@@ -1,3 +1,14 @@
+2008-08-05  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Collect_Interfaces_Info): Minor reformating.
+	* exp_ch3.adb (Build_Offset_To_Top_Functions): Code cleanup: the
+	implementation of this routine has been simplified.
+
+2008-08-05  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h, s-os_lib.adb, s-os_lib.ads: Fix the
+	Set_Read_Only Win32 implementation.
+
 2008-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_strm.adb: Minor reformatting (comments)
