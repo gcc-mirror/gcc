@@ -589,9 +589,9 @@ package body System.OS_Lib is
       Mode     : Copy_Mode := Copy;
       Preserve : Attribute := Time_Stamps)
    is
-      Ada_Name : String_Access :=
-                   To_Path_String_Access
-                     (Name, C_String_Length (Name));
+      Ada_Name     : String_Access :=
+                       To_Path_String_Access
+                         (Name, C_String_Length (Name));
 
       Ada_Pathname : String_Access :=
                        To_Path_String_Access
@@ -648,9 +648,9 @@ package body System.OS_Lib is
                      To_Path_String_Access
                        (Source, C_String_Length (Source));
 
-      Ada_Dest : String_Access :=
-                   To_Path_String_Access
-                     (Dest, C_String_Length (Dest));
+      Ada_Dest   : String_Access :=
+                     To_Path_String_Access
+                       (Dest, C_String_Length (Dest));
    begin
       Copy_Time_Stamps (Ada_Source.all, Ada_Dest.all, Success);
       Free (Ada_Source);
@@ -872,7 +872,7 @@ package body System.OS_Lib is
    ---------------------
 
    function File_Time_Stamp (FD : File_Descriptor) return OS_Time is
-      function File_Time (FD    : File_Descriptor) return OS_Time;
+      function File_Time (FD : File_Descriptor) return OS_Time;
       pragma Import (C, File_Time, "__gnat_file_time_fd");
    begin
       return File_Time (FD);
@@ -1465,6 +1465,7 @@ package body System.OS_Lib is
 
       if Path_Len = 0 then
          return null;
+
       else
          Result := To_Path_String_Access (Path_Addr, Path_Len);
          Free (Path_Addr);
@@ -2269,6 +2270,20 @@ package body System.OS_Lib is
       Rename_File (C_Old_Name'Address, C_New_Name'Address, Success);
    end Rename_File;
 
+   ----------------------
+   -- Set_Non_Writable --
+   ----------------------
+
+   procedure Set_Non_Writable (Name : String) is
+      procedure C_Set_Non_Writable (Name : C_File_Name);
+      pragma Import (C, C_Set_Non_Writable, "__gnat_set_non_writable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Non_Writable (C_Name (C_Name'First)'Address);
+   end Set_Non_Writable;
+
    -----------------------
    -- Set_Close_On_Exec --
    -----------------------
@@ -2299,20 +2314,6 @@ package body System.OS_Lib is
       C_Name (C_Name'Last) := ASCII.NUL;
       C_Set_Executable (C_Name (C_Name'First)'Address);
    end Set_Executable;
-
-   --------------------
-   -- Set_Read_Only --
-   --------------------
-
-   procedure Set_Read_Only (Name : String) is
-      procedure C_Set_Read_Only (Name : C_File_Name);
-      pragma Import (C, C_Set_Read_Only, "__gnat_set_readonly");
-      C_Name : aliased String (Name'First .. Name'Last + 1);
-   begin
-      C_Name (Name'Range)  := Name;
-      C_Name (C_Name'Last) := ASCII.NUL;
-      C_Set_Read_Only (C_Name (C_Name'First)'Address);
-   end Set_Read_Only;
 
    --------------------
    -- Set_Writable --
@@ -2417,12 +2418,12 @@ package body System.OS_Lib is
    end Spawn;
 
    procedure Spawn
-     (Program_Name  : String;
-      Args          : Argument_List;
-      Output_File   : String;
-      Success       : out Boolean;
-      Return_Code   : out Integer;
-      Err_To_Out    : Boolean := True)
+     (Program_Name : String;
+      Args         : Argument_List;
+      Output_File  : String;
+      Success      : out Boolean;
+      Return_Code  : out Integer;
+      Err_To_Out   : Boolean := True)
    is
       FD : File_Descriptor;
 
@@ -2468,16 +2469,16 @@ package body System.OS_Lib is
          type Chars is array (Positive range <>) of aliased Character;
          type Char_Ptr is access constant Character;
 
-         Command_Len : constant Positive := Program_Name'Length + 1
-                                              + Args_Length (Args);
+         Command_Len  : constant Positive := Program_Name'Length + 1
+                                               + Args_Length (Args);
          Command_Last : Natural := 0;
-         Command : aliased Chars (1 .. Command_Len);
+         Command      : aliased Chars (1 .. Command_Len);
          --  Command contains all characters of the Program_Name and Args, all
          --  terminated by ASCII.NUL characters
 
-         Arg_List_Len : constant Positive := Args'Length + 2;
+         Arg_List_Len  : constant Positive := Args'Length + 2;
          Arg_List_Last : Natural := 0;
-         Arg_List : aliased array (1 .. Arg_List_Len) of Char_Ptr;
+         Arg_List      : aliased array (1 .. Arg_List_Len) of Char_Ptr;
          --  List with pointers to NUL-terminated strings of the Program_Name
          --  and the Args and terminated with a null pointer. We rely on the
          --  default initialization for the last null pointer.
@@ -2571,9 +2572,8 @@ package body System.OS_Lib is
       subtype Path_String is String (1 .. Path_Len);
       type    Path_String_Access is access Path_String;
 
-      function Address_To_Access is new
-        Ada.Unchecked_Conversion (Source => Address,
-                              Target => Path_String_Access);
+      function Address_To_Access is new Ada.Unchecked_Conversion
+        (Source => Address, Target => Path_String_Access);
 
       Path_Access : constant Path_String_Access :=
                       Address_To_Access (Path_Addr);

@@ -149,9 +149,9 @@ package System.OS_Lib is
       Hour   : out Hour_Type;
       Minute : out Minute_Type;
       Second : out Second_Type);
-   --  Analogous to the Split routine in Ada.Calendar, takes an OS_Time
-   --  and provides a representation of it as a set of component parts,
-   --  to be interpreted as a date point in UTC.
+   --  Analogous to the Split routine in Ada.Calendar, takes an OS_Time and
+   --  provides a representation of it as a set of component parts, to be
+   --  interpreted as a date point in UTC.
 
    ----------------
    -- File Stuff --
@@ -238,11 +238,11 @@ package System.OS_Lib is
    --  mode parameter is provided. Since this is a temporary file, there is no
    --  point in doing text translation on it.
    --
-   --  On some OSes, the maximum number of temp files that can be created with
-   --  this procedure may be limited. When the maximum is reached, this
-   --  procedure returns Invalid_FD. On some OSes, there may be a race
-   --  condition between processes trying to create temp files at the same
-   --  time in the same directory using this procedure.
+   --  On some operating systems, the maximum number of temp files that can be
+   --  created with this procedure may be limited. When the maximum is reached,
+   --  this procedure returns Invalid_FD. On some operating systems, there may
+   --  be a race condition between processes trying to create temp files at the
+   --  same time in the same directory using this procedure.
 
    procedure Create_Temp_File
      (FD   : out File_Descriptor;
@@ -498,27 +498,29 @@ package System.OS_Lib is
    --  span file systems and may refer to directories.
 
    procedure Set_Writable (Name : String);
-   --  Change the permissions on the named file to make it writable
-   --  for its owner.
+   --  Change permissions on the named file to make it writable for its owner
 
-   procedure Set_Read_Only (Name : String);
-   --  Change the permissions on the named file to make it non-writable
-   --  for its owner.
+   procedure Set_Non_Writable (Name : String);
+   --  Change permissions on the named file to make it non-writable for its
+   --  owner. The readable and executable permissions are not modified.
+
+   procedure Set_Read_Only (Name : String) renames Set_Non_Writable;
+   --  This renaming is provided for backwards compatibility with previous
+   --  versions. The use of Set_Non_Writable is preferred (clearer name).
 
    procedure Set_Executable (Name : String);
-   --  Change the permissions on the named file to make it executable
-   --  for its owner.
+   --  Change permissions on the named file to make it executable for its owner
 
    function Locate_Exec_On_Path
      (Exec_Name : String) return String_Access;
    --  Try to locate an executable whose name is given by Exec_Name in the
-   --  directories listed in the environment Path. If the Exec_Name doesn't
+   --  directories listed in the environment Path. If the Exec_Name does not
    --  have the executable suffix, it will be appended before the search.
-   --  Otherwise works like Locate_Regular_File below.
-   --  If the executable is not found, null is returned.
+   --  Otherwise works like Locate_Regular_File below. If the executable is
+   --  not found, null is returned.
    --
-   --  Note that this function allocates some memory for the returned value.
-   --  This memory needs to be deallocated after use.
+   --  Note that this function allocates memory for the returned value. This
+   --  memory needs to be deallocated after use.
 
    function Locate_Regular_File
      (File_Name : String;
@@ -544,10 +546,9 @@ package System.OS_Lib is
    --  the heap and should be freed after use to avoid storage leaks.
 
    function Get_Target_Debuggable_Suffix return String_Access;
-   --  Return the target debuggable suffix convention. Usually this is the
-   --  same as the convention for Get_Executable_Suffix. The result is
-   --  allocated on the heap and should be freed after use to avoid storage
-   --  leaks.
+   --  Return the target debuggable suffix convention. Usually this is the same
+   --  as the convention for Get_Executable_Suffix. The result is allocated on
+   --  the heap and should be freed after use to avoid storage leaks.
 
    function Get_Executable_Suffix return String_Access;
    --  Return the executable suffix convention. The result is allocated on the

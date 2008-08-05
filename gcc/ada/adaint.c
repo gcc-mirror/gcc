@@ -1927,14 +1927,14 @@ __gnat_set_executable (char *name)
 }
 
 void
-__gnat_set_readonly (char *name)
+__gnat_set_non_writable (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, SET_ACCESS, GENERIC_READ);
+  __gnat_set_OWNER_ACL (wname, REVOKE_ACCESS, GENERIC_WRITE);
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
