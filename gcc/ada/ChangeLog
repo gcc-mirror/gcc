@@ -1,3 +1,48 @@
+2008-08-05  Jose Ruiz  <ruiz@adacore.com>
+
+	* init.c (__gnat_install_handler for linux): If we are building the
+	Xenomai run time then we need to do two additional things: avoid
+	memory swapping and transform the Linux environment task into a native
+	Xenomai task.
+
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS for xenomai run
+	time): Use interface to Xenomai native skin and avoid linux-specific
+	way of setting CPU affinity.
+	(EH_MECHANISM for the xenomai run time): Use sjlj exception mechanism.
+
+2008-08-05  Bob Duff  <duff@adacore.com>
+
+	* checks.ads: Minor comment fix
+
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.adb, g-sercom.ads, g-sercom-mingw.adb,
+	g-sercom-linux.adb (Data_Bits): Change literals B7 and B8 to CS7 and
+	CS8.
+
+2008-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* mlib.adb: Minor code reorganization
+	Minor reformatting
+
+	* make.adb: Minor reformatting
+
+	* prj-attr.ads: Minor reformatting
+
+	* s-os_lib.adb: Minor reformatting
+
+	* s-fileio.adb: Minor code reorganization
+	Minor reformatting
+
+	* prj.ads: Minor reformatting
+
+2008-08-05  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Avoid type Any_Access in
+	unresolved initial value of "null", because it causes implicitly
+	generated "=" operators to be ambiguous, and because this type should
+	not be passed to gigi.
+
 2008-08-05  Vincent Celier  <celier@adacore.com>
 
 	* mlib.adb: Update comments.
