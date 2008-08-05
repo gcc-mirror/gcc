@@ -1,3 +1,19 @@
+2008-08-05  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h, s-os_lib.adb, s-os_lib.ads: Add support for the
+	readable attribute.
+
+2008-08-05  Vincent Celier  <celier@adacore.com>
+
+	* s-wchwts.adb:
+	(Wide_String_To_String): Returns a String with the same 'First as its
+	parameter S.
+	(Wide_Wide_String_To_String): Ditto
+	
+	* s-wchwts.ads:
+	(Wide_String_To_String): Document that the lowest index of the returned
+	String is equal to S'First.
+
 2008-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* xoscons.adb, xutil.ads, xutil.adb, s-oscons-tmplt.c: New files.

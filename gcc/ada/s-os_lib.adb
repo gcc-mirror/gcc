@@ -2268,20 +2268,6 @@ package body System.OS_Lib is
       Rename_File (C_Old_Name'Address, C_New_Name'Address, Success);
    end Rename_File;
 
-   ----------------------
-   -- Set_Non_Writable --
-   ----------------------
-
-   procedure Set_Non_Writable (Name : String) is
-      procedure C_Set_Non_Writable (Name : C_File_Name);
-      pragma Import (C, C_Set_Non_Writable, "__gnat_set_non_writable");
-      C_Name : aliased String (Name'First .. Name'Last + 1);
-   begin
-      C_Name (Name'Range)  := Name;
-      C_Name (C_Name'Last) := ASCII.NUL;
-      C_Set_Non_Writable (C_Name (C_Name'First)'Address);
-   end Set_Non_Writable;
-
    -----------------------
    -- Set_Close_On_Exec --
    -----------------------
@@ -2312,6 +2298,48 @@ package body System.OS_Lib is
       C_Name (C_Name'Last) := ASCII.NUL;
       C_Set_Executable (C_Name (C_Name'First)'Address);
    end Set_Executable;
+
+   ----------------------
+   -- Set_Non_Readable --
+   ----------------------
+
+   procedure Set_Non_Readable (Name : String) is
+      procedure C_Set_Non_Readable (Name : C_File_Name);
+      pragma Import (C, C_Set_Non_Readable, "__gnat_set_non_readable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Non_Readable (C_Name (C_Name'First)'Address);
+   end Set_Non_Readable;
+
+   ----------------------
+   -- Set_Non_Writable --
+   ----------------------
+
+   procedure Set_Non_Writable (Name : String) is
+      procedure C_Set_Non_Writable (Name : C_File_Name);
+      pragma Import (C, C_Set_Non_Writable, "__gnat_set_non_writable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Non_Writable (C_Name (C_Name'First)'Address);
+   end Set_Non_Writable;
+
+   ------------------
+   -- Set_Readable --
+   ------------------
+
+   procedure Set_Readable (Name : String) is
+      procedure C_Set_Readable (Name : C_File_Name);
+      pragma Import (C, C_Set_Readable, "__gnat_set_readable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Readable (C_Name (C_Name'First)'Address);
+   end Set_Readable;
 
    --------------------
    -- Set_Writable --
