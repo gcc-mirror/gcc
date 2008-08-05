@@ -1,3 +1,8 @@
+2008-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/37024
+	* gcc.dg/tree-ssa/tailcall-4.c: New testcase.
+
 2008-08-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37026
