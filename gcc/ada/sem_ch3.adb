@@ -4480,6 +4480,7 @@ package body Sem_Ch3 is
       --  the enclosing scope.
 
       P := Parent (N);
+
       if Nkind (P) = N_Subprogram_Body
         and then Nkind (N) = N_Function_Specification
       then
