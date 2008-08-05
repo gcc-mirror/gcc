@@ -1119,10 +1119,10 @@ package body Exp_Strm is
                 Object_Definition =>
                   New_Occurrence_Of (Etype (Discr), Loc));
 
-            --  If the this  is an access discriminant, do not perform default
-            --  initialization.  The discriminant is about to get its value
+            --  If this is an access discriminant, do not perform default
+            --  initialization. The discriminant is about to get its value
             --  from Read, and if the type is null excluding we do not want
-            --  spurious warnings on an initial null.
+            --  spurious warnings on an initial null value.
 
             if Is_Access_Type (Etype (Discr)) then
                Set_No_Initialization (Decl);

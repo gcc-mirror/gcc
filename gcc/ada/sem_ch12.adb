@@ -8366,8 +8366,8 @@ package body Sem_Ch12 is
                 Defining_Identifier => New_Copy (Formal_Id),
                 Constant_Present    => True,
                 Object_Definition   => New_Copy (Def),
-                Expression          => New_Copy_Tree (Default_Expression
-                                        (Formal)));
+                Expression          => New_Copy_Tree
+                                         (Default_Expression (Formal)));
 
             Append (Decl_Node, List);
             Set_Analyzed (Expression (Decl_Node), False);
@@ -8398,9 +8398,9 @@ package body Sem_Ch12 is
                    Constant_Present    => True,
                    Object_Definition   => New_Copy (Def),
                    Expression          =>
-                      Make_Attribute_Reference (Sloc (Formal_Id),
-                        Attribute_Name => Name_First,
-                        Prefix         => New_Copy (Def)));
+                     Make_Attribute_Reference (Sloc (Formal_Id),
+                       Attribute_Name => Name_First,
+                       Prefix         => New_Copy (Def)));
 
                Append (Decl_Node, List);
 
