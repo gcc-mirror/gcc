@@ -1,3 +1,30 @@
+2008-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_api.h (diamond_derivation<>::test):
+	Expect ambiguity together with the standard exception classes.
+	* testsuite/27_io/ios_base/failure/cons_virtual_derivation.cc: Remove
+	xfail.
+	* testsuite/19_diagnostics/logic_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/19_diagnostics/runtime_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/19_diagnostics/system_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/18_support/bad_alloc/cons_virtual_derivation.cc: Likewise.
+	* testsuite/18_support/bad_cast/cons_virtual_derivation.cc: Likewise.
+	* testsuite/18_support/bad_exception/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/18_support/bad_typeid/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/ext/concurrence_lock_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/ext/forced_exception_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/ext/concurrence_unlock_error/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/20_util/bad_function_call/cons_virtual_derivation.cc:
+	Likewise.
+
 2008-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/postypes.h: Reinstate inclusion of <stdint.h>;

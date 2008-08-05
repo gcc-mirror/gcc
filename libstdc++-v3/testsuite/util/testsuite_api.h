@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Exception testing utils for the C++ library testsuite. 
 //
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,16 +47,19 @@ namespace __gnu_test
   template<typename Exception>
     struct diamond_derivation_base<Exception, true>
     {
-      struct diamond_derivation_error: bad_non_virtual, Exception
+      struct diamond_derivation_error
+      : bad_non_virtual, Exception
       {
-	diamond_derivation_error() : bad_non_virtual(), Exception() { }
+	diamond_derivation_error()
+        : bad_non_virtual(), Exception() { }
       };
     };
 
   template<typename Exception>
     struct diamond_derivation_base<Exception, false>
     {
-      struct diamond_derivation_error: bad_non_virtual, Exception
+      struct diamond_derivation_error
+      : bad_non_virtual, Exception
       {
 	diamond_derivation_error()
 	: bad_non_virtual(), Exception("construct diamond") { }
@@ -64,18 +67,25 @@ namespace __gnu_test
     };
   
   template<typename Exception, bool DefaultCons>
-    struct diamond_derivation: diamond_derivation_base<Exception, DefaultCons>
+    struct diamond_derivation
+    : diamond_derivation_base<Exception, DefaultCons>
     {
       typedef diamond_derivation_base<Exception, DefaultCons> base_type;
       typedef typename base_type::diamond_derivation_error error_type;
-      
+
+      // NB: In the libstdc++-v3 testsuite, all the standard exception
+      // classes (+ a couple of extensions) are checked:  since they
+      // all derive *non* virtually from std::exception, the expected
+      // behavior is ambiguity.
       static void test()
       {
 	bool test __attribute__((unused)) = true;      
-	try { throw error_type(); }
-	catch (std::exception const& e) { }
-	catch (...) 
+	try
+	  { throw error_type(); }
+	catch (std::exception const&)
 	  { VERIFY( false ); }
+	catch (...) 
+	  { VERIFY( true ); }
       }
     };
 
