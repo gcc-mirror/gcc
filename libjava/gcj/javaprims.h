@@ -440,6 +440,7 @@ extern "Java"
       class EnumMap$7;
       class EnumSet;
       class EnumSet$1;
+      class EnumSet$2;
       class Enumeration;
       class EventListener;
       class EventListenerProxy;
