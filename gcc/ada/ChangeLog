@@ -1,5 +1,30 @@
 2008-08-05  Robert Dewar  <dewar@adacore.com>
 
+	* opt.ads (Warn_On_Biased_Representation): New flag
+	
+	* sem_ch13.adb:
+	(Analyze_Attribute_Definition_Clause): Issue warning when biased
+	representation is required.
+	(Minimum_Size): Don't allow biasing if enum rep clause case
+	
+	* sem_warn.adb:
+	(Set_Dot_Warning_Switch): Add handling of -gnatw.b/B switches
+	(Set_Warning_Switch): Include -gnatw.b in -gnatwa, -gnatw.B in gnatws
+	
+	* usage.adb: Add lines for -gnatw.b/B switches
+
+2008-08-05  Pascal Obry  <obry@adacore.com>
+
+	* a-coinve.adb: Reorder the code to avoid uninitialized warning.
+
+	* adaint.c: In UNIX cases do not call __gnat_stat but stat directly.
+
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c: Minor reformatting.
+
+2008-08-05  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb: Minor reformatting
 
 	* prj-nmsc.adb: Minor reformatting

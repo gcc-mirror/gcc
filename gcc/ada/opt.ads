@@ -1240,6 +1240,12 @@ package Opt is
    --  Set to True to generate warnings for static fixed-point expression
    --  values that are not an exact multiple of the small value of the type.
 
+   Warn_On_Biased_Representation : Boolean := True;
+   --  GNAT
+   --  Set to True to generate warnings for size clauses, component clauses
+   --  and component_size clauses that force biased representation. Set False
+   --  by -gnatw.B.
+
    Warn_On_Constant : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for variables that could be declared

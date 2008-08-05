@@ -1131,6 +1131,12 @@ package body Sem_Ch13 is
                      Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
                      Set_Component_Type (Btype, New_Ctyp);
+
+                     if Warn_On_Biased_Representation then
+                        Error_Msg_N
+                          ("?component size clause forces biased "
+                           & "representation", N);
+                     end if;
                   end if;
 
                   Set_Component_Size (Btype, Csize);
@@ -1330,7 +1336,12 @@ package body Sem_Ch13 is
                  or else Has_Small_Clause (U_Ent)
                then
                   Check_Size (Expr, Etyp, Size, Biased);
-                  Set_Has_Biased_Representation (U_Ent, Biased);
+                     Set_Has_Biased_Representation (U_Ent, Biased);
+
+                  if Biased and Warn_On_Biased_Representation then
+                     Error_Msg_N
+                       ("?size clause forces biased representation", N);
+                  end if;
                end if;
 
                --  For types set RM_Size and Esize if possible
@@ -1708,6 +1719,11 @@ package body Sem_Ch13 is
                if Is_Elementary_Type (U_Ent) then
                   Check_Size (Expr, U_Ent, Size, Biased);
                   Set_Has_Biased_Representation (U_Ent, Biased);
+
+                  if Biased and Warn_On_Biased_Representation then
+                     Error_Msg_N
+                       ("?value size clause forces biased representation", N);
+                  end if;
                end if;
 
                Set_RM_Size (U_Ent, Size);
@@ -2490,6 +2506,12 @@ package body Sem_Ch13 is
                            Biased);
 
                         Set_Has_Biased_Representation (Comp, Biased);
+
+                        if Biased and Warn_On_Biased_Representation then
+                           Error_Msg_F
+                             ("?component clause forces biased "
+                              & "representation", CC);
+                        end if;
 
                         if Present (Ocomp) then
                            Set_Component_Clause     (Ocomp, CC);
@@ -3570,7 +3592,10 @@ package body Sem_Ch13 is
 
       --  Fall through with Hi and Lo set. Deal with biased case
 
-      if (Biased and then not Is_Fixed_Point_Type (T))
+      if (Biased
+           and then not Is_Fixed_Point_Type (T)
+           and then not (Is_Enumeration_Type (T)
+                          and then Has_Non_Standard_Rep (T)))
         or else Has_Biased_Representation (T)
       then
          Hi := Hi - Lo;
