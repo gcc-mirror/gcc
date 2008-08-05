@@ -1,3 +1,8 @@
+2008-08-04  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/31890:
+	* gcj/javaprims.h: Regenerate class list.
+
 2008-07-16  Roger Sayle  <roger@eyesopen.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
