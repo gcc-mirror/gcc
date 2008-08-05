@@ -1891,51 +1891,53 @@ package body Prj.Proc is
                      --  Associative array attribute
 
                      else
-                        --  Get the string index
-
-                        Get_Name_String
-                          (Associative_Array_Index_Of
-                             (Current_Item, From_Project_Node_Tree));
-
-                        --  Put in lower case, if necessary
-
                         declare
-                           Lower : Boolean;
-
-                        begin
-                           Lower :=
-                             Case_Insensitive
+                           Index_Name : Name_Id :=
+                             Associative_Array_Index_Of
                                (Current_Item, From_Project_Node_Tree);
-
-                           --  In multi-language mode (gprbuild), the index is
-                           --  always case insensitive if it does not include
-                           --  any dot.
-
-                           if Get_Mode = Multi_Language and then not Lower then
-                              for J in 1 .. Name_Len loop
-                                 if Name_Buffer (J) = '.' then
-                                    Lower := False;
-                                    exit;
-                                 end if;
-                              end loop;
-                           end if;
-
-                           if Lower then
-                              GNAT.Case_Util.To_Lower
-                                (Name_Buffer (1 .. Name_Len));
-                           end if;
-                        end;
-
-                        declare
+                           Lower      : Boolean;
                            The_Array : Array_Id;
 
                            The_Array_Element : Array_Element_Id :=
                                                  No_Array_Element;
 
-                           Index_Name : constant Name_Id := Name_Find;
-                           --  The name id of the index
-
                         begin
+                           if Index_Name /= All_Other_Names then
+                              --  Get the string index
+
+                              Get_Name_String
+                                (Associative_Array_Index_Of
+                                   (Current_Item, From_Project_Node_Tree));
+
+                              --  Put in lower case, if necessary
+
+                              Lower :=
+                                Case_Insensitive
+                                  (Current_Item, From_Project_Node_Tree);
+
+                              --  In multi-language mode (gprbuild), the index
+                              --  is always case insensitive if it does not
+                              --  include any dot.
+
+                              if Get_Mode = Multi_Language
+                                and then not Lower
+                              then
+                                 for J in 1 .. Name_Len loop
+                                    if Name_Buffer (J) = '.' then
+                                       Lower := False;
+                                       exit;
+                                    end if;
+                                 end loop;
+                              end if;
+
+                              if Lower then
+                                 GNAT.Case_Util.To_Lower
+                                   (Name_Buffer (1 .. Name_Len));
+                              end if;
+
+                              Index_Name := Name_Find;
+                           end if;
+
                            --  Look for the array in the appropriate list
 
                            if Pkg /= No_Package then
