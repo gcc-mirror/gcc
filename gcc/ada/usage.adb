@@ -378,12 +378,14 @@ begin
    Write_Line ("        a    turn on all optional warnings " &
                                                   "(except dhl.ot.w)");
    Write_Line ("        A    turn off all optional warnings");
-   Write_Line ("        .a*  turn on warnings for failing assertions");
-   Write_Line ("        .A   turn off warnings for failing assertions");
+   Write_Line ("        .a*  turn on warnings for failing assertion");
+   Write_Line ("        .A   turn off warnings for failing assertion");
    Write_Line ("        b    turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
    Write_Line ("        B*   turn off warnings for bad fixed value " &
                                                   "(not multiple of small)");
+   Write_Line ("        .b*  turn on warnings for biased representation");
+   Write_Line ("        .B   turn off warnings for biased representation");
    Write_Line ("        c    turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
    Write_Line ("        .c   turn on warnings for unrepped components");
@@ -396,7 +398,7 @@ begin
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        g*   turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
-   Write_Line ("        h    turn on warnings for hiding variable ");
+   Write_Line ("        h    turn on warnings for hiding variable");
    Write_Line ("        H*   turn off warnings for hiding variable");
    Write_Line ("        i*   turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
@@ -430,9 +432,9 @@ begin
    Write_Line ("        .P*  turn off warnings for suspicious parameter " &
                                                   "order");
    Write_Line ("        q*   turn on warnings for questionable " &
-                                                  "missing parentheses");
+                                                  "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
-                                                  "missing parentheses");
+                                                  "missing parenthesis");
    Write_Line ("        r    turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r   turn on warnings for object renaming function");
@@ -451,8 +453,8 @@ begin
    Write_Line ("        .w*  turn off warnings on pragma Warnings Off");
    Write_Line ("        x*   turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
-   Write_Line ("        .x   turn on warnings for non-local exceptions");
-   Write_Line ("        .X*  turn off warnings for non-local exceptions");
+   Write_Line ("        .x   turn on warnings for non-local exception");
+   Write_Line ("        .X*  turn off warnings for non-local exception");
    Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
    Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
    Write_Line ("        z*   turn on warnings for convention/size/align " &
