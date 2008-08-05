@@ -22,4 +22,3 @@ $(T)crtn.o: $(srcdir)/config/xtensa/crtn.asm $(GCC_PASSES)
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/xtensa/crtn.asm
 
 $(out_object_file): gt-xtensa.h
-gt-xtensa.h : s-gtype ; @true

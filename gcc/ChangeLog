@@ -1,4 +1,8 @@
 2008-08-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/t-xtensa: Remove dependency for gt-xtensa.h.
+	
+2008-08-05  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_va_start): Unshare valist.
 	(xtensa_gimplify_va_arg_expr): Unshare valist, orig_ndx, ndx, array,
