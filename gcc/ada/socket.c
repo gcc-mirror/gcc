@@ -37,7 +37,8 @@
 #else
 #include "gsocket.h"
 /* Include all the necessary system-specific headers and define the
-   necessary macros (shared with gen-soccon). */
+ * necessary macros (shared with gen-oscons).
+ */
 
 #if !defined(SO_NOSIGPIPE) && !defined (MSG_NOSIGNAL)
 #include <signal.h>
