@@ -1,3 +1,42 @@
+2008-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+	* checks.adb: Minor reformatting
+
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* tbuild.ads (New_External_Name): Update spec to reflect relaxed
+	restriction on Prefix.
+
+2008-08-05  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Sort_Sections, Group_Switches): New/Modified internal
+	methods needed to handle switch sections when building a command line.
+	(Define_Section, Add_Switch, Remove_Switch, Is_New_Section,
+	Current_Section): New public methods or methods modified to handle
+	building command lines with sections.
+	(Set_Command_Line): Take into account sections when analysing a switch
+	string.
+	(Start): Sort the switches by sections before iterating the command line
+	elements.
+	
+	* g-comlin.ads (Define_Section, Add_Switch, Remove_Switch,
+	Is_New_Section, Current_Section): New methods or methods modified to
+	handle building command lines with sections.
+
+2008-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function): For access
+	discriminants, indicate that the corresponding object declaration has
+	no initialization, to prevent spurious warnings when the access type is
+	null-excluding.
+
+2008-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): If this is a call to the predefined
+	Abort_Task, warn if the call appears within a protected operation.
+
 2008-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb (Expand_N_In): Suppress range warnings in instances
