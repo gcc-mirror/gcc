@@ -419,7 +419,8 @@ valid_subreg (rtx op)
   enum machine_mode im = GET_MODE (SUBREG_REG (op));
   return om != VOIDmode && im != VOIDmode
     && (GET_MODE_SIZE (im) == GET_MODE_SIZE (om)
-	|| (GET_MODE_SIZE (im) <= 4 && GET_MODE_SIZE (om) <= 4));
+	|| (GET_MODE_SIZE (im) <= 4 && GET_MODE_SIZE (om) <= 4)
+	|| (GET_MODE_SIZE (im) >= 16 && GET_MODE_SIZE (om) >= 16));
 }
 
 /* When insv and ext[sz]v ar passed a TI SUBREG, we want to strip it off
@@ -429,8 +430,10 @@ adjust_operand (rtx op, HOST_WIDE_INT * start)
 {
   enum machine_mode mode;
   int op_size;
-  /* Strip any SUBREG */
-  if (GET_CODE (op) == SUBREG)
+  /* Strip any paradoxical SUBREG.  */
+  if (GET_CODE (op) == SUBREG
+      && (GET_MODE_BITSIZE (GET_MODE (op))
+	  > GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op)))))
     {
       if (start)
 	*start -=
