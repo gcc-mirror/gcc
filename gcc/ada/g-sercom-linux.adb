@@ -84,7 +84,7 @@ package body GNAT.Serial_Communications is
                     B115200 => 8#010002#);
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
-                   (B7 => 8#040#, B8 => 8#060#);
+                   (CS7 => 8#040#, CS8 => 8#060#);
 
    C_Stop_Bits : constant array (Stop_Bits_Number) of unsigned :=
                    (One => 0, Two => CSTOPB);
@@ -181,7 +181,7 @@ package body GNAT.Serial_Communications is
    procedure Set
      (Port      : Serial_Port;
       Rate      : Data_Rate        := B9600;
-      Bits      : Data_Bits        := B8;
+      Bits      : Data_Bits        := CS8;
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;

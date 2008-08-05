@@ -79,7 +79,7 @@ package body GNAT.Serial_Communications is
    procedure Set
      (Port      : Serial_Port;
       Rate      : Data_Rate        := B9600;
-      Bits      : Data_Bits        := B8;
+      Bits      : Data_Bits        := CS8;
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
