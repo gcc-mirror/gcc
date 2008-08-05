@@ -263,12 +263,13 @@ package body MLib is
                               --  Set Success to True only if the newly
                               --  created file has been correctly written.
 
-                              Success := Status and Actual_Len = Len + 3;
+                              Success := Status and then Actual_Len = Len + 3;
 
                               if Success then
-                                 --  Set_Read_Only is used here, not
-                                 --  Set_Non_Writable, so that gprbuild can be
-                                 --  compiled with older compilers.
+
+                                 --  Set_Read_Only is used here, rather than
+                                 --  Set_Non_Writable, so that gprbuild can
+                                 --  he compiled with older compilers.
 
                                  Set_Read_Only
                                    (Name_Buffer (1 .. Name_Len - 1));
