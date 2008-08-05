@@ -266,8 +266,12 @@ package body MLib is
                               Success := Status and Actual_Len = Len + 3;
 
                               if Success then
-                                 Set_Read_Only (
-                                   Name_Buffer (1 .. Name_Len - 1));
+                                 --  Set_Read_Only is used here, not
+                                 --  Set_Non_Writable, so that gprbuild can be
+                                 --  compiled with older compilers.
+
+                                 Set_Read_Only
+                                   (Name_Buffer (1 .. Name_Len - 1));
                               end if;
                            end if;
                         end if;
