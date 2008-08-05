@@ -1,3 +1,10 @@
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb, xutil.ads, xutil.adb, s-oscons-tmplt.c: New files.
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Generate
+	s-oscons.ads
+
 2008-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (Warn_On_Biased_Representation): New flag

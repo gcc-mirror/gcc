@@ -922,17 +922,46 @@ ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	$(CP) $^ ada/bldtools/sinfo
 	(cd ada/bldtools/sinfo && $(GNATMAKE) -q xsinfo && ./xsinfo ../../sinfo.h )
 
-ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb
+ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/nmake_b
 	$(RM) $(addprefix ada/bldtools/nmake_b/,$(notdir $^))
 	$(CP) $^ ada/bldtools/nmake_b
 	(cd ada/bldtools/nmake_b && $(GNATMAKE) -q xnmake && ./xnmake -b ../../nmake.adb )
 
-ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb
+ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/nmake_s
 	$(RM) $(addprefix ada/bldtools/nmake_s/,$(notdir $^))
 	$(CP) $^ ada/bldtools/nmake_s
 	(cd ada/bldtools/nmake_s && $(GNATMAKE) -q xnmake && ./xnmake -s ../../nmake.ads )
+
+OSCONS_CPPFLAGS=-DTHREAD_KIND_$(THREAD_KIND) s-oscons-tmplt.c
+
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
+OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
+             -DTARGET='""$(target)""' s-oscons-tmplt.c
+
+OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
+                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
+  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
+  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
+
+else
+OSCONS_CPP=../../../xgcc -B../../../ -E -C \
+  -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=../../../xgcc -S -B../../../ s-oscons-tmplt.i
+endif
+
+ada/s-oscons.ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
+	-$(MKDIR) ada/bldtools/oscons
+	$(RM) $(addprefix ada/bldtools/oscons/,$(notdir $^))
+	$(CP) $^ ada/bldtools/oscons
+	(cd ada/bldtools/oscons; gnatmake -q xoscons ; \
+		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
+		$(OSCONS_CPP) ; \
+		$(OSCONS_EXTRACT) ; \
+		./xoscons ; \
+		$(RM) ../../s-oscons.ads ; \
+		$(CP) s-oscons.ads ../../s-oscons.ads)
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
