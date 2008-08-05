@@ -170,8 +170,7 @@ package Prj.Attr is
    --  last of the list.
 
    function Others_Allowed_For (Attribute : Attribute_Node_Id) return Boolean;
-   --  Returns True if the index for an associative array attributes may be
-   --  others.
+   --  True iff the index for an associative array attributes may be others
 
    --------------
    -- Packages --
