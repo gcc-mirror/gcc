@@ -283,7 +283,7 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
     {
       /* Reject a tailcall if the type conversion might need
 	 additional code.  */
-      if (IS_CONVERT_EXPR_CODE_P (code)
+      if (gimple_assign_cast_p (stmt)
 	  && TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
 	return false;
 

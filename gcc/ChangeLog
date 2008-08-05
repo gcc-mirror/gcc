@@ -1,3 +1,10 @@
+2008-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/37024
+	* tree-tailcall.c (process_assignment): Use gimple_assign_cast_p
+	instead of IS_CONVERT_EXPR_CODE_P for seeing if the assignment
+	is a conversion.
+
 2008-08-05  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (c-cppbuiltin.o): Depend on debug.h.
