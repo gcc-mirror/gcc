@@ -1,3 +1,7 @@
+2008-08-05  Matthias Klose  <doko@ubuntu.com>
+
+	* HACKING: Update instructions how to build gcj/javaprims.h.
+
 2008-08-04  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/31890:
