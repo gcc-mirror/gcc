@@ -2550,10 +2550,9 @@ package body Sem_Ch3 is
          Set_Etype (Id, T);
          Resolve (E, T);
 
-         --  If E is "null", and has been replaced by an
-         --  N_Raise_Constraint_Error node (which was marked already-analyzed),
-         --  we need to set the type to something other than Any_Access in
-         --  order to keep gigi happy.
+         --  If E is null and has been replaced by an N_Raise_Constraint_Error
+         --  node (which was marked already-analyzed), we need to set the type
+         --  to something other than Any_Access in order to keep gigi happy.
 
          if Etype (E) = Any_Access then
             Set_Etype (E, T);
