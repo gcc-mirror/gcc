@@ -5221,12 +5221,16 @@ package body Sem_Res is
       end if;
 
       --  Check for violation of restriction No_Specific_Termination_Handlers
+      --  and warn on a potentially blocking call to Abort_Task.
 
       if Is_RTE (Nam, RE_Set_Specific_Handler)
            or else
          Is_RTE (Nam, RE_Specific_Handler)
       then
          Check_Restriction (No_Specific_Termination_Handlers, N);
+
+      elsif Is_RTE (Nam, RE_Abort_Task) then
+         Check_Potentially_Blocking_Operation (N);
       end if;
 
       --  All done, evaluate call and deal with elaboration issues
@@ -9557,7 +9561,7 @@ package body Sem_Res is
       --  return statement, because in that case the accessibility check
       --  takes place after the return.
 
-      elsif Ekind (Target_Type) in Access_Subprogram_Kind
+      elsif Is_Access_Subprogram_Type (Target_Type)
         and then No (Corresponding_Remote_Type (Opnd_Type))
       then
          if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
