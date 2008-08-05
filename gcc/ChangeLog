@@ -1,3 +1,9 @@
+2008-08-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37016
+	* tree-ssa.c (useless_type_conversion_p_1): Call langhook
+	if TYPE_STRUCTURAL_EQUALITY_P is true for both types.
+
 2008-08-05  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): Check .cfi_personality.
