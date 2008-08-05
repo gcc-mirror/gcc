@@ -1653,7 +1653,7 @@ package body Checks is
          begin
             if Int_Val <= Ilast and then Int_Val >= Ifirst then
 
-               --  Conversion is safe.
+               --  Conversion is safe
 
                Rewrite (Parent (Ck_Node),
                  Make_Integer_Literal (Loc, UI_To_Int (Int_Val)));
