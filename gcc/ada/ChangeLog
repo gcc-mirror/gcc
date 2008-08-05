@@ -1,3 +1,10 @@
+2008-08-05  Vincent Celier  <celier@adacore.com>
+
+	* a-wtdeio.adb (Put (Current_Output)): Use Fore in the call to Put
+	(File).
+	
+	* a-ztdeio.adb: Ditto.
+
 2008-08-05  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c, adaint.h, s-os_lib.adb, s-os_lib.ads: Add support for the
