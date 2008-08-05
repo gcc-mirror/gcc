@@ -1828,7 +1828,7 @@ __gnat_is_readable_file (char *name)
   int mode;
   struct stat statbuf;
 
-  ret = __gnat_stat (name, &statbuf);
+  ret = stat (name, &statbuf);
   mode = statbuf.st_mode & S_IRUSR;
   return (!ret && mode);
 #endif
@@ -1854,7 +1854,7 @@ __gnat_is_writable_file (char *name)
   int mode;
   struct stat statbuf;
 
-  ret = __gnat_stat (name, &statbuf);
+  ret = stat (name, &statbuf);
   mode = statbuf.st_mode & S_IWUSR;
   return (!ret && mode);
 #endif
@@ -1878,7 +1878,7 @@ __gnat_is_executable_file (char *name)
   int mode;
   struct stat statbuf;
 
-  ret = __gnat_stat (name, &statbuf);
+  ret = stat (name, &statbuf);
   mode = statbuf.st_mode & S_IXUSR;
   return (!ret && mode);
 #endif
@@ -1899,10 +1899,10 @@ __gnat_set_writable (char *name)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
-  {
-    statbuf.st_mode = statbuf.st_mode | S_IWUSR;
-    chmod (name, statbuf.st_mode);
-  }
+    {
+      statbuf.st_mode = statbuf.st_mode | S_IWUSR;
+      chmod (name, statbuf.st_mode);
+    }
 #endif
 }
 
@@ -1919,10 +1919,10 @@ __gnat_set_executable (char *name)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
-  {
-    statbuf.st_mode = statbuf.st_mode | S_IXUSR;
-    chmod (name, statbuf.st_mode);
-  }
+    {
+      statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+      chmod (name, statbuf.st_mode);
+    }
 #endif
 }
 
@@ -3210,7 +3210,7 @@ get_gcc_version (void)
 
 int
 __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
-                        int close_on_exec_p ATTRIBUTE_UNUSED)
+                          int close_on_exec_p ATTRIBUTE_UNUSED)
 {
 #if defined (F_GETFD) && defined (FD_CLOEXEC) && ! defined (__vxworks)
   int flags = fcntl (fd, F_GETFD, 0);
