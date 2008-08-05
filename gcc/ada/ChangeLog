@@ -1,3 +1,27 @@
+2008-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb:
+	(Freeze_Entity): A deferred constant does not violate the restriction
+	No_Default_Initialization, 
+
+	* sem_ch3.adb (Process_Subtype): An allocator is a valid construct that
+	can carry a null exclusion indicator, and on which an error may be
+	posted if the indicator is redundant.
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Verify that a null exclusion
+	does not apply to a subtype mark that already excludes null.
+
+	* sem_ch12.adb (Formal_Object_Declaration): Verify that a null
+	exclusion does not apply to a subtype mark that already excludes null.
+
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.rtl: Compile s-oscons.ads as part of the runtime library.
+
+2008-08-05  Doug Rupp  <rupp@adacore.com>
+
+	* vms_data.ads: Translation for /POINTER_SIZE qualifier.
+
 2008-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* gsocket.h: Make this file includable in a Nucleus environment, which
