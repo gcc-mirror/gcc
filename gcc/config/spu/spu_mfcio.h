@@ -31,6 +31,10 @@ typedef unsigned long long uint64_t;
 #include <stdint.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /****************************************************************/
 /* DMA list element structure*/
@@ -59,21 +63,23 @@ typedef struct mfc_list_element {
 #define MFC_MIN_DMA_SIZE_MASK (MFC_MIN_DMA_SIZE - 1)
 #define MFC_MAX_DMA_SIZE_MASK (MFC_MAX_DMA_SIZE - 1)
 
-#define MFC_MIN_DMA_LIST_SIZE 0x0008   /*   8 bytes */
-#define MFC_MAX_DMA_LIST_SIZE 0x4000   /* 16K bytes */
+#define MFC_MIN_DMA_LIST_ELEMENTS 1
+#define MFC_MAX_DMA_LIST_ELEMENTS 2048
+
+#define MFC_MIN_DMA_LIST_SIZE (MFC_MIN_DMA_LIST_ELEMENTS << 3) /*   8 bytes */
+#define MFC_MAX_DMA_LIST_SIZE (MFC_MAX_DMA_LIST_ELEMENTS << 3) /* 16K bytes */
 
 /****************************************************************/
-/* MFC DMA Command flags which identify classes of operations.   */
+/* MFC DMA command modifiers to identify classes of operations. */
 /****************************************************************/
-/* Note: These flags may be used in conjunction with the base command types
-  (i.e. MFC_PUT_CMD, MFC_PUTR_CMD, MFC_GET_CMD, and MFC_SNDSIG_CMD)
-  to construct the various command permutations.
- */
+
+/* Note: These commands modifier may be used in conjunction with the base
+   command types (i.e. MFC_PUT_CMD, MFC_GET_CMD, and MFC_SNDSIG_CMD)
+   to construct the various command permutations.  */
 
 #define MFC_BARRIER_ENABLE    0x0001
 #define MFC_FENCE_ENABLE      0x0002
-#define MFC_LIST_ENABLE       0x0004   /* SPU Only */
-#define MFC_START_ENABLE      0x0008   /*  PU Only */
+#define MFC_LIST_ENABLE       0x0004
 #define MFC_RESULT_ENABLE     0x0010
 
 /****************************************************************/
@@ -81,42 +87,37 @@ typedef struct mfc_list_element {
 /****************************************************************/
 
 #define MFC_PUT_CMD          0x0020
-#define MFC_PUTS_CMD         0x0028   /*  PU Only */
-#define MFC_PUTR_CMD         0x0030
-#define MFC_PUTF_CMD         0x0022
-#define MFC_PUTB_CMD         0x0021
-#define MFC_PUTFS_CMD        0x002A   /*  PU Only */
-#define MFC_PUTBS_CMD        0x0029   /*  PU Only */
-#define MFC_PUTRF_CMD        0x0032
-#define MFC_PUTRB_CMD        0x0031
-#define MFC_PUTL_CMD         0x0024   /* SPU Only */
-#define MFC_PUTRL_CMD        0x0034   /* SPU Only */
-#define MFC_PUTLF_CMD        0x0026   /* SPU Only */
-#define MFC_PUTLB_CMD        0x0025   /* SPU Only */
-#define MFC_PUTRLF_CMD       0x0036   /* SPU Only */
-#define MFC_PUTRLB_CMD       0x0035   /* SPU Only */
+#define MFC_PUTB_CMD         (MFC_PUT_CMD | MFC_BARRIER_ENABLE)
+#define MFC_PUTF_CMD         (MFC_PUT_CMD | MFC_FENCE_ENABLE)
+#define MFC_PUTL_CMD         (MFC_PUT_CMD | MFC_LIST_ENABLE)
+#define MFC_PUTLB_CMD        (MFC_PUTL_CMD | MFC_BARRIER_ENABLE)
+#define MFC_PUTLF_CMD        (MFC_PUTL_CMD | MFC_FENCE_ENABLE)
+
+#define MFC_PUTR_CMD         (MFC_PUT_CMD | MFC_RESULT_ENABLE)
+#define MFC_PUTRB_CMD        (MFC_PUTR_CMD | MFC_BARRIER_ENABLE)
+#define MFC_PUTRF_CMD        (MFC_PUTR_CMD | MFC_FENCE_ENABLE)
+#define MFC_PUTRL_CMD        (MFC_PUTR_CMD | MFC_LIST_ENABLE)
+#define MFC_PUTRLB_CMD       (MFC_PUTRL_CMD | MFC_BARRIER_ENABLE)
+#define MFC_PUTRLF_CMD       (MFC_PUTRL_CMD | MFC_FENCE_ENABLE)
 
 /****************************************************************/
 /* MFC DMA Get Commands                                 */
 /****************************************************************/
 
 #define MFC_GET_CMD          0x0040
-#define MFC_GETS_CMD         0x0048   /*  PU Only */
-#define MFC_GETF_CMD         0x0042
-#define MFC_GETB_CMD         0x0041
-#define MFC_GETFS_CMD        0x004A   /*  PU Only */
-#define MFC_GETBS_CMD        0x0049   /*  PU Only */
-#define MFC_GETL_CMD         0x0044   /* SPU Only */
-#define MFC_GETLF_CMD        0x0046   /* SPU Only */
-#define MFC_GETLB_CMD        0x0045   /* SPU Only */
+#define MFC_GETB_CMD         (MFC_GET_CMD | MFC_BARRIER_ENABLE)
+#define MFC_GETF_CMD         (MFC_GET_CMD | MFC_FENCE_ENABLE)
+#define MFC_GETL_CMD         (MFC_GET_CMD | MFC_LIST_ENABLE)
+#define MFC_GETLB_CMD        (MFC_GETL_CMD | MFC_BARRIER_ENABLE)
+#define MFC_GETLF_CMD        (MFC_GETL_CMD | MFC_FENCE_ENABLE)
 
 /****************************************************************/
 /* MFC Synchronization Commands                           */
 /****************************************************************/
 
 #define MFC_SNDSIG_CMD       0x00A0
-#define MFC_SNDSIGB_CMD      0x00A1
-#define MFC_SNDSIGF_CMD      0x00A2
+#define MFC_SNDSIGB_CMD      (MFC_SNDSIG_CMD | MFC_BARRIER_ENABLE)
+#define MFC_SNDSIGF_CMD      (MFC_SNDSIG_CMD | MFC_FENCE_ENABLE)
 #define MFC_BARRIER_CMD      0x00C0
 #define MFC_EIEIO_CMD        0x00C8
 #define MFC_SYNC_CMD         0x00CC
@@ -125,10 +126,20 @@ typedef struct mfc_list_element {
 /* MFC Atomic Commands                                 */
 /****************************************************************/
 
-#define MFC_GETLLAR_CMD      0x00D0   /* SPU Only */
-#define MFC_PUTLLC_CMD       0x00B4   /* SPU Only */
-#define MFC_PUTLLUC_CMD      0x00B0   /* SPU Only */
-#define MFC_PUTQLLUC_CMD     0x00B8   /* SPU Only */
+#define MFC_GETLLAR_CMD      0x00D0
+#define MFC_PUTLLC_CMD       0x00B4
+#define MFC_PUTLLUC_CMD      0x00B0
+#define MFC_PUTQLLUC_CMD     0x00B8
+
+/****************************************************************/
+/* MFC SL1 Storage Control Commands                             */
+/****************************************************************/
+
+#define MFC_SDCRT_CMD        0x0080
+#define MFC_SDCRTST_CMD      0x0081
+#define MFC_SDCRZ_CMD        0x0089
+#define MFC_SDCRST_CMD       0x008D
+#define MFC_SDCRF_CMD        0x008F
 
 /****************************************************************/
 /* Channel Defines                                    */
@@ -209,6 +220,13 @@ typedef struct mfc_list_element {
 #define mfc_eieio(tag,tid,rid) spu_mfcdma32(0,0,0,tag,MFC_CMD_WORD(tid,rid,MFC_EIEIO_CMD))
 #define mfc_sync(tag)          spu_mfcdma32(0,0,0,tag,MFC_SYNC_CMD)
 
+/* MFC SL1 Storage Control Commands */
+#define mfc_sdcrt(  ea,size,tag,tid,rid) spu_mfcdma64(0,mfc_ea2h(ea),mfc_ea2l(ea),size,tag,MFC_CMD_WORD(tid,rid,MFC_SDCRT_CMD))
+#define mfc_sdcrtst(ea,size,tag,tid,rid) spu_mfcdma64(0,mfc_ea2h(ea),mfc_ea2l(ea),size,tag,MFC_CMD_WORD(tid,rid,MFC_SDCRTST_CMD))
+#define mfc_sdcrz(  ea,size,tag,tid,rid) spu_mfcdma64(0,mfc_ea2h(ea),mfc_ea2l(ea),size,tag,MFC_CMD_WORD(tid,rid,MFC_SDCRZ_CMD))
+#define mfc_sdcrst( ea,size,tag,tid,rid) spu_mfcdma64(0,mfc_ea2h(ea),mfc_ea2l(ea),size,tag,MFC_CMD_WORD(tid,rid,MFC_SDCRST_CMD))
+#define mfc_sdcrf(  ea,size,tag,tid,rid) spu_mfcdma64(0,mfc_ea2h(ea),mfc_ea2l(ea),size,tag,MFC_CMD_WORD(tid,rid,MFC_SDCRF_CMD))
+
 /* DMA Queue */
 #define mfc_stat_cmd_queue()          spu_readchcnt(MFC_Cmd)
 
@@ -267,7 +285,7 @@ typedef struct mfc_list_element {
 #define spu_read_event_mask()         spu_readch(SPU_RdEventMask)
 
 /* SPU State Management */
-#define spu_read_machine_status()     spu_readch(SPU_MachStat)
+#define spu_read_machine_status()     spu_readch(SPU_RdMachStat)
 #define spu_write_srr0(srr0)          spu_writech(SPU_WrSRR0,srr0)
 #define spu_read_srr0()               spu_readch(SPU_RdSRR0)
 
@@ -290,5 +308,9 @@ extern unsigned int __mfc_tag_reserve (void);
 extern unsigned int __mfc_tag_release (unsigned int);
 extern unsigned int __mfc_multi_tag_reserve (unsigned int);
 extern unsigned int __mfc_multi_tag_release (unsigned int, unsigned int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SPU_MFCIO_H__ */
