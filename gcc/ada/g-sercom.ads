@@ -51,7 +51,7 @@ package GNAT.Serial_Communications is
      (B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200);
    --  Speed of the communication
 
-   type Data_Bits is (B8, B7);
+   type Data_Bits is (CS8, CS7);
    --  Communication bits
 
    type Stop_Bits_Number is (One, Two);
@@ -71,7 +71,7 @@ package GNAT.Serial_Communications is
    procedure Set
      (Port      : Serial_Port;
       Rate      : Data_Rate        := B9600;
-      Bits      : Data_Bits        := B8;
+      Bits      : Data_Bits        := CS8;
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
