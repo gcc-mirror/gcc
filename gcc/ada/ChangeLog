@@ -1,3 +1,14 @@
+2008-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+	* prj-nmsc.adb: Minor reformatting
+
+2008-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Array_Type_Instance): Only apply complex
+	visibility check on the component type if the simple test fails.
+
 2008-08-05  Jose Ruiz  <ruiz@adacore.com>
 
 	* init.c (__gnat_install_handler for linux): If we are building the
