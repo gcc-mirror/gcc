@@ -830,8 +830,8 @@ package body System.File_IO is
       --  Normal case of Open or Create
 
       else
-         --  If temporary file case, get temporary file name and add
-         --  to the list of temporary files to be deleted on exit.
+         --  If temporary file case, get temporary file name and add to the
+         --  list of temporary files to be deleted on exit.
 
          if Tempfile then
             if not Creat then
@@ -965,7 +965,7 @@ package body System.File_IO is
             --  mode returned by Fopen_Mode is not "r" or "r+", then we first
             --  make sure that the file exists as required by Ada semantics.
 
-            if Creat = False and then Fopstr (1) /= 'r' then
+            if not Creat and then Fopstr (1) /= 'r' then
                if file_exists (Namestr'Address) = 0 then
                   raise Name_Error;
                end if;
