@@ -54,7 +54,8 @@ package System.WCh_WtS is
    --  that normal (non-wide character) mode holds at the start and end of
    --  the result string. EM indicates the wide character encoding method.
    --  Note: in the WCEM_Brackets case, we only use the brackets encoding
-   --  for characters greater than 16#FF#.
+   --  for characters greater than 16#FF#. The lowest index of the returned
+   --  String is equal to S'First.
 
    function Wide_Wide_String_To_String
      (S  : Wide_Wide_String;
