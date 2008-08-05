@@ -1949,6 +1949,36 @@ package VMS_Data is
    --   file xyz.adb is compiled with -gnatl=.lst, then the output is written
    --   to file xyz.adb_lst.
 
+   S_GCC_Pointer : aliased constant S := "/POINTER_SIZE="                  &
+                                            "64 "                          &
+                                               "-mmalloc64 "               &
+                                            "LONG "                        &
+                                               "-mmalloc64 "               &
+                                            "32 "                          &
+                                               "-mno-malloc64 "            &
+                                            "SHORT "                       &
+                                               "-mno-malloc64";
+   --        /POINTER_SIZE=64 (D)
+   --        /POINTER_SIZE[=(keyword[,...])]
+   --
+   --   Change how pointers and descriptors are allocated. The following
+   --   keywords are supported:
+   --
+   --        64 (D)       Allocate heap pointers in 64bit space except as
+   --                     constrained by a 32bit size clause or by
+   --                     Convention_C and generate 64bit descriptors for
+   --                     Descriptor mechanisms for calling imported
+   --                     subprograms and accept both 64bit and 32bit
+   --                     descriptors for calls to exported subprograms.
+   --
+   --        LONG         Equivalent to option 64.
+   --
+   --        32           Allocate all heap pointers in 32bit space and
+   --                     generate 32bit descriptors for Descriptor
+   --                     mechanisms for calling imported subprograms.
+   --
+   --        SHORT        Equivalent to option 32.
+
    S_GCC_Polling : aliased constant S := "/POLLING "                       &
                                             "-gnatP";
    --        /NOPOLLING (D)
@@ -3348,6 +3378,7 @@ package VMS_Data is
                      S_GCC_Nostlib 'Access,
                      S_GCC_Opt     'Access,
                      S_GCC_OptX    'Access,
+                     S_GCC_Pointer 'Access,
                      S_GCC_Polling 'Access,
                      S_GCC_Project 'Access,
                      S_GCC_Psta    'Access,
