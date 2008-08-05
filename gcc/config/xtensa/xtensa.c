@@ -2533,8 +2533,10 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_ndx = TREE_CHAIN (f_reg);
 
   stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
-  reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg, NULL_TREE);
-  ndx = build3 (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx, NULL_TREE);
+  reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), unshare_expr (valist),
+		f_reg, NULL_TREE);
+  ndx = build3 (COMPONENT_REF, TREE_TYPE (f_ndx), unshare_expr (valist),
+		f_ndx, NULL_TREE);
 
   /* Call __builtin_saveregs; save the result in __va_reg */
   u = make_tree (sizetype, expand_builtin_saveregs ());
@@ -2588,7 +2590,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 					       pre_p, NULL);
       real_part = get_initialized_tmp_var (real_part, pre_p, NULL);
 
-      imag_part = xtensa_gimplify_va_arg_expr (valist, TREE_TYPE (type),
+      imag_part = xtensa_gimplify_va_arg_expr (unshare_expr (valist),
+					       TREE_TYPE (type),
 					       pre_p, NULL);
       imag_part = get_initialized_tmp_var (imag_part, pre_p, NULL);
 
@@ -2599,9 +2602,12 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   f_reg = TREE_CHAIN (f_stk);
   f_ndx = TREE_CHAIN (f_reg);
 
-  stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
-  reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg, NULL_TREE);
-  ndx = build3 (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx, NULL_TREE);
+  stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist,
+		f_stk, NULL_TREE);
+  reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), unshare_expr (valist),
+		f_reg, NULL_TREE);
+  ndx = build3 (COMPONENT_REF, TREE_TYPE (f_ndx), unshare_expr (valist),
+		f_ndx, NULL_TREE);
 
   type_size = size_in_bytes (type);
   va_size = round_up (type_size, UNITS_PER_WORD);
@@ -2621,11 +2627,11 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     {
       int align = MIN (TYPE_ALIGN (type), STACK_BOUNDARY) / BITS_PER_UNIT;
 
-      t = build2 (PLUS_EXPR, integer_type_node, orig_ndx,
+      t = build2 (PLUS_EXPR, integer_type_node, unshare_expr (orig_ndx),
 		  build_int_cst (integer_type_node, align - 1));
       t = build2 (BIT_AND_EXPR, integer_type_node, t,
 		  build_int_cst (integer_type_node, -align));
-      gimplify_assign (orig_ndx, t, pre_p);
+      gimplify_assign (unshare_expr (orig_ndx), t, pre_p);
     }
 
 
@@ -2635,7 +2641,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   t = fold_convert (integer_type_node, va_size);
   t = build2 (PLUS_EXPR, integer_type_node, orig_ndx, t);
-  gimplify_assign (ndx, t, pre_p);
+  gimplify_assign (unshare_expr (ndx), t, pre_p);
 
 
   /* Check if the argument is in registers:
@@ -2652,7 +2658,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       lab_false = create_artificial_label ();
       lab_over = create_artificial_label ();
 
-      t = build2 (GT_EXPR, boolean_type_node, ndx,
+      t = build2 (GT_EXPR, boolean_type_node, unshare_expr (ndx),
 		  build_int_cst (integer_type_node,
 				 MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
       t = build3 (COND_EXPR, void_type_node, t,
@@ -2660,7 +2666,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		  NULL_TREE);
       gimplify_and_add (t, pre_p);
 
-      gimplify_assign (array, reg, pre_p);
+      gimplify_assign (unshare_expr (array), reg, pre_p);
 
       t = build1 (GOTO_EXPR, void_type_node, lab_over);
       gimplify_and_add (t, pre_p);
@@ -2682,7 +2688,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   lab_false2 = create_artificial_label ();
 
-  t = build2 (GT_EXPR, boolean_type_node, orig_ndx,
+  t = build2 (GT_EXPR, boolean_type_node, unshare_expr (orig_ndx),
 	      build_int_cst (integer_type_node,
 			     MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
   t = build3 (COND_EXPR, void_type_node, t,
@@ -2690,9 +2696,9 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	      NULL_TREE);
   gimplify_and_add (t, pre_p);
 
-  t = size_binop (PLUS_EXPR, va_size, size_int (32));
+  t = size_binop (PLUS_EXPR, unshare_expr (va_size), size_int (32));
   t = fold_convert (integer_type_node, t);
-  gimplify_assign (ndx, t, pre_p);
+  gimplify_assign (unshare_expr (ndx), t, pre_p);
 
   t = build1 (LABEL_EXPR, void_type_node, lab_false2);
   gimplify_and_add (t, pre_p);
@@ -2719,17 +2725,18 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   if (BYTES_BIG_ENDIAN && TREE_CODE (type_size) == INTEGER_CST)
     {
-      t = fold_build2 (GE_EXPR, boolean_type_node, type_size,
+      t = fold_build2 (GE_EXPR, boolean_type_node, unshare_expr (type_size),
 		       size_int (PARM_BOUNDARY / BITS_PER_UNIT));
-      t = fold_build3 (COND_EXPR, sizetype, t, va_size, type_size);
+      t = fold_build3 (COND_EXPR, sizetype, t, unshare_expr (va_size),
+		       unshare_expr (type_size));
       size = t;
     }
   else
-    size = va_size;
+    size = unshare_expr (va_size);
 
-  t = fold_convert (sizetype, ndx);
+  t = fold_convert (sizetype, unshare_expr (ndx));
   t = build2 (MINUS_EXPR, sizetype, t, size);
-  addr = build2 (POINTER_PLUS_EXPR, ptr_type_node, array, t);
+  addr = build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (array), t);
 
   addr = fold_convert (build_pointer_type (type), addr);
   if (indirect)
