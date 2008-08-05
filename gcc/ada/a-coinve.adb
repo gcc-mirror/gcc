@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1124,13 +1124,12 @@ package body Ada.Containers.Indefinite_Vectors is
 
                   Index : constant Index_Type := Index_Type (Index_As_Int);
 
-                  J : Index_Type'Base;
+                  J : Index_Type'Base := Before;
 
                begin
                   E (Index .. New_Last) := E (Before .. Container.Last);
                   Container.Last := New_Last;
 
-                  J := Before;
                   while J < Index loop
                      E (J) := new Element_Type'(New_Item);
                      J := J + 1;
