@@ -1,7 +1,7 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation
 
    This file is part of libgcj.
@@ -440,6 +440,7 @@ extern "Java"
       class EnumMap$7;
       class EnumSet;
       class EnumSet$1;
+      class EnumSet$2;
       class Enumeration;
       class EventListener;
       class EventListenerProxy;
@@ -614,6 +615,11 @@ extern "Java"
         class ConcurrentSkipListMap$Values;
         class ConcurrentSkipListSet;
         class CopyOnWriteArrayList;
+        class CopyOnWriteArrayList$1;
+        class CopyOnWriteArrayList$2;
+        class CopyOnWriteArrayList$3;
+        class CopyOnWriteArrayList$RandomAccessSubList;
+        class CopyOnWriteArrayList$SubList;
         class CopyOnWriteArraySet;
         class CountDownLatch;
         class CountDownLatch$Sync;
