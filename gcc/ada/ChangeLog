@@ -1,3 +1,13 @@
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* a-rttiev.adb: Minor reformatting (comments)
+
+	* gen-soccon.c: Rename to gen-oscons.c
+
+	* gen-oscons.c: New file. Now generate System.OS_Constants instead of
+	GNAT.Sockets.Constants.
+	Add new constants for GNAT.Serial_Communications and System.File_IO.
+
 2008-08-05  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.adb (Collect_Interfaces_Info): Minor reformating.
