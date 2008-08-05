@@ -1,3 +1,25 @@
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* gsocket.h: Make this file includable in a Nucleus environment, which
+	does not support sockets.
+
+	* socket.c: Remove Nucleus-specific hack.
+
+2008-08-05  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Remove support for readable attribute on vxworks and nucleus
+
+2008-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb:
+	(Analyze_Attribute, case 'Result): handle properly the case where some
+	operand of the expression in a post-condition generates a transient
+	block.
+
+	* sem_ch5.adb (Analyze_Assignment_Statement): Apply conversion to
+	right-hand side when it is an anonymous access_to_subprogram, to force
+	static accessibility check when needed.
+
 2008-08-05  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Changing the description of the gnatcheck metrics
