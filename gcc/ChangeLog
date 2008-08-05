@@ -1,3 +1,26 @@
+2008-08-05  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (c-cppbuiltin.o): Depend on debug.h.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __GCC_HAVE_DWARF2_CFI_ASM.
+	* doc/cpp.texi (__GCC_HAVE_DWARF2_CFI_ASM): Document it.
+	* common.opt (fdwarf2-cfi-asm): New.
+	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): New.
+	* config.in, configure: Rebuild.
+	* dwarf2asm.c (dw2_asm_output_data_raw): New.
+	(dw2_asm_output_data_uleb128_raw, dw2_asm_output_data_sleb128_raw): New.
+	(dw2_force_const_mem): Externalize.
+	* dwarf2asm.h: Update.
+	* dwarf2out.c (dwarf2out_cfi_label): If flag_dwarf2_cfi_asm, don't
+	generate a real label.
+	(output_cfi_directive): New.
+	(add_fde_cfi): If flag_dwarf2_cfi_asm, use it.
+	(output_call_frame_info): Do nothing if flag_dwarf2_cfi_asm.
+	(dwarf2out_begin_prologue): Emit .cfi_startproc, .cfi_personality,
+	and .cfi_lsda.
+	(dwarf2out_end_epilogue): Emit .cfi_endproc.
+	(output_loc_operands_raw, output_loc_sequence_raw): New.
+	(output_cfa_loc_raw): New.
+	
 2008-08-05  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document new ARM -mfpu= and -mcpu= options.

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "output.h"
 #include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
+#include "debug.h"		/* For dwarf2out_do_frame.  */
 #include "toplev.h"
 #include "tm_p.h"		/* Target prototypes.  */
 #include "target.h"
@@ -689,6 +690,11 @@ c_cpp_builtins (cpp_reader *pfile)
 #ifdef HAVE_sync_compare_and_swapti
   if (HAVE_sync_compare_and_swapti)
     cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16");
+#endif
+
+#ifdef DWARF2_UNWIND_INFO
+  if (flag_dwarf2_cfi_asm && dwarf2out_do_frame ())
+    cpp_define (pfile, "__GCC_HAVE_DWARF2_CFI_ASM");
 #endif
 
   /* Make the choice of ObjC runtime visible to source code.  */

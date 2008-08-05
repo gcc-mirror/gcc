@@ -2180,6 +2180,20 @@ changequote([,])dnl
   [AC_DEFINE(HAVE_AS_LEB128, 1,
     [Define if your assembler supports .sleb128 and .uleb128.])])
 
+# Check if we have assembler support for unwind directives.
+gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
+  [elf,2,17,0],,
+[	.text
+	.cfi_startproc
+	.cfi_offset 0, 0
+	.cfi_same_value 1
+	.cfi_def_cfa 1, 2
+	.cfi_escape 1, 2, 3, 4, 5
+	.cfi_endproc])
+AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
+  [`if test $gcc_cv_as_cfi_directive = yes; then echo 1; else echo 0; fi`],
+[Define 0/1 if your assembler supports CFI directives.])
+
 # GAS versions up to and including 2.11.0 may mis-optimize
 # .eh_frame data.
 gcc_GAS_CHECK_FEATURE(eh_frame optimization, gcc_cv_as_eh_frame,
