@@ -513,6 +513,13 @@ package GNAT.Command_Line is
    --  characters whose order is irrelevant. In fact, this package will sort
    --  them alphabetically.
 
+   procedure Define_Section
+     (Config  : in out Command_Line_Configuration;
+      Section : String);
+   --  Indicates a new switch section. Every switch belonging to the same
+   --  section are ordered together, preceded by the section. They are placed
+   --  at the end of the command line (as in 'gnatmake somefile.adb -cargs -g')
+
    procedure Free (Config : in out Command_Line_Configuration);
    --  Free the memory used by Config
 
@@ -549,13 +556,17 @@ package GNAT.Command_Line is
    --  Command_Line_Iterator (which might be fine depending on your
    --  application).
    --
+   --  If the command line has sections (such as -bargs -largs -cargs), then
+   --  they should be listed in the Sections parameter (as "-bargs -cargs")
+   --
    --  This function can be used to reset Cmd by passing an empty string.
 
    procedure Add_Switch
      (Cmd       : in out Command_Line;
       Switch    : String;
       Parameter : String    := "";
-      Separator : Character := ' ');
+      Separator : Character := ' ';
+      Section   : String    := "");
    --  Add a new switch to the command line, and combine/group it with existing
    --  switches if possible. Nothing is done if the switch already exists with
    --  the same parameter.
@@ -578,11 +589,17 @@ package GNAT.Command_Line is
    --  Separator is the character that goes between the switches and its
    --  parameter on the command line. If it is set to ASCII.NUL, then no
    --  separator is applied, and they are concatenated
+   --
+   --  If the switch is part of a section, then it should be specified so that
+   --  the switch is correctly placed in the command line, and the section
+   --  added if not already present. For example, to add the -g switch into the
+   --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs")
 
    procedure Remove_Switch
      (Cmd        : in out Command_Line;
       Switch     : String;
-      Remove_All : Boolean := False);
+      Remove_All : Boolean := False;
+      Section    : String := "");
    --  Remove Switch from the command line, and ungroup existing switches if
    --  necessary.
    --
@@ -592,11 +609,18 @@ package GNAT.Command_Line is
    --
    --  If Remove_All is True, then all matching switches are removed, otherwise
    --  only the first matching one is removed.
+   --
+   --  If the switch belongs to a section, then this section should be
+   --  specified: Remove_Switch (Cmd_Line, "-g", Section => "-cargs") called
+   --  on the command line "-g -cargs -g" will result in "-g", while if
+   --  called with (Cmd_Line, "-g") this will result in "-cargs -g".
+   --  If Remove_All is set, then both "-g" will be removed.
 
    procedure Remove_Switch
      (Cmd       : in out Command_Line;
       Switch    : String;
-      Parameter : String);
+      Parameter : String;
+      Section   : String := "");
    --  Remove a switch with a specific parameter. If Parameter is the empty
    --  string, then only a switch with no parameter will be removed.
 
@@ -618,6 +642,8 @@ package GNAT.Command_Line is
    --  call to Add_Switch, Remove_Switch or Set_Command_Line.
 
    function Current_Switch    (Iter : Command_Line_Iterator) return String;
+   function Is_New_Section    (Iter : Command_Line_Iterator) return Boolean;
+   function Current_Section   (Iter : Command_Line_Iterator) return String;
    function Current_Separator (Iter : Command_Line_Iterator) return String;
    function Current_Parameter (Iter : Command_Line_Iterator) return String;
    --  Return the current switch and its parameter (or the empty string if
@@ -742,6 +768,9 @@ private
       Prefixes : GNAT.OS_Lib.Argument_List_Access;
       --  The list of prefixes
 
+      Sections   : GNAT.OS_Lib.Argument_List_Access;
+      --  The list of sections
+
       Aliases    : GNAT.OS_Lib.Argument_List_Access;
       Expansions : GNAT.OS_Lib.Argument_List_Access;
       --  The aliases. Both arrays have the same indices
@@ -756,8 +785,12 @@ private
       --  Parameter for the corresponding switch in Expanded. The first
       --  character is the separator (or ASCII.NUL if there is no separator)
 
-      Coalesce        : GNAT.OS_Lib.Argument_List_Access;
-      Coalesce_Params : GNAT.OS_Lib.Argument_List_Access;
+      Sections   : GNAT.OS_Lib.Argument_List_Access;
+      --  The list of sections
+
+      Coalesce          : GNAT.OS_Lib.Argument_List_Access;
+      Coalesce_Params   : GNAT.OS_Lib.Argument_List_Access;
+      Coalesce_Sections : GNAT.OS_Lib.Argument_List_Access;
       --  Cached version of the command line. This is recomputed every time the
       --  command line changes. Switches are grouped as much as possible, and
       --  aliases are used to reduce the length of the command line.
@@ -767,6 +800,7 @@ private
 
    type Command_Line_Iterator is record
       List     : GNAT.OS_Lib.Argument_List_Access;
+      Sections : GNAT.OS_Lib.Argument_List_Access;
       Params   : GNAT.OS_Lib.Argument_List_Access;
       Current  : Natural;
    end record;
