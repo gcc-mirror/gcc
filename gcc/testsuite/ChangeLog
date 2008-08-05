@@ -1,7 +1,3 @@
-2008-08-04  Arnaud Charlet  <charlet@adacore.com>
-
-	* gnat.dg/post_block.adb: New test.
-
 2008-08-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37026
