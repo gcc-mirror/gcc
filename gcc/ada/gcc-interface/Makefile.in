@@ -850,13 +850,24 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     LIBGNAT_TARGET_PAIRS += \
     g-soccon.ads<g-soccon-linux-x86.ads \
     s-linux.ads<s-linux.ads \
-    s-osinte.adb<s-osinte-posix.adb \
-    s-osinte.ads<s-osinte-linux.ads \
-    s-tasinf.ads<s-tasinf-linux.ads \
-    s-tasinf.adb<s-tasinf-linux.adb \
-    s-taprop.adb<s-taprop-linux.adb
+    s-osinte.adb<s-osinte-posix.adb
 
-    EH_MECHANISM=-gcc
+    ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
+      LIBGNAT_TARGET_PAIRS += \
+      s-osinte.ads<s-osinte-linux-xenomai.ads \
+      s-taprop.adb<s-taprop-linux-xenomai.adb
+
+      EH_MECHANISM=
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      s-osinte.ads<s-osinte-linux.ads \
+      s-taprop.adb<s-taprop-linux.adb \
+      s-tasinf.ads<s-tasinf-linux.ads \
+      s-tasinf.adb<s-tasinf-linux.adb
+
+      EH_MECHANISM=-gcc
+    endif
+
     THREADSLIB = -lpthread
     EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   endif

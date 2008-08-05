@@ -746,10 +746,34 @@ __gnat_error_handler (int sig,
 char __gnat_alternate_stack[16 * 1024]; /* 2 * SIGSTKSZ */
 #endif
 
+#ifdef __XENO__
+#include <sys/mman.h>
+#include <native/task.h>
+
+RT_TASK main_task;
+#endif
+
 void
 __gnat_install_handler (void)
 {
   struct sigaction act;
+
+#ifdef __XENO__
+  int prio;
+
+  if (__gl_main_priority == -1)
+    prio = 49;
+  else
+    prio = __gl_main_priority;
+
+  /* Avoid memory swapping for this program */
+
+  mlockall (MCL_CURRENT|MCL_FUTURE);
+
+  /* Turn the current Linux task into a native Xenomai task */
+
+  rt_task_shadow(&main_task, "environment_task", prio, T_FPU);
+#endif
 
   /* Set up signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
