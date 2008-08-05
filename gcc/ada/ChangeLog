@@ -1,3 +1,9 @@
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_strm.adb: Minor reformatting (comments)
+
+	* sem_ch12.adb: Minor reformatting.
+
 2008-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting
