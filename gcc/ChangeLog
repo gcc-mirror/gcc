@@ -1,3 +1,10 @@
+2008-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.h (CANNOT_CHANGE_MODE_CLASS): Allow (multi)word-sized
+	SUBREG of multi-word hard register.
+	* config/spu/spu.c (valid_subreg): Likewise.
+	(adjust_operand): Handle SUBREGs of multi-word hard registers.
+
 2008-08-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37026
