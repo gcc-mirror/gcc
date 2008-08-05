@@ -592,11 +592,9 @@ package body System.OS_Lib is
       Ada_Name     : String_Access :=
                        To_Path_String_Access
                          (Name, C_String_Length (Name));
-
       Ada_Pathname : String_Access :=
                        To_Path_String_Access
                          (Pathname, C_String_Length (Pathname));
-
    begin
       Copy_File (Ada_Name.all, Ada_Pathname.all, Success, Mode, Preserve);
       Free (Ada_Name);
@@ -621,6 +619,7 @@ package body System.OS_Lib is
          declare
             C_Source : String (1 .. Source'Length + 1);
             C_Dest   : String (1 .. Dest'Length + 1);
+
          begin
             C_Source (1 .. Source'Length) := Source;
             C_Source (C_Source'Last)      := ASCII.NUL;
@@ -647,7 +646,6 @@ package body System.OS_Lib is
       Ada_Source : String_Access :=
                      To_Path_String_Access
                        (Source, C_String_Length (Source));
-
       Ada_Dest   : String_Access :=
                      To_Path_String_Access
                        (Dest, C_String_Length (Dest));
@@ -2474,7 +2472,7 @@ package body System.OS_Lib is
          Command_Last : Natural := 0;
          Command      : aliased Chars (1 .. Command_Len);
          --  Command contains all characters of the Program_Name and Args, all
-         --  terminated by ASCII.NUL characters
+         --  terminated by ASCII.NUL characters.
 
          Arg_List_Len  : constant Positive := Args'Length + 2;
          Arg_List_Last : Natural := 0;
