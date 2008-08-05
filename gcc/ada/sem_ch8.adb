@@ -884,6 +884,11 @@ package body Sem_Ch8 is
                   Error_Msg_N
                     ("renamed object does not exclude `NULL` "
                      & "(RM 8.5.1(4.6/2))", N);
+
+               elsif Can_Never_Be_Null (Etype (Nam_Ent)) then
+                  Error_Msg_NE
+                    ("`NOT NULL` not allowed (type of& already excludes null)",
+                      N, Nam_Ent);
                end if;
             end if;
          end;

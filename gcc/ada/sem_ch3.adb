@@ -16507,7 +16507,9 @@ package body Sem_Ch3 is
              or else
            Nkind_In (P, N_Derived_Type_Definition,
                         N_Discriminant_Specification,
+                        N_Formal_Object_Declaration,
                         N_Object_Declaration,
+                        N_Object_Renaming_Declaration,
                         N_Parameter_Specification,
                         N_Subtype_Declaration);
 
@@ -16551,6 +16553,9 @@ package body Sem_Ch3 is
                   when N_Component_Declaration =>
                      Error_Node :=
                        Subtype_Indication (Component_Definition (Related_Nod));
+
+                  when N_Allocator =>
+                     Error_Node := Expression (Related_Nod);
 
                   when others =>
                      pragma Assert (False);
