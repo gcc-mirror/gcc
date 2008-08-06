@@ -1,3 +1,7 @@
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.in: Now generate s-oscons-$(THREAD_KIND).
+
 2008-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* Makefile.in (gnatlib*): Now depend on oscons target.

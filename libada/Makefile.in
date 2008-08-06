@@ -94,7 +94,7 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: oscons $(GCC_DIR)/ada/Makefile
 	&& touch stamp-libada
 
 oscons:
-	$(MAKE) -C $(GCC_DIR) THREAD_KIND="$(THREAD_KIND)" ada/s-oscons.ads
+	$(MAKE) -C $(GCC_DIR) THREAD_KIND="$(THREAD_KIND)" ada/s-oscons-$(THREAD_KIND).ads
 
 # Check uninstalled version.
 check:
