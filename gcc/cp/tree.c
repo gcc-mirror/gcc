@@ -873,7 +873,8 @@ cp_build_qualified_type_real (tree type,
      between the unqualified and qualified types.  */
   if (result != type
       && TREE_CODE (type) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
+      && TYPE_LANG_SPECIFIC (result) == TYPE_LANG_SPECIFIC (type))
     TYPE_LANG_SPECIFIC (result) = NULL;
 
   return result;

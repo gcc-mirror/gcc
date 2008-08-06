@@ -6961,16 +6961,17 @@ build_ptrmemfunc_type (tree type)
       TYPE_MAIN_VARIANT (t) = unqualified_variant;
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (unqualified_variant);
       TYPE_NEXT_VARIANT (unqualified_variant) = t;
+      TREE_TYPE (TYPE_BINFO (t)) = t;
     }
 
   /* Cache this pointer-to-member type so that we can find it again
      later.  */
   TYPE_SET_PTRMEMFUNC_TYPE (type, t);
 
-  /* Managing canonical types for the RECORD_TYPE behind a
-     pointer-to-member function is a nightmare, so use structural
-     equality for now.  */
-  SET_TYPE_STRUCTURAL_EQUALITY (t);
+  if (TYPE_STRUCTURAL_EQUALITY_P (type))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (TYPE_CANONICAL (type) != type)
+    TYPE_CANONICAL (t) = build_ptrmemfunc_type (TYPE_CANONICAL (type));
 
   return t;
 }
