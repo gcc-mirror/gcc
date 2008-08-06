@@ -1,3 +1,7 @@
+2008-08-06  Bob Wilson  <bob.wilson@acm.org>
+
+	* config.host: Match more processor names for Xtensa.
+
 2008-07-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/64/t-softfp-compat: Update comments.

@@ -558,9 +558,9 @@ vax-*-openbsd*)
 	;;
 xstormy16-*-elf)
 	;;
-xtensa-*-elf*)
+xtensa*-*-elf*)
 	;;
-xtensa-*-linux*)
+xtensa*-*-linux*)
 	;;
 am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
