@@ -1,3 +1,20 @@
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): diagnose redundant or improper
+	null exclusion in a discriminant declaration
+
+	* sem_ch8.adb (Analyze_Object_Renaming): diagnose null exclusion
+	indicators when type is not an access type.
+
+	* sem_ch12.adb (Formal_Object_Declaration): diagnose null exclusion
+	indicators when type is not an access type.
+
+2008-08-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp (Expand_Interface_Conversion): Freeze the entity associated
+	with the target interface before expanding the code of the interface
+	conversion.
+
 2008-08-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb:
