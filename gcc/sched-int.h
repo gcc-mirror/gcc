@@ -805,6 +805,7 @@ enum INSN_TRAP_CLASS
 
 /* Functions in sched-deps.c.  */
 extern bool sched_insns_conditions_mutex_p (const_rtx, const_rtx);
+extern bool sched_insn_is_legitimate_for_speculation_p (const_rtx, ds_t);
 extern void add_dependence (rtx, rtx, enum reg_note);
 extern void sched_analyze (struct deps *, rtx, rtx);
 extern bool deps_pools_are_empty_p (void);
@@ -838,7 +839,6 @@ extern void sched_finish (void);
 
 extern int try_ready (rtx);
 extern void * xrecalloc (void *, size_t, size_t, size_t);
-extern bool sched_insn_is_legitimate_for_speculation_p (const_rtx, ds_t);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern rtx bb_note (basic_block);
