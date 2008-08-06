@@ -913,3 +913,17 @@ extern Nat get_words_be (void);
 extern Nat get_bytes_be (void);
 extern Nat get_bits_be (void);
 extern Nat get_strict_alignment (void);
+
+/* Let code know whether we are targetting VMS without need of
+   intrusive preprocessor directives.  */
+#ifndef TARGET_ABI_OPEN_VMS
+#define TARGET_ABI_OPEN_VMS 0
+#endif
+
+/* VMS macro set by default, when clear forces 32bit mallocs and 32bit
+   Descriptors. Always used in combination with TARGET_ABI_OPEN_VMS
+   so no effect on non-VMS systems. */
+#ifndef TARGET_MALLOC64
+#define TARGET_MALLOC64 0
+#endif
+
