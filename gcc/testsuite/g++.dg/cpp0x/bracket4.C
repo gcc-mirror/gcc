@@ -1,6 +1,5 @@
 // { dg-do "compile" }
 // { dg-options "-std=c++0x" }
-
 template<typename T>
 struct vector { 
 };
@@ -25,3 +24,12 @@ void f()
 {
   vector<vector<int>>() + 2;
 }
+
+// PR c++/36460
+template <class a>
+class A {};
+template <class b>
+class B {};
+
+A<B<void()>> x;
+

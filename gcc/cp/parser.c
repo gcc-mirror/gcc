@@ -10386,9 +10386,10 @@ cp_parser_template_argument (cp_parser* parser)
      Therefore, we try a type-id first.  */
   cp_parser_parse_tentatively (parser);
   argument = cp_parser_type_id (parser);
-  /* If there was no error parsing the type-id but the next token is a '>>',
-     we probably found a typo for '> >'. But there are type-id which are
-     also valid expressions. For instance:
+  /* If there was no error parsing the type-id but the next token is a
+     '>>', our behavior depends on which dialect of C++ we're
+     parsing. In C++98, we probably found a typo for '> >'. But there
+     are type-id which are also valid expressions. For instance:
 
      struct X { int operator >> (int); };
      template <int V> struct Foo {};
@@ -10397,8 +10398,12 @@ cp_parser_template_argument (cp_parser* parser)
      Here 'X()' is a valid type-id of a function type, but the user just
      wanted to write the expression "X() >> 5". Thus, we remember that we
      found a valid type-id, but we still try to parse the argument as an
-     expression to see what happens.  */
+     expression to see what happens. 
+
+     In C++0x, the '>>' will be considered two separate '>'
+     tokens.  */
   if (!cp_parser_error_occurred (parser)
+      && cxx_dialect == cxx98
       && cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
     {
       maybe_type_id = true;

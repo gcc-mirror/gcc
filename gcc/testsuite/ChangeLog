@@ -1,3 +1,10 @@
+2008-08-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/36460
+       * g++.dg/cpp0x/bracket3.C: Add another test case for the >>
+       warning under -Wc++0x-compat.
+       * g++.dg/cpp0x/bracket4.C: Add testcase for PR c++/36460.
+
 2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/Wcxx-compat-2.c: Adjust test for more warnings.
