@@ -6258,11 +6258,11 @@ the true value of the result of an operation may be outside the base
 range of the result type. The following example shows the distinction:
 
 @smallexample @c ada
-X1 : Integer := Integer'Last;
-X2 : Integer range 1 .. 5 := 5;
-X3 : Integer := Integer'Last;
-X4 : Integer range 1 .. 5 := 5;
-F  : Float := 2.0E+20;
+X1 : Integer := "Integer'Last";
+X2 : Integer range 1 .. 5 := "5";
+X3 : Integer := "Integer'Last";
+X4 : Integer range 1 .. 5 := "5";
+F  : Float := "2.0E+20";
 @dots{}
 X1 := X1 + 1;
 X2 := X2 + 1;
@@ -6271,6 +6271,13 @@ X4 := Integer (F);
 @end smallexample
 
 @noindent
+Note that if explicit values are assigned at compile time, the compiler may
+be able to detect overflow at compile time, in which case no run-time check
+is required, and the setting of -gnato is irrelevant. That's why the assigned
+values in the above fragment are in quotes, the meaning is "assign a value
+not known to the compiler that happens to be equal to ...". The remaining
+discussion assumes that the compiler cannot detect the values at compile time.
+
 Here the first addition results in a value that is outside the base range
 of Integer, and hence requires an overflow check for detection of the
 constraint error. Thus the first assignment to @code{X1} raises a
