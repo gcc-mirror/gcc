@@ -1,3 +1,9 @@
+2008-08-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* jump.c (rtx_renumbered_equal_p): Do not call subreg_regno_offset
+	for unrepresentable subregs or treat them as equal to other regs
+	or subregs with the same register number.
+
 2008-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/35432
