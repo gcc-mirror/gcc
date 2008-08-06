@@ -314,6 +314,10 @@ read_input_line (FILE *list, char **herep, char **linep,
   char *line;
   int c = getc (list);
 
+  /* Read over whitespace.  */
+  while (c == '\n' || c == ' ')
+    c = getc (list);
+
   if (c == EOF)
     {
       *linep = 0;
