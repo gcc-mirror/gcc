@@ -361,12 +361,12 @@ score_reg_class (int regno)
 
 /* Implement PREFERRED_RELOAD_CLASS macro.  */
 enum reg_class
-score_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class class)
+score_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class rclass)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_preferred_reload_class (x, class);
+    return score7_preferred_reload_class (x, rclass);
   else if (TARGET_SCORE3)
-    return score3_preferred_reload_class (x, class);
+    return score3_preferred_reload_class (x, rclass);
 
   gcc_unreachable ();
 }
@@ -374,14 +374,14 @@ score_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class class)
 /* Implement SECONDARY_INPUT_RELOAD_CLASS
    and SECONDARY_OUTPUT_RELOAD_CLASS macro.  */
 enum reg_class
-score_secondary_reload_class (enum reg_class class,
+score_secondary_reload_class (enum reg_class rclass,
                               enum machine_mode mode ATTRIBUTE_UNUSED,
                               rtx x)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_secondary_reload_class (class, mode, x);
+    return score7_secondary_reload_class (rclass, mode, x);
   else if (TARGET_SCORE3)
-    return score3_secondary_reload_class (class, mode, x);
+    return score3_secondary_reload_class (rclass, mode, x);
 
   gcc_unreachable ();
 }

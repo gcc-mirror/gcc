@@ -8952,7 +8952,7 @@ static bool
 mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
 {
   unsigned int size;
-  enum mode_class class;
+  enum mode_class mclass;
 
   if (mode == CCV2mode)
     return (ISA_HAS_8CC
@@ -8975,7 +8975,7 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
     }
 
   size = GET_MODE_SIZE (mode);
-  class = GET_MODE_CLASS (mode);
+  mclass = GET_MODE_CLASS (mode);
 
   if (GP_REG_P (regno))
     return ((regno - GP_REG_FIRST) & 1) == 0 || size <= UNITS_PER_WORD;
@@ -8996,16 +8996,16 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
 	      || mode == DImode))
 	return true;
 
-      if (class == MODE_FLOAT
-	  || class == MODE_COMPLEX_FLOAT
-	  || class == MODE_VECTOR_FLOAT)
+      if (mclass == MODE_FLOAT
+	  || mclass == MODE_COMPLEX_FLOAT
+	  || mclass == MODE_VECTOR_FLOAT)
 	return size <= UNITS_PER_FPVALUE;
 
       /* Allow integer modes that fit into a single register.  We need
 	 to put integers into FPRs when using instructions like CVT
 	 and TRUNC.  There's no point allowing sizes smaller than a word,
 	 because the FPU has no appropriate load/store instructions.  */
-      if (class == MODE_INT)
+      if (mclass == MODE_INT)
 	return size >= MIN_UNITS_PER_WORD && size <= UNITS_PER_FPREG;
     }
 
@@ -9039,7 +9039,7 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
     }
 
   if (ALL_COP_REG_P (regno))
-    return class == MODE_INT && size <= UNITS_PER_WORD;
+    return mclass == MODE_INT && size <= UNITS_PER_WORD;
 
   if (regno == GOT_VERSION_REGNUM)
     return mode == SImode;
@@ -9068,13 +9068,13 @@ mips_hard_regno_nregs (int regno, enum machine_mode mode)
    in mips_hard_regno_nregs.  */
 
 int
-mips_class_max_nregs (enum reg_class class, enum machine_mode mode)
+mips_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
 {
   int size;
   HARD_REG_SET left;
 
   size = 0x8000;
-  COPY_HARD_REG_SET (left, reg_class_contents[(int) class]);
+  COPY_HARD_REG_SET (left, reg_class_contents[(int) rclass]);
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
     {
       size = MIN (size, 4);
@@ -9095,7 +9095,7 @@ mips_class_max_nregs (enum reg_class class, enum machine_mode mode)
 bool
 mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
 			       enum machine_mode to ATTRIBUTE_UNUSED,
-			       enum reg_class class)
+			       enum reg_class rclass)
 {
   /* There are several problems with changing the modes of values
      in floating-point registers:
@@ -9118,7 +9118,7 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
        not ask it to treat the value as having a different format.
 
      We therefore disallow all mode changes involving FPRs.  */
-  return reg_classes_intersect_p (FP_REGS, class);
+  return reg_classes_intersect_p (FP_REGS, rclass);
 }
 
 /* Return true if moves in mode MODE can use the FPU's mov.fmt instruction.  */
@@ -9157,22 +9157,22 @@ mips_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 /* Implement PREFERRED_RELOAD_CLASS.  */
 
 enum reg_class
-mips_preferred_reload_class (rtx x, enum reg_class class)
+mips_preferred_reload_class (rtx x, enum reg_class rclass)
 {
-  if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, class))
+  if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, rclass))
     return LEA_REGS;
 
-  if (reg_class_subset_p (FP_REGS, class)
+  if (reg_class_subset_p (FP_REGS, rclass)
       && mips_mode_ok_for_mov_fmt_p (GET_MODE (x)))
     return FP_REGS;
 
-  if (reg_class_subset_p (GR_REGS, class))
-    class = GR_REGS;
+  if (reg_class_subset_p (GR_REGS, rclass))
+    rclass = GR_REGS;
 
-  if (TARGET_MIPS16 && reg_class_subset_p (M16_REGS, class))
-    class = M16_REGS;
+  if (TARGET_MIPS16 && reg_class_subset_p (M16_REGS, rclass))
+    rclass = M16_REGS;
 
-  return class;
+  return rclass;
 }
 
 /* Implement REGISTER_MOVE_COST.  */
@@ -9234,13 +9234,13 @@ mips_register_move_cost (enum machine_mode mode,
 }
 
 /* Return the register class required for a secondary register when
-   copying between one of the registers in CLASS and value X, which
+   copying between one of the registers in RCLASS and value X, which
    has mode MODE.  X is the source of the move if IN_P, otherwise it
    is the destination.  Return NO_REGS if no secondary register is
    needed.  */
 
 enum reg_class
-mips_secondary_reload_class (enum reg_class class,
+mips_secondary_reload_class (enum reg_class rclass,
 			     enum machine_mode mode, rtx x, bool in_p)
 {
   int regno;
@@ -9248,17 +9248,17 @@ mips_secondary_reload_class (enum reg_class class,
   /* If X is a constant that cannot be loaded into $25, it must be loaded
      into some other GPR.  No other register class allows a direct move.  */
   if (mips_dangerous_for_la25_p (x))
-    return reg_class_subset_p (class, LEA_REGS) ? NO_REGS : LEA_REGS;
+    return reg_class_subset_p (rclass, LEA_REGS) ? NO_REGS : LEA_REGS;
 
   regno = true_regnum (x);
   if (TARGET_MIPS16)
     {
       /* In MIPS16 mode, every move must involve a member of M16_REGS.  */
-      if (!reg_class_subset_p (class, M16_REGS) && !M16_REG_P (regno))
+      if (!reg_class_subset_p (rclass, M16_REGS) && !M16_REG_P (regno))
 	return M16_REGS;
 
       /* We can't really copy to HI or LO at all in MIPS16 mode.  */
-      if (in_p ? reg_classes_intersect_p (class, ACC_REGS) : ACC_REG_P (regno))
+      if (in_p ? reg_classes_intersect_p (rclass, ACC_REGS) : ACC_REG_P (regno))
 	return M16_REGS;
 
       return NO_REGS;
@@ -9266,16 +9266,16 @@ mips_secondary_reload_class (enum reg_class class,
 
   /* Copying from accumulator registers to anywhere other than a general
      register requires a temporary general register.  */
-  if (reg_class_subset_p (class, ACC_REGS))
+  if (reg_class_subset_p (rclass, ACC_REGS))
     return GP_REG_P (regno) ? NO_REGS : GR_REGS;
   if (ACC_REG_P (regno))
-    return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
+    return reg_class_subset_p (rclass, GR_REGS) ? NO_REGS : GR_REGS;
 
   /* We can only copy a value to a condition code register from a
      floating-point register, and even then we require a scratch
      floating-point register.  We can only copy a value out of a
      condition-code register into a general register.  */
-  if (reg_class_subset_p (class, ST_REGS))
+  if (reg_class_subset_p (rclass, ST_REGS))
     {
       if (in_p)
 	return FP_REGS;
@@ -9285,10 +9285,10 @@ mips_secondary_reload_class (enum reg_class class,
     {
       if (!in_p)
 	return FP_REGS;
-      return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
+      return reg_class_subset_p (rclass, GR_REGS) ? NO_REGS : GR_REGS;
     }
 
-  if (reg_class_subset_p (class, FP_REGS))
+  if (reg_class_subset_p (rclass, FP_REGS))
     {
       if (MEM_P (x)
 	  && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8))
@@ -9314,7 +9314,7 @@ mips_secondary_reload_class (enum reg_class class,
       return GR_REGS;
     }
   if (FP_REG_P (regno))
-    return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
+    return reg_class_subset_p (rclass, GR_REGS) ? NO_REGS : GR_REGS;
 
   return NO_REGS;
 }
@@ -12217,7 +12217,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this, temp1, temp2, insn, fnaddr;
+  rtx this_rtx, temp1, temp2, insn, fnaddr;
   bool use_sibcall_p;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
@@ -12257,11 +12257,11 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Find out which register contains the "this" pointer.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, GP_ARG_FIRST + 1);
+    this_rtx = gen_rtx_REG (Pmode, GP_ARG_FIRST + 1);
   else
-    this = gen_rtx_REG (Pmode, GP_ARG_FIRST);
+    this_rtx = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 
-  /* Add DELTA to THIS.  */
+  /* Add DELTA to THIS_RTX.  */
   if (delta != 0)
     {
       rtx offset = GEN_INT (delta);
@@ -12270,23 +12270,23 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  mips_emit_move (temp1, offset);
 	  offset = temp1;
 	}
-      emit_insn (gen_add3_insn (this, this, offset));
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, offset));
     }
 
-  /* If needed, add *(*THIS + VCALL_OFFSET) to THIS.  */
+  /* If needed, add *(*THIS_RTX + VCALL_OFFSET) to THIS_RTX.  */
   if (vcall_offset != 0)
     {
       rtx addr;
 
-      /* Set TEMP1 to *THIS.  */
-      mips_emit_move (temp1, gen_rtx_MEM (Pmode, this));
+      /* Set TEMP1 to *THIS_RTX.  */
+      mips_emit_move (temp1, gen_rtx_MEM (Pmode, this_rtx));
 
-      /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
+      /* Set ADDR to a legitimate address for *THIS_RTX + VCALL_OFFSET.  */
       addr = mips_add_offset (temp2, temp1, vcall_offset);
 
-      /* Load the offset and add it to THIS.  */
+      /* Load the offset and add it to THIS_RTX.  */
       mips_emit_move (temp1, gen_rtx_MEM (Pmode, addr));
-      emit_insn (gen_add3_insn (this, this, temp1));
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, temp1));
     }
 
   /* Jump to the target function.  Use a sibcall if direct jumps are

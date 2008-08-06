@@ -104,13 +104,13 @@ extern void frv_ifcvt_modify_cancel	(ce_if_block_t *);
 extern int frv_trampoline_size		(void);
 extern void frv_initialize_trampoline	(rtx, rtx, rtx);
 extern enum reg_class frv_secondary_reload_class
-					(enum reg_class class,
+					(enum reg_class rclass,
 					 enum machine_mode mode,
 					 rtx x, int);
-extern int frv_class_likely_spilled_p	(enum reg_class class);
+extern int frv_class_likely_spilled_p	(enum reg_class rclass);
 extern int frv_hard_regno_mode_ok	(int, enum machine_mode);
 extern int frv_hard_regno_nregs		(int, enum machine_mode);
-extern int frv_class_max_nregs		(enum reg_class class,
+extern int frv_class_max_nregs		(enum reg_class rclass,
 					 enum machine_mode mode);
 extern int frv_legitimate_constant_p	(rtx);
 extern enum machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);

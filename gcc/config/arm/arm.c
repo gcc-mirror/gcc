@@ -10283,7 +10283,7 @@ output_move_vfp (rtx *operands)
   int load = REG_P (operands[0]);
   int dp = GET_MODE_SIZE (GET_MODE (operands[0])) == 8;
   int integer_p = GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT;
-  const char *template;
+  const char *templ;
   char buff[50];
   enum machine_mode mode;
 
@@ -10306,25 +10306,25 @@ output_move_vfp (rtx *operands)
   switch (GET_CODE (addr))
     {
     case PRE_DEC:
-      template = "f%smdb%c%%?\t%%0!, {%%%s1}%s";
+      templ = "f%smdb%c%%?\t%%0!, {%%%s1}%s";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
       break;
 
     case POST_INC:
-      template = "f%smia%c%%?\t%%0!, {%%%s1}%s";
+      templ = "f%smia%c%%?\t%%0!, {%%%s1}%s";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
       break;
 
     default:
-      template = "f%s%c%%?\t%%%s0, %%1%s";
+      templ = "f%s%c%%?\t%%%s0, %%1%s";
       ops[0] = reg;
       ops[1] = mem;
       break;
     }
 
-  sprintf (buff, template,
+  sprintf (buff, templ,
 	   load ? "ld" : "st",
 	   dp ? 'd' : 's',
 	   dp ? "P" : "",
@@ -10365,7 +10365,7 @@ output_move_neon (rtx *operands)
 {
   rtx reg, mem, addr, ops[2];
   int regno, load = REG_P (operands[0]);
-  const char *template;
+  const char *templ;
   char buff[50];
   enum machine_mode mode;
 
@@ -10392,7 +10392,7 @@ output_move_neon (rtx *operands)
   switch (GET_CODE (addr))
     {
     case POST_INC:
-      template = "v%smia%%?\t%%0!, %%h1";
+      templ = "v%smia%%?\t%%0!, %%h1";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
       break;
@@ -10435,12 +10435,12 @@ output_move_neon (rtx *operands)
       }
 
     default:
-      template = "v%smia%%?\t%%m0, %%h1";
+      templ = "v%smia%%?\t%%m0, %%h1";
       ops[0] = mem;
       ops[1] = reg;
     }
 
-  sprintf (buff, template, load ? "ld" : "st");
+  sprintf (buff, templ, load ? "ld" : "st");
   output_asm_insn (buff, ops);
 
   return "";

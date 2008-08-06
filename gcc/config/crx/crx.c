@@ -371,11 +371,11 @@ crx_regno_reg_class (int regno)
 /* Transfer between HILO_REGS and memory via secondary reloading. */
 
 enum reg_class
-crx_secondary_reload_class (enum reg_class class,
+crx_secondary_reload_class (enum reg_class rclass,
 			    enum machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx x ATTRIBUTE_UNUSED)
 {
-  if (reg_classes_intersect_p (class, HILO_REGS)
+  if (reg_classes_intersect_p (rclass, HILO_REGS)
       && true_regnum (x) == -1)
     return GENERAL_REGS;
 
@@ -839,22 +839,22 @@ crx_address_cost (rtx addr)
 }
 
 /* Return the cost of moving data of mode MODE between a register of class
- * CLASS and memory; IN is zero if the value is to be written to memory,
+ * RCLASS and memory; IN is zero if the value is to be written to memory,
  * nonzero if it is to be read in. This cost is relative to those in
  * REGISTER_MOVE_COST.  */
 
 int
 crx_memory_move_cost (enum machine_mode mode,
-		  enum reg_class class ATTRIBUTE_UNUSED,
+		  enum reg_class rclass ATTRIBUTE_UNUSED,
 		  int in ATTRIBUTE_UNUSED)
 {
   /* One LD or ST takes twice the time of a simple reg-reg move */
-  if (reg_classes_intersect_p (class, GENERAL_REGS))
+  if (reg_classes_intersect_p (rclass, GENERAL_REGS))
     {
       /* printf ("GENERAL_REGS LD/ST = %d\n", 4 * HARD_REGNO_NREGS (0, mode));*/
       return 4 * HARD_REGNO_NREGS (0, mode);
     }	
-  else if (reg_classes_intersect_p (class, HILO_REGS))
+  else if (reg_classes_intersect_p (rclass, HILO_REGS))
     {
       /* HILO to memory and vice versa */
       /* printf ("HILO_REGS %s = %d\n", in ? "LD" : "ST",

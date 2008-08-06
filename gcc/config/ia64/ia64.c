@@ -4958,13 +4958,13 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
   return 2;
 }
 
-/* Implement PREFERRED_RELOAD_CLASS.  Place additional restrictions on CLASS
+/* Implement PREFERRED_RELOAD_CLASS.  Place additional restrictions on RCLASS
    to use when copying X into that class.  */
 
 enum reg_class
-ia64_preferred_reload_class (rtx x, enum reg_class class)
+ia64_preferred_reload_class (rtx x, enum reg_class rclass)
 {
-  switch (class)
+  switch (rclass)
     {
     case FR_REGS:
     case FP_REGS:
@@ -4989,16 +4989,16 @@ ia64_preferred_reload_class (rtx x, enum reg_class class)
       break;
     }
 
-  return class;
+  return rclass;
 }
 
 /* This function returns the register class required for a secondary
-   register when copying between one of the registers in CLASS, and X,
+   register when copying between one of the registers in RCLASS, and X,
    using MODE.  A return value of NO_REGS means that no secondary register
    is required.  */
 
 enum reg_class
-ia64_secondary_reload_class (enum reg_class class,
+ia64_secondary_reload_class (enum reg_class rclass,
 			     enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   int regno = -1;
@@ -5006,7 +5006,7 @@ ia64_secondary_reload_class (enum reg_class class,
   if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
-  switch (class)
+  switch (rclass)
     {
     case BR_REGS:
     case AR_M_REGS:
@@ -9571,7 +9571,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this, insn, funexp;
+  rtx this_rtx, insn, funexp;
   unsigned int this_parmno;
   unsigned int this_regno;
   rtx delta_rtx;
@@ -9600,7 +9600,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   if (!TARGET_REG_NAMES)
     reg_names[this_regno] = ia64_reg_numbers[this_parmno];
 
-  this = gen_rtx_REG (Pmode, this_regno);
+  this_rtx = gen_rtx_REG (Pmode, this_regno);
 
   /* Apply the constant offset, if required.  */
   delta_rtx = GEN_INT (delta);
@@ -9610,11 +9610,11 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       REG_POINTER (tmp) = 1;
       if (delta && satisfies_constraint_I (delta_rtx))
 	{
-	  emit_insn (gen_ptr_extend_plus_imm (this, tmp, delta_rtx));
+	  emit_insn (gen_ptr_extend_plus_imm (this_rtx, tmp, delta_rtx));
 	  delta = 0;
 	}
       else
-	emit_insn (gen_ptr_extend (this, tmp));
+	emit_insn (gen_ptr_extend (this_rtx, tmp));
     }
   if (delta)
     {
@@ -9624,7 +9624,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  emit_move_insn (tmp, delta_rtx);
 	  delta_rtx = tmp;
 	}
-      emit_insn (gen_adddi3 (this, this, delta_rtx));
+      emit_insn (gen_adddi3 (this_rtx, this_rtx, delta_rtx));
     }
 
   /* Apply the offset from the vtable, if required.  */
@@ -9637,7 +9637,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	{
 	  rtx t = gen_rtx_REG (ptr_mode, 2);
 	  REG_POINTER (t) = 1;
-	  emit_move_insn (t, gen_rtx_MEM (ptr_mode, this));
+	  emit_move_insn (t, gen_rtx_MEM (ptr_mode, this_rtx));
 	  if (satisfies_constraint_I (vcall_offset_rtx))
 	    {
 	      emit_insn (gen_ptr_extend_plus_imm (tmp, t, vcall_offset_rtx));
@@ -9647,7 +9647,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    emit_insn (gen_ptr_extend (tmp, t));
 	}
       else
-	emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
+	emit_move_insn (tmp, gen_rtx_MEM (Pmode, this_rtx));
 
       if (vcall_offset)
 	{
@@ -9665,7 +9665,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       else
 	emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
-      emit_insn (gen_adddi3 (this, this, tmp));
+      emit_insn (gen_adddi3 (this_rtx, this_rtx, tmp));
     }
 
   /* Generate a tail call to the target function.  */

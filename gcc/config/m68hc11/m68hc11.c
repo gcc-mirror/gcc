@@ -435,7 +435,7 @@ m68hc11_hard_regno_rename_ok (int reg1, int reg2)
 }
 
 enum reg_class
-preferred_reload_class (rtx operand, enum reg_class class)
+preferred_reload_class (rtx operand, enum reg_class rclass)
 {
   enum machine_mode mode;
 
@@ -443,97 +443,97 @@ preferred_reload_class (rtx operand, enum reg_class class)
 
   if (debug_m6811)
     {
-      printf ("Preferred reload: (class=%s): ", reg_class_names[class]);
+      printf ("Preferred reload: (class=%s): ", reg_class_names[rclass]);
     }
 
-  if (class == D_OR_A_OR_S_REGS && SP_REG_P (operand))
+  if (rclass == D_OR_A_OR_S_REGS && SP_REG_P (operand))
     return m68hc11_base_reg_class;
 
-  if (class >= S_REGS && (GET_CODE (operand) == MEM
+  if (rclass >= S_REGS && (GET_CODE (operand) == MEM
 			  || GET_CODE (operand) == CONST_INT))
     {
       /* S_REGS class must not be used.  The movhi template does not
          work to move a memory to a soft register.
          Restrict to a hard reg.  */
-      switch (class)
+      switch (rclass)
 	{
 	default:
 	case G_REGS:
 	case D_OR_A_OR_S_REGS:
-	  class = A_OR_D_REGS;
+	  rclass = A_OR_D_REGS;
 	  break;
 	case A_OR_S_REGS:
-	  class = A_REGS;
+	  rclass = A_REGS;
 	  break;
 	case D_OR_SP_OR_S_REGS:
-	  class = D_OR_SP_REGS;
+	  rclass = D_OR_SP_REGS;
 	  break;
 	case D_OR_Y_OR_S_REGS:
-	  class = D_OR_Y_REGS;
+	  rclass = D_OR_Y_REGS;
 	  break;
 	case D_OR_X_OR_S_REGS:
-	  class = D_OR_X_REGS;
+	  rclass = D_OR_X_REGS;
 	  break;
 	case SP_OR_S_REGS:
-	  class = SP_REGS;
+	  rclass = SP_REGS;
 	  break;
 	case Y_OR_S_REGS:
-	  class = Y_REGS;
+	  rclass = Y_REGS;
 	  break;
 	case X_OR_S_REGS:
-	  class = X_REGS;
+	  rclass = X_REGS;
 	  break;
 	case D_OR_S_REGS:
-	  class = D_REGS;
+	  rclass = D_REGS;
 	}
     }
-  else if (class == Y_REGS && GET_CODE (operand) == MEM)
+  else if (rclass == Y_REGS && GET_CODE (operand) == MEM)
     {
-      class = Y_REGS;
+      rclass = Y_REGS;
     }
-  else if (class == A_OR_D_REGS && GET_MODE_SIZE (mode) == 4)
+  else if (rclass == A_OR_D_REGS && GET_MODE_SIZE (mode) == 4)
     {
-      class = D_OR_X_REGS;
+      rclass = D_OR_X_REGS;
     }
-  else if (class >= S_REGS && S_REG_P (operand))
+  else if (rclass >= S_REGS && S_REG_P (operand))
     {
-      switch (class)
+      switch (rclass)
 	{
 	default:
 	case G_REGS:
 	case D_OR_A_OR_S_REGS:
-	  class = A_OR_D_REGS;
+	  rclass = A_OR_D_REGS;
 	  break;
 	case A_OR_S_REGS:
-	  class = A_REGS;
+	  rclass = A_REGS;
 	  break;
 	case D_OR_SP_OR_S_REGS:
-	  class = D_OR_SP_REGS;
+	  rclass = D_OR_SP_REGS;
 	  break;
 	case D_OR_Y_OR_S_REGS:
-	  class = D_OR_Y_REGS;
+	  rclass = D_OR_Y_REGS;
 	  break;
 	case D_OR_X_OR_S_REGS:
-	  class = D_OR_X_REGS;
+	  rclass = D_OR_X_REGS;
 	  break;
 	case SP_OR_S_REGS:
-	  class = SP_REGS;
+	  rclass = SP_REGS;
 	  break;
 	case Y_OR_S_REGS:
-	  class = Y_REGS;
+	  rclass = Y_REGS;
 	  break;
 	case X_OR_S_REGS:
-	  class = X_REGS;
+	  rclass = X_REGS;
 	  break;
 	case D_OR_S_REGS:
-	  class = D_REGS;
+	  rclass = D_REGS;
 	}
     }
-  else if (class >= S_REGS)
+  else if (rclass >= S_REGS)
     {
       if (debug_m6811)
 	{
-	  printf ("Class = %s for: ", reg_class_names[class]);
+	  printf ("Class = %s for: ", reg_class_names[rclass]);
 	  fflush (stdout);
 	  debug_rtx (operand);
 	}
@@ -541,12 +541,12 @@ preferred_reload_class (rtx operand, enum reg_class class)
 
   if (debug_m6811)
     {
-      printf (" => class=%s\n", reg_class_names[class]);
+      printf (" => class=%s\n", reg_class_names[rclass]);
       fflush (stdout);
       debug_rtx (operand);
     }
 
-  return class;
+  return rclass;
 }
 
 /* Return 1 if the operand is a valid indexed addressing mode.
@@ -5097,10 +5097,10 @@ m68hc11_init_libfuncs (void)
 
 /* Cost of moving memory.  */
 int
-m68hc11_memory_move_cost (enum machine_mode mode, enum reg_class class,
+m68hc11_memory_move_cost (enum machine_mode mode, enum reg_class rclass,
                           int in ATTRIBUTE_UNUSED)
 {
-  if (class <= H_REGS && class > NO_REGS)
+  if (rclass <= H_REGS && rclass > NO_REGS)
     {
       if (GET_MODE_SIZE (mode) <= 2)
 	return COSTS_N_INSNS (1) + (reload_completed | reload_in_progress);

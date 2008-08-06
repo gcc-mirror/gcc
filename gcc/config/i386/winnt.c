@@ -531,16 +531,16 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 /* Mark a function appropriately.  This should only be called for
    functions for which we are not emitting COFF debugging information.
    FILE is the assembler output file, NAME is the name of the
-   function, and PUBLIC is nonzero if the function is globally
+   function, and PUB is nonzero if the function is globally
    visible.  */
 
 void
-i386_pe_declare_function_type (FILE *file, const char *name, int public)
+i386_pe_declare_function_type (FILE *file, const char *name, int pub)
 {
   fprintf (file, "\t.def\t");
   assemble_name (file, name);
   fprintf (file, ";\t.scl\t%d;\t.type\t%d;\t.endef\n",
-	   public ? (int) C_EXT : (int) C_STAT,
+	   pub ? (int) C_EXT : (int) C_STAT,
 	   (int) DT_FCN << N_BTSHFT);
 }
 

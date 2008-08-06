@@ -8637,7 +8637,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		       tree function)
 {
-  rtx this, insn, funexp;
+  rtx this_rtx, insn, funexp;
   unsigned int int_arg_first;
 
   reload_completed = 1;
@@ -8668,9 +8668,9 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Find the "this" pointer.  Normally in %o0, but in ARCH64 if the function
      returns a structure, the structure return pointer is there instead.  */
   if (TARGET_ARCH64 && aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, int_arg_first + 1);
+    this_rtx = gen_rtx_REG (Pmode, int_arg_first + 1);
   else
-    this = gen_rtx_REG (Pmode, int_arg_first);
+    this_rtx = gen_rtx_REG (Pmode, int_arg_first);
 
   /* Add DELTA.  When possible use a plain add, otherwise load it into
      a register first.  */
@@ -8685,11 +8685,11 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  delta_rtx = scratch;
 	}
 
-      /* THIS += DELTA.  */
-      emit_insn (gen_add2_insn (this, delta_rtx));
+      /* THIS_RTX += DELTA.  */
+      emit_insn (gen_add2_insn (this_rtx, delta_rtx));
     }
 
-  /* Add the word at address (*THIS + VCALL_OFFSET).  */
+  /* Add the word at address (*THIS_RTX + VCALL_OFFSET).  */
   if (vcall_offset)
     {
       rtx vcall_offset_rtx = GEN_INT (vcall_offset);
@@ -8697,8 +8697,8 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
       gcc_assert (vcall_offset < 0);
 
-      /* SCRATCH = *THIS.  */
-      emit_move_insn (scratch, gen_rtx_MEM (Pmode, this));
+      /* SCRATCH = *THIS_RTX.  */
+      emit_move_insn (scratch, gen_rtx_MEM (Pmode, this_rtx));
 
       /* Prepare for adding VCALL_OFFSET.  The difficulty is that we
 	 may not have any available scratch register at this point.  */
@@ -8731,14 +8731,14 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  vcall_offset_rtx = GEN_INT (vcall_offset); /* cannot be 0 */
 	}
 
-      /* SCRATCH = *(*THIS + VCALL_OFFSET).  */
+      /* SCRATCH = *(*THIS_RTX + VCALL_OFFSET).  */
       emit_move_insn (scratch, gen_rtx_MEM (Pmode,
 					    gen_rtx_PLUS (Pmode,
 							  scratch,
 							  vcall_offset_rtx)));
 
-      /* THIS += *(*THIS + VCALL_OFFSET).  */
-      emit_insn (gen_add2_insn (this, scratch));
+      /* THIS_RTX += *(*THIS_RTX + VCALL_OFFSET).  */
+      emit_insn (gen_add2_insn (this_rtx, scratch));
     }
 
   /* Generate a tail call to the target function.  */
