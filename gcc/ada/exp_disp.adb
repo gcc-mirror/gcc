@@ -1054,7 +1054,12 @@ package body Exp_Disp is
       if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
          Subp := Etype (Name (Call_Node));
 
-      --  Normal case
+      --  Call using selected component
+
+      elsif Nkind (Name (Call_Node)) = N_Selected_Component then
+         Subp := Entity (Selector_Name (Name (Call_Node)));
+
+      --  Call using direct name
 
       else
          Subp := Entity (Name (Call_Node));
