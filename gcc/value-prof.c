@@ -333,12 +333,12 @@ gimple_duplicate_stmt_histograms (struct function *fun, gimple stmt,
   histogram_value val;
   for (val = gimple_histogram_value (ofun, ostmt); val != NULL; val = val->hvalue.next)
     {
-      histogram_value new = gimple_alloc_histogram_value (fun, val->type, NULL, NULL);
-      memcpy (new, val, sizeof (*val));
-      new->hvalue.stmt = stmt;
-      new->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new->hvalue.counters) * new->n_counters);
-      memcpy (new->hvalue.counters, val->hvalue.counters, sizeof (*new->hvalue.counters) * new->n_counters);
-      gimple_add_histogram_value (fun, stmt, new);
+      histogram_value new_val = gimple_alloc_histogram_value (fun, val->type, NULL, NULL);
+      memcpy (new_val, val, sizeof (*val));
+      new_val->hvalue.stmt = stmt;
+      new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * new_val->n_counters);
+      memcpy (new_val->hvalue.counters, val->hvalue.counters, sizeof (*new_val->hvalue.counters) * new_val->n_counters);
+      gimple_add_histogram_value (fun, stmt, new_val);
     }
 }
 

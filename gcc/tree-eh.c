@@ -480,18 +480,18 @@ replace_goto_queue_cond_clause (tree *tp, struct leh_tf_state *tf,
 				gimple_stmt_iterator *gsi)
 {
   tree label;
-  gimple_seq new;
+  gimple_seq new_seq;
   treemple temp;
 
   temp.tp = tp;
-  new = find_goto_replacement (tf, temp);
-  if (!new)
+  new_seq = find_goto_replacement (tf, temp);
+  if (!new_seq)
     return;
 
-  if (gimple_seq_singleton_p (new)
-      && gimple_code (gimple_seq_first_stmt (new)) == GIMPLE_GOTO)
+  if (gimple_seq_singleton_p (new_seq)
+      && gimple_code (gimple_seq_first_stmt (new_seq)) == GIMPLE_GOTO)
     {
-      *tp = gimple_goto_dest (gimple_seq_first_stmt (new));
+      *tp = gimple_goto_dest (gimple_seq_first_stmt (new_seq));
       return;
     }
 
@@ -500,7 +500,7 @@ replace_goto_queue_cond_clause (tree *tp, struct leh_tf_state *tf,
   *tp = label;
 
   gsi_insert_after (gsi, gimple_build_label (label), GSI_CONTINUE_LINKING);
-  gsi_insert_seq_after (gsi, gimple_seq_copy (new), GSI_CONTINUE_LINKING);
+  gsi_insert_seq_after (gsi, gimple_seq_copy (new_seq), GSI_CONTINUE_LINKING);
 }
 
 /* The real work of replace_goto_queue.  Returns with TSI updated to
@@ -1665,15 +1665,15 @@ lower_catch (struct leh_state *state, gimple tp)
     {
       struct eh_region *catch_region;
       tree eh_label;
-      gimple x, catch;
+      gimple x, gcatch;
 
-      catch = gsi_stmt (gsi);
+      gcatch = gsi_stmt (gsi);
       catch_region = gen_eh_region_catch (try_region,
-                                          gimple_catch_types (catch));
+                                          gimple_catch_types (gcatch));
 
       this_state.cur_region = catch_region;
       this_state.prev_try = state->prev_try;
-      lower_eh_constructs_1 (&this_state, gimple_catch_handler (catch));
+      lower_eh_constructs_1 (&this_state, gimple_catch_handler (gcatch));
 
       eh_label = create_artificial_label ();
       set_eh_region_tree_label (catch_region, eh_label);
@@ -1681,16 +1681,16 @@ lower_catch (struct leh_state *state, gimple tp)
       x = gimple_build_label (eh_label);
       gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
-      if (gimple_seq_may_fallthru (gimple_catch_handler (catch)))
+      if (gimple_seq_may_fallthru (gimple_catch_handler (gcatch)))
 	{
 	  if (!out_label)
 	    out_label = create_artificial_label ();
 
 	  x = gimple_build_goto (out_label);
-	  gimple_seq_add_stmt (gimple_catch_handler_ptr (catch), x);
+	  gimple_seq_add_stmt (gimple_catch_handler_ptr (gcatch), x);
 	}
 
-      gsi_insert_seq_before (&gsi, gimple_catch_handler (catch),
+      gsi_insert_seq_before (&gsi, gimple_catch_handler (gcatch),
 			     GSI_SAME_STMT);
       gsi_remove (&gsi, false);
     }

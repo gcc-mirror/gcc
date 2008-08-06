@@ -370,22 +370,22 @@ void
 extract_ops_from_tree (tree expr, enum tree_code *subcode_p, tree *op1_p,
 		       tree *op2_p)
 {
-  enum gimple_rhs_class class;
+  enum gimple_rhs_class grhs_class;
 
   *subcode_p = TREE_CODE (expr);
-  class = get_gimple_rhs_class (*subcode_p);
+  grhs_class = get_gimple_rhs_class (*subcode_p);
 
-  if (class == GIMPLE_BINARY_RHS)
+  if (grhs_class == GIMPLE_BINARY_RHS)
     {
       *op1_p = TREE_OPERAND (expr, 0);
       *op2_p = TREE_OPERAND (expr, 1);
     }
-  else if (class == GIMPLE_UNARY_RHS)
+  else if (grhs_class == GIMPLE_UNARY_RHS)
     {
       *op1_p = TREE_OPERAND (expr, 0);
       *op2_p = NULL_TREE;
     }
-  else if (class == GIMPLE_SINGLE_RHS)
+  else if (grhs_class == GIMPLE_SINGLE_RHS)
     {
       *op1_p = expr;
       *op2_p = NULL_TREE;
@@ -1276,16 +1276,16 @@ gimple_seq
 gimple_seq_copy (gimple_seq src)
 {
   gimple_stmt_iterator gsi;
-  gimple_seq new = gimple_seq_alloc ();
+  gimple_seq new_seq = gimple_seq_alloc ();
   gimple stmt;
 
   for (gsi = gsi_start (src); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gimple_copy (gsi_stmt (gsi));
-      gimple_seq_add_stmt (&new, stmt);
+      gimple_seq_add_stmt (&new_seq, stmt);
     }
 
-  return new;
+  return new_seq;
 }
 
 

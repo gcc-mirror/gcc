@@ -4346,8 +4346,8 @@ create_variable_info_for (tree decl, const char *name)
 {
   unsigned int index = VEC_length (varinfo_t, varmap);
   varinfo_t vi;
-  tree decltype = TREE_TYPE (decl);
-  tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decltype);
+  tree decl_type = TREE_TYPE (decl);
+  tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decl_type);
   bool is_global = DECL_P (decl) ? is_global_var (decl) : false;
   VEC (fieldoff_s,heap) *fieldstack = NULL;
 
@@ -4355,7 +4355,7 @@ create_variable_info_for (tree decl, const char *name)
     return create_function_info_for (decl, name);
 
   if (var_can_have_subvars (decl) && use_field_sensitive)
-    push_fields_onto_fieldstack (decltype, &fieldstack, 0);
+    push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
 
   /* If the variable doesn't have subvars, we may end up needing to
      sort the field list and create fake variables for all the

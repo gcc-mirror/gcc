@@ -2294,14 +2294,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   fndecl = get_callee_fndecl (*expr_p);
   if (fndecl && DECL_BUILT_IN (fndecl))
     {
-      tree new = fold_call_expr (*expr_p, !want_value);
+      tree new_tree = fold_call_expr (*expr_p, !want_value);
 
-      if (new && new != *expr_p)
+      if (new_tree && new_tree != *expr_p)
 	{
 	  /* There was a transformation of this call which computes the
 	     same value, but in a more efficient way.  Return and try
 	     again.  */
-	  *expr_p = new;
+	  *expr_p = new_tree;
 	  return GS_OK;
 	}
 
@@ -2452,14 +2452,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR)
     {
-      tree new = fold_call_expr (*expr_p, !want_value);
+      tree new_tree = fold_call_expr (*expr_p, !want_value);
 
-      if (new && new != *expr_p)
+      if (new_tree && new_tree != *expr_p)
 	{
 	  /* There was a transformation of this call which computes the
 	     same value, but in a more efficient way.  Return and try
 	     again.  */
-	  *expr_p = new;
+	  *expr_p = new_tree;
 	  return GS_OK;
 	}
     }
@@ -3636,25 +3636,25 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    if (size > 0 && !can_move_by_pieces (size, align))
 	      {
-		tree new;
+		tree new_tree;
 
 		if (notify_temp_creation)
 		  return GS_ERROR;
 
-		new = create_tmp_var_raw (type, "C");
+		new_tree = create_tmp_var_raw (type, "C");
 
-		gimple_add_tmp_var (new);
-		TREE_STATIC (new) = 1;
-		TREE_READONLY (new) = 1;
-		DECL_INITIAL (new) = ctor;
-		if (align > DECL_ALIGN (new))
+		gimple_add_tmp_var (new_tree);
+		TREE_STATIC (new_tree) = 1;
+		TREE_READONLY (new_tree) = 1;
+		DECL_INITIAL (new_tree) = ctor;
+		if (align > DECL_ALIGN (new_tree))
 		  {
-		    DECL_ALIGN (new) = align;
-		    DECL_USER_ALIGN (new) = 1;
+		    DECL_ALIGN (new_tree) = align;
+		    DECL_USER_ALIGN (new_tree) = 1;
 		  }
-	        walk_tree (&DECL_INITIAL (new), force_labels_r, NULL, NULL);
+	        walk_tree (&DECL_INITIAL (new_tree), force_labels_r, NULL, NULL);
 
-		TREE_OPERAND (*expr_p, 1) = new;
+		TREE_OPERAND (*expr_p, 1) = new_tree;
 
 		/* This is no longer an assignment of a CONSTRUCTOR, but
 		   we still may have processing to do on the LHS.  So
@@ -4844,7 +4844,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 	    }
 	  else
 	    {
-	      gimple try;
+	      gimple gtry;
 	      gimple_seq seq;
 	      enum gimple_try_flags kind;
 
@@ -4854,10 +4854,10 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 		kind = GIMPLE_TRY_FINALLY;
 	      seq = gsi_split_seq_after (iter);
 
-	      try = gimple_build_try (seq, gimple_wce_cleanup (wce), kind);
+	      gtry = gimple_build_try (seq, gimple_wce_cleanup (wce), kind);
               /* Do not use gsi_replace here, as it may scan operands.
                  We want to do a simple structural modification only.  */
-              *gsi_stmt_ptr (&iter) = try;
+              *gsi_stmt_ptr (&iter) = gtry;
 	      iter = gsi_start (seq);
 	    }
 	}

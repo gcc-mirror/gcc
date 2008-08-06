@@ -932,59 +932,60 @@ find_temp_slot_from_address (rtx x)
   return 0;
 }
 
-/* Indicate that NEW is an alternate way of referring to the temp slot
-   that previously was known by OLD.  */
+/* Indicate that NEW_RTX is an alternate way of referring to the temp
+   slot that previously was known by OLD_RTX.  */
 
 void
-update_temp_slot_address (rtx old, rtx new)
+update_temp_slot_address (rtx old_rtx, rtx new_rtx)
 {
   struct temp_slot *p;
 
-  if (rtx_equal_p (old, new))
+  if (rtx_equal_p (old_rtx, new_rtx))
     return;
 
-  p = find_temp_slot_from_address (old);
+  p = find_temp_slot_from_address (old_rtx);
 
-  /* If we didn't find one, see if both OLD is a PLUS.  If so, and NEW
-     is a register, see if one operand of the PLUS is a temporary
-     location.  If so, NEW points into it.  Otherwise, if both OLD and
-     NEW are a PLUS and if there is a register in common between them.
-     If so, try a recursive call on those values.  */
+  /* If we didn't find one, see if both OLD_RTX is a PLUS.  If so, and
+     NEW_RTX is a register, see if one operand of the PLUS is a
+     temporary location.  If so, NEW_RTX points into it.  Otherwise,
+     if both OLD_RTX and NEW_RTX are a PLUS and if there is a register
+     in common between them.  If so, try a recursive call on those
+     values.  */
   if (p == 0)
     {
-      if (GET_CODE (old) != PLUS)
+      if (GET_CODE (old_rtx) != PLUS)
 	return;
 
-      if (REG_P (new))
+      if (REG_P (new_rtx))
 	{
-	  update_temp_slot_address (XEXP (old, 0), new);
-	  update_temp_slot_address (XEXP (old, 1), new);
+	  update_temp_slot_address (XEXP (old_rtx, 0), new_rtx);
+	  update_temp_slot_address (XEXP (old_rtx, 1), new_rtx);
 	  return;
 	}
-      else if (GET_CODE (new) != PLUS)
+      else if (GET_CODE (new_rtx) != PLUS)
 	return;
 
-      if (rtx_equal_p (XEXP (old, 0), XEXP (new, 0)))
-	update_temp_slot_address (XEXP (old, 1), XEXP (new, 1));
-      else if (rtx_equal_p (XEXP (old, 1), XEXP (new, 0)))
-	update_temp_slot_address (XEXP (old, 0), XEXP (new, 1));
-      else if (rtx_equal_p (XEXP (old, 0), XEXP (new, 1)))
-	update_temp_slot_address (XEXP (old, 1), XEXP (new, 0));
-      else if (rtx_equal_p (XEXP (old, 1), XEXP (new, 1)))
-	update_temp_slot_address (XEXP (old, 0), XEXP (new, 0));
+      if (rtx_equal_p (XEXP (old_rtx, 0), XEXP (new_rtx, 0)))
+	update_temp_slot_address (XEXP (old_rtx, 1), XEXP (new_rtx, 1));
+      else if (rtx_equal_p (XEXP (old_rtx, 1), XEXP (new_rtx, 0)))
+	update_temp_slot_address (XEXP (old_rtx, 0), XEXP (new_rtx, 1));
+      else if (rtx_equal_p (XEXP (old_rtx, 0), XEXP (new_rtx, 1)))
+	update_temp_slot_address (XEXP (old_rtx, 1), XEXP (new_rtx, 0));
+      else if (rtx_equal_p (XEXP (old_rtx, 1), XEXP (new_rtx, 1)))
+	update_temp_slot_address (XEXP (old_rtx, 0), XEXP (new_rtx, 0));
 
       return;
     }
 
   /* Otherwise add an alias for the temp's address.  */
   else if (p->address == 0)
-    p->address = new;
+    p->address = new_rtx;
   else
     {
       if (GET_CODE (p->address) != EXPR_LIST)
 	p->address = gen_rtx_EXPR_LIST (VOIDmode, p->address, NULL_RTX);
 
-      p->address = gen_rtx_EXPR_LIST (VOIDmode, new, p->address);
+      p->address = gen_rtx_EXPR_LIST (VOIDmode, new_rtx, p->address);
     }
 }
 
@@ -1210,7 +1211,7 @@ static int cfa_offset;
 static rtx
 instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
 {
-  rtx new;
+  rtx new_rtx;
   HOST_WIDE_INT offset;
 
   if (x == virtual_incoming_args_rtx)
@@ -1219,24 +1220,24 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
         {
 	  /* Replace virtual_incoming_args_rtx with internal arg
 	     pointer if DRAP is used to realign stack.  */
-          new = crtl->args.internal_arg_pointer;
+          new_rtx = crtl->args.internal_arg_pointer;
           offset = 0;
         }
       else
-        new = arg_pointer_rtx, offset = in_arg_offset;
+        new_rtx = arg_pointer_rtx, offset = in_arg_offset;
     }
   else if (x == virtual_stack_vars_rtx)
-    new = frame_pointer_rtx, offset = var_offset;
+    new_rtx = frame_pointer_rtx, offset = var_offset;
   else if (x == virtual_stack_dynamic_rtx)
-    new = stack_pointer_rtx, offset = dynamic_offset;
+    new_rtx = stack_pointer_rtx, offset = dynamic_offset;
   else if (x == virtual_outgoing_args_rtx)
-    new = stack_pointer_rtx, offset = out_arg_offset;
+    new_rtx = stack_pointer_rtx, offset = out_arg_offset;
   else if (x == virtual_cfa_rtx)
     {
 #ifdef FRAME_POINTER_CFA_OFFSET
-      new = frame_pointer_rtx;
+      new_rtx = frame_pointer_rtx;
 #else
-      new = arg_pointer_rtx;
+      new_rtx = arg_pointer_rtx;
 #endif
       offset = cfa_offset;
     }
@@ -1244,7 +1245,7 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
     return NULL_RTX;
 
   *poffset = offset;
-  return new;
+  return new_rtx;
 }
 
 /* A subroutine of instantiate_virtual_regs, called via for_each_rtx.
@@ -1258,7 +1259,7 @@ instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
 {
   HOST_WIDE_INT offset;
   bool *changed = (bool *) data;
-  rtx x, new;
+  rtx x, new_rtx;
 
   x = *loc;
   if (x == 0)
@@ -1267,21 +1268,21 @@ instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
   switch (GET_CODE (x))
     {
     case REG:
-      new = instantiate_new_reg (x, &offset);
-      if (new)
+      new_rtx = instantiate_new_reg (x, &offset);
+      if (new_rtx)
 	{
-	  *loc = plus_constant (new, offset);
+	  *loc = plus_constant (new_rtx, offset);
 	  if (changed)
 	    *changed = true;
 	}
       return -1;
 
     case PLUS:
-      new = instantiate_new_reg (XEXP (x, 0), &offset);
-      if (new)
+      new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
+      if (new_rtx)
 	{
-	  new = plus_constant (new, offset);
-	  *loc = simplify_gen_binary (PLUS, GET_MODE (x), new, XEXP (x, 1));
+	  new_rtx = plus_constant (new_rtx, offset);
+	  *loc = simplify_gen_binary (PLUS, GET_MODE (x), new_rtx, XEXP (x, 1));
 	  if (changed)
 	    *changed = true;
 	  return -1;
@@ -1327,7 +1328,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
   HOST_WIDE_INT offset;
   int insn_code, i;
   bool any_change = false;
-  rtx set, new, x, seq;
+  rtx set, new_rtx, x, seq;
 
   /* There are some special cases to be handled first.  */
   set = single_set (insn);
@@ -1337,17 +1338,17 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	 to mean that the underlying register gets assigned the inverse
 	 transformation.  This is used, for example, in the handling of
 	 non-local gotos.  */
-      new = instantiate_new_reg (SET_DEST (set), &offset);
-      if (new)
+      new_rtx = instantiate_new_reg (SET_DEST (set), &offset);
+      if (new_rtx)
 	{
 	  start_sequence ();
 
 	  for_each_rtx (&SET_SRC (set), instantiate_virtual_regs_in_rtx, NULL);
-	  x = simplify_gen_binary (PLUS, GET_MODE (new), SET_SRC (set),
+	  x = simplify_gen_binary (PLUS, GET_MODE (new_rtx), SET_SRC (set),
 				   GEN_INT (-offset));
-	  x = force_operand (x, new);
-	  if (x != new)
-	    emit_move_insn (new, x);
+	  x = force_operand (x, new_rtx);
+	  if (x != new_rtx)
+	    emit_move_insn (new_rtx, x);
 
 	  seq = get_insns ();
 	  end_sequence ();
@@ -1361,15 +1362,15 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	 new add insn.  The difference between this and falling through
 	 to the generic case is avoiding a new pseudo and eliminating a
 	 move insn in the initial rtl stream.  */
-      new = instantiate_new_reg (SET_SRC (set), &offset);
-      if (new && offset != 0
+      new_rtx = instantiate_new_reg (SET_SRC (set), &offset);
+      if (new_rtx && offset != 0
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
 	{
 	  start_sequence ();
 
 	  x = expand_simple_binop (GET_MODE (SET_DEST (set)), PLUS,
-				   new, GEN_INT (offset), SET_DEST (set),
+				   new_rtx, GEN_INT (offset), SET_DEST (set),
 				   1, OPTAB_LIB_WIDEN);
 	  if (x != SET_DEST (set))
 	    emit_move_insn (SET_DEST (set), x);
@@ -1392,7 +1393,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  && recog_data.operand_loc[1] == &XEXP (SET_SRC (set), 0)
 	  && recog_data.operand_loc[2] == &XEXP (SET_SRC (set), 1)
 	  && GET_CODE (recog_data.operand[2]) == CONST_INT
-	  && (new = instantiate_new_reg (recog_data.operand[1], &offset)))
+	  && (new_rtx = instantiate_new_reg (recog_data.operand[1], &offset)))
 	{
 	  offset += INTVAL (recog_data.operand[2]);
 
@@ -1402,7 +1403,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	      && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
 	    {
 	      start_sequence ();
-	      emit_move_insn (SET_DEST (set), new);
+	      emit_move_insn (SET_DEST (set), new_rtx);
 	      seq = get_insns ();
 	      end_sequence ();
 
@@ -1416,10 +1417,10 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  /* Using validate_change and apply_change_group here leaves
 	     recog_data in an invalid state.  Since we know exactly what
 	     we want to check, do those two by hand.  */
-	  if (safe_insn_predicate (insn_code, 1, new)
+	  if (safe_insn_predicate (insn_code, 1, new_rtx)
 	      && safe_insn_predicate (insn_code, 2, x))
 	    {
-	      *recog_data.operand_loc[1] = recog_data.operand[1] = new;
+	      *recog_data.operand_loc[1] = recog_data.operand[1] = new_rtx;
 	      *recog_data.operand_loc[2] = recog_data.operand[2] = x;
 	      any_change = true;
 
@@ -1474,11 +1475,11 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  break;
 
 	case REG:
-	  new = instantiate_new_reg (x, &offset);
-	  if (new == NULL)
+	  new_rtx = instantiate_new_reg (x, &offset);
+	  if (new_rtx == NULL)
 	    continue;
 	  if (offset == 0)
-	    x = new;
+	    x = new_rtx;
 	  else
 	    {
 	      start_sequence ();
@@ -1489,7 +1490,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	      /* ??? Recognize address_operand and/or "p" constraints
 		 to see if (plus new offset) is a valid before we put
 		 this through expand_simple_binop.  */
-	      x = expand_simple_binop (GET_MODE (x), PLUS, new,
+	      x = expand_simple_binop (GET_MODE (x), PLUS, new_rtx,
 				       GEN_INT (offset), NULL_RTX,
 				       1, OPTAB_LIB_WIDEN);
 	      seq = get_insns ();
@@ -1499,21 +1500,21 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  break;
 
 	case SUBREG:
-	  new = instantiate_new_reg (SUBREG_REG (x), &offset);
-	  if (new == NULL)
+	  new_rtx = instantiate_new_reg (SUBREG_REG (x), &offset);
+	  if (new_rtx == NULL)
 	    continue;
 	  if (offset != 0)
 	    {
 	      start_sequence ();
-	      new = expand_simple_binop (GET_MODE (new), PLUS, new,
+	      new_rtx = expand_simple_binop (GET_MODE (new_rtx), PLUS, new_rtx,
 					 GEN_INT (offset), NULL_RTX,
 					 1, OPTAB_LIB_WIDEN);
 	      seq = get_insns ();
 	      end_sequence ();
 	      emit_insn_before (seq, insn);
 	    }
-	  x = simplify_gen_subreg (recog_data.operand_mode[i], new,
-				   GET_MODE (new), SUBREG_BYTE (x));
+	  x = simplify_gen_subreg (recog_data.operand_mode[i], new_rtx,
+				   GET_MODE (new_rtx), SUBREG_BYTE (x));
 	  break;
 
 	default:

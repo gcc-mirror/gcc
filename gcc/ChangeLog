@@ -1,3 +1,48 @@
+2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_profile_func): Avoid C++ keywords.
+	* calls.c (avoid_likely_spilled_reg): Likewise.
+	* cfgexpand.c (gimple_assign_rhs_to_tree): Likewise.
+	* cgraph.c (cgraph_clone_edge, cgraph_clone_node): Likewise.
+	* config/i386/i386.c (ix86_expand_special_args_builtin,
+	ix86_secondary_reload): Likewise.
+	* except.c (struct eh_region, gen_eh_region_catch,
+	remove_unreachable_regions, duplicate_eh_regions,
+	assign_filter_values, build_post_landing_pads,
+	sjlj_find_directly_reachable_regions, remove_eh_handler,
+	reachable_next_level, foreach_reachable_handler,
+	can_throw_internal_1, can_throw_external_1,
+	collect_one_action_chain): Likewise.
+	* expr.c (expand_expr_real_1, vector_mode_valid_p): Likewise.
+	* fold-const.c (twoval_comparison_p, eval_subst): Likewise.
+	* function.c (update_temp_slot_address, instantiate_new_reg,
+	instantiate_virtual_regs_in_rtx,
+	instantiate_virtual_regs_in_insn): Likewise.
+	* gimple.c (extract_ops_from_tree, gimple_seq_copy): Likewise.
+	* gimplify.c (gimplify_call_expr, gimplify_init_constructor,
+	gimplify_cleanup_point_expr): Likewise.
+	* ipa-cp.c (ipcp_lattice_changed): Likewise.
+	* passes.c (next_pass_1): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* tree-dump.c (dump_register): Likewise.
+	* tree-eh.c (replace_goto_queue_cond_clause, lower_catch):
+	Likewise.
+	* tree-inline.c (remap_ssa_name, remap_type_1, remap_blocks,
+	copy_statement_list, remap_gimple_op_r, copy_tree_body_r,
+	copy_edges_for_bb, copy_cfg_body, copy_tree_r,
+	copy_arguments_for_versioning, copy_static_chain): Likewise.
+	* tree-into-ssa.c (names_replaced_by, add_to_repl_tbl,
+	add_new_name_mapping, register_new_name_mapping): Likewise.
+	* tree-mudflap.c (mf_xform_derefs): Likewise.
+	* tree-predcom.c (struct chain, dump_chain, replace_ref_with,
+	get_init_expr, combine_chains): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-structalias.c (create_variable_info_for): Likewise.
+	* tree-vrp.c (simplify_cond_using_ranges): Likewise.
+	* tree.c (substitute_in_expr, iterative_hash_expr): Likewise.
+	* value-prof.c (gimple_duplicate_stmt_histograms): Likewise.
+
 2008-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37010

@@ -154,7 +154,7 @@ insert_decl_map (copy_body_data *id, tree key, tree value)
 static tree
 remap_ssa_name (tree name, copy_body_data *id)
 {
-  tree new;
+  tree new_tree;
   tree *n;
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
@@ -165,7 +165,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   /* Do not set DEF_STMT yet as statement is not copied yet. We do that
      in copy_bb.  */
-  new = remap_decl (SSA_NAME_VAR (name), id);
+  new_tree = remap_decl (SSA_NAME_VAR (name), id);
 
   /* We might've substituted constant or another SSA_NAME for
      the variable. 
@@ -173,15 +173,15 @@ remap_ssa_name (tree name, copy_body_data *id)
      Replace the SSA name representing RESULT_DECL by variable during
      inlining:  this saves us from need to introduce PHI node in a case
      return value is just partly initialized.  */
-  if ((TREE_CODE (new) == VAR_DECL || TREE_CODE (new) == PARM_DECL)
+  if ((TREE_CODE (new_tree) == VAR_DECL || TREE_CODE (new_tree) == PARM_DECL)
       && (TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
 	  || !id->transform_return_to_modify))
     {
-      new = make_ssa_name (new, NULL);
-      insert_decl_map (id, name, new);
-      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new)
+      new_tree = make_ssa_name (new_tree, NULL);
+      insert_decl_map (id, name, new_tree);
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
-      TREE_TYPE (new) = TREE_TYPE (SSA_NAME_VAR (new));
+      TREE_TYPE (new_tree) = TREE_TYPE (SSA_NAME_VAR (new_tree));
       if (gimple_nop_p (SSA_NAME_DEF_STMT (name)))
 	{
 	  /* By inlining function having uninitialized variable, we might
@@ -202,24 +202,24 @@ remap_ssa_name (tree name, copy_body_data *id)
 	      gimple_stmt_iterator gsi = gsi_last_bb (id->entry_bb);
 	      gimple init_stmt;
 	      
-	      init_stmt = gimple_build_assign (new,
-		                               fold_convert (TREE_TYPE (new),
+	      init_stmt = gimple_build_assign (new_tree,
+		                               fold_convert (TREE_TYPE (new_tree),
 					       		    integer_zero_node));
 	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
-	      SSA_NAME_IS_DEFAULT_DEF (new) = 0;
+	      SSA_NAME_IS_DEFAULT_DEF (new_tree) = 0;
 	    }
 	  else
 	    {
-	      SSA_NAME_DEF_STMT (new) = gimple_build_nop ();
+	      SSA_NAME_DEF_STMT (new_tree) = gimple_build_nop ();
 	      if (gimple_default_def (id->src_cfun, SSA_NAME_VAR (name))
 		  == name)
-	        set_default_def (SSA_NAME_VAR (new), new);
+	        set_default_def (SSA_NAME_VAR (new_tree), new_tree);
 	    }
 	}
     }
   else
-    insert_decl_map (id, name, new);
-  return new;
+    insert_decl_map (id, name, new_tree);
+  return new_tree;
 }
 
 /* Remap DECL during the copying of the BLOCK tree for the function.  */
@@ -295,31 +295,31 @@ remap_decl (tree decl, copy_body_data *id)
 static tree
 remap_type_1 (tree type, copy_body_data *id)
 {
-  tree new, t;
+  tree new_tree, t;
 
   /* We do need a copy.  build and register it now.  If this is a pointer or
      reference type, remap the designated type and make a new pointer or
      reference type.  */
   if (TREE_CODE (type) == POINTER_TYPE)
     {
-      new = build_pointer_type_for_mode (remap_type (TREE_TYPE (type), id),
+      new_tree = build_pointer_type_for_mode (remap_type (TREE_TYPE (type), id),
 					 TYPE_MODE (type),
 					 TYPE_REF_CAN_ALIAS_ALL (type));
-      insert_decl_map (id, type, new);
-      return new;
+      insert_decl_map (id, type, new_tree);
+      return new_tree;
     }
   else if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      new = build_reference_type_for_mode (remap_type (TREE_TYPE (type), id),
+      new_tree = build_reference_type_for_mode (remap_type (TREE_TYPE (type), id),
 					    TYPE_MODE (type),
 					    TYPE_REF_CAN_ALIAS_ALL (type));
-      insert_decl_map (id, type, new);
-      return new;
+      insert_decl_map (id, type, new_tree);
+      return new_tree;
     }
   else
-    new = copy_node (type);
+    new_tree = copy_node (type);
 
-  insert_decl_map (id, type, new);
+  insert_decl_map (id, type, new_tree);
 
   /* This is a new type, not a copy of an old type.  Need to reassociate
      variants.  We can handle everything except the main variant lazily.  */
@@ -327,47 +327,47 @@ remap_type_1 (tree type, copy_body_data *id)
   if (type != t)
     {
       t = remap_type (t, id);
-      TYPE_MAIN_VARIANT (new) = t;
-      TYPE_NEXT_VARIANT (new) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = new;
+      TYPE_MAIN_VARIANT (new_tree) = t;
+      TYPE_NEXT_VARIANT (new_tree) = TYPE_NEXT_VARIANT (t);
+      TYPE_NEXT_VARIANT (t) = new_tree;
     }
   else
     {
-      TYPE_MAIN_VARIANT (new) = new;
-      TYPE_NEXT_VARIANT (new) = NULL;
+      TYPE_MAIN_VARIANT (new_tree) = new_tree;
+      TYPE_NEXT_VARIANT (new_tree) = NULL;
     }
 
   if (TYPE_STUB_DECL (type))
-    TYPE_STUB_DECL (new) = remap_decl (TYPE_STUB_DECL (type), id);
+    TYPE_STUB_DECL (new_tree) = remap_decl (TYPE_STUB_DECL (type), id);
 
   /* Lazily create pointer and reference types.  */
-  TYPE_POINTER_TO (new) = NULL;
-  TYPE_REFERENCE_TO (new) = NULL;
+  TYPE_POINTER_TO (new_tree) = NULL;
+  TYPE_REFERENCE_TO (new_tree) = NULL;
 
-  switch (TREE_CODE (new))
+  switch (TREE_CODE (new_tree))
     {
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-      t = TYPE_MIN_VALUE (new);
+      t = TYPE_MIN_VALUE (new_tree);
       if (t && TREE_CODE (t) != INTEGER_CST)
-        walk_tree (&TYPE_MIN_VALUE (new), copy_tree_body_r, id, NULL);
+        walk_tree (&TYPE_MIN_VALUE (new_tree), copy_tree_body_r, id, NULL);
 
-      t = TYPE_MAX_VALUE (new);
+      t = TYPE_MAX_VALUE (new_tree);
       if (t && TREE_CODE (t) != INTEGER_CST)
-        walk_tree (&TYPE_MAX_VALUE (new), copy_tree_body_r, id, NULL);
-      return new;
+        walk_tree (&TYPE_MAX_VALUE (new_tree), copy_tree_body_r, id, NULL);
+      return new_tree;
 
     case FUNCTION_TYPE:
-      TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
-      walk_tree (&TYPE_ARG_TYPES (new), copy_tree_body_r, id, NULL);
-      return new;
+      TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
+      walk_tree (&TYPE_ARG_TYPES (new_tree), copy_tree_body_r, id, NULL);
+      return new_tree;
 
     case ARRAY_TYPE:
-      TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
-      TYPE_DOMAIN (new) = remap_type (TYPE_DOMAIN (new), id);
+      TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
+      TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
       break;
 
     case RECORD_TYPE:
@@ -376,14 +376,14 @@ remap_type_1 (tree type, copy_body_data *id)
       {
 	tree f, nf = NULL;
 
-	for (f = TYPE_FIELDS (new); f ; f = TREE_CHAIN (f))
+	for (f = TYPE_FIELDS (new_tree); f ; f = TREE_CHAIN (f))
 	  {
 	    t = remap_decl (f, id);
-	    DECL_CONTEXT (t) = new;
+	    DECL_CONTEXT (t) = new_tree;
 	    TREE_CHAIN (t) = nf;
 	    nf = t;
 	  }
-	TYPE_FIELDS (new) = nreverse (nf);
+	TYPE_FIELDS (new_tree) = nreverse (nf);
       }
       break;
 
@@ -393,10 +393,10 @@ remap_type_1 (tree type, copy_body_data *id)
       gcc_unreachable ();
     }
 
-  walk_tree (&TYPE_SIZE (new), copy_tree_body_r, id, NULL);
-  walk_tree (&TYPE_SIZE_UNIT (new), copy_tree_body_r, id, NULL);
+  walk_tree (&TYPE_SIZE (new_tree), copy_tree_body_r, id, NULL);
+  walk_tree (&TYPE_SIZE_UNIT (new_tree), copy_tree_body_r, id, NULL);
 
-  return new;
+  return new_tree;
 }
 
 tree
@@ -504,28 +504,28 @@ static tree
 remap_blocks (tree block, copy_body_data *id)
 {
   tree t;
-  tree new = block;
+  tree new_tree = block;
 
   if (!block)
     return NULL;
 
-  remap_block (&new, id);
-  gcc_assert (new != block);
+  remap_block (&new_tree, id);
+  gcc_assert (new_tree != block);
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    add_lexical_block (new, remap_blocks (t, id));
-  return new;
+    add_lexical_block (new_tree, remap_blocks (t, id));
+  return new_tree;
 }
 
 static void
 copy_statement_list (tree *tp)
 {
   tree_stmt_iterator oi, ni;
-  tree new;
+  tree new_tree;
 
-  new = alloc_stmt_list ();
-  ni = tsi_start (new);
+  new_tree = alloc_stmt_list ();
+  ni = tsi_start (new_tree);
   oi = tsi_start (*tp);
-  *tp = new;
+  *tp = new_tree;
 
   for (; !tsi_end_p (oi); tsi_next (&oi))
     tsi_link_after (&ni, tsi_stmt (oi), TSI_NEW_STMT);
@@ -679,7 +679,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
-	      tree type, new, old;
+	      tree type, new_tree, old;
 
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
 		 it manually here as we'll eventually get ADDR_EXPRs
@@ -689,23 +689,23 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 		 fold_indirect_ref does other useful transformations,
 		 try that first, though.  */
 	      type = TREE_TYPE (TREE_TYPE (*n));
-	      new = unshare_expr (*n);
+	      new_tree = unshare_expr (*n);
 	      old = *tp;
-	      *tp = gimple_fold_indirect_ref (new);
+	      *tp = gimple_fold_indirect_ref (new_tree);
 	      if (!*tp)
 	        {
-		  if (TREE_CODE (new) == ADDR_EXPR)
+		  if (TREE_CODE (new_tree) == ADDR_EXPR)
 		    {
-		      *tp = fold_indirect_ref_1 (type, new);
+		      *tp = fold_indirect_ref_1 (type, new_tree);
 		      /* ???  We should either assert here or build
 			 a VIEW_CONVERT_EXPR instead of blindly leaking
 			 incompatible types to our IL.  */
 		      if (! *tp)
-			*tp = TREE_OPERAND (new, 0);
+			*tp = TREE_OPERAND (new_tree, 0);
 		    }
 	          else
 		    {
-	              *tp = build1 (INDIRECT_REF, type, new);
+	              *tp = build1 (INDIRECT_REF, type, new_tree);
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 		    }
 		}
@@ -908,7 +908,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
-	      tree new;
+	      tree new_tree;
 	      tree old;
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
 	         it manually here as we'll eventually get ADDR_EXPRs
@@ -917,23 +917,23 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		 but we absolutely rely on that.  As fold_indirect_ref
 	         does other useful transformations, try that first, though.  */
 	      tree type = TREE_TYPE (TREE_TYPE (*n));
-	      new = unshare_expr (*n);
+	      new_tree = unshare_expr (*n);
 	      old = *tp;
-	      *tp = gimple_fold_indirect_ref (new);
+	      *tp = gimple_fold_indirect_ref (new_tree);
 	      if (! *tp)
 	        {
-		  if (TREE_CODE (new) == ADDR_EXPR)
+		  if (TREE_CODE (new_tree) == ADDR_EXPR)
 		    {
-		      *tp = fold_indirect_ref_1 (type, new);
+		      *tp = fold_indirect_ref_1 (type, new_tree);
 		      /* ???  We should either assert here or build
 			 a VIEW_CONVERT_EXPR instead of blindly leaking
 			 incompatible types to our IL.  */
 		      if (! *tp)
-			*tp = TREE_OPERAND (new, 0);
+			*tp = TREE_OPERAND (new_tree, 0);
 		    }
 	          else
 		    {
-	              *tp = build1 (INDIRECT_REF, type, new);
+	              *tp = build1 (INDIRECT_REF, type, new_tree);
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 		      TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 		    }
@@ -1547,7 +1547,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
   FOR_EACH_EDGE (old_edge, ei, bb->succs)
     if (!(old_edge->flags & EDGE_EH))
       {
-	edge new;
+	edge new_edge;
 
 	flags = old_edge->flags;
 
@@ -1555,9 +1555,9 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
 	if (old_edge->dest->index == EXIT_BLOCK && !old_edge->flags
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	  flags |= EDGE_FALLTHRU;
-	new = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
-	new->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
-	new->probability = old_edge->probability;
+	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
+	new_edge->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
+	new_edge->probability = old_edge->probability;
       }
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
@@ -1795,9 +1795,9 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
   /* Use aux pointers to map the original blocks to copy.  */
   FOR_EACH_BB_FN (bb, cfun_to_copy)
     {
-      basic_block new = copy_bb (id, bb, frequency_scale, count_scale);
-      bb->aux = new;
-      new->aux = bb;
+      basic_block new_bb = copy_bb (id, bb, frequency_scale, count_scale);
+      bb->aux = new_bb;
+      new_bb->aux = bb;
     }
 
   last = last_basic_block;
@@ -3554,18 +3554,18 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     {
       /* Because the chain gets clobbered when we make a copy, we save it
 	 here.  */
-      tree chain = NULL_TREE, new;
+      tree chain = NULL_TREE, new_tree;
 
       chain = TREE_CHAIN (*tp);
 
       /* Copy the node.  */
-      new = copy_node (*tp);
+      new_tree = copy_node (*tp);
 
       /* Propagate mudflap marked-ness.  */
       if (flag_mudflap && mf_marked_p (*tp))
-        mf_mark (new);
+        mf_mark (new_tree);
 
-      *tp = new;
+      *tp = new_tree;
 
       /* Now, restore the chain, if appropriate.  That will cause
 	 walk_tree to walk into the chain as well.  */
@@ -3583,17 +3583,17 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     {
       /* CONSTRUCTOR nodes need special handling because
          we need to duplicate the vector of elements.  */
-      tree new;
+      tree new_tree;
 
-      new = copy_node (*tp);
+      new_tree = copy_node (*tp);
 
       /* Propagate mudflap marked-ness.  */
       if (flag_mudflap && mf_marked_p (*tp))
-        mf_mark (new);
+        mf_mark (new_tree);
 
-      CONSTRUCTOR_ELTS (new) = VEC_copy (constructor_elt, gc,
+      CONSTRUCTOR_ELTS (new_tree) = VEC_copy (constructor_elt, gc,
 					 CONSTRUCTOR_ELTS (*tp));
-      *tp = new;
+      *tp = new_tree;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     *walk_subtrees = 0;
@@ -4093,10 +4093,10 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id)
   arg_copy = &orig_parm;
   for (parg = arg_copy; *parg; parg = &TREE_CHAIN (*parg))
     {
-      tree new = remap_decl (*parg, id);
-      lang_hooks.dup_lang_specific_decl (new);
-      TREE_CHAIN (new) = TREE_CHAIN (*parg);
-      *parg = new;
+      tree new_tree = remap_decl (*parg, id);
+      lang_hooks.dup_lang_specific_decl (new_tree);
+      TREE_CHAIN (new_tree) = TREE_CHAIN (*parg);
+      *parg = new_tree;
     }
   return orig_parm;
 }
@@ -4110,10 +4110,10 @@ copy_static_chain (tree static_chain, copy_body_data * id)
   chain_copy = &static_chain;
   for (pvar = chain_copy; *pvar; pvar = &TREE_CHAIN (*pvar))
     {
-      tree new = remap_decl (*pvar, id);
-      lang_hooks.dup_lang_specific_decl (new);
-      TREE_CHAIN (new) = TREE_CHAIN (*pvar);
-      *pvar = new;
+      tree new_tree = remap_decl (*pvar, id);
+      lang_hooks.dup_lang_specific_decl (new_tree);
+      TREE_CHAIN (new_tree) = TREE_CHAIN (*pvar);
+      *pvar = new_tree;
     }
   return static_chain;
 }
