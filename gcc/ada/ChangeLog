@@ -1,5 +1,34 @@
 2008-08-06  Thomas Quinot  <quinot@adacore.com>
 
+	* g-socket-dummy.adb, g-socket-dummy.ads, g-sothco-dummy.adb,
+	g-sothco-dummy.ads, g-socthi-dummy.adb, g-socthi-dummy.ads,
+	g-sttsne-dummy.ads: New files.
+
+	* gcc-interface/Makefile.in, Makefile.rtl: Use placeholder sources
+	with pragma Unimplemented_Unit for sockets packages on Nucleus.
+
+2008-08-06  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Another fix for ACL support on Windows.
+
+2008-08-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp (Expand_Interface_Actuals): Adds missing support for
+	expansion of calls to subprograms using selected components.
+
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Use base type to determine whether a
+	dereference is needed because a subtype of an access_to_subprogram is
+	simply an access-subtype
+
+2008-08-06  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Set_Command_Line): Now that aliases can contain
+	parameters, always specify the expected separator.
+
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
 	* xnmake.adb: Use new XUtil package for platform independent text
 	output.
 

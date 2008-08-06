@@ -365,11 +365,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-sercom$(objext) \
   g-sestin$(objext) \
   g-sha1$(objext) \
-  g-soccon$(objext) \
-  g-socket$(objext) \
-  g-socthi$(objext) \
-  g-soliop$(objext) \
-  g-sothco$(objext) \
   g-souinf$(objext) \
   g-speche$(objext) \
   g-spchge$(objext) \
@@ -380,7 +375,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-sptavs$(objext) \
   g-string$(objext) \
   g-strspl$(objext) \
-  g-sttsne$(objext) \
   g-table$(objext) \
   g-tasloc$(objext) \
   g-timsta$(objext) \
@@ -609,4 +603,5 @@ GNATRTL_NONTASKING_OBJS= \
   text_io$(objext) \
   unchconv$(objext) \
   unchdeal$(objext) \
+  $(GNATRTL_SOCKETS_OBJS) \
   $(EXTRA_GNATRTL_NONTASKING_OBJS)
