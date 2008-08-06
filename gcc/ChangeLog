@@ -1,3 +1,15 @@
+2008-08-06  Victor Kaplansky  <victork@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-transform.c (vect_model_simple_cost): Return
+	immediately if stmt is pure SLP.
+	(vect_model_store_cost): Ditto.
+	(vect_model_load_cost): Ditto.
+	(vectorizable_store): Remove PURE_SLP check before call
+	to vect_model_store_cost.
+	(vect_model_store_cost): When checking whether stmt describe
+	strided access, add a check that it is not slp_node.
+
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 8715
