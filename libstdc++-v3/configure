@@ -39677,6 +39677,16 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
   # For the __streamoff_base_type typedef.
 
+
+
+
+  ac_ext=cc
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
   echo "$as_me:$LINENO: checking for int64_t" >&5
 echo $ECHO_N "checking for int64_t... $ECHO_C" >&6
   if test "${glibcxx_cv_INT64_T+set}" = set; then
@@ -39707,7 +39717,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
+	 { ac_try='test -z "$ac_cxx_werror_flag"
 			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
@@ -39731,15 +39741,159 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 
+
   if test $glibcxx_cv_INT64_T = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_INT64_T 1
 _ACEOF
 
-  fi
-  echo "$as_me:$LINENO: result: $glibcxx_cv_INT64_T" >&5
+    echo "$as_me:$LINENO: result: $glibcxx_cv_INT64_T" >&5
 echo "${ECHO_T}$glibcxx_cv_INT64_T" >&6
+
+    echo "$as_me:$LINENO: checking for int64_t as long" >&5
+echo $ECHO_N "checking for int64_t as long... $ECHO_C" >&6
+    if test "${glibcxx_cv_int64_t_long+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdint.h>
+        template<typename, typename> struct same { enum { value = -1 }; };
+        template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
+        int array[same<int64_t, long>::value];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_cv_int64_t_long=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_cv_int64_t_long=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+
+    if test $glibcxx_cv_int64_t_long = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_INT64_T_LONG 1
+_ACEOF
+
+      echo "$as_me:$LINENO: result: $glibcxx_cv_int64_t_long" >&5
+echo "${ECHO_T}$glibcxx_cv_int64_t_long" >&6
+    fi
+
+    echo "$as_me:$LINENO: checking for int64_t as long long" >&5
+echo $ECHO_N "checking for int64_t as long long... $ECHO_C" >&6
+    if test "${glibcxx_cv_int64_t_long_long+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdint.h>
+        template<typename, typename> struct same { enum { value = -1 }; };
+        template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
+        int array[same<int64_t, long long>::value];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_cv_int64_t_long_long=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_cv_int64_t_long_long=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+
+    if test $glibcxx_cv_int64_t_long_long = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_INT64_T_LONG_LONG 1
+_ACEOF
+
+      echo "$as_me:$LINENO: result: $glibcxx_cv_int64_t_long_long" >&5
+echo "${ECHO_T}$glibcxx_cv_int64_t_long_long" >&6
+    fi
+  fi
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
   # For LFS support.
