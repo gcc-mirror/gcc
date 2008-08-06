@@ -298,7 +298,7 @@ package body System.Stack_Usage is
               To_Stack_Address (Stack (Top_Slot_Index_In (Stack))'Address);
          else
             Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Stack'Address);
-            Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Stack'Address);
+            Analyzer.Top_Pattern_Mark := To_Stack_Address (Stack'Address);
          end if;
 
          --  If Arr has been packed, the following assertion must be true (we
@@ -306,7 +306,8 @@ package body System.Stack_Usage is
          --    Min (Analyzer.Inner_Pattern_Mark, Analyzer.Outer_Pattern_Mark)):
 
          pragma Assert
-           (Analyzer.Pattern_Size =
+           (Analyzer.Pattern_Size = 0 or else
+            Analyzer.Pattern_Size =
               Stack_Size
                 (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Pattern_Mark));
       end;
@@ -380,6 +381,10 @@ package body System.Stack_Usage is
 
    begin
       Analyzer.Topmost_Touched_Mark := Analyzer.Bottom_Pattern_Mark;
+
+      if Analyzer.Pattern_Size = 0 then
+         return;
+      end if;
 
       --  Look backward from the topmost possible end of the marked stack to
       --  the bottom of it. The first index not equals to the patterns marks
@@ -559,20 +564,23 @@ package body System.Stack_Usage is
                    Min_Measure    => 0,
                    Max_Measure    => 0);
 
+      Overflow_Guard : constant Integer :=
+        Analyzer.Stack_Size
+          - Stack_Size (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Of_Stack);
+
    begin
       if Analyzer.Pattern_Size = 0 then
          --  If we have that result, it means that we didn't do any computation
          --  at all. In other words, we used at least everything (and possibly
          --  more).
 
-         Result.Min_Measure := Analyzer.Stack_Size;
+         Result.Min_Measure := Analyzer.Stack_Size - Overflow_Guard;
          Result.Max_Measure := Analyzer.Stack_Size;
       else
          Result.Min_Measure := Stack_Size
                     (Analyzer.Topmost_Touched_Mark,
                      Analyzer.Bottom_Of_Stack);
-         Result.Max_Measure := Result.Min_Measure +
-           (Analyzer.Stack_Size - Analyzer.Pattern_Size);
+         Result.Max_Measure := Result.Min_Measure + Overflow_Guard;
       end if;
 
       if Analyzer.Result_Id in Result_Array'Range then
