@@ -1966,7 +1966,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 # Copy generated target dependent sources
 	$(RM) $(RTSDIR)/s-oscons.ads
-	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
+	(cd $(RTSDIR); $(LN_S) ../s-oscons-$(THREAD_KIND).ads s-oscons.ads)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
@@ -2285,11 +2285,6 @@ sysdep.o  : sysdep.c
 raise-gcc.o : raise-gcc.c raise.h
 raise.o   : raise.c raise.h
 vx_stack_info.o : vx_stack_info.c
-
-gen-soccon: gen-soccon.c gsocket.h
-	$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		-UIN_GCC -DTARGET=\"$(target_alias)\" \
-		$< $(OUTPUT_OPTION)
 
 cio.o     : cio.c
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
