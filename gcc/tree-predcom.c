@@ -267,7 +267,7 @@ typedef struct chain
 
   /* For combination chains, the operator and the two chains that are
      combined, and the type of the result.  */
-  enum tree_code operator;
+  enum tree_code op;
   tree rslt_type;
   struct chain *ch1, *ch2;
 
@@ -409,7 +409,7 @@ dump_chain (FILE *file, chain_p chain)
   if (chain->type == CT_COMBINATION)
     {
       fprintf (file, "  equal to %p %s %p in type ",
-	       (void *) chain->ch1, op_symbol_code (chain->operator),
+	       (void *) chain->ch1, op_symbol_code (chain->op),
 	       (void *) chain->ch2);
       print_generic_expr (file, chain->rslt_type, TDF_SLIM);
       fprintf (file, "\n");
@@ -1224,12 +1224,12 @@ determine_roots (struct loop *loop,
 }
 
 /* Replace the reference in statement STMT with temporary variable
-   NEW.  If SET is true, NEW is instead initialized to the value of
+   NEW_TREE.  If SET is true, NEW_TREE is instead initialized to the value of
    the reference in the statement.  IN_LHS is true if the reference
    is in the lhs of STMT, false if it is in rhs.  */
 
 static void
-replace_ref_with (gimple stmt, tree new, bool set, bool in_lhs)
+replace_ref_with (gimple stmt, tree new_tree, bool set, bool in_lhs)
 {
   tree val;
   gimple new_stmt;
@@ -1245,7 +1245,7 @@ replace_ref_with (gimple stmt, tree new, bool set, bool in_lhs)
       remove_phi_node (&psi, false);
 
       /* Turn the phi node into GIMPLE_ASSIGN.  */
-      new_stmt = gimple_build_assign (val, new);
+      new_stmt = gimple_build_assign (val, new_tree);
       gsi_insert_before (&bsi, new_stmt, GSI_NEW_STMT);
       return;
     }
@@ -1256,11 +1256,11 @@ replace_ref_with (gimple stmt, tree new, bool set, bool in_lhs)
 
   bsi = gsi_for_stmt (stmt);
 
-  /* If we do not need to initialize NEW, just replace the use of OLD.  */
+  /* If we do not need to initialize NEW_TREE, just replace the use of OLD.  */
   if (!set)
     {
       gcc_assert (!in_lhs);
-      gimple_assign_set_rhs_from_tree (&bsi, new);
+      gimple_assign_set_rhs_from_tree (&bsi, new_tree);
       stmt = gsi_stmt (bsi);
       update_stmt (stmt);
       return;
@@ -1306,7 +1306,7 @@ replace_ref_with (gimple stmt, tree new, bool set, bool in_lhs)
       val = gimple_assign_lhs (stmt);
     }
 
-  new_stmt = gimple_build_assign (new, unshare_expr (val));
+  new_stmt = gimple_build_assign (new_tree, unshare_expr (val));
   gsi_insert_after (&bsi, new_stmt, GSI_NEW_STMT);
 }
 
@@ -1406,7 +1406,7 @@ get_init_expr (chain_p chain, unsigned index)
       tree e1 = get_init_expr (chain->ch1, index);
       tree e2 = get_init_expr (chain->ch2, index);
 
-      return fold_build2 (chain->operator, chain->rslt_type, e1, e2);
+      return fold_build2 (chain->op, chain->rslt_type, e1, e2);
     }
   else
     return VEC_index (tree, chain->inits, index);
@@ -2347,7 +2347,7 @@ combine_chains (chain_p ch1, chain_p ch2)
 
   new_chain = XCNEW (struct chain);
   new_chain->type = CT_COMBINATION;
-  new_chain->operator = op;
+  new_chain->op = op;
   new_chain->ch1 = ch1;
   new_chain->ch2 = ch2;
   new_chain->rslt_type = rslt_type;

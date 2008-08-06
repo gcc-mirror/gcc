@@ -519,7 +519,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case BOOLEAN_TYPE:
       {
 	unsigned int quals = TYPE_QUALS (node);
-	enum tree_code_class class;
+	enum tree_code_class tclass;
 
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (buffer, "const ");
@@ -528,16 +528,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	else if (quals & TYPE_QUAL_RESTRICT)
 	  pp_string (buffer, "restrict ");
 
-	class = TREE_CODE_CLASS (TREE_CODE (node));
+	tclass = TREE_CODE_CLASS (TREE_CODE (node));
 
-	if (class == tcc_declaration)
+	if (tclass == tcc_declaration)
 	  {
 	    if (DECL_NAME (node))
 	      dump_decl_name (buffer, node, flags);
 	    else
               pp_string (buffer, "<unnamed type decl>");
 	  }
-	else if (class == tcc_type)
+	else if (tclass == tcc_type)
 	  {
 	    if (TYPE_NAME (node))
 	      {

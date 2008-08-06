@@ -50,20 +50,20 @@ tree
 gimple_assign_rhs_to_tree (gimple stmt)
 {
   tree t;
-  enum gimple_rhs_class class;
+  enum gimple_rhs_class grhs_class;
     
-  class = get_gimple_rhs_class (gimple_expr_code (stmt));
+  grhs_class = get_gimple_rhs_class (gimple_expr_code (stmt));
 
-  if (class == GIMPLE_BINARY_RHS)
+  if (grhs_class == GIMPLE_BINARY_RHS)
     t = build2 (gimple_assign_rhs_code (stmt),
 		TREE_TYPE (gimple_assign_lhs (stmt)),
 		gimple_assign_rhs1 (stmt),
 		gimple_assign_rhs2 (stmt));
-  else if (class == GIMPLE_UNARY_RHS)
+  else if (grhs_class == GIMPLE_UNARY_RHS)
     t = build1 (gimple_assign_rhs_code (stmt),
 		TREE_TYPE (gimple_assign_lhs (stmt)),
 		gimple_assign_rhs1 (stmt));
-  else if (class == GIMPLE_SINGLE_RHS)
+  else if (grhs_class == GIMPLE_SINGLE_RHS)
     t = gimple_assign_rhs1 (stmt);
   else
     gcc_unreachable ();

@@ -22434,7 +22434,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   bool last_arg_constant = false;
   const struct insn_data *insn_p = &insn_data[icode];
   enum machine_mode tmode = insn_p->operand[0].mode;
-  enum { load, store } class;
+  enum { load, store } klass;
 
   switch ((enum ix86_special_builtin_type) d->flag)
     {
@@ -22446,7 +22446,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_PCFLOAT:
     case V2DF_FTYPE_PCDOUBLE:
       nargs = 1;
-      class = load;
+      klass = load;
       memory = 0;
       break;
     case VOID_FTYPE_PV2SF_V4SF:
@@ -22457,14 +22457,14 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PDI_DI:
     case VOID_FTYPE_PINT_INT:
       nargs = 1;
-      class = store;
+      klass = store;
       /* Reserve memory operand for target.  */
       memory = ARRAY_SIZE (args);
       break;
     case V4SF_FTYPE_V4SF_PCV2SF:
     case V2DF_FTYPE_V2DF_PCDOUBLE:
       nargs = 2;
-      class = load;
+      klass = load;
       memory = 1;
       break;
     default:
@@ -22473,7 +22473,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 
   gcc_assert (nargs <= ARRAY_SIZE (args));
 
-  if (class == store)
+  if (klass == store)
     {
       arg = CALL_EXPR_ARG (exp, 0);
       op = expand_normal (arg);
@@ -22550,7 +22550,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   if (! pat)
     return 0;
   emit_insn (pat);
-  return class == store ? 0 : target;
+  return klass == store ? 0 : target;
 }
 
 /* Return the integer constant in ARG.  Constrain it to be in the range
@@ -23417,16 +23417,16 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class regclass)
 }
 
 static enum reg_class
-ix86_secondary_reload (bool in_p, rtx x, enum reg_class class,
+ix86_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
 		       enum machine_mode mode,
 		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
   if (!in_p && mode == QImode && !TARGET_64BIT
-      && (class == GENERAL_REGS
-	  || class == LEGACY_REGS
-	  || class == INDEX_REGS))
+      && (rclass == GENERAL_REGS
+	  || rclass == LEGACY_REGS
+	  || rclass == INDEX_REGS))
     {
       int regno;
 

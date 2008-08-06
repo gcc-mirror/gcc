@@ -6383,9 +6383,9 @@ simplify_cond_using_ranges (gimple stmt)
 	 able to simplify this conditional. */
       if (vr->type == VR_RANGE)
 	{
-	  tree new = test_for_singularity (cond_code, op0, op1, vr);
+	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr);
 
-	  if (new)
+	  if (new_tree)
 	    {
 	      if (dump_file)
 		{
@@ -6396,7 +6396,7 @@ simplify_cond_using_ranges (gimple stmt)
 
 	      gimple_cond_set_code (stmt, EQ_EXPR);
 	      gimple_cond_set_lhs (stmt, op0);
-	      gimple_cond_set_rhs (stmt, new);
+	      gimple_cond_set_rhs (stmt, new_tree);
 
 	      update_stmt (stmt);
 
@@ -6413,9 +6413,9 @@ simplify_cond_using_ranges (gimple stmt)
 	     with integral types here, so no need to worry about
 	     issues with inverting FP comparisons.  */
 	  cond_code = invert_tree_comparison (cond_code, false);
-	  new = test_for_singularity (cond_code, op0, op1, vr);
+	  new_tree = test_for_singularity (cond_code, op0, op1, vr);
 
-	  if (new)
+	  if (new_tree)
 	    {
 	      if (dump_file)
 		{
@@ -6426,7 +6426,7 @@ simplify_cond_using_ranges (gimple stmt)
 
 	      gimple_cond_set_code (stmt, NE_EXPR);
 	      gimple_cond_set_lhs (stmt, op0);
-	      gimple_cond_set_rhs (stmt, new);
+	      gimple_cond_set_rhs (stmt, new_tree);
 
 	      update_stmt (stmt);
 

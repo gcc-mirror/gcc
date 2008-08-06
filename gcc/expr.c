@@ -7944,20 +7944,20 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    if (mode == BLKmode)
 	      {
 		HOST_WIDE_INT size = GET_MODE_BITSIZE (ext_mode);
-		rtx new;
+		rtx new_rtx;
 
 		/* If the reference doesn't use the alias set of its type,
 		   we cannot create the temporary using that type.  */
 		if (component_uses_parent_alias_set (exp))
 		  {
-		    new = assign_stack_local (ext_mode, size, 0);
-		    set_mem_alias_set (new, get_alias_set (exp));
+		    new_rtx = assign_stack_local (ext_mode, size, 0);
+		    set_mem_alias_set (new_rtx, get_alias_set (exp));
 		  }
 		else
-		  new = assign_stack_temp_for_type (ext_mode, size, 0, type);
+		  new_rtx = assign_stack_temp_for_type (ext_mode, size, 0, type);
 
-		emit_move_insn (new, op0);
-		op0 = copy_rtx (new);
+		emit_move_insn (new_rtx, op0);
+		op0 = copy_rtx (new_rtx);
 		PUT_MODE (op0, BLKmode);
 		set_mem_attributes (op0, exp, 1);
 	      }
@@ -8198,9 +8198,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      HOST_WIDE_INT temp_size
 		= MAX (int_size_in_bytes (inner_type),
 		       (HOST_WIDE_INT) GET_MODE_SIZE (TYPE_MODE (type)));
-	      rtx new = assign_stack_temp_for_type (TYPE_MODE (type),
-						    temp_size, 0, type);
-	      rtx new_with_op0_mode = adjust_address (new, GET_MODE (op0), 0);
+	      rtx new_rtx = assign_stack_temp_for_type (TYPE_MODE (type),
+							temp_size, 0, type);
+	      rtx new_with_op0_mode = adjust_address (new_rtx, GET_MODE (op0), 0);
 
 	      gcc_assert (!TREE_ADDRESSABLE (exp));
 
@@ -8212,7 +8212,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      else
 		emit_move_insn (new_with_op0_mode, op0);
 
-	      op0 = new;
+	      op0 = new_rtx;
 	    }
 
 	  op0 = adjust_address (op0, TYPE_MODE (type), 0);
@@ -9997,16 +9997,16 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
 int
 vector_mode_valid_p (enum machine_mode mode)
 {
-  enum mode_class class = GET_MODE_CLASS (mode);
+  enum mode_class mclass = GET_MODE_CLASS (mode);
   enum machine_mode innermode;
 
   /* Doh!  What's going on?  */
-  if (class != MODE_VECTOR_INT
-      && class != MODE_VECTOR_FLOAT
-      && class != MODE_VECTOR_FRACT
-      && class != MODE_VECTOR_UFRACT
-      && class != MODE_VECTOR_ACCUM
-      && class != MODE_VECTOR_UACCUM)
+  if (mclass != MODE_VECTOR_INT
+      && mclass != MODE_VECTOR_FLOAT
+      && mclass != MODE_VECTOR_FRACT
+      && mclass != MODE_VECTOR_UFRACT
+      && mclass != MODE_VECTOR_ACCUM
+      && mclass != MODE_VECTOR_UACCUM)
     return 0;
 
   /* Hardware support.  Woo hoo!  */

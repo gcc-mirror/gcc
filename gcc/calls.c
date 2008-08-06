@@ -1877,7 +1877,7 @@ shift_return_value (enum machine_mode mode, bool left_p, rtx value)
 static rtx
 avoid_likely_spilled_reg (rtx x)
 {
-  rtx new;
+  rtx new_rtx;
 
   if (REG_P (x)
       && HARD_REGISTER_P (x)
@@ -1888,10 +1888,10 @@ avoid_likely_spilled_reg (rtx x)
 	 and the whole point of this function is to avoid
 	 using the hard register directly in such a situation.  */
       generating_concat_p = 0;
-      new = gen_reg_rtx (GET_MODE (x));
+      new_rtx = gen_reg_rtx (GET_MODE (x));
       generating_concat_p = 1;
-      emit_move_insn (new, x);
-      return new;
+      emit_move_insn (new_rtx, x);
+      return new_rtx;
     }
   return x;
 }

@@ -638,15 +638,15 @@ repl_map_free (void *p)
 }
 
 
-/* Return the names replaced by NEW (i.e., REPL_TBL[NEW].SET).  */
+/* Return the names replaced by NEW_TREE (i.e., REPL_TBL[NEW_TREE].SET).  */
 
 static inline bitmap
-names_replaced_by (tree new)
+names_replaced_by (tree new_tree)
 {
   struct repl_map_d m;
   void **slot;
 
-  m.name = new;
+  m.name = new_tree;
   slot = htab_find_slot (repl_tbl, (void *) &m, NO_INSERT);
 
   /* If N was not registered in the replacement table, return NULL.  */
@@ -657,20 +657,20 @@ names_replaced_by (tree new)
 }
 
 
-/* Add OLD to REPL_TBL[NEW].SET.  */
+/* Add OLD to REPL_TBL[NEW_TREE].SET.  */
 
 static inline void
-add_to_repl_tbl (tree new, tree old)
+add_to_repl_tbl (tree new_tree, tree old)
 {
   struct repl_map_d m, *mp;
   void **slot;
 
-  m.name = new;
+  m.name = new_tree;
   slot = htab_find_slot (repl_tbl, (void *) &m, INSERT);
   if (*slot == NULL)
     {
       mp = XNEW (struct repl_map_d);
-      mp->name = new;
+      mp->name = new_tree;
       mp->set = BITMAP_ALLOC (NULL);
       *slot = (void *) mp;
     }
@@ -681,23 +681,23 @@ add_to_repl_tbl (tree new, tree old)
 }
 
 
-/* Add a new mapping NEW -> OLD REPL_TBL.  Every entry N_i in REPL_TBL
+/* Add a new mapping NEW_TREE -> OLD REPL_TBL.  Every entry N_i in REPL_TBL
    represents the set of names O_1 ... O_j replaced by N_i.  This is
    used by update_ssa and its helpers to introduce new SSA names in an
    already formed SSA web.  */
 
 static void
-add_new_name_mapping (tree new, tree old)
+add_new_name_mapping (tree new_tree, tree old)
 {
   timevar_push (TV_TREE_SSA_INCREMENTAL);
 
-  /* OLD and NEW must be different SSA names for the same symbol.  */
-  gcc_assert (new != old && SSA_NAME_VAR (new) == SSA_NAME_VAR (old));
+  /* OLD and NEW_TREE must be different SSA names for the same symbol.  */
+  gcc_assert (new_tree != old && SSA_NAME_VAR (new_tree) == SSA_NAME_VAR (old));
 
   /* If this mapping is for virtual names, we will need to update
      virtual operands.  If this is a mapping for .MEM, then we gather
      the symbols associated with each name.  */
-  if (!is_gimple_reg (new))
+  if (!is_gimple_reg (new_tree))
     {
       tree sym;
 
@@ -712,7 +712,7 @@ add_new_name_mapping (tree new, tree old)
 	 will make more sense to rename the symbols from scratch.
 	 Otherwise, the insertion of PHI nodes for each of the old
 	 names in these mappings will be very slow.  */
-      sym = SSA_NAME_VAR (new);
+      sym = SSA_NAME_VAR (new_tree);
       bitmap_set_bit (update_ssa_stats.virtual_symbols, DECL_UID (sym));
     }
 
@@ -726,16 +726,16 @@ add_new_name_mapping (tree new, tree old)
     }
 
   /* Update the REPL_TBL table.  */
-  add_to_repl_tbl (new, old);
+  add_to_repl_tbl (new_tree, old);
 
   /* If OLD had already been registered as a new name, then all the
-     names that OLD replaces should also be replaced by NEW.  */
+     names that OLD replaces should also be replaced by NEW_TREE.  */
   if (is_new_name (old))
-    bitmap_ior_into (names_replaced_by (new), names_replaced_by (old));
+    bitmap_ior_into (names_replaced_by (new_tree), names_replaced_by (old));
 
-  /* Register NEW and OLD in NEW_SSA_NAMES and OLD_SSA_NAMES,
+  /* Register NEW_TREE and OLD in NEW_SSA_NAMES and OLD_SSA_NAMES,
      respectively.  */
-  SET_BIT (new_ssa_names, SSA_NAME_VERSION (new));
+  SET_BIT (new_ssa_names, SSA_NAME_VERSION (new_tree));
   SET_BIT (old_ssa_names, SSA_NAME_VERSION (old));
 
   /* Update mapping counter to use in the virtual mapping heuristic.  */
@@ -2757,12 +2757,12 @@ create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
    update_ssa.  */
 
 void
-register_new_name_mapping (tree new ATTRIBUTE_UNUSED, tree old ATTRIBUTE_UNUSED)
+register_new_name_mapping (tree new_Tree ATTRIBUTE_UNUSED, tree old ATTRIBUTE_UNUSED)
 {
   if (need_to_initialize_update_ssa_p)
     init_update_ssa ();
 
-  add_new_name_mapping (new, old);
+  add_new_name_mapping (new_Tree, old);
 }
 
 
