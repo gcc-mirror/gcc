@@ -1,3 +1,10 @@
+2008-08-06  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/utils2.c (snames.h) Include
+	(TARGET_ABI_OPEN_VMS): Initialize.
+	(build_call_alloc_dealloc); [TARGET_ABI_OPEN_VMS] Allocate on 32bit heap
+	for Convention C.
+
 2008-08-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Process_Discriminants): diagnose redundant or improper
