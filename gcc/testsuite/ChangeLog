@@ -1,3 +1,8 @@
+2008-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37010
+	* gcc.dg/torture/stackalign/push-1.c: New.
+
 2008-08-06  Michael Matz  <matz@suse.de>
 
 	PR target/36613
