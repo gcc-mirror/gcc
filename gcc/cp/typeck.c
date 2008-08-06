@@ -4642,15 +4642,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 
       /* In a template, we are processing a non-dependent expression
 	 so we can just form an ADDR_EXPR with the correct type.  */
-      if (processing_template_decl)
-	{
-	  val = build_address (arg);
-	  if (TREE_CODE (arg) == OFFSET_REF)
-	    PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
-	  return val;
-	}
-
-      if (TREE_CODE (arg) != COMPONENT_REF)
+      if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
 	{
 	  val = build_address (arg);
 	  if (TREE_CODE (arg) == OFFSET_REF)

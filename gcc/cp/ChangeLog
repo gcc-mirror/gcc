@@ -1,3 +1,13 @@
+2008-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37016
+	* decl.c (build_ptrmemfunc_type): Don't require structural 
+	comparison of PMF types.
+	* tree.c (cp_build_qualified_type_real): Don't clear
+	a valid TYPE_PTRMEMFUNC_TYPE.
+	* typeck.c (cp_build_unary_op): Still do build_ptrmemfunc in 
+	templates.
+
 2008-08-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36963
