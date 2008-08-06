@@ -1386,7 +1386,7 @@ package body Exp_Ch11 is
 
       --     Raise_Exception (exception-name'Identity, string);
 
-      --  and there is nothing else to do
+      --  and there is nothing else to do.
 
       if Present (Expression (N)) then
          Rewrite (N,
@@ -1394,7 +1394,7 @@ package body Exp_Ch11 is
              Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
-                 Prefix => Name (N),
+                 Prefix         => Name (N),
                  Attribute_Name => Name_Identity),
                Expression (N))));
          Analyze (N);
