@@ -1,5 +1,10 @@
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 26785
+	* decl.c (grokdeclarator): Use explicit location with permerror_at.
+	
+2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 8715
 	* typeck.c (cp_build_binary_op): Move code to c-common.c.
 

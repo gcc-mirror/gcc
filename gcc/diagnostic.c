@@ -554,10 +554,26 @@ pedwarn0 (const char *gmsgid, ...)
   va_end (ap);
 }
 
-/* A "permissive" error: issues an error unless -fpermissive was given
-   on the command line, in which case it issues a warning.  Use this
-   for things that really should be errors but we want to support
-   legacy code.  */
+/* A "permissive" error at LOCATION: issues an error unless
+   -fpermissive was given on the command line, in which case it issues
+   a warning.  Use this for things that really should be errors but we
+   want to support legacy code.  */
+
+void
+permerror_at (location_t location, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+		       permissive_error_kind ());
+  diagnostic.option_index = OPT_fpermissive;
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
+/* Equivalent to permerror_at (input_location, ...).  */
 
 void
 permerror (const char *gmsgid, ...)

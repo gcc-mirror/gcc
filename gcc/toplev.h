@@ -68,6 +68,8 @@ extern void pedwarn0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern void pedwarn (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void permerror_at (location_t, const char *, ...)
+     ATTRIBUTE_GCC_DIAG(2,3);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
