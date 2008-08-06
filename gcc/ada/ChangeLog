@@ -1,3 +1,7 @@
+2008-08-06  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gcc-interface/Make-lang.in (OSCONS_CPPFLAGS): Remove.
+
 2008-08-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Component_Declaration): Protect against misuse
