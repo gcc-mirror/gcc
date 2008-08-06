@@ -1812,12 +1812,16 @@ package body Sem_Ch12 is
 
          --  Verify that there is no redundant null exclusion.
 
-         if Null_Exclusion_Present (N)
-           and then Can_Never_Be_Null (T)
-         then
-            Error_Msg_NE
-              ("`NOT NULL` not allowed (& already excludes null)",
-                 N, T);
+         if Null_Exclusion_Present (N) then
+            if not Is_Access_Type (T) then
+               Error_Msg_N
+                 ("null exclusion can only apply to an access type", N);
+
+            elsif Can_Never_Be_Null (T) then
+               Error_Msg_NE
+                 ("`NOT NULL` not allowed (& already excludes null)",
+                    N, T);
+            end if;
          end if;
 
       --  Ada 2005 (AI-423): Formal object with an access definition

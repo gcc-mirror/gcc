@@ -4624,11 +4624,21 @@ package body Sem_Ch3 is
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
 
-      --  Ada 2005 (AI-231). Set the null-exclusion attribute
+      --  Ada 2005 (AI-231). Set the null-exclusion attribute, and verify
+      --  that it is not redundant.
 
-      if Null_Exclusion_Present (Type_Definition (N))
-        or else Can_Never_Be_Null (Parent_Type)
-      then
+      if Null_Exclusion_Present (Type_Definition (N)) then
+         Set_Can_Never_Be_Null (Derived_Type);
+
+         if Can_Never_Be_Null (Parent_Type)
+           and then False
+         then
+            Error_Msg_NE
+              ("`NOT NULL` not allowed (& already excludes null)",
+                N, Parent_Type);
+         end if;
+
+      elsif Can_Never_Be_Null (Parent_Type) then
          Set_Can_Never_Be_Null (Derived_Type);
       end if;
 
@@ -12897,6 +12907,12 @@ package body Sem_Ch3 is
          end;
       end if;
 
+      if Null_Exclusion_Present (Def)
+        and then not Is_Access_Type (Parent_Type)
+      then
+         Error_Msg_N ("null exclusion can only apply to an access type", N);
+      end if;
+
       Build_Derived_Type (N, Parent_Type, T, Is_Completion);
 
       --  AI-419: The parent type of an explicitly limited derived type must
@@ -15352,6 +15368,15 @@ package body Sem_Ch3 is
                  Create_Null_Excluding_Itype
                    (T           => Discr_Type,
                     Related_Nod => Discr));
+
+            --  Check for improper null exclusion if the type is otherwise
+            --  legal for a discriminant.
+
+            elsif Null_Exclusion_Present (Discr)
+              and then Is_Discrete_Type (Discr_Type)
+            then
+               Error_Msg_N
+                 ("null exclusion can only apply to an access type", Discr);
             end if;
 
             --  Ada 2005 (AI-402): access discriminants of nonlimited types
