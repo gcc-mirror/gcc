@@ -923,8 +923,6 @@ ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb ada/xu
 	$(CP) $^ ada/bldtools/nmake_s
 	(cd ada/bldtools/nmake_s && $(GNATMAKE) -q xnmake && ./xnmake -s ../../nmake.ads )
 
-OSCONS_CPPFLAGS=-DTHREAD_KIND_$(THREAD_KIND) s-oscons-tmplt.c
-
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
 OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
              -DTARGET='""$(target)""' s-oscons-tmplt.c
