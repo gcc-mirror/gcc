@@ -1,5 +1,24 @@
 2008-08-06  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_res.adb: Minor reformatting
+
+	* s-fileio.adb (Open): When file open operation fails, raise Name_Error
+	only when the operating system reports a non-existing file or directory
+	(ENOENT), otherwise raise Name_Error.
+
+	* exp_ch11.adb: Minor reformatting
+
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): If the return type is
+	incomplete, add the access_to_subprogram type to the list of private
+	dependents only if the incomplete type will be completed in the current
+	scope.
+	(Build_Discriminant_Constraints): If the type of the discriminant is
+	access_to_variable, reject a constraint that is access_to_constant.
+
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
 	* g-socket-dummy.adb, g-socket-dummy.ads, g-sothco-dummy.adb,
 	g-sothco-dummy.ads, g-socthi-dummy.adb, g-socthi-dummy.ads,
 	g-sttsne-dummy.ads: New files.
