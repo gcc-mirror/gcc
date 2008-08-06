@@ -49,7 +49,8 @@
 // XXX If <stdint.h> is really needed, make sure to define the macros,
 // in order not to break <tr1/cstdint> (and <cstdint> in C++0x).
 // Reconsider all this as soon as possible...
-#ifdef _GLIBCXX_HAVE_INT64_T
+#if (defined(_GLIBCXX_HAVE_INT64_T) && !defined(_GLIBCXX_HAVE_INT64_T_LONG) \
+     && !defined(_GLIBCXX_HAVE_INT64_T_LONG_LONG))
 #ifndef __STDC_LIMIT_MACROS
 # define __STDC_LIMIT_MACROS
 #endif
@@ -76,7 +77,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  Note: In versions of GCC up to and including GCC 3.3, streamoff
    *  was typedef long.
   */  
-#ifdef _GLIBCXX_HAVE_INT64_T
+#ifdef _GLIBCXX_HAVE_INT64_T_LONG
+  typedef long          streamoff;
+#elif defined(_GLIBCXX_HAVE_INT64_T_LONG_LONG)
+  typedef long long     streamoff;
+#elif defined(_GLIBCXX_HAVE_INT64_T) 
   typedef int64_t       streamoff;
 #else
   typedef long long     streamoff;
