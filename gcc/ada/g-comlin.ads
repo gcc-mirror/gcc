@@ -513,12 +513,27 @@ package GNAT.Command_Line is
    --  characters whose order is irrelevant. In fact, this package will sort
    --  them alphabetically.
 
+   procedure Define_Switch
+     (Config : in out Command_Line_Configuration;
+      Switch : String);
+   --  Indicates a new switch. The format of this switch follows the getopt
+   --  format (trailing ':', '?', etc for defining a switch with parameters).
+   --  The switches defined in the command_line_configuration object are used
+   --  when ungrouping switches with more that one character after the prefix.
+
    procedure Define_Section
      (Config  : in out Command_Line_Configuration;
       Section : String);
    --  Indicates a new switch section. Every switch belonging to the same
    --  section are ordered together, preceded by the section. They are placed
    --  at the end of the command line (as in 'gnatmake somefile.adb -cargs -g')
+
+   function Get_Switches
+     (Config      : Command_Line_Configuration;
+      Switch_Char : Character)
+      return String;
+   --  Get the switches list as expected by getopt. This list is built using
+   --  all switches defined previously via Define_Switch above.
 
    procedure Free (Config : in out Command_Line_Configuration);
    --  Free the memory used by Config
@@ -595,11 +610,22 @@ package GNAT.Command_Line is
    --  added if not already present. For example, to add the -g switch into the
    --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs")
 
+   procedure Add_Switch
+     (Cmd       : in out Command_Line;
+      Switch    : String;
+      Parameter : String    := "";
+      Separator : Character := ' ';
+      Section   : String    := "";
+      Success   : out Boolean);
+   --  Same as above, returning the status of
+   --  the operation
+
    procedure Remove_Switch
-     (Cmd        : in out Command_Line;
-      Switch     : String;
-      Remove_All : Boolean := False;
-      Section    : String := "");
+     (Cmd           : in out Command_Line;
+      Switch        : String;
+      Remove_All    : Boolean := False;
+      Has_Parameter : Boolean := False;
+      Section       : String := "");
    --  Remove Switch from the command line, and ungroup existing switches if
    --  necessary.
    --
@@ -610,11 +636,24 @@ package GNAT.Command_Line is
    --  If Remove_All is True, then all matching switches are removed, otherwise
    --  only the first matching one is removed.
    --
+   --  if Has_Parameter is set to True, then only switches having a parameter
+   --  are removed.
+   --
    --  If the switch belongs to a section, then this section should be
    --  specified: Remove_Switch (Cmd_Line, "-g", Section => "-cargs") called
    --  on the command line "-g -cargs -g" will result in "-g", while if
    --  called with (Cmd_Line, "-g") this will result in "-cargs -g".
    --  If Remove_All is set, then both "-g" will be removed.
+
+   procedure Remove_Switch
+     (Cmd           : in out Command_Line;
+      Switch        : String;
+      Remove_All    : Boolean := False;
+      Has_Parameter : Boolean := False;
+      Section       : String  := "";
+      Success       : out Boolean);
+   --  Same as above, reporting the success of the operation (Success is False
+   --  if no switch was removed).
 
    procedure Remove_Switch
      (Cmd       : in out Command_Line;
@@ -774,6 +813,9 @@ private
       Aliases    : GNAT.OS_Lib.Argument_List_Access;
       Expansions : GNAT.OS_Lib.Argument_List_Access;
       --  The aliases. Both arrays have the same indices
+
+      Switches   : GNAT.OS_Lib.Argument_List_Access;
+      --  List of expected switches. Used when expanding switch groups.
    end record;
    type Command_Line_Configuration is access Command_Line_Configuration_Record;
 
