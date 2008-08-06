@@ -2184,7 +2184,7 @@ static void
 expand_stack_alignment (void)
 {
   rtx drap_rtx;
-  unsigned int preferred_stack_boundary;
+  unsigned int preferred_stack_boundary, incoming_stack_boundary;
 
   if (! SUPPORTS_STACK_ALIGNMENT)
     return;
@@ -2215,8 +2215,15 @@ expand_stack_alignment (void)
   if (preferred_stack_boundary > crtl->stack_alignment_needed)
     crtl->stack_alignment_needed = preferred_stack_boundary;
 
+  /* The incoming stack frame has to be aligned at least at
+     parm_stack_boundary.  */
+  if (crtl->parm_stack_boundary > INCOMING_STACK_BOUNDARY)
+    incoming_stack_boundary = crtl->parm_stack_boundary;
+  else
+    incoming_stack_boundary = INCOMING_STACK_BOUNDARY;
+
   crtl->stack_realign_needed
-    = INCOMING_STACK_BOUNDARY < crtl->stack_alignment_estimated;
+    = incoming_stack_boundary < crtl->stack_alignment_estimated;
   crtl->stack_realign_tried = crtl->stack_realign_needed;
 
   crtl->stack_realign_processed = true;

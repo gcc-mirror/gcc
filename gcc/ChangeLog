@@ -1,3 +1,17 @@
+2008-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37009
+	* cfgexpand.c (expand_stack_alignment): Check parm_stack_boundary
+	for incoming stack boundary.
+
+	* function.c (assign_parm_find_entry_rtl): Update
+	parm_stack_boundary.
+
+	* function.h (rtl_data): Add parm_stack_boundary.
+
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Check
+	parm_stack_boundary for incoming stack boundary.
+
 2008-08-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* jump.c (rtx_renumbered_equal_p): Do not call subreg_regno_offset

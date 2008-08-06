@@ -339,6 +339,9 @@ struct rtl_data GTY(())
      to call other functions.  */
   unsigned int preferred_stack_boundary;
 
+  /* The minimum alignment of parameter stack.  */
+  unsigned int parm_stack_boundary;
+
   /* The largest alignment of slot allocated on the stack.  */
   unsigned int max_used_stack_slot_alignment;
 
