@@ -4624,7 +4624,7 @@ package body Sem_Ch3 is
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
 
-      --  Ada 2005 (AI-231). Set the null-exclusion attribute, and verify
+      --  Ada 2005 (AI-231): Set the null-exclusion attribute, and verify
       --  that it is not redundant.
 
       if Null_Exclusion_Present (Type_Definition (N)) then
