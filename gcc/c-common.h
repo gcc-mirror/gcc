@@ -928,6 +928,10 @@ extern void warn_about_parentheses (enum tree_code, enum tree_code,
 				    enum tree_code);
 extern void warn_for_unused_label (tree label);
 extern void warn_for_div_by_zero (tree divisor);
+extern void warn_for_sign_compare (tree orig_op0, tree orig_op1, 
+				   tree op0, tree op1, 
+				   tree result_type, 
+				   enum tree_code resultcode);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

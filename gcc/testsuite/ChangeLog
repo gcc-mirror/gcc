@@ -1,3 +1,9 @@
+2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 8715
+	* gcc.dg/pr8715.c: New.
+	* g++.dg/warn/pr8715.C: New.
+	
 2008-08-06  Marc Gauthier  <marc@tensilica.com>
 
 	* lib/target-supports.exp (check_profiling_available): Match more

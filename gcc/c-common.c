@@ -8202,4 +8202,145 @@ warn_for_div_by_zero (tree divisor)
     warning (OPT_Wdiv_by_zero, "division by zero");
 }
 
+/* Subroutine of build_binary_op. Give warnings for comparisons
+   between signed and unsigned quantities that may fail. Do the
+   checking based on the original operand trees ORIG_OP0 and ORIG_OP1,
+   so that casts will be considered, but default promotions won't
+   be. 
+
+   The arguments of this function map directly to local variables
+   of build_binary_op.  */
+
+void 
+warn_for_sign_compare (tree orig_op0, tree orig_op1, 
+		       tree op0, tree op1, 
+		       tree result_type, enum tree_code resultcode)
+{
+  int op0_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op0));
+  int op1_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op1));
+  int unsignedp0, unsignedp1;
+  
+  /* In C++, check for comparison of different enum types.  */
+  if (c_dialect_cxx()
+      && TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE
+      && TREE_CODE (TREE_TYPE (orig_op1)) == ENUMERAL_TYPE
+      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
+    {
+      warning (OPT_Wsign_compare, "comparison between types %qT and %qT",
+               TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
+    }
+
+  /* Do not warn if the comparison is being done in a signed type,
+     since the signed type will only be chosen if it can represent
+     all the values of the unsigned type.  */
+  if (!TYPE_UNSIGNED (result_type))
+    /* OK */;
+  /* Do not warn if both operands are unsigned.  */
+  else if (op0_signed == op1_signed)
+    /* OK */;
+  else
+    {
+      tree sop, uop;
+      bool ovf;
+      
+      if (op0_signed)
+        sop = orig_op0, uop = orig_op1;
+      else 
+        sop = orig_op1, uop = orig_op0;
+
+      STRIP_TYPE_NOPS (sop); 
+      STRIP_TYPE_NOPS (uop);
+
+      /* Do not warn if the signed quantity is an unsuffixed integer
+         literal (or some static constant expression involving such
+         literals or a conditional expression involving such literals)
+         and it is non-negative.  */
+      if (tree_expr_nonnegative_warnv_p (sop, &ovf))
+        /* OK */;
+      /* Do not warn if the comparison is an equality operation, the
+         unsigned quantity is an integral constant, and it would fit
+         in the result if the result were signed.  */
+      else if (TREE_CODE (uop) == INTEGER_CST
+               && (resultcode == EQ_EXPR || resultcode == NE_EXPR)
+               && int_fits_type_p (uop, c_common_signed_type (result_type)))
+        /* OK */;
+      /* In C, do not warn if the unsigned quantity is an enumeration
+         constant and its maximum value would fit in the result if the
+         result were signed.  */
+      else if (!c_dialect_cxx() && TREE_CODE (uop) == INTEGER_CST
+               && TREE_CODE (TREE_TYPE (uop)) == ENUMERAL_TYPE
+               && int_fits_type_p (TYPE_MAX_VALUE (TREE_TYPE (uop)),
+                                   c_common_signed_type (result_type)))
+        /* OK */;
+      else 
+        warning (OPT_Wsign_compare, 
+                 "comparison between signed and unsigned integer expressions");
+    }
+  
+  /* Warn if two unsigned values are being compared in a size larger
+     than their original size, and one (and only one) is the result of
+     a `~' operator.  This comparison will always fail.
+     
+     Also warn if one operand is a constant, and the constant does not
+     have all bits set that are set in the ~ operand when it is
+     extended.  */
+
+  op0 = get_narrower (op0, &unsignedp0);
+  op1 = get_narrower (op1, &unsignedp1);
+  
+  if ((TREE_CODE (op0) == BIT_NOT_EXPR)
+      ^ (TREE_CODE (op1) == BIT_NOT_EXPR))
+    {
+      if (TREE_CODE (op0) == BIT_NOT_EXPR)
+	op0 = get_narrower (TREE_OPERAND (op0, 0), &unsignedp0);
+      if (TREE_CODE (op1) == BIT_NOT_EXPR)
+	op1 = get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
+
+      if (host_integerp (op0, 0) || host_integerp (op1, 0))
+        {
+          tree primop;
+          HOST_WIDE_INT constant, mask;
+          int unsignedp;
+          unsigned int bits;
+          
+          if (host_integerp (op0, 0))
+            {
+              primop = op1;
+              unsignedp = unsignedp1;
+              constant = tree_low_cst (op0, 0);
+            }
+          else
+            {
+              primop = op0;
+              unsignedp = unsignedp0;
+              constant = tree_low_cst (op1, 0);
+            }
+          
+          bits = TYPE_PRECISION (TREE_TYPE (primop));
+          if (bits < TYPE_PRECISION (result_type)
+              && bits < HOST_BITS_PER_LONG && unsignedp)
+            {
+              mask = (~ (HOST_WIDE_INT) 0) << bits;
+              if ((mask & constant) != mask)
+		{
+		  if (constant == 0)
+		    warning (OPT_Wsign_compare, 
+			     "promoted ~unsigned is always non-zero");
+		  else
+		    warning (OPT_Wsign_compare, 
+			     "comparison of promoted ~unsigned with constant");
+		}
+            }
+        }
+      else if (unsignedp0 && unsignedp1
+               && (TYPE_PRECISION (TREE_TYPE (op0))
+                   < TYPE_PRECISION (result_type))
+               && (TYPE_PRECISION (TREE_TYPE (op1))
+                   < TYPE_PRECISION (result_type)))
+        warning (OPT_Wsign_compare, 
+                 "comparison of promoted ~unsigned with unsigned");
+    }
+}
+
 #include "gt-c-common.h"
