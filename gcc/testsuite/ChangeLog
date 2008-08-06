@@ -1,3 +1,8 @@
+2008-08-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/35432
+	* gcc.c-torture/compile/pr35432.c: New file.
+
 2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Backport from mainline:

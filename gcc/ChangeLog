@@ -1,3 +1,9 @@
+2008-08-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/35432
+	* gimplify.c (gimplify_modify_expr): Do not optimize zero-sized types
+	if want_value.
+
 2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Backport from mainline:
