@@ -1,3 +1,10 @@
+2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c: Fix typo.
+	(c_common_reswords): Activate more C++ keyword warnings.
+
+	* matrix-reorg.c (compute_offset): Avoid C++ keywords.
+
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
        
 	PR 26785
