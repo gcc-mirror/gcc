@@ -40,8 +40,6 @@ with Interfaces.C;
 with Interfaces.C.Pointers;
 with Interfaces.C.Strings;
 
-with GNAT.Sockets.Constants;
-
 package GNAT.Sockets.Thin_Common is
 
    package C renames Interfaces.C;

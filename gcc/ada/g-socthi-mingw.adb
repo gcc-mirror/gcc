@@ -39,7 +39,6 @@
 
 with Interfaces.C.Strings; use Interfaces.C.Strings;
 with System;               use System;
-with GNAT.Sockets.Constants;
 
 package body GNAT.Sockets.Thin is
 
