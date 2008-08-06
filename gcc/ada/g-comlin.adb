@@ -1295,13 +1295,19 @@ package body GNAT.Command_Line is
 
                   --  Add it with no parameter, if that's the way the user
                   --  wants it.
+                  --  Specify the separator in all cases, as the switch might
+                  --  need to be unaliased, and the alias might contain
+                  --  switches with parameters.
 
                   if Section = null then
                      Add_Switch
-                       (Cmd, Switch_Char & Full_Switch (Parser));
+                       (Cmd, Switch_Char & Full_Switch (Parser),
+                        Separator => Separator (Parser));
                   else
                      Add_Switch
-                       (Cmd, Switch_Char & Full_Switch (Parser), Section.all);
+                       (Cmd, Switch_Char & Full_Switch (Parser),
+                        Separator => Separator (Parser),
+                        Section   => Section.all);
                   end if;
             end;
          end loop;
@@ -1439,9 +1445,17 @@ package body GNAT.Command_Line is
                      if not Require_Parameter (Cmd.Config.Switches (S).all)
                        or else Last >= Param
                      then
-                        if Idx = Group'First and then Last = Group'Last then
+                        if Idx = Group'First
+                          and then Last = Group'Last
+                          and then Last < Param
+                        then
                            --  The group only concerns a single switch. Do not
                            --  perform recursive call.
+
+                           --  Note that we still perform a recursive call if
+                           --  a parameter is detected in the switch, as this
+                           --  is a way to correctly identify such a parameter
+                           --  in aliases.
                            return False;
                         end if;
 
