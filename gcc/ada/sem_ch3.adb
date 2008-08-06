@@ -1667,6 +1667,7 @@ package body Sem_Ch3 is
 
          if Ada_Version >= Ada_05
            and then Ekind (T) = E_Anonymous_Access_Type
+           and then Etype (E) /= Any_Type
          then
             --  Check RM 3.9.2(9): "if the expected type for an expression is
             --  an anonymous access-to-specific tagged type, then the object
