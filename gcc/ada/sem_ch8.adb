@@ -889,7 +889,15 @@ package body Sem_Ch8 is
                   Error_Msg_NE
                     ("`NOT NULL` not allowed (type of& already excludes null)",
                       N, Nam_Ent);
+
                end if;
+
+            elsif Has_Null_Exclusion (N)
+              and then No (Access_Definition (N))
+              and then Can_Never_Be_Null (T)
+            then
+               Error_Msg_NE
+                 ("`NOT NULL` not allowed (& already excludes null)", N, T);
             end if;
          end;
       end if;
