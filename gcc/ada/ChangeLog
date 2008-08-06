@@ -1,5 +1,13 @@
 2008-08-06  Thomas Quinot  <quinot@adacore.com>
 
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in:
+	Remove obsolete targets referencing gen-soccon
+	When generating s-oscons.ads, use a file name that includes the
+	THREAD_KIND, to ensure that the (potentially different) version from a
+	previous build with a different threads flavour does not get reused.
+
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_res.adb: Minor reformatting
 
 	* s-fileio.adb (Open): When file open operation fails, raise Name_Error
