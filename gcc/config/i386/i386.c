@@ -7614,7 +7614,10 @@ ix86_finalize_stack_realign_flags (void)
 {
   /* Check if stack realign is really needed after reload, and 
      stores result in cfun */
-  unsigned int stack_realign = (ix86_incoming_stack_boundary
+  unsigned int incoming_stack_boundary
+    = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
+       ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  unsigned int stack_realign = (incoming_stack_boundary
 				< (current_function_is_leaf
 				   ? crtl->max_used_stack_slot_alignment
 				   : crtl->stack_alignment_needed));

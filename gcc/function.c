@@ -2261,6 +2261,11 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 		       entry_parm ? data->partial : 0, current_function_decl,
 		       &all->stack_args_size, &data->locate);
 
+  /* Update parm_stack_boundary if this parameter is passed in the
+     stack.  */
+  if (!in_regs && crtl->parm_stack_boundary < data->locate.boundary)
+    crtl->parm_stack_boundary = data->locate.boundary;
+
   /* Adjust offsets to include the pretend args.  */
   pretend_bytes = all->extra_pretend_bytes - pretend_bytes;
   data->locate.slot_offset.constant += pretend_bytes;
