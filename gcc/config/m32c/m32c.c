@@ -340,36 +340,36 @@ classes_intersect (int class1, int class2)
 /* Used by m32c_register_move_cost to determine if a move is
    impossibly expensive.  */
 static int
-class_can_hold_mode (int class, enum machine_mode mode)
+class_can_hold_mode (int rclass, enum machine_mode mode)
 {
   /* Cache the results:  0=untested  1=no  2=yes */
   static char results[LIM_REG_CLASSES][MAX_MACHINE_MODE];
-  if (results[class][mode] == 0)
+  if (results[rclass][mode] == 0)
     {
       int r, n, i;
-      results[class][mode] = 1;
+      results[rclass][mode] = 1;
       for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-	if (class_contents[class][0] & (1 << r)
+	if (class_contents[rclass][0] & (1 << r)
 	    && HARD_REGNO_MODE_OK (r, mode))
 	  {
 	    int ok = 1;
 	    n = HARD_REGNO_NREGS (r, mode);
 	    for (i = 1; i < n; i++)
-	      if (!(class_contents[class][0] & (1 << (r + i))))
+	      if (!(class_contents[rclass][0] & (1 << (r + i))))
 		ok = 0;
 	    if (ok)
 	      {
-		results[class][mode] = 2;
+		results[rclass][mode] = 2;
 		break;
 	      }
 	  }
     }
 #if DEBUG0
   fprintf (stderr, "class %s can hold %s? %s\n",
-	   class_names[class], mode_name[mode],
-	   (results[class][mode] == 2) ? "yes" : "no");
+	   class_names[rclass], mode_name[mode],
+	   (results[rclass][mode] == 2) ? "yes" : "no");
 #endif
-  return results[class][mode] == 2;
+  return results[rclass][mode] == 2;
 }
 
 /* Run-time Target Specification.  */
@@ -4298,22 +4298,22 @@ m32c_compare_redundant (rtx cmp, rtx *operands)
 char *
 m32c_output_compare (rtx insn, rtx *operands)
 {
-  static char template[] = ";cmp.b\t%1,%0";
+  static char templ[] = ";cmp.b\t%1,%0";
   /*                             ^ 5  */
 
-  template[5] = " bwll"[GET_MODE_SIZE(GET_MODE(operands[0]))];
+  templ[5] = " bwll"[GET_MODE_SIZE(GET_MODE(operands[0]))];
   if (m32c_compare_redundant (insn, operands))
     {
 #if DEBUG_CMP
       fprintf(stderr, "cbranch: cmp not needed\n");
 #endif
-      return template;
+      return templ;
     }
 
 #if DEBUG_CMP
-  fprintf(stderr, "cbranch: cmp needed: `%s'\n", template);
+  fprintf(stderr, "cbranch: cmp needed: `%s'\n", templ);
 #endif
-  return template + 1;
+  return templ + 1;
 }
 
 #undef TARGET_ENCODE_SECTION_INFO

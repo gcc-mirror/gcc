@@ -1506,43 +1506,43 @@ get_unaligned_offset (rtx addr, HOST_WIDE_INT ofs)
 
 /* On the Alpha, all (non-symbolic) constants except zero go into
    a floating-point register via memory.  Note that we cannot
-   return anything that is not a subset of CLASS, and that some
+   return anything that is not a subset of RCLASS, and that some
    symbolic constants cannot be dropped to memory.  */
 
 enum reg_class
-alpha_preferred_reload_class(rtx x, enum reg_class class)
+alpha_preferred_reload_class(rtx x, enum reg_class rclass)
 {
   /* Zero is present in any register class.  */
   if (x == CONST0_RTX (GET_MODE (x)))
-    return class;
+    return rclass;
 
   /* These sorts of constants we can easily drop to memory.  */
   if (GET_CODE (x) == CONST_INT
       || GET_CODE (x) == CONST_DOUBLE
       || GET_CODE (x) == CONST_VECTOR)
     {
-      if (class == FLOAT_REGS)
+      if (rclass == FLOAT_REGS)
 	return NO_REGS;
-      if (class == ALL_REGS)
+      if (rclass == ALL_REGS)
 	return GENERAL_REGS;
-      return class;
+      return rclass;
     }
 
   /* All other kinds of constants should not (and in the case of HIGH
      cannot) be dropped to memory -- instead we use a GENERAL_REGS
      secondary reload.  */
   if (CONSTANT_P (x))
-    return (class == ALL_REGS ? GENERAL_REGS : class);
+    return (rclass == ALL_REGS ? GENERAL_REGS : rclass);
 
-  return class;
+  return rclass;
 }
 
 /* Inform reload about cases where moving X with a mode MODE to a register in
-   CLASS requires an extra scratch or immediate register.  Return the class
+   RCLASS requires an extra scratch or immediate register.  Return the class
    needed for the immediate register.  */
 
 static enum reg_class
-alpha_secondary_reload (bool in_p, rtx x, enum reg_class class,
+alpha_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
 			enum machine_mode mode, secondary_reload_info *sri)
 {
   /* Loading and storing HImode or QImode values to and from memory
@@ -1564,7 +1564,7 @@ alpha_secondary_reload (bool in_p, rtx x, enum reg_class class,
 
   /* We also cannot do integral arithmetic into FP regs, as might result
      from register elimination into a DImode fp register.  */
-  if (class == FLOAT_REGS)
+  if (rclass == FLOAT_REGS)
     {
       if (MEM_P (x) && GET_CODE (XEXP (x, 0)) == AND)
 	return GENERAL_REGS;
@@ -1644,7 +1644,7 @@ static rtx
 alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 			HOST_WIDE_INT c, int n, bool no_output)
 {
-  HOST_WIDE_INT new;
+  HOST_WIDE_INT new_const;
   int i, bits;
   /* Use a pseudo if highly optimizing and still generating RTL.  */
   rtx subtarget
@@ -1743,15 +1743,15 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
       /* First, see if minus some low bits, we've an easy load of
 	 high bits.  */
 
-      new = ((c & 0xffff) ^ 0x8000) - 0x8000;
-      if (new != 0)
+      new_const = ((c & 0xffff) ^ 0x8000) - 0x8000;
+      if (new_const != 0)
 	{
-          temp = alpha_emit_set_const (subtarget, mode, c - new, i, no_output);
+          temp = alpha_emit_set_const (subtarget, mode, c - new_const, i, no_output);
 	  if (temp)
 	    {
 	      if (no_output)
 		return temp;
-	      return expand_binop (mode, add_optab, temp, GEN_INT (new),
+	      return expand_binop (mode, add_optab, temp, GEN_INT (new_const),
 				   target, 0, OPTAB_WIDEN);
 	    }
 	}
@@ -1778,12 +1778,12 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
       if (bits > 0)
 	for (; bits > 0; bits--)
 	  {
-	    new = c >> bits;
-	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    new_const = c >> bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new_const, i, no_output);
 	    if (!temp && c < 0)
 	      {
-		new = (unsigned HOST_WIDE_INT)c >> bits;
-		temp = alpha_emit_set_const (subtarget, mode, new,
+		new_const = (unsigned HOST_WIDE_INT)c >> bits;
+		temp = alpha_emit_set_const (subtarget, mode, new_const,
 					     i, no_output);
 	      }
 	    if (temp)
@@ -1806,12 +1806,12 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
       if (bits > 0)
 	for (; bits > 0; bits--)
 	  {
-	    new = c << bits;
-	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    new_const = c << bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new_const, i, no_output);
 	    if (!temp)
 	      {
-		new = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
-	        temp = alpha_emit_set_const (subtarget, mode, new,
+		new_const = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+	        temp = alpha_emit_set_const (subtarget, mode, new_const,
 					     i, no_output);
 	      }
 	    if (temp)
@@ -1832,12 +1832,12 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
       if (bits > 0)
 	for (; bits > 0; bits--)
 	  {
-	    new = c << bits;
-	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    new_const = c << bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new_const, i, no_output);
 	    if (!temp)
 	      {
-		new = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
-	        temp = alpha_emit_set_const (subtarget, mode, new,
+		new_const = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+	        temp = alpha_emit_set_const (subtarget, mode, new_const,
 					     i, no_output);
 	      }
 	    if (temp)
@@ -1855,25 +1855,25 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
      constant except that all bytes that are 0 are changed to be 0xff.  If we
      can, then we can do a ZAPNOT to obtain the desired constant.  */
 
-  new = c;
+  new_const = c;
   for (i = 0; i < 64; i += 8)
-    if ((new & ((HOST_WIDE_INT) 0xff << i)) == 0)
-      new |= (HOST_WIDE_INT) 0xff << i;
+    if ((new_const & ((HOST_WIDE_INT) 0xff << i)) == 0)
+      new_const |= (HOST_WIDE_INT) 0xff << i;
 
   /* We are only called for SImode and DImode.  If this is SImode, ensure that
      we are sign extended to a full word.  */
 
   if (mode == SImode)
-    new = ((new & 0xffffffff) ^ 0x80000000) - 0x80000000;
+    new_const = ((new_const & 0xffffffff) ^ 0x80000000) - 0x80000000;
 
-  if (new != c)
+  if (new_const != c)
     {
-      temp = alpha_emit_set_const (subtarget, mode, new, n - 1, no_output);
+      temp = alpha_emit_set_const (subtarget, mode, new_const, n - 1, no_output);
       if (temp)
 	{
 	  if (no_output)
 	    return temp;
-	  return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
+	  return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new_const),
 			       target, 0, OPTAB_WIDEN);
 	}
     }
@@ -5708,15 +5708,15 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		enum machine_mode mode)
 {
   unsigned int regnum, dummy;
-  enum mode_class class;
+  enum mode_class mclass;
 
   gcc_assert (!valtype || !alpha_return_in_memory (valtype, func));
 
   if (valtype)
     mode = TYPE_MODE (valtype);
 
-  class = GET_MODE_CLASS (mode);
-  switch (class)
+  mclass = GET_MODE_CLASS (mode);
+  switch (mclass)
     {
     case MODE_INT:
       PROMOTE_MODE (mode, dummy, valtype);
@@ -8261,7 +8261,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			   tree function)
 {
   HOST_WIDE_INT hi, lo;
-  rtx this, insn, funexp;
+  rtx this_rtx, insn, funexp;
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());
@@ -8270,9 +8270,9 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Find the "this" pointer.  If the function returns a structure,
      the structure return pointer is in $16.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, 17);
+    this_rtx = gen_rtx_REG (Pmode, 17);
   else
-    this = gen_rtx_REG (Pmode, 16);
+    this_rtx = gen_rtx_REG (Pmode, 16);
 
   /* Add DELTA.  When possible we use ldah+lda.  Otherwise load the
      entire constant for the add.  */
@@ -8281,15 +8281,15 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (hi + lo == delta)
     {
       if (hi)
-	emit_insn (gen_adddi3 (this, this, GEN_INT (hi)));
+	emit_insn (gen_adddi3 (this_rtx, this_rtx, GEN_INT (hi)));
       if (lo)
-	emit_insn (gen_adddi3 (this, this, GEN_INT (lo)));
+	emit_insn (gen_adddi3 (this_rtx, this_rtx, GEN_INT (lo)));
     }
   else
     {
       rtx tmp = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 0),
 					   delta, -(delta < 0));
-      emit_insn (gen_adddi3 (this, this, tmp));
+      emit_insn (gen_adddi3 (this_rtx, this_rtx, tmp));
     }
 
   /* Add a delta stored in the vtable at VCALL_OFFSET.  */
@@ -8298,7 +8298,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       rtx tmp, tmp2;
 
       tmp = gen_rtx_REG (Pmode, 0);
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this_rtx));
 
       lo = ((vcall_offset & 0xffff) ^ 0x8000) - 0x8000;
       hi = (((vcall_offset - lo) & 0xffffffff) ^ 0x80000000) - 0x80000000;
@@ -8320,7 +8320,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	tmp2 = tmp;
       emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp2));
 
-      emit_insn (gen_adddi3 (this, this, tmp));
+      emit_insn (gen_adddi3 (this_rtx, this_rtx, tmp));
     }
 
   /* Generate a tail call to the target function.  */

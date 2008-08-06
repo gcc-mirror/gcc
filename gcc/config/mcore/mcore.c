@@ -2602,30 +2602,30 @@ mcore_r15_operand_p (rtx x)
     }
 }
 
-/* Implement SECONDARY_RELOAD_CLASS.  If CLASS contains r15, and we can't
+/* Implement SECONDARY_RELOAD_CLASS.  If RCLASS contains r15, and we can't
    directly move X into it, use r1-r14 as a temporary.  */
 
 enum reg_class
-mcore_secondary_reload_class (enum reg_class class,
+mcore_secondary_reload_class (enum reg_class rclass,
 			      enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  if (TEST_HARD_REG_BIT (reg_class_contents[class], 15)
+  if (TEST_HARD_REG_BIT (reg_class_contents[rclass], 15)
       && !mcore_r15_operand_p (x))
     return LRW_REGS;
   return NO_REGS;
 }
 
 /* Return the reg_class to use when reloading the rtx X into the class
-   CLASS.  If X is too complex to move directly into r15, prefer to
+   RCLASS.  If X is too complex to move directly into r15, prefer to
    use LRW_REGS instead.  */
 
 enum reg_class
-mcore_reload_class (rtx x, enum reg_class class)
+mcore_reload_class (rtx x, enum reg_class rclass)
 {
-  if (reg_class_subset_p (LRW_REGS, class) && !mcore_r15_operand_p (x))
+  if (reg_class_subset_p (LRW_REGS, rclass) && !mcore_r15_operand_p (x))
     return LRW_REGS;
 
-  return class;
+  return rclass;
 }
 
 /* Tell me if a pair of reg/subreg rtx's actually refer to the same

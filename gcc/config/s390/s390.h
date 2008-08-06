@@ -748,10 +748,10 @@ used in insn definitions or inline assemblies.  */
    macro is used in only one place: `find_reloads_address' in reload.c.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN)	\
 do {									\
-  rtx new = legitimize_reload_address (AD, MODE, OPNUM, (int)(TYPE));	\
-  if (new)								\
+  rtx new_rtx = legitimize_reload_address (AD, MODE, OPNUM, (int)(TYPE));	\
+  if (new_rtx)								\
     {									\
-      (AD) = new;							\
+      (AD) = new_rtx;							\
       goto WIN;								\
     }									\
 } while (0)

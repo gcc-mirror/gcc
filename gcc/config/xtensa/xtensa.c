@@ -1310,10 +1310,10 @@ init_alignment_context (struct alignment_context *ac, rtx mem)
 
 /* Expand an atomic compare and swap operation for HImode and QImode.
    MEM is the memory location, CMP the old value to compare MEM with
-   and NEW the value to set if CMP == MEM.  */
+   and NEW_RTX the value to set if CMP == MEM.  */
 
 void
-xtensa_expand_compare_and_swap (rtx target, rtx mem, rtx cmp, rtx new)
+xtensa_expand_compare_and_swap (rtx target, rtx mem, rtx cmp, rtx new_rtx)
 {
   enum machine_mode mode = GET_MODE (mem);
   struct alignment_context ac;
@@ -1328,7 +1328,7 @@ xtensa_expand_compare_and_swap (rtx target, rtx mem, rtx cmp, rtx new)
   if (ac.shift != NULL_RTX)
     {
       cmp = xtensa_expand_mask_and_shift (cmp, mode, ac.shift);
-      new = xtensa_expand_mask_and_shift (new, mode, ac.shift);
+      new_rtx = xtensa_expand_mask_and_shift (new_rtx, mode, ac.shift);
     }
 
   /* Load the surrounding word into VAL with the MEM value masked out.  */
@@ -1337,10 +1337,10 @@ xtensa_expand_compare_and_swap (rtx target, rtx mem, rtx cmp, rtx new)
 						OPTAB_DIRECT));
   emit_label (csloop);
 
-  /* Patch CMP and NEW into VAL at correct position.  */
+  /* Patch CMP and NEW_RTX into VAL at correct position.  */
   cmpv = force_reg (SImode, expand_simple_binop (SImode, IOR, cmp, val,
 						 NULL_RTX, 1, OPTAB_DIRECT));
-  newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new, val,
+  newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new_rtx, val,
 						 NULL_RTX, 1, OPTAB_DIRECT));
 
   /* Jump to end if we're done.  */
@@ -1384,7 +1384,7 @@ xtensa_expand_atomic (enum rtx_code code, rtx target, rtx mem, rtx val,
   rtx csloop = gen_label_rtx ();
   rtx cmp, tmp;
   rtx old = gen_reg_rtx (SImode);
-  rtx new = gen_reg_rtx (SImode);
+  rtx new_rtx = gen_reg_rtx (SImode);
   rtx orig = NULL_RTX;
 
   init_alignment_context (&ac, mem);
@@ -1435,35 +1435,35 @@ xtensa_expand_atomic (enum rtx_code code, rtx target, rtx mem, rtx val,
       tmp = expand_simple_binop (SImode, AND, old, ac.modemaski,
 				 NULL_RTX, 1, OPTAB_DIRECT);
       tmp = expand_simple_binop (SImode, IOR, tmp, val,
-				 new, 1, OPTAB_DIRECT);
+				 new_rtx, 1, OPTAB_DIRECT);
       break;
 
     case AND:
     case IOR:
     case XOR:
       tmp = expand_simple_binop (SImode, code, old, val,
-				 new, 1, OPTAB_DIRECT);
+				 new_rtx, 1, OPTAB_DIRECT);
       break;
 
     case MULT: /* NAND */
       tmp = expand_simple_binop (SImode, XOR, old, ac.modemask,
 				 NULL_RTX, 1, OPTAB_DIRECT);
       tmp = expand_simple_binop (SImode, AND, tmp, val,
-				 new, 1, OPTAB_DIRECT);
+				 new_rtx, 1, OPTAB_DIRECT);
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  if (tmp != new)
-    emit_move_insn (new, tmp);
-  emit_insn (gen_sync_compare_and_swapsi (cmp, ac.memsi, old, new));
+  if (tmp != new_rtx)
+    emit_move_insn (new_rtx, tmp);
+  emit_insn (gen_sync_compare_and_swapsi (cmp, ac.memsi, old, new_rtx));
   emit_cmp_and_jump_insns (cmp, old, NE, const0_rtx, SImode, true, csloop);
 
   if (target)
     {
-      tmp = (after ? new : cmp);
+      tmp = (after ? new_rtx : cmp);
       convert_move (target,
 		    (ac.shift == NULL_RTX ? tmp
 		     : expand_simple_binop (SImode, LSHIFTRT, tmp, ac.shift,
@@ -1884,7 +1884,7 @@ override_options (void)
        mode = (enum machine_mode) ((int) mode + 1))
     {
       int size = GET_MODE_SIZE (mode);
-      enum mode_class class = GET_MODE_CLASS (mode);
+      enum mode_class mclass = GET_MODE_CLASS (mode);
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
@@ -1892,7 +1892,7 @@ override_options (void)
 
 	  if (ACC_REG_P (regno))
 	    temp = (TARGET_MAC16
-		    && (class == MODE_INT) && (size <= UNITS_PER_WORD));
+		    && (mclass == MODE_INT) && (size <= UNITS_PER_WORD));
 	  else if (GP_REG_P (regno))
 	    temp = ((regno & 1) == 0 || (size <= UNITS_PER_WORD));
 	  else if (FP_REG_P (regno))
@@ -2814,7 +2814,7 @@ xtensa_expand_builtin (tree exp, rtx target,
 
 
 enum reg_class
-xtensa_preferred_reload_class (rtx x, enum reg_class class, int isoutput)
+xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
 {
   if (!isoutput && CONSTANT_P (x) && GET_CODE (x) == CONST_DOUBLE)
     return NO_REGS;
@@ -2825,15 +2825,15 @@ xtensa_preferred_reload_class (rtx x, enum reg_class class, int isoutput)
      won't know that it is live because the hard frame pointer is
      treated specially.  */
 
-  if (class == AR_REGS || class == GR_REGS)
+  if (rclass == AR_REGS || rclass == GR_REGS)
     return RL_REGS;
 
-  return class;
+  return rclass;
 }
 
 
 enum reg_class
-xtensa_secondary_reload_class (enum reg_class class,
+xtensa_secondary_reload_class (enum reg_class rclass,
 			       enum machine_mode mode ATTRIBUTE_UNUSED,
 			       rtx x, int isoutput)
 {
@@ -2845,14 +2845,14 @@ xtensa_secondary_reload_class (enum reg_class class,
 
   if (!isoutput)
     {
-      if ((class == FP_REGS || GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+      if ((rclass == FP_REGS || GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	  && constantpool_mem_p (x))
 	return RL_REGS;
     }
 
   if (ACC_REG_P (regno))
-    return ((class == GR_REGS || class == RL_REGS) ? NO_REGS : RL_REGS);
-  if (class == ACC_REG)
+    return ((rclass == GR_REGS || rclass == RL_REGS) ? NO_REGS : RL_REGS);
+  if (rclass == ACC_REG)
     return (GP_REG_P (regno) ? NO_REGS : RL_REGS);
 
   return NO_REGS;

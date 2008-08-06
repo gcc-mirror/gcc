@@ -937,15 +937,15 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
     {
       if (p_info->const_add != 0)
 	{
-	  HOST_WIDE_INT new = INTVAL (cmp1) + p_info->const_add;
+	  HOST_WIDE_INT new_const = INTVAL (cmp1) + p_info->const_add;
 
 	  /* If modification of cmp1 caused overflow,
 	     we would get the wrong answer if we follow the usual path;
 	     thus, x > 0xffffffffU would turn into x > 0U.  */
 	  if ((p_info->unsignedp
-	       ? (unsigned HOST_WIDE_INT) new >
+	       ? (unsigned HOST_WIDE_INT) new_const >
 	       (unsigned HOST_WIDE_INT) INTVAL (cmp1)
-	       : new > INTVAL (cmp1))
+	       : new_const > INTVAL (cmp1))
 	      != (p_info->const_add > 0))
 	    {
 	      /* This test is always true, but if INVERT is true then
@@ -955,7 +955,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
 	      return result;
 	    }
 	  else
-	    cmp1 = GEN_INT (new);
+	    cmp1 = GEN_INT (new_const);
 	}
     }
 

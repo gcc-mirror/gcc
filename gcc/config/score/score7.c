@@ -322,7 +322,7 @@ score7_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
                         HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
                         tree function)
 {
-  rtx this, temp1, insn, fnaddr;
+  rtx this_rtx, temp1, insn, fnaddr;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
@@ -335,11 +335,11 @@ score7_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Find out which register contains the "this" pointer.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, ARG_REG_FIRST + 1);
+    this_rtx = gen_rtx_REG (Pmode, ARG_REG_FIRST + 1);
   else
-    this = gen_rtx_REG (Pmode, ARG_REG_FIRST);
+    this_rtx = gen_rtx_REG (Pmode, ARG_REG_FIRST);
 
-  /* Add DELTA to THIS.  */
+  /* Add DELTA to THIS_RTX.  */
   if (delta != 0)
     {
       rtx offset = GEN_INT (delta);
@@ -348,23 +348,23 @@ score7_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
           emit_move_insn (temp1, offset);
           offset = temp1;
         }
-      emit_insn (gen_add3_insn (this, this, offset));
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, offset));
     }
 
-  /* If needed, add *(*THIS + VCALL_OFFSET) to THIS.  */
+  /* If needed, add *(*THIS_RTX + VCALL_OFFSET) to THIS_RTX.  */
   if (vcall_offset != 0)
     {
       rtx addr;
 
-      /* Set TEMP1 to *THIS.  */
-      emit_move_insn (temp1, gen_rtx_MEM (Pmode, this));
+      /* Set TEMP1 to *THIS_RTX.  */
+      emit_move_insn (temp1, gen_rtx_MEM (Pmode, this_rtx));
 
-      /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
+      /* Set ADDR to a legitimate address for *THIS_RTX + VCALL_OFFSET.  */
       addr = score7_add_offset (temp1, vcall_offset);
 
-      /* Load the offset and add it to THIS.  */
+      /* Load the offset and add it to THIS_RTX.  */
       emit_move_insn (temp1, gen_rtx_MEM (Pmode, addr));
-      emit_insn (gen_add3_insn (this, this, temp1));
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, temp1));
     }
 
   /* Jump to the target function.  */
@@ -690,19 +690,19 @@ score7_reg_class (int regno)
 
 /* Implement PREFERRED_RELOAD_CLASS macro.  */
 enum reg_class
-score7_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class class)
+score7_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class rclass)
 {
-  if (reg_class_subset_p (G16_REGS, class))
+  if (reg_class_subset_p (G16_REGS, rclass))
     return G16_REGS;
-  if (reg_class_subset_p (G32_REGS, class))
+  if (reg_class_subset_p (G32_REGS, rclass))
     return G32_REGS;
-  return class;
+  return rclass;
 }
 
 /* Implement SECONDARY_INPUT_RELOAD_CLASS
    and SECONDARY_OUTPUT_RELOAD_CLASS macro.  */
 enum reg_class
-score7_secondary_reload_class (enum reg_class class,
+score7_secondary_reload_class (enum reg_class rclass,
                                enum machine_mode mode ATTRIBUTE_UNUSED,
                                rtx x)
 {
@@ -710,7 +710,7 @@ score7_secondary_reload_class (enum reg_class class,
   if (GET_CODE (x) == REG || GET_CODE(x) == SUBREG)
     regno = true_regnum (x);
 
-  if (!GR_REG_CLASS_P (class))
+  if (!GR_REG_CLASS_P (rclass))
     return GP_REG_P (regno) ? NO_REGS : G32_REGS;
   return NO_REGS;
 }
@@ -758,22 +758,22 @@ int
 score7_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 {
   int size = GET_MODE_SIZE (mode);
-  enum mode_class class = GET_MODE_CLASS (mode);
+  enum mode_class mclass = GET_MODE_CLASS (mode);
 
-  if (class == MODE_CC)
+  if (mclass == MODE_CC)
     return regno == CC_REGNUM;
   else if (regno == FRAME_POINTER_REGNUM
            || regno == ARG_POINTER_REGNUM)
-    return class == MODE_INT;
+    return mclass == MODE_INT;
   else if (GP_REG_P (regno))
     /* ((regno <= (GP_REG_LAST- HARD_REGNO_NREGS (dummy, mode)) + 1)  */
     return !(regno & 1) || (size <= UNITS_PER_WORD);
   else if (CE_REG_P (regno))
-    return (class == MODE_INT
+    return (mclass == MODE_INT
             && ((size <= UNITS_PER_WORD)
                 || (regno == CE_REG_FIRST && size == 2 * UNITS_PER_WORD)));
   else
-    return (class == MODE_INT) && (size <= UNITS_PER_WORD);
+    return (mclass == MODE_INT) && (size <= UNITS_PER_WORD);
 }
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame

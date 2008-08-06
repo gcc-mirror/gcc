@@ -93,9 +93,9 @@ extern void score3_asm_file_end (void);
 extern void score3_override_options (void);
 extern int score3_reg_class (int regno);
 extern enum reg_class score3_preferred_reload_class (rtx x ATTRIBUTE_UNUSED,
-                                                     enum reg_class class);
+                                                     enum reg_class rclass);
 extern enum reg_class
-score3_secondary_reload_class (enum reg_class class,
+score3_secondary_reload_class (enum reg_class rclass,
                                enum machine_mode mode ATTRIBUTE_UNUSED,
                                rtx x);
 extern int score3_const_ok_for_letter_p (HOST_WIDE_INT value, char c);

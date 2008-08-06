@@ -1,3 +1,93 @@
+2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/alpha/alpha.c (alpha_preferred_reload_class,
+	alpha_secondary_reload, alpha_emit_set_const_1, function_value,
+	alpha_output_mi_thunk_osf): Avoid C++ keywords.
+	* config/arm/arm.c (output_move_vfp, output_move_neon): Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/avr/avr-protos.h (preferred_reload_class,
+	test_hard_reg_class, avr_simplify_comparison_p,
+	out_shift_with_cnt, class_max_nregs): Likewise.
+	* config/avr/avr.c (class_max_nregs, avr_simplify_comparison_p,
+	output_movqi, output_movhi, output_movsisf, out_shift_with_cnt,
+	preferred_reload_class, test_hard_reg_class): Likewise.
+	* config/bfin/bfin.c (legitimize_pic_address, hard_regno_mode_ok,
+	bfin_memory_move_cost, bfin_secondary_reload,
+	bfin_output_mi_thunk): Likewise.
+	* config/crx/crx.c (crx_secondary_reload_class,
+	crx_memory_move_cost): Likewise.
+	* config/frv/frv-protos.h (frv_secondary_reload_class,
+	frv_class_likely_spilled_p, frv_class_max_nregs): Likewise.
+	* config/frv/frv.c (frv_override_options, frv_alloc_temp_reg,
+	frv_secondary_reload_class, frv_class_likely_spilled_p,
+	frv_class_max_nregs): Likewise.
+	* config/h8300/h8300.c (h8300_classify_operand,
+	h8300_unary_length, h8300_bitfield_length, h8300_asm_insn_count):
+	Likewise.
+	* config/i386/winnt.c (i386_pe_declare_function_type): Likewise.
+	* config/ia64/ia64.c (ia64_preferred_reload_class,
+	ia64_secondary_reload_class, ia64_output_mi_thunk): Likewise.
+	* config/iq2000/iq2000.c (gen_int_relational): Likewise.
+	* config/m32c/m32c.c (class_can_hold_mode, m32c_output_compare):
+	Likewise.
+	* config/m68hc11/m68hc11.c (preferred_reload_class,
+	m68hc11_memory_move_cost): Likewise.
+	* config/mcore/mcore.c (mcore_secondary_reload_class,
+	mcore_reload_class): Likewise.
+	* config/mips/mips.c (mips_hard_regno_mode_ok_p,
+	mips_class_max_nregs, mips_cannot_change_mode_class,
+	mips_preferred_reload_class, mips_secondary_reload_class,
+	mips_output_mi_thunk): Likewise.
+	* config/mmix/mmix.c (mmix_preferred_reload_class,
+	mmix_preferred_output_reload_class, mmix_secondary_reload_class):
+	Likewise.
+	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
+	Likewise.
+	* config/pa/pa.c (pa_secondary_reload, pa_combine_instructions,
+	pa_can_combine_p, pa_cannot_change_mode_class): Likewise.
+	* config/pa/pa.h (LEGITIMIZE_RELOAD_ADDRESS): Likewise.
+	* config/rs6000/rs6000.c (paired_expand_vector_init,
+	rs6000_secondary_reload_class, rs6000_output_mi_thunk,
+	compare_section_name, rs6000_memory_move_cost): Likewise.
+	* config/s390/s390.c (s390_emit_compare_and_swap,
+	s390_preferred_reload_class, s390_secondary_reload,
+	legitimize_pic_address, legitimize_tls_address,
+	legitimize_reload_address, s390_expand_cs_hqi, s390_expand_atomic,
+	s390_class_max_nregs): Likewise.
+	* config/s390/s390.h (LEGITIMIZE_RELOAD_ADDRESS): Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/score/score-protos.h (score_secondary_reload_class,
+	score_preferred_reload_class): Likewise.
+	* config/score/score.c (score_preferred_reload_class,
+	score_secondary_reload_class): Likewise.
+	* config/score/score3.c (score3_output_mi_thunk,
+	score3_preferred_reload_class, score3_secondary_reload_class,
+	score3_hard_regno_mode_ok): Likewise.
+	* config/score/score3.h (score3_preferred_reload_class,
+	score3_secondary_reload_class): Likewise.
+	* config/score/score7.c (score7_output_mi_thunk,
+	score7_preferred_reload_class, score7_secondary_reload_class,
+	score7_hard_regno_mode_ok): Likewise.
+	* config/score/score7.h (score7_preferred_reload_class,
+	score7_secondary_reload_class): Likewise.
+	* config/sh/sh.c (prepare_move_operands, output_far_jump,
+	output_branchy_insn, add_constant, gen_block_redirect,
+	sh_insn_length_adjustment, sh_cannot_change_mode_class,
+	sh_output_mi_thunk, replace_n_hard_rtx, sh_secondary_reload):
+	Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_output_cbranch_hi,
+	xstormy16_output_cbranch_si, xstormy16_secondary_reload_class,
+	xstormy16_preferred_reload_class): Likewise.
+	* config/xtensa/xtensa.c (xtensa_expand_compare_and_swap,
+	xtensa_expand_atomic, override_options,
+	xtensa_preferred_reload_class, xtensa_secondary_reload_class):
+	Likewise.
+	* reorg.c (try_merge_delay_insns): Likewise.
+	* tree.c (merge_dllimport_decl_attributes): Likewise.
+
+	* config/frv/frv.c (frv_print_operand): Change isalpha to ISALPHA.
+
 2008-08-06  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (write_entries_to_file): Quote words.

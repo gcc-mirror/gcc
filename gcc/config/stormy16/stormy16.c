@@ -283,7 +283,7 @@ xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed, rtx insn)
 			 : get_attr_length (insn) == 4);
   int really_reversed = reversed ^ need_longbranch;
   const char *ccode;
-  const char *template;
+  const char *templ;
   const char *operands;
   enum rtx_code code;
   
@@ -329,10 +329,10 @@ xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed, rtx insn)
     }
 
   if (need_longbranch)
-    template = "b%s %s,.+8 | jmpf %s";
+    templ = "b%s %s,.+8 | jmpf %s";
   else
-    template = "b%s %s,%s";
-  sprintf (string, template, ccode, operands, label);
+    templ = "b%s %s,%s";
+  sprintf (string, templ, ccode, operands, label);
   
   return string;
 }
@@ -354,7 +354,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
   int need_longbranch = get_attr_length (insn) >= 8;
   int really_reversed = reversed ^ need_longbranch;
   const char *ccode;
-  const char *template;
+  const char *templ;
   char prevop[16];
   enum rtx_code code;
   
@@ -400,10 +400,10 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
     }
 
   if (need_longbranch)
-    template = "%s | b%s .+6 | jmpf %s";
+    templ = "%s | b%s .+6 | jmpf %s";
   else
-    template = "%s | b%s %s";
-  sprintf (string, template, prevop, ccode, label);
+    templ = "%s | b%s %s";
+  sprintf (string, templ, prevop, ccode, label);
   
   return string;
 }
@@ -420,11 +420,11 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
    You should define these macros to indicate to the reload phase that it may
    need to allocate at least one register for a reload in addition to the
    register to contain the data.  Specifically, if copying X to a register
-   CLASS in MODE requires an intermediate register, you should define
+   RCLASS in MODE requires an intermediate register, you should define
    `SECONDARY_INPUT_RELOAD_CLASS' to return the largest register class all of
    whose registers can be used as intermediate registers or scratch registers.
 
-   If copying a register CLASS in MODE to X requires an intermediate or scratch
+   If copying a register RCLASS in MODE to X requires an intermediate or scratch
    register, `SECONDARY_OUTPUT_RELOAD_CLASS' should be defined to return the
    largest register class required.  If the requirements for input and output
    reloads are the same, the macro `SECONDARY_RELOAD_CLASS' should be used
@@ -432,7 +432,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
 
    The values returned by these macros are often `GENERAL_REGS'.  Return
    `NO_REGS' if no spare register is needed; i.e., if X can be directly copied
-   to or from a register of CLASS in MODE without requiring a scratch register.
+   to or from a register of RCLASS in MODE without requiring a scratch register.
    Do not define this macro if it would always return `NO_REGS'.
 
    If a scratch register is required (either with or without an intermediate
@@ -443,7 +443,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
 
    Define constraints for the reload register and scratch register that contain
    a single register class.  If the original reload register (whose class is
-   CLASS) can meet the constraint given in the pattern, the value returned by
+   RCLASS) can meet the constraint given in the pattern, the value returned by
    these macros is used for the class of the scratch register.  Otherwise, two
    additional reload registers are required.  Their classes are obtained from
    the constraints in the insn pattern.
@@ -461,7 +461,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
    This case often occurs between floating-point and general registers.  */
 
 enum reg_class
-xstormy16_secondary_reload_class (enum reg_class class,
+xstormy16_secondary_reload_class (enum reg_class rclass,
 				  enum machine_mode mode,
 				  rtx x)
 {
@@ -471,7 +471,7 @@ xstormy16_secondary_reload_class (enum reg_class class,
        || ((GET_CODE (x) == SUBREG || GET_CODE (x) == REG)
 	   && (true_regnum (x) == -1
 	       || true_regnum (x) >= FIRST_PSEUDO_REGISTER)))
-      && ! reg_class_subset_p (class, EIGHT_REGS))
+      && ! reg_class_subset_p (rclass, EIGHT_REGS))
     return EIGHT_REGS;
 
   /* When reloading a PLUS, the carry register will be required
@@ -483,13 +483,13 @@ xstormy16_secondary_reload_class (enum reg_class class,
 }
 
 enum reg_class
-xstormy16_preferred_reload_class (rtx x, enum reg_class class)
+xstormy16_preferred_reload_class (rtx x, enum reg_class rclass)
 {
-  if (class == GENERAL_REGS
+  if (rclass == GENERAL_REGS
       && GET_CODE (x) == MEM)
     return EIGHT_REGS;
 
-  return class;
+  return rclass;
 }
 
 /* Predicate for symbols and addresses that reflect special 8-bit
