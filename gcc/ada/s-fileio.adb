@@ -33,10 +33,13 @@
 
 with Ada.Finalization;            use Ada.Finalization;
 with Ada.IO_Exceptions;           use Ada.IO_Exceptions;
+with Interfaces.C;
 with Interfaces.C_Streams;        use Interfaces.C_Streams;
 
 with System.CRTL;
 with System.Case_Util;            use System.Case_Util;
+with System.OS_Constants;
+with System.OS_Lib;
 with System.Soft_Links;
 
 with Ada.Unchecked_Deallocation;
@@ -47,6 +50,7 @@ package body System.File_IO is
 
    package SSL renames System.Soft_Links;
 
+   use type Interfaces.C.int;
    use type System.CRTL.size_t;
 
    ----------------------
@@ -984,7 +988,11 @@ package body System.File_IO is
             Stream := fopen (Namestr'Address, Fopstr'Address, Encoding);
 
             if Stream = NULL_Stream then
-               if not Tempfile and then file_exists (Namestr'Address) = 0 then
+               --  Raise Name_Error if trying to open a non-existent file.
+               --  Otherwise raise Use_Error. Should we raise Device_Error for
+               --  ENOSPC???
+
+               if System.OS_Lib.Errno = System.OS_Constants.ENOENT then
                   raise Name_Error;
                else
                   raise Use_Error;
