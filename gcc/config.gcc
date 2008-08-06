@@ -2348,11 +2348,11 @@ xstormy16-*-elf)
 	tmake_file="stormy16/t-stormy16"
 	extra_parts="crtbegin.o crtend.o"
 	;;
-xtensa-*-elf*)
+xtensa*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h xtensa/elf.h"
 	tmake_file="xtensa/t-xtensa xtensa/t-elf"
 	;;
-xtensa-*-linux*)
+xtensa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa xtensa/t-linux"
 	;;

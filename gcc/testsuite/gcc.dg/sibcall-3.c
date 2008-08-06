@@ -5,7 +5,7 @@
    Copyright (C) 2002 Free Software Foundation Inc.
    Contributed by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
-/* { dg-do run { xfail arc-*-* avr-*-* cris-*-* crisv32-*-* h8300-*-* hppa*64*-*-* m32r-*-* m68hc1?-*-* mcore-*-* mn10300-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa-*-* } } */
+/* { dg-do run { xfail arc-*-* avr-*-* cris-*-* crisv32-*-* h8300-*-* hppa*64*-*-* m32r-*-* m68hc1?-*-* mcore-*-* mn10300-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } } */
 /* -mlongcall disables sibcall patterns.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */

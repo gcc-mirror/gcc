@@ -1,3 +1,10 @@
+2008-08-06  Marc Gauthier  <marc@tensilica.com>
+
+	* config.gcc: Match more processor names for Xtensa.
+	* configure.ac: Likewise.
+	* doc/install.texi (Specific): Likewise.
+	* configure: Regenerate.
+
 2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_profile_func): Avoid C++ keywords.
