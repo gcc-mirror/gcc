@@ -832,7 +832,10 @@ package body Sem_Ch8 is
       if Nkind (Nam) = N_Explicit_Dereference
         and then Ekind (Etype (T2)) = E_Incomplete_Type
       then
-         Error_Msg_N ("invalid use of incomplete type", Id);
+         Error_Msg_NE ("invalid use of incomplete type&", Id, T2);
+         return;
+      elsif Ekind (Etype (T)) = E_Incomplete_Type then
+         Error_Msg_NE ("invalid use of incomplete type&", Id, T);
          return;
       end if;
 
