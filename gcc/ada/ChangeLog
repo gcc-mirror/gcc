@@ -1,5 +1,16 @@
 2008-08-06  Doug Rupp  <rupp@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_param): Force 32bit descriptor if
+	TARGET_MALLOC64 clear.
+
+	* gcc-interface/utils2.c (build_call_alloc_dealloc): Force 32bit malloc
+	if TARGET_MALLOC64 clear.
+
+	* gcc-interface/gigi.h (TARGET_ABI_OPEN_VMS): Move here from utils2.c
+	(TARGET_MALLC64): New macro. Default to clear.
+
+2008-08-06  Doug Rupp  <rupp@adacore.com>
+
 	* gcc-interface/utils2.c (snames.h) Include
 	(TARGET_ABI_OPEN_VMS): Initialize.
 	(build_call_alloc_dealloc); [TARGET_ABI_OPEN_VMS] Allocate on 32bit heap

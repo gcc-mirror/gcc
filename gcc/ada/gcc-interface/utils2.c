@@ -47,12 +47,6 @@
 #include "gigi.h"
 #include "snames.h"
 
-/* Let code below know whether we are targetting VMS without need of
-   intrusive preprocessor directives.  */
-#ifndef TARGET_ABI_OPEN_VMS
-#define TARGET_ABI_OPEN_VMS 0
-#endif
-
 static tree find_common_type (tree, tree);
 static bool contains_save_expr_p (tree);
 static tree contains_null_expr (tree);
@@ -1957,9 +1951,11 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
       /* If the allocator size is 32bits but the pointer size is 64bits then
 	 allocate 32bit memory (sometimes necessary on 64bit VMS). Otherwise
 	 default to standard malloc. */
-      if (TARGET_ABI_OPEN_VMS && POINTER_SIZE == 64
-	  && (UI_To_Int (Esize (Etype (gnat_node))) == 32
-	      || Convention (Etype (gnat_node)) == Convention_C))
+      if (TARGET_ABI_OPEN_VMS &&
+          (!TARGET_MALLOC64 ||
+           (POINTER_SIZE == 64
+	    && (UI_To_Int (Esize (Etype (gnat_node))) == 32
+	        || Convention (Etype (gnat_node)) == Convention_C))))
         return build_call_1_expr (malloc32_decl, gnu_size);
       else
         return build_call_1_expr (malloc_decl, gnu_size);
