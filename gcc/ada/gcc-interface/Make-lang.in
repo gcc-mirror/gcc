@@ -309,17 +309,6 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
 gnat-cross: force
 	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp" \
 		$(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) HOST_CFLAGS= HOST_CC=cc
-
-gen-soccon: force
-	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
-	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
-	   LIBGNAT_OBJS=gen-soccon \
-	   gnatlib
-
 
 # Build hooks:
 
@@ -951,17 +940,17 @@ OSCONS_CPP=../../../xgcc -B../../../ -E -C \
 OSCONS_EXTRACT=../../../xgcc -S -B../../../ s-oscons-tmplt.i
 endif
 
-ada/s-oscons.ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
+ada/s-oscons-$(THREAD_KIND).ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/oscons
 	$(RM) $(addprefix ada/bldtools/oscons/,$(notdir $^))
 	$(CP) $^ ada/bldtools/oscons
-	(cd ada/bldtools/oscons; gnatmake -q xoscons ; \
+	(cd ada/bldtools/oscons ; gnatmake -q xoscons ; \
 		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
 		$(OSCONS_CPP) ; \
 		$(OSCONS_EXTRACT) ; \
 		./xoscons ; \
-		$(RM) ../../s-oscons.ads ; \
-		$(CP) s-oscons.ads ../../s-oscons.ads)
+		$(RM) ../../s-oscons-$(THREAD_KIND).ads ; \
+		$(CP) s-oscons.ads ../../s-oscons-$(THREAD_KIND).ads)
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
