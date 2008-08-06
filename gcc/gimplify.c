@@ -4217,7 +4217,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      side as statements and throw away the assignment.  Do this after
      gimplify_modify_expr_rhs so we handle TARGET_EXPRs of addressable
      types properly.  */
-  if (zero_sized_type (TREE_TYPE (*from_p)))
+  if (zero_sized_type (TREE_TYPE (*from_p)) && !want_value)
     {
       gimplify_stmt (from_p, pre_p);
       gimplify_stmt (to_p, pre_p);
