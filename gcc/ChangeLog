@@ -3,6 +3,18 @@
 	Backport from mainline:
 	2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	PR target/35659
+	* haifa-sched.c (sched_insn_is_legitimate_for_speculation_p): Move ...
+	* sched-deps.c (sched_insn_is_legitimate_for_speculation_p): ... here.
+	Don't allow predicated instructions for data speculation.
+	* sched-int.h (sched_insn_is_legitimate_for_speculation_p): Move
+	declaration.
+
+2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Backport from mainline:
+	2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* haifa-sched.c (extend_global): Split to extend_global_data and
 	extend_region_data.  Update all uses.
 	(extend_all): Rename to extend_block_data.

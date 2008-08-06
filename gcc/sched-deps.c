@@ -536,6 +536,46 @@ sched_insns_conditions_mutex_p (const_rtx insn1, const_rtx insn2)
 }
 
 
+/* Return true if INSN can potentially be speculated with type DS.  */
+bool
+sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
+{
+  if (HAS_INTERNAL_DEP (insn))
+    return false;
+
+  if (!NONJUMP_INSN_P (insn))
+    return false;
+
+  if (SCHED_GROUP_P (insn))
+    return false;
+
+  if (IS_SPECULATION_CHECK_P (insn))
+    return false;
+
+  if (side_effects_p (PATTERN (insn)))
+    return false;
+
+  if (ds & BE_IN_SPEC)
+    /* The following instructions, which depend on a speculatively scheduled
+       instruction, cannot be speculatively scheduled along.  */
+    {
+      if (may_trap_p (PATTERN (insn)))
+	/* If instruction might trap, it cannot be speculatively scheduled.
+	   For control speculation it's obvious why and for data speculation
+	   it's because the insn might get wrong input if speculation
+	   wasn't successful.  */
+	return false;
+
+      if ((ds & BE_IN_DATA)
+	  && sched_get_condition (insn) != NULL_RTX)
+	/* If this is a predicated instruction, then it cannot be
+	   speculatively scheduled.  See PR35659.  */
+	return false;
+    }
+
+  return true;
+}
+
 /* Initialize LIST_PTR to point to one of the lists present in TYPES_PTR,
    initialize RESOLVED_P_PTR with true if that list consists of resolved deps,
    and remove the type of returned [through LIST_PTR] list from TYPES_PTR.

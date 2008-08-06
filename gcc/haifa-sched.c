@@ -4022,32 +4022,6 @@ change_pattern (rtx insn, rtx new_pat)
   dfa_clear_single_insn_cache (insn);
 }
 
-/* Return true if INSN can potentially be speculated with type DS.  */
-bool
-sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
-{
-  if (HAS_INTERNAL_DEP (insn))
-    return false;
-
-  if (!NONJUMP_INSN_P (insn))
-    return false;
-
-  if (SCHED_GROUP_P (insn))
-    return false;
-
-  if (IS_SPECULATION_CHECK_P (insn))
-    return false;
-
-  if (side_effects_p (PATTERN (insn)))
-    return false;
-
-  if ((ds & BE_IN_SPEC)
-      && may_trap_p (PATTERN (insn)))
-    return false;
-
-  return true;
-}
-
 /* -1 - can't speculate,
    0 - for speculation with REQUEST mode it is OK to use
    current instruction pattern,
