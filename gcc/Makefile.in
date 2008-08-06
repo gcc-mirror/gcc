@@ -259,8 +259,8 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 	$(foreach range, \
 	  $(shell i=1; while test $$i -le $(words $(1)); do \
 	     echo $$i; i=`expr $$i + $(write_entries_to_file_split)`; done), \
-	  $(shell echo $(wordlist $(range), \
-			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1)) \
+	  $(shell echo "$(wordlist $(range), \
+			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1))" \
 	     | tr ' ' '\n' >> $(2)))
 
 # --------

@@ -1,3 +1,8 @@
+2008-08-06  Michael Matz  <matz@suse.de>
+
+	* Makefile.in (write_entries_to_file): Quote words.
+	* gengtype.c: (read_input_line): Skip over leading white-space.
+
 2008-08-06  Marc Gauthier  <marc@tensilica.com>
 
 	* config.gcc: Match more processor names for Xtensa.
