@@ -52,6 +52,8 @@ with Ada.Exceptions;
 with Ada.Streams;
 with Ada.Unchecked_Deallocation;
 
+with System.OS_Constants;
+
 package GNAT.Sockets is
 
    --  Sockets are designed to provide a consistent communication facility
@@ -367,6 +369,12 @@ package GNAT.Sockets is
    --     Finalize;
    --  end PingPong;
 
+   package Constants renames System.OS_Constants;
+   --  Renaming used to provide short-hand notations thoughout the sockets
+   --  binding. Note that System.OS_Constants is an internal unit, and the
+   --  entities declared therein are not meant for direct access by users,
+   --  including through this renaming.
+
    procedure Initialize;
    --  Initialize must be called before using any other socket routines.
    --  Note that this operation is a no-op on UNIX platforms, but applications
@@ -404,9 +412,12 @@ package GNAT.Sockets is
    --  structure. Moreover, negative values are not allowed to avoid system
    --  incompatibilities.
 
-   Immediate : constant := 0.0;
-   Forever   : constant := Duration (Integer'Last) * 1.0;
-   --  Should be Duration 2 ** (Constants.SIZEOF_tv_sec * 8 - 1) - 1 ???
+   Immediate : constant Duration := 0.0;
+
+   Timeval_Forever : constant :=
+                       2.0 ** (Constants.SIZEOF_tv_sec * 8 - 1) - 1.0;
+   Forever   : constant Duration :=
+                 Duration'Min (Duration'Last, Timeval_Forever);
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
 

@@ -1,3 +1,31 @@
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Protect against misuse
+	of incomplete type.
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Diagnose properly a renaming
+	of a formal parameter of an incomplete type. Improve error message for
+	other improper uses of incomplete types.
+
+2008-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Clarify -gnato documentation
+
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/Makefile.in,
+	g-socthi-vxworks.adb, g-socthi-mingw.adb, g-sttsne-vxworks.adb,
+	g-socthi.adb, g-socket.adb, g-socket.ads, g-sothco.ads,
+	g-soccon-linux-x86.ads, g-soccon-vxworks.ads, g-soccon-mingw.ads,
+	g-soccon-hpux-ia64.ads, g-soccon-irix.ads, g-soccon-linux-64.ads,
+	g-soccon-aix.ads, g-soccon-solaris.ads, g-soccon-lynxos.ads,
+	g-soccon-vms.ads, g-soccon.ads, g-soccon-freebsd.ads,
+	g-soccon-linux-ppc.ads, g-soccon-tru64.ads, g-soccon-hpux.ads,
+	g-soccon-solaris-64.ads, gen-oscons.c, g-soccon-darwin.ads,
+	g-soccon-mingw-64.ads, g-soccon-linux-mips.ads, g-soccon-rtems.ads:
+	Remove GNAT.Sockets.Constants. This internal package is replaced by
+	System.OS_Constants.
+
 2008-08-06  Thomas Quinot  <quinot@adacore.com>
 
 	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in:

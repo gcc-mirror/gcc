@@ -36,7 +36,6 @@
 
 with Ada.Unchecked_Conversion;
 with Interfaces.C; use Interfaces.C;
-with GNAT.Sockets.Constants;
 
 package body GNAT.Sockets.Thin.Task_Safe_NetDB is
 

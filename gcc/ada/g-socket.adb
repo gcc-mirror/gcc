@@ -37,7 +37,6 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C.Strings;
 
-with GNAT.Sockets.Constants;
 with GNAT.Sockets.Thin_Common;          use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;                 use GNAT.Sockets.Thin;
 with GNAT.Sockets.Thin.Task_Safe_NetDB; use GNAT.Sockets.Thin.Task_Safe_NetDB;

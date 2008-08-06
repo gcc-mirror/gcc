@@ -34,7 +34,6 @@
 --  Temporary version for Alpha/VMS
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
-with GNAT.Sockets.Constants;
 with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;

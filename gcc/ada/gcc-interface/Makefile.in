@@ -368,7 +368,7 @@ PREFIX_REAL_OBJS = ../prefix.o \
 # sockets, reset this variable to empty and add DUMMY_SOCKETS_TARGET_PAIRS 
 # to LIBGNAT_TARGET_PAIRS.
 
-GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
+GNATRTL_SOCKETS_OBJS = g-socket$(objext) g-socthi$(objext) \
   g-soliop$(objext) g-sothco$(objext) g-sttsne$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
@@ -405,7 +405,6 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-m68k.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -446,7 +445,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-vxwork.ads<s-vxwork-ppc.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -519,7 +517,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-ppc.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -568,7 +565,6 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-sparcv9.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -603,7 +599,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-vxwork.ads<s-vxwork-x86.ads \
   g-bytswa.adb<g-bytswa-x86.adb \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -673,7 +668,6 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-arm.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -709,7 +703,6 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-mips.ads \
-  g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -739,7 +732,6 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-soccon.ads<g-soccon-solaris.ads \
   g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-sparc.ads
 
@@ -755,7 +747,6 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-soccon.ads<g-soccon-solaris-64.ads \
   g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-sparcv9.ads
 
@@ -787,7 +778,6 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
     s-taprop.adb<s-taprop-posix.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    g-soccon.ads<g-soccon-solaris.ads \
     g-soliop.ads<g-soliop-solaris.ads \
     system.ads<system-solaris-sparc.ads
 
@@ -815,7 +805,6 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
   g-bytswa.adb<g-bytswa-x86.adb \
-  g-soccon.ads<g-soccon-solaris.ads \
   g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-x86.ads
 
@@ -853,7 +842,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     a-extiti.ads<a-extiti-linux-marte.ads \
     a-rttiev.adb<a-rttiev-linux-marte.adb \
     a-rttiev.ads<a-rttiev-linux-marte.ads \
-    g-soccon.ads<g-soccon-linux-x86-marte.ads \
     s-osinte.adb<s-osinte-linux-marte.adb \
     s-osinte.ads<s-osinte-linux-marte.ads \
     s-taprop.adb<s-taprop-linux-marte.adb
@@ -864,7 +852,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     THREADSLIB = -lmarte
   else
     LIBGNAT_TARGET_PAIRS += \
-    g-soccon.ads<g-soccon-linux-x86.ads \
     s-linux.ads<s-linux.ads \
     s-osinte.adb<s-osinte-posix.adb
 
@@ -905,7 +892,6 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   a-numaux.ads<a-numaux-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  g-soccon.ads<g-soccon-freebsd.ads \
   s-osinte.adb<s-osinte-posix.adb \
   s-osinte.ads<s-osinte-kfreebsd-gnu.ads \
   s-osprim.adb<s-osprim-posix.adb \
@@ -934,7 +920,6 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
   g-bytswa.adb<g-bytswa-x86.adb \
-  g-soccon.ads<g-soccon-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-osinte.adb<s-osinte-freebsd.adb \
@@ -1017,7 +1002,6 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix.adb \
     s-traceb.adb<s-traceb-mastop.adb \
-    g-soccon.ads<g-soccon-irix.ads \
     system.ads<system-irix-n32.ads
 
     THREADSLIB = -lpthread
@@ -1028,7 +1012,6 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
     s-mastop.adb<s-mastop-irix.adb \
     s-osprim.adb<s-osprim-posix.adb \
     s-traceb.adb<s-traceb-mastop.adb \
-    g-soccon.ads<g-soccon-irix.ads \
     system.ads<system-irix-o32.ads
   endif
 
@@ -1055,7 +1038,6 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
   s-taprop.adb<s-taprop-hpux-dce.adb \
   s-taspri.ads<s-taspri-hpux-dce.ads \
   s-tpopsp.adb<s-tpopsp-posix.adb \
-  g-soccon.ads<g-soccon-hpux.ads \
   system.ads<system-hpux.ads
 
   EH_MECHANISM=-gcc
@@ -1075,7 +1057,6 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  g-soccon.ads<g-soccon-hpux.ads \
   system.ads<system-hpux.ads
 
   TOOLS_TARGET_PAIRS = mlib-tgt-specific.adb<mlib-tgt-specific-hpux.adb
@@ -1101,7 +1082,6 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix.adb \
-  g-soccon.ads<g-soccon-aix.ads \
   system.ads<system-aix.ads
 
   THREADSLIB = -lpthreads
@@ -1125,7 +1105,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
     a-numaux.ads<a-numaux-x86.ads \
     a-intnam.ads<a-intnam-lynxos.ads \
     g-bytswa.adb<g-bytswa-x86.adb \
-    g-soccon.ads<g-soccon-lynxos.ads \
     g-sttsne.adb<g-sttsne-locking.adb \
     g-sttsne.ads<g-sttsne-locking.ads \
     s-inmaop.adb<s-inmaop-posix.adb \
@@ -1143,7 +1122,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
   else
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-lynxos.ads \
-    g-soccon.ads<g-soccon-lynxos.ads \
     g-sttsne.adb<g-sttsne-locking.adb \
     g-sttsne.ads<g-sttsne-locking.ads \
     s-inmaop.adb<s-inmaop-posix.adb \
@@ -1171,7 +1149,6 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-rtems.adb \
-  g-soccon.ads<g-soccon-rtems.ads \
   s-stchop.adb<s-stchop-rtems.adb
 endif
 
@@ -1189,7 +1166,6 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   s-taspri.ads<s-taspri-tru64.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-traceb.adb<s-traceb-mastop.adb \
-  g-soccon.ads<g-soccon-tru64.ads \
   system.ads<system-tru64.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-tru64.adb
@@ -1260,7 +1236,6 @@ endif
   a-intnam.ads<a-intnam-vms.ads \
   a-numaux.ads<a-numaux-vms.ads \
   g-expect.adb<g-expect-vms.adb \
-  g-soccon.ads<g-soccon-vms.ads \
   g-socthi.ads<g-socthi-vms.ads \
   g-socthi.adb<g-socthi-vms.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
@@ -1349,7 +1324,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
 
   ifeq ($(strip $(filter-out rtx_w32 rtx_rtss,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
-    g-soccon.ads<g-soccon-mingw.ads \
     s-intman.adb<s-intman-dummy.adb \
     s-osinte.ads<s-osinte-rtx.ads \
     s-osprim.adb<s-osprim-rtx.adb \
@@ -1383,11 +1357,9 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
 
     ifeq ($(strip $(filter-out x86_64%,$(arch))),)
       LIBGNAT_TARGET_PAIRS += \
-        g-soccon.ads<g-soccon-mingw-64.ads \
         system.ads<system-mingw-x86_64.ads
     else
       LIBGNAT_TARGET_PAIRS += \
-        g-soccon.ads<g-soccon-mingw.ads \
         system.ads<system-mingw.ads
     endif
 
@@ -1418,7 +1390,6 @@ endif
 ifeq ($(strip $(filter-out mips linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
-  g-soccon.ads<g-soccon-linux-mips.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
@@ -1443,7 +1414,6 @@ endif
 ifeq ($(strip $(filter-out mipsel linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
-  g-soccon.ads<g-soccon-linux-mips.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
@@ -1468,7 +1438,6 @@ endif
 ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
-  g-soccon.ads<g-soccon-linux-ppc.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
@@ -1588,7 +1557,6 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   a-numaux.ads<a-numaux-libc-x86.ads \
-  g-soccon.ads<g-soccon-linux-64.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
@@ -1651,7 +1619,6 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-linux.ads \
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
-  g-soccon.ads<g-soccon-linux-64.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
@@ -1691,7 +1658,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-taprop.adb<s-taprop-posix.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    g-soccon.ads<g-soccon-darwin.ads \
     a-numaux.ads<a-numaux-x86.ads \
     a-numaux.adb<a-numaux-x86.adb \
     system.ads<system-darwin-x86.ads
@@ -1706,7 +1672,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-taprop.adb<s-taprop-posix.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    g-soccon.ads<g-soccon-darwin.ads \
     a-numaux.ads<a-numaux-darwin.ads \
     a-numaux.adb<a-numaux-darwin.adb \
     system.ads<system-darwin-ppc.ads
