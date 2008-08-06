@@ -1920,7 +1920,10 @@ __gnat_set_non_writable (char *name)
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_WRITE);
+  __gnat_set_OWNER_ACL
+    (wname, DENY_ACCESS,
+     FILE_WRITE_DATA | FILE_APPEND_DATA |
+     FILE_WRITE_PROPERTIES | FILE_WRITE_ATTRIBUTES);
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
