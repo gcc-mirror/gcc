@@ -1,5 +1,10 @@
 2008-08-06  Samuel Tardieu  <sam@rfc1149.net>
 
+	* gcc-interface/Make-lang.in: Use GCC_FOR_TARGET when dealing
+	with s-oscons-tmplt.i.
+
+2008-08-06  Samuel Tardieu  <sam@rfc1149.net>
+
 	* gcc-interface/Make-lang.in (OSCONS_CPPFLAGS): Remove.
 
 2008-08-06  Ed Schonberg  <schonberg@adacore.com>
