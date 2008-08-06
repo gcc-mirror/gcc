@@ -1,3 +1,8 @@
+2008-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (maybe_hot_frequency_p): When profile is absent, all
+	frequencies might be hot.
+
 2008-08-06  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* reload.c (find_reloads): Force constants into literal pool

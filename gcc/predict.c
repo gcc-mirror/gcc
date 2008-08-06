@@ -118,6 +118,8 @@ maybe_hot_frequency_p (int freq)
       if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
         return true;
     }
+  if (profile_status == PROFILE_ABSENT)
+    return true;
   if (freq < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return false;
   return true;
