@@ -364,6 +364,22 @@ PREFIX_REAL_OBJS = ../prefix.o \
   ../../libiberty/xstrdup.o    \
   ../../libiberty/xexit.o
 
+# By default, build socket support units. On platforms that do not support
+# sockets, reset this variable to empty and add DUMMY_SOCKETS_TARGET_PAIRS 
+# to LIBGNAT_TARGET_PAIRS.
+
+GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
+  g-soliop$(objext) g-sothco$(objext) g-sttsne$(objext)
+
+DUMMY_SOCKETS_TARGET_PAIRS = \
+  g-socket.adb<g-socket-dummy.adb \
+  g-socket.ads<g-socket-dummy.ads \
+  g-socthi.adb<g-socthi-dummy.adb \
+  g-socthi.ads<g-socthi-dummy.ads \
+  g-sothco.adb<g-sothco-dummy.adb \
+  g-sothco.ads<g-sothco-dummy.ads \
+  g-sttsne.ads<g-sttsne-dummy.ads
+
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
 
 # $(filter-out PATTERN...,TEXT) removes all PATTERN words from TEXT.
