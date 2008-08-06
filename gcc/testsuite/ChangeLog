@@ -1,3 +1,10 @@
+2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Backport from mainline:
+	2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.target/ia64/20080802-1.c: New test.
+
 2008-08-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37026

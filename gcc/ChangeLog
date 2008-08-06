@@ -3,6 +3,15 @@
 	Backport from mainline:
 	2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* haifa-sched.c (extend_global): Split to extend_global_data and
+	extend_region_data.  Update all uses.
+	(extend_all): Rename to extend_block_data.
+
+2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Backport from mainline:
+	2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* sched-rgn.c (new_ready): Check if instruction can be
 	speculatively scheduled before attempting speculation.
 	(debug_rgn_dependencies): Remove wrongful assert.	

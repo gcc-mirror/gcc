@@ -543,8 +543,6 @@ static void change_queue_index (rtx, int);
 
 static void extend_h_i_d (void);
 static void extend_ready (int);
-static void extend_global (rtx);
-static void extend_all (rtx);
 static void init_h_i_d (rtx);
 static void generate_recovery_code (rtx);
 static void process_insn_forw_deps_be_in_spec (rtx, rtx, ds_t);
@@ -3187,36 +3185,45 @@ extend_ready (int n_new_insns)
     choice_stack[i].state = xmalloc (dfa_state_size);
 }
 
-/* Extend global scheduler structures (those, that live across calls to
-   schedule_block) to include information about just emitted INSN.  */
+/* Extend global-scope scheduler data structures
+   (those, that live within one call to schedule_insns)
+   to include information about just emitted INSN.  */
 static void
-extend_global (rtx insn)
+extend_global_data (rtx insn)
 {
   gcc_assert (INSN_P (insn));
-
-  /* These structures have scheduler scope.  */
 
   /* Init h_i_d.  */
   extend_h_i_d ();
   init_h_i_d (insn);
 
-  /* Init data handled in sched-deps.c.  */
-  sd_init_insn (insn);
-
   /* Extend dependency caches by one element.  */
   extend_dependency_caches (1, false);
 }
 
-/* Extends global and local scheduler structures to include information
-   about just emitted INSN.  */
+/* Extend global- and region-scope scheduler data structures
+   (those, that live within one call to schedule_region)
+   to include information about just emitted INSN.  */
 static void
-extend_all (rtx insn)
-{ 
-  extend_global (insn);
+extend_region_data (rtx insn)
+{
+  extend_global_data (insn);
+
+  /* Init dependency data.  */
+  sd_init_insn (insn);
+}
+
+/* Extend global-, region- and block-scope scheduler data structures
+   (those, that live within one call to schedule_block)
+   to include information about just emitted INSN.  */
+static void
+extend_block_data (rtx insn)
+{
+  extend_region_data (insn);
 
   /* These structures have block scope.  */
   extend_ready (1);
-  
+
   (*current_sched_info->add_remove_insn) (insn, 0);
 }
 
@@ -3390,7 +3397,7 @@ add_to_speculative_block (rtx insn)
       rec = BLOCK_FOR_INSN (check);
 
       twin = emit_insn_before (copy_insn (PATTERN (insn)), BB_END (rec));
-      extend_global (twin);
+      extend_region_data (twin);
 
       sd_copy_back_deps (twin, insn, true);
 
@@ -3580,7 +3587,7 @@ init_before_recovery (void)
       x = emit_jump_insn_after (gen_jump (label), BB_END (single));
       JUMP_LABEL (x) = label;
       LABEL_NUSES (label)++;
-      extend_global (x);
+      extend_global_data (x);
           
       emit_barrier_after (x);
 
@@ -3680,7 +3687,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
     check = emit_insn_before (check, insn);
 
   /* Extend data structures.  */
-  extend_all (check);
+  extend_block_data (check);
   RECOVERY_BLOCK (check) = rec;
 
   if (sched_verbose && spec_info->dump)
@@ -3707,7 +3714,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 	  }
 
       twin = emit_insn_after (ORIG_PAT (insn), BB_END (rec));
-      extend_global (twin);
+      extend_region_data (twin);
 
       if (sched_verbose && spec_info->dump)
 	/* INSN_BB (insn) isn't determined for twin insns yet.
@@ -3760,7 +3767,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
       jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
-      extend_global (jump);
+      extend_region_data (jump);
 
       if (BB_PARTITION (second_bb) != BB_PARTITION (rec))
 	/* Partition type is the same, if it is "unpartitioned".  */
