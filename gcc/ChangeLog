@@ -1,3 +1,9 @@
+2008-08-06  Michael Matz  <matz@suse.de>
+
+	PR target/36613
+	* reload.c (push_reload): Merge in,out,in_reg,out_reg members
+	for reused reload, instead of overwriting them.
+
 2008-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37009

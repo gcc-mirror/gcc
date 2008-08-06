@@ -1,3 +1,8 @@
+2008-08-06  Michael Matz  <matz@suse.de>
+
+	PR target/36613
+	* gcc.target/i386/pr36613.c: New testcase.
+
 2008-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37009
