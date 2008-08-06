@@ -773,6 +773,11 @@ package body Exp_Disp is
          Iface_Typ := Corresponding_Record_Type (Iface_Typ);
       end if;
 
+      --  Freeze the entity associated with the target interface to have
+      --  available the attribute Access_Disp_Table.
+
+      Freeze_Before (N, Iface_Typ);
+
       pragma Assert (not Is_Static
         or else (not Is_Class_Wide_Type (Iface_Typ)
                   and then Is_Interface (Iface_Typ)));
