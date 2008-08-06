@@ -580,6 +580,10 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   int i;
   int inside_cost = 0, outside_cost = 0;
 
+  /* The SLP costs were already calculated during SLP tree build.  */
+  if (PURE_SLP_STMT (stmt_info))
+    return;
+
   inside_cost = ncopies * TARG_VEC_STMT_COST;
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
@@ -629,11 +633,15 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   int group_size;
   int inside_cost = 0, outside_cost = 0;
 
+  /* The SLP costs were already calculated during SLP tree build.  */
+  if (PURE_SLP_STMT (stmt_info))
+    return;
+
   if (dt == vect_constant_def || dt == vect_invariant_def)
     outside_cost = TARG_SCALAR_TO_VEC_COST;
 
   /* Strided access?  */
-  if (DR_GROUP_FIRST_DR (stmt_info)) 
+  if (DR_GROUP_FIRST_DR (stmt_info) && !slp_node) 
     group_size = vect_cost_strided_group_size (stmt_info);
   /* Not a strided access.  */
   else
@@ -682,6 +690,10 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
   gimple first_stmt;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
   int inside_cost = 0, outside_cost = 0;
+
+  /* The SLP costs were already calculated during SLP tree build.  */
+  if (PURE_SLP_STMT (stmt_info))
+    return;
 
   /* Strided accesses?  */
   first_stmt = DR_GROUP_FIRST_DR (stmt_info);
@@ -4865,8 +4877,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
-      if (!PURE_SLP_STMT (stmt_info))
-	vect_model_store_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_store_cost (stmt_info, ncopies, dt, NULL);
       return true;
     }
 

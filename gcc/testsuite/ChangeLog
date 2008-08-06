@@ -1,3 +1,7 @@
+2008-08-06  Victor Kaplansky  <victork@il.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: New test.
+
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 8715
