@@ -4701,10 +4701,10 @@ package body Sem_Res is
          and then Nkind (Subp) /= N_Explicit_Dereference
          and then Present (Parameter_Associations (N))
       then
-         --  The prefix is a parameterless function call that returns an
-         --  access to subprogram. If parameters are present in the current
-         --  call  add an explicit dereference. We use the base type here
-         --  because within an instance these may be subtypes.
+         --  The prefix is a parameterless function call that returns an access
+         --  to subprogram. If parameters are present in the current call, add
+         --  add an explicit dereference. We use the base type here because
+         --  within an instance these may be subtypes.
 
          --  The dereference is added either in Analyze_Call or here. Should
          --  be consolidated ???
@@ -4769,8 +4769,8 @@ package body Sem_Res is
             Error_Msg_N ("entry call required in select statement", N);
 
          --  Ada 2005 (AI-345): If a procedure_call_statement is used
-         --  for a procedure_or_entry_call, the procedure_name or pro-
-         --  cedure_prefix of the procedure_call_statement shall denote
+         --  for a procedure_or_entry_call, the procedure_name or
+         --  procedure_prefix of the procedure_call_statement shall denote
          --  an entry renamed by a procedure, or (a view of) a primitive
          --  subprogram of a limited interface whose first parameter is
          --  a controlling parameter.
@@ -4784,8 +4784,8 @@ package body Sem_Res is
          end if;
       end if;
 
-      --  Check that this is not a call to a protected procedure or
-      --  entry from within a protected function.
+      --  Check that this is not a call to a protected procedure or entry from
+      --  within a protected function.
 
       if Ekind (Current_Scope) = E_Function
         and then Ekind (Scope (Current_Scope)) = E_Protected_Type
