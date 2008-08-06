@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,6 +57,8 @@ with Ada.Text_IO;                   use Ada.Text_IO;
 
 with GNAT.Spitbol;                  use GNAT.Spitbol;
 with GNAT.Spitbol.Patterns;         use GNAT.Spitbol.Patterns;
+
+with XUtil;
 
 procedure XNmake is
 
@@ -137,8 +139,8 @@ procedure XNmake is
    V_Elist_Id  : constant VString := V ("Elist_Id");
    V_Boolean   : constant VString := V ("Boolean");
 
-   procedure Put_Line (F : Sfile; S : String);
-   procedure Put_Line (F : Sfile; S : VString);
+   procedure Put_Line (F : Sfile; S : String)  renames XUtil.Put_Line;
+   procedure Put_Line (F : Sfile; S : VString) renames XUtil.Put_Line;
    --  Local version of Put_Line ensures Unix style line endings
 
    procedure WriteS  (S : String);
@@ -198,17 +200,6 @@ procedure XNmake is
          Put_Line (OutS, S);
       end if;
    end WriteS;
-
-   procedure Put_Line (F : Sfile; S : String) is
-   begin
-      String'Write (Stream (F), S);
-      Character'Write (Stream (F), ASCII.LF);
-   end Put_Line;
-
-   procedure Put_Line (F : Sfile; S : VString) is
-   begin
-      Put_Line (F, To_String (S));
-   end Put_Line;
 
 --  Start of processing for XNmake
 
