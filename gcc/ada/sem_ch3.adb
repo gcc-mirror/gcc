@@ -13210,6 +13210,13 @@ package body Sem_Ch3 is
             Set_Scope (Id, Current_Scope);
             New_Id := Id;
 
+            --  If this is a repeated incomplete declaration, no further
+            --  checks are possible.
+
+            if Nkind (N) = N_Incomplete_Type_Declaration then
+               return Prev;
+            end if;
+
          --  Case of full declaration of incomplete type
 
          elsif Ekind (Prev) = E_Incomplete_Type then
