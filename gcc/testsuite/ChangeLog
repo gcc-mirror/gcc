@@ -1,3 +1,7 @@
+2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/Wcxx-compat-2.c: Adjust test for more warnings.
+
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 26785

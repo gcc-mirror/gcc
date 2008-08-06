@@ -1,35 +1,35 @@
 /* { dg-options "-Wc++-compat" } */
 
 int bool;
-int catch;
-int char16_t;
-int char32_t;
-int class;
+int catch;			/* { dg-warning "keyword" } */
+int char16_t;			/* { dg-warning "keyword" } */
+int char32_t;			/* { dg-warning "keyword" } */
+int class;			/* { dg-warning "keyword" } */
 int const_cast;			/* { dg-warning "keyword" } */
-int decltype;
-int delete;
+int decltype;			/* { dg-warning "keyword" } */
+int delete;			/* { dg-warning "keyword" } */
 int dynamic_cast;		/* { dg-warning "keyword" } */
-int explicit;
-int export;
-int false;
-int friend;
+int explicit;			/* { dg-warning "keyword" } */
+int export;			/* { dg-warning "keyword" } */
+int false;			/* { dg-warning "keyword" } */
+int friend;			/* { dg-warning "keyword" } */
 int mutable;			/* { dg-warning "keyword" } */
-int namespace;
-int new;
-int operator;
-int private;
-int protected;
-int public;
+int namespace;			/* { dg-warning "keyword" } */
+int new;			/* { dg-warning "keyword" } */
+int operator;			/* { dg-warning "keyword" } */
+int private;			/* { dg-warning "keyword" } */
+int protected;			/* { dg-warning "keyword" } */
+int public;			/* { dg-warning "keyword" } */
 int reinterpret_cast;		/* { dg-warning "keyword" } */
 int static_assert;		/* { dg-warning "keyword" } */
 int static_cast;		/* { dg-warning "keyword" } */
-int template;
-int this;
-int throw;
-int true;
-int try;
-int typename;
-int typeid;
-int using;
-int virtual;
+int template;			/* { dg-warning "keyword" } */
+int this;			/* { dg-warning "keyword" } */
+int throw;			/* { dg-warning "keyword" } */
+int true;			/* { dg-warning "keyword" } */
+int try;			/* { dg-warning "keyword" } */
+int typename;			/* { dg-warning "keyword" } */
+int typeid;			/* { dg-warning "keyword" } */
+int using;			/* { dg-warning "keyword" } */
+int virtual;			/* { dg-warning "keyword" } */
 int wchar_t;
