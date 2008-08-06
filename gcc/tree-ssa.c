@@ -1024,12 +1024,18 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
       if (TREE_CODE (inner_type) != TREE_CODE (outer_type))
 	return false;
 
-      /* ???  Add structural equivalence check.  */
+      /* ???  This seems to be necessary even for aggregates that don't
+	 have TYPE_STRUCTURAL_EQUALITY_P set.  */
 
       /* ???  This should eventually just return false.  */
       return lang_hooks.types_compatible_p (inner_type, outer_type);
     }
-
+  /* Also for functions and possibly other types with
+     TYPE_STRUCTURAL_EQUALITY_P set.  */
+  else if (TYPE_STRUCTURAL_EQUALITY_P (inner_type)
+	   && TYPE_STRUCTURAL_EQUALITY_P (outer_type))
+    return lang_hooks.types_compatible_p (inner_type, outer_type);
+  
   return false;
 }
 

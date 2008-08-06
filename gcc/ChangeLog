@@ -1,3 +1,9 @@
+2008-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37016
+	* tree-ssa.c (useless_type_conversion_p_1): Call langhook
+	if TYPE_STRUCTURAL_EQUALITY_P is true for both types.
+
 2008-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu_spu_mfcio.h: Wrap in extern "C" if __cplusplus.
