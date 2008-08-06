@@ -1,3 +1,63 @@
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* xnmake.adb: Use new XUtil package for platform independent text
+	output.
+
+2008-08-06  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Document compiler switch -gnateG
+
+2008-08-06  Quentin Ochem  <ochem@adacore.com>
+
+	* s-stausa.adb (Fill_Stack): Fixed pragma assert and top pattern mark
+	in the case of an empty pattern size.
+	(Compute_Result): Do not do any computation in the case of an empty
+	pattern size.
+	(Report_Result): Fixed computation of the overflow guard.
+
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* g-awk.adb (Finalize): Do not use directly objects of the type in the
+	finalization routine to prevent elaboration order anomalies in new
+	finalization scheme.
+
+2008-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): protect against duplicate incomplete
+	declaration for the same type.
+
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem.adb: Minor rewording (comment)
+
+2008-08-06  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Define_Switch, Get_Switches): New.
+	(Can_Have_Parameter, Require_Parameter, Actual_Switch): New, used when
+	ungrouping switches.
+	(For_Each_Simple_Switch): Allow more control over parameters handling.
+	This generic method now allows ungrouping of switches with parameters
+	and switches with more than one letter after the prefix.
+	(Set_Command_Line): Take care of switches that are prefixed with a
+	switch handling parameters without delimiter (-gnatya and -gnaty3 for
+	example).
+	(Add_Switch, Remove_Switch): Handle parameters possibly present inside
+	a group, as in gnaty3aM80 (3 and 80 are parameters). Report status of
+	the operation.
+	(Start, Alias_Switches, Group_Switches): Take care of parameters
+	possibly present inside a group.
+
+	* g-comlin.ads (Define_Switch): New method used to define a list of
+	expected switches, that are necessary for correctly ungrouping switches
+	with more that one character after the prefix.
+	(Get_Switches): Method that builds a getopt string from the list of
+	switches as set previously by Define_Switch.
+	(Add_Switch, Remove_Switch): New versions of the methods, reporting the
+	status of the operation. Also allow the removal of switches with
+	parameters only.
+	(Command_Line_Configuration_Record): Maintain a list of expected
+	switches.
+
 2008-08-06  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Force 32bit descriptor if
