@@ -3904,6 +3904,10 @@ Defines a symbol, associated with @var{value}, for preprocessing.
 @cindex @option{-gnatef} (@command{gcc})
 Display full source path name in brief error messages.
 
+@item -gnateG
+@cindex @option{-gnateG} (@command{gcc})
+Save result of preprocessing in a text file.
+
 @item -gnatem=@var{path}
 @cindex @option{-gnatem} (@command{gcc})
 Specify a mapping file
@@ -7201,6 +7205,11 @@ symbol with the same name either in a definition file or specified with a
 
 @noindent
 This switch is similar to switch @option{^-D^/ASSOCIATE^} of @code{gnatprep}.
+
+@item -gnateG
+When integrated preprocessing is performed and the preprocessor modifies
+the source text, write the result of this preprocessing into a file
+<source>^.prep^_prep^.
 
 @end table
 
