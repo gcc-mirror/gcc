@@ -1,3 +1,9 @@
+2008-08-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* sched-rgn.c (new_ready): Check if instruction can be
+	speculatively scheduled before attempting speculation.
+	(debug_rgn_dependencies): Remove wrongful assert.
+
 2008-08-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa: Remove dependency for gt-xtensa.h.
