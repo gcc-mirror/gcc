@@ -1,3 +1,9 @@
+2008-08-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/36460
+       * parser.c (cp_parser_template_argument): Don't assume that '>>'
+       following a type-id is an error when in C++0x mode.
+	
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 26785
