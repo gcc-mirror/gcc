@@ -167,6 +167,9 @@ if $GLIBCXX_IS_NATIVE; then
   # For gettimeofday support.
   GLIBCXX_CHECK_GETTIMEOFDAY
 
+  #
+  GLIBCXX_CHECK_STDIO_MACROS
+
   # For TLS support.
   GCC_CHECK_TLS
 

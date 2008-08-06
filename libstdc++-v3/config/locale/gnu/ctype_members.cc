@@ -1,6 +1,6 @@
 // std::ctype implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,6 +35,7 @@
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
+#include <cstdio>
 #include <bits/c++locale_internal.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

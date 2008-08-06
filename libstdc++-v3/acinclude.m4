@@ -1461,6 +1461,29 @@ AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
 ])
 
 dnl
+dnl Check whether EOF, SEEK_CUR, and SEEK_END have the most common values:
+dnl in that case including <cstdio> in some C++ headers can be avoided.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_STDIO_MACROS], [
+
+  AC_MSG_CHECKING([for EOF == -1, SEEK_CUR == 1, SEEK_END == 2])
+  AC_CACHE_VAL(glibcxx_cv_stdio_macros, [
+  AC_TRY_COMPILE([#include <stdio.h>],
+                 [#if ((EOF != -1) || (SEEK_CUR != 1) || (SEEK_END != 2))
+	            unusual values...
+	          #endif
+	         ], [glibcxx_cv_stdio_macros=yes],
+		    [glibcxx_cv_stdio_macros=no])
+  ])
+  AC_MSG_RESULT($glibcxx_cv_stdio_macros)
+  if test x"$glibcxx_cv_stdio_macros" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_STDIO_MACROS, 1,
+              [Define if EOF == -1, SEEK_CUR == 1, SEEK_END == 2.])
+  fi
+
+])
+
+dnl
 dnl Check whether macros, etc are present for <system_error>
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [

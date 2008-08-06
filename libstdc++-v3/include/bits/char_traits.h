@@ -1,7 +1,7 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,8 +45,14 @@
 
 #include <bits/stl_algobase.h>  // std::copy, std::fill_n
 #include <bits/postypes.h>      // For streampos
-#include <cstdio>               // For EOF
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
+
+#ifndef _GLIBCXX_STDIO_MACROS
+# include <cstdio>              // For EOF
+# define _CHAR_TRAITS_EOF EOF
+#else
+# define _CHAR_TRAITS_EOF (-1)
+#endif
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -138,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       static int_type
       eof()
-      { return static_cast<int_type>(EOF); }
+      { return static_cast<int_type>(_CHAR_TRAITS_EOF); }
 
       static int_type
       not_eof(const int_type& __c)
@@ -292,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(EOF); }
+      eof() { return static_cast<int_type>(_CHAR_TRAITS_EOF); }
 
       static int_type
       not_eof(const int_type& __c)

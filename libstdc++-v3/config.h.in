@@ -767,6 +767,9 @@
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef _GLIBCXX_SJLJ_EXCEPTIONS
 
+/* Define if EOF == -1, SEEK_CUR == 1, SEEK_END == 2. */
+#undef _GLIBCXX_STDIO_MACROS
+
 /* Define to use symbol versioning in the shared library. */
 #undef _GLIBCXX_SYMVER
 
