@@ -2625,9 +2625,9 @@ information are.
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
 @item
-@uref{#xtensa-x-elf,,xtensa-*-elf}
+@uref{#xtensa-x-elf,,xtensa*-*-elf}
 @item
-@uref{#xtensa-x-linux,,xtensa-*-linux*}
+@uref{#xtensa-x-linux,,xtensa*-*-linux*}
 @item
 @uref{#windows,,Microsoft Windows}
 @item
@@ -4036,7 +4036,7 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @html
 <hr />
 @end html
-@heading @anchor{xtensa-x-elf}xtensa-*-elf
+@heading @anchor{xtensa-x-elf}xtensa*-*-elf
 
 This target is intended for embedded Xtensa systems using the
 @samp{newlib} C library.  It uses ELF but does not support shared
@@ -4054,14 +4054,14 @@ which you can use to replace the default header file.
 @html
 <hr />
 @end html
-@heading @anchor{xtensa-x-linux}xtensa-*-linux*
+@heading @anchor{xtensa-x-linux}xtensa*-*-linux*
 
 This target is for Xtensa systems running GNU/Linux.  It supports ELF
 shared objects and the GNU C library (glibc).  It also generates
 position-independent code (PIC) regardless of whether the
 @option{-fpic} or @option{-fPIC} options are used.  In other
 respects, this target is the same as the
-@uref{#xtensa-*-elf,,@samp{xtensa-*-elf}} target.
+@uref{#xtensa*-*-elf,,@samp{xtensa*-*-elf}} target.
 
 @html
 <hr />
