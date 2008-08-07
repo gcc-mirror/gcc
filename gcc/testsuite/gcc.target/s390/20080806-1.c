@@ -1,3 +1,8 @@
+/* This used to ICE on s390x due to a reload bug.  */
+
+/* { dg-do compile } */
+/* { dg-options "-O2" } */
+
 int gl2;
 typedef __SIZE_TYPE__ size_t;
 
