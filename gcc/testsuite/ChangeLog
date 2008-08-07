@@ -1,3 +1,11 @@
+2008-08-07  Simon Baldwin  <simonb@google.com>
+
+	Backport from mainline:
+	2008-08-04  Simon Baldwin  <simonb@google.com>
+
+	PR c++/36999
+	* g++.dg/warn/pr36999.C: New.
+
 2008-08-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37042
