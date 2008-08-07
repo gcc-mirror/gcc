@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1765,13 +1765,31 @@ namespace regex_constants
       begin() const
       { return _Base_type::begin(); }
       
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
       /**
-       * @todo Document this function.
+       * @brief Gets an iterator to the start of the %sub_match collection.
+       */
+      const_iterator
+      cbegin() const
+      { return _Base_type::begin(); }
+#endif
+
+      /**
+       * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
       end() const
       { return _Base_type::end(); }
       
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      /**
+       * @brief Gets an iterator to one-past-the-end of the collection.
+       */
+      const_iterator
+      cend() const
+      { return _Base_type::end(); }
+#endif
+
       // [7.10.4] format
       /**
        * @todo Implement this function.
