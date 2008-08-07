@@ -1030,8 +1030,10 @@ xtensa_copy_incoming_a7 (rtx opnd)
     {
     case DFmode:
     case DImode:
-      emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 0),
-				     gen_rtx_REG (SImode, A7_REG - 1)));
+      /* Copy the value out of A7 here but keep the first word in A6 until
+	 after the set_frame_ptr insn.  Otherwise, the register allocator
+	 may decide to put "subreg (tmp, 0)" in A7 and clobber the incoming
+	 value.  */
       emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 4),
 				     gen_raw_REG (SImode, A7_REG)));
       break;
@@ -1052,6 +1054,11 @@ xtensa_copy_incoming_a7 (rtx opnd)
     }
 
   cfun->machine->set_frame_ptr_insn = emit_insn (gen_set_frame_ptr ());
+
+  /* For DF and DI mode arguments, copy the incoming value in A6 now.  */
+  if (mode == DFmode || mode == DImode)
+    emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 0),
+				   gen_rtx_REG (SImode, A7_REG - 1)));
   entry_insns = get_insns ();
   end_sequence ();
 
