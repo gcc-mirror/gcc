@@ -1,3 +1,7 @@
+2008-08-07  Stephen M. Webb  <stephenw@xandros.com>
+
+	* include/tr1_impl/regex (match_results): Add cbegin()/cend() per N2691 WD.
+
 2008-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* acinclude.m4 ([GLIBCXX_CHECK_STDIO_MACROS]): New, checks for
