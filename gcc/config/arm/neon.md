@@ -735,7 +735,10 @@
           (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
-  operands[2] = GEN_INT (ffs ((int) INTVAL (operands[2]) - 1));
+  int elt = ffs ((int) INTVAL (operands[2]) - 1);
+  if (BYTES_BIG_ENDIAN)
+    elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+  operands[2] = GEN_INT (elt);
   
   return "vmov%?.<V_uf_sclr>\t%P0[%c2], %1";
 }
@@ -756,6 +759,9 @@
   int elt = elem % half_elts;
   int hi = (elem / half_elts) * 2;
   int regno = REGNO (operands[0]);
+
+  if (BYTES_BIG_ENDIAN)
+    elt = half_elts - 1 - elt;
 
   operands[0] = gen_rtx_REG (<V_HALF>mode, regno + hi);
   operands[2] = GEN_INT (elt);
@@ -804,7 +810,15 @@
           (match_operand:VD 1 "s_register_operand" "w")
           (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
   "TARGET_NEON"
-  "vmov%?.<V_uf_sclr>\t%0, %P1[%c2]"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov%?.<V_uf_sclr>\t%0, %P1[%c2]";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -820,6 +834,9 @@
   int elt = INTVAL (operands[2]) % half_elts;
   int hi = (INTVAL (operands[2]) / half_elts) * 2;
   int regno = REGNO (operands[1]);
+
+  if (BYTES_BIG_ENDIAN)
+    elt = half_elts - 1 - elt;
 
   operands[1] = gen_rtx_REG (<V_HALF>mode, regno + hi);
   operands[2] = GEN_INT (elt);
@@ -2413,7 +2430,15 @@
 	    (match_operand:VD 1 "s_register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_NEON"
-  "vmov%?.s<V_sz_elem>\t%0, %P1[%c2]"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov%?.s<V_sz_elem>\t%0, %P1[%c2]";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2425,7 +2450,15 @@
 	    (match_operand:VD 1 "s_register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_NEON"
-  "vmov%?.u<V_sz_elem>\t%0, %P1[%c2]"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov%?.u<V_sz_elem>\t%0, %P1[%c2]";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2442,10 +2475,14 @@
   int regno = REGNO (operands[1]);
   unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
   unsigned int elt = INTVAL (operands[2]);
+  unsigned int elt_adj = elt % halfelts;
+
+  if (BYTES_BIG_ENDIAN)
+    elt_adj = halfelts - 1 - elt_adj;
 
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
-  ops[2] = GEN_INT (elt % halfelts);
+  ops[2] = GEN_INT (elt_adj);
   output_asm_insn ("vmov%?.s<V_sz_elem>\t%0, %P1[%c2]", ops);
 
   return "";
@@ -2466,10 +2503,14 @@
   int regno = REGNO (operands[1]);
   unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
   unsigned int elt = INTVAL (operands[2]);
+  unsigned int elt_adj = elt % halfelts;
+
+  if (BYTES_BIG_ENDIAN)
+    elt_adj = halfelts - 1 - elt_adj;
 
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
-  ops[2] = GEN_INT (elt % halfelts);
+  ops[2] = GEN_INT (elt_adj);
   output_asm_insn ("vmov%?.u<V_sz_elem>\t%0, %P1[%c2]", ops);
 
   return "";
@@ -2489,6 +2530,20 @@
   rtx insn;
 
   neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* The intrinsics are defined in terms of a model where the
+	 element ordering in memory is vldm order, whereas the generic
+	 RTL is defined in terms of a model where the element ordering
+	 in memory is array order.  Convert the lane number to conform
+	 to this model.  */
+      unsigned int elt = INTVAL (operands[2]);
+      unsigned int reg_nelts
+	= 64 / GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+      elt ^= reg_nelts - 1;
+      operands[2] = GEN_INT (elt);
+    }
 
   if ((magic & 3) == 3 || GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode)) == 32)
     insn = gen_vec_extract<mode> (operands[0], operands[1], operands[2]);
