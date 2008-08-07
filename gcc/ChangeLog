@@ -1,3 +1,8 @@
+2008-08-07  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Copy incoming value
+	in a6 after the set_frame_ptr insn.
+	
 2008-08-07  Richard Henderson  <rth@redhat.com>
 
 	PR debug/37033
