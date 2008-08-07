@@ -1,3 +1,25 @@
+2008-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (emit_unop_insn): Break out to ...
+	(maybe_emit_unop_insn): ... this one.
+	(expand_sfix_optab): Use maybe variant.
+	* optabs.h (maybe_emit_unop_insn): Declare.
+
+	* i386.md (mov0 patterns): Enable by default.
+	(FP conversion expanders): Disable expansion of code expanding
+	sequences when instruction should be optimized for size.
+	(single strinop patterns): Enable when optimizing for size.
+	(string expanders): Disable expanding of code expanding sequences
+	when optimizning instruction for size.
+	* i386.c (ix86_expand_vector_move_misalign): Do code size optimization
+	per BB basis.
+	(ix86_fp_comparison_sahf_cost): Likewise.
+	(ix86_expand_branch): Likewise.
+	(ix86_expand_ashl_const): Likewise.
+	(ix86_split_ashl): Likewise.
+	(ix86_expand_strlen): Likewise.
+	(ix86_emit_fp_unordered_jump): Likewie.
+
 2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c: Fix typo.

@@ -722,6 +722,7 @@ extern rtx expand_copysign (rtx, rtx, rtx);
 /* Generate an instruction with a given INSN_CODE with an output and
    an input.  */
 extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
+extern bool maybe_emit_unop_insn (int, rtx, rtx, enum rtx_code);
 
 /* Emit one rtl insn to compare two rtx's.  */
 extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
