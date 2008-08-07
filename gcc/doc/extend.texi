@@ -8071,6 +8071,7 @@ v2di __builtin_ia32_psrlqi128 (v2di, int)
 v8hi __builtin_ia32_psrawi128 (v8hi, int)
 v4si __builtin_ia32_psradi128 (v4si, int)
 v4si __builtin_ia32_pmaddwd128 (v8hi, v8hi)
+v2di __builtin_ia32_movq128 (v2di)
 @end smallexample
 
 The following built-in functions are available when @option{-msse3} is used.

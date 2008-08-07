@@ -1,3 +1,10 @@
+2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36992
+	* gcc.target/i386/pr36992-1.c: Scan movq.
+	* gcc.target/i386/pr36992-2.c: Use "-O2 -msse4" instead of
+	"-O0 -msse2".  Scan movq.
+
 2008-08-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37042
@@ -5,15 +12,15 @@
 
 2008-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
- 	* gcc.c-torture/compile/20080806-1.c: Move testcase ...
+	* gcc.c-torture/compile/20080806-1.c: Move testcase ...
 	* gcc.target/s390/20080806-1.c: ... to here.
 
 2008-08-06  Douglas Gregor  <doug.gregor@gmail.com>
 
-       PR c++/36460
-       * g++.dg/cpp0x/bracket3.C: Add another test case for the >>
-       warning under -Wc++0x-compat.
-       * g++.dg/cpp0x/bracket4.C: Add testcase for PR c++/36460.
+	PR c++/36460
+	* g++.dg/cpp0x/bracket3.C: Add another test case for the >>
+	warning under -Wc++0x-compat.
+	* g++.dg/cpp0x/bracket4.C: Add testcase for PR c++/36460.
 
 2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
