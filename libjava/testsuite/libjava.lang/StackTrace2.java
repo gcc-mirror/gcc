@@ -7,7 +7,7 @@ public class StackTrace2
   { 
     try
     {
-      a();
+      new StackTrace2().a();
     }
     catch (Exception x)
     {
@@ -16,14 +16,14 @@ public class StackTrace2
     }
   }
 
-  static void a() 
+  void a() 
   { 
-    new Inner();
+    new Inner().foo();
   }
   
-  static class Inner
+  class Inner
   {
-    public Inner()
+    public void foo()
     {
       doCrash(null);
     }  
@@ -38,7 +38,7 @@ public class StackTrace2
   {
     System.out.println("Trace length = " + trace.length);
     checkLine(trace[0], "StackTrace2$Inner", "doCrash", 33);
-    checkLine(trace[1], "StackTrace2$Inner", "<init>", 28);
+    checkLine(trace[1], "StackTrace2$Inner", "foo", 28);
     checkLine(trace[2], "StackTrace2", "a", 21);
     checkLine(trace[3], "StackTrace2", "main", 10);
   }
