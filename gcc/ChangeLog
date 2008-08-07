@@ -1,3 +1,13 @@
+2008-08-07  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): New.
+	* configure, config.in: Rebuild.
+	* debug.h (dwarf2out_do_cfi_asm): Declare.
+	* c-cppbuiltin.c (c_cpp_builtins): Use it.
+	* dwarf2out.c (dwarf2out_do_cfi_asm): New.
+	(dwarf2out_cfi_label, add_fde_cfi, output_call_frame_info,
+	dwarf2out_begin_prologue, dwarf2out_end_epilogue): Use it.
+
 2008-08-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
