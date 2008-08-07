@@ -726,7 +726,7 @@ _mm_movpi64_epi64 (__m64 __A)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_move_epi64 (__m128i __A)
 {
-  return _mm_set_epi64 ((__m64)0LL, _mm_movepi64_pi64 (__A));
+  return (__m128i)__builtin_ia32_movq128 ((__v2di) __A);
 }
 
 /* Create a vector of zeros.  */

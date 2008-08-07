@@ -210,6 +210,18 @@
   DONE;
 })
 
+(define_insn "sse2_movq128"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(vec_concat:V2DI
+	  (vec_select:DI
+	    (match_operand:V2DI 1 "nonimmediate_operand" "xm")
+	    (parallel [(const_int 0)]))
+	  (const_int 0)))]
+  "TARGET_SSE2"
+  "movq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "mode" "TI")])
+
 (define_insn "<sse>_movup<ssemodesuffixf2c>"
   [(set (match_operand:SSEMODEF2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:SSEMODEF2P

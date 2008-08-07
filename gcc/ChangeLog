@@ -1,3 +1,16 @@
+2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36992
+	* config/i386/emmintrin.h (_mm_move_epi64): Use
+	__builtin_ia32_movq128.
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_MOVQ128.
+	(bdesc_args): Add IX86_BUILTIN_MOVQ128.
+
+	* config/i386/sse.md (sse2_movq128): New.
+
+	* doc/extend.texi: Document __builtin_ia32_movq128.
+
 2008-08-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37042
