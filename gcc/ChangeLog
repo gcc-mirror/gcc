@@ -1,3 +1,8 @@
+2008-08-07  Jan Hubicka  <jh@suse.cz>
+
+	PR target/37048
+	* i386.md (single stringop patterns): Enable unconditionally. 
+
 2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/36992
