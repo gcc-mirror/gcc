@@ -4586,8 +4586,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
     }
   else
     {
-      tree fndecl;
-
       /* Expressions of reference type are sometimes wrapped in
          INDIRECT_REFs.  INDIRECT_REFs are just internal compiler
          representation, not part of the language, so we have to look
@@ -4597,14 +4595,28 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
   	  == REFERENCE_TYPE)
         expr = TREE_OPERAND (expr, 0);
 
-      if (TREE_CODE (expr) == CALL_EXPR
-          && (fndecl = get_callee_fndecl (expr))
-          && (fndecl != error_mark_node))
-        /* If e is a function call (5.2.2 [expr.call]) or an
+      if (TREE_CODE (expr) == CALL_EXPR)
+        {
+          /* If e is a function call (5.2.2 [expr.call]) or an
            invocation of an overloaded operator (parentheses around e
            are ignored), decltype(e) is defined as the return type of
            that function.  */
-        type = TREE_TYPE (TREE_TYPE (fndecl));
+          tree fndecl = get_callee_fndecl (expr);
+          if (fndecl && fndecl != error_mark_node)
+            type = TREE_TYPE (TREE_TYPE (fndecl));
+          else 
+            {
+              tree target_type = TREE_TYPE (CALL_EXPR_FN (expr));
+              if ((TREE_CODE (target_type) == REFERENCE_TYPE
+                   || TREE_CODE (target_type) == POINTER_TYPE)
+                  && (TREE_CODE (TREE_TYPE (target_type)) == FUNCTION_TYPE
+                      || TREE_CODE (TREE_TYPE (target_type)) == METHOD_TYPE))
+                type = TREE_TYPE (TREE_TYPE (target_type));
+              else
+                sorry ("unable to determine the declared type of expression %<%E%>",
+                       expr);
+            }
+        }
       else 
         {
           type = is_bitfield_expr_with_lowered_type (expr);

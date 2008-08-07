@@ -1,3 +1,8 @@
+2008-08-07  Douglas Gregor  <doug.gregor@gmail.com>
+	
+	* semantics.c (finish_decltype_type): Handle calls to function
+	pointers and references to functions properly.
+	
 2008-08-06  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/36460
