@@ -860,6 +860,10 @@ nonstandard_alias_p (tree ptr, tree alias, bool ptr_ptr)
   tree ptr_type = get_otype (ptr, true);
   tree alias_type = get_otype (alias, ptr_ptr);
 
+  /* If this is a ref-all pointer the access is ok.  */
+  if (TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (ptr)))
+    return false;
+
   /* XXX: for now, say it's OK if the alias escapes.
      Not sure this is needed in general, but otherwise GCC will not
      bootstrap.  */
