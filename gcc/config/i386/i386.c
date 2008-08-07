@@ -11808,7 +11808,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
   if (MEM_P (op1))
     {
       /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_size)
+      if (optimize_insn_for_size_p ())
 	{
 	  op0 = gen_lowpart (V4SFmode, op0);
 	  op1 = gen_lowpart (V4SFmode, op1);
@@ -11890,7 +11890,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
   else if (MEM_P (op0))
     {
       /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_size)
+      if (optimize_insn_for_size_p ())
 	{
 	  op0 = gen_lowpart (V4SFmode, op0);
 	  op1 = gen_lowpart (V4SFmode, op1);
@@ -13094,7 +13094,7 @@ ix86_fp_comparison_sahf_cost (enum rtx_code code)
   enum rtx_code bypass_code, first_code, second_code;
   /* Return arbitrarily high cost when instruction is not preferred - this
      avoids gcc from using it.  */
-  if (!(TARGET_SAHF && (TARGET_USE_SAHF || optimize_size)))
+  if (!(TARGET_SAHF && (TARGET_USE_SAHF || optimize_insn_for_size_p ())))
     return 1024;
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
   return (bypass_code != UNKNOWN || second_code != UNKNOWN) + 3;
@@ -13579,7 +13579,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	   optimizing for size.  */
 
 	if ((code == EQ || code == NE)
-	    && (!optimize_size
+	    && (!optimize_insn_for_size_p ()
 	        || hi[1] == const0_rtx || lo[1] == const0_rtx))
 	  {
 	    rtx xor0, xor1;
@@ -15631,7 +15631,7 @@ ix86_split_long_move (rtx operands[])
     }
 
   /* If optimizing for size, attempt to locally unCSE nonzero constants.  */
-  if (optimize_size)
+  if (optimize_insn_for_size_p ())
     {
       for (j = 0; j < nparts - 1; j++)
 	if (CONST_INT_P (operands[6 + j])
@@ -15662,7 +15662,7 @@ ix86_expand_ashl_const (rtx operand, int count, enum machine_mode mode)
 		  ? gen_addsi3
 		  : gen_adddi3) (operand, operand, operand));
     }
-  else if (!optimize_size
+  else if (!optimize_insn_for_size_p ()
 	   && count * ix86_cost->add <= ix86_cost->shift_const)
     {
       int i;
@@ -15745,7 +15745,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 	{
 	  rtx x;
 
-	  if (TARGET_PARTIAL_REG_STALL && !optimize_size)
+	  if (TARGET_PARTIAL_REG_STALL && !optimize_insn_for_size_p ())
 	    x = gen_rtx_ZERO_EXTEND (mode == DImode ? SImode : DImode, operands[2]);
 	  else
 	    x = gen_lowpart (mode == DImode ? SImode : DImode, operands[2]);
@@ -15777,7 +15777,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
       /* For -1 << N, we can avoid the shld instruction, because we
 	 know that we're shifting 0...31/63 ones into a -1.  */
       emit_move_insn (low[0], constm1_rtx);
-      if (optimize_size)
+      if (optimize_insn_for_size_p ())
 	emit_move_insn (high[0], low[0]);
       else
 	emit_move_insn (high[0], constm1_rtx);
@@ -16642,7 +16642,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
   if (stringop_alg != no_stringop && ALG_USABLE_P (stringop_alg))
     return stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
-  else if (optimize_size)
+  else if (optimize_insn_for_size_p ())
     {
       if (!count || (count & 3))
 	return rep_prefix_usable ? rep_prefix_1_byte : loop_1_byte;
@@ -17557,7 +17557,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 
   if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
       && !TARGET_INLINE_ALL_STRINGOPS
-      && !optimize_size
+      && !optimize_insn_for_size_p ()
       && (!CONST_INT_P (align) || INTVAL (align) < 4))
     return 0;
 
@@ -17565,7 +17565,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
   scratch1 = gen_reg_rtx (Pmode);
 
   if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !optimize_size)
+      && !optimize_insn_for_size_p ())
     {
       /* Well it seems that some optimizer does not combine a call like
          foo(strlen(bar), strlen(bar));
@@ -23185,7 +23185,7 @@ static tree
 ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
 			 bool sqrt ATTRIBUTE_UNUSED)
 {
-  if (! (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (! (TARGET_SSE_MATH && TARGET_RECIP && !optimize_insn_for_size_p ()
 	 && flag_finite_math_only && !flag_trapping_math
 	 && flag_unsafe_math_optimizations))
     return NULL_TREE;
@@ -26137,7 +26137,7 @@ ix86_emit_fp_unordered_jump (rtx label)
 
   emit_insn (gen_x86_fnstsw_1 (reg));
 
-  if (TARGET_SAHF && (TARGET_USE_SAHF || optimize_size))
+  if (TARGET_SAHF && (TARGET_USE_SAHF || optimize_insn_for_size_p ()))
     {
       emit_insn (gen_x86_sahf_1 (reg));
 
