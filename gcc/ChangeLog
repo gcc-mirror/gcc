@@ -1,3 +1,14 @@
+2008-08-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (output_move_neon): Update comment describing
+	big-endian vector layout.
+	(arm_assemble_integer): Do not handle big-endian NEON vectors
+	specially.
+	* config/arm/neon.md (vec_set<mode>_internal, vec_extract<mode>,
+	neon_vget_lane<mode>_sext_internal,
+	neon_vget_lane<mode>_zext_internal, neon_vget_lane<mode>): Adjust
+	element indices for big-endian.
+
 2008-08-07  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): New.
