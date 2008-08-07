@@ -1,3 +1,8 @@
+2008-08-07  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* pex-win32.c (argv_to_argc): New function.
+	(spawn_script): Duplicate argv before calling win32_spawn.
+
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* mkstemps.c (mkstemps): Keep looping even for EISDIR.
