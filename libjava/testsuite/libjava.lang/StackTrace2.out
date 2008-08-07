@@ -1,5 +1,5 @@
 Trace length = 4
 StackTrace2$Inner.doCrash:OK
-StackTrace2$Inner.<init>:OK
+StackTrace2$Inner.foo:OK
 StackTrace2.a:OK
 StackTrace2.main:OK
