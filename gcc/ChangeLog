@@ -1,3 +1,8 @@
+2008-08-07  Richard Henderson  <rth@redhat.com>
+
+	PR debug/37033
+	* gcc.c (cpp_options): Pass along -g*.
+
 2008-08-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (output_move_neon): Update comment describing
