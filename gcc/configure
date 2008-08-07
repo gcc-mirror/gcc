@@ -20851,7 +20851,6 @@ fi
 	.cfi_same_value 1
 	.cfi_def_cfa 1, 2
 	.cfi_escape 1, 2, 3, 4, 5
-	.cfi_personality 0, symbol
 	.cfi_endproc' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
@@ -20874,6 +20873,47 @@ echo "${ECHO_T}$gcc_cv_as_cfi_directive" >&6
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_CFI_DIRECTIVE `if test $gcc_cv_as_cfi_directive = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
+echo "$as_me:$LINENO: checking assembler for cfi personality directive" >&5
+echo $ECHO_N "checking assembler for cfi personality directive... $ECHO_C" >&6
+if test "${gcc_cv_as_cfi_personality_directive+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_cfi_personality_directive=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
+  then gcc_cv_as_cfi_personality_directive=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.text
+	.cfi_startproc,
+	.cfi_personality 0, symbol
+	.cfi_endproc' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_cfi_personality_directive=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_cfi_personality_directive" >&5
+echo "${ECHO_T}$gcc_cv_as_cfi_personality_directive" >&6
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_CFI_PERSONALITY_DIRECTIVE `if test $gcc_cv_as_cfi_personality_directive = yes;
+    then echo 1; else echo 0; fi`
 _ACEOF
 
 

@@ -827,6 +827,12 @@
 #endif
 
 
+/* Define 0/1 if your assembler supports .cfi_personality. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_CFI_PERSONALITY_DIRECTIVE
+#endif
+
+
 /* Define if your assembler uses the new HImode fild and fist notation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_FILDS_FISTS

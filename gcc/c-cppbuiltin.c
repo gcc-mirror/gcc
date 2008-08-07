@@ -693,7 +693,7 @@ c_cpp_builtins (cpp_reader *pfile)
 #endif
 
 #ifdef DWARF2_UNWIND_INFO
-  if (flag_dwarf2_cfi_asm && dwarf2out_do_frame ())
+  if (dwarf2out_do_cfi_asm ())
     cpp_define (pfile, "__GCC_HAVE_DWARF2_CFI_ASM");
 #endif
 

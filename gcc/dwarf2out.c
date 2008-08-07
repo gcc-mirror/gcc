@@ -130,6 +130,32 @@ dwarf2out_do_frame (void)
 	  );
 }
 
+/* Decide whether to emit frame unwind via assembler directives.  */
+
+int
+dwarf2out_do_cfi_asm (void)
+{
+  int enc;
+
+  if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
+    return false;
+  if (!eh_personality_libfunc)
+    return true;
+  if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
+    return false;
+
+  /* Make sure the personality encoding is one the assembler can support.
+     In particular, aligned addresses can't be handled.  */
+  enc = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2,/*global=*/1);
+  if ((enc & 0x70) != 0 && (enc & 0x70) != DW_EH_PE_pcrel)
+    return false;
+  enc = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0,/*global=*/0);
+  if ((enc & 0x70) != 0 && (enc & 0x70) != DW_EH_PE_pcrel)
+    return false;
+
+  return true;
+}
+
 /* The size of the target's pointer type.  */
 #ifndef PTR_SIZE
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
@@ -667,7 +693,7 @@ dwarf2out_cfi_label (void)
 {
   static char label[20];
 
-  if (flag_dwarf2_cfi_asm)
+  if (dwarf2out_do_cfi_asm ())
     {
       /* In this case, we will be emitting the asm directive instead of
 	 the label, so just return a placeholder to keep the rest of the
@@ -691,7 +717,7 @@ add_fde_cfi (const char *label, dw_cfi_ref cfi)
 {
   dw_cfi_ref *list_head = &cie_cfi_head;
 
-  if (flag_dwarf2_cfi_asm)
+  if (dwarf2out_do_cfi_asm ())
     {
       if (label)
 	{
@@ -2767,7 +2793,7 @@ output_call_frame_info (int for_eh)
     return;
 
   /* Nothing to do if the assembler's doing it all.  */
-  if (flag_dwarf2_cfi_asm)
+  if (dwarf2out_do_cfi_asm ())
     return;
 
   /* If we make FDEs linkonce, we may have to emit an empty label for
@@ -3187,7 +3213,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
     dwarf2out_source_line (line, file);
 #endif
 
-  if (flag_dwarf2_cfi_asm)
+  if (dwarf2out_do_cfi_asm ())
     {
       int enc;
       rtx ref;
@@ -3242,7 +3268,7 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  if (flag_dwarf2_cfi_asm)
+  if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
 
   /* Output a label to mark the endpoint of the code generated for this
