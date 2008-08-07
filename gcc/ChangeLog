@@ -1,3 +1,9 @@
+2008-08-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
+	movv2si_internal): Combine into mov<mode>_internal.
+	(movv2si_internal_2): Remove.
+
 2008-08-07  Jan Hubicka  <jh@suse.cz>
 
 	PR target/37048
