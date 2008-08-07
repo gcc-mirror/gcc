@@ -1,3 +1,8 @@
+2008-08-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37042
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: New testcase.
+
 2008-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
  	* gcc.c-torture/compile/20080806-1.c: Move testcase ...

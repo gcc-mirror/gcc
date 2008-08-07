@@ -1,3 +1,9 @@
+2008-08-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37042
+	* tree-ssa-alias-warnings.c (nonstandard_alias_p): Ref-all
+	pointers can access anything.
+
 2008-08-06  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (emit_unop_insn): Break out to ...
