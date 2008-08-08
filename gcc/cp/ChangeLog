@@ -1,3 +1,9 @@
+2008-08-08  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/35985
+	* decl.c (xref_basetypes): Check base for MAYBE_CLASS_TYPE_P,
+	and make sure it is not a union.
+
 2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* semantics.c (finish_decltype_type): Initialize type.
