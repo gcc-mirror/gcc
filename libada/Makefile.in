@@ -95,8 +95,7 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: oscons $(GCC_DIR)/ada/Makefile
 
 oscons:
 	$(MAKE) -C $(GCC_DIR) THREAD_KIND="$(THREAD_KIND)" \
-	  $(FLAGS_TO_PASS) \
-	  ada/s-oscons-$(THREAD_KIND).ads
+	  $(FLAGS_TO_PASS) ada/s-oscons.ads
 
 # Check uninstalled version.
 check:
