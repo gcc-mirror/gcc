@@ -58,7 +58,7 @@ package body GNAT.Sockets is
 
    ENOERROR : constant := 0;
 
-   Netdb_Buffer_Size : constant := Constants.Need_Netdb_Buffer * 1024;
+   Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
    --  The network database functions gethostbyname, gethostbyaddr,
    --  getservbyname and getservbyport can either be guaranteed task safe by
    --  the operating system, or else return data through a user-provided buffer
@@ -67,49 +67,49 @@ package body GNAT.Sockets is
    --  Correspondence tables
 
    Levels : constant array (Level_Type) of C.int :=
-              (Socket_Level              => Constants.SOL_SOCKET,
-               IP_Protocol_For_IP_Level  => Constants.IPPROTO_IP,
-               IP_Protocol_For_UDP_Level => Constants.IPPROTO_UDP,
-               IP_Protocol_For_TCP_Level => Constants.IPPROTO_TCP);
+              (Socket_Level              => SOSC.SOL_SOCKET,
+               IP_Protocol_For_IP_Level  => SOSC.IPPROTO_IP,
+               IP_Protocol_For_UDP_Level => SOSC.IPPROTO_UDP,
+               IP_Protocol_For_TCP_Level => SOSC.IPPROTO_TCP);
 
    Modes : constant array (Mode_Type) of C.int :=
-             (Socket_Stream   => Constants.SOCK_STREAM,
-              Socket_Datagram => Constants.SOCK_DGRAM);
+             (Socket_Stream   => SOSC.SOCK_STREAM,
+              Socket_Datagram => SOSC.SOCK_DGRAM);
 
    Shutmodes : constant array (Shutmode_Type) of C.int :=
-                 (Shut_Read       => Constants.SHUT_RD,
-                  Shut_Write      => Constants.SHUT_WR,
-                  Shut_Read_Write => Constants.SHUT_RDWR);
+                 (Shut_Read       => SOSC.SHUT_RD,
+                  Shut_Write      => SOSC.SHUT_WR,
+                  Shut_Read_Write => SOSC.SHUT_RDWR);
 
    Requests : constant array (Request_Name) of C.int :=
-                (Non_Blocking_IO => Constants.FIONBIO,
-                 N_Bytes_To_Read => Constants.FIONREAD);
+                (Non_Blocking_IO => SOSC.FIONBIO,
+                 N_Bytes_To_Read => SOSC.FIONREAD);
 
    Options : constant array (Option_Name) of C.int :=
-               (Keep_Alive          => Constants.SO_KEEPALIVE,
-                Reuse_Address       => Constants.SO_REUSEADDR,
-                Broadcast           => Constants.SO_BROADCAST,
-                Send_Buffer         => Constants.SO_SNDBUF,
-                Receive_Buffer      => Constants.SO_RCVBUF,
-                Linger              => Constants.SO_LINGER,
-                Error               => Constants.SO_ERROR,
-                No_Delay            => Constants.TCP_NODELAY,
-                Add_Membership      => Constants.IP_ADD_MEMBERSHIP,
-                Drop_Membership     => Constants.IP_DROP_MEMBERSHIP,
-                Multicast_If        => Constants.IP_MULTICAST_IF,
-                Multicast_TTL       => Constants.IP_MULTICAST_TTL,
-                Multicast_Loop      => Constants.IP_MULTICAST_LOOP,
-                Receive_Packet_Info => Constants.IP_PKTINFO,
-                Send_Timeout        => Constants.SO_SNDTIMEO,
-                Receive_Timeout     => Constants.SO_RCVTIMEO);
+               (Keep_Alive          => SOSC.SO_KEEPALIVE,
+                Reuse_Address       => SOSC.SO_REUSEADDR,
+                Broadcast           => SOSC.SO_BROADCAST,
+                Send_Buffer         => SOSC.SO_SNDBUF,
+                Receive_Buffer      => SOSC.SO_RCVBUF,
+                Linger              => SOSC.SO_LINGER,
+                Error               => SOSC.SO_ERROR,
+                No_Delay            => SOSC.TCP_NODELAY,
+                Add_Membership      => SOSC.IP_ADD_MEMBERSHIP,
+                Drop_Membership     => SOSC.IP_DROP_MEMBERSHIP,
+                Multicast_If        => SOSC.IP_MULTICAST_IF,
+                Multicast_TTL       => SOSC.IP_MULTICAST_TTL,
+                Multicast_Loop      => SOSC.IP_MULTICAST_LOOP,
+                Receive_Packet_Info => SOSC.IP_PKTINFO,
+                Send_Timeout        => SOSC.SO_SNDTIMEO,
+                Receive_Timeout     => SOSC.SO_RCVTIMEO);
    --  ??? Note: for OpenSolaris, Receive_Packet_Info should be IP_RECVPKTINFO,
    --  but for Linux compatibility this constant is the same as IP_PKTINFO.
 
    Flags : constant array (0 .. 3) of C.int :=
-             (0 => Constants.MSG_OOB,     --  Process_Out_Of_Band_Data
-              1 => Constants.MSG_PEEK,    --  Peek_At_Incoming_Data
-              2 => Constants.MSG_WAITALL, --  Wait_For_A_Full_Reception
-              3 => Constants.MSG_EOR);    --  Send_End_Of_Record
+             (0 => SOSC.MSG_OOB,     --  Process_Out_Of_Band_Data
+              1 => SOSC.MSG_PEEK,    --  Peek_At_Incoming_Data
+              2 => SOSC.MSG_WAITALL, --  Wait_For_A_Full_Reception
+              3 => SOSC.MSG_EOR);    --  Send_End_Of_Record
 
    Socket_Error_Id : constant Exception_Id := Socket_Error'Identity;
    Host_Error_Id   : constant Exception_Id := Host_Error'Identity;
@@ -138,7 +138,7 @@ package body GNAT.Sockets is
    --  Return the int value corresponding to the specified flags combination
 
    function Set_Forced_Flags (F : C.int) return C.int;
-   --  Return F with the bits from Constants.MSG_Forced_Flags forced set
+   --  Return F with the bits from SOSC.MSG_Forced_Flags forced set
 
    function Short_To_Network
      (S : C.unsigned_short) return C.unsigned_short;
@@ -882,7 +882,7 @@ package body GNAT.Sockets is
       Err    : aliased C.int;
 
    begin
-      if Safe_Gethostbyaddr (HA'Address, HA'Size / 8, Constants.AF_INET,
+      if Safe_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
                              Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
          Raise_Host_Error (Integer (Err));
@@ -1260,7 +1260,7 @@ package body GNAT.Sockets is
       --  calling Inet_Addr("") will not return an error.
 
       elsif Image = "" then
-         Raise_Socket_Error (Constants.EINVAL);
+         Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
       Img := New_String (Image);
@@ -1268,7 +1268,7 @@ package body GNAT.Sockets is
       Free (Img);
 
       if Res = Failure then
-         Raise_Socket_Error (Constants.EINVAL);
+         Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
       To_Inet_Addr (To_In_Addr (Res), Result);
@@ -1280,7 +1280,7 @@ package body GNAT.Sockets is
    ----------------
 
    procedure Initialize (Process_Blocking_IO : Boolean) is
-      Expected : constant Boolean := not Constants.Thread_Blocking_IO;
+      Expected : constant Boolean := not SOSC.Thread_Blocking_IO;
    begin
       if Process_Blocking_IO /= Expected then
          raise Socket_Error with
@@ -1613,16 +1613,16 @@ package body GNAT.Sockets is
      (Error_Value : Integer;
       From_Errno  : Boolean := True) return Error_Type
    is
-      use GNAT.Sockets.Constants;
+      use GNAT.Sockets.SOSC;
 
    begin
       if not From_Errno then
          case Error_Value is
-            when Constants.HOST_NOT_FOUND => return Unknown_Host;
-            when Constants.TRY_AGAIN      => return Host_Name_Lookup_Failure;
-            when Constants.NO_RECOVERY    => return Non_Recoverable_Error;
-            when Constants.NO_DATA        => return Unknown_Server_Error;
-            when others                   => return Cannot_Resolve_Error;
+            when SOSC.HOST_NOT_FOUND => return Unknown_Host;
+            when SOSC.TRY_AGAIN      => return Host_Name_Lookup_Failure;
+            when SOSC.NO_RECOVERY    => return Non_Recoverable_Error;
+            when SOSC.NO_DATA        => return Unknown_Server_Error;
+            when others              => return Cannot_Resolve_Error;
          end case;
       end if;
 
@@ -1828,8 +1828,8 @@ package body GNAT.Sockets is
          pragma Warnings (Off);
          --  Following test may be compile time known on some targets
 
-         if Vector'Length - Iov_Count > Constants.IOV_MAX then
-            This_Iov_Count := Constants.IOV_MAX;
+         if Vector'Length - Iov_Count > SOSC.IOV_MAX then
+            This_Iov_Count := SOSC.IOV_MAX;
          else
             This_Iov_Count := Vector'Length - Iov_Count;
          end if;
@@ -1879,7 +1879,7 @@ package body GNAT.Sockets is
       function To_int is
         new Ada.Unchecked_Conversion (C.unsigned, C.int);
    begin
-      return To_int (To_unsigned (F) or Constants.MSG_Forced_Flags);
+      return To_int (To_unsigned (F) or SOSC.MSG_Forced_Flags);
    end Set_Forced_Flags;
 
    -----------------------
@@ -2160,7 +2160,7 @@ package body GNAT.Sockets is
 
          if Current mod 2 /= 0 then
             if Flags (J) = -1 then
-               Raise_Socket_Error (Constants.EOPNOTSUPP);
+               Raise_Socket_Error (SOSC.EOPNOTSUPP);
             end if;
 
             Result := Result + Flags (J);

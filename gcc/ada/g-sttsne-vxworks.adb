@@ -81,7 +81,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
       --  VxWorks does not provide h_errno
 
    begin
-      pragma Assert (Addr_Type = Constants.AF_INET);
+      pragma Assert (Addr_Type = SOSC.AF_INET);
       pragma Assert (Addr_Len = In_Addr'Size / 8);
 
       --  Check that provided buffer is sufficiently large to hold the
@@ -93,7 +93,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
 
       if VxWorks_hostGetByAddr (To_Pointer (Addr).all,
                                 Netdb_Data.Name'Address)
-           /= Constants.OK
+           /= SOSC.OK
       then
          return -1;
       end if;
@@ -106,7 +106,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
       Ret.H_Name      := C.Strings.To_Chars_Ptr
                            (Netdb_Data.Name'Unrestricted_Access);
       Ret.H_Aliases   := Alias_Access;
-      Ret.H_Addrtype  := Constants.AF_INET;
+      Ret.H_Addrtype  := SOSC.AF_INET;
       Ret.H_Length    := 4;
       Ret.H_Addr_List :=
         Netdb_Data.Addr_List (Netdb_Data.Addr_List'First)'Unchecked_Access;
@@ -135,7 +135,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
 
    begin
       Addr := VxWorks_hostGetByName (Name);
-      if Addr = Constants.ERROR then
+      if Addr = SOSC.ERROR then
          return -1;
       end if;
 
@@ -161,7 +161,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
          Ret.H_Name      := C.Strings.To_Chars_Ptr
                               (Netdb_Data.Name'Unrestricted_Access);
          Ret.H_Aliases   := Alias_Access;
-         Ret.H_Addrtype  := Constants.AF_INET;
+         Ret.H_Addrtype  := SOSC.AF_INET;
          Ret.H_Length    := 4;
          Ret.H_Addr_List :=
            Netdb_Data.Addr_List (Netdb_Data.Addr_List'First)'Unchecked_Access;

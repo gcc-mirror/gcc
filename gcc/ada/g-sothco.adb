@@ -54,7 +54,7 @@ package body GNAT.Sockets.Thin_Common is
       Family            : Family_Type)
    is
       C_Family : C.int renames Families (Family);
-      Has_Sockaddr_Len : constant Boolean := Constants.Has_Sockaddr_Len /= 0;
+      Has_Sockaddr_Len : constant Boolean := SOSC.Has_Sockaddr_Len /= 0;
    begin
       if Has_Sockaddr_Len then
          Length_And_Family.Length       := Lengths (Family);
