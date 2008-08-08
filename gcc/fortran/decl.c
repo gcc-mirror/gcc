@@ -6682,6 +6682,7 @@ cleanup:
 
 }
 
+
 /* Match a FINAL declaration inside a derived type.  */
 
 match
@@ -6762,7 +6763,7 @@ gfc_match_final_decl (void)
 
       /* Check if we already have this symbol in the list, this is an error.  */
       for (f = gfc_current_block ()->f2k_derived->finalizers; f; f = f->next)
-	if (f->procedure == sym)
+	if (f->proc_sym == sym)
 	  {
 	    gfc_error ("'%s' at %C is already defined as FINAL procedure!",
 		       name);
@@ -6773,7 +6774,8 @@ gfc_match_final_decl (void)
       gcc_assert (gfc_current_block ()->f2k_derived);
       ++sym->refs;
       f = XCNEW (gfc_finalizer);
-      f->procedure = sym;
+      f->proc_sym = sym;
+      f->proc_tree = NULL;
       f->where = gfc_current_locus;
       f->next = gfc_current_block ()->f2k_derived->finalizers;
       gfc_current_block ()->f2k_derived->finalizers = f;

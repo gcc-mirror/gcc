@@ -7472,22 +7472,29 @@ gfc_resolve_finalizers (gfc_symbol* derived)
       gfc_finalizer* i;
       int my_rank;
 
+      /* Skip this finalizer if we already resolved it.  */
+      if (list->proc_tree)
+	{
+	  prev_link = &(list->next);
+	  continue;
+	}
+
       /* Check this exists and is a SUBROUTINE.  */
-      if (!list->procedure->attr.subroutine)
+      if (!list->proc_sym->attr.subroutine)
 	{
 	  gfc_error ("FINAL procedure '%s' at %L is not a SUBROUTINE",
-		     list->procedure->name, &list->where);
+		     list->proc_sym->name, &list->where);
 	  goto error;
 	}
 
       /* We should have exactly one argument.  */
-      if (!list->procedure->formal || list->procedure->formal->next)
+      if (!list->proc_sym->formal || list->proc_sym->formal->next)
 	{
 	  gfc_error ("FINAL procedure at %L must have exactly one argument",
 		     &list->where);
 	  goto error;
 	}
-      arg = list->procedure->formal->sym;
+      arg = list->proc_sym->formal->sym;
 
       /* This argument must be of our type.  */
       if (arg->ts.type != BT_DERIVED || arg->ts.derived != derived)
@@ -7541,16 +7548,16 @@ gfc_resolve_finalizers (gfc_symbol* derived)
 	{
 	  /* Argument list might be empty; that is an error signalled earlier,
 	     but we nevertheless continued resolving.  */
-	  if (i->procedure->formal)
+	  if (i->proc_sym->formal)
 	    {
-	      gfc_symbol* i_arg = i->procedure->formal->sym;
+	      gfc_symbol* i_arg = i->proc_sym->formal->sym;
 	      const int i_rank = (i_arg->as ? i_arg->as->rank : 0);
 	      if (i_rank == my_rank)
 		{
 		  gfc_error ("FINAL procedure '%s' declared at %L has the same"
 			     " rank (%d) as '%s'",
-			     list->procedure->name, &list->where, my_rank, 
-			     i->procedure->name);
+			     list->proc_sym->name, &list->where, my_rank, 
+			     i->proc_sym->name);
 		  goto error;
 		}
 	    }
@@ -7559,6 +7566,10 @@ gfc_resolve_finalizers (gfc_symbol* derived)
 	/* Is this the/a scalar finalizer procedure?  */
 	if (!arg->as || arg->as->rank == 0)
 	  seen_scalar = true;
+
+	/* Find the symtree for this procedure.  */
+	gcc_assert (!list->proc_tree);
+	list->proc_tree = gfc_find_sym_in_symtree (list->proc_sym);
 
 	prev_link = &list->next;
 	continue;
@@ -7581,7 +7592,8 @@ error:
 		 derived->name, &derived->declared_at);
 
   /* TODO:  Remove this error when finalization is finished.  */
-  gfc_error ("Finalization at %L is not yet implemented", &derived->declared_at);
+  gfc_error ("Finalization at %L is not yet implemented",
+	     &derived->declared_at);
 
   return result;
 }

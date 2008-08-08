@@ -2513,8 +2513,8 @@ find_symtree0 (gfc_symtree *root, gfc_symbol *sym)
 
 /* Find a symtree for a symbol.  */
 
-static gfc_symtree *
-find_sym_in_symtree (gfc_symbol *sym)
+gfc_symtree *
+gfc_find_sym_in_symtree (gfc_symbol *sym)
 {
   gfc_symtree *st;
   gfc_namespace *ns;
@@ -2652,7 +2652,7 @@ gfc_extend_expr (gfc_expr *e)
 
   /* Change the expression node to a function call.  */
   e->expr_type = EXPR_FUNCTION;
-  e->symtree = find_sym_in_symtree (sym);
+  e->symtree = gfc_find_sym_in_symtree (sym);
   e->value.function.actual = actual;
   e->value.function.esym = NULL;
   e->value.function.isym = NULL;
@@ -2718,7 +2718,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
 
   /* Replace the assignment with the call.  */
   c->op = EXEC_ASSIGN_CALL;
-  c->symtree = find_sym_in_symtree (sym);
+  c->symtree = gfc_find_sym_in_symtree (sym);
   c->expr = NULL;
   c->expr2 = NULL;
   c->ext.actual = actual;

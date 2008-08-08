@@ -1,3 +1,9 @@
+2008-08-08  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/finalize_9.f03:  New test.
+	* gfortran.dg/module_md5_1.f90:  Adapted MD5-sum for changed module
+	file format.
+
 2008-08-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-20.c: New testcase.

@@ -2965,9 +2965,12 @@ gfc_free_finalizer (gfc_finalizer* el)
 {
   if (el)
     {
-      --el->procedure->refs;
-      if (!el->procedure->refs)
-	gfc_free_symbol (el->procedure);
+      if (el->proc_sym)
+	{
+	  --el->proc_sym->refs;
+	  if (!el->proc_sym->refs)
+	    gfc_free_symbol (el->proc_sym);
+	}
 
       gfc_free (el);
     }
