@@ -1,3 +1,9 @@
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 7651
+	* class.c (check_bases_and_members): Warn with -Wuninitialized
+	instead of -Wextra.
+	
 2008-08-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/35985

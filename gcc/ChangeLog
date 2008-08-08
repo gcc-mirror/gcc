@@ -1,3 +1,9 @@
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 7651
+	* doc/invoke.texi (-Wextra): Move warning from here...
+	(-Wuninitialized): ... to here.
+	
 2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28875
