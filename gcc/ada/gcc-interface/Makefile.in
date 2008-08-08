@@ -368,7 +368,7 @@ PREFIX_REAL_OBJS = ../prefix.o \
 # sockets, reset this variable to empty and add DUMMY_SOCKETS_TARGET_PAIRS 
 # to LIBGNAT_TARGET_PAIRS.
 
-GNATRTL_SOCKETS_OBJS = g-socket$(objext) g-socthi$(objext) \
+GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
   g-soliop$(objext) g-sothco$(objext) g-sttsne$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \

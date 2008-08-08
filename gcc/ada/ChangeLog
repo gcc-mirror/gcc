@@ -1,5 +1,10 @@
 2008-08-08  Thomas Quinot  <quinot@adacore.com>
 
+	* gcc-interface/Makefile.in: Reintroduce g-soccon.ads as a
+	compatibility shim.
+
+2008-08-08  Thomas Quinot  <quinot@adacore.com>
+
 	* gsocket.h:
 	On Windows, include <errno.h> and redefine only selected errno values
 	from their <winsock2.h> definitions.
