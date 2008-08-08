@@ -67,11 +67,11 @@ package System.OS_Interface is
    function Errno return int;
    pragma Inline (Errno);
 
-   EAGAIN   : constant := 35;
-   EINTR    : constant := 4;
-   EINVAL   : constant := 22;
-   ENOMEM   : constant := 12;
-   ETIMEDOUT    : constant := 60;
+   EAGAIN    : constant := 35;
+   EINTR     : constant := 4;
+   EINVAL    : constant := 22;
+   ENOMEM    : constant := 12;
+   ETIMEDOUT : constant := 60;
 
    -------------
    -- Signals --
