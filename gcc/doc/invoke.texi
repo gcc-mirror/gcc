@@ -2749,10 +2749,6 @@ A pointer is compared against integer zero with @samp{<}, @samp{<=},
 conditional expression.
 
 @item 
-(C++ only) A non-static reference or non-static @samp{const} member
-appears in a class without constructors.
-
-@item 
 (C++ only) Ambiguous virtual bases.
 
 @item 
@@ -3173,8 +3169,10 @@ either specify @samp{-Wextra -Wunused} (note that @samp{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized or
-if a variable may be clobbered by a @code{setjmp} call.
+Warn if an automatic variable is used without first being initialized
+or if a variable may be clobbered by a @code{setjmp} call. In C++,
+warn if a non-static reference or non-static @samp{const} member
+appears in a class without constructors.
 
 If you want to warn about code which uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.

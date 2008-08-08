@@ -4306,7 +4306,7 @@ check_bases_and_members (tree t)
   /* If the class has no user-declared constructor, but does have
      non-static const or reference data members that can never be
      initialized, issue a warning.  */
-  if (extra_warnings
+  if (warn_uninitialized
       /* Classes with user-declared constructors are presumed to
 	 initialize these members.  */
       && !TYPE_HAS_USER_CONSTRUCTOR (t)
@@ -4325,13 +4325,13 @@ check_bases_and_members (tree t)
 
 	  type = TREE_TYPE (field);
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
-	    warning (OPT_Wextra, "non-static reference %q+#D in class "
-		     "without a constructor", field);
+	    warning (OPT_Wuninitialized, "non-static reference %q+#D "
+		     "in class without a constructor", field);
 	  else if (CP_TYPE_CONST_P (type)
 		   && (!CLASS_TYPE_P (type)
 		       || !TYPE_HAS_DEFAULT_CONSTRUCTOR (type)))
-	    warning (OPT_Wextra, "non-static const member %q+#D in class "
-		     "without a constructor", field);
+	    warning (OPT_Wuninitialized, "non-static const member %q+#D "
+		     "in class without a constructor", field);
 	}
     }
 
