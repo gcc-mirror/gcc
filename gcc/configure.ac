@@ -3031,6 +3031,21 @@ LCF0:
       [AC_DEFINE(HAVE_AS_DFP, 1,
 	  [Define if your assembler supports DFP instructions.])])
 
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr7"
+	.csect .text[[PR]]
+	lxvd2x 1,2,3';;
+      *) conftest_s='	.machine power7
+	.text
+	lxvd2x 1,2,3';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([vector-scalar support],
+      gcc_cv_as_powerpc_vsx, [9,99,0], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_VSX, 1,
+	  [Define if your assembler supports VSX instructions.])])
+
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_powerpc_gnu_attribute, [2,18,0],,
       [.gnu_attribute 4,1],,
