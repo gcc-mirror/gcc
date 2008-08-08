@@ -1,5 +1,12 @@
 2008-08-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (likely_value): Calls are not all varying.
+	(surely_varying_stmt_p): Calls are varying only if they are
+	non-builtin and not indirect or have no result.
+	(ccp_fold): Re-instantiate code before the tuples merge.
+
+2008-08-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37056
 	* gimple.h (gimple_assign_rhs_class): New helper function.
 	* tree-ssa-loop-niter.c (get_val_for): Fix tuplification, handle

@@ -1,5 +1,9 @@
 2008-08-08  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ssa-ccp-20.c: New testcase.
+
+2008-08-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37056
 	* gcc.c-torture/compile/pr37056.c: New testcase.
 
