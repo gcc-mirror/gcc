@@ -944,6 +944,11 @@ package body Exp_Ch4 is
          Rewrite (N, New_Reference_To (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
+      elsif Is_Access_Type (T)
+        and then Can_Never_Be_Null (T)
+      then
+         Install_Null_Excluding_Check (Exp);
+
       elsif Is_Access_Type (DesigT)
         and then Nkind (Exp) = N_Allocator
         and then Nkind (Expression (Exp)) /= N_Qualified_Expression
