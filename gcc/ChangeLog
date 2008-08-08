@@ -1,17 +1,35 @@
+2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28875
+	* flags.h (set_Wunused): Delete
+	* toplev.c (process_options): Handle Wunused flags here.
+	* opts.c (maybe_warn_unused_parameter): Delete.
+	(common_handle_option): Replace set_Wunused by warn_unused.
+	(set_Wextra): Do not handle Wunused-parameter here.
+	(set_Wunused): Delete.
+	* c-opts.c (c_common_handle_option): Replace set_Wunused by
+	warn_unused.
+	* common.opt (Wunused): Add Var and Init.
+	(Wunused-function): Likewise.
+	(Wunused-label): Likewise.
+	(Wunused-parameter): Likewise.
+	(Wunused-value): Likewise.
+	(Wunused-variable): Likewise.
+	
 2008-08-08  Peter Bergner  <bergner@vnet.ibm.com>
 
-        * doc/invoke.texi: Add cpu_type power7.
-        * config.in (HAVE_AS_VSX): New.
-        * config.gcc: Add cpu_type power7.
-        * configure.ac (HAVE_AS_VSX): Check for assembler support of the
-        VSX instructions.
-        * configure: Regenerate.
-        * config/rs6000/rs6000.c (rs6000_override_options): Alias power7 to
-        power5.
-        * config/rs6000/rs6000.h (ASM_CPU_POWER7_SPEC): Define.
-        (ASM_CPU_SPEC): Pass %(asm_cpu_power7) for -mcpu=power7.
-        (EXTRA_SPECS): Add asm_cpu_power7 spec string.
- 
+	* doc/invoke.texi: Add cpu_type power7.
+	* config.in (HAVE_AS_VSX): New.
+	* config.gcc: Add cpu_type power7.
+	* configure.ac (HAVE_AS_VSX): Check for assembler support of the
+	VSX instructions.
+	* configure: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_override_options): Alias power7 to
+	power5.
+	* config/rs6000/rs6000.h (ASM_CPU_POWER7_SPEC): Define.
+	(ASM_CPU_SPEC): Pass %(asm_cpu_power7) for -mcpu=power7.
+	(EXTRA_SPECS): Add asm_cpu_power7 spec string.
+
 2008-08-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vectorizable_conversion): Pass the integral

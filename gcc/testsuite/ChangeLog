@@ -1,3 +1,9 @@
+2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28875
+	* gcc.dg/unused-6-no.c: New.
+	* gcc.dg/unused-6-WallWextra.c: New.
+
 2008-08-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/35985

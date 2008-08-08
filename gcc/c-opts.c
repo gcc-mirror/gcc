@@ -376,7 +376,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wall:
-      set_Wunused (value);
+      warn_unused = value;
       set_Wformat (value);
       set_Wimplicit (value);
       warn_char_subscripts = value;
