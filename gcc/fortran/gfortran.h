@@ -2170,7 +2170,8 @@ gfc_try gfc_add_volatile (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_proc (symbol_attribute *attr, const char *name, locus *where);
 
 gfc_try gfc_add_access (symbol_attribute *, gfc_access, const char *, locus *);
-gfc_try gfc_add_is_bind_c(symbol_attribute *, const char *, locus *, int);
+gfc_try gfc_add_is_bind_c (symbol_attribute *, const char *, locus *, int);
+gfc_try gfc_add_extension (symbol_attribute *, locus *);
 gfc_try gfc_add_value (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_flavor (symbol_attribute *, sym_flavor, const char *, locus *);
 gfc_try gfc_add_entry (symbol_attribute *, const char *, locus *);

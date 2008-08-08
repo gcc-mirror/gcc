@@ -1,3 +1,12 @@
+2008-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37011
+	* symbol.c (gfc_add_extension): New function.
+	* decl.c (gfc_get_type_attr_spec): Call it.
+	(gfc_match_derived_decl): Set symbol extension attribute from
+	attr.extension.
+	* gfortran.h : Add prototype for gfc_add_extension.
+
 2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28875
