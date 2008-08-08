@@ -1,3 +1,9 @@
+2008-08-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Generate_Prim_Op_References): New procedure, abstracted
+	from Freeze_Entity. Used to generate cross-reference information for
+	types declared in generic packages.
+
 2008-08-08  Thomas Quinot  <quinot@adacore.com>
 
 	* gcc-interface/Makefile.in: Reintroduce g-soccon.ads as a
