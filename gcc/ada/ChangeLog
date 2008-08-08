@@ -1,3 +1,20 @@
+2008-08-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): add check if null
+	exclusion indicator is present
+
+2008-08-08  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.adb: Minor code reorganization
+	Minor reformatting
+
+	* g-comlin.ads: Minor reformatting
+
+	* s-fileio.adb: Minor reformatting
+
+	* sem_attr.adb: Minor code reorganization (use Nkind_In)
+	Minor reformatting
+
 2008-08-06  Samuel Tardieu  <sam@rfc1149.net>
 
 	* gcc-interface/Make-lang.in: Use GCC_FOR_TARGET when dealing
