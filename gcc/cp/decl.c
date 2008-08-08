@@ -10616,10 +10616,7 @@ xref_basetypes (tree ref, tree base_list)
         basetype = PACK_EXPANSION_PATTERN (basetype);
       if (TREE_CODE (basetype) == TYPE_DECL)
 	basetype = TREE_TYPE (basetype);
-      if (TREE_CODE (basetype) != RECORD_TYPE
-	  && TREE_CODE (basetype) != TYPENAME_TYPE
-	  && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
-	  && TREE_CODE (basetype) != BOUND_TEMPLATE_TEMPLATE_PARM)
+      if (!MAYBE_CLASS_TYPE_P (basetype) || TREE_CODE (basetype) == UNION_TYPE)
 	{
 	  error ("base type %qT fails to be a struct or class type",
 		 basetype);

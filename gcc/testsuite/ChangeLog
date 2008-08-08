@@ -1,3 +1,8 @@
+2008-08-08  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/35985
+	* g++.dg/inherit/base3.C: New.
+
 2008-08-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_floatint_cvt): 
