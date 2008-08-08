@@ -47,11 +47,11 @@ package body System.Stream_Attributes is
    use UST;
 
    Data_Error : exception renames Ada.IO_Exceptions.End_Error;
-   --  Exception raised if insufficient data read (End_Error is
-   --  mandated by AI95-00132).
+   --  Exception raised if insufficient data read (End_Error is mandated by
+   --  AI95-00132).
 
    SU : constant := System.Storage_Unit;
-   --  XXXXX pragma Assert (SU = 8);
+   --  The code in this body assumes that SU = 8
 
    BB : constant := 2 ** SU;           --  Byte base
    BL : constant := 2 ** SU - 1;       --  Byte last
@@ -127,7 +127,7 @@ package body System.Stream_Attributes is
    --  in the range [-2147483648,2147483647]. The integer is represented
    --  in two's complement notation. The most and least significant bytes
    --  are 0 and 3, respectively. Integers are declared as follows:
-   --
+
    --        (MSB)                   (LSB)
    --      +-------+-------+-------+-------+
    --      |byte 0 |byte 1 |byte 2 |byte 3 |
@@ -175,7 +175,7 @@ package body System.Stream_Attributes is
    --  integer in the range [0,4294967295]. It is represented by an unsigned
    --  binary number whose most and least significant bytes are 0 and 3,
    --  respectively. An unsigned integer is declared as follows:
-   --
+
    --        (MSB)                   (LSB)
    --      +-------+-------+-------+-------+
    --      |byte 0 |byte 1 |byte 2 |byte 3 |
@@ -222,10 +222,10 @@ package body System.Stream_Attributes is
    --  or 4 bytes). The encoding used is the IEEE standard for normalized
    --  single-precision floating-point numbers.
 
-   --  The standard defines the encoding for the double-precision
-   --  floating-point data type "double" (64 bits or 8 bytes). The
-   --  encoding used is the IEEE standard for normalized double-precision
-   --  floating-point numbers.
+   --  The standard defines the encoding used for the double-precision
+   --  floating-point data type "double" (64 bits or 8 bytes). The encoding
+   --  used is the IEEE standard for normalized double-precision floating-point
+   --  numbers.
 
    SF_L  : constant := 4;   --  Single precision
    F_L   : constant := 4;   --  Single precision
