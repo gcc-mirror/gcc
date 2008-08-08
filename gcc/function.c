@@ -4840,6 +4840,7 @@ thread_prologue_and_epilogue_insns (void)
 #endif
   edge_iterator ei;
 
+  rtl_profile_for_bb (ENTRY_BLOCK_PTR);
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
@@ -4886,6 +4887,7 @@ thread_prologue_and_epilogue_insns (void)
   if (e == NULL)
     goto epilogue_done;
 
+  rtl_profile_for_bb (EXIT_BLOCK_PTR);
 #ifdef HAVE_return
   if (optimize && HAVE_return)
     {
@@ -5035,6 +5037,7 @@ thread_prologue_and_epilogue_insns (void)
       cfg_layout_finalize ();
     }
 epilogue_done:
+  default_rtl_profile ();
 
   if (inserted)
     {

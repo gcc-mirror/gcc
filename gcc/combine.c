@@ -1112,6 +1112,7 @@ combine_instructions (rtx f, unsigned int nregs)
       last_call_luid = 0;
       mem_last_set = -1;
       label_tick++;
+      rtl_profile_for_bb (this_basic_block);
       for (insn = BB_HEAD (this_basic_block);
 	   insn != NEXT_INSN (BB_END (this_basic_block));
 	   insn = next ? next : NEXT_INSN (insn))
@@ -1268,6 +1269,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	}
     }
 
+  default_rtl_profile ();
   clear_log_links ();
   clear_bb_flags ();
   new_direct_jump_p |= purge_all_dead_edges ();

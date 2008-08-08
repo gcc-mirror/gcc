@@ -2672,6 +2672,7 @@ split_all_insns (void)
       rtx insn, next;
       bool finish = false;
 
+      rtl_profile_for_bb (bb);
       for (insn = BB_HEAD (bb); !finish ; insn = next)
 	{
 	  /* Can't use `next_real_insn' because that might go across
@@ -2714,6 +2715,7 @@ split_all_insns (void)
 	}
     }
 
+  default_rtl_profile ();
   if (changed)
     find_many_sub_basic_blocks (blocks);
 
@@ -2966,6 +2968,7 @@ peephole2_optimize (void)
 
   FOR_EACH_BB_REVERSE (bb)
     {
+      rtl_profile_for_bb (bb);
       /* Indicate that all slots except the last holds invalid data.  */
       for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
 	peep2_insn_data[i].insn = NULL_RTX;
@@ -3182,6 +3185,7 @@ peephole2_optimize (void)
 	}
     }
 
+  default_rtl_profile ();
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
     BITMAP_FREE (peep2_insn_data[i].live_before);
   BITMAP_FREE (live);
