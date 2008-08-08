@@ -988,9 +988,11 @@ package body System.File_IO is
             Stream := fopen (Namestr'Address, Fopstr'Address, Encoding);
 
             if Stream = NULL_Stream then
+
                --  Raise Name_Error if trying to open a non-existent file.
-               --  Otherwise raise Use_Error. Should we raise Device_Error for
-               --  ENOSPC???
+               --  Otherwise raise Use_Error.
+
+               --  Should we raise Device_Error for ENOSPC???
 
                if System.OS_Lib.Errno = System.OS_Constants.ENOENT then
                   raise Name_Error;
