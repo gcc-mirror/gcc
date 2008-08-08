@@ -1834,6 +1834,17 @@ gimple_assign_set_rhs_code (gimple s, enum tree_code code)
 }
 
 
+/* Return the gimple rhs class of the code of the expression computed on
+   the rhs of assignment statement GS.
+   This will never return GIMPLE_INVALID_RHS.  */
+
+static inline enum gimple_rhs_class
+gimple_assign_rhs_class (const_gimple gs)
+{
+  return get_gimple_rhs_class (gimple_assign_rhs_code (gs));
+}
+
+
 /* Return true if S is a type-cast assignment.  */
 
 static inline bool

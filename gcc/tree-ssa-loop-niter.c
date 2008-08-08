@@ -2034,7 +2034,6 @@ static tree
 get_val_for (tree x, tree base)
 {
   gimple stmt;
-  tree nx, val, retval, rhs1, rhs2;
 
   gcc_assert (is_gimple_min_invariant (base));
 
@@ -2050,33 +2049,30 @@ get_val_for (tree x, tree base)
   /* STMT must be either an assignment of a single SSA name or an
      expression involving an SSA name and a constant.  Try to fold that
      expression using the value for the SSA name.  */
-  rhs1 = gimple_assign_rhs1 (stmt);
-  rhs2 = gimple_assign_rhs2 (stmt);
-  if (TREE_CODE (rhs1) == SSA_NAME)
-    nx = rhs1;
-  else if (rhs2 && TREE_CODE (rhs2) == SSA_NAME)
-    nx = rhs2;
-  else
-    gcc_unreachable ();
-
-  /* NX is now the SSA name for which we want to discover the base value.  */
-  val = get_val_for (nx, base);
-  if (rhs2)
+  if (gimple_assign_ssa_name_copy_p (stmt))
+    return get_val_for (gimple_assign_rhs1 (stmt), base);
+  else if (gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
+	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     {
-      /* If this is a binary expression, fold it.  If folding is
-	 not possible, return a tree expression with the RHS of STMT.  */
-      rhs1 = (nx == rhs1) ? val : rhs1;
-      rhs2 = (nx == rhs2) ? val : rhs2;
-      retval = fold_binary (gimple_assign_rhs_code (stmt),
-			    gimple_expr_type (stmt), rhs1, rhs2);
-      if (retval == NULL_TREE)
-	retval= build2 (gimple_assign_rhs_code (stmt),
-		        gimple_expr_type (stmt), rhs1, rhs2);
+      return fold_build1 (gimple_assign_rhs_code (stmt),
+			  gimple_expr_type (stmt),
+			  get_val_for (gimple_assign_rhs1 (stmt), base));
+    }
+  else if (gimple_assign_rhs_class (stmt) == GIMPLE_BINARY_RHS)
+    {
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree rhs2 = gimple_assign_rhs2 (stmt);
+      if (TREE_CODE (rhs1) == SSA_NAME)
+	rhs1 = get_val_for (rhs1, base);
+      else if (TREE_CODE (rhs2) == SSA_NAME)
+	rhs2 = get_val_for (rhs2, base);
+      else
+	gcc_unreachable ();
+      return fold_build2 (gimple_assign_rhs_code (stmt),
+			  gimple_expr_type (stmt), rhs1, rhs2);
     }
   else
-    retval = val;
-      
-  return retval;
+    gcc_unreachable ();
 }
 
 

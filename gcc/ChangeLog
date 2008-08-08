@@ -1,3 +1,10 @@
+2008-08-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37056
+	* gimple.h (gimple_assign_rhs_class): New helper function.
+	* tree-ssa-loop-niter.c (get_val_for): Fix tuplification, handle
+	unary operations properly.
+
 2008-08-07  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (ix86_size_cost): Declare.
