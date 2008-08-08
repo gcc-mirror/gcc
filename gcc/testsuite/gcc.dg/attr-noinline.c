@@ -13,19 +13,19 @@ static inline void __attribute__((__noinline__)) function_declaration_both_after
 
 static void function_declaration_both_after(void) {}
 
-static void function_declaration_noinline_before(void) __attribute__((__noinline__)); /* { dg-warning "previous declaration" "" } */
+static void function_declaration_noinline_before(void) __attribute__((__noinline__)); /* { dg-message "note: previous declaration" "" } */
 
 static inline void function_declaration_noinline_before(void) {} /* { dg-warning "follows declaration with attribute noinline" "" } */
 
-static inline void function_declaration_noinline_after(void) {} /* { dg-warning "previous definition" "" } */
+static inline void function_declaration_noinline_after(void) {} /* { dg-message "note: previous definition" "" } */
 
 static void function_declaration_noinline_after(void) __attribute__((__noinline__)); /* { dg-warning "follows inline declaration" "" } */
 
-static inline void function_declaration_inline_before(void); /* { dg-warning "previous declaration" "" } */
+static inline void function_declaration_inline_before(void); /* { dg-message "note: previous declaration" "" } */
 
 static void __attribute__((__noinline__)) function_declaration_inline_before(void) {} /* { dg-warning "follows inline declaration" "" } */
 
-static inline void function_declaration_inline_noinline_before(void); /* { dg-warning "previous declaration" "" } */
+static inline void function_declaration_inline_noinline_before(void); /* { dg-message "note: previous declaration" "" } */
 
 static void function_declaration_inline_noinline_before(void) __attribute__((__noinline__)); /* { dg-warning "follows inline declaration" "" } */
 
@@ -33,11 +33,11 @@ static void function_declaration_inline_noinline_before(void) {}
 
 static inline void function_declaration_inline_noinline_after(void);
 
-static void function_declaration_inline_noinline_after(void) {} /* { dg-warning "previous definition" "" } */
+static void function_declaration_inline_noinline_after(void) {} /* { dg-message "note: previous definition" "" } */
 
 static void function_declaration_inline_noinline_after(void) __attribute__((__noinline__)); /* { dg-warning "follows inline declaration" "" } */
 
-static void function_declaration_noinline_inline_before(void) __attribute__((__noinline__)); /* { dg-warning "previous declaration" "" } */
+static void function_declaration_noinline_inline_before(void) __attribute__((__noinline__)); /* { dg-message "note: previous declaration" "" } */
 
 static inline void function_declaration_noinline_inline_before(void); /* { dg-warning "follows declaration with attribute noinline" "" } */
 

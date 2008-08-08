@@ -568,9 +568,11 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  if (warn)
 	    {
 	      static int explained;
-	      warning (OPT_Wnon_template_friend, "friend declaration "
-		       "%q#D declares a non-template function", decl);
-	      if (! explained)
+	      bool warned;
+
+	      warned = warning (OPT_Wnon_template_friend, "friend declaration "
+				"%q#D declares a non-template function", decl);
+	      if (! explained && warned)
 		{
 		  inform ("(if this is not what you intended, make sure "
 			  "the function template has already been declared "

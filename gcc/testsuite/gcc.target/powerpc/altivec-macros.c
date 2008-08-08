@@ -55,9 +55,9 @@ _Pragma ("__vector")
 /* { dg-warning "redefined" "pixel redefined"     { target *-*-* } 48 } */
 /* { dg-warning "redefined" "bool redefined"      { target *-*-* } 49 } */
 
-/* { dg-warning "previous"  "prev __vector defn"  { target *-*-* } 24 } */
-/* { dg-warning "previous"  "prev __pixel defn"   { target *-*-* } 27 } */
-/* { dg-warning "previous"  "prev __bool defn"    { target *-*-* } 30 } */
-/* { dg-warning "previous"  "prev vector defn"    { target *-*-* } 33 } */
-/* { dg-warning "previous"  "prev pixel defn"     { target *-*-* } 36 } */
-/* { dg-warning "previous"  "prev bool defn"      { target *-*-* } 39 } */
+/* { dg-message "note: previous"  "prev __vector defn"  { target *-*-* } 24 } */
+/* { dg-message "note: previous"  "prev __pixel defn"   { target *-*-* } 27 } */
+/* { dg-message "note: previous"  "prev __bool defn"    { target *-*-* } 30 } */
+/* { dg-message "note: previous"  "prev vector defn"    { target *-*-* } 33 } */
+/* { dg-message "note: previous"  "prev pixel defn"     { target *-*-* } 36 } */
+/* { dg-message "note: previous"  "prev bool defn"      { target *-*-* } 39 } */

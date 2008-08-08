@@ -1,5 +1,31 @@
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 36901
+	* cp-tree.h (struct diagnostic_context, struct diagnostic_info):
+	Delete forward declarations. Check that toplev.h has not been
+	included before this file. Include toplev.h and diagnostic.h.
+	* error.c (cp_cpp_error): Use DK_PEDWARN.
+	(cxx_incomplete_type_diagnostic): Update declaration.
+	(cxx_incomplete_type_error): Use DK_ERROR.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Take a diagnostic_t
+	as argument. Use emit_diagnostic.
+	(cxx_incomplete_type_error): Use DK_ERROR.
+	(add_exception_specifier): Use diagnostic_t instead of custom
+	codes.  
+	* typeck.c (complete_type_or_else): Update call to
+	cxx_incomplete_type_diagnostic.
+	* init.c (build_delete): Likewise.  
+	* call.c (diagnostic_fn_t): Remove unused typedef.
+	(build_temp): Pass a pointer to diagnostic_t.
+	(convert_like_real): Use emit_diagnostic.
+	(joust): Check return value of warning before giving informative
+	note.  
+	* friend.c (do_friend): Check return value of warning
+	before giving informative note.
+	* parser.c (cp_parser_template_id): Likewise.
+
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 7651
 	* class.c (check_bases_and_members): Warn with -Wuninitialized
 	instead of -Wextra.

@@ -7,7 +7,7 @@
 void
 f (void)
 {
-  long z(); /* { dg-error "previous implicit declaration" } */
+  long z(); /* { dg-message "note: previous implicit declaration" } */
 }
 
 void

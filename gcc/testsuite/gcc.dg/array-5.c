@@ -13,7 +13,7 @@ extern char arr1[1];
 char arr1[1];
 extern char arr2[0];
 char arr2[0];
-extern char arr3[0];            /* { dg-error "previous declaration" } */
+extern char arr3[0];            /* { dg-message "note: previous declaration" } */
 char arr3[1];                   /* { dg-error "conflicting types" } */
 
 /* Variable size matches.  */

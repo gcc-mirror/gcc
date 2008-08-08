@@ -28,7 +28,7 @@ void c(void)
 /* can't have two labels with the same name in the same function */
 void d(void)
 {
- l: dummy();  /* { dg-error "previous definition" "prev def same scope" } */
+ l: dummy();  /* { dg-message "note: previous definition" "prev def same scope" } */
  l: dummy();  /* { dg-error "duplicate label" "dup label same scope" } */
  goto l;
 }
@@ -36,7 +36,7 @@ void d(void)
 /* even at different scopes */
 void e(void)
 {
- l: dummy();	/* { dg-error "previous definition"  "prev def diff scope" } */
+ l: dummy();	/* { dg-message "note: previous definition"  "prev def diff scope" } */
   {
   l: dummy();	/* { dg-error "duplicate label" "dup label diff scope" } */
   }
@@ -150,7 +150,7 @@ void m(void)
 
 void n(void)
 {
-  __label__ l; /* { dg-error "previous declaration" "outer label decl" } */
+  __label__ l; /* { dg-message "note: previous declaration" "outer label decl" } */
   void nest(void)
     {
     l: goto l;  /* { dg-error "duplicate label" "inner label defn" } */

@@ -6,7 +6,7 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-int foo (); /* { dg-error "previous declaration" "different qualifiers" } */
+int foo (); /* { dg-message "note: previous declaration" "different qualifiers" } */
 const int foo () { return 0; } /* { dg-error "conflicting types" "different qualifiers" } */
 
 void bar (void);

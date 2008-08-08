@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "opts.h"
 
+#define pedantic_warning_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
+#define permissive_error_kind() (flag_permissive ? DK_WARNING : DK_ERROR)
 
 /* Prototypes.  */
 static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
@@ -293,9 +295,10 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
    front-end independent format specifiers are exactly those described
-   in the documentation of output_format.  */
+   in the documentation of output_format.  
+   Return true if a diagnostic was printed, false otherwise.  */
 
-void
+bool
 diagnostic_report_diagnostic (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
@@ -305,9 +308,12 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
-  if (diagnostic->kind == DK_WARNING 
+  if ((diagnostic->kind == DK_WARNING || diagnostic->kind == DK_PEDWARN)
       && !diagnostic_report_warnings_p (location))
-    return;
+    return false;
+
+  if (diagnostic->kind == DK_PEDWARN) 
+    diagnostic->kind = pedantic_warning_kind ();
   
   if (context->lock > 0)
     {
@@ -336,7 +342,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
       if (! option_enabled (diagnostic->option_index))
-	return;
+	return false;
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
       if (context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
@@ -347,7 +353,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* This allows for future extensions, like temporarily disabling
 	 warnings for ranges of source code.  */
       if (diagnostic->kind == DK_IGNORED)
-	return;
+	return false;
     }
 
   /* If we changed the kind due to -Werror, and didn't override it, we
@@ -403,6 +409,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   diagnostic->abstract_origin = NULL;
 
   context->lock--;
+
+  return true;
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -457,6 +465,30 @@ verbatim (const char *gmsgid, ...)
   va_end (ap);
 }
 
+bool
+emit_diagnostic (diagnostic_t kind, location_t location, int opt, 
+		 const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  if (kind == DK_PERMERROR)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+			   permissive_error_kind ());
+      diagnostic.option_index = OPT_fpermissive;
+    }
+  else {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, kind);
+      if (kind == DK_WARNING || kind == DK_PEDWARN)
+	diagnostic.option_index = opt;
+  }
+  va_end (ap);
+
+  return report_diagnostic (&diagnostic);
+}
+
 /* An informative note.  Use this for additional details on an error
    message.  */
 void
@@ -472,8 +504,9 @@ inform (const char *gmsgid, ...)
 }
 
 /* A warning at INPUT_LOCATION.  Use this for code which is correct according
-   to the relevant language specification but is likely to be buggy anyway.  */
-void
+   to the relevant language specification but is likely to be buggy anyway.  
+   Returns true if the warning was printed, false if it was inhibited.  */
+bool
 warning (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -483,25 +516,15 @@ warning (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_WARNING);
   diagnostic.option_index = opt;
 
-  report_diagnostic (&diagnostic);
   va_end (ap);
-}
-
-void
-warning0 (const char *gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_WARNING);
-  report_diagnostic (&diagnostic);
-  va_end (ap);
+  return report_diagnostic (&diagnostic);
 }
 
 /* A warning at LOCATION.  Use this for code which is correct according to the
-   relevant language specification but is likely to be buggy anyway.  */
-void
+   relevant language specification but is likely to be buggy anyway.
+   Returns true if the warning was printed, false if it was inhibited.  */
+
+bool
 warning_at (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -510,9 +533,8 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
   diagnostic.option_index = opt;
-
-  report_diagnostic (&diagnostic);
   va_end (ap);
+  return report_diagnostic (&diagnostic);
 }
 
 /* A "pedantic" warning: issues a warning unless -pedantic-errors was
@@ -524,42 +546,31 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
    of the -pedantic command-line switch.  To get a warning enabled
    only with that switch, use either "if (pedantic) pedwarn
    (OPT_pedantic,...)" or just "pedwarn (OPT_pedantic,..)".  To get a
-   pedwarn independently of the -pedantic switch use "pedwarn (0,...)".  */
+   pedwarn independently of the -pedantic switch use "pedwarn (0,...)".
 
-void
+   Returns true if the warning was printed, false if it was inhibited.  */
+
+bool
 pedwarn (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-                      pedantic_warning_kind ());
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_PEDWARN);
   diagnostic.option_index = opt;
-
-  report_diagnostic (&diagnostic);
   va_end (ap);
-}
-
-void
-pedwarn0 (const char *gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-                      pedantic_warning_kind ());
-  report_diagnostic (&diagnostic);
-  va_end (ap);
+  return report_diagnostic (&diagnostic);
 }
 
 /* A "permissive" error at LOCATION: issues an error unless
    -fpermissive was given on the command line, in which case it issues
    a warning.  Use this for things that really should be errors but we
-   want to support legacy code.  */
+   want to support legacy code.
 
-void
+   Returns true if the warning was printed, false if it was inhibited.  */
+
+bool
 permerror_at (location_t location, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -567,15 +578,15 @@ permerror_at (location_t location, const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
-		       permissive_error_kind ());
+                       permissive_error_kind ());
   diagnostic.option_index = OPT_fpermissive;
-  report_diagnostic (&diagnostic);
   va_end (ap);
+  return report_diagnostic (&diagnostic);
 }
 
 /* Equivalent to permerror_at (input_location, ...).  */
 
-void
+bool
 permerror (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -585,8 +596,8 @@ permerror (const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
 		       permissive_error_kind ());
   diagnostic.option_index = OPT_fpermissive;
-  report_diagnostic (&diagnostic);
   va_end (ap);
+  return report_diagnostic (&diagnostic);
 }
 
 

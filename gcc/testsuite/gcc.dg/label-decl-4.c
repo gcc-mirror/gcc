@@ -7,8 +7,8 @@ void
 f (void)
 {
   __label__ a, b, a; /* { dg-error "duplicate label declaration 'a'" } */
-  /* { dg-error "previous declaration of 'a' was here" "previous" { target *-*-* } 9 } */
-  __label__ c; /* { dg-error "previous declaration of 'c' was here" } */
+  /* { dg-message "note: previous declaration of 'a' was here" "previous" { target *-*-* } 9 } */
+  __label__ c; /* { dg-message "note: previous declaration of 'c' was here" } */
   __label__ c; /* { dg-error "duplicate label declaration 'c'" } */
   return;
 }

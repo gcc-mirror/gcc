@@ -2408,11 +2408,10 @@ build_function_call (tree function, tree params)
       /* This situation leads to run-time undefined behavior.  We can't,
 	 therefore, simply error unless we can prove that all possible
 	 executions of the program must execute the code.  */
-      warning (0, "function called through a non-compatible type");
-
-      /* We can, however, treat "undefined" any way we please.
-	 Call abort to encourage the user to fix the program.  */
-      inform ("if this code is reached, the program will abort");
+      if (warning (0, "function called through a non-compatible type"))
+	/* We can, however, treat "undefined" any way we please.
+	   Call abort to encourage the user to fix the program.  */
+	inform ("if this code is reached, the program will abort");
 
       if (VOID_TYPE_P (return_type))
 	return trap;

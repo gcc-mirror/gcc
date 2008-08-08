@@ -4,6 +4,6 @@
 int
 foo ()
 {
-  int bar; /* { dg-error "previous.*decl" "previous.*decl" } */
+  int bar; /* { dg-message "note: previous.*decl" "previous.*decl" } */
   volatile int bar; /* { dg-error "conflicting type qualifiers" "conflicting type qualifiers" } */
 }
