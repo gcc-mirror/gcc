@@ -1,3 +1,8 @@
+2008-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.in: generate s-oscons.ads again, previous change was
+	unneeded.
+
 2008-08-06  Samuel Tardieu  <sam@rfc1149.net>
 
 	* Makefile.in: Pass FLAGS_TO_PASS to sub-make for target
