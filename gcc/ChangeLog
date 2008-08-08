@@ -1,3 +1,17 @@
+2008-08-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_conversion): Pass the integral
+	type to vectorize.builtin_conversion.
+	(vectorizable_conversion): Likewise.
+	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Always takes
+	integral type as input.
+	* config/rs6000/rs6000.c (rs6000_builtin_conversion): Add case for
+	FIX_TRUNC_EXPR.
+	(rs6000_expand_builtin): Add case for ALTIVEC_BUILTIN_VCTUXS
+	and ALTIVEC_BUILTIN_VCTSXS.
+	(rs6000_builtin_mul_widen_even. rs6000_builtin_mul_widen_odd): Fix
+	formatting. 
+
 2008-08-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (likely_value): Calls are not all varying.

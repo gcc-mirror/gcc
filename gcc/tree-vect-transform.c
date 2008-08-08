@@ -3456,6 +3456,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   int i;
   VEC(tree,heap) *vec_oprnds0 = NULL;
   tree vop0;
+  tree integral_type;
 
   /* Is STMT a vectorizable conversion?   */
 
@@ -3508,6 +3509,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       || (!INTEGRAL_TYPE_P (rhs_type) && !INTEGRAL_TYPE_P (lhs_type)))
     return false;
 
+  integral_type = INTEGRAL_TYPE_P (rhs_type) ? vectype_in : vectype_out;
+
   if (modifier == NARROW)
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
   else
@@ -3540,7 +3543,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
   /* Supportable by target?  */
   if ((modifier == NONE
-       && !targetm.vectorize.builtin_conversion (code, vectype_in))
+       && !targetm.vectorize.builtin_conversion (code, integral_type))
       || (modifier == WIDEN
 	  && !supportable_widening_operation (code, stmt, vectype_in,
 					      &decl1, &decl2,
@@ -3550,7 +3553,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 					       &code1)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "op not supported by target.");
+        fprintf (vect_dump, "conversion not supported by target.");
       return false;
     }
 
@@ -3593,7 +3596,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	    vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, NULL);
 
 	  builtin_decl =
-	    targetm.vectorize.builtin_conversion (code, vectype_in);
+	    targetm.vectorize.builtin_conversion (code, integral_type);
 	  for (i = 0; VEC_iterate (tree, vec_oprnds0, i, vop0); i++)
 	    { 
 	      /* Arguments are ready. create the new vector stmt.  */
