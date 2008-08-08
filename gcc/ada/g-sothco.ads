@@ -51,15 +51,15 @@ package GNAT.Sockets.Thin_Common is
    Failure : constant C.int := -1;
 
    type time_t is
-     range -2 ** (8 * Constants.SIZEOF_tv_sec - 1)
-         .. 2 ** (8 * Constants.SIZEOF_tv_sec - 1) - 1;
-   for time_t'Size use 8 * Constants.SIZEOF_tv_sec;
+     range -2 ** (8 * SOSC.SIZEOF_tv_sec - 1)
+         .. 2 ** (8 * SOSC.SIZEOF_tv_sec - 1) - 1;
+   for time_t'Size use 8 * SOSC.SIZEOF_tv_sec;
    pragma Convention (C, time_t);
 
    type suseconds_t is
-     range -2 ** (8 * Constants.SIZEOF_tv_usec - 1)
-         .. 2 ** (8 * Constants.SIZEOF_tv_usec - 1) - 1;
-   for suseconds_t'Size use 8 * Constants.SIZEOF_tv_usec;
+     range -2 ** (8 * SOSC.SIZEOF_tv_usec - 1)
+         .. 2 ** (8 * SOSC.SIZEOF_tv_usec - 1) - 1;
+   for suseconds_t'Size use 8 * SOSC.SIZEOF_tv_usec;
    pragma Convention (C, suseconds_t);
 
    type Timeval is record
@@ -78,12 +78,12 @@ package GNAT.Sockets.Thin_Common is
    -------------------------------------------
 
    Families : constant array (Family_Type) of C.int :=
-                (Family_Inet  => Constants.AF_INET,
-                 Family_Inet6 => Constants.AF_INET6);
+                (Family_Inet  => SOSC.AF_INET,
+                 Family_Inet6 => SOSC.AF_INET6);
 
    Lengths  : constant array (Family_Type) of C.unsigned_char :=
-                (Family_Inet  => Constants.SIZEOF_sockaddr_in,
-                 Family_Inet6 => Constants.SIZEOF_sockaddr_in6);
+                (Family_Inet  => SOSC.SIZEOF_sockaddr_in,
+                 Family_Inet6 => SOSC.SIZEOF_sockaddr_in6);
 
    ----------------------------
    -- Generic socket address --
@@ -95,7 +95,7 @@ package GNAT.Sockets.Thin_Common is
    --  and protocol specific address types) start with the same 2-byte header,
    --  which is either a length and a family (one byte each) or just a two-byte
    --  family. The following unchecked union describes the two possible layouts
-   --  and is meant to be constrained with Constants.Have_Sockaddr_Len.
+   --  and is meant to be constrained with SOSC.Have_Sockaddr_Len.
 
    type Sockaddr_Length_And_Family
      (Has_Sockaddr_Len : Boolean := False)
@@ -231,8 +231,8 @@ package GNAT.Sockets.Thin_Common is
    type Hostent is record
       H_Name      : C.Strings.chars_ptr;
       H_Aliases   : Chars_Ptr_Pointers.Pointer;
-      H_Addrtype  : Constants.H_Addrtype_T;
-      H_Length    : Constants.H_Length_T;
+      H_Addrtype  : SOSC.H_Addrtype_T;
+      H_Length    : SOSC.H_Length_T;
       H_Addr_List : In_Addr_Access_Pointers.Pointer;
    end record;
    pragma Convention (C, Hostent);

@@ -369,7 +369,7 @@ package GNAT.Sockets is
    --     Finalize;
    --  end PingPong;
 
-   package Constants renames System.OS_Constants;
+   package SOSC renames System.OS_Constants;
    --  Renaming used to provide short-hand notations thoughout the sockets
    --  binding. Note that System.OS_Constants is an internal unit, and the
    --  entities declared therein are not meant for direct access by users,
@@ -414,10 +414,9 @@ package GNAT.Sockets is
 
    Immediate : constant Duration := 0.0;
 
-   Timeval_Forever : constant :=
-                       2.0 ** (Constants.SIZEOF_tv_sec * 8 - 1) - 1.0;
-   Forever   : constant Duration :=
-                 Duration'Min (Duration'Last, Timeval_Forever);
+   Timeval_Forever : constant := 2.0 ** (SOSC.SIZEOF_tv_sec * 8 - 1) - 1.0;
+   Forever         : constant Duration :=
+                       Duration'Min (Duration'Last, Timeval_Forever);
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
 

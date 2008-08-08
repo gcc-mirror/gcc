@@ -56,7 +56,7 @@ package body GNAT.Sockets.Thin is
    --  been set in non-blocking mode by the user.
 
    Quantum : constant Duration := 0.2;
-   --  When Constants.Thread_Blocking_IO is False, we set sockets in
+   --  When SOSC.Thread_Blocking_IO is False, we set sockets in
    --  non-blocking mode and we spend a period of time Quantum between
    --  two attempts on a blocking operation.
 
@@ -146,14 +146,14 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          R := Syscall_Accept (S, Addr, Addrlen);
-         exit when Constants.Thread_Blocking_IO
+         exit when SOSC.Thread_Blocking_IO
            or else R /= Failure
            or else Non_Blocking_Socket (S)
-           or else Errno /= Constants.EWOULDBLOCK;
+           or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
-      if not Constants.Thread_Blocking_IO
+      if not SOSC.Thread_Blocking_IO
         and then R /= Failure
       then
          --  A socket inherits the properties of its server especially
@@ -161,7 +161,7 @@ package body GNAT.Sockets.Thin is
          --  tracks sockets set in non-blocking mode by user.
 
          Set_Non_Blocking_Socket (R, Non_Blocking_Socket (S));
-         Res := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
+         Res := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Unchecked_Access);
          --  Is it OK to ignore result ???
       end if;
 
@@ -182,10 +182,10 @@ package body GNAT.Sockets.Thin is
    begin
       Res := Syscall_Connect (S, Name, Namelen);
 
-      if Constants.Thread_Blocking_IO
+      if SOSC.Thread_Blocking_IO
         or else Res /= Failure
         or else Non_Blocking_Socket (S)
-        or else Errno /= Constants.EINPROGRESS
+        or else Errno /= SOSC.EINPROGRESS
       then
          return Res;
       end if;
@@ -223,7 +223,7 @@ package body GNAT.Sockets.Thin is
       Res := Syscall_Connect (S, Name, Namelen);
 
       if Res = Failure
-        and then Errno = Constants.EISCONN
+        and then Errno = SOSC.EISCONN
       then
          return Thin_Common.Success;
       else
@@ -241,8 +241,8 @@ package body GNAT.Sockets.Thin is
       Arg  : Int_Access) return C.int
    is
    begin
-      if not Constants.Thread_Blocking_IO
-        and then Req = Constants.FIONBIO
+      if not SOSC.Thread_Blocking_IO
+        and then Req = SOSC.FIONBIO
       then
          if Arg.all /= 0 then
             Set_Non_Blocking_Socket (S, True);
@@ -267,10 +267,10 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Recv (S, Msg, Len, Flags);
-         exit when Constants.Thread_Blocking_IO
+         exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
-           or else Errno /= Constants.EWOULDBLOCK;
+           or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
@@ -294,10 +294,10 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Recvfrom (S, Msg, Len, Flags, From, Fromlen);
-         exit when Constants.Thread_Blocking_IO
+         exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
-           or else Errno /= Constants.EWOULDBLOCK;
+           or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
@@ -319,10 +319,10 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Send (S, Msg, Len, Flags);
-         exit when Constants.Thread_Blocking_IO
+         exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
-           or else Errno /= Constants.EWOULDBLOCK;
+           or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
@@ -346,10 +346,10 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
-         exit when Constants.Thread_Blocking_IO
+         exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
-           or else Errno /= Constants.EWOULDBLOCK;
+           or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
@@ -374,13 +374,13 @@ package body GNAT.Sockets.Thin is
    begin
       R := Syscall_Socket (Domain, Typ, Protocol);
 
-      if not Constants.Thread_Blocking_IO
+      if not SOSC.Thread_Blocking_IO
         and then R /= Failure
       then
          --  Do not use C_Ioctl as this subprogram tracks sockets set
          --  in non-blocking mode by user.
 
-         Res := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
+         Res := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Unchecked_Access);
          --  Is it OK to ignore result ???
          Set_Non_Blocking_Socket (R, False);
       end if;

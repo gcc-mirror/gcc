@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                   GNAT.SOCKETS.THIN.HOST_ERROR_MESSAGES                  --
+--               G N A T . S O C K E T S . C O N S T A N T S                --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2008, AdaCore                     --
+--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,45 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default implementation of this unit, providing explicit
---  literal messages (we do not use hstrerror from the standard C library,
---  as this function is obsolete).
+--  This package provides a temporary compatibility renaming for deprecated
+--  internal package GNAT.Sockets.Constants.
 
-separate (GNAT.Sockets.Thin)
-package body Host_Error_Messages is
+--  This package should not be directly used by an applications program.
+--  It is a compatibility artefact to help building legacy code with newer
+--  compilers, and will be removed at some point in the future.
 
-   package Messages is
-      HOST_NOT_FOUND : aliased char_array := "Host not found" & nul;
-      TRY_AGAIN      : aliased char_array := "Try again"      & nul;
-      NO_RECOVERY    : aliased char_array := "No recovery"    & nul;
-      NO_DATA        : aliased char_array := "No address"     & nul;
-      Unknown_Error  : aliased char_array := "Unknown error"  & nul;
-   end Messages;
-
-   function Host_Error_Message (H_Errno : Integer) return C.Strings.chars_ptr
-   is
-      use Interfaces.C.Strings;
-      function TCP
-        (P : char_array_access; Nul_Check : Boolean := False) return chars_ptr
-        renames To_Chars_Ptr;
-   begin
-      case H_Errno is
-         when SOSC.HOST_NOT_FOUND =>
-            return TCP (Messages.HOST_NOT_FOUND'Access);
-
-         when SOSC.TRY_AGAIN      =>
-            return TCP (Messages.TRY_AGAIN'Access);
-
-         when SOSC.NO_RECOVERY    =>
-            return TCP (Messages.NO_RECOVERY'Access);
-
-         when SOSC.NO_DATA        =>
-            return TCP (Messages.NO_DATA'Access);
-
-         when others                   =>
-            return TCP (Messages.Unknown_Error'Access);
-
-      end case;
-   end Host_Error_Message;
-
-end Host_Error_Messages;
+with System.OS_Constants;
+package GNAT.Sockets.Constants renames System.OS_Constants;

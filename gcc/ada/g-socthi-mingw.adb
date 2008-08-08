@@ -239,8 +239,8 @@ package body GNAT.Sockets.Thin is
       Res := Standard_Connect (S, Name, Namelen);
 
       if Res = -1 then
-         if Socket_Errno = Constants.EWOULDBLOCK then
-            Set_Socket_Errno (Constants.EINPROGRESS);
+         if Socket_Errno = SOSC.EWOULDBLOCK then
+            Set_Socket_Errno (SOSC.EINPROGRESS);
          end if;
       end if;
 
@@ -341,7 +341,7 @@ package body GNAT.Sockets.Thin is
       if EFS /= No_Fd_Set_Access then
          declare
             EFSC    : constant Fd_Set_Access := New_Socket_Set (EFS);
-            Flag    : constant C.int := Constants.MSG_PEEK + Constants.MSG_OOB;
+            Flag    : constant C.int := SOSC.MSG_PEEK + Constants.MSG_OOB;
             Buffer  : Character;
             Length  : C.int;
             Fromlen : aliased C.int;
@@ -487,7 +487,7 @@ package body GNAT.Sockets.Thin is
    function Socket_Error_Message
      (Errno : Integer) return C.Strings.chars_ptr
    is
-      use GNAT.Sockets.Constants;
+      use GNAT.Sockets.SOSC;
    begin
       case Errno is
          when EINTR =>           return Error_Messages (N_EINTR);

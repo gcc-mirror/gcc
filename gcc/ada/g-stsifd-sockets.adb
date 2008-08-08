@@ -82,7 +82,7 @@ package body Signalling_Fds is
 
          --  Create a listening socket
 
-         L_Sock := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
+         L_Sock := C_Socket (SOSC.AF_INET, Constants.SOCK_STREAM, 0);
 
          if L_Sock = Failure then
             goto Fail;
@@ -122,7 +122,7 @@ package body Signalling_Fds is
 
          --  Create read end (client) socket
 
-         R_Sock := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
+         R_Sock := C_Socket (SOSC.AF_INET, Constants.SOCK_STREAM, 0);
 
          if R_Sock = Failure then
             goto Fail;
@@ -134,7 +134,7 @@ package body Signalling_Fds is
 
          exit when Res /= Failure;
 
-         if Socket_Errno /= Constants.EADDRINUSE then
+         if Socket_Errno /= SOSC.EADDRINUSE then
             goto Fail;
          end if;
 
@@ -152,7 +152,7 @@ package body Signalling_Fds is
 
          pragma Assert (Res = Failure
                           and then
-                        Socket_Errno = Constants.EADDRINUSE);
+                        Socket_Errno = SOSC.EADDRINUSE);
          pragma Warnings (Off); -- useless assignment to "Res"
          Res := C_Close (W_Sock);
          pragma Warnings (On);
@@ -217,7 +217,7 @@ package body Signalling_Fds is
    function Read (Rsig : C.int) return C.int is
       Buf : aliased Character;
    begin
-      return C_Recv (Rsig, Buf'Address, 1, Constants.MSG_Forced_Flags);
+      return C_Recv (Rsig, Buf'Address, 1, SOSC.MSG_Forced_Flags);
    end Read;
 
    -----------
@@ -227,7 +227,7 @@ package body Signalling_Fds is
    function Write (Wsig : C.int) return C.int is
       Buf : aliased Character := ASCII.NUL;
    begin
-      return C_Send (Wsig, Buf'Address, 1, Constants.MSG_Forced_Flags);
+      return C_Send (Wsig, Buf'Address, 1, SOSC.MSG_Forced_Flags);
    end Write;
 
 end Signalling_Fds;
