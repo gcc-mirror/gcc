@@ -1,6 +1,7 @@
 /* { dg-options "-Wc++-compat" } */
 
-int bool;
+_Bool foo;			/* This is okay.  */
+int bool;			/* { dg-warning "keyword" } */
 int catch;			/* { dg-warning "keyword" } */
 int char16_t;			/* { dg-warning "keyword" } */
 int char32_t;			/* { dg-warning "keyword" } */
