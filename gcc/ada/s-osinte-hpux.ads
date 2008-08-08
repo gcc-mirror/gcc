@@ -86,7 +86,7 @@ package System.OS_Interface is
    SIGILL     : constant := 4; --  illegal instruction (not reset)
    SIGTRAP    : constant := 5; --  trace trap (not reset)
    SIGIOT     : constant := 6; --  IOT instruction
-   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
+   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the future
    SIGEMT     : constant := 7; --  EMT instruction
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
@@ -122,6 +122,7 @@ package System.OS_Interface is
    SIGADAABORT : constant := SIGABRT;
    --  Note: on other targets, we usually use SIGABRT, but on HPUX, it
    --  appears that SIGABRT can't be used in sigwait(), so we use SIGTERM.
+   --  Do we use SIGTERM or SIGABRT???
 
    type Signal_Set is array (Natural range <>) of Signal;
 
