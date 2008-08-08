@@ -36,7 +36,7 @@ enum e0 {
 
 enum e1 {
   E2 = sizeof(enum e2 { E2 }), /* { dg-error "redeclaration of enumerator 'E2'" } */
-  /* { dg-error "previous definition" "previous E2" { target *-*-* } 38 } */
+  /* { dg-message "note: previous definition" "previous E2" { target *-*-* } 38 } */
   E3
 };
 

@@ -5,7 +5,7 @@
 int
 foo (void)
 {
-  int a = bar ();	/* { dg-warning "previous implicit declaration" } */
+  int a = bar ();	/* { dg-message "note: previous implicit declaration" } */
   return a;
 }
 

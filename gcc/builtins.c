@@ -4923,13 +4923,14 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	   != type)
     {
       static bool gave_help;
+      bool warned;
 
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
-      warning (0, "%qT is promoted to %qT when passed through %<...%>",
-	       type, promoted_type);
-      if (! gave_help)
+      warned = warning (0, "%qT is promoted to %qT when passed through %<...%>",
+			type, promoted_type);
+      if (!gave_help && warned)
 	{
 	  gave_help = true;
 	  inform ("(so you should pass %qT not %qT to %<va_arg%>)",
@@ -4938,7 +4939,8 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* We can, however, treat "undefined" any way we please.
 	 Call abort to encourage the user to fix the program.  */
-      inform ("if this code is reached, the program will abort");
+      if (warned)
+	inform ("if this code is reached, the program will abort");
       t = build_call_expr (implicit_built_in_decls[BUILT_IN_TRAP], 0);
       gimplify_and_add (t, pre_p);
 

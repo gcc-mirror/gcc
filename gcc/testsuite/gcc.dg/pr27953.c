@@ -5,4 +5,4 @@ void foo(struct A a) {}  /* { dg-warning "declared inside parameter list" } */
 /* { dg-error "incomplete type" "" { target *-*-* } 3 } */
 
 void foo() {}            /* { dg-error "redefinition" } */
-/* { dg-error "previous definition" "" { target *-*-* } 3 } */
+/* { dg-message "note: previous definition" "" { target *-*-* } 3 } */

@@ -9980,15 +9980,14 @@ cp_parser_template_id (cp_parser *parser,
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
 	 parsing because we got our argument list.  */
-      permerror ("%H%<<::%> cannot begin a template-argument list",
-		 &next_token->location);
-      inform ("%H%<<:%> is an alternate spelling for %<[%>. Insert whitespace "
+      if (permerror ("%H%<<::%> cannot begin a template-argument list",
+		     &next_token->location))
+	{
+	  static bool hint = false;
+	  inform ("%H%<<:%> is an alternate spelling for %<[%>. Insert whitespace "
 	      "between %<<%> and %<::%>",
 	      &next_token->location);
-      if (!flag_permissive)
-	{
-	  static bool hint;
-	  if (!hint)
+	  if (!hint && !flag_permissive)
 	    {
 	      inform ("%H(if you use %<-fpermissive%> G++ will accept your code)",
                       &next_token->location);

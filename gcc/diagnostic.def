@@ -20,4 +20,8 @@ DEFINE_DIAGNOSTIC_KIND (DK_WARNING, "warning: ")
 DEFINE_DIAGNOSTIC_KIND (DK_ANACHRONISM, "anachronism: ")
 DEFINE_DIAGNOSTIC_KIND (DK_NOTE, "note: ")
 DEFINE_DIAGNOSTIC_KIND (DK_DEBUG, "debug: ")
+/* These two would be re-classified as DK_WARNING or DK_ERROR, so the
+prefix does not matter.  */
+DEFINE_DIAGNOSTIC_KIND (DK_PEDWARN, "pedwarn: ")
+DEFINE_DIAGNOSTIC_KIND (DK_PERMERROR, "permerror: ")
 

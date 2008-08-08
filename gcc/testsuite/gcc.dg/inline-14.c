@@ -3,7 +3,7 @@
 /* { dg-options "-std=c99" } */
 
 extern inline int func1 (void)
-{ /* { dg-error "previous definition" } */
+{ /* { dg-message "note: previous definition" } */
   return 1;
 }
 
@@ -13,7 +13,7 @@ inline int func1 (void) /* { dg-error "redefinition" } */
 }
 
 inline int func2 (void)
-{ /* { dg-error "previous definition" } */
+{ /* { dg-message "note: previous definition" } */
   return 2;
 }
 

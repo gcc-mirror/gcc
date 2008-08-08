@@ -56,19 +56,17 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 #endif
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void warning0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
-extern void warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void warning_at (location_t, int, const char *, ...)
+extern bool warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern bool warning_at (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void pedwarn0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
-extern void pedwarn (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
-extern void permerror_at (location_t, const char *, ...)
+extern bool pedwarn (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern bool permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern bool permerror_at (location_t, const char *, ...)
      ATTRIBUTE_GCC_DIAG(2,3);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);

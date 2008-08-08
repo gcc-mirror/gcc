@@ -10,7 +10,7 @@ void foo (double decl1)		/* { dg-warning "shadows a global decl" } */
 {				
 }
 
-void foo1 (int d)		/* { dg-error "previous definition" } */
+void foo1 (int d)		/* { dg-message "note: previous definition" } */
 {
   double d;	 /* { dg-bogus "warning" "warning in place of error" } */
   /* { dg-error "redeclared as different" "" { target *-*-* } 15 } */

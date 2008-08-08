@@ -1414,15 +1414,17 @@ warn_uninit (tree t, const char *gmsgid, void *data)
   location = (context != NULL && gimple_has_location (context))
 	     ? gimple_location (context)
 	     : DECL_SOURCE_LOCATION (var);
-  warning_at (location, OPT_Wuninitialized, gmsgid, var);
   xloc = expand_location (location);
   floc = expand_location (DECL_SOURCE_LOCATION (cfun->decl));
-  if (xloc.file != floc.file
-      || xloc.line < floc.line
-      || xloc.line > LOCATION_LINE (cfun->function_end_locus))
-    inform ("%J%qD was declared here", var, var);
+  if (warning_at (location, OPT_Wuninitialized, gmsgid, var))
+    {
+      TREE_NO_WARNING (var) = 1;
 
-  TREE_NO_WARNING (var) = 1;
+      if (xloc.file != floc.file
+	  || xloc.line < floc.line
+	  || xloc.line > LOCATION_LINE (cfun->function_end_locus))
+	inform ("%J%qD was declared here", var, var);
+    }
 }
 
 struct walk_data {

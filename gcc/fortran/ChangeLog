@@ -1,3 +1,9 @@
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 36901
+	* f95-lang.c (gfc_mark_addressable): Use "pedwarn (0," instead of
+	'pedwarn0'.
+
 2008-08-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37011

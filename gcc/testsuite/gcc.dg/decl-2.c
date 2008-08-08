@@ -7,7 +7,7 @@
 void foo(void)
 {
   char
-    c	/* { dg-error "previous declaration" } */
+    c	/* { dg-message "note: previous declaration" } */
     ;
   int i;
   int

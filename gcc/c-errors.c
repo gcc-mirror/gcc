@@ -38,7 +38,7 @@ pedwarn_c99 (int opt, const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-		       flag_isoc99 ? pedantic_warning_kind () : DK_WARNING);
+		       flag_isoc99 ? DK_PEDWARN : DK_WARNING);
   diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
   va_end (ap);
@@ -57,7 +57,7 @@ pedwarn_c90 (int opt, const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-		       flag_isoc99 ? DK_WARNING : pedantic_warning_kind ());
+		       flag_isoc99 ? DK_WARNING : DK_PEDWARN);
   diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
   va_end (ap);

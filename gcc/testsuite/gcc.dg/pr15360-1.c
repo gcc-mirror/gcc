@@ -15,10 +15,10 @@ extern int b = 1; /* { dg-warning "initialized and declared" "extern init warnin
 static int b;
 static int b;
 
-static int c; /* { dg-error "previous declaration" "" } */
+static int c; /* { dg-message "note: previous declaration" "" } */
 int c; /* { dg-error "non-static" "correct error" } */
 
-static int d; /* { dg-error "previous declaration" "" } */
+static int d; /* { dg-message "note: previous declaration" "" } */
 int d = 1; /* { dg-error "non-static" "correct error" } */
 
 void foo (void) { extern int e = 1; } /* { dg-error "has both" "extern init in function" } */

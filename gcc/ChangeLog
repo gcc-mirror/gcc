@@ -1,5 +1,36 @@
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 36901
+	* diagnostic.def (DK_PEDWARN, DK_PERMERROR): New.  
+	* diagnostic.c (pedantic_warning_kind, permissive_error_kind):
+	Moved from diagnostic.h
+	(diagnostic_report_diagnostic): Return bool. Handle DK_PEDWARN and
+	DK_PERMERROR.
+	(emit_diagnostic): New.
+	(warning0, pedwarn0): Delete.
+	(warning, warning_at, pedwarn, permerror): Return bool.  
+	* diagnostic.h (pedantic_warning_kind, permissive_error_kind):
+	Moved to diagnostic.c.
+	(struct diagnostic_context): Use correct type for
+	classify_diagnostic.
+	(diagnostic_report_diagnostic): Update declaration.
+	(emit_diagnostic): Declare.
+	* errors.c (warning): Return bool.  
+	* errors.h (warning): Update declaration.
+	* toplev.h (warning0, pedwarn0): Delete.
+	(warning, warning_at, pedwarn, permerror): Return bool.
+	* c-errors.c (pedwarn_c99, pedwarn_c90): Use DK_PEDWARN.
+	* c-decl.c (locate_old_decl): Delete 'diag' argument. Always use
+	inform. Update all calls.
+	(diagnose_mismatched_decls): Check return value of warning/pedwarn
+	before giving informative note.
+	(implicit_decl_warning): Likewise.  
+	* c-typeck.c (build_function_call): Likewise.  
+	* tree-sssa.c (warn_uninit): Likewise.  
+	* builtins.c (gimplify_va_arg_expr): Likewise.
+
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 7651
 	* doc/invoke.texi (-Wextra): Move warning from here...
 	(-Wuninitialized): ... to here.

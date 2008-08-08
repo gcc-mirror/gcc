@@ -50,10 +50,6 @@ typedef struct diagnostic_info
   int option_index;
 } diagnostic_info;
 
-#define pedantic_warning_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
-#define permissive_error_kind() (flag_permissive ? DK_WARNING : DK_ERROR)
-
-
 /*  Forward declarations.  */
 typedef struct diagnostic_context diagnostic_context;
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
@@ -82,7 +78,7 @@ struct diagnostic_context
      the diagnostic should be changed to before reporting, or
      DK_UNSPECIFIED to leave it as the reported kind, or DK_IGNORED to
      not report it at all.  N_OPTS is from <options.h>.  */
-  char classify_diagnostic[N_OPTS];
+  diagnostic_t classify_diagnostic[N_OPTS];
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -199,7 +195,7 @@ extern void diagnostic_report_current_function (diagnostic_context *,
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
 						    int /* optidx */,
 						    diagnostic_t /* kind */);
-extern void diagnostic_report_diagnostic (diagnostic_context *,
+extern bool diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
 #ifdef ATTRIBUTE_GCC_DIAG
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
@@ -208,6 +204,8 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    va_list *, location_t,
 					    diagnostic_t)
      ATTRIBUTE_GCC_DIAG(2,0);
+extern bool emit_diagnostic (diagnostic_t, location_t, int,
+			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_info *);
 

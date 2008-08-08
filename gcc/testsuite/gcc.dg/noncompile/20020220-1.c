@@ -6,7 +6,7 @@ int foo (const char*, const char*);
 void bar (void)
 {
   const char *s = "bar";
-  int i;			/* { dg-error "previous declaration" } */
+  int i;			/* { dg-message "note: previous declaration" } */
   int size = 2;
   int i = foo (s, s + size);	/* { dg-error "redeclaration of" } */
 }

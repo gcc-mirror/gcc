@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wtraditional" } */
 
-static void testfunc1(void); /* { dg-warning "previous declaration" } */
+static void testfunc1(void); /* { dg-message "note: previous declaration" } */
 void testfunc1() {} /* { dg-warning "non-static.*follows static" "non-static follows static" } */
 
 # 11 "sys-header.h" 3

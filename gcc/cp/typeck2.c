@@ -332,22 +332,18 @@ abstract_virtuals_error (tree decl, tree type)
 
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
-   and TYPE is the type that was invalid.  DIAG_TYPE indicates the
-   type of diagnostic:  0 for an error, 1 for a warning, 2 for a
-   pedwarn.  */
+   and TYPE is the type that was invalid.  DIAG_KIND indicates the
+   type of diagnostic (see diagnostic.def).  */
 
 void
-cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type)
+cxx_incomplete_type_diagnostic (const_tree value, const_tree type, 
+				diagnostic_t diag_kind)
 {
   int decl = 0;
-  void (*p_msg) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
 
-  if (diag_type == 1)
-    p_msg = warning0;
-  else if (diag_type == 2)
-    p_msg = pedwarn0;
-  else
-    p_msg = error;
+  gcc_assert (diag_kind == DK_WARNING 
+	      || diag_kind == DK_PEDWARN 
+	      || diag_kind == DK_ERROR);
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -357,7 +353,8 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
-      p_msg ("%q+D has incomplete type", value);
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "%q+D has incomplete type", value);
       decl = 1;
     }
  retry:
@@ -369,15 +366,19 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!decl)
-	p_msg ("invalid use of incomplete type %q#T", type);
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "invalid use of incomplete type %q#T", type);
       if (!TYPE_TEMPLATE_INFO (type))
-	p_msg ("forward declaration of %q+#T", type);
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "forward declaration of %q+#T", type);
       else
-	p_msg ("declaration of %q+#T", type);
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "declaration of %q+#T", type);
       break;
 
     case VOID_TYPE:
-      p_msg ("invalid use of %qT", type);
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of %qT", type);
       break;
 
     case ARRAY_TYPE:
@@ -386,37 +387,45 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type
 	  type = TREE_TYPE (type);
 	  goto retry;
 	}
-      p_msg ("invalid use of array with unspecified bounds");
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of array with unspecified bounds");
       break;
 
     case OFFSET_TYPE:
     bad_member:
-      p_msg ("invalid use of member (did you forget the %<&%> ?)");
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of member (did you forget the %<&%> ?)");
       break;
 
     case TEMPLATE_TYPE_PARM:
-      p_msg ("invalid use of template type parameter %qT", type);
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of template type parameter %qT", type);
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
-      p_msg ("invalid use of template template parameter %qT",
-            TYPE_NAME (type));
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of template template parameter %qT",
+		       TYPE_NAME (type));
       break;
 
     case TYPENAME_TYPE:
-      p_msg ("invalid use of dependent type %qT", type);
+      emit_diagnostic (diag_kind, input_location, 0,
+		       "invalid use of dependent type %qT", type);
       break;
 
     case UNKNOWN_TYPE:
       if (value && TREE_CODE (value) == COMPONENT_REF)
 	goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-	p_msg ("address of overloaded function with no contextual "
-	       "type information");
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "address of overloaded function with no contextual "
+			 "type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
-	p_msg ("overloaded function with no contextual type information");
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "overloaded function with no contextual type information");
       else
-	p_msg ("insufficient contextual information to determine type");
+	emit_diagnostic (diag_kind, input_location, 0,
+			 "insufficient contextual information to determine type");
       break;
 
     default:
@@ -430,7 +439,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type
 void
 cxx_incomplete_type_error (const_tree value, const_tree type)
 {
-  cxx_incomplete_type_diagnostic (value, type, 0);
+  cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
 }
 
 
@@ -1483,7 +1492,7 @@ add_exception_specifier (tree list, tree spec, int complain)
   bool ok;
   tree core = spec;
   bool is_ptr;
-  int diag_type = -1; /* none */
+  diagnostic_t diag_type = DK_UNSPECIFIED; /* none */
 
   if (spec == error_mark_node)
     return list;
@@ -1512,7 +1521,7 @@ add_exception_specifier (tree list, tree spec, int complain)
 	 and calls.  So just give a pedwarn at this point; we will give an
 	 error later if we hit one of those two cases.  */
       if (!COMPLETE_TYPE_P (complete_type (core)))
-	diag_type = 2; /* pedwarn */
+	diag_type = DK_PEDWARN; /* pedwarn */
     }
 
   if (ok)
@@ -1526,9 +1535,9 @@ add_exception_specifier (tree list, tree spec, int complain)
 	list = tree_cons (NULL_TREE, spec, list);
     }
   else
-    diag_type = 0; /* error */
+    diag_type = DK_ERROR; /* error */
 
-  if (diag_type >= 0 && complain)
+  if (diag_type != DK_UNSPECIFIED && complain)
     cxx_incomplete_type_diagnostic (NULL_TREE, core, diag_type);
 
   return list;

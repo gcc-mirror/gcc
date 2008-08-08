@@ -4,7 +4,7 @@
 void
 foo(int i)
 {
- my_label: /* { dg-error "previous definition" "prev label" } */
+ my_label: /* { dg-message "note: previous definition" "prev label" } */
 
   i++;
 

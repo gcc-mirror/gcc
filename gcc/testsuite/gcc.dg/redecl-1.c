@@ -9,8 +9,8 @@
 
 /* Extern at function scope, clashing with extern at file scope */
 
-extern int foo1;		/* { dg-error "previous" } */
-extern int bar1(int);		/* { dg-error "previous" } */
+extern int foo1;		/* { dg-message "note: previous" } */
+extern int bar1(int);		/* { dg-message "note: previous" } */
 
 void test1(void)
 {
@@ -22,8 +22,8 @@ void test1(void)
 
 void test2(void)
 {
-  extern double foo2;		/* { dg-error "previous" } */
-  extern double bar2(double);	/* { dg-error "previous" } */
+  extern double foo2;		/* { dg-message "note: previous" } */
+  extern double bar2(double);	/* { dg-message "note: previous" } */
 }
 
 extern int foo2;		/* { dg-error "conflict" } */
@@ -36,9 +36,9 @@ typedef float baz3;		/* { dg-bogus } */
 
 void prime3(void)
 {
-  extern int foo3;		/* { dg-error "previous" } */
-  extern int bar3(int);		/* { dg-error "previous" } */
-  extern int baz3;		/* { dg-error "previous" } */
+  extern int foo3;		/* { dg-message "note: previous" } */
+  extern int bar3(int);		/* { dg-message "note: previous" } */
+  extern int baz3;		/* { dg-message "note: previous" } */
 }
 
 void test3(void)
@@ -58,7 +58,7 @@ void prime4(void)
 void test4(void)
 {
   extern double bar4(double);	/* { dg-error "conflict" } */
-/* { dg-error "previous implicit declaration" "" { target *-*-* } 55 } */
+/* { dg-message "note: previous implicit declaration" "" { target *-*-* } 55 } */
 }
 
 /* Implicit decl, clashing with extern at previous function scope.  */
@@ -66,7 +66,7 @@ void test4(void)
 void prime5(void)
 {
   extern double bar5(double);	/* { dg-message "note: previous declaration" "" } */
-} /* { dg-error "previous implicit declaration" "" { target *-*-* } 68 } */
+} /* { dg-message "note: previous implicit declaration" "" { target *-*-* } 68 } */
 
 void test5(void)
 {
@@ -75,7 +75,7 @@ void test5(void)
 
 /* Extern then static, both at file scope.  */
 
-extern int test6(int);		/* { dg-error "previous" "" } */
+extern int test6(int);		/* { dg-message "note: previous" "" } */
 static int test6(int x)		/* { dg-error "follows non-static" } */
 { return x; }
 
@@ -84,7 +84,7 @@ static int test6(int x)		/* { dg-error "follows non-static" } */
 
 void prime7(void)
 {
-  extern int test7(int);	/* { dg-error "previous" "" } */
+  extern int test7(int);	/* { dg-message "note: previous" "" } */
 }
 
 static int test7(int x)		/* { dg-error "follows non-static" } */
@@ -94,7 +94,7 @@ static int test7(int x)		/* { dg-error "follows non-static" } */
 
 void prime8(void)
 {
-  test8();			/* { dg-error "previous" "" } */
+  test8();			/* { dg-message "note: previous" "" } */
                                 /* { dg-warning "implicit" "implicit" { target *-*-* } 97 } */
 }
 

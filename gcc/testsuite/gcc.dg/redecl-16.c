@@ -14,5 +14,5 @@ f (void)
 {
   extern IA5P a[];
 }
-IAP a[] = { 0 };	/* { dg-error "previous definition" } */
+IAP a[] = { 0 };	/* { dg-message "note: previous definition" } */
 extern IA10P a[];	/* { dg-error "conflicting types" } */
