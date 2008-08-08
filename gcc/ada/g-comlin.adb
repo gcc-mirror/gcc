@@ -1143,6 +1143,7 @@ package body GNAT.Command_Line is
    is
       Ret : Ada.Strings.Unbounded.Unbounded_String;
       use type Ada.Strings.Unbounded.Unbounded_String;
+
    begin
       if Config = null or else Config.Switches = null then
          return "";
@@ -1150,9 +1151,10 @@ package body GNAT.Command_Line is
 
       for J in Config.Switches'Range loop
          if Config.Switches (J) (Config.Switches (J)'First) = Switch_Char then
-            Ret := Ret & " " &
-              Config.Switches (J)
-                (Config.Switches (J)'First + 1 .. Config.Switches (J)'Last);
+            Ret :=
+              Ret & " " &
+                Config.Switches (J)
+                  (Config.Switches (J)'First + 1 .. Config.Switches (J)'Last);
          else
             Ret := Ret & " " & Config.Switches (J).all;
          end if;
@@ -1259,13 +1261,16 @@ package body GNAT.Command_Line is
 
                   if not Is_Section then
                      if Section = null then
+
                         --  Workaround some weird cases: some switches may
                         --  expect parameters, but have the same value as
                         --  longer switches: -gnaty3 (-gnaty, parameter=3) and
                         --  -gnatya (-gnatya, no parameter).
+
                         --  So we are calling add_switch here with parameter
                         --  attached. This will be anyway correctly handled by
                         --  Add_Switch if -gnaty3 is actually furnished.
+
                         if Separator (Parser) = ASCII.NUL then
                            Add_Switch
                              (Cmd, Sw & Parameter (Parser), "");
@@ -1295,6 +1300,7 @@ package body GNAT.Command_Line is
 
                   --  Add it with no parameter, if that's the way the user
                   --  wants it.
+
                   --  Specify the separator in all cases, as the switch might
                   --  need to be unaliased, and the alias might contain
                   --  switches with parameters.
@@ -1406,9 +1412,11 @@ package body GNAT.Command_Line is
         (Prefix : String;
          Group  : String) return Boolean
       is
-         Idx   : Natural := Group'First;
+         Idx   : Natural;
          Found : Boolean;
+
       begin
+         Idx := Group'First;
          while Idx <= Group'Last loop
             Found := False;
 
@@ -1424,17 +1432,23 @@ package body GNAT.Command_Line is
 
                begin
                   if Sw'Length >= Prefix'Length
-                  --  Verify that sw starts with Prefix
-                    and then Looking_At (Sw, Sw'First, Prefix)
-                  --  Verify that the group starts with sw
-                    and then Looking_At (Full, Full'First, Sw)
+
+                     --  Verify that sw starts with Prefix
+
+                     and then Looking_At (Sw, Sw'First, Prefix)
+
+                     --  Verify that the group starts with sw
+
+                     and then Looking_At (Full, Full'First, Sw)
                   then
                      Last := Idx + Sw'Length - Prefix'Length - 1;
                      Param := Last + 1;
 
                      if Can_Have_Parameter (Cmd.Config.Switches (S).all) then
+
                         --  Include potential parameter to the recursive call.
                         --  Only numbers are allowed.
+
                         while Last < Group'Last
                           and then Group (Last + 1) in '0' .. '9'
                         loop
@@ -1456,12 +1470,14 @@ package body GNAT.Command_Line is
                            --  a parameter is detected in the switch, as this
                            --  is a way to correctly identify such a parameter
                            --  in aliases.
+
                            return False;
                         end if;
 
                         Found := True;
 
                         --  Recursive call, using the detected parameter if any
+
                         if Last >= Param then
                            For_Each_Simple_Switch
                              (Cmd,
@@ -1871,16 +1887,19 @@ package body GNAT.Command_Line is
 
       function Compatible_Parameter (Param : String_Access) return Boolean is
       begin
+         --  No parameter OK
+
          if Param = null then
-            --  No parameter, OK
             return True;
 
+         --  We need parameters without separators
+
          elsif Param (Param'First) /= ASCII.NUL then
-            --  We need parameters without separators...
             return False;
 
+         --  Parameters must be all digits
+
          else
-            --  We need number only parameters.
             for J in Param'First + 1 .. Param'Last loop
                if Param (J) not in '0' .. '9' then
                   return False;
@@ -1889,12 +1908,15 @@ package body GNAT.Command_Line is
 
             return True;
          end if;
-
       end Compatible_Parameter;
 
-      Group   : Ada.Strings.Unbounded.Unbounded_String;
-      First   : Natural;
+      --  Local declarations
+
+      Group : Ada.Strings.Unbounded.Unbounded_String;
+      First : Natural;
       use type Ada.Strings.Unbounded.Unbounded_String;
+
+   --  Start of processing for Group_Switches
 
    begin
       if Cmd.Config = null
@@ -1914,24 +1936,26 @@ package body GNAT.Command_Line is
                 (Result (C).all, Result (C)'First, Cmd.Config.Prefixes (P).all)
             then
                --  If we are still in the same section, group the switches
+
                if First = 0
                  or else
                    (Sections (C) = null
-                    and then Sections (First) = null)
+                     and then Sections (First) = null)
                  or else
                    (Sections (C) /= null
-                    and then Sections (First) /= null
-                    and then Sections (C).all = Sections (First).all)
+                     and then Sections (First) /= null
+                     and then Sections (C).all = Sections (First).all)
                then
                   Group :=
                     Group &
                       Result (C)
                         (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
-                           Result (C)'Last);
+                         Result (C)'Last);
 
                   if Params (C) /= null then
-                     Group := Group &
-                       Params (C) (Params (C)'First + 1 .. Params (C)'Last);
+                     Group :=
+                       Group &
+                         Params (C) (Params (C)'First + 1 .. Params (C)'Last);
                      Free (Params (C));
                   end if;
 
@@ -1940,9 +1964,11 @@ package body GNAT.Command_Line is
                   end if;
 
                   Free (Result (C));
+
                else
                   --  We changed section: we put the grouped switches to the
                   --  first place, on continue with the new section.
+
                   Result (First) :=
                     new String'
                       (Cmd.Config.Prefixes (P).all &
