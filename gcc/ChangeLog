@@ -1,3 +1,7 @@
+2008-08-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_common_reswords): Also warn about keyword "bool".
+
 2008-08-07  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Copy incoming value
