@@ -45,7 +45,11 @@ package GNAT.Serial_Communications is
    --  A serial com port name
 
    function Name (Number : Positive) return Port_Name;
-   --  Returns the port name for the given port number
+   --  Returns a possible port name for the given legacy PC architecture serial
+   --  port number (COM<number>: on Windows, ttyS<number-1> on Linux).
+   --  Note that this function does not support other kinds of serial ports
+   --  nor operating systems other than Windows and Linux. For all other
+   --  cases, an explicit port name can be passed directly to Open.
 
    type Data_Rate is
      (B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200);
