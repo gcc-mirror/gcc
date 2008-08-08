@@ -376,7 +376,7 @@ set_Wall (int setting)
   gfc_option.warn_intrinsics_std = setting;
   gfc_option.warn_character_truncation = setting;
 
-  set_Wunused (setting);
+  warn_unused = setting;
   warn_return_type = setting;
   warn_switch = setting;
 

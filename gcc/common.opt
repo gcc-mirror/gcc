@@ -210,27 +210,27 @@ Common Var(warn_notreached) Warning
 Warn about code that will never be executed
 
 Wunused
-Common Warning
+Common Var(warn_unused) Init(0) Warning
 Enable all -Wunused- warnings
 
 Wunused-function
-Common Var(warn_unused_function) Warning
+Common Var(warn_unused_function) Init(-1) Warning
 Warn when a function is unused
 
 Wunused-label
-Common Var(warn_unused_label) Warning
+Common Var(warn_unused_label) Init(-1) Warning
 Warn when a label is unused
 
 Wunused-parameter
-Common Var(warn_unused_parameter) Warning
+Common Var(warn_unused_parameter) Init(-1) Warning
 Warn when a function parameter is unused
 
 Wunused-value
-Common Var(warn_unused_value) Warning
+Common Var(warn_unused_value) Init(-1) Warning
 Warn when an expression value is unused
 
 Wunused-variable
-Common Var(warn_unused_variable) Warning
+Common Var(warn_unused_variable) Init(-1) Warning
 Warn when a variable is unused
 
 Wcoverage-mismatch

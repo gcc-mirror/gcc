@@ -221,7 +221,7 @@ java_handle_option (size_t scode, const char *arg, int value)
       flag_wall = value;
       /* When -Wall given, enable -Wunused.  We do this because the C
 	 compiler does it, and people expect it.  */
-      set_Wunused (value);
+      warn_unused = value;
       break;
 
     case OPT_fenable_assertions_:

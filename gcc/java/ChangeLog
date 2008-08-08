@@ -1,3 +1,9 @@
+2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28875
+	* lang.c (java_handle_option): Replace set_Wunused with
+	warn_unused.
+
 2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gcj.texi: Update copyright years.  Do not list GPL as
