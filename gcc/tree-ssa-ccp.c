@@ -528,17 +528,10 @@ likely_value (gimple stmt)
       && !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return VARYING;
 
-  /* A GIMPLE_CALL is assumed to be varying.  NOTE: This may be overly
-     conservative, in the presence of const and pure calls.  */
-  if (code == GIMPLE_CALL)
-    return VARYING;
-
   /* Note that only a GIMPLE_SINGLE_RHS assignment can satisfy
      is_gimple_min_invariant, so we do not consider calls or
      other forms of assignment.  */
-  if (code == GIMPLE_ASSIGN
-      && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
-          == GIMPLE_SINGLE_RHS)
+  if (gimple_assign_single_p (stmt)
       && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
     return CONSTANT;
 
@@ -630,15 +623,23 @@ surely_varying_stmt_p (gimple stmt)
 	return true;
     }
 
-  /* If it contains a call, it is varying.  */
+  /* If it is a call and does not return a value or is not a
+     builtin and not an indirect call, it is varying.  */
   if (is_gimple_call (stmt))
-    return true;
+    {
+      tree fndecl;
+      if (!gimple_call_lhs (stmt)
+	  || ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
+	      && DECL_BUILT_IN (fndecl)))
+	return true;
+    }
 
   /* Anything other than assignments and conditional jumps are not
      interesting for CCP.  */
   if (gimple_code (stmt) != GIMPLE_ASSIGN
-      && (gimple_code (stmt) != GIMPLE_COND)
-      && (gimple_code (stmt) != GIMPLE_SWITCH))
+      && gimple_code (stmt) != GIMPLE_COND
+      && gimple_code (stmt) != GIMPLE_SWITCH
+      && gimple_code (stmt) != GIMPLE_CALL)
     return true;
 
   return false;
@@ -1034,11 +1035,42 @@ ccp_fold (gimple stmt)
       break;
 
     case GIMPLE_CALL:
-      /* It may be possible to fold away calls to builtin functions if
-         their arguments are constants.  At present, such folding will not
-         be attempted, as likely_value classifies all calls as VARYING.  */
-      gcc_unreachable ();
-      break;
+      {
+	tree fn = gimple_call_fn (stmt);
+	prop_value_t *val;
+
+	if (TREE_CODE (fn) == SSA_NAME)
+	  {
+	    val = get_value (fn);
+	    if (val->lattice_val == CONSTANT)
+	      fn = val->value;
+	  }
+	if (TREE_CODE (fn) == ADDR_EXPR
+	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
+	  {
+	    tree *args = XALLOCAVEC (tree, gimple_call_num_args (stmt));
+	    tree call, retval;
+	    unsigned i;
+	    for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	      {
+		args[i] = gimple_call_arg (stmt, i);
+		if (TREE_CODE (args[i]) == SSA_NAME)
+		  {
+		    val = get_value (args[i]);
+		    if (val->lattice_val == CONSTANT)
+		      args[i] = val->value;
+		  }
+	      }
+	    call = build_call_array (gimple_call_return_type (stmt),
+				     fn, gimple_call_num_args (stmt), args);
+	    retval = fold_call_expr (call, false);
+	    if (retval)
+	      /* fold_call_expr wraps the result inside a NOP_EXPR.  */
+	      STRIP_NOPS (retval);
+	    return retval;
+	  }
+	return NULL_TREE;
+      }
 
     case GIMPLE_COND:
       {
