@@ -3413,7 +3413,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Obsolescent
-  (Entity => NAME [, static_string_EXPRESSION [,Ada_05]]);
+  [(Entity => NAME [, static_string_EXPRESSION [,Ada_05]])];
 @end smallexample
 
 @noindent
@@ -4446,6 +4446,17 @@ name: @code{Alignment_Check} which can be used to suppress alignment checks
 on addresses used in address clauses. Such checks can also be suppressed
 by suppressing range checks, but the specific use of @code{Alignment_Check}
 allows suppression of alignment checks without suppressing other range checks.
+
+Note that pragma Suppress gives the compiler permission to omit
+checks, but does not require the compiler to omit checks. The compiler
+will generate checks if they are essentially free, even when they are
+suppressed. In particular, if the compiler can prove that a certain
+check will necessarily fail, it will generate code to do an
+unconditional ``raise'', even if checks are suppressed. The compiler
+warns in this case.
+
+Of course, run-time checks are omitted whenever the compiler can prove
+that they will not fail, whether or not checks are suppressed.
 
 @node Pragma Suppress_All
 @unnumberedsec Pragma Suppress_All

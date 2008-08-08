@@ -1,5 +1,53 @@
 2008-08-08  Thomas Quinot  <quinot@adacore.com>
 
+	* gsocket.h:
+	On Windows, include <errno.h> and redefine only selected errno values
+	from their <winsock2.h> definitions.
+
+	* s-osinte-freebsd.ads: Minor reformatting
+
+	* s-osinte-hpux.ads, s-osinte-irix.ads: Minor reformatting
+
+	* g-soccon.ads: New file.
+
+	* g-stheme.adb, g-socthi-vms.adb, g-socthi-vxworks.adb,
+	g-socthi-mingw.adb, g-sttsne-vxworks.adb, g-socthi.adb,
+	g-stsifd-sockets.adb, g-socket.adb, g-socket.ads,
+	g-sothco.adb, g-sothco.ads: Add back GNAT.Sockets.Constants as a child
+	unit, to allow building software that depends on this internal unit
+	with both older and newer compilers.
+
+2008-08-08  Robert Dewar  <dewar@adacore.com>
+
+	* s-strxdr.adb: Minor reformatting
+
+2008-08-08  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: The "Run-Time Checks" section said "arithmetic overflow
+	checking for integer operations (including division by zero)", which
+	is wrong -- divide by zero is not part of overflow checking.
+	Also added misc clarification about what check-suppression means.
+
+	* gnat_rm.texi: Clarify the meaning of pragma Suppress.
+
+2008-08-08  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Add_Switch): Handle addition of switches at the
+	begining of the command line.
+	(Append, Add): Renaming of Append to Add as this now allows addition
+	at the begining of the list.
+	
+	* g-comlin.ads (Add_Switch): Handle addition of switches at the
+	begining of the command line.
+
+2008-08-08  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.ads:
+	(Name): Document application scope (only legacy PC serial ports on
+	Linux and Windows).
+
+2008-08-08  Thomas Quinot  <quinot@adacore.com>
+
 	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Revert
 	previous change, not needed after all.
 
