@@ -1931,7 +1931,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 # Copy generated target dependent sources
 	$(RM) $(RTSDIR)/s-oscons.ads
-	(cd $(RTSDIR); $(LN_S) ../s-oscons-$(THREAD_KIND).ads s-oscons.ads)
+	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 

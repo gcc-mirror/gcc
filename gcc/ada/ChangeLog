@@ -1,3 +1,8 @@
+2008-08-08  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Revert
+	previous change, not needed after all.
+
 2008-08-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_Allocator_Expression): add check if null

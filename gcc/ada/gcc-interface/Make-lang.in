@@ -938,7 +938,7 @@ OSCONS_CPP=$(GCC_FOR_TARGET) -E -C \
 OSCONS_EXTRACT=$(GCC_FOR_TARGET) -S s-oscons-tmplt.i
 endif
 
-ada/s-oscons-$(THREAD_KIND).ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
+ada/s-oscons.ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/oscons
 	$(RM) $(addprefix ada/bldtools/oscons/,$(notdir $^))
 	$(CP) $^ ada/bldtools/oscons
@@ -947,8 +947,8 @@ ada/s-oscons-$(THREAD_KIND).ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons
 		$(OSCONS_CPP) ; \
 		$(OSCONS_EXTRACT) ; \
 		./xoscons ; \
-		$(RM) ../../s-oscons-$(THREAD_KIND).ads ; \
-		$(CP) s-oscons.ads ../../s-oscons-$(THREAD_KIND).ads)
+		$(RM) ../../s-oscons.ads ; \
+		$(CP) s-oscons.ads ../../s-oscons.ads)
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
