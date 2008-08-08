@@ -1,3 +1,17 @@
+2008-08-08  Peter Bergner  <bergner@vnet.ibm.com>
+
+        * doc/invoke.texi: Add cpu_type power7.
+        * config.in (HAVE_AS_VSX): New.
+        * config.gcc: Add cpu_type power7.
+        * configure.ac (HAVE_AS_VSX): Check for assembler support of the
+        VSX instructions.
+        * configure: Regenerate.
+        * config/rs6000/rs6000.c (rs6000_override_options): Alias power7 to
+        power5.
+        * config/rs6000/rs6000.h (ASM_CPU_POWER7_SPEC): Define.
+        (ASM_CPU_SPEC): Pass %(asm_cpu_power7) for -mcpu=power7.
+        (EXTRA_SPECS): Add asm_cpu_power7 spec string.
+ 
 2008-08-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vectorizable_conversion): Pass the integral
