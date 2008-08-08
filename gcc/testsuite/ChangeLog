@@ -1,3 +1,8 @@
+2008-08-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_floatint_cvt): 
+	Add powerpc. 
+
 2008-08-08  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/finalize_9.f03:  New test.
