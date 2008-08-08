@@ -3168,6 +3168,78 @@ mio_namespace_ref (gfc_namespace **nsp)
 }
 
 
+/* Save/restore the f2k_derived namespace of a derived-type symbol.  */
+
+static void
+mio_finalizer (gfc_finalizer **f)
+{
+  if (iomode == IO_OUTPUT)
+    {
+      gcc_assert (*f);
+      gcc_assert ((*f)->proc_tree); /* Should already be resolved.  */
+      mio_symtree_ref (&(*f)->proc_tree);
+    }
+  else
+    {
+      *f = gfc_get_finalizer ();
+      (*f)->where = gfc_current_locus; /* Value should not matter.  */
+      (*f)->next = NULL;
+
+      mio_symtree_ref (&(*f)->proc_tree);
+      (*f)->proc_sym = NULL;
+    }
+}
+
+static void
+mio_f2k_derived (gfc_namespace *f2k)
+{
+  /* Handle the list of finalizer procedures.  */
+  mio_lparen ();
+  if (iomode == IO_OUTPUT)
+    {
+      gfc_finalizer *f;
+      for (f = f2k->finalizers; f; f = f->next)
+	mio_finalizer (&f);
+    }
+  else
+    {
+      f2k->finalizers = NULL;
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  gfc_finalizer *cur;
+	  mio_finalizer (&cur);
+	  cur->next = f2k->finalizers;
+	  f2k->finalizers = cur;
+	}
+    }
+  mio_rparen ();
+}
+
+static void
+mio_full_f2k_derived (gfc_symbol *sym)
+{
+  mio_lparen ();
+  
+  if (iomode == IO_OUTPUT)
+    {
+      if (sym->f2k_derived)
+	mio_f2k_derived (sym->f2k_derived);
+    }
+  else
+    {
+      if (peek_atom () != ATOM_RPAREN)
+	{
+	  sym->f2k_derived = gfc_get_namespace (NULL, 0);
+	  mio_f2k_derived (sym->f2k_derived);
+	}
+      else
+	gcc_assert (!sym->f2k_derived);
+    }
+
+  mio_rparen ();
+}
+
+
 /* Unlike most other routines, the address of the symbol node is already
    fixed on input and the name/module has already been filled in.  */
 
@@ -3229,6 +3301,9 @@ mio_symbol (gfc_symbol *sym)
   if (sym->components != NULL)
     sym->component_access
       = MIO_NAME (gfc_access) (sym->component_access, access_types);
+
+  /* Load/save the f2k_derived namespace of a derived-type symbol.  */
+  mio_full_f2k_derived (sym);
 
   mio_namelist (sym);
 
