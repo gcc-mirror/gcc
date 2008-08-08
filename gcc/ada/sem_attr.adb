@@ -3831,8 +3831,7 @@ package body Sem_Attr is
             then
                --  Check OK prefix
 
-               if (Nkind (P) = N_Identifier
-                  or else Nkind (P) = N_Operator_Symbol)
+               if Nkind_In (P, N_Identifier, N_Operator_Symbol)
                  and then Chars (P) = Chars (PS)
                then
                   null;
