@@ -1,5 +1,20 @@
 2008-08-07  Jan Hubicka  <jh@suse.cz>
 
+	* i386.h (ix86_size_cost): Declare.
+	(ix86_cur_cost): New function macro.
+	* i386.md (peepholes expanding size and splitters): Predicate by
+	optimize_insn_for_speed_p.
+	(peepholes reduce size and splitters): Predicate by
+	optimize_insn_for_size_p.
+	* i386.c (ix86_size_cost): Rename from ...
+	(size_cost): This one.
+	(override_options): Update.
+	(decide_alg): Likewise.
+	(ix86_expand_clear): Use RTL profile.
+	(ix86_pad_returns): Use RTL profile.
+
+2008-08-07  Jan Hubicka  <jh@suse.cz>
+
 	* recog.c (split_all_insns): Set RTL profile
 	(peephole2_optimize): Likewise.
 	* function.c (thread_prologue_and_epilogue_insns): Likewise.
