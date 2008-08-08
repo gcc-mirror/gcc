@@ -1,6 +1,13 @@
+2008-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/ios_base.h: Undef _IOS_BASE_SEEK_CUR and
+	_IOS_BASE_SEEK_END at the end of the file.
+	* include/bits/char_traits.h: Likewise for _CHAR_TRAITS_EOF.
+
 2008-08-07  Stephen M. Webb  <stephenw@xandros.com>
 
-	* include/tr1_impl/regex (match_results): Add cbegin()/cend() per N2691 WD.
+	* include/tr1_impl/regex (match_results<>::cbegin, cend): Add, per
+	N2691 WD.
 
 2008-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
