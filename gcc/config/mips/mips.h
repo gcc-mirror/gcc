@@ -2703,10 +2703,6 @@ while (0)
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)
 
-#ifndef FUNCTION_NAME_ALREADY_DECLARED
-#define FUNCTION_NAME_ALREADY_DECLARED 0
-#endif
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.

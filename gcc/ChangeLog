@@ -1,3 +1,17 @@
+2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/mips/mips.h (FUNCTION_NAME_ALREADY_DECLARED): Delete.
+	* config/mips/linux.h (ASM_DECLARE_FUNCTION_NAME): Delete.
+	(ASM_DECLARE_FUNCTION_SIZE, FUNCTION_NAME_ALREADY_DECLARED): Delete.
+	* config/mips/mips.c (mips_start_function_definition): New function.
+	(mips_end_function_definition): Likewise.
+	(mips_output_function_prologue): Use mips_start_function_definition.
+	(mips_output_function_epilogue): Use mips_end_function_definition.
+	(build_mips16_function_stub): Use mips_start_function_definition
+	and mips_end_function_definition.
+	(build_mips16_call_stub): Likewise.
+
 2008-08-09  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_build_call_1): Deal with FUNCTION_DECL fn.
