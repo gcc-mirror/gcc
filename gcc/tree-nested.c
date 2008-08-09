@@ -363,8 +363,7 @@ init_tmp_var_with_call (struct nesting_info *info, gimple_stmt_iterator *gsi,
 {
   tree t;
 
-  t = create_tmp_var_for (info, TREE_TYPE (TREE_TYPE (gimple_call_fn (call))),
-                          NULL);
+  t = create_tmp_var_for (info, gimple_call_return_type (call), NULL);
   gimple_call_set_lhs (call, t);
   if (! gsi_end_p (*gsi))
     gimple_set_location (call, gimple_location (gsi_stmt (*gsi)));
@@ -1851,8 +1850,8 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   switch (gimple_code (stmt))
     {
     case GIMPLE_CALL:
-      decl = gimple_call_fn (stmt);
-      if (TREE_CODE (decl) != FUNCTION_DECL)
+      decl = gimple_call_fndecl (stmt);
+      if (!decl)
 	break;
       target_context = decl_function_context (decl);
       if (target_context && !DECL_NO_STATIC_CHAIN (decl))

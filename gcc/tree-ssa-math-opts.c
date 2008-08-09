@@ -533,7 +533,7 @@ execute_cse_reciprocals (void)
 		  if (!fndecl)
 		    continue;
 
-		  gimple_call_set_fn (stmt1, fndecl);
+		  gimple_call_set_fndecl (stmt1, fndecl);
 		  update_stmt (stmt1);
 
 		  gimple_assign_set_rhs_code (stmt, MULT_EXPR);
@@ -840,7 +840,7 @@ execute_convert_to_rsqrt (void)
 		  fold_stmt_inplace (stmt1);
 		  update_stmt (stmt1);
 
-		  gimple_call_set_fn (stmt, fndecl);
+		  gimple_call_set_fndecl (stmt, fndecl);
 		  update_stmt (stmt);
 		}
 	    }

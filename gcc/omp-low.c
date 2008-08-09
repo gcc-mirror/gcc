@@ -3222,7 +3222,7 @@ optimize_omp_library_calls (gimple entry_stmt)
 		   != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (built_in))))
 	      continue;
 
-	    gimple_call_set_fn (call, build_fold_addr_expr (built_in));
+	    gimple_call_set_fndecl (call, built_in);
 	  }
       }
 }

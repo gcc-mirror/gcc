@@ -541,10 +541,8 @@ static tree
 gimple_divmod_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
 			   gcov_type all)
 {
-  gimple stmt1, stmt2, stmt3, label1, label2;
+  gimple stmt1, stmt2, stmt3;
   tree tmp1, tmp2, tmpv;
-  tree label_decl1 = create_artificial_label ();
-  tree label_decl2 = create_artificial_label ();
   gimple bb1end, bb2end, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
@@ -573,17 +571,13 @@ gimple_divmod_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
   bb1end = stmt3;
 
   tmp2 = create_tmp_var (optype, "PROF");
-  label1 = gimple_build_label (label_decl1);
   stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), tmp2,
 					op1, tmpv);
-  gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
 
-  label2 = gimple_build_label (label_decl2);
   stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), tmp2,
 					op1, op2);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
 
@@ -702,9 +696,6 @@ gimple_mod_pow2 (gimple stmt, int prob, gcov_type count, gcov_type all)
 {
   gimple stmt1, stmt2, stmt3, stmt4;
   tree tmp2, tmp3;
-  tree label_decl1 = create_artificial_label ();
-  tree label_decl2 = create_artificial_label ();
-  gimple label1, label2;
   gimple bb1end, bb2end, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
@@ -736,16 +727,12 @@ gimple_mod_pow2 (gimple stmt, int prob, gcov_type count, gcov_type all)
   bb1end = stmt4;
 
   /* tmp2 == op2-1 inherited from previous block.  */
-  label1 = gimple_build_label (label_decl1);
   stmt1 = gimple_build_assign_with_ops (BIT_AND_EXPR, result, op1, tmp2);
-  gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
 
-  label2 = gimple_build_label (label_decl2);
   stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), result,
 					op1, op2);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
 
@@ -861,10 +848,6 @@ gimple_mod_subtract (gimple stmt, int prob1, int prob2, int ncounts,
 {
   gimple stmt1, stmt2, stmt3;
   tree tmp1;
-  tree label_decl1 = create_artificial_label ();
-  tree label_decl2 = create_artificial_label ();
-  tree label_decl3 = create_artificial_label ();
-  gimple label1, label2, label3;
   gimple bb1end, bb2end = NULL, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype, op1, op2;
@@ -894,25 +877,18 @@ gimple_mod_subtract (gimple stmt, int prob1, int prob2, int ncounts,
 
   if (ncounts)	/* Assumed to be 0 or 1 */
     {
-      label1 = gimple_build_label (label_decl1);
       stmt1 = gimple_build_assign_with_ops (MINUS_EXPR, result, result, tmp1);
       stmt2 = gimple_build_cond (LT_EXPR, result, tmp1, NULL_TREE, NULL_TREE);
-      gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
       gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
       gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
       bb2end = stmt2;
     }
 
   /* Fallback case. */
-  label2 = gimple_build_label (label_decl2);
   stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), result,
 					result, tmp1);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb3end = stmt1;
-
-  label3 = gimple_build_label (label_decl3);
-  gsi_insert_before (&gsi, label3, GSI_SAME_STMT);
 
   /* Fix CFG. */
   /* Edge e23 connects bb2 to bb3, etc. */
@@ -1098,9 +1074,6 @@ gimple_ic (gimple stmt, gimple call, struct cgraph_node *direct_call,
 {
   gimple stmt1, stmt2, stmt3;
   tree tmp1, tmpv, tmp;
-  tree label_decl1 = create_artificial_label ();
-  tree label_decl2 = create_artificial_label ();
-  gimple label1, label2;
   gimple bb1end, bb2end, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype = build_pointer_type (void_type_node);
@@ -1124,16 +1097,11 @@ gimple_ic (gimple stmt, gimple call, struct cgraph_node *direct_call,
   gsi_insert_before (&gsi, stmt3, GSI_SAME_STMT);
   bb1end = stmt3;
 
-  label1 = gimple_build_label (label_decl1);
   stmt1 = gimple_copy (stmt);
   gimple_call_set_fn (stmt,
 		      build_addr (direct_call->decl, current_function_decl));
-  gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
-
-  label2 = gimple_build_label (label_decl2);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
   bb3end = stmt;
 
   /* Fix CFG. */
@@ -1287,9 +1255,6 @@ gimple_stringop_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
 {
   gimple stmt1, stmt2, stmt3;
   tree tmp1, tmpv;
-  tree label_decl1 = create_artificial_label ();
-  tree label_decl2 = create_artificial_label ();
-  gimple label1, label2;
   gimple bb1end, bb2end;
   basic_block bb, bb2, bb3, bb4;
   edge e12, e13, e23, e24, e34;
@@ -1325,17 +1290,13 @@ gimple_stringop_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
   gsi_insert_before (&gsi, stmt3, GSI_SAME_STMT);
   bb1end = stmt3;
 
-  label1 = gimple_build_label (label_decl1);
   stmt1 = gimple_copy (stmt);
   gimple_call_set_arg (stmt1, 2, value);
-  gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   region = lookup_stmt_eh_region (stmt);
   if (region >= 0)
     add_stmt_to_eh_region (stmt1, region);
   bb2end = stmt1;
-  label2 = gimple_build_label (label_decl2);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
 
   /* Fix CFG. */
   /* Edge e23 connects bb2 to bb3, etc. */
@@ -1581,13 +1542,11 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
 {
   tree callee;
 
-  if (gimple_code (stmt) != GIMPLE_CALL)
+  if (gimple_code (stmt) != GIMPLE_CALL
+      || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
 
   callee = gimple_call_fn (stmt);
-  
-  if (TREE_CODE (callee) == FUNCTION_DECL)
-    return;
 
   VEC_reserve (histogram_value, heap, *values, 3);
 

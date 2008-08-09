@@ -1,3 +1,32 @@
+2008-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_build_call_1): Deal with FUNCTION_DECL fn.
+	* gimple.h (gimple_call_fn): Adjust comment.
+	(gimple_call_set_fndecl): New function.
+	(gimple_call_fndecl): Adjust for GIMPLE_CALL no
+	longer having bare FUNCTION_DECL operand.
+	(gimple_call_return_type): Likewise.
+	* tree-cfg.c (verify_stmt): Verify function operand of a GIMPLE_CALL.
+
+	* value-prof.c (gimple_divmod_fixed_value): Do not emit labels.
+	(gimple_mod_pow2): Likewise.
+	(gimple_mod_subtract): Likewise.
+	(gimple_ic): Likewise.
+	(gimple_stringop_fixed_value): Likewise.
+	(gimple_indirect_call_to_profile): Fix for GIMPLE_CALL no
+	longer having bare FUNCTION_DECL operand.
+	* ipa-cp.c (ipcp_update_callgraph): Use gimple_call_set_fndecl.
+	* omp-low.c (optimize_omp_library_calls): Likewise.
+	* cgraphunit.c (update_call_expr): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	(execute_convert_to_rsqrt): Likewise.
+	* cfgexpand.c (gimple_to_tree): Simplify.
+	(release_stmt_tree): Fix for GIMPLE_CALL no longer having
+	bare FUNCTION_DECL operand.
+	* tree-nested.c (init_tmp_var_with_call): Use gimple_call_return_type.
+	(convert_gimple_call): Use gimple_call_fndecl.
+	* c-common.c (c_warn_unused_result): Likewise.
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/17880
