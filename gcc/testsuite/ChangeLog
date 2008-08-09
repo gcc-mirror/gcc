@@ -1,5 +1,10 @@
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c++/12242
+	* g++.dg/warn/pr12242.C: New.
+	
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 36901
 	* gcc.dg/pr36901-1.c: New.
 	* gcc.dg/pr36901-3.c: New.
