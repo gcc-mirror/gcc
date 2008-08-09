@@ -1,3 +1,8 @@
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc-interface/misc.c (gnat_handle_option): Replace set_Wunused
+	by warn_unused.
+	
 2008-08-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Generate_Prim_Op_References): New procedure, abstracted
