@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-05-06 21:51+0200\n"
+"PO-Revision-Date: 2008-08-07 20:38+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -27175,7 +27175,7 @@ msgstr "omdefinition av %q#T"
 #: cp/class.c:5246
 #, gcc-internal-format
 msgid "%q#T has virtual functions and accessible non-virtual destructor"
-msgstr "%q#T har virtuella funktioner och åtkomlig icketrivial destruerare"
+msgstr "%q#T har virtuella funktioner och åtkomlig ickevirtuell destruerare"
 
 #: cp/class.c:5348
 #, gcc-internal-format
