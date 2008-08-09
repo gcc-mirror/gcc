@@ -1,5 +1,13 @@
 2008-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Revert fix for libstdc++/35637, thanks to other/36901.
+	* include/tr1_impl/type_traits (__is_function_helper): New, uses
+	variadic templates.
+	(is_function): Forward to the latter.
+	(__in_array): Remove.
+
+2008-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* config/locale/darwin/ctype_members.cc: Include <cstdio>.
 
 2008-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
