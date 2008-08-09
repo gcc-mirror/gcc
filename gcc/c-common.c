@@ -1902,8 +1902,10 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 	  && DECL_NAME (list->expr))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
-	  warning (OPT_Wsequence_point, "operation on %qE may be undefined",
-		   list->expr);
+	  warning_at (EXPR_HAS_LOCATION (writer)
+		      ? EXPR_LOCATION (writer) : input_location,
+		      OPT_Wsequence_point, "operation on %qE may be undefined",
+		      list->expr);
 	}
       list = list->next;
     }

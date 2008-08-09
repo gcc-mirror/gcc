@@ -1,5 +1,10 @@
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/17880
+	* gcc.dg/sequence-pt-pr17880.c: New.
+
+2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/12242
 	* g++.dg/warn/pr12242.C: New.
 	

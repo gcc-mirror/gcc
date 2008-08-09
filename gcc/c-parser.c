@@ -3791,6 +3791,23 @@ c_parser_statement_after_labels (c_parser *parser)
   parser->in_if_block = in_if_block;
 }
 
+/* Parse the condition from an if, do, while or for statements.  */
+
+static tree
+c_parser_condition (c_parser *parser)
+{
+  location_t loc;
+  tree cond;
+  loc = c_parser_peek_token (parser)->location;
+  cond = c_objc_common_truthvalue_conversion 
+    (c_parser_expression_conv (parser).value);
+  if (CAN_HAVE_LOCATION_P (cond))
+    SET_EXPR_LOCATION (cond, loc);
+  if (warn_sequence_point)
+    verify_sequence_points (cond);
+  return cond;
+}
+
 /* Parse a parenthesized condition from an if, do or while statement.
 
    condition:
@@ -3799,15 +3816,10 @@ c_parser_statement_after_labels (c_parser *parser)
 static tree
 c_parser_paren_condition (c_parser *parser)
 {
-  location_t loc;
   tree cond;
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return error_mark_node;
-  loc = c_parser_peek_token (parser)->location;
-  cond = c_objc_common_truthvalue_conversion
-    (c_parser_expression_conv (parser).value);
-  if (CAN_HAVE_LOCATION_P (cond))
-    SET_EXPR_LOCATION (cond, loc);
+  cond = c_parser_condition (parser);
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
   return cond;
 }
@@ -4073,7 +4085,6 @@ c_parser_for_statement (c_parser *parser)
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 	}
       /* Parse the loop condition.  */
-      loc = c_parser_peek_token (parser)->location;
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  c_parser_consume_token (parser);
@@ -4081,10 +4092,7 @@ c_parser_for_statement (c_parser *parser)
 	}
       else
 	{
-	  tree ocond = c_parser_expression_conv (parser).value;
-	  cond = c_objc_common_truthvalue_conversion (ocond);
-	  if (CAN_HAVE_LOCATION_P (cond))
-	    SET_EXPR_LOCATION (cond, loc);
+	  cond = c_parser_condition (parser);
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 	}
       /* Parse the increment expression.  */
