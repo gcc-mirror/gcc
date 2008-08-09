@@ -1958,10 +1958,32 @@ enum reg_class
 
 #define RETURN_ADDR_RTX mips_return_addr
 
-/* Since the mips16 ISA mode is encoded in the least-significant bit
-   of the address, mask it off return addresses for purposes of
-   finding exception handling regions.  */
+/* Mask off the MIPS16 ISA bit in unwind addresses.
 
+   The reason for this is a little subtle.  When unwinding a call,
+   we are given the call's return address, which on most targets
+   is the address of the following instruction.  However, what we
+   actually want to find is the EH region for the call itself.
+   The target-independent unwind code therefore searches for "RA - 1".
+
+   In the MIPS16 case, RA is always an odd-valued (ISA-encoded) address.
+   RA - 1 is therefore the real (even-valued) start of the return
+   instruction.  EH region labels are usually odd-valued MIPS16 symbols
+   too, so a search for an even address within a MIPS16 region would
+   usually work.
+
+   However, there is an exception.  If the end of an EH region is also
+   the end of a function, the end label is allowed to be even.  This is
+   necessary because a following non-MIPS16 function may also need EH
+   information for its first instruction.
+
+   Thus a MIPS16 region may be terminated by an ISA-encoded or a
+   non-ISA-encoded address.  This probably isn't ideal, but it is
+   the traditional (legacy) behavior.  It is therefore only safe
+   to search MIPS EH regions for an _odd-valued_ address.
+
+   Masking off the ISA bit means that the target-independent code
+   will search for "(RA & -2) - 1", which is guaranteed to be odd.  */
 #define MASK_RETURN_ADDR GEN_INT (-2)
 
 

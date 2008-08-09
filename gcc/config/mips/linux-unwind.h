@@ -106,12 +106,17 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
     fs->regs.reg[i].loc.offset
       = (_Unwind_Ptr)&(sc->sc_regs[i]) + reg_offset - new_cfa;
   }
-  /* The PC points to the faulting instruction, but the unwind tables
-     expect it point to the following instruction.  We compensate by
-     reporting a return address at the next instruction. */
+  /* "PC & -2" points to the faulting instruction, but the unwind code
+     searches for "(ADDR & -2) - 1".  (See MASK_RETURN_ADDR for the source
+     of the -2 mask.)  Adding 2 here ensures that "(ADDR & -2) - 1" is the
+     address of the second byte of the faulting instruction.
+
+     Note that setting fs->signal_frame would not work.  As the comment
+     above MASK_RETURN_ADDR explains, MIPS unwinders must earch for an
+     odd-valued address.  */
   fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].how = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].loc.offset
-    = (_Unwind_Ptr)(sc->sc_pc) + 4 - new_cfa;
+    = (_Unwind_Ptr)(sc->sc_pc) + 2 - new_cfa;
   fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
 
   return _URC_NO_REASON;
