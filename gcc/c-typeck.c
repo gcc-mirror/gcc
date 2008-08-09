@@ -4801,6 +4801,9 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	}
     }
 
+  if (warn_sequence_point)
+    verify_sequence_points (inside_init);
+
   /* Any type can be initialized
      from an expression of the same type, optionally with braces.  */
 
@@ -7166,6 +7169,9 @@ c_finish_return (tree retval)
 	}
 
       retval = build2 (MODIFY_EXPR, TREE_TYPE (res), res, t);
+
+      if (warn_sequence_point)
+	verify_sequence_points (retval);
     }
 
   ret_stmt = build_stmt (RETURN_EXPR, retval);
@@ -7243,6 +7249,9 @@ c_start_case (tree exp)
 		     "converted to %<int%> in ISO C");
 
 	  exp = default_conversion (exp);
+
+	  if (warn_sequence_point)
+	    verify_sequence_points (exp);
 	}
     }
 
