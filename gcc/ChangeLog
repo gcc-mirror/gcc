@@ -1,3 +1,10 @@
+2008-08-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_types): Move the AT43USB320 device to
+	avr31 architecture.
+	* config/avr/avr.h (CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.gcc (mips*-*-linux*, mips64*-*-linux*): Add
