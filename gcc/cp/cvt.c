@@ -638,19 +638,35 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (e);
-      /* enum = enum, enum = int, enum = float, (enum)pointer are all
-	 errors.  */
-      if (TREE_CODE (type) == ENUMERAL_TYPE
-	  && (((INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
+
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  /* enum = enum, enum = int, enum = float, (enum)pointer are all
+	     errors.  */
+	  if (((INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
 		|| TREE_CODE (intype) == REAL_TYPE)
 	       && ! (convtype & CONV_STATIC))
-	      || TREE_CODE (intype) == POINTER_TYPE))
-	{
-	  if (flags & LOOKUP_COMPLAIN)
-	    permerror ("conversion from %q#T to %q#T", intype, type);
+	      || TREE_CODE (intype) == POINTER_TYPE)
+	    {
+	      if (flags & LOOKUP_COMPLAIN)
+		permerror ("conversion from %q#T to %q#T", intype, type);
 
-	  if (!flag_permissive)
-	    return error_mark_node;
+	      if (!flag_permissive)
+		return error_mark_node;
+	    }
+
+	  /* [expr.static.cast]
+
+	     8. A value of integral or enumeration type can be explicitly
+	     converted to an enumeration type. The value is unchanged if
+	     the original value is within the range of the enumeration
+	     values. Otherwise, the resulting enumeration value is
+	     unspecified.  */
+	  if (TREE_CODE (expr) == INTEGER_CST && !int_fits_type_p (expr, type))
+	    warning (OPT_Wconversion, 
+		     "the result of the conversion is unspecified because "
+		     "%qE is outside the range of type %qT",
+		     expr, type);
 	}
       if (MAYBE_CLASS_TYPE_P (intype))
 	{
