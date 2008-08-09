@@ -1,5 +1,142 @@
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config.gcc (mips*-*-linux*, mips64*-*-linux*): Add
+	mips/t-libgcc-mips16 to tmake_file.
+	* config/mips/mips-protos.h (mips_call_type): New enum.
+	(mips_pic_base_register, mips_got_load): Declare.
+	(mips_restore_gp): Take an rtx argument.
+	(mips_use_pic_fn_addr_reg_p): Declare.
+	(mips_expand_call): Replace the sibcall_p argument with
+	a mips_call_type argument.  Add a lazy_p parameter.
+	(mips_split_call): Declare.
+	* config/mips/mips.h (MIPS16_PIC_TEMP_REGNUM): New macro.
+	(MIPS16_PIC_TEMP): Likewise.
+	(reg_class): Delete M16_NA_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update accordingly.
+	(SYMBOL_FLAG_BIND_NOW, SYMBOL_REF_BIND_NOW_P): New macros.
+	(mips_split_hi_p): Declare.
+	* config/mips/mips.c (mips_split_hi_p): New array.
+	(mips_regno_to_class): Change M16_NA_REGS entries to M16_REGS.
+	(mips_got_symbol_type_p): New function.
+	(mips_global_symbol_p): Check SYMBOL_REF_EXTERNAL_P.
+	(mips16_stub_function_p): New function.
+	(mips16_local_function_p): Likewise.
+	(mips_use_pic_fn_addr_reg_p): Likewise.
+	(mips_cannot_force_const_mem): Return false for HIGHs.
+	Extend CONST_INT and symbolic handling to MIPS16, using
+	mips_symbol_insns to check that the base symbol type is a
+	legitimate constant.  Reject GOT-based constants if
+	TARGET_MIPS16_PCREL_LOADS.
+	(mips_const_insns): Check targetm.cannot_force_const_mem when
+	decomposing a symbolic base and a large offset.
+	(mips_emit_call_insn): Add ORIG_ADDR and ADDR parameters.
+	When calling a function that needs $25 from MIPS16 code,
+	move the target address into $25 separately and add a USE
+	to the call insn.
+	(mips16_gp_pseudo_reg): Insert the initializer immediately
+	before the first real insn.
+	(mips_pic_base_register, mips_got_load): New functions.
+	(mips_split_symbol): Generalize the name of the LO_SUM_OUT
+	parameter to LOW_OUT.  Say that it can be any valid SET_SRC
+	when splitting a load-address operation.  Split SYMBOL_GOT_DISP
+	constants and highs of SYMBOL_GOT_PAGE_OFST constants.
+	(mips_call_tls_get_addr): Update the call to mips_expand_call,
+	also passing NULL_RTX rather than const0_rtx as the aux argument.
+	(mips_rewrite_small_data_p): Check mips_lo_relocs and mips_split_p
+	instead of TARGET_EXPLICIT_RELOCS.
+	(mips_ok_for_lazy_binding_p): Check SYMBOL_REF_BIND_NOW_P.
+	(mips_load_call_address): Replace the sibcall_p argument with
+	a mips_call_type argument.  Use mips_got_load.
+	(mips16_local_alias): New structure.
+	(mips16_local_aliases): New variable.
+	(mips16_local_aliases_hash): New function.
+	(mips16_local_aliases_eq): Likewise.
+	(mips16_local_alias): Likewise.
+	(mips16_stub_function): Likewise.
+	(mips16_build_function_stub): Create a local alias for the target
+	function.  Handle TARGET_ABICALLS.  For PIC abicalls, emit a
+	.cpload directive and an R_MIPS_NONE relocation for the target
+	function, then load the alias rather than the function itself.
+	Wrap the non-PIC abicalls version in ".option pic0/.option pic2".
+	(mips16_copy_fpr_return_value): Use mips16_stub_function and
+	mips_expand_call.  Set SYMBOL_REF_BIND_NOW on the symbol.
+	(mips16_build_call_stub): Replace the FN parameter with an
+	FN_PTR parameter.  Force the address into a register if it
+	isn't a call_insn_operand; don't rely on the caller to do this.
+	If a call to a locally-defined and locally-binding MIPS16
+	function must be made indirectly, redirect the call to the
+	function's local alias.  Use mips16_stub_function_p,
+	mips16_stub_function, mips_expand_call and use_reg.
+	Set SYMBOL_FLAG_BIND_NOW on __mips_call_* symbols.
+	Use explicit %hi and %lo accesses where possible.
+	Use MIPS_CALL to generate the correct code form of a
+	jal instruction.  Add clobbers of $18 instead of uses.
+	Update the call to mips_emit_call_insn.
+	(mips_expand_call): Replace the SIBCALL_P argument with a
+	mips_call_type argument and handle the new MIPS_CALL_EPILOGUE value.
+	Take a LAZY_P parameter.  Call mips16_build_call_stub first,
+	allowing it to modify the call address.  Update the calls to
+	mips_load_call_address and mips_emit_call_insn.
+	(mips_split_call): New function.
+	(mips_init_relocs): Clear mips_split_hi_p.  Only use %gp_rel if
+	!TARGET_MIPS16.  Split SYMBOL_GOT_DISP, and the high parts of
+	SYMBOL_GOT_PAGE_OFST, for MIPS16 code.
+	(mips_global_pointer): Check mips16_cfun_returns_in_fpr_p.
+	(mips_extra_live_on_entry): Include MIPS16_PIC_TEMP_REGNUM
+	if TARGET_MIPS16.
+	(mips_cprestore_slot): New function.
+	(mips_restore_gp): Take a TEMP parameter.  Handle TARGET_MIPS16
+	and use mips_cprestore_slot.
+	(mips_output_function_prologue): Handle TARGET_MIPS16 for
+	LOADGP_OLDABI.
+	(mips_emit_loadgp): Move into MIPS16_PIC_TEMP for MIPS16,
+	then use a copygp_mips16 instruction to set up $28.
+	(mips_expand_prologue): Initialize the cprestore slot for MIPS16 too.
+	(mips16_lay_out_constants): Call split_all_insns_noflow.
+	(mips_reorg_process_insns): Explicitly set all_noreorder_p to
+	false if TARGET_MIPS16.
+	(mips_reorg): Don't call vr4130_align_insns if TARGET_MIPS16.
+	(mips_output_mi_thunk): Use mips_got_symbol_type_p.  Use the
+	mips_dangerous_for_la25_p approach for MIPS16 PIC calls too.
+	(mips_set_mips16_mode): Always set MASK_EXPLICIT_RELOCS for
+	MIPS16 code.  Allow MIPS16 o32 PIC.
+	(mips_override_options): Allow MIPS16 o32 PIC.
+	* config/mips/mips.md: Lower CONST_GP_P moves into register moves
+	after reload if TARGET_USE_GOT.
+	(UNSPEC_COPYGP): New constant.
+	(length): Use a default length of 8 for MIPS16 GOT loads.
+	(*got_disp<mode>): Check mips_split_p instead of TARGET_XGOT.
+	(*got_page<mode>): Check mips_split_hi_p.
+	(*got_disp<mode>, *got_page<mode>): Use mips_got_load.
+	(unspec_got<mode>, unspec_call<mode>): New expanders.
+	(load_got<mode>, load_call<mode>): Remove the length attributes.
+	Use a got attribute instead of a type attribute.
+	(copygp_mips16): New insn.
+	(restore_gp): Add a scratch clobber and pass it to mips_restore_gp.
+	(load_call<mode>): Use a "d" constraint instead of an "r" constraint.
+	(sibcall, sibcall_value, call, call_value): Update the calls
+	to mips_expand_call.
+	(call_internal, call_value_internal): Use mips_split_call.
+	(call_value_multiple_internal): Likewise.
+	(call_split): Move after call_internal (the insn it is split from).
+	(call_internal_direct, call_value_internal_direct): Turn into
+	define_insn_and_splits.  Split if TARGET_SPLIT_CALLS.
+	(call_direct_split, call_value_direct_split): New patterns.
+	* config/mips/constraints.md (c): Handle TARGET_MIPS16 first
+	and use M16_REGS instead of M16_NA_REGS.
+	* config/mips/predicates.md (const_call_insn_operand): Replace
+	the TARGET_ABSOLUTE_ABICALLS-based check with a more general
+	mips_use_pic_fn_addr_reg_p check.
+	(move_operand): Reject HIGHs if mips_split_hi_p.
+	* config/mips/mips16.S: Assembly as empty if the ABI is not suitable.
+	(__mips16_floatunsisf): Inline __mips16_floatsisf.
+	(CALL_STUB_NO_RET, CALL_STUB_REG): Copy the target register to $25.
+	* config/mips/libgcc-mips16.ver: New file.
+	* config/mips/t-libgcc-mips16 (SHLIB_MAPFILES): Add
+	$(srcdir)/config/mips/libgcc-mips16.ver.
+
+2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips_unspec_address_offset): Move earlier in file.
 	(mips_unspec_address, mips_unspec_offset_high): Likewise.
 	(mips_ok_for_lazy_binding_p, mips_load_call_address): Likewise.

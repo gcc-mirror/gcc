@@ -66,6 +66,7 @@
    (UNSPEC_MEMORY_BARRIER	45)
    (UNSPEC_SET_GOT_VERSION	46)
    (UNSPEC_UPDATE_GOT_VERSION	47)
+   (UNSPEC_COPYGP		48)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -478,7 +479,9 @@
 	  (const_int 0)
 
 	  (eq_attr "got" "load")
-	  (const_int 4)
+	  (if_then_else (ne (symbol_ref "TARGET_MIPS16") (const_int 0))
+			(const_int 8)
+			(const_int 4))
 	  (eq_attr "got" "xgot_high")
 	  (const_int 8)
 
@@ -3590,15 +3593,11 @@
 (define_insn_and_split "*got_disp<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
 	(match_operand:P 1 "got_disp_operand" ""))]
-  "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
+  "TARGET_EXPLICIT_RELOCS && !mips_split_p[SYMBOL_GOT_DISP]"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0)
-	(unspec:P [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
-{
-  operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_DISP);
-}
+  [(set (match_dup 0) (match_dup 2))]
+  { operands[2] = mips_got_load (NULL, operands[1], SYMBOL_GOTOFF_DISP); }
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
@@ -3607,17 +3606,18 @@
 (define_insn_and_split "*got_page<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
 	(high:P (match_operand:P 1 "got_page_ofst_operand" "")))]
-  "TARGET_EXPLICIT_RELOCS"
+  "TARGET_EXPLICIT_RELOCS && !mips_split_hi_p[SYMBOL_GOT_PAGE_OFST]"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0)
-	(unspec:P [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
-{
-  operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_PAGE);
-}
+  [(set (match_dup 0) (match_dup 2))]
+  { operands[2] = mips_got_load (NULL, operands[1], SYMBOL_GOTOFF_PAGE); }
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
+
+;; Convenience expander that generates the rhs of a load_got<mode> insn.
+(define_expand "unspec_got<mode>"
+  [(unspec:P [(match_operand:P 0)
+	      (match_operand:P 1)] UNSPEC_LOAD_GOT)])
 
 ;; Lower-level instructions for loading an address from the GOT.
 ;; We could use MEMs, but an unspec gives more optimization
@@ -3630,9 +3630,8 @@
 		  UNSPEC_LOAD_GOT))]
   ""
   "<load>\t%0,%R2(%1)"
-  [(set_attr "type" "load")
-   (set_attr "mode" "<MODE>")
-   (set_attr "length" "4")])
+  [(set_attr "got" "load")
+   (set_attr "mode" "<MODE>")])
 
 ;; Instructions for adding the low 16 bits of an address to a register.
 ;; Operand 2 is the address: mips_print_operand works out which relocation
@@ -3656,6 +3655,15 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")
    (set_attr "extended_mips16" "yes")])
+
+;; Expose MIPS16 uses of the global pointer after reload if the function
+;; is responsible for setting up the register itself.
+(define_split
+  [(set (match_operand:GPR 0 "d_operand")
+	(const:GPR (unspec:GPR [(const_int 0)] UNSPEC_GP)))]
+  "TARGET_MIPS16 && TARGET_USE_GOT && reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  { operands[1] = pic_offset_table_rtx; })
 
 ;; Allow combine to split complex const_int load sequences, using operand 2
 ;; to store the intermediate results.  See move_operand for details.
@@ -4520,6 +4528,18 @@
   operands[4] = mips_unspec_address (operands[2], SYMBOL_HALF);
 }
   [(set_attr "length" "12")])
+
+;; Initialize the global pointer for MIPS16 code.  Operand 0 is the
+;; global pointer and operand 1 is the MIPS16 register that holds
+;; the required value.
+(define_insn_and_split "copygp_mips16"
+  [(set (match_operand:SI 0 "register_operand" "=y")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "d")]
+			    UNSPEC_COPYGP))]
+  "TARGET_MIPS16"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))])
 
 ;; Emit a .cprestore directive, which normally expands to a single store
 ;; instruction.  Note that we continue to use .cprestore for explicit reloc
@@ -5981,16 +6001,17 @@
 ;; volatile until all uses of $28 are exposed.
 (define_insn_and_split "restore_gp"
   [(set (reg:SI 28)
-	(unspec_volatile:SI [(const_int 0)] UNSPEC_RESTORE_GP))]
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_RESTORE_GP))
+   (clobber (match_scratch:SI 0 "=&d"))]
   "TARGET_CALL_CLOBBERED_GP"
   "#"
   "&& reload_completed"
   [(const_int 0)]
 {
-  mips_restore_gp ();
+  mips_restore_gp (operands[0]);
   DONE;
 }
-  [(set_attr "type"   "load")
+  [(set_attr "type" "load")
    (set_attr "length" "12")])
 
 ;;
@@ -6043,16 +6064,22 @@
 ;;    - Leave GOT_VERSION_REGNUM out of all register classes.
 ;;	The register is therefore not a valid register_operand
 ;;	and cannot be moved to or from other registers.
+
+;; Convenience expander that generates the rhs of a load_call<mode> insn.
+(define_expand "unspec_call<mode>"
+  [(unspec:P [(match_operand:P 0)
+	      (match_operand:P 1)
+	      (reg:SI GOT_VERSION_REGNUM)] UNSPEC_LOAD_CALL)])
+
 (define_insn "load_call<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(unspec:P [(match_operand:P 1 "register_operand" "r")
+	(unspec:P [(match_operand:P 1 "register_operand" "d")
 		   (match_operand:P 2 "immediate_operand" "")
 		   (reg:SI GOT_VERSION_REGNUM)] UNSPEC_LOAD_CALL))]
   "TARGET_USE_GOT"
   "<load>\t%0,%R2(%1)"
-  [(set_attr "type" "load")
-   (set_attr "mode" "<MODE>")
-   (set_attr "length" "4")])
+  [(set_attr "got" "load")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "set_got_version"
   [(set (reg:SI GOT_VERSION_REGNUM)
@@ -6088,7 +6115,8 @@
 	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
   "TARGET_SIBCALLS"
 {
-  mips_expand_call (0, XEXP (operands[0], 0), operands[1], operands[2], true);
+  mips_expand_call (MIPS_CALL_SIBCALL, NULL_RTX, XEXP (operands[0], 0),
+		    operands[1], operands[2], false);
   DONE;
 })
 
@@ -6106,8 +6134,8 @@
 	      (use (match_operand 3 ""))])]		;; next_arg_reg
   "TARGET_SIBCALLS"
 {
-  mips_expand_call (operands[0], XEXP (operands[1], 0),
-		    operands[2], operands[3], true);
+  mips_expand_call (MIPS_CALL_SIBCALL, operands[0], XEXP (operands[1], 0),
+		    operands[2], operands[3], false);
   DONE;
 })
 
@@ -6137,7 +6165,8 @@
 	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
   ""
 {
-  mips_expand_call (0, XEXP (operands[0], 0), operands[1], operands[2], false);
+  mips_expand_call (MIPS_CALL_NORMAL, NULL_RTX, XEXP (operands[0], 0),
+		    operands[1], operands[2], false);
   DONE;
 })
 
@@ -6187,28 +6216,44 @@
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
   [(const_int 0)]
 {
-  emit_call_insn (gen_call_split (operands[0], operands[1]));
-  if (!find_reg_note (operands[2], REG_NORETURN, 0))
-    mips_restore_gp ();
+  mips_split_call (operands[2], gen_call_split (operands[0], operands[1]));
   DONE;
 }
   [(set_attr "jal" "indirect,direct")])
+
+(define_insn "call_split"
+  [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:SI 31))
+   (clobber (reg:SI 28))]
+  "TARGET_SPLIT_CALLS"
+  { return MIPS_CALL ("jal", operands, 0); }
+  [(set_attr "type" "call")])
 
 ;; A pattern for calls that must be made directly.  It is used for
 ;; MIPS16 calls that the linker may need to redirect to a hard-float
 ;; stub; the linker relies on the call relocation type to detect when
 ;; such redirection is needed.
-(define_insn "call_internal_direct"
+(define_insn_and_split "call_internal_direct"
   [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
 	 (match_operand 1))
    (const_int 1)
    (clobber (reg:SI 31))]
   ""
-  { return MIPS_CALL ("jal", operands, 0); })
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0); }
+  "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
+  [(const_int 0)]
+{
+  mips_split_call (operands[2],
+		   gen_call_direct_split (operands[0], operands[1]));
+  DONE;
+}
+  [(set_attr "type" "call")])
 
-(define_insn "call_split"
-  [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
-	 (match_operand 1 "" ""))
+(define_insn "call_direct_split"
+  [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
+	 (match_operand 1))
+   (const_int 1)
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
@@ -6222,7 +6267,7 @@
 	      (use (match_operand 3 ""))])]		;; next_arg_reg
   ""
 {
-  mips_expand_call (operands[0], XEXP (operands[1], 0),
+  mips_expand_call (MIPS_CALL_NORMAL, operands[0], XEXP (operands[1], 0),
 		    operands[2], operands[3], false);
   DONE;
 })
@@ -6238,10 +6283,9 @@
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
   [(const_int 0)]
 {
-  emit_call_insn (gen_call_value_split (operands[0], operands[1],
-					operands[2]));
-  if (!find_reg_note (operands[3], REG_NORETURN, 0))
-    mips_restore_gp ();
+  mips_split_call (operands[3],
+		   gen_call_value_split (operands[0], operands[1],
+					 operands[2]));
   DONE;
 }
   [(set_attr "jal" "indirect,direct")])
@@ -6257,14 +6301,34 @@
   [(set_attr "type" "call")])
 
 ;; See call_internal_direct.
-(define_insn "call_value_internal_direct"
+(define_insn_and_split "call_value_internal_direct"
   [(set (match_operand 0 "register_operand")
         (call (mem:SI (match_operand 1 "const_call_insn_operand"))
               (match_operand 2)))
    (const_int 1)
    (clobber (reg:SI 31))]
   ""
-  { return MIPS_CALL ("jal", operands, 1); })
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
+  "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
+  [(const_int 0)]
+{
+  mips_split_call (operands[3],
+		   gen_call_value_direct_split (operands[0], operands[1],
+						operands[2]));
+  DONE;
+}
+  [(set_attr "type" "call")])
+
+(define_insn "call_value_direct_split"
+  [(set (match_operand 0 "register_operand")
+        (call (mem:SI (match_operand 1 "const_call_insn_operand"))
+              (match_operand 2)))
+   (const_int 1)
+   (clobber (reg:SI 31))
+   (clobber (reg:SI 28))]
+  "TARGET_SPLIT_CALLS"
+  { return MIPS_CALL ("jal", operands, 1); }
+  [(set_attr "type" "call")])
 
 ;; See comment for call_internal.
 (define_insn_and_split "call_value_multiple_internal"
@@ -6280,10 +6344,9 @@
   "reload_completed && TARGET_SPLIT_CALLS && (operands[4] = insn)"
   [(const_int 0)]
 {
-  emit_call_insn (gen_call_value_multiple_split (operands[0], operands[1],
-						 operands[2], operands[3]));
-  if (!find_reg_note (operands[4], REG_NORETURN, 0))
-    mips_restore_gp ();
+  mips_split_call (operands[4],
+		   gen_call_value_multiple_split (operands[0], operands[1],
+						  operands[2], operands[3]));
   DONE;
 }
   [(set_attr "jal" "indirect,direct")])

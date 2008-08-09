@@ -1904,6 +1904,9 @@ case "${target}" in
   mipsisa*-*-elfoabi*)
     target_makefile_frag="config/mt-mips-elfoabi"
     ;;
+  mips*-*-*linux* | mips*-*-gnu*)
+    target_makefile_frag="config/mt-mips-gnu"
+    ;;
   *-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;

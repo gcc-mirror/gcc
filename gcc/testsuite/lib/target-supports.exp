@@ -439,6 +439,14 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
+    # We don't yet support profiling for MIPS16.
+    if { [istarget mips*-*-*]
+	 && ![check_effective_target_nomips16]
+	 && ([lindex $test_what 1] == "-p"
+	     || [lindex $test_what 1] == "-pg") } {
+	return 0
+    }
+
     # MinGW does not support -p.
     if { [istarget *-*-mingw*] && [lindex $test_what 1] == "-p" } {
 	return 0

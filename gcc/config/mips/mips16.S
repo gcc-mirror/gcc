@@ -38,6 +38,8 @@ Boston, MA 02110-1301, USA.  */
    values using the soft-float calling convention, but do the actual
    operation using the hard floating point instructions.  */
 
+#if defined _MIPS_SIM && (_MIPS_SIM == _ABIO32 || _MIPS_SIM == _ABIO64)
+
 /* This file contains 32-bit assembly code.  */
 	.set nomips16
 
@@ -303,8 +305,12 @@ STARTFN (__mips16_floatsisf)
 
 #ifdef L_m16fltunsisf
 STARTFN (__mips16_floatunsisf)
+	.set	noreorder
 	bltz	$4,1f
-	j	__mips16_floatsisf
+	MOVE_SF_BYTE0 (t)
+	.set	reorder
+	cvt.s.w	RET,ARG1
+	MOVE_SF_RET (f, $31)
 1:		
 	and	$2,$4,1
 	srl	$3,$4,1
@@ -522,7 +528,10 @@ RET_FUNCTION (__mips16_ret_dc, DC)
 #define CALL_STUB_NO_RET(NAME, CODE)	\
 STARTFN (NAME);				\
 	STUB_ARGS_##CODE;		\
+	.set	noreorder;		\
 	jr	$2;			\
+	move	$25,$2;			\
+	.set	reorder;		\
 	ENDFN (NAME)
 
 #ifdef L_m16stub1
@@ -569,7 +578,10 @@ CALL_STUB_NO_RET (__mips16_call_stub_10, 10)
 STARTFN (NAME);				\
 	move	$18,$31;		\
 	STUB_ARGS_##CODE;		\
+	.set	noreorder;		\
 	jalr	$2;			\
+	move	$25,$2;			\
+	.set	reorder;		\
 	MOVE_##MODE##_RET (f, $18);	\
 	ENDFN (NAME)
 
@@ -705,3 +717,4 @@ CALL_STUB_RET (__mips16_call_stub_dc_9, 9, DC)
 CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 #endif
 #endif /* !__mips_single_float */
+#endif
