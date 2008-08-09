@@ -1,5 +1,12 @@
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_unspec_address_offset): Move earlier in file.
+	(mips_unspec_address, mips_unspec_offset_high): Likewise.
+	(mips_ok_for_lazy_binding_p, mips_load_call_address): Likewise.
+	(mips16_cfun_returns_in_fpr_p): Likewise.
+
+2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.h (MASK_RETURN_ADDR): Expand commentary.
 	* config/mips/linux-unwind.h (mips_fallback_frame_state): Add 2
 	rather than 4 to PC.

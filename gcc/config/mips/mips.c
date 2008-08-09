@@ -2261,6 +2261,51 @@ mips_emit_call_insn (rtx pattern, bool lazy_p)
   return insn;
 }
 
+/* Wrap symbol or label BASE in an UNSPEC address of type SYMBOL_TYPE,
+   then add CONST_INT OFFSET to the result.  */
+
+static rtx
+mips_unspec_address_offset (rtx base, rtx offset,
+			    enum mips_symbol_type symbol_type)
+{
+  base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
+			 UNSPEC_ADDRESS_FIRST + symbol_type);
+  if (offset != const0_rtx)
+    base = gen_rtx_PLUS (Pmode, base, offset);
+  return gen_rtx_CONST (Pmode, base);
+}
+
+/* Return an UNSPEC address with underlying address ADDRESS and symbol
+   type SYMBOL_TYPE.  */
+
+rtx
+mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
+{
+  rtx base, offset;
+
+  split_const (address, &base, &offset);
+  return mips_unspec_address_offset (base, offset, symbol_type);
+}
+
+/* If mips_unspec_address (ADDR, SYMBOL_TYPE) is a 32-bit value, add the
+   high part to BASE and return the result.  Just return BASE otherwise.
+   TEMP is as for mips_force_temporary.
+
+   The returned expression can be used as the first operand to a LO_SUM.  */
+
+static rtx
+mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
+			 enum mips_symbol_type symbol_type)
+{
+  if (mips_split_p[symbol_type])
+    {
+      addr = gen_rtx_HIGH (Pmode, mips_unspec_address (addr, symbol_type));
+      addr = mips_force_temporary (temp, addr);
+      base = mips_force_temporary (temp, gen_rtx_PLUS (Pmode, addr, base));
+    }
+  return base;
+}
+
 /* Return an instruction that copies $gp into register REG.  We want
    GCC to treat the register's value as constant, so that its value
    can be rematerialized on demand.  */
@@ -2356,51 +2401,6 @@ mips_split_symbol (rtx temp, rtx addr, enum machine_mode mode, rtx *lo_sum_out)
       *lo_sum_out = gen_rtx_LO_SUM (Pmode, high, addr);
     }
   return true;
-}
-
-/* Wrap symbol or label BASE in an UNSPEC address of type SYMBOL_TYPE,
-   then add CONST_INT OFFSET to the result.  */
-
-static rtx
-mips_unspec_address_offset (rtx base, rtx offset,
-			    enum mips_symbol_type symbol_type)
-{
-  base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
-			 UNSPEC_ADDRESS_FIRST + symbol_type);
-  if (offset != const0_rtx)
-    base = gen_rtx_PLUS (Pmode, base, offset);
-  return gen_rtx_CONST (Pmode, base);
-}
-
-/* Return an UNSPEC address with underlying address ADDRESS and symbol
-   type SYMBOL_TYPE.  */
-
-rtx
-mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
-{
-  rtx base, offset;
-
-  split_const (address, &base, &offset);
-  return mips_unspec_address_offset (base, offset, symbol_type);
-}
-
-/* If mips_unspec_address (ADDR, SYMBOL_TYPE) is a 32-bit value, add the
-   high part to BASE and return the result.  Just return BASE otherwise.
-   TEMP is as for mips_force_temporary.
-
-   The returned expression can be used as the first operand to a LO_SUM.  */
-
-static rtx
-mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
-			 enum mips_symbol_type symbol_type)
-{
-  if (mips_split_p[symbol_type])
-    {
-      addr = gen_rtx_HIGH (Pmode, mips_unspec_address (addr, symbol_type));
-      addr = mips_force_temporary (temp, addr);
-      base = mips_force_temporary (temp, gen_rtx_PLUS (Pmode, addr, base));
-    }
-  return base;
 }
 
 /* Return a legitimate address for REG + OFFSET.  TEMP is as for
@@ -5208,6 +5208,49 @@ mips_end_function_definition (const char *name)
     }
 }
 
+/* Return true if calls to X can use R_MIPS_CALL* relocations.  */
+
+static bool
+mips_ok_for_lazy_binding_p (rtx x)
+{
+  return (TARGET_USE_GOT
+	  && GET_CODE (x) == SYMBOL_REF
+	  && !mips_symbol_binds_local_p (x));
+}
+
+/* Load function address ADDR into register DEST.  SIBCALL_P is true
+   if the address is needed for a sibling call.  Return true if we
+   used an explicit lazy-binding sequence.  */
+
+static bool
+mips_load_call_address (rtx dest, rtx addr, bool sibcall_p)
+{
+  /* If we're generating PIC, and this call is to a global function,
+     try to allow its address to be resolved lazily.  This isn't
+     possible for sibcalls when $gp is call-saved because the value
+     of $gp on entry to the stub would be our caller's gp, not ours.  */
+  if (TARGET_EXPLICIT_RELOCS
+      && !(sibcall_p && TARGET_CALL_SAVED_GP)
+      && mips_ok_for_lazy_binding_p (addr))
+    {
+      rtx high, lo_sum_symbol;
+
+      high = mips_unspec_offset_high (dest, pic_offset_table_rtx,
+				      addr, SYMBOL_GOTOFF_CALL);
+      lo_sum_symbol = mips_unspec_address (addr, SYMBOL_GOTOFF_CALL);
+      if (Pmode == SImode)
+	emit_insn (gen_load_callsi (dest, high, lo_sum_symbol));
+      else
+	emit_insn (gen_load_calldi (dest, high, lo_sum_symbol));
+      return true;
+    }
+  else
+    {
+      mips_emit_move (dest, addr);
+      return false;
+    }
+}
+
 /* A chained list of functions for which mips16_build_call_stub has already
    generated a stub.  NAME is the name of the function and FP_RET_P is true
    if the function returns a value in floating-point registers.  */
@@ -5668,49 +5711,6 @@ mips16_build_call_stub (rtx retval, rtx fn, rtx args_size, int fp_code)
   return insn;
 }
 
-/* Return true if calls to X can use R_MIPS_CALL* relocations.  */
-
-static bool
-mips_ok_for_lazy_binding_p (rtx x)
-{
-  return (TARGET_USE_GOT
-	  && GET_CODE (x) == SYMBOL_REF
-	  && !mips_symbol_binds_local_p (x));
-}
-
-/* Load function address ADDR into register DEST.  SIBCALL_P is true
-   if the address is needed for a sibling call.  Return true if we
-   used an explicit lazy-binding sequence.  */
-
-static bool
-mips_load_call_address (rtx dest, rtx addr, bool sibcall_p)
-{
-  /* If we're generating PIC, and this call is to a global function,
-     try to allow its address to be resolved lazily.  This isn't
-     possible for sibcalls when $gp is call-saved because the value
-     of $gp on entry to the stub would be our caller's gp, not ours.  */
-  if (TARGET_EXPLICIT_RELOCS
-      && !(sibcall_p && TARGET_CALL_SAVED_GP)
-      && mips_ok_for_lazy_binding_p (addr))
-    {
-      rtx high, lo_sum_symbol;
-
-      high = mips_unspec_offset_high (dest, pic_offset_table_rtx,
-				      addr, SYMBOL_GOTOFF_CALL);
-      lo_sum_symbol = mips_unspec_address (addr, SYMBOL_GOTOFF_CALL);
-      if (Pmode == SImode)
-	emit_insn (gen_load_callsi (dest, high, lo_sum_symbol));
-      else
-	emit_insn (gen_load_calldi (dest, high, lo_sum_symbol));
-      return true;
-    }
-  else
-    {
-      mips_emit_move (dest, addr);
-      return false;
-    }
-}
-
 /* Expand a "call", "sibcall", "call_value" or "sibcall_value" instruction.
    RESULT is where the result will go (null for "call"s and "sibcall"s),
    ADDR is the address of the function, ARGS_SIZE is the size of the
@@ -7884,6 +7884,19 @@ mips_function_has_gp_insn (void)
   return cfun->machine->has_gp_insn_p;
 }
 
+/* Return true if the current function returns its value in a floating-point
+   register in MIPS16 mode.  */
+
+static bool
+mips16_cfun_returns_in_fpr_p (void)
+{
+  tree return_type = DECL_RESULT (current_function_decl);
+  return (TARGET_MIPS16
+	  && TARGET_HARD_FLOAT_ABI
+	  && !aggregate_value_p (return_type, current_function_decl)
+ 	  && mips_return_mode_in_fpr_p (DECL_MODE (return_type)));
+}
+
 /* Return the register that should be used as the global pointer
    within this function.  Return 0 if the function doesn't need
    a global pointer.  */
@@ -7940,19 +7953,6 @@ mips_global_pointer (void)
 	return regno;
 
   return GLOBAL_POINTER_REGNUM;
-}
-
-/* Return true if the current function returns its value in a floating-point
-   register in MIPS16 mode.  */
-
-static bool
-mips16_cfun_returns_in_fpr_p (void)
-{
-  tree return_type = DECL_RESULT (current_function_decl);
-  return (TARGET_MIPS16
-	  && TARGET_HARD_FLOAT_ABI
-	  && !aggregate_value_p (return_type, current_function_decl)
- 	  && mips_return_mode_in_fpr_p (DECL_MODE (return_type)));
 }
 
 /* Return true if the current function must save register REGNO.  */
