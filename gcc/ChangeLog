@@ -1,4 +1,18 @@
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (STATIC_CHAIN_REGNUM): Remap to $15.
+	(FUNCTION_PROFILER): Save the static chain pointer into $2
+	beforehand and restore it aftewards.
+	(TRAMPOLINE_TEMPLATE): Adjust accordingly.  Load the target
+	address directly into $25 and call the function through $25;
+	do not clobber $3.  Pad the DImode version to cover the space
+	left by the deleted $25 <- $3 move.
+	(TRAMPOLINE_SIZE): Adjust the size of the SImode version after
+	the removal of the $25 <- $3 move.
+	(INITIALIZE_TRAMPOLINE): Update offsets accordingly.
+	* config/mips/sdemtk.h (FUNCTION_PROFILER): As for mips.h.
+
+2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/mips/mips.h (FUNCTION_NAME_ALREADY_DECLARED): Delete.

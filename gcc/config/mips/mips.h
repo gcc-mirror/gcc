@@ -1657,7 +1657,7 @@ enum mips_code_readable_setting {
 #define FRAME_POINTER_REQUIRED (mips_frame_pointer_required ())
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
+#define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 15)
 
 /* Registers used as temporaries in prologue/epilogue code.  If we're
    generating mips16 code, these registers must come from the core set
@@ -2181,6 +2181,10 @@ typedef struct mips_args {
   fprintf (FILE, "\t.set\tnoat\n");					\
   fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
 	   reg_names[GP_REG_FIRST + 1], reg_names[GP_REG_FIRST + 31]);	\
+  /* _mcount treats $2 as the static chain register.  */		\
+  if (cfun->static_chain_decl != NULL)					\
+    fprintf (FILE, "\tmove\t%s,%s\n", reg_names[2],			\
+	     reg_names[STATIC_CHAIN_REGNUM]);				\
   if (!TARGET_NEWABI)							\
     {									\
       fprintf (FILE,							\
@@ -2192,6 +2196,10 @@ typedef struct mips_args {
     }									\
   fprintf (FILE, "\tjal\t_mcount\n");                                   \
   fprintf (FILE, "\t.set\tat\n");					\
+  /* _mcount treats $2 as the static chain register.  */		\
+  if (cfun->static_chain_decl != NULL)					\
+    fprintf (FILE, "\tmove\t%s,%s\n", reg_names[STATIC_CHAIN_REGNUM],	\
+	     reg_names[2]);						\
 }
 
 /* The profiler preserves all interesting registers, including $31.  */
@@ -2231,20 +2239,19 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x00000000\t\t# nop\n");			\
   if (ptr_mode == DImode)						\
     {									\
-      fprintf (STREAM, "\t.word\t0xdfe30014\t\t# ld     $3,20($31)\n");	\
-      fprintf (STREAM, "\t.word\t0xdfe2001c\t\t# ld     $2,28($31)\n");	\
-      fprintf (STREAM, "\t.word\t0x0060c82d\t\t# dmove  $25,$3\n");	\
+      fprintf (STREAM, "\t.word\t0xdff90014\t\t# ld     $25,20($31)\n"); \
+      fprintf (STREAM, "\t.word\t0xdfef001c\t\t# ld     $15,28($31)\n"); \
     }									\
   else									\
     {									\
-      fprintf (STREAM, "\t.word\t0x8fe30014\t\t# lw     $3,20($31)\n");	\
-      fprintf (STREAM, "\t.word\t0x8fe20018\t\t# lw     $2,24($31)\n");	\
-      fprintf (STREAM, "\t.word\t0x0060c821\t\t# move   $25,$3\n");	\
+      fprintf (STREAM, "\t.word\t0x8ff90010\t\t# lw     $25,16($31)\n"); \
+      fprintf (STREAM, "\t.word\t0x8fef0014\t\t# lw     $15,20($31)\n"); \
     }									\
-  fprintf (STREAM, "\t.word\t0x00600008\t\t# jr     $3\n");		\
+  fprintf (STREAM, "\t.word\t0x03200008\t\t# jr     $25\n");		\
   if (ptr_mode == DImode)						\
     {									\
       fprintf (STREAM, "\t.word\t0x0020f82d\t\t# dmove   $31,$1\n");	\
+      fprintf (STREAM, "\t.word\t0x00000000\t\t# <padding>\n");		\
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
     }									\
@@ -2259,7 +2266,7 @@ typedef struct mips_args {
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
-#define TRAMPOLINE_SIZE (32 + GET_MODE_SIZE (ptr_mode) * 2)
+#define TRAMPOLINE_SIZE (ptr_mode == DImode ? 48 : 36)
 
 /* Alignment required for trampolines, in bits.  */
 
@@ -2289,7 +2296,7 @@ typedef struct mips_args {
 {									    \
   rtx func_addr, chain_addr, end_addr;                                      \
 									    \
-  func_addr = plus_constant (ADDR, 32);					    \
+  func_addr = plus_constant (ADDR, ptr_mode == DImode ? 32 : 28);	    \
   chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
   mips_emit_move (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
   mips_emit_move (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
