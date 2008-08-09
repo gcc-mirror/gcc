@@ -192,12 +192,12 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at86rf401",    ARCH_AVR25, "__AVR_AT86RF401__" },
     /* Classic, > 8K, <= 64K.  */
   { "avr3",         ARCH_AVR3, NULL },
-  { "at43usb320",   ARCH_AVR3, "__AVR_AT43USB320__" },
   { "at43usb355",   ARCH_AVR3, "__AVR_AT43USB355__" },
   { "at76c711",     ARCH_AVR3, "__AVR_AT76C711__" },
     /* Classic, == 128K.  */
   { "avr31",        ARCH_AVR31, NULL },
   { "atmega103",    ARCH_AVR31, "__AVR_ATmega103__" },
+  { "at43usb320",   ARCH_AVR31, "__AVR_AT43USB320__" },
     /* Classic + MOVW + JMP/CALL.  */
   { "avr35",        ARCH_AVR35, NULL },
   { "at90usb82",    ARCH_AVR35, "__AVR_AT90USB82__" },
