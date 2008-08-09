@@ -5170,6 +5170,44 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return addr;
 }
 
+/* Start a definition of function NAME.  MIPS16_P indicates whether the
+   function contains MIPS16 code.  */
+
+static void
+mips_start_function_definition (const char *name, bool mips16_p)
+{
+  if (mips16_p)
+    fprintf (asm_out_file, "\t.set\tmips16\n");
+  else
+    fprintf (asm_out_file, "\t.set\tnomips16\n");
+
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.ent\t", asm_out_file);
+      assemble_name (asm_out_file, name);
+      fputs ("\n", asm_out_file);
+    }
+
+  ASM_OUTPUT_TYPE_DIRECTIVE (asm_out_file, name, "function");
+
+  /* Start the definition proper.  */
+  assemble_name (asm_out_file, name);
+  fputs (":\n", asm_out_file);
+}
+
+/* End a function definition started by mips_start_function_definition.  */
+
+static void
+mips_end_function_definition (const char *name)
+{
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.end\t", asm_out_file);
+      assemble_name (asm_out_file, name);
+      fputs ("\n", asm_out_file);
+    }
+}
+
 /* A chained list of functions for which mips16_build_call_stub has already
    generated a stub.  NAME is the name of the function and FP_RET_P is true
    if the function returns a value in floating-point registers.  */
@@ -5315,24 +5353,9 @@ mips16_build_function_stub (void)
     }
   fprintf (asm_out_file, ")\n");
 
-  /* Write the preamble leading up to the function declaration.  */
-  fprintf (asm_out_file, "\t.set\tnomips16\n");
-  switch_to_section (function_section (stubdecl));
-  ASM_OUTPUT_ALIGN (asm_out_file,
-		    floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT));
-
-  /* ??? If FUNCTION_NAME_ALREADY_DECLARED is defined, then we are
-     within a .ent, and we cannot emit another .ent.  */
-  if (!FUNCTION_NAME_ALREADY_DECLARED)
-    {
-      fputs ("\t.ent\t", asm_out_file);
-      assemble_name (asm_out_file, stubname);
-      fputs ("\n", asm_out_file);
-    }
-
-  /* Start the definition proper.  */
-  assemble_name (asm_out_file, stubname);
-  fputs (":\n", asm_out_file);
+  /* Start the function definition.  */
+  assemble_start_function (stubdecl, stubname);
+  mips_start_function_definition (stubname, false);
 
   /* Load the address of the MIPS16 function into $at.  Do this first so
      that targets with coprocessor interlocks can use an MFC1 to fill the
@@ -5349,12 +5372,7 @@ mips16_build_function_stub (void)
   fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 1]);
   fprintf (asm_out_file, "\t.set\tat\n");
 
-  if (!FUNCTION_NAME_ALREADY_DECLARED)
-    {
-      fputs ("\t.end\t", asm_out_file);
-      assemble_name (asm_out_file, stubname);
-      fputs ("\n", asm_out_file);
-    }
+  mips_end_function_definition (stubname);
 
   switch_to_section (function_section (current_function_decl));
 }
@@ -5534,19 +5552,9 @@ mips16_build_call_stub (rtx retval, rtx fn, rtx args_size, int fp_code)
 	}
       fprintf (asm_out_file, ")\n");
 
-      /* Write the preamble leading up to the function declaration.  */
-      fprintf (asm_out_file, "\t.set\tnomips16\n");
+      /* Start the function definition.  */
       assemble_start_function (stubdecl, stubname);
-
-      if (!FUNCTION_NAME_ALREADY_DECLARED)
-	{
-	  fputs ("\t.ent\t", asm_out_file);
-	  assemble_name (asm_out_file, stubname);
-	  fputs ("\n", asm_out_file);
-
-	  assemble_name (asm_out_file, stubname);
-	  fputs (":\n", asm_out_file);
-	}
+      mips_start_function_definition (stubname, false);
 
       if (!fp_ret_p)
 	{
@@ -5621,12 +5629,7 @@ mips16_build_call_stub (rtx retval, rtx fn, rtx args_size, int fp_code)
       ASM_DECLARE_FUNCTION_SIZE (asm_out_file, stubname, stubdecl);
 #endif
 
-      if (!FUNCTION_NAME_ALREADY_DECLARED)
-	{
-	  fputs ("\t.end\t", asm_out_file);
-	  assemble_name (asm_out_file, stubname);
-	  fputs ("\n", asm_out_file);
-	}
+      mips_end_function_definition (stubname);
 
       /* Record this stub.  */
       l = XNEW (struct mips16_stub);
@@ -8395,29 +8398,11 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       && crtl->args.info.fp_code != 0)
     mips16_build_function_stub ();
 
-  /* Select the MIPS16 mode for this function.  */
-  if (TARGET_MIPS16)
-    fprintf (file, "\t.set\tmips16\n");
-  else
-    fprintf (file, "\t.set\tnomips16\n");
-
-  if (!FUNCTION_NAME_ALREADY_DECLARED)
-    {
-      /* Get the function name the same way that toplev.c does before calling
-	 assemble_start_function.  This is needed so that the name used here
-	 exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
-      fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-
-      if (!flag_inhibit_size_directive)
-	{
-	  fputs ("\t.ent\t", file);
-	  assemble_name (file, fnname);
-	  fputs ("\n", file);
-	}
-
-      assemble_name (file, fnname);
-      fputs (":\n", file);
-    }
+  /* Get the function name the same way that toplev.c does before calling
+     assemble_start_function.  This is needed so that the name used here
+     exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
+  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  mips_start_function_definition (fnname, TARGET_MIPS16);
 
   /* Stop mips_file_end from treating this function as external.  */
   if (TARGET_IRIX && mips_abi == ABI_32)
@@ -8484,6 +8469,8 @@ static void
 mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
+  const char *fnname;
+
   /* Reinstate the normal $gp.  */
   SET_REGNO (pic_offset_table_rtx, GLOBAL_POINTER_REGNUM);
   mips_output_cplocal ();
@@ -8496,18 +8483,11 @@ mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
       set_noreorder = set_nomacro = 0;
     }
 
-  if (!FUNCTION_NAME_ALREADY_DECLARED && !flag_inhibit_size_directive)
-    {
-      const char *fnname;
-
-      /* Get the function name the same way that toplev.c does before calling
-	 assemble_start_function.  This is needed so that the name used here
-	 exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
-      fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-      fputs ("\t.end\t", file);
-      assemble_name (file, fnname);
-      fputs ("\n", file);
-    }
+  /* Get the function name the same way that toplev.c does before calling
+     assemble_start_function.  This is needed so that the name used here
+     exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
+  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  mips_end_function_definition (fnname);
 }
 
 /* Save register REG to MEM.  Make the instruction frame-related.  */

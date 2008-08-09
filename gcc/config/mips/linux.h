@@ -96,36 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 	fputc ( '\n', FILE);						\
  } while (0)
 
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)			\
-  do {									\
-    if (!flag_inhibit_size_directive)					\
-      {									\
-	fputs ("\t.ent\t", STREAM);					\
-	assemble_name (STREAM, NAME);					\
-	putc ('\n', STREAM);						\
-      }									\
-    ASM_OUTPUT_TYPE_DIRECTIVE (STREAM, NAME, "function");		\
-    assemble_name (STREAM, NAME);					\
-    fputs (":\n", STREAM);						\
-  } while (0)
-
-#undef ASM_DECLARE_FUNCTION_SIZE
-#define ASM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)			\
-  do {									\
-    if (!flag_inhibit_size_directive)					\
-      {									\
-	fputs ("\t.end\t", STREAM);					\
-	assemble_name (STREAM, NAME);					\
-	putc ('\n', STREAM);						\
-      }									\
-  } while (0)
-
-/* Tell function_prologue in mips.c that we have already output the .ent/.end
-   pseudo-ops.  */
-#undef FUNCTION_NAME_ALREADY_DECLARED
-#define FUNCTION_NAME_ALREADY_DECLARED 1
-
 /* The glibc _mcount stub will save $v0 for us.  Don't mess with saving
    it, since ASM_OUTPUT_REG_PUSH/ASM_OUTPUT_REG_POP do not work in the
    presence of $gp-relative calls.  */
