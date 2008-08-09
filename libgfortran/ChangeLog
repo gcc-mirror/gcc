@@ -9,7 +9,7 @@
 
 2008-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/36852
+	PR fortran/36582
 	* io/list_read.c: If variable rank is zero, do not adjust the found
 	namelist object pointer.
 
