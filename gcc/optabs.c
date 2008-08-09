@@ -3769,6 +3769,7 @@ maybe_emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
   rtx temp;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   rtx pat;
+  rtx last = get_last_insn ();
 
   temp = target;
 
@@ -3782,7 +3783,10 @@ maybe_emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
 
   pat = GEN_FCN (icode) (temp, op0);
   if (!pat)
-    return false;
+    {
+      delete_insns_since (last);
+      return false;
+    }
 
   if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX && code != UNKNOWN)
     add_equal_note (pat, temp, code, op0, NULL_RTX);
@@ -5157,6 +5161,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
 	if (icode != CODE_FOR_nothing)
 	  {
+	    rtx last = get_last_insn ();
 	    if (fmode != GET_MODE (from))
 	      from = convert_to_mode (fmode, from, 0);
 
@@ -5170,11 +5175,14 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	    if (imode != GET_MODE (to))
 	      target = gen_reg_rtx (imode);
 
-	    emit_unop_insn (icode, target, from,
-			    doing_unsigned ? UNSIGNED_FIX : FIX);
-	    if (target != to)
-	      convert_move (to, target, unsignedp);
-	    return;
+	    if (maybe_emit_unop_insn (icode, target, from,
+				      doing_unsigned ? UNSIGNED_FIX : FIX))
+	      {
+		if (target != to)
+		  convert_move (to, target, unsignedp);
+		return;
+	      }
+	    delete_insns_since (last);
 	  }
       }
 
@@ -5382,6 +5390,7 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
 	icode = convert_optab_handler (tab, imode, fmode)->insn_code;
 	if (icode != CODE_FOR_nothing)
 	  {
+	    rtx last = get_last_insn ();
 	    if (fmode != GET_MODE (from))
 	      from = convert_to_mode (fmode, from, 0);
 
@@ -5389,7 +5398,10 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
 	      target = gen_reg_rtx (imode);
 
 	    if (!maybe_emit_unop_insn (icode, target, from, UNKNOWN))
-	      return false;
+	      {
+	        delete_insns_since (last);
+		continue;
+	      }
 	    if (target != to)
 	      convert_move (to, target, 0);
 	    return true;

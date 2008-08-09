@@ -1,3 +1,11 @@
+2008-08-09  Jan Hubicka  <jh@suse.cz>
+
+	PR target/37055
+	* optabs.c (maybe_emit_unop_insn): Remove produced code if
+	expansion failed.
+	(expand_fix): Be prepared for expansion to fail.
+	(expand_sfix_optab): Remove instructions if expansion failed.
+
 2008-08-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Move the AT43USB320 device to
