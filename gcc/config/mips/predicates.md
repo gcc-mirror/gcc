@@ -104,14 +104,9 @@
   switch (symbol_type)
     {
     case SYMBOL_ABSOLUTE:
-      /* We can only use direct calls for TARGET_ABSOLUTE_ABICALLS if we
-	 are sure that the target function does not need $25 to be live
-	 on entry.  This is true for any locally-defined function because
-	 any such function will use %hi/%lo accesses to set up $gp.  */
-      if (TARGET_ABSOLUTE_ABICALLS
-          && !(GET_CODE (op) == SYMBOL_REF
-	       && SYMBOL_REF_DECL (op)
-	       && !DECL_EXTERNAL (SYMBOL_REF_DECL (op))))
+      /* We can only use direct calls if we're sure that the target
+	 function does not need $25 to be valid on entry.  */
+      if (mips_use_pic_fn_addr_reg_p (op))
 	return false;
 
       /* If -mlong-calls or if this function has an explicit long_call
@@ -205,6 +200,11 @@
 	return true;
       return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
 	      && !mips_split_p[symbol_type]);
+
+    case HIGH:
+      op = XEXP (op, 0);
+      return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
+	      && !mips_split_hi_p[symbol_type]);
 
     default:
       return true;

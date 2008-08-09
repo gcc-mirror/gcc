@@ -1659,16 +1659,29 @@ enum mips_code_readable_setting {
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 15)
 
-/* Registers used as temporaries in prologue/epilogue code.  If we're
-   generating mips16 code, these registers must come from the core set
-   of 8.  The prologue register mustn't conflict with any incoming
-   arguments, the static chain pointer, or the frame pointer.  The
-   epilogue temporary mustn't conflict with the return registers, the
-   frame pointer, the EH stack adjustment, or the EH data registers.  */
+/* Registers used as temporaries in prologue/epilogue code:
 
+   - If a MIPS16 PIC function needs access to _gp, it first loads
+     the value into MIPS16_PIC_TEMP and then copies it to $gp.
+
+   - The prologue can use MIPS_PROLOGUE_TEMP as a general temporary
+     register.  The register must not conflict with MIPS16_PIC_TEMP.
+
+   - The epilogue can use MIPS_EPILOGUE_TEMP as a general temporary
+     register.
+
+   If we're generating MIPS16 code, these registers must come from the
+   core set of 8.  The prologue registers mustn't conflict with any
+   incoming arguments, the static chain pointer, or the frame pointer.
+   The epilogue temporary mustn't conflict with the return registers,
+   the PIC call register ($25), the frame pointer, the EH stack adjustment,
+   or the EH data registers.  */
+
+#define MIPS16_PIC_TEMP_REGNUM (GP_REG_FIRST + 2)
 #define MIPS_PROLOGUE_TEMP_REGNUM (GP_REG_FIRST + 3)
 #define MIPS_EPILOGUE_TEMP_REGNUM (GP_REG_FIRST + (TARGET_MIPS16 ? 6 : 8))
 
+#define MIPS16_PIC_TEMP gen_rtx_REG (Pmode, MIPS16_PIC_TEMP_REGNUM)
 #define MIPS_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_PROLOGUE_TEMP_REGNUM)
 #define MIPS_EPILOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_EPILOGUE_TEMP_REGNUM)
 
@@ -1716,7 +1729,6 @@ enum mips_code_readable_setting {
 enum reg_class
 {
   NO_REGS,			/* no registers in set */
-  M16_NA_REGS,			/* mips16 regs not used to pass args */
   M16_REGS,			/* mips16 directly accessible registers */
   T_REG,			/* mips16 T register ($24) */
   M16_T_REGS,			/* mips16 registers plus T register */
@@ -1757,7 +1769,6 @@ enum reg_class
 #define REG_CLASS_NAMES							\
 {									\
   "NO_REGS",								\
-  "M16_NA_REGS",							\
   "M16_REGS",								\
   "T_REG",								\
   "M16_T_REGS",								\
@@ -1801,7 +1812,6 @@ enum reg_class
 #define REG_CLASS_CONTENTS						                                \
 {									                                \
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* no registers */	\
-  { 0x0003000c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 nonarg regs */\
   { 0x000300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 registers */	\
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
   { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
@@ -2418,6 +2428,11 @@ typedef struct mips_args {
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 0)
 #define SYMBOL_REF_LONG_CALL_P(X)					\
   ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_LONG_CALL) != 0)
+
+/* This flag marks functions that cannot be lazily bound.  */
+#define SYMBOL_FLAG_BIND_NOW (SYMBOL_FLAG_MACH_DEP << 1)
+#define SYMBOL_REF_BIND_NOW_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_BIND_NOW) != 0)
 
 /* True if we're generating a form of MIPS16 code in which jump tables
    are stored in the text section and encoded as 16-bit PC-relative
@@ -3280,6 +3295,7 @@ extern int set_nomacro;			/* # of nested .set nomacro's  */
 extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
+extern bool mips_split_hi_p[];
 extern GTY(()) rtx cmp_operands[2];
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */

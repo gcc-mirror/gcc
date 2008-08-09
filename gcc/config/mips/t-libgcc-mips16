@@ -22,3 +22,6 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 
 LIBGCC_SYNC = yes
 LIBGCC_SYNC_CFLAGS = -mno-mips16
+
+# Version these symbols if building libgcc.so.
+SHLIB_MAPFILES += $(srcdir)/config/mips/libgcc-mips16.ver
