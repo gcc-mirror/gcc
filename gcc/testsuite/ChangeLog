@@ -1,3 +1,7 @@
+2008-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/inline-2.c: New testcase.
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/17880

@@ -3810,9 +3810,17 @@ verify_stmt (gimple_stmt_iterator *gsi)
      didn't see a function declaration before the call.  */
   if (is_gimple_call (stmt))
     {
-      tree decl = gimple_call_fn (stmt);
+      tree decl;
 
-      if (TREE_CODE (decl) == FUNCTION_DECL 
+      if (!is_gimple_call_addr (gimple_call_fn (stmt)))
+	{
+	  error ("invalid function in call statement");
+	  return true;
+	}
+
+      decl = gimple_call_fndecl (stmt);
+      if (decl
+	  && TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_LOOPING_CONST_OR_PURE_P (decl)
 	  && (!DECL_PURE_P (decl))
 	  && (!TREE_READONLY (decl)))

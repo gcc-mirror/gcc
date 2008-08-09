@@ -809,7 +809,7 @@ ipcp_update_callgraph (void)
 	    if (ipcp_need_redirect_p (cs))
 	      {
 		cgraph_redirect_edge_callee (cs, orig_callee);
-		gimple_call_set_fn (cs->call_stmt, orig_callee->decl);
+		gimple_call_set_fndecl (cs->call_stmt, orig_callee->decl);
 	      }
 	  }
     }

@@ -216,16 +216,8 @@ gimple_to_tree (gimple stmt)
         
 	t = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
 
-        fn = gimple_call_fn (stmt);
-        if (TREE_CODE (fn) == FUNCTION_DECL)
-          CALL_EXPR_FN (t) = build1 (ADDR_EXPR,
-                                     build_pointer_type (TREE_TYPE (fn)),
-                                     fn);
-        else
-          CALL_EXPR_FN (t) = fn;
-        
+        CALL_EXPR_FN (t) = gimple_call_fn (stmt);
         TREE_TYPE (t) = gimple_call_return_type (stmt);
-
 	CALL_EXPR_STATIC_CHAIN (t) = gimple_call_chain (stmt);
 
 	for (i = 0; i < gimple_call_num_args (stmt); i++)
@@ -253,7 +245,9 @@ gimple_to_tree (gimple stmt)
 
         /* Record the original call statement, as it may be used
            to retrieve profile information during expansion.  */
-	if (TREE_CODE (fn) == FUNCTION_DECL && DECL_BUILT_IN (fn))
+
+	if ((fn = gimple_call_fndecl (stmt)) != NULL_TREE
+	    && DECL_BUILT_IN (fn))
 	  {
 	    ann = get_tree_common_ann (t);
 	    ann->stmt = stmt;
@@ -368,15 +362,11 @@ release_stmt_tree (gimple stmt, tree stmt_tree)
     case GIMPLE_CALL:
       if (gimple_call_lhs (stmt))
 	{
-	  if (TREE_CODE (gimple_call_fn (stmt)) == FUNCTION_DECL)
-	    ggc_free (CALL_EXPR_FN (TREE_OPERAND (stmt_tree, 1)));
 	  ann = tree_common_ann (TREE_OPERAND (stmt_tree, 1));
 	  if (ann)
 	    ggc_free (ann);
 	  ggc_free (TREE_OPERAND (stmt_tree, 1));
 	}
-      else if (TREE_CODE (gimple_call_fn (stmt)) == FUNCTION_DECL)
-	ggc_free (CALL_EXPR_FN (stmt_tree));
       break;
     default:
       break;

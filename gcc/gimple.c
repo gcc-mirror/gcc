@@ -285,6 +285,8 @@ static inline gimple
 gimple_build_call_1 (tree fn, unsigned nargs)
 {
   gimple s = gimple_build_with_ops (GIMPLE_CALL, 0, nargs + 3);
+  if (TREE_CODE (fn) == FUNCTION_DECL)
+    fn = build_fold_addr_expr (fn);
   gimple_set_op (s, 1, fn);
   return s;
 }
