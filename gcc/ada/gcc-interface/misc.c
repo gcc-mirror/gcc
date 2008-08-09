@@ -240,7 +240,7 @@ gnat_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wall:
-      set_Wunused (value);
+      warn_unused = value;
 
       /* We save the value of warn_uninitialized, since if they put
 	 -Wuninitialized on the command line, we need to generate a
