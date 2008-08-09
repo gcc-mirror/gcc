@@ -1,3 +1,7 @@
+2008-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/locale/darwin/ctype_members.cc: Include <cstdio>.
+
 2008-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/ios_base.h: Undef _IOS_BASE_SEEK_CUR and
