@@ -1,3 +1,7 @@
+2008-08-10  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gnat.dg/exp0_eval.adb: New.
+
 2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/20644
