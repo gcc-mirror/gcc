@@ -5471,6 +5471,13 @@ package body Exp_Ch4 is
             --  X ** 0 = 1 (or 1.0)
 
             if Expv = 0 then
+
+               --  Call Remove_Side_Effects to ensure that any side effects
+               --  in the ignored left operand (in particular function calls
+               --  to user defined functions) are properly executed.
+
+               Remove_Side_Effects (Base);
+
                if Ekind (Typ) in Integer_Kind then
                   Xnode := Make_Integer_Literal (Loc, Intval => 1);
                else
@@ -5945,6 +5952,12 @@ package body Exp_Ch4 is
            and then Compile_Time_Known_Value (Right)
            and then Expr_Value (Right) = Uint_1
          then
+            --  Call Remove_Side_Effects to ensure that any side effects in
+            --  the ignored left operand (in particular function calls to
+            --  user defined functions) are properly executed.
+
+            Remove_Side_Effects (Left);
+
             Rewrite (N, Make_Integer_Literal (Loc, 0));
             Analyze_And_Resolve (N, Typ);
             return;
@@ -5993,17 +6006,17 @@ package body Exp_Ch4 is
    --------------------------
 
    procedure Expand_N_Op_Multiply (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Lop  : constant Node_Id    := Left_Opnd (N);
-      Rop  : constant Node_Id    := Right_Opnd (N);
+      Loc : constant Source_Ptr := Sloc (N);
+      Lop : constant Node_Id    := Left_Opnd (N);
+      Rop : constant Node_Id    := Right_Opnd (N);
 
-      Lp2  : constant Boolean :=
-               Nkind (Lop) = N_Op_Expon
-                 and then Is_Power_Of_2_For_Shift (Lop);
+      Lp2 : constant Boolean :=
+              Nkind (Lop) = N_Op_Expon
+                and then Is_Power_Of_2_For_Shift (Lop);
 
-      Rp2  : constant Boolean :=
-               Nkind (Rop) = N_Op_Expon
-                 and then Is_Power_Of_2_For_Shift (Rop);
+      Rp2 : constant Boolean :=
+              Nkind (Rop) = N_Op_Expon
+                and then Is_Power_Of_2_For_Shift (Rop);
 
       Ltyp : constant Entity_Id  := Etype (Lop);
       Rtyp : constant Entity_Id  := Etype (Rop);
@@ -6016,14 +6029,28 @@ package body Exp_Ch4 is
 
       if Is_Integer_Type (Typ) then
 
-         --  N * 0 = 0 * N = 0 for integer types
+         --  N * 0 = 0 for integer types
 
-         if (Compile_Time_Known_Value (Rop)
-              and then Expr_Value (Rop) = Uint_0)
-           or else
-            (Compile_Time_Known_Value (Lop)
-              and then Expr_Value (Lop) = Uint_0)
+         if Compile_Time_Known_Value (Rop)
+           and then Expr_Value (Rop) = Uint_0
          then
+            --  Call Remove_Side_Effects to ensure that any side effects in
+            --  the ignored left operand (in particular function calls to
+            --  user defined functions) are properly executed.
+
+            Remove_Side_Effects (Lop);
+
+            Rewrite (N, Make_Integer_Literal (Loc, Uint_0));
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end if;
+
+         --  Similar handling for 0 * N = 0
+
+         if Compile_Time_Known_Value (Lop)
+           and then Expr_Value (Lop) = Uint_0
+         then
+            Remove_Side_Effects (Rop);
             Rewrite (N, Make_Integer_Literal (Loc, Uint_0));
             Analyze_And_Resolve (N, Typ);
             return;
@@ -6502,6 +6529,12 @@ package body Exp_Ch4 is
         and then Compile_Time_Known_Value (Right)
         and then Expr_Value (Right) = Uint_1
       then
+         --  Call Remove_Side_Effects to ensure that any side effects in the
+         --  ignored left operand (in particular function calls to user defined
+         --  functions) are properly executed.
+
+         Remove_Side_Effects (Left);
+
          Rewrite (N, Make_Integer_Literal (Loc, 0));
          Analyze_And_Resolve (N, Typ);
          return;
