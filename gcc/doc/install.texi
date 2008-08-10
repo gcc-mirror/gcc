@@ -2416,7 +2416,7 @@ AIX:
 @uref{http://www.bullfreeware.com,,Bull's Freeware and Shareware Archive for AIX};
 
 @item
-@uref{http://pware.hvcc.edu,,Hudson Valley Community College Open Source Softeware for IBM System p};
+@uref{http://pware.hvcc.edu,,Hudson Valley Community College Open Source Software for IBM System p};
 
 @item
 @uref{http://www.perzl.org/aix,,AIX 5L and 6 Open Source Packages}.
