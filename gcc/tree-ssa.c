@@ -1430,6 +1430,7 @@ warn_uninit (tree t, const char *gmsgid, void *data)
 struct walk_data {
   gimple stmt;
   bool always_executed;
+  bool warn_possibly_uninitialized;
 };
 
 /* Called via walk_tree, look for SSA_NAMEs that have empty definitions
@@ -1450,7 +1451,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
       if (data->always_executed)
         warn_uninit (t, "%qD is used uninitialized in this function",
 		     data->stmt);
-      else
+      else if (data->warn_possibly_uninitialized)
         warn_uninit (t, "%qD may be used uninitialized in this function",
 		     data->stmt);
       *walk_subtrees = 0;
@@ -1496,11 +1497,13 @@ warn_uninitialized_phi (gimple phi)
 }
 
 static unsigned int
-execute_early_warn_uninitialized (void)
+warn_uninitialized_vars (bool warn_possibly_uninitialized)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
   struct walk_data data;
+
+  data.warn_possibly_uninitialized = warn_possibly_uninitialized;
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
@@ -1521,6 +1524,19 @@ execute_early_warn_uninitialized (void)
 }
 
 static unsigned int
+execute_early_warn_uninitialized (void)
+{
+  /* Currently, this pass runs always but
+     execute_late_warn_uninitialized only runs with optimization. With
+     optimization we want to warn about possible uninitialized as late
+     as possible, thus don't do it here.  However, without
+     optimization we need to warn here about "may be uninitialized".
+  */
+  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/!optimize);
+  return 0;
+}
+
+static unsigned int
 execute_late_warn_uninitialized (void)
 {
   basic_block bb;
@@ -1529,7 +1545,7 @@ execute_late_warn_uninitialized (void)
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally
      get a "may be" warning when we'd have seen an "is" warning later.  */
-  execute_early_warn_uninitialized ();
+  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/1);
 
   FOR_EACH_BB (bb)
     for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
