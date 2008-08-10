@@ -1,2 +1,2 @@
-#include <limits.h>
-static int sc = INT_MAX + 1; 
+int sc = (&sc > 0);
+
