@@ -1,3 +1,17 @@
+2008-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/type_traits (_DEFINE_SPEC*): Simplify.
+	(_DEFINE_SPEC_BODY): Remove.
+	(__is_void_helper, __is_integral_helper, __is_floating_point_helper,
+	__is_member_object_pointer_helper, __is_member_function_pointer_helper,
+	__remove_pointer_helper): Add.
+	(is_void, is_integral, is_floating_point, is_member_object_pointer,
+	is_member_function_pointer, remove_pointer): Use the latter.
+	* include/tr1/type_traits (_DEFINE_SPEC): Simplify.
+	(_DEFINE_SPEC_HELPER): Remove.
+	(__is_signed_helper, __is_unsigned_helper): Add.
+	(is_signed, is_unsigned): Use the latter.
+
 2008-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert fix for libstdc++/35637, thanks to other/36901.
