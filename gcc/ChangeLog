@@ -1,3 +1,13 @@
+2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/20644
+	* tree-ssa.c (struct walk_data): Add new flag
+	warn_possibly_uninitialized.
+	(warn_uninitialized_var): Use it.
+	(warn_uninitialized_vars): New.
+	(execute_early_warn_uninitialized): Call it.
+	(execute_late_warn_uninitialized): Likewise.
+
 2008-08-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36238

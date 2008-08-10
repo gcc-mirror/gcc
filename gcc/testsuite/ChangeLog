@@ -1,5 +1,11 @@
 2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR middle-end/20644
+	* gcc.dg/uninit-pr20644-O0.c: New.
+	* gcc.dg/uninit-pr20644.c: New.
+
+2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 36901
 	* gcc.dg/pr36901.h: Do not depend on limits.h.
 	* gcc.dg/pr36901-3.c: Update.
