@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,16 +60,10 @@ namespace std
 {
 namespace tr1
 {
-#define _DEFINE_SPEC_HELPER(_Spec)                 \
-  template<>                                       \
-    struct _Spec                                   \
+#define _DEFINE_SPEC(_Trait, _Type)    \
+  template<>                           \
+    struct _Trait<_Type>	       \
     : public true_type { };
-
-#define _DEFINE_SPEC(_Trait, _Type)                \
-  _DEFINE_SPEC_HELPER(_Trait<_Type>)               \
-  _DEFINE_SPEC_HELPER(_Trait<_Type const>)         \
-  _DEFINE_SPEC_HELPER(_Trait<_Type volatile>)      \
-  _DEFINE_SPEC_HELPER(_Trait<_Type const volatile>)
 
   template<typename>
     struct is_reference
@@ -120,22 +114,34 @@ namespace tr1
     { };
 
   template<typename>
-    struct is_signed
+    struct __is_signed_helper
     : public false_type { };
-  _DEFINE_SPEC(is_signed, signed char)
-  _DEFINE_SPEC(is_signed, short)
-  _DEFINE_SPEC(is_signed, int)
-  _DEFINE_SPEC(is_signed, long)
-  _DEFINE_SPEC(is_signed, long long)
+  _DEFINE_SPEC(__is_signed_helper, signed char)
+  _DEFINE_SPEC(__is_signed_helper, short)
+  _DEFINE_SPEC(__is_signed_helper, int)
+  _DEFINE_SPEC(__is_signed_helper, long)
+  _DEFINE_SPEC(__is_signed_helper, long long)
+
+  template<typename _Tp>
+    struct is_signed
+    : public integral_constant<bool, (__is_signed_helper<typename
+				      remove_cv<_Tp>::type>::value)>
+    { };
 
   template<typename>
-    struct is_unsigned
+    struct __is_unsigned_helper
     : public false_type { };
-  _DEFINE_SPEC(is_unsigned, unsigned char)
-  _DEFINE_SPEC(is_unsigned, unsigned short)
-  _DEFINE_SPEC(is_unsigned, unsigned int)
-  _DEFINE_SPEC(is_unsigned, unsigned long)
-  _DEFINE_SPEC(is_unsigned, unsigned long long)
+  _DEFINE_SPEC(__is_unsigned_helper, unsigned char)
+  _DEFINE_SPEC(__is_unsigned_helper, unsigned short)
+  _DEFINE_SPEC(__is_unsigned_helper, unsigned int)
+  _DEFINE_SPEC(__is_unsigned_helper, unsigned long)
+  _DEFINE_SPEC(__is_unsigned_helper, unsigned long long)
+
+  template<typename _Tp>
+    struct is_unsigned
+    : public integral_constant<bool, (__is_unsigned_helper<typename
+				      remove_cv<_Tp>::type>::value)>
+    { };
 
   template<typename _Base, typename _Derived>
     struct __is_base_of_helper
@@ -241,7 +247,6 @@ namespace tr1
       };
     };
 
-#undef _DEFINE_SPEC_HELPER
 #undef _DEFINE_SPEC
 }
 }
