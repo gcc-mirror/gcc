@@ -1,3 +1,9 @@
+2008-08-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/36238
+	* reload1.c (gen_reload): Guard calls to get_secondary_mem
+	for memory subregs.
+
 2008-08-09  Jan Hubicka  <jh@suse.cz>
 
 	PR target/37055
