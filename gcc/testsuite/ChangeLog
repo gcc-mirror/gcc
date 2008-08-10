@@ -1,3 +1,10 @@
+2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 36901
+	* gcc.dg/pr36901.h: Do not depend on limits.h.
+	* gcc.dg/pr36901-3.c: Update.
+	* gcc.dg/pr36901-4.c: Update.
+
 2008-08-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36238

@@ -6,6 +6,4 @@ void foo(void)
   int s = sc;
 }
 /* { dg-message "from " "In file included" { target *-*-* } 0 } */
-/* { dg-warning "overflow" "overflow" { target *-*-* } 0 } */
-/* { dg-error "overflow" "overflow" { target *-*-* } 0 } */
-/* { dg-error "#include_next is a GCC extension" "#include_next" { target *-*-* } 0 } */
+/* { dg-error "ordered comparison of pointer with integer zero" "pedantic error" { target *-*-* } 0 } */
