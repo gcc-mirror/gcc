@@ -1281,9 +1281,6 @@ compute_barrier_args_size_1 (rtx insn, HOST_WIDE_INT cur_args_size,
 	      barrier_args_size [INSN_UID (dest)] = cur_args_size;
 	      VEC_safe_push (rtx, heap, *next, dest);
 	    }
-	  else
-	    gcc_assert (barrier_args_size[INSN_UID (dest)]
-			== cur_args_size);
 	}
     }
 
@@ -1341,8 +1338,6 @@ compute_barrier_args_size (void)
 		    {
 		      /* The insns starting with this label have been
 			 already scanned or are in the worklist.  */
-		      gcc_assert (barrier_args_size[INSN_UID (insn)]
-				  == cur_args_size);
 		      break;
 		    }
 		}
