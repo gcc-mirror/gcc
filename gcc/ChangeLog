@@ -1,3 +1,10 @@
+2008-08-11  Michael Matz  <matz@suse.de>
+
+	PR target/36613
+
+	* reload.c (push_reload): Merge in,out,in_reg,out_reg members
+	for reused reload, instead of overwriting them.
+
 2008-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36998

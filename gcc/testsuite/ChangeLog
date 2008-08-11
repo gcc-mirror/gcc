@@ -1,3 +1,8 @@
+2008-08-11  Michael Matz  <matz@suse.de>
+
+	PR target/36613
+	* gcc.target/i386/pr36613.c: New testcase.
+
 2008-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36998

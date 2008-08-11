@@ -1401,13 +1401,36 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	      else
 		remove_address_replacements (rld[i].in);
 	    }
-	  rld[i].in = in;
-	  rld[i].in_reg = in_reg;
+	  /* When emitting reloads we don't necessarily look at the in-
+	     and outmode, but also directly at the operands (in and out).
+	     So we can't simply overwrite them with whatever we have found
+	     for this (to-be-merged) reload, we have to "merge" that too.
+	     Reusing another reload already verified that we deal with the
+	     same operands, just possibly in different modes.  So we
+	     overwrite the operands only when the new mode is larger.
+	     See also PR33613.  */
+	  if (!rld[i].in
+	      || GET_MODE_SIZE (GET_MODE (in))
+	           > GET_MODE_SIZE (GET_MODE (rld[i].in)))
+	    rld[i].in = in;
+	  if (!rld[i].in_reg
+	      || (in_reg
+		  && GET_MODE_SIZE (GET_MODE (in_reg))
+	             > GET_MODE_SIZE (GET_MODE (rld[i].in_reg))))
+	    rld[i].in_reg = in_reg;
 	}
       if (out != 0)
 	{
-	  rld[i].out = out;
-	  rld[i].out_reg = outloc ? *outloc : 0;
+	  if (!rld[i].out
+	      || (out
+		  && GET_MODE_SIZE (GET_MODE (out))
+	             > GET_MODE_SIZE (GET_MODE (rld[i].out))))
+	    rld[i].out = out;
+	  if (outloc
+	      && (!rld[i].out_reg
+		  || GET_MODE_SIZE (GET_MODE (*outloc))
+		     > GET_MODE_SIZE (GET_MODE (rld[i].out_reg))))
+	    rld[i].out_reg = *outloc;
 	}
       if (reg_class_subset_p (class, rld[i].class))
 	rld[i].class = class;
