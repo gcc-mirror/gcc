@@ -1,3 +1,9 @@
+2008-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36998
+	* dwarf2out.c (compute_barrier_args_size_1,
+	compute_barrier_args_size): Temporarily remove assertions.
+
 2008-08-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/20644
