@@ -1,7 +1,10 @@
 /* This used to ICE on s390x due to a reload bug.  */
 
-/* { dg-do compile } */
-/* { dg-options "-O2" } */
+#if defined(STACK_SIZE) && (STACK_SIZE < 65536)
+  #define BYTES 64
+#else
+  #define BYTES 65400
+#endif
 
 int gl2;
 typedef __SIZE_TYPE__ size_t;
@@ -12,7 +15,7 @@ void
 f1 ()
 {
   int i2;
-  unsigned char bf[64 * 1024 + 4];
+  unsigned char bf[BYTES];
 
   for (i2 = 0; i2 < 3; i2++)
     {

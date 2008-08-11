@@ -1,3 +1,9 @@
+2008-08-11  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.target/s390/20080806-1.c: Move testcase ...
+ 	* gcc.c-torture/compile/20080806-1.c: ... to here and make it
+	stack size sensitive.
+
 2008-08-10  Samuel Tardieu  <sam@rfc1149.net>
 
 	* gnat.dg/exp0_eval.adb: New.
