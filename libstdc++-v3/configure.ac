@@ -122,6 +122,8 @@ GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 # Checks for operating systems support that don't require linking.
 GLIBCXX_CHECK_SYSTEM_ERROR
 
+# For common values of EOF, SEEK_CUR, SEEK_END.
+GLIBCXX_CHECK_STDIO_MACROS
 
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
@@ -166,9 +168,6 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For gettimeofday support.
   GLIBCXX_CHECK_GETTIMEOFDAY
-
-  #
-  GLIBCXX_CHECK_STDIO_MACROS
 
   # For TLS support.
   GCC_CHECK_TLS

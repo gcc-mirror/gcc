@@ -1,3 +1,8 @@
+2008-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* configure.ac: Run GLIBCXX_CHECK_STDIO_MACROS unconditionally.
+	* configure: Regenerate.
+
 2008-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/type_traits (_DEFINE_SPEC*): Simplify.
