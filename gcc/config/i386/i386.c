@@ -3173,6 +3173,11 @@ override_options (bool main_args_p)
     *p = '\0';
   }
 
+  /* When scheduling description is not available, disable scheduler pass
+     so it won't slow down the compilation and make x87 code slower.  */
+  if (!TARGET_SCHEDULE)
+    flag_schedule_insns_after_reload = flag_schedule_insns = 0;
+
   if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
     set_param_value ("simultaneous-prefetches",
 		     ix86_cost->simultaneous_prefetches);
@@ -3941,11 +3946,6 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
   if (level > 1)
     flag_schedule_insns = 0;
 #endif
-
-  /* When scheduling description is not available, disable scheduler pass
-     so it won't slow down the compilation and make x87 code slower.  */
-  if (!TARGET_SCHEDULE)
-    flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 
   if (TARGET_MACHO)
     /* The Darwin libraries never set errno, so we might as well

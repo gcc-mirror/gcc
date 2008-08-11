@@ -1,3 +1,9 @@
+2008-08-11  Michael Matz  <matz@suse.de>
+
+	* i386/i386.c (override_options): Move initialisation from
+	flag_schedule_insns_after_reload to here from ...
+	(optimization_options): ... here.
+
 2008-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36998
