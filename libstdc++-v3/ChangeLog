@@ -1,5 +1,9 @@
 2008-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* config/locale/generic/c_locale.cc: Include <cstdio>.
+
+2008-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* configure.ac: Run GLIBCXX_CHECK_STDIO_MACROS unconditionally.
 	* configure: Regenerate.
 
