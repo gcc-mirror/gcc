@@ -240,7 +240,7 @@ __gnat_safe_getservbyname (const char *name, const char *proto,
   struct servent *rh;
   int ri;
 
-#if defined(__linux__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__rtems__)
   (void) getservbyname_r (name, proto, ret, buf, buflen, &rh);
 #else
   rh = getservbyname_r (name, proto, ret, buf, buflen);
@@ -256,7 +256,7 @@ __gnat_safe_getservbyport (int port, const char *proto,
   struct servent *rh;
   int ri;
 
-#if defined(__linux__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__rtems__)
   (void) getservbyport_r (port, proto, ret, buf, buflen, &rh);
 #else
   rh = getservbyport_r (port, proto, ret, buf, buflen);

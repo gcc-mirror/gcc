@@ -933,9 +933,9 @@ OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
   ./s-oscons-tmplt.exe > s-oscons-tmplt.s
 
 else
-OSCONS_CPP=$(GCC_FOR_TARGET) -E -C \
+OSCONS_CPP=$(GCC_FOR_TARGET) $(CFLAGS_FOR_TARGET) -E -C \
   -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(GCC_FOR_TARGET) -S s-oscons-tmplt.i
+OSCONS_EXTRACT=$(GCC_FOR_TARGET) $(CFLAGS_FOR_TARGET) -S s-oscons-tmplt.i
 endif
 
 ada/s-oscons.ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb

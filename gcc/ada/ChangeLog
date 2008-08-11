@@ -1,3 +1,9 @@
+2008-08-11  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* s-oscons-tmplt.c: RTEMS defines AF_INET6 but does support it.
+	* gsocket.h, socket.c: Update to support RTEMS.
+	* gcc-interface/Make-lang.in: Include CFLAGS_FOR_TARGET when cross.
+
 2008-08-10  Samuel Tardieu  <sam@rfc1149.net>
             Robert Dewar <dewar@adacore.com>
 
