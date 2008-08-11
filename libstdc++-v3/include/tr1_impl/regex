@@ -29,6 +29,8 @@
 
 /**
  * @file tr1_impl/regex
+ * @brief The common implementation file for tr1 and std regular expressions.
+ *
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
@@ -40,12 +42,15 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 /**
  * @addtogroup tr1_regex Regular Expressions
  * A facility for performing regular expression pattern matching.
- * @{
  */
+ //@{
 
 namespace regex_constants
 {
-  // [7.5.1] Bitmask Type syntax_option_type
+  /**
+   * @name 5.1 Regular Expression Syntax Options
+   */
+  //@{
   enum __syntax_option
     {
       _S_icase,
@@ -70,72 +75,103 @@ namespace regex_constants
    *
    * A valid value of type syntax_option_type shall have exactly one of the
    * elements @c ECMAScript, @c basic, @c extended, @c awk, @c grep, @c egrep
-   * set.
+   * %set.
    */
   typedef unsigned int syntax_option_type;
 
-  /// Specifies that the matching of regular expressions against a character
-  /// sequence shall be performed without regard to case.
+  /** 
+   * Specifies that the matching of regular expressions against a character
+   * sequence shall be performed without regard to case.
+   */
   static const syntax_option_type icase      = 1 << _S_icase;
 
-  /// Specifies that when a regular expression is matched against a character
-  /// container sequence, no sub-expression matches are to be stored in the
-  /// supplied match_results structure.
+  /**
+   * Specifies that when a regular expression is matched against a character
+   * container sequence, no sub-expression matches are to be stored in the
+   * supplied match_results structure.
+   */
   static const syntax_option_type nosubs     = 1 << _S_nosubs;
 
-  /// Specifies that the regular expression engine should pay more attention to
-  /// the speed with which regular expressions are matched, and less to the
-  /// speed with which regular expression objects are constructed. Otherwise
-  /// it has no detectable effect on the program output.
+  /**
+   * Specifies that the regular expression engine should pay more attention to
+   * the speed with which regular expressions are matched, and less to the
+   * speed with which regular expression objects are constructed. Otherwise
+   * it has no detectable effect on the program output.
+   */
   static const syntax_option_type optimize   = 1 << _S_optimize;
 
-  /// Specifies that character ranges of the form [a-b] should be locale
-  /// sensitive.
+  /**
+   * Specifies that character ranges of the form [a-b] should be locale
+   * sensitive.
+   */
   static const syntax_option_type collate    = 1 << _S_collate;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
-  /// Language Specification, Standard Ecma-262, third edition, 1999], as
-  /// modified in tr1 section [7.13].  This grammar is similar to that defined
-  /// in the PERL scripting language but extended with elements found in the
-  /// POSIX regular expression grammar.
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
+   * Language Specification, Standard Ecma-262, third edition, 1999], as
+   * modified in tr1 section [7.13].  This grammar is similar to that defined
+   * in the PERL scripting language but extended with elements found in the
+   * POSIX regular expression grammar.
+   */
   static const syntax_option_type ECMAScript = 1 << _S_ECMAScript;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
-  /// Portable Operating System Interface (POSIX), Base Definitions and
-  /// Headers, Section 9, Regular Expressions [IEEE, Information Technology --
-  /// Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
+   * Portable Operating System Interface (POSIX), Base Definitions and
+   * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
+   * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+   */
   static const syntax_option_type basic      = 1 << _S_basic;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
-  /// Portable Operating System Interface (POSIX), Base Definitions and Headers,
-  /// Section 9, Regular Expressions.
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
+   * Portable Operating System Interface (POSIX), Base Definitions and Headers,
+   * Section 9, Regular Expressions.
+   */
   static const syntax_option_type extended   = 1 << _S_extended;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
-  /// identical to syntax_option_type extended, except that C-style escape
-  /// sequences are supported.  These sequences are, explicitly, '\\', '\a',
-  /// '\b', '\f', '\n', '\r', '\t' , '\v', '\"', '\\', and '\ddd' (where ddd is
-  /// one, two, or three octal digits).  
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
+   * identical to syntax_option_type extended, except that C-style escape
+   * sequences are supported.  These sequences are, explicitly, "\\", "\a",
+   * "\b", "\f", "\n", "\r", "\t" , "\v", "\"", "'",
+   * and "\ddd" (where ddd is one, two, or three octal digits).  
+   */
   static const syntax_option_type awk        = 1 << _S_awk;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
-  /// identical to syntax_option_type basic, except that newlines are treated
-  /// as whitespace.
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
+   * identical to syntax_option_type basic, except that newlines are treated
+   * as whitespace.
+   */
   static const syntax_option_type grep       = 1 << _S_grep;
 
-  /// Specifies that the grammar recognized by the regular expression engine is
-  /// that used by POSIX utility grep when given the -E option in
-  /// IEEE Std 1003.1-2001.  This option is identical to syntax_option_type 
-  /// extended, except that newlines are treated as whitespace.
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility grep when given the -E option in
+   * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type 
+   * extended, except that newlines are treated as whitespace.
+   */
   static const syntax_option_type egrep      = 1 << _S_egrep;
 
+  //@}
 
-  // [7.5.2] Bitmask Type match_flag_type
+  /**
+   * @name 5.2 Matching Rules
+   *
+   * Matching a regular expression against a sequence of characters [first,
+   * last) proceeds according to the rules of the grammar specified for the
+   * regular expression object, modified according to the effects listed
+   * below for any bitmask elements set.
+   *
+   */
+  //@{
+
   enum __match_flag
     {
       _S_not_bol,
@@ -155,93 +191,122 @@ namespace regex_constants
   /**
    * @brief This is a bitmask type indicating regex matching rules.
    *
-   * Matching a regular expression against a sequence of characters [first,
-   * last) proceeds according to the rules of the grammar specified for the
-   * regular expression object, modified according to the effects listed
-   * below for any bitmask elements set.
-   *
    * The @c match_flag_type is implementation defined but it is valid to
    * perform bitwise operations on these values and expect the right thing to
    * happen.
    */
   typedef std::bitset<_S_match_flag_last> match_flag_type;
 
+  /**
+   * The default matching rules.
+   */
   static const match_flag_type match_default     = 0;
 
-  /// The first character in the sequence [first, last) is treated as though it
-  /// is not at the beginning of a line, so the character "^" in the regular
-  /// expression shall not match [first, first).
+  /**
+   * The first character in the sequence [first, last) is treated as though it
+   * is not at the beginning of a line, so the character "^" in the regular
+   * expression shall not match [first, first).
+   */
   static const match_flag_type match_not_bol     = 1 << _S_not_bol;
 
-  /// The last character in the sequence [first, last) is treated as though it
-  /// is not at the end of a line, so the character "$" in the regular
-  /// expression shall not match [last, last).
+  /**
+   * The last character in the sequence [first, last) is treated as though it
+   * is not at the end of a line, so the character "$" in the regular
+   * expression shall not match [last, last).
+   */
   static const match_flag_type match_not_eol     = 1 << _S_not_eol;
    
-  /// The expression "\b" is not matched against the sub-sequence
-  /// [first,first).
+  /**
+   * The expression "\b" is not matched against the sub-sequence
+   * [first,first).
+   */
   static const match_flag_type match_not_bow     = 1 << _S_not_bow;
    
-  /// The expression "\b" should not be matched against the sub-sequence
-  /// [last,last).
+  /**
+   * The expression "\b" should not be matched against the sub-sequence
+   * [last,last).
+   */
   static const match_flag_type match_not_eow     = 1 << _S_not_eow;
    
-  /// If more than one match is possible then any match is an acceptable
-  /// result.
+  /**
+   * If more than one match is possible then any match is an acceptable
+   * result.
+   */
   static const match_flag_type match_any         = 1 << _S_any;
    
-  /// The expression does not match an empty sequence.
+  /**
+   * The expression does not match an empty sequence.
+   */
   static const match_flag_type match_not_null    = 1 << _S_not_null;
    
-  /// The expression only matches a sub-sequence that begins at first .
+  /**
+   * The expression only matches a sub-sequence that begins at first .
+   */
   static const match_flag_type match_continuous  = 1 << _S_continuous;
    
-  /// --first is a valid iterator position.  When this flag is set then the
-  /// flags match_not_bol and match_not_bow are ignored by the regular
-  /// expression algorithms 7.11 and iterators 7.12.
+  /**
+   * --first is a valid iterator position.  When this flag is set then the
+   * flags match_not_bol and match_not_bow are ignored by the regular
+   * expression algorithms 7.11 and iterators 7.12.
+   */
   static const match_flag_type match_prev_avail  = 1 << _S_prev_avail;
 
-  /// When a regular expression match is to be replaced by a new string, the
-  /// new string is constructed using the rules used by the ECMAScript replace
-  /// function in ECMA- 262 [Ecma International, ECMAScript Language
-  /// Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
-  /// String.prototype.replace. In addition, during search and replace
-  /// operations all non-overlapping occurrences of the regular expression
-  /// are located and replaced, and sections of the input that did not match
-  /// the expression are copied unchanged to the output string.
-  ///
-  /// Format strings (from ECMA-262 [15.5.4.11]):
-  /// $$  $
-  /// $&  The matched substring.
-  /// $`  The portion of <em>string</em> that precedes the matched substring.
-  /// $'  The portion of <em>string</em> that follows the matched substring.
-  /// $n  The nth capture, where n is in [1,9] and $n is not followed by a
-  ///     decimal digit.  If n <= m and the nth capture is undefined, use the
-  ///     empty string
-  ///     instead. If n > m, the result is implementation-defined.
-  /// $nn The nnth capture, where nn is a two-digit decimal number on [01, 99].
-  ///     If nn <= m and the nth capture is undefined, use the empty string
-  ///     instead. If nn > m, the result is implementation-defined.
-  ///
+  /**
+   * When a regular expression match is to be replaced by a new string, the
+   * new string is constructed using the rules used by the ECMAScript replace
+   * function in ECMA- 262 [Ecma International, ECMAScript Language
+   * Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
+   * String.prototype.replace. In addition, during search and replace
+   * operations all non-overlapping occurrences of the regular expression
+   * are located and replaced, and sections of the input that did not match
+   * the expression are copied unchanged to the output string.
+   * 
+   * Format strings (from ECMA-262 [15.5.4.11]):
+   * @li $$  The dollar-sign itself ($)
+   * @li $&  The matched substring.
+   * @li $`  The portion of <em>string</em> that precedes the matched substring.
+   *         This would be match_results::prefix().
+   * @li $'  The portion of <em>string</em> that follows the matched substring.
+   *         This would be match_results::suffix().
+   * @li $n  The nth capture, where n is in [1,9] and $n is not followed by a
+   *         decimal digit.  If n <= match_results::size() and the nth capture
+   *         is undefined, use the empty string instead.  If n >
+   *         match_results::size(), the result is implementation-defined.
+   * @li $nn The nnth capture, where nn is a two-digit decimal number on
+   *         [01, 99].  If nn <= match_results::size() and the nth capture is
+   *         undefined, use the empty string instead. If
+   *         nn > match_results::size(), the result is implementation-defined.
+   */
   static const match_flag_type format_default    = 0;
 
-  /// When a regular expression match is to be replaced by a new string, the
-  /// new string is constructed using the rules used by the POSIX sed utility
-  /// in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
-  /// Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+  /**
+   * When a regular expression match is to be replaced by a new string, the
+   * new string is constructed using the rules used by the POSIX sed utility
+   * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
+   * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+   */
   static const match_flag_type format_sed        = 1 << _S_sed;
 
-  /// During a search and replace operation, sections of the character
-  /// container sequence being searched that do not match the regular
-  /// expression shall not be copied to the output string.
+  /**
+   * During a search and replace operation, sections of the character
+   * container sequence being searched that do not match the regular
+   * expression shall not be copied to the output string.
+   */
   static const match_flag_type format_no_copy    = 1 << _S_no_copy;
 
-  /// When specified during a search and replace operation, only the first
-  /// occurrence of the regular expression shall be replaced.
+  /**
+   * When specified during a search and replace operation, only the first
+   * occurrence of the regular expression shall be replaced.
+   */
   static const match_flag_type format_first_only = 1 << _S_first_only;
 
+  //@}
 
-  /// [7.5.3] implementation-defined error type
+  /**
+   * @name 5.3 Error Types
+   */
+  //@{
+ 
   enum error_type
     {
       _S_error_collate,
@@ -260,63 +325,78 @@ namespace regex_constants
       _S_error_last
     };
 
-  /// The expression contained an invalid collating element name.
+  /** The expression contained an invalid collating element name. */
   static const error_type error_collate(_S_error_collate);
 
-  /// The expression contained an invalid character class name.
+  /** The expression contained an invalid character class name. */
   static const error_type error_ctype(_S_error_ctype);
 
-  /// The expression contained an invalid escaped character, or a trailing
-  /// escape.
+  /**
+   * The expression contained an invalid escaped character, or a trailing
+   * escape.
+   */
   static const error_type error_escape(_S_error_escape);
 
-  /// The expression contained an invalid back reference.
+  /** The expression contained an invalid back reference. */
   static const error_type error_backref(_S_error_backref);
 
-  /// The expression contained mismatched [ and ].
+  /** The expression contained mismatched [ and ]. */
   static const error_type error_brack(_S_error_brack);
 
-  /// The expression contained mismatched ( and ).
+  /** The expression contained mismatched ( and ). */
   static const error_type error_paren(_S_error_paren);
 
-  /// The expression contained mismatched { and }
+  /** The expression contained mismatched { and } */
   static const error_type error_brace(_S_error_brace);
 
-  /// The expression contained an invalid range in a {} expression.
+  /** The expression contained an invalid range in a {} expression. */
   static const error_type error_badbrace(_S_error_badbrace);
 
-  /// The expression contained an invalid character range,
-  /// such as [b-a] in most encodings.
+  /**
+   * The expression contained an invalid character range,
+   * such as [b-a] in most encodings.
+   */
   static const error_type error_range(_S_error_range);
 
-  /// There was insufficient memory to convert the expression into a
-  /// finite state machine.
+  /**
+   * There was insufficient memory to convert the expression into a
+   * finite state machine.
+   */
   static const error_type error_space(_S_error_space);
 
-  /// One of *?+{ was not preceded by a valid regular expression.
+  /**
+   * One of "*?+{" was not preceded by a valid regular expression.
+   */
   static const error_type error_badrepeat(_S_error_badrepeat);
 
-  /// The complexity of an attempted match against a regular expression
-  /// exceeded a pre-set level.
+  /**
+   * The complexity of an attempted match against a regular expression
+   * exceeded a pre-set level.
+   */
   static const error_type error_complexity(_S_error_complexity);
 
-  /// There was insufficient memory to determine whether the
-  /// regular expression could match the specified character sequence.
+  /**
+   * There was insufficient memory to determine whether the
+   * regular expression could match the specified character sequence.
+   */
   static const error_type error_stack(_S_error_stack);
+
+  //@}
 }
 
 
   // [7.8] Class regex_error
   /**
-   * Defines the exception objects thrown report errors from the
-   * regular expression library.
+   * @brief A regular expression exception class.
+   *
+   * The regular expression library throws objects of this class on error.
    */
   class regex_error
   : public std::runtime_error
   {
   public:
     /**
-     * @brief constructs a regex_error object.
+     * @brief Constructs a regex_error object.
      *
      * @param ecode the regex error code.
      */
@@ -326,7 +406,7 @@ namespace regex_constants
     { }
 
     /**
-     * @brief gets the regex error code.
+     * @brief Gets the regex error code.
      *
      * @returns the regex error code.
      */
@@ -338,9 +418,10 @@ namespace regex_constants
     regex_constants::error_type _M_code;
   };
 
-
   // [7.7] Class regex_traits
   /**
+   * @brief Describes aspects of a regular expression.
+   *
    * A regular expression traits class that satisfies the requirements of tr1
    * section [7.2].
    *
@@ -526,38 +607,7 @@ namespace regex_constants
        *         facet.
        */
       bool
-      isctype(_Ch_type __c, char_class_type __f) const
-      {
-	using std::ctype;
-	using std::use_facet;
-	const ctype<_Ch_type>& __ctype(use_facet<
-				       ctype<_Ch_type> >(_M_locale));
-	
-	if (__ctype.is(__c, __f))
-	  return true;
-	
-	// special case of underscore in [[:w:]]
-	if (__c == __ctype.widen('_'))
-	  {
-	    const char* const __wb[] = "w";
-	    char_class_type __wt = this->lookup_classname(__wb,
-							  __wb + sizeof(__wb));
-	    if (__f | __wt)
-	      return true;
-	  }
-      
-	// special case of [[:space:]] in [[:blank:]]
-	if (__c == __ctype.isspace(__c))
-	  {
-	    const char* const __bb[] = "blank";
-	    char_class_type __bt = this->lookup_classname(__bb,
-							  __bb + sizeof(__bb));
-	    if (__f | __bt)
-	      return true;
-	  }
-	
-	return false;
-      }
+      isctype(_Ch_type __c, char_class_type __f) const;
 
       /**
        * @brief Converts a digit to an int.
@@ -568,8 +618,6 @@ namespace regex_constants
        * 
        * @returns the value represented by the digit ch in base radix if the
        * character ch is a valid digit in base radix; otherwise returns -1.
-       *
-       * @todo Implement this function.
        */
       int
       value(_Ch_type __ch, int __radix) const;
@@ -604,6 +652,54 @@ namespace regex_constants
       locale_type _M_locale;
     };
 
+  template<typename _Ch_type>
+    bool regex_traits<_Ch_type>::
+    isctype(_Ch_type __c, char_class_type __f) const
+    {
+      using std::ctype;
+      using std::use_facet;
+      const ctype<_Ch_type>& __ctype(use_facet<
+				     ctype<_Ch_type> >(_M_locale));
+      
+      if (__ctype.is(__c, __f))
+	return true;
+      
+      // special case of underscore in [[:w:]]
+      if (__c == __ctype.widen('_'))
+	{
+	  const char* const __wb[] = "w";
+	  char_class_type __wt = this->lookup_classname(__wb,
+							__wb + sizeof(__wb));
+	  if (__f | __wt)
+	    return true;
+	}
+    
+      // special case of [[:space:]] in [[:blank:]]
+      if (__c == __ctype.isspace(__c))
+	{
+	  const char* const __bb[] = "blank";
+	  char_class_type __bt = this->lookup_classname(__bb,
+							__bb + sizeof(__bb));
+	  if (__f | __bt)
+	    return true;
+	}
+      
+      return false;
+    }
+
+  template<typename _Ch_type>
+    int regex_traits<_Ch_type>::
+    value(_Ch_type __ch, int __radix) const
+    {
+      std::basic_istringstream<_Ch_type> __is(string_type(1, __ch));
+      int __v = -1;
+      if (__radix == 8)
+	__is >> std::oct;
+      else if (__radix == 16)
+	__is >> std::hex;
+      __is >> __v;
+      return __v;
+    }
 
   // [7.8] Class basic_regex
   /**
@@ -623,7 +719,11 @@ namespace regex_constants
       typedef typename _Rx_traits::locale_type  locale_type;
       typedef typename _Rx_traits::string_type  string_type;
 
-      // [7.8.1] constants
+      /**
+       * @name Constants
+       * tr1 [7.8.1] std [28.8.1]
+       */
+      //@{
       static const regex_constants::syntax_option_type icase
         = regex_constants::icase;
       static const regex_constants::syntax_option_type nosubs
@@ -644,6 +744,7 @@ namespace regex_constants
         = regex_constants::grep;
       static const regex_constants::syntax_option_type egrep
         = regex_constants::egrep;
+      //@}
 
       // [7.8.2] construct/copy/destroy
       /**
@@ -722,7 +823,8 @@ namespace regex_constants
        *              expression.
        * @param f     The format flags of the regular expression.
        *
-       * @throws regex_error if @p p is not a valid regular expression.
+       * @throws regex_error if @p [first, last) is not a valid regular
+       *         expression.
        */
       template<typename _InputIterator>
         basic_regex(_InputIterator __first, _InputIterator __last, 
@@ -731,6 +833,14 @@ namespace regex_constants
         { _M_compile(); }
 
 #ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      /**
+       * @brief Constructs a basic regular expression from an initializer list.
+       *
+       * @param l  The initializer list.
+       * @param f  The format flags of the regular expression.
+       *
+       * @throws regex_error if @p l is not a valid regular expression.
+       */
       basic_regex(initializer_list<_Ch_type> __l,
 		  flag_type __f = regex_constants::ECMAScript)
 	: _M_flags(__f), _M_pattern(__l.begin(), __l.end()), _M_mark_count(0)
@@ -853,7 +963,7 @@ namespace regex_constants
        *
        * @throws regex_error if p does not contain a valid regular expression
        * pattern interpreted according to @p flags.  If regex_error is thrown,
-       * *this remains unchanged.
+       * the object remains unchanged.
        */
       template<typename _InputIterator>
         basic_regex&
@@ -862,6 +972,16 @@ namespace regex_constants
         { return this->assign(string_type(__first, __last), __flags); }
 
 #ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      /**
+       * @brief Assigns a new regular expression to a regex object.
+       *
+       * @param l     An initializer list representing a regular expression.
+       * @param flags Syntax option flags.
+       *
+       * @throws regex_error if @p l does not contain a valid regular
+       * expression pattern interpreted according to @p flags.  If regex_error
+       * is thrown, the object remains unchanged.
+       */
       basic_regex&
       assign(initializer_list<_Ch_type> __l,
 	     flag_type __f = regex_constants::ECMAScript)
@@ -933,8 +1053,10 @@ namespace regex_constants
       _Rx_traits   _M_traits;
     };
   
+  /** @brief Standard regular expressions. */
   typedef basic_regex<char>    regex;
 #ifdef _GLIBCXX_USE_WCHAR_T
+  /** @brief Standard wide-character regular expressions. */
   typedef basic_regex<wchar_t> wregex;
 #endif
 
@@ -1055,10 +1177,14 @@ namespace regex_constants
     };
   
   
+  /** @brief Standard regex submatch over a C-style null-terminated string. */
   typedef sub_match<const char*>             csub_match;
+  /** @brief Standard regex submatch over a standard string. */
   typedef sub_match<string::const_iterator>  ssub_match;
 #ifdef _GLIBCXX_USE_WCHAR_T
+  /** @brief Regex submatch over a C-style null-terminated wide string. */
   typedef sub_match<const wchar_t*>          wcsub_match;
+  /** @brief Regex submatch over a standard wide string. */
   typedef sub_match<wstring::const_iterator> wssub_match;
 #endif
 
@@ -1616,6 +1742,8 @@ namespace regex_constants
 
   // [7.10] Class template match_results
   /**
+   * @brief The results of a match or search operation.
+   *
    * A collection of character sequences representing the result of a regular
    * expression match.  Storage for the collection is allocated and freed as
    * necessary by the member functions of class template match_results.
@@ -1632,6 +1760,8 @@ namespace regex_constants
    * of characters [first, second) which formed that match. Otherwise matched
    * is false, and members first and second point to the end of the sequence
    * that was searched.
+   *
+   * @nosubgrouping
    */
   template<typename _Bi_iter,
 	   typename _Allocator = allocator<sub_match<_Bi_iter> > >
@@ -1643,6 +1773,10 @@ namespace regex_constants
                                                               _Base_type;
 
     public:
+      /**
+       * @name 10.? Public Types
+       */
+      //@{
       typedef sub_match<_Bi_iter>                             value_type;
       typedef typename _Allocator::const_reference            const_reference;
       typedef const_reference                                 reference;
@@ -1654,11 +1788,17 @@ namespace regex_constants
       typedef _Allocator                                      allocator_type;
       typedef typename iterator_traits<_Bi_iter>::value_type  char_type;
       typedef basic_string<char_type>                         string_type;
+      //@}
   
     public:
-      // [7.10.1] construct/copy/destroy
       /**
-       * @brief Constructs a default match_results container.
+       * @name 10.1 Construction, Copying, and Destruction
+       */
+      //@{
+
+      /**
+       * @brief Constructs a default %match_results container.
+       * @post size() returns 0 and str() returns an empty string.
        */
       explicit
       match_results(const _Allocator& __a = _Allocator())
@@ -1666,7 +1806,7 @@ namespace regex_constants
       { }
 
       /**
-       * @brief Copy constructs a match_result.
+       * @brief Copy constructs a %match_results.
        */
       match_results(const match_results& __rhs)
       : _Base_type(__rhs), _M_matched(__rhs._M_matched),
@@ -1684,44 +1824,71 @@ namespace regex_constants
       }
 
       /**
-       * @todo Implement this function.
+       * @brief Destroys a %match_results object.
        */
       ~match_results()
       { }
       
-      // [7.10.2] size
+      //@}
+
       /**
-       * @todo Document this function.
+       * @name 10.2 Size
+       */
+      //@{
+
+      /**
+       * @brief Gets the number of matches and submatches.
+       *
+       * The number of matches for a given regular expression will be either 0
+       * if there was no match or mark_count() + 1 if a match was successful.
+       * Some matches may be empty.
+       *
+       * @returns the number of matches found.
        */
       size_type
       size() const
       { return _M_matched ? _Base_type::size() + 1 : 0; }
       
-      /**
-       * @todo Implement this function.
-       */
       //size_type
       //max_size() const;
       using _Base_type::max_size;
 
       /**
-       * @todo Document this function.
+       * @brief Indicates if the %match_results contains no results.
+       * @retval true The %match_results object is empty.
+       * @retval false The %match_results object is not empty.
        */
       bool
       empty() const
       { return size() == 0; }
       
-      // [7.10.3] element access
+      //@}
+
+      /**
+       * @name 10.3 Element Access
+       */
+      //@{
+
       /**
        * @brief Gets the length of the indicated submatch.
        * @param sub indicates the submatch.
+       *
+       * This function returns the length of the indicated submatch, or the
+       * length of the entire match if @p sub is zero (the default).
        */
       difference_type
       length(size_type __sub = 0) const
       { return _M_matched ? this->str(__sub).length() : 0; }
 
       /**
-       * @todo Document this function.
+       * @brief Gets the offset of the beginning of the indicated submatch.
+       * @param sub indicates the submatch.
+       *
+       * This function returns the offset from the beginnig of the target
+       * sequence to the beginning of the submatch, unless the value of @p sub
+       * is zero (the default), in which case this function returns the offset
+       * from the beginning of the target sequence to the beginning of the
+       * match.
        */
       difference_type
       position(size_type __sub = 0) const
@@ -1731,35 +1898,54 @@ namespace regex_constants
       }
 
       /**
-       * @todo Document this function.
+       * @brief Gets the match or submatch converted to a string type.
+       * @param sub indicates the submatch.
+       *
+       * This function gets the submatch (or match, if @p sub is zero) extracted
+       * from the target range and converted to the associated string type.
        */
       string_type
       str(size_type __sub = 0) const
       { return _M_matched ? (*this)[__sub].str() : string_type(); }
       
       /**
-       * @todo Document this function.
+       * @brief Gets a %sub_match reference for the match or submatch.
+       * @param sub indicates the submatch.
+       *
+       * This function gets a reference to the indicated submatch, or the entire
+       * match if @p sub is zero.
+       *
+       * If @p sub >= size() then this function returns a %sub_match with a
+       * special value indicating no submatch.
        */
       const_reference
-      operator[](size_type __n) const
-      { return _Base_type::operator[](__n); }
+      operator[](size_type __sub) const
+      { return _Base_type::operator[](__sub); }
 
       /**
-       * @todo Document this function.
+       * @brief Gets a %sub_match representing the match prefix.
+       *
+       * This function gets a reference to a %sub_match object representing the
+       * part of the target range between the start of the target range and the
+       * start of the match.
        */
       const_reference
       prefix() const
       { return _M_prefix; }
 
       /**
-       * @todo Document this function.
+       * @brief Gets a %sub_match representing the match suffix.
+       *
+       * This function gets a reference to a %sub_match object representing the
+       * part of the target range between the end of the match and the end of
+       * the target range.
        */
       const_reference
       suffix() const
       { return _M_suffix; }
 
       /**
-       * @todo Document this function.
+       * @brief Gets an iterator to the start of the %sub_match collection.
        */
       const_iterator
       begin() const
@@ -1790,7 +1976,18 @@ namespace regex_constants
       { return _Base_type::end(); }
 #endif
 
-      // [7.10.4] format
+      //@}
+
+      /**
+       * @name 10.4 Formatting
+       *
+       * These functions perform formatted substitution of the matched character
+       * sequences into their target.  The format specifiers and escape sequences
+       * accepted by these functions are determined by their @p flags parameter 
+       * as documented above.
+       */
+       //@{
+
       /**
        * @todo Implement this function.
        */
@@ -1809,17 +2006,29 @@ namespace regex_constants
 	     regex_constants::match_flag_type __flags
 	     = regex_constants::format_default) const;
 
-      // [7.10.5] allocator
+      //@} 
+
       /**
-       * @todo Document this function.
+       * @name 10.5 Allocator
+       */
+      //@{ 
+
+      /**
+       * @brief Gets a copy of the allocator.
        */
       //allocator_type
       //get_allocator() const;
       using _Base_type::get_allocator;
       
-      // [7.10.6] swap
+      //@} 
+
       /**
-       * @todo Document this function.
+       * @name 10.6 Swap
+       */
+       //@{ 
+
+      /**
+       * @brief Swaps the contents of two match_results.
        */
       void
       swap(match_results& __that)
@@ -1829,6 +2038,7 @@ namespace regex_constants
 	std::swap(_M_prefix,  __that._M_prefix);
 	std::swap(_M_suffix,  __that._M_suffix);
       }
+      //@} 
       
     private:
       bool       _M_matched;
@@ -1845,6 +2055,9 @@ namespace regex_constants
 
   // match_results comparisons
   /**
+   * @brief Compares two match_results for equality.
+   * @returns true if the two objects refer to the same match,
+   * false otherwise.
    * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Allocator>
@@ -1853,12 +2066,15 @@ namespace regex_constants
 	       const match_results<_Bi_iter, _Allocator>& __m2);
 
   /**
-   * @todo Implement this function.
+   * @brief Compares two match_results for inequality.
+   * @returns true if the two objects do not refer to the same match,
+   * false otherwise.
    */
   template<typename _Bi_iter, class _Allocator>
     inline bool
     operator!=(const match_results<_Bi_iter, _Allocator>& __m1,
-	       const match_results<_Bi_iter, _Allocator>& __m2);
+	       const match_results<_Bi_iter, _Allocator>& __m2)
+    { return !(__m1 == __m2); }
 
   // [7.10.6] match_results swap
   /**
@@ -1876,6 +2092,11 @@ namespace regex_constants
 
   // [7.11.2] Function template regex_match
   /**
+   * @name Matching, Searching, and Replacing
+   */
+  //@{
+
+  /**
    * @brief Determines if there is a match between the regular expression @p e
    * and all of the character sequence [first, last).
    *
@@ -1887,6 +2108,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    *
    * @todo Implement this function.
    */
@@ -1911,6 +2134,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Bi_iter, typename _Ch_type, typename _Rx_traits>
     bool
@@ -1934,6 +2159,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_type, typename _Allocator, typename _Rx_traits>
     inline bool
@@ -1955,6 +2182,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_traits, typename _Ch_alloc,
 	   typename _Allocator, typename _Ch_type, typename _Rx_traits>
@@ -1977,6 +2206,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_type, class _Rx_traits>
     inline bool
@@ -1996,6 +2227,8 @@ namespace regex_constants
    *
    * @retval true  A match exists.
    * @retval false Otherwise.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_traits, typename _Str_allocator,
 	   typename _Ch_type, typename _Rx_traits>
@@ -2017,6 +2250,9 @@ namespace regex_constants
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string, the content of %m is
    *               undefined.
+   *
+   * @throws an exception of type regex_error.
+   *
    * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Allocator,
@@ -2037,7 +2273,9 @@ namespace regex_constants
    * @param flags [IN]  Search policy flags.
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string.
-   * @todo Document me.
+   * @doctodo
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Bi_iter, typename _Ch_type, typename _Rx_traits>
     inline bool
@@ -2059,7 +2297,9 @@ namespace regex_constants
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string, the content of %m is
    *               undefined.
-   * @todo Document me.
+   * @doctodo
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_type, class _Allocator, class _Rx_traits>
     inline bool
@@ -2077,7 +2317,9 @@ namespace regex_constants
    * @param f [IN]  Search policy flags.
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string.
-   * @todo Document me.
+   * @doctodo
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_type, typename _Rx_traits>
     inline bool
@@ -2094,7 +2336,9 @@ namespace regex_constants
    * @param flags [IN]  Search policy flags.
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string.
-   * @todo Document me.
+   * @doctodo
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_traits, typename _String_allocator,
 	   typename _Ch_type, typename _Rx_traits>
@@ -2115,6 +2359,8 @@ namespace regex_constants
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string, the content of %m is
    *               undefined.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Ch_traits, typename _Ch_alloc,
 	   typename _Allocator, typename _Ch_type,
@@ -2128,10 +2374,20 @@ namespace regex_constants
 		 = regex_constants::match_default)
     { return regex_search(__s.begin(), __s.end(), __m, __e, __f); }
 
-  // [7.11.4] Function template regex_replace
+  // tr1 [7.11.4] std [28.11.4] Function template regex_replace
   /**
+   * @doctodo
+   * @param out
+   * @param first
+   * @param last
+   * @param e
+   * @param fmt
+   * @param flags
+   *
+   * @returns out
+   * @throws an exception of type regex_error.
+   *
    * @todo Implement this function.
-   * @todo Document this function.
    */
   template<typename _Out_iter, typename _Bi_iter,
 	   typename _Rx_traits, typename _Ch_type>
@@ -2144,7 +2400,15 @@ namespace regex_constants
     { return __out; }
 
   /**
-   * @todo Document me.
+   * @doctodo
+   * @param s
+   * @param e
+   * @param fmt
+   * @param flags
+   *
+   * @returns a copy of string @p s with replacements.
+   *
+   * @throws an exception of type regex_error.
    */
   template<typename _Rx_traits, typename _Ch_type>
     inline basic_string<_Ch_type>
@@ -2160,7 +2424,9 @@ namespace regex_constants
       return __result;
     }
 
-  // [7.12.1] Class template regex_iterator
+  //@}
+
+  // tr1 [7.12.1] std [28.12] Class template regex_iterator
   /**
    * An iterator adaptor that will provide repeated calls of regex_search over 
    * a range until no more matches remain.
@@ -2183,7 +2449,7 @@ namespace regex_constants
        * @brief Provides a singular iterator, useful for indicating
        * one-past-the-end of a range.
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator();
       
@@ -2194,7 +2460,7 @@ namespace regex_constants
        * @param re [IN] The regular expression to match.
        * @param m  [IN] Policy flags for match rules.
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator(_Bi_iter __a, _Bi_iter __b, const regex_type& __re,
 		     regex_constants::match_flag_type __m
@@ -2203,55 +2469,55 @@ namespace regex_constants
       /**
        * Copy constructs a %regex_iterator.
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator(const regex_iterator& __rhs);
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator&
       operator=(const regex_iterator& __rhs);
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       bool
       operator==(const regex_iterator& __rhs);
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       bool
       operator!=(const regex_iterator& __rhs);
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       const value_type&
       operator*();
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       const value_type*
       operator->();
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator&
       operator++();
       
       /**
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_iterator
       operator++(int);
@@ -2322,7 +2588,7 @@ namespace regex_constants
        * @param m          [IN] Policy flags for match rules.
        *
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_token_iterator(_Bi_iter __a, _Bi_iter __b, const regex_type& __re,
 			   int __submatch = 0,
@@ -2339,7 +2605,7 @@ namespace regex_constants
        * @param m          [IN] Policy flags for match rules.
        *
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       regex_token_iterator(_Bi_iter __a, _Bi_iter __b,
 			   const regex_type& __re,
@@ -2357,7 +2623,7 @@ namespace regex_constants
        * @param m          [IN] Policy flags for match rules.
        
        * @todo Implement this function.
-       * @todo Document this function.
+       * @doctodo
        */
       template<std::size_t _Nm>
         regex_token_iterator(_Bi_iter __a, _Bi_iter __b,
@@ -2433,14 +2699,18 @@ namespace regex_constants
       std::vector<int>  __subs;
     };
 
+  /** @brief Token iterator for C-style NULL-terminated strings. */
   typedef regex_token_iterator<const char*>             cregex_token_iterator;
+  /** @brief Token iterator for standard strings. */
   typedef regex_token_iterator<string::const_iterator>  sregex_token_iterator;
 #ifdef _GLIBCXX_USE_WCHAR_T
+  /** @brief Token iterator for C-style NULL-terminated wide strings. */
   typedef regex_token_iterator<const wchar_t*>          wcregex_token_iterator;
+  /** @brief Token iterator for standard wide-character strings. */
   typedef regex_token_iterator<wstring::const_iterator> wsregex_token_iterator;
 #endif
   
-  /** @} */ // group tr1_regex
+  //@} // group tr1_regex
   
 _GLIBCXX_END_NAMESPACE_TR1
 }
