@@ -1,3 +1,8 @@
+2008-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36998
+	* gcc.dg/pr36998.c: New test.
+
 2008-08-07  Simon Baldwin  <simonb@google.com>
 
 	Backport from mainline:
