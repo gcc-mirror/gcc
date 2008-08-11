@@ -829,6 +829,14 @@ CND(VEOL2, "Alternative EOL")
 #endif
 CND(AF_INET, "IPv4 address family")
 
+/**
+ ** RTEMS lies and defines AF_INET6 even though there is no IPV6 support.
+ ** Its TCP/IP stack is in transition.  It has newer .h files but no IPV6 yet.
+ **/
+#if defined(__rtems__)
+# undef AF_INET6
+#endif
+
 #ifndef AF_INET6
 # define AF_INET6 -1
 #else
