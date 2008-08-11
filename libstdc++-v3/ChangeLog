@@ -1,3 +1,11 @@
+2008-08-11  Stephen M. Webb  <stephenw@xandros.com>
+
+	* include/tr1_impl/regex: Formatting fixes.
+	* testsuite/tr1/7_regular_expressions/regex_traits/char/value.cc:
+	  New test.
+	* testsuite/tr1/7_regular_expressions/regex_traits/wchar_t/value.cc:
+	  New test.
+
 2008-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* config/locale/generic/c_locale.cc: Include <cstdio>.
