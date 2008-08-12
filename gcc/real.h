@@ -259,6 +259,7 @@ extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 extern const struct real_format ieee_single_format;
 extern const struct real_format mips_single_format;
 extern const struct real_format motorola_single_format;
+extern const struct real_format spu_single_format;
 extern const struct real_format ieee_double_format;
 extern const struct real_format mips_double_format;
 extern const struct real_format motorola_double_format;

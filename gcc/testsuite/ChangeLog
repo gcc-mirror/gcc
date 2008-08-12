@@ -1,3 +1,7 @@
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.c-torture/execute/ieee/inf-2.c (testf): Skip on the SPU.
+
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36688
