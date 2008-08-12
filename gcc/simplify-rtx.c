@@ -3080,8 +3080,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     is unable to accurately represent the result.  */
 
 	  if ((flag_rounding_math
-	       || (REAL_MODE_FORMAT_COMPOSITE_P (mode)
-		   && !flag_unsafe_math_optimizations))
+	       || (MODE_COMPOSITE_P (mode) && !flag_unsafe_math_optimizations))
 	      && (inexact || !real_identical (&result, &value)))
 	    return NULL_RTX;
 
