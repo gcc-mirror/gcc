@@ -304,8 +304,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	break;
       }
 
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
     case COMPOUND_EXPR:
       /* Lowered by gimplify.c.  */
       gcc_unreachable ();
@@ -515,6 +513,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       if (BRANCH_COST >= 4 || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
 
+    case TRUTH_ANDIF_EXPR:
       if (if_false_label == NULL_RTX)
         {
 	  drop_through_label = gen_label_rtx ();
@@ -535,6 +534,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       if (BRANCH_COST >= 4 || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
 
+    case TRUTH_ORIF_EXPR:
       if (if_true_label == NULL_RTX)
 	{
           drop_through_label = gen_label_rtx ();
