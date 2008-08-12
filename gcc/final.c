@@ -2181,7 +2181,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      {
 		expanded_location loc;
 
-		app_enable (void);
+		app_enable ();
 		loc = expand_location (ASM_INPUT_SOURCE_LOCATION (body));
 		if (*loc.file && loc.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
@@ -2221,7 +2221,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    /* Output the insn using them.  */
 	    if (string[0])
 	      {
-		app_enable (void);
+		app_enable ();
 		if (expanded.file && expanded.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
 			   ASM_COMMENT_START, expanded.line, expanded.file);
