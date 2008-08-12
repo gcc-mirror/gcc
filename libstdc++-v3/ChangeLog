@@ -1,3 +1,9 @@
+2008-08-12  Johannes Singler  <singler@ira.uka.de>
+
+        * include/paralle/losertree.h 
+        (LoserTreePointerBase<>::~LoserTreePointerBase):
+        Replace delete by appropriate delete[].
+
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* configure.ac: Run unconditionally GLIBCXX_CHECK_INT64_T and
