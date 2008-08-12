@@ -1204,7 +1204,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	         [int ch;
 	          int ret;
 	          ret = isblank(ch);
-		 ],[glibcxx_cv_c99_ctype_tr1=yes], [glibcxx_cv_c99_ctype_tr1=no])
+		 ],[glibcxx_cv_c99_ctype_tr1=yes],
+		   [glibcxx_cv_c99_ctype_tr1=no])
   ])
   AC_MSG_RESULT($glibcxx_cv_c99_ctype_tr1)
   if test x"$glibcxx_cv_c99_ctype_tr1" = x"yes"; then
@@ -1275,7 +1276,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	          typedef uint_least64_t  my_uint_least64_t;
 		  typedef uintmax_t       my_uintmax_t;
 		  typedef uintptr_t       my_uintptr_t;
-		 ],[glibcxx_cv_c99_stdint_tr1=yes], [glibcxx_cv_c99_stdint_tr1=no])
+		 ],[glibcxx_cv_c99_stdint_tr1=yes],
+		   [glibcxx_cv_c99_stdint_tr1=no])
   ])
   AC_MSG_RESULT($glibcxx_cv_c99_stdint_tr1)
   if test x"$glibcxx_cv_c99_stdint_tr1" = x"yes"; then

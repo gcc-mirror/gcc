@@ -24,10 +24,7 @@ case "${host}" in
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
     GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
-    AC_DEFINE(HAVE_SIGSETJMP)
-    AC_DEFINE(HAVE_GETPAGESIZE)
     AC_DEFINE(HAVE_WRITEV)
-    AC_DEFINE(HAVE_INT64_T)
 
     AC_DEFINE(HAVE_LIBM)
     AC_DEFINE(HAVE_COPYSIGN)
@@ -65,16 +62,6 @@ case "${host}" in
     GLIBCXX_CHECK_WRITEV
 
     AC_DEFINE(HAVE_LC_MESSAGES)
-
-    AC_TRY_COMPILE(
-      [#include <setjmp.h>],
-      [sigjmp_buf env;
-       while (! sigsetjmp (env, 1))
-         siglongjmp (env, 1);
-    ],
-    [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
-
-    AC_DEFINE(HAVE_MMAP)
     ;;
 
   *djgpp)
@@ -125,9 +112,7 @@ case "${host}" in
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
     AC_DEFINE(HAVE_LC_MESSAGES)
-    AC_DEFINE(HAVE_GETPAGESIZE)
     AC_DEFINE(HAVE_SETENV)
-    AC_DEFINE(HAVE_SIGSETJMP)
     AC_DEFINE(HAVE_COPYSIGN)
     AC_DEFINE(HAVE_COPYSIGNF)
     AC_DEFINE(HAVE_FINITEF)
@@ -139,7 +124,6 @@ case "${host}" in
     AC_DEFINE(HAVE_ISNAN)
     AC_DEFINE(HAVE_ISNANF)
 
-    AC_DEFINE(HAVE_MMAP)
     AC_DEFINE(HAVE_ACOSF)
     AC_DEFINE(HAVE_ASINF)
     AC_DEFINE(HAVE_ATAN2F)
@@ -208,7 +192,6 @@ case "${host}" in
     GLIBCXX_CHECK_STDLIB_SUPPORT
 
     # For LFS.
-    AC_DEFINE(HAVE_INT64_T)
     GLIBCXX_CHECK_LFS
 
     # For showmanyc_helper().
@@ -220,23 +203,9 @@ case "${host}" in
     AC_CHECK_HEADERS(sys/uio.h)
     GLIBCXX_CHECK_WRITEV
 
-    # For C99 support to TR1.
-    GLIBCXX_CHECK_C99_TR1
-
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
 
     AC_LC_MESSAGES
-
-    # Check for sigsetjmp
-    AC_TRY_COMPILE(
-      [#include <setjmp.h>],
-      [sigjmp_buf env;
-       while (! sigsetjmp (env, 1))
-         siglongjmp (env, 1);
-      ],
-      [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
-
-    AC_DEFINE(HAVE_MMAP) 
 
     # For iconv support.
     AM_ICONV
@@ -314,15 +283,12 @@ case "${host}" in
     case "$target" in
       *-solaris2.7 | *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
          GLIBCXX_CHECK_LINKER_FEATURES
-         AC_DEFINE(HAVE_GETPAGESIZE)
-         AC_DEFINE(HAVE_SIGSETJMP)
          AC_DEFINE(HAVE_MBSTATE_T)
          AC_DEFINE(HAVE_POLL)
          AC_DEFINE(HAVE_S_ISREG)
          AC_DEFINE(HAVE_LC_MESSAGES)
          AC_DEFINE(HAVE_FINITE)
          AC_DEFINE(HAVE_FPCLASS)
-         AC_DEFINE(HAVE_GETPAGESIZE)
          # All of the dependencies for wide character support are here, so
          # turn it on. 
          AC_DEFINE(_GLIBCXX_USE_WCHAR_T) 
@@ -365,7 +331,6 @@ case "${host}" in
       AC_DEFINE(HAVE_STRTOLD)
      ;;
     esac
-    AC_DEFINE(HAVE_MMAP) 
     AC_DEFINE(HAVE_COPYSIGN)
     AC_DEFINE(HAVE_ISNAN)
     AC_DEFINE(HAVE_ISNANF)
@@ -399,7 +364,6 @@ case "${host}" in
     fi
     ;;
   *-vxworks)
-    AC_DEFINE(HAVE_MMAP)
     AC_DEFINE(HAVE_ACOSF)
     AC_DEFINE(HAVE_ASINF)
     AC_DEFINE(HAVE_ATAN2F)
