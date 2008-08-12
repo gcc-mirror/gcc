@@ -16,7 +16,7 @@ struct A {
   int m;
   };
   struct Z;
-  expand me;          // { dg-error "" } not name a type
+  expand me;          // { dg-error "error: 'expand' does not name a type" }
   void foo(struct A::e);
   void foo(struct A::z);  // { dg-warning "" } extra qualification
 };
@@ -71,7 +71,7 @@ namespace NMS
   };
 }
 
-NMS::D thing;         // { dg-error "" } not name a type
+NMS::D thing;         // { dg-error "error: 'D' in namespace 'NMS' does not name a type" }
 void NMS::fn()
 {
   i = 3;
