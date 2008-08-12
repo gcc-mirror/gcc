@@ -2007,11 +2007,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
       if (LABEL_NAME (insn))
 	(*debug_hooks->label) (insn);
 
-      if (app_on)
-	{
-	  fputs (ASM_APP_OFF, file);
-	  app_on = 0;
-	}
+      app_disable ();
 
       next = next_nonnote_insn (insn);
       if (next != 0 && JUMP_P (next))
@@ -2111,11 +2107,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    else
 	      switch_to_section (current_function_section ());
 
-	    if (app_on)
-	      {
-		fputs (ASM_APP_OFF, file);
-		app_on = 0;
-	      }
+	    app_disable ();
 
 #if defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC)
 	    if (GET_CODE (body) == ADDR_VEC)
@@ -2189,11 +2181,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      {
 		expanded_location loc;
 
-		if (! app_on)
-		  {
-		    fputs (ASM_APP_ON, file);
-		    app_on = 1;
-		  }
+		app_enable (void);
 		loc = expand_location (ASM_INPUT_SOURCE_LOCATION (body));
 		if (*loc.file && loc.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
@@ -2233,11 +2221,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    /* Output the insn using them.  */
 	    if (string[0])
 	      {
-		if (! app_on)
-		  {
-		    fputs (ASM_APP_ON, file);
-		    app_on = 1;
-		  }
+		app_enable (void);
 		if (expanded.file && expanded.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
 			   ASM_COMMENT_START, expanded.line, expanded.file);
@@ -2252,11 +2236,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    break;
 	  }
 
-	if (app_on)
-	  {
-	    fputs (ASM_APP_OFF, file);
-	    app_on = 0;
-	  }
+	app_disable ();
 
 	if (GET_CODE (body) == SEQUENCE)
 	  {
