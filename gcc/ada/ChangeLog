@@ -1,3 +1,10 @@
+2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
+
+	* g-stsifd-sockets.adb (Create): Replace Constants.SOCK_STREAM
+	with SOSC.SOCK__STREAM.
+	* g-socthi-mingw.adb (C_Select) Replace Constants.MSG_OOB with
+	SOSC.MSG_OOB.
+
 2008-08-11  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* s-oscons-tmplt.c: RTEMS defines AF_INET6 but does support it.
