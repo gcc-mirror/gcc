@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first == __y.first && __x.second == __y.second; }
 
-  /// <http://gcc.gnu.org/onlinedocs/libstdc++/20_util/howto.html#pairlt>
+  /// <http://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html>
   template<class _T1, class _T2>
     inline bool
     operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
