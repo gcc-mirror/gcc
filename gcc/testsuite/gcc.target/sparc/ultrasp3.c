@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 && ultrasparc_hw } */
+/* { dg-skip-if "" { ! { ilp32 && ultrasparc_hw } } } */
 /* { dg-options "-mcpu=ultrasparc -mv8plus" } */
 
 extern void abort (void);
