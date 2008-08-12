@@ -1,4 +1,11 @@
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/float_disf.c: New file.
+	* config/spu/float_unsdisf.c: New file.
+	* config/spu/t-elf (LIB2FUNCS_STATIC_EXTRA): Add them.
+	(LIB2FUNCS_EXCLUDE): Define.
+
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	    Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* real.h (struct real_format): New member round_towards_zero.
