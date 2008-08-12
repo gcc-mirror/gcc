@@ -1,7 +1,12 @@
+2008-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36688
+	* gimplify.c (gimplify_modify_expr_rhs): Test TREE_READONLY
+	on the VAR_DECL instead of TYPE_READONLY on its type.
+
 2008-08-11  Michael Matz  <matz@suse.de>
 
 	PR target/36613
-
 	* reload.c (push_reload): Merge in,out,in_reg,out_reg members
 	for reused reload, instead of overwriting them.
 
