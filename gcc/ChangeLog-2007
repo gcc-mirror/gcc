@@ -26440,7 +26440,7 @@
 	* tree-ssa-coalesce.c (fail_abnormal_edge_coalesce): Remove
 	spurious whitespace from error message.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* c-common.c (fold_offsetof_1): Handle COMPOUND_EXPR.
