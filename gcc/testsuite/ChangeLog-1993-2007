@@ -7537,7 +7537,7 @@
 	vectorizable.
 
 2007-07-01  Uros Bizjak  <ubizjak@gmail.com>
-	    Volker Reichelt  <reichelt@netcologne.de>
+	    Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR middle-end/32559
 	* gcc.dg/pr32559.c: New test.
@@ -11152,7 +11152,7 @@
 	PR fortran/31011
 	* gfortran.dg/parameter_array_section_2.f90: New test.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* g++.dg/ext/offsetof1.C: Add cases with volatile.
