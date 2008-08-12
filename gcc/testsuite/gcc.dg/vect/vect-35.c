@@ -18,6 +18,8 @@ int main1 ()
   for (i = 0; i < N; i++)
     {
       s.b[i] = 3*i;
+      if (i%3 == 0)
+        s.b[i] = 3*i;
     }
 
   /* Dependence analysis fails cause s.a and s.b may overlap.

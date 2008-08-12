@@ -40,6 +40,8 @@ int main (void)
   for (i=0; i<N; i++) {
     X[i] = i;
     Y[i] = 64-i;
+    if (i%5 == 0)
+      X[i] = i;
   }
 
   dot = foo (N);
@@ -57,6 +59,6 @@ int main (void)
 dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_sdot_qi } }
 */
 /* In the meantime expect: */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_qi_to_hi } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_qi_to_hi || vect_unpack } } } } */
 
 /* { dg-final { cleanup-tree-dump "vect" } } */

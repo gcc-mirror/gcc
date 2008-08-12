@@ -39,6 +39,9 @@ int main (void)
   for (i=0; i<N; i++) {
     X[i] = i;
     Y[i] = 64-i;
+    /* Avoid vectorization.  */
+    if (i%100 == 0)
+      X[i] = i;
   }
 
   dot = foo (N);
@@ -54,7 +57,7 @@ int main (void)
    targets that support accumulation into int (powerpc, ia64) we'd have:
 dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_udot_qi || vect_widen_mult_qi_to_hi } }
 */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" {target vect_widen_mult_qi_to_hi} } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" {target { vect_widen_mult_qi_to_hi || vect_unpack } } } } */
 
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

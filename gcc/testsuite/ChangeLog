@@ -1,3 +1,25 @@
+2008-08-12  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-multitypes-12.c: New.
+	* gcc.dg/vect/vect-multitypes-13.c, gcc.dg/vect/vect-multitypes-14.c,
+	gcc.dg/vect/vect-multitypes-15.c : Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Avoid vectorization of the
+	init loop.
+	* gcc.dg/vect/vect-72.c, gcc.dg/vect/vect-strided-store-a-u8-i2.c:
+	Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Avoid vectorization of the init
+	loop.
+	Should be vectorizable on targets that support vector unpack.
+	* gcc.dg/vect/vect-widen-mult-u8.c,
+	gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c,.
+	gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-35.c: Should be vectorizable on targets that
+	support vector pack. Avoid vectorization of the init loop.
+	* gcc.dg/vect/vect-reduc-pattern-1b.c: Should be vectorizable on
+	targets that support vector unpack.
+	* gcc.dg/vect/vect-reduc-pattern-2b.c,
+	gcc.dg/vect/vect-reduc-dot-s8c.c, gcc.dg/vect/vect-112.c: Likewise.
+
 2008-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36998

@@ -28,6 +28,8 @@ int main (void)
   for (i=0; i<N; i++) {
     X[i] = i;
     Y[i] = 64-i;
+    if (i%4 == 0)
+      X[i] = 5;
   }
 
   foo1 (N);
@@ -40,6 +42,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_qi_to_hi } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_qi_to_hi || vect_unpack } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
