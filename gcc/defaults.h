@@ -663,16 +663,6 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
-/* Define codes for all the float formats that we know of.  */
-#define UNKNOWN_FLOAT_FORMAT 0
-#define IEEE_FLOAT_FORMAT 1
-#define VAX_FLOAT_FORMAT 2
-
-/* Default to IEEE float if not specified.  Nearly all machines use it.  */
-#ifndef TARGET_FLOAT_FORMAT
-#define	TARGET_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
-#endif
-
 #ifndef LARGEST_EXPONENT_IS_NORMAL
 #define LARGEST_EXPONENT_IS_NORMAL(SIZE) 0
 #endif

@@ -1,3 +1,7 @@
+2008-08-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* typeck.c (convert): Do not check for TARGET_FLOAT_FORMAT.
+
 2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28875

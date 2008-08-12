@@ -1740,9 +1740,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	 so we can distinguish it from a register-register-copy.
 
 	 In IEEE floating point, x-0 is not the same as x.  */
-
-      if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	   || ! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+      if (!(HONOR_SIGNED_ZEROS (mode)
+	    && HONOR_SIGN_DEPENDENT_ROUNDING (mode))
 	  && trueop1 == CONST0_RTX (mode))
 	return op0;
 #endif
