@@ -2873,6 +2873,7 @@ const struct real_format ieee_single_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -2888,6 +2889,7 @@ const struct real_format mips_single_format =
     31,
     31,
     false,
+    true,
     true,
     true,
     true,
@@ -2908,6 +2910,7 @@ const struct real_format motorola_single_format =
     31,
     31,
     false,
+    true,
     true,
     true,
     true,
@@ -2939,6 +2942,7 @@ const struct real_format spu_single_format =
     31,
     31,
     true,
+    false,
     false,
     false,
     true,
@@ -3152,6 +3156,7 @@ const struct real_format ieee_double_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -3167,6 +3172,7 @@ const struct real_format mips_double_format =
     63,
     63,
     false,
+    true,
     true,
     true,
     true,
@@ -3187,6 +3193,7 @@ const struct real_format motorola_double_format =
     63,
     63,
     false,
+    true,
     true,
     true,
     true,
@@ -3530,6 +3537,7 @@ const struct real_format ieee_extended_motorola_format =
     true,
     true,
     true,
+    true,
     true
   };
 
@@ -3545,6 +3553,7 @@ const struct real_format ieee_extended_intel_96_format =
     79,
     79,
     false,
+    true,
     true,
     true,
     true,
@@ -3570,6 +3579,7 @@ const struct real_format ieee_extended_intel_128_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -3587,6 +3597,7 @@ const struct real_format ieee_extended_intel_96_round_53_format =
     79,
     79,
     false,
+    true,
     true,
     true,
     true,
@@ -3679,6 +3690,7 @@ const struct real_format ibm_extended_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -3694,6 +3706,7 @@ const struct real_format mips_extended_format =
     127,
     -1,
     false,
+    true,
     true,
     true,
     true,
@@ -3961,6 +3974,7 @@ const struct real_format ieee_quad_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -3976,6 +3990,7 @@ const struct real_format mips_quad_format =
     127,
     127,
     false,
+    true,
     true,
     true,
     true,
@@ -4280,6 +4295,7 @@ const struct real_format vax_f_format =
     false,
     false,
     false,
+    false,
     false
   };
 
@@ -4300,6 +4316,7 @@ const struct real_format vax_d_format =
     false,
     false,
     false,
+    false,
     false
   };
 
@@ -4314,6 +4331,7 @@ const struct real_format vax_g_format =
     1023,
     15,
     15,
+    false,
     false,
     false,
     false,
@@ -4393,6 +4411,7 @@ const struct real_format decimal_single_format =
     true,
     true,
     true,
+    true,
     true, 
     true,
     false
@@ -4416,6 +4435,7 @@ const struct real_format decimal_double_format =
     true,
     true,
     true,
+    true,
     false
   };
 
@@ -4432,6 +4452,7 @@ const struct real_format decimal_quad_format =
     127,
     127,
     false,
+    true,
     true,
     true,
     true, 
@@ -4475,6 +4496,7 @@ const struct real_format real_internal_format =
     MAX_EXP,
     -1,
     -1,
+    false,
     false,
     true,
     true,

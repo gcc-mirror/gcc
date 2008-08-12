@@ -149,6 +149,7 @@ struct real_format
 
   /* Default rounding mode for operations on this format.  */
   bool round_towards_zero;
+  bool has_sign_dependent_rounding;
 
   /* Properties of the format.  */
   bool has_nans;
@@ -171,15 +172,32 @@ extern const struct real_format *
 
 #define REAL_MODE_FORMAT(MODE)						\
   (real_format_for_mode[DECIMAL_FLOAT_MODE_P (MODE)			\
-			? ((MODE - MIN_MODE_DECIMAL_FLOAT)		\
+			? (((MODE) - MIN_MODE_DECIMAL_FLOAT)		\
 			   + (MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1))	\
-			: (MODE - MIN_MODE_FLOAT)])
+			: ((MODE) - MIN_MODE_FLOAT)])
+
+#define FLOAT_MODE_FORMAT(MODE) \
+  (REAL_MODE_FORMAT (SCALAR_FLOAT_MODE_P (MODE)? (MODE) \
+					       : GET_MODE_INNER (MODE)))
 
 /* The following macro determines whether the floating point format is
    composite, i.e. may contain non-consecutive mantissa bits, in which
    case compile-time FP overflow may not model run-time overflow.  */
-#define REAL_MODE_FORMAT_COMPOSITE_P(MODE) \
-	((REAL_MODE_FORMAT(MODE))->pnan < (REAL_MODE_FORMAT (MODE))->p)
+#define MODE_COMPOSITE_P(MODE) \
+  (FLOAT_MODE_P (MODE) \
+   && FLOAT_MODE_FORMAT (MODE)->pnan < FLOAT_MODE_FORMAT (MODE)->p)
+
+/* Accessor macros for format properties.  */
+#define MODE_HAS_NANS(MODE) \
+  (FLOAT_MODE_P (MODE) && FLOAT_MODE_FORMAT (MODE)->has_nans)
+#define MODE_HAS_INFINITIES(MODE) \
+  (FLOAT_MODE_P (MODE) && FLOAT_MODE_FORMAT (MODE)->has_inf)
+#define MODE_HAS_SIGNED_ZEROS(MODE) \
+  (FLOAT_MODE_P (MODE) && FLOAT_MODE_FORMAT (MODE)->has_signed_zero)
+#define MODE_HAS_SIGN_DEPENDENT_ROUNDING(MODE) \
+  (FLOAT_MODE_P (MODE) \
+   && FLOAT_MODE_FORMAT (MODE)->has_sign_dependent_rounding)
+
 
 /* Declare functions in real.c.  */
 

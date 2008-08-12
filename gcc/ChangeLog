@@ -1,5 +1,43 @@
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* real.h (struct real_format): New member has_sign_dependent_rounding.
+	* real.c (ieee_single_format, mips_single_format, motorola_single_format,
+	spu_single_format, ieee_double_format, mips_double_format,
+	motorola_double_format, ieee_extended_motorola_format,
+	ieee_extended_intel_96_format, ieee_extended_intel_128_format,
+	ieee_extended_intel_96_round_53_format, ibm_extended_format,
+	mips_extended_format, ieee_quad_format, mips_quad_format,
+	vax_f_format, vax_d_format, vax_g_format): Initialize it.
+	* config/pdp11/pdp11.c (pdp11_f_format, pdp11_d_format): Likewise.
+
+	* defaults.h (MODE_HAS_NANS, MODE_HAS_INFINITIES,
+	MODE_HAS_SIGNED_ZEROS, MODE_HAS_SIGN_DEPENDENT_ROUNDING): Remove.
+	* config/spu/spu.h (MODE_HAS_NANS, MODE_HAS_INFINITIES,
+	MODE_HAS_SIGN_DEPENDENT_ROUNDING): Remove.
+	(ROUND_TOWARDS_ZERO): Likewise.
+
+	* real.h (REAL_MODE_FORMAT): Protect MODE against macro expansion.
+	(FLOAT_MODE_FORMAT): New macro.
+	(REAL_MODE_FORMAT_COMPOSITE_P): Remove, replace by ...
+	(MODE_COMPOSITE_P): ... this new macro.
+	(MODE_HAS_NANS, MODE_HAS_INFINITIES, MODE_HAS_SIGNED_ZEROS,
+	MODE_HAS_SIGN_DEPENDENT_ROUNDING): New macros.
+	* machmode.h (GET_MODE_INNER): Cast result to enum machine_mode.
+
+	* flags.h: Include "real.h".
+
+	* fold-const.c (const_binop): Use MODE_COMPOSITE_P instead of
+	REAL_MODE_FORMAT_COMPOSITE_P.
+	* simplify-rtx.c (simplify_const_binary_operation): Likewise.
+
+	* doc/tm.texi (Storage Layout): Remove documentation of
+	MODE_HAS_NANS, MODE_HAS_INFINITIES, MODE_HAS_SIGNED_ZEROS,
+	MODE_HAS_SIGN_DEPENDENT_ROUNDING.  Update documentation of
+	ROUND_TOWARDS_ZERO and LARGEST_EXPONENT_IS_NORMAL to clarify
+	they only apply to libgcc2.a.
+
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/float_disf.c: New file.
 	* config/spu/float_unsdisf.c: New file.
 	* config/spu/t-elf (LIB2FUNCS_STATIC_EXTRA): Add them.

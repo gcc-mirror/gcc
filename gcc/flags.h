@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "coretypes.h"
 #include "options.h"
+#include "real.h"
 
 enum debug_info_type
 {
