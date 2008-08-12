@@ -671,9 +671,9 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
 extern bool reduction_code_for_scalar_code (enum tree_code, enum tree_code *);
 extern bool supportable_widening_operation (enum tree_code, gimple, tree,
-  tree *, tree *, enum tree_code *, enum tree_code *);
+  tree *, tree *, enum tree_code *, enum tree_code *, bool *, tree *);
 extern bool supportable_narrowing_operation (enum tree_code, const_gimple,
-					     const_tree, enum tree_code *);
+			     const_tree, enum tree_code *, bool *, tree *);
 
 /* Creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);

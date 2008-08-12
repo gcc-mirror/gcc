@@ -3457,6 +3457,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   VEC(tree,heap) *vec_oprnds0 = NULL;
   tree vop0;
   tree integral_type;
+  tree dummy;
+  bool dummy_bool;
 
   /* Is STMT a vectorizable conversion?   */
 
@@ -3547,10 +3549,11 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       || (modifier == WIDEN
 	  && !supportable_widening_operation (code, stmt, vectype_in,
 					      &decl1, &decl2,
-					      &code1, &code2))
+					      &code1, &code2,
+                                              &dummy_bool, &dummy))
       || (modifier == NARROW
 	  && !supportable_narrowing_operation (code, stmt, vectype_in,
-					       &code1)))
+					       &code1, &dummy_bool, &dummy)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "conversion not supported by target.");
@@ -4268,6 +4271,10 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   int ncopies;
   int j;
   tree vectype_in;
+  tree intermediate_type = NULL_TREE, narrow_type, double_vec_dest;
+  bool double_op = false;
+  tree first_vector, second_vector;
+  tree vec_oprnd2 = NULL_TREE, vec_oprnd3 = NULL_TREE, last_oprnd = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -4297,7 +4304,8 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vectype_out)
     return false;
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_in != nunits_out / 2) /* FORNOW */
+  if (nunits_in != nunits_out / 2
+      && nunits_in != nunits_out/4)
     return false;
 
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
@@ -4326,7 +4334,8 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   /* Supportable by target?  */
-  if (!supportable_narrowing_operation (code, stmt, vectype_in, &code1))
+  if (!supportable_narrowing_operation (code, stmt, vectype_in, &code1,
+                                        &double_op, &intermediate_type))
     return false;
 
   STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
@@ -4346,8 +4355,15 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
 	     ncopies);
 
   /* Handle def.  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
-  
+  /* In case of double demotion, we first generate demotion operation to the
+     intermediate type, and then from that type to the final one.  */
+  if (double_op)
+    narrow_type = intermediate_type;
+  else
+    narrow_type = vectype_out;
+  vec_dest = vect_create_destination_var (scalar_dest, narrow_type);
+  double_vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
      more than one vector stmt - i.e - we need to "unroll" the
@@ -4358,21 +4374,58 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
       /* Handle uses.  */
       if (j == 0)
 	{
-	  vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
-	  vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+          vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
+          vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+          if (double_op)
+            {
+              /* For double demotion we need four operands.  */
+              vec_oprnd2 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd1);
+              vec_oprnd3 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd2);
+            }
 	}
       else
 	{
-	  vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd1);
-	  vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+          vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], last_oprnd);
+          vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+          if (double_op)
+            {
+              /* For double demotion we need four operands.  */
+              vec_oprnd2 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd1);
+              vec_oprnd3 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd2);
+            }
 	}
 
-      /* Arguments are ready. Create the new vector stmt.  */
+      /* Arguments are ready. Create the new vector stmts.  */
       new_stmt = gimple_build_assign_with_ops (code1, vec_dest, vec_oprnd0,
-					       vec_oprnd1);
-      new_temp = make_ssa_name (vec_dest, new_stmt);
-      gimple_assign_set_lhs (new_stmt, new_temp);
+                                               vec_oprnd1);
+      first_vector = make_ssa_name (vec_dest, new_stmt);
+      gimple_assign_set_lhs (new_stmt, first_vector);
       vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+      /* In the next iteration we will get copy for this operand.  */
+      last_oprnd = vec_oprnd1;
+
+      if (double_op)
+        {
+          /* For double demotion operation we first generate two demotion
+             operations from the source type to the intermediate type, and
+             then combine the results in one demotion to the destination
+             type.  */
+          new_stmt = gimple_build_assign_with_ops (code1, vec_dest, vec_oprnd2,
+                                                   vec_oprnd3);
+          second_vector = make_ssa_name (vec_dest, new_stmt);
+          gimple_assign_set_lhs (new_stmt, second_vector);
+          vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+          new_stmt = gimple_build_assign_with_ops (code1, double_vec_dest, 
+                                                  first_vector, second_vector);
+          new_temp = make_ssa_name (double_vec_dest, new_stmt);
+          gimple_assign_set_lhs (new_stmt, new_temp);
+          vect_finish_stmt_generation (stmt, new_stmt, gsi);
+         
+          /* In the next iteration we will get copy for this operand.  */
+          last_oprnd = vec_oprnd3;
+        }
 
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
@@ -4420,6 +4473,9 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   int ncopies;
   int j;
   tree vectype_in;
+  tree intermediate_type = NULL_TREE, first_vector, second_vector;
+  bool double_op;
+  tree wide_type, double_vec_dest;
   
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -4450,7 +4506,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vectype_out)
     return false;
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_out != nunits_in / 2) /* FORNOW */
+  if (nunits_out != nunits_in / 2 && nunits_out != nunits_in/4)
     return false;
 
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
@@ -4492,8 +4548,13 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   /* Supportable by target?  */
   if (!supportable_widening_operation (code, stmt, vectype_in,
-				       &decl1, &decl2, &code1, &code2))
+				       &decl1, &decl2, &code1, &code2,
+                                       &double_op, &intermediate_type))
     return false;
+
+  /* Binary widening operation can only be supported directly by the
+     architecture.  */
+  gcc_assert (!(double_op && op_type == binary_op));
 
   STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
 
@@ -4513,7 +4574,13 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
                         ncopies);
 
   /* Handle def.  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+  if (double_op)
+    wide_type = intermediate_type;
+  else
+    wide_type = vectype_out;
+
+  vec_dest = vect_create_destination_var (scalar_dest, wide_type);
+  double_vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -4540,22 +4607,75 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       /* Arguments are ready. Create the new vector stmt.  We are creating 
          two vector defs because the widened result does not fit in one vector.
          The vectorized stmt can be expressed as a call to a target builtin,
-         or a using a tree-code.  */
+         or a using a tree-code. In case of double promotion (from char to int,
+         for example), the promotion is performed in two phases: first we
+         generate a promotion operation from the source type to the intermediate
+         type (short in case of char->int promotion), and then for each of the
+         created vectors we generate a promotion statement from the intermediate
+         type to the destination type.  */
       /* Generate first half of the widened result:  */
-      new_stmt = vect_gen_widened_results_half (code1, vectype_out, decl1, 
+      new_stmt = vect_gen_widened_results_half (code1, wide_type, decl1, 
 			vec_oprnd0, vec_oprnd1, op_type, vec_dest, gsi, stmt);
-      if (j == 0)
-        STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+      if (is_gimple_call (new_stmt))
+        first_vector = gimple_call_lhs (new_stmt);
       else
-        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+        first_vector =  gimple_assign_lhs (new_stmt);
+
+      if (!double_op)
+        {
+          if (j == 0)
+            STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+          else
+            STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+        }
 
       /* Generate second half of the widened result:  */
-      new_stmt = vect_gen_widened_results_half (code2, vectype_out, decl2,
+      new_stmt = vect_gen_widened_results_half (code2, wide_type, decl2,
 			vec_oprnd0, vec_oprnd1, op_type, vec_dest, gsi, stmt);
-      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      if (is_gimple_call (new_stmt))
+        second_vector = gimple_call_lhs (new_stmt);
+      else
+        second_vector =  gimple_assign_lhs (new_stmt);
 
+      if (!double_op)
+        {
+          STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+        }
+      else
+        {
+          /* FIRST_VECTOR and SECOND_VECTOR are the results of source type
+             to intermediate type promotion. Now we generate promotions
+             for both of them to the destination type (i.e., four
+             statements).  */
+          new_stmt = vect_gen_widened_results_half (code1, vectype_out,
+                                   decl1, first_vector, NULL_TREE, op_type,
+                                   double_vec_dest, gsi, stmt);
+          if (j == 0)
+            STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+          else
+            STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+
+          new_stmt = vect_gen_widened_results_half (code2, vectype_out,
+                                   decl2, first_vector, NULL_TREE, op_type,
+                                   double_vec_dest, gsi, stmt);
+          STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+
+          new_stmt = vect_gen_widened_results_half (code1, vectype_out,
+                                  decl1, second_vector, NULL_TREE, op_type,
+                                  double_vec_dest, gsi, stmt);
+          STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+
+          new_stmt = vect_gen_widened_results_half (code2, vectype_out,
+                                  decl2, second_vector, NULL_TREE, op_type,
+                                  double_vec_dest, gsi, stmt);
+          STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+          prev_stmt_info = vinfo_for_stmt (new_stmt);
+        }
     }
 
   *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);

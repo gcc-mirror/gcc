@@ -1,3 +1,19 @@
+2008-08-12  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c: Depend on langhooks.h.
+	(supportable_widening_operation): Add two arguments. Support double
+	type conversions.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vectorizer.h (supportable_widening_operation): Add two 
+	arguments.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern) : Call
+	supportable_widening_operation with correct arguments.
+	* tree-vect-transform.c (vectorizable_conversion): Likewise.
+	(vectorizable_type_demotion): Support double type conversions.
+	(vectorizable_type_promotion): Likewise.
+	* Makefile.in (tree-vectorizer.o): Depend on langhooks.h.
+
 2008-08-11  Michael Matz  <matz@suse.de>
 
 	* i386/i386.c (override_options): Move initialisation from

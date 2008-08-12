@@ -147,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
+#include "langhooks.h"
 
 /*************************************************************************
   General Vectorization Utilities
@@ -2136,12 +2137,17 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, gimple *def_stmt,
    vectorizing the operation, if available. 
    - DECL1 and DECL2 are decls of target builtin functions to be used
    when vectorizing the operation, if available. In this case,
-   CODE1 and CODE2 are CALL_EXPR.  */
+   CODE1 and CODE2 are CALL_EXPR.  
+   - DOUBLE_OP determines if the operation is a double cast, like
+   char->short->int
+   - INTERM_TYPE is the intermediate type required to perform the 
+   widening operation (short in the above example)  */
 
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
                                 tree *decl1, tree *decl2,
-                                enum tree_code *code1, enum tree_code *code2)
+                                enum tree_code *code1, enum tree_code *code2,
+                                bool *double_op, tree *interm_type)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -2153,6 +2159,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
   tree type = gimple_expr_type (stmt);
   tree wide_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1, c2;
+
+  *double_op = false;
 
   /* The result of a vectorized widening operation usually requires two vectors
      (because the widened results do not fit int one vector). The generated 
@@ -2264,11 +2272,56 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
 
   vec_mode = TYPE_MODE (vectype);
   if ((icode1 = optab_handler (optab1, vec_mode)->insn_code) == CODE_FOR_nothing
-      || insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
       || (icode2 = optab_handler (optab2, vec_mode)->insn_code)
-                                                        == CODE_FOR_nothing
-      || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+                                                        == CODE_FOR_nothing)
     return false;
+
+  /* Check if it's a double cast, like char->int. In such case the intermediate
+     type is short, and we check that char->short->int operaion is supported by
+     the target.  */
+  if (insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
+      || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+    {
+      if (code == NOP_EXPR)
+        {
+          enum machine_mode intermediate_mode =
+                                             insn_data[icode1].operand[0].mode;
+          tree intermediate_type =
+                      lang_hooks.types.type_for_mode (intermediate_mode,
+                                                      TYPE_UNSIGNED (vectype));
+          optab optab3 = optab_for_tree_code (c1, intermediate_type,
+                                              optab_default);
+          optab optab4 = optab_for_tree_code (c2, intermediate_type,
+                                              optab_default);
+
+          if (!optab3 || !optab4)
+            return false;
+
+          if ((icode1 = optab1->handlers[(int) vec_mode].insn_code)
+                                                        == CODE_FOR_nothing
+              || insn_data[icode1].operand[0].mode != intermediate_mode
+              || (icode2 = optab2->handlers[(int) vec_mode].insn_code)
+                                                        == CODE_FOR_nothing
+              || insn_data[icode2].operand[0].mode != intermediate_mode
+              || (icode1 = optab3->handlers[(int) intermediate_mode].insn_code)
+                                                        == CODE_FOR_nothing
+              || insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
+              || (icode2 = optab4->handlers[(int) intermediate_mode].insn_code)
+                                                        == CODE_FOR_nothing
+              || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+            return false;
+          else
+            {
+              *double_op = true;
+              *interm_type = intermediate_type;
+              *code1 = c1;
+              *code2 = c2;
+              return true;
+            }
+        }
+
+       return false;
+    }
 
   *code1 = c1;
   *code2 = c2;
@@ -2288,16 +2341,21 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
 
    Output:
    - CODE1 is the code of a vector operation to be used when 
-   vectorizing the operation, if available.  */
+   vectorizing the operation, if available. 
+   - DOUBLE_OP determines if the operation is a double cast, like
+   int->short->char
+   - INTERMIDIATE_TYPE is the intermediate type required to perform the
+   widening operation (short in the above example) */
 
 bool
 supportable_narrowing_operation (enum tree_code code,
 				 const_gimple stmt, const_tree vectype,
-				 enum tree_code *code1)
+				 enum tree_code *code1, bool *double_op,
+                                 tree *intermediate_type)
 {
   enum machine_mode vec_mode;
   enum insn_code icode1;
-  optab optab1;
+  optab optab1, interm_optab;
   tree type = gimple_expr_type (stmt);
   tree narrow_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1;
@@ -2331,9 +2389,29 @@ supportable_narrowing_operation (enum tree_code code,
     return false;
 
   vec_mode = TYPE_MODE (vectype);
-  if ((icode1 = optab_handler (optab1, vec_mode)->insn_code) == CODE_FOR_nothing
-      || insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
+  if ((icode1 = optab_handler (optab1, vec_mode)->insn_code) 
+       == CODE_FOR_nothing)
     return false;
+
+  /* In case of NUNITS_IN == NUNITS_OUT/4 check that the it is possible to
+     perform the operation using an intermediate type of NUNITS_OUT/2.  */
+  if (insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
+    {
+      enum machine_mode intermediate_mode = insn_data[icode1].operand[0].mode;
+      *intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
+                                                 TYPE_UNSIGNED (vectype));
+      interm_optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
+                                          *intermediate_type, optab_default);
+      if (!interm_optab)
+        return false;
+
+      if ((icode1 = interm_optab->handlers[(int) intermediate_mode].insn_code)
+           == CODE_FOR_nothing
+          || insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
+        return false;
+
+      *double_op = true;
+    }
 
   *code1 = c1;
   return true;

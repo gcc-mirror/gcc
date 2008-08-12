@@ -374,6 +374,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
   tree dummy;
   tree var;
   enum tree_code dummy_code;
+  bool dummy_bool;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -414,7 +415,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
   if (!vectype
       || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt, vectype,
 					  &dummy, &dummy, &dummy_code,
-					  &dummy_code))
+					  &dummy_code, &dummy_bool, &dummy))
     return NULL;
 
   *type_in = vectype;

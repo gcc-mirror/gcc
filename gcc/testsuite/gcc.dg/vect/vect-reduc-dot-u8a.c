@@ -44,6 +44,8 @@ int main (void)
   for (i=0; i<N; i++) {
     X[i] = i;
     Y[i] = 64-i;
+    if (i%5 == 0)
+      X[i] = i;
   }
 
   dot = foo (N);
