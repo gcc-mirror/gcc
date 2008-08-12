@@ -82,7 +82,7 @@
 	PR c++/33959
 	* pt.c (tsubst_aggr_type): Make sure our context is complete.
 
-2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
+2008-01-02  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	Backport:
 	2007-10-31  Paolo Carlini  <pcarlini@suse.de>
@@ -545,7 +545,7 @@
 	PR C++/30168
 	* optimize.c (update_cloned_parm): Copy DECL_COMPLEX_GIMPLE_REG_P also.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* semantics.c (finish_offsetof): Handle COMPOUND_EXPR.

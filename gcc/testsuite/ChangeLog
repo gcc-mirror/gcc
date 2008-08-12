@@ -307,7 +307,7 @@
 	PR testsuite/30459
 	g++.dg/eh/ia64-2.C: Require weak support.
 
-2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
+2008-01-02  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	Backport:
 	2007-10-31  Paolo Carlini  <pcarlini@suse.de>
@@ -1399,7 +1399,7 @@
 	PR libfortran/31001
 	* gfortran.dg/zero_sized_3.f90: New test.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* g++.dg/ext/offsetof1.C: Add cases with volatile.

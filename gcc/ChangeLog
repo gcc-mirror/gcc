@@ -2655,7 +2655,7 @@
 	* config/rs6000/rs6000.c (rs6000_function_value): Look at bit size
 	instead of precision.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* c-common.c (fold_offsetof_1): Handle COMPOUND_EXPR.
