@@ -78,6 +78,7 @@ const struct real_format pdp11_f_format =
     false,
     false,
     false,
+    false,
     false
   };
 
@@ -92,6 +93,7 @@ const struct real_format pdp11_d_format =
     -127,
     127,
     15,
+    false,
     false,
     false,
     false,
