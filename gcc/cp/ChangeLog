@@ -1,3 +1,10 @@
+2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37087
+	* parser.c (cp_parser_class_head): Early return error_mark_node in
+	case of global qualification of class name or qualified name that
+	does not name a class.
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/12242

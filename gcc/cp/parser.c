@@ -14981,11 +14981,17 @@ cp_parser_class_head (cp_parser* parser,
   cp_parser_commit_to_tentative_parse (parser);
   /* Issue the error about the overly-qualified name now.  */
   if (qualified_p)
-    cp_parser_error (parser,
-		     "global qualification of class name is invalid");
+    {
+      cp_parser_error (parser,
+		       "global qualification of class name is invalid");
+      return error_mark_node;
+    }
   else if (invalid_nested_name_p)
-    cp_parser_error (parser,
-		     "qualified name does not name a class");
+    {
+      cp_parser_error (parser,
+		       "qualified name does not name a class");
+      return error_mark_node;
+    }
   else if (nested_name_specifier)
     {
       tree scope;
