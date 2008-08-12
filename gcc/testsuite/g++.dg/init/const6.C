@@ -1,5 +1,5 @@
 // PR c++/36688
-// { dg-do compile }
+// { dg-do run }
 // { dg-options "-O2" }
 
 struct S
