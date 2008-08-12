@@ -1,3 +1,9 @@
+2008-08-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR libgomp/26165
+
+	* gcc.c (include_spec_function): Tweak call to find_a_file.
+
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37014
