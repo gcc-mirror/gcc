@@ -82,7 +82,7 @@ package body Signalling_Fds is
 
          --  Create a listening socket
 
-         L_Sock := C_Socket (SOSC.AF_INET, Constants.SOCK_STREAM, 0);
+         L_Sock := C_Socket (SOSC.AF_INET, SOSC.SOCK_STREAM, 0);
 
          if L_Sock = Failure then
             goto Fail;
@@ -122,7 +122,7 @@ package body Signalling_Fds is
 
          --  Create read end (client) socket
 
-         R_Sock := C_Socket (SOSC.AF_INET, Constants.SOCK_STREAM, 0);
+         R_Sock := C_Socket (SOSC.AF_INET, SOSC.SOCK_STREAM, 0);
 
          if R_Sock = Failure then
             goto Fail;
