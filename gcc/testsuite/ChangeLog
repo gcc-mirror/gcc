@@ -1,5 +1,15 @@
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gcc.c-torture/execute/20031003-1.c (main): Update test to
+	accommodate SPU single-precision rounding mode.
+	* gcc.c-torture/execute/conversion.c (test_float_to_integer,
+	test_float_to_longlong_integer): Likewise.
+	* gcc.c-torture/execute/ieee/rbug.c (main): Likewise.
+	* gcc.dg/hex-round-1.c: Skip test on SPU.
+	* gcc.dg/hex-round-2.c: Likewise.
+
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* gcc.c-torture/execute/ieee/inf-2.c (testf): Skip on the SPU.
 
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
