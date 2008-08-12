@@ -159,9 +159,6 @@
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
-/* Define to 1 if you have the `getpagesize' function. */
-#undef HAVE_GETPAGESIZE
-
 /* Define if gthr-default.h exists (meaning that threading support is
    enabled). */
 #undef HAVE_GTHR_DEFAULT
@@ -274,9 +271,6 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have a working `mmap' system call. */
-#undef HAVE_MMAP
-
 /* Define to 1 if you have the `modf' function. */
 #undef HAVE_MODF
 
@@ -303,9 +297,6 @@
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
-
-/* Define if sigsetjmp is available. */
-#undef HAVE_SIGSETJMP
 
 /* Define to 1 if you have the `sincos' function. */
 #undef HAVE_SINCOS

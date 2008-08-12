@@ -122,6 +122,12 @@ GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 # Checks for operating systems support that don't require linking.
 GLIBCXX_CHECK_SYSTEM_ERROR
 
+# For the streamoff typedef.
+GLIBCXX_CHECK_INT64_T
+
+# For C99 support to TR1.
+GLIBCXX_CHECK_C99_TR1
+
 # For common values of EOF, SEEK_CUR, SEEK_END.
 GLIBCXX_CHECK_STDIO_MACROS
 
@@ -151,14 +157,8 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_HEADERS(sys/uio.h)
   GLIBCXX_CHECK_WRITEV
 
-  # For the __streamoff_base_type typedef.
-  GLIBCXX_CHECK_INT64_T
-
   # For LFS support.
   GLIBCXX_CHECK_LFS
-
-  # For C99 support to TR1.
-  GLIBCXX_CHECK_C99_TR1
 
   # For dev/random and dev/urandom for TR1.
   GLIBCXX_CHECK_RANDOM_TR1
@@ -176,16 +176,6 @@ if $GLIBCXX_IS_NATIVE; then
   GCC_CHECK_UNWIND_GETIPINFO
 
   AC_LC_MESSAGES
-
-  AC_TRY_COMPILE(
-    [#include <setjmp.h>],
-    [sigjmp_buf env;
-     while (! sigsetjmp (env, 1))
-       siglongjmp (env, 1);
-    ],
-    [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
-
-  AC_FUNC_MMAP
 
   # For iconv support.
   AM_ICONV
@@ -229,8 +219,6 @@ else
 
     # GLIBCXX_CHECK_STDLIB_SUPPORT
     AC_DEFINE(HAVE_STRTOF)        
-    # AC_FUNC_MMAP
-    AC_DEFINE(HAVE_MMAP)
 
     AC_DEFINE(HAVE_ACOSF)
     AC_DEFINE(HAVE_ASINF)

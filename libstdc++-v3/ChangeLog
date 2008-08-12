@@ -1,3 +1,13 @@
+2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* configure.ac: Run unconditionally GLIBCXX_CHECK_INT64_T and
+	GLIBCXX_CHECK_C99_TR1; remove sigsetjmp and mmap checks (unused).
+	* crossconfig.m4: Adjust; remove HAVE_GETPAGESIZE defines (unused).
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
+	* acinclude.m4: Minor formatting fixes.
+
 2008-08-11  Stephen M. Webb  <stephenw@xandros.com>
 
 	* include/tr1_impl/regex: Formatting fixes.
