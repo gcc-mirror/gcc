@@ -1,5 +1,9 @@
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu.c (spu_safe_dma): Respect TARGET_SAFE_DMA.
+
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.h (DWARF_FRAME_RETURN_COLUMN): Define.
 
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
