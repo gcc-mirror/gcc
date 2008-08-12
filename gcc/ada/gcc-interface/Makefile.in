@@ -1363,7 +1363,7 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
         system.ads<system-mingw.ads
     endif
 
-    EXTRA_GNATRTL_NONTASKING_OBJS = s-win32.o s-win32.o g-regist.o
+    EXTRA_GNATRTL_NONTASKING_OBJS = s-win32.o s-winext.o g-regist.o
     EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
 
     MISCLIB = -lwsock32

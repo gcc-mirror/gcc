@@ -1,5 +1,10 @@
 2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
 
+	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS) [WINDOWS]: Remove
+	duplicate s-win32.o. Add s-winext.o.
+
+2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
+
 	* g-stsifd-sockets.adb (Create): Replace Constants.SOCK_STREAM
 	with SOSC.SOCK__STREAM.
 	* g-socthi-mingw.adb (C_Select) Replace Constants.MSG_OOB with
