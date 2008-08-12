@@ -1,5 +1,8 @@
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37014
+	* gcc.c-torture/compile/20080812-1.c: New test.
+
 	PR c++/36688
 	* g++.dg/init/const6.C: New test.
 

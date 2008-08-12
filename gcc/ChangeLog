@@ -1,3 +1,10 @@
+2008-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37014
+	* expr.c (expand_expr_real_1): Handle TRUTH_ANDIF_EXPR
+	and TRUTH_ORIF_EXPR.
+	* dojump.c (do_jump): Likewise.
+
 2008-08-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c/35746
