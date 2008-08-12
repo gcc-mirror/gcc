@@ -5719,7 +5719,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = gimplify_modify_expr (expr_p, pre_p, post_p,
 				      fallback != fb_none);
 
-	  if (*expr_p)
+	  if (*expr_p && ret != GS_ERROR)
 	    {
 	      /* The distinction between MODIFY_EXPR and INIT_EXPR is no longer
 		 useful.  */

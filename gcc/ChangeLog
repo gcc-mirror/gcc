@@ -1,3 +1,9 @@
+2008-08-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c/35746
+	* gimplify.c (gimplify_expr): Do not convert MODIFY_EXPR to
+	GIMPLE_MODIFY_STMT upon GS_ERROR.
+
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_safe_dma): Respect TARGET_SAFE_DMA.
