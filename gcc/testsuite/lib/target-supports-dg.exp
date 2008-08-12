@@ -117,6 +117,9 @@ proc dg-require-named-sections { args } {
 
 proc dg-require-effective-target { args } {
     set args [lreplace $args 0 0]
+    if { [llength $args] != 1 } {
+	error "syntax error, need a single effective-target keyword"
+    }
     if { ![is-effective-target [lindex $args 0]] } {
 	upvar dg-do-what dg-do-what
         set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]

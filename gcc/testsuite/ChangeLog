@@ -1,5 +1,11 @@
 2008-08-12  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.target/i386/pr32000-2.c: Use dg-skip-if for target expression.
+	* gcc.target/i386/stackalign/return-3.c: Ditto.
+	* gcc.target/sparc/ultrasp3.c: Ditto.
+	* lib/target-supports-dg.exp (dg-require-effective-target): Error
+	if argument is not a single effective-target keyword.
+
 	PR testsuite/36087
 	* gcc.dg/var-expand3.c: Fix name of dump file.
 
