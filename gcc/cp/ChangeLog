@@ -3657,7 +3657,7 @@
 
 	* call.c (build_new_op): Call warn_logical_operator.
 
-2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-08  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/30852
 	* semantics.c (finish_offsetof): Handle COMPOUND_EXPR.
@@ -3671,7 +3671,7 @@
 	* decl.c (grokdeclarator): Disable warnings for anonymous
 	bitfields.
 
-2007-03-05  Volker Reichelt  <reichelt@netcologne.de>
+2007-03-05  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* typeck2.c (readonly_error): Always emit a hard error.
 	Remove last argument.
