@@ -13082,7 +13082,6 @@ do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
 	  const struct real_format *fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
 	  const int prec = fmt->p;
 	  const mp_rnd_t rnd = fmt->round_towards_zero? GMP_RNDZ : GMP_RNDN;
-	  tree result_s, result_c;
 	  int inexact;
 	  mpfr_t m;
 
