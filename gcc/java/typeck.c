@@ -131,8 +131,7 @@ convert (tree type, tree expr)
       if (type == char_type_node || type == promoted_char_type_node)
 	return fold_convert (type, expr);
       if ((really_constant_p (expr) || ! flag_unsafe_math_optimizations)
-	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-	  && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
+	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE)
 	return convert_ieee_real_to_integer (type, expr);
       else
 	{

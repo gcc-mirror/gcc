@@ -198,8 +198,6 @@
    support long double, we also want a 128-bit integer type.  */
 #define MAX_FIXED_MODE_SIZE            LONG_DOUBLE_TYPE_SIZE
 
-#define TARGET_FLOAT_FORMAT            IEEE_FLOAT_FORMAT
-
 /* Layout of Data Type.  */
 /* Set the sizes of the core types.  */
 #define INT_TYPE_SIZE                   32

@@ -100,8 +100,6 @@ along with GCC; see the file COPYING3.  If not see
    big endian, opposite for what you need for float, the vax float
    conversion routines aren't actually used directly.  But the underlying
    format is indeed the vax/pdp11 float format.  */
-#define TARGET_FLOAT_FORMAT VAX_FLOAT_FORMAT
-
 extern const struct real_format pdp11_f_format;
 extern const struct real_format pdp11_d_format;
 

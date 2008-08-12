@@ -1,5 +1,22 @@
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* defaults.h (TARGET_FLOAT_FORMAT): Remove.
+	(UNKNOWN_FLOAT_FORMAT, IEEE_FLOAT_FORMAT, VAX_FLOAT_FORMAT): Remove.
+
+	* config/alpha/alpha.h (TARGET_FLOAT_FORMAT): Remove.
+	* config/iq2000/iq2000.h (TARGET_FLOAT_FORMAT): Remove.
+	* config/pdp11/pdp11.h (TARGET_FLOAT_FORMAT): Remove.
+	* config/score/score.h (TARGET_FLOAT_FORMAT): Remove.
+	* config/vax/vax.h (TARGET_FLOAT_FORMAT): Remove.
+
+	* doc/tm.texi (Storage Layout): Remove documentation for
+	TARGET_FLOAT_FORMAT.
+
+	* simplify-rtx.c (simplify_binary_operation_1): Replace
+	TARGET_FLOAT_FORMAT check by appropriate HONOR_... checks.
+
+2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* real.h (struct real_format): New member has_sign_dependent_rounding.
 	* real.c (ieee_single_format, mips_single_format, motorola_single_format,
 	spu_single_format, ieee_double_format, mips_double_format,

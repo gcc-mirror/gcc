@@ -1385,28 +1385,6 @@ of shift instructions expanded to libgcc calls.  If not defined
 targets.
 @end deftypefn
 
-@defmac TARGET_FLOAT_FORMAT
-A code distinguishing the floating point format of the target machine.
-There are two defined values:
-
-@ftable @code
-@item IEEE_FLOAT_FORMAT
-This code indicates IEEE floating point.  It is the default; there is no
-need to define @code{TARGET_FLOAT_FORMAT} when the format is IEEE@.
-
-@item VAX_FLOAT_FORMAT
-This code indicates the ``F float'' (for @code{float}) and ``D float''
-or ``G float'' formats (for @code{double}) used on the VAX and PDP-11@.
-@end ftable
-
-If your target uses a floating point format other than these, you must
-define a new @var{name}_FLOAT_FORMAT code for it, and add support for
-it to @file{real.c}.
-
-The ordering of the component words of floating point values stored in
-memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN}.
-@end defmac
-
 @defmac ROUND_TOWARDS_ZERO
 If defined, this macro should be true if the prevailing rounding
 mode is towards zero.
