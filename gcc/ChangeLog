@@ -1,3 +1,9 @@
+2008-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36688
+	* gimplify.c (gimplify_modify_expr_rhs): Test TREE_READONLY
+	on the VAR_DECL instead of TYPE_READONLY on its type.
+
 2008-08-12  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c: Depend on langhooks.h.

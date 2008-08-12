@@ -3913,7 +3913,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	/* If we're assigning from a constant constructor, move the
 	   constructor expression to the RHS of the MODIFY_EXPR.  */
 	if (DECL_INITIAL (*from_p)
-	    && TYPE_READONLY (TREE_TYPE (*from_p))
+	    && TREE_READONLY (*from_p)
 	    && !TREE_THIS_VOLATILE (*from_p)
 	    && TREE_CODE (DECL_INITIAL (*from_p)) == CONSTRUCTOR)
 	  {
