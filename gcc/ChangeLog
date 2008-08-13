@@ -1,3 +1,9 @@
+2008-08-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sparc/sparc.c (emit_soft_tfmode_cvt): Explicitly sign or
+	zero extend SImode values being converted to TFmode before passing
+	to libcalls.
+
 2008-08-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Predefine
