@@ -79,7 +79,7 @@ am__libsupc___la_SOURCES_DIST = array_type_info.cc atexit_arm.cc \
 	bad_cast.cc bad_typeid.cc class_type_info.cc del_op.cc \
 	del_opnt.cc del_opv.cc del_opvnt.cc dyncast.cc eh_alloc.cc \
 	eh_arm.cc eh_aux_runtime.cc eh_call.cc eh_catch.cc \
-	eh_exception.cc eh_globals.cc eh_personality.cc \
+	eh_exception.cc eh_globals.cc eh_personality.cc eh_ptr.cc \
 	eh_term_handler.cc eh_terminate.cc eh_throw.cc eh_type.cc \
 	eh_unex_handler.cc enum_type_info.cc function_type_info.cc \
 	fundamental_type_info.cc guard.cc new_handler.cc new_op.cc \
@@ -91,7 +91,7 @@ am__objects_1 = array_type_info.lo atexit_arm.lo bad_cast.lo \
 	bad_typeid.lo class_type_info.lo del_op.lo del_opnt.lo \
 	del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo eh_arm.lo \
 	eh_aux_runtime.lo eh_call.lo eh_catch.lo eh_exception.lo \
-	eh_globals.lo eh_personality.lo eh_term_handler.lo \
+	eh_globals.lo eh_personality.lo eh_ptr.lo eh_term_handler.lo \
 	eh_terminate.lo eh_throw.lo eh_type.lo eh_unex_handler.lo \
 	enum_type_info.lo function_type_info.lo \
 	fundamental_type_info.lo guard.lo new_handler.lo new_op.lo \
@@ -107,7 +107,7 @@ am__libsupc__convenience_la_SOURCES_DIST = array_type_info.cc \
 	atexit_arm.cc bad_cast.cc bad_typeid.cc class_type_info.cc \
 	del_op.cc del_opnt.cc del_opv.cc del_opvnt.cc dyncast.cc \
 	eh_alloc.cc eh_arm.cc eh_aux_runtime.cc eh_call.cc eh_catch.cc \
-	eh_exception.cc eh_globals.cc eh_personality.cc \
+	eh_exception.cc eh_globals.cc eh_personality.cc eh_ptr.cc \
 	eh_term_handler.cc eh_terminate.cc eh_throw.cc eh_type.cc \
 	eh_unex_handler.cc enum_type_info.cc function_type_info.cc \
 	fundamental_type_info.cc guard.cc new_handler.cc new_op.cc \
@@ -356,7 +356,7 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 headers = \
 	exception new typeinfo cxxabi.h cxxabi-forced.h exception_defines.h \
-	initializer_list
+	initializer_list exception_ptr.h
 
 @GLIBCXX_HOSTED_TRUE@c_sources = \
 @GLIBCXX_HOSTED_TRUE@	cp-demangle.c 
@@ -380,6 +380,7 @@ sources = \
 	eh_exception.cc \
 	eh_globals.cc \
 	eh_personality.cc \
+	eh_ptr.cc \
 	eh_term_handler.cc \
 	eh_terminate.cc \
 	eh_throw.cc \
