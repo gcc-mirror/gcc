@@ -1,3 +1,9 @@
+2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/36701
+	* expr.c (emit_group_store): Allocate stack temp with the
+	largest alignment when copying from register to stack.
+
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (maybe_fold_offset_to_address): Declare.
