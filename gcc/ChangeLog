@@ -1,3 +1,9 @@
+2008-08-13  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/arm-g2.c, gcc.dg/arm-mmx-1.c, gcc.dg/arm-scd42-2.c:
+	Skip if the multilib testing specifies -march that does not
+	agree with the one specified in the testcase.
+
 2008-08-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sparc/sparc.c (emit_soft_tfmode_cvt): Explicitly sign or

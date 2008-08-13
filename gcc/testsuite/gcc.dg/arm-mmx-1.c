@@ -1,8 +1,11 @@
 /* Verify that if IP is saved to ensure stack alignment, we don't load
    it into sp.  */
 /* { dg-do compile } */
+/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mcpu=*" } { "-mcpu=iwmmxt" } } */
+/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mabi=*" } { "-mabi=iwmmxt" } } */
+/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mfloat-abi=softfp" } { "" } } */
+/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-march=*" } { "-march=iwmmxt" } } */
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
-/* { dg-skip-if "" { *-*-* } { "-mfloat-abi=softfp" } { "" } } */
 /* { dg-require-effective-target arm32 } */
 /* { dg-final { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } */
 
