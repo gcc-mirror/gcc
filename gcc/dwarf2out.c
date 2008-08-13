@@ -3472,15 +3472,7 @@ typedef struct dw_loc_list_struct GTY(())
 
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
-static const char *dwarf_stack_op_name (unsigned);
-static dw_loc_descr_ref new_loc_descr (enum dwarf_location_atom,
-				       unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
-static void add_loc_descr (dw_loc_descr_ref *, dw_loc_descr_ref);
-static unsigned long size_of_loc_descr (dw_loc_descr_ref);
-static unsigned long size_of_locs (dw_loc_descr_ref);
-static void output_loc_operands (dw_loc_descr_ref);
-static void output_loc_sequence (dw_loc_descr_ref);
 
 /* Convert a DWARF stack opcode into its string name.  */
 
@@ -3814,6 +3806,25 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   descr->dw_loc_oprnd2.v.val_unsigned = oprnd2;
 
   return descr;
+}
+
+/* Return a pointer to a newly allocated location description for
+   REG and OFFSET.  */
+
+static inline dw_loc_descr_ref
+new_reg_loc_descr (unsigned int reg,  unsigned HOST_WIDE_INT offset)
+{
+  if (offset)
+    {
+      if (reg <= 31)
+	return new_loc_descr (DW_OP_breg0 + reg, offset, 0);
+      else
+	return new_loc_descr (DW_OP_bregx, reg, offset);
+    }
+  else if (reg <= 31)
+    return new_loc_descr (DW_OP_reg0 + reg, 0, 0);
+  else
+   return new_loc_descr (DW_OP_regx, reg, 0);
 }
 
 /* Add a location description term to a location description expression.  */
@@ -4316,18 +4327,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 
   if (cfa->indirect)
     {
-      if (cfa->base_offset)
-	{
-	  if (cfa->reg <= 31)
-	    head = new_loc_descr (DW_OP_breg0 + cfa->reg, cfa->base_offset, 0);
-	  else
-	    head = new_loc_descr (DW_OP_bregx, cfa->reg, cfa->base_offset);
-	}
-      else if (cfa->reg <= 31)
-	head = new_loc_descr (DW_OP_reg0 + cfa->reg, 0, 0);
-      else
-	head = new_loc_descr (DW_OP_regx, cfa->reg, 0);
-
+      head = new_reg_loc_descr (cfa->reg, cfa->base_offset);
       head->dw_loc_oprnd1.val_class = dw_val_class_const;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
       add_loc_descr (&head, tmp);
@@ -4338,17 +4338,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 	}
     }
   else
-    {
-      if (offset == 0)
-	if (cfa->reg <= 31)
-	  head = new_loc_descr (DW_OP_reg0 + cfa->reg, 0, 0);
-	else
-	  head = new_loc_descr (DW_OP_regx, cfa->reg, 0);
-      else if (cfa->reg <= 31)
-	head = new_loc_descr (DW_OP_breg0 + cfa->reg, offset, 0);
-      else
-	head = new_loc_descr (DW_OP_bregx, cfa->reg, offset);
-    }
+    head = new_reg_loc_descr (cfa->reg, offset);
 
   return head;
 }
@@ -4367,21 +4357,15 @@ build_cfa_aligned_loc (HOST_WIDE_INT offset, HOST_WIDE_INT alignment)
  /* When CFA is defined as FP+OFFSET, emulate stack alignment.  */
   if (cfa.reg == HARD_FRAME_POINTER_REGNUM && cfa.indirect == 0)
     {
-      if (dwarf_fp <= 31)
-	head = new_loc_descr (DW_OP_breg0 + dwarf_fp, 0, 0);
-      else
-	head = new_loc_descr (DW_OP_bregx, dwarf_fp, 0);
-
+      head = new_reg_loc_descr (dwarf_fp, 0);
       add_loc_descr (&head, int_loc_descriptor (alignment));
       add_loc_descr (&head, new_loc_descr (DW_OP_and, 0, 0));
 
       add_loc_descr (&head, int_loc_descriptor (offset));
       add_loc_descr (&head, new_loc_descr (DW_OP_plus, 0, 0));
     }
-  else if (dwarf_fp <= 31)
-    head = new_loc_descr (DW_OP_breg0 + dwarf_fp, offset, 0);
   else
-    head = new_loc_descr (DW_OP_bregx, dwarf_fp, offset);
+    head = new_reg_loc_descr (dwarf_fp, offset);
   return head;
 }
 
@@ -9663,11 +9647,7 @@ reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
 static dw_loc_descr_ref
 one_reg_loc_descriptor (unsigned int regno, enum var_init_status initialized)
 {
-  dw_loc_descr_ref reg_loc_descr;
-  if (regno <= 31)
-    reg_loc_descr = new_loc_descr (DW_OP_reg0 + regno, 0, 0);
-  else
-    reg_loc_descr = new_loc_descr (DW_OP_regx, regno, 0);
+  dw_loc_descr_ref reg_loc_descr = new_reg_loc_descr (regno, 0);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&reg_loc_descr, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -9830,10 +9810,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 		= DWARF_FRAME_REGNUM (cfa.indirect
 				      ? HARD_FRAME_POINTER_REGNUM
 				      : STACK_POINTER_REGNUM);
-	      if (base_reg <= 31)
-		return new_loc_descr (DW_OP_breg0 + base_reg, offset, 0);
-	      else
-		return new_loc_descr (DW_OP_bregx, base_reg, offset);
+	      return new_reg_loc_descr (base_reg, offset);
 	    }
 
 	  offset += frame_pointer_fb_offset;
