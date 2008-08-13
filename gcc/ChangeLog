@@ -1,3 +1,18 @@
+2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* dwarf2out.c (dwarf_stack_op_name): Remove prototype.
+	(new_loc_descr): Likewise.
+	(add_loc_descr): Likewise.
+	(size_of_loc_descr): Likewise.
+	(size_of_locs): Likewise.
+	(output_loc_operands): Likewise.
+	(output_loc_sequence): Likewise.
+	(new_reg_loc_descr): New.
+	(build_cfa_loc): Use it.
+	(build_cfa_aligned_loc): Likewise.
+	(one_reg_loc_descriptor): Likewise.
+	(based_loc_descr): Likewise.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 30551
