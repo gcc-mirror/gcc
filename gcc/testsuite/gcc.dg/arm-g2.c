@@ -1,6 +1,7 @@
 /* Verify that hardware multiply is preferred on XScale. */
 /* { dg-do compile } */
 /* { dg-options "-mcpu=xscale -O2" } */
+/* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
 /* { dg-require-effective-target arm32 } */
 
 /* Brett Gaines' test case. */
