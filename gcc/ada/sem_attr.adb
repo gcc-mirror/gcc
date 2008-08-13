@@ -713,6 +713,12 @@ package body Sem_Attr is
                then
                   null;
 
+               --  OK if reference to the current instance of a protected
+               --  object.
+
+               elsif Is_Protected_Self_Reference (P) then
+                  null;
+
                --  Otherwise we have an error case
 
                else
@@ -1643,6 +1649,11 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of % attribute must be a type");
 
+         elsif Is_Protected_Self_Reference (P) then
+            Error_Attr_P
+              ("prefix of % attribute denotes current instance " &
+                 "(RM 9.4(21/2))");
+
          elsif Ekind (Entity (P)) = E_Incomplete_Type
             and then Present (Full_View (Entity (P)))
          then
@@ -2009,7 +2020,13 @@ package body Sem_Attr is
          --  An Address attribute created by expansion is legal even when it
          --  applies to other entity-denoting expressions.
 
-         if Is_Entity_Name (P) then
+         if Is_Protected_Self_Reference (P) then
+            --  An Address attribute on a protected object self reference
+            --  is legal.
+
+            null;
+
+         elsif Is_Entity_Name (P) then
             declare
                Ent : constant Entity_Id := Entity (P);
 

@@ -636,6 +636,14 @@ package body Exp_Attr is
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
       end if;
 
+      --  If prefix is a protected type name, this is a reference to
+      --  the current instance of the type.
+
+      if Is_Protected_Self_Reference (Pref) then
+         Rewrite (Pref, Concurrent_Ref (Pref));
+         Analyze (Pref);
+      end if;
+
       --  Remaining processing depends on specific attribute
 
       case Id is
