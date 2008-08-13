@@ -1,3 +1,8 @@
+2008-08-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sparc/linux64.h (LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
+	LINK_SPEC): Use %R in -Y P argument.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/15236

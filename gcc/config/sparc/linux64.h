@@ -121,7 +121,7 @@ along with GCC; see the file COPYING3.  If not see
   { "link_arch_default", LINK_ARCH_DEFAULT_SPEC },	  \
   { "link_arch",	 LINK_ARCH_SPEC },
 
-#define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
+#define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,%R/usr/lib %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
@@ -130,7 +130,7 @@ along with GCC; see the file COPYING3.  If not see
         %{static:-static}}} \
 "
 
-#define LINK_ARCH64_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
+#define LINK_ARCH64_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
@@ -211,7 +211,7 @@ along with GCC; see the file COPYING3.  If not see
 #else /* !SPARC_BI_ARCH */
 
 #undef LINK_SPEC
-#define LINK_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
+#define LINK_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
