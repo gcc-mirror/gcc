@@ -2914,6 +2914,12 @@ stmt_dominates_stmt_p (gimple s1, gimple s2)
     {
       gimple_stmt_iterator bsi;
 
+      if (gimple_code (s2) == GIMPLE_PHI)
+	return false;
+
+      if (gimple_code (s1) == GIMPLE_PHI)
+	return true;
+
       for (bsi = gsi_start_bb (bb1); gsi_stmt (bsi) != s2; gsi_next (&bsi))
 	if (gsi_stmt (bsi) == s1)
 	  return true;

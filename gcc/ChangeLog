@@ -1,3 +1,24 @@
+2008-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15255
+	* tree-ssa-reassoc.c (linearize_expr_tree): Declare.
+	(struct oecount_s): New struct and VEC types.
+	(cvec): New global.
+	(oecount_hash): New function.
+	(oecount_eq): Likewise.
+	(oecount_cmp): Likewise.
+	(zero_one_operation): New function.
+	(build_and_add_sum): Likewise.
+	(undistribute_ops_list): Perform un-distribution of multiplication
+	and division on the chain of summands.
+	(should_break_up_subtract): Also break up subtracts for factors.
+	(reassociate_bb): Delete dead visited statements.
+	Call undistribute_ops_list.  Re-sort and optimize if it did something.
+	* passes.c (init_optimization_passes): Move DSE before
+	reassociation.
+	* tree-ssa-loop-niter.c (stmt_dominates_stmt_p): Correctly handle
+	PHI nodes.
+
 2008-08-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (-fipa-pta): Say the option is experimental.

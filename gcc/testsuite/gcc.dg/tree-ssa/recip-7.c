@@ -5,7 +5,9 @@
 
 extern double h();
 
-double f(int x, double z, double w)
+double m, n, o;
+
+void f(int x, double z, double w)
 {
   double b, c, d, e, f;
   double y = h ();
@@ -19,7 +21,9 @@ double f(int x, double z, double w)
   e = c / y;
   f = 1 / y;
 
-  return d + e + f;
+  m = d;
+  n = e;
+  o = f;
 }
 
 /* { dg-final { scan-tree-dump-times " / " 1 "recip" } } */
