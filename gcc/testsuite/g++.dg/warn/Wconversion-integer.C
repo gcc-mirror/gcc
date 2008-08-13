@@ -42,8 +42,8 @@ void h (int x)
 
   uc = x ? 1U : -1; /* { dg-warning "conversion" } */
   uc = x ? SCHAR_MIN : 1U; /* { dg-warning "conversion" } */
-  uc = x ? 1 : -1; /* { dg-warning "conversion" } */
-  uc = x ? SCHAR_MIN : 1; /* { dg-warning "conversion" } */
+  uc = x ? 1 : -1; /* Warned by -Wsign-conversion.  */
+  uc = x ? SCHAR_MIN : 1; /* Warned by -Wsign-conversion.  */
   ui = x ? 1U : -1; /* Warned by -Wsign-conversion.  */
   ui = x ? INT_MIN : 1U; /* Warned by -Wsign-conversion.  */
   ui = ui ? SCHAR_MIN : 1U; /* Warned by -Wsign-conversion.  */

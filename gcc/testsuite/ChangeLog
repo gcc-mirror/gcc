@@ -1,3 +1,14 @@
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35635
+	* gcc.dg/pr35635.c: New.
+	* gcc.dg/Wconversion-integer.c: Update.
+	* gcc.dg/Wconversion-integer-no-sign.c: Update.
+	* gcc.dg/Wsign-conversion.c: Update.
+	* g++.dg/warn/pr35635.C: New.
+	* g++.dg/warn/Wconversion-integer.C: Update.
+	* g++.dg/warn/Wsign-conversion.C: Update.
+	
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15255
