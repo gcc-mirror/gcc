@@ -2371,6 +2371,8 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	{
 	case SImode:
 	  func = "_Qp_itoq";
+	  if (TARGET_ARCH64)
+	    operands[1] = gen_rtx_SIGN_EXTEND (DImode, operands[1]);
 	  break;
 	case DImode:
 	  func = "_Qp_xtoq";
@@ -2385,6 +2387,8 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	{
 	case SImode:
 	  func = "_Qp_uitoq";
+	  if (TARGET_ARCH64)
+	    operands[1] = gen_rtx_ZERO_EXTEND (DImode, operands[1]);
 	  break;
 	case DImode:
 	  func = "_Qp_uxtoq";
