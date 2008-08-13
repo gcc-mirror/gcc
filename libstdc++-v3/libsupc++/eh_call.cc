@@ -1,5 +1,5 @@
 // -*- C++ -*- Helpers for calling unextected and terminate
-// Copyright (C) 2001, 2002, 2003, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -125,7 +125,7 @@ __cxa_call_unexpected(void* exc_obj_in)
 
       __cxa_eh_globals* globals = __cxa_get_globals_fast();
       __cxa_exception* new_xh = globals->caughtExceptions;
-      void* new_ptr = __gxx_get_object_from_ambiguous_exception (new_xh);
+      void* new_ptr = new_xh + 1;
       const std::type_info* catch_type;
       int n;
       bool bad_exception_allowed = false;

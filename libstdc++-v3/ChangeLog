@@ -1,3 +1,7 @@
+2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert the last patch.
+
 2008-08-13  Sebastian Redl <sebastian.redl@getdesigned.at>
 
 	Add exception propagation support as per N2179.
