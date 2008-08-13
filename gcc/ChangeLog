@@ -1,3 +1,10 @@
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35635
+	* c-common.c (conversion_warning): Use a switch. Ignore boolean
+	expressions except for conversions to signed:1 bitfields. Handle
+	COND_EXPR with constant operands.
+	
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15255

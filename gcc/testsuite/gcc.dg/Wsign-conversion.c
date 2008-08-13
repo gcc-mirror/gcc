@@ -42,15 +42,15 @@ void h (int x)
 
   uc = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   uc = x ? SCHAR_MIN : 1U;  /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = x ? 1 : -1; 
-  uc = x ? SCHAR_MIN : 1; 
+  uc = x ? 1 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  uc = x ? SCHAR_MIN : 1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = x ? INT_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = ui ? SCHAR_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = 1U * -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = ui + INT_MIN; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = x ? 1 : -1; /* { dg-warning "conversion" } */
-  ui = ui ? SCHAR_MIN : 1; /* { dg-warning "conversion" } */
+  ui = x ? 1 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  ui = ui ? SCHAR_MIN : 1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
 
   fuc (-1); /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   uc = -1;  /* { dg-warning "negative integer implicitly converted to unsigned type" } */
