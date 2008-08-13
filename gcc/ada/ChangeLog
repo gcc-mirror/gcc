@@ -1,3 +1,14 @@
+2008-08-13  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/36777
+	* sem_util.ads, sem_util.adb (Is_Protected_Self_Reference): New.
+	* sem_attr.adb (Check_Type): The current instance of a protected
+	object is not a type name.
+	(Analyze_Access_Attribute): Accept instances of protected objects.
+	(Analyze_Attribute, Attribute_Address clause): Ditto.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Rewrite
+	the prefix as being the current instance if needed.
+
 2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
 
 	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS) [WINDOWS]: Remove

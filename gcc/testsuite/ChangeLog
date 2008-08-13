@@ -1,3 +1,9 @@
+2008-08-13  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/36777
+	* gnat.dg/protected_self_ref1.adb, gnat.dg/protected_self_ref2.adb:
+	New.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/15236
