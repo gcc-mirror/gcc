@@ -66,6 +66,7 @@ extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern bool pedwarn (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool pedwarn_at (location_t, int, const char *, ...) 
+     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern bool permerror_at (location_t, const char *, ...)
      ATTRIBUTE_GCC_DIAG(2,3);
