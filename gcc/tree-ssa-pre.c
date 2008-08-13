@@ -2436,7 +2436,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
     {
     case CALL_EXPR:
       {
-	tree folded;
+	tree folded, sc = currop->op1;
 	unsigned int nargs = 0;
 	tree *args = XNEWVEC (tree, VEC_length (vn_reference_op_s,
 						ref->operands) - 1);
@@ -2453,6 +2453,14 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 				   : currop->op0,
 				   nargs, args);
 	free (args);
+	if (sc)
+	  {
+	    pre_expr scexpr = get_or_alloc_expr_for (sc);
+	    sc = find_or_generate_expression (block, scexpr, stmts, domstmt);
+	    if (!sc)
+	      return NULL_TREE;
+	    CALL_EXPR_STATIC_CHAIN (folded) = sc;
+	  }
 	return folded;
       }
       break;

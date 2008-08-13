@@ -2013,7 +2013,7 @@ gimple_call_set_chain (gimple gs, tree chain)
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   gcc_assert (chain == NULL
               || TREE_CODE (chain) == ADDR_EXPR
-              || DECL_P (chain));
+              || SSA_VAR_P (chain));
   gimple_set_op (gs, 2, chain);
 }
 
