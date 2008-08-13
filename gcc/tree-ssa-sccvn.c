@@ -686,12 +686,12 @@ copy_reference_ops_from_call (gimple call,
   vn_reference_op_s temp;
   unsigned i;
 
-  /* Copy the call_expr opcode, type, function being called, and
-     arguments.  */
+  /* Copy the type, opcode, function being called and static chain.  */
   memset (&temp, 0, sizeof (temp));
   temp.type = gimple_call_return_type (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
+  temp.op1 = gimple_call_chain (call);
   VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
   /* Copy the call arguments.  As they can be references as well,
@@ -701,7 +701,6 @@ copy_reference_ops_from_call (gimple call,
       tree callarg = gimple_call_arg (call, i);
       copy_reference_ops_from_ref (callarg, result);
     }
-  return;
 }
 
 /* Create a vector of vn_reference_op_s structures from REF, a

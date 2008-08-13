@@ -1,3 +1,11 @@
+2008-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.h (gimple_call_set_chain): Accept SSA variables.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1) <CALL_EXPR>:
+	Rematerialize the static chain, if any.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Also copy the
+	static chain.
+
 2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dwarf2out.c (dwarf_stack_op_name): Remove prototype.
