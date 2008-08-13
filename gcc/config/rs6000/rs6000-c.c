@@ -121,6 +121,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__pixel=__attribute__((altivec(pixel__))) unsigned short");
       builtin_define ("__bool=__attribute__((altivec(bool__))) unsigned");
     }
+  if (rs6000_cpu == PROCESSOR_CELL)
+    builtin_define ("__PPU__");
   if (TARGET_SPE)
     builtin_define ("__SPE__");
   if (TARGET_PAIRED_FLOAT)

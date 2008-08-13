@@ -1,3 +1,8 @@
+2008-08-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Predefine
+	__PPU__ when targeting the Cell/B.E. PPU processor.
+
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37014
