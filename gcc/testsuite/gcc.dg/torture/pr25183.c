@@ -12,11 +12,11 @@ static enum err E_;
 int error()
 {
   switch (E_) {
-    case err_IO : break;  /* { dg-warning "overflow" } */
-    case err_NM : break;  /* { dg-warning "overflow" } */
-    case err_EOF : break; /* { dg-warning "overflow" } */
-    case err_SE : break;  /* { dg-warning "overflow" } */
-    case err_PT : break;  /* { dg-warning "overflow" } */
+    case err_IO : break; 
+    case err_NM : break; 
+    case err_EOF : break;
+    case err_SE : break; 
+    case err_PT : break; 
     default : return 0;
   }
 }

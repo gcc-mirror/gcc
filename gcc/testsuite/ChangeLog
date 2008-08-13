@@ -1,5 +1,11 @@
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/15236
+	* gcc.dg/pr15236.c: New.
+	* gcc.dg/torture/pr25183.c: Update.
+
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 35635
 	* gcc.dg/pr35635.c: New.
 	* gcc.dg/Wconversion-integer.c: Update.

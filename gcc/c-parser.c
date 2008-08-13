@@ -1630,6 +1630,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  bool seen_comma;
 	  c_token *token;
 	  location_t comma_loc;
+	  location_t value_loc;
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
 	    {
 	      c_parser_error (parser, "expected identifier");
@@ -1641,15 +1642,19 @@ c_parser_enum_specifier (c_parser *parser)
 	  enum_id = token->value;
 	  /* Set the location in case we create a decl now.  */
 	  c_parser_set_source_position_from_token (token);
+	  value_loc = token->location;
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      c_parser_consume_token (parser);
+	      value_loc = c_parser_peek_token (parser)->location;
+	      /* This may call cb_line_change and alter the input_location.  */
 	      enum_value = c_parser_expr_no_commas (parser, NULL).value;
 	    }
 	  else
 	    enum_value = NULL_TREE;
-	  enum_decl = build_enumerator (&the_enum, enum_id, enum_value);
+	  enum_decl = build_enumerator (&the_enum, enum_id, enum_value, 
+					value_loc);
 	  TREE_CHAIN (enum_decl) = values;
 	  values = enum_decl;
 	  seen_comma = false;

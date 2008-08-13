@@ -1,5 +1,17 @@
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/15236
+	* diagnostic.c (pedwarn_at): New.
+	* toplev.h (pedwarn_at): Declare.
+	* c-tree.h (build_enumerator): Update declaration.
+	* c-decl.c (finish_enum): Update comment.
+	(build_enumerator): Take a location parameter. Give a pedwarn but do
+	not perform any conversion.
+	* c-parser.c (c_parser_enum_specifier): Set correct location for
+	enumerator.
+
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR 35635
 	* c-common.c (conversion_warning): Use a switch. Ignore boolean
 	expressions except for conversions to signed:1 bitfields. Handle
