@@ -404,9 +404,12 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	warn_uninitialized = (value ? 2 : 0);
 
       if (!c_dialect_cxx ())
-	/* We set this to 2 here, but 1 in -Wmain, so -ffreestanding
-	   can turn it off only if it's not explicit.  */
-	warn_main = value * 2;
+	{
+	  /* We set this to 2 here, but 1 in -Wmain, so -ffreestanding
+	     can turn it off only if it's not explicit.  */
+	  if (warn_main == -1)
+	    warn_main = (value ? 2 : 0);
+	}
       else
 	{
 	  /* C++-specific warnings.  */
@@ -465,13 +468,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Winvalid_pch:
       cpp_opts->warn_invalid_pch = value;
-      break;
-
-    case OPT_Wmain:
-      if (value)
-	warn_main = 1;
-      else
-	warn_main = -1;
       break;
 
     case OPT_Wmissing_include_dirs:
@@ -615,9 +611,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fhosted:
       flag_hosted = value;
       flag_no_builtin = !value;
-      /* warn_main will be 2 if set by -Wall, 1 if set by -Wmain */
-      if (!value && warn_main == 2)
-	warn_main = 0;
       break;
 
     case OPT_fshort_double:
@@ -907,6 +900,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	warn_pointer_sign = 1;
       if (warn_overlength_strings == -1)
 	warn_overlength_strings = 1;
+      if (warn_main == -1)
+	warn_main = 2;
       break;
 
     case OPT_print_objc_runtime_info:
@@ -1070,6 +1065,15 @@ c_common_post_options (const char **pfilename)
      in that standard.  */
   if (warn_overlength_strings == -1 || c_dialect_cxx ())
     warn_overlength_strings = 0;
+
+  /* Wmain is enabled by default in C++ but not in C.  */
+  /* Wmain is disabled by default for -ffreestanding (!flag_hosted),
+     even if -Wall was given (warn_main will be 2 if set by -Wall, 1
+     if set by -Wmain).  */
+  if (warn_main == -1)
+    warn_main = (c_dialect_cxx () && flag_hosted) ? 1 : 0;
+  else if (warn_main == 2)
+    warn_main = flag_hosted ? 1 : 0;
 
   /* In C, -Wconversion enables -Wsign-conversion (unless disabled
      through -Wno-sign-conversion). While in C++,

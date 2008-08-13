@@ -2940,10 +2940,11 @@ This warning is also enabled by @option{-Wextra}.
 @item -Wmain
 @opindex Wmain
 @opindex Wno-main
-Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
-function with external linkage, returning int, taking either zero
-arguments, two, or three arguments of appropriate types.
-This warning is enabled by @option{-Wall}.
+Warn if the type of @samp{main} is suspicious.  @samp{main} should be
+a function with external linkage, returning int, taking either zero
+arguments, two, or three arguments of appropriate types.  This warning
+is enabled by default in C++ and is enabled by either @option{-Wall}
+or @option{-pedantic}.
 
 @item -Wmissing-braces
 @opindex Wmissing-braces

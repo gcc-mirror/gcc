@@ -1,3 +1,20 @@
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 30551
+	* doc/invoke.texi (Wmain): Update.
+	* c-decl.c (start_decl): warn_main is only 0 or 1.
+	(start_function): Likewise. Fix formatting.
+	(finish_function): Delete redundant warning.
+	* c.opt (Wmain): Add Var(warn_main) and Init(-1).
+	* c-opts (c_common_handle_option): -Wall only has effect if
+	warn_main is uninitialized. OPT_Wmain is automatically
+	handled. -pedantic also enables Wmain.
+	(c_common_post_options): Handle all logic for Wmain here.
+	* c-common.c (warn_main): Delete.
+	(check_main_parameter_types): Make pedwarns conditional on
+	OPT_Wmain.
+	* c-common.h (warn_main): Delete.
+
 2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/36701
