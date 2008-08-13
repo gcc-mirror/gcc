@@ -5877,11 +5877,13 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  /* The ISO C Standard mandates enumerators to have type int,
 	     even though the underlying type of an enum type is
-	     unspecified.  Here we convert any enumerators that fit in
-	     an int to type int, to avoid promotions to unsigned types
-	     when comparing integers with enumerators that fit in the
-	     int range.  When -pedantic is given, build_enumerator()
-	     would have already taken care of those that don't fit.  */
+	     unspecified.  However, GCC allows enumerators of any
+	     integer type as an extensions.  Here we convert any
+	     enumerators that fit in an int to type int, to avoid
+	     promotions to unsigned types when comparing integers with
+	     enumerators that fit in the int range.  When -pedantic is
+	     given, build_enumerator() would have already warned about
+	     those that don't fit.  */
 	  if (int_fits_type_p (ini, integer_type_node))
 	    tem = integer_type_node;
 	  else
@@ -5933,7 +5935,8 @@ finish_enum (tree enumtype, tree values, tree attributes)
    Assignment of sequential values by default is handled here.  */
 
 tree
-build_enumerator (struct c_enum_contents *the_enum, tree name, tree value)
+build_enumerator (struct c_enum_contents *the_enum, tree name, tree value,
+		  location_t value_loc)
 {
   tree decl, type;
 
@@ -5967,14 +5970,13 @@ build_enumerator (struct c_enum_contents *the_enum, tree name, tree value)
       if (the_enum->enum_overflow)
 	error ("overflow in enumeration values");
     }
-
-  if (pedantic && !int_fits_type_p (value, integer_type_node))
-    {
-      pedwarn (OPT_pedantic, "ISO C restricts enumerator values to range of %<int%>");
-      /* XXX This causes -pedantic to change the meaning of the program.
-	 Remove?  -zw 2004-03-15  */
-      value = convert (integer_type_node, value);
-    }
+  /* Even though the underlying type of an enum is unspecified, the
+     type of enumeration constants is explicitly defined as int
+     (6.4.4.3/2 in the C99 Standard).  GCC allows any integer type as
+     an extension.  */
+  else if (!int_fits_type_p (value, integer_type_node))
+    pedwarn_at (value_loc, OPT_pedantic, 
+		"ISO C restricts enumerator values to range of %<int%>");
 
   /* Set basis for default for next value.  */
   the_enum->enum_next_value = build_binary_op (PLUS_EXPR, value,

@@ -537,10 +537,10 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
   return report_diagnostic (&diagnostic);
 }
 
-/* A "pedantic" warning: issues a warning unless -pedantic-errors was
-   given on the command line, in which case it issues an error.  Use
-   this for diagnostics required by the relevant language standard,
-   if you have chosen not to make them errors.
+/* A "pedantic" warning at LOCATION: issues a warning unless
+   -pedantic-errors was given on the command line, in which case it
+   issues an error.  Use this for diagnostics required by the relevant
+   language standard, if you have chosen not to make them errors.
 
    Note that these diagnostics are issued independent of the setting
    of the -pedantic command-line switch.  To get a warning enabled
@@ -549,6 +549,21 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
    pedwarn independently of the -pedantic switch use "pedwarn (0,...)".
 
    Returns true if the warning was printed, false if it was inhibited.  */
+
+bool
+pedwarn_at (location_t location, int opt, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,  DK_PEDWARN);
+  diagnostic.option_index = opt;
+  va_end (ap);
+  return report_diagnostic (&diagnostic);
+}
+
+/* Equivalent to pedwarn_at using INPUT_LOCATION.  */
 
 bool
 pedwarn (int opt, const char *gmsgid, ...)

@@ -462,7 +462,7 @@ extern void c_print_identifier (FILE *, tree, int);
 extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (tree, struct c_declspecs *,
 						    bool, bool);
-extern tree build_enumerator (struct c_enum_contents *, tree, tree);
+extern tree build_enumerator (struct c_enum_contents *, tree, tree, location_t);
 extern tree check_for_loop_decls (void);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
