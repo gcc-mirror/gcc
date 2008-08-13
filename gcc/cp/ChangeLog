@@ -1,3 +1,9 @@
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 30551
+	* decl.c (grokfndecl): Call check_main_parameters_type only if
+	-Wmain.
+
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37087

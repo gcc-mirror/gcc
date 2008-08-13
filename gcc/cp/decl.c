@@ -6692,7 +6692,8 @@ grokfndecl (tree ctype,
 	  newtype = build_function_type (integer_type_node, oldtypeargs);
 	  TREE_TYPE (decl) = newtype;
 	}
-      check_main_parameter_types (decl);
+      if (warn_main)
+	check_main_parameter_types (decl);
     }
 
   if (ctype != NULL_TREE

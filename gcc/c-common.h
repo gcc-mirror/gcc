@@ -498,11 +498,6 @@ extern int flag_isoc99;
 
 extern int flag_hosted;
 
-/* Warn if main is suspicious.  */
-
-extern int warn_main;
-
-
 /* ObjC language option variables.  */
 
 

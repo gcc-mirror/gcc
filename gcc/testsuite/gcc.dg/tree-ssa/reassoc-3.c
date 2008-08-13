@@ -1,3 +1,4 @@
+/* { dg-options "" } */
 int main(int a, int b, int c, int d)
 {
   int e = (a & ~b) & (~c & d);

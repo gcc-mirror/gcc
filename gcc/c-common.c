@@ -342,10 +342,6 @@ int flag_isoc99;
 
 int flag_hosted = 1;
 
-/* Warn if main is suspicious.  */
-
-int warn_main;
-
 
 /* ObjC language option variables.  */
 
@@ -1363,7 +1359,8 @@ check_main_parameter_types (tree decl)
        {
        case 1:
          if (TYPE_MAIN_VARIANT (type) != integer_type_node)
-           pedwarn (0, "first argument of %q+D should be %<int%>", decl);
+           pedwarn (OPT_Wmain, "first argument of %q+D should be %<int%>", 
+		    decl);
          break;
 
        case 2:
@@ -1371,8 +1368,8 @@ check_main_parameter_types (tree decl)
              || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
              || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
                  != char_type_node))
-           pedwarn (0, "second argument of %q+D should be %<char **%>",
-		     decl);
+           pedwarn (OPT_Wmain, "second argument of %q+D should be %<char **%>",
+		    decl);
          break;
 
        case 3:
@@ -1380,8 +1377,8 @@ check_main_parameter_types (tree decl)
              || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
              || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
                  != char_type_node))
-           pedwarn (0, "third argument of %q+D should probably be "
-		     "%<char **%>", decl);
+	   pedwarn (OPT_Wmain, "third argument of %q+D should probably be "
+		    "%<char **%>", decl);
          break;
        }
    }
@@ -1390,7 +1387,7 @@ check_main_parameter_types (tree decl)
     argument because it's only mentioned in an appendix of the
     standard.  */
   if (argct > 0 && (argct < 2 || argct > 3))
-   pedwarn (0, "%q+D takes only zero or two arguments", decl);
+    pedwarn (OPT_Wmain, "%q+D takes only zero or two arguments", decl);
 }
 
 /* True if pointers to distinct types T1 and T2 can be converted to

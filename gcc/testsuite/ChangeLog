@@ -1,3 +1,16 @@
+2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 30551
+	* gcc.dg/pr30551.c: New.
+	* gcc.dg/pr30551-2.c: New.
+	* gcc.dg/pr30551-3.c: New.
+	* gcc.dg/pr30551-4.c: New.
+	* gcc.dg/pr30551-5.c: New.
+	* gcc.dg/pr30551-6.c: New.
+	* gcc.dg/tree-ssa/reassoc-3.c: Don't compile with -pedantic-errors.
+	* g++.dg/warn/pr30551.C: New.
+	* g++.dg/warn/pr30551-2.C: New.
+
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-21.c: New testcase.

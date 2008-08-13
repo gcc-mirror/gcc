@@ -3153,8 +3153,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   if (!decl)
     return 0;
 
-  if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
-      && MAIN_NAME_P (DECL_NAME (decl)))
+  if (TREE_CODE (decl) != FUNCTION_DECL && MAIN_NAME_P (DECL_NAME (decl)))
     warning (OPT_Wmain, "%q+D is usually a function", decl);
 
   if (initialized)
@@ -6207,13 +6206,13 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     maybe_apply_pragma_weak (decl1);
 
   /* Warn for unlikely, improbable, or stupid declarations of `main'.  */
-  if (warn_main > 0 && MAIN_NAME_P (DECL_NAME (decl1)))
+  if (warn_main && MAIN_NAME_P (DECL_NAME (decl1)))
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  != integer_type_node)
 	pedwarn (OPT_Wmain, "return type of %q+D is not %<int%>", decl1);
 
-      check_main_parameter_types(decl1);
+      check_main_parameter_types (decl1);
 
       if (!TREE_PUBLIC (decl1))
 	pedwarn (OPT_Wmain, "%q+D is normally a non-static function", decl1);
@@ -6672,30 +6671,18 @@ finish_function (void)
   if (DECL_RESULT (fndecl) && DECL_RESULT (fndecl) != error_mark_node)
     DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted)
+  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted
+      && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
+      == integer_type_node && flag_isoc99)
     {
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
-	  != integer_type_node)
-	{
-	  /* If warn_main is 1 (-Wmain) or 2 (-Wall), we have already warned.
-	     If warn_main is -1 (-Wno-main) we don't want to be warned.  */
-	  if (!warn_main)
-	    pedwarn (0, "return type of %q+D is not %<int%>", fndecl);
-	}
-      else
-	{
-	  if (flag_isoc99)
-	    {
-	      tree stmt = c_finish_return (integer_zero_node);
-	      /* Hack.  We don't want the middle-end to warn that this return
-		 is unreachable, so we mark its location as special.  Using
-		 UNKNOWN_LOCATION has the problem that it gets clobbered in
-		 annotate_one_with_locus.  A cleaner solution might be to
-		 ensure ! should_carry_locus_p (stmt), but that needs a flag.
-	      */
-	      SET_EXPR_LOCATION (stmt, BUILTINS_LOCATION);
-	    }
-	}
+      tree stmt = c_finish_return (integer_zero_node);
+      /* Hack.  We don't want the middle-end to warn that this return
+	 is unreachable, so we mark its location as special.  Using
+	 UNKNOWN_LOCATION has the problem that it gets clobbered in
+	 annotate_one_with_locus.  A cleaner solution might be to
+	 ensure ! should_carry_locus_p (stmt), but that needs a flag.
+      */
+      SET_EXPR_LOCATION (stmt, BUILTINS_LOCATION);
     }
 
   /* Tie off the statement tree for this function.  */
