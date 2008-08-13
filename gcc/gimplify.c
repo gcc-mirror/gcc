@@ -1842,17 +1842,13 @@ gimplify_conversion (tree *expr_p)
   /* Attempt to avoid NOP_EXPR by producing reference to a subtype.
      For example this fold (subclass *)&A into &A->subclass avoiding
      a need for statement.  */
-  if (TREE_CODE (*expr_p) == NOP_EXPR
+  if (CONVERT_EXPR_P (*expr_p)
       && POINTER_TYPE_P (TREE_TYPE (*expr_p))
       && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (*expr_p, 0)))
-      && (tem = maybe_fold_offset_to_reference
+      && (tem = maybe_fold_offset_to_address
 		  (TREE_OPERAND (*expr_p, 0),
-		   integer_zero_node, TREE_TYPE (TREE_TYPE (*expr_p)))))
-    {
-      tree ptr_type = build_pointer_type (TREE_TYPE (tem));
-      if (useless_type_conversion_p (TREE_TYPE (*expr_p), ptr_type))
-        *expr_p = build_fold_addr_expr_with_type (tem, ptr_type);
-    }
+		   integer_zero_node, TREE_TYPE (*expr_p))) != NULL_TREE)
+    *expr_p = tem;
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
@@ -6735,30 +6731,24 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	     The second is gimple immediate saving a need for extra statement.
 	   */
 	  if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
-	      && (tmp = maybe_fold_offset_to_reference
+	      && (tmp = maybe_fold_offset_to_address
 			 (TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
-		   	  TREE_TYPE (TREE_TYPE (*expr_p)))))
-	     {
-	       tree ptr_type = build_pointer_type (TREE_TYPE (tmp));
-	       if (useless_type_conversion_p (TREE_TYPE (*expr_p), ptr_type))
-		 {
-                   *expr_p = build_fold_addr_expr_with_type (tmp, ptr_type);
-		   break;
-		 }
-	     }
+		   	  TREE_TYPE (*expr_p))))
+	    {
+	      *expr_p = tmp;
+	      break;
+	    }
 	  /* Convert (void *)&a + 4 into (void *)&a[1].  */
 	  if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR
 	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p,
 									0),0)))
-	      && (tmp = maybe_fold_offset_to_reference
+	      && (tmp = maybe_fold_offset_to_address
 			 (TREE_OPERAND (TREE_OPERAND (*expr_p, 0), 0),
 			  TREE_OPERAND (*expr_p, 1),
-		   	  TREE_TYPE (TREE_TYPE
-				  (TREE_OPERAND (TREE_OPERAND (*expr_p, 0),
-						 0))))))
+		   	  TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p, 0),
+						   0)))))
 	     {
-               tmp = build_fold_addr_expr (tmp);
                *expr_p = fold_convert (TREE_TYPE (*expr_p), tmp);
 	       break;
 	     }

@@ -1,3 +1,16 @@
+2008-08-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (maybe_fold_offset_to_address): Declare.
+	* tree-ssa-ccp.c (surely_varying_stmt_p): Fix typo in last commit.
+	(ccp_fold): Handle pointer conversions the same as fold_stmt.
+	Likewise for POINTER_PLUS_EXPR.
+	(maybe_fold_offset_to_reference): Enable disabled code.
+	(maybe_fold_offset_to_address): New function.
+	(fold_stmt_r): Use it.
+	(fold_gimple_assign): Likewise.
+	* gimplify.c (gimplify_conversion): Use maybe_fold_offset_to_address.
+	(gimplify_expr): Likewise.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* toplev.h (pedwarn_at): Fix declaration.

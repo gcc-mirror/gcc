@@ -630,7 +630,7 @@ surely_varying_stmt_p (gimple stmt)
       tree fndecl;
       if (!gimple_call_lhs (stmt)
 	  || ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
-	      && DECL_BUILT_IN (fndecl)))
+	      && !DECL_BUILT_IN (fndecl)))
 	return true;
     }
 
@@ -988,18 +988,26 @@ ccp_fold (gimple stmt)
 		 useless_type_conversion_p places for pointer type conversions
 		 do not apply here.  Substitution later will only substitute to
 		 allowed places.  */
-              if ((subcode == NOP_EXPR || subcode == CONVERT_EXPR)
-		  && ((POINTER_TYPE_P (TREE_TYPE (lhs))
-		       && POINTER_TYPE_P (TREE_TYPE (op0))
-		       /* Do not allow differences in volatile qualification
-			  as this might get us confused as to whether a
-			  propagation destination statement is volatile
-			  or not.  See PR36988.  */
-		       && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (lhs)))
-			   == TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (op0)))))
-		      || useless_type_conversion_p (TREE_TYPE (lhs),
-						    TREE_TYPE (op0))))
-                return op0;
+	      if (IS_CONVERT_EXPR_CODE_P (subcode)
+		  && POINTER_TYPE_P (TREE_TYPE (lhs))
+		  && POINTER_TYPE_P (TREE_TYPE (op0))
+		  /* Do not allow differences in volatile qualification
+		     as this might get us confused as to whether a
+		     propagation destination statement is volatile
+		     or not.  See PR36988.  */
+		  && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (lhs)))
+		      == TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (op0)))))
+		{
+		  tree tem;
+		  /* Still try to generate a constant of correct type.  */
+		  if (!useless_type_conversion_p (TREE_TYPE (lhs),
+						  TREE_TYPE (op0))
+		      && ((tem = maybe_fold_offset_to_address
+				   (op0, integer_zero_node, TREE_TYPE (lhs)))
+			  != NULL_TREE))
+		    return tem;
+		  return op0;
+		}
 
               return fold_unary (subcode, gimple_expr_type (stmt), op0);
             }  
@@ -1024,6 +1032,18 @@ ccp_fold (gimple stmt)
                   if (val->lattice_val == CONSTANT)
                     op1 = val->value;
                 }
+
+	      /* Fold &foo + CST into an invariant reference if possible.  */
+	      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+		  && TREE_CODE (op0) == ADDR_EXPR
+		  && TREE_CODE (op1) == INTEGER_CST)
+		{
+		  tree lhs = gimple_assign_lhs (stmt);
+		  tree tem = maybe_fold_offset_to_address (op0, op1,
+							   TREE_TYPE (lhs));
+		  if (tem != NULL_TREE)
+		    return tem;
+		}
 
               return fold_binary (subcode, gimple_expr_type (stmt), op0, op1);
             }
@@ -1948,15 +1968,15 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
 	 so it needs to be removed and new COMPONENT_REF constructed.
 	 The wrong COMPONENT_REF are often constructed by folding the
 	 (type *)&object within the expression (type *)&object+offset  */
-      if (handled_component_p (base) && 0)
+      if (handled_component_p (base))
 	{
           HOST_WIDE_INT sub_offset, size, maxsize;
 	  tree newbase;
 	  newbase = get_ref_base_and_extent (base, &sub_offset,
 					     &size, &maxsize);
 	  gcc_assert (newbase);
-	  gcc_assert (!(sub_offset & (BITS_PER_UNIT - 1)));
-	  if (size == maxsize)
+	  if (size == maxsize
+	      && !(sub_offset & (BITS_PER_UNIT - 1)))
 	    {
 	      base = newbase;
 	      if (sub_offset)
@@ -1986,6 +2006,63 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
       ret = maybe_fold_offset_to_array_ref (base, offset, orig_type, true);
     }
   return ret;
+}
+
+/* Attempt to express (ORIG_TYPE)&BASE+OFFSET as &BASE->field_of_orig_type
+   or &BASE[index] or by combination of those.
+
+   Before attempting the conversion strip off existing component refs.  */
+
+tree
+maybe_fold_offset_to_address (tree addr, tree offset, tree orig_type)
+{
+  tree t;
+
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (addr))
+	      && POINTER_TYPE_P (orig_type));
+
+  t = maybe_fold_offset_to_reference (addr, offset, TREE_TYPE (orig_type));
+  if (t != NULL_TREE)
+    {
+      tree orig = addr;
+      tree ptr_type;
+
+      /* For __builtin_object_size to function correctly we need to
+         make sure not to fold address arithmetic so that we change
+	 reference from one array to another.  This would happen for
+	 example for
+
+	   struct X { char s1[10]; char s2[10] } s;
+	   char *foo (void) { return &s.s2[-4]; }
+
+	 where we need to avoid generating &s.s1[6].  As the C and
+	 C++ frontends create different initial trees
+	 (char *) &s.s1 + -4  vs.  &s.s1[-4]  we have to do some
+	 sophisticated comparisons here.  Note that checking for the
+	 condition after the fact is easier than trying to avoid doing
+	 the folding.  */
+      STRIP_NOPS (orig);
+      if (TREE_CODE (orig) == ADDR_EXPR)
+	orig = TREE_OPERAND (orig, 0);
+      if ((TREE_CODE (orig) == ARRAY_REF
+	   || (TREE_CODE (orig) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (orig, 1))) == ARRAY_TYPE))
+	  && (TREE_CODE (t) == ARRAY_REF
+	      || (TREE_CODE (t) == COMPONENT_REF
+		  && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 1))) == ARRAY_TYPE))
+	  && !operand_equal_p (TREE_CODE (orig) == ARRAY_REF
+			       ? TREE_OPERAND (orig, 0) : orig,
+			       TREE_CODE (t) == ARRAY_REF
+			       ? TREE_OPERAND (t, 0) : t, 0))
+	return NULL_TREE;
+
+      ptr_type = build_pointer_type (TREE_TYPE (t));
+      if (!useless_type_conversion_p (orig_type, ptr_type))
+	return NULL_TREE;
+      return build_fold_addr_expr_with_type (t, ptr_type);
+    }
+
+  return NULL_TREE;
 }
 
 /* A subroutine of fold_stmt_r.  Attempt to simplify *(BASE+OFFSET).
@@ -2223,16 +2300,10 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 
       if (POINTER_TYPE_P (TREE_TYPE (expr))
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
-	  && (t = maybe_fold_offset_to_reference
-		      (TREE_OPERAND (expr, 0),
-		       integer_zero_node,
-		       TREE_TYPE (TREE_TYPE (expr)))))
-	{
-	  tree ptr_type = build_pointer_type (TREE_TYPE (t));
-	  if (!useless_type_conversion_p (TREE_TYPE (expr), ptr_type))
-	    return NULL_TREE;
-          t = build_fold_addr_expr_with_type (t, ptr_type);
-	}
+	  && (t = maybe_fold_offset_to_address (TREE_OPERAND (expr, 0),
+						integer_zero_node,
+						TREE_TYPE (TREE_TYPE (expr)))))
+	return t;
       break;
 
       /* ??? Could handle more ARRAY_REFs here, as a variant of INDIRECT_REF.
@@ -2715,15 +2786,10 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	       && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 	{
 	  tree type = gimple_expr_type (stmt);
-	  tree t = maybe_fold_offset_to_reference (gimple_assign_rhs1 (stmt),
-						   integer_zero_node,
-						   TREE_TYPE (type));
+	  tree t = maybe_fold_offset_to_address (gimple_assign_rhs1 (stmt),
+						 integer_zero_node, type);
 	  if (t)
-	    {
-	      tree ptr_type = build_pointer_type (TREE_TYPE (t));
-	      if (useless_type_conversion_p (type, ptr_type))
-		return build_fold_addr_expr_with_type (t, ptr_type);
-	    }
+	    return t;
 	}
       break;
 
