@@ -5,7 +5,9 @@
 
 extern int f2();
 
-double f1(double y, double z, double w)
+double m, n, o;
+
+void f1(double y, double z, double w)
 {
   double b, c, d, e, f;
 
@@ -18,7 +20,9 @@ double f1(double y, double z, double w)
   e = c / y;
   f = 1 / y;
 
-  return d + e + f;
+  m = d;
+  n = e;
+  o = f;
 }
 
 /* { dg-final { scan-tree-dump-times " / " 1 "recip" } } */

@@ -633,9 +633,9 @@ init_optimization_passes (void)
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
+      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_dce);
-      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_object_sizes);

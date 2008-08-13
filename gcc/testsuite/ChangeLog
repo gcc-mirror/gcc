@@ -1,3 +1,15 @@
+2008-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15255
+	* gcc.dg/tree-ssa/reassoc-14.c: New testcase.
+	* gcc.dg/tree-ssa/reassoc-15.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-16.c: Likewise.
+	* gcc.dg/torture/reassoc-1.c: Likewise.
+	* gcc.dg/tree-ssa/recip-2.c: Adjust.
+	* gcc.dg/tree-ssa/recip-6.c: Likewise.
+	* gcc.dg/tree-ssa/recip-7.c: Likewise.
+	* gfortran.dg/reassoc_4.f: Likewise.
+
 2008-08-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/i386/pr32000-2.c: Use dg-skip-if for target expression.
