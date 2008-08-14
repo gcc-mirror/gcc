@@ -1,3 +1,10 @@
+2008-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37103
+	* fold-const.c (fold_widened_comparison): Do not allow
+	sign changes that change the result even if shorter type
+	is wider than arg1_unw's type.
+
 2008-08-13  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/arm-g2.c, gcc.dg/arm-mmx-1.c, gcc.dg/arm-scd42-2.c:
