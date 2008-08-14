@@ -1,3 +1,9 @@
+2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34600
+	* decl.c (grokdeclarator): In case of extern and initializer, return
+	error_mark_node after the error.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 30551
