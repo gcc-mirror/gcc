@@ -1,3 +1,35 @@
+2008-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/36886
+	* Makefile.am:  Added $(i_cshift0_c).
+	Added $(i_cshift0_c) to gfor_built_specific_src.
+	Add rule to build from cshift0.m4.
+	* Makefile.in:  Regenerated.
+	* libgfortran.h:  Addedd prototypes for cshift0_i1,
+	cshift0_i2, cshift0_i4, cshift0_i8, cshift0_i16,
+	cshift0_r4, cshift0_r8, cshift0_r10, cshift0_r16,
+	cshift0_c4, cshift0_c8, cshift0_c10, cshift0_c16.
+	Define Macros GFC_UNALIGNED_C4 and GFC_UNALIGNED_C8.
+	* intrinsics/cshift0.c:  Remove helper functions for
+	the innter shift loop.
+	(cshift0):  Call specific functions depending on type
+	of array argument.  Only call specific functions for
+	correct alignment for other types.
+	* m4/cshift0.m4:  New file.
+	* generated/cshift0_i1.c:  New file.
+	* generated/cshift0_i2.c:  New file.
+	* generated/cshift0_i4.c:  New file.
+	* generated/cshift0_i8:.c  New file.
+	* generated/cshift0_i16.c:  New file.
+	* generated/cshift0_r4.c:  New file.
+	* generated/cshift0_r8.c:  New file.
+	* generated/cshift0_r10.c:  New file.
+	* generated/cshift0_r16.c:  New file.
+	* generated/cshift0_c4.c:  New file.
+	* generated/cshift0_c8.c:  New file.
+	* generated/cshift0_c10.c:  New file.
+	* generated/cshift0_c16.c:  New file.
+
 2008-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36132

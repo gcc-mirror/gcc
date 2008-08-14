@@ -437,6 +437,12 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 			     (__alignof__(GFC_INTEGER_16) - 1))
 #endif
 
+#define GFC_UNALIGNED_C4(x) (((uintptr_t)(x)) & \
+			     (__alignof__(GFC_COMPLEX_4) - 1))
+
+#define GFC_UNALIGNED_C8(x) (((uintptr_t)(x)) & \
+			     (__alignof__(GFC_COMPLEX_8) - 1))
+
 /* Runtime library include.  */
 #define stringize(x) expand_macro(x)
 #define expand_macro(x) # x
@@ -1209,5 +1215,56 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
 
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);
+
+/* Internal auxiliary functions for cshift */
+
+void cshift0_i1 (gfc_array_i1 *, const gfc_array_i1 *, ssize_t, int);
+internal_proto(cshift0_i1);
+
+void cshift0_i2 (gfc_array_i2 *, const gfc_array_i2 *, ssize_t, int);
+internal_proto(cshift0_i2);
+
+void cshift0_i4 (gfc_array_i4 *, const gfc_array_i4 *, ssize_t, int);
+internal_proto(cshift0_i4);
+
+void cshift0_i8 (gfc_array_i8 *, const gfc_array_i8 *, ssize_t, int);
+internal_proto(cshift0_i8);
+
+#ifdef HAVE_GFC_INTEGER_16
+void cshift0_i16 (gfc_array_i16 *, const gfc_array_i16 *, ssize_t, int);
+internal_proto(cshift0_i16);
+#endif
+
+void cshift0_r4 (gfc_array_r4 *, const gfc_array_r4 *, ssize_t, int);
+internal_proto(cshift0_r4);
+
+void cshift0_r8 (gfc_array_r8 *, const gfc_array_r8 *, ssize_t, int);
+internal_proto(cshift0_r8);
+
+#ifdef HAVE_GFC_REAL_10
+void cshift0_r10 (gfc_array_r10 *, const gfc_array_r10 *, ssize_t, int);
+internal_proto(cshift0_r10);
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+void cshift0_r16 (gfc_array_r16 *, const gfc_array_r16 *, ssize_t, int);
+internal_proto(cshift0_r16);
+#endif
+
+void cshift0_c4 (gfc_array_c4 *, const gfc_array_c4 *, ssize_t, int);
+internal_proto(cshift0_c4);
+
+void cshift0_c8 (gfc_array_c8 *, const gfc_array_c8 *, ssize_t, int);
+internal_proto(cshift0_c8);
+
+#ifdef HAVE_GFC_COMPLEX_10
+void cshift0_c10 (gfc_array_c10 *, const gfc_array_c10 *, ssize_t, int);
+internal_proto(cshift0_c10);
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_16
+void cshift0_c16 (gfc_array_c16 *, const gfc_array_c16 *, ssize_t, int);
+internal_proto(cshift0_c16);
+#endif
 
 #endif  /* LIBGFOR_H  */
