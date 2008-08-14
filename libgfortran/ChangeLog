@@ -1,3 +1,8 @@
+2008-08-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libfortran/37123
+	* intrinsics/cshift0.c (cshift0): Fix 2 typos.
+
 2008-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/36886
