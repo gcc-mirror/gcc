@@ -53,13 +53,13 @@ program prog
 
 contains
 
-  subroutine foo(a,c)
+  subroutine foo(a,c)  ! { dg-error "PROCEDURE attribute conflicts with INTENT attribute" }
     abstract interface
       subroutine b() bind(C)
       end subroutine b
     end interface
     procedure(b), bind(c,name="hjj") :: a  ! { dg-error "may not have BIND.C. attribute with NAME" }
-    procedure(c),intent(in):: c  ! { dg-error "PROCEDURE attribute conflicts with INTENT attribute" }
+    procedure(b),intent(in):: c
   end subroutine foo 
 
 end program

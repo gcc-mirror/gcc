@@ -7443,6 +7443,20 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
     }
   
+  if (sym->attr.save == SAVE_EXPLICIT && !sym->attr.proc_pointer)
+    {
+      gfc_error ("PROCEDURE attribute conflicts with SAVE attribute "
+		 "in '%s' at %L", sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  if (sym->attr.intent && !sym->attr.proc_pointer)
+    {
+      gfc_error ("PROCEDURE attribute conflicts with INTENT attribute "
+		 "in '%s' at %L", sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 

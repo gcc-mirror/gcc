@@ -1,3 +1,10 @@
+2008-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36705
+	* symbol.c (check_conflict): Move conflict checks for (procedure,save)
+	and (procedure,intent) to resolve_fl_procedure.
+	* resolve.c (resolve_fl_procedure): Ditto.
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 36901
