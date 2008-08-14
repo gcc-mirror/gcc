@@ -59,8 +59,8 @@ static tree vect_init_vector (gimple, tree, tree, gimple_stmt_iterator *);
 static void vect_finish_stmt_generation 
   (gimple stmt, gimple vec_stmt, gimple_stmt_iterator *);
 static bool vect_is_simple_cond (tree, loop_vec_info); 
-static void vect_create_epilog_for_reduction (tree, gimple, enum tree_code,
-					      gimple);
+static void vect_create_epilog_for_reduction 
+  (tree, gimple, int, enum tree_code, gimple);
 static tree get_initial_def_for_reduction (gimple, tree, tree *);
 
 /* Utility function dealing with loop peeling (not peeling itself).  */
@@ -1824,7 +1824,7 @@ get_initial_def_for_induction (gimple iv_phi)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
-      fprintf (vect_dump, "transform induction: created def-use cycle:");
+      fprintf (vect_dump, "transform induction: created def-use cycle: ");
       print_gimple_stmt (vect_dump, induction_phi, 0, TDF_SLIM);
       fprintf (vect_dump, "\n");
       print_gimple_stmt (vect_dump, SSA_NAME_DEF_STMT (vec_def), 0, TDF_SLIM);
@@ -2056,6 +2056,10 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
   vec_stmt_for_operand = STMT_VINFO_RELATED_STMT (def_stmt_info);
   gcc_assert (vec_stmt_for_operand);
   vec_oprnd = gimple_get_lhs (vec_stmt_for_operand);
+  if (gimple_code (vec_stmt_for_operand) == GIMPLE_PHI)
+    vec_oprnd = PHI_RESULT (vec_stmt_for_operand);
+  else
+    vec_oprnd = gimple_get_lhs (vec_stmt_for_operand);
   return vec_oprnd;
 }
 
@@ -2251,6 +2255,11 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   
    VECT_DEF is a vector of partial results. 
    REDUC_CODE is the tree-code for the epilog reduction.
+   NCOPIES is > 1 in case the vectorization factor (VF) is bigger than the
+     number of elements that we can fit in a vectype (nunits). In this case
+     we have to generate more than one vector stmt - i.e - we need to "unroll"
+     the vector stmt by a factor VF/nunits.  For more details see documentation
+     in vectorizable_operation.
    STMT is the scalar reduction stmt that is being vectorized.
    REDUCTION_PHI is the phi-node that carries the reduction computation.
 
@@ -2294,10 +2303,12 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
 
 static void
 vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
+				  int ncopies,
 				  enum tree_code reduc_code,
 				  gimple reduction_phi)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  stmt_vec_info prev_phi_info;
   tree vectype;
   enum machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -2305,7 +2316,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   basic_block exit_bb;
   tree scalar_dest;
   tree scalar_type;
-  gimple new_phi;
+  gimple new_phi = NULL, phi;
   gimple_stmt_iterator exit_gsi;
   tree vec_dest;
   tree new_temp = NULL_TREE;
@@ -2316,7 +2327,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   tree bitsize, bitpos, bytesize; 
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree adjustment_def;
-  tree vec_initial_def;
+  tree vec_initial_def, def;
   tree orig_name;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2326,7 +2337,8 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   gimple use_stmt;
   bool nested_in_vect_loop = false;
   VEC(gimple,heap) *phis = NULL;
-  int i;
+  enum vect_def_type dt = vect_unknown_def_type;
+  int j, i;
   
   if (nested_in_vect_loop_p (loop, stmt))
     {
@@ -2356,25 +2368,34 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 
   /*** 1. Create the reduction def-use cycle  ***/
   
-  /* 1.1 set the loop-entry arg of the reduction-phi:  */
   /* For the case of reduction, vect_get_vec_def_for_operand returns
      the scalar def before the loop, that defines the initial value
      of the reduction variable.  */
   vec_initial_def = vect_get_vec_def_for_operand (reduction_op, stmt,
 						  &adjustment_def);
-  add_phi_arg (reduction_phi, vec_initial_def, loop_preheader_edge (loop));
 
-  /* 1.2 set the loop-latch arg for the reduction-phi:  */
-  add_phi_arg (reduction_phi, vect_def, loop_latch_edge (loop));
-
-  if (vect_print_dump_info (REPORT_DETAILS))
+  phi = reduction_phi;
+  def = vect_def;
+  for (j = 0; j < ncopies; j++)
     {
-      fprintf (vect_dump, "transform reduction: created def-use cycle:");
-      print_gimple_stmt (vect_dump, reduction_phi, 0, TDF_SLIM);
-      fprintf (vect_dump, "\n");
-      print_gimple_stmt (vect_dump, SSA_NAME_DEF_STMT (vect_def), 0, TDF_SLIM);
-    }
+      /* 1.1 set the loop-entry arg of the reduction-phi:  */
+      add_phi_arg (phi, vec_initial_def, loop_preheader_edge (loop));
 
+      /* 1.2 set the loop-latch arg for the reduction-phi:  */
+      if (j > 0)
+        def = vect_get_vec_def_for_stmt_copy (dt, def);
+      add_phi_arg (phi, def, loop_latch_edge (loop));
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+	{
+	  fprintf (vect_dump, "transform reduction: created def-use cycle: ");
+	  print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
+	  fprintf (vect_dump, "\n");
+	  print_gimple_stmt (vect_dump, SSA_NAME_DEF_STMT (def), 0, TDF_SLIM);
+	}
+
+      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
+    }
 
   /*** 2. Create epilog code
 	  The reduction epilog code operates across the elements of the vector
@@ -2398,7 +2419,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
           s_out3 = extract_field <v_out2, 0>    # step 2
           s_out4 = adjust_result <s_out3>       # step 3
 
-          (step 3 is optional, and step2 1 and 2 may be combined).
+          (step 3 is optional, and steps 1 and 2 may be combined).
           Lastly, the uses of s_out0 are replaced by s_out4.
 
 	  ***/
@@ -2407,8 +2428,22 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
         v_out1 = phi <v_loop>  */
 
   exit_bb = single_exit (loop)->dest;
-  new_phi = create_phi_node (SSA_NAME_VAR (vect_def), exit_bb);
-  SET_PHI_ARG_DEF (new_phi, single_exit (loop)->dest_idx, vect_def);
+  def = vect_def;
+  prev_phi_info = NULL;
+  for (j = 0; j < ncopies; j++)
+    {
+      phi = create_phi_node (SSA_NAME_VAR (vect_def), exit_bb);
+      set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo));
+      if (j == 0)
+	new_phi = phi;
+      else
+	{
+	  def = vect_get_vec_def_for_stmt_copy (dt, def);
+	  STMT_VINFO_RELATED_STMT (prev_phi_info) = phi;
+	}
+      SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
+      prev_phi_info = vinfo_for_stmt (phi);
+    }
   exit_gsi = gsi_after_labels (exit_bb);
 
   /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3 
@@ -2448,6 +2483,9 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
      outer-loop.  */
   if (nested_in_vect_loop)
     goto vect_finalize_reduction;
+
+  /* FORNOW */
+  gcc_assert (ncopies = 1);
 
   /* 2.3 Create the reduction code, using one of the three schemes described
          above.  */
@@ -2664,15 +2702,19 @@ vect_finalize_reduction:
 	{
 	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
 
-	  /* FORNOW. Currently not supporting the case that an inner-loop reduction
-	     is not used in the outer-loop (but only outside the outer-loop).  */
+	  /* FORNOW. Currently not supporting the case that an inner-loop
+	     reduction is not used in the outer-loop (but only outside the
+	     outer-loop).  */
 	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo) 
 		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
 
-	  epilog_stmt = adjustment_def ? epilog_stmt :  new_phi;
+	  epilog_stmt = adjustment_def ? epilog_stmt : new_phi;
 	  STMT_VINFO_VEC_STMT (stmt_vinfo) = epilog_stmt;
-	  set_vinfo_for_stmt (epilog_stmt,
+	  set_vinfo_for_stmt (epilog_stmt, 
 			      new_stmt_vec_info (epilog_stmt, loop_vinfo));
+	  if (adjustment_def)
+	    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (epilog_stmt)) =
+		STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
 	  continue;
 	}
 
@@ -2745,7 +2787,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   tree def;
   gimple def_stmt;
   enum vect_def_type dt;
-  gimple new_phi;
+  gimple new_phi = NULL;
   tree scalar_type;
   bool is_simple_use;
   gimple orig_stmt;
@@ -2754,23 +2796,17 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   int i;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
-  stmt_vec_info prev_stmt_info;
+  int epilog_copies;
+  stmt_vec_info prev_stmt_info, prev_phi_info;
+  gimple first_phi = NULL;
+  bool single_defuse_cycle = false;
   tree reduc_def;
   gimple new_stmt = NULL;
   int j;
   tree ops[3];
 
   if (nested_in_vect_loop_p (loop, stmt))
-    {
-      loop = loop->inner;
-      /* FORNOW. This restriction should be relaxed.  */
-      if (ncopies > 1)
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "multiple types in nested loop.");
-	  return false;
-	}
-    }
+    loop = loop->inner;
 
   gcc_assert (ncopies >= 1);
 
@@ -3004,18 +3040,52 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   /* Create the destination vector  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-  /* Create the reduction-phi that defines the reduction-operand.  */
-  new_phi = create_phi_node (vec_dest, loop->header);
-
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
      more than one vector stmt - i.e - we need to "unroll" the
      vector stmt by a factor VF/nunits.  For more details see documentation
      in vectorizable_operation.  */
 
+  /* If the reduction is used in an outer loop we need to generate
+     VF intermediate results, like so (e.g. for ncopies=2):
+	r0 = phi (init, r0)
+	r1 = phi (init, r1)
+	r0 = x0 + r0;
+        r1 = x1 + r1;
+    (i.e. we generate VF results in 2 registers).
+    In this case we have a separate def-use cycle for each copy, and therefore
+    for each copy we get the vector def for the reduction variable from the
+    respective phi node created for this copy.
+
+    Otherwise (the reduction is unused in the loop nest), we can combine
+    together intermediate results, like so (e.g. for ncopies=2):
+	r = phi (init, r)
+	r = x0 + r;
+	r = x1 + r;
+   (i.e. we generate VF/2 results in a single register).
+   In this case for each copy we get the vector def for the reduction variable
+   from the vectorized reduction operation generated in the previous iteration.
+  */
+
+  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_loop)
+    {
+      single_defuse_cycle = true;
+      epilog_copies = 1;
+    }
+  else
+    epilog_copies = ncopies;
+
   prev_stmt_info = NULL;
+  prev_phi_info = NULL;
   for (j = 0; j < ncopies; j++)
     {
+      if (j == 0 || !single_defuse_cycle)
+	{
+	  /* Create the reduction-phi that defines the reduction-operand.  */
+	  new_phi = create_phi_node (vec_dest, loop->header);
+	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo));
+	}
+
       /* Handle uses.  */
       if (j == 0)
         {
@@ -3027,6 +3097,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
           /* Get the vector def for the reduction variable from the phi node */
           reduc_def = PHI_RESULT (new_phi);
+	  first_phi = new_phi;
         }
       else
         {
@@ -3035,9 +3106,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           if (op_type == ternary_op)
             loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt, loop_vec_def1);
 
-          /* Get the vector def for the reduction variable from the vectorized
-             reduction operation generated in the previous iteration (j-1)  */
-	  reduc_def = gimple_assign_lhs (new_stmt);
+	  if (single_defuse_cycle)
+	    reduc_def = gimple_assign_lhs (new_stmt);
+	  else
+	    reduc_def = PHI_RESULT (new_phi);
+
+	  STMT_VINFO_RELATED_STMT (prev_phi_info) = new_phi;
         }
 
       /* Arguments are ready. create the new vector stmt.  */
@@ -3056,11 +3130,15 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
       prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_phi_info = vinfo_for_stmt (new_phi);
     }
 
   /* Finalize the reduction-phi (set it's arguments) and create the
      epilog reduction code.  */
-  vect_create_epilog_for_reduction (new_temp, stmt, epilog_reduc_code, new_phi);
+  if (!single_defuse_cycle)
+    new_temp = gimple_assign_lhs (*vec_stmt);
+  vect_create_epilog_for_reduction (new_temp, stmt, epilog_copies,
+				    epilog_reduc_code, first_phi);
   return true;
 }
 
@@ -3108,7 +3186,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   int nunits_in;
   int nunits_out;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree fndecl, new_temp, def, rhs_type, lhs_type;
   gimple def_stmt;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
@@ -3212,14 +3289,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-      fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
-
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
@@ -3233,14 +3302,6 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform operation.");
-
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
 
   /* Handle def.  */
   scalar_dest = gimple_call_lhs (stmt);
@@ -3436,7 +3497,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
   tree decl1 = NULL_TREE, decl2 = NULL_TREE;
   tree new_temp;
@@ -3526,14 +3586,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   /* Sanity check: make sure that at least one copy of the vectorized stmt
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
-
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-      fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
 
   /* Check the operands of the operation.  */
   if (!vect_is_simple_use (op0, loop_vinfo, &def_stmt, &def, &dt[0]))
@@ -3847,11 +3899,19 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
   tree vec_def;
 
   gcc_assert (ncopies >= 1);
+  /* FORNOW. This restriction should be relaxed.  */
+  if (nested_in_vect_loop_p (loop, phi) && ncopies > 1)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "multiple types in nested loop.");
+      return false;
+    }
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -3903,7 +3963,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code;
   enum machine_mode vec_mode;
   tree new_temp;
@@ -3932,13 +3991,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (slp_node)
     ncopies = 1;
   gcc_assert (ncopies >= 1);
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -4257,7 +4309,6 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   tree vec_oprnd0=NULL, vec_oprnd1=NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, code1 = ERROR_MARK;
   tree new_temp;
   tree def;
@@ -4310,13 +4361,6 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
   gcc_assert (ncopies >= 1);
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
 
   if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
@@ -4458,7 +4502,6 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   tree vec_oprnd0=NULL, vec_oprnd1=NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
   tree decl1 = NULL_TREE, decl2 = NULL_TREE;
   int op_type; 
@@ -4511,13 +4554,6 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
   gcc_assert (ncopies >= 1);
-  /* FORNOW. This restriction should be relaxed.  */
-  if (nested_in_vect_loop_p (loop, stmt) && ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "multiple types in nested loop.");
-      return false;
-    }
 
   if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))

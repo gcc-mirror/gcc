@@ -1,3 +1,22 @@
+2008-08-14  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Takes an
+	additional argument. Support reduction when duplication is needed due
+	to data-types of different sizes in the loop.
+	(get_initial_def_for_induction): Fix printout.
+	(vect_get_vec_def_for_stmt_copy): Support case where the
+	vec_stmt_for_operand is a phi node.
+	(vectorizable_reduction): Support reduction when duplication is needed 
+	due to data-types of different sizes in the loop.
+	(vectorizable_call): Remove restriction to not vectorize in case we 
+	have data-types of different sizes in the loop.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_induction): Add restriction to not vectorize in case 
+	we have data-types of different sizes in the loop.
+
 2008-08-14  Christophe Saout  <christophe@saout.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

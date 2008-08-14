@@ -1,12 +1,11 @@
 /* { dg-do compile } */
 
-#define N 40
+#define N 96
 #define M 128
 unsigned char in[N+M];
 unsigned short out[N];
 
 /* Outer-loop vectorization. */
-/* Not vectorized due to multiple-types in the inner-loop.  */
 
 void
 foo (){
@@ -22,5 +21,5 @@ foo (){
   }
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { target vect_unpack } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
