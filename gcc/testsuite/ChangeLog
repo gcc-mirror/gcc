@@ -1,3 +1,8 @@
+2008-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37103
+	* gcc.c-torture/execute/20080813-1.c: New test.
+
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37014
