@@ -4952,26 +4952,25 @@
    (set_attr "mode" "TI,V4SF,V2SF")])
 
 (define_insn "vec_concatv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,?Y2,Y2,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,?Y2,Y2,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " mY2,*y ,0 ,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  " C  ,  C,Y2,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " mY2,*y ,0 ,0,0")
+	  (match_operand:DI 2 "vector_move_operand"  " C  ,  C,Y2,x,m")))]
   "!TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}
-   movlps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov,ssemov,sselog,ssemov,ssemov,ssemov")
-   (set_attr "mode" "TI,TI,TI,V4SF,V2SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssemov,ssemov,sselog,ssemov,ssemov")
+   (set_attr "mode" "TI,TI,TI,V4SF,V2SF")])
 
 (define_insn "*vec_concatv2di_rex64_sse4_1"
-  [(set (match_operand:V2DI 0 "register_operand"     "=x ,x ,Yi,!x,x,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=x ,x ,Yi,!x,x,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " 0 ,mx,r ,*y,0,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  " rm,C ,C ,C ,x,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " 0 ,mx,r ,*y,0,0,0")
+	  (match_operand:DI 2 "vector_move_operand"  " rm,C ,C ,C ,x,x,m")))]
   "TARGET_64BIT && TARGET_SSE4_1"
   "@
    pinsrq\t{$0x1, %2, %0|%0, %2, 0x1}
@@ -4980,17 +4979,16 @@
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}
-   movlps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sselog,ssemov,ssemov,ssemov,sselog,ssemov,ssemov,ssemov")
-   (set_attr "prefix_extra" "1,*,*,*,*,*,*,*")
-   (set_attr "mode" "TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog,ssemov,ssemov,ssemov,sselog,ssemov,ssemov")
+   (set_attr "prefix_extra" "1,*,*,*,*,*,*")
+   (set_attr "mode" "TI,TI,TI,TI,TI,V4SF,V2SF")])
 
 (define_insn "*vec_concatv2di_rex64_sse"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,Yi,!Y2,Y2,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,Yi,!Y2,Y2,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " mY2,r ,*y ,0 ,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  " C  ,C ,C  ,Y2,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " mY2,r ,*y ,0 ,0,0")
+	  (match_operand:DI 2 "vector_move_operand"  " C  ,C ,C  ,Y2,x,m")))]
   "TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
@@ -4998,10 +4996,9 @@
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}
-   movlps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,ssemov,ssemov")
-   (set_attr "mode" "TI,TI,TI,TI,V4SF,V2SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,ssemov")
+   (set_attr "mode" "TI,TI,TI,TI,V4SF,V2SF")])
 
 (define_expand "vec_unpacku_hi_v16qi"
   [(match_operand:V8HI 0 "register_operand" "")

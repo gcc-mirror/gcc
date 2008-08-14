@@ -1,3 +1,11 @@
+2008-08-14  Christophe Saout  <christophe@saout.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37101
+	* config/i386/sse.md (vec_concatv2di): Remove movlps alternative.
+	(*vec_concatv2di_rex64_sse4_1): Ditto.
+	(*vec_concatv2di_rex64_sse): Ditto.
+
 2008-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37103
@@ -139,7 +147,6 @@
 2008-08-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR libgomp/26165
-
 	* gcc.c (include_spec_function): Tweak call to find_a_file.
 
 2008-08-12  Jakub Jelinek  <jakub@redhat.com>
@@ -155,7 +162,7 @@
 
 2008-08-12  Anatoly Sokolov  <aesok@post.ru>
 
-        * final.c (final_scan_insn): Use app_enable/app_disable functions.
+	* final.c (final_scan_insn): Use app_enable/app_disable functions.
 
 2008-08-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -685,8 +692,8 @@
 
 2008-08-07  Bob Wilson  <bob.wilson@acm.org>
 	
-	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Copy incoming value
-	in a6 after the set_frame_ptr insn.
+	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Copy incoming
+	value in a6 after the set_frame_ptr insn.
 	
 2008-08-07  Richard Henderson  <rth@redhat.com>
 
@@ -774,7 +781,7 @@
 	* matrix-reorg.c (compute_offset): Avoid C++ keywords.
 
 2008-08-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-       
+
 	PR 26785
 	* diagnostic.c (permerror_at): New.
 	* toplev.h (permerror_at): Declare.
