@@ -9270,7 +9270,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      warning (0, "%qs initialized and declared %<extern%>", name);
 	  }
 	else
-	  error ("%qs has both %<extern%> and initializer", name);
+	  {
+	    error ("%qs has both %<extern%> and initializer", name);
+	    return error_mark_node;
+	  }
       }
 
     /* Record `register' declaration for warnings on &
