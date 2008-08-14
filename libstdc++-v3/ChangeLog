@@ -1,5 +1,10 @@
 2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Re-instate last patch, amended to use __exchange_and_add_dispatch
+	and __atomic_add_dispatch in eh_ptr.cc and eh_throw.cc. 
+
+2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	Revert the last patch.
 
 2008-08-13  Sebastian Redl <sebastian.redl@getdesigned.at>
