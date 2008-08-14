@@ -1,3 +1,11 @@
+2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/incoming-1.c: Skip *-*-darwin*.
+	* gcc.target/i386/incoming-2.c: Likewise.
+	* gcc.target/i386/incoming-3.c: Likewise.
+	* gcc.target/i386/incoming-4.c: Likewise.
+	* gcc.target/i386/incoming-5.c: Likewise.
+
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 30551
