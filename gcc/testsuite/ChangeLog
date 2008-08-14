@@ -1,3 +1,9 @@
+2008-08-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+        PR c/28152
+	* gcc.dg/parser-pr28152.c: New.
+	* gcc.dg/parser-pr28152-2.c: New.
+
 2008-08-14  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-outer-4g.c: Change loop bound.

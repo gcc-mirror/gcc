@@ -241,8 +241,6 @@ c_lex_one_token (c_parser *parser, c_token *token)
 	      }
 	    else
 	      {
-		/* Return the canonical spelling for this keyword.  */
-		token->value = ridpointers[(int) rid_code];
 		token->type = CPP_KEYWORD;
 		token->keyword = rid_code;
 		break;
