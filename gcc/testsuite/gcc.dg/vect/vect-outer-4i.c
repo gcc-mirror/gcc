@@ -1,13 +1,17 @@
-/* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 
-#define N 40
+#include <stdarg.h>
+#include "tree-vect.h"
+
+#define N 96
 #define M 128
 unsigned char in[N+M];
 unsigned short out[N];
 
 /* Outer-loop vectorization. */
-/* Not vectorized due to multiple-types in the inner-loop.  */
+/* Multiple-types in the inner-loop.  */
 
+__attribute__ ((noinline))
 unsigned short
 foo (){
   int i,j;
@@ -24,5 +28,22 @@ foo (){
   return s;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
+int main (void)
+{
+  check_vect ();
+  int i;
+  unsigned short s;
+
+  for (i = 0; i < N+M; i++)
+    in[i] = (unsigned char)i;
+
+  s = foo ();
+
+  if (s != 34048)
+    abort ();
+
+  return 0;
+}
+
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { target vect_unpack } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
