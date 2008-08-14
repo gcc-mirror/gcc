@@ -1,3 +1,12 @@
+2008-08-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.dg/visibility-14.c: New test.
+	* gcc.dg/visibility-15.c: New test.
+	* gcc.dg/visibility-16.c: New test.
+	* gcc.dg/visibility-17.c: New test.
+	* gcc.dg/visibility-18.c: New test.
+	* gcc.dg/visibility-19.c: New test.
+
 2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/34600

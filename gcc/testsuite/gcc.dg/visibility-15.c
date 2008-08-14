@@ -1,0 +1,11 @@
+/* Test that accessed external functions are marked. */
+/* { dg-do compile } */
+/* { dg-require-visibility "" } */
+/* { dg-final { scan-hidden "foo" } } */
+
+extern void foo(void) __attribute__ ((visibility ("hidden")));
+typedef void (*foo_t)(void);
+
+foo_t g(void) {
+  return foo;
+}
