@@ -1,3 +1,8 @@
+2008-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37101
+	* gcc.target/i386/pr37101.c: New test.
+
 2008-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37103
@@ -126,7 +131,7 @@
 	loop.
 	Should be vectorizable on targets that support vector unpack.
 	* gcc.dg/vect/vect-widen-mult-u8.c,
-	gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c,.
+	gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c,
 	gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
 	* gcc.dg/vect/vect-35.c: Should be vectorizable on targets that
 	support vector pack. Avoid vectorization of the init loop.
