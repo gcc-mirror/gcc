@@ -12,7 +12,7 @@ module cyclic
       character(len(y)-1) ouch
       integer i
       do i = 1, len(ouch)
-        ouch(i:i) = achar(ieor(iachar(x(i:i)),iachar(y(i:i)))) ! { dg-error " PROCEDURE attribute conflicts" }
+        ouch(i:i) = achar(ieor(iachar(x(i:i)),iachar(y(i:i)))) ! { dg-error "Syntax error in argument list" }
       end do
       end function ouch
 end module cyclic

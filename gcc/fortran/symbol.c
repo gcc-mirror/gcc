@@ -417,12 +417,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    goto conflict;
 
 	  case FL_PROCEDURE:
-	    if (attr->proc_pointer)
-	      break;
-	    a1 = gfc_code2string (flavors, attr->flavor);
-	    a2 = save;
-	    goto conflict;
-
+	    /* Conflicts between SAVE and PROCEDURE will be checked at
+	       resolution stage, see "resolve_fl_procedure".  */
 	  case FL_VARIABLE:
 	  case FL_NAMELIST:
 	  default:
@@ -618,8 +614,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       break;
 
     case FL_PROCEDURE:
-      if (!attr->proc_pointer)
-        conf2 (intent);
+      /* Conflicts with INTENT will be checked at resolution stage,
+	 see "resolve_fl_procedure".  */
 
       if (attr->subroutine)
 	{
