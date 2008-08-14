@@ -91,7 +91,7 @@ public:
 template <typename T14, template <typename T15> class C12>// { dg-error "" } .*
 class Xeighteen {
 protected:
-  C12<T14> value; // { dg-error "" }
+  C12<T14> value;
   int C12; // { dg-error "" } .*
 };
 

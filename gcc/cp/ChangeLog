@@ -1,5 +1,13 @@
 2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/34485
+	* pt.c (check_template_shadow): Change to return a bool.
+	* name-lookup.c (push_class_level_binding): Early return if
+	check_template_shadow returns false.
+	* cp-tree.h (check_template_shadow): Adjust declaration.
+
+2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/34600
 	* decl.c (grokdeclarator): In case of extern and initializer, return
 	error_mark_node after the error.

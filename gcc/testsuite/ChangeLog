@@ -1,3 +1,11 @@
+2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34485
+	* g++.dg/template/crash81.C: New.
+	* g++.old-deja/g++.benjamin/tem03.C: Adjust.
+	* g++.old-deja/g++.benjamin/tem04.C: Likewise.
+	* g++.old-deja/g++.brendan/crash7.C: Likewise.
+
 2008-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/36886
