@@ -120,7 +120,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 #ifdef HAVE_GFC_INTEGER_16
     case GFC_DTYPE_LOGICAL_16:
     case GFC_DTYPE_INTEGER_16:
-      cshift0_i16 ((gfc_array_i8 *)ret, (gfc_array_i16 *) array, shift,
+      cshift0_i16 ((gfc_array_i16 *)ret, (gfc_array_i16 *) array, shift,
 		   which);
       return;
 #endif
@@ -233,7 +233,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	  /* Let's try to use the complex routines.  First, a sanity
 	     check that the sizes match; this should be optimized to
 	     a no-op.  */
-	  if (sizeof(GFC_INTGER_16) != sizeof(GFC_COMPLEX_8))
+	  if (sizeof(GFC_INTEGER_16) != sizeof(GFC_COMPLEX_8))
 	    break;
 
 	  if (GFC_UNALIGNED_C8(ret->data) || GFC_UNALIGNED_C8(array->data))
