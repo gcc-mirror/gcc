@@ -2809,12 +2809,15 @@ expand_template_argument_pack (tree args)
   return result_args;
 }
 
-/* Complain if DECL shadows a template parameter.
+/* Checks if DECL shadows a template parameter.
 
    [temp.local]: A template-parameter shall not be redeclared within its
-   scope (including nested scopes).  */
+   scope (including nested scopes).
 
-void
+   Emits an error and returns TRUE if the DECL shadows a parameter,
+   returns FALSE otherwise.  */
+
+bool
 check_template_shadow (tree decl)
 {
   tree olddecl;
@@ -2822,7 +2825,7 @@ check_template_shadow (tree decl)
   /* If we're not in a template, we can't possibly shadow a template
      parameter.  */
   if (!current_template_parms)
-    return;
+    return true;
 
   /* Figure out what we're shadowing.  */
   if (TREE_CODE (decl) == OVERLOAD)
@@ -2832,24 +2835,25 @@ check_template_shadow (tree decl)
   /* If there's no previous binding for this name, we're not shadowing
      anything, let alone a template parameter.  */
   if (!olddecl)
-    return;
+    return true;
 
   /* If we're not shadowing a template parameter, we're done.  Note
      that OLDDECL might be an OVERLOAD (or perhaps even an
      ERROR_MARK), so we can't just blithely assume it to be a _DECL
      node.  */
   if (!DECL_P (olddecl) || !DECL_TEMPLATE_PARM_P (olddecl))
-    return;
+    return true;
 
   /* We check for decl != olddecl to avoid bogus errors for using a
      name inside a class.  We check TPFI to avoid duplicate errors for
      inline member templates.  */
   if (decl == olddecl
       || TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
-    return;
+    return true;
 
   error ("declaration of %q+#D", decl);
   error (" shadows template parm %q+#D", olddecl);
+  return false;
 }
 
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,

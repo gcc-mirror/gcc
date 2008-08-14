@@ -44,5 +44,5 @@ void Sort<Comp>::sort (Vector<Comp::T> &v)// { dg-error "" } use of bad T
 void
 f (Vector<int> &vi)
 {
-  Sort<Comparator<int> >::sort (vi);
+  Sort<Comparator<int> >::sort (vi); // { dg-error "error: 'sort' is not a member of 'Sort<Comparator<int> >'" }
 }
