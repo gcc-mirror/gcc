@@ -1,3 +1,9 @@
+2008-08-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+        PR c/28152
+	* c-parser.c (c_lex_one_token): Do not store the canonical spelling
+	for keywords.
+	
 2008-08-14  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vect_create_epilog_for_reduction): Takes an
