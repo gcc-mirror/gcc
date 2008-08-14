@@ -397,7 +397,20 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	$(srcdir)/generated/spread_c8.c \
 	$(srcdir)/generated/spread_c10.c \
 	$(srcdir)/generated/spread_c16.c selected_int_kind.inc \
-	selected_real_kind.inc kinds.h kinds.inc c99_protos.inc \
+	selected_real_kind.inc kinds.h \
+	$(srcdir)/generated/cshift0_i1.c \
+	$(srcdir)/generated/cshift0_i2.c \
+	$(srcdir)/generated/cshift0_i4.c \
+	$(srcdir)/generated/cshift0_i8.c \
+	$(srcdir)/generated/cshift0_i16.c \
+	$(srcdir)/generated/cshift0_r4.c \
+	$(srcdir)/generated/cshift0_r8.c \
+	$(srcdir)/generated/cshift0_r10.c \
+	$(srcdir)/generated/cshift0_r16.c \
+	$(srcdir)/generated/cshift0_c4.c \
+	$(srcdir)/generated/cshift0_c8.c \
+	$(srcdir)/generated/cshift0_c10.c \
+	$(srcdir)/generated/cshift0_c16.c kinds.inc c99_protos.inc \
 	fpu-target.h io/close.c io/file_pos.c io/format.c io/inquire.c \
 	io/intrinsics.c io/list_read.c io/lock.c io/open.c io/read.c \
 	io/size_from_kind.c io/transfer.c io/unit.c io/unix.c \
@@ -679,7 +692,11 @@ am__objects_32 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
 	spread_i16.lo spread_r4.lo spread_r8.lo spread_r10.lo \
 	spread_r16.lo spread_c4.lo spread_c8.lo spread_c10.lo \
 	spread_c16.lo
-am__objects_33 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
+am__objects_33 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
+	cshift0_i8.lo cshift0_i16.lo cshift0_r4.lo cshift0_r8.lo \
+	cshift0_r10.lo cshift0_r16.lo cshift0_c4.lo cshift0_c8.lo \
+	cshift0_c10.lo cshift0_c16.lo
+am__objects_34 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
@@ -689,11 +706,11 @@ am__objects_33 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
 	$(am__objects_29) $(am__objects_30) $(am__objects_31) \
-	$(am__objects_32)
-am__objects_34 = close.lo file_pos.lo format.lo inquire.lo \
+	$(am__objects_32) $(am__objects_33)
+am__objects_35 = close.lo file_pos.lo format.lo inquire.lo \
 	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
 	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo fbuf.lo
-am__objects_35 = associated.lo abort.lo access.lo args.lo \
+am__objects_36 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo dtime.lo env.lo \
 	eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
@@ -707,8 +724,8 @@ am__objects_35 = associated.lo abort.lo access.lo args.lo \
 	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
 	umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
-am__objects_36 =
-am__objects_37 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_37 =
+am__objects_38 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -732,18 +749,18 @@ am__objects_37 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_38 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_39 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_39 = misc_specifics.lo
-am__objects_40 = $(am__objects_37) $(am__objects_38) $(am__objects_39) \
+am__objects_40 = misc_specifics.lo
+am__objects_41 = $(am__objects_38) $(am__objects_39) $(am__objects_40) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_41 = $(am__objects_1) $(am__objects_33) $(am__objects_34) \
-	$(am__objects_35) $(am__objects_36) $(am__objects_40)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_41)
+am__objects_42 = $(am__objects_1) $(am__objects_34) $(am__objects_35) \
+	$(am__objects_36) $(am__objects_37) $(am__objects_41)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_42)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
@@ -1279,6 +1296,21 @@ $(srcdir)/generated/eoshift3_4.c \
 $(srcdir)/generated/eoshift3_8.c \
 $(srcdir)/generated/eoshift3_16.c
 
+i_cshift0_c = \
+$(srcdir)/generated/cshift0_i1.c \
+$(srcdir)/generated/cshift0_i2.c \
+$(srcdir)/generated/cshift0_i4.c \
+$(srcdir)/generated/cshift0_i8.c \
+$(srcdir)/generated/cshift0_i16.c \
+$(srcdir)/generated/cshift0_r4.c \
+$(srcdir)/generated/cshift0_r8.c \
+$(srcdir)/generated/cshift0_r10.c \
+$(srcdir)/generated/cshift0_r16.c \
+$(srcdir)/generated/cshift0_c4.c \
+$(srcdir)/generated/cshift0_c8.c \
+$(srcdir)/generated/cshift0_c10.c \
+$(srcdir)/generated/cshift0_c16.c
+
 i_cshift1_c = \
 $(srcdir)/generated/cshift1_4.c \
 $(srcdir)/generated/cshift1_8.c \
@@ -1445,7 +1477,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) $(i_pack_c) $(i_unpack_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    kinds.inc c99_protos.inc fpu-target.h
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h
 
 
 # Machine generated specifics
@@ -1771,6 +1803,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu_time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_c10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_c16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_c4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_c8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8.Plo@am__quote@
@@ -5038,6 +5083,97 @@ spread_c16.lo: $(srcdir)/generated/spread_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spread_c16.lo `test -f '$(srcdir)/generated/spread_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/spread_c16.c
 
+cshift0_i1.lo: $(srcdir)/generated/cshift0_i1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_i1.lo -MD -MP -MF "$(DEPDIR)/cshift0_i1.Tpo" -c -o cshift0_i1.lo `test -f '$(srcdir)/generated/cshift0_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_i1.Tpo" "$(DEPDIR)/cshift0_i1.Plo"; else rm -f "$(DEPDIR)/cshift0_i1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_i1.c' object='cshift0_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_i1.lo `test -f '$(srcdir)/generated/cshift0_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i1.c
+
+cshift0_i2.lo: $(srcdir)/generated/cshift0_i2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_i2.lo -MD -MP -MF "$(DEPDIR)/cshift0_i2.Tpo" -c -o cshift0_i2.lo `test -f '$(srcdir)/generated/cshift0_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_i2.Tpo" "$(DEPDIR)/cshift0_i2.Plo"; else rm -f "$(DEPDIR)/cshift0_i2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_i2.c' object='cshift0_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_i2.lo `test -f '$(srcdir)/generated/cshift0_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i2.c
+
+cshift0_i4.lo: $(srcdir)/generated/cshift0_i4.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_i4.lo -MD -MP -MF "$(DEPDIR)/cshift0_i4.Tpo" -c -o cshift0_i4.lo `test -f '$(srcdir)/generated/cshift0_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i4.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_i4.Tpo" "$(DEPDIR)/cshift0_i4.Plo"; else rm -f "$(DEPDIR)/cshift0_i4.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_i4.c' object='cshift0_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_i4.lo `test -f '$(srcdir)/generated/cshift0_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i4.c
+
+cshift0_i8.lo: $(srcdir)/generated/cshift0_i8.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_i8.lo -MD -MP -MF "$(DEPDIR)/cshift0_i8.Tpo" -c -o cshift0_i8.lo `test -f '$(srcdir)/generated/cshift0_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i8.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_i8.Tpo" "$(DEPDIR)/cshift0_i8.Plo"; else rm -f "$(DEPDIR)/cshift0_i8.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_i8.c' object='cshift0_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_i8.lo `test -f '$(srcdir)/generated/cshift0_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i8.c
+
+cshift0_i16.lo: $(srcdir)/generated/cshift0_i16.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_i16.lo -MD -MP -MF "$(DEPDIR)/cshift0_i16.Tpo" -c -o cshift0_i16.lo `test -f '$(srcdir)/generated/cshift0_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i16.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_i16.Tpo" "$(DEPDIR)/cshift0_i16.Plo"; else rm -f "$(DEPDIR)/cshift0_i16.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_i16.c' object='cshift0_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_i16.lo `test -f '$(srcdir)/generated/cshift0_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_i16.c
+
+cshift0_r4.lo: $(srcdir)/generated/cshift0_r4.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_r4.lo -MD -MP -MF "$(DEPDIR)/cshift0_r4.Tpo" -c -o cshift0_r4.lo `test -f '$(srcdir)/generated/cshift0_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r4.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_r4.Tpo" "$(DEPDIR)/cshift0_r4.Plo"; else rm -f "$(DEPDIR)/cshift0_r4.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_r4.c' object='cshift0_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_r4.lo `test -f '$(srcdir)/generated/cshift0_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r4.c
+
+cshift0_r8.lo: $(srcdir)/generated/cshift0_r8.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_r8.lo -MD -MP -MF "$(DEPDIR)/cshift0_r8.Tpo" -c -o cshift0_r8.lo `test -f '$(srcdir)/generated/cshift0_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r8.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_r8.Tpo" "$(DEPDIR)/cshift0_r8.Plo"; else rm -f "$(DEPDIR)/cshift0_r8.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_r8.c' object='cshift0_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_r8.lo `test -f '$(srcdir)/generated/cshift0_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r8.c
+
+cshift0_r10.lo: $(srcdir)/generated/cshift0_r10.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_r10.lo -MD -MP -MF "$(DEPDIR)/cshift0_r10.Tpo" -c -o cshift0_r10.lo `test -f '$(srcdir)/generated/cshift0_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r10.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_r10.Tpo" "$(DEPDIR)/cshift0_r10.Plo"; else rm -f "$(DEPDIR)/cshift0_r10.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_r10.c' object='cshift0_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_r10.lo `test -f '$(srcdir)/generated/cshift0_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r10.c
+
+cshift0_r16.lo: $(srcdir)/generated/cshift0_r16.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_r16.lo -MD -MP -MF "$(DEPDIR)/cshift0_r16.Tpo" -c -o cshift0_r16.lo `test -f '$(srcdir)/generated/cshift0_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r16.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_r16.Tpo" "$(DEPDIR)/cshift0_r16.Plo"; else rm -f "$(DEPDIR)/cshift0_r16.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_r16.c' object='cshift0_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_r16.lo `test -f '$(srcdir)/generated/cshift0_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_r16.c
+
+cshift0_c4.lo: $(srcdir)/generated/cshift0_c4.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_c4.lo -MD -MP -MF "$(DEPDIR)/cshift0_c4.Tpo" -c -o cshift0_c4.lo `test -f '$(srcdir)/generated/cshift0_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c4.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_c4.Tpo" "$(DEPDIR)/cshift0_c4.Plo"; else rm -f "$(DEPDIR)/cshift0_c4.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_c4.c' object='cshift0_c4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c4.lo `test -f '$(srcdir)/generated/cshift0_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c4.c
+
+cshift0_c8.lo: $(srcdir)/generated/cshift0_c8.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_c8.lo -MD -MP -MF "$(DEPDIR)/cshift0_c8.Tpo" -c -o cshift0_c8.lo `test -f '$(srcdir)/generated/cshift0_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c8.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_c8.Tpo" "$(DEPDIR)/cshift0_c8.Plo"; else rm -f "$(DEPDIR)/cshift0_c8.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_c8.c' object='cshift0_c8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c8.lo `test -f '$(srcdir)/generated/cshift0_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c8.c
+
+cshift0_c10.lo: $(srcdir)/generated/cshift0_c10.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_c10.lo -MD -MP -MF "$(DEPDIR)/cshift0_c10.Tpo" -c -o cshift0_c10.lo `test -f '$(srcdir)/generated/cshift0_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c10.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_c10.Tpo" "$(DEPDIR)/cshift0_c10.Plo"; else rm -f "$(DEPDIR)/cshift0_c10.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_c10.c' object='cshift0_c10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c10.lo `test -f '$(srcdir)/generated/cshift0_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c10.c
+
+cshift0_c16.lo: $(srcdir)/generated/cshift0_c16.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift0_c16.lo -MD -MP -MF "$(DEPDIR)/cshift0_c16.Tpo" -c -o cshift0_c16.lo `test -f '$(srcdir)/generated/cshift0_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c16.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cshift0_c16.Tpo" "$(DEPDIR)/cshift0_c16.Plo"; else rm -f "$(DEPDIR)/cshift0_c16.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift0_c16.c' object='cshift0_c16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c16.lo `test -f '$(srcdir)/generated/cshift0_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c16.c
+
 close.lo: io/close.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT close.lo -MD -MP -MF "$(DEPDIR)/close.Tpo" -c -o close.lo `test -f 'io/close.c' || echo '$(srcdir)/'`io/close.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/close.Tpo" "$(DEPDIR)/close.Plo"; else rm -f "$(DEPDIR)/close.Tpo"; exit 1; fi
@@ -5972,6 +6108,9 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 
 @MAINTAINER_MODE_TRUE@$(i_eoshift3_c): m4/eoshift3.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_cshift0_c): m4/cshift0.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift0.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $@

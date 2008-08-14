@@ -33,48 +33,6 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include <string.h>
 
-
-/* "Templatized" helper function for the inner shift loop.  */
-
-#define DEF_COPY_LOOP(NAME, TYPE)					\
-static inline void							\
-copy_loop_##NAME (void *xdest, const void *xsrc,			\
-		  size_t roff, size_t soff,				\
-		  index_type len, index_type shift)			\
-{									\
-  TYPE *dest = xdest;							\
-  const TYPE *src;							\
-  index_type i;								\
-									\
-  roff /= sizeof (TYPE);						\
-  soff /= sizeof (TYPE);						\
-									\
-  src = xsrc;								\
-  src += shift * soff;							\
-  for (i = 0; i < len - shift; ++i)					\
-    {									\
-      *dest = *src;							\
-      dest += roff;							\
-      src += soff;							\
-    }									\
-									\
-  src = xsrc;								\
-  for (i = 0; i < shift; ++i)						\
-    {									\
-      *dest = *src;							\
-      dest += roff;							\
-      src += soff;							\
-    }									\
-}
-
-DEF_COPY_LOOP(int, int)
-DEF_COPY_LOOP(long, long)
-DEF_COPY_LOOP(double, double)
-DEF_COPY_LOOP(ldouble, long double)
-DEF_COPY_LOOP(cfloat, _Complex float)
-DEF_COPY_LOOP(cdouble, _Complex double)
-
-
 static void
 cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	 ssize_t shift, int which, index_type size)
@@ -96,8 +54,9 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type dim;
   index_type len;
   index_type n;
-  int whichloop;
   index_type arraysize;
+
+  index_type type_size;
 
   if (which < 1 || which > GFC_DESCRIPTOR_RANK (array))
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
@@ -133,6 +92,180 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   
   if (arraysize == 0)
     return;
+  type_size = GFC_DTYPE_TYPE_SIZE (array);
+
+  switch(type_size)
+    {
+    case GFC_DTYPE_LOGICAL_1:
+    case GFC_DTYPE_INTEGER_1:
+    case GFC_DTYPE_DERIVED_1:
+      cshift0_i1 ((gfc_array_i1 *)ret, (gfc_array_i1 *) array, shift, which);
+      return;
+
+    case GFC_DTYPE_LOGICAL_2:
+    case GFC_DTYPE_INTEGER_2:
+      cshift0_i2 ((gfc_array_i2 *)ret, (gfc_array_i2 *) array, shift, which);
+      return;
+
+    case GFC_DTYPE_LOGICAL_4:
+    case GFC_DTYPE_INTEGER_4:
+      cshift0_i4 ((gfc_array_i4 *)ret, (gfc_array_i4 *) array, shift, which);
+      return;
+
+    case GFC_DTYPE_LOGICAL_8:
+    case GFC_DTYPE_INTEGER_8:
+      cshift0_i8 ((gfc_array_i8 *)ret, (gfc_array_i8 *) array, shift, which);
+      return;
+
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_LOGICAL_16:
+    case GFC_DTYPE_INTEGER_16:
+      cshift0_i16 ((gfc_array_i8 *)ret, (gfc_array_i16 *) array, shift,
+		   which);
+      return;
+#endif
+
+    case GFC_DTYPE_REAL_4:
+      cshift0_r4 ((gfc_array_r4 *)ret, (gfc_array_r4 *) array, shift, which);
+      return;
+
+    case GFC_DTYPE_REAL_8:
+      cshift0_r8 ((gfc_array_r8 *)ret, (gfc_array_r8 *) array, shift, which);
+      return;
+
+#ifdef HAVE_GFC_REAL_10
+    case GFC_DTYPE_REAL_10:
+      cshift0_r10 ((gfc_array_r10 *)ret, (gfc_array_r10 *) array, shift,
+		   which);
+      return;
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+    case GFC_DTYPE_REAL_16:
+      cshift0_r16 ((gfc_array_r16 *)ret, (gfc_array_r16 *) array, shift,
+		   which);
+      return;
+#endif
+
+    case GFC_DTYPE_COMPLEX_4:
+      cshift0_c4 ((gfc_array_c4 *)ret, (gfc_array_c4 *) array, shift, which);
+      return;
+
+    case GFC_DTYPE_COMPLEX_8:
+      cshift0_c8 ((gfc_array_c8 *)ret, (gfc_array_c8 *) array, shift, which);
+      return;
+
+#ifdef HAVE_GFC_COMPLEX_10
+    case GFC_DTYPE_COMPLEX_10:
+      cshift0_c10 ((gfc_array_c10 *)ret, (gfc_array_c10 *) array, shift,
+		   which);
+      return;
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_16
+    case GFC_DTYPE_COMPLEX_16:
+      cshift0_c16 ((gfc_array_c16 *)ret, (gfc_array_c16 *) array, shift,
+		   which);
+      return;
+#endif
+
+    default:
+      break;
+    }
+
+  switch (size)
+    {
+      /* Let's check the actual alignment of the data pointers.  If they
+	 are suitably aligned, we can safely call the unpack functions.  */
+
+    case sizeof (GFC_INTEGER_1):
+      cshift0_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) array, shift,
+		  which);
+      break;
+
+    case sizeof (GFC_INTEGER_2):
+      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(array->data))
+	break;
+      else
+	{
+	  cshift0_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) array, shift,
+		      which);
+	  return;
+	}
+
+    case sizeof (GFC_INTEGER_4):
+      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(array->data))
+	break;
+      else
+	{
+	  cshift0_i4 ((gfc_array_i4 *)ret, (gfc_array_i4 *) array, shift,
+		      which);
+	  return;
+	}
+
+    case sizeof (GFC_INTEGER_8):
+      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(array->data))
+	{
+	  /* Let's try to use the complex routines.  First, a sanity
+	     check that the sizes match; this should be optimized to
+	     a no-op.  */
+	  if (sizeof(GFC_INTEGER_8) != sizeof(GFC_COMPLEX_4))
+	    break;
+
+	  if (GFC_UNALIGNED_C4(ret->data) || GFC_UNALIGNED_C4(array->data))
+	    break;
+
+	  cshift0_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) array, shift,
+		      which);
+	      return;
+	}
+      else
+	{
+	  cshift0_i8 ((gfc_array_i8 *)ret, (gfc_array_i8 *) array, shift,
+		      which);
+	  return;
+	}
+
+#ifdef HAVE_GFC_INTEGER_16
+    case sizeof (GFC_INTEGER_16):
+      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(array->data))
+	{
+	  /* Let's try to use the complex routines.  First, a sanity
+	     check that the sizes match; this should be optimized to
+	     a no-op.  */
+	  if (sizeof(GFC_INTGER_16) != sizeof(GFC_COMPLEX_8))
+	    break;
+
+	  if (GFC_UNALIGNED_C8(ret->data) || GFC_UNALIGNED_C8(array->data))
+	    break;
+
+	  cshift0_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) array, shift,
+		      which);
+	      return;
+	}
+      else
+	{
+	  cshift0_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) array,
+		       shift, which);
+	  return;
+	}
+#else
+    case sizeof (GFC_COMPLEX_8):
+
+      if (GFC_UNALIGNED_C8(ret->data) || GFC_UNALIGNED_C8(array->data))
+	break;
+      else
+	{
+	  cshift0_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) array, shift,
+		      which);
+	  return;
+	}
+#endif
+
+    default:
+      break;
+    }
+
 
   which = which - 1;
   sstride[0] = 0;
@@ -141,35 +274,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   extent[0] = 1;
   count[0] = 0;
   n = 0;
-
-  /* The values assigned here must match the cases in the inner loop.  */
-  whichloop = 0;
-  switch (GFC_DESCRIPTOR_TYPE (array))
-    {
-    case GFC_DTYPE_LOGICAL:
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_REAL:
-      if (size == sizeof (int))
-	whichloop = 1;
-      else if (size == sizeof (long))
-	whichloop = 2;
-      else if (size == sizeof (double))
-	whichloop = 3;
-      else if (size == sizeof (long double))
-	whichloop = 4;
-      break;
-
-    case GFC_DTYPE_COMPLEX:
-      if (size == sizeof (_Complex float))
-	whichloop = 5;
-      else if (size == sizeof (_Complex double))
-	whichloop = 6;
-      break;
-
-    default:
-      break;
-    }
-
   /* Initialized for avoiding compiler warnings.  */
   roffset = size;
   soffset = size;
@@ -227,56 +331,21 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       else
 	{
 	  /* Otherwise, we'll have to perform the copy one element at
-	     a time.  We can speed this up a tad for common cases of 
-	     fundamental types.  */
-	  switch (whichloop)
+	     a time.  */
+	  char *dest = rptr;
+	  const char *src = &sptr[shift * soffset];
+
+	  for (n = 0; n < len - shift; n++)
 	    {
-	    case 0:
-	      {
-		char *dest = rptr;
-		const char *src = &sptr[shift * soffset];
-
-		for (n = 0; n < len - shift; n++)
-		  {
-		    memcpy (dest, src, size);
-		    dest += roffset;
-		    src += soffset;
-		  }
-		for (src = sptr, n = 0; n < shift; n++)
-		  {
-		    memcpy (dest, src, size);
-		    dest += roffset;
-		    src += soffset;
-		  }
-	      }
-	      break;
-
-	    case 1:
-	      copy_loop_int (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-
-	    case 2:
-	      copy_loop_long (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-
-	    case 3:
-	      copy_loop_double (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-
-	    case 4:
-	      copy_loop_ldouble (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-
-	    case 5:
-	      copy_loop_cfloat (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-	      
-	    case 6:
-	      copy_loop_cdouble (rptr, sptr, roffset, soffset, len, shift);
-	      break;
-
-	    default:
-	      abort ();
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	  for (src = sptr, n = 0; n < shift; n++)
+	    {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
 	    }
 	}
 

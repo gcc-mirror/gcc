@@ -379,6 +379,22 @@ $(srcdir)/generated/eoshift3_4.c \
 $(srcdir)/generated/eoshift3_8.c \
 $(srcdir)/generated/eoshift3_16.c
 
+i_cshift0_c= \
+$(srcdir)/generated/cshift0_i1.c \
+$(srcdir)/generated/cshift0_i2.c \
+$(srcdir)/generated/cshift0_i4.c \
+$(srcdir)/generated/cshift0_i8.c \
+$(srcdir)/generated/cshift0_i16.c \
+$(srcdir)/generated/cshift0_r4.c \
+$(srcdir)/generated/cshift0_r8.c \
+$(srcdir)/generated/cshift0_r10.c \
+$(srcdir)/generated/cshift0_r16.c \
+$(srcdir)/generated/cshift0_c4.c \
+$(srcdir)/generated/cshift0_c8.c \
+$(srcdir)/generated/cshift0_c10.c \
+$(srcdir)/generated/cshift0_c16.c
+ 
+
 i_cshift1_c= \
 $(srcdir)/generated/cshift1_4.c \
 $(srcdir)/generated/cshift1_8.c \
@@ -545,7 +561,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) $(i_pack_c) $(i_unpack_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    kinds.inc c99_protos.inc fpu-target.h
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -828,6 +844,9 @@ $(i_eoshift1_c): m4/eoshift1.m4 $(I_M4_DEPS)
 
 $(i_eoshift3_c): m4/eoshift3.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $@
+
+$(i_cshift0_c): m4/cshift0.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift0.m4 > $@
 
 $(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $@

@@ -1,3 +1,9 @@
+2008-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/36886
+	* gfortran.dg/cshift_char_3.f90:  New test case.
+	* gfortran.dg/cshift_nan_1.f90:  New test case.
+
 2008-08-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc.dg/visibility-14.c: New test.
