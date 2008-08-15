@@ -1,3 +1,11 @@
+2008-08-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/pr30551-6.c: Skip for SPU.
+	* gcc.dg/pr30551-3.c: Likewise.
+	* gcc.dg/pr30551.c: Likewise.
+	* g++.dg/warn/pr30551-2.C: Likewise.
+	* g++.dg/warn/pr30551.C: Likewise.
+	
 2008-08-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36705
