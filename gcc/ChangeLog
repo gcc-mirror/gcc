@@ -1,3 +1,8 @@
+2008-08-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (maybe_fold_offset_to_reference): Do not
+	strip components for unknown size accesses.
+
 2008-08-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/2097.md New file.

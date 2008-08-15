@@ -1976,6 +1976,7 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
 					     &size, &maxsize);
 	  gcc_assert (newbase);
 	  if (size == maxsize
+	      && size != -1
 	      && !(sub_offset & (BITS_PER_UNIT - 1)))
 	    {
 	      base = newbase;
