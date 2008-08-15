@@ -1,3 +1,10 @@
+2008-08-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (add_minipool_backward_ref): Check for
+	8-byte-aligned entries in second case of forcing insertion after a
+	particular entry.  Change third case to avoid inserting
+	non-8-byte-aligned entries before 8-byte-aligned ones.
+
 2008-08-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (maybe_fold_offset_to_reference): Do not
