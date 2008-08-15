@@ -8157,26 +8157,89 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return REDUCE_BIT_FIELD (op0);
 
     case VIEW_CONVERT_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
+      op0 = NULL_RTX;
+
+      /* If we are converting to BLKmode, try to avoid an intermediate
+	 temporary by fetching an inner memory reference.  */
+      if (mode == BLKmode
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
+	  && TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))) != BLKmode
+	  && handled_component_p (TREE_OPERAND (exp, 0)))
+      {
+	enum machine_mode mode1;
+	HOST_WIDE_INT bitsize, bitpos;
+	tree offset;
+	int unsignedp;
+	int volatilep = 0;
+	tree tem
+	  = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, &bitpos,
+				 &offset, &mode1, &unsignedp, &volatilep,
+				 true);
+	rtx orig_op0;
+
+	/* ??? We should work harder and deal with non-zero offsets.  */
+	if (!offset
+	    && (bitpos % BITS_PER_UNIT) == 0
+	    && bitsize >= 0
+	    && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) == 0)
+	  {
+	    /* See the normal_inner_ref case for the rationale.  */
+	    orig_op0
+	      = expand_expr (tem,
+			     (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+			      && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
+				  != INTEGER_CST)
+			      && modifier != EXPAND_STACK_PARM
+			      ? target : NULL_RTX),
+			     VOIDmode,
+			     (modifier == EXPAND_INITIALIZER
+			      || modifier == EXPAND_CONST_ADDRESS
+			      || modifier == EXPAND_STACK_PARM)
+			     ? modifier : EXPAND_NORMAL);
+
+	    if (MEM_P (orig_op0))
+	      {
+		op0 = orig_op0;
+
+		/* Get a reference to just this component.  */
+		if (modifier == EXPAND_CONST_ADDRESS
+		    || modifier == EXPAND_SUM
+		    || modifier == EXPAND_INITIALIZER)
+		  op0 = adjust_address_nv (op0, mode, bitpos / BITS_PER_UNIT);
+		else
+		  op0 = adjust_address (op0, mode, bitpos / BITS_PER_UNIT);
+
+		if (op0 == orig_op0)
+		  op0 = copy_rtx (op0);
+
+		set_mem_attributes (op0, TREE_OPERAND (exp, 0), 0);
+		if (REG_P (XEXP (op0, 0)))
+		  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
+
+		MEM_VOLATILE_P (op0) |= volatilep;
+	      }
+	  }
+      }
+
+      if (!op0)
+	op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
 
       /* If the input and output modes are both the same, we are done.  */
-      if (TYPE_MODE (type) == GET_MODE (op0))
+      if (mode == GET_MODE (op0))
 	;
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */
-      else if (TYPE_MODE (type) != BLKmode && GET_MODE (op0) != BLKmode
-	       && GET_MODE_SIZE (TYPE_MODE (type))
-		   == GET_MODE_SIZE (GET_MODE (op0)))
+      else if (mode != BLKmode && GET_MODE (op0) != BLKmode
+	       && GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (op0)))
 	{
 	  if (GET_CODE (op0) == SUBREG)
 	    op0 = force_reg (GET_MODE (op0), op0);
-	  op0 = gen_lowpart (TYPE_MODE (type), op0);
+	  op0 = gen_lowpart (mode, op0);
 	}
       /* If both modes are integral, then we can convert from one to the
 	 other.  */
-      else if (SCALAR_INT_MODE_P (GET_MODE (op0))
-	       && SCALAR_INT_MODE_P (TYPE_MODE (type)))
-	op0 = convert_modes (TYPE_MODE (type), GET_MODE (op0), op0,
+      else if (SCALAR_INT_MODE_P (GET_MODE (op0)) && SCALAR_INT_MODE_P (mode))
+	op0 = convert_modes (mode, GET_MODE (op0), op0, 
 			     TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
       /* As a last resort, spill op0 to memory, and reload it in a
 	 different mode.  */
@@ -8200,8 +8263,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  op0 = target;
 	}
 
-      /* At this point, OP0 is in the correct mode.  If the output type is such
-	 that the operand is known to be aligned, indicate that it is.
+      /* At this point, OP0 is in the correct mode.  If the output type is
+	 such that the operand is known to be aligned, indicate that it is.
 	 Otherwise, we need only be concerned about alignment for non-BLKmode
 	 results.  */
       if (MEM_P (op0))
@@ -8210,22 +8273,24 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	  if (TYPE_ALIGN_OK (type))
 	    set_mem_align (op0, MAX (MEM_ALIGN (op0), TYPE_ALIGN (type)));
-	  else if (TYPE_MODE (type) != BLKmode && STRICT_ALIGNMENT
-		   && MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+	  else if (STRICT_ALIGNMENT
+		   && mode != BLKmode
+		   && MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode))
 	    {
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	      HOST_WIDE_INT temp_size
 		= MAX (int_size_in_bytes (inner_type),
-		       (HOST_WIDE_INT) GET_MODE_SIZE (TYPE_MODE (type)));
-	      rtx new_rtx = assign_stack_temp_for_type (TYPE_MODE (type),
-							temp_size, 0, type);
-	      rtx new_with_op0_mode = adjust_address (new_rtx, GET_MODE (op0), 0);
+		       (HOST_WIDE_INT) GET_MODE_SIZE (mode));
+	      rtx new_rtx
+		= assign_stack_temp_for_type (mode, temp_size, 0, type);
+	      rtx new_with_op0_mode
+		= adjust_address (new_rtx, GET_MODE (op0), 0);
 
 	      gcc_assert (!TREE_ADDRESSABLE (exp));
 
 	      if (GET_MODE (op0) == BLKmode)
 		emit_block_move (new_with_op0_mode, op0,
-				 GEN_INT (GET_MODE_SIZE (TYPE_MODE (type))),
+				 GEN_INT (GET_MODE_SIZE (mode)),
 				 (modifier == EXPAND_STACK_PARM
 				  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
 	      else
@@ -8234,7 +8299,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      op0 = new_rtx;
 	    }
 
-	  op0 = adjust_address (op0, TYPE_MODE (type), 0);
+	  op0 = adjust_address (op0, mode, 0);
 	}
 
       return op0;

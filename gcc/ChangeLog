@@ -1,3 +1,9 @@
+2008-08-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: When converting
+	to BLKmode, try to fetch an inner memory reference.  Use 'mode' in
+	lieu of TYPE_MODE (type) throughout.
+
 2008-08-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (add_minipool_backward_ref): Check for
