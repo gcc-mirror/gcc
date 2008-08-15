@@ -11,8 +11,8 @@
 
 2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
 
-	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS) [WINDOWS]: Remove
-	duplicate s-win32.o. Add s-winext.o.
+	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS) [WINDOWS]:
+	Remove duplicate s-win32.o. Add s-winext.o.
 
 2008-08-12  Danny Smith  <danyssmith@users.sourceforge.net>
 
