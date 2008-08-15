@@ -1,3 +1,22 @@
+2008-08-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/2097.md New file.
+	* config/s390/s390.md ("z10prop" attribute): Define none,
+        z10_super, z10_super_E1, z10_super_A1, z10_super_c,
+        z10_super_c_E1, z10_fwd, z10_fwd_A1, z10_fwd_A3, z10_fwd_E1,
+        z10_rec, z10_fr, z10_fr_A3, z10_fr_E1, z10_c, and z10_cobra as
+        possible values and apply them to insns as appropriate.
+        ("type" attribute): Removed itof and added ftrunctf,ftruncdf,
+        ftruncsd, ftruncdd, itoftf, itofdf, itofsf, itofdd, itoftd,
+        fdivdd, fdivtd, floaddd, floadsd, fmuldd, fmultd, fsimpdd,
+        fsimpsd, fsimptd, fstoredd, fstoresd, ftoidfp as possible
+        values.
+	("bfp" mode attribute): Removed.  Every occurence replaced
+	with <mode>.
+	* config/s390/s390.c (struct "z10_cost"): Updated entries.
+	* config/s390/2084.md (insn_reservation "x_itof"): Updated
+          type attribute.
+
 2008-08-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
         PR c/28152

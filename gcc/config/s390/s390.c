@@ -192,33 +192,33 @@ struct processor_costs z9_109_cost =
 static const
 struct processor_costs z10_cost =
 {
-  COSTS_N_INSNS (4),     /* M     */
-  COSTS_N_INSNS (2),     /* MGHI  */
-  COSTS_N_INSNS (2),     /* MH    */
-  COSTS_N_INSNS (2),     /* MHI   */
-  COSTS_N_INSNS (4),     /* ML    */
-  COSTS_N_INSNS (4),     /* MR    */
-  COSTS_N_INSNS (5),     /* MS    */
-  COSTS_N_INSNS (6),     /* MSG   */
-  COSTS_N_INSNS (4),     /* MSGF  */
-  COSTS_N_INSNS (4),     /* MSGFR */
-  COSTS_N_INSNS (4),     /* MSGR  */
-  COSTS_N_INSNS (4),     /* MSR   */
-  COSTS_N_INSNS (1),     /* multiplication in DFmode */
-  COSTS_N_INSNS (28),    /* MXBR */
-  COSTS_N_INSNS (130),   /* SQXBR */
-  COSTS_N_INSNS (66),    /* SQDBR */
+  COSTS_N_INSNS (10),    /* M     */
+  COSTS_N_INSNS (10),    /* MGHI  */
+  COSTS_N_INSNS (10),    /* MH    */
+  COSTS_N_INSNS (10),    /* MHI   */
+  COSTS_N_INSNS (10),    /* ML    */
+  COSTS_N_INSNS (10),    /* MR    */
+  COSTS_N_INSNS (10),    /* MS    */
+  COSTS_N_INSNS (10),    /* MSG   */
+  COSTS_N_INSNS (10),    /* MSGF  */
+  COSTS_N_INSNS (10),    /* MSGFR */
+  COSTS_N_INSNS (10),    /* MSGR  */
+  COSTS_N_INSNS (10),    /* MSR   */
+  COSTS_N_INSNS (10),    /* multiplication in DFmode */
+  COSTS_N_INSNS (50),    /* MXBR */
+  COSTS_N_INSNS (120),   /* SQXBR */
+  COSTS_N_INSNS (52),    /* SQDBR */
   COSTS_N_INSNS (38),    /* SQEBR */
-  COSTS_N_INSNS (1),     /* MADBR */
-  COSTS_N_INSNS (1),     /* MAEBR */
-  COSTS_N_INSNS (60),    /* DXBR */
-  COSTS_N_INSNS (40),    /* DDBR */
-  COSTS_N_INSNS (26),    /* DEBR */
-  COSTS_N_INSNS (30),    /* DLGR */
-  COSTS_N_INSNS (23),    /* DLR */
-  COSTS_N_INSNS (23),    /* DR */
-  COSTS_N_INSNS (24),    /* DSGFR */
-  COSTS_N_INSNS (24),    /* DSGR */
+  COSTS_N_INSNS (10),    /* MADBR */
+  COSTS_N_INSNS (10),    /* MAEBR */
+  COSTS_N_INSNS (111),   /* DXBR */
+  COSTS_N_INSNS (39),    /* DDBR */
+  COSTS_N_INSNS (32),    /* DEBR */
+  COSTS_N_INSNS (160),   /* DLGR */
+  COSTS_N_INSNS (71),    /* DLR */
+  COSTS_N_INSNS (71),    /* DR */
+  COSTS_N_INSNS (71),    /* DSGFR */
+  COSTS_N_INSNS (71),    /* DSGR */
 };
 
 extern int reload_completed;
@@ -5265,6 +5265,7 @@ s390_agen_dep_p (rtx dep_insn, rtx insn)
     }
   return 0;
 }
+
 
 /* A C statement (sans semicolon) to update the integer scheduling priority
    INSN_PRIORITY (INSN).  Increase the priority to execute the INSN earlier,
