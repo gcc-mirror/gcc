@@ -8772,17 +8772,20 @@ add_minipool_backward_ref (Mfix *fix)
 		 its maximum address (which can happen if we have
 		 re-located a forwards fix); force the new fix to come
 		 after it.  */
-	      min_mp = mp;
-	      min_address = mp->min_address + fix->fix_size;
+	      if (ARM_DOUBLEWORD_ALIGN
+		  && fix->fix_size >= 8 && mp->fix_size < 8)
+		return NULL;
+	      else
+		{
+		  min_mp = mp;
+		  min_address = mp->min_address + fix->fix_size;
+		}
 	    }
-	  /* If we are inserting an 8-bytes aligned quantity and
-	     we have not already found an insertion point, then
-	     make sure that all such 8-byte aligned quantities are
-	     placed at the start of the pool.  */
+	  /* Do not insert a non-8-byte aligned quantity before 8-byte
+	     aligned quantities.  */
 	  else if (ARM_DOUBLEWORD_ALIGN
-		   && min_mp == NULL
-		   && fix->fix_size >= 8
-		   && mp->fix_size < 8)
+		   && fix->fix_size < 8
+		   && mp->fix_size >= 8)
 	    {
 	      min_mp = mp;
 	      min_address = mp->min_address + fix->fix_size;
