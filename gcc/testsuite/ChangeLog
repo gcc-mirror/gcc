@@ -1,3 +1,9 @@
+2008-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35863
+	* gfortran.dg/utf8_1.f03: New test.
+	* gfortran.dg/utf8_2.f03: New test.
+
 2008-08-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* gcc.dg/pr30551-6.c: Skip for SPU.
