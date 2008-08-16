@@ -208,8 +208,14 @@ do {								\
 
 /* Provide default values for the macros controlling stack checking.  */
 
+/* The default is neither full builtin stack checking...  */
 #ifndef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0
+#endif
+
+/* ...nor static builtin stack checking.  */
+#ifndef STACK_CHECK_STATIC_BUILTIN
+#define STACK_CHECK_STATIC_BUILTIN 0
 #endif
 
 /* The default interval is one page.  */
@@ -222,9 +228,24 @@ do {								\
 #define STACK_CHECK_PROBE_LOAD 0
 #endif
 
-/* This value is arbitrary, but should be sufficient for most machines.  */
+/* This is a kludge to try to capture the discrepancy between the old
+   mechanism (generic stack checking) and the new mechanism (static
+   builtin stack checking).  STACK_CHECK_PROTECT needs to be bumped
+   for the latter because part of the protection area is effectively
+   included in STACK_CHECK_MAX_FRAME_SIZE for the former.  */
+#ifdef STACK_CHECK_PROTECT
+#define STACK_OLD_CHECK_PROTECT STACK_CHECK_PROTECT
+#else
+#define STACK_OLD_CHECK_PROTECT \
+ (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 8 * 1024)
+#endif
+
+/* Minimum amount of stack required to recover from an anticipated stack
+   overflow detection.  The default value conveys an estimate of the amount
+   of stack required to propagate an exception.  */
 #ifndef STACK_CHECK_PROTECT
-#define STACK_CHECK_PROTECT (75 * UNITS_PER_WORD)
+#define STACK_CHECK_PROTECT \
+ (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 12 * 1024)
 #endif
 
 /* Make the maximum frame size be the largest we can and still only need

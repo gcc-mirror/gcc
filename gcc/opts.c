@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "rtl.h"
+#include "expr.h"
 #include "ggc.h"
 #include "output.h"
 #include "langhooks.h"
@@ -1898,6 +1899,37 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fsched_stalled_insns_dep_:
       flag_sched_stalled_insns_dep = value;
+      break;
+
+    case OPT_fstack_check_:
+      if (!strcmp (arg, "no"))
+	flag_stack_check = NO_STACK_CHECK;
+      else if (!strcmp (arg, "generic"))
+	/* This is the old stack checking method.  */
+	flag_stack_check = STACK_CHECK_BUILTIN
+			   ? FULL_BUILTIN_STACK_CHECK
+			   : GENERIC_STACK_CHECK;
+      else if (!strcmp (arg, "specific"))
+	/* This is the new stack checking method.  */
+	flag_stack_check = STACK_CHECK_BUILTIN
+			   ? FULL_BUILTIN_STACK_CHECK
+			   : STACK_CHECK_STATIC_BUILTIN
+			     ? STATIC_BUILTIN_STACK_CHECK
+			     : GENERIC_STACK_CHECK;
+      else
+	warning (0, "unknown stack check parameter \"%s\"", arg);
+      break;
+
+    case OPT_fstack_check:
+      /* This is the same as the "specific" mode above.  */
+      if (value)
+	flag_stack_check = STACK_CHECK_BUILTIN
+			   ? FULL_BUILTIN_STACK_CHECK
+			   : STACK_CHECK_STATIC_BUILTIN
+			     ? STATIC_BUILTIN_STACK_CHECK
+			     : GENERIC_STACK_CHECK;
+      else
+	flag_stack_check = NO_STACK_CHECK;
       break;
 
     case OPT_fstack_limit:

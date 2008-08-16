@@ -3236,7 +3236,7 @@ gimplify_parameters (void)
       walk_tree_without_duplicates (&data.passed_type,
 				    gimplify_parm_type, &stmts);
 
-      if (!TREE_CONSTANT (DECL_SIZE (parm)))
+      if (TREE_CODE (DECL_SIZE_UNIT (parm)) != INTEGER_CST)
 	{
 	  gimplify_one_sizepos (&DECL_SIZE (parm), &stmts);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (parm), &stmts);
@@ -3250,9 +3250,12 @@ gimplify_parameters (void)
 	    {
 	      tree local, t;
 
-	      /* For constant sized objects, this is trivial; for
+	      /* For constant-sized objects, this is trivial; for
 		 variable-sized objects, we have to play games.  */
-	      if (TREE_CONSTANT (DECL_SIZE (parm)))
+	      if (TREE_CODE (DECL_SIZE_UNIT (parm)) == INTEGER_CST
+		  && !(flag_stack_check == GENERIC_STACK_CHECK
+		       && compare_tree_int (DECL_SIZE_UNIT (parm),
+					    STACK_CHECK_MAX_VAR_SIZE) > 0))
 		{
 		  local = create_tmp_var (type, get_name (parm));
 		  DECL_IGNORED_P (local) = 0;
@@ -4480,10 +4483,10 @@ expand_function_end (void)
   if (arg_pointer_save_area && ! crtl->arg_pointer_save_area_init)
     get_arg_pointer_save_area ();
 
-  /* If we are doing stack checking and this function makes calls,
+  /* If we are doing generic stack checking and this function makes calls,
      do a stack probe at the start of the function to ensure we have enough
      space for another stack frame.  */
-  if (flag_stack_check && ! STACK_CHECK_BUILTIN)
+  if (flag_stack_check == GENERIC_STACK_CHECK)
     {
       rtx insn, seq;
 
@@ -4491,7 +4494,7 @@ expand_function_end (void)
 	if (CALL_P (insn))
 	  {
 	    start_sequence ();
-	    probe_stack_range (STACK_CHECK_PROTECT,
+	    probe_stack_range (STACK_OLD_CHECK_PROTECT,
 			       GEN_INT (STACK_CHECK_MAX_FRAME_SIZE));
 	    seq = get_insns ();
 	    end_sequence ();

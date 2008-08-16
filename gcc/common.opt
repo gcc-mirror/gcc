@@ -992,11 +992,13 @@ fvariable-expansion-in-unroller
 Common Report Var(flag_variable_expansion_in_unroller) Optimization
 Apply variable expansion when loops are unrolled
 
-; Emit code to probe the stack, to help detect stack overflow; also
-; may cause large objects to be allocated dynamically.
+fstack-check=
+Common Report RejectNegative Joined
+-fstack-check=[no|generic|specific]	Insert stack checking code into the program
+
 fstack-check
-Common Report Var(flag_stack_check)
-Insert stack checking code into the program
+Common Report
+Insert stack checking code into the program.  Same as -fstack-check=specific
 
 fstack-limit
 Common

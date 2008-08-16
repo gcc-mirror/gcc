@@ -306,6 +306,9 @@ rtx stack_limit_rtx;
    to optimize, debug_info_level and debug_hooks in process_options ().  */
 int flag_var_tracking = AUTODETECT_VALUE;
 
+/* Type of stack check.  */
+enum stack_check_type flag_stack_check = NO_STACK_CHECK;
+
 /* True if the user has tagged the function with the 'section'
    attribute.  */
 

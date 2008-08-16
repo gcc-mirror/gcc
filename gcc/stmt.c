@@ -1867,8 +1867,8 @@ expand_decl (tree decl)
     SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, const0_rtx));
 
   else if (DECL_SIZE (decl) == 0)
-    /* Variable with incomplete type.  */
     {
+      /* Variable with incomplete type.  */
       rtx x;
       if (DECL_INITIAL (decl) == 0)
 	/* Error message was already done; now avoid a crash.  */
@@ -1899,15 +1899,14 @@ expand_decl (tree decl)
 			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
     }
 
-  else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
-	   && ! (flag_stack_check && ! STACK_CHECK_BUILTIN
-		 && 0 < compare_tree_int (DECL_SIZE_UNIT (decl),
-					  STACK_CHECK_MAX_VAR_SIZE)))
+  else
     {
-      /* Variable of fixed size that goes on the stack.  */
       rtx oldaddr = 0;
       rtx addr;
       rtx x;
+
+      /* Variable-sized decls are dealt with in the gimplifier.  */
+      gcc_assert (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST);
 
       /* If we previously made RTL for this decl, it must be an array
 	 whose size was determined by the initializer.
@@ -1935,41 +1934,6 @@ expand_decl (tree decl)
 	  if (addr != oldaddr)
 	    emit_move_insn (oldaddr, addr);
 	}
-    }
-  else
-    /* Dynamic-size object: must push space on the stack.  */
-    {
-      rtx address, size, x;
-
-      /* Record the stack pointer on entry to block, if have
-	 not already done so.  */
-      do_pending_stack_adjust ();
-
-      /* Compute the variable's size, in bytes.  This will expand any
-	 needed SAVE_EXPRs for the first time.  */
-      size = expand_normal (DECL_SIZE_UNIT (decl));
-      free_temp_slots ();
-
-      /* Allocate space on the stack for the variable.  Note that
-	 DECL_ALIGN says how the variable is to be aligned and we
-	 cannot use it to conclude anything about the alignment of
-	 the size.  */
-      address = allocate_dynamic_stack_space (size, NULL_RTX,
-					      TYPE_ALIGN (TREE_TYPE (decl)));
-
-      /* Reference the variable indirect through that rtx.  */
-      x = gen_rtx_MEM (DECL_MODE (decl), address);
-      set_mem_attributes (x, decl, 1);
-      SET_DECL_RTL (decl, x);
-
-
-      /* Indicate the alignment we actually gave this variable.  */
-#ifdef STACK_BOUNDARY
-      DECL_ALIGN (decl) = STACK_BOUNDARY;
-#else
-      DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
-#endif
-      DECL_USER_ALIGN (decl) = 0;
     }
 }
 

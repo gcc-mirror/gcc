@@ -1301,9 +1301,9 @@ reload (rtx first, int global)
 	  }
       }
 
-  /* If we are doing stack checking, give a warning if this function's
-     frame size is larger than we expect.  */
-  if (flag_stack_check && ! STACK_CHECK_BUILTIN)
+  /* If we are doing generic stack checking, give a warning if this
+     function's frame size is larger than we expect.  */
+  if (flag_stack_check == GENERIC_STACK_CHECK)
     {
       HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
       static int verbose_warned = 0;
