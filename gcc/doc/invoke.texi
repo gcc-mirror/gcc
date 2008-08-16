@@ -15207,8 +15207,34 @@ a single-threaded environment since stack overflow is automatically
 detected on nearly all systems if there is only one stack.
 
 Note that this switch does not actually cause checking to be done; the
-operating system must do that.  The switch causes generation of code
-to ensure that the operating system sees the stack being extended.
+operating system or the language runtime must do that.  The switch causes
+generation of code to ensure that they see the stack being extended.
+
+You can additionally specify a string parameter: @code{no} means no
+checking, @code{generic} means force the use of old-style checking,
+@code{specific} means use the best checking method and is equivalent
+to bare @option{-fstack-check}.
+
+Old-style checking is a generic mechanism that requires no specific
+target support in the compiler but comes with the following drawbacks:
+
+@enumerate
+@item
+Modified allocation strategy for large objects: they will always be
+allocated dynamically if their size exceeds a fixed threshold.
+
+@item
+Fixed limit on the size of the static frame of functions: when it is
+topped by a particular function, stack checking is not reliable and
+a warning is issued by the compiler.
+
+@item
+Inefficiency: because of both the modified allocation strategy and the
+generic implementation, the performances of the code are hampered.
+@end enumerate
+
+Note that old-style stack checking is also the fallback method for
+@code{specific} if no target support has been added in the compiler.
 
 @item -fstack-limit-register=@var{reg}
 @itemx -fstack-limit-symbol=@var{sym}

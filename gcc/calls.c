@@ -1069,10 +1069,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      rtx copy;
 
 	      if (!COMPLETE_TYPE_P (type)
-		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
-		      && (0 < compare_tree_int (TYPE_SIZE_UNIT (type),
-						STACK_CHECK_MAX_VAR_SIZE))))
+		  || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
+		  || (flag_stack_check == GENERIC_STACK_CHECK
+		      && compare_tree_int (TYPE_SIZE_UNIT (type),
+					   STACK_CHECK_MAX_VAR_SIZE) > 0))
 		{
 		  /* This is a variable-sized object.  Make space on the stack
 		     for it.  */

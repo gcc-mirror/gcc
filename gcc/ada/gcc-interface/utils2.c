@@ -1920,11 +1920,11 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
   /* ??? For now, disable variable-sized allocators in the stack since
      we can't yet gimplify an ALLOCATE_EXPR.  */
   else if (gnat_pool == -1
-	   && TREE_CODE (gnu_size) == INTEGER_CST && !flag_stack_check)
+	   && TREE_CODE (gnu_size) == INTEGER_CST
+	   && flag_stack_check != GENERIC_STACK_CHECK)
     {
       /* If the size is a constant, we can put it in the fixed portion of
 	 the stack frame to avoid the need to adjust the stack pointer.  */
-      if (TREE_CODE (gnu_size) == INTEGER_CST && !flag_stack_check)
 	{
 	  tree gnu_range
 	    = build_range_type (NULL_TREE, size_one_node, gnu_size);
@@ -1937,9 +1937,8 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 	  return convert (ptr_void_type_node,
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
 	}
-      else
-	gcc_unreachable ();
 #if 0
+      else
 	return build2 (ALLOCATE_EXPR, ptr_void_type_node, gnu_size, gnu_align);
 #endif
     }

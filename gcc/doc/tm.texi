@@ -3376,38 +3376,49 @@ linkage is necessary.  The default is @code{0}.
 @node Stack Checking
 @subsection Specifying How Stack Checking is Done
 
-GCC will check that stack references are within the boundaries of
-the stack, if the @option{-fstack-check} is specified, in one of three ways:
+GCC will check that stack references are within the boundaries of the
+stack, if the option @option{-fstack-check} is specified, in one of
+three ways:
 
 @enumerate
 @item
 If the value of the @code{STACK_CHECK_BUILTIN} macro is nonzero, GCC
-will assume that you have arranged for stack checking to be done at
-appropriate places in the configuration files, e.g., in
-@code{TARGET_ASM_FUNCTION_PROLOGUE}.  GCC will do not other special
-processing.
+will assume that you have arranged for full stack checking to be done
+at appropriate places in the configuration files.  GCC will not do
+other special processing.
 
 @item
-If @code{STACK_CHECK_BUILTIN} is zero and you defined a named pattern
-called @code{check_stack} in your @file{md} file, GCC will call that
-pattern with one argument which is the address to compare the stack
-value against.  You must arrange for this pattern to report an error if
-the stack pointer is out of range.
+If @code{STACK_CHECK_BUILTIN} is zero and the value of the
+@code{STACK_CHECK_STATIC_BUILTIN} macro is nonzero, GCC will assume
+that you have arranged for static stack checking (checking of the
+static stack frame of functions) to be done at appropriate places
+in the configuration files.  GCC will only emit code to do dynamic
+stack checking (checking on dynamic stack allocations) using the third
+approach below.
 
 @item
 If neither of the above are true, GCC will generate code to periodically
 ``probe'' the stack pointer using the values of the macros defined below.
 @end enumerate
 
-Normally, you will use the default values of these macros, so GCC
-will use the third approach.
+If neither STACK_CHECK_BUILTIN nor STACK_CHECK_STATIC_BUILTIN is defined,
+GCC will change its allocation strategy for large objects if the option
+@option{-fstack-check} is specified: they will always be allocated
+dynamically if their size exceeds @code{STACK_CHECK_MAX_VAR_SIZE} bytes.
 
 @defmac STACK_CHECK_BUILTIN
 A nonzero value if stack checking is done by the configuration files in a
 machine-dependent manner.  You should define this macro if stack checking
-is require by the ABI of your machine or if you would like to have to stack
-checking in some more efficient way than GCC's portable approach.
-The default value of this macro is zero.
+is require by the ABI of your machine or if you would like to do stack
+checking in some more efficient way than the generic approach.  The default
+value of this macro is zero.
+@end defmac
+
+@defmac STACK_CHECK_STATIC_BUILTIN
+A nonzero value if static stack checking is done by the configuration files
+in a machine-dependent manner.  You should define this macro if you would
+like to do static stack checking in some more efficient way than the generic
+approach.  The default value of this macro is zero.
 @end defmac
 
 @defmac STACK_CHECK_PROBE_INTERVAL
@@ -3418,7 +3429,7 @@ default value of 4096 is suitable for most systems.
 @end defmac
 
 @defmac STACK_CHECK_PROBE_LOAD
-A integer which is nonzero if GCC should perform the stack probe
+An integer which is nonzero if GCC should perform the stack probe
 as a load instruction and zero if GCC should use a store instruction.
 The default is zero, which is the most efficient choice on most systems.
 @end defmac
@@ -3428,6 +3439,10 @@ The number of bytes of stack needed to recover from a stack overflow,
 for languages where such a recovery is supported.  The default value of
 75 words should be adequate for most machines.
 @end defmac
+
+The following macros are relevant only if neither STACK_CHECK_BUILTIN
+nor STACK_CHECK_STATIC_BUILTIN is defined; you can omit them altogether
+in the opposite case.
 
 @defmac STACK_CHECK_MAX_FRAME_SIZE
 The maximum size of a stack frame, in bytes.  GCC will generate probe

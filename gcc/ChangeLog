@@ -1,3 +1,39 @@
+2008-08-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/20548
+	* common.opt (-fstack-check): Do not declare the variable here.
+	(-fstack-check=): New option variant.
+	* doc/invoke.texi (Code Gen Options): Document it.
+	* expr.h (STACK_OLD_CHECK_PROTECT): New macro.
+	(STACK_CHECK_PROTECT): Bump to 3 pages if DWARF-2 EH is used.
+	(STACK_CHECK_STATIC_BUILTIN): New macro.
+	* doc/tm.texi (Stack Checking): Document STACK_CHECK_STATIC_BUILTIN.
+	* opts.c: Include expr.h.
+	(common_handle_option) <OPT_fold_stack_check_>: New case.
+	<OPT_fstack_check>: Likewise.
+	* calls.c (initialize_argument_information): Use TYPE_SIZE_UNIT
+	consistently in the test for variable-sized types.  Adjust for
+	new behaviour of flag_stack_check.
+	* explow.c: Include except.h.
+	(allocate_dynamic_stack_space): Do not take into account
+	STACK_CHECK_MAX_FRAME_SIZE for static builtin stack checking.
+	* function.c (gimplify_parameters): Use DECL_SIZE_UNIT in the test
+	for variable-sized parameters.  Treat all parameters whose size is
+	greater than STACK_CHECK_MAX_VAR_SIZE as variable-sized if generic
+	stack checking is enabled.
+	* gimplify.c (gimplify_decl_expr): Treat non-static objects whose
+	size is greater than STACK_CHECK_MAX_VAR_SIZE as variable-sized
+	if generic stack checking is enabled.
+	(expand_function_end): Adjust for new behaviour of flag_stack_check.
+	* reload1.c (reload): Likewise.
+	* stmt.c (expand_decl): Assert that all automatic variables have
+	fixed size at this point and remove dead code.
+	* flags.h (stack_check_type): New enumeration type.
+	(flag_stack_check): Declare.
+	* toplev.c (flag_stack_check): New global variable.
+	* Makefile.in (opts.o): Add dependency on EXPR_H.
+	(explow.o): Add dependency on except.h.
+
 2008-08-16  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* config/avr/avr.c (avr_override_options): Reduce value of 

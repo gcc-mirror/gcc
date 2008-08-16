@@ -1303,12 +1303,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 	  }
 
-	if (definition && DECL_SIZE (gnu_decl)
+	if (definition && DECL_SIZE_UNIT (gnu_decl)
 	    && get_block_jmpbuf_decl ()
-	    && (TREE_CODE (DECL_SIZE (gnu_decl)) != INTEGER_CST
-		|| (flag_stack_check && !STACK_CHECK_BUILTIN
-		    && 0 < compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
-					     STACK_CHECK_MAX_VAR_SIZE))))
+	    && (TREE_CODE (DECL_SIZE_UNIT (gnu_decl)) != INTEGER_CST
+		|| (flag_stack_check == GENERIC_STACK_CHECK
+		    && compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
+					 STACK_CHECK_MAX_VAR_SIZE) > 0)))
 	  add_stmt_with_node (build_call_1_expr
 			      (update_setjmp_buf_decl,
 			       build_unary_op (ADDR_EXPR, NULL_TREE,

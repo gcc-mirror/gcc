@@ -1447,7 +1447,11 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
     {
       tree init = DECL_INITIAL (decl);
 
-      if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+      if (TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
+	  || (!TREE_STATIC (decl)
+	      && flag_stack_check == GENERIC_STACK_CHECK
+	      && compare_tree_int (DECL_SIZE_UNIT (decl),
+				   STACK_CHECK_MAX_VAR_SIZE) > 0))
 	gimplify_vla_decl (decl, seq_p);
 
       if (init && init != error_mark_node)

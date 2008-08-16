@@ -254,6 +254,27 @@ extern int flag_var_tracking;
    warning message in case flag was set by -fprofile-{generate,use}.  */
 extern bool flag_speculative_prefetching_set;
 
+/* Type of stack check.  */
+enum stack_check_type
+{
+  /* Do not check the stack.  */
+  NO_STACK_CHECK = 0,
+
+  /* Check the stack generically, i.e. assume no specific support
+     from the target configuration files.  */
+  GENERIC_STACK_CHECK,
+
+  /* Check the stack and rely on the target configuration files to
+     check the static frame of functions, i.e. use the generic
+     mechanism only for dynamic stack allocations.  */
+  STATIC_BUILTIN_STACK_CHECK,
+
+  /* Check the stack and entirely rely on the target configuration
+     files, i.e. do not use the generic mechanism at all.  */
+  FULL_BUILTIN_STACK_CHECK
+};
+extern enum stack_check_type flag_stack_check;
+
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */
 
