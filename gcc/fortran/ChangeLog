@@ -1,3 +1,9 @@
+2008-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35863
+	* io.c (gfc_match_open): Enable UTF-8 in checks.
+	* simplify.c (gfc_simplify_selected_char_kind): Enable iso_10646.
+
 2008-08-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36705

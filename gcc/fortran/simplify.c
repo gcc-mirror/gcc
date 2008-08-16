@@ -3795,6 +3795,8 @@ gfc_simplify_selected_char_kind (gfc_expr *e)
   if (gfc_compare_with_Cstring (e, "ascii", false) == 0
       || gfc_compare_with_Cstring (e, "default", false) == 0)
     kind = 1;
+  else if (gfc_compare_with_Cstring (e, "iso_10646", false) == 0)
+    kind = 4;
   else
     kind = -1;
 

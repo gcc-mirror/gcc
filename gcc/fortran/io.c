@@ -1706,8 +1706,7 @@ gfc_match_open (void)
     
       if (open->encoding->expr_type == EXPR_CONSTANT)
 	{
-	  /* TODO: Implement UTF-8 here.  */
-	  static const char * encoding[] = { "DEFAULT", NULL };
+	  static const char * encoding[] = { "DEFAULT", "UTF-8", NULL };
 
 	  if (!compare_to_allowed_values ("ENCODING", encoding, NULL, NULL,
 					  open->encoding->value.character.string,
