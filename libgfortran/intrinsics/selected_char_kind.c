@@ -44,6 +44,8 @@ selected_char_kind (gfc_charlen_type name_len, char *name)
   if ((len == 5 && strncasecmp (name, "ascii", 5) == 0)
       || (len == 7 && strncasecmp (name, "default", 7) == 0))
     return 1;
+  else if (len == 9 && strncasecmp (name, "iso_10646", 9) == 0)
+    return 1;
   else
     return -1;
 }

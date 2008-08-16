@@ -36,9 +36,160 @@ Boston, MA 02110-1301, USA.  */
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
 #define star_fill(p, n) memset(p, '*', n)
 
 #include "write_float.def"
+
+typedef unsigned char uchar;
+
+/* Write out default char4.  */
+
+static void
+write_default_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
+		     int src_len, int w_len)
+{
+  char *p;
+  int j, k = 0;
+  gfc_char4_t c;
+  uchar d;
+      
+  /* Take care of preceding blanks.  */
+  if (w_len > src_len)
+    {
+      k = w_len - src_len;
+      p = write_block (dtp, k);
+      if (p == NULL)
+	return;
+      memset (p, ' ', k);
+    }
+
+  /* Get ready to handle delimiters if needed.  */
+
+  switch (dtp->u.p.delim_status)
+    {
+    case DELIM_APOSTROPHE:
+      d = '\'';
+      break;
+    case DELIM_QUOTE:
+      d = '"';
+      break;
+    default:
+      d = ' ';
+      break;
+    }
+
+  /* Now process the remaining characters, one at a time.  */
+  for (j = k; j < src_len; j++)
+    {
+      c = source[j];
+    
+      /* Handle delimiters if any.  */
+      if (c == d && d != ' ')
+	{
+	  p = write_block (dtp, 2);
+	  if (p == NULL)
+	    return;
+	  *p++ = (uchar) c;
+	}
+      else
+	{
+	  p = write_block (dtp, 1);
+	  if (p == NULL)
+	    return;
+	}
+      *p = c > 255 ? '?' : (uchar) c;
+    }
+}
+
+
+/* Write out UTF-8 converted from char4.  */
+
+static void
+write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
+		     int src_len, int w_len)
+{
+  char *p;
+  int j, k = 0;
+  gfc_char4_t c;
+  static const uchar masks[6] =  { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  static const uchar limits[6] = { 0x80, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+  size_t nbytes;
+  uchar buf[6], d, *q; 
+
+  /* Take care of preceding blanks.  */
+  if (w_len > src_len)
+    {
+      k = w_len - src_len;
+      p = write_block (dtp, k);
+      if (p == NULL)
+	return;
+      memset (p, ' ', k);
+    }
+
+  /* Get ready to handle delimiters if needed.  */
+
+  switch (dtp->u.p.delim_status)
+    {
+    case DELIM_APOSTROPHE:
+      d = '\'';
+      break;
+    case DELIM_QUOTE:
+      d = '"';
+      break;
+    default:
+      d = ' ';
+      break;
+    }
+
+  /* Now process the remaining characters, one at a time.  */
+  for (j = k; j < src_len; j++)
+    {
+      c = source[j];
+      if (c < 0x80)
+	{
+	  /* Handle the delimiters if any.  */
+	  if (c == d && d != ' ')
+	    {
+	      p = write_block (dtp, 2);
+	      if (p == NULL)
+		return;
+	      *p++ = (uchar) c;
+	    }
+	  else
+	    {
+	      p = write_block (dtp, 1);
+	      if (p == NULL)
+		return;
+	    }
+	  *p = (uchar) c;
+	}
+      else
+	{
+	  /* Convert to UTF-8 sequence.  */
+	  nbytes = 1;
+	  q = &buf[6];
+
+	  do
+	    {
+	      *--q = ((c & 0x3F) | 0x80);
+	      c >>= 6;
+	      nbytes++;
+	    }
+	  while (c >= 0x3F || (c & limits[nbytes-1]));
+
+	  *--q = (c | masks[nbytes-1]);
+
+	  p = write_block (dtp, nbytes);
+	  if (p == NULL)
+	    return;
+
+	  while (q < &buf[6])
+	    *p++ = *q++;
+	}
+    }
+}
+
 
 void
 write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
@@ -126,17 +277,16 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 
 
 /* The primary difference between write_a_char4 and write_a is that we have to
-   deal with writing from the first byte of the 4-byte character and take care
-   of endianess.  This currently implements encoding="default" which means we
-   write the lowest significant byte. If the 3 most significant bytes are
-   not representable emit a '?'.  TODO: Implement encoding="UTF-8"
-   which will process all 4 bytes and translate to the encoded output.  */
+   deal with writing from the first byte of the 4-byte character and pay
+   attention to the most significant bytes.  For ENCODING="default" write the
+   lowest significant byte. If the 3 most significant bytes contain
+   non-zero values, emit a '?'.  For ENCODING="utf-8", convert the UCS-32 value
+   to the UTF-8 encoded string before writing out.  */
 
 void
 write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
   int wlen;
-  char *p;
   gfc_char4_t *q;
 
   wlen = f->u.string.length < 0
@@ -173,19 +323,15 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
 	      /* Write out the previously scanned characters in the string.  */
 	      if (bytes > 0)
 		{
-		  p = write_block (dtp, bytes);
-		  if (p == NULL)
-		    return;
-		  for (j = 0; j < bytes; j++)
-		    p[j] = q[j] > 255 ? '?' : (unsigned char) q[j];
+		  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+		    write_utf8_char4 (dtp, q, bytes, 0);
+		  else
+		    write_default_char4 (dtp, q, bytes, 0);
 		  bytes = 0;
 		}
 
 	      /* Write out the CR_LF sequence.  */ 
-	      p = write_block (dtp, 2);
-              if (p == NULL)
-                return;
-	      memcpy (p, crlf, 2);
+	      write_default_char4 (dtp, crlf, 2, 0);
 	    }
 	  else
 	    bytes++;
@@ -194,32 +340,19 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
       /*  Write out any remaining bytes if no LF was found.  */
       if (bytes > 0)
 	{
-	  p = write_block (dtp, bytes);
-	  if (p == NULL)
-	    return;
-	  for (j = 0; j < bytes; j++)
-	    p[j] = q[j] > 255 ? '?' : (unsigned char) q[j];
+	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	    write_utf8_char4 (dtp, q, bytes, 0);
+	  else
+	    write_default_char4 (dtp, q, bytes, 0);
 	}
     }
   else
     {
 #endif
-      int j;
-      p = write_block (dtp, wlen);
-      if (p == NULL)
-	return;
-
-      if (wlen < len)
-	{
-	  for (j = 0; j < wlen; j++)
-	    p[j] = q[j] > 255 ? '?' : (unsigned char) q[j];
-	}
+      if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	write_utf8_char4 (dtp, q, len, wlen);
       else
-	{
-	  memset (p, ' ', wlen - len);
-	  for (j = wlen - len; j < wlen; j++)
-	    p[j] = q[j] > 255 ? '?' : (unsigned char) q[j];
-	}
+	write_default_char4 (dtp, q, len, wlen);
 #ifdef HAVE_CRLF
     }
 #endif
@@ -745,8 +878,6 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
 {
   int i, extra;
   char *p, d;
-  gfc_char4_t *q;
-
 
   switch (dtp->u.p.delim_status)
     {
@@ -769,9 +900,9 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
 	{
 	  extra = 2;
 
-	    for (i = 0; i < length; i++)
-	      if (source[i] == d)
-		extra++;
+	  for (i = 0; i < length; i++)
+	    if (source[i] == d)
+	      extra++;
 	}
 
       p = write_block (dtp, length + extra);
@@ -796,40 +927,24 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
     }
   else
     {
-      /* We have to scan the source string looking for delimiters to determine
-	 how large the write block needs to be.  */
-      if (d == ' ')
-	extra = 0;
-      else
-	{
-	  extra = 2;
-
-	  q = (gfc_char4_t *) source;
-	  for (i = 0; i < length; i++, q++)
-	    if (*q == (gfc_char4_t) d)
-	      extra++;
-	}
-
-      p = write_block (dtp, length + extra);
-      if (p == NULL)
-	return;
-
       if (d == ' ')
 	{
-	  q = (gfc_char4_t *) source;
-	  for (i = 0; i < length; i++, q++)
-	    p[i] = *q > 255 ? '?' : (unsigned char) *q;
+	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	    write_utf8_char4 (dtp, (gfc_char4_t *) source, length, 0);
+	  else
+	    write_default_char4 (dtp, (gfc_char4_t *) source, length, 0);
 	}
       else
 	{
-	  *p++ = d;
-	  q = (gfc_char4_t *) source;
-	  for (i = 0; i < length; i++, q++)
-	    {
-	      *p++ = *q > 255 ? '?' : (unsigned char) *q;
-	      if (*q == (gfc_char4_t) d)
-		*p++ = d;
-	    }
+	  p = write_block (dtp, 1);
+	  *p = d;
+
+	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	    write_utf8_char4 (dtp, (gfc_char4_t *) source, length, 0);
+	  else
+	    write_default_char4 (dtp, (gfc_char4_t *) source, length, 0);
+
+	  p = write_block (dtp, 1);
 	  *p = d;
 	}
     }
