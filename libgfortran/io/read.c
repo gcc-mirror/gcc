@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include <ctype.h>
 #include <stdlib.h>
 
+typedef unsigned char uchar;
+
 /* read.c -- Deal with formatted reads */
 
 
@@ -236,76 +238,237 @@ read_l (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 }
 
 
-/* read_a()-- Read a character record.  This one is pretty easy. */
+static inline gfc_char4_t
+read_utf8 (st_parameter_dt *dtp, size_t *nbytes) 
+{
+  static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
+  static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  static uchar buffer[6];
+  size_t i, nb, nread;
+  gfc_char4_t c;
+  int status;
+  char *s;
 
-void
-read_a (st_parameter_dt *dtp, const fnode *f, char *p, int length)
+  *nbytes = 1;
+  s = (char *) &buffer[0];
+  status = read_block_form (dtp, s, nbytes);
+  if (status == FAILURE)
+    return 0;
+
+  /* If this is a short read, just return.  */
+  if (*nbytes == 0)
+    return 0;
+
+  c = buffer[0];
+  if (c < 0x80)
+    return c;
+
+  /* The number of leading 1-bits in the first byte indicates how many
+     bytes follow.  */
+  for (nb = 2; nb < 7; nb++)
+    if ((c & ~masks[nb-1]) == patns[nb-1])
+      goto found;
+  goto invalid;
+	
+ found:
+  c = (c & masks[nb-1]);
+  nread = nb - 1;
+
+  s = (char *) &buffer[1];
+  status = read_block_form (dtp, s, &nread);
+  if (status == FAILURE)
+    return 0;
+  /* Decode the bytes read.  */
+  for (i = 1; i < nb; i++)
+    {
+      gfc_char4_t n = *s++;
+
+      if ((n & 0xC0) != 0x80)
+	goto invalid;
+
+      c = ((c << 6) + (n & 0x3F));
+    }
+
+  /* Make sure the shortest possible encoding was used.  */
+  if (c <=      0x7F && nb > 1) goto invalid;
+  if (c <=     0x7FF && nb > 2) goto invalid;
+  if (c <=    0xFFFF && nb > 3) goto invalid;
+  if (c <=  0x1FFFFF && nb > 4) goto invalid;
+  if (c <= 0x3FFFFFF && nb > 5) goto invalid;
+
+  /* Make sure the character is valid.  */
+  if (c > 0x7FFFFFFF || (c >= 0xD800 && c <= 0xDFFF))
+    goto invalid;
+
+  return c;
+      
+ invalid:
+  generate_error (&dtp->common, LIBERROR_READ_VALUE, "Invalid UTF-8 encoding");
+  return (gfc_char4_t) '?';
+}
+
+
+static void
+read_utf8_char1 (st_parameter_dt *dtp, char *p, int len, size_t width)
+{
+  gfc_char4_t c;
+  char *dest;
+  size_t nbytes;
+  int i, j;
+
+  len = ((int) width < len) ? len : (int) width;
+
+  dest = (char *) p;
+
+  /* Proceed with decoding one character at a time.  */
+  for (j = 0; j < len; j++, dest++)
+    {
+      c = read_utf8 (dtp, &nbytes);
+
+      /* Check for a short read and if so, break out.  */
+      if (nbytes == 0)
+	break;
+
+      *dest = c > 255 ? '?' : (uchar) c;
+    }
+
+  /* If there was a short read, pad the remaining characters.  */
+  for (i = j; i < len; i++)
+    *dest++ = ' ';
+  return;
+}
+
+static void
+read_default_char1 (st_parameter_dt *dtp, char *p, int len, size_t width)
 {
   char *s;
-  int m, n, wi, status;
-  size_t w;
+  int m, n, status;
 
-  wi = f->u.w;
-  if (wi == -1) /* '(A)' edit descriptor  */
-    wi = length;
+  s = gfc_alloca (width);
 
-  w = wi;
-
-  s = gfc_alloca (w);
-
-  dtp->u.p.sf_read_comma = 0;
-  status = read_block_form (dtp, s, &w);
-  dtp->u.p.sf_read_comma =
-    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
+  status = read_block_form (dtp, s, &width);
+  
   if (status == FAILURE)
     return;
-  if (w > (size_t) length)
-     s += (w - length);
+  if (width > (size_t) len)
+     s += (width - len);
 
-  m = ((int) w > length) ? length : (int) w;
+  m = ((int) width > len) ? len : (int) width;
   memcpy (p, s, m);
 
-  n = length - w;
+  n = len - width;
   if (n > 0)
     memset (p + m, ' ', n);
 }
 
-void
-read_a_char4 (st_parameter_dt *dtp, const fnode *f, char *p, int length)
+
+static void
+read_utf8_char4 (st_parameter_dt *dtp, void *p, int len, size_t width)
+{
+  gfc_char4_t *dest;
+  size_t nbytes;
+  int i, j;
+
+  len = ((int) width < len) ? len : (int) width;
+
+  dest = (gfc_char4_t *) p;
+
+  /* Proceed with decoding one character at a time.  */
+  for (j = 0; j < len; j++, dest++)
+    {
+      *dest = read_utf8 (dtp, &nbytes);
+
+      /* Check for a short read and if so, break out.  */
+      if (nbytes == 0)
+	break;
+    }
+
+  /* If there was a short read, pad the remaining characters.  */
+  for (i = j; i < len; i++)
+    *dest++ = (gfc_char4_t) ' ';
+  return;
+}
+
+
+static void
+read_default_char4 (st_parameter_dt *dtp, char *p, int len, size_t width)
 {
   char *s;
   gfc_char4_t *dest;
-  int m, n, wi, status;
-  size_t w;
+  int m, n, status;
 
-  wi = f->u.w;
-  if (wi == -1) /* '(A)' edit descriptor  */
-    wi = length;
+  s = gfc_alloca (width);
 
-  w = wi;
-
-  s = gfc_alloca (w);
-
-  /* Read in w bytes, treating comma as not a separator.  */
-  dtp->u.p.sf_read_comma = 0;
-  status = read_block_form (dtp, s, &w);
-  dtp->u.p.sf_read_comma =
-    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
+  status = read_block_form (dtp, s, &width);
   
   if (status == FAILURE)
     return;
-  if (w > (size_t) length)
-     s += (w - length);
+  if (width > (size_t) len)
+     s += (width - len);
 
-  m = ((int) w > length) ? length : (int) w;
+  m = ((int) width > len) ? len : (int) width;
   
   dest = (gfc_char4_t *) p;
   
   for (n = 0; n < m; n++, dest++, s++)
     *dest = (unsigned char ) *s;
 
-  for (n = 0; n < length - (int) w; n++, dest++)
+  for (n = 0; n < len - (int) width; n++, dest++)
     *dest = (unsigned char) ' ';
+}
+
+
+/* read_a()-- Read a character record into a KIND=1 character destination,
+   processing UTF-8 encoding if necessary.  */
+
+void
+read_a (st_parameter_dt *dtp, const fnode *f, char *p, int length)
+{
+  int wi;
+  size_t w;
+
+  wi = f->u.w;
+  if (wi == -1) /* '(A)' edit descriptor  */
+    wi = length;
+  w = wi;
+
+  /* Read in w characters, treating comma as not a separator.  */
+  dtp->u.p.sf_read_comma = 0;
+
+  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+    read_utf8_char1 (dtp, p, length, w);
+  else
+    read_default_char1 (dtp, p, length, w);
+  
+  dtp->u.p.sf_read_comma =
+    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
+}
+
+
+/* read_a_char4()-- Read a character record into a KIND=4 character destination,
+   processing UTF-8 encoding if necessary.  */
+
+void
+read_a_char4 (st_parameter_dt *dtp, const fnode *f, char *p, int length)
+{
+  int wi;
+  size_t w;
+
+  wi = f->u.w;
+  if (wi == -1) /* '(A)' edit descriptor  */
+    wi = length;
+  w = wi;
+
+  /* Read in w characters, treating comma as not a separator.  */
+  dtp->u.p.sf_read_comma = 0;
+
+  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+    read_utf8_char4 (dtp, p, length, w);
+  else
+    read_default_char4 (dtp, p, length, w);
+  
+  dtp->u.p.sf_read_comma =
+    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
 }
 
 /* eat_leading_spaces()-- Given a character pointer and a width,

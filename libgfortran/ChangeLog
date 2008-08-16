@@ -1,3 +1,21 @@
+2008-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35863
+	* intrinsics/selected_char_kind.c: Enable iso_10646.
+	* io/read.c (typedef uchar): New type.
+	(read_utf8): New function to read a single UTF-8 encoded character.
+	(read_utf8_char1): New function to read UTF-8 into a KIND=1 string.
+	(read_default_char1): New functio to read default into KIND=1 string.
+	(read_utf8_char4): New function to read UTF-8 into a KIND=4 string.
+	(read_default_char4): New function to read UTF-8 into a KIND=4 string.
+	(read_a): Modify to use the new functions.
+	(read_a_char4): Modify to use the new functions.
+	* io/write.c (error.h): Add include. (typedef uchar): New type.
+	(write_default_char4): New function to default write KIND=4 string.
+	(write_utf8_char4): New function to UTF-8 write KIND=4 string.
+	(write_a_char4): Modify to use new functions.
+	(write_character): Modify to use new functions.
+
 2008-08-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libfortran/37123
