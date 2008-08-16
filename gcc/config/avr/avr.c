@@ -43,6 +43,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "params.h"
 #include "df.h"
 
 /* Maximal allowed offset for an address in the LD command */
@@ -347,6 +348,9 @@ avr_override_options (void)
   const struct mcu_type_s *t;
 
   flag_delete_null_pointer_checks = 0;
+
+  if (!PARAM_SET_P (PARAM_INLINE_CALL_COST))
+    set_param_value ("inline-call-cost", 5);
 
   for (t = avr_mcu_types; t->name; t++)
     if (strcmp (t->name, avr_mcu_name) == 0)
