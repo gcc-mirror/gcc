@@ -1,5 +1,10 @@
 2008-08-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (call_to_gnu): Use the Sloc of the call
+	for back-copy statements in lieu of that of the actual.
+
+2008-08-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/20548
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use DECL_SIZE_UNIT in the
 	setjmp test consistently.  Adjust for new behavior of flag_stack_check.
