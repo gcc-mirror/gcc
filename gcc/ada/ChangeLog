@@ -2,9 +2,9 @@
 
 	PR ada/20548
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use DECL_SIZE_UNIT in the
-	setjmp test consistently.  Adjust for new behaviour of flag_stack_check.
+	setjmp test consistently.  Adjust for new behavior of flag_stack_check.
 	* gcc-interface/utils2.c (build_call_alloc_dealloc): Remove redundant
-	test of flag_stack_check.  Adjust for new behaviour of flag_stack_check.
+	test of flag_stack_check.  Adjust for new behavior of flag_stack_check.
 
 2008-08-13  Samuel Tardieu  <sam@rfc1149.net>
 
