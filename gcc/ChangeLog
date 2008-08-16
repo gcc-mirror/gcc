@@ -1,3 +1,8 @@
+2008-08-16  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* config/avr/avr.c (avr_override_options): Reduce value of 
+	PARAM_INLINE_CALL_COST.
+
 2008-08-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: When converting
