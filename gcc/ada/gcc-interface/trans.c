@@ -2249,7 +2249,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    {
 	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_copy,
 					  gnu_name);
-	      set_expr_location_from_node (gnu_temp, gnat_actual);
+	      set_expr_location_from_node (gnu_temp, gnat_node);
 	      append_to_statement_list (gnu_temp, &gnu_after_list);
 	    }
 	}
@@ -2601,7 +2601,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
 	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_actual, gnu_result);
-	    set_expr_location_from_node (gnu_result, gnat_actual);
+	    set_expr_location_from_node (gnu_result, gnat_node);
 	    append_to_statement_list (gnu_result, &gnu_before_list);
 	    scalar_return_list = TREE_CHAIN (scalar_return_list);
 	    gnu_name_list = TREE_CHAIN (gnu_name_list);
