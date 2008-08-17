@@ -3248,12 +3248,17 @@ __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
   else
     flags &= ~FD_CLOEXEC;
   return fcntl (fd, F_SETFD, flags | FD_CLOEXEC);
+#elif defined(_WIN32)
+  HANDLE h = (HANDLE) _get_osfhandle (fd);
+  if (h == (HANDLE) -1)
+    return -1;
+  if (close_on_exec_p)
+    return ! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0);
+  return ! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 
+    HANDLE_FLAG_INHERIT);
 #else
+  /* TODO: Unimplemented. */
   return -1;
-  /* For the Windows case, we should use SetHandleInformation to remove
-     the HANDLE_INHERIT property from fd. This is not implemented yet,
-     but for our purposes (support of GNAT.Expect) this does not matter,
-     as by default handles are *not* inherited. */
 #endif
 }
 
