@@ -148,6 +148,15 @@ enum mips_code_readable_setting {
 /* True if we are generating position-independent VxWorks RTP code.  */
 #define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
 
+/* True if the output file is marked as ".abicalls; .option pic0"
+   (-call_nonpic).  */
+#define TARGET_ABICALLS_PIC0 \
+  (TARGET_ABSOLUTE_ABICALLS && TARGET_PLT)
+
+/* True if the output file is marked as ".abicalls; .option pic2" (-KPIC).  */
+#define TARGET_ABICALLS_PIC2 \
+  (TARGET_ABICALLS && !TARGET_ABICALLS_PIC0)
+
 /* True if the call patterns should be split into a jalr followed by
    an instruction to restore $gp.  It is only safe to split the load
    from the call when every use of $gp is explicit.  */
@@ -200,7 +209,10 @@ enum mips_code_readable_setting {
    Although GAS does understand .gpdword, the SGI linker mishandles
    the relocations GAS generates (R_MIPS_GPREL32 followed by R_MIPS_64).
    We therefore disable GP-relative switch tables for n64 on IRIX targets.  */
-#define TARGET_GPWORD (TARGET_ABICALLS && !(mips_abi == ABI_64 && TARGET_IRIX))
+#define TARGET_GPWORD				\
+  (TARGET_ABICALLS				\
+   && !TARGET_ABSOLUTE_ABICALLS			\
+   && !(mips_abi == ABI_64 && TARGET_IRIX))
 
 /* Generate mips16 code */
 #define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
@@ -715,7 +727,8 @@ enum mips_code_readable_setting {
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
   {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }, \
-  {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }
+  {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }, \
+  {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }
 
 
 #define GENERATE_DIVIDE_TRAPS (TARGET_DIVIDE_TRAPS \
@@ -1074,7 +1087,7 @@ enum mips_code_readable_setting {
 %{mfix-vr4120} %{mfix-vr4130} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
-%{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \
+%{mabi=*} %{!mabi=*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
 %{mfp32} %{mfp64} \
 %{mshared} %{mno-shared} \
@@ -2559,7 +2572,7 @@ typedef struct mips_args {
    ? "%*" INSN "\t%" #OPNO "%/"					\
    : REG_P (OPERANDS[OPNO])					\
    ? "%*" INSN "r\t%" #OPNO "%/"				\
-   : TARGET_ABICALLS						\
+   : TARGET_ABICALLS_PIC2					\
    ? (".option\tpic0\n\t"					\
       "%*" INSN "\t%" #OPNO "%/\n\t"				\
       ".option\tpic2")						\

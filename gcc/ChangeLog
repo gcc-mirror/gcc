@@ -1,3 +1,42 @@
+2008-08-17  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/install.texi (--with-mips-plt): Document.
+	* doc/invoke.texi (-mplt, -mno-plt): Document.
+	* config.gcc (mips*-*-*): Add mips-plt to supported_defaults
+	and handle ${with_mips_plt}.
+	* config/mips/mips.opt (mplt): New option.
+	* config/mips/mips.h (TARGET_ABICALLS_PIC0): New macro.
+	(TARGET_ABICALLS_PIC2): Likewise.
+	(TARGET_GPWORD): Return false for TARGET_ABSOLUTE_ABICALLS.
+	(OPTION_DEFAULT_SPECS): Add a mips-plt entry.
+	(ASM_SPEC): Use !mabi=* instead of !mabi*.
+	(MIPS_CALL): Use TARGET_ABICALLS_PIC2 instead of TARGET_ABICALLS
+	to decide whether to output ".option picX" directives.
+	* config/mips/linux.h (SUBTARGET_ASM_SPEC): Remove -mabi=64 handling.
+	Pass -call_nonpic rather than -KPIC for -mplt.
+	(BASE_DRIVER_SELF_SPECS): Remove -mplt if -mno-shared is not present
+	on the command line.  Also remove it when -mabi=64 is used without
+	-msym32.
+	* config/mips/linux64.h (SUBTARGET_ASM_SPEC): Delete.
+	* config/mips/mips.c (mips_use_pic_fn_addr_reg_p): Handle
+	TARGET_ABICALLS_PIC0.
+	(mips_classify_symbol): Use TARGET_ABICALLS_PIC2 instead of
+	TARGET_ABICALLS.
+	(mips16_build_function_stub): Only output ".option pic" directives
+	and PIC stubs if TARGET_ABICALLS_PIC2.  Call through $25 instead of $1.
+	(mips16_build_call_stub): Fix comment and remove redundant
+	".set at"/"set .noat" directives.
+	(mips_function_rodata_section): Use the default behaviour for
+	TARGET_ABSOLUTE_ABICALLS.
+	(mips_file_start): Emit ".option pic0" for TARGET_ABICALLS_PIC0.
+	(mips_global_pointer): Handle TARGET_ABICALLS_PIC0.
+	(mips_restore_gp): Do nothing if the current function doesn't use
+	a global pointer.
+	(mips_expand_prologue): Only save $gp if the current function uses it.
+	Use a normal move for TARGET_ABICALLS_PIC0.
+	(mips_override_options): Only set flag_pic if TARGET_ABICALLS_PIC2.
+
 2008-08-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_save_reg_p): Don't short-circuit rest

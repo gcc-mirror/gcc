@@ -1454,13 +1454,20 @@ mips_use_pic_fn_addr_reg_p (const_rtx x)
   if (mips16_stub_function_p (x))
     return false;
 
-  /* When TARGET_ABSOLUTE_ABICALLS is true, locally-defined functions
-     use absolute accesses to set up the global pointer.  */
-  if (TARGET_ABSOLUTE_ABICALLS
-      && GET_CODE (x) == SYMBOL_REF
-      && mips_symbol_binds_local_p (x)
-      && !SYMBOL_REF_EXTERNAL_P (x))
-    return false;
+  if (GET_CODE (x) == SYMBOL_REF)
+    {
+      /* If PLTs and copy relocations are available, the static linker
+	 will make sure that $25 is valid on entry to the target function.  */
+      if (TARGET_ABICALLS_PIC0)
+	return false;
+
+      /* Locally-defined functions use absolute accesses to set up
+	 the global pointer.  */
+      if (TARGET_ABSOLUTE_ABICALLS
+	  && mips_symbol_binds_local_p (x)
+	  && !SYMBOL_REF_EXTERNAL_P (x))
+	return false;
+    }
 
   return true;
 }
@@ -1512,7 +1519,7 @@ mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
 
   /* Don't use GOT accesses for locally-binding symbols when -mno-shared
      is in effect.  */
-  if (TARGET_ABICALLS
+  if (TARGET_ABICALLS_PIC2
       && !(TARGET_ABSOLUTE_ABICALLS && mips_symbol_binds_local_p (x)))
     {
       /* There are three cases to consider:
@@ -5657,35 +5664,36 @@ mips16_build_function_stub (void)
   assemble_start_function (stubdecl, stubname);
   mips_start_function_definition (stubname, false);
 
-  /* If generating abicalls code, either set up the global pointer or
-     switch to absolute mode.  */
-  if (TARGET_ABSOLUTE_ABICALLS)
-    fprintf (asm_out_file, "\t.option\tpic0\n");
-  else if (TARGET_ABICALLS)
+  /* If generating pic2 code, either set up the global pointer or
+     switch to pic0.  */
+  if (TARGET_ABICALLS_PIC2)
     {
-      output_asm_insn ("%(.cpload\t%^%)", NULL);
-      /* Emit an R_MIPS_NONE relocation to tell the linker what the
-	 target function is.  Use a local GOT access when loading the
-	 symbol, to cut down on the number of unnecessary GOT entries
-	 for stubs that aren't needed.  */
-      output_asm_insn (".reloc\t0,R_MIPS_NONE,%0", &symbol);
-      symbol = alias;
+      if (TARGET_ABSOLUTE_ABICALLS)
+	fprintf (asm_out_file, "\t.option\tpic0\n");
+      else
+	{
+	  output_asm_insn ("%(.cpload\t%^%)", NULL);
+	  /* Emit an R_MIPS_NONE relocation to tell the linker what the
+	     target function is.  Use a local GOT access when loading the
+	     symbol, to cut down on the number of unnecessary GOT entries
+	     for stubs that aren't needed.  */
+	  output_asm_insn (".reloc\t0,R_MIPS_NONE,%0", &symbol);
+	  symbol = alias;
+	}
     }
 
-  /* Load the address of the MIPS16 function into $at.  Do this first so
+  /* Load the address of the MIPS16 function into $25.  Do this first so
      that targets with coprocessor interlocks can use an MFC1 to fill the
      delay slot.  */
-  fprintf (asm_out_file, "\t.set\tnoat\n");
-  output_asm_insn ("la\t%@,%0", &symbol);
+  output_asm_insn ("la\t%^,%0", &symbol);
 
   /* Move the arguments from floating-point registers to general registers.  */
   mips_output_args_xfer (crtl->args.info.fp_code, 'f');
 
   /* Jump to the MIPS16 function.  */
-  output_asm_insn ("jr\t%@", NULL);
-  fprintf (asm_out_file, "\t.set\tat\n");
+  output_asm_insn ("jr\t%^", NULL);
 
-  if (TARGET_ABSOLUTE_ABICALLS)
+  if (TARGET_ABICALLS_PIC2 && TARGET_ABSOLUTE_ABICALLS)
     fprintf (asm_out_file, "\t.option\tpic2\n");
 
   mips_end_function_definition (stubname);
@@ -5906,10 +5914,9 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 
       if (!fp_ret_p)
 	{
-	  /* Load the address of the MIPS16 function into $at.  Do this
+	  /* Load the address of the MIPS16 function into $25.  Do this
 	     first so that targets with coprocessor interlocks can use
 	     an MFC1 to fill the delay slot.  */
-	  fprintf (asm_out_file, "\t.set\tnoat\n");
 	  if (TARGET_EXPLICIT_RELOCS)
 	    {
 	      output_asm_insn ("lui\t%^,%%hi(%0)", &fn);
@@ -5927,7 +5934,6 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	{
 	  /* Jump to the previously-loaded address.  */
 	  output_asm_insn ("jr\t%^", NULL);
-	  fprintf (asm_out_file, "\t.set\tat\n");
 	}
       else
 	{
@@ -7222,15 +7228,16 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
 /* Implement TARGET_ASM_FUNCTION_RODATA_SECTION.
 
    The complication here is that, with the combination TARGET_ABICALLS
-   && !TARGET_GPWORD, jump tables will use absolute addresses, and should
-   therefore not be included in the read-only part of a DSO.  Handle such
-   cases by selecting a normal data section instead of a read-only one.
-   The logic apes that in default_function_rodata_section.  */
+   && !TARGET_ABSOLUTE_ABICALLS && !TARGET_GPWORD, jump tables will use
+   absolute addresses, and should therefore not be included in the
+   read-only part of a DSO.  Handle such cases by selecting a normal
+   data section instead of a read-only one.  The logic apes that in
+   default_function_rodata_section.  */
 
 static section *
 mips_function_rodata_section (tree decl)
 {
-  if (!TARGET_ABICALLS || TARGET_GPWORD)
+  if (!TARGET_ABICALLS || TARGET_ABSOLUTE_ABICALLS || TARGET_GPWORD)
     return default_function_rodata_section (decl);
 
   if (decl && DECL_SECTION_NAME (decl))
@@ -7729,7 +7736,11 @@ mips_file_start (void)
 
   /* If TARGET_ABICALLS, tell GAS to generate -KPIC code.  */
   if (TARGET_ABICALLS)
-    fprintf (asm_out_file, "\t.abicalls\n");
+    {
+      fprintf (asm_out_file, "\t.abicalls\n");
+      if (TARGET_ABICALLS_PIC0)
+	fprintf (asm_out_file, "\t.option\tpic0\n");
+    }
 
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\n%s -G value = %d, Arch = %s, ISA = %d\n",
@@ -8285,24 +8296,40 @@ mips_global_pointer (void)
   if (crtl->has_nonlocal_goto)
     return GLOBAL_POINTER_REGNUM;
 
-  /* If the gp is never referenced, there's no need to initialize it.
-     Note that reload can sometimes introduce constant pool references
-     into a function that otherwise didn't need them.  For example,
-     suppose we have an instruction like:
-
-	  (set (reg:DF R1) (float:DF (reg:SI R2)))
-
-     If R2 turns out to be constant such as 1, the instruction may have a
-     REG_EQUAL note saying that R1 == 1.0.  Reload then has the option of
-     using this constant if R2 doesn't get allocated to a register.
-
-     In cases like these, reload will have added the constant to the pool
-     but no instruction will yet refer to it.  */
+  /* There's no need to initialize $gp if it isn't referenced now,
+     and if we can be sure that no new references will be added during
+     or after reload.  */
   if (!df_regs_ever_live_p (GLOBAL_POINTER_REGNUM)
-      && !crtl->uses_const_pool
-      && !mips16_cfun_returns_in_fpr_p ()
       && !mips_function_has_gp_insn ())
-    return 0;
+    {
+      /* The function doesn't use $gp at the moment.  If we're generating
+	 -call_nonpic code, no new uses will be introduced during or after
+	 reload.  */
+      if (TARGET_ABICALLS_PIC0)
+	return 0;
+
+      /* We need to handle the following implicit gp references:
+
+	 - Reload can sometimes introduce constant pool references
+	   into a function that otherwise didn't need them.  For example,
+	   suppose we have an instruction like:
+
+	       (set (reg:DF R1) (float:DF (reg:SI R2)))
+
+	   If R2 turns out to be constant such as 1, the instruction may
+	   have a REG_EQUAL note saying that R1 == 1.0.  Reload then has
+	   the option of using this constant if R2 doesn't get allocated
+	   to a register.
+
+	   In cases like these, reload will have added the constant to the
+	   pool but no instruction will yet refer to it.
+
+	 - MIPS16 functions that return in FPRs need to call an
+	   external libgcc routine.  */
+      if (!crtl->uses_const_pool
+	  && !mips16_cfun_returns_in_fpr_p ())
+	return 0;
+    }
 
   /* We need a global pointer, but perhaps we can use a call-clobbered
      register instead of $gp.  */
@@ -8693,6 +8720,9 @@ void
 mips_restore_gp (rtx temp)
 {
   gcc_assert (TARGET_ABICALLS && TARGET_OLDABI);
+
+  if (cfun->machine->global_pointer == 0)
+    return;
 
   if (TARGET_MIPS16)
     {
@@ -9121,13 +9151,17 @@ mips_expand_prologue (void)
   mips_emit_loadgp ();
 
   /* Initialize the $gp save slot.  */
-  if (frame->cprestore_size > 0)
+  if (frame->cprestore_size > 0
+      && cfun->machine->global_pointer != 0)
     {
       if (TARGET_MIPS16)
 	mips_emit_move (mips_cprestore_slot (MIPS_PROLOGUE_TEMP (Pmode)),
 			MIPS16_PIC_TEMP);
-      else
+      else if (TARGET_ABICALLS_PIC2)
 	emit_insn (gen_cprestore (GEN_INT (frame->args_size)));
+      else
+	emit_move_insn (mips_cprestore_slot (MIPS_PROLOGUE_TEMP (Pmode)),
+			pic_offset_table_rtx);
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -13196,14 +13230,16 @@ mips_override_options (void)
       target_flags &= ~MASK_ABICALLS;
     }
 
-  if (TARGET_ABICALLS)
+  if (TARGET_ABICALLS_PIC2)
     /* We need to set flag_pic for executables as well as DSOs
        because we may reference symbols that are not defined in
        the final executable.  (MIPS does not use things like
        copy relocs, for example.)
 
-       Also, there is a body of code that uses __PIC__ to distinguish
-       between -mabicalls and -mno-abicalls code.  */
+       There is a body of code that uses __PIC__ to distinguish
+       between -mabicalls and -mno-abicalls code.  The non-__PIC__
+       variant is usually appropriate for TARGET_ABICALLS_PIC0, as
+       long as any indirect jumps use $25.  */
     flag_pic = 1;
 
   /* -mvr4130-align is a "speed over size" optimization: it usually produces

@@ -634,8 +634,8 @@ Objective-C and Objective-C++ Dialects}.
 -mips16  -mno-mips16  -mflip-mips16 @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
--mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64 @gol
--mfp32  -mfp64  -mhard-float  -msoft-float @gol
+-mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
+-mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -12161,6 +12161,19 @@ of relocatable objects.  Using @option{-mno-shared} will generally make
 executables both smaller and quicker.
 
 @option{-mshared} is the default.
+
+@item -mplt
+@itemx -mno-plt
+@opindex mplt
+@opindex mno-plt
+Assume (do not assume) that the static and dynamic linkers
+support PLTs and copy relocations.  This option only affects
+@samp{-mno-shared -mabicalls}.  For the n64 ABI, this option
+has no effect without @samp{-msym32}.
+
+You can make @option{-mplt} the default by configuring
+GCC with @option{--with-mips-plt}.  The default is
+@option{-mno-plt} otherwise.
 
 @item -mxgot
 @itemx -mno-xgot
