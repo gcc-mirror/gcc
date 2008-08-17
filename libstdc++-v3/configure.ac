@@ -125,11 +125,30 @@ GLIBCXX_CHECK_SYSTEM_ERROR
 # For the streamoff typedef.
 GLIBCXX_CHECK_INT64_T
 
+# For LFS support.
+GLIBCXX_CHECK_LFS
+
+# For showmanyc_helper().
+AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
+GLIBCXX_CHECK_POLL
+GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+
+# For xsputn_2().
+AC_CHECK_HEADERS(sys/uio.h)
+GLIBCXX_CHECK_WRITEV
+
 # For C99 support to TR1.
 GLIBCXX_CHECK_C99_TR1
 
 # For common values of EOF, SEEK_CUR, SEEK_END.
 GLIBCXX_CHECK_STDIO_MACROS
+
+# Check for available headers.
+AC_CHECK_HEADERS([endian.h float.h fp.h ieeefp.h inttypes.h locale.h \
+machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
+strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
+sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
+wchar.h wctype.h])
 
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
@@ -137,28 +156,11 @@ if $GLIBCXX_IS_NATIVE; then
   # We can do more elaborate tests that assume a working linker.
   CANADIAN=no
 
-  # Check for available headers.
-  AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
-  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h \
-  sys/types.h sys/ipc.h sys/sem.h])
-
   GLIBCXX_CHECK_LINKER_FEATURES
   GLIBCXX_CHECK_MATH_SUPPORT
   GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
   GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
   GLIBCXX_CHECK_STDLIB_SUPPORT
-
-  # For showmanyc_helper().
-  AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
-  GLIBCXX_CHECK_POLL
-  GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
-
-  # For xsputn_2().
-  AC_CHECK_HEADERS(sys/uio.h)
-  GLIBCXX_CHECK_WRITEV
-
-  # For LFS support.
-  GLIBCXX_CHECK_LFS
 
   # For dev/random and dev/urandom for TR1.
   GLIBCXX_CHECK_RANDOM_TR1

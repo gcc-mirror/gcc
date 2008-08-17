@@ -390,9 +390,15 @@ dnl Check whether S_ISREG (Posix) or S_IFREG is available in <sys/stat.h>.
 dnl Define HAVE_S_ISREG / HAVE_S_IFREG appropriately.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
   AC_MSG_CHECKING([for S_ISREG or S_IFREG])
   AC_CACHE_VAL(glibcxx_cv_S_ISREG, [
-    AC_TRY_LINK(
+    GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/stat.h>],
       [struct stat buffer;
        fstat(0, &buffer);
@@ -401,7 +407,7 @@ AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
       [glibcxx_cv_S_ISREG=no])
   ])
   AC_CACHE_VAL(glibcxx_cv_S_IFREG, [
-    AC_TRY_LINK(
+    GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/stat.h>],
       [struct stat buffer;
        fstat(0, &buffer);
@@ -420,6 +426,9 @@ AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
     res=S_IFREG
   fi
   AC_MSG_RESULT($res)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
 ])
 
 
@@ -427,9 +436,15 @@ dnl
 dnl Check whether poll is available in <poll.h>, and define HAVE_POLL.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_POLL], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
   AC_MSG_CHECKING([for poll])
   AC_CACHE_VAL(glibcxx_cv_POLL, [
-    AC_TRY_LINK(
+    GCC_TRY_COMPILE_OR_LINK(
       [#include <poll.h>],
       [struct pollfd pfd[1];
        pfd[0].events = POLLIN;
@@ -441,6 +456,9 @@ AC_DEFUN([GLIBCXX_CHECK_POLL], [
     AC_DEFINE(HAVE_POLL, 1, [Define if poll is available in <poll.h>.])
   fi
   AC_MSG_RESULT($glibcxx_cv_POLL)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
 ])
 
 
@@ -448,9 +466,15 @@ dnl
 dnl Check whether writev is available in <sys/uio.h>, and define HAVE_WRITEV.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
   AC_MSG_CHECKING([for writev])
   AC_CACHE_VAL(glibcxx_cv_WRITEV, [
-    AC_TRY_LINK(
+    GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/uio.h>],
       [struct iovec iov[2];
        writev(0, iov, 0);],
@@ -461,6 +485,9 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
     AC_DEFINE(HAVE_WRITEV, 1, [Define if writev is available in <sys/uio.h>.])
   fi
   AC_MSG_RESULT($glibcxx_cv_WRITEV)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
 ])
 
 
@@ -531,7 +558,7 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   CXXFLAGS="$CXXFLAGS -fno-exceptions"	
   AC_MSG_CHECKING([for LFS support])
   AC_CACHE_VAL(glibcxx_cv_LFS, [
-    AC_TRY_LINK(
+    GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>
        #include <stdio.h>
        #include <sys/stat.h>
