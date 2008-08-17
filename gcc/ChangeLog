@@ -1,3 +1,10 @@
+2008-08-17  Christophe Saout  <christophe@saout.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37101
+	* config/i386/sse.md (vec_concatv2di): Remove movlps alternative.
+	(*vec_concatv2di_rex64_sse): Ditto.
+
 2008-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37103
@@ -455,17 +462,15 @@
 2008-07-01  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/34744
-	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New
-	macros.
-       	(df_scan_free_internal): Free data structures not
+	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New macros.
+	(df_scan_free_internal): Free data structures not
 	allocated in storage pools.
 	(df_mw_hardreg_chain_delete_eq_uses): Use df_scan_free_mws_vec.
 	(df_refs_add_to_chains): Use df_scan_free_ref_vec and
 	df_scan_free_mws_vec.
 	* dse.c (dse_step6): Free offset_map_p and offset_map_n
 	unconditionally.
-	* ifcvt.c (cond_move_process_if_block): Free vectors on false
-	return.
+	* ifcvt.c (cond_move_process_if_block): Free vectors on false return.
 
 2008-07-01  Ira Rosen  <irar@il.ibm.com>
 

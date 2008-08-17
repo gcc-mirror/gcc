@@ -1,3 +1,8 @@
+2008-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37101
+	* gcc.target/i386/pr37101.c: New test.
+
 2008-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37103
