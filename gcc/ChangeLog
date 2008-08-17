@@ -1,3 +1,8 @@
+2008-08-17  Nick Clifton  <nickc@redhat.com>
+
+	* doc/extend.texi (Function Attributes): Fix typo in description
+	if hot function attribute.
+
 2008-08-17  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
