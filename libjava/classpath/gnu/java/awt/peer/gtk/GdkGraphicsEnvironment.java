@@ -73,7 +73,7 @@ public class GdkGraphicsEnvironment extends ClasspathGraphicsEnvironment
 
   static
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
+    if (true) // GCJ LOCAL
       {
         System.loadLibrary("gtkpeer");
       }

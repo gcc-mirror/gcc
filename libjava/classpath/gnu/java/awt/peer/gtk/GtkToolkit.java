@@ -172,7 +172,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   static
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
+    if (true) // GCJ LOCAL
       {
         System.loadLibrary("gtkpeer");
       }

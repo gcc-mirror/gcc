@@ -75,7 +75,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 {
   static 
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
+    if (true) // GCJ LOCAL
       {
         System.loadLibrary("gtkpeer");
       }
