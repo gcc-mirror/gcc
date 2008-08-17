@@ -8322,10 +8322,12 @@ mips_global_pointer (void)
 static bool
 mips_save_reg_p (unsigned int regno)
 {
-  /* We only need to save $gp if TARGET_CALL_SAVED_GP and only then
-     if we have not chosen a call-clobbered substitute.  */
-  if (regno == GLOBAL_POINTER_REGNUM)
-    return TARGET_CALL_SAVED_GP && cfun->machine->global_pointer == regno;
+  /* We need to save $gp if TARGET_CALL_SAVED_GP and if we have not
+     chosen a call-clobbered substitute.  */
+  if (TARGET_CALL_SAVED_GP
+      && regno == GLOBAL_POINTER_REGNUM
+      && cfun->machine->global_pointer == regno)
+    return true;
 
   /* Check call-saved registers.  */
   if ((crtl->saves_all_registers || df_regs_ever_live_p (regno))
