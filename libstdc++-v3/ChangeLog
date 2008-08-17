@@ -1,5 +1,13 @@
 2008-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* acinclude.m4 ([AC_LC_MESSAGES]): Use AC_TRY_COMPILE instead of
+	AC_TRY_LINK.
+	* configure.ac: Run unconditionally AC_LC_MESSAGES.
+	* crossconfig.m4: Adjust.
+	* configure: Regenerate.
+
+2008-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* acinclude.m4 ([GLIBCXX_CHECK_LFS], [GLIBCXX_CHECK_POLL],
 	[GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [GLIBCXX_CHECK_WRITEV]):
 	Use GCC_TRY_COMPILE_OR_LINK instead of AC_TRY_LINK, in C++,

@@ -143,6 +143,8 @@ GLIBCXX_CHECK_C99_TR1
 # For common values of EOF, SEEK_CUR, SEEK_END.
 GLIBCXX_CHECK_STDIO_MACROS
 
+AC_LC_MESSAGES
+
 # Check for available headers.
 AC_CHECK_HEADERS([endian.h float.h fp.h ieeefp.h inttypes.h locale.h \
 machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
@@ -176,8 +178,6 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For _Unwind_GetIPInfo.
   GCC_CHECK_UNWIND_GETIPINFO
-
-  AC_LC_MESSAGES
 
   # For iconv support.
   AM_ICONV
