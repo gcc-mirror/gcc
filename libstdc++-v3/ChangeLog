@@ -1,3 +1,16 @@
+2008-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_LFS], [GLIBCXX_CHECK_POLL],
+	[GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [GLIBCXX_CHECK_WRITEV]):
+	Use GCC_TRY_COMPILE_OR_LINK instead of AC_TRY_LINK, in C++,
+	with -fno-exceptions as flags.
+	* configure.ac: Run unconditionally GLIBCXX_CHECK_LFS,
+	GLIBCXX_CHECK_POLL, GLIBCXX_CHECK_S_ISREG_OR_S_IFREG,
+	GLIBCXX_CHECK_WRITEV and commonized AC_CHECK_HEADERS. 
+	* crossconfig.m4: Adjust; remove AC_CHECK_HEADERS commonized
+	in configure.ac.
+	* configure: Regenerate.
+
 2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Re-instate last patch, amended to use __exchange_and_add_dispatch
