@@ -2903,7 +2903,7 @@ are automatically detected and this attribute is ignored.
 The @code{hot} attribute is not implemented in GCC versions earlier
 than 4.3.
 
-Starting with GCC 4.4, the @code{cold} attribute sets
+Starting with GCC 4.4, the @code{hot} attribute sets
 @code{optimize("O3")} to turn on more aggressive optimization on the
 the i386, x86_64, and IA-64 targets.
 
