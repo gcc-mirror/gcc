@@ -42,8 +42,6 @@ case "${host}" in
     GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
-
-    AC_DEFINE(HAVE_LC_MESSAGES)
     ;;
 
   *djgpp)
@@ -81,7 +79,6 @@ case "${host}" in
     AC_SUBST(SECTION_FLAGS) 
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
-    AC_DEFINE(HAVE_LC_MESSAGES)
     AC_DEFINE(HAVE_SETENV)
     AC_DEFINE(HAVE_COPYSIGN)
     AC_DEFINE(HAVE_COPYSIGNF)
@@ -156,8 +153,6 @@ case "${host}" in
 
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
 
-    AC_LC_MESSAGES
-
     # For iconv support.
     AM_ICONV
     ;;
@@ -220,7 +215,6 @@ case "${host}" in
       *-solaris2.7 | *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
          GLIBCXX_CHECK_LINKER_FEATURES
          AC_DEFINE(HAVE_MBSTATE_T)
-         AC_DEFINE(HAVE_LC_MESSAGES)
          AC_DEFINE(HAVE_FINITE)
          AC_DEFINE(HAVE_FPCLASS)
          # All of the dependencies for wide character support are here, so
