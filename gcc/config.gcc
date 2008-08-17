@@ -2779,7 +2779,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch float tune divide llsc"
+		supported_defaults="abi arch float tune divide llsc mips-plt"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -2823,6 +2823,21 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown llsc type used in --with-llsc" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_mips_plt} in
+		yes)
+			with_mips_plt=plt
+			;;
+		no)
+			with_mips_plt=no-plt
+			;;
+		"")
+			;;
+		*)
+			echo "Unknown --with-mips-plt argument: $with_mips_plt" 1>&2
 			exit 1
 			;;
 		esac
@@ -3078,10 +3093,10 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc mips-plt"
 for option in $all_defaults
 do
-	eval "val=\$with_$option"
+	eval "val=\$with_"`echo $option | sed s/-/_/g`
 	if test -n "$val"; then
 		case " $supported_defaults " in
 		*" $option "*)

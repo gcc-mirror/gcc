@@ -26,11 +26,6 @@ BASE_DRIVER_SELF_SPECS \
 " %{!EB:%{!EL:%(endian_spec)}}" \
 " %{!mabi=*: -mabi=n32}"
 
-#undef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC "\
-%{!fno-PIC:%{!fno-pic:-KPIC}} \
-%{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
-
 #undef LIB_SPEC
 #define LIB_SPEC "\
 %{pthread:-lpthread} \

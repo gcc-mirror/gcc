@@ -160,6 +160,10 @@ mgpopt
 Target Report Var(TARGET_GPOPT) Init(1)
 Use GP-relative addressing to access small data
 
+mplt
+Target Report Var(TARGET_PLT)
+When generating -mabicalls code, allow executables to use PLTs and copy relocations
+
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
 Allow the use of hardware floating-point ABI and instructions

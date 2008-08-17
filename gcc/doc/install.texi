@@ -1076,6 +1076,12 @@ not provide them.
 On MIPS targets, make @option{-mno-llsc} the default when no
 @option{-mllsc} option is passed.
 
+@item --with-mips-plt
+On MIPS targets, make use of copy relocations and PLTs.
+These features are extensions to the traditional
+SVR4-based MIPS ABIs and require support from GNU binutils
+and the runtime C library.
+
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.
