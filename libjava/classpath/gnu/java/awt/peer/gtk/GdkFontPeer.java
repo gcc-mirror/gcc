@@ -167,7 +167,7 @@ public class GdkFontPeer extends ClasspathFontPeer
 
   static 
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
+    if (true) // GCJ LOCAL
       {
         System.loadLibrary("gtkpeer");
       }

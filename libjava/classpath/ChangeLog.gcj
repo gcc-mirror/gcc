@@ -1,3 +1,14 @@
+2008-08-17  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java: Always loadLibrary
+	gtk-peer.
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java: Likewise.
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java: Likewise.
+	* gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java: Likewise.
+	* gnu/java/awt/peer/gtk/*.class: Rebuilt.
+
 2008-06-28  Matthias Klose  <doko@ubuntu.com>
 
 	* m4/ac_prog_javac.m4: Disable check for JAVAC, when
@@ -15,7 +26,7 @@
 	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java
 	(compile): Reverse isAssignableFrom test.
 	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.class:
-        Rebuilt.
+	Rebuilt.
 
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 

@@ -99,7 +99,7 @@ class GdkScreenGraphicsDevice extends GraphicsDevice
 
   static
   {
-    if (Configuration.INIT_LOAD_LIBRARY)
+    if (true) // GCJ LOCAL
       {
         System.loadLibrary("gtkpeer");
       }
