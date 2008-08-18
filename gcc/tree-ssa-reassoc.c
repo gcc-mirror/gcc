@@ -1771,6 +1771,18 @@ reassociate_bb (basic_block bb)
 		{
 		  gsi_remove (&gsi, true);
 		  release_defs (stmt);
+		  /* We might end up removing the last stmt above which
+		     places the iterator to the end of the sequence.
+		     Reset it to the last stmt in this case which might
+		     be the end of the sequence as well if we removed
+		     the last statement of the sequence.  In which case
+		     we need to bail out.  */
+		  if (gsi_end_p (gsi))
+		    {
+		      gsi = gsi_last_bb (bb);
+		      if (gsi_end_p (gsi))
+			break;
+		    }
 		}
 	      continue;
 	    }

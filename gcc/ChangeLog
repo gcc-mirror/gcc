@@ -1,3 +1,8 @@
+2008-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-reassoc.c (reassociate_bb): Properly reset the
+	statement iterator after statement removal.
+
 2008-08-18  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/rs6000/driver-rs6000.c (detect_caches_freebsd): New function.
