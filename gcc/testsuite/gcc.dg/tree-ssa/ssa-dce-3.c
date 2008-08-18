@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce" } */
+/* { dg-options "-O2 -fdump-tree-cddce1" } */
 
 int main(void)
 {
@@ -23,9 +23,9 @@ int main(void)
 
 /* We should eliminate the inner condition, but the loop must be preserved
    as it is infinite.  Therefore there should be just one phi node (for i):  */
-/* { dg-final { scan-tree-dump-times "PHI " 1 "cddce"} } */
+/* { dg-final { scan-tree-dump-times "PHI " 1 "cddce1"} } */
 
 /* And one if (for the exit condition of the loop):  */
-/* { dg-final { scan-tree-dump-times "if " 1 "cddce"} } */
+/* { dg-final { scan-tree-dump-times "if " 1 "cddce1"} } */
 
-/* { dg-final { cleanup-tree-dump "cddce" } } */
+/* { dg-final { cleanup-tree-dump "cddce1" } } */

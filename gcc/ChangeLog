@@ -1,5 +1,15 @@
 2008-08-18  Richard Guenther  <rguenther@suse.de>
 
+	* passes.c (init_optimization_passes): Remove cleanup_cfg1,
+	sdse1 and addressables2 passes.  Replace dce1 with cddce1.
+	Move call_cdce before build_alias.  Move copyrename2,
+	cunrolli and ccp2 beafore build_alias.  Re-add addressable2
+	right after final inlining.
+	* tree-cfg.c (build_gimple_cfg): Do not dump function here.
+	(pass_build_cfg): But instead via TODO_dump_func.
+
+2008-08-18  Richard Guenther  <rguenther@suse.de>
+
 	* tree-sra.c (generate_element_init_1): Deal with NULL constructor
 	element index.
 	(scalarize_init): If we failed to generate some initializers

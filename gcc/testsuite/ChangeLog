@@ -1,3 +1,15 @@
+2008-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/fold-alloca-1.c: Scan cfg dump instead of cleanup_cfg1.
+	* gcc.dg/fold-compare-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030709-2.c: Scan cddce2 dump.
+	* gcc.dg/tree-ssa/20030808-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040211-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040305-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-1.c: Adjust pattern.
+	* gcc.dg/tree-ssa/forwprop-2.c: Likewise..
+	* gcc.dg/tree-ssa/ssa-dce-3.c: Scan cddce1 dump.
+
 2008-08-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36825
