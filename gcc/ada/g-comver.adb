@@ -53,15 +53,18 @@ package body GNAT.Compiler_Version is
 
    function Version return String is
    begin
-      --  Search for terminating right paren
+      --  Search for terminating right paren or NUL ending the string
 
       for J in Ver_Prefix'Length + 1 .. GNAT_Version'Last loop
          if GNAT_Version (J) = ')' then
             return GNAT_Version (Ver_Prefix'Length + 1 .. J);
          end if;
+         if GNAT_Version (J) = Character'Val (0) then
+            return GNAT_Version (Ver_Prefix'Length + 1 .. J - 1);
+         end if;
       end loop;
 
-      --  This should not happen (no right paren found)
+      --  This should not happen (no right paren or NUL found)
 
       return GNAT_Version;
    end Version;

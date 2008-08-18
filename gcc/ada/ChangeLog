@@ -1,4 +1,14 @@
 2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
+            Robert Dewar  <dewar@adacore.com>
+
+	PR ada/30827
+	* bindgen.adb (Gen_Output_File_Ada): Zero-terminate the
+	version string.
+	Move comment in the right place.
+	* g-comver.adb (Version): Look for a zero-termination in
+	addition to a closing parenthesis.
+
+2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
 
 	* exp_ch13.adb, exp_disp.adb, sem_cat.adb, sem_ch10.adb,
 	* sem_ch12.adb, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb,

@@ -2267,17 +2267,19 @@ package body Bindgen is
                WBI ("   gnat_exit_status : Integer;");
                WBI ("   pragma Import (C, gnat_exit_status);");
             end if;
-
-            --  Generate the GNAT_Version and Ada_Main_Program_Name info only
-            --  for the main program. Otherwise, it can lead under some
-            --  circumstances to a symbol duplication during the link (for
-            --  instance when a C program uses 2 Ada libraries)
          end if;
+
+         --  Generate the GNAT_Version and Ada_Main_Program_Name info only for
+         --  the main program. Otherwise, it can lead under some circumstances
+         --  to a symbol duplication during the link (for instance when a C
+         --  program uses two Ada libraries). Also zero terminate the string
+         --  so that its end can be found reliably at run time.
 
          WBI ("");
          WBI ("   GNAT_Version : constant String :=");
          WBI ("                    ""GNAT Version: " &
-                                Gnat_Version_String & """;");
+                                   Gnat_Version_String &
+                                   """ & ASCII.NUL;");
          WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
 
          WBI ("");
