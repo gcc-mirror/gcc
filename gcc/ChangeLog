@@ -1,3 +1,7 @@
+2008-08-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtlanal.c (subreg_offset_representable_p): Check HARD_REGNO_MODE_OK.
+
 2008-08-18  Tomas Bily  <tbily@suse.cz>
 
 	* tree.h (IS_CONVERT_EXPR_CODE_P): Renamed to CONVERT_EXPR_CODE_P.
