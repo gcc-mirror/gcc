@@ -5202,8 +5202,7 @@ package body Sem_Ch12 is
 
          Inst_Par := Entity (Prefix (Gen_Id));
          while Present (Inst_Par)
-           and then Ekind (Inst_Par) /= E_Package
-           and then Ekind (Inst_Par) /= E_Generic_Package
+           and then not Is_Package_Or_Generic_Package (Inst_Par)
          loop
             Inst_Par := Homonym (Inst_Par);
          end loop;

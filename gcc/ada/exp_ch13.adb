@@ -259,9 +259,8 @@ package body Exp_Ch13 is
          Push_Scope (E_Scope);
          Install_Visible_Declarations (E_Scope);
 
-         if Ekind (E_Scope) = E_Package         or else
-            Ekind (E_Scope) = E_Generic_Package or else
-            Is_Protected_Type (E_Scope)         or else
+         if Is_Package_Or_Generic_Package (E_Scope) or else
+            Is_Protected_Type (E_Scope)             or else
             Is_Task_Type (E_Scope)
          then
             Install_Private_Declarations (E_Scope);

@@ -847,10 +847,7 @@ package body Sem_Ch7 is
                   Set_Is_Known_Non_Null (E, False);
                end if;
 
-            elsif Ekind (E) = E_Package
-                    or else
-                  Ekind (E) = E_Generic_Package
-            then
+            elsif Is_Package_Or_Generic_Package (E) then
                Clear_Constants (E, First_Entity (E));
                Clear_Constants (E, First_Private_Entity (E));
             end if;
@@ -1145,8 +1142,7 @@ package body Sem_Ch7 is
          declare
             Comp_Unit : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
          begin
-            if (Ekind (Comp_Unit) = E_Package
-                 or else Ekind (Comp_Unit) = E_Generic_Package)
+            if Is_Package_Or_Generic_Package (Comp_Unit)
               and then not In_Private_Part (Comp_Unit)
               and then not In_Instance
             then
@@ -1308,8 +1304,7 @@ package body Sem_Ch7 is
       Set_Is_Pure         (Id, PF);
       Init_Size_Align     (Id);
 
-      if (Ekind (Current_Scope) /= E_Package
-          and then Ekind (Current_Scope) /= E_Generic_Package)
+      if not Is_Package_Or_Generic_Package (Current_Scope)
         or else In_Private_Part (Current_Scope)
       then
          Error_Msg_N ("invalid context for private declaration", N);

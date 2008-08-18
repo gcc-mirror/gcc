@@ -2007,9 +2007,7 @@ package body Sem_Ch10 is
          --  all the parents are bodies. Restore full visibility of their
          --  private entities.
 
-         if Ekind (Scop) = E_Package
-           or else Ekind (Scop) = E_Generic_Package
-         then
+         if Is_Package_Or_Generic_Package (Scop) then
             Set_In_Package_Body (Scop);
             Install_Private_Declarations (Scop);
          end if;
@@ -2099,9 +2097,7 @@ package body Sem_Ch10 is
          --  context includes another subunit of the same parent which in
          --  turn includes a child unit in its context.
 
-         if Ekind (Par_Unit) = E_Package
-           or else Ekind (Par_Unit) = E_Generic_Package
-         then
+         if Is_Package_Or_Generic_Package (Par_Unit) then
             if not Is_Immediately_Visible (Par_Unit)
               or else (Present (First_Entity (Par_Unit))
                         and then not Is_Immediately_Visible
