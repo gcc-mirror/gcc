@@ -1504,7 +1504,8 @@ get_addr_dereference_operands (gimple stmt, tree *addr, int flags,
 	      && TREE_CODE (ptr) == SSA_NAME
 	      && (pi == NULL
 		  || (pi->name_mem_tag == NULL_TREE
-		      && !pi->pt_anything)))
+		      && !pi->pt_anything))
+	      && gimple_aliases_computed_p (cfun))
 	    {
 	      fprintf (dump_file,
 		  "NOTE: no flow-sensitive alias info for ");
