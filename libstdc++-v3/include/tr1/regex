@@ -50,6 +50,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <sstream>
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  include <tr1_impl/regex>
