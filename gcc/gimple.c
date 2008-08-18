@@ -1899,8 +1899,7 @@ bool
 gimple_assign_unary_nop_p (gimple gs)
 {
   return (gimple_code (gs) == GIMPLE_ASSIGN
-          && (gimple_assign_rhs_code (gs) == NOP_EXPR
-              || gimple_assign_rhs_code (gs) == CONVERT_EXPR
+          && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs))
               || gimple_assign_rhs_code (gs) == NON_LVALUE_EXPR)
           && gimple_assign_rhs1 (gs) != error_mark_node
           && (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (gs)))

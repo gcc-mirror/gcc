@@ -4341,7 +4341,7 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   code = gimple_assign_rhs_code (stmt);
-  if (code != NOP_EXPR && code != CONVERT_EXPR)
+  if (!CONVERT_EXPR_CODE_P (code))
     return false;
 
   op0 = gimple_assign_rhs1 (stmt);
@@ -4366,7 +4366,7 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
 	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
 	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && (code == NOP_EXPR || code == CONVERT_EXPR))))
+	     && CONVERT_EXPR_CODE_P (code))))
     return false;
 
   /* Check the operands of the operation.  */
@@ -4534,7 +4534,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   code = gimple_assign_rhs_code (stmt);
-  if (code != NOP_EXPR && code != CONVERT_EXPR
+  if (!CONVERT_EXPR_CODE_P (code)
       && code != WIDEN_MULT_EXPR)
     return false;
 
@@ -4559,7 +4559,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
 	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
 	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && (code == CONVERT_EXPR || code == NOP_EXPR))))
+	     && CONVERT_EXPR_CODE_P (code))))
     return false;
 
   /* Check the operands of the operation.  */

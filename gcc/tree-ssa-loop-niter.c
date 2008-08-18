@@ -1451,8 +1451,7 @@ expand_simple_operations (tree expr)
 
   switch (code)
     {
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       /* Casts are simple.  */
       ee = expand_simple_operations (e);
       return fold_build1 (code, TREE_TYPE (expr), ee);

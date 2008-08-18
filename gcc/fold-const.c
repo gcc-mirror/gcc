@@ -7625,7 +7625,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
   arg0 = op0;
   if (arg0)
     {
-      if (code == NOP_EXPR || code == CONVERT_EXPR
+      if (CONVERT_EXPR_CODE_P (code)
 	  || code == FLOAT_EXPR || code == ABS_EXPR)
 	{
 	  /* Don't use STRIP_NOPS, because signedness of argument type
@@ -7674,7 +7674,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	     so we don't get into an infinite recursion loop taking the
 	     conversion out and then back in.  */
 
-	  if ((code == NOP_EXPR || code == CONVERT_EXPR
+	  if ((CONVERT_EXPR_CODE_P (code)
 	       || code == NON_LVALUE_EXPR)
 	      && TREE_CODE (tem) == COND_EXPR
 	      && TREE_CODE (TREE_OPERAND (tem, 1)) == code

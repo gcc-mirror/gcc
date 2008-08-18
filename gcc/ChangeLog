@@ -1,3 +1,36 @@
+2008-08-18  Tomas Bily  <tbily@suse.cz>
+
+	* tree.h (IS_CONVERT_EXPR_CODE_P): Renamed to CONVERT_EXPR_CODE_P.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Use
+	CONVERT_EXPR_P.
+	* tree-data-ref.c (split_constant_offset_1): Likewise.
+	* tree-inline.c (estimate_operator_cost): Use CASE_CONVERT.
+	* tree-sra.c (sra_walk_expr): Likewise.
+	* matrix-reorg.c (ssa_accessed_in_assign_rhs): Likewise.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Likewise.
+	* gimple.h (gimple_assign_cast_p): Use CONVERT_EXPR_CODE_P.
+	* tree-ssa-structalias.c (find_func_aliases, find_func_aliases):
+	Likewise.
+	* gimple.c (gimple_assign_unary_nop_p): Likewise.
+	* tree-vect-transform.c (vectorizable_type_demotion)
+	(vectorizable_type_promotion): Likewise.
+	* tree-inline.c (expand_call_inline): 
+	* tree-ssa-forwprop.c (get_prop_source_stmt, can_propagate_from)
+	(forward_propagate_addr_expr_1, forward_propagate_comparison)
+	(tree_ssa_forward_propagate_single_use_vars): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* tree-ssa-dom.c (hashable_expr_equal_p, iterative_hash_hashable_expr)
+	(gimple_assign_unary_useless_conversion_p): Likewise.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* tree-ssa-ccp.c (ccp_fold, fold_gimple_assign): Likewise.
+	* fold-const.c (fold_unary): Likewise.
+	* tree.h (CONVERT_EXPR_P): Likewise.
+	* tree.c (simple_cst_equal, iterative_hash_expr): Likewise.
+	* tree-ssa-loop-im.c (rewrite_bittest): Likewise.
+	* tree-vrp.c: 
+	(register_edge_assert_for_2, extract_range_from_unary_expr)
+	(register_edge_assert_for_1): Likewise.
+	
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* real.h (dconst_e, dconst_third, dconst_sqrt2, dconst_e_ptr,

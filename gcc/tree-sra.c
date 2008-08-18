@@ -881,8 +881,7 @@ sra_walk_expr (tree *expr_p, gimple_stmt_iterator *gsi, bool is_output,
 	   outer element, to which walk_tree will bring us next.  */
 	goto use_all;
 
-      case NOP_EXPR:
-      case CONVERT_EXPR:
+      CASE_CONVERT:
 	/* Similarly, a nop explicitly wants to look at an object in a
 	   type other than the one we've scalarized.  */
 	goto use_all;

@@ -232,7 +232,7 @@ get_prop_source_stmt (tree name, bool single_use_only, bool *single_use_p)
 	/* We can look through pointer conversions in the search
 	   for a useful stmt for the comparison folding.  */
 	rhs = gimple_assign_rhs1 (def_stmt);
-	if (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
+	if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
 	    && TREE_CODE (rhs) == SSA_NAME
 	    && POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (def_stmt)))
 	    && POINTER_TYPE_P (TREE_TYPE (rhs)))
@@ -282,7 +282,7 @@ can_propagate_from (gimple def_stmt)
      function pointers to be canonicalized and in this case this
      optimization could eliminate a necessary canonicalization.  */
   if (is_gimple_assign (def_stmt)
-      && (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))))
+      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))))
     {
       tree rhs = gimple_assign_rhs1 (def_stmt);
       if (POINTER_TYPE_P (TREE_TYPE (rhs))
@@ -689,7 +689,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      a conversion to def_rhs type separate, though.  */
   if (TREE_CODE (lhs) == SSA_NAME
       && ((rhs_code == SSA_NAME && rhs == name)
-	  || IS_CONVERT_EXPR_CODE_P (rhs_code))
+	  || CONVERT_EXPR_CODE_P (rhs_code))
       && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
     {
       /* Only recurse if we don't deal with a single use.  */
@@ -928,7 +928,7 @@ forward_propagate_comparison (gimple stmt)
 
   /* Conversion of the condition result to another integral type.  */
   if (is_gimple_assign (use_stmt)
-      && (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt))
+      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt))
 	  || TREE_CODE_CLASS (gimple_assign_rhs_code (use_stmt))
 	     == tcc_comparison
           || gimple_assign_rhs_code (use_stmt) == TRUTH_NOT_EXPR)
@@ -937,7 +937,7 @@ forward_propagate_comparison (gimple stmt)
       tree lhs = gimple_assign_lhs (use_stmt);
 
       /* We can propagate the condition into a conversion.  */
-      if (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
+      if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
 	{
 	  /* Avoid using fold here as that may create a COND_EXPR with
 	     non-boolean condition as canonical form.  */
@@ -1138,7 +1138,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	      if (gimple_assign_rhs_code (stmt) == ADDR_EXPR
 		  /* Handle pointer conversions on invariant addresses
 		     as well, as this is valid gimple.  */
-		  || (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		  || (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 		      && TREE_CODE (rhs) == ADDR_EXPR
 		      && POINTER_TYPE_P (TREE_TYPE (lhs))))
 		{

@@ -819,8 +819,7 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
     return stmt;
 
   /* There is a conversion in between possibly inserted by fold.  */
-  if (gimple_assign_rhs_code (stmt1) == NOP_EXPR
-      || gimple_assign_rhs_code (stmt1) == CONVERT_EXPR)
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt1)))
     {
       t = gimple_assign_rhs1 (stmt1);
       if (TREE_CODE (t) != SSA_NAME

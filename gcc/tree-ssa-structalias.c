@@ -3852,7 +3852,7 @@ find_func_aliases (gimple origt)
 	  if (gimple_assign_rhs_code (t) == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
-	  else if ((IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
+	  else if ((CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
 		   || gimple_assign_single_p (t))
@@ -3908,7 +3908,7 @@ find_func_aliases (gimple origt)
   else if (stmt_escape_type == ESCAPE_BAD_CAST)
     {
       gcc_assert (is_gimple_assign (t));
-      gcc_assert (IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
+      gcc_assert (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
 		  || gimple_assign_rhs_code (t) == VIEW_CONVERT_EXPR);
       make_escape_constraint (gimple_assign_rhs1 (t));
     }

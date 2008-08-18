@@ -1,3 +1,7 @@
+2008-08-18  Tomas Bily  <tbily@suse.cz>
+
+	* tree.c (cp_tree_equal): Use CONVERT_EXPR_CODE_P.
+
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c: Update all callers of permerror.

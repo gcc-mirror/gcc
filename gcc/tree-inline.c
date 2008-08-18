@@ -2632,10 +2632,9 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights)
     /* These are "free" conversions, or their presumed cost
        is folded into other operations.  */
     case RANGE_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case COMPLEX_EXPR:
     case PAREN_EXPR:
-    case NOP_EXPR:
       return 0;
 
     /* Assign cost of 1 to usual operations.
@@ -3346,8 +3345,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   if (is_gimple_assign (stmt))
     {
       gcc_assert (gimple_assign_single_p (stmt)
-		  || gimple_assign_rhs_code (stmt) == NOP_EXPR
-		  || gimple_assign_rhs_code (stmt) == CONVERT_EXPR);
+		  || CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)));
       TREE_USED (gimple_assign_rhs1 (stmt)) = 1;
     }
 

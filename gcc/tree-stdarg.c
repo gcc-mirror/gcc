@@ -811,7 +811,7 @@ execute_optimize_stdarg (void)
 
 		  if ((gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
 		       && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST)
-		      || IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		      || CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 		      || (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
 			  == GIMPLE_SINGLE_RHS))
 		    check_va_list_escapes (&si, lhs, rhs);

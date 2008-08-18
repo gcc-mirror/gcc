@@ -7153,7 +7153,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   unsignedp = TYPE_UNSIGNED (type);
 
   ignore = (target == const0_rtx
-	    || ((code == NOP_EXPR || code == CONVERT_EXPR 
+	    || ((CONVERT_EXPR_CODE_P (code)
 		 || code == COND_EXPR || code == VIEW_CONVERT_EXPR)
 		&& TREE_CODE (type) == VOID_TYPE));
 
