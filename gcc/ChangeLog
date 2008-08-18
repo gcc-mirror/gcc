@@ -1,3 +1,16 @@
+2008-08-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* real.c (spu_single_format): New variable.
+	* real.h (spu_single_format): Declare.
+
+	* config/spu/spu.c (spu_override_options): Install SFmode format.
+	(spu_split_immediate): Use integer mode to operate on pieces of
+	floating-point values in all cases.
+
+	* config/spu/spu.md (UNSPEC_FLOAT_EXTEND, UNSPEC_FLOAT_TRUNCATE): New.
+	("extendsfdf2"): Use UNSPEC_FLOAT_EXTEND instead of FLOAT_EXTEND.
+	("truncdfsf2"): Use UNSPEC_FLOAT_TRUNCATE instead of FLOAT_TRUNCATE.
+
 2008-08-18  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/rs6000/driver-rs6000.c (detect_caches_freebsd): New function.

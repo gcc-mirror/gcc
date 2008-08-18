@@ -2801,6 +2801,36 @@ const struct real_format motorola_single_format =
     true,
     true
   };
+
+/*  SPU Single Precision (Extended-Range Mode) format is the same as IEEE
+    single precision with the following differences:
+      - Infinities are not supported.  Instead MAX_FLOAT or MIN_FLOAT
+	are generated.
+      - NaNs are not supported.
+      - The range of non-zero numbers in binary is
+	(001)[1.]000...000 to (255)[1.]111...111.
+      - Denormals can be represented, but are treated as +0.0 when
+	used as an operand and are never generated as a result.
+      - -0.0 can be represented, but a zero result is always +0.0.
+      - the only supported rounding mode is trunction (towards zero).  */
+const struct real_format spu_single_format =
+  {
+    encode_ieee_single,
+    decode_ieee_single,
+    2,
+    24,
+    24,
+    -125,
+    129,
+    31,
+    31,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false
+  };
 
 /* IEEE double-precision format.  */
 

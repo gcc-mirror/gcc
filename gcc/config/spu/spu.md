@@ -153,6 +153,8 @@
  (UNSPEC_SPU_REALIGN_LOAD 49)
  (UNSPEC_SPU_MASK_FOR_LOAD 50)
  (UNSPEC_DFTSV		 51)
+ (UNSPEC_FLOAT_EXTEND	 52)
+ (UNSPEC_FLOAT_TRUNCATE	 53)
 ])
 
 (include "predicates.md")
@@ -645,14 +647,16 @@
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "spu_reg_operand" "=r")
-	(float_extend:DF (match_operand:SF 1 "spu_reg_operand" "r")))]
+	(unspec:DF [(match_operand:SF 1 "spu_reg_operand" "r")]
+                   UNSPEC_FLOAT_EXTEND))]
   ""
   "fesd\t%0,%1"
   [(set_attr "type" "fpd")])
 
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "spu_reg_operand" "=r")
-	(float_truncate:SF (match_operand:DF 1 "spu_reg_operand" "r")))]
+	(unspec:SF [(match_operand:DF 1 "spu_reg_operand" "r")]
+                   UNSPEC_FLOAT_TRUNCATE))]
   ""
   "frds\t%0,%1"
   [(set_attr "type" "fpd")])
