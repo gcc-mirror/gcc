@@ -1853,8 +1853,7 @@ gimple_assign_cast_p (gimple s)
   if (is_gimple_assign (s))
     {
       enum tree_code sc = gimple_assign_rhs_code (s);
-      return sc == NOP_EXPR
-	     || sc == CONVERT_EXPR
+      return CONVERT_EXPR_CODE_P (sc)
 	     || sc == VIEW_CONVERT_EXPR
 	     || sc == FIX_TRUNC_EXPR;
     }

@@ -988,7 +988,7 @@ ccp_fold (gimple stmt)
 		 useless_type_conversion_p places for pointer type conversions
 		 do not apply here.  Substitution later will only substitute to
 		 allowed places.  */
-	      if (IS_CONVERT_EXPR_CODE_P (subcode)
+	      if (CONVERT_EXPR_CODE_P (subcode)
 		  && POINTER_TYPE_P (TREE_TYPE (lhs))
 		  && POINTER_TYPE_P (TREE_TYPE (op0))
 		  /* Do not allow differences in volatile qualification
@@ -2781,8 +2781,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
           if (valid_gimple_rhs_p (result))
 	    return result;
         }
-      else if ((gimple_assign_rhs_code (stmt) == NOP_EXPR
-		|| gimple_assign_rhs_code (stmt) == CONVERT_EXPR)
+      else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 	       && POINTER_TYPE_P (gimple_expr_type (stmt))
 	       && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 	{

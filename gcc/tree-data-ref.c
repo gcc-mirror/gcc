@@ -581,8 +581,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	   To compute that ARRAY_REF's element size TYPE_SIZE_UNIT, which
 	   possibly no longer appears in current GIMPLE, might resurface.
 	   This perhaps could run
-	   if (TREE_CODE (var0) == NOP_EXPR
-	       || TREE_CODE (var0) == CONVERT_EXPR)
+	   if (CONVERT_EXPR_P (var0))
 	     {
 	       gimplify_conversion (&var0);
 	       // Attempt to fill in any within var0 found ARRAY_REF's

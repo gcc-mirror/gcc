@@ -2483,8 +2483,7 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
     }
 
   /* Handle unary expressions on integer ranges.  */
-  if ((code == NOP_EXPR
-       || code == CONVERT_EXPR)
+  if (CONVERT_EXPR_CODE_P (code)
       && INTEGRAL_TYPE_P (type)
       && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
     {
@@ -3944,8 +3943,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       /* Extract NAME2 from the (optional) sign-changing cast.  */
       if (gimple_assign_cast_p (def_stmt))
 	{
-	  if ((gimple_assign_rhs_code (def_stmt) == NOP_EXPR
-	       || gimple_assign_rhs_code (def_stmt) == CONVERT_EXPR)
+	  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
 	      && ! TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
 	      && (TYPE_PRECISION (gimple_expr_type (def_stmt))
 		  == TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))))
@@ -4098,8 +4096,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       retval |= register_edge_assert_for_1 (gimple_assign_rhs1 (op_def),
 					    code, e, bsi);
     }
-  else if (gimple_assign_rhs_code (op_def) == NOP_EXPR
-	   || gimple_assign_rhs_code (op_def) == CONVERT_EXPR)
+  else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (op_def)))
     { 
       /* Recurse through the type conversion.  */
       retval |= register_edge_assert_for_1 (gimple_assign_rhs1 (op_def),

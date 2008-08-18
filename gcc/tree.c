@@ -5022,16 +5022,16 @@ simple_cst_equal (const_tree t1, const_tree t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
-  if (code1 == NOP_EXPR || code1 == CONVERT_EXPR || code1 == NON_LVALUE_EXPR)
+  if (CONVERT_EXPR_CODE_P (code1) || code1 == NON_LVALUE_EXPR)
     {
-      if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
+      if (CONVERT_EXPR_CODE_P (code2)
 	  || code2 == NON_LVALUE_EXPR)
 	return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
       else
 	return simple_cst_equal (TREE_OPERAND (t1, 0), t2);
     }
 
-  else if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
+  else if (CONVERT_EXPR_CODE_P (code2)
 	   || code2 == NON_LVALUE_EXPR)
     return simple_cst_equal (t1, TREE_OPERAND (t2, 0));
 
@@ -5338,8 +5338,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	  /* Don't hash the type, that can lead to having nodes which
 	     compare equal according to operand_equal_p, but which
 	     have different hash codes.  */
-	  if (code == NOP_EXPR
-	      || code == CONVERT_EXPR
+	  if (CONVERT_EXPR_CODE_P (code)
 	      || code == NON_LVALUE_EXPR)
 	    {
 	      /* Make sure to include signness in the hash computation.  */

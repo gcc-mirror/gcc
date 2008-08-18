@@ -381,8 +381,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
       if (expr0->ops.unary.op != expr1->ops.unary.op)
         return false;
 
-      if ((expr0->ops.unary.op == NOP_EXPR
-           || expr0->ops.unary.op == CONVERT_EXPR
+      if ((CONVERT_EXPR_CODE_P (expr0->ops.unary.op)
            || expr0->ops.unary.op == NON_LVALUE_EXPR)
           && TYPE_UNSIGNED (expr0->type) != TYPE_UNSIGNED (expr1->type))
         return false;
@@ -460,8 +459,7 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
          Don't hash the type, that can lead to having nodes which
          compare equal according to operand_equal_p, but which
          have different hash codes.  */
-      if (expr->ops.unary.op == NOP_EXPR
-          || expr->ops.unary.op == CONVERT_EXPR
+      if (CONVERT_EXPR_CODE_P (expr->ops.unary.op)
           || expr->ops.unary.op == NON_LVALUE_EXPR)
         val += TYPE_UNSIGNED (expr->type);
 
@@ -1929,8 +1927,7 @@ static bool
 gimple_assign_unary_useless_conversion_p (gimple gs)
 {
   if (is_gimple_assign (gs)
-      && (gimple_assign_rhs_code (gs) == NOP_EXPR
-          || gimple_assign_rhs_code (gs) == CONVERT_EXPR
+      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs))
           || gimple_assign_rhs_code (gs) == VIEW_CONVERT_EXPR
           || gimple_assign_rhs_code (gs) == NON_LVALUE_EXPR))
     {

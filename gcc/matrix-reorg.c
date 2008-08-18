@@ -658,8 +658,7 @@ ssa_accessed_in_assign_rhs (gimple stmt, struct ssa_acc_in_tree *a)
 
     case SSA_NAME:
     case INDIRECT_REF:
-    case CONVERT_EXPR:
-    case NOP_EXPR:
+    CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
       ssa_accessed_in_tree (gimple_assign_rhs1 (stmt), a);
       break;
