@@ -342,7 +342,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer -foptimize-register-move -foptimize-sibling-calls @gol
 -fpeel-loops -fpredictive-commoning -fprefetch-loop-arrays @gol
--fprofile-dir=@var{path} -fprofile-generate -fprofile-generate=@var{path} @gol
+-fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
+-fprofile-generate=@var{path} @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
 -freciprocal-math -fregmove -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
@@ -6368,6 +6369,13 @@ we perform a copy-propagation pass to try to reduce scheduling dependencies
 and occasionally eliminate the copy.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fprofile-correction
+@opindex fprofile-correction
+Profiles collected using an instrumented binary for multi-threaded programs may
+be inconsistent due to missed counter updates. When this option is specified,
+GCC will use heuristics to correct or smooth out such inconsistencies. By
+default, GCC will emit an error message when an inconsistent profile is detected.
 
 @item -fprofile-dir=@var{path}
 @opindex fprofile-dir
