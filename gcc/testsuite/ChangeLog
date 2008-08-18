@@ -1,3 +1,7 @@
+2008-08-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.target/ia64/types-1.c:  Change error to message.
+
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR cpp/7263
