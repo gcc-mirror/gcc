@@ -401,6 +401,7 @@ Fortran compiler.
 @cindex FPP
 @cindex Conditional compilation
 @cindex Preprocessing
+@cindex preprocessor, include file handling
 
 Many Fortran compilers including GNU Fortran allow passing the source code
 through a C preprocessor (CPP; sometimes also called the Fortran preprocessor,
@@ -413,7 +414,11 @@ invoke the preprocessor on any file, use @option{-cpp}, to disable
 preprocessing on files where the preprocessor is run automatically, use
 @option{-nocpp}.
 
-If the GNU Fortran invoked the preprocessor, @code{__GFORTRAN__}
+If a preprocessed file includes another file with the Fortran @code{INCLUDE}
+statement, the included file is not preprocessed. To preprocess included
+files, use the equivalent preprocessor statement @code{#include}.
+
+If GNU Fortran invokes the preprocessor, @code{__GFORTRAN__}
 is defined and @code{__GNUC__}, @code{__GNUC_MINOR__} and
 @code{__GNUC_PATCHLEVEL__} can be used to determine the version of the
 compiler. See @ref{Top,,Overview,cpp,The C Preprocessor} for details.

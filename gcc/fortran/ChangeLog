@@ -1,3 +1,9 @@
+2008-08-18  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/37032
+	* gfortran.texi: Document decision on include file handling in
+	preprocessed files.
+
 2008-08-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36825
