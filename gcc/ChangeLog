@@ -1,3 +1,8 @@
+2008-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_assign): Verify copies
+	and loads have the correct types.
+
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR cpp/7263
