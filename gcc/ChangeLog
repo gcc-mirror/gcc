@@ -1,3 +1,9 @@
+2008-08-18  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/rs6000/driver-rs6000.c (detect_caches_freebsd): New function.
+	(detect_processor_freebsd): Likewise.
+	(host_detect_local_cpu): Call newly added functions for FreeBSD.
+
 2008-08-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* reload.c (find_reloads): Force constants into literal pool
