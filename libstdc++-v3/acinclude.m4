@@ -1274,35 +1274,93 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   # Check for the existence of <stdint.h> types.
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <stdint.h>])
   AC_CACHE_VAL(glibcxx_cv_c99_stdint_tr1, [
-  AC_TRY_COMPILE([#include <stdint.h>],
+  AC_TRY_COMPILE([#define __STDC_LIMIT_MACROS
+                  #define __STDC_CONSTANT_MACROS
+                  #include <stdint.h>],
 	         [typedef int8_t          my_int8_t;
+		  my_int8_t               i8 = INT8_MIN;
+		  i8 = INT8_MAX;
 	          typedef int16_t         my_int16_t;
+		  my_int16_t              i16 = INT16_MIN;
+		  i16 = INT16_MAX;
 	          typedef int32_t         my_int32_t;
+		  my_int32_t              i32 = INT32_MIN;
+		  i32 = INT32_MAX;
 	          typedef int64_t         my_int64_t;
+		  my_int64_t              i64 = INT64_MIN;
+		  i64 = INT64_MAX;
 	          typedef int_fast8_t     my_int_fast8_t;
+		  my_int_fast8_t          if8 = INT_FAST8_MIN;
+		  if8 = INT_FAST8_MAX;
 	          typedef int_fast16_t    my_int_fast16_t;
+		  my_int_fast16_t         if16 = INT_FAST16_MIN;
+		  if16 = INT_FAST16_MAX;
 	          typedef int_fast32_t    my_int_fast32_t;
-	          typedef int_fast64_t    my_int_fast64_t;	
+		  my_int_fast32_t         if32 = INT_FAST32_MIN;
+		  if32 = INT_FAST32_MAX;
+	          typedef int_fast64_t    my_int_fast64_t;
+		  my_int_fast64_t         if64 = INT_FAST64_MIN;
+		  if64 = INT_FAST64_MAX;
 	          typedef int_least8_t    my_int_least8_t;
+		  my_int_least8_t         il8 = INT_LEAST8_MIN;
+		  il8 = INT_LEAST8_MAX;
 	          typedef int_least16_t   my_int_least16_t;
+		  my_int_least16_t        il16 = INT_LEAST16_MIN;
+		  il16 = INT_LEAST16_MAX;
 	          typedef int_least32_t   my_int_least32_t;
+		  my_int_least32_t        il32 = INT_LEAST32_MIN;
+		  il32 = INT_LEAST32_MAX;
 	          typedef int_least64_t   my_int_least64_t;
+		  my_int_least64_t        il64 = INT_LEAST64_MIN;
+		  il64 = INT_LEAST64_MAX;
 		  typedef intmax_t        my_intmax_t;
+		  my_intmax_t             im = INTMAX_MAX;
+		  im = INTMAX_MIN;
 		  typedef intptr_t        my_intptr_t;
+		  my_intptr_t             ip = INTPTR_MAX;
+		  ip = INTPTR_MIN;
 	          typedef uint8_t         my_uint8_t;
+		  my_uint8_t              ui8 = UINT8_MAX;
+		  ui8 = UINT8_MAX;
 	          typedef uint16_t        my_uint16_t;
+		  my_uint16_t             ui16 = UINT16_MAX;
+		  ui16 = UINT16_MAX;
 	          typedef uint32_t        my_uint32_t;
+		  my_uint32_t             ui32 = UINT32_MAX;
+		  ui32 = UINT32_MAX;
 	          typedef uint64_t        my_uint64_t;
+		  my_uint64_t             ui64 = UINT64_MAX;
+		  ui64 = UINT64_MAX;
 	          typedef uint_fast8_t    my_uint_fast8_t;
+		  my_uint_fast8_t         uif8 = UINT_FAST8_MAX;
+		  uif8 = UINT_FAST8_MAX;
 	          typedef uint_fast16_t   my_uint_fast16_t;
+		  my_uint_fast16_t        uif16 = UINT_FAST16_MAX;
+		  uif16 = UINT_FAST16_MAX;
 	          typedef uint_fast32_t   my_uint_fast32_t;
-	          typedef uint_fast64_t   my_uint_fast64_t;	
+		  my_uint_fast32_t        uif32 = UINT_FAST32_MAX;
+		  uif32 = UINT_FAST32_MAX;
+	          typedef uint_fast64_t   my_uint_fast64_t;
+		  my_uint_fast64_t        uif64 = UINT_FAST64_MAX;
+		  uif64 = UINT_FAST64_MAX;
 	          typedef uint_least8_t   my_uint_least8_t;
+		  my_uint_least8_t        uil8 = UINT_LEAST8_MAX;
+		  uil8 = UINT_LEAST8_MAX;
 	          typedef uint_least16_t  my_uint_least16_t;
+		  my_uint_least16_t       uil16 = UINT_LEAST16_MAX;
+		  uil16 = UINT_LEAST16_MAX;
 	          typedef uint_least32_t  my_uint_least32_t;
+		  my_uint_least32_t       uil32 = UINT_LEAST32_MAX;
+		  uil32 = UINT_LEAST32_MAX;
 	          typedef uint_least64_t  my_uint_least64_t;
+		  my_uint_least64_t       uil64 = UINT_LEAST64_MAX;
+		  uil64 = UINT_LEAST64_MAX;
 		  typedef uintmax_t       my_uintmax_t;
+		  my_uintmax_t            uim = UINTMAX_MAX;
+		  uim = UINTMAX_MAX;
 		  typedef uintptr_t       my_uintptr_t;
+		  my_uintptr_t            uip = UINTPTR_MAX;
+		  uip = UINTPTR_MAX;
 		 ],[glibcxx_cv_c99_stdint_tr1=yes],
 		   [glibcxx_cv_c99_stdint_tr1=no])
   ])
