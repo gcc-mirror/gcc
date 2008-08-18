@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 # include <link.h>
 #endif
 
-#ifdef __APPLE__
+#if defined (__APPLE__) || (__FreeBSD__)
 # include <sys/types.h>
 # include <sys/sysctl.h>
 #endif
@@ -123,6 +123,36 @@ detect_processor_darwin (void)
 }
 
 #endif /* __APPLE__ */
+
+#ifdef __FreeBSD__
+
+/* Returns the description of caches on FreeBSD PPC.  */
+
+static char *
+detect_caches_freebsd (void)
+{
+  unsigned l1_sizekb, l1_line, l1_assoc, l2_sizekb;
+  size_t len = 4;
+
+  /* Currently, as of FreeBSD-7.0, there is only the cacheline_size
+     available via sysctl.  */
+  sysctlbyname ("machdep.cacheline_size", &l1_line, &len, NULL, 0);
+
+  l1_sizekb = 32;
+  l1_assoc = 0;
+  l2_sizekb = 512;
+
+  return describe_cache (l1_sizekb, l1_line, l1_assoc, l2_sizekb);
+}
+
+/* Currently returns default powerpc.  */
+static const char *
+detect_processor_freebsd (void)
+{
+  return "powerpc";
+}
+
+#endif /* __FreeBSD__  */
 
 #ifdef __linux__
 
@@ -343,6 +373,10 @@ const char
   cache = detect_caches_aix ();
 #elif defined (__APPLE__)
   cache = detect_caches_darwin ();
+#elif defined (__FreeBSD__)
+  cache = detect_caches_freebsd ();
+  /* FreeBSD PPC does not provide any cache information yet.  */
+  cache = "";
 #elif defined (__linux__)
   cache = detect_caches_linux ();
   /* PPC Linux does not provide any cache information yet.  */
@@ -355,6 +389,8 @@ const char
   cpu = detect_processor_aix ();
 #elif defined (__APPLE__)
   cpu = detect_processor_darwin ();
+#elif defined (__FreeBSD__)
+  cpu = detect_processor_freebsd ();
 #elif defined (__linux__)
   cpu = detect_processor_linux ();
 #else

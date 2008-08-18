@@ -1,3 +1,9 @@
+2008-08-18  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/rs6000/driver-rs6000.c (detect_caches_freebsd): New function.
+	(detect_processor_freebsd): Likewise.
+	(host_detect_local_cpu): Call newly added functions for FreeBSD.
+
 2008-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_types_in_gimple_assign): Verify copies
