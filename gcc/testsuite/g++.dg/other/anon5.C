@@ -1,5 +1,5 @@
 // PR c++/34094
-// { dg-do link { target { ! hppa*-*-hpux* } } }
+// { dg-do link { target { ! *-*-hpux* } } }
 // { dg-options "-g" }
 
 namespace {
