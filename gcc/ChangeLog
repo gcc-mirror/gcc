@@ -1,3 +1,7 @@
+2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* mcf.c: Really add it.
+
 2008-08-18  Paul Yuan  <yingbo.com@gmail.com>
 	    Vinodha Ramasamy  <vinodha@google.com>
 
