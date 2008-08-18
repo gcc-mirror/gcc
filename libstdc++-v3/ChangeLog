@@ -1,5 +1,11 @@
 2008-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* configure.ac: Do not hardcode HAVE_S_ISREG and HAVE_S_IFREG for
+	newlib.
+	* configure: Regenerate.
+
+2008-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/37147
 	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Tighten checks on stdint.h,
 	check the macros too.

@@ -43813,15 +43813,6 @@ _ACEOF
 
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE_S_ISREG 1
-_ACEOF
-
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_S_IFREG 1
-_ACEOF
-
-
-    cat >>confdefs.h <<\_ACEOF
 #define HAVE_ICONV 1
 _ACEOF
 
