@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "" }
 
-// Copyright (C) 2004, 2005 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <locale>
+#include <cstdio>
 #include <testsuite_hooks.h>
 
 // libstdc++/12077

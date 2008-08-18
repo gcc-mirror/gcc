@@ -1,5 +1,36 @@
 2008-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/37149
+	* testsuite/27_io/basic_ostream/inserters_other/char/4.cc: Include
+	<cstdio>.
+	* testsuite/27_io/basic_ostream/inserters_other/char/error_code.cc:
+	Likewise.
+	* testsuite/27_io/objects/char/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/ext/malloc_allocator/deallocate_global.cc: Likewise.
+	* testsuite/ext/malloc_allocator/deallocate_local.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-6.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-8.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-5.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-7.cc: Likewise.
+	* testsuite/ext/new_allocator/deallocate_global.cc: Likewise.
+	* testsuite/ext/new_allocator/deallocate_local.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Likewise.
+	* include/std/regex: Include <sstream>.
+	* include/tr1/regex: Likewise.
+
+2008-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* configure.ac: Do not hardcode HAVE_S_ISREG and HAVE_S_IFREG for
 	newlib.
 	* configure: Regenerate.
