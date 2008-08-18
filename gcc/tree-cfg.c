@@ -3544,6 +3544,7 @@ verify_types_in_gimple_assign (gimple stmt)
   /* Generic handling via classes.  */
   switch (TREE_CODE_CLASS (rhs_code))
     {
+    case tcc_exceptional: /* for SSA_NAME */
     case tcc_unary:
       if (!useless_type_conversion_p (lhs_type, rhs1_type))
 	{
@@ -3555,6 +3556,15 @@ verify_types_in_gimple_assign (gimple stmt)
       break;
 
     case tcc_reference:
+      /* All tcc_reference trees are GIMPLE_SINGLE_RHS.  Verify that
+         no implicit type change happens here.  */
+      if (!useless_type_conversion_p (lhs_type, rhs1_type))
+	{
+	  error ("non-trivial conversion at assignment");
+	  debug_generic_expr (lhs);
+	  debug_generic_expr (rhs1);
+	  return true;
+	}
       return verify_types_in_gimple_reference (rhs1);
 
     case tcc_comparison:
