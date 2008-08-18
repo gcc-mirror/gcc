@@ -7515,8 +7515,7 @@ fold_builtin_cabs (tree arg, tree type, tree fndecl)
 	  && operand_equal_p (real, imag, OEP_PURE_SAME))
         {
 	  const REAL_VALUE_TYPE sqrt2_trunc
-	    = real_value_truncate (TYPE_MODE (type),
-				   *get_real_const (rv_sqrt2));
+	    = real_value_truncate (TYPE_MODE (type), dconst_sqrt2 ());
 	  STRIP_NOPS (real);
 	  return fold_build2 (MULT_EXPR, type,
 			      fold_build1 (ABS_EXPR, type, real),
@@ -7599,7 +7598,7 @@ fold_builtin_sqrt (tree arg, tree type)
 	  tree tree_root;
 	  /* The inner root was either sqrt or cbrt.  */
 	  REAL_VALUE_TYPE dconstroot =
-	    BUILTIN_SQRT_P (fcode) ? dconsthalf : *get_real_const (rv_third);
+	    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconst_third ();
 
 	  /* Adjust for the outer root.  */
 	  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
@@ -7652,7 +7651,7 @@ fold_builtin_cbrt (tree arg, tree type)
 	{
 	  tree expfn = TREE_OPERAND (CALL_EXPR_FN (arg), 0);
 	  const REAL_VALUE_TYPE third_trunc =
-	    real_value_truncate (TYPE_MODE (type), *get_real_const (rv_third));
+	    real_value_truncate (TYPE_MODE (type), dconst_third ());
 	  arg = fold_build2 (MULT_EXPR, type,
 			     CALL_EXPR_ARG (arg, 0),
 			     build_real (type, third_trunc));
@@ -7668,7 +7667,7 @@ fold_builtin_cbrt (tree arg, tree type)
 	    {
 	      tree arg0 = CALL_EXPR_ARG (arg, 0);
 	      tree tree_root;
-	      REAL_VALUE_TYPE dconstroot = *get_real_const (rv_third);
+	      REAL_VALUE_TYPE dconstroot = dconst_third ();
 
 	      SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
 	      dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
@@ -7691,8 +7690,7 @@ fold_builtin_cbrt (tree arg, tree type)
 		  REAL_VALUE_TYPE dconstroot;
 
 		  real_arithmetic (&dconstroot, MULT_EXPR,
-				   get_real_const (rv_third),
-				   get_real_const (rv_third));
+                                   dconst_third_ptr (), dconst_third_ptr ());
 		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
 		  tree_root = build_real (type, dconstroot);
 		  return build_call_expr (powfn, 2, arg0, tree_root);
@@ -7711,8 +7709,7 @@ fold_builtin_cbrt (tree arg, tree type)
 	    {
 	      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg), 0);
 	      const REAL_VALUE_TYPE dconstroot
-		= real_value_truncate (TYPE_MODE (type),
-				       *get_real_const (rv_third));
+		= real_value_truncate (TYPE_MODE (type), dconst_third ());
 	      tree narg01 = fold_build2 (MULT_EXPR, type, arg01,
 					 build_real (type, dconstroot));
 	      return build_call_expr (powfn, 2, arg00, narg01);
@@ -8260,7 +8257,7 @@ fold_builtin_logarithm (tree fndecl, tree arg,
       if (flag_unsafe_math_optimizations && func == mpfr_log)
         {
 	  const REAL_VALUE_TYPE e_truncated =
-	    real_value_truncate (TYPE_MODE (type), *get_real_const (rv_e));
+	    real_value_truncate (TYPE_MODE (type), dconst_e ());
 	  if (real_dconstp (arg, &e_truncated))
 	    return build_real (type, dconst1);
 	}
@@ -8293,9 +8290,8 @@ fold_builtin_logarithm (tree fndecl, tree arg,
 	  {
 	  CASE_FLT_FN (BUILT_IN_EXP):
 	    /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
-	    x = build_real (type,
-			    real_value_truncate (TYPE_MODE (type),
-						 *get_real_const (rv_e)));
+	    x = build_real (type, real_value_truncate (TYPE_MODE (type), 
+                                                       dconst_e ()));
 	    exponent = CALL_EXPR_ARG (arg, 0);
 	    break;
 	  CASE_FLT_FN (BUILT_IN_EXP2):
@@ -8322,7 +8318,7 @@ fold_builtin_logarithm (tree fndecl, tree arg,
 	    /* Prepare to do logN(cbrt(x) -> (1/3)*logN(x).  */
 	    x = CALL_EXPR_ARG (arg, 0);
 	    exponent = build_real (type, real_value_truncate (TYPE_MODE (type),
-							      *get_real_const (rv_third)));
+							      dconst_third ()));
 	    break;
 	  CASE_FLT_FN (BUILT_IN_POW):
 	    /* Prepare to do logN(pow(x,exponent) -> exponent*logN(x).  */
@@ -8382,7 +8378,7 @@ fold_builtin_hypot (tree fndecl, tree arg0, tree arg1, tree type)
       && operand_equal_p (arg0, arg1, OEP_PURE_SAME))
     {
       const REAL_VALUE_TYPE sqrt2_trunc
-	= real_value_truncate (TYPE_MODE (type), *get_real_const (rv_sqrt2));
+	= real_value_truncate (TYPE_MODE (type), dconst_sqrt2 ());
       return fold_build2 (MULT_EXPR, type,
 			  fold_build1 (ABS_EXPR, type, arg0),
 			  build_real (type, sqrt2_trunc));
@@ -8448,8 +8444,7 @@ fold_builtin_pow (tree fndecl, tree arg0, tree arg1, tree type)
       if (flag_unsafe_math_optimizations)
 	{
 	  const REAL_VALUE_TYPE dconstroot
-	    = real_value_truncate (TYPE_MODE (type),
-				   *get_real_const (rv_third));
+	    = real_value_truncate (TYPE_MODE (type), dconst_third ());
 
 	  if (REAL_VALUES_EQUAL (c, dconstroot))
 	    {
@@ -8516,8 +8511,7 @@ fold_builtin_pow (tree fndecl, tree arg0, tree arg1, tree type)
 	  if (tree_expr_nonnegative_p (arg))
 	    {
 	      const REAL_VALUE_TYPE dconstroot
-		= real_value_truncate (TYPE_MODE (type),
-				       *get_real_const (rv_third));
+		= real_value_truncate (TYPE_MODE (type), dconst_third ());
 	      tree narg1 = fold_build2 (MULT_EXPR, type, arg1,
 					build_real (type, dconstroot));
 	      return build_call_expr (fndecl, 2, arg, narg1);

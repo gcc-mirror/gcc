@@ -2225,47 +2225,62 @@ times_pten (REAL_VALUE_TYPE *r, int exp)
     do_divide (r, r, &pten);
 }
 
-/* Returns the special REAL_VALUE_TYPE enumerated by E.  */
+/* Returns the special REAL_VALUE_TYPE corresponding to 'e'.  */
 
 const REAL_VALUE_TYPE *
-get_real_const (enum real_value_const e)
+dconst_e_ptr (void)
 {
-  static REAL_VALUE_TYPE value[rv_max];
-
-  gcc_assert (e < rv_max);
+  static REAL_VALUE_TYPE value;
 
   /* Initialize mathematical constants for constant folding builtins.
      These constants need to be given to at least 160 bits precision.  */
-  if (value[e].cl == rvc_zero)
-    switch (e)
+  if (value.cl == rvc_zero)
     {
-    case rv_e:
-      {
-	mpfr_t m;
-	mpfr_init2 (m, SIGNIFICAND_BITS);
-	mpfr_set_ui (m, 1, GMP_RNDN);
-	mpfr_exp (m, m, GMP_RNDN);
-	real_from_mpfr (&value[e], m, NULL_TREE, GMP_RNDN);
-	mpfr_clear (m);
-      }
-      break;
-    case rv_third:
-      real_arithmetic (&value[e], RDIV_EXPR, &dconst1, real_digit (3));
-      break;
-    case rv_sqrt2:
-      {
-	mpfr_t m;
-	mpfr_init2 (m, SIGNIFICAND_BITS);
-	mpfr_sqrt_ui (m, 2, GMP_RNDN);
-	real_from_mpfr (&value[e], m, NULL_TREE, GMP_RNDN);
-	mpfr_clear (m);
-      }
-      break;
-    default:
-      gcc_unreachable();
+      mpfr_t m;
+      mpfr_init2 (m, SIGNIFICAND_BITS);
+      mpfr_set_ui (m, 1, GMP_RNDN);
+      mpfr_exp (m, m, GMP_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_clear (m);
+      
     }
+  return &value;
+}
 
-  return &value[e];
+/* Returns the special REAL_VALUE_TYPE corresponding to 1/3.  */
+
+const REAL_VALUE_TYPE *
+dconst_third_ptr (void)
+{
+  static REAL_VALUE_TYPE value;
+
+  /* Initialize mathematical constants for constant folding builtins.
+     These constants need to be given to at least 160 bits precision.  */
+  if (value.cl == rvc_zero)
+    {
+      real_arithmetic (&value, RDIV_EXPR, &dconst1, real_digit (3));
+    }
+  return &value;
+}
+
+/* Returns the special REAL_VALUE_TYPE corresponding to sqrt(2).  */
+
+const REAL_VALUE_TYPE *
+dconst_sqrt2_ptr (void)
+{
+  static REAL_VALUE_TYPE value;
+
+  /* Initialize mathematical constants for constant folding builtins.
+     These constants need to be given to at least 160 bits precision.  */
+  if (value.cl == rvc_zero)
+    {
+      mpfr_t m;
+      mpfr_init2 (m, SIGNIFICAND_BITS);
+      mpfr_sqrt_ui (m, 2, GMP_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_clear (m);
+    }
+  return &value;
 }
 
 /* Fills R with +Inf.  */
