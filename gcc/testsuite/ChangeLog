@@ -1,3 +1,8 @@
+2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/15808
+	* gnat.dg/specs/abstract_private.ads: New.
+
 2008-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/fold-alloca-1.c: Scan cfg dump instead of cleanup_cfg1.

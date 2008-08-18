@@ -1,3 +1,9 @@
+2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/15808
+	* sem_ch6.adb (Check_Private_Overriding): Check for generic packages
+	as well.
+
 2008-08-17  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* adaint.c (_gnat_set_close_on_exec) [_WIN32]: Implement.

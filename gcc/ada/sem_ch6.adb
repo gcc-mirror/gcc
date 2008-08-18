@@ -6481,7 +6481,7 @@ package body Sem_Ch6 is
 
          procedure Check_Private_Overriding (T : Entity_Id) is
          begin
-            if Ekind (Current_Scope) = E_Package
+            if Is_Package_Or_Generic_Package (Current_Scope)
               and then In_Private_Part (Current_Scope)
               and then Visible_Part_Type (T)
               and then not In_Instance
