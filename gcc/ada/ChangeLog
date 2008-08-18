@@ -1,5 +1,12 @@
 2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
 
+	* exp_ch13.adb, exp_disp.adb, sem_cat.adb, sem_ch10.adb,
+	* sem_ch12.adb, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb,
+	* sem_prag.adb, sem_util.adb, sem_warn.adb: Use
+	Is_Package_Or_Generic_Package instead of hand-crafted tests.
+
+2008-08-18  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/15808
 	* sem_ch6.adb (Check_Private_Overriding): Check for generic packages
 	as well.

@@ -1383,10 +1383,7 @@ package body Sem_Prag is
             --  the end of the package declarations (for details, see
             --  Analyze_Package_Specification.Analyze_PPCs).
 
-            if Ekind (Scope (S)) /= E_Package
-                 and then
-               Ekind (Scope (S)) /= E_Generic_Package
-            then
+            if not Is_Package_Or_Generic_Package (Scope (S)) then
                Analyze_PPC_In_Decl_Part (N, S);
             end if;
 
@@ -3539,8 +3536,7 @@ package body Sem_Prag is
 
          elsif (C = Convention_Java or else C = Convention_CIL)
            and then
-             (Ekind (Def_Id) = E_Package
-                or else Ekind (Def_Id) = E_Generic_Package
+             (Is_Package_Or_Generic_Package (Def_Id)
                 or else Ekind (Def_Id) = E_Exception
                 or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
          then
@@ -4307,9 +4303,7 @@ package body Sem_Prag is
          E    : Entity_Id;
 
          In_Package_Spec : constant Boolean :=
-                             (Ekind (Current_Scope) = E_Package
-                                or else
-                              Ekind (Current_Scope) = E_Generic_Package)
+                             Is_Package_Or_Generic_Package (Current_Scope)
                                and then not In_Package_Body (Current_Scope);
 
          procedure Suppress_Unsuppress_Echeck (E : Entity_Id; C : Check_Id);
@@ -9215,9 +9209,7 @@ package body Sem_Prag is
                   declare
                      Ent : constant Entity_Id := Find_Lib_Unit_Name;
                   begin
-                     if Ekind (Ent) = E_Package
-                       or else Ekind (Ent) = E_Generic_Package
-                     then
+                     if Is_Package_Or_Generic_Package (Ent) then
                         Set_Obsolescent (Ent);
                         return;
                      end if;

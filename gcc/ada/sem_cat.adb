@@ -433,8 +433,7 @@ package body Sem_Cat is
       --  of an RCI unit.
 
       return Is_Remote_Call_Interface (Unit_Entity)
-        and then (Ekind (Unit_Entity) = E_Package
-                  or else Ekind (Unit_Entity) = E_Generic_Package)
+        and then Is_Package_Or_Generic_Package (Unit_Entity)
         and then Unit_Kind /= N_Package_Body
         and then List_Containing (N) =
                   Visible_Declarations
@@ -459,8 +458,7 @@ package body Sem_Cat is
       --  There are no restrictions on the body of a Remote Types unit
 
       return Is_Remote_Types (Unit_Entity)
-        and then (Ekind (Unit_Entity) = E_Package
-                   or else Ekind (Unit_Entity) = E_Generic_Package)
+        and then Is_Package_Or_Generic_Package (Unit_Entity)
         and then Unit_Kind /= N_Package_Body
         and then not In_Package_Body (Unit_Entity)
         and then not In_Instance;

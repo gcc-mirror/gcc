@@ -6016,9 +6016,7 @@ package body Exp_Disp is
    begin
       --  The scope must be a package
 
-      if Ekind (Scop) /= E_Package
-        and then Ekind (Scop) /= E_Generic_Package
-      then
+      if not Is_Package_Or_Generic_Package (Scop) then
          return False;
       end if;
 

@@ -6566,8 +6566,7 @@ package body Sem_Ch6 is
          elsif Current_Scope = Standard_Standard then
             null;
 
-         elsif ((Ekind (Current_Scope) = E_Package
-                  or else Ekind (Current_Scope) = E_Generic_Package)
+         elsif (Is_Package_Or_Generic_Package (Current_Scope)
                  and then not In_Package_Body (Current_Scope))
            or else Is_Overriding
          then

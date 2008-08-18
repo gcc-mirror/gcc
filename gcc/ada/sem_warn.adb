@@ -1294,11 +1294,8 @@ package body Sem_Warn is
                            or else
                              (Ekind (E1) = E_Package
                                 and then
-                                  Ekind (Cunit_Entity (Current_Sem_Unit)) /=
-                                                          E_Package
-                                and then
-                                  Ekind (Cunit_Entity (Current_Sem_Unit)) /=
-                                                          E_Generic_Package))
+                                  not Is_Package_Or_Generic_Package
+                                    (Cunit_Entity (Current_Sem_Unit))))
 
                --  Exclude instantiations, since there is no reason why every
                --  entity in an instantiation should be referenced.
@@ -1432,7 +1429,7 @@ package body Sem_Warn is
          --  formal package, because the corresponding body is not analyzed.
 
          <<Continue>>
-            if ((Ekind (E1) = E_Package or else Ekind (E1) = E_Generic_Package)
+            if (Is_Package_Or_Generic_Package (E1)
                   and then Nkind (Parent (E1)) = N_Package_Specification
                   and then
                     Nkind (Original_Node (Unit_Declaration_Node (E1)))
