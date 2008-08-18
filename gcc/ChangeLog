@@ -1,3 +1,15 @@
+2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* real.h (dconst_e, dconst_third, dconst_sqrt2, dconst_e_ptr,
+	dconst_third_ptr, dconst_sqrt2_ptr): Declare.
+	(enum real_value_const): Delete.
+	(get_real_const): Delete.
+	* real.c (get_real_const): Delete.
+	(dconst_e_ptr): Define.
+	(dconst_third_ptr): Define.
+	(dconst_sqrt2_ptr): Define.
+	* builtins.c: Update all callers.
+
 2008-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-reassoc.c (reassociate_bb): Properly reset the
