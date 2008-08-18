@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce -fdump-tree-forwprop1-details" } */
+/* { dg-options "-O2 -fdump-tree-cddce2 -fdump-tree-forwprop1-details" } */
   
 int abarney[2];
 int afred[1];
@@ -28,5 +28,5 @@ void foo(int edx, int eax)
 
 /* After cddce we should have two IF statements remaining as the other
    two tests can be threaded.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "cddce"} } */
-/* { dg-final { cleanup-tree-dump "cddce" } } */
+/* { dg-final { scan-tree-dump-times "if " 2 "cddce2"} } */
+/* { dg-final { cleanup-tree-dump "cddce2" } } */

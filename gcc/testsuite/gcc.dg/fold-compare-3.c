@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cleanup_cfg1" } */
+/* { dg-options "-O2 -fdump-tree-cfg" } */
 
 #include <limits.h>
 
@@ -151,9 +151,9 @@ void bla4ge (int var)
     this_comparison_is_not_decidable ();
 }
 
-/* { dg-final { scan-tree-dump-times "this_comparison_is_false" 0 "cleanup_cfg1" } } */
-/* { dg-final { scan-tree-dump-times "this_comparison_is_true" 6 "cleanup_cfg1" } } */
-/* { dg-final { scan-tree-dump-times "this_comparison_is_not_decidable" 12 "cleanup_cfg1" } } */
-/* { dg-final { scan-tree-dump-times "if " 12 "cleanup_cfg1" } } */
+/* { dg-final { scan-tree-dump-times "this_comparison_is_false" 0 "cfg" } } */
+/* { dg-final { scan-tree-dump-times "this_comparison_is_true" 6 "cfg" } } */
+/* { dg-final { scan-tree-dump-times "this_comparison_is_not_decidable" 12 "cfg" } } */
+/* { dg-final { scan-tree-dump-times "if " 12 "cfg" } } */
 
-/* { dg-final { cleanup-tree-dump "cleanup_cfg1" } } */
+/* { dg-final { cleanup-tree-dump "cfg" } } */

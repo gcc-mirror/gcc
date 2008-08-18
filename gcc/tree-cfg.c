@@ -212,10 +212,6 @@ build_gimple_cfg (gimple_seq seq)
 #ifdef ENABLE_CHECKING
   verify_stmts ();
 #endif
-
-  /* Dump a textual representation of the flowgraph.  */
-  if (dump_file)
-    gimple_dump_cfg (dump_file, dump_flags);
 }
 
 static unsigned int
@@ -240,7 +236,8 @@ struct gimple_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg	/* todo_flags_finish */
+  TODO_verify_stmts | TODO_cleanup_cfg
+  | TODO_dump_func			/* todo_flags_finish */
  }
 };
 

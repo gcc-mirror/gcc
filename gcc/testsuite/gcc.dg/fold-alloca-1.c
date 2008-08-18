@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-cleanup_cfg1" } */
+/* { dg-options "-fdump-tree-cfg" } */
 
 void *alloca (__SIZE_TYPE__);
 void link_error ();
@@ -10,5 +10,5 @@ int main (int argc, char *argv[]) {
 	  link_error ();
 	return 0;
 }
-/* { dg-final { scan-tree-dump-times "link_error" 0 "cleanup_cfg1" } } */
-/* { dg-final { cleanup-tree-dump "cleanup_cfg1" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "cfg" } } */
+/* { dg-final { cleanup-tree-dump "cfg" } } */
