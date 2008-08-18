@@ -516,7 +516,7 @@ cgraph_edge (struct cgraph_node *node, gimple call_stmt)
   if (node->call_site_hash)
     return (struct cgraph_edge *)
       htab_find_with_hash (node->call_site_hash, call_stmt,
-			   htab_hash_pointer (call_stmt));
+      	                   htab_hash_pointer (call_stmt));
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best
@@ -1208,7 +1208,12 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
   new_node->master_clone = n->master_clone;
   new_node->count = count;
   if (n->count)
-    count_scale = new_node->count * REG_BR_PROB_BASE / n->count;
+    {
+      if (new_node->count > n->count)
+        count_scale = REG_BR_PROB_BASE;
+      else
+        count_scale = new_node->count * REG_BR_PROB_BASE / n->count;
+    }
   else
     count_scale = 0;
   if (update_original)

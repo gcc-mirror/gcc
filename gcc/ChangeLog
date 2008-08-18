@@ -1,3 +1,22 @@
+2008-08-18  Paul Yuan  <yingbo.com@gmail.com>
+	    Vinodha Ramasamy  <vinodha@google.com>
+
+	* cgraph.c (cgraph_edge): Handle inconsistent counts when setting
+	count_scale.
+	* value-prof.c (check_counter): Fix the counter if
+	flag_profile_correction is true.
+	(tree_divmod_fixed_value_transform, tree_mod_pow2_value_transform,
+	tree_mod_subtract_transform):
+	Follow check_counter parameter change.
+	* common.opt (fprofile-correction): New option.
+	* mcf.c: New file.
+	* profile.c (edge_info, EDGE_INFO): Moved to new file profile.h.
+	(sum_edge_counts, is_edge_inconsistent, correct_negative_edge_counts,
+	is_inconsistent, set_bb_counts, read_profile_edge_counts): New
+	functions.
+	(compute_branch_probabilities): Refactored. Invokes mcf_smooth_cfg if
+	flag_profile_correction is set.
+
 2008-08-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtlanal.c (subreg_offset_representable_p): Check HARD_REGNO_MODE_OK.

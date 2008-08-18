@@ -821,6 +821,10 @@ Common Joined RejectNegative
 Set the top-level directory for storing the profile data.
 The default is 'pwd'.
 
+fprofile-correction
+Common Report Var(flag_profile_correction)
+Enable correction of flow inconsistent profile data input
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations
