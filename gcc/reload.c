@@ -3851,49 +3851,61 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   /* Any constants that aren't allowed and can't be reloaded
      into registers are here changed into memory references.  */
   for (i = 0; i < noperands; i++)
-    if (! goal_alternative_win[i]
-	&& CONST_POOL_OK_P (recog_data.operand[i])
-	&& ((PREFERRED_RELOAD_CLASS (recog_data.operand[i],
-				     (enum reg_class) goal_alternative[i])
-	     == NO_REGS)
-	    || no_input_reloads)
-	&& operand_mode[i] != VOIDmode)
+    if (! goal_alternative_win[i])
       {
-	int this_address_reloaded;
+	rtx op = recog_data.operand[i];
+	rtx subreg = NULL_RTX;
+	rtx plus = NULL_RTX;
+	enum machine_mode mode = operand_mode[i];
 
-	this_address_reloaded = 0;
-	substed_operand[i] = recog_data.operand[i]
-	  = find_reloads_toplev (force_const_mem (operand_mode[i],
-						  recog_data.operand[i]),
-				 i, address_type[i], ind_levels, 0, insn,
-				 &this_address_reloaded);
-	if (alternative_allows_const_pool_ref (this_address_reloaded == 0
-					       ? substed_operand[i]
-					       : NULL,
-					       recog_data.constraints[i],
-					       goal_alternative_number))
-	  goal_alternative_win[i] = 1;
-      }
+	/* Reloads of SUBREGs of CONSTANT RTXs are handled later in
+	   push_reload so we have to let them pass here.  */
+	if (GET_CODE (op) == SUBREG)
+	  {
+	    subreg = op;
+	    op = SUBREG_REG (op);
+	    mode = GET_MODE (op);
+	  }
 
-  /* Likewise any invalid constants appearing as operand of a PLUS
-     that is to be reloaded.  */
-  for (i = 0; i < noperands; i++)
-    if (! goal_alternative_win[i]
-	&& GET_CODE (recog_data.operand[i]) == PLUS
-	&& CONST_POOL_OK_P (XEXP (recog_data.operand[i], 1))
-	&& (PREFERRED_RELOAD_CLASS (XEXP (recog_data.operand[i], 1),
-				    (enum reg_class) goal_alternative[i])
-	     == NO_REGS)
-	&& operand_mode[i] != VOIDmode)
-      {
-	rtx tem = force_const_mem (operand_mode[i],
-				   XEXP (recog_data.operand[i], 1));
-	tem = gen_rtx_PLUS (operand_mode[i],
-			    XEXP (recog_data.operand[i], 0), tem);
+	if (GET_CODE (op) == PLUS)
+	  {
+	    plus = op;
+	    op = XEXP (op, 1);
+	  }
 
-	substed_operand[i] = recog_data.operand[i]
-	  = find_reloads_toplev (tem, i, address_type[i],
-				 ind_levels, 0, insn, NULL);
+	if (CONST_POOL_OK_P (op)
+	    && ((PREFERRED_RELOAD_CLASS (op,
+					 (enum reg_class) goal_alternative[i])
+		 == NO_REGS)
+		|| no_input_reloads)
+	    && mode != VOIDmode)
+	  {
+	    int this_address_reloaded;
+	    rtx tem = force_const_mem (mode, op);
+
+	    /* If we stripped a SUBREG or a PLUS above add it back.  */
+	    if (plus != NULL_RTX)
+	      tem = gen_rtx_PLUS (mode, XEXP (plus, 0), tem);
+
+	    if (subreg != NULL_RTX)
+	      tem = gen_rtx_SUBREG (operand_mode[i], tem, SUBREG_BYTE (subreg));
+
+	    this_address_reloaded = 0;
+	    substed_operand[i] = recog_data.operand[i]
+	      = find_reloads_toplev (tem, i, address_type[i], ind_levels,
+				     0, insn, &this_address_reloaded);
+
+	    /* If the alternative accepts constant pool refs directly
+	       there will be no reload needed at all.  */
+	    if (plus == NULL_RTX
+		&& subreg == NULL_RTX
+		&& alternative_allows_const_pool_ref (this_address_reloaded == 0
+						      ? substed_operand[i]
+						      : NULL,
+						      recog_data.constraints[i],
+						      goal_alternative_number))
+	      goal_alternative_win[i] = 1;
+	  }
       }
 
   /* Record the values of the earlyclobber operands for the caller.  */

@@ -1,3 +1,8 @@
+2008-08-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* reload.c (find_reloads): Force constants into literal pool
+	also if they are wrapped in a SUBREG.
+
 2008-08-17  Christophe Saout  <christophe@saout.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
