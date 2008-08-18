@@ -1,5 +1,11 @@
 2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR bootstrap/37153
+	* value-prof.c (check_counter): Dereference pointer to overall
+	count when printing it.
+
+2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* profile.h: Really add it.
 
 2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
