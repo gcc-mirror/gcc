@@ -1,5 +1,9 @@
 2008-08-18  Steve Ellcey  <sje@cup.hp.com>
 
+	* g++.dg/other/anon5.C: Skip on *-*-hpux*.
+
+2008-08-18  Steve Ellcey  <sje@cup.hp.com>
+
 	* gcc.dg/vect/no-vfa-pr29145.c:  XFAIL if no_vect_align.
 
 2008-08-18  Steve Ellcey  <sje@cup.hp.com>
