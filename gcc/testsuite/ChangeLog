@@ -1,3 +1,11 @@
+2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR cpp/7263
+	* gcc.dg/cpp/pr7263-2.c: New.
+	* gcc.dg/cpp/pr7263-2.h: New.
+	* gcc.dg/cpp/pr7263-3.c: New.
+	* gcc.dg/cpp/pr7263-3.h: New.
+
 2008-08-18  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/30827

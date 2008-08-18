@@ -805,6 +805,9 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
   parser->error = false;
 }
 
+/* CPP's options (initialized by c-opts.c).  */
+extern cpp_options *cpp_opts;
+
 /* Save the warning flags which are controlled by __extension__.  */
 
 static inline int
@@ -813,11 +816,15 @@ disable_extension_diagnostics (void)
   int ret = (pedantic
 	     | (warn_pointer_arith << 1)
 	     | (warn_traditional << 2)
-	     | (flag_iso << 3));
-  pedantic = 0;
+	     | (flag_iso << 3)
+	     | (warn_long_long << 4)
+	     | (cpp_opts->warn_long_long << 5));
+  cpp_opts->pedantic = pedantic = 0;
   warn_pointer_arith = 0;
-  warn_traditional = 0;
+  cpp_opts->warn_traditional = warn_traditional = 0;
   flag_iso = 0;
+  warn_long_long = 0;
+  cpp_opts->warn_long_long = 0;
   return ret;
 }
 
@@ -827,10 +834,12 @@ disable_extension_diagnostics (void)
 static inline void
 restore_extension_diagnostics (int flags)
 {
-  pedantic = flags & 1;
+  cpp_opts->pedantic = pedantic = flags & 1;
   warn_pointer_arith = (flags >> 1) & 1;
-  warn_traditional = (flags >> 2) & 1;
+  cpp_opts->warn_traditional = warn_traditional = (flags >> 2) & 1;
   flag_iso = (flags >> 3) & 1;
+  warn_long_long = (flags >> 4) & 1;
+  cpp_opts->warn_long_long = (flags >> 5) & 1;
 }
 
 /* Possibly kinds of declarator to parse.  */

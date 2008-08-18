@@ -1,5 +1,13 @@
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR cpp/7263
+	* c-opts.c (cpp_opts): Remove static.
+	* c-parser.c (cpp_opts): Declare it extern.
+	(disable_extension_diagnostics): Handle cpp options.
+	(enable_extension_diagnostics): Likewise.
+
+2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* diagnostics.c (permerror_at): Rename as permerror.
 	(permerror): Delete.
 	* toplev.h: Likewise.
