@@ -4038,7 +4038,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  /* Look for an `operator++ (int)'.  If they didn't have
 	     one, then we fall back to the old way of doing things.  */
 	  if (flags & LOOKUP_COMPLAIN)
-	    permerror ("no %<%D(int)%> declared for postfix %qs, "
+	    permerror (input_location, "no %<%D(int)%> declared for postfix %qs, "
 		       "trying prefix operator instead",
 		       fnname,
 		       operator_name_info[code].name);
@@ -4535,9 +4535,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	}
       if (complain & tf_error)
 	{
-	  permerror ("invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
+	  permerror (input_location, "invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
 	  if (fn)
-	    permerror ("  initializing argument %P of %qD", argnum, fn);
+	    permerror (input_location, "  initializing argument %P of %qD", argnum, fn);
 	}
       else
 	return error_mark_node;
@@ -5191,7 +5191,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (convs[i]->bad_p)
 	{
 	  if (complain & tf_error)
-	    permerror ("passing %qT as %<this%> argument of %q#D discards qualifiers",
+	    permerror (input_location, "passing %qT as %<this%> argument of %q#D discards qualifiers",
 		       TREE_TYPE (argtype), fn);
 	  else
 	    return error_mark_node;

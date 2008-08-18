@@ -1055,8 +1055,8 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
     return;
 
   name = DECL_ASSEMBLER_NAME (newdecl);
-  permerror ("%qD was declared %<extern%> and later %<static%>", newdecl);
-  permerror ("previous declaration of %q+D", olddecl);
+  permerror (input_location, "%qD was declared %<extern%> and later %<static%>", newdecl);
+  permerror (input_location, "previous declaration of %q+D", olddecl);
 }
 
 /* NEW_DECL is a redeclaration of OLD_DECL; both are functions or
@@ -1539,9 +1539,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		if (1 == simple_cst_equal (TREE_PURPOSE (t1),
 					   TREE_PURPOSE (t2)))
 		  {
-		    permerror ("default argument given for parameter %d of %q#D",
+		    permerror (input_location, "default argument given for parameter %d of %q#D",
 			       i, newdecl);
-		    permerror ("after previous specification in %q+#D", olddecl);
+		    permerror (input_location, "after previous specification in %q+#D", olddecl);
 		  }
 		else
 		  {
@@ -2448,11 +2448,11 @@ static void
 identify_goto (tree decl, const location_t *locus)
 {
   if (decl)
-    permerror ("jump to label %qD", decl);
+    permerror (input_location, "jump to label %qD", decl);
   else
-    permerror ("jump to case label");
+    permerror (input_location, "jump to case label");
   if (locus)
-    permerror ("%H  from here", locus);
+    permerror (input_location, "%H  from here", locus);
 }
 
 /* Check that a single previously seen jump to a newly defined label
@@ -2494,7 +2494,7 @@ check_previous_goto_1 (tree decl, struct cp_binding_level* level, tree names,
 	  if (problem > 1)
 	    error ("  crosses initialization of %q+#D", new_decls);
 	  else
-	    permerror ("  enters scope of non-POD %q+#D", new_decls);
+	    permerror (input_location, "  enters scope of non-POD %q+#D", new_decls);
 	}
 
       if (b == level)
@@ -2590,8 +2590,8 @@ check_goto (tree decl)
   if (ent->in_try_scope || ent->in_catch_scope
       || ent->in_omp_scope || ent->bad_decls)
     {
-      permerror ("jump to label %q+D", decl);
-      permerror ("  from here");
+      permerror (input_location, "jump to label %q+D", decl);
+      permerror (input_location, "  from here");
       identified = true;
     }
 
@@ -2609,7 +2609,7 @@ check_goto (tree decl)
       else if (u > 1)
 	error ("  skips initialization of %q+#D", b);
       else
-	permerror ("  enters scope of non-POD %q+#D", b);
+	permerror (input_location, "  enters scope of non-POD %q+#D", b);
     }
 
   if (ent->in_try_scope)
@@ -2630,8 +2630,8 @@ check_goto (tree decl)
 	    {
 	      if (!identified)
 		{
-		  permerror ("jump to label %q+D", decl);
-		  permerror ("  from here");
+		  permerror (input_location, "jump to label %q+D", decl);
+		  permerror (input_location, "  from here");
 		  identified = true;
 		}
 	      error ("  exits OpenMP structured block");
@@ -2683,7 +2683,7 @@ define_label (location_t location, tree name)
     p->more_cleanups_ok = 0;
 
   if (name == get_identifier ("wchar_t"))
-    permerror ("label named wchar_t");
+    permerror (input_location, "label named wchar_t");
 
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
@@ -3766,7 +3766,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   else if (declspecs->redefined_builtin_type)
     {
       if (!in_system_header)
-	permerror ("redeclaration of C++ built-in type %qT",
+	permerror (input_location, "redeclaration of C++ built-in type %qT",
 		   declspecs->redefined_builtin_type);
       return NULL_TREE;
     }
@@ -3780,7 +3780,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   else if (declspecs->type == error_mark_node)
     error_p = true;
   if (declared_type == NULL_TREE && ! saw_friend && !error_p)
-    permerror ("declaration does not declare anything");
+    permerror (input_location, "declaration does not declare anything");
   /* Check for an anonymous union.  */
   else if (declared_type && RECORD_OR_UNION_CODE_P (TREE_CODE (declared_type))
 	   && TYPE_ANONYMOUS_P (declared_type))
@@ -4056,7 +4056,7 @@ start_decl (const cp_declarator *declarator,
 	      if (DECL_CONTEXT (field) != context)
 		{
 		  if (!same_type_p (DECL_CONTEXT (field), context))
-		    permerror ("ISO C++ does not permit %<%T::%D%> "
+		    permerror (input_location, "ISO C++ does not permit %<%T::%D%> "
 			       "to be defined as %<%T::%D%>",
 			       DECL_CONTEXT (field), DECL_NAME (decl),
 			       context, DECL_NAME (decl));
@@ -4112,7 +4112,7 @@ start_decl (const cp_declarator *declarator,
 	}
 
       if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl))
-	permerror ("declaration of %q#D outside of class is not definition",
+	permerror (input_location, "declaration of %q#D outside of class is not definition",
 		   decl);
     }
 
@@ -6377,7 +6377,7 @@ check_class_member_definition_namespace (tree decl)
      The definition for a static data member shall appear in a
      namespace scope enclosing the member's class definition.  */
   if (!is_ancestor (current_namespace, DECL_CONTEXT (decl)))
-    permerror ("definition of %qD is not in namespace enclosing %qT",
+    permerror (input_location, "definition of %qD is not in namespace enclosing %qT",
 	       decl, DECL_CONTEXT (decl));
 }
 
@@ -6611,16 +6611,16 @@ grokfndecl (tree ctype,
 		/* Allow this; it's pretty common in C.  */;
 	      else
 		{
-		  permerror ("non-local function %q#D uses anonymous type",
+		  permerror (input_location, "non-local function %q#D uses anonymous type",
 			      decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
-		    permerror ("%q+#D does not refer to the unqualified "
+		    permerror (input_location, "%q+#D does not refer to the unqualified "
 			       "type, so it is not used for linkage",
 			       TYPE_NAME (t));
 		}
 	    }
 	  else
-	    permerror ("non-local function %q#D uses local type %qT", decl, t);
+	    permerror (input_location, "non-local function %q#D uses local type %qT", decl, t);
 	}
     }
 
@@ -7765,7 +7765,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (in_system_header || flag_ms_extensions)
 	/* Allow it, sigh.  */;
       else if (! is_main)
-	permerror ("ISO C++ forbids declaration of %qs with no type", name);
+	permerror (input_location, "ISO C++ forbids declaration of %qs with no type", name);
       else if (pedantic)
 	pedwarn (OPT_pedantic,
 		 "ISO C++ forbids declaration of %qs with no type", name);
@@ -8211,7 +8211,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      explicitp = 2;
 		    if (virtualp)
 		      {
-			permerror ("constructors cannot be declared virtual");
+			permerror (input_location, "constructors cannot be declared virtual");
 			virtualp = 0;
 		      }
 		    if (decl_context == FIELD
@@ -8434,11 +8434,11 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (friendp)
 	    {
-	      permerror ("member functions are implicitly friends of their class");
+	      permerror (input_location, "member functions are implicitly friends of their class");
 	      friendp = 0;
 	    }
 	  else
-	    permerror_at (declarator->id_loc, 
+	    permerror (declarator->id_loc, 
 			  "extra qualification %<%T::%> on member %qs",
 			  ctype, name);
 	}
@@ -8624,7 +8624,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_ABSTRACT (decl) = 1;
 	}
       else if (constructor_name_p (unqualified_id, current_class_type))
-	permerror ("ISO C++ forbids nested type %qD with same name "
+	permerror (input_location, "ISO C++ forbids nested type %qD with same name "
 		   "as enclosing class",
 		   unqualified_id);
 
@@ -8749,13 +8749,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    {
 	      /* Don't allow friend declaration without a class-key.  */
 	      if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-		permerror ("template parameters cannot be friends");
+		permerror (input_location, "template parameters cannot be friends");
 	      else if (TREE_CODE (type) == TYPENAME_TYPE)
-		permerror ("friend declaration requires class-key, "
+		permerror (input_location, "friend declaration requires class-key, "
 			   "i.e. %<friend class %T::%D%>",
 			   TYPE_CONTEXT (type), TYPENAME_TYPE_FULLNAME (type));
 	      else
-		permerror ("friend declaration requires class-key, "
+		permerror (input_location, "friend declaration requires class-key, "
 			   "i.e. %<friend %#T%>",
 			   type);
 	    }
@@ -9077,9 +9077,9 @@ grokdeclarator (const cp_declarator *declarator,
 		       the rest of the compiler does not correctly
 		       handle the initialization unless the member is
 		       static so we make it static below.  */
-		    permerror ("ISO C++ forbids initialization of member %qD",
+		    permerror (input_location, "ISO C++ forbids initialization of member %qD",
 			       unqualified_id);
-		    permerror ("making %qD static", unqualified_id);
+		    permerror (input_location, "making %qD static", unqualified_id);
 		    staticp = 1;
 		  }
 
@@ -9203,7 +9203,7 @@ grokdeclarator (const cp_declarator *declarator,
 	       declaring main to be static.  */
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      {
-		permerror ("cannot declare member function %qD to have "
+		permerror (input_location, "cannot declare member function %qD to have "
 			   "static linkage", decl);
 		invalid_static = 1;
 	      }
@@ -9240,7 +9240,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-		permerror ("%<static%> may not be used when defining "
+		permerror (input_location, "%<static%> may not be used when defining "
 			   "(as opposed to declaring) a static data member");
 		staticp = 0;
 		storage_class = sc_none;

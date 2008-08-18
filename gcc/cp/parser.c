@@ -4142,7 +4142,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  && !(TREE_CODE (new_scope) == TYPENAME_TYPE
 	       && (TREE_CODE (TYPENAME_TYPE_FULLNAME (new_scope))
 		   == TEMPLATE_ID_EXPR)))
-	permerror (TYPE_P (new_scope)
+	permerror (input_location, TYPE_P (new_scope)
 		   ? "%qT is not a template"
 		   : "%qD is not a template",
 		   new_scope);
@@ -9046,8 +9046,8 @@ cp_parser_mem_initializer (cp_parser* parser)
   /* Find out what is being initialized.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      permerror ("%Hanachronistic old-style base class initializer",
-                 &token->location);
+      permerror (token->location,
+		 "anachronistic old-style base class initializer");
       mem_initializer_id = NULL_TREE;
     }
   else
@@ -9980,8 +9980,8 @@ cp_parser_template_id (cp_parser *parser,
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
 	 parsing because we got our argument list.  */
-      if (permerror ("%H%<<::%> cannot begin a template-argument list",
-		     &next_token->location))
+      if (permerror (next_token->location,
+		     "%<<::%> cannot begin a template-argument list"))
 	{
 	  static bool hint = false;
 	  inform ("%H%<<:%> is an alternate spelling for %<[%>. Insert whitespace "
@@ -11358,7 +11358,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       tag_type = typename_type;
       /* The `typename' keyword is only allowed in templates.  */
       if (!processing_template_decl)
-	permerror ("using %<typename%> outside of template");
+	permerror (input_location, "using %<typename%> outside of template");
     }
   /* Otherwise it must be a class-key.  */
   else
@@ -15031,7 +15031,7 @@ cp_parser_class_head (cp_parser* parser,
 	 class member of a namespace outside of its namespace.  */
       if (scope == nested_name_specifier)
 	{
-	  permerror ("%Hextra qualification not allowed",
+	  permerror (input_location, "%Hextra qualification not allowed",
 		     &nested_name_specifier_token_start->location);
 	  nested_name_specifier = NULL_TREE;
 	  num_templates = 0;
@@ -18469,7 +18469,7 @@ static void
 cp_parser_check_class_key (enum tag_types class_key, tree type)
 {
   if ((TREE_CODE (type) == UNION_TYPE) != (class_key == union_type))
-    permerror ("%qs tag used in naming %q#T",
+    permerror (input_location, "%qs tag used in naming %q#T",
 	    class_key == union_type ? "union"
 	     : class_key == record_type ? "struct" : "class",
 	     type);

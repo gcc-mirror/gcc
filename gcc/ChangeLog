@@ -1,3 +1,9 @@
+2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* diagnostics.c (permerror_at): Rename as permerror.
+	(permerror): Delete.
+	* toplev.h: Likewise.
+
 2008-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): Remove cleanup_cfg1,

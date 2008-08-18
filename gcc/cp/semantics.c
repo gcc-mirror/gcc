@@ -2191,7 +2191,7 @@ finish_template_type_parm (tree aggr, tree identifier)
 {
   if (aggr != class_type_node)
     {
-      permerror ("template type parameters must use the keyword %<class%> or %<typename%>");
+      permerror (input_location, "template type parameters must use the keyword %<class%> or %<typename%>");
       aggr = class_type_node;
     }
 

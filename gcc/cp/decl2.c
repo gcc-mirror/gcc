@@ -718,7 +718,7 @@ finish_static_data_member_decl (tree decl,
     VEC_safe_push (tree, gc, pending_statics, decl);
 
   if (LOCAL_CLASS_P (current_class_type))
-    permerror ("local class %q#T shall not have static data member %q#D",
+    permerror (input_location, "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
 
   /* Static consts need not be initialized in the class definition.  */
@@ -1260,15 +1260,15 @@ build_anon_union_vars (tree type, tree object)
 	continue;
       if (TREE_CODE (field) != FIELD_DECL)
 	{
-	  permerror ("%q+#D invalid; an anonymous union can only "
+	  permerror (input_location, "%q+#D invalid; an anonymous union can only "
 		     "have non-static data members", field);
 	  continue;
 	}
 
       if (TREE_PRIVATE (field))
-	permerror ("private member %q+#D in anonymous union", field);
+	permerror (input_location, "private member %q+#D in anonymous union", field);
       else if (TREE_PROTECTED (field))
-	permerror ("protected member %q+#D in anonymous union", field);
+	permerror (input_location, "protected member %q+#D in anonymous union", field);
 
       if (processing_template_decl)
 	ref = build_min_nt (COMPONENT_REF, object,
@@ -1403,7 +1403,7 @@ coerce_new_type (tree type)
     e = 2;
 
   if (e == 2)
-    permerror ("%<operator new%> takes type %<size_t%> (%qT) "
+    permerror (input_location, "%<operator new%> takes type %<size_t%> (%qT) "
 	       "as first parameter", size_type_node);
 
   switch (e)
