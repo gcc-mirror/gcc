@@ -1,3 +1,20 @@
+2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c: Update all callers of permerror.
+	* init.c: Likewise.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* call.c: Likewise.
+	* except.c: Likewise.
+	* cvt.c: Likewise.
+	* typeck2.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* name-lookup.c: Likewise.
+	* lex.c: Likewise.
+	* decl2.c: Likewise.
+	* parser.c: Likewise.
+
 2008-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/34485

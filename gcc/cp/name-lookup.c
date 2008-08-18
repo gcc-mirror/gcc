@@ -890,8 +890,8 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      permerror ("type mismatch with previous external decl of %q#D", x);
-	      permerror ("previous external decl of %q+#D", decl);
+	      permerror (input_location, "type mismatch with previous external decl of %q#D", x);
+	      permerror (input_location, "previous external decl of %q+#D", decl);
 	    }
 	}
 
@@ -1217,10 +1217,10 @@ check_for_out_of_scope_variable (tree decl)
     }
   else
     {
-      permerror ("name lookup of %qD changed for ISO %<for%> scoping",
+      permerror (input_location, "name lookup of %qD changed for ISO %<for%> scoping",
 	         DECL_NAME (decl));
       if (flag_permissive)
-        permerror ("  using obsolete binding at %q+D", decl);
+        permerror (input_location, "  using obsolete binding at %q+D", decl);
       else
 	{
 	  static bool hint;

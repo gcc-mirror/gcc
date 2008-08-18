@@ -777,7 +777,7 @@ digest_init_r (tree type, tree init, bool nested)
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror ("initializer-string for array of chars is too long");
+		permerror (input_location, "initializer-string for array of chars is too long");
 	    }
 	  return init;
 	}

@@ -379,7 +379,7 @@ warn_ref_binding (tree reftype, tree intype, tree decl)
 	  msg = "conversion to non-const reference type %q#T from"
 	    " rvalue of type %qT";
 
-      permerror (msg, reftype, intype);
+      permerror (input_location, msg, reftype, intype);
     }
 }
 
@@ -449,7 +449,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
 	  if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
-	    permerror ("conversion from %qT to %qT discards qualifiers",
+	    permerror (input_location, "conversion from %qT to %qT discards qualifiers",
 		       ttr, reftype);
 	}
 
@@ -649,7 +649,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	      || TREE_CODE (intype) == POINTER_TYPE)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
-		permerror ("conversion from %q#T to %q#T", intype, type);
+		permerror (input_location, "conversion from %q#T to %q#T", intype, type);
 
 	      if (!flag_permissive)
 		return error_mark_node;
