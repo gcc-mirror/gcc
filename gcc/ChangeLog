@@ -1,5 +1,9 @@
 2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* profile.h: Really add it.
+
+2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* mcf.c: Really add it.
 
 2008-08-18  Paul Yuan  <yingbo.com@gmail.com>
@@ -14,6 +18,7 @@
 	Follow check_counter parameter change.
 	* common.opt (fprofile-correction): New option.
 	* mcf.c: New file.
+	* profile.h: Likewise.
 	* profile.c (edge_info, EDGE_INFO): Moved to new file profile.h.
 	(sum_edge_counts, is_edge_inconsistent, correct_negative_edge_counts,
 	is_inconsistent, set_bb_counts, read_profile_edge_counts): New
