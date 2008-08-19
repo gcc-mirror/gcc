@@ -2138,29 +2138,29 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, gimple *def_stmt,
    - DECL1 and DECL2 are decls of target builtin functions to be used
    when vectorizing the operation, if available. In this case,
    CODE1 and CODE2 are CALL_EXPR.  
-   - DOUBLE_OP determines if the operation is a double cast, like
-   char->short->int
-   - INTERM_TYPE is the intermediate type required to perform the 
-   widening operation (short in the above example)  */
+   - MULTI_STEP_CVT determines the number of required intermediate steps in
+   case of multi-step conversion (like char->short->int - in that case
+   MULTI_STEP_CVT will be 1).
+   - INTERM_TYPES contains the intermediate type required to perform the 
+   widening operation (short in the above example).  */   
 
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
                                 tree *decl1, tree *decl2,
                                 enum tree_code *code1, enum tree_code *code2,
-                                bool *double_op, tree *interm_type)
+                                int *multi_step_cvt,
+                                VEC (tree, heap) **interm_types)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   bool ordered_p;
   enum machine_mode vec_mode;
-  enum insn_code icode1, icode2;
+  enum insn_code icode1 = 0, icode2 = 0;
   optab optab1, optab2;
   tree type = gimple_expr_type (stmt);
   tree wide_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1, c2;
-
-  *double_op = false;
 
   /* The result of a vectorized widening operation usually requires two vectors
      (because the widened results do not fit int one vector). The generated 
@@ -2272,52 +2272,60 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
 
   vec_mode = TYPE_MODE (vectype);
   if ((icode1 = optab_handler (optab1, vec_mode)->insn_code) == CODE_FOR_nothing
-      || (icode2 = optab_handler (optab2, vec_mode)->insn_code)
-                                                        == CODE_FOR_nothing)
+       || (icode2 = optab_handler (optab2, vec_mode)->insn_code)
+                                                       == CODE_FOR_nothing)
     return false;
 
-  /* Check if it's a double cast, like char->int. In such case the intermediate
-     type is short, and we check that char->short->int operaion is supported by
-     the target.  */
+  /* Check if it's a multi-step conversion that can be done using intermediate 
+     types.  */
   if (insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
-      || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+       || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
     {
-      if (code == NOP_EXPR)
+      int i;
+      tree prev_type = vectype, intermediate_type;
+      enum machine_mode intermediate_mode, prev_mode = vec_mode;
+      optab optab3, optab4;
+
+      if (!CONVERT_EXPR_CODE_P (code))
+        return false;
+      
+      *code1 = c1;
+      *code2 = c2;
+    
+      /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
+         intermediate  steps in promotion sequence. We try MAX_INTERM_CVT_STEPS
+         to get to NARROW_VECTYPE, and fail if we do not.  */
+      *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
+      for (i = 0; i < 3; i++)
         {
-          enum machine_mode intermediate_mode =
-                                             insn_data[icode1].operand[0].mode;
-          tree intermediate_type =
-                      lang_hooks.types.type_for_mode (intermediate_mode,
-                                                      TYPE_UNSIGNED (vectype));
-          optab optab3 = optab_for_tree_code (c1, intermediate_type,
-                                              optab_default);
-          optab optab4 = optab_for_tree_code (c2, intermediate_type,
-                                              optab_default);
+          intermediate_mode = insn_data[icode1].operand[0].mode;
+          intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
+                                                     TYPE_UNSIGNED (prev_type));
+          optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
+          optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
 
-          if (!optab3 || !optab4)
-            return false;
-
-          if ((icode1 = optab1->handlers[(int) vec_mode].insn_code)
+          if (!optab3 || !optab4
+              || (icode1 = optab1->handlers[(int) prev_mode].insn_code)
                                                         == CODE_FOR_nothing
               || insn_data[icode1].operand[0].mode != intermediate_mode
-              || (icode2 = optab2->handlers[(int) vec_mode].insn_code)
+              || (icode2 = optab2->handlers[(int) prev_mode].insn_code)
                                                         == CODE_FOR_nothing
               || insn_data[icode2].operand[0].mode != intermediate_mode
-              || (icode1 = optab3->handlers[(int) intermediate_mode].insn_code)
+              || (icode1 = optab3->handlers[(int) intermediate_mode].insn_code) 
                                                         == CODE_FOR_nothing
-              || insn_data[icode1].operand[0].mode != TYPE_MODE (wide_vectype)
               || (icode2 = optab4->handlers[(int) intermediate_mode].insn_code)
-                                                        == CODE_FOR_nothing
-              || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+                                                        == CODE_FOR_nothing)
             return false;
-          else
-            {
-              *double_op = true;
-              *interm_type = intermediate_type;
-              *code1 = c1;
-              *code2 = c2;
-              return true;
-            }
+
+          VEC_quick_push (tree, *interm_types, intermediate_type);
+          (*multi_step_cvt)++;
+
+          if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
+              && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
+            return true;
+
+          prev_type = intermediate_type;
+          prev_mode = intermediate_mode;
         }
 
        return false;
@@ -2342,16 +2350,17 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
    Output:
    - CODE1 is the code of a vector operation to be used when 
    vectorizing the operation, if available. 
-   - DOUBLE_OP determines if the operation is a double cast, like
-   int->short->char
-   - INTERMIDIATE_TYPE is the intermediate type required to perform the
-   widening operation (short in the above example) */
+   - MULTI_STEP_CVT determines the number of required intermediate steps in
+   case of multi-step conversion (like int->short->char - in that case
+   MULTI_STEP_CVT will be 1).
+   - INTERM_TYPES contains the intermediate type required to perform the
+   narrowing operation (short in the above example).   */ 
 
 bool
 supportable_narrowing_operation (enum tree_code code,
-				 const_gimple stmt, const_tree vectype,
-				 enum tree_code *code1, bool *double_op,
-                                 tree *intermediate_type)
+				 const_gimple stmt, tree vectype,
+				 enum tree_code *code1, int *multi_step_cvt,
+                                 VEC (tree, heap) **interm_types)
 {
   enum machine_mode vec_mode;
   enum insn_code icode1;
@@ -2359,6 +2368,8 @@ supportable_narrowing_operation (enum tree_code code,
   tree type = gimple_expr_type (stmt);
   tree narrow_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1;
+  tree intermediate_type, prev_type;
+  int i;
 
   switch (code)
     {
@@ -2393,24 +2404,45 @@ supportable_narrowing_operation (enum tree_code code,
        == CODE_FOR_nothing)
     return false;
 
-  /* In case of NUNITS_IN == NUNITS_OUT/4 check that the it is possible to
-     perform the operation using an intermediate type of NUNITS_OUT/2.  */
+  /* Check if it's a multi-step conversion that can be done using intermediate
+     types.  */
   if (insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
     {
-      enum machine_mode intermediate_mode = insn_data[icode1].operand[0].mode;
-      *intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
-                                                 TYPE_UNSIGNED (vectype));
-      interm_optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
-                                          *intermediate_type, optab_default);
-      if (!interm_optab)
-        return false;
+      enum machine_mode intermediate_mode, prev_mode = vec_mode;
 
-      if ((icode1 = interm_optab->handlers[(int) intermediate_mode].insn_code)
-           == CODE_FOR_nothing
-          || insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
-        return false;
+      *code1 = c1;
+      prev_type = vectype;
+      /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
+         intermediate  steps in promotion sequence. We try MAX_INTERM_CVT_STEPS
+         to get to NARROW_VECTYPE, and fail if we do not.  */
+      *interm_types = VEC_alloc (tree, heap, MAX_INTERM_CVT_STEPS);
+      for (i = 0; i < 3; i++)
+        {
+          intermediate_mode = insn_data[icode1].operand[0].mode;
+          intermediate_type = lang_hooks.types.type_for_mode (intermediate_mode,
+                                                     TYPE_UNSIGNED (prev_type));
+          interm_optab = optab_for_tree_code (c1, intermediate_type, 
+                                              optab_default);
+          if (!interm_optab  
+              || (icode1 = optab1->handlers[(int) prev_mode].insn_code)
+                                                        == CODE_FOR_nothing
+              || insn_data[icode1].operand[0].mode != intermediate_mode
+              || (icode1 
+                  = interm_optab->handlers[(int) intermediate_mode].insn_code)
+                 == CODE_FOR_nothing)
+            return false;
 
-      *double_op = true;
+          VEC_quick_push (tree, *interm_types, intermediate_type);
+          (*multi_step_cvt)++;
+
+          if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
+            return true;
+
+          prev_type = intermediate_type;
+          prev_mode = intermediate_mode;
+        }
+
+      return false;
     }
 
   *code1 = c1;

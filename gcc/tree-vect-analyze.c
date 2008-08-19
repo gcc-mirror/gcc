@@ -462,8 +462,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	  ok = true;
 	  if (STMT_VINFO_RELEVANT_P (stmt_info)
 	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
-	    ok = (vectorizable_type_promotion (stmt, NULL, NULL)
-		|| vectorizable_type_demotion (stmt, NULL, NULL)
+	    ok = (vectorizable_type_promotion (stmt, NULL, NULL, NULL)
+		|| vectorizable_type_demotion (stmt, NULL, NULL, NULL)
 		|| vectorizable_conversion (stmt, NULL, NULL, NULL)
 		|| vectorizable_operation (stmt, NULL, NULL, NULL)
 		|| vectorizable_assignment (stmt, NULL, NULL, NULL)
@@ -2497,7 +2497,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
 			     tree *first_stmt_def0_type, 
 			     tree *first_stmt_def1_type,
 			     tree *first_stmt_const_oprnd,
-			     int ncopies_for_cost)
+			     int ncopies_for_cost,
+                             bool *pattern0, bool *pattern1)
 {
   tree oprnd;
   unsigned int i, number_of_oprnds;
@@ -2526,6 +2527,58 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
 
 	  return false;
 	}
+
+      /* Check if DEF_STMT is a part of a pattern and get the def stmt from
+         the pattern. Check that all the stmts of the node are in the
+         pattern.  */
+      if (def_stmt && vinfo_for_stmt (def_stmt)
+          && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (def_stmt)))
+        {
+          if (!*first_stmt_dt0)
+            *pattern0 = true;
+          else
+            {
+              if (i == 1 && !*first_stmt_dt1)
+                *pattern1 = true;
+              else if ((i == 0 && !*pattern0) || (i == 1 && !*pattern1))
+                {
+                  if (vect_print_dump_info (REPORT_DETAILS))
+                    {
+                      fprintf (vect_dump, "Build SLP failed: some of the stmts"
+                                     " are in a pattern, and others are not ");
+                      print_generic_expr (vect_dump, oprnd, TDF_SLIM);
+                    }
+
+                  return false;
+                }
+            }
+
+          def_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
+          dt[i] = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt));
+
+          if (*dt == vect_unknown_def_type)
+            {
+              if (vect_print_dump_info (REPORT_DETAILS))
+                fprintf (vect_dump, "Unsupported pattern.");
+              return false;
+            }
+
+          switch (gimple_code (def_stmt))
+            {
+              case GIMPLE_PHI:
+                def = gimple_phi_result (def_stmt);
+                break;
+
+              case GIMPLE_ASSIGN:
+                def = gimple_assign_lhs (def_stmt);
+                break;
+
+              default:
+                if (vect_print_dump_info (REPORT_DETAILS))
+                  fprintf (vect_dump, "unsupported defining stmt: ");
+                return false;
+            }
+        }
 
       if (!*first_stmt_dt0)
 	{
@@ -2624,15 +2677,13 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
 /* Recursively build an SLP tree starting from NODE.
    Fail (and return FALSE) if def-stmts are not isomorphic, require data 
    permutation or are of unsupported types of operation. Otherwise, return 
-   TRUE.
-   SLP_IMPOSSIBLE is TRUE if it is impossible to SLP in the loop, for example
-   in the case of multiple types for now.  */
+   TRUE.  */
 
 static bool
 vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node, 
-		     unsigned int group_size, bool *slp_impossible,
+		     unsigned int group_size, 
 		     int *inside_cost, int *outside_cost,
-		     int ncopies_for_cost)
+		     int ncopies_for_cost, unsigned int *max_nunits)
 {
   VEC (gimple, heap) *def_stmts0 = VEC_alloc (gimple, heap, group_size);
   VEC (gimple, heap) *def_stmts1 =  VEC_alloc (gimple, heap, group_size);
@@ -2653,6 +2704,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
   enum machine_mode vec_mode;
   tree first_stmt_const_oprnd = NULL_TREE;
   struct data_reference *first_dr;
+  bool pattern0 = false, pattern1 = false;
 
   /* For every stmt in NODE find its def stmt/s.  */
   for (i = 0; VEC_iterate (gimple, stmts, i, stmt); i++)
@@ -2691,16 +2743,13 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
       gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
       vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
-      if (ncopies > 1)
-	{
-	  /* FORNOW.  */
-	  if (vect_print_dump_info (REPORT_SLP)) 
-	    fprintf (vect_dump, "SLP failed - multiple types ");
-	  
-	  *slp_impossible = true;
-	  return false;
-	}
+      if (ncopies > 1 && vect_print_dump_info (REPORT_SLP))
+        fprintf (vect_dump, "SLP with multiple types ");
 
+      /* In case of multiple types we need to detect the smallest type.  */
+      if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
+        *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	  
       if (is_gimple_call (stmt))
 	rhs_code = CALL_EXPR;
       else
@@ -2799,7 +2848,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 						&first_stmt_def0_type, 
 						&first_stmt_def1_type,
 						&first_stmt_const_oprnd,
-						ncopies_for_cost))
+						ncopies_for_cost,
+                                                &pattern0, &pattern1))
 		return false;
 	    }
 	    else
@@ -2807,6 +2857,11 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 		/* Load.  */
 		if (i == 0)
 		  {
+                    /* In case of multiple types we need to detect the smallest
+                       type.  */
+                    if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
+                       *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
 		    /* First stmt of the SLP group should be the first load of 
 		       the interleaving loop if data permutation is not allowed.
 		       Check that there is no gap between the loads.  */
@@ -2905,7 +2960,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 					    &first_stmt_def0_type, 
 					    &first_stmt_def1_type,
 					    &first_stmt_const_oprnd,
-					    ncopies_for_cost))
+					    ncopies_for_cost,
+                                            &pattern0, &pattern1))
 	    return false;
 	}
     }
@@ -2929,8 +2985,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
       SLP_TREE_OUTSIDE_OF_LOOP_COST (left_node) = 0;
       SLP_TREE_INSIDE_OF_LOOP_COST (left_node) = 0;
       if (!vect_build_slp_tree (loop_vinfo, &left_node, group_size, 
-				slp_impossible, inside_cost, outside_cost,
-				ncopies_for_cost))
+				inside_cost, outside_cost,
+				ncopies_for_cost, max_nunits))
 	return false;
       
       SLP_TREE_LEFT (*node) = left_node;
@@ -2946,8 +3002,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
       SLP_TREE_OUTSIDE_OF_LOOP_COST (right_node) = 0;
       SLP_TREE_INSIDE_OF_LOOP_COST (right_node) = 0;
       if (!vect_build_slp_tree (loop_vinfo, &right_node, group_size,
-				slp_impossible, inside_cost, outside_cost,
-				ncopies_for_cost))
+				inside_cost, outside_cost,
+				ncopies_for_cost, max_nunits))
 	return false;
       
       SLP_TREE_RIGHT (*node) = right_node;
@@ -3003,7 +3059,7 @@ vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
 
 
 /* Analyze an SLP instance starting from a group of strided stores. Call
-   vect_build_slp_tree to build a tree of packed stmts if possible. 
+   vect_build_slp_tree to build a tree of packed stmts if possible.  
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
 
 static bool
@@ -3018,8 +3074,8 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   unsigned int vectorization_factor = 0, ncopies;
   bool slp_impossible = false; 
   int inside_cost = 0, outside_cost = 0, ncopies_for_cost;
+  unsigned int max_nunits = 0;
 
-  /* FORNOW: multiple types are not supported.  */
   scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))));
   vectype = get_vectype_for_scalar_type (scalar_type);
   if (!vectype)
@@ -3035,13 +3091,6 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   ncopies = vectorization_factor / nunits;
-  if (ncopies > 1)
-    {
-      if (vect_print_dump_info (REPORT_SLP)) 
-	  fprintf (vect_dump, "SLP failed - multiple types ");
-
-      return false;
-    }
 
   /* Create a node (a root of the SLP tree) for the packed strided stores.  */ 
   SLP_TREE_SCALAR_STMTS (node) = VEC_alloc (gimple, heap, group_size);
@@ -3069,13 +3118,18 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   ncopies_for_cost = unrolling_factor * group_size / nunits;
 
   /* Build the tree for the SLP instance.  */
-  if (vect_build_slp_tree (loop_vinfo, &node, group_size, &slp_impossible,
-			   &inside_cost, &outside_cost, ncopies_for_cost))
+  if (vect_build_slp_tree (loop_vinfo, &node, group_size, &inside_cost,  
+			   &outside_cost, ncopies_for_cost, &max_nunits))
     {
       /* Create a new SLP instance.  */  
       new_instance = XNEW (struct _slp_instance);
       SLP_INSTANCE_TREE (new_instance) = node;
       SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
+      /* Calculate the unrolling factor based on the smallest type.  */
+      if (max_nunits > nunits)
+        unrolling_factor = least_common_multiple (max_nunits, group_size)
+                           / group_size;
+
       SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
       SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (new_instance) = outside_cost;
       SLP_INSTANCE_INSIDE_OF_LOOP_COST (new_instance) = inside_cost;
@@ -3181,7 +3235,8 @@ vect_detect_hybrid_slp_stmts (slp_tree node)
 	&& TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
 	if (vinfo_for_stmt (use_stmt)
-	    && !STMT_SLP_TYPE (vinfo_for_stmt (use_stmt)))
+	    && !STMT_SLP_TYPE (vinfo_for_stmt (use_stmt))
+            && STMT_VINFO_RELEVANT (vinfo_for_stmt (use_stmt)))
 	  vect_mark_slp_stmts (node, hybrid, i);
 
   vect_detect_hybrid_slp_stmts (SLP_TREE_LEFT (node));

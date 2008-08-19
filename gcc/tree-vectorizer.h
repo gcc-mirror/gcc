@@ -522,6 +522,10 @@ typedef struct _stmt_vec_info {
 #define TARG_VEC_STORE_COST          1
 #endif
 
+/* The maximum number of intermediate steps required in multi-step type
+   conversion.  */
+#define MAX_INTERM_CVT_STEPS         3
+
 /* Avoid GTY(()) on stmt_vec_info.  */
 typedef void *vec_void_p;
 DEF_VEC_P (vec_void_p);
@@ -602,6 +606,16 @@ stmt_vinfo_set_outside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
     STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = cost;
 }     
 
+static inline int
+vect_pow2 (int x)
+{
+  int i, res = 1;
+
+  for (i = 0; i < x; i++)
+    res *= 2;
+
+  return res;
+}
 
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
@@ -671,9 +685,10 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
 extern bool reduction_code_for_scalar_code (enum tree_code, enum tree_code *);
 extern bool supportable_widening_operation (enum tree_code, gimple, tree,
-  tree *, tree *, enum tree_code *, enum tree_code *, bool *, tree *);
+  tree *, tree *, enum tree_code *, enum tree_code *, 
+  int *, VEC (tree, heap) **);
 extern bool supportable_narrowing_operation (enum tree_code, const_gimple,
-			     const_tree, enum tree_code *, bool *, tree *);
+	     tree, enum tree_code *, int *, VEC (tree, heap) **);
 
 /* Creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
@@ -705,9 +720,9 @@ extern bool vectorizable_store (gimple, gimple_stmt_iterator *, gimple *,
 extern bool vectorizable_operation (gimple, gimple_stmt_iterator *, gimple *,
 				    slp_tree);
 extern bool vectorizable_type_promotion (gimple, gimple_stmt_iterator *,
-					 gimple *);
+					 gimple *, slp_tree);
 extern bool vectorizable_type_demotion (gimple, gimple_stmt_iterator *,
-					gimple *);
+					gimple *, slp_tree);
 extern bool vectorizable_conversion (gimple, gimple_stmt_iterator *, gimple *,
 				     slp_tree);
 extern bool vectorizable_assignment (gimple, gimple_stmt_iterator *, gimple *,
