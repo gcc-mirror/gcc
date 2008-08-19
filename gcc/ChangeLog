@@ -1,3 +1,23 @@
+2008-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35972
+	PR tree-optimization/23094
+	* tree-ssa-sccvn.h (vn_reference_lookup_pieces): Add maywalk
+	parameter.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Properly
+	handle MISALIGNED_INDIRECT_REF.
+	(get_ref_from_reference_ops): New helper.
+	(vn_reference_lookup_pieces): Walk the use-def chain using the
+	alias-oracle if requested.
+	* tree-ssa-pre.c (phi_translate_1): Do reference lookup with
+	walking the use-def chain.
+	(compute_avail): But not here.
+	(create_component_ref_by_pieces_1): Properly handle
+	MISALIGNED_INDIRECT_REF.
+	(do_regular_insertion): Handle fully redundant
+	expressions after PHI-translation also for SSA_NAME values, not
+	only constants.  Correctly use edoubleprime for that.
+
 2008-08-19  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (supportable_widening_operation): Support

@@ -5,6 +5,9 @@
 
 #define N 16
  
+char x[N] __attribute__ ((__aligned__(16)));
+char cb[N] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+
 __attribute__ ((noinline))
 int main1 ()
 {  
@@ -13,8 +16,6 @@ int main1 ()
     char *q;
   } s;
   int i;
-  char x[N] __attribute__ ((__aligned__(16)));
-  char cb[N] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
   /* Check that datarefs analysis can determine that the access via pointer
      s.p is based off array x, which enables us to antialias this access from

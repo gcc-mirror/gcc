@@ -5,12 +5,13 @@
 
 #define N 16
 
+float b[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+
 __attribute__ ((noinline)) int
 main1 (void)
 {
   int i;
   float a[N];
-  float b[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
   /* Condition in loop.  */
   /* This loop is vectorized on platforms that support vect_condition.  */

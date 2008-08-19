@@ -4,11 +4,12 @@
 #include "tree-vect.h"
 
 #define N 8
+
+int b[N] = {0,3,6,9,12,15,18,21};
+int a[N];
  
 int main1 ()
 {  
-  int b[N] = {0,3,6,9,12,15,18,21};
-  int a[N];
   int i;
 
   for (i = 0; i < N; i++)

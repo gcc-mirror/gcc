@@ -14,11 +14,12 @@ struct foo {
   int y[N];
 } __attribute__((packed));
 
+int x[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
 __attribute__ ((noinline)) int
 main1 (struct foo * __restrict__ p)
 {
   int i;
-  int x[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
   for (i = 0; i < N; i++)
     {

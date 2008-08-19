@@ -178,7 +178,7 @@ void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);
 void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
 tree vn_reference_lookup_pieces (VEC (tree, gc) *,
 				 VEC (vn_reference_op_s, heap) *,
-				 vn_reference_t *);
+				 vn_reference_t *, bool);
 tree vn_reference_lookup (tree, VEC (tree, gc) *, bool, vn_reference_t *);
 vn_reference_t vn_reference_insert (tree, tree, VEC (tree, gc) *);
 vn_reference_t vn_reference_insert_pieces (VEC (tree, gc) *,
