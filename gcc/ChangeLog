@@ -1,3 +1,9 @@
+2008-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37157
+	* config/i386/sse.md (sse2_punpckhqdq, sse2_punpcklqdq): Moved
+	before (sse2_shufpd_<mode>).
+
 2008-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/37156
