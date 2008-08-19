@@ -5,12 +5,13 @@
 
 #define N 32
 
+int int_arr[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+float float_arr[N];
+char char_arr[N];
+
 __attribute__ ((noinline)) int main1 ()
 {
   int i;
-  int int_arr[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-  float float_arr[N];
-  char char_arr[N];
 
   for (i = 0; i < N; i++){
     float_arr[i] = (float) int_arr[i];

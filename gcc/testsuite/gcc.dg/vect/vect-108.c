@@ -5,13 +5,14 @@
 
 #define N 16
 
+int ic[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+int ia[N];
+
 __attribute__ ((noinline)) int
 main1 (void)
 {
   int i;
-  int ic[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-  int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-  int ia[N];
 
   /* This loop is vectorized on platforms that support vect_int_mult.  */
   for (i = 0; i < N; i++)

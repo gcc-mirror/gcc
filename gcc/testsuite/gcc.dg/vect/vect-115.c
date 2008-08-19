@@ -23,12 +23,13 @@ struct test1{
   int l;
 };
 
+int a[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
 __attribute__ ((noinline))
 int main1 ()
 {
   int i;
   struct test1 tmp1;
-  int a[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   struct t tmp2;
 
   tmp1.ptr_t = &tmp2;

@@ -14,12 +14,13 @@ typedef short half_word;
 typedef int half_word;
 #endif
 
+half_word ic[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+half_word ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
+
 int main ()
 {
   int i;
   half_word ia[N];
-  half_word ic[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-  half_word ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
   for (i = 0; i < N; i++)
     {

@@ -1,3 +1,85 @@
+2008-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35972
+	PR tree-optimization/23094
+	* gcc.dg/tree-ssa/ssa-pre-19.c: New testcase.
+	* gcc.dg/autopar/reduc-1.c: Move constant initialized arrays to
+	global memory.
+	* gcc.dg/autopar/reduc-1char.c: Likewise.
+	* gcc.dg/autopar/reduc-1short.c: Likewise.
+	* gcc.dg/autopar/reduc-2.c: Likewise.
+	* gcc.dg/autopar/reduc-2char.c: Likewise.
+	* gcc.dg/autopar/reduc-2short.c: Likewise.
+	* gcc.dg/autopar/reduc-3.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-20040816-1.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-reduc-1char.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-reduc-1char.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-5.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-2.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-111.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-11.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-12.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-13.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-14.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-15.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-37.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-1.c: Likewise.
+	* gcc.dg/vect/pr18400.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-14.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-15.c: Likewise.
+	* gcc.dg/vect/slp-16.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/slp-28.c: Likewise.
+	* gcc.dg/vect/slp-3.c: Likewise.
+	* gcc.dg/vect/slp-34.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-8.c: Likewise.
+	* gcc.dg/vect/vect-107.c: Likewise.
+	* gcc.dg/vect/vect-108.c: Likewise.
+	* gcc.dg/vect/vect-11.c: Likewise.
+	* gcc.dg/vect/vect-112.c: Likewise.
+	* gcc.dg/vect/vect-115.c: Likewise.
+	* gcc.dg/vect/vect-11a.c: Likewise.
+	* gcc.dg/vect/vect-34.c: Likewise.
+	* gcc.dg/vect/vect-9.c: Likewise.
+	* gcc.dg/vect/vect-97.c: Likewise.
+	* gcc.dg/vect/vect-align-1.c: Likewise.
+	* gcc.dg/vect/vect-float-extend-1.c: Likewise.
+	* gcc.dg/vect/vect-floatint-conversion-1.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-16.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-17.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-2.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-3.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-4.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-5.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-6.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-7.c: Likewise.
+	* gcc.dg/vect/vect-intfloat-conversion-1.c: Likewise.
+	* gcc.dg/vect/vect-intfloat-conversion-2.c: Likewise.
+	* gcc.dg/vect/vect-intfloat-conversion-3.c: Likewise.
+	* gcc.dg/vect/vect-intfloat-conversion-4a.c: Likewise.
+	* gcc.dg/vect/vect-intfloat-conversion-4b.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-2.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-5.c: Likewise.
+	* gcc.dg/vect/vect-reduc-1.c: Likewise.
+	* gcc.dg/vect/vect-reduc-1char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-1short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-shift-1.c: Likewise.
+	* gcc.dg/vect/vect-strided-float.c: Likewise.
+	* gcc.dg/vect/vect-strided-store-u32-i2.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-2short.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76c.c: Likewise.
+
 2008-08-19  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/slp-multitypes-1.c: New testcase.

@@ -5,13 +5,14 @@
 
 #define N 16
 
+char cb[N] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
+char cc[N] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+
 __attribute__ ((noinline)) int
 main1 (void)
 {
   int i;
   int diff = 0;
-  char cb[N] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};
-  char cc[N] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 
   /* Cross-iteration cycle.  */
   diff = 0;
