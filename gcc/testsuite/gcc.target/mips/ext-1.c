@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -mips64r2" } */
+/* { dg-mips-options "-O -mips64r2 -mgp64" } */
 /* { dg-final { scan-assembler "\tdext\t" } } */
 /* { dg-final { scan-assembler-not "and" } } */
 
