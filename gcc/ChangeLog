@@ -1,3 +1,8 @@
+2008-08-19  Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Exchange store-ccp
+	with a ccp pass.
+
 2008-08-19  Rafael Espindola  <espindola@google.com>
 
       * varasm.c (weak_decls): Move earlier in the file.
