@@ -1,3 +1,7 @@
+2008-08-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/ext-1.c: Add -mgp64 to dg-mips-options.
+
 2008-08-18  Steve Ellcey  <sje@cup.hp.com>
 
 	* g++.dg/other/anon5.C: Skip on *-*-hpux*.
