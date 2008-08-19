@@ -1,3 +1,18 @@
+2008-08-19  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/slp-multitypes-1.c: New testcase.
+	* gcc.dg/vect/slp-multitypes-2.c, gcc.dg/vect/slp-multitypes-3.c,
+	gcc.dg/vect/slp-multitypes-4.c, gcc.dg/vect/slp-multitypes-5.c,
+	gcc.dg/vect/slp-multitypes-6.c, gcc.dg/vect/slp-multitypes-7.c,
+	gcc.dg/vect/slp-multitypes-8.c, gcc.dg/vect/slp-multitypes-9.c,
+	gcc.dg/vect/slp-multitypes-10.c, gcc.dg/vect/slp-multitypes-11.c,
+	gcc.dg/vect/slp-multitypes-12.c, gcc.dg/vect/slp-widen-mult-u8.c,
+	gcc.dg/vect/slp-widen-mult-s16.c, gcc.dg/vect/vect-multitypes-16.c,
+	gcc.dg/vect/vect-multitypes-17.c: Likewise.
+	* gcc.dg/vect/slp-9.c: Now vectorizable using SLP.
+	* gcc.dg/vect/slp-14.c, gcc.dg/vect/slp-5.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_vect_long_long): New.
+
 2008-08-18  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/ext-1.c: Add -mgp64 to dg-mips-options.

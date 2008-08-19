@@ -1,3 +1,56 @@
+2008-08-19  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c (supportable_widening_operation): Support
+	multi-step conversion, return the number of steps in such conversion
+	and the required intermediate types.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vectorizer.h (vect_pow2): New function.
+	(supportable_widening_operation): Change argument types.
+	(supportable_narrowing_operation): Likewise.
+	(vectorizable_type_promotion): Add an argument.
+	(vectorizable_type_demotion): Likewise.
+	* tree-vect-analyze.c (vect_analyze_operations): Call 
+	vectorizable_type_promotion and vectorizable_type_demotion with
+	additional argument.
+	(vect_get_and_check_slp_defs): Detect patterns.
+	(vect_build_slp_tree): Add an argument, don't fail in case of multiple
+	types. 
+	(vect_analyze_slp_instance): Don't fail in case of multiple types. Call
+	vect_build_slp_tree with correct arguments. Calculate unrolling factor
+	according to the smallest type in the loop.
+	(vect_detect_hybrid_slp_stmts): Include statements from patterns.
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Call 
+	supportable_widening_operation with correct arguments. 
+	* tree-vect-transform.c (vect_get_slp_defs): Allocate output vector 
+	operands lists according to the number of vector statements in left
+	or right node, if exists.
+	(vect_gen_widened_results_half): Remove unused argument.
+	(vectorizable_conversion): Call supportable_widening_operation, 
+	supportable_narrowing_operation, and vect_gen_widened_results_half
+	with correct arguments. 
+	(vectorizable_assignment): Change documentation, support multiple
+	types in SLP. 
+	(vectorizable_operation): Likewise.
+	(vect_get_loop_based_defs): New function.
+	(vect_create_vectorized_demotion_stmts): Likewise.
+	(vectorizable_type_demotion): Support loop-aware SLP and general
+	multi-step conversion. Call vect_get_loop_based_defs and
+	vect_create_vectorized_demotion_stmts for transformation.
+	(vect_create_vectorized_promotion_stmts): New function.
+	(vectorizable_type_promotion): Support loop-aware SLP and general
+	multi-step conversion. Call vect_create_vectorized_promotion_stmts
+	for transformation.	
+	(vectorizable_store): Change documentation, support multiple
+	types in SLP. 
+	(vectorizable_load): Likewise.
+	(vect_transform_stmt): Pass SLP_NODE to 
+	vectorizable_type_promotion and vectorizable_type_demotion.
+	(vect_schedule_slp_instance): Move here the calculation of number
+	of vectorized statements for each node from...
+	(vect_schedule_slp): ... here.
+	(vect_transform_loop): Call vect_schedule_slp without the last
+	argument.
+
 2008-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR bootstrap/37152
