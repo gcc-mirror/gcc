@@ -1,3 +1,10 @@
+2008-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR bootstrap/37152
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Change = 
+	to == in assert statement.
+	(vectorizable_reduction): Fix typo.
+
 2008-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/37153

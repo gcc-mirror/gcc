@@ -2485,7 +2485,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
     goto vect_finalize_reduction;
 
   /* FORNOW */
-  gcc_assert (ncopies = 1);
+  gcc_assert (ncopies == 1);
 
   /* 2.3 Create the reduction code, using one of the three schemes described
          above.  */
@@ -3133,7 +3133,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       prev_phi_info = vinfo_for_stmt (new_phi);
     }
 
-  /* Finalize the reduction-phi (set it's arguments) and create the
+  /* Finalize the reduction-phi (set its arguments) and create the
      epilog reduction code.  */
   if (!single_defuse_cycle)
     new_temp = gimple_assign_lhs (*vec_stmt);
