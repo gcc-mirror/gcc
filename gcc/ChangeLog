@@ -1,3 +1,9 @@
+2008-08-19  Rafael Espindola  <espindola@google.com>
+
+      * varasm.c (weak_decls): Move earlier in the file.
+      (assemble_external): Add weak decls to the weak_decls list.
+      (declare_weak): Don't add decls to the weak_decls list.
+
 2008-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37157
