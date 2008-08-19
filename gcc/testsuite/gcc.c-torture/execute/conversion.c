@@ -284,9 +284,15 @@ test_float_to_integer()
     abort();
   if (f2u(1.99) != 1)
     abort();
+#ifdef __SPU__
+  /* SPU float rounds towards zero.  */
+  if (f2u((float) ((~0U) >> 1)) != 0x7fffff80)
+    abort();
+#else
   if (f2u((float) ((~0U) >> 1)) != (~0U) >> 1 &&	/* 0x7fffffff */
       f2u((float) ((~0U) >> 1)) != ((~0U) >> 1) + 1)
     abort();
+#endif
   if (f2u((float) ~((~0U) >> 1)) != ~((~0U) >> 1))	/* 0x80000000 */
     abort();
 
@@ -439,9 +445,15 @@ test_float_to_longlong_integer()
     abort();
   if (f2ull(1.99) != 1LL)
     abort();
+#ifdef __SPU__
+  /* SPU float rounds towards zero.  */
+  if (f2ull((float) ((~0ULL) >> 1)) != 0x7fffff8000000000ULL)
+    abort();
+#else
   if (f2ull((float) ((~0ULL) >> 1)) != (~0ULL) >> 1 &&	/* 0x7fffffff */
       f2ull((float) ((~0ULL) >> 1)) != ((~0ULL) >> 1) + 1)
     abort();
+#endif
   if (f2ull((float) ~((~0ULL) >> 1)) != ~((~0ULL) >> 1)) /* 0x80000000 */
     abort();
 

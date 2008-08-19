@@ -147,6 +147,9 @@ struct real_format
      or -1 for a complex encoding.  */
   int signbit_rw;
 
+  /* Default rounding mode for operations on this format.  */
+  bool round_towards_zero;
+
   /* Properties of the format.  */
   bool has_nans;
   bool has_inf;
@@ -215,6 +218,11 @@ extern bool exact_real_truncate (enum machine_mode, const REAL_VALUE_TYPE *);
 /* Render R as a decimal floating point constant.  */
 extern void real_to_decimal (char *, const REAL_VALUE_TYPE *, size_t,
 			     size_t, int);
+
+/* Render R as a decimal floating point constant, rounded so as to be
+   parsed back to the same value when interpreted in mode MODE.  */
+extern void real_to_decimal_for_mode (char *, const REAL_VALUE_TYPE *, size_t,
+				      size_t, int, enum machine_mode);
 
 /* Render R as a hexadecimal floating point constant.  */
 extern void real_to_hexadecimal (char *, const REAL_VALUE_TYPE *,

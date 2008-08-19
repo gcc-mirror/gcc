@@ -1,3 +1,35 @@
+2008-08-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* real.h (struct real_format): New member round_towards_zero.
+	* real.c (round_for_format): Respect fmt->round_towards_zero.
+	(ieee_single_format, mips_single_format, motorola_single_format,
+	spu_single_format, ieee_double_format, mips_double_format,
+	motorola_double_format, ieee_extended_motorola_format,
+	ieee_extended_intel_96_format, ieee_extended_intel_128_format,
+	ieee_extended_intel_96_round_53_format, ibm_extended_format,
+	mips_extended_format, ieee_quad_format, mips_quad_format,
+	vax_f_format, vax_d_format, vax_g_format): Initialize it.
+	* config/pdp11/pdp11.c (pdp11_f_format, pdp11_d_format): Likewise.
+
+	* builtins.s (do_mpfr_arg1): Consider round_towards_zero member of
+	real_format to choose rounding mode when calling MPFR functions.
+	(do_mpfr_arg2, do_mpfr_arg3, do_mpfr_sincos): Likewise.
+	(do_mpfr_bessel_n, do_mpfr_remquo, do_mpfr_lgamma_r): Likewise.
+
+	* real.h (real_to_decimal_for_mode): Add prototype.
+	* real.c (real_to_decimal_for_mode): Renames old real_to_decimal.
+	Respect target rounding mode when generating decimal representation.
+	(real_to_decimal): New stub for backwards compatibility.
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Use
+	real_to_decimal_for_mode instead of real_to_decimal.
+
+	* config/spu/spu.md ("floatdisf2", "floatunsdisf2"): New.
+
+	* config/spu/float_disf.c: New file.
+	* config/spu/float_unsdisf.c: New file.
+	* config/spu/t-elf (LIB2FUNCS_STATIC_EXTRA): Add them.
+	(LIB2FUNCS_EXCLUDE): Define.
+
 2008-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/37156

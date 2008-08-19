@@ -21,8 +21,15 @@ CROSS_LIBGCC1 =
 
 TARGET_LIBGCC2_CFLAGS = -fPIC -mwarn-reloc -D__IN_LIBGCC2
 
+# We exclude those because the libgcc2.c default versions do not support
+# the SPU single-precision format (round towards zero).  We provide our
+# own versions below.
+LIB2FUNCS_EXCLUDE = _floatdisf _floatundisf
+
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/float_unsdidf.c \
+			 $(srcdir)/config/spu/float_unsdisf.c \
+			 $(srcdir)/config/spu/float_disf.c \
 			 $(srcdir)/config/spu/mfc_tag_table.c \
 			 $(srcdir)/config/spu/mfc_tag_reserve.c \
 			 $(srcdir)/config/spu/mfc_tag_release.c \

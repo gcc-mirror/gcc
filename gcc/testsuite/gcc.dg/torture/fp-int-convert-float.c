@@ -3,7 +3,6 @@
 /* Skipped for MIPS16 targets because of PR 35232 */
 /* { dg-do run { target { { ! mips*-*-* } || nomips16 } } } */
 /* { dg-options "" } */
-/* { dg-skip-if "Round to zero" { spu-*-* } } */
 
 #include <float.h>
 #include "fp-int-convert.h"

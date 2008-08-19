@@ -661,6 +661,65 @@
   "frds\t%0,%1"
   [(set_attr "type" "fpd")])
 
+(define_expand "floatdisf2"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(float:SF (match_operand:DI 1 "register_operand" "")))]
+  ""
+  {
+    rtx c0 = gen_reg_rtx (SImode);
+    rtx r0 = gen_reg_rtx (DImode);
+    rtx r1 = gen_reg_rtx (SFmode);
+    rtx r2 = gen_reg_rtx (SImode);
+    rtx setneg = gen_reg_rtx (SImode);
+    rtx isneg = gen_reg_rtx (SImode);
+    rtx neg = gen_reg_rtx (DImode);
+    rtx mask = gen_reg_rtx (DImode);
+
+    emit_move_insn (c0, GEN_INT (-0x80000000ll));
+
+    emit_insn (gen_negdi2 (neg, operands[1]));
+    emit_insn (gen_cgt_di_m1 (isneg, operands[1]));
+    emit_insn (gen_extend_compare (mask, isneg));
+    emit_insn (gen_selb (r0, neg, operands[1], mask));
+    emit_insn (gen_andc_si (setneg, c0, isneg));
+
+    emit_insn (gen_floatunsdisf2 (r1, r0));
+
+    emit_insn (gen_iorsi3 (r2, gen_rtx_SUBREG (SImode, r1, 0), setneg));
+    emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, r2, 0));
+    DONE;
+  })
+
+(define_insn_and_split "floatunsdisf2"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (unsigned_float:SF (match_operand:DI 1 "register_operand" "r")))
+   (clobber (match_scratch:SF 2 "=r"))
+   (clobber (match_scratch:SF 3 "=r"))
+   (clobber (match_scratch:SF 4 "=r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup:SF 0)
+        (unsigned_float:SF (match_dup:DI 1)))]
+  {
+    rtx op1_v4si = gen_rtx_REG (V4SImode, REGNO (operands[1]));
+    rtx op2_v4sf = gen_rtx_REG (V4SFmode, REGNO (operands[2]));
+    rtx op2_ti = gen_rtx_REG (TImode, REGNO (operands[2]));
+    rtx op3_ti = gen_rtx_REG (TImode, REGNO (operands[3]));
+
+    REAL_VALUE_TYPE scale;
+    real_2expN (&scale, 32, SFmode);
+
+    emit_insn (gen_floatunsv4siv4sf2 (op2_v4sf, op1_v4si));
+    emit_insn (gen_shlqby_ti (op3_ti, op2_ti, GEN_INT (4)));
+
+    emit_move_insn (operands[4],
+		    CONST_DOUBLE_FROM_REAL_VALUE (scale, SFmode));
+    emit_insn (gen_fma_sf (operands[0],
+			   operands[2], operands[4], operands[3]));
+    DONE;
+  })
+
 ;; Do (double)(operands[1]+0x80000000u)-(double)0x80000000
 (define_expand "floatsidf2"
   [(set (match_operand:DF 0 "register_operand" "")
