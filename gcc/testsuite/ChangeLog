@@ -1,3 +1,7 @@
+2008-08-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-14.c: XFAIL.
+
 2008-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37157
