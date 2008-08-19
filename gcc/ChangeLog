@@ -1,3 +1,9 @@
+2008-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37156
+	* pretty-print.c (pp_base_format): Deal with recursive BLOCK trees.
+	* tree.c (block_nonartificial_location): Likewise.
+
 2008-08-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* real.c (spu_single_format): New variable.

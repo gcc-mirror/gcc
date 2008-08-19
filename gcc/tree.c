@@ -8818,7 +8818,9 @@ block_nonartificial_location (tree block)
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
 
-      while (TREE_CODE (ao) == BLOCK && BLOCK_ABSTRACT_ORIGIN (ao))
+      while (TREE_CODE (ao) == BLOCK
+	     && BLOCK_ABSTRACT_ORIGIN (ao)
+	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
 	ao = BLOCK_ABSTRACT_ORIGIN (ao);
 
       if (TREE_CODE (ao) == FUNCTION_DECL)

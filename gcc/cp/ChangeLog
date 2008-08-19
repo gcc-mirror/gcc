@@ -1,3 +1,8 @@
+2008-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37156
+	* error.c (cp_print_error_function): Deal with recursive BLOCK trees.
+
 2008-08-07  Simon Baldwin  <simonb@google.com>
 
 	Backport from mainline:
