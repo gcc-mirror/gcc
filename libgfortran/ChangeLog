@@ -1,3 +1,9 @@
+2008-08-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/35863
+	* io/write.c (write_a_char4): Add missing variable declaration
+	in HAVE_CRLF block.
+
 2008-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35863

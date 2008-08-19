@@ -308,6 +308,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
       /* Write out any padding if needed.  */
       if (len < wlen)
 	{
+	  char *p;
 	  p = write_block (dtp, wlen - len);
 	  if (p == NULL)
 	    return;
