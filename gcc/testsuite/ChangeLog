@@ -1,3 +1,8 @@
+2008-08-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/torture/fp-int-convert-float.c: Reenable test on SPU.
+	* gcc.dg/torture/fp-int-convert-timode.c: Reenable "float" test on SPU.
+
 2008-08-19  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-14.c: XFAIL.
