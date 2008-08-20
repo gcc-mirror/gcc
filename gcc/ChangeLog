@@ -1,3 +1,10 @@
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Move the second
+	forwprop pass before alias computation.  Remove the second
+	DCE pass.  Remove the first dominator and phi copy/const
+	prop passes.
+
 2008-08-20  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): Always test for assembler

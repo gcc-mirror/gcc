@@ -12,6 +12,5 @@ void foo (int j)
   *q = 1;
 }
 
-/* { dg-final { scan-tree-dump "i\\\[j.*\\\] = 1;" "forwprop1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "i\\\[j.*\\\] = 1;" "forwprop2" } } */
+/* { dg-final { scan-tree-dump "i\\\[j.*\\\] =.* 1;" "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop?" } } */

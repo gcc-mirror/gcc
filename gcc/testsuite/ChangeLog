@@ -1,3 +1,45 @@
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/20030530-2.c: Scan dom2 dump.
+	* gcc.dg/tree-ssa/20030611-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030703-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030703-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030708-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030709-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030710-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030714-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030714-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030729-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030730-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030730-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030731-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-11.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-5.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-8.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-9.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-4.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-5.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-6.c: Likewise.
+	* gcc.dg/tree-ssa/20030814-7.c: Likewise.
+	* gcc.dg/tree-ssa/20030922-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040729-1.c: Likewise.
+	* gcc.dg/tree-ssa/20041122-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr21417.c: Likewise.
+	* gcc.dg/tree-ssa/pr21829.c: Scan phicprop2 dump.
+	* gcc.dg/tree-ssa/ssa-dce-1.c: Scan dce2 dump.
+	* gcc.dg/tree-ssa/ssa-dce-2.c: Likewise.
+	* g++.dg/tree-ssa/pr31146.C: Remove XFAIL, adjust pattern.
+	* gfortran.dg/ldist-1.f90: Adjust.
+
 2008-08-20  Victor Kaplansky  <victork@il.ibm.com>
 
         * gcc.dg/vect/vect-multitypes-15.c: Fix typo.

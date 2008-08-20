@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom3" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
 
 
 typedef unsigned int size_t;
@@ -34,5 +34,5 @@ find_unreachable_blocks (int frobit)
    able to determine that modifying e->dest->flags does not
    modify e or e->dest.  The net result is that we only need one
    load of e->dest.  */
-/* { dg-final { scan-tree-dump-times "->dest" 1 "dom3" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* { dg-final { scan-tree-dump-times "->dest" 1 "dom2" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "dom2" } } */
