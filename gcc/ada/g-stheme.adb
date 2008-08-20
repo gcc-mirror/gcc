@@ -51,7 +51,8 @@ package body Host_Error_Messages is
       use Interfaces.C.Strings;
       function TCP
         (P : char_array_access; Nul_Check : Boolean := False) return chars_ptr
-        renames To_Chars_Ptr;
+         renames To_Chars_Ptr;
+
    begin
       case H_Errno is
          when SOSC.HOST_NOT_FOUND =>
@@ -66,7 +67,7 @@ package body Host_Error_Messages is
          when SOSC.NO_DATA        =>
             return TCP (Messages.NO_DATA'Access);
 
-         when others                   =>
+         when others              =>
             return TCP (Messages.Unknown_Error'Access);
 
       end case;
