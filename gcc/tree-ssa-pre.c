@@ -3160,14 +3160,9 @@ do_regular_insertion (basic_block block, basic_block dom)
 	    {
 	      unsigned int vprime;
 
-	      /* This can happen in the very weird case
-		 that our fake infinite loop edges have caused a
-		 critical edge to appear.  */
-	      if (EDGE_CRITICAL_P (pred))
-		{
-		  cant_insert = true;
-		  break;
-		}
+	      /* We should never run insertion for the exit block
+	         and so not come across fake pred edges.  */
+	      gcc_assert (!(pred->flags & EDGE_FAKE));
 	      bprime = pred->src;
 	      eprime = phi_translate (expr, ANTIC_IN (block), NULL,
 				      bprime, block);
@@ -3299,14 +3294,9 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 	      unsigned int vprime;
 	      pre_expr edoubleprime;
 
-	      /* This can happen in the very weird case
-		 that our fake infinite loop edges have caused a
-		 critical edge to appear.  */
-	      if (EDGE_CRITICAL_P (pred))
-		{
-		  cant_insert = true;
-		  break;
-		}
+	      /* We should never run insertion for the exit block
+	         and so not come across fake pred edges.  */
+	      gcc_assert (!(pred->flags & EDGE_FAKE));
 	      bprime = pred->src;
 	      eprime = phi_translate (expr, ANTIC_IN (block),
 				      PA_IN (block),
@@ -4117,7 +4107,6 @@ fini_pre (bool do_fre)
   free_alloc_pool (pre_expr_pool);
   htab_delete (phi_translate_table);
   htab_delete (expression_to_id);
-  remove_fake_exit_edges ();
 
   FOR_ALL_BB (bb)
     {
@@ -4203,6 +4192,11 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
   statistics_counter_event (cfun, "New PHIs", pre_stats.phis);
   statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
   statistics_counter_event (cfun, "Constified", pre_stats.constified);
+
+  /* Make sure to remove fake edges before committing our inserts.
+     This makes sure we don't end up with extra critical edges that
+     we would need to split.  */
+  remove_fake_exit_edges ();
   gsi_commit_edge_inserts ();
 
   clear_expression_ids ();
