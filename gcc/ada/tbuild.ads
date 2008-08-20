@@ -82,8 +82,9 @@ package Tbuild is
    pragma Inline (Make_Implicit_Exception_Handler);
    --  This is just like Make_Exception_Handler, except that it also sets the
    --  Local_Raise_Statements field to No_Elist, ensuring that it is properly
-   --  initialized. This should always be used when creating exception handlers
-   --  as part of the expansion.
+   --  initialized. This should always be used when creating implicit exception
+   --  handlers during expansion (i.e. handlers that do not correspond to user
+   --  source program exception handlers).
 
    function Make_Implicit_If_Statement
      (Node            : Node_Id;
