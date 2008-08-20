@@ -38,7 +38,6 @@ with Interfaces.C_Streams;        use Interfaces.C_Streams;
 
 with System.CRTL;
 with System.Case_Util;            use System.Case_Util;
-with System.OS_Constants;
 with System.OS_Lib;
 with System.Soft_Links;
 
@@ -994,11 +993,25 @@ package body System.File_IO is
 
                --  Should we raise Device_Error for ENOSPC???
 
-               if System.OS_Lib.Errno = System.OS_Constants.ENOENT then
-                  raise Name_Error;
-               else
-                  raise Use_Error;
-               end if;
+               declare
+                  subtype Cint is Interfaces.C.int;
+
+                  function Is_File_Not_Found_Error
+                    (Errno_Value : Cint) return Cint;
+                  --  Non-zero when the given errno value indicates a non-
+                  --  existing file.
+
+                  pragma Import (C, Is_File_Not_Found_Error,
+                    "__gnat_is_file_not_found_error");
+               begin
+                  if Is_File_Not_Found_Error (Cint (System.OS_Lib.Errno))
+                       /= 0
+                  then
+                     raise Name_Error;
+                  else
+                     raise Use_Error;
+                  end if;
+               end;
             end if;
          end if;
       end if;
