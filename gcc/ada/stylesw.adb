@@ -49,6 +49,7 @@ package body Stylesw is
       Style_Check_Layout                := False;
       Style_Check_Max_Line_Length       := False;
       Style_Check_Max_Nesting_Level     := False;
+      Style_Check_Missing_Overriding    := False;
       Style_Check_Mode_In               := False;
       Style_Check_Order_Subprograms     := False;
       Style_Check_Pragma_Casing         := False;
@@ -123,6 +124,7 @@ package body Stylesw is
       Add ('l', Style_Check_Layout);
       Add ('n', Style_Check_Standard);
       Add ('o', Style_Check_Order_Subprograms);
+      Add ('O', Style_Check_Missing_Overriding);
       Add ('p', Style_Check_Pragma_Casing);
       Add ('r', Style_Check_References);
       Add ('s', Style_Check_Specs);
@@ -369,6 +371,9 @@ package body Stylesw is
 
             when 'o' =>
                Style_Check_Order_Subprograms     := True;
+
+            when 'O' =>
+               Style_Check_Missing_Overriding    := True;
 
             when 'p' =>
                Style_Check_Pragma_Casing         := True;

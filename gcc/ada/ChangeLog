@@ -1,5 +1,38 @@
 2008-08-20  Vincent Celier  <celier@adacore.com>
 
+	* make.adb (Gnatmake_Switch_Found): New Boolean global variable
+	(Switch_May_Be_Passed_To_The_Compiler): New Boolean global variable
+	(Add_Switches): New Boolean parameter Unknown_Switches_To_The_Compiler
+	 defaulted to True. Fail when Unknown_Switches_To_The_Compiler is False
+	and a switch is not recognized by gnatmake.
+	(Gnatmake): Implement new scheme for gnatmake switches and global
+	compilation switches.
+	(Switches_Of): Try successively Switches (<file name>),
+	Switches ("Ada"), Switches (others) and Default_Switches ("Ada").
+
+2008-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* styleg-c.ads, styleg-c.adb (Missing_Overriding): new procedure to
+	implement style check that overriding operations are explicitly marked
+	at such.
+
+	* style.ads (Missing_Overriding): new procedure that provides interface
+	to previous one.
+
+	* stylesw.ads, stylesw.adb: New style switch -gnatyO, to enable check
+	that the declaration or body of overriding operations carries an
+	explicit overriding indicator.
+
+	* sem_ch8.adb
+	(Analyze_Subprogram_Renaming): if operation is overriding, check whether
+	explicit indicator should be present.
+
+	* sem_ch6.adb (Verify_Overriding_Indicator,
+	Check_Overriding_Indicator): If operation is overriding, check whether
+	declaration and/or body of subprogram should be present
+
+2008-08-20  Vincent Celier  <celier@adacore.com>
+
 	* prj-nmsc.adb (Check_Naming_Schemes): Accept source file names for
 	gprbuild when casing is MixedCase, whatever the casing of the letters
 	in the file name.

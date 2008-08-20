@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,10 @@ package Styleg.C is
    --  Check style of identifier occurrence. Ref is an N_Identifier node whose
    --  spelling is to be checked against the Chars spelling in identifier node
    --  Def (which may be either an N_Identifier, or N_Defining_Identifier node)
+
+   procedure Missing_Overriding (N : Node_Id; E : Entity_Id);
+   --  Called where N is the declaration or body of an overriding operation,
+   --  and the node does not have an overriding_indicator.
 
    procedure Subprogram_Not_In_Alpha_Order (Name : Node_Id);
    --  Called if Name is the name of a subprogram body in a package body
