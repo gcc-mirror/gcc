@@ -1,3 +1,72 @@
+2008-08-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-fileio.adb: Minor reformatting
+
+2008-08-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_strm.adb (Build_Elementary_Input_Call,
+	Build_Elementary_Write_Call): Fix incorrect condition in circuitry that
+	selects the stream attribute routines for long float types.
+
+2008-08-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Declarative_Items): Add Location for Array_Data
+
+	* prj.ads (Array_Data): Add a component Location
+
+2008-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb:
+	(Analyze_Pragma, case Obsolescent): Add entity information on the pragma
+	argument for ASIS and navigation use.
+
+2008-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Add comment.
+
+2008-08-20  Bob Duff  <duff@adacore.com>
+
+	* sem_eval.ads: Minor comment fix.
+
+2008-08-20  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Expand_N_And_Then, Expand_N_Or_Else): Improve constant
+	folding. We were folding things like "False and then ...", but not
+	"X and then ..." where X is a constant whose value is known at compile
+	time.
+
+2008-08-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Controlled_Type): New routine.
+	(Expand_N_Extended_Return_Statement): When generating a move of the
+	final list in extended return statements, check the type of the
+	function and in the case of double expanded return statements, the type
+	of the returned object.
+	(Expand_Simple_Function_Return): Perform an interface conversion when
+	the type of the returned object is an interface and the context is an
+	extended return statement.
+
+2008-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Set_Debug_Info_Needed): If the entity is a private type
+	and the full view is visible, set flag on full view as well.
+
+2008-08-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-comlin.adb: Minor reformatting
+	Minor code reorganization.
+
+	* freeze.adb: Minor reformatting
+
+2008-08-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_File): An excluded Ada source file may be a
+	source of another project.
+
+2008-08-20  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads: Minor reformatting.
+
 2008-08-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Minor reformatting.
