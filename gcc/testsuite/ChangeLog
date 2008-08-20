@@ -1,5 +1,13 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 35701
+	* gcc.dg/pr35701.c: New.
+	* gcc.dg/Wconversion-real-integer.c: Add more tests.
+	* gcc.dg/Wconversion-pr34389.c: Update.
+	* g++.dg/warn/Wconversion-pr34389.C: Update.
+
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/35602
 	* g++.dg/warn/pr35602.C: New.
 
