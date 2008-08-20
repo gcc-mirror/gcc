@@ -2118,7 +2118,11 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 					  TREE_TYPE (expr));
       if (t)
 	{
-	  TREE_THIS_VOLATILE (t) = volatile_p;
+	  /* Preserve volatileness of the original expression.
+	     We can end up with a plain decl here which is shared
+	     and we shouldn't mess with its flags.  */
+	  if (!SSA_VAR_P (t))
+	    TREE_THIS_VOLATILE (t) = volatile_p;
 	  return t;
 	}
     }
@@ -2404,8 +2408,11 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 
   if (t)
     {
-      /* Preserve volatileness of the original expression.  */
-      TREE_THIS_VOLATILE (t) = volatile_p;
+      /* Preserve volatileness of the original expression.
+	 We can end up with a plain decl here which is shared
+	 and we shouldn't mess with its flags.  */
+      if (!SSA_VAR_P (t))
+	TREE_THIS_VOLATILE (t) = volatile_p;
       *expr_p = t;
       *changed_p = true;
     }

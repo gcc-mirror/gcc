@@ -1,3 +1,9 @@
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Do not mess
+	with TREE_THIS_VOLATILE on shared nodes.
+	(fold_stmt_r): Likewise.
+
 2008-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37171
