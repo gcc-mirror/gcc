@@ -4881,7 +4881,7 @@ package body Make is
 
       if Verbose_Mode then
          Write_Eol;
-         Display_Version ("GNATMAKE ", "1995");
+         Display_Version ("GNATMAKE", "1995");
       end if;
 
       if Main_Project /= No_Project
