@@ -1566,8 +1566,8 @@ package body GNAT.Command_Line is
          end loop;
       end if;
 
-      --  Determine if the added switch is a known switch with parameter
-      --  attached.
+      --  Test if added switch is a known switch with parameter attached
+
       if Parameter = ""
         and then Cmd.Config /= null
         and then Cmd.Config.Switches /= null
@@ -1580,8 +1580,10 @@ package body GNAT.Command_Line is
                Param : Natural;
 
             begin
+               --  Verify that switch starts with Sw
+               --  What if the "verification" fails???
+
                if Switch'Length >= Sw'Length
-                 --  Verify that switch starts with Sw
                  and then Looking_At (Switch, Switch'First, Sw)
                then
                   Param := Switch'First + Sw'Length - 1;
@@ -1595,13 +1597,13 @@ package body GNAT.Command_Line is
                      end loop;
                   end if;
 
-                  --  If the full Switch is a known switch with attached
-                  --  parameter, then we use this parameter in the callback.
+                  --  If full Switch is a known switch with attached parameter
+                  --  then we use this parameter in the callback.
+
                   if Last = Switch'Last then
                      Callback
                        (Switch (Switch'First .. Param),
                         Switch (Param + 1 .. Last));
-
                      return;
 
                   end if;
@@ -1647,7 +1649,7 @@ package body GNAT.Command_Line is
    is
       procedure Add_Simple_Switch (Simple : String; Param : String);
       --  Add a new switch that has had all its aliases expanded, and switches
-      --  ungrouped. We know there is no more aliases in Switches
+      --  ungrouped. We know there are no more aliases in Switches.
 
       -----------------------
       -- Add_Simple_Switch --
@@ -1675,7 +1677,7 @@ package body GNAT.Command_Line is
             end if;
 
          else
-            --  Do we already have this switch ?
+            --  Do we already have this switch?
 
             for C in Cmd.Expanded'Range loop
                if Cmd.Expanded (C).all = Simple
@@ -1760,9 +1762,9 @@ package body GNAT.Command_Line is
       Unchecked_Free (Tmp);
    end Remove;
 
-   ------------
-   -- Append --
-   ------------
+   ---------
+   -- Add --
+   ---------
 
    procedure Add
      (Line   : in out Argument_List_Access;
@@ -1770,6 +1772,7 @@ package body GNAT.Command_Line is
       Before : Boolean := False)
    is
       Tmp : Argument_List_Access := Line;
+
    begin
       if Tmp /= null then
          Line := new Argument_List (Tmp'First .. Tmp'Last + 1);
@@ -1783,6 +1786,7 @@ package body GNAT.Command_Line is
          end if;
 
          Unchecked_Free (Tmp);
+
       else
          Line := new Argument_List'(1 .. 1 => Str);
       end if;
@@ -1916,7 +1920,7 @@ package body GNAT.Command_Line is
                   Remove (Cmd.Sections, C);
 
                   --  The switch is necessarily unique by construction of
-                  --  Add_Switch
+                  --  Add_Switch.
 
                   return;
 
@@ -1948,7 +1952,7 @@ package body GNAT.Command_Line is
       Params   : Argument_List_Access)
    is
       function Compatible_Parameter (Param : String_Access) return Boolean;
-      --  Tell if the parameter can be part of a group
+      --  True when the parameter can be part of a group
 
       --------------------------
       -- Compatible_Parameter --
