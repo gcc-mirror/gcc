@@ -43,7 +43,7 @@ package Sem_Eval is
    -- Handling of Static Expressions --
    ------------------------------------
 
-   --  This package contains a set of routine that process individual
+   --  This package contains a set of routines that process individual
    --  subexpression nodes with the objective of folding (precomputing) the
    --  value of static expressions that are known at compile time and properly
    --  computing the setting of two flags that appear in every subexpression
