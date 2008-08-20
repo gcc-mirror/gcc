@@ -1,5 +1,11 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c++/35158
+	* parser.c (cp_parser_omp_for_loop): Handle parenthesized
+	initializers.
+
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* parser.c: Update all calls to inform.
 	* typeck.c: Likewise.
 	* init.c: Likewise.
