@@ -1353,6 +1353,30 @@ ssa_name_nonzero_p (const_tree t)
   return false;
 }
 
+/* If OP has a value range with a single constant value return that,
+   otherwise return NULL_TREE.  This returns OP itself if OP is a
+   constant.  */
+
+static tree
+op_with_constant_singleton_value_range (tree op)
+{
+  value_range_t *vr;
+
+  if (is_gimple_min_invariant (op))
+    return op;
+
+  if (TREE_CODE (op) != SSA_NAME)
+    return NULL_TREE;
+
+  vr = get_value_range (op);
+  if (vr->type == VR_RANGE
+      && operand_equal_p (vr->min, vr->max, 0)
+      && is_gimple_min_invariant (vr->min))
+    return vr->min;
+
+  return NULL_TREE;
+}
+
 
 /* Extract value range information from an ASSERT_EXPR EXPR and store
    it in *VR_P.  */
@@ -2033,6 +2057,18 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != TRUTH_AND_EXPR
       && code != TRUTH_OR_EXPR)
     {
+      /* We can still do constant propagation here.  */
+      if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE
+	  && (op1 = op_with_constant_singleton_value_range (op1)) != NULL_TREE)
+	{
+	  tree tem = fold_binary (code, expr_type, op0, op1);
+	  if (is_gimple_min_invariant (tem)
+	      && !is_overflow_infinity (tem))
+	    {
+	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
+	      return;
+	    }
+	}
       set_value_range_to_varying (vr);
       return;
     }
@@ -2437,6 +2473,17 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
       || code == BIT_NOT_EXPR
       || code == CONJ_EXPR)
     {
+      /* We can still do constant propagation here.  */
+      if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE)
+	{
+	  tree tem = fold_unary (code, type, op0);
+	  if (is_gimple_min_invariant (tem)
+	      && !is_overflow_infinity (tem))
+	    {
+	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
+	      return;
+	    }
+	}
       set_value_range_to_varying (vr);
       return;
     }
