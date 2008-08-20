@@ -1,5 +1,11 @@
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/pr21829.c: Scan optimized and cddce2 dumps
+	instead of phicprop2.  Make sure all is fine after cddce2,
+	add an XFAILed scan for merging the two remaining ifs.
+
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.c-torture/compile/20080820-1.c: New testcase.
 
 2008-08-20  Jakub Jelinek  <jakub@redhat.com>

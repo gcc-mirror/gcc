@@ -1,5 +1,11 @@
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vrp.c (op_with_constant_singleton_value_range): New function.
+	(extract_range_from_binary_expr): Fall back to constant propagation.
+	(extract_range_from_unary_expr): Likewise.
+
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Do not mess
 	with TREE_THIS_VOLATILE on shared nodes.
 	(fold_stmt_r): Likewise.
