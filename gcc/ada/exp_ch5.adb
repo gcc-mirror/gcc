@@ -2543,13 +2543,12 @@ package body Exp_Ch5 is
          if Is_Build_In_Place
            and then
                (Controlled_Type (Parent_Function_Typ)
-             or else
-               (Is_Class_Wide_Type (Parent_Function_Typ)
-                  and then Controlled_Type (Root_Type (Parent_Function_Typ)))
-             or else
-               Controlled_Type (Etype (Return_Object_Entity))
-             or else
-               (Present (Exp) and then Controlled_Type (Etype (Exp))))
+                 or else (Is_Class_Wide_Type (Parent_Function_Typ)
+                           and then
+                             Controlled_Type (Root_Type (Parent_Function_Typ)))
+                 or else Controlled_Type (Etype (Return_Object_Entity))
+                 or else (Present (Exp)
+                           and then Controlled_Type (Etype (Exp))))
          then
             Append_To (Statements, Move_Final_List);
          end if;
