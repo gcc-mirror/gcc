@@ -36,14 +36,14 @@
 
 package Gnatvsn is
 
+   Gnat_Static_Version_String : constant String := "GNU Ada";
+   --  Static string identifying this version, that can be used as an argument
+   --  to e.g. pragma Ident.
+
    function Gnat_Version_String return String;
    --  Version output when GNAT (compiler), or its related tools, including
    --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
    --  (with appropriate verbose option switch set).
-
-   Gnat_Static_Version_String : constant String := "GNU Ada";
-   --  Static string identifying this version, that can be used as an argument
-   --  to e.g. pragma Ident.
 
    type Gnat_Build_Type is (FSF, GPL);
    --  See Build_Type below for the meaning of these values.

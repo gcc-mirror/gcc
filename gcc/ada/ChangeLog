@@ -1,5 +1,9 @@
 2008-08-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnatvsn.ads: Minor reformatting.
+
+2008-08-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* a-crbtgk.adb, repinfo.adb, g-traceb.ads, repinfo.ads,
 	system-linux-s390x.ads, s-fatflt.ads, s-parame-ae653.ads, g-spipat.adb,
 	g-spipat.ads, g-tasloc.adb, g-debpoo.adb, g-except.ads, g-debpoo.ads,
