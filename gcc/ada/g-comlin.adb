@@ -111,13 +111,13 @@ package body GNAT.Command_Line is
       Str    : String_Access;
       Before : Boolean := False);
    --  Add a new element to Line. If Before is True, the item is inserted at
-   --  the beginning.
+   --  the beginning, else it is appended.
 
    function Can_Have_Parameter (S : String) return Boolean;
-   --  Tell if S can have a parameter.
+   --  True when S can have a parameter
 
    function Require_Parameter (S : String) return Boolean;
-   --  Tell if S requires a paramter.
+   --  True when S requires a parameter
 
    function Actual_Switch (S : String) return String;
    --  Remove any possible trailing '!', ':', '?' and '='
@@ -1264,14 +1264,14 @@ package body GNAT.Command_Line is
                   if not Is_Section then
                      if Section = null then
 
-                        --  Workaround some weird cases: some switches may
+                        --  Work around some weird cases: some switches may
                         --  expect parameters, but have the same value as
                         --  longer switches: -gnaty3 (-gnaty, parameter=3) and
                         --  -gnatya (-gnatya, no parameter).
 
                         --  So we are calling add_switch here with parameter
                         --  attached. This will be anyway correctly handled by
-                        --  Add_Switch if -gnaty3 is actually furnished.
+                        --  Add_Switch if -gnaty3 is actually provided.
 
                         if Separator (Parser) = ASCII.NUL then
                            Add_Switch
@@ -1726,27 +1726,21 @@ package body GNAT.Command_Line is
       Before : Boolean := False)
    is
       Tmp : Argument_List_Access := Line;
-
    begin
       if Tmp /= null then
          Line := new Argument_List (Tmp'First .. Tmp'Last + 1);
 
          if Before then
+            Line (Tmp'First)                     := Str;
             Line (Tmp'First + 1 .. Tmp'Last + 1) := Tmp.all;
          else
-            Line (Tmp'Range) := Tmp.all;
+            Line (Tmp'Range)    := Tmp.all;
+            Line (Tmp'Last + 1) := Str;
          end if;
 
          Unchecked_Free (Tmp);
-
       else
-         Line := new Argument_List (1 .. 1);
-      end if;
-
-      if Before then
-         Line (Line'First) := Str;
-      else
-         Line (Line'Last) := Str;
+         Line := new Argument_List'(1 .. 1 => Str);
       end if;
    end Add;
 
