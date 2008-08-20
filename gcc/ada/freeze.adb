@@ -2608,10 +2608,9 @@ package body Freeze is
                      --    type T is tagged;
                      --    function F (X : Boolean) return T; -- ERROR
 
-                     --  The type must be declared in the current scope
-                     --  for the use to be legal, and the full view
-                     --  must be available when the construct that mentions
-                     --  it is frozen.
+                     --  The type must be declared in the current scope for the
+                     --  use to be legal, and the full view must be available
+                     --  when the construct that mentions it is frozen.
 
                      elsif Ekind (Etype (E)) = E_Incomplete_Type
                        and then Is_Tagged_Type (Etype (E))
