@@ -1411,6 +1411,10 @@ warn_uninit (tree t, const char *gmsgid, void *data)
   if (TREE_NO_WARNING (var))
     return;
 
+  /* Do not warn if it can be initialized outside this module.  */
+  if (is_global_var (var))
+    return;
+  
   location = (context != NULL && gimple_has_location (context))
 	     ? gimple_location (context)
 	     : DECL_SOURCE_LOCATION (var);
@@ -1443,8 +1447,46 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
   struct walk_data *data = (struct walk_data *) wi->info;
   tree t = *tp;
 
+  /* We do not care about LHS.  */
+  if (wi->is_lhs)
+    return NULL_TREE;
+
   switch (TREE_CODE (t))
     {
+    case ADDR_EXPR:
+      /* Taking the address of an uninitialized variable does not
+	 count as using it.  */
+      *walk_subtrees = 0;
+      break;
+
+    case VAR_DECL:
+      {
+	/* A VAR_DECL in the RHS of a gimple statement may mean that
+	   this variable is loaded from memory.  */
+	use_operand_p vuse;
+	tree op;
+
+	/* If there is not gimple stmt, 
+	   or alias information has not been computed,
+	   then we cannot check VUSE ops.  */
+	if (data->stmt == NULL
+            || !gimple_aliases_computed_p (cfun))
+	  return NULL_TREE;
+
+	vuse = SINGLE_SSA_USE_OPERAND (data->stmt, SSA_OP_VUSE);
+	if (vuse == NULL_USE_OPERAND_P)
+	    return NULL_TREE;
+
+	op = USE_FROM_PTR (vuse);
+	if (t != SSA_NAME_VAR (op) 
+	    || !SSA_NAME_IS_DEFAULT_DEF (op))
+	  return NULL_TREE;
+	/* If this is a VUSE of t and it is the default definition,
+	   then warn about op.  */
+	t = op;
+	/* Fall through into SSA_NAME.  */
+      }
+
     case SSA_NAME:
       /* We only do data flow with SSA_NAMEs, so that's all we
 	 can warn about.  */

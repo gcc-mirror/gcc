@@ -1,3 +1,12 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/179
+	* tree-ssa.c (warn_uninit): Do not warn for variables that can be
+	initialized outside the current module.
+	(warn_uninitialized_var): Ignore left-hand side when walking the
+	trees. Ignore address expressions. Examine VUSE operands in gimple
+	statements with a variable declaration on the right-hand side.
+
 2008-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR bootstrap/37155
