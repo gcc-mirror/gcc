@@ -2182,7 +2182,7 @@ changequote([,])dnl
 
 # Check if we have assembler support for unwind directives.
 gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
-  [elf,2,17,0],,
+  ,,
 [	.text
 	.cfi_startproc
 	.cfi_offset 0, 0
@@ -2195,7 +2195,7 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
   [Define 0/1 if your assembler supports CFI directives.])
 
 gcc_GAS_CHECK_FEATURE([cfi personality directive],
-  gcc_cv_as_cfi_personality_directive, [elf,2,17,0],,
+  gcc_cv_as_cfi_personality_directive, ,,
 [	.text
 	.cfi_startproc,
 	.cfi_personality 0, symbol
