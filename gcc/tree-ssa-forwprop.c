@@ -689,15 +689,22 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      a conversion to def_rhs type separate, though.  */
   if (TREE_CODE (lhs) == SSA_NAME
       && ((rhs_code == SSA_NAME && rhs == name)
-	  || CONVERT_EXPR_CODE_P (rhs_code))
-      && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
+	  || CONVERT_EXPR_CODE_P (rhs_code)))
     {
-      /* Only recurse if we don't deal with a single use.  */
-      if (!single_use_p)
+      /* Only recurse if we don't deal with a single use or we cannot
+	 do the propagation to the current statement.  In particular
+	 we can end up with a conversion needed for a non-invariant
+	 address which we cannot do in a single statement.  */
+      if (!single_use_p
+	  || (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs))
+	      && !is_gimple_min_invariant (def_rhs)))
 	return forward_propagate_addr_expr (lhs, def_rhs);
 
       gimple_assign_set_rhs1 (use_stmt, unshare_expr (def_rhs));
-      gimple_assign_set_rhs_code (use_stmt, TREE_CODE (def_rhs));
+      if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
+	gimple_assign_set_rhs_code (use_stmt, TREE_CODE (def_rhs));
+      else
+	gimple_assign_set_rhs_code (use_stmt, NOP_EXPR);
       return true;
     }
 

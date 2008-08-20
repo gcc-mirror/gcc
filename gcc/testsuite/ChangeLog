@@ -1,5 +1,10 @@
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/forwprop-9.c: Scan FRE dump as well.
+	* gcc.dg/tree-ssa/forwprop-10.c: New testcase.
+
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/20030530-2.c: Scan dom2 dump.
 	* gcc.dg/tree-ssa/20030611-1.c: Likewise.
 	* gcc.dg/tree-ssa/20030703-1.c: Likewise.
