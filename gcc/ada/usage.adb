@@ -457,10 +457,10 @@ begin
    Write_Line ("        .X*  turn off warnings for non-local exception");
    Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
    Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
-   Write_Line ("        z*   turn on warnings for convention/size/align " &
-                               "mismatch on unchecked conversion");
-   Write_Line ("        Z    turn off warnings for convention/size/align " &
-                               "mismatch on unchecked conversion");
+   Write_Line ("        z*   turn on warnings for suspicious " &
+                                                  "unchecked conversion");
+   Write_Line ("        Z    turn off warnings for suspicious " &
+                                                  "unchecked conversion");
    Write_Line ("        *    indicates default in above list");
 
    --  Line for -gnatW switch
