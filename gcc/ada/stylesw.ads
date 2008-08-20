@@ -156,8 +156,8 @@ package Stylesw is
    --  with the IF keyword.
 
    Style_Check_Max_Line_Length : Boolean := False;
-   --  This can be set True by using the -gnatg or -gnatym/M switches. If it is
-   --  True, it activates checking for a maximum line length of
+   --  This can be set True by using the -gnatg or -gnatym/M switches.
+   --  If it is True, it activates checking for a maximum line length of
    --  Style_Max_Line_Length characters.
 
    Style_Check_Max_Nesting_Level : Boolean := False;
