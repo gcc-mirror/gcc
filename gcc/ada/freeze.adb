@@ -134,8 +134,7 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
-   procedure Generate_Prim_Op_References
-     (Typ      : Entity_Id);
+   procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
    --  operations, for source navigation.
 
@@ -2602,9 +2601,10 @@ package body Freeze is
 
                      --  Ada 2005 (AI-326): Check wrong use of tagged
                      --  incomplete type
-                     --
+
                      --    type T is tagged;
                      --    function F (X : Boolean) return T; -- ERROR
+
                      --  The type must be declared in the current scope
                      --  for the use to be legal, and the full view
                      --  must be available when the construct that mentions
@@ -2654,7 +2654,6 @@ package body Freeze is
 
                begin
                   T := First_Entity (E);
-
                   while Present (T) loop
                      if Is_Type (T) then
                         Generate_Prim_Op_References (T);
@@ -5207,16 +5206,14 @@ package body Freeze is
    -- Generate_Prim_Op_References --
    ---------------------------------
 
-   procedure Generate_Prim_Op_References
-     (Typ      : Entity_Id)
-   is
+   procedure Generate_Prim_Op_References (Typ : Entity_Id) is
       Base_T    : Entity_Id;
       Prim      : Elmt_Id;
       Prim_List : Elist_Id;
       Ent       : Entity_Id;
 
    begin
-      --  Handle subtypes of synchronized types.
+      --  Handle subtypes of synchronized types
 
       if Ekind (Typ) = E_Protected_Subtype
         or else Ekind (Typ) = E_Task_Subtype
