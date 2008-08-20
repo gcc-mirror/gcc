@@ -579,7 +579,7 @@ compute_branch_probabilities (void)
          if (informed == 0)
            {
              informed = 1;
-             inform ("correcting inconsistent profile data");
+             inform (input_location, "correcting inconsistent profile data");
            }
          correct_negative_edge_counts ();
          /* Set bb counts to the sum of the outgoing edge counts */
