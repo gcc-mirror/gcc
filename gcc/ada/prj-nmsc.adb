@@ -7720,6 +7720,9 @@ package body Prj.Nmsc is
                               end if;
                            end loop;
 
+                        when Mixed_Case =>
+                           null;
+
                         when others =>
                            OK := False;
                      end case;
