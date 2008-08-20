@@ -1,3 +1,7 @@
+2008-08-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-comlin.ads: Update comments.
+
 2008-08-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Inherit Is_Imported flag.
