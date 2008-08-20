@@ -488,6 +488,7 @@ package body GNAT.Sockets.Thin is
      (Errno : Integer) return C.Strings.chars_ptr
    is
       use GNAT.Sockets.SOSC;
+
    begin
       case Errno is
          when EINTR =>           return Error_Messages (N_EINTR);
