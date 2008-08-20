@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 1992-2005, Free Software Foundation, Inc.        *
+ *           Copyright (C) 1992-2008, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -41,6 +41,21 @@
 #define _THREAD_SAFE
 #define _SGI_MP_SOURCE
 
+#ifdef MaRTE
+
+/* Function that returns a pointer to the per-task errno variable */
+extern int *pthread_errno (void);
+
+int
+__get_errno (void)
+{
+  return *pthread_errno ();
+}
+
+/* Function __set_errno is already defined in package MaRTE.POSIX_Pthread */
+
+#else
+
 #include <errno.h>
 int
 __get_errno(void)
@@ -53,3 +68,5 @@ __set_errno(int err)
 {
   errno = err;
 }
+
+#endif
