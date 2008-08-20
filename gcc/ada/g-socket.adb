@@ -1281,6 +1281,7 @@ package body GNAT.Sockets is
 
    procedure Initialize (Process_Blocking_IO : Boolean) is
       Expected : constant Boolean := not SOSC.Thread_Blocking_IO;
+
    begin
       if Process_Blocking_IO /= Expected then
          raise Socket_Error with
