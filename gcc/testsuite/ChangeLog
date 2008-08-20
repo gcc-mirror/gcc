@@ -1,3 +1,8 @@
+2008-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37171
+	* gcc.dg/pr37171.c: New test.
+
 2008-08-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/div_no_warning.adb: New test.

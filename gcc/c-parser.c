@@ -2828,8 +2828,13 @@ c_parser_attributes (c_parser *parser)
 		}
 	      if (!ok)
 		break;
+	      /* Accept __attribute__((__const)) as __attribute__((const))
+		 etc.  */
+	      attr_name
+		= ridpointers[(int) c_parser_peek_token (parser)->keyword];
 	    }
-	  attr_name = c_parser_peek_token (parser)->value;
+	  else
+	    attr_name = c_parser_peek_token (parser)->value;
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
 	    {

@@ -1,3 +1,9 @@
+2008-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37171
+	* c-parser.c (c_parser_attributes): For keywords use canonical
+	spelling for attr_name.
+
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* value-prof.c (check_counter): Revert wrong call to error.
