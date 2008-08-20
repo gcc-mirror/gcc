@@ -1,5 +1,43 @@
 2008-08-20  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Improve msg for non-contiguous field
+	
+	* sem_ch13.adb:
+	(Adjust_Record_For_Reverse_Bit_Order): Messages about layout are
+	now labeled as info msgs, not warnings.
+
+	* tbuild.ads: Clarify documentation of Make_Implicit_Exception_Handler
+
+	* usage.adb: Minor change to avoid overlong line for -gnatwz/Z
+
+	* a-textio.adb: Remove redundant test.
+
+	* a-witeio.adb: Minor code reorganization
+	Remove redundant test found working on another issue
+
+	* a-ztexio.adb: Minor code reorganization
+	Remove redundant test found working on another issue
+
+2008-08-20  Thomas Quinot  <quinot@adacore.com>
+
+	* s-fileio.adb (Open) Use C helper function to determine whether a
+	given errno value corresponds to a "file not found" error.
+
+	* sysdep.c (__gnat_is_file_not_found_error): New C helper function.
+
+2008-08-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* errno.c (__get_errno for MaRTE): Use the MaRTE function pthread_errno
+	to get access to the per-task errno variable.
+	(__set_errno for MaRTE): Do not redefine this function here since it is
+	already defined in MaRTE.
+
+2008-08-20  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_ugn.texi: Gcov is not supported on static library on AIX.
+
+2008-08-20  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb: Minor reformatting
 
 	* g-comlin.adb: Minor reformatting

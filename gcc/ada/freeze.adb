@@ -1795,18 +1795,21 @@ package body Freeze is
                                     & "(component is little-endian)?", CLC);
                               end if;
 
-                              --  Do not allow non-contiguous field
+                           --  Do not allow non-contiguous field
 
                            else
                               Error_Msg_N
-                                ("attempt to specify non-contiguous field"
-                                 & " not permitted", CLC);
+                                ("attempt to specify non-contiguous field "
+                                 & "not permitted", CLC);
                               Error_Msg_N
-                                ("\(caused by non-standard Bit_Order "
-                                 & "specified)", CLC);
+                                ("\caused by non-standard Bit_Order "
+                                 & "specified", CLC);
+                              Error_Msg_N
+                                ("\consider possibility of using "
+                                 & "Ada 2005 mode here", CLC);
                            end if;
 
-                           --  Case where field fits in one storage unit
+                        --  Case where field fits in one storage unit
 
                         else
                            --  Give warning if suspicious component clause
