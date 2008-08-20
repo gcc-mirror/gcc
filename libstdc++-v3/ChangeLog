@@ -1,6 +1,6 @@
 2008-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR libstdc++/33979 (partial)
+	PR c++/33979 (partial)
 	* include/bits/postypes.h (u16streampos, u32streampos): Add.
 	* include/bits/char_traits.h (char_traits<char16_t>,
 	char_traits<char32_t>): Add.
