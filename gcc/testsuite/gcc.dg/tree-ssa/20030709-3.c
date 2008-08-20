@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom3" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
   
 extern void abort (void);
 
@@ -36,13 +36,13 @@ record_component_aliases (type)
 
 /* There should be precisely one load of type.binfo.  If there is
    more than one, then the dominator optimizations failed.  */
-/* { dg-final { scan-tree-dump-times "type\\.binfo" 1 "dom3"} } */
+/* { dg-final { scan-tree-dump-times "type\\.binfo" 1 "dom2"} } */
  
 /* There should be precisely one load of common.code.  If there is
    more than one, then the dominator optimizations failed.  */
-/* { dg-final { scan-tree-dump-times "common\\.code" 1 "dom3"} } */
+/* { dg-final { scan-tree-dump-times "common\\.code" 1 "dom2"} } */
  
 /* There should be one IF conditional.  */
-/* { dg-final { scan-tree-dump-times "if " 1 "dom3"} } */
+/* { dg-final { scan-tree-dump-times "if " 1 "dom2"} } */
 
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* { dg-final { cleanup-tree-dump "dom2" } } */

@@ -29,6 +29,5 @@ Subroutine PADEC(DKS,DKDS,HVAR,WM,WG,FN,NS,AN,BN,CN,IT)
   return
 end Subroutine PADEC
 
-! { dg-final { scan-tree-dump-times "distributed: split to 4 loops" 1 "ldist" { target ilp32 } } }
-! { dg-final { scan-tree-dump-times "distributed: split to 5 loops" 1 "ldist" { target lp64 } } }
+! { dg-final { scan-tree-dump-times "distributed: split to 4 loops" 1 "ldist" } }
 ! { dg-final { cleanup-tree-dump "ldist" } }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom3" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
 
 extern void abort (void);
 struct rtx_def;
@@ -38,5 +38,5 @@ mark_constant_function (void)
    and the temporary used as the argument to cgraph_rtl_info.
    This if we find current_function_decl used as an argument, then
    we have failed.  */
-/* { dg-final { scan-tree-dump-times "\\(current_function_decl\\)" 0 "dom3"} } */
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* { dg-final { scan-tree-dump-times "\\(current_function_decl\\)" 0 "dom2"} } */
+/* { dg-final { cleanup-tree-dump "dom2" } } */

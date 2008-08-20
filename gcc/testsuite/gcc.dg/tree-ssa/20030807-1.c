@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom3" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
     
 struct rtx_def;
 typedef struct rtx_def *rtx;
@@ -41,5 +41,5 @@ bar (rtx r)
    are threaded to the return 0.  Which in turn means the path
    which combines the result of those two tests into a new test
    must always be true and it is optimized appropriately.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "dom3"} } */
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* { dg-final { scan-tree-dump-times "if " 2 "dom2"} } */
+/* { dg-final { cleanup-tree-dump "dom2" } } */

@@ -16,6 +16,6 @@ int test(int v)
   return x;
 }
 
-/* { dg-final { scan-tree-dump-times "Original statement:.*% 2\[ \t\n]*Updated statement.*=1" 0 "phicprop3" } } */
-/* { dg-final { cleanup-tree-dump "phicprop\[1-3\]" } } */
+/* { dg-final { scan-tree-dump-times "Original statement:.*% 2\[ \t\n]*Updated statement.*=1" 0 "phicprop2" } } */
+/* { dg-final { cleanup-tree-dump "phicprop\[1-2\]" } } */
 

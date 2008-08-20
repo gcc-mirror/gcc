@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dce3" } */
+/* { dg-options "-O1 -fdump-tree-dce2" } */
 
 int t() __attribute__ ((const));
 q()
@@ -9,5 +9,5 @@ q()
     i = t();
 }
 /* There should be no IF conditionals.  */
-/* { dg-final { scan-tree-dump-times "if " 0 "dce3"} } */
-/* { dg-final { cleanup-tree-dump "dce3" } } */
+/* { dg-final { scan-tree-dump-times "if " 0 "dce2"} } */
+/* { dg-final { cleanup-tree-dump "dce2" } } */
