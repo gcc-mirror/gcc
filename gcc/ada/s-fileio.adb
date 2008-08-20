@@ -1001,11 +1001,13 @@ package body System.File_IO is
                   --  Non-zero when the given errno value indicates a non-
                   --  existing file.
 
-                  pragma Import (C, Is_File_Not_Found_Error,
-                    "__gnat_is_file_not_found_error");
+                  pragma Import
+                    (C, Is_File_Not_Found_Error,
+                     "__gnat_is_file_not_found_error");
+
                begin
-                  if Is_File_Not_Found_Error (Cint (System.OS_Lib.Errno))
-                       /= 0
+                  if
+                    Is_File_Not_Found_Error (Cint (System.OS_Lib.Errno)) /= 0
                   then
                      raise Name_Error;
                   else
