@@ -253,9 +253,10 @@ package Prj is
    type Array_Id is new Nat;
    No_Array : constant Array_Id := 0;
    type Array_Data is record
-      Name  : Name_Id          := No_Name;
-      Value : Array_Element_Id := No_Array_Element;
-      Next  : Array_Id         := No_Array;
+      Name     : Name_Id          := No_Name;
+      Location : Source_Ptr       := No_Location;
+      Value    : Array_Element_Id := No_Array_Element;
+      Next     : Array_Id         := No_Array;
    end record;
    --  Each Array_Data value represents an array.
    --  Value is the id of the first element.
