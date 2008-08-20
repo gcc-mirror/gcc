@@ -1271,16 +1271,14 @@ package body Make is
               Source_File_Name => File_Name,
               Source_Index     => Index,
               Naming           => Project_Tree.Projects.Table
-                (Main_Project).Naming,
+                                   (Main_Project).Naming,
               In_Package       => The_Package,
-              Allow_ALI        =>
-                Program = Binder or else Program = Linker);
+              Allow_ALI        => Program = Binder or else Program = Linker);
 
          if Switches.Kind = List then
             Program_Args := Program;
 
             Switch_List := Switches.Values;
-
             while Switch_List /= Nil_String loop
                Element := Project_Tree.String_Elements.Table (Switch_List);
                Get_Name_String (Element.Value);
