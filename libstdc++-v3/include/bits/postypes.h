@@ -222,6 +222,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// File position for wchar_t streams.
   typedef fpos<mbstate_t> wstreampos;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /// File position for char16_t streams.
+  typedef fpos<mbstate_t> u16streampos;
+  /// File position for char32_t streams.
+  typedef fpos<mbstate_t> u32streampos;
+#endif
+
 _GLIBCXX_END_NAMESPACE
 
 #endif

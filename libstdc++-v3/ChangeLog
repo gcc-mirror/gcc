@@ -1,3 +1,39 @@
+2008-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/33979 (partial)
+	* include/bits/postypes.h (u16streampos, u32streampos): Add.
+	* include/bits/char_traits.h (char_traits<char16_t>,
+	char_traits<char32_t>): Add.
+	* include/bits/stringfwd.h (u16string, u32string): Add.
+	* include/ext/vstring_fwd.h: Add typedefs for char16_t/char32_t.
+	* testsuite/21_strings/char_traits/requirements/char32_t/typedefs.cc:
+	New.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/short/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/char16_t/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char/1.cc: Likewise.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Likewise.
+	* testsuite/ext/vstring/requirements/explicit_instantiation/
+	char32_t/1.cc: Likewise.
+	* testsuite/ext/vstring/requirements/explicit_instantiation/
+	char16_t/1.cc: Likewise.
+
 2008-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37149

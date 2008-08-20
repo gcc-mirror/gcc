@@ -1,7 +1,8 @@
-// String support -*- C++ -*-
+// { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-// Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,55 +29,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file stringfwd.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
+// This file tests explicit instantiation of __versa_string
 
-//
-// ISO C++ 14882: 21 Strings library
-//
+#include <ext/vstring.h>
 
-#ifndef _STRINGFWD_H
-#define _STRINGFWD_H 1
+template class __gnu_cxx::__versa_string<char16_t, std::char_traits<char16_t>,
+					 std::allocator<char16_t>,
+					 __gnu_cxx::__sso_string_base>;
 
-#pragma GCC system_header
-
-#include <bits/c++config.h>
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
-  template<typename _Alloc>
-    class allocator;
-
-  template<class _CharT>
-    struct char_traits;
-
-  template<typename _CharT, typename _Traits = char_traits<_CharT>,
-           typename _Alloc = allocator<_CharT> >
-    class basic_string;
-
-  template<> struct char_traits<char>;
-
-  typedef basic_string<char>    string;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<> struct char_traits<wchar_t>;
-
-  typedef basic_string<wchar_t> wstring;
-#endif
-
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
-
-  template<> struct char_traits<char16_t>;
-  template<> struct char_traits<char32_t>;
-
-  typedef basic_string<char16_t> u16string;
-  typedef basic_string<char32_t> u32string;
-
-#endif
-
-_GLIBCXX_END_NAMESPACE
-
-#endif	// _STRINGFWD_H
+template class __gnu_cxx::__versa_string<char16_t, std::char_traits<char16_t>,
+					 std::allocator<char16_t>,
+					 __gnu_cxx::__rc_string_base>;
