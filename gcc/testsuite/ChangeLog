@@ -1,3 +1,15 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/179
+	* gcc.dg/uninit-6.c (make_something): Remove XFAIL.
+	* gcc.dg/uninit-6-O0.c (make_something): Remove XFAIL.
+	* gcc.dg/uninit-B.c (baz): Remove XFAIL.
+	* gcc.dg/uninit-B-2.c: New.
+	* gcc.dg/uninit-B-O0-2.c: New.
+	* gcc.dg/uninit-pr19430-O0.c: New.
+	* gcc.dg/uninit-pr19430.c: New.
+	* gcc.dg/uninit-pr19430-2.c: New.
+
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/35158
