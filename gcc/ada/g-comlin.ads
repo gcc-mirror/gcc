@@ -576,11 +576,12 @@ package GNAT.Command_Line is
    --  This function can be used to reset Cmd by passing an empty string.
 
    procedure Add_Switch
-     (Cmd       : in out Command_Line;
-      Switch    : String;
-      Parameter : String    := "";
-      Separator : Character := ' ';
-      Section   : String    := "");
+     (Cmd        : in out Command_Line;
+      Switch     : String;
+      Parameter  : String    := "";
+      Separator  : Character := ' ';
+      Section    : String    := "";
+      Add_Before : Boolean   := False);
    --  Add a new switch to the command line, and combine/group it with existing
    --  switches if possible. Nothing is done if the switch already exists with
    --  the same parameter.
@@ -608,14 +609,18 @@ package GNAT.Command_Line is
    --  the switch is correctly placed in the command line, and the section
    --  added if not already present. For example, to add the -g switch into the
    --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs")
+   --
+   --  Add_Before allows insertion of the switch at the begining of the command
+   --  line.
 
    procedure Add_Switch
-     (Cmd       : in out Command_Line;
-      Switch    : String;
-      Parameter : String    := "";
-      Separator : Character := ' ';
-      Section   : String    := "";
-      Success   : out Boolean);
+     (Cmd        : in out Command_Line;
+      Switch     : String;
+      Parameter  : String    := "";
+      Separator  : Character := ' ';
+      Section    : String    := "";
+      Add_Before : Boolean   := False;
+      Success    : out Boolean);
    --  Same as above, returning the status of
    --  the operation
 
