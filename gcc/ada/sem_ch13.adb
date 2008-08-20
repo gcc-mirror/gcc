@@ -433,18 +433,20 @@ package body Sem_Ch13 is
                   if Warn_On_Reverse_Bit_Order then
                      Error_Msg_Uint_1 := MSS;
                      Error_Msg_N
-                       ("?reverse bit order in machine " &
-                       "scalar of length^", First_Bit (CC));
+                       ("info: reverse bit order in machine " &
+                       "scalar of length^?", First_Bit (CC));
                      Error_Msg_Uint_1 := NFB;
                      Error_Msg_Uint_2 := NLB;
 
                      if Bytes_Big_Endian then
                         Error_Msg_NE
-                          ("?\big-endian range for component & is ^ .. ^",
+                          ("?\info: big-endian range for "
+                           & "component & is ^ .. ^",
                            First_Bit (CC), Comp);
                      else
                         Error_Msg_NE
-                          ("?\little-endian range for component & is ^ .. ^",
+                          ("?\info: little-endian range "
+                           & "for component & is ^ .. ^",
                            First_Bit (CC), Comp);
                      end if;
                   end if;
