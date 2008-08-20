@@ -1,5 +1,45 @@
 2008-08-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* a-crbtgk.adb, repinfo.adb, g-traceb.ads, repinfo.ads,
+	system-linux-s390x.ads, s-fatflt.ads, s-parame-ae653.ads, g-spipat.adb,
+	g-spipat.ads, g-tasloc.adb, g-debpoo.adb, g-except.ads, g-debpoo.ads,
+	mdll-utl.adb, g-string.adb, g-soliop-solaris.ads, par-sync.adb,
+	exp_ch6.ads, a-cihama.ads, g-curexc.ads, system-linux-sh4.ads,
+	g-utf_32.adb, g-hesorg.adb, s-proinf-irix-athread.ads, s-parint.adb,
+	s-parint.ads, exp_ch7.ads, system-linux-alpha.ads, g-dirope.adb,
+	sinfo-cn.adb, par-labl.adb, a-ciorse.adb, g-calend.adb,
+	s-parame-vms-alpha.ads, nlists.h, exp_imgv.adb, exp_fixd.ads,
+	g-calend.ads, gnatcmd.ads, g-table.adb, s-memory-mingw.adb,
+	g-alveop.ads, g-memdum.ads, g-altive.ads, initialize.c, g-regpat.adb,
+	g-busorg.ads, g-regpat.ads, g-encstr.ads, g-regexp.adb, g-regexp.ads,
+	live.ads, g-dyntab.adb, prj-nmsc.ads, par-ch12.adb, 9drpc.adb,
+	g-alvevi.ads, s-memory.adb, math_lib.adb, s-parame.ads, s-memory.ads,
+	s-regexp.adb, a-exexda.adb, i-cstrea-vms.adb, a-exexpr.adb,
+	g-soliop-mingw.ads, s-imgrea.adb, namet.adb, system-vms.ads,
+	s-inmaop-dummy.adb, s-finroo.ads, a-ngcefu.adb, s-hibaen.ads,
+	g-soliop.ads, s-auxdec.adb, g-locfil.ads, gnatxref.adb, memroot.adb,
+	osint-b.ads, memroot.ads, s-parame-hpux.ads, errutil.adb,
+	system-linux-s390.ads, par-util.adb, osint-c.ads, exp_pakd.ads,
+	i-pacdec.ads, par-endh.adb, mlib-tgt.ads, prj-strt.ads,
+	s-osprim-vms.adb, s-proinf.ads, output.ads, g-moreex.ads,
+	a-finali.ads, s-fatlfl.ads, namet.h, mdll.ads, g-dynhta.ads,
+	s-imgenu.ads, par-tchk.adb, g-excact.ads, memtrack.adb, s-fatgen.adb,
+	a-exexpr-gcc.adb, g-arrspl.adb, par-ch4.adb, g-cgideb.adb, freeze.ads,
+	g-altcon.adb, s-fatllf.ads, gnatfind.adb, s-osinte-lynxos-3.adb,
+	a-exextr.adb, g-htable.ads, a-calfor.adb, s-imgcha.adb, argv.c,
+	a-chahan.ads, g-hesora.adb, system-vms_64.ads, par-ch5.adb, g-md5.adb,
+	lib-xref.ads, g-md5.ads, g-casuti.ads, s-fatsfl.ads, exp_dbug.ads,
+	s-htable.ads, a-ngcoar.adb, s-arit64.ads, a-ngelfu.adb, a-filico.ads,
+	par-ch6.adb, s-inmaop.ads, s-parame-vxworks.ads, s-casuti.ads,
+	a-numaux-darwin.adb, a-cohama.ads, system-linux-sparc.ads, g-os_lib.adb,
+	system-vms-ia64.ads, s-parame-vms-restrict.ads, a-clrefi.ads,
+	s-parame-vms-ia64.ads, a-strfix.adb, a-coorse.adb, a-comlin.ads,
+	a-chtgke.adb, s-imgint.adb, g-expect.ads, exp_ch4.ads, s-finimp.adb,
+	mingw32.h, g-heasor.adb, g-alleve.adb, a-ngrear.adb, s-mastop-irix.adb,
+	s-poosiz.adb, link.c: Fix copyright notice.
+
+2008-08-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* g-comlin.ads: Update comments.
 
 2008-08-20  Ed Schonberg  <schonberg@adacore.com>
