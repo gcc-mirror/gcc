@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package GNAT.Calendar.Time_IO is
    --
    --  Trailing characters (in particular spaces) are not allowed
    --
-   --     yyyy*mm*dd
+   --     yyyy*mm*dd           - ISO format
    --     yy*mm*dd             - Year is assumed to be 20yy
    --     mm*dd*yyyy           - (US date format)
    --     dd*mmm*yyyy          - month spelled out
@@ -141,12 +141,11 @@ package GNAT.Calendar.Time_IO is
    --     mmm dd, yyyy         - month spelled out
    --     dd mmm yyyy          - month spelled out
    --
-   --  Constraint_Error is raised if the input string is malformatted or
+   --  Constraint_Error is raised if the input string is malformed (does not
+   --  conform to one of the above dates, or has an invalid time string), or
    --  the resulting time is not valid.
 
-   procedure Put_Time
-     (Date    : Ada.Calendar.Time;
-      Picture : Picture_String);
+   procedure Put_Time (Date : Ada.Calendar.Time; Picture : Picture_String);
    --  Put Date with format Picture. Raise Picture_Error if bad picture string
 
 private

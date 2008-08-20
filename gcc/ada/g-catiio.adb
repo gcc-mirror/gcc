@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -560,13 +560,15 @@ package body GNAT.Calendar.Time_IO is
       D          : String (1 .. 21);
       D_Length   : constant Natural := Date'Length;
 
-      Year       : Year_Number;
-      Month      : Month_Number;
-      Day        : Day_Number;
-      Hour       : Hour_Number;
-      Minute     : Minute_Number;
-      Second     : Second_Number;
+      Year   : Year_Number;
+      Month  : Month_Number;
+      Day    : Day_Number;
+      Hour   : Hour_Number;
+      Minute : Minute_Number;
+      Second : Second_Number;
+
       Sub_Second : Second_Duration;
+      --  We ignore subseconds in this routine, so this is a throw away value
 
       procedure Extract_Date
         (Year       : out Year_Number;
@@ -770,9 +772,6 @@ package body GNAT.Calendar.Time_IO is
    --  Start of processing for Value
 
    begin
-      Split (Clock, Year, Month, Day, Hour, Minute, Second, Sub_Second);
-      Sub_Second := 0.0;
-
       --  Length checks
 
       if D_Length /= 8
@@ -792,12 +791,12 @@ package body GNAT.Calendar.Time_IO is
 
       D (1 .. D_Length) := Date;
 
-      if D_Length /= 8
-        or else D (3) /= ':'
-      then
+      if D_Length /= 8 or else D (3) /= ':' then
          Extract_Date (Year, Month, Day, Time_Start);
          Extract_Time (Time_Start, Hour, Minute, Second, Check_Space => True);
+
       else
+         Split (Clock, Year, Month, Day, Hour, Minute, Second, Sub_Second);
          Extract_Time (1, Hour, Minute, Second, Check_Space => False);
       end if;
 
@@ -813,7 +812,7 @@ package body GNAT.Calendar.Time_IO is
          raise Constraint_Error;
       end if;
 
-      return Time_Of (Year, Month, Day, Hour, Minute, Second, Sub_Second);
+      return Time_Of (Year, Month, Day, Hour, Minute, Second);
    end Value;
 
    --------------
