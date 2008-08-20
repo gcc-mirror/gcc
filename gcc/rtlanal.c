@@ -3241,8 +3241,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 {
   struct subreg_info info;
   subreg_get_info (xregno, xmode, offset, ymode, &info);
-  return (info.representable_p
-	  && HARD_REGNO_MODE_OK (xregno + info.offset, ymode));
+  return info.representable_p;
 }
 
 /* Return the final regno that a subreg expression refers to.  */

@@ -1,3 +1,7 @@
+2008-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtlanal.c (subreg_offset_representable_p): Revert last change.
+
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35701
