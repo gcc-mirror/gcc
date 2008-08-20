@@ -1856,7 +1856,7 @@ package body Ada.Text_IO is
       if Start = 0 then
          File.WC_Method := WCEM_Brackets;
 
-      elsif Start /= 0 then
+      else
          if Stop = Start then
             for J in WC_Encoding_Letters'Range loop
                if File.Form (Start) = WC_Encoding_Letters (J) then
