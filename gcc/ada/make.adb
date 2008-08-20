@@ -27,6 +27,7 @@ with ALI;      use ALI;
 with ALI.Util; use ALI.Util;
 with Csets;
 with Debug;
+with Errutil;
 with Fmap;
 with Fname;    use Fname;
 with Fname.SF; use Fname.SF;
@@ -318,6 +319,15 @@ package body Make is
    Last_Norm_Switch    : Natural := 0;
 
    Saved_Maximum_Processes : Natural := 0;
+
+   Gnatmake_Switch_Found : Boolean;
+   --  Set by Scan_Make_Arg. True when the switch is a gnatmake switch.
+   --  Tested by Add_Switches when switches in package Builder must all be
+   --  gnatmake switches.
+
+   Switch_May_Be_Passed_To_The_Compiler : Boolean;
+   --  Set by Add_Switches and Switches_Of. True when unrecognized switches
+   --  are passed to the Ada compiler.
 
    type Arg_List_Ref is access Argument_List;
    The_Saved_Gcc_Switches : Arg_List_Ref;
@@ -719,10 +729,11 @@ package body Make is
    --  file, to avoid displaying the -gnatec switch for a temporary file.
 
    procedure Add_Switches
-     (The_Package : Package_Id;
-      File_Name   : String;
-      Index       : Int;
-      Program     : Make_Program_Type);
+     (The_Package                      : Package_Id;
+      File_Name                        : String;
+      Index                            : Int;
+      Program                          : Make_Program_Type;
+      Unknown_Switches_To_The_Compiler : Boolean := True);
    procedure Add_Switch
      (S             : String_Access;
       Program       : Make_Program_Type;
@@ -1237,64 +1248,42 @@ package body Make is
    ------------------
 
    procedure Add_Switches
-     (The_Package : Package_Id;
-      File_Name   : String;
-      Index       : Int;
-      Program     : Make_Program_Type)
+     (The_Package                      : Package_Id;
+      File_Name                        : String;
+      Index                            : Int;
+      Program                          : Make_Program_Type;
+      Unknown_Switches_To_The_Compiler : Boolean := True)
    is
       Switches    : Variable_Value;
       Switch_List : String_List_Id;
       Element     : String_Element;
 
    begin
+      Switch_May_Be_Passed_To_The_Compiler :=
+        Unknown_Switches_To_The_Compiler;
+
       if File_Name'Length > 0 then
          Name_Len := File_Name'Length;
          Name_Buffer (1 .. Name_Len) := File_Name;
          Switches :=
            Switches_Of
-           (Source_File      => Name_Find,
-            Source_File_Name => File_Name,
-            Source_Index     => Index,
-            Naming           => Project_Tree.Projects.Table
-                                  (Main_Project).Naming,
-            In_Package       => The_Package,
-            Allow_ALI        =>
-              Program = Binder or else Program = Linker);
+             (Source_File      => Name_Find,
+              Source_File_Name => File_Name,
+              Source_Index     => Index,
+              Naming           => Project_Tree.Projects.Table
+                (Main_Project).Naming,
+              In_Package       => The_Package,
+              Allow_ALI        =>
+                Program = Binder or else Program = Linker);
 
-         case Switches.Kind is
-            when Undefined =>
-               null;
+         if Switches.Kind = List then
+            Program_Args := Program;
 
-            when List =>
-               Program_Args := Program;
+            Switch_List := Switches.Values;
 
-               Switch_List := Switches.Values;
-
-               while Switch_List /= Nil_String loop
-                  Element := Project_Tree.String_Elements.Table (Switch_List);
-                  Get_Name_String (Element.Value);
-
-                  if Name_Len > 0 then
-                     declare
-                        Argv : constant String := Name_Buffer (1 .. Name_Len);
-                        --  We need a copy, because Name_Buffer may be modified
-
-                     begin
-                        if Verbose_Mode then
-                           Write_Str ("   Adding ");
-                           Write_Line (Argv);
-                        end if;
-
-                        Scan_Make_Arg (Argv, And_Save => False);
-                     end;
-                  end if;
-
-                  Switch_List := Element.Next;
-               end loop;
-
-            when Single =>
-               Program_Args := Program;
-               Get_Name_String (Switches.Value);
+            while Switch_List /= Nil_String loop
+               Element := Project_Tree.String_Elements.Table (Switch_List);
+               Get_Name_String (Element.Value);
 
                if Name_Len > 0 then
                   declare
@@ -1308,9 +1297,25 @@ package body Make is
                      end if;
 
                      Scan_Make_Arg (Argv, And_Save => False);
+
+                     if not Gnatmake_Switch_Found
+                       and then not Switch_May_Be_Passed_To_The_Compiler
+                     then
+                        Errutil.Error_Msg
+                          ('"' & Argv &
+                           """ is not a gnatmake switch. Consider moving " &
+                           "it to Global_Compilation_Switches.",
+                           Element.Location);
+                        Errutil.Finalize;
+                        Make_Failed
+                          ("*** illegal switch """, Argv, """");
+                     end if;
                   end;
                end if;
-         end case;
+
+               Switch_List := Element.Next;
+            end loop;
+         end if;
       end if;
    end Add_Switches;
 
@@ -5038,6 +5043,12 @@ package body Make is
                                   In_Packages => The_Packages,
                                   In_Tree     => Project_Tree);
 
+            Default_Switches_Array : Array_Id;
+
+            Global_Compilation_Array    : Array_Element_Id;
+            Global_Compilation_Elem     : Array_Element;
+            Global_Compilation_Switches : Variable_Value;
+
          begin
             --  We fail if we cannot find the main source file
 
@@ -5083,6 +5094,37 @@ package body Make is
 
             if Builder_Package /= No_Package then
 
+               Global_Compilation_Array := Prj.Util.Value_Of
+                 (Name      => Name_Global_Compilation_Switches,
+                  In_Arrays => Project_Tree.Packages.Table
+                    (Builder_Package).Decl.Arrays,
+                  In_Tree   => Project_Tree);
+
+               Default_Switches_Array :=
+                 Project_Tree.Packages.Table
+                   (Builder_Package).Decl.Arrays;
+
+               while Default_Switches_Array /= No_Array and then
+               Project_Tree.Arrays.Table (Default_Switches_Array).Name /=
+                 Name_Default_Switches
+               loop
+                  Default_Switches_Array :=
+                    Project_Tree.Arrays.Table (Default_Switches_Array).Next;
+               end loop;
+
+               if Global_Compilation_Array /= No_Array_Element and then
+                  Default_Switches_Array /= No_Array
+               then
+                  Errutil.Error_Msg
+                    ("Default_Switches forbidden in presence of " &
+                     "Global_Compilation_Switches. Use Switches instead.",
+                     Project_Tree.Arrays.Table
+                       (Default_Switches_Array).Location);
+                  Errutil.Finalize;
+                  Make_Failed
+                    ("*** illegal combination of Builder attributes");
+               end if;
+
                --  If there is only one main, we attempt to get the gnatmake
                --  switches for this main (if any). If there are no specific
                --  switch for this particular main, get the general gnatmake
@@ -5096,10 +5138,12 @@ package body Make is
                   end if;
 
                   Add_Switches
-                    (File_Name   => Main_Unit_File_Name,
-                     Index       => Main_Index,
-                     The_Package => Builder_Package,
-                     Program     => None);
+                    (File_Name                        => Main_Unit_File_Name,
+                     Index                            => Main_Index,
+                     The_Package                      => Builder_Package,
+                     Program                          => None,
+                     Unknown_Switches_To_The_Compiler =>
+                       Global_Compilation_Array = No_Array_Element);
 
                else
                   --  If there are several mains, we always get the general
@@ -5149,10 +5193,11 @@ package body Make is
                         end if;
 
                         Add_Switches
-                          (File_Name   => " ",
-                           Index       => 0,
-                           The_Package => Builder_Package,
-                           Program     => None);
+                          (File_Name                        => " ",
+                           Index                            => 0,
+                           The_Package                      => Builder_Package,
+                           Program                          => None,
+                           Unknown_Switches_To_The_Compiler => False);
 
                      elsif Defaults /= Nil_Variable_Value then
                         if not Quiet_Output
@@ -5178,6 +5223,59 @@ package body Make is
                      end if;
                   end;
                end if;
+
+               --  Take into account attribute Global_Compilation_Switches
+               --  ("Ada").
+
+               declare
+                  Index : Name_Id;
+                  List  : String_List_Id;
+                  Elem  : String_Element;
+
+               begin
+                  while Global_Compilation_Array /= No_Array_Element loop
+                     Global_Compilation_Elem :=
+                       Project_Tree.Array_Elements.Table
+                         (Global_Compilation_Array);
+
+                     Get_Name_String (Global_Compilation_Elem.Index);
+                     To_Lower (Name_Buffer (1 .. Name_Len));
+                     Index := Name_Find;
+
+                     if Index = Name_Ada then
+                        Global_Compilation_Switches :=
+                          Global_Compilation_Elem.Value;
+
+                        if Global_Compilation_Switches /= Nil_Variable_Value
+                          and then not Global_Compilation_Switches.Default
+                        then
+                           --  We have found attribute
+                           --  Global_Compilation_Switches ("Ada"): put the
+                           --  switches in the appropriate table.
+
+                           List := Global_Compilation_Switches.Values;
+
+                           while List /= Nil_String loop
+                              Elem :=
+                                Project_Tree.String_Elements.Table (List);
+
+                              if Elem.Value /= No_Name then
+                                 Add_Switch
+                                   (Get_Name_String (Elem.Value),
+                                    Compiler,
+                                    And_Save => False);
+                              end if;
+
+                              List := Elem.Next;
+                           end loop;
+
+                           exit;
+                        end if;
+                     end if;
+
+                     Global_Compilation_Array := Global_Compilation_Elem.Next;
+                  end loop;
+               end;
             end if;
 
             Osint.Add_Default_Search_Dirs;
@@ -7528,6 +7626,8 @@ package body Make is
       Success : Boolean;
 
    begin
+      Gnatmake_Switch_Found := True;
+
       pragma Assert (Argv'First = 1);
 
       if Argv'Length = 0 then
@@ -8068,14 +8168,14 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
 
-         --  All other switches are processed by Scan_Make_Switches.
-         --  If the call returns with Success = False, then the switch is
-         --  passed to the compiler.
+         --  All other switches are processed by Scan_Make_Switches. If the
+         --  call returns with Gnatmake_Switch_Found = False, then the switch
+         --  is passed to the compiler.
 
          else
-            Scan_Make_Switches (Argv, Success);
+            Scan_Make_Switches (Argv, Gnatmake_Switch_Found);
 
-            if not Success then
+            if not Gnatmake_Switch_Found then
                Add_Switch (Argv, Compiler, And_Save => And_Save);
             end if;
          end if;
@@ -8119,12 +8219,16 @@ package body Make is
                             In_Tree   => Project_Tree);
 
    begin
+      --  First, try Switches (<file name>)
+
       Switches :=
         Prj.Util.Value_Of
           (Index     => Name_Id (Source_File),
            Src_Index => Source_Index,
            In_Array  => Switches_Array,
            In_Tree   => Project_Tree);
+
+      --  Check also without the suffix
 
       if Switches = Nil_Variable_Value then
          declare
@@ -8189,6 +8293,24 @@ package body Make is
          end;
       end if;
 
+      --  Next, try Switches ("Ada")
+
+      if Switches = Nil_Variable_Value then
+         Switches :=
+           Prj.Util.Value_Of
+             (Index                  => Name_Ada,
+              Src_Index              => 0,
+              In_Array               => Switches_Array,
+              In_Tree                => Project_Tree,
+              Force_Lower_Case_Index => True);
+
+         if Switches /= Nil_Variable_Value then
+            Switch_May_Be_Passed_To_The_Compiler := False;
+         end if;
+      end if;
+
+      --  Next, try Switches (others)
+
       if Switches = Nil_Variable_Value then
          Switches :=
            Prj.Util.Value_Of
@@ -8196,7 +8318,13 @@ package body Make is
               Src_Index => 0,
               In_Array  => Switches_Array,
               In_Tree   => Project_Tree);
+
+         if Switches /= Nil_Variable_Value then
+            Switch_May_Be_Passed_To_The_Compiler := False;
+         end if;
       end if;
+
+      --  And finally, Default_Switches ("Ada")
 
       if Switches = Nil_Variable_Value then
          Switches :=
