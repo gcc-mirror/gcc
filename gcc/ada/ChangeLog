@@ -1,3 +1,17 @@
+2008-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Inherit Is_Imported flag.
+
+2008-08-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch11.adb:
+	(Expand_Exception_Handlers): Call Make_Exception_Handler instead of
+	Make_Implicit_Exception_Handler when rewriting an exception handler with
+	a choice parameter, and pass the handler's Sloc instead of that of the
+	handled sequence of statements. Make_Implicit_Exception_Handler sets the
+	Sloc to No_Location (unless debugging generated code), which we don't
+	want for the case of a user handler.
+
 2008-08-20  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Improve msg for non-contiguous field

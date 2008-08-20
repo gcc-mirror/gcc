@@ -1011,7 +1011,8 @@ package body Exp_Ch11 is
                if Present (Choice_Parameter (Handler)) then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
-                     Clc   : constant Source_Ptr := Sloc (Cparm);
+                     Cloc  : constant Source_Ptr := Sloc (Cparm);
+                     Hloc  : constant Source_Ptr := Sloc (Handler);
                      Save  : Node_Id;
 
                   begin
@@ -1020,7 +1021,7 @@ package body Exp_Ch11 is
                          Name =>
                            New_Occurrence_Of (RTE (RE_Save_Occurrence), Loc),
                          Parameter_Associations => New_List (
-                           New_Occurrence_Of (Cparm, Clc),
+                           New_Occurrence_Of (Cparm, Cloc),
                            Make_Explicit_Dereference (Loc,
                              Make_Function_Call (Loc,
                                Name => Make_Explicit_Dereference (Loc,
@@ -1032,23 +1033,32 @@ package body Exp_Ch11 is
 
                      Obj_Decl :=
                        Make_Object_Declaration
-                         (Clc,
+                         (Cloc,
                           Defining_Identifier => Cparm,
                           Object_Definition   =>
                             New_Occurrence_Of
-                              (RTE (RE_Exception_Occurrence), Clc));
+                              (RTE (RE_Exception_Occurrence), Cloc));
                      Set_No_Initialization (Obj_Decl, True);
 
                      Rewrite (Handler,
-                       Make_Implicit_Exception_Handler (Loc,
+                       Make_Exception_Handler (Hloc,
+                         Choice_Parameter  => Empty,
                          Exception_Choices => Exception_Choices (Handler),
 
                          Statements => New_List (
-                           Make_Block_Statement (Loc,
+                           Make_Block_Statement (Hloc,
                              Declarations => New_List (Obj_Decl),
                              Handled_Statement_Sequence =>
-                               Make_Handled_Sequence_Of_Statements (Loc,
+                               Make_Handled_Sequence_Of_Statements (Hloc,
                                  Statements => Statements (Handler))))));
+
+                     --  Local raise statements can't occur, since exception
+                     --  handlers with choice parameters are not allowed when
+                     --  No_Exception_Propagation applies, so set attributes
+                     --  accordingly.
+
+                     Set_Local_Raise_Statements (Handler, No_Elist);
+                     Set_Local_Raise_Not_OK (Handler);
 
                      Analyze_List
                        (Statements (Handler), Suppress => All_Checks);
