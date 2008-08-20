@@ -1,3 +1,24 @@
+2008-08-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Naming_Schemes): Accept source file names for
+	gprbuild when casing is MixedCase, whatever the casing of the letters
+	in the file name.
+
+2008-08-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): Clarify comment related to
+	creating dummy init proc.
+	(Requires_Init_Proc): Return False in the case No_Default_Initialization
+	is in force and the type does not have associated default
+	initialization. Move test of Is_Public (with tests of restrictions
+	No_Initialize_Scalars and No_Default_Initialization) to end, past tests
+	for default initialization.
+
+2008-08-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (For_Each_Simple_Switch): Take care of switches not part
+	of any alias or prefix but having attached parameters (as \"-O2\").
+
 2008-08-20  Robert Dewar  <dewar@adacore.com>
 
 	* s-fileio.adb: Minor reformatting
