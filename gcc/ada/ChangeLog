@@ -1,3 +1,19 @@
+2008-08-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb:
+	(Adjust_Record_For_Reverse_Bit_Order): Do not access First_Bit for
+	non-existing component clause.
+
+	* exp_ch5.adb: Minor reformatting
+
+	* g-comlin.adb: Minor reformatting
+
+	* make.adb: Minor reformatting
+
+	* prj-proc.adb: Minor reformatting
+
+	* stylesw.ads: Minor reformatting
+
 2008-08-20  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Gnatmake_Switch_Found): New Boolean global variable
