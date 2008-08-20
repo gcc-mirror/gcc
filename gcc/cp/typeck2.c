@@ -313,18 +313,18 @@ abstract_virtuals_error (tree decl, tree type)
       unsigned ix;
       tree fn;
 
-      inform ("%J  because the following virtual functions are pure "
+      inform (input_location, "%J  because the following virtual functions are pure "
 	      "within %qT:", TYPE_MAIN_DECL (type), type);
 
       for (ix = 0; VEC_iterate (tree, pure, ix, fn); ix++)
-	inform ("\t%+#D", fn);
+	inform (input_location, "\t%+#D", fn);
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
 	 again.  */
       VEC_truncate (tree, pure, 0);
     }
   else
-    inform ("%J  since type %qT has pure virtual functions",
+    inform (input_location, "%J  since type %qT has pure virtual functions",
 	    TYPE_MAIN_DECL (type), type);
 
   return 1;

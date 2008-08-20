@@ -489,16 +489,16 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   return report_diagnostic (&diagnostic);
 }
 
-/* An informative note.  Use this for additional details on an error
+/* An informative note at LOCATION.  Use this for additional details on an error
    message.  */
 void
-inform (const char *gmsgid, ...)
+inform (location_t location, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_NOTE);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_NOTE);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }

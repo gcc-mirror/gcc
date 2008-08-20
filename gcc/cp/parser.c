@@ -2229,8 +2229,9 @@ cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
       && declarator->kind == cdk_function)
     {
       error ("%Hnew types may not be defined in a return type", &type_location);
-      inform ("%H(perhaps a semicolon is missing after the definition of %qT)",
-	      &type_location, type);
+      inform (type_location, 
+	      "(perhaps a semicolon is missing after the definition of %qT)",
+	      type);
     }
 }
 
@@ -2358,8 +2359,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		    if (TREE_CODE (field) == TYPE_DECL
 			&& DECL_NAME (field) == id)
 		      {
-			inform ("%H(perhaps %<typename %T::%E%> was intended)",
-				&location, BINFO_TYPE (b), id);
+			inform (location, 
+				"(perhaps %<typename %T::%E%> was intended)",
+				BINFO_TYPE (b), id);
 			break;
 		      }
 		  if (field)
@@ -5576,8 +5578,8 @@ cp_parser_new_expression (cp_parser* parser)
 	{
 	  error ("%Harray bound forbidden after parenthesized type-id",
 		 &token->location);
-	  inform ("%Htry removing the parentheses around the type-id",
-		 &token->location);
+	  inform (token->location, 
+		  "try removing the parentheses around the type-id");
 	  cp_parser_direct_new_declarator (parser);
 	}
       nelts = NULL_TREE;
@@ -9984,13 +9986,13 @@ cp_parser_template_id (cp_parser *parser,
 		     "%<<::%> cannot begin a template-argument list"))
 	{
 	  static bool hint = false;
-	  inform ("%H%<<:%> is an alternate spelling for %<[%>. Insert whitespace "
-	      "between %<<%> and %<::%>",
-	      &next_token->location);
+	  inform (next_token->location,
+		  "%<<:%> is an alternate spelling for %<[%>."
+		  " Insert whitespace between %<<%> and %<::%>");
 	  if (!hint && !flag_permissive)
 	    {
-	      inform ("%H(if you use %<-fpermissive%> G++ will accept your code)",
-                      &next_token->location);
+	      inform (next_token->location, "(if you use %<-fpermissive%>"
+		      " G++ will accept your code)");
 	      hint = true;
 	    }
 	}
@@ -10180,7 +10182,7 @@ cp_parser_template_name (cp_parser* parser,
 	  /* Explain what went wrong.  */
 	  error ("%Hnon-template %qD used as template",
 		 &token->location, identifier);
-	  inform ("use %<%T::template %D%> to indicate that it is a template",
+	  inform (input_location, "use %<%T::template %D%> to indicate that it is a template",
 		  parser->scope, identifier);
 	  /* If parsing tentatively, find the location of the "<" token.  */
 	  if (cp_parser_simulate_error (parser))
@@ -13168,7 +13170,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 			{
 			  error ("%Hinvalid use of constructor as a template",
 				 &declarator_id_start_token->location);
-			  inform ("use %<%T::%D%> instead of %<%T::%D%> to "
+			  inform (input_location, "use %<%T::%D%> instead of %<%T::%D%> to "
 				  "name the constructor in a qualified name",
 				  class_type,
 				  DECL_NAME (TYPE_TI_TEMPLATE (class_type)),

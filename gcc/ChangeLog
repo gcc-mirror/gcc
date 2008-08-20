@@ -1,3 +1,20 @@
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (inform): Add an explicit location_t parameter.
+	* toplev.h (inform): Update declaration.
+	* builtins.c: Update all calls to inform.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-typeck.c: Likewise.
+	* coverage.c: Likewise.
+	* opts.c: Likewise.
+	* toplev.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-ssa.c: Likewise.
+
 2008-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37169

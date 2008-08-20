@@ -3039,7 +3039,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 			   "delete operator:"))
 		{
 		  cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
-		  inform ("neither the destructor nor the class-specific "
+		  inform (input_location, "neither the destructor nor the class-specific "
 			  "operator delete will be called, even if they are "
 			  "declared when the class is defined.");
 		}

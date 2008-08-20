@@ -4009,7 +4009,7 @@ build_x_unary_op (enum tree_code code, tree xarg, tsubst_flags_t complain)
               error ("invalid use of %qE to form a pointer-to-member-function",
                      xarg);
               if (TREE_CODE (xarg) != OFFSET_REF)
-                inform ("  a qualified-id is required");
+                inform (input_location, "  a qualified-id is required");
 	      return error_mark_node;
 	    }
 	  else

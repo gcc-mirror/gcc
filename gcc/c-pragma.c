@@ -1203,7 +1203,7 @@ handle_pragma_message (cpp_reader *ARG_UNUSED(dummy))
     warning (OPT_Wpragmas, "junk at end of %<#pragma message%>");
 
   if (TREE_STRING_LENGTH (message) > 1)
-    inform ("#pragma message: %s", TREE_STRING_POINTER (message));
+    inform (input_location, "#pragma message: %s", TREE_STRING_POINTER (message));
 }
 
 /* A vector of registered pragma callbacks.  */

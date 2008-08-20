@@ -6174,7 +6174,7 @@ resolve_address_of_overloaded_function (tree target_type,
       permerror (input_location, "assuming pointer to member %qD", fn);
       if (!explained)
 	{
-	  inform ("(a pointer to member can only be formed with %<&%E%>)", fn);
+	  inform (input_location, "(a pointer to member can only be formed with %<&%E%>)", fn);
 	  explained = 1;
 	}
     }

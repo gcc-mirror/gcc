@@ -1088,8 +1088,8 @@ decode_options (unsigned int argc, const char **argv)
 
   if (flag_exceptions && flag_reorder_blocks_and_partition)
     {
-      inform
-	    ("-freorder-blocks-and-partition does not work with exceptions");
+      inform (input_location, 
+	      "-freorder-blocks-and-partition does not work with exceptions");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -1100,7 +1100,7 @@ decode_options (unsigned int argc, const char **argv)
   if (flag_unwind_tables && ! targetm.unwind_tables_default
       && flag_reorder_blocks_and_partition)
     {
-      inform ("-freorder-blocks-and-partition does not support unwind info");
+      inform (input_location, "-freorder-blocks-and-partition does not support unwind info");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -1113,8 +1113,8 @@ decode_options (unsigned int argc, const char **argv)
       && (!targetm.have_named_sections
 	  || (flag_unwind_tables && targetm.unwind_tables_default)))
     {
-      inform
-       ("-freorder-blocks-and-partition does not work on this architecture");
+      inform (input_location,
+	      "-freorder-blocks-and-partition does not work on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }

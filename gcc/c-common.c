@@ -1436,7 +1436,7 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   if (emit_lax_note && !emitted_lax_note)
     {
       emitted_lax_note = true;
-      inform ("use -flax-vector-conversions to permit "
+      inform (input_location, "use -flax-vector-conversions to permit "
               "conversions between vectors with differing "
               "element types or numbers of subparts");
     }
