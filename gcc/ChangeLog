@@ -1,3 +1,11 @@
+2008-08-20  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): Always test for assembler
+	support of this feature.  Do not assume that a sufficiently new
+	assembler will support the feature regardless of the target type.
+	(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): Likewise.
+        * configure: Regenerate.
+
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (found_in_subgraph): Remove.

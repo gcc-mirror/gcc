@@ -20839,12 +20839,7 @@ if test "${gcc_cv_as_cfi_directive+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   gcc_cv_as_cfi_directive=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_cfi_directive=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     echo '	.text
 	.cfi_startproc
 	.cfi_offset 0, 0
@@ -20882,12 +20877,7 @@ if test "${gcc_cv_as_cfi_personality_directive+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   gcc_cv_as_cfi_personality_directive=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_cfi_personality_directive=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     echo '	.text
 	.cfi_startproc,
 	.cfi_personality 0, symbol
