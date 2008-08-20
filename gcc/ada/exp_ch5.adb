@@ -2371,6 +2371,7 @@ package body Exp_Ch5 is
                                Parent (Return_Object_Entity);
       Parent_Function      : constant Entity_Id :=
                                Return_Applies_To (Return_Statement_Entity (N));
+      Parent_Function_Typ  : constant Entity_Id := Etype (Parent_Function);
       Is_Build_In_Place    : constant Boolean :=
                                Is_Build_In_Place_Function (Parent_Function);
 
@@ -2379,6 +2380,10 @@ package body Exp_Ch5 is
       Handled_Stm_Seq : Node_Id;
       Result          : Node_Id;
       Exp             : Node_Id;
+
+      function Controlled_Type (Typ : Entity_Id) return Boolean;
+      --  Determine whether type Typ is controlled or contains a controlled
+      --  component.
 
       function Move_Activation_Chain return Node_Id;
       --  Construct a call to System.Tasking.Stages.Move_Activation_Chain
@@ -2393,6 +2398,17 @@ package body Exp_Ch5 is
       --
       --    From         finalization list of the return statement
       --    To           finalization list passed in by the caller
+
+      ---------------------
+      -- Controlled_Type --
+      ---------------------
+
+      function Controlled_Type (Typ : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Controlled (Typ)
+             or else Has_Controlled_Component (Typ);
+      end Controlled_Type;
 
       ---------------------------
       -- Move_Activation_Chain --
@@ -2518,23 +2534,24 @@ package body Exp_Ch5 is
          --  in the rather obscure case of a select-then-abort statement whose
          --  abortable part contains the return statement.
 
-         --  We test the type of the expression as well as the return type
-         --  of the function, because the latter may be a class-wide type
-         --  which is always treated as controlled, while the expression itself
-         --  has to have a definite type. The expression may be absent if a
-         --  constrained aggregate has been expanded into component assignments
-         --  so we have to check for this as well.
+         --  Check the type of the function to determine whether to move the
+         --  finalization list. A special case arises when processing a simple
+         --  return statement which has been rewritten as an extended return.
+         --  In that case check the type of the returned object or the original
+         --  expression.
 
          if Is_Build_In_Place
-           and then Controlled_Type (Etype (Parent_Function))
+           and then
+               (Controlled_Type (Parent_Function_Typ)
+             or else
+               (Is_Class_Wide_Type (Parent_Function_Typ)
+                  and then Controlled_Type (Root_Type (Parent_Function_Typ)))
+             or else
+               Controlled_Type (Etype (Return_Object_Entity))
+             or else
+               (Present (Exp) and then Controlled_Type (Etype (Exp))))
          then
-            if not Is_Class_Wide_Type (Etype (Parent_Function))
-              or else
-               (Present (Exp)
-                 and then Controlled_Type (Etype (Exp)))
-            then
-               Append_To (Statements, Move_Final_List);
-            end if;
+            Append_To (Statements, Move_Final_List);
          end if;
 
          --  Similarly to the above Move_Final_List, if the result type
@@ -3678,7 +3695,7 @@ package body Exp_Ch5 is
       --  inherently limited). We might prefer to do this translation in all
       --  cases (except perhaps for the case of Ada 95 inherently limited),
       --  in order to fully exercise the Expand_N_Extended_Return_Statement
-      --  code. This would also allow us to to the build-in-place optimization
+      --  code. This would also allow us to do the build-in-place optimization
       --  for efficiency even in cases where it is semantically not required.
 
       --  As before, we check the type of the return expression rather than the
@@ -3704,8 +3721,11 @@ package body Exp_Ch5 is
             --  expression is an aggregate that is built in place, this avoids
             --  the need for an expensive conversion of the return object to
             --  the specific type on assignments to the individual components.
+            --  Do not perform this high-level optimization if the result type
+            --  is an interface because the "this" pointer must be displaced.
 
             if Is_Class_Wide_Type (R_Type)
+              and then not Is_Interface (R_Type)
               and then not Is_Class_Wide_Type (Etype (Exp))
             then
                Subtype_Ind := New_Occurrence_Of (Etype (Exp), Loc);
@@ -3720,8 +3740,9 @@ package body Exp_Ch5 is
                               Object_Definition   => Subtype_Ind,
                               Expression          => Exp);
 
-               Ext : constant Node_Id := Make_Extended_Return_Statement (Loc,
-                       Return_Object_Declarations => New_List (Obj_Decl));
+               Ext : constant Node_Id :=
+                       Make_Extended_Return_Statement (Loc,
+                         Return_Object_Declarations => New_List (Obj_Decl));
 
             begin
                Rewrite (N, Ext);
@@ -4176,6 +4197,21 @@ package body Exp_Ch5 is
            Make_Procedure_Call_Statement (Loc,
              Name => Make_Identifier (Loc, Name_uPostconditions),
              Parameter_Associations => New_List (Duplicate_Subexpr (Exp))));
+      end if;
+
+      --  Ada 2005 (AI-251): If this return statement corresponds with an
+      --  simple return statement associated with an extended return statement
+      --  and the type of the returned object is an interface then generate an
+      --  implicit conversion to force displacement of the "this" pointer.
+
+      if Ada_Version >= Ada_05
+        and then Comes_From_Extended_Return_Statement (N)
+        and then Nkind (Expression (N)) = N_Identifier
+        and then Is_Interface (Utyp)
+        and then Utyp /= Underlying_Type (Exptyp)
+      then
+         Rewrite (Exp, Convert_To (Utyp, Relocate_Node (Exp)));
+         Analyze_And_Resolve (Exp);
       end if;
    end Expand_Simple_Function_Return;
 
