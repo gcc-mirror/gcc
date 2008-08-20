@@ -1822,16 +1822,19 @@ package body Sem_Ch8 is
 
          --  Ada 2005: check overriding indicator
 
-         if Must_Override (Specification (N))
-           and then not Is_Overriding_Operation (Rename_Spec)
-         then
-            Error_Msg_NE ("subprogram& is not overriding", N, Rename_Spec);
+         if Is_Overriding_Operation (Rename_Spec) then
+            if Must_Not_Override (Specification (N)) then
+               Error_Msg_NE
+                 ("subprogram& overrides inherited operation",
+                    N, Rename_Spec);
+            elsif
+              Style_Check and then not Must_Override (Specification (N))
+            then
+               Style.Missing_Overriding (N, Rename_Spec);
+            end if;
 
-         elsif Must_Not_Override (Specification (N))
-           and then Is_Overriding_Operation (Rename_Spec)
-         then
-            Error_Msg_NE
-              ("subprogram& overrides inherited operation", N, Rename_Spec);
+         elsif Must_Override (Specification (N)) then
+            Error_Msg_NE ("subprogram& is not overriding", N, Rename_Spec);
          end if;
 
       --  Normal subprogram renaming (not renaming as body)

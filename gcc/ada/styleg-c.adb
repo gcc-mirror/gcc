@@ -230,6 +230,23 @@ package body Styleg.C is
       end if;
    end Check_Identifier;
 
+   ------------------------
+   -- Missing_Overriding --
+   ------------------------
+
+   procedure Missing_Overriding (N : Node_Id; E : Entity_Id) is
+   begin
+      if Style_Check_Missing_Overriding and then Comes_From_Source (N) then
+         if Nkind (N) = N_Subprogram_Body then
+            Error_Msg_N
+              ("(style) missing OVERRIDING indicator in body of&", E);
+         else
+            Error_Msg_N
+              ("(style) missing OVERRIDING indicator in declaration of&", E);
+         end if;
+      end if;
+   end Missing_Overriding;
+
    -----------------------------------
    -- Subprogram_Not_In_Alpha_Order --
    -----------------------------------

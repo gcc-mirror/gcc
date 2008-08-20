@@ -156,14 +156,19 @@ package Stylesw is
    --  with the IF keyword.
 
    Style_Check_Max_Line_Length : Boolean := False;
-   --  This can be set True by using the -gnatg or -gnatym/M switches. If
-   --  it is True, it activates checking for a maximum line length of
+   --  This can be set True by using the -gnatg or -gnatym/M switches. If it is
+   --  True, it activates checking for a maximum line length of
    --  Style_Max_Line_Length characters.
 
    Style_Check_Max_Nesting_Level : Boolean := False;
    --  This can be set True by using -gnatyLnnn with a value other than zero
    --  (a value of zero resets it to False). If True, it activates checking
    --  the maximum nesting level against Style_Max_Nesting_Level.
+
+   Style_Check_Missing_Overriding : Boolean := False;
+   --  This can be set True by using the -gnatyO switch. If it is True, then
+   --  "[not] overriding" is required in subprogram declarations and bodies
+   --  where appropriate.
 
    Style_Check_Mode_In : Boolean := False;
    --  This can be set True by using -gnatyI. If True, it activates checking

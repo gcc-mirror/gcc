@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,6 +186,11 @@ package Style is
      renames Style_Inst.Check_Xtra_Parens;
    --  Called after scanning a conditional expression that has at least one
    --  level of parentheses around the entire expression.
+
+   procedure Missing_Overriding (N : Node_Id; E : Entity_Id)
+     renames Style_C_Inst.Missing_Overriding;
+   --  Called where N is the declaration or body of an overriding operation of
+   --  a tagged type, and does not have an overriding_indicator.
 
    function Mode_In_Check return Boolean
      renames Style_Inst.Mode_In_Check;
