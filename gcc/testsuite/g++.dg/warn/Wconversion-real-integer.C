@@ -4,7 +4,7 @@
 
 /* { dg-do compile }
 /* { dg-options "-Wconversion" } */
-
+/* { dg-require-effective-target int32plus } */
 #include <limits.h>
 
 void fsi (signed int x);
@@ -71,3 +71,42 @@ void h (void)
 }
 
 
+void fss (signed short x);
+void fus (unsigned short x);
+void fsc (signed char x);
+void fuc (unsigned char x);
+
+void h2 (void)
+{
+  unsigned short int us;
+  short int   ss;
+  unsigned char uc;
+  signed char sc;
+  
+  fss (4294967294.0); /* { dg-warning "conversion" } */
+  ss = 4294967294.0; /* { dg-warning "conversion" } */
+  fss (-4294967294.0);  /* { dg-warning "conversion" } */
+  ss = -4294967294.0;  /* { dg-warning "conversion" } */
+  fus (4294967294.0); /* { dg-warning "conversion" } */
+  us = 4294967294.0; /* { dg-warning "conversion" } */
+  fus (-4294967294.0);  /* { dg-warning "conversion" } */
+  us = -4294967294.0;  /* { dg-warning "conversion" } */
+
+  fsc (500.0); /* { dg-warning "conversion" } */
+  sc = 500.0; /* { dg-warning "conversion" } */
+  fsc (-500.0);  /* { dg-warning "conversion" } */
+  sc = -500.0;  /* { dg-warning "conversion" } */
+  fuc (500.0); /* { dg-warning "conversion" } */
+  uc = 500.0; /* { dg-warning "conversion" } */
+  fuc (-500.0);  /* { dg-warning "conversion" } */
+  uc = -500.0;  /* { dg-warning "conversion" } */
+
+  fss (500.0);
+  ss = 500.0;
+  fss (-500.0);
+  ss = -500.0;
+  fus (500.0); 
+  us = 500.0; 
+  fus (-500.0);   /* { dg-warning "conversion" } */
+  us = -500.0;    /* { dg-warning "conversion" } */
+}

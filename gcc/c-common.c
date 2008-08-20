@@ -1693,13 +1693,16 @@ conversion_warning (tree type, tree expr)
 					     TREE_OPERAND (expr, 1), 
 					     /* bitwise */1);
 
-	      /* If one of the operands is a non-negative constant
-		 that fits in the target type, then the type of the
-		 other operand does not matter. */
 	      if (TREE_CODE (expr) == BIT_AND_EXPR)
 		{
 		  tree op0 = TREE_OPERAND (expr, 0);
 		  tree op1 = TREE_OPERAND (expr, 1);
+		  bool unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
+		  bool unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
+
+		  /* If one of the operands is a non-negative constant
+		     that fits in the target type, then the type of the
+		     other operand does not matter. */
 		  if ((TREE_CODE (op0) == INTEGER_CST
 		       && int_fits_type_p (op0, c_common_signed_type (type))
 		       && int_fits_type_p (op0, c_common_unsigned_type (type)))
@@ -1707,6 +1710,15 @@ conversion_warning (tree type, tree expr)
 			  && int_fits_type_p (op1, c_common_signed_type (type))
 			  && int_fits_type_p (op1, 
 					      c_common_unsigned_type (type))))
+		    return;
+		  /* If constant is unsigned and fits in the target
+		     type, then the result will also fit.  */
+		  else if ((TREE_CODE (op0) == INTEGER_CST
+			    && unsigned0 
+			    && int_fits_type_p (op0, type))
+			   || (TREE_CODE (op1) == INTEGER_CST
+			       && unsigned1
+			       && int_fits_type_p (op1, type)))
 		    return;
 		}
 	    }

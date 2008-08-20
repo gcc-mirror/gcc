@@ -1,5 +1,11 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 35701
+	* c-common.c (conversion_warning): Do not warn if applying bit-and
+	operator to unsigned constant that fits in the target type.
+
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/35602
 	* c-common.c (conversion_warning): Do not warn for artificial
 	expressions.

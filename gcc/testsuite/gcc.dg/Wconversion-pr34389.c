@@ -1,6 +1,7 @@
 /* PR 34389 */
 /* { dg-do compile } */
 /* { dg-options "-Wconversion -Wsign-conversion" } */
+/* { dg-require-effective-target int32plus } */
 
 short  mask1(short x)
 {
@@ -32,7 +33,8 @@ short  mask3(int si, unsigned int ui)
   us = si & 0x7fff;
   us = si & 0xAAAA; /* { dg-warning "conversion" } */
   us = ui & 0x7fff;
-  us = ui & 0xAAAA; /* { dg-warning "conversion" } */
+  us = ui & 0xAAAA; /* 0xAAAA is zero-extended, thus it masks the
+		       upper bits of 'ui' making it fit in 'us'.  */
 
   return ss;
 }
