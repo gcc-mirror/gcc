@@ -1,5 +1,10 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	* profile.c: Update calls to inform.
+	* value-prof.c: Update calls to inform.
+	
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* diagnostic.c (inform): Add an explicit location_t parameter.
 	* toplev.h (inform): Update declaration.
 	* builtins.c: Update all calls to inform.
