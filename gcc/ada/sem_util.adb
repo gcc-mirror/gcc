@@ -8971,6 +8971,16 @@ package body Sem_Util is
            and then not Needs_Debug_Info (E)
          then
             Set_Debug_Info_Needed (E);
+
+            --  For a private type, indicate that the full view also needs
+            --  debug information.
+
+            if Is_Type (E)
+              and then Is_Private_Type (E)
+              and then Present (Full_View (E))
+            then
+               Set_Debug_Info_Needed (Full_View (E));
+            end if;
          end if;
       end Set_Debug_Info_Needed_If_Not_Set;
 
