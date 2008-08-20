@@ -1,3 +1,15 @@
+2008-08-20  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting
+
+	* g-comlin.adb: Minor reformatting
+
+	* g-socket.adb: Minor reformatting
+
+	* g-socthi-mingw.adb: Minor reformatting
+
+	* g-stheme.adb: Minor reformatting
+
 2008-08-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb, sem_type.adb, exp_ch9.ads, einfo.ads,
