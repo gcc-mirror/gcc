@@ -1965,9 +1965,11 @@ package body Sem_Ch8 is
 
       --  Most common case: subprogram renames subprogram. No body is generated
       --  in this case, so we must indicate the declaration is complete as is.
+      --  and inherit various attributes of the renamed subprogram.
 
       if No (Rename_Spec) then
          Set_Has_Completion   (New_S);
+         Set_Is_Imported      (New_S, Is_Imported      (Entity (Nam)));
          Set_Is_Pure          (New_S, Is_Pure          (Entity (Nam)));
          Set_Is_Preelaborated (New_S, Is_Preelaborated (Entity (Nam)));
 
