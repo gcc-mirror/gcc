@@ -521,7 +521,7 @@ package body Exp_Strm is
 
          elsif P_Size <= Standard_Long_Float_Size
            and then (Standard_Long_Float_Size /= Standard_Long_Long_Float_Size
-                       or else Rt_Type = Standard_Float)
+                       or else Rt_Type = Standard_Long_Float)
          then
             Lib_RE := RE_I_LF;
 
@@ -735,7 +735,7 @@ package body Exp_Strm is
 
          elsif P_Size <= Standard_Long_Float_Size
            and then (Standard_Long_Float_Size /= Standard_Long_Long_Float_Size
-                      or else Rt_Type = Standard_Float)
+                      or else Rt_Type = Standard_Long_Float)
          then
             Lib_RE := RE_W_LF;
 
