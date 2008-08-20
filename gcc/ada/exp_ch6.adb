@@ -4394,14 +4394,6 @@ package body Exp_Ch6 is
       Prot_Id   : Entity_Id;
 
    begin
-      --  If the subprogram is a function with an anonymous access
-      --  to protected subprogram, it must be expanded to create
-      --  its equivalent type.
-
-      --  if Ekind (Typ) = E_Anonymous_Access_Protected_Subprogram_Type then
-      --     Expand_Access_Protected_Subprogram_Type (N, Typ);
-      --  end if;
-
       --  Deal with case of protected subprogram. Do not generate protected
       --  operation if operation is flagged as eliminated.
 

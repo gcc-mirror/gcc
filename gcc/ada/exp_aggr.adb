@@ -2547,13 +2547,9 @@ package body Exp_Aggr is
             --  in the limited case, the ancestor part must be either a
             --  function call (possibly qualified, or wrapped in an unchecked
             --  conversion) or aggregate (definitely qualified).
-            --  The ancestor part can also be a function call (that may be
-            --  transformed into an explicit dereference) or a qualification
-            --  of one such.
 
             elsif Is_Limited_Type (Etype (A))
               and then Nkind (Unqualify (A)) /= N_Function_Call --  aggregate?
-              and then Nkind (Unqualify (A)) /= N_Explicit_Dereference
               and then
                 (Nkind (Unqualify (A)) /= N_Unchecked_Type_Conversion
                    or else
