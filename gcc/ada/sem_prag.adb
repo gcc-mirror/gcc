@@ -9063,9 +9063,11 @@ package body Sem_Prag is
                if Present (Ename) then
 
                   --  If entity name matches, we are fine
+                  --  Save entity in pragma argument, for ASIS use.
 
                   if Chars (Ename) = Chars (Ent) then
-                     null;
+                     Set_Entity (Ename, Ent);
+                     Generate_Reference (Ent, Ename);
 
                   --  If entity name does not match, only possibility is an
                   --  enumeration literal from an enumeration type declaration.
@@ -9083,6 +9085,8 @@ package body Sem_Prag is
                               "enumeration literal");
 
                         elsif Chars (Ent) = Chars (Ename) then
+                           Set_Entity (Ename, Ent);
+                           Generate_Reference (Ent, Ename);
                            exit;
 
                         else
