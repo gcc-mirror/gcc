@@ -35,9 +35,14 @@
 
 #ifdef __vxworks
 #include "ioLib.h"
+#include "dosFsLib.h"
+#ifndef __RTP__
+# include "nfsLib.h"
+#endif
 #include "selectLib.h"
 #include "vxWorks.h"
 #endif
+
 #ifdef IN_RTS
 #define POSIX
 #include "tconfig.h"
@@ -53,6 +58,7 @@
 #endif
 
 #include <time.h>
+#include <errno.h>
 
 #if defined (sun) && defined (__SVR4) && !defined (__vxworks)
 /* The declaration is present in <time.h> but conditionalized
@@ -893,3 +899,23 @@ __gnat_get_task_options (void)
 }
 
 #endif
+
+int
+__gnat_is_file_not_found_error (int errno_val) {
+   switch (errno_val) {
+      case ENOENT:
+#ifdef __vxworks
+      /* In the case of VxWorks, we also have to take into account various
+       * filesystem-specific variants of this error.
+       */
+      case S_dosFsLib_FILE_NOT_FOUND:
+#ifndef __RTP__
+      case S_nfsLib_NFSERR_NOENT:
+#endif
+#endif
+         return 1;
+
+      default:
+         return 0;
+   }
+}
