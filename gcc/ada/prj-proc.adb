@@ -1491,8 +1491,8 @@ package body Prj.Proc is
                              (Name     => Current_Item_Name,
                               Location => Current_Location,
                               Value    => No_Array_Element,
-                              Next     =>
-                                In_Tree.Packages.Table (Pkg).Decl.Arrays);
+                              Next     => In_Tree.Packages.Table
+                                            (Pkg).Decl.Arrays);
 
                            In_Tree.Packages.Table (Pkg).Decl.Arrays :=
                              New_Array;
@@ -1502,8 +1502,8 @@ package body Prj.Proc is
                              (Name     => Current_Item_Name,
                               Location => Current_Location,
                               Value    => No_Array_Element,
-                              Next     =>
-                                In_Tree.Projects.Table (Project).Decl.Arrays);
+                              Next     => In_Tree.Projects.Table
+                                            (Project).Decl.Arrays);
 
                            In_Tree.Projects.Table (Project).Decl.Arrays :=
                              New_Array;
@@ -1985,9 +1985,8 @@ package body Prj.Proc is
                                    (Name     => Current_Item_Name,
                                     Location => Current_Location,
                                     Value    => No_Array_Element,
-                                    Next     =>
-                                      In_Tree.Packages.Table
-                                        (Pkg).Decl.Arrays);
+                                    Next     => In_Tree.Packages.Table
+                                                  (Pkg).Decl.Arrays);
 
                                  In_Tree.Packages.Table (Pkg).Decl.Arrays :=
                                      The_Array;
@@ -1997,9 +1996,8 @@ package body Prj.Proc is
                                    (Name     => Current_Item_Name,
                                     Location => Current_Location,
                                     Value    => No_Array_Element,
-                                    Next     =>
-                                      In_Tree.Projects.Table
-                                        (Project).Decl.Arrays);
+                                    Next     => In_Tree.Projects.Table
+                                                  (Project).Decl.Arrays);
 
                                  In_Tree.Projects.Table
                                    (Project).Decl.Arrays := The_Array;
