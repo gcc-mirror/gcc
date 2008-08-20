@@ -1,5 +1,9 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	* value-prof.c (check_counter): Revert wrong call to error.
+	
+2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* profile.c: Update calls to inform.
 	* value-prof.c: Update calls to inform.
 	
