@@ -1417,6 +1417,11 @@ package body Prj.Proc is
                                               From_Project_Node_Tree);
                      --  The name of the attribute
 
+                     Current_Location  : constant Source_Ptr :=
+                                           Location_Of
+                                             (Current_Item,
+                                              From_Project_Node_Tree);
+
                      New_Array : Array_Id;
                      --  The new associative array created
 
@@ -1483,9 +1488,10 @@ package body Prj.Proc is
 
                         if Pkg /= No_Package then
                            In_Tree.Arrays.Table (New_Array) :=
-                             (Name   => Current_Item_Name,
-                              Value  => No_Array_Element,
-                              Next   =>
+                             (Name     => Current_Item_Name,
+                              Location => Current_Location,
+                              Value    => No_Array_Element,
+                              Next     =>
                                 In_Tree.Packages.Table (Pkg).Decl.Arrays);
 
                            In_Tree.Packages.Table (Pkg).Decl.Arrays :=
@@ -1493,9 +1499,10 @@ package body Prj.Proc is
 
                         else
                            In_Tree.Arrays.Table (New_Array) :=
-                             (Name   => Current_Item_Name,
-                              Value  => No_Array_Element,
-                              Next   =>
+                             (Name     => Current_Item_Name,
+                              Location => Current_Location,
+                              Value    => No_Array_Element,
+                              Next     =>
                                 In_Tree.Projects.Table (Project).Decl.Arrays);
 
                            In_Tree.Projects.Table (Project).Decl.Arrays :=
@@ -1705,6 +1712,11 @@ package body Prj.Proc is
                                            Name_Of
                                              (Current_Item,
                                               From_Project_Node_Tree);
+
+                     Current_Location : constant Source_Ptr :=
+                                          Location_Of
+                                            (Current_Item,
+                                             From_Project_Node_Tree);
 
                   begin
                      --  Process a typed variable declaration
@@ -1970,9 +1982,10 @@ package body Prj.Proc is
 
                               if Pkg /= No_Package then
                                  In_Tree.Arrays.Table (The_Array) :=
-                                   (Name   => Current_Item_Name,
-                                    Value  => No_Array_Element,
-                                    Next   =>
+                                   (Name     => Current_Item_Name,
+                                    Location => Current_Location,
+                                    Value    => No_Array_Element,
+                                    Next     =>
                                       In_Tree.Packages.Table
                                         (Pkg).Decl.Arrays);
 
@@ -1981,9 +1994,10 @@ package body Prj.Proc is
 
                               else
                                  In_Tree.Arrays.Table (The_Array) :=
-                                   (Name   => Current_Item_Name,
-                                    Value  => No_Array_Element,
-                                    Next   =>
+                                   (Name     => Current_Item_Name,
+                                    Location => Current_Location,
+                                    Value    => No_Array_Element,
+                                    Next     =>
                                       In_Tree.Projects.Table
                                         (Project).Decl.Arrays);
 
