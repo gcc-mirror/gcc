@@ -22536,6 +22536,9 @@ implemented in @code{gcov}: you can now list all your project's files into a
 text file, and provide this file to gcov as a parameter,  preceded by a @@
 (e.g. @samp{gcov @@mysrclist.txt}).
 
+Note that on AIX compiling a static library with @code{-fprofile-arcs} is
+not supported as there can be unresolved symbols during the final link.
+
 @node Profiling an Ada Program using gprof
 @section Profiling an Ada Program using gprof
 @cindex gprof
