@@ -43,18 +43,15 @@
 
 #ifdef MaRTE
 
-/* Function that returns a pointer to the per-task errno variable */
-extern int *pthread_errno (void);
+/* MaRTE OS provides its own implementation of errno related functionality. We
+   want to ensure the use of the MaRTE version for tasking programs (the MaRTE
+   library will not be linked if no tasking constructs are used), so we use the
+   weak symbols mechanism to use the MaRTE version whenever is available. */
 
-int
-__get_errno (void)
-{
-  return *pthread_errno ();
-}
+#pragma weak __get_errno
+#pragma weak __set_errno
 
-/* Function __set_errno is already defined in package MaRTE.POSIX_Pthread */
-
-#else
+#endif
 
 #include <errno.h>
 int
@@ -68,5 +65,3 @@ __set_errno(int err)
 {
   errno = err;
 }
-
-#endif
