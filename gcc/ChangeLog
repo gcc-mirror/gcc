@@ -1,3 +1,10 @@
+2008-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37169
+	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): In
+	V2DI mode, for SSE4.1, use movq instead of vector set if the
+	second element is zero and inter-unit moves are OK.
+
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): More
@@ -16,7 +23,7 @@
 	support of this feature.  Do not assume that a sufficiently new
 	assembler will support the feature regardless of the target type.
 	(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): Likewise.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
@@ -389,24 +396,24 @@
 
 	* config/s390/2097.md New file.
 	* config/s390/s390.md ("z10prop" attribute): Define none,
-        z10_super, z10_super_E1, z10_super_A1, z10_super_c,
-        z10_super_c_E1, z10_fwd, z10_fwd_A1, z10_fwd_A3, z10_fwd_E1,
-        z10_rec, z10_fr, z10_fr_A3, z10_fr_E1, z10_c, and z10_cobra as
-        possible values and apply them to insns as appropriate.
-        ("type" attribute): Removed itof and added ftrunctf,ftruncdf,
-        ftruncsd, ftruncdd, itoftf, itofdf, itofsf, itofdd, itoftd,
-        fdivdd, fdivtd, floaddd, floadsd, fmuldd, fmultd, fsimpdd,
-        fsimpsd, fsimptd, fstoredd, fstoresd, ftoidfp as possible
-        values.
+	z10_super, z10_super_E1, z10_super_A1, z10_super_c,
+	z10_super_c_E1, z10_fwd, z10_fwd_A1, z10_fwd_A3, z10_fwd_E1,
+	z10_rec, z10_fr, z10_fr_A3, z10_fr_E1, z10_c, and z10_cobra as
+	possible values and apply them to insns as appropriate.
+	("type" attribute): Removed itof and added ftrunctf,ftruncdf,
+	ftruncsd, ftruncdd, itoftf, itofdf, itofsf, itofdd, itoftd,
+	fdivdd, fdivtd, floaddd, floadsd, fmuldd, fmultd, fsimpdd,
+	fsimpsd, fsimptd, fstoredd, fstoresd, ftoidfp as possible
+	values.
 	("bfp" mode attribute): Removed.  Every occurence replaced
 	with <mode>.
 	* config/s390/s390.c (struct "z10_cost"): Updated entries.
 	* config/s390/2084.md (insn_reservation "x_itof"): Updated
-          type attribute.
+	  type attribute.
 
 2008-08-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
-        PR c/28152
+	PR c/28152
 	* c-parser.c (c_lex_one_token): Do not store the canonical spelling
 	for keywords.
 	
