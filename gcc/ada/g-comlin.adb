@@ -1566,6 +1566,50 @@ package body GNAT.Command_Line is
          end loop;
       end if;
 
+      --  Determine if the added switch is a known switch with parameter
+      --  attached.
+      if Parameter = ""
+        and then Cmd.Config /= null
+        and then Cmd.Config.Switches /= null
+      then
+         for S in Cmd.Config.Switches'Range loop
+            declare
+               Sw    : constant String :=
+                         Actual_Switch (Cmd.Config.Switches (S).all);
+               Last  : Natural;
+               Param : Natural;
+
+            begin
+               if Switch'Length >= Sw'Length
+                 --  Verify that switch starts with Sw
+                 and then Looking_At (Switch, Switch'First, Sw)
+               then
+                  Param := Switch'First + Sw'Length - 1;
+                  Last := Param;
+
+                  if Can_Have_Parameter (Cmd.Config.Switches (S).all) then
+                     while Last < Switch'Last
+                       and then Switch (Last + 1) in '0' .. '9'
+                     loop
+                        Last := Last + 1;
+                     end loop;
+                  end if;
+
+                  --  If the full Switch is a known switch with attached
+                  --  parameter, then we use this parameter in the callback.
+                  if Last = Switch'Last then
+                     Callback
+                       (Switch (Switch'First .. Param),
+                        Switch (Param + 1 .. Last));
+
+                     return;
+
+                  end if;
+               end if;
+            end;
+         end loop;
+      end if;
+
       Callback (Switch, Parameter);
    end For_Each_Simple_Switch;
 
