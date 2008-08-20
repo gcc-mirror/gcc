@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-dom1-details" } */
+/* { dg-options "-O2 -fno-tree-vrp -fdump-tree-dom1-details" } */
 void t(void);
 void q(void);
 void q1(void);

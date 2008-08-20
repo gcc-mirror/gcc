@@ -1,3 +1,25 @@
+2008-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (found_in_subgraph): Remove.
+	(live): New global static.
+	(live_on_edge): New function.
+	(blocks_visited): Remove.
+	(register_edge_assert_for_2): Use live_on_edge.
+	(find_conditional_asserts): Remove code dealing with
+	found_in_subgraph.  Do not walk the CFG.
+	(find_switch_asserts): Likewise.
+	(find_assert_locations_1): Renamed from find_assert_locations.
+	Move finding assert locations for conditional and switch
+	statements first.  Update live bitmap.  Do not walk the CFG.
+	(find_assert_locations): New function.
+	(insert_range_assertions): Remove entry of CFG walk.
+	Adjust call to find_assert_locations.
+	* tree-ssa-pre.c (do_regular_insertion): Ignore critical edges
+	that only can appear because of fake exit edges but assert we
+	never try to insert on those.
+	(fini_pre): Do not remove fake exit edges here...
+	(execute_pre): ...but here, before committing edge inserts.
+
 2008-08-19  Richard Guenther  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): Exchange store-ccp
