@@ -106,10 +106,12 @@ package body GNAT.Command_Line is
    procedure Remove (Line : in out Argument_List_Access; Index : Integer);
    --  Remove a specific element from Line
 
-   procedure Append
-     (Line : in out Argument_List_Access;
-      Str  : String_Access);
-   --  Append a new element to Line
+   procedure Add
+     (Line   : in out Argument_List_Access;
+      Str    : String_Access;
+      Before : Boolean := False);
+   --  Add a new element to Line. If Before is True, the item is inserted at
+   --  the beginning.
 
    function Can_Have_Parameter (S : String) return Boolean;
    --  Tell if S can have a parameter.
@@ -125,7 +127,7 @@ package body GNAT.Command_Line is
    procedure For_Each_Simple_Switch
      (Cmd       : Command_Line;
       Switch    : String;
-      Parameter : String := "";
+      Parameter : String  := "";
       Unalias   : Boolean := True);
    --  Breaks Switch into as simple switches as possible (expanding aliases and
    --  ungrouping common prefixes when possible), and call Callback for each of
@@ -143,14 +145,14 @@ package body GNAT.Command_Line is
       Result   : Argument_List_Access;
       Sections : Argument_List_Access;
       Params   : Argument_List_Access);
-   --  Group switches with common prefixes whenever possible.
-   --  Once they have been grouped, we also check items for possible aliasing
+   --  Group switches with common prefixes whenever possible. Once they have
+   --  been grouped, we also check items for possible aliasing.
 
    procedure Alias_Switches
      (Cmd    : Command_Line;
       Result : Argument_List_Access;
       Params : Argument_List_Access);
-   --  When possible, replace or more switches by an alias, i.e. a shorter
+   --  When possible, replace one or more switches by an alias, i.e. a shorter
    --  version.
 
    function Looking_At
@@ -1080,8 +1082,8 @@ package body GNAT.Command_Line is
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Append (Config.Aliases,    new String'(Switch));
-      Append (Config.Expansions, new String'(Expanded));
+      Add (Config.Aliases,    new String'(Switch));
+      Add (Config.Expansions, new String'(Expanded));
    end Define_Alias;
 
    -------------------
@@ -1097,7 +1099,7 @@ package body GNAT.Command_Line is
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Append (Config.Prefixes, new String'(Prefix));
+      Add (Config.Prefixes, new String'(Prefix));
    end Define_Prefix;
 
    -------------------
@@ -1113,7 +1115,7 @@ package body GNAT.Command_Line is
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Append (Config.Switches, new String'(Switch));
+      Add (Config.Switches, new String'(Switch));
    end Define_Switch;
 
    --------------------
@@ -1129,7 +1131,7 @@ package body GNAT.Command_Line is
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Append (Config.Sections, new String'(Section));
+      Add (Config.Sections, new String'(Section));
    end Define_Section;
 
    ------------------
@@ -1572,16 +1574,18 @@ package body GNAT.Command_Line is
    ----------------
 
    procedure Add_Switch
-     (Cmd       : in out Command_Line;
-      Switch    : String;
-      Parameter : String := "";
-      Separator : Character := ' ';
-      Section   : String := "")
+     (Cmd        : in out Command_Line;
+      Switch     : String;
+      Parameter  : String    := "";
+      Separator  : Character := ' ';
+      Section    : String    := "";
+      Add_Before : Boolean   := False)
    is
       Success : Boolean;
       pragma Unreferenced (Success);
    begin
-      Add_Switch (Cmd, Switch, Parameter, Separator, Section, Success);
+      Add_Switch
+        (Cmd, Switch, Parameter, Separator, Section, Add_Before, Success);
    end Add_Switch;
 
    ----------------
@@ -1589,12 +1593,13 @@ package body GNAT.Command_Line is
    ----------------
 
    procedure Add_Switch
-     (Cmd       : in out Command_Line;
-      Switch    : String;
-      Parameter : String := "";
-      Separator : Character := ' ';
-      Section   : String := "";
-      Success   : out Boolean)
+     (Cmd        : in out Command_Line;
+      Switch     : String;
+      Parameter  : String := "";
+      Separator  : Character := ' ';
+      Section    : String := "";
+      Add_Before : Boolean := False;
+      Success    : out Boolean)
    is
       procedure Add_Simple_Switch (Simple : String; Param : String);
       --  Add a new switch that has had all its aliases expanded, and switches
@@ -1632,34 +1637,47 @@ package body GNAT.Command_Line is
                if Cmd.Expanded (C).all = Simple
                  and then
                    ((Cmd.Params (C) = null and then Param = "")
-                    or else
-                      (Cmd.Params (C) /= null
-                       and then Cmd.Params (C).all = Separator & Param))
+                     or else
+                       (Cmd.Params (C) /= null
+                         and then Cmd.Params (C).all = Separator & Param))
                  and then
                    ((Cmd.Sections (C) = null and then Section = "")
-                    or else
-                      (Cmd.Sections (C) /= null
-                       and then Cmd.Sections (C).all = Section))
+                     or else
+                       (Cmd.Sections (C) /= null
+                         and then Cmd.Sections (C).all = Section))
                then
                   return;
                end if;
             end loop;
 
             --  Inserting at least one switch
+
             Success := True;
-            Append (Cmd.Expanded, new String'(Simple));
+            Add (Cmd.Expanded, new String'(Simple), Add_Before);
 
             if Param /= "" then
-               Append (Cmd.Params, new String'(Separator & Param));
+               Add
+                 (Cmd.Params,
+                  new String'(Separator & Param),
+                  Add_Before);
 
             else
-               Append (Cmd.Params, null);
+               Add
+                 (Cmd.Params,
+                  null,
+                  Add_Before);
             end if;
 
             if Section = "" then
-               Append (Cmd.Sections, null);
+               Add
+                 (Cmd.Sections,
+                  null,
+                  Add_Before);
             else
-               Append (Cmd.Sections, new String'(Section));
+               Add
+                 (Cmd.Sections,
+                  new String'(Section),
+                  Add_Before);
             end if;
          end if;
       end Add_Simple_Switch;
@@ -1702,22 +1720,35 @@ package body GNAT.Command_Line is
    -- Append --
    ------------
 
-   procedure Append
-     (Line : in out Argument_List_Access;
-      Str  : String_Access)
+   procedure Add
+     (Line   : in out Argument_List_Access;
+      Str    : String_Access;
+      Before : Boolean := False)
    is
       Tmp : Argument_List_Access := Line;
+
    begin
       if Tmp /= null then
          Line := new Argument_List (Tmp'First .. Tmp'Last + 1);
-         Line (Tmp'Range) := Tmp.all;
+
+         if Before then
+            Line (Tmp'First + 1 .. Tmp'Last + 1) := Tmp.all;
+         else
+            Line (Tmp'Range) := Tmp.all;
+         end if;
+
          Unchecked_Free (Tmp);
+
       else
          Line := new Argument_List (1 .. 1);
       end if;
 
-      Line (Line'Last) := Str;
-   end Append;
+      if Before then
+         Line (Line'First) := Str;
+      else
+         Line (Line'Last) := Str;
+      end if;
+   end Add;
 
    -------------------
    -- Remove_Switch --
@@ -1766,10 +1797,10 @@ package body GNAT.Command_Line is
                if Cmd.Expanded (C).all = Simple
                  and then
                    (Remove_All
-                    or else (Cmd.Sections (C) = null
-                             and then Section = "")
-                    or else (Cmd.Sections (C) /= null
-                             and then Section = Cmd.Sections (C).all))
+                     or else (Cmd.Sections (C) = null
+                               and then Section = "")
+                     or else (Cmd.Sections (C) /= null
+                               and then Section = Cmd.Sections (C).all))
                  and then (not Has_Parameter or else Cmd.Params (C) /= null)
                then
                   Remove (Cmd.Expanded, C);
@@ -1789,7 +1820,7 @@ package body GNAT.Command_Line is
       end Remove_Simple_Switch;
 
       procedure Remove_Simple_Switches is
-         new For_Each_Simple_Switch (Remove_Simple_Switch);
+        new For_Each_Simple_Switch (Remove_Simple_Switch);
 
    --  Start of processing for Remove_Switch
 
@@ -1826,10 +1857,10 @@ package body GNAT.Command_Line is
                if Cmd.Expanded (C).all = Simple
                  and then
                    ((Cmd.Sections (C) = null
-                     and then Section = "")
+                      and then Section = "")
                     or else
                       (Cmd.Sections (C) /= null
-                       and then Section = Cmd.Sections (C).all))
+                        and then Section = Cmd.Sections (C).all))
                  and then
                    ((Cmd.Params (C) = null and then Param = "")
                       or else
@@ -2126,7 +2157,7 @@ package body GNAT.Command_Line is
             end loop;
 
             if not Found then
-               Append (Sections_List, Sections (E));
+               Add (Sections_List, Sections (E));
             end if;
          end if;
       end loop;
