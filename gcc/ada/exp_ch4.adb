@@ -3591,34 +3591,33 @@ package body Exp_Ch4 is
          Set_Etype (N, Standard_Boolean);
       end if;
 
-      --  Check for cases of left argument is True or False
+      --  Check for cases where left argument is known to be True or False
 
-      if Nkind (Left) = N_Identifier then
+      if Compile_Time_Known_Value (Left) then
 
          --  If left argument is True, change (True and then Right) to Right.
          --  Any actions associated with Right will be executed unconditionally
          --  and can thus be inserted into the tree unconditionally.
 
-         if Entity (Left) = Standard_True then
+         if Expr_Value_E (Left) = Standard_True then
             if Present (Actions (N)) then
                Insert_Actions (N, Actions (N));
             end if;
 
             Rewrite (N, Right);
-            Adjust_Result_Type (N, Typ);
-            return;
 
          --  If left argument is False, change (False and then Right) to False.
          --  In this case we can forget the actions associated with Right,
          --  since they will never be executed.
 
-         elsif Entity (Left) = Standard_False then
+         else pragma Assert (Expr_Value_E (Left) = Standard_False);
             Kill_Dead_Code (Right);
             Kill_Dead_Code (Actions (N));
             Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-            Adjust_Result_Type (N, Typ);
-            return;
          end if;
+
+         Adjust_Result_Type (N, Typ);
+         return;
       end if;
 
       --  If Actions are present, we expand
@@ -3650,19 +3649,19 @@ package body Exp_Ch4 is
 
       --  No actions present, check for cases of right argument True/False
 
-      if Nkind (Right) = N_Identifier then
+      if Compile_Time_Known_Value (Right) then
 
          --  Change (Left and then True) to Left. Note that we know there are
          --  no actions associated with the True operand, since we just checked
          --  for this case above.
 
-         if Entity (Right) = Standard_True then
+         if Expr_Value_E (Right) = Standard_True then
             Rewrite (N, Left);
 
          --  Change (Left and then False) to False, making sure to preserve any
          --  side effects associated with the Left operand.
 
-         elsif Entity (Right) = Standard_False then
+         else pragma Assert (Expr_Value_E (Right) = Standard_False);
             Remove_Side_Effects (Left);
             Rewrite
               (N, New_Occurrence_Of (Standard_False, Loc));
@@ -6707,34 +6706,33 @@ package body Exp_Ch4 is
          Set_Etype (N, Standard_Boolean);
       end if;
 
-      --  Check for cases of left argument is True or False
+      --  Check for cases where left argument is known to be True or False
 
-      if Nkind (Left) = N_Identifier then
+      if Compile_Time_Known_Value (Left) then
 
          --  If left argument is False, change (False or else Right) to Right.
          --  Any actions associated with Right will be executed unconditionally
          --  and can thus be inserted into the tree unconditionally.
 
-         if Entity (Left) = Standard_False then
+         if Expr_Value_E (Left) = Standard_False then
             if Present (Actions (N)) then
                Insert_Actions (N, Actions (N));
             end if;
 
             Rewrite (N, Right);
-            Adjust_Result_Type (N, Typ);
-            return;
 
          --  If left argument is True, change (True and then Right) to True. In
          --  this case we can forget the actions associated with Right, since
          --  they will never be executed.
 
-         elsif Entity (Left) = Standard_True then
+         else pragma Assert (Expr_Value_E (Left) = Standard_True);
             Kill_Dead_Code (Right);
             Kill_Dead_Code (Actions (N));
             Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-            Adjust_Result_Type (N, Typ);
-            return;
          end if;
+
+         Adjust_Result_Type (N, Typ);
+         return;
       end if;
 
       --  If Actions are present, we expand
@@ -6766,19 +6764,19 @@ package body Exp_Ch4 is
 
       --  No actions present, check for cases of right argument True/False
 
-      if Nkind (Right) = N_Identifier then
+      if Compile_Time_Known_Value (Right) then
 
          --  Change (Left or else False) to Left. Note that we know there are
          --  no actions associated with the True operand, since we just checked
          --  for this case above.
 
-         if Entity (Right) = Standard_False then
+         if Expr_Value_E (Right) = Standard_False then
             Rewrite (N, Left);
 
          --  Change (Left or else True) to True, making sure to preserve any
          --  side effects associated with the Left operand.
 
-         elsif Entity (Right) = Standard_True then
+         else pragma Assert (Expr_Value_E (Right) = Standard_True);
             Remove_Side_Effects (Left);
             Rewrite
               (N, New_Occurrence_Of (Standard_True, Loc));
