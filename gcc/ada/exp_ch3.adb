@@ -692,9 +692,9 @@ package body Exp_Ch3 is
          --  would be needed if this restriction was not active (so that we can
          --  detect attempts to call it), so set a dummy init_proc in place.
          --  This is only done though when actual default initialization is
-         --  needed, so we exclude the setting in the Is_Public case, such
-         --  as for arrays of scalars, since otherwise such objects would be
-         --  wrongly flagged as violating the restriction.
+         --  needed (and not done when only Is_Public is True), since otherwise
+         --  objects such as arrays of scalars could be wrongly flagged as
+         --  violating the restriction.
 
          if Restriction_Active (No_Default_Initialization) then
             if Has_Default_Init then
@@ -3013,11 +3013,6 @@ package body Exp_Ch3 is
          elsif Is_Interface (Rec_Id) then
             return False;
 
-         elsif not Restriction_Active (No_Initialize_Scalars)
-           and then Is_Public (Rec_Id)
-         then
-            return True;
-
          elsif (Has_Discriminants (Rec_Id)
                   and then not Is_Unchecked_Union (Rec_Id))
            or else Is_Tagged_Type (Rec_Id)
@@ -3041,6 +3036,22 @@ package body Exp_Ch3 is
 
             Next_Component (Id);
          end loop;
+
+         --  As explained above, a record initialization procedure is needed
+         --  for public types in case Initialize_Scalars applies to a client.
+         --  However, such a procedure is not needed in the case where either
+         --  of restrictions No_Initialize_Scalars or No_Default_Initialization
+         --  apply. No_Initialize_Scalars excludes the possibility of using
+         --  Initialize_Scalars in any partition, and No_Default_Initialization
+         --  implies that no initialization should ever be done for objects of
+         --  the type, so is incompatible with Initialize_Scalars.
+
+         if not Restriction_Active (No_Initialize_Scalars)
+           and then not Restriction_Active (No_Default_Initialization)
+           and then Is_Public (Rec_Id)
+         then
+            return True;
+         end if;
 
          return False;
       end Requires_Init_Proc;
