@@ -20859,6 +20859,14 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
       this_pre_body = push_stmt_list ();
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
+	  /* See 2.5.1 (in OpenMP 3.0, similar wording is in 2.5 standard too):
+
+	     init-expr:
+	               var = lb
+		       integer-type var = lb
+		       random-access-iterator-type var = lb
+		       pointer-type var = lb
+	  */
 	  cp_decl_specifier_seq type_specifiers;
 
 	  /* First, try to parse as an initialized declaration.  See
@@ -20867,8 +20875,10 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	  cp_parser_parse_tentatively (parser);
 	  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
 					&type_specifiers);
-	  if (!cp_parser_error_occurred (parser))
+	  if (cp_parser_parse_definitely (parser))
 	    {
+	      /* If parsing a type specifier seq succeeded, then this
+		 MUST be a initialized declaration.  */
 	      tree asm_specification, attributes;
 	      cp_declarator *declarator;
 
@@ -20880,9 +20890,10 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	      attributes = cp_parser_attributes_opt (parser);
 	      asm_specification = cp_parser_asm_specification_opt (parser);
 
-	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
-		cp_parser_require (parser, CPP_EQ, "%<=%>");
-	      if (cp_parser_parse_definitely (parser))
+	      if (declarator == cp_error_declarator) 
+		cp_parser_skip_to_end_of_statement (parser);
+
+	      else 
 		{
 		  tree pushed_scope;
 
@@ -20891,8 +20902,21 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 				     /*prefix_attributes=*/NULL_TREE,
 				     &pushed_scope);
 
-		  if (CLASS_TYPE_P (TREE_TYPE (decl))
-		      || type_dependent_expression_p (decl))
+		  if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
+		    {
+		      if (cp_lexer_next_token_is (parser->lexer, 
+						  CPP_OPEN_PAREN))
+			error ("parenthesized initialization is not allowed in "
+			       "OpenMP %<for%> loop");
+		      else
+			/* Trigger an error.  */
+			cp_parser_require (parser, CPP_EQ, "%<=%>");
+
+		      init = error_mark_node;
+		      cp_parser_skip_to_end_of_statement (parser);
+		    }
+		  else if (CLASS_TYPE_P (TREE_TYPE (decl))
+			   || type_dependent_expression_p (decl))
 		    {
 		      bool is_direct_init, is_non_constant_init;
 
@@ -20915,7 +20939,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 		    }
 		  else
 		    {
-		      cp_parser_require (parser, CPP_EQ, "%<=%>");
+		      /* Consume '='.  */
+		      cp_lexer_consume_token (parser->lexer);
 		      init = cp_parser_assignment_expression (parser, false);
 
 		      if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
@@ -20931,14 +20956,11 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 		    pop_scope (pushed_scope);
 		}
 	    }
-	  else
-	    cp_parser_abort_tentative_parse (parser);
-
-	  /* If parsing as an initialized declaration failed, try again as
-	     a simple expression.  */
-	  if (decl == NULL)
+	  else 
 	    {
 	      cp_id_kind idk;
+	      /* If parsing a type specifier sequence failed, then
+		 this MUST be a simple expression.  */
 	      cp_parser_parse_tentatively (parser);
 	      decl = cp_parser_primary_expression (parser, false, false,
 						   false, &idk);
