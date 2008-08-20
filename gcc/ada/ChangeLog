@@ -1,3 +1,28 @@
+2008-08-20  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Remove extra space in version line
+
+	* ali.adb:
+	(Scan_ALI): Use Name_Find, not Name_Enter to get the name of a subunit,
+	as the name may already have been entered in the table by the Project
+	Manager.
+
+2008-08-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* errno.c (__get_errno, __set_errno for MaRTE): Transform then into
+	weak symbols so we use the version provided by MaRTE when available.
+
+2008-08-20  Emmanuel Briot  <briot@adacore.com>
+
+	* g-catiio.ads, g-catiio.adb:
+	(Value): Avoid an unnecessary system call to Clock in most cases.
+	This call is only needed when only the time is provided in the string,
+	and ignored in all other cases. This is more efficient.
+
+2008-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c: Fix formatting nits.
+
 2008-08-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb:
