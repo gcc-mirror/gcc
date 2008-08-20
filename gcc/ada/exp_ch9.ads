@@ -203,7 +203,9 @@ package Exp_Ch9 is
    --  routine to make sure Complete_Master is called on exit).
 
    procedure Expand_Access_Protected_Subprogram_Type (N : Node_Id);
-   --  Build Equivalent_Type for an Access_to_protected_Subprogram
+   --  Build Equivalent_Type for an Access_To_Protected_Subprogram.
+   --  Equivalent_Type is a record type with two components: a pointer
+   --  to the protected object, and a pointer to the operation itself.
 
    procedure Expand_Accept_Declarations (N : Node_Id; Ent : Entity_Id);
    --  Expand declarations required for accept statement. See bodies of

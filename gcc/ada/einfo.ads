@@ -5016,6 +5016,7 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic function only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
+   --    Spec_PPC_List                       (Node24)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
