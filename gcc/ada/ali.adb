@@ -1999,13 +1999,17 @@ package body ALI is
 
                if Nextc not in '0' .. '9' then
                   Name_Len := 0;
-
                   while not At_End_Of_Field loop
                      Name_Len := Name_Len + 1;
                      Name_Buffer (Name_Len) := Getc;
                   end loop;
 
-                  Sdep.Table (Sdep.Last).Subunit_Name := Name_Enter;
+                  --  Set the subunit name. Note that we use Name_Find rather
+                  --  than Name_Enter here as the subunit name may already
+                  --  have been put in the name table by the Project Manager.
+
+                  Sdep.Table (Sdep.Last).Subunit_Name := Name_Find;
+
                   Skip_Space;
                end if;
 
