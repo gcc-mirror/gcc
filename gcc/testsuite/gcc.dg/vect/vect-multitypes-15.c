@@ -45,6 +45,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_sdot_hi  || vect_uncpack } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_sdot_hi  || vect_unpack } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

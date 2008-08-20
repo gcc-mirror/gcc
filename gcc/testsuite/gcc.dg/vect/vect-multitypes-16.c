@@ -26,6 +26,8 @@ int main (void)
 
   for (i=0; i<N; i++) {
     x[i] = i;
+    if (i % 5)
+      x[i] = i;
   }
 
   foo (N,z+2);
@@ -38,7 +40,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target vect_unpack } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! vect_unpack } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_unpack } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_unpack } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
