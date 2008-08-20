@@ -1226,7 +1226,7 @@ check_for_out_of_scope_variable (tree decl)
 	  static bool hint;
 	  if (!hint)
 	    {
-	      inform ("(if you use %<-fpermissive%> G++ will accept your code)");
+	      inform (input_location, "(if you use %<-fpermissive%> G++ will accept your code)");
 	      hint = true;
 	    }
 	}

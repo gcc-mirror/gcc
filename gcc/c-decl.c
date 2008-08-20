@@ -1029,14 +1029,14 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
       if (TREE_CHAIN (t) == 0
 	  && TYPE_MAIN_VARIANT (type) != void_type_node)
 	{
-	  inform ("a parameter list with an ellipsis can%'t match "
+	  inform (input_location, "a parameter list with an ellipsis can%'t match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
 
       if (c_type_promotes_to (type) != type)
 	{
-	  inform ("an argument type that has a default promotion can%'t match "
+	  inform (input_location, "an argument type that has a default promotion can%'t match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
@@ -1120,11 +1120,11 @@ locate_old_decl (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
     ;
   else if (DECL_INITIAL (decl))
-    inform ("previous definition of %q+D was here", decl);
+    inform (input_location, "previous definition of %q+D was here", decl);
   else if (C_DECL_IMPLICIT (decl))
-    inform ("previous implicit declaration of %q+D was here", decl);
+    inform (input_location, "previous implicit declaration of %q+D was here", decl);
   else
-    inform ("previous declaration of %q+D was here", decl);
+    inform (input_location, "previous declaration of %q+D was here", decl);
 }
 
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.

@@ -1350,7 +1350,7 @@ init_asm_output (const char *name)
 						   NULL);
 	    }
 	  else
-	    inform ("-frecord-gcc-switches is not supported by the current target");
+	    inform (input_location, "-frecord-gcc-switches is not supported by the current target");
 	}
 
 #ifdef ASM_COMMENT_START

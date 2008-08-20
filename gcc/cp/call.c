@@ -2545,24 +2545,24 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
   if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
     {
       if (candidate->num_convs == 3)
-	inform ("%s %D(%T, %T, %T) <built-in>", msgstr, candidate->fn,
+	inform (input_location, "%s %D(%T, %T, %T) <built-in>", msgstr, candidate->fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type,
 		candidate->convs[2]->type);
       else if (candidate->num_convs == 2)
-	inform ("%s %D(%T, %T) <built-in>", msgstr, candidate->fn,
+	inform (input_location, "%s %D(%T, %T) <built-in>", msgstr, candidate->fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type);
       else
-	inform ("%s %D(%T) <built-in>", msgstr, candidate->fn,
+	inform (input_location, "%s %D(%T) <built-in>", msgstr, candidate->fn,
 		candidate->convs[0]->type);
     }
   else if (TYPE_P (candidate->fn))
-    inform ("%s %T <conversion>", msgstr, candidate->fn);
+    inform (input_location, "%s %T <conversion>", msgstr, candidate->fn);
   else if (candidate->viable == -1)
-    inform ("%s %+#D <near match>", msgstr, candidate->fn);
+    inform (input_location, "%s %+#D <near match>", msgstr, candidate->fn);
   else
-    inform ("%s %+#D", msgstr, candidate->fn);
+    inform (input_location, "%s %+#D", msgstr, candidate->fn);
 }
 
 static void
@@ -6651,7 +6651,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	      && warning (OPT_Wconversion, "  for conversion from %qT to %qT",
 			  source, w->second_conv->type)) 
 	    {
-	      inform ("  because conversion sequence for the argument is better");
+	      inform (input_location, "  because conversion sequence for the argument is better");
 	    }
 	}
       else

@@ -490,7 +490,7 @@ unqualified_fn_lookup_error (tree name)
 	  static bool hint;
 	  if (!hint)
 	    {
-	      inform ("(if you use %<-fpermissive%>, G++ will accept your "
+	      inform (input_location, "(if you use %<-fpermissive%>, G++ will accept your "
 		     "code, but allowing the use of an undeclared name is "
 		     "deprecated)");
 	      hint = true;

@@ -3842,7 +3842,7 @@ verify_stmt (gimple_stmt_iterator *gsi)
   if (addr)
     {
       debug_generic_expr (addr);
-      inform ("in statement");
+      inform (input_location, "in statement");
       debug_gimple_stmt (stmt);
       return true;
     }

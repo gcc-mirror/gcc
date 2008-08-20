@@ -69,7 +69,7 @@ extern bool pedwarn_at (location_t, int, const char *, ...)
      ATTRIBUTE_GCC_DIAG(3,4);
 extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
-extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void inform (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, int, int);

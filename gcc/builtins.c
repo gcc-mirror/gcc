@@ -4933,14 +4933,14 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (!gave_help && warned)
 	{
 	  gave_help = true;
-	  inform ("(so you should pass %qT not %qT to %<va_arg%>)",
+	  inform (input_location, "(so you should pass %qT not %qT to %<va_arg%>)",
 		   promoted_type, type);
 	}
 
       /* We can, however, treat "undefined" any way we please.
 	 Call abort to encourage the user to fix the program.  */
       if (warned)
-	inform ("if this code is reached, the program will abort");
+	inform (input_location, "if this code is reached, the program will abort");
       t = build_call_expr (implicit_built_in_decls[BUILT_IN_TRAP], 0);
       gimplify_and_add (t, pre_p);
 

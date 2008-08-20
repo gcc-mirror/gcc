@@ -334,7 +334,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++)
-	inform ((flag_guess_branch_prob
+	inform (input_location, (flag_guess_branch_prob
 		 ? "file %s not found, execution counts estimated"
 		 : "file %s not found, execution counts assumed to be zero"),
 		da_file_name);
@@ -369,9 +369,9 @@ get_coverage_counts (unsigned counter, unsigned expected,
       if (!inhibit_warnings)
 	{
 	  if (entry->checksum != checksum)
-	    inform ("checksum is %x instead of %x", entry->checksum, checksum);
+	    inform (input_location, "checksum is %x instead of %x", entry->checksum, checksum);
 	  else
-	    inform ("number of counters is %d instead of %d",
+	    inform (input_location, "number of counters is %d instead of %d",
 		    entry->summary.num, expected);
 	}
 
@@ -379,12 +379,12 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  && !inhibit_warnings
 	  && !warned++)
 	{
-	  inform ("coverage mismatch ignored due to -Wcoverage-mismatch");
-	  inform (flag_guess_branch_prob
+	  inform (input_location, "coverage mismatch ignored due to -Wcoverage-mismatch");
+	  inform (input_location, flag_guess_branch_prob
 		  ? "execution counts estimated"
 		  : "execution counts assumed to be zero");
 	  if (!flag_guess_branch_prob)
-	    inform ("this can result in poorly optimized code");
+	    inform (input_location, "this can result in poorly optimized code");
 	}
 
       return NULL;
