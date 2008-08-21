@@ -1,3 +1,28 @@
+2008-08-21  Jan Hubicka  <jh@suse.cz>
+	Backport from LTO branch:
+
+	2008-05-05  Kenneth Zadeck <zadeck@naturalbridge.com>
+		    Jan Hubicka  <jh@suse.cz>
+	
+	* ipa-pure-const.c
+	(init_state, finish_state, set_function_state, generate_summary):
+	New functions.
+	(scan_stmt): Renamed from scan_function.  Changed to keep state in
+	local static vars rather than cgraph aux field.
+	(propagate): Renamed from static_execute. Changed to keep state in
+	local static vars rather than cgraph aux field.
+	(pass_ipa_pure_const): Changed from SIMPLE_IPA_PASS to IPA_PASS.
+	* tree-pass.h (pass_ipa_pure_const): Turn into IPA_PASS.
+
+	2008-07-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* tree-pass.h (pass_ipa_reference): Make into ipa_opt_pass.
+	* ipa-reference.c (init_function_info, generate_summary, 
+	propagate): New functions.
+	(analyze_function):  Call init_function_info.
+	(static_execute): Stripped into generate_summary and propagate.
+	(pass_ipa_reference): Made into ipa_opt_pass.
+
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37181
