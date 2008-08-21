@@ -3810,7 +3810,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
       SET_ANON_AGGR_TYPE_P (declared_type);
 
       if (TREE_CODE (declared_type) != UNION_TYPE && !in_system_header)
-	pedwarn (OPT_pedantic, "ISO C++ prohibits anonymous structs");
+	pedwarn (input_location, OPT_pedantic, "ISO C++ prohibits anonymous structs");
     }
 
   else
@@ -7033,7 +7033,7 @@ check_static_variable_definition (tree decl, tree type)
 	   "static member %qD",
 	   decl);
   else if (!INTEGRAL_TYPE_P (type))
-    pedwarn (OPT_pedantic, "ISO C++ forbids initialization of member constant "
+    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids initialization of member constant "
 	     "%qD of non-integral type %qT", decl, type);
 
   return 0;
@@ -7113,9 +7113,9 @@ compute_array_index_type (tree name, tree size)
       else if (integer_zerop (size) && !in_system_header)
 	{
 	  if (name)
-	    pedwarn (OPT_pedantic, "ISO C++ forbids zero-size array %qD", name);
+	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array %qD", name);
 	  else
-	    pedwarn (OPT_pedantic, "ISO C++ forbids zero-size array");
+	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array");
 	}
     }
   else if (TREE_CONSTANT (size))
@@ -7131,9 +7131,9 @@ compute_array_index_type (tree name, tree size)
   else if (pedantic && warn_vla != 0)
     {
       if (name)
-	pedwarn (OPT_Wvla, "ISO C++ forbids variable length array %qD", name);
+	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array %qD", name);
       else
-	pedwarn (OPT_Wvla, "ISO C++ forbids variable length array");
+	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array");
     }
   else if (warn_vla > 0)
     {
@@ -7767,7 +7767,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (! is_main)
 	permerror (input_location, "ISO C++ forbids declaration of %qs with no type", name);
       else if (pedantic)
-	pedwarn (OPT_pedantic,
+	pedwarn (input_location, OPT_pedantic,
 		 "ISO C++ forbids declaration of %qs with no type", name);
       else
 	warning (OPT_Wreturn_type,
@@ -7823,7 +7823,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  ok = 1;
 	  if (!explicit_int && !defaulted_int && !explicit_char && pedantic)
 	    {
-	      pedwarn (OPT_pedantic, 
+	      pedwarn (input_location, OPT_pedantic, 
 		       "long, short, signed or unsigned used invalidly for %qs",
 		       name);
 	      if (flag_pedantic_errors)
@@ -7929,7 +7929,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (pedantic)
 	{
 	  tree bad_type = build_qualified_type (type, type_quals);
-	  pedwarn (OPT_pedantic, 
+	  pedwarn (input_location, OPT_pedantic, 
 		   "ignoring %qV qualifiers added to function type %qT",
 		   bad_type, type);
 	}
@@ -9159,11 +9159,11 @@ grokdeclarator (const cp_declarator *declarator,
 	    && pedantic)
 	  {
 	    if (storage_class == sc_static)
-	      pedwarn (OPT_pedantic, 
+	      pedwarn (input_location, OPT_pedantic, 
 		       "%<static%> specified invalid for function %qs "
 		       "declared out of global scope", name);
 	    else
-	      pedwarn (OPT_pedantic, 
+	      pedwarn (input_location, OPT_pedantic, 
 		       "%<inline%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	  }
@@ -9252,7 +9252,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	    if (storage_class == sc_extern && pedantic)
 	      {
-		pedwarn (OPT_pedantic, 
+		pedwarn (input_location, OPT_pedantic, 
 			 "cannot explicitly declare member %q#D to have "
 			 "extern linkage", decl);
 		storage_class = sc_none;
@@ -10148,7 +10148,7 @@ grok_op_properties (tree decl, bool complain)
 	    if (operator_code == POSTINCREMENT_EXPR
 		|| operator_code == POSTDECREMENT_EXPR)
 	      {
-		pedwarn (OPT_pedantic, "%qD cannot have default arguments", 
+		pedwarn (input_location, OPT_pedantic, "%qD cannot have default arguments", 
 			 decl);
 	      }
 	    else

@@ -2687,7 +2687,7 @@ maybe_warn_cpp0x (const char* str)
     /* We really want to suppress this warning in system headers,
        because libstdc++ uses variadic templates even when we aren't
        in C++0x mode. */
-    pedwarn (0, "%s only available with -std=c++0x or -std=gnu++0x", str);
+    pedwarn (input_location, 0, "%s only available with -std=c++0x or -std=gnu++0x", str);
 }
 
 /* Warn about the use of variadic templates when appropriate.  */

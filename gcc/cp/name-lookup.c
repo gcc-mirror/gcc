@@ -725,7 +725,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (! DECL_IN_SYSTEM_HEADER (x))
-		pedwarn (OPT_pedantic, "redeclaration of %<wchar_t%> as %qT",
+		pedwarn (input_location, OPT_pedantic, "redeclaration of %<wchar_t%> as %qT",
 			 TREE_TYPE (x));
 	      
 	      /* Throw away the redeclaration.  */
@@ -796,11 +796,11 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 					  x_exception_spec,
 					  true))
 		    {
-		      pedwarn (0, "declaration of %q#D with C language linkage",
+		      pedwarn (input_location, 0, "declaration of %q#D with C language linkage",
 			       x);
-		      pedwarn (0, "conflicts with previous declaration %q+#D",
+		      pedwarn (input_location, 0, "conflicts with previous declaration %q+#D",
 			       previous);
-		      pedwarn (0, "due to different exception specifications");
+		      pedwarn (input_location, 0, "due to different exception specifications");
 		      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 		    }
 		}

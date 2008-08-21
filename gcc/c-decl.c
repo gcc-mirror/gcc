@@ -788,7 +788,7 @@ pop_scope (void)
 		   && TREE_PUBLIC (p)
 		   && !DECL_INITIAL (p)
 		   && !flag_gnu89_inline)
-	    pedwarn (0, "inline function %q+D declared but never defined", p);
+	    pedwarn (input_location, 0, "inline function %q+D declared but never defined", p);
 
 	  goto common_symbol;
 
@@ -1225,7 +1225,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	       && TYPE_MAIN_VARIANT (TREE_TYPE (newtype)) == integer_type_node
 	       && C_FUNCTION_IMPLICIT_INT (newdecl) && !DECL_INITIAL (olddecl))
 	{
-	  pedwarned = pedwarn (0, "conflicting types for %q+D", newdecl);
+	  pedwarned = pedwarn (input_location, 0,
+			       "conflicting types for %q+D", newdecl);
 	  /* Make sure we keep void as the return type.  */
 	  TREE_TYPE (newdecl) = *newtypep = newtype = oldtype;
 	  C_FUNCTION_IMPLICIT_INT (newdecl) = 0;
@@ -1237,7 +1238,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	       && TYPE_MAIN_VARIANT (TREE_TYPE (oldtype)) == integer_type_node
 	       && C_DECL_IMPLICIT (olddecl) && !DECL_INITIAL (olddecl))
 	{
-	  pedwarned = pedwarn (0, "conflicting types for %q+D", newdecl);
+	  pedwarned = pedwarn (input_location, 0,
+			       "conflicting types for %q+D", newdecl);
 	  /* Make sure we keep void as the return type.  */
 	  TREE_TYPE (olddecl) = *oldtypep = oldtype = newtype;
 	}
@@ -2329,8 +2331,8 @@ implicit_decl_warning (tree id, tree olddecl)
       bool warned;
 
       if (flag_isoc99)
-	warned = pedwarn (OPT_Wimplicit_function_declaration, 
-			  G_("implicit declaration of function %qE"), id);
+	warned = pedwarn (input_location, OPT_Wimplicit_function_declaration,
+			  "implicit declaration of function %qE", id);
       else 
 	warned = warning (OPT_Wimplicit_function_declaration, 
 			  G_("implicit declaration of function %qE"), id);
@@ -2882,7 +2884,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      if (warned != 1 && code != ENUMERAL_TYPE)
 		/* Empty unnamed enum OK */
 		{
-		  pedwarn (0, "unnamed struct/union that defines no instances");
+		  pedwarn (input_location, 0,
+			   "unnamed struct/union that defines no instances");
 		  warned = 1;
 		}
 	    }
@@ -2890,8 +2893,9 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 		   && declspecs->storage_class != csc_none)
 	    {
 	      if (warned != 1)
-		pedwarn (0, "empty declaration with storage class specifier "
-			  "does not redeclare tag");
+		pedwarn (input_location, 0,
+			 "empty declaration with storage class specifier "
+			 "does not redeclare tag");
 	      warned = 1;
 	      pending_xref_error ();
 	    }
@@ -2901,7 +2905,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 		       || declspecs->restrict_p))
 	    {
 	      if (warned != 1)
-		pedwarn (0, "empty declaration with type qualifier "
+		pedwarn (input_location, 0,
+			 "empty declaration with type qualifier "
 			  "does not redeclare tag");
 	      warned = 1;
 	      pending_xref_error ();
@@ -2922,14 +2927,15 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	{
 	  if (warned != 1 && !in_system_header)
 	    {
-	      pedwarn (0, "useless type name in empty declaration");
+	      pedwarn (input_location, 0,
+		       "useless type name in empty declaration");
 	      warned = 1;
 	    }
 	}
     }
   else if (warned != 1 && !in_system_header && declspecs->typedef_p)
     {
-      pedwarn (0, "useless type name in empty declaration");
+      pedwarn (input_location, 0, "useless type name in empty declaration");
       warned = 1;
     }
 
@@ -2976,7 +2982,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
   if (warned != 1)
     {
       if (!found_tag)
-	pedwarn (0, "empty declaration");
+	pedwarn (input_location, 0, "empty declaration");
     }
 }
 
@@ -3042,10 +3048,12 @@ build_array_declarator (tree expr, struct c_declspecs *quals, bool static_p,
   if (!flag_isoc99)
     {
       if (static_p || quals != NULL)
-	pedwarn (OPT_pedantic, "ISO C90 does not support %<static%> or type "
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C90 does not support %<static%> or type "
 		 "qualifiers in parameter array declarators");
       if (vla_unspec_p)
-	pedwarn (OPT_pedantic, "ISO C90 does not support %<[*]%> array declarators");
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C90 does not support %<[*]%> array declarators");
     }
   if (vla_unspec_p)
     {
@@ -3300,8 +3308,9 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && !TREE_READONLY (decl)
       && DECL_DECLARED_INLINE_P (current_function_decl)
       && DECL_EXTERNAL (current_function_decl))
-    pedwarn (0, "%q+D is static but declared in inline function %qD "
-	      "which is not static", decl, current_function_decl);
+    pedwarn (input_location, 0,
+	     "%q+D is static but declared in inline function %qD "
+	     "which is not static", decl, current_function_decl);
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -3674,7 +3683,8 @@ mark_forward_parm_decls (void)
 
   if (pedantic && !current_scope->warned_forward_parm_decls)
     {
-      pedwarn (OPT_pedantic, "ISO C forbids forward parameter declarations");
+      pedwarn (input_location, OPT_pedantic,
+	       "ISO C forbids forward parameter declarations");
       current_scope->warned_forward_parm_decls = true;
     }
 
@@ -3825,7 +3835,8 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
       && type_mv != boolean_type_node)
-    pedwarn (OPT_pedantic, "type of bit-field %qs is a GCC extension", name);
+    pedwarn (input_location, OPT_pedantic,
+	     "type of bit-field %qs is a GCC extension", name);
 
   max_width = TYPE_PRECISION (*type);
 
@@ -3862,20 +3873,20 @@ warn_variable_length_array (const char *name, tree size)
       if (const_size)
 	{
 	  if (name)
-	    pedwarn (OPT_Wvla, "ISO C90 forbids array %qs whose size "
+	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids array %qs whose size "
 		     "can%'t be evaluated",
 		     name);
 	  else
-	    pedwarn (OPT_Wvla, "ISO C90 forbids array whose size "
+	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids array whose size "
 		     "can%'t be evaluated");
 	}
       else
 	{
 	  if (name) 
-	    pedwarn (OPT_Wvla, "ISO C90 forbids variable length array %qs",
+	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids variable length array %qs",
 		     name);
 	  else
-	    pedwarn (OPT_Wvla, "ISO C90 forbids variable length array");
+	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids variable length array");
 	}
     }
   else if (warn_vla > 0)
@@ -4037,7 +4048,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  && funcdef_flag)
 	warn_about_return_type = 1;
       else 
-	pedwarn_c99 (flag_isoc99 ? 0 : OPT_Wimplicit_int, 
+	pedwarn_c99 (input_location, flag_isoc99 ? 0 : OPT_Wimplicit_int, 
 		     "type defaults to %<int%> in declaration of %qs", name);
     }
 
@@ -4066,11 +4077,11 @@ grokdeclarator (const struct c_declarator *declarator,
   if (pedantic && !flag_isoc99)
     {
       if (constp > 1)
-	pedwarn (OPT_pedantic, "duplicate %<const%>");
+	pedwarn (input_location, OPT_pedantic, "duplicate %<const%>");
       if (restrictp > 1)
-	pedwarn (OPT_pedantic, "duplicate %<restrict%>");
+	pedwarn (input_location, OPT_pedantic, "duplicate %<restrict%>");
       if (volatilep > 1)
-	pedwarn (OPT_pedantic, "duplicate %<volatile%>");
+	pedwarn (input_location, OPT_pedantic, "duplicate %<volatile%>");
     }
   if (!flag_gen_aux_info && (TYPE_QUALS (element_type)))
     type = TYPE_MAIN_VARIANT (type);
@@ -4088,7 +4099,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	  || storage_class == csc_typedef))
     {
       if (storage_class == csc_auto)
-	pedwarn ((current_scope == file_scope) ? 0 : OPT_pedantic, 
+	pedwarn (input_location, 
+		 (current_scope == file_scope) ? 0 : OPT_pedantic, 
 		 "function definition declared %<auto%>");
       if (storage_class == csc_register)
 	error ("function definition declared %<register%>");
@@ -4145,7 +4157,8 @@ grokdeclarator (const struct c_declarator *declarator,
       if (storage_class == csc_auto)
 	error ("file-scope declaration of %qs specifies %<auto%>", name);
       if (pedantic && storage_class == csc_register)
-	pedwarn (OPT_pedantic, "file-scope declaration of %qs specifies %<register%>", name);
+	pedwarn (input_location, OPT_pedantic,
+		 "file-scope declaration of %qs specifies %<register%>", name);
     }
   else
     {
@@ -4258,7 +4271,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 
 	    if (pedantic && !in_system_header && flexible_array_type_p (type))
-	      pedwarn (OPT_pedantic, "invalid use of structure with flexible array member");
+	      pedwarn (input_location, OPT_pedantic,
+		       "invalid use of structure with flexible array member");
 
 	    if (size == error_mark_node)
 	      type = error_mark_node;
@@ -4283,7 +4297,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		  }
 
 		if (pedantic && integer_zerop (size))
-		  pedwarn (OPT_pedantic, "ISO C forbids zero-size array %qs", name);
+		  pedwarn (input_location, OPT_pedantic,
+			   "ISO C forbids zero-size array %qs", name);
 
 		if (TREE_CODE (size) == INTEGER_CST)
 		  {
@@ -4355,7 +4370,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    else if (decl_context == FIELD)
 	      {
 		if (pedantic && !flag_isoc99 && !in_system_header)
-		  pedwarn (OPT_pedantic, "ISO C90 does not support flexible array members");
+		  pedwarn (input_location, OPT_pedantic,
+			   "ISO C90 does not support flexible array members");
 
 		/* ISO C99 Flexible array members are effectively
 		   identical to GCC's zero-length array extension.  */
@@ -4500,7 +4516,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		   function definitions in ISO C; GCC used to used
 		   them for noreturn functions.  */
 		if (VOID_TYPE_P (type) && really_funcdef)
-		  pedwarn (0, "function definition has qualified void return type");
+		  pedwarn (input_location, 0,
+			   "function definition has qualified void return type");
 		else
 		  warning (OPT_Wignored_qualifiers,
 			   "type qualifiers ignored on function return type");
@@ -4532,7 +4549,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 		&& type_quals)
-	      pedwarn (OPT_pedantic, "ISO C forbids qualified function types");
+	      pedwarn (input_location, OPT_pedantic,
+		       "ISO C forbids qualified function types");
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals);
 	    size_varies = 0;
@@ -4613,7 +4631,8 @@ grokdeclarator (const struct c_declarator *declarator,
       tree decl;
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
-	pedwarn (OPT_pedantic, "ISO C forbids qualified function types");
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C forbids qualified function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator->u.id, type);
@@ -4621,7 +4640,7 @@ grokdeclarator (const struct c_declarator *declarator,
       if (declspecs->explicit_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       if (declspecs->inline_p)
-	pedwarn (0, "typedef %q+D declared %<inline%>", decl);
+	pedwarn (input_location, 0,"typedef %q+D declared %<inline%>", decl);
       return decl;
     }
 
@@ -4636,7 +4655,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		  && !declspecs->inline_p);
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
-	pedwarn (OPT_pedantic, "ISO C forbids const or volatile function types");
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C forbids const or volatile function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       return type;
@@ -4646,7 +4666,7 @@ grokdeclarator (const struct c_declarator *declarator,
       && variably_modified_type_p (type, NULL_TREE))
     {
       /* C99 6.7.2.1p8 */
-      pedwarn (OPT_pedantic, 
+      pedwarn (input_location, OPT_pedantic, 
 	       "a member of a structure or union cannot have a variably modified type");
     }
 
@@ -4701,7 +4721,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
 	    if (type_quals)
-	      pedwarn (OPT_pedantic, "ISO C forbids qualified function types");
+	      pedwarn (input_location, OPT_pedantic,
+		       "ISO C forbids qualified function types");
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
@@ -4727,7 +4748,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	DECL_ARG_TYPE (decl) = promoted_type;
 	if (declspecs->inline_p)
-	  pedwarn (0, "parameter %q+D declared %<inline%>", decl);
+	  pedwarn (input_location, 0, "parameter %q+D declared %<inline%>", decl);
       }
     else if (decl_context == FIELD)
       {
@@ -4773,7 +4794,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       GCC allows 'auto', perhaps with 'inline', to support
 	       nested functions.  */
 	    if (storage_class == csc_auto)
-		pedwarn (OPT_pedantic, "invalid storage class for function %qs", name);
+		pedwarn (input_location, OPT_pedantic, "invalid storage class for function %qs", name);
 	    else if (storage_class == csc_static)
 	      {
 		error ("invalid storage class for function %qs", name);
@@ -4789,7 +4810,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	if (pedantic && type_quals && !DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn (OPT_pedantic,
+	  pedwarn (input_location, OPT_pedantic,
 		   "ISO C forbids qualified function types");
 
 	/* GNU C interprets a volatile-qualified function type to indicate
@@ -4832,7 +4853,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (flag_hosted && MAIN_NAME_P (declarator->u.id))
 	  {
 	    if (declspecs->inline_p)
-	      pedwarn (0, "cannot inline function %<main%>");
+	      pedwarn (input_location, 0, "cannot inline function %<main%>");
 	  }
 	else if (declspecs->inline_p)
 	  /* Record that the function is declared `inline'.  */
@@ -4871,7 +4892,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
 	if (declspecs->inline_p)
-	  pedwarn (0, "variable %q+D declared %<inline%>", decl);
+	  pedwarn (input_location, 0, "variable %q+D declared %<inline%>", decl);
 
 	/* At file scope, an initialized extern declaration may follow
 	   a static declaration.  In that case, DECL_EXTERNAL will be
@@ -4979,7 +5000,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
   else if (arg_types && TREE_CODE (TREE_VALUE (arg_types)) == IDENTIFIER_NODE)
     {
       if (!funcdef_flag)
-	pedwarn (0, "parameter names (without types) in function declaration");
+	pedwarn (input_location, 0, "parameter names (without types) in function declaration");
 
       arg_info->parms = arg_info->types;
       arg_info->types = 0;
@@ -5393,10 +5414,10 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	}
       if (!ok)
 	{
-	  pedwarn (0, "declaration does not declare anything");
+	  pedwarn (input_location, 0, "declaration does not declare anything");
 	  return NULL_TREE;
 	}
-      pedwarn (OPT_pedantic, "ISO C doesn%'t support unnamed structs/unions");
+      pedwarn (input_location, OPT_pedantic, "ISO C doesn%'t support unnamed structs/unions");
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
@@ -5495,16 +5516,16 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  if (TREE_CODE (t) == UNION_TYPE)
 	    {
 	      if (fieldlist)
-		pedwarn (OPT_pedantic, "union has no named members");
+		pedwarn (input_location, OPT_pedantic, "union has no named members");
 	      else
-		pedwarn (OPT_pedantic, "union has no members");
+		pedwarn (input_location, OPT_pedantic, "union has no members");
 	    }
 	  else
 	    {
 	      if (fieldlist)
-		pedwarn (OPT_pedantic, "struct has no named members");
+		pedwarn (input_location, OPT_pedantic, "struct has no named members");
 	      else
-		pedwarn (OPT_pedantic, "struct has no members");
+		pedwarn (input_location, OPT_pedantic, "struct has no members");
 	    }
 	}
     }
@@ -5583,7 +5604,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
       if (pedantic && !in_system_header && TREE_CODE (t) == RECORD_TYPE
 	  && flexible_array_type_p (TREE_TYPE (x)))
-	pedwarn (OPT_pedantic, 
+	pedwarn (input_location, OPT_pedantic, 
 		 "%Jinvalid use of structure with flexible array member", x);
 
       if (DECL_NAME (x))
@@ -5974,8 +5995,8 @@ build_enumerator (struct c_enum_contents *the_enum, tree name, tree value,
      (6.4.4.3/2 in the C99 Standard).  GCC allows any integer type as
      an extension.  */
   else if (!int_fits_type_p (value, integer_type_node))
-    pedwarn_at (value_loc, OPT_pedantic, 
-		"ISO C restricts enumerator values to range of %<int%>");
+    pedwarn (value_loc, OPT_pedantic, 
+	     "ISO C restricts enumerator values to range of %<int%>");
 
   /* Set basis for default for next value.  */
   the_enum->enum_next_value = build_binary_op (PLUS_EXPR, value,
@@ -6087,7 +6108,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     }
 
   if (warn_about_return_type)
-    pedwarn_c99 (flag_isoc99 ? 0 
+    pedwarn_c99 (input_location, flag_isoc99 ? 0 
 		 : (warn_return_type ? OPT_Wreturn_type : OPT_Wimplicit_int),
 		 "return type defaults to %<int%>");
 
@@ -6210,12 +6231,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  != integer_type_node)
-	pedwarn (OPT_Wmain, "return type of %q+D is not %<int%>", decl1);
+	pedwarn (input_location, OPT_Wmain, "return type of %q+D is not %<int%>", decl1);
 
       check_main_parameter_types (decl1);
 
       if (!TREE_PUBLIC (decl1))
-	pedwarn (OPT_Wmain, "%q+D is normally a non-static function", decl1);
+	pedwarn (input_location, OPT_Wmain, "%q+D is normally a non-static function", decl1);
     }
 
   /* Record the decl so that the function name is defined.
@@ -6363,7 +6384,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  warn_if_shadowing (decl);
 
 	  if (flag_isoc99)
-	    pedwarn (0, "type of %q+D defaults to %<int%>", decl);
+	    pedwarn (input_location, 0, "type of %q+D defaults to %<int%>", decl);
 	  else 
 	    warning (OPT_Wmissing_parameter_type, "type of %q+D defaults to %<int%>", decl);
 	}
@@ -6483,10 +6504,10 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 			     "doesn%'t match built-in prototype", parm);
 		  else
 		    {
-		      pedwarn (OPT_pedantic, "promoted argument %qD "
+		      pedwarn (input_location, OPT_pedantic, "promoted argument %qD "
 			       "doesn%'t match prototype", parm);
-		      pedwarn (OPT_pedantic, "%Hprototype declaration",
-			       &current_function_prototype_locus);
+		      pedwarn (current_function_prototype_locus, OPT_pedantic,
+			       "prototype declaration");
 		    }
 		}
 	      else
@@ -7119,7 +7140,7 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
       gcc_unreachable ();
     }
   if (dupe && !flag_isoc99)
-    pedwarn (OPT_pedantic, "duplicate %qE", qual);
+    pedwarn (input_location, OPT_pedantic, "duplicate %qE", qual);
   return specs;
 }
 
@@ -7168,7 +7189,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 		      break;
 		    }
 		  if (pedantic && !flag_isoc99 && !in_system_header)
-		    pedwarn (OPT_Wlong_long, "ISO C90 does not support %<long long%>");
+		    pedwarn (input_location, OPT_Wlong_long, "ISO C90 does not support %<long long%>");
 		  specs->long_long_p = 1;
 		  break;
 		}
@@ -7292,7 +7313,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	    case RID_COMPLEX:
 	      dupe = specs->complex_p;
 	      if (!flag_isoc99 && !in_system_header)
-		pedwarn (OPT_pedantic, "ISO C90 does not support complex types");
+		pedwarn (input_location, OPT_pedantic, "ISO C90 does not support complex types");
 	      if (specs->typespec_word == cts_void)
 		error ("both %<complex%> and %<void%> in "
 		       "declaration specifiers");
@@ -7322,7 +7343,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      break;
 	    case RID_SAT:
 	      dupe = specs->saturating_p;
-	      pedwarn (OPT_pedantic, "ISO C does not support saturating types");
+	      pedwarn (input_location, OPT_pedantic, "ISO C does not support saturating types");
 	      if (specs->typespec_word == cts_void)
 		error ("both %<_Sat%> and %<void%> in "
 		       "declaration specifiers");
@@ -7519,7 +7540,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      }
 	      if (!targetm.decimal_float_supported_p ())
 		error ("decimal floating point not supported for this target");
-	      pedwarn (OPT_pedantic, 
+	      pedwarn (input_location, OPT_pedantic, 
 		       "ISO C does not support decimal floating point");
 	      return specs;
 	    case RID_FRACT:
@@ -7540,7 +7561,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      }
 	      if (!targetm.fixed_point_supported_p ())
 		error ("fixed-point types not supported for this target");
-	      pedwarn (OPT_pedantic, 
+	      pedwarn (input_location, OPT_pedantic, 
 		       "ISO C does not support fixed-point types");
 	      return specs;
 	    default:
@@ -7727,7 +7748,7 @@ finish_declspecs (struct c_declspecs *specs)
       else if (specs->complex_p)
 	{
 	  specs->typespec_word = cts_double;
-	  pedwarn (OPT_pedantic, 
+	  pedwarn (input_location, OPT_pedantic, 
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
@@ -7772,7 +7793,7 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = char_type_node;
       if (specs->complex_p)
 	{
-	  pedwarn (OPT_pedantic, 
+	  pedwarn (input_location, OPT_pedantic, 
 		   "ISO C does not support complex integer types");
 	  specs->type = build_complex_type (specs->type);
 	}
@@ -7798,7 +7819,7 @@ finish_declspecs (struct c_declspecs *specs)
 		       : integer_type_node);
       if (specs->complex_p)
 	{
-	  pedwarn (OPT_pedantic, 
+	  pedwarn (input_location, OPT_pedantic, 
 		   "ISO C does not support complex integer types");
 	  specs->type = build_complex_type (specs->type);
 	}
@@ -7949,7 +7970,7 @@ c_write_global_declarations_1 (tree globals)
 	  && !TREE_PUBLIC (decl)
 	  && C_DECL_USED (decl))
 	{
-	  pedwarn (0, "%q+F used but never defined", decl);
+	  pedwarn (input_location, 0, "%q+F used but never defined", decl);
 	  TREE_NO_WARNING (decl) = 1;
 	}
 

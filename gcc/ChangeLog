@@ -1,3 +1,18 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (pedwarn_at): Rename as pedwarn.
+	(pedwarn): Delete.
+	* toplev.h (pedwarn_at): Likewise.
+	* builtins.c: Update all calls to pedwarn.
+	* c-lex.c: Likewise.
+	* toplev.c: Likewise.
+	* c-tree.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-typeck.c: Likewise.
+	* c-common.c: Likewise.
+	* c-parser.c: Likewise.
+
 2008-08-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/31070
