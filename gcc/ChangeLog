@@ -1,5 +1,12 @@
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (insert_into_preds_of_block): Before inserting
+	a PHI ask VN if it is already available.
+	* tree-ssa-sccvn.h (vn_phi_lookup): Declare.
+	* tree-ssa-sccvn.c (vn_phi_lookup): Export.
+
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36817
 	* tree-chrec.c (chrec_apply): Always call chrec_fold_plus which
 	makes sure to produce a result of the correct type.
