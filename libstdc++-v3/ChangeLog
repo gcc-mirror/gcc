@@ -1,5 +1,11 @@
 2008-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/char_traits.h (char_traits<char16_t>::
+	assign(char_type*, size_t, char_type), char_traits<char32_t>::
+	assign(char_type*, size_t, char_type)): For now, just open-code.
+
+2008-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/33979 (partial)
 	* include/bits/postypes.h (u16streampos, u32streampos): Add.
 	* include/bits/char_traits.h (char_traits<char16_t>,
