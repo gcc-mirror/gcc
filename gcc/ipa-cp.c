@@ -159,6 +159,36 @@ ipcp_init_cloned_node (struct cgraph_node *orig_node,
   ipa_create_param_decls_array (new_node);
 }
 
+/* Recompute all local information since node might've got new
+   direct calls after clonning.  */
+static void
+ipcp_update_cloned_node (struct cgraph_node *new_node)
+{
+  /* We might've introduced new direct calls.  */
+  push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
+  current_function_decl = new_node->decl;
+  rebuild_cgraph_edges ();
+
+  if (flag_indirect_inlining)
+    {
+      struct cgraph_edge *cs;
+
+      ipa_check_create_node_params ();
+      ipa_count_formal_params (new_node);
+      ipa_create_param_decls_array (new_node);
+      ipa_detect_param_modifications (new_node);
+      ipa_analyze_params_uses (new_node);
+
+      for (cs = new_node->callees; cs; cs = cs->next_callee)
+	{
+	  ipa_count_arguments (cs);
+	  ipa_compute_jump_functions (cs);
+	}
+    }
+  pop_cfun ();
+  current_function_decl = NULL;
+}
+
 /* Return scale for NODE.  */
 static inline gcov_type
 ipcp_get_node_scale (struct cgraph_node *node)
@@ -377,11 +407,27 @@ constant_val_insert (tree parm1 ATTRIBUTE_UNUSED, tree val ATTRIBUTE_UNUSED)
 static tree
 build_const_val (struct ipcp_lattice *lat, tree tree_type)
 {
-  tree const_val = NULL;
+  tree val;
 
   gcc_assert (ipcp_lat_is_const (lat));
-  const_val = fold_convert (tree_type, lat->constant);
-  return const_val;
+  val = lat->constant;
+
+  /* compute_jump_functions inserts FUNCTION_DECL as value of parameter
+     when address of function is taken.  It would make more sense to pass
+     whole ADDR_EXPR, but for now compensate here.  */
+  if ((lat->type == IPA_CONST_VALUE
+        && TREE_CODE (val) == FUNCTION_DECL)
+      || lat->type == IPA_CONST_VALUE_REF)
+    return build_fold_addr_expr_with_type (val, tree_type);
+
+  if (!useless_type_conversion_p (tree_type, TREE_TYPE (val)))
+    {
+      if (fold_convertible_p (tree_type, val))
+	return fold_build1 (NOP_EXPR, tree_type, val);
+      else
+	return fold_build1 (VIEW_CONVERT_EXPR, tree_type, val);
+    }
+  return val;
 }
 
 /* Build the tree representing the constant and call constant_val_insert().  */
@@ -456,6 +502,8 @@ ipcp_init_stage (void)
 	      /* Handle cases of functions with 
 	         a variable number of parameters.  */
 	      ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	      if (flag_indirect_inlining)
+	        ipa_compute_jump_functions (cs);
 	    }
 	  else
 	    ipa_compute_jump_functions (cs);
@@ -781,7 +829,8 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
       if (ipcp_lat_is_const (lat))
 	{
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  if (!ipcp_lat_is_const (lat))
+	  if (jump_func->type != IPA_CONST && jump_func->type != IPA_CONST_REF
+	      && jump_func->type != IPA_CONST_MEMBER_PTR)
 	    return true;
 	}
     }
@@ -966,7 +1015,10 @@ ipcp_insert_stage (void)
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  pop_cfun ();
 	  current_function_decl = NULL;
+	  /* We've possibly introduced direct calls.  */
+	  ipcp_update_cloned_node (node1);
 	}
+
       if (dump_file)
 	dump_function_to_file (node1->decl, dump_file, dump_flags);
     }
@@ -978,19 +1030,6 @@ ipcp_insert_stage (void)
 static unsigned int
 ipcp_driver (void)
 {
-  if (dump_file)
-    fprintf (dump_file, "\nIPA constant propagation start:\n");
-  ipa_check_create_node_params ();
-  ipa_check_create_edge_args ();
-  ipa_register_cgraph_hooks ();
-  /* 1. Call the init stage to initialize 
-     the ipa_node_params and ipa_edge_args structures.  */
-  ipcp_init_stage ();
-  if (dump_file)
-    {
-      fprintf (dump_file, "\nIPA structures before propagation:\n");
-      ipcp_print_all_structures (dump_file);
-    }
   /* 2. Do the interprocedural propagation.  */
   ipcp_iterate_stage ();
   if (dump_file)
@@ -1015,6 +1054,25 @@ ipcp_driver (void)
   return 0;
 }
 
+/* Note function body size.  */
+static void
+ipcp_generate_summary (void)
+{
+  if (dump_file)
+    fprintf (dump_file, "\nIPA constant propagation start:\n");
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+  ipa_register_cgraph_hooks ();
+  /* 1. Call the init stage to initialize 
+     the ipa_node_params and ipa_edge_args structures.  */
+  ipcp_init_stage ();
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nIPA structures before propagation:\n");
+      ipcp_print_all_structures (dump_file);
+    }
+}
+
 /* Gate for IPCP optimization.  */
 static bool
 cgraph_gate_cp (void)
@@ -1022,10 +1080,10 @@ cgraph_gate_cp (void)
   return flag_ipa_cp;
 }
 
-struct simple_ipa_opt_pass pass_ipa_cp = 
+struct ipa_opt_pass pass_ipa_cp = 
 {
  {
-  SIMPLE_IPA_PASS,
+  IPA_PASS,
   "cp",				/* name */
   cgraph_gate_cp,		/* gate */
   ipcp_driver,			/* execute */
@@ -1038,5 +1096,12 @@ struct simple_ipa_opt_pass pass_ipa_cp =
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
   TODO_dump_cgraph | TODO_dump_func	/* todo_flags_finish */
- }
+ },
+ ipcp_generate_summary,			/* generate_summary */
+ NULL,					/* write_summary */
+ NULL,					/* read_summary */
+ NULL,					/* function_read_summary */
+ 0,					/* TODOs */
+ NULL,					/* function_transform */
+ NULL,					/* variable_transform */
 };

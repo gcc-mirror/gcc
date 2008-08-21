@@ -1633,19 +1633,23 @@ inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 {
   struct cgraph_edge *cs;
 
-  ipa_count_formal_params (node);
-  ipa_create_param_decls_array (node);
-  ipa_detect_param_modifications (node);
+  if (!flag_ipa_cp)
+    {
+      ipa_count_formal_params (node);
+      ipa_create_param_decls_array (node);
+      ipa_detect_param_modifications (node);
+    }
   ipa_analyze_params_uses (node);
 
   if (dump_file)
     ipa_print_node_param_flags (dump_file, node);
 
-  for (cs = node->callees; cs; cs = cs->next_callee)
-    {
-      ipa_count_arguments (cs);
-      ipa_compute_jump_functions (cs);
-    }
+  if (!flag_ipa_cp)
+    for (cs = node->callees; cs; cs = cs->next_callee)
+      {
+	ipa_count_arguments (cs);
+	ipa_compute_jump_functions (cs);
+      }
 
   if (dump_file)
     ipa_print_node_jump_functions (dump_file, node);

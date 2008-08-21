@@ -95,6 +95,9 @@ static struct pointer_set_t *visited_nodes;
 
 static bitmap_obstack ipa_obstack;
 
+/* Holders of ipa cgraph hooks: */
+static struct cgraph_node_hook_list *function_insertion_hook_holder;
+
 enum initialization_status_t
 {
   UNINITIALIZED,
@@ -296,7 +299,8 @@ check_operand (ipa_reference_local_vars_info_t local,
 	    bitmap_set_bit (local->statics_written, DECL_UID (t));
 	  /* Mark the write so we can tell which statics are
 	     readonly.  */
-	  bitmap_set_bit (module_statics_written, DECL_UID (t));
+	  if (module_statics_written)
+	    bitmap_set_bit (module_statics_written, DECL_UID (t));
 	}
       else if (local)
 	bitmap_set_bit (local->statics_read, DECL_UID (t));
@@ -345,7 +349,7 @@ look_for_address_of (tree t)
     {
       tree x = get_base_var (t);
       if (TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == FUNCTION_DECL) 
-	if (has_proper_scope_for_analysis (x))
+	if (has_proper_scope_for_analysis (x) && module_statics_escape)
 	  bitmap_set_bit (module_statics_escape, DECL_UID (x));
     }
 }
@@ -935,6 +939,19 @@ clean_function (struct cgraph_node *fn)
   get_function_ann (fn->decl)->reference_vars_info = NULL;
 }
 
+/* Called when new function is inserted to callgraph late.  */
+static void
+add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  /* There are some shared nodes, in particular the initializers on
+     static declarations.  We do not need to scan them more than once
+     since all we would be interested in are the addressof
+     operations.  */
+  visited_nodes = pointer_set_create ();
+  analyze_function (node);
+  pointer_set_destroy (visited_nodes);
+  visited_nodes = NULL;
+}
 
 /* Analyze each function in the cgraph to see which global or statics
    are read or written.  */
@@ -949,6 +966,8 @@ generate_summary (void)
   bitmap module_statics_readonly;
   bitmap bm_temp;
   
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&add_new_function, NULL);
   ipa_init ();
   module_statics_readonly = BITMAP_ALLOC (&ipa_obstack);
   bm_temp = BITMAP_ALLOC (&ipa_obstack);
@@ -1031,6 +1050,8 @@ generate_summary (void)
   
   BITMAP_FREE(module_statics_escape);
   BITMAP_FREE(module_statics_written);
+  module_statics_escape = NULL;
+  module_statics_written = NULL;
   
   if (dump_file)
     EXECUTE_IF_SET_IN_BITMAP (all_module_statics, 0, index, bi)
@@ -1107,6 +1128,7 @@ propagate (void)
   int order_pos = ipa_utils_reduced_inorder (order, false, true);
   int i;
 
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   if (dump_file) 
     dump_cgraph (dump_file);
 

@@ -1,3 +1,39 @@
+2008-08-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (first_cgraph_function_insertion_hook): New variable.
+	(cgraph_add_function_insertion_hook, cgraph_remove_function_insertion_hook,
+	cgraph_call_function_insertion_hooks): New functions.
+	* cgraph.h (cgraph_add_function_insertion_hook, cgraph_remove_function_insertion_hook,
+	cgraph_call_function_insertion_hooks): Declare.
+	* ipa-reference.c (function_insertion_hook_holder): New variable.
+	(check_operand, look_for_address_of): When checking late, do not care
+	about module bitmaps.
+	(add_new_function): New function.
+	(generate_summary): Register hooks; zero module bitmaps.
+	(propagate): Unregister hooks.
+	* ipa-pure-const.c (function_insertion_hook_holder): New variable.
+	(add_new_function): New function.
+	(generate_summary): Register hook.
+	(propagate): Remove hook.
+
+	* ipa-cp.c (ipcp_need_redirect_p): Fix to not be constant 0.
+
+	* tree-pass.h (pass_ipa_cp): Make ipa_opt_pass.
+	* ipa-cp.c (ipcp_update_cloned_node): New function.
+	(build_const_val): Handle functions correctly; bring type logic
+	into sync with tree-inline.c
+	(ipcp_init_stage):  Take care of computing stuff needed by
+	indirect inlining; update clones.
+	(ipcp_generate_summary): Break out of ipcp_driver.
+	(ipcp_driver): Do only execution and transformation.
+	(pass_ipa_cp): Make IPA_PASS.
+	* tree-ssa-ccp.c (fold_stmt_r): Check type before trying to fold
+	offset to address.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): When doing
+	ipcp, some info is already available.
+	* ipa-prop.c (ipa_count_arguments): Grow edge lists as needed.
+	* tree-inline.c (remap_ssa_name): Unshare expression.
+
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (insert_into_preds_of_block): Before inserting

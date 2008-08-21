@@ -173,6 +173,8 @@ struct cgraph_node_hook_list *first_cgraph_node_removal_hook;
 struct cgraph_2edge_hook_list *first_cgraph_edge_duplicated_hook;
 /* List of hooks triggered when a node is duplicated.  */
 struct cgraph_2node_hook_list *first_cgraph_node_duplicated_hook;
+/* List of hooks triggered when an function is inserted.  */
+struct cgraph_node_hook_list *first_cgraph_function_insertion_hook;
 
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -248,6 +250,46 @@ static void
 cgraph_call_node_removal_hooks (struct cgraph_node *node)
 {
   struct cgraph_node_hook_list *entry = first_cgraph_node_removal_hook;
+  while (entry)
+  {
+    entry->hook (node, entry->data);
+    entry = entry->next;
+  }
+}
+
+/* Register HOOK to be called with DATA on each removed node.  */
+struct cgraph_node_hook_list *
+cgraph_add_function_insertion_hook (cgraph_node_hook hook, void *data)
+{
+  struct cgraph_node_hook_list *entry;
+  struct cgraph_node_hook_list **ptr = &first_cgraph_function_insertion_hook;
+
+  entry = (struct cgraph_node_hook_list *) xmalloc (sizeof (*entry));
+  entry->hook = hook;
+  entry->data = data;
+  entry->next = NULL;
+  while (*ptr)
+    ptr = &(*ptr)->next;
+  *ptr = entry;
+  return entry;
+}
+
+/* Remove ENTRY from the list of hooks called on removing nodes.  */
+void
+cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *entry)
+{
+  struct cgraph_node_hook_list **ptr = &first_cgraph_function_insertion_hook;
+
+  while (*ptr != entry)
+    ptr = &(*ptr)->next;
+  *ptr = entry->next;
+}
+
+/* Call all node removal hooks.  */
+void
+cgraph_call_function_insertion_hooks (struct cgraph_node *node)
+{
+  struct cgraph_node_hook_list *entry = first_cgraph_function_insertion_hook;
   while (entry)
   {
     entry->hook (node, entry->data);

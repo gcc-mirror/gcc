@@ -2304,6 +2304,7 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
       *walk_subtrees = 0;
 
       if (POINTER_TYPE_P (TREE_TYPE (expr))
+          && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (expr)))
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
 	  && (t = maybe_fold_offset_to_address (TREE_OPERAND (expr, 0),
 						integer_zero_node,
