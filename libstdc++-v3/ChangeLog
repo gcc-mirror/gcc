@@ -1,3 +1,8 @@
+2008-08-21  Sebastian Redl <sebastian.redl@getdesigned.at>
+
+	* libsupc++/eh_ptr.cc (__gxx_dependent_exception_cleanup): Call
+	__cxa_free_dependent_exception.
+
 2008-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/char_traits.h (char_traits<char16_t>::

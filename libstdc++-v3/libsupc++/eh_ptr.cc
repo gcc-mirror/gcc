@@ -199,6 +199,8 @@ __gxx_dependent_exception_cleanup (_Unwind_Reason_Code code,
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
     __terminate (header->terminateHandler);
 
+  __cxa_free_dependent_exception (dep);
+
   if (__gnu_cxx::__exchange_and_add_dispatch (&header->referenceCount, -1) == 0)
     {
       if (header->exceptionDestructor)
