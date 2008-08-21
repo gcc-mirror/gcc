@@ -38,6 +38,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+LIBOBJDIR =
 DIST_COMMON = $(am__configure_deps) $(nobase_libsubinclude_HEADERS) \
 	$(srcdir)/../compile $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../depcomp \
@@ -247,7 +248,7 @@ libssp_la_SOURCES = \
 libssp_la_LIBADD = 
 libssp_la_DEPENDENCIES = $(version_dep) $(libssp_la_LIBADD)
 libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-		    $(version_arg)
+		    $(version_arg) -no-undefined
 
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
