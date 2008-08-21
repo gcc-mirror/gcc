@@ -96,6 +96,8 @@ typedef struct funct_state_d * funct_state;
 
 static funct_state *funct_state_vec;
 
+/* Holders of ipa cgraph hooks: */
+static struct cgraph_node_hook_list *function_insertion_hook_holder;
 
 /* Init the function state.  */
 
@@ -677,6 +679,21 @@ end:
     }
 }
 
+/* Called when new function is inserted to callgraph late.  */
+static void
+add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  funct_state_vec = XRESIZEVEC (funct_state, funct_state_vec, cgraph_max_uid);
+  /* There are some shared nodes, in particular the initializers on
+     static declarations.  We do not need to scan them more than once
+     since all we would be interested in are the addressof
+     operations.  */
+  visited_nodes = pointer_set_create ();
+  analyze_function (node);
+  pointer_set_destroy (visited_nodes);
+  visited_nodes = NULL;
+}
+
 
 /* Analyze each function in the cgraph to see if it is locally PURE or
    CONST.  */
@@ -686,6 +703,8 @@ generate_summary (void)
 {
   struct cgraph_node *node;
 
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&add_new_function, NULL);
   init_state ();
   /* There are some shared nodes, in particular the initializers on
      static declarations.  We do not need to scan them more than once
@@ -725,6 +744,7 @@ propagate (void)
   int i;
   struct ipa_dfs_info * w_info;
 
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   order_pos = ipa_utils_reduced_inorder (order, true, false);
   if (dump_file)
     {

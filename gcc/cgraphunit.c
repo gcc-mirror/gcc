@@ -434,6 +434,7 @@ cgraph_process_new_functions (void)
 	  gcc_unreachable ();
 	  break;
 	}
+      cgraph_call_function_insertion_hooks (node);
     }
   return output;
 }
@@ -1535,6 +1536,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   new_version_node->local.externally_visible = 0;
   new_version_node->local.local = 1;
   new_version_node->lowered = true;
+  cgraph_call_function_insertion_hooks (new_version_node);
   return new_version_node;
 }
 

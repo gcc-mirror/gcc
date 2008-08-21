@@ -238,6 +238,10 @@ ipa_count_arguments (struct cgraph_edge *cs)
   stmt = cs->call_stmt;
   gcc_assert (is_gimple_call (stmt));
   arg_num = gimple_call_num_args (stmt);
+  if (VEC_length (ipa_edge_args_t, ipa_edge_args_vector)
+      <= (unsigned) cgraph_edge_max_uid)
+    VEC_safe_grow_cleared (ipa_edge_args_t, heap,
+			   ipa_edge_args_vector, cgraph_edge_max_uid + 1);
   ipa_set_cs_argument_count (IPA_EDGE_REF (cs), arg_num);
 }
 

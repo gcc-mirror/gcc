@@ -161,7 +161,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   n = (tree *) pointer_map_contains (id->decl_map, name);
   if (n)
-    return *n;
+    return unshare_expr (*n);
 
   /* Do not set DEF_STMT yet as statement is not copied yet. We do that
      in copy_bb.  */

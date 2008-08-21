@@ -372,6 +372,10 @@ void cgraph_remove_edge_removal_hook (struct cgraph_edge_hook_list *);
 struct cgraph_node_hook_list *cgraph_add_node_removal_hook (cgraph_node_hook,
 							    void *);
 void cgraph_remove_node_removal_hook (struct cgraph_node_hook_list *);
+struct cgraph_node_hook_list *cgraph_add_function_insertion_hook (cgraph_node_hook,
+							          void *);
+void cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *);
+void cgraph_call_function_insertion_hooks (struct cgraph_node *node);
 struct cgraph_2edge_hook_list *cgraph_add_edge_duplication_hook (cgraph_2edge_hook, void *);
 void cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *);
 struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_hook, void *);
