@@ -1,18 +1,36 @@
 set lang_library_path	"../libgfortran/.libs"
-set lang_test_file	"${lang_library_path}/libgfortranbegin.a"
 set lang_link_flags	"-lgfortranbegin -lgfortran"
+set lang_test_file_found 0
 
 load_lib libgomp-dg.exp
 
 # Initialize dg.
 dg-init
 
-if [file exists "${blddir}/${lang_test_file}"] {
+if { $blddir != "" } {
+    if [file exists "${blddir}/${lang_library_path}/libgfortranbegin.a"] {
+        set lang_test_file "${lang_library_path}/libgfortranbegin.a"
+        set lang_test_file_found 1
+    } else {
+        puts "No libgfortranbegin library found, will not execute fortran tests"
+    }
+} elseif [info exists GFORTRAN_UNDER_TEST] {
+    set lang_test_file_found 1
+    # Needs to exist for libgomp.exp.
+    set lang_test_file ""
+} else {
+    puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+}
 
+if { $lang_test_file_found } {
     # Gather a list of all tests.
     set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
-    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    if { $blddir != "" } {
+        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    } else {
+        set ld_library_path "$always_ld_library_path"
+    }
     append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars
 
