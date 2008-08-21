@@ -11586,6 +11586,17 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	     it.  */
 	  warning (0, "second parameter of %<va_start%> not last named argument");
 	}
+
+      /* Undefined by C99 7.15.1.4p4 (va_start):
+         "If the parameter parmN is declared with the register storage
+         class, with a function or array type, or with a type that is
+         not compatible with the type that results after application of
+         the default argument promotions, the behavior is undefined."
+      */
+      else if (DECL_REGISTER (arg))
+        warning (0, "undefined behaviour when second parameter of "
+                 "%<va_start%> is declared with %<register%> storage");
+
       /* We want to verify the second parameter just once before the tree
 	 optimizers are run and then avoid keeping it in the tree,
 	 as otherwise we could warn even for correct code like:
