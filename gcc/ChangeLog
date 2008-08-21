@@ -1,3 +1,9 @@
+2008-08-21  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): Remove
+	spurrious comma from test.
+	* configure: Rebuild.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 30457

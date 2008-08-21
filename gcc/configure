@@ -20879,7 +20879,7 @@ else
   gcc_cv_as_cfi_personality_directive=no
   if test x$gcc_cv_as != x; then
     echo '	.text
-	.cfi_startproc,
+	.cfi_startproc
 	.cfi_personality 0, symbol
 	.cfi_endproc' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
