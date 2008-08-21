@@ -1,5 +1,9 @@
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/vect/vect-fold-1.c: Scan ccp1 dump instead of dom1.
+
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36817
 	* gcc.c-torture/compile/pr36817.c: New testcase.
 
