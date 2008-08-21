@@ -12,23 +12,36 @@ dg-init
 
 set blddir [lookfor_file [get_multilibs] libgomp]
 
-# Look for a static libstdc++ first.
-if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
-    set lang_test_file "${lang_library_path}/libstdc++.a"
+
+if { $blddir != "" } {
+    # Look for a static libstdc++ first.
+    if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
+        set lang_test_file "${lang_library_path}/libstdc++.a"
+        set lang_test_file_found 1
+        # We may have a shared only build, so look for a shared libstdc++.
+    } elseif [file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] {
+        set lang_test_file "${lang_library_path}/libstdc++.${shlib_ext}"
+        set lang_test_file_found 1
+    } else {
+        puts "No libstdc++ library found, will not execute c++ tests"
+    }
+} elseif { [info exists GXX_UNDER_TEST] } {
     set lang_test_file_found 1
-# We may have a shared only build, so look for a shared libstdc++.
-} elseif [file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] {
-    set lang_test_file "${lang_library_path}/libstdc++.${shlib_ext}"
-    set lang_test_file_found 1
+    # Needs to exist for libgomp.exp.
+    set lang_test_file ""
 } else {
-    puts "No libstdc++ library found, will not execute c++ tests"
+    puts "GXX_UNDER_TEST not defined, will not execute c++ tests"
 }
 
 if { $lang_test_file_found } {
     # Gather a list of all tests.
     set tests [lsort [glob -nocomplain $srcdir/$subdir/*.C]]
 
-    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    if { $blddir != "" } {
+        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    } else {
+        set ld_library_path "$always_ld_library_path"
+    }
     append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars
 

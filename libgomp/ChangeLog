@@ -1,3 +1,11 @@
+2008-08-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* testsuite/libgomp.exp (libgomp_init): Only set things that
+	depend on blddir if blddir exists.
+	(libgomp_target_compile): Likewise.
+	* testsuite/libgomp.c++/c++.exp: Likewise.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+
 2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* libgomp.texi: Update to GFDL 1.2.  Update copyright years.

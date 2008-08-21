@@ -119,10 +119,13 @@ proc libgomp_init { args } {
     }
 
     set ALWAYS_CFLAGS ""
-    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
-    lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
+    if { $blddir != "" } {
+        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
+        lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
+        lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+    }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
-    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs -lgomp"
+    lappend ALWAYS_CFLAGS "ldflags=-lgomp"
 
     # We use atomic operations in the testcases to validate results.
     if { ([istarget i?86-*-*] || [istarget x86_64-*-*])
@@ -164,8 +167,11 @@ proc libgomp_target_compile { source dest type options } {
     global lang_library_path
     global lang_link_flags
 
-    if { [info exists lang_test_file] && [file exists "${blddir}/"] } {
-	lappend options "ldflags=-L${blddir}/${lang_library_path} ${lang_link_flags}"
+    if { [info exists lang_test_file] } {
+        if { $blddir != "" } {
+            lappend options "ldflags=-L${blddir}/${lang_library_path}"
+        }
+        lappend options "ldflags=${lang_link_flags}"
     }
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
