@@ -1,3 +1,7 @@
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (ccp_fold): Fold VIEW_CONVERT_EXPRs of constants.
+
 2008-08-21  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (first_cgraph_function_insertion_hook): New variable.

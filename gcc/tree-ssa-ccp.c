@@ -961,7 +961,17 @@ ccp_fold (gimple stmt)
                 }
 
               if (kind == tcc_reference)
-                return fold_const_aggregate_ref (rhs);
+		{
+		  if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR
+		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
+		    {
+		      prop_value_t *val = get_value (TREE_OPERAND (rhs, 0));
+		      if (val->lattice_val == CONSTANT)
+			return fold_unary (VIEW_CONVERT_EXPR,
+					   TREE_TYPE (rhs), val->value);
+		    }
+		  return fold_const_aggregate_ref (rhs);
+		}
               else if (kind == tcc_declaration)
                 return get_symbol_constant_value (rhs);
               return rhs;

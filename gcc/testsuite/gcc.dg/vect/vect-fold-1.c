@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom1" } */
+/* { dg-options "-O2 -fdump-tree-ccp1" } */
 
 typedef unsigned char v4qi __attribute__ ((vector_size (4)));
 
@@ -12,5 +12,5 @@ void foo()
   c = a + b;
 }
 
-/* { dg-final { scan-tree-dump-times "c = { 6, 8, 10, 12 }" 1 "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
+/* { dg-final { scan-tree-dump-times "c =.* { 6, 8, 10, 12 }" 1 "ccp1" } } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */
