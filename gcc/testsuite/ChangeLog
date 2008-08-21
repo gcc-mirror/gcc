@@ -1,3 +1,10 @@
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/37182
+	* gcc.dg/pr17506.c: Remove duplicate testcase.
+	* gcc.dg/uninit-15.c: Adjust to allow for both correct
+	behaviors, one xfailed.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/179
