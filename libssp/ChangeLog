@@ -1,3 +1,8 @@
+2008-08-21  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* Makefile.am: Add -no-undefined
+	* Makefile.in: Regenerate.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
