@@ -298,7 +298,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(_CHAR_TRAITS_EOF); }
+      eof()
+      { return static_cast<int_type>(_CHAR_TRAITS_EOF); }
 
       static int_type
       not_eof(const int_type& __c)
@@ -354,17 +355,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return wmemset(__s, __a, __n); }
 
       static char_type
-      to_char_type(const int_type& __c) { return char_type(__c); }
+      to_char_type(const int_type& __c)
+      { return char_type(__c); }
 
       static int_type
-      to_int_type(const char_type& __c) { return int_type(__c); }
+      to_int_type(const char_type& __c)
+      { return int_type(__c); }
 
       static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(WEOF); }
+      eof()
+      { return static_cast<int_type>(WEOF); }
 
       static int_type
       not_eof(const int_type& __c)
@@ -447,23 +451,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
-      { 
-	std::fill_n(__s, __n, __a);
+      {
+	for (size_t __i = 0; __i < __n; ++__i)
+	  assign(__s[__i], __a);
 	return __s;
       }
 
       static char_type
-      to_char_type(const int_type& __c) { return char_type(__c); }
+      to_char_type(const int_type& __c)
+      { return char_type(__c); }
 
       static int_type
-      to_int_type(const char_type& __c) { return int_type(__c); }
+      to_int_type(const char_type& __c)
+      { return int_type(__c); }
 
       static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(-1); }
+      eof()
+      { return static_cast<int_type>(-1); }
 
       static int_type
       not_eof(const int_type& __c)
@@ -537,22 +545,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
       {
-	std::fill_n(__s, __n, __a);
+	for (size_t __i = 0; __i < __n; ++__i)
+	  assign(__s[__i], __a);
 	return __s;
       }
 
       static char_type
-      to_char_type(const int_type& __c) { return char_type(__c); }
+      to_char_type(const int_type& __c)
+      { return char_type(__c); }
 
       static int_type
-      to_int_type(const char_type& __c) { return int_type(__c); }
+      to_int_type(const char_type& __c)
+      { return int_type(__c); }
 
       static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(-1); }
+      eof()
+      { return static_cast<int_type>(-1); }
 
       static int_type
       not_eof(const int_type& __c)
