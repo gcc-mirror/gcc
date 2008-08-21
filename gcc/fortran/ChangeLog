@@ -1,3 +1,7 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* f95-lang.c: Update all calls to pedwarn.
+
 2008-08-18  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/37032

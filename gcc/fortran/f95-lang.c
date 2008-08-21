@@ -604,7 +604,7 @@ gfc_mark_addressable (tree exp)
 		       IDENTIFIER_POINTER (DECL_NAME (x)));
 		return false;
 	      }
-	    pedwarn (0, "register variable %qs used in nested function",
+	    pedwarn (input_location, 0, "register variable %qs used in nested function",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
 	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
@@ -629,7 +629,7 @@ gfc_mark_addressable (tree exp)
 	      }
 #endif
 
-	    pedwarn (0, "address of register variable %qs requested",
+	    pedwarn (input_location, 0, "address of register variable %qs requested",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
 

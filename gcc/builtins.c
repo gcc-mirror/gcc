@@ -7279,7 +7279,7 @@ fold_builtin_inf (tree type, int warn)
      Thus we pedwarn to ensure this constraint violation is
      diagnosed.  */
   if (!MODE_HAS_INFINITIES (TYPE_MODE (type)) && warn)
-    pedwarn (0, "target format does not support infinity");
+    pedwarn (input_location, 0, "target format does not support infinity");
 
   real_inf (&real);
   return build_real (type, real);

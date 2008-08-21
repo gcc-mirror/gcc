@@ -587,8 +587,8 @@ interpret_integer (const cpp_token *token, unsigned int flags)
   if (itk > itk_unsigned_long
       && (flags & CPP_N_WIDTH) != CPP_N_LARGE
       && !in_system_header && !flag_isoc99)
-    pedwarn (0, "integer constant is too large for %qs type",
-	      (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
+    pedwarn (input_location, 0, "integer constant is too large for %qs type",
+	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
   value = build_int_cst_wide (type, integer.low, integer.high);
 
@@ -642,7 +642,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
 	    return error_mark_node;
 	  }
 	else
-	  pedwarn (OPT_pedantic, "non-standard suffix on floating constant");
+	  pedwarn (input_location, OPT_pedantic, "non-standard suffix on floating constant");
 
 	type = c_common_type_for_mode (mode, 0);
 	gcc_assert (type);
@@ -684,7 +684,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
   if (REAL_VALUE_ISINF (real)) 
     {
       if (!MODE_HAS_INFINITIES (TYPE_MODE (type)))
-	pedwarn (0, "floating constant exceeds range of %qT", type);
+	pedwarn (input_location, 0, "floating constant exceeds range of %qT", type);
       else
 	warning (OPT_Woverflow, "floating constant exceeds range of %qT", type);
     }

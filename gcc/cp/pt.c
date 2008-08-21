@@ -14613,7 +14613,7 @@ do_decl_instantiation (tree decl, tree storage)
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
       if (!in_system_header && (cxx_dialect == cxx98))
-	pedwarn (OPT_pedantic, 
+	pedwarn (input_location, OPT_pedantic, 
 		 "ISO C++ 1998 forbids the use of %<extern%> on explicit "
 		 "instantiations");
       extern_p = 1;
@@ -14705,13 +14705,14 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  if (storage == ridpointers[(int) RID_EXTERN])
 	    {
 	      if (cxx_dialect == cxx98)
-		pedwarn(OPT_pedantic, 
-			"ISO C++ 1998 forbids the use of %<extern%> on "
-			"explicit instantiations");
+		pedwarn (input_location, OPT_pedantic, 
+			 "ISO C++ 1998 forbids the use of %<extern%> on "
+			 "explicit instantiations");
 	    }
 	  else
-	    pedwarn(OPT_pedantic, "ISO C++ forbids the use of %qE on explicit "
-		    "instantiations", storage);
+	    pedwarn (input_location, OPT_pedantic, 
+		     "ISO C++ forbids the use of %qE"
+		     " on explicit instantiations", storage);
 	}
 
       if (storage == ridpointers[(int) RID_INLINE])

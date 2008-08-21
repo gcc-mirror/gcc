@@ -1044,7 +1044,7 @@ fname_decl (unsigned int rid, tree id)
       input_location = saved_location;
     }
   if (!ix && !current_function_decl)
-    pedwarn (0, "%qD is not defined outside of function scope", decl);
+    pedwarn (input_location, 0, "%qD is not defined outside of function scope", decl);
 
   return decl;
 }
@@ -1093,7 +1093,7 @@ fix_string_type (tree value)
 	   separate the %d from the 'C'.  'ISO' should not be
 	   translated, but it may be moved after 'C%d' in languages
 	   where modifiers follow nouns.  */
-	pedwarn (OPT_Woverlength_strings,
+	pedwarn (input_location, OPT_Woverlength_strings,
 		 "string length %qd is greater than the length %qd "
 		 "ISO C%d compilers are required to support",
 		 nchars - 1, nchars_max, relevant_std);
@@ -1141,7 +1141,7 @@ constant_expression_warning (tree value)
 	  || TREE_CODE (value) == VECTOR_CST
 	  || TREE_CODE (value) == COMPLEX_CST)
       && TREE_OVERFLOW (value))
-    pedwarn (OPT_Woverflow, "overflow in constant expression");
+    pedwarn (input_location, OPT_Woverflow, "overflow in constant expression");
 }
 
 /* The same as above but print an unconditional error.  */
@@ -1359,7 +1359,7 @@ check_main_parameter_types (tree decl)
        {
        case 1:
          if (TYPE_MAIN_VARIANT (type) != integer_type_node)
-           pedwarn (OPT_Wmain, "first argument of %q+D should be %<int%>", 
+           pedwarn (input_location, OPT_Wmain, "first argument of %q+D should be %<int%>", 
 		    decl);
          break;
 
@@ -1368,7 +1368,7 @@ check_main_parameter_types (tree decl)
              || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
              || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
                  != char_type_node))
-           pedwarn (OPT_Wmain, "second argument of %q+D should be %<char **%>",
+           pedwarn (input_location, OPT_Wmain, "second argument of %q+D should be %<char **%>",
 		    decl);
          break;
 
@@ -1377,7 +1377,7 @@ check_main_parameter_types (tree decl)
              || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
              || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
                  != char_type_node))
-	   pedwarn (OPT_Wmain, "third argument of %q+D should probably be "
+	   pedwarn (input_location, OPT_Wmain, "third argument of %q+D should probably be "
 		    "%<char **%>", decl);
          break;
        }
@@ -1387,7 +1387,7 @@ check_main_parameter_types (tree decl)
     argument because it's only mentioned in an appendix of the
     standard.  */
   if (argct > 0 && (argct < 2 || argct > 3))
-    pedwarn (OPT_Wmain, "%q+D takes only zero or two arguments", decl);
+    pedwarn (input_location, OPT_Wmain, "%q+D takes only zero or two arguments", decl);
 }
 
 /* True if pointers to distinct types T1 and T2 can be converted to
@@ -3285,19 +3285,19 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer of type %<void *%> used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
-      pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer to member function used in arithmetic");
       size_exp = integer_one_node;
     }
@@ -3806,7 +3806,7 @@ c_sizeof_or_alignof_type (tree type, bool is_sizeof, int complain)
       if (is_sizeof)
 	{
 	  if (complain && (pedantic || warn_pointer_arith))
-	    pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+	    pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 		     "invalid application of %<sizeof%> to a function type");
           else if (!complain)
             return error_mark_node;
@@ -3819,7 +3819,7 @@ c_sizeof_or_alignof_type (tree type, bool is_sizeof, int complain)
     {
       if (type_code == VOID_TYPE
 	  && complain && (pedantic || warn_pointer_arith))
-	pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+	pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 		 "invalid application of %qs to a void type", op_name);
       else if (!complain)
         return error_mark_node;
@@ -4687,7 +4687,7 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
 
   /* Case ranges are a GNU extension.  */
   if (high_value)
-    pedwarn (OPT_pedantic, 
+    pedwarn (input_location, OPT_pedantic, 
 	     "range expressions in switch statements are non-standard");
 
   type = TREE_TYPE (cond);
@@ -5001,7 +5001,7 @@ finish_label_address_expr (tree label)
 {
   tree result;
 
-  pedwarn (OPT_pedantic, "taking the address of a label is non-standard");
+  pedwarn (input_location, OPT_pedantic, "taking the address of a label is non-standard");
 
   if (label == error_mark_node)
     return error_mark_node;

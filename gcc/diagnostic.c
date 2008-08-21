@@ -551,28 +551,13 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
    Returns true if the warning was printed, false if it was inhibited.  */
 
 bool
-pedwarn_at (location_t location, int opt, const char *gmsgid, ...)
+pedwarn (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,  DK_PEDWARN);
-  diagnostic.option_index = opt;
-  va_end (ap);
-  return report_diagnostic (&diagnostic);
-}
-
-/* Equivalent to pedwarn_at using INPUT_LOCATION.  */
-
-bool
-pedwarn (int opt, const char *gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_PEDWARN);
   diagnostic.option_index = opt;
   va_end (ap);
   return report_diagnostic (&diagnostic);
