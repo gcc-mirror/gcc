@@ -47,7 +47,7 @@ YCoreFont::~YCoreFont() {
 
 int foo(YCoreFont *ycf)
 {
-  ycf->ascent ();
+  return ycf->ascent ();
 }
 
 int main()
