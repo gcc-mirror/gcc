@@ -1,5 +1,13 @@
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-17.c: Likewise.
+	* gcc.dg/tree-ssa/data-dep-1.c: Likewise.
+	* gcc.dg/tree-ssa/ltrans-3.c: Likewise.
+
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
 	PR testsuite/37182
 	* gcc.dg/pr17506.c: Remove duplicate testcase.
 	* gcc.dg/uninit-15.c: Adjust to allow for both correct

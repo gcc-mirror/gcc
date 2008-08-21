@@ -27,6 +27,6 @@ void foo(double (*q)[4])
     }
 }
 
-/* { dg-final { scan-tree-dump "Inserted .* &a" "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "Replaced tmp1.data" "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Inserted .* &a" "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced tmp1.data" "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

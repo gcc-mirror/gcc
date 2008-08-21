@@ -17,5 +17,5 @@ int foo(int N, int *res)
       *res = sum + N;
 }
 
-/* { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans" { xfail *-*-* } } } */ 
+/* { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans" } } */ 
 /* { dg-final { cleanup-tree-dump "ltrans" } } */
