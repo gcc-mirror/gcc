@@ -2197,7 +2197,7 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
 gcc_GAS_CHECK_FEATURE([cfi personality directive],
   gcc_cv_as_cfi_personality_directive, ,,
 [	.text
-	.cfi_startproc,
+	.cfi_startproc
 	.cfi_personality 0, symbol
 	.cfi_endproc])
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE,
