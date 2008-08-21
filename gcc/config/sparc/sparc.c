@@ -4627,6 +4627,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
     {
     case MODE_FLOAT:
     case MODE_COMPLEX_FLOAT:
+    case MODE_VECTOR_INT:
       if (TARGET_ARCH64 && TARGET_FPU && named)
 	{
 	  if (slotno >= SPARC_FP_ARG_MAX)

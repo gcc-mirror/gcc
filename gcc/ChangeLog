@@ -1,3 +1,9 @@
+2008-08-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/31070
+	* config/sparc/sparc.c (function_arg_slotno): Handle structure
+	with MODE_VECTOR_INT mode.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/179
