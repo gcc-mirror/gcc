@@ -1,5 +1,10 @@
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36817
+	* gcc.c-torture/compile/pr36817.c: New testcase.
+
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-fre-13.c: Remove XFAIL.
 	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
 	* gcc.dg/tree-ssa/ssa-fre-17.c: Likewise.
