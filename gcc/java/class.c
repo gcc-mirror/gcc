@@ -1821,6 +1821,8 @@ make_class_data (tree type)
 	    field_index = static_count++;
 	  else if (uses_jv_markobj || !flag_reduced_reflection)
 	    field_index = instance_count++;
+	  else
+	    continue;
 	  VEC_quick_push (int, field_indexes, field_index);
 	}
     }
