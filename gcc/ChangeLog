@@ -1,3 +1,10 @@
+2008-08-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37181
+	* tree-vrp.c (extract_range_from_binary_expr): Check for NULL
+	folding result.
+	(extract_range_from_unary_expr): Likewise.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* diagnostic.c (pedwarn_at): Rename as pedwarn.
