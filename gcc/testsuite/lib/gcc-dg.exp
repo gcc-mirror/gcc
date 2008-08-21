@@ -636,7 +636,18 @@ proc process-message { msgproc msgprefix dgargs } {
     # it match a single line.
     set newentry [lindex ${dg-messages} end]
     set expmsg [lindex $newentry 2]
-    set expmsg "$msgprefix\[^\n]*$expmsg"
+
+    # If we have a column...
+    if [regexp "^(\[0-9\]+):" $expmsg "" column] {
+	# Remove "COLUMN:"
+	regsub "^\[0-9\]+:" $expmsg "" expmsg
+
+	# Include the column in the search expression.
+	set expmsg "$column: $msgprefix\[^\n]*$expmsg"
+    } else {
+	set expmsg "$msgprefix\[^\n]*$expmsg"
+    }
+
     set newentry [lreplace $newentry 2 2 $expmsg]
     set dg-messages [lreplace ${dg-messages} end end $newentry]
     verbose "process-message:\n${dg-messages}" 2

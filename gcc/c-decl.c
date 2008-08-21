@@ -5363,12 +5363,15 @@ start_struct (enum tree_code code, tree name)
    WIDTH is non-NULL for bit-fields only, and is an INTEGER_CST node.
    DECL_ATTRS is as for grokdeclarator.
 
+   LOC is the location of the structure component.
+
    This is done during the parsing of the struct declaration.
    The FIELD_DECL nodes are chained together and the lot of them
    are ultimately passed to `build_struct' to make the RECORD_TYPE node.  */
 
 tree
-grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
+grokfield (location_t loc,
+	   struct c_declarator *declarator, struct c_declspecs *declspecs,
 	   tree width, tree *decl_attrs)
 {
   tree value;
@@ -5414,10 +5417,10 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	}
       if (!ok)
 	{
-	  pedwarn (input_location, 0, "declaration does not declare anything");
+	  pedwarn (loc, 0, "declaration does not declare anything");
 	  return NULL_TREE;
 	}
-      pedwarn (input_location, OPT_pedantic, "ISO C doesn%'t support unnamed structs/unions");
+      pedwarn (loc, OPT_pedantic, "ISO C doesn%'t support unnamed structs/unions");
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
