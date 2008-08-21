@@ -1,3 +1,8 @@
+2008-08-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/opt/anchor1.C (foo): Return the return value of
+	ycf->ascent.
+
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-fold-1.c: Scan ccp1 dump instead of dom1.
