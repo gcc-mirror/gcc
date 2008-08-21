@@ -1,3 +1,8 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 30457
+	* gcc.dg/pr30457.c: New.
+
 2008-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/20011008-1.c: Test column.

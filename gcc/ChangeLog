@@ -1,3 +1,9 @@
+2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 30457
+	* builtins.c (fold_builtin_next_arg): Add warning about undefined
+	behaviour.
+	
 2008-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-tree.h (grokfield): New argument.
