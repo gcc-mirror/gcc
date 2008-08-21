@@ -1,3 +1,13 @@
+2008-08-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/20011008-1.c: Test column.
+	* gcc.dg/20080820.c: New.
+	* gcc.dg/fltconst-1.c: Test column.
+	* gcc.dg/cpp/cpp.exp: Add -fno-show-column.
+	* gcc.dg/cpp/trad/trad.exp: Same.
+	* lib/gcc.exp (gcc_target_compile): Remove -fno-show-column.
+	* lib/gcc-dg.exp (process-message): Handle columns.
+
 2008-08-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/opt/anchor1.C (foo): Return the return value of

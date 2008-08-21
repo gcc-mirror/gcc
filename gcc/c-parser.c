@@ -1960,7 +1960,9 @@ c_parser_struct_declaration (c_parser *parser)
 	     structs or unions (which is [a] useful and [b] supports
 	     MS P-SDK).  */
 	  tree attrs = NULL;
-	  ret = grokfield (build_id_declarator (NULL_TREE), specs,
+
+	  ret = grokfield (c_parser_peek_token (parser)->location,
+			   build_id_declarator (NULL_TREE), specs,
 			   NULL_TREE, &attrs);
 	  if (ret)
 	    decl_attributes (&ret, attrs, 0);
@@ -2003,7 +2005,8 @@ c_parser_struct_declaration (c_parser *parser)
 	    }
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    postfix_attrs = c_parser_attributes (parser);
-	  d = grokfield (declarator, specs, width, &all_prefix_attrs);
+	  d = grokfield (c_parser_peek_token (parser)->location,
+			 declarator, specs, width, &all_prefix_attrs);
 	  decl_attributes (&d, chainon (postfix_attrs,
 					all_prefix_attrs), 0);
 	  TREE_CHAIN (d) = decls;
