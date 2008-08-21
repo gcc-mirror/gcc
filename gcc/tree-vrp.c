@@ -2062,7 +2062,8 @@ extract_range_from_binary_expr (value_range_t *vr,
 	  && (op1 = op_with_constant_singleton_value_range (op1)) != NULL_TREE)
 	{
 	  tree tem = fold_binary (code, expr_type, op0, op1);
-	  if (is_gimple_min_invariant (tem)
+	  if (tem
+	      && is_gimple_min_invariant (tem)
 	      && !is_overflow_infinity (tem))
 	    {
 	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
@@ -2477,7 +2478,8 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
       if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE)
 	{
 	  tree tem = fold_unary (code, type, op0);
-	  if (is_gimple_min_invariant (tem)
+	  if (tem
+	      && is_gimple_min_invariant (tem)
 	      && !is_overflow_infinity (tem))
 	    {
 	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
