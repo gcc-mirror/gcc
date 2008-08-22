@@ -6441,13 +6441,13 @@ package body Exp_Aggr is
                loop
                   Append_To
                     (Expressions (Agg), New_Copy (Expression (Expr)));
-                  Set_Etype (Last (Expressions (Agg)), Component_Type (Typ));
 
-                  --  Integer literals should always be marked as static
+                  --  The copied expression must be analyzed and resolved.
+                  --  Besides setting the type, this ensures that static
+                  --  expressions are appropriately marked as such.
 
-                  if Nkind (Expression (Expr)) = N_Integer_Literal then
-                     Set_Is_Static_Expression (Last (Expressions (Agg)));
-                  end if;
+                  Analyze_And_Resolve
+                    (Last (Expressions (Agg)), Component_Type (Typ));
                end loop;
 
                Set_Aggregate_Bounds (Agg, Bounds);
@@ -6464,4 +6464,5 @@ package body Exp_Aggr is
          return False;
       end if;
    end Static_Array_Aggregate;
+
 end Exp_Aggr;
