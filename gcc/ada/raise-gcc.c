@@ -694,6 +694,8 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 #else
   _Unwind_Ptr call_site = _Unwind_GetIP (uw_context);
 #endif
+  /* Subtract 1 if necessary because GetIPInfo returns the actual call site
+     value + 1 in this case.  */
   if (!ip_before_insn)
     call_site--;
 
@@ -758,6 +760,10 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 #else
   _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
 #endif
+  /* Subtract 1 if necessary because GetIPInfo yields a call return address
+     in this case, while we are interested in information for the call point.
+     This does not always yield the exact call instruction address but always
+     brings the IP back within the corresponding region.  */
   if (!ip_before_insn)
     ip--;
 
