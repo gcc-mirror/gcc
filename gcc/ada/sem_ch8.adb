@@ -7054,8 +7054,12 @@ package body Sem_Ch8 is
          --  as use visible. The analysis then reinstalls the spec along with
          --  its context. The use clause P.T is now recognized as redundant,
          --  but in the wrong context. Do not emit a warning in such cases.
+         --  Do not emit a warning either if we are in an instance, there
+         --  is no redundancy between an outer use_clause and one that appears
+         --  within the generic.
 
         and then not Spec_Reloaded_For_Body
+        and then not In_Instance
       then
          --  The type already has a use clause
 
