@@ -4,13 +4,10 @@
 
 2008-08-22  Robert Dewar  <dewar@adacore.com>
 
-	* s-sopco3.adb: Minor code fix to avoid warning
+	* s-sopco3.adb, s-sopco4.adb, s-sopco5.adb, s-strops.adb: Minor code fix
+	to avoid warning.
 
-	* s-sopco4.adb: Minor code fix to avoid warning
-
-	* s-sopco5.adb: Minor code fix to avoid warning
-
-	* s-strops.adb: Minor code fix to avoid warning
+	* g-trasym.adb: Ditto
 
 	* s-utf_32.adb (Get_Category): Fix obvious typo
 
