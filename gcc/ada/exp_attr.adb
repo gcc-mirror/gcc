@@ -607,10 +607,14 @@ package body Exp_Attr is
    begin
       --  Do required validity checking, if enabled. Do not apply check to
       --  output parameters of an Asm instruction, since the value of this
-      --  is not set till after the attribute has been elaborated.
+      --  is not set till after the attribute has been elaborated, and do
+      --  not apply the check to the arguments of a 'Read or 'Input attribute
+      --  reference since the scalar argument is an OUT scalar.
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
+        and then Id /= Attribute_Read
+        and then Id /= Attribute_Input
       then
          declare
             Expr : Node_Id;

@@ -1,3 +1,41 @@
+2008-08-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting
+	Minor code reorganization (introduce subprogram to factor duplicated
+	code).
+
+2008-08-22  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Change the description of gnatcheck default rule
+	settings.
+
+2008-08-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_adjust_context_for_raise): Delete for AIX, HP-UX,
+	Solaris, FreeBSD, VxWorks and PowerPC/Linux.  For x86{-64}/Linux,
+	do not adjust the PC anymore.
+	(__gnat_error_handler): Do not call __gnat_adjust_context_for_raise
+	on AIX, HP-UX, Solaris, FreeBSD and VxWorks.
+
+	* raise-gcc.c (get_call_site_action_for): Use _Unwind_GetIPInfo
+	instead of _Unwind_GetIP.
+
+2008-08-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Static_Array_Aggregate): When a static array aggregate
+	with a range is transformed into a positional aggregate, any copied
+	component literals should be marked Is_Static_Expression.
+
+	* sem_eval.adb (Compile_Time_Known_Value): Don't treat null literals as
+	not being known at at compile time when Configurable_Run_Time_Mode is
+	true.
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb:
+	(Expand_N_Attribute_Reference): No validity checking on OUT parameter of
+	Read or Input attribute.
+
 2008-08-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Use_One_Type): when checking which of two use_type
