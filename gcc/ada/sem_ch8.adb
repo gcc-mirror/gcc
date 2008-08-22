@@ -7064,7 +7064,7 @@ package body Sem_Ch8 is
             --  Case where we know the current use clause for the type
 
             if Present (Current_Use_Clause (T)) then
-               declare
+               Use_Clause_Known : declare
                   Clause1 : constant Node_Id := Parent (Id);
                   Clause2 : constant Node_Id := Current_Use_Clause (T);
                   Ent1    : Entity_Id;
@@ -7093,6 +7093,8 @@ package body Sem_Ch8 is
                         return Defining_Entity (U);
                      end if;
                   end Entity_Of_Unit;
+
+               --  Start of processing for Use_Clause_Known
 
                begin
                   --  If both current use type clause and the use type
@@ -7165,7 +7167,7 @@ package body Sem_Ch8 is
                        ("& is already use-visible through previous "
                         & "use type clause?", Id, Id);
                   end if;
-               end;
+               end Use_Clause_Known;
 
             --  Here if Current_Use_Clause is not set for T, another case
             --  where we do not have the location information available.
