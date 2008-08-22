@@ -657,8 +657,8 @@ package body Exp_Attr is
            Attribute_Unrestricted_Access =>
 
          Access_Cases : declare
-            Btyp_DDT   : constant Entity_Id := Directly_Designated_Type (Btyp);
             Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
+            Btyp_DDT   : Entity_Id;
 
             function Enclosing_Object (N : Node_Id) return Node_Id;
             --  If N denotes a compound name (selected component, indexed
@@ -692,6 +692,27 @@ package body Exp_Attr is
          --  Start of processing for Access_Cases
 
          begin
+            Btyp_DDT := Designated_Type (Btyp);
+
+            --  Handle designated types that come from the limited view
+
+            if Ekind (Btyp_DDT) = E_Incomplete_Type
+              and then From_With_Type (Btyp_DDT)
+              and then Present (Non_Limited_View (Btyp_DDT))
+            then
+               Btyp_DDT := Non_Limited_View (Btyp_DDT);
+
+            elsif Is_Class_Wide_Type (Btyp_DDT)
+               and then Ekind (Etype (Btyp_DDT)) = E_Incomplete_Type
+               and then From_With_Type (Etype (Btyp_DDT))
+               and then Present (Non_Limited_View (Etype (Btyp_DDT)))
+               and then Present (Class_Wide_Type
+                                  (Non_Limited_View (Etype (Btyp_DDT))))
+            then
+               Btyp_DDT :=
+                 Class_Wide_Type (Non_Limited_View (Etype (Btyp_DDT)));
+            end if;
+
             --  In order to improve the text of error messages, the designated
             --  type of access-to-subprogram itypes is set by the semantics as
             --  the associated subprogram entity (see sem_attr). Now we replace
@@ -882,11 +903,10 @@ package body Exp_Attr is
 
                   if Btyp_DDT /= Etype (Ref_Object) then
                      Rewrite (Prefix (N),
-                       Convert_To (Directly_Designated_Type (Typ),
+                       Convert_To (Btyp_DDT,
                          New_Copy_Tree (Prefix (N))));
 
-                     Analyze_And_Resolve (Prefix (N),
-                                          Directly_Designated_Type (Typ));
+                     Analyze_And_Resolve (Prefix (N), Btyp_DDT);
                   end if;
 
                --  When the object is an explicit dereference, convert the
