@@ -9322,7 +9322,9 @@ package body Exp_Dist is
                U_Type := Typ;
 
             elsif U_Type = Underlying_Type (RTE (RE_TypeCode)) then
+
                --  No corresponding FA_TC ???
+
                Lib_RE := RE_TA_TC;
 
             --  Other (non-primitive) types
