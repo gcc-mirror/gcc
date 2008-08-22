@@ -382,12 +382,24 @@ details.  */
 #else // !DEBUG
 #undef NEXT_INSN
 #define NEXT_INSN goto *((pc++)->insn)
-#define REWRITE_INSN(INSN,SLOT,VALUE)		\
-  do {						\
-    pc[-2].insn = INSN;				\
-    pc[-1].SLOT = VALUE;			\
-  }						\
-  while (0)
+
+// REWRITE_INSN does nothing.
+//
+// Rewriting a multi-word instruction in the presence of multiple
+// threads leads to a data race if a thread reads part of an
+// instruction while some other thread is rewriting that instruction.
+// For example, an invokespecial instruction may be rewritten to
+// invokespecial_resolved and its operand changed from an index to a
+// pointer while another thread is executing invokespecial.  This
+// other thread then reads the pointer that is now the operand of
+// invokespecial_resolved and tries to use it as an index.
+//
+// Fixing this requires either spinlocks, a more elaborate data
+// structure, or even per-thread allocated pages.  It's clear from the
+// locking in meth->compile below that the presence of multiple
+// threads was contemplated when this code was written, but the full
+// consequences were not fully appreciated.
+#define REWRITE_INSN(INSN,SLOT,VALUE)
 
 #undef INTERP_REPORT_EXCEPTION
 #define INTERP_REPORT_EXCEPTION(Jthrowable) /* not needed when not debugging */
