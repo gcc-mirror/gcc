@@ -1,5 +1,10 @@
 2008-08-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/37078
+	* gcc.c-torture/compile/pr37078.c: New testcase.
+
+2008-08-22  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37143
 	* g++.dg/vect/pr37143.C: New testcase.
 

@@ -1,5 +1,11 @@
 2008-08-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/37078
+	* tree-vrp.c (extract_range_from_unary_expr): Avoid generating
+	[+INF, +INF] ranges.
+
+2008-08-22  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37143
 	* tree-vect-transform.c (vect_create_cond_for_align_checks): Build
 	a conversion statement instead of a copy.
