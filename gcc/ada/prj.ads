@@ -64,7 +64,7 @@ package Prj is
    --  Tri-state to decide if -lgnarl is needed when linking
 
    type Mode is (Multi_Language, Ada_Only);
-   --  Ada_Only: mode for gnatmake, gnatname, the GNAT driver
+   --  Ada_Only: mode for gnatmake, gnatclean, gnatname, the GNAT driver
    --  Multi_Language: mode for gprbuild, gprclean
 
    type Project_Qualifier is
