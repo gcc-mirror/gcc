@@ -188,7 +188,7 @@ package Lib.Xref is
    --              > = subprogram IN parameter
    --              = = subprogram IN OUT parameter
    --              < = subprogram OUT parameter
-   --              > = subprogram ACCESS parameter
+   --              ^ = subprogram ACCESS parameter
 
    --           b is used for spec entities that are repeated in a body,
    --           including the unit (subprogram, package, task, protected
