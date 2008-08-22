@@ -2404,9 +2404,9 @@
 })
 
 (define_insn_and_split "*vec_extractv4sf_0"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=x,m,fr")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=x,m,f,r")
 	(vec_select:SF
-	  (match_operand:V4SF 1 "nonimmediate_operand" "xm,x,m")
+	  (match_operand:V4SF 1 "nonimmediate_operand" "xm,x,m,m")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
@@ -2659,18 +2659,22 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "V2DF")])
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "sse2_storehpd"
-  [(set (match_operand:DF 0 "nonimmediate_operand"     "=m,x,x*fr")
+  [(set (match_operand:DF 0 "nonimmediate_operand"     "=m,x,x,*f,r")
 	(vec_select:DF
-	  (match_operand:V2DF 1 "nonimmediate_operand" " x,0,o")
+	  (match_operand:V2DF 1 "nonimmediate_operand" " x,0,o,o,o")
 	  (parallel [(const_int 1)])))]
   "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    movhpd\t{%1, %0|%0, %1}
    unpckhpd\t%0, %0
+   #
+   #
    #"
-  [(set_attr "type" "ssemov,sselog1,ssemov")
-   (set_attr "mode" "V1DF,V2DF,DF")])
+  [(set_attr "type" "ssemov,sselog1,ssemov,fmov,imov")
+   (set_attr "mode" "V1DF,V2DF,DF,DF,DF")])
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
@@ -2683,18 +2687,22 @@
   operands[1] = adjust_address (operands[1], DFmode, 8);
 })
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "sse2_storelpd"
-  [(set (match_operand:DF 0 "nonimmediate_operand"     "=m,x,x*fr")
+  [(set (match_operand:DF 0 "nonimmediate_operand"     "=m,x,x,*f,r")
 	(vec_select:DF
-	  (match_operand:V2DF 1 "nonimmediate_operand" " x,x,m")
+	  (match_operand:V2DF 1 "nonimmediate_operand" " x,x,m,m,m")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    movlpd\t{%1, %0|%0, %1}
    #
+   #
+   #
    #"
-  [(set_attr "type" "ssemov")
-   (set_attr "mode" "V1DF,DF,DF")])
+  [(set_attr "type" "ssemov,ssemov,ssemov,fmov,imov")
+   (set_attr "mode" "V1DF,DF,DF,DF,DF")])
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
@@ -2723,21 +2731,25 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "sse2_loadhpd"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,x,o")
+  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,x,o,o,o")
 	(vec_concat:V2DF
 	  (vec_select:DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,0,x,0")
+	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,0,x,0,0,0")
 	    (parallel [(const_int 0)]))
-	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,0,x*fr")))]
+	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,0,x,*f,r")))]
   "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    movhpd\t{%2, %0|%0, %2}
    unpcklpd\t{%2, %0|%0, %2}
    shufpd\t{$1, %1, %0|%0, %1, 1}
+   #
+   #
    #"
-  [(set_attr "type" "ssemov,sselog,sselog,other")
-   (set_attr "mode" "V1DF,V2DF,V2DF,DF")])
+  [(set_attr "type" "ssemov,sselog,sselog,ssemov,fmov,imov")
+   (set_attr "mode" "V1DF,V2DF,V2DF,DF,DF,DF")])
 
 (define_split
   [(set (match_operand:V2DF 0 "memory_operand" "")
@@ -2760,12 +2772,14 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "sse2_loadlpd"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"    "=x,x,x,x,x,m")
+  [(set (match_operand:V2DF 0 "nonimmediate_operand"    "=x,x,x,x,x,m,m,m")
 	(vec_concat:V2DF
-	  (match_operand:DF 2 "nonimmediate_operand"    " m,m,x,0,0,x*fr")
+	  (match_operand:DF 2 "nonimmediate_operand"    " m,m,x,0,0,x,*f,r")
 	  (vec_select:DF
-	    (match_operand:V2DF 1 "vector_move_operand" " C,0,0,x,o,0")
+	    (match_operand:V2DF 1 "vector_move_operand" " C,0,0,x,o,0,0,0")
 	    (parallel [(const_int 1)]))))]
   "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
@@ -2774,9 +2788,11 @@
    movsd\t{%2, %0|%0, %2}
    shufpd\t{$2, %2, %0|%0, %2, 2}
    movhpd\t{%H1, %0|%0, %H1}
+   #
+   #
    #"
-  [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,other")
-   (set_attr "mode" "DF,V1DF,V1DF,V2DF,V1DF,DF")])
+  [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,ssemov,fmov,imov")
+   (set_attr "mode" "DF,V1DF,V1DF,V2DF,V1DF,DF,DF,DF")])
 
 (define_split
   [(set (match_operand:V2DF 0 "memory_operand" "")
