@@ -3671,7 +3671,23 @@ package body Exp_Ch5 is
       Exptyp : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
 
+      Subtype_Ind : Node_Id;
+      --  If the result type of the function is class-wide and the
+      --  expression has a specific type, then we use the expression's
+      --  type as the type of the return object. In cases where the
+      --  expression is an aggregate that is built in place, this avoids
+      --  the need for an expensive conversion of the return object to
+      --  the specific type on assignments to the individual components.
+
    begin
+      if Is_Class_Wide_Type (R_Type)
+        and then not Is_Class_Wide_Type (Etype (Exp))
+      then
+         Subtype_Ind := New_Occurrence_Of (Etype (Exp), Loc);
+      else
+         Subtype_Ind := New_Occurrence_Of (R_Type, Loc);
+      end if;
+
       --  For the case of a simple return that does not come from an extended
       --  return, in the case of Ada 2005 where we are returning a limited
       --  type, we rewrite "return <expression>;" to be:
@@ -3711,43 +3727,21 @@ package body Exp_Ch5 is
             Return_Object_Entity : constant Entity_Id :=
                                      Make_Defining_Identifier (Loc,
                                        New_Internal_Name ('R'));
-            Subtype_Ind : Node_Id;
+            Obj_Decl : constant Node_Id :=
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Return_Object_Entity,
+                           Object_Definition   => Subtype_Ind,
+                           Expression          => Exp);
 
-         begin
-            --  If the result type of the function is class-wide and the
-            --  expression has a specific type, then we use the expression's
-            --  type as the type of the return object. In cases where the
-            --  expression is an aggregate that is built in place, this avoids
-            --  the need for an expensive conversion of the return object to
-            --  the specific type on assignments to the individual components.
+            Ext : constant Node_Id := Make_Extended_Return_Statement (Loc,
+                    Return_Object_Declarations => New_List (Obj_Decl));
             --  Do not perform this high-level optimization if the result type
             --  is an interface because the "this" pointer must be displaced.
 
-            if Is_Class_Wide_Type (R_Type)
-              and then not Is_Interface (R_Type)
-              and then not Is_Class_Wide_Type (Etype (Exp))
-            then
-               Subtype_Ind := New_Occurrence_Of (Etype (Exp), Loc);
-            else
-               Subtype_Ind := New_Occurrence_Of (R_Type, Loc);
-            end if;
-
-            declare
-               Obj_Decl : constant Node_Id :=
-                            Make_Object_Declaration (Loc,
-                              Defining_Identifier => Return_Object_Entity,
-                              Object_Definition   => Subtype_Ind,
-                              Expression          => Exp);
-
-               Ext : constant Node_Id :=
-                       Make_Extended_Return_Statement (Loc,
-                         Return_Object_Declarations => New_List (Obj_Decl));
-
-            begin
-               Rewrite (N, Ext);
-               Analyze (N);
-               return;
-            end;
+         begin
+            Rewrite (N, Ext);
+            Analyze (N);
+            return;
          end;
       end if;
 
@@ -3902,13 +3896,17 @@ package body Exp_Ch5 is
                        Subtype_Mark => New_Reference_To (Etype (Exp), Loc),
                        Expression => Relocate_Node (Exp)));
 
+               --  We do not want discriminant checks on the declaration,
+               --  given that it gets its value from the allocator.
+
+               Set_No_Initialization (Alloc_Node);
+
                Insert_List_Before_And_Analyze (N, New_List (
                  Make_Full_Type_Declaration (Loc,
                    Defining_Identifier => Acc_Typ,
                    Type_Definition     =>
                      Make_Access_To_Object_Definition (Loc,
-                       Subtype_Indication =>
-                          New_Reference_To (R_Type, Loc))),
+                       Subtype_Indication => Subtype_Ind)),
 
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
