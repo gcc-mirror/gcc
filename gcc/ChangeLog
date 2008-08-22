@@ -1,3 +1,9 @@
+2008-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37143
+	* tree-vect-transform.c (vect_create_cond_for_align_checks): Build
+	a conversion statement instead of a copy.
+
 2008-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/37184
