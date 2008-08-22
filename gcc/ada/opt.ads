@@ -144,10 +144,6 @@ package Opt is
    --  Set to non null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
 
-   Assertions_Enabled : Boolean := False;
-   --  GNAT
-   --  Enable assertions made using pragma Assert
-
    ASIS_Mode : Boolean := False;
    --  GNAT
    --  Enable semantic checks and tree transformations that are important
@@ -157,6 +153,10 @@ package Opt is
    --  from the code of GNSA-based tool (a client may need to set ON the
    --  Back_Annotate_Rep_Info flag in this case. At the moment this does not
    --  make very much sense, because GNSA cannot do back annotation).
+
+   Assertions_Enabled : Boolean := False;
+   --  GNAT
+   --  Enable assertions made using pragma Assert
 
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
