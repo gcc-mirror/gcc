@@ -20402,12 +20402,7 @@ Read the rule options from the text file @var{rule_option_filename}, referred as
 @end table
 
 @noindent
-The default behavior is that all the rule checks are enabled, except for
-the checks performed by the compiler.
-@ignore
-and the checks associated with the
-global rules.
-@end ignore
+The default behavior is that all the rule checks are disabled.
 
 A rule file is a text file containing a set of rule options.
 @cindex Rule file (for @code{gnatcheck})
