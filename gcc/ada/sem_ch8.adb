@@ -7073,6 +7073,27 @@ package body Sem_Ch8 is
                   Unit1   : Node_Id;
                   Unit2   : Node_Id;
 
+                  function Entity_Of_Unit (U : Node_Id) return Entity_Id;
+                  --  Return the appropriate entity for determining which unit
+                  --  has a deeper scope: the defining entity for U, unless U
+                  --  is a package instance, in which case we retrieve the
+                  --  entity of the instance spec.
+
+                  --------------------
+                  -- Entity_Of_Unit --
+                  --------------------
+
+                  function Entity_Of_Unit (U : Node_Id) return Entity_Id is
+                  begin
+                     if Nkind (U) =  N_Package_Instantiation
+                       and then Analyzed (U)
+                     then
+                        return Defining_Entity (Instance_Spec (U));
+                     else
+                        return Defining_Entity (U);
+                     end if;
+                  end Entity_Of_Unit;
+
                begin
                   --  If both current use type clause and the use type
                   --  clause for the type are at the compilation unit level,
@@ -7089,23 +7110,10 @@ package body Sem_Ch8 is
                      --  There is a redundant use type clause in a child unit.
                      --  Determine which of the units is more deeply nested.
                      --  If a unit is a package instance, retrieve the entity
-                     --  and its scope from the instance spec
+                     --  and its scope from the instance spec.
 
-                     if Nkind (Unit1) =  N_Package_Instantiation
-                       and then Analyzed (Unit1)
-                     then
-                        Ent1 := Defining_Entity (Instance_Spec (Unit1));
-                     else
-                        Ent1 := Defining_Entity (Unit1);
-                     end if;
-
-                     if Nkind (Unit2) =  N_Package_Instantiation
-                       and then Analyzed (Unit2)
-                     then
-                        Ent2 := Defining_Entity (Instance_Spec (Unit2));
-                     else
-                        Ent2 := Defining_Entity (Unit2);
-                     end if;
+                     Ent1 := Entity_Of_Unit (Unit1);
+                     Ent2 := Entity_Of_Unit (Unit2);
 
                      if Scope (Ent2) = Standard_Standard  then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
@@ -7115,8 +7123,8 @@ package body Sem_Ch8 is
                         Error_Msg_Sloc := Sloc (Id);
                         Err_No := Clause2;
 
-                     --  If both units are child units, we determine which
-                     --  one is the descendant by the scope distance to the
+                     --  If both units are child units, we determine which one
+                     --  is the descendant by the scope distance to the
                      --  ultimate parent unit.
 
                      else
