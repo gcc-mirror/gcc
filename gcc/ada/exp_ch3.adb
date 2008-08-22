@@ -1694,11 +1694,11 @@ package body Exp_Ch3 is
    ----------------------------
 
    procedure Build_Record_Init_Proc (N : Node_Id; Pe : Entity_Id) is
-      Loc         : Source_Ptr := Sloc (N);
-      Discr_Map   : constant Elist_Id := New_Elmt_List;
-      Proc_Id     : Entity_Id;
-      Rec_Type    : Entity_Id;
-      Set_Tag     : Entity_Id := Empty;
+      Loc       : Source_Ptr := Sloc (N);
+      Discr_Map : constant Elist_Id := New_Elmt_List;
+      Proc_Id   : Entity_Id;
+      Rec_Type  : Entity_Id;
+      Set_Tag   : Entity_Id := Empty;
 
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
       --  Build a assignment statement node which assigns to record component
@@ -2515,6 +2515,45 @@ package body Exp_Ch3 is
 
          Statement_List := New_List;
 
+         --  Loop through visible declarations of task types and protected
+         --  types moving any expanded code from the spec to the body of the
+         --  init procedure
+
+         if Is_Task_Record_Type (Rec_Type)
+           or else Is_Protected_Record_Type (Rec_Type)
+         then
+            declare
+               Decl : constant Node_Id :=
+                        Parent (Corresponding_Concurrent_Type (Rec_Type));
+               Def  : Node_Id;
+               N1   : Node_Id;
+               N2   : Node_Id;
+
+            begin
+               if Is_Task_Record_Type (Rec_Type) then
+                  Def := Task_Definition (Decl);
+               else
+                  Def := Protected_Definition (Decl);
+               end if;
+
+               N1 := First (Visible_Declarations (Def));
+               while Present (N1) loop
+                  N2 := N1;
+                  N1 := Next (N1);
+
+                  if Nkind (N2) in N_Statement_Other_Than_Procedure_Call
+                    or else Nkind (N2) in N_Raise_xxx_Error
+                    or else Nkind (N2) = N_Procedure_Call_Statement
+                  then
+                     Append_To (Statement_List,
+                       New_Copy_Tree (N2, New_Scope => Proc_Id));
+                     Rewrite (N2, Make_Null_Statement (Sloc (N2)));
+                     Analyze (N2);
+                  end if;
+               end loop;
+            end;
+         end if;
+
          --  Loop through components, skipping pragmas, in 2 steps. The first
          --  step deals with regular components. The second step deals with
          --  components have per object constraints, and no explicit initia-
@@ -3079,7 +3118,7 @@ package body Exp_Ch3 is
 
       --  If there are discriminants, build the discriminant map to replace
       --  discriminants by their discriminals in complex bound expressions.
-      --  These only arise for the corresponding records of protected types.
+      --  These only arise for the corresponding records of synchronized types.
 
       if Is_Concurrent_Record_Type (Rec_Type)
         and then Has_Discriminants (Rec_Type)

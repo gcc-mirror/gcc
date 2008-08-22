@@ -1,3 +1,14 @@
+2008-08-22  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c, adaint.c: Use Lock_Task and Unlock_Task for non-blocking
+	spawn.
+
+2008-08-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Transfer to the body of the
+	init procedure all the expanded code associated with the spec of
+	task types and protected types.
+
 2008-08-22  Geert Bosch  <bosch@adacore.com>
 
 	* gcc-interface/trans.c: Define FP_ARITH_MAY_WIDEN
