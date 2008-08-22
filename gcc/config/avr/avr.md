@@ -54,6 +54,7 @@
    (UNSPEC_INDEX_JMP	1)
    (UNSPEC_SEI		2)
    (UNSPEC_CLI		3)
+   (UNSPEC_SWAP		4)
 
    (UNSPECV_PROLOGUE_SAVES	0)
    (UNSPECV_EPILOGUE_RESTORES	1)
@@ -1261,6 +1262,19 @@
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_n,set_n")])
 
+(define_peephole2 ; andi
+  [(set (match_operand:QI 0 "d_register_operand" "")
+        (and:QI (match_dup 0)
+	        (match_operand:QI 1 "const_int_operand" "")))
+   (set (match_dup 0)
+        (and:QI (match_dup 0)
+	        (match_operand:QI 2 "const_int_operand" "")))]
+  ""
+  [(set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  {
+    operands[1] = GEN_INT (INTVAL (operands[1]) & INTVAL (operands[2]));
+  })
+
 ;;|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ;; ior
 
@@ -1389,10 +1403,57 @@
   [(set_attr "length" "4")
    (set_attr "cc" "set_n")])
 
+;; swap
+
+(define_insn "*swap"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(unspec:QI [(match_operand:QI 1 "register_operand" "0")]
+		   UNSPEC_SWAP))]
+  ""
+  "swap %0"
+  [(set_attr "length" "1")
+   (set_attr "cc" "none")])
+
 ;;<< << << << << << << << << << << << << << << << << << << << << << << << << <<
 ;; arithmetic shift left
 
-(define_insn "ashlqi3"
+(define_expand "ashlqi3"
+  [(set (match_operand:QI 0 "register_operand"            "")
+	(ashift:QI (match_operand:QI 1 "register_operand" "")
+		   (match_operand:QI 2 "general_operand"  "")))]
+  ""
+  "")
+
+(define_split ; ashlqi3_const4
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 4)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int -16)))]
+  "")
+
+(define_split ; ashlqi3_const5
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 5)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 1)))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int -32)))]
+  "")
+
+(define_split ; ashlqi3_const6
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 6)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 2)))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int -64)))]
+  "")
+
+(define_insn "*ashlqi3"
   [(set (match_operand:QI 0 "register_operand"           "=r,r,r,r,!d,r,r")
 	(ashift:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,0,0")
 		   (match_operand:QI 2 "general_operand"  "r,L,P,K,n,n,Qm")))]
@@ -1420,6 +1481,41 @@
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
+
+(define_peephole2 ; ashlqi3_l_const4
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 4)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 1) (const_int -16))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
+
+(define_peephole2 ; ashlqi3_l_const5
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 5)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 1)))
+   (set (match_dup 1) (const_int -32))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
+
+(define_peephole2 ; ashlqi3_l_const6
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(ashift:QI (match_dup 0)
+		   (const_int 6)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 2)))
+   (set (match_dup 1) (const_int -64))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
 
 (define_peephole2
   [(match_scratch:QI 3 "d")
@@ -1536,7 +1632,43 @@
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; logical shift right
 
-(define_insn "lshrqi3"
+(define_expand "lshrqi3"
+  [(set (match_operand:QI 0 "register_operand"              "")
+	(lshiftrt:QI (match_operand:QI 1 "register_operand" "")
+		     (match_operand:QI 2 "general_operand"  "")))]
+  ""
+  "")
+
+(define_split	; lshrqi3_const4
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 4)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int 15)))]
+  "")
+
+(define_split	; lshrqi3_const5
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 5)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 1)))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int 7)))]
+  "")
+
+(define_split	; lshrqi3_const6
+  [(set (match_operand:QI 0 "d_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 6)))]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 2)))
+   (set (match_dup 0) (and:QI (match_dup 0) (const_int 3)))]
+  "")
+
+(define_insn "*lshrqi3"
   [(set (match_operand:QI 0 "register_operand"             "=r,r,r,r,!d,r,r")
 	(lshiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,0,0")
 		     (match_operand:QI 2 "general_operand"  "r,L,P,K,n,n,Qm")))]
@@ -1564,6 +1696,41 @@
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
+
+(define_peephole2 ; lshrqi3_l_const4
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 4)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 1) (const_int 15))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
+
+(define_peephole2 ; lshrqi3_l_const5
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 5)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 1)))
+   (set (match_dup 1) (const_int 7))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
+
+(define_peephole2 ; lshrqi3_l_const6
+  [(set (match_operand:QI 0 "l_register_operand" "")
+	(lshiftrt:QI (match_dup 0)
+		     (const_int 6)))
+   (match_scratch:QI 1 "d")]
+  ""
+  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+   (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 2)))
+   (set (match_dup 1) (const_int 3))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
+  "")
 
 (define_peephole2
   [(match_scratch:QI 3 "d")
