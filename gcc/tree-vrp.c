@@ -2707,7 +2707,10 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	max = fold_unary_to_constant (code, type, vr0.max);
       else if (!needs_overflow_infinity (type))
 	max = TYPE_MAX_VALUE (type);
-      else if (supports_overflow_infinity (type))
+      else if (supports_overflow_infinity (type)
+	       /* We shouldn't generate [+INF, +INF] as set_value_range
+		  doesn't like this and ICEs.  */
+	       && !is_positive_overflow_infinity (min))
 	max = positive_overflow_infinity (type);
       else
 	{

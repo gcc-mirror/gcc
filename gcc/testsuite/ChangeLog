@@ -1,3 +1,8 @@
+2008-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37143
+	* g++.dg/vect/pr37143.C: New testcase.
+
 2008-08-22  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/30239
