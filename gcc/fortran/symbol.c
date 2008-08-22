@@ -1540,9 +1540,11 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 	  gfc_error (msg, sym->name, where, gfc_basic_typename (sym->ts.type));
 	  return FAILURE;
 	}
-      else if (gfc_notify_std (GFC_STD_GNU, msg, sym->name, where,
-			       gfc_basic_typename (sym->ts.type)) == FAILURE)
+      if (gfc_notify_std (GFC_STD_GNU, msg, sym->name, where,
+	      		  gfc_basic_typename (sym->ts.type)) == FAILURE)
 	return FAILURE;
+      if (gfc_option.warn_surprising)
+	gfc_warning (msg, sym->name, where, gfc_basic_typename (sym->ts.type));
     }
 
   flavor = sym->attr.flavor;

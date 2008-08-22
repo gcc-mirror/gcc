@@ -757,6 +757,10 @@ A LOGICAL SELECT construct has three CASE statements.
 
 @item
 A TRANSFER specifies a source that is shorter than the destination.
+
+@item
+The type of a function result is declared more than once with the same type.  If
+@option{-pedantic} or standard-conforming mode is enabled, this is an error.
 @end itemize
 
 @item -Wtabs

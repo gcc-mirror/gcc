@@ -1,5 +1,13 @@
 2008-08-22  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/30239
+	* symbol.c (gfc_add_type): Warn on -Wsurprising if a function-result
+	type is re-declared but neither -pedantic nor -std=f* is given and so
+	this is no error.
+	* invoke.texi (-Wsurprising): Document this new behaviour.
+
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
 	* gfortran.h (in_prefix): Removed from this header.
 	* match.h (gfc_matching_prefix): Moved and renamed from `in_prefix'.
 	* decl.c (in_prefix): Removed from here.
