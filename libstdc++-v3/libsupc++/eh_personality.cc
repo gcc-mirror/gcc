@@ -377,7 +377,7 @@ PERSONALITY_FUNCTION (int version,
   const unsigned char *p;
   _Unwind_Ptr landing_pad, ip;
   int handler_switch_value;
-  void* thrown_ptr = 0;
+  void* thrown_ptr = ue_header + 1;
   bool foreign_exception;
   int ip_before_insn = 0;
 
@@ -543,33 +543,30 @@ PERSONALITY_FUNCTION (int version,
       bool saw_handler = false;
 
 #ifdef __ARM_EABI_UNWINDER__
-      // ??? How does this work - more importantly, how does it interact with
-      // dependent exceptions?
       throw_type = ue_header;
       if (actions & _UA_FORCE_UNWIND)
 	{
 	  __GXX_INIT_FORCED_UNWIND_CLASS(ue_header->exception_class);
+	  thrown_ptr = 0;
 	}
-      else if (!foreign_exception)
-	thrown_ptr = __get_object_from_ue (ue_header);
+      else if (foreign_exception)
+	thrown_ptr = 0;
 #else
       // During forced unwinding, match a magic exception type.
       if (actions & _UA_FORCE_UNWIND)
 	{
 	  throw_type = &typeid(abi::__forced_unwind);
+	  thrown_ptr = 0;
 	}
       // With a foreign exception class, there's no exception type.
       // ??? What to do about GNU Java and GNU Ada exceptions?
       else if (foreign_exception)
 	{
 	  throw_type = &typeid(abi::__foreign_exception);
+	  thrown_ptr = 0;
 	}
       else
-        {
-          thrown_ptr = __get_object_from_ue (ue_header);
-          throw_type = __get_exception_header_from_obj
-            (thrown_ptr)->exceptionType;
-        }
+	throw_type = xh->exceptionType;
 #endif
 
       while (1)
@@ -761,14 +758,13 @@ __cxa_call_unexpected (void *exc_obj_in)
 
       __cxa_eh_globals *globals = __cxa_get_globals_fast ();
       __cxa_exception *new_xh = globals->caughtExceptions;
-      void *new_ptr = __get_object_from_ambiguous_exception (new_xh);
+      void *new_ptr = new_xh + 1;
 
       // We don't quite have enough stuff cached; re-parse the LSDA.
       parse_lsda_header (0, xh_lsda, &info);
 
       // If this new exception meets the exception spec, allow it.
-      if (check_exception_spec (&info, __get_exception_header_from_obj
-                                  (new_ptr)->exceptionType,
+      if (check_exception_spec (&info, new_xh->exceptionType,
 				new_ptr, xh_switch_value))
 	__throw_exception_again;
 

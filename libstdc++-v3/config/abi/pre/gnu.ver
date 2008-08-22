@@ -66,9 +66,7 @@ GLIBCXX_3.4 {
 #     std::condition_variable;
       std::co[^n]*;
       std::c[p-s]*;
-      std::cu[^r]*;
-#     std::current_exception
-      std::c[v-z]*;
+      std::c[u-z]*;
 #     std::[d-g]*;
       std::d[a-d]*;
       std::d[f-z]*;
@@ -114,13 +112,10 @@ GLIBCXX_3.4 {
       std::n[^au]*;
       std::nu[^m]*;
       std::num[^e]*;
+      std::[p-r]*;
       std::ostrstream*;
       std::out_of_range*;
       std::overflow_error*;
-      std::[p-q]*;
-      std::r[^e]*;
-      std::re[^t]*;
-#     std::rethrow_exception
       std::set_new_handler*;
       std::set_terminate*;
       std::set_unexpected*;
@@ -1051,25 +1046,5 @@ CXXABI_1.3.3 {
     _ZTIu8char32_t;
     _ZTIPu8char32_t;
     _ZTIPKu8char32_t;
-
-    # exception_ptr
-    _ZNSt15__exception_ptr13exception_ptrC1Ev;
-    _ZNSt15__exception_ptr13exception_ptrC2Ev;
-    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrD1Ev;
-    _ZNSt15__exception_ptr13exception_ptrD2Ev;
-    _ZNSt15__exception_ptr13exception_ptraSERKS0_;
-    _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
-    _ZNKSt15__exception_ptr13exception_ptrntEv;
-    _ZNKSt15__exception_ptr13exception_ptr20__cxa_exception_typeEv;
-    _ZNSt15__exception_ptr13exception_ptr4swapERS0_;
-    _ZNSt15__exception_ptreqERKNS_13exception_ptrES2_;
-    _ZNSt15__exception_ptrneERKNS_13exception_ptrES2_;
-
-    _ZSt17current_exceptionv;
-    _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
 
 } CXXABI_1.3.2;

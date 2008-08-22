@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling routines for catching.
-// Copyright (C) 2001, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -43,15 +43,7 @@ std::type_info *__cxa_current_exception_type ()
   __cxa_eh_globals *globals = __cxa_get_globals ();
   __cxa_exception *header = globals->caughtExceptions;
   if (header)
-    {
-      if (__is_dependent_exception (header->unwindHeader.exception_class))
-        {
-          __cxa_dependent_exception *de =
-            __get_dependent_exception_from_ue (&header->unwindHeader);
-          header = __get_exception_header_from_obj (de->primaryException);
-        }
-      return header->exceptionType;
-    }
+    return header->exceptionType;
   else
     return 0;
 }
