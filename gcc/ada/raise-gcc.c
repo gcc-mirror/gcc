@@ -671,6 +671,14 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
    There are two variants of this routine, depending on the underlying
    mechanism (DWARF/SJLJ), which account for differences in the tables.  */
 
+#ifdef __APPLE__
+/* On MacOS X, versions older than 10.5 don't export _Unwind_GetIPInfo.  */
+#undef HAVE_GETIPINFO
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#define HAVE_GETIPINFO 1
+#endif
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
 
 #define __builtin_eh_return_data_regno(x) x
@@ -680,8 +688,14 @@ get_call_site_action_for (_Unwind_Context *uw_context,
                           region_descriptor *region,
                           action_descriptor *action)
 {
-  /* Subtract 1 because GetIP returns the actual call_site value + 1.  */
-  _Unwind_Ptr call_site = _Unwind_GetIP (uw_context) - 1;
+  int ip_before_insn = 0;
+#ifdef HAVE_GETIPINFO
+  _Unwind_Ptr call_site = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
+#else
+  _Unwind_Ptr call_site = _Unwind_GetIP (uw_context);
+#endif
+  if (!ip_before_insn)
+    call_site--;
 
   /* call_site is a direct index into the call-site table, with two special
      values : -1 for no-action and 0 for "terminate".  The latter should never
@@ -737,17 +751,15 @@ get_call_site_action_for (_Unwind_Context *uw_context,
                           region_descriptor *region,
                           action_descriptor *action)
 {
-  /* Subtract 1 because GetIP yields a call return address while we are
-     interested in information for the call point.  This does not always
-     yield the exact call instruction address but always brings the IP back
-     within the corresponding region.
-
-     ??? When unwinding up from a signal handler triggered by a trap on some
-     instruction, we usually have the faulting instruction address here and
-     subtracting 1 might get us into the wrong region.  */
-  _Unwind_Ptr ip = _Unwind_GetIP (uw_context) - 1;
-
   const unsigned char *p = region->call_site_table;
+  int ip_before_insn = 0;
+#ifdef HAVE_GETIPINFO
+  _Unwind_Ptr ip = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
+#else
+  _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
+#endif
+  if (!ip_before_insn)
+    ip--;
 
   /* Unless we are able to determine otherwise...  */
   action->kind = nothing;
