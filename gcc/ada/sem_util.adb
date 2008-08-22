@@ -4616,14 +4616,6 @@ package body Sem_Util is
          return Has_Preelaborable_Initialization (Base_Type (E));
       end if;
 
-      --  Other private types never have preelaborable initialization
-
-      if Is_Private_Type (E) then
-         return False;
-      end if;
-
-      --  Here for all non-private view
-
       --  All elementary types have preelaborable initialization
 
       if Is_Elementary_Type (E) then
@@ -4642,6 +4634,13 @@ package body Sem_Util is
       --  initialization.
 
       elsif Is_Derived_Type (E) then
+
+         --  If the derived type is a private extension then it doesn't have
+         --  preelaborable initialization.
+
+         if Ekind (Base_Type (E)) = E_Record_Type_With_Private then
+            return False;
+         end if;
 
          --  First check whether ancestor type has preelaborable initialization
 
@@ -4662,6 +4661,13 @@ package body Sem_Util is
          then
             Has_PE := False;
          end if;
+
+      --  Private types not derived from a type having preelaborable init and
+      --  that are not marked with pragma Preelaborable_Initialization do not
+      --  have preelaborable initialization.
+
+      elsif Is_Private_Type (E) then
+         return False;
 
       --  Record type has PI if it is non private and all components have PI
 
