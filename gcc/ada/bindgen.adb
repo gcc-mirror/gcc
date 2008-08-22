@@ -604,6 +604,20 @@ package body Bindgen is
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
 
+         --  Import entry point for environment feature enable/disable
+         --  routine, and indication that it's been called previously.
+
+         if OpenVMS_On_Target then
+            WBI ("");
+            WBI ("      procedure Set_Features;");
+            WBI ("      pragma Import (C, Set_Features, " &
+                 """__gnat_set_features"");");
+            WBI ("");
+            WBI ("      Features_Set : Integer;");
+            WBI ("      pragma Import (C, Features_Set, " &
+                 """__gnat_features_set"");");
+         end if;
+
          --  Initialize stack limit variable of the environment task if the
          --  stack check method is stack limit and stack check is enabled.
 
@@ -765,6 +779,15 @@ package body Bindgen is
          WBI ("      if Handler_Installed = 0 then");
          WBI ("         Install_Handler;");
          WBI ("      end if;");
+
+         --  Generate call to Set_Features
+
+         if OpenVMS_On_Target then
+            WBI ("");
+            WBI ("      if Features_Set = 0 then");
+            WBI ("         Set_Features;");
+            WBI ("      end if;");
+         end if;
       end if;
 
       --  Generate call to set Initialize_Scalar values if active
@@ -1048,6 +1071,15 @@ package body Bindgen is
          WBI ("     {");
          WBI ("        __gnat_install_handler ();");
          WBI ("     }");
+
+         --  Call feature enable/disable routine
+
+         if OpenVMS_On_Target then
+            WBI ("   if (__gnat_features_set == 0)");
+            WBI ("     {");
+            WBI ("        __gnat_set_features ();");
+            WBI ("     }");
+         end if;
       end if;
 
       --  Initialize stack limit for the environment task if the stack
@@ -2599,12 +2631,21 @@ package body Bindgen is
 
       Gen_Elab_Defs_C;
 
-      --  Imported variable used to track elaboration/finalization phase.
-      --  Used only when we have a runtime.
+      --  Imported variables used only when we have a runtime.
 
       if not Suppress_Standard_Library_On_Target then
+
+         --  Track elaboration/finalization phase.
+
          WBI ("extern int  __gnat_handler_installed;");
          WBI ("");
+
+         --  Track feature enable/disable on VMS.
+
+         if OpenVMS_On_Target then
+            WBI ("extern int  __gnat_features_set;");
+            WBI ("");
+         end if;
       end if;
 
       --  Write argv/argc exit status stuff if main program case
