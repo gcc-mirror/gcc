@@ -973,7 +973,7 @@ package body Exp_Aggr is
          if Present (Flist) then
             F := New_Copy_Tree (Flist);
 
-         elsif Present (Etype (N)) and then Controlled_Type (Etype (N)) then
+         elsif Present (Etype (N)) and then Needs_Finalization (Etype (N)) then
             if Is_Entity_Name (Into)
               and then Present (Scope (Entity (Into)))
             then
@@ -1137,7 +1137,7 @@ package body Exp_Aggr is
                      Expression => Make_Null (Loc)));
             end if;
 
-            if Controlled_Type (Ctype) then
+            if Needs_Finalization (Ctype) then
                Append_List_To (L,
                  Make_Init_Call (
                    Ref         => New_Copy_Tree (Indexed_Comp),
@@ -1159,7 +1159,7 @@ package body Exp_Aggr is
                 Name       => Indexed_Comp,
                 Expression => New_Copy_Tree (Expr));
 
-            if Present (Comp_Type) and then Controlled_Type (Comp_Type) then
+            if Present (Comp_Type) and then Needs_Finalization (Comp_Type) then
                Set_No_Ctrl_Actions (A);
 
                --  If this is an aggregate for an array of arrays, each
@@ -1223,7 +1223,7 @@ package body Exp_Aggr is
             --  inner finalization actions).
 
             if Present (Comp_Type)
-              and then Controlled_Type (Comp_Type)
+              and then Needs_Finalization (Comp_Type)
               and then not Is_Limited_Type (Comp_Type)
               and then
                 (not Is_Array_Type (Comp_Type)
@@ -2167,7 +2167,7 @@ package body Exp_Aggr is
          --  proper scope is the scope of the target rather than the
          --  potentially transient current scope.
 
-         if Controlled_Type (Typ) then
+         if Needs_Finalization (Typ) then
 
             --  The current aggregate belongs to an allocator which creates
             --  an object through an anonymous access type or acts as the root
@@ -2645,7 +2645,7 @@ package body Exp_Aggr is
 
                --  Call Adjust manually
 
-               if Controlled_Type (Etype (A))
+               if Needs_Finalization (Etype (A))
                  and then not Is_Limited_Type (Etype (A))
                then
                   Append_List_To (Assign,
@@ -2854,7 +2854,7 @@ package body Exp_Aggr is
             --  The controller is the one of the parent type defining the
             --  component (in case of inherited components).
 
-            if Controlled_Type (Comp_Type) then
+            if Needs_Finalization (Comp_Type) then
                Internal_Final_List :=
                  Make_Selected_Component (Loc,
                    Prefix => Convert_To (
@@ -3027,7 +3027,7 @@ package body Exp_Aggr is
                --     Attach_To_Final_List (tmp.comp,
                --       comp_typ (tmp)._record_controller.f)
 
-               if Controlled_Type (Comp_Type)
+               if Needs_Finalization (Comp_Type)
                  and then not Is_Limited_Type (Comp_Type)
                then
                   Append_List_To (L,
@@ -4961,7 +4961,7 @@ package body Exp_Aggr is
         or else Parent_Kind = N_Extension_Aggregate
         or else Parent_Kind = N_Component_Association
         or else (Parent_Kind = N_Object_Declaration
-                  and then Controlled_Type (Typ))
+                  and then Needs_Finalization (Typ))
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)
       then

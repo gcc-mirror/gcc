@@ -846,11 +846,11 @@ package body Exp_Ch7 is
       end if;
    end Check_Visibly_Controlled;
 
-   ---------------------
-   -- Controlled_Type --
-   ---------------------
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
 
-   function Controlled_Type (T : Entity_Id) return Boolean is
+   function Needs_Finalization (T : Entity_Id) return Boolean is
 
       function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
       --  If type is not frozen yet, check explicitly among its components,
@@ -875,7 +875,7 @@ package body Exp_Ch7 is
 
                while Present (Comp) loop
                   if not Is_Type (Comp)
-                    and then Controlled_Type (Etype (Comp))
+                    and then Needs_Finalization (Etype (Comp))
                   then
                      return True;
                   end if;
@@ -886,7 +886,7 @@ package body Exp_Ch7 is
                return False;
 
             elsif Is_Array_Type (Rec) then
-               return Is_Controlled (Component_Type (Rec));
+               return Needs_Finalization (Component_Type (Rec));
 
             else
                return Has_Controlled_Component (Rec);
@@ -896,7 +896,7 @@ package body Exp_Ch7 is
          end if;
       end Has_Some_Controlled_Component;
 
-   --  Start of processing for Controlled_Type
+   --  Start of processing for Needs_Finalization
 
    begin
       --  Class-wide types must be treated as controlled because they may
@@ -910,18 +910,18 @@ package body Exp_Ch7 is
         or else Is_Controlled (T)
         or else Has_Some_Controlled_Component (T)
         or else (Is_Concurrent_Type (T)
-                   and then Present (Corresponding_Record_Type (T))
-                   and then Controlled_Type (Corresponding_Record_Type (T)));
-   end Controlled_Type;
+                  and then Present (Corresponding_Record_Type (T))
+                  and then Needs_Finalization (Corresponding_Record_Type (T)));
+   end Needs_Finalization;
 
-   ---------------------------
-   -- CW_Or_Controlled_Type --
-   ---------------------------
+   -------------------------------
+   -- CW_Or_Has_Controlled_Part --
+   -------------------------------
 
-   function CW_Or_Controlled_Type (T : Entity_Id) return Boolean is
+   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean is
    begin
-      return Is_Class_Wide_Type (T) or else Controlled_Type (T);
-   end CW_Or_Controlled_Type;
+      return Is_Class_Wide_Type (T) or else Needs_Finalization (T);
+   end CW_Or_Has_Controlled_Part;
 
    --------------------------
    -- Controller_Component --
@@ -2038,7 +2038,7 @@ package body Exp_Ch7 is
             null;
 
          elsif Scope (Original_Record_Component (Comp)) = E
-           and then Controlled_Type (Etype (Comp))
+           and then Needs_Finalization (Etype (Comp))
          then
             return True;
          end if;
@@ -3429,7 +3429,7 @@ package body Exp_Ch7 is
          --  and the actual should be finalized on return from the call ???
 
          if Nkind (N) = N_Object_Renaming_Declaration
-           and then Controlled_Type (Etype (Defining_Identifier (N)))
+           and then Needs_Finalization (Etype (Defining_Identifier (N)))
          then
             null;
 
@@ -3439,7 +3439,7 @@ package body Exp_Ch7 is
                        N_Selected_Component,
                        N_Indexed_Component)
            and then
-             Controlled_Type
+             Needs_Finalization
                (Etype (Prefix (Renamed_Object (Defining_Identifier (N)))))
          then
             null;

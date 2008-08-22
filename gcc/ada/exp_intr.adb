@@ -815,7 +815,7 @@ package body Exp_Intr is
 
       --  Processing for pointer to controlled type
 
-      if Controlled_Type (Desig_T) then
+      if Needs_Finalization (Desig_T) then
          Deref :=
            Make_Explicit_Dereference (Loc,
              Prefix => Duplicate_Subexpr_No_Checks (Arg));

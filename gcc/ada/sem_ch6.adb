@@ -3118,7 +3118,7 @@ package body Sem_Ch6 is
       --  actions interfere in complex ways with inlining.
 
       elsif Ekind (Subp) = E_Function
-        and then Controlled_Type (Etype (Subp))
+        and then Needs_Finalization (Etype (Subp))
       then
          Cannot_Inline
            ("cannot inline & (controlled return type)?", N, Subp);
@@ -3927,7 +3927,7 @@ package body Sem_Ch6 is
             if Is_Inherently_Limited_Type (Typ) then
                Set_Returns_By_Ref (Designator);
 
-            elsif Present (Utyp) and then CW_Or_Controlled_Type (Utyp) then
+            elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;
          end;
@@ -5268,13 +5268,9 @@ package body Sem_Ch6 is
             --  returns. This is true even if we are able to get away with
             --  having 'in out' parameters, which are normally illegal for
             --  functions. This formal is also needed when the function has
-            --  a tagged result, because generally such functions can be called
-            --  in a dispatching context and such calls must be handled like
-            --  calls to class-wide functions.
+            --  a tagged result.
 
-            if Controlled_Type (Result_Subt)
-              or else Is_Tagged_Type (Underlying_Type (Result_Subt))
-            then
+            if Needs_BIP_Final_List (E) then
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Finalizable_Ptr_Ptr),

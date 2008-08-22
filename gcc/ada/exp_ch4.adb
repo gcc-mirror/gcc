@@ -575,7 +575,7 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
-      if Is_Tagged_Type (T) or else Controlled_Type (T) then
+      if Is_Tagged_Type (T) or else Needs_Finalization (T) then
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
@@ -669,7 +669,7 @@ package body Exp_Ch4 is
                Set_No_Initialization (Expression (Tmp_Node));
                Insert_Action (N, Tmp_Node);
 
-               if Controlled_Type (T)
+               if Needs_Finalization (T)
                  and then Ekind (PtrT) = E_Anonymous_Access_Type
                then
                   --  Create local finalization list for access parameter
@@ -717,7 +717,7 @@ package body Exp_Ch4 is
                --  Inherit the final chain to ensure that the expansion of the
                --  aggregate is correct in case of controlled types
 
-               if Controlled_Type (Directly_Designated_Type (PtrT)) then
+               if Needs_Finalization (Directly_Designated_Type (PtrT)) then
                   Set_Associated_Final_Chain (Def_Id,
                     Associated_Final_Chain (PtrT));
                end if;
@@ -739,7 +739,7 @@ package body Exp_Ch4 is
                   Set_No_Initialization (Expression (Tmp_Node));
                   Insert_Action (N, Tmp_Node);
 
-                  if Controlled_Type (T)
+                  if Needs_Finalization (T)
                     and then Ekind (PtrT) = E_Anonymous_Access_Type
                   then
                      --  Create local finalization list for access parameter
@@ -835,8 +835,8 @@ package body Exp_Ch4 is
             Insert_Action (N, Tag_Assign);
          end if;
 
-         if Controlled_Type (DesigT)
-            and then Controlled_Type (T)
+         if Needs_Finalization (DesigT)
+            and then Needs_Finalization (T)
          then
             declare
                Attach : Node_Id;
@@ -868,7 +868,7 @@ package body Exp_Ch4 is
                --  Normal case, not a secondary stack allocation
 
                else
-                  if Controlled_Type (T)
+                  if Needs_Finalization (T)
                     and then Ekind (PtrT) = E_Anonymous_Access_Type
                   then
                      --  Create local finalization list for access parameter
@@ -3502,7 +3502,7 @@ package body Exp_Ch4 is
                       Parameter_Associations => Args));
                end if;
 
-               if Controlled_Type (T) then
+               if Needs_Finalization (T) then
 
                   --  Postpone the generation of a finalization call for the
                   --  current allocator if it acts as a coextension.

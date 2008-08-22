@@ -728,7 +728,7 @@ package body Exp_Ch5 is
          --  Cases where either Forwards_OK or Backwards_OK is true
 
          if Forwards_OK (N) or else Backwards_OK (N) then
-            if Controlled_Type (Component_Type (L_Type))
+            if Needs_Finalization (Component_Type (L_Type))
               and then Base_Type (L_Type) = Base_Type (R_Type)
               and then Ndim = 1
               and then not No_Ctrl_Actions (N)
@@ -862,7 +862,7 @@ package body Exp_Ch5 is
                    Right_Opnd => Cright_Lo);
             end if;
 
-            if Controlled_Type (Component_Type (L_Type))
+            if Needs_Finalization (Component_Type (L_Type))
               and then Base_Type (L_Type) = Base_Type (R_Type)
               and then Ndim = 1
               and then not No_Ctrl_Actions (N)
@@ -1775,7 +1775,7 @@ package body Exp_Ch5 is
          return;
 
       elsif Is_Tagged_Type (Typ)
-        or else (Controlled_Type (Typ) and then not Is_Array_Type (Typ))
+        or else (Needs_Finalization (Typ) and then not Is_Array_Type (Typ))
       then
          Tagged_Case : declare
             L                   : List_Id := No_List;
@@ -1937,7 +1937,7 @@ package body Exp_Ch5 is
             --  If no restrictions on aborts, protect the whole assignment
             --  for controlled objects as per 9.8(11).
 
-            if Controlled_Type (Typ)
+            if Needs_Finalization (Typ)
               and then Expand_Ctrl_Actions
               and then Abort_Allowed
             then
@@ -2381,9 +2381,9 @@ package body Exp_Ch5 is
       Result          : Node_Id;
       Exp             : Node_Id;
 
-      function Controlled_Type (Typ : Entity_Id) return Boolean;
+      function Has_Controlled_Parts (Typ : Entity_Id) return Boolean;
       --  Determine whether type Typ is controlled or contains a controlled
-      --  component.
+      --  subcomponent.
 
       function Move_Activation_Chain return Node_Id;
       --  Construct a call to System.Tasking.Stages.Move_Activation_Chain
@@ -2399,16 +2399,16 @@ package body Exp_Ch5 is
       --    From         finalization list of the return statement
       --    To           finalization list passed in by the caller
 
-      ---------------------
-      -- Controlled_Type --
-      ---------------------
+      --------------------------
+      -- Has_Controlled_Parts --
+      --------------------------
 
-      function Controlled_Type (Typ : Entity_Id) return Boolean is
+      function Has_Controlled_Parts (Typ : Entity_Id) return Boolean is
       begin
          return
            Is_Controlled (Typ)
              or else Has_Controlled_Component (Typ);
-      end Controlled_Type;
+      end Has_Controlled_Parts;
 
       ---------------------------
       -- Move_Activation_Chain --
@@ -2542,13 +2542,13 @@ package body Exp_Ch5 is
 
          if Is_Build_In_Place
            and then
-               (Controlled_Type (Parent_Function_Typ)
+               (Has_Controlled_Parts (Parent_Function_Typ)
                  or else (Is_Class_Wide_Type (Parent_Function_Typ)
                            and then
-                             Controlled_Type (Root_Type (Parent_Function_Typ)))
-                 or else Controlled_Type (Etype (Return_Object_Entity))
+                        Has_Controlled_Parts (Root_Type (Parent_Function_Typ)))
+                 or else Has_Controlled_Parts (Etype (Return_Object_Entity))
                  or else (Present (Exp)
-                           and then Controlled_Type (Etype (Exp))))
+                           and then Has_Controlled_Parts (Etype (Exp))))
          then
             Append_To (Statements, Move_Final_List);
          end if;
@@ -3850,7 +3850,7 @@ package body Exp_Ch5 is
            and then
               (not Is_Array_Type (Exptyp)
                 or else Is_Constrained (Exptyp) = Is_Constrained (R_Type)
-                or else CW_Or_Controlled_Type (Utyp))
+                or else CW_Or_Has_Controlled_Part (Utyp))
            and then Nkind (Exp) = N_Function_Call
          then
             Set_By_Ref (N);
@@ -3873,7 +3873,7 @@ package body Exp_Ch5 is
          --  controlled (by the virtue of restriction No_Finalization) because
          --  gigi is not able to properly allocate class-wide types.
 
-         elsif CW_Or_Controlled_Type (Utyp) then
+         elsif CW_Or_Has_Controlled_Part (Utyp) then
             declare
                Loc        : constant Source_Ptr := Sloc (N);
                Temp       : constant Entity_Id :=
@@ -4221,7 +4221,7 @@ package body Exp_Ch5 is
       L   : constant Node_Id    := Name (N);
       T   : constant Entity_Id  := Underlying_Type (Etype (L));
 
-      Ctrl_Act : constant Boolean := Controlled_Type (T)
+      Ctrl_Act : constant Boolean := Needs_Finalization (T)
                                        and then not No_Ctrl_Actions (N);
 
       Save_Tag : constant Boolean := Is_Tagged_Type (T)
