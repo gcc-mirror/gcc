@@ -5591,9 +5591,14 @@ package body Exp_Ch6 is
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
+   --------------------------
+   -- Needs_BIP_Final_List --
+   --------------------------
+
    function Needs_BIP_Final_List (E : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (E));
       Result_Subt : constant Entity_Id := Underlying_Type (Etype (E));
+
    begin
       --  We need the BIP_Final_List if the result type needs finalization. We
       --  also need it for tagged types, even if not class-wide, because some
@@ -5602,7 +5607,7 @@ package body Exp_Ch6 is
       --  pragma Restrictions (No_Finalization), we never need this parameter.
 
       return (Needs_Finalization (Result_Subt)
-              or else Is_Tagged_Type (Underlying_Type (Result_Subt)))
+               or else Is_Tagged_Type (Underlying_Type (Result_Subt)))
         and then not Restriction_Active (No_Finalization);
    end Needs_BIP_Final_List;
 
