@@ -217,22 +217,6 @@ nanosleep (struct timestruc_t *Rqtp, struct timestruc_t *Rmtp)
 
 static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
 
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
-{
-  /* We need to adjust the "Instruction Address Register" value, part of a
-     'struct mstsave' wrapped as a jumpbuf in the mcontext field designated by
-     the signal data pointer we get.  See sys/context.h + sys/mstsave.h  */
-
-  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-  mcontext->jmp_context.iar++;
-}
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
 static void
 __gnat_error_handler (int sig, siginfo_t * si, void * uc)
 {
@@ -262,7 +246,6 @@ __gnat_error_handler (int sig, siginfo_t * si, void * uc)
       msg = "unhandled signal";
     }
 
-  __gnat_adjust_context_for_raise (sig, uc);
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -464,26 +447,6 @@ __gnat_machine_state_length (void)
 static void
 __gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext);
 
-#if defined (__hppa__)
-
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
-{
-  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-
-  if (UseWideRegs (mcontext))
-    mcontext->ss_wide.ss_32.ss_pcoq_head_lo ++;
-  else
-    mcontext->ss_narrow.ss_pcoq_head ++;
-}
-
-#endif
-
 static void
 __gnat_error_handler
   (int sig, siginfo_t *siginfo ATTRIBUTE_UNUSED, void *ucontext)
@@ -513,8 +476,6 @@ __gnat_error_handler
       exception = &program_error;
       msg = "unhandled signal";
     }
-
-  __gnat_adjust_context_for_raise (sig, ucontext);
 
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -617,17 +578,14 @@ void fake_linux_sigemptyset (sigset_t *set) {
 
 static void __gnat_error_handler (int, siginfo_t *siginfo, void *ucontext);
 
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
+#if defined (i386) || defined (__x86_64__) || defined (__ia64__)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
-#ifndef __powerpc__
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-#endif
 
   /* On the i386 and x86-64 architectures, stack checking is performed by
      means of probes with moving stack pointer, that is to say the probed
@@ -651,19 +609,18 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
   if (signo == SIGSEGV && pattern == 0x00240c83)
     mcontext->gregs[REG_ESP] += 4096;
-  mcontext->gregs[REG_EIP]++;
 #elif defined (__x86_64__)
   unsigned long pattern = *(unsigned long *)mcontext->gregs[REG_RIP];
   /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
   if (signo == SIGSEGV && (pattern & 0xffffffffff) == 0x00240c8348)
     mcontext->gregs[REG_RSP] += 4096;
-  mcontext->gregs[REG_RIP]++;
 #elif defined (__ia64__)
+  /* ??? The IA-64 unwinder doesn't compensate for signals.  */
   mcontext->sc_ip++;
-#elif defined (__powerpc__)
-  ((ucontext_t *) ucontext)->uc_mcontext.regs->nip++;
 #endif
 }
+
+#endif
 
 static void
 __gnat_error_handler (int sig,
@@ -731,11 +688,10 @@ __gnat_error_handler (int sig,
     }
   recurse = 0;
 
-  /* We adjust the interrupted context here (and not in the
-     MD_FALLBACK_FRAME_STATE_FOR macro) because recent versions of the Native
-     POSIX Thread Library (NPTL) are compiled with DWARF-2 unwind information,
-     and hence the later macro is never executed for signal frames.  */
-
+  /* We adjust the interrupted context here (and not in the fallback
+     unwinding routine) because recent versions of the Native POSIX
+     Thread Library (NPTL) are compiled with unwind information, so
+     the fallback routine is never executed for signal frames.  */
   __gnat_adjust_context_for_raise (sig, ucontext);
 
   Raise_From_Signal_Handler (exception, msg);
@@ -1052,29 +1008,12 @@ __gnat_install_handler(void)
 
 static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
 
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
-				 void * ucontext)
-{
-  mcontext_t *mcontext = & ((ucontext_t *)ucontext)->uc_mcontext;
-  mcontext->gregs[REG_PC] += (1 - RETURN_ADDR_OFFSET);
-}
-
 static void
 __gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *uctx)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
   const char *msg;
-
-  /* Adjusting is required for every fault context, so adjust for this one
-     now, before we possibly trigger a recursive fault below.  */
-  __gnat_adjust_context_for_raise (sig, (void *)uctx);
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))
@@ -1691,19 +1630,6 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 #include <unistd.h>
 
 static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
-void __gnat_adjust_context_for_raise (int, void*);
-
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
-{
-  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-  mcontext->mc_eip++;
-}
 
 static void
 __gnat_error_handler (int sig, siginfo_t *info __attribute__ ((unused)),
@@ -1739,7 +1665,6 @@ __gnat_error_handler (int sig, siginfo_t *info __attribute__ ((unused)),
       msg = "unhandled signal";
     }
 
-  __gnat_adjust_context_for_raise (sig, ucontext);
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1825,34 +1750,6 @@ __gnat_clear_exception_count (void)
 #endif
 }
 
-
-/* VxWorks context adjustment for targets that need/support it.  */
-
-void __gnat_adjust_context_for_raise (int, void*);
-
-#if defined (_ARCH_PPC) && !defined (VTHREADS) && !defined (__RTP__)
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
-/* We need the constant and structure definitions describing the machine
-   state.  Part of this is normally retrieved from the VxWorks "regs.h" but
-   #including it here gets the GCC internals instance of this file instead.
-   We need to #include the version we need directly here, and prevent the
-   possibly indirect inclusion of the GCC one, as its contents is useless to
-   us and it depends on several other headers that we don't have at hand.  */
-#include <arch/ppc/regsPpc.h>
-#define GCC_REGS_H
-#include <sigLib.h>
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *sigcontext)
-{
-  REG_SET * mcontext = ((struct sigcontext *) sigcontext)->sc_pregs;
-  mcontext->pc++;
-}
-
-#endif
-
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.   */
 static void
@@ -1935,7 +1832,6 @@ __gnat_error_handler (int sig, void * si ATTRIBUTE_UNUSED,
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-  __gnat_adjust_context_for_raise (sig, (void *)sc);
   __gnat_map_signal (sig);
 }
 
@@ -2206,12 +2102,11 @@ void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 				 void *ucontext ATTRIBUTE_UNUSED)
 {
-  /* Adjustments are currently required for the GCC ZCX propagation scheme
-     only.  These adjustments (described below) are harmless for the other
-     schemes, so may be applied unconditionally.  */
+  /* We used to compensate here for the raised from call vs raised from signal
+     exception discrepancy with the GCC ZCX scheme, but this is now dealt with
+     generically (except for Alpha and IA-64), see PR other/26208.
 
-  /* Adjustments required for a GCC ZCX propagation scheme:
-     ------------------------------------------------------
+     *** Call vs signal exception discrepancy with GCC ZCX scheme ***
 
      The GCC unwinder expects to be dealing with call return addresses, since
      this is the "nominal" case of what we retrieve while unwinding a regular
@@ -2239,15 +2134,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 
      signo is passed because on some targets for some signals the PC in
      context points to the instruction after the faulting one, in which case
-     the unwinder adjustment is still desired.
-
-     We used to perform the compensation in the GCC unwinding fallback macro.
-     The thread at http://gcc.gnu.org/ml/gcc-patches/2004-05/msg00343.html
-     describes a couple of issues with this approach.  First, on some targets
-     the adjustment to apply depends on the triggering signal, which is not
-     easily accessible from the macro.  Besides, other languages, e.g. Java,
-     deal with this by performing the adjustment in the signal handler before
-     the raise, so fallback adjustments just break those front-ends.  */
+     the unwinder adjustment is still desired.  */
 }
 
 #endif
