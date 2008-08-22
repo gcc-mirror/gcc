@@ -5289,6 +5289,25 @@ package body Sem_Prag is
             Opt.Check_Policy_List := N;
          end Assertion_Policy;
 
+         ------------------------------
+         -- Assume_No_Invalid_Values --
+         ------------------------------
+
+         --  pragma Assume_No_Invalid_Values (On | Off);
+
+         when Pragma_Assume_No_Invalid_Values =>
+            GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+
+            if Chars (Expression (Arg1)) = Name_On then
+               Assume_No_Invalid_Values := True;
+            else
+               Assume_No_Invalid_Values := False;
+            end if;
+
          ---------------
          -- AST_Entry --
          ---------------
@@ -6315,8 +6334,8 @@ package body Sem_Prag is
          --  pragma Discard_Names [([On =>] LOCAL_NAME)];
 
          when Pragma_Discard_Names => Discard_Names : declare
-            E_Id : Entity_Id;
             E    : Entity_Id;
+            E_Id : Entity_Id;
 
          begin
             Check_Ada_83_Warning;
@@ -6346,6 +6365,7 @@ package body Sem_Prag is
                   Check_Arg_Count (1);
                   Check_Optional_Identifier (Arg1, Name_On);
                   Check_Arg_Is_Local_Name (Arg1);
+
                   E_Id := Expression (Arg1);
 
                   if Etype (E_Id) = Any_Type then
@@ -6355,8 +6375,8 @@ package body Sem_Prag is
                   end if;
 
                   if (Is_First_Subtype (E)
-                       and then (Is_Enumeration_Type (E)
-                                  or else Is_Tagged_Type (E)))
+                      and then
+                        (Is_Enumeration_Type (E) or else Is_Tagged_Type (E)))
                     or else Ekind (E) = E_Exception
                   then
                      Set_Discard_Names (E);
@@ -6364,6 +6384,7 @@ package body Sem_Prag is
                      Error_Pragma_Arg
                        ("inappropriate entity for pragma%", Arg1);
                   end if;
+
                end if;
             end if;
          end Discard_Names;
@@ -12200,6 +12221,7 @@ package body Sem_Prag is
       Pragma_Annotate                      => -1,
       Pragma_Assert                        => -1,
       Pragma_Assertion_Policy              =>  0,
+      Pragma_Assume_No_Invalid_Values      =>  0,
       Pragma_Asynchronous                  => -1,
       Pragma_Atomic                        =>  0,
       Pragma_Atomic_Components             =>  0,

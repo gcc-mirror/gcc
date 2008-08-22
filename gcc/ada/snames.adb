@@ -179,6 +179,7 @@ package body Snames is
      "ada_05#" &
      "ada_2005#" &
      "assertion_policy#" &
+     "assume_no_invalid_values#" &
      "c_pass_by_copy#" &
      "check_name#" &
      "check_policy#" &

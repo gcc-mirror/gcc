@@ -137,6 +137,11 @@ begin
    Write_Switch_Char ("b");
    Write_Line ("Generate brief messages to stderr even if verbose mode set");
 
+   --  Line for -gnatB switch
+
+   Write_Switch_Char ("B");
+   Write_Line ("Assume no bad (invalid) values except in 'Valid attribute");
+
    --  Line for -gnatc switch
 
    Write_Switch_Char ("c");

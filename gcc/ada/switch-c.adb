@@ -212,6 +212,12 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Brief_Output := True;
 
+            --  Processing for B switch
+
+            when 'B' =>
+               Ptr := Ptr + 1;
+               Assume_No_Invalid_Values := True;
+
             --  Processing for c switch
 
             when 'c' =>

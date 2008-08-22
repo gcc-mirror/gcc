@@ -49,6 +49,7 @@ package body Opt is
       Ada_Version_Config                    := Ada_Version;
       Ada_Version_Explicit_Config           := Ada_Version_Explicit;
       Assertions_Enabled_Config             := Assertions_Enabled;
+      Assume_No_Invalid_Values_Config       := Assume_No_Invalid_Values;
       Check_Policy_List_Config              := Check_Policy_List;
       Debug_Pragmas_Enabled_Config          := Debug_Pragmas_Enabled;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
@@ -78,6 +79,7 @@ package body Opt is
       Ada_Version                    := Save.Ada_Version;
       Ada_Version_Explicit           := Save.Ada_Version_Explicit;
       Assertions_Enabled             := Save.Assertions_Enabled;
+      Assume_No_Invalid_Values       := Save.Assume_No_Invalid_Values;
       Check_Policy_List              := Save.Check_Policy_List;
       Debug_Pragmas_Enabled          := Save.Debug_Pragmas_Enabled;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
@@ -102,6 +104,7 @@ package body Opt is
       Save.Ada_Version                    := Ada_Version;
       Save.Ada_Version_Explicit           := Ada_Version_Explicit;
       Save.Assertions_Enabled             := Assertions_Enabled;
+      Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
       Save.Check_Policy_List              := Check_Policy_List;
       Save.Debug_Pragmas_Enabled          := Debug_Pragmas_Enabled;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
@@ -134,27 +137,30 @@ package body Opt is
          --  since the whole point of this is that it still properly indicates
          --  the configuration setting even in a run time unit.
 
-         Ada_Version                := Ada_Version_Runtime;
-         Dynamic_Elaboration_Checks := False;
-         Extensions_Allowed         := True;
-         External_Name_Exp_Casing   := As_Is;
-         External_Name_Imp_Casing   := Lowercase;
-         Optimize_Alignment         := 'O';
-         Persistent_BSS_Mode        := False;
-         Use_VADS_Size              := False;
-         Optimize_Alignment_Local   := True;
+         Ada_Version                 := Ada_Version_Runtime;
+         Dynamic_Elaboration_Checks  := False;
+         Extensions_Allowed          := True;
+         External_Name_Exp_Casing    := As_Is;
+         External_Name_Imp_Casing    := Lowercase;
+         Optimize_Alignment          := 'O';
+         Persistent_BSS_Mode         := False;
+         Use_VADS_Size               := False;
+         Optimize_Alignment_Local    := True;
 
          --  For an internal unit, assertions/debug pragmas are off unless this
-         --  is the main unit and they were explicitly enabled.
+         --  is the main unit and they were explicitly enabled. We also make
+         --  sure we do not assume that values are necessarily valid.
 
          if Main_Unit then
-            Assertions_Enabled    := Assertions_Enabled_Config;
-            Debug_Pragmas_Enabled := Debug_Pragmas_Enabled_Config;
-            Check_Policy_List     := Check_Policy_List_Config;
+            Assertions_Enabled       := Assertions_Enabled_Config;
+            Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
+            Debug_Pragmas_Enabled    := Debug_Pragmas_Enabled_Config;
+            Check_Policy_List        := Check_Policy_List_Config;
          else
-            Assertions_Enabled    := False;
-            Debug_Pragmas_Enabled := False;
-            Check_Policy_List     := Empty;
+            Assertions_Enabled       := False;
+            Assume_No_Invalid_Values := False;
+            Debug_Pragmas_Enabled    := False;
+            Check_Policy_List        := Empty;
          end if;
 
       --  Case of non-internal unit
@@ -163,6 +169,7 @@ package body Opt is
          Ada_Version                 := Ada_Version_Config;
          Ada_Version_Explicit        := Ada_Version_Explicit_Config;
          Assertions_Enabled          := Assertions_Enabled_Config;
+         Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
          Check_Policy_List           := Check_Policy_List_Config;
          Debug_Pragmas_Enabled       := Debug_Pragmas_Enabled_Config;
          Dynamic_Elaboration_Checks  := Dynamic_Elaboration_Checks_Config;
