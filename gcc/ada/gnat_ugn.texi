@@ -21067,18 +21067,20 @@ This rule has no parameters.
 @cindex @code{Metrics} rule (for @command{gnatcheck})
 
 @noindent
-This is an umbrella rule for a set of metrics-based checks. Each metric-based
-check has its own rule name that starts from the common prefix
-@code{Metrics_}. For @option{+R} option, this name ends with @code{_GT}
-(greater then) or @code{_LT} (less then). The parameter of the rule
-@option{+R} option specifies bound (upper or lower, depending on the metric)
-for the given metric. A construct is flagged if a specified metric can be
-computed for it, and the resulting value is higher then the upper bound (or
-less than the lower bound) specified. Parameters and metric names are not
-case-sensitive @option{-R} option does not have a parameter and it turns OFF
-the check for the metric indicated by the metric rule name.
+There is a set of checks based on computing a metric value and comparing the
+result with the specified upper (or lower, depending on a specific metric)
+value specified for a given metric. A construct is flagged if a given metric
+is applicable (can be computed) for it and the computed value is greater
+then (lover then) the specified upper (lower) bound.
 
-The following table shows the available metrics-based checks, including the
+The name of any metric-based rule consists of the prefix @code{Metrics_}
+followed by the name of the corresponding metric (see the table below).
+For @option{+R} option, each metric-based rule has a numeric parameter
+specifying the bound (integer or real, depending on a metric), @option{-R}
+option for metric rules does not have a parameter.
+
+The following table shows the metric names for that the corresponding
+metrics-based checks are supported by gnatcheck, including the
 constraint that must be satisfied by the bound that is specified for the check
 and what bound - upper (U) or lower (L) - should be specified.
 
@@ -21101,7 +21103,7 @@ the same as for the corresponding metrics in @command{gnatmetric}.
 
 @emph{Example:} the rule
 @smallexample
-+RMetrics_Cyclomatic_Complexity_GT : 7
++RMetrics_Cyclomatic_Complexity : 7
 @end smallexample
 @noindent
 means that all bodies with cyclomatic complexity exceeding 7 will be flagged.
