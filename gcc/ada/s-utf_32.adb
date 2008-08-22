@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5103,7 +5103,7 @@ package body System.UTF_32 is
    begin
       --  Deal with FFFE/FFFF cases
 
-      if U mod 2#1_0000# >= 16#FFFE# then
+      if U mod 16#1_0000# >= 16#FFFE# then
          return Fe;
 
       --  Otherwise search table
