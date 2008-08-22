@@ -1,3 +1,28 @@
+2008-08-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37184
+	* config/i386/i386.c (ix86_match_ccmode): Handle CCAmode,
+	CCCmode, CCOmode and CCSmode destination modes.
+
+	PR target/37191
+	* config/i386/mmx.md (*vec_extractv2sf_0): Avoid combining registers
+	from different units in a single alternative.
+	(*vec_extractv2sf_1): Ditto.
+	(*vec_extractv2si_0): Ditto.
+	(*vec_extractv2si_1): Ditto.
+	* config/i386/sse.md (sse2_storehpd): Ditto.
+	(sse2_storelpd): Ditto.
+	(sse2_loadhpd): Ditto.
+	(sse2_loadlpd): Ditto.
+
+	PR target/37197
+	* config/i386/i386.md (clzsi2_abm): Fix operand 1 constraints.
+	(popcountsi2): Ditto.
+	(clzdi2_abm): Ditto.
+	(popcountdi2): Ditto.
+	(clzhi2_abm): Ditto.
+	(popcounthi2): Ditto.
+
 2008-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36548
@@ -35,9 +60,11 @@
 2008-08-21  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (first_cgraph_function_insertion_hook): New variable.
-	(cgraph_add_function_insertion_hook, cgraph_remove_function_insertion_hook,
+	(cgraph_add_function_insertion_hook,
+	cgraph_remove_function_insertion_hook,
 	cgraph_call_function_insertion_hooks): New functions.
-	* cgraph.h (cgraph_add_function_insertion_hook, cgraph_remove_function_insertion_hook,
+	* cgraph.h (cgraph_add_function_insertion_hook,
+	cgraph_remove_function_insertion_hook,
 	cgraph_call_function_insertion_hooks): Declare.
 	* ipa-reference.c (function_insertion_hook_holder): New variable.
 	(check_operand, look_for_address_of): When checking late, do not care
@@ -260,9 +287,9 @@
 
 2008-08-19  Rafael Espindola  <espindola@google.com>
 
-      * varasm.c (weak_decls): Move earlier in the file.
-      (assemble_external): Add weak decls to the weak_decls list.
-      (declare_weak): Don't add decls to the weak_decls list.
+	* varasm.c (weak_decls): Move earlier in the file.
+	(assemble_external): Add weak decls to the weak_decls list.
+	(declare_weak): Don't add decls to the weak_decls list.
 
 2008-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -390,7 +417,6 @@
 	(compute_branch_probabilities): Refactored. Invokes mcf_smooth_cfg if
 	flag_profile_correction is set.
 
->>>>>>> .r139386
 2008-08-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtlanal.c (subreg_offset_representable_p): Check HARD_REGNO_MODE_OK.

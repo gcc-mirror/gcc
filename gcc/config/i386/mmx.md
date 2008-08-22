@@ -535,10 +535,12 @@
   DONE;
 })
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn_and_split "*vec_extractv2sf_0"
-  [(set (match_operand:SF 0 "nonimmediate_operand"     "=x,y,m,m,frxy")
+  [(set (match_operand:SF 0 "nonimmediate_operand"     "=x, m,y ,m,f,r")
 	(vec_select:SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" " x,y,x,y,m")
+	  (match_operand:V2SF 1 "nonimmediate_operand" " xm,x,ym,y,m,m")
 	  (parallel [(const_int 0)])))]
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
@@ -554,18 +556,23 @@
   DONE;
 })
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "*vec_extractv2sf_1"
-  [(set (match_operand:SF 0 "nonimmediate_operand"     "=y,x,frxy")
+  [(set (match_operand:SF 0 "nonimmediate_operand"     "=y,x,y,x,f,r")
 	(vec_select:SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,0,o")
+	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,0,o,o,o,o")
 	  (parallel [(const_int 1)])))]
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    punpckhdq\t%0, %0
    unpckhps\t%0, %0
+   #
+   #
+   #
    #"
-  [(set_attr "type" "mmxcvt,sselog1,*")
-   (set_attr "mode" "DI,V4SF,SI")])
+  [(set_attr "type" "mmxcvt,sselog1,mmxmov,ssemov,fmov,imov")
+   (set_attr "mode" "DI,V4SF,SF,SF,SF,SF")])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
@@ -1214,10 +1221,12 @@
   DONE;
 })
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn_and_split "*vec_extractv2si_0"
-  [(set (match_operand:SI 0 "nonimmediate_operand"     "=x,y,m,m,frxy")
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=x,m,y, m,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" " x,y,x,y,m")
+	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,x,ym,y,m")
 	  (parallel [(const_int 0)])))]
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
@@ -1233,10 +1242,12 @@
   DONE;
 })
 
+;; Avoid combining registers from different units in a single alternative,
+;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "*vec_extractv2si_1"
-  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,Y2,Y2,x,frxy")
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,Y2,Y2,x,y,x,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,0 ,Y2,0,o")
+	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,0 ,Y2,0,o,o,o")
 	  (parallel [(const_int 1)])))]
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -1244,9 +1255,11 @@
    punpckhdq\t%0, %0
    pshufd\t{$85, %1, %0|%0, %1, 85}
    unpckhps\t%0, %0
+   #
+   #
    #"
-  [(set_attr "type" "mmxcvt,sselog1,sselog1,sselog1,*")
-   (set_attr "mode" "DI,TI,TI,V4SF,SI")])
+  [(set_attr "type" "mmxcvt,sselog1,sselog1,sselog1,mmxmov,ssemov,imov")
+   (set_attr "mode" "DI,TI,TI,V4SF,SI,SI,SI")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
