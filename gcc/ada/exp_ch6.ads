@@ -65,7 +65,7 @@ package Exp_Ch6 is
       --  caller or callee, and if the callee, whether to use the secondary
       --  stack or the heap. See Create_Extra_Formals.
       BIP_Final_List,
-      --  Present if result type has controlled parts. Pointer to caller's
+      --  Present if result type needs finalization. Pointer to caller's
       --  finalization list.
       BIP_Master,
       --  Present if result type contains tasks. Master associated with

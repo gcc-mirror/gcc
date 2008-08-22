@@ -1,3 +1,37 @@
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting
+
+2008-08-22  Kevin Pouget  <pouget@adacore.com>
+
+	* s-shasto.ads, s-shasto.adb: Move Shared_Var_ROpen, Shared_Var_WOpen and
+	Shared_Var_Close procedure specifications from package spec to package body.
+
+	* rtsfind.ads: Remove RE_Shared_Var_Close, RE_Shared_Var_ROpen,
+	RE_Shared_Var_WOpen entries.
+
+	* exp_dist.adb: Update RE_Any_Content_Ptr to RE_Any_Container_Ptr in
+	Build_To_Any_Call, Build_TypeCode_Call and Build_From_Any_Call procedures.
+
+2008-08-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c: adjust EH support code on Alpha/Tru64 as well.
+
+	* raise-gcc.c: Add back a couple of comments.
+
+2008-08-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Simple_Function_Return): If secondary stack is
+	involved and the return type is class-wide, use the type of the expression
+	for the generated access type. Suppress useless discriminant checks on the
+	allocator.
+
+2008-08-22  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb: Minor comment fix
+
+	* exp_ch6.ads: Minor comment fix
+
 2008-08-22  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch8.adb: Minor reformatting
