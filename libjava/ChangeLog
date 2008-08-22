@@ -1,3 +1,16 @@
+2008-08-22  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/8995:
+	
+	* interpret-run.cc (REWRITE_INSN): Null this macro.
+
+	* include/jvm.h (class _Jv_Linker): Declare resolve_mutex, init.
+	(read_cpool_entry, write_cpool_entry): New functions.
+	* link.cc (_Jv_Linker::resolve_mutex): new.
+	(_Jv_Linker::init): New function.
+	(_Jv_Linker::resolve_pool_entry): Use {read,write}_cpool_entry
+	to ensure atomic access to constant pool entries.
+
 2008-08-05  Matthias Klose  <doko@ubuntu.com>
 
 	PR libgcj/31890

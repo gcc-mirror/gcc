@@ -362,6 +362,19 @@ _Jv_Linker::resolve_method_entry (jclass klass, jclass &found_class,
   return the_method;
 }
 
+_Jv_Mutex_t _Jv_Linker::resolve_mutex;
+
+void
+_Jv_Linker::init (void)
+{
+  _Jv_MutexInit (&_Jv_Linker::resolve_mutex);
+}
+
+// Locking in resolve_pool_entry is somewhat subtle.  Constant
+// resolution is idempotent, so it doesn't matter if two threads
+// resolve the same entry.  However, it is important that we always
+// write the resolved flag and the data together, atomically.  It is
+// also important that we read them atomically.
 _Jv_word
 _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 {
@@ -369,6 +382,10 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 
   if (GC_base (klass) && klass->constants.data
       && ! GC_base (klass->constants.data))
+    // If a class is heap-allocated but the constant pool is not this
+    // is a "new ABI" class, i.e. one where the initial constant pool
+    // is in the read-only data section of an object file.  Copy the
+    // initial constant pool from there to a new heap-allocated pool.
     {
       jsize count = klass->constants.size;
       if (count)
@@ -384,14 +401,18 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 
   _Jv_Constants *pool = &klass->constants;
 
-  if ((pool->tags[index] & JV_CONSTANT_ResolvedFlag) != 0)
-    return pool->data[index];
+  jbyte tags;
+  _Jv_word data;
+  tags = read_cpool_entry (&data, pool, index);
 
-  switch (pool->tags[index] & ~JV_CONSTANT_LazyFlag)
+  if ((tags & JV_CONSTANT_ResolvedFlag) != 0)
+    return data;
+
+  switch (tags & ~JV_CONSTANT_LazyFlag)
     {
     case JV_CONSTANT_Class:
       {
-	_Jv_Utf8Const *name = pool->data[index].utf8;
+	_Jv_Utf8Const *name = data.utf8;
 
 	jclass found;
 	if (name->first() == '[')
@@ -410,8 +431,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	      {
 		found = _Jv_NewClass(name, NULL, NULL);
 		found->state = JV_STATE_PHANTOM;
-		pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
-		pool->data[index].clazz = found;
+		tags |= JV_CONSTANT_ResolvedFlag;
+		data.clazz = found;
 		break;
 	      }
 	    else
@@ -429,8 +450,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	    || (_Jv_ClassNameSamePackage (check->name,
 					  klass->name)))
 	  {
-	    pool->data[index].clazz = found;
-	    pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	    data.clazz = found;
+	    tags |= JV_CONSTANT_ResolvedFlag;
 	  }
 	else
 	  {
@@ -446,16 +467,16 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
     case JV_CONSTANT_String:
       {
 	jstring str;
-	str = _Jv_NewStringUtf8Const (pool->data[index].utf8);
-	pool->data[index].o = str;
-	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	str = _Jv_NewStringUtf8Const (data.utf8);
+	data.o = str;
+	tags |= JV_CONSTANT_ResolvedFlag;
       }
       break;
 
     case JV_CONSTANT_Fieldref:
       {
 	_Jv_ushort class_index, name_and_type_index;
-	_Jv_loadIndexes (&pool->data[index],
+	_Jv_loadIndexes (&data,
 			 class_index,
 			 name_and_type_index);
 	jclass owner = (resolve_pool_entry (klass, class_index, true)).clazz;
@@ -485,8 +506,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	// Initialize the field's declaring class, not its qualifying
 	// class.
 	_Jv_InitClass (found_class);
-	pool->data[index].field = the_field;
-	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	data.field = the_field;
+	tags |= JV_CONSTANT_ResolvedFlag;
       }
       break;
 
@@ -494,7 +515,7 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
     case JV_CONSTANT_InterfaceMethodref:
       {
 	_Jv_ushort class_index, name_and_type_index;
-	_Jv_loadIndexes (&pool->data[index],
+	_Jv_loadIndexes (&data,
 			 class_index,
 			 name_and_type_index);
 
@@ -503,18 +524,21 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	the_method = resolve_method_entry (klass, found_class,
 					   class_index, name_and_type_index,
 					   true,
-					   pool->tags[index] == JV_CONSTANT_InterfaceMethodref);
+					   tags == JV_CONSTANT_InterfaceMethodref);
       
-	pool->data[index].rmethod
+	data.rmethod
 	  = klass->engine->resolve_method(the_method,
 					  found_class,
 					  ((the_method->accflags
 					    & Modifier::STATIC) != 0));
-	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	tags |= JV_CONSTANT_ResolvedFlag;
       }
       break;
     }
-  return pool->data[index];
+
+  write_cpool_entry (data, tags, pool, index);
+
+  return data;
 }
 
 // This function is used to lazily locate superclasses and
@@ -1701,13 +1725,15 @@ _Jv_Linker::ensure_class_linked (jclass klass)
       // Resolve the remaining constant pool entries.
       for (int index = 1; index < pool->size; ++index)
 	{
-	  if (pool->tags[index] == JV_CONSTANT_String)
-	    {
-	      jstring str;
+	  jbyte tags;
+	  _Jv_word data;
 
-	      str = _Jv_NewStringUtf8Const (pool->data[index].utf8);
-	      pool->data[index].o = str;
-	      pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	  tags = read_cpool_entry (&data, pool, index);
+	  if (tags == JV_CONSTANT_String)
+	    {
+	      data.o = _Jv_NewStringUtf8Const (data.utf8);
+	      tags |= JV_CONSTANT_ResolvedFlag;
+	      write_cpool_entry (data, tags, pool, index);
 	    }
 	}
 

@@ -307,6 +307,9 @@ private:
     s = signature;
   }  
 
+  static _Jv_Mutex_t resolve_mutex;
+  static void init (void) __attribute__((constructor));
+
 public:
 
   static bool has_field_p (jclass, _Jv_Utf8Const *);
@@ -324,6 +327,27 @@ public:
 					     _Jv_Utf8Const *,
 					     bool check_perms = true);
   static void layout_vtable_methods(jclass);
+
+  static jbyte read_cpool_entry (_Jv_word *data,
+				 const _Jv_Constants *const pool,
+				 int index)
+  {
+    _Jv_MutexLock (&resolve_mutex);
+    jbyte tags = pool->tags[index];
+    *data = pool->data[index];
+    _Jv_MutexUnlock (&resolve_mutex);
+    return tags;
+  }
+
+  static void write_cpool_entry (_Jv_word data, jbyte tags,
+				 _Jv_Constants *pool,
+				 int index)
+  {
+    _Jv_MutexLock (&resolve_mutex);
+    pool->data[index] = data;
+    pool->tags[index] = tags;
+    _Jv_MutexUnlock (&resolve_mutex);
+  }
 };
 
 /* Type of pointer used as finalizer.  */
