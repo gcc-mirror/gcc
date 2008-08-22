@@ -854,7 +854,7 @@ package body Exp_Ch7 is
 
       function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
       --  If type is not frozen yet, check explicitly among its components,
-      --  because flag is not necessarily set.
+      --  because the Has_Controlled_Component flag is not necessarily set.
 
       -----------------------------------
       -- Has_Some_Controlled_Component --
