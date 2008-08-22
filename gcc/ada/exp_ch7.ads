@@ -57,19 +57,17 @@ package Exp_Ch7 is
    function Controller_Component (Typ : Entity_Id) return Entity_Id;
    --  Returns the entity of the component whose name is 'Name_uController'
 
-   function Needs_Finalization (T : Entity_Id) return Boolean;
-   --  True if T potentially needs finalization actions. True if T is
-   --  controlled, or has subcomponents. Also True if T is a class-wide type,
-   --  because some type extension might add controlled subcomponents, except
-   --  that if pragma Restrictions (No_Finalization) applies, this is False for
-   --  class-wide types.
-
    function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
    --  True if T is a class-wide type, or if it has controlled parts ("part"
    --  means T or any of its subcomponents). This is the same as
    --  Needs_Finalization, except when pragma Restrictions (No_Finalization)
    --  applies, in which case we know that class-wide objects do not contain
    --  controlled parts.
+
+   procedure Expand_Ctrl_Function_Call (N : Node_Id);
+   --  Expand a call to a function returning a controlled value. That is to
+   --  say attach the result of the call to the current finalization list,
+   --  which is the one of the transient scope created for such constructs.
 
    function Find_Final_List
      (E   : Entity_Id;
@@ -163,14 +161,16 @@ package Exp_Ch7 is
    --  object but not when finalizing the target of an assignment, it is not
    --  necessary either on scope exit.
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id);
-   --  Expand a call to a function returning a controlled value. That is to
-   --  say attach the result of the call to the current finalization list,
-   --  which is the one of the transient scope created for such constructs.
-
    function Make_Handler_For_Ctrl_Operation (Loc : Source_Ptr) return Node_Id;
    --  Generate an implicit exception handler with an 'others' choice,
    --  converting any occurrence to a raise of Program_Error.
+
+   function Needs_Finalization (T : Entity_Id) return Boolean;
+   --  True if T potentially needs finalization actions. True if T is
+   --  controlled, or has subcomponents. Also True if T is a class-wide type,
+   --  because some type extension might add controlled subcomponents, except
+   --  that if pragma Restrictions (No_Finalization) applies, this is False for
+   --  class-wide types.
 
    --------------------------------------------
    -- Task and Protected Object finalization --
