@@ -102,7 +102,7 @@ package body GNAT.Traceback.Symbolic is
       --  The symbolic translation of an empty set of addresses is the
       --  the empty string.
 
-      if Traceback'Length <= 0 then
+      if Traceback'Length = 0 then
          return "";
       end if;
 
