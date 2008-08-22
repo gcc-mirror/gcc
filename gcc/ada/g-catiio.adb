@@ -567,9 +567,6 @@ package body GNAT.Calendar.Time_IO is
       Minute : Minute_Number;
       Second : Second_Number;
 
-      Sub_Second : Second_Duration;
-      --  We ignore subseconds in this routine, so this is a throw away value
-
       procedure Extract_Date
         (Year       : out Year_Number;
          Month      : out Month_Number;
@@ -796,7 +793,14 @@ package body GNAT.Calendar.Time_IO is
          Extract_Time (Time_Start, Hour, Minute, Second, Check_Space => True);
 
       else
-         Split (Clock, Year, Month, Day, Hour, Minute, Second, Sub_Second);
+         declare
+            Discard : Second_Duration;
+            pragma Unreferenced (Discard);
+         begin
+            Split (Clock, Year, Month, Day, Hour, Minute, Second,
+                   Sub_Second => Discard);
+         end;
+
          Extract_Time (1, Hour, Minute, Second, Check_Space => False);
       end if;
 
@@ -819,10 +823,7 @@ package body GNAT.Calendar.Time_IO is
    -- Put_Time --
    --------------
 
-   procedure Put_Time
-     (Date    : Ada.Calendar.Time;
-      Picture : Picture_String)
-   is
+   procedure Put_Time (Date : Ada.Calendar.Time; Picture : Picture_String) is
    begin
       Ada.Text_IO.Put (Image (Date, Picture));
    end Put_Time;
