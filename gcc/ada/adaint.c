@@ -2266,6 +2266,7 @@ win32_wait (int *status)
   DWORD res;
   int k;
   Process_List *pl;
+  int hl_len;
 
   if (plist_length == 0)
     {
@@ -2273,12 +2274,14 @@ win32_wait (int *status)
       return -1;
     }
 
-  hl = (HANDLE *) xmalloc (sizeof (HANDLE) * plist_length);
-
   k = 0;
   plist_enter();
 
+  hl_len = plist_length;
+
   /* -------------------- critical section -------------------- */
+  hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len);
+
   pl = PLIST;
   while (pl)
     {
@@ -2289,7 +2292,7 @@ win32_wait (int *status)
 
   plist_leave();
 
-  res = WaitForMultipleObjects (plist_length, hl, FALSE, INFINITE);
+  res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
   h = hl[res - WAIT_OBJECT_0];
   free (hl);
 
