@@ -1050,6 +1050,7 @@ begin
 
       when Pragma_Abort_Defer                   |
            Pragma_Assertion_Policy              |
+           Pragma_Assume_No_Invalid_Values      |
            Pragma_AST_Entry                     |
            Pragma_All_Calls_Remote              |
            Pragma_Annotate                      |

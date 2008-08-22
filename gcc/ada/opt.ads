@@ -158,6 +158,15 @@ package Opt is
    --  GNAT
    --  Enable assertions made using pragma Assert
 
+   Assume_No_Invalid_Values : Boolean := True;
+   --  ??? true for now, enable by setting to false later
+   --  GNAT
+   --  Normallly, in accordance with (RM 13.9.1 (9-11)) the front end assumes
+   --  that values could have invalid representations, unless it can clearly
+   --  prove that the values are valid. If this switch is set (by -gnatB or by
+   --  pragma Assume_No_Invalid_Values (Off)), then the compiler assumes values
+   --  are valid and in range of their representations.
+
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
    --  If set True, enables back annotation of representation information
@@ -1414,6 +1423,13 @@ package Opt is
    --  mode, as possibly set by the command line switch -gnata, and possibly
    --  modified by the use of the configuration pragma Assertion_Policy.
 
+   Assume_No_Invalid_Values_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch for assuming no invalid
+   --  values enabled mode mode, as possibly set by the command line switch
+   --  -gnatB, and possibly modified by the use of the configuration pragma
+   --  Assume_No_Invalid_Values.
+
    Check_Policy_List_Config : Node_Id;
    --  GNAT
    --  This points to the list of N_Pragma nodes for Check_Policy pragmas
@@ -1612,6 +1628,7 @@ private
       Ada_Version                    : Ada_Version_Type;
       Ada_Version_Explicit           : Ada_Version_Type;
       Assertions_Enabled             : Boolean;
+      Assume_No_Invalid_Values       : Boolean;
       Check_Policy_List              : Node_Id;
       Debug_Pragmas_Enabled          : Boolean;
       Dynamic_Elaboration_Checks     : Boolean;

@@ -1,3 +1,27 @@
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Determine_Range): Deal with values that might be invalid
+
+	* opt.adb, opt.ads (Assume_No_Invalid_Values[_Config]): New configuration
+	switches.
+
+	* par-prag.adb: Dummy entry for pragma Assume_No_Invalid_Values
+
+	* sem_prag.adb: Implement pragma Assume_No_Default_Values
+
+	* snames.adb, snames.ads, snames.h:
+	Add entries for pragma Assume_No_Invalid_Values
+
+	* switch-c.adb: Add processing for -gnatB switch
+
+	* usage.adb: Add entry for flag -gnatB (no bad invalid values)
+
+2008-08-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Transfer to the body of the
+	init procedure all the expanded code associated with the spec of
+	task types and protected types.
+
 2008-08-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_aggr.adb (Static_Array_Aggregate): Call Analyze_And_Resolve on the

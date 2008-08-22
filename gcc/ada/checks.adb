@@ -3125,10 +3125,9 @@ package body Checks is
       --  First step, change to use base type if the expression is an entity
       --  which we do not know is valid.
 
-      --  For now, we do not do this
-
-      if False and then Is_Entity_Name (N)
+      if Is_Entity_Name (N)
         and then not Is_Known_Valid (Entity (N))
+        and then not Assume_No_Invalid_Values
       then
          Typ := Base_Type (Typ);
       end if;
