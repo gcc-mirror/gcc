@@ -998,14 +998,17 @@ package body Sem_Eval is
          return False;
       end if;
 
-      --  If this is not a static expression and we are in configurable run
-      --  time mode, then we consider it not known at compile time. This
-      --  avoids anomalies where whether something is permitted with a given
-      --  configurable run-time library depends on how good the compiler is
-      --  at optimizing and knowing that things are constant when they
-      --  are non-static.
+      --  If this is not a static expression or a null literal, and we are in
+      --  configurable run-time mode, then we consider it not known at compile
+      --  time. This avoids anomalies where whether something is allowed with a
+      --  given configurable run-time library depends on how good the compiler
+      --  is at optimizing and knowing that things are constant when they are
+      --  nonstatic.
 
-      if Configurable_Run_Time_Mode and then not Is_Static_Expression (Op) then
+      if Configurable_Run_Time_Mode
+        and then K /= N_Null
+        and then not Is_Static_Expression (Op)
+      then
          return False;
       end if;
 
