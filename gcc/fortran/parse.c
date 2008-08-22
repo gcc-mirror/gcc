@@ -1576,7 +1576,7 @@ typedef struct
 st_state;
 
 static gfc_try
-verify_st_order (st_state *p, gfc_statement st)
+verify_st_order (st_state *p, gfc_statement st, bool silent)
 {
 
   switch (st)
@@ -1660,9 +1660,10 @@ verify_st_order (st_state *p, gfc_statement st)
   return SUCCESS;
 
 order:
-  gfc_error ("%s statement at %C cannot follow %s statement at %L",
-	     gfc_ascii_statement (st),
-	     gfc_ascii_statement (p->last_statement), &p->where);
+  if (!silent)
+    gfc_error ("%s statement at %C cannot follow %s statement at %L",
+	       gfc_ascii_statement (st),
+	       gfc_ascii_statement (p->last_statement), &p->where);
 
   return FAILURE;
 }
@@ -2169,6 +2170,26 @@ match_deferred_characteristics (gfc_typespec * ts)
 }
 
 
+/* Check specification-expressions in the function result of the currently
+   parsed block and ensure they are typed (give an IMPLICIT type if necessary).
+   For return types specified in a FUNCTION prefix, the IMPLICIT rules of the
+   scope are not yet parsed so this has to be delayed up to parse_spec.  */
+
+static void
+check_function_result_typed (void)
+{
+  gfc_typespec* ts = &gfc_current_ns->proc_name->result->ts;
+
+  gcc_assert (gfc_current_state () == COMP_FUNCTION);
+  gcc_assert (ts->type != BT_UNKNOWN);
+
+  /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
+  /* TODO:  Extend when KIND type parameters are implemented.  */
+  if (ts->type == BT_CHARACTER && ts->cl && ts->cl->length)
+    gfc_expr_check_typed (ts->cl->length, gfc_current_ns, true);
+}
+
+
 /* Parse a set of specification statements.  Returns the statement
    that doesn't fit.  */
 
@@ -2176,18 +2197,69 @@ static gfc_statement
 parse_spec (gfc_statement st)
 {
   st_state ss;
+  bool function_result_typed = false;
   bool bad_characteristic = false;
   gfc_typespec *ts;
 
-  verify_st_order (&ss, ST_NONE);
+  verify_st_order (&ss, ST_NONE, false);
   if (st == ST_NONE)
     st = next_statement ();
 
+  /* If we are not inside a function or don't have a result specified so far,
+     do nothing special about it.  */
+  if (gfc_current_state () != COMP_FUNCTION)
+    function_result_typed = true;
+  else
+    {
+      gfc_symbol* proc = gfc_current_ns->proc_name;
+      gcc_assert (proc);
+
+      if (proc->result->ts.type == BT_UNKNOWN)
+	function_result_typed = true;
+    }
+
 loop:
+  
+  /* If we find a statement that can not be followed by an IMPLICIT statement
+     (and thus we can expect to see none any further), type the function result
+     if it has not yet been typed.  Be careful not to give the END statement
+     to verify_st_order!  */
+  if (!function_result_typed && st != ST_GET_FCN_CHARACTERISTICS)
+    {
+      bool verify_now = false;
+
+      if (st == ST_END_FUNCTION)
+	verify_now = true;
+      else
+	{
+	  st_state dummyss;
+	  verify_st_order (&dummyss, ST_NONE, false);
+	  verify_st_order (&dummyss, st, false);
+
+	  if (verify_st_order (&dummyss, ST_IMPLICIT, true) == FAILURE)
+	    verify_now = true;
+	}
+
+      if (verify_now)
+	{
+	  check_function_result_typed ();
+	  function_result_typed = true;
+	}
+    }
+
   switch (st)
     {
     case ST_NONE:
       unexpected_eof ();
+
+    case ST_IMPLICIT_NONE:
+    case ST_IMPLICIT:
+      if (!function_result_typed)
+	{
+	  check_function_result_typed ();
+	  function_result_typed = true;
+	}
+      goto declSt;
 
     case ST_FORMAT:
     case ST_ENTRY:
@@ -2199,14 +2271,13 @@ loop:
 
     case ST_USE:
     case ST_IMPORT:
-    case ST_IMPLICIT_NONE:
-    case ST_IMPLICIT:
     case ST_PARAMETER:
     case ST_PUBLIC:
     case ST_PRIVATE:
     case ST_DERIVED_DECL:
     case_decl:
-      if (verify_st_order (&ss, st) == FAILURE)
+declSt:
+      if (verify_st_order (&ss, st, false) == FAILURE)
 	{
 	  reject_statement ();
 	  st = next_statement ();
@@ -2295,7 +2366,7 @@ loop:
       gfc_current_block ()->ts.kind = 0;
       /* Keep the derived type; if it's bad, it will be discovered later.  */
       if (!(ts->type == BT_DERIVED && ts->derived))
-        ts->type = BT_UNKNOWN;
+	ts->type = BT_UNKNOWN;
     }
 
   return st;

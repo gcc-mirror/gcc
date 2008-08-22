@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! PR fortran/29391
 ! This file is here to check that LBOUND and UBOUND return correct values
 !
@@ -165,7 +166,7 @@
 contains
 
   subroutine sub1(a,n)
-    integer :: a(2:n+1,4:*), n
+    integer :: n, a(2:n+1,4:*)
 
     if (any([lbound(a,1), lbound(a,2)] /= [2, 4])) call abort
     if (any(lbound(a) /= [2, 4])) call abort

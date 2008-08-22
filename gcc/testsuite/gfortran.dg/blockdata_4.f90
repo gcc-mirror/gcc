@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=gnu" }
 ! PR33152 Initialization/declaration problems in block data
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 blockdata bab

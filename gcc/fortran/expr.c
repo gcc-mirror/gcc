@@ -3266,3 +3266,78 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
 {
   gfc_traverse_expr (expr, NULL, expr_set_symbols_referenced, 0);
 }
+
+
+/* Walk an expression tree and check each variable encountered for being typed.
+   If strict is not set, a top-level variable is tolerated untyped in -std=gnu
+   mode; this is for things in legacy-code like:
+
+     INTEGER :: arr(n), n
+
+   The namespace is needed for IMPLICIT typing.  */
+
+gfc_try
+gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
+{
+  gfc_try t;
+  gfc_actual_arglist* act;
+  gfc_constructor* c;
+
+  if (!e)
+    return SUCCESS;
+
+  /* FIXME:  Check indices for EXPR_VARIABLE / EXPR_SUBSTRING, too, to catch
+     things like len(arr(1:n)) as specification expression.  */
+
+  switch (e->expr_type)
+    {
+
+    case EXPR_NULL:
+    case EXPR_CONSTANT:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_VARIABLE:
+      gcc_assert (e->symtree);
+      t = gfc_check_symbol_typed (e->symtree->n.sym, ns, strict, e->where);
+      if (t == FAILURE)
+	return t;
+      break;
+
+    case EXPR_FUNCTION:
+      for (act = e->value.function.actual; act; act = act->next)
+	{
+	  t = gfc_expr_check_typed (act->expr, ns, true);
+	  if (t == FAILURE)
+	    return t;
+	}
+      break;
+
+    case EXPR_OP:
+      t = gfc_expr_check_typed (e->value.op.op1, ns, true);
+      if (t == FAILURE)
+	return t;
+
+      t = gfc_expr_check_typed (e->value.op.op2, ns, true);
+      if (t == FAILURE)
+	return t;
+
+      break;
+
+    case EXPR_STRUCTURE:
+    case EXPR_ARRAY:
+      for (c = e->value.constructor; c; c = c->next)
+	{
+	  t = gfc_expr_check_typed (c->expr, ns, true);
+	  if (t == FAILURE)
+	    return t;
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+
+    }
+
+  return SUCCESS;
+}
