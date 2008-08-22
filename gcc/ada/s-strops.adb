@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package body System.String_Ops is
 
    function Str_Concat (X, Y : String) return String is
    begin
-      if X'Length <= 0 then
+      if X'Length = 0 then
          return Y;
 
       else
@@ -91,7 +91,7 @@ package body System.String_Ops is
 
    function Str_Concat_SC (X : String; Y : Character) return String is
    begin
-      if X'Length <= 0 then
+      if X'Length = 0 then
          return (1 => Y);
 
       else
