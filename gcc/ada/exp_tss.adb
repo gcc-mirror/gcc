@@ -57,7 +57,12 @@ package body Exp_Tss is
       elsif Is_Concurrent_Type (Full_Type)
         and then Present (Corresponding_Record_Type (Base_Type (Full_Type)))
       then
-         return Init_Proc (Corresponding_Record_Type (Base_Type (Full_Type)));
+         --  The initialization routine to be called is that of the base type
+         --  of the corresponding record type, which may itself be a subtype
+         --  and possibly an itype.
+
+         return Init_Proc
+            (Base_Type (Corresponding_Record_Type (Base_Type (Full_Type))));
 
       else
          Proc := Init_Proc (Base_Type (Full_Type));
