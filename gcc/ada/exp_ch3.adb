@@ -732,7 +732,7 @@ package body Exp_Ch3 is
          --  in any case no point in inlining such complex init procs.
 
          if not Has_Task (Proc_Id)
-           and then not Controlled_Type (Proc_Id)
+           and then not Needs_Finalization (Proc_Id)
          then
             Set_Is_Inlined (Proc_Id);
          end if;
@@ -1581,7 +1581,7 @@ package body Exp_Ch3 is
           Name => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => Args));
 
-      if Controlled_Type (Typ)
+      if Needs_Finalization (Typ)
         and then Nkind (Id_Ref) = N_Selected_Component
       then
          if Chars (Selector_Name (Id_Ref)) /= Name_uParent then
@@ -1865,7 +1865,7 @@ package body Exp_Ch3 is
             Kind := Nkind (Expression (N));
          end if;
 
-         if Controlled_Type (Typ)
+         if Needs_Finalization (Typ)
          and then not (Kind = N_Aggregate or else Kind = N_Extension_Aggregate)
          and then not Is_Inherently_Limited_Type (Typ)
          then
@@ -3145,7 +3145,7 @@ package body Exp_Ch3 is
 
          if not Is_Concurrent_Type (Rec_Type)
            and then not Has_Task (Rec_Type)
-           and then not Controlled_Type (Rec_Type)
+           and then not Needs_Finalization (Rec_Type)
          then
             Set_Is_Inlined  (Proc_Id);
          end if;
@@ -4188,7 +4188,7 @@ package body Exp_Ch3 is
          --  Initialize call as it is required but one for each ancestor of
          --  its type. This processing is suppressed if No_Initialization set.
 
-         if not Controlled_Type (Typ)
+         if not Needs_Finalization (Typ)
            or else No_Initialization (N)
          then
             null;
@@ -4526,7 +4526,7 @@ package body Exp_Ch3 is
             --  we plan to support in-place function results for some cases
             --  of nonlimited types. ???)
 
-            if Controlled_Type (Typ)
+            if Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
               and then not BIP_Call
             then
@@ -5001,7 +5001,7 @@ package body Exp_Ch3 is
                end if;
 
             elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
-              and then Controlled_Type (Directly_Designated_Type (Comp_Typ))
+              and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))
             then
                Set_Associated_Final_Chain (Comp_Typ, Add_Final_Chain (Typ));
             end if;
@@ -5517,7 +5517,7 @@ package body Exp_Ch3 is
             Set_Has_Controlled_Component (Def_Id);
 
          elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
-           and then Controlled_Type (Directly_Designated_Type (Comp_Typ))
+           and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))
          then
             if No (Flist) then
                Flist := Add_Final_Chain (Def_Id);
@@ -6144,7 +6144,7 @@ package body Exp_Ch3 is
             then
                null;
 
-            elsif (Controlled_Type (Desig_Type)
+            elsif (Needs_Finalization (Desig_Type)
                     and then Convention (Desig_Type) /= Convention_Java
                     and then Convention (Desig_Type) /= Convention_CIL)
               or else
@@ -6168,7 +6168,7 @@ package body Exp_Ch3 is
 
               or else (Is_Array_Type (Desig_Type)
                 and then not Is_Frozen (Desig_Type)
-                and then Controlled_Type (Component_Type (Desig_Type)))
+                and then Needs_Finalization (Component_Type (Desig_Type)))
 
                --  The designated type has controlled anonymous access
                --  discriminants.
@@ -7842,7 +7842,7 @@ package body Exp_Ch3 is
          null;
 
       elsif Etype (Tag_Typ) = Tag_Typ
-        or else Controlled_Type (Tag_Typ)
+        or else Needs_Finalization (Tag_Typ)
 
          --  Ada 2005 (AI-251): We must also generate these subprograms if
          --  the immediate ancestor is an interface to ensure the correct

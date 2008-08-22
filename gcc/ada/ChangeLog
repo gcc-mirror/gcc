@@ -1,3 +1,14 @@
+2008-08-22  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb, exp_ch7.adb, exp_ch7.ads, exp_util.adb, freeze.adb,
+	exp_ch4.adb, exp_ch6.ads, exp_ch6.adb, sem_ch6.adb, exp_aggr.adb,
+	exp_intr.adb, exp_ch3.adb: Rename:
+	Exp_Ch7.Controlled_Type => Needs_Finalization
+	Exp_Ch7.CW_Or_Controlled_Type => CW_Or_Has_Controlled_Part
+	Exp_Ch5.Expand_N_Extended_Return_Statement.Controlled_Type =>
+	 Has_Controlled_Parts
+	(Has_Some_Controlled_Component): Fix bug in array case.
+
 2008-08-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb: Minor reformatting

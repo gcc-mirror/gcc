@@ -391,21 +391,20 @@ package body Exp_Ch6 is
       Final_List_Actual : Node_Id;
       Final_List_Formal : Node_Id;
       Is_Ctrl_Result    : constant Boolean :=
-                            Controlled_Type
+                            Needs_Finalization
                               (Underlying_Type (Etype (Function_Id)));
 
    begin
       --  No such extra parameter is needed if there are no controlled parts.
-      --  The test for Controlled_Type accounts for class-wide results (which
-      --  potentially have controlled parts, even if the root type doesn't),
-      --  and the test for a tagged result type is needed because calls to
-      --  such a function can in general occur in dispatching contexts, which
-      --  must be treated the same as a call to class-wide functions. Both of
-      --  these situations require that a finalization list be passed.
+      --  The test for Needs_Finalization accounts for class-wide results
+      --  (which potentially have controlled parts, even if the root type
+      --  doesn't), and the test for a tagged result type is needed because
+      --  calls to such a function can in general occur in dispatching
+      --  contexts, which must be treated the same as a call to class-wide
+      --  functions. Both of these situations require that a finalization list
+      --  be passed.
 
-      if not Is_Ctrl_Result
-        and then not Is_Tagged_Type (Underlying_Type (Etype (Function_Id)))
-      then
+      if not Needs_BIP_Final_List (Function_Id) then
          return;
       end if;
 
@@ -3034,7 +3033,7 @@ package body Exp_Ch6 is
       --  If the return type is limited the context is an initialization
       --  and different processing applies.
 
-      if Controlled_Type (Etype (Subp))
+      if Needs_Finalization (Etype (Subp))
         and then not Is_Inherently_Limited_Type (Etype (Subp))
         and then not Is_Limited_Interface (Etype (Subp))
       then
@@ -4276,7 +4275,7 @@ package body Exp_Ch6 is
          elsif Is_Inherently_Limited_Type (Typ) then
             Set_Returns_By_Ref (Spec_Id);
 
-         elsif Present (Utyp) and then CW_Or_Controlled_Type (Utyp) then
+         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Spec_Id);
          end if;
       end;
@@ -4903,7 +4902,7 @@ package body Exp_Ch6 is
       begin
          if Is_Inherently_Limited_Type (Typ) then
             Set_Returns_By_Ref (Subp);
-         elsif Present (Utyp) and then CW_Or_Controlled_Type (Utyp) then
+         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Subp);
          end if;
       end;
@@ -5591,5 +5590,20 @@ package body Exp_Ch6 is
          Set_Etype (Defining_Identifier (Object_Decl), Result_Subt);
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
+
+   function Needs_BIP_Final_List (E : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (E));
+      Result_Subt : constant Entity_Id := Underlying_Type (Etype (E));
+   begin
+      --  We need the BIP_Final_List if the result type needs finalization. We
+      --  also need it for tagged types, even if not class-wide, because some
+      --  type extension might need finalization, and all overriding functions
+      --  must have the same calling conventions. However, if there is a
+      --  pragma Restrictions (No_Finalization), we never need this parameter.
+
+      return (Needs_Finalization (Result_Subt)
+              or else Is_Tagged_Type (Underlying_Type (Result_Subt)))
+        and then not Restriction_Active (No_Finalization);
+   end Needs_BIP_Final_List;
 
 end Exp_Ch6;

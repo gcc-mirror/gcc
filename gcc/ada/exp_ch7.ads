@@ -57,14 +57,19 @@ package Exp_Ch7 is
    function Controller_Component (Typ : Entity_Id) return Entity_Id;
    --  Returns the entity of the component whose name is 'Name_uController'
 
-   function Controlled_Type (T : Entity_Id) return Boolean;
-   --  True if T potentially needs finalization actions
+   function Needs_Finalization (T : Entity_Id) return Boolean;
+   --  True if T potentially needs finalization actions. True if T is
+   --  controlled, or has subcomponents. Also True if T is a class-wide type,
+   --  because some type extension might add controlled subcomponents, except
+   --  that if pragma Restrictions (No_Finalization) applies, this is False for
+   --  class-wide types.
 
-   function CW_Or_Controlled_Type (T : Entity_Id) return Boolean;
-   --  True if T is either a potentially controlled type or a class-wide type.
-   --  Note that in normal mode, class-wide types are potentially controlled so
-   --  this function is different from Controlled_Type only under restrictions
-   --  No_Finalization.
+   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
+   --  True if T is a class-wide type, or if it has controlled parts ("part"
+   --  means T or any of its subcomponents). This is the same as
+   --  Needs_Finalization, except when pragma Restrictions (No_Finalization)
+   --  applies, in which case we know that class-wide objects do not contain
+   --  controlled parts.
 
    function Find_Final_List
      (E   : Entity_Id;

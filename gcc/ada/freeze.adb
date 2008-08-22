@@ -518,7 +518,7 @@ package body Freeze is
          --  the address expression must be a constant.
 
          if (No (Expression (Decl))
-              and then not Controlled_Type (Typ)
+              and then not Needs_Finalization (Typ)
               and then
                 (not Has_Non_Null_Base_Init_Proc (Typ)
                   or else Is_Imported (E)))
@@ -547,7 +547,7 @@ package body Freeze is
          end if;
 
          if not Error_Posted (Expr)
-           and then not Controlled_Type (Typ)
+           and then not Needs_Finalization (Typ)
          then
             Warn_Overlay (Expr, Typ, Name (Addr));
          end if;
@@ -1381,7 +1381,7 @@ package body Freeze is
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
            and then Ekind (Directly_Designated_Type (E)) = E_Incomplete_Type
-           and then Controlled_Type (Designated_Type (E))
+           and then Needs_Finalization (Designated_Type (E))
            and then No (Associated_Final_Chain (E))
          then
             Build_Final_List (Parent (E), E);

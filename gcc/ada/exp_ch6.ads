@@ -161,4 +161,9 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
+   function Needs_BIP_Final_List (E : Entity_Id) return Boolean;
+   pragma Precondition (Is_Build_In_Place_Function (E));
+   --  Ada 2005 (AI-318-02): Returns True if the function needs the
+   --  BIP_Final_List implicit parameter.
+
 end Exp_Ch6;
