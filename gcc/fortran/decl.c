@@ -247,6 +247,11 @@ var_element (gfc_data_variable *new_var)
 
   sym = new_var->expr->symtree->n.sym;
 
+  /* Symbol should already have an associated type.  */
+  if (gfc_check_symbol_typed (sym, gfc_current_ns,
+			      false, gfc_current_locus) == FAILURE)
+    return MATCH_ERROR;
+
   if (!sym->attr.function && gfc_current_ns->parent
       && gfc_current_ns->parent == sym->ns)
     {
@@ -598,6 +603,11 @@ char_len_param_value (gfc_expr **expr)
     }
 
   m = gfc_match_expr (expr);
+
+  if (m == MATCH_YES
+      && gfc_expr_check_typed (*expr, gfc_current_ns, false) == FAILURE)
+    return MATCH_ERROR;
+
   if (m == MATCH_YES && (*expr)->expr_type == EXPR_FUNCTION)
     {
       if ((*expr)->value.function.actual
@@ -3743,6 +3753,8 @@ cleanup:
    can be matched.  Note that if nothing matches, MATCH_YES is
    returned (the null string was matched).  */
 
+bool in_prefix = false;
+
 match
 gfc_match_prefix (gfc_typespec *ts)
 {
@@ -3750,6 +3762,9 @@ gfc_match_prefix (gfc_typespec *ts)
 
   gfc_clear_attr (&current_attr);
   seen_type = 0;
+
+  gcc_assert (!in_prefix);
+  in_prefix = true;
 
 loop:
   if (!seen_type && ts != NULL
@@ -3764,7 +3779,7 @@ loop:
   if (gfc_match ("elemental% ") == MATCH_YES)
     {
       if (gfc_add_elemental (&current_attr, NULL) == FAILURE)
-	return MATCH_ERROR;
+	goto error;
 
       goto loop;
     }
@@ -3772,7 +3787,7 @@ loop:
   if (gfc_match ("pure% ") == MATCH_YES)
     {
       if (gfc_add_pure (&current_attr, NULL) == FAILURE)
-	return MATCH_ERROR;
+	goto error;
 
       goto loop;
     }
@@ -3780,13 +3795,20 @@ loop:
   if (gfc_match ("recursive% ") == MATCH_YES)
     {
       if (gfc_add_recursive (&current_attr, NULL) == FAILURE)
-	return MATCH_ERROR;
+	goto error;
 
       goto loop;
     }
 
   /* At this point, the next item is not a prefix.  */
+  gcc_assert (in_prefix);
+  in_prefix = false;
   return MATCH_YES;
+
+error:
+  gcc_assert (in_prefix);
+  in_prefix = false;
+  return MATCH_ERROR;
 }
 
 

@@ -1,3 +1,18 @@
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/32095
+	PR fortran/34228
+	* gfortran.dg/used_before_typed_1.f90: New test.
+	* gfortran.dg/used_before_typed_2.f90: New test.
+	* gfortran.dg/used_before_typed_3.f90: New test.
+	* gfortran.dg/array_constructor_26.f03: Add -std=gnu to not enable
+	legacy-behaviour for the new check.
+	* gfortran.dg/array_constructor_27.f03: Ditto.
+	* gfortran.dg/blockdata_4.f90: Ditto.
+	* gfortran.dg/bound_2.f90: Reordered declarations to satisfy the check.
+	* gfortran.dg/result_in_spec_1.f90: Ditto.
+	* gfortran.dg/argument_checking_7.f90: Adapted expected error messages.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 30457

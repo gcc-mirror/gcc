@@ -35,8 +35,8 @@ program test
   if (any (myfunc (test2(1)) .ne. "ABC")) call abort ()
 contains
   function myfunc (ch) result (chr)
-    character(len(ch)) :: chr(4)
     character (*) :: ch(:)
+    character(len(ch)) :: chr(4)
     if (len (ch) .ne. 3) call abort ()
     if (any (ch .ne. "ABC")) call abort ()
     chr = test2 (1)

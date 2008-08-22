@@ -1,3 +1,27 @@
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/32095
+	PR fortran/34228
+	* gfortran.h (in_prefix): New global.
+	(gfc_check_symbol_typed), (gfc_check_expr_typed): New methods.
+	* array.c (match_array_element_spec): Check that bounds-expressions
+	don't have symbols not-yet-typed in them.
+	* decl.c (var_element): Check that variable used is already typed.
+	(char_len_param_value): Check that expression does not contain
+	not-yet-typed symbols.
+	(in_prefix): New global.
+	(gfc_match_prefix): Record using `in_prefix' if we're at the moment
+	parsing a prefix or not.
+	* expr.c (gfc_expr_check_typed): New method.
+	* parse.c (verify_st_order): New argument to disable error output.
+	(check_function_result_typed): New helper method.
+	(parse_spec): Check that the function-result declaration, if given in
+	a prefix, contains no not-yet-typed symbols when the IMPLICIT rules are
+	parsed.
+	* symbol.c (gfc_check_symbol_typed): Check that a symbol already has
+	a type associated to it, otherwise use the IMPLICIT rules or signal
+	an error.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* f95-lang.c: Update all calls to pedwarn.

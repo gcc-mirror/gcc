@@ -314,6 +314,8 @@ match_array_element_spec (gfc_array_spec *as)
     gfc_error ("Expected expression in array specification at %C");
   if (m != MATCH_YES)
     return AS_UNKNOWN;
+  if (gfc_expr_check_typed (*upper, gfc_current_ns, false) == FAILURE)
+    return AS_UNKNOWN;
 
   if (gfc_match_char (':') == MATCH_NO)
     {
@@ -332,6 +334,8 @@ match_array_element_spec (gfc_array_spec *as)
     return AS_UNKNOWN;
   if (m == MATCH_NO)
     return AS_ASSUMED_SHAPE;
+  if (gfc_expr_check_typed (*upper, gfc_current_ns, false) == FAILURE)
+    return AS_UNKNOWN;
 
   return AS_EXPLICIT;
 }

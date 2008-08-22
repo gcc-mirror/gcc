@@ -2245,6 +2245,10 @@ void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
 
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
+/* FIXME:  Do this with parser-state instead of global variable.  */
+extern bool in_prefix;
+gfc_try gfc_check_symbol_typed (gfc_symbol*, gfc_namespace*, bool, locus);
+
 /* intrinsic.c */
 extern int gfc_init_expr;
 
@@ -2335,6 +2339,8 @@ bool gfc_traverse_expr (gfc_expr *, gfc_symbol *,
 			bool (*)(gfc_expr *, gfc_symbol *, int*),
 			int);
 void gfc_expr_set_symbols_referenced (gfc_expr *);
+
+gfc_try gfc_expr_check_typed (gfc_expr*, gfc_namespace*, bool);
 
 /* st.c */
 extern gfc_code new_st;
