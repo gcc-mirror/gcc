@@ -291,6 +291,30 @@ extern char *__gnat_get_code_loc (struct sigcontext *);
 extern void __gnat_set_code_loc (struct sigcontext *, char *);
 extern size_t __gnat_machine_state_length (void);
 
+/* __gnat_adjust_context_for_raise - see comments along with the default
+   version later in this file.  */
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo, void *context)
+{
+  struct sigcontext * sigcontext = (struct sigcontext *) context;
+
+  /* The fallback code fetches the faulting insn address from sc_pc, so
+     adjust that when need be.  For SIGFPE, the required adjustment depends
+     on the trap shadow situation (see man ieee).  */
+  if (signo == SIGFPE)
+    {
+      /* ??? We never adjust here, considering that sc_pc always
+	 designates the instruction following the one which trapped.
+	 This is not necessarily true but corresponds to what we have
+	 always observed.  */
+    }
+  else
+    sigcontext->sc_pc ++;
+}
+
 static void
 __gnat_error_handler
   (int sig, siginfo_t *sip, struct sigcontext *context)
@@ -298,6 +322,10 @@ __gnat_error_handler
   struct Exception_Data *exception;
   static int recurse = 0;
   const char *msg;
+
+  /* Adjusting is required for every fault context, so adjust for this one
+     now, before we possibly trigger a recursive fault below.  */
+  __gnat_adjust_context_for_raise (sig, context);
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))
@@ -1078,6 +1106,10 @@ __gnat_install_handler (void)
 
 #elif defined (VMS)
 
+/* Routine called from binder to override default feature values. */
+void __gnat_set_features ();
+int __gnat_features_set = 0;
+
 long __gnat_error_handler (int *, void *);
 
 #ifdef __IA64
@@ -1591,6 +1623,54 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #endif
 
+/* Feature logical name and global variable address pair */
+struct feature {char *name; int* gl_addr;};
+
+/* Default values for GNAT features set by environment. */
+int __gl_no_malloc_64 = 0;
+
+/* Array feature logical names and global variable addresses */
+static struct feature features[] = {
+  {"GNAT$NO_MALLOC_64", &__gl_no_malloc_64},
+  {0, 0}
+};
+
+void __gnat_set_features ()
+{
+  struct descriptor_s name_desc, result_desc;
+  int i, status;
+  unsigned short rlen;
+
+#define MAXEQUIV 10
+  char buff [MAXEQUIV];
+
+  /* Loop through features array and test name for enable/disable */
+  for (i=0; features [i].name; i++)
+    {
+       name_desc.len = strlen (features [i].name);
+       name_desc.mbz = 0;
+       name_desc.adr = features [i].name;
+
+       result_desc.len = MAXEQUIV - 1;
+       result_desc.mbz = 0;
+       result_desc.adr = buff;
+
+       status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
+
+       if (((status & 1) == 1) && (rlen < MAXEQUIV))
+         buff [rlen] = 0;
+       else
+         strcpy (buff, "");
+
+       if (strcmp (buff, "ENABLE") == 0)
+          *features [i].gl_addr = 1;
+       else if (strcmp (buff, "DISABLE") == 0)
+          *features [i].gl_addr = 0;
+    }
+
+    __gnat_features_set = 1;
+}
+
 /*******************/
 /* FreeBSD Section */
 /*******************/
@@ -2076,7 +2156,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 {
   /* We used to compensate here for the raised from call vs raised from signal
      exception discrepancy with the GCC ZCX scheme, but this is now dealt with
-     generically (except for the IA-64), see GCC PR other/26208.
+     generically (except for the Alpha and IA-64), see GCC PR other/26208.
 
      *** Call vs signal exception discrepancy with GCC ZCX scheme ***
 
