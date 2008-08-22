@@ -846,74 +846,6 @@ package body Exp_Ch7 is
       end if;
    end Check_Visibly_Controlled;
 
-   ------------------------
-   -- Needs_Finalization --
-   ------------------------
-
-   function Needs_Finalization (T : Entity_Id) return Boolean is
-
-      function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
-      --  If type is not frozen yet, check explicitly among its components,
-      --  because the Has_Controlled_Component flag is not necessarily set.
-
-      -----------------------------------
-      -- Has_Some_Controlled_Component --
-      -----------------------------------
-
-      function Has_Some_Controlled_Component
-        (Rec : Entity_Id) return Boolean
-      is
-         Comp : Entity_Id;
-
-      begin
-         if Has_Controlled_Component (Rec) then
-            return True;
-
-         elsif not Is_Frozen (Rec) then
-            if Is_Record_Type (Rec) then
-               Comp := First_Entity (Rec);
-
-               while Present (Comp) loop
-                  if not Is_Type (Comp)
-                    and then Needs_Finalization (Etype (Comp))
-                  then
-                     return True;
-                  end if;
-
-                  Next_Entity (Comp);
-               end loop;
-
-               return False;
-
-            elsif Is_Array_Type (Rec) then
-               return Needs_Finalization (Component_Type (Rec));
-
-            else
-               return Has_Controlled_Component (Rec);
-            end if;
-         else
-            return False;
-         end if;
-      end Has_Some_Controlled_Component;
-
-   --  Start of processing for Needs_Finalization
-
-   begin
-      --  Class-wide types must be treated as controlled because they may
-      --  contain an extension that has controlled components
-
-      --  We can skip this if finalization is not available
-
-      return (Is_Class_Wide_Type (T)
-                and then not In_Finalization_Root (T)
-                and then not Restriction_Active (No_Finalization))
-        or else Is_Controlled (T)
-        or else Has_Some_Controlled_Component (T)
-        or else (Is_Concurrent_Type (T)
-                  and then Present (Corresponding_Record_Type (T))
-                  and then Needs_Finalization (Corresponding_Record_Type (T)));
-   end Needs_Finalization;
-
    -------------------------------
    -- CW_Or_Has_Controlled_Part --
    -------------------------------
@@ -1296,8 +1228,8 @@ package body Exp_Ch7 is
 
       if Is_Task_Allocation then
          Chain := Activation_Chain_Entity (N);
-         Decl := First (Declarations (N));
 
+         Decl := First (Declarations (N));
          while Nkind (Decl) /= N_Object_Declaration
            or else Defining_Identifier (Decl) /= Chain
          loop
@@ -3186,10 +3118,10 @@ package body Exp_Ch7 is
         and then Nkind (Action) /= N_Simple_Return_Statement
         and then Nkind (Par) /= N_Exception_Handler
       then
-
          declare
             S  : Entity_Id;
             K  : Entity_Kind;
+
          begin
             S := Scope (Current_Scope);
             loop
@@ -3271,6 +3203,74 @@ package body Exp_Ch7 is
 
       return Blk;
    end Make_Transient_Block;
+
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
+
+   function Needs_Finalization (T : Entity_Id) return Boolean is
+
+      function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
+      --  If type is not frozen yet, check explicitly among its components,
+      --  because the Has_Controlled_Component flag is not necessarily set.
+
+      -----------------------------------
+      -- Has_Some_Controlled_Component --
+      -----------------------------------
+
+      function Has_Some_Controlled_Component
+        (Rec : Entity_Id) return Boolean
+      is
+         Comp : Entity_Id;
+
+      begin
+         if Has_Controlled_Component (Rec) then
+            return True;
+
+         elsif not Is_Frozen (Rec) then
+            if Is_Record_Type (Rec) then
+               Comp := First_Entity (Rec);
+
+               while Present (Comp) loop
+                  if not Is_Type (Comp)
+                    and then Needs_Finalization (Etype (Comp))
+                  then
+                     return True;
+                  end if;
+
+                  Next_Entity (Comp);
+               end loop;
+
+               return False;
+
+            elsif Is_Array_Type (Rec) then
+               return Needs_Finalization (Component_Type (Rec));
+
+            else
+               return Has_Controlled_Component (Rec);
+            end if;
+         else
+            return False;
+         end if;
+      end Has_Some_Controlled_Component;
+
+   --  Start of processing for Needs_Finalization
+
+   begin
+      --  Class-wide types must be treated as controlled because they may
+      --  contain an extension that has controlled components
+
+      --  We can skip this if finalization is not available
+
+      return (Is_Class_Wide_Type (T)
+                and then not In_Finalization_Root (T)
+                and then not Restriction_Active (No_Finalization))
+        or else Is_Controlled (T)
+        or else Has_Some_Controlled_Component (T)
+        or else (Is_Concurrent_Type (T)
+                  and then Present (Corresponding_Record_Type (T))
+                  and then Needs_Finalization (Corresponding_Record_Type (T)));
+   end Needs_Finalization;
 
    ------------------------
    -- Node_To_Be_Wrapped --
