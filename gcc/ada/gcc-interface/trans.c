@@ -73,6 +73,19 @@
 #define TARGET_ABI_OPEN_VMS 0
 #endif
 
+/* For efficient float-to-int rounding, it is necessary to know whether
+   floating-point arithmetic on may use wider intermediate results.
+   When FP_ARITH_MAY_WIDEN is not defined, be conservative and only assume
+   floating-point arithmetic does not widen if double precision is emulated. */
+
+#ifndef FP_ARITH_MAY_WIDEN
+#if defined(HAVE_extendsfdf2)
+#define FP_ARITH_MAY_WIDEN HAVE_extendsfdf2
+#else
+#define FP_ARITH_MAY_WIDEN 0
+#endif
+#endif
+
 extern char *__gnat_to_canonical_file_spec (char *);
 
 int max_gnat_nodes;
@@ -6308,12 +6321,11 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
       /* The following calculations depend on proper rounding to even
          of each arithmetic operation. In order to prevent excess
          precision from spoiling this property, use the widest hardware
-         floating-point type.
+         floating-point type if FP_ARITH_MAY_WIDEN is true.  */
 
-         FIXME: For maximum efficiency, this should only be done for machines
-         and types where intermediates may have extra precision.  */
+      calc_type = (FP_ARITH_MAY_WIDEN ? longest_float_type_node
+                                      : gnu_in_basetype);
 
-      calc_type = longest_float_type_node;
       /* FIXME: Should not have padding in the first place */
       if (TREE_CODE (calc_type) == RECORD_TYPE
               && TYPE_IS_PADDING_P (calc_type))

@@ -1,3 +1,8 @@
+2008-08-22  Geert Bosch  <bosch@adacore.com>
+
+	* gcc-interface/trans.c: Define FP_ARITH_MAY_WIDEN
+	(convert_with_check): Only use longest_float_type if FP_ARITH_MAY_WIDEN is 0
+
 2008-08-22  Doug Rupp  <rupp@adacore.com>
 
 	* bindgen.adb [VMS] (Gen_Adainit_Ada, Gen_Adainit_C): Import and call
