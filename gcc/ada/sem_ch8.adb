@@ -7060,43 +7060,75 @@ package body Sem_Ch8 is
          --  The type already has a use clause
 
          if In_Use (T) then
+
+            --  Case where we know the current use clause for the type
+
             if Present (Current_Use_Clause (T)) then
                declare
                   Clause1 : constant Node_Id := Parent (Id);
                   Clause2 : constant Node_Id := Current_Use_Clause (T);
+                  Ent1    : Entity_Id;
+                  Ent2    : Entity_Id;
                   Err_No  : Node_Id;
                   Unit1   : Node_Id;
                   Unit2   : Node_Id;
 
                begin
+                  --  If both current use type clause and the use type
+                  --  clause for the type are at the compilation unit level,
+                  --  one of the units must be an ancestor of the other, and
+                  --  the warning belongs on the descendant.
+
                   if Nkind (Parent (Clause1)) = N_Compilation_Unit
-                    and then Nkind (Parent (Clause2)) = N_Compilation_Unit
+                       and then
+                     Nkind (Parent (Clause2)) = N_Compilation_Unit
                   then
+                     Unit1 := Unit (Parent (Clause1));
+                     Unit2 := Unit (Parent (Clause2));
+
                      --  There is a redundant use type clause in a child unit.
                      --  Determine which of the units is more deeply nested.
+                     --  If a unit is a package instance, retrieve the entity
+                     --  and its scope from the instance spec
 
-                     Unit1 := Defining_Entity (Unit (Parent (Clause1)));
-                     Unit2 := Defining_Entity (Unit (Parent (Clause2)));
+                     if Nkind (Unit1) =  N_Package_Instantiation
+                       and then Analyzed (Unit1)
+                     then
+                        Ent1 := Defining_Entity (Instance_Spec (Unit1));
+                     else
+                        Ent1 := Defining_Entity (Unit1);
+                     end if;
 
-                     if Scope (Unit2) = Standard_Standard  then
+                     if Nkind (Unit2) =  N_Package_Instantiation
+                       and then Analyzed (Unit2)
+                     then
+                        Ent2 := Defining_Entity (Instance_Spec (Unit2));
+                     else
+                        Ent2 := Defining_Entity (Unit2);
+                     end if;
+
+                     if Scope (Ent2) = Standard_Standard  then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Err_No := Clause1;
 
-                     elsif Scope (Unit1) = Standard_Standard then
+                     elsif Scope (Ent1) = Standard_Standard then
                         Error_Msg_Sloc := Sloc (Id);
                         Err_No := Clause2;
 
-                     else
-                        --  Determine which is the descendant unit
+                     --  If both units are child units, we determine which
+                     --  one is the descendant by the scope distance to the
+                     --  ultimate parent unit.
 
+                     else
                         declare
                            S1, S2 : Entity_Id;
 
                         begin
-                           S1 := Scope (Unit1);
-                           S2 := Scope (Unit2);
+                           S1 := Scope (Ent1);
+                           S2 := Scope (Ent2);
                            while S1 /= Standard_Standard
-                             and then S2 /= Standard_Standard
+                                   and then
+                                 S2 /= Standard_Standard
                            loop
                               S1 := Scope (S1);
                               S2 := Scope (S2);
@@ -7115,16 +7147,25 @@ package body Sem_Ch8 is
                      Error_Msg_NE
                        ("& is already use-visible through previous "
                         & "use_type_clause #?", Err_No, Id);
+
+                  --  Case where current use type clause and the use type
+                  --  clause for the type are not both at the compilation unit
+                  --  level. In this case we don't have location information.
+
                   else
                      Error_Msg_NE
-                       ("& is already use-visible through previous use type "
-                        & "clause?", Id, Id);
+                       ("& is already use-visible through previous "
+                        & "use type clause?", Id, Id);
                   end if;
                end;
+
+            --  Here if Current_Use_Clause is not set for T, another case
+            --  where we do not have the location information available.
+
             else
                Error_Msg_NE
-                 ("& is already use-visible through previous use type "
-                  & "clause?", Id, Id);
+                 ("& is already use-visible through previous "
+                  & "use type clause?", Id, Id);
             end if;
 
          --  The package where T is declared is already used
