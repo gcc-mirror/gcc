@@ -18,3 +18,5 @@ main ()
 #endif
   return 0;
 }
+
+/* { dg-final-use { cleanup-tree-dump "tree_profile" } } */

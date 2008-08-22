@@ -1,5 +1,16 @@
 2008-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/tree-ssa/pr21658.c (dg-options): Use -fdump-tree-ccp1-details.
+	(dg-final): Use cleanup-tree-dump "ccp1".
+	* gcc.dg/tree-prof/ic-misattribution-1a.c: Cleanup tree_profile.
+	* gcc.dg/ipa/iinline-1.c: Cleanup ipa dump, not tree dump.
+	* g++.dg/ipa/iinline-1.C: Ditto.
+	* gfortran.dg/intrinsic_std_1.f90: Cleanup "original" tree dump.
+	* gfortran.dg/char_eoshift_5.f90: Ditto.
+	* gfortran.dg/index_2.f90: Ditto.
+
+2008-08-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/37184
 	* gcc.target/i386/pr37184.c: New test.
 

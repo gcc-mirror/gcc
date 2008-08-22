@@ -46,3 +46,4 @@ END SUBROUTINE intrinsic_decl
 ! { dg-final { scan-tree-dump " abort " "original" } }
 ! { dg-final { scan-tree-dump " asinh " "original" } }
 ! { dg-final { scan-tree-dump " acosh " "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
