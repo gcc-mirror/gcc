@@ -6442,6 +6442,12 @@ package body Exp_Aggr is
                   Append_To
                     (Expressions (Agg), New_Copy (Expression (Expr)));
                   Set_Etype (Last (Expressions (Agg)), Component_Type (Typ));
+
+                  --  Integer literals should always be marked as static
+
+                  if Nkind (Expression (Expr)) = N_Integer_Literal then
+                     Set_Is_Static_Expression (Last (Expressions (Agg)));
+                  end if;
                end loop;
 
                Set_Aggregate_Bounds (Agg, Bounds);
