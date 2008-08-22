@@ -1,3 +1,22 @@
+2008-08-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.ads: Fix typo in subprogram reference definition.
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* s-sopco3.adb: Minor code fix to avoid warning
+
+	* s-sopco4.adb: Minor code fix to avoid warning
+
+	* s-sopco5.adb: Minor code fix to avoid warning
+
+	* s-strops.adb: Minor code fix to avoid warning
+
+	* s-utf_32.adb (Get_Category): Fix obvious typo
+
+	* s-wwdcha.adb: Minor code reorganization
+	Remove dead code
+
 2008-08-22  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Determine_Range): Deal with values that might be invalid

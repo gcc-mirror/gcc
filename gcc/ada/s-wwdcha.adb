@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,20 +43,11 @@ package body System.WWd_Char is
    begin
       W := 0;
       for C in Lo .. Hi loop
-         --  For Character range, use length of image
-
-         if Character'Pos (C) < 256 then
-            declare
-               S : constant Wide_String := Character'Wide_Image (C);
-            begin
-               W := Natural'Max (W, S'Length);
-            end;
-
-            --  For wide character, always max out at 12 (Hex_hhhhhhhh)
-
-         else
-            return 12;
-         end if;
+         declare
+            S : constant Wide_String := Character'Wide_Image (C);
+         begin
+            W := Natural'Max (W, S'Length);
+         end;
       end loop;
 
       return W;
@@ -72,21 +63,11 @@ package body System.WWd_Char is
    begin
       W := 0;
       for C in Lo .. Hi loop
-
-         --  For Character range, use length of image
-
-         if Character'Pos (C) < 256 then
-            declare
-               S : constant String := Character'Image (C);
-            begin
-               W := Natural'Max (W, S'Length);
-            end;
-
-            --  For wide character, always max out at 12 (Hex_hhhhhhhh)
-
-         else
-            return 12;
-         end if;
+         declare
+            S : constant String := Character'Image (C);
+         begin
+            W := Natural'Max (W, S'Length);
+         end;
       end loop;
 
       return W;
