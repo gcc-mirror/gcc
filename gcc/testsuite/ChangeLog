@@ -1,3 +1,9 @@
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/30239
+	* gfortran.dg/duplicate_type_1.f90: New test.
+	* gfortran.dg/duplicate_type_2.f90: New test.
+
 2008-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/pr21658.c (dg-options): Use -fdump-tree-ccp1-details.
