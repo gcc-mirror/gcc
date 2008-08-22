@@ -697,7 +697,7 @@ package Rtsfind is
      RE_Get_Local_Partition_Id,          -- System.DSA_Services
      RE_Get_Passive_Partition_Id,        -- System.DSA_Services
 
-     RE_Any_Content_Ptr,                 -- System.DSA_Types
+     RE_Any_Container_Ptr,               -- System.DSA_Types
 
      RE_Register_Exception,              -- System.Exception_Table
 
@@ -1261,11 +1261,8 @@ package Rtsfind is
      RE_SS_Mark,                         -- System.Secondary_Stack
      RE_SS_Release,                      -- System.Secondary_Stack
 
-     RE_Shared_Var_Close,                -- System.Shared_Storage
      RE_Shared_Var_Lock,                 -- System.Shared_Storage
-     RE_Shared_Var_ROpen,                -- System.Shared_Storage
      RE_Shared_Var_Unlock,               -- System.Shared_Storage
-     RE_Shared_Var_WOpen,                -- System.Shared_Storage
      RE_Shared_Var_Procs,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
@@ -1854,7 +1851,7 @@ package Rtsfind is
      RE_Get_Local_Partition_Id           => System_DSA_Services,
      RE_Get_Passive_Partition_Id         => System_DSA_Services,
 
-     RE_Any_Content_Ptr                  => System_DSA_Types,
+     RE_Any_Container_Ptr                => System_DSA_Types,
 
      RE_Register_Exception               => System_Exception_Table,
 
@@ -2418,11 +2415,8 @@ package Rtsfind is
      RE_SS_Pool                          => System_Secondary_Stack,
      RE_SS_Release                       => System_Secondary_Stack,
 
-     RE_Shared_Var_Close                 => System_Shared_Storage,
      RE_Shared_Var_Lock                  => System_Shared_Storage,
-     RE_Shared_Var_ROpen                 => System_Shared_Storage,
      RE_Shared_Var_Unlock                => System_Shared_Storage,
-     RE_Shared_Var_WOpen                 => System_Shared_Storage,
      RE_Shared_Var_Procs                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,

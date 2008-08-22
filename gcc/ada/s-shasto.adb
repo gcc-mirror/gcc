@@ -33,6 +33,7 @@
 
 with Ada.IO_Exceptions;
 with Ada.Streams;
+with Ada.Streams.Stream_IO;
 
 with System.Global_Locks;
 with System.Soft_Links;
@@ -54,6 +55,8 @@ package body System.Shared_Storage is
    package FCB renames System.File_Control_Block;
 
    package SFI renames System.File_IO;
+
+   package SIO renames Ada.Streams.Stream_IO;
 
    type String_Access is access String;
    procedure Free is new Ada.Unchecked_Deallocation
@@ -167,6 +170,26 @@ package body System.Shared_Storage is
    --  the file is currently open. If so, then a pointer to the already
    --  created entry is returned, after first moving it to the head of
    --  the LRU chain. If not, then null is returned.
+
+   function Shared_Var_ROpen (Var : String) return SIO.Stream_Access;
+   --  As described above, this routine returns null if the
+   --  corresponding shared storage does not exist, and otherwise, if
+   --  the storage does exist, a Stream_Access value that references
+   --  the shared storage, ready to read the current value.
+
+   function Shared_Var_WOpen (Var : String) return SIO.Stream_Access;
+   --  As described above, this routine returns a Stream_Access value
+   --  that references the shared storage, ready to write the new
+   --  value. The storage is created by this call if it does not
+   --  already exist.
+
+   procedure Shared_Var_Close (Var : SIO.Stream_Access);
+   --  This routine signals the end of a read/assign operation. It can
+   --  be useful to embrace a read/write operation between a call to
+   --  open and a call to close which protect the whole operation.
+   --  Otherwise, two simultaneous operations can result in the
+   --  raising of exception Data_Error by setting the access mode of
+   --  the variable in an incorrect mode.
 
    ---------------
    -- Enter_SFE --
