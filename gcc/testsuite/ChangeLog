@@ -1,5 +1,9 @@
 2008-08-22  Daniel Kraft  <d@domob.eu>
 
+	* gfortran.dg/used_before_typed_4.f90: New test.
+
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/32095
 	PR fortran/34228
 	* gfortran.dg/used_before_typed_1.f90: New test.

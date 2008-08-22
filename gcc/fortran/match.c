@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "parse.h"
 
 int gfc_matching_procptr_assignment = 0;
+bool gfc_matching_prefix = false;
 
 /* For debugging and diagnostic purposes.  Return the textual representation
    of the intrinsic operator OP.  */

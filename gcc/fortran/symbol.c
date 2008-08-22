@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 #include "parse.h"
+#include "match.h"
 
 
 /* Strings for all symbol attributes.  We use these for dumping the
@@ -4240,7 +4241,7 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
 {
   gcc_assert (sym);
 
-  if (in_prefix)
+  if (gfc_matching_prefix)
     return SUCCESS;
 
   /* Check for the type and try to give it an implicit one.  */
