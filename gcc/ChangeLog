@@ -1,3 +1,18 @@
+2008-08-22  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/11259
+	* config/avr/avr.md (UNSPEC_SWAP): New constants.
+	(*swap): New insn pattern.
+	(*ashlqi3): Rename from ashlqi3 insn pattern.
+	(ashlqi3): New expanders.
+	(*lshrqi3): Rename from lshrqi3 insn pattern.
+	(lshrqi3): New expanders.	
+	(ashlqi3_const4, ashlqi3_const5, ashlqi3_const6, lshrqi3_const4,
+	lshrqi3_const5, lshrqi3_const6): New splitters.
+	(andi, ashlqi3_l_const4, ashlqi3_l_const5, ashlqi3_l_const6,
+	lshrqi3_l_const4, lshrqi3_l_const5, lshrqi3_l_const6): Define
+	peephole2 patterns.
+
 2008-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37078
