@@ -1,3 +1,72 @@
+2008-08-22  Doug Rupp  <rupp@adacore.com>
+
+	* bindgen.adb [VMS] (Gen_Adainit_Ada, Gen_Adainit_C): Import and call
+	__gnat_set_features.
+
+	* init.c
+	(__gnat_set_features): New function.
+	(__gnat_features_set): New tracking variable.
+	(__gl_no_malloc_64): New feature global variable
+
+2008-08-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): Do not emit warning message about redundant
+	use_type_clause in an instance.
+
+2008-08-22  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.ads: Remove pragma Precondition, since it breaks some builds.
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting
+
+	* exp_ch7.adb: Minor reformatting
+
+	* exp_ch7.ads: Put routines in proper alpha order
+
+	* exp_dist.adb: Minor reformatting
+
+2008-08-22  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads: Minor comment update
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (One_Bound): Fix latent bug involving secondary stack
+
+2008-08-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_tss.adb:
+	(Base_Init_Proc): For a protected subtype, use the base type of the
+	corresponding record to locate the propoer initialization procedure.
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb:
+	(In_Subrange_Of): New calling sequence
+	(Determine_Range): Prepare for new processing using base type
+
+	* exp_ch4.adb:
+	(Compile_Time_Compare): Use new calling sequence
+
+	* exp_ch5.adb:
+	(Compile_Time_Compare): Use new calling sequence
+
+	* sem_eval.adb:
+	(Compile_Time_Compare): New calling sequence allows dealing with
+	invalid values.
+	(In_Subrange_Of): Ditto
+
+	* sem_eval.ads:
+	(Compile_Time_Compare): New calling sequence allows dealing with
+	invalid values.
+	(In_Subrange_Of): Ditto
+
+2008-08-22  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Fix possible race condition on win32_wait().
+
 2008-08-22  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb, exp_ch7.adb, exp_ch7.ads, exp_util.adb, freeze.adb,

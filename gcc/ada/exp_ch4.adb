@@ -3826,8 +3826,10 @@ package body Exp_Ch4 is
             Lo_Orig : constant Node_Id := Original_Node (Lo);
             Hi_Orig : constant Node_Id := Original_Node (Hi);
 
-            Lcheck : constant Compare_Result := Compile_Time_Compare (Lop, Lo);
-            Ucheck : constant Compare_Result := Compile_Time_Compare (Lop, Hi);
+            Lcheck : constant Compare_Result :=
+                       Compile_Time_Compare (Lop, Lo, Assume_Valid => True);
+            Ucheck : constant Compare_Result :=
+                       Compile_Time_Compare (Lop, Hi, Assume_Valid => True);
 
             Warn1 : constant Boolean :=
                       Constant_Condition_Warnings
@@ -9025,7 +9027,8 @@ package body Exp_Ch4 is
          Op1 : constant Node_Id   := Left_Opnd (N);
          Op2 : constant Node_Id   := Right_Opnd (N);
 
-         Res : constant Compare_Result := Compile_Time_Compare (Op1, Op2);
+         Res : constant Compare_Result :=
+                 Compile_Time_Compare (Op1, Op2, Assume_Valid => True);
          --  Res indicates if compare outcome can be compile time determined
 
          True_Result  : Boolean;

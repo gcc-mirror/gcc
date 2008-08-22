@@ -614,10 +614,14 @@ package body Exp_Ch5 is
             --  or upper bounds at compile time and compare them.
 
             else
-               Cresult := Compile_Time_Compare (Left_Lo, Right_Lo);
+               Cresult :=
+                 Compile_Time_Compare
+                   (Left_Lo, Right_Lo, Assume_Valid => True);
 
                if Cresult = Unknown then
-                  Cresult := Compile_Time_Compare (Left_Hi, Right_Hi);
+                  Cresult :=
+                    Compile_Time_Compare
+                      (Left_Hi, Right_Hi, Assume_Valid => True);
                end if;
 
                case Cresult is

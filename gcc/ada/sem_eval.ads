@@ -133,16 +133,21 @@ package Sem_Eval is
    subtype Compare_GE is Compare_Result range EQ .. GE;
    subtype Compare_LE is Compare_Result range LT .. EQ;
    function Compile_Time_Compare
-     (L, R : Node_Id;
-      Rec  : Boolean := False) return Compare_Result;
+     (L, R         : Node_Id;
+      Assume_Valid : Boolean;
+      Rec          : Boolean := False) return Compare_Result;
    --  Given two expression nodes, finds out whether it can be determined at
    --  compile time how the runtime values will compare. An Unknown result
    --  means that the result of a comparison cannot be determined at compile
    --  time, otherwise the returned result indicates the known result of the
    --  comparison, given as tightly as possible (i.e. EQ or LT is preferred
-   --  returned value to LE). Rec is a parameter that is set True for a
-   --  recursive call from within Compile_Time_Compare to avoid some infinite
-   --  recursion cases. It should never be set by a client.
+   --  returned value to LE). If Assume_Valid is true, the result reflects
+   --  the result of assuming that entities involved in the comparison have
+   --  valid representations. If Assume_Valid is false, then the base type of
+   --  any involved entity is used so that no assumption of validity is made.
+   --  Rec is a parameter that is set True for a recursive call from within
+   --  Compile_Time_Compare to avoid some infinite recursion cases. It should
+   --  never be set by a client.
 
    procedure Flag_Non_Static_Expr (Msg : String; Expr : Node_Id);
    --  This procedure is called after it has been determined that Expr is not
@@ -357,14 +362,17 @@ package Sem_Eval is
    --  and Fixed_Int are used as in routine Is_In_Range above.
 
    function In_Subrange_Of
-     (T1        : Entity_Id;
-      T2        : Entity_Id;
-      Fixed_Int : Boolean := False) return Boolean;
+     (T1           : Entity_Id;
+      T2           : Entity_Id;
+      Assume_Valid : Boolean;
+      Fixed_Int    : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that the range of
    --  values for scalar type T1 are always in the range of scalar type T2. A
    --  result of False does not mean that T1 is not in T2's subrange, only that
    --  it cannot be determined at compile time. Flag Fixed_Int is used as in
-   --  routine Is_In_Range above.
+   --  routine Is_In_Range above. If Assume_Valid is true, the result reflects
+   --  the result of assuming that entities involved in the comparison have
+   --  valid representations.
 
    function Is_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
    --  Returns True if it can guarantee that Lo .. Hi is a null range. If it
