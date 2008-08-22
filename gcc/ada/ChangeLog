@@ -1,13 +1,24 @@
+2008-08-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Static_Array_Aggregate): Call Analyze_And_Resolve on the
+	component expression copies rather than directly setting Etype and
+	Is_Static_Expression.
+
+2008-08-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Has_Preelaborable_Initialization): Revise checking of
+	private types to allow for types derived from a private type with
+	preelaborable initialization, but return False for a private extension
+	(unless it has the pragma).
+
+2008-08-22  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor code reorganization (put entries in alpha order)
+
 2008-08-22  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c, adaint.c: Use Lock_Task and Unlock_Task for non-blocking
 	spawn.
-
-2008-08-22  Javier Miranda  <miranda@adacore.com>
-
-	* exp_ch3.adb (Build_Init_Statements): Transfer to the body of the
-	init procedure all the expanded code associated with the spec of
-	task types and protected types.
 
 2008-08-22  Geert Bosch  <bosch@adacore.com>
 
