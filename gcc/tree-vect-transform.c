@@ -7459,7 +7459,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       addr_tmp = create_tmp_var (int_ptrsize_type, tmp_name);
       add_referenced_var (addr_tmp);
       addr_tmp_name = make_ssa_name (addr_tmp, NULL);
-      addr_stmt = gimple_build_assign (addr_tmp_name, addr_base);
+      addr_stmt = gimple_build_assign_with_ops (NOP_EXPR, addr_tmp_name,
+						addr_base, NULL_TREE);
       SSA_NAME_DEF_STMT (addr_tmp_name) = addr_stmt;
       gimple_seq_add_stmt (cond_expr_stmt_list, addr_stmt);
 
