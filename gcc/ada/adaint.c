@@ -2101,25 +2101,26 @@ __gnat_dup2 (int oldfd, int newfd)
 
 /* Synchronization code, to be thread safe.  */
 
-static CRITICAL_SECTION plist_cs;
+#ifdef CERT
 
-void
-__gnat_plist_init (void)
-{
-  InitializeCriticalSection (&plist_cs);
-}
+/* For the Cert run times on native Windows we use dummy functions
+   for locking and unlocking tasks since we do not support multiple
+   threads on this configuration (Cert run time on native Windows). */
 
-static void
-plist_enter (void)
-{
-  EnterCriticalSection (&plist_cs);
-}
+void dummy (void) {}
 
-static void
-plist_leave (void)
-{
-  LeaveCriticalSection (&plist_cs);
-}
+void (*Lock_Task) ()   = &dummy;
+void (*Unlock_Task) () = &dummy;
+
+#else
+
+#define Lock_Task system__soft_links__lock_task
+extern void (*Lock_Task) (void);
+
+#define Unlock_Task system__soft_links__unlock_task
+extern void (*Unlock_Task) (void);
+
+#endif
 
 typedef struct _process_list
 {
@@ -2138,16 +2139,16 @@ add_handle (HANDLE h)
 
   pl = (Process_List *) xmalloc (sizeof (Process_List));
 
-  plist_enter();
-
   /* -------------------- critical section -------------------- */
+  (*Lock_Task) ();
+
   pl->h = h;
   pl->next = PLIST;
   PLIST = pl;
   ++plist_length;
-  /* -------------------- critical section -------------------- */
 
-  plist_leave();
+  (*Unlock_Task) ();
+  /* -------------------- critical section -------------------- */
 }
 
 static void
@@ -2156,9 +2157,9 @@ remove_handle (HANDLE h)
   Process_List *pl;
   Process_List *prev = NULL;
 
-  plist_enter();
-
   /* -------------------- critical section -------------------- */
+  (*Lock_Task) ();
+
   pl = PLIST;
   while (pl)
     {
@@ -2179,9 +2180,9 @@ remove_handle (HANDLE h)
     }
 
   --plist_length;
-  /* -------------------- critical section -------------------- */
 
-  plist_leave();
+  (*Unlock_Task) ();
+  /* -------------------- critical section -------------------- */
 }
 
 static int
@@ -2275,11 +2276,12 @@ win32_wait (int *status)
     }
 
   k = 0;
-  plist_enter();
+
+  /* -------------------- critical section -------------------- */
+  (*Lock_Task) ();
 
   hl_len = plist_length;
 
-  /* -------------------- critical section -------------------- */
   hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len);
 
   pl = PLIST;
@@ -2288,9 +2290,9 @@ win32_wait (int *status)
       hl[k++] = pl->h;
       pl = pl->next;
     }
-  /* -------------------- critical section -------------------- */
 
-  plist_leave();
+  (*Unlock_Task) ();
+  /* -------------------- critical section -------------------- */
 
   res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
   h = hl[res - WAIT_OBJECT_0];
