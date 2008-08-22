@@ -1440,6 +1440,10 @@ package body Make is
       O_File         : out File_Name_Type;
       O_Stamp        : out Time_Stamp_Type)
    is
+      function File_Not_A_Source_Of
+        (Uname : Name_Id;
+         Sfile : File_Name_Type) return Boolean;
+
       function First_New_Spec (A : ALI_Id) return File_Name_Type;
       --  Looks in the with table entries of A and returns the spec file name
       --  of the first withed unit (subprogram) for which no spec existed when
@@ -1453,6 +1457,34 @@ package body Make is
       --  Note: This function should really be in ali.adb and use Uname
       --  services, but this causes the whole compiler to be dragged along
       --  for gnatbind and gnatmake.
+
+      --------------------------
+      -- File_Not_A_Source_Of --
+      --------------------------
+
+      function File_Not_A_Source_Of
+        (Uname : Name_Id;
+         Sfile : File_Name_Type) return Boolean
+      is
+         UID    : Prj.Unit_Index;
+         U_Data : Unit_Data;
+
+      begin
+         UID := Units_Htable.Get (Project_Tree.Units_HT, Uname);
+
+         if UID /= Prj.No_Unit_Index then
+            U_Data := Project_Tree.Units.Table (UID);
+
+            if U_Data.File_Names (Body_Part).Name /= Sfile
+              and then U_Data.File_Names (Specification).Name /= Sfile
+            then
+               Verbose_Msg (Uname, "sources do not include ", Name_Id (Sfile));
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end File_Not_A_Source_Of;
 
       --------------------
       -- First_New_Spec --
@@ -1827,22 +1859,37 @@ package body Make is
                   end if;
                end if;
 
-            elsif Main_Project /= No_Project then
+            elsif not Read_Only and then Main_Project /= No_Project then
 
                --  Check if a file name does not correspond to the mapping of
                --  units to file names.
 
                declare
+                  SD        : Sdep_Record;
                   WR        : With_Record;
                   Unit_Name : Name_Id;
-                  UID       : Prj.Unit_Index;
-                  U_Data    : Unit_Data;
 
                begin
                   U_Chk :
                   for U in ALIs.Table (ALI).First_Unit ..
                            ALIs.Table (ALI).Last_Unit
                   loop
+                     --  Check if the file name is one of the source of the
+                     --  unit.
+
+                     Get_Name_String (Units.Table (U).Uname);
+                     Name_Len := Name_Len - 2;
+                     Unit_Name := Name_Find;
+
+                     if File_Not_A_Source_Of
+                          (Unit_Name, Units.Table (U).Sfile)
+                     then
+                        ALI := No_ALI_Id;
+                        return;
+                     end if;
+
+                     --  Do the same check for each of the withed units.
+
                      W_Check :
                      for W in Units.Table (U).First_With
                           ..
@@ -1855,29 +1902,30 @@ package body Make is
                            Name_Len := Name_Len - 2;
                            Unit_Name := Name_Find;
 
-                           UID := Units_Htable.Get
-                                   (Project_Tree.Units_HT, Unit_Name);
-
-                           if UID /= Prj.No_Unit_Index then
-                              U_Data := Project_Tree.Units.Table (UID);
-
-                              if U_Data.File_Names (Body_Part).Name /= WR.Sfile
-                                and then
-                                  U_Data.File_Names (Specification).Name /=
-                                                                       WR.Sfile
-                              then
-                                 ALI := No_ALI_Id;
-
-                                 Verbose_Msg
-                                   (Unit_Name, " sources do not include ",
-                                    Name_Id (WR.Sfile));
-
-                                 return;
-                              end if;
+                           if File_Not_A_Source_Of (Unit_Name, WR.Sfile) then
+                              ALI := No_ALI_Id;
+                              return;
                            end if;
                         end if;
                      end loop W_Check;
                   end loop U_Chk;
+
+                  --  Check also the subunits
+
+                  D_Check :
+                  for D in ALIs.Table (ALI).First_Sdep ..
+                           ALIs.Table (ALI).Last_Sdep
+                  loop
+                     SD := Sdep.Table (D);
+                     Unit_Name := SD.Subunit_Name;
+
+                     if Unit_Name /= No_Name then
+                        if File_Not_A_Source_Of (Unit_Name, SD.Sfile) then
+                           ALI := No_ALI_Id;
+                           return;
+                        end if;
+                     end if;
+                  end loop D_Check;
                end;
 
                --  Check that the ALI file is in the correct object directory.
@@ -1931,8 +1979,9 @@ package body Make is
                   Add_Str_To_Name_Buffer (Res_Obj_Dir);
 
                   if Name_Len > 1 and then
-                    (Name_Buffer (Name_Len) = '/' or else
-                       Name_Buffer (Name_Len) = Directory_Separator)
+                    (Name_Buffer (Name_Len) = '/'
+                       or else
+                     Name_Buffer (Name_Len) = Directory_Separator)
                   then
                      Name_Len := Name_Len - 1;
                   end if;
