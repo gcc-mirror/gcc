@@ -378,11 +378,16 @@ package body Sem_Eval is
    --------------------------
 
    function Compile_Time_Compare
-     (L, R : Node_Id;
-      Rec  : Boolean := False) return Compare_Result
+     (L, R         : Node_Id;
+      Assume_Valid : Boolean;
+      Rec          : Boolean := False) return Compare_Result
    is
-      Ltyp : constant Entity_Id := Etype (L);
-      Rtyp : constant Entity_Id := Etype (R);
+      Ltyp : Entity_Id := Etype (L);
+      Rtyp : Entity_Id := Etype (R);
+      --  These get reset to the base type for the case of entities where
+      --  Is_Known_Valid is not set. This takes care of handling possible
+      --  invalid representations using the value of the base type, in
+      --  accordance with RM 13.9.1(10).
 
       procedure Compare_Decompose
         (N : Node_Id;
@@ -739,6 +744,20 @@ package body Sem_Eval is
             return Unknown;
          end if;
 
+         --  Replace types by base types for the case of entities which are
+         --  not known to have valid representations. This takes care of
+         --  properly dealing with invalid representations.
+
+         if not Assume_Valid then
+            if Is_Entity_Name (L) and then not Is_Known_Valid (Entity (L)) then
+               Ltyp := Base_Type (Ltyp);
+            end if;
+
+            if Is_Entity_Name (R) and then not Is_Known_Valid (Entity (R)) then
+               Rtyp := Base_Type (Rtyp);
+            end if;
+         end if;
+
          --  Here is where we check for comparisons against maximum bounds of
          --  types, where we know that no value can be outside the bounds of
          --  the subtype. Note that this routine is allowed to assume that all
@@ -758,28 +777,32 @@ package body Sem_Eval is
             --  See if we can get a decisive check against one operand and
             --  a bound of the other operand (four possible tests here).
 
-            case Compile_Time_Compare (L, Type_Low_Bound (Rtyp), True) is
+            case Compile_Time_Compare (L, Type_Low_Bound (Rtyp),
+                                       Assume_Valid, Rec => True) is
                when LT => return LT;
                when LE => return LE;
                when EQ => return LE;
                when others => null;
             end case;
 
-            case Compile_Time_Compare (L, Type_High_Bound (Rtyp), True) is
+            case Compile_Time_Compare (L, Type_High_Bound (Rtyp),
+                                       Assume_Valid, Rec => True) is
                when GT => return GT;
                when GE => return GE;
                when EQ => return GE;
                when others => null;
             end case;
 
-            case Compile_Time_Compare (Type_Low_Bound (Ltyp), R, True) is
+            case Compile_Time_Compare (Type_Low_Bound (Ltyp), R,
+                                       Assume_Valid, Rec => True) is
                when GT => return GT;
                when GE => return GE;
                when EQ => return GE;
                when others => null;
             end case;
 
-            case Compile_Time_Compare (Type_High_Bound (Ltyp), R, True) is
+            case Compile_Time_Compare (Type_High_Bound (Ltyp), R,
+                                       Assume_Valid, Rec => True) is
                when LT => return LT;
                when LE => return LE;
                when EQ => return LE;
@@ -3485,9 +3508,10 @@ package body Sem_Eval is
    --------------------
 
    function In_Subrange_Of
-     (T1        : Entity_Id;
-      T2        : Entity_Id;
-      Fixed_Int : Boolean := False) return Boolean
+     (T1           : Entity_Id;
+      T2           : Entity_Id;
+      Assume_Valid : Boolean;
+      Fixed_Int    : Boolean := False) return Boolean
    is
       L1 : Node_Id;
       H1 : Node_Id;
@@ -3514,9 +3538,9 @@ package body Sem_Eval is
 
          --  Check bounds to see if comparison possible at compile time
 
-         if Compile_Time_Compare (L1, L2) in Compare_GE
+         if Compile_Time_Compare (L1, L2, Assume_Valid) in Compare_GE
               and then
-            Compile_Time_Compare (H1, H2) in Compare_LE
+            Compile_Time_Compare (H1, H2, Assume_Valid) in Compare_LE
          then
             return True;
          end if;
@@ -3766,10 +3790,10 @@ package body Sem_Eval is
    ---------------------
 
    function Is_Out_Of_Range
-     (N         : Node_Id;
-      Typ       : Entity_Id;
-      Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False) return Boolean
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Fixed_Int    : Boolean := False;
+      Int_Real     : Boolean := False) return Boolean
    is
       Val  : Uint;
       Valr : Ureal;

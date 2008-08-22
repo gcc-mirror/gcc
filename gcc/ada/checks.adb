@@ -2042,7 +2042,9 @@ package body Checks is
         and then
            Is_Discrete_Type (S_Typ) = Is_Discrete_Type (Target_Typ)
         and then
-          (In_Subrange_Of (S_Typ, Target_Typ, Fixed_Int)
+          (In_Subrange_Of (S_Typ, Target_Typ,
+                           Assume_Valid => True,
+                           Fixed_Int    => Fixed_Int)
              or else
            Is_In_Range (Expr, Target_Typ, Fixed_Int, Int_Real))
       then
@@ -2349,7 +2351,10 @@ package body Checks is
 
          begin
             if not Overflow_Checks_Suppressed (Target_Base)
-              and then not In_Subrange_Of (Expr_Type, Target_Base, Conv_OK)
+              and then not
+                In_Subrange_Of (Expr_Type, Target_Base,
+                                Assume_Valid => True,
+                                Fixed_Int    => Conv_OK)
               and then not Float_To_Int
             then
                Activate_Overflow_Check (N);
@@ -3021,7 +3026,8 @@ package body Checks is
       Lo : out Uint;
       Hi : out Uint)
    is
-      Typ : constant Entity_Id := Etype (N);
+      Typ : Entity_Id := Etype (N);
+      --  Type to use, may get reset to base type for possibly invalid entity
 
       Lo_Left : Uint;
       Hi_Left : Uint;
@@ -3115,6 +3121,17 @@ package body Checks is
       --  the value cannot be outside this range (if it is, then we have an
       --  overflow situation, which is a separate check, we are talking here
       --  only about the expression value).
+
+      --  First step, change to use base type if the expression is an entity
+      --  which we do not know is valid.
+
+      --  For now, we do not do this
+
+      if False and then Is_Entity_Name (N)
+        and then not Is_Known_Valid (Entity (N))
+      then
+         Typ := Base_Type (Typ);
+      end if;
 
       --  We use the actual bound unless it is dynamic, in which case use the
       --  corresponding base type bound if possible. If we can't get a bound
@@ -4561,7 +4578,7 @@ package body Checks is
       --  case the literal has already been labeled as having the subtype of
       --  the target.
 
-      if In_Subrange_Of (Source_Type, Target_Type)
+      if In_Subrange_Of (Source_Type, Target_Type, Assume_Valid => True)
         and then not
           (Nkind (N) = N_Integer_Literal
              or else
@@ -4616,7 +4633,9 @@ package body Checks is
 
       --  The conversions will always work and need no check
 
-      elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
+      elsif In_Subrange_Of
+             (Target_Type, Source_Base_Type, Assume_Valid => True)
+      then
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
@@ -4648,7 +4667,9 @@ package body Checks is
       --  If that is the case, we can freely convert the source to the target,
       --  and then test the target result against the bounds.
 
-      elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
+      elsif In_Subrange_Of
+             (Source_Type, Target_Base_Type, Assume_Valid => True)
+      then
 
          --  We make a temporary to hold the value of the converted value
          --  (converted to the base type), and then we will do the test against
@@ -6811,7 +6832,7 @@ package body Checks is
          --  range of the target type.
 
          else
-            if not In_Subrange_Of (S_Typ, T_Typ) then
+            if not In_Subrange_Of (S_Typ, T_Typ, Assume_Valid => True) then
                Cond := Discrete_Expr_Cond (Ck_Node, T_Typ);
             end if;
          end if;
