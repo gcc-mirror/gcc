@@ -774,6 +774,17 @@ package VMS_Data is
    --
    --   Use full source locations references in the report file.
 
+   S_Diagnosis   : aliased constant S := "/DIAGNOSIS_LIMIT=#"              &
+                                            "-m#";
+   --        /DIAGNOSIS_LIMIT=500 (D)
+   --        /ERROR_LIMIT=nnn
+   --
+   --   NNN is a decimal integer in the range of 1 to 1000 and limits the
+   --   number of diagnostic messages to be generated into Stdoutto that
+   --   number.  Once that number has been reached, gnatcheck stops
+   --   to print out diagnoses into Stderr. If NNN is equal to 0, this means
+   --  that there is no limit on the number of diagnoses in Stdout
+
    S_Check_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="       &
                                              "DEFAULT "                    &
                                                 "-vP0 "                    &
@@ -867,6 +878,7 @@ package VMS_Data is
    Check_Switches : aliased constant Switches :=
                       (S_Check_Add      'Access,
                        S_Check_All      'Access,
+                       S_Diagnosis      'Access,
                        S_Check_Ext      'Access,
                        S_Check_Files    'Access,
                        S_Check_Follow   'Access,

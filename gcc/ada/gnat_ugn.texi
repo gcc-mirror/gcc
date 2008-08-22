@@ -20321,6 +20321,12 @@ a generic instantiation a full source location is a chain from the location
 of this construct in the generic unit to the place where this unit is
 instantiated.
 
+@cindex @option{^-m^/DIAGNOSIS_LIMIT^} (@command{gnatcheck})
+@item ^-m@i{nnn}^/DIAGNOSIS_LIMIT=@i{nnn}^
+Maximum number of diagnoses to be sent to Stdout, @i{nnn} from o@dots{}1000,
+the default value is 500. Zero means that there is no limitation on
+the number of diagnostic messages to be printed into Stdout.
+
 @cindex @option{^-q^/QUIET^} (@command{gnatcheck})
 @item ^-q^/QUIET^
 Quiet mode. All the diagnoses about rule violations are placed in the
