@@ -146,10 +146,8 @@ init_pp_output (FILE *out_stream)
       cb->used_undef = cb_used_undef;
     }
 
-  /* Initialize the print structure.  Setting print.src_line to -1 here is
-     a trick to guarantee that the first token of the file will cause
-     a linemarker to be output by maybe_print_line.  */
-  print.src_line = -1;
+  /* Initialize the print structure.  */
+  print.src_line = 1;
   print.printed = 0;
   print.prev = 0;
   print.outf = out_stream;
