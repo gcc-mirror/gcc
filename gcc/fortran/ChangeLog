@@ -1,5 +1,18 @@
 2008-08-22  Daniel Kraft  <d@domob.eu>
 
+	* gfortran.h (in_prefix): Removed from this header.
+	* match.h (gfc_matching_prefix): Moved and renamed from `in_prefix'.
+	* decl.c (in_prefix): Removed from here.
+	(gfc_match_prefix): Use new name of `gfc_matching_prefix'.
+	* symbol.c (gfc_check_symbol_typed): Ditto.
+	* expr.c (check_typed_ns): New helper variable.
+	(expr_check_typed_help): New helper method.
+	(gfc_expr_check_typed): Rewrote to use gfc_traverse_expr to do the
+	work, fixing a minor problem.
+	* match.c (gfc_matching_prefix): New variable.
+
+2008-08-22  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/32095
 	PR fortran/34228
 	* gfortran.h (in_prefix): New global.

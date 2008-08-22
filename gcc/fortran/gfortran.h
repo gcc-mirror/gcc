@@ -2245,8 +2245,6 @@ void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
 
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
-/* FIXME:  Do this with parser-state instead of global variable.  */
-extern bool in_prefix;
 gfc_try gfc_check_symbol_typed (gfc_symbol*, gfc_namespace*, bool, locus);
 
 /* intrinsic.c */

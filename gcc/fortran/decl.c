@@ -3753,8 +3753,6 @@ cleanup:
    can be matched.  Note that if nothing matches, MATCH_YES is
    returned (the null string was matched).  */
 
-bool in_prefix = false;
-
 match
 gfc_match_prefix (gfc_typespec *ts)
 {
@@ -3763,8 +3761,8 @@ gfc_match_prefix (gfc_typespec *ts)
   gfc_clear_attr (&current_attr);
   seen_type = 0;
 
-  gcc_assert (!in_prefix);
-  in_prefix = true;
+  gcc_assert (!gfc_matching_prefix);
+  gfc_matching_prefix = true;
 
 loop:
   if (!seen_type && ts != NULL
@@ -3801,13 +3799,13 @@ loop:
     }
 
   /* At this point, the next item is not a prefix.  */
-  gcc_assert (in_prefix);
-  in_prefix = false;
+  gcc_assert (gfc_matching_prefix);
+  gfc_matching_prefix = false;
   return MATCH_YES;
 
 error:
-  gcc_assert (in_prefix);
-  in_prefix = false;
+  gcc_assert (gfc_matching_prefix);
+  gfc_matching_prefix = false;
   return MATCH_ERROR;
 }
 

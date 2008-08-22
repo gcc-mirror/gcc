@@ -3276,68 +3276,36 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
 
    The namespace is needed for IMPLICIT typing.  */
 
+static gfc_namespace* check_typed_ns;
+
+static bool
+expr_check_typed_help (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
+                       int* f ATTRIBUTE_UNUSED)
+{
+  gfc_try t;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  gcc_assert (e->symtree);
+  t = gfc_check_symbol_typed (e->symtree->n.sym, check_typed_ns,
+                              true, e->where);
+
+  return (t == FAILURE);
+}
+
 gfc_try
 gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
 {
-  gfc_try t;
-  gfc_actual_arglist* act;
-  gfc_constructor* c;
+  bool error_found;
 
-  if (!e)
-    return SUCCESS;
+  /* If this is a top-level variable, do the check with strict given to us.  */
+  if (!strict && e->expr_type == EXPR_VARIABLE && !e->ref)
+    return gfc_check_symbol_typed (e->symtree->n.sym, ns, strict, e->where);
 
-  /* FIXME:  Check indices for EXPR_VARIABLE / EXPR_SUBSTRING, too, to catch
-     things like len(arr(1:n)) as specification expression.  */
+  /* Otherwise, walk the expression and do it strictly.  */
+  check_typed_ns = ns;
+  error_found = gfc_traverse_expr (e, NULL, &expr_check_typed_help, 0);
 
-  switch (e->expr_type)
-    {
-
-    case EXPR_NULL:
-    case EXPR_CONSTANT:
-    case EXPR_SUBSTRING:
-      break;
-
-    case EXPR_VARIABLE:
-      gcc_assert (e->symtree);
-      t = gfc_check_symbol_typed (e->symtree->n.sym, ns, strict, e->where);
-      if (t == FAILURE)
-	return t;
-      break;
-
-    case EXPR_FUNCTION:
-      for (act = e->value.function.actual; act; act = act->next)
-	{
-	  t = gfc_expr_check_typed (act->expr, ns, true);
-	  if (t == FAILURE)
-	    return t;
-	}
-      break;
-
-    case EXPR_OP:
-      t = gfc_expr_check_typed (e->value.op.op1, ns, true);
-      if (t == FAILURE)
-	return t;
-
-      t = gfc_expr_check_typed (e->value.op.op2, ns, true);
-      if (t == FAILURE)
-	return t;
-
-      break;
-
-    case EXPR_STRUCTURE:
-    case EXPR_ARRAY:
-      for (c = e->value.constructor; c; c = c->next)
-	{
-	  t = gfc_expr_check_typed (c->expr, ns, true);
-	  if (t == FAILURE)
-	    return t;
-	}
-      break;
-
-    default:
-      gcc_unreachable ();
-
-    }
-
-  return SUCCESS;
+  return error_found ? FAILURE : SUCCESS;
 }
