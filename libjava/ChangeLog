@@ -1,6 +1,6 @@
 2008-08-22  Andrew Haley  <aph@redhat.com>
 
-	PR libgcj/8895:
+	PR libgcj/8995:
 	
 	* interpret-run.cc (REWRITE_INSN): Null this macro.
 
