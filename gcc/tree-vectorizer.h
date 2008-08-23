@@ -702,6 +702,8 @@ extern void free_stmt_vec_info (gimple stmt);
 extern loop_vec_info vect_analyze_loop (struct loop *);
 extern void vect_free_slp_tree (slp_tree);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
+extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *, 
+                                           HOST_WIDE_INT *);
 
 /** In tree-vect-patterns.c  **/
 /* Pattern recognition functions.
