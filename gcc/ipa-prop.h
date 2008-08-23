@@ -32,14 +32,12 @@ along with GCC; see the file COPYING3.  If not see
    Formal - the caller's formal parameter is passed as an actual argument.
    Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
-   Integer and real constants are represented as IPA_CONST and Fortran
-   constants are represented as IPA_CONST_REF.  Finally, IPA_CONST_MEMBER_PTR
-   stands for C++ member pointers constants.  */
+   Integer and real constants are represented as IPA_CONST.
+   Finally, IPA_CONST_MEMBER_PTR stands for C++ member pointers constants.  */
 enum jump_func_type
 {
   IPA_UNKNOWN = 0,     /* newly allocated and zeroed jump functions default */
   IPA_CONST,
-  IPA_CONST_REF,
   IPA_CONST_MEMBER_PTR,
   IPA_PASS_THROUGH
 };
@@ -52,13 +50,11 @@ enum jump_func_type
    IPA_CONST_VALUE - simple scalar constant,
    Cval of formal f will have a constant value if all callsites to this
    function have the same constant value passed to f.
-   Integer and real constants are represented as IPA_CONST and Fortran
-   constants are represented as IPA_CONST_REF.  */
+   Integer and real constants are represented as IPA_CONST.  */
 enum ipa_lattice_type
 {
   IPA_BOTTOM,
   IPA_CONST_VALUE,
-  IPA_CONST_VALUE_REF,
   IPA_TOP
 };
 

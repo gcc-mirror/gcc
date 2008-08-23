@@ -2172,6 +2172,40 @@ decl_address_invariant_p (const_tree op)
   return false;
 }
 
+/* Return whether OP is a DECL whose address is interprocedural-invariant.  */
+
+bool
+decl_address_ip_invariant_p (const_tree op)
+{
+  /* The conditions below are slightly less strict than the one in
+     staticp.  */
+
+  switch (TREE_CODE (op))
+    {
+    case LABEL_DECL:
+    case FUNCTION_DECL:
+    case STRING_CST:
+      return true;
+
+    case VAR_DECL:
+      if (((TREE_STATIC (op) || DECL_EXTERNAL (op))
+           && !DECL_DLLIMPORT_P (op))
+          || DECL_THREAD_LOCAL_P (op))
+        return true;
+      break;
+
+    case CONST_DECL:
+      if ((TREE_STATIC (op) || DECL_EXTERNAL (op)))
+        return true;
+      break;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
 
 /* Return true if T is function-invariant (internal function, does
    not handle arithmetic; that's handled in skip_simple_arithmetic and

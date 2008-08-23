@@ -207,7 +207,7 @@ ipcp_set_node_scale (struct cgraph_node *node, gcov_type count)
 static inline bool
 ipcp_lat_is_const (struct ipcp_lattice *lat)
 {
-  if (lat->type == IPA_CONST_VALUE || lat->type == IPA_CONST_VALUE_REF)
+  if (lat->type == IPA_CONST_VALUE)
     return true;
   else
     return false;
@@ -218,11 +218,7 @@ ipcp_lat_is_const (struct ipcp_lattice *lat)
 static inline bool
 ipcp_lat_is_insertable (struct ipcp_lattice *lat)
 {
-  if ((lat->type == IPA_CONST_VALUE || lat->type == IPA_CONST_VALUE_REF)
-      && !POINTER_TYPE_P (TREE_TYPE (lat->constant)))
-    return true;
-  else
-    return false;
+  return lat->type == IPA_CONST_VALUE;
 }
 
 /* Return true if LAT1 and LAT2 are equal.  */
@@ -294,11 +290,6 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
       lat->type = IPA_CONST_VALUE;
       lat->constant = jfunc->value.constant;
     }
-  else if (jfunc->type == IPA_CONST_REF)
-    {
-      lat->type = IPA_CONST_VALUE_REF;
-      lat->constant = jfunc->value.constant;
-    }
   else if (jfunc->type == IPA_PASS_THROUGH)
     {
       struct ipcp_lattice *caller_lat;
@@ -349,7 +340,7 @@ ipcp_print_all_lattices (FILE * f)
 	  struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
 
 	  fprintf (f, " param [%d]: ", i);
-	  if (lat->type == IPA_CONST_VALUE || lat->type == IPA_CONST_VALUE_REF)
+	  if (lat->type == IPA_CONST_VALUE)
 	    {
 	      fprintf (f, "type is CONST ");
 	      print_generic_expr (f, lat->constant, 0);
@@ -375,17 +366,7 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
   info->ipcp_lattices = XCNEWVEC (struct ipcp_lattice,
 				  ipa_get_param_count (info));
   for (i = 0; i < ipa_get_param_count (info) ; i++)
-    {
-      tree parm_tree = ipa_get_ith_param (info, i);
-      struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
-
-      if (INTEGRAL_TYPE_P (TREE_TYPE (parm_tree))
-	  || SCALAR_FLOAT_TYPE_P (TREE_TYPE (parm_tree))
-	  || POINTER_TYPE_P (TREE_TYPE (parm_tree)))
-	lat->type = IPA_TOP;
-      else
-	lat->type = IPA_BOTTOM;
-    }
+    ipcp_get_ith_lattice (info, i)->type = IPA_TOP;
 }
 
 /* Create a new assignment statement and make it the first statement in the
@@ -411,14 +392,6 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
 
   gcc_assert (ipcp_lat_is_const (lat));
   val = lat->constant;
-
-  /* compute_jump_functions inserts FUNCTION_DECL as value of parameter
-     when address of function is taken.  It would make more sense to pass
-     whole ADDR_EXPR, but for now compensate here.  */
-  if ((lat->type == IPA_CONST_VALUE
-        && TREE_CODE (val) == FUNCTION_DECL)
-      || lat->type == IPA_CONST_VALUE_REF)
-    return build_fold_addr_expr_with_type (val, tree_type);
 
   if (!useless_type_conversion_p (tree_type, TREE_TYPE (val)))
     {
@@ -789,7 +762,8 @@ ipcp_create_replace_map (struct function *func, tree parm_tree,
   tree const_val;
 
   replace_map = XCNEW (struct ipa_replace_map);
-  if (is_gimple_reg (parm_tree) && gimple_default_def (func, parm_tree)
+  if (is_gimple_reg (parm_tree)
+      && gimple_default_def (func, parm_tree)
       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_default_def (func,
 								 parm_tree)))
     {
@@ -829,8 +803,7 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
       if (ipcp_lat_is_const (lat))
 	{
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  if (jump_func->type != IPA_CONST && jump_func->type != IPA_CONST_REF
-	      && jump_func->type != IPA_CONST_MEMBER_PTR)
+	  if (jump_func->type != IPA_CONST)
 	    return true;
 	}
     }
@@ -949,7 +922,11 @@ ipcp_insert_stage (void)
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
-	  if (ipcp_lat_is_insertable (lat))
+	  tree parm_tree = ipa_get_ith_param (info, i);
+	  if (ipcp_lat_is_insertable (lat)
+	      /* Do not count obviously unused arguments.  */
+	      && (!is_gimple_reg (parm_tree)
+		  || gimple_default_def (DECL_STRUCT_FUNCTION (node->decl), parm_tree)))
 	    const_param++;
 	}
       if (const_param == 0)
@@ -958,8 +935,7 @@ ipcp_insert_stage (void)
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
-	  if (lat->type == IPA_CONST_VALUE
-	      && !POINTER_TYPE_P (TREE_TYPE (lat->constant)))
+	  if (lat->type == IPA_CONST_VALUE)
 	    {
 	      parm_tree = ipa_get_ith_param (info, i);
 	      replace_param =
@@ -999,8 +975,7 @@ ipcp_insert_stage (void)
 	      if (ipcp_lat_is_insertable (lat))
 		{
 		  parm_tree = ipa_get_ith_param (info, i);
-		  if (lat->type != IPA_CONST_VALUE_REF
-		      && !is_gimple_reg (parm_tree))
+		  if (!is_gimple_reg (parm_tree))
 		    ipcp_propagate_one_const (node1, i, lat);
 		}
 	    }
