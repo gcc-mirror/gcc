@@ -1,5 +1,10 @@
 2008-08-23  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37076
+	* arith.c (gfc_arith_concat): Fix concat of kind=4 strings.
+
+2008-08-23  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37025
 	* target-memory.c (gfc_interpret_character): Support
 	kind=4 characters.

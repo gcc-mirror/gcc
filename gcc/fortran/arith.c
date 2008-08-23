@@ -1069,7 +1069,8 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   int len;
 
-  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
+  gcc_assert (op1->ts.kind == op2->ts.kind);
+  result = gfc_constant_result (BT_CHARACTER, op1->ts.kind,
 				&op1->where);
 
   len = op1->value.character.length + op2->value.character.length;
