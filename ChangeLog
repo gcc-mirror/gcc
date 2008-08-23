@@ -1,3 +1,7 @@
+2008-08-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* MAINTAINERS:  Use correct Umlaut for last name.
+
 2008-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* MAINTAINERS: Move myself from Reviewers to Write after Approval.
