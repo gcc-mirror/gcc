@@ -1,5 +1,34 @@
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* tree.c (decl_address_ip_invariant_p): New function.
+	* tree.h (decl_address_ip_invariant_p): Declare.
+	* gimple.c (strip_invariant_refs): Break out from ...
+	(is_gimple_invariant_address): ... here
+	(is_gimple_ip_invariant_address): New function.
+	(is_gimple_ip_invariant): New function.
+	* gimple.h (is_gimple_ip_invariant_address, is_gimple_ip_invariant):
+	Declare.
+
+	* ipa-cp.c (ipcp_lat_is_const): Remove handling of IPA_CONST_VALUE_REF.
+	(ipcp_lat_is_insertable): All constants are insertable.
+	(ipcp_lattice_from_jfunc, ipcp_print_all_lattices): Remove handling of
+	IPA_CONST_VALUE_REF.
+	(ipcp_initialize_node_lattices): Propagate all types of operands.
+	(build_const_val): Do not handle IPA_CONST_VALUE_REF.
+	(ipcp_create_replace_map): Reformat.
+	(ipcp_need_redirect_p): Simplify.
+	(ipcp_insert_stage): Check that argument is used before clonning.
+	* ipa-prop.c (ipa_print_node_jump_functions): Do not handle IPA_CONST_REF.
+	(compute_scalar_jump_functions): Simplify using is_gimple_ip_invariat.
+	(determine_cst_member_ptr): Keep wrapping ADDR_EXPR of members.
+	(update_call_notes_after_inlining): Expect ADDR_EXPR in operand.
+	* ipa-prop.h (jump_func_type): Remove IPA_CONST_REF.
+	(jump_func_type): Remove IPA_CONST_VALUE_REF.
+	* tree-inline.c (tree_function_versioning): Add variables referenced by
+	replacing trees.
+
+2008-08-23  Jan Hubicka  <jh@suse.cz>
+
 	PR target/37094
 	* i386.c (standard_80387_constant_p): Use optimize_size.
 

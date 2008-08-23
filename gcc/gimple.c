@@ -2730,17 +2730,12 @@ is_gimple_address (const_tree t)
     }
 }
 
-/* Return true if T is a gimple invariant address.  */
+/* Strip out all handled components that produce invariant
+   offsets.  */
 
-bool
-is_gimple_invariant_address (const_tree t)
+static const_tree
+strip_invariant_refs (const_tree op)
 {
-  tree op;
-
-  if (TREE_CODE (t) != ADDR_EXPR)
-    return false;
-
-  op = TREE_OPERAND (t, 0);
   while (handled_component_p (op))
     {
       switch (TREE_CODE (op))
@@ -2750,12 +2745,12 @@ is_gimple_invariant_address (const_tree t)
 	  if (!is_gimple_constant (TREE_OPERAND (op, 1))
 	      || TREE_OPERAND (op, 2) != NULL_TREE
 	      || TREE_OPERAND (op, 3) != NULL_TREE)
-	    return false;
+	    return NULL;
 	  break;
 
 	case COMPONENT_REF:
 	  if (TREE_OPERAND (op, 2) != NULL_TREE)
-	    return false;
+	    return NULL;
 	  break;
 
 	default:;
@@ -2763,7 +2758,38 @@ is_gimple_invariant_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  return CONSTANT_CLASS_P (op) || decl_address_invariant_p (op);
+  return op;
+}
+
+/* Return true if T is a gimple invariant address.  */
+
+bool
+is_gimple_invariant_address (const_tree t)
+{
+  const_tree op;
+
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+
+  op = strip_invariant_refs (TREE_OPERAND (t, 0));
+
+  return op && (CONSTANT_CLASS_P (op) || decl_address_invariant_p (op));
+}
+
+/* Return true if T is a gimple invariant address at IPA level
+   (so addresses of variables on stack are not allowed).  */
+
+bool
+is_gimple_ip_invariant_address (const_tree t)
+{
+  const_tree op;
+
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+
+  op = strip_invariant_refs (TREE_OPERAND (t, 0));
+
+  return op && (CONSTANT_CLASS_P (op) || decl_address_ip_invariant_p (op));
 }
 
 /* Return true if T is a GIMPLE minimal invariant.  It's a restricted
@@ -2774,6 +2800,18 @@ is_gimple_min_invariant (const_tree t)
 {
   if (TREE_CODE (t) == ADDR_EXPR)
     return is_gimple_invariant_address (t);
+
+  return is_gimple_constant (t);
+}
+
+/* Return true if T is a GIMPLE interprocedural invariant.  It's a restricted
+   form of gimple minimal invariant.  */
+
+bool
+is_gimple_ip_invariant (const_tree t)
+{
+  if (TREE_CODE (t) == ADDR_EXPR)
+    return is_gimple_ip_invariant_address (t);
 
   return is_gimple_constant (t);
 }

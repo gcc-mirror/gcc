@@ -4214,8 +4214,18 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 	replace_info
 	  = (struct ipa_replace_map *) VARRAY_GENERIC_PTR (tree_map, i);
 	if (replace_info->replace_p)
-	  insert_decl_map (&id, replace_info->old_tree,
-			   replace_info->new_tree);
+	  {
+	    if (TREE_CODE (replace_info->new_tree) == ADDR_EXPR)
+	      {
+		tree op = TREE_OPERAND (replace_info->new_tree, 0);
+		while (handled_component_p (op))
+		  op = TREE_OPERAND (op, 0);
+		if (TREE_CODE (op) == VAR_DECL)
+		  add_referenced_var (op);
+	      }
+	    insert_decl_map (&id, replace_info->old_tree,
+			     replace_info->new_tree);
+	  }
       }
   
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);

@@ -872,10 +872,15 @@ extern bool is_gimple_lvalue (tree);
 bool is_gimple_address (const_tree);
 /* Returns true iff T is a GIMPLE invariant address.  */
 bool is_gimple_invariant_address (const_tree);
+/* Returns true iff T is a GIMPLE invariant address at interprocedural
+   level.  */
+bool is_gimple_ip_invariant_address (const_tree);
 /* Returns true iff T is a valid GIMPLE constant.  */
 bool is_gimple_constant (const_tree);
 /* Returns true iff T is a GIMPLE restricted function invariant.  */
 extern bool is_gimple_min_invariant (const_tree);
+/* Returns true iff T is a GIMPLE restricted interprecodural invariant.  */
+extern bool is_gimple_ip_invariant (const_tree);
 /* Returns true iff T is a GIMPLE rvalue.  */
 extern bool is_gimple_val (tree);
 /* Returns true iff T is a GIMPLE asm statement input.  */
