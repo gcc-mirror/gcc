@@ -6692,7 +6692,7 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (mode == XFmode
-      && (optimize_insn_for_size_p () || TARGET_EXT_80387_CONSTANTS))
+      && (optimize_size || TARGET_EXT_80387_CONSTANTS))
     {
       int i;
 
