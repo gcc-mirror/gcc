@@ -1856,10 +1856,52 @@ self_inlining_addr_expr (tree value, tree fn)
 }
 
 static void
+insert_init_stmt (basic_block bb, gimple init_stmt)
+{
+  gimple_stmt_iterator si = gsi_last_bb (bb);
+  gimple_stmt_iterator i;
+  gimple_seq seq = gimple_seq_alloc ();
+  struct gimplify_ctx gctx;
+
+  push_gimplify_context (&gctx);
+
+  i = gsi_start (seq);
+  gimple_regimplify_operands (init_stmt, &i);
+
+  if (gimple_in_ssa_p (cfun)
+      && init_stmt
+      && !gimple_seq_empty_p (seq))
+    {
+      /* The replacement can expose previously unreferenced
+	 variables.  */
+      for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+	find_new_referenced_vars (gsi_stmt (i));
+
+      /* Insert the gimplified sequence needed for INIT_STMT
+	 after SI.  INIT_STMT will be inserted after SEQ.  */
+      gsi_insert_seq_after (&si, seq, GSI_NEW_STMT);
+     }
+
+  pop_gimplify_context (NULL);
+
+  /* If VAR represents a zero-sized variable, it's possible that the
+     assignment statement may result in no gimple statements.  */
+  if (init_stmt)
+    gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
+
+  if (gimple_in_ssa_p (cfun))
+    for (;!gsi_end_p (si); gsi_next (&si))
+      mark_symbols_for_renaming (gsi_stmt (si));
+}
+
+/* Initialize parameter P with VALUE.  If needed, produce init statement
+   at the end of BB.  When BB is NULL, we return init statement to be
+   output later.  */
+static gimple
 setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 		     basic_block bb, tree *vars)
 {
-  gimple init_stmt;
+  gimple init_stmt = NULL;
   tree var;
   tree rhs = value;
   tree def = (gimple_in_ssa_p (cfun)
@@ -1902,7 +1944,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	  && ! self_inlining_addr_expr (value, fn))
 	{
 	  insert_decl_map (id, p, value);
-	  return;
+	  return NULL;
 	}
     }
 
@@ -1960,7 +2002,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
     {
       insert_decl_map (id, def, rhs);
-      return;
+      return NULL;
     }
 
   /* If the value of argument is never used, don't care about initializing
@@ -1968,19 +2010,17 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   if (gimple_in_ssa_p (cfun) && !def && is_gimple_reg (p))
     {
       gcc_assert (!value || !TREE_SIDE_EFFECTS (value));
-      return;
+      return NULL;
     }
 
   /* Initialize this VAR_DECL from the equivalent argument.  Convert
      the argument to the proper type in case it was promoted.  */
   if (value)
     {
-      gimple_stmt_iterator si = gsi_last_bb (bb);
-
       if (rhs == error_mark_node)
 	{
 	  insert_decl_map (id, p, var);
-	  return;
+	  return NULL;
 	}
 
       STRIP_USELESS_TYPE_CONVERSION (rhs);
@@ -1997,51 +2037,10 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       else
         init_stmt = gimple_build_assign (var, rhs);
 
-      /* If we did not create a gimple value and we did not create a gimple
-	 cast of a gimple value, then we will need to gimplify INIT_STMT
-	 at the end.  Note that is_gimple_cast only checks the outer
-	 tree code, not its operand.  Thus the explicit check that its
-	 operand is a gimple value.  */
-      if ((!is_gimple_val (rhs)
-	  && (!is_gimple_cast (rhs)
-	      || !is_gimple_val (TREE_OPERAND (rhs, 0))))
-	  || !is_gimple_reg (var))
-	{
-	  gimple_stmt_iterator i;
-	  gimple_seq seq = gimple_seq_alloc ();
-          struct gimplify_ctx gctx;
-
-	  push_gimplify_context (&gctx);
-
-	  i = gsi_start (seq);
-	  gimple_regimplify_operands (init_stmt, &i);
-
-	  if (gimple_in_ssa_p (cfun)
-              && init_stmt
-	      && !gimple_seq_empty_p (seq))
-	    {
-	      /* The replacement can expose previously unreferenced
-		 variables.  */
-	      for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
-		find_new_referenced_vars (gsi_stmt (i));
-
-	      /* Insert the gimplified sequence needed for INIT_STMT
-		 after SI.  INIT_STMT will be inserted after SEQ.  */
-	      gsi_insert_seq_after (&si, seq, GSI_NEW_STMT);
-	     }
-
-	  pop_gimplify_context (NULL);
-	}
-
-      /* If VAR represents a zero-sized variable, it's possible that the
-	 assignment statement may result in no gimple statements.  */
-      if (init_stmt)
-        gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
-
-      if (gimple_in_ssa_p (cfun))
-	for (;!gsi_end_p (si); gsi_next (&si))
-	  mark_symbols_for_renaming (gsi_stmt (si));
+      if (bb && init_stmt)
+        insert_init_stmt (bb, init_stmt);
     }
+  return init_stmt;
 }
 
 /* Generate code to initialize the parameters of the function at the
@@ -4149,8 +4148,11 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   unsigned i;
   struct ipa_replace_map *replace_info;
   basic_block old_entry_block;
+  VEC (gimple, heap) *init_stmts = VEC_alloc (gimple, heap, 10);
+
   tree t_step;
   tree old_current_function_decl = current_function_decl;
+  tree vars = NULL_TREE;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
@@ -4207,10 +4209,16 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
     DECL_ARGUMENTS (new_decl) =
       copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id);
   
+  DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
+  
+  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
+  number_blocks (id.dst_fn);
+  
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
     for (i = 0; i < VARRAY_ACTIVE_SIZE (tree_map); i++)
       {
+	gimple init;
 	replace_info
 	  = (struct ipa_replace_map *) VARRAY_GENERIC_PTR (tree_map, i);
 	if (replace_info->replace_p)
@@ -4223,16 +4231,17 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 		if (TREE_CODE (op) == VAR_DECL)
 		  add_referenced_var (op);
 	      }
-	    insert_decl_map (&id, replace_info->old_tree,
-			     replace_info->new_tree);
+	    gcc_assert (TREE_CODE (replace_info->old_tree) == PARM_DECL);
+	    init = setup_one_parameter (&id, replace_info->old_tree,
+	    			        replace_info->new_tree, id.src_fn,
+				        NULL,
+				        &vars);
+	    if (init)
+	      VEC_safe_push (gimple, heap, init_stmts, init);
 	  }
       }
   
-  DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
-  
-  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
-  number_blocks (id.dst_fn);
-  
+  declare_inline_vars (DECL_INITIAL (new_decl), vars);
   if (DECL_STRUCT_FUNCTION (old_decl)->local_decls != NULL_TREE)
     /* Add local vars.  */
     for (t_step = DECL_STRUCT_FUNCTION (old_decl)->local_decls;
@@ -4260,6 +4269,13 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (new_decl);
 
+  if (VEC_length (gimple, init_stmts))
+    {
+      basic_block bb = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
+      while (VEC_length (gimple, init_stmts))
+	insert_init_stmt (bb, VEC_pop (gimple, init_stmts));
+    }
+
   /* Clean up.  */
   pointer_map_destroy (id.decl_map);
   if (!update_clones)
@@ -4284,6 +4300,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
     }
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
+  VEC_free (gimple, heap, init_stmts);
   pop_cfun ();
   current_function_decl = old_current_function_decl;
   gcc_assert (!current_function_decl

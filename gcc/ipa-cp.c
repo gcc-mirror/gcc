@@ -369,20 +369,6 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
     ipcp_get_ith_lattice (info, i)->type = IPA_TOP;
 }
 
-/* Create a new assignment statement and make it the first statement in the
-   function.  PARM1 is the lhs of the assignment and VAL is the rhs. */
-static void
-constant_val_insert (tree parm1 ATTRIBUTE_UNUSED, tree val ATTRIBUTE_UNUSED)
-{
-  gimple init_stmt = NULL;
-  edge e_step;
-
-  init_stmt = gimple_build_assign (parm1, val);
-  gcc_assert (init_stmt);
-  e_step = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun));
-  gsi_insert_on_edge_immediate (e_step, init_stmt);
-}
-
 /* build INTEGER_CST tree with type TREE_TYPE and value according to LAT.
    Return the tree.  */
 static tree
@@ -401,21 +387,6 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
 	return fold_build1 (VIEW_CONVERT_EXPR, tree_type, val);
     }
   return val;
-}
-
-/* Build the tree representing the constant and call constant_val_insert().  */
-static void
-ipcp_propagate_one_const (struct cgraph_node *node, int param,
-			  struct ipcp_lattice *lat)
-{
-  tree const_val;
-  tree parm_tree;
-
-  if (dump_file)
-    fprintf (dump_file, "propagating const to %s\n", cgraph_node_name (node));
-  parm_tree = ipa_get_ith_param (IPA_NODE_REF (node), param);
-  const_val = build_const_val (lat, TREE_TYPE (parm_tree));
-  constant_val_insert (parm_tree, const_val);
 }
 
 /* Compute the proper scale for NODE.  It is the ratio between the number of
@@ -755,33 +726,19 @@ ipcp_print_profile_data (FILE * f)
    PARM_TREE is the formal parameter found to be constant.  LAT represents the
    constant.  */
 static struct ipa_replace_map *
-ipcp_create_replace_map (struct function *func, tree parm_tree,
-			 struct ipcp_lattice *lat)
+ipcp_create_replace_map (tree parm_tree, struct ipcp_lattice *lat)
 {
   struct ipa_replace_map *replace_map;
   tree const_val;
 
   replace_map = XCNEW (struct ipa_replace_map);
-  if (is_gimple_reg (parm_tree)
-      && gimple_default_def (func, parm_tree)
-      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_default_def (func,
-								 parm_tree)))
-    {
-      if (dump_file)
-	fprintf (dump_file, "replacing param with const\n");
-      const_val = build_const_val (lat, TREE_TYPE (parm_tree));
-      replace_map->old_tree =gimple_default_def (func, parm_tree);
-      replace_map->new_tree = const_val;
-      replace_map->replace_p = true;
-      replace_map->ref_p = false;
-    }
-  else
-    {
-      replace_map->old_tree = NULL;
-      replace_map->new_tree = NULL;
-      replace_map->replace_p = false;
-      replace_map->ref_p = false;
-    }
+  if (dump_file)
+    fprintf (dump_file, "replacing param with const\n");
+  const_val = build_const_val (lat, TREE_TYPE (parm_tree));
+  replace_map->old_tree = parm_tree;
+  replace_map->new_tree = const_val;
+  replace_map->replace_p = true;
+  replace_map->ref_p = false;
 
   return replace_map;
 }
@@ -939,8 +896,7 @@ ipcp_insert_stage (void)
 	    {
 	      parm_tree = ipa_get_ith_param (info, i);
 	      replace_param =
-		ipcp_create_replace_map (DECL_STRUCT_FUNCTION (node->decl),
-					 parm_tree, lat);
+		ipcp_create_replace_map (parm_tree, lat);
 	      VARRAY_PUSH_GENERIC_PTR (replace_trees, replace_param);
 	    }
 	}
@@ -963,36 +919,8 @@ ipcp_insert_stage (void)
 	fprintf (dump_file, "versioned function %s\n",
 		 cgraph_node_name (node));
       ipcp_init_cloned_node (node, node1);
-      if (const_param > 0)
-	{
-	  push_cfun (DECL_STRUCT_FUNCTION (node1->decl));
-	  gimple_register_cfg_hooks ();
-	  current_function_decl = node1->decl;
-
-	  for (i = 0; i < count; i++)
-	    {
-	      struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
-	      if (ipcp_lat_is_insertable (lat))
-		{
-		  parm_tree = ipa_get_ith_param (info, i);
-		  if (!is_gimple_reg (parm_tree))
-		    ipcp_propagate_one_const (node1, i, lat);
-		}
-	    }
-	  if (gimple_in_ssa_p (cfun))
-	    {
-	      update_ssa (TODO_update_ssa);
-#ifdef   ENABLE_CHECKING
-	      verify_ssa (true);
-#endif
-	    }
-	  free_dominance_info (CDI_DOMINATORS);
-	  free_dominance_info (CDI_POST_DOMINATORS);
-	  pop_cfun ();
-	  current_function_decl = NULL;
-	  /* We've possibly introduced direct calls.  */
-	  ipcp_update_cloned_node (node1);
-	}
+      /* We've possibly introduced direct calls.  */
+      ipcp_update_cloned_node (node1);
 
       if (dump_file)
 	dump_function_to_file (node1->decl, dump_file, dump_flags);

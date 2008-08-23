@@ -951,6 +951,7 @@ decode_options (unsigned int argc, const char **argv)
   flag_tree_builtin_call_dce = opt2;
   flag_tree_pre = opt2;
       flag_tree_switch_conversion = 1;
+      flag_ipa_cp = opt2;
 
       /* Allow more virtual operators to increase alias precision.  */
 
