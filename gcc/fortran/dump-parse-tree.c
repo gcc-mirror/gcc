@@ -631,14 +631,14 @@ show_components (gfc_symbol *sym)
     {
       fprintf (dumpfile, "(%s ", c->name);
       show_typespec (&c->ts);
-      if (c->pointer)
+      if (c->attr.pointer)
 	fputs (" POINTER", dumpfile);
-      if (c->dimension)
+      if (c->attr.dimension)
 	fputs (" DIMENSION", dumpfile);
       fputc (' ', dumpfile);
       show_array_spec (c->as);
-      if (c->access)
-	fprintf (dumpfile, " %s", gfc_code2string (access_types, c->access));
+      if (c->attr.access)
+	fprintf (dumpfile, " %s", gfc_code2string (access_types, c->attr.access));
       fputc (')', dumpfile);
       if (c->next != NULL)
 	fputc (' ', dumpfile);

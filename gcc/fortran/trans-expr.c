@@ -390,7 +390,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
-  if (c->pointer && c->dimension == 0 && c->ts.type != BT_CHARACTER)
+  if (c->attr.pointer && c->attr.dimension == 0 && c->ts.type != BT_CHARACTER)
     se->expr = build_fold_indirect_ref (se->expr);
 }
 
@@ -3432,11 +3432,11 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
   gfc_start_block (&block);
 
-  if (cm->pointer)
+  if (cm->attr.pointer)
     {
       gfc_init_se (&se, NULL);
       /* Pointer component.  */
-      if (cm->dimension)
+      if (cm->attr.dimension)
 	{
 	  /* Array pointer.  */
 	  if (expr->expr_type == EXPR_NULL)
@@ -3462,11 +3462,11 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	  gfc_add_block_to_block (&block, &se.post);
 	}
     }
-  else if (cm->dimension)
+  else if (cm->attr.dimension)
     {
-      if (cm->allocatable && expr->expr_type == EXPR_NULL)
+      if (cm->attr.allocatable && expr->expr_type == EXPR_NULL)
  	gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);
-      else if (cm->allocatable)
+      else if (cm->attr.allocatable)
 	{
 	  tree tmp2;
 
@@ -3637,11 +3637,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	 components.  Although the latter have a default initializer
 	 of EXPR_NULL,... by default, the static nullify is not needed
 	 since this is done every time we come into scope.  */
-      if (!c->expr || cm->allocatable)
+      if (!c->expr || cm->attr.allocatable)
         continue;
 
       val = gfc_conv_initializer (c->expr, &cm->ts,
-	  TREE_TYPE (cm->backend_decl), cm->dimension, cm->pointer);
+	  TREE_TYPE (cm->backend_decl), cm->attr.dimension, cm->attr.pointer);
 
       /* Append it to the constructor list.  */
       CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);

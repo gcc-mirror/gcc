@@ -3970,7 +3970,7 @@ gfc_trans_deallocate (gfc_code * code)
 
 	  /* Do not deallocate the components of a derived type
 	     ultimate pointer component.  */
-	  if (!(last && last->u.c.component->pointer)
+	  if (!(last && last->u.c.component->attr.pointer)
 		   && !(!last && expr->symtree->n.sym->attr.pointer))
 	    {
 	      tmp = gfc_deallocate_alloc_comp (expr->ts.derived, se.expr,

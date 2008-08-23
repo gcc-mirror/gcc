@@ -1867,7 +1867,7 @@ parse_derived (void)
   for (c = sym->components; c; c = c->next)
     {
       /* Look for allocatable components.  */
-      if (c->allocatable
+      if (c->attr.allocatable
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.alloc_comp))
 	{
 	  sym->attr.alloc_comp = 1;
@@ -1875,7 +1875,7 @@ parse_derived (void)
 	}
 
       /* Look for pointer components.  */
-      if (c->pointer
+      if (c->attr.pointer
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.pointer_comp))
 	{
 	  sym->attr.pointer_comp = 1;
@@ -1884,7 +1884,7 @@ parse_derived (void)
 
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE
-	  || c->access == ACCESS_PRIVATE
+	  || c->attr.access == ACCESS_PRIVATE
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.private_comp))
 	{
 	  sym->attr.private_comp = 1;

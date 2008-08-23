@@ -1764,7 +1764,7 @@ copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to)
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
       to_cm->backend_decl = from_cm->backend_decl;
-      if (!from_cm->pointer && from_cm->ts.type == BT_DERIVED)
+      if (!from_cm->attr.pointer && from_cm->ts.type == BT_DERIVED)
 	gfc_get_derived_type (to_cm->ts.derived);
 
       else if (from_cm->ts.type == BT_CHARACTER)
@@ -1848,7 +1848,7 @@ gfc_get_derived_type (gfc_symbol * derived)
       if (c->ts.type != BT_DERIVED)
 	continue;
 
-      if (!c->pointer || c->ts.derived->backend_decl == NULL)
+      if (!c->attr.pointer || c->ts.derived->backend_decl == NULL)
 	c->ts.derived->backend_decl = gfc_get_derived_type (c->ts.derived);
 
       if (c->ts.derived && c->ts.derived->attr.is_iso_c)
@@ -1893,12 +1893,12 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       /* This returns an array descriptor type.  Initialization may be
          required.  */
-      if (c->dimension)
+      if (c->attr.dimension)
 	{
-	  if (c->pointer || c->allocatable)
+	  if (c->attr.pointer || c->attr.allocatable)
 	    {
 	      enum gfc_array_kind akind;
-	      if (c->pointer)
+	      if (c->attr.pointer)
 		akind = GFC_ARRAY_POINTER;
 	      else
 		akind = GFC_ARRAY_ALLOCATABLE;
@@ -1910,7 +1910,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 	    field_type = gfc_get_nodesc_array_type (field_type, c->as,
 						    PACKED_STATIC);
 	}
-      else if (c->pointer)
+      else if (c->attr.pointer)
 	field_type = build_pointer_type (field_type);
 
       field = gfc_add_field_to_struct (&fieldlist, typenode,

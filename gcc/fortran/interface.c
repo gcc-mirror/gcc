@@ -392,19 +392,19 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       if (strcmp (dt1->name, dt2->name) != 0)
 	return 0;
 
-      if (dt1->access != dt2->access)
+      if (dt1->attr.access != dt2->attr.access)
 	return 0;
 
-      if (dt1->pointer != dt2->pointer)
+      if (dt1->attr.pointer != dt2->attr.pointer)
 	return 0;
 
-      if (dt1->dimension != dt2->dimension)
+      if (dt1->attr.dimension != dt2->attr.dimension)
 	return 0;
 
-     if (dt1->allocatable != dt2->allocatable)
+     if (dt1->attr.allocatable != dt2->attr.allocatable)
 	return 0;
 
-      if (dt1->dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
+      if (dt1->attr.dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
 	return 0;
 
       /* Make sure that link lists do not put this function into an 

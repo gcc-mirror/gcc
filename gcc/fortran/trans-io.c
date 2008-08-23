@@ -2087,14 +2087,14 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
 			     expr, field, NULL_TREE);
 
-          if (c->dimension)
+          if (c->attr.dimension)
             {
               tmp = transfer_array_component (tmp, c, & code->loc);
               gfc_add_expr_to_block (&se->pre, tmp);
             }
           else
             {
-              if (!c->pointer)
+              if (!c->attr.pointer)
                 tmp = build_fold_addr_expr (tmp);
               transfer_expr (se, &c->ts, tmp, code);
             }

@@ -1403,19 +1403,19 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   c->ts = current_ts;
   c->ts.cl = cl;
-  gfc_set_component_attr (c, &current_attr);
+  c->attr = current_attr;
 
   c->initializer = *init;
   *init = NULL;
 
   c->as = *as;
   if (c->as != NULL)
-    c->dimension = 1;
+    c->attr.dimension = 1;
   *as = NULL;
 
   /* Should this ever get more complicated, combine with similar section
      in add_init_expr_to_sym into a separate function.  */
-  if (c->ts.type == BT_CHARACTER && !c->pointer && c->initializer && c->ts.cl
+  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer && c->ts.cl
       && c->ts.cl->length && c->ts.cl->length->expr_type == EXPR_CONSTANT)
     {
       int len;
@@ -1461,9 +1461,9 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     }
 
   /* Check array components.  */
-  if (!c->dimension)
+  if (!c->attr.dimension)
     {
-      if (c->allocatable)
+      if (c->attr.allocatable)
 	{
 	  gfc_error ("Allocatable component at %C must be an array");
 	  return FAILURE;
@@ -1472,7 +1472,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	return SUCCESS;
     }
 
-  if (c->pointer)
+  if (c->attr.pointer)
     {
       if (c->as->type != AS_DEFERRED)
 	{
@@ -1481,7 +1481,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	  return FAILURE;
 	}
     }
-  else if (c->allocatable)
+  else if (c->attr.allocatable)
     {
       if (c->as->type != AS_DEFERRED)
 	{
