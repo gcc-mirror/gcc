@@ -1,3 +1,31 @@
+2008-08-23  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_component): Add field "symbol_attribute attr", remove
+	fields "pointer", "allocatable", "dimension", "access".
+	Remove functions "gfc_set_component_attr" and "gfc_get_component_attr".
+	* interface.c (gfc_compare_derived_types): Ditto.
+	* trans-array.c (gfc_array_allocate,structure_alloc_comps): Ditto.
+	* trans-expr.c (gfc_conv_component_ref,gfc_trans_subcomponent_assign,
+	gfc_conv_structure): Ditto.
+	* symbol.c (gfc_find_component,free_components,gfc_set_component_attr,
+	gfc_get_component_attr,verify_bind_c_derived_type,
+	generate_isocbinding_symbol): Ditto.
+	* decl.c (build_struct): Ditto.
+	* dump-parse-tree.c (show_components): Ditto.
+	* trans-stmt.c (gfc_trans_deallocate): Ditto.
+	* expr.c (gfc_check_assign,gfc_check_pointer_assign,
+	gfc_default_initializer): Ditto.
+	* module.c (mio_component): Ditto.
+	* trans-types.c (copy_dt_decls_ifequal,gfc_get_derived_type): Ditto.
+	* resolve.c (has_default_initializer,resolve_structure_cons,
+	gfc_iso_c_func_interface,find_array_spec,resolve_ref,
+	resolve_deallocate_expr,resolve_allocate_expr,resolve_fl_derived,
+	resolve_equivalence_derived): Ditto.
+	* trans-io.c (transfer_expr): Ditto.
+	* parse.c (parse_derived): Ditto.
+	* dependency.c (gfc_check_dependency): Ditto.
+	* primary.c (gfc_variable_attr): Ditto.
+
 2008-08-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37076

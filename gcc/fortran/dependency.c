@@ -639,13 +639,13 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 	  if (expr1->symtree->n.sym->attr.pointer)
 	    return 1;
 	  for (ref = expr1->ref; ref; ref = ref->next)
-	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+	    if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	      return 1;
 
 	  if (expr2->symtree->n.sym->attr.pointer)
 	    return 1;
 	  for (ref = expr2->ref; ref; ref = ref->next)
-	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+	    if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	      return 1;
 
 	  /* Otherwise distinct symbols have no dependencies.  */

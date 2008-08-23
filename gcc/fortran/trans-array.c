@@ -3760,7 +3760,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   if (!prev_ref)
     allocatable_array = expr->symtree->n.sym->attr.allocatable;
   else
-    allocatable_array = prev_ref->u.c.component->allocatable;
+    allocatable_array = prev_ref->u.c.component->attr.allocatable;
 
   /* Figure out the size of the array.  */
   switch (ref->u.ar.type)
@@ -5530,7 +5530,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	case DEALLOCATE_ALLOC_COMP:
 	  /* Do not deallocate the components of ultimate pointer
 	     components.  */
-	  if (cmp_has_alloc_comps && !c->pointer)
+	  if (cmp_has_alloc_comps && !c->attr.pointer)
 	    {
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -5540,7 +5540,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
-	  if (c->allocatable)
+	  if (c->attr.allocatable)
 	    {
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -5550,9 +5550,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  break;
 
 	case NULLIFY_ALLOC_COMP:
-	  if (c->pointer)
+	  if (c->attr.pointer)
 	    continue;
-	  else if (c->allocatable)
+	  else if (c->attr.allocatable)
 	    {
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -5570,7 +5570,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  break;
 
 	case COPY_ALLOC_COMP:
-	  if (c->pointer)
+	  if (c->attr.pointer)
 	    continue;
 
 	  /* We need source and destination components.  */
@@ -5578,7 +5578,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  dcmp = fold_build3 (COMPONENT_REF, ctype, dest, cdecl, NULL_TREE);
 	  dcmp = fold_convert (TREE_TYPE (comp), dcmp);
 
-	  if (c->allocatable && !cmp_has_alloc_comps)
+	  if (c->attr.allocatable && !cmp_has_alloc_comps)
 	    {
 	      tmp = gfc_duplicate_allocatable(dcmp, comp, ctype, c->as->rank);
 	      gfc_add_expr_to_block (&fnblock, tmp);

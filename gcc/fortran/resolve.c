@@ -648,7 +648,7 @@ has_default_initializer (gfc_symbol *der)
   for (c = der->components; c; c = c->next)
     if ((c->ts.type != BT_DERIVED && c->initializer)
 	|| (c->ts.type == BT_DERIVED
-	    && (!c->pointer && has_default_initializer (c->ts.derived))))
+	    && (!c->attr.pointer && has_default_initializer (c->ts.derived))))
       break;
 
   return c != NULL;
@@ -810,7 +810,7 @@ resolve_structure_cons (gfc_expr *expr)
 
       rank = comp->as ? comp->as->rank : 0;
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
-	  && (comp->allocatable || cons->expr->rank))
+	  && (comp->attr.allocatable || cons->expr->rank))
 	{
 	  gfc_error ("The rank of the element in the derived type "
 		     "constructor at %L does not match that of the "
@@ -824,7 +824,7 @@ resolve_structure_cons (gfc_expr *expr)
       if (!gfc_compare_types (&cons->expr->ts, &comp->ts))
 	{
 	  t = FAILURE;
-	  if (comp->pointer && cons->expr->ts.type != BT_UNKNOWN)
+	  if (comp->attr.pointer && cons->expr->ts.type != BT_UNKNOWN)
 	    gfc_error ("The element in the derived type constructor at %L, "
 		       "for pointer component '%s', is %s but should be %s",
 		       &cons->expr->where, comp->name,
@@ -835,7 +835,7 @@ resolve_structure_cons (gfc_expr *expr)
 	}
 
       if (cons->expr->expr_type == EXPR_NULL
-	    && !(comp->pointer || comp->allocatable))
+	    && !(comp->attr.pointer || comp->attr.allocatable))
 	{
 	  t = FAILURE;
 	  gfc_error ("The NULL in the derived type constructor at %L is "
@@ -844,7 +844,7 @@ resolve_structure_cons (gfc_expr *expr)
 		     comp->name);
 	}
 
-      if (!comp->pointer || cons->expr->expr_type == EXPR_NULL)
+      if (!comp->attr.pointer || cons->expr->expr_type == EXPR_NULL)
 	continue;
 
       a = gfc_expr_attr (cons->expr);
@@ -1996,7 +1996,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 	  if (!(args_sym->attr.target)
 	      && !(args_sym->attr.pointer)
 	      && (parent_ref == NULL ||
-		  !parent_ref->u.c.component->pointer))
+		  !parent_ref->u.c.component->attr.pointer))
             {
               gfc_error_now ("Parameter '%s' to '%s' at %L must be either "
                              "a TARGET or an associated pointer",
@@ -2084,7 +2084,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                 }
               else if ((args_sym->attr.pointer == 1 ||
 			(parent_ref != NULL 
-			 && parent_ref->u.c.component->pointer))
+			 && parent_ref->u.c.component->attr.pointer))
 		       && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   /* Case 1c, section 15.1.2.5, J3/04-007: an associated
@@ -3624,7 +3624,7 @@ find_array_spec (gfc_expr *e)
 	if (c == NULL)
 	  gfc_internal_error ("find_array_spec(): Component not found");
 
-	if (c->dimension)
+	if (c->attr.dimension)
 	  {
 	    if (as != NULL)
 	      gfc_internal_error ("find_array_spec(): unused as(1)");
@@ -3897,14 +3897,14 @@ resolve_ref (gfc_expr *expr)
 	case REF_COMPONENT:
 	  if (current_part_dimension || seen_part_dimension)
 	    {
-	      if (ref->u.c.component->pointer)
+	      if (ref->u.c.component->attr.pointer)
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the POINTER "
 			     "attribute at %L", &expr->where);
 		  return FAILURE;
 		}
-	      else if (ref->u.c.component->allocatable)
+	      else if (ref->u.c.component->attr.allocatable)
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the ALLOCATABLE "
@@ -4630,7 +4630,7 @@ resolve_deallocate_expr (gfc_expr *e)
 	case REF_COMPONENT:
 	  allocatable = (ref->u.c.component->as != NULL
 			 && ref->u.c.component->as->type == AS_DEFERRED);
-	  pointer = ref->u.c.component->pointer;
+	  pointer = ref->u.c.component->attr.pointer;
 	  break;
 
 	case REF_SUBSTRING:
@@ -4777,8 +4777,8 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		allocatable = (ref->u.c.component->as != NULL
 			       && ref->u.c.component->as->type == AS_DEFERRED);
 
-		pointer = ref->u.c.component->pointer;
-		dimension = ref->u.c.component->dimension;
+		pointer = ref->u.c.component->attr.pointer;
+		dimension = ref->u.c.component->attr.dimension;
 		break;
 
 	      case REF_SUBSTRING:
@@ -7682,7 +7682,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
 
-      if (c->ts.type == BT_DERIVED && c->pointer
+      if (c->ts.type == BT_DERIVED && c->attr.pointer
 	  && c->ts.derived->components == NULL
 	  && !c->ts.derived->attr.zero_comp)
 	{
@@ -7698,11 +7698,11 @@ resolve_fl_derived (gfc_symbol *sym)
       if (c->ts.type == BT_DERIVED
 	    && c->ts.derived
 	    && c->ts.derived->components
-	    && c->pointer
+	    && c->attr.pointer
 	    && sym != c->ts.derived)
 	add_dt_to_dt_list (c->ts.derived);
 
-      if (c->pointer || c->allocatable ||  c->as == NULL)
+      if (c->attr.pointer || c->attr.allocatable ||  c->as == NULL)
 	continue;
 
       for (i = 0; i < c->as->rank; i++)
@@ -8891,7 +8891,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 
       /* Shall not be an object of sequence derived type containing a pointer
 	 in the structure.  */
-      if (c->pointer)
+      if (c->attr.pointer)
 	{
 	  gfc_error ("Derived type variable '%s' at %L with pointer "
 		     "component(s) cannot be an EQUIVALENCE object",

@@ -2252,10 +2252,8 @@ mio_component (gfc_component *c)
   mio_typespec (&c->ts);
   mio_array_spec (&c->as);
 
-  mio_integer (&c->dimension);
-  mio_integer (&c->pointer);
-  mio_integer (&c->allocatable);
-  c->access = MIO_NAME (gfc_access) (c->access, access_types); 
+  mio_symbol_attribute (&c->attr);
+  c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types); 
 
   mio_expr (&c->initializer);
   mio_rparen ();

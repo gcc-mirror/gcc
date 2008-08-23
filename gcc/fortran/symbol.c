@@ -1874,7 +1874,7 @@ gfc_find_component (gfc_symbol *sym, const char *name)
 
   else if (sym->attr.use_assoc)
     {
-      if (p->access == ACCESS_PRIVATE)
+      if (p->attr.access == ACCESS_PRIVATE)
 	{
 	  gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
 		     name, sym->name);
@@ -1883,7 +1883,7 @@ gfc_find_component (gfc_symbol *sym, const char *name)
 	
       /* If there were components given and all components are private, error
 	 out at this place.  */
-      if (p->access != ACCESS_PUBLIC && sym->component_access == ACCESS_PRIVATE)
+      if (p->attr.access != ACCESS_PUBLIC && sym->component_access == ACCESS_PRIVATE)
 	{
 	  gfc_error ("All components of '%s' are PRIVATE in structure"
 		     " constructor at %C", sym->name);
@@ -1912,34 +1912,6 @@ free_components (gfc_component *p)
 
       gfc_free (p);
     }
-}
-
-
-/* Set component attributes from a standard symbol attribute structure.  */
-
-void
-gfc_set_component_attr (gfc_component *c, symbol_attribute *attr)
-{
-
-  c->dimension = attr->dimension;
-  c->pointer = attr->pointer;
-  c->allocatable = attr->allocatable;
-  c->access = attr->access;
-}
-
-
-/* Get a standard symbol attribute structure given the component
-   structure.  */
-
-void
-gfc_get_component_attr (symbol_attribute *attr, gfc_component *c)
-{
-
-  gfc_clear_attr (attr);
-  attr->dimension = c->dimension;
-  attr->pointer = c->pointer;
-  attr->allocatable = c->allocatable;
-  attr->access = c->access;
 }
 
 
@@ -3354,7 +3326,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
     {
       /* The components cannot be pointers (fortran sense).  
          J3/04-007, Section 15.2.3, C1505.	*/
-      if (curr_comp->pointer != 0)
+      if (curr_comp->attr.pointer != 0)
         {
           gfc_error ("Component '%s' at %L cannot have the "
                      "POINTER attribute because it is a member "
@@ -3366,7 +3338,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 
       /* The components cannot be allocatable.
          J3/04-007, Section 15.2.3, C1505.	*/
-      if (curr_comp->allocatable != 0)
+      if (curr_comp->attr.allocatable != 0)
         {
           gfc_error ("Component '%s' at %L cannot have the "
                      "ALLOCATABLE attribute because it is a member "
@@ -4081,8 +4053,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
         index = get_c_kind ("c_ptr", c_interop_kinds_table);
         tmp_comp->ts.kind = c_interop_kinds_table[index].value;
 
-        tmp_comp->pointer = 0;
-        tmp_comp->dimension = 0;
+        tmp_comp->attr.pointer = 0;
+        tmp_comp->attr.dimension = 0;
 
         /* Mark the component as C interoperable.  */
         tmp_comp->ts.is_c_interop = 1;

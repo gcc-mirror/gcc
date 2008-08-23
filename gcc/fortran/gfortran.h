@@ -834,8 +834,7 @@ typedef struct gfc_component
   const char *name;
   gfc_typespec ts;
 
-  int pointer, allocatable, dimension;
-  gfc_access access;
+  symbol_attribute attr;
   gfc_array_spec *as;
 
   tree backend_decl;
@@ -2131,9 +2130,6 @@ bool gfc_is_intrinsic_typename (const char *);
 
 gfc_typespec *gfc_get_default_type (gfc_symbol *, gfc_namespace *);
 gfc_try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);
-
-void gfc_set_component_attr (gfc_component *, symbol_attribute *);
-void gfc_get_component_attr (symbol_attribute *, gfc_component *);
 
 void gfc_set_sym_referenced (gfc_symbol *);
 

@@ -1898,7 +1898,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	break;
 
       case REF_COMPONENT:
-	gfc_get_component_attr (&attr, ref->u.c.component);
+	attr = ref->u.c.component->attr;
 	if (ts != NULL)
 	  {
 	    *ts = ref->u.c.component->ts;
@@ -1909,8 +1909,8 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 		ts->cl = NULL;
 	  }
 
-	pointer = ref->u.c.component->pointer;
-	allocatable = ref->u.c.component->allocatable;
+	pointer = ref->u.c.component->attr.pointer;
+	allocatable = ref->u.c.component->attr.allocatable;
 	if (pointer)
 	  target = 1;
 

@@ -2675,7 +2675,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   has_pointer = sym->attr.pointer;
 
   for (ref = lvalue->ref; ref; ref = ref->next)
-    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+    if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
       {
 	has_pointer = 1;
 	break;
@@ -2907,7 +2907,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       if (pointer)
 	check_intent_in = 0;
 
-      if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	pointer = 1;
     }
 
@@ -3056,7 +3056,7 @@ gfc_default_initializer (gfc_typespec *ts)
 
   /* See if we have a default initializer.  */
   for (c = ts->derived->components; c; c = c->next)
-    if (c->initializer || c->allocatable)
+    if (c->initializer || c->attr.allocatable)
       break;
 
   if (!c)
@@ -3082,7 +3082,7 @@ gfc_default_initializer (gfc_typespec *ts)
       if (c->initializer)
 	tail->expr = gfc_copy_expr (c->initializer);
 
-      if (c->allocatable)
+      if (c->attr.allocatable)
 	{
 	  tail->expr = gfc_get_expr ();
 	  tail->expr->expr_type = EXPR_NULL;
