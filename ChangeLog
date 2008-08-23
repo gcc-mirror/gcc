@@ -1,3 +1,7 @@
+2008-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself from Reviewers to Write after Approval.
+
 2008-08-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* MAINTAINERS: Update my email address.
