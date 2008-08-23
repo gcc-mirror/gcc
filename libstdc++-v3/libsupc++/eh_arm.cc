@@ -1,5 +1,5 @@
 // -*- C++ -*- ARM specific Exception handling support routines.
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2008 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -48,13 +48,19 @@ __cxa_type_match(_Unwind_Exception* ue_header,
 {
   bool forced_unwind = __is_gxx_forced_unwind_class(ue_header->exception_class);
   bool foreign_exception = !forced_unwind && !__is_gxx_exception_class(ue_header->exception_class);
+  bool dependent_exception =
+    __is_dependent_exception(ue_header->exception_class);
   __cxa_exception* xh = __get_exception_header_from_ue(ue_header);
+  __cxa_dependent_exception *dx = __get_dependent_exception_from_ue(ue_header);
   const std::type_info* throw_type;
 
   if (forced_unwind)
     throw_type = &typeid(abi::__forced_unwind);
   else if (foreign_exception)
     throw_type = &typeid(abi::__foreign_exception);
+  else if (dependent_exception)
+    throw_type = __get_exception_header_from_obj
+      (dx->primaryException)->exceptionType;
   else
     throw_type = xh->exceptionType;
 
