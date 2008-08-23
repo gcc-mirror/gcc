@@ -1,5 +1,10 @@
 2008-08-23  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37076
+	* gfortran.dg/widechar_9.f90: New.
+
+2008-08-23  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37025
 	* gfortran.dg/widechar_8.f90: New.
 
