@@ -1,5 +1,16 @@
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (constant_val_insert): Remove.
+	(ipcp_propagate_one_const): Remove.
+	(ipcp_create_replace_map): Always insert replacements to the map.
+	(ipcp_insert_stage): Do not try to insert statements by hand.
+	* tree-inline.c (insert_init_stmt): Break out from ...
+	(setup_one_parameter): ... here; allow NULL BB pointer.
+	(tree_function_versioning): Use setup_one_parameter to process
+	replacement map.
+
+2008-08-23  Jan Hubicka  <jh@suse.cz>
+
 	* tree.c (decl_address_ip_invariant_p): New function.
 	* tree.h (decl_address_ip_invariant_p): Declare.
 	* gimple.c (strip_invariant_refs): Break out from ...
