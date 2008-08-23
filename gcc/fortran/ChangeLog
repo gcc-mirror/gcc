@@ -1,3 +1,9 @@
+2008-08-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37025
+	* target-memory.c (gfc_interpret_character): Support
+	kind=4 characters.
+
 2008-08-22  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/30239
