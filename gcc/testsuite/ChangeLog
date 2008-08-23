@@ -1,3 +1,8 @@
+2008-08-23  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37174
+	* g++.dg/vect/pr37174.cc: New test.
+
 2008-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37078

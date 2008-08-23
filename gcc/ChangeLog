@@ -1,3 +1,9 @@
+2008-08-23  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37174
+	* tree-vect-analyze.c (vect_get_and_check_slp_defs): Check that the
+	def stmt is a part of the loop before accessing its stmt_vec_info.
+
 2008-08-22  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/11259
