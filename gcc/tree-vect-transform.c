@@ -1385,11 +1385,11 @@ vect_init_vector (gimple stmt, tree vector_var, tree vector_type,
 /* For constant and loop invariant defs of SLP_NODE this function returns 
    (vector) defs (VEC_OPRNDS) that will be used in the vectorized stmts.  
    OP_NUM determines if we gather defs for operand 0 or operand 1 of the scalar
-   stmts.  */
+   stmts. NUMBER_OF_VECTORS is the number of vector defs to create.  */
 
 static void
 vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
-			   unsigned int op_num)
+			   unsigned int op_num, unsigned int number_of_vectors)
 {
   VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple stmt = VEC_index (gimple, stmts, 0);
@@ -1405,7 +1405,6 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   unsigned int vec_num, i;
   int number_of_copies = 1;
   bool is_store = false;
-  unsigned int number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
   bool constant_p;
 
@@ -1529,13 +1528,27 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
   gimple first_stmt;
   enum tree_code code;
   int number_of_vects;
+  HOST_WIDE_INT lhs_size_unit, rhs_size_unit; 
 
+  first_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0);
   /* The number of vector defs is determined by the number of vector statements
      in the node from which we get those statements.  */
   if (SLP_TREE_LEFT (slp_node)) 
     number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (SLP_TREE_LEFT (slp_node));
   else
-    number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+    {
+      number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      /* Number of vector stmts was calculated according to LHS in
+         vect_schedule_slp_instance(), fix it by replacing LHS with RHS, if
+         necessary. See vect_get_smallest_scalar_type() for details.  */
+      vect_get_smallest_scalar_type (first_stmt, &lhs_size_unit,
+                                     &rhs_size_unit);
+      if (rhs_size_unit != lhs_size_unit)
+        {
+          number_of_vects *= rhs_size_unit;
+          number_of_vects /= lhs_size_unit;
+        }
+    }
 
   /* Allocate memory for vectorized defs.  */
   *vec_oprnds0 = VEC_alloc (tree, heap, number_of_vects);
@@ -1547,9 +1560,8 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     vect_get_slp_vect_defs (SLP_TREE_LEFT (slp_node), vec_oprnds0);
   else
     /* Build vectors from scalar defs.  */
-    vect_get_constant_vectors (slp_node, vec_oprnds0, 0);
+    vect_get_constant_vectors (slp_node, vec_oprnds0, 0, number_of_vects);
 
-  first_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0);
   if (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt)))
     /* Since we don't call this function with loads, this is a group of
        stores.  */
@@ -1573,7 +1585,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     vect_get_slp_vect_defs (SLP_TREE_RIGHT (slp_node), vec_oprnds1);
   else
     /* Build vectors from scalar defs.  */
-    vect_get_constant_vectors (slp_node, vec_oprnds1, 1);
+    vect_get_constant_vectors (slp_node, vec_oprnds1, 1, number_of_vects);
 }
 
 

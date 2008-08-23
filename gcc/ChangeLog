@@ -1,3 +1,17 @@
+2008-08-23  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37161
+	* tree-vectorizer.h (vect_get_smallest_scalar_type): Declare.
+	* tree-vect-analyze.c (vect_get_smallest_scalar_type): New function.
+	(vect_determine_vectorization_factor): Move the scalar type
+	retrieval to vect_get_smallest_scalar_type.
+	(vect_build_slp_tree): Call vect_get_smallest_scalar_type to get
+	scalar type. Remove redundant computation.
+	* tree-vect-transform.c (vect_get_constant_vectors): Add argument.
+	(vect_get_slp_defs): Take the type of RHS into account if
+	necessary by calling vect_get_smallest_scalar_type. Call
+	vect_get_constant_vectors with additional argument.
+
 2008-08-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35648
