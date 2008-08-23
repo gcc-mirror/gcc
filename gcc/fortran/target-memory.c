@@ -399,9 +399,28 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
   result->value.character.string =
     gfc_get_wide_string (result->value.character.length + 1);
 
-  gcc_assert (result->ts.kind == gfc_default_character_kind);
-  for (i = 0; i < result->value.character.length; i++)
-    result->value.character.string[i] = (gfc_char_t) buffer[i];
+  if (result->ts.kind == gfc_default_character_kind)
+    for (i = 0; i < result->value.character.length; i++)
+      result->value.character.string[i] = (gfc_char_t) buffer[i];
+  else
+    {
+      mpz_t integer;
+      unsigned bytes = size_character (1, result->ts.kind);
+      mpz_init (integer);
+      gcc_assert (bytes <= sizeof (unsigned long));
+
+      for (i = 0; i < result->value.character.length; i++)
+	{
+	  gfc_conv_tree_to_mpz (integer,
+	    native_interpret_expr (gfc_get_char_type (result->ts.kind),
+				   &buffer[bytes*i], buffer_size-bytes*i));
+	  result->value.character.string[i]
+	    = (gfc_char_t) mpz_get_ui (integer);
+	}
+
+      mpz_clear (integer);
+    }
+
   result->value.character.string[result->value.character.length] = '\0';
 
   return result->value.character.length;
