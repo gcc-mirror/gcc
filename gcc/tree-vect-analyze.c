@@ -2508,6 +2508,7 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
   stmt_vec_info stmt_info = 
     vinfo_for_stmt (VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0));
   enum gimple_rhs_class rhs_class;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   rhs_class = get_gimple_rhs_class (gimple_assign_rhs_code (stmt));
   number_of_oprnds = gimple_num_ops (stmt) - 1;	/* RHS only */
@@ -2531,7 +2532,9 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
       /* Check if DEF_STMT is a part of a pattern and get the def stmt from
          the pattern. Check that all the stmts of the node are in the
          pattern.  */
-      if (def_stmt && vinfo_for_stmt (def_stmt)
+      if (def_stmt && gimple_bb (def_stmt)
+          && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+          && vinfo_for_stmt (def_stmt)
           && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (def_stmt)))
         {
           if (!*first_stmt_dt0)
