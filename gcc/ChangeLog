@@ -1,3 +1,8 @@
+2008-08-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35648
+	* doc/invoke.texi (Wwrite-strings): Clarify description.
+	
 2008-08-23  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37174
