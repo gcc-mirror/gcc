@@ -1,3 +1,8 @@
+2008-08-23  Jan Hubicka  <jh@suse.cz>
+
+	PR target/37094
+	* i386.c (standard_80387_constant_p): Use optimize_size.
+
 2008-08-23  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37161
