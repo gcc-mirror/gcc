@@ -1,7 +1,7 @@
 // Exception Handling support header for -*- C++ -*-
 
 // Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-// 2004, 2005, 2006, 2007
+// 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -110,6 +110,7 @@ namespace std
    *  result in a call of @c terminate() (15.5.1)."
    */
   bool uncaught_exception() throw();
+
 } // namespace std
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -131,5 +132,10 @@ _GLIBCXX_END_NAMESPACE
 } // extern "C++"
 
 #pragma GCC visibility pop
+
+#if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
+     && defined(_GLIBCXX_ATOMIC_BUILTINS_4))
+#include <exception_ptr.h>
+#endif
 
 #endif

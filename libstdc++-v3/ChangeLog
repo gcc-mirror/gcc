@@ -1,3 +1,47 @@
+2008-08-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_atomic_builtins): Add.
+	* testsuite/lib/dg-options.exp (dg-require-atomic-builtins): Likewise.
+	* testsuite/18_support/exception_ptr/current_exception.cc: Use it.
+        * testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+        * testsuite/18_support/exception_ptr/lifespan.cc: Likewise.
+
+2008-08-23  Sebastian Redl <sebastian.redl@getdesigned.at>
+
+	Add (again) exception propagation support as per N2179.  Feature is
+	available only when _GLIBCXX_ATOMIC_BUILTINS_4 is defined.
+	* libsupc++/exception_ptr.h (exception_ptr, current_exception,
+        copy_exception, rethrow_exception): New file, implement exception
+	propagation.
+        * libsupc++/eh_ptr.cc (exception_ptr, current_exception,
+        rethrow_exception, __gxx_dependent_exception_cleanup): Likewise.
+        * libsupc++/unwind-cxx.h (__cxa_exception): Add reference count.
+	(__cxa_dependent_exception, __cxa_allocate_dependent_exception,
+        __cxa_free_dependent_exception, __get_dependent_exception_from_ue,
+        __GXX_INIT_DEPENDENT_EXCEPTION_CLASS, __is_dependent_exception,
+        __gxx_dependent_exception_class, __get_object_from_ue,
+        __get_object_from_ambiguous_exception): Add.
+        (__GXX_INIT_EXCEPTION_CLASS, __gxx_exception_class): Rename.
+        (__is_gxx_exception_class): Handle dependent exceptions.
+        * libsupc++/eh_arm.cc (__cxa_type_match): Likewise.
+        * libsupc++/eh_call.cc (__cxa_call_unexpected): Likewise.
+        * libsupc++/eh_personality.cc (__gxx_personality_*): Likewise.
+        * libsupc++/eh_type.cc (__cxa_current_exception_type): Likewise.
+        * libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception,
+        __cxa_free_dependent_exception): Add.
+        * libsupc++/eh_throw.cc (__gxx_exception_cleanup): Handle reference
+        counting.
+        * libsupc++/exception: Conditionally include exception_ptr.h.
+        * libsupc++/Makefile.am: Register new files.
+        * libsupc++/Makefile.in: Regenerate.
+        * config/abi/pre/gnu.ver: Add new symbols.
+        * testsuite/18_support/exception_ptr/current_exception.cc: Test the
+        core functionality of current_exception().
+        * testsuite/18_support/exception_ptr/rethrow_exception.cc: Test the
+        core functionality of rethrow_exception().
+        * testsuite/18_support/exception_ptr/lifespan.cc: Test the life span of
+        exception objects during exception propagation.
+
 2008-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert again the N2179 patch.
