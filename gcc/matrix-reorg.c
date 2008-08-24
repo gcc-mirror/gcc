@@ -1962,6 +1962,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		{
 		  gcc_assert (TREE_CODE (offset) == INTEGER_CST);
 		  gimple_assign_set_rhs2 (acc_info->stmt, tmp1);
+		  update_stmt (acc_info->stmt);
 		}
 	    }
 	}
