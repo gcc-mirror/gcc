@@ -1,3 +1,9 @@
+2008-08-24  Jan Hubicka <jh@suse.cz>
+
+	* gcc.dg/ipa/ipacost-1.c: New testcase.
+	* gcc.dg/ipa/ipacost-2.c: New testcase.
+	* gcc.dg/ipa/ipa-7.c: Update template.
+
 2008-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37201

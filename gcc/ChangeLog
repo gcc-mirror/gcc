@@ -1,5 +1,21 @@
 2008-08-24  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi (-fipa-cp-clone): New option.
+	(-fipa-cp): Update docs.
+	(--param ipcp-unit-growth):New.
+	* ipa-cp.c: Include fibheap.h, params.h
+	(ipcp_initialize_node_lattices): When not cloning, all externally
+	visible functions are bottom.
+	(ipcp_need_redirect_p): Accept clones.
+	(ipcp_insert_stage): Use cost driven heuristics.
+	(max_count, dead_nodes): New static vars.
+	(ipcp_need_original_clone_p, ipcp_estimate_cloning_cost,
+	ipcp_const_param_count): New functions.
+	* common.opt (ipa-cp-clone): New command line option.
+	* params.def (ipcp-unit-growth): New.
+
+2008-08-24  Jan Hubicka  <jh@suse.cz>
+
 	* tree-inline.c (tree_function_versioning): Look harder
 	for referenced vars.
 
