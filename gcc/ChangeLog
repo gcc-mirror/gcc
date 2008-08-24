@@ -1,5 +1,16 @@
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_analyze_node): New function.
+	(ipcp_update_cloned_node): Use it.
+	(ipcp_init_stage): Likewise.
+	* ipa-inline.c (function_insertion_hook_holder): New static var.
+	(analyze_function): Break out from ....
+	(inline_generate_summary): Here; register insertion hook.
+	(cgraph_decide_inlining): Remove hook.
+	(add_new_function): New function.
+
+2008-08-23  Jan Hubicka  <jh@suse.cz>
+
 	* opts.c (decode_options): Revert accidental change enabling ipa-cp.
 
 2008-08-23  Jan Hubicka  <jh@suse.cz>

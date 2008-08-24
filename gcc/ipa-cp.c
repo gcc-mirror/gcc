@@ -159,6 +159,18 @@ ipcp_init_cloned_node (struct cgraph_node *orig_node,
   ipa_create_param_decls_array (new_node);
 }
 
+/* Perform intraprocedrual analysis needed for ipcp.  */
+static void
+ipcp_analyze_node (struct cgraph_node *node)
+{
+  /* Unreachable nodes should have been eliminated before ipcp.  */
+  gcc_assert (node->needed || node->reachable);
+
+  ipa_count_formal_params (node);
+  ipa_create_param_decls_array (node);
+  ipa_detect_param_modifications (node);
+}
+
 /* Recompute all local information since node might've got new
    direct calls after clonning.  */
 static void
@@ -169,15 +181,13 @@ ipcp_update_cloned_node (struct cgraph_node *new_node)
   current_function_decl = new_node->decl;
   rebuild_cgraph_edges ();
 
+  /* Indirect inlinng rely on fact that we've already analyzed
+     the body..  */
   if (flag_indirect_inlining)
     {
       struct cgraph_edge *cs;
 
-      ipa_check_create_node_params ();
-      ipa_count_formal_params (new_node);
-      ipa_create_param_decls_array (new_node);
-      ipa_detect_param_modifications (new_node);
-      ipa_analyze_params_uses (new_node);
+      ipcp_analyze_node (new_node);
 
       for (cs = new_node->callees; cs; cs = cs->next_callee)
 	{
@@ -418,18 +428,12 @@ ipcp_init_stage (void)
   struct cgraph_edge *cs;
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (!node->analyzed)
-	continue;
-      /* Unreachable nodes should have been eliminated before ipcp.  */
-      gcc_assert (node->needed || node->reachable);
-
-      ipa_count_formal_params (node);
-      ipa_create_param_decls_array (node);
-      ipcp_initialize_node_lattices (node);
-      ipa_detect_param_modifications (node);
-      ipcp_compute_node_scale (node);
-    }
+    if (node->analyzed)
+      {
+        ipcp_analyze_node (node);
+        ipcp_initialize_node_lattices (node);
+        ipcp_compute_node_scale (node);
+      }
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (!node->analyzed)
