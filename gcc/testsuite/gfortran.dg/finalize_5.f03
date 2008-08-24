@@ -9,7 +9,7 @@ MODULE final_type
   TYPE :: mytype
     INTEGER, ALLOCATABLE :: fooarr(:)
     REAL :: foobar
-    FINAL :: finalize_matrix ! { dg-error "must be inside CONTAINS" }
+    FINAL :: finalize_matrix ! { dg-error "must be inside a derived type" }
   CONTAINS
     FINAL :: ! { dg-error "Empty FINAL" }
     FINAL ! { dg-error "Empty FINAL" }

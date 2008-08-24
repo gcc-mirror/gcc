@@ -1,3 +1,30 @@
+2008-08-24  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (gfc_typebound_proc):  New struct.
+	(gfc_symtree):  New member typebound.
+	(gfc_find_typebound_proc):  Prototype for new method.
+	(gfc_get_derived_super_type):  Prototype for new method.
+	* parse.h (gfc_compile_state):  New state COMP_DERIVED_CONTAINS.
+	* decl.c (gfc_match_procedure):  Handle PROCEDURE inside derived-type
+	CONTAINS section.
+	(gfc_match_end):  Handle new context COMP_DERIVED_CONTAINS.
+	(gfc_match_private):  Ditto.
+	(match_binding_attributes), (match_procedure_in_type):  New methods.
+	(gfc_match_final_decl):  Rewrote to make use of new
+	COMP_DERIVED_CONTAINS parser state.
+	* parse.c (typebound_default_access):  New global helper variable.
+	(set_typebound_default_access):  New callback method.
+	(parse_derived_contains):  New method.
+	(parse_derived):  Extracted handling of CONTAINS to new parser state
+	and parse_derived_contains.
+	* resolve.c (resolve_bindings_derived), (resolve_bindings_result):  New.
+	(check_typebound_override), (resolve_typebound_procedure):  New methods.
+	(resolve_typebound_procedures):  New method.
+	(resolve_fl_derived):  Call new resolving method for typebound procs.
+	* symbol.c (gfc_new_symtree):  Initialize new member typebound to NULL.
+	(gfc_find_typebound_proc):  New method.
+	(gfc_get_derived_super_type):  New method.
+
 2008-08-23  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.h (gfc_component): Add field "symbol_attribute attr", remove
