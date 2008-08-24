@@ -1,6 +1,12 @@
 2008-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37201
+	* decl.c (verify_bind_c_sym): Reject array/string returning
+	functions.
+
+2008-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37201
 	* trans-expr.c (gfc_conv_function_call): Add string_length
 	for character-returning bind(C) functions.
 
