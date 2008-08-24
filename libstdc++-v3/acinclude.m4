@@ -1549,27 +1549,24 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 ])
 
 dnl
-dnl Check whether "dev/random" and "dev/urandom" are available for the
+dnl Check whether "/dev/random" and "/dev/urandom" are available for the
 dnl random_device of "TR1" (Chapter 5.1, "Random number generation").
 dnl
 AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
 
-  AC_MSG_CHECKING([for "dev/random" and "dev/urandom" for TR1 random_device])
+  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for TR1 random_device])
   AC_CACHE_VAL(glibcxx_cv_random_tr1, [
-  AC_TRY_RUN([#include <stdio.h>
-	      int main()
-	      {
-                return !(fopen("/dev/random", "r")
-                         && fopen("/dev/urandom", "r"));
-	      }	      
-	     ],
-             [glibcxx_cv_random_tr1=yes], [glibcxx_cv_random_tr1=no],
-	     [glibcxx_cv_random_tr1=no])
+    if test -r /dev/random && test -r /dev/urandom; then
+      glibcxx_cv_random_tr1=yes;
+    else
+      glibcxx_cv_random_tr1=no;
+    fi
   ])
   AC_MSG_RESULT($glibcxx_cv_random_tr1)
+
   if test x"$glibcxx_cv_random_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1, 1,
-              [Define if dev/random and dev/urandom are available for
+              [Define if /dev/random and /dev/urandom are available for
 	       the random_device of TR1 (Chapter 5.1).])
   fi
 
