@@ -991,6 +991,27 @@ typedef struct
 }
 gfc_user_op;
 
+
+/* Data needed for type-bound procedures.  */
+typedef struct
+{
+  struct gfc_symtree* target;
+  locus where; /* Where the PROCEDURE definition was.  */
+
+  gfc_access access;
+  char* pass_arg; /* Argument-name for PASS.  NULL if not specified.  */
+
+  /* Once resolved, we use the position of pass_arg in the formal arglist of
+     the binding-target procedure to identify it.  The first argument has
+     number 0 here, the second 1, and so on.  */
+  unsigned pass_arg_num;
+
+  unsigned nopass:1; /* Whether we have NOPASS (PASS otherwise).  */
+  unsigned non_overridable:1;
+}
+gfc_typebound_proc;
+
+
 /* Symbol nodes.  These are important things.  They are what the
    standard refers to as "entities".  The possibly multiple names that
    refer to the same entity are accomplished by a binary tree of
@@ -1127,6 +1148,8 @@ typedef struct gfc_symtree
   }
   n;
 
+  /* Data for type-bound procedures; NULL if no type-bound procedure.  */
+  gfc_typebound_proc* typebound;
 }
 gfc_symtree;
 
@@ -2236,6 +2259,9 @@ void gfc_symbol_state (void);
 
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
+
+gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
+gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, const char*);
 
 void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
 

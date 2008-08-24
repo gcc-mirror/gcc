@@ -2225,6 +2225,7 @@ gfc_new_symtree (gfc_symtree **root, const char *name)
 
   st = XCNEW (gfc_symtree);
   st->name = gfc_get_string (name);
+  st->typebound = NULL;
 
   gfc_insert_bbt (root, st, compare_symtree);
   return st;
@@ -4237,4 +4238,48 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
 
   /* Everything is ok.  */
   return SUCCESS;
+}
+
+
+/* Get the super-type of a given derived type.  */
+
+gfc_symbol*
+gfc_get_derived_super_type (gfc_symbol* derived)
+{
+  if (!derived->attr.extension)
+    return NULL;
+
+  gcc_assert (derived->components);
+  gcc_assert (derived->components->ts.type == BT_DERIVED);
+  gcc_assert (derived->components->ts.derived);
+
+  return derived->components->ts.derived;
+}
+
+
+/* Find a type-bound procedure by name for a derived-type (looking recursively
+   through the super-types).  */
+
+gfc_symtree*
+gfc_find_typebound_proc (gfc_symbol* derived, const char* name)
+{
+  gfc_symtree* res;
+
+  /* Try to find it in the current type's namespace.  */
+  gcc_assert (derived->f2k_derived);
+  res = gfc_find_symtree (derived->f2k_derived->sym_root, name);
+  if (res)
+    return res->typebound ? res : NULL;
+
+  /* Otherwise, recurse on parent type if derived is an extension.  */
+  if (derived->attr.extension)
+    {
+      gfc_symbol* super_type;
+      super_type = gfc_get_derived_super_type (derived);
+      gcc_assert (super_type);
+      return gfc_find_typebound_proc (super_type, name);
+    }
+
+  /* Nothing found.  */
+  return NULL;
 }

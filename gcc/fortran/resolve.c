@@ -7613,6 +7613,321 @@ error:
 }
 
 
+/* Check that it is ok for the typebound procedure proc to override the
+   procedure old.  */
+
+static gfc_try
+check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
+{
+  locus where;
+  const gfc_symbol* proc_target;
+  const gfc_symbol* old_target;
+  unsigned proc_pass_arg, old_pass_arg, argpos;
+  gfc_formal_arglist* proc_formal;
+  gfc_formal_arglist* old_formal;
+
+  where = proc->typebound->where;
+  proc_target = proc->typebound->target->n.sym;
+  old_target = old->typebound->target->n.sym;
+
+  /* Check that overridden binding is not NON_OVERRIDABLE.  */
+  if (old->typebound->non_overridable)
+    {
+      gfc_error ("'%s' at %L overrides a procedure binding declared"
+		 " NON_OVERRIDABLE", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is PURE, the overriding must be, too.  */
+  if (old_target->attr.pure && !proc_target->attr.pure)
+    {
+      gfc_error ("'%s' at %L overrides a PURE procedure and must also be PURE",
+		 proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is ELEMENTAL, the overriding must be, too.  If it
+     is not, the overriding must not be either.  */
+  if (old_target->attr.elemental && !proc_target->attr.elemental)
+    {
+      gfc_error ("'%s' at %L overrides an ELEMENTAL procedure and must also be"
+		 " ELEMENTAL", proc->name, &where);
+      return FAILURE;
+    }
+  if (!old_target->attr.elemental && proc_target->attr.elemental)
+    {
+      gfc_error ("'%s' at %L overrides a non-ELEMENTAL procedure and must not"
+		 " be ELEMENTAL, either", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is a SUBROUTINE, the overriding must also be a
+     SUBROUTINE.  */
+  if (old_target->attr.subroutine && !proc_target->attr.subroutine)
+    {
+      gfc_error ("'%s' at %L overrides a SUBROUTINE and must also be a"
+		 " SUBROUTINE", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is a FUNCTION, the overriding must also be a
+     FUNCTION and have the same characteristics.  */
+  if (old_target->attr.function)
+    {
+      if (!proc_target->attr.function)
+	{
+	  gfc_error ("'%s' at %L overrides a FUNCTION and must also be a"
+		     " FUNCTION", proc->name, &where);
+	  return FAILURE;
+	}
+
+      /* FIXME:  Do more comprehensive checking (including, for instance, the
+	 rank and array-shape).  */
+      gcc_assert (proc_target->result && old_target->result);
+      if (!gfc_compare_types (&proc_target->result->ts,
+			      &old_target->result->ts))
+	{
+	  gfc_error ("'%s' at %L and the overridden FUNCTION should have"
+		     " matching result types", proc->name, &where);
+	  return FAILURE;
+	}
+    }
+
+  /* If the overridden binding is PUBLIC, the overriding one must not be
+     PRIVATE.  */
+  if (old->typebound->access == ACCESS_PUBLIC
+      && proc->typebound->access == ACCESS_PRIVATE)
+    {
+      gfc_error ("'%s' at %L overrides a PUBLIC procedure and must not be"
+		 " PRIVATE", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* Compare the formal argument lists of both procedures.  This is also abused
+     to find the position of the passed-object dummy arguments of both
+     bindings as at least the overridden one might not yet be resolved and we
+     need those positions in the check below.  */
+  proc_pass_arg = old_pass_arg = 0;
+  if (!proc->typebound->nopass && !proc->typebound->pass_arg)
+    proc_pass_arg = 1;
+  if (!old->typebound->nopass && !old->typebound->pass_arg)
+    old_pass_arg = 1;
+  argpos = 1;
+  for (proc_formal = proc_target->formal, old_formal = old_target->formal;
+       proc_formal && old_formal;
+       proc_formal = proc_formal->next, old_formal = old_formal->next)
+    {
+      if (proc->typebound->pass_arg
+	  && !strcmp (proc->typebound->pass_arg, proc_formal->sym->name))
+	proc_pass_arg = argpos;
+      if (old->typebound->pass_arg
+	  && !strcmp (old->typebound->pass_arg, old_formal->sym->name))
+	old_pass_arg = argpos;
+
+      /* Check that the names correspond.  */
+      if (strcmp (proc_formal->sym->name, old_formal->sym->name))
+	{
+	  gfc_error ("Dummy argument '%s' of '%s' at %L should be named '%s' as"
+		     " to match the corresponding argument of the overridden"
+		     " procedure", proc_formal->sym->name, proc->name, &where,
+		     old_formal->sym->name);
+	  return FAILURE;
+	}
+
+      /* Check that the types correspond if neither is the passed-object
+	 argument.  */
+      /* FIXME:  Do more comprehensive testing here.  */
+      if (proc_pass_arg != argpos && old_pass_arg != argpos
+	  && !gfc_compare_types (&proc_formal->sym->ts, &old_formal->sym->ts))
+	{
+	  gfc_error ("Types mismatch for dummy argument '%s' of '%s' %L in"
+		     " in respect to the overridden procedure",
+		     proc_formal->sym->name, proc->name, &where);
+	  return FAILURE;
+	}
+
+      ++argpos;
+    }
+  if (proc_formal || old_formal)
+    {
+      gfc_error ("'%s' at %L must have the same number of formal arguments as"
+		 " the overridden procedure", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is NOPASS, the overriding one must also be
+     NOPASS.  */
+  if (old->typebound->nopass && !proc->typebound->nopass)
+    {
+      gfc_error ("'%s' at %L overrides a NOPASS binding and must also be"
+		 " NOPASS", proc->name, &where);
+      return FAILURE;
+    }
+
+  /* If the overridden binding is PASS(x), the overriding one must also be
+     PASS and the passed-object dummy arguments must correspond.  */
+  if (!old->typebound->nopass)
+    {
+      if (proc->typebound->nopass)
+	{
+	  gfc_error ("'%s' at %L overrides a binding with PASS and must also be"
+		     " PASS", proc->name, &where);
+	  return FAILURE;
+	}
+
+      if (proc_pass_arg != old_pass_arg)
+	{
+	  gfc_error ("Passed-object dummy argument of '%s' at %L must be at"
+		     " the same position as the passed-object dummy argument of"
+		     " the overridden procedure", proc->name, &where);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
+
+/* Resolve the type-bound procedures for a derived type.  */
+
+static gfc_symbol* resolve_bindings_derived;
+static gfc_try resolve_bindings_result;
+
+static void
+resolve_typebound_procedure (gfc_symtree* stree)
+{
+  gfc_symbol* proc;
+  locus where;
+  gfc_symbol* me_arg;
+  gfc_symbol* super_type;
+
+  /* If this is no type-bound procedure, just return.  */
+  if (!stree->typebound)
+    return;
+
+  /* Get the target-procedure to check it.  */
+  gcc_assert (stree->typebound->target);
+  proc = stree->typebound->target->n.sym;
+  where = stree->typebound->where;
+
+  /* Default access should already be resolved from the parser.  */
+  gcc_assert (stree->typebound->access != ACCESS_UNKNOWN);
+
+  /* It should be a module procedure or an external procedure with explicit
+     interface.  */
+  if ((!proc->attr.subroutine && !proc->attr.function)
+      || (proc->attr.proc != PROC_MODULE
+	  && proc->attr.if_source != IFSRC_IFBODY)
+      || proc->attr.abstract)
+    {
+      gfc_error ("'%s' must be a module procedure or an external procedure with"
+		 " an explicit interface at %L", proc->name, &where);
+      goto error;
+    }
+
+  /* Find the super-type of the current derived type.  We could do this once and
+     store in a global if speed is needed, but as long as not I believe this is
+     more readable and clearer.  */
+  super_type = gfc_get_derived_super_type (resolve_bindings_derived);
+
+  /* If PASS, resolve and check arguments.  */
+  if (!stree->typebound->nopass)
+    {
+      if (stree->typebound->pass_arg)
+	{
+	  gfc_formal_arglist* i;
+
+	  /* If an explicit passing argument name is given, walk the arg-list
+	     and look for it.  */
+
+	  me_arg = NULL;
+	  stree->typebound->pass_arg_num = 0;
+	  for (i = proc->formal; i; i = i->next)
+	    {
+	      if (!strcmp (i->sym->name, stree->typebound->pass_arg))
+		{
+		  me_arg = i->sym;
+		  break;
+		}
+	      ++stree->typebound->pass_arg_num;
+	    }
+
+	  if (!me_arg)
+	    {
+	      gfc_error ("Procedure '%s' with PASS(%s) at %L has no"
+			 " argument '%s'",
+			 proc->name, stree->typebound->pass_arg, &where,
+			 stree->typebound->pass_arg);
+	      goto error;
+	    }
+	}
+      else
+	{
+	  /* Otherwise, take the first one; there should in fact be at least
+	     one.  */
+	  stree->typebound->pass_arg_num = 0;
+	  if (!proc->formal)
+	    {
+	      gfc_error ("Procedure '%s' with PASS at %L must have at"
+			 " least one argument", proc->name, &where);
+	      goto error;
+	    }
+	  me_arg = proc->formal->sym;
+	}
+
+      /* Now check that the argument-type matches.  */
+      gcc_assert (me_arg);
+      if (me_arg->ts.type != BT_DERIVED
+	  || me_arg->ts.derived != resolve_bindings_derived)
+	{
+	  gfc_error ("Argument '%s' of '%s' with PASS(%s) at %L must be of"
+		     " the derived-type '%s'", me_arg->name, proc->name,
+		     me_arg->name, &where, resolve_bindings_derived->name);
+	  goto error;
+	}
+    }
+
+  /* If we are extending some type, check that we don't override a procedure
+     flagged NON_OVERRIDABLE.  */
+  if (super_type)
+    {
+      gfc_symtree* overridden;
+      overridden = gfc_find_typebound_proc (super_type, stree->name);
+
+      if (overridden && check_typebound_override (stree, overridden) == FAILURE)
+	goto error;
+    }
+
+  /* FIXME: Remove once typebound-procedures are fully implemented.  */
+  {
+    /* Output the error only once so we can do reasonable testing.  */
+    static bool tbp_error = false;
+    if (!tbp_error)
+      gfc_error ("Type-bound procedures are not yet implemented at %L", &where);
+    tbp_error = true;
+  }
+
+  return;
+
+error:
+  resolve_bindings_result = FAILURE;
+}
+
+static gfc_try
+resolve_typebound_procedures (gfc_symbol* derived)
+{
+  if (!derived->f2k_derived || !derived->f2k_derived->sym_root)
+    return SUCCESS;
+
+  resolve_bindings_derived = derived;
+  resolve_bindings_result = SUCCESS;
+  gfc_traverse_symtree (derived->f2k_derived->sym_root,
+			&resolve_typebound_procedure);
+
+  return resolve_bindings_result;
+}
+
+
 /* Add a derived type to the dt_list.  The dt_list is used in trans-types.c
    to give all identical derived types the same backend_decl.  */
 static void
@@ -7721,6 +8036,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
     }
+
+  /* Resolve the type-bound procedures.  */
+  if (resolve_typebound_procedures (sym) == FAILURE)
+    return FAILURE;
 
   /* Resolve the finalizer procedures.  */
   if (gfc_resolve_finalizers (sym) == FAILURE)
