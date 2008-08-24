@@ -1,3 +1,9 @@
+2008-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37201
+	* gfortran.dg/bind_c_usage_17.f90: New.
+	* gfortran.dg/bind_c_usage_17_c.c: New.
+
 2008-08-24  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/finalize_5.f03:  Adapted expected error message to changes

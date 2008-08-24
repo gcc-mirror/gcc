@@ -2677,7 +2677,9 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
   ts = sym->ts;
-  if (ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
+  if (ts.type == BT_CHARACTER && sym->attr.is_bind_c)
+    se->string_length = build_int_cst (gfc_charlen_type_node, 1);
+  else if (ts.type == BT_CHARACTER)
     {
       if (sym->ts.cl->length == NULL)
 	{
