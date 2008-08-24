@@ -1,5 +1,9 @@
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* opts.c (decode_options): Revert accidental change enabling ipa-cp.
+
+2008-08-23  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-cp.c (constant_val_insert): Remove.
 	(ipcp_propagate_one_const): Remove.
 	(ipcp_create_replace_map): Always insert replacements to the map.
