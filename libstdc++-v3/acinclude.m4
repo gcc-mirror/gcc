@@ -1094,7 +1094,7 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_CLOCK_GETTIME], [
 
   AC_MSG_CHECKING([for clock_gettime clocks])					 
-  GLIBCXX_ENABLE(clock-gettime,$1,,
+  GLIBCXX_ENABLE(clock-gettime,$1,[=KIND],
     [use KIND for check type],
     [permit yes|no|rt])
 
