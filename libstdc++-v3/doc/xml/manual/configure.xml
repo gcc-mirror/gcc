@@ -320,16 +320,16 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-clock-gettime=OPTION</code></term>
- <listitem><para>Enables checks (link-type too) for the clock_gettime clocks,
-        used in the implementation [time.clock] in the current C++0x draft.
+ <listitem><para>Enables link-type checks for the availability of the
+        clock_gettime clocks, used in [time.clock] of the current C++0x draft.
         The choice OPTION=yes checks for the availability of the monotonic and
-        realtime clocks in libc and libposix4.  OPTION=rt searches librt too,
-        and in case of success enables its linking to libstdc++ as part of the
-        build process.   Note that this is not always desirable because, in
-        glibc, for example, in turn it triggers automatically the linking of
-        libpthread too, which activates locking, a large overhead for
-        single-thread programs.  OPTION=no skips the tests completely.  The
-        default is OPTION=no.
+        realtime clocks in libc and libposix4.  In case of need the latter is 
+        also linked to libstdc++ as part of the build process.  OPTION=rt
+        also searches (and, in case, links) librt.   Note that the latter
+        is not always desirable because, in glibc, for example, in turn it
+        triggers the linking of libpthread too, which activates locking,
+        a large overhead for single-thread programs.  OPTION=no skips the
+        tests completely.  The default is OPTION=no.
     </para>
  </listitem></varlistentry>
 

@@ -1079,14 +1079,13 @@ dnl [time.clock] in the current C++0x working draft.
 dnl
 dnl --enable-clock-gettime
 dnl --enable-clock-gettime=yes
-dnl        checks for the availability of monotonic or realtime clocks
-dnl        in libc and libposix4
+dnl        checks for the availability of monotonic and realtime clocks
+dnl        in libc and libposix4 and in case links the latter
 dnl --enable-clock-gettime=rt
-dnl        searches librt too, and in case of success enables its linking
-dnl        to libstdc++ as part of the build process.   Note that this is
+dnl        also searches (and, in case, links) librt.  Note that this is
 dnl        not always desirable because, in glibc, for example, in turn it
-dnl        triggers automatically the linking of libpthread too, which
-dnl        activates locking, a large overhead for single-thread programs.
+dnl        triggers the linking of libpthread too, which activates locking,
+dnl        a large overhead for single-thread programs.
 dnl --enable-clock-gettime=no
 dnl --disable-clock-gettime
 dnl        disables the checks completely
