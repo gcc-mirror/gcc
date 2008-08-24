@@ -3368,7 +3368,11 @@ gfc_try
 verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
                    int is_in_common, gfc_common_head *com_block)
 {
+  bool bind_c_function = false;
   gfc_try retval = SUCCESS;
+
+  if (tmp_sym->attr.function && tmp_sym->attr.is_bind_c)
+    bind_c_function = true;
 
   if (tmp_sym->attr.function && tmp_sym->result != NULL)
     {
@@ -3385,7 +3389,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	  tmp_sym->attr.is_c_interop = 1;
 	}
     }
-  
+
   /* Here, we know we have the bind(c) attribute, so if we have
      enough type info, then verify that it's a C interop kind.
      The info could be in the symbol already, or possibly still in
@@ -3451,22 +3455,23 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	      retval = FAILURE;
 	    }
 
-	  /* If it is a BIND(C) function, make sure the return value is a
-	     scalar value.  The previous tests in this function made sure
-	     the type is interoperable.  */
-	  if (tmp_sym->attr.function == 1 && tmp_sym->as != NULL)
-	    gfc_error ("Return type of BIND(C) function '%s' at %L cannot "
-		       "be an array", tmp_sym->name, &(tmp_sym->declared_at));
+        }
 
-	  /* BIND(C) functions can not return a character string.  */
-	  if (tmp_sym->attr.function == 1 && tmp_sym->ts.type == BT_CHARACTER)
-	    if (tmp_sym->ts.cl == NULL || tmp_sym->ts.cl->length == NULL
-		|| tmp_sym->ts.cl->length->expr_type != EXPR_CONSTANT
-		|| mpz_cmp_si (tmp_sym->ts.cl->length->value.integer, 1) != 0)
-	      gfc_error ("Return type of BIND(C) function '%s' at %L cannot "
+      /* If it is a BIND(C) function, make sure the return value is a
+	 scalar value.  The previous tests in this function made sure
+	 the type is interoperable.  */
+      if (bind_c_function && tmp_sym->as != NULL)
+	gfc_error ("Return type of BIND(C) function '%s' at %L cannot "
+		   "be an array", tmp_sym->name, &(tmp_sym->declared_at));
+
+      /* BIND(C) functions can not return a character string.  */
+      if (bind_c_function && tmp_sym->ts.type == BT_CHARACTER)
+	if (tmp_sym->ts.cl == NULL || tmp_sym->ts.cl->length == NULL
+	    || tmp_sym->ts.cl->length->expr_type != EXPR_CONSTANT
+	    || mpz_cmp_si (tmp_sym->ts.cl->length->value.integer, 1) != 0)
+	  gfc_error ("Return type of BIND(C) function '%s' at %L cannot "
 			 "be a character string", tmp_sym->name,
 			 &(tmp_sym->declared_at));
-	}
     }
 
   /* See if the symbol has been marked as private.  If it has, make sure
