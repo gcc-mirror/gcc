@@ -1,3 +1,8 @@
+2008-08-24  Razya Ladelsky  <razya@il.ibm.com>
+
+        PR tree-optimization/37185
+        * matrix-reorg.c (transform_access_sites): Update changed stmt.
+
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_analyze_node): New function.
