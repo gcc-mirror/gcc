@@ -312,7 +312,27 @@
      environment.
      </para>
  </listitem></varlistentry>
-</variablelist>
 
+ <varlistentry><term><code>--enable-clock-gettime</code></term>
+ <listitem><para>This is an abbreviated form of
+        <code>'--enable-clock-gettime=yes'</code>(described next).
+     </para>
+ </listitem></varlistentry>
+
+ <varlistentry><term><code>--enable-clock-gettime=OPTION</code></term>
+ <listitem><para>Enables checks (link-type too) for the clock_gettime clocks,
+        used in the implementation [time.clock] in the current C++0x draft.
+        The choice OPTION=yes checks for the availability of the monotonic and
+        realtime clocks in libc and libposix4.  OPTION=rt searches librt too,
+        and in case of success enables its linking to libstdc++ as part of the
+        build process.   Note that this is not always desirable because, in
+        glibc, for example, in turn it triggers automatically the linking of
+        libpthread too, which activates locking, a large overhead for
+        single-thread programs.  OPTION=no skips the tests completely.  The
+        default is OPTION=no.
+    </para>
+ </listitem></varlistentry>
+
+</variablelist>
 
 </sect1>

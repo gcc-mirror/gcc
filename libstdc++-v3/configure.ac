@@ -143,6 +143,13 @@ GLIBCXX_CHECK_C99_TR1
 # For common values of EOF, SEEK_CUR, SEEK_END.
 GLIBCXX_CHECK_STDIO_MACROS
 
+# For gettimeofday support.
+GLIBCXX_CHECK_GETTIMEOFDAY
+
+# For clock_gettime support.
+# NB: The default is [no], because otherwise it requires linking.
+GLIBCXX_ENABLE_CLOCK_GETTIME([no])
+
 AC_LC_MESSAGES
 
 # Check for available headers.
@@ -166,12 +173,6 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For dev/random and dev/urandom for TR1.
   GLIBCXX_CHECK_RANDOM_TR1
-
-  # For clock_gettime support.
-  GLIBCXX_CHECK_CLOCK_GETTIME
-
-  # For gettimeofday support.
-  GLIBCXX_CHECK_GETTIMEOFDAY
 
   # For TLS support.
   GCC_CHECK_TLS
