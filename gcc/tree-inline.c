@@ -4223,9 +4223,16 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 	  = (struct ipa_replace_map *) VARRAY_GENERIC_PTR (tree_map, i);
 	if (replace_info->replace_p)
 	  {
-	    if (TREE_CODE (replace_info->new_tree) == ADDR_EXPR)
+	    tree op = replace_info->new_tree;
+
+	    STRIP_NOPS (op);
+
+	    if (TREE_CODE (op) == VIEW_CONVERT_EXPR)
+	      op = TREE_OPERAND (op, 0);
+	    
+	    if (TREE_CODE (op) == ADDR_EXPR)
 	      {
-		tree op = TREE_OPERAND (replace_info->new_tree, 0);
+		op = TREE_OPERAND (op, 0);
 		while (handled_component_p (op))
 		  op = TREE_OPERAND (op, 0);
 		if (TREE_CODE (op) == VAR_DECL)

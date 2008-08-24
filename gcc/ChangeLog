@@ -1,3 +1,8 @@
+2008-08-24  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (tree_function_versioning): Look harder
+	for referenced vars.
+
 2008-08-24  Razya Ladelsky  <razya@il.ibm.com>
 
         PR tree-optimization/37185
