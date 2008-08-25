@@ -1,3 +1,9 @@
+2008-08-25  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/36756
+	* config/rs6000/rs6000.c (optimization_options): Don't default to
+	section anchors without toplevel reorder.
+
 2008-08-25  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu_mfcio.h (mfc_begin_critical_section): New function.
