@@ -776,23 +776,16 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc)
   switch (cfi->dw_cfi_opc)
     {
     case DW_CFA_def_cfa_offset:
-      loc->offset = cfi->dw_cfi_oprnd1.dw_cfi_offset;
-      break;
     case DW_CFA_def_cfa_offset_sf:
-      loc->offset
-	= cfi->dw_cfi_oprnd1.dw_cfi_offset * DWARF_CIE_DATA_ALIGNMENT;
+      loc->offset = cfi->dw_cfi_oprnd1.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_register:
       loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
       break;
     case DW_CFA_def_cfa:
-      loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
-      loc->offset = cfi->dw_cfi_oprnd2.dw_cfi_offset;
-      break;
     case DW_CFA_def_cfa_sf:
       loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
-      loc->offset
-	= cfi->dw_cfi_oprnd2.dw_cfi_offset * DWARF_CIE_DATA_ALIGNMENT;
+      loc->offset = cfi->dw_cfi_oprnd2.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_expression:
       get_cfa_from_loc_descr (loc, cfi->dw_cfi_oprnd1.dw_cfi_loc);
@@ -891,20 +884,14 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
   if (loc.reg == old_cfa.reg && !loc.indirect)
     {
       /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction, indicating
-	 the CFA register did not change but the offset did.  */
+	 the CFA register did not change but the offset did.  The data 
+	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
+	 in the assembler via the .cfi_def_cfa_offset directive.  */
       if (loc.offset < 0)
-	{
-	  HOST_WIDE_INT f_offset = loc.offset / DWARF_CIE_DATA_ALIGNMENT;
-	  gcc_assert (f_offset * DWARF_CIE_DATA_ALIGNMENT == loc.offset);
-
-	  cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
-	  cfi->dw_cfi_oprnd1.dw_cfi_offset = f_offset;
-	}
+	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
       else
-	{
-	  cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
-	  cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
-	}
+	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
     }
 
 #ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
@@ -924,22 +911,15 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
     {
       /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
 	 indicating the CFA register has changed to <register> with
-	 the specified offset.  */
+	 the specified offset.  The data factoring for DW_CFA_def_cfa_sf
+	 happens in output_cfi, or in the assembler via the .cfi_def_cfa
+	 directive.  */
       if (loc.offset < 0)
-	{
-	  HOST_WIDE_INT f_offset = loc.offset / DWARF_CIE_DATA_ALIGNMENT;
-	  gcc_assert (f_offset * DWARF_CIE_DATA_ALIGNMENT == loc.offset);
-
-	  cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
-	  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
-	  cfi->dw_cfi_oprnd2.dw_cfi_offset = f_offset;
-	}
+	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
-	{
-	  cfi->dw_cfi_opc = DW_CFA_def_cfa;
-	  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
-	  cfi->dw_cfi_oprnd2.dw_cfi_offset = loc.offset;
-	}
+	cfi->dw_cfi_opc = DW_CFA_def_cfa;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
+      cfi->dw_cfi_oprnd2.dw_cfi_offset = loc.offset;
     }
   else
     {
@@ -982,28 +962,12 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
     }
   else if (sreg == INVALID_REGNUM)
     {
-      if (reg & ~0x3f)
-	/* The register number won't fit in 6 bits, so we have to use
-	   the long form.  */
+      if (offset < 0)
+	cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
+      else if (reg & ~0x3f)
 	cfi->dw_cfi_opc = DW_CFA_offset_extended;
       else
 	cfi->dw_cfi_opc = DW_CFA_offset;
-
-#ifdef ENABLE_CHECKING
-      {
-	/* If we get an offset that is not a multiple of
-	   DWARF_CIE_DATA_ALIGNMENT, there is either a bug in the
-	   definition of DWARF_CIE_DATA_ALIGNMENT, or a bug in the machine
-	   description.  */
-	HOST_WIDE_INT check_offset = offset / DWARF_CIE_DATA_ALIGNMENT;
-
-	gcc_assert (check_offset * DWARF_CIE_DATA_ALIGNMENT == offset);
-      }
-#endif
-      offset /= DWARF_CIE_DATA_ALIGNMENT;
-      if (offset < 0)
-	cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
-
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else if (sreg == reg)
@@ -2546,12 +2510,24 @@ switch_to_eh_frame_section (void)
     }
 }
 
+/* Divide OFF by DWARF_CIE_DATA_ALIGNMENT, asserting no remainder.  */
+
+static HOST_WIDE_INT
+div_data_align (HOST_WIDE_INT off)
+{
+  HOST_WIDE_INT r = off / DWARF_CIE_DATA_ALIGNMENT;
+  gcc_assert (r * DWARF_CIE_DATA_ALIGNMENT == off);
+  return r;
+}
+
 /* Output a Call Frame Information opcode and its operand(s).  */
 
 static void
 output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 {
   unsigned long r;
+  HOST_WIDE_INT off;
+
   if (cfi->dw_cfi_opc == DW_CFA_advance_loc)
     dw2_asm_output_data (1, (cfi->dw_cfi_opc
 			     | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f)),
@@ -2563,7 +2539,8 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
       dw2_asm_output_data (1, (cfi->dw_cfi_opc | (r & 0x3f)),
 			   "DW_CFA_offset, column 0x%lx", r);
-      dw2_asm_output_data_uleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset, NULL);
+      off = div_data_align (cfi->dw_cfi_oprnd2.dw_cfi_offset);
+      dw2_asm_output_data_uleb128 (off, NULL);
     }
   else if (cfi->dw_cfi_opc == DW_CFA_restore)
     {
@@ -2615,6 +2592,12 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 	  break;
 
 	case DW_CFA_offset_extended:
+	  r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
+	  dw2_asm_output_data_uleb128 (r, NULL);
+	  off = div_data_align (cfi->dw_cfi_oprnd2.dw_cfi_offset);
+	  dw2_asm_output_data_uleb128 (off, NULL);
+	  break;
+
 	case DW_CFA_def_cfa:
 	  r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
 	  dw2_asm_output_data_uleb128 (r, NULL);
@@ -2622,10 +2605,17 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 	  break;
 
 	case DW_CFA_offset_extended_sf:
+	  r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
+	  dw2_asm_output_data_uleb128 (r, NULL);
+	  off = div_data_align (cfi->dw_cfi_oprnd2.dw_cfi_offset);
+	  dw2_asm_output_data_sleb128 (off, NULL);
+	  break;
+
 	case DW_CFA_def_cfa_sf:
 	  r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
 	  dw2_asm_output_data_uleb128 (r, NULL);
-	  dw2_asm_output_data_sleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset, NULL);
+	  off = div_data_align (cfi->dw_cfi_oprnd2.dw_cfi_offset);
+	  dw2_asm_output_data_sleb128 (off, NULL);
 	  break;
 
 	case DW_CFA_restore_extended:
@@ -2649,7 +2639,8 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 	  break;
 
 	case DW_CFA_def_cfa_offset_sf:
-	  dw2_asm_output_data_sleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset, NULL);
+	  off = div_data_align (cfi->dw_cfi_oprnd1.dw_cfi_offset);
+	  dw2_asm_output_data_sleb128 (off, NULL);
 	  break;
 
 	case DW_CFA_GNU_window_save:
@@ -2695,7 +2686,7 @@ output_cfi_directive (dw_cfi_ref cfi)
     case DW_CFA_offset_extended_sf:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 0);
       fprintf (asm_out_file, "\t.cfi_offset %lu, "HOST_WIDE_INT_PRINT_DEC"\n",
-	       r, cfi->dw_cfi_oprnd2.dw_cfi_offset * DWARF_CIE_DATA_ALIGNMENT);
+	       r, cfi->dw_cfi_oprnd2.dw_cfi_offset);
       break;
 
     case DW_CFA_restore:

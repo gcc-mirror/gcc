@@ -1,3 +1,12 @@
+2008-08-25  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (def_cfa_1): Don't scale by DWARF_CIE_DATA_ALIGNMENT.
+	(regsave): Likewise.
+	(lookup_cfa_1): Don't rescale by DWARF_CIE_DATA_ALIGNMENT.
+	(output_cfi_directive): Likewise.
+	(div_data_align): New.
+	(output_cfi): Use it.
+
 2008-08-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config.gcc (mips64*-*-linux*): Handle mips64octeon*-*-linux*.
