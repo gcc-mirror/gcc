@@ -344,6 +344,7 @@
 ;; slt		set less than instructions
 ;; signext      sign extend instructions
 ;; clz		the clz and clo instructions
+;; pop		the pop instruction
 ;; trap		trap if instructions
 ;; imul		integer multiply 2 operands
 ;; imul3	integer multiply 3 operands
@@ -372,7 +373,7 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mtc,mfc,mthilo,mfhilo,const,arith,logical,
-   shift,slt,signext,clz,trap,imul,imul3,imadd,idiv,move,fmove,fadd,fmul,
+   shift,slt,signext,clz,pop,trap,imul,imul3,imadd,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,
    frsqrt2,multi,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
@@ -556,7 +557,7 @@
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 (define_attr "cpu"
-  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf2_1,24kf1_1,74kc,74kf2_1,74kf1_1,74kf3_2,loongson_2e,loongson_2f,m4k,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sb1a,sr71000,xlr"
+  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf2_1,24kf1_1,74kc,74kf2_1,74kf1_1,74kf3_2,loongson_2e,loongson_2f,m4k,octeon,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sb1a,sr71000,xlr"
   (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
@@ -2409,6 +2410,22 @@
   "ISA_HAS_CLZ_CLO"
   "<d>clz\t%0,%1"
   [(set_attr "type" "clz")
+   (set_attr "mode" "<MODE>")])
+
+;;
+;;  ...................
+;;
+;;  Count number of set bits.
+;;
+;;  ...................
+;;
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(popcount:GPR (match_operand:GPR 1 "register_operand" "d")))]
+  "ISA_HAS_POP"
+  "<d>pop\t%0,%1"
+  [(set_attr "type" "pop")
    (set_attr "mode" "<MODE>")])
 
 ;;

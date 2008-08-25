@@ -50,6 +50,7 @@ enum processor_type {
   PROCESSOR_LOONGSON_2E,
   PROCESSOR_LOONGSON_2F,
   PROCESSOR_M4K,
+  PROCESSOR_OCTEON,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
   PROCESSOR_R4000,
@@ -253,6 +254,7 @@ enum mips_code_readable_setting {
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
+#define TARGET_OCTEON		    (mips_arch == PROCESSOR_OCTEON)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
@@ -529,6 +531,10 @@ enum mips_code_readable_setting {
       if (TARGET_LOONGSON_VECTORS)					\
         builtin_define ("__mips_loongson_vector_rev");                  \
 									\
+      /* Historical Octeon macro.  */					\
+      if (TARGET_OCTEON)						\
+	builtin_define ("__OCTEON__");					\
+									\
       /* Macros dependent on the C dialect.  */				\
       if (preprocessing_asm_p ())					\
 	{								\
@@ -693,7 +699,7 @@ enum mips_code_readable_setting {
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*: -mips32r2} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64} \
-     %{march=mips64r2: -mips64r2} \
+     %{march=mips64r2|march=octeon: -mips64r2} \
      %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
 
 /* A spec that infers a -mhard-float or -msoft-float setting from an
@@ -703,7 +709,7 @@ enum mips_code_readable_setting {
 #define MIPS_ARCH_FLOAT_SPEC \
   "%{mhard-float|msoft-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
-     |march=34kc|march=74kc|march=5kc: -msoft-float; \
+     |march=34kc|march=74kc|march=5kc|march=octeon: -msoft-float; \
      march=*: -mhard-float}"
 
 /* A spec condition that matches 32-bit options.  It only works if
@@ -996,6 +1002,9 @@ enum mips_code_readable_setting {
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
    : ISA_HAS_LL_SC)
+
+/* ISA includes the pop instruction.  */
+#define ISA_HAS_POP		TARGET_OCTEON
 
 /* Add -G xx support.  */
 

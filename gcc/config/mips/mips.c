@@ -652,7 +652,10 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "sb1", PROCESSOR_SB1, 64, PTF_AVOID_BRANCHLIKELY },
   { "sb1a", PROCESSOR_SB1A, 64, PTF_AVOID_BRANCHLIKELY },
   { "sr71000", PROCESSOR_SR71000, 64, PTF_AVOID_BRANCHLIKELY },
-  { "xlr", PROCESSOR_XLR, 64, 0 }
+  { "xlr", PROCESSOR_XLR, 64, 0 },
+
+  /* MIPS64 Release 2 processors.  */
+  { "octeon", PROCESSOR_OCTEON, 65, PTF_AVOID_BRANCHLIKELY }
 };
 
 /* Default costs.  If these are used for a processor we should look
@@ -851,6 +854,16 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
   },
   { /* M4k */
     DEFAULT_COSTS
+  },
+    /* Octeon */
+  {
+    SOFT_FP_COSTS,
+    COSTS_N_INSNS (5),            /* int_mult_si */
+    COSTS_N_INSNS (5),            /* int_mult_di */
+    COSTS_N_INSNS (72),           /* int_div_si */
+    COSTS_N_INSNS (72),           /* int_div_di */
+                     1,		  /* branch_cost */
+                     4		  /* memory_latency */
   },
   { /* R3900 */
     COSTS_N_INSNS (2),            /* fp_add */
