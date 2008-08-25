@@ -1722,7 +1722,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
     }
 
   if (sym->attr.extension
-	&& gfc_find_component (sym->components->ts.derived, name))
+	&& gfc_find_component (sym->components->ts.derived, name, true, true))
     {
       gfc_error ("Component '%s' at %C already in the parent type "
 		 "at %L", name, &sym->components->ts.derived->declared_at);
@@ -1839,10 +1839,12 @@ bad:
 
 /* Given a derived type node and a component name, try to locate the
    component structure.  Returns the NULL pointer if the component is
-   not found or the components are private.  */
+   not found or the components are private.  If noaccess is set, no access
+   checks are done.  */
 
 gfc_component *
-gfc_find_component (gfc_symbol *sym, const char *name)
+gfc_find_component (gfc_symbol *sym, const char *name,
+		    bool noaccess, bool silent)
 {
   gfc_component *p;
 
@@ -1862,22 +1864,24 @@ gfc_find_component (gfc_symbol *sym, const char *name)
 	&& sym->attr.extension
 	&& sym->components->ts.type == BT_DERIVED)
     {
-      p = gfc_find_component (sym->components->ts.derived, name);
+      p = gfc_find_component (sym->components->ts.derived, name,
+			      noaccess, silent);
       /* Do not overwrite the error.  */
       if (p == NULL)
 	return p;
     }
 
-  if (p == NULL)
+  if (p == NULL && !silent)
     gfc_error ("'%s' at %C is not a member of the '%s' structure",
 	       name, sym->name);
 
-  else if (sym->attr.use_assoc)
+  else if (sym->attr.use_assoc && !noaccess)
     {
       if (p->attr.access == ACCESS_PRIVATE)
 	{
-	  gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
-		     name, sym->name);
+	  if (!silent)
+	    gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
+		       name, sym->name);
 	  return NULL;
 	}
 	
@@ -1885,8 +1889,9 @@ gfc_find_component (gfc_symbol *sym, const char *name)
 	 out at this place.  */
       if (p->attr.access != ACCESS_PUBLIC && sym->component_access == ACCESS_PRIVATE)
 	{
-	  gfc_error ("All components of '%s' are PRIVATE in structure"
-		     " constructor at %C", sym->name);
+	  if (!silent)
+	    gfc_error ("All components of '%s' are PRIVATE in structure"
+		       " constructor at %C", sym->name);
 	  return NULL;
 	}
     }

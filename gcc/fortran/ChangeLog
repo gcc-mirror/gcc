@@ -1,3 +1,16 @@
+2008-08-25  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (gfc_find_component): Add new arguments.
+	* parse.c (parse_derived_contains): Check if the derived-type containing
+	the CONTAINS section is SEQUENCE/BIND(C).
+	* resolve.c (resolve_typebound_procedure): Check for name collision with
+	components.
+	(resolve_fl_derived): Check for name collision with inherited
+	type-bound procedures.
+	* symbol.c (gfc_find_component): New arguments `noaccess' and `silent'.
+	(gfc_add_component): Adapt for new arguments.
+	* primary.c (match_varspec), (gfc_match_structure_constructor): Ditto.
+
 2008-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37201

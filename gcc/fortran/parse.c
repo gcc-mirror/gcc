@@ -1715,8 +1715,19 @@ parse_derived_contains (void)
   bool error_flag = false;
   bool to_finish;
 
-  accept_statement (ST_CONTAINS);
   gcc_assert (gfc_current_state () == COMP_DERIVED);
+  gcc_assert (gfc_current_block ());
+
+  /* Derived-types with SEQUENCE and/or BIND(C) must not have a CONTAINS
+     section.  */
+  if (gfc_current_block ()->attr.sequence)
+    gfc_error ("Derived-type '%s' with SEQUENCE must not have a CONTAINS"
+	       " section at %C", gfc_current_block ()->name);
+  if (gfc_current_block ()->attr.is_bind_c)
+    gfc_error ("Derived-type '%s' with BIND(C) must not have a CONTAINS"
+	       " section at %C", gfc_current_block ()->name);
+
+  accept_statement (ST_CONTAINS);
   push_state (&s, COMP_DERIVED_CONTAINS, NULL);
 
   to_finish = false;
