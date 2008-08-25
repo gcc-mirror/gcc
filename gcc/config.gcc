@@ -1551,6 +1551,10 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 			tm_file="${tm_file} mips/st.h"
 			tmake_file="${tmake_file} mips/t-st"
 			;;
+		mips64octeon*-*-linux*)
+			tm_defines="${tm_defines} MIPS_CPU_STRING_DEFAULT=\\\"octeon\\\""
+			target_cpu_default=MASK_SOFT_FLOAT_ABI
+			;;
 		mipsisa64r2*-*-linux*)
 			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
 			;;

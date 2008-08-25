@@ -1,3 +1,20 @@
+2008-08-24  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config.gcc (mips64*-*-linux*): Handle mips64octeon*-*-linux*.
+	* config/mips/mips.h (enum processor_type): Add PROCESSOR_OCTEON.
+	(TARGET_OCTEON): New macro.
+	(TARGET_CPU_CPP_BUILTINS): Define __OCTEON__ for Octeon.
+	(MIPS_ISA_LEVEL_SPEC, MIPS_ARCH_FLOAT_SPEC): Handle -march=octeon.
+	(ISA_HAS_POP): New macro.
+	* config/mips/driver-native.c (host_detect_local_cpu): Handle
+	Octeon.
+	* config/mips/mips.c (mips_cpu_info_table, mips_rtx_cost_data):
+	Handle Octeon.
+	* config/mips/mips.md (cpu): Add octeon.
+	(type): Add pop attribute value.
+	(popcount<mode>2): New pattern.
+	* doc/invoke.texi (-march=@var{arch}): Add octeon.
+
 2008-08-24  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (-fipa-cp-clone): New option.

@@ -1,3 +1,7 @@
+2008-08-24  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-pop-1.c: New test.
+
 2008-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37201
