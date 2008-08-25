@@ -1,3 +1,22 @@
+2008-08-25  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (immediate_insn): Move up in file, fix
+	comment typo, reformat.
+	(fetchop_bit, atomic_hiqi_op memory_barrier,
+	sync_compare_and_swap<mode>, compare_and_swap_12, sync_add<mode>,
+	sync_<optab><mode>, sync_<optab>_12, sync_old_<optab><mode>,
+	sync_old_<optab>_12, sync_new_<optab><mode>, sync_new_<optab>_12,
+	sync_nand<mode>, sync_nand_12, sync_old_nand<mode>,
+	sync_old_nand_12, sync_new_nand<mode>, sync_new_nand_12,
+	sync_sub<mode>, sync_old_add<mode>, sync_old_sub<mode>,
+	sync_new_add<mode>, sync_new_sub<mode>, sync_<optab><mode>,
+	sync_old_<optab><mode>, sync_new_<optab><mode>, sync_nand<mode>,
+	sync_old_nand<mode>, sync_new_nand<mode>,
+	sync_lock_test_and_set<mode>, sync_lock_test_and_set<mode>,
+	test_and_set_12): Moved to sync.md.
+	(sync.md): Include.
+	* config/mips/sync.md: New file.
+
 2008-08-25  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (def_cfa_1): Don't scale by DWARF_CIE_DATA_ALIGNMENT.
