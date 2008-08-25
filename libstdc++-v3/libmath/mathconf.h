@@ -1,6 +1,7 @@
 /* Configuration data for libmath subpart of libstdc++. */
 
-/* Copyright (C) 1997-1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997-1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+   2007, 2008 Free Software Foundation, Inc.
 
    This file is part of the GNU ISO C++ Library.  This library is free
    software; you can redistribute it and/or modify it under the
@@ -263,10 +264,10 @@ do {								\
 
 
 /* Replacement for non-existing float functions.  */
-#if !defined(HAVE_FABSF) && !defined(HAVE___BUILTIN_FABSF)
+#ifndef HAVE_FABSF
 # define fabsf(x) fabs (x)
 #endif
-#if !defined(HAVE_COSF) && !defined(HAVE___BUILTIN_COSF)
+#ifndef HAVE_COSF
 # define cosf(x) cos (x)
 #endif
 #ifndef HAVE_COSHF
@@ -284,13 +285,13 @@ do {								\
 #ifndef HAVE_POWF
 # define powf(x, y) pow (x, y)
 #endif
-#if !defined(HAVE_SINF) && !defined(HAVE___BUILTIN_SINF)
+#ifndef HAVE_SINF
 # define sinf(x) sin (x)
 #endif
 #ifndef HAVE_SINHF
 # define sinhf(x) sinh (x)
 #endif
-#if !defined(HAVE_SQRTF) && !defined(HAVE___BUILTIN_SQRTF)
+#ifndef HAVE_SQRTF
 # define sqrtf(x) sqrt (x)
 #endif
 #ifndef HAVE_TANF
@@ -306,4 +307,3 @@ do {								\
 #ifdef __cplusplus
 }
 #endif
-

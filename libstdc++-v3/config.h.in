@@ -631,48 +631,6 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
-/* Define if the compiler/host combination has __builtin_abs. */
-#undef HAVE___BUILTIN_ABS
-
-/* Define if the compiler/host combination has __builtin_cos. */
-#undef HAVE___BUILTIN_COS
-
-/* Define if the compiler/host combination has __builtin_cosf. */
-#undef HAVE___BUILTIN_COSF
-
-/* Define if the compiler/host combination has __builtin_cosl. */
-#undef HAVE___BUILTIN_COSL
-
-/* Define if the compiler/host combination has __builtin_fabs. */
-#undef HAVE___BUILTIN_FABS
-
-/* Define if the compiler/host combination has __builtin_fabsf. */
-#undef HAVE___BUILTIN_FABSF
-
-/* Define if the compiler/host combination has __builtin_fabsl. */
-#undef HAVE___BUILTIN_FABSL
-
-/* Define if the compiler/host combination has __builtin_labs. */
-#undef HAVE___BUILTIN_LABS
-
-/* Define if the compiler/host combination has __builtin_sin. */
-#undef HAVE___BUILTIN_SIN
-
-/* Define if the compiler/host combination has __builtin_sinf. */
-#undef HAVE___BUILTIN_SINF
-
-/* Define if the compiler/host combination has __builtin_sinl. */
-#undef HAVE___BUILTIN_SINL
-
-/* Define if the compiler/host combination has __builtin_sqrt. */
-#undef HAVE___BUILTIN_SQRT
-
-/* Define if the compiler/host combination has __builtin_sqrtf. */
-#undef HAVE___BUILTIN_SQRTF
-
-/* Define if the compiler/host combination has __builtin_sqrtl. */
-#undef HAVE___BUILTIN_SQRTL
-
 /* Define to 1 if you have the `__signbit' function. */
 #undef HAVE___SIGNBIT
 
