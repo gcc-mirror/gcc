@@ -1,3 +1,9 @@
+2008-08-25  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/extends_7.f03: New test.
+	* gfortran.dg/typebound_proc_7.f03: New test.
+	* gfortran.dg/typebound_proc_8.f03: New test.
+
 2008-08-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/octeon-pop-1.c: New test.

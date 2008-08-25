@@ -1757,7 +1757,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
-      component = gfc_find_component (sym, name);
+      component = gfc_find_component (sym, name, false, false);
       if (component == NULL)
 	return MATCH_ERROR;
 
@@ -2096,7 +2096,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result, bool parent
 
   where = gfc_current_locus;
 
-  gfc_find_component (sym, NULL);
+  gfc_find_component (sym, NULL, false, true);
 
   /* Match the component list and store it in a list together with the
      corresponding component names.  Check for empty argument list first.  */
@@ -2149,13 +2149,15 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result, bool parent
 	      strncpy (comp_tail->name, comp->name, GFC_MAX_SYMBOL_LEN + 1);
 	    }
 
-	  /* Find the current component in the structure definition and check its
-	     access is not private.  */
+	  /* Find the current component in the structure definition and check
+	     its access is not private.  */
 	  if (comp)
-	    this_comp = gfc_find_component (sym, comp->name);
+	    this_comp = gfc_find_component (sym, comp->name, false, false);
 	  else
 	    {
-	      this_comp = gfc_find_component (sym, (const char *)comp_tail->name);
+	      this_comp = gfc_find_component (sym,
+					      (const char *)comp_tail->name,
+					      false, false);
 	      comp = NULL; /* Reset needed!  */
 	    }
 

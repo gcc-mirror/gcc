@@ -7800,6 +7800,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
   locus where;
   gfc_symbol* me_arg;
   gfc_symbol* super_type;
+  gfc_component* comp;
 
   /* If this is no type-bound procedure, just return.  */
   if (!stree->typebound)
@@ -7898,6 +7899,25 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	goto error;
     }
 
+  /* See if there's a name collision with a component directly in this type.  */
+  for (comp = resolve_bindings_derived->components; comp; comp = comp->next)
+    if (!strcmp (comp->name, stree->name))
+      {
+	gfc_error ("Procedure '%s' at %L has the same name as a component of"
+		   " '%s'",
+		   stree->name, &where, resolve_bindings_derived->name);
+	goto error;
+      }
+
+  /* Try to find a name collision with an inherited component.  */
+  if (super_type && gfc_find_component (super_type, stree->name, true, true))
+    {
+      gfc_error ("Procedure '%s' at %L has the same name as an inherited"
+		 " component of '%s'",
+		 stree->name, &where, resolve_bindings_derived->name);
+      goto error;
+    }
+
   /* FIXME: Remove once typebound-procedures are fully implemented.  */
   {
     /* Output the error only once so we can do reasonable testing.  */
@@ -7954,11 +7974,24 @@ add_dt_to_dt_list (gfc_symbol *derived)
 static gfc_try
 resolve_fl_derived (gfc_symbol *sym)
 {
+  gfc_symbol* super_type;
   gfc_component *c;
   int i;
 
+  super_type = gfc_get_derived_super_type (sym);
+
   for (c = sym->components; c != NULL; c = c->next)
     {
+      /* If this type is an extension, see if this component has the same name
+	 as an inherited type-bound procedure.  */
+      if (super_type && gfc_find_typebound_proc (super_type, c->name))
+	{
+	  gfc_error ("Component '%s' of '%s' at %L has the same name as an"
+		     " inherited type-bound procedure",
+		     c->name, sym->name, &c->loc);
+	  return FAILURE;
+	}
+
       if (c->ts.type == BT_CHARACTER)
 	{
 	 if (c->ts.cl->length == NULL
