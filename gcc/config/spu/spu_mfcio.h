@@ -289,6 +289,34 @@ typedef struct mfc_list_element {
 #define spu_write_srr0(srr0)          spu_writech(SPU_WrSRR0,srr0)
 #define spu_read_srr0()               spu_readch(SPU_RdSRR0)
 
+/* Interrupt-Safe Critical Sections */
+
+static __inline__ unsigned int mfc_begin_critical_section (void)
+  __attribute__ ((__always_inline__));
+
+static __inline__ unsigned int
+mfc_begin_critical_section (void)
+{
+#ifdef SPU_MFCIO_INTERRUPT_SAFE
+  unsigned int __status = spu_read_machine_status ();
+  spu_idisable ();
+  return __status;
+#else
+  return 0;
+#endif
+}
+
+static __inline__ void mfc_end_critical_section (unsigned int)
+  __attribute__ ((__always_inline__));
+
+static __inline__ void
+mfc_end_critical_section (unsigned int __status __attribute__ ((__unused__)))
+{
+#ifdef SPU_MFCIO_INTERRUPT_SAFE
+  if (__status & 1)
+    spu_ienable ();
+#endif
+}
 
 /* MFC Tag Manager */
 
