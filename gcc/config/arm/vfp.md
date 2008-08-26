@@ -26,7 +26,10 @@
 ;; The VFP "type" attributes differ from those used in the FPA model.
 ;; ffarith	Fast floating point insns, e.g. abs, neg, cpy, cmp.
 ;; farith	Most arithmetic insns.
-;; fmul		Double precision multiply.
+;; fmuls	Single precision multiply.
+;; fmuld	Double precision multiply.
+;; fmacs	Single precision multiply-accumulate.
+;; fmacd	Double precision multiply-accumulate.
 ;; fdivs	Single precision sqrt or division.
 ;; fdivd	Double precision sqrt or division.
 ;; f_flag	fmstat operation
@@ -573,7 +576,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmuls%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmuls")]
 )
 
 (define_insn "*muldf3_vfp"
@@ -583,7 +586,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmuld%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmuld")]
 )
 
 
@@ -594,7 +597,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmuls%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmuls")]
 )
 
 (define_insn "*muldf3negdf_vfp"
@@ -604,7 +607,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmuld%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmuld")]
 )
 
 
@@ -619,7 +622,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmacs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmacs")]
 )
 
 (define_insn "*muldf3adddf_vfp"
@@ -630,7 +633,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmacd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmacd")]
 )
 
 ;; 0 = 1 * 2 - 0
@@ -642,7 +645,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmscs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmacs")]
 )
 
 (define_insn "*muldf3subdf_vfp"
@@ -653,7 +656,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmscd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmacd")]
 )
 
 ;; 0 = -(1 * 2) + 0
@@ -665,7 +668,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmacs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmacs")]
 )
 
 (define_insn "*fmuldf3negdfadddf_vfp"
@@ -676,7 +679,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmacd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmacd")]
 )
 
 
@@ -690,7 +693,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmscs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fmacs")]
 )
 
 (define_insn "*muldf3negdfsubdf_vfp"
@@ -702,7 +705,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmscd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmul")]
+   (set_attr "type" "fmacd")]
 )
 
 

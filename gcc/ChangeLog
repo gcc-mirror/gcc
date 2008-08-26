@@ -1,3 +1,17 @@
+2008-08-28  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/vfp.md: Document fmul{s,d} and fmac{s,d} types.
+	Remove documentation entry for fmul type.
+	Use fmuls to annotate single-precision multiplication patterns,
+	fmuld to annotate double-precision multiplication patterns,
+	fmacs to annotate single-precision multiply-accumulate patterns
+	and fmacd to annotate double-precision multiply-accumulate patterns.
+	* config/arm/vfp11.md: Update reservations accordingly.
+	* config/arm/arm.md: Note that certain values of the "type"
+	attribute are documented in vfp.md.
+	* config/arm/arm1020e.md: Remove out of date duplicate comment.
+	(v10_cvt): Use new fmul types.
+
 2008-08-26  Paul Brook   <paul@codesourcery.com>
 
 	* config/arm/vfp.md: Move pipeline description for VFP11 to...
