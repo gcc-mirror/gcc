@@ -57,12 +57,12 @@
 
 (define_insn_reservation "vfp_farith" 8
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "farith,f_cvt"))
+      (eq_attr "type" "farith,f_cvt,fmuls,fmacs"))
  "fmac")
 
 (define_insn_reservation "vfp_fmul" 9
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fmul"))
+      (eq_attr "type" "fmuld,fmacd"))
  "fmac*2")
 
 (define_insn_reservation "vfp_fdivs" 19
