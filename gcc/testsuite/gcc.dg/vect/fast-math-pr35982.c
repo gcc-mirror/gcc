@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_intfloat_cvt } */
 
 struct mem 
 {
