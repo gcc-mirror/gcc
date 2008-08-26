@@ -2174,16 +2174,21 @@ dbxout_type (tree type, int full)
       stabstr_C ('e');
       for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))
 	{
+          tree value = TREE_VALUE (tem);
+
 	  stabstr_I (TREE_PURPOSE (tem));
 	  stabstr_C (':');
 
-	  if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == 0)
-	    stabstr_D (TREE_INT_CST_LOW (TREE_VALUE (tem)));
-	  else if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == -1
-		   && (HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
-	    stabstr_D (TREE_INT_CST_LOW (TREE_VALUE (tem)));
+          if (TREE_CODE (value) == CONST_DECL)
+            value = DECL_INITIAL (value);
+
+	  if (TREE_INT_CST_HIGH (value) == 0)
+	    stabstr_D (TREE_INT_CST_LOW (value));
+	  else if (TREE_INT_CST_HIGH (value) == -1
+		   && (HOST_WIDE_INT) TREE_INT_CST_LOW (value) < 0)
+	    stabstr_D (TREE_INT_CST_LOW (value));
 	  else
-	    stabstr_O (TREE_VALUE (tem));
+	    stabstr_O (value);
 
 	  stabstr_C (',');
 	  if (TREE_CHAIN (tem) != 0)

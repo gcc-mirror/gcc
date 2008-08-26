@@ -447,8 +447,13 @@ dump_typename (tree t, int flags)
 const char *
 class_key_or_enum_as_string (tree t)
 {
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
-    return "enum";
+  if (TREE_CODE (t) == ENUMERAL_TYPE) 
+    {
+      if (SCOPED_ENUM_P (t))
+        return "enum class";
+      else
+        return "enum";
+    }
   else if (TREE_CODE (t) == UNION_TYPE)
     return "union";
   else if (TYPE_LANG_SPECIFIC (t) && CLASSTYPE_DECLARED_CLASS (t))

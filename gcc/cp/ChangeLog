@@ -1,3 +1,54 @@
+2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* typeck.c (type_after_usual_arithmetic_conversions): Don't do the
+	usual arithmetic conversions on scoped enumeration types.
+	(common_type): Ditto.
+	(default_conversion): Don't perform integral promotions on scoped
+	enumeration types. 
+	(build_array_ref): Scoped enumeration types can't be used as
+	subscripts.
+	* decl.c (start_enum): If building a C++0x scoped enumeration,
+	enter its scope. If provided with an underlying type, check that
+	underlying type and set up the enumeration type accordingly.
+	(finish_enum): Only compute an underlying type if the underlying
+	type isn't already fixed, and only convert the enumerator values
+	now if we've just computed the underlying type. Finish the scope
+	of C++0x scoped enumerations.
+	(build_enumerator): For enumerations with a fixed underlying type,
+	check the enumerator values when the enumerator is defined.
+	(lookup_enumerator): New.
+	* call.c (standard_conversion): Don't allow assignment from
+	integers to scoped enumeration types, even with -fpermissive.
+	Don't convert from scoped enumerations to bool or any arithmetic
+	types.
+	(build_conditional_expr): Don't per the usual arithmetic
+	conversions for scoped enumeration types.
+	(convert_like_real): Check complain to see if we should
+	produce warnings.
+	* error.c (class_key_or_enum_as_string): Print scoped enums.
+	* cp-tree.h (MAYBE_CLASS_TYPE_P): Check CLASS_TYPE_P, not
+	TYPE_LANG_FLAG_5.
+	(INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P): New.
+	(SCOPED_ENUM_P): New.
+	(UNSCOPED_ENUM_P): New.
+	(SET_SCOPED_ENUM_P): New.
+	(ENUM_UNDERLYING_TYPE): New.
+	* pt.c (lookup_template_class): Update the instantiation of enum
+	types to deal with C++0x scoped enumerations and underlying
+	types.
+	* name-lookup.c (begin_scope): Deal with scoped enumeration
+	scopes.
+	(lookup_qualified_name): Deal with lookup into enumeration types.
+	* name-lookup.h (enum scope_kind): Add sk_scoped_enum.
+	* parser.c (cp_parser_class_or_namespace_name): Rename to...
+	(cp_parser_qualifying_entity): ... this. Also, in C++0x mode,
+	parse a type-name that can be an enumeration type.
+	(cp_parser_nested_name_specifier_opt): Update with C++0x grammar.
+	(cp_parser_elaborated_type_specifier): Parse the
+	optional `struct' or `class' following enum (in C++0x).
+	(cp_parser_enum_specifier): Parse C++0x scoped enumerations and
+	enum-base clauses.
+
 2008-08-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c: Update all calls to pedwarn.
