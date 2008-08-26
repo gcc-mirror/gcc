@@ -1,3 +1,11 @@
+2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* g++.dg/cpp0x/scoped_enum_examples.C: New.
+	* g++.dg/cpp0x/scoped_enum.C: New.
+	* g++.dg/cpp0x/scoped_enum_98.C: New.
+	* g++.dg/cpp0x/enum_base_warn.C: New.
+	* g++.dg/cpp0x/enum_base.C: New.
+
 2008-08-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/powerpc/altivec-macros.c: Fix dg-message directives.
