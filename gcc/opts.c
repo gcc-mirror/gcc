@@ -1127,7 +1127,7 @@ decode_options (unsigned int argc, const char **argv)
 #ifndef IRA_COVER_CLASSES
   if (flag_ira)
     {
-      inform ("-fira does not work on this architecture");
+      inform (input_location, "-fira does not work on this architecture");
       flag_ira = 0;
     }
 #endif
