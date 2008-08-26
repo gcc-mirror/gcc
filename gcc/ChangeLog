@@ -1,3 +1,9 @@
+2008-08-26  Jeff Law  <law@redhat.com>
+
+	* mn10300.md (movqi, movhi): Split i->d*a case into two cases to
+	avoid the possibility of getting DATA_OR_ADDRESS_REGS as the
+	preferred class when copying a constant into a partial word register.
+
 2008-08-26  Ben Elliston  <bje@au.ibm.com>
 
 	* rtlanal.c: Fix uses of "it's" with "its" where appropriate.
