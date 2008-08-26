@@ -262,10 +262,10 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
   /* FIXME: Attributes.  */
   gcc_assert (ARITHMETIC_TYPE_P (t1)
 	      || TREE_CODE (t1) == VECTOR_TYPE
-	      || TREE_CODE (t1) == ENUMERAL_TYPE);
+	      || UNSCOPED_ENUM_P (t1));
   gcc_assert (ARITHMETIC_TYPE_P (t2)
 	      || TREE_CODE (t2) == VECTOR_TYPE
-	      || TREE_CODE (t2) == ENUMERAL_TYPE);
+	      || UNSCOPED_ENUM_P (t2));
 
   /* In what follows, we slightly generalize the rules given in [expr] so
      as to deal with `long long' and `complex'.  First, merge the
@@ -764,9 +764,9 @@ common_type (tree t1, tree t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
-  if ((ARITHMETIC_TYPE_P (t1) || code1 == ENUMERAL_TYPE
+  if ((ARITHMETIC_TYPE_P (t1) || UNSCOPED_ENUM_P (t1)
        || code1 == VECTOR_TYPE)
-      && (ARITHMETIC_TYPE_P (t2) || code2 == ENUMERAL_TYPE
+      && (ARITHMETIC_TYPE_P (t2) || UNSCOPED_ENUM_P (t2)
 	  || code2 == VECTOR_TYPE))
     return type_after_usual_arithmetic_conversions (t1, t2);
 
@@ -1666,7 +1666,7 @@ default_conversion (tree exp)
   /* Perform the integral promotions first so that bitfield
      expressions (which may promote to "int", even if the bitfield is
      declared "unsigned") are promoted correctly.  */
-  if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (exp)))
+  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (exp)))
     exp = perform_integral_promotions (exp);
   /* Perform the other conversions.  */
   exp = decay_conversion (exp);
@@ -2548,7 +2548,7 @@ build_array_ref (tree array, tree idx)
 
       warn_array_subscript_with_type_char (idx);
 
-      if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
+      if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
 	{
 	  error ("array subscript is not an integer");
 	  return error_mark_node;

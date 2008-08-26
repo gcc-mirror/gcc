@@ -113,6 +113,8 @@ typedef enum scope_kind {
 			for-init-statement.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
+  sk_scoped_enum,    /* The scope containing the enumertors of a C++0x
+                        scoped enumeration.  */
   sk_namespace,	     /* The scope containing the members of a
 			namespace, including the global scope.  */
   sk_template_parms, /* A scope for template parameters.  */

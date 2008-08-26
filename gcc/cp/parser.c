@@ -1581,7 +1581,7 @@ static tree cp_parser_nested_name_specifier_opt
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier
   (cp_parser *, bool, bool, bool, bool);
-static tree cp_parser_class_or_namespace_name
+static tree cp_parser_qualifying_entity
   (cp_parser *, bool, bool, bool, bool, bool);
 static tree cp_parser_postfix_expression
   (cp_parser *, bool, bool, bool);
@@ -3932,9 +3932,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 
 /* Parse an (optional) nested-name-specifier.
 
-   nested-name-specifier:
+   nested-name-specifier: [C++98]
      class-or-namespace-name :: nested-name-specifier [opt]
      class-or-namespace-name :: template nested-name-specifier [opt]
+
+   nested-name-specifier: [C++0x]
+     type-name ::
+     namespace-name ::
+     nested-name-specifier identifier ::
+     nested-name-specifier template [opt] simple-template-id ::
 
    PARSER->SCOPE should be set appropriately before this function is
    called.  TYPENAME_KEYWORD_P is TRUE if the `typename' keyword is in
@@ -4010,7 +4016,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       else
 	{
 	  /* If the next token is not an identifier, then it is
-	     definitely not a class-or-namespace-name.  */
+	     definitely not a type-name or namespace-name.  */
 	  if (token->type != CPP_NAME)
 	    break;
 	  /* If the following token is neither a `<' (to begin a
@@ -4050,12 +4056,12 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 					       /*only_current_p=*/false);
       /* Parse the qualifying entity.  */
       new_scope
-	= cp_parser_class_or_namespace_name (parser,
-					     typename_keyword_p,
-					     template_keyword_p,
-					     check_dependency_p,
-					     type_p,
-					     is_declaration);
+	= cp_parser_qualifying_entity (parser,
+                                       typename_keyword_p,
+                                       template_keyword_p,
+                                       check_dependency_p,
+                                       type_p,
+                                       is_declaration);
       /* Look for the `::' token.  */
       cp_parser_require (parser, CPP_SCOPE, "%<::%>");
 
@@ -4107,10 +4113,14 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 			  decl = error_mark_node;
 			}
 		      else
-			cp_parser_name_lookup_error
-			  (parser, token->u.value, decl,
-			   "is not a class or namespace",
-			   token->location);
+                        {
+                          const char* msg = "is not a class or namespace";
+                          if (cxx_dialect != cxx98)
+                            msg = "is not a class, namespace, or enumeration";
+                          cp_parser_name_lookup_error
+                            (parser, token->u.value, decl, msg,
+	  		     token->location);
+                        }
 		    }
 		  parser->scope = error_mark_node;
 		  error_p = true;
@@ -4229,11 +4239,11 @@ cp_parser_nested_name_specifier (cp_parser *parser,
   return scope;
 }
 
-/* Parse a class-or-namespace-name.
-
-   class-or-namespace-name:
-     class-name
-     namespace-name
+/* Parse the qualifying entity in a nested-name-specifier. For C++98,
+   this is either a class-name or a namespace-name (which corresponds
+   to the class-or-namespace-name production in the grammar). For
+   C++0x, it can also be a type-name that refers to an enumeration
+   type.
 
    TYPENAME_KEYWORD_P is TRUE iff the `typename' keyword is in effect.
    TEMPLATE_KEYWORD_P is TRUE iff the `template' keyword is in effect.
@@ -4247,18 +4257,19 @@ cp_parser_nested_name_specifier (cp_parser *parser,
    ERROR_MARK_NODE is returned.  */
 
 static tree
-cp_parser_class_or_namespace_name (cp_parser *parser,
-				   bool typename_keyword_p,
-				   bool template_keyword_p,
-				   bool check_dependency_p,
-				   bool type_p,
-				   bool is_declaration)
+cp_parser_qualifying_entity (cp_parser *parser,
+			     bool typename_keyword_p,
+			     bool template_keyword_p,
+			     bool check_dependency_p,
+			     bool type_p,
+			     bool is_declaration)
 {
   tree saved_scope;
   tree saved_qualifying_scope;
   tree saved_object_scope;
   tree scope;
   bool only_class_p;
+  bool successful_parse_p;
 
   /* Before we try to parse the class-name, we must save away the
      current PARSER->SCOPE since cp_parser_class_name will destroy
@@ -4268,7 +4279,8 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   saved_object_scope = parser->object_scope;
   /* Try for a class-name first.  If the SAVED_SCOPE is a type, then
      there is no need to look for a namespace-name.  */
-  only_class_p = template_keyword_p || (saved_scope && TYPE_P (saved_scope));
+  only_class_p = template_keyword_p 
+    || (saved_scope && TYPE_P (saved_scope) && cxx_dialect == cxx98);
   if (!only_class_p)
     cp_parser_parse_tentatively (parser);
   scope = cp_parser_class_name (parser,
@@ -4278,8 +4290,26 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
 				check_dependency_p,
 				/*class_head_p=*/false,
 				is_declaration);
+  successful_parse_p = only_class_p || cp_parser_parse_definitely (parser);
+  /* If that didn't work and we're in C++0x mode, try for a type-name.  */
+  if (!only_class_p 
+      && cxx_dialect != cxx98
+      && !successful_parse_p)
+    {
+      /* Restore the saved scope.  */
+      parser->scope = saved_scope;
+      parser->qualifying_scope = saved_qualifying_scope;
+      parser->object_scope = saved_object_scope;
+
+      /* Parse tentatively.  */
+      cp_parser_parse_tentatively (parser);
+     
+      /* Parse a typedef-name or enum-name.  */
+      scope = cp_parser_nonclass_name (parser);
+      successful_parse_p = cp_parser_parse_definitely (parser);
+    }
   /* If that didn't work, try for a namespace-name.  */
-  if (!only_class_p && !cp_parser_parse_definitely (parser))
+  if (!only_class_p && !successful_parse_p)
     {
       /* Restore the saved scope.  */
       parser->scope = saved_scope;
@@ -11307,7 +11337,7 @@ cp_parser_nonclass_name (cp_parser* parser)
    elaborated-type-specifier:
      class-key :: [opt] nested-name-specifier [opt] identifier
      class-key :: [opt] nested-name-specifier [opt] template [opt] template-id
-     enum :: [opt] nested-name-specifier [opt] identifier
+     enum-key :: [opt] nested-name-specifier [opt] identifier
      typename :: [opt] nested-name-specifier identifier
      typename :: [opt] nested-name-specifier template [opt]
        template-id
@@ -11345,6 +11375,17 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       cp_lexer_consume_token (parser->lexer);
       /* Remember that it's an enumeration type.  */
       tag_type = enum_type;
+      /* Parse the optional `struct' or `class' key (for C++0x scoped
+         enums).  */
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
+          || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
+        {
+          if (cxx_dialect == cxx98)
+            maybe_warn_cpp0x ("scoped enums");
+
+          /* Consume the `struct' or `class'.  */
+          cp_lexer_consume_token (parser->lexer);
+        }
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
     }
@@ -11632,11 +11673,19 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 /* Parse an enum-specifier.
 
    enum-specifier:
-     enum identifier [opt] { enumerator-list [opt] }
+     enum-key identifier [opt] enum-base [opt] { enumerator-list [opt] }
+
+   enum-key:
+     enum
+     enum class   [C++0x]
+     enum struct  [C++0x]
+
+   enum-base:   [C++0x]
+     : type-specifier-seq
 
    GNU Extensions:
-     enum attributes[opt] identifier [opt] { enumerator-list [opt] }
-       attributes[opt]
+     enum-key attributes[opt] identifier [opt] enum-base [opt] 
+       { enumerator-list [opt] }attributes[opt]
 
    Returns an ENUM_TYPE representing the enumeration, or NULL_TREE
    if the token stream isn't an enum-specifier after all.  */
@@ -11647,6 +11696,8 @@ cp_parser_enum_specifier (cp_parser* parser)
   tree identifier;
   tree type;
   tree attributes;
+  bool scoped_enum_p = false;
+  tree underlying_type = NULL_TREE;
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -11658,12 +11709,55 @@ cp_parser_enum_specifier (cp_parser* parser)
      the enumeration being defined.  */
   cp_lexer_consume_token (parser->lexer);
 
+  /* Parse the "class" or "struct", which indicates a scoped
+     enumeration type in C++0x.  */
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
+    {
+      if (cxx_dialect == cxx98)
+        maybe_warn_cpp0x ("scoped enums");
+
+      /* Consume the `struct' or `class' token.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      scoped_enum_p = true;
+    }
+      
   attributes = cp_parser_attributes_opt (parser);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     identifier = cp_parser_identifier (parser);
   else
     identifier = make_anon_name ();
+
+  /* Check for the `:' that denotes a specified underlying type in C++0x.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      cp_decl_specifier_seq type_specifiers;
+
+      if (cxx_dialect == cxx98)
+        maybe_warn_cpp0x ("scoped enums");
+
+      /* Consume the `:'.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      /* Parse the type-specifier-seq.  */
+      cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+                                    &type_specifiers);
+      if (type_specifiers.type == error_mark_node)
+        return error_mark_node;
+     
+      /* If that didn't work, stop.  */
+      if (type_specifiers.type != error_mark_node)
+        {
+          underlying_type = grokdeclarator (NULL, &type_specifiers, TYPENAME,
+                                            /*initialized=*/0, NULL);
+          if (underlying_type == error_mark_node)
+            underlying_type = NULL_TREE;
+        }
+      else
+        cp_parser_error (parser, "expected underlying type of enumeration");
+    }
 
   /* Look for the `{' but don't consume it yet.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
@@ -11679,7 +11773,7 @@ cp_parser_enum_specifier (cp_parser* parser)
     /* Create the new type.  We do this before consuming the opening
        brace so the enum will be recorded as being on the line of its
        tag (or the 'enum' keyword, if there is no tag).  */
-    type = start_enum (identifier);
+    type = start_enum (identifier, underlying_type, scoped_enum_p);
   
   /* Consume the opening brace.  */
   cp_lexer_consume_token (parser->lexer);
@@ -11818,7 +11912,7 @@ cp_parser_namespace_name (cp_parser* parser)
        During the lookup of a name preceding the :: scope resolution
        operator, object, function, and enumerator names are ignored.
 
-     (Note that cp_parser_class_or_namespace_name only calls this
+     (Note that cp_parser_qualifying_entity only calls this
      function if the token after the name is the scope resolution
      operator.)  */
   namespace_decl = cp_parser_lookup_name (parser, identifier,
