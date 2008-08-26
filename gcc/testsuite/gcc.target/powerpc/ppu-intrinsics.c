@@ -1,5 +1,5 @@
 /* { dg-do link { target { *-*-linux* && powerpc_fprs } } } */
-/* { dg-options "-W -Wall -mcpu=cell" } */
+/* { dg-options "-W -Wall -Wno-uninitialized -mcpu=cell" } */
 /* Test some PPU intrinsics from <ppu_intrinsics.h>.  */
 
 #include <ppu_intrinsics.h>

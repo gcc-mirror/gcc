@@ -1,7 +1,15 @@
 2008-08-26  Janis Johnson  <janis187@us.ibm.com>
 
-	gcc.dg/torture/type-generic-1.c: Don't use IBM 128-bit long double.
-	g++.dg/torture/type-generic-1.C: Ditto.
+	* gcc.target/powerpc/altivec-macros.c: Fix dg-message directives.
+	* gcc.target/powerpc/ppu-intrinsics.c: Ignore some warnings.
+	* gcc.target/powerpc/darwin-save-world-1.c: Require AltiVec hardware.
+	* gcc.target/powerpc/altivec-types-1.c: Expect some notes.
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: Ignore a warning.
+	* g++.dg/ext/altivec-2.C: Initialize a local variable.
+	* g++.dg/ext/altivec-3.C: Move AltiVec code out of main.
+
+	* gcc.dg/torture/type-generic-1.c: Don't use IBM 128-bit long double.
+	* g++.dg/torture/type-generic-1.C: Ditto.
 
 2008-08-26  Victor Kaplansky  <victork@il.ibm.com>
 
