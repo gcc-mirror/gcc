@@ -1,3 +1,11 @@
+2008-08-26  Ben Elliston  <bje@au.ibm.com>
+
+	* rtlanal.c: Fix uses of "it's" with "its" where appropriate.
+	* cp/typeck.c: Likewise.
+	* cp/tree.c: Likewise.
+	* gimple-low.c: Likewise.
+	* jump.c: Likewise.
+
 2008-08-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-build.c, ira-color.c, ira-costs.c, ira.h, ira-lives.c,
