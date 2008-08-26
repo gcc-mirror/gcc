@@ -1,3 +1,9 @@
+2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* c-common.c (do_switch_warnings): Look through the CONST_DECLs in
+	the enumerators of an ENUMERAL_TYPE.
+	* dbxout.c (dbxout_type): Ditto.
+
 2008-08-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-opt/37219
