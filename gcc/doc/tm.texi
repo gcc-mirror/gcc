@@ -2026,6 +2026,18 @@ The macro body should not assume anything about the contents of
 On most machines, it is not necessary to define this macro.
 @end defmac
 
+@defmac IRA_HARD_REGNO_ADD_COST_MULTIPLIER (@var{regno})
+In some case register allocation order is not enough for the
+Integrated Register Allocator (@acronym{IRA}) to generate a good code.
+If this macro is defined, it should return a floating point value
+based on @var{regno}.  The cost of using @var{regno} for a pseudo will
+be increased by approximately the pseudo's usage frequency times the
+value returned by this macro.  Not defining this macro is equivalent
+to having it always return @code{0.0}.
+
+On most machines, it is not necessary to define this macro.
+@end defmac
+
 @node Values in Registers
 @subsection How Values Fit in Registers
 
@@ -2812,6 +2824,19 @@ as below:
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
    ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
 @end smallexample
+@end defmac
+
+@defmac IRA_COVER_CLASSES
+The macro defines cover classes for the Integrated Register Allocator
+(@acronym{IRA}).  Cover classes are a set of non-intersecting register
+classes covering all hard registers used for register allocation
+purposes.  Any move between two registers in the same cover class
+should be cheaper than load or store of the registers.  The macro
+value should be the initializer for an array of register class values,
+with @code{LIM_REG_CLASSES} used as the end marker.
+
+You must define this macro in order to use the integrated register
+allocator for the target.
 @end defmac
 
 @node Old Constraints

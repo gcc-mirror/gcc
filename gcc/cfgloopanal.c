@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "output.h"
 #include "graphds.h"
+#include "params.h"
 
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 
@@ -372,6 +373,7 @@ init_set_costs (void)
 unsigned
 estimate_reg_pressure_cost (unsigned n_new, unsigned n_old)
 {
+  unsigned cost;
   unsigned regs_needed = n_new + n_old;
 
   /* If we have enough registers, we should use them and not restrict
@@ -379,12 +381,25 @@ estimate_reg_pressure_cost (unsigned n_new, unsigned n_old)
   if (regs_needed + target_res_regs <= target_avail_regs)
     return 0;
 
-  /* If we are close to running out of registers, try to preserve them.  */
   if (regs_needed <= target_avail_regs)
-    return target_reg_cost * n_new;
-  
-  /* If we run out of registers, it is very expensive to add another one.  */
-  return target_spill_cost * n_new;
+    /* If we are close to running out of registers, try to preserve
+       them.  */
+    cost = target_reg_cost * n_new;
+  else
+    /* If we run out of registers, it is very expensive to add another
+       one.  */
+    cost = target_spill_cost * n_new;
+
+  if (optimize && flag_ira && (flag_ira_algorithm == IRA_ALGORITHM_REGIONAL
+			       || flag_ira_algorithm == IRA_ALGORITHM_MIXED)
+      && number_of_loops () <= (unsigned) IRA_MAX_LOOPS_NUM)
+    /* IRA regional allocation deals with high register pressure
+       better.  So decrease the cost (to do more accurate the cost
+       calculation for IRA, we need to know how many registers lives
+       through the loop transparently).  */
+    cost /= 2;
+
+  return cost;
 }
 
 /* Sets EDGE_LOOP_EXIT flag for all loop exits.  */

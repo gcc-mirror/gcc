@@ -653,6 +653,30 @@ Common Report Var(flag_ipa_struct_reorg)
 Perform structure layout optimizations based
 on profiling information.
 
+fira
+Common Report Var(flag_ira) Init(0)
+Use integrated register allocator.
+
+fira-algorithm=
+Common Joined RejectNegative
+-fira-algorithm=[regional|CB|mixed] Set the used IRA algorithm
+
+fira-coalesce
+Common Report Var(flag_ira_coalesce) Init(0)
+Do optimistic coalescing.
+
+fira-share-save-slots
+Common Report Var(flag_ira_share_save_slots) Init(1)
+Share slots for saving different hard registers.
+
+fira-share-spill-slots
+Common Report Var(flag_ira_share_spill_slots) Init(1)
+Share stack slots for spilled pseudo-registers.
+
+fira-verbose=
+Common RejectNegative Joined UInteger
+-fira-verbose=<number> Control IRA's level of diagnostic messages.
+
 fivopts
 Common Report Var(flag_ivopts) Init(1) Optimization
 Optimize induction variables on trees

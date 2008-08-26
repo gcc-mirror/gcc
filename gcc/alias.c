@@ -1975,6 +1975,34 @@ adjust_offset_for_component_ref (tree x, rtx offset)
   return GEN_INT (ioffset);
 }
 
+/* The function returns nonzero if X is an address containg VALUE.  */
+static int
+value_addr_p (rtx x)
+{
+  if (GET_CODE (x) == VALUE)
+    return 1;
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == VALUE)
+    return 1;
+  return 0;
+}
+
+/* The function returns nonzero if X is a stack address.  */
+static int
+stack_addr_p (rtx x)
+{
+  if (x == hard_frame_pointer_rtx || x == frame_pointer_rtx
+      || x == arg_pointer_rtx || x == stack_pointer_rtx)
+    return 1;
+  if (GET_CODE (x) == PLUS
+      && (XEXP (x, 0) == hard_frame_pointer_rtx
+	  || XEXP (x, 0) == frame_pointer_rtx
+	  || XEXP (x, 0) == arg_pointer_rtx
+	  || XEXP (x, 0) == stack_pointer_rtx)
+      && CONSTANT_P (XEXP (x, 1)))
+    return 1;
+  return 0;
+}
+
 /* Return nonzero if we can determine the exprs corresponding to memrefs
    X and Y and they do not overlap.  */
 
@@ -1984,8 +2012,26 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
   rtx basex, basey;
+  rtx x_addr, y_addr;
   rtx moffsetx, moffsety;
   HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
+
+  if (flag_ira && optimize && reload_completed)
+    {
+      /* We need this code for IRA because of stack slot sharing.  RTL
+	 in decl can be different than RTL used in insns.  It is a
+	 safe code although it can be conservative sometime.  */
+      x_addr = canon_rtx (get_addr (XEXP (x, 0)));
+      y_addr = canon_rtx (get_addr (XEXP (y, 0)));
+      
+      if (value_addr_p (x_addr) || value_addr_p (y_addr))
+	return 0;
+       
+      if (stack_addr_p (x_addr) && stack_addr_p (y_addr)
+	  && memrefs_conflict_p (SIZE_FOR_MODE (y), y_addr,
+				 SIZE_FOR_MODE (x), x_addr, 0))
+	return 0;
+    }
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)

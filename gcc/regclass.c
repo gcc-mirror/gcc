@@ -178,7 +178,7 @@ static enum reg_class reg_class_superclasses[N_REG_CLASSES][N_REG_CLASSES];
 
 /* For each reg class, table listing all the classes contained in it.  */
 
-static enum reg_class reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+enum reg_class reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
 
 /* For each pair of reg classes,
    a largest reg class contained in their union.  */
@@ -211,24 +211,22 @@ bool have_regs_of_mode [MAX_MACHINE_MODE];
 
 /* 1 if class does contain register of given mode.  */
 
-static char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
-
-typedef unsigned short move_table[N_REG_CLASSES];
+char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
 
 /* Maximum cost of moving from a register in one class to a register in
    another class.  Based on REGISTER_MOVE_COST.  */
 
-static move_table *move_cost[MAX_MACHINE_MODE];
+move_table *move_cost[MAX_MACHINE_MODE];
 
 /* Similar, but here we don't have to move if the first index is a subset
    of the second so in that case the cost is zero.  */
 
-static move_table *may_move_in_cost[MAX_MACHINE_MODE];
+move_table *may_move_in_cost[MAX_MACHINE_MODE];
 
 /* Similar, but here we don't have to move if the first index is a superset
    of the second so in that case the cost is zero.  */
 
-static move_table *may_move_out_cost[MAX_MACHINE_MODE];
+move_table *may_move_out_cost[MAX_MACHINE_MODE];
 
 /* Keep track of the last mode we initialized move costs for.  */
 static int last_mode_for_init_move_cost;
@@ -313,7 +311,7 @@ init_reg_sets (void)
 
 /* Initialize may_move_cost and friends for mode M.  */
 
-static void
+void
 init_move_cost (enum machine_mode m)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
@@ -1024,6 +1022,7 @@ reg_preferred_class (int regno)
 {
   if (reg_pref == 0)
     return GENERAL_REGS;
+
   return (enum reg_class) reg_pref[regno].prefclass;
 }
 
@@ -2283,6 +2282,32 @@ auto_inc_dec_reg_p (rtx reg, enum machine_mode mode)
 }
 #endif
 
+
+/* Allocate space for reg info.  */
+void
+allocate_reg_info (void)
+{
+  int size = max_reg_num ();
+
+  gcc_assert (! reg_pref && ! reg_renumber);
+  reg_renumber = XNEWVEC (short, size);
+  reg_pref = XCNEWVEC (struct reg_pref, size);
+  memset (reg_renumber, -1, size * sizeof (short));
+}
+
+
+/* Resize reg info. The new elements will be uninitialized.  */
+void
+resize_reg_info (void)
+{
+  int size = max_reg_num ();
+
+  gcc_assert (reg_pref && reg_renumber);
+  reg_renumber = XRESIZEVEC (short, reg_renumber, size);
+  reg_pref = XRESIZEVEC (struct reg_pref, reg_pref, size);
+}
+
+
 /* Free up the space allocated by allocate_reg_info.  */
 void
 free_reg_info (void)
@@ -2298,6 +2323,21 @@ free_reg_info (void)
       free (reg_renumber);
       reg_renumber = NULL;
     }
+}
+
+
+
+
+/* Set up preferred and alternate classes for REGNO as PREFCLASS and
+   ALTCLASS.  */
+void
+setup_reg_classes (int regno,
+		   enum reg_class prefclass, enum reg_class altclass)
+{
+  if (reg_pref == NULL)
+    return;
+  reg_pref[regno].prefclass = prefclass;
+  reg_pref[regno].altclass = altclass;
 }
 
 

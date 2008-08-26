@@ -1565,7 +1565,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 static bool
 gate_handle_postreload (void)
 {
-  return (optimize > 0);
+  return (optimize > 0 && reload_completed);
 }
 
 

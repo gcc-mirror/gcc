@@ -714,6 +714,11 @@ DEFPARAM (PARAM_DF_DOUBLE_QUEUE_THRESHOLD_FACTOR,
 	  "Multiplier used for determining the double-queueing threshold",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_IRA_MAX_LOOPS_NUM,
+	  "ira-max-loops-num",
+	  "max loops number for regional RA",
+	  50, 0, 0)
+
 /* Switch initialization conversion will refuse to create arrays that are
    bigger than this parameter times the number of switch branches.  */
 

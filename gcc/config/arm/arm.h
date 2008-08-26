@@ -1185,6 +1185,20 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
+/* The following macro defines cover classes for Integrated Register
+   Allocator.  Cover classes is a set of non-intersected register
+   classes covering all hard registers used for register allocation
+   purpose.  Any move between two registers of a cover class should be
+   cheaper than load or store of the registers.  The macro value is
+   array of register classes with LIM_REG_CLASSES used as the end
+   marker.  */
+
+#define IRA_COVER_CLASSES						     \
+{									     \
+  GENERAL_REGS, FPA_REGS, CIRRUS_REGS, VFP_REGS, IWMMXT_GR_REGS, IWMMXT_REGS,\
+  LIM_REG_CLASSES							     \
+}
+
 /* FPA registers can't do subreg as all values are reformatted to internal
    precision.  VFP registers may only be accessed in the mode they
    were set.  */
