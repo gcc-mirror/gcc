@@ -1,4 +1,10 @@
-2008-08-28  Paul Brook  <paul@codesourcery.com>
+2008-08-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-opt/37219
+	* fwprop.c (fwprop): Check that the loop_father is the outer loop.
+	(fwprop_addr): Check that the loop_father is not the outer loop.
+
+2008-08-26  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/vfp.md: Document fmul{s,d} and fmac{s,d} types.
 	Remove documentation entry for fmul type.
