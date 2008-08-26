@@ -1,3 +1,16 @@
+2008-08-26  Victor Kaplansky  <victork@il.ibm.com>
+	    Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc/config/spu/spu.md (vec_extract_evenv4si,
+	vec_extract_evenv4sf, vec_extract_evenv8hi,
+	vec_extract_evenv16qi, vec_extract_oddv4si,
+	vec_extract_oddv4sf, vec_extract_oddv8hi, vec_extract_oddv16qi,
+	vec_interleave_highv4sf, vec_interleave_lowv4sf,
+	vec_interleave_highv4si, vec_interleave_lowv4si,
+	vec_interleave_highv8hi, vec_interleave_lowv8hi,
+	vec_interleave_highv16qi, vec_interleave_lowv16qi,
+	vec_pack_trunc_v8hi, vec_pack_trunc_v4si): Implement.S
+
 2008-08-25  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/36756
