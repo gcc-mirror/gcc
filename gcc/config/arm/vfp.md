@@ -1,6 +1,6 @@
-;; ARM VFP coprocessor Machine Description
-;; Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
-;; Written by CodeSourcery, LLC.
+;; ARM VFP instruction patterns
+;; Copyright (C) 2003, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -23,41 +23,6 @@
   [(VFPCC_REGNUM 127)]
 )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Pipeline description
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define_automaton "vfp11")
-
-;; There are 3 pipelines in the VFP11 unit.
-;;
-;; - A 8-stage FMAC pipeline (7 execute + writeback) with forward from
-;;   fourth stage for simple operations.
-;;
-;; - A 5-stage DS pipeline (4 execute + writeback) for divide/sqrt insns.
-;;   These insns also uses first execute stage of FMAC pipeline.
-;;
-;; - A 4-stage LS pipeline (execute + 2 memory + writeback) with forward from
-;;   second memory stage for loads.
-
-;; We do not model Write-After-Read hazards.
-;; We do not do write scheduling with the arm core, so it is only necessary
-;; to model the first stage of each pipeline
-;; ??? Need to model LS pipeline properly for load/store multiple?
-;; We do not model fmstat properly.  This could be done by modeling pipelines
-;; properly and defining an absence set between a dummy fmstat unit and all
-;; other vfp units.
-
-(define_cpu_unit "fmac" "vfp11")
-
-(define_cpu_unit "ds" "vfp11")
-
-(define_cpu_unit "vfp_ls" "vfp11")
-
-(define_cpu_unit "fmstat" "vfp11")
-
-(exclusion_set "fmac,ds" "fmstat")
-
 ;; The VFP "type" attributes differ from those used in the FPA model.
 ;; ffarith	Fast floating point insns, e.g. abs, neg, cpy, cmp.
 ;; farith	Most arithmetic insns.
@@ -70,51 +35,6 @@
 ;; f_2_r	Transfer vfp to arm reg.
 ;; r_2_f	Transfer arm to vfp reg.
 ;; f_cvt	Convert floating<->integral
-
-(define_insn_reservation "vfp_ffarith" 4
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "ffarith"))
- "fmac")
-
-(define_insn_reservation "vfp_farith" 8
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "farith,f_cvt"))
- "fmac")
-
-(define_insn_reservation "vfp_fmul" 9
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fmul"))
- "fmac*2")
-
-(define_insn_reservation "vfp_fdivs" 19
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivs"))
- "ds*15")
-
-(define_insn_reservation "vfp_fdivd" 33
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivd"))
- "fmac+ds*29")
-
-;; Moves to/from arm regs also use the load/store pipeline.
-(define_insn_reservation "vfp_fload" 4
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_loads,f_loadd,r_2_f"))
- "vfp_ls")
-
-(define_insn_reservation "vfp_fstore" 4
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_stores,f_stored,f_2_r"))
- "vfp_ls")
-
-(define_insn_reservation "vfp_to_cpsr" 4
- (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_flag"))
- "fmstat,vfp_ls*3")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Insn pattern
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; SImode moves
 ;; ??? For now do not allow loading constants into vfp regs.  This causes

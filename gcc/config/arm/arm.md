@@ -351,6 +351,7 @@
 (include "arm1136jfs.md")
 (include "cortex-a8.md")
 (include "cortex-r4.md")
+(include "vfp11.md")
 
 
 ;;---------------------------------------------------------------------------
