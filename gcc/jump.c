@@ -351,7 +351,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
 	return UNKNOWN;
 
       /* These CONST_CAST's are okay because prev_nonnote_insn just
-	 returns it's argument and we assign it to a const_rtx
+	 returns its argument and we assign it to a const_rtx
 	 variable.  */
       for (prev = prev_nonnote_insn (CONST_CAST_RTX(insn));
 	   prev != 0 && !LABEL_P (prev);
