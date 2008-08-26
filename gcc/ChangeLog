@@ -1,3 +1,9 @@
+2008-08-26  Paul Brook   <paul@codesourcery.com>
+
+	* config/arm/vfp.md: Move pipeline description for VFP11 to...
+	* config/arm/vfp11.md: ...here.  New.
+	* config/arm/arm.md: Include vfp11.md.
+
 2008-08-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* opts.c (decode_options) [!IRA_COVER_CLASSES]: Add missing
