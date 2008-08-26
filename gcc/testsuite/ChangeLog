@@ -1,3 +1,8 @@
+2008-08-26  Janis Johnson  <janis187@us.ibm.com>
+
+	gcc.dg/torture/type-generic-1.c: Don't use IBM 128-bit long double.
+	g++.dg/torture/type-generic-1.C: Ditto.
+
 2008-08-26  Victor Kaplansky  <victork@il.ibm.com>
 
 	* gcc.dg/vect/slp-18.c: Require vect_intfloat_cvt.
