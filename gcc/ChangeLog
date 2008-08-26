@@ -1,3 +1,8 @@
+2008-08-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* opts.c (decode_options) [!IRA_COVER_CLASSES]: Add missing
+	parameter to inform call.
+
 2008-08-26  Jeff Law  <law@redhat.com>
 
 	* mn10300.md (movqi, movhi): Split i->d*a case into two cases to
