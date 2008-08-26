@@ -274,7 +274,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
--fdump-noaddr -fdump-unnumbered  -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
+-fdump-noaddr -fdump-unnumbered @gol
+-fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ipa-all -fdump-ipa-cgraph -fdump-ipa-inline @gol
 -fdump-statistics @gol
@@ -332,7 +333,10 @@ Objective-C and Objective-C++ Dialects}.
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-marix-reorg -fipa-pta @gol 
 -fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
--fipa-type-escape -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
+-fipa-type-escape -fira -fira-algorithm=@var{algorithm} @gol
+-fira-coalesce -fno-ira-share-save-slots @gol
+-fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
+-fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -fmerge-all-constants -fmerge-constants -fmodulo-sched @gol
 -fmodulo-sched-allow-regmoves -fmove-loop-invariants -fmudflap @gol
 -fmudflapir -fmudflapth -fno-branch-count-reg -fno-default-inline @gol
@@ -5673,6 +5677,49 @@ optimization.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
+@item -fira
+@opindex fira
+Use the integrated register allocator (@acronym{IRA}) for register
+allocation.  It is a default if @acronym{IRA} has been ported for the
+target.
+
+@item -fira-algorithm=@var{algorithm}
+Use specified algorithm for the integrated register allocator.  The
+@var{algorithm} argument should be one of @code{regional}, @code{CB},
+or @code{mixed}.  The second algorithm specifies Chaitin-Briggs
+coloring, the first one specifies regional coloring based on
+Chaitin-Briggs coloring, and the third one which is the default
+specifies a mix of Chaitin-Briggs and regional algorithms where loops
+with small register pressure are ignored.  The first algorithm can
+give best result for machines with small size and irregular register
+set, the second one is faster and generates decent code and the
+smallest size code, and the mixed algorithm usually give the best
+results in most cases and for most architectures.
+
+@item -fira-coalesce
+@opindex fira-coalesce
+Do optimistic register coalescing.  This option might be profitable for
+architectures with big regular register files.
+
+@item -fno-ira-share-save-slots
+@opindex fno-ira-share-save-slots
+Switch off sharing stack slots used for saving call used hard
+registers living through a call.  Each hard register will get a
+separate stack slot and as a result function stack frame will be
+bigger.
+
+@item -fno-ira-share-spill-slots
+@opindex fno-ira-share-spill-slots
+Switch off sharing stack slots allocated for pseudo-registers.  Each
+pseudo-register which did not get a hard register will get a separate
+stack slot and as a result function stack frame will be bigger.
+
+@item -fira-verbose=@var{n}
+@opindex fira-verbose
+Set up how verbose dump file for the integrated register allocator
+will be.  Default value is 5.  If the value is greater or equal to 10,
+the dump file will be stderr as if the value were @var{n} minus 10.
+
 @item -fdelayed-branch
 @opindex fdelayed-branch
 If supported for the target machine, attempt to reorder instructions
@@ -7383,6 +7430,13 @@ Maximum size of a strongly connected component (SCC) during SCCVN
 processing.  If this limit is hit, SCCVN processing for the whole
 function will not be done and optimizations depending on it will
 be disabled.  The default maximum SCC size is 10000.
+
+@item ira-max-loops-num
+IRA uses a regional register allocation by default.  If a function
+contains loops more than number given by the parameter, non-regional
+register allocator will be used even when option
+@option{-fira-algorithm} is given.  The default value of the parameter
+is 20.
 
 @end table
 @end table

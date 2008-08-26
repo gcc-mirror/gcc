@@ -196,6 +196,9 @@ enum reg_class {
    LIM_REG_CLASSES 
 };
 
+/* SPU is simple, it really only has one class of registers.  */
+#define IRA_COVER_CLASSES { GENERAL_REGS, LIM_REG_CLASSES }
+
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 #define REG_CLASS_NAMES \

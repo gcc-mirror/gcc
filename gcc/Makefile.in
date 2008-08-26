@@ -849,6 +849,7 @@ TREE_DATA_REF_H = tree-data-ref.h $(LAMBDA_H) omega.h graphds.h tree-chrec.h
 VARRAY_H = varray.h $(MACHMODE_H) $(SYSTEM_H) coretypes.h $(TM_H)
 TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
+IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBIMAP_H = ebitmap.h sbitmap.h
 IPA_PROP_H = ipa-prop.h $(TREE_H) vec.h $(CGRAPH_H)
@@ -1097,6 +1098,13 @@ OBJS-common = \
 	init-regs.o \
 	integrate.o \
 	intl.o \
+	ira.o \
+	ira-build.o \
+	ira-costs.o \
+	ira-conflicts.o \
+	ira-color.o \
+	ira-emit.o \
+	ira-lives.o \
 	jump.o \
 	lambda-code.o \
 	lambda-mat.o \
@@ -2408,7 +2416,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(INSN_ATTR_H) output.h $(DIAGNOSTIC_H) debug.h insn-config.h intl.h \
    $(RECOG_H) Makefile $(TOPLEV_H) dwarf2out.h sdbout.h dbxout.h $(EXPR_H) \
    hard-reg-set.h $(BASIC_BLOCK_H) graph.h except.h $(REGS_H) $(TIMEVAR_H) \
-   value-prof.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
+   value-prof.h $(PARAMS_H) $(TM_P_H) reload.h ira.h dwarf2asm.h $(TARGET_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) $(CFGLOOP_H) hosthooks.h \
    $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h $(GGC_H) $(INTEGRATE_H) \
    opts.h params.def tree-mudflap.h $(REAL_H) tree-pass.h $(GIMPLE_H)
@@ -2771,7 +2779,7 @@ cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) coretypes.h $(TM_H) \
    $(GGC_H)
 cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h $(TM_H) \
-   $(OBSTACK_H) output.h graphds.h
+   $(OBSTACK_H) output.h graphds.h $(PARAMS_H)
 graphds.o : graphds.c graphds.h $(CONFIG_H) $(SYSTEM_H) $(BITMAP_H) $(OBSTACK_H) \
    coretypes.h vec.h vecprim.h
 loop-iv.o : loop-iv.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(BASIC_BLOCK_H) \
@@ -2835,7 +2843,7 @@ reload1.o : reload1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(EXPR_H) $(OPTABS_H) reload.h $(REGS_H) hard-reg-set.h insn-config.h \
    $(BASIC_BLOCK_H) $(RECOG_H) output.h $(FUNCTION_H) $(TOPLEV_H) $(TM_P_H) \
    addresses.h except.h $(TREE_H) $(REAL_H) $(FLAGS_H) $(MACHMODE_H) \
-   $(OBSTACK_H) $(DF_H) $(TARGET_H) dse.h
+   $(OBSTACK_H) $(DF_H) $(TARGET_H) dse.h ira.h
 rtlhooks.o :  rtlhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    rtlhooks-def.h $(EXPR_H) $(RECOG_H)
 postreload.o : postreload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -2851,7 +2859,7 @@ postreload-gcse.o : postreload-gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) $(FUNCTION_H) \
    addresses.h $(RECOG_H) reload.h $(EXPR_H) $(TOPLEV_H) $(TM_P_H) $(DF_H) \
-   gt-caller-save.h $(GGC_H)
+   output.h ira.h gt-caller-save.h $(GGC_H)
 bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) except.h \
    $(RTL_H) hard-reg-set.h $(REGS_H) $(TM_P_H) $(FIBHEAP_H) output.h $(EXPR_H) \
    $(TARGET_H) $(FLAGS_H) $(INSN_ATTR_H) $(FUNCTION_H) tree-pass.h $(TOPLEV_H) \
@@ -2872,6 +2880,37 @@ stack-ptr-mod.o : stack-ptr-mod.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 init-regs.o : init-regs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(RTL_H) $(REGS_H) $(EXPR_H) tree-pass.h \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(DF_H)
+ira-build.o: ira-build.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) \
+   $(PARAMS_H) $(DF_H) sparseset.h $(IRA_INT_H)
+ira-costs.o: ira-costs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) insn-config.h $(RECOG_H) \
+   $(REGS_H) hard-reg-set.h $(FLAGS_H) errors.h \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) \
+   $(IRA_INT_H)
+ira-conflicts.o: ira-conflicts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
+   $(DF_H) sparseset.h $(IRA_INT_H)
+ira-color.o: ira-color.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
+   $(DF_H) $(SPLAY_TREE_H) $(IRA_INT_H)
+ira-emit.o: ira-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
+   $(IRA_INT_H)
+ira-lives.o: ira-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
+   $(DF_H) sparseset.h $(IRA_INT_H)
+ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TARGET_H) $(TM_H) $(RTL_H) $(RECOG_H) \
+   $(REGS_H) hard-reg-set.h $(FLAGS_H) $(OBSTACK_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) \
+   $(DF_H) $(IRA_INT_H)  $(PARAMS_H) $(TIMEVAR_H) $(INTEGRATE_H) \
+   tree-pass.h output.h
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(TIMEVAR_H) tree-pass.h $(DF_H)\
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \

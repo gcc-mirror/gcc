@@ -1,6 +1,6 @@
-/* Communication between reload.c and reload1.c.
-   Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
+/* Communication between reload.c, reload1.c and the rest of compiler.
+   Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1997, 1998, 1999,
+   2000, 2001, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -209,8 +209,9 @@ struct insn_chain
   int block;
   /* The rtx of the insn.  */
   rtx insn;
-  /* Register life information: record all live hard registers, and all
-     live pseudos that have a hard register.  */
+  /* Register life information: record all live hard registers, and
+     all live pseudos that have a hard register.  This set also
+     contains pseudos spilled by IRA.  */
   regset_head live_throughout;
   regset_head dead_or_set;
 

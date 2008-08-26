@@ -298,7 +298,6 @@ static int equiv_init_movable_p (rtx, int);
 static int contains_replace_regs (rtx);
 static int memref_referenced_p (rtx, rtx);
 static int memref_used_between_p (rtx, rtx, rtx);
-static void update_equiv_regs (void);
 static void no_equiv (rtx, const_rtx, void *);
 static void block_alloc (int);
 static int qty_sugg_compare (int, int);
@@ -795,9 +794,11 @@ memref_used_between_p (rtx memref, rtx start, rtx end)
    into the using insn.  If it succeeds, we can eliminate the register
    completely.
 
-   Initialize the REG_EQUIV_INIT array of initializing insns.  */
+   Initialize the REG_EQUIV_INIT array of initializing insns.
 
-static void
+   Return non-zero if jump label rebuilding should be done.  */
+
+int
 update_equiv_regs (void)
 {
   rtx insn;
@@ -1183,6 +1184,8 @@ update_equiv_regs (void)
 		      new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
 		      REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
 		      REG_NOTES (equiv_insn) = 0;
+		      /* Rescan it to process the notes.  */
+		      df_insn_rescan (new_insn);
 
 		      /* Make sure this insn is recognized before
 			 reload begins, otherwise
@@ -1227,6 +1230,7 @@ update_equiv_regs (void)
 
   end_alias_analysis ();
   free (reg_equiv);
+  return recorded_label_ref;
 }
 
 /* Mark REG as having no known equivalence.
@@ -2442,6 +2446,12 @@ find_stack_regs (void)
 }
 #endif
 
+static bool
+gate_handle_local_alloc (void)
+{
+  return ! flag_ira;
+}
+
 /* Run old register allocator.  Return TRUE if we must exit
    rest_of_compilation upon return.  */
 static unsigned int
@@ -2517,7 +2527,7 @@ struct rtl_opt_pass pass_local_alloc =
  {
   RTL_PASS,
   "lreg",                               /* name */
-  NULL,                                 /* gate */
+  gate_handle_local_alloc,              /* gate */
   rest_of_handle_local_alloc,           /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */

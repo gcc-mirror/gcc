@@ -841,6 +841,28 @@ Global register allocation.  This pass allocates hard registers for
 the remaining pseudo registers (those whose life spans are not
 contained in one basic block).  The pass is located in @file{global.c}.
 
+@item
+The optional integrated register allocator (@acronym{IRA}).  It can be
+used instead of the local and global allocator.  It is called
+integrated because coalescing, register live range splitting, and hard
+register preferencing are done on-the-fly during coloring.  It also
+has better integration with the reload pass.  Pseudo-registers spilled
+by the allocator or the reload have still a chance to get
+hard-registers if the reload evicts some pseudo-registers from
+hard-registers.  The allocator helps to choose better pseudos for
+spilling based on their live ranges and to coalesce stack slots
+allocated for the spilled pseudo-registers.  IRA is a regional
+register allocator which is transformed into Chaitin-Briggs allocator
+if there is one region.  By default, IRA chooses regions using
+register pressure but the user can force it to use one region or
+regions corresponding to all loops.
+
+Source files of the allocator are @file{ira.c}, @file{ira-build.c},
+@file{ira-costs.c}, @file{ira-conflicts.c}, @file{ira-color.c},
+@file{ira-emit.c}, @file{ira-lives}, plus header files @file{ira.h}
+and @file{ira-int.h} used for the communication between the allocator
+and the rest of the compiler and between the IRA files.
+
 @cindex reloading
 @item
 Reloading.  This pass renumbers pseudo registers with the hardware

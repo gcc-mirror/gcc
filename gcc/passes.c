@@ -767,6 +767,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_subregs_of_mode_init);
       NEXT_PASS (pass_local_alloc);
       NEXT_PASS (pass_global_alloc);
+      NEXT_PASS (pass_ira);
       NEXT_PASS (pass_subregs_of_mode_finish);
       NEXT_PASS (pass_postreload);
 	{

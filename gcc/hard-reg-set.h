@@ -538,6 +538,11 @@ extern char global_regs[FIRST_PSEUDO_REGISTER];
 
 extern HARD_REG_SET regs_invalidated_by_call;
 
+/* Call used hard registers which can not be saved because there is no
+   insn for this.  */
+
+extern HARD_REG_SET no_caller_save_reg_set;
+
 #ifdef REG_ALLOC_ORDER
 /* Table of register numbers in the order in which to try to use them.  */
 
@@ -555,6 +560,10 @@ extern HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 /* For each reg class, number of regs it contains.  */
 
 extern unsigned int reg_class_size[N_REG_CLASSES];
+
+/* For each reg class, table listing all the classes contained in it.  */
+
+extern enum reg_class reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
 
 /* For each pair of reg classes,
    a largest reg class contained in their union.  */

@@ -1,3 +1,220 @@
+2008-08-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-build.c, ira-color.c, ira-costs.c, ira.h, ira-lives.c,
+	ira.c, ira-conflicts.c, ira-emit.c, ira-int.h: New files.
+
+	* doc/passes.texi: Describe IRA.
+
+	* doc/tm.texi (IRA_COVER_CLASSES,
+	IRA_HARD_REGNO_ADD_COST_MULTIPLIER): Describe the new macros.
+
+	* doc/invoke.texi (ira-max-loops-num): Describe the new parameter.
+	(-fira, -fira-algorithm, -fira-coalesce, -fno-ira-move-spills,
+	-fira-propagate-cost, -fno-ira-share-save-slots,
+	-fno-ira-share-spill-slots, -fira-verbose): Describe new options.
+
+	* flags.h (ira_algorithm): New enumeration.
+	(flag_ira_algorithm, flag_ira_verbose): New external variable
+	declarations.
+
+	* postreload.c (gate_handle_postreload): Don't do post reload
+	optimizations unless the reload is completed.
+
+	* reload.c (push_reload, find_dummy_reload): Use DF_LR_OUT for
+	IRA.
+
+	* tree-pass.h (pass_ira): New external variable declaration.
+
+	* reload.h: Add 2008 to the Copyright.
+    
+	* cfgloopanal.c: Include params.h.
+	(estimate_reg_pressure_cost): Decrease cost for IRA optimization
+	mode.
+    
+	* params.h (IRA_MAX_LOOPS_NUM): New macro.
+
+	* toplev.c (ira.h): New include.
+	(flag_ira_algorithm, flag_ira_verbose): New external variables.
+	(backend_init_target): Call ira_init.
+	(backend_init): Call ira_init_once.
+	(finalize): Call finish_ira_once.
+
+	* toplev.h (flag_ira, flag_ira_coalesce, flag_ira_move_spills,
+	flag_ira_share_save_slots, flag_ira_share_spill_slots): New
+	external variables.
+
+	* regs.h (contains_reg_of_mode, move_cost, may_move_in_cost,
+	may_move_out_cost): New external variable declarations.
+	(move_table): New typedef.
+    
+	* caller-save.c: Include headers output.h and ira.h.
+	(no_caller_save_reg_set): New global variable.
+	(save_slots_num, save_slots): New variables.
+	(reg_save_code, reg_restore_code, add_stored_regs): Add
+	prototypes.
+	(init_caller_save): Set up no_caller_save_reg_set.
+	(init_save_areas): Reset save_slots_num.
+	(saved_hard_reg): New structure.
+	(hard_reg_map, saved_regs_num, all_saved_regs): New variables.
+	(initiate_saved_hard_regs, new_saved_hard_reg,
+	finish_saved_hard_regs, saved_hard_reg_compare_func): New
+	functions.
+	(setup_save_areas): Add code for sharing stack slots.
+	(all_blocks): New variable.
+	(save_call_clobbered_regs): Process pseudo-register too.
+	(mark_set_regs): Process pseudo-register too.
+	(insert_one_insn): Put the insn after bb note in a empty basic
+	block.  Add insn check.
+    
+	* global.c (eliminable_regset): Make it external.
+	(mark_elimination): Use DF_LR_IN for IRA.
+	(pseudo_for_reload_consideration_p): New.
+	(build_insn_chain): Make it external.  Don't ignore spilled
+	pseudos for IRA.  Use pseudo_for_reload_consideration_p.
+	(gate_handle_global_alloc): New function.
+	(pass_global_alloc): Add the gate function.
+
+	* opts.c (decode_options): Set up flag_ira.  Print the warning for
+	-fira.
+	(common_handle_option): Process -fira-algorithm and -fira-verbose.
+
+	* timevar.def (TV_IRA, TV_RELOAD): New passes.
+
+	* regmove.c (regmove_optimize): Don't do replacement of output for
+	IRA.
+
+	* hard-reg-set.h (no_caller_save_reg_set, reg_class_subclasses):
+	New external variable declarations.
+
+	* local-alloc.c (update_equiv_regs): Make it external.  Return
+	true if jump label rebuilding should be done.  Rescan new_insn for
+	notes.
+	(gate_handle_local_alloc): New function.
+	(pass_local_alloc): Add the gate function.
+
+	* alias.c (value_addr_p, stack_addr_p): New functions.
+	(nonoverlapping_memrefs_p): Use them for IRA.
+
+	* common.opt (fira, fira-algorithm, fira-coalesce,
+	fira-move-spills, fira-share-save-slots, fira-share-spill-slots,
+	fira-verbose): New options.
+
+	* regclass.c (reg_class_subclasses, contains_reg_of_mode,
+	move_cost, may_move_in_cost, may_move_out_cost): Make the
+	variables external.
+	(move_table): Remove typedef.
+	(init_move_cost): Make it external.
+	(allocate_reg_info, resize_reg_info, setup_reg_classes): New
+	functions.
+
+	* rtl.h (init_move_cost, allocate_reg_info, resize_reg_info,
+	setup_reg_classes): New function prototypes.
+	(eliminable_regset): New external variable declaration.
+	(build_insn_chain, update_equiv_regs): New function prototypes.
+    
+	* Makefile.in (IRA_INT_H): New definition.
+	(OBJS-common): Add ira.o, ira-build.o, ira-costs.o,
+	ira-conflicts.o, ira-color.o, ira-emit.o, and ira-lives.o.
+	(reload1.o, toplev.o): Add dependence on ira.h.
+	(cfgloopanal.o): Add PARAMS_H.
+	(caller-save.o): Add dependence on output.h and ira.h.
+	(ira.o, ira-build.o, ira-costs.o, ira-conflicts.o, ira-color.o,
+	ira-emit.o, ira-lives.o): New entries.
+
+	* passes.c (pass_ira): New pass.
+
+	* params.def (PARAM_IRA_MAX_LOOPS_NUM): New parameter.
+
+	* reload1.c (ira.h): Include the header.
+	(changed_allocation_pseudos): New bitmap.
+	(init_reload): Initiate the bitmap.
+	(compute_use_by_pseudos): Permits spilled registers in FROM.
+	(temp_pseudo_reg_arr): New variable.
+	(reload): Allocate and free temp_pseudo_reg_arr.  Sort pseudos for
+	IRA.  Call alter_reg with the additional parameter.  Don't clear
+	spilled_pseudos for IRA.  Restore original insn chain for IRA.
+	Clear changed_allocation_pseudos at the end of reload.
+	(calculate_needs_all_insns): Call IRA's mark_memory_move_deletion.
+	(hard_regno_to_pseudo_regno): New variable.
+	(count_pseudo): Check spilled pseudos.  Set up
+	hard_regno_to_pseudo_regno.
+	(count_spilled_pseudo): Check spilled pseudos. Update
+	hard_regno_to_pseudo_regno.
+	(find_reg): Use better_spill_reload_regno_p.  Check
+	hard_regno_to_pseudo_regno.
+	(alter_reg): Set up spilled_pseudos.  Add a new parameter.  Add
+	code for IRA.
+	(eliminate_regs_1): Use additional parameter for alter_reg.
+	(finish_spills): Set up pseudo_previous_regs only for spilled
+	pseudos.  Call reassign_pseudos once for all spilled pseudos, pass
+	more arguments.  Don't clear live_throughout and dead_or_set for
+	spilled pseudos.  Use additional parameter for alter_reg.  Call
+	mark_allocation_change.  Set up changed_allocation_pseudos.
+	Remove sanity check.
+	(emit_input_reload_insns, delete_output_reload): Use additional
+	parameter for alter_reg.  Call mark_allocation_change.
+	(substitute, gen_reload_chain_without_interm_reg_p): New
+	functions.
+	(reloads_conflict): Use gen_reload_chain_without_interm_reg_p.
+    
+	* testsuite/gcc.dg/20080410-1.c: New file.
+	
+	* config/s390/s390.h (IRA_COVER_CLASSES,
+	IRA_HARD_REGNO_ADD_COST_MULTIPLIER): Define.
+
+	* config/sparc/sparc.h (IRA_COVER_CLASSES): New macro.
+
+	* config/i386/i386.h (IRA_COVER_CLASSES): Ditto.
+
+	* config/ia64/ia64.h (IRA_COVER_CLASSES): Ditto.
+
+	* config/rs6000/rs6000.h (IRA_COVER_CLASSES): Ditto.
+
+	* config/arm/arm.h (IRA_COVER_CLASSES): Ditto.
+    
+	* config/alpha/alpha.h (IRA_COVER_CLASSES): Ditto.
+    
+	2008-08-24  Jeff Law  <law@redhat.com>
+	* ira.c (setup_reg_class_intersect_union): Prefer smallest class
+	when ignoring unavailable registers.
+
+	2008-08-24  Jeff Law  <law@redhat.com>
+	* ira-color.c (coalesced_pseudo_reg_slot_compare): Check
+	FRAME_GROWS_DOWNWARD and STACK_GROWS_DOWNWARD.
+	* ira.c (setup_eliminable_regset): Check stack_realign_needed.
+	* config/mn10300/mn10300.h (IRA_COVER_CLASSES): New macro.
+
+	2008-06-03 Steve Chamberlain <steve.chamberlain@gmail.com>
+	* ira-build.c (allocno_range_compare_func): Stabilize sort.
+
+	2008-05-29 Andy Hutchinson <hutchinsonandy@aim.com>
+	* config/avr/avr.h (IRA_COVER_CLASSES): New macro.
+	* reload1.c (find_reg): Process registers in register allocation order.
+
+	2008-05-10 Richard Sandiford <rsandifo@nildram.co.uk>
+	* toplev.c (backend_init_target): Move ira_init call from
+	here...
+	(lang_dependent_init_target): ...to here.
+
+	2008-05-10 Richard Sandiford <rsandifo@nildram.co.uk>
+	* ira.c (setup_class_subset_and_memory_move_costs): Don't
+	calculate memory move costs for NO_REGS.
+
+	2008-05-05 Kaz Kojima <kkojima@gcc.gnu.org>
+	* ira-color.c (ira_fast_allocation): Use no_stack_reg_p only if
+	STACK_REGS is defined.
+
+	2008-04-08 Andrew Pinski <andrew_pinski@playstation.sony.com>
+	* config/spu/spu.h (IRA_COVER_CLASSES): New macro.
+
+	2008-04-04 Bernd Schmidt <bernd.schmidt@analog.com>
+	* config/bfin/bfin.h (IRA_COVER_CLASSES): New macro.
+
+	2008-04-04 Kaz Kojima <kkojima@gcc.gnu.org>
+	* config/sh/sh.h (IRA_COVER_CLASSES): Define.
+	* config/sh/sh.md (movsicc_true+3): Check if emit returns a
+	barrier.
+
 2008-08-26  Victor Kaplansky  <victork@il.ibm.com>
 	    Dorit Nuzman  <dorit@il.ibm.com>
 

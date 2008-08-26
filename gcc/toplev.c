@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "params.h"
 #include "reload.h"
+#include "ira.h"
 #include "dwarf2asm.h"
 #include "integrate.h"
 #include "real.h"
@@ -269,6 +270,14 @@ int flag_next_runtime = 0;
 /* Set to the default thread-local storage (tls) model to use.  */
 
 enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
+
+/* Set the default algorithm for the integrated register allocator.  */
+
+enum ira_algorithm flag_ira_algorithm = IRA_ALGORITHM_MIXED;
+
+/* Set the default value for -fira-verbose.  */
+
+unsigned int flag_ira_verbose = 5;
 
 /* Nonzero means change certain warnings into errors.
    Usually these are warnings about failure to conform to some standard.  */
@@ -2009,6 +2018,7 @@ backend_init (void)
   save_register_info ();
 
   /* Initialize the target-specific back end pieces.  */
+  ira_init_once ();
   backend_init_target ();
 }
 
@@ -2029,9 +2039,10 @@ lang_dependent_init_target (void)
   /* Do the target-specific parts of expr initialization.  */
   init_expr_target ();
 
-  /* Although the actions of init_set_costs are language-independent,
-     it uses optabs, so we cannot call it from backend_init.  */
+  /* Although the actions of these functions are language-independent,
+     they use optabs, so we cannot call them from backend_init.  */
   init_set_costs ();
+  ira_init ();
 
   expand_dummy_function_end ();
 }
@@ -2131,6 +2142,8 @@ finalize (void)
 
   statistics_fini ();
   finish_optimization_passes ();
+
+  ira_finish_once ();
 
   if (mem_report)
     dump_memory_report (true);

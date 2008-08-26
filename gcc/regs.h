@@ -262,8 +262,26 @@ extern int caller_save_needed;
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
 
+/* 1 if the corresponding class does contain register of given
+   mode.  */
+extern char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
+
+typedef unsigned short move_table[N_REG_CLASSES];
+
+/* Maximum cost of moving from a register in one class to a register
+   in another class.  */
+extern move_table *move_cost[MAX_MACHINE_MODE];
+
 /* Specify number of hard registers given machine mode occupy.  */
 extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
+
+/* Similar, but here we don't have to move if the first index is a
+   subset of the second so in that case the cost is zero.  */
+extern move_table *may_move_in_cost[MAX_MACHINE_MODE];
+
+/* Similar, but here we don't have to move if the first index is a
+   superset of the second so in that case the cost is zero.  */
+extern move_table *may_move_out_cost[MAX_MACHINE_MODE];
 
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */
