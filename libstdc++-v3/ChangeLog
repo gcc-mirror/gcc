@@ -1,3 +1,7 @@
+2008-08-26  Ben Elliston  <bje@au.ibm.com>
+
+	* src/mt_allocator.cc (__pool): Fix error in comment.
+
 2008-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* linkage.m4 ([GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1],

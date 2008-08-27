@@ -610,7 +610,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     // If we have thread support and it's active we check the thread
     // key value and return its id or if it's not set we take the
     // first record from _M_thread_freelist and sets the key and
-    // returns it's id.
+    // returns its id.
     if (__gthread_active_p())
       {
 	void* v = __gthread_getspecific(freelist._M_key);
