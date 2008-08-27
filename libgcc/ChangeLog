@@ -1,3 +1,7 @@
+2008-08-27  Release Manager
+
+	* GCC 4.3.2 released.
+
 2008-06-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (DECNUMINC): Remove
