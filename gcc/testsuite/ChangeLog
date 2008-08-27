@@ -1,5 +1,10 @@
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/31673
+	* gcc.dg/c90-fordecl-1.c: Update.
+
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c/37186
 	* gcc.dg/pr37186.c: New.
 
