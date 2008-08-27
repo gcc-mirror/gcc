@@ -1,3 +1,9 @@
+2008-08-27  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/t-arm-coff (LIB1ASMFUNCS): Add missing undescrore on
+	_clzsi2.
+	* config/arm/t-linux (LIB1ASMFUNCS): Ditto.
+
 2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* c-common.c (do_switch_warnings): Look through the CONST_DECLs in
