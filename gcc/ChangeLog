@@ -1,5 +1,9 @@
 2008-08-27  Paul Brook  <paul@codesourcery.com>
 
+	* config.gcc: Loosen checks for arm uclinux eabi targets.
+
+2008-08-27  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/t-arm-coff (LIB1ASMFUNCS): Add missing undescrore on
 	_clzsi2.
 	* config/arm/t-linux (LIB1ASMFUNCS): Ditto.
