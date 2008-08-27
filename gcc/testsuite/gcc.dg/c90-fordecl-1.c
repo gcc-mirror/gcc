@@ -9,5 +9,6 @@ foo (void)
   int j = 0;
   for (int i = 1; i <= 10; i++) /* { dg-bogus "warning" "warning in place of error" } */
     j += i;
-  /* { dg-error "parse|decl" "declaration in for loop" { target *-*-* } 10 } */
+  /* { dg-error "'for' loop initial declarations are only allowed in C99 mode" "declaration in for loop" { target *-*-* } 10 } */
+  /* { dg-message "note: use option -std=c99 or -std=gnu99 to compile your code" "note" { target *-*-* } 10 }} */
 }

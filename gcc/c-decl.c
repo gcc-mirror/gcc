@@ -6796,13 +6796,19 @@ check_for_loop_decls (void)
   tree one_decl = NULL_TREE;
   int n_decls = 0;
 
-
   if (!flag_isoc99)
     {
+      static bool hint = true;
       /* If we get here, declarations have been used in a for loop without
 	 the C99 for loop scope.  This doesn't make much sense, so don't
 	 allow it.  */
-      error ("%<for%> loop initial declaration used outside C99 mode");
+      error ("%<for%> loop initial declarations are only allowed in C99 mode");
+      if (hint)
+	{
+	  inform (input_location, 
+		  "use option -std=c99 or -std=gnu99 to compile your code");
+	  hint = false;
+	}
       return NULL_TREE;
     }
   /* C99 subclause 6.8.5 paragraph 3:
