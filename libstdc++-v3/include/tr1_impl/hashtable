@@ -149,6 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       // hasher, if present, comes from _Hash_code_base.
       typedef typename _Allocator::difference_type        difference_type;
       typedef typename _Allocator::size_type              size_type;
+      typedef typename _Allocator::pointer                pointer;
+      typedef typename _Allocator::const_pointer          const_pointer;
       typedef typename _Allocator::reference              reference;
       typedef typename _Allocator::const_reference        const_reference;
       
