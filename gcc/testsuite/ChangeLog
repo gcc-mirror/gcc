@@ -1,3 +1,8 @@
+2008-08-27  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/torture/type-generic-1.c: Revert previous change.
+	* g++.dg/torture/type-generic-1.C: Ditto.
+
 2008-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/ipacost-1.c: Remove template matching only x86-64
