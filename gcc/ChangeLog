@@ -1,3 +1,10 @@
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/37186
+	* c-typeck.c (WARN_FOR_ASSIGNMENT): Add OPT parameter.
+	(convert_for_assignment): Pass corrent OPT_W* parameter to
+	WARN_FOR_ASSIGNMENT.
+
 2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/35321
