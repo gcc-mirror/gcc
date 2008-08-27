@@ -1,3 +1,8 @@
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/37186
+	* gcc.dg/pr37186.c: New.
+
 2008-08-27  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/torture/type-generic-1.c: Revert previous change.

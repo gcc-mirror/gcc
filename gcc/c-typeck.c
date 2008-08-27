@@ -3952,24 +3952,24 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, AR, AS, IN, RE)	\
+#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)	\
   do {						\
     switch (errtype)				\
       {						\
       case ic_argpass:				\
-	pedwarn (LOCATION, 0, AR, parmnum, rname);	\
+	pedwarn (LOCATION, OPT, AR, parmnum, rname);	\
 	break;					\
       case ic_argpass_nonproto:			\
-	warning (0, AR, parmnum, rname);	\
+	warning (OPT, AR, parmnum, rname);	\
 	break;					\
       case ic_assign:				\
-	pedwarn (LOCATION, 0, AS);			\
+	pedwarn (LOCATION, OPT, AS);			\
 	break;					\
       case ic_init:				\
-	pedwarn (LOCATION, 0, IN);			\
+	pedwarn (LOCATION, OPT, IN);			\
 	break;					\
       case ic_return:				\
-	pedwarn (LOCATION, 0, RE);			\
+	pedwarn (LOCATION, OPT, RE);			\
 	break;					\
       default:					\
 	gcc_unreachable ();			\
@@ -4151,7 +4151,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		     function where an ordinary one is wanted, but not
 		     vice-versa.  */
 		  if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
-		    WARN_FOR_ASSIGNMENT (input_location,
+		    WARN_FOR_ASSIGNMENT (input_location, 0,
 					 G_("passing argument %d of %qE "
 					    "makes qualified function "
 					    "pointer from unqualified"),
@@ -4165,7 +4165,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 					    "pointer from unqualified"));
 		}
 	      else if (TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl))
-		WARN_FOR_ASSIGNMENT (input_location,
+		WARN_FOR_ASSIGNMENT (input_location, 0,
 				     G_("passing argument %d of %qE discards "
 					"qualifiers from pointer target type"),
 				     G_("assignment discards qualifiers "
@@ -4265,7 +4265,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		  (VOID_TYPE_P (ttr)
 		   && !null_pointer_constant_p (rhs)
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
-	    WARN_FOR_ASSIGNMENT (input_location,
+	    WARN_FOR_ASSIGNMENT (input_location, OPT_pedantic,
 				 G_("ISO C forbids passing argument %d of "
 				    "%qE between function pointer "
 				    "and %<void *%>"),
@@ -4303,7 +4303,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		WARN_FOR_ASSIGNMENT (input_location,
+		WARN_FOR_ASSIGNMENT (input_location, OPT_Wpointer_sign,
 				     G_("pointer targets in passing argument "
 					"%d of %qE differ in signedness"),
 				     G_("pointer targets in assignment "
@@ -4321,7 +4321,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		 it is okay to use a const or volatile function
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
-		WARN_FOR_ASSIGNMENT (input_location,
+		WARN_FOR_ASSIGNMENT (input_location, 0,
 				     G_("passing argument %d of %qE makes "
 					"qualified function pointer "
 					"from unqualified"),
@@ -4336,7 +4336,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       else
 	/* Avoid warning about the volatile ObjC EH puts on decls.  */
 	if (!objc_ok)
-	  WARN_FOR_ASSIGNMENT (input_location,
+	  WARN_FOR_ASSIGNMENT (input_location, 0,
 			       G_("passing argument %d of %qE from "
 				  "incompatible pointer type"),
 			       G_("assignment from incompatible pointer type"),
@@ -4359,7 +4359,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant_p (rhs))
-	WARN_FOR_ASSIGNMENT (input_location,
+	WARN_FOR_ASSIGNMENT (input_location, 0,
 			     G_("passing argument %d of %qE makes "
 				"pointer from integer without a cast"),
 			     G_("assignment makes pointer from integer "
@@ -4373,7 +4373,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      WARN_FOR_ASSIGNMENT (input_location,
+      WARN_FOR_ASSIGNMENT (input_location, 0,
 			   G_("passing argument %d of %qE makes integer "
 			      "from pointer without a cast"),
 			   G_("assignment makes integer from pointer "
