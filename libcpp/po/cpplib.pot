@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2008-02-01 16:21+0000\n"
+"POT-Creation-Date: 2008-08-27 17:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -635,7 +635,7 @@ msgstr ""
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1238
+#: files.c:1283
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
