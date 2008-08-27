@@ -1,5 +1,12 @@
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c++/17880
+	* semantics.c (maybe_convert_cond): Call verify_sequence_points.
+	(finish_return_stmt): Likewise.
+	(finish_switch_condition): Likewise.
+
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* cp-tree.h: Fix #error directive.
 
 2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
