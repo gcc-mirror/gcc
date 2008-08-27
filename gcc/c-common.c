@@ -7685,6 +7685,7 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       return error_mark_node;
 
     case CALL_EXPR:
+    case TARGET_EXPR:
       error ("cannot apply %<offsetof%> when %<operator[]%> is overloaded");
       return error_mark_node;
 

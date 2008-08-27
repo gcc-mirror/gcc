@@ -1,3 +1,8 @@
+2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/35321
+	* c-common.c (fold_offsetof_1): Handle TARGET_EXPR like CALL_EXPR.
+
 2008-08-27  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Loosen checks for arm uclinux eabi targets.
