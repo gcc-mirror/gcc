@@ -54,6 +54,5 @@ main()
 /* { dg-final { scan-ipa-dump-not "versioned function i_can_not_be_propagated_fully2" "cp"  } } */
 /* { dg-final { scan-ipa-dump-not "versioned function i_can_not_be_propagated_fully " "cp"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated" "optimized"  } } */
-/* { dg-final { scan-tree-dump "symbol: array" "optimized"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

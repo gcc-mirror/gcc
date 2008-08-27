@@ -1,3 +1,15 @@
+2008-08-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/ipacost-1.c: Remove template matching only x86-64
+	* gcc.dg/ipa/ipacost-2.c: Add -fipa-cp-clone; remove template matching
+	only x86-64
+	* gcc.dg/ipa/ipa-1.c: Add -fipa-cp-clone
+	* gcc.dg/ipa/ipa-2.c: Add -fipa-cp-clone
+	* gcc.dg/ipa/ipa-3.c: Add -fipa-cp-clone
+	* gcc.dg/ipa/ipa-4.c: Add -fipa-cp-clone
+	* gcc.dg/ipa/ipa-5.c: Add -fipa-cp-clone
+	* gcc.dg/ipa/ipa-7.c: Add -fipa-cp-clone
+
 2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/35321

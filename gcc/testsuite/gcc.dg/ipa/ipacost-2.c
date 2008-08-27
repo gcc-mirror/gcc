@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-cp -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized"  } */
+/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized"  } */
 
 int array[100];
 
@@ -55,6 +55,5 @@ main()
 /* { dg-final { scan-ipa-dump-times "versioned function i_can_not_be_propagated_fully " 1 "cp"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated" "optimized"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated" "optimized"  } } */
-/* { dg-final { scan-tree-dump "symbol: array" "optimized"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
