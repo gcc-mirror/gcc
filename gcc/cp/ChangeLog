@@ -1,3 +1,7 @@
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* cp-tree.h: Fix #error directive.
+
 2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* typeck.c (type_after_usual_arithmetic_conversions): Don't do the

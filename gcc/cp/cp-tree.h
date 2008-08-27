@@ -48,8 +48,8 @@ extern void cp_cpp_error			(cpp_reader *, int,
      ATTRIBUTE_GCC_CXXDIAG(3,0);
 #ifdef GCC_TOPLEV_H
 #error \
-"In order for the format checking to accept the C++ front end diagnostic\n"
-"framework extensions, you must include this file before toplev.h, not after."
+In order for the format checking to accept the C++ front end diagnostic \
+framework extensions, you must include this file before toplev.h, not after.
 #endif
 #include "toplev.h"
 #include "diagnostic.h"
