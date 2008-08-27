@@ -1,3 +1,24 @@
+2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/hashtable (_Hashtable<>): Add missing pointer and
+	const_pointer typedefs.
+	* testsuite/tr1/6_containers/unordered_set/requirements/typedef.cc:
+	Add.
+	* testsuite/tr1/6_containers/unordered_map/requirements/typedef.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/requirements/
+	typedef.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/requirements/
+	typedef.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/typedef.cc:
+	Likewise.
+
 2008-08-27  Paul Brook  <paul@codesourcery.com>
 
 	* libsupc++/eh_call.cc (__cxa_call_unexpected): Fix name of
