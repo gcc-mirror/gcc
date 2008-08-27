@@ -1,3 +1,9 @@
+2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/17880
+	* g++.dg/warn/sequence-pt-1.C: New.
+	* g++.dg/warn/sequence-pt-pr17880.C: New.
+
 2008-08-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/cpp0x/scoped_enum_examples.C: New.
