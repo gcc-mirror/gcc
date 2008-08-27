@@ -739,7 +739,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
-	arm*-*-uclinux-*eabi)
+	arm*-*-uclinux*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h"
 	    tmake_file="$tmake_file arm/t-bpabi"
   	    # The BPABI long long divmod functions return a 128-bit value in
