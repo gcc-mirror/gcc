@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.  
    Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -200,6 +201,11 @@ enum reg_class
 #define GENERAL_REGS GR_REGS
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
+
+#define IRA_COVER_CLASSES	\
+{				\
+  GR_REGS, LIM_REG_CLASSES	\
+}
 
 #define REG_CLASS_NAMES						\
 {								\
