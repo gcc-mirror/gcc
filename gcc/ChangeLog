@@ -1,5 +1,10 @@
 2008-08-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu_mfcio.h (mfc_begin_critical_section): New function.
+	(mfc_end_critical_section): Likewise.
+
+2008-08-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Propagate
 	all type qualifiers from element type to vector type.
 
