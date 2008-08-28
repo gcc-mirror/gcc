@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007 Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -317,6 +317,11 @@ enum reg_class
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
+
+#define IRA_COVER_CLASSES		\
+{					\
+  GENERAL_REGS, LIM_REG_CLASSES		\
+}
 
 /* Give names of register classes as strings for dump file.  */
 
