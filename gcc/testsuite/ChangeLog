@@ -1,3 +1,17 @@
+2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/30949
+	* gcc.dg/pr30949.c: New.
+	* gcc.dg/transparent-union-1.c: Update.
+	* gcc.dg/cleanup-1.c: Update.
+	* gcc.dg/assign-warn-2.c: Update.
+	* gcc.dg/conv-2.c: Update.
+	* gcc.dg/Wpointer-sign-pedantic.c: Update.
+	* gcc.dg/Wpointer-sign-Wall.c: Update.
+	* gcc.dg/assign-warn-1.c: Update.
+	* gcc.dg/dfp/composite-type.c: Update.
+	* gcc.dg/noncompile/20020213-1.c: Update.
+	
 2008-08-28  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/typebound_call_1.f03: New test.

@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-Wpointer-sign" } */
 
-void f1(long *);
-void f2(unsigned long *);
+void f1(long *); /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" } */
+void f2(unsigned long *); /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" } */
 
 int main()
 {

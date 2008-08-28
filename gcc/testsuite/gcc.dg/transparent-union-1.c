@@ -81,3 +81,5 @@ main (void)
   f13 (&l);
   return 0;
 }
+
+/* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" { target *-*-* } 0 } */
