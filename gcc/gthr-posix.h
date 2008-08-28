@@ -104,7 +104,9 @@ __gthrw3(sched_yield)
 __gthrw3(pthread_mutex_lock)
 __gthrw3(pthread_mutex_trylock)
 #ifdef _POSIX_TIMEOUTS
+#if _POSIX_TIMEOUTS >= 0
 __gthrw3(pthread_mutex_timedlock)
+#endif
 #endif /* _POSIX_TIMEOUTS */
 __gthrw3(pthread_mutex_unlock)
 __gthrw3(pthread_mutex_init)
@@ -131,7 +133,9 @@ __gthrw(sched_yield)
 __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
 #ifdef _POSIX_TIMEOUTS
+#if _POSIX_TIMEOUTS >= 0
 __gthrw(pthread_mutex_timedlock)
+#endif
 #endif /* _POSIX_TIMEOUTS */
 __gthrw(pthread_mutex_unlock)
 __gthrw(pthread_mutex_init)
@@ -768,6 +772,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 }
 
 #ifdef _POSIX_TIMEOUTS
+#if _POSIX_TIMEOUTS >= 0
 static inline int
 __gthread_mutex_timedlock (__gthread_mutex_t *mutex,
 			   const __gthread_time_t *abs_timeout)
@@ -777,6 +782,7 @@ __gthread_mutex_timedlock (__gthread_mutex_t *mutex,
   else
     return 0;
 }
+#endif
 #endif
 
 static inline int
@@ -823,12 +829,14 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
 }
 
 #ifdef _POSIX_TIMEOUTS
+#if _POSIX_TIMEOUTS >= 0
 static inline int
 __gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *mutex,
 				     const __gthread_time_t *abs_timeout)
 {
   return __gthread_mutex_timedlock (mutex, abs_timeout);
 }
+#endif
 #endif
 
 static inline int

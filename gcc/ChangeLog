@@ -1,3 +1,10 @@
+2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* gtrh-posix.h: Fix uses of _POSIX_TIMEOUTS per the normal Posix
+	rule that a symbolic constant must be defined and >= 0 for the
+	corresponding facility to be present at compile-time.
+	* gthr-posix.c: Likewise.
+
 2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.h (ISA_HAS_DMUL3): New macro.

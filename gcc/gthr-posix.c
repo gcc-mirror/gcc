@@ -112,12 +112,14 @@ pthread_mutex_trylock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
 }
 
 #ifdef _POSIX_TIMEOUTS
+#if _POSIX_TIMEOUTS >= 0
 int
 pthread_mutex_timedlock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED,
 			 const struct timespec *abs_timeout ATTRIBUTE_UNUSED)
 {
   return 0;
 }
+#endif
 #endif /* _POSIX_TIMEOUTS */
 
 int
