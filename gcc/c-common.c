@@ -1568,7 +1568,7 @@ conversion_warning (tree type, tree expr)
   for (i = 0; i < expr_num_operands; i++)
     {
       tree op = TREE_OPERAND (expr, i);
-      if (DECL_P (op) && DECL_ARTIFICIAL (op))
+      if (op && DECL_P (op) && DECL_ARTIFICIAL (op))
 	return;
     }
 
