@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="Makefile.in"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir MAINT enable_shared LN_S x_ada_cflags default_gnatlib_target CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT warn_cflags LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir MAINT enable_shared LN_S default_gnatlib_target CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT warn_cflags LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 ac_pwd=`pwd`
 
@@ -1491,13 +1491,6 @@ else
   echo "$as_me:$LINENO: result: no, using $LN_S" >&5
 echo "${ECHO_T}no, using $LN_S" >&6
 fi
-
-
-# Determine x_ada_cflags
-case $host in
-  hppa*) x_ada_cflags=-mdisable-indexing ;;
-  *) x_ada_cflags= ;;
-esac
 
 
 # Determine what to build for 'gnatlib'
@@ -3114,7 +3107,6 @@ s,@target_subdir@,$target_subdir,;t t
 s,@MAINT@,$MAINT,;t t
 s,@enable_shared@,$enable_shared,;t t
 s,@LN_S@,$LN_S,;t t
-s,@x_ada_cflags@,$x_ada_cflags,;t t
 s,@default_gnatlib_target@,$default_gnatlib_target,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
