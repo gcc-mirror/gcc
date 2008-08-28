@@ -137,6 +137,7 @@ static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (bool);
 static bool spu_vector_alignment_reachable (const_tree, bool);
+static tree spu_builtin_vec_perm (tree, tree *);
 static int spu_sms_res_mii (struct ddg *g);
 
 extern const char *reg_names[];
@@ -287,6 +288,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
+
+#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
+#define TARGET_VECTORIZE_BUILTIN_VEC_PERM spu_builtin_vec_perm
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE spu_libgcc_cmp_return_mode
@@ -5541,6 +5545,60 @@ spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed
 
   /* All other types are naturally aligned.  */
   return true;
+}
+
+/* Implement targetm.vectorize.builtin_vec_perm.  */
+tree
+spu_builtin_vec_perm (tree type, tree *mask_element_type)
+{
+  struct spu_builtin_description *d;
+
+  *mask_element_type = unsigned_char_type_node;
+
+  switch (TYPE_MODE (type))
+    {
+    case V16QImode:
+      if (TYPE_UNSIGNED (type))
+        d = &spu_builtins[SPU_SHUFFLE_0];
+      else
+        d = &spu_builtins[SPU_SHUFFLE_1];
+      break;
+
+    case V8HImode:
+      if (TYPE_UNSIGNED (type))
+        d = &spu_builtins[SPU_SHUFFLE_2];
+      else
+        d = &spu_builtins[SPU_SHUFFLE_3];
+      break;
+
+    case V4SImode:
+      if (TYPE_UNSIGNED (type))
+        d = &spu_builtins[SPU_SHUFFLE_4];
+      else
+        d = &spu_builtins[SPU_SHUFFLE_5];
+      break;
+
+    case V2DImode:
+      if (TYPE_UNSIGNED (type))
+        d = &spu_builtins[SPU_SHUFFLE_6];
+      else
+        d = &spu_builtins[SPU_SHUFFLE_7];
+      break;
+
+    case V4SFmode:
+      d = &spu_builtins[SPU_SHUFFLE_8];
+      break;
+
+    case V2DFmode:
+      d = &spu_builtins[SPU_SHUFFLE_9];
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  gcc_assert (d);
+  return d->fndecl;
 }
 
 /* Count the total number of instructions in each pipe and return the

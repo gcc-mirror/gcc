@@ -1802,7 +1802,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
   slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   for (j = 0; VEC_iterate (slp_instance, slp_instances, j, instance); j++)
-    vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
+    vect_free_slp_instance (instance);
+
   VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
 

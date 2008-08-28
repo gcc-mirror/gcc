@@ -438,7 +438,10 @@ struct gcc_target
     /* Return true if vector alignment is reachable (by peeling N
        iterations) for the given type.  */
     bool (* vector_alignment_reachable) (const_tree, bool);
-  } vectorize;
+
+    /* Target builtin that implements vector permute.  */
+    tree (* builtin_vec_perm) (tree, tree*);
+} vectorize;
 
   /* The initial value of target_flags.  */
   int default_target_flags;

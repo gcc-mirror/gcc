@@ -1,3 +1,16 @@
+2008-08-28  Ira Rosen  <irar@il.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_perm): New.
+	* gcc.dg/vect/slp-perm-1.c: New testcase.
+	* gcc.dg/vect/slp-perm-2.c: New testcase.
+	* gcc.dg/vect/slp-perm-3.c: New testcase.
+	* gcc.dg/vect/slp-perm-4.c: New testcase.
+	* gcc.dg/vect/slp-perm-5.c: New testcase.
+	* gcc.dg/vect/slp-perm-6.c: New testcase.
+	* gcc.dg/vect/slp-perm-7.c: New testcase.
+	* gcc.dg/vect/slp-perm-8.c: New testcase.
+	* gcc.dg/vect/slp-perm-9.c: New testcase.
+
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 37217

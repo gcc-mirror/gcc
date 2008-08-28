@@ -572,6 +572,11 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #undef TARG_VEC_STORE_COST
 #define TARG_VEC_STORE_COST          1
 
+/* Cost of vector permutation.  */
+#ifndef TARG_VEC_PERMUTE_COST
+#define TARG_VEC_PERMUTE_COST        1 
+#endif
+
 
 /* Misc */
 
