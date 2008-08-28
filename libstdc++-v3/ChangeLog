@@ -1,3 +1,22 @@
+2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/tr1/6_containers/unordered_set/requirements/typedef.cc:
+	Rename to .../typedefs.cc.
+	* testsuite/tr1/6_containers/unordered_map/requirements/typedef.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/requirements/
+	typedef.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/requirements/
+	typedef.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/typedef.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/typedef.cc:
+	Likewise.
+
 2008-08-28  Chris Fairles  <chris.fairles@gmail.com>
 
         * acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): New. Checks for gthread
