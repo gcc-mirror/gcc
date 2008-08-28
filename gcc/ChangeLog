@@ -1,5 +1,7 @@
 2008-08-28  Nick Clifton  <nickc@redhat.com>
 
+	* config/mcore/mcore.h (IRA_COVER_CLASSES): Define.
+
 	* config/iq2000/iq2000.h (IRA_COVER_CLASSES): Define.
 
 	* config/fr30/fr30.h (IRA_COVER_CLASSES): Define.
