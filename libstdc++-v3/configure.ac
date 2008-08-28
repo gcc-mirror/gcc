@@ -100,7 +100,7 @@ GLIBCXX_ENABLE_PCH($is_hosted)
 GLIBCXX_ENABLE_ATOMIC_BUILTINS
 GLIBCXX_ENABLE_THREADS
 
-# Checks for compiler support that don't require linking.
+# Checks for compiler support that doesn't require linking.
 GLIBCXX_CHECK_COMPILER_FEATURES
 GLIBCXX_CHECK_STANDARD_LAYOUT
 
@@ -119,7 +119,7 @@ GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 
-# Checks for operating systems support that don't require linking.
+# Checks for operating systems support that doesn't require linking.
 GLIBCXX_CHECK_SYSTEM_ERROR
 
 # For the streamoff typedef.
@@ -149,6 +149,9 @@ GLIBCXX_CHECK_GETTIMEOFDAY
 # For clock_gettime support.
 # NB: The default is [no], because otherwise it requires linking.
 GLIBCXX_ENABLE_CLOCK_GETTIME([no])
+
+# For gthread support
+GLIBCXX_CHECK_GTHREADS
 
 AC_LC_MESSAGES
 

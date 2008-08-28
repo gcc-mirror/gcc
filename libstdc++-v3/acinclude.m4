@@ -2816,6 +2816,45 @@ AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
 ])
 
 
+dnl
+dnl Check if gthread implementation defines the types and functions
+dnl required by the c++0x thread library.  Conforming gthread
+dnl implementations can define __GTHREADS_CXX0X to enable use with c++0x.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
+
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  AC_MSG_CHECKING([for gthreads library])
+
+  AC_TRY_COMPILE([#include "gthr.h"],
+    [
+     	#ifndef __GTHREADS_CXX0X
+	#error
+	#endif
+    ], [ac_has_gthreads=yes], [ac_has_gthreads=no])
+
+  AC_MSG_RESULT([$ac_has_gthreads])
+
+  if test x"$ac_has_gthreads" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_HAS_GTHREADS, 1,
+              [Define if gthreads library is available.])
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
