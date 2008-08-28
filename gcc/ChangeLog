@@ -1,3 +1,8 @@
+2008-08-28  Joey Ye  <joey.ye@intel.com>
+
+	* doc/extend.texi: Document AVX built-in functions.
+	* doc/invoke.texi: Document -mavx.
+
 2008-08-28  H.J. Lu  <hongjiu.lu@intel.com>
 	    Joey Ye  <joey.ye@intel.com>
 	    Xuepeng Guo  <xuepeng.guo@intel.com>
