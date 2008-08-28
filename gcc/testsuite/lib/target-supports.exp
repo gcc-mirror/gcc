@@ -2571,3 +2571,14 @@ proc check_effective_target_automatic_stack_alignment  { } {
 	return 0
     }
 }
+
+# Return 1 if avx instructions can be compiled.
+
+proc check_effective_target_avx { } {
+    return [check_no_compiler_messages avx object {
+	void _mm256_zeroall (void)
+	{
+	   __builtin_ia32_vzeroall ();
+	}
+    } "-O2 -mavx" ]
+}

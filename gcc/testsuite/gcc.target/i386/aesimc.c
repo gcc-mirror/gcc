@@ -2,10 +2,18 @@
 /* { dg-require-effective-target aes } */
 /* { dg-options "-O2 -maes" } */
 
+#ifndef CHECK_H
+#define CHECK_H "aes-check.h"
+#endif
+
+#ifndef TEST
+#define TEST aes_test
+#endif
+
+#include CHECK_H
+
 #include <wmmintrin.h>
 #include <string.h>
-
-#include "aes-check.h"
 
 extern void abort (void);
 
@@ -34,7 +42,7 @@ init_data (__m128i *s1, __m128i *d)
 }
 
 static void
-aes_test (void)
+TEST (void)
 {
   int i;
 

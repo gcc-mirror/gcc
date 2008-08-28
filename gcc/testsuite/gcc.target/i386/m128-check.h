@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <xmmintrin.h>
+
+#ifdef __SSE2__
 #include <emmintrin.h>
 
 typedef union
@@ -10,8 +13,20 @@ typedef union
 typedef union
 {
   __m128i x;
+  unsigned char a[16];
+} union128i_ub;
+
+typedef union
+{
+  __m128i x;
   short a[8];
 } union128i_w;
+
+typedef union
+{
+  __m128i x;
+  unsigned short a[8];
+} union128i_uw;
 
 typedef union
 {
@@ -27,15 +42,16 @@ typedef union
 
 typedef union
 {
-  __m128  x;
-  float a[4];
-} union128;
-
-typedef union
-{
   __m128d x;
   double a[2];
 } union128d;
+#endif
+
+typedef union
+{
+  __m128  x;
+  float a[4];
+} union128;
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
@@ -65,9 +81,82 @@ check_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
   return err;						\
 }
 
+#ifdef __SSE2__
 CHECK_EXP (union128i_b, char, "%d")
+CHECK_EXP (union128i_ub, unsigned char, "%d")
 CHECK_EXP (union128i_w, short, "%d")
+CHECK_EXP (union128i_uw, unsigned short, "%d")
 CHECK_EXP (union128i_d, int, "0x%x")
 CHECK_EXP (union128i_q, long long, "0x%llx")
-CHECK_EXP (union128, float, "%f")
 CHECK_EXP (union128d, double, "%f")
+#endif
+
+CHECK_EXP (union128, float, "%f")
+
+#define ESP_FLOAT 0.000001
+#define ESP_DOUBLE 0.000001
+#define CHECK_ARRAY(ARRAY, TYPE, FMT)                   \
+static int                                              \
+__attribute__((noinline, unused))                       \
+checkV##ARRAY (const TYPE *v, const TYPE *e, int n)     \
+{                                                       \
+  int i;                                                \
+  int err = 0;                                          \
+                                                        \
+  for (i = 0; i < n; i++)                               \
+    if (v[i] != e[i])                                   \
+      {                                                 \
+        err++;                                          \
+        PRINTF ("%i: " FMT " != " FMT "\n",             \
+                i, v[i], e[i]);                 \
+      }                                                 \
+  return err;                                           \
+}
+
+CHECK_ARRAY(i, int, "0x%x")
+CHECK_ARRAY(l, long long, "0x%llx")
+
+#define CHECK_FP_ARRAY(ARRAY, TYPE, ESP, FMT)                   \
+static int                                              \
+__attribute__((noinline, unused))                       \
+checkV##ARRAY (const TYPE *v, const TYPE *e, int n)     \
+{                                                       \
+  int i;                                                \
+  int err = 0;                                          \
+                                                        \
+  for (i = 0; i < n; i++)                               \
+    if (v[i] > (e[i] + (ESP)) || v[i] < (e[i] - (ESP))) \
+    if (e[i] != v[i])                                   \
+      {                                                 \
+        err++;                                          \
+        PRINTF ("%i: " FMT " != " FMT "\n",             \
+                i, v[i], e[i]);                 \
+      }                                                 \
+  return err;                                           \
+}
+
+CHECK_FP_ARRAY (d, double, ESP_DOUBLE, "%f")
+CHECK_FP_ARRAY (f, float, ESP_FLOAT, "%f")
+
+union ieee754_float
+{
+   float d;
+   struct 
+   {
+      unsigned long frac : 23;
+      unsigned exp : 8;
+      unsigned sign : 1;
+   } bits __attribute__((packed));
+};
+
+union ieee754_double
+{
+   double d;
+   struct 
+   {
+      unsigned long frac1 : 32;
+      unsigned long frac0 : 20;
+      unsigned exp : 11;
+      unsigned sign : 1;
+   } bits __attribute__((packed));
+};

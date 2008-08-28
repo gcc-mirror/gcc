@@ -2,7 +2,15 @@
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
 
-#include "sse4_1-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse4_1-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse4_1_test
+#endif
+
+#include CHECK_H
 
 #include <smmintrin.h>
 #include <string.h>
@@ -41,7 +49,7 @@ check_pblendw (__m128i *dst, short *src1, short *src2)
 }
 
 static void
-sse4_1_test (void)
+TEST (void)
 {
   __m128i x, y;
   union

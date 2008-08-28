@@ -2,7 +2,16 @@
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.2" } */
 
-#include "sse4_2-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse4_2-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse4_2_test
+#endif
+
+#include CHECK_H
+
 #include "sse4_2-pcmpstr.h"
 
 #define NUM 1024
@@ -20,7 +29,7 @@
 
 
 static void
-sse4_2_test (void)
+TEST (void)
 {
   union
     {

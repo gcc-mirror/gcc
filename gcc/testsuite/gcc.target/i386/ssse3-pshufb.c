@@ -2,11 +2,21 @@
 /* { dg-require-effective-target ssse3 } */
 /* { dg-options "-O2 -fno-strict-aliasing -mssse3" } */
 
-#include "ssse3-check.h"
+#ifndef CHECK_H
+#define CHECK_H "ssse3-check.h"
+#endif
+
+#ifndef TEST
+#define TEST ssse3_test
+#endif
+
+#include CHECK_H
+
 #include "ssse3-vals.h"
 
 #include <tmmintrin.h>
 
+#ifndef __AVX__
 /* Test the 64-bit form */
 static void
 ssse3_test_pshufb (int *i1, int *i2, int *r)
@@ -16,6 +26,7 @@ ssse3_test_pshufb (int *i1, int *i2, int *r)
   *(__m64 *)r = _mm_shuffle_pi8 (t1, t2);
   _mm_empty ();
 }
+#endif
 
 /* Test the 128-bit form */
 static void
@@ -27,6 +38,7 @@ ssse3_test_pshufb128 (int *i1, int *i2, int *r)
   *(__m128i *)r = _mm_shuffle_epi8 (t1, t2);
 }
 
+#ifndef __AVX__
 /* Routine to manually compute the results */
 static void
 compute_correct_result_64 (int *i1, int *i2, int *r)
@@ -48,6 +60,7 @@ compute_correct_result_64 (int *i1, int *i2, int *r)
 	bout[i] = b1[8 + (select & 0x7)];
     }
 }
+#endif
 
 static void
 compute_correct_result_128 (int *i1, int *i2, int *r)
@@ -69,7 +82,7 @@ compute_correct_result_128 (int *i1, int *i2, int *r)
 }
 
 static void
-ssse3_test (void)
+TEST (void)
 {
   int i;
   int r [4] __attribute__ ((aligned(16)));
@@ -78,6 +91,7 @@ ssse3_test (void)
 
   for (i = 0; i < 256; i += 8)
     {
+#ifndef __AVX__
       /* Manually compute the result */
       compute_correct_result_64 (&vals[i + 0], &vals[i + 4], ck);
 
@@ -85,6 +99,7 @@ ssse3_test (void)
       ssse3_test_pshufb (&vals[i + 0], &vals[i + 4], &r[0]);
       ssse3_test_pshufb (&vals[i + 2], &vals[i + 6], &r[2]);
       fail += chk_128 (ck, r);
+#endif
 
       /* Recompute the result for 128-bits */
       compute_correct_result_128 (&vals[i + 0], &vals[i + 4], ck);
