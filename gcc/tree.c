@@ -6319,6 +6319,21 @@ int_fits_type_p (const_tree c, const_tree type)
      for "unknown if constant fits", 0 for "constant known *not* to fit" and 1
      for "constant known to fit".  */
 
+  if (TREE_TYPE (c) == sizetype
+      && TYPE_UNSIGNED (TREE_TYPE (c))
+      && TREE_INT_CST_HIGH (c) == -1
+      && !TREE_OVERFLOW (c))
+      /* So c is an unsigned integer which type is sizetype.
+         sizetype'd integers are sign extended even though they are
+	 unsigned. If the integer value fits in the lower end word of c,
+	 and if the higher end word has all its bits set to 1, that
+	 means the higher end bits are set to 1 only for sign extension.
+	 So let's convert c into an equivalent zero extended unsigned
+	 integer.  */
+      c = force_fit_type_double (size_type_node,
+				 TREE_INT_CST_LOW (c),
+				 TREE_INT_CST_HIGH (c),
+				 false, false);
   /* Check if C >= type_low_bound.  */
   if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
