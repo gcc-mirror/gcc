@@ -24,6 +24,7 @@
 #define GCC_ARM_PROTOS_H
 
 extern void arm_override_options (void);
+extern void arm_optimization_options (int, int);
 extern int use_return_insn (int, rtx);
 extern int arm_regno_class (int);
 extern void arm_load_pic_register (unsigned long);

@@ -1,3 +1,18 @@
+2008-08-28  Paul Brook  <paul@codesourcery.com>
+	Mark Shinwell  <shinwell@codesourcery.com>
+	Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* config/arm/arm.c (TARGET_MAX_ANCHOR_OFFSET): New.
+	(TARGET_MIN_ANCHOR_OFFSET): New.
+	(arm_override_options): Set correct anchor ranges for Thumb-1
+	and Thumb-2 if required.
+	(legitimize_pic_address): Handle case involving a TLS symbol
+	reference with an addend.
+	(arm_optimization_options): Enable section anchors at -O1 and
+	above.
+	* config/arm/arm.h (OPTIMIZATION_OPTIONS): New.
+	* config/arm/arm-protos.h (arm_optimization_options): New.
+
 2008-08-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.h (IRA_COVER_CLASSES): Define.

@@ -427,6 +427,9 @@ extern int arm_arch_hwdiv;
 
 #define OVERRIDE_OPTIONS  arm_override_options ()
 
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)		\
+	arm_optimization_options ((LEVEL), (SIZE))
+
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
    Subtargets can override these if required.  */
