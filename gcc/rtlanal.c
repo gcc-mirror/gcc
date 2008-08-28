@@ -3244,6 +3244,64 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
   return info.representable_p;
 }
 
+/* Return the number of a YMODE register to which
+
+       (subreg:YMODE (reg:XMODE XREGNO) OFFSET)
+
+   can be simplified.  Return -1 if the subreg can't be simplified.
+
+   XREGNO is a hard register number.  */
+
+int
+simplify_subreg_regno (unsigned int xregno, enum machine_mode xmode,
+		       unsigned int offset, enum machine_mode ymode)
+{
+  struct subreg_info info;
+  unsigned int yregno;
+
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  /* Give the backend a chance to disallow the mode change.  */
+  if (GET_MODE_CLASS (xmode) != MODE_COMPLEX_INT
+      && GET_MODE_CLASS (xmode) != MODE_COMPLEX_FLOAT
+      && REG_CANNOT_CHANGE_MODE_P (xregno, xmode, ymode))
+    return -1;
+#endif
+
+  /* We shouldn't simplify stack-related registers.  */
+  if ((!reload_completed || frame_pointer_needed)
+      && (xregno == FRAME_POINTER_REGNUM
+	  || xregno == HARD_FRAME_POINTER_REGNUM))
+    return -1;
+
+  if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      && xregno == ARG_POINTER_REGNUM)
+    return -1;
+
+  if (xregno == STACK_POINTER_REGNUM)
+    return -1;
+
+  /* Try to get the register offset.  */
+  subreg_get_info (xregno, xmode, offset, ymode, &info);
+  if (!info.representable_p)
+    return -1;
+
+  /* Make sure that the offsetted register value is in range.  */
+  yregno = xregno + info.offset;
+  if (!HARD_REGISTER_NUM_P (yregno))
+    return -1;
+
+  /* See whether (reg:YMODE YREGNO) is valid.
+
+     ??? We allow invalid registers if (reg:XMODE XREGNO) is also invalid.
+     This is a kludge to work around how float/complex arguments are passed
+     on 32-bit SPARC and should be fixed.  */
+  if (!HARD_REGNO_MODE_OK (yregno, ymode)
+      && HARD_REGNO_MODE_OK (xregno, xmode))
+    return -1;
+
+  return (int) yregno;
+}
+
 /* Return the final regno that a subreg expression refers to.  */
 unsigned int
 subreg_regno (const_rtx x)

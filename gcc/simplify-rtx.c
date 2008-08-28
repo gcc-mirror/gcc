@@ -5069,35 +5069,13 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      suppress this simplification.  If the hard register is the stack,
      frame, or argument pointer, leave this as a SUBREG.  */
 
-  if (REG_P (op)
-      && REGNO (op) < FIRST_PSEUDO_REGISTER
-#ifdef CANNOT_CHANGE_MODE_CLASS
-      && ! (REG_CANNOT_CHANGE_MODE_P (REGNO (op), innermode, outermode)
-	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_INT
-	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_FLOAT)
-#endif
-      && ((reload_completed && !frame_pointer_needed)
-	  || (REGNO (op) != FRAME_POINTER_REGNUM
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	      && REGNO (op) != HARD_FRAME_POINTER_REGNUM
-#endif
-	     ))
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      && REGNO (op) != ARG_POINTER_REGNUM
-#endif
-      && REGNO (op) != STACK_POINTER_REGNUM
-      && subreg_offset_representable_p (REGNO (op), innermode,
-					byte, outermode))
+  if (REG_P (op) && HARD_REGISTER_P (op))
     {
-      unsigned int regno = REGNO (op);
-      unsigned int final_regno
-	= regno + subreg_regno_offset (regno, innermode, byte, outermode);
+      unsigned int regno, final_regno;
 
-      /* ??? We do allow it if the current REG is not valid for
-	 its mode.  This is a kludge to work around how float/complex
-	 arguments are passed on 32-bit SPARC and should be fixed.  */
-      if (HARD_REGNO_MODE_OK (final_regno, outermode)
-	  || ! HARD_REGNO_MODE_OK (regno, innermode))
+      regno = REGNO (op);
+      final_regno = simplify_subreg_regno (regno, innermode, byte, outermode);
+      if (HARD_REGISTER_NUM_P (final_regno))
 	{
 	  rtx x;
 	  int final_offset = byte;

@@ -2999,12 +2999,11 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      if (REG_P (SUBREG_REG (operand))
 		  && REGNO (SUBREG_REG (operand)) < FIRST_PSEUDO_REGISTER)
 		{
-		  if (!subreg_offset_representable_p
-			(REGNO (SUBREG_REG (operand)),
-			 GET_MODE (SUBREG_REG (operand)),
-			 SUBREG_BYTE (operand),
-			 GET_MODE (operand)))
-		     force_reload = 1;
+		  if (simplify_subreg_regno (REGNO (SUBREG_REG (operand)),
+					     GET_MODE (SUBREG_REG (operand)),
+					     SUBREG_BYTE (operand),
+					     GET_MODE (operand)) < 0)
+		    force_reload = 1;
 		  offset += subreg_regno_offset (REGNO (SUBREG_REG (operand)),
 						 GET_MODE (SUBREG_REG (operand)),
 						 SUBREG_BYTE (operand),
