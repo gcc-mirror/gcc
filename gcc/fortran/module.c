@@ -1695,6 +1695,20 @@ static const mstring attr_bits[] =
     minit (NULL, -1)
 };
 
+/* For binding attributes.  */
+static const mstring binding_passing[] =
+{
+    minit ("PASS", 0),
+    minit ("NOPASS", 1),
+    minit (NULL, -1)
+};
+static const mstring binding_overriding[] =
+{
+    minit ("OVERRIDABLE", 0),
+    minit ("NON_OVERRIDABLE", 1),
+    minit (NULL, -1)
+};
+
 
 /* Specialization of mio_name.  */
 DECL_MIO_NAME (ab_attribute)
@@ -2762,6 +2776,7 @@ static const mstring expr_types[] = {
     minit ("STRUCTURE", EXPR_STRUCTURE),
     minit ("ARRAY", EXPR_ARRAY),
     minit ("NULL", EXPR_NULL),
+    minit ("COMPCALL", EXPR_COMPCALL),
     minit (NULL, -1)
 };
 
@@ -3025,6 +3040,10 @@ mio_expr (gfc_expr **ep)
 
     case EXPR_NULL:
       break;
+
+    case EXPR_COMPCALL:
+      gcc_unreachable ();
+      break;
     }
 
   mio_rparen ();
@@ -3181,6 +3200,54 @@ mio_namespace_ref (gfc_namespace **nsp)
 /* Save/restore the f2k_derived namespace of a derived-type symbol.  */
 
 static void
+mio_typebound_proc (gfc_typebound_proc** proc)
+{
+  int flag;
+
+  if (iomode == IO_INPUT)
+    {
+      *proc = gfc_get_typebound_proc ();
+      (*proc)->where = gfc_current_locus;
+    }
+  gcc_assert (*proc);
+
+  mio_lparen ();
+  mio_symtree_ref (&(*proc)->target);
+
+  (*proc)->access = MIO_NAME (gfc_access) ((*proc)->access, access_types);
+
+  (*proc)->nopass = mio_name ((*proc)->nopass, binding_passing);
+  (*proc)->non_overridable = mio_name ((*proc)->non_overridable,
+				       binding_overriding);
+
+  if (iomode == IO_INPUT)
+    (*proc)->pass_arg = NULL;
+
+  flag = (int) (*proc)->pass_arg_num;
+  mio_integer (&flag);
+  (*proc)->pass_arg_num = (unsigned) flag;
+
+  mio_rparen ();
+}
+
+static void
+mio_typebound_symtree (gfc_symtree* st)
+{
+  if (iomode == IO_OUTPUT && !st->typebound)
+    return;
+
+  if (iomode == IO_OUTPUT)
+    {
+      mio_lparen ();
+      mio_allocated_string (st->name);
+    }
+  /* For IO_INPUT, the above is done in mio_f2k_derived.  */
+
+  mio_typebound_proc (&st->typebound);
+  mio_rparen ();
+}
+
+static void
 mio_finalizer (gfc_finalizer **f)
 {
   if (iomode == IO_OUTPUT)
@@ -3220,6 +3287,27 @@ mio_f2k_derived (gfc_namespace *f2k)
 	  mio_finalizer (&cur);
 	  cur->next = f2k->finalizers;
 	  f2k->finalizers = cur;
+	}
+    }
+  mio_rparen ();
+
+  /* Handle type-bound procedures.  */
+  mio_lparen ();
+  if (iomode == IO_OUTPUT)
+    gfc_traverse_symtree (f2k->sym_root, &mio_typebound_symtree);
+  else
+    {
+      while (peek_atom () == ATOM_LPAREN)
+	{
+	  gfc_symtree* st;
+
+	  mio_lparen (); 
+
+	  require_atom (ATOM_STRING);
+	  gfc_get_sym_tree (atom_string, f2k, &st);
+	  gfc_free (atom_string);
+
+	  mio_typebound_symtree (st);
 	}
     }
   mio_rparen ();

@@ -1676,7 +1676,7 @@ cleanup:
 }
 
 
-/* Used by match_varspec() to extend the reference list by one
+/* Used by gfc_match_varspec() to extend the reference list by one
    element.  */
 
 static gfc_ref *
@@ -1699,15 +1699,17 @@ extend_ref (gfc_expr *primary, gfc_ref *tail)
 /* Match any additional specifications associated with the current
    variable like member references or substrings.  If equiv_flag is
    set we only match stuff that is allowed inside an EQUIVALENCE
-   statement.  */
+   statement.  sub_flag tells whether we expect a type-bound procedure found
+   to be a subroutine as part of CALL or a FUNCTION.  */
 
-static match
-match_varspec (gfc_expr *primary, int equiv_flag)
+match
+gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_ref *substring, *tail;
   gfc_component *component;
   gfc_symbol *sym = primary->symtree->n.sym;
+  gfc_symtree *tbp;
   match m;
   bool unknown;
 
@@ -1751,11 +1753,59 @@ match_varspec (gfc_expr *primary, int equiv_flag)
 
   for (;;)
     {
+      gfc_try t;
+
       m = gfc_match_name (name);
       if (m == MATCH_NO)
 	gfc_error ("Expected structure component name at %C");
       if (m != MATCH_YES)
 	return MATCH_ERROR;
+
+      tbp = gfc_find_typebound_proc (sym, &t, name, false);
+      if (tbp)
+	{
+	  gfc_symbol* tbp_sym;
+
+	  if (t == FAILURE)
+	    return MATCH_ERROR;
+
+	  gcc_assert (!tail || !tail->next);
+	  gcc_assert (primary->expr_type == EXPR_VARIABLE);
+
+	  tbp_sym = tbp->typebound->target->n.sym;
+
+	  primary->expr_type = EXPR_COMPCALL;
+	  primary->value.compcall.tbp = tbp;
+	  primary->ts = tbp_sym->ts;
+
+	  m = gfc_match_actual_arglist (tbp_sym->attr.subroutine,
+					&primary->value.compcall.actual);
+	  if (m == MATCH_ERROR)
+	    return MATCH_ERROR;
+	  if (m == MATCH_NO)
+	    {
+	      if (sub_flag)
+		primary->value.compcall.actual = NULL;
+	      else
+		{
+		  gfc_error ("Expected argument list at %C");
+		  return MATCH_ERROR;
+		}
+	    }
+
+	  if (sub_flag && !tbp_sym->attr.subroutine)
+	    {
+	      gfc_error ("'%s' at %C should be a SUBROUTINE", name);
+	      return MATCH_ERROR;
+	    }
+	  if (!sub_flag && !tbp_sym->attr.function)
+	    {
+	      gfc_error ("'%s' at %C should be a FUNCTION", name);
+	      return MATCH_ERROR;
+	    }
+
+	  break;
+	}
 
       component = gfc_find_component (sym, name, false, false);
       if (component == NULL)
@@ -2387,7 +2437,7 @@ gfc_match_rvalue (gfc_expr **result)
       e->expr_type = EXPR_VARIABLE;
       e->symtree = symtree;
 
-      m = match_varspec (e, 0);
+      m = gfc_match_varspec (e, 0, false);
       break;
 
     case FL_PARAMETER:
@@ -2404,7 +2454,7 @@ gfc_match_rvalue (gfc_expr **result)
 	}
 
       e->symtree = symtree;
-      m = match_varspec (e, 0);
+      m = gfc_match_varspec (e, 0, false);
 
       if (sym->ts.is_c_interop || sym->ts.is_iso_c)
 	break;
@@ -2461,7 +2511,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  e = gfc_get_expr ();
 	  e->expr_type = EXPR_VARIABLE;
 	  e->symtree = symtree;
-	  m = match_varspec (e, 0);
+	  m = gfc_match_varspec (e, 0, false);
 	  break;
 	}
 
@@ -2488,7 +2538,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  e->symtree = symtree;
 	  e->expr_type = EXPR_VARIABLE;
 
-	  m = match_varspec (e, 0);
+	  m = gfc_match_varspec (e, 0, false);
 	  break;
 	}
 
@@ -2584,7 +2634,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  e = gfc_get_expr ();
 	  e->symtree = symtree;
 	  e->expr_type = EXPR_VARIABLE;
-	  m = match_varspec (e, 0);
+	  m = gfc_match_varspec (e, 0, false);
 	  break;
 	}
 
@@ -2607,9 +2657,9 @@ gfc_match_rvalue (gfc_expr **result)
 	      break;
 	    }
 
-	  /*FIXME:??? match_varspec does set this for us: */
+	  /*FIXME:??? gfc_match_varspec does set this for us: */
 	  e->ts = sym->ts;
-	  m = match_varspec (e, 0);
+	  m = gfc_match_varspec (e, 0, false);
 	  break;
 	}
 
@@ -2698,7 +2748,7 @@ gfc_match_rvalue (gfc_expr **result)
       /* If our new function returns a character, array or structure
 	 type, it might have subsequent references.  */
 
-      m = match_varspec (e, 0);
+      m = gfc_match_varspec (e, 0, false);
       if (m == MATCH_NO)
 	m = MATCH_YES;
 
@@ -2882,7 +2932,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
   expr->where = where;
 
   /* Now see if we have to do more.  */
-  m = match_varspec (expr, equiv_flag);
+  m = gfc_match_varspec (expr, equiv_flag, false);
   if (m != MATCH_YES)
     {
       gfc_free_expr (expr);

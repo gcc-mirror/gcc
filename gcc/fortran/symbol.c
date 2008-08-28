@@ -4266,15 +4266,37 @@ gfc_get_derived_super_type (gfc_symbol* derived)
    through the super-types).  */
 
 gfc_symtree*
-gfc_find_typebound_proc (gfc_symbol* derived, const char* name)
+gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
+			 const char* name, bool noaccess)
 {
   gfc_symtree* res;
+
+  /* Set default to failure.  */
+  if (t)
+    *t = FAILURE;
 
   /* Try to find it in the current type's namespace.  */
   gcc_assert (derived->f2k_derived);
   res = gfc_find_symtree (derived->f2k_derived->sym_root, name);
   if (res)
-    return res->typebound ? res : NULL;
+    {
+      if (!res->typebound)
+	return NULL;
+
+      /* We found one.  */
+      if (t)
+	*t = SUCCESS;
+
+      if (!noaccess && derived->attr.use_assoc
+	  && res->typebound->access == ACCESS_PRIVATE)
+	{
+	  gfc_error ("'%s' of '%s' is PRIVATE at %C", name, derived->name);
+	  if (t)
+	    *t = FAILURE;
+	}
+
+      return res;
+    }
 
   /* Otherwise, recurse on parent type if derived is an extension.  */
   if (derived->attr.extension)
@@ -4282,7 +4304,7 @@ gfc_find_typebound_proc (gfc_symbol* derived, const char* name)
       gfc_symbol* super_type;
       super_type = gfc_get_derived_super_type (derived);
       gcc_assert (super_type);
-      return gfc_find_typebound_proc (super_type, name);
+      return gfc_find_typebound_proc (super_type, t, name, noaccess);
     }
 
   /* Nothing found.  */

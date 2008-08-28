@@ -4281,6 +4281,141 @@ fixup_charlen (gfc_expr *e)
 }
 
 
+/* Update an actual argument to include the passed-object for type-bound
+   procedures at the right position.  */
+
+static gfc_actual_arglist*
+update_arglist_pass (gfc_actual_arglist* lst, gfc_expr* po, unsigned argpos)
+{
+  if (argpos == 1)
+    {
+      gfc_actual_arglist* result;
+
+      result = gfc_get_actual_arglist ();
+      result->expr = po;
+      result->next = lst;
+
+      return result;
+    }
+
+  gcc_assert (lst);
+  gcc_assert (argpos > 1);
+
+  lst->next = update_arglist_pass (lst->next, po, argpos - 1);
+  return lst;
+}
+
+
+/* Update the arglist of an EXPR_COMPCALL expression to include the
+   passed-object.  */
+
+static gfc_try
+update_compcall_arglist (gfc_expr* e)
+{
+  gfc_expr* po;
+  gfc_typebound_proc* tbp;
+
+  tbp = e->value.compcall.tbp->typebound;
+
+  po = gfc_get_expr ();
+  po->expr_type = EXPR_VARIABLE;
+  po->symtree = e->symtree;
+  po->ref = gfc_copy_ref (e->ref);
+
+  if (gfc_resolve_expr (po) == FAILURE)
+    return FAILURE;
+  if (po->rank > 0)
+    {
+      gfc_error ("Passed-object at %L must be scalar", &e->where);
+      return FAILURE;
+    }
+
+  if (tbp->nopass)
+    {
+      gfc_free_expr (po);
+      return SUCCESS;
+    }
+
+  gcc_assert (tbp->pass_arg_num > 0);
+  e->value.compcall.actual = update_arglist_pass (e->value.compcall.actual, po,
+						  tbp->pass_arg_num);
+
+  return SUCCESS;
+}
+
+
+/* Resolve a call to a type-bound procedure, either function or subroutine,
+   statically from the data in an EXPR_COMPCALL expression.  The adapted
+   arglist and the target-procedure symtree are returned.  */
+
+static gfc_try
+resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
+			  gfc_actual_arglist** actual)
+{
+  gcc_assert (e->expr_type == EXPR_COMPCALL);
+
+  /* Update the actual arglist for PASS.  */
+  if (update_compcall_arglist (e) == FAILURE)
+    return FAILURE;
+
+  *actual = e->value.compcall.actual;
+  *target = e->value.compcall.tbp->typebound->target;
+
+  gfc_free_ref_list (e->ref);
+  e->ref = NULL;
+  e->value.compcall.actual = NULL;
+
+  return SUCCESS;
+}
+
+
+/* Resolve a call to a type-bound subroutine.  */
+
+static gfc_try
+resolve_typebound_call (gfc_code* c)
+{
+  gfc_actual_arglist* newactual;
+  gfc_symtree* target;
+
+  /* Transform into an ordinary EXEC_CALL for now.  */
+
+  if (resolve_typebound_static (c->expr, &target, &newactual) == FAILURE)
+    return FAILURE;
+
+  c->ext.actual = newactual;
+  c->symtree = target;
+  c->op = EXEC_CALL;
+
+  gcc_assert (!c->expr->ref && !c->expr->value.compcall.actual);
+  gfc_free_expr (c->expr);
+  c->expr = NULL;
+
+  return resolve_call (c);
+}
+
+
+/* Resolve a component-call expression.  */
+
+static gfc_try
+resolve_compcall (gfc_expr* e)
+{
+  gfc_actual_arglist* newactual;
+  gfc_symtree* target;
+
+  /* For now, we simply transform it into a EXPR_FUNCTION call with the same
+     arglist to the TBP's binding target.  */
+
+  if (resolve_typebound_static (e, &target, &newactual) == FAILURE)
+    return FAILURE;
+
+  e->value.function.actual = newactual;
+  e->symtree = target;
+  e->expr_type = EXPR_FUNCTION;
+
+  return gfc_resolve_expr (e);
+}
+
+
 /* Resolve an expression.  That is, make sure that types of operands agree
    with their operators, intrinsic operators are converted to function calls
    for overloaded types and unresolved function references are resolved.  */
@@ -4315,6 +4450,10 @@ gfc_resolve_expr (gfc_expr *e)
 	  && e->ref->type != REF_SUBSTRING)
 	gfc_resolve_substring_charlen (e);
 
+      break;
+
+    case EXPR_COMPCALL:
+      t = resolve_compcall (e);
       break;
 
     case EXPR_SUBSTRING:
@@ -4786,7 +4925,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		pointer = 0;
 		break;
 	    }
-       }
+	}
     }
 
   if (allocatable == 0 && pointer == 0)
@@ -6201,7 +6340,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    omp_workshare_flag = omp_workshare_save;
 	}
 
-      t = gfc_resolve_expr (code->expr);
+      t = SUCCESS;
+      if (code->op != EXEC_COMPCALL)
+	t = gfc_resolve_expr (code->expr);
       forall_flag = forall_save;
 
       if (gfc_resolve_expr (code->expr2) == FAILURE)
@@ -6305,6 +6446,10 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_CALL:
 	call:
 	  resolve_call (code);
+	  break;
+
+	case EXEC_COMPCALL:
+	  resolve_typebound_call (code);
 	  break;
 
 	case EXEC_SELECT:
@@ -7842,7 +7987,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	     and look for it.  */
 
 	  me_arg = NULL;
-	  stree->typebound->pass_arg_num = 0;
+	  stree->typebound->pass_arg_num = 1;
 	  for (i = proc->formal; i; i = i->next)
 	    {
 	      if (!strcmp (i->sym->name, stree->typebound->pass_arg))
@@ -7866,7 +8011,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	{
 	  /* Otherwise, take the first one; there should in fact be at least
 	     one.  */
-	  stree->typebound->pass_arg_num = 0;
+	  stree->typebound->pass_arg_num = 1;
 	  if (!proc->formal)
 	    {
 	      gfc_error ("Procedure '%s' with PASS at %L must have at"
@@ -7886,6 +8031,10 @@ resolve_typebound_procedure (gfc_symtree* stree)
 		     me_arg->name, &where, resolve_bindings_derived->name);
 	  goto error;
 	}
+
+      gfc_warning ("Polymorphic entities are not yet implemented,"
+		   " non-polymorphic passed-object dummy argument of '%s'"
+		   " at %L accepted", proc->name, &where);
     }
 
   /* If we are extending some type, check that we don't override a procedure
@@ -7893,7 +8042,8 @@ resolve_typebound_procedure (gfc_symtree* stree)
   if (super_type)
     {
       gfc_symtree* overridden;
-      overridden = gfc_find_typebound_proc (super_type, stree->name);
+      overridden = gfc_find_typebound_proc (super_type, NULL,
+					    stree->name, true);
 
       if (overridden && check_typebound_override (stree, overridden) == FAILURE)
 	goto error;
@@ -7917,15 +8067,6 @@ resolve_typebound_procedure (gfc_symtree* stree)
 		 stree->name, &where, resolve_bindings_derived->name);
       goto error;
     }
-
-  /* FIXME: Remove once typebound-procedures are fully implemented.  */
-  {
-    /* Output the error only once so we can do reasonable testing.  */
-    static bool tbp_error = false;
-    if (!tbp_error)
-      gfc_error ("Type-bound procedures are not yet implemented at %L", &where);
-    tbp_error = true;
-  }
 
   return;
 
@@ -7984,7 +8125,8 @@ resolve_fl_derived (gfc_symbol *sym)
     {
       /* If this type is an extension, see if this component has the same name
 	 as an inherited type-bound procedure.  */
-      if (super_type && gfc_find_typebound_proc (super_type, c->name))
+      if (super_type
+	  && gfc_find_typebound_proc (super_type, NULL, c->name, true))
 	{
 	  gfc_error ("Component '%s' of '%s' at %L has the same name as an"
 		     " inherited type-bound procedure",

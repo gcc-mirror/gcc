@@ -1,3 +1,44 @@
+2008-08-28  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (enum expr_t): New value `EXPR_COMPCALL'.
+	(gfc_get_typebound_proc): New macro.
+	(struct gfc_expr): New union-member `compcall' for EXPR_COMPCALL.
+	(enum gfc_exec_op): New value `EXEC_COMPCALL'.
+	(gfc_find_typebound_proc): New argument.
+	(gfc_copy_ref), (gfc_match_varspec): Made public.
+	* decl.c (match_procedure_in_type): Use gfc_get_typebound_proc.
+	* expr.c (free_expr0), (gfc_copy_expr): Handle EXPR_COMPCALL.
+	(gfc_copy_ref): Made public and use new name.
+	(simplify_const_ref): Use new name of gfc_copy_ref.
+	(simplify_parameter_variable): Ditto.
+	(gfc_simplify_expr): gcc_unreachable for EXPR_COMPCALL.
+	* match.c (match_typebound_call): New method.
+	(gfc_match_call): Allow for CALL's to typebound procedures.
+	* module.c (binding_passing), (binding_overriding): New variables.
+	(expr_types): Add EXPR_COMPCALL.
+	(mio_expr): gcc_unreachable for EXPR_COMPCALL.
+	(mio_typebound_proc), (mio_typebound_symtree): New methods.
+	(mio_f2k_derived): Handle type-bound procedures.
+	* primary.c (gfc_match_varspec): Made public and parse trailing
+	references to type-bound procedures; new argument `sub_flag'.
+	(gfc_match_rvalue): New name and argument of gfc_match_varspec.
+	(match_variable): Ditto.
+	* resolve.c (update_arglist_pass): New method.
+	(update_compcall_arglist), (resolve_typebound_static): New methods.
+	(resolve_typebound_call), (resolve_compcall): New methods.
+	(gfc_resolve_expr): Handle EXPR_COMPCALL.
+	(resolve_code): Handle EXEC_COMPCALL.
+	(resolve_fl_derived): New argument to gfc_find_typebound_proc.
+	(resolve_typebound_procedure): Ditto and removed not-implemented error.
+	* st.c (gfc_free_statement): Handle EXEC_COMPCALL.
+	* symbol.c (gfc_find_typebound_proc): New argument `noaccess' and
+	implement access-checking.
+	* trans-expr.c (gfc_apply_interface_mapping_to_expr): gcc_unreachable
+	on EXPR_COMPCALL.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Add missing break.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Add missing
+	intialization of ref->type.
+
 2008-08-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/37253

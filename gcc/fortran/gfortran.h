@@ -151,7 +151,7 @@ bt;
 /* Expression node types.  */
 typedef enum
 { EXPR_OP = 1, EXPR_FUNCTION, EXPR_CONSTANT, EXPR_VARIABLE,
-  EXPR_SUBSTRING, EXPR_STRUCTURE, EXPR_ARRAY, EXPR_NULL
+  EXPR_SUBSTRING, EXPR_STRUCTURE, EXPR_ARRAY, EXPR_NULL, EXPR_COMPCALL
 }
 expr_t;
 
@@ -1003,13 +1003,15 @@ typedef struct
 
   /* Once resolved, we use the position of pass_arg in the formal arglist of
      the binding-target procedure to identify it.  The first argument has
-     number 0 here, the second 1, and so on.  */
+     number 1 here, the second 2, and so on.  */
   unsigned pass_arg_num;
 
   unsigned nopass:1; /* Whether we have NOPASS (PASS otherwise).  */
   unsigned non_overridable:1;
 }
 gfc_typebound_proc;
+
+#define gfc_get_typebound_proc() XCNEW (gfc_typebound_proc)
 
 
 /* Symbol nodes.  These are important things.  They are what the
@@ -1447,11 +1449,13 @@ gfc_intrinsic_sym;
    EXPR_FUNCTION   Function call, symbol points to function's name
    EXPR_CONSTANT   A scalar constant: Logical, String, Real, Int or Complex
    EXPR_VARIABLE   An Lvalue with a root symbol and possible reference list
-                   which expresses structure, array and substring refs.
+		   which expresses structure, array and substring refs.
    EXPR_NULL       The NULL pointer value (which also has a basic type).
    EXPR_SUBSTRING  A substring of a constant string
    EXPR_STRUCTURE  A structure constructor
-   EXPR_ARRAY      An array constructor.  */
+   EXPR_ARRAY      An array constructor.
+   EXPR_COMPCALL   Function (or subroutine) call of a procedure pointer
+		   component or type-bound procedure.  */
 
 #include <gmp.h>
 #include <mpfr.h>
@@ -1466,7 +1470,8 @@ typedef struct gfc_expr
   int rank;
   mpz_t *shape;		/* Can be NULL if shape is unknown at compile time */
 
-  /* Nonnull for functions and structure constructors */
+  /* Nonnull for functions and structure constructors, the base object for
+     component-calls.  */
   gfc_symtree *symtree;
 
   gfc_ref *ref;
@@ -1523,6 +1528,13 @@ typedef struct gfc_expr
       gfc_symbol *esym;
     }
     function;
+
+    struct
+    {
+      gfc_actual_arglist* actual;
+      gfc_symtree* tbp;
+    }
+    compcall;
 
     struct
     {
@@ -1770,8 +1782,8 @@ gfc_forall_iterator;
 typedef enum
 {
   EXEC_NOP = 1, EXEC_ASSIGN, EXEC_LABEL_ASSIGN, EXEC_POINTER_ASSIGN,
-  EXEC_GOTO, EXEC_CALL, EXEC_ASSIGN_CALL, EXEC_RETURN, EXEC_ENTRY,
-  EXEC_PAUSE, EXEC_STOP, EXEC_CONTINUE, EXEC_INIT_ASSIGN,
+  EXEC_GOTO, EXEC_CALL, EXEC_COMPCALL, EXEC_ASSIGN_CALL, EXEC_RETURN,
+  EXEC_ENTRY, EXEC_PAUSE, EXEC_STOP, EXEC_CONTINUE, EXEC_INIT_ASSIGN,
   EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_WHILE, EXEC_SELECT,
   EXEC_FORALL, EXEC_WHERE, EXEC_CYCLE, EXEC_EXIT,
   EXEC_ALLOCATE, EXEC_DEALLOCATE,
@@ -2261,7 +2273,7 @@ gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
-gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, const char*);
+gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*, const char*, bool);
 
 void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
 
@@ -2341,6 +2353,7 @@ gfc_expr *gfc_logical_expr (int, locus *);
 mpz_t *gfc_copy_shape (mpz_t *, int);
 mpz_t *gfc_copy_shape_excluding (mpz_t *, int, gfc_expr *);
 gfc_expr *gfc_copy_expr (gfc_expr *);
+gfc_ref* gfc_copy_ref (gfc_ref*);
 
 gfc_try gfc_specification_expr (gfc_expr *);
 
@@ -2464,6 +2477,7 @@ bool gfc_check_access (gfc_access, gfc_access);
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
 match gfc_match_rvalue (gfc_expr **);
+match gfc_match_varspec (gfc_expr*, int, bool);
 int gfc_check_digit (char, int);
 
 /* trans.c */

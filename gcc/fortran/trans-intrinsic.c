@@ -901,6 +901,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 		  case AR_FULL:
 		    break;
 		  }
+		break;
 	      }
 	    }
 	}

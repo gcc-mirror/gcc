@@ -1,5 +1,8 @@
 ! { dg-do compile }
 
+! FIXME: Remove -w after polymorphic entities are supported.
+! { dg-options "-w" }
+
 ! Type-bound procedures
 ! Test for the check if overriding methods "match" the overridden ones by their
 ! characteristics.
@@ -178,5 +181,3 @@ CONTAINS
 END MODULE testmod
 
 ! { dg-final { cleanup-modules "testmod" } }
-! FIXME: Remove not-yet-implemented error when implemented.
-! { dg-excess-errors "not yet implemented" }

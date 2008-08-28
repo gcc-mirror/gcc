@@ -2509,6 +2509,48 @@ done:
 }
 
 
+/* Match the call of a type-bound procedure, if CALL%var has already been 
+   matched and var found to be a derived-type variable.  */
+
+static match
+match_typebound_call (gfc_symtree* varst)
+{
+  gfc_symbol* var;
+  gfc_expr* base;
+  match m;
+
+  var = varst->n.sym;
+
+  base = gfc_get_expr ();
+  base->expr_type = EXPR_VARIABLE;
+  base->symtree = varst;
+  base->where = gfc_current_locus;
+  
+  m = gfc_match_varspec (base, 0, true);
+  if (m == MATCH_NO)
+    gfc_error ("Expected component reference at %C");
+  if (m != MATCH_YES)
+    return MATCH_ERROR;
+
+  if (gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("Junk after CALL at %C");
+      return MATCH_ERROR;
+    }
+
+  if (base->expr_type != EXPR_COMPCALL)
+    {
+      gfc_error ("Expected type-bound procedure reference at %C");
+      return MATCH_ERROR;
+    }
+
+  new_st.op = EXEC_COMPCALL;
+  new_st.expr = base;
+
+  return MATCH_YES;
+}
+
+
 /* Match a CALL statement.  The tricky part here are possible
    alternate return specifiers.  We handle these by having all
    "subroutines" actually return an integer via a register that gives
@@ -2540,6 +2582,11 @@ gfc_match_call (void)
     return MATCH_ERROR;
 
   sym = st->n.sym;
+
+  /* If this is a variable of derived-type, it probably starts a type-bound
+     procedure call.  */
+  if (sym->attr.flavor != FL_PROCEDURE && sym->ts.type == BT_DERIVED)
+    return match_typebound_call (st);
 
   /* If it does not seem to be callable...  */
   if (!sym->attr.generic
