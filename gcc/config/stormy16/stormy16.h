@@ -1,6 +1,6 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
+   2008  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -197,6 +197,11 @@ enum reg_class
 };
 
 #define N_REG_CLASSES ((int) LIM_REG_CLASSES)
+
+#define IRA_COVER_CLASSES			\
+{						\
+  GENERAL_REGS, CARRY_REGS, LIM_REG_CLASSES	\
+}
 
 #define REG_CLASS_NAMES				\
 {						\
