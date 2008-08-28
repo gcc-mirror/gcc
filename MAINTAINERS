@@ -50,7 +50,7 @@ frv port		Alexandre Oliva		aoliva@redhat.com
 h8 port			Jeff Law		law@redhat.com
 h8 port			Kazu Hirata		kazu@codesourcery.com
 hppa port		Jeff Law		law@redhat.com
-hppa port		Dave Anglin		dave.anglin@nrc.ca
+hppa port		John David Anglin	dave.anglin@nrc-cnrc.gc.ca
 i386 port		Richard Henderson	rth@redhat.com
 i386 port		Jan Hubicka		jh@suse.cz
 i386 port		Uros Bizjak		ubizjak@gmail.com
@@ -85,7 +85,6 @@ spu port		Trevor Smigiel		trevor_smigiel@playstation.sony.com
 spu port		Andrew Pinski		andrew_pinski@playstation.sony.com
 spu port		David Edelsohn		edelsohn@gnu.org
 v850 port		Nick Clifton		nickc@redhat.com
-vax port		Dave Anglin		dave.anglin@nrc.ca
 vax port		Matt Thomas		matt@3am-software.com
 x86-64 port		Jan Hubicka		jh@suse.cz
 xstormy16 port		Nick Clifton		nickc@redhat.com
@@ -99,7 +98,7 @@ darwin port		Eric Christopher	echristo@apple.com
 darwin port		Stan Shebs		stanshebs@earthlink.net
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
-hpux			Dave Anglin		dave.anglin@nrc.ca
+hpux			John David Anglin	dave.anglin@nrc-cnrc.gc.ca
 hpux			Steve Ellcey		sje@cup.hp.com
 irix, osf		Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org

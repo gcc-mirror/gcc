@@ -1,3 +1,7 @@
+2008-08-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* MAINTAINERS: Update my hppa and hpux entries.  Remove my vax entry.
+
 2008-08-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* MAINTAINERS:  Use correct Umlaut for last name.
