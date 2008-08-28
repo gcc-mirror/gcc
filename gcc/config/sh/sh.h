@@ -1466,7 +1466,7 @@ enum reg_class
 /* MAC_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00300000 },	\
 /* FPUL_REGS:  */							\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00400000 },	\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00400000 },	\
 /* SIBCALL_REGS: Initialized in CONDITIONAL_REGISTER_USAGE.  */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	\
 /* GENERAL_REGS:  */							\
@@ -1510,7 +1510,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define IRA_COVER_CLASSES						     \
 {									     \
   GENERAL_REGS, FP_REGS, PR_REGS, T_REGS, MAC_REGS, TARGET_REGS,  	     \
-  LIM_REG_CLASSES							     \
+  FPUL_REGS, LIM_REG_CLASSES						     \
 }
 
 /* When defined, the compiler allows registers explicitly used in the
