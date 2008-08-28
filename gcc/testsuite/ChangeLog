@@ -1,3 +1,8 @@
+2008-08-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36817
+	* gcc.c-torture/compile/pr36817.c: New testcase.
+
 2008-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/37184

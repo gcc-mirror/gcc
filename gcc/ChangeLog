@@ -1,3 +1,9 @@
+2008-08-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36817
+	* tree-chrec.c (chrec_apply): Always call chrec_fold_plus which
+	makes sure to produce a result of the correct type.
+
 2008-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/37184

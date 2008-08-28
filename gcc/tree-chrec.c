@@ -579,8 +579,7 @@ chrec_apply (unsigned var,
       /* "{a, +, b} (x)"  ->  "a + b*x".  */
       x = chrec_convert_rhs (type, x, NULL_TREE);
       res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
-      if (!integer_zerop (CHREC_LEFT (chrec)))
-	res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+      res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
     }
   
   else if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
