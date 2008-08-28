@@ -212,7 +212,7 @@ recognize_single_bit_test (gimple cond, tree *name, tree *bit)
       stmt = SSA_NAME_DEF_STMT (orig_name);
 
       while (is_gimple_assign (stmt)
-	     && (gimple_assign_copy_p (stmt)
+	     && (gimple_assign_ssa_name_copy_p (stmt)
 		 || (gimple_assign_cast_p (stmt)
 		     && integral_operand_p (gimple_assign_lhs (stmt))
 		     && integral_operand_p (gimple_assign_rhs1 (stmt))
