@@ -31,21 +31,22 @@
     The default optimizations and debug flags for a libstdc++ build
     are <code>-g -O2</code>. However, both debug and optimization
     flags can be varied to change debugging characteristics. For
-    instance, turning off all optimization via the <code>-g -O0</code>
-    flag will disable inlining, so that stepping through all
-    functions, including inlined constructors and destructors, is
-    possible. In addition,
-    <code>-fno-eliminate-unused-debug-types</code> can be used when
-    additional debug information, such as nested class info, is
-    desired.
+    instance, turning off all optimization via the <code>-g -O0
+    -fno-inline</code> flags will disable inlining and optimizations,
+    and add debugging information, so that stepping through all functions,
+    (including inlined constructors and destructors) is possible. In
+    addition, <code>-fno-eliminate-unused-debug-types</code> can be
+    used when additional debug information, such as nested class info,
+    is desired.
 </para>
 
 <para>
   Or, the debug format that the compiler and debugger use to
   communicate information about source constructs can be changed via
-  <code> -gdwarf-2 </code> or <code> -gstabs </code> flags: some
-  debugging formats permit more expressive type and scope information
-  to be shown in gdb.  The default debug information for a particular
+  <code>-gdwarf-2</code> or <code>-gstabs</code> flags: some debugging
+  formats permit more expressive type and scope information to be
+  shown in gdb. Expressiveness can be enhanced by flags like
+  <code>-g3</code>. The default debug information for a particular
   platform can be identified via the value set by the
   PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
 </para>
@@ -78,21 +79,21 @@
   debug build will persist, without having to specify
   <code>CXXFLAGS</code>, and the debug library will be installed in a
   separate directory tree, in <code>(prefix)/lib/debug</code>. For
-  more information, look at the <ulink
-  url="configopts.html">configuration options</ulink> document.
+  more information, look at the <link
+  linkend="manual.intro.setup.configure">configuration</link> section.
 </para>
 
 <para>
   A second approach is to use the configuration flags 
 </para>
 <programlisting>
-     make CXXFLAGS='-g3 -O0' all
+     make CXXFLAGS='-g3 -fno-inline -O0' all
 </programlisting>
 
 <para>
   This quick and dirty approach is often sufficient for quick
   debugging tasks, when you cannot or don't want to recompile your
-  application to use the <ulink url="#safe">debug mode</ulink>.</para>
+  application to use the <link linkend="manual.ext.debug_mode">debug mode</link>.</para>
 </sect2>
  
 <sect2 id="debug.memory" xreflabel="debug.memory">
@@ -115,8 +116,8 @@
   thing of great importance to keep in mind when debugging C++ code
   that uses <code>new</code> and <code>delete</code>: there are
   different kinds of allocation schemes that can be used by <code>
-  std::allocator </code>. For implementation details, see the <ulink
-  url="ext/mt_allocator.html">mt allocator</ulink> documentation and
+  std::allocator </code>. For implementation details, see the <link
+  linkend="manual.ext.allocator.mt">mt allocator</link> documentation and
   look specifically for <code>GLIBCXX_FORCE_NEW</code>.
 </para>
 
@@ -197,7 +198,7 @@
 
 <para>
   Many options are available for gdb itself: please see <ulink
-  url="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC109">
+  url="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC125">
   "GDB features for C++" </ulink> in the gdb documentation. Also
   recommended: the other parts of this manual.
 </para>

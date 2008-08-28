@@ -18,18 +18,26 @@
 <title>Configure</title>
 
 <para>
-  Here are some of the non-obvious options to libstdc++'s configure.
-  Keep in mind that
+  When configuring libstdc++, you'll have to configure the entire
+  <emphasis>gccsrcdir</emphasis> directory. Consider using the
+  toplevel gcc configuration option
+  <literal>--enable-languages=c++</literal>, which saves time by only
+  building the C++ toolchain.
+</para>
+
+<para>
+  Here are all of the configure options specific to libstdc++.  Keep
+  in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
    <ulink url="http://www.gnu.org/software/autoconf/manual/autoconf-2.57/html_node/autoconf_131.html#SEC131">they
-   all have opposite forms as well</ulink>
-   (enable/disable and with/without).  The defaults are for <emphasis>current
-   development sources</emphasis>, which may be different than those for
-   released versions.
+   all have opposite forms as well</ulink> (enable/disable and
+   with/without).  The defaults are for the <emphasis>current
+   development sources</emphasis>, which may be different than those
+   for released versions.
 </para>
 <para>The canonical way to find out the configure options that are
    available for a given set of libstdc++ sources is to go to the
-   source directory and then type:<code>  ./configure --help</code>
+   source directory and then type:<command>./configure --help</command>.
 </para>
 
 <variablelist>
@@ -121,10 +129,10 @@
  <varlistentry><term><code>--enable-libstdcxx-allocator=OPTION  </code></term>
  <listitem><para>Select a target-specific underlying std::allocator.  The
         choices are 'new' to specify a wrapper for new, 'malloc' to
-        specify a wrapper for malloc, 'mt' for a fixed power of two allocator
-        (<ulink url="ext/mt_allocator.html">documented</ulink> under extensions),
+        specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
 	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	This option can change the library ABI.
+	This option can change the library ABI. See this page for more information on allocator 
+        <link linkend="allocator.ext">extensions</link>
      </para>
  </listitem></varlistentry>
 
@@ -153,7 +161,7 @@
  <varlistentry><term><code>--enable-libstdcxx-debug</code></term>
  <listitem><para>Build separate debug libraries in addition to what is normally built.
         By default, the debug libraries are compiled with 
-        <code> CXXFLAGS='-g3 -O0'</code>
+        <code> CXXFLAGS='-g3 -O0 -fno-inline'</code>
         , are installed in <code>${libdir}/debug</code>, and have the
         same names and versioning information as the non-debug
         libraries. This option is off by default.
@@ -161,7 +169,7 @@
      <para>Note this make command, executed in
         the build directory, will do much the same thing, without the
         configuration difference and without building everything twice: 
-        <code>make CXXFLAGS='-g3 -O0' all</code>
+        <code>make CXXFLAGS='-g3 -O0 -fno-inline' all</code>
      </para>
  </listitem></varlistentry>
 
@@ -174,7 +182,7 @@
         FLAGS is a quoted string of options, like
      </para>
         <programlisting>
-  --enable-libstdcxx-debug-flags='-g3 -O1 -gdwarf-2'</programlisting>
+  --enable-libstdcxx-debug-flags='-g3 -O1 -fno-inline'</programlisting>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cxx-flags=FLAGS</code></term>
@@ -258,7 +266,7 @@
  <varlistentry><term><code>--enable-concept-checks</code></term>
  <listitem><para>This turns on additional compile-time checks for instantiated
         library templates, in the form of specialized templates,
-        <ulink url="19_diagnostics/howto.html#3">described here</ulink>.  They
+        <link linkend="manual.diagnostics.concept_checking">described here</link>.  They
         can help users discover when they break the rules of the STL, before
         their programs run.
      </para>

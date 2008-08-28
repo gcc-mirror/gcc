@@ -1,5 +1,5 @@
-<sect1 id="manual.intro.setup.build" xreflabel="Building">
-<?dbhtml filename="build.html"?>
+<sect1 id="manual.intro.setup.prereq" xreflabel="Prerequisites">
+<?dbhtml filename="prerequisites.html"?>
  
 <sect1info>
   <keywordset>
@@ -7,28 +7,25 @@
       ISO C++
     </keyword>
     <keyword>
-      build
+      Prerequisites
     </keyword>
   </keywordset>
 </sect1info>
 
-<title>Build</title>
+<title>Prerequisites</title>
 
 <para>
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
    <ulink url="http://gcc.gnu.org/install/">the GCC install page</ulink>.
-   Additional data is given here only where it applies to libstdc++.
+   In particular, list of prerequisite software needed to build the library 
+   <ulink url="http://gcc.gnu.org/install/prerequisites.html">
+   starts with those requirements.</ulink> The same pages also list
+   the tools you will need if you wish to modify the source.
 </para>
 
-<sect2 id="build.prereq" xreflabel="build.prereq">
-<title>Prerequisites</title>
   <para>
-    The list of software needed to build the library is kept with the
-    rest of the compiler, at
-      <ulink url="http://gcc.gnu.org/install/prerequisites.html">
-      http://gcc.gnu.org/install/prerequisites.html</ulink>.  The same page
-      also lists the tools you will need if you wish to modify the source.
+   Additional data is given here only where it applies to libstdc++.
   </para>
 
    <para>As of GCC 4.0.1 the minimum version of binutils required to build
@@ -38,7 +35,7 @@
       ftp://sources.redhat.com/pub/binutils</ulink>.
       Older releases of libstdc++ do not require such a recent version,
       but to take full advantage of useful space-saving features and
-      bug-fixes you should use a recent binutils if possible.
+      bug-fixes you should use a recent binutils whenever possible.
       The configure process will automatically detect and use these
       features if the underlying support is present.
    </para>
@@ -93,6 +90,7 @@ se_NO.UTF-8         UTF-8
 ta_IN               UTF-8
 zh_TW               BIG5
 </programlisting>
+
       <para>Failure to have the underlying "C" library locale
       information installed will mean that C++ named locales for the
       above regions will not work: because of this, the libstdc++
@@ -157,26 +155,4 @@ zh_TW               BIG5
       </varlistentry>
    </variablelist>
 
-</sect2>
-
-<sect2 id="build.configure" xreflabel="build.make">
-<title>Make</title>
-   <para>If you have never done this before, you should read the basic
-      <ulink url="http://gcc.gnu.org/install/">GCC Installation
-      Instructions</ulink> first.  Read <emphasis>all of them</emphasis>.
-      <emphasis>Twice.</emphasis>
-   </para>
-   <para>When building libstdc++ you'll have to configure
-      the entire <emphasis>gccsrcdir</emphasis> directory.  The full list of libstdc++
-      specific configuration options, not dependent on the specific compiler
-      release being used, can be found <ulink url="configopts.html">here</ulink>.
-   </para>
-   <para>Consider possibly using --enable-languages=c++ to save time by only
-      building the C++ language parts.
-   </para>
-
-   <programlisting>
-   cd <emphasis>gccbuilddir</emphasis>
-   <emphasis>gccsrcdir</emphasis>/configure --prefix=<emphasis>destdir</emphasis> --other-opts...</programlisting>
-</sect2>
 </sect1>
