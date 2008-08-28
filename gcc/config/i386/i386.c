@@ -1764,6 +1764,7 @@ enum x86_64_reg_class
     X86_64_NO_CLASS,
     X86_64_INTEGER_CLASS,
     X86_64_INTEGERSI_CLASS,
+    X86_64_AVX_CLASS,
     X86_64_SSE_CLASS,
     X86_64_SSESF_CLASS,
     X86_64_SSEDF_CLASS,
@@ -1849,6 +1850,10 @@ static int ix86_isa_flags_explicit;
   (OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSSE3_SET)
 #define OPTION_MASK_ISA_SSE4_2_SET \
   (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_SSE4_1_SET)
+#define OPTION_MASK_ISA_AVX_SET \
+  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_SSE4_2_SET)
+#define OPTION_MASK_ISA_FMA_SET \
+  (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_AVX_SET)
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -1892,7 +1897,11 @@ static int ix86_isa_flags_explicit;
   (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_SSE4_1_UNSET)
 #define OPTION_MASK_ISA_SSE4_1_UNSET \
   (OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSE4_2_UNSET)
-#define OPTION_MASK_ISA_SSE4_2_UNSET OPTION_MASK_ISA_SSE4_2
+#define OPTION_MASK_ISA_SSE4_2_UNSET \
+  (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_AVX_UNSET )
+#define OPTION_MASK_ISA_AVX_UNSET \
+  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_FMA_UNSET)
+#define OPTION_MASK_ISA_FMA_UNSET OPTION_MASK_ISA_FMA
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -2078,6 +2087,32 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	{
 	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_2_UNSET;
 	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_UNSET;
+	}
+      return true;
+
+    case OPT_mavx:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_AVX_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_UNSET;
+	}
+      return true;
+
+    case OPT_mfma:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_FMA_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_FMA_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_UNSET;
 	}
       return true;
 
@@ -2447,7 +2482,9 @@ override_options (bool main_args_p)
       PTA_SSE4_2 = 1 << 15,
       PTA_SSE5 = 1 << 16,
       PTA_AES = 1 << 17,
-      PTA_PCLMUL = 1 << 18
+      PTA_PCLMUL = 1 << 18,
+      PTA_AVX = 1 << 19,
+      PTA_FMA = 1 << 20 
     };
 
   static struct pta
@@ -2765,6 +2802,12 @@ override_options (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_SSE4_2
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE4_2))
 	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4_2;
+	if (processor_alias_table[i].flags & PTA_AVX
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX;
+	if (processor_alias_table[i].flags & PTA_FMA
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_FMA))
+	  ix86_isa_flags |= OPTION_MASK_ISA_FMA;
 	if (processor_alias_table[i].flags & PTA_SSE4A
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE4A))
 	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4A;
@@ -4587,6 +4630,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     }
   if (TARGET_MMX)
     cum->mmx_nregs = MMX_REGPARM_MAX;
+  cum->warn_avx = true;
   cum->warn_sse = true;
   cum->warn_mmx = true;
 
@@ -4611,6 +4655,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	  cum->nregs = 0;
 	  cum->sse_nregs = 0;
 	  cum->mmx_nregs = 0;
+	  cum->warn_avx = 0;
 	  cum->warn_sse = 0;
 	  cum->warn_mmx = 0;
 	  return;
@@ -4963,6 +5008,8 @@ classify_argument (enum machine_mode mode, const_tree type,
       classes[0] = classes[1] = X86_64_INTEGER_CLASS;
       return 2;
     case CTImode:
+    case COImode:
+    case OImode:
       return 0;
     case SFmode:
       if (!(bit_offset % 64))
@@ -4994,6 +5041,14 @@ classify_argument (enum machine_mode mode, const_tree type,
     case TCmode:
       /* This modes is larger than 16 bytes.  */
       return 0;
+    case V8SFmode:
+    case V8SImode:
+    case V32QImode:
+    case V16HImode:
+    case V4DFmode:
+    case V4DImode:
+      classes[0] = X86_64_AVX_CLASS;
+      return 1;
     case V4SFmode:
     case V4SImode:
     case V16QImode:
@@ -5050,6 +5105,7 @@ examine_argument (enum machine_mode mode, const_tree type, int in_return,
       case X86_64_INTEGERSI_CLASS:
 	(*int_nregs)++;
 	break;
+      case X86_64_AVX_CLASS:
       case X86_64_SSE_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
@@ -5148,6 +5204,7 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
       case X86_64_INTEGER_CLASS:
       case X86_64_INTEGERSI_CLASS:
 	return gen_rtx_REG (mode, intreg[0]);
+      case X86_64_AVX_CLASS:
       case X86_64_SSE_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
@@ -5281,6 +5338,13 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	break;
       /* FALLTHRU */
 
+    case OImode:
+    case V8SFmode:
+    case V8SImode:
+    case V32QImode:
+    case V16HImode:
+    case V4DFmode:
+    case V4DImode:
     case TImode:
     case V16QImode:
     case V8HImode:
@@ -5323,9 +5387,13 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static void
 function_arg_advance_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			 tree type, HOST_WIDE_INT words)
+			 tree type, HOST_WIDE_INT words, int named)
 {
   int int_nregs, sse_nregs;
+
+  /* Unnamed 256bit vector mode parameters are passed on stack.  */
+  if (!named && VALID_AVX256_REG_MODE (mode))
+    return;
 
   if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs))
     cum->words += words;
@@ -5357,7 +5425,7 @@ function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
 
 void
 function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+		      tree type, int named)
 {
   HOST_WIDE_INT bytes, words;
 
@@ -5373,7 +5441,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (TARGET_64BIT && (cum ? cum->call_abi : DEFAULT_ABI) == MS_ABI)
     function_arg_advance_ms_64 (cum, bytes, words);
   else if (TARGET_64BIT)
-    function_arg_advance_64 (cum, mode, type, words);
+    function_arg_advance_64 (cum, mode, type, words, named);
   else
     function_arg_advance_32 (cum, mode, type, bytes, words);
 }
@@ -5396,7 +5464,7 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		 enum machine_mode orig_mode, tree type,
 		 HOST_WIDE_INT bytes, HOST_WIDE_INT words)
 {
-  static bool warnedsse, warnedmmx;
+  static bool warnedavx, warnedsse, warnedmmx;
 
   /* Avoid the AL settings for the Unix64 ABI.  */
   if (mode == VOIDmode)
@@ -5445,6 +5513,7 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	break;
       /* FALLTHRU */
     case TImode:
+      /* In 32bit, we pass TImode in xmm registers.  */
     case V16QImode:
     case V8HImode:
     case V4SImode:
@@ -5457,6 +5526,28 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    {
 	      warnedsse = true;
 	      warning (0, "SSE vector argument without SSE enabled "
+		       "changes the ABI");
+	    }
+	  if (cum->sse_nregs)
+	    return gen_reg_or_parallel (mode, orig_mode,
+				        cum->sse_regno + FIRST_SSE_REG);
+	}
+      break;
+
+    case OImode:
+      /* In 32bit, we pass OImode in ymm registers.  */
+    case V8SFmode:
+    case V8SImode:
+    case V32QImode:
+    case V16HImode:
+    case V4DFmode:
+    case V4DImode:
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  if (!TARGET_AVX && !warnedavx && cum->warn_avx)
+	    {
+	      warnedavx = true;
+	      warning (0, "AVX vector argument without AVX enabled "
 		       "changes the ABI");
 	    }
 	  if (cum->sse_nregs)
@@ -5490,8 +5581,10 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static rtx
 function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		 enum machine_mode orig_mode, tree type)
+		 enum machine_mode orig_mode, tree type, int named)
 {
+  static bool warnedavx;
+
   /* Handle a hidden AL argument containing number of registers
      for varargs x86-64 functions.  */
   if (mode == VOIDmode)
@@ -5503,6 +5596,35 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		          			     : X64_SSE_REGPARM_MAX))
  	       : cum->sse_regno)
 		    : -1);
+
+  switch (mode)
+    {
+    default:
+      break;
+
+    case V8SFmode:
+    case V8SImode:
+    case V32QImode:
+    case V16HImode:
+    case V4DFmode:
+    case V4DImode:
+      /* In 64bit, we pass TImode in interger registers and OImode on
+	 stack.  */
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  if (!TARGET_AVX && !warnedavx && cum->warn_avx)
+	    {
+	      warnedavx = true;
+	      warning (0, "AVX vector argument without AVX enabled "
+		       "changes the ABI");
+	    }
+	}
+
+      /* Unnamed 256bit vector mode parameters are passed on stack.  */
+      if (!named)
+	return NULL;
+      break;
+    }
 
   return construct_container (mode, orig_mode, type, 0, cum->nregs,
 			      cum->sse_nregs,
@@ -5578,7 +5700,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
   if (TARGET_64BIT && (cum ? cum->call_abi : DEFAULT_ABI) == MS_ABI)
     return function_arg_ms_64 (cum, mode, omode, named, bytes);
   else if (TARGET_64BIT)
-    return function_arg_64 (cum, mode, omode, type);
+    return function_arg_64 (cum, mode, omode, type, named);
   else
     return function_arg_32 (cum, mode, omode, type, bytes, words);
 }
@@ -6202,27 +6324,37 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
       label_ref = gen_rtx_LABEL_REF (Pmode, label);
 
       /* Compute address to jump to :
-         label - eax*4 + nnamed_sse_arguments*4  */
+         label - eax*4 + nnamed_sse_arguments*4 Or
+         label - eax*5 + nnamed_sse_arguments*5 for AVX.  */
       tmp_reg = gen_reg_rtx (Pmode);
       nsse_reg = gen_reg_rtx (Pmode);
       emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, AX_REG)));
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
 			      gen_rtx_MULT (Pmode, nsse_reg,
 					    GEN_INT (4))));
+
+      /* vmovaps is one byte longer than movaps.  */
+      if (TARGET_AVX)
+	emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
+				gen_rtx_PLUS (Pmode, tmp_reg,
+					      nsse_reg)));
+
       if (cum->sse_regno)
 	emit_move_insn
 	  (nsse_reg,
 	   gen_rtx_CONST (DImode,
 			  gen_rtx_PLUS (DImode,
 					label_ref,
-					GEN_INT (cum->sse_regno * 4))));
+					GEN_INT (cum->sse_regno
+						 * (TARGET_AVX ? 5 : 4)))));
       else
 	emit_move_insn (nsse_reg, label_ref);
       emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
 
       /* Compute address of memory block we save into.  We always use pointer
 	 pointing 127 bytes after first byte to store - this is needed to keep
-	 instruction size limited by 4 bytes.  */
+	 instruction size limited by 4 bytes (5 bytes for AVX) with one
+	 byte displacement.  */
       tmp_reg = gen_reg_rtx (Pmode);
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
 			      plus_constant (save_area,
@@ -6416,9 +6548,28 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   nat_mode = type_natural_mode (type);
-  container = construct_container (nat_mode, TYPE_MODE (type), type, 0,
-				   X86_64_REGPARM_MAX, X86_64_SSE_REGPARM_MAX,
-				   intreg, 0);
+  switch (nat_mode)
+    {
+    case V8SFmode:
+    case V8SImode:
+    case V32QImode:
+    case V16HImode:
+    case V4DFmode:
+    case V4DImode:
+      /* Unnamed 256bit vector mode parameters are passed on stack.  */
+      if (ix86_cfun_abi () == SYSV_ABI)
+	{
+	  container = NULL;
+	  break;
+	}
+
+    default:
+      container = construct_container (nat_mode, TYPE_MODE (type),
+				       type, 0, X86_64_REGPARM_MAX,
+				       X86_64_SSE_REGPARM_MAX, intreg,
+				       0);
+      break;
+    }
 
   /* Pull the value out of the saved registers.  */
 
@@ -6793,8 +6944,10 @@ standard_sse_mode_p (enum machine_mode mode)
     }
 }
 
-/* Return 1 if X is FP constant we can load to SSE register w/o using memory.
- */
+/* Return 1 if X is all 0s.  For all 1s, return 2 if X is in 128bit
+   SSE modes and SSE2 is enabled,  return 3 if X is in 256bit AVX
+   modes and AVX is enabled.  */
+
 int
 standard_sse_constant_p (rtx x)
 {
@@ -6802,9 +6955,13 @@ standard_sse_constant_p (rtx x)
 
   if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
     return 1;
-  if (vector_all_ones_operand (x, mode)
-      && standard_sse_mode_p (mode))
-    return TARGET_SSE2 ? 2 : -1;
+  if (vector_all_ones_operand (x, mode))
+    {
+      if (standard_sse_mode_p (mode))
+	return TARGET_SSE2 ? 2 : -2;
+      else if (VALID_AVX256_REG_MODE (mode))
+	return TARGET_AVX ? 3 : -3;
+    }
 
   return 0;
 }
@@ -6818,14 +6975,37 @@ standard_sse_constant_opcode (rtx insn, rtx x)
   switch (standard_sse_constant_p (x))
     {
     case 1:
-      if (get_attr_mode (insn) == MODE_V4SF)
-        return "xorps\t%0, %0";
-      else if (get_attr_mode (insn) == MODE_V2DF)
-        return "xorpd\t%0, %0";
-      else
-        return "pxor\t%0, %0";
+      switch (get_attr_mode (insn))
+	{
+	case MODE_V4SF:
+	  return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	case MODE_V2DF:
+	  return TARGET_AVX ? "vxorpd\t%0, %0, %0" : "xorpd\t%0, %0";
+	case MODE_TI:
+	  return TARGET_AVX ? "vpxor\t%0, %0, %0" : "pxor\t%0, %0";
+	case MODE_V8SF:
+	  return "vxorps\t%x0, %x0, %x0";
+	case MODE_V4DF:
+	  return "vxorpd\t%x0, %x0, %x0";
+	case MODE_OI:
+	  return "vpxor\t%x0, %x0, %x0";
+	default:
+	  gcc_unreachable ();
+	}
     case 2:
-      return "pcmpeqd\t%0, %0";
+      if (TARGET_AVX)
+	switch (get_attr_mode (insn))
+	  {
+	  case MODE_V4SF:
+	  case MODE_V2DF:
+	  case MODE_TI:
+	    return "vpcmpeqd\t%0, %0, %0";
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
+      else
+	return "pcmpeqd\t%0, %0";
     }
   gcc_unreachable ();
 }
@@ -10035,12 +10215,19 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
    If CODE is 'b', pretend the mode is QImode.
    If CODE is 'k', pretend the mode is SImode.
    If CODE is 'q', pretend the mode is DImode.
+   If CODE is 'x', pretend the mode is V4SFmode.
+   If CODE is 't', pretend the mode is V8SFmode.
    If CODE is 'h', pretend the reg is the 'high' byte register.
-   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.  */
+   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
+   If CODE is 'd', duplicate the operand for AVX instruction.
+ */
 
 void
 print_reg (rtx x, int code, FILE *file)
 {
+  const char *reg;
+  bool duplicated = code == 'd' && TARGET_AVX;
+
   gcc_assert (x == pc_rtx
 	      || (REGNO (x) != ARG_POINTER_REGNUM
 		  && REGNO (x) != FRAME_POINTER_REGNUM
@@ -10070,6 +10257,10 @@ print_reg (rtx x, int code, FILE *file)
     code = 3;
   else if (code == 'h')
     code = 0;
+  else if (code == 'x')
+    code = 16;
+  else if (code == 't')
+    code = 32;
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
@@ -10101,12 +10292,14 @@ print_reg (rtx x, int code, FILE *file)
 	}
       return;
     }
+
+  reg = NULL;
   switch (code)
     {
     case 3:
       if (STACK_TOP_P (x))
 	{
-	  fputs ("st(0)", file);
+	  reg = "st(0)";
 	  break;
 	}
       /* FALLTHRU */
@@ -10119,20 +10312,38 @@ print_reg (rtx x, int code, FILE *file)
     case 16:
     case 2:
     normal:
-      fputs (hi_reg_name[REGNO (x)], file);
+      reg = hi_reg_name[REGNO (x)];
       break;
     case 1:
       if (REGNO (x) >= ARRAY_SIZE (qi_reg_name))
 	goto normal;
-      fputs (qi_reg_name[REGNO (x)], file);
+      reg = qi_reg_name[REGNO (x)];
       break;
     case 0:
       if (REGNO (x) >= ARRAY_SIZE (qi_high_reg_name))
 	goto normal;
-      fputs (qi_high_reg_name[REGNO (x)], file);
+      reg = qi_high_reg_name[REGNO (x)];
+      break;
+    case 32:
+      if (SSE_REG_P (x))
+	{
+	  gcc_assert (!duplicated);
+	  putc ('y', file);
+	  fputs (hi_reg_name[REGNO (x)] + 1, file);
+	  return;
+	}
       break;
     default:
       gcc_unreachable ();
+    }
+
+  fputs (reg, file);
+  if (duplicated)
+    {
+      if (ASSEMBLER_DIALECT == ASM_ATT)
+	fprintf (file, ", %%%s", reg);
+      else
+	fprintf (file, ", %s", reg);
     }
 }
 
@@ -10191,8 +10402,11 @@ get_some_local_dynamic_name (void)
    w --  likewise, print the HImode name of the register.
    k --  likewise, print the SImode name of the register.
    q --  likewise, print the DImode name of the register.
+   x --  likewise, print the V4SFmode name of the register.
+   t --  likewise, print the V8SFmode name of the register.
    h -- print the QImode name for a "high" register, either ah, bh, ch or dh.
    y -- print "st(0)" instead of "st" as a register.
+   d -- print duplicated register operand for AVX instruction.
    D -- print condition for SSE cmp instruction.
    P -- if PIC, print an @PLT suffix.
    X -- don't print any sort of PIC '@' suffix for a symbol.
@@ -10343,12 +10557,15 @@ print_operand (FILE *file, rtx x, int code)
 	      gcc_unreachable ();
 	    }
 
+	case 'd':
 	case 'b':
 	case 'w':
 	case 'k':
 	case 'q':
 	case 'h':
+	case 't':
 	case 'y':
+	case 'x':
 	case 'X':
 	case 'P':
 	  break;
@@ -10365,40 +10582,93 @@ print_operand (FILE *file, rtx x, int code)
 	  /* Little bit of braindamage here.  The SSE compare instructions
 	     does use completely different names for the comparisons that the
 	     fp conditional moves.  */
-	  switch (GET_CODE (x))
+	  if (TARGET_AVX)
 	    {
-	    case EQ:
-	    case UNEQ:
-	      fputs ("eq", file);
-	      break;
-	    case LT:
-	    case UNLT:
-	      fputs ("lt", file);
-	      break;
-	    case LE:
-	    case UNLE:
-	      fputs ("le", file);
-	      break;
-	    case UNORDERED:
-	      fputs ("unord", file);
-	      break;
-	    case NE:
-	    case LTGT:
-	      fputs ("neq", file);
-	      break;
-	    case UNGE:
-	    case GE:
-	      fputs ("nlt", file);
-	      break;
-	    case UNGT:
-	    case GT:
-	      fputs ("nle", file);
-	      break;
-	    case ORDERED:
-	      fputs ("ord", file);
-	      break;
-	    default:
-	      gcc_unreachable ();
+	      switch (GET_CODE (x))
+		{
+		case EQ:
+		  fputs ("eq", file);
+		  break;
+		case UNEQ:
+		  fputs ("eq_us", file);
+		  break;
+		case LT:
+		  fputs ("lt", file);
+		  break;
+		case UNLT:
+		  fputs ("nge", file);
+		  break;
+		case LE:
+		  fputs ("le", file);
+		  break;
+		case UNLE:
+		  fputs ("ngt", file);
+		  break;
+		case UNORDERED:
+		  fputs ("unord", file);
+		  break;
+		case NE:
+		  fputs ("neq", file);
+		  break;
+		case LTGT:
+		  fputs ("neq_oq", file);
+		  break;
+		case GE:
+		  fputs ("ge", file);
+		  break;
+		case UNGE:
+		  fputs ("nlt", file);
+		  break;
+		case GT:
+		  fputs ("gt", file);
+		  break;
+		case UNGT:
+		  fputs ("nle", file);
+		  break;
+		case ORDERED:
+		  fputs ("ord", file);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	  else
+	    {
+	      switch (GET_CODE (x))
+		{
+		case EQ:
+		case UNEQ:
+		  fputs ("eq", file);
+		  break;
+		case LT:
+		case UNLT:
+		  fputs ("lt", file);
+		  break;
+		case LE:
+		case UNLE:
+		  fputs ("le", file);
+		  break;
+		case UNORDERED:
+		  fputs ("unord", file);
+		  break;
+		case NE:
+		case LTGT:
+		  fputs ("neq", file);
+		  break;
+		case UNGE:
+		case GE:
+		  fputs ("nlt", file);
+		  break;
+		case UNGT:
+		case GT:
+		  fputs ("nle", file);
+		  break;
+		case ORDERED:
+		  fputs ("ord", file);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
 	    }
 	  return;
 	case 'O':
@@ -10951,7 +11221,7 @@ split_ti (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
 const char *
 output_387_binary_op (rtx insn, rtx *operands)
 {
-  static char buf[30];
+  static char buf[40];
   const char *p;
   const char *ssep;
   int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]);
@@ -10980,7 +11250,7 @@ output_387_binary_op (rtx insn, rtx *operands)
 	p = "fiadd";
       else
 	p = "fadd";
-      ssep = "add";
+      ssep = "vadd";
       break;
 
     case MINUS:
@@ -10989,7 +11259,7 @@ output_387_binary_op (rtx insn, rtx *operands)
 	p = "fisub";
       else
 	p = "fsub";
-      ssep = "sub";
+      ssep = "vsub";
       break;
 
     case MULT:
@@ -10998,7 +11268,7 @@ output_387_binary_op (rtx insn, rtx *operands)
 	p = "fimul";
       else
 	p = "fmul";
-      ssep = "mul";
+      ssep = "vmul";
       break;
 
     case DIV:
@@ -11007,7 +11277,7 @@ output_387_binary_op (rtx insn, rtx *operands)
 	p = "fidiv";
       else
 	p = "fdiv";
-      ssep = "div";
+      ssep = "vdiv";
       break;
 
     default:
@@ -11016,11 +11286,22 @@ output_387_binary_op (rtx insn, rtx *operands)
 
   if (is_sse)
    {
-      strcpy (buf, ssep);
-      if (GET_MODE (operands[0]) == SFmode)
-	strcat (buf, "ss\t{%2, %0|%0, %2}");
-      else
-	strcat (buf, "sd\t{%2, %0|%0, %2}");
+     if (TARGET_AVX)
+       {
+	 strcpy (buf, ssep);
+	 if (GET_MODE (operands[0]) == SFmode)
+	   strcat (buf, "ss\t{%2, %1, %0|%0, %1, %2}");
+	 else
+	   strcat (buf, "sd\t{%2, %1, %0|%0, %1, %2}");
+       }
+     else
+       {
+	 strcpy (buf, ssep + 1);
+	 if (GET_MODE (operands[0]) == SFmode)
+	   strcat (buf, "ss\t{%2, %0|%0, %2}");
+	 else
+	   strcat (buf, "sd\t{%2, %0|%0, %2}");
+       }
       return buf;
    }
   strcpy (buf, p);
@@ -11382,16 +11663,21 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 
   if (is_sse)
     {
+      static const char ucomiss[] = "vucomiss\t{%1, %0|%0, %1}";
+      static const char ucomisd[] = "vucomisd\t{%1, %0|%0, %1}";
+      static const char comiss[] = "vcomiss\t{%1, %0|%0, %1}";
+      static const char comisd[] = "vcomisd\t{%1, %0|%0, %1}";
+
       if (GET_MODE (operands[0]) == SFmode)
 	if (unordered_p)
-	  return "ucomiss\t{%1, %0|%0, %1}";
+	  return &ucomiss[TARGET_AVX ? 0 : 1];
 	else
-	  return "comiss\t{%1, %0|%0, %1}";
+	  return &comiss[TARGET_AVX ? 0 : 1];
       else
 	if (unordered_p)
-	  return "ucomisd\t{%1, %0|%0, %1}";
+	  return &ucomisd[TARGET_AVX ? 0 : 1];
 	else
-	  return "comisd\t{%1, %0|%0, %1}";
+	  return &comisd[TARGET_AVX ? 0 : 1];
     }
 
   gcc_assert (STACK_TOP_P (cmp_op0));
@@ -11804,6 +12090,58 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
   op0 = operands[0];
   op1 = operands[1];
+
+  if (TARGET_AVX)
+    {
+      switch (GET_MODE_CLASS (mode))
+	{
+	case MODE_VECTOR_INT:
+	case MODE_INT:
+	  switch (GET_MODE_SIZE (mode))
+	    {
+	    case 16:
+	      op0 = gen_lowpart (V16QImode, op0);
+	      op1 = gen_lowpart (V16QImode, op1);
+	      emit_insn (gen_avx_movdqu (op0, op1));
+	      break;
+	    case 32:
+	      op0 = gen_lowpart (V32QImode, op0);
+	      op1 = gen_lowpart (V32QImode, op1);
+	      emit_insn (gen_avx_movdqu256 (op0, op1));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  break;
+	case MODE_VECTOR_FLOAT:
+	  op0 = gen_lowpart (mode, op0);
+	  op1 = gen_lowpart (mode, op1);
+
+	  switch (mode)
+	    { 
+	    case V4SFmode:
+	      emit_insn (gen_avx_movups (op0, op1));
+	      break;
+	    case V8SFmode:
+	      emit_insn (gen_avx_movups256 (op0, op1));
+	      break;
+	    case V2DFmode:
+	      emit_insn (gen_avx_movupd (op0, op1));
+	      break;
+	    case V4DFmode:
+	      emit_insn (gen_avx_movupd256 (op0, op1));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      return;
+    }
 
   if (MEM_P (op1))
     {
@@ -17927,6 +18265,44 @@ ix86_attr_length_address_default (rtx insn)
       }
   return 0;
 }
+
+/* Compute default value for "length_vex" attribute. It includes
+   2 or 3 byte VEX prefix and 1 opcode byte.  */
+
+int
+ix86_attr_length_vex_default (rtx insn, int has_0f_opcode,
+			      int has_vex_w)
+{
+  int i;
+
+  /* Only 0f opcode can use 2 byte VEX prefix and  VEX W bit uses 3
+     byte VEX prefix.  */
+  if (!has_0f_opcode || has_vex_w)
+    return 3 + 1;
+
+ /* We can always use 2 byte VEX prefix in 32bit.  */
+  if (!TARGET_64BIT)
+    return 2 + 1;
+
+  extract_insn_cached (insn);
+
+  for (i = recog_data.n_operands - 1; i >= 0; --i)
+    if (REG_P (recog_data.operand[i]))
+      {
+	/* REX.W bit uses 3 byte VEX prefix.  */
+	if (GET_MODE (recog_data.operand[i]) == DImode)
+	  return 3 + 1;
+      }
+    else
+      {
+	/* REX.X or REX.B bits use 3 byte VEX prefix.  */
+	if (MEM_P (recog_data.operand[i])
+	    && x86_extended_reg_mentioned_p (recog_data.operand[i]))
+	  return 3 + 1;
+      }
+
+  return 2 + 1;
+}
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
@@ -18994,6 +19370,144 @@ enum ix86_builtins
   /* PCLMUL instruction */
   IX86_BUILTIN_PCLMULQDQ128,
 
+  /* AVX */
+  IX86_BUILTIN_ADDPD256,
+  IX86_BUILTIN_ADDPS256,
+  IX86_BUILTIN_ADDSUBPD256,
+  IX86_BUILTIN_ADDSUBPS256,
+  IX86_BUILTIN_ANDPD256,
+  IX86_BUILTIN_ANDPS256,
+  IX86_BUILTIN_ANDNPD256,
+  IX86_BUILTIN_ANDNPS256,
+  IX86_BUILTIN_BLENDPD256,
+  IX86_BUILTIN_BLENDPS256,
+  IX86_BUILTIN_BLENDVPD256,
+  IX86_BUILTIN_BLENDVPS256,
+  IX86_BUILTIN_DIVPD256,
+  IX86_BUILTIN_DIVPS256,
+  IX86_BUILTIN_DPPS256,
+  IX86_BUILTIN_HADDPD256,
+  IX86_BUILTIN_HADDPS256,
+  IX86_BUILTIN_HSUBPD256,
+  IX86_BUILTIN_HSUBPS256,
+  IX86_BUILTIN_MAXPD256,
+  IX86_BUILTIN_MAXPS256,
+  IX86_BUILTIN_MINPD256,
+  IX86_BUILTIN_MINPS256,
+  IX86_BUILTIN_MULPD256,
+  IX86_BUILTIN_MULPS256,
+  IX86_BUILTIN_ORPD256,
+  IX86_BUILTIN_ORPS256,
+  IX86_BUILTIN_SHUFPD256,
+  IX86_BUILTIN_SHUFPS256,
+  IX86_BUILTIN_SUBPD256,
+  IX86_BUILTIN_SUBPS256,
+  IX86_BUILTIN_XORPD256,
+  IX86_BUILTIN_XORPS256,
+  IX86_BUILTIN_CMPSD,
+  IX86_BUILTIN_CMPSS,
+  IX86_BUILTIN_CMPPD,
+  IX86_BUILTIN_CMPPS,
+  IX86_BUILTIN_CMPPD256,
+  IX86_BUILTIN_CMPPS256,
+  IX86_BUILTIN_CVTDQ2PD256,
+  IX86_BUILTIN_CVTDQ2PS256,
+  IX86_BUILTIN_CVTPD2PS256,
+  IX86_BUILTIN_CVTPS2DQ256,
+  IX86_BUILTIN_CVTPS2PD256,
+  IX86_BUILTIN_CVTTPD2DQ256,
+  IX86_BUILTIN_CVTPD2DQ256,
+  IX86_BUILTIN_CVTTPS2DQ256,
+  IX86_BUILTIN_EXTRACTF128PD256,
+  IX86_BUILTIN_EXTRACTF128PS256,
+  IX86_BUILTIN_EXTRACTF128SI256,
+  IX86_BUILTIN_VZEROALL,
+  IX86_BUILTIN_VZEROUPPER,
+  IX86_BUILTIN_VZEROUPPER_REX64,
+  IX86_BUILTIN_VPERMILVARPD,
+  IX86_BUILTIN_VPERMILVARPS,
+  IX86_BUILTIN_VPERMILVARPD256,
+  IX86_BUILTIN_VPERMILVARPS256,
+  IX86_BUILTIN_VPERMILPD,
+  IX86_BUILTIN_VPERMILPS,
+  IX86_BUILTIN_VPERMILPD256,
+  IX86_BUILTIN_VPERMILPS256,
+  IX86_BUILTIN_VPERMIL2PD,
+  IX86_BUILTIN_VPERMIL2PS,
+  IX86_BUILTIN_VPERMIL2PD256,
+  IX86_BUILTIN_VPERMIL2PS256,
+  IX86_BUILTIN_VPERM2F128PD256,
+  IX86_BUILTIN_VPERM2F128PS256,
+  IX86_BUILTIN_VPERM2F128SI256,
+  IX86_BUILTIN_VBROADCASTSS,
+  IX86_BUILTIN_VBROADCASTSD256,
+  IX86_BUILTIN_VBROADCASTSS256,
+  IX86_BUILTIN_VBROADCASTPD256,
+  IX86_BUILTIN_VBROADCASTPS256,
+  IX86_BUILTIN_VINSERTF128PD256,
+  IX86_BUILTIN_VINSERTF128PS256,
+  IX86_BUILTIN_VINSERTF128SI256,
+  IX86_BUILTIN_LOADUPD256,
+  IX86_BUILTIN_LOADUPS256,
+  IX86_BUILTIN_STOREUPD256,
+  IX86_BUILTIN_STOREUPS256,
+  IX86_BUILTIN_LDDQU256,
+  IX86_BUILTIN_LOADDQU256,
+  IX86_BUILTIN_STOREDQU256,
+  IX86_BUILTIN_MASKLOADPD,
+  IX86_BUILTIN_MASKLOADPS,
+  IX86_BUILTIN_MASKSTOREPD,
+  IX86_BUILTIN_MASKSTOREPS,
+  IX86_BUILTIN_MASKLOADPD256,
+  IX86_BUILTIN_MASKLOADPS256,
+  IX86_BUILTIN_MASKSTOREPD256,
+  IX86_BUILTIN_MASKSTOREPS256,
+  IX86_BUILTIN_MOVSHDUP256,
+  IX86_BUILTIN_MOVSLDUP256,
+  IX86_BUILTIN_MOVDDUP256,
+
+  IX86_BUILTIN_SQRTPD256,
+  IX86_BUILTIN_SQRTPS256,
+  IX86_BUILTIN_SQRTPS_NR256,
+  IX86_BUILTIN_RSQRTPS256,
+  IX86_BUILTIN_RSQRTPS_NR256,
+
+  IX86_BUILTIN_RCPPS256,
+
+  IX86_BUILTIN_ROUNDPD256,
+  IX86_BUILTIN_ROUNDPS256,
+
+  IX86_BUILTIN_UNPCKHPD256,
+  IX86_BUILTIN_UNPCKLPD256,
+  IX86_BUILTIN_UNPCKHPS256,
+  IX86_BUILTIN_UNPCKLPS256,
+
+  IX86_BUILTIN_SI256_SI,
+  IX86_BUILTIN_PS256_PS,
+  IX86_BUILTIN_PD256_PD,
+  IX86_BUILTIN_SI_SI256,
+  IX86_BUILTIN_PS_PS256,
+  IX86_BUILTIN_PD_PD256,
+
+  IX86_BUILTIN_VTESTZPD,
+  IX86_BUILTIN_VTESTCPD,
+  IX86_BUILTIN_VTESTNZCPD,
+  IX86_BUILTIN_VTESTZPS,
+  IX86_BUILTIN_VTESTCPS,
+  IX86_BUILTIN_VTESTNZCPS,
+  IX86_BUILTIN_VTESTZPD256,
+  IX86_BUILTIN_VTESTCPD256,
+  IX86_BUILTIN_VTESTNZCPD256,
+  IX86_BUILTIN_VTESTZPS256,
+  IX86_BUILTIN_VTESTCPS256,
+  IX86_BUILTIN_VTESTNZCPS256,
+  IX86_BUILTIN_PTESTZ256,
+  IX86_BUILTIN_PTESTC256,
+  IX86_BUILTIN_PTESTNZC256,
+
+  IX86_BUILTIN_MOVMSKPD256,
+  IX86_BUILTIN_MOVMSKPS256,
+
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
   IX86_BUILTIN_FABSQ,
@@ -19328,19 +19842,35 @@ enum ix86_special_builtin_type
 {
   SPECIAL_FTYPE_UNKNOWN,
   VOID_FTYPE_VOID,
+  V32QI_FTYPE_PCCHAR,
   V16QI_FTYPE_PCCHAR,
+  V8SF_FTYPE_PCV4SF,
+  V8SF_FTYPE_PCFLOAT,
+  V4DF_FTYPE_PCV2DF,
+  V4DF_FTYPE_PCDOUBLE,
   V4SF_FTYPE_PCFLOAT,
   V2DF_FTYPE_PCDOUBLE,
+  V8SF_FTYPE_PCV8SF_V8SF,
+  V4DF_FTYPE_PCV4DF_V4DF,
   V4SF_FTYPE_V4SF_PCV2SF,
+  V4SF_FTYPE_PCV4SF_V4SF,
   V2DF_FTYPE_V2DF_PCDOUBLE,
+  V2DF_FTYPE_PCV2DF_V2DF,
   V2DI_FTYPE_PV2DI,
   VOID_FTYPE_PV2SF_V4SF,
   VOID_FTYPE_PV2DI_V2DI,
+  VOID_FTYPE_PCHAR_V32QI,
   VOID_FTYPE_PCHAR_V16QI,
+  VOID_FTYPE_PFLOAT_V8SF,
   VOID_FTYPE_PFLOAT_V4SF,
+  VOID_FTYPE_PDOUBLE_V4DF,
   VOID_FTYPE_PDOUBLE_V2DF,
   VOID_FTYPE_PDI_DI,
-  VOID_FTYPE_PINT_INT
+  VOID_FTYPE_PINT_INT,
+  VOID_FTYPE_PV8SF_V8SF_V8SF,
+  VOID_FTYPE_PV4DF_V4DF_V4DF,
+  VOID_FTYPE_PV4SF_V4SF_V4SF,
+  VOID_FTYPE_PV2DF_V2DF_V2DF
 };
 
 /* Builtin types */
@@ -19350,25 +19880,45 @@ enum ix86_builtin_type
   FLOAT128_FTYPE_FLOAT128,
   FLOAT_FTYPE_FLOAT,
   FLOAT128_FTYPE_FLOAT128_FLOAT128,
+  INT_FTYPE_V8SF_V8SF_PTEST,
+  INT_FTYPE_V4DI_V4DI_PTEST,
+  INT_FTYPE_V4DF_V4DF_PTEST,
+  INT_FTYPE_V4SF_V4SF_PTEST,
   INT_FTYPE_V2DI_V2DI_PTEST,
+  INT_FTYPE_V2DF_V2DF_PTEST,
   INT64_FTYPE_V4SF,
   INT64_FTYPE_V2DF,
   INT_FTYPE_V16QI,
   INT_FTYPE_V8QI,
+  INT_FTYPE_V8SF,
+  INT_FTYPE_V4DF,
   INT_FTYPE_V4SF,
   INT_FTYPE_V2DF,
   V16QI_FTYPE_V16QI,
+  V8SI_FTYPE_V8SF,
+  V8SI_FTYPE_V4SI,
   V8HI_FTYPE_V8HI,
   V8HI_FTYPE_V16QI,
   V8QI_FTYPE_V8QI,
+  V8SF_FTYPE_V8SF,
+  V8SF_FTYPE_V8SI,
+  V8SF_FTYPE_V4SF,
   V4SI_FTYPE_V4SI,
   V4SI_FTYPE_V16QI,
+  V4SI_FTYPE_V8SI,
   V4SI_FTYPE_V8HI,
+  V4SI_FTYPE_V4DF,
   V4SI_FTYPE_V4SF,
   V4SI_FTYPE_V2DF,
   V4HI_FTYPE_V4HI,
+  V4DF_FTYPE_V4DF,
+  V4DF_FTYPE_V4SI,
+  V4DF_FTYPE_V4SF,
+  V4DF_FTYPE_V2DF,
+  V4SF_FTYPE_V4DF,
   V4SF_FTYPE_V4SF,
   V4SF_FTYPE_V4SF_VEC_MERGE,
+  V4SF_FTYPE_V8SF,
   V4SF_FTYPE_V4SI,
   V4SF_FTYPE_V2DF,
   V2DI_FTYPE_V2DI,
@@ -19378,6 +19928,7 @@ enum ix86_builtin_type
   V2DF_FTYPE_V2DF,
   V2DF_FTYPE_V2DF_VEC_MERGE,
   V2DF_FTYPE_V4SI,
+  V2DF_FTYPE_V4DF,
   V2DF_FTYPE_V4SF,
   V2DF_FTYPE_V2SI,
   V2SI_FTYPE_V2SI,
@@ -19395,6 +19946,8 @@ enum ix86_builtin_type
   V8HI_FTYPE_V16QI_V16QI,
   V8HI_FTYPE_V4SI_V4SI,
   V8HI_FTYPE_V8HI_SI_COUNT,
+  V8SF_FTYPE_V8SF_V8SF,
+  V8SF_FTYPE_V8SF_V8SI,
   V4SI_FTYPE_V4SI_V4SI,
   V4SI_FTYPE_V4SI_V4SI_COUNT,
   V4SI_FTYPE_V8HI_V8HI,
@@ -19406,8 +19959,11 @@ enum ix86_builtin_type
   V4HI_FTYPE_V8QI_V8QI,
   V4HI_FTYPE_V2SI_V2SI,
   V4HI_FTYPE_V4HI_SI_COUNT,
+  V4DF_FTYPE_V4DF_V4DF,
+  V4DF_FTYPE_V4DF_V4DI,
   V4SF_FTYPE_V4SF_V4SF,
   V4SF_FTYPE_V4SF_V4SF_SWAP,
+  V4SF_FTYPE_V4SF_V4SI,
   V4SF_FTYPE_V4SF_V2SI,
   V4SF_FTYPE_V4SF_V2DF,
   V4SF_FTYPE_V4SF_DI,
@@ -19427,6 +19983,7 @@ enum ix86_builtin_type
   V2DF_FTYPE_V2DF_V2DF,
   V2DF_FTYPE_V2DF_V2DF_SWAP,
   V2DF_FTYPE_V2DF_V4SF,
+  V2DF_FTYPE_V2DF_V2DI,
   V2DF_FTYPE_V2DF_DI,
   V2DF_FTYPE_V2DF_SI,
   V2SF_FTYPE_V2SF_V2SF,
@@ -19442,21 +19999,38 @@ enum ix86_builtin_type
   V8HI_FTYPE_V8HI_INT,
   V4SI_FTYPE_V4SI_INT,
   V4HI_FTYPE_V4HI_INT,
+  V8SF_FTYPE_V8SF_INT,
+  V4SI_FTYPE_V8SI_INT,
+  V4SF_FTYPE_V8SF_INT,
+  V2DF_FTYPE_V4DF_INT,
+  V4DF_FTYPE_V4DF_INT,
   V4SF_FTYPE_V4SF_INT,
   V2DI_FTYPE_V2DI_INT,
   V2DI2TI_FTYPE_V2DI_INT,
   V2DF_FTYPE_V2DF_INT,
   V16QI_FTYPE_V16QI_V16QI_V16QI,
+  V8SF_FTYPE_V8SF_V8SF_V8SF,
+  V4DF_FTYPE_V4DF_V4DF_V4DF,
   V4SF_FTYPE_V4SF_V4SF_V4SF,
   V2DF_FTYPE_V2DF_V2DF_V2DF,
   V16QI_FTYPE_V16QI_V16QI_INT,
+  V8SI_FTYPE_V8SI_V8SI_INT,
+  V8SI_FTYPE_V8SI_V4SI_INT,
   V8HI_FTYPE_V8HI_V8HI_INT,
+  V8SF_FTYPE_V8SF_V8SF_INT,
+  V8SF_FTYPE_V8SF_V4SF_INT,
   V4SI_FTYPE_V4SI_V4SI_INT,
+  V4DF_FTYPE_V4DF_V4DF_INT,
+  V4DF_FTYPE_V4DF_V2DF_INT,
   V4SF_FTYPE_V4SF_V4SF_INT,
   V2DI_FTYPE_V2DI_V2DI_INT,
   V2DI2TI_FTYPE_V2DI_V2DI_INT,
   V1DI2DI_FTYPE_V1DI_V1DI_INT,
   V2DF_FTYPE_V2DF_V2DF_INT,
+  V8SF_FTYPE_V8SF_V8SF_V8SI_INT,
+  V4DF_FTYPE_V4DF_V4DF_V4DI_INT,
+  V4SF_FTYPE_V4SF_V4SF_V4SI_INT,
+  V2DF_FTYPE_V2DF_V2DF_V2DI_INT,
   V2DI_FTYPE_V2DI_UINT_UINT,
   V2DI_FTYPE_V2DI_V2DI_UINT_UINT
 };
@@ -19507,6 +20081,34 @@ static const struct builtin_description bdesc_special_args[] =
   /* SSE4A */
   { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_vmmovntv2df, "__builtin_ia32_movntsd", IX86_BUILTIN_MOVNTSD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
   { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_vmmovntv4sf, "__builtin_ia32_movntss", IX86_BUILTIN_MOVNTSS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
+
+  /* AVX */
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vzeroall, "__builtin_ia32_vzeroall", IX86_BUILTIN_VZEROALL, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vzeroupper, 0, IX86_BUILTIN_VZEROUPPER, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_64BIT, CODE_FOR_avx_vzeroupper_rex64, 0, IX86_BUILTIN_VZEROUPPER_REX64, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastss, "__builtin_ia32_vbroadcastss", IX86_BUILTIN_VBROADCASTSS, UNKNOWN, (int) V4SF_FTYPE_PCFLOAT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastsd256, "__builtin_ia32_vbroadcastsd256", IX86_BUILTIN_VBROADCASTSD256, UNKNOWN, (int) V4DF_FTYPE_PCDOUBLE },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastss256, "__builtin_ia32_vbroadcastss256", IX86_BUILTIN_VBROADCASTSS256, UNKNOWN, (int) V8SF_FTYPE_PCFLOAT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastf128_pd256, "__builtin_ia32_vbroadcastf128_pd256", IX86_BUILTIN_VBROADCASTPD256, UNKNOWN, (int) V4DF_FTYPE_PCV2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastf128_ps256, "__builtin_ia32_vbroadcastf128_ps256", IX86_BUILTIN_VBROADCASTPS256, UNKNOWN, (int) V8SF_FTYPE_PCV4SF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movupd256, "__builtin_ia32_loadupd256", IX86_BUILTIN_LOADUPD256, UNKNOWN, (int) V4DF_FTYPE_PCDOUBLE },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movups256, "__builtin_ia32_loadups256", IX86_BUILTIN_LOADUPS256, UNKNOWN, (int) V8SF_FTYPE_PCFLOAT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movupd256, "__builtin_ia32_storeupd256", IX86_BUILTIN_STOREUPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movups256, "__builtin_ia32_storeups256", IX86_BUILTIN_STOREUPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_loaddqu256", IX86_BUILTIN_LOADDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_storedqu256", IX86_BUILTIN_STOREDQU256, UNKNOWN, (int) VOID_FTYPE_PCHAR_V32QI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_lddqu256, "__builtin_ia32_lddqu256", IX86_BUILTIN_LDDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd256, "__builtin_ia32_maskloadpd256", IX86_BUILTIN_MASKLOADPD256, UNKNOWN, (int) V4DF_FTYPE_PCV4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps256, "__builtin_ia32_maskloadps256", IX86_BUILTIN_MASKLOADPS256, UNKNOWN, (int) V8SF_FTYPE_PCV8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd, "__builtin_ia32_maskstorepd", IX86_BUILTIN_MASKSTOREPD, UNKNOWN, (int) VOID_FTYPE_PV2DF_V2DF_V2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SF_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SF_V8SF },
 };
 
 /* Builtins with variable number of arguments.  */
@@ -19991,6 +20593,124 @@ static const struct builtin_description bdesc_args[] =
 
   /* PCLMUL */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_pclmulqdq, 0, IX86_BUILTIN_PCLMULQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_INT },
+
+  /* AVX */
+  { OPTION_MASK_ISA_AVX, CODE_FOR_addv4df3, "__builtin_ia32_addpd256", IX86_BUILTIN_ADDPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_addv8sf3, "__builtin_ia32_addps256", IX86_BUILTIN_ADDPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_addsubv4df3, "__builtin_ia32_addsubpd256", IX86_BUILTIN_ADDSUBPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_addsubv8sf3, "__builtin_ia32_addsubps256", IX86_BUILTIN_ADDSUBPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_andv4df3, "__builtin_ia32_andpd256", IX86_BUILTIN_ANDPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_andv8sf3, "__builtin_ia32_andps256", IX86_BUILTIN_ANDPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_nandv4df3, "__builtin_ia32_andnpd256", IX86_BUILTIN_ANDNPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_nandv8sf3, "__builtin_ia32_andnps256", IX86_BUILTIN_ANDNPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_divv4df3, "__builtin_ia32_divpd256", IX86_BUILTIN_DIVPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_divv8sf3, "__builtin_ia32_divps256", IX86_BUILTIN_DIVPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_haddv4df3, "__builtin_ia32_haddpd256", IX86_BUILTIN_HADDPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_hsubv8sf3, "__builtin_ia32_hsubps256", IX86_BUILTIN_HSUBPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_hsubv4df3, "__builtin_ia32_hsubpd256", IX86_BUILTIN_HSUBPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_haddv8sf3, "__builtin_ia32_haddps256", IX86_BUILTIN_HADDPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_smaxv4df3, "__builtin_ia32_maxpd256", IX86_BUILTIN_MAXPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_smaxv8sf3, "__builtin_ia32_maxps256", IX86_BUILTIN_MAXPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_sminv4df3, "__builtin_ia32_minpd256", IX86_BUILTIN_MINPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_sminv8sf3, "__builtin_ia32_minps256", IX86_BUILTIN_MINPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_mulv4df3, "__builtin_ia32_mulpd256", IX86_BUILTIN_MULPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_mulv8sf3, "__builtin_ia32_mulps256", IX86_BUILTIN_MULPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_iorv4df3, "__builtin_ia32_orpd256", IX86_BUILTIN_ORPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_iorv8sf3, "__builtin_ia32_orps256", IX86_BUILTIN_ORPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_subv4df3, "__builtin_ia32_subpd256", IX86_BUILTIN_SUBPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_subv8sf3, "__builtin_ia32_subps256", IX86_BUILTIN_SUBPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_xorv4df3, "__builtin_ia32_xorpd256", IX86_BUILTIN_XORPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_xorv8sf3, "__builtin_ia32_xorps256", IX86_BUILTIN_XORPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilvarv2df3, "__builtin_ia32_vpermilvarpd", IX86_BUILTIN_VPERMILVARPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilvarv4sf3, "__builtin_ia32_vpermilvarps", IX86_BUILTIN_VPERMILVARPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilvarv4df3, "__builtin_ia32_vpermilvarpd256", IX86_BUILTIN_VPERMILVARPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilvarv8sf3, "__builtin_ia32_vpermilvarps256", IX86_BUILTIN_VPERMILVARPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SI },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_blendpd256, "__builtin_ia32_blendpd256", IX86_BUILTIN_BLENDPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_blendps256, "__builtin_ia32_blendps256", IX86_BUILTIN_BLENDPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_blendvpd256, "__builtin_ia32_blendvpd256", IX86_BUILTIN_BLENDVPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_blendvps256, "__builtin_ia32_blendvps256", IX86_BUILTIN_BLENDVPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_dpps256, "__builtin_ia32_dpps256", IX86_BUILTIN_DPPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_shufpd256, "__builtin_ia32_shufpd256", IX86_BUILTIN_SHUFPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_shufps256, "__builtin_ia32_shufps256", IX86_BUILTIN_SHUFPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmpsdv2df3, "__builtin_ia32_cmpsd", IX86_BUILTIN_CMPSD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmpssv4sf3, "__builtin_ia32_cmpss", IX86_BUILTIN_CMPSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmppdv2df3, "__builtin_ia32_cmppd", IX86_BUILTIN_CMPPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmppsv4sf3, "__builtin_ia32_cmpps", IX86_BUILTIN_CMPPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmppdv4df3, "__builtin_ia32_cmppd256", IX86_BUILTIN_CMPPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cmppsv8sf3, "__builtin_ia32_cmpps256", IX86_BUILTIN_CMPPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v4df, "__builtin_ia32_vextractf128_pd256", IX86_BUILTIN_EXTRACTF128PD256, UNKNOWN, (int) V2DF_FTYPE_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v8sf, "__builtin_ia32_vextractf128_ps256", IX86_BUILTIN_EXTRACTF128PS256, UNKNOWN, (int) V4SF_FTYPE_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vextractf128v8si, "__builtin_ia32_vextractf128_si256", IX86_BUILTIN_EXTRACTF128SI256, UNKNOWN, (int) V4SI_FTYPE_V8SI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtdq2pd256, "__builtin_ia32_cvtdq2pd256", IX86_BUILTIN_CVTDQ2PD256, UNKNOWN, (int) V4DF_FTYPE_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtdq2ps256, "__builtin_ia32_cvtdq2ps256", IX86_BUILTIN_CVTDQ2PS256, UNKNOWN, (int) V8SF_FTYPE_V8SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtpd2ps256, "__builtin_ia32_cvtpd2ps256", IX86_BUILTIN_CVTPD2PS256, UNKNOWN, (int) V4SF_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtps2dq256, "__builtin_ia32_cvtps2dq256", IX86_BUILTIN_CVTPS2DQ256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtps2pd256, "__builtin_ia32_cvtps2pd256", IX86_BUILTIN_CVTPS2PD256, UNKNOWN, (int) V4DF_FTYPE_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvttpd2dq256, "__builtin_ia32_cvttpd2dq256", IX86_BUILTIN_CVTTPD2DQ256, UNKNOWN, (int) V4SI_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvtpd2dq256, "__builtin_ia32_cvtpd2dq256", IX86_BUILTIN_CVTPD2DQ256, UNKNOWN, (int) V4SI_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_cvttps2dq256, "__builtin_ia32_cvttps2dq256", IX86_BUILTIN_CVTTPS2DQ256, UNKNOWN, (int) V8SI_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v4df3, "__builtin_ia32_vperm2f128_pd256", IX86_BUILTIN_VPERM2F128PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v8sf3, "__builtin_ia32_vperm2f128_ps256", IX86_BUILTIN_VPERM2F128PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vperm2f128v8si3, "__builtin_ia32_vperm2f128_si256", IX86_BUILTIN_VPERM2F128SI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv2df, "__builtin_ia32_vpermilpd", IX86_BUILTIN_VPERMILPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv4sf, "__builtin_ia32_vpermilps", IX86_BUILTIN_VPERMILPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv4df, "__builtin_ia32_vpermilpd256", IX86_BUILTIN_VPERMILPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv8sf, "__builtin_ia32_vpermilps256", IX86_BUILTIN_VPERMILPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v2df3,  "__builtin_ia32_vpermil2pd", IX86_BUILTIN_VPERMIL2PD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_V2DI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v4sf3,  "__builtin_ia32_vpermil2ps", IX86_BUILTIN_VPERMIL2PS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v4df3,  "__builtin_ia32_vpermil2pd256", IX86_BUILTIN_VPERMIL2PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_V4DI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v8sf3,  "__builtin_ia32_vpermil2ps256", IX86_BUILTIN_VPERMIL2PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_V8SI_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v4df, "__builtin_ia32_vinsertf128_pd256", IX86_BUILTIN_VINSERTF128PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V2DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v8sf, "__builtin_ia32_vinsertf128_ps256", IX86_BUILTIN_VINSERTF128PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V4SF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v8si, "__builtin_ia32_vinsertf128_si256", IX86_BUILTIN_VINSERTF128SI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V4SI_INT },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movshdup256, "__builtin_ia32_movshdup256", IX86_BUILTIN_MOVSHDUP256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movsldup256, "__builtin_ia32_movsldup256", IX86_BUILTIN_MOVSLDUP256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movddup256, "__builtin_ia32_movddup256", IX86_BUILTIN_MOVDDUP256, UNKNOWN, (int) V4DF_FTYPE_V4DF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_sqrtv4df2, "__builtin_ia32_sqrtpd256", IX86_BUILTIN_SQRTPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_sqrtv8sf2, "__builtin_ia32_sqrtps256", IX86_BUILTIN_SQRTPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_sqrtv8sf2, "__builtin_ia32_sqrtps_nr256", IX86_BUILTIN_SQRTPS_NR256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_rsqrtv8sf2, "__builtin_ia32_rsqrtps256", IX86_BUILTIN_RSQRTPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_rsqrtv8sf2, "__builtin_ia32_rsqrtps_nr256", IX86_BUILTIN_RSQRTPS_NR256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_rcpv8sf2, "__builtin_ia32_rcpps256", IX86_BUILTIN_RCPPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundpd256, "__builtin_ia32_roundpd256", IX86_BUILTIN_ROUNDPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_INT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_roundps256, "__builtin_ia32_roundps256", IX86_BUILTIN_ROUNDPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_INT },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpckhpd256,  "__builtin_ia32_unpckhpd256", IX86_BUILTIN_UNPCKHPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpcklpd256,  "__builtin_ia32_unpcklpd256", IX86_BUILTIN_UNPCKLPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpckhps256,  "__builtin_ia32_unpckhps256", IX86_BUILTIN_UNPCKHPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_unpcklps256,  "__builtin_ia32_unpcklps256", IX86_BUILTIN_UNPCKLPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_si256_si, "__builtin_ia32_si256_si", IX86_BUILTIN_SI256_SI, UNKNOWN, (int) V8SI_FTYPE_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_ps256_ps, "__builtin_ia32_ps256_ps", IX86_BUILTIN_PS256_PS, UNKNOWN, (int) V8SF_FTYPE_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_pd256_pd, "__builtin_ia32_pd256_pd", IX86_BUILTIN_PD256_PD, UNKNOWN, (int) V4DF_FTYPE_V2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_si_si256, "__builtin_ia32_si_si256", IX86_BUILTIN_SI_SI256, UNKNOWN, (int) V4SI_FTYPE_V8SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_ps_ps256, "__builtin_ia32_ps_ps256", IX86_BUILTIN_PS_PS256, UNKNOWN, (int) V4SF_FTYPE_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_pd_pd256, "__builtin_ia32_pd_pd256", IX86_BUILTIN_PD_PD256, UNKNOWN, (int) V2DF_FTYPE_V4DF },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd, "__builtin_ia32_vtestzpd", IX86_BUILTIN_VTESTZPD, EQ, (int) INT_FTYPE_V2DF_V2DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd, "__builtin_ia32_vtestcpd", IX86_BUILTIN_VTESTCPD, LTU, (int) INT_FTYPE_V2DF_V2DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd, "__builtin_ia32_vtestnzcpd", IX86_BUILTIN_VTESTNZCPD, GTU, (int) INT_FTYPE_V2DF_V2DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps, "__builtin_ia32_vtestzps", IX86_BUILTIN_VTESTZPS, EQ, (int) INT_FTYPE_V4SF_V4SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps, "__builtin_ia32_vtestcps", IX86_BUILTIN_VTESTCPS, LTU, (int) INT_FTYPE_V4SF_V4SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps, "__builtin_ia32_vtestnzcps", IX86_BUILTIN_VTESTNZCPS, GTU, (int) INT_FTYPE_V4SF_V4SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd256, "__builtin_ia32_vtestzpd256", IX86_BUILTIN_VTESTZPD256, EQ, (int) INT_FTYPE_V4DF_V4DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd256, "__builtin_ia32_vtestcpd256", IX86_BUILTIN_VTESTCPD256, LTU, (int) INT_FTYPE_V4DF_V4DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestpd256, "__builtin_ia32_vtestnzcpd256", IX86_BUILTIN_VTESTNZCPD256, GTU, (int) INT_FTYPE_V4DF_V4DF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps256, "__builtin_ia32_vtestzps256", IX86_BUILTIN_VTESTZPS256, EQ, (int) INT_FTYPE_V8SF_V8SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps256, "__builtin_ia32_vtestcps256", IX86_BUILTIN_VTESTCPS256, LTU, (int) INT_FTYPE_V8SF_V8SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vtestps256, "__builtin_ia32_vtestnzcps256", IX86_BUILTIN_VTESTNZCPS256, GTU, (int) INT_FTYPE_V8SF_V8SF_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_ptest256, "__builtin_ia32_ptestz256", IX86_BUILTIN_PTESTZ256, EQ, (int) INT_FTYPE_V4DI_V4DI_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_ptest256, "__builtin_ia32_ptestc256", IX86_BUILTIN_PTESTC256, LTU, (int) INT_FTYPE_V4DI_V4DI_PTEST },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_ptest256, "__builtin_ia32_ptestnzc256", IX86_BUILTIN_PTESTNZC256, GTU, (int) INT_FTYPE_V4DI_V4DI_PTEST },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movmskpd256, "__builtin_ia32_movmskpd256", IX86_BUILTIN_MOVMSKPD256, UNKNOWN, (int) INT_FTYPE_V4DF  },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movmskps256, "__builtin_ia32_movmskps256", IX86_BUILTIN_MOVMSKPS256, UNKNOWN, (int) INT_FTYPE_V8SF },
 };
 
 /* SSE5 */
@@ -20787,6 +21507,276 @@ ix86_init_mmx_sse_builtins (void)
 				float_type_node,
 				NULL_TREE);
 
+  /* AVX builtins  */
+  tree V32QI_type_node = build_vector_type_for_mode (char_type_node,
+						     V32QImode);
+  tree V8SI_type_node = build_vector_type_for_mode (intSI_type_node,
+						    V8SImode);
+  tree V8SF_type_node = build_vector_type_for_mode (float_type_node,
+						    V8SFmode);
+  tree V4DI_type_node = build_vector_type_for_mode (long_long_integer_type_node,
+						    V4DImode);
+  tree V4DF_type_node = build_vector_type_for_mode (double_type_node,
+						    V4DFmode);
+  tree v8sf_ftype_v8sf
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree v8si_ftype_v8sf
+    = build_function_type_list (V8SI_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8si
+    = build_function_type_list (V8SF_type_node,
+				V8SI_type_node,
+				NULL_TREE);
+  tree v4si_ftype_v4df
+    = build_function_type_list (V4SI_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4si
+    = build_function_type_list (V4DF_type_node,
+				V4SI_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4sf
+    = build_function_type_list (V4DF_type_node,
+				V4SF_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_v4df
+    = build_function_type_list (V4SF_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v8sf
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V8SF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v4df
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V4DF_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_int
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, integer_type_node,
+				NULL_TREE);
+  tree v4si_ftype_v8si_int
+    = build_function_type_list (V4SI_type_node,
+				V8SI_type_node, integer_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_int
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, integer_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_v8sf_int
+    = build_function_type_list (V4SF_type_node,
+				V8SF_type_node, integer_type_node,
+				NULL_TREE);
+  tree v2df_ftype_v4df_int
+    = build_function_type_list (V2DF_type_node,
+				V4DF_type_node, integer_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v8sf_int
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V8SF_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v8sf_v8sf
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V8SF_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v4df_v4df
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V4DF_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree v8si_ftype_v8si_v8si_int
+    = build_function_type_list (V8SI_type_node,
+				V8SI_type_node, V8SI_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v4df_int
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V4DF_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v8sf_v8si_int
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V8SF_type_node,
+				V8SI_type_node, integer_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v4df_v4di_int
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V4DF_type_node,
+				V4DI_type_node, integer_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_v4sf_v4sf_v4si_int
+    = build_function_type_list (V4SF_type_node,
+				V4SF_type_node, V4SF_type_node,
+				V4SI_type_node, integer_type_node,
+				NULL_TREE);
+  tree v2df_ftype_v2df_v2df_v2di_int
+    = build_function_type_list (V2DF_type_node,
+				V2DF_type_node, V2DF_type_node,
+				V2DI_type_node, integer_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_pcfloat
+    = build_function_type_list (V8SF_type_node,
+				pcfloat_type_node,
+				NULL_TREE);
+  tree v4df_ftype_pcdouble
+    = build_function_type_list (V4DF_type_node,
+				pcdouble_type_node,
+				NULL_TREE);
+  tree pcv4sf_type_node
+    = build_pointer_type (build_type_variant (V4SF_type_node, 1, 0));
+  tree pcv2df_type_node
+    = build_pointer_type (build_type_variant (V2DF_type_node, 1, 0));
+  tree v8sf_ftype_pcv4sf
+    = build_function_type_list (V8SF_type_node,
+				pcv4sf_type_node,
+				NULL_TREE);
+  tree v4df_ftype_pcv2df
+    = build_function_type_list (V4DF_type_node,
+				pcv2df_type_node,
+				NULL_TREE);
+  tree v32qi_ftype_pcchar
+    = build_function_type_list (V32QI_type_node,
+				pcchar_type_node,
+				NULL_TREE);
+  tree void_ftype_pchar_v32qi
+    = build_function_type_list (void_type_node,
+			        pchar_type_node, V32QI_type_node,
+				NULL_TREE);
+  tree v8si_ftype_v8si_v4si_int
+    = build_function_type_list (V8SI_type_node,
+				V8SI_type_node, V4SI_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v4sf_int
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V4SF_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v2df_int
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V2DF_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree void_ftype_pfloat_v8sf
+    = build_function_type_list (void_type_node,
+			        pfloat_type_node, V8SF_type_node,
+				NULL_TREE);
+  tree void_ftype_pdouble_v4df
+    = build_function_type_list (void_type_node,
+			        pdouble_type_node, V4DF_type_node,
+				NULL_TREE);
+  tree pv8sf_type_node = build_pointer_type (V8SF_type_node);
+  tree pv4sf_type_node = build_pointer_type (V4SF_type_node);
+  tree pv4df_type_node = build_pointer_type (V4DF_type_node);
+  tree pv2df_type_node = build_pointer_type (V2DF_type_node);
+  tree pcv8sf_type_node
+    = build_pointer_type (build_type_variant (V8SF_type_node, 1, 0));
+  tree pcv4df_type_node
+    = build_pointer_type (build_type_variant (V4DF_type_node, 1, 0));
+  tree v8sf_ftype_pcv8sf_v8sf
+    = build_function_type_list (V8SF_type_node,
+				pcv8sf_type_node, V8SF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_pcv4df_v4df
+    = build_function_type_list (V4DF_type_node,
+				pcv4df_type_node, V4DF_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_pcv4sf_v4sf
+    = build_function_type_list (V4SF_type_node,
+				pcv4sf_type_node, V4SF_type_node,
+				NULL_TREE);
+  tree v2df_ftype_pcv2df_v2df
+    = build_function_type_list (V2DF_type_node,
+				pcv2df_type_node, V2DF_type_node,
+				NULL_TREE);
+  tree void_ftype_pv8sf_v8sf_v8sf
+    = build_function_type_list (void_type_node,
+			        pv8sf_type_node, V8SF_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree void_ftype_pv4df_v4df_v4df
+    = build_function_type_list (void_type_node,
+			        pv4df_type_node, V4DF_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree void_ftype_pv4sf_v4sf_v4sf
+    = build_function_type_list (void_type_node,
+			        pv4sf_type_node, V4SF_type_node,
+				V4SF_type_node,
+				NULL_TREE);
+  tree void_ftype_pv2df_v2df_v2df
+    = build_function_type_list (void_type_node,
+			        pv2df_type_node, V2DF_type_node,
+				V2DF_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v2df
+    = build_function_type_list (V4DF_type_node,
+				V2DF_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v4sf
+    = build_function_type_list (V8SF_type_node,
+				V4SF_type_node,
+				NULL_TREE);
+  tree v8si_ftype_v4si
+    = build_function_type_list (V8SI_type_node,
+				V4SI_type_node,
+				NULL_TREE);
+  tree v2df_ftype_v4df
+    = build_function_type_list (V2DF_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_v8sf
+    = build_function_type_list (V4SF_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree v4si_ftype_v8si
+    = build_function_type_list (V4SI_type_node,
+				V8SI_type_node,
+				NULL_TREE);
+  tree int_ftype_v4df
+    = build_function_type_list (integer_type_node,
+				V4DF_type_node,
+				NULL_TREE);
+  tree int_ftype_v8sf
+    = build_function_type_list (integer_type_node,
+				V8SF_type_node,
+				NULL_TREE);
+  tree int_ftype_v8sf_v8sf
+    = build_function_type_list (integer_type_node,
+				V8SF_type_node, V8SF_type_node,
+				NULL_TREE);
+  tree int_ftype_v4di_v4di
+    = build_function_type_list (integer_type_node,
+				V4DI_type_node, V4DI_type_node,
+				NULL_TREE);
+  tree int_ftype_v4df_v4df
+    = build_function_type_list (integer_type_node,
+				V4DF_type_node, V4DF_type_node,
+				NULL_TREE);
+  tree v8sf_ftype_v8sf_v8si
+    = build_function_type_list (V8SF_type_node,
+				V8SF_type_node, V8SI_type_node,
+				NULL_TREE);
+  tree v4df_ftype_v4df_v4di
+    = build_function_type_list (V4DF_type_node,
+				V4DF_type_node, V4DI_type_node,
+				NULL_TREE);
+  tree v4sf_ftype_v4sf_v4si
+    = build_function_type_list (V4SF_type_node,
+				V4SF_type_node, V4SI_type_node, NULL_TREE);
+  tree v2df_ftype_v2df_v2di
+    = build_function_type_list (V2DF_type_node,
+				V2DF_type_node, V2DI_type_node, NULL_TREE);
+
   tree ftype;
 
   /* Add all special builtins with variable number of operands.  */
@@ -20804,8 +21794,23 @@ ix86_init_mmx_sse_builtins (void)
 	case VOID_FTYPE_VOID:
 	  type = void_ftype_void;
 	  break;
+	case V32QI_FTYPE_PCCHAR:
+	  type = v32qi_ftype_pcchar;
+	  break;
 	case V16QI_FTYPE_PCCHAR:
 	  type = v16qi_ftype_pcchar;
+	  break;
+	case V8SF_FTYPE_PCV4SF:
+	  type = v8sf_ftype_pcv4sf;
+	  break;
+	case V8SF_FTYPE_PCFLOAT:
+	  type = v8sf_ftype_pcfloat;
+	  break;
+	case V4DF_FTYPE_PCV2DF:
+	  type = v4df_ftype_pcv2df;
+	  break;
+	case V4DF_FTYPE_PCDOUBLE:
+	  type = v4df_ftype_pcdouble;
 	  break;
 	case V4SF_FTYPE_PCFLOAT:
 	  type = v4sf_ftype_pcfloat;
@@ -20816,11 +21821,23 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DF_FTYPE_PCDOUBLE:
 	  type = v2df_ftype_pcdouble;
 	  break;
+	case V8SF_FTYPE_PCV8SF_V8SF:
+	  type = v8sf_ftype_pcv8sf_v8sf;
+	  break;
+	case V4DF_FTYPE_PCV4DF_V4DF:
+	  type = v4df_ftype_pcv4df_v4df;
+	  break;
 	case V4SF_FTYPE_V4SF_PCV2SF:
 	  type = v4sf_ftype_v4sf_pcv2sf;
 	  break;
+	case V4SF_FTYPE_PCV4SF_V4SF:
+	  type = v4sf_ftype_pcv4sf_v4sf;
+	  break;
 	case V2DF_FTYPE_V2DF_PCDOUBLE:
 	  type = v2df_ftype_v2df_pcdouble;
+	  break;
+	case V2DF_FTYPE_PCV2DF_V2DF:
+	  type = v2df_ftype_pcv2df_v2df;
 	  break;
 	case VOID_FTYPE_PV2SF_V4SF:
 	  type = void_ftype_pv2sf_v4sf;
@@ -20828,11 +21845,20 @@ ix86_init_mmx_sse_builtins (void)
 	case VOID_FTYPE_PV2DI_V2DI:
 	  type = void_ftype_pv2di_v2di;
 	  break;
+	case VOID_FTYPE_PCHAR_V32QI:
+	  type = void_ftype_pchar_v32qi;
+	  break;
 	case VOID_FTYPE_PCHAR_V16QI:
 	  type = void_ftype_pchar_v16qi;
 	  break;
+	case VOID_FTYPE_PFLOAT_V8SF:
+	  type = void_ftype_pfloat_v8sf;
+	  break;
 	case VOID_FTYPE_PFLOAT_V4SF:
 	  type = void_ftype_pfloat_v4sf;
+	  break;
+	case VOID_FTYPE_PDOUBLE_V4DF:
+	  type = void_ftype_pdouble_v4df;
 	  break;
 	case VOID_FTYPE_PDOUBLE_V2DF:
 	  type = void_ftype_pdouble_v2df;
@@ -20842,6 +21868,18 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case VOID_FTYPE_PINT_INT:
 	  type = void_ftype_pint_int;
+	  break;
+	case VOID_FTYPE_PV8SF_V8SF_V8SF:
+	  type = void_ftype_pv8sf_v8sf_v8sf;
+	  break;
+	case VOID_FTYPE_PV4DF_V4DF_V4DF:
+	  type = void_ftype_pv4df_v4df_v4df;
+	  break;
+	case VOID_FTYPE_PV4SF_V4SF_V4SF:
+	  type = void_ftype_pv4sf_v4sf_v4sf;
+	  break;
+	case VOID_FTYPE_PV2DF_V2DF_V2DF:
+	  type = void_ftype_pv2df_v2df_v2df;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -20865,8 +21903,23 @@ ix86_init_mmx_sse_builtins (void)
 	case FLOAT_FTYPE_FLOAT:
 	  type = float_ftype_float;
 	  break;
+	case INT_FTYPE_V8SF_V8SF_PTEST:
+	  type = int_ftype_v8sf_v8sf;
+	  break;
+	case INT_FTYPE_V4DI_V4DI_PTEST:
+	  type = int_ftype_v4di_v4di;
+	  break;
+	case INT_FTYPE_V4DF_V4DF_PTEST:
+	  type = int_ftype_v4df_v4df;
+	  break;
+	case INT_FTYPE_V4SF_V4SF_PTEST:
+	  type = int_ftype_v4sf_v4sf;
+	  break;
 	case INT_FTYPE_V2DI_V2DI_PTEST:
 	  type = int_ftype_v2di_v2di;
+	  break;
+	case INT_FTYPE_V2DF_V2DF_PTEST:
+	  type = int_ftype_v2df_v2df;
 	  break;
 	case INT64_FTYPE_V4SF:
 	  type = int64_ftype_v4sf;
@@ -20880,6 +21933,12 @@ ix86_init_mmx_sse_builtins (void)
 	case INT_FTYPE_V8QI:
 	  type = int_ftype_v8qi;
 	  break;
+	case INT_FTYPE_V8SF:
+	  type = int_ftype_v8sf;
+	  break;
+	case INT_FTYPE_V4DF:
+	  type = int_ftype_v4df;
+	  break;
 	case INT_FTYPE_V4SF:
 	  type = int_ftype_v4sf;
 	  break;
@@ -20888,6 +21947,12 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V16QI_FTYPE_V16QI:
 	  type = v16qi_ftype_v16qi;
+	  break;
+	case V8SI_FTYPE_V8SF:
+	  type = v8si_ftype_v8sf;
+	  break;
+	case V8SI_FTYPE_V4SI:
+	  type = v8si_ftype_v4si;
 	  break;
 	case V8HI_FTYPE_V8HI:
 	  type = v8hi_ftype_v8hi;
@@ -20898,11 +21963,26 @@ ix86_init_mmx_sse_builtins (void)
 	case V8QI_FTYPE_V8QI:
 	  type = v8qi_ftype_v8qi;
 	  break;
+	case V8SF_FTYPE_V8SF:
+	  type = v8sf_ftype_v8sf;
+	  break;
+	case V8SF_FTYPE_V8SI:
+	  type = v8sf_ftype_v8si;
+	  break;
+	case V8SF_FTYPE_V4SF:
+	  type = v8sf_ftype_v4sf;
+	  break;
+	case V4SI_FTYPE_V4DF:
+	  type = v4si_ftype_v4df;
+	  break;
 	case V4SI_FTYPE_V4SI:
 	  type = v4si_ftype_v4si;
 	  break;
 	case V4SI_FTYPE_V16QI:
 	  type = v4si_ftype_v16qi;
+	  break;
+	case V4SI_FTYPE_V8SI:
+	  type = v4si_ftype_v8si;
 	  break;
 	case V4SI_FTYPE_V8HI:
 	  type = v4si_ftype_v8hi;
@@ -20916,12 +21996,30 @@ ix86_init_mmx_sse_builtins (void)
 	case V4HI_FTYPE_V4HI:
 	  type = v4hi_ftype_v4hi;
 	  break;
+	case V4DF_FTYPE_V4DF:
+	  type = v4df_ftype_v4df;
+	  break;
+	case V4DF_FTYPE_V4SI:
+	  type = v4df_ftype_v4si;
+	  break;
+	case V4DF_FTYPE_V4SF:
+	  type = v4df_ftype_v4sf;
+	  break;
+	case V4DF_FTYPE_V2DF:
+	  type = v4df_ftype_v2df;
+	  break;
 	case V4SF_FTYPE_V4SF:
 	case V4SF_FTYPE_V4SF_VEC_MERGE:
 	  type = v4sf_ftype_v4sf;
 	  break;
+	case V4SF_FTYPE_V8SF:
+	  type = v4sf_ftype_v8sf;
+	  break;
 	case V4SF_FTYPE_V4SI:
 	  type = v4sf_ftype_v4si;
+	  break;
+	case V4SF_FTYPE_V4DF:
+	  type = v4sf_ftype_v4df;
 	  break;
 	case V4SF_FTYPE_V2DF:
 	  type = v4sf_ftype_v2df;
@@ -20949,6 +22047,9 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V2SI_FTYPE_V2SF:
 	  type = v2si_ftype_v2sf;
+	  break;
+	case V2DF_FTYPE_V4DF:
+	  type = v2df_ftype_v4df;
 	  break;
 	case V2DF_FTYPE_V4SF:
 	  type = v2df_ftype_v4sf;
@@ -20994,6 +22095,12 @@ ix86_init_mmx_sse_builtins (void)
 	case V8HI_FTYPE_V8HI_SI_COUNT:
 	  type = v8hi_ftype_v8hi_int;
 	  break;
+	case V8SF_FTYPE_V8SF_V8SF:
+	  type = v8sf_ftype_v8sf_v8sf;
+	  break;
+	case V8SF_FTYPE_V8SF_V8SI:
+	  type = v8sf_ftype_v8sf_v8si;
+	  break;
 	case V4SI_FTYPE_V4SI_V4SI:
 	case V4SI_FTYPE_V4SI_V4SI_COUNT:
 	  type = v4si_ftype_v4si_v4si;
@@ -21023,9 +22130,18 @@ ix86_init_mmx_sse_builtins (void)
 	case V4HI_FTYPE_V4HI_SI_COUNT:
 	  type = v4hi_ftype_v4hi_int;
 	  break;
+	case V4DF_FTYPE_V4DF_V4DF:
+	  type = v4df_ftype_v4df_v4df;
+	  break;
+	case V4DF_FTYPE_V4DF_V4DI:
+	  type = v4df_ftype_v4df_v4di;
+	  break;
 	case V4SF_FTYPE_V4SF_V4SF:
 	case V4SF_FTYPE_V4SF_V4SF_SWAP:
 	  type = v4sf_ftype_v4sf_v4sf;
+	  break;
+	case V4SF_FTYPE_V4SF_V4SI:
+	  type = v4sf_ftype_v4sf_v4si;
 	  break;
 	case V4SF_FTYPE_V4SF_V2SI:
 	  type = v4sf_ftype_v4sf_v2si;
@@ -21078,6 +22194,9 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DF_FTYPE_V2DF_V4SF:
 	  type = v2df_ftype_v2df_v4sf;
 	  break;
+	case V2DF_FTYPE_V2DF_V2DI:
+	  type = v2df_ftype_v2df_v2di;
+	  break;
 	case V2DF_FTYPE_V2DF_DI:
 	  type = v2df_ftype_v2df_int64;
 	  break;
@@ -21115,14 +22234,26 @@ ix86_init_mmx_sse_builtins (void)
 	case V8HI_FTYPE_V8HI_INT:
 	  type = v8hi_ftype_v8hi_int;
 	  break;
+	case V8SF_FTYPE_V8SF_INT:
+	  type = v8sf_ftype_v8sf_int;
+	  break;
 	case V4SI_FTYPE_V4SI_INT:
 	  type = v4si_ftype_v4si_int;
+	  break;
+	case V4SI_FTYPE_V8SI_INT:
+	  type = v4si_ftype_v8si_int;
 	  break;
 	case V4HI_FTYPE_V4HI_INT:
 	  type = v4hi_ftype_v4hi_int;
 	  break;
+	case V4DF_FTYPE_V4DF_INT:
+	  type = v4df_ftype_v4df_int;
+	  break;
 	case V4SF_FTYPE_V4SF_INT:
 	  type = v4sf_ftype_v4sf_int;
+	  break;
+	case V4SF_FTYPE_V8SF_INT:
+	  type = v4sf_ftype_v8sf_int;
 	  break;
 	case V2DI_FTYPE_V2DI_INT:
 	case V2DI2TI_FTYPE_V2DI_INT:
@@ -21131,8 +22262,17 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DF_FTYPE_V2DF_INT:
 	  type = v2df_ftype_v2df_int;
 	  break;
+	case V2DF_FTYPE_V4DF_INT:
+	  type = v2df_ftype_v4df_int;
+	  break;
 	case V16QI_FTYPE_V16QI_V16QI_V16QI:
 	  type = v16qi_ftype_v16qi_v16qi_v16qi;
+	  break;
+	case V8SF_FTYPE_V8SF_V8SF_V8SF:
+	  type = v8sf_ftype_v8sf_v8sf_v8sf;
+	  break;
+	case V4DF_FTYPE_V4DF_V4DF_V4DF:
+	  type = v4df_ftype_v4df_v4df_v4df;
 	  break;
 	case V4SF_FTYPE_V4SF_V4SF_V4SF:
 	  type = v4sf_ftype_v4sf_v4sf_v4sf;
@@ -21143,11 +22283,29 @@ ix86_init_mmx_sse_builtins (void)
 	case V16QI_FTYPE_V16QI_V16QI_INT:
 	  type = v16qi_ftype_v16qi_v16qi_int;
 	  break;
+	case V8SI_FTYPE_V8SI_V8SI_INT:
+	  type = v8si_ftype_v8si_v8si_int;
+	  break;
+	case V8SI_FTYPE_V8SI_V4SI_INT:
+	  type = v8si_ftype_v8si_v4si_int;
+	  break;
 	case V8HI_FTYPE_V8HI_V8HI_INT:
 	  type = v8hi_ftype_v8hi_v8hi_int;
 	  break;
+	case V8SF_FTYPE_V8SF_V8SF_INT:
+	  type = v8sf_ftype_v8sf_v8sf_int;
+	  break;
+	case V8SF_FTYPE_V8SF_V4SF_INT:
+	  type = v8sf_ftype_v8sf_v4sf_int;
+	  break;
 	case V4SI_FTYPE_V4SI_V4SI_INT:
 	  type = v4si_ftype_v4si_v4si_int;
+	  break;
+	case V4DF_FTYPE_V4DF_V4DF_INT:
+	  type = v4df_ftype_v4df_v4df_int;
+	  break;
+	case V4DF_FTYPE_V4DF_V2DF_INT:
+	  type = v4df_ftype_v4df_v2df_int;
 	  break;
 	case V4SF_FTYPE_V4SF_V4SF_INT:
 	  type = v4sf_ftype_v4sf_v4sf_int;
@@ -21167,6 +22325,18 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V1DI2DI_FTYPE_V1DI_V1DI_INT:
 	  type = v1di_ftype_v1di_v1di_int;
+	  break;
+	case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
+	  type = v8sf_ftype_v8sf_v8sf_v8si_int;
+	  break;
+	case V4DF_FTYPE_V4DF_V4DF_V4DI_INT:
+	  type = v4df_ftype_v4df_v4df_v4di_int;
+	  break;
+	case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
+	  type = v4sf_ftype_v4sf_v4sf_v4si_int;
+	  break;
+	case V2DF_FTYPE_V2DF_V2DF_V2DI_INT:
+	  type = v2df_ftype_v2df_v2df_v2di_int;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -21233,6 +22403,10 @@ ix86_init_mmx_sse_builtins (void)
 
   /* PCLMUL */
   def_builtin_const (OPTION_MASK_ISA_PCLMUL, "__builtin_ia32_pclmulqdq128", v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PCLMULQDQ128);
+
+  /* AVX */
+  def_builtin (OPTION_MASK_ISA_AVX, "__builtin_ia32_vzeroupper", void_ftype_void,
+	       TARGET_64BIT ? IX86_BUILTIN_VZEROUPPER_REX64 : IX86_BUILTIN_VZEROUPPER);
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V2SI_type_node, integer_type_node,
@@ -22134,7 +23308,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 
   switch ((enum ix86_builtin_type) d->flag)
     {
+    case INT_FTYPE_V8SF_V8SF_PTEST:
+    case INT_FTYPE_V4DI_V4DI_PTEST:
+    case INT_FTYPE_V4DF_V4DF_PTEST:
+    case INT_FTYPE_V4SF_V4SF_PTEST:
     case INT_FTYPE_V2DI_V2DI_PTEST:
+    case INT_FTYPE_V2DF_V2DF_PTEST:
       return ix86_expand_sse_ptest (d, exp, target);
     case FLOAT128_FTYPE_FLOAT128:
     case FLOAT_FTYPE_FLOAT:
@@ -22142,20 +23321,35 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case INT64_FTYPE_V2DF:
     case INT_FTYPE_V16QI:
     case INT_FTYPE_V8QI:
+    case INT_FTYPE_V8SF:
+    case INT_FTYPE_V4DF:
     case INT_FTYPE_V4SF:
     case INT_FTYPE_V2DF:
     case V16QI_FTYPE_V16QI:
+    case V8SI_FTYPE_V8SF:
+    case V8SI_FTYPE_V4SI:
     case V8HI_FTYPE_V8HI:
     case V8HI_FTYPE_V16QI:
     case V8QI_FTYPE_V8QI:
+    case V8SF_FTYPE_V8SF:
+    case V8SF_FTYPE_V8SI:
+    case V8SF_FTYPE_V4SF:
     case V4SI_FTYPE_V4SI:
     case V4SI_FTYPE_V16QI:
     case V4SI_FTYPE_V4SF:
+    case V4SI_FTYPE_V8SI:
     case V4SI_FTYPE_V8HI:
+    case V4SI_FTYPE_V4DF:
     case V4SI_FTYPE_V2DF:
     case V4HI_FTYPE_V4HI:
+    case V4DF_FTYPE_V4DF:
+    case V4DF_FTYPE_V4SI:
+    case V4DF_FTYPE_V4SF:
+    case V4DF_FTYPE_V2DF:
     case V4SF_FTYPE_V4SF:
     case V4SF_FTYPE_V4SI:
+    case V4SF_FTYPE_V8SF:
+    case V4SF_FTYPE_V4DF:
     case V4SF_FTYPE_V2DF:
     case V2DI_FTYPE_V2DI:
     case V2DI_FTYPE_V16QI:
@@ -22163,6 +23357,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V4SI:
     case V2DF_FTYPE_V2DF:
     case V2DF_FTYPE_V4SI:
+    case V2DF_FTYPE_V4DF:
     case V2DF_FTYPE_V4SF:
     case V2DF_FTYPE_V2SI:
     case V2SI_FTYPE_V2SI:
@@ -22184,6 +23379,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI:
     case V8HI_FTYPE_V16QI_V16QI:
     case V8HI_FTYPE_V4SI_V4SI:
+    case V8SF_FTYPE_V8SF_V8SF:
+    case V8SF_FTYPE_V8SF_V8SI:
     case V4SI_FTYPE_V4SI_V4SI:
     case V4SI_FTYPE_V8HI_V8HI:
     case V4SI_FTYPE_V4SF_V4SF:
@@ -22191,7 +23388,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4HI_FTYPE_V4HI_V4HI:
     case V4HI_FTYPE_V8QI_V8QI:
     case V4HI_FTYPE_V2SI_V2SI:
+    case V4DF_FTYPE_V4DF_V4DF:
+    case V4DF_FTYPE_V4DF_V4DI:
     case V4SF_FTYPE_V4SF_V4SF:
+    case V4SF_FTYPE_V4SF_V4SI:
     case V4SF_FTYPE_V4SF_V2SI:
     case V4SF_FTYPE_V4SF_V2DF:
     case V4SF_FTYPE_V4SF_DI:
@@ -22206,6 +23406,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2SI_FTYPE_V2SF_V2SF:
     case V2DF_FTYPE_V2DF_V2DF:
     case V2DF_FTYPE_V2DF_V4SF:
+    case V2DF_FTYPE_V2DF_V2DI:
     case V2DF_FTYPE_V2DF_DI:
     case V2DF_FTYPE_V2DF_SI:
     case V2SF_FTYPE_V2SF_V2SF:
@@ -22249,22 +23450,35 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs_constant = 1;
       break;
     case V8HI_FTYPE_V8HI_INT:
+    case V8SF_FTYPE_V8SF_INT:
     case V4SI_FTYPE_V4SI_INT:
+    case V4SI_FTYPE_V8SI_INT:
     case V4HI_FTYPE_V4HI_INT:
+    case V4DF_FTYPE_V4DF_INT:
     case V4SF_FTYPE_V4SF_INT:
+    case V4SF_FTYPE_V8SF_INT:
     case V2DI_FTYPE_V2DI_INT:
     case V2DF_FTYPE_V2DF_INT:
+    case V2DF_FTYPE_V4DF_INT:
       nargs = 2;
       nargs_constant = 1;
       break;
     case V16QI_FTYPE_V16QI_V16QI_V16QI:
+    case V8SF_FTYPE_V8SF_V8SF_V8SF:
+    case V4DF_FTYPE_V4DF_V4DF_V4DF:
     case V4SF_FTYPE_V4SF_V4SF_V4SF:
     case V2DF_FTYPE_V2DF_V2DF_V2DF:
       nargs = 3;
       break;
     case V16QI_FTYPE_V16QI_V16QI_INT:
     case V8HI_FTYPE_V8HI_V8HI_INT:
+    case V8SI_FTYPE_V8SI_V8SI_INT:
+    case V8SI_FTYPE_V8SI_V4SI_INT:
+    case V8SF_FTYPE_V8SF_V8SF_INT: 
+    case V8SF_FTYPE_V8SF_V4SF_INT: 
     case V4SI_FTYPE_V4SI_V4SI_INT:
+    case V4DF_FTYPE_V4DF_V4DF_INT:
+    case V4DF_FTYPE_V4DF_V2DF_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT:
     case V2DI_FTYPE_V2DI_V2DI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT:
@@ -22284,6 +23498,13 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V2DI_UINT_UINT:
       nargs = 3;
       nargs_constant = 2;
+      break;
+    case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
+    case V4DF_FTYPE_V4DF_V4DF_V4DI_INT:
+    case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
+    case V2DF_FTYPE_V2DF_V2DF_V2DI_INT:
+      nargs = 4;
+      nargs_constant = 1;
       break;
     case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
       nargs = 4;
@@ -22345,11 +23566,38 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_sse4_1_roundsd:
 	      case CODE_FOR_sse4_1_roundss:
 	      case CODE_FOR_sse4_1_blendps:
+	      case CODE_FOR_avx_blendpd256:
+	      case CODE_FOR_avx_vpermilv4df:
+	      case CODE_FOR_avx_roundpd256:
+	      case CODE_FOR_avx_roundps256:
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 
 	      case CODE_FOR_sse4_1_blendpd:
+	      case CODE_FOR_avx_vpermilv2df:
+	      case CODE_FOR_avx_vpermil2v2df3:
+	      case CODE_FOR_avx_vpermil2v4sf3:
+	      case CODE_FOR_avx_vpermil2v4df3:
+	      case CODE_FOR_avx_vpermil2v8sf3:
 		error ("the last argument must be a 2-bit immediate");
+		return const0_rtx;
+
+	      case CODE_FOR_avx_vextractf128v4df:
+	      case CODE_FOR_avx_vextractf128v8sf:
+	      case CODE_FOR_avx_vextractf128v8si:
+	      case CODE_FOR_avx_vinsertf128v4df:
+	      case CODE_FOR_avx_vinsertf128v8sf:
+	      case CODE_FOR_avx_vinsertf128v8si:
+		error ("the last argument must be a 1-bit immediate");
+		return const0_rtx;
+
+	      case CODE_FOR_avx_cmpsdv2df3:
+	      case CODE_FOR_avx_cmpssv4sf3:
+	      case CODE_FOR_avx_cmppdv2df3:
+	      case CODE_FOR_avx_cmppsv4sf3:
+	      case CODE_FOR_avx_cmppdv4df3:
+	      case CODE_FOR_avx_cmppsv8sf3:
+		error ("the last argument must be a 5-bit immediate");
 		return const0_rtx;
 
 	     default:
@@ -22450,8 +23698,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       emit_insn (GEN_FCN (icode) (target));
       return 0;
     case V2DI_FTYPE_PV2DI:
+    case V32QI_FTYPE_PCCHAR:
     case V16QI_FTYPE_PCCHAR:
+    case V8SF_FTYPE_PCV4SF:
+    case V8SF_FTYPE_PCFLOAT:
     case V4SF_FTYPE_PCFLOAT:
+    case V4DF_FTYPE_PCV2DF:
+    case V4DF_FTYPE_PCDOUBLE:
     case V2DF_FTYPE_PCDOUBLE:
       nargs = 1;
       klass = load;
@@ -22459,8 +23712,11 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
     case VOID_FTYPE_PV2SF_V4SF:
     case VOID_FTYPE_PV2DI_V2DI:
+    case VOID_FTYPE_PCHAR_V32QI:
     case VOID_FTYPE_PCHAR_V16QI:
+    case VOID_FTYPE_PFLOAT_V8SF:
     case VOID_FTYPE_PFLOAT_V4SF:
+    case VOID_FTYPE_PDOUBLE_V4DF:
     case VOID_FTYPE_PDOUBLE_V2DF:
     case VOID_FTYPE_PDI_DI:
     case VOID_FTYPE_PINT_INT:
@@ -22474,6 +23730,23 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 2;
       klass = load;
       memory = 1;
+      break;
+    case V8SF_FTYPE_PCV8SF_V8SF:
+    case V4DF_FTYPE_PCV4DF_V4DF:
+    case V4SF_FTYPE_PCV4SF_V4SF:
+    case V2DF_FTYPE_PCV2DF_V2DF:
+      nargs = 2;
+      klass = load;
+      memory = 0;
+      break;
+    case VOID_FTYPE_PV8SF_V8SF_V8SF:
+    case VOID_FTYPE_PV4DF_V4DF_V4DF:
+    case VOID_FTYPE_PV4SF_V4SF_V4SF:
+    case VOID_FTYPE_PV2DF_V2DF_V2DF:
+      nargs = 2;
+      klass = store;
+      /* Reserve memory operand for target.  */
+      memory = ARRAY_SIZE (args);
       break;
     default:
       gcc_unreachable ();
@@ -23761,8 +25034,11 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* We implement the move patterns for all vector modes into and
 	 out of SSE registers, even when no operation instructions
-	 are available.  */
-      return (VALID_SSE_REG_MODE (mode)
+	 are available.  OImode move is available only when AVX is
+	 enabled.  */
+      return ((TARGET_AVX && mode == OImode)
+	      || VALID_AVX256_REG_MODE (mode)
+	      || VALID_SSE_REG_MODE (mode)
 	      || VALID_SSE2_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE_3DNOW (mode));
@@ -24911,7 +26187,8 @@ extended_reg_mentioned_1 (rtx *p, void *data ATTRIBUTE_UNUSED)
 bool
 x86_extended_reg_mentioned_p (rtx insn)
 {
-  return for_each_rtx (&PATTERN (insn), extended_reg_mentioned_1, NULL);
+  return for_each_rtx (INSN_P (insn) ? &PATTERN (insn) : &insn,
+		       extended_reg_mentioned_1, NULL);
 }
 
 /* Generate an unsigned DImode/SImode to FP conversion.  This is the same code
@@ -24962,7 +26239,7 @@ static bool
 ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 				   rtx target, rtx val)
 {
-  enum machine_mode smode, wsmode, wvmode;
+  enum machine_mode hmode, smode, wsmode, wvmode;
   rtx x;
 
   switch (mode)
@@ -25087,6 +26364,33 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
       emit_move_insn (target, gen_lowpart (mode, x));
       return true;
 
+    case V4DFmode:
+      hmode = V2DFmode;
+      goto half;
+    case V4DImode:
+      hmode = V2DImode;
+      goto half;
+    case V8SFmode:
+      hmode = V4SFmode;
+      goto half;
+    case V8SImode:
+      hmode = V4SImode;
+      goto half;
+    case V16HImode:
+      hmode = V8HImode;
+      goto half;
+    case V32QImode:
+      hmode = V16QImode;
+      goto half;
+half:
+      {
+	rtx tmp = gen_reg_rtx (hmode);
+	ix86_expand_vector_init_duplicate (mmx_ok, hmode, tmp, val);
+	emit_insn (gen_rtx_SET (VOIDmode, target,
+				gen_rtx_VEC_CONCAT (mode, tmp, tmp)));
+      }
+      return true;
+
     default:
       return false;
     }
@@ -25126,6 +26430,14 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
       break;
     case V4HImode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
+      break;
+    case V32QImode:
+    case V16HImode:
+    case V8SImode:
+    case V8SFmode:
+    case V4DImode:
+    case V4DFmode:
+      use_vector_set = TARGET_AVX;
       break;
     default:
       break;
@@ -25265,6 +26577,12 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
 	 the general case.  */
       return false;
 
+    case V4DFmode:
+    case V4DImode:
+    case V8SFmode:
+    case V8SImode:
+    case V16HImode:
+    case V32QImode:
     case V4SFmode:
     case V4SImode:
     case V8HImode:
@@ -25325,7 +26643,7 @@ ix86_expand_vector_init_concat (enum machine_mode mode,
 				rtx target, rtx *ops, int n)
 {
   enum machine_mode cmode, hmode = VOIDmode;
-  rtx first[4], second[2];
+  rtx first[8], second[4];
   rtvec v;
   int i, j;
 
@@ -25334,6 +26652,18 @@ ix86_expand_vector_init_concat (enum machine_mode mode,
     case 2:
       switch (mode)
 	{
+	case V8SImode:
+	  cmode = V4SImode;
+	  break;
+	case V8SFmode:
+	  cmode = V4SFmode;
+	  break;
+	case V4DImode:
+	  cmode = V2DImode;
+	  break;
+	case V4DFmode:
+	  cmode = V2DFmode;
+	  break;
 	case V4SImode:
 	  cmode = V2SImode;
 	  break;
@@ -25368,11 +26698,33 @@ ix86_expand_vector_init_concat (enum machine_mode mode,
     case 4:
       switch (mode)
 	{
+	case V4DImode:
+	  cmode = V2DImode;
+	  break;
+	case V4DFmode:
+	  cmode = V2DFmode;
+	  break;
 	case V4SImode:
 	  cmode = V2SImode;
 	  break;
 	case V4SFmode:
 	  cmode = V2SFmode;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      goto half;
+
+    case 8:
+      switch (mode)
+	{
+	case V8SImode:
+	  cmode = V2SImode;
+	  hmode = V4SImode;
+	  break;
+	case V8SFmode:
+	  cmode = V2SFmode;
+	  hmode = V4SFmode;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -25531,7 +26883,8 @@ static void
 ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 				 rtx target, rtx vals)
 {
-  rtx ops[16];
+  rtx ops[32], op0, op1;
+  enum machine_mode half_mode = VOIDmode;
   int n, i;
 
   switch (mode)
@@ -25542,6 +26895,10 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 	break;
       /* FALLTHRU */
 
+    case V8SFmode:
+    case V8SImode:
+    case V4DFmode:
+    case V4DImode:
     case V4SFmode:
     case V4SImode:
     case V2DFmode:
@@ -25550,6 +26907,28 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
       for (i = 0; i < n; i++)
 	ops[i] = XVECEXP (vals, 0, i);
       ix86_expand_vector_init_concat (mode, target, ops, n);
+      return;
+
+    case V32QImode:
+      half_mode = V16QImode;
+      goto half;
+
+    case V16HImode:
+      half_mode = V8HImode;
+      goto half;
+
+half:
+      n = GET_MODE_NUNITS (mode);
+      for (i = 0; i < n; i++)
+	ops[i] = XVECEXP (vals, 0, i);
+      op0 = gen_reg_rtx (half_mode);
+      op1 = gen_reg_rtx (half_mode);
+      ix86_expand_vector_init_interleave (half_mode, op0, ops,
+					  n >> 2);
+      ix86_expand_vector_init_interleave (half_mode, op1,
+					  &ops [n >> 1], n >> 2);
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_VEC_CONCAT (mode, op0, op1)));
       return;
 
     case V16QImode:
@@ -25694,8 +27073,28 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 {
   enum machine_mode mode = GET_MODE (target);
   enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  enum machine_mode half_mode;
   bool use_vec_merge = false;
   rtx tmp;
+  static rtx (*gen_extract[6][2]) (rtx, rtx)
+    = {
+	{ gen_vec_extract_lo_v32qi, gen_vec_extract_hi_v32qi },
+	{ gen_vec_extract_lo_v16hi, gen_vec_extract_hi_v16hi },
+	{ gen_vec_extract_lo_v8si, gen_vec_extract_hi_v8si },
+	{ gen_vec_extract_lo_v4di, gen_vec_extract_hi_v4di },
+	{ gen_vec_extract_lo_v8sf, gen_vec_extract_hi_v8sf },
+	{ gen_vec_extract_lo_v4df, gen_vec_extract_hi_v4df }
+      };
+  static rtx (*gen_insert[6][2]) (rtx, rtx, rtx)
+    = {
+	{ gen_vec_set_lo_v32qi, gen_vec_set_hi_v32qi },
+	{ gen_vec_set_lo_v16hi, gen_vec_set_hi_v16hi },
+	{ gen_vec_set_lo_v8si, gen_vec_set_hi_v8si },
+	{ gen_vec_set_lo_v4di, gen_vec_set_hi_v4di },
+	{ gen_vec_set_lo_v8sf, gen_vec_set_hi_v8sf },
+	{ gen_vec_set_lo_v4df, gen_vec_set_hi_v4df }
+      };
+  int i, j, n;
 
   switch (mode)
     {
@@ -25843,6 +27242,62 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       break;
 
     case V8QImode:
+      break;
+
+    case V32QImode:
+      half_mode = V16QImode;
+      j = 0;
+      n = 16;
+      goto half;
+
+    case V16HImode:
+      half_mode = V8HImode;
+      j = 1;
+      n = 8;
+      goto half;
+
+    case V8SImode:
+      half_mode = V4SImode;
+      j = 2;
+      n = 4;
+      goto half;
+
+    case V4DImode:
+      half_mode = V2DImode;
+      j = 3;
+      n = 2;
+      goto half;
+
+    case V8SFmode:
+      half_mode = V4SFmode;
+      j = 4;
+      n = 4;
+      goto half;
+
+    case V4DFmode:
+      half_mode = V2DFmode;
+      j = 5;
+      n = 2;
+      goto half;
+
+half:
+      /* Compute offset.  */
+      i = elt / n;
+      elt %= n;
+
+      gcc_assert (i <= 1);
+
+      /* Extract the half.  */
+      tmp = gen_reg_rtx (half_mode);
+      emit_insn ((*gen_extract[j][i]) (tmp, target));
+
+      /* Put val in tmp at elt.  */
+      ix86_expand_vector_set (false, tmp, val, elt);
+
+      /* Put it back.  */
+      emit_insn ((*gen_insert[j][i]) (target, target, tmp));
+      return;
+
     default:
       break;
     }
@@ -26043,6 +27498,8 @@ ix86_vector_mode_supported_p (enum machine_mode mode)
   if (TARGET_SSE && VALID_SSE_REG_MODE (mode))
     return true;
   if (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
+    return true;
+  if (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
     return true;
   if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
     return true;

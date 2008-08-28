@@ -217,6 +217,10 @@ ix86_target_macros_internal (int isa_flag,
     def_or_undef (parse_in, "__AES__");
   if (isa_flag & OPTION_MASK_ISA_PCLMUL)
     def_or_undef (parse_in, "__PCLMUL__");
+  if (isa_flag & OPTION_MASK_ISA_AVX)
+    def_or_undef (parse_in, "__AVX__");
+  if (isa_flag & OPTION_MASK_ISA_FMA)
+    def_or_undef (parse_in, "__FMA__");
   if (isa_flag & OPTION_MASK_ISA_SSE4A)
     def_or_undef (parse_in, "__SSE4A__");
   if (isa_flag & OPTION_MASK_ISA_SSE5)

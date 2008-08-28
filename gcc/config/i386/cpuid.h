@@ -35,11 +35,15 @@
 #define bit_SSE3	(1 << 0)
 #define bit_PCLMUL	(1 << 1)
 #define bit_SSSE3	(1 << 9)
+#define bit_FMA		(1 << 12)
 #define bit_CMPXCHG16B	(1 << 13)
 #define bit_SSE4_1	(1 << 19)
 #define bit_SSE4_2	(1 << 20)
 #define bit_POPCNT	(1 << 23)
 #define bit_AES		(1 << 25)
+#define bit_XSAVE	(1 << 26)
+#define bit_OSXSAVE	(1 << 27)
+#define bit_AVX		(1 << 28)
 
 /* %edx */
 #define bit_CMPXCHG8B	(1 << 8)

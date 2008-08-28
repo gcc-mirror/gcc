@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SSSE3	OPTION_ISA_SSSE3
 #define TARGET_SSE4_1	OPTION_ISA_SSE4_1
 #define TARGET_SSE4_2	OPTION_ISA_SSE4_2
+#define TARGET_AVX	OPTION_ISA_AVX
+#define TARGET_FMA	OPTION_ISA_FMA
 #define TARGET_SSE4A	OPTION_ISA_SSE4A
 #define TARGET_SSE5	OPTION_ISA_SSE5
 #define TARGET_ROUND	OPTION_ISA_ROUND
@@ -702,7 +704,7 @@ enum target_cpu_default
    Pentium+ prefers DFmode values to be aligned to 64 bit boundary
    and Pentium Pro XFmode values at 128 bit boundaries.  */
 
-#define BIGGEST_ALIGNMENT 128
+#define BIGGEST_ALIGNMENT (TARGET_AVX ? 256: 128)
 
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
@@ -996,6 +998,10 @@ do {									\
 
 #define HARD_REGNO_NREGS_WITH_PADDING(REGNO, MODE) ((MODE) == XFmode ? 4 : 8)
 
+#define VALID_AVX256_REG_MODE(MODE)					\
+  ((MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
+   || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode)
+
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V2DImode || (MODE) == DFmode)
@@ -1013,8 +1019,14 @@ do {									\
    || (MODE) == V4HImode || (MODE) == V8QImode)
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
-   place emms and femms instructions.  */
-#define UNITS_PER_SIMD_WORD(MODE) (TARGET_SSE ? 16 : UNITS_PER_WORD)
+   place emms and femms instructions.
+   FIXME: AVX has 32byte floating point vector operations and 16byte
+   integer vector operations.  But vectorizer doesn't support
+   different sizes for integer and floating point vectors.  We limit
+   vector size to 16byte.  */
+#define UNITS_PER_SIMD_WORD(MODE)					\
+  (TARGET_AVX ? (((MODE) == DFmode || (MODE) == SFmode) ? 16 : 16)	\
+   	      : (TARGET_SSE ? 16 : UNITS_PER_WORD))
 
 #define VALID_DFP_MODE_P(MODE) \
   ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
@@ -1035,7 +1047,9 @@ do {									\
 #define SSE_REG_MODE_P(MODE)						\
   ((MODE) == TImode || (MODE) == V16QImode || (MODE) == TFmode		\
    || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
-   || (MODE) == V4SFmode || (MODE) == V4SImode)
+   || (MODE) == V4SFmode || (MODE) == V4SImode || (MODE) == V32QImode	\
+   || (MODE) == V16HImode || (MODE) == V8SImode || (MODE) == V4DImode	\
+   || (MODE) == V8SFmode || (MODE) == V4DFmode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
@@ -1339,6 +1353,19 @@ enum reg_class
 #define SSE_VEC_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == V4SFmode) || (TARGET_SSE2 && (MODE) == V2DFmode))
 
+#define AVX_FLOAT_MODE_P(MODE) \
+  (TARGET_AVX && ((MODE) == SFmode || (MODE) == DFmode))
+
+#define AVX128_VEC_FLOAT_MODE_P(MODE) \
+  (TARGET_AVX && ((MODE) == V4SFmode || (MODE) == V2DFmode))
+
+#define AVX256_VEC_FLOAT_MODE_P(MODE) \
+  (TARGET_AVX && ((MODE) == V8SFmode || (MODE) == V4DFmode))
+
+#define AVX_VEC_FLOAT_MODE_P(MODE) \
+  (TARGET_AVX && ((MODE) == V4SFmode || (MODE) == V2DFmode \
+		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
+
 #define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))
 #define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
 
@@ -1559,6 +1586,7 @@ typedef struct ix86_args {
   int fastcall;			/* fastcall calling convention is used */
   int sse_words;		/* # sse words passed so far */
   int sse_nregs;		/* # sse registers available for passing */
+  int warn_avx;			/* True when we want to warn about AVX ABI.  */
   int warn_sse;			/* True when we want to warn about SSE ABI.  */
   int warn_mmx;			/* True when we want to warn about MMX ABI.  */
   int sse_regno;		/* next available sse register number */
@@ -2132,6 +2160,29 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   ix86_output_addr_diff_elt ((FILE), (VALUE), (REL))
+
+/* When we see %v, we will print the 'v' prefix if TARGET_AVX is
+   true.  */
+
+#define ASM_OUTPUT_AVX_PREFIX(STREAM, PTR)	\
+{						\
+  if ((PTR)[0] == '%' && (PTR)[1] == 'v')	\
+    {						\
+      if (TARGET_AVX)				\
+	(PTR) += 1;				\
+      else					\
+	(PTR) += 2;				\
+    }						\
+}
+
+/* A C statement or statements which output an assembler instruction
+   opcode to the stdio stream STREAM.  The macro-operand PTR is a
+   variable of type `char *' which points to the opcode name in
+   its "internal" form--the form that is written in the machine
+   description.  */
+
+#define ASM_OUTPUT_OPCODE(STREAM, PTR) \
+  ASM_OUTPUT_AVX_PREFIX ((STREAM), (PTR))
 
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between

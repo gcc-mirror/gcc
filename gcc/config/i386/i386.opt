@@ -299,6 +299,14 @@ mno-sse4
 Target RejectNegative Report InverseMask(ISA_SSE4_1) MaskExists Var(ix86_isa_flags) VarExists Save
 Do not support SSE4.1 and SSE4.2 built-in functions and code generation
 
+mavx
+Target Report Mask(ISA_AVX) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation
+
+mfma
+Target Report Mask(ISA_FMA) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
+
 msse4a
 Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) VarExists Save
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
