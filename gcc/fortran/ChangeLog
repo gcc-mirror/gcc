@@ -1,3 +1,9 @@
+2008-08-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/37253
+	* module.c (ab_attribute,attr_bits,mio_symbol_attribute): Take care of
+	saving attr.procedure and attr.proc_ptr to the module file.
+
 2008-08-25  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (gfc_find_component): Add new arguments.
