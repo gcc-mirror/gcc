@@ -1,7 +1,7 @@
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 37217
-	* c-common.c (convesion_warning): Check for null operands.
+	* c-common.c (conversion_warning): Check for null operands.
 
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
