@@ -1,3 +1,9 @@
+2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-dmul-1.c: New test.
+	* gcc.target/mips/octeon-dmul-2.c: New test.
+	* gcc.target/mips/dmult-1.c: New test.
+
 2008-08-28  Xuepeng Guo  <xuepeng.guo@intel.com>
 	    Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>

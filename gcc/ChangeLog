@@ -1,6 +1,17 @@
+2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (ISA_HAS_DMUL3): New macro.
+	* config/mips/mips.md (D): New mode attribute.
+	(mulsi3, muldi3): Merge it into ...
+	(mul<mode>3): ... new template.  Use _mul3 ending for 3-op
+	patterns.
+	(muldi3_mul3): New pattern.
+	(mulsi3_mult3): Rename to mulsi3_mul3.
+
 2008-08-28  Jan Hubicka  <jh@suse.cz>
 
-	* expmed.c (store_bit_field_1): Be prepared for movstrict expander to fail.
+	* expmed.c (store_bit_field_1): Be prepared for movstrict expander
+	to fail.
 	* predict.c (always_optimize_for_size_p): Rename to ...
 	(optimize_function_for_size): ... this one; make extern.
 	(optimize_function_for_speed_p): New.
@@ -9,7 +20,8 @@
 	optimize_insn_for_size_p, optimize_insn_for_size_p): Update.
 	* basic-block.h (optimize_function_for_size_p,
 	optimize_function_for_speed_p): Declare.
-	* i386.md (optimize_size checks): Replace them by appropriate predicate.
+	* i386.md (optimize_size checks): Replace them by appropriate
+	predicate.
 	(standard_80387_constant_p, ix86_compute_frame_layout,
 	ix86_expand_epilogue, ix86_decompose_address,
 	print_operand, emit_i387_cw_initialization,

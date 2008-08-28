@@ -778,6 +778,9 @@ enum mips_code_readable_setting {
 				  || ISA_MIPS64R2)			\
 				 && !TARGET_MIPS16)
 
+/* ISA has a three-operand multiplication instruction.  */
+#define ISA_HAS_DMUL3		(TARGET_64BIT && TARGET_OCTEON)
+
 /* ISA has the floating-point conditional move instructions introduced
    in mips4.  */
 #define ISA_HAS_FP_CONDMOVE	((ISA_MIPS4				\
