@@ -1,3 +1,14 @@
+2008-08-28  Chris Fairles  <chris.fairles@gmail.com>
+
+        * gthr-posix.h (__gthread_create,  __gthread_join, __gthread_detach,
+	__gthread_mutex_timed_lock, __gthread_recursive_mutex_timed_lock,
+	__gthread_cond_signal, __gthread_cond_timedwait,
+	__gthread_cond_timedwait_recursive): New functions.
+	* gthr-posix.c (pthread_mutex_timedlock, pthread_cond_timedwait):
+	Likewise.
+	* gthr.h: Comment on defining __GTHREADS_CXX0X macro in conforming
+	thread interfaces.
+
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37005

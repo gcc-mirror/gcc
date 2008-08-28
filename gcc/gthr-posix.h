@@ -34,6 +34,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    Easy, since the interface is just one-to-one mapping.  */
 
 #define __GTHREADS 1
+#define __GTHREADS_CXX0X 1
 
 /* Some implementations of <pthread.h> require this to be defined.  */
 #if !defined(_REENTRANT) && defined(__osf__)
@@ -43,11 +44,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include <pthread.h>
 #include <unistd.h>
 
+typedef pthread_t __gthread_t;
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
 typedef pthread_mutex_t __gthread_recursive_mutex_t;
 typedef pthread_cond_t __gthread_cond_t;
+typedef struct timespec __gthread_time_t;
 
 /* POSIX like conditional variables are supported.  Please look at comments
    in gthr.h for details. */
@@ -63,6 +66,7 @@ typedef pthread_cond_t __gthread_cond_t;
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 #endif
 #define __GTHREAD_COND_INIT PTHREAD_COND_INITIALIZER
+#define __GTHREAD_TIME_INIT {0,0}
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 # ifndef __gthrw_pragma
@@ -88,28 +92,56 @@ typedef pthread_cond_t __gthread_cond_t;
 __gthrw3(pthread_once)
 __gthrw3(pthread_getspecific)
 __gthrw3(pthread_setspecific)
+
 __gthrw3(pthread_create)
+__gthrw3(pthread_join)
+__gthrw3(pthread_detach)
+__gthrw3(pthread_equal)
+__gthrw3(pthread_self)
 __gthrw3(pthread_cancel)
+__gthrw3(sched_yield)
+
 __gthrw3(pthread_mutex_lock)
 __gthrw3(pthread_mutex_trylock)
+#ifdef _POSIX_TIMEOUTS
+__gthrw3(pthread_mutex_timedlock)
+#endif /* _POSIX_TIMEOUTS */
 __gthrw3(pthread_mutex_unlock)
 __gthrw3(pthread_mutex_init)
 __gthrw3(pthread_mutex_destroy)
+
 __gthrw3(pthread_cond_broadcast)
+__gthrw3(pthread_cond_signal)
 __gthrw3(pthread_cond_wait)
+__gthrw3(pthread_cond_timedwait)
+__gthrw3(pthread_cond_destroy)
 #else
 __gthrw(pthread_once)
 __gthrw(pthread_getspecific)
 __gthrw(pthread_setspecific)
+
 __gthrw(pthread_create)
+__gthrw(pthread_join)
+__gthrw(pthread_equal)
+__gthrw(pthread_self)
+__gthrw(pthread_detach)
 __gthrw(pthread_cancel)
+__gthrw(sched_yield)
+
 __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
+#ifdef _POSIX_TIMEOUTS
+__gthrw(pthread_mutex_timedlock)
+#endif /* _POSIX_TIMEOUTS */
 __gthrw(pthread_mutex_unlock)
 __gthrw(pthread_mutex_init)
 __gthrw(pthread_mutex_destroy)
+
 __gthrw(pthread_cond_broadcast)
+__gthrw(pthread_cond_signal)
 __gthrw(pthread_cond_wait)
+__gthrw(pthread_cond_timedwait)
+__gthrw(pthread_cond_destroy)
 #endif
 
 __gthrw(pthread_key_create)
@@ -122,17 +154,11 @@ __gthrw(pthread_mutexattr_destroy)
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
 #if defined(__osf__) && defined(_PTHREAD_USE_MANGLED_NAMES_)
-__gthrw3(pthread_cond_destroy)
 __gthrw3(pthread_cond_init)
-__gthrw3(pthread_cond_signal)
 __gthrw3(pthread_exit)
-__gthrw3(pthread_self)
 #else
-__gthrw(pthread_cond_destroy)
 __gthrw(pthread_cond_init)
-__gthrw(pthread_cond_signal)
 __gthrw(pthread_exit)
-__gthrw(pthread_self)
 #endif /* __osf__ && _PTHREAD_USE_MANGLED_NAMES_ */
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
@@ -140,7 +166,6 @@ __gthrw(sched_get_priority_max)
 __gthrw(sched_get_priority_min)
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
 #endif /* _POSIX_PRIORITY_SCHEDULING */
-__gthrw(sched_yield)
 __gthrw(pthread_attr_destroy)
 __gthrw(pthread_attr_init)
 __gthrw(pthread_attr_setdetachstate)
@@ -647,6 +672,42 @@ __gthread_objc_condition_signal (objc_condition_t condition)
 #else /* _LIBOBJC */
 
 static inline int
+__gthread_create (__gthread_t *thread, void *(*func) (void*), void *args)
+{
+  return __gthrw_(pthread_create) (thread, NULL, func, args);
+}
+
+static inline int
+__gthread_join (__gthread_t thread, void **value_ptr)
+{
+  return __gthrw_(pthread_join) (thread, value_ptr);
+}
+
+static inline int
+__gthread_detach (__gthread_t thread)
+{
+  return __gthrw_(pthread_detach) (thread);
+}
+
+static inline int
+__gthread_equal (__gthread_t t1, __gthread_t t2)
+{
+  return __gthrw_(pthread_equal) (t1, t2);
+}
+
+static inline __gthread_t
+__gthread_self (void)
+{
+  return __gthrw_(pthread_self) ();
+}
+
+static inline int
+__gthread_yield (void)
+{
+  return __gthrw_(sched_yield) ();
+}
+
+static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
 {
   if (__gthread_active_p ())
@@ -706,6 +767,18 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
     return 0;
 }
 
+#ifdef _POSIX_TIMEOUTS
+static inline int
+__gthread_mutex_timedlock (__gthread_mutex_t *mutex,
+			   const __gthread_time_t *abs_timeout)
+{
+  if (__gthread_active_p ())
+    return __gthrw_(pthread_mutex_timedlock) (mutex, abs_timeout);
+  else
+    return 0;
+}
+#endif
+
 static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
@@ -749,6 +822,15 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
   return __gthread_mutex_trylock (mutex);
 }
 
+#ifdef _POSIX_TIMEOUTS
+static inline int
+__gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *mutex,
+				     const __gthread_time_t *abs_timeout)
+{
+  return __gthread_mutex_timedlock (mutex, abs_timeout);
+}
+#endif
+
 static inline int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 {
@@ -762,9 +844,22 @@ __gthread_cond_broadcast (__gthread_cond_t *cond)
 }
 
 static inline int
+__gthread_cond_signal (__gthread_cond_t *cond)
+{
+  return __gthrw_(pthread_cond_signal) (cond);
+}
+
+static inline int
 __gthread_cond_wait (__gthread_cond_t *cond, __gthread_mutex_t *mutex)
 {
   return __gthrw_(pthread_cond_wait) (cond, mutex);
+}
+
+static inline int
+__gthread_cond_timedwait (__gthread_cond_t *cond, __gthread_mutex_t *mutex,
+			  const __gthread_time_t *abs_timeout)
+{
+  return __gthrw_(pthread_cond_timedwait) (cond, mutex, abs_timeout);
 }
 
 static inline int
@@ -772,6 +867,20 @@ __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 			       __gthread_recursive_mutex_t *mutex)
 {
   return __gthread_cond_wait (cond, mutex);
+}
+
+static inline int
+__gthread_cond_timedwait_recursive (__gthread_cond_t *cond,
+				    __gthread_recursive_mutex_t *mutex,
+				    const __gthread_time_t *abs_timeout)
+{
+  return __gthread_cond_timedwait (cond, mutex, abs_timeout);
+}
+
+static inline int
+__gthread_cond_destroy (__gthread_cond_t* cond)
+{
+  return __gthrw_(pthread_cond_destroy) (cond);
 }
 
 #endif /* _LIBOBJC */
