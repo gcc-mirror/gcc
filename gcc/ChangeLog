@@ -1,5 +1,8 @@
 2008-08-28  Nick Clifton  <nickc@redhat.com>
 
+	* config/v850/v850.h (IRA_COVER_CLASSES): Define.
+	* config/v850/v850.md (return): Remove frame size restriction.	
+
 	* config/mcore/mcore.h (IRA_COVER_CLASSES): Define.
 
 	* config/iq2000/iq2000.h (IRA_COVER_CLASSES): Define.
