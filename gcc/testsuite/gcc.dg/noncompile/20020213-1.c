@@ -25,7 +25,10 @@ int main ()
 }
 
 /* { dg-warning "passing argument 2 of" "2nd incompatible" { target *-*-* } 15 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 5 } */
 /* { dg-warning "passing argument 1 of" "1st incompatible" { target *-*-* } 16 } */
 /* { dg-warning "passing argument 2 of" "2nd incompatible" { target *-*-* } 16 } */
 /* { dg-warning "passing argument 1 of" "1st incompatible" { target *-*-* } 18 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 6 } */
 /* { dg-warning "passing argument 1 of" "1st incompatible" { target *-*-* } 20 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 7 } */

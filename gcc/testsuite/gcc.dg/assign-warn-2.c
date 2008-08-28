@@ -122,3 +122,4 @@ TESTARP(istrb, int, struct s); /* { dg-error "incompatible type for argument 1 o
 TESTASS(istrc, int, struct s); /* { dg-error "incompatible types in assignment" } */
 TESTINI(istrd, int, struct s); /* { dg-error "incompatible types in initialization" } */
 TESTRET(istre, int, struct s); /* { dg-error "incompatible types in return" } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 0 } */

@@ -3952,28 +3952,31 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)	\
-  do {						\
-    switch (errtype)				\
-      {						\
-      case ic_argpass:				\
-	pedwarn (LOCATION, OPT, AR, parmnum, rname);	\
-	break;					\
-      case ic_argpass_nonproto:			\
-	warning (OPT, AR, parmnum, rname);	\
-	break;					\
-      case ic_assign:				\
-	pedwarn (LOCATION, OPT, AS);			\
-	break;					\
-      case ic_init:				\
-	pedwarn (LOCATION, OPT, IN);			\
-	break;					\
-      case ic_return:				\
-	pedwarn (LOCATION, OPT, RE);			\
-	break;					\
-      default:					\
-	gcc_unreachable ();			\
-      }						\
+#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)               \
+  do {                                                                   \
+    switch (errtype)                                                     \
+      {                                                                  \
+      case ic_argpass:                                                   \
+        if (pedwarn (LOCATION, OPT, AR, parmnum, rname))                 \
+          inform (fundecl ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,   \
+                  "expected %qT but argument is of type %qT",            \
+                  type, rhstype);                                        \
+        break;                                                           \
+      case ic_argpass_nonproto:                                          \
+        warning (OPT, AR, parmnum, rname);                               \
+        break;                                                           \
+      case ic_assign:                                                    \
+        pedwarn (LOCATION, OPT, AS);                                     \
+        break;                                                           \
+      case ic_init:                                                      \
+        pedwarn (LOCATION, OPT, IN);                                     \
+        break;                                                           \
+      case ic_return:                                                    \
+        pedwarn (LOCATION, OPT, RE);                                     \
+        break;                                                           \
+      default:                                                           \
+        gcc_unreachable ();                                              \
+      }                                                                  \
   } while (0)
 
   STRIP_TYPE_NOPS (rhs);

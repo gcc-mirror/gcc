@@ -1,3 +1,9 @@
+2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/30949
+	* c-typeck.c (convert_for_assignment): Give a note describing what
+	was passed and what was expected.
+
 2008-08-28  Joey Ye  <joey.ye@intel.com>
 
 	* doc/extend.texi: Document AVX built-in functions.
