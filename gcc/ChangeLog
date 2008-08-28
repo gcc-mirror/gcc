@@ -1,3 +1,14 @@
+2008-08-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37005
+	* fold-const.c (maybe_canonicalize_comparison_1): Require
+	undefined overflow only for canonicalizing A +- CST cmp CST.
+	Make sure to not generate new constants that are not inside
+	their TYPE_MIN/MAX_VALUE range.
+	(maybe_canonicalize_comparison): Remove undefined overflow
+	checking from here.
+	(fold_binary): Remove now duplicate folding.
+
 2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-typeck.c (convert_for_assignment): Adjust WARN_FOR_ASSIGNMENT
