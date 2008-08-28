@@ -563,7 +563,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpreferred-stack-boundary=@var{num}
 -mincoming-stack-boundary=@var{num}
 -mcld -mcx16 -msahf -mrecip @gol
--mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 @gol
+-mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -maes -mpclmul @gol
 -msse4a -m3dnow -mpopcnt -mabm -msse5 @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
@@ -10865,6 +10865,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-sse4.2
 @itemx -msse4
 @itemx -mno-sse4
+@itemx -mavx
+@itemx -mno-avx
 @itemx -maes
 @itemx -mno-aes
 @itemx -mpclmul
@@ -10886,7 +10888,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX,
-SSE, SSE2, SSE3, SSSE3, SSE4.1, AES, PCLMUL, SSE4A, SSE5, ABM or
+SSE, SSE2, SSE3, SSSE3, SSE4.1, AVX, AES, PCLMUL, SSE4A, SSE5, ABM or
 3DNow!@: extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
@@ -10894,6 +10896,10 @@ disabled by these switches.
 
 To have SSE/SSE2 instructions generated automatically from floating-point
 code (as opposed to 387 instructions), see @option{-mfpmath=sse}.
+
+GCC depresses SSEx instructions when @option{-mavx} is used. Instead, it
+generates new AVX instructions or AVX equivalence for all SSEx instructions
+when needed.
 
 These options will enable GCC to use these extended instructions in
 generated code, even without @option{-mfpmath=sse}.  Applications which
