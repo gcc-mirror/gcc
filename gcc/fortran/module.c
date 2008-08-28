@@ -1649,7 +1649,7 @@ typedef enum
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
-  AB_EXTENSION
+  AB_EXTENSION, AB_PROCEDURE, AB_PROC_POINTER
 }
 ab_attribute;
 
@@ -1690,6 +1690,8 @@ static const mstring attr_bits[] =
     minit ("PROTECTED", AB_PROTECTED),
     minit ("ABSTRACT", AB_ABSTRACT),
     minit ("EXTENSION", AB_EXTENSION),
+    minit ("PROCEDURE", AB_PROCEDURE),
+    minit ("PROC_POINTER", AB_PROC_POINTER),
     minit (NULL, -1)
 };
 
@@ -1805,6 +1807,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ZERO_COMP, attr_bits);
       if (attr->extension)
 	MIO_NAME (ab_attribute) (AB_EXTENSION, attr_bits);
+      if (attr->procedure)
+	MIO_NAME (ab_attribute) (AB_PROCEDURE, attr_bits);
+      if (attr->proc_pointer)
+	MIO_NAME (ab_attribute) (AB_PROC_POINTER, attr_bits);
 
       mio_rparen ();
 
@@ -1925,6 +1931,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_EXTENSION:
 	      attr->extension = 1;
+	      break;
+	    case AB_PROCEDURE:
+	      attr->procedure = 1;
+	      break;
+	    case AB_PROC_POINTER:
+	      attr->proc_pointer = 1;
 	      break;
 	    }
 	}
