@@ -1,3 +1,8 @@
+2008-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36741
+	* g++.dg/other/new-size-type.C: New test.
+
 2008-08-28  Ira Rosen  <irar@il.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_perm): New.
