@@ -1,5 +1,7 @@
 2008-08-28  Nick Clifton  <nickc@redhat.com>
 
+	* config/fr30/fr30.h (IRA_COVER_CLASSES): Define.
+
 	* config/m32r/m32r.h (IRA_COVER_CLASSES): Define.
 
 2008-08-28  Paul Brook  <paul@codesourcery.com>
