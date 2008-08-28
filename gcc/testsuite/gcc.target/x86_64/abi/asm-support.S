@@ -1,4 +1,7 @@
 	.file	"snapshot.S"
+#ifdef __AVX__
+	.sse_check none
+#endif
 	.text
 	.p2align 4,,15
 .globl snapshot

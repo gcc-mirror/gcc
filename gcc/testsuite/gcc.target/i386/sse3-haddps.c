@@ -1,7 +1,15 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse3 -mfpmath=sse" } */
 
-#include "sse3-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse3-check.h"
+#endif
+
+#ifndef TEST
+#define TEST sse3_test
+#endif
+
+#include CHECK_H
 
 #include <pmmintrin.h>
 
@@ -60,7 +68,7 @@ static float vals[80] =
   };
 
 static void
-sse3_test ()
+TEST ()
 {
   int i;
   int fail = 0;

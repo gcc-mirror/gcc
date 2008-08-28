@@ -2,8 +2,15 @@
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
 
-#include "sse4_1-check.h"
+#ifndef CHECK_H
+#define CHECK_H "sse4_1-check.h"
+#endif
 
+#ifndef TEST
+#define TEST sse4_1_test
+#endif
+
+#include CHECK_H
 #include <smmintrin.h>
 
 #define msk0   0
@@ -24,7 +31,7 @@
 #define msk15 15
 
 static void
-sse4_1_test (void)
+TEST (void)
 {
   union
     {

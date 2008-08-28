@@ -64,6 +64,19 @@ proc check_effective_target_aes { } {
     } "-O2 -maes" ]
 }
 
+# Return 1 if vaes instructions can be compiled.
+proc check_effective_target_vaes { } {
+    return [check_no_compiler_messages vaes object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_aesimc_si128 (__m128i __X)
+	{
+	    return (__m128i) __builtin_ia32_aesimc128 ((__v2di)__X);
+	}
+    } "-O2 -maes -mavx" ]
+}
+
 # Return 1 if pclmul instructions can be compiled.
 proc check_effective_target_pclmul { } {
     return [check_no_compiler_messages pclmul object {
