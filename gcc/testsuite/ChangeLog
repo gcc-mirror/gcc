@@ -1,3 +1,8 @@
+2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37260
+	* g++.dg/parse/crash44.C: New.
+
 2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/octeon-dmul-1.c: New test.

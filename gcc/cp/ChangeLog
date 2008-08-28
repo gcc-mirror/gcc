@@ -1,3 +1,8 @@
+2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37260
+	* decl.c (reshape_init_r): Check init for error_mark_node.
+
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/17880

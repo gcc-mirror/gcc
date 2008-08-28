@@ -4772,6 +4772,9 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 {
   tree init = d->cur->value;
 
+  if (error_operand_p (init))
+    return error_mark_node;
+
   /* A non-aggregate type is always initialized with a single
      initializer.  */
   if (!CP_AGGREGATE_TYPE_P (type))
