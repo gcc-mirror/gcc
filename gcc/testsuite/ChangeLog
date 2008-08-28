@@ -1,3 +1,7 @@
+2008-08-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/altivec-volatile.c: New test.
+
 2008-08-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36741

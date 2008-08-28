@@ -1,3 +1,8 @@
+2008-08-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Propagate
+	all type qualifiers from element type to vector type.
+
 2008-08-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36741
