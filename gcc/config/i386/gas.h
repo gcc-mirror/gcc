@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
    GAS version 1.38.1 doesn't understand the `repz' opcode mnemonic.
    So use `repe' instead.  */
 
+#undef ASM_OUTPUT_OPCODE
 #define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
 {									\
   if ((PTR)[0] == 'r'							\
@@ -103,6 +104,8 @@ along with GCC; see the file COPYING3.  If not see
 	  (PTR) += 5;							\
 	}								\
     }									\
+  else									\
+    ASM_OUTPUT_AVX_PREFIX ((STREAM), (PTR));				\
 }
 
 /* Define macro used to output shift-double opcodes when the shift

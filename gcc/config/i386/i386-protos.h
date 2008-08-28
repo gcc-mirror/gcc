@@ -128,6 +128,7 @@ extern int ix86_check_movabs (rtx, int);
 extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx, int);
 extern int ix86_attr_length_address_default (rtx);
+extern int ix86_attr_length_vex_default (rtx, int, int);
 
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 

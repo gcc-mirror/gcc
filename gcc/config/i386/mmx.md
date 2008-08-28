@@ -78,14 +78,44 @@
     movq\t{%1, %0|%0, %1}
     movdq2q\t{%1, %0|%0, %1}
     movq2dq\t{%1, %0|%0, %1}
+    %vpxor\t%0, %d0
+    %vmovq\t{%1, %0|%0, %1}
+    %vmovq\t{%1, %0|%0, %1}
+    %vmovq\t{%1, %0|%0, %1}
+    %vmovq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,ssemov")
+   (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*")
+   (set (attr "prefix")
+     (if_then_else (eq_attr "alternative" "7,8,9,10,11")
+       (const_string "maybe_vex")
+       (const_string "orig")))
+   (set_attr "mode" "DI")])
+
+(define_insn "*mov<mode>_internal_avx"
+  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
+			"=!?y,!?y,m  ,!y ,*Y2,*Y2,*Y2 ,m  ,r  ,m")
+	(match_operand:MMXMODEI8 1 "vector_move_operand"
+			"C   ,!ym,!?y,*Y2,!y ,C  ,*Y2m,*Y2,irm,r"))]
+  "TARGET_AVX
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
     pxor\t%0, %0
     movq\t{%1, %0|%0, %1}
     movq\t{%1, %0|%0, %1}
-    movd\t{%1, %0|%0, %1}
-    movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,ssemov")
-   (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*")
-   (set_attr "mode" "DI")])
+    movdq2q\t{%1, %0|%0, %1}
+    movq2dq\t{%1, %0|%0, %1}
+    vpxor\t%0, %0, %0
+    vmovq\t{%1, %0|%0, %1}
+    vmovq\t{%1, %0|%0, %1}
+    #
+    #"
+  [(set_attr "type" "mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,*,*")
+   (set_attr "unit" "*,*,*,mmx,mmx,*,*,*,*,*")
+   (set (attr "prefix")
+     (if_then_else (eq_attr "alternative" "5,6,7")
+       (const_string "vex")
+       (const_string "orig")))
+   (set_attr "mode" "DI,DI,DI,DI,DI,TI,DI,DI,DI,DI")])
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
@@ -122,6 +152,35 @@
   DONE;
 })
 
+(define_insn "*movv2sf_internal_rex64_avx"
+  [(set (match_operand:V2SF 0 "nonimmediate_operand"
+				"=rm,r ,!?y,!?y ,m ,!y,Y2,x,x,x,m,r,x")
+        (match_operand:V2SF 1 "vector_move_operand"
+				"Cr ,m ,C  ,!?ym,!y,Y2,!y,C,x,m,x,x,r"))]
+  "TARGET_64BIT && TARGET_AVX
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+    mov{q}\t{%1, %0|%0, %1}
+    mov{q}\t{%1, %0|%0, %1}
+    pxor\t%0, %0
+    movq\t{%1, %0|%0, %1}
+    movq\t{%1, %0|%0, %1}
+    movdq2q\t{%1, %0|%0, %1}
+    movq2dq\t{%1, %0|%0, %1}
+    vxorps\t%0, %0, %0
+    vmovaps\t{%1, %0|%0, %1}
+    vmovlps\t{%1, %0, %0|%0, %0, %1}
+    vmovlps\t{%1, %0|%0, %1}
+    vmovq\t{%1, %0|%0, %1}
+    vmovq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,sselog1,ssemov,ssemov,ssemov,ssemov")
+   (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*,*")
+   (set (attr "prefix")
+     (if_then_else (eq_attr "alternative" "7,8,9,10,11,12")
+       (const_string "vex")
+       (const_string "orig")))
+   (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
+
 (define_insn "*movv2sf_internal_rex64"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
 				"=rm,r ,!?y,!?y ,m ,!y,*Y2,x,x,x,m,r,Yi")
@@ -146,6 +205,33 @@
   [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,sselog1,ssemov,ssemov,ssemov,ssemov")
    (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
+
+(define_insn "*movv2sf_internal_avx"
+  [(set (match_operand:V2SF 0 "nonimmediate_operand"
+			"=!?y,!?y ,m  ,!y ,*Y2,*x,*x,*x,m ,r  ,m")
+        (match_operand:V2SF 1 "vector_move_operand"
+			"C   ,!?ym,!?y,*Y2,!y ,C ,*x,m ,*x,irm,r"))]
+  "TARGET_AVX
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+    pxor\t%0, %0
+    movq\t{%1, %0|%0, %1}
+    movq\t{%1, %0|%0, %1}
+    movdq2q\t{%1, %0|%0, %1}
+    movq2dq\t{%1, %0|%0, %1}
+    vxorps\t%0, %0, %0
+    vmovaps\t{%1, %0|%0, %1}
+    vmovlps\t{%1, %0, %0|%0, %0, %1}
+    vmovlps\t{%1, %0|%0, %1}
+    #
+    #"
+  [(set_attr "type" "mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,*,*")
+   (set_attr "unit" "*,*,*,mmx,mmx,*,*,*,*,*,*")
+   (set (attr "prefix")
+     (if_then_else (eq_attr "alternative" "5,6,7,8")
+       (const_string "vex")
+       (const_string "orig")))
+   (set_attr "mode" "DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 
 (define_insn "*movv2sf_internal"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"

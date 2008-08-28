@@ -1,6 +1,683 @@
+2008-08-28  H.J. Lu  <hongjiu.lu@intel.com>
+	    Joey Ye  <joey.ye@intel.com>
+	    Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* config.gcc (extra_headers): Add gmmintrin.h for x86 and x86-64.
+
+	* config/i386/cpuid.h (bit_FMA): New.
+	(bit_XSAVE): Likewise.
+	(bit_OSXSAVE): Likewise.
+	(bit_AVX): Likewise.
+
+	* config/i386/gas.h (ASM_OUTPUT_OPCODE): Undefine before
+	define.  Use ASM_OUTPUT_AVX_PREFIX.
+
+	* config/i386/gmmintrin.h: New.
+
+	* config/i386/i386.c (x86_64_reg_class): Add X86_64_AVX_CLASS.
+	(OPTION_MASK_ISA_AVX_SET): New.
+	(OPTION_MASK_ISA_FMA_SET): Likewise.
+	(OPTION_MASK_ISA_AVX_UNSET): Likewise.
+	(OPTION_MASK_ISA_FMA_SET): Likewise.
+	(OPTION_MASK_ISA_SSE4_2_UNSET): Updated.
+	(ix86_handle_option): Handle OPT_mavx and OPT_mfma.
+	(pta_flags): Add PTA_AVX and PTA_FMA.
+	(override_options): Handle PTA_AVX and PTA_FMA.
+	(init_cumulative_args): Handle warn_avx.
+	(classify_argument): Return 0 for COImode and OImode.  Return
+	1 and X86_64_AVX_CLASS for 256bit vector types.
+	(examine_argument): Handle X86_64_AVX_CLASS.
+	(construct_container): Likewise.
+	(function_arg_advance_32): Pass OImode and 256bit vector types
+	in AVX register.
+	(function_arg_advance_64): Take a new argument to indicate if a
+	parameter is named.  Handle 256bit vector types.  Return
+	immediately for unnamed 256bit vector mode parameters.
+	(function_arg_advance): Updated.
+	(function_arg_32): Add comments for TImode.  Handle OImode
+	and 256bit vector types.
+	(function_arg_64): Take a new argument to indicate if a
+	parameter is named.  Handle 256bit vector types.  Return NULL
+	for unnamed 256bit vector mode parameters.
+	(function_arg): Updated.
+	(setup_incoming_varargs_64): Support
+	AVX encoding for *sse_prologue_save_insn.
+	(ix86_gimplify_va_arg): Handle 256bit vector mode parameters.
+	(standard_sse_constant_p): Return -2 for all 1s if SSE2 isn't
+	enabled.  For all 1s in 256bit vector modes, return 3 if AVX is
+	enabled, otherwise return -3.
+	(standard_sse_constant_opcode): Handle AVX and 256bit vector
+	modes.
+	(print_reg): Support AVX registers.  Handle 'x' and 't'.
+	Handle 'd' to duplicate the operand.
+	(print_operand): Likewise.  Also support AVX vector compare
+	instructions.
+	(output_387_binary_op): Support AVX.
+	(output_fp_compare): Likewise.
+	(ix86_expand_vector_move_misalign): Likewise.
+	(ix86_attr_length_vex_default): New.
+	(ix86_builtins): Add IX86_BUILTIN_ADDPD256,
+	IX86_BUILTIN_ADDPS256, IX86_BUILTIN_ADDSUBPD256,
+	IX86_BUILTIN_ADDSUBPS256, IX86_BUILTIN_ANDPD256,
+	IX86_BUILTIN_ANDPS256, IX86_BUILTIN_ANDNPD256,
+	IX86_BUILTIN_ANDNPS256, IX86_BUILTIN_BLENDPD256,
+	IX86_BUILTIN_BLENDPS256, IX86_BUILTIN_BLENDVPD256,
+	IX86_BUILTIN_BLENDVPS256, IX86_BUILTIN_DIVPD256,
+	IX86_BUILTIN_DIVPS256, IX86_BUILTIN_DPPS256,
+	IX86_BUILTIN_HADDPD256, IX86_BUILTIN_HADDPS256,
+	IX86_BUILTIN_HSUBPD256, IX86_BUILTIN_HSUBPS256,
+	IX86_BUILTIN_MAXPD256, IX86_BUILTIN_MAXPS256,
+	IX86_BUILTIN_MINPD256, IX86_BUILTIN_MINPS256,
+	IX86_BUILTIN_MULPD256, IX86_BUILTIN_MULPS256,
+	IX86_BUILTIN_ORPD256, IX86_BUILTIN_ORPS256,
+	IX86_BUILTIN_SHUFPD256, IX86_BUILTIN_SHUFPS256,
+	IX86_BUILTIN_SUBPD256, IX86_BUILTIN_SUBPS256,
+	IX86_BUILTIN_XORPD256, IX86_BUILTIN_XORPS256,
+	IX86_BUILTIN_CMPSD, IX86_BUILTIN_CMPSS, IX86_BUILTIN_CMPPD,
+	IX86_BUILTIN_CMPPS, IX86_BUILTIN_CMPPD256,
+	IX86_BUILTIN_CMPPS256, IX86_BUILTIN_CVTDQ2PD256,
+	IX86_BUILTIN_CVTDQ2PS256, IX86_BUILTIN_CVTPD2PS256,
+	IX86_BUILTIN_CVTPS2DQ256, IX86_BUILTIN_CVTPS2PD256,
+	IX86_BUILTIN_CVTTPD2DQ256, IX86_BUILTIN_CVTPD2DQ256,
+	IX86_BUILTIN_CVTTPS2DQ256, IX86_BUILTIN_EXTRACTF128PD256,
+	IX86_BUILTIN_EXTRACTF128PS256, IX86_BUILTIN_EXTRACTF128SI256,
+	IX86_BUILTIN_VZEROALL, IX86_BUILTIN_VZEROUPPER,
+	IX86_BUILTIN_VZEROUPPER_REX64, IX86_BUILTIN_VPERMILVARPD,
+	IX86_BUILTIN_VPERMILVARPS, IX86_BUILTIN_VPERMILVARPD256,
+	IX86_BUILTIN_VPERMILVARPS256, IX86_BUILTIN_VPERMILPD,
+	IX86_BUILTIN_VPERMILPS, IX86_BUILTIN_VPERMILPD256,
+	IX86_BUILTIN_VPERMILPS256, IX86_BUILTIN_VPERMIL2PD,
+	IX86_BUILTIN_VPERMIL2PS, IX86_BUILTIN_VPERMIL2PD256,
+	IX86_BUILTIN_VPERMIL2PS256, IX86_BUILTIN_VPERM2F128PD256,
+	IX86_BUILTIN_VPERM2F128PS256, IX86_BUILTIN_VPERM2F128SI256,
+	IX86_BUILTIN_VBROADCASTSS, IX86_BUILTIN_VBROADCASTSD256,
+	IX86_BUILTIN_VBROADCASTSS256, IX86_BUILTIN_VBROADCASTPD256,
+	IX86_BUILTIN_VBROADCASTPS256, IX86_BUILTIN_VINSERTF128PD256,
+	IX86_BUILTIN_VINSERTF128PS256, IX86_BUILTIN_VINSERTF128SI256,
+	IX86_BUILTIN_LOADUPD256, IX86_BUILTIN_LOADUPS256,
+	IX86_BUILTIN_STOREUPD256, IX86_BUILTIN_STOREUPS256,
+	IX86_BUILTIN_LDDQU256, IX86_BUILTIN_LOADDQU256,
+	IX86_BUILTIN_STOREDQU256, IX86_BUILTIN_MASKLOADPD,
+	IX86_BUILTIN_MASKLOADPS, IX86_BUILTIN_MASKSTOREPD,
+	IX86_BUILTIN_MASKSTOREPS, IX86_BUILTIN_MASKLOADPD256,
+	IX86_BUILTIN_MASKLOADPS256, IX86_BUILTIN_MASKSTOREPD256,
+	IX86_BUILTIN_MASKSTOREPS256, IX86_BUILTIN_MOVSHDUP256,
+	IX86_BUILTIN_MOVSLDUP256, IX86_BUILTIN_MOVDDUP256,
+	IX86_BUILTIN_SQRTPD256, IX86_BUILTIN_SQRTPS256,
+	IX86_BUILTIN_SQRTPS_NR256, IX86_BUILTIN_RSQRTPS256,
+	IX86_BUILTIN_RSQRTPS_NR256, IX86_BUILTIN_RCPPS256,
+	IX86_BUILTIN_ROUNDPD256, IX86_BUILTIN_ROUNDPS256,
+	IX86_BUILTIN_UNPCKHPD256, IX86_BUILTIN_UNPCKLPD256,
+	IX86_BUILTIN_UNPCKHPS256, IX86_BUILTIN_UNPCKLPS256,
+	IX86_BUILTIN_SI256_SI, IX86_BUILTIN_PS256_PS,
+	IX86_BUILTIN_PD256_PD, IX86_BUILTIN_SI_SI256,
+	IX86_BUILTIN_PS_PS256, IX86_BUILTIN_PD_PD256,
+	IX86_BUILTIN_VTESTZPD, IX86_BUILTIN_VTESTCPD,
+	IX86_BUILTIN_VTESTNZCPD, IX86_BUILTIN_VTESTZPS,
+	IX86_BUILTIN_VTESTCPS, IX86_BUILTIN_VTESTNZCPS,
+	IX86_BUILTIN_VTESTZPD256, IX86_BUILTIN_VTESTCPD256,
+	IX86_BUILTIN_VTESTNZCPD256, IX86_BUILTIN_VTESTZPS256,
+	IX86_BUILTIN_VTESTCPS256, IX86_BUILTIN_VTESTNZCPS256,
+	IX86_BUILTIN_PTESTZ256, IX86_BUILTIN_PTESTC256,
+	IX86_BUILTIN_PTESTNZC256, IX86_BUILTIN_MOVMSKPD256
+	and IX86_BUILTIN_MOVMSKPS256,
+	(ix86_special_builtin_type): Add V32QI_FTYPE_PCCHAR,
+	V8SF_FTYPE_PCV4SF, V8SF_FTYPE_PCFLOAT, V4DF_FTYPE_PCV2DF,
+	V4DF_FTYPE_PCDOUBLE, V8SF_FTYPE_PCV8SF_V8SF,
+	V4DF_FTYPE_PCV4DF_V4DF, V4SF_FTYPE_PCV4SF_V4SF,
+	V2DF_FTYPE_PCV2DF_V2DF, VOID_FTYPE_PCHAR_V32QI,
+	VOID_FTYPE_PFLOAT_V8SF, VOID_FTYPE_PDOUBLE_V4DF,
+	VOID_FTYPE_PV8SF_V8SF_V8SF, VOID_FTYPE_PV4DF_V4DF_V4DF,
+	VOID_FTYPE_PV4SF_V4SF_V4SF and VOID_FTYPE_PV2DF_V2DF_V2DF,
+	(ix86_builtin_type): Add INT_FTYPE_V8SF_V8SF_PTEST,
+	INT_FTYPE_V4DI_V4DI_PTEST, INT_FTYPE_V4DF_V4DF_PTEST,
+	INT_FTYPE_V4SF_V4SF_PTEST, INT_FTYPE_V2DF_V2DF_PTEST,
+	INT_FTYPE_V8SF, INT_FTYPE_V4DF, V8SI_FTYPE_V8SF, V8SI_FTYPE_V4SI,
+	V8SF_FTYPE_V8SF, V8SF_FTYPE_V8SI, V8SF_FTYPE_V4SF,
+	V4SI_FTYPE_V8SI, V4SI_FTYPE_V4DF, V4DF_FTYPE_V4DF,
+	V4DF_FTYPE_V4SI, V4DF_FTYPE_V4SF, V4DF_FTYPE_V2DF,
+	V4SF_FTYPE_V4DF, V4SF_FTYPE_V8SF, V2DF_FTYPE_V4DF,
+	V8SF_FTYPE_V8SF_V8SF, V8SF_FTYPE_V8SF_V8SI,
+	V4DF_FTYPE_V4DF_V4DF, V4DF_FTYPE_V4DF_V4DI,
+	V4SF_FTYPE_V4SF_V4SI, V2DF_FTYPE_V2DF_V2DI,
+	V8SF_FTYPE_V8SF_INT, V4SI_FTYPE_V8SI_INT, V4SF_FTYPE_V8SF_INT,
+	V2DF_FTYPE_V4DF_INT, V4DF_FTYPE_V4DF_INT,
+	V8SF_FTYPE_V8SF_V8SF_V8SF, V4DF_FTYPE_V4DF_V4DF_V4DF,
+	V8SI_FTYPE_V8SI_V8SI_INT, V8SF_FTYPE_V8SF_V8SF_INT,
+	V4DF_FTYPE_V4DF_V4DF_INT, V4DF_FTYPE_V4DF_V2DF_INT,
+	V8SF_FTYPE_V8SF_V8SF_V8SI_INT, V4DF_FTYPE_V4DF_V4DF_V4DI_INT,
+	V4SF_FTYPE_V4SF_V4SF_V4SI_INT and V2DF_FTYPE_V2DF_V2DF_V2DI_INT.
+	(bdesc_special_args): Add IX86_BUILTIN_VZEROALL,
+	IX86_BUILTIN_VZEROUPPER. IX86_BUILTIN_VZEROUPPER_REX64,
+	IX86_BUILTIN_VBROADCASTSS, IX86_BUILTIN_VBROADCASTSD256,
+	IX86_BUILTIN_VBROADCASTSS256, IX86_BUILTIN_VBROADCASTPD256,
+	IX86_BUILTIN_VBROADCASTPS256, IX86_BUILTIN_LOADUPD256,
+	IX86_BUILTIN_LOADUPS256, IX86_BUILTIN_STOREUPD256,
+	IX86_BUILTIN_STOREUPS256, IX86_BUILTIN_LOADDQU256,
+	IX86_BUILTIN_STOREDQU256, IX86_BUILTIN_LDDQU256,
+	IX86_BUILTIN_MASKLOADPD, IX86_BUILTIN_MASKLOADPS,
+	IX86_BUILTIN_MASKLOADPD256, IX86_BUILTIN_MASKLOADPS256,
+	IX86_BUILTIN_MASKSTOREPD, IX86_BUILTIN_MASKSTOREPS,
+	IX86_BUILTIN_MASKSTOREPD256 and IX86_BUILTIN_MASKSTOREPS256.
+	(ix86_builtins): Add IX86_BUILTIN_ADDPD256,
+	IX86_BUILTIN_ADDPS256, IX86_BUILTIN_ADDSUBPD256,
+	IX86_BUILTIN_ADDSUBPS256, IX86_BUILTIN_ANDPD256,
+	IX86_BUILTIN_ANDPS256, IX86_BUILTIN_ANDNPD256,
+	IX86_BUILTIN_ANDNPS256, IX86_BUILTIN_DIVPD256,
+	IX86_BUILTIN_DIVPS256, IX86_BUILTIN_HADDPD256,
+	IX86_BUILTIN_HSUBPS256, IX86_BUILTIN_HSUBPD256,
+	IX86_BUILTIN_HADDPS256, IX86_BUILTIN_MAXPD256,
+	IX86_BUILTIN_MAXPS256, IX86_BUILTIN_MINPD256,
+	IX86_BUILTIN_MINPS256, IX86_BUILTIN_MULPD256,
+	IX86_BUILTIN_MULPS256, IX86_BUILTIN_ORPD256,
+	IX86_BUILTIN_ORPS256, IX86_BUILTIN_SUBPD256,
+	IX86_BUILTIN_SUBPS256, IX86_BUILTIN_XORPD256,
+	IX86_BUILTIN_XORPS256, IX86_BUILTIN_VPERMILVARPD,
+	IX86_BUILTIN_VPERMILVARPS, IX86_BUILTIN_VPERMILVARPD256,
+	IX86_BUILTIN_VPERMILVARPS256, IX86_BUILTIN_BLENDPD256,
+	IX86_BUILTIN_BLENDPS256, IX86_BUILTIN_BLENDVPD256,
+	IX86_BUILTIN_BLENDVPS256, IX86_BUILTIN_DPPS256,
+	IX86_BUILTIN_SHUFPD256, IX86_BUILTIN_SHUFPS256,
+	IX86_BUILTIN_CMPSD, IX86_BUILTIN_CMPSS, IX86_BUILTIN_CMPPD,
+	IX86_BUILTIN_CMPPS,
+	IX86_BUILTIN_CMPPD256,IX86_BUILTIN_CMPPS256,
+	IX86_BUILTIN_EXTRACTF128PD256, IX86_BUILTIN_EXTRACTF128PS256,
+	IX86_BUILTIN_EXTRACTF128SI256, IX86_BUILTIN_CVTDQ2PD256,
+	IX86_BUILTIN_CVTDQ2PS256, IX86_BUILTIN_CVTPD2PS256,
+	IX86_BUILTIN_CVTPS2DQ256, IX86_BUILTIN_CVTPS2PD256,
+	IX86_BUILTIN_CVTTPD2DQ256, IX86_BUILTIN_CVTPD2DQ256,
+	IX86_BUILTIN_CVTTPS2DQ256, IX86_BUILTIN_VPERM2F128PD256,
+	IX86_BUILTIN_VPERM2F128PS256, IX86_BUILTIN_VPERM2F128SI256,
+	IX86_BUILTIN_VPERMILPD, IX86_BUILTIN_VPERMILPS,
+	IX86_BUILTIN_VPERMILPD256, IX86_BUILTIN_VPERMILPS256,
+	IX86_BUILTIN_VPERMIL2PD, IX86_BUILTIN_VPERMILPS,
+	IX86_BUILTIN_VPERMILPD256, IX86_BUILTIN_VPERMILPS256,
+	IX86_BUILTIN_VPERMIL2PD, IX86_BUILTIN_VPERMIL2PS,
+	IX86_BUILTIN_VPERMIL2PD256, IX86_BUILTIN_VPERMIL2PS256,
+	IX86_BUILTIN_VINSERTF128PD256, IX86_BUILTIN_VINSERTF128PS256,
+	IX86_BUILTIN_VINSERTF128SI256, IX86_BUILTIN_MOVSHDUP256,
+	IX86_BUILTIN_MOVSLDUP256, IX86_BUILTIN_MOVDDUP256,
+	IX86_BUILTIN_SQRTPD256, IX86_BUILTIN_SQRTPS256,
+	IX86_BUILTIN_SQRTPS_NR256, IX86_BUILTIN_RSQRTPS256,
+	IX86_BUILTIN_RSQRTPS_NR256, IX86_BUILTIN_RCPPS256,
+	IX86_BUILTIN_ROUNDPD256, IX86_BUILTIN_ROUNDPS256,
+	IX86_BUILTIN_UNPCKHPD256, IX86_BUILTIN_UNPCKLPD256,
+	IX86_BUILTIN_UNPCKHPS256, IX86_BUILTIN_UNPCKLPS256,
+	IX86_BUILTIN_SI256_SI, IX86_BUILTIN_PS256_PS,
+	IX86_BUILTIN_PD256_PD, IX86_BUILTIN_SI_SI256,
+	IX86_BUILTIN_PS_PS256, IX86_BUILTIN_PD_PD256,
+	IX86_BUILTIN_VTESTZPD, IX86_BUILTIN_VTESTCPD,
+	IX86_BUILTIN_VTESTNZCPD, IX86_BUILTIN_VTESTZPS,
+	IX86_BUILTIN_VTESTCPS, IX86_BUILTIN_VTESTNZCPS,
+	IX86_BUILTIN_VTESTZPD256, IX86_BUILTIN_VTESTCPD256,
+	IX86_BUILTIN_VTESTNZCPD256, IX86_BUILTIN_VTESTZPS256,
+	IX86_BUILTIN_VTESTCPS256, IX86_BUILTIN_VTESTNZCPS256,
+	IX86_BUILTIN_PTESTZ256, IX86_BUILTIN_PTESTC256,
+	IX86_BUILTIN_PTESTNZC256, IX86_BUILTIN_MOVMSKPD256 and
+	IX86_BUILTIN_MOVMSKPS256.
+	(ix86_init_mmx_sse_builtins): Support AVX builtins.
+	(ix86_expand_args_builtin): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+	(ix86_hard_regno_mode_ok): Handle AVX modes.
+	(ix86_expand_vector_init_duplicate): Likewise.
+	(ix86_expand_vector_init_one_nonzero): Likewise.
+	(ix86_expand_vector_init_one_var): Likewise.
+	(ix86_expand_vector_init_concat): Likewise.
+	(ix86_expand_vector_init_general): Likewise.
+	(ix86_expand_vector_set): Likewise.
+	(ix86_vector_mode_supported_p): Likewise.
+	(x86_extended_reg_mentioned_p): Check INSN_P before using
+	PATTERN.
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_AVX and OPTION_MASK_ISA_FMA.
+
+	* config/i386/i386.h (TARGET_AVX): New.
+	(TARGET_FMA): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Handle TARGET_AVX and TARGET_FMA.
+	(BIGGEST_ALIGNMENT): Set to 256 for TARGET_AVX.
+	(VALID_AVX256_REG_MODE): New.
+	(AVX256_VEC_FLOAT_MODE_P): Likewise.
+	(AVX_FLOAT_MODE_P): Likewise.
+	(AVX128_VEC_FLOAT_MODE_P): Likewise.
+	(AVX256_VEC_FLOAT_MODE_P): Likewise.
+	(AVX_VEC_FLOAT_MODE_P): Likewise.
+	(ASM_OUTPUT_AVX_PREFIX): Likewise.
+	(ASM_OUTPUT_OPCODE): Likewise.
+	(UNITS_PER_SIMD_WORD): Add a FIXME for 32byte vectorizer
+	support.
+	(SSE_REG_MODE_P): Allow 256bit vector modes.
+	(ix86_args): Add a warn_avx field.
+
+	* config/i386/i386.md (UNSPEC_PCMP): New.
+	(UNSPEC_VPERMIL): Likewise.
+	(UNSPEC_VPERMIL2): Likewise.
+	(UNSPEC_VPERMIL2F128): Likewise.
+	(UNSPEC_MASKLOAD): Likewise.
+	(UNSPEC_MASKSTORE): Likewise.
+	(UNSPEC_CAST): Likewise.
+	(UNSPEC_VTESTP): Likewise.
+	(UNSPECV_VZEROALL): Likewise.
+	(UNSPECV_VZEROUPPER): Likewise.
+	(XMM0_REG): Likewise.
+	(XMM1_REG): Likewise.
+	(XMM2_REG): Likewise.
+	(XMM3_REG): Likewise.
+	(XMM4_REG): Likewise.
+	(XMM5_REG): Likewise.
+	(XMM6_REG): Likewise.
+	(XMM8_REG): Likewise.
+	(XMM9_REG): Likewise.
+	(XMM10_REG): Likewise.
+	(XMM11_REG): Likewise.
+	(XMM12_REG): Likewise.
+	(XMM13_REG): Likewise.
+	(XMM14_REG): Likewise.
+	(XMM15_REG): Likewise.
+	(prefix): Likewise.
+	(prefix_vex_imm8): Likewise.
+	(prefix_vex_w): Likewise.
+	(length_vex): Likewise.
+	(maxmin): Likewise.
+	(movoi): Likewise.
+	(*avx_ashlti3): Likewise.
+	(*avx_lshrti3): Likewise.
+	(*avx_setcc<mode>): Likewise.
+	(*fop_<mode>_comm_mixed_avx): Likewise.
+	(*fop_<mode>_comm_avx): Likewise.
+	(*fop_<mode>_1_mixed_avx): Likewise.
+	(*fop_<mode>_1_avx): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_ieee_smin<mode>3): Likewise.
+	(*avx_ieee_smax<mode>3): Likewise.
+	(mode): Add OI, V8SF and V4DF.
+	(length): Support VEX prefix.
+	(*cmpfp_i_mixed): Set prefix attribute.
+	(*cmpfp_i_sse): Likewise.
+	(*cmpfp_iu_mixed): Likewise.
+	(*cmpfp_iu_sse): Likewise.
+	(*movsi_1): Support AVX.
+	(*movdi_2): Likewise.
+	(*movdi_1_rex64): Likewise.
+	(*movti_internal): Likewise.
+	(*movti_rex64): Likewise.
+	(*movsf_1): Likewise.
+	(*movdf_nointeger): Likewise.
+	(*movdf_integer_rex64): Likewise.
+	(*movtf_internal): Likewise.
+	(zero_extendsidi2_32): Likewise.
+	(zero_extendsidi2_rex64): Likewise.
+	(*extendsfdf2_mixed): Likewise.
+	(*extendsfdf2_sse): Likewise.
+	(*truncdfsf_fast_mixed): Likewise.
+	(*truncdfsf_fast_sse): Likewise.
+	(*truncdfsf_mixed): Likewise.
+	(fix_trunc<mode>di_sse): Likewise.
+	(fix_trunc<mode>si_sse): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_nointerunit): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_interunit): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_nointerunit): Likewise.
+	(*rcpsf2_sse): Likewise.
+	(*rsqrtsf2_sse): Likewise.
+	(*sqrt<mode>2_sse): Likewise.
+	(sse4_1_round<mode>2): Likewise.
+	(*sse_prologue_save_insn): Disallow REX prefix for AVX.
+	Support AVX.  Set length attribute properly for AVX.
+
+	* config/i386/i386-modes.def (VECTOR_MODES (INT, 32)): New.
+	(VECTOR_MODES (FLOAT, 32)): Likewise.
+	(VECTOR_MODE (INT, DI, 8)): Likewise.
+	(VECTOR_MODE (INT, HI, 32)): Likewise.
+	(VECTOR_MODE (INT, QI, 64)): Likewise.
+	(VECTOR_MODE (FLOAT, DF, 8)): Likewise.
+	(VECTOR_MODE (FLOAT, SF, 16)): Likewise.
+	(VECTOR_MODE (INT, DI, 4)): Removed.
+	(VECTOR_MODE (INT, SI, 8)): Likewise.
+	(VECTOR_MODE (INT, HI, 16)): Likewise.
+	(VECTOR_MODE (INT, QI, 32)): Likewise.
+	(VECTOR_MODE (FLOAT, SF, 8)): Likewise.
+	(INT_MODE (OI, 32)): Likewise.
+
+	* config/i386/i386.opt (mavx): New.
+	(mfma): Likewise.
+
+	* config/i386/i386-protos.h (ix86_attr_length_vex_default): New.
+
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Support AVX.
+	(*mov<mode>_internal_avx): New.
+	(*movv2sf_internal_rex64_avx): Likewise.
+	(*movv2sf_internal_avx): Likewise.
+
+	* config/i386/predicates.md (const_4_to_5_operand): New.
+	(const_6_to_7_operand): Likewise.
+	(const_8_to_11_operand): Likewise.
+	(const_12_to_15_operand): Likewise.
+	(avx_comparison_float_operator): Likewise.
+
+	* config/i386/sse.md (AVX256MODEI): New.
+	(AVX256MODE): Likewise.
+	(AVXMODEQI): Likewise.
+	(AVXMODE): Likewise.
+	(AVX256MODEF2P): Likewise.
+	(AVX256MODE2P): Likewise.
+	(AVX256MODE4P): Likewise.
+	(AVX256MODE8P): Likewise.
+	(AVXMODEF2P): Likewise.
+	(AVXMODEF4P): Likewise.
+	(AVXMODEDCVTDQ2PS): Likewise.
+	(AVXMODEDCVTPS2DQ): Likewise.
+	(avxvecmode): Likewise.
+	(avxvecpsmode): Likewise.
+	(avxhalfvecmode): Likewise.
+	(avxscalarmode): Likewise.
+	(avxcvtvecmode): Likewise.
+	(avxpermvecmode): Likewise.
+	(avxmodesuffixf2c): Likewise.
+	(avxmodesuffixp): Likewise.
+	(avxmodesuffixs): Likewise.
+	(avxmodesuffix): Likewise.
+	(vpermilbits): Likewise.
+	(pinsrbits): Likewise.
+	(mov<mode>): Likewise.
+	(*mov<mode>_internal): Likewise.
+	(push<mode>1): Likewise.
+	(movmisalign<mode>): Likewise.
+	(avx_movup<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_movdqu<avxmodesuffix>): Likewise.
+	(avx_lddqu<avxmodesuffix>): Likewise.
+	(<plusminus_insn><mode>3): Likewise.
+	(*avx_<plusminus_insn><mode>3): Likewise.
+	(*avx_vm<plusminus_insn><mode>3): Likewise.
+	(mul<mode>3): Likewise.
+	(*avx_mul<mode>3): Likewise.
+	(*avx_vmmul<mode>3): Likewise.
+	(divv8sf3): Likewise.
+	(divv4df3): Likewise.
+	(avx_div<mode>3): Likewise.
+	(*avx_div<mode>3): Likewise.
+	(*avx_vmdiv<mode>3): Likewise.
+	(avx_rcpv8sf2): Likewise.
+	(*avx_vmrcpv4sf2): Likewise.
+	(sqrtv8sf2): Likewise.
+	(avx_sqrtv8sf2): Likewise.
+	(*avx_vmsqrt<mode>2): Likewise.
+	(rsqrtv8sf2): Likewise.
+	(avx_rsqrtv8sf2): Likewise.
+	(*avx_vmrsqrtv4sf2): Likewise.
+	(<code><mode>3): Likewise.
+	(*avx_<code><mode>3_finite): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_vm<code><mode>3): Likewise.
+	(*avx_ieee_smin<mode>3): Likewise.
+	(*avx_ieee_smax<mode>3): Likewise.
+	(avx_addsubv8sf3): Likewise.
+	(avx_addsubv4df3): Likewise.
+	(*avx_addsubv4sf3): Likewise.
+	(*avx_addsubv2df3): Likewise.
+	(avx_h<plusminus_insn>v4df3): Likewise.
+	(avx_h<plusminus_insn>v8sf3): Likewise.
+	(*avx_h<plusminus_insn>v4sf3): Likewise.
+	(*avx_h<plusminus_insn>v2df3): Likewise.
+	(avx_cmpp<avxmodesuffixf2c><mode>3): Likewise.
+	(avx_cmps<ssemodesuffixf2c><mode>3): Likewise.
+	(*avx_maskcmp<mode>3): Likewise.
+	(avx_nand<mode>3): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_nand<mode>3): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_cvtsi2ss): Likewise.
+	(*avx_cvtsi2ssq): Likewise.
+	(*avx_cvtsi2sd): Likewise.
+	(*avx_cvtsi2sdq): Likewise.
+	(*avx_cvtsd2ss): Likewise.
+	(avx_cvtss2sd): Likewise.
+	(avx_cvtdq2ps<avxmodesuffix>): Likewise.
+	(avx_cvtps2dq<avxmodesuffix>): Likewise.
+	(avx_cvttps2dq<avxmodesuffix>): Likewise.
+	(*avx_cvtsi2sd): Likewise.
+	(*avx_cvtsi2sdq): Likewise.
+	(avx_cvtdq2pd256): Likewise.
+	(avx_cvtpd2dq256): Likewise.
+	(avx_cvttpd2dq256): Likewise.
+	(*avx_cvtsd2ss): Likewise.
+	(*avx_cvtss2sd): Likewise.
+	(avx_cvtpd2ps256): Likewise.
+	(avx_cvtps2pd256): Likewise.
+	(*avx_movhlps): Likewise.
+	(*avx_movlhps): Likewise.
+	(avx_unpckhps256): Likewise.
+	(*avx_unpckhps): Likewise.
+	(avx_unpcklps256): Likewise.
+	(*avx_unpcklps): Likewise.
+	(avx_movshdup256): Likewise.
+	(avx_movsldup256): Likewise.
+	(avx_shufps256): Likewise.
+	(avx_shufps256_1): Likewise.
+	(*avx_shufps_<mode>): Likewise.
+	(*avx_loadhps): Likewise.
+	(*avx_storelps): Likewise.
+	(*avx_loadlps): Likewise.
+	(*avx_movss): Likewise.
+	(*vec_dupv4sf_avx): Likewise.
+	(*vec_concatv2sf_avx): Likewise.
+	(*vec_concatv4sf_avx): Likewise.
+	(*vec_setv4sf_0_avx): Likewise.
+	(*vec_setv4sf_avx): Likewise.
+	(*avx_insertps): Likewise.
+	(avx_vextractf128<mode>): Likewise.
+	(vec_extract_lo_<mode>): Likewise.
+	(vec_extract_hi_<mode>): Likewise.
+	(vec_extract_lo_<mode>): Likewise.
+	(vec_extract_hi_<mode>): Likewise.
+	(vec_extract_lo_v16hi): Likewise.
+	(vec_extract_hi_v16hi): Likewise.
+	(vec_extract_lo_v32qi): Likewise.
+	(vec_extract_hi_v32qi): Likewise.
+	(avx_unpckhpd256): Likewise.
+	(*avx_unpckhpd): Likewise.
+	(avx_movddup256): Likewise.
+	(*avx_movddup): Likewise.
+	(avx_unpcklpd256): Likewise.
+	(*avx_unpcklpd): Likewise.
+	(avx_shufpd256): Likewise.
+	(avx_shufpd256_1): Likewise.
+	(*avx_punpckhqdq): Likewise.
+	(*avx_punpcklqdq): Likewise.
+	(*avx_shufpd_<mode>): Likewise.
+	(*avx_storehpd): Likewise.
+	(*avx_loadhpd): Likewise.
+	(*avx_loadlpd): Likewise.
+	(*avx_movsd): Likewise.
+	(*vec_concatv2df_avx): Likewise.
+	(*avx_<plusminus_insn><mode>3): Likewise.
+	(*avx_<plusminus_insn><mode>3): Likewise.
+	(*avx_mulv8hi3): Likewise.
+	(*avxv8hi3_highpart): Likewise.
+	(*avx_umulv8hi3_highpart): Likewise.
+	(*avx_umulv2siv2di3): Likewise.
+	(*avx_mulv2siv2di3): Likewise.
+	(*avx_pmaddwd): Likewise.
+	(*avx_mulv4si3): Likewise.
+	(*avx_ashr<mode>3): Likewise.
+	(*avx_lshr<mode>3): Likewise.
+	(*avx_ashl<mode>3): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_eq<mode>3): Likewise.
+	(*avx_gt<mode>3): Likewise.
+	(*avx_nand<mode>3): Likewise.
+	(*avx_nand<mode>3): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_<code><mode>3): Likewise.
+	(*avx_packsswb): Likewise.
+	(*avx_packssdw): Likewise.
+	(*avx_packuswb): Likewise.
+	(*avx_punpckhbw): Likewise.
+	(*avx_punpcklbw): Likewise.
+	(*avx_punpckhwd): Likewise.
+	(*avx_punpcklwd): Likewise.
+	(*avx_punpckhdq): Likewise.
+	(*avx_punpckldq): Likewise.
+	(*avx_pinsr<avxmodesuffixs>): Likewise.
+	(*avx_pinsrq): Likewise.
+	(*avx_loadld): Likewise.
+	(*vec_extractv2di_1_rex64_avx): Likewise.
+	(*vec_extractv2di_1_avx): Likewise.
+	(*vec_dupv2di_avx): Likewise.
+	(*vec_concatv2si_avx): Likewise.
+	(*vec_concatv4si_1_avx): Likewise.
+	(*vec_concatv2di_avx): Likewise.
+	(*vec_concatv2di_rex64_avx): Likewise.
+	(*avx_uavgv16qi3): Likewise.
+	(*avx_uavgv8hi3): Likewise.
+	(*avx_psadbw): Likewise.
+	(avx_movmskp<avxmodesuffixf2c>256): Likewise.
+	(*avx_phaddwv8hi3): Likewise.
+	(*avx_phadddv4si3): Likewise.
+	(*avx_phaddswv8hi3): Likewise.
+	(*avx_phsubwv8hi3): Likewise.
+	(*avx_phsubdv4si3): Likewise.
+	(*avx_phsubswv8hi3): Likewise.
+	(*avx_pmaddubsw128): Likewise.
+	(*avx_pmulhrswv8hi3): Likewise.
+	(*avx_pshufbv16qi3): Likewise.
+	(*avx_psign<mode>3): Likewise.
+	(*avx_palignrti): Likewise.
+	(avx_blendp<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_blendvp<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_dpp<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(*avx_mpsadbw): Likewise.
+	(*avx_packusdw): Likewise.
+	(*avx_pblendvb): Likewise.
+	(*avx_pblendw): Likewise.
+	(avx_vtestp<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_ptest256): Likewise.
+	(avx_roundp<avxmodesuffixf2c>256): Likewise.
+	(*avx_rounds<ssemodesuffixf2c>): Likewise.
+	(*avx_aesenc): Likewise.
+	(*avx_aesenclast): Likewise.
+	(*avx_aesdec): Likewise.
+	(*avx_aesdeclast): Likewise.
+	(avx_vzeroupper): Likewise.
+	(avx_vzeroupper_rex64): Likewise.
+	(avx_vpermil<mode>): Likewise.
+	(avx_vpermilvar<mode>3): Likewise.
+	(avx_vpermil2<mode>3): Likewise.
+	(avx_vperm2f128<mode>3): Likewise.
+	(avx_vbroadcasts<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_vbroadcastss256): Likewise.
+	(avx_vbroadcastf128_p<avxmodesuffixf2c>256): Likewise.
+	(avx_vinsertf128<mode>): Likewise.
+	(vec_set_lo_<mode>): Likewise.
+	(vec_set_hi_<mode>): Likewise.
+	(vec_set_lo_<mode>): Likewise.
+	(vec_set_hi_<mode>): Likewise.
+	(vec_set_lo_v16hi): Likewise.
+	(vec_set_hi_v16hi): Likewise.
+	(vec_set_lo_v32qi): Likewise.
+	(vec_set_hi_v32qi): Likewise.
+	(avx_maskloadp<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_maskstorep<avxmodesuffixf2c><avxmodesuffix>): Likewise.
+	(avx_<avxmodesuffixp><avxmodesuffix>_<avxmodesuffixp>): Likewise.
+	(avx_<avxmodesuffixp>_<avxmodesuffixp><avxmodesuffix>): Likewise.
+	(vec_init<mode>): Likewise.
+	(*vec_concat<mode>_avx): Likewise.
+	(blendbits): Support V8SF and V4DF.
+	(sse2_movq128): Support AVX.
+	(<sse>_movnt<mode>): Likewise.
+	(sse2_movntv2di): Likewise.
+	(sse_rcpv4sf2): Likewise.
+	(sse_sqrtv4sf2): Likewise.
+	(sse_rsqrtv4sf2): Likewise.
+	(<sse>_comi): Likewise.
+	(<sse>_ucomi): Likewise.
+	(sse_cvtss2si): Likewise.
+	(sse_cvtss2si_2): Likewise.
+	(sse_cvtss2siq): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(sse_cvttss2si): Likewise.
+	(sse_cvttss2siq): Likewise.
+	(sse2_cvtsd2si): Likewise.
+	(sse2_cvtsd2si_2): Likewise.
+	(sse2_cvtsd2siq): Likewise.
+	(sse2_cvtsd2siq_2): Likewise.
+	(sse2_cvttsd2si): Likewise.
+	(sse2_cvttsd2siq): Likewise.
+	(sse2_cvtdq2pd): Likewise.
+	(*sse2_cvtpd2dq): Likewise.
+	(*sse2_cvttpd2dq): Likewise.
+	(*sse2_cvtpd2ps): Likewise.
+	(sse2_cvtps2pd): Likewise.
+	(sse3_movshdup): Likewise.
+	(sse3_movsldup): Likewise.
+	(sse_storehps): Likewise.
+	(*sse4_1_extractps): Likewise.
+	(sse2_storelpd): Likewise.
+	(vec_dupv2df_sse3): Likewise.
+	(*vec_concatv2df_sse3): Likewise.
+	(*sse4_1_pextrb): Likewise.
+	(*sse4_1_pextrb_memory): Likewise.
+	(*sse2_pextrw): Likewise.
+	(*sse4_1_pextrw_memory): Likewise.
+	(*sse4_1_pextrd): Likewise.
+	(*sse4_1_pextrq): Likewise.
+	(sse2_pshufd_1): Likewise.
+	(sse2_pshuflw_1): Likewise.
+	(sse2_pshufhw_1): Likewise.
+	(*sse2_storeq_rex64): Likewise.
+	(*vec_dupv4si): Likewise.
+	(<sse>_movmskp<ssemodesuffixf2c>): Likewise.
+	(sse2_pmovmskb): Likewise.
+	(*sse2_maskmovdqu): Likewise.
+	(*sse2_maskmovdqu_rex64): Likewise.
+	(sse_ldmxcsr): Likewise.
+	(sse_stmxcsr): Likewise.
+	(abs<mode>2): Likewise.
+	(sse4_1_movntdqa): Likewise.
+	(sse4_1_phminposuw): Likewise.
+	(sse4_1_extendv8qiv8hi2): Likewise.
+	(*sse4_1_extendv8qiv8hi2): Likewise.
+	(sse4_1_extendv4qiv4si2): Likewise.
+	(*sse4_1_extendv4qiv4si2): Likewise.
+	(sse4_1_extendv2qiv2di2): Likewise.
+	(*sse4_1_extendv2qiv2di2): Likewise.
+	(sse4_1_extendv4hiv4si2): Likewise.
+	(*sse4_1_extendv4hiv4si2): Likewise.
+	(sse4_1_extendv2hiv2di2): Likewise.
+	(*sse4_1_extendv2hiv2di2): Likewise.
+	(sse4_1_extendv2siv2di2): Likewise.
+	(*sse4_1_extendv2siv2di2): Likewise.
+	(sse4_1_zero_extendv8qiv8hi2): Likewise.
+	(*sse4_1_zero_extendv8qiv8hi2): Likewise.
+	(sse4_1_zero_extendv4qiv4si2): Likewise.
+	(*sse4_1_zero_extendv4qiv4si2): Likewise.
+	(sse4_1_zero_extendv2qiv2di2): Likewise.
+	(*sse4_1_zero_extendv2qiv2di2): Likewise.
+	(sse4_1_zero_extendv4hiv4si2): Likewise.
+	(*sse4_1_zero_extendv4hiv4si2): Likewise.
+	(sse4_1_zero_extendv2hiv2di2): Likewise.
+	(*sse4_1_zero_extendv2hiv2di2): Likewise.
+	(sse4_1_zero_extendv2siv2di2): Likewise.
+	(*sse4_1_zero_extendv2siv2di2): Likewise.
+	(sse4_1_ptest): Likewise.
+	(sse4_1_roundp<ssemodesuffixf2c>): Likewise.
+	(sse4_2_pcmpestri): Likewise.
+	(sse4_2_pcmpestrm): Likewise.
+	(sse4_2_pcmpistri): Likewise.
+	(sse4_2_pcmpistrm): Likewise.
+	(aesimc): Likewise.
+	(aeskeygenassist): Likewise.
+
+2008-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (vzeroall_operation): New.
+
+	* config/i386/sse.md (avx_vzeroall): New.
+	(*avx_vzeroall): Likewise.
+
 2008-08-28  Paul Brook  <paul@codesourcery.com>
-	Mark Shinwell  <shinwell@codesourcery.com>
-	Richard Earnshaw  <richard.earnshaw@arm.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* config/arm/arm.c (TARGET_MAX_ANCHOR_OFFSET): New.
 	(TARGET_MIN_ANCHOR_OFFSET): New.
@@ -94,7 +771,7 @@
 
 2008-08-28  Chris Fairles  <chris.fairles@gmail.com>
 
-        * gthr-posix.h (__gthread_create,  __gthread_join, __gthread_detach,
+	* gthr-posix.h (__gthread_create,  __gthread_join, __gthread_detach,
 	__gthread_mutex_timed_lock, __gthread_recursive_mutex_timed_lock,
 	__gthread_cond_signal, __gthread_cond_timedwait,
 	__gthread_cond_timedwait_recursive): New functions.
@@ -522,8 +1199,8 @@
 
 2008-08-24  Razya Ladelsky  <razya@il.ibm.com>
 
-        PR tree-optimization/37185
-        * matrix-reorg.c (transform_access_sites): Update changed stmt.
+	PR tree-optimization/37185
+	* matrix-reorg.c (transform_access_sites): Update changed stmt.
 
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
