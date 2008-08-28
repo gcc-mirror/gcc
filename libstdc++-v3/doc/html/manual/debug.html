@@ -11,19 +11,20 @@
     The default optimizations and debug flags for a libstdc++ build
     are <code class="code">-g -O2</code>. However, both debug and optimization
     flags can be varied to change debugging characteristics. For
-    instance, turning off all optimization via the <code class="code">-g -O0</code>
-    flag will disable inlining, so that stepping through all
-    functions, including inlined constructors and destructors, is
-    possible. In addition,
-    <code class="code">-fno-eliminate-unused-debug-types</code> can be used when
-    additional debug information, such as nested class info, is
-    desired.
+    instance, turning off all optimization via the <code class="code">-g -O0
+    -fno-inline</code> flags will disable inlining and optimizations,
+    and add debugging information, so that stepping through all functions,
+    (including inlined constructors and destructors) is possible. In
+    addition, <code class="code">-fno-eliminate-unused-debug-types</code> can be
+    used when additional debug information, such as nested class info,
+    is desired.
 </p><p>
   Or, the debug format that the compiler and debugger use to
   communicate information about source constructs can be changed via
-  <code class="code"> -gdwarf-2 </code> or <code class="code"> -gstabs </code> flags: some
-  debugging formats permit more expressive type and scope information
-  to be shown in gdb.  The default debug information for a particular
+  <code class="code">-gdwarf-2</code> or <code class="code">-gstabs</code> flags: some debugging
+  formats permit more expressive type and scope information to be
+  shown in gdb. Expressiveness can be enhanced by flags like
+  <code class="code">-g3</code>. The default debug information for a particular
   platform can be identified via the value set by the
   PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
 </p><p>
@@ -43,15 +44,15 @@
   debug build will persist, without having to specify
   <code class="code">CXXFLAGS</code>, and the debug library will be installed in a
   separate directory tree, in <code class="code">(prefix)/lib/debug</code>. For
-  more information, look at the <a class="ulink" href="configopts.html" target="_top">configuration options</a> document.
+  more information, look at the <a class="link" href="configure.html" title="Configure">configuration</a> section.
 </p><p>
   A second approach is to use the configuration flags 
 </p><pre class="programlisting">
-     make CXXFLAGS='-g3 -O0' all
+     make CXXFLAGS='-g3 -fno-inline -O0' all
 </pre><p>
   This quick and dirty approach is often sufficient for quick
   debugging tasks, when you cannot or don't want to recompile your
-  application to use the <a class="ulink" href="#safe" target="_top">debug mode</a>.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
+  application to use the <a class="link" href="debug_mode.html" title="Chapter 30. Debug Mode">debug mode</a>.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
   There are various third party memory tracing and debug utilities
   that can be used to provide detailed memory allocation information
   about C++ code. An exhaustive list of tools is not going to be
@@ -66,7 +67,7 @@
   thing of great importance to keep in mind when debugging C++ code
   that uses <code class="code">new</code> and <code class="code">delete</code>: there are
   different kinds of allocation schemes that can be used by <code class="code">
-  std::allocator </code>. For implementation details, see the <a class="ulink" href="ext/mt_allocator.html" target="_top">mt allocator</a> documentation and
+  std::allocator </code>. For implementation details, see the <a class="link" href="bk01pt12ch32.html#manual.ext.allocator.mt" title="mt_allocator">mt allocator</a> documentation and
   look specifically for <code class="code">GLIBCXX_FORCE_NEW</code>.
 </p><p>
   In a nutshell, the default allocator used by <code class="code">
@@ -122,7 +123,7 @@
    valgrind -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes a.out
 </pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.gdb"></a>Using <span class="command"><strong>gdb</strong></span></h3></div></div></div><p> 
   </p><p>
-  Many options are available for gdb itself: please see <a class="ulink" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC109" target="_top">
+  Many options are available for gdb itself: please see <a class="ulink" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC125" target="_top">
   "GDB features for C++" </a> in the gdb documentation. Also
   recommended: the other parts of this manual.
 </p><p>

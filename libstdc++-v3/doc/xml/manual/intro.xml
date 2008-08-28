@@ -707,17 +707,56 @@
 <chapter id="manual.intro.setup" xreflabel="Setup">
   <title>Setup</title>
 
-  <!-- Section 01 : Configure -->
+   <para>To transform libstdc++ sources into installed include files
+   and properly built binaries useful for linking to other software is
+   a multi-step process. Steps include getting the sources,
+   configuring and building the sources, testing, and installation.
+   </para>
+
+   <para>The general outline of commands is something like:
+   </para>
+
+   <programlisting>
+   <emphasis>get gcc sources</emphasis>
+   <emphasis>extract into gccsrcdir</emphasis>
+   mkdir <emphasis>gccbuilddir</emphasis>
+   cd <emphasis>gccbuilddir</emphasis>
+   <emphasis>gccsrcdir</emphasis>/configure --prefix=<emphasis>destdir</emphasis> --other-opts...
+   make
+   make check
+   make install
+   </programlisting>
+
+   <para>
+     Each step is described in more detail in the following sections.
+   </para>
+
+  <!-- Section 01 : Prerequisites -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	      parse="xml" href="prerequisites.xml">
+  </xi:include>
+
+  <!-- Section 02 : Configure -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	      parse="xml" href="configure.xml">
   </xi:include>
 
-  <!-- Section 02 : Build -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
-	      parse="xml" href="build.xml">
-  </xi:include>
+  <!-- Section 03 : Make -->
+<sect1 id="manual.intro.setup.make" xreflabel="Make">
+<title>Make</title>
+   <para>If you have never done this before, you should read the basic
+      <ulink url="http://gcc.gnu.org/install/">GCC Installation
+      Instructions</ulink> first.  Read <emphasis>all of them</emphasis>.
+      <emphasis>Twice.</emphasis>
+   </para>
 
-  <!-- Section 03 : Test -->
+<para>Then type:<command>make</command>, and congratulations, you're
+started to build.
+</para>
+
+</sect1>
+
+  <!-- Section 04 : Test -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	      parse="xml" href="test.xml">
   </xi:include>

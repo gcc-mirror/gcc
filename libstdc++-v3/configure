@@ -14157,7 +14157,7 @@ _ACEOF
 
 
 
-# Checks for compiler support that doesn't require linking.
+# Checks for compiler support that don't require linking.
 
   # All these tests are for C++; save the language and the compiler flags.
   # The CXXFLAGS thing is suspicious, but based on similar bits previously
@@ -17363,7 +17363,7 @@ _ACEOF
   fi
 
 
-# Checks for operating systems support that doesn't require linking.
+# Checks for operating systems support that don't require linking.
 
 
 echo "$as_me:$LINENO: checking for EOWNERDEAD" >&5
@@ -103227,7 +103227,7 @@ esac
 
   fi
 
-  # At some point, we should differentiate between aritectures
+  # At some point, we should differentiate between architectures
   # like x86, which have long double versions, and alpha/powerpc/etc.,
   # which don't. For the time being, punt.
   if test x"long_double_math_on_this_cpu" = x"yes"; then

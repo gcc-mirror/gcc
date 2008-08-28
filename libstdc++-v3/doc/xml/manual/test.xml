@@ -12,13 +12,34 @@
     <keyword>
       testsuite
     </keyword>
+    <keyword>
+      performance
+    </keyword>
+    <keyword>
+      conformance
+    </keyword>
+    <keyword>
+      ABI
+    </keyword>
+    <keyword>
+      exception safety
+    </keyword>
   </keywordset>
 </sect1info>
 
 <title>Test</title>
 
+<para>
+The libstdc++ testsuite includes testing for standard conformance,
+regressions, ABI, and performance.
+</para>
+
 <sect2 id="test.organization" xreflabel="test.organization">
 <title>Organization</title>
+
+<sect3 id="test.organization.layout" xreflabel="Directory Layout">
+<title>Directory Layout</title>
+
 <para>
   The directory <emphasis>libsrcdir/testsuite</emphasis> contains the
   individual test cases organized in sub-directories corresponding to
@@ -108,10 +129,10 @@ util		  Files for libtestc++, utilities and testing routines.
       All new tests should be written with the policy of one test
       case, one file in mind. 
    </para>
+</sect3>
 
-</sect2>
 
-<sect2 id="test.naming" xreflabel="test.naming">
+<sect3 id="test.organization.naming" xreflabel="Naming Conventions">
 <title>Naming Conventions</title>
 
    <para>
@@ -202,139 +223,15 @@ cat 27_io/objects/char/3_xin.in | a.out
 </listitem>
 </itemizedlist>
 
+</sect3>
 </sect2>
 
-<sect2 id="test.utils" xreflabel="test.utils">
-<title>Utilities</title>
-  <para> 
-  </para>
-  <para>
-   The testsuite directory also contains some files that implement
-   functionality that is intended to make writing test cases easier,
-   or to avoid duplication, or to provide error checking in a way that
-   is consistent across platforms and test harnesses. A stand-alone
-   executable, called <emphasis>abi_check</emphasis>, and a static
-   library called <emphasis>libtestc++</emphasis> are
-   constructed. Both of these items are not installed, and only used
-   during testing.
-  </para>
-
-  <para>
-  These files include the following functionality:
-  </para>
-
-  <itemizedlist>
-     <listitem>
-       <para>
-       <emphasis>testsuite_abi.h</emphasis>,
-       <emphasis>testsuite_abi.cc</emphasis>,
-       <emphasis>testsuite_abi_check.cc</emphasis>
-       </para>
-       <para>
-        Creates the executable <emphasis>abi_check</emphasis>.
-        Used to check correctness of symbol versioning, visibility of
-        exported symbols, and compatibility on symbols in the shared
-        library, for hosts that support this feature. More information
-        can be found in the ABI documentation <ulink url="abi.html">here</ulink>
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-       <emphasis>testsuite_allocator.h</emphasis>,
-       <emphasis>testsuite_allocator.cc</emphasis>
-       </para>
-       <para>
-        Contains specialized allocators that keep track of construction
-        and destruction. Also, support for overriding global new and
-        delete operators, including verification that new and delete
-        are called during execution, and that allocation over max_size
-        fails.
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-       <emphasis>testsuite_character.h</emphasis>
-       </para>
-       <para>
-        Contains <code>std::char_traits</code> and
-        <code>std::codecvt</code> specializations for a user-defined
-        POD.
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-       <emphasis>testsuite_hooks.h</emphasis>,
-       <emphasis>testsuite_hooks.cc</emphasis>
-       </para>
-       <para>
-       A large number of utilities, including:
-       </para>
-       <itemizedlist>
-         <listitem><para>VERIFY</para></listitem>
-         <listitem><para>set_memory_limits</para></listitem>
-         <listitem><para>verify_demangle</para></listitem>
-         <listitem><para>run_tests_wrapped_locale</para></listitem>
-         <listitem><para>run_tests_wrapped_env</para></listitem>
-         <listitem><para>try_named_locale</para></listitem>
-         <listitem><para>try_mkfifo</para></listitem>
-         <listitem><para>func_callback</para></listitem>
-         <listitem><para>counter</para></listitem>
-         <listitem><para>copy_tracker</para></listitem>
-         <listitem><para>copy_constructor</para></listitem>
-         <listitem><para>assignment_operator</para></listitem>
-         <listitem><para>destructor</para></listitem>
-         <listitem>
-	 <para>pod_char, pod_int and associated char_traits specializations</para>
-	 </listitem>
-       </itemizedlist>
-     </listitem>
-     <listitem>
-       <para>
-	 <emphasis>testsuite_io.h</emphasis>
-       </para>
-       <para>
-       Error, exception, and constraint checking for
-       <code>std::streambuf, std::basic_stringbuf, std::basic_filebuf</code>.
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-	 <emphasis>testsuite_iterators.h</emphasis>
-       </para>
-       <para>
-	 Wrappers for various iterators.
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-	 <emphasis>testsuite_performance.h</emphasis>
-       </para>
-       <para>
-       A number of class abstractions for performance counters, and
-       reporting functions including:
-       </para>
-      <itemizedlist>
-         <listitem><para>time_counter</para></listitem>
-         <listitem><para>resource_counter</para></listitem>
-         <listitem><para>report_performance</para></listitem>
-      </itemizedlist>
-     </listitem>
-  </itemizedlist>
-
-</sect2>
 
 <sect2 id="test.run" xreflabel="test.run">
 <title>Running the Testsuite</title>
 
   <sect3 id="test.run.basic" xreflabel="test.run.basic">
-    <title>Basic Results</title>
-    <para>
-      There are several options for running tests, including testing
-      the regression tests, testing a subset of the regression tests,
-      testing the performance tests, testing just compilation, testing
-      installed tools, etc. In addition, there is a special rule for
-      checking the exported symbols of the shared library.
-    </para>
+    <title>Basic</title>
    
     <para>
       You can check the status of the build without installing it
@@ -361,7 +258,7 @@ cat 27_io/objects/char/3_xin.in | a.out
      <para>
        Archives of test results for various versions and platforms are
        available on the GCC website in the <ulink
-       url="http://gcc.gnu.org/gcc-4.1/buildstat.html">build
+       url="http://gcc.gnu.org/gcc-4.3/buildstat.html">build
        status</ulink> section of each individual release, and are also
        archived on a daily basis on the <ulink
        url="http://gcc.gnu.org/ml/gcc-testresults/current">gcc-testresults</ulink>
@@ -370,8 +267,15 @@ cat 27_io/objects/char/3_xin.in | a.out
      </para>
   </sect3>
   
-  <sect3 id="test.run.options" xreflabel="test.run.options">
-    <title>Options</title>
+  <sect3 id="test.run.variations" xreflabel="test.run.variations">
+    <title>Variations</title>
+    <para>
+      There are several options for running tests, including testing
+      the regression tests, testing a subset of the regression tests,
+      testing the performance tests, testing just compilation, testing
+      installed tools, etc. In addition, there is a special rule for
+      checking the exported symbols of the shared library.
+    </para>
     <para>
       To debug the dejagnu test harness during runs, try invoking with a
       specific argument to the variable RUNTESTFLAGS, as below.
@@ -567,7 +471,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
   </sect3>
 
   <sect3 id="test.run.permutations" xreflabel="test.run.permutations">
-    <title>Test Permutations</title>
+    <title>Permutations</title>
     <para>
       To run the libstdc++ test suite under the <link
       linkend="manual.ext.debug_mode">debug mode</link>, edit
@@ -583,14 +487,22 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
     </para>
 
     <para>
+      The <link linkend="manual.ext.parallel_mode">parallel
+      mode</link> can be tested in much the same manner, substituting
+      <constant>-D_GLIBCXX_PARALLEL</constant> for
+      <constant>-D_GLIBCXX_DEBUG</constant> in the previous paragraph.
+    </para>
+
+    <para>
       Or, just run the testsuites with <constant>CXXFLAGS</constant>
-      set to <constant>-D_GLIBCXX_DEBUG</constant>.
+      set to <constant>-D_GLIBCXX_DEBUG</constant> or
+      <constant>-D_GLIBCXX_PARALLEL</constant>.
     </para>
   </sect3>
 </sect2>
 
 <sect2 id="test.new_tests" xreflabel="test.new_tests">
-<title>New Test Cases</title>
+<title>Writing a new test case</title>
 
    <para>
     The first step in making a new test case is to choose the correct
@@ -718,14 +630,18 @@ up in the normal.exp file.
    <para>
     More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
    </para>
-
-
 </sect2>
 
-<sect2 id="test.dejagnu" xreflabel="test.dejagnu">
-<title>Test Harness Details</title>
+
+<sect2 id="test.harness" xreflabel="Test Harness and Utilities">
+<title>Test Harness and Utilities</title>
+
+<sect3 id="test.harness.dejagnu" xreflabel="test.harness.dejagnu">
+<title>Dejagnu Harness Details</title>
   <para> 
-    Underlying details of testing are abstracted via the GNU Dejagnu package.
+    Underlying details of testing for conformance and regressions are
+    abstracted via the GNU Dejagnu package. This is similar to the
+    rest of GCC.
   </para>
 
 
@@ -764,58 +680,125 @@ board" information unique to this library.  This is currently unused and sets
 only default variables.
 </para>
 
-</sect2>
+</sect3>
 
-<sect2 id="test.future" xreflabel="test.future">
-<title>Future</title>
+<sect3 id="test.harness.utils" xreflabel="test.utils">
+<title>Utilities</title>
   <para> 
   </para>
+  <para>
+   The testsuite directory also contains some files that implement
+   functionality that is intended to make writing test cases easier,
+   or to avoid duplication, or to provide error checking in a way that
+   is consistent across platforms and test harnesses. A stand-alone
+   executable, called <emphasis>abi_check</emphasis>, and a static
+   library called <emphasis>libtestc++</emphasis> are
+   constructed. Both of these items are not installed, and only used
+   during testing.
+  </para>
 
+  <para>
+  These files include the following functionality:
+  </para>
 
-<para>
-Shared runs need to be implemented, for targets that support shared libraries.
-</para>
-
-<para>
-Diffing of expected output to standard streams needs to be finished off.
-</para>
-
-<para>
-The V3 testing framework supports, or will eventually support,
-additional keywords for the purpose of easing the job of writing
-test cases.  All V3-keywords are of the form <code>@xxx@</code>.
-Currently plans for supported keywords include:
-</para>
-
-<variablelist>
-<varlistentry><term> <code> @require@ &lt;files&gt; </code> </term>
-<listitem>
-   <para>
-      The existence of &lt;files&gt; is essential for the test to complete
-      successfully.  For example, a test case foo.C using bar.baz as
-      input file could say
-   </para>
-   <programlisting>
-	    // @require@ bar.baz</programlisting>
-   <para>
-      The special variable % stands for the rootname, e.g. the
-      file-name without its `.C' extension.  Example of use (taken
-      verbatim from 27_io/filebuf.cc)
-   </para>
-   <programlisting>
-	   // @require@ %-*.tst %-*.txt</programlisting>
-</listitem></varlistentry>
-<varlistentry><term> <code> @diff@ &lt;first-list&gt; &lt;second-list&gt; </code> </term>
-<listitem>
-   <para>
-      After the test case compiles and ran successfully, diff
-      &lt;first-list&gt; against &lt;second-list&gt;, these lists should
-      have the same length.  The test fails if diff returns non-zero a
-      pair of files.
-   </para>
-</listitem></varlistentry>
-</variablelist>
+  <itemizedlist>
+     <listitem>
+       <para>
+       <emphasis>testsuite_abi.h</emphasis>,
+       <emphasis>testsuite_abi.cc</emphasis>,
+       <emphasis>testsuite_abi_check.cc</emphasis>
+       </para>
+       <para>
+        Creates the executable <emphasis>abi_check</emphasis>.
+        Used to check correctness of symbol versioning, visibility of
+        exported symbols, and compatibility on symbols in the shared
+        library, for hosts that support this feature. More information
+        can be found in the ABI documentation <ulink url="abi.html">here</ulink>
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <emphasis>testsuite_allocator.h</emphasis>,
+       <emphasis>testsuite_allocator.cc</emphasis>
+       </para>
+       <para>
+        Contains specialized allocators that keep track of construction
+        and destruction. Also, support for overriding global new and
+        delete operators, including verification that new and delete
+        are called during execution, and that allocation over max_size
+        fails.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <emphasis>testsuite_character.h</emphasis>
+       </para>
+       <para>
+        Contains <code>std::char_traits</code> and
+        <code>std::codecvt</code> specializations for a user-defined
+        POD.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <emphasis>testsuite_hooks.h</emphasis>,
+       <emphasis>testsuite_hooks.cc</emphasis>
+       </para>
+       <para>
+       A large number of utilities, including:
+       </para>
+       <itemizedlist>
+         <listitem><para>VERIFY</para></listitem>
+         <listitem><para>set_memory_limits</para></listitem>
+         <listitem><para>verify_demangle</para></listitem>
+         <listitem><para>run_tests_wrapped_locale</para></listitem>
+         <listitem><para>run_tests_wrapped_env</para></listitem>
+         <listitem><para>try_named_locale</para></listitem>
+         <listitem><para>try_mkfifo</para></listitem>
+         <listitem><para>func_callback</para></listitem>
+         <listitem><para>counter</para></listitem>
+         <listitem><para>copy_tracker</para></listitem>
+         <listitem><para>copy_constructor</para></listitem>
+         <listitem><para>assignment_operator</para></listitem>
+         <listitem><para>destructor</para></listitem>
+         <listitem>
+	 <para>pod_char, pod_int and associated char_traits specializations</para>
+	 </listitem>
+       </itemizedlist>
+     </listitem>
+     <listitem>
+       <para>
+	 <emphasis>testsuite_io.h</emphasis>
+       </para>
+       <para>
+       Error, exception, and constraint checking for
+       <code>std::streambuf, std::basic_stringbuf, std::basic_filebuf</code>.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+	 <emphasis>testsuite_iterators.h</emphasis>
+       </para>
+       <para>
+	 Wrappers for various iterators.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+	 <emphasis>testsuite_performance.h</emphasis>
+       </para>
+       <para>
+       A number of class abstractions for performance counters, and
+       reporting functions including:
+       </para>
+      <itemizedlist>
+         <listitem><para>time_counter</para></listitem>
+         <listitem><para>resource_counter</para></listitem>
+         <listitem><para>report_performance</para></listitem>
+      </itemizedlist>
+     </listitem>
+  </itemizedlist>
+</sect3>
 
 </sect2>
-
 </sect1>

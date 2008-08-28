@@ -304,7 +304,6 @@ xml_sources = \
 	${xml_srcdir}/manual/auto_ptr.xml \
 	${xml_srcdir}/manual/backwards_compatibility.xml \
 	${xml_srcdir}/manual/bitmap_allocator.xml \
-	${xml_srcdir}/manual/build.xml \
 	${xml_srcdir}/manual/build_hacking.xml \
 	${xml_srcdir}/manual/codecvt.xml \
 	${xml_srcdir}/manual/concurrency.xml \
@@ -326,6 +325,7 @@ xml_sources = \
 	${xml_srcdir}/manual/mt_allocator.xml \
 	${xml_srcdir}/manual/numerics.xml \
 	${xml_srcdir}/manual/parallel_mode.xml \
+	${xml_srcdir}/manual/prerequisites.xml \
 	${xml_srcdir}/manual/internals.xml \
 	${xml_srcdir}/manual/shared_ptr.xml \
 	${xml_srcdir}/manual/spine.xml \

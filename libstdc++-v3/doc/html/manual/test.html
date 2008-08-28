@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Test</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      test&#10;    , &#10;      testsuite&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt01ch02.html" title="Chapter 2. Setup" /><link rel="prev" href="build.html" title="Build" /><link rel="next" href="using.html" title="Chapter 3. Using" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Test</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="build.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Setup</th><td width="20%" align="right"> <a accesskey="n" href="using.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.test"></a>Test</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.organization"></a>Organization</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Test</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      test&#10;    , &#10;      testsuite&#10;    , &#10;      performance&#10;    , &#10;      conformance&#10;    , &#10;      ABI&#10;    , &#10;      exception safety&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt01ch02.html" title="Chapter 2. Setup" /><link rel="prev" href="bk01pt01ch02s03.html" title="Make" /><link rel="next" href="using.html" title="Chapter 3. Using" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Test</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch02s03.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Setup</th><td width="20%" align="right"> <a accesskey="n" href="using.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.test"></a>Test</h2></div></div></div><p>
+The libstdc++ testsuite includes testing for standard conformance,
+regressions, ABI, and performance.
+</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.organization"></a>Organization</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.organization.layout"></a>Directory Layout</h4></div></div></div><p>
   The directory <span class="emphasis"><em>libsrcdir/testsuite</em></span> contains the
   individual test cases organized in sub-directories corresponding to
   chapters of the C++ standard (detailed below), the dejagnu test
@@ -69,7 +72,7 @@ util		  Files for libtestc++, utilities and testing routines.
    </pre><p>
       All new tests should be written with the policy of one test
       case, one file in mind. 
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.naming"></a>Naming Conventions</h3></div></div></div><p>
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.organization.naming"></a>Naming Conventions</h4></div></div></div><p>
       In addition, there are some special names and suffixes that are
       used within the testsuite to designate particular kinds of
       tests.
@@ -123,69 +126,7 @@ cat 27_io/objects/char/3_xin.in | a.out
       analyze runtime performance, for performance regression testing,
       or for other optimization related analysis. At the moment, these
       test cases are not run by default.
-   </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.utils"></a>Utilities</h3></div></div></div><p> 
-  </p><p>
-   The testsuite directory also contains some files that implement
-   functionality that is intended to make writing test cases easier,
-   or to avoid duplication, or to provide error checking in a way that
-   is consistent across platforms and test harnesses. A stand-alone
-   executable, called <span class="emphasis"><em>abi_check</em></span>, and a static
-   library called <span class="emphasis"><em>libtestc++</em></span> are
-   constructed. Both of these items are not installed, and only used
-   during testing.
-  </p><p>
-  These files include the following functionality:
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
-       <span class="emphasis"><em>testsuite_abi.h</em></span>,
-       <span class="emphasis"><em>testsuite_abi.cc</em></span>,
-       <span class="emphasis"><em>testsuite_abi_check.cc</em></span>
-       </p><p>
-        Creates the executable <span class="emphasis"><em>abi_check</em></span>.
-        Used to check correctness of symbol versioning, visibility of
-        exported symbols, and compatibility on symbols in the shared
-        library, for hosts that support this feature. More information
-        can be found in the ABI documentation <a class="ulink" href="abi.html" target="_top">here</a>
-       </p></li><li><p>
-       <span class="emphasis"><em>testsuite_allocator.h</em></span>,
-       <span class="emphasis"><em>testsuite_allocator.cc</em></span>
-       </p><p>
-        Contains specialized allocators that keep track of construction
-        and destruction. Also, support for overriding global new and
-        delete operators, including verification that new and delete
-        are called during execution, and that allocation over max_size
-        fails.
-       </p></li><li><p>
-       <span class="emphasis"><em>testsuite_character.h</em></span>
-       </p><p>
-        Contains <code class="code">std::char_traits</code> and
-        <code class="code">std::codecvt</code> specializations for a user-defined
-        POD.
-       </p></li><li><p>
-       <span class="emphasis"><em>testsuite_hooks.h</em></span>,
-       <span class="emphasis"><em>testsuite_hooks.cc</em></span>
-       </p><p>
-       A large number of utilities, including:
-       </p><div class="itemizedlist"><ul type="circle"><li><p>VERIFY</p></li><li><p>set_memory_limits</p></li><li><p>verify_demangle</p></li><li><p>run_tests_wrapped_locale</p></li><li><p>run_tests_wrapped_env</p></li><li><p>try_named_locale</p></li><li><p>try_mkfifo</p></li><li><p>func_callback</p></li><li><p>counter</p></li><li><p>copy_tracker</p></li><li><p>copy_constructor</p></li><li><p>assignment_operator</p></li><li><p>destructor</p></li><li><p>pod_char, pod_int and associated char_traits specializations</p></li></ul></div></li><li><p>
-	 <span class="emphasis"><em>testsuite_io.h</em></span>
-       </p><p>
-       Error, exception, and constraint checking for
-       <code class="code">std::streambuf, std::basic_stringbuf, std::basic_filebuf</code>.
-       </p></li><li><p>
-	 <span class="emphasis"><em>testsuite_iterators.h</em></span>
-       </p><p>
-	 Wrappers for various iterators.
-       </p></li><li><p>
-	 <span class="emphasis"><em>testsuite_performance.h</em></span>
-       </p><p>
-       A number of class abstractions for performance counters, and
-       reporting functions including:
-       </p><div class="itemizedlist"><ul type="circle"><li><p>time_counter</p></li><li><p>resource_counter</p></li><li><p>report_performance</p></li></ul></div></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.run"></a>Running the Testsuite</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.basic"></a>Basic Results</h4></div></div></div><p>
-      There are several options for running tests, including testing
-      the regression tests, testing a subset of the regression tests,
-      testing the performance tests, testing just compilation, testing
-      installed tools, etc. In addition, there is a special rule for
-      checking the exported symbols of the shared library.
-    </p><p>
+   </p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.run"></a>Running the Testsuite</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.basic"></a>Basic</h4></div></div></div><p>
       You can check the status of the build without installing it
       using the dejagnu harness, much like the rest of the gcc
       tools.</p><pre class="programlisting"> make check</pre><p>in the <span class="emphasis"><em>libbuilddir</em></span> directory.</p><p>or</p><pre class="programlisting"> make check-target-libstdc++-v3</pre><p>in the <span class="emphasis"><em>gccbuilddir</em></span> directory.
@@ -200,12 +141,18 @@ cat 27_io/objects/char/3_xin.in | a.out
        output, and the executable output (if any).
      </p><p>
        Archives of test results for various versions and platforms are
-       available on the GCC website in the <a class="ulink" href="http://gcc.gnu.org/gcc-4.1/buildstat.html" target="_top">build
+       available on the GCC website in the <a class="ulink" href="http://gcc.gnu.org/gcc-4.3/buildstat.html" target="_top">build
        status</a> section of each individual release, and are also
        archived on a daily basis on the <a class="ulink" href="http://gcc.gnu.org/ml/gcc-testresults/current" target="_top">gcc-testresults</a>
        mailing list. Please check either of these places for a similar
        combination of source version, operating system, and host CPU.
-     </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.options"></a>Options</h4></div></div></div><p>
+     </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.variations"></a>Variations</h4></div></div></div><p>
+      There are several options for running tests, including testing
+      the regression tests, testing a subset of the regression tests,
+      testing the performance tests, testing just compilation, testing
+      installed tools, etc. In addition, there is a special rule for
+      checking the exported symbols of the shared library.
+    </p><p>
       To debug the dejagnu test harness during runs, try invoking with a
       specific argument to the variable RUNTESTFLAGS, as below.
     </p><pre class="programlisting">
@@ -325,7 +272,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       We are interested in any strange failures of the testsuite;
       please email the main libstdc++ mailing list if you see
       something odd or have questions.
-   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.permutations"></a>Test Permutations</h4></div></div></div><p>
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.permutations"></a>Permutations</h4></div></div></div><p>
       To run the libstdc++ test suite under the <a class="link" href="debug_mode.html" title="Chapter 30. Debug Mode">debug mode</a>, edit
       <code class="filename">libstdc++-v3/scripts/testsuite_flags</code> to add the
       compile-time flag <code class="constant">-D_GLIBCXX_DEBUG</code> to the
@@ -337,9 +284,15 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       release mode: any deviation indicates an error in either the
       library or the test suite.
     </p><p>
+      The <a class="link" href="parallel_mode.html" title="Chapter 31. Parallel Mode">parallel
+      mode</a> can be tested in much the same manner, substituting
+      <code class="constant">-D_GLIBCXX_PARALLEL</code> for
+      <code class="constant">-D_GLIBCXX_DEBUG</code> in the previous paragraph.
+    </p><p>
       Or, just run the testsuites with <code class="constant">CXXFLAGS</code>
-      set to <code class="constant">-D_GLIBCXX_DEBUG</code>.
-    </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.new_tests"></a>New Test Cases</h3></div></div></div><p>
+      set to <code class="constant">-D_GLIBCXX_DEBUG</code> or
+      <code class="constant">-D_GLIBCXX_PARALLEL</code>.
+    </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.new_tests"></a>Writing a new test case</h3></div></div></div><p>
     The first step in making a new test case is to choose the correct
     directory and file name, given the organization as previously
     described. 
@@ -450,8 +403,10 @@ up in the normal.exp file.
 // { dg-options "-O0" { target *-*-* } }
 </pre><p>
     More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.dejagnu"></a>Test Harness Details</h3></div></div></div><p> 
-    Underlying details of testing are abstracted via the GNU Dejagnu package.
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.harness"></a>Test Harness and Utilities</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.harness.dejagnu"></a>Dejagnu Harness Details</h4></div></div></div><p> 
+    Underlying details of testing for conformance and regressions are
+    abstracted via the GNU Dejagnu package. This is similar to the
+    rest of GCC.
   </p><p>This is information for those looking at making changes to the testsuite
 structure, and/or needing to trace dejagnu's actions with --verbose.  This
 will not be useful to people who are "merely" adding new tests to the existing
@@ -475,29 +430,60 @@ callbacks loaded from the support library.
 </p><p>The <code class="code">config</code> directory is searched for any particular "target
 board" information unique to this library.  This is currently unused and sets
 only default variables.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="test.future"></a>Future</h3></div></div></div><p> 
+</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="test.harness.utils"></a>Utilities</h4></div></div></div><p> 
   </p><p>
-Shared runs need to be implemented, for targets that support shared libraries.
-</p><p>
-Diffing of expected output to standard streams needs to be finished off.
-</p><p>
-The V3 testing framework supports, or will eventually support,
-additional keywords for the purpose of easing the job of writing
-test cases.  All V3-keywords are of the form <code class="code">@xxx@</code>.
-Currently plans for supported keywords include:
-</p><div class="variablelist"><dl><dt><span class="term"> <code class="code"> @require@ &lt;files&gt; </code> </span></dt><dd><p>
-      The existence of &lt;files&gt; is essential for the test to complete
-      successfully.  For example, a test case foo.C using bar.baz as
-      input file could say
-   </p><pre class="programlisting">
-	    // @require@ bar.baz</pre><p>
-      The special variable % stands for the rootname, e.g. the
-      file-name without its `.C' extension.  Example of use (taken
-      verbatim from 27_io/filebuf.cc)
-   </p><pre class="programlisting">
-	   // @require@ %-*.tst %-*.txt</pre></dd><dt><span class="term"> <code class="code"> @diff@ &lt;first-list&gt; &lt;second-list&gt; </code> </span></dt><dd><p>
-      After the test case compiles and ran successfully, diff
-      &lt;first-list&gt; against &lt;second-list&gt;, these lists should
-      have the same length.  The test fails if diff returns non-zero a
-      pair of files.
-   </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="build.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt01ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Build </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 3. Using</td></tr></table></div></body></html>
+   The testsuite directory also contains some files that implement
+   functionality that is intended to make writing test cases easier,
+   or to avoid duplication, or to provide error checking in a way that
+   is consistent across platforms and test harnesses. A stand-alone
+   executable, called <span class="emphasis"><em>abi_check</em></span>, and a static
+   library called <span class="emphasis"><em>libtestc++</em></span> are
+   constructed. Both of these items are not installed, and only used
+   during testing.
+  </p><p>
+  These files include the following functionality:
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+       <span class="emphasis"><em>testsuite_abi.h</em></span>,
+       <span class="emphasis"><em>testsuite_abi.cc</em></span>,
+       <span class="emphasis"><em>testsuite_abi_check.cc</em></span>
+       </p><p>
+        Creates the executable <span class="emphasis"><em>abi_check</em></span>.
+        Used to check correctness of symbol versioning, visibility of
+        exported symbols, and compatibility on symbols in the shared
+        library, for hosts that support this feature. More information
+        can be found in the ABI documentation <a class="ulink" href="abi.html" target="_top">here</a>
+       </p></li><li><p>
+       <span class="emphasis"><em>testsuite_allocator.h</em></span>,
+       <span class="emphasis"><em>testsuite_allocator.cc</em></span>
+       </p><p>
+        Contains specialized allocators that keep track of construction
+        and destruction. Also, support for overriding global new and
+        delete operators, including verification that new and delete
+        are called during execution, and that allocation over max_size
+        fails.
+       </p></li><li><p>
+       <span class="emphasis"><em>testsuite_character.h</em></span>
+       </p><p>
+        Contains <code class="code">std::char_traits</code> and
+        <code class="code">std::codecvt</code> specializations for a user-defined
+        POD.
+       </p></li><li><p>
+       <span class="emphasis"><em>testsuite_hooks.h</em></span>,
+       <span class="emphasis"><em>testsuite_hooks.cc</em></span>
+       </p><p>
+       A large number of utilities, including:
+       </p><div class="itemizedlist"><ul type="circle"><li><p>VERIFY</p></li><li><p>set_memory_limits</p></li><li><p>verify_demangle</p></li><li><p>run_tests_wrapped_locale</p></li><li><p>run_tests_wrapped_env</p></li><li><p>try_named_locale</p></li><li><p>try_mkfifo</p></li><li><p>func_callback</p></li><li><p>counter</p></li><li><p>copy_tracker</p></li><li><p>copy_constructor</p></li><li><p>assignment_operator</p></li><li><p>destructor</p></li><li><p>pod_char, pod_int and associated char_traits specializations</p></li></ul></div></li><li><p>
+	 <span class="emphasis"><em>testsuite_io.h</em></span>
+       </p><p>
+       Error, exception, and constraint checking for
+       <code class="code">std::streambuf, std::basic_stringbuf, std::basic_filebuf</code>.
+       </p></li><li><p>
+	 <span class="emphasis"><em>testsuite_iterators.h</em></span>
+       </p><p>
+	 Wrappers for various iterators.
+       </p></li><li><p>
+	 <span class="emphasis"><em>testsuite_performance.h</em></span>
+       </p><p>
+       A number of class abstractions for performance counters, and
+       reporting functions including:
+       </p><div class="itemizedlist"><ul type="circle"><li><p>time_counter</p></li><li><p>resource_counter</p></li><li><p>report_performance</p></li></ul></div></li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch02s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt01ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Make </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 3. Using</td></tr></table></div></body></html>
