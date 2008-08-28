@@ -1,5 +1,12 @@
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36548
+	PR middle-end/37125
+	* fold-const.c (extract_muldiv_1): Optimize (X * C1) % C2 only
+	if the multiplication does not overflow.
+
+2008-08-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36817
 	* tree-chrec.c (chrec_apply): Always call chrec_fold_plus which
 	makes sure to produce a result of the correct type.

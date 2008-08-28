@@ -1,5 +1,11 @@
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36548
+	PR middle-end/37125
+	* gcc.c-torture/execute/pr37125.c: New testcase.
+
+2008-08-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36817
 	* gcc.c-torture/compile/pr36817.c: New testcase.
 

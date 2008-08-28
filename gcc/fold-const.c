@@ -5916,9 +5916,20 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 (C * 8) % 4 since we know that's zero.  */
       if ((code == TRUNC_MOD_EXPR || code == CEIL_MOD_EXPR
 	   || code == FLOOR_MOD_EXPR || code == ROUND_MOD_EXPR)
+	  /* If the multiplication can overflow we cannot optimize this.
+	     ???  Until we can properly mark individual operations as
+	     not overflowing we need to treat sizetype special here as
+	     stor-layout relies on this opimization to make
+	     DECL_FIELD_BIT_OFFSET always a constant.  */
+	  && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t))
+	      || (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+		  && TYPE_IS_SIZETYPE (TREE_TYPE (t))))
 	  && TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
 	  && integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
-	return omit_one_operand (type, integer_zero_node, op0);
+	{
+	  *strict_overflow_p = true;
+	  return omit_one_operand (type, integer_zero_node, op0);
+	}
 
       /* ... fall through ...  */
 
