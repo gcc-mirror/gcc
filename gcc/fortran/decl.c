@@ -6888,7 +6888,7 @@ match_procedure_in_type (void)
     }
 
   /* Construct the data structure.  */
-  tb = XCNEW (gfc_typebound_proc);
+  tb = gfc_get_typebound_proc ();
   tb->where = gfc_current_locus;
 
   /* Match binding attributes.  */

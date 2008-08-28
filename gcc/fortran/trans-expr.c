@@ -2011,6 +2011,10 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
     case EXPR_STRUCTURE:
       gfc_apply_interface_mapping_to_cons (mapping, expr->value.constructor);
       break;
+
+    case EXPR_COMPCALL:
+      gcc_unreachable ();
+      break;
     }
 
   return;

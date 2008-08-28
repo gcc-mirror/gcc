@@ -1,3 +1,18 @@
+2008-08-28  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/typebound_call_1.f03: New test.
+	* gfortran.dg/typebound_call_2.f03: New test.
+	* gfortran.dg/typebound_call_3.f03: New test.
+	* gfortran.dg/typebound_call_4.f03: New test.
+	* gfortran.dg/typebound_call_5.f03: New test.
+	* gfortran.dg/typebound_call_6.f03: New test.
+	* gfortran.dg/typebound_proc_1.f08: Don't expect not-implemented error.
+	* gfortran.dg/typebound_proc_2.f90: Ditto.
+	* gfortran.dg/typebound_proc_5.f03: Ditto.
+	* gfortran.dg/typebound_proc_6.f03: Ditto.
+	* gfortran.dg/typebound_proc_7.f03: Ditto.
+	* gfortran.dg/typebound_proc_8.f03: Ditto.
+
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37207

@@ -1,5 +1,8 @@
 ! { dg-do compile }
 
+! FIXME: Remove -w after polymorphic entities are supported.
+! { dg-options "-w" }
+
 ! Type-bound procedures
 ! Test for errors in specific bindings, during resolution.
 
@@ -117,5 +120,3 @@ CONTAINS
 END PROGRAM main
 
 ! { dg-final { cleanup-modules "othermod testmod" } }
-! FIXME: Remove not-yet-implemented error when implemented.
-! { dg-excess-errors "not yet implemented" }

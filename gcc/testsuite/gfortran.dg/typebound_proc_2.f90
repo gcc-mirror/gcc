@@ -31,5 +31,4 @@ CONTAINS
 END MODULE testmod
 
 ! { dg-final { cleanup-modules "testmod" } }
-! FIXME: Remove not-yet-implemented error when implemented.
-! { dg-excess-errors "no IMPLICIT type|not yet implemented" }
+! { dg-excess-errors "no IMPLICIT type" }

@@ -498,6 +498,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   e1->symtree = symtree1;
   e1->ts = sym->ts;
   e1->ref = ref = gfc_get_ref ();
+  ref->type = REF_ARRAY;
   ref->u.ar.where = where;
   ref->u.ar.as = sym->as;
   ref->u.ar.type = AR_FULL;

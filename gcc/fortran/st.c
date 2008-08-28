@@ -108,6 +108,8 @@ gfc_free_statement (gfc_code *p)
     case EXEC_ARITHMETIC_IF:
       break;
 
+    case EXEC_COMPCALL:
+      gfc_free_expr (p->expr);
     case EXEC_CALL:
     case EXEC_ASSIGN_CALL:
       gfc_free_actual_arglist (p->ext.actual);

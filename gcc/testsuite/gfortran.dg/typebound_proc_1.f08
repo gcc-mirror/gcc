@@ -1,5 +1,8 @@
 ! { dg-do compile }
 
+! FIXME: Remove -w after polymorphic entities are supported.
+! { dg-options "-w" }
+
 ! Type-bound procedures
 ! Test that the basic syntax for specific bindings is parsed and resolved.
 
@@ -22,7 +25,7 @@ MODULE testmod
     ! Might be empty
   CONTAINS
     PROCEDURE proc1
-    PROCEDURE, PASS(me) :: p2 => proc2 ! { dg-error "not yet implemented" }
+    PROCEDURE, PASS(me) :: p2 => proc2
   END TYPE t1
 
   TYPE t2
