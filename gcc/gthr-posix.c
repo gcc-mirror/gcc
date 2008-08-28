@@ -75,6 +75,24 @@ pthread_create (pthread_t *thread ATTRIBUTE_UNUSED,
   return 0;
 }
 
+int 
+pthread_join (pthread_t thread ATTRIBUTE_UNUSED, 
+	      void **value_ptr ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+void
+pthread_exit (void *value_ptr ATTRIBUTE_UNUSED)
+{
+}
+
+int 
+pthread_detach (pthread_t thread ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 int
 pthread_cancel (pthread_t thread ATTRIBUTE_UNUSED)
 {
@@ -92,6 +110,15 @@ pthread_mutex_trylock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
 {
   return 0;
 }
+
+#ifdef _POSIX_TIMEOUTS
+int
+pthread_mutex_timedlock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED,
+			 const struct timespec *abs_timeout ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+#endif /* _POSIX_TIMEOUTS */
 
 int
 pthread_mutex_unlock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
@@ -150,9 +177,12 @@ pthread_cond_wait (pthread_cond_t *cond ATTRIBUTE_UNUSED,
   return 0;
 }
 
-void
-pthread_exit (void *value_ptr ATTRIBUTE_UNUSED)
+int
+pthread_cond_timedwait (pthread_cond_t *cond ATTRIBUTE_UNUSED, 
+			pthread_mutex_t *mutex ATTRIBUTE_UNUSED, 
+			const struct timespec *abstime ATTRIBUTE_UNUSED)
 {
+  return 0;
 }
 
 int
@@ -173,6 +203,7 @@ pthread_self (void)
 {
   return (pthread_t) 0;
 }
+
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 int
