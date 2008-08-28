@@ -8289,9 +8289,14 @@ maybe_canonicalize_comparison_1 (enum tree_code code, tree type,
   int sgn0;
   bool swap = false;
 
-  /* Match A +- CST code arg1 and CST code arg1.  */
-  if (!(((code0 == MINUS_EXPR
-          || code0 == PLUS_EXPR)
+  /* Match A +- CST code arg1 and CST code arg1.  We can change the
+     first form only if overflow is undefined.  */
+  if (!((TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
+	 /* In principle pointers also have undefined overflow behavior,
+	    but that causes problems elsewhere.  */
+	 && !POINTER_TYPE_P (TREE_TYPE (arg0))
+	 && (code0 == MINUS_EXPR
+	     || code0 == PLUS_EXPR)
          && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	|| code0 == INTEGER_CST))
     return NULL_TREE;
@@ -8352,9 +8357,21 @@ maybe_canonicalize_comparison_1 (enum tree_code code, tree type,
       *strict_overflow_p = true;
     }
 
-  /* Now build the constant reduced in magnitude.  */
+  /* Now build the constant reduced in magnitude.  But not if that
+     would produce one outside of its types range.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (cst0))
+      && ((sgn0 == 1
+	   && TYPE_MIN_VALUE (TREE_TYPE (cst0))
+	   && tree_int_cst_equal (cst0, TYPE_MIN_VALUE (TREE_TYPE (cst0))))
+	  || (sgn0 == -1
+	      && TYPE_MAX_VALUE (TREE_TYPE (cst0))
+	      && tree_int_cst_equal (cst0, TYPE_MAX_VALUE (TREE_TYPE (cst0))))))
+    /* We cannot swap the comparison here as that would cause us to
+       endlessly recurse.  */
+    return NULL_TREE;
+
   t = int_const_binop (sgn0 == -1 ? PLUS_EXPR : MINUS_EXPR,
-  		       cst0, build_int_cst (TREE_TYPE (cst0), 1), 0);
+		       cst0, build_int_cst (TREE_TYPE (cst0), 1), 0);
   if (code0 != INTEGER_CST)
     t = fold_build2 (code0, TREE_TYPE (arg0), TREE_OPERAND (arg0, 0), t);
 
@@ -8379,12 +8396,6 @@ maybe_canonicalize_comparison (enum tree_code code, tree type,
   bool strict_overflow_p;
   const char * const warnmsg = G_("assuming signed overflow does not occur "
 				  "when reducing constant in comparison");
-
-  /* In principle pointers also have undefined overflow behavior,
-     but that causes problems elsewhere.  */
-  if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
-      || POINTER_TYPE_P (TREE_TYPE (arg0)))
-    return NULL_TREE;
 
   /* Try canonicalization by simplifying arg0.  */
   strict_overflow_p = false;
@@ -12421,29 +12432,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					   WARN_STRICT_OVERFLOW_ALL);
 		  return constant_boolean_node (0, type);
 		}
-	    }
-	}
-
-      /* Change X >= C to X > (C - 1) and X < C to X <= (C - 1) if C > 0.
-	 This transformation affects the cases which are handled in later
-	 optimizations involving comparisons with non-negative constants.  */
-      if (TREE_CODE (arg1) == INTEGER_CST
-	  && TREE_CODE (arg0) != INTEGER_CST
-	  && tree_int_cst_sgn (arg1) > 0)
-	{
-	  if (code == GE_EXPR)
-	    {
-	      arg1 = const_binop (MINUS_EXPR, arg1,
-			          build_int_cst (TREE_TYPE (arg1), 1), 0);
-	      return fold_build2 (GT_EXPR, type, arg0,
-				  fold_convert (TREE_TYPE (arg0), arg1));
-	    }
-	  if (code == LT_EXPR)
-	    {
-	      arg1 = const_binop (MINUS_EXPR, arg1,
-			          build_int_cst (TREE_TYPE (arg1), 1), 0);
-	      return fold_build2 (LE_EXPR, type, arg0,
-				  fold_convert (TREE_TYPE (arg0), arg1));
 	    }
 	}
 
