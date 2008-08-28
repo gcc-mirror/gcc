@@ -837,6 +837,8 @@ extern bool optimize_edge_for_size_p (edge);
 extern bool optimize_edge_for_speed_p (edge);
 extern bool optimize_insn_for_size_p (void);
 extern bool optimize_insn_for_speed_p (void);
+extern bool optimize_function_for_size_p (struct function *);
+extern bool optimize_function_for_speed_p (struct function *);
 extern bool gimple_predicted_by_p (const_basic_block, enum br_predictor);
 extern bool rtl_predicted_by_p (const_basic_block, enum br_predictor);
 extern void gimple_predict_edge (edge, enum br_predictor, int);

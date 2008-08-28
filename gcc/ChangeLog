@@ -1,3 +1,21 @@
+2008-08-28  Jan Hubicka  <jh@suse.cz>
+
+	* expmed.c (store_bit_field_1): Be prepared for movstrict expander to fail.
+	* predict.c (always_optimize_for_size_p): Rename to ...
+	(optimize_function_for_size): ... this one; make extern.
+	(optimize_function_for_speed_p): New.
+	(optimize_bb_for_size_p, optimize_bb_for_size_p,
+	optimize_edge_for_size_p,optimize_edge_for_size_p,
+	optimize_insn_for_size_p, optimize_insn_for_size_p): Update.
+	* basic-block.h (optimize_function_for_size_p,
+	optimize_function_for_speed_p): Declare.
+	* i386.md (optimize_size checks): Replace them by appropriate predicate.
+	(standard_80387_constant_p, ix86_compute_frame_layout,
+	ix86_expand_epilogue, ix86_decompose_address,
+	print_operand, emit_i387_cw_initialization,
+	inline_memory_move_cost, ix86_pad_returns,
+	ix86_reorg): Replace optimize_size checks.
+
 2008-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtl.h (simplify_subreg_regno): Declare.

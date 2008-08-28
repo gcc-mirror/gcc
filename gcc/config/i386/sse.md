@@ -220,7 +220,7 @@
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set (attr "mode")
-	(cond [(ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
+	(cond [(ior (ior (ne (symbol_ref "optimize_function_for_size_p (cfun)") (const_int 0))
 			 (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
 		    (and (eq_attr "alternative" "2")
 			 (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
@@ -656,7 +656,7 @@
 		  (match_operand:V4SF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
 {
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (TARGET_SSE_MATH && TARGET_RECIP && optimize_insn_for_speed_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {
@@ -794,7 +794,7 @@
 	(sqrt:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")))]
   "TARGET_SSE"
 {
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (TARGET_SSE_MATH && TARGET_RECIP && optimize_insn_for_speed_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {
