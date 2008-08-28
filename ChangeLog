@@ -1,3 +1,9 @@
+2008-08-28  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac (powerpc-*-darwin*, i?86-*-darwin*,x86_64-*-darwin9):
+	Enable bfd, binutils and opcodes.
+	* configure: Regenerate.
+
 2008-08-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* MAINTAINERS: Update my hppa and hpux entries.  Remove my vax entry.
