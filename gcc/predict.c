@@ -182,11 +182,19 @@ probably_never_executed_bb_p (const_basic_block bb)
 
 /* Return true when current function should always be optimized for size.  */
 
-static bool
-always_optimize_for_size_p (void)
+bool
+optimize_function_for_size_p (struct function *fun)
 {
   return (optimize_size
-	  || cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED);
+	  || fun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED);
+}
+
+/* Return true when current function should always be optimized for speed.  */
+
+bool
+optimize_function_for_speed_p (struct function *fun)
+{
+  return !optimize_function_for_size_p (fun);
 }
 
 /* Return TRUE when BB should be optimized for size.  */
@@ -194,7 +202,7 @@ always_optimize_for_size_p (void)
 bool
 optimize_bb_for_size_p (basic_block bb)
 {
-  return always_optimize_for_size_p () || !maybe_hot_bb_p (bb);
+  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (bb);
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
@@ -210,7 +218,7 @@ optimize_bb_for_speed_p (basic_block bb)
 bool
 optimize_edge_for_size_p (edge e)
 {
-  return always_optimize_for_size_p () || !maybe_hot_edge_p (e);
+  return optimize_function_for_size_p (cfun) || !maybe_hot_edge_p (e);
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
@@ -226,7 +234,7 @@ optimize_edge_for_speed_p (edge e)
 bool
 optimize_insn_for_size_p (void)
 {
-  return always_optimize_for_size_p () || !crtl->maybe_hot_insn_p;
+  return optimize_function_for_size_p (cfun) || !crtl->maybe_hot_insn_p;
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
