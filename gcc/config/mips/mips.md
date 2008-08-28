@@ -685,6 +685,13 @@
 		     (HA "") (SA "") (DA "d")
 		     (UHA "") (USA "") (UDA "d")])
 
+;; Same as d but upper-case.
+(define_mode_attr D [(SI "") (DI "D")
+		     (QQ "") (HQ "") (SQ "") (DQ "D")
+		     (UQQ "") (UHQ "") (USQ "") (UDQ "D")
+		     (HA "") (SA "") (DA "D")
+		     (UHA "") (USA "") (UDA "D")])
+
 ;; This attribute gives the length suffix for a sign- or zero-extension
 ;; instruction.
 (define_mode_attr size [(QI "b") (HI "h")])
@@ -1286,35 +1293,23 @@
 ;; These processors have PRId values of 0x00004220 and 0x00004300,
 ;; respectively.
 
-(define_expand "mulsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(mult:SI (match_operand:SI 1 "register_operand")
-		 (match_operand:SI 2 "register_operand")))]
+(define_expand "mul<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(mult:GPR (match_operand:GPR 1 "register_operand")
+		  (match_operand:GPR 2 "register_operand")))]
   ""
 {
-  if (ISA_HAS_MUL3)
-    emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
+  if (ISA_HAS_<D>MUL3)
+    emit_insn (gen_mul<mode>3_mul3 (operands[0], operands[1], operands[2]));
   else if (TARGET_FIX_R4000)
-    emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mul<mode>3_r4000 (operands[0], operands[1], operands[2]));
   else
-    emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
+    emit_insn
+      (gen_mul<mode>3_internal (operands[0], operands[1], operands[2]));
   DONE;
 })
 
-(define_expand "muldi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(mult:DI (match_operand:DI 1 "register_operand")
-		 (match_operand:DI 2 "register_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_FIX_R4000)
-    emit_insn (gen_muldi3_r4000 (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_insn "mulsi3_mult3"
+(define_insn "mulsi3_mul3"
   [(set (match_operand:SI 0 "register_operand" "=d,l")
 	(mult:SI (match_operand:SI 1 "register_operand" "d,d")
 		 (match_operand:SI 2 "register_operand" "d,d")))
@@ -1329,6 +1324,20 @@
 }
   [(set_attr "type" "imul3,imul")
    (set_attr "mode" "SI")])
+
+(define_insn "muldi3_mul3"
+  [(set (match_operand:DI 0 "register_operand" "=d,l")
+	(mult:DI (match_operand:DI 1 "register_operand" "d,d")
+		 (match_operand:DI 2 "register_operand" "d,d")))
+   (clobber (match_scratch:DI 3 "=l,X"))]
+  "ISA_HAS_DMUL3"
+{
+  if (which_alternative == 1)
+    return "dmult\t%1,%2";
+  return "dmul\t%0,%1,%2";
+}
+  [(set_attr "type" "imul3,imul")
+   (set_attr "mode" "DI")])
 
 ;; If a register gets allocated to LO, and we spill to memory, the reload
 ;; will include a move from LO to a GPR.  Merge it into the multiplication
