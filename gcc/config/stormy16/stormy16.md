@@ -265,9 +265,9 @@
    mov.b %0, %1
    shl %0,#8\n\tshr %0,#8"
   [(set_attr "psw_operand" "nop,0")
-   (set_attr_alternative "length" 
-	     [(const_int 2)
-	      (const_int 4)])])
+   (set_attr_alternative "length"
+	     [(const_int 4)
+	      (const_int 8)])])
 
 
 ;; ::::::::::::::::::::

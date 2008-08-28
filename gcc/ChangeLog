@@ -1,5 +1,9 @@
 2008-08-28  Nick Clifton  <nickc@redhat.com>
 
+	* config/stormy16/stormy16.h (IRA_COVER_CLASSES): Define.
+	* config/stormy16/stormy16.md (zero_extendqihi2): Fix length
+	attribute.
+
 	* config/v850/v850.h (IRA_COVER_CLASSES): Define.
 	* config/v850/v850.md (return): Remove frame size restriction.	
 
