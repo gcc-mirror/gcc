@@ -1,3 +1,8 @@
+2008-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (REG_CLASS_CONTENTS): Drop fr32 from FPUL_REGS.
+	(IRA_COVER_CLASSES): Add FPUL_REGS.
+
 2008-08-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 37217
