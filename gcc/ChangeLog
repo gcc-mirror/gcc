@@ -1,3 +1,48 @@
+2008-08-28  Ira Rosen  <irar@il.ibm.com>
+
+	* target.h (struct vectorize): Add new target builtin.
+	* tree-vectorizer.c (destroy_loop_vec_info): Call 
+	vect_free_slp_instance instead of vect_free_slp_node.
+	* tree-vectorizer.h (enum slp_load_perm_type): New.
+	(struct _slp_instance): Add new fields.
+	(SLP_INSTANCE_LOAD_PERMUTATION): New.
+	(SLP_INSTANCE_LOADS): New.
+	(vect_free_slp_tree): Remove.
+	(vect_free_slp_instance): Declare.        
+	(SLP_TREE_LOADS_PERM_TYPE, TARG_VEC_PERMUTE_COST): New.
+	(vectorizable_load): Add argument.
+	(vect_transform_slp_perm_load): New.
+	* tree-vect-analyze.c (vect_analyze_operations): Add an argument to 
+	vectorizable_load.
+	(vect_get_place_in_interleaving_chain): New function.
+	(vect_free_slp_tree): Make static.
+	(vect_free_slp_instance): New function.
+	(vect_build_slp_tree): Add new arguments. Allow load permutations and 
+	collect the load location in the interleaving chain.
+	(vect_supported_slp_permutation_p): New function.
+	(vect_supported_load_permutation_p): Likewise.
+	(vect_analyze_slp_instance): In case of loads permutation, call
+	vect_supported_load_permutation_p to check that the permutation is 
+	supported.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_VEC_PERM): New.
+	* tree-vect-transform.c (vect_transform_stmt): Add new argument.
+	(vect_create_mask_and_perm): New function.
+	(vect_get_mask_element, vect_transform_slp_perm_load): Likewise.
+	(vectorizable_load): Add an argument. Don't keep the created vectors  
+	statements in the node if permutation is required. Call 
+	vect_transform_slp_perm_load to generate the permutation.
+	(vect_transform_stmt): Add new argument. Call vectorizable_load with 
+	additional argument.
+	(vect_schedule_slp_instance): In case of loads permutation, allocate  
+	vectorized statements structure for all the related SLP nodes. Call 
+	vect_transform_stmt with addditional argument.
+	(vect_transform_loop): Call vect_transform_stmt with correct arguments. 
+	* config/spu/spu.c (spu_builtin_vec_perm): New. 
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Redefine.
+	* config/spu/spu.h (TARG_VEC_PERMUTE_COS): Define.
+	* config/rs6000/rs6000.c (rs6000_builtin_vec_perm): New.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Redefine.
+
 2008-08-28  Chris Fairles  <chris.fairles@gmail.com>
 
         * gthr-posix.h (__gthread_create,  __gthread_join, __gthread_detach,

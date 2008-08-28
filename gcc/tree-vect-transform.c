@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Utility functions for the code transformation.  */
 static bool vect_transform_stmt (gimple, gimple_stmt_iterator *, bool *,
-				 slp_tree);
+				 slp_tree, slp_instance);
 static tree vect_create_destination_var (tree, tree);
 static tree vect_create_data_ref_ptr 
   (gimple, struct loop*, tree, tree *, gimple *, bool, bool *);
@@ -936,7 +936,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       base_offset = force_gimple_operand (base_offset, &seq, false, tmp);
       gimple_seq_add_seq (new_stmt_list, seq);
     }
-  
+
   /* base + base_offset */
   addr_base = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (data_ref_base), 
 			   data_ref_base, base_offset);
@@ -5962,6 +5962,313 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 }
 
 
+/* Create NCOPIES permutation statements using the mask MASK_BYTES (by 
+   building a vector of type MASK_TYPE from it) and two input vectors placed in
+   DR_CHAIN at FIRST_VEC_INDX and SECOND_VEC_INDX for the first copy and
+   shifting by STRIDE elements of DR_CHAIN for every copy.
+   (STRIDE is the number of vectorized stmts for NODE divided by the number of
+   copies).  
+   VECT_STMTS_COUNTER specifies the index in the vectorized stmts of NODE, where
+   the created stmts must be inserted.  */
+
+static inline void
+vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt, 
+                           int *mask_array, int mask_nunits, 
+                           tree mask_element_type, tree mask_type,
+                           int first_vec_indx, int second_vec_indx, 
+                           gimple_stmt_iterator *gsi, slp_tree node, 
+                           tree builtin_decl, tree vectype, 
+                           VEC(tree,heap) *dr_chain,
+                           int ncopies, int vect_stmts_counter)
+{
+  tree t = NULL_TREE, mask_vec, mask, perm_dest;
+  gimple perm_stmt = NULL;
+  stmt_vec_info next_stmt_info;
+  int i, group_size, stride, dr_chain_size;
+  tree first_vec, second_vec, data_ref;
+  tree sym;
+  ssa_op_iter iter;
+  VEC (tree, heap) *params = NULL;
+
+  /* Create a vector mask.  */
+  for (i = mask_nunits - 1; i >= 0; --i)
+    t = tree_cons (NULL_TREE, build_int_cst (mask_element_type, mask_array[i]),
+                   t);
+
+  mask_vec = build_vector (mask_type, t);
+  mask = vect_init_vector (stmt, mask_vec, mask_type, NULL);
+
+  group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (node));
+  stride = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
+  dr_chain_size = VEC_length (tree, dr_chain); 
+
+  /* Initialize the vect stmts of NODE to properly insert the generated 
+     stmts later.  */
+  for (i = VEC_length (gimple, SLP_TREE_VEC_STMTS (node)); 
+       i < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
+    VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (node), NULL);
+
+  perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
+  for (i = 0; i < ncopies; i++)
+    {
+      first_vec = VEC_index (tree, dr_chain, first_vec_indx);
+      second_vec = VEC_index (tree, dr_chain, second_vec_indx);
+
+      /* Build argument list for the vectorized call.  */
+      VEC_free (tree, heap, params);
+      params = VEC_alloc (tree, heap, 3);
+      VEC_quick_push (tree, params, first_vec);
+      VEC_quick_push (tree, params, second_vec);
+      VEC_quick_push (tree, params, mask);
+
+      /* Generate the permute statement.  */
+      perm_stmt = gimple_build_call_vec (builtin_decl, params);
+      data_ref = make_ssa_name (perm_dest, perm_stmt);
+      gimple_call_set_lhs (perm_stmt, data_ref);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      FOR_EACH_SSA_TREE_OPERAND (sym, perm_stmt, iter, SSA_OP_ALL_VIRTUALS)
+        {
+          if (TREE_CODE (sym) == SSA_NAME)
+            sym = SSA_NAME_VAR (sym);
+          mark_sym_for_renaming (sym);
+        }
+
+      /* Store the vector statement in NODE.  */ 
+      VEC_replace (gimple, SLP_TREE_VEC_STMTS (node), 
+                   stride * i + vect_stmts_counter, perm_stmt);
+
+      first_vec_indx += stride;
+      second_vec_indx += stride;
+    }
+
+  /* Mark the scalar stmt as vectorized.  */
+  next_stmt_info = vinfo_for_stmt (next_scalar_stmt);
+  STMT_VINFO_VEC_STMT (next_stmt_info) = perm_stmt;
+}
+
+
+/* Given FIRST_MASK_ELEMENT - the mask element in element representation, 
+   return in CURRENT_MASK_ELEMENT its equivalent in target specific
+   representation. Check that the mask is valid and return FALSE if not. 
+   Return TRUE in NEED_NEXT_VECTOR if the permutation requires to move to
+   the next vector, i.e., the current first vector is not needed.  */
+   
+static bool
+vect_get_mask_element (gimple stmt, int first_mask_element, int m, 
+                       int mask_nunits, bool only_one_vec, int index,
+                       int *mask, int *current_mask_element, 
+                       bool *need_next_vector)
+{
+  int i;
+  static int number_of_mask_fixes = 1;
+  static bool mask_fixed = false;
+  static bool needs_first_vector = false;
+
+  /* Convert to target specific representation.  */
+  *current_mask_element = first_mask_element + m;
+  /* Adjust the value in case it's a mask for second and third vectors.  */
+  *current_mask_element -= mask_nunits * (number_of_mask_fixes - 1);
+
+  if (*current_mask_element < mask_nunits)
+    needs_first_vector = true;
+
+  /* We have only one input vector to permute but the mask accesses values in
+     the next vector as well.  */
+  if (only_one_vec && *current_mask_element >= mask_nunits)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "permutation requires at least two vectors ");
+          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+        }
+
+      return false;
+    }
+
+  /* The mask requires the next vector.  */
+  if (*current_mask_element >= mask_nunits * 2)
+    {
+      if (needs_first_vector || mask_fixed)
+        {
+          /* We either need the first vector too or have already moved to the
+             next vector. In both cases, this permutation needs three   
+             vectors.  */
+          if (vect_print_dump_info (REPORT_DETAILS))
+            {
+              fprintf (vect_dump, "permutation requires at "
+                                  "least three vectors ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+
+          return false;
+        }
+
+      /* We move to the next vector, dropping the first one and working with
+         the second and the third - we need to adjust the values of the mask
+         accordingly.  */
+      *current_mask_element -= mask_nunits * number_of_mask_fixes;
+
+      for (i = 0; i < index; i++)
+        mask[i] -= mask_nunits * number_of_mask_fixes;
+
+      (number_of_mask_fixes)++;
+      mask_fixed = true;
+    }
+
+  *need_next_vector = mask_fixed;
+
+  /* This was the last element of this mask. Start a new one.  */
+  if (index == mask_nunits - 1)
+    {
+      number_of_mask_fixes = 1;
+      mask_fixed = false;
+      needs_first_vector = false;
+    }
+
+  return true;
+}
+
+
+/* Generate vector permute statements from a list of loads in DR_CHAIN.
+   If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
+   permute statements for SLP_NODE_INSTANCE.  */
+bool
+vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
+                              gimple_stmt_iterator *gsi, int vf,
+                              slp_instance slp_node_instance, bool analyze_only)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  tree mask_element_type = NULL_TREE, mask_type;
+  int i, j, k, m, scale, mask_nunits, nunits, vec_index = 0, scalar_index;
+  slp_tree node;
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info), builtin_decl;
+  gimple next_scalar_stmt;
+  int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
+  int first_mask_element;
+  int index, unroll_factor, *mask, current_mask_element, ncopies;
+  bool only_one_vec = false, need_next_vector = false;
+  int first_vec_index, second_vec_index, orig_vec_stmts_num, vect_stmts_counter;
+
+  if (!targetm.vectorize.builtin_vec_perm)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no builtin for vect permute for ");
+          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+        }
+
+       return false;
+    }
+
+  builtin_decl = targetm.vectorize.builtin_vec_perm (vectype,
+                                                     &mask_element_type);
+  if (!builtin_decl || !mask_element_type)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no builtin for vect permute for ");
+          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+        }
+
+       return false;
+    }
+
+  mask_type = get_vectype_for_scalar_type (mask_element_type);
+  mask_nunits = TYPE_VECTOR_SUBPARTS (mask_type);
+  mask = (int *) xmalloc (sizeof (int) * mask_nunits);
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  scale = mask_nunits / nunits;
+  unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
+
+  /* The number of vector stmts to generate based only on SLP_NODE_INSTANCE
+     unrolling factor.  */
+  orig_vec_stmts_num = group_size * 
+                SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance) / nunits;
+  if (orig_vec_stmts_num == 1)
+    only_one_vec = true;
+
+  /* Number of copies is determined by the final vectorization factor 
+     relatively to SLP_NODE_INSTANCE unrolling factor.  */
+  ncopies = vf / SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance); 
+
+  /* Generate permutation masks for every NODE. Number of masks for each NODE 
+     is equal to GROUP_SIZE.  
+     E.g., we have a group of three nodes with three loads from the same 
+     location in each node, and the vector size is 4. I.e., we have a 
+     a0b0c0a1b1c1... sequence and we need to create the following vectors: 
+     for a's: a0a0a0a1 a1a1a2a2 a2a3a3a3
+     for b's: b0b0b0b1 b1b1b2b2 b2b3b3b3
+     ...
+
+     The masks for a's should be: {0,0,0,3} {3,3,6,6} {6,9,9,9} (in target
+     scpecific type, e.g., in bytes for Altivec.
+     The last mask is illegal since we assume two operands for permute 
+     operation, and the mask element values can't be outside that range. Hence,
+     the last mask must be converted into {2,5,5,5}.
+     For the first two permutations we need the first and the second input 
+     vectors: {a0,b0,c0,a1} and {b1,c1,a2,b2}, and for the last permutation
+     we need the second and the third vectors: {b1,c1,a2,b2} and 
+     {c2,a3,b3,c3}.  */
+
+  for (i = 0;
+       VEC_iterate (slp_tree, SLP_INSTANCE_LOADS (slp_node_instance),
+                    i, node);
+       i++)
+    {
+      scalar_index = 0;
+      index = 0;
+      vect_stmts_counter = 0;
+      vec_index = 0;
+      first_vec_index = vec_index++;
+      if (only_one_vec)
+        second_vec_index = first_vec_index;
+      else
+        second_vec_index =  vec_index++;
+
+      for (j = 0; j < unroll_factor; j++)
+        {
+          for (k = 0; k < group_size; k++)
+            {
+              first_mask_element = (i + j * group_size) * scale;
+              for (m = 0; m < scale; m++)
+                {
+                  if (!vect_get_mask_element (stmt, first_mask_element, m, 
+                                   mask_nunits, only_one_vec, index, mask,
+                                   &current_mask_element, &need_next_vector))
+                    return false;
+
+                  mask[index++] = current_mask_element;
+                } 
+
+              if (index == mask_nunits)
+                {
+                  index = 0;
+                  if (!analyze_only)
+                    {
+                      if (need_next_vector)
+                        {
+                          first_vec_index = second_vec_index;
+                          second_vec_index = vec_index;
+                        }
+
+                      next_scalar_stmt = VEC_index (gimple,
+                                SLP_TREE_SCALAR_STMTS (node), scalar_index++);
+
+                      vect_create_mask_and_perm (stmt, next_scalar_stmt,
+                               mask, mask_nunits, mask_element_type, mask_type, 
+                               first_vec_index, second_vec_index, gsi, node, 
+                               builtin_decl, vectype, dr_chain, ncopies, 
+                               vect_stmts_counter++);
+                    }
+                } 
+            } 
+        } 
+    } 
+
+  free (mask);
+  return true;
+}
+
 /* vectorizable_load.
 
    Check if STMT reads a non scalar data-ref (array/pointer/structure) that 
@@ -5972,7 +6279,7 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 
 bool
 vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
-		   slp_tree slp_node)
+		   slp_tree slp_node, slp_instance slp_node_instance)
 {
   tree scalar_dest;
   tree vec_dest = NULL;
@@ -6008,6 +6315,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   struct loop *at_loop;
   int vec_num;
   bool slp = (slp_node != NULL);
+  bool slp_perm = false;
   enum tree_code code;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
@@ -6028,6 +6336,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       return false;
     }
 
+  if (slp && SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance))
+    slp_perm = true;
+ 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
@@ -6397,33 +6708,47 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 	  /* Collect vector loads and later create their permutation in
 	     vect_transform_strided_load ().  */
-          if (strided_load)
+          if (strided_load || slp_perm)
             VEC_quick_push (tree, dr_chain, new_temp);
 
          /* Store vector loads in the corresponding SLP_NODE.  */
-	  if (slp)
+	  if (slp && !slp_perm)
 	    VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
 	}
 
-      if (slp)
+      if (slp && !slp_perm)
 	continue;
 
-      if (strided_load)
-	{
-	  if (!vect_transform_strided_load (stmt, dr_chain, group_size, gsi))
-	    return false;	  
-	  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
-          VEC_free (tree, heap, dr_chain);
-	  dr_chain = VEC_alloc (tree, heap, group_size);
-	}
+      if (slp_perm)
+        {
+          if (!vect_transform_slp_perm_load (stmt, dr_chain, gsi,
+                                   LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+                                             slp_node_instance, false))
+            {
+              VEC_free (tree, heap, dr_chain);
+              return false;
+            }
+        }
       else
-	{
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
-	}
+        {
+          if (strided_load)
+  	    {
+	      if (!vect_transform_strided_load (stmt, dr_chain, group_size, gsi))
+	        return false;	  
+
+	      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+              VEC_free (tree, heap, dr_chain);
+	      dr_chain = VEC_alloc (tree, heap, group_size);
+	    }
+          else
+	    {
+	      if (j == 0)
+	        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	      else
+	        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    }
+        }
     }
 
   if (dr_chain)
@@ -6690,7 +7015,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 
 static bool
 vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
-		     bool *strided_store, slp_tree slp_node)
+		     bool *strided_store, slp_tree slp_node, 
+                     slp_instance slp_node_instance)
 {
   bool is_store = false;
   gimple vec_stmt = NULL;
@@ -6732,7 +7058,8 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
       break;
 
     case load_vec_info_type:
-      done = vectorizable_load (stmt, gsi, &vec_stmt, slp_node);
+      done = vectorizable_load (stmt, gsi, &vec_stmt, slp_node, 
+                                slp_node_instance);
       gcc_assert (done);
       break;
 
@@ -7807,6 +8134,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   stmt_vec_info stmt_info;
   unsigned int vec_stmts_size, nunits, group_size;
   tree vectype;
+  int i;
+  slp_tree loads_node;
 
   if (!node)
     return false;
@@ -7830,8 +8159,28 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
      size.  */
   vec_stmts_size = (vectorization_factor * group_size) / nunits;
 
-  SLP_TREE_VEC_STMTS (node) = VEC_alloc (gimple, heap, vec_stmts_size);
-  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vec_stmts_size;
+  /* In case of load permutation we have to allocate vectorized statements for
+     all the nodes that participate in that permutation.  */
+  if (SLP_INSTANCE_LOAD_PERMUTATION (instance))
+    {
+      for (i = 0;
+           VEC_iterate (slp_tree, SLP_INSTANCE_LOADS (instance), i, loads_node);
+           i++)
+        {
+          if (!SLP_TREE_VEC_STMTS (loads_node))
+            {
+              SLP_TREE_VEC_STMTS (loads_node) = VEC_alloc (gimple, heap,
+                                                           vec_stmts_size);
+              SLP_TREE_NUMBER_OF_VEC_STMTS (loads_node) = vec_stmts_size;
+            }
+        }
+    }
+
+  if (!SLP_TREE_VEC_STMTS (node))
+    {
+      SLP_TREE_VEC_STMTS (node) = VEC_alloc (gimple, heap, vec_stmts_size);
+      SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vec_stmts_size;
+    }
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -7840,7 +8189,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
     }	
 
   si = gsi_for_stmt (stmt);
-  is_store = vect_transform_stmt (stmt, &si, &strided_store, node);
+  is_store = vect_transform_stmt (stmt, &si, &strided_store, node, instance);
   if (is_store)
     {
       if (DR_GROUP_FIRST_DR (stmt_info))
@@ -7980,7 +8329,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    {
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		fprintf (vect_dump, "transform phi.");
-	      vect_transform_stmt (phi, NULL, NULL, NULL);
+	      vect_transform_stmt (phi, NULL, NULL, NULL, NULL);
 	    }
 	}
 
@@ -8059,7 +8408,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    fprintf (vect_dump, "transform statement.");
 
 	  strided_store = false;
-	  is_store = vect_transform_stmt (stmt, &si, &strided_store, NULL);
+	  is_store = vect_transform_stmt (stmt, &si, &strided_store, NULL, NULL);
           if (is_store)
             {
 	      if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
