@@ -1,3 +1,11 @@
+2008-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (simplify_subreg_regno): Declare.
+	* rtlanal.c (simplify_subreg_regno): New function, split out from...
+	* simplify-rtx.c (simplify_subreg): ...here.
+	* reload.c (find_reloads): Use simplify_subreg_regno instead of
+	subreg_offset_representable_p.
+
 2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/30949
