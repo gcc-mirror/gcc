@@ -1,3 +1,8 @@
+2008-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36741
+	* g++.dg/other/new-size-type.C: New test.
+
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36548

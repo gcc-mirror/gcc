@@ -1,3 +1,9 @@
+2008-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36741
+	* tree.c (int_fits_type_p): Don't forget unsigned integers
+	  of type sizetype which higher end word equals -1.
+
 2008-08-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36548
