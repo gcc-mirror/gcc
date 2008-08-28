@@ -4286,7 +4286,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		     qualifier are acceptable if the 'volatile' has been added
 		     in by the Objective-C EH machinery.  */
 		  if (!objc_type_quals_match (ttl, ttr))
-		    WARN_FOR_ASSIGNMENT (input_location,
+		    WARN_FOR_ASSIGNMENT (input_location, 0,
 					 G_("passing argument %d of %qE discards "
 					    "qualifiers from pointer target type"),
 					 G_("assignment discards qualifiers "

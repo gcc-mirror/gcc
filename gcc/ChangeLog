@@ -1,3 +1,8 @@
+2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-typeck.c (convert_for_assignment): Adjust WARN_FOR_ASSIGNMENT
+	use not updated in the last change.
+
 2008-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (REG_CLASS_CONTENTS): Drop fr32 from FPUL_REGS.
