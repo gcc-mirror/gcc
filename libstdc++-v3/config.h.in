@@ -698,6 +698,9 @@
 /* Define if a fully dynamic basic_string is wanted. */
 #undef _GLIBCXX_FULLY_DYNAMIC_STRING
 
+/* Define if gthreads library is available. */
+#undef _GLIBCXX_HAS_GTHREADS
+
 /* Define to 1 if a full hosted library is built, or 0 if freestanding. */
 #undef _GLIBCXX_HOSTED
 
