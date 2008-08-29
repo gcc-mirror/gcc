@@ -1105,10 +1105,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       span = build_decl (VAR_DECL, create_tmp_var_name ("span"),
 			 gfc_array_index_type);
       gfc_finish_var_decl (span, sym);
-      TREE_STATIC (span) = 1;
-      DECL_INITIAL (span) = build_int_cst (NULL_TREE, 0);
+      TREE_STATIC (span) = TREE_STATIC (decl);
+      DECL_ARTIFICIAL (span) = 1;
+      DECL_INITIAL (span) = build_int_cst (gfc_array_index_type, 0);
 
       GFC_DECL_SPAN (decl) = span;
+      GFC_TYPE_ARRAY_SPAN (TREE_TYPE (decl)) = span;
     }
 
   sym->backend_decl = decl;
