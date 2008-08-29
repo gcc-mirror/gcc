@@ -599,12 +599,12 @@
 		(const_string "yes")
 		(const_string "no")))
 
-;; Attribute defining whether or not we can use the branch-likely instructions
+;; Attribute defining whether or not we can use the branch-likely
+;; instructions.
 (define_attr "branch_likely" "no,yes"
-  (const
-   (if_then_else (ne (symbol_ref "GENERATE_BRANCHLIKELY") (const_int 0))
-		 (const_string "yes")
-		 (const_string "no"))))
+  (if_then_else (ne (symbol_ref "GENERATE_BRANCHLIKELY") (const_int 0))
+		(const_string "yes")
+		(const_string "no")))
 
 ;; True if an instruction might assign to hi or lo when reloaded.
 ;; This is used by the TUNE_MACC_CHAINS code.
@@ -788,6 +788,9 @@
 ;; by swapping the operands.
 (define_code_iterator swapped_fcond [ge gt unge ungt])
 
+;; Equality operators.
+(define_code_iterator equality_op [eq ne])
+
 ;; These code iterators allow the signed and unsigned scc operations to use
 ;; the same template.
 (define_code_iterator any_gt [gt gtu])
@@ -848,6 +851,12 @@
 				 (unge "ule")
 				 (ungt "ult")])
 
+;; The value of the bit when the branch is taken for branch_bit patterns.
+;; Comparison is always against zero so this depends on the operator.
+(define_code_attr bbv [(eq "0") (ne "1")])
+
+;; This is the inverse value of bbv.
+(define_code_attr bbinv [(eq "1") (ne "0")])
 
 ;; .........................
 ;;
@@ -856,11 +865,19 @@
 ;; .........................
 
 (define_delay (and (eq_attr "type" "branch")
-		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0)))
+		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0))
+		   (eq_attr "branch_likely" "yes"))
   [(eq_attr "can_delay" "yes")
    (nil)
-   (and (eq_attr "branch_likely" "yes")
-	(eq_attr "can_delay" "yes"))])
+   (eq_attr "can_delay" "yes")])
+
+;; Branches that don't have likely variants do not annul on false.
+(define_delay (and (eq_attr "type" "branch")
+		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0))
+		   (eq_attr "branch_likely" "no"))
+  [(eq_attr "can_delay" "yes")
+   (nil)
+   (nil)])
 
 (define_delay (eq_attr "type" "jump")
   [(eq_attr "can_delay" "yes")
@@ -5052,6 +5069,50 @@
 	(if_then_else (match_operand 0)
 		      (label_ref (match_operand 1))
 		      (pc)))])
+
+;; Branch if bit is set/clear.
+
+(define_insn "*branch_bit<bbv><mode>"
+  [(set (pc)
+	(if_then_else
+	 (equality_op (zero_extract:GPR
+		       (match_operand:GPR 1 "register_operand" "d")
+		       (const_int 1)
+		       (match_operand 2 "const_int_operand" ""))
+		      (const_int 0))
+	 (label_ref (match_operand 0 ""))
+	 (pc)))]
+  "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+{
+  return
+    mips_output_conditional_branch (insn, operands,
+				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"),
+				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"));
+}
+  [(set_attr "type"	     "branch")
+   (set_attr "mode"	     "none")
+   (set_attr "branch_likely" "no")])
+
+(define_insn "*branch_bit<bbv><mode>_inverted"
+  [(set (pc)
+	(if_then_else
+	 (equality_op (zero_extract:GPR
+		       (match_operand:GPR 1 "register_operand" "d")
+		       (const_int 1)
+		       (match_operand 2 "const_int_operand" ""))
+		      (const_int 0))
+	 (pc)
+	 (label_ref (match_operand 0 ""))))]
+  "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+{
+  return
+    mips_output_conditional_branch (insn, operands,
+				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"),
+				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"));
+}
+  [(set_attr "type"	     "branch")
+   (set_attr "mode"	     "none")
+   (set_attr "branch_likely" "no")])
 
 ;;
 ;;  ....................

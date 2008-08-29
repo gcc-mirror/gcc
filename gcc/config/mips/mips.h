@@ -1006,6 +1006,9 @@ enum mips_code_readable_setting {
    ? TARGET_LLSC && !TARGET_MIPS16	\
    : ISA_HAS_LL_SC)
 
+/* ISA includes the bbit* instructions.  */
+#define ISA_HAS_BBIT		TARGET_OCTEON
+
 /* ISA includes the pop instruction.  */
 #define ISA_HAS_POP		TARGET_OCTEON
 

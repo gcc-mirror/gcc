@@ -1,3 +1,9 @@
+2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-bbit-1.c: New test.
+	* gcc.target/mips/octeon-bbit-2.c: New test.
+	* gcc.target/mips/octeon-bbit-3.c: New test.
+
 2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
             Andrew Pinski  <pinskia@gcc.gnu.org>
 
