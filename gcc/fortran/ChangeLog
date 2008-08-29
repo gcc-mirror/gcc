@@ -1,5 +1,14 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* trans.h (struct lang_type): Add span.
+	(GFC_TYPE_ARRAY_SPAN): Define.
+	* trans-decl.c (gfc_get_symbol_decl): For subref array pointers,
+	copy TREE_STATIC from decl to span instead of setting it
+	unconditionally, set DECL_ARTIFICIAL, fix type of initializer
+	and set GFC_TYPE_ARRAY_SPAN on decl's type.
+	* trans-types.c (gfc_get_array_descr_info): If
+	GFC_TYPE_ARRAY_SPAN is non-NULL, use it as element size.
+
 	* trans-decl.c (check_constant_initializer,
 	gfc_emit_parameter_debug_info): New functions.
 	(gfc_generate_module_vars, gfc_generate_function_code): Emit

@@ -2289,7 +2289,10 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   else
     info->base_decl = base_decl = build_decl (VAR_DECL, NULL_TREE, ptype);
 
-  elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
+  if (GFC_TYPE_ARRAY_SPAN (type))
+    elem_size = GFC_TYPE_ARRAY_SPAN (type);
+  else
+    elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
   field = TYPE_FIELDS (TYPE_MAIN_VARIANT (type));
   data_off = byte_position (field);
   field = TREE_CHAIN (field);

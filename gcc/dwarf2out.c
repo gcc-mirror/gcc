@@ -12854,6 +12854,8 @@ descr_info_loc (tree val, tree base_decl)
     {
     CASE_CONVERT:
       return descr_info_loc (TREE_OPERAND (val, 0), base_decl);
+    case VAR_DECL:
+      return loc_descriptor_from_tree_1 (val, 0);
     case INTEGER_CST:
       if (host_integerp (val, 0))
 	return int_loc_descriptor (tree_low_cst (val, 0));

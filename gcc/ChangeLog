@@ -1,5 +1,7 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (descr_info_loc): Handle VAR_DECL.
+
 	* dwarf2out.c (gen_const_die): New function.
 	(size_of_die, value_format, output_die): Output larger
 	dw_val_class_vec using DW_FORM_block2 or DW_FORM_block4.
