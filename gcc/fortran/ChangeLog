@@ -1,5 +1,9 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/24790
+	* trans-decl.c (create_function_arglist): Set DECL_BY_REFERENCE on
+	PARM_DECLs with pointer or reference type.
+
 	* trans-decl.c (gfc_build_qualified_array): Build non-flat
 	array type for debug info purposes.
 
