@@ -1,5 +1,9 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/ipa/modif-1.c: Update template.
+
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/ipa/ipa-1.c: Fix template for better debug output.
 	* gcc.dg/ipa/ipa-2.c: Fix template for better debug output.
 	* gcc.dg/ipa/ipa-3.c: Fix template for better debug output.

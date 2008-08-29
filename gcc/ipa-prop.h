@@ -381,9 +381,8 @@ void ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) *new_edges);
 
 /* Debugging interface.  */
-void ipa_print_all_tree_maps (FILE *);
-void ipa_print_node_param_flags (FILE * f, struct cgraph_node *node);
-void ipa_print_all_param_flags (FILE *);
+void ipa_print_node_params (FILE *, struct cgraph_node *node);
+void ipa_print_all_params (FILE *);
 void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
 void ipa_print_all_jump_functions (FILE * f);
 

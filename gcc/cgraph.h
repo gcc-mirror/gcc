@@ -390,6 +390,8 @@ int compute_call_stmt_bb_frequency (basic_block bb);
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
 int cgraph_postorder (struct cgraph_node **);
 
+bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
+
 /* In varpool.c  */
 
 extern GTY(()) struct varpool_node *varpool_nodes_queue;

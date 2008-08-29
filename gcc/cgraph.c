@@ -857,6 +857,7 @@ cgraph_remove_node (struct cgraph_node *node)
 {
   void **slot;
   bool kill_body = false;
+  struct cgraph_node *n;
 
   cgraph_call_node_removal_hooks (node);
   cgraph_node_remove_callers (node);
@@ -865,8 +866,9 @@ cgraph_remove_node (struct cgraph_node *node)
   /* Incremental inlining access removed nodes stored in the postorder list.
      */
   node->needed = node->reachable = false;
-  while (node->nested)
-    cgraph_remove_node (node->nested);
+  for (n = node->nested; n; n = n->next_nested)
+    n->origin = NULL;
+  node->nested = NULL;
   if (node->origin)
     {
       struct cgraph_node **node2 = &node->origin->nested;

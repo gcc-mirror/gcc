@@ -1,3 +1,35 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Do not remove nested nodes.
+
+	* cgraph.h (cgraph_maybe_hot_edge_p): Declare.
+	* ipa-cp.c (n_cloning_candidates): New static variable.
+	(ipcp_print_profile_data, ipcp_function_scale_print): Forward declare.
+	(ipcp_print_all_lattices): Improve debug output.
+	(ipcp_cloning_candidate_p): New function.
+	(ipcp_initialize_node_lattices): Use it.
+	(ipcp_init_stage): Do only analyzis here; prettier debug output.
+	(ipcp_propagate_stage): Prettier debug output.
+	(ipcp_iterate_stage): Initialize latices here; prettier debug output.
+	(ipcp_print_all_structures): Remove.
+	(ipcp_need_redirect_p): Test !n_cloning_candidates.
+	(ipcp_insert_stage): Prettier debug output; call
+	cgraph_remove_unreachable_nodes before propagating.
+	(pass_ipa_cp): Schedule function removal pass.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Better
+	debug output.
+	(cgraph_maybe_hot_edge_p): Move to ...
+	* predict.c (cgraph_maybe_hot_edge_p) ... here.
+	* opts.c (flag_ipa_cp_set, flag_ipa_cp_clone_set): New.
+	(common_handle_option): Set them; enable ipa-cp when profiling.
+	* ipa-prop.c (ipa_print_node_jump_functions): Prettier output.
+	(ipa_print_all_jump_functions): Likewise.
+	(ipa_print_all_tree_maps, ipa_print_node_param_flags): Remove.
+	(ipa_print_node_params, ipa_print_all_params): New.
+	* ipa-prop.h (ipa_print_all_tree_maps, ipa_print_node_param_flags,
+	ipa_print_all_param_flags): Remove.
+	(ipa_print_node_params, ipa_print_all_params): New.
+
 2008-08-29  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_secondary_reload_class): Revert

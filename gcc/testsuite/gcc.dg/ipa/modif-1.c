@@ -1,6 +1,6 @@
 /* Verify that modification analysis detects modfications.  */
 /* { dg-do compile } */
-/* { dg-options "-O3 -c -fdump-ipa-inline -fno-early-inlining"  } */
+/* { dg-options "-O3 -c -fdump-ipa-inline-details -fno-early-inlining"  } */
 
 struct whatever
 {
@@ -33,12 +33,12 @@ void the_test (struct whatever u, struct whatever v,
   func4 (&l);
 }
 
-/* { dg-final { scan-ipa-dump-not "param 0 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 1 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 2 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 3 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump-not "param 4 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 5 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 6 flags:\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 7 flags:\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump-not "param 0\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 1\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 2\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 3\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump-not "param 4\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 5\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 6\[^\\n\]*modified" "inline" } } */
+/* { dg-final { scan-ipa-dump "param 7\[^\\n\]*modified" "inline" } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */
