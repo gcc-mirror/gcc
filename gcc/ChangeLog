@@ -1,5 +1,12 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (gen_const_die): New function.
+	(size_of_die, value_format, output_die): Output larger
+	dw_val_class_vec using DW_FORM_block2 or DW_FORM_block4.
+	(native_encode_initializer): New function.
+	(tree_add_const_value_attribute): Call it.
+	(gen_decl_die, dwarf2out_decl): Handle CONST_DECLs if is_fortran ().
+
 	* dwarf2out.c (gen_formal_parameter_die, gen_variable_die): For
 	DECL_BY_REFERENCE decls don't pass TREE_READONLY and
 	TREE_THIS_VOLATILE to add_type_attribute.
