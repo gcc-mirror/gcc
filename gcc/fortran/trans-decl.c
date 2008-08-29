@@ -703,6 +703,50 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       TYPE_DOMAIN (type) = range;
       layout_type (type);
     }
+
+  if (nest || write_symbols == NO_DEBUG)
+    return;
+
+  if (TYPE_NAME (type) != NULL_TREE
+      && GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1) != NULL_TREE
+      && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1)) == VAR_DECL)
+    {
+      tree gtype = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+
+      for (dim = 0; dim < sym->as->rank - 1; dim++)
+	{
+	  gcc_assert (TREE_CODE (gtype) == ARRAY_TYPE);
+	  gtype = TREE_TYPE (gtype);
+	}
+      gcc_assert (TREE_CODE (gtype) == ARRAY_TYPE);
+      if (TYPE_MAX_VALUE (TYPE_DOMAIN (gtype)) == NULL)
+	TYPE_NAME (type) = NULL_TREE;
+    }
+
+  if (TYPE_NAME (type) == NULL_TREE)
+    {
+      tree gtype = TREE_TYPE (type), rtype, type_decl;
+
+      for (dim = sym->as->rank - 1; dim >= 0; dim--)
+	{
+	  rtype = build_range_type (gfc_array_index_type,
+				    GFC_TYPE_ARRAY_LBOUND (type, dim),
+				    GFC_TYPE_ARRAY_UBOUND (type, dim));
+	  gtype = build_array_type (gtype, rtype);
+	  /* Ensure the bound variables aren't optimized out at -O0.  */
+	  if (!optimize)
+	    {
+	      if (GFC_TYPE_ARRAY_LBOUND (type, dim)
+		  && TREE_CODE (GFC_TYPE_ARRAY_LBOUND (type, dim)) == VAR_DECL)
+		DECL_IGNORED_P (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 0;
+	      if (GFC_TYPE_ARRAY_UBOUND (type, dim)
+		  && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, dim)) == VAR_DECL)
+		DECL_IGNORED_P (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 0;
+	    }
+	}
+      TYPE_NAME (type) = type_decl = build_decl (TYPE_DECL, NULL, gtype);
+      DECL_ORIGINAL_TYPE (type_decl) = gtype;
+    }
 }
 
 

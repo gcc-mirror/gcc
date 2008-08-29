@@ -11934,6 +11934,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
     case RESULT_DECL:
       {
 	dw_die_ref decl_die = lookup_decl_die (bound);
+	dw_loc_descr_ref loc;
 
 	/* ??? Can this happen, or should the variable have been bound
 	   first?  Probably it can, since I imagine that we try to create
@@ -11942,6 +11943,11 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	   later parameter.  */
 	if (decl_die != NULL)
 	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
+	else
+	  {
+	    loc = loc_descriptor_from_tree_1 (bound, 0);
+	    add_AT_location_description (subrange_die, bound_attr, loc);
+	  }
 	break;
       }
 
