@@ -1,3 +1,9 @@
+2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+            Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR 18050
+	* c-common.c (verify_tree): Fix handling of ADDR_EXPR.
+
 2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* gtrh-posix.h: Fix uses of _POSIX_TIMEOUTS per the normal Posix

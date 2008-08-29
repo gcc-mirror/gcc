@@ -1,3 +1,10 @@
+2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+            Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR 18050
+	* gcc.dg/Wsequence-point-pr18050.c: New.
+	* g++.dg/warn/Wsequence-point-pr18050.C: New.
+
 2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37260
