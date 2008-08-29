@@ -4333,7 +4333,12 @@ find_switch_asserts (basic_block bb, gimple last)
   edge e;
   tree vec2;
   size_t n = gimple_switch_num_labels(last);
+#if GCC_VERSION >= 4000
   unsigned int idx;
+#else
+  /* Work around GCC 3.4 bug (PR 37086).  */
+  volatile unsigned int idx;
+#endif
 
   need_assert = false;
   bsi = gsi_for_stmt (last);
