@@ -1072,7 +1072,7 @@ L2:     .word STATIC
 #define LEGITIMATE_CONSTANT_P(X)					\
   (! (GET_CODE (X) == CONST						\
       && GET_CODE (XEXP (X, 0)) == PLUS					\
-      && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF			\
+      && (GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF || GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF) \
       && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
 
