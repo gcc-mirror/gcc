@@ -51,15 +51,25 @@ host_subdir = @host_subdir@
 GCC_DIR=../../$(host_subdir)/gcc
 include $(GCC_DIR)/libgcc.mvars
 
+target_noncanonical:=@target_noncanonical@
+version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)
+
 # exeext should not be used because it's the *host* exeext.  We're building
 # a *target* library, aren't we?!?  Likewise for CC.  Still, provide bogus
 # definitions just in case something slips through the safety net provided
 # by recursive make invocations in gcc/ada/Makefile.in
-FLAGS_TO_PASS = \
+LIBADA_FLAGS_TO_PASS = \
         "MAKEOVERRIDES=" \
         "LDFLAGS=$(LDFLAGS)" \
         "LN_S=$(LN_S)" \
         "SHELL=$(SHELL)" \
+        "GNATLIBFLAGS=$(GNATLIBFLAGS)" \
+        "GNATLIBCFLAGS=$(GNATLIBCFLAGS)" \
+        "TARGET_LIBGCC2_CFLAGS=$(TARGET_LIBGCC2_CFLAGS)" \
+        "THREAD_KIND=$(THREAD_KIND)" \
+        "TRACE=$(TRACE)" \
+        "libsubdir=$(libsubdir)" \
         "objext=$(objext)" \
         "prefix=$(prefix)" \
         "exeext=.exeext.should.not.be.used " \
@@ -73,29 +83,19 @@ gnatlib: @default_gnatlib_target@
 
 gnatlib-plain: oscons $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib \
+	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) gnatlib \
 	&& touch stamp-libada
 
 gnatlib-sjlj gnatlib-zcx gnatlib-shared: oscons $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  $@ \
+	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) $@ \
 	&& touch stamp-libada
 
 oscons:
-	$(MAKE) -C $(GCC_DIR) THREAD_KIND="$(THREAD_KIND)" \
-	  $(FLAGS_TO_PASS) ada/s-oscons.ads
+	$(MAKE) -C $(GCC_DIR) $(LIBADA_FLAGS_TO_PASS) ada/s-oscons.ads
+
+install-gnatlib: $(GCC_DIR)/ada/Makefile
+	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) install-gnatlib
 
 # Check uninstalled version.
 check:
