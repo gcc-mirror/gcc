@@ -1868,14 +1868,14 @@ insert_init_stmt (basic_block bb, gimple init_stmt)
   i = gsi_start (seq);
   gimple_regimplify_operands (init_stmt, &i);
 
-  if (gimple_in_ssa_p (cfun)
-      && init_stmt
+  if (init_stmt
       && !gimple_seq_empty_p (seq))
     {
       /* The replacement can expose previously unreferenced
 	 variables.  */
-      for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
-	find_new_referenced_vars (gsi_stmt (i));
+      if (gimple_in_ssa_p (cfun))
+        for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+	  find_new_referenced_vars (gsi_stmt (i));
 
       /* Insert the gimplified sequence needed for INIT_STMT
 	 after SI.  INIT_STMT will be inserted after SEQ.  */
