@@ -1,5 +1,8 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (add_bound_info): If lookup_decl_die failed, try
+	loc_descriptor_from_tree_1.
+
 	PR fortran/29635
 	PR fortran/23057
 	* debug.h (struct gcc_debug_hooks): Add NAME and CHILD

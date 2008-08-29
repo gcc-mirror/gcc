@@ -1,5 +1,8 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* trans-decl.c (gfc_build_qualified_array): Build non-flat
+	array type for debug info purposes.
+
 	PR fortran/29635
 	PR fortran/23057
 	* f95-lang.c (gfc_init_ts): New function.
