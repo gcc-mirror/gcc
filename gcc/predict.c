@@ -270,7 +270,7 @@ optimize_loop_nest_for_speed_p (struct loop *loop)
   if (optimize_loop_for_speed_p (loop))
     return true;
   l = loop->inner;
-  while (l != loop)
+  while (l && l != loop)
     {
       if (optimize_loop_for_speed_p (l))
         return true;
