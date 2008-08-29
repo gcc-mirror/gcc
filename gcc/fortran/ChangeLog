@@ -1,3 +1,7 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+	
+	* parse.c (parse_interface): Likewise.
+
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans.h (struct lang_type): Add span.

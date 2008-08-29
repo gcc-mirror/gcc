@@ -2064,7 +2064,7 @@ static gfc_statement parse_spec (gfc_statement);
 static void
 parse_interface (void)
 {
-  gfc_compile_state new_state, current_state;
+  gfc_compile_state new_state = COMP_NONE, current_state;
   gfc_symbol *prog_unit, *sym;
   gfc_interface_info save;
   gfc_state_data s1, s2;
