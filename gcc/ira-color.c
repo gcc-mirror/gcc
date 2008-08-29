@@ -926,6 +926,7 @@ push_allocnos_to_stack (void)
   int cost;
 
   /* Initialize.  */
+  VEC_truncate(ira_allocno_t, removed_splay_allocno_vec, 0);
   for (i = 0; i < ira_reg_class_cover_size; i++)
     {
       cover_class = ira_reg_class_cover[i];
