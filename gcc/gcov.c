@@ -361,6 +361,9 @@ main (int argc, char **argv)
 
   gcc_init_libintl ();
 
+  /* Handle response files.  */
+  expandargv (&argc, &argv);
+
   argno = process_args (argc, argv);
   if (optind == argc)
     print_usage (true);

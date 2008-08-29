@@ -1,3 +1,7 @@
+2008-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* gcov.c (main): Call expandargv.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Check that loop
