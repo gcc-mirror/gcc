@@ -1,5 +1,16 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Check that loop
+	is not cold.
+	* predict.c (optimize_bb_for_size_p, optimize_bb_for_speed_p):
+	Constify arguments.
+	(optimize_loop_for_size_p, optimize_loop_for_speed_p): New functions.
+	* basic-block.h (optimize_bb_for_size_p, optimize_bb_for_speed_p):
+	Constify.
+	(optimize_loop_for_size_p, optimize_loop_for_speed_p): Declare.
+
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* tree-pass.h (pass_strip_predict_hints): Declare.
 	* predict.c (strip_builtin_expect): Rename to ...
 	(strip_predict_hints): ... this one; strip also GIMPLE_PREDICT.
