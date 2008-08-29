@@ -4485,7 +4485,7 @@ static void dwarf2out_end_block (unsigned, unsigned);
 static bool dwarf2out_ignore_block (const_tree);
 static void dwarf2out_global_decl (tree);
 static void dwarf2out_type_decl (tree, int);
-static void dwarf2out_imported_module_or_decl (tree, tree);
+static void dwarf2out_imported_module_or_decl (tree, tree, tree, bool);
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
 static void dwarf2out_begin_function (tree);
@@ -5115,7 +5115,7 @@ static void gen_decl_die (tree, dw_die_ref);
 static dw_die_ref force_decl_die (tree);
 static dw_die_ref force_type_die (tree);
 static dw_die_ref setup_namespace_context (tree, dw_die_ref);
-static void declare_in_namespace (tree, dw_die_ref);
+static dw_die_ref declare_in_namespace (tree, dw_die_ref);
 static struct dwarf_file_data * lookup_filename (const char *);
 static void retry_incomplete_types (void);
 static void gen_type_die_for_member (tree, tree, dw_die_ref);
@@ -7196,7 +7196,8 @@ is_symbol_die (dw_die_ref c)
   return (is_type_die (c)
 	  || (get_AT (c, DW_AT_declaration)
 	      && !get_AT (c, DW_AT_specification))
-	  || c->die_tag == DW_TAG_namespace);
+	  || c->die_tag == DW_TAG_namespace
+	  || c->die_tag == DW_TAG_module);
 }
 
 static char *
@@ -13519,29 +13520,49 @@ gen_variable_die (tree decl, dw_die_ref context_die)
   com_decl = fortran_common (decl, &off);
 
   /* Symbol in common gets emitted as a child of the common block, in the form
-     of a data member.
-
-     ??? This creates a new common block die for every common block symbol.
-     Better to share same common block die for all symbols in that block.  */
+     of a data member.  */
   if (com_decl)
     {
       tree field;
       dw_die_ref com_die;
-      const char *cnam = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (com_decl));
-      dw_loc_descr_ref loc = loc_descriptor_from_tree (com_decl);
 
+      if (lookup_decl_die (decl))
+	return;
       field = TREE_OPERAND (DECL_VALUE_EXPR (decl), 0);
-      var_die = new_die (DW_TAG_common_block, context_die, decl);
-      add_name_and_src_coords_attributes (var_die, field);
-      add_AT_flag (var_die, DW_AT_external, 1);
-      add_AT_loc (var_die, DW_AT_location, loc);
+      var_die = lookup_decl_die (com_decl);
+      if (var_die == NULL)
+	{
+	  const char *cnam
+	    = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (com_decl));
+	  dw_loc_descr_ref loc = loc_descriptor_from_tree (com_decl);
+
+	  var_die = new_die (DW_TAG_common_block, context_die, decl);
+	  add_name_and_src_coords_attributes (var_die, com_decl);
+	  add_AT_flag (var_die, DW_AT_external, 1);
+	  if (loc)
+	    add_AT_loc (var_die, DW_AT_location, loc);
+          else if (DECL_EXTERNAL (decl))
+	    add_AT_flag (var_die, DW_AT_declaration, 1);
+	  add_pubname_string (cnam, var_die); /* ??? needed? */
+	  equate_decl_number_to_die (com_decl, var_die);
+	}
+      else if (get_AT (var_die, DW_AT_location) == NULL)
+	{
+	  dw_loc_descr_ref loc = loc_descriptor_from_tree (com_decl);
+
+	  if (loc)
+	    {
+	      add_AT_loc (var_die, DW_AT_location, loc);
+	      remove_AT (var_die, DW_AT_declaration);
+	    }
+	}
       com_die = new_die (DW_TAG_member, var_die, decl);
       add_name_and_src_coords_attributes (com_die, decl);
       add_type_attribute (com_die, TREE_TYPE (decl), TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
       add_AT_loc (com_die, DW_AT_data_member_location,
 		  int_loc_descriptor (off));
-      add_pubname_string (cnam, var_die); /* ??? needed? */
+      equate_decl_number_to_die (decl, com_die);
       return;
     }
 
@@ -14306,7 +14327,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	}
       else
 	{
-	  declare_in_namespace (type, context_die);
+	  context_die = declare_in_namespace (type, context_die);
 	  need_pop = 0;
 	}
 
@@ -14678,29 +14699,32 @@ setup_namespace_context (tree thing, dw_die_ref context_die)
    For compatibility with older debuggers, namespace DIEs only contain
    declarations; all definitions are emitted at CU scope.  */
 
-static void
+static dw_die_ref
 declare_in_namespace (tree thing, dw_die_ref context_die)
 {
   dw_die_ref ns_context;
 
   if (debug_info_level <= DINFO_LEVEL_TERSE)
-    return;
+    return context_die;
 
   /* If this decl is from an inlined function, then don't try to emit it in its
      namespace, as we will get confused.  It would have already been emitted
      when the abstract instance of the inline function was emitted anyways.  */
   if (DECL_P (thing) && DECL_ABSTRACT_ORIGIN (thing))
-    return;
+    return context_die;
 
   ns_context = setup_namespace_context (thing, context_die);
 
   if (ns_context != context_die)
     {
+      if (is_fortran ())
+	return ns_context;
       if (DECL_P (thing))
 	gen_decl_die (thing, ns_context);
       else
 	gen_type_die (thing, ns_context);
     }
+  return context_die;
 }
 
 /* Generate a DIE for a namespace or namespace alias.  */
@@ -14716,8 +14740,11 @@ gen_namespace_die (tree decl)
     {
       /* Output a real namespace.  */
       dw_die_ref namespace_die
-	= new_die (DW_TAG_namespace, context_die, decl);
+	= new_die (is_fortran () ? DW_TAG_module : DW_TAG_namespace,
+		   context_die, decl);
       add_name_and_src_coords_attributes (namespace_die, decl);
+      if (DECL_EXTERNAL (decl))
+	add_AT_flag (namespace_die, DW_AT_declaration, 1);
       equate_decl_number_to_die (decl, namespace_die);
     }
   else
@@ -14807,7 +14834,7 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 	    gen_type_die_for_member (origin, decl, context_die);
 
 	  /* And its containing namespace.  */
-	  declare_in_namespace (decl, context_die);
+	  context_die = declare_in_namespace (decl, context_die);
 	}
 
       /* Now output a DIE to represent the function itself.  */
@@ -14852,16 +14879,6 @@ gen_decl_die (tree decl, dw_die_ref context_die)
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	break;
 
-      /* If this is the global definition of the Fortran COMMON block, we don't
-         need to do anything.  Syntactically, the block itself has no identity,
-         just its constituent identifiers.  */
-      if (TREE_CODE (decl) == VAR_DECL
-          && TREE_PUBLIC (decl)
-          && TREE_STATIC (decl)
-          && is_fortran ()
-          && !DECL_HAS_VALUE_EXPR_P (decl))
-        break;
-
       /* Output any DIEs that are needed to specify the type of this data
 	 object.  */
       if (TREE_CODE (decl) == RESULT_DECL && DECL_BY_REFERENCE (decl))
@@ -14875,7 +14892,7 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 	gen_type_die_for_member (origin, decl, context_die);
 
       /* And its containing namespace.  */
-      declare_in_namespace (decl, context_die);
+      context_die = declare_in_namespace (decl, context_die);
 
       /* Now output the DIE to represent the data object itself.  This gets
 	 complicated because of the possibility that the VAR_DECL really
@@ -14928,15 +14945,7 @@ dwarf2out_global_decl (tree decl)
   /* Output DWARF2 information for file-scope tentative data object
      declarations, file-scope (extern) function declarations (which
      had no corresponding body) and file-scope tagged type declarations
-     and definitions which have not yet been forced out.
-
-     Ignore the global decl of any Fortran COMMON blocks which also
-     wind up here though they have already been described in the local
-     scope for the procedures using them.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && TREE_PUBLIC (decl) && TREE_STATIC (decl) && is_fortran ())
-    return;
-
+     and definitions which have not yet been forced out.  */
   if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
     dwarf2out_decl (decl);
 }
@@ -14950,10 +14959,14 @@ dwarf2out_type_decl (tree decl, int local)
     dwarf2out_decl (decl);
 }
 
-/* Output debug information for imported module or decl.  */
+/* Output debug information for imported module or decl DECL.
+   NAME is non-NULL name in context if the decl has been renamed.
+   CHILD is true if decl is one of the renamed decls as part of
+   importing whole module.  */
 
 static void
-dwarf2out_imported_module_or_decl (tree decl, tree context)
+dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
+				   bool child)
 {
   dw_die_ref imported_die, at_import_die;
   dw_die_ref scope_die;
@@ -14975,6 +14988,14 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
       && !should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
     return;
   scope_die = get_context_die (context);
+
+  if (child)
+    {
+      gcc_assert (scope_die->die_child);
+      gcc_assert (scope_die->die_child->die_tag == DW_TAG_imported_module);
+      gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
+      scope_die = scope_die->die_child;
+    }
 
   /* For TYPE_DECL or CONST_DECL, lookup TREE_TYPE.  */
   if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
@@ -15026,6 +15047,8 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   xloc = expand_location (input_location);
   add_AT_file (imported_die, DW_AT_decl_file, lookup_filename (xloc.file));
   add_AT_unsigned (imported_die, DW_AT_decl_line, xloc.line);
+  if (name)
+    add_AT_string (imported_die, DW_AT_name, IDENTIFIER_POINTER (name));
   add_AT_die_ref (imported_die, DW_AT_import, at_import_die);
 }
 

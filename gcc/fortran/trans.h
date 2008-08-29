@@ -429,6 +429,16 @@ void gfc_generate_block_data (gfc_namespace *);
 /* Output a decl for a module variable.  */
 void gfc_generate_module_vars (gfc_namespace *);
 
+struct module_htab_entry GTY(())
+{
+  const char *name;
+  tree namespace_decl;
+  htab_t GTY ((param_is (union tree_node))) decls;
+};
+
+struct module_htab_entry *gfc_find_module (const char *);
+void gfc_module_add_decl (struct module_htab_entry *, tree);
+
 /* Get and set the current location.  */
 void gfc_set_backend_locus (locus *);
 void gfc_get_backend_locus (locus *);

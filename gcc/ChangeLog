@@ -1,3 +1,34 @@
+2008-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29635
+	PR fortran/23057
+	* debug.h (struct gcc_debug_hooks): Add NAME and CHILD
+	arguments to imported_module_or_decl.
+	(debug_nothing_tree_tree): Removed.
+	(debug_nothing_tree_tree_tree_bool): New prototype.
+	* debug.c (do_nothing_debug_hooks): Adjust.
+	(debug_nothing_tree_tree): Removed.
+	(debug_nothing_tree_tree_tree_bool): New function.
+	* dwarf2out.c (is_symbol_die): Handle DW_TAG_module.
+	(gen_variable_die): Put all common vars for the
+	same COMMON block under one DW_TAG_common_block.
+	(declare_in_namespace): Return new context_die, for Fortran
+	return the module DIE instead of adding extra declarations into
+	the namespace.
+	(gen_type_die_with_usage): Adjust declare_in_namespace caller.
+	(gen_namespace_die): If is_fortran (), generate DW_TAG_module
+	instead of DW_TAG_namespace.  If DECL_EXTERNAL is set, add
+	DW_AT_declaration.
+	(dwarf2out_global_decl): Don't skip Fortran global vars.
+	(gen_decl_die): Likewise.  Adjust declare_in_namespace callers.
+	(dwarf2out_imported_module_or_decl): Add NAME and CHILD arguments.
+	If NAME is non-NULL, add DW_AT_name.  If CHILD is non-NULL, put
+	DW_TAG_imported_declaration as child of previous
+	DW_TAG_imported_module.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Adjust.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Do not remove nested nodes.

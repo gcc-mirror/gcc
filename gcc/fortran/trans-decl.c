@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "flags.h"
 #include "cgraph.h"
+#include "debug.h"
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -994,7 +995,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      This is done here rather than in gfc_finish_var_decl because it
      is different for string length variables.  */
   if (sym->module)
-    SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_identifier (sym));
+    {
+      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_identifier (sym));
+      if (sym->attr.use_assoc)
+	DECL_IGNORED_P (decl) = 1;
+    }
 
   if (sym->attr.dimension)
     {
@@ -1300,7 +1305,9 @@ build_function_decl (gfc_symbol * sym)
 
   /* Allow only one nesting level.  Allow public declarations.  */
   gcc_assert (current_function_decl == NULL_TREE
-	  || DECL_CONTEXT (current_function_decl) == NULL_TREE);
+	      || DECL_CONTEXT (current_function_decl) == NULL_TREE
+	      || TREE_CODE (DECL_CONTEXT (current_function_decl))
+		 == NAMESPACE_DECL);
 
   type = gfc_get_function_type (sym);
   fndecl = build_decl (FUNCTION_DECL, gfc_sym_identifier (sym), type);
@@ -2922,6 +2929,88 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
   return gfc_finish_block (&body);
 }
 
+static GTY ((param_is (struct module_htab_entry))) htab_t module_htab;
+
+/* Hash and equality functions for module_htab.  */
+
+static hashval_t
+module_htab_do_hash (const void *x)
+{
+  return htab_hash_string (((const struct module_htab_entry *)x)->name);
+}
+
+static int
+module_htab_eq (const void *x1, const void *x2)
+{
+  return strcmp ((((const struct module_htab_entry *)x1)->name),
+		 (const char *)x2) == 0;
+}
+
+/* Hash and equality functions for module_htab's decls.  */
+
+static hashval_t
+module_htab_decls_hash (const void *x)
+{
+  const_tree t = (const_tree) x;
+  const_tree n = DECL_NAME (t);
+  if (n == NULL_TREE)
+    n = TYPE_NAME (TREE_TYPE (t));
+  return htab_hash_string (IDENTIFIER_POINTER (n));
+}
+
+static int
+module_htab_decls_eq (const void *x1, const void *x2)
+{
+  const_tree t1 = (const_tree) x1;
+  const_tree n1 = DECL_NAME (t1);
+  if (n1 == NULL_TREE)
+    n1 = TYPE_NAME (TREE_TYPE (t1));
+  return strcmp (IDENTIFIER_POINTER (n1), (const char *) x2) == 0;
+}
+
+struct module_htab_entry *
+gfc_find_module (const char *name)
+{
+  void **slot;
+
+  if (! module_htab)
+    module_htab = htab_create_ggc (10, module_htab_do_hash,
+				   module_htab_eq, NULL);
+
+  slot = htab_find_slot_with_hash (module_htab, name,
+				   htab_hash_string (name), INSERT);
+  if (*slot == NULL)
+    {
+      struct module_htab_entry *entry = GGC_CNEW (struct module_htab_entry);
+
+      entry->name = gfc_get_string (name);
+      entry->decls = htab_create_ggc (10, module_htab_decls_hash,
+				      module_htab_decls_eq, NULL);
+      *slot = (void *) entry;
+    }
+  return (struct module_htab_entry *) *slot;
+}
+
+void
+gfc_module_add_decl (struct module_htab_entry *entry, tree decl)
+{
+  void **slot;
+  const char *name;
+
+  if (DECL_NAME (decl))
+    name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  else
+    {
+      gcc_assert (TREE_CODE (decl) == TYPE_DECL);
+      name = IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl)));
+    }
+  slot = htab_find_slot_with_hash (entry->decls, name,
+				   htab_hash_string (name), INSERT);
+  if (*slot == NULL)
+    *slot = (void *) decl;
+}
+
+static struct module_htab_entry *cur_module;
 
 /* Output an initialized decl for a module variable.  */
 
@@ -2941,12 +3030,37 @@ gfc_create_module_variable (gfc_symbol * sym)
       && sym->ts.type == BT_DERIVED)
     sym->backend_decl = gfc_typenode_for_spec (&(sym->ts));
 
+  if (sym->attr.flavor == FL_DERIVED
+      && sym->backend_decl
+      && TREE_CODE (sym->backend_decl) == RECORD_TYPE)
+    {
+      decl = sym->backend_decl;
+      gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
+      gcc_assert (TYPE_CONTEXT (decl) == NULL_TREE
+		  || TYPE_CONTEXT (decl) == sym->ns->proc_name->backend_decl);
+      gcc_assert (DECL_CONTEXT (TYPE_STUB_DECL (decl)) == NULL_TREE
+		  || DECL_CONTEXT (TYPE_STUB_DECL (decl))
+		     == sym->ns->proc_name->backend_decl);
+      TYPE_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
+      DECL_CONTEXT (TYPE_STUB_DECL (decl)) = sym->ns->proc_name->backend_decl;
+      gfc_module_add_decl (cur_module, TYPE_STUB_DECL (decl));
+    }
+
   /* Only output variables and array valued, or derived type,
      parameters.  */
   if (sym->attr.flavor != FL_VARIABLE
 	&& !(sym->attr.flavor == FL_PARAMETER
 	       && (sym->attr.dimension || sym->ts.type == BT_DERIVED)))
     return;
+
+  if ((sym->attr.in_common || sym->attr.in_equivalence) && sym->backend_decl)
+    {
+      decl = sym->backend_decl;
+      gcc_assert (DECL_CONTEXT (decl) == NULL_TREE);
+      gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
+      DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
+      gfc_module_add_decl (cur_module, decl);
+    }
 
   /* Don't generate variables from other modules. Variables from
      COMMONs will already have been generated.  */
@@ -2955,8 +3069,8 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   /* Equivalenced variables arrive here after creation.  */
   if (sym->backend_decl
-	&& (sym->equiv_built || sym->attr.in_equivalence))
-      return;
+      && (sym->equiv_built || sym->attr.in_equivalence))
+    return;
 
   if (sym->backend_decl)
     internal_error ("backend decl for module variable %s already exists",
@@ -2969,7 +3083,11 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   /* Create the variable.  */
   pushdecl (decl);
+  gcc_assert (DECL_CONTEXT (decl) == NULL_TREE);
+  gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
+  DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
+  gfc_module_add_decl (cur_module, decl);
 
   /* Also add length of strings.  */
   if (sym->ts.type == BT_CHARACTER)
@@ -2992,6 +3110,7 @@ void
 gfc_generate_module_vars (gfc_namespace * ns)
 {
   module_namespace = ns;
+  cur_module = gfc_find_module (ns->proc_name->name);
 
   /* Check if the frontend left the namespace in a reasonable state.  */
   gcc_assert (ns->proc_name && !ns->proc_name->tlink);
@@ -3001,6 +3120,79 @@ gfc_generate_module_vars (gfc_namespace * ns)
 
   /* Create decls for all the module variables.  */
   gfc_traverse_ns (ns, gfc_create_module_variable);
+
+  cur_module = NULL;
+}
+
+static void
+gfc_trans_use_stmts (gfc_namespace * ns)
+{
+  gfc_use_list *use_stmt;
+  for (use_stmt = ns->use_stmts; use_stmt; use_stmt = use_stmt->next)
+    {
+      struct module_htab_entry *entry
+	= gfc_find_module (use_stmt->module_name);
+      gfc_use_rename *rent;
+
+      if (entry->namespace_decl == NULL)
+	{
+	  entry->namespace_decl
+	    = build_decl (NAMESPACE_DECL,
+			  get_identifier (use_stmt->module_name),
+			  void_type_node);
+	  DECL_EXTERNAL (entry->namespace_decl) = 1;
+	}
+      if (!use_stmt->only_flag)
+	(*debug_hooks->imported_module_or_decl) (entry->namespace_decl,
+						 NULL_TREE,
+						 ns->proc_name->backend_decl,
+						 false);
+      for (rent = use_stmt->rename; rent; rent = rent->next)
+	{
+	  tree decl, local_name;
+	  void **slot;
+
+	  if (rent->op != INTRINSIC_NONE)
+	    continue;
+
+	  slot = htab_find_slot_with_hash (entry->decls, rent->use_name,
+					   htab_hash_string (rent->use_name),
+					   INSERT);
+	  if (*slot == NULL)
+	    {
+	      gfc_symtree *st;
+
+	      st = gfc_find_symtree (ns->sym_root,
+				     rent->local_name[0]
+				     ? rent->local_name : rent->use_name);
+	      gcc_assert (st && st->n.sym->attr.use_assoc);
+	      if (st->n.sym->backend_decl && DECL_P (st->n.sym->backend_decl))
+		{
+		  gcc_assert (DECL_EXTERNAL (entry->namespace_decl));
+		  decl = copy_node (st->n.sym->backend_decl);
+		  DECL_CONTEXT (decl) = entry->namespace_decl;
+		  DECL_EXTERNAL (decl) = 1;
+		  DECL_IGNORED_P (decl) = 0;
+		  DECL_INITIAL (decl) = NULL_TREE;
+		}
+	      else
+		{
+		  *slot = error_mark_node;
+		  htab_clear_slot (entry->decls, slot);
+		  continue;
+		}
+	      *slot = decl;
+	    }
+	  decl = (tree) *slot;
+	  if (rent->local_name[0])
+	    local_name = get_identifier (rent->local_name);
+	  else
+	    local_name = NULL_TREE;
+	  (*debug_hooks->imported_module_or_decl) (decl, local_name,
+						   ns->proc_name->backend_decl,
+						   !use_stmt->only_flag);
+	}
+    }
 }
 
 static void
@@ -3533,6 +3725,8 @@ gfc_generate_function_code (gfc_namespace * ns)
       gfc_gimplify_function (fndecl);
       cgraph_finalize_function (fndecl, false);
     }
+
+  gfc_trans_use_stmts (ns);
 }
 
 void
@@ -3624,6 +3818,7 @@ gfc_generate_block_data (gfc_namespace * ns)
   decl = build_decl (VAR_DECL, id, gfc_array_index_type);
   TREE_PUBLIC (decl) = 1;
   TREE_STATIC (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
 
   pushdecl (decl);
   rest_of_decl_compilation (decl, 1, 0);

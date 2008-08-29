@@ -1132,6 +1132,35 @@ gfc_entry_list;
 #define gfc_get_entry_list() \
   (gfc_entry_list *) gfc_getmem(sizeof(gfc_entry_list))
 
+/* Lists of rename info for the USE statement.  */
+
+typedef struct gfc_use_rename
+{
+  char local_name[GFC_MAX_SYMBOL_LEN + 1], use_name[GFC_MAX_SYMBOL_LEN + 1];
+  struct gfc_use_rename *next;
+  int found;
+  gfc_intrinsic_op op;
+  locus where;
+}
+gfc_use_rename;
+
+#define gfc_get_use_rename() XCNEW (gfc_use_rename);
+
+/* A list of all USE statements in a namespace.  */
+
+typedef struct gfc_use_list
+{
+  const char *module_name;
+  int only_flag;
+  struct gfc_use_rename *rename;
+  /* Next USE statement.  */
+  struct gfc_use_list *next;
+}
+gfc_use_list;
+
+#define gfc_get_use_list() \
+  (gfc_use_list *) gfc_getmem(sizeof(gfc_use_list))
+
 /* Within a namespace, symbols are pointed to by symtree nodes that
    are linked together in a balanced binary tree.  There can be
    several symtrees pointing to the same symbol node via USE
@@ -1231,6 +1260,9 @@ typedef struct gfc_namespace
 
   /* A list of all alternate entry points to this procedure (or NULL).  */
   gfc_entry_list *entries;
+
+  /* A list of USE statements in this namespace.  */
+  gfc_use_list *use_stmts;
 
   /* Set to 1 if namespace is a BLOCK DATA program unit.  */
   int is_block_data;
@@ -2472,6 +2504,7 @@ void gfc_module_init_2 (void);
 void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
 bool gfc_check_access (gfc_access, gfc_access);
+void gfc_free_use_stmts (gfc_use_list *);
 
 /* primary.c */
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
