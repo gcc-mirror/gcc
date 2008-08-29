@@ -138,6 +138,27 @@ maybe_hot_bb_p (const_basic_block bb)
   return maybe_hot_frequency_p (bb->frequency);
 }
 
+/* Return true if the call can be hot.  */
+
+bool
+cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
+{
+  if (profile_info && flag_branch_probabilities
+      && (edge->count
+	  <= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
+    return false;
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (edge->callee->decl))
+      || lookup_attribute ("cold", DECL_ATTRIBUTES (edge->caller->decl)))
+    return false;
+  if (lookup_attribute ("hot", DECL_ATTRIBUTES (edge->caller->decl)))
+    return true;
+  if (flag_guess_branch_prob
+      && edge->frequency < (CGRAPH_FREQ_MAX
+      			    / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
+    return false;
+  return true;
+}
+
 /* Return true in case BB can be CPU intensive and should be optimized
    for maximal performance.  */
 

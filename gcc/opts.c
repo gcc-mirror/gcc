@@ -347,7 +347,7 @@ static bool profile_arc_flag_set, flag_profile_values_set;
 static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
-static bool flag_inline_functions_set;
+static bool flag_inline_functions_set, flag_ipa_cp_set, flag_ipa_cp_clone_set;
 
 /* Functions excluded from profiling.  */
 
@@ -1031,9 +1031,6 @@ decode_options (unsigned int argc, const char **argv)
 
       /* We want to crossjump as much as possible.  */
       set_param_value ("min-crossjump-insns", 1);
-
-      /* Do not perform clonning in ipcp.  */
-      flag_ipa_cp_clone = 0;
     }
   else
     set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);
@@ -1837,6 +1834,11 @@ common_handle_option (size_t scode, const char *arg, int value,
         flag_value_profile_transformations = value;
       if (!flag_inline_functions_set)
         flag_inline_functions = value;
+      if (!flag_ipa_cp_set)
+        flag_ipa_cp = value;
+      if (!flag_ipa_cp_clone_set
+	  && value && flag_ipa_cp)
+	flag_ipa_cp_clone = value;
       break;
 
     case OPT_fprofile_generate_:
@@ -1992,6 +1994,14 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_ftracer:
       flag_tracer_set = true;
+      break;
+
+    case OPT_fipa_cp:
+      flag_ipa_cp_set = true;
+      break;
+
+    case OPT_fipa_cp_clone:
+      flag_ipa_cp_clone_set = true;
       break;
 
     case OPT_funroll_loops:

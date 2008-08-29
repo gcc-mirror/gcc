@@ -135,6 +135,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "fibheap.h"
 #include "params.h"
 
+/* Number of functions identified as candidates for cloning. When not cloning
+   we can simplify iterate stage not forcing it to go through the decision
+   on what is profitable and what not.  */
+static int n_cloning_candidates;
+
+/* Maximal count found in program.  */
+static gcov_type max_count;
+
+/* Cgraph nodes that has been completely replaced by cloning during iterate
+ * stage and will be removed after ipcp is finished.  */
+static bitmap dead_nodes;
+
+static void ipcp_print_profile_data (FILE *);
+static void ipcp_function_scale_print (FILE *);
+
 /* Get the original node field of ipa_node_params associated with node NODE.  */
 static inline struct cgraph_node *
 ipcp_get_orig_node (struct cgraph_node *node)
@@ -174,7 +189,7 @@ ipcp_analyze_node (struct cgraph_node *node)
 }
 
 /* Recompute all local information since node might've got new
-   direct calls after clonning.  */
+   direct calls after cloning.  */
 static void
 ipcp_update_cloned_node (struct cgraph_node *new_node)
 {
@@ -337,7 +352,7 @@ ipcp_print_all_lattices (FILE * f)
   struct cgraph_node *node;
   int i, count;
 
-  fprintf (f, "\nLATTICE PRINT\n");
+  fprintf (f, "\nLattice:\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
       struct ipa_node_params *info;
@@ -345,13 +360,13 @@ ipcp_print_all_lattices (FILE * f)
       if (!node->analyzed)
 	continue;
       info = IPA_NODE_REF (node);
-      fprintf (f, "Printing lattices %s:\n", cgraph_node_name (node));
+      fprintf (f, "  Node: %s:\n", cgraph_node_name (node));
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
 
-	  fprintf (f, " param [%d]: ", i);
+	  fprintf (f, "    param [%d]: ", i);
 	  if (lat->type == IPA_CONST_VALUE)
 	    {
 	      fprintf (f, "type is CONST ");
@@ -366,6 +381,100 @@ ipcp_print_all_lattices (FILE * f)
     }
 }
 
+/* Return true if this NODE is viable candidate for cloning.  */
+static bool
+ipcp_cloning_candidate_p (struct cgraph_node *node)
+{
+  int n_calls = 0;
+  int n_hot_calls = 0;
+  gcov_type direct_call_sum = 0;
+  struct cgraph_edge *e;
+
+  /* We never clone functions that are not visible from outside.
+     FIXME: in future we should clone such functions when they are called with
+     different constants, but current ipcp implementation is not good on this.
+     */
+  if (!node->needed || !node->analyzed)
+    return false;
+
+  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; body is overwrittable.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+  if (!tree_versionable_function_p (node->decl))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; body is not versionable.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      direct_call_sum += e->count;
+      n_calls ++;
+      if (cgraph_maybe_hot_edge_p (e))
+	n_hot_calls ++;
+    }
+  
+  if (!n_calls)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; no direct calls.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+  if (node->local.inline_summary.self_insns < n_calls)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Considering %s for cloning; code would shrink.\n",
+ 	         cgraph_node_name (node));
+      return true;
+    }  
+
+  if (!flag_ipa_cp_clone)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; -fipa-cp-clone disabled.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+
+  if (!optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; optimizing it for size.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+
+  /* When profile is available and function is hot, propagate into it even if
+     calls seems cold; constant propagation can improve function's speed
+     significandly.  */
+  if (max_count)
+    {
+      if (direct_call_sum > node->count * 90 / 100)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Considering %s for cloning; usually called directly.\n",
+		     cgraph_node_name (node));
+	  return true;
+        }
+    }
+  if (!n_hot_calls)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not considering %s for cloning; no hot calls.\n",
+		 cgraph_node_name (node));
+    }
+  if (dump_file)
+    fprintf (dump_file, "Considering %s for cloning.\n",
+	     cgraph_node_name (node));
+  return true;
+}
+
 /* Initialize ipcp_lattices array.  The lattices corresponding to supported
    types (integers, real types and Fortran constants defined as const_decls)
    are initialized to IPA_TOP, the rest of them to IPA_BOTTOM.  */
@@ -374,18 +483,24 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 {
   int i;
   struct ipa_node_params *info = IPA_NODE_REF (node);
+  enum ipa_lattice_type type;
 
   info->ipcp_lattices = XCNEWVEC (struct ipcp_lattice,
 				  ipa_get_param_count (info));
   
+  if (ipa_is_called_with_var_arguments (info))
+    type = IPA_BOTTOM;
+  else if (!node->needed)
+    type = IPA_TOP;
   /* When cloning is allowed, we can assume that externally visible functions
      are not called.  We will compensate this by cloning later.  */
-  if (flag_ipa_cp_clone || !node->needed)
-    for (i = 0; i < ipa_get_param_count (info) ; i++)
-      ipcp_get_ith_lattice (info, i)->type = IPA_TOP;
+  else if (ipcp_cloning_candidate_p (node))
+    type = IPA_TOP, n_cloning_candidates ++;
   else
-    for (i = 0; i < ipa_get_param_count (info) ; i++)
-      ipcp_get_ith_lattice (info, i)->type = IPA_BOTTOM;
+    type = IPA_BOTTOM;
+
+  for (i = 0; i < ipa_get_param_count (info) ; i++)
+    ipcp_get_ith_lattice (info, i)->type = type;
 }
 
 /* build INTEGER_CST tree with type TREE_TYPE and value according to LAT.
@@ -438,11 +553,7 @@ ipcp_init_stage (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
-      {
-        ipcp_analyze_node (node);
-        ipcp_initialize_node_lattices (node);
-        ipcp_compute_node_scale (node);
-      }
+      ipcp_analyze_node (node);
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (!node->analyzed)
@@ -489,6 +600,13 @@ ipcp_change_tops_to_bottom (void)
 	  if (lat->type == IPA_TOP)
 	    {
 	      prop_again = true;
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Forcing param ");
+		  print_generic_expr (dump_file, ipa_get_ith_param (info, i), 0);
+		  fprintf (dump_file, " of node %s to bottom.\n",
+			   cgraph_node_name (node));
+		}
 	      lat->type = IPA_BOTTOM;
 	    }
 	}
@@ -512,6 +630,7 @@ ipcp_propagate_stage (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+
   /* Initialize worklist to contain all functions.  */
   wl = ipa_init_func_list ();
   while (wl)
@@ -550,11 +669,37 @@ ipcp_propagate_stage (void)
 static void
 ipcp_iterate_stage (void)
 {
+  struct cgraph_node *node;
+  n_cloning_candidates = 0;
+
+  if (dump_file)
+    fprintf (dump_file, "\nIPA iterate stage:\n\n");
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      ipcp_initialize_node_lattices (node);
+      ipcp_compute_node_scale (node);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      ipcp_print_all_lattices (dump_file);
+      ipcp_function_scale_print (dump_file);
+    }
+
   ipcp_propagate_stage ();
   if (ipcp_change_tops_to_bottom ())
     /* Some lattices have changed from IPA_TOP to IPA_BOTTOM.
        This change should be propagated.  */
-    ipcp_propagate_stage ();
+    {
+      gcc_assert (n_cloning_candidates);
+      ipcp_propagate_stage ();
+    }
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nIPA lattices after propagation:\n");
+      ipcp_print_all_lattices (dump_file);
+      if (dump_flags & TDF_DETAILS)
+        ipcp_print_profile_data (dump_file);
+    }
 }
 
 /* Check conditions to forbid constant insertion to function described by
@@ -708,17 +853,6 @@ ipcp_print_bb_profiles (FILE * f)
     }
 }
 
-/* Print all IPCP data structures to F.  */
-static void
-ipcp_print_all_structures (FILE * f)
-{
-  ipcp_print_all_lattices (f);
-  ipcp_function_scale_print (f);
-  ipa_print_all_tree_maps (f);
-  ipa_print_all_param_flags (f);
-  ipa_print_all_jump_functions (f);
-}
-
 /* Print profile info for all functions.  */
 static void
 ipcp_print_profile_data (FILE * f)
@@ -771,7 +905,7 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
   struct ipa_jump_func *jump_func;
   struct cgraph_node *node = cs->callee, *orig;
 
-  if (!flag_ipa_cp_clone)
+  if (!n_cloning_candidates)
     return false;
 
   if ((orig = ipcp_get_orig_node (node)) != NULL)
@@ -908,10 +1042,6 @@ ipcp_update_profiling (void)
     }
 }
 
-/* Maximal count found in program.  */
-static gcov_type max_count;
-bitmap dead_nodes;
-
 /* Return true if original clone needs to be preserved.  */
 static bool
 ipcp_need_original_clone_p (struct cgraph_node *node)
@@ -1008,6 +1138,8 @@ ipcp_insert_stage (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  if (dump_file)
+    fprintf (dump_file, "\nIPA insert stage:\n\n");
 
   dead_nodes = BITMAP_ALLOC (NULL);
 
@@ -1156,18 +1288,19 @@ ipcp_insert_stage (void)
 static unsigned int
 ipcp_driver (void)
 {
-  /* 2. Do the interprocedural propagation.  */
-  ipcp_iterate_stage ();
+  cgraph_remove_unreachable_nodes (true,dump_file);
   if (dump_file)
     {
-      fprintf (dump_file, "\nIPA structures after propagation:\n");
-      ipcp_print_all_structures (dump_file);
-      fprintf (dump_file, "\nProfiling info before insert stage:\n");
-      ipcp_print_profile_data (dump_file);
+      fprintf (dump_file, "\nIPA structures before propagation:\n");
+      if (dump_flags & TDF_DETAILS)
+        ipa_print_all_params (dump_file);
+      ipa_print_all_jump_functions (dump_file);
     }
+  /* 2. Do the interprocedural propagation.  */
+  ipcp_iterate_stage ();
   /* 3. Insert the constants found to the functions.  */
   ipcp_insert_stage ();
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\nProfiling info after insert stage:\n");
       ipcp_print_profile_data (dump_file);
@@ -1176,7 +1309,6 @@ ipcp_driver (void)
   free_all_ipa_structures_after_ipa_cp ();
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");
-  cgraph_remove_unreachable_nodes (true, NULL);
   return 0;
 }
 
@@ -1192,11 +1324,6 @@ ipcp_generate_summary (void)
   /* 1. Call the init stage to initialize 
      the ipa_node_params and ipa_edge_args structures.  */
   ipcp_init_stage ();
-  if (dump_file)
-    {
-      fprintf (dump_file, "\nIPA structures before propagation:\n");
-      ipcp_print_all_structures (dump_file);
-    }
 }
 
 /* Gate for IPCP optimization.  */
@@ -1221,7 +1348,8 @@ struct ipa_opt_pass pass_ipa_cp =
   PROP_trees,			/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func	/* todo_flags_finish */
+  TODO_dump_cgraph | TODO_dump_func |
+  TODO_remove_functions /* todo_flags_finish */
  },
  ipcp_generate_summary,			/* generate_summary */
  NULL,					/* write_summary */
