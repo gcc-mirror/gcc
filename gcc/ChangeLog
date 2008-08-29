@@ -1,5 +1,12 @@
 2008-08-29  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-opt/37251
+
+	* ira-color.c (push_allocnos_to_stack): Truncate
+	removed_splay_allocno_vec.
+
+2008-08-29  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-opt/37243
 	* ira-color (ira_fast_allocation): Don't assign hard registers to
 	global allocnos.
