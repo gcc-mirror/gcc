@@ -1,3 +1,8 @@
+2008-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (LEGITIMATE_CONSTANT_P): Treat LABEL_REFs in
+	the same way as SYMBOL_REFs.
+
 2008-08-28  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.md (<u>mulsidi3): Use a temporary register.
