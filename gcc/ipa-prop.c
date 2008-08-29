@@ -1057,6 +1057,10 @@ static void
 ipa_edge_removal_hook (struct cgraph_edge *cs,
 		       void *data __attribute__ ((unused)))
 {
+  /* During IPA-CP updating we can be called on not-yet analyze clones.  */
+  if (VEC_length (ipa_edge_args_t, ipa_edge_args_vector)
+      <= (unsigned)cs->uid)
+    return;
   ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
 }
 
