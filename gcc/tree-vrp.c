@@ -2058,10 +2058,13 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != TRUTH_OR_EXPR)
     {
       /* We can still do constant propagation here.  */
-      if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE
-	  && (op1 = op_with_constant_singleton_value_range (op1)) != NULL_TREE)
+      tree const_op0 = op_with_constant_singleton_value_range (op0);
+      tree const_op1 = op_with_constant_singleton_value_range (op1);
+      if (const_op0 || const_op1)
 	{
-	  tree tem = fold_binary (code, expr_type, op0, op1);
+	  tree tem = fold_binary (code, expr_type,
+				  const_op0 ? const_op0 : op0,
+				  const_op1 ? const_op1 : op1);
 	  if (tem
 	      && is_gimple_min_invariant (tem)
 	      && !is_overflow_infinity (tem))
