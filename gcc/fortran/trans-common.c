@@ -416,6 +416,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       if (!com->is_bind_c)
 	DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
       else
@@ -680,6 +681,8 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       TREE_PUBLIC (var_decl) = TREE_PUBLIC (decl);
       TREE_STATIC (var_decl) = TREE_STATIC (decl);
       TREE_USED (var_decl) = TREE_USED (decl);
+      if (s->sym->attr.use_assoc)
+	DECL_IGNORED_P (var_decl) = 1;
       if (s->sym->attr.target)
 	TREE_ADDRESSABLE (var_decl) = 1;
       /* This is a fake variable just for debugging purposes.  */

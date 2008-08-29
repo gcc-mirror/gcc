@@ -99,6 +99,7 @@ int global_bindings_p (void);
 static void clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static alias_set_type gfc_get_alias_set (tree);
+static void gfc_init_ts (void);
 
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
@@ -112,6 +113,7 @@ static alias_set_type gfc_get_alias_set (tree);
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #undef LANG_HOOKS_GET_ALIAS_SET
+#undef LANG_HOOKS_INIT_TS
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
@@ -134,10 +136,11 @@ static alias_set_type gfc_get_alias_set (tree);
 #define LANG_HOOKS_POST_OPTIONS		gfc_post_options
 #define LANG_HOOKS_PRINT_IDENTIFIER     gfc_print_identifier
 #define LANG_HOOKS_PARSE_FILE           gfc_be_parse_file
-#define LANG_HOOKS_MARK_ADDRESSABLE        gfc_mark_addressable
-#define LANG_HOOKS_TYPE_FOR_MODE           gfc_type_for_mode
-#define LANG_HOOKS_TYPE_FOR_SIZE           gfc_type_for_size
-#define LANG_HOOKS_GET_ALIAS_SET	   gfc_get_alias_set
+#define LANG_HOOKS_MARK_ADDRESSABLE	gfc_mark_addressable
+#define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
+#define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
+#define LANG_HOOKS_GET_ALIAS_SET	gfc_get_alias_set
+#define LANG_HOOKS_INIT_TS		gfc_init_ts
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
@@ -1188,6 +1191,16 @@ gfc_init_builtin_functions (void)
 
 #undef DEFINE_MATH_BUILTIN_C
 #undef DEFINE_MATH_BUILTIN
+
+static void
+gfc_init_ts (void)
+{
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
+}
 
 #include "gt-fortran-f95-lang.h"
 #include "gtype-fortran.h"

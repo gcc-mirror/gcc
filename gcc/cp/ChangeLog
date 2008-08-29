@@ -1,3 +1,10 @@
+2008-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29635
+	PR fortran/23057
+	* name-lookup.c (do_using_directive, cp_emit_debug_info_for_using):
+	Adjust debug_hooks->imported_module_or_decl callers.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* cp-gimplify.c (cp_gimplify_expr): Add PRED_CONTINUE heuristic.

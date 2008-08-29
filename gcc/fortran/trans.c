@@ -1209,6 +1209,19 @@ void
 gfc_generate_module_code (gfc_namespace * ns)
 {
   gfc_namespace *n;
+  struct module_htab_entry *entry;
+
+  gcc_assert (ns->proc_name->backend_decl == NULL);
+  ns->proc_name->backend_decl
+    = build_decl (NAMESPACE_DECL, get_identifier (ns->proc_name->name),
+		  void_type_node);
+  gfc_set_decl_location (ns->proc_name->backend_decl,
+			 &ns->proc_name->declared_at);
+  entry = gfc_find_module (ns->proc_name->name);
+  if (entry->namespace_decl)
+    /* Buggy sourcecode, using a module before defining it?  */
+    htab_empty (entry->decls);
+  entry->namespace_decl = ns->proc_name->backend_decl;
 
   gfc_generate_module_vars (ns);
 
@@ -1216,10 +1229,21 @@ gfc_generate_module_code (gfc_namespace * ns)
      sibling calls.  */
   for (n = ns->contained; n; n = n->sibling)
     {
+      gfc_entry_list *el;
+
       if (!n->proc_name)
         continue;
 
       gfc_create_function_decl (n);
+      gcc_assert (DECL_CONTEXT (n->proc_name->backend_decl) == NULL_TREE);
+      DECL_CONTEXT (n->proc_name->backend_decl) = ns->proc_name->backend_decl;
+      gfc_module_add_decl (entry, n->proc_name->backend_decl);
+      for (el = ns->entries; el; el = el->next)
+	{
+	  gcc_assert (DECL_CONTEXT (el->sym->backend_decl) == NULL_TREE);
+	  DECL_CONTEXT (el->sym->backend_decl) = ns->proc_name->backend_decl;
+	  gfc_module_add_decl (entry, el->sym->backend_decl);
+	}
     }
 
   for (n = ns->contained; n; n = n->sibling)

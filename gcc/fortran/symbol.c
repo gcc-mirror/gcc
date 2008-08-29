@@ -3023,6 +3023,7 @@ gfc_free_namespace (gfc_namespace *ns)
 
   gfc_free_equiv (ns->equiv);
   gfc_free_equiv_lists (ns->equiv_lists);
+  gfc_free_use_stmts (ns->use_stmts);
 
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
     gfc_free_interface (ns->op[i]);

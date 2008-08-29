@@ -3490,7 +3490,8 @@ do_using_directive (tree name_space)
 
   /* Emit debugging info.  */
   if (!processing_template_decl)
-    (*debug_hooks->imported_module_or_decl) (name_space, context);
+    (*debug_hooks->imported_module_or_decl) (name_space, NULL_TREE,
+					     context, false);
 }
 
 /* Deal with a using-directive seen by the parser.  Currently we only
@@ -5327,7 +5328,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   /* FIXME: Handle TEMPLATE_DECLs.  */
   for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))
     if (TREE_CODE (t) != TEMPLATE_DECL)
-      (*debug_hooks->imported_module_or_decl) (t, context);
+      (*debug_hooks->imported_module_or_decl) (t, NULL_TREE, context, false);
 }
 
 #include "gt-cp-name-lookup.h"
