@@ -1496,12 +1496,15 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
     TREE_MAP is a mapping of tree nodes we want to replace with
     new ones (according to results of prior analysis).
     OLD_VERSION_NODE is the node that is versioned.
-    It returns the new version's cgraph node.  */
+    It returns the new version's cgraph node. 
+    ARGS_TO_SKIP lists arguments to be omitted from functions
+    */
 
 struct cgraph_node *
 cgraph_function_versioning (struct cgraph_node *old_version_node,
 			    VEC(cgraph_edge_p,heap) *redirect_callers,
-			    varray_type tree_map)
+			    varray_type tree_map,
+			    bitmap args_to_skip)
 {
   tree old_decl = old_version_node->decl;
   struct cgraph_node *new_version_node = NULL;
@@ -1512,7 +1515,10 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   /* Make a new FUNCTION_DECL tree node for the
      new version. */
-  new_decl = copy_node (old_decl);
+  if (!args_to_skip)
+    new_decl = copy_node (old_decl);
+  else
+    new_decl = build_function_decl_skip_args (old_decl, args_to_skip);
 
   /* Create the new version's call-graph node.
      and update the edges of the new node. */
@@ -1521,7 +1527,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 				     redirect_callers);
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (old_decl, new_decl, tree_map, false);
+  tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip);
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);
 
@@ -1560,7 +1566,7 @@ save_inline_function_body (struct cgraph_node *node)
   gcc_assert (first_clone == cgraph_node (first_clone->decl));
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->decl, first_clone->decl, NULL, true);
+  tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL);
 
   DECL_EXTERNAL (first_clone->decl) = 0;
   DECL_ONE_ONLY (first_clone->decl) = 0;

@@ -1,5 +1,29 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* tree.c (build_function_type_skip_args, build_function_decl_skip_args):
+	New functions.
+	* tree.h (build_function_type_skip_args, build_function_decl_skip_args):
+	Declare.
+	* gimple.c (giple_copy_call_skip_args): New function.
+	(giple_copy_call_skip_args): Declare.
+
+	* cgraph.h (cgraph_function_versioning): Add skip_args arugmnet
+	* ipa-cp.c (ipcp_node_not_modifiable_p): Rename to ...
+	(ipcp_node_modifiable_p): ... this one; use tree_versionable_function_p.
+	(ipcp_create_replace_map): Improve debug output.
+	(ipcp_need_redirect_p): Return false when not clonning.
+	(ipcp_update_callgraph): Skip args.
+	(ipcp_insert_stage): UPdate call of !ipcp_node_modifiable_p;
+	skip args.
+	* cgraphunit.c (cgraph_function_versioning): Add skip_args argument.
+	(save_inline_function_body): Update call of tree_function_versioning.
+	* ipa-prop.c (ipa_edge_removal_hook): Do not ICE on unanalyzed nodes.
+	* tree-inline.c (copy_arguments_for_versioning): Add skip_args argument.
+	(tree_function_versioning): Likewise.
+	* tree-inline.h (tree_function_versioning): Update prototype.
+
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* loop-unswitch.c (unswitch_single_loop): Use optimize_loop_for_speed_p.
 	* tree-ssa-threadupdate.c (mark_threaded_blocks): Use optimize_function_for_size_p.
 	* tracer.c (ignore_bb_p): Use optimize_bb_for_size_p.

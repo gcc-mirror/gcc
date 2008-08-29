@@ -4089,19 +4089,37 @@ copy_decl_maybe_to_var (tree decl, copy_body_data *id)
 
 /* Return a copy of the function's argument tree.  */
 static tree
-copy_arguments_for_versioning (tree orig_parm, copy_body_data * id)
+copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
+			       bitmap args_to_skip, tree *vars)
 {
-  tree *arg_copy, *parg;
+  tree arg, *parg;
+  tree new_parm = NULL;
+  int i = 0;
 
-  arg_copy = &orig_parm;
-  for (parg = arg_copy; *parg; parg = &TREE_CHAIN (*parg))
-    {
-      tree new_tree = remap_decl (*parg, id);
-      lang_hooks.dup_lang_specific_decl (new_tree);
-      TREE_CHAIN (new_tree) = TREE_CHAIN (*parg);
-      *parg = new_tree;
-    }
-  return orig_parm;
+  parg = &new_parm;
+
+  for (arg = orig_parm; arg; arg = TREE_CHAIN (arg), i++)
+    if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
+      {
+        tree new_tree = remap_decl (arg, id);
+        lang_hooks.dup_lang_specific_decl (new_tree);
+        *parg = new_tree;
+	parg = &TREE_CHAIN (new_tree);
+      }
+    else
+      {
+	/* Make an equivalent VAR_DECL.  If the argument was used
+	   as temporary variable later in function, the uses will be
+	   replaced by local variable.  */
+	tree var = copy_decl_to_var (arg, id);
+	get_var_ann (var);
+	add_referenced_var (var);
+	insert_decl_map (id, arg, var);
+        /* Declare this new variable.  */
+        TREE_CHAIN (var) = *vars;
+        *vars = var;
+      }
+  return new_parm;
 }
 
 /* Return a copy of the function's static chain.  */
@@ -4146,7 +4164,7 @@ tree_versionable_function_p (tree fndecl)
    of edges of clones of the function will be updated.  */
 void
 tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
-			  bool update_clones)
+			  bool update_clones, bitmap args_to_skip)
 {
   struct cgraph_node *old_version_node;
   struct cgraph_node *new_version_node;
@@ -4214,7 +4232,8 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   /* Copy the function's arguments.  */
   if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
     DECL_ARGUMENTS (new_decl) =
-      copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id);
+      copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
+      				     args_to_skip, &vars);
   
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
   

@@ -5878,6 +5878,81 @@ build_function_type (tree value_type, tree arg_types)
   return t;
 }
 
+/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.  */
+
+tree
+build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
+{
+  tree new_type = NULL;
+  tree args, new_args = NULL, t;
+  tree new_reversed;
+  int i = 0;
+
+  for (args = TYPE_ARG_TYPES (orig_type); args && args != void_list_node;
+       args = TREE_CHAIN (args), i++)
+    if (!bitmap_bit_p (args_to_skip, i))
+      new_args = tree_cons (NULL_TREE, TREE_VALUE (args), new_args);
+
+  new_reversed = nreverse (new_args);
+  if (args)
+    {
+      if (new_reversed)
+        TREE_CHAIN (new_args) = void_list_node;
+      else
+	new_reversed = void_list_node;
+    }
+    gcc_assert (new_reversed);
+
+  /* Use copy_node to preserve as much as possible from original type
+     (debug info, attribute lists etc.)
+     Exception is METHOD_TYPEs must have THIS argument.
+     When we are asked to remove it, we need to build new FUNCTION_TYPE
+     instead.  */
+  if (TREE_CODE (orig_type) != METHOD_TYPE
+      || !bitmap_bit_p (args_to_skip, 0))
+    {
+      new_type = copy_node (orig_type);
+      TYPE_ARG_TYPES (new_type) = new_reversed;
+    }
+  else
+    new_type = build_function_type (TREE_TYPE (orig_type), new_reversed);
+
+  /* This is a new type, not a copy of an old type.  Need to reassociate
+     variants.  We can handle everything except the main variant lazily.  */
+  t = TYPE_MAIN_VARIANT (orig_type);
+  if (orig_type != t)
+    {
+      TYPE_MAIN_VARIANT (new_type) = t;
+      TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
+      TYPE_NEXT_VARIANT (t) = new_type;
+    }
+  else
+    {
+      TYPE_MAIN_VARIANT (new_type) = new_type;
+      TYPE_NEXT_VARIANT (new_type) = NULL;
+    }
+  return new_type;
+}
+
+/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.  
+  
+   Arguments from DECL_ARGUMENTS list can't be removed now, since they are
+   linked by TREE_CHAIN directly.  It is caller responsibility to eliminate
+   them when they are being duplicated (i.e. copy_arguments_for_versioning).  */
+
+tree
+build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip)
+{
+  tree new_decl = copy_node (orig_decl);
+  tree new_type;
+
+  new_type = TREE_TYPE (orig_decl);
+  if (prototype_p (new_type))
+    new_type = build_function_type_skip_args (new_type, args_to_skip);
+  TREE_TYPE (orig_decl) = new_type;
+  return new_decl;
+}
+
 /* Build a function type.  The RETURN_TYPE is the type returned by the
    function. If VAARGS is set, no void_type_node is appended to the
    the list. ARGP muse be alway be terminated be a NULL_TREE.  */
@@ -5893,9 +5968,9 @@ build_function_type_list_1 (bool vaargs, tree return_type, va_list argp)
 
   if (vaargs)
     {
-	  last = args;
-	  if (args != NULL_TREE)
-	    args = nreverse (args);
+      last = args;
+      if (args != NULL_TREE)
+	args = nreverse (args);
       gcc_assert (args != NULL_TREE && last != void_list_node);
     }
   else if (args == NULL_TREE)
