@@ -669,7 +669,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
      at least 50% of time (and 75% gives the guarantee of usage).  */
   if (simple_cst_equal (gimple_assign_rhs2 (stmt), value) != 1
       || 2 * count < all
-      || !maybe_hot_bb_p (gimple_bb (stmt)))
+      || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
 
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
@@ -820,7 +820,7 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
   /* We require that we hit a power of 2 at least half of all evaluations.  */
   if (simple_cst_equal (gimple_assign_rhs2 (stmt), value) != 1
       || count < wrong_values
-      || !maybe_hot_bb_p (gimple_bb (stmt)))
+      || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
 
   if (dump_file)
@@ -1017,7 +1017,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
 	break;
     }
   if (i == steps
-      || !maybe_hot_bb_p (gimple_bb (stmt)))
+      || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
 
   gimple_remove_histogram_value (cfun, stmt, histogram);
@@ -1397,7 +1397,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 80% of time.  */
-  if ((6 * count / 5) < all || !maybe_hot_bb_p (gimple_bb (stmt)))
+  if ((6 * count / 5) < all || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;

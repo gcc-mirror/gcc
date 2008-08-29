@@ -92,7 +92,7 @@ ignore_bb_p (const_basic_block bb)
 {
   if (bb->index < NUM_FIXED_BLOCKS)
     return true;
-  if (!maybe_hot_bb_p (bb))
+  if (optimize_bb_for_size_p (bb))
     return true;
   return false;
 }

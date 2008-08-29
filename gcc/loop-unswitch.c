@@ -290,7 +290,7 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
     }
 
   /* Do not unswitch in cold areas.  */
-  if (!maybe_hot_bb_p (loop->header))
+  if (optimize_loop_for_size_p (loop))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unswitching, not hot area\n");

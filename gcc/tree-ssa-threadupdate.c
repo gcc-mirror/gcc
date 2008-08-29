@@ -994,7 +994,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 
   /* If optimizing for size, only thread through block if we don't have
      to duplicate it or it's an otherwise empty redirection block.  */
-  if (optimize_size)
+  if (optimize_function_for_size_p (cfun))
     {
       EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
 	{

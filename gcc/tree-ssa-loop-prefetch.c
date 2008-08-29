@@ -1460,7 +1460,7 @@ loop_prefetch_arrays (struct loop *loop)
   struct tree_niter_desc desc;
   bool unrolled = false, no_other_refs;
 
-  if (!maybe_hot_bb_p (loop->header))
+  if (optimize_loop_nest_for_size_p (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  ignored (cold area)\n");

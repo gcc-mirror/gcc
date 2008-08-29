@@ -299,7 +299,7 @@ static int contains_replace_regs (rtx);
 static int memref_referenced_p (rtx, rtx);
 static int memref_used_between_p (rtx, rtx, rtx);
 static void no_equiv (rtx, const_rtx, void *);
-static void block_alloc (int);
+static void block_alloc (basic_block);
 static int qty_sugg_compare (int, int);
 static int qty_sugg_compare_1 (const void *, const void *);
 static int qty_compare (int, int);
@@ -311,7 +311,7 @@ static void reg_is_set (rtx, const_rtx, void *);
 static void reg_is_born (rtx, int);
 static void wipe_dead_reg (rtx, int);
 static int find_free_reg (enum reg_class, enum machine_mode, int, int, int,
-			  int, int);
+			  int, int, basic_block);
 static void mark_life (int, enum machine_mode, int);
 static void post_mark_life (int, enum machine_mode, int, int, int);
 static int requires_inout (const char *);
@@ -436,7 +436,7 @@ local_alloc (void)
 
       next_qty = 0;
 
-      block_alloc (b->index);
+      block_alloc (b);
     }
 
   free (qty);
@@ -1270,7 +1270,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED
    Only the pseudos that die but once can be handled.  */
 
 static void
-block_alloc (int b)
+block_alloc (basic_block b)
 {
   int i, q;
   rtx insn;
@@ -1283,7 +1283,7 @@ block_alloc (int b)
 
   /* Count the instructions in the basic block.  */
 
-  insn = BB_END (BASIC_BLOCK (b));
+  insn = BB_END (b);
   while (1)
     {
       if (!NOTE_P (insn))
@@ -1291,7 +1291,7 @@ block_alloc (int b)
 	  ++insn_count;
 	  gcc_assert (insn_count <= max_uid);
 	}
-      if (insn == BB_HEAD (BASIC_BLOCK (b)))
+      if (insn == BB_HEAD (b))
 	break;
       insn = PREV_INSN (insn);
     }
@@ -1302,14 +1302,14 @@ block_alloc (int b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  REG_SET_TO_HARD_REG_SET (regs_live, DF_LR_IN (BASIC_BLOCK (b)));
+  REG_SET_TO_HARD_REG_SET (regs_live, DF_LR_IN (b));
 
   /* This is conservative, as this would include registers that are
      artificial-def'ed-but-not-used.  However, artificial-defs are
      rare, and such uninitialized use is rarer still, and the chance
      of this having any performance impact is even less, while the
      benefit is not having to compute and keep the TOP set around.  */
-  for (def_rec = df_get_artificial_defs (b); *def_rec; def_rec++)
+  for (def_rec = df_get_artificial_defs (b->index); *def_rec; def_rec++)
     {
       int regno = DF_REF_REGNO (*def_rec);
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -1320,7 +1320,7 @@ block_alloc (int b)
      and assigns quantities to registers.
      It computes which registers to tie.  */
 
-  insn = BB_HEAD (BASIC_BLOCK (b));
+  insn = BB_HEAD (b);
   while (1)
     {
       if (!NOTE_P (insn))
@@ -1487,7 +1487,7 @@ block_alloc (int b)
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number], regs_live);
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number + 1], regs_live);
 
-      if (insn == BB_END (BASIC_BLOCK (b)))
+      if (insn == BB_END (b))
 	break;
 
       insn = NEXT_INSN (insn);
@@ -1542,7 +1542,7 @@ block_alloc (int b)
       q = qty_order[i];
       if (qty_phys_num_sugg[q] != 0 || qty_phys_num_copy_sugg[q] != 0)
 	qty[q].phys_reg = find_free_reg (qty[q].min_class, qty[q].mode, q,
-					 0, 1, qty[q].birth, qty[q].death);
+					 0, 1, qty[q].birth, qty[q].death, b);
       else
 	qty[q].phys_reg = -1;
     }
@@ -1627,19 +1627,19 @@ block_alloc (int b)
 		 a scheduling pass after reload and we are not optimizing
 		 for code size.  */
 	      if (flag_schedule_insns_after_reload && dbg_cnt (local_alloc_for_sched)
-		  && !optimize_size
+		  && optimize_bb_for_speed_p (b)
 		  && !SMALL_REGISTER_CLASSES)
 		{
 		  qty[q].phys_reg = find_free_reg (qty[q].min_class,
 						   qty[q].mode, q, 0, 0,
-						   fake_birth, fake_death);
+						   fake_birth, fake_death, b);
 		  if (qty[q].phys_reg >= 0)
 		    continue;
 		}
 #endif
 	      qty[q].phys_reg = find_free_reg (qty[q].min_class,
 					       qty[q].mode, q, 0, 0,
-					       qty[q].birth, qty[q].death);
+					       qty[q].birth, qty[q].death, b);
 	      if (qty[q].phys_reg >= 0)
 		continue;
 	    }
@@ -1647,17 +1647,17 @@ block_alloc (int b)
 #ifdef INSN_SCHEDULING
 	  /* Similarly, avoid false dependencies.  */
 	  if (flag_schedule_insns_after_reload && dbg_cnt (local_alloc_for_sched)
-	      && !optimize_size
+	      && optimize_bb_for_speed_p (b)
 	      && !SMALL_REGISTER_CLASSES
 	      && qty[q].alternate_class != NO_REGS)
 	    qty[q].phys_reg = find_free_reg (qty[q].alternate_class,
 					     qty[q].mode, q, 0, 0,
-					     fake_birth, fake_death);
+					     fake_birth, fake_death, b);
 #endif
 	  if (qty[q].alternate_class != NO_REGS)
 	    qty[q].phys_reg = find_free_reg (qty[q].alternate_class,
 					     qty[q].mode, q, 0, 0,
-					     qty[q].birth, qty[q].death);
+					     qty[q].birth, qty[q].death, b);
 	}
     }
 
@@ -2145,7 +2145,7 @@ wipe_dead_reg (rtx reg, int output_p)
 static int
 find_free_reg (enum reg_class rclass, enum machine_mode mode, int qtyno,
 	       int accept_call_clobbered, int just_try_suggested,
-	       int born_index, int dead_index)
+	       int born_index, int dead_index, basic_block bb)
 {
   int i, ins;
   HARD_REG_SET first_used, used;
@@ -2261,7 +2261,7 @@ find_free_reg (enum reg_class rclass, enum machine_mode mode, int qtyno,
       /* Don't try the copy-suggested regs again.  */
       qty_phys_num_copy_sugg[qtyno] = 0;
       return find_free_reg (rclass, mode, qtyno, accept_call_clobbered, 1,
-			    born_index, dead_index);
+			    born_index, dead_index, bb);
     }
 
   /* We need not check to see if the current function has nonlocal
@@ -2274,11 +2274,12 @@ find_free_reg (enum reg_class rclass, enum machine_mode mode, int qtyno,
       && ! just_try_suggested
       && qty[qtyno].n_calls_crossed != 0
       && qty[qtyno].n_throwing_calls_crossed == 0
-      && CALLER_SAVE_PROFITABLE (optimize_size ? qty[qtyno].n_refs : qty[qtyno].freq,
-				 optimize_size ? qty[qtyno].n_calls_crossed
+      && CALLER_SAVE_PROFITABLE (optimize_bb_for_size_p (bb) ? qty[qtyno].n_refs
+      				 : qty[qtyno].freq,
+				 optimize_bb_for_size_p (bb) ? qty[qtyno].n_calls_crossed
 				 : qty[qtyno].freq_calls_crossed))
     {
-      i = find_free_reg (rclass, mode, qtyno, 1, 0, born_index, dead_index);
+      i = find_free_reg (rclass, mode, qtyno, 1, 0, born_index, dead_index, bb);
       if (i >= 0)
 	caller_save_needed = 1;
       return i;

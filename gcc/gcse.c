@@ -738,9 +738,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 	  timevar_pop (TV_CPROP1);
 	}
 
-      if (optimize_size)
-	/* Do nothing.  */ ;
-      else
+      if (optimize_function_for_speed_p (cfun))
 	{
 	  timevar_push (TV_PRE);
 	  changed |= one_pre_gcse_pass (pass + 1);
@@ -773,7 +771,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 	 for code size -- it rarely makes programs faster, and can make
 	 them bigger if we did partial redundancy elimination (when optimizing
 	 for space, we don't run the partial redundancy algorithms).  */
-      if (optimize_size)
+      if (optimize_function_for_size_p (cfun))
 	{
 	  timevar_push (TV_HOIST);
 	  max_gcse_regno = max_reg_num ();
@@ -825,7 +823,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
   /* We are finished with alias.  */
   end_alias_analysis ();
 
-  if (!optimize_size && flag_gcse_sm)
+  if (optimize_function_for_speed_p (cfun) && flag_gcse_sm)
     {
       timevar_push (TV_LSM);
       store_motion ();

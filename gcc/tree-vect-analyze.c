@@ -1219,7 +1219,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
       print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
     }
 
-  if (optimize_size)
+  if (optimize_loop_nest_for_size_p (loop))
     {
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	fprintf (vect_dump, "versioning not supported when optimizing for size.");
@@ -1993,7 +1993,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   /* Try versioning if:
      1) flag_tree_vect_loop_version is TRUE
-     2) optimize_size is FALSE
+     2) optimize loop for speed
      3) there is at least one unsupported misaligned data ref with an unknown
         misalignment, and
      4) all misaligned data refs with a known misalignment are supported, and
@@ -2001,7 +2001,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   do_versioning = 
 	flag_tree_vect_loop_version 
-	&& (!optimize_size)
+	&& optimize_loop_nest_for_speed_p (loop)
 	&& (!loop->inner); /* FORNOW */
 
   if (do_versioning)

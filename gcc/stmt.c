@@ -2419,7 +2419,7 @@ expand_case (tree exp)
 
       else if (count < case_values_threshold ()
 	       || compare_tree_int (range,
-				    (optimize_size ? 3 : 10) * count) > 0
+				    (optimize_insn_for_size_p () ? 3 : 10) * count) > 0
 	       /* RANGE may be signed, and really large ranges will show up
 		  as negative numbers.  */
 	       || compare_tree_int (range, 0) < 0
@@ -2489,7 +2489,7 @@ expand_case (tree exp)
 
 	      /* Index jumptables from zero for suitable values of
                  minval to avoid a subtraction.  */
-	      if (! optimize_size
+	      if (optimize_insn_for_speed_p ()
 		  && compare_tree_int (minval, 0) > 0
 		  && compare_tree_int (minval, 3) < 0)
 		{

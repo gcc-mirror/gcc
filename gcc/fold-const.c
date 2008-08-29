@@ -6679,7 +6679,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
   if (TREE_CONSTANT (arg0))
     return 1;
 
-  if (optimize_size)
+  if (cfun && optimize_function_for_size_p (cfun))
     return 0;
 
   if (reorder && flag_evaluation_order
@@ -10407,7 +10407,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 
 	      /* Optimize x*x as pow(x,2.0), which is expanded as x*x.  */
-	      if (! optimize_size
+	      if (optimize_function_for_speed_p (cfun)
 		  && operand_equal_p (arg0, arg1, 0))
 		{
 		  tree powfn = mathfn_built_in (type, BUILT_IN_POW);

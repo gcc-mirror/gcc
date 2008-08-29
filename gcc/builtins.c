@@ -7530,7 +7530,7 @@ fold_builtin_cabs (tree arg, tree type, tree fndecl)
 
   /* Don't do this when optimizing for size.  */
   if (flag_unsafe_math_optimizations
-      && optimize && !optimize_size)
+      && optimize && optimize_function_for_speed_p (cfun))
     {
       tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
 
@@ -8882,7 +8882,7 @@ fold_builtin_strcpy (tree fndecl, tree dest, tree src, tree len)
   if (operand_equal_p (src, dest, 0))
     return fold_convert (TREE_TYPE (TREE_TYPE (fndecl)), dest);
 
-  if (optimize_size)
+  if (optimize_function_for_size_p (cfun))
     return NULL_TREE;
 
   fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
@@ -11501,7 +11501,7 @@ fold_builtin_fputs (tree arg0, tree arg1, bool ignore, bool unlocked, tree len)
     case 1: /* length is greater than 1, call fwrite.  */
       {
 	/* If optimizing for size keep fputs.  */
-	if (optimize_size)
+	if (optimize_function_for_size_p (cfun))
 	  return NULL_TREE;
 	/* New argument list transforming fputs(string, stream) to
 	   fwrite(string, 1, len, stream).  */

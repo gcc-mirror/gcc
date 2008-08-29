@@ -1843,7 +1843,7 @@ parallelize_loops (void)
     {
       htab_empty (reduction_list);
       if (/* Do not bother with loops in cold areas.  */
-	  !maybe_hot_bb_p (loop->header)
+	  optimize_loop_nest_for_size_p (loop)
 	  /* Or loops that roll too little.  */
 	  || expected_loop_iterations (loop) <= n_threads
 	  /* And of course, the loop must be parallelizable.  */

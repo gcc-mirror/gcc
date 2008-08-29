@@ -674,7 +674,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
   int depth = 0;
   int n = 0;
 
-  if (optimize_size
+  if (optimize_function_for_size_p (DECL_STRUCT_FUNCTION (node->decl))
       || (!flag_inline_functions && !DECL_DECLARED_INLINE_P (node->decl)))
     return false;
 
@@ -951,7 +951,7 @@ cgraph_decide_inlining_of_small_functions (void)
       if (!flag_inline_functions
 	  && !DECL_DECLARED_INLINE_P (edge->callee->decl))
  	not_good = N_("function not declared inline and code size would grow");
-      if (optimize_size)
+      if (optimize_function_for_size_p (DECL_STRUCT_FUNCTION(edge->caller->decl)))
  	not_good = N_("optimizing for size and code size would grow");
       if (not_good && growth > 0 && cgraph_estimate_growth (edge->callee) > 0)
 	{

@@ -1,3 +1,57 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unswitch.c (unswitch_single_loop): Use optimize_loop_for_speed_p.
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Use optimize_function_for_size_p.
+	* tracer.c (ignore_bb_p): Use optimize_bb_for_size_p.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Use optimize_bb_for_size_p.
+	* value-prof.c (gimple_divmod_fixed_value_transform,
+	gimple_mod_pow2_value_transform, gimple_mod_subtract_transform,
+	gimple_stringops_transform): Use optimize_bb_for_size_p.
+	* ipa-cp.c (ipcp_insert_stage): Use optimize_function_for_size_p.
+	* final.c (compute_alignments): Use optimize_function_for_size_p.
+	* builtins.c (fold_builtin_cabs): Use optimize_function_for_speed_p.
+	(fold_builtin_strcpy, fold_builtin_fputs): Use
+	optimize_function_for_size_p.
+	* fold-const.c (tree_swap_operands_p): Use optimize_function_for_size_p.
+	* recog.c (relax_delay_slots): Likewise.
+	* tree-ssa-math-opts.c (replace_reciprocal): Use optimize_bb_for_speed_p.
+	(execute_cse_reciprocals): Use optimize_bb_for_size_p.
+	* ipa-inline.c (cgraph_decide_recursive_inlining): Use
+	optimize_function_for_size_p.
+	(cgraph_decide_inlining_of_small_function): Use
+	optimize_function_for_size_p.
+	* global.c (find_reg): Use optimize_function_for_size_p.
+	* opts.c (decode_options): Do not clear flag_tree_ch, flag_inline_functions,
+	flag_unswitch_loops, flag_unroll_loops, flag_unroll_all_loops and
+	flag_prefetch_loop_arrays. Those can work it out from profile.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely): Use
+	optimize_loop_for_speed_p.
+	* predict.c (optimize_bb_for_size_p, optimize_bb_for_speed_p): Constify
+	argument.
+	(optimize_loop_nest_for_size_p, optimize_loop_nest_for_speed_p): New.
+	* tree-parloops.c (parallelize_loops): Use optimize_loop_for_size_p.
+	* tree-eh.c (decide_copy_try_finally): Use optimize_function_for_size_p.
+	* local-alloc.c (block_alloc): Pass BB pointer.
+	(find_free_reg): Add BB pointer, use optimize_bb_for_size_p.
+	* gcse.c (gcse_main): Use optimize_function_for_size_p.
+	* loop-unroll.c (decide_unrolling_and_peeling): Use optimize_loop_for_size_p.
+	(decide_peel_completely): Likewise.
+	* tree-vect-analyze.c (vect_mark_for_runtime_alias_test): Use
+	optimize_loop_for_size_p.
+	(vect_enhance_data_refs_alignment): Likewise.
+	* tree-ssa-coalesce.c (coalesce_cost): Add optimize_for_size argument.
+	(coalesce_cost_bb, coalesce_cost_edge, create_outofssa_var_map): Update call.
+	* cfgcleanup.c (outgoing_edges_match): Use optimize_bb_for_speed_p.
+	(try_crossjump_bb): Use optimize_bb_for_size_p.
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Use
+	optimize_loop_for_speed_p.
+	* bb-reorder.c (find_traces_1_round): Likewise.
+	(copy_bb): Use optimize_bb_for_speed_p.
+	(duplicate_computed_gotos): Likewise.
+	* basic-block.h (optimize_loop_nest_for_size_p,
+	optimize_loop_nest_for_speed_p): New.
+	* stmt.c (expand_case): Use optimize_insn_for_size_p.
+
 2008-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* gcov.c (main): Call expandargv.
