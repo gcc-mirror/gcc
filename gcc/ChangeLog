@@ -1,3 +1,9 @@
+2008-08-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37207
+	* tree-vrp.c (extract_range_from_binary_expr): Also try
+	to constant fold if only one of the operands is a constant.
+
 2008-08-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.h (LEGITIMATE_CONSTANT_P): Treat LABEL_REFs in
