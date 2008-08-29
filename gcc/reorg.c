@@ -3439,7 +3439,7 @@ relax_delay_slots (rtx first)
 
 	 Only do so if optimizing for size since this results in slower, but
 	 smaller code.  */
-      if (optimize_size
+      if (optimize_function_for_size_p (cfun)
 	  && GET_CODE (PATTERN (delay_insn)) == RETURN
 	  && next
 	  && JUMP_P (next)

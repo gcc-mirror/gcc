@@ -261,6 +261,37 @@ optimize_loop_for_speed_p (struct loop *loop)
   return optimize_bb_for_speed_p (loop->header);
 }
 
+/* Return TRUE when LOOP nest should be optimized for speed.  */
+
+bool
+optimize_loop_nest_for_speed_p (struct loop *loop)
+{
+  struct loop *l = loop;
+  if (optimize_loop_for_speed_p (loop))
+    return true;
+  l = loop->inner;
+  while (l != loop)
+    {
+      if (optimize_loop_for_speed_p (l))
+        return true;
+      if (l->inner)
+        l = l->inner;
+      else if (l->next)
+        l = l->next;
+      else
+	l = loop_outer (l);
+    }
+  return false;
+}
+
+/* Return TRUE when LOOP nest should be optimized for size.  */
+
+bool
+optimize_loop_nest_for_size_p (struct loop *loop)
+{
+  return !optimize_loop_nest_for_speed_p (loop);
+}
+
 /* Set RTL expansion for BB profile.  */
 
 void

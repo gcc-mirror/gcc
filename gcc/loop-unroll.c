@@ -269,7 +269,7 @@ decide_unrolling_and_peeling (int flags)
 	fprintf (dump_file, "\n;; *** Considering loop %d ***\n", loop->num);
 
       /* Do not peel cold areas.  */
-      if (!maybe_hot_bb_p (loop->header))
+      if (optimize_loop_for_size_p (loop))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, ";; Not considering loop, cold area\n");
@@ -368,7 +368,7 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
     }
 
   /* Do not peel cold areas.  */
-  if (!maybe_hot_bb_p (loop->header))
+  if (optimize_loop_for_size_p (loop))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not considering loop, cold area\n");

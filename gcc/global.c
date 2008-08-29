@@ -1168,8 +1168,8 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
       if (! accept_call_clobbered
 	  && allocno[num].calls_crossed != 0
 	  && allocno[num].throwing_calls_crossed == 0
-	  && CALLER_SAVE_PROFITABLE (optimize_size ? allocno[num].n_refs : allocno[num].freq,
-				     optimize_size ? allocno[num].calls_crossed
+	  && CALLER_SAVE_PROFITABLE (optimize_function_for_size_p (cfun) ? allocno[num].n_refs : allocno[num].freq,
+				     optimize_function_for_size_p (cfun) ? allocno[num].calls_crossed
 				     : allocno[num].freq_calls_crossed))
 	{
 	  HARD_REG_SET new_losers;

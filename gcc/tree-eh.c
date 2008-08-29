@@ -1535,7 +1535,7 @@ decide_copy_try_finally (int ndests, gimple_seq finally)
   sw_estimate = 10 + 2 * ndests;
 
   /* Optimize for size clearly wants our best guess.  */
-  if (optimize_size)
+  if (optimize_function_for_size_p (cfun))
     return f_estimate < sw_estimate;
 
   /* ??? These numbers are completely made up so far.  */

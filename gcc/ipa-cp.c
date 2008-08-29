@@ -1019,9 +1019,7 @@ ipcp_insert_stage (void)
       if (new_insns + growth > max_new_insns)
 	break;
       if (growth
-          && (optimize_size
-	      || (DECL_STRUCT_FUNCTION (node->decl)
-	          ->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)))
+	  && optimize_function_for_size_p (DECL_STRUCT_FUNCTION (node->decl)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not versioning, cold code would grow");

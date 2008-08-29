@@ -359,7 +359,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
       FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
 	{
-	  if (may_increase_size && maybe_hot_bb_p (loop->header)
+	  if (may_increase_size && optimize_loop_for_speed_p (loop)
 	      /* Unroll outermost loops only if asked to do so or they do
 		 not cause code growth.  */
 	      && (unroll_outer

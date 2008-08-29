@@ -990,12 +990,6 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize_size)
     {
-      /* Loop header copying usually increases size of the code.  This used not to
-	 be true, since quite often it is possible to verify that the condition is
-	 satisfied in the first iteration and therefore to eliminate it.  Jump
-	 threading handles these cases now.  */
-      flag_tree_ch = 0;
-
       /* Conditional DCE generates bigger code.  */
       flag_tree_builtin_call_dce = 0;
 
@@ -1004,8 +998,6 @@ decode_options (unsigned int argc, const char **argv)
 
       /* These options are set with -O3, so reset for -Os */
       flag_predictive_commoning = 0;
-      flag_inline_functions = 0;
-      flag_unswitch_loops = 0;
       flag_gcse_after_reload = 0;
       flag_tree_vectorize = 0;
 
@@ -1028,12 +1020,6 @@ decode_options (unsigned int argc, const char **argv)
       align_jumps = 1;
       align_labels = 1;
       align_functions = 1;
-
-      /* Unroll/prefetch switches that may be set on the command line, and tend to
-	 generate bigger code.  */
-      flag_unroll_loops = 0;
-      flag_unroll_all_loops = 0;
-      flag_prefetch_loop_arrays = 0;
 
       /* Basic optimization options.  */
       optimize_size = 1;

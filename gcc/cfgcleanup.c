@@ -1235,9 +1235,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	 we require the existing branches to have probabilities that are
 	 roughly similar.  */
       if (match
-	  && !optimize_size
-	  && maybe_hot_bb_p (bb1)
-	  && maybe_hot_bb_p (bb2))
+	  && optimize_bb_for_speed_p (bb1)
+	  && optimize_bb_for_speed_p (bb2))
 	{
 	  int prob2;
 
@@ -1684,7 +1683,7 @@ try_crossjump_bb (int mode, basic_block bb)
 
   /* Don't crossjump if this block ends in a computed jump,
      unless we are optimizing for size.  */
-  if (!optimize_size
+  if (optimize_bb_for_size_p (bb)
       && bb != EXIT_BLOCK_PTR
       && computed_jump_p (BB_END (bb)))
     return false;

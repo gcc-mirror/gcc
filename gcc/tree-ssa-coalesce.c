@@ -75,7 +75,7 @@ typedef struct coalesce_list_d
    possibly on CRITICAL edge and in HOT basic block.  */
 
 static inline int
-coalesce_cost (int frequency, bool hot, bool critical)
+coalesce_cost (int frequency, bool optimize_for_size, bool critical)
 {
   /* Base costs on BB frequencies bounded by 1.  */
   int cost = frequency;
@@ -83,12 +83,8 @@ coalesce_cost (int frequency, bool hot, bool critical)
   if (!cost)
     cost = 1;
 
-  if (optimize_size)
+  if (optimize_for_size)
     cost = 1;
-  else
-    /* It is more important to coalesce in HOT blocks.  */
-    if (hot)
-      cost *= 2;
 
   /* Inserting copy on critical edge costs more than inserting it elsewhere.  */
   if (critical)
@@ -102,7 +98,7 @@ coalesce_cost (int frequency, bool hot, bool critical)
 static inline int 
 coalesce_cost_bb (basic_block bb)
 {
-  return coalesce_cost (bb->frequency, maybe_hot_bb_p (bb), false);
+  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb), false);
 }
 
 
@@ -115,7 +111,7 @@ coalesce_cost_edge (edge e)
     return MUST_COALESCE_COST;
 
   return coalesce_cost (EDGE_FREQUENCY (e), 
-			maybe_hot_edge_p (e), 
+			optimize_edge_for_size_p (e), 
 			EDGE_CRITICAL_P (e));
 }
 
@@ -1099,7 +1095,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		    if (SSA_NAME_VAR (outputs[match]) == SSA_NAME_VAR (input))
 		      {
 			cost = coalesce_cost (REG_BR_PROB_BASE, 
-					      maybe_hot_bb_p (bb),
+					      optimize_bb_for_size_p (bb),
 					      false);
 			add_coalesce (cl, v1, v2, cost);
 			bitmap_set_bit (used_in_copy, v1);
