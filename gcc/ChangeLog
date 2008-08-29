@@ -1,3 +1,9 @@
+2008-08-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-opt/37243
+	* ira-color (ira_fast_allocation): Don't assign hard registers to
+	global allocnos.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/37278
