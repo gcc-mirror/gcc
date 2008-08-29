@@ -12027,6 +12027,9 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
     {
       tree domain = TYPE_DOMAIN (type);
 
+      if (TYPE_STRING_FLAG (type) && is_fortran () && dimension_number > 0)
+	break;
+
       /* Arrays come in three flavors: Unspecified bounds, fixed bounds,
 	 and (in GNU C only) variable bounds.  Handle all three forms
 	 here.  */
@@ -12560,7 +12563,40 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   bool collapse_nested_arrays = !is_ada ();
   tree element_type;
-  
+
+  /* Emit DW_TAG_string_type for Fortran character types (with kind 1 only, as
+     DW_TAG_string_type doesn't have DW_AT_type attribute).  */
+  if (TYPE_STRING_FLAG (type)
+      && TREE_CODE (type) == ARRAY_TYPE
+      && is_fortran ()
+      && TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (char_type_node))
+    {
+      HOST_WIDE_INT size;
+
+      array_die = new_die (DW_TAG_string_type, scope_die, type);
+      add_name_attribute (array_die, type_tag (type));
+      equate_type_number_to_die (type, array_die);
+      size = int_size_in_bytes (type);
+      if (size >= 0)
+	add_AT_unsigned (array_die, DW_AT_byte_size, size);
+      else if (TYPE_DOMAIN (type) != NULL_TREE
+	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+	       && DECL_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	{
+	  tree szdecl = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	  dw_loc_descr_ref loc = loc_descriptor_from_tree (szdecl);
+
+	  size = int_size_in_bytes (TREE_TYPE (szdecl));
+	  if (loc && size > 0)
+	    {
+	      add_AT_loc (array_die, DW_AT_string_length, loc);
+	      if (size != DWARF2_ADDR_SIZE)
+		add_AT_unsigned (array_die, DW_AT_byte_size, size);
+	    }
+	}
+      return;
+    }
+
   /* ??? The SGI dwarf reader fails for array of array of enum types
      (e.g. const enum machine_mode insn_operand_mode[2][10]) unless the inner
      array type comes before the outer array type.  We thus call gen_type_die
@@ -12587,7 +12623,8 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
   if (is_fortran ()
       && TREE_CODE (type) == ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+      && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE
+      && !TYPE_STRING_FLAG (TREE_TYPE (type)))
     add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
 #if 0
@@ -12615,8 +12652,12 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   element_type = TREE_TYPE (type);
   if (collapse_nested_arrays)
     while (TREE_CODE (element_type) == ARRAY_TYPE)
-      element_type = TREE_TYPE (element_type);
-  
+      {
+	if (TYPE_STRING_FLAG (element_type) && is_fortran ())
+	  break;
+	element_type = TREE_TYPE (element_type);
+      }
+
 #ifndef MIPS_DEBUGGING_INFO
   gen_type_die (element_type, context_die);
 #endif

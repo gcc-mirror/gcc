@@ -1,5 +1,10 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (add_subscript_info): Stop on Fortran TYPE_STRING_FLAG
+	types.
+	(gen_array_type_die): Emit DW_TAG_string_type for Fortran character
+	types.
+
 	* dwarf2out.c (loc_by_reference): New function.
 	(add_location_or_const_value_attribute): Use it.
 
