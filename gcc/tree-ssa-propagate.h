@@ -69,16 +69,6 @@ struct prop_value_d {
 
     /* Propagated value.  */
     tree value;
-
-    /* If this value is held in an SSA name for a non-register
-       variable, this field holds the actual memory reference
-       associated with this value.  This field is taken from 
-       the LHS of the assignment that generated the associated SSA
-       name.  However, in the case of PHI nodes, this field is copied
-       from the PHI arguments (assuming that all the arguments have
-       the same memory reference).  See replace_vuses_in for a more
-       detailed description.  */
-    tree mem_ref;
 };
 
 typedef struct prop_value_d prop_value_t;
@@ -128,10 +118,8 @@ bool valid_gimple_rhs_p (tree);
 bool valid_gimple_call_p (tree);
 void move_ssa_defining_stmt_for_defs (gimple, gimple);
 bool update_call_from_tree (gimple_stmt_iterator *, tree);
-tree first_vdef (gimple);
 bool stmt_makes_single_load (gimple);
 bool stmt_makes_single_store (gimple);
-prop_value_t *get_value_loaded_by (gimple, prop_value_t *);
 bool substitute_and_fold (prop_value_t *, bool);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

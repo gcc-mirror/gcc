@@ -1,5 +1,42 @@
 2008-08-29  Richard Guenther  <rguenther@suse.de>
 
+	* common.opt (ftree-store-ccp): Mark as preserved for
+	backward compatibility.
+	* doc/invoke.texi (-ftree-store-ccp): Remove documentation.
+	* tree-pass.h (pass_store_ccp): Remove.
+	* tree-ssa-propagate.h (struct prop_value_d): Remove mem_ref field.
+	(first_vdef): Remove declaration.
+	(get_value_loaded_by): Likewise.
+	* tree-ssa-ccp.c (do_store_ccp): Remove.
+	(get_default_value): Simplify as do_store_ccp is always false
+	now.  Do not initialize mem_ref.
+	(set_value_varying): Likewise.
+	(canonicalize_float_value): Likewise.
+	(set_lattice_value): Likewise.
+	(likely_value): Likewise.
+	(surely_varying_stmt_p): Likewise.
+	(ccp_initialize): Likewise.
+	(ccp_lattice_meet): Likewise.
+	(ccp_visit_phi_node): Likewise.
+	(ccp_fold): Likewise.
+	(evaluate_stmt): Likewise.
+	(visit_assignment): Likewise.
+	(ccp_visit_stmt): Likewise.
+	(execute_ssa_ccp): Fold into ...
+	(do_ssa_ccp): ... this.
+	(do_ssa_store_ccp): Remove.
+	(gate_store_ccp): Likewise.
+	(pass_store_ccp): Likewise.
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Do not
+	initialize mem_ref.
+	* tree-ssa-propagate.c (first_vdef): Remove.
+	(get_value_loaded_by): Likewise.
+	(replace_vuses_in): Likewise.
+	(substitute_and_fold): Do not call replace_vuses_in.
+	* opts.c (decode_options): Do not set flag_tree_store_ccp.
+
+2008-08-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/37236
 	* tree-ssa-structalias.c (intra_create_variable_infos): Mark
 	PARAM_NOALIAS tags with is_heapvar.

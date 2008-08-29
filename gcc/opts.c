@@ -951,14 +951,13 @@ decode_options (unsigned int argc, const char **argv)
   flag_delete_null_pointer_checks = opt2;
   flag_reorder_blocks = opt2;
   flag_reorder_functions = opt2;
-  flag_tree_store_ccp = opt2;
   flag_tree_vrp = opt2;
   flag_tree_builtin_call_dce = opt2;
   flag_tree_pre = opt2;
   flag_tree_switch_conversion = 1;
   flag_ipa_cp = opt2;
 
-      /* Allow more virtual operators to increase alias precision.  */
+  /* Allow more virtual operators to increase alias precision.  */
 
   set_param_value ("max-aliased-vops",
 		   (opt2) ? 500 : initial_max_aliased_vops);
