@@ -1,5 +1,15 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.h (gfc_use_list): Add where field.
+	* module.c (use_locus): New static variable.
+	(gfc_match_use): Set it.
+	(gfc_use_module): Copy it to gfc_use_list's where field.
+	* trans-decl.c (gfc_generate_module_vars): Call gfc_trans_use_stmts.
+	(gfc_trans_use_stmts): Set backend locus before calling the debug
+	hook.  Allow non-VAR_DECLs to be created even for non-external
+	module.  Don't emit anything so far for renames from different
+	modules.
+
 	PR fortran/24790
 	* trans-decl.c (create_function_arglist): Set DECL_BY_REFERENCE on
 	PARM_DECLs with pointer or reference type.
