@@ -58,6 +58,13 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
   if (header->aux)
     return false;
 
+  /* Loop header copying usually increases size of the code.  This used not to
+     be true, since quite often it is possible to verify that the condition is
+     satisfied in the first iteration and therefore to eliminate it.  Jump
+     threading handles these cases now.  */
+  if (optimize_loop_for_size_p (loop))
+    return false;
+
   gcc_assert (EDGE_COUNT (header->succs) > 0);
   if (single_succ_p (header))
     return false;
