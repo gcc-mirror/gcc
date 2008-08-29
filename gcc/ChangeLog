@@ -1,3 +1,17 @@
+2008-08-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (ISA_HAS_BBIT): New macro.
+	* config/mips/mips.md (branch_likely): Remove const.  Fix
+	comment formatting.
+	(define_delay for type "branch"): Change to only apply for branch
+	with likely variant.
+	(define_delay for type "branch" and "branch_likely" no).  New delay
+	definition.
+	(equality_op): New code iterator.
+	(bbv, bbinv): New code attributes.
+	(*branch_bit<bbv><mode>, *branch_bit<bbv><mode>_inverted): New
+	patterns.
+
 2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
             Andrew Pinski  <pinskia@gcc.gnu.org>
 
