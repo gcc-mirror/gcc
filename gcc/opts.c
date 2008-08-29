@@ -955,7 +955,8 @@ decode_options (unsigned int argc, const char **argv)
   flag_tree_vrp = opt2;
   flag_tree_builtin_call_dce = opt2;
   flag_tree_pre = opt2;
-      flag_tree_switch_conversion = 1;
+  flag_tree_switch_conversion = 1;
+  flag_ipa_cp = opt2;
 
       /* Allow more virtual operators to increase alias precision.  */
 
@@ -973,6 +974,9 @@ decode_options (unsigned int argc, const char **argv)
   flag_unswitch_loops = opt3;
   flag_gcse_after_reload = opt3;
   flag_tree_vectorize = opt3;
+  flag_ipa_cp_clone = opt3;
+  if (flag_ipa_cp_clone)
+    flag_ipa_cp = 1;
 
   /* Allow even more virtual operators.  Max-aliased-vops was set above for
      -O2, so don't reset it unless we are at -O3.  */
@@ -1028,6 +1032,9 @@ decode_options (unsigned int argc, const char **argv)
 
       /* We want to crossjump as much as possible.  */
       set_param_value ("min-crossjump-insns", 1);
+
+      /* Do not perform clonning in ipcp.  */
+      flag_ipa_cp_clone = 0;
     }
   else
     set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);

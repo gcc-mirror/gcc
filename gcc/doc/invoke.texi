@@ -5902,6 +5902,7 @@ This optimization analyzes the program to determine when values passed
 to functions are constants and then optimizes accordingly.  
 This optimization can substantially increase performance
 if the application has constants passed to functions.
+This flag is enabled by default at @option{-O2}, @option{-Os} and @option{-O3}.
 
 @item -fipa-cp-clone
 @opindex fipa-cp-clone
@@ -5911,6 +5912,7 @@ when externally visible function can be called with constant arguments.
 Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
+This flag is enabled by default at @option{-O3}.
 
 @item -fipa-matrix-reorg
 @opindex fipa-matrix-reorg
