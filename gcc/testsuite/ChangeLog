@@ -1,3 +1,11 @@
+2008-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37101
+	* gcc.target/i386/pr37101.c: New test.
+
 2008-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/35432

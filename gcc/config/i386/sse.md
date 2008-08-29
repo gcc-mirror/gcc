@@ -3576,20 +3576,19 @@
    (set_attr "mode" "TI,V4SF,V2SF")])
 
 (define_insn "*vec_concatv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y,?Y,Y,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y,?Y,Y,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " m,*y,0,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  " C, C,Y,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " m,*y,0,0,0")
+	  (match_operand:DI 2 "vector_move_operand"  " C, C,Y,x,m")))]
   "TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}
-   movlps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov,ssemov,sselog,ssemov,ssemov,ssemov")
-   (set_attr "mode" "TI,TI,TI,V4SF,V2SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssemov,ssemov,sselog,ssemov,ssemov")
+   (set_attr "mode" "TI,TI,TI,V4SF,V2SF")])
 
 (define_expand "vec_setv2di"
   [(match_operand:V2DI 0 "register_operand" "")
