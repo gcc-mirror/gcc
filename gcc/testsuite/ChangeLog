@@ -1,5 +1,10 @@
 2008-08-29  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/37236
+	* gfortran.fortran-torture/compile/pr37236.f: New testcase.
+
+2008-08-29  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37207
 	* gcc.dg/tree-ssa/vrp46.c: New testcase.
 

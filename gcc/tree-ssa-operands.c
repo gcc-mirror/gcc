@@ -1247,26 +1247,26 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
      D.874_2 = (*my_char_ref_1)[1]{lb: 1 sz: 1};
   */
   if (ref 
-	   && flag_strict_aliasing
-	   && TREE_CODE (ref) != INDIRECT_REF
-	   && !MTAG_P (alias)
-	   && base
-	   && (TREE_CODE (base) != INDIRECT_REF
-	       || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
-	   && (TREE_CODE (base) != INDIRECT_REF
-	       || TREE_CODE (ref) != ARRAY_REF
-	       || offset != 0
-	       || (DECL_SIZE (alias)
-		   && TREE_CODE (DECL_SIZE (alias)) == INTEGER_CST
-		   && size != -1
-		   && (unsigned HOST_WIDE_INT)size
-		      != TREE_INT_CST_LOW (DECL_SIZE (alias))))
-	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
-	   && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
-	   && !var_ann (alias)->is_heapvar
-	   /* When the struct has may_alias attached to it, we need not to
-	      return true.  */
-	   && get_alias_set (base))
+      && flag_strict_aliasing
+      && TREE_CODE (ref) != INDIRECT_REF
+      && !MTAG_P (alias)
+      && base
+      && (TREE_CODE (base) != INDIRECT_REF
+	  || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
+      && (TREE_CODE (base) != INDIRECT_REF
+	  || TREE_CODE (ref) != ARRAY_REF
+	  || offset != 0
+	  || (DECL_SIZE (alias)
+	      && TREE_CODE (DECL_SIZE (alias)) == INTEGER_CST
+	      && size != -1
+	      && (unsigned HOST_WIDE_INT)size
+	      != TREE_INT_CST_LOW (DECL_SIZE (alias))))
+      && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
+      && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
+      && !var_ann (alias)->is_heapvar
+      /* When the struct has may_alias attached to it, we need not to
+	 return true.  */
+      && get_alias_set (base))
     {
 #ifdef ACCESS_DEBUGGING
       fprintf (stderr, "Access to ");
@@ -1285,11 +1285,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
 	   && !MTAG_P (alias)
+	   && !var_ann (alias)->is_heapvar
 	   && !POINTER_TYPE_P (TREE_TYPE (alias))
 	   && offsetgtz
 	   && DECL_SIZE (alias)
 	   && TREE_CODE (DECL_SIZE (alias)) == INTEGER_CST
-	   && uoffset > TREE_INT_CST_LOW (DECL_SIZE (alias)))
+	   && uoffset >= TREE_INT_CST_LOW (DECL_SIZE (alias)))
     {
 #ifdef ACCESS_DEBUGGING
       fprintf (stderr, "Access to ");
