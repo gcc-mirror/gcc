@@ -1,3 +1,9 @@
+2008-08-29  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_secondary_reload_class): Revert
+	change from 2008-04-03.
+	* config/xtensa/xtensa.h (IRA_COVER_CLASSES): Define.
+
 2008-08-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37251

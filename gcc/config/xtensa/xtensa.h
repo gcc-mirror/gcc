@@ -479,6 +479,11 @@ enum reg_class
   { 0xffffffff, 0x0000000f }  /* all registers */ \
 }
 
+#define IRA_COVER_CLASSES						\
+{									\
+  BR_REGS, FP_REGS, ACC_REG, AR_REGS, LIM_REG_CLASSES			\
+}
+
 /* A C expression whose value is a register class containing hard
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
