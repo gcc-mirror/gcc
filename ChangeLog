@@ -1,3 +1,7 @@
+2008-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* MAINTAINERS (Write after Approval): Add myself.
+
 2008-08-28  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac (powerpc-*-darwin*, i?86-*-darwin*,x86_64-*-darwin9):
