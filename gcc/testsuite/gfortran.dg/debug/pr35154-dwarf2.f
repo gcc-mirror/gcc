@@ -27,11 +27,11 @@ C { dg-options "-dA" }
 
 C { dg-final { scan-assembler "(DIE.*DW_TAG_common_block)" } }
 C { dg-final { scan-assembler "DW_AT_name: \"__BLNK__\"" } }
-C { dg-final { scan-assembler "(DIE.*DW_TAG_member)" } }
+C { dg-final { scan-assembler "(DIE.*DW_TAG_variable)" } }
 C { dg-final { scan-assembler "\"i.*\".*DW_AT_name" } }
 C { dg-final { scan-assembler "\"j.*\".*DW_AT_name" } }
 C { dg-final { scan-assembler "(DIE.*DW_TAG_common_block)" } }
 C { dg-final { scan-assembler "DW_AT_name: \"label\"" } }
-C { dg-final { scan-assembler "(DIE.*DW_TAG_member)" } }
+C { dg-final { scan-assembler "(DIE.*DW_TAG_variable)" } }
 C { dg-final { scan-assembler "\"l.*\".*DW_AT_name" } }
 C { dg-final { scan-assembler "\"m.*\".*DW_AT_name" } }

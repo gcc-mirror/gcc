@@ -1,3 +1,9 @@
+2008-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/23057
+	* gfortran.dg/debug/pr35154-dwarf2.f: Adjust for replacement
+	of DW_TAG_member with DW_TAG_variable.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/modif-1.c: Update template.
