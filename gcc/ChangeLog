@@ -1,5 +1,9 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/37261
+	* fold-const.c (fold_binary): In (X | C1) & C2 canonicalization
+	compute new & and | in type rather than TREE_TYPE (arg0).
+
 	* dwarf2out.c (fortran_common): Update comment.
 	(gen_variable_die): Swap com_die and var_die variables in Fortran
 	COMMON block handling code.
