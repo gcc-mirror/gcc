@@ -1,5 +1,9 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (fortran_common): Update comment.
+	(gen_variable_die): Swap com_die and var_die variables in Fortran
+	COMMON block handling code.
+
 	* dwarf2out.c (descr_info_loc): Handle VAR_DECL.
 
 	* dwarf2out.c (gen_const_die): New function.
