@@ -1,5 +1,9 @@
 2008-08-29  Richard Guenther  <rguenther@suse.de>
 
+	* gfortran.fortran-torture/compile/20080805-1.f90: New testcase.
+
+2008-08-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/37236
 	* gfortran.fortran-torture/compile/pr37236.f: New testcase.
 

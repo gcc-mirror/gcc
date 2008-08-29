@@ -1,5 +1,12 @@
 2008-08-29  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (create_variable_info_for): Do not
+	create fields for heap vars or vars with a noalias state.
+	For NO_ALIAS_ANYTHING variables add a self-constraint, not one
+	from ESCAPED.
+
+2008-08-29  Richard Guenther  <rguenther@suse.de>
+
 	* common.opt (ftree-store-ccp): Mark as preserved for
 	backward compatibility.
 	* doc/invoke.texi (-ftree-store-ccp): Remove documentation.

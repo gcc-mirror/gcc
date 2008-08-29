@@ -4354,7 +4354,11 @@ create_variable_info_for (tree decl, const char *name)
   if (TREE_CODE (decl) == FUNCTION_DECL && in_ipa_mode)
     return create_function_info_for (decl, name);
 
-  if (var_can_have_subvars (decl) && use_field_sensitive)
+  if (var_can_have_subvars (decl) && use_field_sensitive
+      && (!var_ann (decl)
+	  || var_ann (decl)->noalias_state == 0)
+      && (!var_ann (decl)
+	  || !var_ann (decl)->is_heapvar))
     push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
 
   /* If the variable doesn't have subvars, we may end up needing to
@@ -4380,7 +4384,13 @@ create_variable_info_for (tree decl, const char *name)
   VEC_safe_push (varinfo_t, heap, varmap, vi);
   if (is_global && (!flag_whole_program || !in_ipa_mode)
       && could_have_pointers (decl))
-    make_constraint_from (vi, escaped_id);
+    {
+      if (var_ann (decl)
+	  && var_ann (decl)->noalias_state == NO_ALIAS_ANYTHING)
+	make_constraint_from (vi, vi->id);
+      else
+	make_constraint_from (vi, escaped_id);
+    }
 
   stats.total_vars++;
   if (use_field_sensitive
