@@ -1,3 +1,9 @@
+2008-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37261
+	* fold-const.c (fold_binary): In (X | C1) & C2 canonicalization
+	compute new & and | in type rather than TREE_TYPE (arg0).
+
 2008-08-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu_mfcio.h (mfc_begin_critical_section): New function.

@@ -10640,14 +10640,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tree tmp1 = fold_convert (TREE_TYPE (arg0), arg1);
-	  tree tmp2 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-				   TREE_OPERAND (arg0, 0), tmp1);
-	  tree tmp3 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-				   TREE_OPERAND (arg0, 1), tmp1);
+	  tree tmp1 = fold_convert (type, arg1);
+	  tree tmp2 = fold_convert (type, TREE_OPERAND (arg0, 0));
+	  tree tmp3 = fold_convert (type, TREE_OPERAND (arg0, 1));
+	  tmp2 = fold_build2 (BIT_AND_EXPR, type, tmp2, tmp1);
+	  tmp3 = fold_build2 (BIT_AND_EXPR, type, tmp3, tmp1);
 	  return fold_convert (type,
-			       fold_build2 (BIT_IOR_EXPR, TREE_TYPE (arg0),
-					    tmp2, tmp3));
+			       fold_build2 (BIT_IOR_EXPR, type, tmp2, tmp3));
 	}
 
       /* (X | Y) & Y is (X, Y).  */
