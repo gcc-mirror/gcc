@@ -1,5 +1,8 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (loc_by_reference): New function.
+	(add_location_or_const_value_attribute): Use it.
+
 	PR fortran/23057
 	* dwarf2out.c (gen_variable_die): Represent Fortran COMMON vars
 	as DW_TAG_variable children of DW_TAG_common_block rather than
