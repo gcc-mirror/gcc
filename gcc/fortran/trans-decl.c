@@ -1644,6 +1644,10 @@ create_function_arglist (gfc_symbol * sym)
       DECL_ARG_TYPE (parm) = TREE_VALUE (typelist);
       /* All implementation args are read-only.  */
       TREE_READONLY (parm) = 1;
+      if (POINTER_TYPE_P (type)
+	  && (!f->sym->attr.proc_pointer
+	      && f->sym->attr.flavor != FL_PROCEDURE))
+	DECL_BY_REFERENCE (parm) = 1;
 
       gfc_finish_decl (parm);
 
