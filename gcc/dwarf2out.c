@@ -13023,11 +13023,13 @@ gen_formal_parameter_die (tree node, dw_die_ref context_die)
 	  tree type = TREE_TYPE (node);
 	  add_name_and_src_coords_attributes (parm_die, node);
 	  if (DECL_BY_REFERENCE (node))
-	    type = TREE_TYPE (type);
-	  add_type_attribute (parm_die, type,
-			      TREE_READONLY (node),
-			      TREE_THIS_VOLATILE (node),
-			      context_die);
+	    add_type_attribute (parm_die, TREE_TYPE (type), 0, 0,
+				context_die);
+	  else
+	    add_type_attribute (parm_die, type,
+				TREE_READONLY (node),
+				TREE_THIS_VOLATILE (node),
+				context_die);
 	  if (DECL_ARTIFICIAL (node))
 	    add_AT_flag (parm_die, DW_AT_artificial, 1);
 	}
@@ -13704,14 +13706,15 @@ gen_variable_die (tree decl, dw_die_ref context_die)
   else
     {
       tree type = TREE_TYPE (decl);
+
+      add_name_and_src_coords_attributes (var_die, decl);
       if ((TREE_CODE (decl) == PARM_DECL
 	   || TREE_CODE (decl) == RESULT_DECL)
 	  && DECL_BY_REFERENCE (decl))
-	type = TREE_TYPE (type);
-
-      add_name_and_src_coords_attributes (var_die, decl);
-      add_type_attribute (var_die, type, TREE_READONLY (decl),
-			  TREE_THIS_VOLATILE (decl), context_die);
+	add_type_attribute (var_die, TREE_TYPE (type), 0, 0, context_die);
+      else
+	add_type_attribute (var_die, type, TREE_READONLY (decl),
+			    TREE_THIS_VOLATILE (decl), context_die);
 
       if (TREE_PUBLIC (decl))
 	add_AT_flag (var_die, DW_AT_external, 1);
