@@ -5093,6 +5093,7 @@ static void gen_unspecified_parameters_die (tree, dw_die_ref);
 static void gen_formal_types_die (tree, dw_die_ref);
 static void gen_subprogram_die (tree, dw_die_ref);
 static void gen_variable_die (tree, dw_die_ref);
+static void gen_const_die (tree, dw_die_ref);
 static void gen_label_die (tree, dw_die_ref);
 static void gen_lexical_block_die (tree, dw_die_ref, int);
 static void gen_inlined_subroutine_die (tree, dw_die_ref, int);
@@ -7564,8 +7565,10 @@ size_of_die (dw_die_ref die)
 	  size += 1 + 2*HOST_BITS_PER_LONG/HOST_BITS_PER_CHAR; /* block */
 	  break;
 	case dw_val_class_vec:
-	  size += 1 + (a->dw_attr_val.v.val_vec.length
-		       * a->dw_attr_val.v.val_vec.elt_size); /* block */
+	  size += constant_size (a->dw_attr_val.v.val_vec.length
+				 * a->dw_attr_val.v.val_vec.elt_size)
+		  + a->dw_attr_val.v.val_vec.length
+		    * a->dw_attr_val.v.val_vec.elt_size; /* block */
 	  break;
 	case dw_val_class_flag:
 	  size += 1;
@@ -7764,7 +7767,18 @@ value_format (dw_attr_ref a)
     case dw_val_class_long_long:
       return DW_FORM_block1;
     case dw_val_class_vec:
-      return DW_FORM_block1;
+      switch (constant_size (a->dw_attr_val.v.val_vec.length
+			     * a->dw_attr_val.v.val_vec.elt_size))
+	{
+	case 1:
+	  return DW_FORM_block1;
+	case 2:
+	  return DW_FORM_block2;
+	case 4:
+	  return DW_FORM_block4;
+	default:
+	  gcc_unreachable ();
+	}
     case dw_val_class_flag:
       return DW_FORM_flag;
     case dw_val_class_die_ref:
@@ -8056,7 +8070,8 @@ output_die (dw_die_ref die)
 	    unsigned int i;
 	    unsigned char *p;
 
-	    dw2_asm_output_data (1, len * elt_size, "%s", name);
+	    dw2_asm_output_data (constant_size (len * elt_size),
+				 len * elt_size, "%s", name);
 	    if (elt_size > sizeof (HOST_WIDE_INT))
 	      {
 		elt_size /= 2;
@@ -11762,6 +11777,150 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
   tree_add_const_value_attribute (die, decl);
 }
 
+/* Helper function for tree_add_const_value_attribute.  Natively encode
+   initializer INIT into an array.  Return true if successful.  */
+
+static bool
+native_encode_initializer (tree init, unsigned char *array, int size)
+{
+  tree type;
+
+  if (init == NULL_TREE)
+    return false;
+
+  STRIP_NOPS (init);
+  switch (TREE_CODE (init))
+    {
+    case STRING_CST:
+      type = TREE_TYPE (init);
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree enttype = TREE_TYPE (type);
+	  enum machine_mode mode = TYPE_MODE (enttype);
+
+	  if (GET_MODE_CLASS (mode) != MODE_INT || GET_MODE_SIZE (mode) != 1)
+	    return false;
+	  if (int_size_in_bytes (type) != size)
+	    return false;
+	  if (size > TREE_STRING_LENGTH (init))
+	    {
+	      memcpy (array, TREE_STRING_POINTER (init),
+		      TREE_STRING_LENGTH (init));
+	      memset (array + TREE_STRING_LENGTH (init),
+		      '\0', size - TREE_STRING_LENGTH (init));
+	    }
+	  else
+	    memcpy (array, TREE_STRING_POINTER (init), size);
+	  return true;
+	}
+      return false;
+    case CONSTRUCTOR:
+      type = TREE_TYPE (init);
+      if (int_size_in_bytes (type) != size)
+	return false;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  HOST_WIDE_INT min_index;
+	  unsigned HOST_WIDE_INT cnt;
+	  int curpos = 0, fieldsize;
+	  constructor_elt *ce;
+
+	  if (TYPE_DOMAIN (type) == NULL_TREE
+	      || !host_integerp (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0))
+	    return false;
+
+	  fieldsize = int_size_in_bytes (TREE_TYPE (type));
+	  if (fieldsize <= 0)
+	    return false;
+
+	  min_index = tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0);
+	  memset (array, '\0', size);
+	  for (cnt = 0;
+	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce);
+	       cnt++)
+	    {
+	      tree val = ce->value;
+	      tree index = ce->index;
+	      int pos = curpos;
+	      if (index && TREE_CODE (index) == RANGE_EXPR)
+		pos = (tree_low_cst (TREE_OPERAND (index, 0), 0) - min_index)
+		      * fieldsize;
+	      else if (index)
+		pos = tree_low_cst (index, 0) * fieldsize;
+
+	      if (val)
+		{
+		  STRIP_NOPS (val);
+		  if (!native_encode_initializer (val, array + pos, fieldsize))
+		    return false;
+		}
+	      curpos = pos + fieldsize;
+	      if (index && TREE_CODE (index) == RANGE_EXPR)
+		{
+		  int count = tree_low_cst (TREE_OPERAND (index, 1), 0)
+			      - tree_low_cst (TREE_OPERAND (index, 0), 0);
+		  while (count > 0)
+		    {
+		      if (val)
+			memcpy (array + curpos, array + pos, fieldsize);
+		      curpos += fieldsize;
+		    }
+		}
+	      gcc_assert (curpos <= size);
+	    }
+	  return true;
+	}
+      else if (TREE_CODE (type) == RECORD_TYPE
+	       || TREE_CODE (type) == UNION_TYPE)
+	{
+	  tree field = NULL_TREE;
+	  unsigned HOST_WIDE_INT cnt;
+	  constructor_elt *ce;
+
+	  if (int_size_in_bytes (type) != size)
+	    return false;
+
+	  if (TREE_CODE (type) == RECORD_TYPE)
+	    field = TYPE_FIELDS (type);
+
+	  for (cnt = 0;
+	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce);
+	       cnt++, field = field ? TREE_CHAIN (field) : 0)
+	    {
+	      tree val = ce->value;
+	      int pos, fieldsize;
+
+	      if (ce->index != 0)
+		field = ce->index;
+
+	      if (val)
+		STRIP_NOPS (val);
+
+	      if (field == NULL_TREE || DECL_BIT_FIELD (field))
+		return false;
+
+	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		  && TYPE_DOMAIN (TREE_TYPE (field))
+		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
+		return false;
+	      else if (DECL_SIZE_UNIT (field) == NULL_TREE
+		       || !host_integerp (DECL_SIZE_UNIT (field), 0))
+		return false;
+	      fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 0);
+	      pos = int_byte_position (field);
+	      gcc_assert (pos + fieldsize <= size);
+	      if (val
+		  && !native_encode_initializer (val, array + pos, fieldsize))
+		return false;
+	    }
+	  return true;
+	}
+      return false;
+    default:
+      return native_encode_expr (init, array, size) == size;
+    }
+}
+
 /* If we don't have a copy of this variable in memory for some reason (such
    as a C++ member constant that doesn't have an out-of-line definition),
    we should tell the debugger about the constant value.  */
@@ -11781,6 +11940,19 @@ tree_add_const_value_attribute (dw_die_ref var_die, tree decl)
   rtl = rtl_for_decl_init (init, type);
   if (rtl)
     add_const_value_attribute (var_die, rtl);
+  /* If the host and target are sane, try harder.  */
+  else if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
+	   && initializer_constant_valid_p (init, type))
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (init));
+      if (size > 0 && (int) size == size)
+	{
+	  unsigned char *array = GGC_CNEWVEC (unsigned char, size);
+
+	  if (native_encode_initializer (init, array, size))
+	    add_AT_vec (var_die, DW_AT_const_value, size, 1, array);
+	}
+    }
 }
 
 /* Convert the CFI instructions for the current function into a
@@ -13743,6 +13915,24 @@ gen_variable_die (tree decl, dw_die_ref context_die)
     tree_add_const_value_attribute (var_die, decl);
 }
 
+/* Generate a DIE to represent a named constant.  */
+
+static void
+gen_const_die (tree decl, dw_die_ref context_die)
+{
+  dw_die_ref const_die;
+  tree type = TREE_TYPE (decl);
+
+  const_die = new_die (DW_TAG_constant, context_die, decl);
+  add_name_and_src_coords_attributes (const_die, decl);
+  add_type_attribute (const_die, type, 1, 0, context_die);
+  if (TREE_PUBLIC (decl))
+    add_AT_flag (const_die, DW_AT_external, 1);
+  if (DECL_ARTIFICIAL (decl))
+    add_AT_flag (const_die, DW_AT_artificial, 1);
+  tree_add_const_value_attribute (const_die, decl);
+}
+
 /* Generate a DIE to represent a label identifier.  */
 
 static void
@@ -14883,8 +15073,20 @@ gen_decl_die (tree decl, dw_die_ref context_die)
       break;
 
     case CONST_DECL:
-      /* The individual enumerators of an enum type get output when we output
-	 the Dwarf representation of the relevant enum type itself.  */
+      if (!is_fortran ())
+	{
+	  /* The individual enumerators of an enum type get output when we output
+	     the Dwarf representation of the relevant enum type itself.  */
+	  break;
+	}
+
+      /* Emit its type.  */
+      gen_type_die (TREE_TYPE (decl), context_die);
+
+      /* And its containing namespace.  */
+      context_die = declare_in_namespace (decl, context_die);
+
+      gen_const_die (decl, context_die);
       break;
 
     case FUNCTION_DECL:
@@ -15227,6 +15429,15 @@ dwarf2out_decl (tree decl)
 	 variable declarations or definitions.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	return;
+      break;
+
+    case CONST_DECL:
+      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	return;
+      if (!is_fortran ())
+	return;
+      if (TREE_STATIC (decl) && decl_function_context (decl))
+	context_die = lookup_decl_die (DECL_CONTEXT (decl));
       break;
 
     case NAMESPACE_DECL:

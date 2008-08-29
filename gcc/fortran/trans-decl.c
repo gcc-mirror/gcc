@@ -3232,6 +3232,135 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 }
 
 
+/* Return true if expr is a constant initializer that gfc_conv_initializer
+   will handle.  */
+
+static bool
+check_constant_initializer (gfc_expr *expr, gfc_typespec *ts, bool array,
+			    bool pointer)
+{
+  gfc_constructor *c;
+  gfc_component *cm;
+
+  if (pointer)
+    return true;
+  else if (array)
+    {
+      if (expr->expr_type == EXPR_CONSTANT || expr->expr_type == EXPR_NULL)
+	return true;
+      else if (expr->expr_type == EXPR_STRUCTURE)
+	return check_constant_initializer (expr, ts, false, false);
+      else if (expr->expr_type != EXPR_ARRAY)
+	return false;
+      for (c = expr->value.constructor; c; c = c->next)
+	{
+	  if (c->iterator)
+	    return false;
+	  if (c->expr->expr_type == EXPR_STRUCTURE)
+	    {
+	      if (!check_constant_initializer (c->expr, ts, false, false))
+		return false;
+	    }
+	  else if (c->expr->expr_type != EXPR_CONSTANT)
+	    return false;
+	}
+      return true;
+    }
+  else switch (ts->type)
+    {
+    case BT_DERIVED:
+      if (expr->expr_type != EXPR_STRUCTURE)
+	return false;
+      cm = expr->ts.derived->components;
+      for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
+	{
+	  if (!c->expr || cm->attr.allocatable)
+	    continue;
+	  if (!check_constant_initializer (c->expr, &cm->ts,
+					   cm->attr.dimension,
+					   cm->attr.pointer))
+	    return false;
+	}
+      return true;
+    default:
+      return expr->expr_type == EXPR_CONSTANT;
+    }
+}
+
+/* Emit debug info for parameters and unreferenced variables with
+   initializers.  */
+
+static void
+gfc_emit_parameter_debug_info (gfc_symbol *sym)
+{
+  tree decl;
+
+  if (sym->attr.flavor != FL_PARAMETER
+      && (sym->attr.flavor != FL_VARIABLE || sym->attr.referenced))
+    return;
+
+  if (sym->backend_decl != NULL
+      || sym->value == NULL
+      || sym->attr.use_assoc
+      || sym->attr.dummy
+      || sym->attr.result
+      || sym->attr.function
+      || sym->attr.intrinsic
+      || sym->attr.pointer
+      || sym->attr.allocatable
+      || sym->attr.cray_pointee
+      || sym->attr.threadprivate
+      || sym->attr.is_bind_c
+      || sym->attr.subref_array_pointer
+      || sym->attr.assign)
+    return;
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      gfc_conv_const_charlen (sym->ts.cl);
+      if (sym->ts.cl->backend_decl == NULL
+	  || TREE_CODE (sym->ts.cl->backend_decl) != INTEGER_CST)
+	return;
+    }
+  else if (sym->ts.type == BT_DERIVED && sym->ts.derived->attr.alloc_comp)
+    return;
+
+  if (sym->as)
+    {
+      int n;
+
+      if (sym->as->type != AS_EXPLICIT)
+	return;
+      for (n = 0; n < sym->as->rank; n++)
+	if (sym->as->lower[n]->expr_type != EXPR_CONSTANT
+	    || sym->as->upper[n] == NULL
+	    || sym->as->upper[n]->expr_type != EXPR_CONSTANT)
+	  return;
+    }
+
+  if (!check_constant_initializer (sym->value, &sym->ts,
+				   sym->attr.dimension, false))
+    return;
+
+  /* Create the decl for the variable or constant.  */
+  decl = build_decl (sym->attr.flavor == FL_PARAMETER ? CONST_DECL : VAR_DECL,
+		     gfc_sym_identifier (sym), gfc_sym_type (sym));
+  if (sym->attr.flavor == FL_PARAMETER)
+    TREE_READONLY (decl) = 1;
+  gfc_set_decl_location (decl, &sym->declared_at);
+  if (sym->attr.dimension)
+    GFC_DECL_PACKED_ARRAY (decl) = 1;
+  DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
+  TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
+  if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+    TREE_PUBLIC (decl) = 1;
+  DECL_INITIAL (decl)
+    = gfc_conv_initializer (sym->value, &sym->ts, TREE_TYPE (decl),
+			    sym->attr.dimension, 0);
+  debug_hooks->global_decl (decl);
+}
+
 /* Generate all the required code for module variables.  */
 
 void
@@ -3252,6 +3381,7 @@ gfc_generate_module_vars (gfc_namespace * ns)
   cur_module = NULL;
 
   gfc_trans_use_stmts (ns);
+  gfc_traverse_ns (ns, gfc_emit_parameter_debug_info);
 }
 
 
@@ -3787,6 +3917,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     }
 
   gfc_trans_use_stmts (ns);
+  gfc_traverse_ns (ns, gfc_emit_parameter_debug_info);
 }
 
 void

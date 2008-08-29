@@ -1,5 +1,11 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* trans-decl.c (check_constant_initializer,
+	gfc_emit_parameter_debug_info): New functions.
+	(gfc_generate_module_vars, gfc_generate_function_code): Emit
+	PARAMETERs and unreferenced variables with initializers into
+	debug info.
+
 	* gfortran.h (gfc_use_list): Add where field.
 	* module.c (use_locus): New static variable.
 	(gfc_match_use): Set it.
