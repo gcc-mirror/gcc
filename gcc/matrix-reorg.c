@@ -1601,7 +1601,7 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
     {
       gimple call_stmt;
       tree size;
-      struct malloc_call_data mcd;
+      struct malloc_call_data mcd = {NULL, NULL_TREE, NULL_TREE};
 
       call_stmt = mi->malloc_for_level[level];
 

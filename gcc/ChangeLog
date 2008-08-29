@@ -1,3 +1,9 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* see.c (see_merge_one_def_extension): Silence used uninitialized warning.
+	* matrix-reorg.c (check_allocation_function): Likewise.
+	* config/i386/driver-i386.c (detect_caches_amd): Likewise.
+
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37261

@@ -2809,7 +2809,7 @@ see_merge_one_def_extension (void **slot, void *b)
   enum rtx_code code;
   enum rtx_code extension_code;
   enum machine_mode source_extension_mode;
-  enum machine_mode source_mode;
+  enum machine_mode source_mode = VOIDmode;
   enum machine_mode dest_extension_mode;
   bool merge_success = false;
   int i;

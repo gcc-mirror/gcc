@@ -75,7 +75,7 @@ detect_caches_amd (unsigned max_ext_level)
 {
   unsigned eax, ebx, ecx, edx;
   unsigned l1_sizekb, l1_line, l1_assoc;
-  unsigned l2_sizekb, l2_line, l2_assoc;
+  unsigned l2_sizekb = 0, l2_line = 0, l2_assoc = 0;
 
   if (max_ext_level < 0x80000005)
     return "";
