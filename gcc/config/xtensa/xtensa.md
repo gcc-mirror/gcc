@@ -222,10 +222,11 @@
 		 (any_extend:DI (match_operand:SI 2 "register_operand"))))]
   "TARGET_MUL32_HIGH"
 {
-  emit_insn (gen_mulsi3 (gen_lowpart (SImode, operands[0]),
-			 operands[1], operands[2]));
+  rtx temp = gen_reg_rtx (SImode);
+  emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
   emit_insn (gen_<u>mulsi3_highpart (gen_highpart (SImode, operands[0]),
 				     operands[1], operands[2]));
+  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), temp));
   DONE;
 })
 
