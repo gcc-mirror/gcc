@@ -2189,6 +2189,13 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	return;
       }
 
+    case ADDR_EXPR:
+      x = TREE_OPERAND (x, 0);
+      if (DECL_P (x))
+	return;
+      writer = 0;
+      goto restart;
+
     default:
       /* For other expressions, simply recurse on their operands.
 	 Manual tail recursion for unary expressions.
