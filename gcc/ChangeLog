@@ -1,6 +1,13 @@
+2008-08-29  Jeff Law  <law@redhat.com>
+
+	* mn10300.c (mn10300_secondary_reload_class): We need secondary
+	reloads for AM33-2 if IN is a pseudo with an equivalent memory
+	location and class is an FP register.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
-	* see.c (see_merge_one_def_extension): Silence used uninitialized warning.
+	* see.c (see_merge_one_def_extension): Silence used uninitialized
+	warning.
 	* matrix-reorg.c (check_allocation_function): Likewise.
 	* config/i386/driver-i386.c (detect_caches_amd): Likewise.
 
