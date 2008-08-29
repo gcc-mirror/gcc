@@ -3209,6 +3209,13 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   gcc_assert (!id->src_cfun->after_inlining);
 
   id->entry_bb = bb;
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (fn)))
+    {
+      gimple_stmt_iterator si = gsi_last_bb (bb);
+      gsi_insert_after (&si, gimple_build_predict (PRED_COLD_FUNCTION,
+      						   NOT_TAKEN),
+			GSI_NEW_STMT);
+    }
   initialize_inlined_parameters (id, stmt, fn, bb);
 
   if (DECL_INITIAL (fn))

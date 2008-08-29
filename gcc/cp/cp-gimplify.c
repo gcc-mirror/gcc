@@ -610,6 +610,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     case CONTINUE_STMT:
+      gimple_seq_add_stmt (pre_p, gimple_build_predict (PRED_CONTINUE, NOT_TAKEN));
       gimple_seq_add_stmt (pre_p, gimple_build_goto (get_bc_label (bc_continue)));
       *expr_p = NULL_TREE;
       ret = GS_ALL_DONE;
