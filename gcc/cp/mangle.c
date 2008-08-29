@@ -1549,6 +1549,13 @@ write_type (tree type)
 	  if (target_mangling)
 	    {
 	      write_string (target_mangling);
+	      /* Add substitutions for types other than fundamental
+		 types.  */
+	      if (TREE_CODE (type) != VOID_TYPE
+		  && TREE_CODE (type) != INTEGER_TYPE
+		  && TREE_CODE (type) != REAL_TYPE
+		  && TREE_CODE (type) != BOOLEAN_TYPE)
+		add_substitution (type);
 	      return;
 	    }
 
