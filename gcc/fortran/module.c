@@ -188,6 +188,8 @@ static int symbol_number;	/* Counter for assigning symbol numbers */
 /* Tells mio_expr_ref to make symbols for unused equivalence members.  */
 static bool in_load_equiv;
 
+static locus use_locus;
+
 
 
 /*****************************************************************/
@@ -545,6 +547,8 @@ gfc_match_use (void)
 	    return m;
 	}
     }
+
+  use_locus = gfc_current_locus;
 
   m = gfc_match_name (module_name);
   if (m != MATCH_YES)
@@ -5142,6 +5146,7 @@ gfc_use_module (void)
   use_stmt->module_name = gfc_get_string (module_name);
   use_stmt->only_flag = only_flag;
   use_stmt->rename = gfc_rename_list;
+  use_stmt->where = use_locus;
   gfc_rename_list = NULL;
   use_stmt->next = gfc_current_ns->use_stmts;
   gfc_current_ns->use_stmts = use_stmt;

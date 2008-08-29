@@ -1153,6 +1153,7 @@ typedef struct gfc_use_list
   const char *module_name;
   int only_flag;
   struct gfc_use_rename *rename;
+  locus where;
   /* Next USE statement.  */
   struct gfc_use_list *next;
 }

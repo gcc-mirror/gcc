@@ -3151,26 +3151,7 @@ gfc_create_module_variable (gfc_symbol * sym)
     }
 }
 
-
-/* Generate all the required code for module variables.  */
-
-void
-gfc_generate_module_vars (gfc_namespace * ns)
-{
-  module_namespace = ns;
-  cur_module = gfc_find_module (ns->proc_name->name);
-
-  /* Check if the frontend left the namespace in a reasonable state.  */
-  gcc_assert (ns->proc_name && !ns->proc_name->tlink);
-
-  /* Generate COMMON blocks.  */
-  gfc_trans_common (ns);
-
-  /* Create decls for all the module variables.  */
-  gfc_traverse_ns (ns, gfc_create_module_variable);
-
-  cur_module = NULL;
-}
+/* Emit debug information for USE statements.  */
 
 static void
 gfc_trans_use_stmts (gfc_namespace * ns)
@@ -3190,6 +3171,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 			  void_type_node);
 	  DECL_EXTERNAL (entry->namespace_decl) = 1;
 	}
+      gfc_set_backend_locus (&use_stmt->where);
       if (!use_stmt->only_flag)
 	(*debug_hooks->imported_module_or_decl) (entry->namespace_decl,
 						 NULL_TREE,
@@ -3214,9 +3196,14 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 				     rent->local_name[0]
 				     ? rent->local_name : rent->use_name);
 	      gcc_assert (st && st->n.sym->attr.use_assoc);
-	      if (st->n.sym->backend_decl && DECL_P (st->n.sym->backend_decl))
+	      if (st->n.sym->backend_decl
+		  && DECL_P (st->n.sym->backend_decl)
+		  && st->n.sym->module
+		  && strcmp (st->n.sym->module, use_stmt->module_name) == 0)
 		{
-		  gcc_assert (DECL_EXTERNAL (entry->namespace_decl));
+		  gcc_assert (DECL_EXTERNAL (entry->namespace_decl)
+			      || (TREE_CODE (st->n.sym->backend_decl)
+				  != VAR_DECL));
 		  decl = copy_node (st->n.sym->backend_decl);
 		  DECL_CONTEXT (decl) = entry->namespace_decl;
 		  DECL_EXTERNAL (decl) = 1;
@@ -3236,12 +3223,37 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	    local_name = get_identifier (rent->local_name);
 	  else
 	    local_name = NULL_TREE;
+	  gfc_set_backend_locus (&rent->where);
 	  (*debug_hooks->imported_module_or_decl) (decl, local_name,
 						   ns->proc_name->backend_decl,
 						   !use_stmt->only_flag);
 	}
     }
 }
+
+
+/* Generate all the required code for module variables.  */
+
+void
+gfc_generate_module_vars (gfc_namespace * ns)
+{
+  module_namespace = ns;
+  cur_module = gfc_find_module (ns->proc_name->name);
+
+  /* Check if the frontend left the namespace in a reasonable state.  */
+  gcc_assert (ns->proc_name && !ns->proc_name->tlink);
+
+  /* Generate COMMON blocks.  */
+  gfc_trans_common (ns);
+
+  /* Create decls for all the module variables.  */
+  gfc_traverse_ns (ns, gfc_create_module_variable);
+
+  cur_module = NULL;
+
+  gfc_trans_use_stmts (ns);
+}
+
 
 static void
 gfc_generate_contained_functions (gfc_namespace * parent)
