@@ -1,5 +1,12 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi (-fipa-cp): Enabled by default at -O2/-Os/-O3
+	(-fipa-cp-clone): Enabled by default at -O3.
+	* opts.c (decode_options): Enable ipa-cp at -O2, ipa-cp-clone at -O3;
+	make ipa-cp-clone to imply ipa-cp; disable cloning at -Os.
+
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* tree.c (build_function_type_skip_args, build_function_decl_skip_args):
 	New functions.
 	* tree.h (build_function_type_skip_args, build_function_decl_skip_args):
