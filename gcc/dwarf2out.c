@@ -13531,43 +13531,66 @@ gen_variable_die (tree decl, dw_die_ref context_die)
     {
       tree field;
       dw_die_ref com_die;
+      dw_loc_descr_ref loc;
 
-      if (lookup_decl_die (decl))
-	return;
+      com_die = lookup_decl_die (decl);
+      if (com_die)
+	{
+	  if (get_AT (com_die, DW_AT_location) == NULL)
+	    {
+	      loc = loc_descriptor_from_tree (com_decl);
+	      if (loc)
+		{
+		  if (off)
+		    add_loc_descr (&loc, new_loc_descr (DW_OP_plus_uconst,
+							off, 0));
+		  add_AT_loc (com_die, DW_AT_location, loc);
+		  remove_AT (com_die, DW_AT_declaration);
+		}
+	    }
+	  return;
+	}
       field = TREE_OPERAND (DECL_VALUE_EXPR (decl), 0);
       var_die = lookup_decl_die (com_decl);
+      loc = loc_descriptor_from_tree (com_decl);
       if (var_die == NULL)
 	{
 	  const char *cnam
 	    = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (com_decl));
-	  dw_loc_descr_ref loc = loc_descriptor_from_tree (com_decl);
 
 	  var_die = new_die (DW_TAG_common_block, context_die, decl);
 	  add_name_and_src_coords_attributes (var_die, com_decl);
-	  add_AT_flag (var_die, DW_AT_external, 1);
 	  if (loc)
-	    add_AT_loc (var_die, DW_AT_location, loc);
+	    {
+	      add_AT_loc (var_die, DW_AT_location, loc);
+	      /* Avoid sharing the same loc descriptor between
+		 DW_TAG_common_block and DW_TAG_variable.  */
+	      loc = loc_descriptor_from_tree (com_decl);
+	    }
           else if (DECL_EXTERNAL (decl))
 	    add_AT_flag (var_die, DW_AT_declaration, 1);
 	  add_pubname_string (cnam, var_die); /* ??? needed? */
 	  equate_decl_number_to_die (com_decl, var_die);
 	}
-      else if (get_AT (var_die, DW_AT_location) == NULL)
+      else if (get_AT (var_die, DW_AT_location) == NULL && loc)
 	{
-	  dw_loc_descr_ref loc = loc_descriptor_from_tree (com_decl);
-
-	  if (loc)
-	    {
-	      add_AT_loc (var_die, DW_AT_location, loc);
-	      remove_AT (var_die, DW_AT_declaration);
-	    }
+	  add_AT_loc (var_die, DW_AT_location, loc);
+	  loc = loc_descriptor_from_tree (com_decl);
+	  remove_AT (var_die, DW_AT_declaration);
 	}
-      com_die = new_die (DW_TAG_member, var_die, decl);
+      com_die = new_die (DW_TAG_variable, var_die, decl);
       add_name_and_src_coords_attributes (com_die, decl);
       add_type_attribute (com_die, TREE_TYPE (decl), TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
-      add_AT_loc (com_die, DW_AT_data_member_location,
-		  int_loc_descriptor (off));
+      add_AT_flag (com_die, DW_AT_external, 1);
+      if (loc)
+	{
+	  if (off)
+	    add_loc_descr (&loc, new_loc_descr (DW_OP_plus_uconst, off, 0));
+	  add_AT_loc (com_die, DW_AT_location, loc);
+	}
+      else if (DECL_EXTERNAL (decl))
+	add_AT_flag (com_die, DW_AT_declaration, 1);
       equate_decl_number_to_die (decl, com_die);
       return;
     }

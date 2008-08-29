@@ -1,5 +1,11 @@
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/23057
+	* dwarf2out.c (gen_variable_die): Represent Fortran COMMON vars
+	as DW_TAG_variable children of DW_TAG_common_block rather than
+	DW_TAG_member children.  Put DW_AT_external to individual
+	DW_TAG_variable DIEs, not to DW_TAG_common_block.
+
 	* dwarf2out.c (add_bound_info): If lookup_decl_die failed, try
 	loc_descriptor_from_tree_1.
 
