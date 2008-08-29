@@ -1,3 +1,9 @@
+2008-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (write_type): Add target-specific manglings for
+	non-fundamental types to the substitution table.
+	gcc/testsuite/
+
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/29635
