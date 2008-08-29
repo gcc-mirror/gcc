@@ -11591,6 +11591,32 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
   return cvar;
 }
 
+/* Dereference a location expression LOC if DECL is passed by invisible
+   reference.  */
+
+static dw_loc_descr_ref
+loc_by_reference (dw_loc_descr_ref loc, tree decl)
+{
+  HOST_WIDE_INT size;
+  enum dwarf_location_atom op;
+
+  if (loc == NULL)
+    return NULL;
+
+  if ((TREE_CODE (decl) != PARM_DECL && TREE_CODE (decl) != RESULT_DECL)
+      || !DECL_BY_REFERENCE (decl))
+    return loc;
+
+  size = int_size_in_bytes (TREE_TYPE (decl));
+  if (size > DWARF2_ADDR_SIZE || size == -1)
+    return 0;
+  else if (size == DWARF2_ADDR_SIZE)
+    op = DW_OP_deref;
+  else
+    op = DW_OP_deref_size;
+  add_loc_descr (&loc, new_loc_descr (op, size, 0));
+  return loc;
+}
 
 /* Generate *either* a DW_AT_location attribute or else a DW_AT_const_value
    data attribute for a variable or a parameter.  We generate the
@@ -11649,8 +11675,8 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       else
 	initialized = VAR_INIT_STATUS_INITIALIZED;
 
-      list = new_loc_list (loc_descriptor (varloc, initialized),
-			   node->label, node->next->label, secname, 1);
+      descr = loc_by_reference (loc_descriptor (varloc, initialized), decl);
+      list = new_loc_list (descr, node->label, node->next->label, secname, 1);
       node = node->next;
 
       for (; node->next; node = node->next)
@@ -11661,8 +11687,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	    enum var_init_status initialized =
 	      NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 	    varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	    add_loc_descr_to_loc_list (&list,
-				       loc_descriptor (varloc, initialized),
+	    descr = loc_by_reference (loc_descriptor (varloc, initialized),
+				      decl);
+	    add_loc_descr_to_loc_list (&list, descr,
 				       node->label, node->next->label, secname);
 	  }
 
@@ -11683,8 +11710,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 					   current_function_funcdef_no);
 	      endname = ggc_strdup (label_id);
 	    }
-	  add_loc_descr_to_loc_list (&list,
-				     loc_descriptor (varloc, initialized),
+	  descr = loc_by_reference (loc_descriptor (varloc, initialized),
+				    decl);
+	  add_loc_descr_to_loc_list (&list, descr,
 				     node->label, endname, secname);
 	}
 
@@ -11714,6 +11742,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note), status);
       if (descr)
 	{
+	  descr = loc_by_reference (descr, decl);
 	  add_AT_location_description (die, attr, descr);
 	  return;
 	}
@@ -11724,6 +11753,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
   descr = loc_descriptor_from_tree (decl);
   if (descr)
     {
+      descr = loc_by_reference (descr, decl);
       add_AT_location_description (die, attr, descr);
       return;
     }
