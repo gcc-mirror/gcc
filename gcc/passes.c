@@ -585,6 +585,7 @@ init_optimization_passes (void)
       struct opt_pass **p = &pass_all_optimizations.pass.sub;
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
+      NEXT_PASS (pass_strip_predict_hints);
       NEXT_PASS (pass_update_address_taken);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_complete_unrolli);

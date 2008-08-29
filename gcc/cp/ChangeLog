@@ -1,3 +1,7 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* cp-gimplify.c (cp_gimplify_expr): Add PRED_CONTINUE heuristic.
+
 2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37260

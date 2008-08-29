@@ -1,3 +1,15 @@
+2008-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_strip_predict_hints): Declare.
+	* predict.c (strip_builtin_expect): Rename to ...
+	(strip_predict_hints): ... this one; strip also GIMPLE_PREDICT.
+	(tree_bb_level_predictions): Do not remove GIMPLE_PREDICT.
+	(tree_estimate_probability): Do not strip builtin_expect.
+	(pass_strip_predict_hints): New pass.
+	* tree-inline.c (expand_call_inline): When inlining cold function, predict
+	it as unlikely.
+	* passes.c (init_optimization_passes): Add pass_strip_predict_hints.
+
 2008-08-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37207
