@@ -1,3 +1,10 @@
+2008-08-29  Laurent Guerby  <laurent@guerby.net>
+	
+	* Makefile.in (FLAGS_TO_PASS): renamed to LIBADA_FLAGS_TO_PASS to
+	avoid conflicts. Factor more flags to pass.
+	(libsubdir): New variable.
+	(install-gnatlib): New target.
+
 2008-08-28  Laurent Guerby  <laurent@guerby.net>
 
 	* configure: Regenerate.
