@@ -829,7 +829,7 @@ copy_prop_visit_phi_node (gimple phi)
 {
   enum ssa_prop_result retval;
   unsigned i;
-  prop_value_t phi_val = { 0, NULL_TREE, NULL_TREE };
+  prop_value_t phi_val = { 0, NULL_TREE };
 
   tree lhs = gimple_phi_result (phi);
 

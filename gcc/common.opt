@@ -1111,8 +1111,8 @@ Common Report Var(flag_tree_ccp) Optimization
 Enable SSA-CCP optimization on trees
 
 ftree-store-ccp
-Common Report Var(flag_tree_store_ccp) Optimization
-Enable SSA-CCP optimization for stores and loads
+Common
+Does nothing.  Preserved for backward compatibility.
 
 ftree-ch
 Common Report Var(flag_tree_ch) Optimization

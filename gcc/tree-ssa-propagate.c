@@ -823,22 +823,6 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 }
 
 
-/* Return the first VDEF operand for STMT.  */
-
-tree
-first_vdef (gimple stmt)
-{
-  ssa_op_iter iter;
-  tree op;
-
-  /* Simply return the first operand we arrive at.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-    return (op);
-
-  gcc_unreachable ();
-}
-
-
 /* Return true if STMT is of the form 'LHS = mem_ref', where 'mem_ref'
    is a non-volatile pointer dereference, a structure reference or a
    reference to a single _DECL.  Ignore volatile memory references
@@ -898,30 +882,6 @@ stmt_makes_single_store (gimple stmt)
 }
 
 
-/* If STMT makes a single memory load and all the virtual use operands
-   have the same value in array VALUES, return it.  Otherwise, return
-   NULL.  */
-
-prop_value_t *
-get_value_loaded_by (gimple stmt, prop_value_t *values)
-{
-  ssa_op_iter i;
-  tree vuse;
-  prop_value_t *prev_val = NULL;
-  prop_value_t *val = NULL;
-
-  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, i, SSA_OP_VIRTUAL_USES)
-    {
-      val = &values[SSA_NAME_VERSION (vuse)];
-      if (prev_val && prev_val->value != val->value)
-	return NULL;
-      prev_val = val;
-    }
-
-  return val;
-}
-
-
 /* Propagation statistics.  */
 struct prop_stats_d
 {
@@ -965,131 +925,6 @@ replace_uses_in (gimple stmt, prop_value_t *prop_value)
 
       propagate_value (use, val);
 
-      replaced = true;
-    }
-
-  return replaced;
-}
-
-
-/* Replace the VUSE references in statement STMT with the values
-   stored in PROP_VALUE.  Return true if a reference was replaced.
-
-   Replacing VUSE operands is slightly more complex than replacing
-   regular USEs.  We are only interested in two types of replacements
-   here:
-   
-   1- If the value to be replaced is a constant or an SSA name for a
-      GIMPLE register, then we are making a copy/constant propagation
-      from a memory store.  For instance,
-
-      	# a_3 = VDEF <a_2>
-	a.b = x_1;
-	...
- 	# VUSE <a_3>
-	y_4 = a.b;
-
-      This replacement is only possible iff STMT is an assignment
-      whose RHS is identical to the LHS of the statement that created
-      the VUSE(s) that we are replacing.  Otherwise, we may do the
-      wrong replacement:
-
-      	# a_3 = VDEF <a_2>
-	# b_5 = VDEF <b_4>
-	*p = 10;
-	...
-	# VUSE <b_5>
-	x_8 = b;
-
-      Even though 'b_5' acquires the value '10' during propagation,
-      there is no way for the propagator to tell whether the
-      replacement is correct in every reached use, because values are
-      computed at definition sites.  Therefore, when doing final
-      substitution of propagated values, we have to check each use
-      site.  Since the RHS of STMT ('b') is different from the LHS of
-      the originating statement ('*p'), we cannot replace 'b' with
-      '10'.
-
-      Similarly, when merging values from PHI node arguments,
-      propagators need to take care not to merge the same values
-      stored in different locations:
-
-     		if (...)
-		  # a_3 = VDEF <a_2>
-		  a.b = 3;
-		else
-		  # a_4 = VDEF <a_2>
-		  a.c = 3;
-		# a_5 = PHI <a_3, a_4>
-
-      It would be wrong to propagate '3' into 'a_5' because that
-      operation merges two stores to different memory locations.
-
-
-   2- If the value to be replaced is an SSA name for a virtual
-      register, then we simply replace each VUSE operand with its
-      value from PROP_VALUE.  This is the same replacement done by
-      replace_uses_in.  */
-
-static bool
-replace_vuses_in (gimple stmt, prop_value_t *prop_value)
-{
-  bool replaced = false;
-  ssa_op_iter iter;
-  use_operand_p vuse;
-
-  if (stmt_makes_single_load (stmt))
-    {
-      /* If STMT is an assignment whose RHS is a single memory load,
-	 see if we are trying to propagate a constant or a GIMPLE
-	 register (case #1 above).  */
-      prop_value_t *val = get_value_loaded_by (stmt, prop_value);
-      tree rhs = gimple_assign_rhs1 (stmt);
-
-      if (val
-	  && val->value
-	  && (is_gimple_reg (val->value)
-	      || is_gimple_min_invariant (val->value))
-	  && simple_cst_equal (rhs, val->mem_ref) == 1)
-	{
-	  /* We can only perform the substitution if the load is done
-	     from the same memory location as the original store.
-	     Since we already know that there are no intervening
-	     stores between DEF_STMT and STMT, we only need to check
-	     that the RHS of STMT is the same as the memory reference
-	     propagated together with the value.  */
-	  gimple_assign_set_rhs1 (stmt, val->value);
-
-	  if (TREE_CODE (val->value) != SSA_NAME)
-	    prop_stats.num_const_prop++;
-	  else
-	    prop_stats.num_copy_prop++;
-
-	  /* Since we have replaced the whole RHS of STMT, there
-	     is no point in checking the other VUSEs, as they will
-	     all have the same value.  */
-	  return true;
-	}
-    }
-
-  /* Otherwise, the values for every VUSE operand must be other
-     SSA_NAMEs that can be propagated into STMT.  */
-  FOR_EACH_SSA_USE_OPERAND (vuse, stmt, iter, SSA_OP_VIRTUAL_USES)
-    {
-      tree var = USE_FROM_PTR (vuse);
-      tree val = prop_value[SSA_NAME_VERSION (var)].value;
-
-      if (val == NULL_TREE || var == val)
-	continue;
-
-      /* Constants and copies propagated between real and virtual
-	 operands are only possible in the cases handled above.  They
-	 should be ignored in any other context.  */
-      if (is_gimple_min_invariant (val) || is_gimple_reg (val))
-	continue;
-
-      propagate_value (vuse, val);
-      prop_stats.num_copy_prop++;
       replaced = true;
     }
 
@@ -1321,17 +1156,11 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	      gcc_assert (gsi_stmt (i) == stmt);
 	    }
 
-	  if (prop_value)
-	    {
-	      /* Only replace real uses if we couldn't fold the
-		 statement using value range information (value range
-		 information is not collected on virtuals, so we only
-		 need to check this for real uses).  */
-	      if (!did_replace)
-		did_replace |= replace_uses_in (stmt, prop_value);
-
-	      did_replace |= replace_vuses_in (stmt, prop_value);
-	    }
+	  /* Only replace real uses if we couldn't fold the
+	     statement using value range information.  */
+	  if (prop_value
+	      && !did_replace)
+	    did_replace |= replace_uses_in (stmt, prop_value);
 
 	  /* If we made a replacement, fold and cleanup the statement.  */
 	  if (did_replace)

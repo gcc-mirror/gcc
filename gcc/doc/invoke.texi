@@ -365,7 +365,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc @gol
--ftree-sink -ftree-sra -ftree-store-ccp -ftree-switch-conversion @gol
+-ftree-sink -ftree-sra -ftree-switch-conversion @gol
 -ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
@@ -5937,13 +5937,6 @@ enabled by default at @option{-O} and higher.
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
 at @option{-O} and higher.
-
-@item -ftree-store-ccp
-@opindex ftree-store-ccp
-Perform sparse conditional constant propagation (CCP) on trees.  This
-pass operates on both local scalar variables and memory stores and
-loads (global variables, structures, arrays, etc).  This flag is
-enabled by default at @option{-O2} and higher.
 
 @item -ftree-switch-conversion
 Perform conversion of simple initializations in a switch to
