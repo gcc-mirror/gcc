@@ -624,7 +624,7 @@ typedef struct iq2000_args
 #define MEMORY_MOVE_COST(MODE,CLASS,TO_P)	\
   (TO_P ? 2 : 16)
 
-#define BRANCH_COST 2
+#define BRANCH_COST(speed_p, predictable_p) 2
 
 #define SLOW_BYTE_ACCESS 1
 

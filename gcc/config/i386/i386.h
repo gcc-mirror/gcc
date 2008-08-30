@@ -1975,7 +1975,8 @@ do {							\
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
 
-#define BRANCH_COST ix86_branch_cost
+#define BRANCH_COST(speed_p, predictable_p) \
+  (!(speed_p) ? 2 : (predictable_p) ? 0 : ix86_branch_cost)
 
 /* Define this macro as a C expression which is nonzero if accessing
    less than a word of memory (i.e. a `char' or a `short') is no

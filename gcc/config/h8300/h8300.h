@@ -1004,7 +1004,7 @@ struct cum_arg
 #define DELAY_SLOT_LENGTH(JUMP) \
   (NEXT_INSN (PREV_INSN (JUMP)) == JUMP ? 0 : 2)
 
-#define BRANCH_COST 0
+#define BRANCH_COST(speed_p, predictable_p) 0
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

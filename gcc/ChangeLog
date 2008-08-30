@@ -1,3 +1,48 @@
+2008-08-30  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (expand_abs_nojump): Update BRANCH_COST call.
+	* fold-cost.c (LOGICAL_OP_NON_SHORT_CIRCUIT, fold_truthop): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* ifcvt.c (MAX_CONDITIONAL_EXECUTE): Likewise.
+	(note-if_info): Add BRANCH_COST.
+	(noce_try_store_flag_constants, noce_try_addcc, noce_try_store_flag_mask,
+	noce_try_cmove_arith, noce_try_cmove_arith, noce_try_cmove_arith,
+	noce_find_if_block, find_if_case_1, find_if_case_2): Use compuated
+	branch cost.
+	* expr.h (BRANCH_COST): Update default.
+	* predict.c (predictable_edge_p): New function.
+	* expmed.c (expand_smod_pow2, expand_sdiv_pow2, emit_store_flag):
+	Update BRANCH_COST call.
+	* basic-block.h (predictable_edge_p): Declare.
+	* config/alpha/alpha.h (BRANCH_COST): Update.
+	* config/frv/frv.h (BRANCH_COST): Update.
+	* config/s390/s390.h (BRANCH_COST): Update.
+	* config/spu/spu.h (BRANCH_COST): Update.
+	* config/sparc/sparc.h (BRANCH_COST): Update.
+	* config/m32r/m32r.h (BRANCH_COST): Update.
+	* config/i386/i386.h (BRANCH_COST): Update.
+	* config/i386/i386.c (ix86_expand_int_movcc): Update use of BRANCH_COST.
+	* config/sh/sh.h (BRANCH_COST): Update.
+	* config/pdp11/pdp11.h (BRANCH_COST): Update.
+	* config/avr/avr.h (BRANCH_COST): Update.
+	* config/crx/crx.h (BRANCH_COST): Update.
+	* config/xtensa/xtensa.h (BRANCH_COST): Update.
+	* config/stormy16/stormy16.h (BRANCH_COST): Update.
+	* config/m68hc11/m68hc11.h (BRANCH_COST): Update.
+	* config/iq2000/iq2000.h (BRANCH_COST): Update.
+	* config/ia64/ia64.h (BRANCH_COST): Update.
+	* config/rs6000/rs6000.h (BRANCH_COST): Update.
+	* config/arc/arc.h (BRANCH_COST): Update.
+	* config/score/score.h (BRANCH_COST): Update.
+	* config/arm/arm.h (BRANCH_COST): Update.
+	* config/pa/pa.h (BRANCH_COST): Update.
+	* config/mips/mips.h (BRANCH_COST): Update.
+	* config/vax/vax.h (BRANCH_COST): Update.
+	* config/h8300/h8300.h (BRANCH_COST): Update.
+	* params.def (PARAM_PREDICTABLE_BRANCH_OUTCOME): New.
+	* doc/invoke.texi (predictable-branch-cost-outcome): Document.
+	* doc/tm.texi (BRANCH_COST): Update.
+
 2008-08-30  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR target/37283

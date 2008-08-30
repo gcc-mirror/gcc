@@ -2196,7 +2196,7 @@ do {                                                                    \
    On Niagara-2, a not-taken branch costs 1 cycle whereas a taken
    branch costs 6 cycles.  */
 
-#define BRANCH_COST \
+#define BRANCH_COST (speed_p, predictable_p) \
 	((sparc_cpu == PROCESSOR_V9 \
 	  || sparc_cpu == PROCESSOR_ULTRASPARC) \
 	 ? 7 \

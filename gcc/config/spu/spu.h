@@ -434,7 +434,7 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 /* Costs */
 
-#define BRANCH_COST spu_branch_cost
+#define BRANCH_COST(speed_p, predictable_p) spu_branch_cost
 
 #define SLOW_BYTE_ACCESS 0
 

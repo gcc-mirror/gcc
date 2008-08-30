@@ -5874,9 +5874,14 @@ value to the result of that function.  The arguments to that function
 are the same as to this macro.
 @end defmac
 
-@defmac BRANCH_COST
-A C expression for the cost of a branch instruction.  A value of 1 is
-the default; other values are interpreted relative to that.
+@defmac BRANCH_COST (@var{speed_p}, @var{predictable_p})
+A C expression for the cost of a branch instruction.  A value of 1 is the
+default; other values are interpreted relative to that. Parameter @var{speed_p}
+is true when the branch in question should be optimized for speed.  When
+it is false, @code{BRANCH_COST} should be returning value optimal for code size
+rather then performance considerations.  @var{predictable_p} is true for well
+predictable branches. On many architectures the @code{BRANCH_COST} can be
+reduced then.
 @end defmac
 
 Here are additional macros which do not specify precise relative costs,

@@ -6900,6 +6900,10 @@ to the hottest structure frequency in the program is less than this
 parameter, then structure reorganization is not applied to this structure.
 The default is 10.
 
+@item predictable-branch-cost-outcome
+When branch is predicted to be taken with probability lower than this threshold
+(in percent), then it is considered well predictable. The default is 10.
+
 @item max-crossjump-edges
 The maximum number of incoming edges to consider for crossjumping.
 The algorithm used by @option{-fcrossjumping} is @math{O(N^2)} in

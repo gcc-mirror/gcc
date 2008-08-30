@@ -511,7 +511,7 @@ do {									    \
 					 (MODE)==SImode ? 8 :	\
 					 (MODE)==SFmode ? 8 : 16)
 
-#define BRANCH_COST 0
+#define BRANCH_COST(speed_p, predictable_p) 0
 
 #define SLOW_BYTE_ACCESS 0
 

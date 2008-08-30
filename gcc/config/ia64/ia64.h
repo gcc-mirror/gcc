@@ -1384,7 +1384,7 @@ do {									\
    many additional insn groups we run into, vs how good the dynamic
    branch predictor is.  */
 
-#define BRANCH_COST 6
+#define BRANCH_COST(speed_p, predictable_p) 6
 
 /* Define this macro as a C expression which is nonzero if accessing less than
    a word of memory (i.e. a `char' or a `short') is no faster than accessing a

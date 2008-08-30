@@ -852,6 +852,7 @@ extern void guess_outgoing_edge_probabilities (basic_block);
 extern void remove_predictions_associated_with_edge (edge);
 extern bool edge_probability_reliable_p (const_edge);
 extern bool br_prob_note_reliable_p (const_rtx);
+extern bool predictable_edge_p (edge);
 
 /* In cfg.c  */
 extern void dump_regset (regset, FILE *);

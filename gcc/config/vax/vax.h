@@ -648,7 +648,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    Branches are extremely cheap on the VAX while the shift insns often
    used to replace branches can be expensive.  */
 
-#define BRANCH_COST 0
+#define BRANCH_COST(speed_p, predictable_p) 0
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

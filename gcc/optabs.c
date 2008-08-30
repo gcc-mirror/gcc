@@ -3443,7 +3443,9 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
      value of X as (((signed) x >> (W-1)) ^ x) - ((signed) x >> (W-1)),
      where W is the width of MODE.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && BRANCH_COST >= 2)
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && BRANCH_COST (optimize_insn_for_speed_p (),
+	      	      false) >= 2)
     {
       rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
 				   size_int (GET_MODE_BITSIZE (mode) - 1),

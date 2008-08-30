@@ -587,7 +587,7 @@ do {							\
 
 #define MEMORY_MOVE_COST(M,C,I) (5 + memory_move_secondary_cost (M, C, I))
 
-#define BRANCH_COST 5
+#define BRANCH_COST(speed_p, predictable_p) 5
 
 #define SLOW_BYTE_ACCESS 0
 
