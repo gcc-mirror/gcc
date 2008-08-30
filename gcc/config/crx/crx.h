@@ -420,7 +420,7 @@ struct cumulative_args
 /* Moving to processor register flushes pipeline - thus asymmetric */
 #define REGISTER_MOVE_COST(MODE, FROM, TO) ((TO != GENERAL_REGS) ? 8 : 2)
 /* Assume best case (branch predicted) */
-#define BRANCH_COST 2
+#define BRANCH_COST(speed_p, predictable_p) 2
 
 #define SLOW_BYTE_ACCESS  1
 

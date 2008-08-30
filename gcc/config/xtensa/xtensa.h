@@ -887,7 +887,7 @@ typedef struct xtensa_args
 
 #define MEMORY_MOVE_COST(MODE, CLASS, IN) 4
 
-#define BRANCH_COST 3
+#define BRANCH_COST(speed_p, predictable_p) 3
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

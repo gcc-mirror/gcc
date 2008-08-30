@@ -793,7 +793,7 @@ typedef struct score_args
   (4 + memory_move_secondary_cost ((MODE), (CLASS), (TO_P)))
 
 /* Try to generate sequences that don't involve branches.  */
-#define BRANCH_COST                     2
+#define BRANCH_COST(speed_p, predictable_p) 2
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS                1

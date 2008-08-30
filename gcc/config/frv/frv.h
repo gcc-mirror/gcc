@@ -2193,7 +2193,7 @@ do {							\
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  */
-#define BRANCH_COST frv_branch_cost_int
+#define BRANCH_COST(speed_p, predictable_p) frv_branch_cost_int
 
 /* Define this macro as a C expression which is nonzero if accessing less than
    a word of memory (i.e. a `char' or a `short') is no faster than accessing a

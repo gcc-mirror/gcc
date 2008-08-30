@@ -1057,7 +1057,7 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 /* there is no point in avoiding branches on a pdp, 
    since branches are really cheap - I just want to find out
    how much difference the BRANCH_COST macro makes in code */
-#define BRANCH_COST (TARGET_BRANCH_CHEAP ? 0 : 1)
+#define BRANCH_COST(speed_p, predictable_p) (TARGET_BRANCH_CHEAP ? 0 : 1)
 
 
 #define COMPARE_FLAG_MODE HImode

@@ -1570,7 +1570,7 @@ do { 									\
   : 2)
 
 /* Adjust the cost of branches.  */
-#define BRANCH_COST (pa_cpu == PROCESSOR_8000 ? 2 : 1)
+#define BRANCH_COST(speed_p, predictable_p) (pa_cpu == PROCESSOR_8000 ? 2 : 1)
 
 /* Handling the special cases is going to get too complicated for a macro,
    just call `pa_adjust_insn_length' to do the real work.  */

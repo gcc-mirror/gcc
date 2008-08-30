@@ -2847,7 +2847,8 @@ struct sh_args {
    The SH1 does not have delay slots, hence we get a pipeline stall
    at every branch.  The SH4 is superscalar, so the single delay slot
    is not sufficient to keep both pipelines filled.  */
-#define BRANCH_COST (TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1)
+#define BRANCH_COST(speed_p, predictable_p) \
+	(TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1)
 
 /* Assembler output control.  */
 

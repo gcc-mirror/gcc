@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The default branch cost is 1.  */
 #ifndef BRANCH_COST
-#define BRANCH_COST 1
+#define BRANCH_COST(speed_p, predictable_p) 1
 #endif
 
 /* This is the 4th arg to `expand_expr'.

@@ -2297,7 +2297,7 @@ do {							\
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
-#define BRANCH_COST \
+#define BRANCH_COST(speed_p, predictable_p) \
   (TARGET_32BIT ? 4 : (optimize > 0 ? 2 : 0))
 
 /* Position Independent Code.  */

@@ -318,6 +318,23 @@ optimize_loop_nest_for_size_p (struct loop *loop)
   return !optimize_loop_nest_for_speed_p (loop);
 }
 
+/* Return true when edge E is likely to be well predictable by branch
+   predictor.  */
+
+bool
+predictable_edge_p (edge e)
+{
+  if (profile_status == PROFILE_ABSENT)
+    return false;
+  if ((e->probability
+       <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100)
+      || (REG_BR_PROB_BASE - e->probability
+          <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100))
+    return true;
+  return false;
+}
+
+
 /* Set RTL expansion for BB profile.  */
 
 void

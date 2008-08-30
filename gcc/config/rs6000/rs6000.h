@@ -967,7 +967,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    Set this to 3 on the RS/6000 since that is roughly the average cost of an
    unscheduled conditional branch.  */
 
-#define BRANCH_COST 3
+#define BRANCH_COST(speed_p, predictable_p) 3
 
 /* Override BRANCH_COST heuristic which empirically produces worse
    performance for removing short circuiting from the logical ops.  */
