@@ -1,3 +1,7 @@
+2008-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Consistently use tabs to separate columns.
+
 2008-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* MAINTAINERS (Write after Approval): Add myself.
