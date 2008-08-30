@@ -15892,7 +15892,7 @@ dependent_type_p (tree type)
       /* If we are not processing a template, then nobody should be
 	 providing us with a dependent type.  */
       gcc_assert (type);
-      gcc_assert (TREE_CODE (type) != TEMPLATE_TYPE_PARM);
+      gcc_assert (TREE_CODE (type) != TEMPLATE_TYPE_PARM || is_auto (type));
       return false;
     }
 
