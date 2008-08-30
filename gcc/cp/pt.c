@@ -16187,6 +16187,19 @@ type_dependent_expression_p (tree expression)
   if (TREE_CODE (expression) == STMT_EXPR)
     expression = stmt_expr_value_expr (expression);
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (expression))
+    {
+      tree elt;
+      unsigned i;
+
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), i, elt)
+	{
+	  if (type_dependent_expression_p (elt))
+	    return true;
+	}
+      return false;
+    }
+
   if (TREE_TYPE (expression) == unknown_type_node)
     {
       if (TREE_CODE (expression) == ADDR_EXPR)
@@ -16671,6 +16684,126 @@ build_non_dependent_args (tree args)
 			  build_non_dependent_expr (TREE_VALUE (a)),
 			  new_args);
   return nreverse (new_args);
+}
+
+/* Returns a type which represents 'auto'.  We use a TEMPLATE_TYPE_PARM
+   with a level one deeper than the actual template parms.  */
+
+tree
+make_auto (void)
+{
+  tree au;
+
+  /* ??? Is it worth caching this for multiple autos at the same level?  */
+  au = cxx_make_type (TEMPLATE_TYPE_PARM);
+  TYPE_NAME (au) = build_decl (TYPE_DECL, get_identifier ("auto"), au);
+  TYPE_STUB_DECL (au) = TYPE_NAME (au);
+  TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
+    (0, processing_template_decl + 1, processing_template_decl + 1,
+     TYPE_NAME (au), NULL_TREE);
+  TYPE_CANONICAL (au) = canonical_type_parameter (au);
+  DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
+  SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
+
+  return au;
+}
+
+/* Replace auto in TYPE with std::initializer_list<auto>.  */
+
+static tree
+listify_autos (tree type, tree auto_node)
+{
+  tree std_init_list = namespace_binding
+    (get_identifier ("initializer_list"), std_node);
+  tree argvec;
+  tree init_auto;
+  if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
+    {    
+      error ("deducing auto from brace-enclosed initializer list requires "
+	     "#include <initializer_list>");
+      return error_mark_node;
+    }
+  argvec = make_tree_vec (1);
+  TREE_VEC_ELT (argvec, 0) = auto_node;
+  init_auto = lookup_template_class (std_init_list, argvec, NULL_TREE,
+				     NULL_TREE, 0, tf_warning_or_error);
+
+  TREE_VEC_ELT (argvec, 0) = init_auto;
+  if (processing_template_decl)
+    argvec = add_to_template_args (current_template_args (), argvec);
+  return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
+}
+
+/* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
+   from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
+
+tree
+do_auto_deduction (tree type, tree init, tree auto_node)
+{
+  tree parms, args, tparms, targs;
+  int val;
+
+  /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
+     with either a new invented type template parameter U or, if the
+     initializer is a braced-init-list (8.5.4), with
+     std::initializer_list<U>.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    type = listify_autos (type, auto_node);
+
+  parms = build_tree_list (NULL_TREE, type);
+  args = build_tree_list (NULL_TREE, init);
+  tparms = make_tree_vec (1);
+  targs = make_tree_vec (1);
+  TREE_VEC_ELT (tparms, 0)
+    = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
+  val = type_unification_real (tparms, targs, parms, args, 0,
+			       DEDUCE_CALL, LOOKUP_NORMAL);
+  if (val > 0)
+    {
+      error ("unable to deduce %qT from %qE", type, init);
+      return error_mark_node;
+    }
+
+  if (processing_template_decl)
+    targs = add_to_template_args (current_template_args (), targs);
+  return tsubst (type, targs, tf_warning_or_error, NULL_TREE);
+}
+
+/* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto'.  */
+
+bool
+is_auto (const_tree type)
+{
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+      && TYPE_IDENTIFIER (type) == get_identifier ("auto"))
+    return true;
+  else
+    return false;
+}
+
+/* Returns true iff TYPE contains a use of 'auto'.  Since auto can only
+   appear as a type-specifier for the declaration in question, we don't
+   have to look through the whole type.  */
+
+tree
+type_uses_auto (tree type)
+{
+  enum tree_code code;
+  if (is_auto (type))
+    return type;
+
+  code = TREE_CODE (type);
+
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE
+      || code == OFFSET_TYPE || code == FUNCTION_TYPE
+      || code == METHOD_TYPE || code == ARRAY_TYPE)
+    return type_uses_auto (TREE_TYPE (type));
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    return type_uses_auto (TREE_TYPE (TREE_TYPE
+				   (TYPE_PTRMEMFUNC_FN_TYPE (type))));
+
+  return NULL_TREE;
 }
 
 #include "gt-cp-pt.h"

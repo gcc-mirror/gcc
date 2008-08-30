@@ -1,3 +1,22 @@
+2008-08-29  Jason Merrill  <jason@redhat.com>
+
+	Implement C++0x 'auto' semantics.
+	* decl.c (start_decl_1): Don't complain about auto being incomplete.
+	(cp_finish_decl): Deduce auto.
+	* init.c (build_new): Handle 'new auto'.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Give a different
+	message for auto than for normal template type parms.
+	* pt.c (type_dependent_expression_p): Handle { }.
+	(make_auto): New function.
+	(listify_autos): New function.
+	(do_auto_deduction): New function.
+	(is_auto): New function.
+	(type_uses_auto): New function.
+	* cp-tree.h: Declare them.
+	* parser.c (cp_parser_decl_specifier_seq): In C++0x mode, don't
+	treat auto as a declspec.
+	(cp_parser_simple_type_specifier): It's a type-specifier.
+
 2008-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (write_type): Add target-specific manglings for

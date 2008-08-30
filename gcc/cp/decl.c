@@ -4203,6 +4203,8 @@ start_decl_1 (tree decl, bool initialized)
 	 arrays which might be completed by the initialization.  */
       if (complete_p)
 	;			/* A complete type is ok.  */
+      else if (type_uses_auto (type))
+	; 			/* An auto type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
 	  error ("variable %q#D has initializer but incomplete type", decl);
@@ -4217,8 +4219,11 @@ start_decl_1 (tree decl, bool initialized)
     }
   else if (aggregate_definition_p && !complete_p)
     {
-      error ("aggregate %q#D has incomplete type and cannot be defined",
-	     decl);
+      if (type_uses_auto (type))
+	error ("declaration of %q#D has no initializer", decl);
+      else
+	error ("aggregate %q#D has incomplete type and cannot be defined",
+	       decl);
       /* Change the type so that assemble_variable will give
 	 DECL an rtl we can live with: (mem (const_int 0)).  */
       type = TREE_TYPE (decl) = error_mark_node;
@@ -5406,6 +5411,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   int was_readonly = 0;
   bool var_definition_p = false;
   int saved_processing_template_decl;
+  tree auto_node;
 
   if (decl == error_mark_node)
     return;
@@ -5439,6 +5445,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       && TYPE_BEING_DEFINED (current_class_type)
       && (DECL_INITIAL (decl) || init))
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
+
+  auto_node = type_uses_auto (type);
+  if (auto_node && !type_dependent_expression_p (init))
+    {
+      type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
+      if (type == error_mark_node)
+	return;
+    }
 
   if (processing_template_decl)
     {
