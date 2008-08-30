@@ -3591,11 +3591,9 @@ enum tree_index
 
   TI_OPTIMIZATION_DEFAULT,
   TI_OPTIMIZATION_CURRENT,
-  TI_OPTIMIZATION_COLD,
-  TI_OPTIMIZATION_HOT,
   TI_TARGET_OPTION_DEFAULT,
   TI_TARGET_OPTION_CURRENT,
-  TI_CURRENT_OPTION_PRAGMA,
+  TI_CURRENT_TARGET_PRAGMA,
   TI_CURRENT_OPTIMIZE_PRAGMA,
 
   TI_MAX
@@ -3765,12 +3763,10 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define main_identifier_node		global_trees[TI_MAIN_IDENTIFIER]
 #define MAIN_NAME_P(NODE) (IDENTIFIER_NODE_CHECK (NODE) == main_identifier_node)
 
-/* Optimization options (OPTIMIZATION_NODE) to use for default, current, cold,
-   and hot functions.  */
+/* Optimization options (OPTIMIZATION_NODE) to use for default and current
+   functions.  */
 #define optimization_default_node	global_trees[TI_OPTIMIZATION_DEFAULT]
 #define optimization_current_node	global_trees[TI_OPTIMIZATION_CURRENT]
-#define optimization_cold_node		global_trees[TI_OPTIMIZATION_COLD]
-#define optimization_hot_node		global_trees[TI_OPTIMIZATION_HOT]
 
 /* Default/current target options (TARGET_OPTION_NODE).  */
 #define target_option_default_node	global_trees[TI_TARGET_OPTION_DEFAULT]
@@ -3778,7 +3774,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 
 /* Default tree list option(), optimize() pragmas to be linked into the
    attribute list.  */
-#define current_option_pragma		global_trees[TI_CURRENT_OPTION_PRAGMA]
+#define current_target_pragma		global_trees[TI_CURRENT_TARGET_PRAGMA]
 #define current_optimize_pragma		global_trees[TI_CURRENT_OPTIMIZE_PRAGMA]
 
 /* An enumeration of the standard C integer types.  These must be

@@ -991,19 +991,13 @@ struct gcc_target
     void (*print) (FILE *, int, struct cl_target_option *);
 
     /* Function to parse arguments to be validated for #pragma option, and to
-       change the state if the options are valid.  If the arguments are NULL,
-       use the default target options.  Return true if the options are valid,
-       and set the current state.  */
-    bool (*pragma_parse) (tree);
+       change the state if the options are valid.  If the first argument is
+       NULL, the second argument specifies the default options to use.  Return
+       true if the options are valid, and set the current state.  */
+    bool (*pragma_parse) (tree, tree);
 
     /* Function to determine if one function can inline another function.  */
     bool (*can_inline_p) (tree, tree);
-
-    /* Whether the cold attribute changes the optimization level.  */
-    bool cold_attribute_sets_optimization;
-
-    /* Whether the hot attribute changes the optimization level.  */
-    bool hot_attribute_sets_optimization;
   } target_option;
 
   /* For targets that need to mark extra registers as live on entry to

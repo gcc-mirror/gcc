@@ -2843,6 +2843,31 @@ c_builtin_function (tree decl)
 
   return decl;
 }
+
+tree
+c_builtin_function_ext_scope (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  tree   id = DECL_NAME (decl);
+
+  const char *name = IDENTIFIER_POINTER (id);
+  C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
+
+  /* Should never be called on a symbol with a preexisting meaning.  */
+  gcc_assert (!I_SYMBOL_BINDING (id));
+
+  bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false);
+
+  /* Builtins in the implementation namespace are made visible without
+     needing to be explicitly declared.  See push_file_scope.  */
+  if (name[0] == '_' && (name[1] == '_' || ISUPPER (name[1])))
+    {
+      TREE_CHAIN (decl) = visible_builtins;
+      visible_builtins = decl;
+    }
+
+  return decl;
+}
 
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited

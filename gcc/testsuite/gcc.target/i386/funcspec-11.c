@@ -4,7 +4,7 @@
 /* { dg-options "-O2 -march=i386" } */
 /* { dg-final { scan-assembler "cmov" } } */
 
-extern int foo (int) __attribute__((__option__("arch=i686")));
+extern int foo (int) __attribute__((__target__("arch=i686")));
 
 int
 foo (int x)

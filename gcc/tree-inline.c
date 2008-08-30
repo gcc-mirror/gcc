@@ -4369,6 +4369,11 @@ build_duplicate_type (tree type)
 bool
 tree_can_inline_p (tree caller, tree callee)
 {
+#if 0
+  /* This causes a regression in SPEC in that it prevents a cold function from
+     inlining a hot function.  Perhaps this should only apply to functions
+     that the user declares hot/cold/optimize explicitly.  */
+
   /* Don't inline a function with a higher optimization level than the
      caller, or with different space constraints (hot/cold functions).  */
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller);
@@ -4390,6 +4395,7 @@ tree_can_inline_p (tree caller, tree callee)
 	  || (caller_opt->optimize_size != callee_opt->optimize_size))
 	return false;
     }
+#endif
 
   /* Allow the backend to decide if inlining is ok.  */
   return targetm.target_option.can_inline_p (caller, callee);

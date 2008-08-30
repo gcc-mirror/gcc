@@ -66,7 +66,7 @@ static tree grok_reference_init (tree, tree, tree, tree *);
 static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
 			 int, int, tree);
 static void record_unknown_type (tree, const char *);
-static tree builtin_function_1 (tree, tree);
+static tree builtin_function_1 (tree, tree, bool);
 static tree build_library_fn_1 (tree, enum tree_code, tree);
 static int member_function_or_else (tree, tree, enum overload_flags);
 static void bad_specifiers (tree, const char *, int, int, int, int,
@@ -1763,6 +1763,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       /* Merge deprecatedness.  */
       if (TREE_DEPRECATED (newdecl))
 	TREE_DEPRECATED (olddecl) = 1;
+
+      /* Preserve function specific target and optimization options */
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	{
+	  if (DECL_FUNCTION_SPECIFIC_TARGET (olddecl)
+	      && !DECL_FUNCTION_SPECIFIC_TARGET (newdecl))
+	    DECL_FUNCTION_SPECIFIC_TARGET (newdecl)
+	      = DECL_FUNCTION_SPECIFIC_TARGET (olddecl);
+
+	  if (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (olddecl)
+	      && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (newdecl))
+	    DECL_FUNCTION_SPECIFIC_OPTIMIZATION (newdecl)
+	      = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (olddecl);
+	}
 
       /* Merge the initialization information.  */
       if (DECL_INITIAL (newdecl) == NULL_TREE
@@ -3497,7 +3511,7 @@ cp_make_fname_decl (tree id, int type_dep)
 }
 
 static tree
-builtin_function_1 (tree decl, tree context)
+builtin_function_1 (tree decl, tree context, bool is_global)
 {
   tree          id = DECL_NAME (decl);
   const char *name = IDENTIFIER_POINTER (id);
@@ -3518,7 +3532,10 @@ builtin_function_1 (tree decl, tree context)
 
   DECL_CONTEXT (decl) = context;
 
-  pushdecl (decl);
+  if (is_global)
+    pushdecl_top_level (decl);
+  else
+    pushdecl (decl);
 
   /* A function in the user's namespace should have an explicit
      declaration before it is used.  Mark the built-in function as
@@ -3551,11 +3568,36 @@ cxx_builtin_function (tree decl)
     {
       tree decl2 = copy_node(decl);
       push_namespace (std_identifier);
-      builtin_function_1 (decl2, std_node);
+      builtin_function_1 (decl2, std_node, false);
       pop_namespace ();
     }
 
-  return builtin_function_1 (decl, NULL_TREE);
+  return builtin_function_1 (decl, NULL_TREE, false);
+}
+
+/* Like cxx_builtin_function, but guarantee the function is added to the global
+   scope.  This is to allow function specific options to add new machine
+   dependent builtins when the target ISA changes via attribute((target(...)))
+   which saves space on program startup if the program does not use non-generic
+   ISAs.  */
+
+tree
+cxx_builtin_function_ext_scope (tree decl)
+{
+
+  tree          id = DECL_NAME (decl);
+  const char *name = IDENTIFIER_POINTER (id);
+  /* All builtins that don't begin with an '_' should additionally
+     go in the 'std' namespace.  */
+  if (name[0] != '_')
+    {
+      tree decl2 = copy_node(decl);
+      push_namespace (std_identifier);
+      builtin_function_1 (decl2, std_node, true);
+      pop_namespace ();
+    }
+
+  return builtin_function_1 (decl, NULL_TREE, true);
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library

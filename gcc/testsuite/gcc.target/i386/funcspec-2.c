@@ -5,7 +5,7 @@
 
 extern void exit (int);
 
-#define SSE5_ATTR __attribute__((__option__("sse5,fused-madd")))
+#define SSE5_ATTR __attribute__((__target__("sse5,fused-madd")))
 extern float  flt_mul_add     (float a, float b, float c) SSE5_ATTR;
 extern float  flt_mul_sub     (float a, float b, float c) SSE5_ATTR;
 extern float  flt_neg_mul_add (float a, float b, float c) SSE5_ATTR;

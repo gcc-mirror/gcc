@@ -766,7 +766,8 @@
 
 /* Function specific option attribute support.  */
 #ifndef TARGET_OPTION_VALID_ATTRIBUTE_P
-#define TARGET_OPTION_VALID_ATTRIBUTE_P NULL
+#define TARGET_OPTION_VALID_ATTRIBUTE_P \
+  default_target_option_valid_attribute_p
 #endif
 
 #ifndef TARGET_OPTION_SAVE
@@ -782,19 +783,11 @@
 #endif
 
 #ifndef TARGET_OPTION_PRAGMA_PARSE
-#define TARGET_OPTION_PRAGMA_PARSE NULL
+#define TARGET_OPTION_PRAGMA_PARSE default_target_option_pragma_parse
 #endif
 
 #ifndef TARGET_OPTION_CAN_INLINE_P
 #define TARGET_OPTION_CAN_INLINE_P default_target_option_can_inline_p
-#endif
-
-#ifndef TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION
-#define TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION false
-#endif
-
-#ifndef TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION
-#define TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION false
 #endif
 
 #define TARGET_OPTION_HOOKS			\
@@ -805,8 +798,6 @@
     TARGET_OPTION_PRINT,			\
     TARGET_OPTION_PRAGMA_PARSE,			\
     TARGET_OPTION_CAN_INLINE_P,			\
-    TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION, \
-    TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION, \
   }
 
 /* The whole shebang.  */

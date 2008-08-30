@@ -2665,19 +2665,19 @@ take function pointer arguments.  The @code{nothrow} attribute is not
 implemented in GCC versions earlier than 3.3.
 
 @item option
-@cindex @code{option} function attribute
-The @code{option} attribute is used to specify that a function is to
+@cindex @code{target} function attribute
+The @code{target} attribute is used to specify that a function is to
 be compiled with different target options than specified on the
 command line.  This can be used for instance to have functions
 compiled with a different ISA (instruction set architecture) than the
-default.  You can also use the @samp{#pragma GCC option} pragma to set
+default.  You can also use the @samp{#pragma GCC target} pragma to set
 more than one function to be compiled with specific target options.
 @xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC option} pragma.
+@samp{#pragma GCC target} pragma.
 
 For instance on a 386, you could compile one function with
-@code{option("sse4.1,arch=core2")} and another with
-@code{option("sse4a,arch=amdfam10")} that would be equivalent to
+@code{target("sse4.1,arch=core2")} and another with
+@code{target("sse4a,arch=amdfam10")} that would be equivalent to
 compiling the first function with @option{-msse4.1} and
 @option{-march=core2} options, and the second function with
 @option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
@@ -2687,8 +2687,8 @@ supports the particular ISA it was compiled for (for example by using
 family are used).
 
 @smallexample
-int core2_func (void) __attribute__ ((__option__ ("arch=core2")));
-int sse3_func (void) __attribute__ ((__option__ ("sse3")));
+int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
+int sse3_func (void) __attribute__ ((__target__ ("sse3")));
 @end smallexample
 
 On the 386, the following options are allowed:
@@ -2696,132 +2696,132 @@ On the 386, the following options are allowed:
 @table @samp
 @item abm
 @itemx no-abm
-@cindex option("abm")
+@cindex @code{target("abm")} attribute
 Enable/disable the generation of the advanced bit instructions.
 
 @item aes
 @itemx no-aes
-@cindex @code{option("aes")} attribute
+@cindex @code{target("aes")} attribute
 Enable/disable the generation of the AES instructions.
 
 @item mmx
 @itemx no-mmx
-@cindex @code{option("mmx")} attribute
+@cindex @code{target("mmx")} attribute
 Enable/disable the generation of the MMX instructions.
 
 @item pclmul
 @itemx no-pclmul
-@cindex @code{option("pclmul")} attribute
+@cindex @code{target("pclmul")} attribute
 Enable/disable the generation of the PCLMUL instructions.
 
 @item popcnt
 @itemx no-popcnt
-@cindex @code{option("popcnt")} attribute
+@cindex @code{target("popcnt")} attribute
 Enable/disable the generation of the POPCNT instruction.
 
 @item sse
 @itemx no-sse
-@cindex @code{option("sse")} attribute
+@cindex @code{target("sse")} attribute
 Enable/disable the generation of the SSE instructions.
 
 @item sse2
 @itemx no-sse2
-@cindex @code{option("sse2")} attribute
+@cindex @code{target("sse2")} attribute
 Enable/disable the generation of the SSE2 instructions.
 
 @item sse3
 @itemx no-sse3
-@cindex @code{option("sse3")} attribute
+@cindex @code{target("sse3")} attribute
 Enable/disable the generation of the SSE3 instructions.
 
 @item sse4
 @itemx no-sse4
-@cindex @code{option("sse4")} attribute
+@cindex @code{target("sse4")} attribute
 Enable/disable the generation of the SSE4 instructions (both SSE4.1
 and SSE4.2).
 
 @item sse4.1
 @itemx no-sse4.1
-@cindex @code{option("sse4.1")} attribute
+@cindex @code{target("sse4.1")} attribute
 Enable/disable the generation of the sse4.1 instructions.
 
 @item sse4.2
 @itemx no-sse4.2
-@cindex @code{option("sse4.2")} attribute
+@cindex @code{target("sse4.2")} attribute
 Enable/disable the generation of the sse4.2 instructions.
 
 @item sse4a
 @itemx no-sse4a
-@cindex @code{option("sse4a")} attribute
+@cindex @code{target("sse4a")} attribute
 Enable/disable the generation of the SSE4A instructions.
 
 @item sse5
 @itemx no-sse5
-@cindex @code{option("sse5")} attribute
+@cindex @code{target("sse5")} attribute
 Enable/disable the generation of the SSE5 instructions.
 
 @item ssse3
 @itemx no-ssse3
-@cindex @code{option("ssse3")} attribute
+@cindex @code{target("ssse3")} attribute
 Enable/disable the generation of the SSSE3 instructions.
 
 @item cld
 @itemx no-cld
-@cindex @code{option("cld")} attribute
+@cindex @code{target("cld")} attribute
 Enable/disable the generation of the CLD before string moves.
 
 @item fancy-math-387
 @itemx no-fancy-math-387
-@cindex @code{option("fancy-math-387")} attribute
+@cindex @code{target("fancy-math-387")} attribute
 Enable/disable the generation of the @code{sin}, @code{cos}, and
 @code{sqrt} instructions on the 387 floating point unit.
 
 @item fused-madd
 @itemx no-fused-madd
-@cindex @code{option("fused-madd")} attribute
+@cindex @code{target("fused-madd")} attribute
 Enable/disable the generation of the fused multiply/add instructions.
 
 @item ieee-fp
 @itemx no-ieee-fp
-@cindex @code{option("ieee-fp")} attribute
+@cindex @code{target("ieee-fp")} attribute
 Enable/disable the generation of floating point that depends on IEEE arithmetic.
 
 @item inline-all-stringops
 @itemx no-inline-all-stringops
-@cindex @code{option("inline-all-stringops")} attribute
+@cindex @code{target("inline-all-stringops")} attribute
 Enable/disable inlining of string operations.
 
 @item inline-stringops-dynamically
 @itemx no-inline-stringops-dynamically
-@cindex @code{option("inline-stringops-dynamically")} attribute
+@cindex @code{target("inline-stringops-dynamically")} attribute
 Enable/disable the generation of the inline code to do small string
 operations and calling the library routines for large operations.
 
 @item align-stringops
 @itemx no-align-stringops
-@cindex @code{option("align-stringops")} attribute
+@cindex @code{target("align-stringops")} attribute
 Do/do not align destination of inlined string operations.
 
 @item recip
 @itemx no-recip
-@cindex @code{option("recip")} attribute
+@cindex @code{target("recip")} attribute
 Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
 instructions followed an additional Newton-Rhapson step instead of
 doing a floating point division.
 
 @item arch=@var{ARCH}
-@cindex @code{option("arch=@var{ARCH}")} attribute
+@cindex @code{target("arch=@var{ARCH}")} attribute
 Specify the architecture to generate code for in compiling the function.
 
 @item tune=@var{TUNE}
-@cindex @code{option("tune=@var{TUNE}")} attribute
+@cindex @code{target("tune=@var{TUNE}")} attribute
 Specify the architecture to tune for in compiling the function.
 
 @item fpmath=@var{FPMATH}
-@cindex @code{option("fpmath=@var{FPMATH}")} attribute
+@cindex @code{target("fpmath=@var{FPMATH}")} attribute
 Specify which floating point unit to use.  The
-@code{option("fpmath=sse,387")} option must be specified as
-@code{option("fpmath=sse+387")} because the comma would separate
+@code{target("fpmath=sse,387")} option must be specified as
+@code{target("fpmath=sse+387")} because the comma would separate
 different options.
 @end table
 
@@ -2831,10 +2831,10 @@ options, or you can separate the option with a comma (@code{,}).
 On the 386, the inliner will not inline a function that has different
 target options than the caller, unless the callee has a subset of the
 target options of the caller.  For example a function declared with
-@code{option("sse5")} can inline a function with
-@code{option("sse2")}, since @code{-msse5} implies @code{-msse2}.
+@code{target("sse5")} can inline a function with
+@code{target("sse2")}, since @code{-msse5} implies @code{-msse2}.
 
-The @code{option} attribute is not implemented in GCC versions earlier
+The @code{target} attribute is not implemented in GCC versions earlier
 than 4.4, and at present only the 386 uses it.
 
 @item optimize
@@ -2853,17 +2853,7 @@ that affect more than one function.
 This can be used for instance to have frequently executed functions
 compiled with more aggressive optimization options that produce faster
 and larger code, while other functions can be called with less
-aggressive options.  On some targets, the @code{hot} attribute implies
-@code{optimize("O3")}, and @code{cold} attribute implies
-@code{optimize("Os")}.
-
-@smallexample
-int fast_func (void) __attribute__ ((__optimize__ ("O3,unroll-loops")));
-int slow_func (void) __attribute__ ((__optimize__ ("Os")));
-@end smallexample
-
-The inliner will not inline functions with a higher optimization level
-than the caller or different space/time trade offs.
+aggressive options.
 
 @item pure
 @cindex @code{pure} function attribute
@@ -2903,10 +2893,6 @@ are automatically detected and this attribute is ignored.
 The @code{hot} attribute is not implemented in GCC versions earlier
 than 4.3.
 
-Starting with GCC 4.4, the @code{hot} attribute sets
-@code{optimize("O3")} to turn on more aggressive optimization on the
-the i386, x86_64, and IA-64 targets.
-
 @item cold
 @cindex @code{cold} function attribute
 The @code{cold} attribute is used to inform the compiler that a function is
@@ -2923,10 +2909,6 @@ When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
 
 The @code{cold} attribute is not implemented in GCC versions earlier than 4.3.
-
-Starting with GCC 4.4, the @code{cold} attribute sets
-@code{optimize("Os")} to save space on the the i386, x86_64, and IA-64
-targets.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
@@ -11834,41 +11816,22 @@ push_macro} and restored by @code{#pragma pop_macro}.
 @subsection Function Specific Option Pragmas
 
 @table @code
-@item #pragma GCC option (@var{"string"}...)
-@cindex pragma GCC option
+@item #pragma GCC target (@var{"string"}...)
+@cindex pragma GCC target
 
 This pragma allows you to set target specific options for functions
 defined later in the source file.  One or more strings can be
 specified.  Each function that is defined after this point will be as
-if @code{attribute((option("STRING")))} was specified for that
+if @code{attribute((target("STRING")))} was specified for that
 function.  The parenthesis around the options is optional.
 @xref{Function Attributes}, for more information about the
-@code{option} attribute and the attribute syntax.
+@code{target} attribute and the attribute syntax.
 
-The @samp{#pragma GCC option} pragma is not implemented in GCC
+The @samp{#pragma GCC target} pragma is not implemented in GCC
 versions earlier than 4.4, and is currently only implemented for the
-386 and x86_64 backend.
+386 and x86_64 backends.
 @end table
 
-@table @code
-@item #pragma GCC option (push)
-@itemx #pragma GCC option (pop)
-@cindex pragma GCC option
-
-These pragmas maintain a stack of the current options.  It is
-intended for include files where you temporarily want to switch to
-using a different @samp{#pragma GCC option} and then to pop back to
-the previous options.
-@end table
-
-@table @code
-@item #pragma GCC option (reset)
-@cindex pragma, target option
-@cindex pragma GCC option
-
-This pragma clears the current @code{#pragma GCC options} to use the
-default switches as specified on the command line.
-@end table
 @table @code
 @item #pragma GCC optimize (@var{"string"}...)
 @cindex pragma GCC optimize
@@ -11886,22 +11849,31 @@ versions earlier than 4.4.
 @end table
 
 @table @code
-@item #pragma GCC optimize (push)
-@itemx #pragma GCC optimize (pop)
-@cindex pragma GCC optimize
+@item #pragma GCC push_options
+@itemx #pragma GCC pop_options
+@cindex pragma GCC push_options
+@cindex pragma GCC pop_options
 
-These pragmas maintain a stack of the current optimization options.
-It is intended for include files where you temporarily want to switch
-to using a different @code{#pragma GCC optimize} and then to pop back
-to the previous optimizations.
+These pragmas maintain a stack of the current target and optimization
+options.  It is intended for include files where you temporarily want
+to switch to using a different @samp{#pragma GCC target} or
+@samp{#pragma GCC optimize} and then to pop back to the previous
+options.
+
+The @samp{#pragma GCC push_options} and @samp{#pragma GCC pop_options}
+pragmas are not implemented in GCC versions earlier than 4.4.
 @end table
 
 @table @code
-@item #pragma GCC optimize reset
-@cindex pragma GCC optimize
+@item #pragma GCC reset_options
+@cindex pragma GCC reset_options
 
-This pragma clears the current @code{#pragma GCC optimize} to use the
-default switches as specified on the command line.
+This pragma clears the current @code{#pragma GCC target} and
+@code{#pragma GCC optimize} to use the default switches as specified
+on the command line.
+
+The @samp{#pragma GCC reset_options} pragma is not implemented in GCC
+versions earlier than 4.4.
 @end table
 
 @node Unnamed Fields

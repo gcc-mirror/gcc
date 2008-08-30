@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "c-pragma.h"
 
-static bool ix86_pragma_option_parse (tree);
+static bool ix86_pragma_target_parse (tree, tree);
 static void ix86_target_macros_internal
   (int, enum processor_type, enum processor_type, enum fpmath_unit,
    void (*def_or_undef) (cpp_reader *, const char *));
@@ -232,11 +232,12 @@ ix86_target_macros_internal (int isa_flag,
 }
 
 
-/* Hook to validate the current #pragma option and set the state, and update
-   the macros based on what was changed.  */
+/* Hook to validate the current #pragma GCC target and set the state, and
+   update the macros based on what was changed.  If ARGS is NULL, then
+   POP_TARGET is used to reset the options.  */
 
 static bool
-ix86_pragma_option_parse (tree args)
+ix86_pragma_target_parse (tree args, tree pop_target)
 {
   tree prev_tree = build_target_option_node ();
   tree cur_tree;
@@ -252,12 +253,14 @@ ix86_pragma_option_parse (tree args)
 
   if (! args)
     {
-      cur_tree = target_option_default_node;
+      cur_tree = ((pop_target)
+		  ? pop_target
+		  : target_option_default_node);
       cl_target_option_restore (TREE_TARGET_OPTION (cur_tree));
     }
   else
     {
-      cur_tree = ix86_valid_option_attribute_tree (args);
+      cur_tree = ix86_valid_target_attribute_tree (args);
       if (!cur_tree)
 	return false;
     }
@@ -339,8 +342,8 @@ ix86_target_macros (void)
 void
 ix86_register_pragmas (void)
 {
-  /* Update pragma hook to allow parsing #pragma GCC option.  */
-  targetm.target_option.pragma_parse = ix86_pragma_option_parse;
+  /* Update pragma hook to allow parsing #pragma GCC target.  */
+  targetm.target_option.pragma_parse = ix86_pragma_target_parse;
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();

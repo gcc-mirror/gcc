@@ -1,3 +1,19 @@
+2008-08-29  Michael Meissner  <gnu@the-meissners.org>
+
+	* decl.c (builtin_function_1): Take a bool argument to decide
+	whether to use pushdecl or pushdecl_top_level.
+	(duplicate_decls): Copy function specific target and optimization
+	options on duplicate declarations.
+	(cxx_builtin_function): Update builtin_function_1 call.
+	(cxx_builtin_function_ext_scope): New function, guarantee that the
+	declaration is done at global scope.
+
+	* cp-objcp-common.h (LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE): New
+	macro, define builtin function hook for delayed machine specific
+	builtins.
+
+	* cp-tree.h (cxx_builtin_function_ext_scope): Add declaration.
+
 2008-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37288
