@@ -19112,8 +19112,11 @@ arm_order_regs_for_local_alloc (void)
 void
 arm_optimization_options (int level, int size ATTRIBUTE_UNUSED)
 {
-  /* Enable section anchors by default at -O1 or higher.  */
-  flag_section_anchors = (level > 0 ? 1 : 0);
+  /* Enable section anchors by default at -O1 or higher.
+     Use 2 to distinguish from an explicit -fsection-anchors
+     given on the command line.  */
+  if (level > 0)
+    flag_section_anchors = 2;
 }
 
 #include "gt-arm.h"
