@@ -1,3 +1,8 @@
+2008-08-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/Make-lang.in: Allow s-oscons.{o,ali} to
+	be built even without a separate libada directory.
+
 2008-08-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib-xref.ads: Fix typo in subprogram reference definition.
