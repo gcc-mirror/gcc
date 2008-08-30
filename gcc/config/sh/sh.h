@@ -2613,8 +2613,8 @@ struct sh_args {
       if (TARGET_SH2E && MODE == SFmode)				\
 	{								\
 	  X = copy_rtx (X);						\
-	  push_reload (index_rtx, NULL_RTX, &XEXP (X, 1), NULL,		\
-		       R0_REGS, Pmode, VOIDmode, 0, 0, (OPNUM),		\
+	  push_reload (X, NULL_RTX, &X, NULL,				\
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
 		       (TYPE));						\
 	  goto WIN;							\
 	}								\
