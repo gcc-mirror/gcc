@@ -12,7 +12,7 @@ float b[SIZE] __attribute__((__aligned__(32)));
 float c[SIZE] __attribute__((__aligned__(32)));
 
 /* This should vectorize.  */
-#pragma GCC optimize push
+#pragma GCC push_options
 #pragma GCC optimize (3, "unroll-all-loops", "-fprefetch-loop-arrays")
 
 void
@@ -24,7 +24,7 @@ opt3 (void)
     a[i] = b[i] + c[i];
 }
 
-#pragma GCC optimize pop
+#pragma GCC pop_options
 
 /* This should not vectorize.  */
 void

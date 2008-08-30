@@ -5,14 +5,14 @@
 extern void exit (int);
 
 #ifdef __SSE5__
-#warning "__SSE5__ should not be defined before #pragma GCC option."
+#warning "__SSE5__ should not be defined before #pragma GCC target."
 #endif
 
-#pragma GCC option (push)
-#pragma GCC option ("sse5,fused-madd")
+#pragma GCC push_options
+#pragma GCC target ("sse5,fused-madd")
 
 #ifndef __SSE5__
-#warning "__SSE5__ should have be defined after #pragma GCC option."
+#warning "__SSE5__ should have be defined after #pragma GCC target."
 #endif
 
 float
@@ -21,9 +21,9 @@ flt_mul_add (float a, float b, float c)
   return (a * b) + c;
 }
 
-#pragma GCC option (pop)
+#pragma GCC pop_options
 #ifdef __SSE5__
-#warning "__SSE5__ should not be defined after #pragma GCC pop option."
+#warning "__SSE5__ should not be defined after #pragma GCC pop target."
 #endif
 
 double

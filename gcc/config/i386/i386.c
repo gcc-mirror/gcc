@@ -1793,6 +1793,7 @@ static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
+static void ix86_add_new_builtins (int);
 
 enum ix86_function_specific_strings
 {
@@ -1809,8 +1810,8 @@ static void ix86_function_specific_save (struct cl_target_option *);
 static void ix86_function_specific_restore (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
 					  struct cl_target_option *);
-static bool ix86_valid_option_attribute_p (tree, tree, tree, int);
-static bool ix86_valid_option_attribute_inner_p (tree, char *[]);
+static bool ix86_valid_target_attribute_p (tree, tree, tree, int);
+static bool ix86_valid_target_attribute_inner_p (tree, char *[]);
 static bool ix86_can_inline_p (tree, tree);
 static void ix86_set_current_function (tree);
 
@@ -2583,7 +2584,7 @@ override_options (bool main_args_p)
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
   /* Set up prefix/suffix so the error messages refer to either the command
-     line argument, or the attribute(option).  */
+     line argument, or the attribute(target).  */
   if (main_args_p)
     {
       prefix = "-m";
@@ -3366,12 +3367,12 @@ ix86_function_specific_print (FILE *file, int indent,
 }
 
 
-/* Inner function to process the attribute((option(...))), take an argument and
+/* Inner function to process the attribute((target(...))), take an argument and
    set the current options from the argument. If we have a list, recursively go
    over the list.  */
 
 static bool
-ix86_valid_option_attribute_inner_p (tree args, char *p_strings[])
+ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
 {
   char *next_optstr;
   bool ret = true;
@@ -3462,7 +3463,7 @@ ix86_valid_option_attribute_inner_p (tree args, char *p_strings[])
 
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
-	    && !ix86_valid_option_attribute_inner_p (TREE_VALUE (args), p_strings))
+	    && !ix86_valid_target_attribute_inner_p (TREE_VALUE (args), p_strings))
 	  ret = false;
 
       return ret;
@@ -3531,7 +3532,7 @@ ix86_valid_option_attribute_inner_p (tree args, char *p_strings[])
       /* Process the option.  */
       if (opt == N_OPTS)
 	{
-	  error ("attribute(option(\"%s\")) is unknown", orig_p);
+	  error ("attribute(target(\"%s\")) is unknown", orig_p);
 	  ret = false;
 	}
 
@@ -3570,7 +3571,7 @@ ix86_valid_option_attribute_inner_p (tree args, char *p_strings[])
 /* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
 
 tree
-ix86_valid_option_attribute_tree (tree args)
+ix86_valid_target_attribute_tree (tree args)
 {
   const char *orig_arch_string = ix86_arch_string;
   const char *orig_tune_string = ix86_tune_string;
@@ -3584,7 +3585,7 @@ ix86_valid_option_attribute_tree (tree args)
     = TREE_TARGET_OPTION (target_option_default_node);
 
   /* Process each of the options on the chain.  */
-  if (! ix86_valid_option_attribute_inner_p (args, option_strings))
+  if (! ix86_valid_target_attribute_inner_p (args, option_strings))
     return NULL_TREE;
 
   /* If the changed options are different from the default, rerun override_options,
@@ -3617,6 +3618,9 @@ ix86_valid_option_attribute_tree (tree args)
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
       override_options (false);
 
+      /* Add any builtin functions with the new isa if any.  */
+      ix86_add_new_builtins (ix86_isa_flags);
+
       /* Save the current options unless we are validating options for
 	 #pragma.  */
       t = build_target_option_node ();
@@ -3634,27 +3638,47 @@ ix86_valid_option_attribute_tree (tree args)
   return t;
 }
 
-/* Hook to validate attribute((option("string"))).  */
+/* Hook to validate attribute((target("string"))).  */
 
 static bool
-ix86_valid_option_attribute_p (tree fndecl,
+ix86_valid_target_attribute_p (tree fndecl,
 			       tree ARG_UNUSED (name),
 			       tree args,
 			       int ARG_UNUSED (flags))
 {
-  struct cl_target_option cur_opts;
+  struct cl_target_option cur_target;
   bool ret = true;
-  tree new_opts;
+  tree old_optimize = build_optimization_node ();
+  tree new_target, new_optimize;
+  tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
-  cl_target_option_save (&cur_opts);
-  new_opts = ix86_valid_option_attribute_tree (args);
-  if (!new_opts)
+  /* If the function changed the optimization levels as well as setting target
+     options, start with the optimizations specified.  */
+  if (func_optimize && func_optimize != old_optimize)
+    cl_optimization_restore (TREE_OPTIMIZATION (func_optimize));
+
+  /* The target attributes may also change some optimization flags, so update
+     the optimization options if necessary.  */
+  cl_target_option_save (&cur_target);
+  new_target = ix86_valid_target_attribute_tree (args);
+  new_optimize = build_optimization_node ();
+
+  if (!new_target)
     ret = false;
 
   else if (fndecl)
-    DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_opts;
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
 
-  cl_target_option_restore (&cur_opts);
+      if (old_optimize != new_optimize)
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
+    }
+
+  cl_target_option_restore (&cur_target);
+
+  if (old_optimize != new_optimize)
+    cl_optimization_restore (TREE_OPTIMIZATION (old_optimize));
+
   return ret;
 }
 
@@ -19535,6 +19559,7 @@ enum ix86_builtins
   IX86_BUILTIN_FNMSUBSD,
   IX86_BUILTIN_FNMSUBPS,
   IX86_BUILTIN_FNMSUBPD,
+  IX86_BUILTIN_PCMOV,
   IX86_BUILTIN_PCMOV_V2DI,
   IX86_BUILTIN_PCMOV_V4SI,
   IX86_BUILTIN_PCMOV_V8HI,
@@ -19734,17 +19759,35 @@ enum ix86_builtins
 /* Table for the ix86 builtin decls.  */
 static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 
-/* Table to record which ISA options the builtin needs.  */
-static int ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
+/* Table of all of the builtin functions that are possible with different ISA's
+   but are waiting to be built until a function is declared to use that
+   ISA.  */
+struct builtin_isa GTY(())
+{
+  tree type;			/* builtin type to use in the declaration */
+  const char *name;		/* function name */
+  int isa;			/* isa_flags this builtin is defined for */
+  bool const_p;			/* true if the declaration is constant */
+};
+
+static GTY(()) struct builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
+
 
 /* Add an ix86 target builtin function with CODE, NAME and TYPE.  Save the MASK
  * of which isa_flags to use in the ix86_builtins_isa array.  Stores the
  * function decl in the ix86_builtins array.  Returns the function decl or
  * NULL_TREE, if the builtin was not added.
  *
- * Record all builtins, even if it isn't an instruction set in the current ISA
- * in case the user uses function specific options for a different ISA.  When
- * the builtin is expanded, check at that time whether it is valid.  */
+ * If the front end has a special hook for builtin functions, delay adding
+ * builtin functions that aren't in the current ISA until the ISA is changed
+ * with function specific optimization.  Doing so, can save about 300K for the
+ * default compiler.  When the builtin is expanded, check at that time whether
+ * it is valid.
+ *
+ * If the front end doesn't have a special hook, record all builtins, even if
+ * it isn't an instruction set in the current ISA in case the user uses
+ * function specific options for a different ISA, so that we don't get scope
+ * errors if a builtin is added in the middle of a function scope.  */
 
 static inline tree
 def_builtin (int mask, const char *name, tree type, enum ix86_builtins code)
@@ -19753,10 +19796,25 @@ def_builtin (int mask, const char *name, tree type, enum ix86_builtins code)
 
   if (!(mask & OPTION_MASK_ISA_64BIT) || TARGET_64BIT)
     {
-      decl = add_builtin_function (name, type, code, BUILT_IN_MD,
-				   NULL, NULL_TREE);
-      ix86_builtins[(int) code] = decl;
-      ix86_builtins_isa[(int) code] = mask;
+      ix86_builtins_isa[(int) code].isa = mask;
+
+      if ((mask & ix86_isa_flags) != 0
+	  || (lang_hooks.builtin_function
+	      == lang_hooks.builtin_function_ext_scope))
+
+	{
+	  decl = add_builtin_function (name, type, code, BUILT_IN_MD, NULL,
+				       NULL_TREE);
+	  ix86_builtins[(int) code] = decl;
+	  ix86_builtins_isa[(int) code].type = NULL_TREE;
+	}
+      else
+	{
+	  ix86_builtins[(int) code] = NULL_TREE;
+	  ix86_builtins_isa[(int) code].const_p = false;
+	  ix86_builtins_isa[(int) code].type = type;
+	  ix86_builtins_isa[(int) code].name = name;
+	}
     }
 
   return decl;
@@ -19771,7 +19829,38 @@ def_builtin_const (int mask, const char *name, tree type,
   tree decl = def_builtin (mask, name, type, code);
   if (decl)
     TREE_READONLY (decl) = 1;
+  else
+    ix86_builtins_isa[(int) code].const_p = true;
+
   return decl;
+}
+
+/* Add any new builtin functions for a given ISA that may not have been
+   declared.  This saves a bit of space compared to adding all of the
+   declarations to the tree, even if we didn't use them.  */
+
+static void
+ix86_add_new_builtins (int isa)
+{
+  int i;
+  tree decl;
+
+  for (i = 0; i < (int)IX86_BUILTIN_MAX; i++)
+    {
+      if ((ix86_builtins_isa[i].isa & isa) != 0
+	  && ix86_builtins_isa[i].type != NULL_TREE)
+	{
+	  decl = add_builtin_function_ext_scope (ix86_builtins_isa[i].name,
+						 ix86_builtins_isa[i].type,
+						 i, BUILT_IN_MD, NULL,
+						 NULL_TREE);
+
+	  ix86_builtins[i] = decl;
+	  ix86_builtins_isa[i].type = NULL_TREE;
+	  if (ix86_builtins_isa[i].const_p)
+	    TREE_READONLY (decl) = 1;
+	}
+    }
 }
 
 /* Bits for builtin_description.flag.  */
@@ -20787,7 +20876,7 @@ static const struct builtin_description bdesc_multi_arg[] =
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5i_vmfnmsubv2df4,    "__builtin_ia32_fnmsubsd",   IX86_BUILTIN_FNMSUBSD,   0,            (int)MULTI_ARG_3_DF },
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5i_fnmsubv4sf4,      "__builtin_ia32_fnmsubps",   IX86_BUILTIN_FNMSUBPS,   0,            (int)MULTI_ARG_3_SF },
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5i_fnmsubv2df4,      "__builtin_ia32_fnmsubpd",   IX86_BUILTIN_FNMSUBPD,   0,            (int)MULTI_ARG_3_DF },
-  { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcmov_v2di,        "__builtin_ia32_pcmov",      IX86_BUILTIN_PCMOV_V2DI, 0,            (int)MULTI_ARG_3_DI },
+  { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcmov_v2di,        "__builtin_ia32_pcmov",      IX86_BUILTIN_PCMOV,	 0,            (int)MULTI_ARG_3_DI },
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcmov_v2di,        "__builtin_ia32_pcmov_v2di", IX86_BUILTIN_PCMOV_V2DI, 0,            (int)MULTI_ARG_3_DI },
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcmov_v4si,        "__builtin_ia32_pcmov_v4si", IX86_BUILTIN_PCMOV_V4SI, 0,            (int)MULTI_ARG_3_SI },
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcmov_v8hi,        "__builtin_ia32_pcmov_v8hi", IX86_BUILTIN_PCMOV_V8HI, 0,            (int)MULTI_ARG_3_HI },
@@ -23986,10 +24075,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
      whether it is supported.  */
-  if (ix86_builtins_isa[fcode]
-      && !(ix86_builtins_isa[fcode] & ix86_isa_flags))
+  if (ix86_builtins_isa[fcode].isa
+      && !(ix86_builtins_isa[fcode].isa & ix86_isa_flags))
     {
-      char *opts = ix86_target_string (ix86_builtins_isa[fcode], 0, NULL,
+      char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa, 0, NULL,
 				       NULL, NULL, false);
 
       if (!opts)
@@ -29026,7 +29115,7 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function
 
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
-#define TARGET_OPTION_VALID_ATTRIBUTE_P ix86_valid_option_attribute_p
+#define TARGET_OPTION_VALID_ATTRIBUTE_P ix86_valid_target_attribute_p
 
 #undef TARGET_OPTION_SAVE
 #define TARGET_OPTION_SAVE ix86_function_specific_save
@@ -29039,12 +29128,6 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_OPTION_CAN_INLINE_P
 #define TARGET_OPTION_CAN_INLINE_P ix86_can_inline_p
-
-#undef TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION
-#define TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION true
-
-#undef TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION
-#define TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

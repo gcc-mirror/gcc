@@ -65,13 +65,14 @@ extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 extern const unsigned int cl_lang_count;
 
+#define CL_SAVE			(1 << 17) /* Target-specific option for attribute.  */
 #define CL_PARAMS               (1 << 18) /* Fake entry.  Used to display --param info with --help.  */
 #define CL_WARNING		(1 << 19) /* Enables an (optional) warning message.  */
 #define CL_OPTIMIZATION		(1 << 20) /* Enables an (optional) optimization.  */
 #define CL_TARGET		(1 << 21) /* Target-specific option.  */
 #define CL_COMMON		(1 << 22) /* Language-independent.  */
 
-#define CL_MIN_OPTION_CLASS	CL_PARAMS
+#define CL_MIN_OPTION_CLASS	CL_SAVE
 #define CL_MAX_OPTION_CLASS	CL_COMMON
 
 /* From here on the bits describe attributes of the options.

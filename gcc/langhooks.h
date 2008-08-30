@@ -410,6 +410,14 @@ struct lang_hooks
   /* Do language specific processing in the builtin function DECL  */
   tree (*builtin_function) (tree decl);
 
+  /* Like builtin_function, but make sure the scope is the external scope.
+     This is used to delay putting in back end builtin functions until the ISA
+     that defines the builtin is declared via function specific target options,
+     which can save memory for machines like the x86_64 that have multiple
+     ISAs.  If this points to the same function as builtin_function, the
+     backend must add all of the builtins at program initialization time.  */
+  tree (*builtin_function_ext_scope) (tree decl);
+
   /* Used to set up the tree_contains_structure array for a frontend. */
   void (*init_ts) (void);
 
@@ -428,5 +436,11 @@ extern tree add_builtin_function (const char *name, tree type,
 				  int function_code, enum built_in_class cl,
 				  const char *library_name,
 				  tree attrs);
+
+extern tree add_builtin_function_ext_scope (const char *name, tree type,
+					    int function_code,
+					    enum built_in_class cl,
+					    const char *library_name,
+					    tree attrs);
 
 #endif /* GCC_LANG_HOOKS_H */

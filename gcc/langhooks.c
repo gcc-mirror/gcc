@@ -540,13 +540,16 @@ lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *c ATTRIBUTE_UNUSED,
 {
 }
 
-tree
-add_builtin_function (const char *name,
-		      tree type,
-		      int function_code,
-		      enum built_in_class cl,
-		      const char *library_name,
-		      tree attrs)
+/* Common function for add_builtin_function and
+   add_builtin_function_ext_scope.  */
+static tree
+add_builtin_function_common (const char *name,
+			     tree type,
+			     int function_code,
+			     enum built_in_class cl,
+			     const char *library_name,
+			     tree attrs,
+			     tree (*hook) (tree))
 {
   tree   id = get_identifier (name);
   tree decl = build_decl (FUNCTION_DECL, id, type);
@@ -571,8 +574,43 @@ add_builtin_function (const char *name,
   else
     decl_attributes (&decl, NULL_TREE, 0);
 
-  return lang_hooks.builtin_function (decl);
+  return hook (decl);
 
+}
+
+/* Create a builtin function.  */
+
+tree
+add_builtin_function (const char *name,
+		      tree type,
+		      int function_code,
+		      enum built_in_class cl,
+		      const char *library_name,
+		      tree attrs)
+{
+  return add_builtin_function_common (name, type, function_code, cl,
+				      library_name, attrs,
+				      lang_hooks.builtin_function);
+}
+
+/* Like add_builtin_function, but make sure the scope is the external scope.
+   This is used to delay putting in back end builtin functions until the ISA
+   that defines the builtin is declared via function specific target options,
+   which can save memory for machines like the x86_64 that have multiple ISAs.
+   If this points to the same function as builtin_function, the backend must
+   add all of the builtins at program initialization time.  */
+
+tree
+add_builtin_function_ext_scope (const char *name,
+				tree type,
+				int function_code,
+				enum built_in_class cl,
+				const char *library_name,
+				tree attrs)
+{
+  return add_builtin_function_common (name, type, function_code, cl,
+				      library_name, attrs,
+				      lang_hooks.builtin_function_ext_scope);
 }
 
 tree

@@ -5,6 +5,151 @@
 
 	* Makefile.in (dodump.h): Add $(BASIC_BLOCK_H) dependency.
 
+	* opts.h (CL_SAVE): New option class for marking options that are
+	target specific options usable in the target attribute.
+	(CL_MIN_OPTION_CLASS): CL_SAVE is now the minimum option.
+
+	* opt-functions.awk (switch_flags): Add CL_SAVE flag so backends
+	can easily find the target specific options that are safe to use
+	in the attribute or pragma.
+
+	* attribs.c (decl_attributes): Change #pragma GCC option to
+	#pragma GCC target, and attribute((option(...))) to
+	attribute((target(...))).
+
+	* doc/extend.texi (target attribute): Change from option
+	attribute.  Delete push/pop/reset.
+	(#pragma GCC target): Change from #pragma GCC option.  Delete
+	push/pop/reset.
+	(#pragma GCC push_options): Document new pragma.
+	(#pragma GCC pop_options): Document new pragma.
+	(#pragma GCC reset_options): Document new pragma.
+
+	* targhooks.c (default_target_option_valid_attribute_p): Add
+	warning about port not supporting target attributes.
+	(default_target_option_pragma_parse): New function, warn about
+	#pragma GCC target not being supported.
+
+	* targhooks.h (default_target_option_pragma_parse): Add
+	declaration.
+
+	* tree.h (TI_CURRENT_TARGET_PRAGMA): Rename from
+	TI_CURRENT_OPTION_PRAGMA.
+	(current_target_pragma): Rename from current_option_pragma.
+
+	* target.h: (struct target_option): Delete booleans for changing
+	the optimization level on hot/cold functions.  Change signature of
+	pragma_parse hook to take a second tree.
+
+	* c-tree.h (c_builtin_function_ext_scope): Add declaration.
+
+	* c-decl.c (c_builtin_function_ext_scope): New function, guarantee
+	that the declaration is done at global scope.
+
+	* langhooks.c (add_builtin_function_common): Move most of the code
+	from add_builtin_function here, calling the hook passed in.
+	(add_builtin_function): Call add_builtin_function_common with
+	standard builtin hook.
+	(add_builtin_function_ext_scope): New function to add builtins to
+	global scope.
+
+	* langhooks.h (struct lang_hooks): Add builtin_function_ext_scope
+	hook.
+	(add_builtin_function_ext_scope): Add declaration.
+
+	* c-pragma.c (handle_pragma_target): Rename from
+	handle_pragma_option, #pragma GCC option is now #pragma GCC
+	target.  Move warning about port not supporting target options to
+	default pragma parse hook.  Remove push/pop/reset from this
+	pragma.
+	(handle_pragma_optimize): Remove push/pop/reset from this pragma.
+	(option_stack): Delete static variable.
+	(optimize_stack): Ditto.
+	(optons_stack): New stack of saved target and optimization
+	options.
+	(handle_pragma_push_options): New function to handle pushing both
+	target and optimization options.
+	(handle_pragma_pop_options): New function to handle popping both
+	target and optimization options.
+	(handle_pragma_reset_options): New function to handle resetting
+	both target and optimization options to their initial state.
+	(init_pragma): Rename handle_pragma_option to
+	handle_pragma_target.  Add support for push_options, pop_options,
+	and reset_options pragmas.
+
+	* target-def.h (TARGET_OPTION_PRAGMA_PARSE): Change default to
+	default_target_option_pragma_parse.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Change default to
+	default_target_option_valid_attribute_p.
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): Delete.
+	(TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION): Ditto.
+	(TARGET_OPTION_HOOKS): Delete the fields for whether to change
+	optimization level on hot/cold functions.
+
+	* tree-inline.c (tree_can_inline_p): Disable suppressing inlining
+	if the caller and callee have different optimization levels.
+
+	* c-common.c (handle_target_attribute): Rename from
+	handle_option_attribute, attribute((option(...))) is now
+	attribute((target(...))).  Move warning if the port does not
+	support target attributes to the default hook.
+	(handle_hot_attribute): Delete code to change the optimization
+	level of hot functions.
+	(handle_cold_attribute): Ditto.
+
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Take a second
+	argument that is the binary tree options to use if there are no
+	arguments.  Call ix86_valid_target_attribute_tree instead of
+	ix86_valid_option_attribute_tree.
+	(ix86_pragma_target_parse): Rename from ix86_pragma_option_parse.
+	(ix86_register_pragmas): Use ix86_pragma_target_parse instead of
+	ix86_pragma_option_parse.
+
+	* config/i386/i386-protos.h (ix86_valid_target_attribute_tree):
+	Rename from ix86_valid_option_attribute_tree.
+
+	* config/i386/i386.c (ix86_add_new_builtins): New function to add
+	new builtins when the ISA changes.
+	(ix86_valid_target_attribute_tree): Rename from
+	ix86_valid_option_attribute_tree.  Change callers.  If the
+	function specified optimization options, use those as the starting
+	point before setting up the target attributes.  If the
+	optimization options were changed in the course of setting the
+	target attributes, record the new optimization options.
+	(ix86_valid_target_attribute_tree_inner_p): Rename from
+	ix86_valid_option_attribute_tree_inner_p.  Change callers.  Call
+	ix86_add_new_builtins if the ISA changed.
+	(ix86_valid_target_attribute_p): Rename from
+	ix86_valid_option_attribute_p.  Change callers.
+	(enum ix86_builtins): Add IX86_BUILTIN_PCMOV to allow both
+	__builtin_ia32_pcmov and __builtin_ia32_pcmov_v2di to be declared
+	as delayed builtin functions.
+	(struct builtin_isa): New structure to record builtin functions
+	that should be delayed until the ISA for that function is used.
+	(ix86_builtins_isa): Change from int to struct to track builtin
+	functions we want to declare at some point.
+	(def_builtin): If the front end can delay defining the builtin
+	functions, don't create builtins for ISAs not part of the default
+	options.
+	(def_builtin_const): Ditto.
+	(bdesc_multi_arg): Declare __builtin_ia32_pcmov and
+	__builtin_ia32_pcmov_v2di to be different builtin functions.
+	(ix86_expand_builtin): Changes due to ix86_builtins_isa now being
+	a structure instead of an int.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Use
+	ix86_valid_target_attribute_p, not ix86_valid_option_attribute_p.
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): Delete.
+	(TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION): Ditto.
+
+	* config/ia64/ia64.h
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): Delete.
+	(TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION): Ditto.
+
+	* langhooks-def.h (LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE): New
+	hook, default to being the same as LANG_HOOKS_BUILTIN_FUNCTION.
+	(LANG_HOOKS_INITIALIZER): Add
+	LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE hook.
+
 2008-08-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/37270

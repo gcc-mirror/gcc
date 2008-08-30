@@ -571,7 +571,7 @@ static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
-static tree handle_option_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
@@ -856,8 +856,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_error_attribute },
   { "error",		      1, 1, true,  false, false,
 			      handle_error_attribute },
-  { "option",                 1, -1, true, false, false,
-			      handle_option_attribute },
+  { "target",                 1, -1, true, false, false,
+			      handle_target_attribute },
   { "optimize",               1, -1, true, false, false,
 			      handle_optimize_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
@@ -5260,34 +5260,8 @@ handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		   name, "cold");
 	  *no_add_attrs = true;
 	}
-      else
-	{
-	  tree old_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node);
-
-	  /* If we are not at -O3, but are optimizing, turn on -O3
-	     optimizations just for this one function.  */
-	  if (((optimize > 0 && optimize < 3) || optimize_size)
-	      && targetm.target_option.hot_attribute_sets_optimization
-	      && (!old_opts || old_opts == optimization_default_node))
-	    {
-	      /* Create the hot optimization node if needed.  */
-	      if (!optimization_hot_node)
-		{
-		  struct cl_optimization current_options;
-		  static const char *os_argv[] = { NULL, "-O3", NULL };
-
-		  cl_optimization_save (&current_options);
-		  decode_options (2, os_argv);
-		  optimization_hot_node = build_optimization_node ();
-		  cl_optimization_restore (&current_options);
-		}
-
-	      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
-		= optimization_hot_node;
-	    }
-	  /* Most of the rest of the hot processing is done later with
-	     lookup_attribute.  */
-	}
+      /* Most of the rest of the hot processing is done later with
+	 lookup_attribute.  */
     }
   else
     {
@@ -5312,34 +5286,8 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		   name, "hot");
 	  *no_add_attrs = true;
 	}
-      else
-	{
-	  tree old_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node);
-
-	  /* If we are optimizing, but not optimizing for space, turn on -Os
-	     optimizations just for this one function.  */
-	  if (optimize && !optimize_size
-	      && targetm.target_option.cold_attribute_sets_optimization
-	      && (!old_opts || old_opts == optimization_default_node))
-	    {
-	      /* Create the cold optimization node if needed.  */
-	      if (!optimization_cold_node)
-		{
-		  struct cl_optimization current_options;
-		  static const char *os_argv[] = { NULL, "-Os", NULL };
-
-		  cl_optimization_save (&current_options);
-		  decode_options (2, os_argv);
-		  optimization_cold_node = build_optimization_node ();
-		  cl_optimization_restore (&current_options);
-		}
-
-	      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
-		= optimization_cold_node;
-	    }
-	  /* Most of the rest of the cold processing is done later with
-	     lookup_attribute.  */
-	}
+      /* Most of the rest of the cold processing is done later with
+	 lookup_attribute.  */
     }
   else
     {
@@ -7038,25 +6986,16 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
-/* For handling "option" attribute. arguments as in
-   struct attribute_spec.handler.  */
+/* Handle a "target" attribute.  */
 
 static tree
-handle_option_attribute (tree *node, tree name, tree args, int flags,
+handle_target_attribute (tree *node, tree name, tree args, int flags,
 			 bool *no_add_attrs)
 {
   /* Ensure we have a function type.  */
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
-    }
-  else if (targetm.target_option.valid_attribute_p
-	   == default_target_option_valid_attribute_p)
-    {
-      warning (OPT_Wattributes,
-	       "%qE attribute is not supported on this machine",
-	       name);
       *no_add_attrs = true;
     }
   else if (! targetm.target_option.valid_attribute_p (*node, name, args,

@@ -69,6 +69,8 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL c_dup_lang_specific_decl
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION c_builtin_function
+#undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
+#define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE c_builtin_function_ext_scope
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE

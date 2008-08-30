@@ -12,7 +12,7 @@ typedef long long __m128i __attribute__ ((__vector_size__ (16), __may_alias__));
 #error "-msse3 should not be set for this test"
 #endif
 
-__m128d sse3_hsubpd (__m128d a, __m128d b) __attribute__((__option__("sse3")));
+__m128d sse3_hsubpd (__m128d a, __m128d b) __attribute__((__target__("sse3")));
 __m128d generic_hsubpd (__m128d a, __m128d b);
 
 __m128d
@@ -31,7 +31,7 @@ generic_hsubpd (__m128d a, __m128d b)
 #error "-mssse3 should not be set for this test"
 #endif
 
-__m128w ssse3_psignd128 (__m128w a, __m128w b) __attribute__((__option__("ssse3")));
+__m128w ssse3_psignd128 (__m128w a, __m128w b) __attribute__((__target__("ssse3")));
 __m128w generic_psignd (__m128w ab, __m128w b);
 
 __m128w
@@ -50,7 +50,7 @@ generic_psignd128 (__m128w a, __m128w b)
 #error "-msse4.1 should not be set for this test"
 #endif
 
-__m128d sse4_1_blendvpd (__m128d a, __m128d b, __m128d c) __attribute__((__option__("sse4.1")));
+__m128d sse4_1_blendvpd (__m128d a, __m128d b, __m128d c) __attribute__((__target__("sse4.1")));
 __m128d generic_blendvpd (__m128d a, __m128d b, __m128d c);
 
 __m128d
@@ -69,7 +69,7 @@ generic_blendvpd  (__m128d a, __m128d b, __m128d c)
 #error "-msse4.2 should not be set for this test"
 #endif
 
-__m128i sse4_2_pcmpgtq (__m128i a, __m128i b) __attribute__((__option__("sse4.2")));
+__m128i sse4_2_pcmpgtq (__m128i a, __m128i b) __attribute__((__target__("sse4.2")));
 __m128i generic_pcmpgtq (__m128i ab, __m128i b);
 
 __m128i
@@ -88,7 +88,7 @@ generic_pcmpgtq (__m128i a, __m128i b)
 #error "-msse4a should not be set for this test"
 #endif
 
-__m128i sse4_2_insertq (__m128i a, __m128i b) __attribute__((__option__("sse4a")));
+__m128i sse4_2_insertq (__m128i a, __m128i b) __attribute__((__target__("sse4a")));
 __m128i generic_insertq (__m128i ab, __m128i b);
 
 __m128i
@@ -107,7 +107,7 @@ generic_insertq (__m128i a, __m128i b)
 #error "-msse5 should not be set for this test"
 #endif
 
-__m128d sse5_fmaddpd (__m128d a, __m128d b, __m128d c) __attribute__((__option__("sse5")));
+__m128d sse5_fmaddpd (__m128d a, __m128d b, __m128d c) __attribute__((__target__("sse5")));
 __m128d generic_fmaddpd (__m128d a, __m128d b, __m128d c);
 
 __m128d
@@ -126,7 +126,7 @@ generic_fmaddpd  (__m128d a, __m128d b, __m128d c)
 #error "-maes should not be set for this test"
 #endif
 
-__m128i aes_aesimc128 (__m128i a) __attribute__((__option__("aes")));
+__m128i aes_aesimc128 (__m128i a) __attribute__((__target__("aes")));
 __m128i generic_aesimc128 (__m128i a);
 
 __m128i
@@ -145,7 +145,7 @@ generic_aesimc128 (__m128i a)
 #error "-mpclmul should not be set for this test"
 #endif
 
-__m128i pclmul_pclmulqdq128 (__m128i a, __m128i b) __attribute__((__option__("pclmul")));
+__m128i pclmul_pclmulqdq128 (__m128i a, __m128i b) __attribute__((__target__("pclmul")));
 __m128i generic_pclmulqdq128 (__m128i a, __m128i b);
 
 __m128i

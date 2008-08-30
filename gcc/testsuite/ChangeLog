@@ -1,3 +1,31 @@
+2008-08-29  Michael Meissner  <gnu@the-meissners.org>
+
+	* gcc.target/i386/sse-22.c: Change #pragma GCC option to #pragma
+	GCC target.  Change attribute((option(...))) to
+	attribute((target(...))).
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/funcspec-1.c: Ditto.
+	* gcc.target/i386/funcspec-2.c: Ditto.
+	* gcc.target/i386/funcspec-3.c: Ditto.
+	* gcc.target/i386/funcspec-4.c: Ditto.
+	* gcc.target/i386/funcspec-5.c: Ditto.
+	* gcc.target/i386/funcspec-6.c: Ditto.
+	* gcc.target/i386/funcspec-7.c: Ditto.
+	* gcc.target/i386/funcspec-8.c: Ditto.
+	* gcc.target/i386/funcspec-9.c: Ditto.
+	* gcc.target/i386/funcspec-10.c: Ditto.
+	* gcc.target/i386/funcspec-11.c: Ditto.
+
+	* gcc.target/i386/cold-1.c: Delete.
+	* gcc.target/i386/hot-1.c: Ditto.
+
+	* gcc.dg/pr36997.c: Add -msse2 to the target flags.
+
+	* gcc.target/i386/funcspec-8.c: #pragma GCC option push is now
+	#pragma GCC push_options, and #pragma GCC option pop is now
+	#pragma GCC pop_options.
+	* gcc.target/i386/opt-2.c: Ditto.
+
 2008-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/mangle-neon.C: Add substitution test.
