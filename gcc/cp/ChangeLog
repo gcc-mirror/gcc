@@ -1,3 +1,8 @@
+2008-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37288
+	* pt.c (dependent_type_p): Don't abort on auto outside of a template.
+
 2008-08-29  Jason Merrill  <jason@redhat.com>
 
 	Implement C++0x 'auto' semantics.
