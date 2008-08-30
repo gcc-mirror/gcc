@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "langhooks.h"
 #include "ggc.h"
+#include "basic-block.h"
 
 static bool prefer_and_bit_test (enum machine_mode, int);
 static void do_jump_by_parts_greater (tree, int, rtx, rtx);

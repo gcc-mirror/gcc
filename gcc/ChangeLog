@@ -1,3 +1,10 @@
+2008-08-29  Michael Meissner  <gnu@the-meissners.org>
+
+	* dojump.c (top level): Include basic-block.h to declare
+	optimize_insn_for_speed_p
+
+	* Makefile.in (dodump.h): Add $(BASIC_BLOCK_H) dependency.
+
 2008-08-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/37270
