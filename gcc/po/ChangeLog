@@ -1,3 +1,7 @@
+2008-08-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* fi.po: New.
+
 2008-08-27  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.pot: Regenerate.
