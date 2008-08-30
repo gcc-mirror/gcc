@@ -1,5 +1,25 @@
 2008-08-30  Jan Hubicka  <jh@suse.cz>
 
+	* postreload-gcse.c (gate_handle_gcse2): Disable for functions
+	optimized for speed.
+	* final.c (compute_alignments): Use optimize_bb_for_size_p.
+	* tree-call-cdce.c (gate_call_cdce): Use optimize_function_for_speed_p.
+	* opts.c (flag_predictive_commoning_set, flag_unswitch_loops_set,
+	flag_gcse_after_reload_set): New static vars.
+	(common_handle_option): Enable those flags for profile-use.
+	(decode_options): Remove optimize_size flags that are handled
+	on higher granuality.
+	* tree-vectorizer.c (vectorize_loops): Use
+	optimize_loop_nest_for_speed_p.
+	* tree-ssa-pre.c (do_pre): Use optimize_function_for_speed_p.
+	* tree-predcom.c (tree_predictive_commoning): Use
+	optimize_loop_for_speed_p.
+	* varasm.c (assemble_start_function): Use optimize_function_for_speed_p.
+	* bb-reorder.c (rest_of_handle_reorder_blocks): Likewise.
+	* predict.c (optimize_loop_for_speed_p): Fix walk.
+
+2008-08-30  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (cgraph_estimate_growth): Discover self recursive
 	functions.
 	(cgraph_decide_inlining_of_small_function): Use edge->count to detect

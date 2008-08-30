@@ -1723,7 +1723,7 @@ assemble_start_function (tree decl, const char *fnname)
      because ASM_OUTPUT_MAX_SKIP_ALIGN might not do any alignment at all.  */
   if (! DECL_USER_ALIGN (decl)
       && align_functions_log > align
-      && cfun->function_frequency != FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+      && optimize_function_for_speed_p (cfun))
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file,

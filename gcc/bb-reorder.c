@@ -2225,7 +2225,15 @@ rest_of_handle_reorder_blocks (void)
      splitting possibly introduced more crossjumping opportunities.  */
   cfg_layout_initialize (CLEANUP_EXPENSIVE);
 
-  if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
+  if ((flag_reorder_blocks || flag_reorder_blocks_and_partition)
+      /* Don't reorder blocks when optimizing for size because extra jump insns may
+	 be created; also barrier may create extra padding.
+
+	 More correctly we should have a block reordering mode that tried to
+	 minimize the combined size of all the jumps.  This would more or less
+	 automatically remove extra jumps, but would also try to use more short
+	 jumps instead of long jumps.  */
+      && optimize_function_for_speed_p (cfun))
     {
       reorder_basic_blocks ();
       cleanup_cfg (CLEANUP_EXPENSIVE);

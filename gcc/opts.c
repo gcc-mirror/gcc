@@ -348,6 +348,7 @@ static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
 static bool flag_inline_functions_set, flag_ipa_cp_set, flag_ipa_cp_clone_set;
+static bool flag_predictive_commoning_set, flag_unswitch_loops_set, flag_gcse_after_reload_set;
 
 /* Functions excluded from profiling.  */
 
@@ -993,36 +994,9 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize_size)
     {
-      /* Conditional DCE generates bigger code.  */
-      flag_tree_builtin_call_dce = 0;
-
-      /* PRE tends to generate bigger code.  */
-      flag_tree_pre = 0;
-
-      /* These options are set with -O3, so reset for -Os */
-      flag_predictive_commoning = 0;
-      flag_gcse_after_reload = 0;
-      flag_tree_vectorize = 0;
-
-      /* Don't reorder blocks when optimizing for size because extra jump insns may
-	 be created; also barrier may create extra padding.
-
-	 More correctly we should have a block reordering mode that tried to
-	 minimize the combined size of all the jumps.  This would more or less
-	 automatically remove extra jumps, but would also try to use more short
-	 jumps instead of long jumps.  */
-      flag_reorder_blocks = 0;
-      flag_reorder_blocks_and_partition = 0;
-
       /* Inlining of functions reducing size is a good idea regardless of them
 	 being declared inline.  */
       flag_inline_functions = 1;
-
-      /* Don't align code.  */
-      align_loops = 1;
-      align_jumps = 1;
-      align_labels = 1;
-      align_functions = 1;
 
       /* Basic optimization options.  */
       optimize_size = 1;
@@ -1839,6 +1813,12 @@ common_handle_option (size_t scode, const char *arg, int value,
       if (!flag_ipa_cp_clone_set
 	  && value && flag_ipa_cp)
 	flag_ipa_cp_clone = value;
+      if (!flag_predictive_commoning_set)
+	flag_predictive_commoning = value;
+      if (!flag_unswitch_loops_set)
+	flag_unswitch_loops = value;
+      if (!flag_gcse_after_reload_set)
+	flag_gcse_after_reload = value;
       break;
 
     case OPT_fprofile_generate_:
@@ -2002,6 +1982,18 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fipa_cp_clone:
       flag_ipa_cp_clone_set = true;
+      break;
+
+    case OPT_fpredictive_commoning:
+      flag_predictive_commoning_set = true;
+      break;
+
+    case OPT_funswitch_loops:
+      flag_unswitch_loops_set = true;
+      break;
+
+    case OPT_fgcse_after_reload:
+      flag_gcse_after_reload_set = true;
       break;
 
     case OPT_funroll_loops:

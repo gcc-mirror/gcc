@@ -2650,9 +2650,10 @@ tree_predictive_commoning (void)
 
   initialize_original_copy_tables ();
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
-    {
-      unrolled |= tree_predictive_commoning_loop (loop);
-    }
+    if (optimize_loop_for_speed_p (loop))
+      {
+	unrolled |= tree_predictive_commoning_loop (loop);
+      }
 
   if (unrolled)
     {

@@ -707,7 +707,7 @@ compute_alignments (void)
       edge_iterator ei;
 
       if (!LABEL_P (label)
-	  || probably_never_executed_bb_p (bb))
+	  || optimize_bb_for_size_p (bb))
 	{
 	  if (dump_file)
 	    fprintf(dump_file, "BB %4i freq %4i loop %2i loop_depth %2i skipped.\n",
