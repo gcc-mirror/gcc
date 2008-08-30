@@ -2366,6 +2366,14 @@ build_new (tree placement, tree type, tree nelts, tree init,
   orig_nelts = nelts;
   orig_init = init;
 
+  if (nelts == NULL_TREE && init != void_zero_node && list_length (init) == 1
+      && !any_type_dependent_arguments_p (init))
+    {
+      tree auto_node = type_uses_auto (type);
+      if (auto_node)
+	type = do_auto_deduction (type, TREE_VALUE (init), auto_node);
+    }
+
   if (processing_template_decl)
     {
       if (dependent_type_p (type)

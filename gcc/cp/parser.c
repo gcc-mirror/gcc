@@ -8324,11 +8324,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	     GNU Extension:
 	       thread  */
 	case RID_AUTO:
-          /* Consume the token.  */
-          cp_lexer_consume_token (parser->lexer);
-
           if (cxx_dialect == cxx98) 
             {
+	      /* Consume the token.  */
+	      cp_lexer_consume_token (parser->lexer);
+
               /* Complain about `auto' as a storage specifier, if
                  we're complaining about C++0x compatibility.  */
               warning 
@@ -8340,10 +8340,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,
 					   token->location);
             }
-          else 
-            /* We do not yet support the use of `auto' as a
-               type-specifier.  */
-            error ("%HC++0x %<auto%> specifier not supported", &token->location);
+          else
+	    /* C++0x auto type-specifier.  */
+	    found_decl_spec = false;
           break;
 
 	case RID_REGISTER:
@@ -11069,14 +11068,8 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
       
     case RID_AUTO:
-      if (cxx_dialect != cxx98)
-        {
-          /* Consume the token.  */
-          cp_lexer_consume_token (parser->lexer);
-          /* We do not yet support the use of `auto' as a
-             type-specifier.  */
-          error ("%HC++0x %<auto%> specifier not supported", &token->location);
-        }
+      maybe_warn_cpp0x ("C++0x auto");
+      type = make_auto ();
       break;
 
     case RID_DECLTYPE:
