@@ -1,3 +1,10 @@
+2008-08-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/37270
+	* config/sh/sh.h (LEGITIMIZE_RELOAD_ADDRESS): Generate
+	the reload address with the index register for SFmode
+	access with a displacement.
+
 2008-08-30  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (expand_abs_nojump): Update BRANCH_COST call.
