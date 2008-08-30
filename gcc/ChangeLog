@@ -1,3 +1,10 @@
+2008-08-30  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_estimate_growth): Discover self recursive
+	functions.
+	(cgraph_decide_inlining_of_small_function): Use edge->count to detect
+	profile presence locally.
+
 2008-08-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/37086

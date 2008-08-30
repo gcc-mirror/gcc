@@ -318,18 +318,25 @@ cgraph_estimate_growth (struct cgraph_node *node)
 {
   int growth = 0;
   struct cgraph_edge *e;
+  bool self_recursive = false;
+
   if (node->global.estimated_growth != INT_MIN)
     return node->global.estimated_growth;
 
   for (e = node->callers; e; e = e->next_caller)
-    if (e->inline_failed)
-      growth += (cgraph_estimate_size_after_inlining (1, e->caller, node)
-		 - e->caller->global.insns);
+    {
+      if (e->caller == node)
+        self_recursive = true;
+      if (e->inline_failed)
+	growth += (cgraph_estimate_size_after_inlining (1, e->caller, node)
+		   - e->caller->global.insns);
+    }
 
-  /* ??? Wrong for self recursive functions or cases where we decide to not
-     inline for different reasons, but it is not big deal as in that case
-     we will keep the body around, but we will also avoid some inlining.  */
-  if (!node->needed && !DECL_EXTERNAL (node->decl))
+  /* ??? Wrong for non-trivially self recursive functions or cases where
+     we decide to not inline for different reasons, but it is not big deal
+     as in that case we will keep the body around, but we will also avoid
+     some inlining.  */
+  if (!node->needed && !DECL_EXTERNAL (node->decl) && !self_recursive)
     growth -= node->global.insns;
 
   node->global.estimated_growth = growth;
@@ -906,8 +913,13 @@ cgraph_decide_inlining_of_small_functions (void)
 	 is not good idea so prohibit the recursive inlining.
 
 	 ??? When the frequencies are taken into account we might not need this
-	 restriction.   */
-      if (!max_count)
+	 restriction.
+
+	 We need to be cureful here, in some testcases, e.g. directivec.c in
+	 libcpp, we can estimate self recursive function to have negative growth
+	 for inlining completely.
+	 */
+      if (!edge->count)
 	{
 	  where = edge->caller;
 	  while (where->global.inlined_to)
