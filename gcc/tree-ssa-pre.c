@@ -4230,7 +4230,8 @@ do_pre (void)
 static bool
 gate_pre (void)
 {
-  return flag_tree_pre != 0;
+  /* PRE tends to generate bigger code.  */
+  return flag_tree_pre != 0 && optimize_function_for_speed_p (cfun);
 }
 
 struct gimple_opt_pass pass_pre =

@@ -913,7 +913,7 @@ gate_call_cdce (void)
   /* The limit constants used in the implementation
      assume IEEE floating point format.  Other formats
      can be supported in the future if needed.  */
-  return flag_tree_builtin_call_dce != 0; 
+  return flag_tree_builtin_call_dce != 0 && optimize_function_for_speed_p (cfun); 
 }
 
 struct gimple_opt_pass pass_call_cdce =

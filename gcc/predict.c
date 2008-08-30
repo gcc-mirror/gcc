@@ -300,7 +300,12 @@ optimize_loop_nest_for_speed_p (struct loop *loop)
       else if (l->next)
         l = l->next;
       else
-	l = loop_outer (l);
+        {
+	  while (l != loop && !l->next)
+	    l = loop_outer (l);
+	  if (l != loop)
+	    l = l->next;
+	}
     }
   return false;
 }

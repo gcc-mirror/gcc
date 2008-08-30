@@ -1,6 +1,6 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 	
-	* parse.c (parse_interface): Likewise.
+	* parse.c (parse_interface): Silence uninitialized var warning.
 
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
