@@ -1,3 +1,8 @@
+2008-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/25_algorithms/nth_element/2.cc: Constrain iterations
+	when testing on a simultor.
+
 2008-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/tr1/6_containers/unordered_set/requirements/typedef.cc:

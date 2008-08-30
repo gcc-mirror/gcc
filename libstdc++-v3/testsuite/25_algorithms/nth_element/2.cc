@@ -18,6 +18,12 @@
 
 // 25.3.2 [lib.alg.nth.element]
 
+// { dg-options "-DMAX_SIZE=256" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE (1 << 10)
+#endif
+
 #include <vector>
 #include <algorithm>
 #include <testsuite_hooks.h>
@@ -64,7 +70,7 @@ do_test01(unsigned size)
 void
 test01()
 {
-  for (unsigned size = 4; size <= 1 << 10; size <<= 1)
+  for (unsigned size = 4; size <= MAX_SIZE; size <<= 1)
     do_test01(size);
 }
 
