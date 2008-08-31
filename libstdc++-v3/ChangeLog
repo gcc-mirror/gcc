@@ -1,3 +1,16 @@
+2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* acinclude.m4 <enable_symvers>: Don't use symvers on Windows.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* libmath/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* libsupc++/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2008-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/25_algorithms/nth_element/2.cc: Constrain iterations
