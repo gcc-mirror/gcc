@@ -1,3 +1,8 @@
+2008-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (native_encode_initializer): Subtract min_index for
+	non-range array index.  Handle VIEW_CONVERT_EXPR and NON_LVALUE_EXPR.
+
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* sparc.h (BRANCH_COST): Fix macro definition.
