@@ -53,7 +53,7 @@ static bool v850_handle_option       (size_t, const char *, int);
 static void const_double_split       (rtx, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static int  const_costs_int          (HOST_WIDE_INT, int);
 static int  const_costs		     (rtx, enum rtx_code);
-static bool v850_rtx_costs	     (rtx, int, int, int *);
+static bool v850_rtx_costs	     (rtx, int, int, int *, bool);
 static void substitute_ep_register   (rtx, rtx, int, int, rtx *, rtx *);
 static void v850_reorg		     (void);
 static int  ep_memory_offset         (enum machine_mode, int);

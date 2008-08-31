@@ -744,7 +744,7 @@ iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
 /* Provide the costs of an addressing mode that contains ADDR.  */
 
 static int
-iq2000_address_cost (rtx addr, bool speec ATTRIBUTE_UNUSED)
+iq2000_address_cost (rtx addr, bool speed)
 {
   switch (GET_CODE (addr))
     {
@@ -795,7 +795,7 @@ iq2000_address_cost (rtx addr, bool speec ATTRIBUTE_UNUSED)
 	  case LABEL_REF:
 	  case HIGH:
 	  case LO_SUM:
-	    return iq2000_address_cost (plus1) + 1;
+	    return iq2000_address_cost (plus1, speed) + 1;
 
 	  default:
 	    break;
@@ -3203,7 +3203,8 @@ print_operand (FILE *file, rtx op, int letter)
 }
 
 static bool
-iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total, bool speed)
+iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
 

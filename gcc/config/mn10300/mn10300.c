@@ -1942,7 +1942,7 @@ legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 }
 
 static int
-mn10300_address_cost_1 (rtx x, int *unsig, bool speed ATTRIBUTE_UNUSED)
+mn10300_address_cost_1 (rtx x, int *unsig)
 {
   switch (GET_CODE (x))
     {
@@ -1979,7 +1979,7 @@ mn10300_address_cost_1 (rtx x, int *unsig, bool speed ATTRIBUTE_UNUSED)
     case EXPR_LIST:
     case SUBREG:
     case MEM:
-      return mn10300_address_cost (XEXP (x, 0));
+      return mn10300_address_cost (XEXP (x, 0), !optimize_size);
 
     case ZERO_EXTEND:
       *unsig = 1;

@@ -49,6 +49,7 @@
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "score3.h"
+#include "df.h"
 
 #define BITSET_P(VALUE, BIT)      (((VALUE) & (1L << (BIT))) != 0)
 #define INS_BUF_SZ                128
@@ -1155,7 +1156,7 @@ score3_rtx_costs (rtx x, int code, int outer_code, int *total,
 
 /* Implement TARGET_ADDRESS_COST macro.  */
 int
-score3_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+score3_address_cost (rtx addr)
 {
   return score3_address_insns (addr, SImode);
 }

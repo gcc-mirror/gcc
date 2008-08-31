@@ -1960,7 +1960,7 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
   switch (GET_CODE (x))
     {
     case SUBREG:
-      return gen_rtx_SUBREG (mode, XEXP (x, 0), XEXP (x, 1));
+      return gen_rtx_SUBREG (mode, XEXP (x, 0), XINT (x, 1));
     case REG:
       if (REGNO (x) < FIRST_PSEUDO_REGISTER)
         return gen_rtx_REG (mode, REGNO (x));
@@ -5335,7 +5335,8 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
           + rtx_cost (XEXP (XEXP (x, 0), 0), code, !optimize_size)
           + rtx_cost (XEXP (XEXP (x, 1), 0), code, !optimize_size);
 
-      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total = rtx_cost (XEXP (x, 0), code, !optimize_size)
+      	      + rtx_cost (XEXP (x, 1), code, !optimize_size);
       switch (mode)
         {
         case QImode:
