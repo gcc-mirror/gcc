@@ -1,5 +1,8 @@
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (maybe_hot_bb_p, maybe_hot_edge_p): Previous commit
+	mistakely had old version of patch.
+
 	* ipa-cp.c (ipcp_need_original_clone_p): Remove.
 	(ipcp_estimate_growth): New.
 	(ipcp_insert_stage): Use ipcp_estimate_growth.

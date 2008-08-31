@@ -148,7 +148,7 @@ maybe_hot_count_p (gcov_type count)
 bool
 maybe_hot_bb_p (const_basic_block bb)
 {
-  return maybe_hot_count_p (bb->count) || maybe_hot_frequency_p (bb->frequency);
+  return maybe_hot_count_p (bb->count) && maybe_hot_frequency_p (bb->frequency);
 }
 
 /* Return true if the call can be hot.  */
@@ -178,7 +178,7 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
 bool
 maybe_hot_edge_p (edge e)
 {
-  return maybe_hot_count_p (e->count) || maybe_hot_frequency_p (EDGE_FREQUENCY (e));
+  return maybe_hot_count_p (e->count) && maybe_hot_frequency_p (EDGE_FREQUENCY (e));
 }
 
 /* Return true in case BB is probably never executed.  */
