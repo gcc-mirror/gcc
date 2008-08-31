@@ -1,3 +1,8 @@
+2008-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37168
+	* gcc.target/powerpc/pr37168.c: New test.
+
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/cold-attribute-1.c: New testcase.
