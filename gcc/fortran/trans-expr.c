@@ -3066,10 +3066,12 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   /* For non-default character kinds, we have to multiply the string
      length by the base type size.  */
   chartype = gfc_get_char_type (dkind);
-  slen = fold_build2 (MULT_EXPR, size_type_node, slen,
-		      TYPE_SIZE_UNIT (chartype));
-  dlen = fold_build2 (MULT_EXPR, size_type_node, dlen,
-		      TYPE_SIZE_UNIT (chartype));
+  slen = fold_build2 (MULT_EXPR, size_type_node,
+		      fold_convert (size_type_node, slen),
+		      fold_convert (size_type_node, TYPE_SIZE_UNIT (chartype)));
+  dlen = fold_build2 (MULT_EXPR, size_type_node,
+		      fold_convert (size_type_node, dlen),
+		      fold_convert (size_type_node, TYPE_SIZE_UNIT (chartype)));
 
   if (dlength)
     dest = fold_convert (pvoid_type_node, dest);
