@@ -1,3 +1,8 @@
+2008-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (gfc_trans_string_copy): Use the correct types
+	to compute slen and dlen.
+
 2008-08-31  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (enum gfc_statement): New entry `ST_GENERIC'.
