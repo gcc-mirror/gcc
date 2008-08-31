@@ -1,3 +1,8 @@
+2008-08-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37289
+	* gcc.dg/pr37289.c: New testcase.
+
 2008-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37168
