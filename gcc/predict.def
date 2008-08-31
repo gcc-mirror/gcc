@@ -69,11 +69,11 @@ DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
 DEF_PREDICTOR (PRED_CONTINUE, "continue", HITRATE (50), 0)
 
 /* Branch to basic block containing call marked by noreturn attribute.  */
-DEF_PREDICTOR (PRED_NORETURN, "noreturn call", HITRATE (99),
+DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Branch to basic block containing call marked by cold function attribute.  */
-DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", HITRATE (99),
+DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Loopback edge is taken.  */

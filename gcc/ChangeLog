@@ -1,3 +1,9 @@
+2008-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (PROB_VERY_LIKELY): Make small enough so things
+	become cold.
+	* predict.def (PRED_NORETURN_CALL, PRED_COLD_CALL): Use it.
+
 2008-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/37287
