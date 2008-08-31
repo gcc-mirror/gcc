@@ -208,7 +208,7 @@ tree spu_builtin_types[SPU_BTI_MAX];
 #define TARGET_RTX_COSTS spu_rtx_costs
 
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE spu_sched_issue_rate
@@ -4209,7 +4209,8 @@ spu_asm_globalize_label (FILE * file, const char *name)
 }
 
 static bool
-spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
+spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+	       bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
   int cost = COSTS_N_INSNS (2);

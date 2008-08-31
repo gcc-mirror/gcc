@@ -2119,7 +2119,8 @@ m32c_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32c_rtx_costs
 static bool
-m32c_rtx_costs (rtx x, int code, int outer_code, int *total)
+m32c_rtx_costs (rtx x, int code, int outer_code, int *total,
+		bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
@@ -2198,7 +2199,7 @@ m32c_rtx_costs (rtx x, int code, int outer_code, int *total)
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST m32c_address_cost
 static int
-m32c_address_cost (rtx addr)
+m32c_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 {
   int i;
   /*  fprintf(stderr, "\naddress_cost\n");

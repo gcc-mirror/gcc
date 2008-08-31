@@ -233,6 +233,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 #ifdef LOAD_EXTEND_OP
   enum rtx_code extend_op = UNKNOWN;
 #endif
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
 
   dreg = true_regnum (SET_DEST (set));
   if (dreg < 0)
@@ -267,7 +268,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
     old_cost = REGISTER_MOVE_COST (GET_MODE (src),
 				   REGNO_REG_CLASS (REGNO (src)), dclass);
   else
-    old_cost = rtx_cost (src, SET);
+    old_cost = rtx_cost (src, SET, speed);
 
   for (l = val->locs; l; l = l->next)
     {
@@ -302,7 +303,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	      this_rtx = GEN_INT (this_val);
 	    }
 #endif
-	  this_cost = rtx_cost (this_rtx, SET);
+	  this_cost = rtx_cost (this_rtx, SET, speed);
 	}
       else if (REG_P (this_rtx))
 	{
@@ -310,7 +311,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	  if (extend_op != UNKNOWN)
 	    {
 	      this_rtx = gen_rtx_fmt_e (extend_op, word_mode, this_rtx);
-	      this_cost = rtx_cost (this_rtx, SET);
+	      this_cost = rtx_cost (this_rtx, SET, speed);
 	    }
 	  else
 #endif
@@ -570,8 +571,10 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		  if (op_alt_regno[i][j] == -1
 		      && reg_fits_class_p (testreg, rclass, 0, mode)
 		      && (GET_CODE (recog_data.operand[i]) != CONST_INT
-			  || (rtx_cost (recog_data.operand[i], SET)
-			      > rtx_cost (testreg, SET))))
+			  || (rtx_cost (recog_data.operand[i], SET,
+			  		optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn)))
+			      > rtx_cost (testreg, SET,
+			  		optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn))))))
 		    {
 		      alternative_nregs[j]++;
 		      op_alt_regno[i][j] = regno;
@@ -1240,6 +1243,8 @@ reload_cse_move2add (rtx first)
 		{
 		  rtx new_src = gen_int_mode (INTVAL (src) - reg_offset[regno],
 					      GET_MODE (reg));
+		  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+
 		  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
 		     use (set (reg) (reg)) instead.
 		     We don't delete this insn, nor do we convert it into a
@@ -1255,7 +1260,7 @@ reload_cse_move2add (rtx first)
 		      if (INTVAL (src) == reg_offset [regno])
 			validate_change (insn, &SET_SRC (pat), reg, 0);
 		    }
-		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
+		  else if (rtx_cost (new_src, PLUS, speed) < rtx_cost (src, SET, speed)
 			   && have_add2_insn (reg, new_src))
 		    {
 		      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
@@ -1331,14 +1336,15 @@ reload_cse_move2add (rtx first)
 				      + base_offset
 				      - regno_offset,
 				      GET_MODE (reg));
-		      int success = 0;
+		      bool success = false;
+		      bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
 
 		      if (new_src == const0_rtx)
 			/* See above why we create (set (reg) (reg)) here.  */
 			success
 			  = validate_change (next, &SET_SRC (set), reg, 0);
-		      else if ((rtx_cost (new_src, PLUS)
-				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
+		      else if ((rtx_cost (new_src, PLUS, speed)
+				< COSTS_N_INSNS (1) + rtx_cost (src3, SET, speed))
 			       && have_add2_insn (reg, new_src))
 			{
 			  rtx newpat = gen_rtx_SET (VOIDmode,

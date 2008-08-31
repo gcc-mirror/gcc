@@ -146,7 +146,7 @@ static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
-static bool m68k_rtx_costs (rtx, int, int, int *);
+static bool m68k_rtx_costs (rtx, int, int, int *, bool);
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
@@ -2205,7 +2205,8 @@ const_int_cost (HOST_WIDE_INT i)
 }
 
 static bool
-m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
+m68k_rtx_costs (rtx x, int code, int outer_code, int *total,
+		bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

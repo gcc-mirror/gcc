@@ -2298,7 +2298,8 @@ s390_float_const_zero_p (rtx value)
    of the superexpression of x.  */
 
 static bool
-s390_rtx_costs (rtx x, int code, int outer_code, int *total)
+s390_rtx_costs (rtx x, int code, int outer_code, int *total,
+		bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
@@ -2336,9 +2337,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	    *total = s390_cost->madbr;
 	  else
 	    *total = s390_cost->maebr;
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), MULT) 
-	    + rtx_cost (XEXP (XEXP (x, 0), 1), MULT) 
-	    + rtx_cost (XEXP (x, 1), code);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), MULT, speed) 
+	    + rtx_cost (XEXP (XEXP (x, 0), 1), MULT, speed) 
+	    + rtx_cost (XEXP (x, 1), code, speed);
 	  return true;  /* Do not do an additional recursive descent.  */
 	}
       *total = COSTS_N_INSNS (1);
@@ -2492,7 +2493,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 /* Return the cost of an address rtx ADDR.  */
 
 static int
-s390_address_cost (rtx addr)
+s390_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 {
   struct s390_address ad;
   if (!s390_decompose_address (addr, &ad))

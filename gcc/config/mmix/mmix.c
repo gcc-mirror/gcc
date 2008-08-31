@@ -132,7 +132,7 @@ static void mmix_setup_incoming_varargs
   (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
-static bool mmix_rtx_costs (rtx, int, int, int *);
+static bool mmix_rtx_costs (rtx, int, int, int *, bool);
 static rtx mmix_struct_value_rtx (tree, int);
 static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 				    enum machine_mode, const_tree, bool);
@@ -181,7 +181,7 @@ static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mmix_reorg
@@ -1106,7 +1106,8 @@ static bool
 mmix_rtx_costs (rtx x ATTRIBUTE_UNUSED,
 		int code ATTRIBUTE_UNUSED,
 		int outer_code ATTRIBUTE_UNUSED,
-		int *total ATTRIBUTE_UNUSED)
+		int *total ATTRIBUTE_UNUSED,
+		bool speed ATTRIBUTE_UNUSED)
 {
   /* For the time being, this is just a stub and we'll accept the
      generic calculations, until we can do measurements, at least.

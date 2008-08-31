@@ -49,8 +49,8 @@ static void vax_init_libfuncs (void);
 static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
-static int vax_address_cost (rtx);
-static bool vax_rtx_costs (rtx, int, int, int *);
+static int vax_address_cost (rtx, bool);
+static bool vax_rtx_costs (rtx, int, int, int *, bool);
 static rtx vax_struct_value_rtx (tree, int);
 
 /* Initialize the GCC target structure.  */
@@ -520,7 +520,7 @@ vax_address_cost_1 (rtx addr)
 }
 
 static int
-vax_address_cost (rtx x)
+vax_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   return (1 + (REG_P (x) ? 0 : vax_address_cost_1 (x)));
 }
@@ -534,7 +534,8 @@ vax_address_cost (rtx x)
    costs on a per cpu basis.  */
 
 static bool
-vax_rtx_costs (rtx x, int code, int outer_code, int *total)
+vax_rtx_costs (rtx x, int code, int outer_code, int *total,
+	       bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
   int i = 0;				   /* may be modified in switch */

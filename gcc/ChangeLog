@@ -1,3 +1,151 @@
+2008-08-30  Jan Hubicka  <jh@suse.cz>
+
+	* fwprop.c (should_replace_address): Add speed attribute.
+	(PR_OPTIMIZE_FOR_SPEED): New flag.
+	(propagate_rtx_1): Use it.
+	(propagate_rtx): Set it.
+	(try_fwprop_subst): Update call of rtx_costs.
+	(forward_propagate_and_simplify): LIkewise.
+	* hooks.c (hook_int_rtx_bool_0): New
+	(hook_bool_rtx_int_int_intp_false): Replace by ...
+	(hook_bool_rtx_int_int_intp_bool_false): .. thisone.
+	* hooks.h (hook_int_rtx_bool_0): New
+	(hook_bool_rtx_int_int_intp_false): Replace by ...
+	(hook_bool_rtx_int_int_intp_bool_false): .. thisone.
+	* optabs.c (avoid_expensive_constant): UPdate call of rtx_cost.
+	(prepare_cmp_insn): UPdate call of rtx_cost.
+	* postreload.c (reload_cse_simplify_set): Update call of rtx_cost.
+	(reload_cse_simplify_operands): Update call of rtx_cost.
+	(reload_cse_move2add): call of rtx_cost.
+	* target.h (struct gcc_target): Update rtx_costs and address_costs.
+	* rtlanal.c (rtx_cost): Add speed argument.
+	(address_cost): Add speed argument
+	(default_address_cost): Likewise.
+	(insn_rtx_cost): Likewise.
+	* cfgloopanal.c (seq_cost): Add speed argument.
+	(target_reg_cost, target_spill_cost): Turn to array.
+	(init_set_costs): Update for speed.
+	(estimate_reg_pressure_cost): Add speed argument.
+	* auto-inc-dec.c (attempt_change): Update call of rtx_cost.
+	* dojump.c (prefer_and_bit_test): UPdate call of rtx_cost.
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field speed.
+	(seq_cost): Add speed argument.
+	(computation_cost): Add speed arugment.
+	(add_cost, multiply_by_const, get_address_cost): add speed argument.
+	(force_expr_to_var_cost): Update for profile info.
+	(force_var_cost): Likewise.
+	(split_address_cost): Likewise.
+	(ptr_difference_cost): Likewise.
+	(difference_cost): Likewise.
+	(get_computation_cost_at): Likewise.
+	(determine_iv_cost): Likewise.
+	(ivopts_global_cost_for_size): Likewise.
+	(rewrite_use_address): Likewise.
+	(tree_ssa_iv_optimize_loop): Initialize speed field.
+	* cse.c (optimize_this_for_speed_p): New static var.
+	(notreg_cost): Update call of rtx_cost.
+	(cse_extended_basic_block): set optimize_this_for_speed_p.
+	* ifcvt.c (cheap_bb_rtx_cost_p): Update call of rtx_cost.
+	(noce_try_cmove_arith): Likewise.
+	(noce_try_sign_mask): LIkewise.
+	* expr.c (compress_float_constant): Update rtx_cost calls.
+	* tree-ssa-address.c (most_expensive_mult_to_index): Add speed argument.
+	(addr_to_parts): Likewise.
+	(create_mem_ref): Likewise.
+	* dse.c (find_shift_sequence): Add speed argument.
+	(replace_read): Update call.
+	* calls.c (precompute_register_parameters): Update call of rtx_cost.
+	* expmed.c (sdiv_pow2_cheap, smod_pow2_cheap, zero_cost, add_cost,
+	* neg_cost, shift_cost, shiftadd_cost,
+	shiftsub_cost, mul_cost, sdiv_cost, udiv_cost ,mul_widen_cost,
+	mul_highpart_cost): Increase dimension.
+	(init_expmed): Initialize for both size and speed.
+	(expand_shift): Use profile.
+	(synth_mult): Use profile.
+	(choose_mult_variant): Use profile.
+	(expand_mult): Use profile.
+	(expand_mult_highpart_optab): Use profile.
+	(expand_mult_highpart): Use profile.
+	(expand_smod_pow2): Use profile.
+	(expand_divmod): Use profile.
+	* simplify-rtx.c (simplify_binary_operation_1): Update call of rtx_cost.
+	* loop-invariant.c (create_new_invariant): Use profile.
+	(gain_for_invariant): Add speed parameter.
+	(best_gain_for_invariant): Likewise.
+	(find_invariants_to_move): Likewise.
+	(move_single_loop_invariants): Set it.
+	* target-def.h (TARGET_RTX_COSTS): Use hook.
+	* rtl.h (rtx_cost, address_cost, insn_rtx_cost): Update prototpe.
+	(optimize_insn_for_size_p, optimize_insn_for_speed_p): Declare.
+	* output.h (default_address_cost): Update prototype.
+	* combine.c (optimize_this_for_speed_p): New static var.
+	(combine_validate_cost): Update call of rtx_cost.
+	(combine_instructions): Set optimize_this_for_speed_p.
+	(expand_compound_operation): Update call of rtx_cost.
+	(make_extraction):Update call of rtx_cost.
+	(force_to_mode):Update call of rtx_cost.
+	(distribute_and_simplify_rtx):Update call of rtx_cost.
+	* cfgloop.h (target_reg_cost, target_spill_cost): Turn to array.
+	(estimate_reg_pressure_cost): Update prototype.
+	* tree-flow.h (multiply_by_cost, create_mem_ref): Update prototype.
+	* basic-block.h (optimize_insn_for_size_p, optimize_insn_for_speed_p):
+	Remove.
+	* config/alpha/alpha.c (alpha_rtx_costs): Update.
+	(alpha_rtx_costs): Update.
+	* config/frv/frv.c (frv_rtx_costs): Update.
+	* config/s390/s390.c (s390_rtx_costs): Update.
+	* config/m32c/m32c.c (m32c_memory_move_cost): Update.
+	(m32c_rtx_costs): Update.
+	* config/spu/spu.c (TARGET_ADDRESS_COST): Upate.
+	(spu_rtx_costs): Update.
+	* config/sparc/sparc.c (sparc_rtx_costs): Update.
+	* config/m32r/m32r.c (m32r_rtx_costs): Update.
+	* config/i386/i386.c (:ix86_address_cost): Update.
+	(ix86_rtx_costs): Update.
+	* config/sh/sh.c (sh_rtx_costs, sh_address_cost): Update.
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Update.
+	* config/avr/avr.c (avr_rtx_costs, avr_address_cost): Update.
+	* config/crx/crx.c (crx_address_cost): Update.
+	* config/xtensa/xtensa.c (xtensa_rtx_costs): Update.
+	* config/stormy16/stormy16.c
+	(xstormy16_address_cost, xstormy16_rtx_costs): Update.
+	* config/m68hc11/m68hc11.c
+	(m68hc11_address_cost, m68hc11_rtx_costs): Update.
+	* config/cris/cris.c (cris_rtx_costs, cris_address_cost): Update.
+	* config/iq2000/iq2000.c (iq2000_rtx_costs, iq2000_address_cost): Update.
+	* config/mn10300/mn10300.c (mn10300_address_cost, mn10300_rtx_costs): Update
+	* config/ia64/ia64.c (ia64_rtx_costs): Update.
+	* config/m68k/m68k.c (m68k_rtx_costs): Update.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Update.
+	* config/arc/arc.c (arc_rtx_costs, arc_address_cost): Update.
+	* config/mcore/mcore.c (TARGET_ADDRESS_COST): Update.
+	(mcore_rtx_costs): update.
+	* config/score/score3.c (score3_rtx_costs): Update.
+	* config/score/score7.c (score7_rtx_costs): Update.
+	* config/score/score3.h (score3_rtx_costs):Update.
+	* config/score/score7.h (score7_rtx_costs): Update.
+	* config/score/score.c (score_rtx_costs): Update.
+	* config/arm/arm.c (arm_address_cost): Update.
+	(arm_rtx_costs_1): Update.
+	(arm_rtx_costs_1): Update.
+	(arm_size_rtx_costs): Update.
+	(arm_size_rtx_costs): Update.
+	(arm_size_rtx_costs): Update.
+	(arm_xscale_rtx_costs): Update.
+	(arm_thumb_address_cost): Update.
+	* config/pa/pa.c (hppa_address_cost): Update.
+	* config/mips/mips.c (mips_rtx_costs): Update.
+	* config/vax/vax.c (vax_address_cost): Update.
+	* config/h8300/h8300.c (h8300_shift_costs): Update.
+	(h8300_rtx_costs): Update.
+	* config/v850/v850.c (TARGET_ADDRESS_COST): Update.
+	(v850_rtx_costs): Update.
+	* config/mmix/mmix.c (mmix_rtx_costs, mmix_rtx_costs): Update.
+	* config/bfin/bfin.c
+	(bfin_address_cost): Update.
+	(bfin_rtx_costs): Update.
+	* stmt.c (lshift_cheap_p): Update.
+
 2008-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36444

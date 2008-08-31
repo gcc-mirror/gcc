@@ -67,10 +67,10 @@ static void m68hc11_reorg (void);
 static int go_if_legitimate_address_internal (rtx, enum machine_mode, int);
 static rtx m68hc11_expand_compare (enum rtx_code, rtx, rtx);
 static int must_parenthesize (rtx);
-static int m68hc11_address_cost (rtx);
+static int m68hc11_address_cost (rtx, bool);
 static int m68hc11_shift_cost (enum machine_mode, rtx, int);
 static int m68hc11_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
-static bool m68hc11_rtx_costs (rtx, int, int, int *);
+static bool m68hc11_rtx_costs (rtx, int, int, int *, bool);
 static tree m68hc11_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec m68hc11_attribute_table[];
 
@@ -5145,7 +5145,7 @@ m68hc11_register_move_cost (enum machine_mode mode, enum reg_class from,
    If ADDR is not a valid address, its cost is irrelevant.  */
 
 static int
-m68hc11_address_cost (rtx addr)
+m68hc11_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 {
   int cost = 4;
 
@@ -5230,7 +5230,7 @@ m68hc11_shift_cost (enum machine_mode mode, rtx x, int shift)
 {
   int total;
 
-  total = rtx_cost (x, SET);
+  total = rtx_cost (x, SET, !optimize_size);
   if (mode == QImode)
     total += m68hc11_cost->shiftQI_const[shift % 8];
   else if (mode == HImode)
@@ -5274,14 +5274,14 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
           return m68hc11_shift_cost (mode, XEXP (x, 0), INTVAL (XEXP (x, 1)));
 	}
 
-      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total = rtx_cost (XEXP (x, 0), code, !optimize_size) + rtx_cost (XEXP (x, 1), code, !optimize_size);
       total += m68hc11_cost->shift_var;
       return total;
 
     case AND:
     case XOR:
     case IOR:
-      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total = rtx_cost (XEXP (x, 0), code, !optimize_size) + rtx_cost (XEXP (x, 1), code, !optimize_size);
       total += m68hc11_cost->logical;
 
       /* Logical instructions are byte instructions only.  */
@@ -5290,7 +5290,7 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
 
     case MINUS:
     case PLUS:
-      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total = rtx_cost (XEXP (x, 0), code, !optimize_size) + rtx_cost (XEXP (x, 1), code, !optimize_size);
       total += m68hc11_cost->add;
       if (GET_MODE_SIZE (mode) > 2)
 	{
@@ -5301,7 +5301,7 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
     case UDIV:
     case DIV:
     case MOD:
-      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total = rtx_cost (XEXP (x, 0), code, !optimize_size) + rtx_cost (XEXP (x, 1), code, !optimize_size);
       switch (mode)
         {
         case QImode:
@@ -5324,16 +5324,16 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
       if (mode == HImode && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
           && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
         return m68hc11_cost->multQI
-          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
-          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code, !optimize_size)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code, !optimize_size);
 
       /* emul instruction produces 32-bit result for 68HC12.  */
       if (TARGET_M6812 && mode == SImode
           && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
           && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
         return m68hc11_cost->multHI
-          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
-          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code, !optimize_size)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code, !optimize_size);
 
       total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
       switch (mode)
@@ -5362,7 +5362,7 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
     case COMPARE:
     case ABS:
     case ZERO_EXTEND:
-      total = extra_cost + rtx_cost (XEXP (x, 0), code);
+      total = extra_cost + rtx_cost (XEXP (x, 0), code, !optimize_size);
       if (mode == QImode)
 	{
 	  return total + COSTS_N_INSNS (1);
@@ -5389,7 +5389,8 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
 }
 
 static bool
-m68hc11_rtx_costs (rtx x, int code, int outer_code, int *total)
+m68hc11_rtx_costs (rtx x, int code, int outer_code, int *total,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

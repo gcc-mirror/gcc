@@ -569,7 +569,8 @@ score_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Implement TARGET_RTX_COSTS macro.  */
 bool
-score_rtx_costs (rtx x, int code, int outer_code, int *total)
+score_rtx_costs (rtx x, int code, int outer_code, int *total,
+		 bool speed ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_rtx_costs (x, code, outer_code, total);
@@ -581,7 +582,8 @@ score_rtx_costs (rtx x, int code, int outer_code, int *total)
 
 /* Implement TARGET_ADDRESS_COST macro.  */
 int
-score_address_cost (rtx addr)
+score_address_cost (rtx addr,
+		    bool speed ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_address_cost (addr);

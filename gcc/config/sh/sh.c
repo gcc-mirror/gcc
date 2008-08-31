@@ -241,8 +241,8 @@ static int addsubcosts (rtx);
 static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx);
-static bool sh_rtx_costs (rtx, int, int, int *);
-static int sh_address_cost (rtx);
+static bool sh_rtx_costs (rtx, int, int, int *, bool);
+static int sh_address_cost (rtx, bool);
 static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
@@ -2361,7 +2361,7 @@ andcosts (rtx x)
 	  || satisfies_constraint_J16 (XEXP (x, 1)))
 	return 1;
       else
-	return 1 + rtx_cost (XEXP (x, 1), AND);
+	return 1 + rtx_cost (XEXP (x, 1), AND, !optimize_size);
     }
 
   /* These constants are single cycle extu.[bw] instructions.  */
@@ -2461,7 +2461,8 @@ multcosts (rtx x ATTRIBUTE_UNUSED)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-sh_rtx_costs (rtx x, int code, int outer_code, int *total)
+sh_rtx_costs (rtx x, int code, int outer_code, int *total,
+	      bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
@@ -2587,7 +2588,8 @@ sh_rtx_costs (rtx x, int code, int outer_code, int *total)
    since it increases pressure on r0.  */
 
 static int
-sh_address_cost (rtx X)
+sh_address_cost (rtx X,
+	         bool speed ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (X) == PLUS
 	  && ! CONSTANT_P (XEXP (X, 1))

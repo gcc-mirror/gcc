@@ -829,7 +829,7 @@ static void rs6000_xcoff_file_start (void);
 static void rs6000_xcoff_file_end (void);
 #endif
 static int rs6000_variable_issue (FILE *, int, rtx, int);
-static bool rs6000_rtx_costs (rtx, int, int, int *);
+static bool rs6000_rtx_costs (rtx, int, int, int *, bool);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
 static void rs6000_sched_init (FILE *, int, int);
 static bool is_microcoded_insn (rtx);
@@ -1180,7 +1180,7 @@ static const char alt_reg_names[][8] =
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_VECTOR_OPAQUE_P
 #define TARGET_VECTOR_OPAQUE_P rs6000_is_opaque_type
@@ -21456,7 +21456,8 @@ rs6000_xcoff_file_end (void)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
+rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
+		  bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
 
@@ -21555,7 +21556,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* When optimizing for size, MEM should be slightly more expensive
 	 than generating address, e.g., (plus (reg) (const)).
 	 L1 cache latency is about two instructions.  */
-      *total = optimize_size ? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (2);
+      *total = !speed ? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (2);
       return true;
 
     case LABEL_REF:
@@ -21766,7 +21767,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case CALL:
     case IF_THEN_ELSE:
-      if (optimize_size)
+      if (!speed)
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;

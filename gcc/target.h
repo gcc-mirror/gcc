@@ -648,11 +648,11 @@ struct gcc_target
      scanned.  In either case, *TOTAL contains the cost result.  */
   /* Note that CODE and OUTER_CODE ought to be RTX_CODE, but that's
      not necessarily defined at this point.  */
-  bool (* rtx_costs) (rtx x, int code, int outer_code, int *total);
+  bool (* rtx_costs) (rtx x, int code, int outer_code, int *total, bool speed);
 
   /* Compute the cost of X, used as an address.  Never called with
      invalid addresses.  */
-  int (* address_cost) (rtx x);
+  int (* address_cost) (rtx x, bool speed);
 
   /* Return where to allocate pseudo for a given hard register initial
      value.  */

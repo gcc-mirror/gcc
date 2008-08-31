@@ -437,7 +437,8 @@ add_to_parts (struct mem_address *parts, tree elt)
    element(s) to PARTS.  */
 
 static void
-most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr)
+most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
+			      bool speed)
 {
   HOST_WIDE_INT coef;
   double_int best_mult, amult, amult_neg;
@@ -459,7 +460,7 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr)
 	  || !multiplier_allowed_in_address_p (coef, Pmode))
 	continue;
 
-      acost = multiply_by_cost (coef, Pmode);
+      acost = multiply_by_cost (coef, Pmode, speed);
 
       if (acost > best_mult_cost)
 	{
@@ -512,7 +513,7 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr)
    addressing modes is useless.  */
 
 static void
-addr_to_parts (aff_tree *addr, struct mem_address *parts)
+addr_to_parts (aff_tree *addr, struct mem_address *parts, bool speed)
 {
   tree part;
   unsigned i;
@@ -532,7 +533,7 @@ addr_to_parts (aff_tree *addr, struct mem_address *parts)
 
   /* First move the most expensive feasible multiplication
      to index.  */
-  most_expensive_mult_to_index (parts, addr);
+  most_expensive_mult_to_index (parts, addr, speed);
 
   /* Try to find a base of the reference.  Since at the moment
      there is no reliable way how to distinguish between pointer and its
@@ -573,13 +574,14 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
    of created memory reference.  */
 
 tree
-create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr)
+create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
+		bool speed)
 {
   tree mem_ref, tmp;
   tree atype;
   struct mem_address parts;
 
-  addr_to_parts (addr, &parts);
+  addr_to_parts (addr, &parts, speed);
   gimplify_mem_ref_parts (gsi, &parts);
   mem_ref = create_mem_ref_raw (type, &parts);
   if (mem_ref)

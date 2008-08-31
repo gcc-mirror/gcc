@@ -8491,7 +8491,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
    requires to two regs - that would mean more pseudos with longer
    lifetimes.  */
 static int
-ix86_address_cost (rtx x)
+ix86_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   struct ix86_address parts;
   int cost = 1;
@@ -25244,10 +25244,11 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
+ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
 {
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   enum machine_mode mode = GET_MODE (x);
+  const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
 
   switch (code)
     {
@@ -25299,13 +25300,13 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	  && GET_MODE (XEXP (x, 0)) == SImode)
 	*total = 1;
       else if (TARGET_ZERO_EXTEND_WITH_AND)
-	*total = ix86_cost->add;
+	*total = cost->add;
       else
-	*total = ix86_cost->movzx;
+	*total = cost->movzx;
       return false;
 
     case SIGN_EXTEND:
-      *total = ix86_cost->movsx;
+      *total = cost->movsx;
       return false;
 
     case ASHIFT:
@@ -25315,13 +25316,13 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	  HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
 	  if (value == 1)
 	    {
-	      *total = ix86_cost->add;
+	      *total = cost->add;
 	      return false;
 	    }
 	  if ((value == 2 || value == 3)
-	      && ix86_cost->lea <= ix86_cost->shift_const)
+	      && cost->lea <= cost->shift_const)
 	    {
-	      *total = ix86_cost->lea;
+	      *total = cost->lea;
 	      return false;
 	    }
 	}
@@ -25336,24 +25337,24 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
 	      if (INTVAL (XEXP (x, 1)) > 32)
-		*total = ix86_cost->shift_const + COSTS_N_INSNS (2);
+		*total = cost->shift_const + COSTS_N_INSNS (2);
 	      else
-		*total = ix86_cost->shift_const * 2;
+		*total = cost->shift_const * 2;
 	    }
 	  else
 	    {
 	      if (GET_CODE (XEXP (x, 1)) == AND)
-		*total = ix86_cost->shift_var * 2;
+		*total = cost->shift_var * 2;
 	      else
-		*total = ix86_cost->shift_var * 6 + COSTS_N_INSNS (2);
+		*total = cost->shift_var * 6 + COSTS_N_INSNS (2);
 	    }
 	}
       else
 	{
 	  if (CONST_INT_P (XEXP (x, 1)))
-	    *total = ix86_cost->shift_const;
+	    *total = cost->shift_const;
 	  else
-	    *total = ix86_cost->shift_var;
+	    *total = cost->shift_var;
 	}
       return false;
 
@@ -25361,18 +25362,18 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
 	  /* ??? SSE scalar cost should be used here.  */
-	  *total = ix86_cost->fmul;
+	  *total = cost->fmul;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
 	{
-	  *total = ix86_cost->fmul;
+	  *total = cost->fmul;
 	  return false;
 	}
       else if (FLOAT_MODE_P (mode))
 	{
 	  /* ??? SSE vector cost should be used here.  */
-	  *total = ix86_cost->fmul;
+	  *total = cost->fmul;
 	  return false;
 	}
       else
@@ -25413,9 +25414,9 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	        op0 = XEXP (op0, 0), mode = GET_MODE (op0);
 	    }
 
-  	  *total = (ix86_cost->mult_init[MODE_INDEX (mode)]
-		    + nbits * ix86_cost->mult_bit
-	            + rtx_cost (op0, outer_code) + rtx_cost (op1, outer_code));
+  	  *total = (cost->mult_init[MODE_INDEX (mode)]
+		    + nbits * cost->mult_bit
+	            + rtx_cost (op0, outer_code, speed) + rtx_cost (op1, outer_code, speed));
 
           return true;
 	}
@@ -25426,14 +25427,14 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
     case UMOD:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	/* ??? SSE cost should be used here.  */
-	*total = ix86_cost->fdiv;
+	*total = cost->fdiv;
       else if (X87_FLOAT_MODE_P (mode))
-	*total = ix86_cost->fdiv;
+	*total = cost->fdiv;
       else if (FLOAT_MODE_P (mode))
 	/* ??? SSE vector cost should be used here.  */
-	*total = ix86_cost->fdiv;
+	*total = cost->fdiv;
       else
-	*total = ix86_cost->divide[MODE_INDEX (mode)];
+	*total = cost->divide[MODE_INDEX (mode)];
       return false;
 
     case PLUS:
@@ -25448,11 +25449,11 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1));
 	      if (val == 2 || val == 4 || val == 8)
 		{
-		  *total = ix86_cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code);
+		  *total = cost->lea;
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code, speed);
 		  *total += rtx_cost (XEXP (XEXP (XEXP (x, 0), 0), 0),
-				      outer_code);
-		  *total += rtx_cost (XEXP (x, 1), outer_code);
+				      outer_code, speed);
+		  *total += rtx_cost (XEXP (x, 1), outer_code, speed);
 		  return true;
 		}
 	    }
@@ -25462,18 +25463,18 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (x, 0), 1));
 	      if (val == 2 || val == 4 || val == 8)
 		{
-		  *total = ix86_cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code);
-		  *total += rtx_cost (XEXP (x, 1), outer_code);
+		  *total = cost->lea;
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed);
+		  *total += rtx_cost (XEXP (x, 1), outer_code, speed);
 		  return true;
 		}
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
-	      *total = ix86_cost->lea;
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code);
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code);
-	      *total += rtx_cost (XEXP (x, 1), outer_code);
+	      *total = cost->lea;
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code, speed);
+	      *total += rtx_cost (XEXP (x, 1), outer_code, speed);
 	      return true;
 	    }
 	}
@@ -25483,18 +25484,18 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
 	  /* ??? SSE cost should be used here.  */
-	  *total = ix86_cost->fadd;
+	  *total = cost->fadd;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
 	{
-	  *total = ix86_cost->fadd;
+	  *total = cost->fadd;
 	  return false;
 	}
       else if (FLOAT_MODE_P (mode))
 	{
 	  /* ??? SSE vector cost should be used here.  */
-	  *total = ix86_cost->fadd;
+	  *total = cost->fadd;
 	  return false;
 	}
       /* FALLTHRU */
@@ -25504,10 +25505,10 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
     case XOR:
       if (!TARGET_64BIT && mode == DImode)
 	{
-	  *total = (ix86_cost->add * 2
-		    + (rtx_cost (XEXP (x, 0), outer_code)
+	  *total = (cost->add * 2
+		    + (rtx_cost (XEXP (x, 0), outer_code, speed)
 		       << (GET_MODE (XEXP (x, 0)) != DImode))
-		    + (rtx_cost (XEXP (x, 1), outer_code)
+		    + (rtx_cost (XEXP (x, 1), outer_code, speed)
 	               << (GET_MODE (XEXP (x, 1)) != DImode)));
 	  return true;
 	}
@@ -25517,27 +25518,27 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
 	  /* ??? SSE cost should be used here.  */
-	  *total = ix86_cost->fchs;
+	  *total = cost->fchs;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
 	{
-	  *total = ix86_cost->fchs;
+	  *total = cost->fchs;
 	  return false;
 	}
       else if (FLOAT_MODE_P (mode))
 	{
 	  /* ??? SSE vector cost should be used here.  */
-	  *total = ix86_cost->fchs;
+	  *total = cost->fchs;
 	  return false;
 	}
       /* FALLTHRU */
 
     case NOT:
       if (!TARGET_64BIT && mode == DImode)
-	*total = ix86_cost->add * 2;
+	*total = cost->add * 2;
       else
-	*total = ix86_cost->add;
+	*total = cost->add;
       return false;
 
     case COMPARE:
@@ -25548,9 +25549,9 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	{
 	  /* This kind of construct is implemented using test[bwl].
 	     Treat it as if we had an AND.  */
-	  *total = (ix86_cost->add
-		    + rtx_cost (XEXP (XEXP (x, 0), 0), outer_code)
-		    + rtx_cost (const1_rtx, outer_code));
+	  *total = (cost->add
+		    + rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed)
+		    + rtx_cost (const1_rtx, outer_code, speed));
 	  return true;
 	}
       return false;
@@ -25563,23 +25564,23 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
     case ABS:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	/* ??? SSE cost should be used here.  */
-	*total = ix86_cost->fabs;
+	*total = cost->fabs;
       else if (X87_FLOAT_MODE_P (mode))
-	*total = ix86_cost->fabs;
+	*total = cost->fabs;
       else if (FLOAT_MODE_P (mode))
 	/* ??? SSE vector cost should be used here.  */
-	*total = ix86_cost->fabs;
+	*total = cost->fabs;
       return false;
 
     case SQRT:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	/* ??? SSE cost should be used here.  */
-	*total = ix86_cost->fsqrt;
+	*total = cost->fsqrt;
       else if (X87_FLOAT_MODE_P (mode))
-	*total = ix86_cost->fsqrt;
+	*total = cost->fsqrt;
       else if (FLOAT_MODE_P (mode))
 	/* ??? SSE vector cost should be used here.  */
-	*total = ix86_cost->fsqrt;
+	*total = cost->fsqrt;
       return false;
 
     case UNSPEC:

@@ -1414,7 +1414,8 @@ avoid_expensive_constant (enum machine_mode mode, optab binoptab,
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
-      && rtx_cost (x, binoptab->code) > COSTS_N_INSNS (1))
+      && rtx_cost (x, binoptab->code, optimize_insn_for_speed_p ())
+                   > COSTS_N_INSNS (1))
     {
       if (GET_CODE (x) == CONST_INT)
 	{
@@ -4037,11 +4038,13 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
   /* If we are inside an appropriately-short loop and we are optimizing,
      force expensive constants into a register.  */
   if (CONSTANT_P (x) && optimize
-      && rtx_cost (x, COMPARE) > COSTS_N_INSNS (1))
+      && (rtx_cost (x, COMPARE, optimize_insn_for_speed_p ())
+          > COSTS_N_INSNS (1)))
     x = force_reg (mode, x);
 
   if (CONSTANT_P (y) && optimize
-      && rtx_cost (y, COMPARE) > COSTS_N_INSNS (1))
+      && (rtx_cost (y, COMPARE, optimize_insn_for_speed_p ())
+          > COSTS_N_INSNS (1)))
     y = force_reg (mode, y);
 
 #ifdef HAVE_cc0

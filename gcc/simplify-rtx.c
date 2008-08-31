@@ -1665,12 +1665,13 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      rtx coeff;
 	      unsigned HOST_WIDE_INT l;
 	      HOST_WIDE_INT h;
+	      bool speed = optimize_function_for_speed_p (cfun);
 
 	      add_double (coeff0l, coeff0h, coeff1l, coeff1h, &l, &h);
 	      coeff = immed_double_const (l, h, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
-	      return rtx_cost (tem, SET) <= rtx_cost (orig, SET)
+	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
 		? tem : 0;
 	    }
 	}
@@ -1859,12 +1860,13 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      rtx coeff;
 	      unsigned HOST_WIDE_INT l;
 	      HOST_WIDE_INT h;
+	      bool speed = optimize_function_for_speed_p (cfun);
 
 	      add_double (coeff0l, coeff0h, negcoeff1l, negcoeff1h, &l, &h);
 	      coeff = immed_double_const (l, h, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
-	      return rtx_cost (tem, SET) <= rtx_cost (orig, SET)
+	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
 		? tem : 0;
 	    }
 	}

@@ -3501,10 +3501,13 @@ label_is_jump_target_p (const_rtx label, const_rtx jump_insn)
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
    Another is in rtl generation, to pick the cheapest way to multiply.
-   Other uses like the latter are expected in the future.  */
+   Other uses like the latter are expected in the future. 
+
+   SPEED parameter specify whether costs optimized for speed or size should
+   be returned.  */
 
 int
-rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
+rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED, bool speed)
 {
   int i, j;
   enum rtx_code code;
@@ -3552,7 +3555,7 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
       break;
 
     default:
-      if (targetm.rtx_costs (x, code, outer_code, &total))
+      if (targetm.rtx_costs (x, code, outer_code, &total, speed))
 	return total;
       break;
     }
@@ -3563,19 +3566,22 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      total += rtx_cost (XEXP (x, i), code);
+      total += rtx_cost (XEXP (x, i), code, speed);
     else if (fmt[i] == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
-	total += rtx_cost (XVECEXP (x, i, j), code);
+	total += rtx_cost (XVECEXP (x, i, j), code, speed);
 
   return total;
 }
 
 /* Return cost of address expression X.
-   Expect that X is properly formed address reference.  */
+   Expect that X is properly formed address reference.  
+
+   SPEED parameter specify whether costs optimized for speed or size should
+   be returned.  */
 
 int
-address_cost (rtx x, enum machine_mode mode)
+address_cost (rtx x, enum machine_mode mode, bool speed)
 {
   /* We may be asked for cost of various unusual addresses, such as operands
      of push instruction.  It is not worthwhile to complicate writing
@@ -3584,15 +3590,15 @@ address_cost (rtx x, enum machine_mode mode)
   if (!memory_address_p (mode, x))
     return 1000;
 
-  return targetm.address_cost (x);
+  return targetm.address_cost (x, speed);
 }
 
 /* If the target doesn't override, compute the cost as with arithmetic.  */
 
 int
-default_address_cost (rtx x)
+default_address_cost (rtx x, bool speed)
 {
-  return rtx_cost (x, MEM);
+  return rtx_cost (x, MEM, speed);
 }
 
 
@@ -4563,7 +4569,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
    zero indicates an instruction pattern without a known cost.  */
 
 int
-insn_rtx_cost (rtx pat)
+insn_rtx_cost (rtx pat, bool speed)
 {
   int i, cost;
   rtx set;
@@ -4591,7 +4597,7 @@ insn_rtx_cost (rtx pat)
   else
     return 0;
 
-  cost = rtx_cost (SET_SRC (set), SET);
+  cost = rtx_cost (SET_SRC (set), SET, speed);
   return cost > 0 ? cost : COSTS_N_INSNS (1);
 }
 

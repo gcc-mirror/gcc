@@ -481,7 +481,7 @@
 #define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_const_tree_false
 #define TARGET_ALIGN_ANON_BITFIELD hook_bool_void_false
 #define TARGET_NARROW_VOLATILE_BITFIELD hook_bool_void_false
-#define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false
+#define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_bool_false
 #define TARGET_MANGLE_TYPE hook_constcharptr_const_tree_null
 #define TARGET_ALLOCATE_INITIAL_VALUE NULL
 

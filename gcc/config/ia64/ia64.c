@@ -202,7 +202,7 @@ static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (const_tree, const_tree);
-static bool ia64_rtx_costs (rtx, int, int, int *);
+static bool ia64_rtx_costs (rtx, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
 static bool ia64_handle_option (size_t, const char *, int);
@@ -4810,7 +4810,8 @@ ia64_print_operand (FILE * file, rtx x, int code)
 /* ??? This is incomplete.  */
 
 static bool
-ia64_rtx_costs (rtx x, int code, int outer_code, int *total)
+ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
+		bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

@@ -144,8 +144,8 @@ prefer_and_bit_test (enum machine_mode mode, int bitnum)
   XEXP (and_test, 1) = GEN_INT ((unsigned HOST_WIDE_INT) 1 << bitnum);
   XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
 
-  return (rtx_cost (and_test, IF_THEN_ELSE)
-	  <= rtx_cost (shift_test, IF_THEN_ELSE));
+  return (rtx_cost (and_test, IF_THEN_ELSE, optimize_insn_for_speed_p ())
+	  <= rtx_cost (shift_test, IF_THEN_ELSE, optimize_insn_for_speed_p ()));
 }
 
 /* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if

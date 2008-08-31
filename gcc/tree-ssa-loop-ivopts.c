@@ -219,6 +219,9 @@ struct ivopts_data
   /* The currently optimized loop.  */
   struct loop *current_loop;
 
+  /* Are we optimizing for speed?  */
+  bool speed;
+
   /* Number of registers used in it.  */
   unsigned regs_used;
 
@@ -2539,7 +2542,7 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
 /* Returns estimate on cost of computing SEQ.  */
 
 static unsigned
-seq_cost (rtx seq)
+seq_cost (rtx seq, bool speed)
 {
   unsigned cost = 0;
   rtx set;
@@ -2548,7 +2551,7 @@ seq_cost (rtx seq)
     {
       set = single_set (seq);
       if (set)
-	cost += rtx_cost (set, SET);
+	cost += rtx_cost (set, SET,speed);
       else
 	cost++;
     }
@@ -2641,23 +2644,28 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 /* Determines cost of the computation of EXPR.  */
 
 static unsigned
-computation_cost (tree expr)
+computation_cost (tree expr, bool speed)
 {
   rtx seq, rslt;
   tree type = TREE_TYPE (expr);
   unsigned cost;
   /* Avoid using hard regs in ways which may be unsupported.  */
   int regno = LAST_VIRTUAL_REGISTER + 1;
+  enum function_frequency real_frequency = cfun->function_frequency;
 
+  cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
+  crtl->maybe_hot_insn_p = speed;
   walk_tree (&expr, prepare_decl_rtl, &regno, NULL);
   start_sequence ();
   rslt = expand_expr (expr, NULL_RTX, TYPE_MODE (type), EXPAND_NORMAL);
   seq = get_insns ();
   end_sequence ();
+  default_rtl_profile ();
+  cfun->function_frequency = real_frequency;
 
-  cost = seq_cost (seq);
+  cost = seq_cost (seq, speed);
   if (MEM_P (rslt))
-    cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type));
+    cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type), speed);
 
   return cost;
 }
@@ -2833,7 +2841,7 @@ get_computation (struct loop *loop, struct iv_use *use, struct iv_cand *cand)
 /* Returns cost of addition in MODE.  */
 
 static unsigned
-add_cost (enum machine_mode mode)
+add_cost (enum machine_mode mode, bool speed)
 {
   static unsigned costs[NUM_MACHINE_MODES];
   rtx seq;
@@ -2850,7 +2858,7 @@ add_cost (enum machine_mode mode)
   seq = get_insns ();
   end_sequence ();
 
-  cost = seq_cost (seq);
+  cost = seq_cost (seq, speed);
   if (!cost)
     cost = 1;
 
@@ -2895,7 +2903,7 @@ mbc_entry_eq (const void *entry1, const void *entry2)
 /* Returns cost of multiplication by constant CST in MODE.  */
 
 unsigned
-multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
+multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode, bool speed)
 {
   static htab_t costs;
   struct mbc_entry **cached, act;
@@ -2921,7 +2929,7 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
   seq = get_insns ();
   end_sequence ();
   
-  cost = seq_cost (seq);
+  cost = seq_cost (seq, speed);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Multiplication by %d in %s costs %d\n",
@@ -2984,7 +2992,8 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
 static comp_cost
 get_address_cost (bool symbol_present, bool var_present,
 		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
-		  enum machine_mode mem_mode)
+		  enum machine_mode mem_mode,
+		  bool speed)
 {
   static bool initialized[MAX_MACHINE_MODE];
   static HOST_WIDE_INT rat[MAX_MACHINE_MODE], off[MAX_MACHINE_MODE];
@@ -3100,8 +3109,8 @@ get_address_cost (bool symbol_present, bool var_present,
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  acost = seq_cost (seq);
-	  acost += address_cost (addr, mem_mode);
+	  acost = seq_cost (seq, speed);
+	  acost += address_cost (addr, mem_mode, speed);
 
 	  if (!acost)
 	    acost = 1;
@@ -3120,7 +3129,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	 If VAR_PRESENT is true, try whether the mode with
 	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
 	 if this is the case, use it.  */
-      add_c = add_cost (Pmode);
+      add_c = add_cost (Pmode, speed);
       for (i = 0; i < 8; i++)
 	{
 	  var_p = i & 1;
@@ -3178,10 +3187,10 @@ get_address_cost (bool symbol_present, bool var_present,
 	     && multiplier_allowed_in_address_p (ratio, mem_mode));
 
   if (ratio != 1 && !ratio_p)
-    cost += multiply_by_cost (ratio, Pmode);
+    cost += multiply_by_cost (ratio, Pmode, speed);
 
   if (s_offset && !offset_p && !symbol_present)
-    cost += add_cost (Pmode);
+    cost += add_cost (Pmode, speed);
 
   acost = costs[mem_mode][symbol_present][var_present][offset_p][ratio_p];
   complexity = (symbol_present != 0) + (var_present != 0) + offset_p + ratio_p;
@@ -3191,12 +3200,12 @@ get_address_cost (bool symbol_present, bool var_present,
 /* Estimates cost of forcing expression EXPR into a variable.  */
 
 static comp_cost
-force_expr_to_var_cost (tree expr)
+force_expr_to_var_cost (tree expr, bool speed)
 {
   static bool costs_initialized = false;
-  static unsigned integer_cost;
-  static unsigned symbol_cost;
-  static unsigned address_cost;
+  static unsigned integer_cost [2];
+  static unsigned symbol_cost [2];
+  static unsigned address_cost [2];
   tree op0, op1;
   comp_cost cost0, cost1, cost;
   enum machine_mode mode;
@@ -3206,30 +3215,36 @@ force_expr_to_var_cost (tree expr)
       tree type = build_pointer_type (integer_type_node);
       tree var, addr;
       rtx x;
+      int i;
 
       var = create_tmp_var_raw (integer_type_node, "test_var");
       TREE_STATIC (var) = 1;
       x = produce_memory_decl_rtl (var, NULL);
       SET_DECL_RTL (var, x);
 
-      integer_cost = computation_cost (build_int_cst (integer_type_node,
-						      2000));
-
       addr = build1 (ADDR_EXPR, type, var);
-      symbol_cost = computation_cost (addr) + 1;
 
-      address_cost
-	= computation_cost (build2 (POINTER_PLUS_EXPR, type,
-				    addr,
-				    build_int_cst (sizetype, 2000))) + 1;
-      if (dump_file && (dump_flags & TDF_DETAILS))
+
+      for (i = 0; i < 2; i++)
 	{
-	  fprintf (dump_file, "force_expr_to_var_cost:\n");
-	  fprintf (dump_file, "  integer %d\n", (int) integer_cost);
-	  fprintf (dump_file, "  symbol %d\n", (int) symbol_cost);
-	  fprintf (dump_file, "  address %d\n", (int) address_cost);
-	  fprintf (dump_file, "  other %d\n", (int) target_spill_cost);
-	  fprintf (dump_file, "\n");
+	  integer_cost[i] = computation_cost (build_int_cst (integer_type_node,
+							     2000), i);
+
+	  symbol_cost[i] = computation_cost (addr, i) + 1;
+
+	  address_cost[i]
+	    = computation_cost (build2 (POINTER_PLUS_EXPR, type,
+					addr,
+					build_int_cst (sizetype, 2000)), i) + 1;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "force_expr_to_var_cost %s costs:\n", i ? "speed" : "size");
+	      fprintf (dump_file, "  integer %d\n", (int) integer_cost[i]);
+	      fprintf (dump_file, "  symbol %d\n", (int) symbol_cost[i]);
+	      fprintf (dump_file, "  address %d\n", (int) address_cost[i]);
+	      fprintf (dump_file, "  other %d\n", (int) target_spill_cost[i]);
+	      fprintf (dump_file, "\n");
+	    }
 	}
 
       costs_initialized = true;
@@ -3243,7 +3258,7 @@ force_expr_to_var_cost (tree expr)
   if (is_gimple_min_invariant (expr))
     {
       if (TREE_CODE (expr) == INTEGER_CST)
-	return new_cost (integer_cost, 0);
+	return new_cost (integer_cost [speed], 0);
 
       if (TREE_CODE (expr) == ADDR_EXPR)
 	{
@@ -3252,10 +3267,10 @@ force_expr_to_var_cost (tree expr)
 	  if (TREE_CODE (obj) == VAR_DECL
 	      || TREE_CODE (obj) == PARM_DECL
 	      || TREE_CODE (obj) == RESULT_DECL)
-	    return new_cost (symbol_cost, 0);
+	    return new_cost (symbol_cost [speed], 0);
 	}
 
-      return new_cost (address_cost, 0);
+      return new_cost (address_cost [speed], 0);
     }
 
   switch (TREE_CODE (expr))
@@ -3272,18 +3287,18 @@ force_expr_to_var_cost (tree expr)
       if (is_gimple_val (op0))
 	cost0 = zero_cost;
       else
-	cost0 = force_expr_to_var_cost (op0);
+	cost0 = force_expr_to_var_cost (op0, speed);
 
       if (is_gimple_val (op1))
 	cost1 = zero_cost;
       else
-	cost1 = force_expr_to_var_cost (op1);
+	cost1 = force_expr_to_var_cost (op1, speed);
 
       break;
 
     default:
       /* Just an arbitrary value, FIXME.  */
-      return new_cost (target_spill_cost, 0);
+      return new_cost (target_spill_cost[speed], 0);
     }
 
   mode = TYPE_MODE (TREE_TYPE (expr));
@@ -3292,16 +3307,16 @@ force_expr_to_var_cost (tree expr)
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
-      cost = new_cost (add_cost (mode), 0);
+      cost = new_cost (add_cost (mode, speed), 0);
       break;
 
     case MULT_EXPR:
       if (cst_and_fits_in_hwi (op0))
-	cost = new_cost (multiply_by_cost (int_cst_value (op0), mode), 0);
-      else if (cst_and_fits_in_hwi (op1))
-	cost = new_cost (multiply_by_cost (int_cst_value (op1), mode), 0);
+	cost = new_cost (multiply_by_cost (int_cst_value (op0), mode, speed), 0);
+      else if (cst_and_fits_in_hwi (op1))                                  
+	cost = new_cost (multiply_by_cost (int_cst_value (op1), mode, speed), 0);
       else
-	return new_cost (target_spill_cost, 0);
+	return new_cost (target_spill_cost [speed], 0);
       break;
 
     default:
@@ -3315,8 +3330,8 @@ force_expr_to_var_cost (tree expr)
      computations often are either loop invariant or at least can
      be shared between several iv uses, so letting this grow without
      limits would not give reasonable results.  */
-  if (cost.cost > target_spill_cost)
-    cost.cost = target_spill_cost;
+  if (cost.cost > target_spill_cost [speed])
+    cost.cost = target_spill_cost [speed];
 
   return cost;
 }
@@ -3334,7 +3349,7 @@ force_var_cost (struct ivopts_data *data,
       walk_tree (&expr, find_depends, depends_on, NULL);
     }
 
-  return force_expr_to_var_cost (expr);
+  return force_expr_to_var_cost (expr, data->speed);
 }
 
 /* Estimates cost of expressing address ADDR  as var + symbol + offset.  The
@@ -3365,7 +3380,7 @@ split_address_cost (struct ivopts_data *data,
       *var_present = true;
       fd_ivopts_data = data;
       walk_tree (&addr, find_depends, depends_on, NULL);
-      return new_cost (target_spill_cost, 0);
+      return new_cost (target_spill_cost[data->speed], 0);
     }
 
   *offset += bitpos / BITS_PER_UNIT;
@@ -3395,6 +3410,7 @@ ptr_difference_cost (struct ivopts_data *data,
 {
   HOST_WIDE_INT diff = 0;
   comp_cost cost;
+  bool speed = optimize_loop_for_speed_p (data->current_loop);
 
   gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
 
@@ -3415,7 +3431,7 @@ ptr_difference_cost (struct ivopts_data *data,
   
   cost = force_var_cost (data, e1, depends_on);
   cost = add_costs (cost, force_var_cost (data, e2, depends_on));
-  cost.cost += add_cost (Pmode);
+  cost.cost += add_cost (Pmode, speed);
 
   return cost;
 }
@@ -3459,14 +3475,14 @@ difference_cost (struct ivopts_data *data,
   if (integer_zerop (e1))
     {
       cost = force_var_cost (data, e2, depends_on);
-      cost.cost += multiply_by_cost (-1, mode);
+      cost.cost += multiply_by_cost (-1, mode, data->speed);
 
       return cost;
     }
 
   cost = force_var_cost (data, e1, depends_on);
   cost = add_costs (cost, force_var_cost (data, e2, depends_on));
-  cost.cost += add_cost (mode);
+  cost.cost += add_cost (mode, data->speed);
 
   return cost;
 }
@@ -3491,6 +3507,7 @@ get_computation_cost_at (struct ivopts_data *data,
   comp_cost cost;
   unsigned n_sums;
   double_int rat;
+  bool speed = optimize_bb_for_speed_p (gimple_bb (at));
 
   *depends_on = NULL;
 
@@ -3571,7 +3588,7 @@ get_computation_cost_at (struct ivopts_data *data,
   else
     {
       cost = force_var_cost (data, cbase, depends_on);
-      cost.cost += add_cost (TYPE_MODE (ctype));
+      cost.cost += add_cost (TYPE_MODE (ctype), data->speed);
       cost = add_costs (cost,
 			difference_cost (data,
 					 ubase, build_int_cst (utype, 0),
@@ -3590,20 +3607,20 @@ get_computation_cost_at (struct ivopts_data *data,
   if (address_p)
     return add_costs (cost, get_address_cost (symbol_present, var_present,
 				offset, ratio,
-				TYPE_MODE (TREE_TYPE (*use->op_p))));
+				TYPE_MODE (TREE_TYPE (*use->op_p)), speed));
 
   /* Otherwise estimate the costs for computing the expression.  */
   aratio = ratio > 0 ? ratio : -ratio;
   if (!symbol_present && !var_present && !offset)
     {
       if (ratio != 1)
-	cost.cost += multiply_by_cost (ratio, TYPE_MODE (ctype));
+	cost.cost += multiply_by_cost (ratio, TYPE_MODE (ctype), speed);
 
       return cost;
     }
 
   if (aratio != 1)
-    cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype));
+    cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype), speed);
 
   n_sums = 1;
   if (var_present
@@ -3616,7 +3633,7 @@ get_computation_cost_at (struct ivopts_data *data,
   if (offset)
     cost.complexity++;
 
-  cost.cost += n_sums * add_cost (TYPE_MODE (ctype));
+  cost.cost += n_sums * add_cost (TYPE_MODE (ctype), speed);
   return cost;
 
 fallback:
@@ -3630,7 +3647,7 @@ fallback:
     if (address_p)
       comp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (comp)), comp);
 
-    return new_cost (computation_cost (comp), 0);
+    return new_cost (computation_cost (comp, speed), 0);
   }
 }
 
@@ -4008,7 +4025,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 
   base = cand->iv->base;
   cost_base = force_var_cost (data, base, NULL);
-  cost_step = add_cost (TYPE_MODE (TREE_TYPE (base)));
+  cost_step = add_cost (TYPE_MODE (TREE_TYPE (base)), data->speed);
 
   cost = cost_step + cost_base.cost / AVG_LOOP_NITER (current_loop);
 
@@ -4062,7 +4079,7 @@ ivopts_global_cost_for_size (struct ivopts_data *data, unsigned size)
 {
   /* We add size to the cost, so that we prefer eliminating ivs
      if possible.  */
-  return size + estimate_reg_pressure_cost (size, data->regs_used);
+  return size + estimate_reg_pressure_cost (size, data->regs_used, data->speed);
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -4101,8 +4118,8 @@ determine_set_costs (struct ivopts_data *data)
     {
       fprintf (dump_file, "Global costs:\n");
       fprintf (dump_file, "  target_avail_regs %d\n", target_avail_regs);
-      fprintf (dump_file, "  target_reg_cost %d\n", target_reg_cost);
-      fprintf (dump_file, "  target_spill_cost %d\n", target_spill_cost);
+      fprintf (dump_file, "  target_reg_cost %d\n", target_reg_cost[data->speed]);
+      fprintf (dump_file, "  target_spill_cost %d\n", target_spill_cost[data->speed]);
     }
 
   n = 0;
@@ -5255,7 +5272,7 @@ rewrite_use_address (struct ivopts_data *data,
   gcc_assert (ok);
   unshare_aff_combination (&aff);
 
-  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff);
+  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff, data->speed);
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
 }
@@ -5469,6 +5486,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   gcc_assert (!data->niters);
   data->current_loop = loop;
+  data->speed = optimize_loop_for_speed_p (loop);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

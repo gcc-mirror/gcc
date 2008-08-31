@@ -1260,13 +1260,14 @@ alpha_legitimize_reload_address (rtx x,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
+alpha_rtx_costs (rtx x, int code, int outer_code, int *total,
+		 bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
   const struct alpha_rtx_cost_data *cost_data;
 
-  if (optimize_size)
+  if (!speed)
     cost_data = &alpha_rtx_cost_size;
   else
     cost_data = &alpha_rtx_cost_data[alpha_tune];
@@ -1311,7 +1312,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = COSTS_N_INSNS (15);
       else
 	/* Otherwise we do a load from the GOT.  */
-	*total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
+	*total = COSTS_N_INSNS (!speed ? 1 : alpha_memory_latency);
       return true;
 
     case HIGH:
@@ -1326,8 +1327,8 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
       else if (GET_CODE (XEXP (x, 0)) == MULT
 	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
-	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), outer_code)
-		    + rtx_cost (XEXP (x, 1), outer_code) + COSTS_N_INSNS (1));
+	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed)
+		    + rtx_cost (XEXP (x, 1), outer_code, speed) + COSTS_N_INSNS (1));
 	  return true;
 	}
       return false;
@@ -1375,7 +1376,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case MEM:
-      *total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
+      *total = COSTS_N_INSNS (!speed ? 1 : alpha_memory_latency);
       return true;
 
     case NEG:
@@ -10657,7 +10658,7 @@ alpha_init_libfuncs (void)
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS alpha_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG alpha_reorg
