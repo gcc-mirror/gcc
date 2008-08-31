@@ -198,6 +198,14 @@ tree_unswitch_single_loop (struct loop *loop, int num)
       return false;
     }
 
+  /* Do not unswitch in cold regions.  */
+  if (optimize_loop_for_size_p (loop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, ";; Not unswitching cold loops\n");
+      return false;
+    }
+
   /* The loop should not be too large, to limit code growth.  */
   if (tree_num_loop_insns (loop, &eni_size_weights)
       > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
