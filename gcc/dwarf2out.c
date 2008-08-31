@@ -15036,11 +15036,15 @@ gen_namespace_die (tree decl)
      they are an alias of.  */
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL)
     {
-      /* Output a real namespace.  */
+      /* Output a real namespace or module.  */
       dw_die_ref namespace_die
 	= new_die (is_fortran () ? DW_TAG_module : DW_TAG_namespace,
 		   context_die, decl);
-      add_name_and_src_coords_attributes (namespace_die, decl);
+      /* For Fortran modules defined in different CU don't add src coords.  */
+      if (namespace_die->die_tag == DW_TAG_module && DECL_EXTERNAL (decl))
+	add_name_attribute (namespace_die, dwarf2_name (decl, 0));
+      else
+	add_name_and_src_coords_attributes (namespace_die, decl);
       if (DECL_EXTERNAL (decl))
 	add_AT_flag (namespace_die, DW_AT_declaration, 1);
       equate_decl_number_to_die (decl, namespace_die);
