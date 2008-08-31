@@ -1,3 +1,26 @@
+2008-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* frv.c (frv_rtx_costs): Update forward declaration.
+	* spu.c (spu_rtx_costs): Likewise.
+	* pdp11.c: Include df.h
+	(pdp11_output_function_epilogue): Use df_set_regs_ever_live.
+	* m68hc11.c (m68hc11_gen_highpart): Fix call of gen_rtx_SUBREG.
+	(m68hc11_rtx_costs_1): Fix call of rtx_cost.
+	* iq2000.c (iq2000_address_cost): Add speed argument.
+	(iq2000_rtx_costs): Likewise.
+	* mn10300.c (mn10300_address_cost_1): Remove speed argument;
+	update call of mn10300_address_cost.
+	* mcore.c: Include df.h
+	(mcore_rtx_costs): Update prototype.
+	* score3.c: Include df.h
+	(score3_rtx_costs): Remove speed argument.
+	* score7.c: Include df.h
+	(score7_address_cost): Remove speed argument.
+	* score-protos.h (score_address_cost): Update prototype.
+	* score.c: Include df.h
+	(score_rtx_costs): Update call of costs functions.
+	* v850.c (v850_rtx_costs): Add bool argument.
+
 2008-08-31  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_rtx_costs): Correct call to rtx_costs.

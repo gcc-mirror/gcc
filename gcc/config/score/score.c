@@ -49,6 +49,7 @@
 #include "langhooks.h"
 #include "score7.h"
 #include "score3.h"
+#include "df.h"
 
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
@@ -573,9 +574,9 @@ score_rtx_costs (rtx x, int code, int outer_code, int *total,
 		 bool speed ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_rtx_costs (x, code, outer_code, total);
+    return score7_rtx_costs (x, code, outer_code, total, speed);
   else if (TARGET_SCORE3)
-    return score3_rtx_costs (x, code, outer_code, total);
+    return score3_rtx_costs (x, code, outer_code, total, speed);
 
   gcc_unreachable ();
 }

@@ -39,7 +39,7 @@ extern const char * score_move (rtx *ops);
 extern bool score_unaligned_load (rtx* ops);
 extern bool score_unaligned_store (rtx* ops);
 extern bool score_block_move (rtx* ops);
-extern int score_address_cost (rtx addr);
+extern int score_address_cost (rtx addr, bool speed);
 extern rtx score_function_arg (const CUMULATIVE_ARGS *cum,
                                enum machine_mode mode,
                                tree type, int named);

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 /*
 #define FPU_REG_P(X)	((X)>=8 && (X)<14)
@@ -376,7 +377,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
     if (frame_pointer_needed)					
     {								
 	/* hope this is safe - m68k does it also .... */		
-      df_regs_ever_live_p (FRAME_POINTER_REGNUM) = 0;			
+        df_set_regs_ever_live (FRAME_POINTER_REGNUM, false);
 								
 	for (i =7, j = 0 ; i >= 0 ; i--)				
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		

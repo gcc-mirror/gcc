@@ -126,7 +126,7 @@ static int mem_is_padded_component_ref (rtx x);
 static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
 static void spu_asm_globalize_label (FILE * file, const char *name);
 static unsigned char spu_rtx_costs (rtx x, int code, int outer_code,
-				    int *total);
+				    int *total, bool speed);
 static unsigned char spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (const_tree type, const_tree fntype);
