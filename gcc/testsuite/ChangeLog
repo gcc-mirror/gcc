@@ -1,3 +1,8 @@
+2008-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c/37271
+	* gcc.dg/pr37186.c: Add dg-message command for line 5.
+
 2008-08-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37289
