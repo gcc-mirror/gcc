@@ -283,6 +283,7 @@ static enum machine_mode this_insn_cc0_mode, prev_insn_cc0_mode;
 /* Insn being scanned.  */
 
 static rtx this_insn;
+static bool optimize_this_for_speed_p;
 
 /* Index by register number, gives the number of the next (or
    previous) register in the chain of registers sharing the same
@@ -752,7 +753,7 @@ notreg_cost (rtx x, enum rtx_code outer)
 	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (x)),
 				     GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))))
 	  ? 0
-	  : rtx_cost (x, outer) * 2);
+	  : rtx_cost (x, outer, optimize_this_for_speed_p) * 2);
 }
 
 
@@ -5970,6 +5971,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 
       FOR_BB_INSNS (bb, insn)
 	{
+	  optimize_this_for_speed_p = optimize_bb_for_speed_p (bb);
 	  /* If we have processed 1,000 insns, flush the hash table to
 	     avoid extreme quadratic behavior.  We must not include NOTEs
 	     in the count since there may be more of them when generating

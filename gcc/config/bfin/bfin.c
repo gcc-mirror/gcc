@@ -1378,7 +1378,7 @@ bfin_dsp_memref_p (rtx x)
    All addressing modes are equally cheap on the Blackfin.  */
 
 static int
-bfin_address_cost (rtx addr ATTRIBUTE_UNUSED)
+bfin_address_cost (rtx addr ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -2871,7 +2871,7 @@ bfin_legitimate_constant_p (rtx x)
 }
 
 static bool
-bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
+bfin_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 {
   int cost2 = COSTS_N_INSNS (1);
   rtx op0, op1;
@@ -2919,19 +2919,19 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      if (val == 2 || val == 4)
 		{
 		  *total = cost2;
-		  *total += rtx_cost (XEXP (op0, 0), outer_code);
-		  *total += rtx_cost (op1, outer_code);
+		  *total += rtx_cost (XEXP (op0, 0), outer_code, speed);
+		  *total += rtx_cost (op1, outer_code, speed);
 		  return true;
 		}
 	    }
 	  *total = cost2;
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, SET);
+	    *total += rtx_cost (op0, SET, speed);
 #if 0 /* We'd like to do this for accuracy, but it biases the loop optimizer
 	 towards creating too many induction variables.  */
 	  if (!reg_or_7bit_operand (op1, SImode))
-	    *total += rtx_cost (op1, SET);
+	    *total += rtx_cost (op1, SET, speed);
 #endif
 	}
       else if (GET_MODE (x) == DImode)
@@ -2939,10 +2939,10 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = 6 * cost2;
 	  if (GET_CODE (op1) != CONST_INT
 	      || !satisfies_constraint_Ks7 (op1))
-	    *total += rtx_cost (op1, PLUS);
+	    *total += rtx_cost (op1, PLUS, speed);
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, PLUS);
+	    *total += rtx_cost (op0, PLUS, speed);
 	}
       return true;
 
@@ -2965,7 +2965,7 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
       op1 = XEXP (x, 1);
       if (GET_CODE (op0) != REG
 	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	*total += rtx_cost (op0, code);
+	*total += rtx_cost (op0, code, speed);
 
       return true;
 	  
@@ -2990,7 +2990,7 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
 
       if (GET_CODE (op0) != REG
 	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	*total += rtx_cost (op0, code);
+	*total += rtx_cost (op0, code, speed);
 
       if (GET_MODE (x) == DImode)
 	{
@@ -3004,12 +3004,12 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (code == AND)
 	{
 	  if (! rhs_andsi3_operand (XEXP (x, 1), SImode))
-	    *total += rtx_cost (XEXP (x, 1), code);
+	    *total += rtx_cost (XEXP (x, 1), code, speed);
 	}
       else
 	{
 	  if (! regorlog2_operand (XEXP (x, 1), SImode))
-	    *total += rtx_cost (XEXP (x, 1), code);
+	    *total += rtx_cost (XEXP (x, 1), code, speed);
 	}
 
       return true;
@@ -3042,17 +3042,17 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      op0 = XEXP (op0, 0);
 	      op1 = XEXP (op1, 0);
 	    }
-	  else if (optimize_size)
+	  else if (!speed)
 	    *total = COSTS_N_INSNS (1);
 	  else
 	    *total = COSTS_N_INSNS (3);
 
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, MULT);
+	    *total += rtx_cost (op0, MULT, speed);
 	  if (GET_CODE (op1) != REG
 	      && (GET_CODE (op1) != SUBREG || GET_CODE (SUBREG_REG (op1)) != REG))
-	    *total += rtx_cost (op1, MULT);
+	    *total += rtx_cost (op1, MULT, speed);
 	}
       return true;
 

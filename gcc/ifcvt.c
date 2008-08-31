@@ -143,12 +143,13 @@ cheap_bb_rtx_cost_p (const_basic_block bb, int max_cost)
 {
   int count = 0;
   rtx insn = BB_HEAD (bb);
+  bool speed = optimize_bb_for_speed_p (bb);
 
   while (1)
     {
       if (NONJUMP_INSN_P (insn))
 	{
-	  int cost = insn_rtx_cost (PATTERN (insn));
+	  int cost = insn_rtx_cost (PATTERN (insn), speed);
 	  if (cost == 0)
 	    return false;
 
@@ -1351,7 +1352,8 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
      if insn_rtx_cost can't be estimated.  */
   if (insn_a)
     {
-      insn_cost = insn_rtx_cost (PATTERN (insn_a));
+      insn_cost = insn_rtx_cost (PATTERN (insn_a),
+      				 optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn_a)));
       if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (if_info->branch_cost))
 	return FALSE;
     }
@@ -1360,7 +1362,8 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
   if (insn_b)
     {
-      insn_cost += insn_rtx_cost (PATTERN (insn_b));
+      insn_cost += insn_rtx_cost (PATTERN (insn_b),
+      				 optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn_b)));
       if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (if_info->branch_cost))
         return FALSE;
     }
@@ -1901,7 +1904,8 @@ noce_try_sign_mask (struct noce_if_info *if_info)
      INSN_B which can happen for e.g. conditional stores to memory.  */
   b_unconditional = (if_info->insn_b == NULL_RTX
 		     || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb);
-  if (rtx_cost (t, SET) >= COSTS_N_INSNS (2)
+  if (rtx_cost (t, SET, optimize_bb_for_speed_p (BLOCK_FOR_INSN (if_info->insn_b)))
+      >= COSTS_N_INSNS (2)
       && (!b_unconditional
           || t != if_info->b))
     return FALSE;

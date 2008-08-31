@@ -161,8 +161,8 @@ static bool iq2000_return_in_memory   (const_tree, const_tree);
 static void iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *,
 					   enum machine_mode, tree, int *,
 					   int);
-static bool iq2000_rtx_costs          (rtx, int, int, int *);
-static int  iq2000_address_cost       (rtx);
+static bool iq2000_rtx_costs          (rtx, int, int, int *, bool);
+static int  iq2000_address_cost       (rtx, bool);
 static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
@@ -744,7 +744,7 @@ iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
 /* Provide the costs of an addressing mode that contains ADDR.  */
 
 static int
-iq2000_address_cost (rtx addr)
+iq2000_address_cost (rtx addr, bool speec ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (addr))
     {
@@ -3203,7 +3203,7 @@ print_operand (FILE *file, rtx op, int letter)
 }
 
 static bool
-iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total)
+iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total, bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
 

@@ -137,7 +137,7 @@ static GTY(()) section *zbss_section;
 #define TARGET_RTX_COSTS v850_rtx_costs
 
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
@@ -422,7 +422,7 @@ static bool
 v850_rtx_costs (rtx x,
                 int code,
                 int outer_code ATTRIBUTE_UNUSED,
-                int * total)
+                int * total, bool speed)
 {
   switch (code)
     {
@@ -438,7 +438,7 @@ v850_rtx_costs (rtx x,
     case DIV:
     case UMOD:
     case UDIV:
-      if (TARGET_V850E && optimize_size)
+      if (TARGET_V850E && !speed)
         *total = 6;
       else
 	*total = 60;

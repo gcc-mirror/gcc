@@ -131,7 +131,8 @@ static bool arm_slowmul_rtx_costs (rtx, int, int, int *);
 static bool arm_fastmul_rtx_costs (rtx, int, int, int *);
 static bool arm_xscale_rtx_costs (rtx, int, int, int *);
 static bool arm_9e_rtx_costs (rtx, int, int, int *);
-static int arm_address_cost (rtx);
+static bool arm_rtx_costs (rtx, int, int, int *, bool);
+static int arm_address_cost (rtx, bool);
 static bool arm_memory_load_p (rtx);
 static bool arm_cirrus_insn_p (rtx);
 static void cirrus_reorg (rtx);
@@ -256,9 +257,8 @@ static bool arm_allocate_stack_slots_for_args (void);
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
-/* This will be overridden in arm_override_options.  */
 #undef  TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS arm_slowmul_rtx_costs
+#define TARGET_RTX_COSTS arm_rtx_costs
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST arm_address_cost
 
@@ -1185,10 +1185,6 @@ arm_override_options (void)
   gcc_assert (arm_tune != arm_none);
 
   tune_flags = all_cores[(int)arm_tune].flags;
-  if (optimize_size)
-    targetm.rtx_costs = arm_size_rtx_costs;
-  else
-    targetm.rtx_costs = all_cores[(int)arm_tune].rtx_costs;
 
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
@@ -4920,7 +4916,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
     case MINUS:
       if (GET_CODE (XEXP (x, 1)) == MULT && mode == SImode && arm_arch_thumb2)
 	{
-	  extra_cost = rtx_cost (XEXP (x, 1), code);
+	  extra_cost = rtx_cost (XEXP (x, 1), code, true);
 	  if (!REG_OR_SUBREG_REG (XEXP (x, 0)))
 	    extra_cost += 4 * ARM_NUM_REGS (mode);
 	  return extra_cost;
@@ -4969,7 +4965,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 
       if (GET_CODE (XEXP (x, 0)) == MULT)
 	{
-	  extra_cost = rtx_cost (XEXP (x, 0), code);
+	  extra_cost = rtx_cost (XEXP (x, 0), code, true);
 	  if (!REG_OR_SUBREG_REG (XEXP (x, 1)))
 	    extra_cost += 4 * ARM_NUM_REGS (mode);
 	  return extra_cost;
@@ -5168,7 +5164,7 @@ arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ROTATE:
       if (mode == SImode && GET_CODE (XEXP (x, 1)) == REG)
 	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code);
+	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, false);
 	  return true;
 	}
       /* Fall through */
@@ -5178,15 +5174,15 @@ arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ASHIFTRT:
       if (mode == DImode && GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), code);
+	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), code, false);
 	  return true;
 	}
       else if (mode == SImode)
 	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code);
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, false);
 	  /* Slightly disparage register shifts, but not by much.  */
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	    *total += 1 + rtx_cost (XEXP (x, 1), code);
+	    *total += 1 + rtx_cost (XEXP (x, 1), code, false);
 	  return true;
 	}
 
@@ -5352,6 +5348,16 @@ arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = COSTS_N_INSNS (4); /* How knows?  */
       return false;
     }
+}
+
+/* RTX costs when optimizing for size.  */
+static bool
+arm_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
+{
+  if (!speed)
+    return arm_size_rtx_costs (x, code, outer_code, total);
+  else
+    return all_cores[(int)arm_tune].rtx_costs;
 }
 
 /* RTX costs for cores with a slow MUL implementation.  Thumb-2 is not
@@ -5546,7 +5552,7 @@ arm_xscale_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* A COMPARE of a MULT is slow on XScale; the muls instruction
 	 will stall until the multiplication is complete.  */
       if (GET_CODE (XEXP (x, 0)) == MULT)
-	*total = 4 + rtx_cost (XEXP (x, 0), code);
+	*total = 4 + rtx_cost (XEXP (x, 0), code, true);
       else
 	*total = arm_rtx_costs_1 (x, code, outer_code);
       return true;
@@ -5666,7 +5672,7 @@ arm_thumb_address_cost (rtx x)
 }
 
 static int
-arm_address_cost (rtx x)
+arm_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   return TARGET_32BIT ? arm_arm_address_cost (x) : arm_thumb_address_cost (x);
 }

@@ -1074,8 +1074,8 @@ rhs_regno (const_rtx x)
 #define MAX_COST INT_MAX
 
 extern void init_rtlanal (void);
-extern int rtx_cost (rtx, enum rtx_code);
-extern int address_cost (rtx, enum machine_mode);
+extern int rtx_cost (rtx, enum rtx_code, bool);
+extern int address_cost (rtx, enum machine_mode, bool);
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
 				  unsigned int);
@@ -1784,7 +1784,7 @@ extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx find_first_parameter_load (rtx, rtx);
 extern bool keep_with_call_p (const_rtx);
 extern bool label_is_jump_target_p (const_rtx, const_rtx);
-extern int insn_rtx_cost (rtx);
+extern int insn_rtx_cost (rtx, bool);
 
 /* Given an insn and condition, return a canonical description of
    the test being made.  */
@@ -2339,5 +2339,7 @@ extern void insn_locators_finalize (void);
 extern void set_curr_insn_source_location (location_t);
 extern void set_curr_insn_block (tree);
 extern int curr_insn_locator (void);
+extern bool optimize_insn_for_size_p (void);
+extern bool optimize_insn_for_speed_p (void);
 
 #endif /* ! GCC_RTL_H */

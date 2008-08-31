@@ -9471,7 +9471,8 @@ static bool
 frv_rtx_costs (rtx x,
                int code ATTRIBUTE_UNUSED,
                int outer_code ATTRIBUTE_UNUSED,
-               int *total)
+               int *total,
+	       bool speed ATTRIBUTE_UNUSED)
 {
   if (outer_code == MEM)
     {

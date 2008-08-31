@@ -184,7 +184,8 @@ canonicalize_address (rtx x)
    for a memory access in the given MODE.  */
 
 static bool
-should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode)
+should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode,
+			bool speed)
 {
   int gain;
 
@@ -196,14 +197,14 @@ should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode)
     return true;
 
   /* Prefer the new address if it is less expensive.  */
-  gain = address_cost (old_rtx, mode) - address_cost (new_rtx, mode);
+  gain = address_cost (old_rtx, mode, speed) - address_cost (new_rtx, mode, speed);
 
   /* If the addresses have equivalent cost, prefer the new address
      if it has the highest `rtx_cost'.  That has the potential of
      eliminating the most insns without additional costs, and it
      is the same that cse.c used to do.  */
   if (gain == 0)
-    gain = rtx_cost (new_rtx, SET) - rtx_cost (old_rtx, SET);
+    gain = rtx_cost (new_rtx, SET, speed) - rtx_cost (old_rtx, SET, speed);
 
   return (gain > 0);
 }
@@ -231,7 +232,10 @@ enum {
      PR_HANDLE_MEM is set when the source of the propagation was not
      another MEM.  Then, it is safe not to treat non-read-only MEMs as
      ``opaque'' objects.  */
-  PR_HANDLE_MEM = 2
+  PR_HANDLE_MEM = 2,
+
+  /* Set when costs should be optimized for speed.  */
+  PR_OPTIMIZE_FOR_SPEED = 4
 };
 
 
@@ -360,7 +364,8 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
 
 	  /* Copy propagations are always ok.  Otherwise check the costs.  */
 	  if (!(REG_P (old_rtx) && REG_P (new_rtx))
-	      && !should_replace_address (op0, new_op0, GET_MODE (x)))
+	      && !should_replace_address (op0, new_op0, GET_MODE (x),
+	      			 	  flags & PR_OPTIMIZE_FOR_SPEED))
 	    return true;
 
 	  tem = replace_equiv_address_nv (x, new_op0);
@@ -438,7 +443,8 @@ varying_mem_p (rtx *body, void *data ATTRIBUTE_UNUSED)
    Otherwise, we accept simplifications that have a lower or equal cost.  */
 
 static rtx
-propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx)
+propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
+	       bool speed)
 {
   rtx tem;
   bool collapsed;
@@ -452,6 +458,9 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx)
     flags |= PR_CAN_APPEAR;
   if (!for_each_rtx (&new_rtx, varying_mem_p, NULL))
     flags |= PR_HANDLE_MEM;
+
+  if (speed)
+    flags |= PR_OPTIMIZE_FOR_SPEED;
 
   tem = x;
   collapsed = propagate_rtx_1 (&tem, old_rtx, copy_rtx (new_rtx), flags);
@@ -728,7 +737,8 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new_rtx, rtx def_insn, bool 
   enum df_ref_type type = DF_REF_TYPE (use);
   int flags = DF_REF_FLAGS (use);
   rtx set = single_set (insn);
-  int old_cost = rtx_cost (SET_SRC (set), SET);
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int old_cost = rtx_cost (SET_SRC (set), SET, speed);
   bool ok;
 
   if (dump_file)
@@ -750,7 +760,7 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new_rtx, rtx def_insn, bool 
     }
 
   else if (DF_REF_TYPE (use) == DF_REF_REG_USE
-	   && rtx_cost (SET_SRC (set), SET) > old_cost)
+	   && rtx_cost (SET_SRC (set), SET, speed) > old_cost)
     {
       if (dump_file)
 	fprintf (dump_file, "Changes to insn %d not profitable\n",
@@ -928,7 +938,8 @@ forward_propagate_and_simplify (struct df_ref *use, rtx def_insn, rtx def_set)
   else
     mode = GET_MODE (*loc);
 
-  new_rtx = propagate_rtx (*loc, mode, reg, src);
+  new_rtx = propagate_rtx (*loc, mode, reg, src,
+  			   optimize_bb_for_speed_p (BLOCK_FOR_INSN (use_insn)));
 
   if (!new_rtx)
     return false;

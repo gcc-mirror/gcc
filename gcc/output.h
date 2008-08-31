@@ -621,7 +621,7 @@ extern void default_elf_asm_output_external (FILE *file, tree,
 					     const char *);
 extern int maybe_assemble_visibility (tree);
 
-extern int default_address_cost (rtx);
+extern int default_address_cost (rtx, bool);
 
 /* dbxout helper functions */
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO

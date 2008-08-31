@@ -182,7 +182,7 @@ static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS 		mcore_rtx_costs
 #undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST 		hook_int_rtx_0
+#define TARGET_ADDRESS_COST 		hook_int_rtx_bool_0
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG	mcore_reorg
 
@@ -479,7 +479,8 @@ mcore_ior_cost (rtx x)
 }
 
 static bool
-mcore_rtx_costs (rtx x, int code, int outer_code, int * total)
+mcore_rtx_costs (rtx x, int code, int outer_code, int * total,
+		 bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

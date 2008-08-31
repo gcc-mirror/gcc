@@ -112,8 +112,8 @@ static void cris_asm_output_mi_thunk
 static void cris_file_start (void);
 static void cris_init_libfuncs (void);
 
-static bool cris_rtx_costs (rtx, int, int, int *);
-static int cris_address_cost (rtx);
+static bool cris_rtx_costs (rtx, int, int, int *, bool);
+static int cris_address_cost (rtx, bool);
 static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
@@ -1756,7 +1756,8 @@ cris_expand_return (bool on_stack)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-cris_rtx_costs (rtx x, int code, int outer_code, int *total)
+cris_rtx_costs (rtx x, int code, int outer_code, int *total,
+		bool speed)
 {
   switch (code)
     {
@@ -1840,7 +1841,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case ZERO_EXTEND: case SIGN_EXTEND:
-      *total = rtx_cost (XEXP (x, 0), outer_code);
+      *total = rtx_cost (XEXP (x, 0), outer_code, speed);
       return true;
 
     default:
@@ -1851,7 +1852,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
 /* The ADDRESS_COST worker.  */
 
 static int
-cris_address_cost (rtx x)
+cris_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   /* The metric to use for the cost-macros is unclear.
      The metric used here is (the number of cycles needed) / 2,

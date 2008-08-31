@@ -1424,7 +1424,8 @@ static rtx
 find_shift_sequence (int access_size,
 		     store_info_t store_info,
 		     read_info_t read_info,
-		     int shift)
+		     int shift,
+		     bool speed)
 {
   enum machine_mode store_mode = GET_MODE (store_info->mem);
   enum machine_mode read_mode = GET_MODE (read_info->mem);
@@ -1483,7 +1484,7 @@ find_shift_sequence (int access_size,
       cost = 0;
       for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
-	  cost += insn_rtx_cost (PATTERN (insn));
+	  cost += insn_rtx_cost (PATTERN (insn), speed);
 
       /* The computation up to here is essentially independent
 	 of the arguments and could be precomputed.  It may
@@ -1582,7 +1583,8 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 	     GET_MODE_NAME (store_mode), INSN_UID (store_insn->insn));
   start_sequence ();
   if (shift)
-    read_reg = find_shift_sequence (access_size, store_info, read_info, shift);
+    read_reg = find_shift_sequence (access_size, store_info, read_info, shift,
+    				    optimize_bb_for_speed_p (BLOCK_FOR_INSN (read_insn->insn)));
   else
     read_reg = extract_low_bits (read_mode, store_mode,
 				 copy_rtx (store_info->rhs));

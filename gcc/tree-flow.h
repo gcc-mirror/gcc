@@ -1124,7 +1124,7 @@ extern void tree_check_data_deps (void);
 bool expr_invariant_in_loop_p (struct loop *, tree);
 bool stmt_invariant_in_loop_p (struct loop *, gimple);
 bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode);
-unsigned multiply_by_cost (HOST_WIDE_INT, enum machine_mode);
+unsigned multiply_by_cost (HOST_WIDE_INT, enum machine_mode, bool);
 
 /* In tree-ssa-threadupdate.c.  */
 extern bool thread_through_all_blocks (bool);
@@ -1155,7 +1155,7 @@ struct mem_address
 
 struct affine_tree_combination;
 tree create_mem_ref (gimple_stmt_iterator *, tree, 
-		     struct affine_tree_combination *);
+		     struct affine_tree_combination *, bool);
 rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);

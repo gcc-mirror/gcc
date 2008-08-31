@@ -149,7 +149,7 @@ static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
 static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static bool pdp11_rtx_costs (rtx, int, int, int *);
+static bool pdp11_rtx_costs (rtx, int, int, int *, bool);
 static bool pdp11_return_in_memory (const_tree, const_tree);
 
 /* Initialize the GCC target structure.  */
@@ -1094,7 +1094,8 @@ register_move_cost(enum reg_class c1, enum reg_class c2)
 }
 
 static bool
-pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
+pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+		 bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

@@ -139,7 +139,7 @@ static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 							int) ATTRIBUTE_UNUSED;
 static section *xtensa_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
-static bool xtensa_rtx_costs (rtx, int, int, int *);
+static bool xtensa_rtx_costs (rtx, int, int, int *, bool);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
@@ -177,7 +177,7 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST xtensa_build_builtin_va_list
@@ -2947,7 +2947,8 @@ xtensa_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
+xtensa_rtx_costs (rtx x, int code, int outer_code, int *total,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

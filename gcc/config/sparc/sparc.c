@@ -404,7 +404,7 @@ static rtx sparc_tls_get_addr (void);
 static rtx sparc_tls_got (void);
 static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
-static bool sparc_rtx_costs (rtx, int, int, int *);
+static bool sparc_rtx_costs (rtx, int, int, int *, bool);
 static bool sparc_promote_prototypes (const_tree);
 static rtx sparc_struct_value_rtx (tree, int);
 static bool sparc_return_in_memory (const_tree, const_tree);
@@ -513,7 +513,7 @@ static bool fpu_option_set = false;
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sparc_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_0
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 
 /* This is only needed for TARGET_ARCH64, but since PROMOTE_FUNCTION_MODE is a
    no-op for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime
@@ -8401,7 +8401,8 @@ sparc_extra_constraint_check (rtx op, int c, int strict)
    ??? the latencies and then CSE will just use that.  */
 
 static bool
-sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
+sparc_rtx_costs (rtx x, int code, int outer_code, int *total,
+		 bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);

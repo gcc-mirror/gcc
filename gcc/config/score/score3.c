@@ -1000,7 +1000,8 @@ score3_address_insns (rtx x, enum machine_mode mode)
 
 /* Implement TARGET_RTX_COSTS macro.  */
 bool
-score3_rtx_costs (rtx x, int code, int outer_code, int *total)
+score3_rtx_costs (rtx x, int code, int outer_code, int *total,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
 
@@ -1154,7 +1155,7 @@ score3_rtx_costs (rtx x, int code, int outer_code, int *total)
 
 /* Implement TARGET_ADDRESS_COST macro.  */
 int
-score3_address_cost (rtx addr)
+score3_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 {
   return score3_address_insns (addr, SImode);
 }

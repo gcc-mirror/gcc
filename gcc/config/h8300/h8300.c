@@ -1152,7 +1152,7 @@ h8300_shift_costs (rtx x)
 /* Worker function for TARGET_RTX_COSTS.  */
 
 static bool
-h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
+h8300_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 {
   if (TARGET_H8300SX && outer_code == MEM)
     {
@@ -1178,7 +1178,7 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  {
 	    /* Constant operands need the same number of processor
 	       states as register operands.  Although we could try to
-	       use a size-based cost for optimize_size, the lack of
+	       use a size-based cost for !speed, the lack of
 	       of a mode makes the results very unpredictable.  */
 	    *total = 0;
 	    return true;
@@ -1243,11 +1243,11 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  {
 	  case QImode:
 	  case HImode:
-	    *total = COSTS_N_INSNS (optimize_size ? 4 : 10);
+	    *total = COSTS_N_INSNS (!speed ? 4 : 10);
 	    return false;
 
 	  case SImode:
-	    *total = COSTS_N_INSNS (optimize_size ? 4 : 18);
+	    *total = COSTS_N_INSNS (!speed ? 4 : 18);
 	    return false;
 
 	  default:

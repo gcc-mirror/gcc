@@ -297,6 +297,7 @@ static rtx added_links_insn;
 
 /* Basic block in which we are performing combines.  */
 static basic_block this_basic_block;
+static bool optimize_this_for_speed_p;
 
 
 /* Length of the currently allocated uid_insn_cost array.  */
@@ -793,10 +794,10 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat,
     }
 
   /* Calculate the replacement insn_rtx_costs.  */
-  new_i3_cost = insn_rtx_cost (newpat);
+  new_i3_cost = insn_rtx_cost (newpat, optimize_this_for_speed_p);
   if (newi2pat)
     {
-      new_i2_cost = insn_rtx_cost (newi2pat);
+      new_i2_cost = insn_rtx_cost (newi2pat, optimize_this_for_speed_p);
       new_cost = (new_i2_cost > 0 && new_i3_cost > 0)
 		 ? new_i2_cost + new_i3_cost : 0;
     }
@@ -811,7 +812,7 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat,
       int old_other_cost, new_other_cost;
 
       old_other_cost = INSN_COST (undobuf.other_insn);
-      new_other_cost = insn_rtx_cost (newotherpat);
+      new_other_cost = insn_rtx_cost (newotherpat, optimize_this_for_speed_p);
       if (old_other_cost > 0 && new_other_cost > 0)
 	{
 	  old_cost += old_other_cost;
@@ -1068,6 +1069,7 @@ combine_instructions (rtx f, unsigned int nregs)
   create_log_links ();
   FOR_EACH_BB (this_basic_block)
     {
+      optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
       label_tick++;
@@ -1090,7 +1092,8 @@ combine_instructions (rtx f, unsigned int nregs)
 
 	    /* Record the current insn_rtx_cost of this instruction.  */
 	    if (NONJUMP_INSN_P (insn))
-	      INSN_COST (insn) = insn_rtx_cost (PATTERN (insn));
+	      INSN_COST (insn) = insn_rtx_cost (PATTERN (insn),
+	      					optimize_this_for_speed_p);
 	    if (dump_file)
 	      fprintf(dump_file, "insn_cost %d: %d\n",
 		    INSN_UID (insn), INSN_COST (insn));
@@ -6107,9 +6110,11 @@ expand_compound_operation (rtx x)
       rtx temp2 = expand_compound_operation (temp);
 
       /* Make sure this is a profitable operation.  */
-      if (rtx_cost (x, SET) > rtx_cost (temp2, SET))
+      if (rtx_cost (x, SET, optimize_this_for_speed_p)
+          > rtx_cost (temp2, SET, optimize_this_for_speed_p))
        return temp2;
-      else if (rtx_cost (x, SET) > rtx_cost (temp, SET))
+      else if (rtx_cost (x, SET, optimize_this_for_speed_p)
+               > rtx_cost (temp, SET, optimize_this_for_speed_p))
        return temp;
       else
        return x;
@@ -6534,7 +6539,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
-	  if (rtx_cost (temp, SET) <= rtx_cost (temp1, SET))
+	  if (rtx_cost (temp, SET, optimize_this_for_speed_p)
+	      <= rtx_cost (temp1, SET, optimize_this_for_speed_p))
 	    return temp;
 	  return temp1;
 	}
@@ -6728,7 +6734,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
-	  if (rtx_cost (temp1, SET) < rtx_cost (temp, SET))
+	  if (rtx_cost (temp1, SET, optimize_this_for_speed_p)
+	      < rtx_cost (temp, SET, optimize_this_for_speed_p))
 	    temp = temp1;
 	}
       pos_rtx = temp;
@@ -7377,7 +7384,8 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 
 	      y = simplify_gen_binary (AND, GET_MODE (x),
 				       XEXP (x, 0), GEN_INT (cval));
-	      if (rtx_cost (y, SET) < rtx_cost (x, SET))
+	      if (rtx_cost (y, SET, optimize_this_for_speed_p)
+	          < rtx_cost (x, SET, optimize_this_for_speed_p))
 		x = y;
 	    }
 
@@ -8521,7 +8529,8 @@ distribute_and_simplify_rtx (rtx x, int n)
   tmp = apply_distributive_law (simplify_gen_binary (inner_code, mode,
 						     new_op0, new_op1));
   if (GET_CODE (tmp) != outer_code
-      && rtx_cost (tmp, SET) < rtx_cost (x, SET))
+      && rtx_cost (tmp, SET, optimize_this_for_speed_p)
+         < rtx_cost (x, SET, optimize_this_for_speed_p))
     return tmp;
 
   return NULL_RTX;

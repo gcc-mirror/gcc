@@ -3458,13 +3458,14 @@ compress_float_constant (rtx x, rtx y)
   enum machine_mode srcmode;
   REAL_VALUE_TYPE r;
   int oldcost, newcost;
+  bool speed = optimize_insn_for_speed_p ();
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, y);
 
   if (LEGITIMATE_CONSTANT_P (y))
-    oldcost = rtx_cost (y, SET);
+    oldcost = rtx_cost (y, SET, speed);
   else
-    oldcost = rtx_cost (force_const_mem (dstmode, y), SET);
+    oldcost = rtx_cost (force_const_mem (dstmode, y), SET, speed);
 
   for (srcmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_srcmode));
        srcmode != orig_srcmode;
@@ -3491,7 +3492,7 @@ compress_float_constant (rtx x, rtx y)
 	  if (! (*insn_data[ic].operand[1].predicate) (trunc_y, srcmode))
 	    continue;
 	  /* This is valid, but may not be cheaper than the original. */
-	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET);
+	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET, speed);
 	  if (oldcost < newcost)
 	    continue;
 	}
@@ -3499,7 +3500,7 @@ compress_float_constant (rtx x, rtx y)
 	{
 	  trunc_y = force_const_mem (srcmode, trunc_y);
 	  /* This is valid, but may not be cheaper than the original. */
-	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET);
+	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET, speed);
 	  if (oldcost < newcost)
 	    continue;
 	  trunc_y = validize_mem (trunc_y);
