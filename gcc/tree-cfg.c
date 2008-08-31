@@ -3549,8 +3549,25 @@ verify_types_in_gimple_assign (gimple stmt)
       if (!useless_type_conversion_p (lhs_type, rhs1_type))
 	{
 	  error ("non-trivial conversion at assignment");
-	  debug_generic_expr (lhs);
-	  debug_generic_expr (rhs1);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      break;
+
+    case tcc_binary:
+      if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
+	{
+	  error ("invalid operands in binary expression");
+	  return true;
+	}
+      if (!useless_type_conversion_p (lhs_type, rhs1_type)
+	  || !useless_type_conversion_p (lhs_type, rhs2_type))
+	{
+	  error ("type mismatch in binary expression");
+	  debug_generic_stmt (lhs_type);
+	  debug_generic_stmt (rhs1_type);
+	  debug_generic_stmt (rhs2_type);
 	  return true;
 	}
       break;
@@ -3561,8 +3578,8 @@ verify_types_in_gimple_assign (gimple stmt)
       if (!useless_type_conversion_p (lhs_type, rhs1_type))
 	{
 	  error ("non-trivial conversion at assignment");
-	  debug_generic_expr (lhs);
-	  debug_generic_expr (rhs1);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
 	  return true;
 	}
       return verify_types_in_gimple_reference (rhs1);
