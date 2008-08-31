@@ -1,3 +1,9 @@
+2008-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/36444
+	* expmed.c (extract_bit_field_1): Check the mode size to make
+	sure the vector modes have the same size.
+
 2008-08-29  Michael Meissner  <gnu@the-meissners.org>
 
 	* dojump.c (top level): Include basic-block.h to declare
