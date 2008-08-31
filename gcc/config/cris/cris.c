@@ -1834,7 +1834,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total,
           && !CONST_INT_P (XEXP (x, 0))
           && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
 	{
-	  *total = (rtx_cost (XEXP (x, 0), outer_code) + 2
+	  *total = (rtx_cost (XEXP (x, 0), outer_code, speed) + 2
 		    + 2 * GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))));
 	  return true;
 	}
