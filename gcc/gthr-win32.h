@@ -455,7 +455,10 @@ __gthread_getspecific (__gthread_key_t key)
 static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
-  return __gthr_win32_setspecific (key, ptr);
+  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
+    return 0;
+  else
+    return GetLastError ();
 }
 
 static inline void
