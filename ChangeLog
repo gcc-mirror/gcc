@@ -1,3 +1,11 @@
+2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* configure.ac (RPATH_ENVVAR): Use PATH on Windows.
+	(GCC_SHLIB_SUBDIR): New.
+	* Makefile.tpl (HOST_LIB_PATH_gcc): Use GCC_SHLIB_SUBDIR.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2008-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* MAINTAINERS: Consistently use tabs to separate columns.

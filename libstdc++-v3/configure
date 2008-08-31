@@ -106551,7 +106551,12 @@ if test x$enable_symvers = xyes ; then
     enable_symvers=no
   else
     if test $with_gnu_ld = yes ; then
-      enable_symvers=gnu
+      case ${target_os} in
+        cygwin* | pe | mingw32*)
+          enable_symvers=no ;;
+        *)
+          enable_symvers=gnu ;;
+      esac
     else
       case ${target_os} in
         darwin*)
