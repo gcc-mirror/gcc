@@ -1,5 +1,9 @@
 2008-08-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/37287
+	* dwarf2out.c (gen_namespace_die): For DECL_EXTERNAL modules don't
+	add source coords.
+
 	* dwarf2out.c (native_encode_initializer): Subtract min_index for
 	non-range array index.  Handle VIEW_CONVERT_EXPR and NON_LVALUE_EXPR.
 
