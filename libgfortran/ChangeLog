@@ -1,3 +1,11 @@
+2008-08-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/36895
+	* io/write.c (namelist_write_newline): New function to correctly mark
+	next records in both external and internal units.
+	(nml_write_obj): Use new function.
+	(namelist_write: Use new function.
+
 2008-08-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/35863
