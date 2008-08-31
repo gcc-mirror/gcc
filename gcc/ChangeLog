@@ -1,3 +1,9 @@
+2008-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_assign): Dump mismatched
+	types instead of operands.  Re-instantiate verifying of
+	binary expression operands.
+
 2008-08-30  Jan Hubicka  <jh@suse.cz>
 
 	* fwprop.c (should_replace_address): Add speed attribute.
