@@ -1116,6 +1116,22 @@ list_formatted_write (st_parameter_dt *dtp, bt type, void *p, int kind,
 
 #define NML_DIGITS 20
 
+static void
+namelist_write_newline (st_parameter_dt *dtp)
+{
+  if (!is_internal_unit (dtp))
+    {
+#ifdef HAVE_CRLF
+      write_character (dtp, "\r\n", 1, 2);
+#else
+      write_character (dtp, "\n", 1, 1);
+#endif
+    }
+  else
+    write_character (dtp, " ", 1, 1);
+}
+
+
 static namelist_info *
 nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	       namelist_info * base, char * base_name)
@@ -1152,11 +1168,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 
   if (obj->type != GFC_DTYPE_DERIVED)
     {
-#ifdef HAVE_CRLF
-      write_character (dtp, "\r\n ", 1, 3);
-#else
-      write_character (dtp, "\n ", 1, 2);
-#endif
+      namelist_write_newline (dtp);
+      write_character (dtp, " ", 1, 1);
+
       len = 0;
       if (base)
 	{
@@ -1361,11 +1375,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	  if (num > 5)
 	    {
 	      num = 0;
-#ifdef HAVE_CRLF
-	      write_character (dtp, "\r\n ", 1, 3);
-#else
-	      write_character (dtp, "\n ", 1, 2);
-#endif
+	      namelist_write_newline (dtp);
+	      write_character (dtp, " ", 1, 1);
 	    }
 	  rep_ctr = 1;
 	}
@@ -1391,6 +1402,7 @@ obj_loop:
 
   return retval;
 }
+
 
 /* This is the entry function for namelist writes.  It outputs the name
    of the namelist and iterates through the namelist by calls to
@@ -1447,12 +1459,8 @@ namelist_write (st_parameter_dt *dtp)
 	}
     }
 
-#ifdef HAVE_CRLF
-  write_character (dtp, "  /\r\n", 1, 5);
-#else
-  write_character (dtp, "  /\n", 1, 4);
-#endif
-
+  write_character (dtp, "  /", 1, 3);
+  namelist_write_newline (dtp);
   /* Restore the original delimiter.  */
   dtp->u.p.delim_status = tmp_delim;
 }
