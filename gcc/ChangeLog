@@ -1,3 +1,12 @@
+2008-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* postreload-gcse.c (eliminate_partially_redundant_loads): Use optimize_bb_for_size_p.
+	* predict.c (maybe_hot_frequency_p): Make inline.
+	(maybe_hot_count_p): Break out from ...
+	(maybe_hot_bb_p): ... this one.
+	(maybe_hot_edge_p): Simplify.
+	* basic-block.h (probably_cold_bb_p): Remove.
+
 2008-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37168

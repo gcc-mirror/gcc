@@ -1173,7 +1173,7 @@ eliminate_partially_redundant_loads (void)
 	continue;
 
       /* Do not try anything on cold basic blocks.  */
-      if (probably_cold_bb_p (bb))
+      if (optimize_bb_for_size_p (bb))
 	continue;
 
       /* Reset the table of things changed since the start of the current
