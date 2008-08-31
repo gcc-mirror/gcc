@@ -4279,11 +4279,8 @@ gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
   /* Try to find it in the current type's namespace.  */
   gcc_assert (derived->f2k_derived);
   res = gfc_find_symtree (derived->f2k_derived->sym_root, name);
-  if (res)
+  if (res && res->typebound)
     {
-      if (!res->typebound)
-	return NULL;
-
       /* We found one.  */
       if (t)
 	*t = SUCCESS;

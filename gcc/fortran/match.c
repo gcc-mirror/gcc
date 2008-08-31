@@ -2525,6 +2525,7 @@ match_typebound_call (gfc_symtree* varst)
   base->expr_type = EXPR_VARIABLE;
   base->symtree = varst;
   base->where = gfc_current_locus;
+  gfc_set_sym_referenced (varst->n.sym);
   
   m = gfc_match_varspec (base, 0, true);
   if (m == MATCH_NO)

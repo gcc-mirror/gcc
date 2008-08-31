@@ -1,3 +1,51 @@
+2008-08-31  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (enum gfc_statement): New entry `ST_GENERIC'.
+	(struct gfc_tbp_generic): New type.
+	(struct gfc_typebound_proc): Removed `target' and added union with
+	`specific' and `generic' members; new members `overridden',
+	`subroutine', `function' and `is_generic'.
+	(struct gfc_expr): New members `derived' and `name' in compcall union
+	member and changed type of `tbp' to gfc_typebound_proc.
+	(gfc_compare_interfaces), (gfc_compare_actual_formal): Made public.
+	* match.h (gfc_typebound_default_access): New global.
+	(gfc_match_generic): New method.
+	* decl.c (gfc_match_generic): New method.
+	(match_binding_attributes): New argument `generic' and handle it.
+	(match_procedure_in_type): Mark matched binding as non-generic.
+	* interface.c (gfc_compare_interfaces): Made public.
+	(gfc_compare_actual_formal): Ditto.
+	(check_interface_1), (compare_parameter): Use new public names.
+	(gfc_procedure_use), (gfc_search_interface): Ditto.
+	* match.c (match_typebound_call): Set base-symbol referenced.
+	* module.c (binding_generic): New global array.
+	(current_f2k_derived): New global.
+	(mio_typebound_proc): Handle IO of GENERIC bindings.
+	(mio_f2k_derived): Record current f2k-namespace in current_f2k_derived.
+	* parse.c (decode_statement): Handle GENERIC statement.
+	(gfc_ascii_statement): Ditto.
+	(typebound_default_access), (set_typebound_default_access): Removed.
+	(gfc_typebound_default_access): New global.
+	(parse_derived_contains): New default-access implementation and handle
+	GENERIC statements encountered.
+	* primary.c (gfc_match_varspec): Adapted to new gfc_typebound_proc
+	structure and removed check for SUBROUTINE/FUNCTION from here.
+	* resolve.c (extract_compcall_passed_object): New method.
+	(update_compcall_arglist): Use it.
+	(resolve_typebound_static): Adapted to new gfc_typebound_proc structure.
+	(resolve_typebound_generic_call): New method.
+	(resolve_typebound_call): Check target is a SUBROUTINE and handle calls
+	to GENERIC bindings.
+	(resolve_compcall): Ditto (check for target being FUNCTION).
+	(check_typebound_override): Handle GENERIC bindings.
+	(check_generic_tbp_ambiguity), (resolve_typebound_generic): New methods.
+	(resolve_typebound_procedure): Handle GENERIC bindings and set new
+	attributes subroutine, function and overridden in gfc_typebound_proc.
+	(resolve_fl_derived): Ensure extended type is resolved before the
+	extending one is.
+	* st.c (gfc_free_statement): Fix bug with free'ing EXEC_COMPCALL's.
+	* symbol.c (gfc_find_typebound_proc): Adapt for GENERIC changes.
+
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 	
 	* parse.c (parse_interface): Silence uninitialized var warning.
