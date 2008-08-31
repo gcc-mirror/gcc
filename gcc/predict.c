@@ -110,7 +110,8 @@ static const struct predictor_info predictor_info[]= {
 #undef DEF_PREDICTOR
 
 /* Return TRUE if frequency FREQ is considered to be hot.  */
-static bool
+
+static inline bool
 maybe_hot_frequency_p (int freq)
 {
   if (!profile_info || !flag_branch_probabilities)
@@ -127,17 +128,27 @@ maybe_hot_frequency_p (int freq)
   return true;
 }
 
+/* Return TRUE if frequency FREQ is considered to be hot.  */
+
+static inline bool
+maybe_hot_count_p (gcov_type count)
+{
+  if (profile_status != PROFILE_READ)
+    return true;
+  /* Code executed at most once is not hot.  */
+  if (profile_info->runs >= count)
+    return false;
+  return (count
+	  > profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION));
+}
+
 /* Return true in case BB can be CPU intensive and should be optimized
    for maximal performance.  */
 
 bool
 maybe_hot_bb_p (const_basic_block bb)
 {
-  if (profile_info && flag_branch_probabilities
-      && (bb->count
-	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
-    return false;
-  return maybe_hot_frequency_p (bb->frequency);
+  return maybe_hot_count_p (bb->count) || maybe_hot_frequency_p (bb->frequency);
 }
 
 /* Return true if the call can be hot.  */
@@ -167,28 +178,7 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
 bool
 maybe_hot_edge_p (edge e)
 {
-  if (profile_info && flag_branch_probabilities
-      && (e->count
-	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
-    return false;
-  return maybe_hot_frequency_p (EDGE_FREQUENCY (e));
-}
-
-/* Return true in case BB is cold and should be optimized for size.  */
-
-bool
-probably_cold_bb_p (const_basic_block bb)
-{
-  if (profile_info && flag_branch_probabilities
-      && (bb->count
-	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
-    return true;
-  if ((!profile_info || !flag_branch_probabilities)
-      && cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
-    return true;
-  if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
-    return true;
-  return false;
+  return maybe_hot_count_p (e->count) || maybe_hot_frequency_p (EDGE_FREQUENCY (e));
 }
 
 /* Return true in case BB is probably never executed.  */
