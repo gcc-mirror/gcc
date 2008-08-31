@@ -1698,6 +1698,12 @@ static const mstring binding_overriding[] =
     minit ("NON_OVERRIDABLE", 1),
     minit (NULL, -1)
 };
+static const mstring binding_generic[] =
+{
+    minit ("SPECIFIC", 0),
+    minit ("GENERIC", 1),
+    minit (NULL, -1)
+};
 
 
 /* Specialization of mio_name.  */
@@ -3189,6 +3195,8 @@ mio_namespace_ref (gfc_namespace **nsp)
 
 /* Save/restore the f2k_derived namespace of a derived-type symbol.  */
 
+static gfc_namespace* current_f2k_derived;
+
 static void
 mio_typebound_proc (gfc_typebound_proc** proc)
 {
@@ -3202,13 +3210,13 @@ mio_typebound_proc (gfc_typebound_proc** proc)
   gcc_assert (*proc);
 
   mio_lparen ();
-  mio_symtree_ref (&(*proc)->target);
 
   (*proc)->access = MIO_NAME (gfc_access) ((*proc)->access, access_types);
 
   (*proc)->nopass = mio_name ((*proc)->nopass, binding_passing);
   (*proc)->non_overridable = mio_name ((*proc)->non_overridable,
 				       binding_overriding);
+  (*proc)->is_generic = mio_name ((*proc)->is_generic, binding_generic);
 
   if (iomode == IO_INPUT)
     (*proc)->pass_arg = NULL;
@@ -3216,6 +3224,38 @@ mio_typebound_proc (gfc_typebound_proc** proc)
   flag = (int) (*proc)->pass_arg_num;
   mio_integer (&flag);
   (*proc)->pass_arg_num = (unsigned) flag;
+
+  if ((*proc)->is_generic)
+    {
+      gfc_tbp_generic* g;
+
+      mio_lparen ();
+
+      if (iomode == IO_OUTPUT)
+	for (g = (*proc)->u.generic; g; g = g->next)
+	  mio_allocated_string (g->specific_st->name);
+      else
+	{
+	  (*proc)->u.generic = NULL;
+	  while (peek_atom () != ATOM_RPAREN)
+	    {
+	      g = gfc_get_tbp_generic ();
+	      g->specific = NULL;
+
+	      require_atom (ATOM_STRING);
+	      gfc_get_sym_tree (atom_string, current_f2k_derived,
+				&g->specific_st);
+	      gfc_free (atom_string);
+
+	      g->next = (*proc)->u.generic;
+	      (*proc)->u.generic = g;
+	    }
+	}
+
+      mio_rparen ();
+    }
+  else
+    mio_symtree_ref (&(*proc)->u.specific);
 
   mio_rparen ();
 }
@@ -3260,6 +3300,8 @@ mio_finalizer (gfc_finalizer **f)
 static void
 mio_f2k_derived (gfc_namespace *f2k)
 {
+  current_f2k_derived = f2k;
+
   /* Handle the list of finalizer procedures.  */
   mio_lparen ();
   if (iomode == IO_OUTPUT)

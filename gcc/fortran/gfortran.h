@@ -229,7 +229,7 @@ typedef enum
   ST_OMP_PARALLEL, ST_OMP_PARALLEL_DO, ST_OMP_PARALLEL_SECTIONS,
   ST_OMP_PARALLEL_WORKSHARE, ST_OMP_SECTIONS, ST_OMP_SECTION, ST_OMP_SINGLE,
   ST_OMP_THREADPRIVATE, ST_OMP_WORKSHARE, ST_OMP_TASK, ST_OMP_END_TASK,
-  ST_OMP_TASKWAIT, ST_PROCEDURE,
+  ST_OMP_TASKWAIT, ST_PROCEDURE, ST_GENERIC,
   ST_GET_FCN_CHARACTERISTICS, ST_NONE
 }
 gfc_statement;
@@ -992,14 +992,39 @@ typedef struct
 gfc_user_op;
 
 
-/* Data needed for type-bound procedures.  */
-typedef struct
+/* A list of specific bindings that are associated with a generic spec.  */
+typedef struct gfc_tbp_generic
 {
-  struct gfc_symtree* target;
-  locus where; /* Where the PROCEDURE definition was.  */
+  /* The parser sets specific_st, upon resolution we look for the corresponding
+     gfc_typebound_proc and set specific for further use.  */
+  struct gfc_symtree* specific_st;
+  struct gfc_typebound_proc* specific;
+
+  struct gfc_tbp_generic* next;
+}
+gfc_tbp_generic;
+
+#define gfc_get_tbp_generic() XCNEW (gfc_tbp_generic)
+
+
+/* Data needed for type-bound procedures.  */
+typedef struct gfc_typebound_proc
+{
+  locus where; /* Where the PROCEDURE/GENERIC definition was.  */
+
+  union
+  {
+    struct gfc_symtree* specific;
+    gfc_tbp_generic* generic;
+  }
+  u;
 
   gfc_access access;
   char* pass_arg; /* Argument-name for PASS.  NULL if not specified.  */
+
+  /* The overridden type-bound proc (or GENERIC with this name in the
+     parent-type) or NULL if non.  */
+  struct gfc_typebound_proc* overridden;
 
   /* Once resolved, we use the position of pass_arg in the formal arglist of
      the binding-target procedure to identify it.  The first argument has
@@ -1008,6 +1033,8 @@ typedef struct
 
   unsigned nopass:1; /* Whether we have NOPASS (PASS otherwise).  */
   unsigned non_overridable:1;
+  unsigned is_generic:1;
+  unsigned function:1, subroutine:1;
 }
 gfc_typebound_proc;
 
@@ -1565,7 +1592,9 @@ typedef struct gfc_expr
     struct
     {
       gfc_actual_arglist* actual;
-      gfc_symtree* tbp;
+      gfc_typebound_proc* tbp;
+      gfc_symbol* derived;
+      const char* name;
     }
     compcall;
 
@@ -2472,6 +2501,7 @@ int gfc_is_compile_time_shape (gfc_array_spec *);
 void gfc_free_interface (gfc_interface *);
 int gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 int gfc_compare_types (gfc_typespec *, gfc_typespec *);
+int gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, int);
 void gfc_check_interfaces (gfc_namespace *);
 void gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 gfc_symbol *gfc_search_interface (gfc_interface *, int,
@@ -2483,6 +2513,8 @@ gfc_try gfc_add_interface (gfc_symbol *);
 gfc_interface *gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
+int gfc_compare_actual_formal (gfc_actual_arglist**, gfc_formal_arglist*,
+      			       int, int, locus*);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

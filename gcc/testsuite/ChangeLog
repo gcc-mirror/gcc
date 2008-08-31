@@ -1,3 +1,9 @@
+2008-08-31  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/typebound_generic_1.f03: New test.
+	* gfortran.dg/typebound_generic_2.f03: New test.
+	* gfortran.dg/typebound_generic_3.f03: New test.
+
 2008-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36444

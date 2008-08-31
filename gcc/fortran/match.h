@@ -36,6 +36,9 @@ extern gfc_st_label *gfc_statement_label;
 extern int gfc_matching_procptr_assignment;
 extern bool gfc_matching_prefix;
 
+/* Default access specifier while matching procedure bindings.  */
+extern gfc_access gfc_typebound_default_access;
+
 /****************** All gfc_match* routines *****************/
 
 /* match.c.  */
@@ -141,6 +144,7 @@ match gfc_match_end (gfc_statement *);
 match gfc_match_data_decl (void);
 match gfc_match_formal_arglist (gfc_symbol *, int, int);
 match gfc_match_procedure (void);
+match gfc_match_generic (void);
 match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
