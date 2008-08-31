@@ -1,3 +1,7 @@
+2008-08-31  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_rtx_costs): Correct call to rtx_costs.
+
 2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* gthr-win32.h (__gthread_setspecific): Use CONST_CAST2.
