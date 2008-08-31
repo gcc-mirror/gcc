@@ -1,5 +1,13 @@
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_need_original_clone_p): Remove.
+	(ipcp_estimate_growth): New.
+	(ipcp_insert_stage): Use ipcp_estimate_growth.
+	* profile.c (branch_prob): When reading failed, do not consider
+	profile as read.
+
+2008-08-31  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Check that
 	loop is optimized for speed.
 

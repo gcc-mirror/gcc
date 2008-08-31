@@ -1042,21 +1042,57 @@ ipcp_update_profiling (void)
     }
 }
 
-/* Return true if original clone needs to be preserved.  */
-static bool
-ipcp_need_original_clone_p (struct cgraph_node *node)
+/* If NODE was cloned, how much would program grow? */
+static long
+ipcp_estimate_growth (struct cgraph_node *node)
 {
-  struct cgraph_edge *e;
+  struct cgraph_edge *cs;
+  int redirectable_node_callers = 0;
+  int removable_args = 0;
+  bool need_original = node->needed;
+  struct ipa_node_params *info;
+  int i, count;
+  int growth;
 
-  if (node->needed)
-    return true;
-  for (e = node->callers; e; e = e->next_caller)
-    if (!bitmap_bit_p (dead_nodes, e->caller->uid)
-        && ipcp_need_redirect_p (e))
-      return true;
+  for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+    if (!ipcp_need_redirect_p (cs))
+      redirectable_node_callers++;
+    else
+      need_original = true;
 
-  return false;
+  /* If we will be able to fully replace orignal node, we never increase
+     program size.  */
+  if (!need_original)
+    return false;
+
+  info = IPA_NODE_REF (node);
+  count = ipa_get_param_count (info);
+  for (i = 0; i < count; i++)
+    {
+      struct ipcp_lattice *lat = ipcp_get_ith_lattice (info, i);
+      tree parm_tree = ipa_get_ith_param (info, i);
+
+      /* We can proactively remove obviously unused arguments.  */
+      if (is_gimple_reg (parm_tree)
+	  && !gimple_default_def (DECL_STRUCT_FUNCTION (node->decl),
+				  parm_tree))
+	removable_args++;
+
+      if (lat->type == IPA_CONST_VALUE)
+	removable_args++;
+    }
+
+  /* We make just very simple estimate of savings for removal of operand from
+     call site.  Precise cost is dificult to get, as our size metric counts
+     constants and moves as free.  Generally we are looking for cases that
+     small function is called very many times.  */
+  growth = node->local.inline_summary.self_insns
+  	   - removable_args * redirectable_node_callers;
+  if (growth < 0)
+    return 0;
+  return growth;
 }
+
 
 /* Estimate cost of cloning NODE.  */
 static long
@@ -1067,12 +1103,12 @@ ipcp_estimate_cloning_cost (struct cgraph_node *node)
   struct cgraph_edge *e;
   int cost;
 
-  /* When we don't need original clone; we should always propagate.  */
-  if (!ipcp_need_original_clone_p (node))
+  cost = ipcp_estimate_growth (node) * 1000;
+  if (!cost)
     {
       if (dump_file)
-	fprintf (dump_file, "Function %s can be fully propagated\n",
-		 cgraph_node_name (node));
+        fprintf (dump_file, "Versioning of %s will save code size\n",
+	         cgraph_node_name (node));
       return 0;
     }
 
@@ -1084,7 +1120,6 @@ ipcp_estimate_cloning_cost (struct cgraph_node *node)
 	freq_sum += e->frequency + 1;
       }
 
-  cost = node->local.inline_summary.self_insns * 1000;
   if (max_count)
     cost /= count_sum * 1000 / max_count + 1;
   else
@@ -1185,10 +1220,7 @@ ipcp_insert_stage (void)
 	fprintf (dump_file, "considering function %s\n",
 		 cgraph_node_name (node));
 
-      if (ipcp_need_original_clone_p (node))
-        growth = node->local.inline_summary.self_insns;
-      else
-	bitmap_set_bit (dead_nodes, node->uid);
+      growth = ipcp_estimate_growth (node);
 
       if (new_insns + growth > max_new_insns)
 	break;

@@ -1154,7 +1154,7 @@ branch_prob (void)
 
   VEC_free (histogram_value, heap, values);
   free_edge_list (el);
-  if (flag_branch_probabilities)
+  if (flag_branch_probabilities && profile_info)
     profile_status = PROFILE_READ;
   coverage_end_function ();
 }
