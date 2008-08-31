@@ -11846,7 +11846,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 		pos = (tree_low_cst (TREE_OPERAND (index, 0), 0) - min_index)
 		      * fieldsize;
 	      else if (index)
-		pos = tree_low_cst (index, 0) * fieldsize;
+		pos = (tree_low_cst (index, 0) - min_index) * fieldsize;
 
 	      if (val)
 		{
@@ -11916,6 +11916,9 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	  return true;
 	}
       return false;
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return native_encode_initializer (TREE_OPERAND (init, 0), array, size);
     default:
       return native_encode_expr (init, array, size) == size;
     }
