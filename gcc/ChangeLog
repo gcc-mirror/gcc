@@ -1,5 +1,10 @@
 2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
+	* gthr-win32.h (__gthread_setspecific): Use CONST_CAST2.
+	* config/i386/gthr-win32.c (__gthread_setspecific): Same.
+
+2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
 	* mkmap-flat.awk: Add option pe_dll.
 	* config/i386/t-cygming (SHLIB_LINK): Support building libgcc_s.
 	* config/i386/t-cygwin (SHLIB_LC): Add.

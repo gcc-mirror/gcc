@@ -141,7 +141,10 @@ __gthr_win32_getspecific (__gthread_key_t key)
 int
 __gthr_win32_setspecific (__gthread_key_t key, const void *ptr)
 {
-  return (TlsSetValue (key, (void*) ptr) != 0) ? 0 : (int) GetLastError ();
+  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
+    return 0;
+  else
+    return GetLastError ();
 }
 
 void
