@@ -1204,7 +1204,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       for (; new_mode != VOIDmode ; new_mode = GET_MODE_WIDER_MODE (new_mode))
 	if (GET_MODE_NUNITS (new_mode) == nunits
-	    && GET_MODE_INNER (new_mode) == tmode
+	    && GET_MODE_SIZE (new_mode) == GET_MODE_SIZE (GET_MODE (op0))
 	    && targetm.vector_mode_supported_p (new_mode))
 	  break;
       if (new_mode != VOIDmode)

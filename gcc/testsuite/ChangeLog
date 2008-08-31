@@ -1,3 +1,9 @@
+2008-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/36444
+	* g++.dg/torture/pr36444.C: New testcase.
+	* gcc.c-torture/compile/vector-4.c: New testcase.
+
 2008-08-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36895
