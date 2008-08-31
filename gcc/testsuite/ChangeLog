@@ -1,3 +1,8 @@
+2008-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37168
+	* gcc.target/powerpc/pr37168.c: New test.
+
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37261

@@ -1,3 +1,14 @@
+2008-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37168
+	* config/rs6000/rs6000-protos.h (const_vector_elt_as_int): Add
+	prototype.
+	* config/rs6000/rs6000.c (const_vector_elt_as_int): No longer static.
+	* config/rs6000/altivec.md (easy_vector_constant_add_self splitter):
+	Also split V4SFmode.
+	* config/rs6000/predicates.md (easy_vector_constant_add_self): Handle
+	vector float modes.
+
 2008-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37261
