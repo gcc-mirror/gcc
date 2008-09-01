@@ -1,3 +1,7 @@
+2008-09-01  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c (TARGET_ADDRESS_COST): Update.
+
 2008-09-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_no_early_mul_dep): Handle multiply-subtract.
@@ -28,10 +32,10 @@
 	* config/bfin/bfin.h (MOVE_RATIO): Update.
 
 2008-08-31  Andrey Belevantsev  <abel@ispras.ru>
-        Dmitry Melnik  <dm@ispras.ru>
-        Dmitry Zhurikhin  <zhur@ispras.ru>
-        Alexander Monakov  <amonakov@ispras.ru>
-        Maxim Kuvyrkov  <maxim@codesourcery.com>
+	Dmitry Melnik  <dm@ispras.ru>
+	Dmitry Zhurikhin  <zhur@ispras.ru>
+	Alexander Monakov  <amonakov@ispras.ru>
+	Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sel-sched.h, sel-sched-dump.h, sel-sched-ir.h, sel-sched.c,
 	sel-sched-dump.c, sel-sched-ir.c: New files.
@@ -57,7 +61,7 @@
     	* cse.c (hash_rtx_cb): New.
 	(hash_rtx): Use it.
 	* dbgcnt.def (sel_sched_cnt, sel_sched_region_cnt,
-	sel_sched_insn_cnt): New counters. 
+	sel_sched_insn_cnt): New counters.
 	* final.c (compute_alignments): Export.  Free dominance info after loop_optimizer_finalize.
 	* genattr.c (main): Output maximal_insn_latency prototype.
 	* genautomata.c (output_default_latencies): New. Factor its code from ...
@@ -87,7 +91,7 @@
 	* rtl.h (rtx_equal_p_cb, hash_rtx_cb): Declare.
 	(remove_free_INSN_LIST_NODE, remove_free_EXPR_LIST_node,
 	debug_bb_n_slim, debug_bb_slim,    print_rtl_slim): Likewise.
-	* vecprim.h: Add a vector type for unsigned int. 
+	* vecprim.h: Add a vector type for unsigned int.
 	* haifa-sched.c: Include vecprim.h and cfgloop.h.
 	(issue_rate, sched_verbose_param, note_list, dfa_state_size,
 	ready_try, cycle_issued_insns, spec_info): Make global.
@@ -112,7 +116,7 @@
 	(ready_lastpos, ready_element, ready_sort, reemit_notes,
 	find_fallthru_edge): Make global, remove static prototypes.
 	(max_issue): Make global.  Add privileged_n and state parameters.  Use
-	them.  
+	them.
 	(extend_global, extend_all): Removed.
 	(init_before_recovery): Add new param.  Fix the handling of the case
 	when we insert a recovery code before the EXIT which has a predecessor
@@ -181,11 +185,11 @@
 	(sched_split_block): New hook.
 	(sched_split_block_1): New function.
 	(sched_create_empty_bb): New hook.
-	(sched_create_empty_bb_1): New function.	
+	(sched_create_empty_bb_1): New function.
 	(common_sched_info, ready): New global variables.
 	(current_sched_info_var): Remove.
-	(move_block_after_check): Use common_sched_info.		
-	(haifa_luid_for_non_insn): New static function.	
+	(move_block_after_check): Use common_sched_info.
+	(haifa_luid_for_non_insn): New static function.
 	(init_before_recovery): Use haifa_init_only_bb instead of
 	add_block.
 	(increase_insn_priority): New.
@@ -221,7 +225,7 @@
 	(add_insn_mem_dependence, flush_pending_lists): Adjust for readonly
 	contexts.
 	(remove_from_dependence_list, remove_from_both_dependence_lists): New.
-	(remove_from_deps): New. Use the above functions.	
+	(remove_from_deps): New. Use the above functions.
 	(cur_insn, can_start_lhs_rhs_p): New static variables.
 	(add_or_update_back_dep_1): Initialize present_dep_type.
 	(haifa_start_insn, haifa_finish_insn, haifa_note_reg_set,
@@ -347,7 +351,7 @@
 	extend_rgns, deps_join rgn_setup_common_sched_info,
 	rgn_setup_sched_infos, debug_regions, debug_region, dump_region_dot,
 	dump_region_dot_file, haifa_sched_init, haifa_sched_finish): Export.
-	(get_rgn_sched_max_insns_priority, sel_add_to_insn_priority, 
+	(get_rgn_sched_max_insns_priority, sel_add_to_insn_priority,
 	increase_insn_priority): Likewise.
 	* sched-rgn.c: Include sel-sched.h.
 	(ref_counts): New static variable.  Use it ...
@@ -430,7 +434,7 @@
 	(struct _rs6000_sched_context): New.
 	(rs6000_sched_reorder2): Do not modify INSN_PRIORITY for selective
 	scheduling.
-	(rs6000_sched_finish): Do not run for selective scheduling. 
+	(rs6000_sched_finish): Do not run for selective scheduling.
 
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
@@ -1286,7 +1290,7 @@
 	patterns.
 
 2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-            Andrew Pinski  <pinskia@gcc.gnu.org>
+	    Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR 18050
 	* c-common.c (verify_tree): Fix handling of ADDR_EXPR.
@@ -2046,7 +2050,7 @@
 	attribute.
 
 	* config/v850/v850.h (IRA_COVER_CLASSES): Define.
-	* config/v850/v850.md (return): Remove frame size restriction.	
+	* config/v850/v850.md (return): Remove frame size restriction.
 
 	* config/mcore/mcore.h (IRA_COVER_CLASSES): Define.
 
@@ -2076,43 +2080,43 @@
 2008-08-28  Ira Rosen  <irar@il.ibm.com>
 
 	* target.h (struct vectorize): Add new target builtin.
-	* tree-vectorizer.c (destroy_loop_vec_info): Call 
+	* tree-vectorizer.c (destroy_loop_vec_info): Call
 	vect_free_slp_instance instead of vect_free_slp_node.
 	* tree-vectorizer.h (enum slp_load_perm_type): New.
 	(struct _slp_instance): Add new fields.
 	(SLP_INSTANCE_LOAD_PERMUTATION): New.
 	(SLP_INSTANCE_LOADS): New.
 	(vect_free_slp_tree): Remove.
-	(vect_free_slp_instance): Declare.        
+	(vect_free_slp_instance): Declare.
 	(SLP_TREE_LOADS_PERM_TYPE, TARG_VEC_PERMUTE_COST): New.
 	(vectorizable_load): Add argument.
 	(vect_transform_slp_perm_load): New.
-	* tree-vect-analyze.c (vect_analyze_operations): Add an argument to 
+	* tree-vect-analyze.c (vect_analyze_operations): Add an argument to
 	vectorizable_load.
 	(vect_get_place_in_interleaving_chain): New function.
 	(vect_free_slp_tree): Make static.
 	(vect_free_slp_instance): New function.
-	(vect_build_slp_tree): Add new arguments. Allow load permutations and 
+	(vect_build_slp_tree): Add new arguments. Allow load permutations and
 	collect the load location in the interleaving chain.
 	(vect_supported_slp_permutation_p): New function.
 	(vect_supported_load_permutation_p): Likewise.
 	(vect_analyze_slp_instance): In case of loads permutation, call
-	vect_supported_load_permutation_p to check that the permutation is 
+	vect_supported_load_permutation_p to check that the permutation is
 	supported.
 	* target-def.h (TARGET_VECTORIZE_BUILTIN_VEC_PERM): New.
 	* tree-vect-transform.c (vect_transform_stmt): Add new argument.
 	(vect_create_mask_and_perm): New function.
 	(vect_get_mask_element, vect_transform_slp_perm_load): Likewise.
-	(vectorizable_load): Add an argument. Don't keep the created vectors  
-	statements in the node if permutation is required. Call 
+	(vectorizable_load): Add an argument. Don't keep the created vectors
+	statements in the node if permutation is required. Call
 	vect_transform_slp_perm_load to generate the permutation.
-	(vect_transform_stmt): Add new argument. Call vectorizable_load with 
+	(vect_transform_stmt): Add new argument. Call vectorizable_load with
 	additional argument.
-	(vect_schedule_slp_instance): In case of loads permutation, allocate  
-	vectorized statements structure for all the related SLP nodes. Call 
+	(vect_schedule_slp_instance): In case of loads permutation, allocate
+	vectorized statements structure for all the related SLP nodes. Call
 	vect_transform_stmt with addditional argument.
-	(vect_transform_loop): Call vect_transform_stmt with correct arguments. 
-	* config/spu/spu.c (spu_builtin_vec_perm): New. 
+	(vect_transform_loop): Call vect_transform_stmt with correct arguments.
+	* config/spu/spu.c (spu_builtin_vec_perm): New.
 	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Redefine.
 	* config/spu/spu.h (TARG_VEC_PERMUTE_COS): Define.
 	* config/rs6000/rs6000.c (rs6000_builtin_vec_perm): New.
@@ -2262,11 +2266,11 @@
 	* tree-pass.h (pass_ira): New external variable declaration.
 
 	* reload.h: Add 2008 to the Copyright.
-    
+
 	* cfgloopanal.c: Include params.h.
 	(estimate_reg_pressure_cost): Decrease cost for IRA optimization
 	mode.
-    
+
 	* params.h (IRA_MAX_LOOPS_NUM): New macro.
 
 	* toplev.c (ira.h): New include.
@@ -2282,7 +2286,7 @@
 	* regs.h (contains_reg_of_mode, move_cost, may_move_in_cost,
 	may_move_out_cost): New external variable declarations.
 	(move_table): New typedef.
-    
+
 	* caller-save.c: Include headers output.h and ira.h.
 	(no_caller_save_reg_set): New global variable.
 	(save_slots_num, save_slots): New variables.
@@ -2301,7 +2305,7 @@
 	(mark_set_regs): Process pseudo-register too.
 	(insert_one_insn): Put the insn after bb note in a empty basic
 	block.  Add insn check.
-    
+
 	* global.c (eliminable_regset): Make it external.
 	(mark_elimination): Use DF_LR_IN for IRA.
 	(pseudo_for_reload_consideration_p): New.
@@ -2347,7 +2351,7 @@
 	setup_reg_classes): New function prototypes.
 	(eliminable_regset): New external variable declaration.
 	(build_insn_chain, update_equiv_regs): New function prototypes.
-    
+
 	* Makefile.in (IRA_INT_H): New definition.
 	(OBJS-common): Add ira.o, ira-build.o, ira-costs.o,
 	ira-conflicts.o, ira-color.o, ira-emit.o, and ira-lives.o.
@@ -2392,9 +2396,9 @@
 	(substitute, gen_reload_chain_without_interm_reg_p): New
 	functions.
 	(reloads_conflict): Use gen_reload_chain_without_interm_reg_p.
-    
+
 	* testsuite/gcc.dg/20080410-1.c: New file.
-	
+
 	* config/s390/s390.h (IRA_COVER_CLASSES,
 	IRA_HARD_REGNO_ADD_COST_MULTIPLIER): Define.
 
@@ -2407,9 +2411,9 @@
 	* config/rs6000/rs6000.h (IRA_COVER_CLASSES): Ditto.
 
 	* config/arm/arm.h (IRA_COVER_CLASSES): Ditto.
-    
+
 	* config/alpha/alpha.h (IRA_COVER_CLASSES): Ditto.
-    
+
 	2008-08-24  Jeff Law  <law@redhat.com>
 	* ira.c (setup_reg_class_intersect_union): Prefer smallest class
 	when ignoring unavailable registers.
@@ -2629,7 +2633,7 @@
 
 	PR 35648
 	* doc/invoke.texi (Wwrite-strings): Clarify description.
-	
+
 2008-08-23  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37174
@@ -2644,7 +2648,7 @@
 	(*ashlqi3): Rename from ashlqi3 insn pattern.
 	(ashlqi3): New expanders.
 	(*lshrqi3): Rename from lshrqi3 insn pattern.
-	(lshrqi3): New expanders.	
+	(lshrqi3): New expanders.
 	(ashlqi3_const4, ashlqi3_const5, ashlqi3_const6, lshrqi3_const4,
 	lshrqi3_const5, lshrqi3_const6): New splitters.
 	(andi, ashlqi3_l_const4, ashlqi3_l_const5, ashlqi3_l_const6,
@@ -2710,7 +2714,7 @@
 	PR 30457
 	* builtins.c (fold_builtin_next_arg): Add warning about undefined
 	behaviour.
-	
+
 2008-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-tree.h (grokfield): New argument.
@@ -2778,7 +2782,7 @@
 
 	2008-05-05  Kenneth Zadeck <zadeck@naturalbridge.com>
 		    Jan Hubicka  <jh@suse.cz>
-	
+
 	* ipa-pure-const.c
 	(init_state, finish_state, set_function_state, generate_summary):
 	New functions.
@@ -2792,7 +2796,7 @@
 	2008-07-15  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* tree-pass.h (pass_ipa_reference): Make into ipa_opt_pass.
-	* ipa-reference.c (init_function_info, generate_summary, 
+	* ipa-reference.c (init_function_info, generate_summary,
 	propagate): New functions.
 	(analyze_function):  Call init_function_info.
 	(static_execute): Stripped into generate_summary and propagate.
@@ -2873,12 +2877,12 @@
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* value-prof.c (check_counter): Revert wrong call to error.
-	
+
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* profile.c: Update calls to inform.
 	* value-prof.c: Update calls to inform.
-	
+
 2008-08-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* diagnostic.c (inform): Add an explicit location_t parameter.
@@ -2999,27 +3003,27 @@
 	(supportable_narrowing_operation): Likewise.
 	(vectorizable_type_promotion): Add an argument.
 	(vectorizable_type_demotion): Likewise.
-	* tree-vect-analyze.c (vect_analyze_operations): Call 
+	* tree-vect-analyze.c (vect_analyze_operations): Call
 	vectorizable_type_promotion and vectorizable_type_demotion with
 	additional argument.
 	(vect_get_and_check_slp_defs): Detect patterns.
 	(vect_build_slp_tree): Add an argument, don't fail in case of multiple
-	types. 
+	types.
 	(vect_analyze_slp_instance): Don't fail in case of multiple types. Call
 	vect_build_slp_tree with correct arguments. Calculate unrolling factor
 	according to the smallest type in the loop.
 	(vect_detect_hybrid_slp_stmts): Include statements from patterns.
-	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Call 
-	supportable_widening_operation with correct arguments. 
-	* tree-vect-transform.c (vect_get_slp_defs): Allocate output vector 
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Call
+	supportable_widening_operation with correct arguments.
+	* tree-vect-transform.c (vect_get_slp_defs): Allocate output vector
 	operands lists according to the number of vector statements in left
 	or right node, if exists.
 	(vect_gen_widened_results_half): Remove unused argument.
-	(vectorizable_conversion): Call supportable_widening_operation, 
+	(vectorizable_conversion): Call supportable_widening_operation,
 	supportable_narrowing_operation, and vect_gen_widened_results_half
-	with correct arguments. 
+	with correct arguments.
 	(vectorizable_assignment): Change documentation, support multiple
-	types in SLP. 
+	types in SLP.
 	(vectorizable_operation): Likewise.
 	(vect_get_loop_based_defs): New function.
 	(vect_create_vectorized_demotion_stmts): Likewise.
@@ -3029,11 +3033,11 @@
 	(vect_create_vectorized_promotion_stmts): New function.
 	(vectorizable_type_promotion): Support loop-aware SLP and general
 	multi-step conversion. Call vect_create_vectorized_promotion_stmts
-	for transformation.	
+	for transformation.
 	(vectorizable_store): Change documentation, support multiple
-	types in SLP. 
+	types in SLP.
 	(vectorizable_load): Likewise.
-	(vect_transform_stmt): Pass SLP_NODE to 
+	(vect_transform_stmt): Pass SLP_NODE to
 	vectorizable_type_promotion and vectorizable_type_demotion.
 	(vect_schedule_slp_instance): Move here the calculation of number
 	of vectorized statements for each node from...
@@ -3044,7 +3048,7 @@
 2008-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR bootstrap/37152
-	* tree-vect-transform.c (vect_create_epilog_for_reduction): Change = 
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Change =
 	to == in assert statement.
 	(vectorizable_reduction): Fix typo.
 
@@ -3102,7 +3106,7 @@
 	* gimple.c (gimple_assign_unary_nop_p): Likewise.
 	* tree-vect-transform.c (vectorizable_type_demotion)
 	(vectorizable_type_promotion): Likewise.
-	* tree-inline.c (expand_call_inline): 
+	* tree-inline.c (expand_call_inline):
 	* tree-ssa-forwprop.c (get_prop_source_stmt, can_propagate_from)
 	(forward_propagate_addr_expr_1, forward_propagate_comparison)
 	(tree_ssa_forward_propagate_single_use_vars): Likewise.
@@ -3115,10 +3119,10 @@
 	* tree.h (CONVERT_EXPR_P): Likewise.
 	* tree.c (simple_cst_equal, iterative_hash_expr): Likewise.
 	* tree-ssa-loop-im.c (rewrite_bittest): Likewise.
-	* tree-vrp.c: 
+	* tree-vrp.c:
 	(register_edge_assert_for_2, extract_range_from_unary_expr)
 	(register_edge_assert_for_1): Likewise.
-	
+
 2008-08-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* real.h (dconst_e, dconst_third, dconst_sqrt2, dconst_e_ptr,
@@ -3269,7 +3273,7 @@
 
 2008-08-16  Andy Hutchinson  <hutchinsonandy@aim.com>
 
-	* config/avr/avr.c (avr_override_options): Reduce value of 
+	* config/avr/avr.c (avr_override_options): Reduce value of
 	PARAM_INLINE_CALL_COST.
 
 2008-08-15  Eric Botcazou  <ebotcazou@adacore.com>
@@ -3314,7 +3318,7 @@
 	PR c/28152
 	* c-parser.c (c_lex_one_token): Do not store the canonical spelling
 	for keywords.
-	
+
 2008-08-14  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vect_create_epilog_for_reduction): Takes an
@@ -3323,15 +3327,15 @@
 	(get_initial_def_for_induction): Fix printout.
 	(vect_get_vec_def_for_stmt_copy): Support case where the
 	vec_stmt_for_operand is a phi node.
-	(vectorizable_reduction): Support reduction when duplication is needed 
+	(vectorizable_reduction): Support reduction when duplication is needed
 	due to data-types of different sizes in the loop.
-	(vectorizable_call): Remove restriction to not vectorize in case we 
+	(vectorizable_call): Remove restriction to not vectorize in case we
 	have data-types of different sizes in the loop.
 	(vectorizable_conversion): Likewise.
 	(vectorizable_operation): Likewise.
 	(vectorizable_type_demotion): Likewise.
 	(vectorizable_type_promotion): Likewise.
-	(vectorizable_induction): Add restriction to not vectorize in case 
+	(vectorizable_induction): Add restriction to not vectorize in case
 	we have data-types of different sizes in the loop.
 
 2008-08-14  Christophe Saout  <christophe@saout.de>
@@ -3428,7 +3432,7 @@
 2008-08-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* toplev.h (pedwarn_at): Fix declaration.
-	
+
 2008-08-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sparc/linux64.h (LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
@@ -3452,7 +3456,7 @@
 	* c-common.c (conversion_warning): Use a switch. Ignore boolean
 	expressions except for conversions to signed:1 bitfields. Handle
 	COND_EXPR with constant operands.
-	
+
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15255
@@ -3630,7 +3634,7 @@
 	(supportable_widening_operation): Add two arguments. Support double
 	type conversions.
 	(supportable_narrowing_operation): Likewise.
-	* tree-vectorizer.h (supportable_widening_operation): Add two 
+	* tree-vectorizer.h (supportable_widening_operation): Add two
 	arguments.
 	(supportable_narrowing_operation): Likewise.
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern) : Call
@@ -3906,21 +3910,21 @@
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 36901
-	* diagnostic.def (DK_PEDWARN, DK_PERMERROR): New.  
+	* diagnostic.def (DK_PEDWARN, DK_PERMERROR): New.
 	* diagnostic.c (pedantic_warning_kind, permissive_error_kind):
 	Moved from diagnostic.h
 	(diagnostic_report_diagnostic): Return bool. Handle DK_PEDWARN and
 	DK_PERMERROR.
 	(emit_diagnostic): New.
 	(warning0, pedwarn0): Delete.
-	(warning, warning_at, pedwarn, permerror): Return bool.  
+	(warning, warning_at, pedwarn, permerror): Return bool.
 	* diagnostic.h (pedantic_warning_kind, permissive_error_kind):
 	Moved to diagnostic.c.
 	(struct diagnostic_context): Use correct type for
 	classify_diagnostic.
 	(diagnostic_report_diagnostic): Update declaration.
 	(emit_diagnostic): Declare.
-	* errors.c (warning): Return bool.  
+	* errors.c (warning): Return bool.
 	* errors.h (warning): Update declaration.
 	* toplev.h (warning0, pedwarn0): Delete.
 	(warning, warning_at, pedwarn, permerror): Return bool.
@@ -3929,9 +3933,9 @@
 	inform. Update all calls.
 	(diagnose_mismatched_decls): Check return value of warning/pedwarn
 	before giving informative note.
-	(implicit_decl_warning): Likewise.  
-	* c-typeck.c (build_function_call): Likewise.  
-	* tree-sssa.c (warn_uninit): Likewise.  
+	(implicit_decl_warning): Likewise.
+	* c-typeck.c (build_function_call): Likewise.
+	* tree-sssa.c (warn_uninit): Likewise.
 	* builtins.c (gimplify_va_arg_expr): Likewise.
 
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
@@ -3939,7 +3943,7 @@
 	PR 7651
 	* doc/invoke.texi (-Wextra): Move warning from here...
 	(-Wuninitialized): ... to here.
-	
+
 2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28875
@@ -3957,7 +3961,7 @@
 	(Wunused-parameter): Likewise.
 	(Wunused-value): Likewise.
 	(Wunused-variable): Likewise.
-	
+
 2008-08-08  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/invoke.texi: Add cpu_type power7.
@@ -3984,7 +3988,7 @@
 	(rs6000_expand_builtin): Add case for ALTIVEC_BUILTIN_VCTUXS
 	and ALTIVEC_BUILTIN_VCTSXS.
 	(rs6000_builtin_mul_widen_even. rs6000_builtin_mul_widen_odd): Fix
-	formatting. 
+	formatting.
 
 2008-08-08  Richard Guenther  <rguenther@suse.de>
 
@@ -4027,10 +4031,10 @@
 	* c-common.c (c_common_reswords): Also warn about keyword "bool".
 
 2008-08-07  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Copy incoming
 	value in a6 after the set_frame_ptr insn.
-	
+
 2008-08-07  Richard Henderson  <rth@redhat.com>
 
 	PR debug/37033
@@ -4066,7 +4070,7 @@
 2008-08-07  Jan Hubicka  <jh@suse.cz>
 
 	PR target/37048
-	* i386.md (single stringop patterns): Enable unconditionally. 
+	* i386.md (single stringop patterns): Enable unconditionally.
 
 2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -4121,7 +4125,7 @@
 	PR 26785
 	* diagnostic.c (permerror_at): New.
 	* toplev.h (permerror_at): Declare.
-	
+
 2008-08-06  Victor Kaplansky  <victork@il.ibm.com>
 	    Ira Rosen  <irar@il.ibm.com>
 
@@ -4140,7 +4144,7 @@
 	* c-common.c (warn_for_sign_compare): New. Handle separately the
 	case that 'constant' is zero.
 	* c-typeck.c (build_binary_op): Move code to c-common.c
-	
+
 2008-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/alpha/alpha.c (alpha_preferred_reload_class,
@@ -4360,13 +4364,13 @@
 2008-08-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa: Remove dependency for gt-xtensa.h.
-	
+
 2008-08-05  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (xtensa_va_start): Unshare valist.
 	(xtensa_gimplify_va_arg_expr): Unshare valist, orig_ndx, ndx, array,
 	va_size, and type_size.
-	
+
 2008-08-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37016
@@ -4407,7 +4411,7 @@
 	(dwarf2out_end_epilogue): Emit .cfi_endproc.
 	(output_loc_operands_raw, output_loc_sequence_raw): New.
 	(output_cfa_loc_raw): New.
-	
+
 2008-08-05  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document new ARM -mfpu= and -mcpu= options.
@@ -4890,7 +4894,7 @@
 	and generate prologue code accordingly.
 	(ix86_expand_epilogue): Generate epilogue code wrt stack
 	realignment is really needed or not.
-	
+
 	* config/i386/i386.h (MAIN_STACK_BOUNDARY): New.
 	(ABI_STACK_BOUNDARY): Likewise.
 	(PREFERRED_STACK_BOUNDARY_DEFAULT): Likewise.
