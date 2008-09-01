@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "basic-block.h"
 #include "cselib.h"
+
+#ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"
 #include "sel-sched-dump.h"
 
@@ -941,5 +943,5 @@ debug_mem_addr_value (rtx x)
   debug_rtx (addr);
   return t;
 }
-
+#endif
 

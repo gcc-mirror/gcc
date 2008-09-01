@@ -157,11 +157,6 @@ extern rtx bb_note (basic_block);
 
 extern void reemit_notes (rtx);
 
-/* Functions in sched-vis.c.  */
-extern void print_insn (char *, const_rtx, int);
-extern void print_pattern (char *, const_rtx, int);
-extern void print_value (char *, const_rtx, int);
-
 /* Functions in haifa-sched.c.  */
 extern int haifa_classify_insn (const_rtx);
 
@@ -1367,5 +1362,11 @@ extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);
 
 #endif /* INSN_SCHEDULING */
+
+/* Functions in sched-vis.c.  These must be outside INSN_SCHEDULING as 
+   sched-vis.c is compiled always.  */
+extern void print_insn (char *, const_rtx, int);
+extern void print_pattern (char *, const_rtx, int);
+extern void print_value (char *, const_rtx, int);
 
 #endif /* GCC_SCHED_INT_H */
