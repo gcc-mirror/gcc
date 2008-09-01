@@ -1,5 +1,7 @@
 2008-00-01  Jan Hubicka  <jh@suse.cz>
 
+	* config/spu/spu.c (spu_expand_block_move) Update call of MOVE_RATIO.
+
 	* expr.c (MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P, SET_BY_PIECES_P): Pass speed operand.
 	* expr.h (MOVE_RATIO, CLEAR_RATIO, SET_RATIO): Update.
 	* gimplify.c (gimplify_init_constructor): Add speed operand.
