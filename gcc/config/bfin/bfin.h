@@ -998,7 +998,7 @@ do {					       \
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a movmem or libcall instead.  */
 
-#define MOVE_RATIO 5
+#define MOVE_RATIO(speed) 5
 
 /* STORAGE LAYOUT: target machine storage layout
    Define this macro as a C expression which is nonzero if accessing

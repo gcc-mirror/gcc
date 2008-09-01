@@ -1906,12 +1906,12 @@ do {									\
 
    If you don't define this, a reasonable default is used.  */
 
-#define MOVE_RATIO (optimize_size ? 3 : ix86_cost->move_ratio)
+#define MOVE_RATIO(speed) ((speed) ? ix86_cost->move_ratio : 3)
 
 /* If a clear memory operation would take CLEAR_RATIO or more simple
    move-instruction sequences, we will do a clrmem or libcall instead.  */
 
-#define CLEAR_RATIO (optimize_size ? 2 : MIN (6, ix86_cost->move_ratio))
+#define CLEAR_RATIO(speed) ((speed) ? MIN (6, ix86_cost->move_ratio) : 2)
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension

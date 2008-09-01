@@ -1902,10 +1902,10 @@ decide_block_copy (struct sra_elt *elt)
 	     sensible default.  */
 	  max_size = SRA_MAX_STRUCTURE_SIZE
 	    ? SRA_MAX_STRUCTURE_SIZE
-	    : MOVE_RATIO * UNITS_PER_WORD;
+	    : MOVE_RATIO (optimize_function_for_speed_p (cfun)) * UNITS_PER_WORD;
 	  max_count = SRA_MAX_STRUCTURE_COUNT
 	    ? SRA_MAX_STRUCTURE_COUNT
-	    : MOVE_RATIO;
+	    : MOVE_RATIO (optimize_function_for_speed_p (cfun));
 
 	  full_size = tree_low_cst (size_tree, 1);
 	  full_count = count_type_elements (elt->type, false);

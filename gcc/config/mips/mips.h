@@ -2940,7 +2940,7 @@ while (0)
    we'll have to generate a load/store pair for each, halve the
    value of MIPS_CALL_RATIO to take that into account.  */
 
-#define MOVE_RATIO					\
+#define MOVE_RATIO(speed)				\
   (HAVE_movmemsi					\
    ? MIPS_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX		\
    : MIPS_CALL_RATIO / 2)
@@ -2961,20 +2961,20 @@ while (0)
 	  ? (SIZE) < UNITS_PER_WORD				\
 	  : (SIZE) <= MIPS_MAX_MOVE_BYTES_STRAIGHT))		\
    : (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1)	\
-      < (unsigned int) MOVE_RATIO))
+      < (unsigned int) MOVE_RATIO (false)))
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
 
-#define CLEAR_RATIO \
-  (optimize_size ? MIPS_CALL_RATIO : 15)
+#define CLEAR_RATIO(speed)\
+  ((speed) ? 15 : MIPS_CALL_RATIO)
 
 /* This is similar to CLEAR_RATIO, but for a non-zero constant, so when
    optimizing for size adjust the ratio to account for the overhead of
    loading the constant and replicating it across the word.  */
 
-#define SET_RATIO \
-  (optimize_size ? MIPS_CALL_RATIO - 2 : 15)
+#define SET_RATIO(speed) \
+  ((speed) ? 15 : MIPS_CALL_RATIO - 2)
 
 /* STORE_BY_PIECES_P can be used when copying a constant string, but
    in that case each word takes 3 insns (lui, ori, sw), or more in

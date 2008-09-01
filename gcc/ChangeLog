@@ -1,3 +1,26 @@
+2008-00-01  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P, SET_BY_PIECES_P): Pass speed operand.
+	* expr.h (MOVE_RATIO, CLEAR_RATIO, SET_RATIO): Update.
+	* gimplify.c (gimplify_init_constructor): Add speed operand.
+	* tree-sra.c (decide_block_copy): Likewise.
+	* tree-inline.c (estimate_move_cost): Likewise.
+	* config/alpha/alpha.h (MOVE_RATIO): Update.
+	* config/frv/frv.c (MOVE_RATIO): Update.
+	* config/spu/spu.h (MOVE_RATIO): Update.
+	* config/sparc/sparc.h (MOVE_RATIO): Update.
+	* config/i386/i386.h (MOVE_RATIO, CLEAR_RATIO): Update.
+	* config/m68hc11/m68hc11.h (MOVE_RATIO): Update.
+	* config/cris/cris.h (MOVE_RATIO): Update.
+	* config/mn10300/mn10300.h (MOVE_RATIO): Update.
+	* config/arm/arm.h (MOVE_RATIO): Update.
+	* config/pa/pa.md: Update uses of MOVE_RATIO
+	* config/pa/pa.h (MOVE_RATIO): Update.
+	* config/mips/mips.h (MOVE_RATIO, MOVE_BY_PIECES, CLEAR_RATIO, SET_RATIO): Update.
+	* config/h8300/h8300.h (MOVE_RATIO): Update.
+	* config/v850/v850.h (MOVE_RATIO): Update.
+	* config/bfin/bfin.h (MOVE_RATIO): Update.
+
 2008-08-31  Andrey Belevantsev  <abel@ispras.ru>
         Dmitry Melnik  <dm@ispras.ru>
         Dmitry Zhurikhin  <zhur@ispras.ru>

@@ -1505,7 +1505,7 @@ do {                                                                    \
 /* MOVE_RATIO is the number of move instructions that is better than a
    block move.  Make this small on 6811, since the code size grows very
    large with each move.  */
-#define MOVE_RATIO		3
+#define MOVE_RATIO(speed)	3
 
 /* Define if shifts truncate the shift count which implies one can omit
    a sign-extension or zero-extension of a shift count.  */
