@@ -66,10 +66,10 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 
 #ifndef MOVE_RATIO
 #if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
-#define MOVE_RATIO 2
+#define MOVE_RATIO(speed) 2
 #else
 /* If we are optimizing for space (-Os), cut down the default move ratio.  */
-#define MOVE_RATIO (optimize_size ? 3 : 15)
+#define MOVE_RATIO(speed) ((speed) ? 15 : 3)
 #endif
 #endif
 
@@ -78,10 +78,10 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 
 #ifndef CLEAR_RATIO
 #if defined (HAVE_setmemqi) || defined (HAVE_setmemhi) || defined (HAVE_setmemsi) || defined (HAVE_setmemdi) || defined (HAVE_setmemti)
-#define CLEAR_RATIO 2
+#define CLEAR_RATIO(speed) 2
 #else
 /* If we are optimizing for space, cut down the default clear ratio.  */
-#define CLEAR_RATIO (optimize_size ? 3 : 15)
+#define CLEAR_RATIO(speed) ((speed) ? 15 :3)
 #endif
 #endif
 
@@ -89,7 +89,7 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
    SET_RATIO or more simple move-instruction sequences, we will do a movmem
    or libcall instead.  */
 #ifndef SET_RATIO
-#define SET_RATIO MOVE_RATIO
+#define SET_RATIO(speed) MOVE_RATIO(speed)
 #endif
 
 enum direction {none, upward, downward};

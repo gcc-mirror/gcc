@@ -865,7 +865,7 @@ do {									\
 
 /* According expr.c, a value of around 6 should minimize code size, and
    for the V850 series, that's our primary concern.  */
-#define MOVE_RATIO 6
+#define MOVE_RATIO(speed) 6
 
 /* Indirect calls are expensive, never turn a direct call
    into an indirect call.  */

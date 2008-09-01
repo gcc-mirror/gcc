@@ -814,7 +814,7 @@ while (0)
 
 /* According expr.c, a value of around 6 should minimize code size, and
    for the MN10300 series, that's our primary concern.  */
-#define MOVE_RATIO 6
+#define MOVE_RATIO(speed) 6
 
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"

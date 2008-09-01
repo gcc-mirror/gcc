@@ -1506,7 +1506,7 @@ do { 									\
    arguments passed in registers to avoid infinite recursion during argument
    setup for a function call.  Why?  Consider how we copy the stack slots
    reserved for parameters when they may be trashed by a call.  */
-#define MOVE_RATIO (TARGET_64BIT ? 8 : 4)
+#define MOVE_RATIO(speed) (TARGET_64BIT ? 8 : 4)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */

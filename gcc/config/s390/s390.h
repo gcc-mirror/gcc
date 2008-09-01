@@ -872,7 +872,7 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1, *s390_compare_emitte
    in tree-sra with UNITS_PER_WORD to make a decision so we adjust it
    here to compensate for that factor since mvc costs exactly the same
    on 31 and 64 bit.  */
-#define MOVE_RATIO (TARGET_64BIT? 2 : 4)
+#define MOVE_RATIO(speed) (TARGET_64BIT? 2 : 4)
 
 
 /* Sections.  */

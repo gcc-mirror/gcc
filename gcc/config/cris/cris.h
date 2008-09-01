@@ -1242,7 +1242,7 @@ struct cum_args {int regs;};
    word-length sizes will be emitted.  The "9" will translate to
    (9 - 1) * 4 = 32 bytes maximum moved, but using 16 instructions
    (8 instruction sequences) or less.  */
-#define MOVE_RATIO 9
+#define MOVE_RATIO(speed) 9
 
 
 /* Node: Sections */

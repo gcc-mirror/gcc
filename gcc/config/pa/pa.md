@@ -3487,7 +3487,7 @@
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size / align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO (optimize_insn_for_speed_p ()))
     FAIL;
   
   /* Fall through means we're going to use our block move pattern.  */
@@ -3675,7 +3675,7 @@
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size / align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO (optimize_insn_for_speed_p ()))
     FAIL;
   
   /* Fall through means we're going to use our block move pattern.  */
@@ -3842,7 +3842,7 @@
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size / align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO (optimize_insn_for_speed_p ()))
     FAIL;
   
   /* Fall through means we're going to use our block clear pattern.  */
@@ -3956,7 +3956,7 @@
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size / align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO (optimize_insn_for_speed_p ()))
     FAIL;
   
   /* Fall through means we're going to use our block clear pattern.  */

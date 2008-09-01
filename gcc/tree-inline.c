@@ -2614,7 +2614,7 @@ estimate_move_cost (tree type)
 
   size = int_size_in_bytes (type);
 
-  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO)
+  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))
     /* Cost of a memcpy call, 3 arguments and the call.  */
     return 4;
   else
