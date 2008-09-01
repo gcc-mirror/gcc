@@ -77,24 +77,24 @@
 ;; Data processing instructions.  Moves without shifts are kept separate
 ;; for the purposes of the dual-issue constraints above.
 (define_insn_reservation "cortex_r4_alu" 2
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (and (eq_attr "type" "alu")
             (not (eq_attr "insn" "mov"))))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_mov" 2
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (and (eq_attr "type" "alu")
             (eq_attr "insn" "mov")))
   "cortex_r4_mov")
 
 (define_insn_reservation "cortex_r4_alu_shift" 2
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "alu_shift"))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_alu_shift_reg" 2
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "alu_shift_reg"))
   "cortex_r4_alu_shift_reg")
 
@@ -127,32 +127,32 @@
 ;; Multiplication instructions.
 
 (define_insn_reservation "cortex_r4_mul_4" 4
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "mul,smmul"))
   "cortex_r4_mul_2")
 
 (define_insn_reservation "cortex_r4_mul_3" 3
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "smulxy,smulwy,smuad,smusd"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_mla_4" 4
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "mla,smmla"))
   "cortex_r4_mul_2")
 
 (define_insn_reservation "cortex_r4_mla_3" 3
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "smlaxy,smlawy,smlad,smlsd"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_smlald" 3
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "smlald,smlsld"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_mull" 4
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "smull,umull,umlal,umaal"))
   "cortex_r4_mul_2")
 
@@ -195,19 +195,19 @@
 ;; is performed with B having ten more leading zeros than A.
 ;; This gives a latency of nine for udiv and ten for sdiv.
 (define_insn_reservation "cortex_r4_udiv" 9
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "udiv"))
   "cortex_r4_div_9")
 
 (define_insn_reservation "cortex_r4_sdiv" 10
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "insn" "sdiv"))
   "cortex_r4_div_10")
 
 ;; Branches.  We assume correct prediction.
 
 (define_insn_reservation "cortex_r4_branch" 0
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "branch"))
   "cortex_r4_branch")
 
@@ -215,7 +215,7 @@
 ;; number is used as "positive infinity" so that everything should be
 ;; finished by the time of return.
 (define_insn_reservation "cortex_r4_call" 32
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "call"))
   "nothing")
 
@@ -226,12 +226,12 @@
 ;; accesses following are correctly aligned.
 
 (define_insn_reservation "cortex_r4_load_1_2" 3
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "load1,load2"))
   "cortex_r4_load_store")
 
 (define_insn_reservation "cortex_r4_load_3_4" 4
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "load3,load4"))
   "cortex_r4_load_store_2")
 
@@ -281,12 +281,12 @@
 ;; Store instructions.
 
 (define_insn_reservation "cortex_r4_store_1_2" 0
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "store1,store2"))
   "cortex_r4_load_store")
 
 (define_insn_reservation "cortex_r4_store_3_4" 0
-  (and (eq_attr "tune" "cortexr4")
+  (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "store3,store4"))
   "cortex_r4_load_store_2")
 

@@ -1,3 +1,22 @@
+2008-09-01  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md: Include cortex-r4f.md.
+	(attr fpu): Update type list.
+	(attr type): Add fcpys, ffariths, ffarithd, fadds, faddd, fconsts,
+	fconstd, fcmps and fcmpd. 
+	(attr tune_cortexr4): Define.
+	(attr generic_sched, attr generic_vfp): Use tune_cortexr4.
+	* config/arm/vfp.md: Document fcpys, ffariths, ffarithd, fadds, faddd,
+	fconsts, fconstd, fcmps and fcmpd.  Use them in insn patterns.
+	* config/arm/arm.c (arm_issue_rate): Add cortexr4f.
+	* config/arm/arm1020e.md (v10_ffarith, v10_farith): Use new insn
+	types.
+	* config/arm/cortex-a8-neon.md (cortex_a8_vfp_add_sub,
+	cortex_a8_vfp_farith: Ditto.
+	* config/arm/vfp11.md (vfp_ffarith, vfp_farith): Ditto.
+	* config/arm/cortex-r4.md: Use tune_cortexr4.
+	* config/arm/cortex-r4f.md: New file.
+
 2008-09-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37305
