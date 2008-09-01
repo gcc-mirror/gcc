@@ -1,3 +1,9 @@
+2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
+	
+	* sel-sched-dump.c: Surround with #ifdef INSN_SCHEDULING.
+	* sched-int.h (print_insn, print_pattern, print_value): Declare also
+	when !INSN_SCHEDULING.
+	
 2008-09-01  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c (TARGET_ADDRESS_COST): Update.
