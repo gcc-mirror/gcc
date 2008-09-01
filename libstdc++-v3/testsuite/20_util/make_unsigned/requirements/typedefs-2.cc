@@ -24,7 +24,8 @@
 #include <type_traits>
 #include <testsuite_hooks.h>
 
-enum test_enum { first_selection };
+// Ensure that this enum has "short" as its underlying type.
+enum test_enum { first_selection = ((unsigned char)-1) + 1 };
 
 void test01()
 {

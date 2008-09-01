@@ -1,3 +1,17 @@
+2008-09-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/std/type_traits (__make_unsigned_selector<>): Consider
+	enums of size smaller than short.
+	(__make_signed_selector<>): Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust line numbers.
+	* testsuite/20_util/make_usigned/requirements/typedefs_neg.cc:
+	Adjust line numbers.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc:
+	Ensure test_enum is the same size as short.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Ensure test_enum is the same size as short.
+
 2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* acinclude.m4 <enable_symvers>: Don't use symvers on Windows.

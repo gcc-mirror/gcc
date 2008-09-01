@@ -455,15 +455,18 @@ namespace std
     struct __make_unsigned_selector<_Tp, false, true>
     {
     private:
-      // GNU enums start with sizeof short.
-      typedef unsigned short __smallest;
-      static const bool __b1 = sizeof(_Tp) <= sizeof(__smallest);
+      // With -fshort-enums, an enum may be as small as a char.
+      typedef unsigned char __smallest;
+      static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
+      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned short);
       static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned int);
-      typedef conditional<__b2, unsigned int, unsigned long> __cond;
-      typedef typename __cond::type __cond_type;
+      typedef conditional<__b2, unsigned int, unsigned long> __cond2;
+      typedef typename __cond2::type __cond2_type;
+      typedef conditional<__b1, unsigned short, __cond2_type> __cond1;
+      typedef typename __cond1::type __cond1_type;
 
     public:
-      typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
+      typedef typename conditional<__b0, __smallest, __cond1_type>::type __type;
     };
 
   // Given an integral/enum type, return the corresponding unsigned
@@ -530,15 +533,18 @@ namespace std
     struct __make_signed_selector<_Tp, false, true>
     {
     private:
-      // GNU enums start with sizeof short.
-      typedef signed short __smallest;
-      static const bool __b1 = sizeof(_Tp) <= sizeof(__smallest);
+      // With -fshort-enums, an enum may be as small as a char.
+      typedef signed char __smallest;
+      static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
+      static const bool __b1 = sizeof(_Tp) <= sizeof(signed short);
       static const bool __b2 = sizeof(_Tp) <= sizeof(signed int);
-      typedef conditional<__b2, signed int, signed long> __cond;
-      typedef typename __cond::type __cond_type;
+      typedef conditional<__b2, signed int, signed long> __cond2;
+      typedef typename __cond2::type __cond2_type;
+      typedef conditional<__b1, signed short, __cond2_type> __cond1;
+      typedef typename __cond1::type __cond1_type;
 
     public:
-      typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
+      typedef typename conditional<__b0, __smallest, __cond1_type>::type __type;
     };
 
   // Given an integral/enum type, return the corresponding signed
