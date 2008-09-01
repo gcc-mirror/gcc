@@ -24,8 +24,15 @@
 )
 
 ;; The VFP "type" attributes differ from those used in the FPA model.
-;; ffarith	Fast floating point insns, e.g. abs, neg, cpy, cmp.
-;; farith	Most arithmetic insns.
+;; fcpys	Single precision cpy.
+;; ffariths	Single precision abs, neg.
+;; ffarithd	Double precision abs, neg, cpy.
+;; fadds	Single precision add/sub.
+;; faddd	Double precision add/sub.
+;; fconsts	Single precision load immediate.
+;; fconstd	Double precision load immediate.
+;; fcmps	Single precision comparison.
+;; fcmpd	Double precision comparison.
 ;; fmuls	Single precision multiply.
 ;; fmuld	Double precision multiply.
 ;; fmacs	Single precision multiply-accumulate.
@@ -74,7 +81,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_loads,f_stores")
+   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
@@ -111,7 +118,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_load,f_store")
+   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,fcpys,f_load,f_store")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,   0,*,*,*,*,1008,*")]
 )
@@ -145,7 +152,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarith,f_loadd,f_stored")
+  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
    (set_attr "length" "8,8,8,4,4,4,4,4")
    (set_attr "pool_range"     "*,1020,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,1008,*,*,*,*,1008,*")]
@@ -172,7 +179,7 @@
       abort ();
     }
   "
-  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarith,f_load,f_store")
+  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_load,f_store")
    (set_attr "length" "8,8,8,4,4,4,4,4")
    (set_attr "pool_range"     "*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,   0,*,*,*,*,1008,*")]
@@ -214,7 +221,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "r_2_f,f_2_r,farith,f_loads,f_stores,load1,store1,ffarith,*")
+     "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,*")
    (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,4080,*,*,*")]
 )
@@ -250,7 +257,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "r_2_f,f_2_r,farith,f_load,f_store,load1,store1,ffarith,*")
+     "r_2_f,f_2_r,fconsts,f_load,f_store,load1,store1,fcpys,*")
    (set_attr "pool_range" "*,*,*,1020,*,4092,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
@@ -288,7 +295,7 @@
     }
   "
   [(set_attr "type"
-     "r_2_f,f_2_r,farith,f_loadd,f_stored,load2,store2,ffarith,*")
+     "r_2_f,f_2_r,fconstd,f_loadd,f_stored,load2,store2,ffarithd,*")
    (set_attr "length" "4,4,4,8,8,4,4,4,8")
    (set_attr "pool_range" "*,*,*,1020,*,1020,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,1008,*,*,*")]
@@ -320,7 +327,7 @@
     }
   "
   [(set_attr "type"
-     "r_2_f,f_2_r,farith,load2,store2,f_load,f_store,ffarith,*")
+     "r_2_f,f_2_r,fconstd,load2,store2,f_load,f_store,ffarithd,*")
    (set_attr "length" "4,4,4,8,8,4,4,4,8")
    (set_attr "pool_range" "*,*,*,4096,*,1020,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,0,*,1008,*,*,*")]
@@ -349,7 +356,7 @@
    fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
-    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+    (set_attr "type" "fcpys,fcpys,fcpys,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
 (define_insn "*thumb2_movsfcc_vfp"
@@ -372,7 +379,7 @@
    ite\\t%D3\;fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+    (set_attr "type" "fcpys,fcpys,fcpys,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
 (define_insn "*movdfcc_vfp"
@@ -395,7 +402,7 @@
    fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
-    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+    (set_attr "type" "ffarithd,ffarithd,ffarithd,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
 (define_insn "*thumb2_movdfcc_vfp"
@@ -418,7 +425,7 @@
    ite\\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+    (set_attr "type" "ffarithd,ffarithd,ffarithd,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
 
@@ -430,7 +437,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fabss%?\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "ffariths")]
 )
 
 (define_insn "*absdf2_vfp"
@@ -439,7 +446,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fabsd%?\\t%P0, %P1"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "ffarithd")]
 )
 
 (define_insn "*negsf2_vfp"
@@ -450,7 +457,7 @@
    fnegs%?\\t%0, %1
    eor%?\\t%0, %1, #-2147483648"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "ffariths")]
 )
 
 (define_insn_and_split "*negdf2_vfp"
@@ -496,7 +503,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "length" "4,4,8")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "ffarithd")]
 )
 
 
@@ -509,7 +516,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fadds%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fadds")]
 )
 
 (define_insn "*adddf3_vfp"
@@ -519,7 +526,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "faddd%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "faddd")]
 )
 
 
@@ -530,7 +537,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsubs%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "fadds")]
 )
 
 (define_insn "*subdf3_vfp"
@@ -540,7 +547,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsubd%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "farith")]
+   (set_attr "type" "faddd")]
 )
 
 
@@ -909,7 +916,7 @@
    fcmps%?\\t%0, %1
    fcmpzs%?\\t%0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "fcmps")]
 )
 
 (define_insn "*cmpsf_trap_vfp"
@@ -921,7 +928,7 @@
    fcmpes%?\\t%0, %1
    fcmpezs%?\\t%0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "fcmpd")]
 )
 
 (define_insn "*cmpdf_vfp"
@@ -933,7 +940,7 @@
    fcmpd%?\\t%P0, %P1
    fcmpzd%?\\t%P0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "fcmpd")]
 )
 
 (define_insn "*cmpdf_trap_vfp"
@@ -945,7 +952,7 @@
    fcmped%?\\t%P0, %P1
    fcmpezd%?\\t%P0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "ffarith")]
+   (set_attr "type" "fcmpd")]
 )
 
 
