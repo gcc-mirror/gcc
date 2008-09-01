@@ -11056,7 +11056,8 @@ tsubst_copy_and_build (tree t,
 	op1 = tsubst_non_call_postfix_expression (op1, args, complain,
 						  in_decl);
       if (TREE_CODE (op1) == LABEL_DECL)
-	return finish_label_address_expr (DECL_NAME (op1));
+	return finish_label_address_expr (DECL_NAME (op1),
+					  EXPR_LOCATION (op1));
       return build_x_unary_op (ADDR_EXPR, op1, complain);
 
     case PLUS_EXPR:

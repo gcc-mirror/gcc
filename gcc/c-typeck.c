@@ -1967,13 +1967,16 @@ build_component_ref (tree datum, tree component)
 
 /* Given an expression PTR for a pointer, return an expression
    for the value pointed to.
-   ERRORSTRING is the name of the operator to appear in error messages.  */
+   ERRORSTRING is the name of the operator to appear in error messages.
+
+   LOC is the location to use for the generated tree.  */
 
 tree
-build_indirect_ref (tree ptr, const char *errorstring)
+build_indirect_ref (tree ptr, const char *errorstring, location_t loc)
 {
   tree pointer = default_conversion (ptr);
   tree type = TREE_TYPE (pointer);
+  tree ref;
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {
@@ -1992,11 +1995,14 @@ build_indirect_ref (tree ptr, const char *errorstring)
       if (TREE_CODE (pointer) == ADDR_EXPR
 	  && (TREE_TYPE (TREE_OPERAND (pointer, 0))
 	      == TREE_TYPE (type)))
-	return TREE_OPERAND (pointer, 0);
+	{
+	  ref = TREE_OPERAND (pointer, 0);
+	  protected_set_expr_location (ref, loc);
+	  return ref;
+	}
       else
 	{
 	  tree t = TREE_TYPE (type);
-	  tree ref;
 
 	  ref = build1 (INDIRECT_REF, t, pointer);
 
@@ -2019,6 +2025,7 @@ build_indirect_ref (tree ptr, const char *errorstring)
 	  TREE_SIDE_EFFECTS (ref)
 	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer);
 	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
+	  protected_set_expr_location (ref, loc);
 	  return ref;
 	}
     }
@@ -2034,11 +2041,14 @@ build_indirect_ref (tree ptr, const char *errorstring)
    If A is a variable or a member, we generate a primitive ARRAY_REF.
    This avoids forcing the array out of registers, and can work on
    arrays that are not lvalues (for example, members of structures returned
-   by functions).  */
+   by functions).
+
+   LOC is the location to use for the returned expression.  */
 
 tree
-build_array_ref (tree array, tree index)
+build_array_ref (tree array, tree index, location_t loc)
 {
+  tree ret;
   bool swapped = false;
   if (TREE_TYPE (array) == error_mark_node
       || TREE_TYPE (index) == error_mark_node)
@@ -2139,7 +2149,9 @@ build_array_ref (tree array, tree index)
 	       in an inline function.
 	       Hope it doesn't break something else.  */
 	    | TREE_THIS_VOLATILE (array));
-      return require_complete_type (fold (rval));
+      ret = require_complete_type (fold (rval));
+      protected_set_expr_location (ret, loc);
+      return ret;
     }
   else
     {
@@ -2152,7 +2164,7 @@ build_array_ref (tree array, tree index)
       gcc_assert (TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) != FUNCTION_TYPE);
 
       return build_indirect_ref (build_binary_op (PLUS_EXPR, ar, index, 0),
-				 "array indexing");
+				 "array indexing", loc);
     }
 }
 
@@ -2724,16 +2736,20 @@ convert_arguments (int nargs, tree *argarray,
 /* This is the entry point used by the parser to build unary operators
    in the input.  CODE, a tree_code, specifies the unary operator, and
    ARG is the operand.  For unary plus, the C parser currently uses
-   CONVERT_EXPR for code.  */
+   CONVERT_EXPR for code.
+
+   LOC is the location to use for the tree generated.
+*/
 
 struct c_expr
-parser_build_unary_op (enum tree_code code, struct c_expr arg)
+parser_build_unary_op (enum tree_code code, struct c_expr arg, location_t loc)
 {
   struct c_expr result;
 
   result.original_code = ERROR_MARK;
   result.value = build_unary_op (code, arg.value, 0);
-  
+  protected_set_expr_location (result.value, loc);
+
   if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
     overflow_warning (result.value);
 

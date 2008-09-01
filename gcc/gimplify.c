@@ -4762,6 +4762,8 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  mark_addressable (TREE_VALUE (link));
 	  if (tret == GS_ERROR)
 	    {
+	      if (EXPR_HAS_LOCATION (TREE_VALUE (link)))
+	        input_location = EXPR_LOCATION (TREE_VALUE (link));
 	      error ("memory input %d is not directly addressable", i);
 	      ret = tret;
 	    }

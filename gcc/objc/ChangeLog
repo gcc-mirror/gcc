@@ -1,3 +1,12 @@
+2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (build_typed_selector_reference): Pass input_location to
+	build_unary_op calls.
+	(build_selector_reference): Same, but to build_array_ref.
+	(objc_substitute_decl): Same.
+	(build_ivar_reference): Same, but to build_indirect_ref.
+	(get_super_receiver): Same.
+
 2008-07-28  Richard Guenther  <rguenther@suse.de>
 
 	Merge from gimple-tuples-branch.

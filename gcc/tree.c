@@ -3577,6 +3577,16 @@ set_expr_locus (tree node, source_location *loc)
   else
     EXPR_CHECK (node)->exp.locus = *loc;
 }
+
+/* Like SET_EXPR_LOCATION, but make sure the tree can have a location.
+
+   LOC is the location to use in tree T.  */
+
+void protected_set_expr_location (tree t, location_t loc)
+{
+  if (t && t != error_mark_node && CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, loc);
+}
 
 /* Return a declaration like DDECL except that its DECL_ATTRIBUTES
    is ATTRIBUTE.  */

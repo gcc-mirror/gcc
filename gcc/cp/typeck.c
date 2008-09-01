@@ -2405,7 +2405,8 @@ build_x_indirect_ref (tree expr, const char *errorstring,
 
 /* Helper function called from c-common.  */
 tree
-build_indirect_ref (tree ptr, const char *errorstring)
+build_indirect_ref (tree ptr, const char *errorstring, 
+		    location_t loc __attribute__ ((__unused__)))
 {
   return cp_build_indirect_ref (ptr, errorstring, tf_warning_or_error);
 }

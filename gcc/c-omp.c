@@ -137,7 +137,7 @@ c_finish_omp_atomic (enum tree_code code, tree lhs, tree rhs)
       tree var = create_tmp_var_raw (TREE_TYPE (addr), NULL);
       addr = build4 (TARGET_EXPR, TREE_TYPE (addr), var, addr, NULL, NULL);
     }
-  lhs = build_indirect_ref (addr, NULL);
+  lhs = build_indirect_ref (addr, NULL, EXPR_LOCATION (addr));
 
   /* There are lots of warnings, errors, and conversions that need to happen
      in the course of interpreting a statement.  Use the normal mechanisms

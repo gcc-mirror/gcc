@@ -5457,13 +5457,14 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	{
 	  tree identifier;
 	  tree expression;
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
 	  /* Consume the '&&' token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Look for the identifier.  */
 	  identifier = cp_parser_identifier (parser);
 	  /* Create an expression representing the address.  */
-	  expression = finish_label_address_expr (identifier);
+	  expression = finish_label_address_expr (identifier, loc);
 	  if (cp_parser_non_integral_constant_expression (parser,
 						"the address of a label"))
 	    expression = error_mark_node;
