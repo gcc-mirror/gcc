@@ -1,5 +1,9 @@
 2008-09-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa64-hpux.h (LIB_SPEC): Link against librt when building static
+	openmp applications.
+	* pa-hpux11.h (LIB_SPEC): Likewise.
+
 	* ira.c (setup_eliminable_regset): Only declare i if ELIMINABLE_REGS is
 	defined.
 
