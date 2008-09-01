@@ -1,4 +1,9 @@
 2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sel-sched-ir.c (cmp_v_in_regset_pool): Surround with 
+	#ifdef ENABLE_CHECKING. 
+
+2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
 	
 	* sel-sched-dump.c: Surround with #ifdef INSN_SCHEDULING.
 	* sched-int.h (print_insn, print_pattern, print_value): Declare also
