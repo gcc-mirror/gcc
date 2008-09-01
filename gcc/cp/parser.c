@@ -853,7 +853,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, cp_parameter_declarator *, cp_cv_quals, tree);
+  (cp_declarator *, cp_parameter_declarator *, cp_cv_quals, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1015,7 +1015,8 @@ cp_declarator *
 make_call_declarator (cp_declarator *target,
 		      cp_parameter_declarator *parms,
 		      cp_cv_quals cv_qualifiers,
-		      tree exception_specification)
+		      tree exception_specification,
+		      tree late_return_type)
 {
   cp_declarator *declarator;
 
@@ -1024,6 +1025,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.parameters = parms;
   declarator->u.function.qualifiers = cv_qualifiers;
   declarator->u.function.exception_specification = exception_specification;
+  declarator->u.function.late_return_type = late_return_type;
   if (target)
     {
       declarator->parameter_pack_p = target->parameter_pack_p;
@@ -1725,6 +1727,8 @@ static cp_declarator *cp_parser_direct_declarator
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, cp_cv_quals *);
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
+  (cp_parser *);
+static tree cp_parser_late_return_type_opt
   (cp_parser *);
 static tree cp_parser_declarator_id
   (cp_parser *, bool);
@@ -13021,6 +13025,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		{
 		  cp_cv_quals cv_quals;
 		  tree exception_specification;
+		  tree late_return;
 
 		  if (ctor_dtor_or_conv_p)
 		    *ctor_dtor_or_conv_p = *ctor_dtor_or_conv_p < 0;
@@ -13034,11 +13039,15 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
 
+		  late_return
+		    = cp_parser_late_return_type_opt (parser);
+
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,
 						     params,
 						     cv_quals,
-						     exception_specification);
+						     exception_specification,
+						     late_return);
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
 		     function.  */
@@ -13514,6 +13523,30 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
     }
 
   return cv_quals;
+}
+
+/* Parse a late-specified return type, if any.  This is not a separate
+   non-terminal, but part of a function declarator, which looks like
+
+   -> type-id
+
+   Returns the type indicated by the type-id.  */
+
+static tree
+cp_parser_late_return_type_opt (cp_parser* parser)
+{
+  cp_token *token;
+
+  /* Peek at the next token.  */
+  token = cp_lexer_peek_token (parser->lexer);
+  /* A late-specified return type is indicated by an initial '->'. */
+  if (token->type != CPP_DEREF)
+    return NULL_TREE;
+
+  /* Consume the ->.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  return cp_parser_type_id (parser);
 }
 
 /* Parse a declarator-id.

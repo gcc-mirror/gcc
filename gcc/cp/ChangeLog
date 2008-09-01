@@ -1,3 +1,14 @@
+2008-08-31  Jason Merrill  <jason@redhat.com>
+
+	Implement late-specified return type using 'auto'.
+	* cp-tree.h (struct cp_declarator): Add late_return_type field to
+	function declarator.
+	* parser.c (cp_parser_late_return_type_opt): New fn.
+	(cp_parser_direct_declarator): Use it.
+	(make_call_declarator): Put it in the declarator.
+	* decl.c (grokdeclarator): Splice in late-specified return type.
+	* pt.c (splice_late_return_type): New fn.
+
 2008-08-29  Michael Meissner  <gnu@the-meissners.org>
 
 	* decl.c (builtin_function_1): Take a bool argument to decide
