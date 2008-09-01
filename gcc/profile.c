@@ -402,19 +402,18 @@ compute_branch_probabilities (void)
   int inconsistent = 0;
 
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
-  if (profile_info)
+  if (!profile_info)
+    return;
+  if (profile_info->run_max * profile_info->runs < profile_info->sum_max)
     {
-      if (profile_info->run_max * profile_info->runs < profile_info->sum_max)
-        {
-          error ("corrupted profile info: run_max * runs < sum_max");
-          exec_counts = NULL;
-        }
+      error ("corrupted profile info: run_max * runs < sum_max");
+      exec_counts = NULL;
+    }
 
-      if (profile_info->sum_all < profile_info->sum_max)
-        {
-          error ("corrupted profile info: sum_all is smaller than sum_max");
-          exec_counts = NULL;
-        }
+  if (profile_info->sum_all < profile_info->sum_max)
+    {
+      error ("corrupted profile info: sum_all is smaller than sum_max");
+      exec_counts = NULL;
     }
 
   /* Attach extra info block to each bb.  */
@@ -695,6 +694,7 @@ compute_branch_probabilities (void)
 	}
     }
   counts_to_freqs ();
+  profile_status = PROFILE_READ;
 
   if (dump_file)
     {
@@ -1154,8 +1154,6 @@ branch_prob (void)
 
   VEC_free (histogram_value, heap, values);
   free_edge_list (el);
-  if (flag_branch_probabilities && profile_info)
-    profile_status = PROFILE_READ;
   coverage_end_function ();
 }
 
