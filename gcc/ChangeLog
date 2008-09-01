@@ -1,3 +1,408 @@
+2008-08-31  Andrey Belevantsev  <abel@ispras.ru>
+        Dmitry Melnik  <dm@ispras.ru>
+        Dmitry Zhurikhin  <zhur@ispras.ru>
+        Alexander Monakov  <amonakov@ispras.ru>
+        Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* sel-sched.h, sel-sched-dump.h, sel-sched-ir.h, sel-sched.c,
+	sel-sched-dump.c, sel-sched-ir.c: New files.
+	* Makefile.in (OBJS-common): Add selective scheduling object
+	files.
+	(sel-sched.o, sel-sched-dump.o, sel-sched-ir.o): New entries.
+	(SEL_SCHED_IR_H, SEL_SCHED_DUMP_H): New entries.
+	(sched-vis.o): Add dependency on $(INSN_ATTR_H).
+	* cfghooks.h (get_cfg_hooks, set_cfg_hooks): New prototypes.
+	* cfghooks.c (get_cfg_hooks, set_cfg_hooks): New functions.
+	(make_forwarder_block): Update loop latch if we have redirected
+	the loop latch edge.
+	* cfgloop.c (get_loop_body_in_custom_order): New function.
+	* cfgloop.h (LOOPS_HAVE_FALLTHRU_PREHEADERS): New enum field.
+	(CP_FALLTHRU_PREHEADERS): Likewise.
+	(get_loop_body_in_custom_order): Declare.
+	* cfgloopmanip.c (has_preds_from_loop): New.
+	(create_preheader): Honor CP_FALLTHRU_PREHEADERS.
+	Assert that the preheader edge will be fall thru when it is set.
+	* common.opt (fsel-sched-bookkeeping, fsel-sched-pipelining,
+	fsel-sched-pipelining-outer-loops, fsel-sched-renaming,
+	fsel-sched-substitution, fselective-scheduling): New flags.
+    	* cse.c (hash_rtx_cb): New.
+	(hash_rtx): Use it.
+	* dbgcnt.def (sel_sched_cnt, sel_sched_region_cnt,
+	sel_sched_insn_cnt): New counters. 
+	* final.c (compute_alignments): Export.  Free dominance info after loop_optimizer_finalize.
+	* genattr.c (main): Output maximal_insn_latency prototype.
+	* genautomata.c (output_default_latencies): New. Factor its code from ...
+	(output_internal_insn_latency_func): ... here.
+	(output_internal_maximal_insn_latency_func): New.
+	(output_maximal_insn_latency_func): New.
+	* hard-reg-set.h (UHOST_BITS_PER_WIDE_INT): Define unconditionally.
+	(struct hard_reg_set_iterator): New.
+	(hard_reg_set_iter_init, hard_reg_set_iter_set,
+	hard_reg_set_iter_next): New functions.
+	(EXECUTE_IF_SET_IN_HARD_REG_SET): New macro.
+	* lists.c (remove_free_INSN_LIST_node,
+	remove_free_EXPR_LIST_node): New functions.
+	* loop-init.c (loop_optimizer_init): When LOOPS_HAVE_FALLTHRU_PREHEADERS,
+	set CP_FALLTHRU_PREHEADERS when calling create_preheaders.
+	(loop_optimizer_finalize): Do not verify flow info after reload.
+	* recog.c (validate_replace_rtx_1): New parameter simplify.
+	Default it to true.  Update all uses.  Factor out simplifying
+	code to ...
+	(simplify_while_replacing): ... this new function.
+	(validate_replace_rtx_part,
+	validate_replace_rtx_part_nosimplify): New.
+	* recog.h (validate_replace_rtx_part,
+	validate_replace_rtx_part_nosimplify): Declare.
+	* rtl.c (rtx_equal_p_cb): New.
+	(rtx_equal_p): Use it.
+	* rtl.h (rtx_equal_p_cb, hash_rtx_cb): Declare.
+	(remove_free_INSN_LIST_NODE, remove_free_EXPR_LIST_node,
+	debug_bb_n_slim, debug_bb_slim,    print_rtl_slim): Likewise.
+	* vecprim.h: Add a vector type for unsigned int. 
+	* haifa-sched.c: Include vecprim.h and cfgloop.h.
+	(issue_rate, sched_verbose_param, note_list, dfa_state_size,
+	ready_try, cycle_issued_insns, spec_info): Make global.
+	(readyp): Initialize.
+	(dfa_lookahead): New global variable.
+	(old_max_uid, old_last_basic_block): Remove.
+	(h_i_d): Make it a vector.
+	(INSN_TICK, INTER_TICK, QUEUE_INDEX, INSN_COST): Make them work
+	through HID macro.
+	(after_recovery, adding_bb_to_current_region_p):
+	New variables to handle correct insertion of the recovery code.
+	(struct ready_list): Move declaration to sched-int.h.
+	(rgn_n_insns): Removed.
+	(rtx_vec_t): Move to sched-int.h.
+	(find_insn_reg_weight): Remove.
+	(find_insn_reg_weight1): Rename to find_insn_reg_weight.
+	(haifa_init_h_i_d, haifa_finish_h_i_d):
+	New functions to initialize / finalize haifa instruction data.
+	(extend_h_i_d, init_h_i_d): Rewrite.
+	(unlink_other_notes): Move logic to add_to_note_list.  Handle
+	selective scheduler.
+	(ready_lastpos, ready_element, ready_sort, reemit_notes,
+	find_fallthru_edge): Make global, remove static prototypes.
+	(max_issue): Make global.  Add privileged_n and state parameters.  Use
+	them.  
+	(extend_global, extend_all): Removed.
+	(init_before_recovery): Add new param.  Fix the handling of the case
+	when we insert a recovery code before the EXIT which has a predecessor
+	with a fallthrough edge to it.
+	(create_recovery_block): Make global.  Rename to
+	sched_create_recovery_block.  Update.
+	(change_pattern): Rename to sched_change_pattern.  Make global.
+	(speculate_insn): Rename to sched_speculate_insn.  Make global.
+	Split haifa-specific functionality into ...
+	(haifa_change_pattern): New static function.
+	(sched_extend_bb): New static function.
+	(sched_init_bbs): New function.
+	(current_sched_info): Change type to struct haifa_sched_info.
+	(insn_cost): Adjust for selective scheduling.
+	(dep_cost_1): New function.  Move logic from ...
+	(dep_cost): ... here.
+	(dep_cost): Use dep_cost_1.
+	(contributes_to_priority_p): Use sched_deps_info instead of
+	current_sched_info.
+	(priority): Adjust to work with selective scheduling.  Process the
+	corner case when all dependencies don't contribute to priority.
+	(rank_for_schedule): Use ds_weak instead of dep_weak.
+	(advance_state): New function.  Move logic from ...
+	(advance_one_cycle): ... here.
+	(add_to_note_list, concat_note_lists): New functions.
+	(rm_other_notes): Make static.  Adjust for selective scheduling.
+	(remove_notes, restore_other_notes): New functions.
+	(move_insn): Add two arguments.  Update assert.  Don't call
+	reemit_notes.
+	(choose_ready): Remove lookahead variable, use dfa_lookahead.
+	Remove more_issue, max_points.  Move the code to initialize
+	max_lookahead_tries to max_issue.
+	(schedule_block): Remove rgn_n_insns1 parameter.  Don't allocate
+	ready.  Adjust use of move_insn.  Call restore_other_notes.
+	(luid): Remove.
+	(sched_init, sched_finish): Move Haifa-specific initialization/
+	finalization to ...
+	(haifa_sched_init, haifa_sched_finish): ... respectively.
+	New functions.
+	(setup_sched_dump): New function.
+	(haifa_init_only_bb): New static function.
+	(haifa_speculate_insn): New static function.
+	(try_ready): Use haifa_* instead of speculate_insn and
+	change_pattern.
+	(extend_ready, extend_all): Remove.
+	(sched_extend_ready_list, sched_finish_ready_list): New functions.
+	(create_check_block_twin, add_to_speculative_block): Use
+	haifa_insns_init instead of extend_global.  Update to use new
+	initialization functions.  Change parameter.  Factor out code from
+	create_check_block_twin to ...
+	(sched_create_recovery_edges) ... this new function.
+	(add_block): Remove.
+	(sched_scan_info): New.
+	(extend_bb): Use sched_scan_info.
+	(init_bb, extend_insn, init_insn, init_insns_in_bb, sched_scan): New
+	static functions for walking through scheduling region.
+	(sched_luids): New vector variable to replace uid_to_luid.
+	(luids_extend_insn): New function.
+	(sched_max_luid): New variable.
+	(luids_init_insn): New function.
+	(sched_init_luids, sched_finish_luids): New functions.
+	(insn_luid): New debug function.
+	(sched_extend_target): New function.
+	(haifa_init_insn): New static function.
+	(sched_init_only_bb): New hook.
+	(sched_split_block): New hook.
+	(sched_split_block_1): New function.
+	(sched_create_empty_bb): New hook.
+	(sched_create_empty_bb_1): New function.	
+	(common_sched_info, ready): New global variables.
+	(current_sched_info_var): Remove.
+	(move_block_after_check): Use common_sched_info.		
+	(haifa_luid_for_non_insn): New static function.	
+	(init_before_recovery): Use haifa_init_only_bb instead of
+	add_block.
+	(increase_insn_priority): New.
+	* modulo-sched.c: (issue_rate): Remove static declaration.
+	(sms_sched_info): Change type to haifa_sched_info.
+	(sms_sched_deps_info, sms_common_sched_info): New variables.
+	(setup_sched_infos): New.
+	(sms_schedule): Initialize them.  Call haifa_sched_init/finish.
+	Do not call regstat_free_calls_crossed.
+	(sms_print_insn): Use const_rtx.
+	* params.def (PARAM_MAX_PIPELINE_REGION_BLOCKS,
+	PARAM_MAX_PIPELINE_REGION_INSNS, PARAM_SELSCHED_MAX_LOOKAHEAD,
+	PARAM_SELSCHED_MAX_SCHED_TIMES, PARAM_SELSCHED_INSNS_TO_RENAME,
+	PARAM_SCHED_MEM_TRUE_DEP_COST): New.
+	* sched-deps.c (sched_deps_info): New.  Update all relevant uses of
+	current_sched_info to use it.
+	(enum reg_pending_barrier_mode): Move to sched-int.h.
+	(h_d_i_d): New variable. Initialize to NULL.
+	({true, output, anti, spec, forward}_dependency_cache): Initialize
+	to NULL.
+	(estimate_dep_weak): Remove static declaration.
+	(sched_has_condition_p): New function.  Adjust users of
+	sched_get_condition to use it instead.
+	(conditions_mutex_p): Add arguments indicating which conditions are
+	reversed.  Use them.
+	(sched_get_condition_with_rev): Rename from sched_get_condition.  Add
+	argument to indicate whether returned condition is reversed.  Do not
+	generate new rtx when condition should be reversed; indicate it by
+	setting new argument instead.
+	(add_dependence_list_and_free): Add deps parameter.
+	Update all users.  Do not free dependence list when
+	deps context is readonly.
+	(add_insn_mem_dependence, flush_pending_lists): Adjust for readonly
+	contexts.
+	(remove_from_dependence_list, remove_from_both_dependence_lists): New.
+	(remove_from_deps): New. Use the above functions.	
+	(cur_insn, can_start_lhs_rhs_p): New static variables.
+	(add_or_update_back_dep_1): Initialize present_dep_type.
+	(haifa_start_insn, haifa_finish_insn, haifa_note_reg_set,
+	haifa_note_reg_clobber, haifa_note_reg_use, haifa_note_mem_dep,
+	haifa_note_dep): New functions implementing dependence hooks for
+	the Haifa scheduler.
+	(note_reg_use, note_reg_set, note_reg_clobber, note_mem_dep,
+	note_dep): New functions.
+	(ds_to_dt, extend_deps_reg_info, maybe_extend_reg_info_p): New
+	functions.
+	(init_deps): Initialize last_reg_pending_barrier and deps->readonly.
+	(free_deps): Initialize deps->reg_last.
+	(sched_analyze_reg, sched_analyze_1, sched_analyze_2,
+	sched_analyze_insn): Update to use dependency hooks infrastructure
+	and readonly contexts.
+	(deps_analyze_insn): New function.  Move part of logic from ...
+	(sched_analyze): ... here.  Also move some logic to ...
+	(deps_start_bb): ... here.  New function.
+	(add_forw_dep, delete_forw_dep): Guard use of INSN_DEP_COUNT with
+	sel_sched_p.
+	(sched_deps_init): New function.  Move code from ...
+	(init_dependency_caches): ... here.  Remove.
+	(init_deps_data_vector): New.
+	(sched_deps_finish): New function.  Move code from ...
+	(free_dependency_caches): ... here.  Remove.
+	(init_deps_global, finish_deps_global): Adjust for use with
+	selective scheduling.
+	(get_dep_weak): Move logic to ...
+	(get_dep_weak_1): New function.
+	(ds_merge): Move logic to ...
+	(ds_merge_1): New static function.
+	(ds_full_merge, ds_max_merge, ds_get_speculation_types): New functions.
+	(ds_get_max_dep_weak): New function.
+	* sched-ebb.c (sched_n_insns): Rename to sched_rgn_n_insns.
+	(n_insns): Rename to rgn_n_insns.
+	(debug_ebb_dependencies): New function.
+	(init_ready_list): Use it.
+	(begin_schedule_ready): Use sched_init_only_bb.
+	(ebb_print_insn): Indicate when an insn starts a new cycle.
+	(contributes_to_priority, compute_jump_reg_dependencies,
+	add_remove_insn, fix_recovery_cfg): Add ebb_ prefix to function names.
+	(add_block1): Remove to ebb_add_block.
+	(ebb_sched_deps_info, ebb_common_sched_info): New variables.
+	(schedule_ebb): Initialize them.  Use remove_notes instead of
+	rm_other_notes.  Use haifa_local_init/finish.
+	(schedule_ebbs): Use haifa_sched_init/finish.
+	* sched-int.h: Include vecprim.h, remove rtl.h.
+	(struct ready_list): Delete declaration.
+	(sched_verbose_param, enum sched_pass_id_t,
+	bb_vec_t, insn_vec_t, rtx_vec_t): New.
+	(struct sched_scan_info_def): New structure.
+	(sched_scan_info, sched_scan, sched_init_bbs,
+	sched_init_luids, sched_finish_luids, sched_extend_target,
+	haifa_init_h_i_d, haifa_finish_h_i_d): Declare.
+	(struct common_sched_info_def): New.
+	(common_sched_info, haifa_common_sched_info,
+	sched_emulate_haifa_p): Declare.
+	(sel_sched_p): New.
+	(sched_luids): Declare.
+	(INSN_LUID, LUID_BY_UID, SET_INSN_LUID): Declare.
+	(sched_max_luid, insn_luid): Declare.
+	(note_list, remove_notes, restore_other_notes, bb_note): Declare.
+	(sched_insns_init, sched_insns_finish, xrecalloc, reemit_notes,
+	print_insn, print_pattern, print_value, haifa_classify_insn,
+	sel_find_rgns, sel_mark_hard_insn, dfa_state_size, advance_state,
+	setup_sched_dump, sched_init, sched_finish,
+	sel_insn_is_speculation_check): Export.
+	(struct ready_list): Move from haifa-sched.c.
+	(ready_try, ready, max_issue): Export.
+	(ebb_compute_jump_reg_dependencies, find_fallthru_edge,
+	sched_init_only_bb, sched_split_block, sched_split_block_1,
+	sched_create_empty_bb, sched_create_empty_bb_1,
+	sched_create_recovery_block, sched_create_recovery_edges): Export.
+	(enum reg_pending_barrier_mode): Export.
+	(struct deps): New fields `last_reg_pending_barrier' and `readonly'.
+	(deps_t): New.
+	(struct sched_info): Rename to haifa_sched_info.  Use const_rtx for
+	print_insn field.  Move add_block and fix_recovery_cfg to
+	common_sched_info_def.  Move compute_jump_reg_dependencies, use_cselib  ...
+	(struct sched_deps_info_def): ... this new structure.
+	(sched_deps_info): Declare.
+	(struct spec_info_def): Remove weakness_cutoff, add
+	data_weakness_cutoff and control_weakness_cutoff.
+	(spec_info): Declare.
+	(struct _haifa_deps_insn_data): Split from haifa_insn_data.  Add
+	dep_count field.
+	(struct haifa_insn_data): Rename to struct _haifa_insn_data.
+	(haifa_insn_data_def, haifa_insn_data_t): New typedefs.
+	(current_sched_info): Change type to struct haifa_sched_info.
+	(haifa_deps_insn_data_def, haifa_deps_insn_data_t): New typedefs.
+	(h_d_i_d): New variable.
+	(HDID): New accessor macro.
+	(h_i_d): Change type to VEC (haifa_insn_data_def, heap) *.
+	(HID): New accessor macro.  Rewrite h_i_d accessor macros through HID
+	and HDID.
+	(IS_SPECULATION_CHECK_P): Update for selective scheduler.
+	(enum SCHED_FLAGS): Update for selective scheduler.
+	(enum SPEC_SCHED_FLAGS): New flag SEL_SCHED_SPEC_DONT_CHECK_CONTROL.
+	(init_dependency_caches, free_dependency_caches): Delete declarations.
+	(deps_analyze_insn, remove_from_deps, get_dep_weak_1,
+	estimate_dep_weak, ds_full_merge, ds_max_merge, ds_weak,
+	ds_get_speculation_types, ds_get_max_dep_weak, sched_deps_init,
+	sched_deps_finish, haifa_note_reg_set, haifa_note_reg_use,
+	haifa_note_reg_clobber, maybe_extend_reg_info_p, deps_start_bb,
+	ds_to_dt): Export.
+	(rm_other_notes): Delete declaration.
+	(schedule_block): Remove one argument.
+	(cycle_issued_insns, issue_rate, dfa_lookahead, ready_sort,
+	ready_element, ready_lastpos, sched_extend_ready_list,
+	sched_finish_ready_list, sched_change_pattern, sched_speculate_insn,
+	concat_note_lists): Export.
+	(struct region): Move from sched-rgn.h.
+	(nr_regions, rgn_table, rgn_bb_table, block_to_bb, containing_rgn,
+	RGN_NR_BLOCKS, RGN_BLOCKS, RGN_DONT_CALC_DEPS, RGN_HAS_REAL_EBB,
+	BLOCK_TO_BB, CONTAINING_RGN): Export.
+	(ebb_head, BB_TO_BLOCK, EBB_FIRST_BB, EBB_LAST_BB, INSN_BB): Likewise.
+	(current_nr_blocks, current_blocks, target_bb): Likewise.
+	(dep_cost_1, sched_is_disabled_for_current_region_p, sched_rgn_init,
+	sched_rgn_finish, rgn_setup_region, sched_rgn_compute_dependencies,
+	sched_rgn_local_init, extend_regions,
+	rgn_make_new_region_out_of_new_block, compute_priorities,
+	debug_rgn_dependencies, free_rgn_deps, contributes_to_priority,
+	extend_rgns, deps_join rgn_setup_common_sched_info,
+	rgn_setup_sched_infos, debug_regions, debug_region, dump_region_dot,
+	dump_region_dot_file, haifa_sched_init, haifa_sched_finish): Export.
+	(get_rgn_sched_max_insns_priority, sel_add_to_insn_priority, 
+	increase_insn_priority): Likewise.
+	* sched-rgn.c: Include sel-sched.h.
+	(ref_counts): New static variable.  Use it ...
+	(INSN_REF_COUNT): ... here.  Rewrite and move closer to uses.
+	(FED_BY_SPEC_LOAD, IS_LOAD_INSN): Rewrite to use HID accessor macro.
+	(sched_is_disabled_for_current_region_p): Delete static declaration.
+	(struct region): Move to sched-int.h.
+	(nr_regions, rgn_table, rgn_bb_table, block_to_bb, containing_rgn,
+	ebb_head): Define and initialize.
+	(RGN_NR_BLOCKS, RGN_BLOCKS, RGN_DONT_CALC_DEPS, RGN_HAS_REAL_EBB,
+	BLOCK_TO_BB, CONTAINING_RGN, debug_regions, extend_regions,
+	BB_TO_BLOCK, EBB_FIRST_BB, EBB_LAST_BB): Move to
+	sched-int.h.
+	(find_single_block_region): Add new argument to indicate that EBB
+	regions should be constructed.
+	(debug_live): Delete declaration.
+	(current_nr_blocks, current_blocks, target_bb): Remove static qualifiers.
+	(compute_dom_prob_ps, check_live, update_live, set_spec_fed): Delete
+	declaration.
+	(init_regions): Delete declaration.
+	(debug_region, bb_in_region_p, dump_region_dot_file, dump_region_dot,
+	rgn_estimate_number_of_insns): New.
+	(too_large): Use estimate_number_of_insns.
+	(haifa_find_rgns): New. Move the code from ...
+	(find_rgns): ... here.  Call either sel_find_rgns or haifa_find_rgns.
+	(free_trg_info): New.
+	(compute_trg_info): Allocate candidate tables here instead of ...
+	(init_ready_list): ... here.
+	(rgn_print_insn): Use const_rtx.
+	(contributes_to_priority, extend_regions): Delete static declaration.
+	(add_remove_insn, fix_recovery_cfg): Add rgn_ to function names.
+	(add_block1): Rename to rgn_add_block.
+	(debug_rgn_dependencies): Delete static qualifier.
+	(new_ready): Use sched_deps_info.  Simplify.
+	(rgn_common_sched_info, rgn_const_sched_deps_info,
+	rgn_const_sel_sched_deps_info, rgn_sched_deps_info, rgn_sched_info): New.
+	(region_sched_info): Rename to rgn_const_sched_info.
+	(deps_join): New, extracted from ...
+	(propagate_deps): ... here.
+	(compute_block_dependences, debug_dependencies): Update for selective
+	scheduling.
+	(free_rgn_deps, compute_priorities): New functions.
+	(sched_rgn_init, sched_rgn_finish, rgn_setup_region,
+	sched_rgn_compute_dependencies): New functions.
+	(schedule_region): Use them.
+	(sched_rgn_local_init, sched_rgn_local_free, sched_rgn_local_finish,
+	rgn_setup_common_sched_info, rgn_setup_sched_infos):
+	New functions.
+	(schedule_insns): Call new functions that were split out.
+	(rgn_make_new_region_out_of_new_block): New.
+	(get_rgn_sched_max_insns_priority): New.
+	(rest_of_handle_sched, rest_of_handle_sched2): Call selective
+	scheduling when appropriate.
+	* sched-vis.c: Include insn-attr.h.
+	(print_value, print_pattern): Make global.
+	(print_rtl_slim, debug_bb_slim, debug_bb_n_slim): New functions.
+	* target-def.h (TARGET_SCHED_ADJUST_COST_2,
+	TARGET_SCHED_ALLOC_SCHED_CONTEXT, TARGET_SCHED_INIT_SCHED_CONTEXT,
+	TARGET_SCHED_SET_SCHED_CONTEXT, TARGET_SCHED_CLEAR_SCHED_CONTEXT,
+	TARGET_SCHED_FREE_SCHED_CONTEXT, TARGET_SCHED_GET_INSN_CHECKED_DS,
+	TARGET_SCHED_GET_INSN_SPEC_DS, TARGET_SCHED_SKIP_RTX_P): New target
+	hooks.  Initialize them to 0.
+	(TARGET_SCHED_GEN_CHECK): Rename to TARGET_SCHED_GEN_SPEC_CHECK.
+	* target.h (struct gcc_target): Add them.  Rename gen_check field to
+	gen_spec_check.
+	* flags.h (sel_sched_switch_set): Declare.
+	* opts.c (sel_sched_switch_set): New variable.
+	(decode_options): Unset flag_sel_sched_pipelining_outer_loops if
+	pipelining is disabled from command line.
+	(common_handle_option): Record whether selective scheduling is
+	requested from command line.
+	* doc/invoke.texi: Document new flags and parameters.
+	* doc/tm.texi: Document new target hooks.
+	* config/ia64/ia64.c (TARGET_SCHED_GEN_SPEC_CHECK): Define to ia64_gen_check.
+	(dfa_state_size): Do not declare locally.
+	* config/ia64/ia64.opt (msched-ar-data-spec): Default to 0.
+	* config/rs6000/rs6000.c (rs6000_init_sched_context,
+	rs6000_alloc_sched_context, rs6000_set_sched_context,
+	rs6000_free_sched_context): New functions.
+	(struct _rs6000_sched_context): New.
+	(rs6000_sched_reorder2): Do not modify INSN_PRIORITY for selective
+	scheduling.
+	(rs6000_sched_finish): Do not run for selective scheduling. 
+
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* frv.c (frv_rtx_costs): Update forward declaration.

@@ -664,7 +664,7 @@ insn_current_reference_address (rtx branch)
 /* Compute branch alignments based on frequency information in the
    CFG.  */
 
-static unsigned int
+unsigned int
 compute_alignments (void)
 {
   int log, max_skip, max_log;
@@ -784,7 +784,10 @@ compute_alignments (void)
     }
 
   if (dump_file)
-    loop_optimizer_finalize ();
+    {
+      loop_optimizer_finalize ();
+      free_dominance_info (CDI_DOMINATORS);
+    }
   return 0;
 }
 

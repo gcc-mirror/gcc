@@ -382,8 +382,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_SCHED_NEEDS_BLOCK_P
 #define TARGET_SCHED_NEEDS_BLOCK_P ia64_needs_block_p
 
-#undef TARGET_SCHED_GEN_CHECK
-#define TARGET_SCHED_GEN_CHECK ia64_gen_check
+#undef TARGET_SCHED_GEN_SPEC_CHECK
+#define TARGET_SCHED_GEN_SPEC_CHECK ia64_gen_check
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC\
@@ -6277,10 +6277,6 @@ static rtx dfa_stop_insn;
 /* The following variable value is the last issued insn.  */
 
 static rtx last_scheduled_insn;
-
-/* The following variable value is size of the DFA state.  */
-
-static size_t dfa_state_size;
 
 /* The following variable value is pointer to a DFA state used as
    temporary variable.  */

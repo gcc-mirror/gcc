@@ -962,6 +962,29 @@ fschedule-insns2
 Common Report Var(flag_schedule_insns_after_reload) Optimization
 Reschedule instructions after register allocation
 
+; This flag should be on when a target implements non-trivial
+; scheduling hooks, maybe saving some information for its own sake.
+; On IA64, for example, this is used for correct bundling. 
+fselective-scheduling
+Common Report Var(flag_selective_scheduling) Optimization
+Schedule instructions using selective scheduling algorithm
+
+fselective-scheduling2
+Common Report Var(flag_selective_scheduling2) Optimization 
+Run selective scheduling after reload
+
+fsel-sched-pipelining
+Common Report Var(flag_sel_sched_pipelining) Init(0) Optimization
+Perform software pipelining of inner loops during selective scheduling
+
+fsel-sched-pipelining-outer-loops
+Common Report Var(flag_sel_sched_pipelining_outer_loops) Init(0) Optimization
+Perform software pipelining of outer loops during selective scheduling
+
+fsel-sched-reschedule-pipelined
+Common Report Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
+Reschedule pipelined regions without pipelining
+
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
 ; of stalled insns into the ready list.
 fsched-stalled-insns

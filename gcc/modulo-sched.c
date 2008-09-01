@@ -187,13 +187,6 @@ static int compute_split_row (sbitmap, int, int, int, ddg_node_ptr);
 /* This page defines constants and structures for the modulo scheduling
    driver.  */
 
-/* As in haifa-sched.c:  */
-/* issue_rate is the number of insns that can be scheduled in the same
-   machine cycle.  It can be defined in the config/mach/mach.h file,
-   otherwise we set it to 1.  */
-
-static int issue_rate;
-
 static int sms_order_nodes (ddg_ptr, int, int *, int *);
 static void set_node_sched_params (ddg_ptr);
 static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
@@ -242,7 +235,7 @@ typedef struct node_sched_params
    code in order to use sched_analyze() for computing the dependencies.
    They are used when initializing the sched_info structure.  */
 static const char *
-sms_print_insn (rtx insn, int aligned ATTRIBUTE_UNUSED)
+sms_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
 {
   static char tmp[80];
 
@@ -258,7 +251,17 @@ compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
 {
 }
 
-static struct sched_info sms_sched_info =
+static struct common_sched_info_def sms_common_sched_info;
+
+static struct sched_deps_info_def sms_sched_deps_info =
+  {
+    compute_jump_reg_dependencies,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL,
+    0, 0, 0
+  };
+
+static struct haifa_sched_info sms_sched_info =
 {
   NULL,
   NULL,
@@ -267,15 +270,13 @@ static struct sched_info sms_sched_info =
   NULL,
   sms_print_insn,
   NULL,
-  compute_jump_reg_dependencies,
   NULL, NULL,
   NULL, NULL,
-  0, 0, 0,
+  0, 0,
 
-  NULL, NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, 
   0
 };
-
 
 /* Given HEAD and TAIL which are the first and last insns in a loop;
    return the register which controls the loop.  Return zero if it has
@@ -856,6 +857,19 @@ canon_loop (struct loop *loop)
     }
 }
 
+/* Setup infos.  */
+static void
+setup_sched_infos (void)
+{
+  memcpy (&sms_common_sched_info, &haifa_common_sched_info,
+	  sizeof (sms_common_sched_info));
+  sms_common_sched_info.sched_pass_id = SCHED_SMS_PASS;
+  common_sched_info = &sms_common_sched_info;
+
+  sched_deps_info = &sms_sched_deps_info;
+  current_sched_info = &sms_sched_info;
+}
+
 /* Probability in % that the sms-ed loop rolls enough so that optimized
    version may be entered.  Just a guess.  */
 #define PROB_SMS_ENOUGH_ITERATIONS 80
@@ -901,16 +915,8 @@ sms_schedule (void)
     issue_rate = 1;
 
   /* Initialize the scheduler.  */
-  current_sched_info = &sms_sched_info;
-
-  /* Init Data Flow analysis, to be used in interloop dep calculation.  */
-  df_set_flags (DF_LR_RUN_DCE);
-  df_rd_add_problem ();
-  df_note_add_problem ();
-  df_chain_add_problem (DF_DU_CHAIN + DF_UD_CHAIN);
-  df_analyze ();
-  regstat_compute_calls_crossed ();
-  sched_init ();
+  setup_sched_infos ();
+  haifa_sched_init ();
 
   /* Allocate memory to hold the DDG array one entry for each loop.
      We use loop->num as index into this array.  */
@@ -1242,11 +1248,10 @@ sms_schedule (void)
       free_ddg (g);
     }
 
-  regstat_free_calls_crossed ();
   free (g_arr);
 
   /* Release scheduler data, needed until now because of DFA.  */
-  sched_finish ();
+  haifa_sched_finish ();
   loop_optimizer_finalize ();
 }
 

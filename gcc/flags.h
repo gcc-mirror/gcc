@@ -228,6 +228,9 @@ extern int flag_evaluation_order;
 extern unsigned HOST_WIDE_INT g_switch_value;
 extern bool g_switch_set;
 
+/* Same for selective scheduling.  */
+extern bool sel_sched_switch_set;
+
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  
    For each variable, there is an _log variant which is the power

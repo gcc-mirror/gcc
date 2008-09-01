@@ -144,7 +144,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "output.h"
 #include "params.h"
+#include "vecprim.h"
 #include "dbgcnt.h"
+#include "cfgloop.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -152,7 +154,7 @@ along with GCC; see the file COPYING3.  If not see
    machine cycle.  It can be defined in the config/mach/mach.h file,
    otherwise we set it to 1.  */
 
-static int issue_rate;
+int issue_rate;
 
 /* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose=N:
@@ -170,9 +172,6 @@ int sched_verbose = 0;
    either to stderr, or to the dump listing file (-dRS).  */
 FILE *sched_dump = 0;
 
-/* Highest uid before scheduling.  */
-static int old_max_uid;
-
 /* fix_sched_param() is called from toplev.c upon detection
    of the -fsched-verbose=N option.  */
 
@@ -185,10 +184,12 @@ fix_sched_param (const char *param, const char *val)
     warning (0, "fix_sched_param: unknown param: %s", param);
 }
 
-struct haifa_insn_data *h_i_d;
+/* This is a placeholder for the scheduler parameters common 
+   to all schedulers.  */
+struct common_sched_info_def *common_sched_info;
 
-#define INSN_TICK(INSN)		(h_i_d[INSN_UID (INSN)].tick)
-#define INTER_TICK(INSN)        (h_i_d[INSN_UID (INSN)].inter_tick)
+#define INSN_TICK(INSN)	(HID (INSN)->tick)
+#define INTER_TICK(INSN) (HID (INSN)->inter_tick)
 
 /* If INSN_TICK of an instruction is equal to INVALID_TICK,
    then it should be recalculated from scratch.  */
@@ -202,12 +203,12 @@ struct haifa_insn_data *h_i_d;
 
 /* List of important notes we must keep around.  This is a pointer to the
    last element in the list.  */
-static rtx note_list;
+rtx note_list;
 
 static struct spec_info_def spec_info_var;
 /* Description of the speculative part of the scheduling.
    If NULL - no speculation.  */
-spec_info_t spec_info;
+spec_info_t spec_info = NULL;
 
 /* True, if recovery block was added during scheduling of current block.
    Used to determine, if we need to fix INSN_TICKs.  */
@@ -224,11 +225,15 @@ static int nr_begin_data, nr_be_in_data, nr_begin_control, nr_be_in_control;
 /* Array used in {unlink, restore}_bb_notes.  */
 static rtx *bb_header = 0;
 
-/* Number of basic_blocks.  */
-static int old_last_basic_block;
-
 /* Basic block after which recovery blocks will be created.  */
 static basic_block before_recovery;
+
+/* Basic block just before the EXIT_BLOCK and after recovery, if we have
+   created it.  */
+basic_block after_recovery;
+
+/* FALSE if we add bb to another region, so we don't need to initialize it.  */
+bool adding_bb_to_current_region_p = true;
 
 /* Queues, etc.  */
 
@@ -290,7 +295,7 @@ static int q_size = 0;
    QUEUE_READY     - INSN is in ready list.
    N >= 0 - INSN queued for X [where NEXT_Q_AFTER (q_ptr, X) == N] cycles.  */
    
-#define QUEUE_INDEX(INSN) (h_i_d[INSN_UID (INSN)].queue_index)
+#define QUEUE_INDEX(INSN) (HID (INSN)->queue_index)
 
 /* The following variable value refers for all current and future
    reservations of the processor units.  */
@@ -298,36 +303,20 @@ state_t curr_state;
 
 /* The following variable value is size of memory representing all
    current and future reservations of the processor units.  */
-static size_t dfa_state_size;
+size_t dfa_state_size;
 
 /* The following array is used to find the best insn from ready when
    the automaton pipeline interface is used.  */
-static char *ready_try;
+char *ready_try = NULL;
 
-/* Describe the ready list of the scheduler.
-   VEC holds space enough for all insns in the current region.  VECLEN
-   says how many exactly.
-   FIRST is the index of the element with the highest priority; i.e. the
-   last one in the ready list, since elements are ordered by ascending
-   priority.
-   N_READY determines how many insns are on the ready list.  */
+/* The ready list.  */
+struct ready_list ready = {NULL, 0, 0, 0};
 
-struct ready_list
-{
-  rtx *vec;
-  int veclen;
-  int first;
-  int n_ready;
-};
-
-/* The pointer to the ready list.  */
-static struct ready_list *readyp;
+/* The pointer to the ready list (to be removed).  */
+static struct ready_list *readyp = &ready;
 
 /* Scheduling clock.  */
 static int clock_var;
-
-/* Number of instructions in current scheduling region.  */
-static int rgn_n_insns;
 
 static int may_trap_exp (const_rtx, int);
 
@@ -341,6 +330,39 @@ static int may_trap_exp (const_rtx, int);
 
 /* Returns a class that insn with GET_DEST(insn)=x may belong to,
    as found by analyzing insn's expression.  */
+
+
+static int haifa_luid_for_non_insn (rtx x);
+
+/* Haifa version of sched_info hooks common to all headers.  */
+const struct common_sched_info_def haifa_common_sched_info = 
+  {
+    NULL, /* fix_recovery_cfg */
+    NULL, /* add_block */
+    NULL, /* estimate_number_of_insns */
+    haifa_luid_for_non_insn, /* luid_for_non_insn */
+    SCHED_PASS_UNKNOWN /* sched_pass_id */
+  };
+
+const struct sched_scan_info_def *sched_scan_info;
+
+/* Mapping from instruction UID to its Logical UID.  */
+VEC (int, heap) *sched_luids = NULL;
+
+/* Next LUID to assign to an instruction.  */
+int sched_max_luid = 1;
+
+/* Haifa Instruction Data.  */
+VEC (haifa_insn_data_def, heap) *h_i_d = NULL;
+
+void (* sched_init_only_bb) (basic_block, basic_block);
+
+/* Split block function.  Different schedulers might use different functions
+   to handle their internal data consistent.  */
+basic_block (* sched_split_block) (basic_block, rtx);
+
+/* Create empty basic block after the specified block.  */
+basic_block (* sched_create_empty_bb) (basic_block);
 
 static int
 may_trap_exp (const_rtx x, int is_store)
@@ -478,10 +500,6 @@ haifa_classify_insn (const_rtx insn)
   return haifa_classify_rtx (PATTERN (insn));
 }
 
-
-/* A typedef for rtx vector.  */
-typedef VEC(rtx, heap) *rtx_vec_t;
-
 /* Forward declarations.  */
 
 static int priority (rtx);
@@ -490,10 +508,11 @@ static void swap_sort (rtx *, int);
 static void queue_insn (rtx, int);
 static int schedule_insn (rtx);
 static int find_set_reg_weight (const_rtx);
-static void find_insn_reg_weight (basic_block);
-static void find_insn_reg_weight1 (rtx);
+static void find_insn_reg_weight (const_rtx);
 static void adjust_priority (rtx);
 static void advance_one_cycle (void);
+static void extend_h_i_d (void);
+
 
 /* Notes handling mechanism:
    =========================
@@ -511,12 +530,7 @@ static void advance_one_cycle (void);
    unlink_other_notes ()).  After scheduling the block, these notes are
    inserted at the beginning of the block (in schedule_block()).  */
 
-static rtx unlink_other_notes (rtx, rtx);
-static void reemit_notes (rtx);
-
-static rtx *ready_lastpos (struct ready_list *);
 static void ready_add (struct ready_list *, rtx, bool);
-static void ready_sort (struct ready_list *);
 static rtx ready_remove_first (struct ready_list *);
 
 static void queue_to_ready (struct ready_list *);
@@ -524,14 +538,10 @@ static int early_queue_to_ready (state_t, struct ready_list *);
 
 static void debug_ready_list (struct ready_list *);
 
-static void move_insn (rtx);
-
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  */
-static rtx ready_element (struct ready_list *, int);
 static rtx ready_remove (struct ready_list *, int);
 static void ready_remove_insn (rtx);
-static int max_issue (struct ready_list *, int *, int);
 
 static int choose_ready (struct ready_list *, rtx *);
 
@@ -543,23 +553,17 @@ static void change_queue_index (rtx, int);
    speculative instructions.  */
 
 static void extend_h_i_d (void);
-static void extend_ready (int);
 static void init_h_i_d (rtx);
 static void generate_recovery_code (rtx);
 static void process_insn_forw_deps_be_in_spec (rtx, rtx, ds_t);
 static void begin_speculative_block (rtx);
 static void add_to_speculative_block (rtx);
-static dw_t dep_weak (ds_t);
-static edge find_fallthru_edge (basic_block);
-static void init_before_recovery (void);
-static basic_block create_recovery_block (void);
+static void init_before_recovery (basic_block *);
 static void create_check_block_twin (rtx, bool);
 static void fix_recovery_deps (basic_block);
-static void change_pattern (rtx, rtx);
-static int speculate_insn (rtx, ds_t, rtx *);
+static void haifa_change_pattern (rtx, rtx);
 static void dump_new_block_header (int, basic_block, rtx, rtx);
 static void restore_bb_notes (basic_block);
-static void extend_bb (void);
 static void fix_jump_move (rtx);
 static void move_block_after_check (rtx);
 static void move_succs (VEC(edge,gc) **, basic_block);
@@ -575,7 +579,7 @@ static void check_cfg (rtx, rtx);
 #endif /* INSN_SCHEDULING */
 
 /* Point to state used for the current scheduling pass.  */
-struct sched_info *current_sched_info;
+struct haifa_sched_info *current_sched_info;
 
 #ifndef INSN_SCHEDULING
 void
@@ -583,9 +587,6 @@ schedule_insns (void)
 {
 }
 #else
-
-/* Working copy of frontend's sched_info variable.  */
-static struct sched_info current_sched_info_var;
 
 /* Pointer to the last instruction scheduled.  Used by rank_for_schedule,
    so that insns independent of the last scheduled insn will be preferred
@@ -595,7 +596,7 @@ static rtx last_scheduled_insn;
 
 /* Cached cost of the instruction.  Use below function to get cost of the
    insn.  -1 here means that the field is not initialized.  */
-#define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
+#define INSN_COST(INSN)	(HID (INSN)->cost)
 
 /* Compute cost of executing INSN.
    This is the number of cycles between instruction issue and
@@ -603,7 +604,21 @@ static rtx last_scheduled_insn;
 HAIFA_INLINE int
 insn_cost (rtx insn)
 {
-  int cost = INSN_COST (insn);
+  int cost;
+
+  if (sel_sched_p ())
+    {
+      if (recog_memoized (insn) < 0)
+	return 0;
+
+      cost = insn_default_latency (insn);
+      if (cost < 0)
+	cost = 0;
+
+      return cost;
+    }
+
+  cost = INSN_COST (insn);
 
   if (cost < 0)
     {
@@ -633,7 +648,7 @@ insn_cost (rtx insn)
    This is the number of cycles between instruction issue and
    instruction results.  */
 int
-dep_cost (dep_t link)
+dep_cost_1 (dep_t link, dw_t dw)
 {
   rtx used = DEP_CON (link);
   int cost;
@@ -664,8 +679,14 @@ dep_cost (dep_t link)
 	  else if (bypass_p (insn))
 	    cost = insn_latency (insn, used);
 	}
+	
 
-      if (targetm.sched.adjust_cost != NULL)
+      if (targetm.sched.adjust_cost_2)
+	{
+	  cost = targetm.sched.adjust_cost_2 (used, (int) dep_type, insn, cost,
+					      dw);
+	}
+      else if (targetm.sched.adjust_cost != NULL)
 	{
 	  /* This variable is used for backward compatibility with the
 	     targets.  */
@@ -691,6 +712,34 @@ dep_cost (dep_t link)
   return cost;
 }
 
+/* Compute cost of dependence LINK.
+   This is the number of cycles between instruction issue and
+   instruction results.  */
+int
+dep_cost (dep_t link)
+{
+  return dep_cost_1 (link, 0);
+}
+
+/* Use this sel-sched.c friendly function in reorder2 instead of increasing
+   INSN_PRIORITY explicitly.  */
+void
+increase_insn_priority (rtx insn, int amount)
+{
+  if (!sel_sched_p ())
+    {
+      /* We're dealing with haifa-sched.c INSN_PRIORITY.  */
+      if (INSN_PRIORITY_KNOWN (insn))
+	  INSN_PRIORITY (insn) += amount;
+    }
+  else
+    {
+      /* In sel-sched.c INSN_PRIORITY is not kept up to date.  
+	 Use EXPR_PRIORITY instead. */
+      sel_add_to_insn_priority (insn, amount);
+    }
+}
+
 /* Return 'true' if DEP should be included in priority calculations.  */
 static bool
 contributes_to_priority_p (dep_t dep)
@@ -706,7 +755,7 @@ contributes_to_priority_p (dep_t dep)
      their producers will increase, and, thus, the
      producers will more likely be scheduled, thus,
      resolving the dependence.  */
-  if ((current_sched_info->flags & DO_SPECULATION)
+  if (sched_deps_info->generate_spec_deps
       && !(spec_info->flags & COUNT_SPEC_IN_CRITICAL_PATH)
       && (DEP_STATUS (dep) & SPECULATIVE))
     return false;
@@ -726,7 +775,7 @@ priority (rtx insn)
 
   if (!INSN_PRIORITY_KNOWN (insn))
     {
-      int this_priority = 0;
+      int this_priority = -1;
 
       if (sd_lists_empty_p (insn, SD_LIST_FORW))
 	/* ??? We should set INSN_PRIORITY to insn_cost when and insn has
@@ -745,7 +794,8 @@ priority (rtx insn)
 	     INSN_FORW_DEPS list of each instruction in the corresponding
 	     recovery block.  */ 
 
-	  rec = RECOVERY_BLOCK (insn);
+          /* Selective scheduling does not define RECOVERY_BLOCK macro.  */
+	  rec = sel_sched_p () ? NULL : RECOVERY_BLOCK (insn);
 	  if (!rec || rec == EXIT_BLOCK_PTR)
 	    {
 	      prev_first = PREV_INSN (insn);
@@ -798,6 +848,14 @@ priority (rtx insn)
 	    }
 	  while (twin != prev_first);
 	}
+
+      if (this_priority < 0)
+	{
+	  gcc_assert (this_priority == -1);
+
+	  this_priority = insn_cost (insn);
+	}
+
       INSN_PRIORITY (insn) = this_priority;
       INSN_PRIORITY_STATUS (insn) = 1;
     }
@@ -849,13 +907,13 @@ rank_for_schedule (const void *x, const void *y)
 
       ds1 = TODO_SPEC (tmp) & SPECULATIVE;
       if (ds1)
-	dw1 = dep_weak (ds1);
+	dw1 = ds_weak (ds1);
       else
 	dw1 = NO_DEP_WEAK;
       
       ds2 = TODO_SPEC (tmp2) & SPECULATIVE;
       if (ds2)
-	dw2 = dep_weak (ds2);
+	dw2 = ds_weak (ds2);
       else
 	dw2 = NO_DEP_WEAK;
 
@@ -962,7 +1020,7 @@ queue_insn (rtx insn, int n_cycles)
 
       fprintf (sched_dump, "queued for %d cycles.\n", n_cycles);
     }
-  
+
   QUEUE_INDEX (insn) = next_q;
 }
 
@@ -979,7 +1037,7 @@ queue_remove (rtx insn)
 /* Return a pointer to the bottom of the ready list, i.e. the insn
    with the lowest priority.  */
 
-HAIFA_INLINE static rtx *
+rtx *
 ready_lastpos (struct ready_list *ready)
 {
   gcc_assert (ready->n_ready >= 1);
@@ -1052,7 +1110,7 @@ ready_remove_first (struct ready_list *ready)
    insn with the highest priority is 0, and the lowest priority has
    N_READY - 1.  */
 
-HAIFA_INLINE static rtx
+rtx
 ready_element (struct ready_list *ready, int index)
 {
   gcc_assert (ready->n_ready && index < ready->n_ready);
@@ -1099,7 +1157,7 @@ ready_remove_insn (rtx insn)
 /* Sort the ready list READY by ascending priority, using the SCHED_SORT
    macro.  */
 
-HAIFA_INLINE static void
+void
 ready_sort (struct ready_list *ready)
 {
   rtx *first = ready_lastpos (ready);
@@ -1125,25 +1183,34 @@ adjust_priority (rtx prev)
       targetm.sched.adjust_priority (prev, INSN_PRIORITY (prev));
 }
 
-/* Advance time on one cycle.  */
-HAIFA_INLINE static void
-advance_one_cycle (void)
+/* Advance DFA state STATE on one cycle.  */
+void
+advance_state (state_t state)
 {
   if (targetm.sched.dfa_pre_advance_cycle)
     targetm.sched.dfa_pre_advance_cycle ();
 
   if (targetm.sched.dfa_pre_cycle_insn)
-    state_transition (curr_state,
+    state_transition (state,
 		      targetm.sched.dfa_pre_cycle_insn ());
 
-  state_transition (curr_state, NULL);
+  state_transition (state, NULL);
   
   if (targetm.sched.dfa_post_cycle_insn)
-    state_transition (curr_state,
+    state_transition (state,
 		      targetm.sched.dfa_post_cycle_insn ());
 
   if (targetm.sched.dfa_post_advance_cycle)
     targetm.sched.dfa_post_advance_cycle ();
+}
+
+/* Advance time on one cycle.  */
+HAIFA_INLINE static void
+advance_one_cycle (void)
+{
+  advance_state (curr_state);
+  if (sched_verbose >= 6)
+    fprintf (sched_dump, "\n;;\tAdvanced a state.\n");
 }
 
 /* Clock at which the previous instruction was issued.  */
@@ -1256,10 +1323,45 @@ schedule_insn (rtx insn)
 
 /* Functions for handling of notes.  */
 
+/* Insert the INSN note at the end of the notes list.  */
+static void 
+add_to_note_list (rtx insn, rtx *note_list_end_p)
+{
+  PREV_INSN (insn) = *note_list_end_p;
+  if (*note_list_end_p)
+    NEXT_INSN (*note_list_end_p) = insn;
+  *note_list_end_p = insn;
+}
+
+/* Add note list that ends on FROM_END to the end of TO_ENDP.  */
+void
+concat_note_lists (rtx from_end, rtx *to_endp)
+{
+  rtx from_start;
+
+  if (from_end == NULL)
+    /* It's easy when have nothing to concat.  */
+    return;
+
+  if (*to_endp == NULL)
+    /* It's also easy when destination is empty.  */
+    {
+      *to_endp = from_end;
+      return;
+    }
+
+  from_start = from_end;
+  /* A note list should be traversed via PREV_INSN.  */
+  while (PREV_INSN (from_start) != NULL) 
+    from_start = PREV_INSN (from_start);
+
+  add_to_note_list (from_start, to_endp);
+  *to_endp = from_end;
+}
+
 /* Delete notes beginning with INSN and put them in the chain
    of notes ended by NOTE_LIST.
    Returns the insn following the notes.  */
-
 static rtx
 unlink_other_notes (rtx insn, rtx tail)
 {
@@ -1290,22 +1392,22 @@ unlink_other_notes (rtx insn, rtx tail)
       /* See sched_analyze to see how these are handled.  */
       if (NOTE_KIND (insn) != NOTE_INSN_EH_REGION_BEG
 	  && NOTE_KIND (insn) != NOTE_INSN_EH_REGION_END)
-	{
-	  /* Insert the note at the end of the notes list.  */
-	  PREV_INSN (insn) = note_list;
-	  if (note_list)
-	    NEXT_INSN (note_list) = insn;
-	  note_list = insn;
-	}
+        add_to_note_list (insn, &note_list);
 
       insn = next;
     }
+
+  if (insn == tail)
+    {
+      gcc_assert (sel_sched_p ());
+      return prev;
+    }
+
   return insn;
 }
 
 /* Return the head and tail pointers of ebb starting at BEG and ending
    at END.  */
-
 void
 get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
 {
@@ -1358,8 +1460,7 @@ no_real_insns_p (const_rtx head, const_rtx tail)
 
 /* Delete notes between HEAD and TAIL and put them in the chain
    of notes ended by NOTE_LIST.  */
-
-void
+static void
 rm_other_notes (rtx head, rtx tail)
 {
   rtx next_tail;
@@ -1380,12 +1481,73 @@ rm_other_notes (rtx head, rtx tail)
       if (NOTE_NOT_BB_P (insn))
 	{
 	  prev = insn;
-
 	  insn = unlink_other_notes (insn, next_tail);
 
-	  gcc_assert (prev != tail && prev != head && insn != next_tail);
+	  gcc_assert ((sel_sched_p ()
+		       || prev != tail) && prev != head && insn != next_tail);
 	}
     }
+}
+
+/* Same as above, but also process REG_SAVE_NOTEs of HEAD.  */
+void
+remove_notes (rtx head, rtx tail)
+{
+  /* rm_other_notes only removes notes which are _inside_ the
+     block---that is, it won't remove notes before the first real insn
+     or after the last real insn of the block.  So if the first insn
+     has a REG_SAVE_NOTE which would otherwise be emitted before the
+     insn, it is redundant with the note before the start of the
+     block, and so we have to take it out.  */
+  if (INSN_P (head))
+    {
+      rtx note;
+
+      for (note = REG_NOTES (head); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
+	  remove_note (head, note);
+    }
+
+  /* Remove remaining note insns from the block, save them in
+     note_list.  These notes are restored at the end of
+     schedule_block ().  */
+  rm_other_notes (head, tail);
+}
+
+/* Restore-other-notes: NOTE_LIST is the end of a chain of notes
+   previously found among the insns.  Insert them just before HEAD.  */
+rtx
+restore_other_notes (rtx head, basic_block head_bb)
+{
+  if (note_list != 0)
+    {
+      rtx note_head = note_list;
+
+      if (head)
+	head_bb = BLOCK_FOR_INSN (head);
+      else
+	head = NEXT_INSN (bb_note (head_bb));
+
+      while (PREV_INSN (note_head))
+	{
+	  set_block_for_insn (note_head, head_bb);
+	  note_head = PREV_INSN (note_head);
+	}
+      /* In the above cycle we've missed this note.  */
+      set_block_for_insn (note_head, head_bb);
+
+      PREV_INSN (note_head) = PREV_INSN (head);
+      NEXT_INSN (PREV_INSN (head)) = note_head;
+      PREV_INSN (head) = note_list;
+      NEXT_INSN (note_list) = head;
+
+      if (BLOCK_FOR_INSN (head) != head_bb)
+	BB_END (head_bb) = note_list;
+
+      head = note_head;
+    }
+
+  return head;
 }
 
 /* Functions for computation of registers live/usage info.  */
@@ -1393,7 +1555,6 @@ rm_other_notes (rtx head, rtx tail)
 /* This function looks for a new register being defined.
    If the destination register is already used by the source,
    a new register is not needed.  */
-
 static int
 find_set_reg_weight (const_rtx x)
 {
@@ -1415,25 +1576,9 @@ find_set_reg_weight (const_rtx x)
   return 0;
 }
 
-/* Calculate INSN_REG_WEIGHT for all insns of a block.  */
-
+/* Calculate INSN_REG_WEIGHT for INSN.  */
 static void
-find_insn_reg_weight (basic_block bb)
-{
-  rtx insn, next_tail, head, tail;
-
-  get_ebb_head_tail (bb, bb, &head, &tail);
-  next_tail = NEXT_INSN (tail);
-
-  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    find_insn_reg_weight1 (insn);    
-}
-
-/* Calculate INSN_REG_WEIGHT for single instruction.
-   Separated from find_insn_reg_weight because of need
-   to initialize new instruction in generate_recovery_code.  */
-static void
-find_insn_reg_weight1 (rtx insn)
+find_insn_reg_weight (const_rtx insn)
 {
   int reg_weight = 0;
   rtx x;
@@ -1739,8 +1884,7 @@ debug_ready_list (struct ready_list *ready)
    NOTEs.  The REG_SAVE_NOTE note following first one is contains the
    saved value for NOTE_BLOCK_NUMBER which is useful for
    NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  */
-
-static void
+void
 reemit_notes (rtx insn)
 {
   rtx note, last = insn;
@@ -1759,10 +1903,8 @@ reemit_notes (rtx insn)
 
 /* Move INSN.  Reemit notes if needed.  Update CFG, if needed.  */
 static void
-move_insn (rtx insn)
+move_insn (rtx insn, rtx last, rtx nt)
 {
-  rtx last = last_scheduled_insn;
-
   if (PREV_INSN (insn) != last)
     {
       basic_block bb;
@@ -1782,9 +1924,10 @@ move_insn (rtx insn)
 	  jump_p = control_flow_insn_p (insn);
 
 	  gcc_assert (!jump_p
-		      || ((current_sched_info->flags & SCHED_RGN)
+		      || ((common_sched_info->sched_pass_id == SCHED_RGN_PASS)
 			  && IS_SPECULATION_BRANCHY_CHECK_P (insn))
-		      || (current_sched_info->flags & SCHED_EBB));
+		      || (common_sched_info->sched_pass_id
+			  == SCHED_EBB_PASS));
 	  
 	  gcc_assert (BLOCK_FOR_INSN (PREV_INSN (insn)) == bb);
 
@@ -1796,8 +1939,7 @@ move_insn (rtx insn)
       if (jump_p)
 	/* We move the block note along with jump.  */
 	{
-	  /* NT is needed for assertion below.  */
-	  rtx nt = current_sched_info->next_tail;
+	  gcc_assert (nt);
 
 	  note = NEXT_INSN (insn);
 	  while (NOTE_NOT_BB_P (note) && note != nt)
@@ -1840,8 +1982,6 @@ move_insn (rtx insn)
       if (BB_END (bb) == last)
 	BB_END (bb) = insn;  
     }
-  
-  reemit_notes (insn);
 
   SCHED_GROUP_P (insn) = 0;  
 }
@@ -1866,7 +2006,10 @@ static struct choice_entry *choice_stack;
 /* The following variable value is number of essential insns issued on
    the current cycle.  An insn is essential one if it changes the
    processors state.  */
-static int cycle_issued_insns;
+int cycle_issued_insns;
+
+/* This holds the value of the target dfa_lookahead hook.  */
+int dfa_lookahead;
 
 /* The following variable value is maximal number of tries of issuing
    insns for the first cycle multipass insn scheduling.  We define
@@ -1897,43 +2040,113 @@ static int cached_issue_rate = 0;
    of all instructions in READY.  The function stops immediately,
    if it reached the such a solution, that all instruction can be issued.
    INDEX will contain index of the best insn in READY.  The following
-   function is used only for first cycle multipass scheduling.  */
-static int
-max_issue (struct ready_list *ready, int *index, int max_points)
+   function is used only for first cycle multipass scheduling.
+
+   PRIVILEGED_N >= 0
+
+   This function expects recognized insns only.  All USEs,
+   CLOBBERs, etc must be filtered elsewhere.  */
+int
+max_issue (struct ready_list *ready, int privileged_n, state_t state,
+	   int *index)
 {
-  int n, i, all, n_ready, best, delay, tries_num, points = -1;
+  int n, i, all, n_ready, best, delay, tries_num, points = -1, max_points;
+  int more_issue;
   struct choice_entry *top;
   rtx insn;
 
-  best = 0;
-  memcpy (choice_stack->state, curr_state, dfa_state_size);
-  top = choice_stack;
-  top->rest = cached_first_cycle_multipass_dfa_lookahead;
-  top->n = 0;
   n_ready = ready->n_ready;
+  gcc_assert (dfa_lookahead >= 1 && privileged_n >= 0
+	      && privileged_n <= n_ready);
+
+  /* Init MAX_LOOKAHEAD_TRIES.  */
+  if (cached_first_cycle_multipass_dfa_lookahead != dfa_lookahead)
+    {
+      cached_first_cycle_multipass_dfa_lookahead = dfa_lookahead;
+      max_lookahead_tries = 100;
+      for (i = 0; i < issue_rate; i++)
+	max_lookahead_tries *= dfa_lookahead;
+    }
+
+  /* Init max_points.  */
+  max_points = 0;
+  more_issue = issue_rate - cycle_issued_insns;
+  gcc_assert (more_issue >= 0);
+
+  for (i = 0; i < n_ready; i++)
+    if (!ready_try [i])
+      {
+	if (more_issue-- > 0)
+	  max_points += ISSUE_POINTS (ready_element (ready, i));
+	else
+	  break;
+      }
+
+  /* The number of the issued insns in the best solution.  */
+  best = 0;
+
+  top = choice_stack;
+
+  /* Set initial state of the search.  */
+  memcpy (top->state, state, dfa_state_size);
+  top->rest = dfa_lookahead;
+  top->n = 0;
+
+  /* Count the number of the insns to search among.  */
   for (all = i = 0; i < n_ready; i++)
     if (!ready_try [i])
       all++;
+
+  /* I is the index of the insn to try next.  */
   i = 0;
   tries_num = 0;
   for (;;)
     {
-      if (top->rest == 0 || i >= n_ready)
+      if (/* If we've reached a dead end or searched enough of what we have
+	     been asked...  */
+	  top->rest == 0
+	  /* Or have nothing else to try.  */
+	  || i >= n_ready)
 	{
+	  /* ??? (... || i == n_ready).  */
+	  gcc_assert (i <= n_ready);
+
 	  if (top == choice_stack)
 	    break;
-	  if (best < top - choice_stack && ready_try [0])
+
+	  if (best < top - choice_stack)
 	    {
-	      best = top - choice_stack;
-	      *index = choice_stack [1].index;
-	      points = top->n;
-	      if (top->n == max_points || best == all)
-		break;
+	      if (privileged_n)
+		{
+		  n = privileged_n;
+		  /* Try to find issued privileged insn.  */
+		  while (n && !ready_try[--n]);
+		}
+
+	      if (/* If all insns are equally good...  */
+		  privileged_n == 0
+		  /* Or a privileged insn will be issued.  */
+		  || ready_try[n])
+		/* Then we have a solution.  */
+		{
+		  best = top - choice_stack;
+		  /* This is the index of the insn issued first in this
+		     solution.  */
+		  *index = choice_stack [1].index;
+		  points = top->n;
+		  if (top->n == max_points || best == all)
+		    break;
+		}
 	    }
+
+	  /* Set ready-list index to point to the last insn
+	     ('i++' below will advance it to the next insn).  */
 	  i = top->index;
+
+	  /* Backtrack.  */
 	  ready_try [i] = 0;
 	  top--;
-	  memcpy (curr_state, top->state, dfa_state_size);
+	  memcpy (state, top->state, dfa_state_size);
 	}
       else if (!ready_try [i])
 	{
@@ -1941,45 +2154,43 @@ max_issue (struct ready_list *ready, int *index, int max_points)
 	  if (tries_num > max_lookahead_tries)
 	    break;
 	  insn = ready_element (ready, i);
-	  delay = state_transition (curr_state, insn);
+	  delay = state_transition (state, insn);
 	  if (delay < 0)
 	    {
-	      if (state_dead_lock_p (curr_state))
+	      if (state_dead_lock_p (state))
 		top->rest = 0;
 	      else
 		top->rest--;
+
 	      n = top->n;
-	      if (memcmp (top->state, curr_state, dfa_state_size) != 0)
+	      if (memcmp (top->state, state, dfa_state_size) != 0)
 		n += ISSUE_POINTS (insn);
+
+	      /* Advance to the next choice_entry.  */
 	      top++;
-	      top->rest = cached_first_cycle_multipass_dfa_lookahead;
+	      /* Initialize it.  */
+	      top->rest = dfa_lookahead;
 	      top->index = i;
 	      top->n = n;
-	      memcpy (top->state, curr_state, dfa_state_size);
+	      memcpy (top->state, state, dfa_state_size);
+
 	      ready_try [i] = 1;
 	      i = -1;
 	    }
 	}
+
+      /* Increase ready-list index.  */
       i++;
     }
-  while (top != choice_stack)
-    {
-      ready_try [top->index] = 0;
-      top--;
-    }
-  memcpy (curr_state, choice_stack->state, dfa_state_size);  
 
-  if (sched_verbose >= 4)    
-    fprintf (sched_dump, ";;\t\tChoosed insn : %s; points: %d/%d\n",
-	     (*current_sched_info->print_insn) (ready_element (ready, *index),
-						0), 
-	     points, max_points);
-  
+  /* Restore the original state of the DFA.  */
+  memcpy (state, choice_stack->state, dfa_state_size);  
+
   return best;
 }
 
 /* The following function chooses insn from READY and modifies
-   *N_READY and READY.  The following function is used only for first
+   READY.  The following function is used only for first
    cycle multipass scheduling.
    Return:
    -1 if cycle should be advanced,
@@ -2022,15 +2233,9 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
       /* Try to choose the better insn.  */
       int index = 0, i, n;
       rtx insn;
-      int more_issue, max_points, try_data = 1, try_control = 1;
+      int try_data = 1, try_control = 1;
+      ds_t ts;
       
-      if (cached_first_cycle_multipass_dfa_lookahead != lookahead)
-	{
-	  cached_first_cycle_multipass_dfa_lookahead = lookahead;
-	  max_lookahead_tries = 100;
-	  for (i = 0; i < issue_rate; i++)
-	    max_lookahead_tries *= lookahead;
-	}
       insn = ready_element (ready, 0);
       if (INSN_CODE (insn) < 0)
 	{
@@ -2069,11 +2274,13 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
 	    }
 	}
 
-      if ((!try_data && (TODO_SPEC (insn) & DATA_SPEC))
-	  || (!try_control && (TODO_SPEC (insn) & CONTROL_SPEC))
-	  || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
-	      && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
-	      (insn)))
+      ts = TODO_SPEC (insn);
+      if ((ts & SPECULATIVE)
+	  && (((!try_data && (ts & DATA_SPEC))
+	       || (!try_control && (ts & CONTROL_SPEC)))
+	      || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
+		  && !targetm.sched
+		  .first_cycle_multipass_dfa_lookahead_guard_spec (insn))))
 	/* Discard speculative instruction that stands first in the ready
 	   list.  */
 	{
@@ -2081,31 +2288,49 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
 	  return 1;
 	}
 
-      max_points = ISSUE_POINTS (insn);
-      more_issue = issue_rate - cycle_issued_insns - 1;
+      ready_try[0] = 0;
 
       for (i = 1; i < ready->n_ready; i++)
 	{
 	  insn = ready_element (ready, i);
-	  ready_try [i]
-	    = (INSN_CODE (insn) < 0
-               || (!try_data && (TODO_SPEC (insn) & DATA_SPEC))
-               || (!try_control && (TODO_SPEC (insn) & CONTROL_SPEC))
-	       || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
-		   && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard
-		   (insn)));
 
-	  if (!ready_try [i] && more_issue-- > 0)
-	    max_points += ISSUE_POINTS (insn);
+	  ready_try [i]
+	    = ((!try_data && (TODO_SPEC (insn) & DATA_SPEC))
+               || (!try_control && (TODO_SPEC (insn) & CONTROL_SPEC)));
 	}
 
-      if (max_issue (ready, &index, max_points) == 0)
+      /* Let the target filter the search space.  */
+      for (i = 1; i < ready->n_ready; i++)
+	if (!ready_try[i])
+	  {
+	    insn = ready_element (ready, i);
+
+	    gcc_assert (INSN_CODE (insn) >= 0
+			|| recog_memoized (insn) < 0);
+
+	    ready_try [i]
+	      = (/* INSN_CODE check can be omitted here as it is also done later
+		    in max_issue ().  */
+		 INSN_CODE (insn) < 0
+		 || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
+		     && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard
+		     (insn)));
+	  }
+
+      if (max_issue (ready, 1, curr_state, &index) == 0)
 	{
+	  if (sched_verbose >= 4)
+	    fprintf (sched_dump, ";;\t\tChosen none\n");
 	  *insn_ptr = ready_remove_first (ready);
 	  return 0;
 	}
       else
 	{
+	  if (sched_verbose >= 4)    
+	    fprintf (sched_dump, ";;\t\tChosen insn : %s\n",
+		     (*current_sched_info->print_insn)
+		     (ready_element (ready, index), 0));
+          
 	  *insn_ptr = ready_remove (ready, index);
 	  return 0;
 	}
@@ -2117,9 +2342,8 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
    region.  */
 
 void
-schedule_block (basic_block *target_bb, int rgn_n_insns1)
+schedule_block (basic_block *target_bb)
 {
-  struct ready_list ready;
   int i, first_cycle_insn_p;
   int can_issue_more;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
@@ -2148,15 +2372,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 
   state_reset (curr_state);
 
-  /* Allocate the ready list.  */
-  readyp = &ready;
-  ready.vec = NULL;
-  ready_try = NULL;
-  choice_stack = NULL;
-
-  rgn_n_insns = -1;
-  extend_ready (rgn_n_insns1 + 1);
-
+  /* Clear the ready list.  */
   ready.first = ready.veclen - 1;
   ready.n_ready = 0;
 
@@ -2443,7 +2659,8 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	  (*current_sched_info->begin_schedule_ready) (insn,
 						       last_scheduled_insn);
  
-	  move_insn (insn);
+	  move_insn (insn, last_scheduled_insn, current_sched_info->next_tail);
+	  reemit_notes (insn);
 	  last_scheduled_insn = insn;
 	  
 	  if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
@@ -2530,6 +2747,9 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	  }
     }
 
+  if (sched_verbose)
+    fprintf (sched_dump, ";;   total time = %d\n", clock_var);
+
   if (!current_sched_info->queue_must_finish_empty
       || haifa_recovery_bb_recently_added_p)
     {
@@ -2545,59 +2765,25 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
   if (targetm.sched.md_finish)
     {
       targetm.sched.md_finish (sched_dump, sched_verbose);
-
       /* Target might have added some instructions to the scheduled block
 	 in its md_finish () hook.  These new insns don't have any data
 	 initialized and to identify them we extend h_i_d so that they'll
-	 get zero luids.*/
-      extend_h_i_d ();
+	 get zero luids.  */
+      sched_init_luids (NULL, NULL, NULL, NULL);
     }
+
+  if (sched_verbose)
+    fprintf (sched_dump, ";;   new head = %d\n;;   new tail = %d\n\n",
+	     INSN_UID (head), INSN_UID (tail));
 
   /* Update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
   tail = last_scheduled_insn;
 
-  /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
-     previously found among the insns.  Insert them at the beginning
-     of the insns.  */
-  if (note_list != 0)
-    {
-      basic_block head_bb = BLOCK_FOR_INSN (head);
-      rtx note_head = note_list;
-
-      while (PREV_INSN (note_head))
-	{
-	  set_block_for_insn (note_head, head_bb);
-	  note_head = PREV_INSN (note_head);
-	}
-      /* In the above cycle we've missed this note:  */
-      set_block_for_insn (note_head, head_bb);
-
-      PREV_INSN (note_head) = PREV_INSN (head);
-      NEXT_INSN (PREV_INSN (head)) = note_head;
-      PREV_INSN (head) = note_list;
-      NEXT_INSN (note_list) = head;
-      head = note_head;
-    }
-
-  /* Debugging.  */
-  if (sched_verbose)
-    {
-      fprintf (sched_dump, ";;   total time = %d\n;;   new head = %d\n",
-	       clock_var, INSN_UID (head));
-      fprintf (sched_dump, ";;   new tail = %d\n\n",
-	       INSN_UID (tail));
-    }
+  head = restore_other_notes (head, NULL);
 
   current_sched_info->head = head;
   current_sched_info->tail = tail;
-
-  free (ready.vec);
-
-  free (ready_try);
-  for (i = 0; i <= rgn_n_insns; i++)
-    free (choice_stack [i].state);
-  free (choice_stack);
 }
 
 /* Set_priorities: compute priority of each insn in the block.  */
@@ -2636,48 +2822,49 @@ set_priorities (rtx head, rtx tail)
   return n_insn;
 }
 
-/* Next LUID to assign to an instruction.  */
-static int luid;
-
-/* Initialize some global state for the scheduler.  */
-
+/* Set dump and sched_verbose for the desired debugging output.  If no
+   dump-file was specified, but -fsched-verbose=N (any N), print to stderr.
+   For -fsched-verbose=N, N>=10, print everything to stderr.  */
 void
-sched_init (void)
+setup_sched_dump (void)
 {
-  basic_block b;
-  rtx insn;
-  int i;
-
-  /* Switch to working copy of sched_info.  */
-  memcpy (&current_sched_info_var, current_sched_info,
-	  sizeof (current_sched_info_var));
-  current_sched_info = &current_sched_info_var;
-      
-  /* Disable speculative loads in their presence if cc0 defined.  */
-#ifdef HAVE_cc0
-  flag_schedule_speculative_load = 0;
-#endif
-
-  /* Set dump and sched_verbose for the desired debugging output.  If no
-     dump-file was specified, but -fsched-verbose=N (any N), print to stderr.
-     For -fsched-verbose=N, N>=10, print everything to stderr.  */
   sched_verbose = sched_verbose_param;
   if (sched_verbose_param == 0 && dump_file)
     sched_verbose = 1;
   sched_dump = ((sched_verbose_param >= 10 || !dump_file)
 		? stderr : dump_file);
+}
+
+/* Initialize some global state for the scheduler.  This function works 
+   with the common data shared between all the schedulers.  It is called
+   from the scheduler specific initialization routine.  */
+
+void
+sched_init (void)
+{
+  /* Disable speculative loads in their presence if cc0 defined.  */
+#ifdef HAVE_cc0
+  flag_schedule_speculative_load = 0;
+#endif
 
   /* Initialize SPEC_INFO.  */
   if (targetm.sched.set_sched_flags)
     {
       spec_info = &spec_info_var;
       targetm.sched.set_sched_flags (spec_info);
-      if (current_sched_info->flags & DO_SPECULATION)
-	spec_info->weakness_cutoff =
-	  (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF) * MAX_DEP_WEAK) / 100;
+
+      if (spec_info->mask != 0)
+        {
+          spec_info->data_weakness_cutoff =
+            (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF) * MAX_DEP_WEAK) / 100;
+          spec_info->control_weakness_cutoff =
+            (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF)
+             * REG_BR_PROB_BASE) / 100;
+        }
       else
 	/* So we won't read anything accidentally.  */
-	spec_info = 0;
+	spec_info = NULL;
+
     }
   else
     /* So we won't read anything accidentally.  */
@@ -2696,18 +2883,10 @@ sched_init (void)
       cached_first_cycle_multipass_dfa_lookahead = 0;
     }
 
-  old_max_uid = 0;
-  h_i_d = 0;
-  extend_h_i_d ();
-
-  for (i = 0; i < old_max_uid; i++)
-    {
-      h_i_d[i].cost = -1;
-      h_i_d[i].todo_spec = HARD_DEP;
-      h_i_d[i].queue_index = QUEUE_NOWHERE;
-      h_i_d[i].tick = INVALID_TICK;
-      h_i_d[i].inter_tick = INVALID_TICK;
-    }
+  if (targetm.sched.first_cycle_multipass_dfa_lookahead)
+    dfa_lookahead = targetm.sched.first_cycle_multipass_dfa_lookahead ();
+  else
+    dfa_lookahead = 0;
 
   if (targetm.sched.init_dfa_pre_cycle_insn)
     targetm.sched.init_dfa_pre_cycle_insn ();
@@ -2717,67 +2896,93 @@ sched_init (void)
 
   dfa_start ();
   dfa_state_size = state_size ();
-  curr_state = xmalloc (dfa_state_size);
-
-  h_i_d[0].luid = 0;
-  luid = 1;
-  FOR_EACH_BB (b)
-    for (insn = BB_HEAD (b); ; insn = NEXT_INSN (insn))
-      {
-	INSN_LUID (insn) = luid;
-
-	/* Increment the next luid, unless this is a note.  We don't
-	   really need separate IDs for notes and we don't want to
-	   schedule differently depending on whether or not there are
-	   line-number notes, i.e., depending on whether or not we're
-	   generating debugging information.  */
-	if (!NOTE_P (insn))
-	  ++luid;
-
-	if (insn == BB_END (b))
-	  break;
-      }
-
-  init_dependency_caches (luid);
 
   init_alias_analysis ();
 
-  old_last_basic_block = 0;
-  extend_bb ();
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
 
-  /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
-     removing death notes.  */
-  FOR_EACH_BB_REVERSE (b)
-    find_insn_reg_weight (b);
+  /* More problems needed for interloop dep calculation in SMS.  */
+  if (common_sched_info->sched_pass_id == SCHED_SMS_PASS)
+    {
+      df_rd_add_problem ();
+      df_chain_add_problem (DF_DU_CHAIN + DF_UD_CHAIN);
+    }
+
+  df_analyze ();
+  
+  /* Do not run DCE after reload, as this can kill nops inserted 
+     by bundling.  */
+  if (reload_completed)
+    df_clear_flags (DF_LR_RUN_DCE);
+
+  regstat_compute_calls_crossed ();
 
   if (targetm.sched.md_init_global)
-      targetm.sched.md_init_global (sched_dump, sched_verbose, old_max_uid);
+    targetm.sched.md_init_global (sched_dump, sched_verbose,
+				  get_max_uid () + 1);
 
-  nr_begin_data = nr_begin_control = nr_be_in_data = nr_be_in_control = 0;
-  before_recovery = 0;
+  curr_state = xmalloc (dfa_state_size);
+}
 
+static void haifa_init_only_bb (basic_block, basic_block);
+
+/* Initialize data structures specific to the Haifa scheduler.  */
+void
+haifa_sched_init (void)
+{
+  setup_sched_dump ();
+  sched_init ();
+
+  if (spec_info != NULL)
+    {
+      sched_deps_info->use_deps_list = 1;
+      sched_deps_info->generate_spec_deps = 1;
+    }
+
+  /* Initialize luids, dependency caches, target and h_i_d for the
+     whole function.  */
+  {
+    bb_vec_t bbs = VEC_alloc (basic_block, heap, n_basic_blocks);
+    basic_block bb;
+
+    sched_init_bbs ();
+
+    FOR_EACH_BB (bb)
+      VEC_quick_push (basic_block, bbs, bb);
+    sched_init_luids (bbs, NULL, NULL, NULL);
+    sched_deps_init (true);
+    sched_extend_target ();
+    haifa_init_h_i_d (bbs, NULL, NULL, NULL);
+
+    VEC_free (basic_block, heap, bbs);
+  }
+
+  sched_init_only_bb = haifa_init_only_bb;
+  sched_split_block = sched_split_block_1;
+  sched_create_empty_bb = sched_create_empty_bb_1;
   haifa_recovery_bb_ever_added_p = false;
 
 #ifdef ENABLE_CHECKING
-  /* This is used preferably for finding bugs in check_cfg () itself.  */
+  /* This is used preferably for finding bugs in check_cfg () itself.
+     We must call sched_bbs_init () before check_cfg () because check_cfg ()
+     assumes that the last insn in the last bb has a non-null successor.  */
   check_cfg (0, 0);
 #endif
+
+  nr_begin_data = nr_begin_control = nr_be_in_data = nr_be_in_control = 0;
+  before_recovery = 0;
+  after_recovery = 0;
 }
 
-/* Free global data used during insn scheduling.  */
-
+/* Finish work with the data specific to the Haifa scheduler.  */
 void
-sched_finish (void)
+haifa_sched_finish (void)
 {
-  free (h_i_d);
-  free (curr_state);
-  dfa_finish ();
-  free_dependency_caches ();
-  end_alias_analysis ();
+  sched_create_empty_bb = NULL;
+  sched_split_block = NULL;
+  sched_init_only_bb = NULL;
 
-  if (targetm.sched.md_finish_global)
-    targetm.sched.md_finish_global (sched_dump, sched_verbose);
-  
   if (spec_info && spec_info->dump)
     {
       char c = reload_completed ? 'a' : 'b';
@@ -2799,13 +3004,37 @@ sched_finish (void)
                c, nr_be_in_control);
     }
 
+  /* Finalize h_i_d, dependency caches, and luids for the whole
+     function.  Target will be finalized in md_global_finish ().  */
+  sched_deps_finish ();
+  sched_finish_luids ();
+  current_sched_info = NULL;
+  sched_finish ();
+}
+
+/* Free global data used during insn scheduling.  This function works with 
+   the common data shared between the schedulers.  */
+
+void
+sched_finish (void)
+{
+  haifa_finish_h_i_d ();
+  free (curr_state);
+
+  if (targetm.sched.md_finish_global)
+    targetm.sched.md_finish_global (sched_dump, sched_verbose);
+
+  end_alias_analysis ();
+
+  regstat_free_calls_crossed ();
+
+  dfa_finish ();
+
 #ifdef ENABLE_CHECKING
   /* After reload ia64 backend clobbers CFG, so can't check anything.  */
   if (!reload_completed)
     check_cfg (0, 0);
 #endif
-
-  current_sched_info = NULL;
 }
 
 /* Fix INSN_TICKs of the instructions in the current block as well as
@@ -2881,6 +3110,8 @@ fix_inter_tick (rtx head, rtx tail)
     }
   bitmap_clear (&processed);
 }
+
+static int haifa_speculate_insn (rtx, ds_t, rtx *);
   
 /* Check if NEXT is ready to be added to the ready or queue list.
    If "yes", add it to the proper list.
@@ -2940,7 +3171,7 @@ try_ready (rtx next)
 		*ts = ds_merge (*ts, ds);
 	    }
 
-	  if (dep_weak (*ts) < spec_info->weakness_cutoff)
+	  if (ds_weak (*ts) < spec_info->data_weakness_cutoff)
 	    /* Too few points.  */
 	    *ts = (*ts & ~SPECULATIVE) | HARD_DEP;
 	}
@@ -2974,7 +3205,7 @@ try_ready (rtx next)
       
       gcc_assert ((*ts & SPECULATIVE) && !(*ts & ~SPECULATIVE));
       
-      res = speculate_insn (next, *ts, &new_pat);
+      res = haifa_speculate_insn (next, *ts, &new_pat);
 	
       switch (res)
 	{
@@ -2998,7 +3229,7 @@ try_ready (rtx next)
 	       save it.  */
 	    ORIG_PAT (next) = PATTERN (next);
 	  
-	  change_pattern (next, new_pat);
+	  haifa_change_pattern (next, new_pat);
 	  break;
 	  
 	default:
@@ -3029,7 +3260,7 @@ try_ready (rtx next)
        ORIG_PAT field.  Except one case - speculation checks have ORIG_PAT
        pat too, so skip them.  */
     {
-      change_pattern (next, ORIG_PAT (next));
+      haifa_change_pattern (next, ORIG_PAT (next));
       ORIG_PAT (next) = 0;
     }
 
@@ -3148,98 +3379,70 @@ change_queue_index (rtx next, int delay)
     }
 }
 
-/* Extend H_I_D data.  */
-static void
-extend_h_i_d (void)
-{
-  /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
-     pseudos which do not cross calls.  */
-  int new_max_uid = get_max_uid () + 1;  
+static int sched_ready_n_insns = -1;
 
-  h_i_d = (struct haifa_insn_data *)
-    xrecalloc (h_i_d, new_max_uid, old_max_uid, sizeof (*h_i_d));
-  old_max_uid = new_max_uid;
-
-  if (targetm.sched.h_i_d_extended)
-    targetm.sched.h_i_d_extended ();
-}
-
-/* Extend READY, READY_TRY and CHOICE_STACK arrays.
-   N_NEW_INSNS is the number of additional elements to allocate.  */
-static void
-extend_ready (int n_new_insns)
+/* Initialize per region data structures.  */
+void
+sched_extend_ready_list (int new_sched_ready_n_insns)
 {
   int i;
 
-  readyp->veclen = rgn_n_insns + n_new_insns + 1 + issue_rate;
-  readyp->vec = XRESIZEVEC (rtx, readyp->vec, readyp->veclen);
- 
-  ready_try = (char *) xrecalloc (ready_try, rgn_n_insns + n_new_insns + 1,
-				  rgn_n_insns + 1, sizeof (char));
+  if (sched_ready_n_insns == -1)
+    /* At the first call we need to initialize one more choice_stack
+       entry.  */
+    {
+      i = 0;
+      sched_ready_n_insns = 0;
+    }
+  else
+    i = sched_ready_n_insns + 1;
 
-  rgn_n_insns += n_new_insns;
+  ready.veclen = new_sched_ready_n_insns + issue_rate;
+  ready.vec = XRESIZEVEC (rtx, ready.vec, ready.veclen);
 
+  gcc_assert (new_sched_ready_n_insns >= sched_ready_n_insns);
+
+  ready_try = (char *) xrecalloc (ready_try, new_sched_ready_n_insns,
+                                  sched_ready_n_insns, sizeof (*ready_try));
+
+  /* We allocate +1 element to save initial state in the choice_stack[0]
+     entry.  */
   choice_stack = XRESIZEVEC (struct choice_entry, choice_stack,
-			     rgn_n_insns + 1);
+			     new_sched_ready_n_insns + 1);
 
-  for (i = rgn_n_insns; n_new_insns--; i--)
+  for (; i <= new_sched_ready_n_insns; i++)
     choice_stack[i].state = xmalloc (dfa_state_size);
+
+  sched_ready_n_insns = new_sched_ready_n_insns;
 }
 
-/* Extend global-scope scheduler data structures
-   (those, that live within one call to schedule_insns)
-   to include information about just emitted INSN.  */
-static void
-extend_global_data (rtx insn)
+/* Free per region data structures.  */
+void
+sched_finish_ready_list (void)
 {
-  gcc_assert (INSN_P (insn));
+  int i;
 
-  /* Init h_i_d.  */
-  extend_h_i_d ();
-  init_h_i_d (insn);
+  free (ready.vec);
+  ready.vec = NULL;
+  ready.veclen = 0;
 
-  /* Extend dependency caches by one element.  */
-  extend_dependency_caches (1, false);
+  free (ready_try);
+  ready_try = NULL;
+
+  for (i = 0; i <= sched_ready_n_insns; i++)
+    free (choice_stack [i].state);
+  free (choice_stack);
+  choice_stack = NULL;
+
+  sched_ready_n_insns = -1;
 }
 
-/* Extend global- and region-scope scheduler data structures
-   (those, that live within one call to schedule_region)
-   to include information about just emitted INSN.  */
-static void
-extend_region_data (rtx insn)
+static int
+haifa_luid_for_non_insn (rtx x)
 {
-  extend_global_data (insn);
+  gcc_assert (NOTE_P (x) || LABEL_P (x));
 
-  /* Init dependency data.  */
-  sd_init_insn (insn);
-}
-
-/* Extend global-, region- and block-scope scheduler data structures
-   (those, that live within one call to schedule_block)
-   to include information about just emitted INSN.  */
-static void
-extend_block_data (rtx insn)
-{
-  extend_region_data (insn);
-
-  /* These structures have block scope.  */
-  extend_ready (1);
-
-  (*current_sched_info->add_remove_insn) (insn, 0);
-}
-
-/* Initialize h_i_d entry of the new INSN with default values.
-   Values, that are not explicitly initialized here, hold zero.  */
-static void
-init_h_i_d (rtx insn)
-{
-  INSN_LUID (insn) = luid++;
-  INSN_COST (insn) = -1;
-  TODO_SPEC (insn) = HARD_DEP;
-  QUEUE_INDEX (insn) = QUEUE_NOWHERE;
-  INSN_TICK (insn) = INVALID_TICK;
-  INTER_TICK (insn) = INVALID_TICK;
-  find_insn_reg_weight1 (insn);
+  return 0;
 }
 
 /* Generates recovery code for INSN.  */
@@ -3290,7 +3493,7 @@ process_insn_forw_deps_be_in_spec (rtx insn, rtx twin, ds_t fs)
 		     it can be removed from the ready (or queue) list only
 		     due to backend decision.  Hence we can't let the
 		     probability of the speculative dep to decrease.  */
-		  dep_weak (ds) <= dep_weak (fs))
+		  ds_weak (ds) <= ds_weak (fs))
 		{
 		  ds_t new_ds;
 
@@ -3330,6 +3533,8 @@ begin_speculative_block (rtx insn)
 
   TODO_SPEC (insn) &= ~BEGIN_SPEC;
 }
+
+static void haifa_init_insn (rtx);
 
 /* Generates recovery code for BE_IN speculative INSN.  */
 static void
@@ -3398,7 +3603,7 @@ add_to_speculative_block (rtx insn)
       rec = BLOCK_FOR_INSN (check);
 
       twin = emit_insn_before (copy_insn (PATTERN (insn)), BB_END (rec));
-      extend_region_data (twin);
+      haifa_init_insn (twin);
 
       sd_copy_back_deps (twin, insn, true);
 
@@ -3479,44 +3684,9 @@ xrecalloc (void *p, size_t new_nmemb, size_t old_nmemb, size_t size)
   return p;
 }
 
-/* Return the probability of speculation success for the speculation
-   status DS.  */
-static dw_t
-dep_weak (ds_t ds)
-{
-  ds_t res = 1, dt;
-  int n = 0;
-
-  dt = FIRST_SPEC_TYPE;
-  do
-    {
-      if (ds & dt)
-	{
-	  res *= (ds_t) get_dep_weak (ds, dt);
-	  n++;
-	}
-
-      if (dt == LAST_SPEC_TYPE)
-	break;
-      dt <<= SPEC_TYPE_SHIFT;
-    }
-  while (1);
-
-  gcc_assert (n);
-  while (--n)
-    res /= MAX_DEP_WEAK;
-
-  if (res < MIN_DEP_WEAK)
-    res = MIN_DEP_WEAK;
-
-  gcc_assert (res <= MAX_DEP_WEAK);
-
-  return (dw_t) res;
-}
-
 /* Helper function.
    Find fallthru edge from PRED.  */
-static edge
+edge
 find_fallthru_edge (basic_block pred)
 {
   edge e;
@@ -3548,9 +3718,37 @@ find_fallthru_edge (basic_block pred)
   return NULL;
 }
 
+/* Extend per basic block data structures.  */
+static void
+sched_extend_bb (void)
+{
+  rtx insn;
+
+  /* The following is done to keep current_sched_info->next_tail non null.  */
+  insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
+  if (NEXT_INSN (insn) == 0
+      || (!NOTE_P (insn)
+	  && !LABEL_P (insn)
+	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
+	  && !BARRIER_P (NEXT_INSN (insn))))
+    {
+      rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
+      /* Make insn appear outside BB.  */
+      set_block_for_insn (note, NULL);
+      BB_END (EXIT_BLOCK_PTR->prev_bb) = insn;
+    }
+}
+
+/* Init per basic block data structures.  */
+void
+sched_init_bbs (void)
+{
+  sched_extend_bb ();
+}
+
 /* Initialize BEFORE_RECOVERY variable.  */
 static void
-init_before_recovery (void)
+init_before_recovery (basic_block *before_recovery_ptr)
 {
   basic_block last;
   edge e;
@@ -3569,10 +3767,24 @@ init_before_recovery (void)
       basic_block single, empty;
       rtx x, label;
 
-      single = create_empty_bb (last);
-      empty = create_empty_bb (single);            
+      /* If the fallthrough edge to exit we've found is from the block we've 
+	 created before, don't do anything more.  */
+      if (last == after_recovery)
+	return;
 
-      single->count = last->count;     
+      adding_bb_to_current_region_p = false;
+
+      single = sched_create_empty_bb (last);
+      empty = sched_create_empty_bb (single);
+
+      /* Add new blocks to the root loop.  */
+      if (current_loops != NULL)
+	{
+	  add_bb_to_loop (single, VEC_index (loop_p, current_loops->larray, 0));
+	  add_bb_to_loop (empty, VEC_index (loop_p, current_loops->larray, 0));
+	}
+
+      single->count = last->count;
       empty->count = last->count;
       single->frequency = last->frequency;
       empty->frequency = last->frequency;
@@ -3588,14 +3800,20 @@ init_before_recovery (void)
       x = emit_jump_insn_after (gen_jump (label), BB_END (single));
       JUMP_LABEL (x) = label;
       LABEL_NUSES (label)++;
-      extend_global_data (x);
+      haifa_init_insn (x);
           
       emit_barrier_after (x);
 
-      add_block (empty, 0);
-      add_block (single, 0);
+      sched_init_only_bb (empty, NULL);
+      sched_init_only_bb (single, NULL);
+      sched_extend_bb ();
 
+      adding_bb_to_current_region_p = true;
       before_recovery = single;
+      after_recovery = empty;
+
+      if (before_recovery_ptr)
+        *before_recovery_ptr = before_recovery;
 
       if (sched_verbose >= 2 && spec_info->dump)
         fprintf (spec_info->dump,
@@ -3607,8 +3825,8 @@ init_before_recovery (void)
 }
 
 /* Returns new recovery block.  */
-static basic_block
-create_recovery_block (void)
+basic_block
+sched_create_recovery_block (basic_block *before_recovery_ptr)
 {
   rtx label;
   rtx barrier;
@@ -3617,8 +3835,7 @@ create_recovery_block (void)
   haifa_recovery_bb_recently_added_p = true;
   haifa_recovery_bb_ever_added_p = true;
 
-  if (!before_recovery)
-    init_before_recovery ();
+  init_before_recovery (before_recovery_ptr);
 
   barrier = get_last_bb_insn (before_recovery);
   gcc_assert (BARRIER_P (barrier));
@@ -3627,7 +3844,7 @@ create_recovery_block (void)
 
   rec = create_basic_block (label, label, before_recovery);
 
-  /* Recovery block always end with an unconditional jump.  */
+  /* A recovery block always ends with an unconditional jump.  */
   emit_barrier_after (BB_END (rec));
 
   if (BB_PARTITION (before_recovery) != BB_UNPARTITIONED)
@@ -3637,9 +3854,53 @@ create_recovery_block (void)
     fprintf (spec_info->dump, ";;\t\tGenerated recovery block rec%d\n",
              rec->index);
 
-  before_recovery = rec;
-
   return rec;
+}
+
+/* Create edges: FIRST_BB -> REC; FIRST_BB -> SECOND_BB; REC -> SECOND_BB
+   and emit necessary jumps.  */
+void
+sched_create_recovery_edges (basic_block first_bb, basic_block rec,
+			     basic_block second_bb)
+{
+  rtx label;
+  rtx jump;
+  edge e;
+  int edge_flags;
+
+  /* This is fixing of incoming edge.  */
+  /* ??? Which other flags should be specified?  */      
+  if (BB_PARTITION (first_bb) != BB_PARTITION (rec))
+    /* Partition type is the same, if it is "unpartitioned".  */
+    edge_flags = EDGE_CROSSING;
+  else
+    edge_flags = 0;
+      
+  e = make_edge (first_bb, rec, edge_flags);
+  label = block_label (second_bb);
+  jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
+  JUMP_LABEL (jump) = label;
+  LABEL_NUSES (label)++;
+
+  if (BB_PARTITION (second_bb) != BB_PARTITION (rec))
+    /* Partition type is the same, if it is "unpartitioned".  */
+    {
+      /* Rewritten from cfgrtl.c.  */
+      if (flag_reorder_blocks_and_partition
+	  && targetm.have_named_sections)
+	/* We don't need the same note for the check because
+	   any_condjump_p (check) == true.  */
+	{
+	  REG_NOTES (jump) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
+						NULL_RTX,
+						REG_NOTES (jump));
+	}
+      edge_flags = EDGE_CROSSING;
+    }
+  else
+    edge_flags = 0;  
+
+  make_single_succ_edge (rec, second_bb, edge_flags);  
 }
 
 /* This function creates recovery code for INSN.  If MUTATE_P is nonzero,
@@ -3653,26 +3914,36 @@ create_check_block_twin (rtx insn, bool mutate_p)
   sd_iterator_def sd_it;
   dep_t dep;
   dep_def _new_dep, *new_dep = &_new_dep;
+  ds_t todo_spec;
 
-  gcc_assert (ORIG_PAT (insn)
-	      && (!mutate_p 
-		  || (IS_SPECULATION_SIMPLE_CHECK_P (insn)
-		      && !(TODO_SPEC (insn) & SPECULATIVE))));
+  gcc_assert (ORIG_PAT (insn) != NULL_RTX);
+
+  if (!mutate_p)
+    todo_spec = TODO_SPEC (insn);
+  else
+    {
+      gcc_assert (IS_SPECULATION_SIMPLE_CHECK_P (insn)
+		  && (TODO_SPEC (insn) & SPECULATIVE) == 0);
+
+      todo_spec = CHECK_SPEC (insn);
+    }
+
+  todo_spec &= SPECULATIVE;
 
   /* Create recovery block.  */
   if (mutate_p || targetm.sched.needs_block_p (insn))
     {
-      rec = create_recovery_block ();
+      rec = sched_create_recovery_block (NULL);
       label = BB_HEAD (rec);
     }
   else
     {
       rec = EXIT_BLOCK_PTR;
-      label = 0;
+      label = NULL_RTX;
     }
 
   /* Emit CHECK.  */
-  check = targetm.sched.gen_check (insn, label, mutate_p);
+  check = targetm.sched.gen_spec_check (insn, label, mutate_p);
 
   if (rec != EXIT_BLOCK_PTR)
     {
@@ -3688,7 +3959,15 @@ create_check_block_twin (rtx insn, bool mutate_p)
     check = emit_insn_before (check, insn);
 
   /* Extend data structures.  */
-  extend_block_data (check);
+  haifa_init_insn (check);
+
+  /* CHECK is being added to current region.  Extend ready list.  */
+  gcc_assert (sched_ready_n_insns != -1);
+  sched_extend_ready_list (sched_ready_n_insns + 1);
+
+  if (current_sched_info->add_remove_insn)
+    current_sched_info->add_remove_insn (insn, 0);
+
   RECOVERY_BLOCK (check) = rec;
 
   if (sched_verbose && spec_info->dump)
@@ -3715,7 +3994,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 	  }
 
       twin = emit_insn_after (ORIG_PAT (insn), BB_END (rec));
-      extend_region_data (twin);
+      haifa_init_insn (twin);
 
       if (sched_verbose && spec_info->dump)
 	/* INSN_BB (insn) isn't determined for twin insns yet.
@@ -3741,54 +4020,17 @@ create_check_block_twin (rtx insn, bool mutate_p)
     {
       basic_block first_bb, second_bb;
       rtx jump;
-      edge e;
-      int edge_flags;
 
       first_bb = BLOCK_FOR_INSN (check);
-      e = split_block (first_bb, check);
-      /* split_block emits note if *check == BB_END.  Probably it 
-	 is better to rip that note off.  */
-      gcc_assert (e->src == first_bb);
-      second_bb = e->dest;
+      second_bb = sched_split_block (first_bb, check);
 
-      /* This is fixing of incoming edge.  */
-      /* ??? Which other flags should be specified?  */      
-      if (BB_PARTITION (first_bb) != BB_PARTITION (rec))
-	/* Partition type is the same, if it is "unpartitioned".  */
-	edge_flags = EDGE_CROSSING;
-      else
-	edge_flags = 0;
-      
-      e = make_edge (first_bb, rec, edge_flags);
+      sched_create_recovery_edges (first_bb, rec, second_bb);
 
-      add_block (second_bb, first_bb);
-      
-      gcc_assert (NOTE_INSN_BASIC_BLOCK_P (BB_HEAD (second_bb)));
-      label = block_label (second_bb);
-      jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
-      JUMP_LABEL (jump) = label;
-      LABEL_NUSES (label)++;
-      extend_region_data (jump);
+      sched_init_only_bb (second_bb, first_bb);      
+      sched_init_only_bb (rec, EXIT_BLOCK_PTR);
 
-      if (BB_PARTITION (second_bb) != BB_PARTITION (rec))
-	/* Partition type is the same, if it is "unpartitioned".  */
-	{
-	  /* Rewritten from cfgrtl.c.  */
-	  if (flag_reorder_blocks_and_partition
-	      && targetm.have_named_sections
-	      /*&& !any_condjump_p (jump)*/)
-	    /* any_condjump_p (jump) == false.
-	       We don't need the same note for the check because
-	       any_condjump_p (check) == true.  */
-	    add_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
-	  edge_flags = EDGE_CROSSING;
-	}
-      else
-	edge_flags = 0;  
-      
-      make_single_succ_edge (rec, second_bb, edge_flags);  
-      
-      add_block (rec, EXIT_BLOCK_PTR);
+      jump = BB_END (rec);
+      haifa_init_insn (jump);
     }
 
   /* Move backward dependences from INSN to CHECK and 
@@ -4004,27 +4246,36 @@ fix_recovery_deps (basic_block rec)
   add_jump_dependencies (insn, jump);
 }
 
-/* Changes pattern of the INSN to NEW_PAT.  */
-static void
-change_pattern (rtx insn, rtx new_pat)
+/* Change pattern of INSN to NEW_PAT.  */
+void
+sched_change_pattern (rtx insn, rtx new_pat)
 {
   int t;
 
   t = validate_change (insn, &PATTERN (insn), new_pat, 0);
   gcc_assert (t);
+  dfa_clear_single_insn_cache (insn);
+}
+
+/* Change pattern of INSN to NEW_PAT.  Invalidate cached haifa
+   instruction data.  */
+static void
+haifa_change_pattern (rtx insn, rtx new_pat)
+{
+  sched_change_pattern (insn, new_pat);
+
   /* Invalidate INSN_COST, so it'll be recalculated.  */
   INSN_COST (insn) = -1;
   /* Invalidate INSN_TICK, so it'll be recalculated.  */
   INSN_TICK (insn) = INVALID_TICK;
-  dfa_clear_single_insn_cache (insn);
 }
 
 /* -1 - can't speculate,
    0 - for speculation with REQUEST mode it is OK to use
    current instruction pattern,
    1 - need to change pattern for *NEW_PAT to be speculative.  */
-static int
-speculate_insn (rtx insn, ds_t request, rtx *new_pat)
+int
+sched_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
 {
   gcc_assert (current_sched_info->flags & DO_SPECULATION
               && (request & SPECULATIVE)
@@ -4037,7 +4288,20 @@ speculate_insn (rtx insn, ds_t request, rtx *new_pat)
       && !(request & BEGIN_SPEC))
     return 0;
 
-  return targetm.sched.speculate_insn (insn, request & BEGIN_SPEC, new_pat);
+  return targetm.sched.speculate_insn (insn, request, new_pat);
+}
+
+static int
+haifa_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
+{
+  gcc_assert (sched_deps_info->generate_spec_deps
+	      && !IS_SPECULATION_CHECK_P (insn));
+
+  if (HAS_INTERNAL_DEP (insn)
+      || SCHED_GROUP_P (insn))
+    return -1;
+
+  return sched_speculate_insn (insn, request, new_pat);
 }
 
 /* Print some information about block BB, which starts with HEAD and
@@ -4151,47 +4415,6 @@ restore_bb_notes (basic_block first)
   bb_header = 0;
 }
 
-/* Extend per basic block data structures of the scheduler.
-   If BB is NULL, initialize structures for the whole CFG.
-   Otherwise, initialize them for the just created BB.  */
-static void
-extend_bb (void)
-{
-  rtx insn;
-
-  old_last_basic_block = last_basic_block;
-
-  /* The following is done to keep current_sched_info->next_tail non null.  */
-
-  insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
-  if (NEXT_INSN (insn) == 0
-      || (!NOTE_P (insn)
-	  && !LABEL_P (insn)
-	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
-	  && !BARRIER_P (NEXT_INSN (insn))))
-    {
-      rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
-      /* Make insn appear outside BB.  */
-      set_block_for_insn (note, NULL);
-      BB_END (EXIT_BLOCK_PTR->prev_bb) = insn;
-    }
-}
-
-/* Add a basic block BB to extended basic block EBB.
-   If EBB is EXIT_BLOCK_PTR, then BB is recovery block.
-   If EBB is NULL, then BB should be a new region.  */
-void
-add_block (basic_block bb, basic_block ebb)
-{
-  gcc_assert (current_sched_info->flags & NEW_BBS);
-
-  extend_bb ();
-
-  if (current_sched_info->add_block)
-    /* This changes only data structures of the front-end.  */
-    current_sched_info->add_block (bb, ebb);
-}
-
 /* Helper function.
    Fix CFG after both in- and inter-block movement of
    control_flow_insn_p JUMP.  */
@@ -4204,7 +4427,7 @@ fix_jump_move (rtx jump)
   jump_bb = BLOCK_FOR_INSN (jump);
   jump_bb_next = jump_bb->next_bb;
 
-  gcc_assert (current_sched_info->flags & SCHED_EBB
+  gcc_assert (common_sched_info->sched_pass_id == SCHED_EBB_PASS
 	      || IS_SPECULATION_BRANCHY_CHECK_P (jump));
   
   if (!NOTE_INSN_BASIC_BLOCK_P (BB_END (jump_bb_next)))
@@ -4252,9 +4475,8 @@ move_block_after_check (rtx jump)
 
   df_mark_solutions_dirty ();
   
-  if (current_sched_info->fix_recovery_cfg)
-    current_sched_info->fix_recovery_cfg 
-      (bb->index, jump_bb->index, jump_bb_next->index);
+  common_sched_info->fix_recovery_cfg
+    (bb->index, jump_bb->index, jump_bb_next->index);
 }
 
 /* Helper function for move_block_after_check.
@@ -4480,6 +4702,281 @@ check_cfg (rtx head, rtx tail)
 
   gcc_assert (bb == 0);
 }
+
 #endif /* ENABLE_CHECKING */
+
+const struct sched_scan_info_def *sched_scan_info;
+
+/* Extend per basic block data structures.  */
+static void
+extend_bb (void)
+{
+  if (sched_scan_info->extend_bb)
+    sched_scan_info->extend_bb ();
+}
+
+/* Init data for BB.  */
+static void
+init_bb (basic_block bb)
+{
+  if (sched_scan_info->init_bb)
+    sched_scan_info->init_bb (bb);
+}
+
+/* Extend per insn data structures.  */
+static void
+extend_insn (void)
+{
+  if (sched_scan_info->extend_insn)
+    sched_scan_info->extend_insn ();
+}
+
+/* Init data structures for INSN.  */
+static void
+init_insn (rtx insn)
+{
+  if (sched_scan_info->init_insn)
+    sched_scan_info->init_insn (insn);
+}
+
+/* Init all insns in BB.  */
+static void
+init_insns_in_bb (basic_block bb)
+{
+  rtx insn;
+
+  FOR_BB_INSNS (bb, insn)
+    init_insn (insn);
+}
+
+/* A driver function to add a set of basic blocks (BBS),
+   a single basic block (BB), a set of insns (INSNS) or a single insn (INSN)
+   to the scheduling region.  */
+void
+sched_scan (const struct sched_scan_info_def *ssi,
+	    bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
+{
+  sched_scan_info = ssi;
+
+  if (bbs != NULL || bb != NULL)
+    {
+      extend_bb ();
+
+      if (bbs != NULL)
+	{
+	  unsigned i;
+	  basic_block x;
+
+	  for (i = 0; VEC_iterate (basic_block, bbs, i, x); i++)
+	    init_bb (x);
+	}
+
+      if (bb != NULL)
+	init_bb (bb);
+    }
+
+  extend_insn ();
+
+  if (bbs != NULL)
+    {      
+      unsigned i;
+      basic_block x;
+
+      for (i = 0; VEC_iterate (basic_block, bbs, i, x); i++)
+	init_insns_in_bb (x);
+    }
+
+  if (bb != NULL)
+    init_insns_in_bb (bb);
+
+  if (insns != NULL)
+    {
+      unsigned i;
+      rtx x;
+
+      for (i = 0; VEC_iterate (rtx, insns, i, x); i++)
+	init_insn (x);
+    }
+
+  if (insn != NULL)
+    init_insn (insn);
+}
+
+
+/* Extend data structures for logical insn UID.  */
+static void
+luids_extend_insn (void)
+{
+  int new_luids_max_uid = get_max_uid () + 1;
+
+  VEC_safe_grow_cleared (int, heap, sched_luids, new_luids_max_uid);
+}
+
+/* Initialize LUID for INSN.  */
+static void
+luids_init_insn (rtx insn)
+{
+  int i = INSN_P (insn) ? 1 : common_sched_info->luid_for_non_insn (insn);
+  int luid;
+
+  if (i >= 0)
+    {
+      luid = sched_max_luid;
+      sched_max_luid += i;
+    }
+  else
+    luid = -1;
+
+  SET_INSN_LUID (insn, luid);
+}
+
+/* Initialize luids for BBS, BB, INSNS and INSN.
+   The hook common_sched_info->luid_for_non_insn () is used to determine
+   if notes, labels, etc. need luids.  */
+void
+sched_init_luids (bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
+{
+  const struct sched_scan_info_def ssi =
+    {
+      NULL, /* extend_bb */
+      NULL, /* init_bb */
+      luids_extend_insn, /* extend_insn */
+      luids_init_insn /* init_insn */
+    };
+
+  sched_scan (&ssi, bbs, bb, insns, insn);
+}
+
+/* Free LUIDs.  */
+void
+sched_finish_luids (void)
+{
+  VEC_free (int, heap, sched_luids);
+  sched_max_luid = 1;
+}
+
+/* Return logical uid of INSN.  Helpful while debugging.  */
+int
+insn_luid (rtx insn)
+{
+  return INSN_LUID (insn);
+}
+
+/* Extend per insn data in the target.  */
+void
+sched_extend_target (void)
+{
+  if (targetm.sched.h_i_d_extended)
+    targetm.sched.h_i_d_extended ();
+}
+
+/* Extend global scheduler structures (those, that live across calls to
+   schedule_block) to include information about just emitted INSN.  */
+static void
+extend_h_i_d (void)
+{
+  int reserve = (get_max_uid () + 1 
+                 - VEC_length (haifa_insn_data_def, h_i_d));
+  if (reserve > 0 
+      && ! VEC_space (haifa_insn_data_def, h_i_d, reserve))
+    {
+      VEC_safe_grow_cleared (haifa_insn_data_def, heap, h_i_d, 
+                             3 * get_max_uid () / 2);
+      sched_extend_target ();
+    }
+}
+
+/* Initialize h_i_d entry of the INSN with default values.
+   Values, that are not explicitly initialized here, hold zero.  */
+static void
+init_h_i_d (rtx insn)
+{
+  if (INSN_LUID (insn) > 0)
+    {
+      INSN_COST (insn) = -1;
+      find_insn_reg_weight (insn);
+      QUEUE_INDEX (insn) = QUEUE_NOWHERE;
+      INSN_TICK (insn) = INVALID_TICK;
+      INTER_TICK (insn) = INVALID_TICK;
+      TODO_SPEC (insn) = HARD_DEP;
+    }
+}
+
+/* Initialize haifa_insn_data for BBS, BB, INSNS and INSN.  */
+void
+haifa_init_h_i_d (bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
+{
+  const struct sched_scan_info_def ssi =
+    {
+      NULL, /* extend_bb */
+      NULL, /* init_bb */
+      extend_h_i_d, /* extend_insn */
+      init_h_i_d /* init_insn */
+    };
+
+  sched_scan (&ssi, bbs, bb, insns, insn);
+}
+
+/* Finalize haifa_insn_data.  */
+void
+haifa_finish_h_i_d (void)
+{
+  VEC_free (haifa_insn_data_def, heap, h_i_d);
+}
+
+/* Init data for the new insn INSN.  */
+static void
+haifa_init_insn (rtx insn)
+{
+  gcc_assert (insn != NULL);
+
+  sched_init_luids (NULL, NULL, NULL, insn);
+  sched_extend_target ();
+  sched_deps_init (false);
+  haifa_init_h_i_d (NULL, NULL, NULL, insn);
+
+  if (adding_bb_to_current_region_p)
+    {
+      sd_init_insn (insn);
+
+      /* Extend dependency caches by one element.  */
+      extend_dependency_caches (1, false);
+    }
+}
+
+/* Init data for the new basic block BB which comes after AFTER.  */
+static void
+haifa_init_only_bb (basic_block bb, basic_block after)
+{
+  gcc_assert (bb != NULL);
+
+  sched_init_bbs ();
+
+  if (common_sched_info->add_block)
+    /* This changes only data structures of the front-end.  */
+    common_sched_info->add_block (bb, after);
+}
+
+/* A generic version of sched_split_block ().  */
+basic_block
+sched_split_block_1 (basic_block first_bb, rtx after)
+{
+  edge e;
+
+  e = split_block (first_bb, after);
+  gcc_assert (e->src == first_bb);
+
+  /* sched_split_block emits note if *check == BB_END.  Probably it 
+     is better to rip that note off.  */
+
+  return e->dest;
+}
+
+/* A generic version of sched_create_empty_bb ().  */
+basic_block
+sched_create_empty_bb_1 (basic_block after)
+{
+  return create_empty_bb (after);
+}
 
 #endif /* INSN_SCHEDULING */

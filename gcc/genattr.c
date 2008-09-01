@@ -184,6 +184,10 @@ main (int argc, char **argv)
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
       printf ("extern int insn_latency (rtx, rtx);\n\n");
+      printf ("/* Maximal insn latency time possible of all bypasses for this insn.\n");
+      printf ("   Use the function if bypass_p returns nonzero for\n");
+      printf ("   the 1st insn. */\n");
+      printf ("extern int maximal_insn_latency (rtx);\n\n");
       printf ("\n#if AUTOMATON_ALTS\n");
       printf ("/* The following function returns number of alternative\n");
       printf ("   reservations of given insn.  It may be used for better\n");

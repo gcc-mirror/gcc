@@ -3985,6 +3985,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 
   if (after == last_insn)
     last_insn = last;
+
   return last;
 }
 
