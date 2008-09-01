@@ -1779,7 +1779,6 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag)
 
 	  primary->expr_type = EXPR_COMPCALL;
 	  primary->value.compcall.tbp = tbp->typebound;
-	  primary->value.compcall.derived = sym;
 	  primary->value.compcall.name = tbp->name;
 	  gcc_assert (primary->symtree->n.sym->attr.referenced);
 	  if (tbp_sym)

@@ -118,6 +118,7 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 * User Interface::         Code that Interacts with the User.
 * Frontend Data Structures::
                            Data structures used by the frontend
+* Object Orientation::     Internals of Fortran 2003 OOP features.
 * LibGFortran::            The LibGFortran Runtime Library.
 * GNU Free Documentation License::
                            How you can copy and share this manual.
@@ -466,6 +467,13 @@ function symbol if the call is to an intrinsic or external function,
 respectively.  These values are determined during resolution-phase from the
 structure's @code{symtree} member.
 
+A special case of function calls are ``component calls'' to type-bound
+procedures; those have the @code{expr_type} @code{EXPR_COMPCALL} with
+@code{value.compcall} containing the argument list and the procedure called,
+while @code{symtree} and @code{ref} describe the object on which the procedure
+was called in the same way as a @code{EXPR_VARIABLE} expression would.
+@xref{Type-bound Procedures}.
+
 
 @subsection Array- and Structure-Constructors
 
@@ -549,6 +557,96 @@ x = "abcde"(1:2)
 In this case, @code{value.character} contains the full string's data as if it
 was a string constant, but the @code{ref} member is also set and points to a
 substring reference as described in the subsection above.
+
+
+@c ---------------------------------------------------------------------
+@c F2003 OOP
+@c ---------------------------------------------------------------------
+
+@node Object Orientation
+@chapter Internals of Fortran 2003 OOP Features
+
+@menu
+* Type-bound Procedures:: Type-bound procedures.
+@end menu
+
+
+@c Type-bound procedures
+@c ---------------------
+
+@node Type-bound Procedures
+@section Type-bound Procedures
+
+Type-bound procedures are stored in the @code{sym_root} of the namespace
+@code{f2k_derived} associated with the derived-type symbol as @code{gfc_symtree}
+nodes.  The name and symbol of these symtrees corresponds to the binding-name
+of the procedure, i.e. the name that is used to call it from the context of an
+object of the derived-type.
+
+In addition, those and only those symtrees representing a type-bound procedure
+have their @code{typebound} member set; @code{typebound} points to a struct of
+type @code{gfc_typebound_proc} containing the additional data needed:  The
+binding attributes (like @code{PASS} and @code{NOPASS}, @code{NON_OVERRIDABLE} 
+or the access-specifier), the binding's target(s) and, if the current binding
+overrides or extends an inherited binding of the same name, @code{overridden}
+points to this binding's @code{gfc_typebound_proc} structure.
+
+
+@subsection Specific Bindings
+@c --------------------------
+
+For specific bindings (declared with @code{PROCEDURE}), if they have a
+passed-object argument, the passed-object dummy argument is first saved by its
+name, and later during resolution phase the corresponding argument is looked for
+and its position remembered as @code{pass_arg_num} in @code{gfc_typebound_proc}.
+The binding's target procedure is pointed-to by @code{u.specific}.
+
+At the moment, all type-bound procedure calls are statically dispatched and
+transformed into ordinary procedure calls at resolution time; their actual
+argument list is updated to include at the right position the passed-object
+argument, if applicable, and then a simple procedure call to the binding's
+target procedure is built.  To handle dynamic dispatch in the future, this will
+be extended to allow special code generation during the trans-phase to dispatch
+based on the object's dynamic type.
+
+
+@subsection Generic Bindings
+@c -------------------------
+
+Bindings declared as @code{GENERIC} store the specific bindings they target as
+a linked list using nodes of type @code{gfc_tbp_generic} in @code{u.generic}.
+For each specific target, the parser records its symtree and during resolution
+this symtree is bound to the corresponding @code{gfc_typebound_proc} structure
+of the specific target.
+
+Calls to generic bindings are handled entirely in the resolution-phase, where
+for the actual argument list present the matching specific binding is found
+and the call's target procedure (@code{value.compcall.tbp}) is re-pointed to
+the found specific binding and this call is subsequently handled by the logic
+for specific binding calls.
+
+
+@subsection Calls to Type-bound Procedures
+@c ---------------------------------------
+
+Calls to type-bound procedures are stored in the parse-tree as @code{gfc_expr}
+nodes of type @code{EXPR_COMPCALL}.  Their @code{value.compcall.actual} saves
+the actual argument list of the call and @code{value.compcall.tbp} points to the
+@code{gfc_typebound_proc} structure of the binding to be called.  The object
+in whose context the procedure was called is saved by combination of
+@code{symtree} and @code{ref}, as if the expression was of type
+@code{EXPR_VARIABLE}.
+
+For code like this:
+@smallexample
+CALL myobj%procedure (arg1, arg2)
+@end smallexample
+@noindent
+the @code{CALL} is represented in the parse-tree as a @code{gfc_code} node of
+type @code{EXEC_COMPCALL}.  The @code{expr} member of this node holds an
+expression of type @code{EXPR_COMPCALL} of the same structure as mentioned above
+except that its target procedure is of course a @code{SUBROUTINE} and not a
+@code{FUNCTION}.
 
 
 @c ---------------------------------------------------------------------

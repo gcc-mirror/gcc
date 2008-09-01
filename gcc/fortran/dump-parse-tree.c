@@ -316,6 +316,22 @@ show_char_const (const gfc_char_t *c, int length)
   fputc ('\'', dumpfile);
 }
 
+
+/* Show a component-call expression.  */
+
+static void
+show_compcall (gfc_expr* p)
+{
+  gcc_assert (p->expr_type == EXPR_COMPCALL);
+
+  fprintf (dumpfile, "%s", p->symtree->n.sym->name);
+  show_ref (p->ref);
+  fprintf (dumpfile, "%s", p->value.compcall.name);
+
+  show_actual_arglist (p->value.compcall.actual);
+}
+
+
 /* Show an expression.  */
 
 static void
@@ -539,6 +555,10 @@ show_expr (gfc_expr *p)
 
       break;
 
+    case EXPR_COMPCALL:
+      show_compcall (p);
+      break;
+
     default:
       gfc_internal_error ("show_expr(): Don't know how to show expr");
     }
@@ -646,6 +666,76 @@ show_components (gfc_symbol *sym)
 }
 
 
+/* Show the f2k_derived namespace with procedure bindings.  */
+
+static void
+show_typebound (gfc_symtree* st)
+{
+  if (!st->typebound)
+    return;
+
+  show_indent ();
+
+  if (st->typebound->is_generic)
+    fputs ("GENERIC", dumpfile);
+  else
+    {
+      fputs ("PROCEDURE, ", dumpfile);
+      if (st->typebound->nopass)
+	fputs ("NOPASS", dumpfile);
+      else
+	{
+	  if (st->typebound->pass_arg)
+	    fprintf (dumpfile, "PASS(%s)", st->typebound->pass_arg);
+	  else
+	    fputs ("PASS", dumpfile);
+	}
+      if (st->typebound->non_overridable)
+	fputs (", NON_OVERRIDABLE", dumpfile);
+    }
+
+  if (st->typebound->access == ACCESS_PUBLIC)
+    fputs (", PUBLIC", dumpfile);
+  else
+    fputs (", PRIVATE", dumpfile);
+
+  fprintf (dumpfile, " :: %s => ", st->n.sym->name);
+
+  if (st->typebound->is_generic)
+    {
+      gfc_tbp_generic* g;
+      for (g = st->typebound->u.generic; g; g = g->next)
+	{
+	  fputs (g->specific_st->name, dumpfile);
+	  if (g->next)
+	    fputs (", ", dumpfile);
+	}
+    }
+  else
+    fputs (st->typebound->u.specific->n.sym->name, dumpfile);
+}
+
+static void
+show_f2k_derived (gfc_namespace* f2k)
+{
+  gfc_finalizer* f;
+
+  ++show_level;
+
+  /* Finalizer bindings.  */
+  for (f = f2k->finalizers; f; f = f->next)
+    {
+      show_indent ();
+      fprintf (dumpfile, "FINAL %s", f->proc_sym->name);
+    }
+
+  /* Type-bound procedures.  */
+  gfc_traverse_symtree (f2k->sym_root, &show_typebound);
+
+  --show_level;
+}
+
+
 /* Show a symbol.  If a symbol is an ENTRY, SUBROUTINE or FUNCTION, we
    show the interface.  Information needed to reconstruct the list of
    specific interfaces associated with a generic symbol is done within
@@ -699,6 +789,13 @@ show_symbol (gfc_symbol *sym)
       show_indent ();
       fputs ("components: ", dumpfile);
       show_components (sym);
+    }
+
+  if (sym->f2k_derived)
+    {
+      show_indent ();
+      fputs ("Procedure bindings:\n", dumpfile);
+      show_f2k_derived (sym->f2k_derived);
     }
 
   if (sym->formal)
@@ -1108,6 +1205,11 @@ show_code_node (int level, gfc_code *c)
 	fputs ("CALL ?? ", dumpfile);
 
       show_actual_arglist (c->ext.actual);
+      break;
+
+    case EXEC_COMPCALL:
+      fputs ("CALL ", dumpfile);
+      show_compcall (c->expr);
       break;
 
     case EXEC_RETURN:
