@@ -1,3 +1,8 @@
+2008-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36449
+	* g++.dg/opt/pr36449.C: New test.
+
 2008-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37168
