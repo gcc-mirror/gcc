@@ -122,8 +122,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{mt|pthread:-lpthread} -lc \
-     %{static:%{!nolibdld:-a shared -ldld -a archive -lpthread -lc}}}\
+     %{static|mt|pthread:%{fopenmp:%{static:-a archive_shared} -lrt\
+       %{static:-a archive}} -lpthread} -lc\
+     %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 
 #undef STARTFILE_SPEC
