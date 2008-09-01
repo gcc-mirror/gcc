@@ -1,5 +1,12 @@
 2008-09-01  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (arm_override_options): Set arm_abi earlier.
+	Allow Interworking on ARMv4 EABI based targets.
+	* config/arm/bpabi.h (TARGET_FIX_V4BX_SPEC): Define.
+	(SUBTARGET_EXTRA_ASM_SPEC, LINK_SPEC): Add TARGET_FIX_V4BX_SPEC.
+
+2008-09-01  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/thumb2.md (thumb2_negscc): Match the correct operand for
 	optimized LT0 test.  Remove optimization for GT.
 
