@@ -1,3 +1,10 @@
+2008-09-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37305
+	* tree-ssa-ccp.c (ccp_fold): Do not set TREE_OVERFLOW on
+	the result of constant conversions.
+	(fold_gimple_assign): Likewise.
+
 2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
 
 	* sel-sched-ir.c (cmp_v_in_regset_pool): Surround with 
