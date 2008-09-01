@@ -1,5 +1,10 @@
 2008-09-01  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/37193
+	* module.c (read_module): Initialize use_only flag on used symbols.
+
+2008-09-01  Daniel Kraft  <d@domob.eu>
+
 	* gfc-internals.texi (F2003 OOP), (Type-bound Procedures): New chapter
 	and section to document the internals of type-bound procedures.
 	(gfc_expr): Document EXPR_COMPCALL.

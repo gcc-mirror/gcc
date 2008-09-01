@@ -1,3 +1,9 @@
+2008-09-01  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37193
+	* gfortran.dg/use_rename_4.f90: New test.
+	* gfortran.dg/use_rename_5.f90: New test.
+
 2008-09-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37305
