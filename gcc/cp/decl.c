@@ -8220,6 +8220,12 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
 
+	    /* Handle a late-specified return type.  */
+	    type = splice_late_return_type
+	      (type, declarator->u.function.late_return_type);
+	    if (type == error_mark_node)
+	      return error_mark_node;
+
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
 	    funcdecl_p = inner_declarator && inner_declarator->kind == cdk_id;

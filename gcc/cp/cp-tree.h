@@ -4108,6 +4108,8 @@ struct cp_declarator {
       cp_cv_quals qualifiers;
       /* The exception-specification for the function.  */
       tree exception_specification;
+      /* The late-specified return type, if any.  */
+      tree late_return_type;
     } function;
     /* For arrays.  */
     struct {
@@ -4525,6 +4527,7 @@ extern tree check_explicit_specialization	(tree, tree, int, int);
 extern tree make_auto				(void);
 extern tree do_auto_deduction			(tree, tree, tree);
 extern tree type_uses_auto			(tree);
+extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, tree, bool, bool);
 extern tree end_template_parm_list		(tree);

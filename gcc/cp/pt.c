@@ -16769,6 +16769,23 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   return tsubst (type, targs, tf_warning_or_error, NULL_TREE);
 }
 
+/* Substitutes LATE_RETURN_TYPE for 'auto' in TYPE and returns the
+   result.  */
+
+tree
+splice_late_return_type (tree type, tree late_return_type)
+{
+  tree argvec;
+
+  if (late_return_type == NULL_TREE)
+    return type;
+  argvec = make_tree_vec (1);
+  TREE_VEC_ELT (argvec, 0) = late_return_type;
+  if (processing_template_decl)
+    argvec = add_to_template_args (current_template_args (), argvec);
+  return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
+}
+
 /* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto'.  */
 
 bool
