@@ -939,6 +939,7 @@ return_regset_to_pool (regset rs)
   regset_pool.v[regset_pool.n++] = rs;
 }
 
+#ifdef ENABLE_CHECKING
 /* This is used as a qsort callback for sorting regset pool stacks.
    X and XX are addresses of two regsets.  They are never equal.  */
 static int
@@ -946,6 +947,7 @@ cmp_v_in_regset_pool (const void *x, const void *xx)
 {
   return *((const regset *) x) - *((const regset *) xx);
 }
+#endif
 
 /*  Free the regset pool possibly checking for memory leaks.  */
 void
