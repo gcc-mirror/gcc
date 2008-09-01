@@ -1593,7 +1593,6 @@ typedef struct gfc_expr
     {
       gfc_actual_arglist* actual;
       gfc_typebound_proc* tbp;
-      gfc_symbol* derived;
       const char* name;
     }
     compcall;

@@ -1,3 +1,17 @@
+2008-09-01  Daniel Kraft  <d@domob.eu>
+
+	* gfc-internals.texi (F2003 OOP), (Type-bound Procedures): New chapter
+	and section to document the internals of type-bound procedures.
+	(gfc_expr): Document EXPR_COMPCALL.
+	* gfortran.h (struct gfc_expr): Remove unused `derived' from compcall.
+	* dump-parse-tree.c (show_compcall): New method.
+	(show_expr): Call it for EXPR_COMPCALL.
+	(show_typebound), (show_f2k_derived): New methods.
+	(show_symbol): Call show_f2k_derived.
+	(show_code_node): Handle EXEC_COMPCALL.
+	* primary.c (gfc_match_varspec): Don't initialize removed `derived' in
+	primary->value.compcall.
+
 2008-08-31  Richard Guenther  <rguenther@suse.de>
 
 	* trans-expr.c (gfc_trans_string_copy): Use the correct types
