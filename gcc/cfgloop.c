@@ -887,6 +887,19 @@ get_loop_body_in_dom_order (const struct loop *loop)
   return tovisit;
 }
 
+/* Gets body of a LOOP sorted via provided BB_COMPARATOR.  */
+
+basic_block *
+get_loop_body_in_custom_order (const struct loop *loop, 
+			       int (*bb_comparator) (const void *, const void *))
+{
+  basic_block *bbs = get_loop_body (loop);
+
+  qsort (bbs, loop->num_nodes, sizeof (basic_block), bb_comparator);
+
+  return bbs;
+}
+
 /* Get body of a LOOP in breadth first sort order.  */
 
 basic_block *

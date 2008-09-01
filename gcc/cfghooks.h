@@ -190,5 +190,7 @@ extern enum ir_type current_ir_type (void);
 extern void rtl_register_cfg_hooks (void);
 extern void cfg_layout_rtl_register_cfg_hooks (void);
 extern void gimple_register_cfg_hooks (void);
+extern struct cfg_hooks get_cfg_hooks (void);
+extern void set_cfg_hooks (struct cfg_hooks);
 
 #endif  /* GCC_CFGHOOKS_H */

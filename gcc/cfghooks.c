@@ -56,6 +56,18 @@ gimple_register_cfg_hooks (void)
   cfg_hooks = &gimple_cfg_hooks;
 }
 
+struct cfg_hooks
+get_cfg_hooks (void)
+{
+  return *cfg_hooks;
+}
+
+void
+set_cfg_hooks (struct cfg_hooks new_cfg_hooks)
+{
+  *cfg_hooks = new_cfg_hooks;
+}
+
 /* Returns current ir type.  */
 
 enum ir_type
@@ -719,6 +731,8 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   /* Redirect back edges we want to keep.  */
   for (ei = ei_start (dummy->preds); (e = ei_safe_edge (ei)); )
     {
+      basic_block e_src;
+
       if (redirect_edge_p (e))
 	{
 	  ei_next (&ei);
@@ -735,10 +749,21 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
       if (fallthru->count < 0)
 	fallthru->count = 0;
 
+      e_src = e->src;
       jump = redirect_edge_and_branch_force (e, bb);
-      if (jump != NULL
-	  && new_bb_cbk != NULL)
-	new_bb_cbk (jump);
+      if (jump != NULL)
+        {
+          /* If we redirected the loop latch edge, the JUMP block now acts like
+             the new latch of the loop.  */
+          if (current_loops != NULL
+              && dummy->loop_father != NULL
+              && dummy->loop_father->header == dummy
+              && dummy->loop_father->latch == e_src)
+            dummy->loop_father->latch = jump;
+          
+          if (new_bb_cbk != NULL)
+            new_bb_cbk (jump);
+        }
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))

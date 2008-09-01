@@ -66,7 +66,14 @@ loop_optimizer_init (unsigned flags)
 
   /* Create pre-headers.  */
   if (flags & LOOPS_HAVE_PREHEADERS)
-    create_preheaders (CP_SIMPLE_PREHEADERS);
+    {
+      int cp_flags = CP_SIMPLE_PREHEADERS;
+
+      if (flags & LOOPS_HAVE_FALLTHRU_PREHEADERS)
+        cp_flags |= CP_FALLTHRU_PREHEADERS;
+      
+      create_preheaders (cp_flags);
+    }
 
   /* Force all latches to have only single successor.  */
   if (flags & LOOPS_HAVE_SIMPLE_LATCHES)
@@ -118,7 +125,10 @@ loop_optimizer_finalize (void)
 
   /* Checking.  */
 #ifdef ENABLE_CHECKING
-  verify_flow_info ();
+  /* FIXME: no point to verify flow info after bundling on ia64.  Use this 
+     hack for achieving this.  */
+  if (!reload_completed)
+    verify_flow_info ();
 #endif
 }
 

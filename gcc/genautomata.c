@@ -8076,13 +8076,13 @@ output_min_insn_conflict_delay_func (void)
   fprintf (output_file, "}\n\n");
 }
 
-/* Output function `internal_insn_latency'.  */
+/* Output the array holding default latency values.  These are used in 
+   insn_latency and maximal_insn_latency function implementations.  */
 static void
-output_internal_insn_latency_func (void)
+output_default_latencies (void)
 {
-  decl_t decl;
-  struct bypass_decl *bypass;
   int i, j, col;
+  decl_t decl;
   const char *tabletype = "unsigned char";
 
   /* Find the smallest integer type that can hold all the default
@@ -8097,18 +8097,6 @@ output_internal_insn_latency_func (void)
 	if (DECL_INSN_RESERV (decl)->default_latency > USHRT_MAX)
 	  tabletype = "int";
       }
-
-  fprintf (output_file, "static int\n%s (int %s ATTRIBUTE_UNUSED,\n\tint %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED)\n",
-	   INTERNAL_INSN_LATENCY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
-	   INTERNAL_INSN2_CODE_NAME, INSN_PARAMETER_NAME,
-	   INSN2_PARAMETER_NAME);
-  fprintf (output_file, "{\n");
-
-  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
-    {
-      fputs ("  return 0;\n}\n\n", output_file);
-      return;
-    }
 
   fprintf (output_file, "  static const %s default_latencies[] =\n    {",
 	   tabletype);
@@ -8126,6 +8114,27 @@ output_internal_insn_latency_func (void)
       }
   gcc_assert (j == DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
   fputs ("\n    };\n", output_file);
+}
+
+/* Output function `internal_insn_latency'.  */
+static void
+output_internal_insn_latency_func (void)
+{
+  int i;
+  decl_t decl;
+  struct bypass_decl *bypass;
+
+  fprintf (output_file, "static int\n%s (int %s ATTRIBUTE_UNUSED,\n\tint %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED)\n",
+	   INTERNAL_INSN_LATENCY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
+	   INTERNAL_INSN2_CODE_NAME, INSN_PARAMETER_NAME,
+	   INSN2_PARAMETER_NAME);
+  fprintf (output_file, "{\n");
+
+  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
+    {
+      fputs ("  return 0;\n}\n\n", output_file);
+      return;
+    }
 
   fprintf (output_file, "  if (%s >= %s || %s >= %s)\n    return 0;\n",
 	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME,
@@ -8171,6 +8180,50 @@ output_internal_insn_latency_func (void)
 	   INTERNAL_INSN_CODE_NAME);
 }
 
+/* Output function `internal_maximum_insn_latency'.  */
+static void
+output_internal_maximal_insn_latency_func (void)
+{
+  decl_t decl;
+  struct bypass_decl *bypass;
+  int i;
+  int max;
+
+  fprintf (output_file, "static int\n%s (int %s ATTRIBUTE_UNUSED,\n\trtx %s ATTRIBUTE_UNUSED)\n",
+	   "internal_maximal_insn_latency", INTERNAL_INSN_CODE_NAME,
+	   INSN_PARAMETER_NAME);
+  fprintf (output_file, "{\n");
+
+  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
+    {
+      fputs ("  return 0;\n}\n\n", output_file);
+      return;
+    }
+
+  fprintf (output_file, "  switch (%s)\n    {\n", INTERNAL_INSN_CODE_NAME);
+  for (i = 0; i < description->decls_num; i++)
+    if (description->decls[i]->mode == dm_insn_reserv
+	&& DECL_INSN_RESERV (description->decls[i])->bypass_list)
+      {
+	decl = description->decls [i];
+        max = DECL_INSN_RESERV (decl)->default_latency;
+	fprintf (output_file,
+		 "    case %d: {",
+		 DECL_INSN_RESERV (decl)->insn_num);
+	for (bypass = DECL_INSN_RESERV (decl)->bypass_list;
+	     bypass != NULL;
+	     bypass = bypass->next)
+	  {
+	    if (bypass->latency > max)
+              max = bypass->latency;
+	  }
+	fprintf (output_file, " return %d; }\n      break;\n", max);
+      }
+
+  fprintf (output_file, "    }\n  return default_latencies[%s];\n}\n\n",
+	   INTERNAL_INSN_CODE_NAME);
+}
+
 /* The function outputs PHR interface function `insn_latency'.  */
 static void
 output_insn_latency_func (void)
@@ -8187,6 +8240,21 @@ output_insn_latency_func (void)
 	   INTERNAL_INSN_LATENCY_FUNC_NAME,
 	   INTERNAL_INSN_CODE_NAME, INTERNAL_INSN2_CODE_NAME,
 	   INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME);
+}
+
+/* The function outputs PHR interface function `maximal_insn_latency'.  */
+static void
+output_maximal_insn_latency_func (void)
+{
+  fprintf (output_file, "int\n%s (rtx %s)\n",
+	   "maximal_insn_latency", INSN_PARAMETER_NAME);
+  fprintf (output_file, "{\n  int %s;\n",
+	   INTERNAL_INSN_CODE_NAME);
+  output_internal_insn_code_evaluation (INSN_PARAMETER_NAME,
+					INTERNAL_INSN_CODE_NAME, 0);
+  fprintf (output_file, "  return %s (%s, %s);\n}\n\n",
+	   "internal_maximal_insn_latency",
+	   INTERNAL_INSN_CODE_NAME, INSN_PARAMETER_NAME);
 }
 
 /* The function outputs PHR interface function `print_reservation'.  */
@@ -9179,8 +9247,11 @@ write_automata (void)
   output_internal_reset_func ();
   output_reset_func ();
   output_min_insn_conflict_delay_func ();
+  output_default_latencies ();
   output_internal_insn_latency_func ();
   output_insn_latency_func ();
+  output_internal_maximal_insn_latency_func ();
+  output_maximal_insn_latency_func ();
   output_print_reservation_func ();
   /* Output function get_cpu_unit_code.  */
   fprintf (output_file, "\n#if %s\n\n", CPU_UNITS_QUERY_MACRO_NAME);

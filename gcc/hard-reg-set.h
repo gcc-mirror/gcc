@@ -89,6 +89,8 @@ typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
    hard_reg_set_intersect_p (X, Y), which returns true if X and Y intersect.
    hard_reg_set_empty_p (X), which returns true if X is empty.  */
 
+#define UHOST_BITS_PER_WIDE_INT ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
+
 #ifdef HARD_REG_SET
 
 #define SET_HARD_REG_BIT(SET, BIT)  \
@@ -134,8 +136,6 @@ hard_reg_set_empty_p (const HARD_REG_SET x)
 }
 
 #else
-
-#define UHOST_BITS_PER_WIDE_INT ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
 
 #define SET_HARD_REG_BIT(SET, BIT)		\
   ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
@@ -478,6 +478,100 @@ hard_reg_set_empty_p (const HARD_REG_SET x)
 #endif
 #endif
 #endif
+
+/* Iterator for hard register sets.  */
+
+typedef struct
+{
+  /* Pointer to the current element.  */
+  HARD_REG_ELT_TYPE *pelt;
+
+  /* The length of the set.  */
+  unsigned short length;
+
+  /* Word within the current element.  */
+  unsigned short word_no;
+
+  /* Contents of the actually processed word.  When finding next bit
+     it is shifted right, so that the actual bit is always the least
+     significant bit of ACTUAL.  */
+  HARD_REG_ELT_TYPE bits;
+} hard_reg_set_iterator;
+
+#define HARD_REG_ELT_BITS UHOST_BITS_PER_WIDE_INT
+
+/* The implementation of the iterator functions is fully analogous to 
+   the bitmap iterators.  */
+static inline void
+hard_reg_set_iter_init (hard_reg_set_iterator *iter, HARD_REG_SET set, 
+                        unsigned min, unsigned *regno)
+{
+#ifdef HARD_REG_SET_LONGS
+  iter->pelt = set;
+  iter->length = HARD_REG_SET_LONGS;
+#else
+  iter->pelt = &set;
+  iter->length = 1;
+#endif
+  iter->word_no = min / HARD_REG_ELT_BITS;
+  if (iter->word_no < iter->length)
+    {
+      iter->bits = iter->pelt[iter->word_no];
+      iter->bits >>= min % HARD_REG_ELT_BITS;
+
+      /* This is required for correct search of the next bit.  */
+      min += !iter->bits;
+    }
+  *regno = min;
+}
+
+static inline bool 
+hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
+{
+  while (1)
+    {
+      /* Return false when we're advanced past the end of the set.  */
+      if (iter->word_no >= iter->length)
+        return false;
+
+      if (iter->bits)
+        {
+          /* Find the correct bit and return it.  */
+          while (!(iter->bits & 1))
+            {
+              iter->bits >>= 1;
+              *regno += 1;
+            }
+          return (*regno < FIRST_PSEUDO_REGISTER);
+        }
+  
+      /* Round to the beginning of the next word.  */
+      *regno = (*regno + HARD_REG_ELT_BITS - 1);
+      *regno -= *regno % HARD_REG_ELT_BITS;
+
+      /* Find the next non-zero word.  */
+      while (++iter->word_no < iter->length)
+        {
+          iter->bits = iter->pelt[iter->word_no];
+          if (iter->bits)
+            break;
+          *regno += HARD_REG_ELT_BITS;
+        }
+    }
+}
+
+static inline void
+hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
+{
+  iter->bits >>= 1;
+  *regno += 1;
+}
+
+#define EXECUTE_IF_SET_IN_HARD_REG_SET(SET, MIN, REGNUM, ITER)          \
+  for (hard_reg_set_iter_init (&(ITER), (SET), (MIN), &(REGNUM));       \
+       hard_reg_set_iter_set (&(ITER), &(REGNUM));                      \
+       hard_reg_set_iter_next (&(ITER), &(REGNUM)))
+
 
 /* Define some standard sets of registers.  */
 

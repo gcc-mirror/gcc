@@ -47,6 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 unsigned HOST_WIDE_INT g_switch_value;
 bool g_switch_set;
 
+/* Same for selective scheduling.  */
+bool sel_sched_switch_set;
+
 /* True if we should exit after parsing options.  */
 bool exit_after_options;
 
@@ -1087,6 +1090,11 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks = 1;
     }
 
+  /* Pipelining of outer loops is only possible when general pipelining
+     capabilities are requested.  */
+  if (!flag_sel_sched_pipelining)
+    flag_sel_sched_pipelining_outer_loops = 0;
+
 #ifndef IRA_COVER_CLASSES
   if (flag_ira)
     {
@@ -1868,6 +1876,11 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_frandom_seed_:
       set_random_seed (arg);
+      break;
+
+    case OPT_fselective_scheduling:
+    case OPT_fselective_scheduling2:
+      sel_sched_switch_set = true;
       break;
 
     case OPT_fsched_verbose_:

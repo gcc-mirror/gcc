@@ -303,6 +303,7 @@ Objective-C and Objective-C++ Dialects}.
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
+-fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
 -ftest-coverage  -ftime-report -fvar-tracking @gol
 -g  -g@var{level}  -gcoff -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
@@ -356,6 +357,8 @@ Objective-C and Objective-C++ Dialects}.
 -fsched2-use-traces -fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
 -fschedule-insns -fschedule-insns2 -fsection-anchors -fsee @gol
+-fselective-scheduling -fselective-scheduling2 @gol
+-fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
 -fsplit-wide-types -fstack-protector -fstack-protector-all @gol
 -fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer @gol
@@ -5829,6 +5832,27 @@ The modulo scheduling comes before the traditional scheduling, if a loop
 was modulo scheduled we may want to prevent the later scheduling passes
 from changing its schedule, we use this option to control that.
 
+@item -fselective-scheduling
+@opindex fselective-scheduling
+Schedule instructions using selective scheduling algorithm.  Selective
+scheduling runs instead of the first scheduler pass.
+
+@item -fselective-scheduling2
+@opindex fselective-scheduling2
+Schedule instructions using selective scheduling algorithm.  Selective
+scheduling runs instead of the second scheduler pass.
+
+@item -fsel-sched-pipelining
+@opindex fsel-sched-pipelining
+Enable software pipelining of innermost loops during selective scheduling.  
+This option has no effect until one of @option{-fselective-scheduling} or 
+@option{-fselective-scheduling2} is turned on.
+
+@item -fsel-sched-pipelining-outer-loops
+@opindex fsel-sched-pipelining-outer-loops
+When pipelining loops during selective scheduling, also pipeline outer loops.
+This option has no effect until @option{-fsel-sched-pipelining} is turned on.
+
 @item -fcaller-saves
 @opindex fcaller-saves
 Enable values to be allocated in registers that will be clobbered by
@@ -7325,9 +7349,17 @@ with probably little benefit.  The default value is 100.
 The maximum number of blocks in a region to be considered for
 interblock scheduling.  The default value is 10.
 
+@item max-pipeline-region-blocks
+The maximum number of blocks in a region to be considered for
+pipelining in the selective scheduler.  The default value is 15.
+
 @item max-sched-region-insns
 The maximum number of insns in a region to be considered for
 interblock scheduling.  The default value is 100.
+
+@item max-pipeline-region-insns
+The maximum number of insns in a region to be considered for
+pipelining in the selective scheduler.  The default value is 200.
 
 @item min-spec-prob
 The minimum probability (in percents) of reaching a source block
@@ -7348,8 +7380,25 @@ The minimal probability of speculation success (in percents), so that
 speculative insn will be scheduled.
 The default value is 40.
 
-@item max-last-value-rtl
+@item sched-mem-true-dep-cost
+Minimal distance (in CPU cycles) between store and load targeting same
+memory locations.  The default value is 1.
 
+@item selsched-max-lookahead
+The maximum size of the lookahead window of selective scheduling.  It is a
+depth of search for available instructions.
+The default value is 50.
+
+@item selsched-max-sched-times
+The maximum number of times that an instruction will be scheduled during 
+selective scheduling.  This is the limit on the number of iterations 
+through which the instruction may be pipelined.  The default value is 2.
+
+@item selsched-max-insns-to-rename
+The maximum number of best instructions in the ready list that are considered
+for renaming in the selective scheduler.  The default value is 2.
+
+@item max-last-value-rtl
 The maximum size measured as number of RTLs that can be recorded in an expression
 in combiner for a pseudo register as last known value of that register.  The default
 is 10000.

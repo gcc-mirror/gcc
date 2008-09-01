@@ -188,4 +188,30 @@ remove_free_INSN_LIST_elem (rtx elem, rtx *listp)
   free_INSN_LIST_node (remove_list_elem (elem, listp));
 }
 
+/* Remove and free the first node in the INSN_LIST pointed to by LISTP.  */
+rtx
+remove_free_INSN_LIST_node (rtx *listp)
+{
+  rtx node = *listp;
+  rtx elem = XEXP (node, 0);
+
+  remove_list_node (listp);
+  free_INSN_LIST_node (node);
+
+  return elem;
+}
+
+/* Remove and free the first node in the EXPR_LIST pointed to by LISTP.  */
+rtx
+remove_free_EXPR_LIST_node (rtx *listp)
+{
+  rtx node = *listp;
+  rtx elem = XEXP (node, 0);
+
+  remove_list_node (listp);
+  free_EXPR_LIST_node (node);
+
+  return elem;
+}
+
 #include "gt-lists.h"

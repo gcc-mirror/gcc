@@ -1,5 +1,5 @@
-/* VEC types for primitive types
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+/* Instruction scheduling pass.  
+   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,16 +17,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_VECPRIM_H
-#define GCC_VECPRIM_H
+#ifndef GCC_SEL_SCHED_H
+#define GCC_SEL_SCHED_H
 
-DEF_VEC_I(char);
-DEF_VEC_ALLOC_I(char,heap);
+/* The main entry point.  */
+extern void run_selective_scheduling (void);
+extern bool maybe_skip_selective_scheduling (void);
 
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
-
-DEF_VEC_I(unsigned);
-DEF_VEC_ALLOC_I(unsigned,heap);
-
-#endif /* GCC_VECPRIM_H */
+#endif /* GCC_SEL_SCHED_H */
