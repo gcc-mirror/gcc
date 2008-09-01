@@ -1,3 +1,8 @@
+2008-09-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* ira.c (setup_eliminable_regset): Only declare i if ELIMINABLE_REGS is
+	defined.
+
 2008-09-01  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (maybe_hot_count_p, maybe_hot_edge_p): When profile is

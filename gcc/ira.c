@@ -1258,7 +1258,6 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 static void
 setup_eliminable_regset (void)
 {
-  int i;
   /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
      asm.  Unlike regs_ever_live, elements of this array corresponding
      to eliminable regs (like the frame pointer) are set if an asm
@@ -1266,6 +1265,7 @@ setup_eliminable_regset (void)
   char *regs_asm_clobbered
     = (char *) alloca (FIRST_PSEUDO_REGISTER * sizeof (char));
 #ifdef ELIMINABLE_REGS
+  int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   /* FIXME: If EXIT_IGNORE_STACK is set, we will not save and restore
