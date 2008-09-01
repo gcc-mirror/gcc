@@ -941,6 +941,7 @@ ccp_fold (gimple stmt)
                  so this should almost always return a simplified RHS.  */
               tree lhs = gimple_assign_lhs (stmt);
               tree op0 = gimple_assign_rhs1 (stmt);
+	      tree res;
 
               /* Simplify the operand down to a constant.  */
               if (TREE_CODE (op0) == SSA_NAME)
@@ -976,8 +977,21 @@ ccp_fold (gimple stmt)
 		  return op0;
 		}
 
-              return fold_unary (subcode, gimple_expr_type (stmt), op0);
-            }  
+              res = fold_unary (subcode, gimple_expr_type (stmt), op0);
+
+	      /* If the operation was a conversion do _not_ mark a
+	         resulting constant with TREE_OVERFLOW if the original
+		 constant was not.  These conversions have implementation
+		 defined behavior and retaining the TREE_OVERFLOW flag
+		 here would confuse later passes such as VRP.  */
+	      if (res
+		  && TREE_CODE (res) == INTEGER_CST
+		  && TREE_CODE (op0) == INTEGER_CST
+		  && CONVERT_EXPR_CODE_P (subcode))
+		TREE_OVERFLOW (res) = TREE_OVERFLOW (op0);
+
+	      return res;
+            }
 
           case GIMPLE_BINARY_RHS:
             {
@@ -2644,26 +2658,37 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       break;
 
     case GIMPLE_UNARY_RHS:
-      result = fold_unary (subcode,
-                           gimple_expr_type (stmt),
-                           gimple_assign_rhs1 (stmt));
+      {
+	tree rhs = gimple_assign_rhs1 (stmt);
 
-      if (result)
-        {
-          STRIP_USELESS_TYPE_CONVERSION (result);
-          if (valid_gimple_rhs_p (result))
-	    return result;
-        }
-      else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
-	       && POINTER_TYPE_P (gimple_expr_type (stmt))
-	       && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
-	{
-	  tree type = gimple_expr_type (stmt);
-	  tree t = maybe_fold_offset_to_address (gimple_assign_rhs1 (stmt),
-						 integer_zero_node, type);
-	  if (t)
-	    return t;
-	}
+	result = fold_unary (subcode, gimple_expr_type (stmt), rhs);
+	if (result)
+	  {
+	    /* If the operation was a conversion do _not_ mark a
+	       resulting constant with TREE_OVERFLOW if the original
+	       constant was not.  These conversions have implementation
+	       defined behavior and retaining the TREE_OVERFLOW flag
+	       here would confuse later passes such as VRP.  */
+	    if (CONVERT_EXPR_CODE_P (subcode)
+		&& TREE_CODE (result) == INTEGER_CST
+		&& TREE_CODE (rhs) == INTEGER_CST)
+	      TREE_OVERFLOW (result) = TREE_OVERFLOW (rhs);
+
+	    STRIP_USELESS_TYPE_CONVERSION (result);
+	    if (valid_gimple_rhs_p (result))
+	      return result;
+	  }
+	else if (CONVERT_EXPR_CODE_P (subcode)
+		 && POINTER_TYPE_P (gimple_expr_type (stmt))
+		 && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
+	  {
+	    tree type = gimple_expr_type (stmt);
+	    tree t = maybe_fold_offset_to_address (gimple_assign_rhs1 (stmt),
+						   integer_zero_node, type);
+	    if (t)
+	      return t;
+	  }
+      }
       break;
 
     case GIMPLE_BINARY_RHS:
