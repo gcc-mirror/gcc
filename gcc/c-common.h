@@ -357,7 +357,7 @@ extern void push_cleanup (tree, tree, bool);
 extern tree pushdecl_top_level (tree);
 extern tree pushdecl (tree);
 extern tree build_modify_expr (tree, enum tree_code, tree);
-extern tree build_indirect_ref (tree, const char *);
+extern tree build_indirect_ref (tree, const char *, location_t);
 
 extern int c_expand_decl (tree);
 
@@ -851,7 +851,7 @@ extern tree build_function_call (tree, tree);
 
 extern tree resolve_overloaded_builtin (tree, tree);
 
-extern tree finish_label_address_expr (tree);
+extern tree finish_label_address_expr (tree, location_t);
 
 /* Same function prototype, but the C and C++ front ends have
    different implementations.  Used in c-common.c.  */

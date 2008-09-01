@@ -1578,6 +1578,8 @@ struct tree_constructor GTY(())
    location.  */
 #define CAN_HAVE_LOCATION_P(NODE) (EXPR_P (NODE))
 
+extern void protected_set_expr_location (tree, location_t);
+
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)

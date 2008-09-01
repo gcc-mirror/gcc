@@ -1,3 +1,11 @@
+2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (build_x_indirect_ref): Add location argument.
+	* class.c (build_base_path): Pass location to build_indirect_ref.
+	* pt.c (tsubst_copy_and_build): Pass location to
+	finish_label_address_expr.
+	* parser.c (cp_parser_unary_expression): Same.
+
 2008-08-31  Jason Merrill  <jason@redhat.com>
 
 	Implement late-specified return type using 'auto'.

@@ -1,3 +1,7 @@
+2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/20010516-1.c: Test for columns.
+
 2008-09-01  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37193

@@ -2630,7 +2630,8 @@ build_typed_selector_reference (tree ident, tree prototype)
  return_at_index:
   expr = build_unary_op (ADDR_EXPR,
 			 build_array_ref (UOBJC_SELECTOR_TABLE_decl,
-					  build_int_cst (NULL_TREE, index)),
+					  build_int_cst (NULL_TREE, index),
+					  input_location),
 			 1);
   return convert (objc_selector_type, expr);
 }
@@ -2648,7 +2649,8 @@ build_selector_reference (tree ident)
 	return (flag_next_runtime
 		? TREE_PURPOSE (*chain)
 		: build_array_ref (UOBJC_SELECTOR_TABLE_decl,
-				   build_int_cst (NULL_TREE, index)));
+				   build_int_cst (NULL_TREE, index),
+				   input_location));
 
       index++;
       chain = &TREE_CHAIN (*chain);
@@ -2661,7 +2663,8 @@ build_selector_reference (tree ident)
   return (flag_next_runtime
 	  ? expr
 	  : build_array_ref (UOBJC_SELECTOR_TABLE_decl,
-			     build_int_cst (NULL_TREE, index)));
+			     build_int_cst (NULL_TREE, index),
+			     input_location));
 }
 
 static GTY(()) int class_reference_idx;
@@ -3046,11 +3049,13 @@ objc_substitute_decl (tree expr, tree oldexpr, tree newexpr)
       return build_array_ref (objc_substitute_decl (TREE_OPERAND (expr, 0),
 						    oldexpr,
 						    newexpr),
-			      TREE_OPERAND (expr, 1));
+			      TREE_OPERAND (expr, 1),
+			      input_location);
     case INDIRECT_REF:
       return build_indirect_ref (objc_substitute_decl (TREE_OPERAND (expr, 0),
 						       oldexpr,
-						       newexpr), "->");
+						       newexpr), "->",
+				 input_location);
     default:
       return expr;
     }
@@ -6713,7 +6718,8 @@ build_ivar_reference (tree id)
       self_decl = convert (objc_instance_type, self_decl); /* cast */
     }
 
-  return objc_build_component_ref (build_indirect_ref (self_decl, "->"), id);
+  return objc_build_component_ref (build_indirect_ref (self_decl, "->",
+  						       input_location), id);
 }
 
 /* Compute a hash value for a given method SEL_NAME.  */
@@ -8737,7 +8743,7 @@ get_super_receiver (void)
 		super_class
 		  = build_indirect_ref
 		    (build_c_cast (build_pointer_type (objc_class_type),
-				   super_class), "unary *");
+				   super_class), "unary *", input_location);
 	    }
 	  else
 	    {

@@ -1,3 +1,24 @@
+2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree.c (protected_set_expr_location): New.
+	* tree.h (protected_set_expr_location): New prototype.
+	* c-tree.h (build_array_ref): Add argument.
+	(parser_build_unary_op): Same.
+	* c-typeck.c (build_indirect_ref): Handle new location argument.
+	(build_array_ref): Same.
+	(parser_build_unary_op): Same.
+	* gimplify.c (gimplify_asm_expr): Set input_location before calling
+	error.
+	* c-omp.c (c_finish_omp_atomic): Pass location when calling
+	build_indirect_ref.
+	* c-common.c (finish_label_address_expr): Handle new location
+	argument.
+	* c-common.h (build_indirect_ref): Add argument.
+	(finish_label_address_expr): Same.
+	* c-parser.c (c_parser_unary_expression): Pass location to build
+	functions.
+	(c_parser_postfix_expression): Same.
+
 2008-09-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md: Include cortex-r4f.md.

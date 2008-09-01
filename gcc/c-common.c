@@ -5003,10 +5003,12 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 }
 
 /* Finish an expression taking the address of LABEL (an
-   IDENTIFIER_NODE).  Returns an expression for the address.  */
+   IDENTIFIER_NODE).  Returns an expression for the address.
+
+   LOC is the location for the expression returned.  */
 
 tree
-finish_label_address_expr (tree label)
+finish_label_address_expr (tree label, location_t loc)
 {
   tree result;
 
@@ -5025,6 +5027,7 @@ finish_label_address_expr (tree label)
       /* The current function in not necessarily uninlinable.
 	 Computed gotos are incompatible with inlining, but the value
 	 here could be used only in a diagnostic, for example.  */
+      protected_set_expr_location (result, loc);
     }
 
   return result;
