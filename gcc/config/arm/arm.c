@@ -18235,8 +18235,15 @@ arm_no_early_mul_dep (rtx producer, rtx consumer)
     op = XVECEXP (op, 0, 0);
   op = XEXP (op, 1);
 
-  return (GET_CODE (op) == PLUS
-	  && !reg_overlap_mentioned_p (value, XEXP (op, 0)));
+  if (GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
+    {
+      if (GET_CODE (XEXP (op, 0)) == MULT)
+	return !reg_overlap_mentioned_p (value, XEXP (op, 0));
+      else
+	return !reg_overlap_mentioned_p (value, XEXP (op, 1));
+    }
+
+  return 0;
 }
 
 /* We can't rely on the caller doing the proper promotion when
