@@ -1,3 +1,8 @@
+2008-09-01  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/thumb2.md (thumb2_negscc): Match the correct operand for
+	optimized LT0 test.  Remove optimization for GT.
+
 2008-09-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (LIB_SPEC): Link against librt when building static
