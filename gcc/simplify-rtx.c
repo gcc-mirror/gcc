@@ -1594,10 +1594,14 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	 to CONST_INT since overflow won't be computed properly if wider
 	 than HOST_BITS_PER_WIDE_INT.  */
 
-      if (CONSTANT_P (op0) && GET_MODE (op0) != VOIDmode
+      if ((GET_CODE (op0) == CONST
+	   || GET_CODE (op0) == SYMBOL_REF
+	   || GET_CODE (op0) == LABEL_REF)
 	  && GET_CODE (op1) == CONST_INT)
 	return plus_constant (op0, INTVAL (op1));
-      else if (CONSTANT_P (op1) && GET_MODE (op1) != VOIDmode
+      else if ((GET_CODE (op1) == CONST
+		|| GET_CODE (op1) == SYMBOL_REF
+		|| GET_CODE (op1) == LABEL_REF)
 	       && GET_CODE (op0) == CONST_INT)
 	return plus_constant (op1, INTVAL (op0));
 

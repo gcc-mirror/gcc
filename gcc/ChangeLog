@@ -1,3 +1,9 @@
+2008-09-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Check for CONST,
+	SYMBOL_REF and LABEL_REF when applying plus_constant, instead of
+	checking for a non-VOID CONSTANT_P.
+
 2008-09-02  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (pass_strip_predict_hints): Avoid bugs dump file.
