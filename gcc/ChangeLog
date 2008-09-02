@@ -1,3 +1,7 @@
+2008-09-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md (<u>mulsidi3): Use a temporary register.
+
 2008-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37248
