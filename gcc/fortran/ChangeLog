@@ -1,3 +1,22 @@
+2008-09-02  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (struct gfc_namespace): New member `implicit_loc'.
+	(gfc_add_abstract): New method.
+	* decl.c (gfc_get_type_attr_spec): Match ABSTRACT attribute.
+	(gfc_match_derived_decl): Copy abstract attribute in derived symbol.
+	* dump-parse-tree.c (show_attr): Show ABSTRACT attribute as `ABSTRACT'
+	only to allow for ABSTRACT types.
+	* parse.c (parse_interface): Use new gfc_add_abstract.
+	* primary.c (gfc_match_structure_constructor): Check that no ABSTRACT
+	type is constructed.
+	* resolve.c (resolve_typespec_used): New method.
+	(resolve_fl_derived): Check type in respect to ABSTRACT attribute and
+	check that no component is of an ABSTRACT type.
+	(resolve_symbol): Check that no symbol is of an ABSTRACT type.
+	(resolve_types): Check IMPLICIT declarations for ABSTRACT types.
+	* symbol.c (gfc_merge_new_implicit): Remember loci of IMPLICIT's.
+	(gfc_add_abstract): New method.
+
 2008-09-01  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37193

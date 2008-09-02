@@ -2170,7 +2170,7 @@ loop:
 
   if (current_interface.type == INTERFACE_ABSTRACT)
     {
-      gfc_new_block->attr.abstract = 1;
+      gfc_add_abstract (&gfc_new_block->attr, &gfc_current_locus);
       if (gfc_is_intrinsic_typename (gfc_new_block->name))
 	gfc_error ("Name '%s' of ABSTRACT INTERFACE at %C "
 		   "cannot be the same as an intrinsic type",

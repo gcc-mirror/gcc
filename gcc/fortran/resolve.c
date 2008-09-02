@@ -82,6 +82,33 @@ gfc_is_formal_arg (void)
   return formal_arg_flag;
 }
 
+
+/* Ensure a typespec used is valid; for instance, TYPE(t) is invalid if t is
+   an ABSTRACT derived-type.  If where is not NULL, an error message with that
+   locus is printed, optionally using name.  */
+
+static gfc_try
+resolve_typespec_used (gfc_typespec* ts, locus* where, const char* name)
+{
+  if (ts->type == BT_DERIVED && ts->derived->attr.abstract)
+    {
+      if (where)
+	{
+	  if (name)
+	    gfc_error ("'%s' at %L is of the ABSTRACT type '%s'",
+		       name, where, ts->derived->name);
+	  else
+	    gfc_error ("ABSTRACT type '%s' used at %L",
+		       ts->derived->name, where);
+	}
+
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
 /* Resolve types of formal argument lists.  These have to be done early so that
    the formal argument lists of module procedures can be copied to the
    containing module before the individual procedures are resolved
@@ -8420,8 +8447,21 @@ resolve_fl_derived (gfc_symbol *sym)
   if (super_type && resolve_fl_derived (super_type) == FAILURE)
     return FAILURE;
 
+  /* An ABSTRACT type must be extensible.  */
+  if (sym->attr.abstract && (sym->attr.is_bind_c || sym->attr.sequence))
+    {
+      gfc_error ("Non-extensible derived-type '%s' at %L must not be ABSTRACT",
+		 sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
   for (c = sym->components; c != NULL; c = c->next)
     {
+      /* Check type-spec if this is not the parent-type component.  */
+      if ((!sym->attr.extension || c != sym->components)
+	  && resolve_typespec_used (&c->ts, &c->loc, c->name) == FAILURE)
+	return FAILURE;
+
       /* If this type is an extension, see if this component has the same name
 	 as an inherited type-bound procedure.  */
       if (super_type
@@ -9115,6 +9155,13 @@ resolve_symbol (gfc_symbol *sym)
 	  || (a->dummy && a->intent == INTENT_OUT))
 	apply_default_init (sym);
     }
+
+  /* If this symbol has a type-spec, check it.  */
+  if (sym->attr.flavor == FL_VARIABLE || sym->attr.flavor == FL_PARAMETER
+      || (sym->attr.flavor == FL_PROCEDURE && sym->attr.function))
+    if (resolve_typespec_used (&sym->ts, &sym->declared_at, sym->name)
+	  == FAILURE)
+      return;
 }
 
 
@@ -10069,6 +10116,18 @@ resolve_types (gfc_namespace *ns)
   gfc_equiv *eq;
 
   gfc_current_ns = ns;
+
+  /* Check that all IMPLICIT types are ok.  */
+  if (!ns->seen_implicit_none)
+    {
+      unsigned letter;
+      for (letter = 0; letter != GFC_LETTERS; ++letter)
+	if (ns->set_flag[letter]
+	    && resolve_typespec_used (&ns->default_type[letter],
+				      &ns->implicit_loc[letter],
+				      NULL) == FAILURE)
+	  return;
+    }
 
   resolve_entries (ns);
 

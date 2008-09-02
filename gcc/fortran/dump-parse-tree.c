@@ -619,7 +619,7 @@ show_attr (symbol_attribute *attr)
     fputs (" IN-COMMON", dumpfile);
 
   if (attr->abstract)
-    fputs (" ABSTRACT INTERFACE", dumpfile);
+    fputs (" ABSTRACT", dumpfile);
   if (attr->function)
     fputs (" FUNCTION", dumpfile);
   if (attr->subroutine)

@@ -1244,6 +1244,8 @@ typedef struct gfc_namespace
   int set_flag[GFC_LETTERS];
   /* Keeps track of the implicit types associated with the letters.  */
   gfc_typespec default_type[GFC_LETTERS];
+  /* Store the positions of IMPLICIT statements.  */
+  locus implicit_loc[GFC_LETTERS];
 
   /* If this is a namespace of a procedure, this points to the procedure.  */
   struct gfc_symbol *proc_name;
@@ -2260,6 +2262,7 @@ gfc_try gfc_add_function (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_subroutine (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_volatile (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_proc (symbol_attribute *attr, const char *name, locus *where);
+gfc_try gfc_add_abstract (symbol_attribute* attr, locus* where);
 
 gfc_try gfc_add_access (symbol_attribute *, gfc_access, const char *, locus *);
 gfc_try gfc_add_is_bind_c (symbol_attribute *, const char *, locus *, int);
