@@ -1,3 +1,9 @@
+2008-09-02  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR target/37283
+	* opts.c (decode_options): Move processing of -fno-unit-at-a-time
+	and -fno-toplevel-reorder after handle_options.
+
 2008-09-02  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_tune_cortex_a9): Define.
