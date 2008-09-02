@@ -1926,14 +1926,22 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 	    {
 	      /* Currently SET is the only monadic value for CODE, all
 		 the rest are diadic.  */
-	      emit_set_insn (target, GEN_INT (val));
+	      if (TARGET_USE_MOVT)
+		arm_emit_movpair (target, GEN_INT (val));
+	      else
+		emit_set_insn (target, GEN_INT (val));
+
 	      return 1;
 	    }
 	  else
 	    {
 	      rtx temp = subtargets ? gen_reg_rtx (mode) : target;
 
-	      emit_set_insn (temp, GEN_INT (val));
+	      if (TARGET_USE_MOVT)
+		arm_emit_movpair (temp, GEN_INT (val));
+	      else
+		emit_set_insn (temp, GEN_INT (val));
+
 	      /* For MINUS, the value is subtracted from, since we never
 		 have subtraction of a constant.  */
 	      if (code == MINUS)
@@ -5117,6 +5125,10 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
     case SYMBOL_REF:
       return 6;
 
+    case HIGH:
+    case LO_SUM:
+      return (outer == SET) ? 1 : -1;
+
     case CONST_DOUBLE:
       if (arm_const_double_rtx (x) || vfp3_const_double_rtx (x))
 	return outer == SET ? 2 : -1;
@@ -5341,6 +5353,13 @@ arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case CONST_DOUBLE:
       *total = COSTS_N_INSNS (4);
+      return true;
+
+    case HIGH:
+    case LO_SUM:
+      /* We prefer constant pool entries to MOVW/MOVT pairs, so bump the
+	 cost of these slightly.  */
+      *total = COSTS_N_INSNS (1) + 1;
       return true;
 
     default:
@@ -9891,6 +9910,14 @@ output_mov_long_double_arm_from_arm (rtx *operands)
 }
 
 
+/* Emit a MOVW/MOVT pair.  */
+void arm_emit_movpair (rtx dest, rtx src)
+{
+  emit_set_insn (dest, gen_rtx_HIGH (SImode, src));
+  emit_set_insn (dest, gen_rtx_LO_SUM (SImode, dest, src));
+}
+
+
 /* Output a move from arm registers to an fpa registers.
    OPERANDS[0] is an fpa register.
    OPERANDS[1] is the first registers of an arm register pair.  */
@@ -12906,10 +12933,21 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
-    /* An integer without a preceding # sign.  */
+    /* An integer or symbol address without a preceding # sign.  */
     case 'c':
-      gcc_assert (GET_CODE (x) == CONST_INT);
-      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+      switch (GET_CODE (x))
+	{
+	case CONST_INT:
+	  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  break;
+
+	case SYMBOL_REF:
+	  output_addr_const (stream, x);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
       return;
 
     case 'B':

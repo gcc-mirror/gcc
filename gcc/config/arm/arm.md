@@ -4823,6 +4823,14 @@
 			       optimize && can_create_pseudo_p ());
           DONE;
         }
+
+      if (TARGET_USE_MOVT && !target_word_relocations
+	  && GET_CODE (operands[1]) == SYMBOL_REF
+	  && !flag_pic && !arm_tls_referenced_p (operands[1]))
+	{
+	  arm_emit_movpair (operands[0], operands[1]);
+	  DONE;
+	}
     }
   else /* TARGET_THUMB1...  */
     {
@@ -4881,6 +4889,28 @@
 					     : 0));
   }
   "
+)
+
+;; The ARM LO_SUM and HIGH are backwards - HIGH sets the low bits, and
+;; LO_SUM adds in the high bits.  Fortunately these are opaque operations
+;; so this does not matter.
+(define_insn "*arm_movt"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
+	(lo_sum:SI (match_operand:SI 1 "nonimmediate_operand" "0")
+		   (match_operand:SI 2 "general_operand"      "i")))]
+  "TARGET_32BIT"
+  "movt%?\t%0, #:upper16:%c2"
+  [(set_attr "predicable" "yes")
+   (set_attr "length" "4")]
+)
+
+(define_insn "*arm_movw"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
+	(high:SI (match_operand:SI 1 "general_operand"      "i")))]
+  "TARGET_32BIT"
+  "movw%?\t%0, #:lower16:%c1"
+  [(set_attr "predicable" "yes")
+   (set_attr "length" "4")]
 )
 
 (define_insn "*arm_movsi_insn"
