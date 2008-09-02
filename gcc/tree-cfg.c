@@ -6560,7 +6560,13 @@ gimple_purge_all_dead_eh_edges (const_bitmap blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
     {
-      changed |= gimple_purge_dead_eh_edges (BASIC_BLOCK (i));
+      basic_block bb = BASIC_BLOCK (i);
+
+      /* Earlier gimple_purge_dead_eh_edges could have removed
+	 this basic block already.  */
+      gcc_assert (bb || changed);
+      if (bb != NULL)
+	changed |= gimple_purge_dead_eh_edges (bb);
     }
 
   return changed;

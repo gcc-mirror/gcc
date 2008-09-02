@@ -1,5 +1,8 @@
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/36766
+	* g++.dg/tree-ssa/pr36766.C: New test.
+
 	PR target/36332
 	* gcc.c-torture/execute/ieee/pr36332.c: New test.
 
