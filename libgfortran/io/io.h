@@ -940,6 +940,9 @@ internal_proto(write_o);
 extern void write_real (st_parameter_dt *, const char *, int);
 internal_proto(write_real);
 
+extern void write_real_g0 (st_parameter_dt *, const char *, int, int);
+internal_proto(write_real_g0);
+
 extern void write_x (st_parameter_dt *, int, int);
 internal_proto(write_x);
 

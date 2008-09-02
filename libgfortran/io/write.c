@@ -301,7 +301,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
   if (is_stream_io (dtp))
     {
       const char crlf[] = "\r\n";
-      int i, j, bytes;
+      int i, bytes;
       gfc_char4_t *qq;
       bytes = 0;
 
@@ -952,6 +952,39 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
 }
 
 
+/* Set an fnode to default format.  */
+
+static void
+set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
+{
+  f->format = FMT_G;
+  switch (length)
+    {
+    case 4:
+      f->u.real.w = 15;
+      f->u.real.d = 8;
+      f->u.real.e = 2;
+      break;
+    case 8:
+      f->u.real.w = 25;
+      f->u.real.d = 17;
+      f->u.real.e = 3;
+      break;
+    case 10:
+      f->u.real.w = 29;
+      f->u.real.d = 20;
+      f->u.real.e = 4;
+      break;
+    case 16:
+      f->u.real.w = 44;
+      f->u.real.d = 35;
+      f->u.real.e = 4;
+      break;
+    default:
+      internal_error (&dtp->common, "bad real kind");
+      break;
+    }
+}
 /* Output a real number with default format.
    This is 1PG14.7E2 for REAL(4), 1PG23.15E3 for REAL(8),
    1PG28.19E4 for REAL(10) and 1PG43.34E4 for REAL(16).  */
@@ -961,34 +994,22 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
 {
   fnode f ;
   int org_scale = dtp->u.p.scale_factor;
-  f.format = FMT_G;
   dtp->u.p.scale_factor = 1;
-  switch (length)
-    {
-    case 4:
-      f.u.real.w = 15;
-      f.u.real.d = 8;
-      f.u.real.e = 2;
-      break;
-    case 8:
-      f.u.real.w = 25;
-      f.u.real.d = 17;
-      f.u.real.e = 3;
-      break;
-    case 10:
-      f.u.real.w = 29;
-      f.u.real.d = 20;
-      f.u.real.e = 4;
-      break;
-    case 16:
-      f.u.real.w = 44;
-      f.u.real.d = 35;
-      f.u.real.e = 4;
-      break;
-    default:
-      internal_error (&dtp->common, "bad real kind");
-      break;
-    }
+  set_fnode_default (dtp, &f, length);
+  write_float (dtp, &f, source , length);
+  dtp->u.p.scale_factor = org_scale;
+}
+
+
+void
+write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
+{
+  fnode f ;
+  int org_scale = dtp->u.p.scale_factor;
+  dtp->u.p.scale_factor = 1;
+  set_fnode_default (dtp, &f, length);
+  f.format = FMT_ES;
+  f.u.real.d = d;
   write_float (dtp, &f, source , length);
   dtp->u.p.scale_factor = org_scale;
 }
