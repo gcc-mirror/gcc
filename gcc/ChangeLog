@@ -1,3 +1,9 @@
+2008-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36332
+	* real.c (real_maxval): Clear a lower bit to make real_maxval
+	match get_max_float for IBM long double format.
+
 2008-09-02  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.md (<u>mulsidi3): Use a temporary register.
