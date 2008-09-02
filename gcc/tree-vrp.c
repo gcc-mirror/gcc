@@ -3785,6 +3785,14 @@ register_new_assert_for (tree name, tree expr,
 		&& gimple_code (gsi_stmt (si)) != GIMPLE_SWITCH);
 #endif
 
+  /* Never build an assert comparing against an integer constant with
+     TREE_OVERFLOW set.  This confuses our undefined overflow warning
+     machinery.  */
+  if (TREE_CODE (val) == INTEGER_CST
+      && TREE_OVERFLOW (val))
+    val = build_int_cst_wide (TREE_TYPE (val),
+			      TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val));
+
   /* The new assertion A will be inserted at BB or E.  We need to
      determine if the new location is dominated by a previously
      registered location for A.  If we are doing an edge insertion,
