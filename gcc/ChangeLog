@@ -1,3 +1,8 @@
+2008-09-02  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac: Use m4_quote to quote the expansion of m4_do.
+	* configure: Regenerate.
+
 2008-09-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Check for CONST,
@@ -41,7 +46,7 @@
 2008-09-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	Fixed typo in date of the 2008-09-01 MOVE_RATIO commit.
-	
+
 	* config/ia64/ia64.opt (msched-ar-data-spec): Default to 1.
 	* config/ia64/ia64.c (ia64_set_sched_flags): Always initialize
 	spec_info->mask.
@@ -130,7 +135,7 @@
 	* config/arm/arm.md: Include cortex-r4f.md.
 	(attr fpu): Update type list.
 	(attr type): Add fcpys, ffariths, ffarithd, fadds, faddd, fconsts,
-	fconstd, fcmps and fcmpd. 
+	fconstd, fcmps and fcmpd.
 	(attr tune_cortexr4): Define.
 	(attr generic_sched, attr generic_vfp): Use tune_cortexr4.
 	* config/arm/vfp.md: Document fcpys, ffariths, ffarithd, fadds, faddd,
@@ -153,15 +158,15 @@
 
 2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
 
-	* sel-sched-ir.c (cmp_v_in_regset_pool): Surround with 
-	#ifdef ENABLE_CHECKING. 
+	* sel-sched-ir.c (cmp_v_in_regset_pool): Surround with
+	#ifdef ENABLE_CHECKING.
 
 2008-09-01  Andrey Belevantsev  <abel@ispras.ru>
-	
+
 	* sel-sched-dump.c: Surround with #ifdef INSN_SCHEDULING.
 	* sched-int.h (print_insn, print_pattern, print_value): Declare also
 	when !INSN_SCHEDULING.
-	
+
 2008-09-01  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c (TARGET_ADDRESS_COST): Update.

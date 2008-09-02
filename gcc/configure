@@ -7169,7 +7169,7 @@ CFLAGS="$save_CFLAGS"
 if test "$GCC" = yes; then
   echo "$as_me:$LINENO: checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings" >&5
 echo $ECHO_N "checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings... $ECHO_C" >&6
-if test "${acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_+set}" = set; then
+if test "${acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   save_CFLAGS="$CFLAGS"
@@ -7211,19 +7211,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_=yes
+  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_=no
+acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 CFLAGS="$save_CFLAGS"
 fi
-echo "$as_me:$LINENO: result: $acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_" >&5
-echo "${ECHO_T}$acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_" >&6
-if test $acx_cv_prog_cc_pedantic_m4_do__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings_ = yes; then
+echo "$as_me:$LINENO: result: $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&5
+echo "${ECHO_T}$acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings" >&6
+if test $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros__Wno_overlength_strings = yes; then
   strict_warn="$strict_warn${strict_warn:+ }-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
 fi
 
