@@ -1,3 +1,10 @@
+2008-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37095
+	* cgraph.c (cgraph_node): When creating new cgraph node after
+	assembler_name_hash has been populated, record it in the hash
+	table.
+
 2008-09-01  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document -mword-relocations.
