@@ -101,7 +101,7 @@ Target Report Var(mflag_sched_br_data_spec) Init(0)
 Use data speculation before reload
 
 msched-ar-data-spec
-Target Report Var(mflag_sched_ar_data_spec) Init(0)
+Target Report Var(mflag_sched_ar_data_spec) Init(1)
 Use data speculation after reload
 
 msched-control-spec
