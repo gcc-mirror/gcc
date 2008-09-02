@@ -1631,9 +1631,6 @@ rtx ix86_compare_op0 = NULL_RTX;
 rtx ix86_compare_op1 = NULL_RTX;
 rtx ix86_compare_emitted = NULL_RTX;
 
-/* Size of the register save area.  */
-#define X86_64_VARARGS_SIZE (X86_64_REGPARM_MAX * UNITS_PER_WORD + X86_64_SSE_REGPARM_MAX * 16)
-
 /* Define the structure for the machine field in struct function.  */
 
 struct stack_local_entry GTY(())
@@ -6312,14 +6309,24 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   int i;
   int regparm = ix86_regparm;
 
-  if((cum ? cum->call_abi : ix86_cfun_abi ()) != DEFAULT_ABI)
+  if (cum->call_abi != DEFAULT_ABI)
     regparm = DEFAULT_ABI != SYSV_ABI ? X86_64_REGPARM_MAX : X64_REGPARM_MAX;
 
-  if (! cfun->va_list_gpr_size && ! cfun->va_list_fpr_size)
-    return;
+  /* GPR size of varargs save area.  */
+  if (cfun->va_list_gpr_size)
+    ix86_varargs_gpr_size = X86_64_REGPARM_MAX * UNITS_PER_WORD;
+  else
+    ix86_varargs_gpr_size = 0;
 
-  /* Indicate to allocate space on the stack for varargs save area.  */
-  ix86_save_varrargs_registers = 1;
+  /* FPR size of varargs save area.  We don't need it if we don't pass
+     anything in SSE registers.  */
+  if (cum->sse_nregs && cfun->va_list_fpr_size)
+    ix86_varargs_fpr_size = X86_64_SSE_REGPARM_MAX * 16;
+  else
+    ix86_varargs_fpr_size = 0;
+
+  if (! ix86_varargs_gpr_size && ! ix86_varargs_fpr_size)
+    return;
 
   save_area = frame_pointer_rtx;
   set = get_varargs_alias_set ();
@@ -6337,7 +6344,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 					x86_64_int_parameter_registers[i]));
     }
 
-  if (cum->sse_nregs && cfun->va_list_fpr_size)
+  if (ix86_varargs_fpr_size)
     {
       /* Now emit code to save SSE registers.  The AX parameter contains number
 	 of SSE parameter registers used to call this function.  We use
@@ -6382,7 +6389,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
       tmp_reg = gen_reg_rtx (Pmode);
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
 			      plus_constant (save_area,
-					     8 * X86_64_REGPARM_MAX + 127)));
+					     ix86_varargs_gpr_size + 127)));
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
       MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
@@ -6438,7 +6445,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (stdarg_p (fntype))
     function_arg_advance (&next_cum, mode, type, 1);
 
-  if ((cum ? cum->call_abi : DEFAULT_ABI) == MS_ABI)
+  if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);
   else
     setup_incoming_varargs_64 (&next_cum);
@@ -6501,7 +6508,7 @@ ix86_va_start (tree valist, rtx nextarg)
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
-  if (cfun->va_list_fpr_size)
+  if (TARGET_SSE && cfun->va_list_fpr_size)
     {
       type = TREE_TYPE (fpr);
       t = build2 (MODIFY_EXPR, type, fpr,
@@ -6520,12 +6527,15 @@ ix86_va_start (tree valist, rtx nextarg)
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  if (cfun->va_list_gpr_size || cfun->va_list_fpr_size)
+  if (ix86_varargs_gpr_size || ix86_varargs_fpr_size)
     {
       /* Find the register save area.
 	 Prologue of the function save it right above stack frame.  */
       type = TREE_TYPE (sav);
       t = make_tree (type, frame_pointer_rtx);
+      if (!ix86_varargs_gpr_size)
+	t = build2 (POINTER_PLUS_EXPR, type, t,
+		    size_int (-8 * X86_64_REGPARM_MAX));
       t = build2 (MODIFY_EXPR, type, sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7500,13 +7510,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   offset += frame->nregs * UNITS_PER_WORD;
 
   /* Va-arg area */
-  if (ix86_save_varrargs_registers)
-    {
-      offset += X86_64_VARARGS_SIZE;
-      frame->va_arg_size = X86_64_VARARGS_SIZE;
-    }
-  else
-    frame->va_arg_size = 0;
+  frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
+  offset += frame->va_arg_size;
 
   /* Align start of frame for local function.  */
   frame->padding1 = ((offset + stack_alignment_needed - 1)
