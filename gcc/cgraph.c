@@ -453,7 +453,21 @@ cgraph_node (tree decl)
       node->origin->nested = node;
       node->master_clone = node;
     }
+  if (assembler_name_hash)
+    {
+      void **aslot;
+      tree name = DECL_ASSEMBLER_NAME (decl);
 
+      aslot = htab_find_slot_with_hash (assembler_name_hash, name,
+					decl_assembler_name_hash (name),
+					INSERT);
+      /* We can have multiple declarations with same assembler name. For C++
+	 it is __builtin_strlen and strlen, for instance.  Do we need to
+	 record them all?  Original implementation marked just first one
+	 so lets hope for the best.  */
+      if (*aslot == NULL)
+	*aslot = node;
+    }
   return node;
 }
 
