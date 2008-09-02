@@ -2076,17 +2076,15 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	    {
 	      enum machine_mode dest_mode = GET_MODE (dest);
 	      enum machine_mode tmp_mode = GET_MODE (tmps[i]);
-	      int dest_size = GET_MODE_SIZE (dest_mode);
-	      int tmp_size = GET_MODE_SIZE (tmp_mode);
 
-	      gcc_assert (bytepos == 0
-			  && XVECLEN (src, 0)
-			  && dest_size == tmp_size);
+	      gcc_assert (bytepos == 0 && XVECLEN (src, 0));
 
 	      if (GET_MODE_ALIGNMENT (dest_mode)
 		  >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
-		  dest = assign_stack_temp (dest_mode, dest_size, 0);
+		  dest = assign_stack_temp (dest_mode,
+					    GET_MODE_SIZE (dest_mode),
+					    0);
 		  emit_move_insn (adjust_address (dest,
 						  tmp_mode,
 						  bytepos),
@@ -2095,7 +2093,9 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 		}
 	      else
 		{
-		  dest = assign_stack_temp (tmp_mode, tmp_size, 0);
+		  dest = assign_stack_temp (tmp_mode,
+					    GET_MODE_SIZE (tmp_mode),
+					    0);
 		  emit_move_insn (dest, tmps[i]);
 		  dst = adjust_address (dest, dest_mode, bytepos);
 		}
