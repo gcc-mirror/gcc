@@ -1,3 +1,23 @@
+2008-09-02  H.J. Lu  <hongjiu.lu@intel.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (X86_64_VARARGS_SIZE): Removed.
+	(setup_incoming_varargs_64): Assume cum != NULL. Set/check
+	ix86_varargs_gpr_size and ix86_varargs_fpr_size.  Use
+	ix86_varargs_gpr_size instead of X86_64_REGPARM_MAX.
+	Don't set ix86_save_varrargs_registers.
+	(ix86_setup_incoming_varargs): Assume cum != NULL.
+	(ix86_va_start): Check ix86_varargs_gpr_size and
+	ix86_varargs_fpr_size instead of cfun->va_list_gpr_size and
+	cfun->va_list_fpr_size, respectively.  Subtract 8*X86_64_REGPARM_MAX
+	from frame pointer if ix86_varargs_gpr_size == 0.
+	(ix86_compute_frame_layout): Updated.
+	* config/i386/i386.h (ix86_save_varrargs_registers): Removed.
+	(ix86_varargs_gpr_size): Define.
+	(ix86_varargs_fpr_size): Likewise.
+	(machine_function): Remove save_varrargs_registers.
+	Add varargs_gpr_size and varargs_fpr_size.
+
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/alpha/alpha.c (va_list_skip_additions,

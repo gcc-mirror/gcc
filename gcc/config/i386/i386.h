@@ -2390,7 +2390,8 @@ struct machine_function GTY(())
 {
   struct stack_local_entry *stack_locals;
   const char *some_ld_name;
-  int save_varrargs_registers;
+  int varargs_gpr_size;
+  int varargs_fpr_size;
   int accesses_prev_frame;
   int optimize_mode_switching[MAX_386_ENTITIES];
   int needs_cld;
@@ -2416,7 +2417,8 @@ struct machine_function GTY(())
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
-#define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
+#define ix86_varargs_gpr_size (cfun->machine->varargs_gpr_size)
+#define ix86_varargs_fpr_size (cfun->machine->varargs_fpr_size)
 #define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
 #define ix86_current_function_needs_cld (cfun->machine->needs_cld)
 #define ix86_tls_descriptor_calls_expanded_in_cfun \
