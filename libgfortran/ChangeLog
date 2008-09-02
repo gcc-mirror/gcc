@@ -1,3 +1,7 @@
+2008-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* runtime/error.c: Fix cast for printf.
+
 2008-08-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36895

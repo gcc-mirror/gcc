@@ -199,13 +199,13 @@ show_locus (st_parameter_common *cmp)
       if (filename != NULL)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
-		   (int) cmp->line, cmp->filename, cmp->unit, filename);
+		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
 	  free_mem (filename);
 	}
       else
 	{
 	  st_printf ("At line %d of file %s (unit = %d)\n",
-		   (int) cmp->line, cmp->filename, cmp->unit);
+		   (int) cmp->line, cmp->filename, (int) cmp->unit);
 	}
       return;
     }
