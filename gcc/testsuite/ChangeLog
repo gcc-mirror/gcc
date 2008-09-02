@@ -1,5 +1,8 @@
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/36332
+	* gcc.c-torture/execute/ieee/pr36332.c: New test.
+
 	PR c/37171
 	* g++.dg/ext/attrib34.C: New test.
 
