@@ -710,17 +710,6 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
     }
 }
 
-/* Strongly connected components of the reduced data dependence graph.  */
-
-typedef struct rdg_component
-{
-  int num;
-  VEC (int, heap) *vertices;
-} *rdgc;
-
-DEF_VEC_P (rdgc);
-DEF_VEC_ALLOC_P (rdgc, heap);
-
 /* Flag all the nodes of RDG containing memory accesses that could
    potentially belong to arrays already accessed in the current
    PARTITION.  */
@@ -863,9 +852,6 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
   free (all_components);
   BITMAP_FREE (saved_components);
 }
-
-DEF_VEC_P (bitmap);
-DEF_VEC_ALLOC_P (bitmap, heap);
 
 /* Aggregate several components into a useful partition that is
    registered in the PARTITIONS vector.  Partitions will be

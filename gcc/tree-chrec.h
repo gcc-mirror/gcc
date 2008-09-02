@@ -70,6 +70,7 @@ extern tree evolution_part_in_loop_num (tree, unsigned);
 extern tree hide_evolution_in_other_loops_than_loop (tree, unsigned);
 extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
+extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
 
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);

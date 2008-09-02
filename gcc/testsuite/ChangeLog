@@ -1,3 +1,23 @@
+2008-09-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <grosser@fim.uni-passau.de>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Konrad Trifunovic  <konrad.trifunovic@inria.fr>
+	    Adrien Eliche  <aeliche@isty.uvsq.fr>
+
+	Merge from graphite branch.
+	* gcc.dg/graphite/scop-{0,1,2,3,4,5,6,7,8,9,
+	10,11,12,13,14,15,16,17,18}.c: New.
+	* gcc.dg/graphite/graphite.exp: New.
+	* gcc.dg/graphite/scop-matmult.c: New.
+	* gcc.dg/graphite/block-0.c: New.
+	* lib/target-supports.exp (check_effective_target_fgraphite): New.
+	* gfortran.dg/graphite/block-1.f90: New.
+	* gfortran.dg/graphite/scop-{1,2}.f: New.
+	* gfortran.dg/graphite/block-{1,3,4}.f90: New.
+	* gfortran.dg/graphite/graphite.exp: New.
+	
 2008-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37327

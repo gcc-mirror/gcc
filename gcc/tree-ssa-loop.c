@@ -287,6 +287,49 @@ struct gimple_opt_pass pass_linear_transform =
  }
 };
 
+/* GRAPHITE optimizations.  */
+
+static unsigned int
+graphite_transforms (void)
+{
+  if (!current_loops)
+    return 0;
+
+  graphite_transform_loops ();
+
+  return 0;
+}
+
+static bool
+gate_graphite_transforms (void)
+{
+  /* Enable -fgraphite pass if any one of the graphite optimization flags 
+     is turned on.  */
+  if (flag_loop_block || flag_loop_interchange || flag_loop_strip_mine)
+    flag_graphite = 1;
+
+  return flag_graphite != 0;
+}
+
+struct gimple_opt_pass pass_graphite_transforms =
+{
+ {
+  GIMPLE_PASS,
+  "graphite",				/* name */
+  gate_graphite_transforms,		/* gate */
+  graphite_transforms,       		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_GRAPHITE_TRANSFORMS,  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_verify_loops			/* todo_flags_finish */
+ }
+};
+
 /* Check the correctness of the data dependence analyzers.  */
 
 static unsigned int

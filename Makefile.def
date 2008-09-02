@@ -68,6 +68,16 @@ host_modules= { module= mpfr; lib_path=.libs; bootstrap=true;
 		no_install= true; 
 	        host="none-${host_vendor}-${host_os}";
 		target="none-${host_vendor}-${host_os}"; };
+host_modules= { module= ppl; lib_path=.libs; bootstrap=true;
+		extra_configure_flags='--disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/';
+		no_install= true; 
+	        host="none-${host_vendor}-${host_os}";
+		target="none-${host_vendor}-${host_os}"; };
+host_modules= { module= cloog; lib_path=.libs; bootstrap=true;
+		extra_configure_flags='--disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-ppl=$$r/$(HOST_SUBDIR)/ppl/ --with-bits=gmp';
+		no_install= true; 
+	        host="none-${host_vendor}-${host_os}";
+		target="none-${host_vendor}-${host_os}"; };
 host_modules= { module= gnuserv; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
@@ -295,6 +305,8 @@ dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-gmp; };
 dependencies = { module=all-gcc; on=all-intl; };
 dependencies = { module=all-gcc; on=all-mpfr; };
+dependencies = { module=all-gcc; on=all-ppl; };
+dependencies = { module=all-gcc; on=all-cloog; };
 dependencies = { module=all-gcc; on=all-build-texinfo; };
 dependencies = { module=all-gcc; on=all-build-bison; };
 dependencies = { module=all-gcc; on=all-build-byacc; };
@@ -318,6 +330,9 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
 dependencies = { module=configure-mpfr; on=all-gmp; };
+dependencies = { module=configure-ppl; on=all-gmp; };
+dependencies = { module=configure-ppl; on=all-mpfr; };
+dependencies = { module=configure-cloog; on=all-ppl; };
 
 // Host modules specific to gdb.
 dependencies = { module=configure-gdb; on=all-intl; };

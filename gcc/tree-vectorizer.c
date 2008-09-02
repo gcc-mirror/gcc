@@ -201,7 +201,7 @@ rename_use_op (use_operand_p op_p)
 
 /* Renames the variables in basic block BB.  */
 
-static void
+void
 rename_variables_in_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;

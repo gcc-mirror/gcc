@@ -147,7 +147,6 @@ static lambda_lattice lambda_lattice_new (int, int, struct obstack *);
 static lambda_lattice lambda_lattice_compute_base (lambda_loopnest,
                                                    struct obstack *);
 
-static tree find_induction_var_from_exit_cond (struct loop *);
 static bool can_convert_to_perfect_nest (struct loop *);
 
 /* Create a new lambda body vector.  */
@@ -1434,7 +1433,7 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 /* Given a LOOP, find the induction variable it is testing against in the exit
    condition.  Return the induction variable if found, NULL otherwise.  */
 
-static tree
+tree
 find_induction_var_from_exit_cond (struct loop *loop)
 {
   gimple expr = get_loop_exit_condition (loop);

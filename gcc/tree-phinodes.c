@@ -202,10 +202,9 @@ ideal_phi_node_len (int len)
   return new_len;
 }
 
-
 /* Return a PHI node with LEN argument slots for variable VAR.  */
 
-static gimple
+gimple
 make_phi_node (tree var, int len)
 {
   gimple phi;
@@ -348,15 +347,12 @@ reserve_phi_args_for_new_edge (basic_block bb)
     }
 }
 
+/* Adds PHI to BB.  */
 
-/* Create a new PHI node for variable VAR at basic block BB.  */
-
-gimple
-create_phi_node (tree var, basic_block bb)
+void 
+add_phi_node_to_bb (gimple phi, basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  gimple phi = make_phi_node (var, EDGE_COUNT (bb->preds));
-
   /* Add the new PHI node to the list of PHI nodes for block BB.  */
   if (phi_nodes (bb) == NULL)
     set_phi_nodes (bb, gimple_seq_alloc ());
@@ -367,6 +363,16 @@ create_phi_node (tree var, basic_block bb)
   /* Associate BB to the PHI node.  */
   gimple_set_bb (phi, bb);
 
+}
+
+/* Create a new PHI node for variable VAR at basic block BB.  */
+
+gimple
+create_phi_node (tree var, basic_block bb)
+{
+  gimple phi = make_phi_node (var, EDGE_COUNT (bb->preds));
+
+  add_phi_node_to_bb (phi, bb);
   return phi;
 }
 

@@ -5021,18 +5021,38 @@ create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
     }
 }
 
+/* Returns the phi-node in BB with result RESULT.  */
+
+static gimple
+get_phi_with_result (basic_block bb, tree result)
+{
+  gimple_stmt_iterator i = gsi_start_phis (bb);
+
+  for (; !gsi_end_p (i); gsi_next (&i))
+    if (gimple_phi_result (gsi_stmt (i)) == result)
+      return gsi_stmt (i);
+
+  gcc_unreachable ();
+  return NULL;
+}
+
+
 /* Removes statement STMT (real or a phi node).  If INCLUDING_DEFINED_NAME
    is true, remove also the ssa name defined by the statement.  */
 
 static void
 remove_statement (gimple stmt, bool including_defined_name)
 {
-  gimple_stmt_iterator bsi = gsi_for_stmt (stmt);
-
   if (gimple_code (stmt) == GIMPLE_PHI)
-    remove_phi_node (&bsi, including_defined_name);
+    {
+      gimple bb_phi = get_phi_with_result (gimple_bb (stmt), 
+					 gimple_phi_result (stmt));
+      gimple_stmt_iterator bsi = gsi_for_stmt (bb_phi);
+      remove_phi_node (&bsi, including_defined_name);
+    }
   else
     {
+      gimple_stmt_iterator bsi = gsi_for_stmt (stmt);
       gsi_remove (&bsi, true);
       release_defs (stmt); 
     }
