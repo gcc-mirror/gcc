@@ -1,3 +1,8 @@
+2008-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37171
+	* g++.dg/ext/attrib34.C: New test.
+
 2008-09-02  Sebastian Pop  <sebastian.pop@amd.com>
 	    Tobias Grosser  <grosser@fim.uni-passau.de>
 	    Jan Sjodin  <jan.sjodin@amd.com>
