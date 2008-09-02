@@ -130,12 +130,6 @@ static bitmap mem_syms_to_rename;
    released after we finish updating the SSA web.  */
 static bitmap names_to_release;
 
-/* For each block, the PHI nodes that need to be rewritten are stored into
-   these vectors.  */
-typedef VEC(gimple, heap) *gimple_vec;
-DEF_VEC_P (gimple_vec);
-DEF_VEC_ALLOC_P (gimple_vec, heap);
-
 static VEC(gimple_vec, heap) *phis_to_rewrite;
 
 /* The bitmap of non-NULL elements of PHIS_TO_REWRITE.  */

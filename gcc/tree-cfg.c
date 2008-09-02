@@ -6140,7 +6140,7 @@ print_loops (FILE *file, int verbosity)
 {
   basic_block bb;
 
-  bb = BASIC_BLOCK (NUM_FIXED_BLOCKS);
+  bb = ENTRY_BLOCK_PTR;
   if (bb && bb->loop_father)
     print_loop_and_siblings (file, bb->loop_father, 0, verbosity);
 }

@@ -96,6 +96,8 @@ struct dr_alias
   bitmap vops;
 };
 
+typedef struct scop *scop_p;
+
 /* Each vector of the access matrix represents a linear access
    function for a subscript.  First elements correspond to the
    leftmost indices, ie. for a[i][j] the first vector corresponds to
@@ -170,16 +172,20 @@ struct data_reference
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
-  /* Decomposition to indices for alias analysis.  */
+  /* Subscripts of this data reference.  */
   struct indices indices;
 
   /* Alias information for the data reference.  */
   struct dr_alias alias;
 
+  /* The SCoP in which the data reference was analyzed.  */
+  scop_p scop;
+
   /* Matrix representation for the data access functions.  */
   struct access_matrix *access_matrix;
 };
 
+#define DR_SCOP(DR)                (DR)->scop
 #define DR_STMT(DR)                (DR)->stmt
 #define DR_REF(DR)                 (DR)->ref
 #define DR_BASE_OBJECT(DR)         (DR)->indices.base_object
@@ -373,6 +379,8 @@ void dr_analyze_innermost (struct data_reference *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
+extern tree find_data_references_in_loop (struct loop *, 
+                                          VEC (data_reference_p, heap) **);
 extern void print_direction_vector (FILE *, lambda_vector, int);
 extern void print_dir_vectors (FILE *, VEC (lambda_vector, heap) *, int);
 extern void print_dist_vectors (FILE *, VEC (lambda_vector, heap) *, int);
@@ -392,10 +400,18 @@ extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_ref (data_reference_p);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
+extern bool find_data_references_in_stmt (struct loop *, gimple,
+					  VEC (data_reference_p, heap) **);
 struct data_reference *create_data_ref (struct loop *, tree, gimple, bool);
-bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
-void compute_all_dependences (VEC (data_reference_p, heap) *,
-			      VEC (ddr_p, heap) **, VEC (loop_p, heap) *, bool);
+extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
+extern void compute_all_dependences (VEC (data_reference_p, heap) *,
+				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
+				     bool);
+
+extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
+extern bool dr_may_alias_p (const struct data_reference *,
+			    const struct data_reference *);
+extern bool stmt_simple_memref_p (struct loop *, gimple, tree);
 
 /* Return true when the DDR contains two data references that have the
    same access functions.  */
@@ -511,15 +527,21 @@ typedef struct rdg_edge
   /* Type of the dependence.  */
   enum rdg_dep_type type;
 
-  /* Levels of the dependence: the depth of the loops that
-    carry the dependence.  */
+  /* Levels of the dependence: the depth of the loops that carry the
+     dependence.  */
   unsigned level;
+
+  /* Dependence relation between data dependences, NULL when one of
+     the vertices is a scalar.  */
+  ddr_p relation;
 } *rdg_edge_p;
 
 #define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
 #define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
+#define RDGE_RELATION(E)    ((struct rdg_edge *) ((E)->data))->relation
 
 struct graph *build_rdg (struct loop *);
+struct graph *build_empty_rdg (int);
 void free_rdg (struct graph *);
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
@@ -561,7 +583,21 @@ void lambda_collect_parameters (VEC (data_reference_p, heap) *,
 bool lambda_compute_access_matrices (VEC (data_reference_p, heap) *,
 				     VEC (tree, heap) *, int);
 
-/* In tree-data-refs.c  */
+/* In tree-data-ref.c  */
 void split_constant_offset (tree , tree *, tree *);
+
+/* Strongly connected components of the reduced data dependence graph.  */
+
+typedef struct rdg_component
+{
+  int num;
+  VEC (int, heap) *vertices;
+} *rdgc;
+
+DEF_VEC_P (rdgc);
+DEF_VEC_ALLOC_P (rdgc, heap);
+
+DEF_VEC_P (bitmap);
+DEF_VEC_ALLOC_P (bitmap, heap);
 
 #endif  /* GCC_TREE_DATA_REF_H  */

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfglayout.h"
 #include "cfghooks.h"
 #include "output.h"
+#include "tree-flow.h"
 
 static void duplicate_subloops (struct loop *, struct loop *);
 static void copy_loops_to (struct loop **, int,
@@ -466,6 +467,243 @@ scale_loop_frequencies (struct loop *loop, int num, int den)
   free (bbs);
 }
 
+/* Recompute dominance information for basic blocks outside LOOP.  */
+
+static void
+update_dominators_in_loop (struct loop *loop)
+{
+  VEC (basic_block, heap) *dom_bbs = NULL;
+  sbitmap seen;
+  basic_block *body;
+  unsigned i;
+
+  seen = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (seen);
+  body = get_loop_body (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    SET_BIT (seen, body[i]->index);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block ldom;
+
+      for (ldom = first_dom_son (CDI_DOMINATORS, body[i]);
+	   ldom;
+	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
+	if (!TEST_BIT (seen, ldom->index))
+	  {
+	    SET_BIT (seen, ldom->index);
+	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
+	  }
+    }
+
+  iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
+  free (body);
+  free (seen);
+  VEC_free (basic_block, heap, dom_bbs);
+}
+
+/* Creates an if region as shown above. CONDITION is used to create
+   the test for the if. 
+
+   |
+   |     -------------                 -------------
+   |     |  pred_bb  |                 |  pred_bb  |
+   |     -------------                 -------------
+   |           |                             |
+   |           |                             | ENTRY_EDGE
+   |           | ENTRY_EDGE                  V
+   |           |             ====>     -------------
+   |           |                       |  cond_bb  |
+   |           |                       | CONDITION |
+   |           |                       -------------
+   |           V                        /         \
+   |     -------------         e_false /           \ e_true
+   |     |  succ_bb  |                V             V
+   |     -------------         -----------       -----------
+   |                           | false_bb |      | true_bb |
+   |                           -----------       -----------
+   |                                   \           /
+   |                                    \         /
+   |                                     V       V
+   |                                   -------------
+   |                                   |  join_bb  |
+   |                                   -------------
+   |                                         | exit_edge (result)
+   |                                         V
+   |                                    -----------
+   |                                    | succ_bb |
+   |                                    -----------
+   |
+ */
+
+edge
+create_empty_if_region_on_edge (edge entry_edge, tree condition)
+{
+
+  basic_block succ_bb, cond_bb, true_bb, false_bb, join_bb;
+  edge e_true, e_false, exit_edge;
+  gimple cond_stmt;
+  tree simple_cond;
+  gimple_stmt_iterator gsi;
+
+  succ_bb = entry_edge->dest;
+  cond_bb = split_edge (entry_edge);
+  
+  /* Insert condition in cond_bb.  */
+  gsi = gsi_last_bb (cond_bb);
+  simple_cond =
+    force_gimple_operand_gsi (&gsi, condition, true, NULL,
+			      false, GSI_NEW_STMT);
+  cond_stmt = gimple_build_cond_from_tree (simple_cond, NULL_TREE, NULL_TREE);
+  gsi = gsi_last_bb (cond_bb);
+  gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
+  
+  join_bb = split_edge (single_succ_edge (cond_bb));
+
+  e_true = single_succ_edge (cond_bb);
+  true_bb = split_edge (e_true);
+
+  e_false = make_edge (cond_bb, join_bb, 0);
+  false_bb = split_edge (e_false);
+
+  e_true->flags &= ~EDGE_FALLTHRU;
+  e_true->flags |= EDGE_TRUE_VALUE;
+  e_false->flags &= ~EDGE_FALLTHRU;
+  e_false->flags |= EDGE_FALSE_VALUE;
+
+  set_immediate_dominator (CDI_DOMINATORS, cond_bb, entry_edge->src);
+  set_immediate_dominator (CDI_DOMINATORS, true_bb, cond_bb);
+  set_immediate_dominator (CDI_DOMINATORS, false_bb, cond_bb);
+  set_immediate_dominator (CDI_DOMINATORS, join_bb, cond_bb);
+
+  exit_edge = single_succ_edge (join_bb);
+
+  if (single_pred_p (exit_edge->dest))
+    set_immediate_dominator (CDI_DOMINATORS, exit_edge->dest, join_bb);
+
+  return exit_edge;
+}
+
+/* create_empty_loop_on_edge
+   |
+   |     -------------                 ------------------------
+   |     |  pred_bb  |                 |  pred_bb              |
+   |     -------------                 |  IV_0 = INITIAL_VALUE |
+   |           |                       ------------------------
+   |           |                       ______    | ENTRY_EDGE
+   |           | ENTRY_EDGE           /      V   V
+   |           |             ====>   |     -----------------------------
+   |           |                     |     | IV_BEFORE = phi (IV_0, IV) |
+   |           |                     |     | loop_header                |
+   |           V                     |     | IV_BEFORE <= UPPER_BOUND   |
+   |     -------------               |     -----------------------\-----
+   |     |  succ_bb  |               |         |                   \
+   |     -------------               |         |                    \ exit_e
+   |                                 |         V                     V---------
+   |                                 |      --------------           | succ_bb |
+   |                                 |      | loop_latch  |          ----------
+   |                                 |      |IV = IV_BEFORE + STRIDE
+   |                                 |      --------------
+   |                                  \       /
+   |                                   \ ___ /
+
+   Creates an empty loop as shown above, the IV_BEFORE is the SSA_NAME
+   that is used before the increment of IV. IV_BEFORE should be used for 
+   adding code to the body that uses the IV.  OUTER is the outer loop in
+   which the new loop should be inserted.  */
+
+struct loop *
+create_empty_loop_on_edge (edge entry_edge, 
+			   tree initial_value,
+			   tree stride, tree upper_bound,
+			   tree iv,
+			   tree *iv_before,
+			   struct loop *outer)
+{
+  basic_block loop_header, loop_latch, succ_bb, pred_bb;
+  struct loop *loop;
+  int freq;
+  gcov_type cnt;
+  gimple_stmt_iterator gsi;
+  bool insert_after;
+  gimple_seq stmts;
+  gimple cond_expr;
+  tree exit_test;
+  edge exit_e;
+  int prob;
+  tree upper_bound_gimplified;
+  
+  gcc_assert (entry_edge && initial_value && stride && upper_bound && iv);
+
+  /* Create header, latch and wire up the loop.  */
+  pred_bb = entry_edge->src;
+  loop_header = split_edge (entry_edge);
+  loop_latch = split_edge (single_succ_edge (loop_header));
+  succ_bb = single_succ (loop_latch);
+  make_edge (loop_header, succ_bb, 0);
+  redirect_edge_succ_nodup (single_succ_edge (loop_latch), loop_header);
+
+  /* Set immediate dominator information.  */
+  set_immediate_dominator (CDI_DOMINATORS, loop_header, pred_bb);
+  set_immediate_dominator (CDI_DOMINATORS, loop_latch, loop_header);
+  set_immediate_dominator (CDI_DOMINATORS, succ_bb, loop_header);
+
+  /* Initialize a loop structure and put it in a loop hierarchy.  */
+  loop = alloc_loop ();
+  loop->header = loop_header;
+  loop->latch = loop_latch;
+  add_loop (loop, outer);
+
+  /* TODO: Fix frequencies and counts.  */
+  freq = EDGE_FREQUENCY (entry_edge);
+  cnt = entry_edge->count;
+
+  prob = REG_BR_PROB_BASE / 2;
+
+  scale_loop_frequencies (loop, REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE);
+
+  /* Update dominators.  */
+  update_dominators_in_loop (loop);
+
+  /* Construct IV code in loop.  */
+  initial_value = force_gimple_operand (initial_value, &stmts, true, iv);
+  if (stmts)
+    {
+      gsi_insert_seq_on_edge (loop_preheader_edge (loop), stmts);
+      gsi_commit_edge_inserts ();
+    }
+
+  standard_iv_increment_position (loop, &gsi, &insert_after);
+  create_iv (initial_value, stride, iv, loop, &gsi, insert_after,
+	     iv_before, NULL);
+
+  /* Modify edge flags.  */
+  exit_e = single_exit (loop);
+  exit_e->flags = EDGE_LOOP_EXIT | EDGE_FALSE_VALUE;
+  single_pred_edge (loop_latch)->flags = EDGE_TRUE_VALUE;
+
+  gsi = gsi_last_bb (exit_e->src);
+
+  upper_bound_gimplified = 
+    force_gimple_operand_gsi (&gsi, upper_bound, true, NULL,
+			      false, GSI_NEW_STMT);
+  gsi = gsi_last_bb (exit_e->src);
+  
+  cond_expr = gimple_build_cond 
+    (LE_EXPR, *iv_before, upper_bound_gimplified, NULL_TREE, NULL_TREE);
+
+  exit_test = gimple_cond_lhs (cond_expr);
+  exit_test = force_gimple_operand_gsi (&gsi, exit_test, true, NULL,
+					false, GSI_NEW_STMT);
+  gimple_cond_set_lhs (cond_expr, exit_test);
+  gsi = gsi_last_bb (exit_e->src);
+  gsi_insert_after (&gsi, cond_expr, GSI_NEW_STMT);
+
+  return loop;
+}
+
 /* Make area between HEADER_EDGE and LATCH_EDGE a loop by connecting
    latch to header and update loop tree and dominators
    accordingly. Everything between them plus LATCH_EDGE destination must
@@ -483,10 +721,6 @@ loopify (edge latch_edge, edge header_edge,
 {
   basic_block succ_bb = latch_edge->dest;
   basic_block pred_bb = header_edge->src;
-  basic_block *body;
-  VEC (basic_block, heap) *dom_bbs;
-  unsigned i;
-  sbitmap seen;
   struct loop *loop = alloc_loop ();
   struct loop *outer = loop_outer (succ_bb->loop_father);
   int freq;
@@ -538,35 +772,7 @@ loopify (edge latch_edge, edge header_edge,
     }
   scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
   scale_loop_frequencies (succ_bb->loop_father, true_scale, REG_BR_PROB_BASE);
-
-  /* Update dominators of blocks outside of LOOP.  */
-  dom_bbs = NULL;
-  seen = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (seen);
-  body = get_loop_body (loop);
-
-  for (i = 0; i < loop->num_nodes; i++)
-    SET_BIT (seen, body[i]->index);
-
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block ldom;
-
-      for (ldom = first_dom_son (CDI_DOMINATORS, body[i]);
-	   ldom;
-	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
-	if (!TEST_BIT (seen, ldom->index))
-	  {
-	    SET_BIT (seen, ldom->index);
-	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
-	  }
-    }
-
-  iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
-
-  free (body);
-  free (seen);
-  VEC_free (basic_block, heap, dom_bbs);
+  update_dominators_in_loop (loop);
 
   return loop;
 }

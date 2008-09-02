@@ -38,6 +38,12 @@ DEF_VEC_P(gimple_seq);
 DEF_VEC_ALLOC_P(gimple_seq,gc);
 DEF_VEC_ALLOC_P(gimple_seq,heap);
 
+/* For each block, the PHI nodes that need to be rewritten are stored into
+   these vectors.  */
+typedef VEC(gimple, heap) *gimple_vec;
+DEF_VEC_P (gimple_vec);
+DEF_VEC_ALLOC_P (gimple_vec, heap);
+
 enum gimple_code {
 #define DEFGSCODE(SYM, STRING, STRUCT)	SYM,
 #include "gimple.def"

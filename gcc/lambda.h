@@ -39,6 +39,9 @@ DEF_VEC_ALLOC_P (lambda_vector_vec_p, heap);
    all vectors are the same length).  */
 typedef lambda_vector *lambda_matrix;
 
+DEF_VEC_P (lambda_matrix);
+DEF_VEC_ALLOC_P (lambda_matrix, heap);
+
 /* A transformation matrix, which is a self-contained ROWSIZE x COLSIZE
    matrix.  Rather than use floats, we simply keep a single DENOMINATOR that
    represents the denominator for every element in the matrix.  */
@@ -213,6 +216,7 @@ void lambda_loopnest_to_gcc_loopnest (struct loop *,
                                       lambda_loopnest, lambda_trans_matrix,
                                       struct obstack *);
 void remove_iv (gimple);
+tree find_induction_var_from_exit_cond (struct loop *);
 
 static inline void lambda_vector_negate (lambda_vector, lambda_vector, int);
 static inline void lambda_vector_mult_const (lambda_vector, lambda_vector, int, int);
@@ -374,6 +378,33 @@ lambda_vector_matrix_mult (lambda_vector vect, int m, lambda_matrix mat,
       dest[i] += mat[j][i] * vect[j];
 }
 
+/* Compare two vectors returning an integer less than, equal to, or
+   greater than zero if the first argument is considered to be respectively
+   less than, equal to, or greater than the second.  
+   We use the lexicographic order.  */
+
+static inline int
+lambda_vector_compare (lambda_vector vec1, int length1, lambda_vector vec2,
+                       int length2)
+{
+  int min_length;
+  int i;
+
+  if (length1 < length2)
+    min_length = length1;
+  else
+    min_length = length2;
+
+  for (i = 0; i < min_length; i++)
+    if (vec1[i] < vec2[i])
+      return -1;
+    else if (vec1[i] > vec2[i])
+      return 1;
+    else
+      continue;
+
+  return length1 - length2;
+}
 
 /* Print out a vector VEC of length N to OUTFILE.  */
 

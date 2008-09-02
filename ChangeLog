@@ -1,3 +1,20 @@
+2008-09-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <grosser@fim.uni-passau.de>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Konrad Trifunovic  <konrad.trifunovic@inria.fr>
+	    Adrien Eliche  <aeliche@isty.uvsq.fr>
+
+	Merge from graphite branch.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure.ac (host_libs): Add ppl and cloog.
+	Add checks for PPL and CLooG.
+	* Makefile.def (ppl, cloog): Added modules and dependences.
+	* Makefile.tpl (PPLLIBS, PPLINC, CLOOGLIBS, CLOOGINC): New.
+	(HOST_PPLLIBS, HOST_PPLINC, HOST_CLOOGLIBS, HOST_CLOOGINC): New.
+
 2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* configure.ac (RPATH_ENVVAR): Use PATH on Windows.

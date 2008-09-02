@@ -786,6 +786,8 @@ extern gimple get_single_def_stmt_with_phi (tree, gimple);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
+extern void add_phi_node_to_bb (gimple phi, basic_block bb);
+extern gimple make_phi_node (tree var, int len);
 extern gimple create_phi_node (tree, basic_block);
 extern void add_phi_arg (gimple, tree, edge);
 extern void remove_phi_args (edge);
@@ -1023,6 +1025,7 @@ bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 					 int);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
 void rename_variables_in_loop (struct loop *);
+void rename_variables_in_bb (basic_block bb);
 struct loop *tree_ssa_loop_version (struct loop *, tree,
 				    basic_block *);
 tree expand_simple_operations (tree);
@@ -1116,6 +1119,10 @@ bool sra_type_can_be_decomposed_p (tree);
 
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (void);
+extern unsigned perfect_loop_nest_depth (struct loop *);
+
+/* In graphite.c  */
+extern void graphite_transform_loops (void);
 
 /* In tree-data-ref.c  */
 extern void tree_check_data_deps (void);

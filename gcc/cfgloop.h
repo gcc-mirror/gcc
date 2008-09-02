@@ -228,6 +228,7 @@ extern int num_loop_insns (const struct loop *);
 extern int average_num_loop_insns (const struct loop *);
 extern unsigned get_loop_level (const struct loop *);
 extern bool loop_exit_edge_p (const struct loop *, const_edge);
+extern bool is_loop_exit (struct loop *, basic_block);
 extern void mark_loop_exit_edges (void);
 
 /* Loops & cfg manipulation.  */
@@ -284,6 +285,9 @@ extern bool can_duplicate_loop_p (const struct loop *loop);
 #define DLTHE_FLAG_COMPLETTE_PEEL 4	/* Update frequencies expecting
 					   a complete peeling.  */
 
+extern edge create_empty_if_region_on_edge (edge, tree);
+extern struct loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
+					       tree *, struct loop *);
 extern struct loop * duplicate_loop (struct loop *, struct loop *);
 extern bool duplicate_loop_to_header_edge (struct loop *, edge, 
 					   unsigned, sbitmap, edge,

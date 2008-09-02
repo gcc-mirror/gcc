@@ -40,6 +40,15 @@ Print the tree that is $ in C syntax.
 Works only when an inferior is executing.
 end
 
+define pgg
+set debug_gimple_stmt ($)
+end
+
+document pgg
+Print the Gimple statement that is $ in C syntax.
+Works only when an inferior is executing.
+end
+
 define pgs
 set debug_generic_stmt ($)
 end

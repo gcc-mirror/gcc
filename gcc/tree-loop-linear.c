@@ -272,7 +272,7 @@ try_interchange_loops (lambda_trans_matrix trans,
 /* Return the number of nested loops in LOOP_NEST, or 0 if the loops
    are not perfectly nested.  */
 
-static unsigned int
+unsigned int
 perfect_loop_nest_depth (struct loop *loop_nest)
 {
   struct loop *temp;
