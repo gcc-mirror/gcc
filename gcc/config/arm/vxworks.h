@@ -113,3 +113,6 @@ along with GCC; see the file COPYING3.  If not see
    cannot allow arbitrary offsets for shared libraries either.  */
 #undef ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P
 #define ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 1
+
+#undef TARGET_DEFAULT_WORD_RELOCATIONS
+#define TARGET_DEFAULT_WORD_RELOCATIONS 1

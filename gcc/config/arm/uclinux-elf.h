@@ -83,3 +83,5 @@
   "%{pthread:-lpthread} \
    %{shared:-lc} \
    %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
+
+#define TARGET_DEFAULT_WORD_RELOCATIONS 1

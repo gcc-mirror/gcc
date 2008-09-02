@@ -241,6 +241,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_INT_SIMD \
   (TARGET_32BIT && arm_arch6 && arm_arch_notm)
 
+/* Should MOVW/MOVT be used in preference to a constant pool.  */
+#define TARGET_USE_MOVT (arm_arch_thumb2 && !optimize_size)
+
 /* We could use unified syntax for arm mode, but for now we just use it
    for Thumb-2.  */
 #define TARGET_UNIFIED_ASM TARGET_THUMB2
@@ -1961,6 +1964,11 @@ typedef struct
 /* True if SYMBOL + OFFSET constants must refer to something within
    SYMBOL's section.  */
 #define ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 0
+
+/* Nonzero if all target requires all absolute relocations be R_ARM_ABS32.  */
+#ifndef TARGET_DEFAULT_WORD_RELOCATIONS
+#define TARGET_DEFAULT_WORD_RELOCATIONS 0
+#endif
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.

@@ -1,5 +1,22 @@
 2008-09-01  Paul Brook  <paul@codesourcery.com>
 
+	* doc/invoke.texi: Document -mword-relocations.
+	* config/arm/uclinux-elf.h (TARGET_DEFAULT_WORD_RELOCATIONS): Define.
+	* config/arm/symbian.h (TARGET_DEFAULT_WORD_RELOCATIONS): Define.
+	* config/arm/vxworks.h (TARGET_DEFAULT_WORD_RELOCATIONS): Define.
+	* config/arm/arm.c (arm_split_constant): Use arm_emit_movpair.
+	(arm_rtx_costs_1, arm_size_rtx_costs): Handle HIGH and LO_SUM.
+	(arm_emit_movpair): New function.
+	(arm_print_operand <c>): Handle sybolic addresses.
+	* config/arm/arm.h (TARGET_USE_MOVT): Define.
+	(TARGET_DEFAULT_WORD_RELOCATIONS): Define.
+	* config/arm/arm-protos.h (arm_emit_movpair): Add prototype.
+	* config/arm/arm.opt: Add -mword-relocations.
+	* config/arm/arm.md (movsi): Use arm_emit_movpair.
+	(arm_movt, arm_movw): New.
+
+2008-09-01  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm.c (arm_override_options): Set arm_abi earlier.
 	Allow Interworking on ARMv4 EABI based targets.
 	* config/arm/bpabi.h (TARGET_FIX_V4BX_SPEC): Define.

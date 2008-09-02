@@ -448,7 +448,8 @@ Objective-C and Objective-C++ Dialects}.
 -mthumb  -marm @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
 -mcaller-super-interworking  -mcallee-super-interworking @gol
--mtp=@var{name}}
+-mtp=@var{name}
+-mword-relocations}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -msize  -minit-stack=@var{n}  -mno-interrupts @gol
@@ -8909,6 +8910,13 @@ models are @option{soft}, which generates calls to @code{__aeabi_read_tp},
 (supported in the arm6k architecture), and @option{auto}, which uses the
 best available method for the selected processor.  The default setting is
 @option{auto}.
+
+@item -mword-relocations
+@opindex mword-relocations
+Only generate absolute relocations on word sized values (i.e. R_ARM_ABS32).
+This is enabled by default on targets (uClinux, SymbianOS) where the runtime
+loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
+is speficied.
 
 @end table
 

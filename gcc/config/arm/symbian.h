@@ -101,3 +101,5 @@
 
 /* SymbianOS cannot merge entities with vague linkage at runtime.  */
 #define TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P false
+
+#define TARGET_DEFAULT_WORD_RELOCATIONS 1

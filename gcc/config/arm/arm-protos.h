@@ -123,6 +123,7 @@ extern const char *fp_immediate_constant (rtx);
 extern void arm_emit_call_insn (rtx, rtx);
 extern const char *output_call (rtx *);
 extern const char *output_call_mem (rtx *);
+void arm_emit_movpair (rtx, rtx);
 extern const char *output_mov_long_double_fpa_from_arm (rtx *);
 extern const char *output_mov_long_double_arm_from_fpa (rtx *);
 extern const char *output_mov_long_double_arm_from_arm (rtx *);

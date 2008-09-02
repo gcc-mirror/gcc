@@ -156,3 +156,7 @@ Assume big endian bytes, little endian words
 mvectorize-with-neon-quad
 Target Report Mask(NEON_VECTORIZE_QUAD)
 Use Neon quad-word (rather than double-word) registers for vectorization
+
+mword-relocations
+Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
++Only generate absolute relocations on word sized values.
