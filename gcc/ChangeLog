@@ -1,5 +1,6 @@
 2008-09-02  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (pass_strip_predict_hints): Avoid bugs dump file.
 	* expmed.c (expand_divmod): Fix test of smod_pow2_cheap and sdiv_pow2_cheap
 
 2008-09-02  H.J. Lu  <hongjiu.lu@intel.com>
