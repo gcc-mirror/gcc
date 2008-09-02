@@ -1099,7 +1099,7 @@ init_hard_regno_rename (int regno)
 /* A wrapper around HARD_REGNO_RENAME_OK that will look into the hard regs 
    data first.  */
 static inline bool
-sel_hard_regno_rename_ok (int from, int to)
+sel_hard_regno_rename_ok (int from ATTRIBUTE_UNUSED, int to ATTRIBUTE_UNUSED)
 {
 #ifdef HARD_REGNO_RENAME_OK
   /* Check whether this is all calculated.  */
