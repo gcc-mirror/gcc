@@ -1,6 +1,6 @@
 2008-09-02  Adam Nemet  <anemet@caviumnetworks.com>
 
-	* sel-sched.c (fur_orig_expr_found): Mark arguments unused.
+	* sel-sched.c (sel_hard_regno_rename_ok): Mark arguments unused.
 
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
