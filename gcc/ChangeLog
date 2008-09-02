@@ -1,3 +1,7 @@
+2008-09-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* expr.c (emit_group_store): Don't assert stack temp mode size.
+
 2008-09-02  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR target/37283
@@ -34,7 +38,6 @@
 2008-09-02  Victor Kaplansky  <victork@il.ibm.com>
 
 	* gcc/config/spu/spu.md (divdf3): Removed.
-  
 
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
