@@ -1,3 +1,9 @@
+2008-09-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37327
+	* tree-vrp.c (register_new_assert_for): Make sure to not have
+	TREE_OVERFLOW set on the bound.
+
 2008-09-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	Fixed typo in date of the 2008-09-01 MOVE_RATIO commit.
