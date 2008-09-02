@@ -870,38 +870,10 @@ decode_options (unsigned int argc, const char **argv)
 	}
     }
   
-  if (!flag_unit_at_a_time)
-    {
-      flag_section_anchors = 0;
-      flag_toplevel_reorder = 0;
-    }
-  if (!flag_toplevel_reorder)
-    {
-      if (flag_section_anchors == 1)
-        error ("Section anchors must be disabled when toplevel reorder is disabled.");
-      flag_section_anchors = 0;
-    }
-
 #ifdef IRA_COVER_CLASSES
   /* Use IRA if it is implemented for the target.  */
   flag_ira = 1;
 #endif
-
-  /* Originally we just set the variables if a particular optimization level,
-     but with the advent of being able to change the optimization level for a
-     function, we need to reset optimizations.  */
-  if (!optimize)
-    {
-      flag_merge_constants = 0;
-
-      /* We disable toplevel reordering at -O0 to disable transformations that
-         might be surprising to end users and to get -fno-toplevel-reorder
-	 tested, but we keep section anchors.  */
-      if (flag_toplevel_reorder == 2)
-        flag_toplevel_reorder = 0;
-    }
-  else
-    flag_merge_constants = 1;
 
   /* -O1 optimizations.  */
   opt1 = (optimize >= 1);
@@ -918,6 +890,7 @@ decode_options (unsigned int argc, const char **argv)
   flag_if_conversion2 = opt1;
   flag_ipa_pure_const = opt1;
   flag_ipa_reference = opt1;
+  flag_merge_constants = opt1;
   flag_split_wide_types = opt1;
   flag_tree_ccp = opt1;
   flag_tree_dce = opt1;
@@ -1034,6 +1007,24 @@ decode_options (unsigned int argc, const char **argv)
 #endif
 
   handle_options (argc, argv, lang_mask);
+
+  /* -fno-unit-at-a-time and -fno-toplevel-reorder handling.  */
+  if (!flag_unit_at_a_time)
+    {
+      flag_section_anchors = 0;
+      flag_toplevel_reorder = 0;
+    }
+  else if (!optimize && flag_toplevel_reorder == 2)
+    /* We disable toplevel reordering at -O0 to disable transformations that
+       might be surprising to end users and to get -fno-toplevel-reorder
+       tested, but we keep section anchors.  */
+    flag_toplevel_reorder = 0;
+  else if (!flag_toplevel_reorder)
+    {
+      if (flag_section_anchors == 1)
+        error ("section anchors must be disabled when toplevel reorder is disabled");
+      flag_section_anchors = 0;
+    }
 
   if (first_time_p)
     {
