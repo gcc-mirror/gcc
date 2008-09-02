@@ -1,3 +1,8 @@
+2008-09-02  Victor Kaplansky  <victork@il.ibm.com>
+
+	* gcc/config/spu/spu.md (divdf3): Removed.
+  
+
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37095

@@ -1,3 +1,7 @@
+2008-09-02  Victor Kaplansky  <victork@il.ibm.com>
+
+	* gcc.dg/fastmath-2.c: New.
+    
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37095
