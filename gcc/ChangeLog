@@ -1,5 +1,9 @@
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/36766
+	* tree-cfg.c (gimple_purge_all_dead_eh_edges): Do nothing
+	for already removed basic blocks.
+
 	PR target/36332
 	* real.c (real_maxval): Clear a lower bit to make real_maxval
 	match get_max_float for IBM long double format.
