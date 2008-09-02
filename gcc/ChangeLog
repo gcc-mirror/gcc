@@ -1,5 +1,10 @@
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/alpha/alpha.c (va_list_skip_additions,
+	alpha_stdarg_optimize_hook, alpha_gimplify_va_arg_1): Tuplify.
+	(alpha_gimplify_va_arg): Call unshare_expr on second use of
+	offset_field.
+
 	PR tree-optimization/36766
 	* tree-cfg.c (gimple_purge_all_dead_eh_edges): Do nothing
 	for already removed basic blocks.
