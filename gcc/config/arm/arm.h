@@ -407,6 +407,9 @@ extern int arm_tune_xscale;
 /* Nonzero if tuning for stores via the write buffer.  */
 extern int arm_tune_wbuf;
 
+/* Nonzero if tuning for Cortex-A9.  */
+extern int arm_tune_cortex_a9;
+
 /* Nonzero if we should define __THUMB_INTERWORK__ in the
    preprocessor.
    XXX This is a bit of a hack, it's intended to help work around

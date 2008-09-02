@@ -341,7 +341,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else 
-          (ior (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa8")
+          (ior (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa8,cortexa9")
 	      (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -349,7 +349,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa8")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa8,cortexa9")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -360,6 +360,7 @@
 (include "arm1026ejs.md")
 (include "arm1136jfs.md")
 (include "cortex-a8.md")
+(include "cortex-a9.md")
 (include "cortex-r4.md")
 (include "cortex-r4f.md")
 (include "vfp11.md")

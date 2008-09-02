@@ -1,3 +1,16 @@
+2008-09-02  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_tune_cortex_a9): Define.
+	(arm_override_options): Set arm_tune_cortex_a9.
+	(arm_rtx_costs_1): Make register shifts more expensive on Cortex-A9.
+	(arm_issue_rate): Handle cortexa9.
+	* config/arm/arm.h (arm_tune_cortex_a9): Declare.
+	* config/arm/arm-cores.def: Add cortex-a9.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm.md: Include cortex-a9.md.
+	(generic_sched, generic_vfp): Add cortexa9.
+	* config/arm/cortex-a9.md: New file.
+
 2008-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37327

@@ -544,6 +544,9 @@ int arm_tune_xscale = 0;
    This typically means an ARM6 or ARM7 with MMU or MPU.  */
 int arm_tune_wbuf = 0;
 
+/* Nonzero if tuning for Cortex-A9.  */
+int arm_tune_cortex_a9 = 0;
+
 /* Nonzero if generating Thumb instructions.  */
 int thumb_code = 0;
 
@@ -1289,6 +1292,7 @@ arm_override_options (void)
   arm_tune_xscale = (tune_flags & FL_XSCALE) != 0;
   arm_arch_iwmmxt = (insn_flags & FL_IWMMXT) != 0;
   arm_arch_hwdiv = (insn_flags & FL_DIV) != 0;
+  arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
 
   /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
@@ -4913,7 +4917,15 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 		    || (GET_CODE (XEXP (x, 0)) == SUBREG
 			&& GET_CODE (SUBREG_REG (XEXP (x, 0))) == REG))
 		   ? 0 : 8));
-      return (1 + ((GET_CODE (XEXP (x, 0)) == REG
+
+      extra_cost = 1;
+      /* Increase the cost of complex shifts because they aren't any faster,
+         and reduce dual issue opportunities.  */
+      if (arm_tune_cortex_a9
+	  && outer != SET && GET_CODE (XEXP (x, 1)) != CONST_INT)
+	extra_cost++;
+
+      return (extra_cost + ((GET_CODE (XEXP (x, 0)) == REG
 		    || (GET_CODE (XEXP (x, 0)) == SUBREG
 			&& GET_CODE (SUBREG_REG (XEXP (x, 0))) == REG))
 		   ? 0 : 4)
@@ -5028,7 +5040,8 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 			 && ((INTVAL (XEXP (XEXP (x, 0), 1)) &
 			      (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0)))
 		    && (REG_OR_SUBREG_REG (XEXP (XEXP (x, 0), 0)))
-		    && ((REG_OR_SUBREG_REG (XEXP (XEXP (x, 0), 1)))
+		    && ((REG_OR_SUBREG_REG (XEXP (XEXP (x, 0), 1))
+			 && !arm_tune_cortex_a9)
 			|| GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
 		   ? 0 : 4));
 
@@ -19066,6 +19079,7 @@ arm_issue_rate (void)
     case cortexr4:
     case cortexr4f:
     case cortexa8:
+    case cortexa9:
       return 2;
 
     default:
