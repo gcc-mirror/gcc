@@ -1,3 +1,11 @@
+2008-09-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	Fixed typo in date of the 2008-09-01 MOVE_RATIO commit.
+	
+	* config/ia64/ia64.opt (msched-ar-data-spec): Default to 1.
+	* config/ia64/ia64.c (ia64_set_sched_flags): Always initialize
+	spec_info->mask.
+
 2008-09-02  Victor Kaplansky  <victork@il.ibm.com>
 
 	* gcc/config/spu/spu.md (divdf3): Removed.
@@ -123,7 +131,7 @@
 
 	* config/arm/arm.c (arm_no_early_mul_dep): Handle multiply-subtract.
 
-2008-00-01  Jan Hubicka  <jh@suse.cz>
+2008-09-01  Jan Hubicka  <jh@suse.cz>
 
 	* config/spu/spu.c (spu_expand_block_move) Update call of MOVE_RATIO.
 

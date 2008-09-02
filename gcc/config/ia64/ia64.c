@@ -6853,6 +6853,8 @@ ia64_set_sched_flags (spec_info_t spec_info)
 	    mask |= BE_IN_CONTROL;
 	}
 
+      spec_info->mask = mask;
+
       if (mask)
 	{
 	  *flags |= USE_DEPS_LIST | DO_SPECULATION;
@@ -6860,7 +6862,6 @@ ia64_set_sched_flags (spec_info_t spec_info)
 	  if (mask & BE_IN_SPEC)
 	    *flags |= NEW_BBS;
 	  
-	  spec_info->mask = mask;
 	  spec_info->flags = 0;
       
 	  if ((mask & DATA_SPEC) && mflag_sched_prefer_non_data_spec_insns)
