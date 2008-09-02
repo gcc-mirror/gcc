@@ -58,6 +58,91 @@
 
 	* expr.c (emit_group_store): Don't assert stack temp mode size.
 
+2008-09-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <grosser@fim.uni-passau.de>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Konrad Trifunovic  <konrad.trifunovic@inria.fr>
+	    Adrien Eliche  <aeliche@isty.uvsq.fr>
+
+	Merge from graphite branch.
+	* graphite.c: New.
+	* graphite.h: New.
+	* tree-loop-linear.c (perfect_loop_nest_depth): Export.
+	* doc/invoke.texi (-floop-block, -floop-interchange,
+	-floop-strip-mine): Document new flags.
+	* tree-into-ssa.c (gimple_vec): Moved...
+	* tree-loop-distribution.c (rdg_component): Moved...
+	* cfgloopmanip.c: Include tree-flow.h.
+	(update_dominators_in_loop): New.
+	(create_empty_if_region_on_edge): New.
+	(create_empty_loop_on_edge): New.
+	(loopify): Use update_dominators_in_loop.
+	* tree-pass.h (pass_graphite_transforms): Declared.
+	* configure: Regenerate.
+	* tree-phinodes.c (make_phi_node): Export.
+	(add_phi_node_to_bb): New, split from create_phi_node.
+	* tree-chrec.c (for_each_scev_op): New.
+	* tree-chrec.h (for_each_scev_op): Declared.
+	* tree-ssa-loop-ivopts.c (get_phi_with_result): New.
+	(remove_statement): Call get_phi_with_result.
+	* config.in (HAVE_cloog): Undef.
+	* gdbinit.in (pgg): New.
+	* timevar.def (TV_GRAPHITE_TRANSFORMS): New.
+	* tree-ssa-loop.c (graphite_transforms): New.
+	(gate_graphite_transforms): New.
+	(pass_graphite_transforms): New.
+	* configure.ac (PPLLIBS, PPLINC, CLOOGLIBS, CLOOGINC,
+	HAVE_cloog): Defined.
+	* tree-vectorizer.c (rename_variables_in_bb): Export.
+	* tree-data-ref.c (dr_may_alias_p): Export.
+	(stmt_simple_memref_p): New.
+	(find_data_references_in_stmt): Export.
+	(find_data_references_in_loop): Export.
+	(create_rdg_edge_for_ddr): Initialize RDGE_RELATION.
+	(create_rdg_edges_for_scalar): Initialize RDGE_RELATION.
+	(create_rdg_vertices): Export.
+	(build_empty_rdg): New.
+	(build_rdg): Call build_empty_rdg.  Free dependence_relations.
+	* tree-data-ref.h (rdg_component): ... here.
+	(scop_p): New.
+	(struct data_reference): Add a field scop.
+	(DR_SCOP): New.
+	(find_data_references_in_loop): Declared.
+	(find_data_references_in_stmt): Declared.
+	(create_rdg_vertices): Declared.
+	(dr_may_alias_p): Declared.
+	(stmt_simple_memref_p): Declared.
+	(struct rdg_edge): Add a field ddr_p relation.
+	(build_empty_rdg): Declared.
+	* lambda.h (lambda_matrix): Declare a VEC of.
+	(find_induction_var_from_exit_cond): Declared.
+	(lambda_vector_compare): New.
+	* common.opt (fgraphite, floop-strip-mine,
+	floop-interchange, floop-block): New flags.
+	* lambda-code.c (find_induction_var_from_exit_cond): Export.
+	* cfgloop.c (is_loop_exit): New.
+	* cfgloop.h (is_loop_exit): Declared.
+	(create_empty_if_region_on_edge): Declared.
+	(create_empty_loop_on_edge): Declared.
+	* tree-flow.h (add_phi_node_to_bb): Declared.
+	(make_phi_node): Declared.
+	(rename_variables_in_bb): Declared.
+	(perfect_loop_nest_depth): Declared.
+	(graphite_transform_loops): Declared.
+	* Makefile.in (cfgloopmanip.o): Depend on TREE_FLOW_H.
+	(graphite.o-warn): Add -Wno-error.
+	(PPLLIBS, PPLINC, CLOOGLIBS, CLOOGINC): Declared.
+	(LIBS): Add GMPLIBS, CLOOGLIBS, PPLLIBS.
+	(INCLUDES): Add PPLINC, CLOOGINC.
+	(OBJS-common): Add graphite.o.
+	(graphite.o): Add rule.
+	* gimple.h (gimple_vec): ... here.
+	* tree-cfg.c (print_loops): Start printing at ENTRY_BLOCK_PTR.
+	* passes.c (init_optimization_passes): Schedule 
+	pass_graphite_transforms.
+
 2008-09-02  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR target/37283
