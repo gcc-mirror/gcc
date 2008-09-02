@@ -1,5 +1,19 @@
 2008-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/37301
+	PR libfortran/37228
+	* io/io.h (write_real_g0): Declare new function to handle g0.d format.
+	* io/transfer.c (formatted_transfer_scalar): Use new function.
+	* io/format.c (parse_format_list): Enable g0.d.
+	* io/write.c (write_a_char4): Delete unused var.
+	(set_fnode_default): New function to set the default fnode w, d, and e
+	factored from write_real. (write_real): Use new factored function.
+	(write_real_g0): New function that sets d to that passed by g0.d format
+	specifier and set format to ES.  Default values for w and e are used
+	from the new function, set_fnode_default.
+
+2008-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	* runtime/error.c: Fix cast for printf.
 
 2008-08-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>

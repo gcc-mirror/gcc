@@ -735,6 +735,20 @@ parse_format_list (st_parameter_dt *dtp)
 	      goto finished;
 	    }
 	  tail->u.real.w = 0;
+	  u = format_lex (fmt);
+	  if (u != FMT_PERIOD)
+	    {
+	      fmt->saved_token = u;
+	      break;
+	    }
+
+	  u = format_lex (fmt);
+	  if (u != FMT_POSINT)
+	    {
+	      fmt->error = posint_required;
+	      goto finished;
+	    }
+	  tail->u.real.d = fmt->value;
 	  break;
 	}
       if (t == FMT_F || dtp->u.p.mode == WRITING)
