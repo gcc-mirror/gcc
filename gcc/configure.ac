@@ -323,14 +323,14 @@ AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 # So, we only use -pedantic if we can disable those warnings.
 
 ACX_PROG_CC_WARNING_OPTS(
-	[m4_do([-W -Wall -Wwrite-strings -Wstrict-prototypes ],
-	       [-Wmissing-prototypes -Wcast-qual])], [loose_warn])
+	m4_quote(m4_do([-W -Wall -Wwrite-strings -Wstrict-prototypes ],
+		       [-Wmissing-prototypes -Wcast-qual])), [loose_warn])
 ACX_PROG_CC_WARNING_OPTS(
-	[m4_do([-Wold-style-definition -Wc++-compat ], 
-	       [-Wmissing-format-attribute])], [strict_warn])
+	m4_quote(m4_do([-Wold-style-definition -Wc++-compat ], 
+		       [-Wmissing-format-attribute])), [strict_warn])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(
-	[m4_do([-Wno-long-long -Wno-variadic-macros ], 
-	       [-Wno-overlength-strings])], [strict_warn])
+	m4_quote(m4_do([-Wno-long-long -Wno-variadic-macros ], 
+		       [-Wno-overlength-strings])), [strict_warn])
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual], [strict_warn])
 
 # The above macros do nothing if the compiler is not GCC.  However, the
