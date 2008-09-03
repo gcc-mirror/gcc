@@ -1,3 +1,7 @@
+2008-09-03  Jeff Law  <law@redhat.com>
+
+	* h8300.c (expand_a_shift): Avoid invalid RTL sharing.
+
 2008-09-03  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_split_lock_test_and_set): Move
