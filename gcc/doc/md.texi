@@ -1855,6 +1855,46 @@ A memory operand for floating-point loads and stores
 A register indirect memory operand
 @end table
 
+@item picoChip family---@file{picochip.h}
+@table @code
+@item k
+Stack register.
+
+@item f
+Pointer register.  A register which can be used to access memory without
+supplying an offset.  Any other register can be used to access memory,
+but will need a constant offset.  In the case of the offset being zero,
+it is more efficient to use a pointer register, since this reduces code
+size.
+
+@item t
+A twin register.  A register which may be paired with an adjacent
+register to create a 32-bit register.
+
+@item a
+Any absolute memory address (e.g., symbolic constant, symbolic
+constant + offset).
+
+@item I
+4-bit signed integer.
+
+@item J
+4-bit unsigned integer.
+
+@item K
+8-bit signed integer.
+
+@item M
+Any constant whose absolute value is no greater than 4-bits.
+
+@item N
+10-bit signed integer
+
+@item O
+16-bit signed integer.
+
+@end table
+
 @item PowerPC and IBM RS6000---@file{config/rs6000/rs6000.h}
 @table @code
 @item b
