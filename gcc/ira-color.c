@@ -1606,13 +1606,13 @@ print_loop_title (ira_loop_tree_node_t loop_tree_node)
 
   ira_assert (loop_tree_node->loop != NULL);
   fprintf (ira_dump_file,
-	   "\n  Loop %d (parent %d, header bb%d, depth %d)\n    ref:",
+	   "\n  Loop %d (parent %d, header bb%d, depth %d)\n    all:",
 	   loop_tree_node->loop->num,
 	   (loop_tree_node->parent == NULL
 	    ? -1 : loop_tree_node->parent->loop->num),
 	   loop_tree_node->loop->header->index,
 	   loop_depth (loop_tree_node->loop));
-  EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->mentioned_allocnos, 0, j, bi)
+  EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->all_allocnos, 0, j, bi)
     fprintf (ira_dump_file, " %dr%d", j, ALLOCNO_REGNO (ira_allocnos[j]));
   fprintf (ira_dump_file, "\n    modified regnos:");
   EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->modified_regnos, 0, j, bi)
@@ -1654,8 +1654,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
   if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
     print_loop_title (loop_tree_node);
 
-  bitmap_copy (coloring_allocno_bitmap, loop_tree_node->mentioned_allocnos);
-  bitmap_ior_into (coloring_allocno_bitmap, loop_tree_node->border_allocnos);
+  bitmap_copy (coloring_allocno_bitmap, loop_tree_node->all_allocnos);
   bitmap_copy (consideration_allocno_bitmap, coloring_allocno_bitmap);
   EXECUTE_IF_SET_IN_BITMAP (consideration_allocno_bitmap, 0, j, bi)
     {
@@ -1669,7 +1668,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
   /* Process caps.  They are processed just once.  */
   if (flag_ira_algorithm == IRA_ALGORITHM_MIXED
       || flag_ira_algorithm == IRA_ALGORITHM_REGIONAL)
-    EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->mentioned_allocnos, 0, j, bi)
+    EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->all_allocnos, 0, j, bi)
       {
 	a = ira_allocnos[j];
 	if (ALLOCNO_CAP_MEMBER (a) == NULL)
@@ -1725,12 +1724,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  if (subloop_allocno == NULL
 	      || ALLOCNO_CAP (subloop_allocno) != NULL)
 	    continue;
-	  if ((flag_ira_algorithm == IRA_ALGORITHM_MIXED
-	       && (loop_tree_node->reg_pressure[rclass]
-		   <= ira_available_class_regs[rclass]))
-	      || (hard_regno < 0
-		  && ! bitmap_bit_p (subloop_node->mentioned_allocnos,
-				     ALLOCNO_NUM (subloop_allocno))))
+	  ira_assert (bitmap_bit_p (subloop_node->all_allocnos,
+				    ALLOCNO_NUM (subloop_allocno)));
+	  if (flag_ira_algorithm == IRA_ALGORITHM_MIXED
+	      && (loop_tree_node->reg_pressure[rclass]
+		  <= ira_available_class_regs[rclass]))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{
