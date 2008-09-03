@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, for HPs running
    HPUX using the 64bit runtime model.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2007 Free Software Foundation,
-   Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -217,6 +217,7 @@ do {								\
     ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");		\
   else								\
     ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
+  default_elf_asm_output_external (FILE, DECL, NAME);		\
 } while (0)
 
 /* We need set the type for external libcalls.  Also note that not all

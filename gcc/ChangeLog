@@ -1,3 +1,9 @@
+2008-09-03  John David Anglin  <dave.anglin@nrc.cnrc.gc.ca>
+
+	PR testsuite/37325
+	* config/pa/pa64-hpux.h (ASM_OUTPUT_EXTERNAL_REAL): Call
+	default_elf_asm_output_external.
+
 2008-09-03  Jeff Law  <law@redhat.com>
 
 	* h8300.c (expand_a_shift): Avoid invalid RTL sharing.
