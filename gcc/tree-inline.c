@@ -1156,6 +1156,12 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	           (s1, gimple_omp_single_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_CRITICAL:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy
+	    = gimple_build_omp_critical (s1, gimple_omp_critical_name (stmt));
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}

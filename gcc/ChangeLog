@@ -1,3 +1,10 @@
+2008-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37436
+	* gimple.h (gimple_has_substatements): GIMPLE_OMP_CRITICAL has
+	substatements.
+	* tree-inline.c (remap_gimple_stmt): Handle GIMPLE_OMP_CRITICAL.
+
 2008-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	From Michael Frysinger  <michael.frysinger@analog.com>
