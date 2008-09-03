@@ -2144,7 +2144,7 @@ static gimple_seq
 sra_build_assignment (tree dst, tree src)
 {
   gimple stmt;
-  gimple_seq seq = NULL;
+  gimple_seq seq = NULL, seq2 = NULL;
   /* Turning BIT_FIELD_REFs into bit operations enables other passes
      to do a much better job at optimizing the code.
      From dst = BIT_FIELD_REF <var, sz, off> we produce
@@ -2308,6 +2308,8 @@ sra_build_assignment (tree dst, tree src)
 	   && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
     src = fold_convert (TREE_TYPE (dst), src);
 
+  src = force_gimple_operand (src, &seq2, false, NULL_TREE);
+  gimple_seq_add_seq (&seq, seq2);
   stmt = gimple_build_assign (dst, src);
   gimple_seq_add_stmt (&seq, stmt);
   return seq;
@@ -2597,8 +2599,7 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
 
       t = build2 (COMPLEX_EXPR, elt->type, r, i);
       tmp_seq = sra_build_bf_assignment (expr, t);
-      gcc_assert (gimple_seq_singleton_p (tmp_seq));
-      SSA_NAME_DEF_STMT (expr) = gimple_seq_first_stmt (tmp_seq);
+      SSA_NAME_DEF_STMT (expr) = gimple_seq_last_stmt (tmp_seq);
       gimple_seq_add_seq (seq_p, tmp_seq);
     }
   else if (elt->replacement)
