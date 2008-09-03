@@ -5415,7 +5415,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
 
-      if (init && init_const_expr_p)
+      if (init && init_const_expr_p && TREE_CODE (decl) == VAR_DECL)
 	{
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
 	  if (DECL_INTEGRAL_CONSTANT_VAR_P (decl))

@@ -1,3 +1,9 @@
+2008-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37348
+	* decl.c (cp_finish_decl): Only set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P if decl is VAR_DECL.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.
