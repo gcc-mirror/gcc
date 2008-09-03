@@ -1,3 +1,8 @@
+2008-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): Check _POSIX_TIMERS too.
+	* configure: Regenerate.
+
 2008-09-03  Chris Fairles  <chris.fairles@gmail.com>
 
         * include/std/condition_variable: Use new deleted ctors.
