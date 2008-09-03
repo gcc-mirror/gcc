@@ -1,3 +1,14 @@
+2008-08-30  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37193
+	* module.c (read_module): Initialize use_only flag on used symbols.
+
+2008-06-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36371
+	* expr.c (gfc_check_assign):  Change message and locus for
+	error when conform == 0.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.

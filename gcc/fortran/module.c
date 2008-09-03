@@ -3753,9 +3753,9 @@ read_module (void)
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
 
 	      /* Delete the symtree if the symbol has been added by a USE
-		 statement without an ONLY(11.3.2). Remember that the rsym
+		 statement without an ONLY(11.3.2).  Remember that the rsym
 		 will be the same as the symbol found in the symtree, for
-		 this case.*/
+		 this case.  */
 	      if (st && (only_flag || info->u.rsym.renamed)
 		     && !st->n.sym->attr.use_only
 		     && !st->n.sym->attr.use_rename
@@ -3790,6 +3790,11 @@ read_module (void)
 
 	      if (strcmp (name, p) != 0)
 		sym->attr.use_rename = 1;
+
+	      /* We need to set the only_flag here so that symbols from the
+		 same USE...ONLY but earlier are not deleted from the tree in
+		 the gfc_delete_symtree above.  */
+	      sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */
 	      info->u.rsym.symtree = st;
