@@ -4950,7 +4950,7 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 CFLAGS="$saved_CFLAGS"
 
 saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
+CFLAGS="$CFLAGS $clooginc -DCLOOG_PPL_BACKEND $gmpinc $pplinc"
 
 echo "$as_me:$LINENO: checking for correct version of CLooG" >&5
 echo $ECHO_N "checking for correct version of CLooG... $ECHO_C" >&6

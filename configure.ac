@@ -1386,7 +1386,7 @@ choke me
 CFLAGS="$saved_CFLAGS"
 
 saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
+CFLAGS="$CFLAGS $clooginc -DCLOOG_PPL_BACKEND $gmpinc $pplinc"
 
 AC_MSG_CHECKING([for correct version of CLooG])
 AC_TRY_COMPILE([#include "cloog/cloog.h"],[
