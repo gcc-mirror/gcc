@@ -1,3 +1,15 @@
+2008-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37189
+	* cp-tree.h (defer_mark_used_calls, deferred_mark_used_calls): New
+	extern decls.
+	* decl2.c (mark_used): If defer_mark_used_calls, push decl into
+	deferred_mark_used_calls vector and exit early.
+	* decl.c (defer_mark_used_calls, deferred_mark_used_calls): New
+	variables.
+	(finish_function): Set defer_mark_used_calls for the duration of the
+	function.  Call mark_used on any queued decls.
+
 2008-09-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37208
