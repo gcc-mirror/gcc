@@ -106,3 +106,12 @@ proc dg-require-atomic-builtins { args } {
     }
     return
 }
+
+proc dg-require-gthreads { args } {
+    if { ![ check_v3_target_gthreads ] } {
+        upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+        return
+    }
+    return
+}

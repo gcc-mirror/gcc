@@ -1,5 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" } 
+// { dg-require-gthreads "" }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //

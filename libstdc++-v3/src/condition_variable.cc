@@ -29,56 +29,80 @@
 
 #include <condition_variable>
 
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+
 namespace std
 {
   condition_variable::condition_variable()
   {
-#if __GTHREAD_HAS_COND
-# if defined __GTHREAD_COND_INIT
-    native_handle_type __tmp = __GTHREAD_COND_INIT;
+#ifdef __GTHREAD_COND_INIT
+    __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
     _M_cond = __tmp;
-# else
+#else
     int __e = __gthread_cond_init(&_M_cond, NULL);
-    if ( __e)
+
+    if (__e)
       __throw_system_error(__e);
-# endif
 #endif
   }
 
   condition_variable::~condition_variable()
   {
-#if __GTHREAD_HAS_COND
     // XXX no thread blocked
-    /* int __e = */ pthread_cond_destroy(&_M_cond);
+    /* int __e = */ __gthread_cond_destroy(&_M_cond);
     // if __e == EBUSY then blocked
-#endif
   }
 
+  void
+  condition_variable::wait(unique_lock<mutex>& __lock)
+  {
+    int __e = __gthread_cond_wait(&_M_cond, __lock.mutex()->native_handle());
+
+    if (__e)
+      __throw_system_error(__e);    
+  }
+  
   void 
   condition_variable::notify_one()
   { 
-#if __GTHREAD_HAS_COND
-    int __e = pthread_cond_signal(&_M_cond);
+    lock_guard<mutex> __lock(_M_internal_mutex);
+    int __e = __gthread_cond_signal(&_M_cond);
 
     // XXX not in spec
     // EINVAL
-    if ( __e)
+    if (__e)
       __throw_system_error(__e);
-#endif
   }
 
   void 
   condition_variable::notify_all()
   { 
-#if __GTHREAD_HAS_COND
-    int __e = pthread_cond_broadcast(&_M_cond);
+    lock_guard<mutex> __lock(_M_internal_mutex);
+    int __e = __gthread_cond_broadcast(&_M_cond);
 
     // XXX not in spec
     // EINVAL
-    if ( __e)
+    if (__e)
+      __throw_system_error(__e);
+  }
+
+  condition_variable_any::condition_variable_any()
+  {
+#ifdef __GTHREAD_COND_INIT
+    __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
+    _M_cond = __tmp;
+#else
+    int __e = __gthread_cond_init(&_M_cond, NULL);
+
+    if (__e)
       __throw_system_error(__e);
 #endif
   }
-
+  
+  condition_variable_any::~condition_variable_any()
+  {
+    __gthread_cond_destroy(&_M_cond);
+  } 
 }
 
+#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

@@ -1,5 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
@@ -37,5 +39,6 @@ void test01()
   mutex_type m1;
   mutex_type m2(m1);
 }
-// { dg-error "within this context" "" { target *-*-* } 38 } 
-// { dg-error "is private" "" { target *-*-* } 107 } 
+
+// { dg-error "used here" "" { target *-*-* } 40 }
+// { dg-error "deleted function" "" { target *-*-* } 75 }
