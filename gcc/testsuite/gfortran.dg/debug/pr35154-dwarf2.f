@@ -25,13 +25,13 @@ C { dg-options "-dA" }
       return
       end
 
-C { dg-final { scan-assembler "(DIE.*DW_TAG_common_block)" } }
-C { dg-final { scan-assembler "DW_AT_name: \"__BLNK__\"" } }
-C { dg-final { scan-assembler "(DIE.*DW_TAG_variable)" } }
-C { dg-final { scan-assembler "\"i.*\".*DW_AT_name" } }
-C { dg-final { scan-assembler "\"j.*\".*DW_AT_name" } }
-C { dg-final { scan-assembler "(DIE.*DW_TAG_common_block)" } }
-C { dg-final { scan-assembler "DW_AT_name: \"label\"" } }
-C { dg-final { scan-assembler "(DIE.*DW_TAG_variable)" } }
-C { dg-final { scan-assembler "\"l.*\".*DW_AT_name" } }
-C { dg-final { scan-assembler "\"m.*\".*DW_AT_name" } }
+C { dg-final { scan-assembler "DIE\[^\n\]*DW_TAG_common_block" } }
+C { dg-final { scan-assembler "(DW_AT_name: \"__BLNK__\"|\"__BLNK__\[^\n\]*\"\[^\n\]*DW_AT_name)" } }
+C { dg-final { scan-assembler "DIE\[^\n\]*DW_TAG_variable" } }
+C { dg-final { scan-assembler "\"i\[^\n\]*\"\[^\n\]*DW_AT_name" } }
+C { dg-final { scan-assembler "\"j\[^\n\]*\"\[^\n\]*DW_AT_name" } }
+C { dg-final { scan-assembler "DIE\[^\n\]*DW_TAG_common_block" } }
+C { dg-final { scan-assembler "(DW_AT_name: \"label\"|\"label\[^\n\]*\"\[^\n\]*DW_AT_name)" } }
+C { dg-final { scan-assembler "DIE\[^\n\]*DW_TAG_variable" } }
+C { dg-final { scan-assembler "\"l\[^\n\]*\"\[^\n\]*DW_AT_name" } }
+C { dg-final { scan-assembler "\"m\[^\n\]*\"\[^\n\]*DW_AT_name" } }
