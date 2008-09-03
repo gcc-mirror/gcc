@@ -1,3 +1,9 @@
+2008-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c-torture/compile/vector-4.c: Add -mavx for x86.
+
+	* gcc.target/i386/avx-3.c: Require DFP support.
+
 2008-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37348
