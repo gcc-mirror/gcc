@@ -69,6 +69,8 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 pdp11 port		Paul Koning		ni1d@arrl.net
+picochip port		Hari Sandanagobalane	hariharan@picochip.com
+picochip port		Daniel Towner		dant@picochip.com
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		edelsohn@gnu.org
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com

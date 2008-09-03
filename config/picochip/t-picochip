@@ -1,0 +1,62 @@
+# Compile the extra library functions.
+
+LIB2FUNCS_EXTRA = \
+	$(srcdir)/config/picochip/libgccExtras/ashrsi3.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/ashlsi3.asm		\
+	$(srcdir)/config/picochip/libgccExtras/divmodhi4.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/udivmodhi4.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/divmodsi4.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/udivmodsi4.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/divmod15.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/ucmpsi2.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/cmpsi2.asm 		\
+	$(srcdir)/config/picochip/libgccExtras/clzsi2.asm			\
+	$(srcdir)/config/picochip/libgccExtras/adddi3.asm			\
+	$(srcdir)/config/picochip/libgccExtras/subdi3.asm			\
+	$(srcdir)/config/picochip/libgccExtras/lshrsi3.asm		\
+	$(srcdir)/config/picochip/libgccExtras/parityhi2.asm		\
+	$(srcdir)/config/picochip/libgccExtras/popcounthi2.asm
+
+# Prevent some of the more complicated libgcc functions from being
+# compiled. This is because they are generally too big to fit into an
+# AE anyway, so there is no point in having them. Also, some don't
+# compile properly so we'll ignore them for the moment.
+
+LIB1ASMFUNCS = _mulsc3 _divsc3
+LIB1ASMSRC = picochip/libgccExtras/fake_libgcc.asm
+
+# Turn off the building of exception handling libraries.
+LIB2ADDEH =
+LIB2ADDEHDEP =
+
+# Turn off ranlib on target libraries.
+RANLIB_FOR_TARGET = cat
+
+# Special libgcc setup. Make single/double floating point the same,
+# and use our own include files.
+TARGET_LIBGCC2_CFLAGS = -DDF=SF -I../../includes/
+
+# Switch off all debugging for the embedded libraries.
+# (embedded processors need small libraries by default).
+# NOTE: If the debug level is increased, turn off instruction scheduling.
+LIBGCC2_DEBUG_CFLAGS = -g0
+
+# Build all combinations of library for different multiply units, and
+# presence/absence of byte access.
+MULTILIB_OPTIONS = mmul-type=none/mmul-type=mac/mmul-type=mul mno-byte-access/mbyte-access
+
+# Using a mul unit (currently) implies that byte access is available.
+MULTILIB_EXCEPTIONS = mmul-type=mul/mno-byte-access
+
+# We want fine grained libraries, so use the new code
+# to build the floating point emulation libraries.
+FPBIT = fp-bit.c
+
+# Software floating point support. Floating point is not properly
+# supported, but is existence can be useful for some types of testing.
+fp-bit.c:	$(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#define FLOAT_ONLY' >> fp-bit.c
+	echo '#define SMALL_MACHINE' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+

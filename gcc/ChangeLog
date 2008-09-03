@@ -1,3 +1,13 @@
+2008-09-03  Hari Sandanagobalane  <hariharan@picochip.com>
+
+	Add picoChip port.
+	* doc/extend.texi: Document picoChip builtin functions.
+	* doc/invoke.texi: Document picoChip options.
+	* doc/contrib.texi: Add picoChip contribution.
+	* doc/md.texi: Document picoChip constraints.
+	* config.gcc: Add picochip-*-*.
+	* config/picochip/: Add new port.
+
 2008-09-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37328

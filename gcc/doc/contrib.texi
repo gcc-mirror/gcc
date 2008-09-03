@@ -917,6 +917,10 @@ Teemu Torma for thread safe exception handling support.
 Leonard Tower wrote parts of the parser, RTL generator, and RTL
 definitions, and of the VAX machine description.
 
+@item 
+Daniel Towner and Hariharan Sandanagobalane contributed and 
+maintain the picoChip port.
+
 @item
 Tom Tromey for internationalization support and for his many Java
 contributions and libgcj maintainership.

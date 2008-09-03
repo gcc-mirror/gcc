@@ -329,6 +329,9 @@ mips*-*-*)
 	need_64bit_hwint=yes
 	extra_headers="loongson.h"
 	;;
+picochip-*-*)
+        cpu_type=picochip
+        ;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h"
@@ -1707,6 +1710,9 @@ pdp11-*-bsd)
         ;;
 pdp11-*-*)
 	;;
+picochip-*)
+        # Nothing special
+        ;;
 # port not yet contributed
 #powerpc-*-openbsd*)
 #	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit "

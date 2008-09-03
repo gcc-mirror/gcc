@@ -1,3 +1,8 @@
+2008-09-03  Hari Sandanagobalane  <hariharan@picochip.com>
+
+	Add picoChip port.
+	* config.host: Add picochip-*-*.
+
 2008-08-06  Bob Wilson  <bob.wilson@acm.org>
 
 	* config.host: Match more processor names for Xtensa.

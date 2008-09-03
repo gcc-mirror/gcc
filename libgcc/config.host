@@ -428,6 +428,8 @@ pdp11-*-bsd)
         ;;
 pdp11-*-*)
 	;;
+picochip-*-*)
+        ;;
 powerpc64-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
 	;;
