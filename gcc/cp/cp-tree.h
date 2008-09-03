@@ -4911,7 +4911,7 @@ extern tree build_x_indirect_ref		(tree, const char *,
                                                  tsubst_flags_t);
 extern tree cp_build_indirect_ref		(tree, const char *,
                                                  tsubst_flags_t);
-extern tree build_array_ref			(tree, tree);
+extern tree build_array_ref			(tree, tree, location_t);
 extern tree get_member_function_from_ptrfunc	(tree *, tree);
 extern tree cp_build_function_call              (tree, tree, tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,

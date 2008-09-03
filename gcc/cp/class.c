@@ -627,7 +627,7 @@ build_vtbl_ref_1 (tree instance, tree idx)
 
   assemble_external (vtbl);
 
-  aref = build_array_ref (vtbl, idx);
+  aref = build_array_ref (vtbl, idx, input_location);
   TREE_CONSTANT (aref) |= TREE_CONSTANT (vtbl) && TREE_CONSTANT (idx);
 
   return aref;
