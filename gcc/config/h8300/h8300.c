@@ -3659,7 +3659,7 @@ expand_a_shift (enum machine_mode mode, int code, rtx operands[])
       break;
     }
 
-  emit_move_insn (operands[0], operands[1]);
+  emit_move_insn (copy_rtx (operands[0]), operands[1]);
 
   /* Need a loop to get all the bits we want  - we generate the
      code at emit time, but need to allocate a scratch reg now.  */
@@ -3667,9 +3667,9 @@ expand_a_shift (enum machine_mode mode, int code, rtx operands[])
   emit_insn (gen_rtx_PARALLEL
 	     (VOIDmode,
 	      gen_rtvec (2,
-			 gen_rtx_SET (VOIDmode, operands[0],
+			 gen_rtx_SET (VOIDmode, copy_rtx (operands[0]),
 				      gen_rtx_fmt_ee (code, mode,
-						      operands[0], operands[2])),
+						      copy_rtx (operands[0]), operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_SCRATCH (QImode)))));
   return true;
