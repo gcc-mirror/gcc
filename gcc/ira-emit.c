@@ -424,7 +424,7 @@ change_loop (ira_loop_tree_node_t node)
      might get the different hard register.  So we need to change
      ALLOCNO_REG.  */
   bitmap_and_compl (local_allocno_bitmap,
-		    ira_curr_loop_tree_node->mentioned_allocnos,
+		    ira_curr_loop_tree_node->all_allocnos,
 		    ira_curr_loop_tree_node->border_allocnos);
   EXECUTE_IF_SET_IN_REG_SET (local_allocno_bitmap, 0, i, bi)
     {

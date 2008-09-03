@@ -113,7 +113,7 @@ create_loop_tree_nodes (bool loops_p)
       ira_bb_nodes[i].regno_allocno_map = NULL;
       memset (ira_bb_nodes[i].reg_pressure, 0,
 	      sizeof (ira_bb_nodes[i].reg_pressure));
-      ira_bb_nodes[i].mentioned_allocnos = NULL;
+      ira_bb_nodes[i].all_allocnos = NULL;
       ira_bb_nodes[i].modified_regnos = NULL;
       ira_bb_nodes[i].border_allocnos = NULL;
       ira_bb_nodes[i].local_copies = NULL;
@@ -156,7 +156,7 @@ create_loop_tree_nodes (bool loops_p)
 	      sizeof (ira_allocno_t) * max_regno);
       memset (ira_loop_nodes[i].reg_pressure, 0,
 	      sizeof (ira_loop_nodes[i].reg_pressure));
-      ira_loop_nodes[i].mentioned_allocnos = ira_allocate_bitmap ();
+      ira_loop_nodes[i].all_allocnos = ira_allocate_bitmap ();
       ira_loop_nodes[i].modified_regnos = ira_allocate_bitmap ();
       ira_loop_nodes[i].border_allocnos = ira_allocate_bitmap ();
       ira_loop_nodes[i].local_copies = ira_allocate_bitmap ();
@@ -188,7 +188,7 @@ finish_loop_tree_node (ira_loop_tree_node_t loop)
       ira_free_bitmap (loop->local_copies);
       ira_free_bitmap (loop->border_allocnos);
       ira_free_bitmap (loop->modified_regnos);
-      ira_free_bitmap (loop->mentioned_allocnos);
+      ira_free_bitmap (loop->all_allocnos);
       ira_free (loop->regno_allocno_map);
       loop->regno_allocno_map = NULL;
     }
@@ -212,8 +212,8 @@ finish_loop_tree_nodes (void)
 	ira_free_bitmap (ira_bb_nodes[i].border_allocnos);
       if (ira_bb_nodes[i].modified_regnos != NULL)
 	ira_free_bitmap (ira_bb_nodes[i].modified_regnos);
-      if (ira_bb_nodes[i].mentioned_allocnos != NULL)
-	ira_free_bitmap (ira_bb_nodes[i].mentioned_allocnos);
+      if (ira_bb_nodes[i].all_allocnos != NULL)
+	ira_free_bitmap (ira_bb_nodes[i].all_allocnos);
       if (ira_bb_nodes[i].regno_allocno_map != NULL)
 	ira_free (ira_bb_nodes[i].regno_allocno_map);
     }
@@ -437,6 +437,7 @@ ira_create_allocno (int regno, bool cap_p, ira_loop_tree_node_t loop_tree_node)
   ALLOCNO_CAP (a) = NULL;
   ALLOCNO_CAP_MEMBER (a) = NULL;
   ALLOCNO_NUM (a) = ira_allocnos_num;
+  bitmap_set_bit (loop_tree_node->all_allocnos, ALLOCNO_NUM (a));
   ALLOCNO_CONFLICT_ALLOCNO_ARRAY (a) = NULL;
   ALLOCNO_CONFLICT_ALLOCNOS_NUM (a) = 0;
   COPY_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a), ira_no_alloc_regs);
@@ -765,7 +766,6 @@ create_cap_allocno (ira_allocno_t a)
   ira_set_allocno_cover_class (cap, cover_class);
   ALLOCNO_AVAILABLE_REGS_NUM (cap) = ALLOCNO_AVAILABLE_REGS_NUM (a);
   ALLOCNO_CAP_MEMBER (cap) = a;
-  bitmap_set_bit (parent->mentioned_allocnos, ALLOCNO_NUM (cap));
   ALLOCNO_CAP (a) = cap;
   ALLOCNO_COVER_CLASS_COST (cap) = ALLOCNO_COVER_CLASS_COST (a);
   ALLOCNO_MEMORY_COST (cap) = ALLOCNO_MEMORY_COST (a);
@@ -1290,8 +1290,6 @@ create_insn_allocnos (rtx x, bool output_p)
 	  
 	  ALLOCNO_NREFS (a)++;
 	  ALLOCNO_FREQ (a) += REG_FREQ_FROM_BB (curr_bb);
-	  bitmap_set_bit (ira_curr_loop_tree_node->mentioned_allocnos,
-			  ALLOCNO_NUM (a));
 	  if (output_p)
 	    bitmap_set_bit (ira_curr_loop_tree_node->modified_regnos, regno);
 	}
@@ -1709,7 +1707,7 @@ remove_unnecessary_allocnos (void)
 		prev_a = a;
 		ALLOCNO_LOOP_TREE_NODE (a) = parent;
 		parent->regno_allocno_map[regno] = a;
-		bitmap_set_bit (parent->mentioned_allocnos, ALLOCNO_NUM (a));
+		bitmap_set_bit (parent->all_allocnos, ALLOCNO_NUM (a));
 	      }
 	    else
 	      {
@@ -2358,20 +2356,18 @@ check_allocno_creation (void)
 
   FOR_EACH_ALLOCNO (a, ai)
     {
-      if (ALLOCNO_LOOP_TREE_NODE (a) == ira_loop_tree_root)
+      loop_tree_node = ALLOCNO_LOOP_TREE_NODE (a);
+      ira_assert (bitmap_bit_p (loop_tree_node->all_allocnos,
+				ALLOCNO_NUM (a)));
+      if (loop_tree_node == ira_loop_tree_root)
 	continue;
       if (ALLOCNO_CAP_MEMBER (a) != NULL)
-	{
-	  ira_assert (ALLOCNO_CAP (a) != NULL);
-	}
+	ira_assert (ALLOCNO_CAP (a) != NULL);
       else if (ALLOCNO_CAP (a) == NULL)
-	{
-	  loop_tree_node = ALLOCNO_LOOP_TREE_NODE (a);
-	  ira_assert (loop_tree_node->parent
-		      ->regno_allocno_map[ALLOCNO_REGNO (a)] != NULL
-		      && bitmap_bit_p (loop_tree_node->border_allocnos,
-				       ALLOCNO_NUM (a)));
-	}
+	ira_assert (loop_tree_node->parent
+		    ->regno_allocno_map[ALLOCNO_REGNO (a)] != NULL
+		    && bitmap_bit_p (loop_tree_node->border_allocnos,
+				     ALLOCNO_NUM (a)));
     }
 }
 #endif

@@ -111,15 +111,16 @@ struct ira_loop_tree_node
      (defined only for the cover classes).  */
   int reg_pressure[N_REG_CLASSES];
 
-  /* Numbers of allocnos referred in the loop node.  */
-  bitmap mentioned_allocnos;
+  /* Numbers of allocnos referred or living in the loop node (except
+     for its subloops).  */
+  bitmap all_allocnos;
+
+  /* Numbers of allocnos living at the loop borders.  */
+  bitmap border_allocnos;
 
   /* Regnos of pseudos modified in the loop node (including its
      subloops).  */
   bitmap modified_regnos;
-
-  /* Numbers of allocnos living at the loop borders.  */
-  bitmap border_allocnos;
 
   /* Numbers of copies referred in the corresponding loop.  */
   bitmap local_copies;

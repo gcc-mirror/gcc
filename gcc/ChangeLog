@@ -7,6 +7,29 @@
 2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37243
+
+	* ira-int.h (ira_loop_tree_node): Rename mentioned_allocnos to
+	all_allocnos.
+
+	* ira-color.c (print_loop_title): Use all_allocnos.
+	(color_pass): Ditto.  Don't add border_allocnos.  Check that
+	subloop allocno in the correspdoning bitmap all_allocnos.
+
+	* ira-emit.c (change_loop): Use all_allocnos.
+
+	* ira-build.c (create_loop_tree_nodes, finish_loop_tree_node):
+	Ditto.
+	(ira_create_allocno): Set up all_allocnos bit for the created
+	allocno.
+	(create_cap_allocno): Remove setting mentioned_allocnos.
+	(create_insn_allocnos): Ditto.
+	(remove_unnecessary_allocnos): Use all_allocnos.
+	(check_allocno_creation): Check that allocnos are in the
+	corresponding bitmap all_allocnos.
+	
+2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-opt/37243
 	
 	* ira-conflicts.c (REG_SUBREG_P, go_through_subreg): New.
 	(process_regs_for_copy): Process subregs.  Refine check when cost
