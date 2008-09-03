@@ -1,5 +1,22 @@
 2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-opt/37243
+	
+	* ira-conflicts.c (REG_SUBREG_P, go_through_subreg): New.
+	(process_regs_for_copy): Process subregs.  Refine check when cost
+	is taken into account in ira-costs.c.
+	(process_reg_shuffles): Use REG_SUBREG_P.
+	(add_insn_allocno_copies): Ditto.  Ignore modes.
+
+	* ira-color.c (conflict_allocno_vec): New.
+	(COST_HOP_DIVISOR): New macro.
+	(update_copy_costs_1): Use it.
+	(update_conflict_hard_regno_costs): New function.
+	(assign_hard_reg): Use it.
+	(ira_color): Allocate and free conflict_allocno_vec.
+ 
+2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-opt/37296
 
 	* ira-int.h (ira_sort_insn_chain): Remove.
