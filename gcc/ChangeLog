@@ -1,3 +1,8 @@
+2008-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_expand_prologue): Honour no_stack_limit
+	attributes.
+
 2008-09-03 Danny Smith  <dannysmith@usrs.sourceforge.net>
 
 	* gthr-win32.h (CONST_CAST2): Really make sure CONST_CAST2 is
