@@ -3776,6 +3776,15 @@ mark_used (tree decl)
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (skip_evaluation)
     return;
+
+  /* If within finish_function, defer the rest until that function
+     finishes, otherwise it might recurse.  */
+  if (defer_mark_used_calls)
+    {
+      VEC_safe_push (tree, gc, deferred_mark_used_calls, decl);
+      return;
+    }
+
   /* Normally, we can wait until instantiation-time to synthesize
      DECL.  However, if DECL is a static data member initialized with
      a constant, we need the value right now because a reference to
