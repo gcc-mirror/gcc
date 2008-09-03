@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-O2 -mavx -std=gnu99" } */
 
 _Decimal128
