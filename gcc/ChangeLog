@@ -1,3 +1,11 @@
+2008-09-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/37293
+	* cgraphunit.c (update_call_expr): Remove eh regions from statements
+	which become non throw.
+	(cgraph_function_versioning): Also clear DECL_WEAK.  Call
+	update_call_expr after updating the flags on the decl.
+
 2008-09-03  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/37315
