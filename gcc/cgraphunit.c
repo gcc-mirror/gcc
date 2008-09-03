@@ -1417,7 +1417,14 @@ update_call_expr (struct cgraph_node *new_version)
 
   /* Update the call expr on the edges to call the new version.  */
   for (e = new_version->callers; e; e = e->next_caller)
-    gimple_call_set_fndecl (e->call_stmt, new_version->decl);
+    {
+      struct function *inner_function = DECL_STRUCT_FUNCTION (e->caller->decl);
+      gimple_call_set_fndecl (e->call_stmt, new_version->decl);
+      /* Update EH information too, just in case.  */
+      if (!stmt_could_throw_p (e->call_stmt)
+          && lookup_stmt_eh_region_fn (inner_function, e->call_stmt))
+        remove_stmt_from_eh_region_fn (inner_function, e->call_stmt);
+    }
 }
 
 
@@ -1524,20 +1531,24 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip);
-  /* Update the call_expr on the edges to call the new version node. */
-  update_call_expr (new_version_node);
 
   /* Update the new version's properties.
-     Make The new version visible only within this translation unit.
+     Make The new version visible only within this translation unit.  Make sure
+     that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   DECL_EXTERNAL (new_version_node->decl) = 0;
   DECL_ONE_ONLY (new_version_node->decl) = 0;
   TREE_PUBLIC (new_version_node->decl) = 0;
   DECL_COMDAT (new_version_node->decl) = 0;
+  DECL_WEAK (new_version_node->decl) = 0;
   new_version_node->local.externally_visible = 0;
   new_version_node->local.local = 1;
   new_version_node->lowered = true;
+  
+  /* Update the call_expr on the edges to call the new version node. */
+  update_call_expr (new_version_node);
+  
   cgraph_call_function_insertion_hooks (new_version_node);
   return new_version_node;
 }
