@@ -1629,7 +1629,7 @@ struct lang_decl_flags GTY(())
   unsigned this_thunk_p : 1;
   unsigned repo_available_p : 1;
   unsigned hidden_friend_p : 1;
-  unsigned threadprivate_p : 1;
+  unsigned threadprivate_or_deleted_p : 1;
   unsigned defaulted_p : 1;
 
   union lang_decl_u {
@@ -2645,11 +2645,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if DECL has been declared threadprivate by
    #pragma omp threadprivate.  */
 #define CP_DECL_THREADPRIVATE_P(DECL) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (DECL))->decl_flags.threadprivate_p)
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (DECL))->decl_flags.threadprivate_or_deleted_p)
 
 /* Nonzero if DECL was declared with '= delete'.  */
 #define DECL_DELETED_FN(DECL) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.threadprivate_p)
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.threadprivate_or_deleted_p)
 
 /* Nonzero if DECL was declared with '= default'.  */
 #define DECL_DEFAULTED_FN(DECL) \
@@ -3862,6 +3862,12 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   already been parsed.  */
 #define SF_INCLASS_INLINE    2  /* The function is an inline, defined
 				   in the class body.  */
+
+/* Used with start_decl's initialized parameter.  */
+#define SD_UNINITIALIZED     0
+#define SD_INITIALIZED       1
+#define SD_DEFAULTED         2
+#define SD_DELETED           3
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a

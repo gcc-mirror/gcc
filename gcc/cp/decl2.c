@@ -3767,6 +3767,12 @@ mark_used (tree decl)
   TREE_USED (decl) = 1;
   if (DECL_CLONED_FUNCTION_P (decl))
     TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DELETED_FN (decl))
+    {
+      error ("deleted function %q+D", decl);
+      error ("used here");
+    }
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (skip_evaluation)
     return;
@@ -3829,12 +3835,6 @@ mark_used (tree decl)
       synthesize_method (decl);
       /* If we've already synthesized the method we don't need to
 	 do the instantiation test below.  */
-    }
-  else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_DELETED_FN (decl))
-    {
-      error ("deleted function %q+D", decl);
-      error ("used here");
     }
   else if ((DECL_NON_THUNK_FUNCTION_P (decl) || TREE_CODE (decl) == VAR_DECL)
 	   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)

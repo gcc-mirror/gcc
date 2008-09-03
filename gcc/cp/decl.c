@@ -3969,14 +3969,14 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
    grokfield.)  The DECL corresponding to the DECLARATOR is returned.
    If an error occurs, the error_mark_node is returned instead.
    
-   DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED is 1
-   if an explicit initializer is present, or 2 for an explicitly defaulted
-   function, or 3 for an explicitly deleted function, but 0 if this is a
-   variable implicitly initialized via a default constructor.  ATTRIBUTES
-   and PREFIX_ATTRIBUTES are GNU attributes associated with this
-   declaration.  *PUSHED_SCOPE_P is set to the scope entered in this
-   function, if any; if set, the caller is responsible for calling
-   pop_scope.  */
+   DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED is
+   SD_INITIALIZED if an explicit initializer is present, or SD_DEFAULTED
+   for an explicitly defaulted function, or SD_DELETED for an explicitly
+   deleted function, but 0 (SD_UNINITIALIZED) if this is a variable
+   implicitly initialized via a default constructor.  ATTRIBUTES and
+   PREFIX_ATTRIBUTES are GNU attributes associated with this declaration.
+   *PUSHED_SCOPE_P is set to the scope entered in this function, if any; if
+   set, the caller is responsible for calling pop_scope.  */
 
 tree
 start_decl (const cp_declarator *declarator,
@@ -4034,7 +4034,7 @@ start_decl (const cp_declarator *declarator,
 	return error_mark_node;
 
       case FUNCTION_DECL:
-	if (initialized == 3)
+	if (initialized == SD_DELETED)
 	  /* We'll handle the rest of the semantics later, but we need to
 	     set this now so it's visible to duplicate_decls.  */
 	  DECL_DELETED_FN (decl) = 1;
