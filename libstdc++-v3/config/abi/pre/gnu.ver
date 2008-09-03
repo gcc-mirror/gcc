@@ -860,13 +860,25 @@ GLIBCXX_3.4.11 {
     _ZTSSt10lock_error;
     _ZNKSt10lock_error4whatEv;
 
+    _ZSt11__once_call;
+    _ZSt15__once_callable;
+    _ZSt14__once_functor;
+    _ZSt11__once_lock;
+    _ZSt12__once_mutex;
+    __once_proxy;
+
     # condition_variable
     _ZNSt18condition_variable10notify_allEv;
     _ZNSt18condition_variable10notify_oneEv;
+    _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE;
     _ZNSt18condition_variableC1Ev;
     _ZNSt18condition_variableC2Ev;
     _ZNSt18condition_variableD1Ev;
     _ZNSt18condition_variableD2Ev;
+    _ZNSt22condition_variable_anyC1Ev;
+    _ZNSt22condition_variable_anyC2Ev;
+    _ZNSt22condition_variable_anyD1Ev;
+    _ZNSt22condition_variable_anyD2Ev;
 
     # system_error
     _ZSt18get_posix_categoryv;

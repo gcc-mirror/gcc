@@ -1091,7 +1091,7 @@ proc check_v3_target_atomic_builtins { } {
 	set et_atomic_builtins 0
 
 	# Set up and compile a C++0x test program that depends
-	# on the C99 stdint facilities to be available.
+	# on the atomic builtin facilities to be available.
 	set src atomic_builtins[pid].cc
 	set exe atomic_builtins[pid].exe
 
@@ -1119,4 +1119,62 @@ proc check_v3_target_atomic_builtins { } {
     }
     verbose "check_v3_target_atomic_builtins: $et_atomic_builtins" 2
     return $et_atomic_builtins
+}
+
+proc check_v3_target_gthreads { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_gthreads
+
+    global tool
+
+    if { ![info exists et_gthreads_target_name] } {
+        set et_gthreads_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_gthreads_target_name } {
+        verbose "check_v3_target_gthreads: `$et_gthreads_target_name'" 2
+        set et_gthreads_target_name $current_target
+        if [info exists et_gthreads] {
+            verbose "check_v3_target_gthreads: removing cached result" 2
+            unset et_gthreads
+        }
+    }
+
+    if [info exists et_gthreads] {
+        verbose "check_v3_target_gthreads: using cached result" 2
+    } else {
+        set et_gthreads 0
+
+        # Set up and compile a C++0x test program that depends
+        # on the gthreads facilities to be available.
+        set src gthreads[pid].cc
+        set exe gthreads[pid].exe
+
+        set f [open $src "w"]
+	puts $f "#include <bits/c++config.h>"
+        puts $f "int main()"
+        puts $f "#ifdef _GLIBCXX_HAS_GTHREADS"
+        puts $f "{ return 0; }"
+        puts $f "#endif"
+        close $f
+
+        set cxxflags_saved $cxxflags
+        set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+        set lines [v3_target_compile $src $exe executable ""]
+        set cxxflags $cxxflags_saved
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, compilation succeeded.
+            set et_gthreads 1
+        } else {
+            verbose "check_v3_target_gthreads: compilation failed" 2
+        }
+    }
+    verbose "check_v3_target_gthreads: $et_gthreads" 2
+    return $et_gthreads
 }

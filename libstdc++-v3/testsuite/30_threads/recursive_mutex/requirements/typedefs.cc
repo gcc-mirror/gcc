@@ -1,5 +1,8 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
+
 // 2008-03-18 Benjamin Kosnik <bkoz@redhat.com>
 
 // Copyright (C) 2008 Free Software Foundation, Inc.

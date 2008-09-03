@@ -1,3 +1,111 @@
+2008-09-03  Chris Fairles  <chris.fairles@gmail.com>
+
+        * include/std/condition_variable: Use new deleted ctors.
+        * include/std/mutex: Likewise plus implement timed_mutex, 
+	recursive_timed_mutex and call_once.
+	* src/condition_variable.cc: Implement wait(). Use gthread types.
+	Remove _GTHREADS_HAS_COND checks in favor of global
+	_GLIBCXX_HAS_GTHREADS.
+	* src/mutex.cc (call_once): Implementation using TLS with mutex
+	fallback.
+	* config/abi/pre/gnu.ver: Add exported symbols.
+	* testsuite/lib/libstdc++.exp (check_v3_target_gthreads): New.
+	* testsuite/lib/dg-options.exp (dg-require-gthreads): Likewise.
+	* testsuite/30_threads/lock_guard/requirements/typedefs.cc: Use
+	dg-require-gthreads and dg-require-cstdint.
+	* testsuite/30_threads/lock_guard/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/requirements/typedefs.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
+	Likewise.
+        * testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/requirements/typedefs.cc:
+	Likewise.
+        * testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/30_threads/unique_lock/requirements/typedefs.cc: Likewise.
+        * testsuite/30_threads/mutex/cons/assign_neg.cc: Also adjust dg-error
+	lines for deleted members.
+        * testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+        * testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/call_once/once_flag.cc: New.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/copy_neg.cc: Likewise
+	* testsuite/30_threads/condition_variable/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/requirements/typedefs.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc: 
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc: 
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc: 
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc: 
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc: 
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+
 2008-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/std/type_traits (__make_unsigned_selector<>): Consider
