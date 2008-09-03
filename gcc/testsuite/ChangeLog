@@ -4,8 +4,8 @@
 
 2008-09-03  Jakub Jelinek  <jakub@redhat.com>
 
-	PR c++/37436
-	* g++.dg/gomp/pr37436.C: New test.
+	PR c++/37346
+	* g++.dg/gomp/pr37346.C: New test.
 
 2008-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 

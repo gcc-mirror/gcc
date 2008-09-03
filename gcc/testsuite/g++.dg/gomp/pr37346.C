@@ -1,4 +1,4 @@
-// PR c++/37436
+// PR c++/37346
 // { dg-do compile }
 // { dg-options "-fopenmp" }
 
