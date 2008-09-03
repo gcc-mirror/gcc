@@ -1,3 +1,10 @@
+2008-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Michael Frysinger  <michael.frysinger@analog.com>
+	* config/bfin/bfin.c (bfin_cpus[]): Add 0.1 for bf522, bf523, bf524,
+	bf525, bf526, bf527, bf542, bf544, bf547, bf548, and bf549.  Add 0.2
+	for bf538.
+
 2008-09-03  Hari Sandanagobalane  <hariharan@picochip.com>
 
 	Add picoChip port.
