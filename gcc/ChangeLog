@@ -1,3 +1,25 @@
+2008-09-03  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/37315
+	* cgraph.c (cgraph_create_edge): Use gimple_has_body_p.
+	* cgraphunit.c (verify_cgraph_node): drop gimple_body check.
+	(cgraph_analyze_functions): Use node->analyzed
+	(cgraph_mark_functions_to_output): Likewise.
+	(cgraph_expand_function): All functions can be released after
+	expanding.
+	(cgraph_optimize): Use gimple_has_body_p.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Use analyzed flag.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(inline_transform): Inline transform.
+	* tree-inline.c (initialize_cfun): Do now shallow copy structure;
+	copy fields needed.
+	(inlinable_function_p): Drop gimple_body check.
+	(expand_call_inline): Use gimple_has_body_p.
+	* gimple.c (gimple_has_body_p): New.
+	* gimple.h (gimple_has_body_p): Add prototype.
+	* tree-cfg.c (execute_build_cfg): Remove gimple_body.
+	(dump_function_to_file): Use gimple_has_body_p check.
+
 2008-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37346
