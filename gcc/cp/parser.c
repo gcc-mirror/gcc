@@ -12610,7 +12610,7 @@ cp_parser_init_declarator (cp_parser* parser,
       || token->type == CPP_OPEN_PAREN
       || token->type == CPP_OPEN_BRACE)
     {
-      is_initialized = 1;
+      is_initialized = SD_INITIALIZED;
       initialization_kind = token->type;
 
       if (token->type == CPP_EQ
@@ -12618,9 +12618,9 @@ cp_parser_init_declarator (cp_parser* parser,
 	{
 	  cp_token *t2 = cp_lexer_peek_nth_token (parser->lexer, 2);
 	  if (t2->keyword == RID_DEFAULT)
-	    is_initialized = 2;
+	    is_initialized = SD_DEFAULTED;
 	  else if (t2->keyword == RID_DELETE)
-	    is_initialized = 3;
+	    is_initialized = SD_DELETED;
 	}
     }
   else
@@ -12633,7 +12633,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	  cp_parser_error (parser, "expected initializer");
 	  return error_mark_node;
 	}
-      is_initialized = 0;
+      is_initialized = SD_UNINITIALIZED;
       initialization_kind = CPP_EOF;
     }
 

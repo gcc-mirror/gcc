@@ -6185,6 +6185,10 @@ resolve_address_of_overloaded_function (tree target_type,
      function will be marked as used at this point.  */
   if (!(flags & tf_conv))
     {
+      /* Make =delete work with SFINAE.  */
+      if (DECL_DELETED_FN (fn) && !(flags & tf_error))
+	return error_mark_node;
+      
       mark_used (fn);
       /* We could not check access when this expression was originally
 	 created since we did not know at that time to which function

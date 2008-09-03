@@ -5119,6 +5119,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	joust (cand, w->loser, 1);
     }
 
+  /* Make =delete work with SFINAE.  */
+  if (DECL_DELETED_FN (fn) && !(complain & tf_error))
+    return error_mark_node;
+
   if (DECL_FUNCTION_MEMBER_P (fn))
     {
       /* If FN is a template function, two cases must be considered.

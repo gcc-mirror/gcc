@@ -704,7 +704,8 @@ check_narrowing (tree type, tree init)
     }
 
   if (!ok)
-    error ("narrowing conversion of %qE to %qT inside { }", init, type);
+    permerror (input_location, "narrowing conversion of %qE to %qT inside { }",
+	       init, type);
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting

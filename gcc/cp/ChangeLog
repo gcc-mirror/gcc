@@ -1,3 +1,23 @@
+2008-09-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37208
+	* call.c (build_over_call): Make =delete work with SFINAE.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+
+	* cp-tree.h (struct lang_decl_flags): Rename threadprivate_p to
+	threadprivate_or_deleted_p.
+	(CP_DECL_THREADPRIVATE_P): Adjust.
+	(DECL_DELETED_FN): Likewise.
+	(SD_UNINITIALIZED, SD_INITIALIZED, SD_DEFAULTED): New macros.
+	(SD_DELETED): New macro.
+	* parser.c (cp_parser_init_declarator): Use them.
+	* decl.c (start_decl): Use them.
+
+	* decl2.c (mark_used): Give =deleted error even in sizeof.
+
+	* typeck2.c (check_narrowing): Downgrade narrowing error to
+	permerror.
+
 2008-09-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (build_array_ref): Use new location argument.
