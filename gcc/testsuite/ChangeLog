@@ -1,3 +1,8 @@
+2008-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37322
+	* gfortran.dg/debug/pr35154-dwarf2.f: Fix up scan-assembler regexps.
+
 2008-09-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36445
