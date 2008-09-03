@@ -21610,7 +21610,8 @@ int
 main ()
 {
 
-     	#if (!defined(__GTHREADS_CXX0X) || _POSIX_TIMERS <= 0)
+     	#if (!defined(__GTHREADS_CXX0X) || !defined(_POSIX_TIMEOUTS) \
+	     || _POSIX_TIMEOUTS <= 0)
 	#error
 	#endif
 
