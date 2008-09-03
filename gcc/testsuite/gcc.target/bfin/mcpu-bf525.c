@@ -10,8 +10,8 @@
 #error "__ADSPBF52x__ is not defined"
 #endif
 
-#if __SILICON_REVISION__ != 0x0000
-#error "__SILICON_REVISION__ is not 0x0000"
+#if __SILICON_REVISION__ != 0x0001
+#error "__SILICON_REVISION__ is not 0x0001"
 #endif
 
 #ifndef __WORKAROUNDS_ENABLED
