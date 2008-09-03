@@ -181,7 +181,6 @@ get_dup_num (int op_num, bool use_commut_op_p)
   if (op_num < 0 || recog_data.n_alternatives == 0)
     return -1;
   op = recog_data.operand[op_num];
-  ira_assert (REG_P (op));
   commut_op_used_p = true;
   if (use_commut_op_p)
     {
@@ -295,6 +294,32 @@ get_dup (int op_num, bool use_commut_op_p)
     return recog_data.operand[n];
 }
 
+/* Check that X is REG or SUBREG of REG.  */
+#define REG_SUBREG_P(x)							\
+   (REG_P (x) || (GET_CODE (x) == SUBREG && REG_P (SUBREG_REG (x))))
+
+/* Return X if X is a REG, otherwise it should be SUBREG of REG and
+   the function returns the reg in this case.  *OFFSET will be set to
+   0 in the first case or the regno offset in the first case.  */
+static rtx
+go_through_subreg (rtx x, int *offset)
+{
+  rtx reg;
+
+  *offset = 0;
+  if (REG_P (x))
+    return x;
+  ira_assert (GET_CODE (x) == SUBREG);
+  reg = SUBREG_REG (x);
+  ira_assert (REG_P (reg));
+  if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
+    *offset = subreg_regno_offset (REGNO (reg), GET_MODE (reg),
+				   SUBREG_BYTE (x), GET_MODE (x));
+  else
+    *offset = (SUBREG_BYTE (x) / REGMODE_NATURAL_SIZE (GET_MODE (x)));
+  return reg;
+}
+
 /* Process registers REG1 and REG2 in move INSN with execution
    frequency FREQ.  The function also processes the registers in a
    potential move insn (INSN == NULL in this case) with frequency
@@ -306,27 +331,32 @@ get_dup (int op_num, bool use_commut_op_p)
 static bool
 process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
 {
-  int hard_regno, cost, index;
+  int hard_regno, cost, index, offset1, offset2;
+  bool only_regs_p;
   ira_allocno_t a;
   enum reg_class rclass, cover_class;
   enum machine_mode mode;
   ira_copy_t cp;
 
-  gcc_assert (REG_P (reg1) && REG_P (reg2));
+  gcc_assert (REG_SUBREG_P (reg1) && REG_SUBREG_P (reg2));
+  only_regs_p = REG_P (reg1) && REG_P (reg2);
+  reg1 = go_through_subreg (reg1, &offset1);
+  reg2 = go_through_subreg (reg2, &offset2);
   if (HARD_REGISTER_P (reg1))
     {
       if (HARD_REGISTER_P (reg2))
 	return false;
-      hard_regno = REGNO (reg1);
+      hard_regno = REGNO (reg1) + offset1 - offset2;
       a = ira_curr_regno_allocno_map[REGNO (reg2)];
     }
   else if (HARD_REGISTER_P (reg2))
     {
-      hard_regno = REGNO (reg2);
+      hard_regno = REGNO (reg2) + offset2 - offset1;
       a = ira_curr_regno_allocno_map[REGNO (reg1)];
     }
   else if (!CONFLICT_ALLOCNO_P (ira_curr_regno_allocno_map[REGNO (reg1)],
-				ira_curr_regno_allocno_map[REGNO (reg2)]))
+				ira_curr_regno_allocno_map[REGNO (reg2)])
+	   && offset1 == offset2)
     {
       cp = ira_add_allocno_copy (ira_curr_regno_allocno_map[REGNO (reg1)],
 				 ira_curr_regno_allocno_map[REGNO (reg2)],
@@ -341,7 +371,8 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
   cover_class = ALLOCNO_COVER_CLASS (a);
   if (! ira_class_subset_p[rclass][cover_class])
     return false;
-  if (reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode))
+  if (reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode)
+      && only_regs_p)
     /* It is already taken into account in ira-costs.c.  */
     return false;
   index = ira_class_hard_reg_index[cover_class][hard_regno];
@@ -371,12 +402,12 @@ process_reg_shuffles (rtx reg, int op_num, int freq)
   int i;
   rtx another_reg;
 
-  gcc_assert (REG_P (reg));
+  gcc_assert (REG_SUBREG_P (reg));
   for (i = 0; i < recog_data.n_operands; i++)
     {
       another_reg = recog_data.operand[i];
       
-      if (!REG_P (another_reg) || op_num == i
+      if (!REG_SUBREG_P (another_reg) || op_num == i
 	  || recog_data.operand_type[i] != OP_OUT)
 	continue;
       
@@ -399,9 +430,12 @@ add_insn_allocno_copies (rtx insn)
   if (freq == 0)
     freq = 1;
   if ((set = single_set (insn)) != NULL_RTX
-      && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set))
+      && REG_SUBREG_P (SET_DEST (set)) && REG_SUBREG_P (SET_SRC (set))
       && ! side_effects_p (set)
-      && find_reg_note (insn, REG_DEAD, SET_SRC (set)) != NULL_RTX)
+      && find_reg_note (insn, REG_DEAD,
+			REG_P (SET_SRC (set))
+			? SET_SRC (set)
+			: SUBREG_REG (SET_SRC (set))) != NULL_RTX)
     process_regs_for_copy (SET_DEST (set), SET_SRC (set), insn, freq);
   else
     {
@@ -409,8 +443,10 @@ add_insn_allocno_copies (rtx insn)
       for (i = 0; i < recog_data.n_operands; i++)
 	{
 	  operand = recog_data.operand[i];
-	  if (REG_P (operand)
-	      && find_reg_note (insn, REG_DEAD, operand) != NULL_RTX)
+	  if (REG_SUBREG_P (operand)
+	      && find_reg_note (insn, REG_DEAD,
+				REG_P (operand)
+				? operand : SUBREG_REG (operand)) != NULL_RTX)
 	    {
 	      str = recog_data.constraints[i];
 	      while (*str == ' ' && *str == '\t')
@@ -418,7 +454,7 @@ add_insn_allocno_copies (rtx insn)
 	      bound_p = false;
 	      for (j = 0, commut_p = false; j < 2; j++, commut_p = true)
 		if ((dup = get_dup (i, commut_p)) != NULL_RTX
-		    && REG_P (dup) && GET_MODE (operand) == GET_MODE (dup)
+		    && REG_SUBREG_P (dup)
 		    && process_regs_for_copy (operand, dup, NULL_RTX, freq))
 		  bound_p = true;
 	      if (bound_p)
