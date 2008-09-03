@@ -1,6 +1,6 @@
 // PR c++/30293
 // PR c++/30294
-// { dg-do compile }
+// { dg-do compile { target { ! { powerpc-ibm-aix* } } } }
 // { dg-options "" }
 
 extern "Java" {
