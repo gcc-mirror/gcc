@@ -1681,101 +1681,6 @@ expand_reg_info (int old_size)
 
 
 
-/* This page contains code for sorting the insn chain used by reload.
-   In the old register allocator, the insn chain order corresponds to
-   the order of insns in RTL.  By putting insns with higher execution
-   frequency BBs first, reload has a better chance to generate less
-   expensive operand reloads for such insns.  */
-
-/* Map bb index -> order number in the BB chain in RTL code.  */
-static int *basic_block_order_nums;
-
-/* Map chain insn uid -> order number in the insn chain before sorting
-   the insn chain.  */
-static int *chain_insn_order;
-
-/* The function is used to sort insn chain according insn execution
-   frequencies.  */
-static int
-chain_freq_compare (const void *v1p, const void *v2p)
-{
-  const struct insn_chain *c1 = *(struct insn_chain * const *)v1p;
-  const struct insn_chain *c2 = *(struct insn_chain * const *)v2p;
-  int diff;
-
-  diff = (BASIC_BLOCK (c2->block)->frequency
-	  - BASIC_BLOCK (c1->block)->frequency);
-  if (diff)
-    return diff;
-  /* Keep the same order in BB scope.  */
-  return (chain_insn_order[INSN_UID(c1->insn)]
-	  - chain_insn_order[INSN_UID(c2->insn)]);
-}
-
-/* Sort the insn chain according insn original order.  */
-static int
-chain_bb_compare (const void *v1p, const void *v2p)
-{
-  const struct insn_chain *c1 = *(struct insn_chain * const *)v1p;
-  const struct insn_chain *c2 = *(struct insn_chain * const *)v2p;
-  int diff;
-
-  diff = (basic_block_order_nums[c1->block]
-	  - basic_block_order_nums[c2->block]);
-  if (diff)
-    return diff;
-  /* Keep the same order in BB scope.  */
-  return (chain_insn_order[INSN_UID(c1->insn)]
-	  - chain_insn_order[INSN_UID(c2->insn)]);
-}
-
-/* Sort the insn chain according to insn frequencies if
-   FREQ_P or according to insn original order otherwise.  */
-void
-ira_sort_insn_chain (bool freq_p)
-{
-  struct insn_chain *chain, **chain_arr;
-  basic_block bb;
-  int i, n;
-  
-  chain_insn_order = (int *) ira_allocate (get_max_uid () * sizeof (int));
-  for (n = 0, chain = reload_insn_chain; chain != 0; chain = chain->next)
-    {
-      chain_insn_order[INSN_UID (chain->insn)] = n;
-      n++;
-    }
-  if (n <= 1)
-    return;
-  chain_arr
-    = (struct insn_chain **) ira_allocate (n * sizeof (struct insn_chain *));
-  basic_block_order_nums
-    = (int *) ira_allocate (sizeof (int) * last_basic_block);
-  n = 0;
-  FOR_EACH_BB (bb)
-    {
-      basic_block_order_nums[bb->index] = n++;
-    }
-  for (n = 0, chain = reload_insn_chain; chain != 0; chain = chain->next)
-    chain_arr[n++] = chain;
-  qsort (chain_arr, n, sizeof (struct insn_chain *),
-	 freq_p ? chain_freq_compare : chain_bb_compare);
-  ira_free (chain_insn_order);
-  for (i = 1; i < n - 1; i++)
-    {
-      chain_arr[i]->next = chain_arr[i + 1];
-      chain_arr[i]->prev = chain_arr[i - 1];
-    }
-  chain_arr[i]->next = NULL;
-  chain_arr[i]->prev = chain_arr[i - 1];
-  reload_insn_chain = chain_arr[0];
-  reload_insn_chain->prev = NULL;
-  reload_insn_chain->next = chain_arr[1];
-  ira_free (basic_block_order_nums);
-  ira_free (chain_arr);
-}
-
-
-
 /* All natural loops.  */
 struct loops ira_loops;
 
@@ -1965,9 +1870,6 @@ ira (FILE *f)
   timevar_push (TV_RELOAD);
   df_set_flags (DF_NO_INSN_RESCAN);
   build_insn_chain ();
-
-  if (optimize)
-    ira_sort_insn_chain (true);
 
   reload_completed = !reload (get_insns (), optimize > 0);
 

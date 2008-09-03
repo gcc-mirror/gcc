@@ -24,7 +24,6 @@ extern void ira_init_once (void);
 extern void ira_init (void);
 extern void ira_finish_once (void);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
-extern void ira_sort_insn_chain (bool);
 
 extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
 extern void ira_mark_allocation_change (int);

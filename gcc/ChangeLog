@@ -1,3 +1,15 @@
+2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-opt/37296
+
+	* ira-int.h (ira_sort_insn_chain): Remove.
+
+	* ira.c (basic_block_order_nums, chain_insn_order,
+	chain_freq_compare, chain_bb_compare, ira_sort_insn_chain): Remove.
+	(ira): Don't call ira_sort_insn_chain.
+
+	* reload1.c (reload): Don't call ira_sort_insn_chain.
+
 2008-09-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/37293
