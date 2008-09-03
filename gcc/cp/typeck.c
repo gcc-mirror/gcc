@@ -2506,14 +2506,18 @@ cp_build_indirect_ref (tree ptr, const char *errorstring,
 
    If INDEX is of some user-defined type, it must be converted to
    integer type.  Otherwise, to make a compatible PLUS_EXPR, it
-   will inherit the type of the array, which will be some pointer type.  */
+   will inherit the type of the array, which will be some pointer type.
+   
+   LOC is the location to use in building the array reference.  */
 
 tree
-build_array_ref (tree array, tree idx)
+build_array_ref (tree array, tree idx, location_t loc)
 {
+  tree ret;
+
   if (idx == 0)
     {
-      error ("subscript missing in array reference");
+      error_at (loc, "subscript missing in array reference");
       return error_mark_node;
     }
 
@@ -2527,17 +2531,21 @@ build_array_ref (tree array, tree idx)
     {
     case COMPOUND_EXPR:
       {
-	tree value = build_array_ref (TREE_OPERAND (array, 1), idx);
-	return build2 (COMPOUND_EXPR, TREE_TYPE (value),
-		       TREE_OPERAND (array, 0), value);
+	tree value = build_array_ref (TREE_OPERAND (array, 1), idx, loc);
+	ret = build2 (COMPOUND_EXPR, TREE_TYPE (value),
+		      TREE_OPERAND (array, 0), value);
+	SET_EXPR_LOCATION (ret, loc);
+	return ret;
       }
 
     case COND_EXPR:
-      return build_conditional_expr
-	(TREE_OPERAND (array, 0),
-	 build_array_ref (TREE_OPERAND (array, 1), idx),
-	 build_array_ref (TREE_OPERAND (array, 2), idx),
-         tf_warning_or_error);
+      ret = build_conditional_expr
+	      (TREE_OPERAND (array, 0),
+	      build_array_ref (TREE_OPERAND (array, 1), idx, loc),
+	      build_array_ref (TREE_OPERAND (array, 2), idx, loc),
+	      tf_warning_or_error);
+      SET_EXPR_LOCATION (ret, loc);
+      return ret;
 
     default:
       break;
@@ -2551,7 +2559,7 @@ build_array_ref (tree array, tree idx)
 
       if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
 	{
-	  error ("array subscript is not an integer");
+	  error_at (loc, "array subscript is not an integer");
 	  return error_mark_node;
 	}
 
@@ -2588,7 +2596,8 @@ build_array_ref (tree array, tree idx)
 	}
 
       if (!lvalue_p (array))
-	pedwarn (input_location, OPT_pedantic, "ISO C++ forbids subscripting non-lvalue array");
+	pedwarn (loc, OPT_pedantic, 
+	         "ISO C++ forbids subscripting non-lvalue array");
 
       /* Note in C++ it is valid to subscript a `register' array, since
 	 it is valid to take the address of something with that
@@ -2599,7 +2608,8 @@ build_array_ref (tree array, tree idx)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
-	    warning (OPT_Wextra, "subscripting array declared %<register%>");
+	    warning_at (loc, OPT_Wextra,
+			"subscripting array declared %<register%>");
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
@@ -2612,7 +2622,9 @@ build_array_ref (tree array, tree idx)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      return require_complete_type (fold_if_not_in_template (rval));
+      ret = require_complete_type (fold_if_not_in_template (rval));
+      SET_EXPR_LOCATION (ret, loc);
+      return ret;
     }
 
   {
@@ -2632,21 +2644,23 @@ build_array_ref (tree array, tree idx)
 
     if (TREE_CODE (TREE_TYPE (ar)) != POINTER_TYPE)
       {
-	error ("subscripted value is neither array nor pointer");
+	error_at (loc, "subscripted value is neither array nor pointer");
 	return error_mark_node;
       }
     if (TREE_CODE (TREE_TYPE (ind)) != INTEGER_TYPE)
       {
-	error ("array subscript is not an integer");
+	error_at (loc, "array subscript is not an integer");
 	return error_mark_node;
       }
 
     warn_array_subscript_with_type_char (idx);
 
-    return cp_build_indirect_ref (cp_build_binary_op (PLUS_EXPR, ar, ind,
-						   tf_warning_or_error),
-                                  "array indexing",
-                                  tf_warning_or_error);
+    ret = cp_build_indirect_ref (cp_build_binary_op (PLUS_EXPR, ar, ind,
+						     tf_warning_or_error),
+                                 "array indexing",
+                                 tf_warning_or_error);
+    protected_set_expr_location (ret, loc);
+    return ret;
   }
 }
 

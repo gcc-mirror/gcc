@@ -1,3 +1,11 @@
+2008-09-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (build_array_ref): Use new location argument.
+	* class.c (build_vtbl_ref_1): Pass location to build_array_ref.
+	* call.c (build_new_op): Same.
+	* decl2.c (grok_array_decl): Same.
+	* cp-tree.h (build_array_ref): Add location argument to prototype.
+
 2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (build_x_indirect_ref): Add location argument.

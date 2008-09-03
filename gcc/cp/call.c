@@ -4214,7 +4214,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
       return cp_build_unary_op (code, arg1, candidates != 0, complain);
 
     case ARRAY_REF:
-      return build_array_ref (arg1, arg2);
+      return build_array_ref (arg1, arg2, input_location);
 
     case COND_EXPR:
       return build_conditional_expr (arg1, arg2, arg3, complain);

@@ -2061,7 +2061,7 @@ build_array_ref (tree array, tree index, location_t loc)
       if (TREE_CODE (TREE_TYPE (index)) != ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (index)) != POINTER_TYPE)
 	{
-	  error ("subscripted value is neither array nor pointer");
+	  error_at (loc, "subscripted value is neither array nor pointer");
 	  return error_mark_node;
 	}
       temp = array;
@@ -2072,13 +2072,13 @@ build_array_ref (tree array, tree index, location_t loc)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (index)))
     {
-      error ("array subscript is not an integer");
+      error_at (loc, "array subscript is not an integer");
       return error_mark_node;
     }
 
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (array))) == FUNCTION_TYPE)
     {
-      error ("subscripted value is pointer to function");
+      error_at (loc, "subscripted value is pointer to function");
       return error_mark_node;
     }
 
@@ -2125,10 +2125,10 @@ build_array_ref (tree array, tree index, location_t loc)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && C_DECL_REGISTER (foo))
-	    pedwarn (input_location, OPT_pedantic, 
+	    pedwarn (loc, OPT_pedantic, 
 		     "ISO C forbids subscripting %<register%> array");
 	  else if (!flag_isoc99 && !lvalue_p (foo))
-	    pedwarn (input_location, OPT_pedantic, 
+	    pedwarn (loc, OPT_pedantic, 
 		     "ISO C90 forbids subscripting non-lvalue array");
 	}
 

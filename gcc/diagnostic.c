@@ -598,6 +598,19 @@ error (const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* Same as ebove, but use location LOC instead of input_location.  */
+void
+error_at (location_t loc, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, loc, DK_ERROR);
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
 /* "Sorry, not implemented."  Use for a language feature which is
    required by the relevant specification but not implemented by GCC.
    An object file will not be produced.  */
