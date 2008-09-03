@@ -1,3 +1,10 @@
+2008-09-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37328
+	* tree-sra.c (sra_build_assignment): Gimplify properly.
+	(generate_copy_inout): Take the correct stmt as definition,
+	remove bogus assert.
+
 2008-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_expand_prologue): Honour no_stack_limit
