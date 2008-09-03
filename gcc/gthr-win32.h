@@ -32,6 +32,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_GTHR_WIN32_H
 #define GCC_GTHR_WIN32_H
 
+/* Make sure CONST_CAST2 (origin in system.h) is declared.  */
+#ifndef CONST_CAST2
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
+#endif
+
 /* Windows32 threads specific definitions. The windows32 threading model
    does not map well into pthread-inspired gcc's threading model, and so
    there are caveats one needs to be aware of.
@@ -455,10 +460,7 @@ __gthread_getspecific (__gthread_key_t key)
 static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
-  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
-    return 0;
-  else
-    return GetLastError ();
+  return __gthr_win32_setspecific (key, ptr);
 }
 
 static inline void
@@ -615,7 +617,10 @@ __gthread_getspecific (__gthread_key_t key)
 static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
-  return (TlsSetValue (key, (void*) ptr) != 0) ? 0 : (int) GetLastError ();
+  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
+    return 0;
+  else
+    return GetLastError ();
 }
 
 static inline void

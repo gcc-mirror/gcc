@@ -1,3 +1,11 @@
+2008-09-03 Danny Smith  <dannysmith@usrs.sourceforge.net>
+
+	* gthr-win32.h (CONST_CAST2): Really make sure CONST_CAST2 is
+	defined.
+	(__gthread_setspecific): Revert 2008-08-31 change to
+	__GTHREAD_HIDE_W32API case.  Apply it to !__GTHREAD_HIDE_W32API
+	case.
+
 2008-09-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* diagnostic.c (error_at): New.
