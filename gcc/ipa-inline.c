@@ -212,7 +212,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
-	  if (gimple_body (e->callee->decl))
+	  if (e->callee->analyzed)
 	    overall_insns -= e->callee->global.insns, nfunctions_inlined++;
 	  duplicate = false;
 	}
@@ -1388,7 +1388,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (!gimple_body (e->callee->decl) && !e->callee->inline_decl)
+      if (!e->callee->analyzed && !e->callee->inline_decl)
 	{
 	  if (dump_file)
 	    {
@@ -1463,7 +1463,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	      }
 	    continue;
 	  }
-	if (!gimple_body (e->callee->decl) && !e->callee->inline_decl)
+	if (!e->callee->analyzed && !e->callee->inline_decl)
 	  {
 	    if (dump_file)
 	      {
@@ -1706,7 +1706,7 @@ inline_transform (struct cgraph_node *node)
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (current_function_decl))
+  if (cgraph_preserve_function_body_p (node->decl))
     save_inline_function_body (node);
 
   for (e = node->callees; e; e = e->next_callee)

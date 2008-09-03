@@ -822,6 +822,7 @@ enum gimple_statement_structure_enum gss_for_assign (enum tree_code);
 void sort_case_labels (VEC(tree,heap) *);
 void gimple_set_body (tree, gimple_seq);
 gimple_seq gimple_body (tree);
+bool gimple_has_body_p (tree);
 gimple_seq gimple_seq_alloc (void);
 void gimple_seq_free (gimple_seq);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);

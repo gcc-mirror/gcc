@@ -1816,6 +1816,14 @@ gimple_body (tree fndecl)
   return fn ? fn->gimple_body : NULL;
 }
 
+/* Return true when FNDECL has Gimple body either in unlowered
+   or CFG form.  */
+bool
+gimple_has_body_p (tree fndecl)
+{
+  struct function *fn = DECL_STRUCT_FUNCTION (fndecl);
+  return (gimple_body (fndecl) || (fn && fn->cfg));
+}
 
 /* Detect flags from a GIMPLE_CALL.  This is just like
    call_expr_flags, but for gimple tuples.  */

@@ -217,7 +217,10 @@ build_gimple_cfg (gimple_seq seq)
 static unsigned int
 execute_build_cfg (void)
 {
-  build_gimple_cfg (gimple_body (current_function_decl));
+  gimple_seq body = gimple_body (current_function_decl);
+
+  build_gimple_cfg (body);
+  gimple_set_body (current_function_decl, NULL);
   return 0;
 }
 
@@ -5898,7 +5901,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   if (dsf && (flags & TDF_DETAILS))
     dump_eh_tree (file, dsf);
 
-  if (flags & TDF_RAW && !gimple_body (fn))
+  if (flags & TDF_RAW && !gimple_has_body_p (fn))
     {
       dump_node (fn, TDF_SLIM | flags, file);
       return;

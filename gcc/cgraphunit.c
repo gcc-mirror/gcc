@@ -639,7 +639,6 @@ verify_cgraph_node (struct cgraph_node *node)
     }
 
   if (node->analyzed
-      && gimple_body (node->decl)
       && !TREE_ASM_WRITTEN (node->decl)
       && (!DECL_EXTERNAL (node->decl) || node->global.inlined_to))
     {
@@ -860,7 +859,7 @@ cgraph_analyze_functions (void)
     {
       fprintf (cgraph_dump_file, "Initial entry points:");
       for (node = cgraph_nodes; node != first_analyzed; node = node->next)
-	if (node->needed && gimple_body (node->decl))
+	if (node->needed)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n");
     }
@@ -912,7 +911,7 @@ cgraph_analyze_functions (void)
     {
       fprintf (cgraph_dump_file, "Unit entry points:");
       for (node = cgraph_nodes; node != first_analyzed; node = node->next)
-	if (node->needed && gimple_body (node->decl))
+	if (node->needed)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\nInitial ");
       dump_cgraph (cgraph_dump_file);
@@ -926,10 +925,10 @@ cgraph_analyze_functions (void)
       tree decl = node->decl;
       next = node->next;
 
-      if (node->local.finalized && !gimple_body (decl))
+      if (node->local.finalized && !gimple_has_body_p (decl))
 	cgraph_reset_node (node);
 
-      if (!node->reachable && gimple_body (decl))
+      if (!node->reachable && gimple_has_body_p (decl))
 	{
 	  if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
@@ -938,7 +937,7 @@ cgraph_analyze_functions (void)
 	}
       else
 	node->next_needed = NULL;
-      gcc_assert (!node->local.finalized || gimple_body (decl));
+      gcc_assert (!node->local.finalized || gimple_has_body_p (decl));
       gcc_assert (node->analyzed == node->local.finalized);
     }
   if (cgraph_dump_file)
@@ -991,7 +990,7 @@ cgraph_mark_functions_to_output (void)
       /* We need to output all local functions that are used and not
 	 always inlined, as well as those that are reachable from
 	 outside the current compilation unit.  */
-      if (gimple_body (decl)
+      if (node->analyzed
 	  && !node->global.inlined_to
 	  && (node->needed
 	      || (e && node->reachable))
@@ -1003,7 +1002,7 @@ cgraph_mark_functions_to_output (void)
 	  /* We should've reclaimed all functions that are not needed.  */
 #ifdef ENABLE_CHECKING
 	  if (!node->global.inlined_to
-	      && gimple_body (decl)
+	      && gimple_has_body_p (decl)
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
@@ -1011,7 +1010,7 @@ cgraph_mark_functions_to_output (void)
 	    }
 #endif
 	  gcc_assert (node->global.inlined_to
-		      || !gimple_body (decl)
+		      || !gimple_has_body_p (decl)
 		      || DECL_EXTERNAL (decl));
 
 	}
@@ -1039,16 +1038,13 @@ cgraph_expand_function (struct cgraph_node *node)
   tree_rest_of_compilation (decl);
 
   /* Make sure that BE didn't give up on compiling.  */
-  /* ??? Can happen with nested function of extern inline.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
   current_function_decl = NULL;
-  if (!cgraph_preserve_function_body_p (decl))
-    {
-      cgraph_release_function_body (node);
-      /* Eliminate all call edges.  This is important so the call_expr no longer
-	 points to the dead function body.  */
-      cgraph_node_remove_callees (node);
-    }
+  gcc_assert (!cgraph_preserve_function_body_p (decl));
+  cgraph_release_function_body (node);
+  /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
+     points to the dead function body.  */
+  cgraph_node_remove_callees (node);
 
   cgraph_function_flags_ready = true;
 }
@@ -1329,7 +1325,7 @@ cgraph_optimize (void)
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->analyzed
 	    && (node->global.inlined_to
-		|| gimple_body (node->decl)))
+		|| gimple_has_body_p (node->decl)))
 	  {
 	    error_found = true;
 	    dump_cgraph_node (stderr, node);
