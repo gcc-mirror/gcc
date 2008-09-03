@@ -4600,8 +4600,6 @@ alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
   enum machine_mode mode = GET_MODE (mem);
   rtx label, x, cond = gen_lowpart (DImode, scratch);
 
-  emit_insn (gen_memory_barrier ());
-
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
 
@@ -4611,6 +4609,8 @@ alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
+
+  emit_insn (gen_memory_barrier ());
 }
 
 void
@@ -4649,7 +4649,6 @@ alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
   mem = gen_rtx_MEM (DImode, align);
   MEM_VOLATILE_P (mem) = 1;
 
-  emit_insn (gen_memory_barrier ());
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
 
@@ -4673,6 +4672,8 @@ alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
 
   x = gen_rtx_EQ (DImode, scratch, const0_rtx);
   emit_unlikely_jump (x, label);
+
+  emit_insn (gen_memory_barrier ());
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
