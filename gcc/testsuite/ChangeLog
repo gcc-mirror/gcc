@@ -1,5 +1,10 @@
 2008-09-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/36445
+	* g++.dg/torture/pr36445.C: New test.
+
+2008-09-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/37293
 	* g++.dg/torture/ipa-cp-1.C: New test.
 
