@@ -1,3 +1,10 @@
+2008-09-03  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/37345
+	PR tree-optimization/37358
+	PR tree-optimization/37357
+	* g++.dg/torture/pr37345.c: New file.
+
 2008-09-03  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* lib/target-supports.exp (check_effective_target_fgraphite): Fix test.
