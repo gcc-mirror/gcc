@@ -1341,6 +1341,23 @@ if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl;
   LIBS="$ppllibs $LIBS"
 fi
 
+AC_ARG_ENABLE(ppl-version-check,
+[  --disable-ppl-version-check    disable check for PPL version],
+ENABLE_PPL_CHECK=$enableval,
+ENABLE_PPL_CHECK=yes)
+
+if test "${ENABLE_PPL_CHECK}" = "yes"; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $pplinc $gmpinc"
+  AC_MSG_CHECKING([for version $ppl_major_version.$ppl_minor_version of PPL])
+  AC_TRY_COMPILE([#include "ppl_c.h"],[
+  #if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
+  choke me
+  #endif
+  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); ppllibs= ; pplinc= ])
+  CFLAGS="$saved_CFLAGS"
+fi
+
 # Flags needed for PPL
 AC_SUBST(ppllibs)
 AC_SUBST(pplinc)
@@ -1348,17 +1365,23 @@ AC_SUBST(pplinc)
 
 # Check for CLOOG
 clooglibs=
-clooginc=
+clooginc=" -DCLOOG_PPL_BACKEND "
 
-AC_ARG_WITH(cloog, [  --with-cloog=PATH         Specify prefix directory for the installed CLOOG package
+AC_ARG_WITH(cloog, [  --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL package
                           Equivalent to --with-cloog-include=PATH/include
                           plus --with-cloog-lib=PATH/lib])
-AC_ARG_WITH(cloog_include, [  --with-cloog-include=PATH Specify directory for installed CLOOG include files])
-AC_ARG_WITH(cloog_lib, [  --with-cloog-lib=PATH     Specify the directory for the installed CLOOG library])
+AC_ARG_WITH(cloog_include, [  --with-cloog-include=PATH Specify directory for installed CLooG include files])
+AC_ARG_WITH(cloog_lib, [  --with-cloog-lib=PATH   Specify the directory for the installed CLooG library])
+AC_ARG_WITH(cloog-polylib, [  --with-cloog-polylib=PATH Specify prefix directory for the installed CLooG-PolyLib package])
 
 if test "x$with_cloog" != x; then
   clooglibs="-L$with_cloog/lib -lcloog"
   clooginc="-I$with_cloog/include -DCLOOG_PPL_BACKEND "
+  LIBS="$clooglibs $LIBS"
+fi
+if test "x$with_cloog_polylib" != x; then
+  clooglibs="-L$with_cloog/lib -lcloog"
+  clooginc="-I$with_cloog/include "
   LIBS="$clooglibs $LIBS"
 fi
 if test "x$with_cloog_include" != x; then
@@ -1374,27 +1397,22 @@ if test "x$with_cloog$with_cloog_include$with_cloog_lib" = x && test -d ${srcdir
   LIBS="$clooglibs $LIBS"
 fi
 
-saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $pplinc $gmpinc"
+AC_ARG_ENABLE(cloog-version-check,
+[  --disable-cloog-version-check  disable check for CLooG version],
+ENABLE_CLOOG_CHECK=$enableval,
+ENABLE_CLOOG_CHECK=yes)
 
-AC_MSG_CHECKING([for version $ppl_major_version.$ppl_minor_version of PPL])
-AC_TRY_COMPILE([#include "ppl_c.h"],[
-#if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
-choke me
-#endif
-], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); clooglibs= ; clooginc= ])
-CFLAGS="$saved_CFLAGS"
-
-saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $clooginc -DCLOOG_PPL_BACKEND $gmpinc $pplinc"
-
-AC_MSG_CHECKING([for correct version of CLooG])
-AC_TRY_COMPILE([#include "cloog/cloog.h"],[
-#if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15
-choke me
-#endif
-], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); clooglibs= ; clooginc= ])
-CFLAGS="$saved_CFLAGS"
+if test "${ENABLE_CLOOG_CHECK}" = "yes"; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
+  AC_MSG_CHECKING([for correct version of CLooG])
+  AC_TRY_COMPILE([#include "cloog/cloog.h"],[
+  #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15
+  choke me
+  #endif
+  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); clooglibs= ; clooginc= ])
+  CFLAGS="$saved_CFLAGS"
+fi
 
 # Flags needed for CLOOG
 AC_SUBST(clooglibs)
