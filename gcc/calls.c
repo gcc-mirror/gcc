@@ -3423,7 +3423,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      flags |= ECF_PURE;
 	    }
 
-	  if (GET_MODE (val) == MEM && !must_copy)
+	  if (MEM_P (val) && !must_copy)
 	    slot = val;
 	  else
 	    {

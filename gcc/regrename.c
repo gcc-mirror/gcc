@@ -89,7 +89,7 @@ static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 static struct du_chain *build_def_use (basic_block);
 static void dump_def_use_chain (struct du_chain *);
 static void note_sets (rtx, const_rtx, void *);
-static void clear_dead_regs (HARD_REG_SET *, enum machine_mode, rtx);
+static void clear_dead_regs (HARD_REG_SET *, enum reg_note, rtx);
 static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
 				    struct du_chain *);
 
@@ -114,7 +114,7 @@ note_sets (rtx x, const_rtx set ATTRIBUTE_UNUSED, void *data)
    in the list NOTES.  */
 
 static void
-clear_dead_regs (HARD_REG_SET *pset, enum machine_mode kind, rtx notes)
+clear_dead_regs (HARD_REG_SET *pset, enum reg_note kind, rtx notes)
 {
   rtx note;
   for (note = notes; note; note = XEXP (note, 1))
@@ -1990,4 +1990,3 @@ struct rtl_opt_pass pass_cprop_hardreg =
   TODO_dump_func | TODO_verify_rtl_sharing /* todo_flags_finish */
  }
 };
-

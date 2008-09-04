@@ -1085,7 +1085,7 @@ gimple_build_predict (enum br_predictor predictor, enum prediction outcome)
 {
   gimple p = gimple_alloc (GIMPLE_PREDICT, 0);
   /* Ensure all the predictors fit into the lower bits of the subcode.  */
-  gcc_assert (END_PREDICTORS <= GF_PREDICT_TAKEN);
+  gcc_assert ((int) END_PREDICTORS <= GF_PREDICT_TAKEN);
   gimple_predict_set_predictor (p, predictor);
   gimple_predict_set_outcome (p, outcome);
   return p;
@@ -2066,7 +2066,7 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
 tree
 gimple_get_lhs (const_gimple stmt)
 {
-  enum tree_code code = gimple_code (stmt);
+  enum gimple_code code = gimple_code (stmt);
 
   if (code == GIMPLE_ASSIGN)
     return gimple_assign_lhs (stmt);
@@ -2083,7 +2083,7 @@ gimple_get_lhs (const_gimple stmt)
 void
 gimple_set_lhs (gimple stmt, tree lhs)
 {
-  enum tree_code code = gimple_code (stmt);
+  enum gimple_code code = gimple_code (stmt);
 
   if (code == GIMPLE_ASSIGN)
     gimple_assign_set_lhs (stmt, lhs);

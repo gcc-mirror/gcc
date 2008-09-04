@@ -501,7 +501,7 @@ likely_value (gimple stmt)
   tree use;
   ssa_op_iter iter;
 
-  enum tree_code code = gimple_code (stmt);
+  enum gimple_code code = gimple_code (stmt);
 
   /* This function appears to be called only for assignments, calls,
      conditionals, and switches, due to the logic in visit_stmt.  */
@@ -1308,7 +1308,7 @@ evaluate_stmt (gimple stmt)
      bother folding the statement.  */
   else if (likelyvalue == VARYING)
     {
-      enum tree_code code = gimple_code (stmt);
+      enum gimple_code code = gimple_code (stmt);
       if (code == GIMPLE_ASSIGN)
         {
           enum tree_code subcode = gimple_assign_rhs_code (stmt);

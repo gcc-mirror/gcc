@@ -712,13 +712,13 @@ see_get_extension_reg (rtx extension, bool return_dest_reg)
     Otherwise, set SOURCE_MODE to be the mode of the extended expr and return
     the rtx code of the extension.  */
 
-static enum rtx_code
+static enum entry_type
 see_get_extension_data (rtx extension, enum machine_mode *source_mode)
 {
   rtx rhs, lhs, set;
 
   if (!extension || !INSN_P (extension))
-    return UNKNOWN;
+    return NOT_RELEVANT;
 
   /* Parallel pattern for extension not supported for the moment.  */
   if (GET_CODE (PATTERN (extension)) == PARALLEL)
@@ -733,21 +733,21 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
   /* Don't handle extensions to something other then register or
      subregister.  */
   if (!REG_P (lhs) && GET_CODE (lhs) != SUBREG)
-    return UNKNOWN;
+    return NOT_RELEVANT;
 
   if (GET_CODE (rhs) != SIGN_EXTEND && GET_CODE (rhs) != ZERO_EXTEND)
-    return UNKNOWN;
+    return NOT_RELEVANT;
 
   if (!REG_P (XEXP (rhs, 0))
       && !(GET_CODE (XEXP (rhs, 0)) == SUBREG
 	   && REG_P (SUBREG_REG (XEXP (rhs, 0)))))
-    return UNKNOWN;
+    return NOT_RELEVANT;
 
   *source_mode = GET_MODE (XEXP (rhs, 0));
 
   if (GET_CODE (rhs) == SIGN_EXTEND)
-    return SIGN_EXTEND;
-  return ZERO_EXTEND;
+    return SIGN_EXTENDED_DEF;
+  return ZERO_EXTENDED_DEF;
 }
 
 
@@ -760,7 +760,7 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
    Otherwise, return the generated instruction.  */
 
 static rtx
-see_gen_normalized_extension (rtx reg, enum rtx_code extension_code,
+see_gen_normalized_extension (rtx reg, enum entry_type extension_code,
    			      enum machine_mode mode)
 {
   rtx subreg, insn;
@@ -768,11 +768,12 @@ see_gen_normalized_extension (rtx reg, enum rtx_code extension_code,
 
   if (!reg
       || !REG_P (reg)
-      || (extension_code != SIGN_EXTEND && extension_code != ZERO_EXTEND))
+      || (extension_code != SIGN_EXTENDED_DEF
+          && extension_code != ZERO_EXTENDED_DEF))
     return NULL;
 
   subreg = gen_lowpart_SUBREG (mode, reg);
-  if (extension_code == SIGN_EXTEND)
+  if (extension_code == SIGN_EXTENDED_DEF)
     extension = gen_rtx_SIGN_EXTEND (GET_MODE (reg), subreg);
   else
     extension = gen_rtx_ZERO_EXTEND (GET_MODE (reg), subreg);
@@ -1019,14 +1020,14 @@ see_seek_pre_extension_expr (rtx extension, enum extension_type type)
 {
   struct see_pre_extension_expr **slot_pre_exp, temp_pre_exp;
   rtx dest_extension_reg = see_get_extension_reg (extension, 1);
-  enum rtx_code extension_code;
+  enum entry_type extension_code;
   enum machine_mode source_extension_mode;
 
   if (type == DEF_EXTENSION)
     {
       extension_code = see_get_extension_data (extension,
 					       &source_extension_mode);
-      gcc_assert (extension_code != UNKNOWN);
+      gcc_assert (extension_code != NOT_RELEVANT);
       extension =
 	see_gen_normalized_extension (dest_extension_reg, extension_code,
 				      source_extension_mode);
@@ -2807,7 +2808,7 @@ see_merge_one_def_extension (void **slot, void *b)
   rtx simplified_temp_extension = NULL;
   rtx *pat;
   enum rtx_code code;
-  enum rtx_code extension_code;
+  enum entry_type extension_code;
   enum machine_mode source_extension_mode;
   enum machine_mode source_mode = VOIDmode;
   enum machine_mode dest_extension_mode;
@@ -2866,7 +2867,7 @@ see_merge_one_def_extension (void **slot, void *b)
 	    {
 	      rtx orig_src = SET_SRC (*sub);
 
-	      if (extension_code == SIGN_EXTEND)
+	      if (extension_code == SIGN_EXTENDED_DEF)
 		temp_extension = gen_rtx_SIGN_EXTEND (dest_extension_mode,
 						      orig_src);
 	      else
@@ -2898,7 +2899,7 @@ see_merge_one_def_extension (void **slot, void *b)
     {
       rtx orig_src = SET_SRC (*pat);
 
-      if (extension_code == SIGN_EXTEND)
+      if (extension_code == SIGN_EXTENDED_DEF)
 	temp_extension = gen_rtx_SIGN_EXTEND (dest_extension_mode, orig_src);
       else
 	temp_extension = gen_rtx_ZERO_EXTEND (dest_extension_mode, orig_src);
@@ -3245,7 +3246,7 @@ see_handle_relevant_defs (struct df_ref *ref, rtx insn)
 {
   struct web_entry *root_entry = NULL;
   rtx se_insn = NULL;
-  enum rtx_code extension_code;
+  enum entry_type extension_code;
   rtx reg = DF_REF_REAL_REG (ref);
   rtx ref_insn = NULL;
   unsigned int i = DF_REF_ID (ref);
@@ -3274,9 +3275,9 @@ see_handle_relevant_defs (struct df_ref *ref, rtx insn)
     {
       
       if (ENTRY_EI (root_entry)->relevancy == SIGN_EXTENDED_DEF)
-	extension_code = SIGN_EXTEND;
+	extension_code = SIGN_EXTENDED_DEF;
       else
-	extension_code = ZERO_EXTEND;
+	extension_code = ZERO_EXTENDED_DEF;
       
       se_insn =
 	see_gen_normalized_extension (reg, extension_code,
@@ -3314,7 +3315,7 @@ see_handle_relevant_uses (struct df_ref *ref, rtx insn)
 {
   struct web_entry *root_entry = NULL;
   rtx se_insn = NULL;
-  enum rtx_code extension_code;
+  enum entry_type extension_code;
   rtx reg = DF_REF_REAL_REG (ref);
 
   root_entry = unionfind_root (&use_entry[DF_REF_ID (ref)]);
@@ -3333,9 +3334,9 @@ see_handle_relevant_uses (struct df_ref *ref, rtx insn)
   
   /* Generate the use extension.  */
   if (ENTRY_EI (root_entry)->relevancy == SIGN_EXTENDED_DEF)
-    extension_code = SIGN_EXTEND;
+    extension_code = SIGN_EXTENDED_DEF;
   else
-    extension_code = ZERO_EXTEND;
+    extension_code = ZERO_EXTENDED_DEF;
   
   se_insn =
     see_gen_normalized_extension (reg, extension_code,
@@ -3468,7 +3469,7 @@ static enum entry_type
 see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 		     enum machine_mode *source_mode_unsigned)
 {
-  enum rtx_code extension_code;
+  enum entry_type extension_code;
   rtx rhs = NULL;
   rtx lhs = NULL;
   rtx set = NULL;
@@ -3487,8 +3488,8 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
   extension_code = see_get_extension_data (insn, source_mode);
   switch (extension_code)
     {
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
+    case SIGN_EXTENDED_DEF:
+    case ZERO_EXTENDED_DEF:
       source_register = see_get_extension_reg (insn, 0);
       /* FIXME: This restriction can be relaxed.  The only thing that is
 	 important is that the reference would be inside the same basic block
@@ -3521,12 +3522,9 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 	    return NOT_RELEVANT;
 	}
 
-      if (extension_code == SIGN_EXTEND)
-	return SIGN_EXTENDED_DEF;
-      else
-	return ZERO_EXTENDED_DEF;
+      return extension_code;
 
-    case UNKNOWN:
+    case NOT_RELEVANT:
       /* This may still be an EXTENDED_DEF.  */
 
       /* FIXME: This restriction can be relaxed.  It is possible to handle
@@ -3894,4 +3892,3 @@ struct rtl_opt_pass pass_see =
   TODO_dump_func			/* todo_flags_finish */
  }
 };
-

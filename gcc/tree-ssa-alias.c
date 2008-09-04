@@ -3216,7 +3216,7 @@ is_escape_site (gimple stmt)
 	 Applications (OOPSLA), pp. 1-19, 1999.  */
       return ESCAPE_STORED_IN_GLOBAL;
     }
-  else if (gimple_code (stmt) == RETURN_EXPR)
+  else if (gimple_code (stmt) == GIMPLE_RETURN)
     return ESCAPE_TO_RETURN;
 
   return NO_ESCAPE;

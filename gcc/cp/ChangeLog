@@ -1,3 +1,8 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* parser.c (check_no_duplicate_clause): Change code parameter to
+	enum omp_clause_code.
+
 2008-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37348
