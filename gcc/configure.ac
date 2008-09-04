@@ -3177,6 +3177,12 @@ if test x"$insn" != x; then
 [Define if your assembler supports the --debug-prefix-map option.])])
 fi
 
+gcc_GAS_CHECK_FEATURE([.lcomm with alignment], gcc_cv_as_lcomm_with_alignment,
+ ,,
+[.lcomm bar,4,16],,
+[AC_DEFINE(HAVE_GAS_LCOMM_WITH_ALIGNMENT, 1,
+  [Define if your assembler supports .lcomm with an alignment field.])])
+
 AC_CACHE_CHECK([assembler for tolerance to line number 0],
  [gcc_cv_as_line_zero],
  [gcc_cv_as_line_zero=no

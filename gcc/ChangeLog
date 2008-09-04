@@ -1,3 +1,12 @@
+2008-09-04  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac (HAVE_GAS_LCOMM_WITH_ALIGNMENT): New assembler
+	check.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/bsd.h (ASM_OUTPUT_ALIGNED_LOCAL): Use .lcomm with an
+	alignment field, if it is supported.
+
 2008-09-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/t-mingw32 (SHLIB_LC): Change order of import
