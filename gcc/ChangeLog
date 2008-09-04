@@ -1,3 +1,16 @@
+2008-09-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-conflicts.c (process_regs_for_copy): Check insn to check
+	that the cost is already taken into account in ira-costs.c
+
+	* ira-int.h (ira_debug_copy, ira_debug_copies): New.
+
+	* ira-build.c (print_copy, print_copies, ira_debug_copy,
+	ira_debug_copies): New.
+	(ira_bulid): Call print_copies.
+	
+	* doc/tm.texi (IRA_COVER_CLASSES): Fix the description.
+	
 2008-09-04  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR target/32783

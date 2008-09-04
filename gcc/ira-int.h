@@ -838,6 +838,8 @@ extern rtx *ira_reg_equiv_const;
 extern ira_loop_tree_node_t ira_curr_loop_tree_node;
 extern ira_allocno_t *ira_curr_regno_allocno_map;
 
+extern void ira_debug_copy (ira_copy_t);
+extern void ira_debug_copies (void);
 extern void ira_debug_allocno_copies (ira_allocno_t);
 
 extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
