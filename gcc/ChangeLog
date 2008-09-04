@@ -1,3 +1,8 @@
+2008-09-04  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_function_ok_for_sibcall): Restore a null
+	pointer check lost in the recent no-unit-at-a-time patch.
+	
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/37343

@@ -1942,6 +1942,9 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
      not need to reload P5 in the prologue, but the sibcall wil pop P5 in the
      sibcall epilogue, and we end up with the wrong value in P5.  */
 
+  if (!decl)
+    /* Not enough information.  */
+    return false;
  
   this_func = cgraph_local_info (current_function_decl);
   called_func = cgraph_local_info (decl);
