@@ -1,3 +1,8 @@
+2008-09-03  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* lib/target-supports.exp (check_effective_target_fgraphite): Fix test.
+	Graphite is only available with -O1.
+
 2008-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.c-torture/compile/vector-4.c: Add -mavx for x86.

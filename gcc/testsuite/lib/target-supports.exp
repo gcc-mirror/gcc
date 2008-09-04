@@ -568,7 +568,7 @@ proc check_effective_target_tls_runtime {} {
 proc check_effective_target_fgraphite {} {
     return [check_no_compiler_messages fgraphite object {
 	void foo (void) { }
-    } "-fgraphite"]
+    } "-O1 -fgraphite"]
 }
 
 # Return 1 if compilation with -fopenmp is error-free for trivial
