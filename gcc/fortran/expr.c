@@ -1454,7 +1454,40 @@ simplify_const_ref (gfc_expr *p)
 		  for (; cons; cons = cons->next)
 		    {
 		      cons->expr->ref = gfc_copy_ref (p->ref->next);
-		      simplify_const_ref (cons->expr);
+		      if (simplify_const_ref (cons->expr) == FAILURE)
+			return FAILURE;
+		    }
+
+		  /* If this is a CHARACTER array and we possibly took a
+		     substring out of it, update the type-spec's character
+		     length according to the first element (as all should have
+		     the same length).  */
+		  if (p->ts.type == BT_CHARACTER)
+		    {
+		      int string_len;
+
+		      gcc_assert (p->ref->next);
+		      gcc_assert (!p->ref->next->next);
+		      gcc_assert (p->ref->next->type == REF_SUBSTRING);
+
+		      if (p->value.constructor)
+			{
+			  const gfc_expr* first = p->value.constructor->expr;
+			  gcc_assert (first->expr_type == EXPR_CONSTANT);
+			  gcc_assert (first->ts.type == BT_CHARACTER);
+			  string_len = first->value.character.length;
+			}
+		      else
+			string_len = 0;
+
+		      if (!p->ts.cl)
+			{
+			  p->ts.cl = gfc_get_charlen ();
+			  p->ts.cl->next = NULL;
+			  p->ts.cl->length = NULL;
+			}
+		      gfc_free_expr (p->ts.cl->length);
+		      p->ts.cl->length = gfc_int_expr (string_len);
 		    }
 		}
 	      gfc_free_ref_list (p->ref);
