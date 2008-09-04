@@ -1,3 +1,12 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* symbol.c (generate_isocbinding_symbol): Compare
+	gfc_notification_std with ERROR rather than FAILURE.
+	* resolve.c (check_assumed_size_reference): Compare array type
+	with AR_FULL rather than DIMEN_ELEMENT.
+	(resolve_actual_arglist): Compare with EXPR_VARIABLE rather than
+	FL_VARIABLE.
+
 2008-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/37228

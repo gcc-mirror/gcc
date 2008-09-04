@@ -6231,7 +6231,7 @@ need_fake_edge_p (gimple t)
       && !(call_flags & ECF_NORETURN))
     return true;
 
-  if (gimple_code (t) == ASM_EXPR
+  if (gimple_code (t) == GIMPLE_ASM
        && (gimple_asm_volatile_p (t) || gimple_asm_input_p (t)))
     return true;
 

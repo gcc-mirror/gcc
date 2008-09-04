@@ -1,3 +1,43 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* rtl.h (LABEL_REF_NONLOCAL_P): Don't check for REG_LABEL_OPERAND
+	or REG_LABEL_TARGET.
+	* calls.c (emit_library_call_value_1): Use MEM_P rather than
+	comparing MODE with MEM.
+	* gimple.c (gimple_build_predict): Cast END_PREDICTORS before
+	comparing with GF_PREDICT_TAKEN.
+	(gimple_get_lhs): Change code to enum gimple_code.
+	(gimple_set_lhs): Likewise.
+	* ifcvt.c (noce_process_if_block): Correct GET_MODE to GET_CODE.
+	* omp-low.c (find_omp_clause): Change kind parameter to enum
+	omp_clause_code.
+	* tree-flow.h (find_omp_clause): Update declaration.
+	* regrename.c (clear_dead_regs): Change kind parameter to enum
+	reg_note.
+	* reload1.c (eliminate_regs_1): Use REG_NOTE_KIND rather than
+	GET_MODE.
+	* see.c (see_get_extension_data): Change return type to enum
+	entry_type.  Change UNKNOWN to NOT_RELEVANT, SIGN_EXTEND to
+	SIGNED_EXTENDED_DEF, ZERO_EXTEND to ZERO_EXTENDED_DEF.
+	(see_gen_normalized_extension): Change extension_code parameter to
+	enum entry_type.
+	(see_seek_pre_extension_expr): Change extension_code to enum
+	entry_type.
+	(see_merge_one_def_extension): Likewise.
+	(see_handle_relevant_defs): Likewise.
+	(see_handle_relevant_uses): Likewise.
+	(see_analyze_one_def): Likewise.
+	* tree-cfg.c (need_fake_edge_p): Compare gimple code with
+	GIMPLE_ASM rather than ASM_EXPR.
+	* tree-ssa-alias.c (is_escape_site): Compare gimple code with
+	GIMPLE_RETURN rather than RETURN_EXPR.
+	* tree-ssa-ccp.c (likely_value): Change code to enum gimple_code.
+	(evaluate_stmt): Likewise.
+	* tree-vect-analyze.c (vect_analyze_operations): Change relevance
+	to enum vect_relevant.
+	(vect_mark_stmts_to_be_vectorized): Change assertion to not
+	compare gimple codes with tree codes.
+
 2008-09-04  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_size_rtx_costs): Call cost function.

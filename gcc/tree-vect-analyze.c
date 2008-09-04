@@ -427,7 +427,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	{
 	  gimple stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  enum vect_def_type relevance = STMT_VINFO_RELEVANT (stmt_info);
+	  enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -4081,8 +4081,10 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 	    case vect_used_in_outer_by_reduction:
 	    case vect_used_in_outer:
-	      gcc_assert (gimple_code (stmt) != WIDEN_SUM_EXPR
-			  && gimple_code (stmt) != DOT_PROD_EXPR);
+	      gcc_assert (gimple_code (stmt) != GIMPLE_ASSIGN
+                          || (gimple_assign_rhs_code (stmt) != WIDEN_SUM_EXPR
+                              && (gimple_assign_rhs_code (stmt)
+                                  != DOT_PROD_EXPR)));
 	      break;
 
 	    case vect_used_by_reduction:

@@ -2289,7 +2289,7 @@ noce_process_if_block (struct noce_if_info *if_info)
       if (GET_MODE (x) == BLKmode)
 	return FALSE;
 
-      if (GET_MODE (x) == ZERO_EXTRACT
+      if (GET_CODE (x) == ZERO_EXTRACT
 	  && (GET_CODE (XEXP (x, 1)) != CONST_INT
 	      || GET_CODE (XEXP (x, 2)) != CONST_INT))
 	return FALSE;

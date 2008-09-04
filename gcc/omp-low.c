@@ -164,7 +164,7 @@ static tree maybe_lookup_decl_in_outer_ctx (tree, omp_context *);
 /* Find an OpenMP clause of type KIND within CLAUSES.  */
 
 tree
-find_omp_clause (tree clauses, enum tree_code kind)
+find_omp_clause (tree clauses, enum omp_clause_code kind)
 {
   for (; clauses ; clauses = OMP_CLAUSE_CHAIN (clauses))
     if (OMP_CLAUSE_CODE (clauses) == kind)
