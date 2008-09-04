@@ -3681,6 +3681,9 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 #endif
     }
       
+  /* The always important stack pointer.  */
+  bitmap_set_bit (entry_block_defs, STACK_POINTER_REGNUM);
+
   /* Once the prologue has been generated, all of these registers
      should just show up in the first regular block.  */
   if (HAVE_prologue && epilogue_completed)
@@ -3693,9 +3696,6 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
     }
   else
     {
-      /* The always important stack pointer.  */
-      bitmap_set_bit (entry_block_defs, STACK_POINTER_REGNUM);
-
       /* If STATIC_CHAIN_INCOMING_REGNUM == STATIC_CHAIN_REGNUM
 	 only STATIC_CHAIN_REGNUM is defined.  If they are different,
 	 we only care about the STATIC_CHAIN_INCOMING_REGNUM.  */
