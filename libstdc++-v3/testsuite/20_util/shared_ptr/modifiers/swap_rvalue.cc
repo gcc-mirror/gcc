@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation
+// Copyright (C) 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +19,23 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// 20.7.12.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
 #include <testsuite_hooks.h>
 
 struct A { };
-std::auto_ptr<A> source() { return std::auto_ptr<A>(); }
 
-// 20.6.6.2.3 shared_ptr assignment [util.smartptr.shared.assign]
+// 20.7.12.2.4 shared_ptr modifiers [util.smartptr.shared.mod]
 
-// Assignment from rvalue auto_ptr
+// swap
 int
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::shared_ptr<A> a;
-  a = source(); // { dg-error "no match" }
+  std::shared_ptr<A> p(new A);
+  p.swap(std::shared_ptr<A>(new A));
 
   return 0;
 }
@@ -47,4 +46,3 @@ main()
   test01();
   return 0;
 }
-// { dg-excess-errors "candidates are" }

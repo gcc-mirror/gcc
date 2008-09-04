@@ -1,5 +1,32 @@
 2008-09-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/36962
+	* include/Makefile.am: Update headers.
+	* include/Makefile.in: Regenerate.
+	* include/std/memory: Update headers.
+	* include/tr1/memory: Likewise.
+	* include/tr1_impl/boost_shared_ptr.h: Remove, splitting into
+	separate implementations for std and tr1.
+	* include/bits/boost_sp_shared_count.h: Remove.
+	* include/tr1/boost_sp_shared_count.h: Remove.
+	* include/bits/shared_ptr.h: New. Combines boost_sp_shared_count.h
+	and boost_shared_ptr.h into one file.
+	(__shared_count,__shared_ptr,shared_ptr,swap): Add unique_ptr
+	and rvalue-reference support as per current WP.
+	* include/tr1/shared_ptr.h: New. Combines boost_sp_shared_count.h
+	and boost_shared_ptr.h into one file.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr.cc: New.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter.cc: New.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref.cc: New.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_neg.cc: New.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc: New.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_lvalue_neg.cc: New.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_rvalue.cc: New.
+	* testsuite/20_util/shared_ptr/modifiers/swap_rvalue.cc: New.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue_neg.cc: Remove.
+
+2008-09-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/locale.xml: Fix typo.
 
 2008-09-04  Paolo Carlini  <paolo.carlini@oracle.com>

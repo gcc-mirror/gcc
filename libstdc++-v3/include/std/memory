@@ -72,21 +72,20 @@
 #  include <bits/unique_ptr.h>
 #  include <debug/debug.h>
 #  include <type_traits>
+#  include <functional>
 #  if _GLIBCXX_DEPRECATED
 #    include <backward/auto_ptr.h>
 #  endif
 #  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #    include <tr1_impl/boost_sp_counted_base.h>
-#    include <bits/boost_sp_shared_count.h>
-#    include <tr1_impl/boost_shared_ptr.h>
+#    include <bits/shared_ptr.h>
 #  else
 #    define _GLIBCXX_INCLUDE_AS_CXX0X
 #    define _GLIBCXX_BEGIN_NAMESPACE_TR1
 #    define _GLIBCXX_END_NAMESPACE_TR1
 #    define _GLIBCXX_TR1
 #    include <tr1_impl/boost_sp_counted_base.h>
-#    include <bits/boost_sp_shared_count.h>
-#    include <tr1_impl/boost_shared_ptr.h>
+#    include <bits/shared_ptr.h>
 #    undef _GLIBCXX_TR1
 #    undef _GLIBCXX_END_NAMESPACE_TR1
 #    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
