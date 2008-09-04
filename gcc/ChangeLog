@@ -1,3 +1,13 @@
+2008-09-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Do not
+	enable VMX for POWER6.
+
+2008-09-03  Anton Blanchard  <anton@samba.org>
+
+	* config/rs6000/rs6000.c (rs6000_split_lock_test_and_set): Do not
+	emit memory barrier before operation.
+
 2008-09-03  John David Anglin  <dave.anglin@nrc.cnrc.gc.ca>
 
 	PR testsuite/37325
