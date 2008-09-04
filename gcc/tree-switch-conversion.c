@@ -298,7 +298,7 @@ check_final_bb (void)
 
 	  if ((bb == info.switch_bb
 	       || (single_pred_p (bb) && single_pred (bb) == info.switch_bb))
-	      && !is_gimple_min_invariant (gimple_phi_arg_def (phi, i)))
+	      && !is_gimple_ip_invariant (gimple_phi_arg_def (phi, i)))
 	    {
 	      info.reason = "   Non-invariant value from a case\n";
 	      return false; /* Non-invariant argument.  */

@@ -1,5 +1,11 @@
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/37343
+	* tree-switch-conversion.c (check_final_bb): Accept only IP
+	invariants.
+
+2008-09-04  Jan Hubicka  <jh@suse.cz>
+
 	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops_using_ranges):
 	Break out from ...
 	(vrp_evaluate_conditional_warnv_with_ops): ... this one.  Add
