@@ -1,3 +1,7 @@
+2008-09-04  Le-Chun Wu  <lcwu@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-09-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* configure.ac (--with-cloog-polylib): New.
