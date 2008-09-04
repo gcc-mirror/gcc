@@ -1,3 +1,8 @@
+2008-09-04  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/t-mingw32 (SHLIB_LC): Change order of import
+	libraries.
+
 2008-09-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Do not
