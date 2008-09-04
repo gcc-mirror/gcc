@@ -1,3 +1,8 @@
+2008-09-04  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (gen_one_bundle): Don't create new nops when
+	optimizing for size.
+
 2008-09-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* df-scan.c (df_get_entry_block_def_set): Add STACK_POINTER_REGNUM
