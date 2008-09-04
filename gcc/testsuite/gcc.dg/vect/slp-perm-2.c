@@ -32,6 +32,8 @@ int main (int argc, const char* argv[])
   unsigned int input[N], output[N], i;
   unsigned int check_results[N] = {1322, 13, 4166, 471, 7010, 929, 9854, 1387, 12698, 1845, 15542, 2303, 18386, 2761, 21230, 3219};
 
+  check_vect ();
+
   for (i = 0; i < N; i++)
     {
       input[i] = i%256;

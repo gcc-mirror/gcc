@@ -27,6 +27,8 @@ int main (int argc, const char* argv[])
   unsigned char input[N], output[N], i;
   unsigned char check_results[N];
 
+  check_vect ();
+
   for (i = 0; i < N; i++)
     {
       input[i] = i;

@@ -1,3 +1,11 @@
+2008-09-03  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/slp-perm-1.c: Add call to check_vect.
+	* gcc.dg/vect/slp-perm-2.c, gcc.dg/vect/slp-perm-3.c,
+	gcc.dg/vect/slp-perm-4.c, gcc.dg/vect/slp-perm-5.c,
+	gcc.dg/vect/slp-perm-6.c, gcc.dg/vect/slp-perm-7.c,
+	gcc.dg/vect/slp-perm-8.c, gcc.dg/vect/slp-perm-9.c: Likewise.
+
 2008-09-03  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/37345
