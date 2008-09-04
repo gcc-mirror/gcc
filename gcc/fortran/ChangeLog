@@ -1,3 +1,10 @@
+2008-09-04  Richard Guenther  <rguenther@suse.de>
+
+	* trans-array.c (gfc_conv_array_parameter): Use correct types
+	in building COND_EXPRs.
+	* trans-expr.c (gfc_conv_missing_dummy): Likewise.
+	* trans-intrinsics.c (gfc_conv_intrinsic_merge): Likewise.
+
 2008-09-04  Daniel Kraft  <d@domob.eu>
 
 	* PR fortran/37099

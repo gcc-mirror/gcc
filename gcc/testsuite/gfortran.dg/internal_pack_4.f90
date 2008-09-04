@@ -26,6 +26,6 @@ USE M1
 CALL S2()
 END
 
-! { dg-final { scan-tree-dump-times "a != 0B \\? _gfortran_internal_pack" 1 "original" } }
+! { dg-final { scan-tree-dump-times "a != 0B \\? \\\(.*\\\) _gfortran_internal_pack" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "if \\(a != 0B &&" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

@@ -2918,7 +2918,8 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
       se->string_length = len;
     }
   type = TREE_TYPE (tsource);
-  se->expr = fold_build3 (COND_EXPR, type, mask, tsource, fsource);
+  se->expr = fold_build3 (COND_EXPR, type, mask, tsource,
+			  fold_convert (type, fsource));
 }
 
 
