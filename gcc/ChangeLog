@@ -1,3 +1,9 @@
+2008-09-04  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR target/32783
+	* config/rs6000/rs6000.c (optimization_options): Remove check of
+	flag_toplevel_order.
+
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.h (ISA_HAS_SEQ_SNE): New macro.
