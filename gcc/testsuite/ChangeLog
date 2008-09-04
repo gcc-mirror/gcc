@@ -1,3 +1,8 @@
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-cins-1.c: New test.
+	* gcc.target/mips/octeon-cins-2.c: New test.
+
 2008-09-04  Richard Guenther  <rguenther@suse.de>
 
 	* gfortran.dg/internal_pack_4.f90: Adjust pattern.

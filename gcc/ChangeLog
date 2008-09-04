@@ -1,3 +1,13 @@
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (ISA_HAS_CINS): New macro.
+	* config/mips/mips-protos.h (mask_low_and_shift_p,
+	mask_low_and_shift_len): Declare.
+	* config/mips/mips.c (mask_low_and_shift_p,
+	mask_low_and_shift_len): New functions.
+	(mips_print_operand): Handle new operand prefix "m".
+	* config/mips/mips.md (*cins<mode>): New pattern.
+
 2008-09-04  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (gen_one_bundle): Don't create new nops when

@@ -6659,6 +6659,32 @@ mips_use_ins_ext_p (rtx op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos)
 
   return true;
 }
+
+/* Check if MASK and SHIFT are valid in mask-low-and-shift-left
+   operation if MAXLEN is the maxium length of consecutive bits that
+   can make up MASK.  MODE is the mode of the operation.  See
+   mask_low_and_shift_len for the actual definition.  */
+
+bool
+mask_low_and_shift_p (enum machine_mode mode, rtx mask, rtx shift, int maxlen)
+{
+  return IN_RANGE (mask_low_and_shift_len (mode, mask, shift), 1, maxlen);
+}
+
+/* The canonical form of a mask-low-and-shift-left operation is
+   (and (ashift X SHIFT) MASK) where MASK has the lower SHIFT number of bits
+   cleared.  Thus we need to shift MASK to the right before checking if it
+   is a valid mask value.  MODE is the mode of the operation.  If true
+   return the length of the mask, otherwise return -1.  */
+
+int
+mask_low_and_shift_len (enum machine_mode mode, rtx mask, rtx shift)
+{
+  HOST_WIDE_INT shval;
+
+  shval = INTVAL (shift) & (GET_MODE_BITSIZE (mode) - 1);
+  return exact_log2 ((UINTVAL (mask) >> shval) + 1);
+}
 
 /* Return true if -msplit-addresses is selected and should be honored.
 
@@ -7026,6 +7052,7 @@ mips_print_float_branch_condition (FILE *file, enum rtx_code code, int letter)
    'X'	Print CONST_INT OP in hexadecimal format.
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
    'd'	Print CONST_INT OP in decimal.
+   'm'	Print one less than CONST_INT OP in decimal.
    'h'	Print the high-part relocation associated with OP, after stripping
 	  any outermost HIGH.
    'R'	Print the low-part relocation associated with OP.
@@ -7077,6 +7104,13 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 'd':
       if (GET_CODE (op) == CONST_INT)
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'm':
+      if (GET_CODE (op) == CONST_INT)
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;

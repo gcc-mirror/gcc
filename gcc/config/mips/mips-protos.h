@@ -314,6 +314,10 @@ extern bool mips_use_ins_ext_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern const char *mips16e_output_save_restore (rtx, HOST_WIDE_INT);
 extern bool mips16e_save_restore_pattern_p (rtx, HOST_WIDE_INT,
 					    struct mips16e_save_restore_info *);
+
+extern bool mask_low_and_shift_p (enum machine_mode, rtx, rtx, int);
+extern int mask_low_and_shift_len (enum machine_mode, rtx, rtx);
+
 union mips_gen_fn_ptrs
 {
   rtx (*fn_6) (rtx, rtx, rtx, rtx, rtx, rtx);
