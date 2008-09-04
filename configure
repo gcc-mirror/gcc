@@ -935,6 +935,8 @@ Optional Features:
   --enable-gold           use gold instead of ld
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
+  --disable-ppl-version-check    disable check for PPL version
+  --disable-cloog-version-check  disable check for CLooG version
   --enable-stage1-languages[=all]   choose additional languages to build during
                           stage1.  Mostly useful for compiler development.
   --enable-objc-gc        enable use of Boehm's garbage collector with the
@@ -972,11 +974,12 @@ Optional Packages:
                           plus --with-ppl-lib=PATH/lib
   --with-ppl-include=PATH Specify directory for installed PPL include files
   --with-ppl-lib=PATH     Specify the directory for the installed PPL library
-  --with-cloog=PATH         Specify prefix directory for the installed CLOOG package
+  --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL package
                           Equivalent to --with-cloog-include=PATH/include
                           plus --with-cloog-lib=PATH/lib
-  --with-cloog-include=PATH Specify directory for installed CLOOG include files
-  --with-cloog-lib=PATH     Specify the directory for the installed CLOOG library
+  --with-cloog-include=PATH Specify directory for installed CLooG include files
+  --with-cloog-lib=PATH   Specify the directory for the installed CLooG library
+  --with-cloog-polylib=PATH Specify prefix directory for the installed CLooG-PolyLib package
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -4845,6 +4848,73 @@ if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl;
   LIBS="$ppllibs $LIBS"
 fi
 
+# Check whether --enable-ppl-version-check or --disable-ppl-version-check was given.
+if test "${enable_ppl_version_check+set}" = set; then
+  enableval="$enable_ppl_version_check"
+  ENABLE_PPL_CHECK=$enableval
+else
+  ENABLE_PPL_CHECK=yes
+fi;
+
+if test "${ENABLE_PPL_CHECK}" = "yes"; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $pplinc $gmpinc"
+  echo "$as_me:$LINENO: checking for version $ppl_major_version.$ppl_minor_version of PPL" >&5
+echo $ECHO_N "checking for version $ppl_major_version.$ppl_minor_version of PPL... $ECHO_C" >&6
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include "ppl_c.h"
+int
+main ()
+{
+
+  #if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
+  choke me
+  #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; ppllibs= ; pplinc=
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$saved_CFLAGS"
+fi
+
 # Flags needed for PPL
 
 
@@ -4852,7 +4922,7 @@ fi
 
 # Check for CLOOG
 clooglibs=
-clooginc=
+clooginc=" -DCLOOG_PPL_BACKEND "
 
 
 # Check whether --with-cloog or --without-cloog was given.
@@ -4873,9 +4943,20 @@ if test "${with_cloog_lib+set}" = set; then
 
 fi;
 
+# Check whether --with-cloog-polylib or --without-cloog-polylib was given.
+if test "${with_cloog_polylib+set}" = set; then
+  withval="$with_cloog_polylib"
+
+fi;
+
 if test "x$with_cloog" != x; then
   clooglibs="-L$with_cloog/lib -lcloog"
   clooginc="-I$with_cloog/include -DCLOOG_PPL_BACKEND "
+  LIBS="$clooglibs $LIBS"
+fi
+if test "x$with_cloog_polylib" != x; then
+  clooglibs="-L$with_cloog/lib -lcloog"
+  clooginc="-I$with_cloog/include "
   LIBS="$clooglibs $LIBS"
 fi
 if test "x$with_cloog_include" != x; then
@@ -4891,70 +4972,20 @@ if test "x$with_cloog$with_cloog_include$with_cloog_lib" = x && test -d ${srcdir
   LIBS="$clooglibs $LIBS"
 fi
 
-saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $pplinc $gmpinc"
-
-echo "$as_me:$LINENO: checking for version $ppl_major_version.$ppl_minor_version of PPL" >&5
-echo $ECHO_N "checking for version $ppl_major_version.$ppl_minor_version of PPL... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include "ppl_c.h"
-int
-main ()
-{
-
-#if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
-choke me
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
+# Check whether --enable-cloog-version-check or --disable-cloog-version-check was given.
+if test "${enable_cloog_version_check+set}" = set; then
+  enableval="$enable_cloog_version_check"
+  ENABLE_CLOOG_CHECK=$enableval
 else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
+  ENABLE_CLOOG_CHECK=yes
+fi;
 
-echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; clooglibs= ; clooginc=
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-CFLAGS="$saved_CFLAGS"
-
-saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $clooginc -DCLOOG_PPL_BACKEND $gmpinc $pplinc"
-
-echo "$as_me:$LINENO: checking for correct version of CLooG" >&5
+if test "${ENABLE_CLOOG_CHECK}" = "yes"; then
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
+  echo "$as_me:$LINENO: checking for correct version of CLooG" >&5
 echo $ECHO_N "checking for correct version of CLooG... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
+  cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -4965,9 +4996,9 @@ int
 main ()
 {
 
-#if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15
-choke me
-#endif
+  #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15
+  choke me
+  #endif
 
   ;
   return 0;
@@ -5005,7 +5036,8 @@ echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; clooglibs= ; clooginc=
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-CFLAGS="$saved_CFLAGS"
+  CFLAGS="$saved_CFLAGS"
+fi
 
 # Flags needed for CLOOG
 
