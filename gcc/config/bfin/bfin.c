@@ -4457,6 +4457,11 @@ gen_one_bundle (rtx slot[3])
 {
   gcc_assert (slot[1] != NULL_RTX);
 
+  /* Don't add extra NOPs if optimizing for size.  */
+  if (optimize_size
+      && (slot[0] == NULL_RTX || slot[2] == NULL_RTX))
+    return false;
+
   /* Verify that we really can do the multi-issue.  */
   if (slot[0])
     {
