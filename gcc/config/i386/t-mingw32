@@ -2,4 +2,4 @@
 NATIVE_SYSTEM_HEADER_DIR = /mingw/include
 
 # MinGW-specific parts of LIB_SPEC
-SHLIB_LC += -lmingw32 -lmingwex -lmoldname -lmsvcrt
+SHLIB_LC = -lmingw32 -lmingwex -lmoldname -lmsvcrt -luser32 -lkernel32 -ladvapi32 -lshell32
