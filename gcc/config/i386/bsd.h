@@ -65,6 +65,13 @@ along with GCC; see the file COPYING3.  If not see
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
+#ifdef HAVE_GAS_LCOMM_WITH_ALIGNMENT
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGNMENT)  \
+( fputs (".lcomm ", (FILE)),			\
+  assemble_name ((FILE), (NAME)),		\
+  fprintf ((FILE), ",%u,%u\n", (int)(SIZE), (int)(ALIGNMENT) / BITS_PER_UNIT))
+#endif
+
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
