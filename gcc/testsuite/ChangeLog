@@ -1,3 +1,8 @@
+2008-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/37243
+	* gfortran.dg/pr37243.f: New.
+
 2008-09-03  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/37343
