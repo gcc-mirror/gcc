@@ -1,3 +1,13 @@
+2008-09-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/37345
+	PR tree-optimization/37358
+	PR tree-optimization/37357
+	* tree.c (build_function_type_skip_args): Build distinct type copy;
+	set TYPE_CONTEXT.
+	(build_function_decl_skip_args): Set type of new decl not orig decl;
+	clear DECL_VINDEX for methods turned into functions.
+
 2008-09-04  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac (HAVE_GAS_LCOMM_WITH_ALIGNMENT): New assembler

@@ -5925,7 +5925,12 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
       TYPE_ARG_TYPES (new_type) = new_reversed;
     }
   else
-    new_type = build_function_type (TREE_TYPE (orig_type), new_reversed);
+    {
+      new_type
+        = build_distinct_type_copy (build_function_type (TREE_TYPE (orig_type),
+							 new_reversed));
+      TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
+    }
 
   /* This is a new type, not a copy of an old type.  Need to reassociate
      variants.  We can handle everything except the main variant lazily.  */
@@ -5959,7 +5964,12 @@ build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip)
   new_type = TREE_TYPE (orig_decl);
   if (prototype_p (new_type))
     new_type = build_function_type_skip_args (new_type, args_to_skip);
-  TREE_TYPE (orig_decl) = new_type;
+  TREE_TYPE (new_decl) = new_type;
+
+  /* For declarations setting DECL_VINDEX (i.e. methods)
+     we expect first argument to be THIS pointer.   */
+  if (bitmap_bit_p (args_to_skip, 0))
+    DECL_VINDEX (new_decl) = NULL_TREE;
   return new_decl;
 }
 
