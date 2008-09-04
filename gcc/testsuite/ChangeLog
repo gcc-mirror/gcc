@@ -1,3 +1,8 @@
+2008-09-03  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/37343
+	* g++.dg/torture/pr37343.C New file.
+
 2008-09-03  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/slp-perm-1.c: Add call to check_vect.
@@ -11,7 +16,7 @@
 	PR tree-optimization/37345
 	PR tree-optimization/37358
 	PR tree-optimization/37357
-	* g++.dg/torture/pr37345.c: New file.
+	* g++.dg/torture/pr37345.C: New file.
 
 2008-09-03  Tobias Grosser  <grosser@fim.uni-passau.de>
 
