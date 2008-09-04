@@ -1,5 +1,22 @@
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* config/mips/mips.h (ISA_HAS_SEQ_SNE): New macro.
+	* config/mips/mips.c (mips_expand_scc): Also expand seq and sne if
+	second operand is a reg_imm10_operand.
+	* config/mips/mips.md (*seq_<GPR:mode><GPR2:mode>_seq,
+	*sne_<GPR:mode><GPR2:mode>_sne): New patterns.
+	(*seq_<GPR:mode><GPR2:mode>): Rename to
+	*seq_zero_<GPR:mode><GPR2:mode>.  Don't match if
+	ISA_HAS_SEQ_SNE.
+	(*seq_<GPR:mode><GPR2:mode>_mips16): Rename to
+	*seq_zero_<GPR:mode><GPR2:mode>_mip16.  Don't match if
+	ISA_HAS_SEQ_SNE.
+	(*sne_<GPR:mode><GPR2:mode>): Rename to
+	*sne_zero_<GPR:mode><GPR2:mode>.  Don't match if
+	ISA_HAS_SEQ_SNE.
+
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* config/mips/mips.h (ISA_HAS_EXTS): New macro.
 	* config/mips/mips.md (*ashr_trunc<mode>): Name the pattern
 	combining an arithmetic right shift by more than 31 and a

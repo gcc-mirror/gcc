@@ -5200,21 +5200,34 @@
   ""
   { if (mips_expand_scc (EQ, operands[0])) DONE; else FAIL; })
 
-(define_insn "*seq_<GPR:mode><GPR2:mode>"
+(define_insn "*seq_zero_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
 	(eq:GPR2 (match_operand:GPR 1 "register_operand" "d")
 		 (const_int 0)))]
-  "!TARGET_MIPS16"
+  "!TARGET_MIPS16 && !ISA_HAS_SEQ_SNE"
   "sltu\t%0,%1,1"
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*seq_<GPR:mode><GPR2:mode>_mips16"
+(define_insn "*seq_zero_<GPR:mode><GPR2:mode>_mips16"
   [(set (match_operand:GPR2 0 "register_operand" "=t")
 	(eq:GPR2 (match_operand:GPR 1 "register_operand" "d")
 		 (const_int 0)))]
-  "TARGET_MIPS16"
+  "TARGET_MIPS16 && !ISA_HAS_SEQ_SNE"
   "sltu\t%1,1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "<GPR:MODE>")])
+
+;; Generate sltiu unless using seq results in better code.
+(define_insn "*seq_<GPR:mode><GPR2:mode>_seq"
+  [(set (match_operand:GPR2 0 "register_operand" "=d,d,d")
+	(eq:GPR2 (match_operand:GPR 1 "register_operand" "%d,d,d")
+		 (match_operand:GPR 2 "reg_imm10_operand" "d,J,YB")))]
+  "ISA_HAS_SEQ_SNE"
+  "@
+   seq\t%0,%1,%2
+   sltiu\t%0,%1,1
+   seqi\t%0,%1,%2"
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 
@@ -5228,12 +5241,25 @@
   "!TARGET_MIPS16"
   { if (mips_expand_scc (NE, operands[0])) DONE; else FAIL; })
 
-(define_insn "*sne_<GPR:mode><GPR2:mode>"
+(define_insn "*sne_zero_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
 	(ne:GPR2 (match_operand:GPR 1 "register_operand" "d")
 		 (const_int 0)))]
-  "!TARGET_MIPS16"
+  "!TARGET_MIPS16 && !ISA_HAS_SEQ_SNE"
   "sltu\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "<GPR:MODE>")])
+
+;; Generate sltu unless using sne results in better code.
+(define_insn "*sne_<GPR:mode><GPR2:mode>_sne"
+  [(set (match_operand:GPR2 0 "register_operand" "=d,d,d")
+	(ne:GPR2 (match_operand:GPR 1 "register_operand" "%d,d,d")
+		 (match_operand:GPR 2 "reg_imm10_operand" "d,J,YB")))]
+  "ISA_HAS_SEQ_SNE"
+  "@
+   sne\t%0,%1,%2
+   sltu\t%0,%.,%1
+   snei\t%0,%1,%2"
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 

@@ -1,5 +1,15 @@
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* gcc.target/mips/seq-1.c: New test.
+	* gcc.target/mips/octeon-seq-1.c: New test.
+	* gcc.target/mips/octeon-seq-2.c: New test.
+	* gcc.target/mips/octeon-seq-3.c: New test.
+	* gcc.target/mips/octeon-seq-4.c: New test.
+	* gcc.target/mips/scc-2.c: Also pass on sltiu.
+	* gcc.target/mips/scc-3.c: Likewise.
+
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* gcc.target/mips/truncate-2.c: New test.
 	* gcc.target/mips/octeon-exts-1.c: New test.
 	* gcc.target/mips/octeon-exts-2.c: New test.
