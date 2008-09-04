@@ -714,9 +714,12 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  
 		  ALLOCNO_CALL_FREQ (a) += freq;
 		  ALLOCNO_CALLS_CROSSED_NUM (a)++;
-		  /* Don't allocate allocnos that cross calls, if this
-		     function receives a nonlocal goto.  */
-		  if (cfun->has_nonlocal_label)
+		  /* Don't allocate allocnos that cross setjmps or any
+		     call, if this function receives a nonlocal
+		     goto.  */
+		  if (cfun->has_nonlocal_label
+		      || find_reg_note (insn, REG_SETJMP,
+					NULL_RTX) != NULL_RTX)
 		    {
 		      SET_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a));
 		      SET_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
