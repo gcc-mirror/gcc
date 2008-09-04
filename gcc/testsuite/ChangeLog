@@ -1,5 +1,13 @@
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* gcc.target/mips/truncate-2.c: New test.
+	* gcc.target/mips/octeon-exts-1.c: New test.
+	* gcc.target/mips/octeon-exts-2.c: New test.
+	* gcc.target/mips/octeon-exts-3.c: New test.
+	* gcc.target/mips/octeon-exts-4.c: New test.
+
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* gcc.target/mips/octeon-cins-1.c: New test.
 	* gcc.target/mips/octeon-cins-2.c: New test.
 

@@ -1,5 +1,26 @@
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* config/mips/mips.h (ISA_HAS_EXTS): New macro.
+	* config/mips/mips.md (*ashr_trunc<mode>): Name the pattern
+	combining an arithmetic right shift by more than 31 and a
+	trunction.  Don't match for out-of-range shift amounts.  Set
+	attribute mode to <MODE>.
+	(*lshr32_trunc<mode>): Name the pattern combining a logical right
+	shift by 32 and and a truncation.  Set attribute mode to <MODE>.
+	(*<optab>_trunc<mode>_exts): New pattern for truncated right
+	shifts by less than 32.
+	(extv): Change predicate on first operand to accept registers.
+	Change predicate of the other operands from immediate_operand to
+	const_int_operand.  Expand exts when source is a register.
+	(extzv): Change predicate of the constant operands from
+	immediate_operand to const_int_operand.
+	(extzv<mode>): Change predicate of the constant operands from
+	immediate_operand to const_int_operand and no constraint. Also
+	remove mode.
+	(*extzv_trunc<mode>_exts): New pattern.
+
+2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* config/mips/mips.h (ISA_HAS_CINS): New macro.
 	* config/mips/mips-protos.h (mask_low_and_shift_p,
 	mask_low_and_shift_len): Declare.
