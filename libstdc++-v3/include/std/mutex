@@ -615,8 +615,10 @@ namespace std
     typedef __gthread_once_t __native_type;
 
     once_flag()
-    : _M_once(__GTHREAD_ONCE_INIT)
-    { }
+    {
+      __gthread_once_t __tmp = __GTHREAD_ONCE_INIT;
+      _M_once = __tmp;
+    }
     
     once_flag(const once_flag&) = delete;
     once_flag& operator=(const once_flag&) = delete;

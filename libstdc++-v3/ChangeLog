@@ -1,3 +1,9 @@
+2008-09-04  Chris Fairles  <chris.fairles@gmail.com>
+
+        * include/std/mutex (once_flag): Construct __gthread_once_t in a
+	temporary variable before assigning to _M_once to avoid initialization
+	errors. 
+
 2008-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* config/abi/pre/gnu.ver: Also export __once_functor_lock; tighten
