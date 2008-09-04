@@ -4222,8 +4222,14 @@ mips_expand_scc (enum rtx_code code, rtx target)
 
   if (code == EQ || code == NE)
     {
-      rtx zie = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
-      mips_emit_binary (code, target, zie, const0_rtx);
+      if (ISA_HAS_SEQ_SNE
+	  && reg_imm10_operand (cmp_operands[1], GET_MODE (cmp_operands[1])))
+	mips_emit_binary (code, target, cmp_operands[0], cmp_operands[1]);
+      else
+	{
+	  rtx zie = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+	  mips_emit_binary (code, target, zie, const0_rtx);
+	}
     }
   else
     mips_emit_int_order_test (code, 0, target,

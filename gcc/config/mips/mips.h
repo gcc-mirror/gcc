@@ -1015,6 +1015,9 @@ enum mips_code_readable_setting {
 /* ISA includes the exts instruction.  */
 #define ISA_HAS_EXTS		TARGET_OCTEON
 
+/* ISA includes the seq and sne instructions.  */
+#define ISA_HAS_SEQ_SNE		TARGET_OCTEON
+
 /* ISA includes the pop instruction.  */
 #define ISA_HAS_POP		TARGET_OCTEON
 
