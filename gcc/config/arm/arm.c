@@ -5391,7 +5391,7 @@ arm_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
   if (!speed)
     return arm_size_rtx_costs (x, code, outer_code, total);
   else
-    return all_cores[(int)arm_tune].rtx_costs;
+    return all_cores[(int)arm_tune].rtx_costs (x, code, outer_code, total);
 }
 
 /* RTX costs for cores with a slow MUL implementation.  Thumb-2 is not
