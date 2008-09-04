@@ -1,3 +1,9 @@
+2008-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): Tidy checks in case of
+	POSIX threads.
+	* configure: Regenerate.
+
 2008-09-04  Chris Fairles  <chris.fairles@gmail.com>
 
         * include/std/mutex (once_flag): Construct __gthread_once_t in a

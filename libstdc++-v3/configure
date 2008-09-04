@@ -21610,10 +21610,15 @@ int
 main ()
 {
 
-     	#if (!defined(__GTHREADS_CXX0X) || !defined(_POSIX_TIMEOUTS) \
-	     || _POSIX_TIMEOUTS <= 0)
-	#error
-	#endif
+      #ifndef __GTHREADS_CXX0X
+      #error
+      #endif
+
+      // In case of POSIX threads check _POSIX_TIMEOUTS too.
+      #if (defined(_PTHREADS) \
+           && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+      #error
+      #endif
 
   ;
   return 0;
