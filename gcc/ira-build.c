@@ -310,7 +310,7 @@ form_loop_tree (void)
 	 ira_loop_nodes[i].children = NULL;
 	 ira_loop_nodes[i].subloops = NULL;
        }
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB (bb)
     {
       bb_node = &ira_bb_nodes[bb->index];
       bb_node->bb = bb;
@@ -1343,7 +1343,7 @@ create_bb_allocnos (ira_loop_tree_node_t bb_node)
 
   curr_bb = bb = bb_node->bb;
   ira_assert (bb != NULL);
-  FOR_BB_INSNS (bb, insn)
+  FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
       create_insn_allocnos (PATTERN (insn), false);
   /* It might be a allocno living through from one subloop to
