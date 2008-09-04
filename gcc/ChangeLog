@@ -1,5 +1,15 @@
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
+	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops_using_ranges):
+	Break out from ...
+	(vrp_evaluate_conditional_warnv_with_ops): ... this one.  Add
+	using_ranges argument.
+	(vrp_evaluate_conditional): Avoid bogus warning for type range.
+	(vrp_visit_cond_stmt): Update call of
+	vrp_evaluate_conditional_warnv_with_ops
+
+2008-09-04  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/37345
 	PR tree-optimization/37358
 	PR tree-optimization/37357
