@@ -1,3 +1,24 @@
+2008-09-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/37243
+	* ira-build.c (form_loop_tree): Reverse BB walk.
+	(create_bb_allocnos): Likewise.
+	* ira-lives.c (make_regno_born_and_dead, regs_set): Delete.
+	(mark_reg_store): Rename to...
+	(mark_ref_live): ...this and take a df_ref argument instead of
+	note_stores arguments.  Assert that we have a register.
+	(mark_reg_clobber): Delete.
+	(def_conflicts_with_inputs_p): New function.
+	(mark_reg_conflicts): Delete.
+	(mark_reg_death): Rename to...
+	(mark_ref_dead): ...this and take a df_ref argument instead of
+	a register.  Assert that we have a register.
+	(process_bb_node_lives): Hoist frequency calculation out of
+	instruction walk.  Convert from a forwards scan to a backwards scan.
+	Use DF_REF_USES and DF_REF_DEFS instead of register notes and
+	note_stores.  Remove EH_RETURN_DATA_REGNO and regs_set handling.
+	(create_allocno_live_ranges): Don't create regs_set.
+
 2008-09-04  Ian Lance Taylor  <iant@google.com>
 
 	* rtl.h (LABEL_REF_NONLOCAL_P): Don't check for REG_LABEL_OPERAND

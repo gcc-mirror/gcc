@@ -149,15 +149,6 @@ make_regno_dead (int regno)
   update_allocno_pressure_excess_length (a);
 }
 
-/* Process the birth and, right after then, death of register
-   REGNO.  */
-static void
-make_regno_born_and_dead (int regno)
-{
-  make_regno_born (regno);
-  make_regno_dead (regno);
-}
-
 /* The current register pressures for each cover class for the current
    basic block.  */
 static int curr_reg_pressure[N_REG_CLASSES];
@@ -218,40 +209,21 @@ clear_allocno_live (ira_allocno_t a)
   sparseset_clear_bit (allocnos_live, ALLOCNO_NUM (a));
 }
 
-/* Record all regs that are set in any one insn.  Communication from
-   mark_reg_{store,clobber}.  */
-static VEC(rtx, heap) *regs_set;
-
-/* Handle the case where REG is set by the insn being scanned, during
-   the scan to build live ranges and calculate reg pressure info.
+/* Mark the register referenced by use or def REF as live
    Store a 1 in hard_regs_live or allocnos_live for this register or
    the corresponding allocno, record how many consecutive hardware
-   registers it actually needs.
+   registers it actually needs.  */
 
-   Note that even if REG does not remain alive after this insn, we
-   must mark it here as live, to ensure a conflict between REG and any
-   other reg allocnos set in this insn that really do live.  This is
-   because those other allocnos could be considered after this.
-
-   REG might actually be something other than a register; if so, we do
-   nothing.
-
-   SETTER is 0 if this register was modified by an auto-increment
-   (i.e., a REG_INC note was found for it).  */
 static void
-mark_reg_store (rtx reg, const_rtx setter ATTRIBUTE_UNUSED,
-		void *data ATTRIBUTE_UNUSED)
+mark_ref_live (struct df_ref *ref)
 {
+  rtx reg;
   int regno;
 
+  reg = DF_REF_REG (ref);
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
-
-  if (! REG_P (reg))
-    return;
-
-  VEC_safe_push (rtx, heap, regs_set, reg);
-
+  gcc_assert (REG_P (reg));
   regno = REGNO (reg);
 
   if (regno >= FIRST_PSEUDO_REGISTER)
@@ -297,53 +269,34 @@ mark_reg_store (rtx reg, const_rtx setter ATTRIBUTE_UNUSED,
     }
 }
 
-/* Like mark_reg_store except notice just CLOBBERs; ignore SETs.  */
-static void
-mark_reg_clobber (rtx reg, const_rtx setter, void *data)
+/* Return true if the definition described by DEF conflicts with the
+   instruction's inputs.  */
+static bool
+def_conflicts_with_inputs_p (struct df_ref *def)
 {
-  if (GET_CODE (setter) == CLOBBER)
-    mark_reg_store (reg, setter, data);
+  /* Conservatively assume that the condition is true for all clobbers.  */
+  return DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER);
 }
 
-/* Record that hard register REG (if it is a hard register) has
-   conflicts with all the allocno currently live or the corresponding
-   allocno lives at just the current program point.  Do not mark REG
-   (or the allocno) itself as live.  */
-static void
-mark_reg_conflicts (rtx reg)
-{
-  int regno;
-
-  if (GET_CODE (reg) == SUBREG)
-    reg = SUBREG_REG (reg);
-
-  if (! REG_P (reg))
-    return;
-
-  regno = REGNO (reg);
-
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    make_regno_born_and_dead (regno);
-  else if (! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno))
-    {
-      int last = regno + hard_regno_nregs[regno][GET_MODE (reg)];
-
-      while (regno < last)
-	{
-	  make_regno_born_and_dead (regno);
-	  regno++;
-	}
-    }
-}
-
-/* Mark REG (or the corresponding allocno) as being dead (following
-   the insn being scanned now).  Store a 0 in hard_regs_live or
+/* Mark the register referenced by definition DEF as dead, if the
+   definition is a total one.  Store a 0 in hard_regs_live or
    allocnos_live for the register.  */
 static void
-mark_reg_death (rtx reg)
+mark_ref_dead (struct df_ref *def)
 {
   unsigned int i;
-  int regno = REGNO (reg);
+  rtx reg;
+  int regno;
+
+  if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
+      || DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL))
+    return;
+
+  reg = DF_REF_REG (def);
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  gcc_assert (REG_P (reg));
+  regno = REGNO (reg);
 
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
@@ -618,14 +571,14 @@ process_single_reg_class_operands (bool in_p, int freq)
 static void
 process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 {
-  int i;
+  int i, freq;
   unsigned int j;
   basic_block bb;
   rtx insn;
   edge e;
   edge_iterator ei;
   bitmap_iterator bi;
-  bitmap reg_live_in;
+  bitmap reg_live_out;
   unsigned int px;
 
   bb = loop_tree_node->bb;
@@ -637,9 +590,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  high_pressure_start_point[ira_reg_class_cover[i]] = -1;
 	}
       curr_bb_node = loop_tree_node;
-      reg_live_in = DF_LR_IN (bb);
+      reg_live_out = DF_LR_OUT (bb);
       sparseset_clear (allocnos_live);
-      REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_in);
+      REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
       AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
       AND_COMPL_HARD_REG_SET (hard_regs_live, ira_no_alloc_regs);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -659,7 +612,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	    ira_assert (curr_reg_pressure[cover_class]
 			<= ira_available_class_regs[cover_class]);
 	  }
-      EXECUTE_IF_SET_IN_BITMAP (reg_live_in, FIRST_PSEUDO_REGISTER, j, bi)
+      EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
 	{
 	  ira_allocno_t a = ira_curr_regno_allocno_map[j];
 	  
@@ -670,87 +623,91 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  make_regno_born (j);
 	}
       
-#ifdef EH_RETURN_DATA_REGNO
-      if (bb_has_eh_pred (bb))
-	{
-	  for (j = 0; ; ++j)
-	    {
-	      unsigned int regno = EH_RETURN_DATA_REGNO (j);
-	      
-	      if (regno == INVALID_REGNUM)
-		break;
-	      make_regno_born_and_dead (regno);
-	    }
-	}
-#endif
-      
-      /* Allocnos can't go in stack regs at the start of a basic block
-	 that is reached by an abnormal edge. Likewise for call
-	 clobbered regs, because caller-save, fixup_abnormal_edges and
-	 possibly the table driven EH machinery are not quite ready to
-	 handle such allocnos live across such edges.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  break;
-      
-      if (e != NULL)
-	{
-#ifdef STACK_REGS
-	  EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, px)
-	    {
-	      ALLOCNO_NO_STACK_REG_P (ira_allocnos[px]) = true;
-	      ALLOCNO_TOTAL_NO_STACK_REG_P (ira_allocnos[px]) = true;
-	    }
-	  for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
-	    make_regno_born_and_dead (px);
-#endif
-	  /* No need to record conflicts for call clobbered regs if we
-	     have nonlocal labels around, as we don't ever try to
-	     allocate such regs in this case.  */
-	  if (!cfun->has_nonlocal_label)
-	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	      if (call_used_regs[px])
-		make_regno_born_and_dead (px);
-	}
-  
+      freq = REG_FREQ_FROM_BB (bb);
+      if (freq == 0)
+	freq = 1;
+
       /* Scan the code of this basic block, noting which allocnos and
-	 hard regs are born or die.  */
-      FOR_BB_INSNS (bb, insn)
+	 hard regs are born or die.
+
+	 Note that this loop treats uninitialized values as live until
+	 the beginning of the block.  For example, if an instruction
+	 uses (reg:DI foo), and only (subreg:SI (reg:DI foo) 0) is ever
+	 set, FOO will remain live until the beginning of the block.
+	 Likewise if FOO is not set at all.  This is unnecessarily
+	 pessimistic, but it probably doesn't matter much in practice.  */
+      FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  rtx link;
-	  int freq;
+	  struct df_ref **def_rec, **use_rec;
+	  bool call_p;
 	  
 	  if (! INSN_P (insn))
 	    continue;
 	  
-	  freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
-	  if (freq == 0)
-	    freq = 1;
-
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "   Insn %u(l%d): point = %d\n",
 		     INSN_UID (insn), loop_tree_node->parent->loop->num,
 		     curr_point);
 
-	  /* Check regs_set is an empty set.  */
-	  gcc_assert (VEC_empty (rtx, regs_set));
-      
-	  /* Mark any allocnos clobbered by INSN as live, so they
-	     conflict with the inputs.  */
-	  note_stores (PATTERN (insn), mark_reg_clobber, NULL);
+	  /* Mark each defined value as live.  We need to do this for
+	     unused values because they still conflict with quantities
+	     that are live at the time of the definition.
+
+	     Ignore DF_REF_MAY_CLOBBERs on a call instruction.  Such
+	     references represent the effect of the called function
+	     on a call-clobbered register.  Marking the register as
+	     live would stop us from allocating it to a call-crossing
+	     allocno.  */
+	  call_p = CALL_P (insn);
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MAY_CLOBBER))
+	      mark_ref_live (*def_rec);
+
+	  /* If INSN has multiple outputs, then any value used in one
+	     of the outputs conflicts with the other outputs.  Model this
+	     by making the used value live during the output phase.
+
+	     It is unsafe to use !single_set here since it will ignore
+	     an unused output.  Just because an output is unused does
+	     not mean the compiler can assume the side effect will not
+	     occur.  Consider if ALLOCNO appears in the address of an
+	     output and we reload the output.  If we allocate ALLOCNO
+	     to the same hard register as an unused output we could
+	     set the hard register before the output reload insn.  */
+	  if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
+	    for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	      {
+		int i;
+		rtx reg;
+
+		reg = DF_REF_REG (*use_rec);
+		for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+		  {
+		    rtx set;
+
+		    set = XVECEXP (PATTERN (insn), 0, i);
+		    if (GET_CODE (set) == SET
+			&& reg_overlap_mentioned_p (reg, SET_DEST (set)))
+		      {
+			/* After the previous loop, this is a no-op if
+			   REG is contained within SET_DEST (SET).  */
+			mark_ref_live (*use_rec);
+			break;
+		      }
+		  }
+	      }
 	  
 	  extract_insn (insn);
-	  process_single_reg_class_operands (true, freq);
+	  process_single_reg_class_operands (false, freq);
 	  
-	  /* Mark any allocnos dead after INSN as dead now.  */
-	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	    if (REG_NOTE_KIND (link) == REG_DEAD)
-	      mark_reg_death (XEXP (link, 0));
-	  
-	  curr_point++;
+	  /* See which defined values die here.  */
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MAY_CLOBBER))
+	      mark_ref_dead (*def_rec);
 
-	  if (CALL_P (insn))
+	  if (call_p)
 	    {
+	      /* The current set of live allocnos are live across the call.  */
 	      EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
 	        {
 		  ira_allocno_t a = ira_allocnos[i];
@@ -767,67 +724,62 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		}
 	    }
 	  
-	  /* Mark any allocnos set in INSN as live.  Clobbers are
-	     processed again, so they will conflict with the reg
-	     allocnos that are set.  */
-	  note_stores (PATTERN (insn), mark_reg_store, NULL);
-	  
-#ifdef AUTO_INC_DEC
-	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	    if (REG_NOTE_KIND (link) == REG_INC)
-	      mark_reg_store (XEXP (link, 0), NULL_RTX, NULL);
-#endif
-	  
-	  /* If INSN has multiple outputs, then any allocno that dies
-	     here and is used inside of an output must conflict with
-	     the other outputs.
-	     
-	     It is unsafe to use !single_set here since it will ignore
-	     an unused output.  Just because an output is unused does
-	     not mean the compiler can assume the side effect will not
-	     occur.  Consider if ALLOCNO appears in the address of an
-	     output and we reload the output.  If we allocate ALLOCNO
-	     to the same hard register as an unused output we could
-	     set the hard register before the output reload insn.  */
-	  if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
-	    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	      if (REG_NOTE_KIND (link) == REG_DEAD)
-		{
-		  int i;
-		  int used_in_output = 0;
-		  rtx reg = XEXP (link, 0);
-		  
-		  for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-		    {
-		      rtx set = XVECEXP (PATTERN (insn), 0, i);
-		      
-		      if (GET_CODE (set) == SET
-			  && ! REG_P (SET_DEST (set))
-			  && ! rtx_equal_p (reg, SET_DEST (set))
-			  && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-			used_in_output = 1;
-		    }
-		  if (used_in_output)
-		    mark_reg_conflicts (reg);
-		}
-	  
-	  process_single_reg_class_operands (false, freq);
-	  
-	  /* Mark any allocnos set in INSN and then never used.  */
-	  while (! VEC_empty (rtx, regs_set))
-	    {
-	      rtx reg = VEC_pop (rtx, regs_set);
-	      rtx note = find_regno_note (insn, REG_UNUSED, REGNO (reg));
+	  curr_point++;
 
-	      if (note)
-		mark_reg_death (XEXP (note, 0));
-	    }
+	  /* Mark each used value as live.  */
+	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	    mark_ref_live (*use_rec);
+
+	  /* If any defined values conflict with the inputs, mark those
+	     defined values as live.  */
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (def_conflicts_with_inputs_p (*def_rec))
+	      mark_ref_live (*def_rec);
+
+	  process_single_reg_class_operands (true, freq);
+	  
+	  /* See which of the defined values we marked as live are dead
+	     before the instruction.  */
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (def_conflicts_with_inputs_p (*def_rec))
+	      mark_ref_dead (*def_rec);
+
 	  curr_point++;
 	}
+
+      /* Allocnos can't go in stack regs at the start of a basic block
+	 that is reached by an abnormal edge. Likewise for call
+	 clobbered regs, because caller-save, fixup_abnormal_edges and
+	 possibly the table driven EH machinery are not quite ready to
+	 handle such allocnos live across such edges.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_ABNORMAL)
+	  break;
+
+      if (e != NULL)
+	{
+#ifdef STACK_REGS
+	  EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, px)
+	    {
+	      ALLOCNO_NO_STACK_REG_P (ira_allocnos[px]) = true;
+	      ALLOCNO_TOTAL_NO_STACK_REG_P (ira_allocnos[px]) = true;
+	    }
+	  for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
+	    make_regno_born (px);
+#endif
+	  /* No need to record conflicts for call clobbered regs if we
+	     have nonlocal labels around, as we don't ever try to
+	     allocate such regs in this case.  */
+	  if (!cfun->has_nonlocal_label)
+	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
+	      if (call_used_regs[px])
+		make_regno_born (px);
+	}
+
       EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
-       {
-	 make_regno_dead (ALLOCNO_REGNO (ira_allocnos[i]));
-       }
+	{
+	  make_regno_dead (ALLOCNO_REGNO (ira_allocnos[i]));
+	}
 
       curr_point++;
 
@@ -944,9 +896,6 @@ void
 ira_create_allocno_live_ranges (void)
 {
   allocnos_live = sparseset_alloc (ira_allocnos_num);
-  /* Make a vector that mark_reg_{store,clobber} will store in.  */
-  if (!regs_set)
-    regs_set = VEC_alloc (rtx, heap, 10);
   curr_point = 0;
   ira_traverse_loop_tree (true, ira_loop_tree_root, NULL,
 			  process_bb_node_lives);
