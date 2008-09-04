@@ -1097,6 +1097,40 @@ ira_add_allocno_copy (ira_allocno_t first, ira_allocno_t second, int freq,
   return cp;
 }
 
+/* Print info about copy CP into file F.  */
+static void
+print_copy (FILE *f, ira_copy_t cp)
+{
+  fprintf (f, "  cp%d:a%d(r%d)<->a%d(r%d)@%d\n", cp->num,
+	   ALLOCNO_NUM (cp->first), ALLOCNO_REGNO (cp->first),
+	   ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second), cp->freq);
+}
+
+/* Print info about copy CP into stderr.  */
+void
+ira_debug_copy (ira_copy_t cp)
+{
+  print_copy (stderr, cp);
+}
+
+/* Print info about all copies into file F.  */
+static void
+print_copies (FILE *f)
+{
+  ira_copy_t cp;
+  ira_copy_iterator ci;
+
+  FOR_EACH_COPY (cp, ci)
+    print_copy (f, cp);
+}
+
+/* Print info about all copies into stderr.  */
+void
+ira_debug_copies (void)
+{
+  print_copies (stderr);
+}
+
 /* Print info about copies involving allocno A into file F.  */
 static void
 print_allocno_copies (FILE *f, ira_allocno_t a)
@@ -2409,6 +2443,8 @@ ira_build (bool loops_p)
   sort_conflict_id_allocno_map ();
   setup_min_max_conflict_allocno_ids ();
   ira_build_conflicts ();
+  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+    print_copies (ira_dump_file);
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     {
       int n, nr;

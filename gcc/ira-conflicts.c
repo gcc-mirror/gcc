@@ -371,8 +371,8 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
   cover_class = ALLOCNO_COVER_CLASS (a);
   if (! ira_class_subset_p[rclass][cover_class])
     return false;
-  if (reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode)
-      && only_regs_p)
+  if (only_regs_p && insn != NULL_RTX
+      && reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode))
     /* It is already taken into account in ira-costs.c.  */
     return false;
   index = ira_class_hard_reg_index[cover_class][hard_regno];
