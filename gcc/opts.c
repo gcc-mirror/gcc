@@ -1008,21 +1008,35 @@ decode_options (unsigned int argc, const char **argv)
 
   handle_options (argc, argv, lang_mask);
 
-  /* -fno-unit-at-a-time and -fno-toplevel-reorder handling.  */
+  /* Handle related options for unit-at-a-time, toplevel-reorder, and
+     section-anchors.  */
   if (!flag_unit_at_a_time)
     {
+      if (flag_section_anchors == 1)
+	error ("Section anchors must be disabled when unit-at-a-time "
+	       "is disabled.");
       flag_section_anchors = 0;
+      if (flag_toplevel_reorder == 1)
+	error ("Toplevel reorder must be disabled when unit-at-a-time "
+	       "is disabled.");
       flag_toplevel_reorder = 0;
     }
-  else if (!optimize && flag_toplevel_reorder == 2)
-    /* We disable toplevel reordering at -O0 to disable transformations that
-       might be surprising to end users and to get -fno-toplevel-reorder
-       tested, but we keep section anchors.  */
-    flag_toplevel_reorder = 0;
-  else if (!flag_toplevel_reorder)
+  if (!optimize)
+    {
+      /* Unless the user has asked for section anchors, we disable toplevel
+	 reordering at -O0 to disable transformations that might be surprising
+	 to end users and to get -fno-toplevel-reorder tested.  */
+      if (flag_toplevel_reorder == 2 && flag_section_anchors != 1)
+	{
+	  flag_toplevel_reorder = 0;
+	  flag_section_anchors = 0;
+	}
+    }
+  if (!flag_toplevel_reorder)
     {
       if (flag_section_anchors == 1)
-        error ("section anchors must be disabled when toplevel reorder is disabled");
+	error ("section anchors must be disabled when toplevel reorder"
+	       " is disabled");
       flag_section_anchors = 0;
     }
 

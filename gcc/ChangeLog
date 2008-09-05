@@ -1,3 +1,10 @@
+2008-09-05  Janis Johnson  <janis187@us.ibm.com>
+	    Samuel Tardieu  <sam@rfc1149.net>
+
+	PR target/37283
+	* opts.c (decode_options): Handle more relationships among
+	unit-at-a-time, toplevel-reorder, and section-anchors.
+
 2008-09-05  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi (--enable-reduced-reflection): Document new option.
