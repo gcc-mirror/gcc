@@ -1,3 +1,8 @@
+2008-09-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* s-stchop-rtems.adb: Add file missed in early commit.  Already
+	referenced in gcc-interface/Makefile.in.
+
 2008-08-30  Thomas Quinot  <quinot@adacore.com>
 
 	* gcc-interface/Make-lang.in: Allow s-oscons.{o,ali} to
