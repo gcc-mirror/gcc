@@ -1745,6 +1745,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag)
   if (equiv_flag)
     return MATCH_YES;
 
+  if (sym->ts.type == BT_UNKNOWN && gfc_peek_ascii_char () == '%'
+      && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
+    gfc_set_default_type (sym, 0, sym->ns);
+
   if (sym->ts.type != BT_DERIVED || gfc_match_char ('%') != MATCH_YES)
     goto check_substring;
 
@@ -2434,10 +2438,6 @@ gfc_match_rvalue (gfc_expr **result)
     {
     case FL_VARIABLE:
     variable:
-      if (sym->ts.type == BT_UNKNOWN && gfc_peek_ascii_char () == '%'
-	  && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
-	gfc_set_default_type (sym, 0, sym->ns);
-
       e = gfc_get_expr ();
 
       e->expr_type = EXPR_VARIABLE;
