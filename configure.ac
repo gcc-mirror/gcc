@@ -1364,7 +1364,7 @@ AC_SUBST(pplinc)
 
 
 # Check for CLOOG
-clooglibs=
+clooglibs=" -lcloog "
 clooginc=" -DCLOOG_PPL_BACKEND "
 
 AC_ARG_WITH(cloog, [  --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL package
