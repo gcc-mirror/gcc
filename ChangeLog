@@ -1,3 +1,8 @@
+2008-09-05  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Initialize clooglibs to -lcloog.
+	* configure: Re-generate.
+
 2008-09-04  Le-Chun Wu  <lcwu@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

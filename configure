@@ -4921,7 +4921,7 @@ fi
 
 
 # Check for CLOOG
-clooglibs=
+clooglibs=" -lcloog "
 clooginc=" -DCLOOG_PPL_BACKEND "
 
 
