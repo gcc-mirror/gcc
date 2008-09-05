@@ -16994,6 +16994,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 	    int *dynamic_check)
 {
   const struct stringop_algs * algs;
+  bool optimize_for_speed;
   /* Algorithms using the rep prefix want at least edi and ecx;
      additionally, memset wants eax and memcpy wants esi.  Don't
      consider such algorithms if the user has appropriated those
@@ -17008,7 +17009,16 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 			       && alg != rep_prefix_8_byte))
   const struct processor_costs *cost;
   
-  cost = optimize_insn_for_size_p () ? &ix86_size_cost : ix86_cost;
+  /* Even if the string operation call is cold, we still might spend a lot
+     of time processing large blocks.  */
+  if (optimize_function_for_size_p (cfun)
+      || (optimize_insn_for_size_p ()
+          && expected_size != -1 && expected_size < 256))
+    optimize_for_speed = false;
+  else
+    optimize_for_speed = true;
+
+  cost = optimize_for_speed ? ix86_cost : &ix86_size_cost;
 
   *dynamic_check = -1;
   if (memset)
@@ -17018,7 +17028,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
   if (stringop_alg != no_stringop && ALG_USABLE_P (stringop_alg))
     return stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
-  else if (optimize_insn_for_size_p ())
+  else if (!optimize_for_speed)
     {
       if (!count || (count & 3))
 	return rep_prefix_usable ? rep_prefix_1_byte : loop_1_byte;
