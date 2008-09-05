@@ -1,5 +1,6 @@
 /* Prototypes of target machine for GNU compiler for Xtensa.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -66,9 +67,10 @@ extern bool xtensa_output_addr_const_extra (FILE *, rtx);
 extern void xtensa_output_literal (FILE *, rtx, enum machine_mode, int);
 extern rtx xtensa_return_addr (int, rtx);
 extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
-extern enum reg_class xtensa_secondary_reload_class (enum reg_class,
-						     enum machine_mode, rtx,
-						     int);
+struct secondary_reload_info;
+extern enum reg_class xtensa_secondary_reload (bool, rtx, enum reg_class,
+					       enum machine_mode,
+					       struct secondary_reload_info *);
 extern void xtensa_initialize_trampoline (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 

@@ -216,6 +216,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN xtensa_expand_builtin
 
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD xtensa_secondary_reload
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -2840,22 +2843,23 @@ xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
 
 
 enum reg_class
-xtensa_secondary_reload_class (enum reg_class rclass,
-			       enum machine_mode mode ATTRIBUTE_UNUSED,
-			       rtx x, int isoutput)
+xtensa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+			 enum machine_mode mode, secondary_reload_info *sri)
 {
   int regno;
 
-  if (GET_CODE (x) == SIGN_EXTEND)
-    x = XEXP (x, 0);
-  regno = xt_true_regnum (x);
-
-  if (!isoutput)
+  if (in_p && constantpool_mem_p (x))
     {
-      if (rclass == FP_REGS && constantpool_mem_p (x))
+      if (rclass == FP_REGS)
 	return RL_REGS;
+
+      if (mode == QImode)
+	sri->icode = CODE_FOR_reloadqi_literal;
+      else if (mode == HImode)
+	sri->icode = CODE_FOR_reloadhi_literal;
     }
 
+  regno = xt_true_regnum (x);
   if (ACC_REG_P (regno))
     return ((rclass == GR_REGS || rclass == RL_REGS) ? NO_REGS : RL_REGS);
   if (rclass == ACC_REG)
