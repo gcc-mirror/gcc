@@ -1515,6 +1515,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	    }
 	  x = simplify_gen_subreg (recog_data.operand_mode[i], new_rtx,
 				   GET_MODE (new_rtx), SUBREG_BYTE (x));
+	  gcc_assert (x);
 	  break;
 
 	default:

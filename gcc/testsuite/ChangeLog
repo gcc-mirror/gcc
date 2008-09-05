@@ -1,3 +1,7 @@
+2008-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/20080903-1.c: New test.
+
 2008-09-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36746
