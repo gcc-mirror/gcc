@@ -1,3 +1,7 @@
+2008-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (decide_alg): Be more conservative about optimizing for size.
+
 2008-09-04  Ian Lance Taylor  <iant@google.com>
 
 	* varasm.c (narrowing_initializer_constant_valid_p): New

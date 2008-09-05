@@ -10,7 +10,7 @@ my_cold_memset (void *a, int b,int c)
 t(void *a,int b,int c)
 {
   if (a)
-    my_cold_memset (a,b,c);
+    my_cold_memset (a,b,40);
 }
 
 /* The IF conditional should be predicted as cold and my_cold_memset inlined
