@@ -1,5 +1,5 @@
 ;; Predicate definitions for Xtensa.
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -37,13 +37,17 @@
 ;; Non-immediate operand excluding the constant pool.
 (define_predicate "nonimmed_operand"
   (ior (and (match_operand 0 "memory_operand")
-	    (match_test "!constantpool_address_p (XEXP (op, 0))"))
+	    (match_test "!constantpool_mem_p (op)"))
        (match_operand 0 "register_operand")))
 
 ;; Memory operand excluding the constant pool.
 (define_predicate "mem_operand"
   (and (match_operand 0 "memory_operand")
-       (match_test "!constantpool_address_p (XEXP (op, 0))")))
+       (match_test "!constantpool_mem_p (op)")))
+
+;; Memory operand in the constant pool.
+(define_predicate "constantpool_operand"
+  (match_test "constantpool_mem_p (op)"))
 
 (define_predicate "mask_operand"
   (ior (and (match_code "const_int")
@@ -131,7 +135,9 @@
 (define_predicate "move_operand"
   (ior
      (ior (match_operand 0 "register_operand")
-	  (match_operand 0 "memory_operand"))
+	  (and (match_operand 0 "memory_operand")
+	       (match_test "!constantpool_mem_p (op)
+			    || GET_MODE_SIZE (mode) % UNITS_PER_WORD == 0")))
      (ior (and (match_code "const_int")
 	       (match_test "GET_MODE_CLASS (mode) == MODE_INT
 			    && xtensa_simm12b (INTVAL (op))"))

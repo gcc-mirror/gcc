@@ -508,12 +508,6 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS)				\
   xtensa_preferred_reload_class (X, CLASS, 1)
   
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  xtensa_secondary_reload_class (CLASS, MODE, X, 0)
-
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  xtensa_secondary_reload_class (CLASS, MODE, X, 1)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_UNITS(mode, size)						\

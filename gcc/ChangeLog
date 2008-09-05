@@ -1,3 +1,18 @@
+2008-09-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/predicates.md (nonimmed_operand, mem_operand): Use
+	constantpool_mem_p.
+	(constantpool_operand): New.
+	(move_operand): Disallow sub-word modes for the constant pool.
+	* config/xtensa/xtensa.c (TARGET_SECONDARY_RELOAD): Define.
+	(xtensa_secondary_reload_class): Replace with....
+	(xtensa_secondary_reload): this function.  Remove SIGN_EXTEND check. 
+	Set icode for sub-word reloads from the constant pool.
+	* config/xtensa/xtensa.h (SECONDARY_INPUT_RELOAD_CLASS): Delete.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Delete.
+	* config/xtensa/xtensa.md (reload<mode>_literal): New.
+	* config/xtensa/xtensa-protos.h: Update prototypes.
+	
 2008-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.h (enum reg_class): Add FRAME_REGS.
