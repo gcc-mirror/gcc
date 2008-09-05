@@ -1,3 +1,7 @@
+2008-09-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/t-rs6000: Remove target gt-rs6000.h.
+
 2008-09-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-conflicts.c (process_regs_for_copy): Check insn to check
