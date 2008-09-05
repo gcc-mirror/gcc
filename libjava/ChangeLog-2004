@@ -13210,7 +13210,7 @@
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c:
 	Likewise.
 
-2004-03-09  Kim Ho  <kho@redhat.com>
+2004-03-09  Kim Ho  <kho@redhat.com>
 
 	* java/awt/Container.java: (visitChild): Move
 	the x and y coordinate of the component rectangle
@@ -13386,7 +13386,7 @@
 	(setBackground): If c is null, inherit from closest ancestor whose
 	background color is set.
 
-2004-02-26  Kim Ho  <kho@redhat.com>
+2004-02-26  Kim Ho  <kho@redhat.com>
 
 	* Makefile.am: Add new files.
 	* Makefile.in: Re-generate.
@@ -13568,7 +13568,7 @@
 	(getMaximumSize): ditto.
 	(paintTicks): Use doubles to find the
 	tick location.
-	(paintHorizontalLabel):  Use preferredSize
+	(paintHorizontalLabel):  Use preferredSize
 	as initial width and height.
 	(paintVerticalLabel): ditto.
 
@@ -13653,7 +13653,7 @@
 	* javax/swing/plaf/basic/BasicLookAndFeel.java:
 	Added constant.
 
-2004-02-16  Kim Ho  <kho@redhat.com>
+2004-02-16  Kim Ho  <kho@redhat.com>
 
 	* javax/swing/JSlider.java: Fix indentation and comments.
 	(setModel): Remove null check to conform with Sun's.
@@ -13690,7 +13690,7 @@
 	(hide): Only do something if component is visible at the moment.
 	(reshape): If lightweight, erase old bounds and repaint new bounds.
 
-2004-02-13  Kim Ho  <kho@redhat.com>
+2004-02-13  Kim Ho  <kho@redhat.com>
 
 	* Makefile.am: Updated for new file.
 	* Makefile.in: Regenerated.

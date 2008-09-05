@@ -26,7 +26,7 @@ Fri Dec 31 19:10:31 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Makefile.in (dwarfout.o): Depend on frame.h
 	(dwarf2out.o): Likewise.
 
-1999-12-29  "Martin v. Loewis" <martin@loewis.home.cs.tu-berlin.de>
+1999-12-29  "Martin v. Löwis" <martin@loewis.home.cs.tu-berlin.de>
 
 	Restore i386 binary compatibility in Dwarf EH info.
 	* config/i386/i386.h (DWARF_FRAME_REGISTERS): Define as 17, the old
@@ -15712,7 +15712,7 @@ Wed Apr 14 11:28:34 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* config/i386/i386.c (memory_address_length): Add missing parenthesis.
 
-Wed Apr 14 13:59:27 1999  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Wed Apr 14 13:59:27 1999  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* extend.texi (Deprecated Features): New node.
 	* invoke.texi (-Wdeprecated): Document.

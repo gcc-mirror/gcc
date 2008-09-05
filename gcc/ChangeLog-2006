@@ -7446,7 +7446,7 @@
 
 	* config/xtensa/lib1funcs.asm: Use C-style comments.
 
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23 Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* tree.c (local_define_builtin): Replace calls to
 	lang_hooks.builtin_function with add_builtin_function.
@@ -18422,7 +18422,7 @@
 	(dump_decl_name): Do not walk the decl tree chains.
 	* tree-pass.h (TDF_CHAIN): Remove.
 
-2006-02-20  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2006-02-20  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Makefile.in (C): Remove
 	(PROTO): Remove
@@ -18982,7 +18982,7 @@
 	* opts.c (common_handle_option): Free new_option pointer.
 	* df-core.c (df_analyze): Free postorder pointer.
 
-2006-02-15  Rafael ¡vila de EspÌndola <rafael.espindola@gmail.com>
+2006-02-15  Rafael √Åvila de Esp√≠ndola <rafael.espindola@gmail.com>
 
 	* Makefile.in: Fix the examples about the use of stamps
 
@@ -22671,7 +22671,7 @@
 	* basic-block.h: Remove the prototype for
 	partition_hot_cold_basic_blocks.
 
-2006-01-16  Rafael √vila de Esp√ÔøΩ≠ndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael √Åvila de Esp√ÔøΩ≠ndola <rafael.espindola@gmail.com>
 
 	* cppspec.c (lang_specific_spec_functions): Remove.
 	* gcc.c (lookup_spec_function): Use static_spec_functions directly.

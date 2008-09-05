@@ -11758,7 +11758,7 @@ PR ada/10768
 	POINTER_PLUS_EXPR's operands.
 	When adding an offset to a pointer, use POINTER_PLUS_EXPR.
 
-2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+2007-06-11  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* trans.c (Attribute_to_gnu): Use signed_or_unsigned_type_for instead
 	of get_signed_or_unsigned_type.
@@ -14424,7 +14424,7 @@ PR ada/10768
 
 	* misc.c (enumerate_modes): Consider log2_b to always be one.
 
-2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-14  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* misc.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
 
@@ -16244,7 +16244,7 @@ PR ada/10768
 	(Print_Name,Print_Node): Make these debug printouts more robust: print
 	"no such..." instead of crashing on bad input.
 
-2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+2007-03-30  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* trans.c (Attribute_to_gnu): Use get_signed_or_unsigned_type
 	instead of gnat_signed_or_unsigned_type.
@@ -18939,7 +18939,7 @@ PR ada/10768
 
 	* fe.h: Remove redundant declarations.
 
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23 Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* utils.c (builtin_function): Rename to gnat_builtin_function.
 	Move common code to add_builtin_function.
@@ -19090,7 +19090,7 @@ PR ada/10768
 	* utils.c (create_var_decl): Use have_global_bss_p when deciding
 	whether to make the decl common.
 
-2006-02-20  Rafael �vila de Esp�ndola  <rafael.espindola@gmail.com>
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (Ada): Remove.
 	(.PHONY): Remove Ada
@@ -21548,11 +21548,11 @@ PR ada/10768
 
 	* s-bitops.adb: Clarify comment for Bits_Array
 
-2005-12-07  Rafael �vila de Esp�ndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (ada.install-normal): Remove.
 
-2005-12-07  Rafael �vila de Esp�ndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype.
 

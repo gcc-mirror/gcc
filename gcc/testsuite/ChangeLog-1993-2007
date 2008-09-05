@@ -1794,7 +1794,7 @@
 	* gcc.dg/vect/vect-ifcvt-16.c: Likewise.
 	* gcc.dg/vect/vect-ifcvt-17.c: Likewise.
 
-2007-10-31  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-10-31  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33941
@@ -2010,7 +2010,7 @@
 	PR c++/30659
 	* g++.dg/template/crash71.C: New.
 
-2007-10-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-28  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/32147
 	* gfortran.dg/module_md5_1.f90: Update hash-value.
@@ -2469,7 +2469,7 @@
 
 	* gfortran.dg/bounds_check_10.f90: Fix testcase.
 
-2007-10-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33254
@@ -2611,7 +2611,7 @@
 	PR tree-optimization/33572
 	* g++.dg/torture/pr33572.C: Replace with complete test.
 
-2007-10-08  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-08  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33689
 	* gfortran.dg/spec_expr_5.f90: New.
@@ -2643,7 +2643,7 @@
 	PR libfortran/33683
 	* gfortran.dg/gamma_5.f90:  New test case
 
-2007-10-07  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-07  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/20851
 	* initialization_1.f90: Fix dg-error annotations.
@@ -2680,7 +2680,7 @@
 	PR tree-optimization/33572
 	* g++.dg/torture/pr33572.C: New.
 
-2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-06  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/25076
 	* gfortran.dg/forall_11.f90: New.
@@ -2740,7 +2740,7 @@
 	PR tree-optimization/33627
 	* g++.dg/torture/pr33627.C: New testcase.
 
-2007-10-04  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-04  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33626
 	* gfortran.dg/parens_6.f90: New.
@@ -2780,7 +2780,7 @@
 	* gfortran.dg/default_format_1.f90: XFAIL on ppc-darwin.
 	* gfortran.dg/default_format_2.f90: XFAIL on ppc-darwin.
 
-2007-10-03  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-03  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33198
 	* gfortran.dg/common_errors_1.f90: New.
@@ -2901,7 +2901,7 @@
 	* gcc.target/i386/sse5-convert.c: Fix target selector and rename to...
 	* gcc.target/i386/pr33524.c: ...this.
 
-2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-28  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33354
 	* gfortran.dg/minmaxloc_4.f90: New.
@@ -2943,7 +2943,7 @@
 	PR middle-end/7003
 	* gcc.target/powerpc/gcse-1.c: New test.
 
-2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-27  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/array_initializer_3.f90: Adapt error annotations for
 	fixed capitalizations.
@@ -3045,7 +3045,7 @@
 	PR c++/14688
 	* g++.dg/inherit/override_attribs.C: New file.
 
-2007-09-23  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-23  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33269
 	* io.c (check_format_string): Move NULL and constant checks into
@@ -3471,7 +3471,7 @@
 	* gcc.dg/sibcall-4.c: As for gcc.dg/sibcall-3.c.
 	* gcc.dg/tree-ssa/ssa-fre-3.c: Require !mips64.
 
-2007-09-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-20  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/g77/19981216-0.f: Remove dg-warning annotation.
 	* gfortran.dg/io_constraints_1.f90: Make a -std=f95 test.  Add
@@ -4644,7 +4644,7 @@
 	* gcc.target/cris/builtin_clz_v0.c: New testcase.
 	* gcc.target/cris/builtin_clz_v3.c: New testcase.
 
-2007-09-02  Tobias Schlüuter  <tobi@gcc.gnu.org>
+2007-09-02  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/substr_6.f90: New test.
 
@@ -4851,7 +4851,7 @@
 	PR c++/32596
 	* g++.dg/ext/visibility/anon5.C: New test.
 
-2007-08-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-08-28  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/gamma_4.f90: Fix large-real kind selection.
 
@@ -6115,7 +6115,7 @@
 	* gcc.dg/torture/pr30364-2.c (f)(main): Likewise.
 	* gcc.dg/torture/pr30364-3.c (f)(main): Likewise.
 
-2007-07-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-07-27  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/operator_3.f90: Fix dg directive.
 	* gfortran.dg/min_max_conformance.f90: Fix dg directive.
@@ -6308,7 +6308,7 @@
 	PR fortran/30814
 	* gfortran.dg/pack_bounds_1.f90:  New test case.
 
-2007-07-23  Daniel Franke  <franke.daniel@gmail.com>
+2007-07-23  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31639
 	* gfortran.dg/initialization_9.f90: New test.
@@ -6861,7 +6861,7 @@
 	* gcc.target/m68k/interrupt_thread-2.c: Likewise.
 	* gcc.target/m68k/interrupt_thread-3.c: Likewise.
 	
-2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
+2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31639
 	* gfortran.dg/func_decl_4.f90: New test.
@@ -8393,7 +8393,7 @@
 
 	* gcc.dg/tree-ssa/prefetch-6.c: New test.
 
-2007-05-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-05-29  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/sizeof.f90: New.
 
@@ -9098,7 +9098,7 @@
 	* transfer_simplify_1.f90: New test.
 	* transfer_simplify_2.f90: New test.
 
-2007-05-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-05-15  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/unf_io_convert_3.f90: Fix dg directive.
 
@@ -9131,7 +9131,7 @@
 	gcc.target/m68k/interrupt_thread-3.c: New.
 	* gcc.target/m68k/m68k.exp: Accept fido.
 
-2007-05-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-05-13  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/alloc_comp_basics_1.f90: Fix dg directive.
 	* gfortran.dg/altreturn_3.f90: Likewise.
@@ -9226,7 +9226,7 @@
 	PR tree-optimization/31885
 	* gcc.dg/tree-ssa/loop-29.c: New test.
 
-2007-05-10 Dominique d'Humières <dominiq@lps.ens.fr>
+2007-05-10 Dominique d'HumiÃ¨res <dominiq@lps.ens.fr>
 
 	* assumed_dummy_1.f90: Fix dg directive.
 	* char_initialiser_actual.f90: Likewise.
@@ -9900,7 +9900,7 @@
 
 	* gcc.dg/cpp/_Pragma6.c: Skip on fido-*-* and m68k-*-*.
 
-2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-17  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31144
 	* gfortran.dg/module_naming_1.f90: New.
@@ -10003,7 +10003,7 @@
 	PR fortran/31550
 	* gfortran.dg/used_types_16.f90: New test.
 
-2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/18937
 	* gfortran.dg/goto_2.f90: New.
@@ -10033,7 +10033,7 @@
 	* gfortran.dg/c_by_val.c: Use GCC extensions instead of including
 	<complex.h>.
 
-2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-12  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31250
 	* gfortran.dg/char_length_2.f90: New.
@@ -10601,7 +10601,7 @@
 	PR fortran/31193
 	* gfortran.dg/transfer_array_intrinsic_3.f90: New test.
 
-2007-03-22  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-22  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/20897
 	* gfortran.dg/derived_name_1.f90: New.
@@ -11765,7 +11765,7 @@
 	* gcc.target/ia64/builtin-popcount-1.c: New test case.
 	* gcc.target/ia64/builtin-popcount-2.c: Likewise.
 
-2007-02-11  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-02-11  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/30478
 	* gfortran.dg/enum_4.f90: Update error message checks.
@@ -13019,7 +13019,7 @@
 	PR target/29248
 	* gcc.dg/rs6000-leaf.c: New.
 
-2006-12-20  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-20  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25392
 	* gfortran.dg/f2c_8.f90: New test.
@@ -13342,7 +13342,7 @@
 	* gcc.c-torture/compile/vector-2.c: New test.
 	* gcc.c-torture/compile/vector-3.c: New test.
 
-2006-12-12  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-12  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/fortran-torture.exp: Update copyright years.  Remove
 	obsolete comment.  Test -ftree-vectorize where it makes sense.
@@ -17138,7 +17138,7 @@
 
 	* gnat.dg/string_slice.adb: New test.
 
-2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-07-01  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19259
 	* gfortran.dg/semicolon_fixed.c: New.
@@ -18417,7 +18417,7 @@
 	PR tree-optimization/27409
 	* gcc.dg/torture/pr27409.c: New testcase.
 
-2006-05-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-05-07  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/27457
 	* gfortran.dg/select_6.f90: New.
@@ -19966,7 +19966,7 @@
 	PR fortran/25045
 	* optional_dim.f90: New test.
 
-2006-02-14  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-14  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/26277
 	* gfortran.dg/label_4.f90: New.
@@ -20056,7 +20056,7 @@
 
 	gfortran.dg/null_1.f90: New test.
 
-2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-10  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14771
 	* gfortran.dg/parens_4.f90: New.
@@ -20066,7 +20066,7 @@
 
 	* gcc.dg/pr23372-1.c: Remove empty file.
 
-2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-09  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/14771
@@ -20160,7 +20160,7 @@
 	* gcc.dg/gomp/critical-3.c: Call cleanup-tree-dump.
 	* gcc.dg/tree-ssa/pr23382.c: Ditto.
 
-2006-02-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-07  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25577
 	* gfortran.dg/mvbits_1.f90: New.
@@ -20580,7 +20580,7 @@
 	* gcc.target/i386/20060125-1.c: New test case.
 	* gcc.target/i386/20060125-2.c: New test case.
 
-2006-01-25  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-25  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
 	* gfortran.dg/goto_1.f: New.
@@ -56925,7 +56925,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/labels-2.c: New test.
 
-1999-12-27  Martin von LÃ¯Â¿Â½is  <loewis@informatik.hu-berlin.de>
+1999-12-27  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.c-torture/execute/991227-1.c: New test.
 
@@ -56933,7 +56933,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g++.old-deja/g++.pt/instantiate6.C: Remove excess errors XFAIL.
 
-1999-12-21  Martin von LÃ¯Â¿Â½is  <loewis@informatik.hu-berlin.de>
+1999-12-21  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.c-torture/execute/991221-1.c: New test.
 
@@ -58515,7 +58515,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g77.f-torture/execute/970816-3.f: New test from Craig.
 
-1998-07-10 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+1998-07-10 Martin von LÃ¶wis <martin@mira.isdn.cs.tu-berlin.de>
 
 	*  g++.other/singleton.C: Return error value instead of taking
 	SIGSEGV.
@@ -58525,7 +58525,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	*  g++.other/singleton.C: New test.  Warning is under dispute.
 	Runtime crash is not.
 
-1998-07-09  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+1998-07-09  Martin von LÃ¶wis <martin@mira.isdn.cs.tu-berlin.de>
 
 	* g++.ns/{alias2.C, alias5.C, koenig4.C, lookup3.C ns13.C,
 	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C,

@@ -653,7 +653,7 @@
 	* texi2pod.pl: Handle @include, @ftable, @vtable.
 	Reformat some code for clarity.
 
-2002-02-24  Christian Jönsson  <c.christian.joensson@telia.com>
+2002-02-24  Christian JÃ¶nsson  <c.christian.joensson@telia.com>
 
 	* test_summary: Additional to XPASS and FAIL, add UNRESOLVED,
 	WARNING and ERROR output from the *.sum files.
@@ -1058,7 +1058,7 @@ Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
 
 	* gcc_update: Allow patches compressed by bzip2.
 
-1999-10-11  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+1999-10-11  Martin v. LÃ¶wis <loewis@informatik.hu-berlin.de>
 
 	* newcvsroot: New file.
 

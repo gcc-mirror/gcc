@@ -2665,7 +2665,7 @@
 	* bits/sbuf_iter.h (istreambuf_iterator::operator++()): Fix.
 	* testsuite/27/27istringstream_formatted.cc: Add.
 
-1999-04-16  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+1999-04-16  Martin v. Löwis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* src/basic_file.cc (__basic_file::open): Fix thinko in
 	_G_HAVE_IO_FILE_OPEN bits.

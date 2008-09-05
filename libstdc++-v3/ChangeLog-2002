@@ -5109,7 +5109,7 @@
 	* config/os/bsd/freebsd/bits/ctype_noninline.h: Same.
 	* config/os/aix/bits/ctype_noninline.h: Same.
 
-	Testcase by Dietmar Kühl via Peter Schmid
+	Testcase by Dietmar KÃ¼hl via Peter Schmid
 	* testsuite/22_locale/ctype_members_char.cc (char>): Add test for
 	classic_table().
 

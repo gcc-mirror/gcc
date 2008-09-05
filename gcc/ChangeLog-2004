@@ -20647,7 +20647,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√©  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

@@ -4589,7 +4589,7 @@
 	* testsuite/ext/allocators.cc: Fixup.
 
 2003-06-11  Stefan Olsson  <stefan@snon.net>
-	    Ola R�nnerup  <fnolis@home.se>
+	    Ola Rönnerup  <fnolis@home.se>
 
 	* include/Makefile.am (ext_headers): Add.
 	* include/Makefile.in: Regenerate.
@@ -5515,7 +5515,7 @@
 
 2003-04-29 Joel Sherrill  <joel.sherrill@OARcorp.com>
 	   Loren J. Rittle <ljrittle@acm.org>
-	   Martin v. Loewis  <martin@v.loewis.de>
+	   Martin v. Löwis  <martin@v.loewis.de>
 
 	* config/cpu/i386/atomicity.h: New file.
 

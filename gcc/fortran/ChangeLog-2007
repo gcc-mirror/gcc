@@ -870,7 +870,7 @@
 	(gfc_dep_resolver): Correct the logic for substrings so that
 	overlapping arrays are handled correctly.
 
-2007-10-28  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-28  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/32147
 	* module.c (write_symbol): Fix whitespace.
@@ -985,7 +985,7 @@
 	namespaces and start search for symbol in current namespace.
 
 2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
-	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Dominique d'Humi√®res  <dominiq@lps.ens.fr>
 
 	PR fortran/33733
 	* simplify.c (gfc_simplify_transfer): Return null if the source
@@ -1028,7 +1028,7 @@
 	* resolve.c (check_dimension): Fix dimension-type switch;
 	improve error message.
 
-2007-10-13  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-13  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33254
@@ -1055,7 +1055,7 @@
 	PR fortran/33636
 	* expr.c (find_array_section): Check for constructor constantness.
 
-2007-10-08  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-08  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/33689
 	* resolve.c (gfc_resolve_expr): Fix indentation.
@@ -1069,7 +1069,7 @@
 	* mathbuiltins.def (GAMMA):  Change function name to
 	"tgamma" instad of "gamma".
 
-2007-10-07  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-07  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/20851
 	* expr.c (check_inquiry): Typo fix in error message.
@@ -1085,11 +1085,11 @@
 	* simplify.c (range_check): Return gfc_bad_expr if incoming expression 
 	is NULL.
 
-2007-10-06  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-06  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	* simplify.c (gfc_simplify_size): Fix typo.
 
-2007-10-06  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-06  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/25076
 	* resolve.c (gfc_find_forall_index): Move towards top,
@@ -1148,7 +1148,7 @@
 	* gfortran.h (gfc_linebuf): Add dbg_emitted field.
 	(gfc_define_undef_line): New prototype.
 
-2007-10-04  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-04  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/33626
 	* resolve.c (resolve_operator): Always copy the type for
@@ -1166,7 +1166,7 @@
 	* trans-decl.c (build_function_decl): Set "externally_visible"
 	attribute on the MAIN program decl.
 
-2007-10-03  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-10-03  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/33198
 	* resolve.c (has_default_initializer): Move to top.  Make bool.
@@ -1239,7 +1239,7 @@
 
 	* module.c (mio_expr): Avoid -Wcast-qual warning.
 
-2007-09-27  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-09-27  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	* arith.c (reduce_binary_aa): Fix capitalization.
 	* check.c (gfc_check_dot_product): Likewise.
@@ -1264,7 +1264,7 @@
 	PR fortran/30780
 	* invoke.texi: Add note to -ffpe-trap option. Fix typos.
 
-2007-09-23  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-09-23  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	PR fortran/33269
 	* io.c (check_format_string): Move NULL and constant checks into
@@ -1373,7 +1373,7 @@
 	reduce_binary_aa): Call ourselves recursively if an element of
 	the constructor is itself a constant array.
 
-2007-09-20  Tobias Schl¸ter  <tobi@gcc.gnu.org>
+2007-09-20  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	* io.c (resolve_tag_format): New function using code split out
 	and simplified from ...
@@ -1663,7 +1663,7 @@
 	* match.c (gfc_match_strings): Delete unused function.
 	* match.h (gfc_match_strings): Delete prototype.
 
-2007-09-02  Tobias Schl¸uter  <tobi@gcc.gnu.org>
+2007-09-02  Tobias Schl√ºter  <tobi@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_char_const): New function.
 	(gfc_show_expr): Use it.
@@ -1879,7 +1879,7 @@
 	runtime error checking.
 
 2007-08-22  Roger Sayle  <roger@eyesopen.com>
-	    Tobias Schl¸ter <tobias.schlueter@physik.uni-muenchen.de>
+	    Tobias Schl√ºter <tobias.schlueter@physik.uni-muenchen.de>
 
 	* match.c (intrinsic_operators): Delete.
 	(gfc_match_intrinsic_op): Rewrite matcher to avoid calling
@@ -2897,7 +2897,7 @@
 	dummy arguments, tell middle-end not to emit additional warnings.
 
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
-	    Tobias Schl¸ter <tobias.schlueter@physik.uni-muenchen.de>
+	    Tobias Schl√ºter <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17711
 	* gfortran.h (gfc_intrinsic_op): Added INTRINSIC_EQ_OS,
@@ -3430,7 +3430,7 @@
 	the total offset to the field.
 	* target-memory.h : Add prototype for gfc_merge_initializers.
 
-2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+2007-06-11  Rafael √Åvila de Esp√≠ndola  <espindola@google.com>
 
 	* trans-types.c (gfc_signed_type): Remove.
 	* trans-types.h (gfc_signed_type): Remove.
@@ -3839,7 +3839,7 @@
 	* trans-expr.c (gfc_conv_substring): Evaluate substring bounds
 	only once.
 
-2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-14  Rafael √Åvila de Esp√≠ndola  <espindola@google.com>
 
 	* f95-lang.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Use unsigned_type_for
@@ -4392,7 +4392,7 @@
 	* gfortran.texi: Add a section for the %VAL, %REF and %LOC
 	extensions.
 
-2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+2007-03-30  Rafael √Åvila de Esp√≠ndola  <espindola@google.com>
 
 	* trans-types.c (gfc_signed_or_unsigned_type): Remove.
 	(gfc_unsigned_type): Use get_signed_or_unsigned_type instead of

@@ -21,7 +21,7 @@
 	PR fortran/25587
 	* trans-io.c (gfc_build_st_parameter): Correct off by one error.
 
-2005-12-28  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-28  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove distdir from comment.
 
@@ -399,11 +399,11 @@
 	as actual arguments to ASSOCIATED.  Moved a misplaced
 	comment.
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (fortran.all.build, fortran.install-normal): Remove.
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype, except for
 	gt-fortran-trans.h.

@@ -181,7 +181,7 @@
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
-2008-05-14  Rafael Espindola  <espindola@google.com>
+2008-05-14  Rafael Espíndola  <espindola@google.com>
 
 	* config-ml.in: don't handle --enable-shared and --enable-static.
 
@@ -1844,7 +1844,7 @@
 	* MAINTAINERS (Write After Approval):  Remove myself.
 	(Language Front End Maintainers):  Add myself as fortran 95 maintainer.
 
-2006-02-21  Rafael Avila de Espindola <rafael.espindola@gmail.com>
+2006-02-21  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
 	* Makefile.tpl  (BUILD_CONFIGDIRS): Remove.
 	(TARGET_CONFIGDIRS): Remove.
@@ -3755,7 +3755,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias Schl���¼ter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
@@ -7670,7 +7670,7 @@ Thu Apr  6 16:15:14 2000  Philippe De Muyter  <phdm@macqel.be>
 	* MAINTAINERS: Added myself.
 
 2000-04-05  Benjamin Kosnik  <bkoz@cygnus.com>
-	    Martin v. Loewis  <martin@loewis.home.cs.tu-berlin.de>
+	    Martin v. Löwis  <martin@loewis.home.cs.tu-berlin.de>
 
 	* configure.in (enable_libstdcxx_v3): Add.
 	(target_libs): Add bits here to switch between libstdc++-v2 and

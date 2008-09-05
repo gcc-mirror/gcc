@@ -50,7 +50,7 @@
 
 	* Make-lang.in: Add dummy lang.install-pdf target.
 
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23 Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* objcp-decl.h (objcp_builtin_function): Remove.
 
@@ -82,7 +82,7 @@
 	* Make-lang.in (objcp/objcp-decl.o): Add dependency on
 	$(TARGET_H).
 
-2006-02-20 Rafael ¡vila de EspÌndola <rafael.espindola@gmail.com>
+2006-02-20 Rafael √Åvila de Esp√≠ndola <rafael.espindola@gmail.com>
 
 	* Make-lang.in (OBJ-C++): Remove
 	(.PHONY): Remove Obj-c++ and obj-C++. Add obj-c++
@@ -91,11 +91,11 @@
 
 	* Make-lang.in (objcp/objcp-decl.o): Add depends on $(EXPR_H).
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (obj-c++.all.build, obj-c++.install-normal): Remove.
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype.
 
