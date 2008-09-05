@@ -588,6 +588,8 @@ AWK = @AWK@
 BACKTRACESPEC = @BACKTRACESPEC@
 BUILD_ECJ1_FALSE = @BUILD_ECJ1_FALSE@
 BUILD_ECJ1_TRUE = @BUILD_ECJ1_TRUE@
+BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE = @BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@
+BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE = @BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE@
 BUILD_VERSION = @BUILD_VERSION@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -936,6 +938,8 @@ AM_GCJFLAGS = \
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_7)
 @SUPPRESS_LIBGCJ_BC_FALSE@LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 @SUPPRESS_LIBGCJ_BC_TRUE@LIBGCJ_BC_FLAGS = 
+@BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@LIBGCJ_REDUCED_REFLECTION_FLAGS = 
+@BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE@LIBGCJ_REDUCED_REFLECTION_FLAGS = -freduced-reflection
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
@@ -10392,8 +10396,13 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 	$(lib_gnu_awt_xlib_la_LINK) -objectlist lib_gnu_awt_xlib.objectlist \
 	-rpath $(toolexeclibdir) $(lib_gnu_awt_xlib_la_LDFLAGS) $(LIBS)
 
+# Concurrent things use reflection internally.
+java/util/concurrent.lo \
+java/util/concurrent/atomic.lo \
+java/util/concurrent/locks.lo: LIBGCJ_REDUCED_REFLECTION_FLAGS =
+
 %.lo: %.list
-	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(here)/classpath/lib/classes -MT $@ -MD -MP -MF $(basename $@).deps @$<
+	$(LTGCJCOMPILE) $(LIBGCJ_REDUCED_REFLECTION_FLAGS) -c -o $@ -fsource-filename=$(here)/classpath/lib/classes -MT $@ -MD -MP -MF $(basename $@).deps @$<
 
 java/lang/Object.lo: classpath/lib/java/lang/Object.class
 	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(srcdir)/$(basename $@).java $<
