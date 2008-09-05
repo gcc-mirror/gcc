@@ -458,7 +458,7 @@
 	* typeck.c (build_binary_op): Duplicate warning message
 	for better translation.
 
-2006-10-23  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* decl.c (builtin_function_1): Move common code to
 	add_builtin_function.
@@ -2846,7 +2846,7 @@
 	* decl.c (grok_op_properties): Check for ellipsis in arguments of
 	operators.
 
-2006-02-20  Rafael �vila de Esp�ndola  <rafael.espindola@gmail.com>
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (C++): Remove.
 	(.PHONY): Remove C++.
@@ -3336,7 +3336,7 @@
 	(cp_parser_asm_definition): Call cgraph_add_asm_node rather than
 	assemble_asm.
 
-2006-01-16  Rafael �ila de Esp�dola  <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* g++spec.c (lang_specific_spec_functions): Remove.
 

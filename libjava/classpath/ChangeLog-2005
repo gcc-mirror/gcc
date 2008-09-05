@@ -4439,7 +4439,7 @@
 
 2005-11-09  Mark Wielaard  <mark@klomp.org>
 
-	Reported by Petteri Räty <betelgeuse@gentoo.org>
+	Reported by Petteri RÃ¤ty <betelgeuse@gentoo.org>
 	* INSTALL: Remove double --enable-xmlj entry.
 
 2005-11-09  Anthony Balkissoon  <abalkiss@redhat.com>

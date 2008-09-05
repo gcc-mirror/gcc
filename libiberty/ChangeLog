@@ -4901,7 +4901,7 @@ Thu Oct  8 23:42:08 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge egcs & devo libiberty.
 
-1998-09-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-09-08  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cplus-dem.c (demangle_arm_pt): Demangle anonymous namespaces.
 

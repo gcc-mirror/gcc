@@ -7626,7 +7626,7 @@ Thu Aug 13 17:08:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* tree.c (get_file_function_name_long): Split out...
 	(get_file_function_name): ...from here.
 
-Thu Aug 13 16:09:53 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Thu Aug 13 16:09:53 1998  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* expr.c (safe_from_p): Change code to ERROR_MARK only when not
 	accessing nodes.
@@ -11595,7 +11595,7 @@ Thu May 21 23:09:50 1998  Jeffrey A Law  (law@cygnus.com)
 	* alias.c (rtx_equal_for_memref_p): Handle SCRATCH as a memory
 	address.
 
-Thu May 21 20:18:13 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Thu May 21 20:18:13 1998  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* Makefile.in (TREE_H): Add tree-check.h.
 	(tree-check.h, gencheck): New targets.
@@ -12506,7 +12506,7 @@ Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 	(REG_N_CHANGES_SIZE, REG_N_CALLS_CROSSED, REG_LIVE_LENGTH): Likewise.
 	(REGNO_FIRST_UID, REGNO_LAST_UID, REGNO_LAST_NOTE_UID): Likewise.
 
-Wed May 13 12:54:19 1998  Martin von Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+Wed May 13 12:54:19 1998  Martin von Löwis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* acconfig.h (ENABLE_CHECKING): Undefine.
 	* configure.in (--enable-checking): New option.
@@ -14684,7 +14684,7 @@ Tue Mar 24 12:13:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* genpeep.c: Likewise.
 	* genrecog.c: Likewise.
 
-1998-03-24  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1998-03-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* c-lang.c (lang_print_xnode): New function.
 	* objc/objc-act.c (lang_print_xnode): Likewise.
@@ -16061,7 +16061,7 @@ Sat Feb 14 02:02:41 1998  Jeffrey A Law  (law@cygnus.com)
 	* varasm.c (assemble_string): Similarly for 'i'.
 	* i386.h (LEGITIMIZE_ADDRESS): Similarly for 'orig_x'.
 
-1998-02-13  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1998-02-13  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* c-lang.c (lang_print_xnode): New function.
 	* objc/objc-act.c (lang_print_xnode): Likewise.

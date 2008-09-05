@@ -42,7 +42,7 @@
 	PR objc++/36723
 	* objc-act.c (objc_build_constructor): Update C++ tweak.
 
-2007-07-14  Rafael Avila de Espindola  <espindola@google.com>
+2007-07-14  Rafael √Åvila de Esp√≠ndola  <espindola@google.com>
 
 	* objc-act.c (synth_module_prologue): Use TREE_NO_WARNING instead
 	of DECL_IN_SYSTEM_HEADER.
@@ -175,7 +175,7 @@
 	* objc-act.c (objc_finish_file): Remove ifdef clause for OBJCPLUS and
 	content where we called cp_finish_file.
 
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23 Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* objc-act.c (synth_module_prologue): Replace calls to
 	builtin_function with add_builtin_function.
@@ -228,7 +228,7 @@
 	module descriptor.
 	(gen_type_name_0): Fix ICE when issuing warning.
 
-2006-02-20 Rafael ¡vila de EspÌndola <rafael.espindola@gmail.com>
+2006-02-20 Rafael √Åvila de Esp√≠ndola <rafael.espindola@gmail.com>
 	* Make-lang.in (OBJC): Remove
 	(OBJECTIVE-C): Remove
 	(objective-c): Remove
@@ -245,11 +245,11 @@
 	PR objc/25348
 	* objc-act.c (encode_array): Handle arrays to zero sized types.
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (objc.all.build, objc.install-normal): Remove.
 
-2005-12-07  Rafael ¡vila de EspÌndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype.
 

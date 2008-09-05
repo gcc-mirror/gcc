@@ -914,7 +914,7 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 	* semantics.c (begin_new_placement): Remove.
 	(finish_new_placement): Likewise.
 
-1999-11-05  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1999-11-05  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK): New macro.
 	(DECL_TEMPLATE_INFO): Use it.
@@ -1714,7 +1714,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* typeck.c (mark_addressable): Addressed variables are implicitly
 	used.
 
-1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1999-09-23  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK): New macro.
 	(RECORD_OR_UNION_TYPE_CHECK, LANG_IDENTIFIER_CAST): Likewise.
@@ -1733,7 +1733,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* decl.c (init_decl_processing): If -fshort-wchar, use 'short unsigned
 	int' for wchar_t.
 
-1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1999-09-23  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* ir.texi: Fix formatting errors and typos.
 
@@ -1769,7 +1769,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* decl2.c (lang_decode_option): Adjust, in the wake of recent
 	changes to option processing.
 
-1999-09-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1999-09-21  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (get_member_function_from_ptrfunc): Allow extraction of
 	function pointer from pmfs with no object given.
@@ -1922,7 +1922,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(cp_finish_decl): Adjust call to layout_var_decl.
 	* pt.c (tsubst_expr): Make sure to initialize stmt before using it.
 
-1999-09-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1999-09-18  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (get_member_function_from_ptrfunc): Always consider
 	virtuality inside member pointer.
@@ -3751,11 +3751,11 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(build_functional_cast): Likewise.
 	* xref.c (GNU_xref_decl): Likewise.
 
-1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+1999-08-10  Martin v. LÃ¶wis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* lex.c (do_identifier): Remove unnecessary lookup of class field.
 
-1999-08-09  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+1999-08-09  Martin v. LÃ¶wis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* decl2.c (set_decl_namespace): Do not complain about non-matching
 	decls if processing a template.
@@ -4559,7 +4559,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	maybe_push_cache_obstack.
 	* search.c (push_class_decls): Likewise.
 
-1999-06-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-06-14  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* pt.c (tsubst_friend_function): Push into namespace of friend
 	function before pushdecl'ing it.
@@ -4972,7 +4972,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* pt.c (check_explicit_specialization): Improve error messages.
 
-1999-05-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-05-04  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (string_conv_p): Use same_type_p to check whether we
 	try to convert between char and wchar_t.
@@ -4989,7 +4989,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* typeck.c (build_const_cast): Tighten checks for legality.
 
-1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-05-02  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* init.c (build_member_call): Lookup names coming from
 	namespace-scoped LOOKUP_EXPR.
@@ -4998,7 +4998,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* gxxint.texi: Add documentation for 'I'.
 
-1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-05-02  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* tinfo.cc (operator==): Qualify type_info with std::.
 
@@ -5391,7 +5391,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	* typeck.c (build_unary_op): Handle taking the address of a unique
 	bound non-static member function.
 
-1999-04-13  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1999-04-13  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* lang-options.h (-Wdeprecated): New flag.
 	* decl2.c (warn_deprecated): New flag.
@@ -5833,7 +5833,7 @@ Fri Mar 26 10:20:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(GNU_xref_end_scope, GNU_xref_ref, GNU_xref_decl, GNU_xref_call,
 	gen_assign, GNU_xref_member): Const-ify a char*.
 
-1999-03-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-25  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* gxxint.texi: Remove old discussion on copying virtual bases.
 
@@ -5866,7 +5866,7 @@ Fri Mar 26 10:20:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* lex.c (do_identifier): If we got error_mark_node, call
 	lookup_name again.
 
-1999-03-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-24  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* class.c (finish_struct_1): Always reset TYPE_FIELDS for empty
 	classes.
@@ -5984,7 +5984,7 @@ Fri Mar 26 10:20:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* Make-lang.in: ($(INTL_TARGETS)): Depend on cp/parse.c.
 	($(srcdir)/cp/parse.c): Moved from ../Makefile.in.
 
-1999-03-17  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-17  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (named_complex_class_head_sans_basetype):
 	Do not push a scope for error_mark_node.
@@ -6064,7 +6064,7 @@ Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sig.c (build_signature_table_constructor): Use cp_error.
 
-1999-03-13  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-13  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* semantics.c (finish_switch_cond): Handle error cases gracefully.
 	Detected by g++.law/enum5.C.
@@ -6078,7 +6078,7 @@ Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* typeck2.c (process_init_constructor): Return error if one argument
 	is in error.  Detected by g++.benjamin/13478.C.
 
-1999-03-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-12  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (select_decl): Allow class templates when we need types.
 	* decl2.c (ambiguous_decl): Likewise.
@@ -6217,7 +6217,7 @@ Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* decl2.c (import_export_class): Also return if
 	CLASSTYPE_INTERFACE_ONLY is set.
 
-1999-03-03  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-03-03  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (push_overloaded_decl): Only overwrite the old binding if
 	there was one.
@@ -6304,7 +6304,7 @@ Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* typeck.c (convert_for_assignment): Allow boolean integral constant
 	expressions to convert to null pointer.
 
-1999-02-24  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1999-02-24  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (lookup_namespace_name): Resolve namespace aliases.
 
@@ -6558,7 +6558,7 @@ Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 	expand_si_desc, expand_class_desc, expand_ptr_desc, expand_attr_desc,
 	expand_generic_desc): Likewise.
 
-1999-01-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1999-01-25  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* tree.c (equal_functions): New function.
 	(ovl_member): Call it.
@@ -6567,7 +6567,7 @@ Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cvt.c (cp_convert_to_pointer): Fix conversion of 0 to pmf.
 
-1999-01-25  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1999-01-25  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (decls_match): Return 1 if old and new are identical.
 	(push_overloaded_decl): Set OVL_USED when PUSH_USING.

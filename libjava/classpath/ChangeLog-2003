@@ -3892,7 +3892,7 @@
 	* java/sql/Timestamp.java
 	(valueOf): Fixed confusion of java.sql.Date and java.util.Date
 
-2003-07-24  H. V�is�nen  <hvaisane@joyx.joensuu.fi>
+2003-07-24  H. Väisänen  <hvaisane@joyx.joensuu.fi>
 
 	* java/text/SimpleDateFormat.java (format) [YEAR_FIELD]: Zero pad
 	unless field size is 2.
@@ -18212,7 +18212,7 @@
 
 	* java/util/zip/ZipFile.java (readEntries): Search for the End Of
 	Central Directory.  When a zip comment is present the directory
-	may start earlier.  Patch suggested by J�rg Prante
+	may start earlier.  Patch suggested by Jörg Prante
 	<joergprante@gmx.de>.
 
 	* java/util/zip/ZipConstants.java: Renamed constants to their SUN
@@ -18417,7 +18417,7 @@
 
 	* java/util/zip/ZipFile.java: Return -1 in 
 	PartialInputStream.read(byte[],int,int) when end of stream reached.
-	Reported by Bernd M�sli <bmoesli@esmertec.com>.
+	Reported by Bernd Mösli <bmoesli@esmertec.com>.
 
 2001-10-01  Mark Wielaard  <mark@klomp.org>
 

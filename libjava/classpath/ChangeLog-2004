@@ -13822,9 +13822,9 @@ PR AWT/16121
 	* ChangeLog: Restore corrupted umlauts.  
 	
 	Some time between 2004-04-07 and 2004-05-01, somebody used
-	an editing tool on ChangeLog that converted Bernd M�sli's surname
-	to Mvsli, and similarly corrupted the names of J�rg Prante and
-	H. V�is�nen.  It looks as if the editing tool read in latin1
+	an editing tool on ChangeLog that converted Bernd Mösli's surname
+	to Mvsli, and similarly corrupted the names of Jörg Prante and
+	H. Väisänen.  It looks as if the editing tool read in latin1
 	characters, then masked them with 0x7F and wrote them out again.
 	
 	* ChangeLog: Explicitly set coding system to latin-1.

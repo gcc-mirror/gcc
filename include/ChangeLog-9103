@@ -2533,7 +2533,7 @@ Fri Oct 25 03:18:20 1991  John Gilmore  (gnu at cygnus.com)
 
 Thu Oct 24 22:11:11 1991  John Gilmore  (gnu at cygnus.com)
 
-	RS/6000 support, by Metin G. Ozisik, Mimi Phûông-Thåo Võ, and
+	RS/6000 support, by Metin G. Ozisik, Mimi PhÃ»Ã´ng-ThÃ¥o VÃµ, and
 	John Gilmore.
 
 	* a.out.gnu.h:  Update slightly.

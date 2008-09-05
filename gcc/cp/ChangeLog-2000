@@ -2256,7 +2256,7 @@
 	* parse.y (member_init): Just pass in the type.
 	* init.c (expand_member_init): Handle getting a type.
 
-2000-07-04  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-07-04  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 	    Jason Merrill  <jason@redhat.com>
 
 	* decl.c (finish_function): Warn if a function has no return
@@ -2602,7 +2602,7 @@
 	* decl.c (pushdecl): Don't set DECL_CONTEXT from current_namespace.
 	(push_namespace): Set DECL_CONTEXT for a new NAMESPACE_DECL.
 
-2000-06-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-06-24  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (complex_direct_notype_declarator): Support global_scope.
 	* Makefile.in: Adjust conflict count.
@@ -3787,7 +3787,7 @@
 	* semantics.c (finish_member_declaration): Don't mark members of
 	classes declared in an extern "C" region as extern "C".
 
-2000-05-22  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-05-22  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (qualified_lookup_using_namespace): Look through
 	namespace aliases.
@@ -4241,7 +4241,7 @@
 
 	* ir.texi: Correct typo.
 
-2000-04-25  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-04-25  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (grokdeclarator): Reject VLAs as members.
 
@@ -4540,7 +4540,7 @@
 	(interface_only): Don't declare.
 	(interface_unknown): Likewise.
 
-2000-04-11  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-04-11  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* tree.h (HAVE_TEMPLATES): Remove definition.
 	* lang-options.h (-fthis-is-variable): Remove documentation.
@@ -4595,7 +4595,7 @@
 	(__pointer_to_member_type_info::__do_catch): Remove.
 	(__pointer_to_member_type_info::__pointer_catch): Implement.
 
-2000-04-10  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-04-10  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* lex.c (init_parse): Remove traces of classof and headof.
 	* decl2.c (flag_operator_names): Default to 1.
@@ -5308,7 +5308,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* init.c (build_offset_ref): Handle the case of a templated member
 	function.
 
-2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-19  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (expand_exception_blocks): Clear catch_clauses_last.
 
@@ -5334,7 +5334,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(layout_class_type): Implement new ABI handling of bitfields
 	longer than their types.
 
-2000-03-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-18  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (extdefs): Call ggc_collect.
 	* parse.c: Regenerated.
@@ -5785,7 +5785,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* init.c (construct_virtual_bases): Fix thinko.
 	* typeck.c (expand_ptrmemfunc_cst): Fix thinko.
 
-2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+2000-03-01  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (current_function_decl): Move to toplev.c.
 
@@ -5944,7 +5944,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (decls_match): Remove obsolete static member nadgering.
 
-2000-02-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-02-21  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (grokdeclarator): Change ANSI to ISO.
 	* lex.c (consume_string, readescape, do_identifier): Likewise.
@@ -6088,7 +6088,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* decl.c (redeclaration_error_message): Allow redeclaration of
 	namespace-scope decls.
 
-2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+2000-02-18  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* typeck2.c (my_friendly_abort): Use GCCBUGURL.
 
@@ -6971,7 +6971,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* optimize.c (copy_body_r): Clear the operand three of a
 	TARGET_EXPR when copying it.
 
-2000-01-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-01-14  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (build_decl_overload_real): Check whether we are in ::
 	before returning __builtin_new/delete.
@@ -7268,7 +7268,7 @@ Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(fixup_vtable_deltas1): Likewise.
 	(finish_struct_1): Likewise.
 
-2000-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-01-01  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* call.c (build_new_method_call): Also check destructors.
 

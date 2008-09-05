@@ -2155,7 +2155,7 @@
 	and enable call to diagnose_omp_structured_block_errors.
 	* Makefile.in (GTFILES): Add omp-low.c again.
 
-2008-05-02  Rafael Espindola  <espindola@google.com>
+2008-05-02  Rafael Espíndola  <espindola@google.com>
 
 	* tree-gimple.c (is_gimple_condexpr): Do not allow
 	trapping comparisons.
@@ -2203,7 +2203,7 @@
 	(verify_stmts): Add code to check that label_to_block_map and labels
 	are consistent.
 
-2008-04-22  Rafael Espindola <espindola@google.com>
+2008-04-22  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @134843.
 
@@ -2243,17 +2243,17 @@
 	(lower_eh_constructs_2): Call maybe_record_in_goto_queue for
 	GIMPLE_CONDs.
 
-2008-05-01  Rafael Espindola <espindola@google.com>
+2008-05-01  Rafael Espíndola <espindola@google.com>
 
 	* gimple-pretty-print.c (dump_gimple_try): Print like trunk does.
 	(dump_gimple_catch): Print like trunk does.
 
-2008-05-01  Rafael Espindola <espindola@google.com>
+2008-05-01  Rafael Espíndola <espindola@google.com>
 
 	* passes.c (gimple_verify_flow_info): Enable remaining
 	pass_rename_ssa_copies passes.
 
-2008-05-01  Rafael Espindola <espindola@google.com>
+2008-05-01  Rafael Espíndola <espindola@google.com>
 
 	* tree-cfg.c (gimple_verify_flow_info): Handle switches with only the
 	default label.
@@ -2274,17 +2274,17 @@
 	replace_locals_stmt, copy_gimple_seq_and_replace_locals): New.
 	* tree-inline.h (copy_gimple_seq_and_replace_locals): New prototype.
 
-2008-04-29  Rafael Espindola <espindola@google.com>
+2008-04-29  Rafael Espíndola <espindola@google.com>
 
 	* gimple-pretty-print.c (dump_gimple_return): Add missing space.
 	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Fix type
 	of variable.
 
-2008-04-29  Rafael Espindola <espindola@google.com>
+2008-04-29  Rafael Espíndola <espindola@google.com>
 
 	* gimple-pretty-print.c (pp_cfg_jump): add missing ";".
 
-2008-04-29  Rafael Espindola <espindola@google.com>
+2008-04-29  Rafael Espíndola <espindola@google.com>
 
 	* gimple-pretty-print.c (dump_gimple_assign): print ";" at the end.
 	(dump_gimple_return):print ";" at the end.
@@ -2292,7 +2292,7 @@
 	(dump_gimple_cond): use op_symbol_code instead of tree_code_name.
 	(pp_cfg_jump): print ";" at the end.
 
-2008-04-29  Rafael Espindola <espindola@google.com>
+2008-04-29  Rafael Espíndola <espindola@google.com>
 
 	* ipa-cp.c (ipcp_driver): Disable.
 	* matrix-reorg.c (matrix_reorg): Comment body.
@@ -2329,7 +2329,7 @@
 	(remap_gimple_stmt): Add code to handle GIMPLE_RESX region number
 	remapping.
 
-2008-04-28  Rafael Espindola <espindola@google.com>
+2008-04-28  Rafael Espíndola <espindola@google.com>
 
 	* cfgexpand.c (gimple_to_tree): Add support for switch stmts without
 	a default label.
@@ -2412,7 +2412,7 @@
 	gimplify_do_stmt and gimplify_switch_stmt.  Tuplify
 	gimplification of CONTINUE_STMT and BREAK_STMT.
 
-2008-04-26  Rafael Espindola <espindola@google.com>
+2008-04-26  Rafael Espíndola <espindola@google.com>
 
 	* gimple.c (gimple_build_assign_with_ops): Don't set SSA_NAME_DEF_STMT.
 	* gimple.h (gimple_assign_set_lhs): Set SSA_NAME_DEF_STMT.
@@ -2468,7 +2468,7 @@
 	(gimplify_init_ctor_eval_range): Add a fall-through label for
 	GIMPLE_COND statement.
 
-2008-04-25  Rafael Espindola <espindola@google.com>
+2008-04-25  Rafael Espíndola <espindola@google.com>
 
 	* tree-ssa-dom.c (avail_expr_eq): Return false if the hashes don't
 	match.
@@ -2481,12 +2481,12 @@
 	GIMPLE_CHANGE_DYNAMIC_TYPE.
 	* tree-cfg.c (verify_types_in_gimple_stmt): Likewise.
 
-2008-04-24  Rafael Espindola <espindola@google.com>
+2008-04-24  Rafael Espíndola <espindola@google.com>
 
 	* tree-ssa-dom.c (initialize_hash_element): Fix the type of the code
 	variable.
 
-2008-04-23  Rafael Espindola <espindola@google.com>
+2008-04-23  Rafael Espíndola <espindola@google.com>
 
 	* omp-low.c (gate_lower_omp): Return 0.
 	* passes.c (init_optimization_passes): Enable all passes whose
@@ -2516,7 +2516,7 @@
 	(lower_omp_1): Remove debugging code.
 	* gimple.h (gimple_omp_parallel_combined_p): Add new argument.
 
-2008-04-22  Rafael Espindola <espindola@google.com>
+2008-04-22  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @134552.
 
@@ -2609,7 +2609,7 @@
 	(build_ssa_operands): Likewise.
 	(stmt_references_memory_p): Remove.
 
-2008-04-21  Rafael Espindola <espindola@google.com>
+2008-04-21  Rafael Espíndola <espindola@google.com>
 
 	Cherry pick http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01213.html
 
@@ -2873,18 +2873,18 @@
 
 	* tree-cfg.c (need_fake_edge_p): Initialize CALL_FLAGS.
 
-2008-04-12  Rafael Espindola <espindola@google.com>
+2008-04-12  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @134237.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-13  Rafael Espindola <espindola@google.com>
+2008-04-13  Rafael Espíndola <espindola@google.com>
 
 	* config/extensions.m4: Add. Was missing from previous merge.
 
-2008-04-12  Rafael Espindola <espindola@google.com>
+2008-04-12  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133860.
 
@@ -2963,7 +2963,7 @@
 	(tree_ssa_phiprop): Tuplify.
 	* passes.c (init_optimization_passes): Re-enable pass_phiprop.
 
-2008-04-11  Rafael Espindola <espindola@google.com>
+2008-04-11  Rafael Espíndola <espindola@google.com>
 
 	* tree-ssa-math-opts.c (execute_cse_sincos_1): fix warning.
 
@@ -3188,21 +3188,21 @@
 	if cfun is NULL.
 
 
-2008-04-04  Rafael Espindola <espindola@google.com>
+2008-04-04  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133632.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-04  Rafael Espindola <espindola@google.com>
+2008-04-04  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133631.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-04  Rafael Espindola <espindola@google.com>
+2008-04-04  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133630.
 
@@ -3230,14 +3230,14 @@
 	(lower_nested_functions): Pass convert_nl_goto_receiver as the first
 	parameter to walk_all_functions.
 
-2008-04-03  Rafael Espindola <espindola@google.com>
+2008-04-03  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133624.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-03  Rafael Espindola <espindola@google.com>
+2008-04-03  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133612.
 
@@ -3299,28 +3299,28 @@
 	* cfgexpand.c (gimple_to_tree): Generate assignment to return value
 	if necessary.
 
-2008-04-02  Rafael Espindola <espindola@google.com>
+2008-04-02  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133597.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-02  Rafael Espindola <espindola@google.com>
+2008-04-02  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133527.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-02  Rafael Espindola <espindola@google.com>
+2008-04-02  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133519.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-04-02  Rafael Espindola <espindola@google.com>
+2008-04-02  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133453.
 
@@ -3373,35 +3373,35 @@
 	* gimplify.c (gimplify_switch_expr): Verify the return value from
 	gimplify_expr.
 
-2008-03-31  Rafael Espindola <espindola@google.com>
+2008-03-31  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133452.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-31  Rafael Espindola <espindola@google.com>
+2008-03-31  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133440.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-31  Rafael Espindola <espindola@google.com>
+2008-03-31  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133423.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-30  Rafael Espindola <espindola@google.com>
+2008-03-30  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133342.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-28  Rafael Espindola <espindola@google.com>
+2008-03-28  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133341.
 
@@ -3427,7 +3427,7 @@
 	* omp-low.c (expand_omp_sections): Fix build breakage due to an
 	uninitialized variable.
 
-2008-03-28  Rafael Espindola <espindola@google.com>
+2008-03-28  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133315.
 
@@ -3440,7 +3440,7 @@
 	V_MAIN and V_BACK.
 	(expand_omp_for): Initialize VIN.
 
-2008-03-28  Rafael Espindola <espindola@google.com>
+2008-03-28  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133313.
 
@@ -3521,14 +3521,14 @@
 	(gimple_has_location): Remove fixmes.
 	* tree-cfg.c (gimple_block_label): Remove ATTRIBUTE_UNUSED.
 
-2008-03-27  Rafael Espindola <espindola@google.com>
+2008-03-27  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133311.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-27  Rafael Espindola <espindola@google.com>
+2008-03-27  Rafael Espíndola <espindola@google.com>
 
 	* gcc/tree-nested.c (save_tmp_var): Use gsi_insert_after_without_update
 	instead of gsi_insert_after.
@@ -3546,20 +3546,20 @@
 	* testsuite/gcc.dg/tree-ssa/ssa-dse-10.c: {dg-final} changed.
 	* testsuite/gcc.dg/tree-ssa/pr30375.c: {dg-final} changed.
 
-2008-03-26  Rafael Espindola <espindola@google.com>
+2008-03-26  Rafael Espíndola <espindola@google.com>
 	* gcc/tree-ssa-operands.c (ssa_operands_active): Assert that cfun is
 	not NULL.
 	* gcc/tree-nested.c (init_tmp_var): Use
 	gsi_insert_before_without_update instead of gsi_insert_before.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133309.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133306.
 
@@ -3576,7 +3576,7 @@
 	* passes.c (init_optimization_passes):
 	Enable pass_copy_prop.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133257.
 
@@ -3593,35 +3593,35 @@
 	(gimplify_body): Updated the call to gimple_build_bind and moved
 	the copying of block information into gimplify_bind_expr.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133255.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133251.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-25  Rafael Espindola <espindola@google.com>
+2008-03-25  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133250.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-24  Rafael Espindola <espindola@google.com>
+2008-03-24  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133246.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-24  Rafael Espindola <espindola@google.com>
+2008-03-24  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133222.
 
@@ -3632,21 +3632,21 @@
 
 	* passes.c (init_optimization_passes): Enable pass_split_crit_edges.
 
-2008-03-24  Rafael Espindola <espindola@google.com>
+2008-03-24  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133169.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-21  Rafael Espindola <espindola@google.com>
+2008-03-21  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133168.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-21  Rafael Espindola <espindola@google.com>
+2008-03-21  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133167.
 
@@ -3680,28 +3680,28 @@
 	(gimplify_call_expr): Remove call to get_tmp_var_for, set
 	gimple_register on a new lhs in some cases.
 
-2008-03-20  Rafael Espindola <espindola@google.com>
+2008-03-20  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133162.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-20  Rafael Espindola <espindola@google.com>
+2008-03-20  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133161.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-20  Rafael Espindola <espindola@google.com>
+2008-03-20  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133140.
 
 	* configure.ac (ACX_PKGVERSION): Update revision merge string.
 	* configure: Regenerate.
 
-2008-03-20  Rafael Espindola <espindola@google.com>
+2008-03-20  Rafael Espíndola <espindola@google.com>
 
 	Merge with mainline @133138.
 
@@ -4082,7 +4082,7 @@
 	* tree-phinodes.c (allocate_phi_node): Fix syntax errors from
 	previous commit.
 
-2008-03-05  Rafael Espindola  <espindola@google.com>
+2008-03-05  Rafael Espíndola  <espindola@google.com>
 
 	* tree-phinodes.c (allocate_phi_node): free free_phinodes[bucket]
 	if empty.
@@ -4157,7 +4157,7 @@
 	pass_warn_function_return, pass_update_address_taken,
 	pass_simple_dse and pass_build_alias passes.
 
-2008-03-04  Rafael Espindola  <espindola@google.com>
+2008-03-04  Rafael Espíndola  <espindola@google.com>
 
 	* fold-const.c (tree_simple_nonnegative_warnv_p): New.
 	(tree_unary_nonnegative_warnv_p): New.
@@ -4224,7 +4224,7 @@
 	(struct gimple_cfg_hooks): Enable block_ends_with_call_p
 	callback.
 
-2008-03-04  Rafael Espindola  <espindola@google.com>
+2008-03-04  Rafael Espíndola  <espindola@google.com>
 
 	* fold-const.c (tree_unary_nonzero_warnv_p): New.
 	(tree_binary_nonzero_warnv_p): New.
@@ -4297,12 +4297,12 @@
 	* tree-cfg.c (replace_uses_by): Check that op is not null.
 	* passes.c (init_optimization_passes): Enable pass_lim.
 
-2008-02-28  Rafael Espindola  <espindola@google.com>
+2008-02-28  Rafael Espíndola  <espindola@google.com>
 
 	* tree-outof-ssa.c (insert_backedge_copies): Don't build
 	uninitialized assignment.
 
-2008-02-28  Rafael Espindola  <espindola@google.com>
+2008-02-28  Rafael Espíndola  <espindola@google.com>
 
 	* tree-dfa.c (dump_dfa_stats): cast dfa_stats.max_num_phi_args to long.
 
@@ -4503,11 +4503,11 @@
 	* tree-cfgcleanup.c (tree_forwarder_block_p): Fix test
 	for PHI_WANTED.
 
-2008-02-25  Rafael Espindola  <espindola@google.com>
+2008-02-25  Rafael Espíndola  <espindola@google.com>
 
 	* tree-cfgcleanup.c (tree_forwarder_block_p): fix thinko.
 
-2008-02-24  Rafael Espindola  <espindola@google.com>
+2008-02-24  Rafael Espíndola  <espindola@google.com>
 
 	* gimple-iterator.c (gsi_split_seq_before): Don't abort if at the
 	beginning.
@@ -4544,18 +4544,18 @@
 		(copy_or_nop_cast_stmt_rhs): New.
 		* gimple.h (copy_or_nop_cast_stmt_rhs): Declare.
 
-2008-02-21  Rafael Espindola  <espindola@google.com>
+2008-02-21  Rafael Espíndola  <espindola@google.com>
 
 	* gimple.h (gimple_cond_true_p): Define.
 	(gimple_cond_false_p): Define.
 	(gimple_cond_single_var_p): Define.
 
-2008-02-21  Rafael Espindola  <espindola@google.com>
+2008-02-21  Rafael Espíndola  <espindola@google.com>
 
 	* tree-tailcall.c (adjust_accumulator_values): Check that a phi was
 	found.
 
-2008-02-21  Rafael Espindola  <espindola@google.com>
+2008-02-21  Rafael Espíndola  <espindola@google.com>
 
 	* tree-tailcall.c (adjust_accumulator_values): Initialize phi.
 
@@ -4573,13 +4573,13 @@
 	* gimplify.c (gimplify_expr): Save locus into the right
 	sequence.
 
-2008-02-20  Rafael Espindola  <espindola@google.com>
+2008-02-20  Rafael Espíndola  <espindola@google.com>
 
 	* passes.c (init_optimization_passes): Enable pass_mark_used_blocks
 	and pass_cleanup_cfg_post_optimizing.
 	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): call cleanup_tree_cfg.
 
-2008-02-20  Rafael Espindola  <espindola@google.com>
+2008-02-20  Rafael Espíndola  <espindola@google.com>
 
 	* passes.c (init_optimization_passes):  Enable pass_nrv.
 	* tree-nrv.c (finalize_nrv_r): data is now a walk_stmt_info.
@@ -4719,7 +4719,7 @@
 	ebitmap.o-warn, lower-subreg.o-warn, tree-chrec.o-warn):
 	Change -Wno-error to -Wno-uninitialized.
 
-2008-02-19  Rafael Espindola  <espindola@google.com>
+2008-02-19  Rafael Espíndola  <espindola@google.com>
 
 	* tree-eh.c (collect_finally_tree): handle GIMPLE_SWITCH.
 
@@ -4980,7 +4980,7 @@
 	markers to execute pass_expand.
 	Guard more passes under #if 0.
 
-2008-02-01  Rafael Espindola  <espindola@google.com>
+2008-02-01  Rafael Espíndola  <espindola@google.com>
 
 	* passes.c (init_optimization_passes): Enable pass_del_ssa.
 
@@ -5006,12 +5006,12 @@
 	(create_outofssa_var_map):Port to tuples.
 	(coalesce_partitions): Port to tuples.
 
-2008-02-01  Rafael Espindola  <espindola@google.com>
+2008-02-01  Rafael Espíndola  <espindola@google.com>
 
 	* tree-ssa-operands.c (free_stmt_operands): Only free
 	with_ops.addresses_taken if stmt has ops.
 
-2008-01-31  Rafael Espindola  <espindola@google.com>
+2008-01-31  Rafael Espíndola  <espindola@google.com>
 
 	* tree-optimize.c (pass_free_cfg_annotations): Flip
 	works_with_tuples_p.
@@ -5033,16 +5033,16 @@
 	lower-subreg.o-warn, tree-chrec.o-warn, varasm.o-warn):
 	New.
 
-2008-01-30  Rafael Espindola  <espindola@google.com>
+2008-01-30  Rafael Espíndola  <espindola@google.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Comment out
 	pop_gimplify_context calls
 
-2008-01-30  Rafael Espindola  <espindola@google.com>
+2008-01-30  Rafael Espíndola  <espindola@google.com>
 
 	* gimple.h (gsi_after_labels): Add.
 
-2008-01-30  Rafael Espindola  <espindola@google.com>
+2008-01-30  Rafael Espíndola  <espindola@google.com>
 
 	* Makefile.in (tree-complex.o): Uncomment gt-tree-vect-generic.h.
 	(GTFILES): Add tree-vect-generic.c.
@@ -5070,7 +5070,7 @@
 	(pass_lower_vector): flip works_with_tuples_p
 	(pass_lower_vector_ssa) flip works_with_tuples_
 
-2008-01-29  Rafael Espindola  <espindola@google.com>
+2008-01-29  Rafael Espíndola  <espindola@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-01/msg01434.html
 

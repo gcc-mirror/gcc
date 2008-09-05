@@ -2169,7 +2169,7 @@
 	* symbol.c (gfc_add_common): Disable checks to work around other more
 	fundamental inadequacies.
 
-2004-05-22  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-22  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c (gfc_get_extern_function_decl): Set DECL_IS_PURE
 	only for functions.
@@ -2377,7 +2377,7 @@
 
 	* decl.c (variable_decl): Always apply default initializer.
 
-2004-05-08  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-08  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15206
 	* trans-intrinsic.c (gfc_conv_intrinsic_rrspacing): Fixed to
@@ -2451,7 +2451,7 @@
 	Remove "set DEVELOPMENT".
 	(Compiling GFORTRAN): Remove.
 
-2004-05-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-09  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* array.c (match_subscript, match_array_ref): Add comments
 	explaining argument 'init'.
@@ -2461,20 +2461,20 @@
 	* primary.c (match_digits, match_integer_constant): Add comment
 	explaining signflag.
 
-2004-05-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-01  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13940
 	* primary.c: Include system.h and flags.h, needed for pedantic.
 	(match_boz_constant): Allow "x" for hexadecimal constants, warn if
 	pedantic is set.
 
-2004-05-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-01  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13940
 	* match.c (match_data_constant): Handle case where
 	gfc_find_symbol	sets sym to NULL
 
-2004-04-28  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-04-28  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* Make-lang.in (f95-lang.o, trans-intrinsic.o): Add missing
 	dependency on mathbuiltins.def
@@ -2488,7 +2488,7 @@
 
 	* gfortranspec.c: Do not include multilib.h.
 
-2004-04-24  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-04-24  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-intrinsic.c: Fix comment, this is not trans-expr.c. Add
 	2004 to copyright years.

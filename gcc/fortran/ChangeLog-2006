@@ -112,7 +112,7 @@
 	the nullifying of intent(out) arguments rather than the backend
 	declaration.
 
-2006-12-20  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-20  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25392
 	* trans-stmt.c (gfc_trans_return): Fix comment formatting.
@@ -215,7 +215,7 @@
 	function declarations to match the library changes.  Mark
 	allocation functions with DECL_IS_MALLOC.
 
-2006-12-12  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-12  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-expr.c (gfc_conv_substring): Check for empty substring.
 
@@ -669,7 +669,7 @@
 	* trans-expr.c (gfc_conv_expr_reference): Set TREE_STATIC on the
 	new CONST_DECL.
 
-2006-11-11  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-11-11  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* array.c: Add 2006 to copyright years.
 	* data.c: Same.
@@ -969,7 +969,7 @@
 	* expr.c (simplify_parameter_variable): Keep rank of original
 	expression.
 
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-23 Rafael Ãvila de EspÃ­ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (f951$(exeext)): Depend on and link with attribs.o.
 	* trans.h (builtin_function): Rename to	gfc_builtin_function.
@@ -1566,7 +1566,7 @@
 	PR fortran/29097
 	* scanner.c (include_line): Handle conditional include.
 
-2006-09-25  Tobias Schluter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-09-25  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21203
 	* error.c (show_loci): No need to risk an ICE to output a
@@ -1599,7 +1599,7 @@
 	* iresolve.c (resolve_spread): Build shape for result if the
 	source shape is available and dim and ncopies are constants.
 
-2006-09-18  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-09-18  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/28817
 	PR fortran/21918
@@ -2121,7 +2121,7 @@
 
 	* intrinsic.texi: Document new intrinsics.
 
-2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-07-01  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19259
 	* parse.c (next_free): Error out on line starting with semicolon.
@@ -2728,7 +2728,7 @@
 	* parse.c (next_statement): Add check to avoid an ICE when
 	gfc_current_locus.lb is not set.
 
-2006-05-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-05-07  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/27457
 	* match.c (match_case_eos): Error out on garbage following
@@ -2749,7 +2749,7 @@
 	-fall-intrinsics is used.
 	(gfc_handle_option): Permit -Wno-nonstd-intrinsics.
 
-2006-05-04  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-05-04  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* simplify.c (ascii_table): Fix wrong entry.
 
@@ -3357,7 +3357,7 @@
 
 	* module.c (read_module): Remove redundant code lines.
 
-2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-20 Rafael Ãvila de EspÃ­ndola <rafael.espindola@gmail.com>
 	* Make-lang.in (FORTRAN): Remove
 	(.PHONY): Remove F95 and f95. Add fortran
 
@@ -3456,7 +3456,7 @@
 	PR fortran/26054
 	* options.c: Do not warn for Fortran 2003 features by default.
 
-2006-02-15  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-15  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* check.c: Update copyright years.
 	
@@ -3479,7 +3479,7 @@
 	to check dim argument.
 	(check_reduction):  Likewise.
 
-2006-02-14  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-14  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/26277
 	* io.c (match_ltag): Mark label as referenced.
@@ -3930,14 +3930,14 @@
 	are set.
 
 
-2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-10  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14771
 	* arith.c (eval_intrinsic): Accept INTRINSIC_PARENTHESES.
 	* expr.c (check_intrinsic_op): Likewise.
 	* module.c (mio_expr): Likewise.
 
-2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-09  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c: Update copyright years.
 	* matchexp.c: Likewise.
@@ -4319,7 +4319,7 @@
 	is_aliased_array and convert it to a temporary and back again
 	using gfc_conv_aliased_arg.
 
-2006-01-19  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-19  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortranspec.c: Update copyright years.
 	* trans.c: Likewise.
@@ -4330,7 +4330,7 @@
 	* trans-stmt.h: Likewise.
 	* trans-types.c: Likewise.
 
-2006-01-18  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-18  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
 	PR fortran/18937
@@ -4375,7 +4375,7 @@
 	argument checking. Replace strcmp's with comparisons with generic
 	codes.
 
-2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ãvila de EspÃ­ndola  <rafael.espindola@gmail.com>
 
 	* gfortranspec.c (lang_specific_spec_functions): Remove.
 
@@ -4412,7 +4412,7 @@
 	* trans.c (gfc_add_expr_to_block): Do not fold tcc_statement
 	nodes.
 
-2006-01-11  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-11  Tobias SchlÃ¼ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* parse.c (next_fixed): Remove superfluous string concatenation.
 

@@ -687,7 +687,7 @@
 	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Only check
 	copy constructors and copy assignment operators proper.
 
-2008-07-21  Rafael Avila de Espindola  <espindola@google.com>
+2008-07-21  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* parser.c (cp_token): Remove in_system_header.
 	(eof_token): Remove in_system_header.
@@ -4544,7 +4544,7 @@
 	* init.c (avoid_placement_new_aliasing): New static function.
 	(build_new_1): Call it.
 
-2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+2007-06-11  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
 	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
@@ -4773,7 +4773,7 @@
 	* rtti.c (get_tinfo_decl_dynamic, get_typeid): Try to complete the
 	type only if is a class type (5.2.8/4).
 
-2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-14  Rafael Ávila de Espíndola  <espindola@google.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
 	* decl.c (grokdeclarator): Use unsigned_type_for instead of

@@ -88,7 +88,7 @@
 
 	* fixincl.x: Regenerate.
 
-2008-02-04  Ismail Dönmez  <ismail@pardus.org.tr>
+2008-02-04  Ismail DÃ¶nmez  <ismail@pardus.org.tr>
 
 	* inclhack.def: (bsd_stdio_attrs_conflict, freebsd_gcc3_breakage,
 	freebsd_gcc4_breakage, hppa_hpux_fp_macros, hpux11_abs,

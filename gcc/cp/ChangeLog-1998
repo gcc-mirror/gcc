@@ -495,7 +495,7 @@ Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* decl.c (require_complete_types_for_parms): Call layout_decl
 	after we've completed the type.
 
-1998-11-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-11-21  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (validate_nonmember_using_decl): Allow using templates
 	from the global namespace.
@@ -769,7 +769,7 @@ Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* method.c (build_overload_value): Handle REFERENCE_TYPE.
 
-1998-11-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-11-08  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (grokdeclarator): Allow namespace-scoped members if they
 	are friends.
@@ -1081,11 +1081,11 @@ Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* decl.c (grokdeclarator): Set DECL_NONCONVERTING_P for all
 	non-converting constructors.
 
-1998-10-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-10-24  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* gxxint.texi: Correct documentation for n, N, Q, and B.
 
-1998-10-23  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-10-23  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (condition): Convert VAR_DECL from reference to indirect
 	reference.
@@ -1219,7 +1219,7 @@ Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* decl.c (grokdeclarator): Use them.
 	* tree.c (canonical_type_variant): Likewise.
 
-1998-10-22  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-10-22  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (named_class_head): Push into class while parsing the
 	base class list.
@@ -1264,7 +1264,7 @@ Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pt.c (tsubst, TEMPLATE*PARM*): Abort if we don't have any args.
 
-1998-10-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-10-18  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (validate_nonmember_using_decl): Fix using-directives of
 	std if std is ignored.
@@ -1659,7 +1659,7 @@ Tue Oct  6 07:57:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pt.c (instantiate_decl): Do save and restore file position.
 
-1998-10-05  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-10-05  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (build_decl_overload_real): Clear
 	numeric_output_need_bar after __.
@@ -1793,7 +1793,7 @@ Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 	(finish_anon_union): Also complain about local anon unions with no
 	members.
 
-1998-09-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-09-25  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (lookup_namespace_name): If the name is a namespace,
 	return it immediately.
@@ -1905,7 +1905,7 @@ Tue Sep 22 21:01:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	* decl2.c (grokfield): Likewise.
 	* pt.c (finish_member_template_decl): Likewise.
 
-1998-09-20  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-09-20  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (hack_identifier): Finding multiple members is always
 	an error.
@@ -2017,7 +2017,7 @@ Mon Sep 21 01:53:05 1998  Felix Lee  <flee@cygnus.com>
 	* error.c (dump_type_real): Handle NAMESPACE_DECL.
 	* parse.y (base_class.1): Avoid crash on error.
 
-1998-09-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-09-08  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (make_typename_type): If context is a namespace, the code
 	is in error.
@@ -2495,7 +2495,7 @@ Wed Aug 26 10:54:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* lex.c (real_yylex): Don't warn about long long constants if
 	we're allowing long long.
 
-1998-08-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-08-24  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (pushdecl): Use IDENTIFIER_NAMESPACE_VALUE instead of
 	accessing bindings directly.
@@ -3143,7 +3143,7 @@ Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 	* decl.c (qualify_lookup): New fn.
 	(lookup_name_real): Use it.
 
-1998-07-16  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+1998-07-16  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (add_using_namespace): When directly using a namespace
 	that was indirect before, promote it.
@@ -3184,7 +3184,7 @@ Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 	* decl.c (push_using_directive): Iterate over namespaces used
 	indirectly.
 
-1998-07-15  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1998-07-15  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (add_using_namespace): Iterate over namespaces used
 	indirectly.
@@ -3218,7 +3218,7 @@ Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 	* parse.y (using_directive): New nonterminal.
 	(extdef, simple_stmt): Use it.
 
-1998-07-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-07-14  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (add_function): Move error message ...
 	(arg_assoc_namespace): ... from here.
@@ -3238,7 +3238,7 @@ Tue Jul 14 20:09:22 1998  Jeffrey A Law  (law@cygnus.com)
 	* call.c (joust): Don't warn about "confusing" conversions to the
 	same type.
 
-1998-07-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-07-14  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* class.c (push_nested_class): Complain about namespaces.
 	* decl.c (start_decl): Enter the object's namespace.
@@ -3257,7 +3257,7 @@ Tue Jul 14 20:09:22 1998  Jeffrey A Law  (law@cygnus.com)
 	* init.c (build_offset_ref): Call mark_used and
 	convert_from_reference for namespace members.
 
-Mon Jul 13 23:25:28 1998  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+Mon Jul 13 23:25:28 1998  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* search.c (my_tree_cons): The bitfield is at index 2.
 
@@ -3266,7 +3266,7 @@ Mon Jul 13 17:21:01 1998  Nick Clifton  <nickc@cygnus.com>
 	* lang-options.h: Format changed to work with new --help support
 	in gcc/toplev.c
 
-1998-07-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-07-12  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (build_expr_from_tree): Change calls of do_identifier.
 	Do Koenig lookup in CALL_EXPR.
@@ -3484,7 +3484,7 @@ Sat Jun 27 07:36:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* sig.c (build_signature_pointer_or_reference_type): Don't set
 	DECL_CONTEXT.
 
-1998-06-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1998-06-24  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	Set DECL_CONTEXT for globals to NULL_TREE instead of global_namespace.
 	* cp-tree.h (FROB_CONTEXT): New macro.
@@ -3858,7 +3858,7 @@ Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (cp_printers): Use 'o' instead of '_' for the null entry.
 
-1998-06-05  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+1998-06-05  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (DECL_NAMESPACE_ALIAS, ORIGINAL_NAMESPACE): Declare.
 	* decl.c (lookup_name_real): Add namespaces_only parameter.
@@ -3886,7 +3886,7 @@ Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (dump_expr): Clean up NEW_EXPR case.
 
-1998-06-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-06-04  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	Suggested by Brendan Kehoe
 	* decl2.c (do_toplevel_using_decl): When decl is a TYPE_DECL,
@@ -4039,7 +4039,7 @@ Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (pushdecl): Don't copy the type_decl.
 
-1998-05-26  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1998-05-26  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* class.c (pushclass): Always store TYPE_MAIN_VARIANT in
 	current_class_type.
@@ -4060,7 +4060,7 @@ Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (pushtag): Avoid crashing on erroneous input.
 
-1998-05-25  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+1998-05-25  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (push_namespace): Only produce one unique name for
 	anonymous namespaces.
@@ -4127,7 +4127,7 @@ Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	used as expression.
 	* typeck.c (decay_conversion): Likewise.
 
-1998-05-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+1998-05-24  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* error.c (dump_expr): Support namespaces.
 
@@ -4248,7 +4248,7 @@ Thu May 21 11:54:44 1998  Dave Brolley  <brolley@cygnus.com>
 	* pt.c (classtype_mangled_name): Don't try DECL_CONTEXT on types.
 	In fact, don't use DECL_CONTEXT at all here.
 
-1998-05-20  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+1998-05-20  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (record_unknown_type): New function.
 	(init_decl_processing): Call it for the unknown and global type
@@ -4366,7 +4366,7 @@ Mon May 18 03:00:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (instantiate_type): Don't abort on TREE_NONLOCAL_FLAG.
 
-Mon May 18 01:43:01 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+Mon May 18 01:43:01 1998  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (lookup_name_real): Don't look at IDENTIFIER_LOCAL_VALUE
 	for a type unless it is one.
@@ -4380,7 +4380,7 @@ Mon May 18 01:24:08 1998  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (BISON): Use bison from the build tree if it exists.
 	(FLEX): Likewise.
 
-Sun May 17 14:52:08 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+Sun May 17 14:52:08 1998  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (type_unknown_p): Return true for TREE_LIST also.
 
@@ -4620,7 +4620,7 @@ Sat May  9 14:44:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl.c (lookup_name_real): Use it.
 	* search.c (lookup_field): Likewise.
 
-Fri May  8 23:32:42 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Fri May  8 23:32:42 1998  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.def (OVERLOAD): New node.
 	* cp-tree.h (BINDING_TYPE, SET_IDENTIFIER_GLOBAL_VALUE,
@@ -5894,7 +5894,7 @@ Wed Feb 25 00:35:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (get_unique_name): Tweak from earlier in the name.
 
-Tue Feb 24 22:15:04 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+Tue Feb 24 22:15:04 1998  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.def: Add CPLUS_BINDING node.
 	* cp-tree.h (tree_binding): New struct.

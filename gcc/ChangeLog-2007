@@ -18112,7 +18112,7 @@
 	movhi_insn, movqi_insn, movsf_insn, movdf_insn): Don't allow constant
 	to memory moves.
 
-2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+2007-06-11  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* tree.c (signed_or_unsigned_type_for): New.
 	(unsigned_type_for): Use signed_or_unsigned_type_for.
@@ -19817,7 +19817,7 @@
 	(i386_pe_mangle_decl_assembler_name): New. Wrap
 	i386_pe_maybe_mangle_decl_assembler_name.
 
-2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-16  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-common.c (c_common_signed_or_unsigned_type): Delay the check for
 	INTEGRAL_TYPE_P and TYPE_UNSIGNED.
@@ -20845,7 +20845,7 @@
 	* config/i386/i386.c (ix86_scalar_mode_supported): TFmode is
 	supported for TARGET_64BIT.
 
-2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-16  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-common.c (c_common_signed_or_unsigned_type): Emulate
 	c_common_unsigned_type behavior.
@@ -20983,7 +20983,7 @@
 
 	* genautomata.c (gen_regexp_el): Allocate correct size for regexp.
 
-2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+2007-05-14  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-common.c (warnings_for_convert_and_check): Use unsigned_type_for
 	instead of c_common_unsigned_type.
@@ -24355,7 +24355,7 @@
 	* config/avr/avr.md (movw peephole2): New.
 	(movw_r peephole2): New.
 
-2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+2007-03-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* tree.h (get_signed_or_unsigned_type): New.
 	* fold-const.c (operand_equal_for_comparison_p): Use
@@ -26017,7 +26017,7 @@
 
 	* c-common.c (warn_logical_operator): Fix condition.
 
-2007-03-10  Tobias Schlﾃｯﾂｿﾂｽter  <tobi@gcc.gnu.org>
+2007-03-10  Tobias Schlﾃｼter  <tobi@gcc.gnu.org>
 
 	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Add missing
 	quotation mark.
@@ -33161,7 +33161,7 @@
 	* langhooks.h (struct lang_hooks): Removed field
 	'can_use_bit_fields_p'.
 
-2007-01-10  Ralf Corsﾃﾂｩpius <ralf.corsepius@rtems.org>
+2007-01-10  Ralf Corsﾃｩpius <ralf.corsepius@rtems.org>
 
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
 
@@ -33390,7 +33390,7 @@
 	* config/frv/predicates.md (reg_or_0_operand): Accept
 	CONST_DOUBLEs.
 
-2007-01-08  Ralf Corsﾃﾂｩpius <ralf.corsepius@rtems.org>
+2007-01-08  Ralf Corsﾃｩpius <ralf.corsepius@rtems.org>
 
 	* config/bfin/rtems.h, config/bfin/t-rtems: New.
 	* config.gcc: Add bfin*-rtems*.
