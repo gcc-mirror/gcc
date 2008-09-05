@@ -1147,6 +1147,7 @@ extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern rtx bb_note (basic_block);
 extern void concat_note_lists (rtx, rtx *);
+extern rtx sched_emit_insn (rtx);
 
 
 /* Types and functions in sched-rgn.c.  */

@@ -4979,4 +4979,15 @@ sched_create_empty_bb_1 (basic_block after)
   return create_empty_bb (after);
 }
 
+/* Insert PAT as an INSN into the schedule and update the necessary data
+   structures to account for it. */
+rtx
+sched_emit_insn (rtx pat)
+{
+  rtx insn = emit_insn_after (pat, last_scheduled_insn);
+  last_scheduled_insn = insn;
+  haifa_init_insn (insn);
+  return insn;
+}
+
 #endif /* INSN_SCHEDULING */
