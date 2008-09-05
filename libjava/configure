@@ -459,7 +459,7 @@ ac_includes_default="\
 #endif"
 
 ac_subdirs_all="$ac_subdirs_all classpath libltdl"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir multi_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs JAVA_MAINTAINER_MODE_TRUE JAVA_MAINTAINER_MODE_FALSE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJ_LD_SYMBOLIC_FUNCTIONS LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE X_AWT_TRUE X_AWT_FALSE GCJ_FOR_ECJX GCJH host_exeext INCLTDL LIBLTDL DIRLTDL LIBTOOL SED EGREP FGREP GREP DUMPBIN ac_ct_DUMPBIN NM lt_ECHO CPP CPPFLAGS CXXCPP GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ECJ_BUILD_JAR ECJ_JAR BUILD_ECJ1_TRUE BUILD_ECJ1_FALSE INSTALL_ECJ_JAR_TRUE INSTALL_ECJ_JAR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME SUPPRESS_LIBGCJ_BC_TRUE SUPPRESS_LIBGCJ_BC_FALSE INTERPRETER INTERPRETER_TRUE INTERPRETER_FALSE LIBFFI LIBFFIINCS PLATFORM USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava extra_gij_ldflags extra_ldflags LIBSTDCXXSPEC LIBGCJTESTSPEC GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE ENABLE_SHARED_TRUE ENABLE_SHARED_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION dbexecdir gcjsubdir gxx_include_dir libstdcxx_incdir PERL SYSDEP_SOURCES ANONVERSCRIPT_TRUE ANONVERSCRIPT_FALSE LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here python_mod_dir python_mod_dir_expanded MAKE INSTALL_AOT_RPM_TRUE INSTALL_AOT_RPM_FALSE CREATE_JAVA_HOME_TRUE CREATE_JAVA_HOME_FALSE gcc_suffix JAVA_VERSION BUILD_VERSION JVM_ROOT_DIR JVM_JAR_ROOT_DIR JVM_JAR_DIR JRE_DIR SDK_DIR JRE_LNK SDK_LNK SDK_BIN_DIR SDK_LIB_DIR SDK_INCLUDE_DIR JRE_BIN_DIR JRE_LIB_DIR GCJ_BIN_DIR CPU OS LIBDIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir multi_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs JAVA_MAINTAINER_MODE_TRUE JAVA_MAINTAINER_MODE_FALSE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJ_LD_SYMBOLIC_FUNCTIONS LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE X_AWT_TRUE X_AWT_FALSE GCJ_FOR_ECJX GCJH host_exeext INCLTDL LIBLTDL DIRLTDL LIBTOOL SED EGREP FGREP GREP DUMPBIN ac_ct_DUMPBIN NM lt_ECHO CPP CPPFLAGS CXXCPP GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ECJ_BUILD_JAR ECJ_JAR BUILD_ECJ1_TRUE BUILD_ECJ1_FALSE INSTALL_ECJ_JAR_TRUE INSTALL_ECJ_JAR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME SUPPRESS_LIBGCJ_BC_TRUE SUPPRESS_LIBGCJ_BC_FALSE BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE INTERPRETER INTERPRETER_TRUE INTERPRETER_FALSE LIBFFI LIBFFIINCS PLATFORM USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava extra_gij_ldflags extra_ldflags LIBSTDCXXSPEC LIBGCJTESTSPEC GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE ENABLE_SHARED_TRUE ENABLE_SHARED_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION dbexecdir gcjsubdir gxx_include_dir libstdcxx_incdir PERL SYSDEP_SOURCES ANONVERSCRIPT_TRUE ANONVERSCRIPT_FALSE LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here python_mod_dir python_mod_dir_expanded MAKE INSTALL_AOT_RPM_TRUE INSTALL_AOT_RPM_FALSE CREATE_JAVA_HOME_TRUE CREATE_JAVA_HOME_FALSE gcc_suffix JAVA_VERSION BUILD_VERSION JVM_ROOT_DIR JVM_JAR_ROOT_DIR JVM_JAR_DIR JRE_DIR SDK_DIR JRE_LNK SDK_LNK SDK_BIN_DIR SDK_LIB_DIR SDK_INCLUDE_DIR JRE_BIN_DIR JRE_LIB_DIR GCJ_BIN_DIR CPU OS LIBDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 ac_pwd=`pwd`
 
@@ -1038,6 +1038,9 @@ Optional Features:
                           use global hash table for monitor locks
   --enable-libgcj-bc      enable(default) or disable BC ABI for portions of
                           libgcj
+  --enable-reduced-reflection
+                          enable or disable(default) -freduced-reflection when
+                          building portions of libgcj
   --enable-gc-debug       include full support for pointer backtracing etc.
   --enable-interpreter    enable interpreter
   --enable-sjlj-exceptions
@@ -6021,13 +6024,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:6024: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:6027: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6027: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:6030: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6030: output\"" >&5)
+  (eval echo "\"\$as_me:6033: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -7071,7 +7074,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 7074 "configure"' > conftest.$ac_ext
+  echo '#line 7077 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -8772,11 +8775,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8775: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8778: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8779: \$? = $ac_status" >&5
+   echo "$as_me:8782: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9094,11 +9097,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9097: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9100: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9101: \$? = $ac_status" >&5
+   echo "$as_me:9104: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9199,11 +9202,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9202: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9205: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9206: \$? = $ac_status" >&5
+   echo "$as_me:9209: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9254,11 +9257,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9257: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9260: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9261: \$? = $ac_status" >&5
+   echo "$as_me:9264: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12106,7 +12109,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12109 "configure"
+#line 12112 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12206,7 +12209,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12209 "configure"
+#line 12212 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14244,11 +14247,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14247: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14250: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14251: \$? = $ac_status" >&5
+   echo "$as_me:14254: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14343,11 +14346,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14346: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14349: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14350: \$? = $ac_status" >&5
+   echo "$as_me:14353: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14395,11 +14398,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14398: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14401: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14402: \$? = $ac_status" >&5
+   echo "$as_me:14405: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15783,11 +15786,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15786: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15789: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15790: \$? = $ac_status" >&5
+   echo "$as_me:15793: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16099,11 +16102,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16102: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16105: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16106: \$? = $ac_status" >&5
+   echo "$as_me:16109: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16198,11 +16201,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16201: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16204: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16205: \$? = $ac_status" >&5
+   echo "$as_me:16208: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16250,11 +16253,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16253: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16256: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16257: \$? = $ac_status" >&5
+   echo "$as_me:16260: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18510,6 +18513,25 @@ else
 fi
 
 
+build_libgcj_reduced_reflection=no
+# Check whether --enable-reduced-reflection or --disable-reduced-reflection was given.
+if test "${enable_reduced_reflection+set}" = set; then
+  enableval="$enable_reduced_reflection"
+  if test "$enable_reduced_reflection" = "yes"; then
+     build_libgcj_reduced_reflection=yes
+   fi
+fi;
+
+
+if test "$build_libgcj_reduced_reflection" = "yes"; then
+  BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE=
+  BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE='#'
+else
+  BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE='#'
+  BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE=
+fi
+
+
 # What is the native OS API for MinGW?
 
 # Check whether --with-win32-nlsapi or --without-win32-nlsapi was given.
@@ -18606,7 +18628,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 18609 "configure"
+#line 18631 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -28367,6 +28389,13 @@ echo "$as_me: error: conditional \"SUPPRESS_LIBGCJ_BC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE}" && test -z "${BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_LIBGCJ_REDUCED_REFLECTION\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_LIBGCJ_REDUCED_REFLECTION\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${INTERPRETER_TRUE}" && test -z "${INTERPRETER_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"INTERPRETER\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -29613,6 +29642,8 @@ s,@JAVA_HOME_SET_FALSE@,$JAVA_HOME_SET_FALSE,;t t
 s,@JAVA_HOME@,$JAVA_HOME,;t t
 s,@SUPPRESS_LIBGCJ_BC_TRUE@,$SUPPRESS_LIBGCJ_BC_TRUE,;t t
 s,@SUPPRESS_LIBGCJ_BC_FALSE@,$SUPPRESS_LIBGCJ_BC_FALSE,;t t
+s,@BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE@,$BUILD_LIBGCJ_REDUCED_REFLECTION_TRUE,;t t
+s,@BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@,$BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE,;t t
 s,@INTERPRETER@,$INTERPRETER,;t t
 s,@INTERPRETER_TRUE@,$INTERPRETER_TRUE,;t t
 s,@INTERPRETER_FALSE@,$INTERPRETER_FALSE,;t t

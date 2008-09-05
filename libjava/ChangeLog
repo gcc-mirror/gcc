@@ -1,3 +1,17 @@
+2008-09-05  David Daney  <ddaney@avtrex.com>
+
+	* configure.ac (reduced-reflection): New AC_ARG_ENABLE.
+	(build_libgcj_reduced_reflection): New variable.
+	(BUILD_LIBGCJ_REDUCED_REFLECTION): New AM_CONDITIONAL.
+	* Makefile.am (LIBGCJ_REDUCED_REFLECTION_FLAGS): New variable.
+	(%.lo: %.list): Add LIBGCJ_REDUCED_REFLECTION_FLAGS to compile
+	command.
+	(java/util/concurrent.lo, java/util/concurrent/atomic.lo,
+	java/util/concurrent/locks.lo): Override
+	LIBGCJ_REDUCED_REFLECTION_FLAGS.
+	* Makefile.in, include/Makefile.in, testsuite/Makefile.in,
+	gcj/Makefile.in, configure: Regenerate.
+
 2008-08-22  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/8995:

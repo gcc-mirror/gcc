@@ -1582,6 +1582,13 @@ these options.  This allows the compile-time linker to resolve
 dependencies when statically linking to libgcj.  However it makes it
 impossible to override the affected portions of libgcj at run-time.
 
+@item --enable-reduced-reflection
+Build most of libgcj with @option{-freduced-reflection}.  This reduces
+the size of libgcj at the expense of not being able to do accurate
+reflection on the classes it contains.  This option is safe if you
+know that code using libgcj will never use reflection on the standard
+runtime classes in libgcj (including using serialization, RMI or CORBA).
+
 @item --with-ecos
 Enable runtime eCos target support.
 

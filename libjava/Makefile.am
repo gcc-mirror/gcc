@@ -173,6 +173,12 @@ else
 LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 endif
 
+if BUILD_LIBGCJ_REDUCED_REFLECTION
+LIBGCJ_REDUCED_REFLECTION_FLAGS = -freduced-reflection
+else
+LIBGCJ_REDUCED_REFLECTION_FLAGS =
+endif
+
 ## Extra CFLAGS used for JNI C sources shared with GNU Classpath.
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 
@@ -401,8 +407,13 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 
 ## Compiling a list of java sources to a single .o.
 
+# Concurrent things use reflection internally.
+java/util/concurrent.lo \
+java/util/concurrent/atomic.lo \
+java/util/concurrent/locks.lo: LIBGCJ_REDUCED_REFLECTION_FLAGS =
+
 %.lo: %.list
-	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(here)/classpath/lib/classes -MT $@ -MD -MP -MF $(basename $@).deps @$<
+	$(LTGCJCOMPILE) $(LIBGCJ_REDUCED_REFLECTION_FLAGS) -c -o $@ -fsource-filename=$(here)/classpath/lib/classes -MT $@ -MD -MP -MF $(basename $@).deps @$<
 
 java/lang/Object.lo: classpath/lib/java/lang/Object.class
 	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(srcdir)/$(basename $@).java $<

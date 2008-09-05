@@ -1,3 +1,7 @@
+2008-09-05  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (--enable-reduced-reflection): Document new option.
+
 2008-09-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/predicates.md (nonimmed_operand, mem_operand): Use

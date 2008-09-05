@@ -526,6 +526,15 @@ AC_ARG_ENABLE(libgcj-bc,
    fi])
 AM_CONDITIONAL(SUPPRESS_LIBGCJ_BC, test "$suppress_libgcj_bc" = "yes")
 
+build_libgcj_reduced_reflection=no
+AC_ARG_ENABLE(reduced-reflection,
+  AS_HELP_STRING([--enable-reduced-reflection],
+                 [enable or disable(default) -freduced-reflection when building portions of libgcj]),
+  [if test "$enable_reduced_reflection" = "yes"; then
+     build_libgcj_reduced_reflection=yes
+   fi])
+AM_CONDITIONAL(BUILD_LIBGCJ_REDUCED_REFLECTION, test "$build_libgcj_reduced_reflection" = "yes")
+
 # What is the native OS API for MinGW?
 AC_ARG_WITH(win32-nlsapi,
   AS_HELP_STRING([--with-win32-nlsapi=ansi or unicows or unicode],
