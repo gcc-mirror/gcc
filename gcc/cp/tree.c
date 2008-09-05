@@ -877,6 +877,17 @@ cp_build_qualified_type_real (tree type,
       && TYPE_LANG_SPECIFIC (result) == TYPE_LANG_SPECIFIC (type))
     TYPE_LANG_SPECIFIC (result) = NULL;
 
+  /* We may also have ended up building a new copy of the canonical
+     type of a pointer-to-method type, which could have the same
+     sharing problem described above.  */
+  if (TYPE_CANONICAL (result) != TYPE_CANONICAL (type)
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
+      && (TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) 
+          == TYPE_LANG_SPECIFIC (TYPE_CANONICAL (type))))
+    TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) = NULL;
+      
+
   return result;
 }
 

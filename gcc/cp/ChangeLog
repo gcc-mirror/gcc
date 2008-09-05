@@ -1,3 +1,10 @@
+2008-09-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/37342
+       * tree.c (cp_build_qualified_type_real): Deal with sharing of
+       TYPE_LANG_SPECIFIC in the canonical types of pointer-to-method
+       types.
+	
 2008-09-04  Ian Lance Taylor  <iant@google.com>
 
 	* parser.c (check_no_duplicate_clause): Change code parameter to
