@@ -1,3 +1,9 @@
+2008-09-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36746
+	* gfortran.dg/implicit_derived_type_1.f90: New test.
+	* gfortran.dg/used_before_typed_5.f90: New test.
+
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/cold-attribute-1.c: Update testcase.
