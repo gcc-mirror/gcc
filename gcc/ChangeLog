@@ -1,3 +1,8 @@
+2008-09-04  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (native_encode_real): Fix computation of WORDS.
+	(native_interpret_real): Likewise.
+
 2008-09-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/t-rs6000: Remove target gt-rs6000.h.

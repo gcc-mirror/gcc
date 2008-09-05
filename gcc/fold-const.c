@@ -7225,7 +7225,7 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
 
   if (total_bytes > len)
     return 0;
-  words = 32 / UNITS_PER_WORD;
+  words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
   real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
 
@@ -7415,7 +7415,7 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
   total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   if (total_bytes > len || total_bytes > 24)
     return NULL_TREE;
-  words = 32 / UNITS_PER_WORD;
+  words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
   memset (tmp, 0, sizeof (tmp));
   for (bitpos = 0; bitpos < total_bytes * BITS_PER_UNIT;
