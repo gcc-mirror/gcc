@@ -1,3 +1,13 @@
+2008-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.h (enum reg_class): Add FRAME_REGS.
+	(REG_CLASS_NAMES): Update.
+	(REG_CLASS_CONTENTS): Update.
+	* config/mips/mips.c (mips_regno_to_class): Use FRAME_REGS instead
+	of ALL_REGS for regs 77 and 78.
+	* function.c (instantiate_virtual_regs_in_insn): Assert that
+	return value of simplify_gen_subreg is not NULL.
+
 2008-09-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* emit-rtl.c (gen_rtvec): Rewrite not using gen_rtvec_v.
