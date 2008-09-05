@@ -1,3 +1,14 @@
+2008-09-05  Peter Dimov  <pdimov@mmltd.net>
+
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_2.cc: New.
+
+2008-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref.cc: Rename
+	to...
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_1.cc: ...
+	this.
+
 2008-09-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/36962
