@@ -1,3 +1,7 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/init/const7.C: New test.
+
 2008-09-04  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/seq-1.c: New test.

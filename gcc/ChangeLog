@@ -1,3 +1,9 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* varasm.c (narrowing_initializer_constant_valid_p): New
+	static function.
+	(initializer_constant_valid_p): Call it.
+
 2008-09-04  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (native_encode_real): Fix computation of WORDS.
