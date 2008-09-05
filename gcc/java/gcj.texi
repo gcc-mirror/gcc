@@ -557,9 +557,10 @@ the ability to use certain reflection capabilities of the standard
 Java runtime environment. When set all meta-data except for that
 which is needed to obtain correct runtime semantics is eliminated.
 
-For code that does not use reflection (i.e. the methods in the
-@code{java.lang.reflect} package), @code{-freduced-reflection}
-will result in proper operation with a savings in executable code size.
+For code that does not use reflection (i.e. serialization, RMI, CORBA
+or call methods in the @code{java.lang.reflect} package),
+@code{-freduced-reflection} will result in proper operation with a
+savings in executable code size.
 
 JNI (@code{-fjni}) and the binary compatibility ABI
 (@code{-findirect-dispatch}) do not work properly without full
