@@ -1,6 +1,8 @@
 2008-09-05  Janis Johnson  <janis187@us.ibm.com>
 	    Samuel Tardieu  <sam@rfc1149.net>
 
+	* opts.c (decode_options): Combine nested if statements.
+
 	PR target/37283
 	* opts.c (decode_options): Handle more relationships among
 	unit-at-a-time, toplevel-reorder, and section-anchors.
