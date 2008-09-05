@@ -1,3 +1,8 @@
+2008-09-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* emit-rtl.c (gen_rtvec): Rewrite not using gen_rtvec_v.
+	(gen_rtvec_v): Fix coding standards.
+
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (decide_alg): Be more conservative about optimizing for size.
