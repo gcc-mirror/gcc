@@ -1,3 +1,8 @@
+2008-09-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/37342
+       * g++.dg/other/canon-37342.C: New.
+	
 2008-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c-torture/compile/20080903-1.c: New test.
