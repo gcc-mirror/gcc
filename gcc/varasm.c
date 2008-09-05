@@ -4021,6 +4021,78 @@ constructor_static_from_elts_p (const_tree ctor)
 	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (ctor)));
 }
 
+/* A subroutine of initializer_constant_valid_p.  VALUE is either a
+   MINUS_EXPR or a POINTER_PLUS_EXPR, and ENDTYPE is a narrowing
+   conversion to something smaller than a pointer.  This returns
+   null_pointer_node if the resulting value is an absolute constant
+   which can be used to initialize a static variable.  Otherwise it
+   returns NULL.  */
+
+static tree
+narrowing_initializer_constant_valid_p (tree value, tree endtype)
+{
+  tree op0, op1;
+
+  if (!INTEGRAL_TYPE_P (endtype))
+    return NULL_TREE;
+
+  op0 = TREE_OPERAND (value, 0);
+  op1 = TREE_OPERAND (value, 1);
+
+  /* Like STRIP_NOPS except allow the operand mode to widen.  This
+     works around a feature of fold that simplifies (int)(p1 - p2) to
+     ((int)p1 - (int)p2) under the theory that the narrower operation
+     is cheaper.  */
+
+  while (TREE_CODE (op0) == NOP_EXPR
+	 || TREE_CODE (op0) == CONVERT_EXPR
+	 || TREE_CODE (op0) == NON_LVALUE_EXPR)
+    {
+      tree inner = TREE_OPERAND (op0, 0);
+      if (inner == error_mark_node
+	  || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
+	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))
+	      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+	break;
+      op0 = inner;
+    }
+
+  while (TREE_CODE (op1) == NOP_EXPR
+	 || TREE_CODE (op1) == CONVERT_EXPR
+	 || TREE_CODE (op1) == NON_LVALUE_EXPR)
+    {
+      tree inner = TREE_OPERAND (op1, 0);
+      if (inner == error_mark_node
+	  || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
+	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))
+	      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+	break;
+      op1 = inner;
+    }
+
+  op0 = initializer_constant_valid_p (op0, endtype);
+  op1 = initializer_constant_valid_p (op1, endtype);
+
+  /* Both initializers must be known.  */
+  if (op0 && op1)
+    {
+      if (op0 == op1)
+	return null_pointer_node;
+
+      /* Support differences between labels.  */
+      if (TREE_CODE (op0) == LABEL_DECL
+	  && TREE_CODE (op1) == LABEL_DECL)
+	return null_pointer_node;
+
+      if (TREE_CODE (op0) == STRING_CST
+	  && TREE_CODE (op1) == STRING_CST
+	  && operand_equal_p (op0, op1, 1))
+	return null_pointer_node;
+    }
+
+  return NULL_TREE;
+}
+
 /* Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an
    element of a "constant" initializer.
@@ -4034,6 +4106,8 @@ constructor_static_from_elts_p (const_tree ctor)
 tree
 initializer_constant_valid_p (tree value, tree endtype)
 {
+  tree ret;
+
   switch (TREE_CODE (value))
     {
     case CONSTRUCTOR:
@@ -4171,6 +4245,14 @@ initializer_constant_valid_p (tree value, tree endtype)
 	  if (valid1 == null_pointer_node)
 	    return valid0;
 	}
+
+      /* Support narrowing pointer differences.  */
+      if (TREE_CODE (value) == POINTER_PLUS_EXPR)
+	{
+	  ret = narrowing_initializer_constant_valid_p (value, endtype);
+	  if (ret != NULL_TREE)
+	    return ret;
+	}
       break;
 
     case MINUS_EXPR:
@@ -4199,64 +4281,10 @@ initializer_constant_valid_p (tree value, tree endtype)
 	}
 
       /* Support narrowing differences.  */
-      if (INTEGRAL_TYPE_P (endtype))
-	{
-	  tree op0, op1;
+      ret = narrowing_initializer_constant_valid_p (value, endtype);
+      if (ret != NULL_TREE)
+	return ret;
 
-	  op0 = TREE_OPERAND (value, 0);
-	  op1 = TREE_OPERAND (value, 1);
-
-	  /* Like STRIP_NOPS except allow the operand mode to widen.
-	     This works around a feature of fold that simplifies
-	     (int)(p1 - p2) to ((int)p1 - (int)p2) under the theory
-	     that the narrower operation is cheaper.  */
-
-	  while (TREE_CODE (op0) == NOP_EXPR
-		 || TREE_CODE (op0) == CONVERT_EXPR
-		 || TREE_CODE (op0) == NON_LVALUE_EXPR)
-	    {
-	      tree inner = TREE_OPERAND (op0, 0);
-	      if (inner == error_mark_node
-	          || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
-		  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))
-		      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
-		break;
-	      op0 = inner;
-	    }
-
-	  while (TREE_CODE (op1) == NOP_EXPR
-		 || TREE_CODE (op1) == CONVERT_EXPR
-		 || TREE_CODE (op1) == NON_LVALUE_EXPR)
-	    {
-	      tree inner = TREE_OPERAND (op1, 0);
-	      if (inner == error_mark_node
-	          || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
-		  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))
-		      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
-		break;
-	      op1 = inner;
-	    }
-
-	  op0 = initializer_constant_valid_p (op0, endtype);
-	  op1 = initializer_constant_valid_p (op1, endtype);
-
-	  /* Both initializers must be known.  */
-	  if (op0 && op1)
-	    {
-	      if (op0 == op1)
-		return null_pointer_node;
-
-	      /* Support differences between labels.  */
-	      if (TREE_CODE (op0) == LABEL_DECL
-		  && TREE_CODE (op1) == LABEL_DECL)
-		return null_pointer_node;
-
-	      if (TREE_CODE (op0) == STRING_CST
-		  && TREE_CODE (op1) == STRING_CST
-		  && operand_equal_p (op0, op1, 1))
-		return null_pointer_node;
-	    }
-	}
       break;
 
     default:

@@ -1,3 +1,9 @@
+2008-09-04  Ian Lance Taylor  <iant@google.com>
+
+	* varasm.c (narrowing_initializer_constant_valid_p): New
+	static function.
+	(initializer_constant_valid_p): Call it.
+
 2008-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36332
