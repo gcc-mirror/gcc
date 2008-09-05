@@ -35,6 +35,14 @@ munsafe-dma
 Target Report RejectNegative InverseMask(SAFE_DMA)
 volatile must be specified on any memory that is effected by DMA
 
+mdual-nops
+Target Report Var(spu_dual_nops,10) Init(10)
+Insert nops when it might improve performance by allowing dual issue (default)
+
+mdual-nops=
+Target RejectNegative Joined UInteger Var(spu_dual_nops)
+Insert nops when it might improve performance by allowing dual issue (default)
+
 mstdmain
 Target Report Mask(STD_MAIN)
 Use standard main function as entry for startup
@@ -42,6 +50,14 @@ Use standard main function as entry for startup
 mbranch-hints
 Target Report Mask(BRANCH_HINTS)
 Generate branch hints for branches
+
+mhint-max-nops=
+Target RejectNegative Joined UInteger Var(spu_max_nops) Init(2)
+Maximum number of nops to insert for a hint (Default 2)
+
+mhint-max-distance=
+Target RejectNegative Joined Var(spu_max_distance_str)
+Approximate maximum number of instructions to allow between a hint and its branch [125]
 
 msmall-mem
 Target Report RejectNegative InverseMask(LARGE_MEM)
@@ -54,6 +70,10 @@ Generate code for 32 bit addressing
 mfixed-range=
 Target RejectNegative Joined Var(spu_fixed_range_string)
 Specify range of registers to make fixed
+
+msafe-hints
+Target Report Mask(SAFE_HINTS)
+Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue
 
 march=
 Target RejectNegative Joined Var(spu_arch_string)
