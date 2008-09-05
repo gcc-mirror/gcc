@@ -1,3 +1,7 @@
+2008-09-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/ligbomp.c/c.exp: Unset lang_test_file only if it exists.
+
 2008-08-31  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* Makefile.am (libgomp_la_LDFLAGS): Add -no-undefined.
