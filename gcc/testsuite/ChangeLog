@@ -1,3 +1,9 @@
+2008-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37399
+	* gfortran.dg/size_kind.f90: Remove allocate statement
+	as it overflows at compile time on 32bit systems.
+
 2008-09-06  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/tree-ssa-pr14703.C: New testcase.
