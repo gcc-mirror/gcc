@@ -2985,17 +2985,13 @@ ira_fast_allocation (void)
   for (i = 0; i < num; i++)
     {
       a = sorted_allocnos[i];
-      ALLOCNO_ASSIGNED_P (a) = true;
-      ALLOCNO_HARD_REGNO (a) = -1;
-      /* Live info about hard registers are absent when OPTIMIZE==0.
-	 So try to assign hard-registers only to local allocnos.  */
-      if (!optimize && REG_BASIC_BLOCK (ALLOCNO_REGNO (a)) == REG_BLOCK_GLOBAL)
-	continue;
       COPY_HARD_REG_SET (conflict_hard_regs, ALLOCNO_CONFLICT_HARD_REGS (a));
       for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
 	for (j =  r->start; j <= r->finish; j++)
 	  IOR_HARD_REG_SET (conflict_hard_regs, used_hard_regs[j]);
       cover_class = ALLOCNO_COVER_CLASS (a);
+      ALLOCNO_ASSIGNED_P (a) = true;
+      ALLOCNO_HARD_REGNO (a) = -1;
       if (hard_reg_set_subset_p (reg_class_contents[cover_class],
 				 conflict_hard_regs))
 	continue;
