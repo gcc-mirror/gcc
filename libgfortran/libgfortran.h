@@ -68,6 +68,11 @@ typedef off_t gfc_offset;
 
 #ifndef __GNUC__
 #define __attribute__(x)
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#else
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
 #endif
 
 
@@ -107,7 +112,8 @@ typedef off_t gfc_offset;
    mingw provides, __mingw_snprintf().  We also provide a prototype for
    __mingw_snprintf(), because the mingw headers currently don't have one.  */
 #if HAVE_MINGW_SNPRINTF
-extern int __mingw_snprintf (char *, size_t, const char *, ...);
+extern int __mingw_snprintf (char *, size_t, const char *, ...)
+     __attribute__ ((format (printf, 3, 4)));
 #undef snprintf
 #define snprintf __mingw_snprintf
 #endif
@@ -649,7 +655,8 @@ extern void runtime_error_at (const char *, const char *, ...)
      __attribute__ ((noreturn, format (printf, 2, 3)));
 iexport_proto(runtime_error_at);
 
-extern void runtime_warning_at (const char *, const char *, ...);
+extern void runtime_warning_at (const char *, const char *, ...)
+     __attribute__ ((format (printf, 2, 3)));
 iexport_proto(runtime_warning_at);
 
 extern void internal_error (st_parameter_common *, const char *)

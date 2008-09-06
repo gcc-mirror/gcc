@@ -123,7 +123,7 @@ maxval_r10 (gfc_array_r10 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -312,7 +312,7 @@ mmaxval_r10 (gfc_array_r10 * const restrict retarray,
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in MAXVAL intrinsic");
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -497,7 +497,7 @@ smaxval_r10 (gfc_array_r10 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {

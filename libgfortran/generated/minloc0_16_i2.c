@@ -69,7 +69,7 @@ minloc0_16_i2 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  int ret_rank;
 	  index_type ret_extent;
@@ -193,7 +193,7 @@ mminloc0_16_i2 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  int ret_rank, mask_rank;
 	  index_type ret_extent;
@@ -353,7 +353,7 @@ sminloc0_16_i2 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  int ret_rank;
 	  index_type ret_extent;

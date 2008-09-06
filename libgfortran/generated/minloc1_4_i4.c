@@ -124,7 +124,7 @@ minloc1_4_i4 (gfc_array_i4 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -318,7 +318,7 @@ mminloc1_4_i4 (gfc_array_i4 * const restrict retarray,
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in MINLOC intrinsic");
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -508,7 +508,7 @@ sminloc1_4_i4 (gfc_array_i4 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {

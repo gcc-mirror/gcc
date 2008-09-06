@@ -110,7 +110,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 		       (long int) GFC_DESCRIPTOR_RANK (retarray),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
