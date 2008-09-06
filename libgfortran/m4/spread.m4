@@ -122,7 +122,7 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
       if (GFC_DESCRIPTOR_RANK(ret) != rrank)
 	runtime_error ("rank mismatch in spread()");
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n = 0; n < rrank; n++)
 	    {

@@ -127,7 +127,7 @@ count_1_l (gfc_array_i1 * const restrict retarray,
 		       (long int) GFC_DESCRIPTOR_RANK (retarray),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {

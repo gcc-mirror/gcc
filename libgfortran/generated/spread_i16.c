@@ -121,7 +121,7 @@ spread_i16 (gfc_array_i16 *ret, const gfc_array_i16 *source,
       if (GFC_DESCRIPTOR_RANK(ret) != rrank)
 	runtime_error ("rank mismatch in spread()");
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n = 0; n < rrank; n++)
 	    {

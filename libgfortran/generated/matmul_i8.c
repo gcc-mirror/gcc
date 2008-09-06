@@ -135,7 +135,7 @@ matmul_i8 (gfc_array_i8 * const restrict retarray,
 	= internal_malloc_size (sizeof (GFC_INTEGER_8) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
-    else if (compile_options.bounds_check)
+    else if (unlikely (compile_options.bounds_check))
       {
 	index_type ret_extent, arg_extent;
 

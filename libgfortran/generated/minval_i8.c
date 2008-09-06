@@ -123,7 +123,7 @@ minval_i8 (gfc_array_i8 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -312,7 +312,7 @@ mminval_i8 (gfc_array_i8 * const restrict retarray,
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in MINVAL intrinsic");
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {
@@ -497,7 +497,7 @@ sminval_i8 (gfc_array_i8 * const restrict retarray,
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
-      if (compile_options.bounds_check)
+      if (unlikely (compile_options.bounds_check))
 	{
 	  for (n=0; n < rank; n++)
 	    {

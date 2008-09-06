@@ -136,7 +136,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
 	= internal_malloc_size (sizeof ('rtype_name`) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
-    else if (compile_options.bounds_check)
+    else if (unlikely (compile_options.bounds_check))
       {
 	index_type ret_extent, arg_extent;
 

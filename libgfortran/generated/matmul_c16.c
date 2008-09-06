@@ -135,7 +135,7 @@ matmul_c16 (gfc_array_c16 * const restrict retarray,
 	= internal_malloc_size (sizeof (GFC_COMPLEX_16) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
-    else if (compile_options.bounds_check)
+    else if (unlikely (compile_options.bounds_check))
       {
 	index_type ret_extent, arg_extent;
 
