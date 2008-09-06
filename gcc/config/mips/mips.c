@@ -6173,7 +6173,8 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
      because there is no direct "jx" instruction equivalent to "jalx" to
      switch the ISA mode.  We only care about cases where the sibling
      and normal calls would both be direct.  */
-  if (mips_use_mips16_mode_p (decl)
+  if (decl
+      && mips_use_mips16_mode_p (decl)
       && const_call_insn_operand (XEXP (DECL_RTL (decl), 0), VOIDmode))
     return false;
 
