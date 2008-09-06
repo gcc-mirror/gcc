@@ -1,5 +1,11 @@
 2008-09-06  Steven G. Kargl  <kargls@comcast.net>
 
+	PR fortran/36153
+	* fortran/resolve.c (resolve_function): Shortcircuit for SIZE and
+	UBOUND if 2nd argument is KIND.
+
+2008-09-06  Steven G. Kargl  <kargls@comcast.net>
+
 	PR fortran/33229
 	* resolve.c (resolve_function): An intrinsic subroutine should not be
 	called as a function.

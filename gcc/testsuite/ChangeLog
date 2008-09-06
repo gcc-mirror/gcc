@@ -1,3 +1,8 @@
+2008-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36153
+	* gfortran.dg/size_kind.f90: New test.
+
 2008-09-06  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/33229
