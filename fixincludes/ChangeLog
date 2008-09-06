@@ -1,3 +1,15 @@
+2008-09-06  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl.tpl (sed): make the program executable configurable.
+	Some platforms have some rather oddball defaults.
+	* config.h.in (SED_PROGRAM): define the default sed.
+	* fixincl.x: regenerated
+	* tests/base/internal/wchar_core.h: fix bad sample text
+	* tests/base/math.h: fix bad sample text
+	* configure.ac: search for working sed
+	* inclhack.def (glibc_mutex_init): fix non-portable construct
+	and re-order a few misordered entries.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

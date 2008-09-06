@@ -620,6 +620,7 @@ fix = {
 		"#endif";
 };
 
+
 /*
  * Compaq Tru64 v5.1 defines all of its PTHREAD_*_INITIALIZER macros
  * incorrectly, specifying less fields in the initializers than are
@@ -639,31 +640,33 @@ fix = {
                 "s@CVALID\\(.*\\)_}@CVALID\\1_, 0, 0 }@\n"
                 "s@WVALID\\(.*\\)A}@WVALID\\1A, 0, 0, 0, 0, 0, 0, 0, 0, 0 }@\n"
                 "s@WVALID\\(.*\\)_}@WVALID\\1_, 0, 0, 0, 0, 0, 0, 0 }@\n";
-    test_text = "/*\n"
-                " * @(#)_RCSfile: pthread.h,v \\$ "
-                "_Revision: 1.1.33.21 \\$ (DEC) "
-                "_Date: 2000/08/15 15:30:13 \\$\n"
-                " */\n"
-"#ifndef _PTHREAD_NOMETER_STATIC\n"
-"# define PTHREAD_MUTEX_INITIALIZER \\\n"
-"    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA}\n"
-"# define PTHREAD_COND_INITIALIZER \\\n"
-"    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA}\n"
-"# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \\\n"
-"    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}\n"
-"# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \\\n"
-"    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}\n"
-"#else\n"
-"# define PTHREAD_MUTEX_INITIALIZER {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA}\n"
-"# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \\\n"
-"    {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}\n"
-"# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \\\n"
-"    {0, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}\n"
-"#endif\n\n"
-"#define PTHREAD_RWLOCK_INITIALIZER {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA}\n"
-"#define PTHREAD_RWLOCK_INITWITHNAME_NP(_n_,_a_) \\\n"
-"        {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA, _n_, _a_}\n";
+    test_text = <<- _EOText_
+	/*
+	 * @(#)_RCSfile: pthread.h,v $ _Revision: 1.1.33.21 $ (DEC) _Date: 2000/08/15 15:30:13 $
+	 */
+	#ifndef _PTHREAD_NOMETER_STATIC
+	# define PTHREAD_MUTEX_INITIALIZER \
+	    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA}
+	# define PTHREAD_COND_INITIALIZER \
+	    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA}
+	# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \
+	    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}
+	# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \
+	    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}
+	#else
+	# define PTHREAD_MUTEX_INITIALIZER {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA}
+	# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \
+	    {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}
+	# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \
+	    {0, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}
+	#endif
+
+	#define PTHREAD_RWLOCK_INITIALIZER {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA}
+	#define PTHREAD_RWLOCK_INITWITHNAME_NP(_n_,_a_) \
+	        {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA, _n_, _a_}
+	_EOText_;
 };
+
 
 /*
  *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
@@ -852,10 +855,10 @@ fix = {
                 "extern long double cabsl( struct __cabsl_s );";
 };
 
+
 /*
  * Fixup Darwin's broken check for __builtin_nanf.
- */ 
-    
+ */    
 fix = {
     hackname  = broken_nan;
     /*
@@ -871,7 +874,7 @@ fix = {
     c_fix     = format; 
     c_fix_arg = "#if 1";
     test_text = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
-}; 
+};
 
 
 /*
@@ -1228,10 +1231,12 @@ fix = {
     hackname = glibc_mutex_init;
     files    = pthread.h;
     select   = '\{ *\{ *0, *\} *\}';
-    sed      = "/define[ \t]\\+PTHREAD_MUTEX_INITIALIZER[ \t]*\\\\/,+1"
-               "s/{ { 0, } }/{ { 0, 0, 0, 0, 0, 0 } }/";
-    sed      = "s/{ \\(0, 0, 0, 0, PTHREAD_MUTEX_\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0 }/";
-    sed      = "s/{ \\(0, 0, 0, PTHREAD_MUTEX_\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0, 0 }/";
+    sed      = "/define[ \t]\\+PTHREAD_MUTEX_INITIALIZER[ \t]*\\\\/{\n"
+               "N\ns/{ { 0, } }/{ { 0, 0, 0, 0, 0, 0 } }/\n}";
+    sed      = "s/{ \\(0, 0, 0, 0, PTHREAD_MUTEX_"
+               "\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, PTHREAD_MUTEX_"
+               "\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0, 0 }/";
     sed      = "/define[ \t]\\+PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\/"
                "N;s/^[ \t]*#[ \t]*"
                "\\(define[ \t]\\+PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\\\)\\n"
@@ -1242,7 +1247,8 @@ fix = {
                "#  \\1\\n"
                "  { { 0, 0, 0, 0, 0, 0, 0, 0 } }\\n"
                "# endif/";
-    sed      = "s/{ \\(0, 0, 0, 0, 0, 0, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP\\) }/{ \\1, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, 0, 0, 0, "
+               "PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP\\) }/{ \\1, 0 }/";
     sed      = "/define[ \t]\\+PTHREAD_COND_INITIALIZER/"
                "s/{ { 0, } }/{ { 0, 0, 0, 0, 0, (void *) 0, 0, 0 } }/";
 
@@ -1349,6 +1355,40 @@ fix = {
 
 
 /*
+ *  Un-Hide a series of five FP defines from post-1999 compliance GCC:
+ *  FP_NORMAL, FP_ZERO, FP_INFINITE, FP_SUBNORMAL and FP_NAN
+ */
+fix = {
+     hackname  = hppa_hpux_fp_macros;
+     mach      = "hppa*-hp-hpux11*";
+     files     = math.h;
+     select    = "#[ \t]*define[ \t]*FP_NORMAL.*\n"
+		 "#[ \t]*define[ \t]*FP_ZERO.*\n"
+		 "#[ \t]*define[ \t]*FP_INFINITE.*\n"
+		 "#[ \t]*define[ \t]*FP_SUBNORMAL.*\n"
+		 "#[ \t]*define[ \t]*FP_NAN.*\n";
+     c_fix     = format;
+     c_fix_arg = <<- _EOFix_
+	#endif /* _INCLUDE_HPUX_SOURCE */
+
+	#if defined(_INCLUDE_HPUX_SOURCE) || \
+	   (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+	%0#endif
+
+	#ifdef _INCLUDE_HPUX_SOURCE
+
+	_EOFix_;
+
+     test_text =
+            "#  define FP_NORMAL     0\n"
+            "#  define FP_ZERO       1\n"
+            "#  define FP_INFINITE   2\n"
+            "#  define FP_SUBNORMAL  3\n"
+            "#  define FP_NAN        4\n";
+};
+
+
+/*
  * Delete C++ double pow (double, int) inline function from HP-UX 10 & 11
  * math.h to prevent clash with define in c_std/bits/std_cmath.h.
  */
@@ -1393,27 +1433,6 @@ fix = {
             "   inline double pow(double d,int expon) {\n"
             "     return pow(d, (double)expon);\n"
             "   }\n";
-};
-
-
-fix = {
-     hackname  = hppa_hpux_fp_macros;
-     mach      = "hppa*-hp-hpux11*";
-     files     = math.h;
-     select    = "#[ \t]*define[ \t]*FP_NORMAL.*\n"
-		 "#[ \t]*define[ \t]*FP_ZERO.*\n"
-		 "#[ \t]*define[ \t]*FP_INFINITE.*\n"
-		 "#[ \t]*define[ \t]*FP_SUBNORMAL.*\n"
-		 "#[ \t]*define[ \t]*FP_NAN.*\n";
-     c_fix     = format;
-     c_fix_arg = "#endif /* _INCLUDE_HPUX_SOURCE */\n\n#if defined(_INCLUDE_HPUX_SOURCE) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))\n%0#endif\n\n#ifdef _INCLUDE_HPUX_SOURCE\n";
-
-     test_text =
-            "#  define FP_NORMAL     0\n"
-            "#  define FP_ZERO       1\n"
-            "#  define FP_INFINITE   2\n"
-            "#  define FP_SUBNORMAL  3\n"
-            "#  define FP_NAN        4\n";
 };
 
 
@@ -1512,7 +1531,6 @@ fix = {
     select    = "ifndef _MATH_INCLUDED";
     c_fix     = format;
     c_fix_arg = "if !defined(_MATH_INCLUDED) || defined(__GNUG__)";
-//  sed       = "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/";
     test_text = "#ifndef _MATH_INCLUDED";
 };
 
@@ -1534,6 +1552,21 @@ fix = {
     "#ifdef _PA_RISC\n"
     "#  define fabsf(x) ((float)fabs((double)(float)(x)))\n"
     "#endif";
+};
+
+
+/*
+ *  Fix C99 constant in __POINTER_SET define.
+ */
+fix = {
+    hackname  = hpux11_pthread_const;
+    mach      = "*-hp-hpux11.[0-3]*";
+    files     = sys/pthread.h;
+    select    = "^#define[ \t]*__POINTER_SET[ \t]*\\(\\(void \\*\\) 1LL\\)";
+
+    c_fix     = format;
+    c_fix_arg = "#define __POINTER_SET\t\t((void *) 1L)";
+    test_text = "#define __POINTER_SET\t\t((void *) 1LL)";
 };
 
 
@@ -1763,19 +1796,6 @@ fix = {
     test_text = "   extern int errno;\n";
 };
 
-/*
- *  Fix C99 constant in __POINTER_SET define.
- */
-fix = {
-    hackname  = hpux11_pthread_const;
-    mach      = "*-hp-hpux11.[0-3]*";
-    files     = sys/pthread.h;
-    select    = "^#define[ \t]*__POINTER_SET[ \t]*\\(\\(void \\*\\) 1LL\\)";
-
-    c_fix     = format;
-    c_fix_arg = "#define __POINTER_SET\t\t((void *) 1L)";
-    test_text = "#define __POINTER_SET\t\t((void *) 1LL)";
-};
 
 /*
  *  Add missing braces to pthread initializer defines.
@@ -2112,7 +2132,9 @@ fix = {
     c_fix_arg = "#if _NO_XOPEN5 && !defined(__c99)\n%1";
 
     test_text = "#if _NO_XOPEN5\n"
-		"extern size_t          wcsftime(wchar_t *, __SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, const struct tm *);";
+		"extern size_t wcsftime(wchar_t *, "
+		"__SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, "
+		"const struct tm *);";
 };
 
 /*
@@ -2278,7 +2300,8 @@ fix = {
      * exception either.  So currently we bypass only for glibc, based on a
      * comment in the fixed glibc header.  Ick.
      */
-    bypass    = 'We have a problem when using C\+\+|for C\+\+, _[a-z0-9A-Z_]+_exception; for C, exception';
+    bypass    = 'We have a problem when using C\+\+|for C\+\+, '
+		'_[a-z0-9A-Z_]+_exception; for C, exception';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"
@@ -2368,7 +2391,11 @@ fix = {
     select    = "extern __inline int";
 
     c_fix     = format;
-    c_fix_arg = "extern\n#ifdef __GNUC_STDC_INLINE__\n__attribute__((__gnu_inline__))\n#endif\n__inline int";
+    c_fix_arg = "extern\n"
+		"#ifdef __GNUC_STDC_INLINE__\n"
+		"__attribute__((__gnu_inline__))\n"
+		"#endif\n"
+		"__inline int";
 
     test_text = "extern __inline int\nsigaddset(sigset_t *set, int signo)\n{}";
 };

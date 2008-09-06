@@ -38,6 +38,8 @@
    you don't. */
 #undef HAVE_DECL_FFLUSH_UNLOCKED
 
+#define SED_PROGRAM "/usr/bin/sed"
+
 /* Define to 1 if you have the declaration of `fgetc_unlocked', and to 0 if
    you don't. */
 #undef HAVE_DECL_FGETC_UNLOCKED

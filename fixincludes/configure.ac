@@ -5,6 +5,7 @@ AC_CONFIG_SRCDIR(inclhack.def)
 AC_CONFIG_AUX_DIR(..)
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
+AC_PROG_SED
 
 # Figure out what compiler warnings we can enable.
 # See config/warnings.m4 for details.
@@ -106,6 +107,8 @@ else
   MAINT='#'
 fi	
 AC_SUBST(MAINT)
+AC_DEFINE_UNQUITED([SED_PROGRAM], "${SED}",
+   [Defined to the best working sed program on the host system])
 
 AC_CONFIG_HEADERS(config.h, [echo timestamp > stamp-h])
 AC_CONFIG_FILES(Makefile mkheaders.almost:mkheaders.in)
