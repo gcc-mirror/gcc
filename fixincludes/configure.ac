@@ -3,6 +3,7 @@ AC_PREREQ(2.59)
 AC_INIT(fixincludes, [ ])
 AC_CONFIG_SRCDIR(inclhack.def)
 AC_CONFIG_AUX_DIR(..)
+m4_sinclude(../libtool.m4)
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
 AC_PROG_SED
