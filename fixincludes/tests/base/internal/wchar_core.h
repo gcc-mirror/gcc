@@ -11,5 +11,5 @@
 
 #if defined( IRIX_WCSFTIME_CHECK )
 #if _NO_XOPEN5 && !defined(__c99)
-extern size_t          wcsftime(wchar_t *, __SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, const struct tm *);
+extern size_t wcsftime(wchar_t *, __SGI_LIBC_NAMESPACE_QUALIFIER size_t, const char *, const struct tm *);
 #endif  /* IRIX_WCSFTIME_CHECK */

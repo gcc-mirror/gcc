@@ -35,6 +35,10 @@ x=fixincl.x =]
  *  You should have received a copy of the GNU General Public License along
  *  with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef SED_PROGRAM
+#define SED_PROGRAM "/usr/bin/sed"
+#endif
+static char const sed_cmd_z[] = SED_PROGRAM;
 [=
 
 FOR fix =]
@@ -165,7 +169,7 @@ static tTestDesc a[=(. Hack)=]Tests[] = {[=
  *  Fix Command Arguments for [=(. Hack)=]
  */
 static const char* apz[=(. Hack)=]Patch[] = {[=
-    IF   (exist? "sed")=] "sed"[=
+    IF   (exist? "sed")=] sed_cmd_z[=
       FOR sed=],
     "-e", [=(kr-string (get "sed"))=][=
       ENDFOR sed=],[=
