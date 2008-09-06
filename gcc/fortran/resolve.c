@@ -2336,15 +2336,16 @@ resolve_function (gfc_expr *expr)
 	 assumed size array argument.  UBOUND and SIZE have to be
 	 excluded from the check if the second argument is anything
 	 than a constant.  */
-      int inquiry;
-      inquiry = GENERIC_ID == GFC_ISYM_UBOUND
-		  || GENERIC_ID == GFC_ISYM_SIZE;
 
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
-	  if (inquiry && arg->next != NULL && arg->next->expr)
+	  if ((GENERIC_ID == GFC_ISYM_UBOUND || GENERIC_ID == GFC_ISYM_SIZE)
+	      && arg->next != NULL && arg->next->expr)
 	    {
 	      if (arg->next->expr->expr_type != EXPR_CONSTANT)
+		break;
+
+	      if (arg->next->name && strncmp(arg->next->name, "kind", 4) == 0)
 		break;
 
 	      if ((int)mpz_get_si (arg->next->expr->value.integer)
