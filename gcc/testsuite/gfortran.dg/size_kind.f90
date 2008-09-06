@@ -19,7 +19,9 @@ program test_64
    print *, "max_32 = ", max_32
    print *, "big_sz = ", big_sz
 
-   allocate(array(big_sz))
+! Disabled as it overflows on 32bit systems (at compile time)
+! (conversion of integer(8) to integer(4))
+!   allocate(array(big_sz))
    print *, "sz = ", size(array)
    print *, "sz = ", size(array, kind=long)
 end program
