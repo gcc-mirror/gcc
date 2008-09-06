@@ -1,3 +1,35 @@
+2008-09-06  Richard Sandiford  <rdsandiford@goolemail.com>
+	    Peter Fuerst  <post@pfrst.de>
+
+	* doc/invoke.texi: Document -mr10k-cache-barrier=.
+	* doc/extend.texi: Document __builtin_mips_cache.
+	* config/mips/mips-ftypes.def: Add a (VOID, SI, CVPOINTER) entry.
+	* config/mips/mips.opt (mr10k-cache-barrier=): New option.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define
+	__GCC_HAVE_BUILTIN_MIPS_CACHE.
+	(TARGET_CACHE_BUILTIN, ISA_HAS_CACHE): New macros.
+	* config/mips/mips.c (mips_r10k_cache_barrier_setting): New enum.
+	(set_push_mips_isas): New variable.
+	(mips_r10k_cache_barrier): New variable.
+	(cache): New availability predicate.
+	(mips_builtins): Add an entry for __builtin_mips_cache.
+	(mips_build_cvpointer_type): New function.
+	(MIPS_ATYPE_CVPOINTER): New macro.
+	(mips_prepare_builtin_arg): Only use the insn's mode if the rtx's
+	mode is VOIDmode.
+	(r10k_simplified_address_p, r10k_simplify_address)
+	(r10k_uncached_address_p, r10k_safe_address_p)
+	(r10k_needs_protection_p_1, r10k_needs_protection_p_store)
+	(r10k_needs_protection_p_call, r10k_needs_protection_p)
+	(r10k_insert_cache_barriers): New functions.
+	(mips_reorg_process_insns): Delete cache barriers after a
+	branch-likely instruction.
+	(mips_reorg): Call r10k_insert_cache_barriers.
+	(mips_handle_option): Handle OPT_mr10k_cache_barrier_.
+	* config/mips/mips.md (UNSPEC_MIPS_CACHE): New constant.
+	(UNSPEC_R10K_CACHE_BARRIER): Likewise.
+	(mips_cache, r10k_cache_barrier): New define_insns.
+
 2008-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira-int.h (ira_zero_hard_reg_set, ira_one_hard_reg_set): Delete.

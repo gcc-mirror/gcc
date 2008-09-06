@@ -247,6 +247,9 @@
    (UNSPEC_LOONGSON_ALU2_TURN_ENABLED_INSN   531)
    (UNSPEC_LOONGSON_FALU1_TURN_ENABLED_INSN  532)
    (UNSPEC_LOONGSON_FALU2_TURN_ENABLED_INSN  533)
+
+   (UNSPEC_MIPS_CACHE		600)
+   (UNSPEC_R10K_CACHE_BARRIER	601)
   ]
 )
 
@@ -4722,6 +4725,25 @@
 }
   [(set_attr "length" "20")])
 
+;; Cache operations for R4000-style caches.
+(define_insn "mips_cache"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK [(match_operand:SI 0 "const_int_operand")
+		     (match_operand:QI 1 "address_operand" "p")]
+		    UNSPEC_MIPS_CACHE))]
+  "ISA_HAS_CACHE"
+  "cache\t%X0,%a1")
+
+;; Similar, but with the operands hard-coded to an R10K cache barrier
+;; operation.  We keep the pattern distinct so that we can identify
+;; cache operations inserted by -mr10k-cache-barrier=, and so that
+;; the operation is never inserted into a delay slot.
+(define_insn "r10k_cache_barrier"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK [(const_int 0)] UNSPEC_R10K_CACHE_BARRIER))]
+  "ISA_HAS_CACHE"
+  "cache\t0x14,0(%$)"
+  [(set_attr "can_delay" "no")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
