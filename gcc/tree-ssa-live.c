@@ -489,6 +489,13 @@ remove_unused_scope_block_p (tree scope)
       if (TREE_CODE (*t) == FUNCTION_DECL)
 	unused = false;
 
+      /* Remove everything we don't generate debug info for.  */
+      else if (DECL_IGNORED_P (*t))
+	{
+	  *t = TREE_CHAIN (*t);
+	  next = t;
+	}
+
       /* When we are outputting debug info, we usually want to output
 	 info about optimized-out variables in the scope blocks.
 	 Exception are the scope blocks not containing any instructions
