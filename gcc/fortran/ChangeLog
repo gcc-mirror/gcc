@@ -1,3 +1,9 @@
+2008-09-06  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/33229
+	* resolve.c (resolve_function): An intrinsic subroutine should not be
+	called as a function.
+
 2008-09-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35837
