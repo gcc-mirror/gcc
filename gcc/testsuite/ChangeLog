@@ -1,3 +1,7 @@
+2008-09-06  Jeff Law <law@redhat.com>
+
+	* gcc.c-torture/execute/memcpy-bi.c: Include <string.h>
+ 
 2008-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37399

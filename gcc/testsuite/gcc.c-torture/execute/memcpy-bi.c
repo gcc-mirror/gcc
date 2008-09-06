@@ -1,4 +1,5 @@
 /* Test builtin-memcpy (which may emit different code for different N).  */
+#include <string.h>
 
 #define TESTSIZE 80
 
