@@ -1,3 +1,16 @@
+2008-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira-int.h (ira_zero_hard_reg_set, ira_one_hard_reg_set): Delete.
+	* ira-color.c (setup_allocno_left_conflicts_num): Use
+	hard_reg_set_equal_p instead of a comparison with
+	ira_zero_hard_reg_set.
+	* ira.c (setup_reg_subclasses): Likewise.
+	(setup_cover_and_important_classes): Likewise.
+	(setup_class_translate): Likewise.
+	(setup_reg_class_intersect_union): Likewise.
+	(ira_zero_hard_reg_set, ira_one_hard_reg_set): Delete.
+	(ira_init_once): Don't initialize them.
+
 2008-09-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/tm.texi (IRA_COVER_CLASSES): Fix a typo.
