@@ -1,3 +1,8 @@
+2008-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Fix a typo.
+	* configured: Regenerate.
+
 2008-09-06  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl.tpl (sed): make the program executable configurable.

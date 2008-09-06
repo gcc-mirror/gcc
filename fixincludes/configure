@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT WARN_CFLAGS WARN_PEDANTIC WERROR target_noncanonical TARGET CPP EGREP MAINT LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT SED WARN_CFLAGS WARN_PEDANTIC WERROR target_noncanonical TARGET CPP EGREP MAINT LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 ac_pwd=`pwd`
 
@@ -1355,6 +1355,633 @@ ac_config_guess="$SHELL $ac_aux_dir/config.guess"
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"
 ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 
+# libtool.m4 - Configure libtool for the host system. -*-Autoconf-*-
+#
+# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
+# 2006, 2007 Free Software Foundation, Inc.
+#
+# This file is part of GNU Libtool:
+# Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
+#
+# This file is free software; the Free Software Foundation gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+
+
+
+# serial 53 LT_INIT
+
+
+# LT_PREREQ(VERSION)
+# ------------------
+# Complain and exit if this libtool version is less that VERSION.
+
+
+
+# LT_INIT([OPTIONS])
+# ------------------
+# _LT_INIT
+
+# Old names:
+
+
+
+
+# _LT_CC_BASENAME(CC)
+# -------------------
+# Calculate cc_basename.  Skip known compiler wrappers and cross-prefix.
+
+
+
+# _LT_FILEUTILS_DEFAULTS
+# ----------------------
+# It is okay to use these file commands and assume they have been set
+# sensibly after `m4_require([_LT_FILEUTILS_DEFAULTS])'.
+# _LT_FILEUTILS_DEFAULTS
+
+
+# _LT_SETUP
+# ---------
+# _LT_SETUP
+
+
+# _LT_PROG_LTMAIN
+# ---------------
+# Note that this code is called both from `configure', and `config.status'
+# now that we use AC_CONFIG_COMMANDS to generate libtool.  Notably,
+# `config.status' has no value for ac_aux_dir unless we are using Automake,
+# so we pass a copy along to make sure it has a sensible value anyway.
+# _LT_PROG_LTMAIN
+
+
+## ------------------------------------- ##
+## Accumulate code for creating libtool. ##
+## ------------------------------------- ##
+
+# So that we can recreate a full libtool script including additional
+# tags, we accumulate the chunks of code to send to AC_CONFIG_COMMANDS
+# in macros and then make a single call at the end using the `libtool'
+# label.
+
+
+# _LT_CONFIG_LIBTOOL_INIT([INIT-COMMANDS])
+# ----------------------------------------
+# Register INIT-COMMANDS to be passed to AC_CONFIG_COMMANDS later.
+
+
+# Initialize.
+
+
+
+# _LT_CONFIG_LIBTOOL([COMMANDS])
+# ------------------------------
+# Register COMMANDS to be passed to AC_CONFIG_COMMANDS later.
+
+
+# Initialize.
+
+
+
+# _LT_CONFIG_SAVE_COMMANDS([COMMANDS], [INIT_COMMANDS])
+# -----------------------------------------------------
+
+
+
+# _LT_FORMAT_COMMENT([COMMENT])
+# -----------------------------
+# Add leading comment marks to the start of each line, and a trailing
+# full-stop to the whole comment if one is not present already.
+
+
+
+
+## ------------------------ ##
+## FIXME: Eliminate VARNAME ##
+## ------------------------ ##
+
+
+# _LT_DECL([CONFIGNAME], VARNAME, VALUE, [DESCRIPTION], [IS-TAGGED?])
+# -------------------------------------------------------------------
+# CONFIGNAME is the name given to the value in the libtool script.
+# VARNAME is the (base) name used in the configure script.
+# VALUE may be 0, 1 or 2 for a computed quote escaped value based on
+# VARNAME.  Any other value will be used directly.
+
+
+
+# _LT_TAGDECL([CONFIGNAME], VARNAME, VALUE, [DESCRIPTION])
+# --------------------------------------------------------
+
+
+
+# lt_decl_tag_varnames([SEPARATOR], [VARNAME1...])
+# ------------------------------------------------
+
+
+
+# _lt_decl_filter(SUBKEY, VALUE, [SEPARATOR], [VARNAME1..])
+# ---------------------------------------------------------
+
+
+
+# lt_decl_quote_varnames([SEPARATOR], [VARNAME1...])
+# --------------------------------------------------
+
+
+
+# lt_decl_dquote_varnames([SEPARATOR], [VARNAME1...])
+# ---------------------------------------------------
+
+
+
+# lt_decl_varnames_tagged([SEPARATOR], [VARNAME1...])
+# ---------------------------------------------------
+
+
+
+
+# lt_decl_all_varnames([SEPARATOR], [VARNAME1...])
+# ------------------------------------------------
+
+
+
+
+# _LT_CONFIG_STATUS_DECLARE([VARNAME])
+# ------------------------------------
+# Quote a variable value, and forward it to `config.status' so that its
+# declaration there will have the same value as in `configure'.  VARNAME
+# must have a single quote delimited value for this to work.
+
+
+
+# _LT_CONFIG_STATUS_DECLARATIONS
+# ------------------------------
+# We delimit libtool config variables with single quotes, so when
+# we write them to config.status, we have to be sure to quote all
+# embedded single quotes properly.  In configure, this macro expands
+# each variable declared with _LT_DECL (and _LT_TAGDECL) into:
+#
+#    <var>='`$ECHO "X$<var>" | $Xsed -e "$delay_single_quote_subst"`'
+
+
+
+# _LT_LIBTOOL_TAGS
+# ----------------
+# Output comment and list of tags supported by the script
+
+
+
+# _LT_LIBTOOL_DECLARE(VARNAME, [TAG])
+# -----------------------------------
+# Extract the dictionary values for VARNAME (optionally with TAG) and
+# expand to a commented shell variable setting:
+#
+#    # Some comment about what VAR is for.
+#    visible_name=$lt_internal_name
+
+
+
+# _LT_LIBTOOL_CONFIG_VARS
+# -----------------------
+# Produce commented declarations of non-tagged libtool config variables
+# suitable for insertion in the LIBTOOL CONFIG section of the `libtool'
+# script.  Tagged libtool config variables (even for the LIBTOOL CONFIG
+# section) are produced by _LT_LIBTOOL_TAG_VARS.
+
+
+
+# _LT_LIBTOOL_TAG_VARS(TAG)
+# -------------------------
+
+
+
+# _LT_TAGVAR(VARNAME, [TAGNAME])
+# ------------------------------
+
+
+
+# _LT_CONFIG_COMMANDS
+# -------------------
+# Send accumulated output to $CONFIG_STATUS.  Thanks to the lists of
+# variables for single and double quote escaping we saved from calls
+# to _LT_DECL, we can put quote escaped variables declarations
+# into `config.status', and then the shell code to quote escape them in
+# for loops in `config.status'.  Finally, any additional code accumulated
+# from calls to _LT_CONFIG_LIBTOOL_INIT is expanded.
+#_LT_CONFIG_COMMANDS
+
+
+# Initialize.
+
+
+
+# LT_OUTPUT
+# ---------
+# This macro allows early generation of the libtool script (before
+# AC_OUTPUT is called), incase it is used in configure for compilation
+# tests.
+# LT_OUTPUT
+
+
+# _LT_CONFIG(TAG)
+# ---------------
+# If TAG is the built-in tag, create an initial libtool script with a
+# default configuration from the untagged config vars.  Otherwise add code
+# to config.status for appending the configuration named by TAG from the
+# matching tagged config vars.
+# _LT_CONFIG
+
+
+# LT_SUPPORTED_TAG(TAG)
+# ---------------------
+# Trace this macro to discover what tags are supported by the libtool
+# --tag option, using:
+#    autoconf --trace 'LT_SUPPORTED_TAG:$1'
+
+
+
+# C support is built-in for now
+
+
+
+
+# LT_LANG(LANG)
+# -------------
+# Enable libtool support for the given language if not already enabled.
+# LT_LANG
+
+
+# _LT_LANG(LANGNAME)
+# ------------------
+# _LT_LANG
+
+
+# _LT_LANG_DEFAULT_CONFIG
+# -----------------------
+# _LT_LANG_DEFAULT_CONFIG
+
+# Obsolete macros:
+
+
+
+
+
+
+# _LT_TAG_COMPILER
+# ----------------
+# _LT_TAG_COMPILER
+
+
+# _LT_COMPILER_BOILERPLATE
+# ------------------------
+# Check for compiler boilerplate output or warnings with
+# the simple compiler test code.
+# _LT_COMPILER_BOILERPLATE
+
+
+# _LT_LINKER_BOILERPLATE
+# ----------------------
+# Check for linker boilerplate output or warnings with
+# the simple link test code.
+# _LT_LINKER_BOILERPLATE
+
+
+# _LT_SYS_MODULE_PATH_AIX
+# -----------------------
+# Links a minimal program and checks the executable
+# for the system default hardcoded library path. In most cases,
+# this is /usr/lib:/lib, but when the MPI compilers are used
+# the location of the communication and MPI libs are included too.
+# If we don't find anything, use the default library path according
+# to the aix ld manual.
+# _LT_SYS_MODULE_PATH_AIX
+
+
+# _LT_SHELL_INIT(ARG)
+# -------------------
+# _LT_SHELL_INIT
+
+
+# _LT_PROG_ECHO_BACKSLASH
+# -----------------------
+# Add some code to the start of the generated configure script which
+# will find an echo command which doesn't interpret backslashes.
+# _LT_PROG_ECHO_BACKSLASH
+
+
+# _LT_ENABLE_LOCK
+# ---------------
+# _LT_ENABLE_LOCK
+
+
+# _LT_CMD_OLD_ARCHIVE
+# -------------------
+# _LT_CMD_OLD_ARCHIVE
+
+
+# _LT_COMPILER_OPTION(MESSAGE, VARIABLE-NAME, FLAGS,
+#		[OUTPUT-FILE], [ACTION-SUCCESS], [ACTION-FAILURE])
+# ----------------------------------------------------------------
+# Check whether the given compiler option works
+# _LT_COMPILER_OPTION
+
+# Old name:
+
+
+
+# _LT_LINKER_OPTION(MESSAGE, VARIABLE-NAME, FLAGS,
+#                  [ACTION-SUCCESS], [ACTION-FAILURE])
+# ----------------------------------------------------
+# Check whether the given linker option works
+# _LT_LINKER_OPTION
+
+# Old name:
+
+
+
+# LT_CMD_MAX_LEN
+#---------------
+# LT_CMD_MAX_LEN
+
+# Old name:
+
+
+
+# _LT_HEADER_DLFCN
+# ----------------
+# _LT_HEADER_DLFCN
+
+
+# _LT_TRY_DLOPEN_SELF (ACTION-IF-TRUE, ACTION-IF-TRUE-W-USCORE,
+#                      ACTION-IF-FALSE, ACTION-IF-CROSS-COMPILING)
+# ----------------------------------------------------------------
+# _LT_TRY_DLOPEN_SELF
+
+
+# LT_SYS_DLOPEN_SELF
+# ------------------
+# LT_SYS_DLOPEN_SELF
+
+# Old name:
+
+
+
+# _LT_COMPILER_C_O([TAGNAME])
+# ---------------------------
+# Check to see if options -c and -o are simultaneously supported by compiler.
+# This macro does not hard code the compiler like AC_PROG_CC_C_O.
+# _LT_COMPILER_C_O
+
+
+# _LT_COMPILER_FILE_LOCKS([TAGNAME])
+# ----------------------------------
+# Check to see if we can do hard links to lock some files if needed
+# _LT_COMPILER_FILE_LOCKS
+
+
+# _LT_CHECK_OBJDIR
+# ----------------
+# _LT_CHECK_OBJDIR
+
+
+# _LT_LINKER_HARDCODE_LIBPATH([TAGNAME])
+# --------------------------------------
+# Check hardcoding attributes.
+# _LT_LINKER_HARDCODE_LIBPATH
+
+
+# _LT_CMD_STRIPLIB
+# ----------------
+# _LT_CMD_STRIPLIB
+
+
+# _LT_SYS_DYNAMIC_LINKER([TAG])
+# -----------------------------
+# PORTME Fill in your ld.so characteristics
+# _LT_SYS_DYNAMIC_LINKER
+
+
+# _LT_PATH_TOOL_PREFIX(TOOL)
+# --------------------------
+# find a file program which can recognize shared library
+# _LT_PATH_TOOL_PREFIX
+
+# Old name:
+
+
+
+# _LT_PATH_MAGIC
+# --------------
+# find a file program which can recognize a shared library
+# _LT_PATH_MAGIC
+
+
+# LT_PATH_LD
+# ----------
+# find the pathname to the GNU or non-GNU linker
+# LT_PATH_LD
+
+# Old names:
+
+
+
+
+# _LT_PATH_LD_GNU
+#- --------------
+# _LT_PATH_LD_GNU
+
+
+# _LT_CMD_RELOAD
+# --------------
+# find reload flag for linker
+#   -- PORTME Some linkers may need a different reload flag.
+# _LT_CMD_RELOAD
+
+
+# _LT_CHECK_MAGIC_METHOD
+# ----------------------
+# how to check for library dependencies
+#  -- PORTME fill in with the dynamic library characteristics
+# _LT_CHECK_MAGIC_METHOD
+
+
+# LT_PATH_NM
+# ----------
+# find the pathname to a BSD- or MS-compatible name lister
+# LT_PATH_NM
+
+# Old names:
+
+
+
+
+# LT_LIB_M
+# --------
+# check for math library
+# LT_LIB_M
+
+# Old name:
+
+
+
+# _LT_COMPILER_NO_RTTI([TAGNAME])
+# -------------------------------
+# _LT_COMPILER_NO_RTTI
+
+
+# _LT_CMD_GLOBAL_SYMBOLS
+# ----------------------
+ # _LT_CMD_GLOBAL_SYMBOLS
+
+
+# _LT_COMPILER_PIC([TAGNAME])
+# ---------------------------
+# _LT_COMPILER_PIC
+
+
+# _LT_LINKER_SHLIBS([TAGNAME])
+# ----------------------------
+# See if the linker supports building shared libraries.
+# _LT_LINKER_SHLIBS
+
+
+# _LT_LANG_C_CONFIG([TAG])
+# ------------------------
+# Ensure that the configuration variables for a C compiler are suitably
+# defined.  These variables are subsequently used by _LT_CONFIG to write
+# the compiler configuration to `libtool'.
+# _LT_LANG_C_CONFIG
+
+
+# _LT_PROG_CXX
+# ------------
+# Since AC_PROG_CXX is broken, in that it returns g++ if there is no c++
+# compiler, we have our own version here.
+# _LT_PROG_CXX
+
+
+
+# _LT_LANG_CXX_CONFIG([TAG])
+# --------------------------
+# Ensure that the configuration variables for a C++ compiler are suitably
+# defined.  These variables are subsequently used by _LT_CONFIG to write
+# the compiler configuration to `libtool'.
+# _LT_LANG_CXX_CONFIG
+
+
+# _LT_SYS_HIDDEN_LIBDEPS([TAGNAME])
+# ---------------------------------
+# Figure out "hidden" library dependencies from verbose
+# compiler output when linking a shared library.
+# Parse the compiler output and extract the necessary
+# objects, libraries and library flags.
+# _LT_SYS_HIDDEN_LIBDEPS
+
+
+# _LT_PROG_F77
+# ------------
+# Since AC_PROG_F77 is broken, in that it returns the empty string
+# if there is no fortran compiler, we have our own version here.
+# _LT_PROG_F77
+
+
+
+# _LT_LANG_F77_CONFIG([TAG])
+# --------------------------
+# Ensure that the configuration variables for a Fortran 77 compiler are
+# suitably defined.  These variables are subsequently used by _LT_CONFIG
+# to write the compiler configuration to `libtool'.
+# _LT_LANG_F77_CONFIG
+
+
+# _LT_PROG_FC
+# -----------
+# Since AC_PROG_FC is broken, in that it returns the empty string
+# if there is no fortran compiler, we have our own version here.
+# _LT_PROG_FC
+
+
+
+# _LT_LANG_FC_CONFIG([TAG])
+# -------------------------
+# Ensure that the configuration variables for a Fortran compiler are
+# suitably defined.  These variables are subsequently used by _LT_CONFIG
+# to write the compiler configuration to `libtool'.
+# _LT_LANG_FC_CONFIG
+
+
+# _LT_LANG_GCJ_CONFIG([TAG])
+# --------------------------
+# Ensure that the configuration variables for the GNU Java Compiler compiler
+# are suitably defined.  These variables are subsequently used by _LT_CONFIG
+# to write the compiler configuration to `libtool'.
+# _LT_LANG_GCJ_CONFIG
+
+
+# _LT_LANG_RC_CONFIG([TAG])
+# -------------------------
+# Ensure that the configuration variables for the Windows resource compiler
+# are suitably defined.  These variables are subsequently used by _LT_CONFIG
+# to write the compiler configuration to `libtool'.
+# _LT_LANG_RC_CONFIG
+
+
+# LT_PROG_GCJ
+# -----------
+
+
+# Old name:
+
+
+
+# LT_PROG_RC
+# ----------
+
+
+# Old name:
+
+
+
+# _LT_DECL_EGREP
+# --------------
+# If we don't have a new enough Autoconf to choose the best grep
+# available, choose the one first in the user's PATH.
+
+
+
+# _LT_DECL_SED
+# ------------
+# Check for a fully-functional sed program, that truncates
+# as few characters as possible.  Prefer GNU sed if found.
+# _LT_DECL_SED
+
+
+############################################################
+# NOTE: This macro has been submitted for inclusion into   #
+#  GNU Autoconf as AC_PROG_SED.  When it is available in   #
+#  a released version of Autoconf we should remove this    #
+#  macro and use it instead.                               #
+############################################################
+
+#AC_PROG_SED
+#m4_ifndef
+
+# Old name:
+
+
+
+# _LT_CHECK_SHELL_FEATURES
+# ------------------------
+# Find out whether the shell is Bourne or XSI compatible,
+# or has some other useful features.
+# _LT_CHECK_SHELL_FEATURES
+
+
+# _LT_PROG_XSI_SHELLFNS
+# ---------------------
+# Bourne and XSI compatible variants of some useful shell functions.
+
+
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
   { { echo "$as_me:$LINENO: error: cannot run $ac_config_sub" >&5
@@ -2376,6 +3003,65 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+echo "$as_me:$LINENO: checking for a sed that does not truncate output" >&5
+echo $ECHO_N "checking for a sed that does not truncate output... $ECHO_C" >&6
+if test "${lt_cv_path_SED+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  # Loop through the user's path and test for sed and gsed.
+# Then use that list of sed's as ones to test for truncation.
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for lt_ac_prog in sed gsed; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      if $as_executable_p "$as_dir/$lt_ac_prog$ac_exec_ext"; then
+        lt_ac_sed_list="$lt_ac_sed_list $as_dir/$lt_ac_prog$ac_exec_ext"
+      fi
+    done
+  done
+done
+IFS=$as_save_IFS
+lt_ac_max=0
+lt_ac_count=0
+# Add /usr/xpg4/bin/sed as it is typically found on Solaris
+# along with /bin/sed that truncates output.
+for lt_ac_sed in $lt_ac_sed_list /usr/xpg4/bin/sed; do
+  test ! -f $lt_ac_sed && continue
+  cat /dev/null > conftest.in
+  lt_ac_count=0
+  echo $ECHO_N "0123456789$ECHO_C" >conftest.in
+  # Check for GNU sed and select it if it is found.
+  if "$lt_ac_sed" --version 2>&1 < /dev/null | grep 'GNU' > /dev/null; then
+    lt_cv_path_SED=$lt_ac_sed
+    break
+  fi
+  while true; do
+    cat conftest.in conftest.in >conftest.tmp
+    mv conftest.tmp conftest.in
+    cp conftest.in conftest.nl
+    echo >>conftest.nl
+    $lt_ac_sed -e 's/a$//' < conftest.nl >conftest.out || break
+    cmp -s conftest.out conftest.nl || break
+    # 10000 chars as input seems more than enough
+    test $lt_ac_count -gt 10 && break
+    lt_ac_count=`expr $lt_ac_count + 1`
+    if test $lt_ac_count -gt $lt_ac_max; then
+      lt_ac_max=$lt_ac_count
+      lt_cv_path_SED=$lt_ac_sed
+    fi
+  done
+done
+
+fi
+
+SED=$lt_cv_path_SED
+
+echo "$as_me:$LINENO: result: $SED" >&5
+echo "${ECHO_T}$SED" >&6
 
 
 # Figure out what compiler warnings we can enable.
@@ -5398,6 +6084,11 @@ else
 fi
 
 
+cat >>confdefs.h <<_ACEOF
+#define SED_PROGRAM "${SED}"
+_ACEOF
+
+
           ac_config_headers="$ac_config_headers config.h"
 
                     ac_config_files="$ac_config_files Makefile mkheaders.almost:mkheaders.in"
@@ -6032,6 +6723,7 @@ s,@CPPFLAGS@,$CPPFLAGS,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
 s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
+s,@SED@,$SED,;t t
 s,@WARN_CFLAGS@,$WARN_CFLAGS,;t t
 s,@WARN_PEDANTIC@,$WARN_PEDANTIC,;t t
 s,@WERROR@,$WERROR,;t t

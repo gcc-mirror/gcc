@@ -108,7 +108,7 @@ else
   MAINT='#'
 fi	
 AC_SUBST(MAINT)
-AC_DEFINE_UNQUITED([SED_PROGRAM], "${SED}",
+AC_DEFINE_UNQUOTED([SED_PROGRAM], "${SED}",
    [Defined to the best working sed program on the host system])
 
 AC_CONFIG_HEADERS(config.h, [echo timestamp > stamp-h])
