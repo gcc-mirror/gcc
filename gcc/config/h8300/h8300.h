@@ -354,6 +354,19 @@ enum reg_class {
 { "NO_REGS", "COUNTER_REGS", "SOURCE_REGS", "DESTINATION_REGS", \
   "GENERAL_REGS", "MAC_REGS", "ALL_REGS", "LIM_REGS" }
 
+/* The following macro defines cover classes for Integrated Register
+   Allocator.  Cover classes is a set of non-intersected register
+   classes covering all hard registers used for register allocation
+   purpose.  Any move between two registers of a cover class should be
+   cheaper than load or store of the registers.  The macro value is
+   array of register classes with LIM_REG_CLASSES used as the end
+   marker.  */
+
+#define IRA_COVER_CLASSES \
+{						\
+  GENERAL_REGS, MAC_REGS, LIM_REG_CLASSES	\
+}
+
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
