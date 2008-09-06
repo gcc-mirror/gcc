@@ -1,4 +1,8 @@
-2008-09-04  Vladimir Makarov  <vmakarov@redhat.com>
+2008-09-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/tm.texi (IRA_COVER_CLASSES): Fix a typo.
+
+2008-09-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (ira_fast_allocation): Permit global allocno
 	allocation.
