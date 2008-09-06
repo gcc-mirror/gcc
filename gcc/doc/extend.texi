@@ -6985,6 +6985,7 @@ instructions, but allow the compiler to schedule those calls.
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
+* Other MIPS Built-in Functions::
 * picoChip Built-in Functions::
 * PowerPC AltiVec Built-in Functions::
 * SPARC VIS Built-in Functions::
@@ -9438,6 +9439,18 @@ Saturating subtraction.  Return the result of subtracting @var{y} from
 Halt.  The processor will stop execution.  This built-in is useful for
 implementing assertions.
 
+@end table
+
+@node Other MIPS Built-in Functions
+@subsection Other MIPS Built-in Functions
+
+GCC provides other MIPS-specific built-in functions:
+
+@table @code
+@item void __builtin_mips_cache (int @var{op}, const volatile void *@var{addr})
+Insert a @samp{cache} instruction with operands @var{op} and @var{addr}.
+GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
+when this function is available.
 @end table
 
 @node PowerPC AltiVec Built-in Functions

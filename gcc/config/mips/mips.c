@@ -148,6 +148,13 @@ enum mips_address_type {
   ADDRESS_SYMBOLIC
 };
 
+/* Enumerates the setting of the -mr10k-cache-barrier option.  */
+enum mips_r10k_cache_barrier_setting {
+  R10K_CACHE_BARRIER_NONE,
+  R10K_CACHE_BARRIER_STORE,
+  R10K_CACHE_BARRIER_LOAD_STORE
+};
+
 /* Macros to create an enumeration identifier for a function prototype.  */
 #define MIPS_FTYPE_NAME1(A, B) MIPS_##A##_FTYPE_##B
 #define MIPS_FTYPE_NAME2(A, B, C) MIPS_##A##_FTYPE_##B##_##C
@@ -455,6 +462,9 @@ static int mips_base_align_functions; /* align_functions */
 
 /* The -mcode-readable setting.  */
 enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
+
+/* The -mr10k-cache-barrier setting.  */
+static enum mips_r10k_cache_barrier_setting mips_r10k_cache_barrier;
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
 bool mips_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -10922,6 +10932,7 @@ AVAIL_NON_MIPS16 (dspr2, TARGET_DSPR2)
 AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
 AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_VECTORS)
+AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 
 /* Construct a mips_builtin_description from the given arguments.
 
@@ -11352,7 +11363,10 @@ static const struct mips_builtin_description mips_builtins[] = {
   LOONGSON_BUILTIN_SUFFIX (punpcklwd, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
   LOONGSON_BUILTIN_SUFFIX (punpcklbh, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
   LOONGSON_BUILTIN_SUFFIX (punpcklhw, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
-  LOONGSON_BUILTIN_SUFFIX (punpcklwd, s, MIPS_V2SI_FTYPE_V2SI_V2SI)
+  LOONGSON_BUILTIN_SUFFIX (punpcklwd, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+
+  /* Sundry other built-in functions.  */
+  DIRECT_NO_TARGET_BUILTIN (cache, MIPS_VOID_FTYPE_SI_CVPOINTER, cache)
 };
 
 /* MODE is a vector mode whose elements have type TYPE.  Return the type
@@ -11374,10 +11388,25 @@ mips_builtin_vector_type (tree type, enum machine_mode mode)
   return types[mode_index];
 }
 
+/* Return a type for 'const volatile void *'.  */
+
+static tree
+mips_build_cvpointer_type (void)
+{
+  static tree cache;
+
+  if (cache == NULL_TREE)
+    cache = build_pointer_type (build_qualified_type
+				(void_type_node,
+				 TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE));
+  return cache;
+}
+
 /* Source-level argument types.  */
 #define MIPS_ATYPE_VOID void_type_node
 #define MIPS_ATYPE_INT integer_type_node
 #define MIPS_ATYPE_POINTER ptr_type_node
+#define MIPS_ATYPE_CVPOINTER mips_build_cvpointer_type ()
 
 /* Standard mode-based argument types.  */
 #define MIPS_ATYPE_UQI unsigned_intQI_type_node
@@ -11477,7 +11506,13 @@ mips_prepare_builtin_arg (enum insn_code icode,
   mode = insn_data[icode].operand[opno].mode;
   if (!insn_data[icode].operand[opno].predicate (value, mode))
     {
-      value = copy_to_mode_reg (mode, value);
+      /* Cope with address operands, where MODE is not the mode of
+	 VALUE itself.  */
+      if (GET_MODE (value) == VOIDmode)
+	value = copy_to_mode_reg (mode, value);
+      else
+	value = copy_to_reg (value);
+
       /* Check the predicate again.  */
       if (!insn_data[icode].operand[opno].predicate (value, mode))
 	{
@@ -12022,6 +12057,378 @@ mips16_lay_out_constants (void)
 	}
     }
   mips16_emit_constants (pool.first, get_last_insn ());
+}
+
+/* Return true if it is worth r10k_simplify_address's while replacing
+   an address with X.  We are looking for constants, and for addresses
+   at a known offset from the incoming stack pointer.  */
+
+static bool
+r10k_simplified_address_p (rtx x)
+{
+  if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
+    x = XEXP (x, 0);
+  return x == virtual_incoming_args_rtx || CONSTANT_P (x);
+}
+
+/* X is an expression that appears in INSN.  Try to use the UD chains
+   to simplify it, returning the simplified form on success and the
+   original form otherwise.  Replace the incoming value of $sp with
+   virtual_incoming_args_rtx (which should never occur in X otherwise).  */
+
+static rtx
+r10k_simplify_address (rtx x, rtx insn)
+{
+  rtx newx, op0, op1, set, def_insn, note;
+  struct df_ref *use, *def;
+  struct df_link *defs;
+
+  newx = NULL_RTX;
+  if (UNARY_P (x))
+    {
+      op0 = r10k_simplify_address (XEXP (x, 0), insn);
+      if (op0 != XEXP (x, 0))
+	newx = simplify_gen_unary (GET_CODE (x), GET_MODE (x),
+				   op0, GET_MODE (XEXP (x, 0)));
+    }
+  else if (BINARY_P (x))
+    {
+      op0 = r10k_simplify_address (XEXP (x, 0), insn);
+      op1 = r10k_simplify_address (XEXP (x, 1), insn);
+      if (op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
+	newx = simplify_gen_binary (GET_CODE (x), GET_MODE (x), op0, op1);
+    }
+  else if (GET_CODE (x) == LO_SUM)
+    {
+      /* LO_SUMs can be offset from HIGHs, if we know they won't
+	 overflow.  See mips_classify_address for the rationale behind
+	 the lax check.  */
+      op0 = r10k_simplify_address (XEXP (x, 0), insn);
+      if (GET_CODE (op0) == HIGH)
+	newx = XEXP (x, 1);
+    }
+  else if (REG_P (x))
+    {
+      /* Uses are recorded by regno_reg_rtx, not X itself.  */
+      use = df_find_use (insn, regno_reg_rtx[REGNO (x)]);
+      gcc_assert (use);
+      defs = DF_REF_CHAIN (use);
+
+      /* Require a single definition.  */
+      if (defs && defs->next == NULL)
+	{
+	  def = defs->ref;
+	  if (DF_REF_IS_ARTIFICIAL (def))
+	    {
+	      /* Replace the incoming value of $sp with
+		 virtual_incoming_args_rtx.  */
+	      if (x == stack_pointer_rtx
+		  && DF_REF_BB (def) == ENTRY_BLOCK_PTR)
+		newx = virtual_incoming_args_rtx;
+	    }
+	  else if (dominated_by_p (CDI_DOMINATORS, DF_REF_BB (use),
+				   DF_REF_BB (def)))
+	    {
+	      /* Make sure that DEF_INSN is a single set of REG.  */
+	      def_insn = DF_REF_INSN (def);
+	      if (NONJUMP_INSN_P (def_insn))
+		{
+		  set = single_set (def_insn);
+		  if (set && rtx_equal_p (SET_DEST (set), x))
+		    {
+		      /* Prefer to use notes, since the def-use chains
+			 are often shorter.  */
+		      note = find_reg_equal_equiv_note (def_insn);
+		      if (note)
+			newx = XEXP (note, 0);
+		      else
+			newx = SET_SRC (set);
+		      newx = r10k_simplify_address (newx, def_insn);
+		    }
+		}
+	    }
+	}
+    }
+  if (newx && r10k_simplified_address_p (newx))
+    return newx;
+  return x;
+}
+
+/* Return true if ADDRESS is known to be an uncached address
+   on R10K systems.  */
+
+static bool
+r10k_uncached_address_p (unsigned HOST_WIDE_INT address)
+{
+  unsigned HOST_WIDE_INT upper;
+
+  /* Check for KSEG1.  */
+  if (address + 0x60000000 < 0x20000000)
+    return true;
+
+  /* Check for uncached XKPHYS addresses.  */
+  if (Pmode == DImode)
+    {
+      upper = (address >> 40) & 0xf9ffff;
+      if (upper == 0x900000 || upper == 0xb80000)
+	return true;
+    }
+  return false;
+}
+
+/* Return true if we can prove that an access to address X in instruction
+   INSN would be safe from R10K speculation.  This X is a general
+   expression; it might not be a legitimate address.  */
+
+static bool
+r10k_safe_address_p (rtx x, rtx insn)
+{
+  rtx base, offset;
+  HOST_WIDE_INT offset_val;
+
+  x = r10k_simplify_address (x, insn);
+
+  /* Check for references to the stack frame.  It doesn't really matter
+     how much of the frame has been allocated at INSN; -mr10k-cache-barrier
+     allows us to assume that accesses to any part of the eventual frame
+     is safe from speculation at any point in the function.  */
+  mips_split_plus (x, &base, &offset_val);
+  if (base == virtual_incoming_args_rtx
+      && offset_val >= -cfun->machine->frame.total_size
+      && offset_val < cfun->machine->frame.args_size)
+    return true;
+
+  /* Check for uncached addresses.  */
+  if (CONST_INT_P (x))
+    return r10k_uncached_address_p (INTVAL (x));
+
+  /* Check for accesses to a static object.  */
+  split_const (x, &base, &offset);
+  return offset_within_block_p (base, INTVAL (offset));
+}
+
+/* Return true if a MEM with MEM_EXPR EXPR and MEM_OFFSET OFFSET is
+   an in-range access to an automatic variable, or to an object with
+   a link-time-constant address.  */
+
+static bool
+r10k_safe_mem_expr_p (tree expr, rtx offset)
+{
+  if (expr == NULL_TREE
+      || offset == NULL_RTX
+      || !CONST_INT_P (offset)
+      || INTVAL (offset) < 0
+      || INTVAL (offset) >= int_size_in_bytes (TREE_TYPE (expr)))
+    return false;
+
+  while (TREE_CODE (expr) == COMPONENT_REF)
+    {
+      expr = TREE_OPERAND (expr, 0);
+      if (expr == NULL_TREE)
+	return false;
+    }
+
+  return DECL_P (expr);
+}
+
+/* A for_each_rtx callback for which DATA points to the instruction
+   containing *X.  Stop the search if we find a MEM that is not safe
+   from R10K speculation.  */
+
+static int
+r10k_needs_protection_p_1 (rtx *loc, void *data)
+{
+  rtx mem;
+
+  mem = *loc;
+  if (!MEM_P (mem))
+    return 0;
+
+  if (r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
+    return -1;
+
+  if (r10k_safe_address_p (XEXP (mem, 0), (rtx) data))
+    return -1;
+
+  return 1;
+}
+
+/* A note_stores callback for which DATA points to an instruction pointer.
+   If *DATA is nonnull, make it null if it X contains a MEM that is not
+   safe from R10K speculation.  */
+
+static void
+r10k_needs_protection_p_store (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
+			       void *data)
+{
+  rtx *insn_ptr;
+
+  insn_ptr = (rtx *) data;
+  if (*insn_ptr && for_each_rtx (&x, r10k_needs_protection_p_1, *insn_ptr))
+    *insn_ptr = NULL_RTX;
+}
+
+/* A for_each_rtx callback that iterates over the pattern of a CALL_INSN.
+   Return nonzero if the call is not to a declared function.  */
+
+static int
+r10k_needs_protection_p_call (rtx *loc, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x;
+
+  x = *loc;
+  if (!MEM_P (x))
+    return 0;
+
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DECL (x))
+    return -1;
+
+  return 1;
+}
+
+/* Return true if instruction INSN needs to be protected by an R10K
+   cache barrier.  */
+
+static bool
+r10k_needs_protection_p (rtx insn)
+{
+  if (CALL_P (insn))
+    return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_call, NULL);
+
+  if (mips_r10k_cache_barrier == R10K_CACHE_BARRIER_STORE)
+    {
+      note_stores (PATTERN (insn), r10k_needs_protection_p_store, &insn);
+      return insn == NULL_RTX;
+    }
+
+  return for_each_rtx (&PATTERN (insn), r10k_needs_protection_p_1, insn);
+}
+
+/* Return true if BB is only reached by blocks in PROTECTED_BBS and if every
+   edge is unconditional.  */
+
+static bool
+r10k_protected_bb_p (basic_block bb, sbitmap protected_bbs)
+{
+  edge_iterator ei;
+  edge e;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (!single_succ_p (e->src)
+	|| !TEST_BIT (protected_bbs, e->src->index)
+	|| (e->flags & EDGE_COMPLEX) != 0)
+      return false;
+  return true;
+}
+
+/* Implement -mr10k-cache-barrier= for the current function.  */
+
+static void
+r10k_insert_cache_barriers (void)
+{
+  int *rev_post_order;
+  unsigned int i, n;
+  basic_block bb;
+  sbitmap protected_bbs;
+  rtx insn, end, unprotected_region;
+
+  if (TARGET_MIPS16)
+    {
+      sorry ("%qs does not support MIPS16 code", "-mr10k-cache-barrier");
+      return;
+    }
+
+  /* Restore the BLOCK_FOR_INSN pointers, which are needed by DF.  */
+  compute_bb_for_insn ();
+
+  /* Create def-use chains.  */
+  df_set_flags (DF_EQ_NOTES);
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_analyze ();
+
+  /* Calculate dominators.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Bit X of PROTECTED_BBS is set if the last operation in basic block
+     X is protected by a cache barrier.  */
+  protected_bbs = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (protected_bbs);
+
+  /* Iterate over the basic blocks in reverse post-order.  */
+  rev_post_order = XNEWVEC (int, last_basic_block);
+  n = pre_and_rev_post_order_compute (NULL, rev_post_order, false);
+  for (i = 0; i < n; i++)
+    {
+      bb = BASIC_BLOCK (rev_post_order[i]);
+
+      /* If this block is only reached by unconditional edges, and if the
+	 source of every edge is protected, the beginning of the block is
+	 also protected.  */
+      if (r10k_protected_bb_p (bb, protected_bbs))
+	unprotected_region = NULL_RTX;
+      else
+	unprotected_region = pc_rtx;
+      end = NEXT_INSN (BB_END (bb));
+
+      /* UNPROTECTED_REGION is:
+
+	 - null if we are processing a protected region,
+	 - pc_rtx if we are processing an unprotected region but have
+	   not yet found the first instruction in it
+	 - the first instruction in an unprotected region otherwise.  */
+      for (insn = BB_HEAD (bb); insn != end; insn = NEXT_INSN (insn))
+	{
+	  if (unprotected_region && INSN_P (insn))
+	    {
+	      if (recog_memoized (insn) == CODE_FOR_mips_cache)
+		/* This CACHE instruction protects the following code.  */
+		unprotected_region = NULL_RTX;
+	      else
+		{
+		  /* See if INSN is the first instruction in this
+		     unprotected region.  */
+		  if (unprotected_region == pc_rtx)
+		    unprotected_region = insn;
+
+		  /* See if INSN needs to be protected.  If so,
+		     we must insert a cache barrier somewhere between
+		     PREV_INSN (UNPROTECTED_REGION) and INSN.  It isn't
+		     clear which position is better performance-wise,
+		     but as a tie-breaker, we assume that it is better
+		     to allow delay slots to be back-filled where
+		     possible, and that it is better not to insert
+		     barriers in the middle of already-scheduled code.
+		     We therefore insert the barrier at the beginning
+		     of the region.  */
+		  if (r10k_needs_protection_p (insn))
+		    {
+		      emit_insn_before (gen_r10k_cache_barrier (),
+					unprotected_region);
+		      unprotected_region = NULL_RTX;
+		    }
+		}
+	    }
+
+	  if (CALL_P (insn))
+	    /* The called function is not required to protect the exit path.
+	       The code that follows a call is therefore unprotected.  */
+	    unprotected_region = pc_rtx;
+	}
+
+      /* Record whether the end of this block is protected.  */
+      if (unprotected_region == NULL_RTX)
+	SET_BIT (protected_bbs, bb->index);
+    }
+  XDELETEVEC (rev_post_order);
+
+  sbitmap_free (protected_bbs);
+
+  free_dominance_info (CDI_DOMINATORS);
+
+  df_finish_pass (false);
+
+  free_bb_for_insn ();
 }
 
 /* A temporary variable used by for_each_rtx callbacks, etc.  */
@@ -12675,6 +13082,13 @@ mips_reorg_process_insns (void)
 		 orphaned high-part relocation.  */
 	      if (mips_orphaned_high_part_p (htab, insn))
 		delete_insn (insn);
+	      /* Also delete cache barriers if the last instruction
+		 was an annulled branch.  INSN will not be speculatively
+		 executed.  */
+	      else if (recog_memoized (insn) == CODE_FOR_r10k_cache_barrier
+		       && last_insn
+		       && INSN_ANNULLED_BRANCH_P (SEQ_BEGIN (last_insn)))
+		delete_insn (insn);
 	      else
 		{
 		  mips_avoid_hazard (last_insn, insn, &hilo_delay,
@@ -12694,6 +13108,8 @@ static void
 mips_reorg (void)
 {
   mips16_lay_out_constants ();
+  if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE)
+    r10k_insert_cache_barriers ();
   if (mips_base_delayed_branch)
     dbr_schedule (get_insns ());
   mips_reorg_process_insns ();
@@ -13123,6 +13539,17 @@ mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 	return false;
       return true;
 
+    case OPT_mr10k_cache_barrier_:
+      if (strcmp (arg, "load-store") == 0)
+	mips_r10k_cache_barrier = R10K_CACHE_BARRIER_LOAD_STORE;
+      else if (strcmp (arg, "store") == 0)
+	mips_r10k_cache_barrier = R10K_CACHE_BARRIER_STORE;
+      else if (strcmp (arg, "none") == 0)
+	mips_r10k_cache_barrier = R10K_CACHE_BARRIER_NONE;
+      else
+	return false;
+      return true;
+
     default:
       return true;
     }
@@ -13357,6 +13784,14 @@ mips_override_options (void)
   if (TARGET_PAIRED_SINGLE_FLOAT && !ISA_HAS_PAIRED_SINGLE)
     warning (0, "the %qs architecture does not support paired-single"
 	     " instructions", mips_arch_info->name);
+
+  if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE
+      && !TARGET_CACHE_BUILTIN)
+    {
+      error ("%qs requires a target that provides the %qs instruction",
+	     "-mr10k-cache-barrier", "cache");
+      mips_r10k_cache_barrier = R10K_CACHE_BARRIER_NONE;
+    }
 
   /* If TARGET_DSPR2, enable MASK_DSP.  */
   if (TARGET_DSPR2)

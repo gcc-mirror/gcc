@@ -12808,6 +12808,73 @@ Work around certain SB-1 CPU core errata.
 (This flag currently works around the SB-1 revision 2
 ``F1'' and ``F2'' floating point errata.)
 
+@item -mr10k-cache-barrier=@var{setting}
+@opindex mr10k-cache-barrier
+Specify whether GCC should insert cache barriers to avoid the
+side-effects of speculation on R10K processors.
+
+In common with many processors, the R10K tries to predict the outcome
+of a conditional branch and speculatively executes instructions from
+the ``taken'' branch.  It later aborts these instructions if the
+predicted outcome was wrong.  However, on the R10K, even aborted
+instructions can have side effects.
+
+This problem only affects kernel stores and, depending on the system,
+kernel loads.  As an example, a speculatively-executed store may load
+the target memory into cache and mark the cache line as dirty, even if
+the store itself is later aborted.  If a DMA operation writes to the
+same area of memory before the ``dirty'' line is flushed, the cached
+data will overwrite the DMA-ed data.  See the R10K processor manual
+for a full description, including other potential problems.
+
+One workaround is to insert cache barrier instructions before every memory
+access that might be speculatively executed and that might have side
+effects even if aborted.  @option{-mr10k-cache-barrier=@var{setting}}
+controls GCC's implementation of this workaround.  It assumes that
+aborted accesses to any byte in the following regions will not have
+side effects:
+
+@enumerate
+@item
+the memory occupied by the current function's stack frame;
+
+@item
+the memory occupied by an incoming stack argument;
+
+@item
+the memory occupied by an object with a link-time-constant address.
+@end enumerate
+
+It is the kernel's responsibility to ensure that speculative
+accesses to these regions are indeed safe.
+
+If the input program contains a function declaration such as:
+
+@smallexample
+void foo (void);
+@end smallexample
+
+then the implementation of @code{foo} must allow @code{j foo} and
+@code{jal foo} to be executed speculatively.  GCC honors this
+restriction for functions it compiles itself.  It expects non-GCC
+functions (such as hand-written assembly code) to do the same.
+
+The option has three forms:
+
+@table @gcctabopt
+@item -mr10k-cache-barrier=load-store
+Insert a cache barrier before a load or store that might be
+speculatively executed and that might have side effects even
+if aborted.
+
+@item -mr10k-cache-barrier=store
+Insert a cache barrier before a store that might be speculatively
+executed and that might have side effects even if aborted.
+
+@item -mr10k-cache-barrier=none
+Disable the insertion of cache barriers.  This is the default setting.
+@end table
+
 @item -mflush-func=@var{func}
 @itemx -mno-flush-func
 @opindex mflush-func

@@ -236,6 +236,10 @@ mpaired-single
 Target Report Mask(PAIRED_SINGLE_FLOAT)
 Use paired-single floating-point instructions
 
+mr10k-cache-barrier=
+Target Joined RejectNegative
+-mr10k-cache-barrier=SETTING	Specify when r10k cache barriers should be inserted
+
 mshared
 Target Report Var(TARGET_SHARED) Init(1)
 When generating -mabicalls code, make the code suitable for use in shared libraries

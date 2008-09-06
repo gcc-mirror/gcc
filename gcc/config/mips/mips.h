@@ -563,6 +563,9 @@ enum mips_code_readable_setting {
 									\
       if (mips_abi == ABI_EABI)						\
 	builtin_define ("__mips_eabi");					\
+									\
+      if (TARGET_CACHE_BUILTIN)						\
+	builtin_define ("__GCC_HAVE_BUILTIN_MIPS_CACHE");		\
     }									\
   while (0)
 
@@ -1020,6 +1023,12 @@ enum mips_code_readable_setting {
 
 /* ISA includes the pop instruction.  */
 #define ISA_HAS_POP		TARGET_OCTEON
+
+/* The CACHE instruction is available in non-MIPS16 code.  */
+#define TARGET_CACHE_BUILTIN (mips_isa >= 3)
+
+/* The CACHE instruction is available.  */
+#define ISA_HAS_CACHE (TARGET_CACHE_BUILTIN && !TARGET_MIPS16)
 
 /* Add -G xx support.  */
 

@@ -238,6 +238,10 @@ proc dg-mips-options {args} {
 	    } else {
 		append flags " -msoft-float"
 	    }
+	} elseif {[regexp -- {^-mr10k-cache-barrier=(load|store)} $flag]
+		  && $mips_isa < 3
+		  && [lsearch -regexp $flags {^(-mips|-march)}] < 0} {
+	    append flags " -mips3"
 	}
     }
     foreach flag $flags {
