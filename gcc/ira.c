@@ -670,7 +670,7 @@ setup_reg_subclasses (void)
 
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      if (hard_reg_set_equal_p (temp_hard_regset, ira_zero_hard_reg_set))
+      if (hard_reg_set_empty_p (temp_hard_regset))
 	continue;
       for (j = 0; j < N_REG_CLASSES; j++)
 	if (i != j)
@@ -734,7 +734,7 @@ setup_cover_and_important_classes (void)
 	  gcc_unreachable ();
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      if (! hard_reg_set_equal_p (temp_hard_regset, ira_zero_hard_reg_set))
+      if (! hard_reg_set_empty_p (temp_hard_regset))
 	ira_reg_class_cover[ira_reg_class_cover_size++] = cl;
     }
   ira_important_classes_num = 0;
@@ -742,7 +742,7 @@ setup_cover_and_important_classes (void)
     {
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      if (! hard_reg_set_equal_p (temp_hard_regset, ira_zero_hard_reg_set))
+      if (! hard_reg_set_empty_p (temp_hard_regset))
 	for (j = 0; j < ira_reg_class_cover_size; j++)
 	  {
 	    COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
@@ -794,8 +794,7 @@ setup_class_translate (void)
 	    {
 	      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
 	      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	      if (! hard_reg_set_subset_p (temp_hard_regset,
-					   ira_zero_hard_reg_set))
+	      if (! hard_reg_set_empty_p (temp_hard_regset))
 		gcc_unreachable ();
 	    }
 #endif
@@ -818,7 +817,7 @@ setup_class_translate (void)
 			     reg_class_contents[cover_class]);
 	  AND_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
 	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	  if (! hard_reg_set_equal_p (temp_hard_regset, ira_zero_hard_reg_set))
+	  if (! hard_reg_set_empty_p (temp_hard_regset))
 	    {
 	      min_cost = INT_MAX;
 	      for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
@@ -875,8 +874,8 @@ setup_reg_class_intersect_union (void)
 	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
 	  COPY_HARD_REG_SET (temp_set2, reg_class_contents[cl2]);
 	  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
-	  if (hard_reg_set_equal_p (temp_hard_regset, ira_zero_hard_reg_set)
-	      && hard_reg_set_equal_p (temp_set2, ira_zero_hard_reg_set))
+	  if (hard_reg_set_empty_p (temp_hard_regset)
+	      && hard_reg_set_empty_p (temp_set2))
 	    {
 	      for (i = 0;; i++)
 		{
@@ -1081,10 +1080,6 @@ ira_init_register_move_cost (enum machine_mode mode)
 
 
 
-/* Hard regsets whose all bits are correspondingly zero or one.  */
-HARD_REG_SET ira_zero_hard_reg_set;
-HARD_REG_SET ira_one_hard_reg_set;
-
 /* This is called once during compiler work.  It sets up
    different arrays whose values don't depend on the compiled
    function.  */
@@ -1093,8 +1088,6 @@ ira_init_once (void)
 {
   enum machine_mode mode;
 
-  CLEAR_HARD_REG_SET (ira_zero_hard_reg_set);
-  SET_HARD_REG_SET (ira_one_hard_reg_set);
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     {
       ira_register_move_cost[mode] = NULL;

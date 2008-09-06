@@ -1274,7 +1274,7 @@ setup_allocno_left_conflicts_num (ira_allocno_t allocno)
   AND_HARD_REG_SET (temp_set, reg_class_contents[cover_class]);
   AND_COMPL_HARD_REG_SET (temp_set, ira_no_alloc_regs);
   conflict_allocnos_size = 0;
-  if (! hard_reg_set_equal_p (temp_set, ira_zero_hard_reg_set))
+  if (! hard_reg_set_empty_p (temp_set))
     for (i = 0; i < (int) hard_regs_num; i++)
       {
 	hard_regno = ira_class_hard_regs[cover_class][i];
@@ -1282,7 +1282,7 @@ setup_allocno_left_conflicts_num (ira_allocno_t allocno)
 	  {
 	    conflict_allocnos_size++;
 	    CLEAR_HARD_REG_BIT (temp_set, hard_regno);
-	    if (hard_reg_set_equal_p (temp_set, ira_zero_hard_reg_set))
+	    if (hard_reg_set_empty_p (temp_set))
 	      break;
 	  }
       }
