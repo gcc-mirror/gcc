@@ -1,3 +1,7 @@
+2008-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-ssa-pr14703.C: New testcase.
+
 2008-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36153
