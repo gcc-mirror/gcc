@@ -1,3 +1,10 @@
+2008-09-07  Dorit Nuzman  <dorit@il.ibm.com>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35642
+	* lib/target-supports.exp (check_effective_target_vect_short_mult):
+	Add powerpc.
+
 2008-09-07  Victor Kaplansky  <victork@il.ibm.com>
 
 	PR testsuite/37334
