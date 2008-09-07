@@ -1,10 +1,10 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ffast-math" } */
+/* { dg-options "-O2 -ffinite-math-only" } */
 
 extern void abort (void);
 
 volatile double a = 2.002083e-146;
-double b;
+volatile double b;
 
 int
 main()
@@ -15,4 +15,3 @@ main()
     abort ();
   return 0;
 }
-

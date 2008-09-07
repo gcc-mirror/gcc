@@ -1,3 +1,11 @@
+2008-09-07  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR testsuite/37334
+	* gcc/testsuite/gcc.dg/fastmath-2.c: Add volatile to
+	definition of b, change -ffast-math to -ffinite-math-only
+	and rename test to ...
+	* gcc/testsuite/gcc.dg/div-double-1.c: ... this.
+
 2008-09-06  Jeff Law <law@redhat.com>
 
 	* gcc.c-torture/execute/memcpy-bi.c: Include <string.h>
