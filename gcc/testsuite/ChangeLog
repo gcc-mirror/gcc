@@ -1,3 +1,9 @@
+2008-09-07  Richard Guenther  <rguenther@suse.de>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36630
+	* gcc.dg/vect/pr36630.c: New test.
+
 2008-09-04  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/init/const7.C: New test.

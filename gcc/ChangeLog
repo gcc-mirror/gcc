@@ -1,3 +1,10 @@
+2008-09-07  Richard Guenther  <rguenther@suse.de>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36630
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer):
+	Call STRIP_NOPS before calling evolution_part_in_loop_num.
+
 2008-09-04  Ian Lance Taylor  <iant@google.com>
 
 	* varasm.c (narrowing_initializer_constant_valid_p): New
