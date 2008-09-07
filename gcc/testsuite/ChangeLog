@@ -1,3 +1,8 @@
+2008-09-07  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/stfunc_6.f90: Extended testcase to include more tests
+	related to PURE and statement functions.
+
 2008-09-07  Dorit Nuzman  <dorit@il.ibm.com>
             Ira Rosen  <irar@il.ibm.com>
 
