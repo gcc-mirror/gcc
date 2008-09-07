@@ -2,7 +2,7 @@
 
 // 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@ void test01()
   std::tr1::intmax_t i = 0, numer = 0, denom = 0, base = 0;
   const char* s = 0;
   char** endptr = 0;
-#ifdef _GLIBCXX_USE_WCHAR_T
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
   const wchar_t* ws = 0;
   wchar_t** wendptr = 0;
 #endif  
@@ -49,7 +49,7 @@ void test01()
   ret = std::tr1::strtoimax(s, endptr, base);
   uret = std::tr1::strtoumax(s, endptr, base);
 
-#ifdef _GLIBCXX_USE_WCHAR_T
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
   ret = std::tr1::wcstoimax(ws, wendptr, base);
   uret = std::tr1::wcstoumax(ws, wendptr, base);
 #endif
