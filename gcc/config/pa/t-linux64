@@ -8,5 +8,7 @@ LIB1ASMSRC = pa/milli64.S
 # Actually, hppa64 is always PIC but adding -fPIC does no harm.
 CRTSTUFF_T_CFLAGS_S = -fPIC
 
+LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/pa/linux-atomic.c
+
 # Compile libgcc2.a as PIC.
 TARGET_LIBGCC2_CFLAGS = -fPIC -Dpa64=1 -DELF=1
