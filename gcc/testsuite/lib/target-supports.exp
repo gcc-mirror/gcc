@@ -2093,7 +2093,8 @@ proc check_effective_target_vect_short_mult { } {
 	if { [istarget ia64-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*] 
+             || [istarget powerpc*-*-*] } {
 	   set et_vect_short_mult_saved 1
 	}
     }

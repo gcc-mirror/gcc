@@ -647,6 +647,28 @@
    DONE;
  }")
  
+(define_expand "mulv8hi3"
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:V8HI 2 "register_operand" ""))]
+   "TARGET_ALTIVEC"
+   "
+{
+   rtx odd = gen_reg_rtx (V4SImode);
+   rtx even = gen_reg_rtx (V4SImode);
+   rtx high = gen_reg_rtx (V4SImode);
+   rtx low = gen_reg_rtx (V4SImode);
+
+   emit_insn (gen_altivec_vmulesh (even, operands[1], operands[2]));
+   emit_insn (gen_altivec_vmulosh (odd, operands[1], operands[2]));
+
+   emit_insn (gen_altivec_vmrghw (high, even, odd));
+   emit_insn (gen_altivec_vmrglw (low, even, odd));
+
+   emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+
+   DONE;
+}")
 
 ;; Fused multiply subtract 
 (define_insn "altivec_vnmsubfp"
