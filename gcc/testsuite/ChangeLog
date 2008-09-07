@@ -1,3 +1,11 @@
+2008-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37203
+	* gfortran.d/reshape_order_1.f90:  New test case.
+	* gfortran.d/reshape_order_2.f90:  New test case.
+	* gfortran.d/reshape_order_3.f90:  New test case.
+	* gfortran.d/reshape_order_4.f90:  New test case.
+
 2008-09-07  Richard Guenther  <rguenther@suse.de>
             Ira Rosen  <irar@il.ibm.com>
 

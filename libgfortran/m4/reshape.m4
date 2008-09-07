@@ -123,6 +123,33 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
   if (shape_empty)
     return;
 
+  if (unlikely (compile_options.bounds_check))
+    {
+      if (order)
+	{
+	  int seen[GFC_MAX_DIMENSIONS];
+	  index_type v;
+
+	  for (n = 0; n < rdim; n++)
+	    seen[n] = 0;
+
+	  for (n = 0; n < rdim; n++)
+	    {
+	      v = order->data[n * order->dim[0].stride] - 1;
+
+	      if (v < 0 || v >= rdim)
+		runtime_error("Value %ld out of range in ORDER argument"
+			      " to RESHAPE intrinsic", (long int) v + 1);
+
+	      if (seen[v] != 0)
+		runtime_error("Duplicate value %ld in ORDER argument to"
+			      " RESHAPE intrinsic", (long int) v + 1);
+		
+	      seen[v] = 1;
+	    }
+	}
+    }
+
   rsize = 1;
   for (n = 0; n < rdim; n++)
     {
