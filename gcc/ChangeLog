@@ -1,3 +1,8 @@
+2008-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa32-regs.h (IRA_COVER_CLASSES): Define.
+	* pa64-regs.h (IRA_COVER_CLASSES): Define.
+
 2008-09-07  Helge Deller  <deller@gmx.de>
 
         * pa/linux-atomic.c: New file.
