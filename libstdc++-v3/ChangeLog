@@ -1,3 +1,12 @@
+2008-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Check wcstoimax and
+	wcstoumax, define _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1.
+	* include/tr1_impl/cinttypes: Use the latter.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Likewise.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
 2008-09-05  Peter Dimov  <pdimov@mmltd.net>
 
 	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_2.cc: New.
