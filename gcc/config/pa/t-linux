@@ -9,6 +9,7 @@ LIB1ASMSRC = pa/milli64.S
 TARGET_LIBGCC2_CFLAGS = -fPIC -DELF=1 -DLINUX=1
 
 LIB2FUNCS_EXTRA=fptr.c
+LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/pa/linux-atomic.c
 
 fptr.c: $(srcdir)/config/pa/fptr.c
 	rm -f fptr.c
