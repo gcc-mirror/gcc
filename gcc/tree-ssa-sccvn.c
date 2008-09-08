@@ -1607,13 +1607,17 @@ static bool
 visit_copy (tree lhs, tree rhs)
 {
   /* Follow chains of copies to their destination.  */
-  while (SSA_VAL (rhs) != rhs && TREE_CODE (SSA_VAL (rhs)) == SSA_NAME)
+  while (TREE_CODE (rhs) == SSA_NAME
+	 && SSA_VAL (rhs) != rhs)
     rhs = SSA_VAL (rhs);
 
   /* The copy may have a more interesting constant filled expression
      (we don't, since we know our RHS is just an SSA name).  */
-  VN_INFO (lhs)->has_constants = VN_INFO (rhs)->has_constants;
-  VN_INFO (lhs)->expr = VN_INFO (rhs)->expr;
+  if (TREE_CODE (rhs) == SSA_NAME)
+    {
+      VN_INFO (lhs)->has_constants = VN_INFO (rhs)->has_constants;
+      VN_INFO (lhs)->expr = VN_INFO (rhs)->expr;
+    }
 
   return set_ssa_val_to (lhs, rhs);
 }

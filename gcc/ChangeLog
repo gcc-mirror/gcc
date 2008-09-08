@@ -1,3 +1,9 @@
+2008-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37421
+	* tree-ssa-sccvn.c (visit_copy): Make sure to fully
+	valueize the RHS.
+
 2008-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37415

@@ -1,3 +1,8 @@
+2008-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37421
+	* g++.dg/torture/pr37421.C: New testcase.
+
 2008-09-08  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36167
