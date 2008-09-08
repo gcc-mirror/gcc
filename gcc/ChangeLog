@@ -1,3 +1,8 @@
+2008-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira-color.c (ira_reuse_stack_slot): Set slot_num on success at the
+	end of the search.
+
 2008-09-08  M R Swami Reddy <MR.Swami.Reddy@nsc.com>
 
 	* crx/crx.h (IRA_COVER_CLASSES): Define.
