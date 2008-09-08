@@ -1,3 +1,9 @@
+2008-09-04  Daniel Kraft  <d@domob.eu>
+
+	* PR fortran/37099
+	* expr.c (simplify_const_ref): Update expression's character length
+	when pulling out a substring reference.
+
 2008-08-30  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37193
