@@ -1,3 +1,11 @@
+2008-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37337
+	* tree-ssa-dom.c (optimize_stmt): Call maybe_clean_or_replace_eh_stmt
+	even when a stmt has been gimple_modified_p, but after fold_stmt is
+	not any longer.  Remove unneeded may_have_exposed_new_symbols
+	initializations.
+
 2008-09-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37421
