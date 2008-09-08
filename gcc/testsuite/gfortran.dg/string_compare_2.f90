@@ -35,3 +35,5 @@ program pack_bug
       end if
     end do
 end
+
+! { dg-final { cleanup-modules "xparams" } }
