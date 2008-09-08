@@ -1,3 +1,8 @@
+2008-09-08  Tobias Burnus  <burnus@net.b.de>
+
+	PR fortran/37400
+	* gfortran.dg/implicit_12.f90: New test.
+
 2008-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37203
@@ -7,7 +12,7 @@
 	* gfortran.d/reshape_order_4.f90:  New test case.
 
 2008-09-07  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36630
 	* gcc.dg/vect/pr36630.c: New test.
@@ -18,7 +23,7 @@
 	related to PURE and statement functions.
 
 2008-09-07  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35642
 	* lib/target-supports.exp (check_effective_target_vect_short_mult):
@@ -35,7 +40,7 @@
 2008-09-06  Jeff Law <law@redhat.com>
 
 	* gcc.c-torture/execute/memcpy-bi.c: Include <string.h>
- 
+
 2008-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37399
