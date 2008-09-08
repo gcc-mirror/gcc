@@ -1,3 +1,12 @@
+2008-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37414
+	* predict.c (optimize_function_for_size_p): Don't segfault if
+	FUN is NULL.
+	* fold-const.c (LOGICAL_OP_NON_SHORT_CIRCUIT, fold_truthop,
+	tree_swap_operands_p): Don't test cfun != NULL before calling
+	optimize_function_for_s*_p.
+
 2008-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ira-color.c (ira_reuse_stack_slot): Set slot_num on success at the

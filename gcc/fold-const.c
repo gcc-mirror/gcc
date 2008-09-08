@@ -5110,7 +5110,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
-  (BRANCH_COST (!cfun || optimize_function_for_speed_p (cfun), \
+  (BRANCH_COST (optimize_function_for_speed_p (cfun), \
 		false) >= 2)
 #endif
 
@@ -5359,7 +5359,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
      that can be merged.  Avoid doing this if the RHS is a floating-point
      comparison since those can trap.  */
 
-  if (BRANCH_COST (!cfun || optimize_function_for_speed_p (cfun),
+  if (BRANCH_COST (optimize_function_for_speed_p (cfun),
 		   false) >= 2
       && ! FLOAT_TYPE_P (TREE_TYPE (rl_arg))
       && simple_operand_p (rl_arg)
@@ -6682,7 +6682,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
   if (TREE_CONSTANT (arg0))
     return 1;
 
-  if (cfun && optimize_function_for_size_p (cfun))
+  if (optimize_function_for_size_p (cfun))
     return 0;
 
   if (reorder && flag_evaluation_order
