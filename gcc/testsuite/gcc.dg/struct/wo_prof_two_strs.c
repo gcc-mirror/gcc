@@ -15,7 +15,15 @@ typedef struct
   float d;
 }str_t2;
 
+#ifdef STACK_SIZE
+#if STACK_SIZE > 16000
 #define N 1000
+#else
+#define N (STACK_SIZE/16)
+#endif
+#else
+#define N 1000
+#endif
 
 str_t1 *p1;
 str_t2 *p2;
@@ -36,7 +44,7 @@ main ()
   int i, r;
 
   r = rand ();
-  num = r > N ? N : num; 
+  num = r > N ? N : r; 
   p1 = malloc (num * sizeof (str_t1));
   p2 = malloc (num * sizeof (str_t2));
 
@@ -56,5 +64,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "Number of structures to transform is 2" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "Number of structures to transform is 2" "ipa_struct_reorg" { xfail { "avr-*-*" } } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

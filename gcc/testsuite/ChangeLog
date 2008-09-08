@@ -1,3 +1,33 @@
+2008-09-08  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/struct/wo_prof_escape_substr_value.c: Limit allocation
+	based on STACK_SIZE.
+	* gcc.dg/struct/wo_prof_array_through_pointer.c: Ditto.
+	* gcc.dg/struct/wo_prof_escape_substr_pointer.c: Ditto.
+	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Limit allocation
+	based on STACK_SIZE. Check malloc return for NULL.
+	* gcc.dg/struct/w_prof_local_var.c: Ditto.
+	* gcc.dg/struct/wo_prof_mult_field_peeling.c: Ditto.
+	* gcc.dg/struct/w_prof_local_array.c: Limit allocation based on
+	STACK_SIZE. XFAIL AVR target.
+	* gcc.dg/struct/wo_prof_local_array.c: Ditto.
+	* gcc.dg/struct/w_prof_two_strs.c: Limit allocation based on
+	STACK_SIZE. Limit random size to N.
+	* gcc.dg/struct/wo_prof_two_strs.c: Limit allocation based on
+	STACK_SIZE. XFAIL AVR target. Limit random size to N.
+	* gcc.dg/struct/w_prof_single_str_global.c: XFAIL AVR target.
+	* gcc.dg/struct/wo_prof_array_field.c: Ditto.
+	* gcc.dg/struct/wo_prof_double_malloc.c: Ditto.
+	* gcc.dg/struct/wo_prof_global_array.c: Ditto.
+	* gcc.dg/struct/wo_prof_single_str_global.c: Ditto.
+	* gcc.dg/struct/wo_prof_single_str_local.c: Ditto.
+	* gcc.dg/struct/w_prof_global_var.c: Limit allocation based on
+	STACK_SIZE. Check malloc return for NULL. XFAIL AVR target.
+	* gcc.dg/struct/wo_prof_global_var.c: Ditto.
+	* gcc.dg/struct/wo_prof_local_var.c: Ditto.
+	* gcc.dg/struct/wo_prof_malloc_size_var.c: Access only allocated
+	space. Limit allocation based on STACK_SIZE. XFAIL AVR target.
+
 2008-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/cdce3.C: Require c99 runtime.
