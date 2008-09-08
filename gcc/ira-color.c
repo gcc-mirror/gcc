@@ -2728,10 +2728,11 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
 	}
       if (best_cost >= 0)
 	{
-	  slot = &ira_spilled_reg_stack_slots[best_slot_num];
+	  slot_num = best_slot_num;
+	  slot = &ira_spilled_reg_stack_slots[slot_num];
 	  SET_REGNO_REG_SET (&slot->spilled_regs, regno);
 	  x = slot->mem;
-	  ALLOCNO_HARD_REGNO (allocno) = -best_slot_num - 2;
+	  ALLOCNO_HARD_REGNO (allocno) = -slot_num - 2;
 	}
     }
   if (x != NULL_RTX)
