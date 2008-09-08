@@ -1,5 +1,11 @@
+2008-09-08  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_split_lock_test_and_set): Move
+	memory barrier to below the test-and-set.
+	(alpha_split_lock_test_and_set_12): Likewise.
+
 2008-09-07  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36630
 	* tree-vect-transform.c (vect_update_ivs_after_vectorizer):
