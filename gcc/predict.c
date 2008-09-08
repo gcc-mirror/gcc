@@ -203,7 +203,8 @@ bool
 optimize_function_for_size_p (struct function *fun)
 {
   return (optimize_size
-	  || fun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED);
+	  || (fun && (fun->function_frequency
+		      == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)));
 }
 
 /* Return true when current function should always be optimized for speed.  */

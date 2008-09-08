@@ -1,5 +1,8 @@
 2008-09-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37414
+	* g++.dg/opt/init2.C: New test.
+
 	PR middle-end/37337
 	* g++.dg/tree-ssa/pr37337.C: New test.
 
