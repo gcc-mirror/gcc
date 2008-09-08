@@ -9556,11 +9556,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type;
 
-	type = 
-          finish_decltype_type (tsubst_expr 
-                                (DECLTYPE_TYPE_EXPR (t), args,
-                                 complain, in_decl,
-                                 /*integral_constant_expression_p=*/false),
+	++skip_evaluation;
+
+	type = tsubst_expr (DECLTYPE_TYPE_EXPR (t), args,
+			    complain, in_decl,
+			    /*integral_constant_expression_p=*/false);
+
+	--skip_evaluation;
+
+	type =
+          finish_decltype_type (type,
                                 DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t));
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
@@ -9796,7 +9801,22 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     {
     case PARM_DECL:
       r = retrieve_local_specialization (t);
-      gcc_assert (r != NULL);
+
+      if (r == NULL)
+	{
+	  /* This can happen for a parameter name used later in a function
+	     declaration (such as in a late-specified return type).
+	     Replace it with an arbitrary expression with the same type
+	     (*(T*)0).  This should only occur in an unevaluated context
+	     (i.e. decltype).  */
+	  gcc_assert (skip_evaluation && DECL_CONTEXT (t) == NULL_TREE);
+	  r = non_reference (TREE_TYPE (t));
+	  r = tsubst (r, args, complain, in_decl);
+	  r = build_pointer_type (r);
+	  r = build_c_cast (r, null_node);
+	  return cp_build_indirect_ref (r, NULL, tf_warning_or_error);
+	}
+      
       if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
 	r = ARGUMENT_PACK_SELECT_ARG (r);
       mark_used (r);

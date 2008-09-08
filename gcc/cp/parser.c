@@ -853,7 +853,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, cp_parameter_declarator *, cp_cv_quals, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1013,7 +1013,7 @@ make_ptrmem_declarator (cp_cv_quals cv_qualifiers, tree class_type,
 
 cp_declarator *
 make_call_declarator (cp_declarator *target,
-		      cp_parameter_declarator *parms,
+		      tree parms,
 		      cp_cv_quals cv_qualifiers,
 		      tree exception_specification,
 		      tree late_return_type)
@@ -1736,9 +1736,9 @@ static tree cp_parser_type_id
   (cp_parser *);
 static void cp_parser_type_specifier_seq
   (cp_parser *, bool, cp_decl_specifier_seq *);
-static cp_parameter_declarator *cp_parser_parameter_declaration_clause
+static tree cp_parser_parameter_declaration_clause
   (cp_parser *);
-static cp_parameter_declarator *cp_parser_parameter_declaration_list
+static tree cp_parser_parameter_declaration_list
   (cp_parser *, bool *);
 static cp_parameter_declarator *cp_parser_parameter_declaration
   (cp_parser *, bool, bool *);
@@ -12986,8 +12986,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	  if (!first || dcl_kind != CP_PARSER_DECLARATOR_NAMED)
 	    {
-	      cp_parameter_declarator *params;
+	      tree params;
 	      unsigned saved_num_template_parameter_lists;
+	      bool is_declarator = false;
+	      tree t;
 
 	      /* In a member-declarator, the only valid interpretation
 		 of a parenthesis is the start of a
@@ -13014,6 +13016,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		= parser->num_template_parameter_lists;
 	      parser->num_template_parameter_lists = 0;
 
+	      begin_scope (sk_function_parms, NULL_TREE);
+
 	      /* Parse the parameter-declaration-clause.  */
 	      params = cp_parser_parameter_declaration_clause (parser);
 
@@ -13027,6 +13031,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  cp_cv_quals cv_quals;
 		  tree exception_specification;
 		  tree late_return;
+
+		  is_declarator = true;
 
 		  if (ctor_dtor_or_conv_p)
 		    *ctor_dtor_or_conv_p = *ctor_dtor_or_conv_p < 0;
@@ -13053,10 +13059,16 @@ cp_parser_direct_declarator (cp_parser* parser,
 		     return type, so are not those of the declared
 		     function.  */
 		  parser->default_arg_ok_p = false;
-
-		  /* Repeat the main loop.  */
-		  continue;
 		}
+
+	      /* Remove the function parms from scope.  */
+	      for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+		pop_binding (DECL_NAME (t), t);
+	      leave_scope();
+
+	      if (is_declarator)
+		/* Repeat the main loop.  */
+		continue;
 	    }
 
 	  /* If this is the first, we can try a parenthesized
@@ -13728,10 +13740,10 @@ cp_parser_type_specifier_seq (cp_parser* parser,
    value of NULL indicates a parameter-declaration-clause consisting
    only of an ellipsis.  */
 
-static cp_parameter_declarator *
+static tree
 cp_parser_parameter_declaration_clause (cp_parser* parser)
 {
-  cp_parameter_declarator *parameters;
+  tree parameters;
   cp_token *token;
   bool ellipsis_p;
   bool is_error;
@@ -13743,7 +13755,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     {
       /* Consume the `...' token.  */
       cp_lexer_consume_token (parser->lexer);
-      return NULL;
+      return NULL_TREE;
     }
   else if (token->type == CPP_CLOSE_PAREN)
     /* There are no parameters.  */
@@ -13751,10 +13763,10 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 #ifndef NO_IMPLICIT_EXTERN_C
       if (in_system_header && current_class_type == NULL
 	  && current_lang_name == lang_name_c)
-	return NULL;
+	return NULL_TREE;
       else
 #endif
-	return no_parameters;
+	return void_list_node;
     }
   /* Check for `(void)', too, which is a special case.  */
   else if (token->keyword == RID_VOID
@@ -13764,7 +13776,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
       /* Consume the `void' token.  */
       cp_lexer_consume_token (parser->lexer);
       /* There are no parameters.  */
-      return no_parameters;
+      return void_list_node;
     }
 
   /* Parse the parameter-declaration-list.  */
@@ -13799,8 +13811,8 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     ellipsis_p = false;
 
   /* Finish the parameter list.  */
-  if (parameters && ellipsis_p)
-    parameters->ellipsis_p = true;
+  if (!ellipsis_p)
+    parameters = chainon (parameters, void_list_node);
 
   return parameters;
 }
@@ -13816,11 +13828,11 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
    `void_list_node' is never appended to the list.  Upon return,
    *IS_ERROR will be true iff an error occurred.  */
 
-static cp_parameter_declarator *
+static tree
 cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 {
-  cp_parameter_declarator *parameters = NULL;
-  cp_parameter_declarator **tail = &parameters;
+  tree parameters = NULL_TREE;
+  tree *tail = &parameters; 
   bool saved_in_unbraced_linkage_specification_p;
 
   /* Assume all will go well.  */
@@ -13836,6 +13848,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
   while (true)
     {
       cp_parameter_declarator *parameter;
+      tree decl = error_mark_node;
       bool parenthesized_p;
       /* Parse the parameter.  */
       parameter
@@ -13843,17 +13856,38 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 					   /*template_parm_p=*/false,
 					   &parenthesized_p);
 
+      /* We don't know yet if the enclosing context is deprecated, so wait
+	 and warn in grokparms if appropriate.  */
+      deprecated_state = DEPRECATED_SUPPRESS;
+
+      if (parameter)
+	decl = grokdeclarator (parameter->declarator,
+			       &parameter->decl_specifiers,
+			       PARM,
+			       parameter->default_argument != NULL_TREE,
+			       &parameter->decl_specifiers.attributes);
+
+      deprecated_state = DEPRECATED_NORMAL;
+
       /* If a parse error occurred parsing the parameter declaration,
 	 then the entire parameter-declaration-list is erroneous.  */
-      if (!parameter)
+      if (decl == error_mark_node)
 	{
 	  *is_error = true;
-	  parameters = NULL;
+	  parameters = error_mark_node;
 	  break;
 	}
+
+      if (parameter->decl_specifiers.attributes)
+	cplus_decl_attributes (&decl,
+			       parameter->decl_specifiers.attributes,
+			       0);
+      if (DECL_NAME (decl))
+	decl = pushdecl (decl);
+
       /* Add the new parameter to the list.  */
-      *tail = parameter;
-      tail = &parameter->next;
+      *tail = build_tree_list (parameter->default_argument, decl);
+      tail = &TREE_CHAIN (*tail);
 
       /* Peek at the next token.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN)
