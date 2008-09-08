@@ -8,7 +8,15 @@ typedef struct
   float b;
 }str_t;
 
+#ifdef STACK_SIZE
+#if STACK_SIZE > 16000
 #define N 1000
+#else
+#define N (STACK_SIZE/16)
+#endif
+#else
+#define N 1000
+#endif
 
 typedef struct 
 {

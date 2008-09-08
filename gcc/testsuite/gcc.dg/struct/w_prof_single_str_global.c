@@ -26,6 +26,6 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final-use { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" } } */
+/* { dg-final-use { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" { xfail { "avr-*-*" } } } } */
 /* { dg-final-use { cleanup-ipa-dump "*" } } */
 

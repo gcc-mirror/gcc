@@ -10,14 +10,23 @@ typedef struct
   float d;
 }str_t;
 
+#ifdef STACK_SIZE
+#if STACK_SIZE > 1600
 #define N 100
+#else
+#define N (STACK_SIZE/16)
+#endif
+#else
+#define N 100
+#endif
 
 int 
 main ()
 {
   int i;
   str_t *p = malloc (N * sizeof (str_t));
-
+  if (p == NULL)
+    return 0;
   for (i = 0; i < N; i++)
     p[i].a = 5;
 

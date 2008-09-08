@@ -9,7 +9,15 @@ struct str
   float b;
 };
 
+#ifdef STACK_SIZE
+#if STACK_SIZE > 8000
 #define N 1000
+#else
+#define N (STACK_SIZE/8)
+#endif
+#else
+#define N 1000
+#endif
 
 int
 foo (struct str * p_str)
@@ -25,7 +33,8 @@ main ()
 {
   int i, sum;
   struct str * p = malloc (N * sizeof (struct str));
-
+  if (p == NULL)
+    return 0;
   for (i = 0; i < N; i++)
     sum = foo (p+i);
 

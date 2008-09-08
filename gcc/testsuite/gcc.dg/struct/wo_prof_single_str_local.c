@@ -29,5 +29,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "No structures to transform" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "No structures to transform" "ipa_struct_reorg" { xfail { "avr-*-*" } } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */
