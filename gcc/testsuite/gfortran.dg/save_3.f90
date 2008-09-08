@@ -14,3 +14,5 @@ pure function tell_i() result (answer)
   answer=i
 end function tell_i
 end module g95bug
+
+! { dg-final { cleanup-modules "g95bug" } }

@@ -1,5 +1,12 @@
 2008-09-08  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/36167
+	* gfortran.dg/array_function_3.f90: New test.
+	* gfortran.dg/save_3.f90: Added cleanup-modules directive.
+	* gfortran.dg/string_compare_1.f90: Ditto.
+
+2008-09-08  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/37199
 	* gfortran.dg/array_function_2.f90: New test.
 
