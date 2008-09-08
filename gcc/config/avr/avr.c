@@ -5683,7 +5683,7 @@ avr_reorg (void)
 	      rtx t = XEXP (src,0);
 
 	      PUT_CODE (t, swap_condition (GET_CODE (t)));
-	      SET_SRC (pattern) = gen_rtx_NEG (GET_MODE (SET_SRC (pattern)),
+	      SET_SRC (pattern) = gen_rtx_COMPARE (GET_MODE (SET_SRC (pattern)), const0_rtx,
 					       SET_SRC (pattern));
 	      INSN_CODE (next) = -1;
 	      INSN_CODE (insn) = -1;

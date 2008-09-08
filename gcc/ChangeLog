@@ -1,3 +1,14 @@
+2008-08-09  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/36609
+	* config/avr/avr.c (avr_reorg): Create RTL for reversed compare with
+	zero.
+	* config/avr/avr.md  (QISI) : Define mode iterator.
+	(negated_tst<mode>) : Redefine as split using mode macro.
+	(reversed_tstqi): Define insn as reversed compare with zero.
+	(reversed_tsthi): Ditto.
+	(reversed_tstsi): Ditto.
+
 2008-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37393
