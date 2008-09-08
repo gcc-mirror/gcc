@@ -1,3 +1,10 @@
+2008-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR driver/37409
+	* pa-hpux.h (LINK_SPEC): Strip -fwhole-program.
+	* pa-hpux10.h (LINK_SPEC): Likewise.
+	* pa-hpux11.h (LINK_SPEC): Likewise.
+`
 2008-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa32-regs.h (IRA_COVER_CLASSES): Define.
