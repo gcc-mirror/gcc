@@ -117,6 +117,9 @@
 		       (const_int 2))]
         (const_int 2)))
 
+;; Define mode iterator
+(define_mode_iterator QISI [(QI "") (HI "") (SI "")])
+
 ;;========================================================================
 ;; The following is used by nonlocal_goto and setjmp.
 ;; The receiver pattern will create no instructions since internally
@@ -2015,9 +2018,10 @@
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
 
-(define_insn "*negated_tstqi"
+(define_insn "*reversed_tstqi"
   [(set (cc0)
-        (neg:QI (match_operand:QI 0 "register_operand" "r")))]
+        (compare (const_int 0)  
+		 (match_operand:QI 0 "register_operand" "r")))]
   ""
   "cp __zero_reg__,%0"
   [(set_attr "cc" "compare")
@@ -2031,9 +2035,10 @@
 [(set_attr "cc" "compare,compare")
  (set_attr "length" "1,2")])
 
-(define_insn "*negated_tsthi"
+(define_insn "*reversed_tsthi"
   [(set (cc0)
-        (neg:HI (match_operand:HI 0 "register_operand" "r")))]
+        (compare (const_int 0)
+		 (match_operand:HI 0 "register_operand" "r")))]
   ""
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
@@ -2048,9 +2053,10 @@
   [(set_attr "cc" "compare")
    (set_attr "length" "4")])
 
-(define_insn "*negated_tstsi"
+(define_insn "*reversed_tstsi"
   [(set (cc0)
-        (neg:SI (match_operand:SI 0 "register_operand" "r")))]
+        (compare (const_int 0)  
+		 (match_operand:SI 0 "register_operand" "r")))]
   ""
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0
@@ -2186,6 +2192,19 @@
 }"
   [(set_attr "cc" "compare,compare,compare,compare,compare")
    (set_attr "length" "4,4,7,5,8")])
+
+; Optimize negated tests into reverse compare if overflow is undefined.
+(define_insn_and_split "negated_tst<mode>"
+ [(set (cc0)
+        (neg:QISI (match_operand:QISI 0 "register_operand")))]
+
+  "(!flag_wrapv && !flag_trapv && flag_strict_overflow)"
+  "#"
+  ""
+  [(set (cc0)
+        (compare (const_int 0)  
+		 (match_dup 0)))]
+  "")
 
 ;; ----------------------------------------------------------------------
 ;; JUMP INSTRUCTIONS
