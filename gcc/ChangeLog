@@ -1,3 +1,7 @@
+2008-09-08  M R Swami Reddy <MR.Swami.Reddy@nsc.com>
+
+	* crx/crx.h (IRA_COVER_CLASSES): Define.
+
 2008-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37337
@@ -50,7 +54,7 @@
 
 2008-09-06  Jeff Law <law@redhat.com>
 
-	* h8300.h (IRA_COVER_CLASSES): Define.
+	* h8300/h8300.h (IRA_COVER_CLASSES): Define.
 
 2008-09-06  Jan Hubicka  <jh@suse.cz>
 
