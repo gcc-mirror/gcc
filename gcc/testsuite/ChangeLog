@@ -1,3 +1,8 @@
+2008-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37337
+	* g++.dg/tree-ssa/pr37337.C: New test.
+
 2008-09-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37421

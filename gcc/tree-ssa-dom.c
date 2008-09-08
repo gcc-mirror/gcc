@@ -2179,7 +2179,8 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 {
   gimple stmt, old_stmt;
   bool may_optimize_p;
-  bool may_have_exposed_new_symbols = false;
+  bool may_have_exposed_new_symbols;
+  bool modified_p = false;
 
   old_stmt = stmt = gsi_stmt (si);
   
@@ -2188,7 +2189,6 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
-  may_have_exposed_new_symbols = false;
   push_stmt_changes (gsi_stmt_ptr (&si));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2237,6 +2237,10 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
 	 Indicate we will need to rescan and rewrite the statement.  */
       may_have_exposed_new_symbols = true;
+      /* Indicate that maybe_clean_or_replace_eh_stmt needs to be called,
+	 even if fold_stmt updated the stmt already and thus cleared
+	 gimple_modified_p flag on it.  */
+      modified_p = true;
     }
 
   /* Check for redundant computations.  Do this optimization only
@@ -2285,7 +2289,7 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
      Ultimately I suspect we're going to need to change the interface
      into the SSA_NAME manager.  */
-  if (gimple_modified_p (stmt))
+  if (gimple_modified_p (stmt) || modified_p)
     {
       tree val = NULL;
 
