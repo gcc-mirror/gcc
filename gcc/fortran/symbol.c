@@ -257,6 +257,12 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
   sym->ts = *ts;
   sym->attr.implicit_type = 1;
 
+  if (ts->cl)
+    {
+      sym->ts.cl = gfc_get_charlen ();
+      *sym->ts.cl = *ts->cl;
+    }
+
   if (sym->attr.is_bind_c == 1)
     {
       /* BIND(C) variables should not be implicitly declared.  */
