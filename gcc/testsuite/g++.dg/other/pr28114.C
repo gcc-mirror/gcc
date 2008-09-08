@@ -5,5 +5,5 @@ template<int> void foo(struct {}*); // { dg-error "" }
 
 void bar()
 {
-  foo<0>(0);
+  foo<0>(0);			// { dg-error "" }
 }

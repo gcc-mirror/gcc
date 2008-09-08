@@ -11,5 +11,5 @@ template<int P = 0> struct foo {
 };
 
 void bar() {
-  foo<>::bar(0); // { dg-error "" "" } instantiated from here
+  foo<>::bar(0);
 }

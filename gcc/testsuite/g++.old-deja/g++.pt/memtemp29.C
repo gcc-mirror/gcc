@@ -9,7 +9,7 @@ struct S
   void f(U u);
 
   template <class U>
-  void g(U U);
+  void g(U u);
 
   int c[16];
 };

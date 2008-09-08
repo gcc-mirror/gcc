@@ -604,6 +604,13 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	     scope of the current namespace, not the current
 	     function.  */
 	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
+	  /* When parsing the parameter list of a function declarator,
+	     don't set DECL_CONTEXT to an enclosing function.  When we
+	     push the PARM_DECLs in order to process the function body,
+	     current_binding_level->this_entity will be set.  */
+	  && !(TREE_CODE (x) == PARM_DECL
+	       && current_binding_level->kind == sk_function_parms
+	       && current_binding_level->this_entity == NULL)
 	  && !DECL_CONTEXT (x))
 	DECL_CONTEXT (x) = current_function_decl;
 
@@ -712,8 +719,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	    }
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
-	      gcc_assert (DECL_CONTEXT (t));
-
 	      /* Check for duplicate params.  */
 	      if (duplicate_decls (x, t, is_friend))
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
@@ -4987,6 +4992,8 @@ pushtag (tree name, tree type, tag_scope scope)
   while (/* Cleanup scopes are not scopes from the point of view of
 	    the language.  */
 	 b->kind == sk_cleanup
+	 /* Neither are function parameter scopes.  */
+	 || b->kind == sk_function_parms
 	 /* Neither are the scopes used to hold template parameters
 	    for an explicit specialization.  For an ordinary template
 	    declaration, these scopes are not scopes from the point of

@@ -2016,7 +2016,8 @@ write_template_args (tree args)
    <expr-primary> ::= <template-param>
 		  ::= L <type> <value number> E		# literal
 		  ::= L <mangled-name> E		# external name
-		  ::= sr <type> <unqualified-name>
+		  ::= st <type>				# sizeof
+		  ::= sr <type> <unqualified-name>	# dependent name
 		  ::= sr <type> <unqualified-name> <template-args> */
 
 static void
@@ -2042,6 +2043,12 @@ write_expression (tree expr)
       code = TREE_CODE (expr);
     }
 
+  if (code == OVERLOAD)
+    {
+      expr = OVL_FUNCTION (expr);
+      code = TREE_CODE (expr);
+    }
+
   /* Handle pointers-to-members by making them look like expression
      nodes.  */
   if (code == PTRMEM_CST)
@@ -2064,6 +2071,13 @@ write_expression (tree expr)
   else if (TREE_CODE_CLASS (code) == tcc_constant
 	   || (abi_version_at_least (2) && code == CONST_DECL))
     write_template_arg_literal (expr);
+  else if (code == PARM_DECL)
+    {
+      /* A function parameter used under decltype in a late-specified
+	 return type.  Represented with a type placeholder.  */
+      write_string ("sT");
+      write_type (non_reference (TREE_TYPE (expr)));
+    }
   else if (DECL_P (expr))
     {
       /* G++ 3.2 incorrectly mangled non-type template arguments of
@@ -2175,16 +2189,17 @@ write_expression (tree expr)
       switch (code)
 	{
 	case CALL_EXPR:
-	  sorry ("call_expr cannot be mangled due to a defect in the C++ ABI");
+	  write_expression (CALL_EXPR_FN (expr));
+	  for (i = 0; i < call_expr_nargs (expr); ++i)
+	    write_expression (CALL_EXPR_ARG (expr, i));
+	  write_char ('E');
 	  break;
 
 	case CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
-	  /* There is no way to mangle a zero-operand cast like
-	     "T()".  */
 	  if (!TREE_OPERAND (expr, 0))
-	    sorry ("zero-operand casts cannot be mangled due to a defect "
-		   "in the C++ ABI");
+	  /* "T()" is mangled as "T(void)".  */
+	    write_char ('v');
 	  else
 	    write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
 	  break;
@@ -2194,7 +2209,6 @@ write_expression (tree expr)
 	  write_type (TREE_TYPE (expr));
 	  write_expression (TREE_OPERAND (expr, 0));
 	  break;
-
 
 	/* Handle pointers-to-members specially.  */
 	case SCOPE_REF:

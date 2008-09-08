@@ -69,4 +69,6 @@ int main()
     case 42:
       break;
     }
+
+  auto j = 42, k = 24;
 }

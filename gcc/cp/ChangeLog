@@ -1,3 +1,27 @@
+2008-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37302
+	* parser.c (cp_parser_parameter_declaration_list): Process the
+	PARM_DECLs as we go and push them.  Return a TREE_LIST.
+	(cp_parser_parameter_declaration_clause): Return a TREE_LIST.
+	(cp_parser_direct_declarator): Create a binding level and
+	suppress deprecated warnings in the parameter list.
+	(make_call_declarator): PARMS is now a tree.
+	* cp-tree.h (struct cp_declarator): Function parms are now a tree.
+	* decl.h (enum deprecated_states, deprecated_state): Move here.
+	* decl.c: From here.
+	(type_is_deprecated): New fn.
+	(grokparms): PARMLIST is a tree now.  Warn about parms that
+	use deprecated types.
+	* mangle.c (write_expression): Handle PARM_DECL, CALL_EXPR and
+	0-operand cast.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Set skip_evaluation.
+	(tsubst_copy) [PARM_DECL]: Handle a PARM_DECL used outside of a 
+	function.
+	* name-lookup.c (pushtag): Look through function parameter scopes.
+	(pushdecl_maybe_friend): Don't set DECL_CONTEXT on a PARM_DECL 
+	when we're parsing a function declarator.
+
 2008-09-05  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/37342
