@@ -1,3 +1,31 @@
+2008-09-09  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+
+	Improved branch hints, safe hints, and scheduling for Cell SPU.
+
+	* haifa-sched.c (sched_emit_insn) : Define.
+	* sched-int.h (sched_emit_insn) : Add prototype.
+	* doc/invoke.texi (-mdual-nops, -mhint-max-nops,
+	-mhint-max-distance -msafe-hints) : Document.
+	* config/spu/spu.c (spu_flag_var_tracking): New.
+	(TARGET_SCHED_INIT_GLOBAL, TARGET_SCHED_INIT,
+	TARGET_SCHED_REORDER, TARGET_SCHED_REORDER2,
+	TARGET_ASM_FILE_START): Define.
+	(TARGET_SCHED_ADJUST_PRIORITY): Remove.
+	(STOP_HINT_P, HINTED_P, SCHED_ON_EVEN_P): Define.
+	(spu_emit_branch_hint): Add blocks argument.
+	(insert_branch_hints, insert_nops): Remove.
+	(pad_bb, insert_hbrp_for_ilb_runout, insert_hbrp, in_spu_reorg,
+	uses_ls_unit, spu_sched_init_global, spu_sched_init,
+	spu_sched_reorder, asm_file_start): New functions.
+	(clock_var, spu_sched_length, pipe0_clock,
+	pipe1_clock, prev_clock_var, prev_priority,
+	spu_ls_first, prev_ls_clock): New static variables.
+	* config/spu/spu.h (TARGET_DEFAULT): Add MASK_SAFE_HINTS.
+	* config/spu.md (iprefetch): Add operand, make it clobber MEM.
+	(nopn_nv): Add a non-volatile version of nop.
+	* config/spu/spu.opt (-mdual-nops, -mhint-max-nops,
+	-mhint-max-distance, -msafe-hints): New options.
+
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/37408

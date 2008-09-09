@@ -54,6 +54,9 @@
 #include "tm-constrs.h"
 #include "spu-builtins.h"
 #include "ddg.h"
+#include "sbitmap.h"
+#include "timevar.h"
+#include "df.h"
 
 /* Builtin types, data and prototypes. */
 struct spu_builtin_range
@@ -94,19 +97,19 @@ static rtx frame_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm,
 static void emit_nop_for_insn (rtx insn);
 static bool insn_clobbers_hbr (rtx insn);
 static void spu_emit_branch_hint (rtx before, rtx branch, rtx target,
-				  int distance);
+				  int distance, sbitmap blocks);
 static rtx spu_emit_vector_compare (enum rtx_code rcode, rtx op0, rtx op1,
 	                            enum machine_mode dmode);
 static rtx get_branch_target (rtx branch);
-static void insert_branch_hints (void);
-static void insert_nops (void);
 static void spu_machine_dependent_reorg (void);
 static int spu_sched_issue_rate (void);
 static int spu_sched_variable_issue (FILE * dump, int verbose, rtx insn,
 				     int can_issue_more);
 static int get_pipe (rtx insn);
-static int spu_sched_adjust_priority (rtx insn, int pri);
 static int spu_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost);
+static void spu_sched_init_global (FILE *, int, int);
+static void spu_sched_init (FILE *, int, int);
+static int spu_sched_reorder (FILE *, int, rtx *, int *, int);
 static tree spu_handle_fndecl_attribute (tree * node, tree name, tree args,
 					 int flags,
 					 unsigned char *no_add_attrs);
@@ -138,6 +141,7 @@ static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (bool);
 static bool spu_vector_alignment_reachable (const_tree, bool);
 static int spu_sms_res_mii (struct ddg *g);
+static void asm_file_start (void);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -146,6 +150,18 @@ rtx spu_compare_op0, spu_compare_op1;
 int spu_arch;
 /* Which cpu are we tuning for.  */
 int spu_tune;
+
+/* The hardware requires 8 insns between a hint and the branch it
+   effects.  This variable describes how many rtl instructions the
+   compiler needs to see before inserting a hint, and then the compiler
+   will insert enough nops to make it at least 8 insns.  The default is
+   for the compiler to allow up to 2 nops be emitted.  The nops are
+   inserted in pairs, so we round down. */
+int spu_hint_dist = (8*4) - (2*4);
+
+/* Determines whether we run variable tracking in machine dependent
+   reorganization.  */
+static int spu_flag_var_tracking;
 
 enum spu_immediate {
   SPU_NONE,
@@ -212,11 +228,20 @@ tree spu_builtin_types[SPU_BTI_MAX];
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE spu_sched_issue_rate
 
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL spu_sched_init_global
+
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT spu_sched_init
+
 #undef TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE spu_sched_variable_issue
 
-#undef TARGET_SCHED_ADJUST_PRIORITY
-#define TARGET_SCHED_ADJUST_PRIORITY spu_sched_adjust_priority
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER spu_sched_reorder
+
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 spu_sched_reorder
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST spu_sched_adjust_cost
@@ -297,6 +322,9 @@ const struct attribute_spec spu_attribute_table[];
 #undef TARGET_SCHED_SMS_RES_MII
 #define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
 
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START asm_file_start
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
@@ -325,8 +353,13 @@ spu_override_options (void)
 
   flag_omit_frame_pointer = 1;
 
+  /* Functions must be 8 byte aligned so we correctly handle dual issue */
   if (align_functions < 8)
     align_functions = 8;
+
+  spu_hint_dist = 8*4 - spu_max_nops*4;
+  if (spu_hint_dist < 0) 
+    spu_hint_dist = 0;
 
   if (spu_fixed_range_string)
     fix_range (spu_fixed_range_string);
@@ -1980,16 +2013,6 @@ spu_const (enum machine_mode mode, HOST_WIDE_INT val)
 
   return gen_rtx_CONST_VECTOR (mode, v);
 }
-
-/* branch hint stuff */
-
-/* The hardware requires 8 insns between a hint and the branch it
-   effects.  This variable describes how many rtl instructions the
-   compiler needs to see before inserting a hint.  (FIXME: We should
-   accept less and insert nops to enforce it because hinting is always
-   profitable for performance, but we do need to be careful of code
-   size.) */
-int spu_hint_dist = (8 * 4);
 
 /* Create a MODE vector constant from 4 ints. */
 rtx
@@ -2014,75 +2037,200 @@ spu_const_from_ints(enum machine_mode mode, int a, int b, int c, int d)
   arr[15] = (d >> 0) & 0xff;
   return array_to_constant(mode, arr);
 }
+
+/* branch hint stuff */
 
 /* An array of these is used to propagate hints to predecessor blocks. */
 struct spu_bb_info
 {
-  rtx prop_jump;		/* propagated from another block */
-  basic_block bb;		/* the original block. */
+  rtx prop_jump; /* propagated from another block */
+  int bb_index;  /* the original block. */
 };
+static struct spu_bb_info *spu_bb_info;
 
-/* The special $hbr register is used to prevent the insn scheduler from
-   moving hbr insns across instructions which invalidate them.  It
-   should only be used in a clobber, and this function searches for
-   insns which clobber it.  */
-static bool
-insn_clobbers_hbr (rtx insn)
+#define STOP_HINT_P(INSN) \
+		(GET_CODE(INSN) == CALL_INSN \
+		 || INSN_CODE(INSN) == CODE_FOR_divmodsi4 \
+		 || INSN_CODE(INSN) == CODE_FOR_udivmodsi4)
+
+/* 1 when RTX is a hinted branch or its target.  We keep track of
+   what has been hinted so the safe-hint code can test it easily.  */
+#define HINTED_P(RTX)						\
+  (RTL_FLAG_CHECK3("HINTED_P", (RTX), CODE_LABEL, JUMP_INSN, CALL_INSN)->unchanging)
+
+/* 1 when RTX is an insn that must be scheduled on an even boundary. */
+#define SCHED_ON_EVEN_P(RTX)						\
+  (RTL_FLAG_CHECK2("SCHED_ON_EVEN_P", (RTX), JUMP_INSN, CALL_INSN)->in_struct)
+
+/* Emit a nop for INSN such that the two will dual issue.  This assumes
+   INSN is 8-byte aligned.  When INSN is inline asm we emit an lnop.
+   We check for TImode to handle a MULTI1 insn which has dual issued its
+   first instruction.  get_pipe returns -1 for MULTI0, inline asm, or
+   ADDR_VEC insns. */
+static void
+emit_nop_for_insn (rtx insn)
 {
-  if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == PARALLEL)
+  int p;
+  rtx new_insn;
+  p = get_pipe (insn);
+  if ((CALL_P (insn) || JUMP_P (insn)) && SCHED_ON_EVEN_P (insn))
+    new_insn = emit_insn_after (gen_lnop (), insn);
+  else if (p == 1 && GET_MODE (insn) == TImode)
     {
-      rtx parallel = PATTERN (insn);
-      rtx clobber;
-      int j;
-      for (j = XVECLEN (parallel, 0) - 1; j >= 0; j--)
-	{
-	  clobber = XVECEXP (parallel, 0, j);
-	  if (GET_CODE (clobber) == CLOBBER
-	      && GET_CODE (XEXP (clobber, 0)) == REG
-	      && REGNO (XEXP (clobber, 0)) == HBR_REGNUM)
-	    return 1;
-	}
+      new_insn = emit_insn_before (gen_nopn (GEN_INT (127)), insn);
+      PUT_MODE (new_insn, TImode);
+      PUT_MODE (insn, VOIDmode);
     }
-  return 0;
+  else
+    new_insn = emit_insn_after (gen_lnop (), insn);
+  recog_memoized (new_insn);
 }
 
+/* Insert nops in basic blocks to meet dual issue alignment
+   requirements.  Also make sure hbrp and hint instructions are at least
+   one cycle apart, possibly inserting a nop.  */
 static void
-spu_emit_branch_hint (rtx before, rtx branch, rtx target, int distance)
+pad_bb(void)
 {
-  rtx branch_label;
-  rtx hint, insn, prev, next;
+  rtx insn, next_insn, prev_insn, hbr_insn = 0;
+  int length;
+  int addr;
+
+  /* This sets up INSN_ADDRESSES. */
+  shorten_branches (get_insns ());
+
+  /* Keep track of length added by nops. */
+  length = 0;
+
+  prev_insn = 0;
+  insn = get_insns ();
+  if (!active_insn_p (insn))
+    insn = next_active_insn (insn);
+  for (; insn; insn = next_insn)
+    {
+      next_insn = next_active_insn (insn);
+      if (INSN_CODE (insn) == CODE_FOR_iprefetch
+	  || INSN_CODE (insn) == CODE_FOR_hbr)
+	{
+	  if (hbr_insn)
+	    {
+	      int a0 = INSN_ADDRESSES (INSN_UID (hbr_insn));
+	      int a1 = INSN_ADDRESSES (INSN_UID (insn));
+	      if ((a1 - a0 == 8 && GET_MODE (insn) != TImode)
+		  || (a1 - a0 == 4))
+		{
+		  prev_insn = emit_insn_before (gen_lnop (), insn);
+		  PUT_MODE (prev_insn, GET_MODE (insn));
+		  PUT_MODE (insn, TImode);
+		  length += 4;
+		}
+	    }
+	  hbr_insn = insn;
+	}
+      if (INSN_CODE (insn) == CODE_FOR_blockage)
+	{
+	  if (GET_MODE (insn) == TImode)
+	    PUT_MODE (next_insn, TImode);
+	  insn = next_insn;
+	  next_insn = next_active_insn (insn);
+	}
+      addr = INSN_ADDRESSES (INSN_UID (insn));
+      if ((CALL_P (insn) || JUMP_P (insn)) && SCHED_ON_EVEN_P (insn))
+	{
+	  if (((addr + length) & 7) != 0)
+	    {
+	      emit_nop_for_insn (prev_insn);
+	      length += 4;
+	    }
+	}
+      else if (GET_MODE (insn) == TImode
+	       && ((next_insn && GET_MODE (next_insn) != TImode)
+		   || get_attr_type (insn) == TYPE_MULTI0)
+	       && ((addr + length) & 7) != 0)
+	{
+	  /* prev_insn will always be set because the first insn is
+	     always 8-byte aligned. */
+	  emit_nop_for_insn (prev_insn);
+	  length += 4;
+	}
+      prev_insn = insn;
+    }
+}
+
+
+/* Routines for branch hints. */
+
+static void
+spu_emit_branch_hint (rtx before, rtx branch, rtx target,
+		      int distance, sbitmap blocks)
+{
+  rtx branch_label = 0;
+  rtx hint;
+  rtx insn;
+  rtx table;
 
   if (before == 0 || branch == 0 || target == 0)
     return;
 
+  /* While scheduling we require hints to be no further than 600, so
+     we need to enforce that here too */
   if (distance > 600)
     return;
 
+  /* If we have a Basic block note, emit it after the basic block note.  */
+  if (NOTE_KIND (before) == NOTE_INSN_BASIC_BLOCK)
+    before = NEXT_INSN (before);
 
   branch_label = gen_label_rtx ();
   LABEL_NUSES (branch_label)++;
   LABEL_PRESERVE_P (branch_label) = 1;
   insn = emit_label_before (branch_label, branch);
   branch_label = gen_rtx_LABEL_REF (VOIDmode, branch_label);
+  SET_BIT (blocks, BLOCK_FOR_INSN (branch)->index);
 
-  /* If the previous insn is pipe0, make the hbr dual issue with it.  If
-     the current insn is pipe0, dual issue with it. */
-  prev = prev_active_insn (before);
-  if (prev && get_pipe (prev) == 0)
-    hint = emit_insn_before (gen_hbr (branch_label, target), before);
-  else if (get_pipe (before) == 0 && distance > spu_hint_dist)
-    {
-      next = next_active_insn (before);
-      hint = emit_insn_after (gen_hbr (branch_label, target), before);
-      if (next)
-	PUT_MODE (next, TImode);
-    }
-  else
-    {
-      hint = emit_insn_before (gen_hbr (branch_label, target), before);
-      PUT_MODE (hint, TImode);
-    }
+  hint = emit_insn_before (gen_hbr (branch_label, target), before);
   recog_memoized (hint);
+  HINTED_P (branch) = 1;
+
+  if (GET_CODE (target) == LABEL_REF)
+    HINTED_P (XEXP (target, 0)) = 1;
+  else if (tablejump_p (branch, 0, &table))
+    {
+      rtvec vec;
+      int j;
+      if (GET_CODE (PATTERN (table)) == ADDR_VEC)
+	vec = XVEC (PATTERN (table), 0);
+      else
+	vec = XVEC (PATTERN (table), 1);
+      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+	HINTED_P (XEXP (RTVEC_ELT (vec, j), 0)) = 1;
+    }
+
+  if (distance >= 588)
+    {
+      /* Make sure the hint isn't scheduled any earlier than this point,
+         which could make it too far for the branch offest to fit */
+      recog_memoized (emit_insn_before (gen_blockage (), hint));
+    }
+  else if (distance <= 8 * 4)
+    {
+      /* To guarantee at least 8 insns between the hint and branch we
+         insert nops. */
+      int d;
+      for (d = distance; d < 8 * 4; d += 4)
+	{
+	  insn =
+	    emit_insn_after (gen_nopn_nv (gen_rtx_REG (SImode, 127)), hint);
+	  recog_memoized (insn);
+	}
+
+      /* Make sure any nops inserted aren't scheduled before the hint. */
+      recog_memoized (emit_insn_after (gen_blockage (), hint));
+
+      /* Make sure any nops inserted aren't scheduled after the call. */
+      if (CALL_P (branch) && distance < 8 * 4)
+	recog_memoized (emit_insn_before (gen_blockage (), branch));
+    }
 }
 
 /* Returns 0 if we don't want a hint for this branch.  Otherwise return
@@ -2152,245 +2300,403 @@ get_branch_target (rtx branch)
   return 0;
 }
 
-static void
-insert_branch_hints (void)
+/* The special $hbr register is used to prevent the insn scheduler from
+   moving hbr insns across instructions which invalidate them.  It
+   should only be used in a clobber, and this function searches for
+   insns which clobber it.  */
+static bool
+insn_clobbers_hbr (rtx insn)
 {
-  struct spu_bb_info *spu_bb_info;
-  rtx branch, insn, next;
-  rtx branch_target = 0;
-  int branch_addr = 0, insn_addr, head_addr;
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL)
+    {
+      rtx parallel = PATTERN (insn);
+      rtx clobber;
+      int j;
+      for (j = XVECLEN (parallel, 0) - 1; j >= 0; j--)
+	{
+	  clobber = XVECEXP (parallel, 0, j);
+	  if (GET_CODE (clobber) == CLOBBER
+	      && GET_CODE (XEXP (clobber, 0)) == REG
+	      && REGNO (XEXP (clobber, 0)) == HBR_REGNUM)
+	    return 1;
+	}
+    }
+  return 0;
+}
+
+/* Search up to 32 insns starting at FIRST:
+   - at any kind of hinted branch, just return
+   - at any unconditional branch in the first 15 insns, just return
+   - at a call or indirect branch, after the first 15 insns, force it to
+     an even address and return
+   - at any unconditional branch, after the first 15 insns, force it to
+     an even address. 
+   At then end of the search, insert an hbrp within 4 insns of FIRST,
+   and an hbrp within 16 instructions of FIRST.
+ */
+static void
+insert_hbrp_for_ilb_runout (rtx first)
+{
+  rtx insn, before_4 = 0, before_16 = 0;
+  int addr = 0, length, first_addr = -1;
+  int hbrp_addr0 = 128 * 4, hbrp_addr1 = 128 * 4;
+  int insert_lnop_after = 0;
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	if (first_addr == -1)
+	  first_addr = INSN_ADDRESSES (INSN_UID (insn));
+	addr = INSN_ADDRESSES (INSN_UID (insn)) - first_addr;
+	length = get_attr_length (insn);
+
+	if (before_4 == 0 && addr + length >= 4 * 4)
+	  before_4 = insn;
+	/* We test for 14 instructions because the first hbrp will add
+	   up to 2 instructions. */
+	if (before_16 == 0 && addr + length >= 14 * 4)
+	  before_16 = insn;
+
+	if (INSN_CODE (insn) == CODE_FOR_hbr)
+	  {
+	    /* Make sure an hbrp is at least 2 cycles away from a hint. 
+	       Insert an lnop after the hbrp when necessary. */
+	    if (before_4 == 0 && addr > 0)
+	      {
+		before_4 = insn;
+		insert_lnop_after |= 1;
+	      }
+	    else if (before_4 && addr <= 4 * 4)
+	      insert_lnop_after |= 1;
+	    if (before_16 == 0 && addr > 10 * 4)
+	      {
+		before_16 = insn;
+		insert_lnop_after |= 2;
+	      }
+	    else if (before_16 && addr <= 14 * 4)
+	      insert_lnop_after |= 2;
+	  }
+
+	if (INSN_CODE (insn) == CODE_FOR_iprefetch)
+	  {
+	    if (addr < hbrp_addr0)
+	      hbrp_addr0 = addr;
+	    else if (addr < hbrp_addr1)
+	      hbrp_addr1 = addr;
+	  }
+
+	if (CALL_P (insn) || JUMP_P (insn))
+	  {
+	    if (HINTED_P (insn))
+	      return;
+
+	    /* Any branch after the first 15 insns should be on an even
+	       address to avoid a special case branch.  There might be
+	       some nops and/or hbrps inserted, so we test after 10
+	       insns. */
+	    if (addr > 10 * 4)
+	      SCHED_ON_EVEN_P (insn) = 1;
+	  }
+
+	if (CALL_P (insn) || tablejump_p (insn, 0, 0))
+	  return;
+
+
+	if (addr + length >= 32 * 4)
+	  {
+	    gcc_assert (before_4 && before_16);
+	    if (hbrp_addr0 > 4 * 4)
+	      {
+		insn =
+		  emit_insn_before (gen_iprefetch (GEN_INT (1)), before_4);
+		recog_memoized (insn);
+		INSN_ADDRESSES_NEW (insn,
+				    INSN_ADDRESSES (INSN_UID (before_4)));
+		PUT_MODE (insn, GET_MODE (before_4));
+		PUT_MODE (before_4, TImode);
+		if (insert_lnop_after & 1)
+		  {
+		    insn = emit_insn_before (gen_lnop (), before_4);
+		    recog_memoized (insn);
+		    INSN_ADDRESSES_NEW (insn,
+					INSN_ADDRESSES (INSN_UID (before_4)));
+		    PUT_MODE (insn, TImode);
+		  }
+	      }
+	    if ((hbrp_addr0 <= 4 * 4 || hbrp_addr0 > 16 * 4)
+		&& hbrp_addr1 > 16 * 4)
+	      {
+		insn =
+		  emit_insn_before (gen_iprefetch (GEN_INT (2)), before_16);
+		recog_memoized (insn);
+		INSN_ADDRESSES_NEW (insn,
+				    INSN_ADDRESSES (INSN_UID (before_16)));
+		PUT_MODE (insn, GET_MODE (before_16));
+		PUT_MODE (before_16, TImode);
+		if (insert_lnop_after & 2)
+		  {
+		    insn = emit_insn_before (gen_lnop (), before_16);
+		    recog_memoized (insn);
+		    INSN_ADDRESSES_NEW (insn,
+					INSN_ADDRESSES (INSN_UID
+							(before_16)));
+		    PUT_MODE (insn, TImode);
+		  }
+	      }
+	    return;
+	  }
+      }
+    else if (BARRIER_P (insn))
+      return;
+
+}
+
+/* The SPU might hang when it executes 48 inline instructions after a
+   hinted branch jumps to its hinted target.  The beginning of a
+   function and the return from a call might have been hinted, and must
+   be handled as well.  To prevent a hang we insert 2 hbrps.  The first
+   should be within 6 insns of the branch target.  The second should be
+   within 22 insns of the branch target.  When determining if hbrps are
+   necessary, we look for only 32 inline instructions, because up to to
+   12 nops and 4 hbrps could be inserted.  Similarily, when inserting
+   new hbrps, we insert them within 4 and 16 insns of the target.  */
+static void
+insert_hbrp (void)
+{
+  rtx insn;
+  if (TARGET_SAFE_HINTS)
+    {
+      shorten_branches (get_insns ());
+      /* Insert hbrp at beginning of function */
+      insn = next_active_insn (get_insns ());
+      if (insn)
+	insert_hbrp_for_ilb_runout (insn);
+      /* Insert hbrp after hinted targets. */
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if ((LABEL_P (insn) && HINTED_P (insn)) || CALL_P (insn))
+	  insert_hbrp_for_ilb_runout (next_active_insn (insn));
+    }
+}
+
+static int in_spu_reorg;
+
+/* Insert branch hints.  There are no branch optimizations after this
+   pass, so it's safe to set our branch hints now. */
+static void
+spu_machine_dependent_reorg (void)
+{
+  sbitmap blocks;
   basic_block bb;
+  rtx branch, insn;
+  rtx branch_target = 0;
+  int branch_addr = 0, insn_addr, required_dist = 0;
+  int i;
   unsigned int j;
 
+  if (!TARGET_BRANCH_HINTS || optimize == 0)
+    {
+      /* We still do it for unoptimized code because an external
+         function might have hinted a call or return. */
+      insert_hbrp ();
+      pad_bb ();
+      return;
+    }
+
+  blocks = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (blocks);
+
+  in_spu_reorg = 1;
+  compute_bb_for_insn ();
+
+  compact_blocks ();
+
   spu_bb_info =
-    (struct spu_bb_info *) xcalloc (last_basic_block + 1,
+    (struct spu_bb_info *) xcalloc (n_basic_blocks,
 				    sizeof (struct spu_bb_info));
 
   /* We need exact insn addresses and lengths.  */
   shorten_branches (get_insns ());
 
-  FOR_EACH_BB_REVERSE (bb)
-  {
-    head_addr = INSN_ADDRESSES (INSN_UID (BB_HEAD (bb)));
-    branch = 0;
-    if (spu_bb_info[bb->index].prop_jump)
-      {
-	branch = spu_bb_info[bb->index].prop_jump;
-	branch_target = get_branch_target (branch);
-	branch_addr = INSN_ADDRESSES (INSN_UID (branch));
-      }
-    /* Search from end of a block to beginning.   In this loop, find
-       jumps which need a branch and emit them only when:
-       - it's an indirect branch and we're at the insn which sets
-       the register  
-       - we're at an insn that will invalidate the hint. e.g., a
-       call, another hint insn, inline asm that clobbers $hbr, and
-       some inlined operations (divmodsi4).  Don't consider jumps
-       because they are only at the end of a block and are
-       considered when we are deciding whether to propagate
-       - we're getting too far away from the branch.  The hbr insns
-       only have a signed 10-bit offset
-       We go back as far as possible so the branch will be considered
-       for propagation when we get to the beginning of the block.  */
-    next = 0;
-    for (insn = BB_END (bb); insn; insn = PREV_INSN (insn))
-      {
-	if (INSN_P (insn))
-	  {
-	    insn_addr = INSN_ADDRESSES (INSN_UID (insn));
-	    if (branch && next
-		&& ((GET_CODE (branch_target) == REG
-		     && set_of (branch_target, insn) != NULL_RTX)
-		    || insn_clobbers_hbr (insn)
-		    || branch_addr - insn_addr > 600))
-	      {
-		int next_addr = INSN_ADDRESSES (INSN_UID (next));
-		if (insn != BB_END (bb)
-		    && branch_addr - next_addr >= spu_hint_dist)
-		  {
-		    if (dump_file)
-		      fprintf (dump_file,
-			       "hint for %i in block %i before %i\n",
-			       INSN_UID (branch), bb->index, INSN_UID (next));
-		    spu_emit_branch_hint (next, branch, branch_target,
-					  branch_addr - next_addr);
-		  }
-		branch = 0;
-	      }
-
-	    /* JUMP_P will only be true at the end of a block.  When
-	       branch is already set it means we've previously decided
-	       to propagate a hint for that branch into this block. */
-	    if (CALL_P (insn) || (JUMP_P (insn) && !branch))
-	      {
-		branch = 0;
-		if ((branch_target = get_branch_target (insn)))
-		  {
-		    branch = insn;
-		    branch_addr = insn_addr;
-		  }
-	      }
-
-	    /* When a branch hint is emitted it will be inserted
-	       before "next".  Make sure next is the beginning of a
-	       cycle to minimize impact on the scheduled insns. */
-	    if (GET_MODE (insn) == TImode)
-	      next = insn;
-	  }
-	if (insn == BB_HEAD (bb))
-	  break;
-      }
-
-    if (branch)
-      {
-	/* If we haven't emitted a hint for this branch yet, it might
-	   be profitable to emit it in one of the predecessor blocks,
-	   especially for loops.  */
-	rtx bbend;
-	basic_block prev = 0, prop = 0, prev2 = 0;
-	int loop_exit = 0, simple_loop = 0;
-	int next_addr = 0;
-	if (next)
-	  next_addr = INSN_ADDRESSES (INSN_UID (next));
-
-	for (j = 0; j < EDGE_COUNT (bb->preds); j++)
-	  if (EDGE_PRED (bb, j)->flags & EDGE_FALLTHRU)
-	    prev = EDGE_PRED (bb, j)->src;
-	  else
-	    prev2 = EDGE_PRED (bb, j)->src;
-
-	for (j = 0; j < EDGE_COUNT (bb->succs); j++)
-	  if (EDGE_SUCC (bb, j)->flags & EDGE_LOOP_EXIT)
-	    loop_exit = 1;
-	  else if (EDGE_SUCC (bb, j)->dest == bb)
-	    simple_loop = 1;
-
-	/* If this branch is a loop exit then propagate to previous
-	   fallthru block. This catches the cases when it is a simple
-	   loop or when there is an initial branch into the loop. */
-	if (prev && loop_exit && prev->loop_depth <= bb->loop_depth)
-	  prop = prev;
-
-	/* If there is only one adjacent predecessor.  Don't propagate
-	   outside this loop.  This loop_depth test isn't perfect, but
-	   I'm not sure the loop_father member is valid at this point.  */
-	else if (prev && single_pred_p (bb)
-		 && prev->loop_depth == bb->loop_depth)
-	  prop = prev;
-
-	/* If this is the JOIN block of a simple IF-THEN then
-	   propagate the hint to the HEADER block. */
-	else if (prev && prev2
-		 && EDGE_COUNT (bb->preds) == 2
-		 && EDGE_COUNT (prev->preds) == 1
-		 && EDGE_PRED (prev, 0)->src == prev2
-		 && prev2->loop_depth == bb->loop_depth
-		 && GET_CODE (branch_target) != REG)
-	  prop = prev;
-
-	/* Don't propagate when:
-	   - this is a simple loop and the hint would be too far
-	   - this is not a simple loop and there are 16 insns in
-	   this block already
-	   - the predecessor block ends in a branch that will be
-	   hinted
-	   - the predecessor block ends in an insn that invalidates
-	   the hint */
-	if (prop
-	    && prop->index >= 0
-	    && (bbend = BB_END (prop))
-	    && branch_addr - INSN_ADDRESSES (INSN_UID (bbend)) <
-	    (simple_loop ? 600 : 16 * 4) && get_branch_target (bbend) == 0
-	    && (JUMP_P (bbend) || !insn_clobbers_hbr (bbend)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "propagate from %i to %i (loop depth %i) "
-		       "for %i (loop_exit %i simple_loop %i dist %i)\n",
-		       bb->index, prop->index, bb->loop_depth,
-		       INSN_UID (branch), loop_exit, simple_loop,
-		       branch_addr - INSN_ADDRESSES (INSN_UID (bbend)));
-
-	    spu_bb_info[prop->index].prop_jump = branch;
-	    spu_bb_info[prop->index].bb = bb;
-	  }
-	else if (next && branch_addr - next_addr >= spu_hint_dist)
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "hint for %i in block %i before %i\n",
-		       INSN_UID (branch), bb->index, INSN_UID (next));
-	    spu_emit_branch_hint (next, branch, branch_target,
-				  branch_addr - next_addr);
-	  }
-	branch = 0;
-      }
-  }
-  free (spu_bb_info);
-}
-
-/* Emit a nop for INSN such that the two will dual issue.  This assumes
-   INSN is 8-byte aligned.  When INSN is inline asm we emit an lnop.
-   We check for TImode to handle a MULTI1 insn which has dual issued its
-   first instruction.  get_pipe returns -1 for MULTI0, inline asm, or
-   ADDR_VEC insns. */
-static void
-emit_nop_for_insn (rtx insn)
-{
-  int p;
-  rtx new_insn;
-  p = get_pipe (insn);
-  if (p == 1 && GET_MODE (insn) == TImode)
+  for (i = n_basic_blocks - 1; i >= 0; i--)
     {
-      new_insn = emit_insn_before (gen_nopn (GEN_INT (127)), insn);
-      PUT_MODE (new_insn, TImode);
-      PUT_MODE (insn, VOIDmode);
-    }
-  else
-    new_insn = emit_insn_after (gen_lnop (), insn);
-}
-
-/* Insert nops in basic blocks to meet dual issue alignment
-   requirements. */
-static void
-insert_nops (void)
-{
-  rtx insn, next_insn, prev_insn;
-  int length;
-  int addr;
-
-  /* This sets up INSN_ADDRESSES. */
-  shorten_branches (get_insns ());
-
-  /* Keep track of length added by nops. */
-  length = 0;
-
-  prev_insn = 0;
-  for (insn = get_insns (); insn; insn = next_insn)
-    {
-      next_insn = next_active_insn (insn);
-      addr = INSN_ADDRESSES (INSN_UID (insn));
-      if (GET_MODE (insn) == TImode
-	  && next_insn
-	  && GET_MODE (next_insn) != TImode
-	  && ((addr + length) & 7) != 0)
+      bb = BASIC_BLOCK (i);
+      branch = 0;
+      if (spu_bb_info[i].prop_jump)
 	{
-	  /* prev_insn will always be set because the first insn is
-	     always 8-byte aligned. */
-	  emit_nop_for_insn (prev_insn);
-	  length += 4;
+	  branch = spu_bb_info[i].prop_jump;
+	  branch_target = get_branch_target (branch);
+	  branch_addr = INSN_ADDRESSES (INSN_UID (branch));
+	  required_dist = spu_hint_dist;
 	}
-      prev_insn = insn;
-    }
-}
+      /* Search from end of a block to beginning.   In this loop, find
+         jumps which need a branch and emit them only when:
+         - it's an indirect branch and we're at the insn which sets
+         the register  
+         - we're at an insn that will invalidate the hint. e.g., a
+         call, another hint insn, inline asm that clobbers $hbr, and
+         some inlined operations (divmodsi4).  Don't consider jumps
+         because they are only at the end of a block and are
+         considered when we are deciding whether to propagate
+         - we're getting too far away from the branch.  The hbr insns
+         only have a signed 10 bit offset
+         We go back as far as possible so the branch will be considered
+         for propagation when we get to the beginning of the block.  */
+      for (insn = BB_END (bb); insn; insn = PREV_INSN (insn))
+	{
+	  if (INSN_P (insn))
+	    {
+	      insn_addr = INSN_ADDRESSES (INSN_UID (insn));
+	      if (branch
+		  && ((GET_CODE (branch_target) == REG
+		       && set_of (branch_target, insn) != NULL_RTX)
+		      || insn_clobbers_hbr (insn)
+		      || branch_addr - insn_addr > 600))
+		{
+		  rtx next = NEXT_INSN (insn);
+		  int next_addr = INSN_ADDRESSES (INSN_UID (next));
+		  if (insn != BB_END (bb)
+		      && branch_addr - next_addr >= required_dist)
+		    {
+		      if (dump_file)
+			fprintf (dump_file,
+				 "hint for %i in block %i before %i\n",
+				 INSN_UID (branch), bb->index,
+				 INSN_UID (next));
+		      spu_emit_branch_hint (next, branch, branch_target,
+					    branch_addr - next_addr, blocks);
+		    }
+		  branch = 0;
+		}
 
-static void
-spu_machine_dependent_reorg (void)
-{
-  if (optimize > 0)
-    {
-      if (TARGET_BRANCH_HINTS)
-	insert_branch_hints ();
-      insert_nops ();
+	      /* JUMP_P will only be true at the end of a block.  When
+	         branch is already set it means we've previously decided
+	         to propagate a hint for that branch into this block. */
+	      if (CALL_P (insn) || (JUMP_P (insn) && !branch))
+		{
+		  branch = 0;
+		  if ((branch_target = get_branch_target (insn)))
+		    {
+		      branch = insn;
+		      branch_addr = insn_addr;
+		      required_dist = spu_hint_dist;
+		    }
+		}
+	    }
+	  if (insn == BB_HEAD (bb))
+	    break;
+	}
+
+      if (branch)
+	{
+	  /* If we haven't emitted a hint for this branch yet, it might
+	     be profitable to emit it in one of the predecessor blocks,
+	     especially for loops.  */
+	  rtx bbend;
+	  basic_block prev = 0, prop = 0, prev2 = 0;
+	  int loop_exit = 0, simple_loop = 0;
+	  int next_addr = INSN_ADDRESSES (INSN_UID (NEXT_INSN (insn)));
+
+	  for (j = 0; j < EDGE_COUNT (bb->preds); j++)
+	    if (EDGE_PRED (bb, j)->flags & EDGE_FALLTHRU)
+	      prev = EDGE_PRED (bb, j)->src;
+	    else
+	      prev2 = EDGE_PRED (bb, j)->src;
+
+	  for (j = 0; j < EDGE_COUNT (bb->succs); j++)
+	    if (EDGE_SUCC (bb, j)->flags & EDGE_LOOP_EXIT)
+	      loop_exit = 1;
+	    else if (EDGE_SUCC (bb, j)->dest == bb)
+	      simple_loop = 1;
+
+	  /* If this branch is a loop exit then propagate to previous
+	     fallthru block. This catches the cases when it is a simple
+	     loop or when there is an initial branch into the loop. */
+	  if (prev && (loop_exit || simple_loop)
+	      && prev->loop_depth <= bb->loop_depth)
+	    prop = prev;
+
+	  /* If there is only one adjacent predecessor.  Don't propagate
+	     outside this loop.  This loop_depth test isn't perfect, but
+	     I'm not sure the loop_father member is valid at this point.  */
+	  else if (prev && single_pred_p (bb)
+		   && prev->loop_depth == bb->loop_depth)
+	    prop = prev;
+
+	  /* If this is the JOIN block of a simple IF-THEN then
+	     propogate the hint to the HEADER block. */
+	  else if (prev && prev2
+		   && EDGE_COUNT (bb->preds) == 2
+		   && EDGE_COUNT (prev->preds) == 1
+		   && EDGE_PRED (prev, 0)->src == prev2
+		   && prev2->loop_depth == bb->loop_depth
+		   && GET_CODE (branch_target) != REG)
+	    prop = prev;
+
+	  /* Don't propagate when:
+	     - this is a simple loop and the hint would be too far
+	     - this is not a simple loop and there are 16 insns in
+	     this block already
+	     - the predecessor block ends in a branch that will be
+	     hinted
+	     - the predecessor block ends in an insn that invalidates
+	     the hint */
+	  if (prop
+	      && prop->index >= 0
+	      && (bbend = BB_END (prop))
+	      && branch_addr - INSN_ADDRESSES (INSN_UID (bbend)) <
+	      (simple_loop ? 600 : 16 * 4) && get_branch_target (bbend) == 0
+	      && (JUMP_P (bbend) || !insn_clobbers_hbr (bbend)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "propagate from %i to %i (loop depth %i) "
+			 "for %i (loop_exit %i simple_loop %i dist %i)\n",
+			 bb->index, prop->index, bb->loop_depth,
+			 INSN_UID (branch), loop_exit, simple_loop,
+			 branch_addr - INSN_ADDRESSES (INSN_UID (bbend)));
+
+	      spu_bb_info[prop->index].prop_jump = branch;
+	      spu_bb_info[prop->index].bb_index = i;
+	    }
+	  else if (branch_addr - next_addr >= required_dist)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "hint for %i in block %i before %i\n",
+			 INSN_UID (branch), bb->index,
+			 INSN_UID (NEXT_INSN (insn)));
+	      spu_emit_branch_hint (NEXT_INSN (insn), branch, branch_target,
+				    branch_addr - next_addr, blocks);
+	    }
+	  branch = 0;
+	}
     }
+  free (spu_bb_info);
+
+  if (!sbitmap_empty_p (blocks))
+    find_many_sub_basic_blocks (blocks);
+
+  /* We have to schedule to make sure alignment is ok. */
+  FOR_EACH_BB (bb) bb->flags &= ~BB_DISABLE_SCHEDULE;
+
+  /* The hints need to be scheduled, so call it again. */
+  schedule_insns ();
+
+  insert_hbrp ();
+
+  pad_bb ();
+
+
+  if (spu_flag_var_tracking)
+    {
+      df_analyze ();
+      timevar_push (TV_VAR_TRACKING);
+      variable_tracking_main ();
+      timevar_pop (TV_VAR_TRACKING);
+      df_finish_pass (false);
+    }
+
+  free_bb_for_insn ();
+
+  in_spu_reorg = 0;
 }
 
 
@@ -2402,15 +2708,14 @@ spu_sched_issue_rate (void)
 }
 
 static int
-spu_sched_variable_issue (FILE * dump ATTRIBUTE_UNUSED,
-			  int verbose ATTRIBUTE_UNUSED, rtx insn,
-			  int can_issue_more)
+uses_ls_unit(rtx insn)
 {
-  if (GET_CODE (PATTERN (insn)) != USE
-      && GET_CODE (PATTERN (insn)) != CLOBBER
-      && get_pipe (insn) != -2)
-    can_issue_more--;
-  return can_issue_more;
+  rtx set = single_set (insn);
+  if (set != 0
+      && (GET_CODE (SET_DEST (set)) == MEM
+	  || GET_CODE (SET_SRC (set)) == MEM))
+    return 1;
+  return 0;
 }
 
 static int
@@ -2436,7 +2741,6 @@ get_pipe (rtx insn)
     case TYPE_FPD:
     case TYPE_FP6:
     case TYPE_FP7:
-    case TYPE_IPREFETCH:
       return 0;
 
     case TYPE_LNOP:
@@ -2446,41 +2750,332 @@ get_pipe (rtx insn)
     case TYPE_BR:
     case TYPE_MULTI1:
     case TYPE_HBR:
+    case TYPE_IPREFETCH:
       return 1;
     default:
       abort ();
     }
 }
 
-static int
-spu_sched_adjust_priority (rtx insn, int pri)
+
+/* haifa-sched.c has a static variable that keeps track of the current
+   cycle.  It is passed to spu_sched_reorder, and we record it here for
+   use by spu_sched_variable_issue.  It won't be accurate if the
+   scheduler updates it's clock_var between the two calls. */
+static int clock_var;
+
+/* This is used to keep track of insn alignment.  Set to 0 at the
+   beginning of each block and increased by the "length" attr of each
+   insn scheduled. */
+static int spu_sched_length;
+
+/* Record when we've issued pipe0 and pipe1 insns so we can reorder the
+   ready list appropriately in spu_sched_reorder(). */
+static int pipe0_clock;
+static int pipe1_clock;
+
+static int prev_clock_var;
+
+static int prev_priority;
+
+/* The SPU needs to load the next ilb sometime during the execution of
+   the previous ilb.  There is a potential conflict if every cycle has a
+   load or store.  To avoid the conflict we make sure the load/store
+   unit is free for at least one cycle during the execution of insns in
+   the previous ilb. */
+static int spu_ls_first;
+static int prev_ls_clock;
+
+static void
+spu_sched_init_global (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		       int max_ready ATTRIBUTE_UNUSED)
 {
-  int p = get_pipe (insn);
-  /* Schedule UNSPEC_CONVERT's early so they have less effect on
-   * scheduling.  */
+  spu_sched_length = 0;
+}
+
+static void
+spu_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		int max_ready ATTRIBUTE_UNUSED)
+{
+  if (align_labels > 4 || align_loops > 4 || align_jumps > 4)
+    {
+      /* When any block might be at least 8-byte aligned, assume they
+         will all be at least 8-byte aligned to make sure dual issue
+         works out correctly. */
+      spu_sched_length = 0;
+    }
+  spu_ls_first = INT_MAX;
+  clock_var = -1;
+  prev_ls_clock = -1;
+  pipe0_clock = -1;
+  pipe1_clock = -1;
+  prev_clock_var = -1;
+  prev_priority = -1;
+}
+
+static int
+spu_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
+			  int verbose ATTRIBUTE_UNUSED, rtx insn, int more)
+{
+  int len;
+  int p;
   if (GET_CODE (PATTERN (insn)) == USE
       || GET_CODE (PATTERN (insn)) == CLOBBER
-      || p == -2)
-    return pri + 100; 
-  /* Schedule pipe0 insns early for greedier dual issue. */
-  if (p != 1)
-    return pri + 50;
-  return pri;
+      || (len = get_attr_length (insn)) == 0)
+    return more;
+
+  spu_sched_length += len;
+
+  /* Reset on inline asm */
+  if (INSN_CODE (insn) == -1)
+    {
+      spu_ls_first = INT_MAX;
+      pipe0_clock = -1;
+      pipe1_clock = -1;
+      return 0;
+    }
+  p = get_pipe (insn);
+  if (p == 0)
+    pipe0_clock = clock_var;
+  else
+    pipe1_clock = clock_var;
+
+  if (in_spu_reorg)
+    {
+      if (clock_var - prev_ls_clock > 1
+	  || INSN_CODE (insn) == CODE_FOR_iprefetch)
+	spu_ls_first = INT_MAX;
+      if (uses_ls_unit (insn))
+	{
+	  if (spu_ls_first == INT_MAX)
+	    spu_ls_first = spu_sched_length;
+	  prev_ls_clock = clock_var;
+	}
+
+      /* The scheduler hasn't inserted the nop, but we will later on.
+         Include those nops in spu_sched_length. */
+      if (prev_clock_var == clock_var && (spu_sched_length & 7))
+	spu_sched_length += 4;
+      prev_clock_var = clock_var;
+
+      /* more is -1 when called from spu_sched_reorder for new insns
+         that don't have INSN_PRIORITY */
+      if (more >= 0)
+	prev_priority = INSN_PRIORITY (insn);
+    }
+
+  /* Always try issueing more insns.  spu_sched_reorder will decide 
+     when the cycle should be advanced. */
+  return 1;
+}
+
+/* This function is called for both TARGET_SCHED_REORDER and
+   TARGET_SCHED_REORDER2.  */
+static int
+spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		   rtx *ready, int *nreadyp, int clock)
+{
+  int i, nready = *nreadyp;
+  int pipe_0, pipe_1, pipe_hbrp, pipe_ls, schedule_i;
+  rtx insn;
+
+  clock_var = clock;
+
+  if (nready <= 0 || pipe1_clock >= clock)
+    return 0;
+
+  /* Find any rtl insns that don't generate assembly insns and schedule
+     them first. */
+  for (i = nready - 1; i >= 0; i--)
+    {
+      insn = ready[i];
+      if (INSN_CODE (insn) == -1
+	  || INSN_CODE (insn) == CODE_FOR_blockage
+	  || INSN_CODE (insn) == CODE_FOR__spu_convert)
+	{
+	  ready[i] = ready[nready - 1];
+	  ready[nready - 1] = insn;
+	  return 1;
+	}
+    }
+
+  pipe_0 = pipe_1 = pipe_hbrp = pipe_ls = schedule_i = -1;
+  for (i = 0; i < nready; i++)
+    if (INSN_CODE (ready[i]) != -1)
+      {
+	insn = ready[i];
+	switch (get_attr_type (insn))
+	  {
+	  default:
+	  case TYPE_MULTI0:
+	  case TYPE_CONVERT:
+	  case TYPE_FX2:
+	  case TYPE_FX3:
+	  case TYPE_SPR:
+	  case TYPE_NOP:
+	  case TYPE_FXB:
+	  case TYPE_FPD:
+	  case TYPE_FP6:
+	  case TYPE_FP7:
+	    pipe_0 = i;
+	    break;
+	  case TYPE_LOAD:
+	  case TYPE_STORE:
+	    pipe_ls = i;
+	  case TYPE_LNOP:
+	  case TYPE_SHUF:
+	  case TYPE_BR:
+	  case TYPE_MULTI1:
+	  case TYPE_HBR:
+	    pipe_1 = i;
+	    break;
+	  case TYPE_IPREFETCH:
+	    pipe_hbrp = i;
+	    break;
+	  }
+      }
+
+  /* In the first scheduling phase, schedule loads and stores together
+     to increase the chance they will get merged during postreload CSE. */
+  if (!reload_completed && pipe_ls >= 0)
+    {
+      insn = ready[pipe_ls];
+      ready[pipe_ls] = ready[nready - 1];
+      ready[nready - 1] = insn;
+      return 1;
+    }
+
+  /* If there is an hbrp ready, prefer it over other pipe 1 insns. */
+  if (pipe_hbrp >= 0)
+    pipe_1 = pipe_hbrp;
+
+  /* When we have loads/stores in every cycle of the last 15 insns and
+     we are about to schedule another load/store, emit an hbrp insn
+     instead. */
+  if (in_spu_reorg
+      && spu_sched_length - spu_ls_first >= 4 * 15
+      && !(pipe0_clock < clock && pipe_0 >= 0) && pipe_1 == pipe_ls)
+    {
+      insn = sched_emit_insn (gen_iprefetch (GEN_INT (3)));
+      recog_memoized (insn);
+      if (pipe0_clock < clock)
+	PUT_MODE (insn, TImode);
+      spu_sched_variable_issue (file, verbose, insn, -1);
+      return 0;
+    }
+
+  /* In general, we want to emit nops to increase dual issue, but dual
+     issue isn't faster when one of the insns could be scheduled later
+     without effecting the critical path.  We look at INSN_PRIORITY to
+     make a good guess, but it isn't perfect so -mdual-nops=n can be
+     used to effect it. */
+  if (in_spu_reorg && spu_dual_nops < 10)
+    {
+      /* When we are at an even address and we are not issueing nops to
+         improve scheduling then we need to advance the cycle.  */
+      if ((spu_sched_length & 7) == 0 && prev_clock_var == clock
+	  && (spu_dual_nops == 0
+	      || (pipe_1 != -1
+		  && prev_priority >
+		  INSN_PRIORITY (ready[pipe_1]) + spu_dual_nops)))
+	return 0;
+
+      /* When at an odd address, schedule the highest priority insn
+         without considering pipeline. */
+      if ((spu_sched_length & 7) == 4 && prev_clock_var != clock
+	  && (spu_dual_nops == 0
+	      || (prev_priority >
+		  INSN_PRIORITY (ready[nready - 1]) + spu_dual_nops)))
+	return 1;
+    }
+
+
+  /* We haven't issued a pipe0 insn yet this cycle, if there is a
+     pipe0 insn in the ready list, schedule it. */
+  if (pipe0_clock < clock && pipe_0 >= 0)
+    schedule_i = pipe_0;
+
+  /* Either we've scheduled a pipe0 insn already or there is no pipe0
+     insn to schedule.  Put a pipe1 insn at the front of the ready list. */
+  else
+    schedule_i = pipe_1;
+
+  if (schedule_i > -1)
+    {
+      insn = ready[schedule_i];
+      ready[schedule_i] = ready[nready - 1];
+      ready[nready - 1] = insn;
+      return 1;
+    }
+  return 0;
 }
 
 /* INSN is dependent on DEP_INSN. */
 static int
-spu_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED,
-		       rtx dep_insn ATTRIBUTE_UNUSED, int cost)
+spu_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
-  if (GET_CODE (insn) == CALL_INSN)
+  rtx set;
+
+  /* The blockage pattern is used to prevent instructions from being
+     moved across it and has no cost. */
+  if (INSN_CODE (insn) == CODE_FOR_blockage
+      || INSN_CODE (dep_insn) == CODE_FOR_blockage)
+    return 0;
+
+  if (INSN_CODE (insn) == CODE_FOR__spu_convert
+      || INSN_CODE (dep_insn) == CODE_FOR__spu_convert)
+    return 0;
+
+  /* Make sure hbrps are spread out. */
+  if (INSN_CODE (insn) == CODE_FOR_iprefetch
+      && INSN_CODE (dep_insn) == CODE_FOR_iprefetch)
+    return 8;
+
+  /* Make sure hints and hbrps are 2 cycles apart. */
+  if ((INSN_CODE (insn) == CODE_FOR_iprefetch
+       || INSN_CODE (insn) == CODE_FOR_hbr)
+       && (INSN_CODE (dep_insn) == CODE_FOR_iprefetch
+	   || INSN_CODE (dep_insn) == CODE_FOR_hbr))
+    return 2;
+
+  /* An hbrp has no real dependency on other insns. */
+  if (INSN_CODE (insn) == CODE_FOR_iprefetch
+      || INSN_CODE (dep_insn) == CODE_FOR_iprefetch)
+    return 0;
+
+  /* Assuming that it is unlikely an argument register will be used in
+     the first cycle of the called function, we reduce the cost for
+     slightly better scheduling of dep_insn.  When not hinted, the
+     mispredicted branch would hide the cost as well.  */
+  if (CALL_P (insn))
+  {
+    rtx target = get_branch_target (insn);
+    if (GET_CODE (target) != REG || !set_of (target, insn))
+      return cost - 2;
+    return cost;
+  }
+
+  /* And when returning from a function, let's assume the return values
+     are completed sooner too. */
+  if (CALL_P (dep_insn))
     return cost - 2;
+
+  /* Make sure an instruction that loads from the back chain is schedule
+     away from the return instruction so a hint is more likely to get
+     issued. */
+  if (INSN_CODE (insn) == CODE_FOR__return
+      && (set = single_set (dep_insn))
+      && GET_CODE (SET_DEST (set)) == REG
+      && REGNO (SET_DEST (set)) == LINK_REGISTER_REGNUM)
+    return 20;
+
   /* The dfa scheduler sets cost to 0 for all anti-dependencies and the
      scheduler makes every insn in a block anti-dependent on the final
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
-  if (GET_CODE (insn) == JUMP_INSN && REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (JUMP_P (insn) && REG_NOTE_KIND (link) == REG_DEP_ANTI)
     return insn_cost (dep_insn) - 3;
+
   return cost;
 }
 
@@ -5601,3 +6196,17 @@ spu_libgcc_shift_count_mode (void)
    for shift counts.  */
   return SImode;
 }
+
+/* An early place to adjust some flags after GCC has finished processing
+ * them. */
+static void
+asm_file_start (void)
+{
+  /* Variable tracking should be run after all optimizations which
+     change order of insns.  It also needs a valid CFG. */
+  spu_flag_var_tracking = flag_var_tracking;
+  flag_var_tracking = 0;
+
+  default_file_start ();
+}
+

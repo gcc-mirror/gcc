@@ -4249,11 +4249,22 @@ selb\t%0,%4,%0,%3"
   "lnop"
   [(set_attr "type" "lnop")])
 
+;; The operand is so we know why we generated this hbrp.
+;; We clobber mem to make sure it isn't moved over any
+;; loads, stores or calls while scheduling.
 (define_insn "iprefetch"
-  [(unspec [(const_int 0)] UNSPEC_IPREFETCH)]
+  [(unspec [(match_operand:SI 0 "const_int_operand" "n")] UNSPEC_IPREFETCH)
+   (clobber (mem:BLK (scratch)))]
   ""
-  "hbrp"
+  "hbrp\t# %0"
   [(set_attr "type" "iprefetch")])
+
+;; A non-volatile version so it gets scheduled
+(define_insn "nopn_nv"
+  [(unspec [(match_operand:SI 0 "register_operand" "r")] UNSPEC_NOP)]
+  ""
+  "nop\t%0"
+  [(set_attr "type" "nop")])
 
 (define_insn "hbr"
   [(set (reg:SI 130)

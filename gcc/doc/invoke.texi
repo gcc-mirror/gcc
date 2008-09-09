@@ -14429,6 +14429,33 @@ useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
 
+@item -mdual-nops
+@itemx -mdual-nops=@var{n}
+@opindex mdual-nops
+By default, GCC will insert nops to increase dual issue when it expects
+it to increase performance.  @var{n} can be a value from 0 to 10.  A
+smaller @var{n} will insert fewer nops.  10 is the default, 0 is the
+same as @option{-mno-dual-nops}.  Disabled with @option{-Os}.
+
+@item -mhint-max-nops=@var{n}
+@opindex mhint-max-nops
+Maximum number of nops to insert for a branch hint.  A branch hint must
+be at least 8 instructions away from the branch it is effecting.  GCC
+will insert up to @var{n} nops to enforce this, otherwise it will not
+generate the branch hint.
+
+@item -mhint-max-distance=@var{n}
+@opindex mhint-max-distance
+The encoding of the branch hint instruction limits the hint to be within
+256 instructions of the branch it is effecting.  By default, GCC makes
+sure it is within 125. 
+
+@item -msafe-hints
+@opindex msafe-hints
+Work around a hardware bug which causes the SPU to stall indefinitely.
+By default, GCC will insert the @code{hbrp} instruction to make sure
+this stall won't happen.
+
 @end table
 
 @node System V Options

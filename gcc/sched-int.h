@@ -848,6 +848,7 @@ extern void * xrecalloc (void *, size_t, size_t, size_t);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern rtx bb_note (basic_block);
+extern rtx sched_emit_insn (rtx);
 
 /* Functions in sched-rgn.c.  */
 
