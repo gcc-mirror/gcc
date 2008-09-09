@@ -1664,14 +1664,9 @@ AC_DEFUN([GLIBCXX_CHECK_STANDARD_LAYOUT], [
 		    private:	    
   		    b& operator=(const b&);
   		    b(const b&);
-		    };
-
-		    int main()
-		    {
-		      b tst1 = { false };
-		       return 0;
-		    }],,
-             [ac_standard_layout=yes], [ac_standard_layout=no])
+		    };],
+		 [b tst1 = { false };],
+		 [ac_standard_layout=yes], [ac_standard_layout=no])
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
