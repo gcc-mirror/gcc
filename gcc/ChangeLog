@@ -1,3 +1,7 @@
+2008-09-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.md (return): Restore frame size restriction.
+
 2008-09-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (c_expand_decl): Remove.
