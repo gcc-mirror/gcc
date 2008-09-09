@@ -6,7 +6,10 @@ auto f() -> int
 }
 
 template<class T, class U>
-auto add(T t, U u) -> decltype (t+u);
+auto add(T t, U u) -> decltype (t+u)
+{
+  return t+u;
+}
 
 template<class T, class U>
 decltype(T()+U()) add2(T t, U u);

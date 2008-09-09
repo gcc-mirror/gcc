@@ -1,3 +1,9 @@
+2008-09-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37439
+	* pt.c (tsubst_copy) [PARM_DECL]: Don't abort if the parm has
+	DECL_CONTEXT set.
+
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37389
