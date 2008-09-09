@@ -84,6 +84,7 @@ testva##NAME (int n, ...)					\
     }								\
 }
 
+#ifndef SKIP_COMPLEX
 #ifndef SKIP_COMPLEX_INT
 T(ci, _Complex int, CINT (2, 3))
 T(cl, _Complex long, CINT (3, 4))
@@ -91,3 +92,4 @@ T(cll, _Complex long long, CINT (5, 6))
 #endif
 T(cd, _Complex double, CDBL (7.0, 8.0))
 T(cld, _Complex long double, CDBL (8.0, 9.0))
+#endif

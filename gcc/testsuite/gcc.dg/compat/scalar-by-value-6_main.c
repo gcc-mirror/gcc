@@ -6,14 +6,18 @@
 extern void exit (int);
 extern void longdouble_i_doit (void);
 extern void longdouble_d_doit (void);
+#ifndef SKIP_COMPLEX
 extern void complexlongdouble_i_doit (void);
 extern void complexlongdouble_d_doit (void);
+#endif
 
 int main (void)
 {
   longdouble_i_doit ();
   longdouble_d_doit ();
+#ifndef SKIP_COMPLEX
   complexlongdouble_i_doit ();
   complexlongdouble_d_doit ();
+#endif
   exit (0);
 }

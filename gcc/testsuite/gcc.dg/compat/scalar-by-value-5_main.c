@@ -16,6 +16,7 @@ int main (void)
 {
   longlong_i_doit ();
   longlong_d_doit ();
+#ifndef SKIP_COMPLEX
 #ifndef SKIP_COMPLEX_INT
   complexint_i_doit ();
   complexint_d_doit ();
@@ -25,6 +26,7 @@ int main (void)
 #ifndef SKIP_COMPLEX_INT
   complexlonglong_i_doit ();
   complexlonglong_d_doit ();
+#endif
 #endif
   exit (0);
 }

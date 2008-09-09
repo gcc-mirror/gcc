@@ -24,6 +24,13 @@
 #define DEBUG_FINI
 #endif
 
+#ifdef SKIP_COMPLEX
+#ifndef SKIP_COMPLEX_INT
+#define SKIP_COMPLEX_INT
+#endif
+#endif
+
+#ifndef SKIP_COMPLEX
 #ifdef __GNUC__
 #define CINT(x, y) (x + y * __extension__ 1i)
 #define CDBL(x, y) (x + y * __extension__ 1i)
@@ -37,6 +44,7 @@
 #define CINT(x, y) ((_Complex int) (x + y * _Complex_I))
 #endif
 #define CDBL(x, y) (x + y * _Complex_I)
+#endif
 #endif
 
 extern void abort (void);

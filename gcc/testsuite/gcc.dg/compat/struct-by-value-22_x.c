@@ -1,3 +1,5 @@
+#ifndef SKIP_VLA_IN_STRUCT
+
 #ifndef T
 #include "compat-common.h"
 #include "mixed-struct-defs.h"
@@ -75,5 +77,7 @@ U(Sfifi)
 U(Sfiifii)
 #undef S
 #undef U
+
+#endif
 
 #endif

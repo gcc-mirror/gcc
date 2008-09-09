@@ -1,9 +1,10 @@
 #include <new>
+#include <cstddef>
 
 extern int ret;
 
 void *ptr;
-void * operator new[] (size_t s) throw (std::bad_alloc)
+void * operator new[] (std::size_t s) throw (std::bad_alloc)
 {
   ptr = operator new (s);
   return ptr;

@@ -51,8 +51,11 @@ set option_list $COMPAT_OPTIONS
 
 # Subsets of tests can be selectively disabled by members of this list:
 #  - ATTRIBUTE: disable all tests using the __attribute__ extension,
+#  - COMPLEX: disable all tests using the complex types feature,
 #  - COMPLEX_INT: disable all tests using the complex integral types extension,
 #  - VA: disable all tests using the variable number of arguments feature,
+#  - VLA_IN_STRUCT: disable all tests using the variable-length arrays as
+#    structure members extension,
 #  - ZERO_ARRAY: disable all tests using the zero-sized arrays extension.
 # The default skip lists can be overriden by
 # COMPAT_SKIPS="[list {skip_1}...{skip_n}]"

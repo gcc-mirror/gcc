@@ -1,3 +1,51 @@
+2008-09-08  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/compat/eh/filter2_x.C: Declare abort.
+	* g++.dg/compat/eh/new1_x.C, g++.dg/compat/eh/new1_y.C: Include
+	cstddef and use std::size_t.
+
+	* gcc.dg/compat/compat-common.h: Define SKIP_COMPLEX_INT if
+	SKIP_COMPLEX.  Honor SKIP_COMPLEX.
+	* gcc.dg/compat/scalar-by-value-3_x.c,
+	gcc.dg/compat/scalar-by-value-3_y.c,
+	gcc.dg/compat/scalar-by-value-4_x.c,
+	gcc.dg/compat/scalar-by-value-4_y.c,
+	gcc.dg/compat/scalar-by-value-5.c,
+	gcc.dg/compat/scalar-by-value-5_main.c,
+	gcc.dg/compat/scalar-by-value-6.c,
+	gcc.dg/compat/scalar-by-value-6_main.c,
+	gcc.dg/compat/scalar-by-value-6_x.c,
+	gcc.dg/compat/scalar-by-value-6_y.c,
+	gcc.dg/compat/struct-by-value-16_x.c,
+	gcc.dg/compat/struct-by-value-16_y.c,
+	gcc.dg/compat/struct-by-value-16a_x.c,
+	gcc.dg/compat/struct-by-value-16a_y.c,
+	gcc.dg/compat/struct-by-value-17_x.c,
+	gcc.dg/compat/struct-by-value-17_y.c,
+	gcc.dg/compat/struct-by-value-17a_x.c,
+	gcc.dg/compat/struct-by-value-17a_y.c,
+	gcc.dg/compat/struct-by-value-18_x.c,
+	gcc.dg/compat/struct-by-value-18_y.c,
+	gcc.dg/compat/struct-by-value-18a_x.c,
+	gcc.dg/compat/struct-by-value-18a_y.c,
+	gcc.dg/compat/struct-layout-1.h,
+	gcc.dg/compat/scalar-return-3_x.c,
+	gcc.dg/compat/scalar-return-3_y.c,
+	gcc.dg/compat/scalar-return-4_x.c,
+	gcc.dg/compat/scalar-return-4_y.c: Honor SKIP_COMPLEX.
+
+	* gcc.dg/compat/scalar-by-value-y.h: Use stdarg.h for non-GCC
+	compilers.
+
+	* gcc.dg/compat/struct-by-value-22_y.c,
+	gcc.dg/compat/struct-by-value-22_main.c,
+	gcc.dg/compat/struct-by-value-22_x.c: Honor SKIP_VLA_IN_STRUCT.
+
+	* lib/c-compat.exp (compat_setup_dfp): Check the compiler under test
+	first.
+	* lib/compat.exp: Document COMPLEX and VLA_IN_STRUCT skips.
+
 2008-09-08  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.dg/struct/wo_prof_escape_substr_value.c: Limit allocation
