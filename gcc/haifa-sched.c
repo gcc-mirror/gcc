@@ -2071,7 +2071,14 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
   /* Init max_points.  */
   max_points = 0;
   more_issue = issue_rate - cycle_issued_insns;
-  gcc_assert (more_issue >= 0);
+
+  /* ??? We used to assert here that we never issue more insns than issue_rate.
+     However, some targets (e.g. MIPS/SB1) claim lower issue rate than can be
+     achieved to get better performance.  Until these targets are fixed to use
+     scheduler hooks to manipulate insns priority instead, the assert should 
+     be disabled.  
+
+     gcc_assert (more_issue >= 0);  */
 
   for (i = 0; i < n_ready; i++)
     if (!ready_try [i])
