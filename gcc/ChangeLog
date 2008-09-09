@@ -1,3 +1,9 @@
+2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
+
+        PR rtl-optimization/37360
+	* haifa-sched.c (max_issue): Do not assert that we never issue more
+	insns than issue_rate.  Add comment.
+	
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_types_in_gimple_op): Remove.
