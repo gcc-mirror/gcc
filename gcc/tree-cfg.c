@@ -3168,67 +3168,94 @@ valid_fixed_convert_types_p (tree type1, tree type2)
 	      || FIXED_POINT_TYPE_P (type2)));
 }
 
-/* Verify that OP is a valid GIMPLE operand.  Return true if there is
-   an error, false otherwise.  */
+/* Verify the contents of a GIMPLE_CALL STMT.  Returns true when there
+   is a problem, otherwise false.  */
 
 static bool
-verify_types_in_gimple_op (tree op)
+verify_gimple_call (gimple stmt)
 {
-  if (!is_gimple_val (op) && !is_gimple_lvalue (op))
+  tree fn = gimple_call_fn (stmt);
+  tree fntype;
+
+  if (!POINTER_TYPE_P (TREE_TYPE  (fn))
+      || (TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != FUNCTION_TYPE
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != METHOD_TYPE))
     {
-      error ("Invalid GIMPLE operand");
-      debug_generic_expr (op);
+      error ("non-function in gimple call");
+      return true;
+    }
+
+  if (gimple_call_lhs (stmt)
+      && !is_gimple_lvalue (gimple_call_lhs (stmt)))
+    {
+      error ("invalid LHS in gimple call");
+      return true;
+    }
+
+  fntype = TREE_TYPE (TREE_TYPE (fn));
+  if (gimple_call_lhs (stmt)
+      && !useless_type_conversion_p (TREE_TYPE (gimple_call_lhs (stmt)),
+				     TREE_TYPE (fntype))
+      /* ???  At least C++ misses conversions at assignments from
+	 void * call results.
+	 ???  Java is completely off.  Especially with functions
+	 returning java.lang.Object.
+	 For now simply allow arbitrary pointer type conversions.  */
+      && !(POINTER_TYPE_P (TREE_TYPE (gimple_call_lhs (stmt)))
+	   && POINTER_TYPE_P (TREE_TYPE (fntype))))
+    {
+      error ("invalid conversion in gimple call");
+      debug_generic_stmt (TREE_TYPE (gimple_call_lhs (stmt)));
+      debug_generic_stmt (TREE_TYPE (fntype));
+      return true;
+    }
+
+  /* ???  The C frontend passes unpromoted arguments in case it
+     didn't see a function declaration before the call.  So for now
+     leave the call arguments unverified.  Once we gimplify
+     unit-at-a-time we have a chance to fix this.  */
+
+  return false;
+}
+
+/* Verifies the gimple comparison with the result type TYPE and
+   the operands OP0 and OP1.  */
+
+static bool
+verify_gimple_comparison (tree type, tree op0, tree op1)
+{
+  tree op0_type = TREE_TYPE (op0);
+  tree op1_type = TREE_TYPE (op1);
+
+  if (!is_gimple_val (op0) || !is_gimple_val (op1))
+    {
+      error ("invalid operands in gimple comparison");
+      return true;
+    }
+
+  /* For comparisons we do not have the operations type as the
+     effective type the comparison is carried out in.  Instead
+     we require that either the first operand is trivially
+     convertible into the second, or the other way around.
+     The resulting type of a comparison may be any integral type.
+     Because we special-case pointers to void we allow
+     comparisons of pointers with the same mode as well.  */
+  if ((!useless_type_conversion_p (op0_type, op1_type)
+       && !useless_type_conversion_p (op1_type, op0_type)
+       && (!POINTER_TYPE_P (op0_type)
+	   || !POINTER_TYPE_P (op1_type)
+	   || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
+      || !INTEGRAL_TYPE_P (type))
+    {
+      error ("type mismatch in comparison expression");
+      debug_generic_expr (type);
+      debug_generic_expr (op0_type);
+      debug_generic_expr (op1_type);
       return true;
     }
 
   return false;
 }
-
-
-/* Verify the contents of a GIMPLE_CALL STMT.  Returns true when there
-   is a problem, otherwise false.  */
-
-static bool
-verify_types_in_gimple_call (gimple stmt)
-{
-  bool failed = false;
-  unsigned int i;
-  tree fn;
-
-  if (gimple_call_lhs (stmt))
-    failed |= verify_types_in_gimple_op (gimple_call_lhs (stmt));
-
-  fn = gimple_call_fn (stmt);
-  if (TREE_CODE (fn) != OBJ_TYPE_REF
-      && verify_types_in_gimple_op (fn))
-    failed = true;
-
-  if (gimple_call_chain (stmt))
-    failed |= verify_types_in_gimple_op (gimple_call_chain (stmt));
-
-  for (i = 0; i < gimple_call_num_args (stmt); i++)
-    failed |= verify_types_in_gimple_op (gimple_call_arg (stmt,i));
-
-  return failed;
-}
-
-
-/* Verify the contents of a GIMPLE_COND STMT.  Returns true when there
-   is a problem, otherwise false.  */
-
-static bool
-verify_types_in_gimple_cond (gimple stmt)
-{
-  bool failed = false;
-  
-  failed |= verify_types_in_gimple_op (gimple_cond_lhs (stmt));
-  failed |= verify_types_in_gimple_op (gimple_cond_rhs (stmt));
-  failed |= verify_types_in_gimple_op (gimple_cond_true_label (stmt));
-  failed |= verify_types_in_gimple_op (gimple_cond_false_label (stmt));
-
-  return failed;
-}
-
 
 /* Verify the contents of a GIMPLE_ASSIGN STMT.  Returns true when there
    is a problem, otherwise false.
@@ -3588,35 +3615,7 @@ verify_types_in_gimple_assign (gimple stmt)
       return verify_types_in_gimple_reference (rhs1);
 
     case tcc_comparison:
-      {
-	if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	  {
-	    error ("invalid operands in comparison expression");
-	    return true;
-	  }
-
-	/* For comparisons we do not have the operations type as the
-	   effective type the comparison is carried out in.  Instead
-	   we require that either the first operand is trivially
-	   convertible into the second, or the other way around.
-	   The resulting type of a comparison may be any integral type.
-	   Because we special-case pointers to void we allow
-	   comparisons of pointers with the same mode as well.  */
-	if ((!useless_type_conversion_p (rhs1_type, rhs2_type)
-	     && !useless_type_conversion_p (rhs2_type, rhs1_type)
-	     && (!POINTER_TYPE_P (rhs1_type)
-		 || !POINTER_TYPE_P (rhs2_type)
-		 || TYPE_MODE (rhs1_type) != TYPE_MODE (rhs2_type)))
-	    || !INTEGRAL_TYPE_P (lhs_type))
-	  {
-	    error ("type mismatch in comparison expression");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    debug_generic_expr (rhs2_type);
-	    return true;
-	  }
-        break;
-      }
+      return verify_gimple_comparison (lhs_type, rhs1, rhs2);
 
     default:;
     }
@@ -3629,27 +3628,72 @@ verify_types_in_gimple_assign (gimple stmt)
    is a problem, otherwise false.  */
 
 static bool
-verify_types_in_gimple_return (gimple stmt)
+verify_gimple_return (gimple stmt)
 {
   tree op = gimple_return_retval (stmt);
+  tree restype = TREE_TYPE (TREE_TYPE (cfun->decl));
 
+  /* We cannot test for present return values as we do not fix up missing
+     return values from the original source.  */
   if (op == NULL)
     return false;
-  
-  return verify_types_in_gimple_op (op);
+ 
+  if (!is_gimple_val (op)
+      && TREE_CODE (op) != RESULT_DECL)
+    {
+      error ("invalid operand in return statement");
+      debug_generic_stmt (op);
+      return true;
+    }
+
+  if (!useless_type_conversion_p (restype, TREE_TYPE (op))
+      /* ???  With C++ we can have the situation that the result
+	 decl is a reference type while the return type is an aggregate.  */
+      && !(TREE_CODE (op) == RESULT_DECL
+	   && TREE_CODE (TREE_TYPE (op)) == REFERENCE_TYPE
+	   && useless_type_conversion_p (restype, TREE_TYPE (TREE_TYPE (op)))))
+    {
+      error ("invalid conversion in return statement");
+      debug_generic_stmt (restype);
+      debug_generic_stmt (TREE_TYPE (op));
+      return true;
+    }
+
+  return false;
 }
 
+
+/* Verify the contents of a GIMPLE_GOTO STMT.  Returns true when there
+   is a problem, otherwise false.  */
+
+static bool
+verify_gimple_goto (gimple stmt)
+{
+  tree dest = gimple_goto_dest (stmt);
+
+  /* ???  We have two canonical forms of direct goto destinations, a
+     bare LABEL_DECL and an ADDR_EXPR of a LABEL_DECL.  */
+  if (TREE_CODE (dest) != LABEL_DECL
+      && (!is_gimple_val (dest)
+	  || !POINTER_TYPE_P (TREE_TYPE (dest))))
+    {
+      error ("goto destination is neither a label nor a pointer");
+      return true;
+    }
+
+  return false;
+}
 
 /* Verify the contents of a GIMPLE_SWITCH STMT.  Returns true when there
    is a problem, otherwise false.  */
 
 static bool
-verify_types_in_gimple_switch (gimple stmt)
+verify_gimple_switch (gimple stmt)
 {
   if (!is_gimple_val (gimple_switch_index (stmt)))
     {
       error ("invalid operand to switch statement");
-      debug_generic_expr (gimple_switch_index (stmt));
+      debug_generic_stmt (gimple_switch_index (stmt));
       return true;
     }
 
@@ -3661,16 +3705,34 @@ verify_types_in_gimple_switch (gimple stmt)
    and false otherwise.  */
 
 static bool
-verify_types_in_gimple_phi (gimple stmt)
+verify_gimple_phi (gimple stmt)
 {
-  size_t i;
+  tree type = TREE_TYPE (gimple_phi_result (stmt));
+  unsigned i;
 
-  if (verify_types_in_gimple_op (gimple_phi_result (stmt)))
-    return true;
+  if (!is_gimple_variable (gimple_phi_result (stmt)))
+    {
+      error ("Invalid PHI result");
+      return true;
+    }
 
   for (i = 0; i < gimple_phi_num_args (stmt); i++)
-    if (verify_types_in_gimple_op (gimple_phi_arg_def (stmt, i)))
-      return true;
+    {
+      tree arg = gimple_phi_arg_def (stmt, i);
+      if (!is_gimple_val (arg))
+	{
+	  error ("Invalid PHI argument");
+	  debug_generic_stmt (arg);
+	  return true;
+	}
+      if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
+	{
+	  error ("Incompatible types in PHI argument");
+	  debug_generic_stmt (type);
+	  debug_generic_stmt (TREE_TYPE (arg));
+	  return true;
+	}
+    }
 
   return false;
 }
@@ -3702,32 +3764,37 @@ verify_types_in_gimple_stmt (gimple stmt)
       return TREE_CODE (gimple_label_label (stmt)) != LABEL_DECL;
 
     case GIMPLE_CALL:
-      return verify_types_in_gimple_call (stmt);
+      return verify_gimple_call (stmt);
 
     case GIMPLE_COND:
-      return verify_types_in_gimple_cond (stmt);
+      return verify_gimple_comparison (boolean_type_node,
+				       gimple_cond_lhs (stmt),
+				       gimple_cond_rhs (stmt));
 
     case GIMPLE_GOTO:
-      return verify_types_in_gimple_op (gimple_goto_dest (stmt));
-
-    case GIMPLE_NOP:
-    case GIMPLE_PREDICT:
-      return false;
+      return verify_gimple_goto (stmt);
 
     case GIMPLE_SWITCH:
-      return verify_types_in_gimple_switch (stmt);
+      return verify_gimple_switch (stmt);
 
     case GIMPLE_RETURN:
-      return verify_types_in_gimple_return (stmt);
+      return verify_gimple_return (stmt);
 
     case GIMPLE_ASM:
       return false;
 
     case GIMPLE_CHANGE_DYNAMIC_TYPE:
-      return verify_types_in_gimple_op (gimple_cdt_location (stmt));
+      return (!is_gimple_reg (gimple_cdt_location (stmt))
+	      || !POINTER_TYPE_P (TREE_TYPE (gimple_cdt_location (stmt))));
 
     case GIMPLE_PHI:
-      return verify_types_in_gimple_phi (stmt);
+      return verify_gimple_phi (stmt);
+
+    /* Tuples that do not have tree operands.  */
+    case GIMPLE_NOP:
+    case GIMPLE_RESX:
+    case GIMPLE_PREDICT:
+      return false;
 
     default:
       gcc_unreachable ();
@@ -3748,44 +3815,22 @@ verify_types_in_gimple_seq_2 (gimple_seq stmts)
 
       switch (gimple_code (stmt))
         {
-          case GIMPLE_BIND:
-            err |= verify_types_in_gimple_seq_2 (gimple_bind_body (stmt));
-            break;
+	case GIMPLE_BIND:
+	  err |= verify_types_in_gimple_seq_2 (gimple_bind_body (stmt));
+	  break;
 
-          case GIMPLE_TRY:
-            err |= verify_types_in_gimple_seq_2 (gimple_try_eval (stmt));
-            err |= verify_types_in_gimple_seq_2 (gimple_try_cleanup (stmt));
-            break;
+	case GIMPLE_TRY:
+	  err |= verify_types_in_gimple_seq_2 (gimple_try_eval (stmt));
+	  err |= verify_types_in_gimple_seq_2 (gimple_try_cleanup (stmt));
+	  break;
 
-          case GIMPLE_EH_FILTER:
-            err |= verify_types_in_gimple_seq_2
-	      	     (gimple_eh_filter_failure (stmt));
-            break;
+	case GIMPLE_EH_FILTER:
+	  err |= verify_types_in_gimple_seq_2 (gimple_eh_filter_failure (stmt));
+	  break;
 
-          case GIMPLE_CATCH:
-             err |= verify_types_in_gimple_seq_2 (gimple_catch_handler (stmt));
-             break;
-
-	  case GIMPLE_OMP_CRITICAL:
-          case GIMPLE_OMP_CONTINUE:
-          case GIMPLE_OMP_MASTER:
-          case GIMPLE_OMP_ORDERED:
-          case GIMPLE_OMP_SECTION:
-          case GIMPLE_OMP_FOR:
-          case GIMPLE_OMP_PARALLEL:
-	  case GIMPLE_OMP_TASK:
-          case GIMPLE_OMP_SECTIONS:
-          case GIMPLE_OMP_SINGLE:
-	  case GIMPLE_OMP_ATOMIC_STORE:
-	  case GIMPLE_OMP_ATOMIC_LOAD:
-            break;
-
-	  /* Tuples that do not have trees.  */
-          case GIMPLE_NOP:
-          case GIMPLE_RESX:
-          case GIMPLE_OMP_RETURN:
-	  case GIMPLE_PREDICT:
-            break;
+	case GIMPLE_CATCH:
+	  err |= verify_types_in_gimple_seq_2 (gimple_catch_handler (stmt));
+	  break;
 
 	default:
 	  {

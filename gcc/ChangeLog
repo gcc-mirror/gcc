@@ -1,3 +1,23 @@
+2008-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_op): Remove.
+	(verify_types_in_gimple_call): Rename to ...
+	(verify_gimple_call): ... this.  Enhance.
+	(verify_types_in_gimple_cond): Remove.
+	(verify_gimple_comparison): New function ...
+	(verify_types_in_gimple_assign): ... split out from here.
+	(verify_types_in_gimple_return): Rename to ...
+	(verify_gimple_return): ... this.  Enhance.
+	(verify_types_in_gimple_switch): Rename to ...
+	(verify_gimple_switch): ... this.  Enhance.
+	(verify_gimple_goto): New function.
+	(verify_types_in_gimple_phi): Rename to ...
+	(verify_gimple_phi): ... this.  Enhance.
+	(verify_types_in_gimple_stmt): Adjust calls to helper functions.
+	Fold in single-statement cases from verify_types_in_gimple_seq_2.
+	(verify_types_in_gimple_seq_2): Remove cases handled in
+	verify_types_in_gimple_stmt.
+
 2008-09-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (n_regs_to_save): New static variable.
