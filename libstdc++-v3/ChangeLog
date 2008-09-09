@@ -1,6 +1,6 @@
 2008-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* include/tr1_impl/cinttypes: Restore __STDC_FORMAT_MACRO after
+	* include/tr1_impl/cinttypes: Restore __STDC_FORMAT_MACROS after
 	inclusion of <inttypes.h>.
 	* include/tr1_impl/cstdint: Likewise for __STDC_LIMIT_MACROS and
 	__STDC_CONSTANT_MACROS after <stdint.h>.
