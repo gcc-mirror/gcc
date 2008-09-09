@@ -807,7 +807,7 @@ rtx
 dw2_force_const_mem (rtx x, bool is_public)
 {
   splay_tree_node node;
-  const char *str;
+  const char *key;
   tree decl;
 
   if (! indirect_pool)
@@ -817,13 +817,14 @@ dw2_force_const_mem (rtx x, bool is_public)
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
-  str = targetm.strip_name_encoding (XSTR (x, 0));
-  node = splay_tree_lookup (indirect_pool, (splay_tree_key) str);
+  key = XSTR (x, 0);
+  node = splay_tree_lookup (indirect_pool, (splay_tree_key) key);
   if (node)
     decl = (tree) node->value;
   else
     {
       tree id;
+      const char *str = targetm.strip_name_encoding (key);
 
       if (is_public && USE_LINKONCE_INDIRECT)
 	{
@@ -856,7 +857,7 @@ dw2_force_const_mem (rtx x, bool is_public)
       if (id)
 	TREE_SYMBOL_REFERENCED (id) = 1;
 
-      splay_tree_insert (indirect_pool, (splay_tree_key) str,
+      splay_tree_insert (indirect_pool, (splay_tree_key) key,
 			 (splay_tree_value) decl);
     }
 
@@ -877,6 +878,7 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
   sym = (const char *) node->key;
   decl = (tree) node->value;
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
+  sym = targetm.strip_name_encoding (sym);
   if (TREE_PUBLIC (decl) && USE_LINKONCE_INDIRECT)
     fprintf (asm_out_file, "\t.hidden %sDW.ref.%s\n", user_label_prefix, sym);
   assemble_variable (decl, 1, 1, 1);
