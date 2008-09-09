@@ -210,7 +210,7 @@ static void
 update_conflict_hard_regno_costs (int *costs, ira_allocno_t allocno,
 				  int divisor, bool decr_p)
 {
-  int i, cost, class_size, mult, div;
+  int i, cost, class_size, freq, mult, div;
   int *conflict_costs;
   bool cont_p;
   enum machine_mode mode;
@@ -258,9 +258,11 @@ update_conflict_hard_regno_costs (int *costs, ira_allocno_t allocno,
 	cont_p = true;
       else
 	{
-	  ira_assert (ALLOCNO_FREQ (another_allocno) != 0);
 	  mult = cp->freq;
-	  div = ALLOCNO_FREQ (another_allocno) * divisor;
+	  freq = ALLOCNO_FREQ (another_allocno);
+	  if (freq == 0)
+	    freq = 1;
+	  div = freq * divisor;
 	  cont_p = false;
 	  for (i = class_size - 1; i >= 0; i--)
 	    {
