@@ -14285,16 +14285,10 @@ struct b
   		    b& operator=(const b&);
   		    b(const b&);
 		    };
-
-		    int main()
-		    {
-		      b tst1 = { false };
-		       return 0;
-		    }
 int
 main ()
 {
-
+b tst1 = { false };
   ;
   return 0;
 }
