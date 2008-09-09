@@ -1,3 +1,9 @@
+2008-09-09  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37411
+	* trans-array.c (gfc_conv_array_parameter): Added assertion that the
+	symbol has an array spec.
+
 2008-09-08  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37199

@@ -5155,6 +5155,9 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 		      && expr->ref->u.ar.type == AR_FULL);
   sym = full_array_var ? expr->symtree->n.sym : NULL;
 
+  /* The symbol should have an array specification.  */
+  gcc_assert (!sym || sym->as);
+
   if (expr->expr_type == EXPR_ARRAY && expr->ts.type == BT_CHARACTER)
     {
       get_array_ctor_strlen (&se->pre, expr->value.constructor, &tmp);
