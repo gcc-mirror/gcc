@@ -1,3 +1,9 @@
+2008-09-09  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37429
+	* gfortran.dg/typebound_call_7.f03: New test.
+	* gfortran.dg/typebound_call_8.f03: New test.
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37354
