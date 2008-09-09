@@ -6,8 +6,8 @@
 
 /* Test some simple cases.  */
 
-void f_void1 (void)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_void1 (void) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
@@ -16,8 +16,8 @@ void f_void2 ()
   return;
 }
 
-void f_int1 (int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_int1 (int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
@@ -29,8 +29,8 @@ void f_int2 (f)
 
 /* Test that we don't ever warn about nested functions.  */
 
-void f_int3 (int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_int3 (int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   void f3a (void) { return; }
   void f3b () { return; }
   void f3c (int f) { return; }
@@ -39,8 +39,8 @@ void f_int3 (int f)
   return;
 }
 
-void f_int4 (int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_int4 (int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   void f4a (void) { return; }
   void f4b () { return; }
   void f4c (int f) { return; }
@@ -77,14 +77,14 @@ void f_int6 (f)
    are still warned about.  */
 
 extern void f_int_p1 (int);
-void f_int_p1 (int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_int_p1 (int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
 extern void f_int_p2 (int f);
-void f_int_p2 (int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_int_p2 (int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
@@ -103,14 +103,14 @@ void f_int_p4 (f)
 }
 
 extern void f_void_p1 ();
-void f_void_p1 (void)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_void_p1 (void) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
 extern void f_void_p2 (void);
-void f_void_p2 (void)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_void_p2 (void) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
@@ -133,39 +133,39 @@ f_impl1()
   return 0;
 }
 
-f_impl2(void)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+f_impl2(void) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return 0;
 }
 
-f_impl3(int f)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+f_impl3(int f) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return 0;
 }
 
 /* Test stdarg functions.  */
 
-f_stdarg1(const char *s, ...)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+f_stdarg1(const char *s, ...) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return 0;
 }
 
-void f_stdarg2(const char *s, ...)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_stdarg2(const char *s, ...) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
 extern void f_stdarg3(const char *, ...);
-void f_stdarg3(const char *s, ...)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_stdarg3(const char *s, ...) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
 /* Test handling function pointer parameters.  */
 
 void f_fnptr1 (int f, int (*fp)(int));
-void f_fnptr1 (int f, int (*fp)(int))
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+void f_fnptr1 (int f, int (*fp)(int)) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return;
 }
 
@@ -180,8 +180,8 @@ void f_fnptr2 (f, fp)
 /* Test for main.  */
 
 int
-main (int argc, char **argv)
-{ /* { dg-warning "traditional C rejects ISO C style" } */
+main (int argc, char **argv) /* { dg-warning "traditional C rejects ISO C style" } */
+{
   return 0;
 }
 

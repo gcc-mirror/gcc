@@ -1,3 +1,9 @@
+2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function.h (struct function): Add function_start_locus.
+	* cfgexpand.c (gimple_expand_cfg): Use it.
+	* c-parser.c (c_parser_declaration_or_fndef): Set it.
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37433

@@ -2,8 +2,8 @@
 /* { dg-options "-Winline -O2 --param large-function-growth=0 --param large-function-insns=1" } */
 
 void big (void);
-inline int q(void)
-{				/* { dg-warning "large-function-growth" } */
+inline int q(void) /* { dg-warning "large-function-growth" } */
+{
 	big();
 	big();
 	big();
