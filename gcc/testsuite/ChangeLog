@@ -1,3 +1,8 @@
+2008-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37389
+	* g++.dg/parse/enum4.C: New test.
+
 2008-09-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35837

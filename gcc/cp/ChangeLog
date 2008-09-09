@@ -1,3 +1,9 @@
+2008-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37389
+	* decl.c (build_enumerator): Handle previous value's DECL_INITIAL
+	being error_operand_p.
+
 2008-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37348
