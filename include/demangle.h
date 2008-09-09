@@ -370,7 +370,9 @@ enum demangle_component_type
      subtree is the first part and the right subtree the second.  */
   DEMANGLE_COMPONENT_COMPOUND_NAME,
   /* A name formed by a single character.  */
-  DEMANGLE_COMPONENT_CHARACTER
+  DEMANGLE_COMPONENT_CHARACTER,
+  /* A decltype type.  */
+  DEMANGLE_COMPONENT_DECLTYPE
 };
 
 /* Types which are only used internally.  */

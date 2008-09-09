@@ -660,6 +660,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_CHARACTER:
       printf ("character '%c'\n",  dc->u.s_character.character);
       return;
+    case DEMANGLE_COMPONENT_DECLTYPE:
+      printf ("decltype\n");
+      break;
     }
 
   d_dump (d_left (dc), indent + 2);
@@ -807,6 +810,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
     case DEMANGLE_COMPONENT_CAST:
     case DEMANGLE_COMPONENT_JAVA_RESOURCE:
+    case DEMANGLE_COMPONENT_DECLTYPE:
       if (left == NULL)
 	return NULL;
       break;
@@ -1422,7 +1426,7 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "aa", NL ("&&"),        2 },
   { "ad", NL ("&"),         1 },
   { "an", NL ("&"),         2 },
-  { "cl", NL ("()"),        0 },
+  { "cl", NL ("()"),        2 },
   { "cm", NL (","),         2 },
   { "co", NL ("~"),         1 },
   { "dV", NL ("/="),        2 },
@@ -1871,12 +1875,15 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* n */ { NL ("__int128"),	NL ("__int128"),	D_PRINT_DEFAULT },
   /* o */ { NL ("unsigned __int128"), NL ("unsigned __int128"),
 	    D_PRINT_DEFAULT },
-  /* p */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
-  /* q */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
-  /* r */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
+  /* The decimal floating point and half-precision floating point types
+     don't use the normal builtin type encoding, they're just stuck into
+     holes in the table for convenience.  */
+  /* p */ { NL ("decimal32"),	NL ("decimal32"),	D_PRINT_DEFAULT },
+  /* q */ { NL ("decimal64"),	NL ("decimal64"),	D_PRINT_DEFAULT },
+  /* r */ { NL ("decimal128"),	NL ("decimal128"),	D_PRINT_DEFAULT },
   /* s */ { NL ("short"),	NL ("short"),		D_PRINT_DEFAULT },
   /* t */ { NL ("unsigned short"), NL ("unsigned short"), D_PRINT_DEFAULT },
-  /* u */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
+  /* u */ { NL ("half"),	NL ("half"),		D_PRINT_FLOAT },
   /* v */ { NL ("void"),	NL ("void"),		D_PRINT_VOID },
   /* w */ { NL ("wchar_t"),	NL ("char"),		D_PRINT_DEFAULT },
   /* x */ { NL ("long long"),	NL ("long"),		D_PRINT_LONG_LONG },
@@ -2044,6 +2051,52 @@ cplus_demangle_type (struct d_info *di)
       ret = d_source_name (di);
       ret = d_make_comp (di, DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL,
 			 cplus_demangle_type (di), ret);
+      break;
+
+    case 'D':
+      can_subst = 0;
+      d_advance (di, 1);
+      peek = d_next_char (di);
+      switch (peek)
+	{
+	case 'T':
+	case 't':
+	  /* decltype (expression) */
+	  ret = d_make_comp (di, DEMANGLE_COMPONENT_DECLTYPE,
+			     d_expression (di), NULL);
+	  if (ret && d_next_char (di) != 'E')
+	    ret = NULL;
+	  break;
+	  
+	case 'p':
+	  /* Pack expansion.  */
+	  return NULL;
+	  
+	case 'f':
+	  /* 32-bit DFP */
+	  ret = d_make_builtin_type (di,
+				     &cplus_demangle_builtin_types['p' - 'a']);
+	  di->expansion += ret->u.s_builtin.type->len;
+	  break;
+	case 'd':
+	  /* 64-bit decimal floating point */
+	  ret = d_make_builtin_type (di,
+				     &cplus_demangle_builtin_types['q' - 'a']);
+	  di->expansion += ret->u.s_builtin.type->len;
+	  break;
+	case 'e':
+	  /* 128-bit DFP */
+	  ret = d_make_builtin_type (di,
+				     &cplus_demangle_builtin_types['r' - 'a']);
+	  di->expansion += ret->u.s_builtin.type->len;
+	  break;
+	case 'h':
+	  /* 16-bit half-precision FP */
+	  ret = d_make_builtin_type (di,
+				     &cplus_demangle_builtin_types['u' - 'a']);
+	  di->expansion += ret->u.s_builtin.type->len;
+	  break;
+	}
       break;
 
     default:
@@ -2391,9 +2444,39 @@ d_template_arg (struct d_info *di)
     }
 }
 
+/* Subroutine of <expression> ::= cl <expression>+ E */
+
+static struct demangle_component *
+d_exprlist (struct d_info *di)
+{
+  struct demangle_component *list = NULL;
+  struct demangle_component **p = &list;
+
+  while (1)
+    {
+      struct demangle_component *arg = d_expression (di);
+      if (arg == NULL)
+	return NULL;
+
+      *p = d_make_comp (di, DEMANGLE_COMPONENT_ARGLIST, arg, NULL);
+      if (*p == NULL)
+	return NULL;
+      p = &d_right (*p);
+
+      if (d_peek_char (di) == 'E')
+	{
+	  d_advance (di, 1);
+	  break;
+	}
+    }
+
+  return list;
+}
+
 /* <expression> ::= <(unary) operator-name> <expression>
                 ::= <(binary) operator-name> <expression> <expression>
                 ::= <(trinary) operator-name> <expression> <expression> <expression>
+		::= cl <expression>+ E
                 ::= st <type>
                 ::= <template-param>
                 ::= sr <type> <unqualified-name>
@@ -2426,6 +2509,12 @@ d_expression (struct d_info *di)
 			    d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
 					 d_template_args (di)));
     }
+  else if (peek == 's' && d_peek_next_char (di) == 'T')
+    {
+      /* Just demangle a parameter placeholder as its type.  */
+      d_advance (di, 2);
+      return cplus_demangle_type (di);
+    }
   else
     {
       struct demangle_component *op;
@@ -2454,7 +2543,12 @@ d_expression (struct d_info *di)
 	  args = op->u.s_extended_operator.args;
 	  break;
 	case DEMANGLE_COMPONENT_CAST:
-	  args = 1;
+	  if (d_peek_char (di) == 'v')
+	    /* T() encoded as an operand of void.  */
+	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
+				cplus_demangle_type (di));
+	  else
+	    args = 1;
 	  break;
 	}
 
@@ -2466,13 +2560,18 @@ d_expression (struct d_info *di)
 	case 2:
 	  {
 	    struct demangle_component *left;
+	    struct demangle_component *right;
 
 	    left = d_expression (di);
+	    if (!strcmp (op->u.s_operator.op->code, "cl"))
+	      right = d_exprlist (di);
+	    else
+	      right = d_expression (di);
+
 	    return d_make_comp (di, DEMANGLE_COMPONENT_BINARY, op,
 				d_make_comp (di,
 					     DEMANGLE_COMPONENT_BINARY_ARGS,
-					     left,
-					     d_expression (di)));
+					     left, right));
 	  }
 	case 3:
 	  {
@@ -3520,7 +3619,9 @@ d_print_comp (struct d_print_info *dpi,
 	  d_append_char (dpi, ')');
 	}
       d_append_char (dpi, '(');
-      d_print_comp (dpi, d_right (dc));
+      if (d_left (dc)->type != DEMANGLE_COMPONENT_CAST
+	  || d_right (dc)->type != DEMANGLE_COMPONENT_BUILTIN_TYPE)
+	d_print_comp (dpi, d_right (dc));
       d_append_char (dpi, ')');
       return;
 
@@ -3528,6 +3629,15 @@ d_print_comp (struct d_print_info *dpi,
       if (d_right (dc)->type != DEMANGLE_COMPONENT_BINARY_ARGS)
 	{
 	  d_print_error (dpi);
+	  return;
+	}
+
+      if (!strcmp (d_left (dc)->u.s_operator.op->code, "cl"))
+	{
+	  d_print_comp (dpi, d_left (d_right (dc)));
+	  d_append_string (dpi, " (");
+	  d_print_comp (dpi, d_right (d_right (dc)));
+	  d_append_char (dpi, ')');
 	  return;
 	}
 
@@ -3679,6 +3789,12 @@ d_print_comp (struct d_print_info *dpi,
 
     case DEMANGLE_COMPONENT_CHARACTER:
       d_append_char (dpi, dc->u.s_character.character);
+      return;
+
+    case DEMANGLE_COMPONENT_DECLTYPE:
+      d_append_string (dpi, "decltype (");
+      d_print_comp (dpi, d_left (dc));
+      d_append_char (dpi, ')');
       return;
 
     default:

@@ -1,3 +1,8 @@
+2008-09-09  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_DECLTYPE.
+
 2008-07-07  Joel Brobecker  <brobecker@adacore.com>
 
 	* safe-ctype.h: Add #include of ctype.h before redefining
