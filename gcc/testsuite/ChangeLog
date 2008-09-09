@@ -1,5 +1,8 @@
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37356
+	* g++.dg/tree-ssa/pr37356.C: New test.
+
 	PR target/37438
 	* gcc.dg/pr37438.c: New test.
 

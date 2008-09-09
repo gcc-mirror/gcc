@@ -1,4 +1,15 @@
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/37356
+	* tree-inline.c (copy_bb): Insert stmt into copy_basic_block before
+	calling gimple_regimplify_operands on it.  Iterate over all newly
+	added statements, not just the last one.
+	(insert_init_stmt): Insert stmt into seq first, then call
+	gimple_regimplify_operands on it.  Don't create new gimplification
+	context, nor find referenced vars.
+
+2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/37419
 	* ipa-prop.h (ipa_propagate_indirect_call_infos): Change last argument
