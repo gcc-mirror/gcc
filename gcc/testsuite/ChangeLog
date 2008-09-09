@@ -1,3 +1,8 @@
+2008-09-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/37435
+	* gcc.dg/dfp/pr37435.c: New.
+
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37417

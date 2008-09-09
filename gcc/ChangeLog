@@ -1,3 +1,9 @@
+2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/37435
+	* caller-save.c (insert_restore, insert_save): Check the mode by
+	reg_save_code.
+
 2008-09-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/37265
