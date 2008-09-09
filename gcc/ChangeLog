@@ -1,5 +1,11 @@
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/37433
+	* tree-ssa-ccp.c (ccp_fold): Properly guard folding of
+	function calls.
+
+2008-09-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37387
 	* tree-ssa-ifcombine.c (ifcombine_iforif): Convert the name
 	and bits to a common type.
