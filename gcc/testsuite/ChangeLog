@@ -6,6 +6,13 @@
 
 2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR/37442
+	* gcc.target/i386/pr12329.c: Place error message on function name
+	line.
+	* gcc.target/i386/sse-5.c: Same.
+
+2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
+
 	* gcc.dg/always_inline.c: Place error message on function
 	name line.
 	* gcc.dg/winline-6.c: Same.
