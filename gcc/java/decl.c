@@ -1694,10 +1694,6 @@ build_result_decl (tree fndecl)
   tree result = DECL_RESULT (fndecl);
   if (! result)
     {
-      /* To be compatible with C_PROMOTING_INTEGER_TYPE_P in cc1/cc1plus. */
-      if (INTEGRAL_TYPE_P (restype)
-	  && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
-	restype = integer_type_node;
       result = build_decl (RESULT_DECL, NULL_TREE, restype);
       DECL_ARTIFICIAL (result) = 1;
       DECL_IGNORED_P (result) = 1;
