@@ -1,3 +1,9 @@
+2008-09-09  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (is_edge_inconsistent): Add debug output; ignore negative count
+	on fake edges.
+	(is_inconsistent): Add debug output.
+
 2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	* haifa-sched.c (advance_one_cycle): Do not print '\n' before printing

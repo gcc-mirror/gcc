@@ -277,8 +277,20 @@ is_edge_inconsistent (VEC(edge,gc) *edges)
     {
       if (!EDGE_INFO (e)->ignore)
         {
-          if (e->count < 0)
-            return true;
+          if (e->count < 0
+	      && ((!e->flags & EDGE_FAKE)
+	          || !block_ends_with_call_p (e->src)))
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+		  	   "Edge %i->%i is inconsistent, count"HOST_WIDEST_INT_PRINT_DEC,
+			   e->src->index, e->dest->index, e->count);
+		  dump_bb (e->src, dump_file, 0);
+		  dump_bb (e->dest, dump_file, 0);
+		}
+              return true;
+	    }
         }
     }
   return false;
@@ -307,20 +319,59 @@ static bool
 is_inconsistent (void)
 {
   basic_block bb;
+  bool inconsistent = false;
   FOR_EACH_BB (bb)
     {
-      if (is_edge_inconsistent (bb->preds))
-        return true;
-      if (is_edge_inconsistent (bb->succs))
-        return true;
-      if ( bb->count != sum_edge_counts (bb->preds)
-         || (bb->count != sum_edge_counts (bb->succs) &&
-             !(find_edge (bb, EXIT_BLOCK_PTR) != NULL &&
-               block_ends_with_call_p (bb))))
-        return true;
+      inconsistent |= is_edge_inconsistent (bb->preds);
+      if (!dump_file && inconsistent)
+	return true;
+      inconsistent |= is_edge_inconsistent (bb->succs);
+      if (!dump_file && inconsistent)
+	return true;
+      if (bb->count < 0)
+        {
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "BB %i count is negative "
+		       HOST_WIDEST_INT_PRINT_DEC,
+		       bb->index,
+		       bb->count);
+	      dump_bb (bb, dump_file, 0);
+	    }
+	  inconsistent = true;
+	}
+      if (bb->count != sum_edge_counts (bb->preds))
+        {
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "BB %i count does not match sum of incomming edges "
+		       HOST_WIDEST_INT_PRINT_DEC" should be " HOST_WIDEST_INT_PRINT_DEC,
+		       bb->index,
+		       bb->count,
+		       sum_edge_counts (bb->preds));
+	      dump_bb (bb, dump_file, 0);
+	    }
+	  inconsistent = true;
+	}
+      if (bb->count != sum_edge_counts (bb->succs) &&
+          ! (find_edge (bb, EXIT_BLOCK_PTR) != NULL && block_ends_with_call_p (bb)))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "BB %i count does not match sum of outgoing edges "
+		       HOST_WIDEST_INT_PRINT_DEC" should be " HOST_WIDEST_INT_PRINT_DEC,
+		       bb->index,
+		       bb->count,
+		       sum_edge_counts (bb->succs));
+	      dump_bb (bb, dump_file, 0);
+	    }
+	  inconsistent = true;
+	}
+      if (!dump_file && inconsistent)
+	return true;
     }
 
-  return false;
+  return inconsistent;
 }
 
 /* Set each basic block count to the sum of its outgoing edge counts */
