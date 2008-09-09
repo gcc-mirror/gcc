@@ -1,3 +1,9 @@
+2008-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/abi.xml: Update for new releases.
+	* doc/doxygen/user.cfg.in: Include C compatibility headers.
+	* doc/html/*: Regenerate.
+	
 2008-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/cinttypes: Restore __STDC_FORMAT_MACROS after
