@@ -1210,7 +1210,7 @@ advance_one_cycle (void)
 {
   advance_state (curr_state);
   if (sched_verbose >= 6)
-    fprintf (sched_dump, "\n;;\tAdvanced a state.\n");
+    fprintf (sched_dump, ";;\tAdvanced a state.\n");
 }
 
 /* Clock at which the previous instruction was issued.  */
@@ -2326,9 +2326,10 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
 
       if (max_issue (ready, 1, curr_state, &index) == 0)
 	{
-	  if (sched_verbose >= 4)
-	    fprintf (sched_dump, ";;\t\tChosen none\n");
 	  *insn_ptr = ready_remove_first (ready);
+	  if (sched_verbose >= 4)
+	    fprintf (sched_dump, ";;\t\tChosen insn (but can't issue) : %s \n", 
+                     (*current_sched_info->print_insn) (*insn_ptr, 0));
 	  return 0;
 	}
       else

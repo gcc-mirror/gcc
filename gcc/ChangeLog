@@ -1,5 +1,12 @@
 2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
 
+	* haifa-sched.c (advance_one_cycle): Do not print '\n' before printing
+	dump message.
+	(choose_ready): When first insn is chosen from the ready list, also
+	dump it.
+
+2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
+
         PR rtl-optimization/37360
 	* haifa-sched.c (max_issue): Do not assert that we never issue more
 	insns than issue_rate.  Add comment.
