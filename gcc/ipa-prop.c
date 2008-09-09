@@ -890,12 +890,12 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
 /* Update the param called notes associated with NODE when CS is being inlined,
    assuming NODE is (potentially indirectly) inlined into CS->callee.
    Moreover, if the callee is discovered to be constant, create a new cgraph
-   edge for it.  Newly discovered indirect edges will be added to NEW_EDGES,
-   unless it is NULL.  */
+   edge for it.  Newly discovered indirect edges will be added to *NEW_EDGES,
+   unless NEW_EDGES is NULL.  */
 static void
 update_call_notes_after_inlining (struct cgraph_edge *cs,
 				  struct cgraph_node *node,
-				  VEC (cgraph_edge_p, heap) *new_edges)
+				  VEC (cgraph_edge_p, heap) **new_edges)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
   struct ipa_edge_args *top = IPA_EDGE_REF (cs);
@@ -949,7 +949,8 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 	  new_indirect_edge->indirect_call = 1;
 	  ipa_check_create_edge_args ();
 	  if (new_edges)
-	    VEC_safe_push (cgraph_edge_p, heap, new_edges, new_indirect_edge);
+	    VEC_safe_push (cgraph_edge_p, heap, *new_edges, new_indirect_edge);
+	  top = IPA_EDGE_REF (cs);
 	}
     }
 }
@@ -959,11 +960,11 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
    update_call_notes_after_inlining on all nodes and
    update_jump_functions_after_inlining on all non-inlined edges that lead out
    of this subtree.  Newly discovered indirect edges will be added to
-   NEW_EDGES, unless it is NULL.  */
+   *NEW_EDGES, unless NEW_EDGES is NULL.  */
 static void
 propagate_info_to_inlined_callees (struct cgraph_edge *cs,
 				   struct cgraph_node *node,
-				   VEC (cgraph_edge_p, heap) *new_edges)
+				   VEC (cgraph_edge_p, heap) **new_edges)
 {
   struct cgraph_edge *e;
 
@@ -979,10 +980,10 @@ propagate_info_to_inlined_callees (struct cgraph_edge *cs,
 /* Update jump functions and call note functions on inlining the call site CS.
    CS is expected to lead to a node already cloned by
    cgraph_clone_inline_nodes.  Newly discovered indirect edges will be added to
-   NEW_EDGES, unless it is NULL.  */
+   *NEW_EDGES, unless NEW_EDGES is NULL.  */
 void
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
-				   VEC (cgraph_edge_p, heap) *new_edges)
+				   VEC (cgraph_edge_p, heap) **new_edges)
 {
   propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
 }

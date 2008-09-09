@@ -1,5 +1,19 @@
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/37419
+	* ipa-prop.h (ipa_propagate_indirect_call_infos): Change last argument
+	to pointer to vector pointer.
+	* ipa-prop.c (ipa_propagate_indirect_call_infos,
+	propagate_info_to_inlined_callees): Likewise.
+	(update_call_notes_after_inlining): Likewise.  Push new indirect edge
+	to *new_edges instead of new_edges.  Reread IPA_EDGE_REF after
+	ipa_check_create_edge_args.
+	* ipa-inline.c (cgraph_decide_recursive_inlining): Change last argument
+	to pointer to vector pointer.
+	(cgraph_decide_inlining_of_small_function): Adjust
+	cgraph_decide_recursive_inlining and ipa_propagate_indirect_call_infos
+	calls.
+
 	PR target/37438
 	* config/i386/i386.md (zero_extendqihi2_movzbl): Enable when optimizing
 	for size, not speed.
