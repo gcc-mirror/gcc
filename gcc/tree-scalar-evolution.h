@@ -29,13 +29,23 @@ extern void scev_initialize (void);
 extern void scev_reset (void);
 extern void scev_finalize (void);
 extern tree analyze_scalar_evolution (struct loop *, tree);
-extern tree instantiate_scev (struct loop *, struct loop *, tree);
+extern tree instantiate_scev (basic_block, struct loop *, tree);
 extern tree resolve_mixers (struct loop *, tree);
 extern void gather_stats_on_scev_database (void);
 extern void scev_analysis (void);
 unsigned int scev_const_prop (void);
 
 extern bool simple_iv (struct loop *, gimple, tree, affine_iv *, bool);
+
+/* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the
+   loop is function's body.  */
+
+static inline basic_block
+block_before_loop (loop_p loop)
+{
+  edge preheader = loop_preheader_edge (loop);
+  return (preheader ? preheader->src : ENTRY_BLOCK_PTR);
+}
 
 /* Analyze all the parameters of the chrec that were left under a
    symbolic form.  LOOP is the loop in which symbolic names have to
@@ -44,7 +54,7 @@ extern bool simple_iv (struct loop *, gimple, tree, affine_iv *, bool);
 static inline tree
 instantiate_parameters (struct loop *loop, tree chrec)
 {
-  return instantiate_scev (loop, loop, chrec);
+  return instantiate_scev (block_before_loop (loop), loop, chrec);
 }
 
 /* Returns the loop of the polynomial chrec CHREC.  */

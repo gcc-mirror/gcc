@@ -1,3 +1,29 @@
+2008-09-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/37375
+	* tree-scalar-evolution.c (scev_info_str): Add field instantiated_below.
+	(new_scev_info_str, eq_scev_info, find_var_scev_info,
+	set_scalar_evolution, get_scalar_evolution, get_instantiated_value,
+	set_instantiated_value): Pass instantiated_below.
+	(analyze_scalar_evolution_1, analyze_scalar_evolution): Update calls to
+	above functions.
+	(instantiate_scev_1, instantiate_scev): Pass a basic block above which the
+	definitions are not instantiated.
+
+	* tree-scalar-evolution.h (instantiate_scev): Update declaration.
+	(block_before_loop): New.
+	* tree-data-ref.c (dr_analyze_indices): Update uses of instantiate_scev.
+	* graphite.c (block_before_scop): New.
+	(loop_affine_expr, stmt_simple_for_scop_p, harmful_stmt_in_bb): Pass a 
+	basic block, not a loop for determining the parameters.
+	(scopdet_edge_info, build_scops_1): Do not pass outermost loop in the
+	scop.
+	(idx_record_params, find_params_in_bb, find_scop_parameters,
+	build_loop_iteration_domains, add_conditions_to_domain): Update calls 
+	to instantiate_scev.
+
+	* Makefile.in (cfgloopmanip.o): Add missing dependency on TREE_FLOW_H.
+
 2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37333

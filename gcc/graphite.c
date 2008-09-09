@@ -717,16 +717,24 @@ outermost_loop_in_scop (scop_p scop, basic_block bb)
   return nest;
 }
 
+/* Returns the block preceding the entry of SCOP.  */
+
+static basic_block
+block_before_scop (scop_p scop)
+{
+  return SESE_ENTRY (SCOP_REGION (scop))->src;
+}
+
 /* Return true when EXPR is an affine function in LOOP with parameters
-   instantiated relative to outermost_loop.  */
+   instantiated relative to SCOP_ENTRY.  */
 
 static bool
-loop_affine_expr (struct loop *outermost_loop, struct loop *loop, tree expr)
+loop_affine_expr (basic_block scop_entry, struct loop *loop, tree expr)
 {
-  int n = outermost_loop->num;
+  int n = scop_entry->loop_father->num;
   tree scev = analyze_scalar_evolution (loop, expr);
 
-  scev = instantiate_scev (outermost_loop, loop, scev);
+  scev = instantiate_scev (scop_entry, loop, scev);
 
   return (evolution_function_is_invariant_p (scev, n)
 	  || evolution_function_is_affine_multivariate_p (scev, n));
@@ -751,11 +759,11 @@ is_simple_operand (loop_p loop, gimple stmt, tree op)
 }
 
 /* Return true only when STMT is simple enough for being handled by
-   Graphite.  This depends on OUTERMOST_LOOP, as the parametetrs are
-   initialized relative to this loop.  */
+   Graphite.  This depends on SCOP_ENTRY, as the parametetrs are
+   initialized relatively to this basic block.  */
 
 static bool
-stmt_simple_for_scop_p (struct loop *outermost_loop, gimple stmt)
+stmt_simple_for_scop_p (basic_block scop_entry, gimple stmt)
 {
   basic_block bb = gimple_bb (stmt);
   struct loop *loop = bb->loop_father;
@@ -791,11 +799,11 @@ stmt_simple_for_scop_p (struct loop *outermost_loop, gimple stmt)
 	      || code == GE_EXPR))
           return false;
 
-	if (!outermost_loop)
+	if (!scop_entry)
 	  return false;
 
 	FOR_EACH_SSA_TREE_OPERAND (op, stmt, op_iter, SSA_OP_ALL_USES)
-	  if (!loop_affine_expr (outermost_loop, loop, op))
+	  if (!loop_affine_expr (scop_entry, loop, op))
 	    return false;
 
 	return true;
@@ -850,18 +858,17 @@ stmt_simple_for_scop_p (struct loop *outermost_loop, gimple stmt)
 }
 
 /* Returns the statement of BB that contains a harmful operation: that
-   can be a function call with side effects, data dependences that
-   cannot be computed in OUTERMOST_LOOP, the induction variables are
-   not linear with respect to OUTERMOST_LOOP, etc.  The current open
+   can be a function call with side effects, the induction variables
+   are not linear with respect to SCOP_ENTRY, etc.  The current open
    scop should end before this statement.  */
 
 static gimple
-harmful_stmt_in_bb (struct loop *outermost_loop, basic_block bb)
+harmful_stmt_in_bb (basic_block scop_entry, basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!stmt_simple_for_scop_p (outermost_loop, gsi_stmt (gsi)))
+    if (!stmt_simple_for_scop_p (scop_entry, gsi_stmt (gsi)))
       return gsi_stmt (gsi);
 
   return NULL;
@@ -1048,20 +1055,28 @@ struct scopdet_info
 };
 
 static struct scopdet_info build_scops_1 (edge, VEC (scop_p, heap) **,
-                                          loop_p, loop_p);
+                                          loop_p);
 
 /* Checks, if a bb can be added to a SCoP.  */
 
 static struct scopdet_info 
-scopdet_edge_info (edge ee, loop_p outermost_loop,
+scopdet_edge_info (edge ee,
 		   VEC (scop_p, heap) **scops, gbb_type type, gimple *stmt)
 	       
 {
   basic_block bb = ee->dest;
   struct loop *loop = bb->loop_father;
   struct scopdet_info result;
+  basic_block scop_entry;
 
-  *stmt = harmful_stmt_in_bb (outermost_loop, bb);
+  if (VEC_length (scop_p, *scops) != 0)
+    scop_entry = block_before_scop (VEC_last (scop_p, *scops));
+  else if (loop->header)
+    scop_entry = loop->header;
+  else
+    scop_entry = ENTRY_BLOCK_PTR;
+
+  *stmt = harmful_stmt_in_bb (scop_entry, bb);
   result.difficult = (*stmt != NULL);
   result.last = NULL;
 
@@ -1084,7 +1099,7 @@ scopdet_edge_info (edge ee, loop_p outermost_loop,
         VEC (scop_p, heap) *tmp_scops = VEC_alloc (scop_p, heap, 3);
         struct scopdet_info sinfo;
 
-        sinfo = build_scops_1 (ee, &tmp_scops, loop, outermost_loop);
+        sinfo = build_scops_1 (ee, &tmp_scops, loop);
 
         result.last = single_exit (bb->loop_father);
 
@@ -1117,20 +1132,18 @@ scopdet_edge_info (edge ee, loop_p outermost_loop,
     case GBB_LOOP_MULT_EXIT_HEADER:
       {
         /* XXX: Handle loop nests with the same header.  */
-        /* XXX: Handle iterative optimization of outermost_loop.  */
         /* XXX: For now we just do not join loops with multiple exits. If the 
            exits lead to the same bb it may be possible to join the loop.  */
         VEC (scop_p, heap) *tmp_scops = VEC_alloc (scop_p, heap, 3);
         VEC (edge, heap) *exits = get_loop_exit_edges (loop);
         edge e;
         int i;
-        build_scops_1 (ee, &tmp_scops, loop, outermost_loop);
+        build_scops_1 (ee, &tmp_scops, loop);
 
         for (i = 0; VEC_iterate (edge, exits, i, e); i++)
           if (dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
               && e->dest->loop_father == loop_outer (loop))
-            build_scops_1 (e, &tmp_scops, e->dest->loop_father,
-                           outermost_loop);
+            build_scops_1 (e, &tmp_scops, e->dest->loop_father);
 
         result.next = NULL; 
         result.last = NULL;
@@ -1199,7 +1212,7 @@ scopdet_edge_info (edge ee, loop_p outermost_loop,
 		continue;
 	      }
 
-	    sinfo = build_scops_1 (e, &tmp_scops, loop, outermost_loop);
+	    sinfo = build_scops_1 (e, &tmp_scops, loop);
 
 	    result.exits |= sinfo.exits;
 	    result.last = sinfo.last;
@@ -1261,10 +1274,9 @@ scopdet_edge_info (edge ee, loop_p outermost_loop,
 	      e = split_block (dom_bb, NULL);
 
 	    if (loop_depth (loop) > loop_depth (dom_bb->loop_father))
-	      sinfo = build_scops_1 (e, &tmp_scops, loop_outer (loop),
-				     outermost_loop);
+	      sinfo = build_scops_1 (e, &tmp_scops, loop_outer (loop));
 	    else
-	      sinfo = build_scops_1 (e, &tmp_scops, loop, outermost_loop);
+	      sinfo = build_scops_1 (e, &tmp_scops, loop);
                                            
                                      
 	    result.exits |= sinfo.exits; 
@@ -1335,8 +1347,7 @@ end_scop (scop_p scop, edge exit, bool split_entry)
 /* Creates the SCoPs and writes entry and exit points for every SCoP.  */
 
 static struct scopdet_info 
-build_scops_1 (edge start, VEC (scop_p, heap) **scops, loop_p loop,
-	       loop_p outermost_loop)
+build_scops_1 (edge start, VEC (scop_p, heap) **scops, loop_p loop)
 {
   edge current = start;
 
@@ -1357,7 +1368,7 @@ build_scops_1 (edge start, VEC (scop_p, heap) **scops, loop_p loop,
      and can only be added if all bbs in deeper layers are simple.  */
   while (current != NULL)
     {
-      sinfo = scopdet_edge_info (current, outermost_loop, scops,
+      sinfo = scopdet_edge_info (current, scops,
 				 get_bb_type (current->dest, loop), &stmt);
 
       if (!in_scop && !(sinfo.exits || sinfo.difficult))
@@ -1433,7 +1444,7 @@ static void
 build_scops (void)
 {
   struct loop *loop = current_loops->tree_root;
-  build_scops_1 (single_succ_edge (ENTRY_BLOCK_PTR), &current_scops, loop, loop);
+  build_scops_1 (single_succ_edge (ENTRY_BLOCK_PTR), &current_scops, loop);
 }
 
 /* Gather the basic blocks belonging to the SCOP.  */
@@ -1895,19 +1906,15 @@ idx_record_params (tree base, tree *idx, void *dta)
       tree scev;
       scop_p scop = data->scop;
       struct loop *loop = data->loop;
+      Value one;
 
       scev = analyze_scalar_evolution (loop, *idx);
-      scev = instantiate_scev (outermost_loop_in_scop (scop, loop->header),
-			       loop, scev);
+      scev = instantiate_scev (block_before_scop (scop), loop, scev);
 
-      {
-	Value one;
-
-	value_init (one);
-	value_set_si (one, 1);
-	scan_tree_for_params (scop, scev, NULL, 0, one, false);
-	value_clear (one);
-      }
+      value_init (one);
+      value_set_si (one, 1);
+      scan_tree_for_params (scop, scev, NULL, 0, one, false);
+      value_clear (one);
     }
 
   return true;
@@ -1957,11 +1964,11 @@ find_params_in_bb (scop_p scop, basic_block bb)
           
           lhs = gimple_cond_lhs (stmt);
           lhs = analyze_scalar_evolution (loop, lhs);
-          lhs = instantiate_scev (nest, loop, lhs);
+          lhs = instantiate_scev (block_before_scop (scop), loop, lhs);
 
           rhs = gimple_cond_rhs (stmt);
           rhs = analyze_scalar_evolution (loop, rhs);
-          rhs = instantiate_scev (nest, loop, rhs);
+          rhs = instantiate_scev (block_before_scop (scop), loop, rhs);
 
           value_init (one);
           scan_tree_for_params (scop, lhs, NULL, 0, one, false);
@@ -2081,8 +2088,7 @@ find_scop_parameters (scop_p scop)
 	continue;
 
       nb_iters = analyze_scalar_evolution (loop, nb_iters);
-      nb_iters = instantiate_scev (outermost_loop_in_scop (scop, loop->header),
-				   loop, nb_iters);
+      nb_iters = instantiate_scev (block_before_scop (scop), loop, nb_iters);
       scan_tree_for_params (scop, nb_iters, NULL, 0, one, false);
     }
 
@@ -2209,10 +2215,10 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
       row++;
       value_set_si (cstr->p[row][0], 1);
       value_set_si (cstr->p[row][loop_col], -1);
+
       nb_iters = analyze_scalar_evolution (loop, nb_iters);
-      nb_iters = 
-        instantiate_scev (outermost_loop_in_scop (scop, loop->header),
-			  loop, nb_iters);
+      nb_iters = instantiate_scev (block_before_scop (scop), loop, nb_iters);
+
       value_init (one);
       value_set_si (one, 1);
       scan_tree_for_params (scop, nb_iters, cstr, row, one, false);
@@ -2333,15 +2339,15 @@ add_conditions_to_domain (graphite_bb_p gb)
             tree left;
             tree right;
             loop_p loop = GBB_BB (gb)->loop_father;
-            loop_p outermost = outermost_loop_in_scop (scop, GBB_BB (gb));
 
             left = gimple_cond_lhs (stmt);
             right = gimple_cond_rhs (stmt);
 
             left = analyze_scalar_evolution (loop, left);
             right = analyze_scalar_evolution (loop, right);
-            left = instantiate_scev (outermost, loop, left);
-            right = instantiate_scev (outermost, loop, right);
+
+            left = instantiate_scev (block_before_scop (scop), loop, left);
+            right = instantiate_scev (block_before_scop (scop), loop, right);
 
             code = gimple_cond_code (stmt);
 
@@ -3974,13 +3980,13 @@ gbb_can_be_ignored (graphite_bb_p gb)
              XXX: Just a heuristic, that needs further investigation.  */
           case GIMPLE_ASSIGN:
 	    {
-	      tree var =  gimple_assign_lhs (stmt);
+	      tree var = gimple_assign_lhs (stmt);
 	      var = analyze_scalar_evolution (loop, var);
-	      var = instantiate_scev (outermost_loop_in_scop (scop,
-							      GBB_BB (gb)),
-				      loop, var);
+	      var = instantiate_scev (block_before_scop (scop), loop, var);
+
 	      if (TREE_CODE (var) == SCEV_NOT_KNOWN)
 		return false;
+
 	      break;
 	    }
           /* Otherwise not ignoreable.  */
