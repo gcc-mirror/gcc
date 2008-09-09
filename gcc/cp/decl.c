@@ -11143,21 +11143,26 @@ build_enumerator (tree name, tree value, tree enumtype)
 	      tree prev_value;
 	      bool overflowed;
 
-	      /* The next value is the previous value plus one.  We can
-		 safely assume that the previous value is an INTEGER_CST.
+	      /* The next value is the previous value plus one.
 		 add_double doesn't know the type of the target expression,
 		 so we must check with int_fits_type_p as well.  */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
-	      overflowed = add_double (TREE_INT_CST_LOW (prev_value),
-				       TREE_INT_CST_HIGH (prev_value),
-				       1, 0, &lo, &hi);
-	      value = build_int_cst_wide (TREE_TYPE (prev_value), lo, hi);
-	      overflowed |= !int_fits_type_p (value, TREE_TYPE (prev_value));
-
-	      if (overflowed)
+	      if (error_operand_p (prev_value))
+		value = error_mark_node;
+	      else
 		{
-		  error ("overflow in enumeration values at %qD", name);
-		  value = error_mark_node;
+		  overflowed = add_double (TREE_INT_CST_LOW (prev_value),
+					   TREE_INT_CST_HIGH (prev_value),
+					   1, 0, &lo, &hi);
+		  value = build_int_cst_wide (TREE_TYPE (prev_value), lo, hi);
+		  overflowed
+		    |= !int_fits_type_p (value, TREE_TYPE (prev_value));
+
+		  if (overflowed)
+		    {
+		      error ("overflow in enumeration values at %qD", name);
+		      value = error_mark_node;
+		    }
 		}
 	    }
 	  else
@@ -11181,8 +11186,6 @@ build_enumerator (tree name, tree value, tree enumtype)
           /* Silently convert the value so that we can continue.  */
           value = perform_implicit_conversion (ENUM_UNDERLYING_TYPE (enumtype),
                                                value, tf_none);
-          if (value == error_mark_node)
-            value = NULL_TREE;
         }
     }
 
