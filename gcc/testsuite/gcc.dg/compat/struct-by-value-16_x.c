@@ -4,6 +4,7 @@
 #include "fp-struct-check.h"
 #include "fp-struct-test-by-value-x.h"
 
+#ifndef SKIP_COMPLEX
 DEFS(cf, _Complex float)
 CHECKS(cf, _Complex float)
 
@@ -19,7 +20,7 @@ TEST(Scf9, _Complex float)
 TEST(Scf10, _Complex float)
 TEST(Scf11, _Complex float)
 TEST(Scf12, _Complex float)
-
+#endif
 
 #undef T
 
@@ -30,6 +31,7 @@ DEBUG_INIT
 
 #define T(TYPE, MTYPE) testit##TYPE ();
 
+#ifndef SKIP_COMPLEX
 T(Scf1, _Complex float)
 T(Scf2, _Complex float)
 T(Scf3, _Complex float)
@@ -42,7 +44,7 @@ T(Scf9, _Complex float)
 T(Scf10, _Complex float)
 T(Scf11, _Complex float)
 T(Scf12, _Complex float)
-
+#endif
 
 DEBUG_FINI
 

@@ -1,5 +1,14 @@
 extern void abort (void);
 
+#ifdef __GNUC__
+#define va_list __builtin_va_list
+#define va_start __builtin_va_start
+#define va_arg __builtin_va_arg
+#define va_end __builtin_va_end
+#else
+#include <stdarg.h>
+#endif
+
 #if USE_MEMCMP
 /* For comparing vectors.  */
 #define TEST_FUNCS(NAME, TYPE, PADT, VAL, VAL2) \
@@ -115,22 +124,22 @@ void NAME##_f9 (PADT z0, PADT z1, PADT z2, PADT z3, PADT z4, PADT z5,	\
 									\
 void NAME##_fv (int n, ...)						\
 {									\
-  __builtin_va_list ap;							\
+  va_list ap;								\
   TYPE x;								\
-  __builtin_va_start (ap, n);						\
+  va_start (ap, n);							\
 									\
   while (n-- != 0)							\
-    if (__builtin_va_arg (ap, PADT) != (PADT) 0)			\
+    if (va_arg (ap, PADT) != (PADT) 0)					\
       abort ();								\
 									\
-  x = __builtin_va_arg (ap, TYPE);					\
+  x = va_arg (ap, TYPE);						\
   if (memcmp (&x, &VAL, sizeof (x)) != 0 )				\
     abort ();								\
 									\
-  if (__builtin_va_arg (ap, PADT) != VAL2)				\
+  if (va_arg (ap, PADT) != VAL2)					\
     abort ();								\
 									\
-  __builtin_va_end (ap);						\
+  va_end (ap);								\
 }
 
 #else
@@ -248,21 +257,21 @@ void NAME##_f9 (PADT z0, PADT z1, PADT z2, PADT z3, PADT z4, PADT z5,	\
 									\
 void NAME##_fv (int n, ...)						\
 {									\
-  __builtin_va_list ap;							\
+  va_list ap;								\
 									\
-  __builtin_va_start (ap, n);						\
+  va_start (ap, n);							\
 									\
   while (n-- != 0)							\
-    if (__builtin_va_arg (ap, PADT) != (PADT) 0)			\
+    if (va_arg (ap, PADT) != (PADT) 0)					\
       abort ();								\
 									\
-  if (__builtin_va_arg (ap, TYPE) != VAL)				\
+  if (va_arg (ap, TYPE) != VAL)						\
     abort ();								\
 									\
-  if (__builtin_va_arg (ap, PADT) != VAL2)				\
+  if (va_arg (ap, PADT) != VAL2)					\
     abort ();								\
 									\
-  __builtin_va_end (ap);						\
+  va_end (ap);								\
 }
 
 #endif

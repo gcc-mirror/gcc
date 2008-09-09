@@ -9,6 +9,7 @@ const int test_va = 0;
 const int test_va = 1;
 #endif
 
+#ifndef SKIP_VLA_IN_STRUCT
 #define T(NAME, FIELDS, TYPE, FIELDINIT, FIELDTEST)			\
 void									\
 testva##NAME (int n, ...)						\
@@ -37,3 +38,4 @@ testva##NAME (int n, ...)						\
 }
 
 #include "struct-by-value-22_x.c"
+#endif

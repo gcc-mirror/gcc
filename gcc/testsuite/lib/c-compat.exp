@@ -65,18 +65,18 @@ proc compat_setup_dfp { } {
     global compat_have_dfp
 
     verbose "compat_setup_dfp: $compat_use_alt $compat_same_alt" 2
-    set compat_have_dfp 1
+
+    # Does the compiler under test support decimal float types?
+    compat-use-tst-compiler
+    set compat_have_dfp [check_effective_target_dfprt_nocache]
+    verbose "compat_have_dfp for tst compiler: $compat_have_dfp" 2
+
     # If there is an alternate compiler, does it support decimal float types?
-    if { $compat_use_alt == 1 && $compat_same_alt == 0 } {
+    if { $compat_have_dfp == 1 && $compat_use_alt == 1 && $compat_same_alt == 0 } {
 	compat-use-alt-compiler
 	set compat_have_dfp [check_effective_target_dfprt_nocache]
 	compat-use-tst-compiler
 	verbose "compat_have_dfp for alt compiler: $compat_have_dfp" 2
-    }
-    # Does the compiler under test support it?
-    if { $compat_have_dfp == 1 } {
-	set compat_have_dfp [check_effective_target_dfprt_nocache]
-	verbose "compat_have_dfp for tst compiler: $compat_have_dfp" 2
     }
 
     # If decimal float is not supported, add it to the skip list, which

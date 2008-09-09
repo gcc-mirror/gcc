@@ -214,9 +214,11 @@ typedef _Decimal32 TDecimal32;
 typedef _Decimal64 TDecimal64;
 typedef _Decimal128 TDecimal128;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tcfloat;
 typedef _Complex double Tcdouble;
 typedef _Complex long double Tcldouble;
+#endif
 typedef bool Tbool;
 typedef enum E0 TE0;
 typedef enum E1 TE1;
@@ -263,9 +265,11 @@ typedef _Decimal32 TalDecimal32 atal;
 typedef _Decimal64 TalDecimal64 atal;
 typedef _Decimal128 TalDecimal128 atal;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Talcfloat atal;
 typedef _Complex double Talcdouble atal;
 typedef _Complex long double Talcldouble atal;
+#endif
 typedef bool Talbool atal;
 typedef enum E0 TalE0 atal;
 typedef enum E1 TalE1 atal;
@@ -312,9 +316,11 @@ typedef _Decimal32 Tal1Decimal32 atal1;
 typedef _Decimal64 Tal1Decimal64 atal1;
 typedef _Decimal128 Tal1Decimal128 atal1;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tal1cfloat atal1;
 typedef _Complex double Tal1cdouble atal1;
 typedef _Complex long double Tal1cldouble atal1;
+#endif
 typedef bool Tal1bool atal1;
 typedef enum E0 Tal1E0 atal1;
 typedef enum E1 Tal1E1 atal1;
@@ -361,9 +367,11 @@ typedef _Decimal32 Tal2Decimal32 atal2;
 typedef _Decimal64 Tal2Decimal64 atal2;
 typedef _Decimal128 Tal2Decimal128 atal2;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tal2cfloat atal2;
 typedef _Complex double Tal2cdouble atal2;
 typedef _Complex long double Tal2cldouble atal2;
+#endif
 typedef bool Tal2bool atal2;
 typedef enum E0 Tal2E0 atal2;
 typedef enum E1 Tal2E1 atal2;
@@ -410,9 +418,11 @@ typedef _Decimal32 Tal4Decimal32 atal4;
 typedef _Decimal64 Tal4Decimal64 atal4;
 typedef _Decimal128 Tal4Decimal128 atal4;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tal4cfloat atal4;
 typedef _Complex double Tal4cdouble atal4;
 typedef _Complex long double Tal4cldouble atal4;
+#endif
 typedef bool Tal4bool atal4;
 typedef enum E0 Tal4E0 atal4;
 typedef enum E1 Tal4E1 atal4;
@@ -459,9 +469,11 @@ typedef _Decimal32 Tal8Decimal32 atal8;
 typedef _Decimal64 Tal8Decimal64 atal8;
 typedef _Decimal128 Tal8Decimal128 atal8;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tal8cfloat atal8;
 typedef _Complex double Tal8cdouble atal8;
 typedef _Complex long double Tal8cldouble atal8;
+#endif
 typedef bool Tal8bool atal8;
 typedef enum E0 Tal8E0 atal8;
 typedef enum E1 Tal8E1 atal8;
@@ -508,9 +520,11 @@ typedef _Decimal32 Tal16Decimal32 atal16;
 typedef _Decimal64 Tal16Decimal64 atal16;
 typedef _Decimal128 Tal16Decimal128 atal16;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Tal16cfloat atal16;
 typedef _Complex double Tal16cdouble atal16;
 typedef _Complex long double Tal16cldouble atal16;
+#endif
 typedef bool Tal16bool atal16;
 typedef enum E0 Tal16E0 atal16;
 typedef enum E1 Tal16E1 atal16;
@@ -557,9 +571,11 @@ typedef _Decimal32 Talx1Decimal32 atalx1;
 typedef _Decimal64 Talx1Decimal64 atalx1;
 typedef _Decimal128 Talx1Decimal128 atalx1;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Talx1cfloat atalx1;
 typedef _Complex double Talx1cdouble atalx1;
 typedef _Complex long double Talx1cldouble atalx1;
+#endif
 typedef bool Talx1bool atalx1;
 typedef enum E0 Talx1E0 atalx1;
 typedef enum E1 Talx1E1 atalx1;
@@ -603,9 +619,11 @@ typedef _Decimal32 Talx2Decimal32 atalx2;
 typedef _Decimal64 Talx2Decimal64 atalx2;
 typedef _Decimal128 Talx2Decimal128 atalx2;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Talx2cfloat atalx2;
 typedef _Complex double Talx2cdouble atalx2;
 typedef _Complex long double Talx2cldouble atalx2;
+#endif
 typedef enum E0 Talx2E0 atalx2;
 typedef enum E1 Talx2E1 atalx2;
 typedef enum E2 Talx2E2 atalx2;
@@ -643,9 +661,11 @@ typedef _Decimal32 Talx4Decimal32 atalx4;
 typedef _Decimal64 Talx4Decimal64 atalx4;
 typedef _Decimal128 Talx4Decimal128 atalx4;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Talx4cfloat atalx4;
 typedef _Complex double Talx4cdouble atalx4;
 typedef _Complex long double Talx4cldouble atalx4;
+#endif
 typedef enum E0 Talx4E0 atalx4;
 typedef enum E1 Talx4E1 atalx4;
 typedef enum E2 Talx4E2 atalx4;
@@ -677,9 +697,11 @@ typedef long double Talx8ldouble atalx8;
 typedef _Decimal64 Talx8Decimal64 atalx8;
 typedef _Decimal128 Talx8Decimal128 atalx8;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex float Talx8cfloat atalx8;
 typedef _Complex double Talx8cdouble atalx8;
 typedef _Complex long double Talx8cldouble atalx8;
+#endif
 typedef void *Taly8ptr ataly8;
 typedef char *Taly8cptr ataly8;
 typedef int *Taly8iptr ataly8;
@@ -689,8 +711,10 @@ typedef _Complex unsigned long int Taly16culong ataly16;
 typedef _Complex long long int Talx16cllong atalx16;
 typedef _Complex unsigned long long int Talx16cullong atalx16;
 #endif
+#ifndef SKIP_COMPLEX
 typedef _Complex double Talx16cdouble atalx16;
 typedef _Complex long double Talx16cldouble atalx16;
+#endif
 typedef int (*Tfnptr) (void);
 
 /* Bitfield macros.  In C, it is invalid to use numbers larger

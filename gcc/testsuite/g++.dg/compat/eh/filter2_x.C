@@ -1,6 +1,8 @@
 #include <exception>
 #include <cstdlib>
 
+extern "C" void abort (void);
+
 extern void my_terminate (void);
 extern void ex_test (void);
 

@@ -12,6 +12,7 @@ const int test_va = 1;
 #include "fp-struct-init.h"
 #include "fp-struct-test-by-value-y.h"
 
+#ifndef SKIP_COMPLEX
 DEFS(cd,_Complex double)
 INITS(cd, _Complex double)
 
@@ -27,4 +28,4 @@ TEST(Scd9, _Complex double)
 TEST(Scd10, _Complex double)
 TEST(Scd11, _Complex double)
 TEST(Scd12, _Complex double)
-
+#endif
