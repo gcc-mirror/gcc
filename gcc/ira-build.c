@@ -443,7 +443,7 @@ ira_create_allocno (int regno, bool cap_p, ira_loop_tree_node_t loop_tree_node)
   COPY_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a), ira_no_alloc_regs);
   COPY_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), ira_no_alloc_regs);
   ALLOCNO_NREFS (a) = 0;
-  ALLOCNO_FREQ (a) = 1;
+  ALLOCNO_FREQ (a) = 0;
   ALLOCNO_HARD_REGNO (a) = -1;
   ALLOCNO_CALL_FREQ (a) = 0;
   ALLOCNO_CALLS_CROSSED_NUM (a) = 0;

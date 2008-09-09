@@ -1,5 +1,14 @@
 2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-opt/37333
+	
+	* ira-build.c (ira_create_allocno): Setup frequency to 0.
+
+	* ira-color.c (update_conflict_hard_regno_costs): Remove assert.
+	Check zero freq and increase if necessary.
+
+2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* ira-conflicts.c (process_regs_for_copy): Check that the hard
 	regno is in the right range.  Add comments.
 
