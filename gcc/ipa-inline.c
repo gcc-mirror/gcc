@@ -646,11 +646,12 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
 
 /* Decide on recursive inlining: in the case function has recursive calls,
    inline until body size reaches given argument.  If any new indirect edges
-   are discovered in the process, add them to NEW_EDGES, unless it is NULL.  */
+   are discovered in the process, add them to *NEW_EDGES, unless NEW_EDGES
+   is NULL.  */
 
 static bool
 cgraph_decide_recursive_inlining (struct cgraph_node *node,
-				  VEC (cgraph_edge_p, heap) *new_edges)
+				  VEC (cgraph_edge_p, heap) **new_edges)
 {
   int limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE_AUTO);
   int max_depth = PARAM_VALUE (PARAM_MAX_INLINE_RECURSIVE_DEPTH_AUTO);
@@ -980,7 +981,9 @@ cgraph_decide_inlining_of_small_functions (void)
 	  where = edge->caller;
 	  if (where->global.inlined_to)
 	    where = where->global.inlined_to;
-	  if (!cgraph_decide_recursive_inlining (where, new_indirect_edges))
+	  if (!cgraph_decide_recursive_inlining (where,
+						 flag_indirect_inlining
+						 ? &new_indirect_edges : NULL))
 	    continue;
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
@@ -1002,7 +1005,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	  cgraph_mark_inline_edge (edge, true);
 	  if (flag_indirect_inlining)
 	    {
-	      ipa_propagate_indirect_call_infos (edge, new_indirect_edges);
+	      ipa_propagate_indirect_call_infos (edge, &new_indirect_edges);
 	      add_new_edges_to_heap (heap, new_indirect_edges);
 	    }
 	  update_callee_keys (heap, callee, updated_nodes);

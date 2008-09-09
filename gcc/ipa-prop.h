@@ -378,7 +378,7 @@ void ipa_create_param_decls_array (struct cgraph_node *);
 void ipa_detect_param_modifications (struct cgraph_node *);
 void ipa_analyze_params_uses (struct cgraph_node *);
 void ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
-					VEC (cgraph_edge_p, heap) *new_edges);
+					VEC (cgraph_edge_p, heap) **new_edges);
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);
