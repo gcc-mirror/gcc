@@ -429,16 +429,6 @@ add_decl_expr (tree decl)
   add_stmt (r);
 }
 
-/* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
-   flag for this because "A union for which objects or pointers are
-   declared is not an anonymous union" [class.union].  */
-
-int
-anon_aggr_type_p (const_tree node)
-{
-  return ANON_AGGR_TYPE_P (node);
-}
-
 /* Finish a scope.  */
 
 tree

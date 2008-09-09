@@ -1,3 +1,17 @@
+2008-09-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (c_expand_decl): Remove.
+	* c-common.h (anon_aggr_type_p): Remove prototype.
+	(DECL_ANON_UNION_ELEMS): Remove.
+	* c-objc-common.h (LANG_HOOKS_EXPAND_DECL): Remove.
+	* c-decl.c (anon_aggr_type_p): Remove.
+	* langhooks-def.h (LANG_HOOKS_EXPAND_DECL): Remove.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_EXPAND_DECL.
+	* langhooks.h (struct lang_hooks): Remove expand_decl.
+	* langhooks.c (lhd_expand_decl): Remove.
+	* stmt.c (expand_anon_union_decl): Remove.
+	* tree.h (expand_anon_union_decl): Remove prototype.
+
 2008-08-09  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/36609

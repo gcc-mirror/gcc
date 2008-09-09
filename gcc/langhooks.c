@@ -227,18 +227,6 @@ lhd_expand_expr (tree ARG_UNUSED (t), rtx ARG_UNUSED (r),
   gcc_unreachable ();
 }
 
-/* The default language-specific function for expanding a decl.  After
-   the language-independent cases are handled, this function will be
-   called.  If this function is not defined, it is assumed that
-   declarations other than those for variables and labels do not require
-   any RTL generation.  */
-
-int
-lhd_expand_decl (tree ARG_UNUSED (t))
-{
-  return 0;
-}
-
 /* This is the default decl_printable_name function.  */
 
 const char *

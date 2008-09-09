@@ -175,9 +175,6 @@ framework extensions, you must include this file before toplev.h, not after.
      to which the vptr should be initialized.  Use get_vtbl_decl_for_binfo
      to extract the VAR_DECL for the complete vtable.
 
-   DECL_ARGUMENTS
-     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.
-
    DECL_VINDEX
      This field is NULL for a non-virtual function.  For a virtual
      function, it is eventually set to an INTEGER_CST indicating the
