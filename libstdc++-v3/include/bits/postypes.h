@@ -46,18 +46,30 @@
 
 #include <cwchar> // For mbstate_t
 
-// XXX If <stdint.h> is really needed, make sure to define the macros,
-// in order not to break <tr1/cstdint> (and <cstdint> in C++0x).
-// Reconsider all this as soon as possible...
+// XXX If <stdint.h> is really needed, make sure to define the macros
+// before including it, in order not to break <tr1/cstdint> (and <cstdint>
+// in C++0x).  Reconsider all this as soon as possible...
 #if (defined(_GLIBCXX_HAVE_INT64_T) && !defined(_GLIBCXX_HAVE_INT64_T_LONG) \
      && !defined(_GLIBCXX_HAVE_INT64_T_LONG_LONG))
+
 #ifndef __STDC_LIMIT_MACROS
+# define _UNDEF__STDC_LIMIT_MACROS
 # define __STDC_LIMIT_MACROS
 #endif
 #ifndef __STDC_CONSTANT_MACROS
+# define _UNDEF__STDC_CONSTANT_MACROS
 # define __STDC_CONSTANT_MACROS
 #endif
 #include <stdint.h> // For int64_t
+#ifdef _UNDEF__STDC_LIMIT_MACROS
+# undef __STDC_LIMIT_MACROS
+# undef _UNDEF__STDC_LIMIT_MACROS
+#endif
+#ifdef _UNDEF__STDC_CONSTANT_MACROS
+# undef __STDC_CONSTANT_MACROS
+# undef _UNDEF__STDC_CONSTANT_MACROS
+#endif
+
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

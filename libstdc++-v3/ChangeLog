@@ -1,3 +1,11 @@
+2008-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/cinttypes: Restore __STDC_FORMAT_MACRO after
+	inclusion of <inttypes.h>.
+	* include/tr1_impl/cstdint: Likewise for __STDC_LIMIT_MACROS and
+	__STDC_CONSTANT_MACROS after <stdint.h>.
+	* include/bits/postypes.h: Likewise.
+
 2008-09-09  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4 (GLIBCXX_CHECK_STANDARD_LAYOUT): Fix compile check
