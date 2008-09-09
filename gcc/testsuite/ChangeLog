@@ -1,5 +1,8 @@
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/37417
+	* g++.dg/ext/vla5.C: New test.
+
 	PR middle-end/37356
 	* g++.dg/tree-ssa/pr37356.C: New test.
 
