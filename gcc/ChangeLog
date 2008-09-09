@@ -1,5 +1,9 @@
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/37438
+	* config/i386/i386.md (zero_extendqihi2_movzbl): Enable when optimizing
+	for size, not speed.
+
 	PR rtl-optimization/37408
 	* function.c (assign_parm_find_stack_rtl): Set correct MEM_SIZE
 	if parm is promoted.
