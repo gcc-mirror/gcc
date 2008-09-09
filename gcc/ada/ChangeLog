@@ -1,3 +1,17 @@
+2008-09-09  Arnaud Charlet  <charlet@adacore.com>
+	    Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+       * gcc-interface/Makefile.in: Switch VxWorks to s-interr-hwint.adb.
+
+       * s-interr-vxworks.adb: Renamed to s-interr-hwint.adb
+
+       * s-interr-hwint.adb: New file.
+
+	* s-osinte-vxworks.ads, s-osinte-vxworks.adb: Add new functions
+	needed by s-interr-hwint.adb.
+
+	* s-osinte-vxworks-kernel.adb: New file.
+
 2008-09-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-stchop-rtems.adb: Add file missed in early commit.  Already
@@ -28,8 +42,8 @@
 
 	* checks.adb (Determine_Range): Deal with values that might be invalid
 
-	* opt.adb, opt.ads (Assume_No_Invalid_Values[_Config]): New configuration
-	switches.
+	* opt.adb, opt.ads (Assume_No_Invalid_Values[_Config]): New
+	configuration switches.
 
 	* par-prag.adb: Dummy entry for pragma Assume_No_Invalid_Values
 

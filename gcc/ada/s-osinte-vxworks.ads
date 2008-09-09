@@ -432,6 +432,50 @@ package System.OS_Interface is
    pragma Import (C, semFlush, "semFlush");
    --  Release all threads blocked on the semaphore
 
+   ------------------------------------------------------------
+   --   Binary Semaphore Wrapper to Support Interrupt Tasks  --
+   ------------------------------------------------------------
+
+   type Binary_Semaphore_Id is new Long_Integer;
+
+   function Binary_Semaphore_Create return Binary_Semaphore_Id;
+   pragma Inline (Binary_Semaphore_Create);
+
+   function Binary_Semaphore_Delete (ID : Binary_Semaphore_Id) return int;
+   pragma Inline (Binary_Semaphore_Delete);
+
+   function Binary_Semaphore_Obtain (ID : Binary_Semaphore_Id) return int;
+   pragma Inline (Binary_Semaphore_Obtain);
+
+   function Binary_Semaphore_Release (ID : Binary_Semaphore_Id) return int;
+   pragma Inline (Binary_Semaphore_Release);
+
+   function Binary_Semaphore_Flush (ID : Binary_Semaphore_Id) return int;
+   pragma Inline (Binary_Semaphore_Flush);
+
+   ------------------------------------------------------------
+   -- Hardware Interrupt Wrappers to Support Interrupt Tasks --
+   ------------------------------------------------------------
+
+   type Interrupt_Handler is access procedure (parameter : System.Address);
+   pragma Convention (C, Interrupt_Handler);
+
+   type Interrupt_Vector is new System.Address;
+
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int;
+   pragma Inline (Interrupt_Connect);
+   --  Use this to set up an user handler. The routine installs a
+   --  a user handler which is invoked after RTEMS has saved enough
+   --  context for a high-level language routine to be safely invoked.
+
+   function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;
+   pragma Inline (Interrupt_Number_To_Vector);
+   --  Convert a logical interrupt number to the hardware interrupt vector
+   --  number used to connect the interrupt.
+
 private
    type sigset_t is new unsigned_long_long;
 

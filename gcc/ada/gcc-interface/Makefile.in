@@ -391,10 +391,10 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
+  s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
@@ -472,7 +472,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
     EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
   else
     LIBGNAT_TARGET_PAIRS += \
-    s-interr.adb<s-interr-vxworks.adb \
+    s-interr.adb<s-interr-hwint.adb \
     s-tpopsp.adb<s-tpopsp-vxworks.adb \
     system.ads<system-vxworks-ppc.ads
 
@@ -505,10 +505,10 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   g-io.ads<g-io-vxworks-ppc-cert.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
+  s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-ae653.ads \
@@ -551,10 +551,10 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
+  s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
@@ -626,7 +626,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
     EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
   else
     LIBGNAT_TARGET_PAIRS += \
-    s-interr.adb<s-interr-vxworks.adb \
+    s-interr.adb<s-interr-hwint.adb \
     s-tpopsp.adb<s-tpopsp-vxworks.adb \
     system.ads<system-vxworks-x86.ads
 
@@ -654,10 +654,10 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
+  s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
@@ -689,10 +689,10 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-interr.adb<s-interr-vxworks.adb \
+  s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
-  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \

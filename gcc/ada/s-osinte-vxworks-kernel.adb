@@ -224,9 +224,14 @@ package body System.OS_Interface is
       Handler   : Interrupt_Handler;
       Parameter : System.Address := System.Null_Address) return int
    is
-      pragma Unreferenced (Vector, Handler, Parameter);
+      function intConnect
+        (vector    : Interrupt_Vector;
+         handler   : Interrupt_Handler;
+         parameter : System.Address) return int;
+      pragma Import (C, intConnect, "intConnect");
+
    begin
-      return 0;
+      return intConnect (Vector, Handler, Parameter);
    end Interrupt_Connect;
 
    --------------------------------
@@ -234,9 +239,13 @@ package body System.OS_Interface is
    --------------------------------
 
    function Interrupt_Number_To_Vector
-     (intNum : int) return Interrupt_Vector is
+     (intNum : int) return Interrupt_Vector
+   is
+      function INUM_TO_IVEC (intNum : int) return Interrupt_Vector;
+      pragma Import (C, INUM_TO_IVEC, "__gnat_inum_to_ivec");
+
    begin
-      return Interrupt_Vector (intNum);
+      return INUM_TO_IVEC (intNum);
    end Interrupt_Number_To_Vector;
 
 end System.OS_Interface;
