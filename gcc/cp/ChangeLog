@@ -1,3 +1,9 @@
+2008-09-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cp-objcp-common.h (LANG_HOOKS_EXPAND_DECL): Remove.
+	* cp-tree.h: Don't mention DECL_ANON_UNION_ELEMS.
+	* semantics.c (anon_aggr_type_p): Remove.
+
 2008-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37302

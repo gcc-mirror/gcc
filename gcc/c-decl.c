@@ -6978,15 +6978,6 @@ current_stmt_tree (void)
   return &c_stmt_tree;
 }
 
-/* Nonzero if TYPE is an anonymous union or struct type.  Always 0 in
-   C.  */
-
-int
-anon_aggr_type_p (const_tree ARG_UNUSED (node))
-{
-  return 0;
-}
-
 /* Return the global value of T as a symbol.  */
 
 tree

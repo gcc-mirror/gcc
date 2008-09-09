@@ -800,12 +800,6 @@ extern void finish_file	(void);
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
 
-extern int anon_aggr_type_p (const_tree);
-
-/* For a VAR_DECL that is an anonymous union, these are the various
-   sub-variables that make up the anonymous union.  */
-#define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))
-
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
 #define DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) == 1)
