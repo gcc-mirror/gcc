@@ -1,3 +1,9 @@
+2008-09-05  Daniel Kraft  <d@domob.eu>
+ 
+	PR fortran/35837
+	* resolve.c (resolve_types): Restore gfc_current_ns on exit.
+	* symbol.c (gfc_save_all): Removed blank line.
+
 2008-09-04  Daniel Kraft  <d@domob.eu>
 
 	* PR fortran/37099

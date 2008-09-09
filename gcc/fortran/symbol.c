@@ -3058,7 +3058,6 @@ save_symbol (gfc_symbol *sym)
 void
 gfc_save_all (gfc_namespace *ns)
 {
-
   gfc_traverse_ns (ns, save_symbol);
 }
 
