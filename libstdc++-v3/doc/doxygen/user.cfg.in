@@ -455,10 +455,10 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-# The INPUT tag can be used to specify the files and/or directories that contain 
-# documented source files. You may enter file names like "myfile.cpp" or 
-# directories like "/usr/src/myproject". Separate the files or directories 
-# with spaces.
+# The INPUT tag can be used to specify the files and/or directories
+# that contain documented source files. You may enter file names like
+# "myfile.cpp" or directories like "/usr/src/myproject". Separate the
+# files or directories with spaces.
 
 INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          @srcdir@/libsupc++/cxxabi-forced.h \
@@ -599,6 +599,7 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/tr1_impl/unordered_map \
                          include/tr1_impl/unordered_set \
                          include/tr1_impl/utility \
+                         include/ \
                          include/@host_alias@/bits \
                          include/backward \
                          include/bits \
