@@ -38,12 +38,22 @@
 
 // For 8.22.1/1 (see C99, Notes 219, 220, 222)
 #ifndef __STDC_LIMIT_MACROS
+# define _UNDEF__STDC_LIMIT_MACROS
 # define __STDC_LIMIT_MACROS
 #endif
 #ifndef __STDC_CONSTANT_MACROS
+# define _UNDEF__STDC_CONSTANT_MACROS
 # define __STDC_CONSTANT_MACROS
 #endif
 #include_next <stdint.h>
+#ifdef _UNDEF__STDC_LIMIT_MACROS
+# undef __STDC_LIMIT_MACROS
+# undef _UNDEF__STDC_LIMIT_MACROS
+#endif
+#ifdef _UNDEF__STDC_CONSTANT_MACROS
+# undef __STDC_CONSTANT_MACROS
+# undef _UNDEF__STDC_CONSTANT_MACROS
+#endif
 
 namespace std
 {
