@@ -1,5 +1,12 @@
 2008-09-09  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/37429
+	* resolve.c (expression_rank): Added assertion to guard against
+	EXPR_COMPCALL expressions.
+	(resolve_compcall): Set expression's rank from the target procedure's.
+
+2008-09-09  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/37411
 	* trans-array.c (gfc_conv_array_parameter): Added assertion that the
 	symbol has an array spec.

@@ -4021,6 +4021,10 @@ expression_rank (gfc_expr *e)
   gfc_ref *ref;
   int i, rank;
 
+  /* Just to make sure, because EXPR_COMPCALL's also have an e->ref and that
+     could lead to serious confusion...  */
+  gcc_assert (e->expr_type != EXPR_COMPCALL);
+
   if (e->ref == NULL)
     {
       if (e->expr_type == EXPR_ARRAY)
@@ -4550,6 +4554,11 @@ resolve_compcall (gfc_expr* e)
 
   if (resolve_typebound_generic_call (e) == FAILURE)
     return FAILURE;
+  gcc_assert (!e->value.compcall.tbp->is_generic);
+
+  /* Take the rank from the function's symbol.  */
+  if (e->value.compcall.tbp->u.specific->n.sym->as)
+    e->rank = e->value.compcall.tbp->u.specific->n.sym->as->rank;
 
   /* For now, we simply transform it into an EXPR_FUNCTION call with the same
      arglist to the TBP's binding target.  */
