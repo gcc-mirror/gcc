@@ -331,7 +331,7 @@ go_through_subreg (rtx x, int *offset)
 static bool
 process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
 {
-  int hard_regno, cost, index, offset1, offset2;
+  int allocno_preferenced_hard_regno, cost, index, offset1, offset2;
   bool only_regs_p;
   ira_allocno_t a;
   enum reg_class rclass, cover_class;
@@ -342,16 +342,18 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
   only_regs_p = REG_P (reg1) && REG_P (reg2);
   reg1 = go_through_subreg (reg1, &offset1);
   reg2 = go_through_subreg (reg2, &offset2);
+  /* Set up hard regno preferenced by allocno.  If allocno gets the
+     hard regno the copy (or potential move) insn will be removed.  */
   if (HARD_REGISTER_P (reg1))
     {
       if (HARD_REGISTER_P (reg2))
 	return false;
-      hard_regno = REGNO (reg1) + offset1 - offset2;
+      allocno_preferenced_hard_regno = REGNO (reg1) + offset1 - offset2;
       a = ira_curr_regno_allocno_map[REGNO (reg2)];
     }
   else if (HARD_REGISTER_P (reg2))
     {
-      hard_regno = REGNO (reg2) + offset2 - offset1;
+      allocno_preferenced_hard_regno = REGNO (reg2) + offset2 - offset1;
       a = ira_curr_regno_allocno_map[REGNO (reg1)];
     }
   else if (!CONFLICT_ALLOCNO_P (ira_curr_regno_allocno_map[REGNO (reg1)],
@@ -366,7 +368,10 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
     }
   else
     return false;
-  rclass = REGNO_REG_CLASS (hard_regno);
+  if (! IN_RANGE (allocno_preferenced_hard_regno, 0, FIRST_PSEUDO_REGISTER - 1))
+    /* Can not be tied.  */
+    return false;
+  rclass = REGNO_REG_CLASS (allocno_preferenced_hard_regno);
   mode = ALLOCNO_MODE (a);
   cover_class = ALLOCNO_COVER_CLASS (a);
   if (! ira_class_subset_p[rclass][cover_class])
@@ -375,8 +380,9 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
       && reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode))
     /* It is already taken into account in ira-costs.c.  */
     return false;
-  index = ira_class_hard_reg_index[cover_class][hard_regno];
+  index = ira_class_hard_reg_index[cover_class][allocno_preferenced_hard_regno];
   if (index < 0)
+    /* Can not be tied.  It is not in the cover class.  */
     return false;
   if (HARD_REGISTER_P (reg1))
     cost = ira_register_move_cost[mode][cover_class][rclass] * freq;
