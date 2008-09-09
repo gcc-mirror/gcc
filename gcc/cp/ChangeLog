@@ -1,3 +1,9 @@
+2008-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37417
+	* tree.c (array_type_nelts_top): Add size_one_node instead of
+	integer_one_node.
+
 2008-09-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37439
