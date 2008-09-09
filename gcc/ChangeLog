@@ -1,3 +1,13 @@
+2008-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37354
+	PR middle-end/30165
+	* gimplify.c (gimplify_conversion): Change conversions of
+	non-register type to VIEW_CONVERT_EXPRs.
+	(gimplify_addr_expr): If we need to make the operand
+	addressable make sure to use a properly initialized
+	temporary for that so it gets a valid gimple store.
+
 2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* function.h (struct function): Add function_start_locus.

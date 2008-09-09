@@ -1,3 +1,9 @@
+2008-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37354
+	PR middle-end/30165
+	* g++.dg/torture/pr37354.C: New testcase.
+
 2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/always_inline.c: Place error message on function
