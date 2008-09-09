@@ -440,6 +440,25 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       else
 	return false;
 
+      /* As we strip non-widening conversions in finding a common
+         name that is tested make sure to end up with an integral
+	 type for building the bit operations.  */
+      if (TYPE_PRECISION (TREE_TYPE (bits1))
+	  >= TYPE_PRECISION (TREE_TYPE (bits2)))
+	{
+	  bits1 = fold_convert (unsigned_type_for (TREE_TYPE (bits1)), bits1);
+	  name1 = fold_convert (TREE_TYPE (bits1), name1);
+	  bits2 = fold_convert (unsigned_type_for (TREE_TYPE (bits2)), bits2);
+	  bits2 = fold_convert (TREE_TYPE (bits1), bits2);
+	}
+      else
+	{
+	  bits2 = fold_convert (unsigned_type_for (TREE_TYPE (bits2)), bits2);
+	  name1 = fold_convert (TREE_TYPE (bits2), name1);
+	  bits1 = fold_convert (unsigned_type_for (TREE_TYPE (bits1)), bits1);
+	  bits1 = fold_convert (TREE_TYPE (bits2), bits1);
+	}
+
       /* Do it.  */
       gsi = gsi_for_stmt (inner_cond);
       t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), bits1, bits2);
