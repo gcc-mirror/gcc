@@ -2261,7 +2261,14 @@ gimple_expand_cfg (void)
 
   insn_locators_alloc ();
   if (!DECL_BUILT_IN (current_function_decl))
-    set_curr_insn_source_location (DECL_SOURCE_LOCATION (current_function_decl));
+    {
+      /* Eventually, all FEs should explicitly set function_start_locus.  */
+      if (cfun->function_start_locus == UNKNOWN_LOCATION)
+       set_curr_insn_source_location
+         (DECL_SOURCE_LOCATION (current_function_decl));
+      else
+       set_curr_insn_source_location (cfun->function_start_locus);
+    }
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   prologue_locator = curr_insn_locator ();
 

@@ -25,8 +25,8 @@ foo3(void)
 
 extern void foo4(void);
 void
-foo4(void)
-{ /* { dg-warning "candidate for attribute 'noreturn'" "detect noreturn candidate" } */
+foo4(void) /* { dg-warning "candidate for attribute 'noreturn'" "detect noreturn candidate" } */
+{
   exit(0);
 }
 

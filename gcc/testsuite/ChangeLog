@@ -1,3 +1,20 @@
+2008-09-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/always_inline.c: Place error message on function
+	name line.
+	* gcc.dg/winline-6.c: Same.
+	* gcc.dg/noreturn-1.c: Same.
+	* gcc.dg/noreturn-7.c: Same.
+	* gcc.dg/inline-14.c: Same.
+	* gcc.dg/always_inline3.c: Same.
+	* gcc.dg/winline-3.c: Same.
+	* gcc.dg/wtr-func-def-1.c: Same.
+	* gcc.dg/winline-5.c: Same.
+	* gcc.dg/winline-7.c: Same.
+	* gcc.dg/winline-9.c: Same.
+	* gcc.dg/noreturn-4.c: Same.
+	* gcc.dg/20041213-1.c: Use column numbers.
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37433

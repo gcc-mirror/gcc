@@ -1301,9 +1301,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok, bool empty_ok,
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
 	c_parser_declaration_or_fndef (parser, false, false, true, false);
-      DECL_SOURCE_LOCATION (current_function_decl)
-	= c_parser_peek_token (parser)->location;
       store_parm_decls ();
+      DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
+	= c_parser_peek_token (parser)->location;
       fnbody = c_parser_compound_statement (parser);
       if (nested)
 	{
