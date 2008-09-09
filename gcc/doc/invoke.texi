@@ -8740,35 +8740,35 @@ different function prologues), and this information can be used to
 locate the start if functions inside an executable piece of code.  The
 default is @option{-msched-prolog}.
 
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which floating-point ABI to use.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+Specifying @samp{soft} causes GCC to generate output containing 
+library calls for floating-point operations.
+@samp{softfp} allows the generation of code using hardware floating-point 
+instructions, but still uses the soft-float calling conventions.  
+@samp{hard} allows generation of floating-point instructions 
+and uses FPU-specific calling conventions.
+
+Using @option{-mfloat-abi=hard} with VFP coprocessors is not supported.
+Use @option{-mfloat-abi=softfp} with the appropriate @option{-mfpu} option
+to allow the compiler to generate code that makes use of the hardware
+floating-point capabilities for these CPUs.
+
+The default depends on the specific target configuration.  Note that
+the hard-float and soft-float ABIs are not link-compatible; you must
+compile your entire program with the same ABI, and link with a
+compatible set of libraries.
+
 @item -mhard-float
 @opindex mhard-float
-Generate output containing floating point instructions.  This is the
-default.
+Equivalent to @option{-mfloat-abi=hard}.
 
 @item -msoft-float
 @opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries are not available for all ARM
-targets.  Normally the facilities of the machine's usual C compiler are
-used, but this cannot be done directly in cross-compilation.  You must make
-your own arrangements to provide suitable library functions for
-cross-compilation.
-
-@option{-msoft-float} changes the calling convention in the output file;
-therefore, it is only useful if you compile @emph{all} of a program with
-this option.  In particular, you need to compile @file{libgcc.a}, the
-library that comes with GCC, with @option{-msoft-float} in order for
-this to work.
-
-@item -mfloat-abi=@var{name}
-@opindex mfloat-abi
-Specifies which ABI to use for floating point values.  Permissible values
-are: @samp{soft}, @samp{softfp} and @samp{hard}.
-
-@samp{soft} and @samp{hard} are equivalent to @option{-msoft-float}
-and @option{-mhard-float} respectively.  @samp{softfp} allows the generation
-of floating point instructions, but still uses the soft-float calling
-conventions.
+Equivalent to @option{-mfloat-abi=soft}.
 
 @item -mlittle-endian
 @opindex mlittle-endian
