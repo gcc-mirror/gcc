@@ -1,3 +1,9 @@
+2008-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sol2.h (REGISTER_TARGET_PRAGMAS): Move ...
+	* config/i386/sol2.h (REGISTER_SUBTARGET_PRAGMAS): ... here.
+	* config/sparc/sol2.h (REGISTER_TARGET_PRAGMAS): ... and here.
+
 2008-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (is_edge_inconsistent): Add debug output; ignore negative count
