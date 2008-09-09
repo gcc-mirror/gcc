@@ -1,3 +1,11 @@
+2008-09-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (n_regs_to_save): New static variable.
+	(push_multiple_operation, pop_multiple_operation): Set it.
+	(workaround_rts_anomaly): New function.
+	(workaround_speculation): New function, broken out of bfin_reorg.
+	(bfin_reorg): Call the new functions.
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37354
