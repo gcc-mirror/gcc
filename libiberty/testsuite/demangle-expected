@@ -3882,3 +3882,19 @@ myspace::foo()::localstruct::f(myspace::foo()::otherlocalstruct)
 --format=gnu-v3
 _ZGr32_java$Sutil$Siso4217$_properties
 java resource java/util/iso4217.properties
+# decltype/param placeholder test
+--format=gnu-v3
+_Z3addIidEDTplsTT_sTT0_ES0_S1_
+decltype ((int) + (double)) add<int, double>(int, double)
+# decltype/T() test
+--format=gnu-v3
+_Z4add2IidEDTplcvT_vcvT0_vES0_S1_
+decltype (((int)()) + ((double)())) add2<int, double>(int, double)
+# decltype/fn call test
+--format=gnu-v3
+_Z4add3IidEDTclL_Z1gEsTT_sTT0_EES0_S1_
+decltype (g (int, double)) add3<int, double>(int, double)
+# Extended floating point types test
+--format=gnu-v3
+_Z1fDfDdDeDh
+f(decimal32, decimal64, decimal128, half)
