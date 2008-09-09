@@ -747,6 +747,7 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
   VEC (tree, heap) *access_fns = NULL;
   tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
   tree base, off, access_fn;
+  basic_block before_loop = block_before_loop (nest);
 
   while (handled_component_p (aref))
     {
@@ -754,7 +755,7 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
 	{
 	  op = TREE_OPERAND (aref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
-	  access_fn = instantiate_scev (nest, loop, access_fn);
+	  access_fn = instantiate_scev (before_loop, loop, access_fn);
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
 
 	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
@@ -767,7 +768,7 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
-      access_fn = instantiate_scev (nest, loop, access_fn);
+      access_fn = instantiate_scev (before_loop, loop, access_fn);
       base = initial_condition (access_fn);
       split_constant_offset (base, &base, &off);
       access_fn = chrec_replace_initial_condition (access_fn,
