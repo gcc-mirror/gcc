@@ -1232,7 +1232,7 @@ static basic_block
 copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
          gcov_type count_scale)
 {
-  gimple_stmt_iterator gsi, copy_gsi;
+  gimple_stmt_iterator gsi, copy_gsi, seq_gsi;
   basic_block copy_basic_block;
   tree decl;
 
@@ -1263,6 +1263,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	continue;
 
       gimple_duplicate_stmt_histograms (cfun, stmt, id->src_cfun, orig_stmt);
+      seq_gsi = copy_gsi;
 
       /* With return slot optimization we can end up with
 	 non-gimple (foo *)&this->m, fix that here.  */
@@ -1271,21 +1272,31 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	  && !is_gimple_val (gimple_assign_rhs1 (stmt)))
 	{
 	  tree new_rhs;
-	  new_rhs = force_gimple_operand_gsi (&copy_gsi,
+	  new_rhs = force_gimple_operand_gsi (&seq_gsi,
 	                                      gimple_assign_rhs1 (stmt),
 	                                      true, NULL, true, GSI_SAME_STMT);
 	  gimple_assign_set_rhs1 (stmt, new_rhs);
+	  id->regimplify = false;
 	}
-      else if (id->regimplify)
-	gimple_regimplify_operands (stmt, &copy_gsi);
 
-      gsi_insert_after (&copy_gsi, stmt, GSI_NEW_STMT);
+      gsi_insert_after (&seq_gsi, stmt, GSI_NEW_STMT);
+
+      if (id->regimplify)
+	gimple_regimplify_operands (stmt, &seq_gsi);
+
+      /* If copy_basic_block has been empty at the start of this iteration,
+	 call gsi_start_bb again to get at the newly added statements.  */
+      if (gsi_end_p (copy_gsi))
+	copy_gsi = gsi_start_bb (copy_basic_block);
+      else
+	gsi_next (&copy_gsi);
 
       /* Process the new statement.  The call to gimple_regimplify_operands
 	 possibly turned the statement into multiple statements, we
 	 need to process all of them.  */
-      while (!gsi_end_p (copy_gsi))
+      do
 	{
+	  stmt = gsi_stmt (copy_gsi);
 	  if (is_gimple_call (stmt)
 	      && gimple_call_va_arg_pack_p (stmt)
 	      && id->gimple_call)
@@ -1459,6 +1470,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 
 	  gsi_next (&copy_gsi);
 	}
+      while (!gsi_end_p (copy_gsi));
 
       copy_gsi = gsi_last_bb (copy_basic_block);
     }
@@ -1889,40 +1901,16 @@ self_inlining_addr_expr (tree value, tree fn)
 static void
 insert_init_stmt (basic_block bb, gimple init_stmt)
 {
-  gimple_stmt_iterator si = gsi_last_bb (bb);
-  gimple_stmt_iterator i;
-  gimple_seq seq = gimple_seq_alloc ();
-  struct gimplify_ctx gctx;
-
-  push_gimplify_context (&gctx);
-
-  i = gsi_start (seq);
-  gimple_regimplify_operands (init_stmt, &i);
-
-  if (init_stmt
-      && !gimple_seq_empty_p (seq))
-    {
-      /* The replacement can expose previously unreferenced
-	 variables.  */
-      if (gimple_in_ssa_p (cfun))
-        for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
-	  find_new_referenced_vars (gsi_stmt (i));
-
-      /* Insert the gimplified sequence needed for INIT_STMT
-	 after SI.  INIT_STMT will be inserted after SEQ.  */
-      gsi_insert_seq_after (&si, seq, GSI_NEW_STMT);
-     }
-
-  pop_gimplify_context (NULL);
-
   /* If VAR represents a zero-sized variable, it's possible that the
      assignment statement may result in no gimple statements.  */
   if (init_stmt)
-    gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
+    {
+      gimple_stmt_iterator si = gsi_last_bb (bb);
 
-  if (gimple_in_ssa_p (cfun))
-    for (;!gsi_end_p (si); gsi_next (&si))
-      mark_symbols_for_renaming (gsi_stmt (si));
+      gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
+      gimple_regimplify_operands (init_stmt, &si);
+      mark_symbols_for_renaming (init_stmt);
+    }
 }
 
 /* Initialize parameter P with VALUE.  If needed, produce init statement
