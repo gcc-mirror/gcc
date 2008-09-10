@@ -950,6 +950,10 @@ GLIBCXX_3.4.11 {
     _ZNSbIwSt11char_traitsIwESaIwEEaSESt16initializer_listIwE;
     _ZNSbIwSt11char_traitsIwESaIwEEpLESt16initializer_listIwE;
 
+    # ctype<char>::_M_narrow_init and _M_widen_init
+    _ZNKSt5ctypeIcE14_M_narrow_initEv;
+    _ZNKSt5ctypeIcE13_M_widen_initEv;
+
 } GLIBCXX_3.4.10;
 
 # Symbols in the support library (libsupc++) have their own tag.

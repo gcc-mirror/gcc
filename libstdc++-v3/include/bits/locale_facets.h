@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1161,43 +1161,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
     private:
-
-      void _M_widen_init() const
-      {
-	char __tmp[sizeof(_M_widen)];
-	for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
-	  __tmp[__i] = __i;
-	do_widen(__tmp, __tmp + sizeof(__tmp), _M_widen);
-
-	_M_widen_ok = 1;
-	// Set _M_widen_ok to 2 if memcpy can't be used.
-	if (__builtin_memcmp(__tmp, _M_widen, sizeof(_M_widen)))
-	  _M_widen_ok = 2;
-      }
-
-      // Fill in the narrowing cache and flag whether all values are
-      // valid or not.  _M_narrow_ok is set to 2 if memcpy can't
-      // be used.
-      void _M_narrow_init() const
-      {
-	char __tmp[sizeof(_M_narrow)];
-	for (size_t __i = 0; __i < sizeof(_M_narrow); ++__i)
-	  __tmp[__i] = __i;
-	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
-
-	_M_narrow_ok = 1;
-	if (__builtin_memcmp(__tmp, _M_narrow, sizeof(_M_narrow)))
-	  _M_narrow_ok = 2;
-	else
-	  {
-	    // Deal with the special case of zero: renarrow with a
-	    // different default and compare.
-	    char __c;
-	    do_narrow(__tmp, __tmp + 1, 1, &__c);
-	    if (__c == 1)
-	      _M_narrow_ok = 2;
-	  }
-      }
+      void _M_narrow_init() const;
+      void _M_widen_init() const;
     };
 
   template<>
