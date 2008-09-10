@@ -53,26 +53,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::id ctype<wchar_t>::id;
 #endif
 
-  template<>
-    const ctype<char>&
-    use_facet<ctype<char> >(const locale& __loc)
-    {
-      size_t __i = ctype<char>::id._M_id();
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<char>&>(*(__tmp->_M_facets[__i]));
-    }
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<>
-    const ctype<wchar_t>&
-    use_facet<ctype<wchar_t> >(const locale& __loc)
-    {
-      size_t __i = ctype<wchar_t>::id._M_id();
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<wchar_t>&>(*(__tmp->_M_facets[__i]));
-    }
-#endif
-
   // XXX At some point, just rename this file to ctype_configure_char.cc
   // and compile it as a separate file instead of including it here.
   // Platform-specific initialization code for ctype tables.

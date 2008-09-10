@@ -1,5 +1,15 @@
 2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* src/ctype.cc (use_facet<ctype<char> >, use_facet<ctype<wchar_t>):
+	Remove specializations.
+	* src/locale-inst.cc (use_facet<ctype<C> >): Instantiate.
+	* include/bits/locale_facets.tcc (use_facet<ctype<char> >,
+	use_facet<ctype<wchar_t>): Declare as extern template.
+	* include/bits/locale_facets.h (use_facet<ctype<char> >,
+	use_facet<ctype<wchar_t>): Do not declare as specializations.
+
+2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* config/locale/darwin/ctype_members.cc (ctype<char>::_M_narrow_init,
 	ctype<char>::_M_widen_init): Don't define here.
 	* config/locale/gnu/ctype_members.cc: Likewise.
