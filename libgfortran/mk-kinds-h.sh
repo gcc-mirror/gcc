@@ -13,6 +13,7 @@ largest=""
 smallest=""
 for k in $possible_integer_kinds; do
   echo "  integer (kind=$k) :: i" > tmp$$.f90
+  echo "  i = 1_$k" >> tmp$$.f90
   echo "  end" >> tmp$$.f90
   if $compile -S tmp$$.f90 > /dev/null 2>&1; then
     s=`expr 8 \* $k`
@@ -46,6 +47,7 @@ echo ""
 
 for k in $possible_real_kinds; do
   echo "  real (kind=$k) :: x" > tmp$$.f90
+  echo "  x = 1.0_$k" >> tmp$$.f90
   echo "  end" >> tmp$$.f90
   if $compile -S tmp$$.f90 > /dev/null 2>&1; then
     case $k in
