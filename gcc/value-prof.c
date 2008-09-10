@@ -1117,8 +1117,7 @@ gimple_ic (gimple stmt, gimple call, struct cgraph_node *direct_call,
   bb1end = stmt3;
 
   stmt1 = gimple_copy (stmt);
-  gimple_call_set_fn (stmt,
-		      build_addr (direct_call->decl, current_function_decl));
+  gimple_call_set_fndecl (stmt1, direct_call->decl);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   bb2end = stmt1;
   bb3end = stmt;
