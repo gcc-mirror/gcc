@@ -21,3 +21,5 @@ program startest
    if('#'//Q2//'#' /='#abcdefghijkl#') call abort()
    call sub('ABCDEFGHIJKLM') ! len=13
 end program startest
+
+! { dg-final { cleanup-modules "mod" } }

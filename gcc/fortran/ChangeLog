@@ -1,3 +1,8 @@
+2008-09-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37420
+	* trans-decl.c (get_proc_pointer_decl): Fix -Wunused-variable.
+
 2008-09-09  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37429
