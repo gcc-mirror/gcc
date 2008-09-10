@@ -7213,6 +7213,10 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
 
   timevar_push (TV_TREE_GIMPLIFY);
 
+  /* Initialize for optimize_insn_for_s{ize,peed}_p possibly called during
+     gimplification.  */
+  default_rtl_profile ();
+
   gcc_assert (gimplify_ctxp == NULL);
   push_gimplify_context (&gctx);
 
