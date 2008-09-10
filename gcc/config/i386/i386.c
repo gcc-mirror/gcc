@@ -26886,7 +26886,7 @@ static void
 ix86_expand_vector_init_interleave (enum machine_mode mode,
 				    rtx target, rtx *ops, int n)
 {
-  enum machine_mode first_imode, second_imode, third_imode;
+  enum machine_mode first_imode, second_imode, third_imode, inner_mode;
   int i, j;
   rtx op0, op1;
   rtx (*gen_load_even) (rtx, rtx, rtx);
@@ -26899,6 +26899,7 @@ ix86_expand_vector_init_interleave (enum machine_mode mode,
       gen_load_even = gen_vec_setv8hi;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
       gen_interleave_second_low = gen_vec_interleave_lowv2di;
+      inner_mode = HImode;
       first_imode = V4SImode;
       second_imode = V2DImode;
       third_imode = VOIDmode;
@@ -26907,6 +26908,7 @@ ix86_expand_vector_init_interleave (enum machine_mode mode,
       gen_load_even = gen_vec_setv16qi;
       gen_interleave_first_low = gen_vec_interleave_lowv8hi;
       gen_interleave_second_low = gen_vec_interleave_lowv4si;
+      inner_mode = QImode;
       first_imode = V8HImode;
       second_imode = V4SImode;
       third_imode = V2DImode;
@@ -26935,7 +26937,9 @@ ix86_expand_vector_init_interleave (enum machine_mode mode,
       emit_move_insn (op0, gen_lowpart (mode, op1));
       
       /* Load even elements into the second positon.  */
-      emit_insn ((*gen_load_even) (op0, ops [i + i + 1],
+      emit_insn ((*gen_load_even) (op0,
+				   force_reg (inner_mode,
+					      ops [i + i + 1]),
 				   const1_rtx));
 
       /* Cast vector to FIRST_IMODE vector.  */
@@ -27051,6 +27055,11 @@ half:
 
     case V8HImode:
       if (!TARGET_SSE2)
+	break;
+
+      /* Don't use ix86_expand_vector_init_interleave if we can't
+	 move from GPR to SSE register directly.  */ 
+      if (!TARGET_INTER_UNIT_MOVES)
 	break;
 
       n = GET_MODE_NUNITS (mode);

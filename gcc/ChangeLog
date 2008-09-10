@@ -1,3 +1,12 @@
+2008-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37434:
+	* config/i386/i386.c (ix86_expand_vector_init_interleave): Force
+	the even element into register.
+	(ix86_expand_vector_init_general): Don't use
+	ix86_expand_vector_init_interleave on V16QImode and V8HImode
+	if we can't move from GPR to SSE register directly.
+
 2008-09-10  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (workaround_speculation): Correct algorithm to
@@ -168,7 +177,7 @@
 
 2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
 
-        PR rtl-optimization/37360
+	PR rtl-optimization/37360
 	* haifa-sched.c (max_issue): Do not assert that we never issue more
 	insns than issue_rate.  Add comment.
 	
@@ -312,19 +321,19 @@
 
 2008-09-07  Helge Deller  <deller@gmx.de>
 
-        * pa/linux-atomic.c: New file.
+	* pa/linux-atomic.c: New file.
 	* pa/t-linux (LIB2FUNCS_STATIC_EXTRA): Define.
 	* pa/t-linux64 (LIB2FUNCS_STATIC_EXTRA): Define.
 
 2008-09-07  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36630
 	* tree-vect-transform.c (vect_update_ivs_after_vectorizer):
 	Call STRIP_NOPS before calling evolution_part_in_loop_num.
 
 2008-09-07  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35642
 	* config/rs6000/altivec.md (mulv8hi3): Implement.
