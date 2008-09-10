@@ -1,5 +1,9 @@
 2008-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* expr.c (find_array_element): Reformat comment.
+
+2008-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* expr.c (find_array_element): Reformat.
 
 2008-09-10  Tobias Burnus  <burnus@net-b.de>
