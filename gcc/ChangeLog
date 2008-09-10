@@ -1,5 +1,9 @@
 2008-09-10  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (phi_translate_1): Fix memory leak.
+
+2008-09-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/37432
 	* tree-inline.c (insert_init_stmt): Make sure to not
 	insert invalid gimple stores.

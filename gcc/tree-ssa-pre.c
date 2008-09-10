@@ -1504,11 +1504,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  {
 		    tree name = get_representative_for (opresult);
 		    if (!name)
-		      return NULL;
+		      break;
 		    op0 = name;
 		  }
 		else if (!opresult)
-		  return NULL;
+		  break;
 	      }
 	    changed |= op0 != oldop0;
 
@@ -1522,11 +1522,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  {
 		    tree name = get_representative_for (opresult);
 		    if (!name)
-		      return NULL;
+		      break;
 		    op1 = name;
 		  }
 		else if (!opresult)
-		  return NULL;
+		  break;
 	      }
 	    changed |= op1 != oldop1;
 	    if (op2 && TREE_CODE (op2) == SSA_NAME)
@@ -1539,11 +1539,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  {
 		    tree name = get_representative_for (opresult);
 		    if (!name)
-		      return NULL;
+		      break;
 		    op2 = name;
 		  }
 		else if (!opresult)
-		  return NULL;
+		  break;
 	      }
 	    changed |= op2 != oldop2;
 
@@ -1557,6 +1557,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    newop.op1 = op1;
 	    newop.op2 = op2;
 	    VEC_replace (vn_reference_op_s, newoperands, i, &newop);
+	  }
+	if (i != VEC_length (vn_reference_op_s, operands))
+	  {
+	    if (newoperands)
+	      VEC_free (vn_reference_op_s, heap, newoperands);
+	    return NULL;
 	  }
 
 	newvuses = translate_vuses_through_block (vuses, phiblock, pred);
