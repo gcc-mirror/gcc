@@ -1,3 +1,13 @@
+2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/37455
+	* include/bits/locale_facets.h (ctype<char>::_M_narrow_init,
+	ctype<char>::_M_widen_init): Don't define inline.
+	* config/locale/darwin/ctype_members.cc: ... define here.
+	* config/locale/gnu/ctype_members.cc: ... likewise.
+	* config/locale/generic/ctype_members.cc: ... likewise.
+	* config/abi/pre/gnu.ver: Export.
+
 2008-09-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/abi.xml: Update for new releases.
