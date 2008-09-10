@@ -1,3 +1,10 @@
+2008-09-10  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* gcc-interface/Makefile.in: Switch RTEMS to s-interr-hwint.adb.
+	* s-osinte-rtems.ads: Add shared hardware interrupt adapter
+	layer. RTEMS binds to OS provided adapter routines so there are
+	no modifications to s-osinte-rtems.adb.
+
 2008-09-09  Arnaud Charlet  <charlet@adacore.com>
 	    Joel Sherrill  <joel.sherrill@oarcorp.com>
 
