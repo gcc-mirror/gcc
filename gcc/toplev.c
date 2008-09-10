@@ -1703,6 +1703,14 @@ process_options (void)
   else
     aux_base_name = "gccaux";
 
+#ifndef HAVE_cloog
+  if (flag_graphite
+      || flag_loop_block
+      || flag_loop_interchange
+      || flag_loop_strip_mine)
+    sorry ("Graphite loop optimizations cannot be used");
+#endif
+
   /* Unrolling all loops implies that standard loop unrolling must also
      be done.  */
   if (flag_unroll_all_loops)

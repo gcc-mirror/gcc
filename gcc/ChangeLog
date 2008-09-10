@@ -1,3 +1,12 @@
+2008-09-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/37388
+	* toplev.c (process_options): Fail and warn when graphite
+	flags are used, but the compiler has not been configured
+	with graphite libraries.
+	* graphite.c (graphite_transform_loops): Remove printfs
+	to dump_file for the case when graphite is not available.
+
 2008-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37434:
