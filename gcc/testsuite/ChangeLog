@@ -1,3 +1,16 @@
+2008-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37434:
+	* gcc.target/i386/pr37434-1.c: New.
+	* gcc.target/i386/pr37434-2.c: Likewise.
+	* gcc.target/i386/pr37434-3.c: Likewise.
+	* gcc.target/i386/pr37434-4.c: Likewise.
+	* gcc.target/i386/sse2-set-v8hi-1a.c: Likewise.
+	* gcc.target/i386/sse2-set-v8hi-2a.c: Likewise.
+	* gcc.target/i386/sse4_1-set-v16qi-1a.c: Likewise.
+	* gcc.target/i386/sse4_1-set-v16qi-2a.c: Likewise.
+	* gcc.target/i386/sse4_1-set-v16qi-3a.c: Likewise.
+
 2008-09-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37420
@@ -631,7 +644,7 @@
 	* gcc.target/mips/octeon-bbit-3.c: New test.
 
 2008-08-28  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-            Andrew Pinski  <pinskia@gcc.gnu.org>
+	    Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR 18050
 	* gcc.dg/Wsequence-point-pr18050.c: New.
