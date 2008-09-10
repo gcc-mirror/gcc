@@ -88,7 +88,13 @@ package System.OS_Interface is
    -- Signals --
    -------------
 
-   Max_Interrupt : constant := 31;
+   Num_HW_Interrupts : constant := 256;
+
+   Max_HW_Interrupt : constant := Num_HW_Interrupts - 1;
+   type HW_Interrupt is new int range 0 .. Max_HW_Interrupt;
+
+   Max_Interrupt : constant := Max_HW_Interrupt;
+
    type Signal is new int range 0 .. Max_Interrupt;
 
    SIGXCPU     : constant := 0; --  XCPU
@@ -501,6 +507,79 @@ package System.OS_Interface is
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
+   ------------------------------------------------------------
+   --   Binary Semaphore Wrapper to Support Interrupt Tasks  --
+   ------------------------------------------------------------
+
+   type Binary_Semaphore_Id is new rtems_id;
+
+   function Binary_Semaphore_Create return Binary_Semaphore_Id;
+   pragma Import (
+      C,
+      Binary_Semaphore_Create,
+      "__gnat_binary_semaphore_create");
+
+   function Binary_Semaphore_Delete (ID : Binary_Semaphore_Id) return int;
+   pragma Import (
+      C,
+      Binary_Semaphore_Delete,
+      "__gnat_binary_semaphore_delete");
+
+   function Binary_Semaphore_Obtain (ID : Binary_Semaphore_Id) return int;
+   pragma Import (
+      C,
+      Binary_Semaphore_Obtain,
+      "__gnat_binary_semaphore_obtain");
+
+   function Binary_Semaphore_Release (ID : Binary_Semaphore_Id) return int;
+   pragma Import (
+      C,
+      Binary_Semaphore_Release,
+      "__gnat_binary_semaphore_release");
+
+   function Binary_Semaphore_Flush (ID : Binary_Semaphore_Id) return int;
+   pragma Import (
+      C,
+      Binary_Semaphore_Flush,
+      "__gnat_binary_semaphore_flush");
+
+   ------------------------------------------------------------
+   -- Hardware Interrupt Wrappers to Support Interrupt Tasks --
+   ------------------------------------------------------------
+
+   type Interrupt_Handler is access procedure (parameter : System.Address);
+   pragma Convention (C, Interrupt_Handler);
+   type Interrupt_Vector is new System.Address;
+
+   function Interrupt_Connect
+     (vector    : Interrupt_Vector;
+      handler   : Interrupt_Handler;
+      parameter : System.Address := System.Null_Address) return int;
+   pragma Import (C, Interrupt_Connect, "__gnat_interrupt_connect");
+   --  Use this to set up an user handler. The routine installs a
+   --  a user handler which is invoked after RTEMS has saved enough
+   --  context for a high-level language routine to be safely invoked.
+
+   function Interrupt_Vector_Get
+     (Vector : Interrupt_Vector) return Interrupt_Handler;
+   pragma Import (C, Interrupt_Vector_Get, "__gnat_interrupt_get");
+   --  Use this to get the existing handler for later restoral.
+
+   procedure Interrupt_Vector_Set
+     (Vector  : Interrupt_Vector;
+      Handler : Interrupt_Handler);
+   pragma Import (C, Interrupt_Vector_Set, "__gnat_interrupt_set");
+   --  Use this to restore a handler obtained using Interrupt_Vector_Get.
+
+   function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;
+   --  Convert a logical interrupt number to the hardware interrupt vector
+   --  number used to connect the interrupt.
+   pragma Import (
+      C,
+      Interrupt_Number_To_Vector,
+      "__gnat_interrupt_number_to_vector"
+   );
+
 private
 
    type sigset_t is new int;
@@ -533,7 +612,7 @@ private
       schedpolicy     : int;
       schedparam      : struct_sched_param;
       cputime_clocked_allowed : int;
-      deatchstate     : int;
+      detatchstate    : int;
    end record;
    pragma Convention (C, pthread_attr_t);
 

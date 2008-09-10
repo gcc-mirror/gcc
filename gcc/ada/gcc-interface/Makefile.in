@@ -1149,7 +1149,8 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-rtems.adb \
-  s-stchop.adb<s-stchop-rtems.adb
+  s-stchop.adb<s-stchop-rtems.adb \
+  s-interr.adb<s-interr-hwint.adb
 endif
 
 ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
