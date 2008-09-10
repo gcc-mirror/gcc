@@ -1,3 +1,8 @@
+2008-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36904
+	* gcc.target/powerpc/altivec-27.c: New test.
+
 2008-09-10  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/37333

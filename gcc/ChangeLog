@@ -1,3 +1,11 @@
+2008-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36904
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Return NULL
+	instead of tok->val.node if not expanding to something else.  Handle
+	intervening CPP_PADDING tokens.
+	(altivec_categorize_keyword): Remove unneeded comparisons.
+
 2008-09-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (phi_translate_1): Fix memory leak.
