@@ -1,4 +1,10 @@
 2008-09-10  Tobias Burnus  <burnus@net-b.de>
+	    H. J. Lu  <hongjiu.lu@intel.com>
+
+	* mk-sik-inc.sh: Make -Wunused-variable proof.
+	* mk-srk-inc.sh: Make -Wunused-variable proof.
+
+2008-09-10  Tobias Burnus  <burnus@net-b.de>
 
 	* mk-kinds-h.sh: Make -Wunused-variable proof.
 
