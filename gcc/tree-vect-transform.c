@@ -50,7 +50,7 @@ static bool vect_transform_stmt (gimple, gimple_stmt_iterator *, bool *,
 				 slp_tree, slp_instance);
 static tree vect_create_destination_var (tree, tree);
 static tree vect_create_data_ref_ptr 
-  (gimple, struct loop*, tree, tree *, gimple *, bool, bool *);
+  (gimple, struct loop*, tree, tree *, gimple *, bool, bool *, tree);
 static tree vect_create_addr_base_for_vector_ref 
   (gimple, gimple_seq *, tree, struct loop *);
 static tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
@@ -981,6 +981,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
         by the data-ref in STMT.
    4. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
         pointing to the initial address.
+   5. TYPE: if not NULL indicates the required type of the data-ref.
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
@@ -1010,7 +1011,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 static tree
 vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 			  tree offset, tree *initial_address, gimple *ptr_incr,
-			  bool only_init, bool *inv_p)
+			  bool only_init, bool *inv_p, tree type)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1069,7 +1070,10 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
     }
 
   /** (1) Create the new vector-pointer variable:  **/
-  vect_ptr_type = build_pointer_type (vectype);
+  if (type)
+    vect_ptr_type = build_pointer_type (type);
+  else
+    vect_ptr_type = build_pointer_type (vectype);
 
   vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                     get_name (base_name));
@@ -5372,7 +5376,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE, 
 						  &dummy, &ptr_incr, false, 
-						  &inv_p);
+						  &inv_p, TREE_TYPE (vec_oprnd));
 	  gcc_assert (!inv_p);
 	}
       else 
@@ -5610,7 +5614,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       pe = loop_preheader_edge (loop_for_initial_load);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-				      &init_addr, &inc, true, &inv_p);
+		                  &init_addr, &inc, true, &inv_p, NULL_TREE);
       data_ref = build1 (ALIGN_INDIRECT_REF, vectype, ptr);
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -6578,7 +6582,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
         dataref_ptr = vect_create_data_ref_ptr (first_stmt,
 					        at_loop, offset, 
 						&dummy, &ptr_incr, false, 
-						&inv_p);
+						&inv_p, NULL_TREE);
       else
         dataref_ptr = 
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
