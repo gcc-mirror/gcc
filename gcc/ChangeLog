@@ -1,3 +1,9 @@
+2008-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* value-prof.c (gimple_ic): Fix tuplification bug.
+	* sched-deps.c (sched_insns_conditions_mutex_p): Silence unitialized var
+	warning.
+
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37353

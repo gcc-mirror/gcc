@@ -527,7 +527,7 @@ bool
 sched_insns_conditions_mutex_p (const_rtx insn1, const_rtx insn2)
 {
   rtx cond1, cond2;
-  bool rev1, rev2;
+  bool rev1 = false, rev2 = false;
 
   /* df doesn't handle conditional lifetimes entirely correctly;
      calls mess up the conditional lifetimes.  */
