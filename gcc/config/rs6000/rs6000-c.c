@@ -102,16 +102,13 @@ altivec_categorize_keyword (const cpp_token *tok)
     {
       cpp_hashnode *ident = tok->val.node;
 
-      if (ident == C_CPP_HASHNODE (vector_keyword)
-	  || ident == C_CPP_HASHNODE (__vector_keyword))
+      if (ident == C_CPP_HASHNODE (vector_keyword))
 	return C_CPP_HASHNODE (__vector_keyword);
 
-      if (ident == C_CPP_HASHNODE (pixel_keyword)
-	  || ident ==  C_CPP_HASHNODE (__pixel_keyword))
+      if (ident == C_CPP_HASHNODE (pixel_keyword))
 	return C_CPP_HASHNODE (__pixel_keyword);
 
-      if (ident == C_CPP_HASHNODE (bool_keyword)
-	  || ident == C_CPP_HASHNODE (__bool_keyword))
+      if (ident == C_CPP_HASHNODE (bool_keyword))
 	return C_CPP_HASHNODE (__bool_keyword);
 
       return ident;
@@ -158,12 +155,18 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 
   ident = altivec_categorize_keyword (tok);
 
+  if (ident != expand_this)
+    expand_this = NULL;
+
   if (ident == C_CPP_HASHNODE (__vector_keyword))
     {
-      tok = cpp_peek_token (pfile, 0);
+      int idx = 0;
+      do
+	tok = cpp_peek_token (pfile, idx++);
+      while (tok->type == CPP_PADDING);
       ident = altivec_categorize_keyword (tok);
 
-      if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+      if (ident == C_CPP_HASHNODE (__pixel_keyword))
 	{
 	  expand_this = C_CPP_HASHNODE (__vector_keyword);
 	  expand_bool_pixel = __pixel_keyword;
@@ -178,8 +181,12 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 	  enum rid rid_code = (enum rid)(ident->rid_code);
 	  if (ident->type == NT_MACRO)
 	    {
-	      (void)cpp_get_token (pfile);
-	      tok = cpp_peek_token (pfile, 0);
+	      do
+		(void) cpp_get_token (pfile);
+	      while (--idx > 0);
+	      do
+		tok = cpp_peek_token (pfile, idx++);
+	      while (tok->type == CPP_PADDING);
 	      ident = altivec_categorize_keyword (tok);
 	      if (ident)
 		rid_code = (enum rid)(ident->rid_code);
@@ -193,19 +200,23 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 	      expand_this = C_CPP_HASHNODE (__vector_keyword);
 	      /* If the next keyword is bool or pixel, it
 		 will need to be expanded as well.  */
-	      tok = cpp_peek_token (pfile, 1);
+	      do
+		tok = cpp_peek_token (pfile, idx++);
+	      while (tok->type == CPP_PADDING);
 	      ident = altivec_categorize_keyword (tok);
 
-	      if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+	      if (ident == C_CPP_HASHNODE (__pixel_keyword))
 		expand_bool_pixel = __pixel_keyword;
 	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		expand_bool_pixel = __bool_keyword;
 	      else
 		{
 		  /* Try two tokens down, too.  */
-		  tok = cpp_peek_token (pfile, 2);
+		  do
+		    tok = cpp_peek_token (pfile, idx++);
+		  while (tok->type == CPP_PADDING);
 		  ident = altivec_categorize_keyword (tok);
-		  if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+		  if (ident == C_CPP_HASHNODE (__pixel_keyword))
 		    expand_bool_pixel = __pixel_keyword;
 		  else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		    expand_bool_pixel = __bool_keyword;
