@@ -1,5 +1,8 @@
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37338
+	* gimplify.c (gimplify_body): Call default_rtl_profile.
+
 	PR target/36904
 	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Return NULL
 	instead of tok->val.node if not expanding to something else.  Handle
