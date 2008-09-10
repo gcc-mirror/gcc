@@ -1,3 +1,9 @@
+2008-09-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37432
+	* tree-inline.c (insert_init_stmt): Make sure to not
+	insert invalid gimple stores.
+
 2008-09-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/37388

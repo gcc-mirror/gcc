@@ -1907,6 +1907,22 @@ insert_init_stmt (basic_block bb, gimple init_stmt)
     {
       gimple_stmt_iterator si = gsi_last_bb (bb);
 
+      /* We can end up with init statements that store to a non-register
+         from a rhs with a conversion.  Handle that here by forcing the
+	 rhs into a temporary.  gimple_regimplify_operands is not
+	 prepared to do this for us.  */
+      if (!is_gimple_reg (gimple_assign_lhs (init_stmt))
+	  && is_gimple_reg_type (TREE_TYPE (gimple_assign_lhs (init_stmt)))
+	  && gimple_assign_rhs_class (init_stmt) == GIMPLE_UNARY_RHS)
+	{
+	  tree rhs = build1 (gimple_assign_rhs_code (init_stmt),
+			     gimple_expr_type (init_stmt),
+			     gimple_assign_rhs1 (init_stmt));
+	  rhs = force_gimple_operand_gsi (&si, rhs, true, NULL_TREE, false,
+					  GSI_NEW_STMT);
+	  gimple_assign_set_rhs_code (init_stmt, TREE_CODE (rhs));
+	  gimple_assign_set_rhs1 (init_stmt, rhs);
+	}
       gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
       gimple_regimplify_operands (init_stmt, &si);
       mark_symbols_for_renaming (init_stmt);
