@@ -1034,7 +1034,8 @@ find_array_element (gfc_constructor *cons, gfc_array_ref *ar,
 	  cons = NULL;
 	  goto depart;
 	}
-        /* Check the bounds.  */
+
+      /* Check the bounds.  */
       if ((ar->as->upper[i]
 	   && ar->as->upper[i]->expr_type == EXPR_CONSTANT
 	   && mpz_cmp (e->value.integer,
