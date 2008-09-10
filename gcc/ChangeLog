@@ -1,3 +1,13 @@
+2008-09-10  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (workaround_speculation): Correct algorithm to
+	not lose track of the number of NOPs needed.  Number of NOPs needed
+	for sync vs. loads workaround was switched; corrected.  Run second
+	pass for all workarounds.  No NOPs needed after call insns.  Change
+	second pass to use find_next_insn_start and find_load helpers in order
+	to properly detect parallel insns.
+	* config/bfin/bfin.md (cbranch_with_nops): Increase length.
+
 2008-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* value-prof.c (gimple_ic): Fix tuplification bug.

@@ -2588,7 +2588,7 @@
   return "";
 }
   [(set_attr "type" "brcc")
-   (set_attr "length" "6")])
+   (set_attr "length" "8")])
 
 ;; setcc insns.  */
 (define_expand "seq"
