@@ -1,3 +1,9 @@
+2008-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (SWI32): New mode iterator.
+	(jcc_fused_1, jcc_fused_2, jcc_fused_3, jcc_fused_4): Use it instead
+	of SWI.
+
 2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/37435
