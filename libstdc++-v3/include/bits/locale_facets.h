@@ -1165,10 +1165,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void _M_widen_init() const;
     };
 
-  template<>
-    const ctype<char>&
-    use_facet<ctype<char> >(const locale& __loc);
-
 #ifdef _GLIBCXX_USE_WCHAR_T
   // 22.2.1.3  ctype<wchar_t> specialization
   /**
@@ -1470,10 +1466,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       _M_initialize_ctype();
     };
-
-  template<>
-    const ctype<wchar_t>&
-    use_facet<ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCXX_USE_WCHAR_T
 
   /// class ctype_byname [22.2.1.2].

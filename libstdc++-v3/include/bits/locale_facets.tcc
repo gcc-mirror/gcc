@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1284,6 +1284,10 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class ctype_byname<char>;
 
   extern template
+    const ctype<char>&
+    use_facet<ctype<char> >(const locale&);
+
+  extern template
     const numpunct<char>&
     use_facet<numpunct<char> >(const locale&);
 
@@ -1317,6 +1321,10 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class _GLIBCXX_LDBL_NAMESPACE num_get<wchar_t>;
   extern template class _GLIBCXX_LDBL_NAMESPACE num_put<wchar_t>;
   extern template class ctype_byname<wchar_t>;
+
+  extern template
+    const ctype<wchar_t>&
+    use_facet<ctype<wchar_t> >(const locale&);
 
   extern template
     const numpunct<wchar_t>&
