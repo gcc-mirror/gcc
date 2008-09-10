@@ -4800,12 +4800,6 @@ graphite_transform_loops (void)
 void
 graphite_transform_loops (void)
 {
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Graphite loop optimizations cannot be used.\n");
-      fprintf (dump_file, "GCC has not been configured with the required "
-	       "libraries for Graphite loop optimizations.");
-    }
   sorry ("Graphite loop optimizations cannot be used");
 }
 
