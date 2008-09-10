@@ -99,8 +99,6 @@ typedef struct input_domain
   bool is_ub_inclusive;
 } inp_domain;
 
-static VEC (gimple, heap) *cond_dead_built_in_calls;
-
 /* A helper function to construct and return an input
    domain object.  LB is the lower bound, HAS_LB is 
    a boolean flag indicating if the lower bound exists,
@@ -844,18 +842,18 @@ shrink_wrap_one_built_in_call (gimple bi_call)
    wrapping transformation.  */
 
 static bool
-shrink_wrap_conditional_dead_built_in_calls (void)
+shrink_wrap_conditional_dead_built_in_calls (VEC (gimple, heap) *calls)
 {
   bool changed = false;
   unsigned i = 0;
 
-  unsigned n = VEC_length (gimple, cond_dead_built_in_calls);
+  unsigned n = VEC_length (gimple, calls);
   if (n == 0) 
     return false;
 
   for (; i < n ; i++)
     {
-      gimple bi_call = VEC_index (gimple, cond_dead_built_in_calls, i);
+      gimple bi_call = VEC_index (gimple, calls, i);
       changed |= shrink_wrap_one_built_in_call (bi_call);
     }
 
@@ -870,8 +868,7 @@ tree_call_cdce (void)
   basic_block bb;
   gimple_stmt_iterator i;
   bool something_changed = false;
-  cond_dead_built_in_calls = VEC_alloc (gimple, heap, 64);
-
+  VEC (gimple, heap) *cond_dead_built_in_calls = NULL;
   FOR_EACH_BB (bb)
     {
       /* Collect dead call candidates.  */
@@ -887,12 +884,18 @@ tree_call_cdce (void)
                   print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
                   fprintf (dump_file, "\n");
                 }
-              VEC_quick_push (gimple, cond_dead_built_in_calls, stmt);
+	      if (cond_dead_built_in_calls == NULL)
+		cond_dead_built_in_calls = VEC_alloc (gimple, heap, 64);
+	      VEC_safe_push (gimple, heap, cond_dead_built_in_calls, stmt);
             }
 	}
     }
 
-  something_changed = shrink_wrap_conditional_dead_built_in_calls ();
+  if (cond_dead_built_in_calls == NULL)
+    return 0;
+
+  something_changed
+    = shrink_wrap_conditional_dead_built_in_calls (cond_dead_built_in_calls);
 
   VEC_free (gimple, heap, cond_dead_built_in_calls);
 

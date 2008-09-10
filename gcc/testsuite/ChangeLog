@@ -1,3 +1,8 @@
+2008-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37353
+	* gcc.dg/pr37353.c: New test.
+
 2008-09-10  Martin Michlmayr <tbm@cyrius.com>
 	    Ira Rosen  <irar@il.ibm.com>
 

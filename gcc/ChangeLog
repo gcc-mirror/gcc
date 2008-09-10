@@ -1,3 +1,14 @@
+2008-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37353
+	* tree-call-cdce.c (cond_dead_built_in_calls): Remove.
+	(shrink_wrap_conditional_dead_built_in_calls): Add calls argument, use
+	calls instead of cond_dead_built_in_calls.
+	(tree_call_cdce): Add cond_dead_built_in_calls automatic variable,
+	initalize the vector only before adding first entry.  Use VEC_safe_push
+	instead of VEC_quick_push.  Pass cond_dead_built_in_calls to
+	shrink_wrap_conditional_dead_built_in_calls call.
+
 2008-09-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37385
