@@ -1,5 +1,13 @@
 2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* config/locale/darwin/ctype_members.cc (ctype<char>::_M_narrow_init,
+	ctype<char>::_M_widen_init): Don't define here.
+	* config/locale/gnu/ctype_members.cc: Likewise.
+	* config/locale/generic/ctype_members.cc: Likewise.
+	* src/ctype.cc: Define here.
+
+2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/37455
 	* include/bits/locale_facets.h (ctype<char>::_M_narrow_init,
 	ctype<char>::_M_widen_init): Don't define inline.
