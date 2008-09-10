@@ -1,3 +1,14 @@
+2008-09-10  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37385
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Add a new argument,
+	and use it as a vector type if not NULL.
+	(vectorizable_store): Call vect_create_data_ref_ptr with the type of 
+	vectorized rhs.
+	(vect_setup_realignment): Call vect_create_data_ref_ptr with additional
+	argument.
+	(vectorizable_load): Likewise.
+
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (SWI32): New mode iterator.
