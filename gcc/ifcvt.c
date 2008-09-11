@@ -2459,7 +2459,7 @@ noce_process_if_block (struct noce_if_info *if_info)
    REGS.  COND is the condition we will test.  */
 
 static int
-check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) *regs, rtx cond)
+check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs, rtx cond)
 {
   rtx insn;
 
@@ -2520,7 +2520,7 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) *regs, rtx con
 
       vals[REGNO (dest)] = src;
 
-      VEC_safe_push (int, heap, regs, REGNO (dest));
+      VEC_safe_push (int, heap, *regs, REGNO (dest));
     }
 
   return TRUE;
@@ -2621,8 +2621,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   memset (else_vals, 0, size);
 
   /* Make sure the blocks are suitable.  */
-  if (!check_cond_move_block (then_bb, then_vals, then_regs, cond)
-      || (else_bb && !check_cond_move_block (else_bb, else_vals, else_regs, cond)))
+  if (!check_cond_move_block (then_bb, then_vals, &then_regs, cond)
+      || (else_bb && !check_cond_move_block (else_bb, else_vals, &else_regs, cond)))
     {
       VEC_free (int, heap, then_regs);
       VEC_free (int, heap, else_regs);
