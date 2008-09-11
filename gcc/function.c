@@ -286,6 +286,7 @@ free_after_compilation (struct function *f)
   f->cfg = NULL;
 
   regno_reg_rtx = NULL;
+  insn_locators_free ();
 }
 
 /* Return size needed for stack frame based on slots so far allocated.

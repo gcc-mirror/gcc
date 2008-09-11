@@ -2357,6 +2357,7 @@ extern const struct rtl_hooks general_rtl_hooks;
 #define gen_lowpart rtl_hooks.gen_lowpart
 
 extern void insn_locators_alloc (void);
+extern void insn_locators_free (void);
 extern void insn_locators_finalize (void);
 extern void set_curr_insn_source_location (location_t);
 extern void set_curr_insn_block (tree);
