@@ -27,8 +27,10 @@ void test(double x)
   if (pow(x,0.5) != sqrt(x))
     abort ();
 
+#ifdef HAVE_C99_RUNTIME
   if (pow(x,1.0/3.0) != cbrt(x))
     abort ();
+#endif
 }
 
 int main()

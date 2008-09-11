@@ -1,3 +1,7 @@
+2008-09-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtins-8.c: Condition cbrt test on HAVE_C99_RUNTIME.
+
 2008-09-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/tree-ssa/vrp47.c: New.
