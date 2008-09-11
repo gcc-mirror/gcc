@@ -110,16 +110,6 @@ struct ipa_replace_map
   bool ref_p;
 };
 
-/* ipa_param_flags contains various flags that describe how the associated
-   parameter is treated within a function. */
-struct ipa_param_flags
-{
-  /* Whether the value parameter has been modified within the function.  */
-  unsigned modified : 1;
-  /* Whether the parameter has been used as a call destination. */
-  unsigned called : 1;
-};
-
 /* Each instance of the following  structure describes a statement that calls a
    function parameter.  Those referring  to statements within the same function
    are linked in a list.  */
@@ -144,6 +134,19 @@ struct ipa_param_call_note
   bool processed;
 };
 
+/* Structure describing a single formal parameter.  */
+struct ipa_param_descriptor
+{
+  /* IPA-CP lattice.  */
+  struct ipcp_lattice ipcp_lattice;
+  /* PARAM_DECL of this parameter.  */
+  tree decl;
+  /* Whether the value parameter has been modified within the function.  */
+  unsigned modified : 1;
+  /* Whether the parameter has been used as a call destination. */
+  unsigned called : 1;
+};
+
 /* ipa_node_params stores information related to formal parameters of functions
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */
@@ -153,12 +156,9 @@ struct ipa_node_params
      this function's parameters would not be analyzed by the different
      stages of IPA CP.  */
   int param_count;
-  /* Array of lattices.  */
-  struct ipcp_lattice *ipcp_lattices;
-  /* Mapping each parameter to its PARM_DECL tree.  */
-  tree *param_decls;
-  /* Various flags describing individual parameters.  */
-  struct ipa_param_flags *param_flags;
+  /* Pointer to an array of structures describing individual formal
+     parameters.  */
+  struct ipa_param_descriptor *params;
   /* List of structures enumerating calls to a formal parameter.  */
   struct ipa_param_call_note *param_calls;
   /* Only for versioned nodes this field would not be NULL,
@@ -197,31 +197,33 @@ ipa_get_param_count (struct ipa_node_params *info)
   return info->param_count;
 }
 
-/* Returns the declaration of ith param of the corresponding node.  Note there
-   is no setter function as this array is built just once using
-   ipa_create_param_decls_array. */
+/* Return the declaration of Ith formal parameter of the function corresponding
+   to INFO.  Note there is no setter function as this array is built just once
+   using ipa_initialize_node_params. */
 static inline tree
-ipa_get_ith_param (struct ipa_node_params *info, int i)
+ipa_get_param (struct ipa_node_params *info, int i)
 {
-  return info->param_decls[i];
+  return info->params[i].decl;
 }
 
-/* Returns the modification flag corresponding to the ith parameter.  Note
-   there is no setter method as the goal is to set all flags when building the
-   array in ipa_detect_param_modifications.  */
+/* Return the modification flag corresponding to the Ith formal parameter of
+   the function associated with INFO.  Note that there is no setter method as
+   the goal is to set all flags when building the array in
+   ipa_detect_param_modifications.  */
 static inline bool
-ipa_is_ith_param_modified (struct ipa_node_params *info, int i)
+ipa_is_param_modified (struct ipa_node_params *info, int i)
 {
-  return info->param_flags[i].modified;
+  return info->params[i].modified;
 }
 
-/* Returns the called flag corresponding o the ith paramterer.  Note there is
-   no setter method as the goal is to set all flags when building the array in
+/* Return the called flag corresponding to the Ith formal parameter of the
+   function associated with INFO.  Note that there is no setter method as the
+   goal is to set all flags when building the array in
    ipa_detect_called_params.  */
 static inline bool
-ipa_is_ith_param_called (struct ipa_node_params *info, int i)
+ipa_is_param_called (struct ipa_node_params *info, int i)
 {
-  return info->param_flags[i].called;
+  return info->params[i].called;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
@@ -372,12 +374,11 @@ struct cgraph_node *ipa_pop_func_from_list (struct ipa_func_list **);
 void ipa_compute_jump_functions (struct cgraph_edge *);
 void ipa_count_arguments (struct cgraph_edge *);
 
-/* Function parameters related computations.  */
-void ipa_count_formal_params (struct cgraph_node *);
-void ipa_create_param_decls_array (struct cgraph_node *);
+/* Function formal parameters related computations.  */
+void ipa_initialize_node_params (struct cgraph_node *node);
 void ipa_detect_param_modifications (struct cgraph_node *);
 void ipa_analyze_params_uses (struct cgraph_node *);
-void ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
+bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
 
 /* Debugging interface.  */
