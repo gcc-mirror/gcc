@@ -1,3 +1,8 @@
+2008-09-11  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.c-torture/compile/pr11832.c: xfail on ia64-*-*.
+	* gcc.c-torture/compile/pr33009.c: Ditto.
+
 2008-09-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/dec-eval-method-2.c: New test.
