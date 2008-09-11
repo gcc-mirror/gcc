@@ -846,21 +846,34 @@ cgraph_node_remove_callers (struct cgraph_node *node)
 void
 cgraph_release_function_body (struct cgraph_node *node)
 {
-  if (DECL_STRUCT_FUNCTION (node->decl)
-      && DECL_STRUCT_FUNCTION (node->decl)->gimple_df)
+  if (DECL_STRUCT_FUNCTION (node->decl))
     {
       tree old_decl = current_function_decl;
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-      current_function_decl = node->decl;
-      delete_tree_ssa ();
-      delete_tree_cfg_annotations ();
-      cfun->eh = NULL;
-      gimple_set_body (node->decl, NULL);
-      current_function_decl = old_decl;
+      if (cfun->gimple_df)
+	{
+	  current_function_decl = node->decl;
+	  delete_tree_ssa ();
+	  delete_tree_cfg_annotations ();
+	  cfun->eh = NULL;
+	  current_function_decl = old_decl;
+	}
+      if (cfun->cfg)
+	{
+	  gcc_assert (dom_computed[0] == DOM_NONE);
+	  gcc_assert (dom_computed[1] == DOM_NONE);
+	  clear_edges ();
+	}
       pop_cfun();
+      gimple_set_body (node->decl, NULL);
+      VEC_free (ipa_opt_pass, heap,
+      		DECL_STRUCT_FUNCTION (node->decl)->ipa_transforms_to_apply);
+      /* Struct function hangs a lot of data that would leak if we didn't
+         removed all pointers to it.   */
+      ggc_free (DECL_STRUCT_FUNCTION (node->decl));
+      DECL_STRUCT_FUNCTION (node->decl) = NULL;
     }
   DECL_SAVED_TREE (node->decl) = NULL;
-  DECL_STRUCT_FUNCTION (node->decl) = NULL;
   DECL_INITIAL (node->decl) = error_mark_node;
 }
 

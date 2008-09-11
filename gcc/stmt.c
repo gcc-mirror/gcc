@@ -151,14 +151,8 @@ force_label_rtx (tree label)
 {
   rtx ref = label_rtx (label);
   tree function = decl_function_context (label);
-  struct function *p;
 
   gcc_assert (function);
-
-  if (function != current_function_decl)
-    p = find_function_data (function);
-  else
-    p = cfun;
 
   forced_labels = gen_rtx_EXPR_LIST (VOIDmode, ref, forced_labels);
   return ref;
