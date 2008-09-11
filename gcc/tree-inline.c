@@ -129,7 +129,7 @@ static void unsave_expr_1 (tree);
 static tree unsave_r (tree *, int *, void *);
 static void declare_inline_vars (tree, tree);
 static void remap_save_expr (tree *, void *, int *);
-static void add_lexical_block (tree current_block, tree new_block);
+static void prepend_lexical_block (tree current_block, tree new_block);
 static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
@@ -512,7 +512,10 @@ remap_blocks (tree block, copy_body_data *id)
   remap_block (&new_tree, id);
   gcc_assert (new_tree != block);
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    add_lexical_block (new_tree, remap_blocks (t, id));
+    prepend_lexical_block (new_tree, remap_blocks (t, id));
+  /* Blocks are in arbitrary order, but make things slightly prettier and do
+     not swap order when producing a copy.  */
+  BLOCK_SUBBLOCKS (new_tree) = blocks_nreverse (BLOCK_SUBBLOCKS (new_tree));
   return new_tree;
 }
 
@@ -3032,16 +3035,10 @@ count_insns_seq (gimple_seq seq, eni_weights *weights)
 /* Install new lexical TREE_BLOCK underneath 'current_block'.  */
 
 static void
-add_lexical_block (tree current_block, tree new_block)
+prepend_lexical_block (tree current_block, tree new_block)
 {
-  tree *blk_p;
-
-  /* Walk to the last sub-block.  */
-  for (blk_p = &BLOCK_SUBBLOCKS (current_block);
-       *blk_p;
-       blk_p = &BLOCK_CHAIN (*blk_p))
-    ;
-  *blk_p = new_block;
+  BLOCK_CHAIN (new_block) = BLOCK_SUBBLOCKS (current_block);
+  BLOCK_SUBBLOCKS (current_block) = new_block;
   BLOCK_SUPERCONTEXT (new_block) = current_block;
 }
 
@@ -3222,7 +3219,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   id->block = make_node (BLOCK);
   BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
   BLOCK_SOURCE_LOCATION (id->block) = input_location;
-  add_lexical_block (gimple_block (stmt), id->block);
+  prepend_lexical_block (gimple_block (stmt), id->block);
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */
@@ -3248,7 +3245,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   initialize_inlined_parameters (id, stmt, fn, bb);
 
   if (DECL_INITIAL (fn))
-    add_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+    prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
 
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */
