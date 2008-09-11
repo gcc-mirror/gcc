@@ -1,3 +1,66 @@
+2008-09-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_param_flags): Removed.
+	(struct ipa_param_descriptor): New structure.
+	(struct ipa_node_params): ipcp_lattices, param_decls and
+	param_flags moved to ipa_param_description.
+	(ipa_get_ith_param): Renamed to ipa_get_param, changed to access
+	descriptors.  Renamed all users.
+	(ipa_is_ith_param_modified): Renamed to ipa_is_param_modified,
+	changed to access descriptors.  Renamed all users.
+	(ipa_is_ith_param_called): Renamed to ipa_is_param_called, changed
+	to access descriptors. Renamed all users.
+	* ipa-cp.c (ipcp_init_cloned_node): Call
+	ipa_initialize_node_params instead of ipa_count_formal_params and
+	ipa_create_param_decls_array.
+	(ipcp_analyze_node): Likewise.
+	(ipcp_get_ith_lattice): Renamed to ipcp_get_lattice, changed to access
+	descriptors.  Renamed all users.
+	(ipcp_initialize_node_lattices): Remove allocation.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Call
+	ipa_initialize_node_params instead of ipa_count_formal_params and
+	ipa_create_param_decls_array.
+	* ipa-prop.c (ipa_create_param_decls_array): Renamed to
+	ipa_populate_param_decls, made static, added parameter info,
+	renamed mt to node, removed allocation, changed to use
+	descriptors.
+	(ipa_count_formal_params): Made static, added parameter info,
+	renamed mt to node.
+	(ipa_initialize_node_params): New function.
+	(ipa_check_stmt_modifications): Changed to use descriptors.
+	(ipa_detect_param_modifications): Removed allocation, changed to
+	use descriptors.
+	(ipa_note_param_call): Changed to use descriptors.
+	(ipa_analyze_params_uses): Removed allocation.
+	(ipa_free_node_params_substructures): Changed to use descriptors.
+	(ipa_edge_duplication_hook): Use the unused attribute.
+	(ipa_node_duplication_hook): Use the unused attribute, changed to
+	use descriptors, changed to duplicate descriptors.
+
+	* ipa-inline.c (cgraph_mark_inline_edge): New parameter new_edges,
+	changed all callers.  Call ipa_propagate_indirect_call_infos if doing
+	indirect inlining.  Made static.
+        (cgraph_decide_inlining): Freeing ipa-prop structures after inlining
+	functions called only once.
+	(cgraph_decide_recursive_inlining): Don't call
+	ipa_propagate_indirect_call_infos, pass new_edges to
+	cgraph_mark_inline_edge instead.
+	(cgraph_decide_inlining_of_small_functions): Don't call
+	ipa_propagate_indirect_call_infos, pass new_edges to
+	cgraph_mark_inline_edge instead.
+	(cgraph_decide_inlining): Don't call
+	ipa_propagate_indirect_call_infos.
+	* ipa-prop.c: Check that vectors are allocated.
+
+	* ipa-inline.c (cgraph_mark_inline_edge): Returns boolean, true
+	iff a new cgraph edges have been created.
+	(cgraph_decide_inlining): New variable redo_always_inline.
+	Flattening and always_inlining loop until callgraph stabilizes.
+	* ipa-prop.c (update_call_notes_after_inlining): Returns boolean,
+	true iff new cgraph edges have been created.
+	(propagate_info_to_inlined_callees): Likewise.
+	(ipa_propagate_indirect_call_infos): Likewise.
+
 2008-09-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vectorizer.c (slpeel_add_loop_guard): Fix types.

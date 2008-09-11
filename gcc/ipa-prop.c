@@ -102,52 +102,67 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
-    if (ipa_get_ith_param(info, i) == ptree)
+    if (ipa_get_param(info, i) == ptree)
       return i;
 
   return -1;
 }
 
-/* Insert the formal trees to the param_decls array in function MT.  */
-void
-ipa_create_param_decls_array (struct cgraph_node *mt)
+/* Populate the param_decl field in parameter descriptors of INFO that
+   corresponds to NODE.  */
+static void
+ipa_populate_param_decls (struct cgraph_node *node,
+			  struct ipa_node_params *info)
 {
   tree fndecl;
   tree fnargs;
   tree parm;
   int param_num;
-  struct ipa_node_params *info = IPA_NODE_REF (mt);
 
-  if (info->param_decls)
-    return;
-
-  info->param_decls = XCNEWVEC (tree, ipa_get_param_count (info));
-  fndecl = mt->decl;
+  fndecl = node->decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     {
-      info->param_decls[param_num] = parm;
+      info->params[param_num].decl = parm;
       param_num++;
     }
 }
 
-/* Count number of formals in MT. Insert the result to the 
-   ipa_node_params.  */
-void
-ipa_count_formal_params (struct cgraph_node *mt)
+/* Count number of formal parameters in NOTE. Store the result to the
+   appropriate field of INFO.  */
+static void
+ipa_count_formal_params (struct cgraph_node *node,
+			 struct ipa_node_params *info)
 {
   tree fndecl;
   tree fnargs;
   tree parm;
   int param_num;
 
-  fndecl = mt->decl;
+  fndecl = node->decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     param_num++;
-  ipa_set_param_count (IPA_NODE_REF (mt), param_num);
+  ipa_set_param_count (info, param_num);
+}
+
+/* Initialize the ipa_node_params structure associated with NODE by counting
+   the function parameters, creating the descriptors and populating their
+   param_decls.  */
+void
+ipa_initialize_node_params (struct cgraph_node *node)
+{
+  struct ipa_node_params *info = IPA_NODE_REF (node);
+
+  if (!info->params)
+    {
+      ipa_count_formal_params (node, info);
+      info->params = XCNEWVEC (struct ipa_param_descriptor,
+				    ipa_get_param_count (info));
+      ipa_populate_param_decls (node, info);
+    }
 }
 
 /* Check STMT to detect whether a formal parameter is directly modified within
@@ -173,13 +188,13 @@ ipa_check_stmt_modifications (struct ipa_node_params *info, gimple stmt)
 	lhs = SSA_NAME_VAR (lhs);
       index = ipa_get_param_decl_index (info, lhs);
       if (index >= 0)
-	info->param_flags[index].modified = true;
+	info->params[index].modified = true;
       break;
 
     case GIMPLE_ASM:
       /* Asm code could modify any of the parameters.  */
       for (j = 0; j < ipa_get_param_count (info); j++)
-	info->param_flags[j].modified = true;
+	info->params[j].modified = true;
       break;
 
     default:
@@ -205,10 +220,6 @@ ipa_detect_param_modifications (struct cgraph_node *node)
   if (ipa_get_param_count (info) == 0 || info->modification_analysis_done)
     return;
 
-  if (!info->param_flags)
-    info->param_flags = XCNEWVEC (struct ipa_param_flags,
-				  ipa_get_param_count (info));
-
   func = DECL_STRUCT_FUNCTION (decl);
   FOR_EACH_BB_FN (bb, func)
     {
@@ -221,8 +232,8 @@ ipa_detect_param_modifications (struct cgraph_node *node)
 
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
-    if (TREE_ADDRESSABLE (ipa_get_ith_param (info, i)))
-      info->param_flags[i].modified = true;
+    if (TREE_ADDRESSABLE (ipa_get_param (info, i)))
+      info->params[i].modified = true;
 
   info->modification_analysis_done = 1;
 }
@@ -402,7 +413,7 @@ compute_pass_through_member_ptrs (struct ipa_node_params *info,
 	      int index = ipa_get_param_decl_index (info, arg);
 
 	      gcc_assert (index >=0);
-	      if (!ipa_is_ith_param_modified (info, index))
+	      if (!ipa_is_param_modified (info, index))
 		{
 		  functions[num].type = IPA_PASS_THROUGH;
 		  functions[num].value.formal_id = index;
@@ -613,7 +624,7 @@ ipa_note_param_call (struct ipa_node_params *info, int formal_id,
   struct ipa_param_call_note *note;
   basic_block bb = gimple_bb (stmt);
 
-  info->param_flags[formal_id].called = 1;
+  info->params[formal_id].called = 1;
 
   note = XCNEW (struct ipa_param_call_note);
   note->formal_id = formal_id;
@@ -788,7 +799,7 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
     return;
 
   index = ipa_get_param_decl_index (info, rec);
-  if (index >= 0 && !ipa_is_ith_param_modified (info, index))
+  if (index >= 0 && !ipa_is_param_modified (info, index))
     ipa_note_param_call (info, index, call);
 
   return;
@@ -818,9 +829,6 @@ ipa_analyze_params_uses (struct cgraph_node *node)
 
   if (ipa_get_param_count (info) == 0 || info->uses_analysis_done)
     return;
-  if (!info->param_flags)
-    info->param_flags = XCNEWVEC (struct ipa_param_flags,
-				  ipa_get_param_count (info));
 
   func = DECL_STRUCT_FUNCTION (decl);
   FOR_EACH_BB_FN (bb, func)
@@ -891,8 +899,8 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
    assuming NODE is (potentially indirectly) inlined into CS->callee.
    Moreover, if the callee is discovered to be constant, create a new cgraph
    edge for it.  Newly discovered indirect edges will be added to *NEW_EDGES,
-   unless NEW_EDGES is NULL.  */
-static void
+   unless NEW_EDGES is NULL.  Return true iff a new edge(s) were created.  */
+static bool
 update_call_notes_after_inlining (struct cgraph_edge *cs,
 				  struct cgraph_node *node,
 				  VEC (cgraph_edge_p, heap) **new_edges)
@@ -900,6 +908,7 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
   struct ipa_node_params *info = IPA_NODE_REF (node);
   struct ipa_edge_args *top = IPA_EDGE_REF (cs);
   struct ipa_param_call_note *nt;
+  bool res = false;
 
   for (nt = info->param_calls; nt; nt = nt->next)
     {
@@ -940,6 +949,7 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 	  if (!callee || !callee->local.inlinable)
 	    continue;
 
+	  res = true;
 	  if (dump_file)
 	    print_edge_addition_message (dump_file, nt, jfunc, node);
 
@@ -953,6 +963,7 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 	  top = IPA_EDGE_REF (cs);
 	}
     }
+  return res;
 }
 
 /* Recursively traverse subtree of NODE (including node) made of inlined
@@ -960,32 +971,43 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
    update_call_notes_after_inlining on all nodes and
    update_jump_functions_after_inlining on all non-inlined edges that lead out
    of this subtree.  Newly discovered indirect edges will be added to
-   *NEW_EDGES, unless NEW_EDGES is NULL.  */
-static void
+   *NEW_EDGES, unless NEW_EDGES is NULL.  Return true iff a new edge(s) were
+   created.  */
+static bool
 propagate_info_to_inlined_callees (struct cgraph_edge *cs,
 				   struct cgraph_node *node,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
   struct cgraph_edge *e;
+  bool res;
 
-  update_call_notes_after_inlining (cs, node, new_edges);
+  res = update_call_notes_after_inlining (cs, node, new_edges);
 
   for (e = node->callees; e; e = e->next_callee)
     if (!e->inline_failed)
-      propagate_info_to_inlined_callees (cs, e->callee, new_edges);
+      res |= propagate_info_to_inlined_callees (cs, e->callee, new_edges);
     else
       update_jump_functions_after_inlining (cs, e);
+
+  return res;
 }
 
 /* Update jump functions and call note functions on inlining the call site CS.
    CS is expected to lead to a node already cloned by
    cgraph_clone_inline_nodes.  Newly discovered indirect edges will be added to
-   *NEW_EDGES, unless NEW_EDGES is NULL.  */
-void
+   *NEW_EDGES, unless NEW_EDGES is NULL.  Return true iff a new edge(s) were +
+   created.  */
+bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
-  propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  /* Do nothing if the preparation phase has not been carried out yet
+     (i.e. during early inlining).  */
+  if (!ipa_node_params_vector)
+    return false;
+  gcc_assert (ipa_edge_args_vector);
+
+  return propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
 }
 
 /* Frees all dynamically allocated structures that the argument info points
@@ -1020,12 +1042,8 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_node_params_substructures (struct ipa_node_params *info)
 {
-  if (info->ipcp_lattices)
-    free (info->ipcp_lattices);
-  if (info->param_decls)
-    free (info->param_decls);
-  if (info->param_flags)
-    free (info->param_flags);
+  if (info->params)
+    free (info->params);
 
   while (info->param_calls)
     {
@@ -1091,7 +1109,7 @@ duplicate_array (void *src, size_t n)
 /* Hook that is called by cgraph.c when a node is duplicated.  */
 static void
 ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
-			   void *data)
+			   __attribute__((unused)) void *data)
 {
   struct ipa_edge_args *old_args, *new_args;
   int arg_count;
@@ -1106,13 +1124,12 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
   new_args->jump_functions = (struct ipa_jump_func *)
     duplicate_array (old_args->jump_functions,
 		     sizeof (struct ipa_jump_func) * arg_count);
-  data = data; 			/* Suppressing compiler warning.  */
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
 static void
 ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
-			   void *data)
+			   __attribute__((unused)) void *data)
 {
   struct ipa_node_params *old_info, *new_info;
   struct ipa_param_call_note *note;
@@ -1124,15 +1141,9 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   param_count = ipa_get_param_count (old_info);
 
   ipa_set_param_count (new_info, param_count);
-  new_info->ipcp_lattices = (struct ipcp_lattice *)
-    duplicate_array (old_info->ipcp_lattices,
-		     sizeof (struct ipcp_lattice) * param_count);
-  new_info->param_decls = (tree *)
-    duplicate_array (old_info->param_decls, sizeof (tree) * param_count);
-  new_info->param_flags = (struct ipa_param_flags *)
-    duplicate_array (old_info->param_flags,
-		     sizeof (struct ipa_param_flags) * param_count);
-
+  new_info->params = (struct ipa_param_descriptor *)
+    duplicate_array (old_info->params,
+		     sizeof (struct ipa_param_descriptor) * param_count);
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
   new_info->count_scale = old_info->count_scale;
 
@@ -1146,8 +1157,6 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       nn->next = new_info->param_calls;
       new_info->param_calls = nn;
     }
-
-  data = data; 			/* Suppressing compiler warning.  */
 }
 
 /* Register our cgraph hooks if they are not already there.  */
@@ -1221,13 +1230,13 @@ ipa_print_node_params (FILE * f, struct cgraph_node *node)
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
     {
-      temp = ipa_get_ith_param (info, i);
+      temp = ipa_get_param (info, i);
       if (TREE_CODE (temp) == PARM_DECL)
 	fprintf (f, "    param %d : %s", i,
 		 (*lang_hooks.decl_printable_name) (temp, 2));
-      if (ipa_is_ith_param_modified (info, i))
+      if (ipa_is_param_modified (info, i))
 	fprintf (f, " modified");
-      if (ipa_is_ith_param_called (info, i))
+      if (ipa_is_param_called (info, i))
 	fprintf (f, " called");
       fprintf (f, "\n");
     }

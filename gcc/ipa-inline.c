@@ -243,15 +243,19 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       cgraph_clone_inlined_nodes (e, duplicate, update_original);
 }
 
-/* Mark edge E as inlined and update callgraph accordingly. 
-   UPDATE_ORIGINAL specify whether profile of original function should be
-   updated. */
+/* Mark edge E as inlined and update callgraph accordingly.  UPDATE_ORIGINAL
+   specify whether profile of original function should be updated.  If any new
+   indirect edges are discovered in the process, add them to NEW_EDGES, unless
+   it is NULL.  Return true iff any new callgraph edges were discovered as a
+   result of inlining.  */
 
-void
-cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original)
+static bool
+cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
+			 VEC (cgraph_edge_p, heap) **new_edges)
 {
   int old_insns = 0, new_insns = 0;
   struct cgraph_node *to = NULL, *what;
+  struct cgraph_edge *curr = e;
 
   if (e->callee->inline_decl)
     cgraph_redirect_edge_callee (e, cgraph_node (e->callee->inline_decl));
@@ -281,6 +285,11 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original)
   if (new_insns > old_insns)
     overall_insns += new_insns - old_insns;
   ncalls_inlined++;
+
+  if (flag_indirect_inlining)
+    return ipa_propagate_indirect_call_infos (curr, new_edges);
+  else
+    return false;
 }
 
 /* Mark all calls of EDGE->CALLEE inlined into EDGE->CALLER.
@@ -302,7 +311,7 @@ cgraph_mark_inline (struct cgraph_edge *edge)
       next = e->next_caller;
       if (e->caller == to && e->inline_failed)
 	{
-          cgraph_mark_inline_edge (e, true);
+          cgraph_mark_inline_edge (e, true, NULL);
 	  if (e == edge)
 	    edge = next;
 	}
@@ -747,9 +756,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
 	  fprintf (dump_file, "\n");
 	}
       cgraph_redirect_edge_callee (curr, master_clone);
-      cgraph_mark_inline_edge (curr, false);
-      if (flag_indirect_inlining)
-	ipa_propagate_indirect_call_infos (curr, new_edges);
+      cgraph_mark_inline_edge (curr, false, new_edges);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
     }
@@ -1002,12 +1009,10 @@ cgraph_decide_inlining_of_small_functions (void)
 	      continue;
 	    }
 	  callee = edge->callee;
-	  cgraph_mark_inline_edge (edge, true);
+	  cgraph_mark_inline_edge (edge, true, &new_indirect_edges);
 	  if (flag_indirect_inlining)
-	    {
-	      ipa_propagate_indirect_call_infos (edge, &new_indirect_edges);
-	      add_new_edges_to_heap (heap, new_indirect_edges);
-	    }
+	    add_new_edges_to_heap (heap, new_indirect_edges);
+
 	  update_callee_keys (heap, callee, updated_nodes);
 	}
       where = edge->caller;
@@ -1070,6 +1075,7 @@ cgraph_decide_inlining (void)
   int old_insns = 0;
   int i;
   int initial_insns = 0;
+  bool redo_always_inline = true;
 
   cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
 
@@ -1103,68 +1109,69 @@ cgraph_decide_inlining (void)
 
   /* In the first pass mark all always_inline edges.  Do this with a priority
      so none of our later choices will make this impossible.  */
-  for (i = nnodes - 1; i >= 0; i--)
+  while (redo_always_inline)
     {
-      struct cgraph_edge *e, *next;
-
-      node = order[i];
-
-      /* Handle nodes to be flattened, but don't update overall unit size.  */
-      if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) != NULL)
-        {
-  	  if (dump_file)
-    	    fprintf (dump_file,
-	     	     "Flattening %s\n", cgraph_node_name (node));
-	  cgraph_decide_inlining_incrementally (node, INLINE_ALL, 0);
-        }
-
-      if (!node->local.disregard_inline_limits)
-	continue;
-      if (dump_file)
-	fprintf (dump_file,
-		 "\nConsidering %s %i insns (always inline)\n",
-		 cgraph_node_name (node), node->global.insns);
-      old_insns = overall_insns;
-      for (e = node->callers; e; e = next)
+      redo_always_inline = false;
+      for (i = nnodes - 1; i >= 0; i--)
 	{
-	  next = e->next_caller;
-	  if (!e->inline_failed || gimple_call_cannot_inline_p (e->call_stmt))
-	    continue;
-	  if (cgraph_recursive_inlining_p (e->caller, e->callee,
-				  	   &e->inline_failed))
-	    continue;
-	  if (!tree_can_inline_p (e->caller->decl, e->callee->decl))
+	  struct cgraph_edge *e, *next;
+
+	  node = order[i];
+
+	  /* Handle nodes to be flattened, but don't update overall unit
+	     size.  */
+	  if (lookup_attribute ("flatten",
+				DECL_ATTRIBUTES (node->decl)) != NULL)
 	    {
-	      gimple_call_set_cannot_inline (e->call_stmt, true);
-	      continue;
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Flattening %s\n", cgraph_node_name (node));
+	      cgraph_decide_inlining_incrementally (node, INLINE_ALL, 0);
 	    }
-	  cgraph_mark_inline_edge (e, true);
-	  if (flag_indirect_inlining)
-	    ipa_propagate_indirect_call_infos (e, NULL);
+
+	  if (!node->local.disregard_inline_limits)
+	    continue;
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "\nConsidering %s %i insns (always inline)\n",
+		     cgraph_node_name (node), node->global.insns);
+	  old_insns = overall_insns;
+	  for (e = node->callers; e; e = next)
+	    {
+	      next = e->next_caller;
+	      if (!e->inline_failed
+		  || gimple_call_cannot_inline_p (e->call_stmt))
+		continue;
+	      if (cgraph_recursive_inlining_p (e->caller, e->callee,
+					       &e->inline_failed))
+		continue;
+	      if (!tree_can_inline_p (e->caller->decl, e->callee->decl))
+		{
+		  gimple_call_set_cannot_inline (e->call_stmt, true);
+		  continue;
+		}
+	      if (cgraph_mark_inline_edge (e, true, NULL))
+		redo_always_inline = true;
+	      if (dump_file)
+		fprintf (dump_file,
+			 " Inlined into %s which now has %i insns.\n",
+			 cgraph_node_name (e->caller),
+			 e->caller->global.insns);
+	    }
+	  /* Inlining self recursive function might introduce new calls to
+	     themselves we didn't see in the loop above.  Fill in the proper
+	     reason why inline failed.  */
+	  for (e = node->callers; e; e = e->next_caller)
+	    if (e->inline_failed)
+	      e->inline_failed = N_("recursive inlining");
 	  if (dump_file)
 	    fprintf (dump_file, 
-		     " Inlined into %s which now has %i insns.\n",
-		     cgraph_node_name (e->caller),
-		     e->caller->global.insns);
+		     " Inlined for a net change of %+i insns.\n",
+		     overall_insns - old_insns);
 	}
-      /* Inlining self recursive function might introduce new calls to
-	 themselves we didn't see in the loop above.  Fill in the proper
-	 reason why inline failed.  */
-      for (e = node->callers; e; e = e->next_caller)
-	if (e->inline_failed)
-	  e->inline_failed = N_("recursive inlining");
-      if (dump_file)
-	fprintf (dump_file, 
-		 " Inlined for a net change of %+i insns.\n",
-		 overall_insns - old_insns);
     }
 
   cgraph_decide_inlining_of_small_functions ();
-
-  /* After this point, any edge discovery performed by indirect inlining is no
-     good so let's give up. */
-  if (flag_indirect_inlining)
-    free_all_ipa_structures_after_iinln ();
 
   if (flag_inline_functions_called_once)
     {
@@ -1219,6 +1226,10 @@ cgraph_decide_inlining (void)
 	    }
 	}
     }
+
+  /* Free ipa-prop structures if they are no longer needed.  */
+  if (flag_indirect_inlining)
+    free_all_ipa_structures_after_iinln ();
 
   if (dump_file)
     fprintf (dump_file,
@@ -1635,8 +1646,7 @@ inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 
   if (!flag_ipa_cp)
     {
-      ipa_count_formal_params (node);
-      ipa_create_param_decls_array (node);
+      ipa_initialize_node_params (node);
       ipa_detect_param_modifications (node);
     }
   ipa_analyze_params_uses (node);
