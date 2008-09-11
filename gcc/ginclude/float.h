@@ -233,8 +233,8 @@ Boston, MA 02110-1301, USA.  */
 	 2  evaluate all operations and constants to the range and
 	    precision of the _Decimal128 type.  */
 
-#undef DECFLT_EVAL_METHOD
-#define DECFLT_EVAL_METHOD	__DECFLT_EVAL_METHOD__
+#undef DEC_EVAL_METHOD
+#define DEC_EVAL_METHOD	__DEC_EVAL_METHOD__
 
 #endif /* __STDC_WANT_DEC_FP__ */
 

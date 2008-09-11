@@ -1,3 +1,7 @@
+2008-09-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* ginclude/float.h (DEC_EVAL_METHOD): Correct the macro name.
+
 2008-09-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Avoid
