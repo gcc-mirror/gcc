@@ -271,6 +271,19 @@ insn_locators_finalize (void)
   curr_rtl_loc = -1;
 }
 
+/* Allocate insn locator datastructure.  */
+void
+insn_locators_free (void)
+{
+  prologue_locator = epilogue_locator = 0;
+
+  VEC_free (int, heap, block_locators_locs);
+  VEC_free (tree,gc, block_locators_blocks);
+  VEC_free (int, heap, locations_locators_locs);
+  VEC_free (location_t, heap, locations_locators_vals);
+}
+
+
 /* Set current location.  */
 void
 set_curr_insn_source_location (location_t location)

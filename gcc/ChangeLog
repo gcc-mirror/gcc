@@ -1,5 +1,11 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* function.c (free_after_compilation): Call insn_locators_free.
+	* cfglayout.c (insn_locators_free): New function.
+	* rtl.h (insn_locators_free): Declare.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* ifcvt.c (check_cond_move_block): Make regs argument pointer to vector pointer.
 	(cond_move_process_if_block): Update call.
 
