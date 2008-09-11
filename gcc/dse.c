@@ -1445,7 +1445,7 @@ find_shift_sequence (int access_size,
        new_mode = GET_MODE_WIDER_MODE (new_mode))
     {
       rtx target, new_reg, shift_seq, insn, new_lhs;
-      int cost, offset;
+      int cost;
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
@@ -1458,11 +1458,6 @@ find_shift_sequence (int access_size,
 	 desirable or not possible.  */
       if (!CONSTANT_P (store_info->rhs)
 	  && !MODES_TIEABLE_P (new_mode, store_mode))
-	continue;
-      offset = subreg_lowpart_offset (new_mode, store_mode);
-      new_lhs = simplify_gen_subreg (new_mode, copy_rtx (store_info->rhs),
-				     store_mode, offset);
-      if (new_lhs == NULL_RTX)
 	continue;
 
       new_reg = gen_reg_rtx (new_mode);
@@ -1494,6 +1489,11 @@ find_shift_sequence (int access_size,
 	 but in practice the answer will depend only on ACCESS_SIZE.  */
 
       if (cost > COSTS_N_INSNS (1))
+	continue;
+
+      new_lhs = extract_low_bits (new_mode, store_mode,
+				  copy_rtx (store_info->rhs));
+      if (new_lhs == NULL_RTX)
 	continue;
 
       /* We found an acceptable shift.  Generate a move to

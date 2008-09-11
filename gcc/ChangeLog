@@ -1,3 +1,10 @@
+2008-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37382
+	* expmed.c (extract_low_bits): Avoid creating invalid subregs.
+	* dse.c (find_shift_sequence): Use extract_low_bits instead of
+	simplify_gen_subreg.
+
 2008-09-11  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-transform.c (vectorizable_store): Use the rhs vector type

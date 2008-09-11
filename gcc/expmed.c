@@ -1991,8 +1991,22 @@ extract_low_bits (enum machine_mode mode, enum machine_mode src_mode, rtx src)
     return src;
 
   if (CONSTANT_P (src))
-    return simplify_gen_subreg (mode, src, src_mode,
-				subreg_lowpart_offset (mode, src_mode));
+    {
+      /* simplify_gen_subreg can't be used here, as if simplify_subreg
+	 fails, it will happily create (subreg (symbol_ref)) or similar
+	 invalid SUBREGs.  */
+      unsigned int byte = subreg_lowpart_offset (mode, src_mode);
+      rtx ret = simplify_subreg (mode, src, src_mode, byte);
+      if (ret)
+	return ret;
+
+      if (GET_MODE (src) == VOIDmode
+	  || !validate_subreg (mode, src_mode, src, byte))
+	return NULL_RTX;
+
+      src = force_reg (GET_MODE (src), src);
+      return gen_rtx_SUBREG (mode, src, byte);
+    }
 
   if (GET_MODE_CLASS (mode) == MODE_CC || GET_MODE_CLASS (src_mode) == MODE_CC)
     return NULL_RTX;
