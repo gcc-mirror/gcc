@@ -3200,6 +3200,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   /* FORNOW: the only supported permutation is 0..01..1.. of length equal to 
      GROUP_SIZE and where each sequence of same drs is of GROUP_SIZE length as 
      well.  */
+  if (VEC_length (int, load_permutation)
+      != (unsigned int) (group_size * group_size))
+    return false;
+
   supported = true;
   for (j = 0; j < group_size; j++)
     {
