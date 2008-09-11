@@ -1,5 +1,10 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/37448
+	* cgraph.c (cgraph_create_edge): Use !cgraph_edge for sanity check.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-pre.c (phi_translate_1): Fix memory leak
 
 2008-09-11  Jan Hubicka  <jh@suse.cz>
