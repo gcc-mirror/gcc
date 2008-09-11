@@ -1,3 +1,15 @@
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (dump_memory_report): Call dump_vec_loc_statistics.
+	* vec.c: Include hashtab.h
+	(vec_descriptor, ptr_hash_entry): New structures.
+	(vec_desc_hash, vec_ptr_map): New static variables.
+	(hash_descriptor, eq_descriptor, hash_ptr, eq_ptr, vec_descriptor,
+	register_overhead, free_overhead, vec_heap_free): New functions.
+	(vec_gc_o_reserve_1): ggc_free when resizing to 0.
+	(vec_heap_o_reserve_1): free when resizing to 0; add statistics.
+	(cmp_statistic, add_statistics, dump_vec_loc_statistics): New functions.
+
 2008-09-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37474

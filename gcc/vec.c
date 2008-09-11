@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "coretypes.h"
 #include "toplev.h"
+#include "hashtab.h"
 
 struct vec_prefix 
 {
@@ -38,6 +39,135 @@ struct vec_prefix
   unsigned alloc;
   void *vec[1];
 };
+
+
+#ifdef GATHER_STATISTICS
+
+/* Store information about each particular vector.  */
+struct vec_descriptor
+{
+  const char *function;
+  const char *file;
+  int line;
+  size_t allocated;
+  size_t times;
+  size_t peak;
+};
+
+
+/* Hashtable mapping vec addresses to descriptors.  */
+static htab_t vec_desc_hash;
+
+/* Hashtable helpers.  */
+static hashval_t
+hash_descriptor (const void *p)
+{
+  const struct vec_descriptor *const d =
+    (const struct vec_descriptor *) p;
+  return htab_hash_pointer (d->file) + d->line;
+}
+static int
+eq_descriptor (const void *p1, const void *p2)
+{
+  const struct vec_descriptor *const d = (const struct vec_descriptor *) p1;
+  const struct vec_descriptor *const l = (const struct vec_descriptor *) p2;
+  return d->file == l->file && d->function == l->function && d->line == l->line;
+}
+
+/* Hashtable converting address of allocated field to loc descriptor.  */
+static htab_t ptr_hash;
+struct ptr_hash_entry
+{
+  void *ptr;
+  struct vec_descriptor *loc;
+  size_t allocated;
+};
+
+/* Hash table helpers functions.  */
+static hashval_t
+hash_ptr (const void *p)
+{
+  const struct ptr_hash_entry *const d = (const struct ptr_hash_entry *) p;
+
+  return htab_hash_pointer (d->ptr);
+}
+
+static int
+eq_ptr (const void *p1, const void *p2)
+{
+  const struct ptr_hash_entry *const p = (const struct ptr_hash_entry *) p1;
+
+  return (p->ptr == p2);
+}
+
+/* Return descriptor for given call site, create new one if needed.  */
+static struct vec_descriptor *
+vec_descriptor (const char *name, int line, const char *function)
+{
+  struct vec_descriptor loc;
+  struct vec_descriptor **slot;
+
+  loc.file = name;
+  loc.line = line;
+  loc.function = function;
+  if (!vec_desc_hash)
+    vec_desc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+
+  slot = (struct vec_descriptor **) htab_find_slot (vec_desc_hash, &loc, 1);
+  if (*slot)
+    return *slot;
+  *slot = XCNEW (struct vec_descriptor);
+  (*slot)->file = name;
+  (*slot)->line = line;
+  (*slot)->function = function;
+  (*slot)->allocated = 0;
+  (*slot)->peak = 0;
+  return *slot;
+}
+
+/* Account the overhead.  */
+static void
+register_overhead (struct vec_prefix *ptr, size_t size,
+		   const char *name, int line, const char *function)
+{
+  struct vec_descriptor *loc = vec_descriptor (name, line, function);
+  struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
+  PTR *slot;
+
+  p->ptr = ptr;
+  p->loc = loc;
+  p->allocated = size;
+  if (!ptr_hash)
+    ptr_hash = htab_create (10, hash_ptr, eq_ptr, NULL);
+  slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr), INSERT);
+  gcc_assert (!*slot);
+  *slot = p;
+
+  loc->allocated += size;
+  if (loc->peak < loc->allocated)
+    loc->peak += loc->allocated;
+  loc->times++;
+}
+
+/* Notice that the pointer has been freed.  */
+static void
+free_overhead (struct vec_prefix *ptr)
+{
+  PTR *slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr),
+					NO_INSERT);
+  struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
+  p->loc->allocated -= p->allocated;
+  htab_clear_slot (ptr_hash, slot);
+  free (p);
+}
+
+void
+vec_heap_free (void *ptr)
+{
+  free_overhead ((struct vec_prefix *)ptr);
+  free (ptr);
+}
+#endif
 
 /* Calculate the new ALLOC value, making sure that RESERVE slots are
    free.  If EXACT grow exactly, otherwise grow exponentially.  */
@@ -99,7 +229,11 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
   unsigned alloc = alloc = calculate_allocation (pfx, reserve, exact);
   
   if (!alloc)
-    return NULL;
+    {
+      if (pfx)
+        ggc_free (pfx);
+      return NULL;
+    }
   
   vec = ggc_realloc_stat (vec, vec_offset + alloc * elt_size PASS_MEM_STAT);
   ((struct vec_prefix *)vec)->alloc = alloc;
@@ -171,12 +305,26 @@ vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
   unsigned alloc = calculate_allocation (pfx, reserve, exact);
 
   if (!alloc)
-    return NULL;
+    {
+      if (pfx)
+        vec_heap_free (pfx);
+      return NULL;
+    }
+
+#ifdef GATHER_STATISTICS
+  if (vec)
+    free_overhead (pfx);
+#endif
   
   vec = xrealloc (vec, vec_offset + alloc * elt_size);
   ((struct vec_prefix *)vec)->alloc = alloc;
   if (!pfx)
     ((struct vec_prefix *)vec)->num = 0;
+#ifdef GATHER_STATISTICS
+  if (vec)
+    register_overhead ((struct vec_prefix *)vec,
+    		       vec_offset + alloc * elt_size PASS_MEM_STAT);
+#endif
   
   return vec;
 }
@@ -234,3 +382,80 @@ vec_assert_fail (const char *op, const char *struct_name,
 		  struct_name, op, function, trim_filename (file), line);
 }
 #endif
+
+#ifdef GATHER_STATISTICS
+/* Helper for qsort; sort descriptors by amount of memory consumed.  */
+static int
+cmp_statistic (const void *loc1, const void *loc2)
+{
+  const struct vec_descriptor *const l1 =
+    *(const struct vec_descriptor *const *) loc1;
+  const struct vec_descriptor *const l2 =
+    *(const struct vec_descriptor *const *) loc2;
+  long diff;
+  diff = l1->allocated - l2->allocated;
+  if (!diff)
+    diff = l1->peak - l2->peak;
+  if (!diff)
+    diff = l1->times - l2->times;
+  return diff > 0 ? 1 : diff < 0 ? -1 : 0;
+}
+/* Collect array of the descriptors from hashtable.  */
+static struct vec_descriptor **loc_array;
+static int
+add_statistics (void **slot, void *b)
+{
+  int *n = (int *)b;
+  loc_array[*n] = (struct vec_descriptor *) *slot;
+  (*n)++;
+  return 1;
+}
+
+/* Dump per-site memory statistics.  */
+#endif
+void
+dump_vec_loc_statistics (void)
+{
+#ifdef GATHER_STATISTICS
+  int nentries = 0;
+  char s[4096];
+  size_t allocated = 0;
+  size_t times = 0;
+  int i;
+
+  loc_array = XCNEWVEC (struct vec_descriptor *, vec_desc_hash->n_elements);
+  fprintf (stderr, "Heap vectors:\n");
+  fprintf (stderr, "\n%-48s %10s       %10s       %10s\n",
+	   "source location", "Leak", "Peak", "Times");
+  fprintf (stderr, "-------------------------------------------------------\n");
+  htab_traverse (vec_desc_hash, add_statistics, &nentries);
+  qsort (loc_array, nentries, sizeof (*loc_array), cmp_statistic);
+  for (i = 0; i < nentries; i++)
+    {
+      struct vec_descriptor *d = loc_array[i];
+      allocated += d->allocated;
+      times += d->times;
+    }
+  for (i = 0; i < nentries; i++)
+    {
+      struct vec_descriptor *d = loc_array[i];
+      const char *s1 = d->file;
+      const char *s2;
+      while ((s2 = strstr (s1, "gcc/")))
+	s1 = s2 + 4;
+      sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
+      s[48] = 0;
+      fprintf (stderr, "%-48s %10li:%4.1f%% %10li      %10li:%4.1f%% \n", s,
+	       (long)d->allocated,
+	       (d->allocated) * 100.0 / allocated,
+	       (long)d->peak,
+	       (long)d->times,
+	       (d->times) * 100.0 / times);
+    }
+  fprintf (stderr, "%-48s %10ld                        %10ld\n",
+	   "Total", (long)allocated, (long)times);
+  fprintf (stderr, "\n%-48s %10s       %10s       %10s\n",
+	   "source location", "Leak", "Peak", "Times");
+  fprintf (stderr, "-------------------------------------------------------\n");
+#endif
+}
