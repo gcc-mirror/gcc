@@ -1,3 +1,8 @@
+2008-09-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/tree-ssa/vrp47.c: New.
+	* gcc.target/i386/andor-2.c: New.
+
 2008-09-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37474
