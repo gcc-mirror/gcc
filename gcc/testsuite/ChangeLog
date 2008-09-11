@@ -1,3 +1,8 @@
+2008-09-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37474
+	* gcc.dg/vect/pr37474.c: New test.
+
 2008-09-11  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.target/m68k/xgot-1.c: Add -mcpu=5206 to select a ColdFire

@@ -1,3 +1,9 @@
+2008-09-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37474
+	* tree-vect-analyze.c (vect_supported_load_permutation_p): Check the
+	length of load permutation.
+
 2008-09-11  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h (IRA_COVER_CLASSES): Define.
