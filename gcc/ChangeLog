@@ -1,3 +1,7 @@
+2008-09-11  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h (IRA_COVER_CLASSES): Define.
+
 2008-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37382
