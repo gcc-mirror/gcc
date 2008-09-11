@@ -112,7 +112,8 @@ redirect_edge_var_map_clear (edge e)
 void
 redirect_edge_var_map_dup (edge newe, edge olde)
 {
-  void **new_slot, **old_slot; edge_var_map_vector head;
+  void **new_slot, **old_slot;
+  edge_var_map_vector head;
 
   if (!edge_var_maps)
     return;
@@ -149,6 +150,17 @@ redirect_edge_var_map_vector (edge e)
   return (edge_var_map_vector) *slot;
 }
 
+/* Used by redirect_edge_var_map_destroy to free all memory.  */
+
+static bool
+free_var_map_entry (const void *key ATTRIBUTE_UNUSED,
+		    void **value,
+		    void *data ATTRIBUTE_UNUSED)
+{
+  edge_var_map_vector head = (edge_var_map_vector) *value;
+  VEC_free (edge_var_map, heap, head);
+  return true;
+}
 
 /* Clear the edge variable mappings.  */
 
@@ -157,6 +169,7 @@ redirect_edge_var_map_destroy (void)
 {
   if (edge_var_maps)
     {
+      pointer_map_traverse (edge_var_maps, free_var_map_entry, NULL);
       pointer_map_destroy (edge_var_maps);
       edge_var_maps = NULL;
     }

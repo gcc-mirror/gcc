@@ -1,5 +1,11 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa.c (redirect_edge_var_map_clear): Fix formatting.
+	(free_var_map_entry): New function.
+	(redirect_edge_var_map_destroy): Use it.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/37448
 	* tree-inline.c (add_lexical_block): Replace with ...
 	(prepend_lexical_block): ... prepend at begginig.
