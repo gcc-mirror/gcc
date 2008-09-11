@@ -1579,7 +1579,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	      VEC_free (vn_reference_op_s, heap, newoperands);
 
 	    if (result && is_gimple_min_invariant (result))
-	      return get_or_alloc_expr_for_constant (result);
+	      {
+	        gcc_assert (!newoperands);
+	        return get_or_alloc_expr_for_constant (result);
+	      }
 
 	    expr = (pre_expr) pool_alloc (pre_expr_pool);
 	    expr->kind = REFERENCE;
@@ -1599,11 +1602,13 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		newref = vn_reference_insert_pieces (newvuses,
 						     newoperands,
 						     result, new_val_id);
+		newoperands = NULL;
 		PRE_EXPR_REFERENCE (expr) = newref;
 		get_or_alloc_expression_id (expr);
 	      }
 	    add_to_value (new_val_id, expr);
 	  }
+	VEC_free (vn_reference_op_s, heap, newoperands);
 	phi_trans_add (oldexpr, expr, pred);
 	return expr;
       }
