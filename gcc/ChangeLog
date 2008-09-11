@@ -1,5 +1,13 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/37448
+	* tree-inline.c (add_lexical_block): Replace with ...
+	(prepend_lexical_block): ... prepend at begginig.
+	(remap_blocks): Use it and reverse later.
+	(expand_call_inline): Use prepend_lexical_block.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* gimplify.c (pop_gimplify_context): Free bind_expr_stack.
 
 2008-09-11  Jan Hubicka  <jh@suse.cz>
