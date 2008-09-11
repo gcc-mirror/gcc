@@ -739,6 +739,7 @@ static struct entry *hash_table[HASH_SIZE];
 static int idx, limidx, output_one, short_enums;
 static const char *destdir;
 static const char *srcdir;
+static const char *srcdir_safe;
 FILE *outfile;
 
 void
@@ -795,7 +796,7 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+}\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.c", filecnt);
   outfile = fopen (destbuf, "w");
@@ -808,7 +809,7 @@ int main (void)\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_y.c", filecnt);
   outfile = fopen (destbuf, "w");
@@ -821,7 +822,7 @@ int main (void)\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");
@@ -1999,6 +2000,22 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
 
   if (srcdir == NULL && !output_one)
     goto usage;
+
+  if (srcdir != NULL)
+    {
+      const char *s = srcdir;
+      char *ss, *t;
+      t = ss = malloc (strlen (srcdir) + 1);
+      if (!ss)
+	abort ();
+      do {
+	if (*s == '\\')
+	  *t++ = '/';
+	else
+	  *t++ = *s;
+      } while (*s++);
+      srcdir_safe = ss;
+    }
 
   for (i = 0; i < NTYPES2; ++i)
     if (base_types[i].bitfld)

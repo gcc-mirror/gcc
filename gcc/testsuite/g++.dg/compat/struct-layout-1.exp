@@ -121,7 +121,7 @@ if [info exists ALT_CXX_UNDER_TEST] then {
 }
 
 set tstobjdir "$tmpdir/g++.dg-struct-layout-1"
-set generator "$tmpdir/g++.dg-struct-layout-1_generate"
+set generator "$tmpdir/g++.dg-struct-layout-1_generate.exe"
 
 set generator_src "$srcdir/$subdir/struct-layout-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/../../gcc.dg/compat/generate-random.c"

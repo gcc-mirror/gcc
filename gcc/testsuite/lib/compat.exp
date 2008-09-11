@@ -339,10 +339,10 @@ proc compat-execute { src1 sid use_alt } {
 
 	# There's a unique name for each executable we generate, based on
 	# the set of options and how the pieces of the tests are compiled.
-	set execname1 "${execbase}-${count}1"
-	set execname2 "${execbase}-${count}2"
-	set execname3 "${execbase}-${count}3"
-	set execname4 "${execbase}-${count}4"
+	set execname1 "${execbase}-${count}1.exe"
+	set execname2 "${execbase}-${count}2.exe"
+	set execname3 "${execbase}-${count}3.exe"
+	set execname4 "${execbase}-${count}4.exe"
 	incr count
 
 	file_on_host delete $execname1

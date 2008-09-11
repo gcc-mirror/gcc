@@ -495,6 +495,7 @@ static struct entry *hash_table[HASH_SIZE];
 static int idx, limidx, output_one, short_enums;
 static const char *destdir;
 static const char *srcdir;
+static const char *srcdir_safe;
 FILE *outfile;
 
 void
@@ -532,7 +533,7 @@ switchfiles (int fields)
       exit (1);
     }
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "", srcdir);
+    fprintf (outfile, dg_options[i], "", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1.h\"\n\
 \n\
@@ -558,7 +559,7 @@ int main (void)\n\
   if (outfile == NULL)
     goto fail;
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "-w ", srcdir);
+    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
@@ -570,7 +571,7 @@ int main (void)\n\
   if (outfile == NULL)
     goto fail;
   for (i = 0; i < NDG_OPTIONS; i++)
-    fprintf (outfile, dg_options[i], "-w ", srcdir);
+    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
   fprintf (outfile, "\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
@@ -1588,6 +1589,22 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
 
   if (srcdir == NULL && !output_one)
     goto usage;
+
+  if (srcdir != NULL)
+    {
+      const char *s = srcdir;
+      char *ss, *t;
+      t = ss = malloc (strlen (srcdir) + 1);
+      if (!ss)
+	abort ();
+      do {
+	if (*s == '\\')
+	  *t++ = '/';
+	else
+	  *t++ = *s;
+      } while (*s++);
+      srcdir_safe = ss;
+    }
 
   for (i = 0; i < NTYPES2; ++i)
     if (base_types[i].bitfld)
