@@ -1,3 +1,7 @@
+2008-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h: Fix whitespace issues.
+
 2008-09-11  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_param_flags): Removed.
@@ -40,7 +44,7 @@
 	* ipa-inline.c (cgraph_mark_inline_edge): New parameter new_edges,
 	changed all callers.  Call ipa_propagate_indirect_call_infos if doing
 	indirect inlining.  Made static.
-        (cgraph_decide_inlining): Freeing ipa-prop structures after inlining
+	(cgraph_decide_inlining): Freeing ipa-prop structures after inlining
 	functions called only once.
 	(cgraph_decide_recursive_inlining): Don't call
 	ipa_propagate_indirect_call_infos, pass new_edges to
@@ -144,7 +148,8 @@
 
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
-	* ifcvt.c (check_cond_move_block): Make regs argument pointer to vector pointer.
+	* ifcvt.c (check_cond_move_block): Make regs argument pointer to
+	vector pointer.
 	(cond_move_process_if_block): Update call.
 
 2008-09-11  Jan Hubicka  <jh@suse.cz>
@@ -233,8 +238,8 @@
 2008-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* value-prof.c (gimple_ic): Fix tuplification bug.
-	* sched-deps.c (sched_insns_conditions_mutex_p): Silence unitialized var
-	warning.
+	* sched-deps.c (sched_insns_conditions_mutex_p): Silence unitialized
+	var warning.
 
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -327,8 +332,8 @@
 	set_instantiated_value): Pass instantiated_below.
 	(analyze_scalar_evolution_1, analyze_scalar_evolution): Update calls to
 	above functions.
-	(instantiate_scev_1, instantiate_scev): Pass a basic block above which the
-	definitions are not instantiated.
+	(instantiate_scev_1, instantiate_scev): Pass a basic block above which
+	the definitions are not instantiated.
 
 	* tree-scalar-evolution.h (instantiate_scev): Update declaration.
 	(block_before_loop): New.
@@ -377,8 +382,8 @@
 
 2008-09-09  Jan Hubicka  <jh@suse.cz>
 
-	* profile.c (is_edge_inconsistent): Add debug output; ignore negative count
-	on fake edges.
+	* profile.c (is_edge_inconsistent): Add debug output; ignore
+	negative count on fake edges.
 	(is_inconsistent): Add debug output.
 
 2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
@@ -558,7 +563,8 @@
 2008-09-06  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/14703
-	* tree-ssa-live.c (remove_unused_scope_block_p): Remove ignored declarations.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Remove ignored
+	declarations.
 	* passes.c (init_optimization_passes): Recompute inline parameters.
 
 2008-09-06  Richard Sandiford  <rdsandiford@googlemail.com>
@@ -617,9 +623,8 @@
 
 2008-09-05  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* ira-color.c (ira_fast_allocation): Permit global allocno
-	allocation.
-	
+	* ira-color.c (ira_fast_allocation): Permit global allocno allocation.
+
 2008-09-05  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	Improved branch hints, safe hints, and scheduling.
@@ -890,8 +895,7 @@
 
 2008-09-04  Nick Clifton  <nickc@redhat.com>
 
-	* configure.ac (HAVE_GAS_LCOMM_WITH_ALIGNMENT): New assembler
-	check.
+	* configure.ac (HAVE_GAS_LCOMM_WITH_ALIGNMENT): New assembler check.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* config/i386/bsd.h (ASM_OUTPUT_ALIGNED_LOCAL): Use .lcomm with an
@@ -1051,11 +1055,9 @@
 
 2008-09-03 Danny Smith  <dannysmith@usrs.sourceforge.net>
 
-	* gthr-win32.h (CONST_CAST2): Really make sure CONST_CAST2 is
-	defined.
+	* gthr-win32.h (CONST_CAST2): Really make sure CONST_CAST2 is defined.
 	(__gthread_setspecific): Revert 2008-08-31 change to
-	__GTHREAD_HIDE_W32API case.  Apply it to !__GTHREAD_HIDE_W32API
-	case.
+	__GTHREAD_HIDE_W32API case.  Apply it to !__GTHREAD_HIDE_W32API case.
 
 2008-09-02  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -1122,7 +1124,8 @@
 2008-09-02  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (pass_strip_predict_hints): Avoid bugs dump file.
-	* expmed.c (expand_divmod): Fix test of smod_pow2_cheap and sdiv_pow2_cheap
+	* expmed.c (expand_divmod): Fix test of smod_pow2_cheap and
+	sdiv_pow2_cheap
 
 2008-09-02  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1317,8 +1320,7 @@
 	error.
 	* c-omp.c (c_finish_omp_atomic): Pass location when calling
 	build_indirect_ref.
-	* c-common.c (finish_label_address_expr): Handle new location
-	argument.
+	* c-common.c (finish_label_address_expr): Handle new location argument.
 	* c-common.h (build_indirect_ref): Add argument.
 	(finish_label_address_expr): Same.
 	* c-parser.c (c_parser_unary_expression): Pass location to build
@@ -1336,8 +1338,7 @@
 	* config/arm/vfp.md: Document fcpys, ffariths, ffarithd, fadds, faddd,
 	fconsts, fconstd, fcmps and fcmpd.  Use them in insn patterns.
 	* config/arm/arm.c (arm_issue_rate): Add cortexr4f.
-	* config/arm/arm1020e.md (v10_ffarith, v10_farith): Use new insn
-	types.
+	* config/arm/arm1020e.md (v10_ffarith, v10_farith): Use new insn types.
 	* config/arm/cortex-a8-neon.md (cortex_a8_vfp_add_sub,
 	cortex_a8_vfp_farith: Ditto.
 	* config/arm/vfp11.md (vfp_ffarith, vfp_farith): Ditto.
@@ -1374,7 +1375,8 @@
 
 	* config/spu/spu.c (spu_expand_block_move) Update call of MOVE_RATIO.
 
-	* expr.c (MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P, SET_BY_PIECES_P): Pass speed operand.
+	* expr.c (MOVE_BY_PIECES_P, CLEAR_BY_PIECES_P, SET_BY_PIECES_P):
+	Pass speed operand.
 	* expr.h (MOVE_RATIO, CLEAR_RATIO, SET_RATIO): Update.
 	* gimplify.c (gimplify_init_constructor): Add speed operand.
 	* tree-sra.c (decide_block_copy): Likewise.
@@ -1390,16 +1392,17 @@
 	* config/arm/arm.h (MOVE_RATIO): Update.
 	* config/pa/pa.md: Update uses of MOVE_RATIO
 	* config/pa/pa.h (MOVE_RATIO): Update.
-	* config/mips/mips.h (MOVE_RATIO, MOVE_BY_PIECES, CLEAR_RATIO, SET_RATIO): Update.
+	* config/mips/mips.h (MOVE_RATIO, MOVE_BY_PIECES,
+	CLEAR_RATIO, SET_RATIO): Update.
 	* config/h8300/h8300.h (MOVE_RATIO): Update.
 	* config/v850/v850.h (MOVE_RATIO): Update.
 	* config/bfin/bfin.h (MOVE_RATIO): Update.
 
 2008-08-31  Andrey Belevantsev  <abel@ispras.ru>
-	Dmitry Melnik  <dm@ispras.ru>
-	Dmitry Zhurikhin  <zhur@ispras.ru>
-	Alexander Monakov  <amonakov@ispras.ru>
-	Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Dmitry Melnik  <dm@ispras.ru>
+	    Dmitry Zhurikhin  <zhur@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sel-sched.h, sel-sched-dump.h, sel-sched-ir.h, sel-sched.c,
 	sel-sched-dump.c, sel-sched-ir.c: New files.
@@ -1422,13 +1425,15 @@
 	* common.opt (fsel-sched-bookkeeping, fsel-sched-pipelining,
 	fsel-sched-pipelining-outer-loops, fsel-sched-renaming,
 	fsel-sched-substitution, fselective-scheduling): New flags.
-    	* cse.c (hash_rtx_cb): New.
+	* cse.c (hash_rtx_cb): New.
 	(hash_rtx): Use it.
 	* dbgcnt.def (sel_sched_cnt, sel_sched_region_cnt,
 	sel_sched_insn_cnt): New counters.
-	* final.c (compute_alignments): Export.  Free dominance info after loop_optimizer_finalize.
+	* final.c (compute_alignments): Export.  Free dominance
+	info after loop_optimizer_finalize.
 	* genattr.c (main): Output maximal_insn_latency prototype.
-	* genautomata.c (output_default_latencies): New. Factor its code from ...
+	* genautomata.c (output_default_latencies): New.
+	Factor its code from ...
 	(output_internal_insn_latency_func): ... here.
 	(output_internal_maximal_insn_latency_func): New.
 	(output_maximal_insn_latency_func): New.
@@ -1439,8 +1444,9 @@
 	(EXECUTE_IF_SET_IN_HARD_REG_SET): New macro.
 	* lists.c (remove_free_INSN_LIST_node,
 	remove_free_EXPR_LIST_node): New functions.
-	* loop-init.c (loop_optimizer_init): When LOOPS_HAVE_FALLTHRU_PREHEADERS,
-	set CP_FALLTHRU_PREHEADERS when calling create_preheaders.
+	* loop-init.c (loop_optimizer_init): When
+	LOOPS_HAVE_FALLTHRU_PREHEADERS, set CP_FALLTHRU_PREHEADERS when
+	calling create_preheaders.
 	(loop_optimizer_finalize): Do not verify flow info after reload.
 	* recog.c (validate_replace_rtx_1): New parameter simplify.
 	Default it to true.  Update all uses.  Factor out simplifying
@@ -1668,7 +1674,8 @@
 	(deps_t): New.
 	(struct sched_info): Rename to haifa_sched_info.  Use const_rtx for
 	print_insn field.  Move add_block and fix_recovery_cfg to
-	common_sched_info_def.  Move compute_jump_reg_dependencies, use_cselib  ...
+	common_sched_info_def.  Move compute_jump_reg_dependencies,
+	use_cselib  ...
 	(struct sched_deps_info_def): ... this new structure.
 	(sched_deps_info): Declare.
 	(struct spec_info_def): Remove weakness_cutoff, add
@@ -1732,7 +1739,8 @@
 	(find_single_block_region): Add new argument to indicate that EBB
 	regions should be constructed.
 	(debug_live): Delete declaration.
-	(current_nr_blocks, current_blocks, target_bb): Remove static qualifiers.
+	(current_nr_blocks, current_blocks, target_bb):
+	Remove static qualifiers.
 	(compute_dom_prob_ps, check_live, update_live, set_spec_fed): Delete
 	declaration.
 	(init_regions): Delete declaration.
@@ -1751,7 +1759,8 @@
 	(debug_rgn_dependencies): Delete static qualifier.
 	(new_ready): Use sched_deps_info.  Simplify.
 	(rgn_common_sched_info, rgn_const_sched_deps_info,
-	rgn_const_sel_sched_deps_info, rgn_sched_deps_info, rgn_sched_info): New.
+	rgn_const_sel_sched_deps_info, rgn_sched_deps_info, rgn_sched_info):
+	New.
 	(region_sched_info): Rename to rgn_const_sched_info.
 	(deps_join): New, extracted from ...
 	(propagate_deps): ... here.
@@ -1789,7 +1798,8 @@
 	requested from command line.
 	* doc/invoke.texi: Document new flags and parameters.
 	* doc/tm.texi: Document new target hooks.
-	* config/ia64/ia64.c (TARGET_SCHED_GEN_SPEC_CHECK): Define to ia64_gen_check.
+	* config/ia64/ia64.c (TARGET_SCHED_GEN_SPEC_CHECK): Define to
+	ia64_gen_check.
 	(dfa_state_size): Do not declare locally.
 	* config/ia64/ia64.opt (msched-ar-data-spec): Default to 0.
 	* config/rs6000/rs6000.c (rs6000_init_sched_context,
@@ -1868,7 +1878,8 @@
 
 2008-08-31  Jan Hubicka  <jh@suse.cz>
 
-	* postreload-gcse.c (eliminate_partially_redundant_loads): Use optimize_bb_for_size_p.
+	* postreload-gcse.c (eliminate_partially_redundant_loads):
+	Use optimize_bb_for_size_p.
 	* predict.c (maybe_hot_frequency_p): Make inline.
 	(maybe_hot_count_p): Break out from ...
 	(maybe_hot_bb_p): ... this one.
@@ -2027,8 +2038,10 @@
 	* config/m68hc11/m68hc11.c
 	(m68hc11_address_cost, m68hc11_rtx_costs): Update.
 	* config/cris/cris.c (cris_rtx_costs, cris_address_cost): Update.
-	* config/iq2000/iq2000.c (iq2000_rtx_costs, iq2000_address_cost): Update.
-	* config/mn10300/mn10300.c (mn10300_address_cost, mn10300_rtx_costs): Update
+	* config/iq2000/iq2000.c (iq2000_rtx_costs, iq2000_address_cost):
+	Update.
+	* config/mn10300/mn10300.c (mn10300_address_cost, mn10300_rtx_costs):
+	Update
 	* config/ia64/ia64.c (ia64_rtx_costs): Update.
 	* config/m68k/m68k.c (m68k_rtx_costs): Update.
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Update.
@@ -2233,10 +2246,10 @@
 	* dojump.c (do_jump): Likewise.
 	* ifcvt.c (MAX_CONDITIONAL_EXECUTE): Likewise.
 	(note-if_info): Add BRANCH_COST.
-	(noce_try_store_flag_constants, noce_try_addcc, noce_try_store_flag_mask,
-	noce_try_cmove_arith, noce_try_cmove_arith, noce_try_cmove_arith,
-	noce_find_if_block, find_if_case_1, find_if_case_2): Use compuated
-	branch cost.
+	(noce_try_store_flag_constants, noce_try_addcc,
+	noce_try_store_flag_mask, noce_try_cmove_arith, noce_try_cmove_arith,
+	noce_try_cmove_arith, noce_find_if_block, find_if_case_1,
+	find_if_case_2): Use computed branch cost.
 	* expr.h (BRANCH_COST): Update default.
 	* predict.c (predictable_edge_p): New function.
 	* expmed.c (expand_smod_pow2, expand_sdiv_pow2, emit_store_flag):
@@ -2444,7 +2457,6 @@
 2008-08-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37251
-
 	* ira-color.c (push_allocnos_to_stack): Truncate
 	removed_splay_allocno_vec.
 
@@ -2546,9 +2558,11 @@
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* loop-unswitch.c (unswitch_single_loop): Use optimize_loop_for_speed_p.
-	* tree-ssa-threadupdate.c (mark_threaded_blocks): Use optimize_function_for_size_p.
+	* tree-ssa-threadupdate.c (mark_threaded_blocks):
+	Use optimize_function_for_size_p.
 	* tracer.c (ignore_bb_p): Use optimize_bb_for_size_p.
-	* postreload-gcse.c (eliminate_partially_redundant_load): Use optimize_bb_for_size_p.
+	* postreload-gcse.c (eliminate_partially_redundant_load):
+	Use optimize_bb_for_size_p.
 	* value-prof.c (gimple_divmod_fixed_value_transform,
 	gimple_mod_pow2_value_transform, gimple_mod_subtract_transform,
 	gimple_stringops_transform): Use optimize_bb_for_size_p.
@@ -2559,16 +2573,18 @@
 	optimize_function_for_size_p.
 	* fold-const.c (tree_swap_operands_p): Use optimize_function_for_size_p.
 	* recog.c (relax_delay_slots): Likewise.
-	* tree-ssa-math-opts.c (replace_reciprocal): Use optimize_bb_for_speed_p.
+	* tree-ssa-math-opts.c (replace_reciprocal):
+	Use optimize_bb_for_speed_p.
 	(execute_cse_reciprocals): Use optimize_bb_for_size_p.
 	* ipa-inline.c (cgraph_decide_recursive_inlining): Use
 	optimize_function_for_size_p.
 	(cgraph_decide_inlining_of_small_function): Use
 	optimize_function_for_size_p.
 	* global.c (find_reg): Use optimize_function_for_size_p.
-	* opts.c (decode_options): Do not clear flag_tree_ch, flag_inline_functions,
-	flag_unswitch_loops, flag_unroll_loops, flag_unroll_all_loops and
-	flag_prefetch_loop_arrays. Those can work it out from profile.
+	* opts.c (decode_options): Do not clear flag_tree_ch,
+	flag_inline_functions, flag_unswitch_loops, flag_unroll_loops,
+	flag_unroll_all_loops and flag_prefetch_loop_arrays. Those can
+	work it out from profile.
 	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely): Use
 	optimize_loop_for_speed_p.
 	* predict.c (optimize_bb_for_size_p, optimize_bb_for_speed_p): Constify
@@ -2579,13 +2595,15 @@
 	* local-alloc.c (block_alloc): Pass BB pointer.
 	(find_free_reg): Add BB pointer, use optimize_bb_for_size_p.
 	* gcse.c (gcse_main): Use optimize_function_for_size_p.
-	* loop-unroll.c (decide_unrolling_and_peeling): Use optimize_loop_for_size_p.
+	* loop-unroll.c (decide_unrolling_and_peeling):
+	Use optimize_loop_for_size_p.
 	(decide_peel_completely): Likewise.
 	* tree-vect-analyze.c (vect_mark_for_runtime_alias_test): Use
 	optimize_loop_for_size_p.
 	(vect_enhance_data_refs_alignment): Likewise.
 	* tree-ssa-coalesce.c (coalesce_cost): Add optimize_for_size argument.
-	(coalesce_cost_bb, coalesce_cost_edge, create_outofssa_var_map): Update call.
+	(coalesce_cost_bb, coalesce_cost_edge, create_outofssa_var_map):
+	Update call.
 	* cfgcleanup.c (outgoing_edges_match): Use optimize_bb_for_speed_p.
 	(try_crossjump_bb): Use optimize_bb_for_size_p.
 	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Use
@@ -2620,8 +2638,8 @@
 	(tree_bb_level_predictions): Do not remove GIMPLE_PREDICT.
 	(tree_estimate_probability): Do not strip builtin_expect.
 	(pass_strip_predict_hints): New pass.
-	* tree-inline.c (expand_call_inline): When inlining cold function, predict
-	it as unlikely.
+	* tree-inline.c (expand_call_inline): When inlining cold function,
+	predict it as unlikely.
 	* passes.c (init_optimization_passes): Add pass_strip_predict_hints.
 
 2008-08-29  Richard Guenther  <rguenther@suse.de>
@@ -2671,8 +2689,7 @@
 	* config/mips/mips.h (ISA_HAS_DMUL3): New macro.
 	* config/mips/mips.md (D): New mode attribute.
 	(mulsi3, muldi3): Merge it into ...
-	(mul<mode>3): ... new template.  Use _mul3 ending for 3-op
-	patterns.
+	(mul<mode>3): ... new template.  Use _mul3 ending for 3-op patterns.
 	(muldi3_mul3): New pattern.
 	(mulsi3_mult3): Rename to mulsi3_mul3.
 
@@ -3577,7 +3594,7 @@
 	* config/arm/arm1020e.md: Remove out of date duplicate comment.
 	(v10_cvt): Use new fmul types.
 
-2008-08-26  Paul Brook   <paul@codesourcery.com>
+2008-08-26  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/vfp.md: Move pipeline description for VFP11 to...
 	* config/arm/vfp11.md: ...here.  New.
@@ -3965,7 +3982,8 @@
 	(ipcp_create_replace_map): Reformat.
 	(ipcp_need_redirect_p): Simplify.
 	(ipcp_insert_stage): Check that argument is used before clonning.
-	* ipa-prop.c (ipa_print_node_jump_functions): Do not handle IPA_CONST_REF.
+	* ipa-prop.c (ipa_print_node_jump_functions): Do not handle
+	IPA_CONST_REF.
 	(compute_scalar_jump_functions): Simplify using is_gimple_ip_invariat.
 	(determine_cst_member_ptr): Keep wrapping ADDR_EXPR of members.
 	(update_call_notes_after_inlining): Expect ADDR_EXPR in operand.
@@ -4083,8 +4101,7 @@
 
 	* c-tree.h (grokfield): New argument.
 	* c-decl.c (grokfield): Handle new location argument.
-	* c-parser.c (c_parser_struct_declaration): Pass location to
-	grokfield.
+	* c-parser.c (c_parser_struct_declaration): Pass location to grokfield.
 
 2008-08-21  Richard Guenther  <rguenther@suse.de>
 
@@ -4669,13 +4686,12 @@
 	("type" attribute): Removed itof and added ftrunctf,ftruncdf,
 	ftruncsd, ftruncdd, itoftf, itofdf, itofsf, itofdd, itoftd,
 	fdivdd, fdivtd, floaddd, floadsd, fmuldd, fmultd, fsimpdd,
-	fsimpsd, fsimptd, fstoredd, fstoresd, ftoidfp as possible
-	values.
+	fsimpsd, fsimptd, fstoredd, fstoresd, ftoidfp as possible values.
 	("bfp" mode attribute): Removed.  Every occurence replaced
 	with <mode>.
 	* config/s390/s390.c (struct "z10_cost"): Updated entries.
 	* config/s390/2084.md (insn_reservation "x_itof"): Updated
-	  type attribute.
+	type attribute.
 
 2008-08-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
@@ -4770,8 +4786,7 @@
 	handled. -pedantic also enables Wmain.
 	(c_common_post_options): Handle all logic for Wmain here.
 	* c-common.c (warn_main): Delete.
-	(check_main_parameter_types): Make pedwarns conditional on
-	OPT_Wmain.
+	(check_main_parameter_types): Make pedwarns conditional on OPT_Wmain.
 	* c-common.h (warn_main): Delete.
 
 2008-08-13  H.J. Lu  <hongjiu.lu@intel.com>
@@ -5264,8 +5279,7 @@
 	* c-typeck.c (digest_init): Call verify_sequence_points from here.
 	(c_finish_return): Likewise.
 	(c_start_case): Likewise.
-	* c-common.c (warn_for_collisions_1): Use explicit location in
-	warning.
+	* c-common.c (warn_for_collisions_1): Use explicit location in warning.
 	* c-parser.c (c_parser_condition): New. Call
 	verify_sequence_points.
 	(c_parser_paren_condition): Call c_parser_condition.
@@ -5439,8 +5453,7 @@
 2008-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/36992
-	* config/i386/emmintrin.h (_mm_move_epi64): Use
-	__builtin_ia32_movq128.
+	* config/i386/emmintrin.h (_mm_move_epi64): Use __builtin_ia32_movq128.
 
 	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_MOVQ128.
 	(bdesc_args): Add IX86_BUILTIN_MOVQ128.
@@ -5584,8 +5597,7 @@
 	* config/sh/sh.c (prepare_move_operands, output_far_jump,
 	output_branchy_insn, add_constant, gen_block_redirect,
 	sh_insn_length_adjustment, sh_cannot_change_mode_class,
-	sh_output_mi_thunk, replace_n_hard_rtx, sh_secondary_reload):
-	Likewise.
+	sh_output_mi_thunk, replace_n_hard_rtx, sh_secondary_reload): Likewise.
 	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
 	* config/stormy16/stormy16.c (xstormy16_output_cbranch_hi,
 	xstormy16_output_cbranch_si, xstormy16_secondary_reload_class,
