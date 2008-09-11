@@ -1,5 +1,10 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* ifcvt.c (check_cond_move_block): Make regs argument pointer to vector pointer.
+	(cond_move_process_if_block): Update call.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* toplev.c (dump_memory_report): Call dump_vec_loc_statistics.
 	* vec.c: Include hashtab.h
 	(vec_descriptor, ptr_hash_entry): New structures.
