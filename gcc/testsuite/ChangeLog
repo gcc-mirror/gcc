@@ -1,3 +1,8 @@
+2008-09-11  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.target/m68k/xgot-1.c: Add -mcpu=5206 to select a ColdFire
+	target.
+
 2008-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37382
