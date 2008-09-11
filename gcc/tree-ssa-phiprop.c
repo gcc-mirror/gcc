@@ -247,7 +247,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	         || phivn[SSA_NAME_VERSION (arg)].value == NULL_TREE))
 	{
 	  gimple def_stmt = SSA_NAME_DEF_STMT (arg);
-	  if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
+	  if (!gimple_assign_single_p (def_stmt))
 	    return false;
 	  arg = gimple_assign_rhs1 (def_stmt);
 	}

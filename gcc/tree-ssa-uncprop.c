@@ -137,11 +137,11 @@ associate_equivalences_with_edges (void)
 		    }
 		}
 
-	      if (TREE_CODE (op0) == SSA_NAME
-		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0)
-		  && (is_gimple_min_invariant (op1)
-		      || (TREE_CODE (op1) == SSA_NAME
-			  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))))
+	      else if (TREE_CODE (op0) == SSA_NAME
+		       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0)
+		       && (is_gimple_min_invariant (op1)
+			   || (TREE_CODE (op1) == SSA_NAME
+			       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))))
 		{
 		  /* For IEEE, -0.0 == 0.0, so we don't necessarily know
 		     the sign of a variable compared against zero.  If

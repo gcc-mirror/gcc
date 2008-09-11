@@ -1,3 +1,10 @@
+2008-09-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Avoid
+	entering the weaker equivalence recording.
+
+	* tree-ssa-phiprop.c (propagate_with_phi): Fix tuplification.
+
 2008-09-11  Jeff Law <law@redhat.com>
 
 	* reload1.c (alter_reg): Undo the BYTE_BIG_ENDIAN correction performed
