@@ -5180,6 +5180,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       return false;
     }
 
+  /* The type of the vector store is determined by the rhs.  */
+  vectype = get_vectype_for_scalar_type (TREE_TYPE (op));
+
   /* If accesses through a pointer to vectype do not alias the original
      memory reference we have a problem.  */
   if (get_alias_set (vectype) != get_alias_set (TREE_TYPE (scalar_dest))
