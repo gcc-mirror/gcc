@@ -1541,6 +1541,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   /* Create a new symbol to represent the actual argument.  */
   new_sym = gfc_new_symbol (sym->name, NULL);
   new_sym->ts = sym->ts;
+  new_sym->as = gfc_copy_array_spec (sym->as);
   new_sym->attr.referenced = 1;
   new_sym->attr.dimension = sym->attr.dimension;
   new_sym->attr.pointer = sym->attr.pointer;
@@ -1721,8 +1722,9 @@ gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
 
 
 /* Convert intrinsic function calls into result expressions.  */
+
 static bool
-gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping * mapping)
+gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping *mapping)
 {
   gfc_symbol *sym;
   gfc_expr *new_expr;
@@ -1736,7 +1738,7 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping * mapping)
   else
     arg2 = NULL;
 
-  sym  = arg1->symtree->n.sym;
+  sym = arg1->symtree->n.sym;
 
   if (sym->attr.dummy)
     return false;
@@ -1773,6 +1775,13 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping * mapping)
       for (; d < dup; d++)
 	{
 	  gfc_expr *tmp;
+
+	  if (!sym->as->upper[d] || !sym->as->lower[d])
+	    {
+	      gfc_free_expr (new_expr);
+	      return false;
+	    }
+
 	  tmp = gfc_add (gfc_copy_expr (sym->as->upper[d]), gfc_int_expr (1));
 	  tmp = gfc_subtract (tmp, gfc_copy_expr (sym->as->lower[d]));
 	  if (new_expr)
@@ -1798,9 +1807,15 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping * mapping)
 	gcc_unreachable ();
 
       if (expr->value.function.isym->id == GFC_ISYM_LBOUND)
-	new_expr = gfc_copy_expr (sym->as->lower[d]);
+	{
+	  if (sym->as->lower[d])
+	    new_expr = gfc_copy_expr (sym->as->lower[d]);
+	}
       else
-	new_expr = gfc_copy_expr (sym->as->upper[d]);
+	{
+	  if (sym->as->upper[d])
+	    new_expr = gfc_copy_expr (sym->as->upper[d]);
+	}
       break;
 
     default:

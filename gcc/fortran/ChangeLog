@@ -1,3 +1,10 @@
+2008-09-08  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37199
+	* trans-expr.c (gfc_add_interface_mapping): Set new_sym->as.
+	(gfc_map_intrinsic_function): Added checks against NULL bounds in
+	array specs.
+
 2008-09-05  Daniel Kraft  <d@domob.eu>
  
 	PR fortran/35837
