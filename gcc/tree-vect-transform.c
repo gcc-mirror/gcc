@@ -918,9 +918,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   gimple_seq_add_seq (new_stmt_list, seq);
 
   /* Create base_offset */
-  base_offset = size_binop (PLUS_EXPR, base_offset, init);
-  base_offset = fold_convert (sizetype, base_offset);
-  dest = create_tmp_var (TREE_TYPE (base_offset), "base_off");
+  base_offset = size_binop (PLUS_EXPR,
+			    fold_convert (sizetype, base_offset),
+			    fold_convert (sizetype, init));
+  dest = create_tmp_var (sizetype, "base_off");
   add_referenced_var (dest);
   base_offset = force_gimple_operand (base_offset, &seq, true, dest);
   gimple_seq_add_seq (new_stmt_list, seq);
@@ -930,8 +931,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       tree tmp = create_tmp_var (sizetype, "offset");
 
       add_referenced_var (tmp);
-      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset), offset, step);
-      base_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (base_offset),
+      offset = fold_build2 (MULT_EXPR, sizetype,
+			    fold_convert (sizetype, offset), step);
+      base_offset = fold_build2 (PLUS_EXPR, sizetype,
 				 base_offset, offset);
       base_offset = force_gimple_operand (base_offset, &seq, false, tmp);
       gimple_seq_add_seq (new_stmt_list, seq);
@@ -7632,8 +7634,10 @@ vect_update_init_of_dr (struct data_reference *dr, tree niters)
 {
   tree offset = DR_OFFSET (dr);
       
-  niters = fold_build2 (MULT_EXPR, TREE_TYPE (niters), niters, DR_STEP (dr));
-  offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, niters);
+  niters = fold_build2 (MULT_EXPR, sizetype,
+			fold_convert (sizetype, niters),
+			fold_convert (sizetype, DR_STEP (dr)));
+  offset = fold_build2 (PLUS_EXPR, sizetype, offset, niters);
   DR_OFFSET (dr) = offset;
 }
 

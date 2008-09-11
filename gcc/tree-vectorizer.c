@@ -940,10 +940,9 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
   enter_e->flags |= EDGE_FALSE_VALUE;
   gsi = gsi_last_bb (guard_bb);
 
-  cond =
-    force_gimple_operand (cond, &gimplify_stmt_list, true,
-			  NULL_TREE);
-  cond_stmt = gimple_build_cond (NE_EXPR, cond, integer_zero_node,
+  cond = force_gimple_operand (cond, &gimplify_stmt_list, true, NULL_TREE);
+  cond_stmt = gimple_build_cond (NE_EXPR,
+				 cond, build_int_cst (TREE_TYPE (cond), 0),
 				 NULL_TREE, NULL_TREE);
   if (gimplify_stmt_list)
     gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
@@ -1073,7 +1072,8 @@ set_prologue_iterations (basic_block bb_before_first_loop,
     force_gimple_operand (cost_pre_condition, &gimplify_stmt_list,
 			  true, NULL_TREE);
   cond_stmt = gimple_build_cond (NE_EXPR, cost_pre_condition,
-				 integer_zero_node, NULL_TREE, NULL_TREE);
+				 build_int_cst (TREE_TYPE (cost_pre_condition),
+						0), NULL_TREE, NULL_TREE);
 
   gsi = gsi_last_bb (cond_bb);
   if (gimplify_stmt_list)

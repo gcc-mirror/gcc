@@ -1,3 +1,15 @@
+2008-09-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.c (slpeel_add_loop_guard): Fix types.
+	(set_prologue_iterations): Likewise.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref):
+	Likewise.
+	(vect_update_init_of_dr): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Fix
+	type verification.
+	* fold-const.c (fold_unary): Do not generate calculations
+	in sub-types.
+
 2008-09-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* dojump.c (do_jump) [BIT_AND_EXPR]: Move below.  Fall through to

@@ -7883,7 +7883,9 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	 transformation effectively doesn't preserve non-maximal ranges.  */
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (op0) == BIT_AND_EXPR
-	  && TREE_CODE (TREE_OPERAND (op0, 1)) == INTEGER_CST)
+	  && TREE_CODE (TREE_OPERAND (op0, 1)) == INTEGER_CST
+	  /* Not if the conversion is to the sub-type.  */
+	  && TREE_TYPE (type) != TREE_TYPE (op0))
 	{
 	  tree and = op0;
 	  tree and0 = TREE_OPERAND (and, 0), and1 = TREE_OPERAND (and, 1);
