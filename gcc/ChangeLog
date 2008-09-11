@@ -1,3 +1,9 @@
+2008-09-11  Jeff Law <law@redhat.com>
+
+	* reload1.c (alter_reg): Undo the BYTE_BIG_ENDIAN correction performed
+	by assign_stack_local on the IRA path for stack slot sharing
+	as well as the non-IRA path.
+
 2008-09-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h: Fix whitespace issues.

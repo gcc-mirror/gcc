@@ -2176,18 +2176,28 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	 inherent space, and no less total space, then the previous slot.  */
       else if (from_reg == -1 || (! dont_share_p && flag_ira && optimize))
 	{
+	  rtx stack_slot;
 	  alias_set_type alias_set = new_alias_set ();
 
 	  /* No known place to spill from => no slot to reuse.  */
 	  x = assign_stack_local (mode, total_size,
 				  min_align > inherent_align
 				  || total_size > inherent_size ? -1 : 0);
+
+	  stack_slot = x;
+
 	  if (BYTES_BIG_ENDIAN)
 	    /* Cancel the  big-endian correction done in assign_stack_local.
 	       Get the address of the beginning of the slot.
 	       This is so we can do a big-endian correction unconditionally
 	       below.  */
 	    adjust = inherent_size - total_size;
+	    if (adjust)
+	      stack_slot
+		= adjust_address_nv (x, mode_for_size (total_size
+						       * BITS_PER_UNIT,
+						       MODE_INT, 1),
+				     adjust);
 
 	  /* Nothing can alias this slot except this pseudo.  */
 	  set_mem_alias_set (x, alias_set);
@@ -2195,7 +2205,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 
 	  if (! dont_share_p && flag_ira && optimize)
 	    /* Inform IRA about allocation a new stack slot.  */
-	    ira_mark_new_stack_slot (x, i, total_size);
+	    ira_mark_new_stack_slot (stack_slot, i, total_size);
 	}
 
       /* Reuse a stack slot if possible.  */
