@@ -1,3 +1,22 @@
+2008-09-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* dojump.c (do_jump) [BIT_AND_EXPR]: Move below.  Fall through to
+	TRUTH_AND_EXPR for boolean (1-bit precision) expressions.
+	(do_jump) [BIT_IOR_EXPR]: Compile as TRUTH_OR_EXPR.
+
+	* tree-flow.h (simplify_stmt_using_ranges): Accept a GSI, return a bool.
+	* tree-ssa-propagate.c (substitute_and_fold): Pass a GSI to
+	VRP's simplify_stmt_using_ranges.  Do simplify_stmt_using_ranges
+	before finalizing the changes.
+	* tree-vrp.c (extract_range_from_binary_expr): Add limited support
+	for BIT_IOR_EXPR.
+	(simplify_truth_ops_using_ranges): New.
+	(simplify_div_or_mod_using_ranges, simplify_abs_using_ranges,
+	simplify_cond_using_ranges, simplify_switch_using_ranges): Return
+	whether a simplification was made.
+	(simplify_stmt_using_ranges): Ditto, and accept a GSI.  For GS_ASSIGN,
+	use a switch statement and also call simplify_truth_ops_using_ranges.
+
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (loc_array): Make static.

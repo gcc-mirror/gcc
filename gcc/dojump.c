@@ -208,79 +208,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
       break;
 
-    case BIT_AND_EXPR:
-      /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
-	 See if the former is preferred for jump tests and restore it
-	 if so.  */
-      if (integer_onep (TREE_OPERAND (exp, 1)))
-	{
-	  tree exp0 = TREE_OPERAND (exp, 0);
-	  rtx set_label, clr_label;
-
-	  /* Strip narrowing integral type conversions.  */
-	  while (CONVERT_EXPR_P (exp0)
-		 && TREE_OPERAND (exp0, 0) != error_mark_node
-		 && TYPE_PRECISION (TREE_TYPE (exp0))
-		    <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp0, 0))))
-	    exp0 = TREE_OPERAND (exp0, 0);
-
-	  /* "exp0 ^ 1" inverts the sense of the single bit test.  */
-	  if (TREE_CODE (exp0) == BIT_XOR_EXPR
-	      && integer_onep (TREE_OPERAND (exp0, 1)))
-	    {
-	      exp0 = TREE_OPERAND (exp0, 0);
-	      clr_label = if_true_label;
-	      set_label = if_false_label;
-	    }
-	  else
-	    {
-	      clr_label = if_false_label;
-	      set_label = if_true_label;
-	    }
-
-	  if (TREE_CODE (exp0) == RSHIFT_EXPR)
-	    {
-	      tree arg = TREE_OPERAND (exp0, 0);
-	      tree shift = TREE_OPERAND (exp0, 1);
-	      tree argtype = TREE_TYPE (arg);
-	      if (TREE_CODE (shift) == INTEGER_CST
-		  && compare_tree_int (shift, 0) >= 0
-		  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
-		  && prefer_and_bit_test (TYPE_MODE (argtype),
-					  TREE_INT_CST_LOW (shift)))
-		{
-		  HOST_WIDE_INT mask = (HOST_WIDE_INT) 1
-				       << TREE_INT_CST_LOW (shift);
-		  do_jump (build2 (BIT_AND_EXPR, argtype, arg,
-				   build_int_cst_type (argtype, mask)),
-			   clr_label, set_label);
-		  break;
-		}
-	    }
-	}
-
-      /* If we are AND'ing with a small constant, do this comparison in the
-         smallest type that fits.  If the machine doesn't have comparisons
-         that small, it will be converted back to the wider comparison.
-         This helps if we are testing the sign bit of a narrower object.
-         combine can't do this for us because it can't know whether a
-         ZERO_EXTRACT or a compare in a smaller mode exists, but we do.  */
-
-      if (! SLOW_BYTE_ACCESS
-          && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
-          && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
-          && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
-          && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
-          && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
-          && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
-          && (optab_handler (cmp_optab, TYPE_MODE (type))->insn_code
-              != CODE_FOR_nothing))
-        {
-          do_jump (fold_convert (type, exp), if_false_label, if_true_label);
-          break;
-        }
-      goto normal;
-
     case TRUTH_NOT_EXPR:
       do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
       break;
@@ -504,8 +431,86 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	    do_jump (cmp0, 0, if_true_label);
 	    do_jump (cmp1, if_false_label, if_true_label);
           }
-      }
       break;
+    }
+
+    case BIT_AND_EXPR:
+      /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
+	 See if the former is preferred for jump tests and restore it
+	 if so.  */
+      if (integer_onep (TREE_OPERAND (exp, 1)))
+	{
+	  tree exp0 = TREE_OPERAND (exp, 0);
+	  rtx set_label, clr_label;
+
+	  /* Strip narrowing integral type conversions.  */
+	  while (CONVERT_EXPR_P (exp0)
+		 && TREE_OPERAND (exp0, 0) != error_mark_node
+		 && TYPE_PRECISION (TREE_TYPE (exp0))
+		    <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp0, 0))))
+	    exp0 = TREE_OPERAND (exp0, 0);
+
+	  /* "exp0 ^ 1" inverts the sense of the single bit test.  */
+	  if (TREE_CODE (exp0) == BIT_XOR_EXPR
+	      && integer_onep (TREE_OPERAND (exp0, 1)))
+	    {
+	      exp0 = TREE_OPERAND (exp0, 0);
+	      clr_label = if_true_label;
+	      set_label = if_false_label;
+	    }
+	  else
+	    {
+	      clr_label = if_false_label;
+	      set_label = if_true_label;
+	    }
+
+	  if (TREE_CODE (exp0) == RSHIFT_EXPR)
+	    {
+	      tree arg = TREE_OPERAND (exp0, 0);
+	      tree shift = TREE_OPERAND (exp0, 1);
+	      tree argtype = TREE_TYPE (arg);
+	      if (TREE_CODE (shift) == INTEGER_CST
+		  && compare_tree_int (shift, 0) >= 0
+		  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
+		  && prefer_and_bit_test (TYPE_MODE (argtype),
+					  TREE_INT_CST_LOW (shift)))
+		{
+		  HOST_WIDE_INT mask = (HOST_WIDE_INT) 1
+				       << TREE_INT_CST_LOW (shift);
+		  do_jump (build2 (BIT_AND_EXPR, argtype, arg,
+				   build_int_cst_type (argtype, mask)),
+			   clr_label, set_label);
+		  break;
+		}
+	    }
+	}
+
+      /* If we are AND'ing with a small constant, do this comparison in the
+         smallest type that fits.  If the machine doesn't have comparisons
+         that small, it will be converted back to the wider comparison.
+         This helps if we are testing the sign bit of a narrower object.
+         combine can't do this for us because it can't know whether a
+         ZERO_EXTRACT or a compare in a smaller mode exists, but we do.  */
+
+      if (! SLOW_BYTE_ACCESS
+          && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
+          && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
+          && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
+          && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
+          && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
+          && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
+          && (optab_handler (cmp_optab, TYPE_MODE (type))->insn_code
+              != CODE_FOR_nothing))
+        {
+          do_jump (fold_convert (type, exp), if_false_label, if_true_label);
+          break;
+        }
+
+      if (TYPE_PRECISION (TREE_TYPE (exp)) > 1
+	  || TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
+	goto normal;
+
+      /* Boolean comparisons can be compiled as TRUTH_AND_EXPR.  */
 
     case TRUTH_AND_EXPR:
       /* High branch cost, expand as the bitwise AND of the conditions.
@@ -530,6 +535,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	}
       break;
 
+    case BIT_IOR_EXPR:
     case TRUTH_OR_EXPR:
       /* High branch cost, expand as the bitwise OR of the conditions.
 	 Do the same if the RHS has side effects, because we're effectively

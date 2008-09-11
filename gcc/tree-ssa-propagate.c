@@ -1098,6 +1098,7 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	{
           bool did_replace;
 	  gimple stmt = gsi_stmt (i);
+	  gimple old_stmt;
 	  enum gimple_code code = gimple_code (stmt);
 
 	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
@@ -1162,12 +1163,24 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	      && !did_replace)
 	    did_replace |= replace_uses_in (stmt, prop_value);
 
-	  /* If we made a replacement, fold and cleanup the statement.  */
+	  /* If we made a replacement, fold the statement.  */
+
+	  old_stmt = stmt;
+	  if (did_replace)
+	    fold_stmt (&i);
+
+	  /* Some statements may be simplified using ranges.  For
+	     example, division may be replaced by shifts, modulo
+	     replaced with bitwise and, etc.   Do this after 
+	     substituting constants, folding, etc so that we're
+	     presented with a fully propagated, canonicalized
+	     statement.  */
+	  if (use_ranges_p)
+	    did_replace |= simplify_stmt_using_ranges (&i);
+
+	  /* Now cleanup.  */
 	  if (did_replace)
 	    {
-	      gimple old_stmt = stmt;
-
-	      fold_stmt (&i);
 	      stmt = gsi_stmt (i);
 
               /* If we cleaned up EH information from the statement,
@@ -1206,15 +1219,6 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	      else
 		fprintf (dump_file, "Not folded\n");
 	    }
-
-	  /* Some statements may be simplified using ranges.  For
-	     example, division may be replaced by shifts, modulo
-	     replaced with bitwise and, etc.   Do this after 
-	     substituting constants, folding, etc so that we're
-	     presented with a fully propagated, canonicalized
-	     statement.  */
-	  if (use_ranges_p)
-	    simplify_stmt_using_ranges (stmt);
 
 	  gsi_prev (&i);
 	}
