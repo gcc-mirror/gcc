@@ -495,9 +495,6 @@ struct function GTY(())
   /* Points to the FUNCTION_DECL of this function.  */
   tree decl;
 
-  /* Function containing this function, if any.  */
-  struct function *outer;
-
   /* A PARM_DECL that should contain the static chain for this function.
      It will be initialized at the beginning of the function.  */
   tree static_chain_decl;
@@ -610,9 +607,6 @@ extern GTY(()) struct function *cfun;
    push_cfun or set_cfun.  */
 #define cfun (cfun + 0)
 
-/* Pointer to chain of `struct function' for containing functions.  */
-extern GTY(()) struct function *outer_function_chain;
-
 /* Nonzero if we've already converted virtual regs to hard regs.  */
 extern int virtuals_instantiated;
 
@@ -632,10 +626,6 @@ extern void instantiate_decl_rtl (rtx x);
 #define dom_computed (cfun->cfg->x_dom_computed)
 #define n_bbs_in_dom_tree (cfun->cfg->x_n_bbs_in_dom_tree)
 #define VALUE_HISTOGRAMS(fun) (fun)->value_histograms
-
-/* Given a function decl for a containing function,
-   return the `struct function' for it.  */
-struct function *find_function_data (tree);
 
 /* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
    and create duplicate blocks.  */

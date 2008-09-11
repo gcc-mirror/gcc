@@ -1,5 +1,17 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_release_function_body): Plug memory leak on
+	ipa_transforms_to_apply and CFG; ggc_free gimple df and struct function
+	so we are sure we do not dangle it forever.
+	* function.c (outer_function_chain, find_function_data): Remove.
+	(function_context_stack): New.
+	(push_function_context, pop_function_context): Update.
+	* function.h (struct function): Remove pointer outer.
+	(outer_function_chain, find_function_data): Remove.
+	* stmt.c (force_label_rtx): Remove dead call of find_function_data.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/37448
 	* cgraph.c (cgraph_create_edge): Use !cgraph_edge for sanity check.
 
