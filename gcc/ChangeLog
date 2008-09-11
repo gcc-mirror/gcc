@@ -1,3 +1,8 @@
+2008-09-11  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_store): Use the rhs vector type
+	for alias check.
+
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37338
