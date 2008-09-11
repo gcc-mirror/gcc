@@ -947,7 +947,7 @@ cmp_statistic (const void *loc1, const void *loc2)
 }
 
 /* Collect array of the descriptors from hashtable.  */
-struct loc_descriptor **loc_array;
+static struct loc_descriptor **loc_array;
 static int
 add_statistics (void **slot, void *b)
 {

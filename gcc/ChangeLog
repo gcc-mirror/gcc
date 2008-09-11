@@ -1,5 +1,10 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* ggc-common.c (loc_array): Make static.
+	* dce.c (rest_of_handle_ud_dce): Free worklist.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_release_function_body): Plug memory leak on
 	ipa_transforms_to_apply and CFG; ggc_free gimple df and struct function
 	so we are sure we do not dangle it forever.

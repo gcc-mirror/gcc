@@ -424,6 +424,7 @@ rest_of_handle_ud_dce (void)
       insn = VEC_pop (rtx, worklist);
       mark_reg_dependencies (insn);
     }
+  VEC_free (rtx, heap, worklist);
 
   /* Before any insns are deleted, we must remove the chains since
      they are not bidirectional.  */
