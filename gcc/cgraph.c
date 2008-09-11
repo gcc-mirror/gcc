@@ -636,11 +636,11 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 		    gimple call_stmt, gcov_type count, int freq, int nest)
 {
   struct cgraph_edge *edge = GGC_NEW (struct cgraph_edge);
-#ifdef ENABLE_CHECKING
-  struct cgraph_edge *e;
 
-  for (e = caller->callees; e; e = e->next_callee)
-    gcc_assert (e->call_stmt != call_stmt);
+#ifdef ENABLE_CHECKING
+  /* This is rather pricely check possibly trigerring construction of call stmt
+     hashtable.  */
+  gcc_assert (!cgraph_edge (caller, call_stmt));
 #endif
 
   gcc_assert (is_gimple_call (call_stmt));
