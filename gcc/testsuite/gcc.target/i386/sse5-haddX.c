@@ -12,10 +12,10 @@
 union
 {
   __m128i x[NUM];
-  int8_t ssi[NUM * 16];
-  int16_t si[NUM * 8];
-  int32_t li[NUM * 4];
-  int64_t lli[NUM * 2];
+  signed char ssi[NUM * 16];
+  short si[NUM * 8];
+  int li[NUM * 4];
+  long long lli[NUM * 2];
 } dst, res, src1;
 
 static void

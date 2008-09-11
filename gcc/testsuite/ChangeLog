@@ -1,5 +1,10 @@
 2008-09-11  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.target/i386/sse5-haddX.c, gcc.target/i386/sse5-hsubX.c:
+	Avoid intN_t types.
+
+2008-09-11  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/builtins-8.c: Condition cbrt test on HAVE_C99_RUNTIME.
 
 2008-09-11  Paolo Bonzini  <bonzini@gnu.org>
