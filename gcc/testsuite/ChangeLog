@@ -1,5 +1,14 @@
 2008-09-11  Joseph Myers  <joseph@codesourcery.com>
 
+	* lib/compat.exp, gcc.dg/compat/struct-layout-1.exp,
+	g++.dg/compat/struct-layout-1.exp: Use .exe extension for compat
+	test executables.
+	* gcc.dg/compat/struct-layout-1_generate.c,
+	g++.dg/compat/struct-layout-1_generate.c: Convert backslash to
+	slash in srcdir for dg-options string.
+
+2008-09-11  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.target/i386/sse5-haddX.c, gcc.target/i386/sse5-hsubX.c:
 	Avoid intN_t types.
 

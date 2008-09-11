@@ -83,7 +83,7 @@ if { $compat_have_dfp == 0 } {
 }
 
 set tstobjdir "$tmpdir/gcc.dg-struct-layout-1"
-set generator "$tmpdir/gcc.dg-struct-layout-1_generate"
+set generator "$tmpdir/gcc.dg-struct-layout-1_generate.exe"
 
 set generator_src "$srcdir/$subdir/struct-layout-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
