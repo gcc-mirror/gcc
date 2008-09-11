@@ -834,7 +834,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   if (TREE_CODE (rhs2) == SSA_NAME
       /* Avoid problems with IVopts creating PLUS_EXPRs with a
 	 different type than their operands.  */
-      && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (name)))
+      && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
     return forward_propagate_addr_into_variable_array_index (rhs2, def_rhs,
 							     use_stmt_gsi);
   return false;
