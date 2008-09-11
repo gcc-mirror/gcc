@@ -1,5 +1,9 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* gimplify.c (pop_gimplify_context): Free bind_expr_stack.
+
+2008-09-11  Jan Hubicka  <jh@suse.cz>
+
 	* function.c (free_after_compilation): Call insn_locators_free.
 	* cfglayout.c (insn_locators_free): New function.
 	* rtl.h (insn_locators_free): Declare.
