@@ -1,5 +1,11 @@
 2008-09-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* emit-rtl.c (set_reg_attrs_from_value): Fix invalid alignment
+	information passed to mark_reg_pointer.
+	* explow.c (force_reg): Likewise.
+
+2008-09-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.c (spu_override_options): Default to -mno-safe-hints
 	when building for the celledp architecture.
 
