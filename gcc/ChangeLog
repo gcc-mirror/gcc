@@ -1,3 +1,7 @@
+2008-09-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (set_instantiated_value): Set instantiated_below.
+
 2008-09-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37377

@@ -1962,6 +1962,7 @@ set_instantiated_value (htab_t cache, basic_block instantiated_below,
   PTR *slot;
   
   pattern.var = version;
+  pattern.instantiated_below = instantiated_below;
   slot = htab_find_slot (cache, &pattern, INSERT);
 
   if (!*slot)
