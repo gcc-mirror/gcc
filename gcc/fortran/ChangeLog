@@ -1,3 +1,9 @@
+2008-09-12  Richard Guenther  <rguenther@suse.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Use
+	build_fold_addr_expr to properly mark the argument
+	addressable.
+
 2008-09-11  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36214

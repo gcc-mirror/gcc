@@ -3718,7 +3718,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
       moldsize = size_in_bytes (type);
 
       /* Use memcpy to do the transfer.  */
-      tmp = fold_build1 (ADDR_EXPR, build_pointer_type (type), tmpdecl);
+      tmp = build_fold_addr_expr (tmpdecl);
       tmp = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3,
 			     fold_convert (pvoid_type_node, tmp),
 			     fold_convert (pvoid_type_node, ptr),

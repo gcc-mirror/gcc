@@ -6319,9 +6319,8 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   if (rhs_code == TRUTH_NOT_EXPR)
     {
       rhs_code = NE_EXPR;
-      op1 = integer_one_node;
+      op1 = build_int_cst (TREE_TYPE (op0), 1);
     }
-
   else
     {
       op1 = gimple_assign_rhs2 (stmt);
