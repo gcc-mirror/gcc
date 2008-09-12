@@ -2171,7 +2171,7 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   if (a1 == NULL || ALLOCNO_HARD_REGNO (a1) >= 0)
     {
       if (a2 == NULL || ALLOCNO_HARD_REGNO (a2) >= 0)
-	return (const int *) v1p - (const int *) v2p; /* Save the order. */
+	return regno1 - regno2;
       return 1;
     }
   else if (a2 == NULL || ALLOCNO_HARD_REGNO (a2) >= 0)
@@ -2185,7 +2185,7 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   total_size2 = MAX (PSEUDO_REGNO_BYTES (regno2), regno_max_ref_width[regno2]);
   if ((diff = total_size2 - total_size1) != 0)
     return diff;
-  return (const int *) v1p - (const int *) v2p; /* Save the order. */
+  return regno1 - regno2;
 }
 
 /* Setup REGNO_COALESCED_ALLOCNO_COST and REGNO_COALESCED_ALLOCNO_NUM
