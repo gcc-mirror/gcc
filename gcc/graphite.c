@@ -1542,8 +1542,9 @@ scop_record_loop (scop_p scop, struct loop *loop)
 	oldiv->name = IDENTIFIER_POINTER (DECL_NAME (oldiv->t));
       else
 	{
-	  char *n = XNEWVEC (char, 16);
-	  sprintf (n, "D.%u", DECL_UID (oldiv->t));
+	  int len = 2 + 16;
+	  char *n = XNEWVEC (char, len);
+	  snprintf (n, len, "D.%u", DECL_UID (oldiv->t));
 	  oldiv->name = n;
 	}
       oldiv->loop = loop;
@@ -1988,13 +1989,14 @@ save_var_name (char **nv, int i, name_tree p)
 
   if (name)
     {
-      nv[i] = XNEWVEC (char, strlen (name) + 12);
-      sprintf (nv[i], "%s_%12d", name, SSA_NAME_VERSION (p->t));
+      int len = strlen (name) + 16;
+      nv[i] = XNEWVEC (char, len);
+      snprintf (nv[i], len, "%s_%d", name, SSA_NAME_VERSION (p->t));
     }
   else
     {
-      nv[i] = XNEWVEC (char, 12);
-      sprintf (nv[i], "T_%12d", SSA_NAME_VERSION (p->t));
+      nv[i] = XNEWVEC (char, 16);
+      snprintf (nv[i], 2 + 16, "T_%d", SSA_NAME_VERSION (p->t));
     }
 
   p->name = nv[i];
@@ -2044,8 +2046,9 @@ initialize_cloog_names (scop_p scop)
 
   for (i = 0; i < nb_iterators; i++)
     {
-      iterators[i] = XNEWVEC (char, 18 + 12);
-      sprintf (iterators[i], "graphite_iterator_%d", i);
+      int len = 18 + 16;
+      iterators[i] = XNEWVEC (char, len);
+      snprintf (iterators[i], len, "graphite_iterator_%d", i);
     }
 
   cloog_names_set_nb_iterators (cloog_program_names (SCOP_PROG (scop)),
@@ -2055,8 +2058,9 @@ initialize_cloog_names (scop_p scop)
 
   for (i = 0; i < nb_scattering; i++)
     {
-      scattering[i] = XNEWVEC (char, 2 + 12);
-      sprintf (scattering[i], "s_%d", i);
+      int len = 2 + 16;
+      scattering[i] = XNEWVEC (char, len);
+      snprintf (scattering[i], len, "s_%d", i);
     }
 
   cloog_names_set_nb_scattering (cloog_program_names (SCOP_PROG (scop)),

@@ -1,5 +1,13 @@
 2008-09-12  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/37484
+	* graphite.c (scop_record_loop): Use snprintf instead of sprintf.
+	(save_var_name): Same.
+	(initialize_cloog_names): Same.
+	(initialize_cloog_names): Same.
+
+2008-09-12  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (set_instantiated_value): Set instantiated_below.
 
 2008-09-12  Vladimir Makarov  <vmakarov@redhat.com>
