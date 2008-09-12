@@ -1,3 +1,8 @@
+2008-09-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_override_options): Default to -mno-safe-hints
+	when building for the celledp architecture.
+
 2008-09-09  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	Improved branch hints, safe hints, and scheduling for Cell SPU.
