@@ -973,7 +973,7 @@ set_reg_attrs_from_value (rtx reg, rtx x)
 	REG_ATTRS (reg)
 	  = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
       if (MEM_POINTER (x))
-	mark_reg_pointer (reg, MEM_ALIGN (x));
+	mark_reg_pointer (reg, 0);
     }
   else if (REG_P (x))
     {
