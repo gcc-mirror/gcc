@@ -390,6 +390,16 @@ spu_override_options (void)
         error ("Unknown architecture '%s'", &spu_tune_string[0]);
     }
 
+  /* Change defaults according to the processor architecture.  */
+  if (spu_arch == PROCESSOR_CELLEDP)
+    {
+      /* If no command line option has been otherwise specified, change
+	 the default to -mno-safe-hints on celledp -- only the original
+	 Cell/B.E. processors require this workaround.  */
+      if (!(target_flags_explicit & MASK_SAFE_HINTS))
+	target_flags &= ~MASK_SAFE_HINTS;
+    }
+
   REAL_MODE_FORMAT (SFmode) = &spu_single_format;
 }
 
