@@ -2037,21 +2037,59 @@ create_caps (void)
    the IR for one region but we don't do it because it takes a lot of
    time.  */
 
-/* This recursive function returns immediate common dominator of two
-   loop tree nodes N1 and N2.  */
-static ira_loop_tree_node_t
-common_loop_tree_node_dominator (ira_loop_tree_node_t n1,
-				 ira_loop_tree_node_t n2)
+/* Map: regno -> allocnos which will finally represent the regno for
+   IR with one region.  */
+static ira_allocno_t *regno_top_level_allocno_map;
+
+/* Process all allocnos originated from pseudo REGNO and copy live
+   ranges from low level allocnos to final allocnos which are
+   destinations of removed stores at a loop exit.  Return true if we
+   copied live ranges.  */
+static bool
+copy_live_ranges_to_removed_store_destinations (int regno)
 {
-  ira_assert (n1 != NULL && n2 != NULL);
-  if (n1 == n2)
-    return n1;
-  if (n1->level < n2->level)
-    return common_loop_tree_node_dominator (n1, n2->parent);
-  else if (n1->level > n2->level)
-    return common_loop_tree_node_dominator (n1->parent, n2);
-  else
-    return common_loop_tree_node_dominator (n1->parent, n2->parent);
+  ira_allocno_t a, parent_a;
+  ira_loop_tree_node_t parent;
+  allocno_live_range_t r;
+  bool merged_p;
+
+  merged_p = false;
+  for (a = ira_regno_allocno_map[regno];
+       a != NULL;
+       a = ALLOCNO_NEXT_REGNO_ALLOCNO (a))
+    {
+      if (a != regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))])
+	/* This allocno will be removed.  */
+	continue;
+      /* Caps will be removed.  */
+      ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
+      for (parent = ALLOCNO_LOOP_TREE_NODE (a)->parent;
+	   parent != NULL;
+	   parent = parent->parent)
+	if ((parent_a = parent->regno_allocno_map[regno]) == NULL
+	    || (parent_a == regno_top_level_allocno_map[REGNO (ALLOCNO_REG
+							       (parent_a))]
+		&& ALLOCNO_MEM_OPTIMIZED_DEST_P (parent_a)))
+	  break;
+      if (parent == NULL || parent_a == NULL)
+	continue;
+      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+	{
+	  fprintf
+	    (ira_dump_file,
+	     "      Coping ranges of a%dr%d to a%dr%d: ",
+	     ALLOCNO_NUM (a), REGNO (ALLOCNO_REG (a)),
+	     ALLOCNO_NUM (parent_a), REGNO (ALLOCNO_REG (parent_a)));
+	  ira_print_live_range_list (ira_dump_file,
+				     ALLOCNO_LIVE_RANGES (a));
+	}
+      r = copy_allocno_live_range_list (ALLOCNO_LIVE_RANGES (a));
+      change_allocno_in_range_list (r, parent_a);
+      ALLOCNO_LIVE_RANGES (parent_a)
+	= merge_ranges (r, ALLOCNO_LIVE_RANGES (parent_a));
+      merged_p = true;
+    }
+  return merged_p;
 }
 
 /* Flatten the IR.  In other words, this function transforms IR as if
@@ -2066,20 +2104,16 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   int i, j, num;
   bool propagate_p, stop_p, keep_p;
   int hard_regs_num;
-  bool new_pseudos_p, merged_p;
+  bool new_pseudos_p, merged_p, mem_dest_p;
   unsigned int n;
   enum reg_class cover_class;
   ira_allocno_t a, parent_a, first, second, node_first, node_second;
-  ira_allocno_t dominator_a;
   ira_copy_t cp;
-  ira_loop_tree_node_t parent, node, dominator;
+  ira_loop_tree_node_t parent, node;
   allocno_live_range_t r;
   ira_allocno_iterator ai;
   ira_copy_iterator ci;
   sparseset allocnos_live;
-  /* Map: regno -> allocnos which will finally represent the regno for
-     IR with one region.  */
-  ira_allocno_t *regno_top_level_allocno_map;
   bool *allocno_propagated_p;
 
   regno_top_level_allocno_map
@@ -2093,7 +2127,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   /* Fix final allocno attributes.  */
   for (i = max_regno_before_emit - 1; i >= FIRST_PSEUDO_REGISTER; i--)
     {
-      propagate_p = false;
+      mem_dest_p = propagate_p = false;
       for (a = ira_regno_allocno_map[i];
 	   a != NULL;
 	   a = ALLOCNO_NEXT_REGNO_ALLOCNO (a))
@@ -2111,6 +2145,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      continue;
 	    }
 	  ira_assert (ALLOCNO_CAP_MEMBER (parent_a) == NULL);
+	  if (ALLOCNO_MEM_OPTIMIZED_DEST (a) != NULL)
+	    mem_dest_p = true;
 	  if (propagate_p)
 	    {
 	      if (!allocno_propagated_p [ALLOCNO_NUM (parent_a)])
@@ -2198,49 +2234,11 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 				  [ALLOCNO_REGNO (parent_a)])) == NULL)
 		break;
 	    }
-	  if (first != NULL)
-	    {
-	      parent_a = ALLOCNO_MEM_OPTIMIZED_DEST (first);
-	      dominator = common_loop_tree_node_dominator
-		          (ALLOCNO_LOOP_TREE_NODE (parent_a),
-			   ALLOCNO_LOOP_TREE_NODE (first));
-	      dominator_a = dominator->regno_allocno_map[ALLOCNO_REGNO (a)];
-	      ira_assert (parent_a != NULL);
-	      stop_p = first != a;
-	      /* Remember that exit can be to a grandparent (not only
-		 to a parent) or a child of the grandparent.  */
-	      for (first = a;;)
-		{
-		  if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
-		    {
-		      fprintf
-			(ira_dump_file,
-			 "      Coping ranges of a%dr%d to a%dr%d: ",
-			 ALLOCNO_NUM (first), REGNO (ALLOCNO_REG (first)),
-			 ALLOCNO_NUM (parent_a),
-			 REGNO (ALLOCNO_REG (parent_a)));
-		      ira_print_live_range_list (ira_dump_file,
-						 ALLOCNO_LIVE_RANGES (first));
-		    }
-		  r = copy_allocno_live_range_list (ALLOCNO_LIVE_RANGES
-						    (first));
-		  change_allocno_in_range_list (r, parent_a);
-		  ALLOCNO_LIVE_RANGES (parent_a)
-		    = merge_ranges (r, ALLOCNO_LIVE_RANGES (parent_a));
-		  merged_p = true;
-		  if (stop_p)
-		    break;
-		  parent = ALLOCNO_LOOP_TREE_NODE (first)->parent;
-		  ira_assert (parent != NULL);
-		  first = parent->regno_allocno_map[ALLOCNO_REGNO (a)];
-		  ira_assert (first != NULL);
-		  if (first == dominator_a)
-		    break;
-		}
-	    }
 	  ALLOCNO_COPIES (a) = NULL;
 	  regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))] = a;
 	}
+      if (mem_dest_p && copy_live_ranges_to_removed_store_destinations (i))
+	merged_p = true;
     }
   ira_free (allocno_propagated_p);
   ira_assert (new_pseudos_p || ira_max_point_before_emit == ira_max_point);

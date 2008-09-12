@@ -311,9 +311,11 @@ generate_edge_moves (edge e)
 	if (REGNO (ALLOCNO_REG (src_allocno))
 	    == REGNO (ALLOCNO_REG (dest_allocno)))
 	  continue;
-	/* Actually it is not a optimization we need this code because
-	   the memory (remember about equivalent memory) might be ROM
-	   (or placed in read only section).  */
+	/* Remove unnecessary stores at the region exit.  We should do
+	   this for readonly memory for sure and this is guaranteed by
+	   that we never generate moves on region borders (see
+	   checking ira_reg_equiv_invariant_p in function
+	   change_loop).  */
  	if (ALLOCNO_HARD_REGNO (dest_allocno) < 0
 	    && ALLOCNO_HARD_REGNO (src_allocno) >= 0
 	    && not_modified_p (src_allocno, dest_allocno))

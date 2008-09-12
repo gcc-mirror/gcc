@@ -1,3 +1,15 @@
+2008-09-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-opt/37377
+	
+	* ira-build.c (common_loop_tree_node_dominator): Remove.
+	(copy_live_ranges_to_removed_store_destinations): New function.
+	(regno_top_level_allocno_map): Move to top level from ...
+	(ira_flattening): ... here.  Use
+	copy_live_ranges_to_removed_store_destinations.
+
+	* ira-emit.c (generate_edge_moves): Fix a comment.
+	
 2008-09-12  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/37466
