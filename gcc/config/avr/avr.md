@@ -306,10 +306,11 @@
 
 
 
-(define_peephole2
+(define_peephole2 ; movsi_lreg_const
   [(match_scratch:QI 2 "d")
    (set (match_operand:SI 0 "l_register_operand" "")
-        (match_operand:SI 1 "immediate_operand" ""))]
+        (match_operand:SI 1 "immediate_operand" ""))
+   (match_dup 2)]
   "(operands[1] != const0_rtx
     && operands[1] != constm1_rtx)"
   [(parallel [(set (match_dup 0) (match_dup 1))

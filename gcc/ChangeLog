@@ -1,3 +1,9 @@
+2008-09-12  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/37466
+	* config/avr/avr.md (movsi_lreg_const peephole2): Add match_dup for
+	scratch register after 'set' pattern.
+
 2008-09-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* emit-rtl.c (set_reg_attrs_from_value): Fix invalid alignment
