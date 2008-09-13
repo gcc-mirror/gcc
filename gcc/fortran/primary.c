@@ -1869,7 +1869,10 @@ check_substring:
 
 	case MATCH_NO:
 	  if (unknown)
-	    gfc_clear_ts (&primary->ts);
+	    {
+	      gfc_clear_ts (&primary->ts);
+	      gfc_clear_ts (&sym->ts);
+	    }
 	  break;
 
 	case MATCH_ERROR:
