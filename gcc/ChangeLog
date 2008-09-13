@@ -1,3 +1,16 @@
+2008-09-13  Martin Jambor  <mjambor@suse.cz>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (free_edges): New variable.
+	(NEXT_FREE_EDGE): New macro.
+	(cgraph_free_edge): New function.
+	(cgraph_remove_edge): Call cgraph_remove_edge_1.
+	(cgraph_node_remove_callees): Likewise.
+	(cgraph_node_remove_callers): Likewise.
+	(cgraph_create_edge): Reuse edges from the free list.  Do not
+	update uid if doing so.
+	(cgraph_remove_*_hook): Add free call.
+
 2008-09-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira-color.c (conflict_allocno_vec): Delete.

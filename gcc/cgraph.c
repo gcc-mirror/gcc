@@ -176,6 +176,12 @@ struct cgraph_2node_hook_list *first_cgraph_node_duplicated_hook;
 /* List of hooks triggered when an function is inserted.  */
 struct cgraph_node_hook_list *first_cgraph_function_insertion_hook;
 
+/* Head of a linked list of unused (freed) call graph edges.
+   Do not GTY((delete)) this list so UIDs gets reliably recycled.  */
+static GTY(()) struct cgraph_edge *free_edges;
+
+/* Macro to access the next item in the list of free cgraph edges. */
+#define NEXT_FREE_EDGE(EDGE) (EDGE)->prev_caller
 
 /* Register HOOK to be called with DATA on each removed edge.  */
 struct cgraph_edge_hook_list *
@@ -203,6 +209,7 @@ cgraph_remove_edge_removal_hook (struct cgraph_edge_hook_list *entry)
   while (*ptr != entry)
     ptr = &(*ptr)->next;
   *ptr = entry->next;
+  free (entry);
 }
 
 /* Call all edge removal hooks.  */
@@ -243,6 +250,7 @@ cgraph_remove_node_removal_hook (struct cgraph_node_hook_list *entry)
   while (*ptr != entry)
     ptr = &(*ptr)->next;
   *ptr = entry->next;
+  free (entry);
 }
 
 /* Call all node removal hooks.  */
@@ -283,6 +291,7 @@ cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *entry)
   while (*ptr != entry)
     ptr = &(*ptr)->next;
   *ptr = entry->next;
+  free (entry);
 }
 
 /* Call all node removal hooks.  */
@@ -323,6 +332,7 @@ cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *entry)
   while (*ptr != entry)
     ptr = &(*ptr)->next;
   *ptr = entry->next;
+  free (entry);
 }
 
 /* Call all edge duplication hooks.  */
@@ -364,6 +374,7 @@ cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *entry)
   while (*ptr != entry)
     ptr = &(*ptr)->next;
   *ptr = entry->next;
+  free (entry);
 }
 
 /* Call all node duplication hooks.  */
@@ -635,7 +646,7 @@ struct cgraph_edge *
 cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 		    gimple call_stmt, gcov_type count, int freq, int nest)
 {
-  struct cgraph_edge *edge = GGC_NEW (struct cgraph_edge);
+  struct cgraph_edge *edge;
 
 #ifdef ENABLE_CHECKING
   /* This is rather pricely check possibly trigerring construction of call stmt
@@ -644,6 +655,17 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 #endif
 
   gcc_assert (is_gimple_call (call_stmt));
+
+  if (free_edges)
+    {
+      edge = free_edges;
+      free_edges = NEXT_FREE_EDGE (edge);
+    }
+  else
+    {
+      edge = GGC_NEW (struct cgraph_edge);
+      edge->uid = cgraph_edge_max_uid++;
+    }
 
   if (!callee->analyzed)
     edge->inline_failed = N_("function body not available");
@@ -677,7 +699,6 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   gcc_assert (freq <= CGRAPH_FREQ_MAX);
   edge->loop_nest = nest;
   edge->indirect_call = 0;
-  edge->uid = cgraph_edge_max_uid++;
   if (caller->call_site_hash)
     {
       void **slot;
@@ -722,17 +743,36 @@ cgraph_edge_remove_caller (struct cgraph_edge *e)
 	  		       htab_hash_pointer (e->call_stmt));
 }
 
+/* Put the edge onto the free list.  */
+
+static void
+cgraph_free_edge (struct cgraph_edge *e)
+{
+  int uid = e->uid;
+
+  /* Clear out the edge so we do not dangle pointers.  */
+  memset (e, 0, sizeof (e));
+  e->uid = uid;
+  NEXT_FREE_EDGE (e) = free_edges;
+  free_edges = e;
+}
+
 /* Remove the edge E in the cgraph.  */
 
 void
 cgraph_remove_edge (struct cgraph_edge *e)
 {
+  /* Call all edge removal hooks.  */
   cgraph_call_edge_removal_hooks (e);
+
   /* Remove from callers list of the callee.  */
   cgraph_edge_remove_callee (e);
 
   /* Remove from callees list of the callers.  */
   cgraph_edge_remove_caller (e);
+
+  /* Put the edge onto the free list.  */
+  cgraph_free_edge (e);
 }
 
 /* Redirect callee of E to N.  The function does not update underlying
@@ -814,6 +854,7 @@ cgraph_node_remove_callees (struct cgraph_node *node)
     {
       cgraph_call_edge_removal_hooks (e);
       cgraph_edge_remove_callee (e);
+      cgraph_free_edge (e);
     }
   node->callees = NULL;
   if (node->call_site_hash)
@@ -837,6 +878,7 @@ cgraph_node_remove_callers (struct cgraph_node *node)
     {
       cgraph_call_edge_removal_hooks (e);
       cgraph_edge_remove_caller (e);
+      cgraph_free_edge (e);
     }
   node->callers = NULL;
 }
