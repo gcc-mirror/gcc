@@ -3134,8 +3134,8 @@ with the @option{--with-ld=@dots{}} option.  This overrides the standard
 search for ld.  The two linkers supported on this target require different
 commands.  The default linker is determined during configuration.  As a
 result, it's not possible to switch linkers in the middle of a GCC build.
-This has been been reported to sometimes occur in unified builds of
-binutils and GCC@.
+This has been reported to sometimes occur in unified builds of binutils
+and GCC@.
 
 GCC 3.0 through 3.2 require binutils 2.11 or above.  GCC 3.3 through
 GCC 4.0 require binutils 2.14 or later.

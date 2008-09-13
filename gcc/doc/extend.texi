@@ -3166,7 +3166,7 @@ declaration without explicit visibility is limited to the visibility
 of its type.
 
 In C++, you can mark member functions and static member variables of a
-class with the visibility attribute.  This is useful if if you know a
+class with the visibility attribute.  This is useful if you know a
 particular method or static member variable should only be used from
 one shared object; then you can mark it hidden while the rest of the
 class has default visibility.  Care must be taken to avoid breaking
@@ -5747,7 +5747,7 @@ backward.  Further, instructions will be issued as necessary to prevent the
 processor from speculating loads across the operation and from queuing stores
 after the operation.
 
-All of the routines are are described in the Intel documentation to take
+All of the routines are described in the Intel documentation to take
 ``an optional list of variables protected by the memory barrier''.  It's
 not clear what is meant by that; it could mean that @emph{only} the
 following variables are protected, or it could mean that these variables
@@ -12925,13 +12925,13 @@ type.  Diagnostic is produced if this requirement is not met.
 
 @item __is_class (type)
 If @code{type} is a cv class type, and not a union type
-([basic.compound]) the the trait is true, else it is false.
+([basic.compound]) the trait is true, else it is false.
 
 @item __is_empty (type)
 If @code{__is_class (type)} is false then the trait is false.
 Otherwise @code{type} is considered empty if and only if: @code{type}
 has no non-static data members, or all non-static data members, if
-any, are bit-fields of lenght 0, and @code{type} has no virtual
+any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
 has no base classes @code{base_type} for which 
 @code{__is_empty (base_type)} is false.  Requires: @code{type} shall
@@ -12939,7 +12939,7 @@ be a complete type, an array type of unknown bound, or is a
 @code{void} type.
 
 @item __is_enum (type)
-If @code{type} is a cv enumeration type ([basic.compound]) the the trait is 
+If @code{type} is a cv enumeration type ([basic.compound]) the trait is
 true, else it is false.
 
 @item __is_pod (type)
@@ -12953,7 +12953,7 @@ is true, else it is false.  Requires: @code{type} shall be a complete
 type, an array type of unknown bound, or is a @code{void} type.
 
 @item __is_union (type)
-If @code{type} is a cv union type ([basic.compound]) the the trait is 
+If @code{type} is a cv union type ([basic.compound]) the trait is
 true, else it is false.
 
 @end table

@@ -3703,7 +3703,7 @@ insn-field) goes into the @code{JUMP_LABEL} field and does not have a
 This insn is an branching instruction (either an unconditional jump or
 an indirect jump) which crosses between hot and cold sections, which
 could potentially be very far apart in the executable.  The presence
-of this note indicates to other optimizations that this this branching
+of this note indicates to other optimizations that this branching
 instruction should not be ``collapsed'' into a simpler branching
 construct.  It is used when the optimization to partition basic blocks
 into hot and cold sections is turned on.

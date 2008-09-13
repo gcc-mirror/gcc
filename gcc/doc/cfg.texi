@@ -513,9 +513,9 @@ containing the queried statement.
 When changes need to be applied to a function in its @code{tree}
 representation, @dfn{block statement iterators} should be used.  These
 iterators provide an integrated abstraction of the flow graph and the
-instruction stream.  Block statement iterators iterators are
-constructed using the @code{block_stmt_iterator} data structure and
-several modifier are available, including the following:
+instruction stream.  Block statement iterators are constructed using
+the @code{block_stmt_iterator} data structure and several modifier are
+available, including the following:
 
 @ftable @code
 @item bsi_start
