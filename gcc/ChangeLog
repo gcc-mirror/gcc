@@ -1,5 +1,13 @@
 2008-09-13  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/32581
+	* tree-profile.c (add_abnormal_goto_call_edges): New function.
+	(tree_gen_interval_profiler, tree_gen_pow2_profiler,
+	tree_gen_one_value_profiler, tree_gen_average_profiler,
+	tree_gen_ic_func_profiler, tree_gen_ior_profiler): Use it.
+
+2008-09-13  Jan Hubicka  <jh@suse.cz>
+
 	* i386.c (ix86_expand_movmem, ix86_expand_movstr): Avoid processing too
 	many bytes on misalligned blocks.
 

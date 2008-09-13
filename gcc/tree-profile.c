@@ -162,6 +162,20 @@ tree_init_edge_profiler (void)
     }
 }
 
+/* New call was added, make goto call edges if neccesary.  */
+
+static void
+add_abnormal_goto_call_edges (gimple_stmt_iterator gsi)
+{
+  gimple stmt = gsi_stmt (gsi);
+
+  if (!stmt_can_make_abnormal_goto (stmt))
+    return;
+  if (!gsi_end_p (gsi))
+    split_block (gimple_bb (stmt), stmt);
+  make_abnormal_goto_edges (gimple_bb (stmt), true);
+}
+
 /* Output instructions as GIMPLE trees to increment the edge 
    execution count, and insert them on E.  We rely on 
    gsi_insert_on_edge to preserve the order.  */
@@ -221,7 +235,8 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_interval_profiler_fn, 4,
 			    ref_ptr, val, start, steps);
-  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+  add_abnormal_goto_call_edges (gsi);
 }
 
 /* Output instructions as GIMPLE trees to increment the power of two histogram 
@@ -241,7 +256,8 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_pow2_profiler_fn, 2, ref_ptr, val);
-  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+  add_abnormal_goto_call_edges (gsi);
 }
 
 /* Output instructions as GIMPLE trees for code to find the most common value.
@@ -261,7 +277,8 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_one_value_profiler_fn, 2, ref_ptr, val);
-  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+  add_abnormal_goto_call_edges (gsi);
 }
 
 
@@ -340,9 +357,10 @@ tree_gen_ic_func_profiler (void)
 				 cur_func,
 				 ic_void_ptr_var);
       gsi_insert_after (&gsi, stmt1, GSI_NEW_STMT);
-
       gcc_assert (EDGE_COUNT (bb->succs) == 1);
       bb = split_edge (EDGE_I (bb->succs, 0));
+      add_abnormal_goto_call_edges (gsi);
+
       gsi = gsi_start_bb (bb);
       /* Set __gcov_indirect_call_callee to 0,
          so that calls from other modules won't get misattributed
@@ -388,7 +406,8 @@ tree_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_average_profiler_fn, 2, ref_ptr, val);
-  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+  add_abnormal_goto_call_edges (gsi);
 }
 
 /* Output instructions as GIMPLE trees to increment the ior histogram 
@@ -408,7 +427,8 @@ tree_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_ior_profiler_fn, 2, ref_ptr, val);
-  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+  add_abnormal_goto_call_edges (gsi);
 }
 
 /* Return 1 if tree-based profiling is in effect, else 0.
