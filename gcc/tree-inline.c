@@ -1029,6 +1029,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
   gimple copy = NULL;
   struct walk_stmt_info wi;
   tree new_block;
+  bool skip_first = false;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -1050,7 +1051,11 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	 already been set (e.g. a recent "foo (&result_decl, ...)");
 	 just toss the entire GIMPLE_RETURN.  */
       if (retval && TREE_CODE (retval) != RESULT_DECL)
-	copy = gimple_build_assign (id->retvar, retval);
+        {
+	  copy = gimple_build_assign (id->retvar, retval);
+	  /* id->retvar is already substituted.  Skip it on later remapping.  */
+	  skip_first = true;
+	}
       else
 	return gimple_build_nop ();
     }
@@ -1216,7 +1221,10 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
   wi.info = id;
-  walk_gimple_op (copy, remap_gimple_op_r, &wi); 
+  if (skip_first)
+    walk_tree (gimple_op_ptr (copy, 1), remap_gimple_op_r, &wi, NULL);
+  else
+    walk_gimple_op (copy, remap_gimple_op_r, &wi); 
 
   /* We have to handle EH region remapping of GIMPLE_RESX specially because
      the region number is not an operand.  */

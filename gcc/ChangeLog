@@ -1,3 +1,8 @@
+2008-09-13  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/37392
+	* tree-inline.c (remap_gimple_stmt): Do not remap return value.
+
 2008-09-13  Martin Jambor  <mjambor@suse.cz>
 	    Jan Hubicka  <jh@suse.cz>
 
