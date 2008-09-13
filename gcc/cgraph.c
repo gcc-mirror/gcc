@@ -84,6 +84,7 @@ The callgraph:
 #include "gimple.h"
 #include "tree-dump.h"
 #include "tree-flow.h"
+#include "value-prof.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -906,6 +907,9 @@ cgraph_release_function_body (struct cgraph_node *node)
 	  gcc_assert (dom_computed[1] == DOM_NONE);
 	  clear_edges ();
 	}
+      if (cfun->value_histograms)
+	free_histograms ();
+      gcc_assert (!current_loops);
       pop_cfun();
       gimple_set_body (node->decl, NULL);
       VEC_free (ipa_opt_pass, heap,

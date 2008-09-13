@@ -1,5 +1,10 @@
 2008-09-13  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c: Include value-prof.h
+	* Makefile.in (cgraph.o): Add value-prof.h dependency.
+
+2008-09-13  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/32581
 	* tree-profile.c (add_abnormal_goto_call_edges): New function.
 	(tree_gen_interval_profiler, tree_gen_pow2_profiler,
