@@ -1,3 +1,9 @@
+2008-09-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30141
+	* tree-nested.c (finalize_nesting_tree_1): Generate valid
+	gimple stores for memory rhs.
+
 2008-09-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/37489

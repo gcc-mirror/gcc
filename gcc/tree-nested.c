@@ -1995,6 +1995,15 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 		      root->frame_decl, field, NULL_TREE);
 	  stmt = gimple_build_assign (y, x);
 	  gimple_seq_add_stmt (&stmt_list, stmt);
+	  /* If the assignment is from a non-register the stmt is
+	     not valid gimple.  Make it so by using a temporary instead.  */
+	  if (!is_gimple_reg (x)
+	      && is_gimple_reg_type (TREE_TYPE (x)))
+	    {
+	      gimple_stmt_iterator gsi = gsi_last (stmt_list);
+	      x = init_tmp_var (root, x, &gsi);
+	      gimple_assign_set_rhs1 (stmt, x);
+	    }
 	}
     }
 
