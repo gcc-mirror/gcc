@@ -1,3 +1,8 @@
+2008-09-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/37500
+	* pt.c (tsubst_decl): Do not copy DECL_STRUCT_FUNCTION pointer.
+
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37417
