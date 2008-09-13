@@ -1,6 +1,6 @@
 /* ARM and Thumb asm statements should be able to access the constant
    pool.  */
-/* { dg-do compile { target arm*-*-* } } */
+/* { dg-do compile } */
 extern unsigned x[];
 unsigned *trapTable()
 {

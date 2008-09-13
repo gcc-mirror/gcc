@@ -1,5 +1,5 @@
 /* PR optimization/10467  */
-/* { dg-do compile { target arm*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mthumb" } */
 
 typedef enum {Ident_1} Enumeration;
