@@ -1,3 +1,9 @@
+2008-09-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/37489
+	* cse.c (fold_rtx): Don't return const_true_rtx for float
+	compare if FLOAT_STORE_FLAG_VALUE is undefined.
+
 2008-09-13  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/37392

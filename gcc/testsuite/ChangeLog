@@ -1,3 +1,8 @@
+2008-09-13  Raksit Ashok <raksit@google.com>
+
+	PR rtl-optimization/37489
+	* g++.dg/opt/cse3.C: New.
+
 2008-09-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/37495
