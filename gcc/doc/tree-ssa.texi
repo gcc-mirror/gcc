@@ -1045,7 +1045,7 @@ FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_VIRTUAL_USES)
 FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_USES)
   my_code;
 
-/* Look at every every PHI use.  */
+/* Look at every PHI use.  */
 FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_ALL_USES)
   my_code;
 @end smallexample
@@ -1131,7 +1131,7 @@ Some useful functions and macros:
 single use of @code{ssa_var}.
 @item   @code{single_imm_use (ssa_var, use_operand_p *ptr, tree *stmt)} :
 Returns true if there is only a single use of @code{ssa_var}, and also returns
-the use pointer and statement it occurs in in the second and third parameters.
+the use pointer and statement it occurs in, in the second and third parameters.
 @item   @code{num_imm_uses (ssa_var)} : Returns the number of immediate uses of
 @code{ssa_var}. It is better not to use this if possible since it simply
 utilizes a loop to count the uses.

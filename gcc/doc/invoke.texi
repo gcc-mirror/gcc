@@ -1522,7 +1522,7 @@ known not to modify global memory.
 With the @option{-fno-builtin-@var{function}} option
 only the built-in function @var{function} is
 disabled.  @var{function} must not begin with @samp{__builtin_}.  If a
-function is named this is not built-in in this version of GCC, this
+function is named that is not built-in in this version of GCC, this
 option is ignored.  There is no corresponding
 @option{-fbuiltin-@var{function}} option; if you wish to enable
 built-in functions selectively when using @option{-fno-builtin} or
@@ -5081,7 +5081,7 @@ Don't forget the trailing @samp{/}.
 @opindex print-sysroot
 Print the target sysroot directory that will be used during
 compilation.  This is the target sysroot specified either at configure
-time or or using the @option{--sysroot} option, possibly with an extra
+time or using the @option{--sysroot} option, possibly with an extra
 suffix that depends on compilation options.  If no target sysroot is
 specified, the option prints nothing.
 
@@ -7084,7 +7084,7 @@ The default value is 90.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
-limit after inlining inlining is constrained by
+limit after inlining, inlining is constrained by
 @option{--param large-function-growth}.  This parameter is useful primarily
 to avoid extreme compilation time caused by non-linear algorithms used by the
 backend.
@@ -10931,7 +10931,7 @@ the system libraries and startup modules.
 
 Set 80387 floating-point precision to 32, 64 or 80 bits.  When @option{-mpc32}
 is specified, the significands of results of floating-point operations are
-rounded to 24 bits (single precision); @option{-mpc64} rounds the the
+rounded to 24 bits (single precision); @option{-mpc64} rounds the
 significands of results of floating-point operations to 53 bits (double
 precision) and @option{-mpc80} rounds the significands of results of
 floating-point operations to 64 bits (extended double precision), which is
