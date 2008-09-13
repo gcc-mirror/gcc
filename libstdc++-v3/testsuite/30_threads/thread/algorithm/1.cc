@@ -45,14 +45,16 @@ int main()
 
   try 
     {
-	std::thread t1(f);
-	std::thread::id t1_id = t1.get_id();
-	
-	std::thread t2;
-	t2.swap(std::move(t1));
-	
-	VERIFY( t1.get_id() == std::thread::id() );
-	VERIFY( t2.get_id() == t1_id ); 
+      std::thread t1(f);
+      std::thread::id t1_id = t1.get_id();
+      
+      std::thread t2;
+      t2.swap(std::move(t1));
+      
+      VERIFY( t1.get_id() == std::thread::id() );
+      VERIFY( t2.get_id() == t1_id );
+      
+      t2.join();
     }
   catch (const std::system_error&)
     {

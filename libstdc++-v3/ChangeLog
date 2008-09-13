@@ -1,4 +1,12 @@
-2008-09-12  Chris Fairles <chris.fairles@gmail.com>
+2008-09-13  Chris Fairles  <chris.fairles@gmail.com>
+
+        * testsuite/30_threads/thread/algorithm/1.cc: Join thread before
+        program exits.
+        * testsuite/30_threads/thread/algorithm/2.cc: Likewise.
+        * testsuite/30_threads/thread/this_thread/3.cc: Define test variable.
+        * testsuite/30_threads/thread/this_thread/4.cc: Likewise.
+
+2008-09-12  Chris Fairles  <chris.fairles@gmail.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/thread: New.
