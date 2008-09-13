@@ -412,6 +412,9 @@
 /* Define to 1 if you have the <tgmath.h> header file. */
 #undef HAVE_TGMATH_H
 
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
@@ -790,6 +793,9 @@
 
 /* Define if code specialized for long long should be used. */
 #undef _GLIBCXX_USE_LONG_LONG
+
+/* Defined if nanosleep is available. */
+#undef _GLIBCXX_USE_NANOSLEEP
 
 /* Define if NLS translations are to be used. */
 #undef _GLIBCXX_USE_NLS

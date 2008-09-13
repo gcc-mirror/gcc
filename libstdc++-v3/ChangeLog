@@ -1,3 +1,39 @@
+2008-09-12  Chris Fairles <chris.fairles@gmail.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/thread: New.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Regenerate.
+	* src/thread.cc: New.
+	* src/Makefile.am: Update.
+	* src/Makefile.in: Regenerate.
+	* acinclude.m4: Add check for nanosleep.
+	* configure.ac: Call it.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* config/abi/pre/gnu.ver: Add exports.
+	* doc/doxygen/user.cfg.in: Add thread header.
+	* testsuite/lib/libstdc++.exp (check_v3_target_nanosleep): Add.
+	* testsuite/lib/dg-options.exp (dg-require-nanosleep): Add.
+	* testsuite/30_threads/thread/cons/1.cc: New.
+	* testsuite/30_threads/thread/cons/2.cc: Likewise.
+	* testsuite/30_threads/thread/cons/3.cc: Likewise.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/algorithm/1.cc: Likewise.
+	* testsuite/30_threads/thread/algorithm/2.cc: Likewise.
+	* testsuite/30_threads/thread/member/1.cc: Likewise.
+	* testsuite/30_threads/thread/member/2.cc: Likewise.
+	* testsuite/30_threads/thread/member/3.cc: Likewise.
+	* testsuite/30_threads/thread/this_thread/1.cc: Likewise.
+	* testsuite/30_threads/thread/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/thread/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/thread/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/headers/thread/types_std_c++0x.cc: Likewise.
+	* testsuite/30_threads/headers/thread/std_c++0x_neg.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/all.cc: Add thread.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: 
+	Add thread, condition_variable and mutex.
+
 2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/ctype.cc (use_facet<ctype<char> >, use_facet<ctype<wchar_t>):

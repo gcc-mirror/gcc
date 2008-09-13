@@ -95,6 +95,7 @@
 #include <bitset>
 #include <chrono>
 #include <complex>
+#include <condition_variable>
 #include <deque>
 #include <exception>
 #include <fstream>
@@ -110,6 +111,7 @@
 #include <locale>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <new>
 #include <numeric>
 #include <ostream>
@@ -123,6 +125,7 @@
 #include <stdexcept>
 #include <streambuf>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <typeinfo>
 #include <type_traits>
@@ -207,6 +210,7 @@
 #include <bitset>
 #include <chrono>
 #include <complex>
+#include <condition_variable>
 #include <deque>
 #include <exception>
 #include <fstream>
@@ -236,6 +240,7 @@
 #include <stdexcept>
 #include <streambuf>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <typeinfo>
 #include <type_traits>

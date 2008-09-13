@@ -1201,6 +1201,39 @@ AC_DEFUN([GLIBCXX_CHECK_GETTIMEOFDAY], [
 ])
 
 dnl
+dnl Check for nanosleep, used in the implementation of 30.2.2
+dnl [thread.thread.this] in the current C++0x working draft.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_NANOSLEEP], [
+
+  AC_MSG_CHECKING([for nanosleep])
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  ac_has_nanosleep=no;
+  AC_CHECK_HEADERS(time.h, ac_has_time_h=yes, ac_has_time_h=no)
+  if test x"$ac_has_time_h" = x"yes"; then
+    AC_MSG_CHECKING([for nanosleep])
+    AC_TRY_COMPILE([#include <time.h>],                                                                                                         
+      [timespec ts; nanosleep(&ts, 0);],
+      [ac_has_nanosleep=yes], [ac_has_nanosleep=no])
+
+    AC_MSG_RESULT($ac_has_nanosleep)
+  fi
+
+  if test x"$ac_has_nanosleep" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_NANOSLEEP, 1,
+      [ Defined if nanosleep is available. ])
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check for ISO/IEC 9899:1999 "C99" support to ISO/IEC DTR 19768 "TR1"
 dnl facilities in Chapter 8, "C compatibility".
 dnl

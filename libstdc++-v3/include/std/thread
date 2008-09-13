@@ -1,0 +1,280 @@
+// <thread> -*- C++ -*-
+
+// Copyright (C) 2008 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/** @file thread
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_THREAD
+#define _GLIBCXX_THREAD 1
+
+#pragma GCC system_header
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <c++0x_warning.h>
+#else
+
+#include <chrono>
+#include <exception>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
+#include <type_traits>
+#include <cstddef>
+#include <bits/functexcept.h>
+#include <bits/gthr.h>
+
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+
+namespace std
+{
+  class __thread_data_base;
+
+  typedef shared_ptr<__thread_data_base> __thread_data_ptr;
+
+  class __thread_data_base : public enable_shared_from_this<__thread_data_base>
+  {
+  public:
+    __thread_data_base() = default;
+    virtual ~__thread_data_base() = default;
+    
+    virtual void __run() const = 0;
+    
+    __gthread_t 	_M_thread_handle;
+    __thread_data_ptr 	_M_this_ptr;
+    mutex 		_M_data_mutex;
+  };
+  
+  template<typename _Callable>
+    class __thread_data : public __thread_data_base
+    {
+    public:
+      __thread_data(_Callable&& __f)
+      : _M_func(std::forward<_Callable>(__f))
+      { }
+
+      void __run() const
+      { _M_func(); }
+
+    private:
+      _Callable _M_func;
+    };
+
+  /// thread
+  class thread
+  {
+  public:
+    // types
+    class id;
+    typedef __gthread_t native_handle_type;
+
+    // cons
+    thread();
+    
+    template<typename _Callable>
+      explicit thread(_Callable __f)
+      : _M_thread_data(__make_thread_data(__f))
+      { __start_thread(); }
+
+    template<typename _Callable, typename... _Args>
+      thread(_Callable&& __f, _Args&&... __args)
+      : _M_thread_data(__make_thread_data(std::bind(__f, __args...)))
+      { __start_thread(); }
+
+    ~thread();
+
+    thread(const thread&) = delete;
+    thread(thread&&);
+    thread& operator=(const thread&) = delete;
+    thread& operator=(thread&&);
+
+    // members
+    void 
+    swap(thread&& __t);
+
+    bool 
+    joinable() const;
+
+    void 
+    join();
+
+    void 
+    detach();
+
+    id
+    get_id() const;
+
+    native_handle_type 
+    native_handle()
+    { return _M_thread_data->_M_thread_handle; }
+
+    // static members
+    static unsigned hardware_concurrency();
+
+    __thread_data_ptr
+    _M_get_thread_data() const
+    {
+      lock_guard<mutex> __l(_M_thread_data_mutex);
+      return _M_thread_data;
+    }
+
+  private:
+    template<typename _Callable>
+      __thread_data_ptr 
+      __make_thread_data(_Callable&& __f)
+      { 
+	return __thread_data_ptr(
+	  new __thread_data<_Callable>(std::forward<_Callable>(__f)));
+      }
+    
+    __thread_data_ptr
+    __make_thread_data(void(*__f)())
+    { return __thread_data_ptr(new __thread_data<void(*)()>(__f)); }
+    
+    void __start_thread();
+
+    __thread_data_ptr 	_M_thread_data;
+    mutable mutex 	_M_thread_data_mutex;
+  };
+
+  inline void
+  swap(thread& __x, thread& __y)
+  { __x.swap(__y); }
+
+  inline void
+  swap(thread&& __x, thread& __y)
+  { __x.swap(__y); }
+  
+  inline void
+  swap(thread& __x, thread&& __y)
+  { __x.swap(__y); }
+
+  namespace this_thread
+  {
+    thread::id
+    get_id();
+
+    void
+    yield();
+
+    template<typename _Clock, typename _Duration>
+      void
+      sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	sleep_for(__atime - _Clock::now());
+      }
+
+    template<typename _Rep, typename _Period>
+      void
+      sleep_for(const chrono::duration<_Rep, _Period>& __rtime)
+      {
+	chrono::seconds __s =
+	  chrono::duration_cast<chrono::seconds>(__rtime);
+
+	chrono::nanoseconds __ns =
+	  chrono::duration_cast<chrono::nanoseconds>(__rtime - __s);
+
+	__gthread_time_t __ts = 
+	  {
+	    static_cast<std::time_t>(__s.count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+#ifdef _GLIBCXX_USE_NANOSLEEP
+	::nanosleep(&__ts, 0);
+#endif
+      }
+  }
+
+  /// thread::id
+  class thread::id
+  {
+  public:
+    id() : _M_thread_id() { }
+
+  private:
+    friend class thread;
+
+    friend thread::id this_thread::get_id();
+
+    friend bool 
+    operator==(thread::id __x, thread::id __y)
+    { 
+      return 
+	static_cast<bool>(__gthread_equal(__x._M_thread_id, __y._M_thread_id));
+    }
+
+    friend bool
+    operator<(thread::id __x, thread::id __y)
+    { return __x._M_thread_id < __y._M_thread_id; }
+
+    template<class _CharT, class _Traits>
+      friend basic_ostream<_CharT, _Traits>&
+      operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id); 
+
+    id(__gthread_t __id)
+    : _M_thread_id(__id)
+    { }
+      
+    __gthread_t _M_thread_id;
+  };
+
+  inline bool
+  operator!=(thread::id __x, thread::id __y)
+  { return !(__x == __y); }
+  
+  inline bool
+  operator<=(thread::id __x, thread::id __y)
+  { return !(__y < __x); }
+  
+  inline bool
+  operator>(thread::id __x, thread::id __y)
+  { return __y < __x; }
+  
+  inline bool
+  operator>=(thread::id __x, thread::id __y)
+  { return !(__x < __y); }
+  
+  template<class _CharT, class _Traits>
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id)
+    {
+      if(__id == thread::id())
+	return __out << "non-executing thread";
+      else
+	return __out << __id._M_thread_id;
+    }  
+}
+
+#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _GLIBCXX_THREAD

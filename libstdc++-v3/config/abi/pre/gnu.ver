@@ -128,7 +128,11 @@ GLIBCXX_3.4 {
       std::strstream*;
       std::strstreambuf*;
 #     std::t[a-q]*;
-      std::t[a-n]*;
+      std::t[a-g]*;      
+      std::th[a-h]*;
+      std::th[j-q]*;
+      std::th[s-z]*;
+      std::t[i-n]*;
       std::tr1::h[^a]*;
       std::t[s-z]*;
 #     std::[A-Zu-z]*;
@@ -899,6 +903,23 @@ GLIBCXX_3.4.11 {
     _ZNSt22condition_variable_anyC2Ev;
     _ZNSt22condition_variable_anyD1Ev;
     _ZNSt22condition_variable_anyD2Ev;
+
+    # thread
+    _ZNKSt6thread6get_idEv;
+    _ZNKSt6thread8joinableEv;
+    _ZNSt10shared_ptrISt18__thread_data_baseED1Ev;
+    _ZNSt11this_thread5yieldEv;
+    _ZNSt11this_thread6get_idEv;
+    _ZNSt12bad_weak_ptrD0Ev;
+    _ZNSt12bad_weak_ptrD1Ev;
+    _ZNSt6thread14__start_threadEv;
+    _ZNSt6thread4joinEv;
+    _ZNSt6thread4swapEOS_;
+    _ZNSt6thread6detachEv;
+    _ZNSt6threadC1Ev;
+    _ZNSt6threadC2Ev;
+    _ZNSt6threadD1Ev;
+    _ZNSt6threadD2Ev;
 
     # system_error
     _ZSt18get_posix_categoryv;

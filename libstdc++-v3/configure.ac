@@ -153,6 +153,9 @@ GLIBCXX_ENABLE_CLOCK_GETTIME([no])
 # For gthread support
 GLIBCXX_CHECK_GTHREADS
 
+# For nanosleep support
+GLIBCXX_CHECK_NANOSLEEP
+
 AC_LC_MESSAGES
 
 # Check for available headers.
