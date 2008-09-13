@@ -1,3 +1,33 @@
+2008-09-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira-color.c (conflict_allocno_vec): Delete.
+	(update_cost_queue_elem): New structure.
+	(update_cost_queue): New variable.
+	(update_cost_queue_tail): Likewise.
+	(update_cost_queue_elems): Likewise.
+	(allocno_update_cost_check): Delete.
+	(initiate_cost_update): Allocate update_cost_queue_elems
+	instead of allocno_update_cost_check.
+	(finish_cost_update): Update the free()s accordingly.
+	(start_update_cost): New function.
+	(queue_update_cost): Likewise.
+	(get_next_update_cost): Likewise.
+	(update_copy_costs_1): Inline into...
+	(update_copy_costs): ...here.  Use a queue instead of recursive calls.
+	Use cover_class instead of ALLOCNO_COVER_CLASS (another_allocno),
+	once we've established they are equal.  Don't allocate update
+	costs if there is nothing to add to them.
+	(update_conflict_hard_regno_costs): Remove ALLOCNO and
+	DIVISOR arguments.  Use a queue instead of recursive calls;
+	process all the allocnos in the initial queue, rather than
+	a single allocno.
+	(assign_hard_reg): Use queue_update_cost instead of
+	conflict_allocno_vec.  Queue coalesced allocnos instead
+	of calling update_conflict_hard_regno_costs for each one.
+	Just call update_conflict_hard_regno_costs once for the
+	entire queue.
+	(ira_color): Remove conflict_allocno_vec handling.
+
 2008-09-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/37484
