@@ -1,3 +1,12 @@
+2008-09-14  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming-crtend.c (register_frame_ctor): If
+	DEFAULT_USE_CXA_ATEXIT, register __gcc_deregister_frame
+	directly with atexit.
+	(deregister_frame_ctor): Rename to ...
+	(deregister_frame_dtor): Use to call __gcc_deregister_frame
+	if !DEFAULT_USE_CXA_ATEXIT.
+
 2008-09-13  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Include value-prof.h
