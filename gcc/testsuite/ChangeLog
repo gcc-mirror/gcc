@@ -1,3 +1,8 @@
+2008-09-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/37495
+	* gcc.c-torture/compile/vector-4.c: Add "dg-do compile".
+
 2008-09-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/pr36141.c: Move to ...

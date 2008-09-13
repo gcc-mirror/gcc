@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-options "-mavx" { target { i?86-*-* x86_64-*-* } } } */
 
 /* Make sure that vector of size 8 of signed char works. This used to crash with AVX on x86
