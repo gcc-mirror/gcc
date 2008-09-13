@@ -1,5 +1,5 @@
 /* Verify that ldr is preferred on XScale for loading a 3 or 4 byte constant. */
-/* { dg-do compile { target arm*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-mcpu=xscale -O" } */
 
 unsigned load4(void) __attribute__ ((naked));

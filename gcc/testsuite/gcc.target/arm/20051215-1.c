@@ -1,7 +1,7 @@
 /* ARM's load-and-call patterns used to allow automodified addresses.
    This was wrong, because if the modified register were spilled,
    the call would need an output reload.  */
-/* { dg-do run { target arm*-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
 extern void abort (void);
 typedef void (*callback) (void);

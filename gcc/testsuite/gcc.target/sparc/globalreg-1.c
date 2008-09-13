@@ -1,4 +1,4 @@
-/* { dg-do run { target sparc*-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-std=gnu99 -Os" } */
 
 /* This is a massively distilled test case based upon
