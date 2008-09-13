@@ -8179,6 +8179,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	DECL_PENDING_INLINE_INFO (r) = 0;
 	DECL_PENDING_INLINE_P (r) = 0;
 	DECL_SAVED_TREE (r) = NULL_TREE;
+	DECL_STRUCT_FUNCTION (r) = NULL;
 	TREE_USED (r) = 0;
 	if (DECL_CLONED_FUNCTION (r))
 	  {
