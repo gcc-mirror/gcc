@@ -93,7 +93,8 @@ static bool allocated_hardreg_p[FIRST_PSEUDO_REGISTER];
 
 /* Describes one element in a queue of allocnos whose costs need to be
    updated.  Each allocno in the queue is known to have a cover class.  */
-struct update_cost_queue_elem {
+struct update_cost_queue_elem
+{
   /* This element is in the queue iff CHECK == update_cost_check.  */
   int check;
 
