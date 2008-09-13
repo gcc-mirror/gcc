@@ -1,3 +1,8 @@
+2008-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_movmem, ix86_expand_movstr): Avoid processing too
+	many bytes on misalligned blocks.
+
 2008-09-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cfg.texi: Fix some typos.
