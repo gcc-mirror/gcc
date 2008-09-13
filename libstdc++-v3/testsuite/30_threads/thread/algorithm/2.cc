@@ -51,6 +51,8 @@ void test01()
       
       VERIFY( t1.get_id() == std::thread::id() );
       VERIFY( t2.get_id() == t1_id );
+
+      t2.join();
     }
  catch (const std::system_error&)
    {
@@ -73,6 +75,8 @@ void test02()
       std::swap(std::move(t1), t2);
 
       VERIFY( t2.get_id() == t1_id );
+
+      t2.join();
     }
   catch (const std::system_error&)
     {
@@ -95,6 +99,8 @@ void test03()
       std::swap(t2, std::move(t1));
 
       VERIFY( t2.get_id() == t1_id );
+      
+      t2.join();
     }
   catch (const std::system_error&)
     {
