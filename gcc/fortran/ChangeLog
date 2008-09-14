@@ -1,3 +1,11 @@
+2008-09-11  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36214
+	* simplify.c (simplify_cmplx): Added linebreak to long line.
+	* target-memory.c (gfc_convert_boz): Fix indentation.
+	(gfc_interpret_float): Set mpfr precision to right value before
+	calling mpfr_init.
+
 2008-09-08  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37199

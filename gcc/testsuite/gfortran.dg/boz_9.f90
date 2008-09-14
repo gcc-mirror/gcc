@@ -22,13 +22,13 @@ complex          :: z2 = cmplx(5.0, o'01245')
 
 if (r2c /= 13107.0) call abort()
 if (rc  /= 1.83668190E-41) call abort()
-if (dc /= 0.30102999566398120) call abort()
+if (dc /= 0.30102999566398120d0) call abort()
 if (real(z1c) /= 2.94272678E-44 .or. aimag(z1c) /= -4.0) call abort()
 if (real(z2c) /= 5.0 .or. aimag(z2c) /= 9.48679060E-43) call abort()
 
 if (r2 /= 13107.0) call abort()
 if (r  /= 1.83668190E-41) call abort()
-if (d /= 0.30102999566398120) call abort()
+if (d /= 0.30102999566398120d0) call abort()
 if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
 if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
 
@@ -40,7 +40,7 @@ z2 = cmplx(5.0, o'01245')
 
 if (r2 /= 13107.0) call abort()
 if (r  /= 1.83668190E-41) call abort()
-if (d /= 0.30102999566398120) call abort()
+if (d /= 0.30102999566398120d0) call abort()
 if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
 if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
 

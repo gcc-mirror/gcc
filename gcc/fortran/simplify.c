@@ -763,7 +763,8 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 	{
 	case BT_INTEGER:
 	  if (!y->is_boz)
-	    mpfr_set_z (result->value.complex.i, y->value.integer, GFC_RND_MODE);
+	    mpfr_set_z (result->value.complex.i, y->value.integer,
+			GFC_RND_MODE);
 	  break;
 
 	case BT_REAL:

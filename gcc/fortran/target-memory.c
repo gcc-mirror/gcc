@@ -338,8 +338,9 @@ gfc_interpret_integer (int kind, unsigned char *buffer, size_t buffer_size,
 
 int
 gfc_interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
-		 mpfr_t real)
+		     mpfr_t real)
 {
+  gfc_set_model_kind (kind);
   mpfr_init (real);
   gfc_conv_tree_to_mpfr (real,
 			 native_interpret_expr (gfc_get_real_type (kind),
@@ -661,10 +662,8 @@ gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
     }
 
   for (index = 0; gfc_integer_kinds[index].kind != 0; ++index)
-    {
-	if ((unsigned) gfc_integer_kinds[index].bit_size >= ts_bit_size)
-	  break;
-    }
+    if ((unsigned) gfc_integer_kinds[index].bit_size >= ts_bit_size)
+      break;
 
   expr->ts.kind = gfc_integer_kinds[index].kind;
   buffer_size = MAX (buffer_size, size_integer (expr->ts.kind));
