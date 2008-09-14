@@ -1,3 +1,15 @@
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	Merge from classpath:
+	2008-09-02  Andrew John Hughes  <gnu_andrew at member.fsf.org>
+
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java:
+	(makeVtable()): Populate methodNameMap.
+	(printMethods(CniPrintStream)): Always use pre-populated
+	methodNameMap for bridge targets.
+
+	* tools/classes/gnu/classpath/tools/javah/ClassWrapper.class: Update.
+
 2008-04-17  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/35950:
