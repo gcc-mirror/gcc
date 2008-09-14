@@ -1,3 +1,9 @@
+2008-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (-fconserve-stack): Document.
+	* opts.c (decode_options): Handle conserve_stack.
+	* common.opt (fconvserve_stack): New.
+
 2008-09-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.host: Add x-aix to host_xmake_file.
