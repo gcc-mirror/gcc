@@ -1112,6 +1112,14 @@ decode_options (unsigned int argc, const char **argv)
       optimization_current_node = optimization_default_node;
       first_time_p = false;
     }
+  if (flag_conserve_stack)
+    {
+      if (!PARAM_SET_P (PARAM_LARGE_STACK_FRAME))
+        PARAM_VALUE (PARAM_LARGE_STACK_FRAME) = 100;
+      if (!PARAM_SET_P (PARAM_STACK_FRAME_GROWTH))
+        PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) = 40;
+    }
+
 }
 
 #define LEFT_COLUMN	27

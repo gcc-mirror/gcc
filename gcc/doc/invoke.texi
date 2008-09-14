@@ -323,8 +323,8 @@ Objective-C and Objective-C++ Dialects}.
 -falign-labels[=@var{n}] -falign-loops[=@var{n}] -fassociative-math @gol
 -fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
--fcheck-data-deps -fcprop-registers -fcrossjumping -fcse-follow-jumps @gol
--fcse-skip-blocks -fcx-fortran-rules -fcx-limited-range @gol
+-fcheck-data-deps -fconserve-stack -fcprop-registers -fcrossjumping @gol
+-fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules -fcx-limited-range @gol
 -fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
@@ -5870,6 +5870,13 @@ This option is always enabled by default on certain machines, usually
 those which have no call-preserved registers to use instead.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fconserve-stack
+@opindex fconserve-stack
+Attempt to minimize stack usage.  The compiler will attempt to use less
+stack space, even if that makes the program slower.  This option
+implies setting the @option{large-stack-frame} parameter to 100
+and the @option{large-stack-frame-growth} parameter to 400.
 
 @item -ftree-reassoc
 @opindex ftree-reassoc
