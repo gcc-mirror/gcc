@@ -1,3 +1,7 @@
+2008-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/Make-lang.in (gnac1): Add CFLAGS.
+
 2008-09-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* a-crbtgk.adb, a-direct.ads, a-tasatt.adb, ali.ads,
