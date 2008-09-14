@@ -1,3 +1,11 @@
+2008-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net.b.de>
+
+	PR fortran/35840
+	* io.c (match_vtag): Add tag name to error message.
+	(match_out_tag): Cleanup whitespace.
+	(gfc_resolve_dt): Resolve id and async tags. 
+
 2008-09-13  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35770
