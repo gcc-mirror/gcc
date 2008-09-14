@@ -1,3 +1,9 @@
+2008-09-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.host: Add x-aix to host_xmake_file.
+	* config/rs6000/t-aix52: Do not override LDFLAGS.
+	* config/rs6000/x-aix: New file.
+
 2008-09-14  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/19636
@@ -6306,7 +6312,7 @@
 	PR ada/36554
 	* dwarf2out.c (is_subrange_type): Deal with BOOLEAN_TYPE.
 
-2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	PR 36974
 	* final.c (call_from_call_insn): Handle COND_EXEC.
@@ -6518,7 +6524,7 @@
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
 	vector modes.
 
-2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* final.c (call_from_call_insn): New.
 	(final_scan_insn): Call assemble_external on FUNCTION_DECLs.
@@ -7634,7 +7640,7 @@
 	(TARGET_OPTION_PRINT): Ditto.
 	(TARGET_CAN_INLINE_P): Ditto.
 
-2008-07-22  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-22  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-typeck.c (build_external_ref): Don't call assemble_external.
 	* final.c (output_operand): Call assemble_external.
@@ -7655,7 +7661,7 @@
 	highest magnitude if this is still less or equal to the true
 	quotient in magnitude.
 
-2008-07-21  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-21  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* Makefile.in: Replace toplev.h with TOPLEV_H.
 	* c-decl.c (merge_decls): Don't set DECL_IN_SYSTEM_HEADER.
@@ -7957,7 +7963,7 @@
 	(m32c_legitimate_address_p): Handle "++rii" addresses created by
 	m32c_legitimize_reload_address.
 
-2007-07-16  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2007-07-16  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
 	DECL_IN_SYSTEM_HEADER in sync.
@@ -8047,7 +8053,7 @@
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
 
-2007-07-14  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2007-07-14  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
 	is set.

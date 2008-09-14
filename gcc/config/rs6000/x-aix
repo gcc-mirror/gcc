@@ -1,0 +1,3 @@
+# genautomata requires more than 256MB of data
+build/genautomata : override LDFLAGS += -Wl,-bmaxdata:0x20000000
+
