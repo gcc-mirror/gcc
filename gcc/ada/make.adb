@@ -4363,7 +4363,7 @@ package body Make is
                --  directory information.
 
                File_Name : constant String := Base_Name (Main);
-               --  The simple file name of the current main main
+               --  The simple file name of the current main
 
             begin
                exit when Main = "";
@@ -7220,7 +7220,7 @@ package body Make is
 
          elsif Sfile /= No_File then
 
-            --  If Put_In_Q is False, we add the source as it it were specified
+            --  If Put_In_Q is False, we add the source as if it were specified
             --  on the command line, and we set Put_In_Q to True, so that the
             --  following sources will be put directly in the queue. This will
             --  allow parallel compilation processes if -jx switch is used.

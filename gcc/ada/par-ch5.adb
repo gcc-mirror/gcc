@@ -1067,7 +1067,7 @@ package body Ch5 is
       --  scanned out and is in Prev_Token.
 
       procedure Check_If_Column;
-      --  An internal procedure used to check that THEN, ELSE ELSE, or ELSIF
+      --  An internal procedure used to check that THEN, ELSE, or ELSIF
       --  appear in the right place if column checking is enabled (i.e. if
       --  they are the first token on the line, then they must appear in
       --  the same column as the opening IF).

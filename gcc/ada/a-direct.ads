@@ -317,7 +317,7 @@ package Ada.Directories is
    procedure End_Search (Search : in out Search_Type);
    --  Ends the search represented by Search. After a successful call on
    --  End_Search, the object Search will have no entries available. Note
-   --  that is is not necessary to call End_Search if the call to Start_Search
+   --  that it is not necessary to call End_Search if the call to Start_Search
    --  was unsuccessful and raised an exception (but it is harmless to make
    --  the call in this case).
 

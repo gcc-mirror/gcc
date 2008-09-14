@@ -1602,7 +1602,7 @@ package body Sem_Ch6 is
 
          --  Note that wrappers already have their corresponding specs and
          --  bodies set during their creation, so if the candidate spec is
-         --  a wrapper, then we definately need to swap all types to their
+         --  a wrapper, then we definitely need to swap all types to their
          --  original concurrent status.
 
          if No (Spec_N)
@@ -5098,7 +5098,7 @@ package body Sem_Ch6 is
       end if;
 
       --  If this is a derived subprogram then the subtypes of the parent
-      --  subprogram's formal parameters will be used to to determine the need
+      --  subprogram's formal parameters will be used to determine the need
       --  for extra formals.
 
       if Is_Overloadable (E) and then Present (Alias (E)) then

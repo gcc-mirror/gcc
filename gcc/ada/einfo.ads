@@ -497,7 +497,7 @@ package Einfo is
 --    Checks_May_Be_Suppressed (Flag31)
 --       Present in all entities. Set if a pragma Suppress or Unsuppress
 --       mentions the entity specifically in the second argument. If this
---       flag is set the the Global_Entity_Suppress and Local_Entity_Suppress
+--       flag is set the Global_Entity_Suppress and Local_Entity_Suppress
 --       tables must be consulted to determine if the is actually an active
 --       Suppress or Unsuppress pragma that applies to the entity.
 
@@ -588,7 +588,7 @@ package Einfo is
 --    Constant_Value (synthesized)
 --       Applies to variables, constants, named integers, and named reals.
 --       Obtains the initialization expression for the entity. Will return
---       Empty for for a deferred constant whose full view is not available
+--       Empty for a deferred constant whose full view is not available
 --       or in some other cases of internal entities, which cannot be treated
 --       as constants from the point of view of constant folding. Empty is
 --       also returned for variables with no initialization expression.
@@ -1594,7 +1594,7 @@ package Einfo is
 
 --    Has_Pragma_Pack (Flag121) [implementation base type only]
 --       Present in all entities. If set, indicates that a valid pragma Pack
---       was was given for the type. Note that this flag is not inherited by
+--       was given for the type. Note that this flag is not inherited by
 --       derived type. See also the Is_Packed flag.
 
 --    Has_Pragma_Pure (Flag203)

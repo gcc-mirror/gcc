@@ -326,7 +326,7 @@ package body Exp_Aggr is
       --  The limit is applied to the total number of components that the
       --  aggregate will have, which is the number of static expressions
       --  that will appear in the flattened array. This requires a recursive
-      --  computation of the the number of scalar components of the structure.
+      --  computation of the number of scalar components of the structure.
 
       ---------------------
       -- Component_Count --

@@ -2716,7 +2716,7 @@ package body Exp_Ch7 is
                 With_Attach  => Make_Identifier (Loc, Name_B)));
 
             --  When the type is also a controlled type by itself,
-            --  Initialize it and attach it to the finalization chain
+            --  initialize it and attach it to the finalization chain.
 
             if Is_Controlled (Typ) then
                Append_To (Res,
@@ -2739,7 +2739,7 @@ package body Exp_Ch7 is
                 Make_Identifier (Loc, Name_B)));
 
             --  When the type is also a controlled type by itself,
-            --  Adjust it it and attach it to the finalization chain
+            --  adjust it and attach it to the finalization chain.
 
             if Is_Controlled (Typ) then
                Append_To (Res,

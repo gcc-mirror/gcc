@@ -780,7 +780,7 @@ package VMS_Data is
    --        /ERROR_LIMIT=nnn
    --
    --   NNN is a decimal integer in the range of 1 to 1000 and limits the
-   --   number of diagnostic messages to be generated into Stdoutto that
+   --   number of diagnostic messages to be generated into Stdout to that
    --   number.  Once that number has been reached, gnatcheck stops
    --   to print out diagnoses into Stderr. If NNN is equal to 0, this means
    --  that there is no limit on the number of diagnoses in Stdout
@@ -4878,8 +4878,8 @@ package VMS_Data is
    --
    --   Specifies the syntax element metrics to be computed (if at least one
    --   positive syntax element metric, line metric, complexity or coupling
-   --   metric is specified then only explicitly specified specified syntax
-   --   element metrics are computed and reported)
+   --   metric is specified then only explicitly specified syntax element
+   --   metrics are computed and reported)
    --
    --   option may be one of the following:
    --
@@ -5012,8 +5012,8 @@ package VMS_Data is
 
    --   Specifies the line metrics to be computed (if at least one positive
    --   syntax element metric, line metric, complexity or coupling metric is
-   --   specified then only explicitly specified specified line metrics are
-   --   computed and reported)
+   --   specified then only explicitly specified line metrics are computed
+   --   and reported)
    --
    --   option may be one of the following:
    --
@@ -5067,8 +5067,8 @@ package VMS_Data is
 
    --   Specifies the complexity metrics to be computed (if at least one
    --   positive syntax element metric, line metric, complexity or coupling
-   --   metric is specified then only explicitly specified specified complexity
-   --   metrics are computed and reported)
+   --   metric is specified then only explicitly specified complexity metrics
+   --   are computed and reported)
    --
    --   option may be one of the following:
    --

@@ -2115,7 +2115,7 @@ package body Sem_Ch7 is
          then
             if not Has_Private_Declaration (Etype (Id)) then
 
-               --  We assume that the user did not not intend a deferred
+               --  We assume that the user did not intend a deferred
                --  constant declaration, and the expression is just missing.
 
                Error_Msg_N

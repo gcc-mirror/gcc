@@ -6552,7 +6552,7 @@ package body Exp_Ch4 is
       Determine_Range (Right, ROK, Rlo, Rhi);
       Determine_Range (Left, LOK, Llo, Lhi);
 
-      --  The operand type may be private (e.g. in the expansion of an an
+      --  The operand type may be private (e.g. in the expansion of an
       --  intrinsic operation) so we must use the underlying type to get the
       --  bounds, and convert the literals explicitly.
 

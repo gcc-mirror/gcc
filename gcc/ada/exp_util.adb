@@ -1895,7 +1895,7 @@ package body Exp_Util is
 
                --  If the variable reference does not come from source, we
                --  cannot reliably tell whether it appears in the else part.
-               --  In particular, if if appears in generated code for a node
+               --  In particular, if it appears in generated code for a node
                --  that requires finalization, it may be attached to a list
                --  that has not been yet inserted into the code. For now,
                --  treat it as unknown.

@@ -1392,7 +1392,7 @@ package Sinfo is
    --    is undefined and should not be read).
 
    --  No_Ctrl_Actions (Flag7-Sem)
-   --    Present in N_Assignment_Statement to indicate that no finalize nor nor
+   --    Present in N_Assignment_Statement to indicate that no finalize nor
    --    adjust should take place on this assignment even though the rhs is
    --    controlled. This is used in init procs and aggregate expansions where
    --    the generated assignments are more initialisations than real
@@ -1592,7 +1592,7 @@ package Sinfo is
    --    and N_Extended_Return_Statement nodes. References the entity for the
    --    storage pool to be used for the allocate or free call or for the
    --    allocation of the returned value from function. Empty indicates that
-   --    the global default default pool is to be used. Note that in the case
+   --    the global default pool is to be used. Note that in the case
    --    of a return statement, this field is set only if the function returns
    --    value of a type whose size is not known at compile time on the
    --    secondary stack.

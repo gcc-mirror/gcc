@@ -10353,7 +10353,7 @@ package body Exp_Dist is
                      --  to the union parameter list.
 
                      --  Ordering of declarations is a complete mess in this
-                     --  area, it is supposed to be types/varibles, then
+                     --  area, it is supposed to be types/variables, then
                      --  subprogram specs, then subprogram bodies ???
 
                      ---------------------------------------

@@ -1490,7 +1490,7 @@ package Exp_Dbug is
    --
    --  These are the external names generated for Case_1.Typ (note that
    --  Pkg1.Typ is associated with the Primary Dispatch Table, because it
-   --  is the the parent of this type, and hence no external name is
+   --  is the parent of this type, and hence no external name is
    --  generated for it).
    --      case_1__typ0P   (associated with Pkg2.Typ)
    --      case_1__typ1P   (associated with Pkg3.Typ)

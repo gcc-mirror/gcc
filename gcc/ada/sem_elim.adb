@@ -476,7 +476,7 @@ package body Sem_Elim is
                         end loop;
 
                         --  Find last non-space before this colon. If there
-                        --  is no no space character before this colon, then
+                        --  is no space character before this colon, then
                         --  return False. Otherwise, End_Idx set to point to
                         --  this non-space character.
 

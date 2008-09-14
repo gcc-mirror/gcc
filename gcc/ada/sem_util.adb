@@ -8053,7 +8053,7 @@ package body Sem_Util is
          return Object_Access_Level (Expression (Obj));
 
       --  Function results are objects, so we get either the access level of
-      --  the function or, in the case of an indirect call, the level of of the
+      --  the function or, in the case of an indirect call, the level of the
       --  access-to-subprogram type.
 
       elsif Nkind (Obj) = N_Function_Call then

@@ -65,7 +65,7 @@ sub print_usage
   print "                 command line\n";
   print "     -ext ext  : Choose the generated file names extension (default\n";
   print "                 is htm)\n";
-  print "This program attemps to generate an html file from an Ada file\n";
+  print "This program attempts to generate an html file from an Ada file\n";
   exit;
 }
 
@@ -351,7 +351,7 @@ sub to_type
   # return 'generic package'                    if ($char eq 'K');
   return 'block'                              if ($char eq 'L');
   return 'modular integer'                    if ($char eq 'M');
-  return 'enumeration litteral'               if ($char eq 'N');
+  return 'enumeration literal'                if ($char eq 'N');
   return 'ordinary fixed point'               if ($char eq 'O');
   return 'access'                             if ($char eq 'P');
   return 'label'                              if ($char eq 'Q');  

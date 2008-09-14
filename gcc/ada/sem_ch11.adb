@@ -185,8 +185,7 @@ package body Sem_Ch11 is
             --  scope for visibility purposes. We create an entity to denote
             --  the whole exception part, and use it as the scope of all the
             --  choices, which may even have the same name without conflict.
-            --  This scope plays no other role in expansion or or code
-            --  generation.
+            --  This scope plays no other role in expansion or code generation.
 
             Choice := Choice_Parameter (Handler);
 

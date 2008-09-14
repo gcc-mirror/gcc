@@ -43,7 +43,7 @@ package GNAT.Altivec.Vector_Operations is
    --  much smaller set of low level primitives with type conversions around.
    --
    --  In some cases, a direct binding without any intermediate body is
-   --  possible or even even mandatory for technical reasons. What we provide
+   --  possible or even mandatory for technical reasons. What we provide
    --  here for such cases are renamings of straight imports exposed by
    --  Altivec.Low_Level_Interface.  See the comments in the private part for
    --  additional details.

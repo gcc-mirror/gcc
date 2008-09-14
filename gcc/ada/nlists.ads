@@ -172,7 +172,7 @@ package Nlists is
 
    function Prev (Node : Node_Id) return Node_Id;
    pragma Inline (Prev);
-   --  This function returns the previous node on a node list list, or Empty
+   --  This function returns the previous node on a node list, or Empty
    --  if Node is the first element of the node list. The argument must be
    --  a member of a node list. Note: the implementation does maintain back
    --  pointers, so this function executes quickly in constant time.

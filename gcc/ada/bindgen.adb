@@ -205,7 +205,7 @@ package body Bindgen is
    --  value of 1 signals its presence in the partition.
 
    --  Default_Stack_Size is the default stack size used when creating an Ada
-   --  task with no explicit Storize_Size clause.
+   --  task with no explicit Storage_Size clause.
 
    --  Leap_Seconds_Support denotes whether leap seconds have been enabled or
    --  disabled. A value of zero indicates that leap seconds are turned "off",

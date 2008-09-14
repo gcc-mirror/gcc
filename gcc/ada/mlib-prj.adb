@@ -1163,7 +1163,7 @@ package body MLib.Prj is
 
                   Close (FD);
 
-                  --  And invoke gnatbind with this this response file
+                  --  And invoke gnatbind with this response file
 
                   Spawn (Gnatbind_Path.all, Args, Success);
 

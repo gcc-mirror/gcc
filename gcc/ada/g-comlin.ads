@@ -610,8 +610,8 @@ package GNAT.Command_Line is
    --  added if not already present. For example, to add the -g switch into the
    --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs")
    --
-   --  Add_Before allows insertion of the switch at the begining of the command
-   --  line.
+   --  Add_Before allows insertion of the switch at the beginning of the
+   --  command line.
 
    procedure Add_Switch
      (Cmd        : in out Command_Line;

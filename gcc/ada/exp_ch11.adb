@@ -849,7 +849,7 @@ package body Exp_Ch11 is
 
       begin
          --  If we have no Entity, then we are probably in no run time mode
-         --  or some weird error has occurred. In either case do do nothing!
+         --  or some weird error has occurred. In either case do nothing!
 
          if Present (Ent) then
             declare
