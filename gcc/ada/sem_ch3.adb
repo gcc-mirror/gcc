@@ -765,7 +765,7 @@ package body Sem_Ch3 is
          --  If the current scope is a protected type, the anonymous access
          --  is associated with one of the protected operations, and must
          --  be available in the scope that encloses the protected declaration.
-         --  Otherwise the type is is in the scope enclosing the subprogram.
+         --  Otherwise the type is in the scope enclosing the subprogram.
 
          if Ekind (Current_Scope) = E_Protected_Type then
             Anon_Scope := Scope (Scope (Defining_Entity (Related_Nod)));
@@ -1121,7 +1121,7 @@ package body Sem_Ch3 is
          --  A bit of a kludge here. These kludges will be removed when Itypes
          --  have proper parent pointers to their declarations???
 
-         --  Kludge 1) Link definining_identifier of formals. Required by
+         --  Kludge 1) Link defining_identifier of formals. Required by
          --  First_Formal to provide its functionality.
 
          declare
@@ -1993,7 +1993,7 @@ package body Sem_Ch3 is
 
       End_Scope;
 
-      --  If the type has discriminants, non-trivial subtypes may be be
+      --  If the type has discriminants, non-trivial subtypes may be
       --  declared before the full view of the type. The full views of those
       --  subtypes will be built after the full view of the type.
 
@@ -15724,7 +15724,7 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-251): If the parent of the private type declaration
          --  is an interface there is no need to check that it is an ancestor
          --  of the associated full type declaration. The required tests for
-         --  this case case are performed by Build_Derived_Record_Type.
+         --  this case are performed by Build_Derived_Record_Type.
 
          elsif not Is_Interface (Base_Type (Priv_Parent))
            and then not Is_Ancestor (Base_Type (Priv_Parent), Full_Parent)
@@ -15960,7 +15960,7 @@ package body Sem_Ch3 is
                Prim_Elmt := First_Elmt (Priv_List);
 
                --  In the case of a concurrent type completing a private tagged
-               --  type, primivies may have been declared in between the two
+               --  type, primitives may have been declared in between the two
                --  views. These subprograms need to be wrapped the same way
                --  entries and protected procedures are handled because they
                --  cannot be directly shared by the two views.

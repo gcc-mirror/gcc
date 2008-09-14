@@ -370,7 +370,7 @@ package GNAT.Sockets is
    --  end PingPong;
 
    package SOSC renames System.OS_Constants;
-   --  Renaming used to provide short-hand notations thoughout the sockets
+   --  Renaming used to provide short-hand notations throughout the sockets
    --  binding. Note that System.OS_Constants is an internal unit, and the
    --  entities declared therein are not meant for direct access by users,
    --  including through this renaming.

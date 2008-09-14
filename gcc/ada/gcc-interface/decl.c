@@ -1939,7 +1939,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			   true, Has_Component_Size_Clause (gnat_entity));
 
 	/* If the component type is a RECORD_TYPE that has a self-referential
-	   size, use the maxium size.  */
+	   size, use the maximum size.  */
 	if (!gnu_comp_size && TREE_CODE (tem) == RECORD_TYPE
 	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (tem)))
 	  gnu_comp_size = max_size (TYPE_SIZE (tem), true);
@@ -2304,7 +2304,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 Has_Component_Size_Clause (gnat_entity));
 
 	      /* If the component type is a RECORD_TYPE that has a
-		 self-referential size, use the maxium size.  */
+		 self-referential size, use the maximum size.  */
 	      if (!gnu_comp_size
 		  && TREE_CODE (gnu_type) == RECORD_TYPE
 		  && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))

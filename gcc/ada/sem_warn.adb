@@ -1025,7 +1025,7 @@ package body Sem_Warn is
                      --  Suppress warning if private type, and the procedure
                      --  has a separate declaration in a different unit. This
                      --  is the case where the client of a package sees only
-                     --  the private type, and it it may be quite reasonable
+                     --  the private type, and it may be quite reasonable
                      --  for the logical view to be in out, even if the
                      --  implementation ends up using access types or some
                      --  other method to achieve the local effect of a

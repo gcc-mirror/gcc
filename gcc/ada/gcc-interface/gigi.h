@@ -782,7 +782,7 @@ extern bool value_factor_p (tree value, HOST_WIDE_INT factor);
    desired for the result.  Usually the operation is to be performed
    in that type.  For MODIFY_EXPR and ARRAY_REF, RESULT_TYPE may be 0
    in which case the type to be used will be derived from the operands.  */
-extern tree build_binary_op (enum tree_code op_code, tree retult_type,
+extern tree build_binary_op (enum tree_code op_code, tree result_type,
                              tree left_operand, tree right_operand);
 
 /* Similar, but make unary operation.   */

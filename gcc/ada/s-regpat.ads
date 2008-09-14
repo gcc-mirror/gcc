@@ -404,7 +404,7 @@ package System.Regpat is
       Expression      : String;
       Final_Code_Size : out Program_Size;
       Flags           : Regexp_Flags := No_Flags);
-   --  Compile a regular expression into into internal code
+   --  Compile a regular expression into internal code
 
    --  This procedure is significantly faster than the Compile function since
    --  it avoids the extra step of precomputing the required size.

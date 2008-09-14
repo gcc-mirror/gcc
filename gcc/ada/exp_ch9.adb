@@ -4124,7 +4124,7 @@ package body Exp_Ch9 is
 
    --    objectR
 
-   --  which is a renaming of the _object field of the current object object
+   --  which is a renaming of the _object field of the current object
    --  record, passed into protected operations as a parameter.
 
    function Concurrent_Ref (N : Node_Id) return Node_Id is
@@ -8721,7 +8721,7 @@ package body Exp_Ch9 is
                Alt_Stats := New_List;
             end if;
 
-            --  After the call, if any, branch to to trailing statements. We
+            --  After the call, if any, branch to trailing statements. We
             --  create a label for each, as well as the corresponding label
             --  declaration.
 
@@ -12292,7 +12292,7 @@ package body Exp_Ch9 is
          when ' ' =>
             return True;
 
-         --  FIFO_Within_Priorities certainly certainly does not permit this
+         --  FIFO_Within_Priorities certainly does not permit this
          --  optimization since the Rendezvous is a scheduling action that may
          --  require some other task to be run.
 

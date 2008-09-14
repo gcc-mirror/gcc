@@ -1105,7 +1105,7 @@ is
       pragma Inline (Push_Scope_Stack);
       --  Push a new entry onto the scope stack. Scope.Last (the stack pointer)
       --  is incremented. The Junk field is preinitialized to False. The caller
-      --  is expected to fill in all remaining entries of the new new top stack
+      --  is expected to fill in all remaining entries of the new top stack
       --  entry at Scope.Table (Scope.Last).
 
       procedure Pop_Scope_Stack;

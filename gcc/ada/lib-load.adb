@@ -711,7 +711,7 @@ package body Lib.Load is
                   --  it may very likely be the case that there is also pragma
                   --  Restriction forbidding its usage. This is typically the
                   --  case when building a configurable run time, where the
-                  --  usage of certain run-time units units is restricted by
+                  --  usage of certain run-time units is restricted by
                   --  means of both the corresponding pragma Restriction (such
                   --  as No_Calendar), and by not including the unit. Hence,
                   --  we check whether this predefined unit is forbidden, so

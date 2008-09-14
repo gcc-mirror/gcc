@@ -1541,7 +1541,7 @@ package body Exp_Pakd is
 
                else
                   --  We have to convert the right hand side to Etype (Obj).
-                  --  A special case case arises if what we have now is a Val
+                  --  A special case arises if what we have now is a Val
                   --  attribute reference whose expression type is Etype (Obj).
                   --  This happens for assignments of fields from the same
                   --  array. In this case we get the required right hand side

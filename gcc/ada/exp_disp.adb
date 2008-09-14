@@ -767,7 +767,7 @@ package body Exp_Disp is
       end if;
 
       --  If the target type is a tagged synchronized type, the dispatch table
-      --  info is in the correspondoing record type.
+      --  info is in the corresponding record type.
 
       if Is_Concurrent_Type (Iface_Typ) then
          Iface_Typ := Corresponding_Record_Type (Iface_Typ);

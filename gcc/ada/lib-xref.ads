@@ -587,7 +587,7 @@ package Lib.Xref is
    --  Node N is an operator node, whose entity has been set. If this entity
    --  is a user defined operator (i.e. an operator not defined in package
    --  Standard), then a reference to the operator is recorded at node N.
-   --  T is the operand type of of the operator. A reference to the operator
+   --  T is the operand type of the operator. A reference to the operator
    --  is an implicit reference to the type, and that needs to be recorded
    --  to avoid spurious warnings on unused entities, when the operator is
    --  a renaming of a predefined operator.

@@ -2063,7 +2063,7 @@ package body Sem_Ch8 is
             Check_Frozen_Renaming (N, Rename_Spec);
 
             --  Check explicitly that renamed entity is not intrinsic, because
-            --  in in a generic the renamed body is not built. In this case,
+            --  in a generic the renamed body is not built. In this case,
             --  the renaming_as_body is a completion.
 
             if Inside_A_Generic then
@@ -4803,7 +4803,7 @@ package body Sem_Ch8 is
                end if;
 
                --  Operator is visible if prefix of expanded name denotes
-               --  scope of type, or else type type is defined in System_Aux
+               --  scope of type, or else type is defined in System_Aux
                --  and the prefix denotes System.
 
                return Scope (Btyp) = Scop

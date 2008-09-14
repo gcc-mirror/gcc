@@ -331,7 +331,7 @@ package body Ch10 is
 
          --  A common error is to omit the body keyword after package. We can
          --  often diagnose this early on (before getting loads of errors from
-         --  contained subprogram bodies), by knowing that that the file we
+         --  contained subprogram bodies), by knowing that the file we
          --  are compiling has a name that requires a body to be found.
 
          Save_Scan_State (Scan_State);

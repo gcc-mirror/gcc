@@ -502,7 +502,7 @@ package body Checks is
          Type_Level :=
            Make_Integer_Literal (Loc, Type_Access_Level (Typ));
 
-         --  Raise Program_Error if the accessibility level of the the access
+         --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
 
          Insert_Action (Insert_Node,
@@ -1096,7 +1096,7 @@ package body Checks is
             Apply_Discriminant_Check (N, Typ);
          end if;
 
-         --  Apply the the 2005 Null_Excluding check. Note that we do not apply
+         --  Apply the 2005 Null_Excluding check. Note that we do not apply
          --  this check if the constraint node is illegal, as shown by having
          --  an error posted. This additional guard prevents cascaded errors
          --  and compiler aborts on illegal programs involving Ada 2005 checks.

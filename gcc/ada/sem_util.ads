@@ -457,7 +457,7 @@ package Sem_Util is
    --  Given an entity for an exception, package, subprogram or generic unit,
    --  returns the ultimately renamed entity if this is a renaming. If this is
    --  not a renamed entity, returns its argument. It is an error to call this
-   --  with any any other kind of entity.
+   --  with any other kind of entity.
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or

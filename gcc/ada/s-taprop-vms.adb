@@ -822,7 +822,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       --  Since the initial signal mask of a thread is inherited from the
-      --  creator, we need to set our local signal mask mask all signals
+      --  creator, we need to set our local signal mask to mask all signals
       --  during the creation operation, to make sure the new thread is
       --  not disturbed by signals before it has set its own Task_Id.
 

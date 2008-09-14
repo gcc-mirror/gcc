@@ -1,3 +1,23 @@
+2008-09-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* a-crbtgk.adb, a-direct.ads, a-tasatt.adb, ali.ads,
+	bindgen.adb, checks.adb, einfo.ads, exp_aggr.adb, exp_ch11.adb,
+	exp_ch3.adb, exp_ch4.adb, exp_ch6.adb, exp_ch7.adb, exp_ch9.adb,
+	exp_dbug.ads, exp_disp.adb, exp_dist.adb, exp_pakd.adb,
+	exp_util.adb, g-alveop.ads, g-comlin.adb, g-comlin.ads,
+	g-diopit.adb, g-socket.ads, gcc-interface/decl.c,
+	gcc-interface/gigi.h, gcc-interface/trans.c,
+	lib-load.adb, lib-xref.ads, make.adb, mlib-prj.adb, nlists.ads,
+	opt.ads, par-ch10.adb, par-ch5.adb, par.adb, s-os_lib.ads,
+	s-oscons-tmplt.c, s-parint.ads, s-regpat.ads, s-shasto.ads,
+	s-stausa.ads, s-taprop-vms.adb, sem.adb, sem_ch10.adb,
+	sem_ch11.adb, sem_ch12.adb, sem_ch13.adb, sem_ch3.adb,
+	sem_ch3.ads, sem_ch4.adb, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb,
+	sem_elim.adb, sem_prag.adb, sem_util.adb, sem_util.ads,
+	sem_warn.adb, sinfo.ads, styleg.adb, vms_data.ads: Fix typos in
+	comments.
+	* gnathtml.pl: Fix typos.
+
 2008-09-10  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* gcc-interface/Makefile.in: Switch RTEMS to s-interr-hwint.adb.

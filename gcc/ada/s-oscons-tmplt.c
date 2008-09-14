@@ -243,7 +243,7 @@ CND(FNDELAY, "Nonblocking")
 /*
 
    ----------------------
-   -- Ioctl operatings --
+   -- Ioctl operations --
    ----------------------
 
 */

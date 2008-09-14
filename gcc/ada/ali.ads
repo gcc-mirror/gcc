@@ -959,7 +959,7 @@ package ALI is
    --    Ignore_Lines requests that Scan_ALI ignore any lines that start
    --    with any given key character. The default value of X causes all
    --    Xref lines to be ignored. The corresponding data in the ALI
-   --    tables will not be filled in in this case. It is not possible
+   --    tables will not be filled in this case. It is not possible
    --    to ignore U (unit) lines, they are always read.
    --
    --    Read_Lines requests that Scan_ALI process only lines that start

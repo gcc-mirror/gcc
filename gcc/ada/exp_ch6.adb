@@ -4492,7 +4492,7 @@ package body Exp_Ch6 is
       --  which denotes the enclosing protected object. If the enclosing
       --  operation is an entry, we are immediately within the protected body,
       --  and we can retrieve the object from the service entries procedure. A
-      --  barrier function has has the same signature as an entry. A barrier
+      --  barrier function has the same signature as an entry. A barrier
       --  function is compiled within the protected object, but unlike
       --  protected operations its never needs locks, so that its protected
       --  body subprogram points to itself.

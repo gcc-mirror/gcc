@@ -161,7 +161,7 @@ package Opt is
    Assume_No_Invalid_Values : Boolean := True;
    --  ??? true for now, enable by setting to false later
    --  GNAT
-   --  Normallly, in accordance with (RM 13.9.1 (9-11)) the front end assumes
+   --  Normally, in accordance with (RM 13.9.1 (9-11)) the front end assumes
    --  that values could have invalid representations, unless it can clearly
    --  prove that the values are valid. If this switch is set (by -gnatB or by
    --  pragma Assume_No_Invalid_Values (Off)), then the compiler assumes values

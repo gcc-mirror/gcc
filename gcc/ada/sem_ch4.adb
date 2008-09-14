@@ -499,7 +499,7 @@ package body Sem_Ch4 is
             Check_Fully_Declared (Type_Id, N);
 
             --  Ada 2005 (AI-231): If the designated type is itself an access
-            --  type that excludes null, it's default initializastion will
+            --  type that excludes null, its default initialization will
             --  be a null object, and we can insert an unconditional raise
             --  before the allocator.
 

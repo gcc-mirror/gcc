@@ -3096,7 +3096,7 @@ package body Sem_Prag is
             return;
          end if;
 
-         --  Import pragmas must be be for imported entities
+         --  Import pragmas must be for imported entities
 
          if Prag_Id = Pragma_Import_Function
               or else
@@ -3395,7 +3395,7 @@ package body Sem_Prag is
                Process_Interface_Name (Def_Id, Arg3, Arg4);
 
                --  Note that we do not set Is_Public here. That's because we
-               --  only want to set if if there is no address clause, and we
+               --  only want to set it if there is no address clause, and we
                --  don't know that yet, so we delay that processing till
                --  freeze time.
 

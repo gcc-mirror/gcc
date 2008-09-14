@@ -4428,8 +4428,8 @@ package body Exp_Ch3 is
             --  unconstrained nominal subtype, then it acquired its constraints
             --  from the expression in the first place, and not only does this
             --  mean that the constraint check is not needed, but an attempt to
-            --  perform the constraint check can cause order order of
-            --  elaboration problems.
+            --  perform the constraint check can cause order of elaboration
+            --  problems.
 
             if not Is_Constr_Subt_For_U_Nominal (Typ) then
 

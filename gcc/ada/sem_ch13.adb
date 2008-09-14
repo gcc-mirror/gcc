@@ -420,7 +420,7 @@ package body Sem_Ch13 is
             --     1 .. 4       3 .. 6         1         3
             --     4 .. 7       0 .. 3         4         0
 
-            --  The general rule is that the first bit is is obtained by
+            --  The general rule is that the first bit is obtained by
             --  subtracting the old ending bit from machine scalar size - 1.
 
             for C in Start .. Stop loop

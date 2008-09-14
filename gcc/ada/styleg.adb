@@ -967,7 +967,7 @@ package body Styleg is
    -- Non_Lower_Case_Keyword --
    ----------------------------
 
-   --  In check casing mode (-gnatyk), reserved keywords must be be spelled
+   --  In check casing mode (-gnatyk), reserved keywords must be spelled
    --  in all lower case (excluding keywords range, access, delta and digits
    --  used as attribute designators).
 
