@@ -1,3 +1,7 @@
+2008-09-14  Andreas Schwab  <schwab@suse.de>
+
+	* tree-call-cdce.c (check_target_format): Accept Motorola formats.
+
 2008-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi (-fconserve-stack): Document.
@@ -133,7 +137,7 @@
 2008-09-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37377
-	
+
 	* ira-build.c (common_loop_tree_node_dominator): Remove.
 	(copy_live_ranges_to_removed_store_destinations): New function.
 	(regno_top_level_allocno_map): Move to top level from ...
@@ -141,7 +145,7 @@
 	copy_live_ranges_to_removed_store_destinations.
 
 	* ira-emit.c (generate_edge_moves): Fix a comment.
-	
+
 2008-09-12  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/37466
@@ -445,7 +449,7 @@
 	PR tree-optimization/37385
 	* tree-vect-transform.c (vect_create_data_ref_ptr): Add a new argument,
 	and use it as a vector type if not NULL.
-	(vectorizable_store): Call vect_create_data_ref_ptr with the type of 
+	(vectorizable_store): Call vect_create_data_ref_ptr with the type of
 	vectorized rhs.
 	(vect_setup_realignment): Call vect_create_data_ref_ptr with additional
 	argument.
@@ -473,7 +477,7 @@
 
 2008-09-09  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/invoke.texi (ARM Options): Correct errors in discussion 
+	* doc/invoke.texi (ARM Options): Correct errors in discussion
 	of -mfloat-abi, -mhard-float, and -msoft-float.
 
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
@@ -527,12 +531,12 @@
 	(block_before_loop): New.
 	* tree-data-ref.c (dr_analyze_indices): Update uses of instantiate_scev.
 	* graphite.c (block_before_scop): New.
-	(loop_affine_expr, stmt_simple_for_scop_p, harmful_stmt_in_bb): Pass a 
+	(loop_affine_expr, stmt_simple_for_scop_p, harmful_stmt_in_bb): Pass a
 	basic block, not a loop for determining the parameters.
 	(scopdet_edge_info, build_scops_1): Do not pass outermost loop in the
 	scop.
 	(idx_record_params, find_params_in_bb, find_scop_parameters,
-	build_loop_iteration_domains, add_conditions_to_domain): Update calls 
+	build_loop_iteration_domains, add_conditions_to_domain): Update calls
 	to instantiate_scev.
 
 	* Makefile.in (cfgloopmanip.o): Add missing dependency on TREE_FLOW_H.
@@ -540,7 +544,7 @@
 2008-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37333
-	
+
 	* ira-build.c (ira_create_allocno): Setup frequency to 0.
 
 	* ira-color.c (update_conflict_hard_regno_costs): Remove assert.
@@ -586,7 +590,7 @@
 	PR rtl-optimization/37360
 	* haifa-sched.c (max_issue): Do not assert that we never issue more
 	insns than issue_rate.  Add comment.
-	
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_types_in_gimple_op): Remove.
@@ -862,13 +866,13 @@
 	(move_operand): Disallow sub-word modes for the constant pool.
 	* config/xtensa/xtensa.c (TARGET_SECONDARY_RELOAD): Define.
 	(xtensa_secondary_reload_class): Replace with....
-	(xtensa_secondary_reload): this function.  Remove SIGN_EXTEND check. 
+	(xtensa_secondary_reload): this function.  Remove SIGN_EXTEND check.
 	Set icode for sub-word reloads from the constant pool.
 	* config/xtensa/xtensa.h (SECONDARY_INPUT_RELOAD_CLASS): Delete.
 	(SECONDARY_OUTPUT_RELOAD_CLASS): Delete.
 	* config/xtensa/xtensa.md (reload<mode>_literal): New.
 	* config/xtensa/xtensa-protos.h: Update prototypes.
-	
+
 2008-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.h (enum reg_class): Add FRAME_REGS.
@@ -913,9 +917,9 @@
 	* ira-build.c (print_copy, print_copies, ira_debug_copy,
 	ira_debug_copies): New.
 	(ira_bulid): Call print_copies.
-	
+
 	* doc/tm.texi (IRA_COVER_CLASSES): Fix the description.
-	
+
 2008-09-04  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR target/32783
@@ -1054,7 +1058,7 @@
 
 	* config/bfin/bfin.c (bfin_function_ok_for_sibcall): Restore a null
 	pointer check lost in the recent no-unit-at-a-time patch.
-	
+
 2008-09-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/37343
@@ -1142,11 +1146,11 @@
 	(remove_unnecessary_allocnos): Use all_allocnos.
 	(check_allocno_creation): Check that allocnos are in the
 	corresponding bitmap all_allocnos.
-	
+
 2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37243
-	
+
 	* ira-conflicts.c (REG_SUBREG_P, go_through_subreg): New.
 	(process_regs_for_copy): Process subregs.  Refine check when cost
 	is taken into account in ira-costs.c.
@@ -1159,7 +1163,7 @@
 	(update_conflict_hard_regno_costs): New function.
 	(assign_hard_reg): Use it.
 	(ira_color): Allocate and free conflict_allocno_vec.
- 
+
 2008-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-opt/37296
@@ -1401,7 +1405,7 @@
 	(graphite.o): Add rule.
 	* gimple.h (gimple_vec): ... here.
 	* tree-cfg.c (print_loops): Start printing at ENTRY_BLOCK_PTR.
-	* passes.c (init_optimization_passes): Schedule 
+	* passes.c (init_optimization_passes): Schedule
 	pass_graphite_transforms.
 
 2008-09-02  Samuel Tardieu  <sam@rfc1149.net>
@@ -6318,7 +6322,7 @@
 	PR ada/36554
 	* dwarf2out.c (is_subrange_type): Deal with BOOLEAN_TYPE.
 
-2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	PR 36974
 	* final.c (call_from_call_insn): Handle COND_EXEC.
@@ -6530,7 +6534,7 @@
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
 	vector modes.
 
-2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* final.c (call_from_call_insn): New.
 	(final_scan_insn): Call assemble_external on FUNCTION_DECLs.
@@ -7646,7 +7650,7 @@
 	(TARGET_OPTION_PRINT): Ditto.
 	(TARGET_CAN_INLINE_P): Ditto.
 
-2008-07-22  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2008-07-22  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-typeck.c (build_external_ref): Don't call assemble_external.
 	* final.c (output_operand): Call assemble_external.
@@ -7667,7 +7671,7 @@
 	highest magnitude if this is still less or equal to the true
 	quotient in magnitude.
 
-2008-07-21  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2008-07-21  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* Makefile.in: Replace toplev.h with TOPLEV_H.
 	* c-decl.c (merge_decls): Don't set DECL_IN_SYSTEM_HEADER.
@@ -7969,7 +7973,7 @@
 	(m32c_legitimate_address_p): Handle "++rii" addresses created by
 	m32c_legitimize_reload_address.
 
-2007-07-16  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2007-07-16  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
 	DECL_IN_SYSTEM_HEADER in sync.
@@ -8059,7 +8063,7 @@
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
 
-2007-07-14  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
+2007-07-14  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
 	is set.
