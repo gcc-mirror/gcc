@@ -286,9 +286,6 @@ Julian Brown					julian@codesourcery.com
 Christian Bruel					christian.bruel@st.com
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
-John Carr					jfc@mit.edu
-Steve Chamberlain				sac@transmeta.com
-Michael Chastain				mec.gnu@mindspring.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Josh Conner					jconner@apple.com
@@ -343,10 +340,8 @@ Andrew Jenner					andrew@codesourcery.com
 Kean Johnston					jkj@sco.com
 Phillip Jordan					phillip.m.jordan@gmail.com
 Tim Josling					tej@melbpc.org.au
-Klaus Kaempf					kkaempf@progis.de
 Victor Kaplansky				victork@il.ibm.com
 Brendan Kehoe					brendan@zen.org
-Mumit Khan					khan@xraylith.wisc.edu
 Matthias Klose					doko@debian.org
 Jeff Knaggs					jknaggs@redhat.com
 Michael Koch					konqueror@gmx.de
@@ -363,18 +358,14 @@ Asher Langton					langton2@llnl.gov
 Chris Lattner					sabre@nondot.org
 Terry Laurenzo					tlaurenzo@gmail.com
 Marc Lehmann					pcg@goof.com
-Alan Lehotsky					apl@alum.mit.edu
 James Lemke					jwlemke@juniper.net
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
-Warren Levy					warrenl@cruzio.com
-Don Lindsay					dlindsay@redhat.com
 Chen Liqin					liqin@sunnorth.com.cn
 Sa Liu						saliu@de.ibm.com
 Ralph Loader					rcl@ihug.co.nz
 Gabor Loki					loki@inf.u-szeged.hu
 Sandra Loosemore				sandra@codesourcery.com
 Manuel López-Ibáñez				manu@gcc.gnu.org
-Dave Love					d.love@dl.ac.uk
 Martin v. Löwis					loewis@informatik.hu-berlin.de
 H.J. Lu						hjl.tools@gmail.com
 Xinliang David Li				davidxl@google.com
@@ -405,9 +396,7 @@ Jeffrey D. Oldham				oldham@codesourcery.com
 Andrea Ornstein					andrea.ornstein@st.com
 Seongbae Park					seongbae.park@gmail.com
 Devang Patel					dpatel@apple.com
-Alexandre Petit-Bianco				apbianco@redhat.com
 Nicolas Pitre					nico@cam.org
-Clinton Popetz					cpopetz@cpopetz.com
 Vladimir Prus					vladimir@codesourcery.com
 Jerry Quinn					jlquinn@optonline.net
 Dwarakanath Rajagopal				dwarak.rajagopal@amd.com
@@ -416,7 +405,6 @@ Volker Reichelt					v.reichelt@netcologne.de
 Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
 Erven Rohou					erven.rohou@st.com
-Gavin Romig-Koch				gavin@redhat.com
 Ira Rosen					irar@il.ibm.com
 Maciej W. Rozycki				macro@linux-mips.org
 Douglas Rupp					rupp@gnat.com
@@ -440,7 +428,6 @@ Gabriele Svelto					gabriele.svelto@st.com
 Samuel Tardieu					sam@rfc1149.net
 Kresten Krab Thorup				krab@gcc.gnu.org
 Caroline Tice					ctice@apple.com
-Michael Tiemann					tiemann@redhat.com
 Kai Tietz					kai.tietz@onevision.com
 David Ung					davidu@mips.com
 Kris Van Hees					kris.van.hees@oracle.com

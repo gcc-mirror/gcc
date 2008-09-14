@@ -1,3 +1,11 @@
+2008-09-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Remove John Carr, Steve Chamberlain, Michael Chastain,
+	Klaus Kaempf, Mumit Khan, Alan Lehotsky, Warren Levy, Don Lindsay,
+	Dave Love, Alexandre Petit-Bianco, Clinton Popetz, Gavin Romig-Koch,
+	and Michael Tiemann from Write After Approval since they do not
+	actually have access.
+
 2008-09-05  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Initialize clooglibs to -lcloog.
