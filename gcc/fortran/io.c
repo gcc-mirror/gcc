@@ -1121,14 +1121,15 @@ match_vtag (const io_tag *tag, gfc_expr **v)
 
   if (result->symtree->n.sym->attr.intent == INTENT_IN)
     {
-      gfc_error ("Variable tag cannot be INTENT(IN) at %C");
+      gfc_error ("Variable %s cannot be INTENT(IN) at %C", tag->name);
       gfc_free_expr (result);
       return MATCH_ERROR;
     }
 
   if (gfc_pure (NULL) && gfc_impure_variable (result->symtree->n.sym))
     {
-      gfc_error ("Variable tag cannot be assigned in PURE procedure at %C");
+      gfc_error ("Variable %s cannot be assigned in PURE procedure at %C",
+		 tag->name);
       gfc_free_expr (result);
       return MATCH_ERROR;
     }
@@ -1141,13 +1142,13 @@ match_vtag (const io_tag *tag, gfc_expr **v)
 /* Match I/O tags that cause variables to become redefined.  */
 
 static match
-match_out_tag(const io_tag *tag, gfc_expr **result)
+match_out_tag (const io_tag *tag, gfc_expr **result)
 {
   match m;
 
-  m = match_vtag(tag, result);
+  m = match_vtag (tag, result);
   if (m == MATCH_YES)
-    gfc_check_do_variable((*result)->symtree);
+    gfc_check_do_variable ((*result)->symtree);
 
   return m;
 }
@@ -2472,6 +2473,7 @@ gfc_resolve_dt (gfc_dt *dt)
   RESOLVE_TAG (&tag_rec, dt->rec);
   RESOLVE_TAG (&tag_spos, dt->rec);
   RESOLVE_TAG (&tag_advance, dt->advance);
+  RESOLVE_TAG (&tag_id, dt->id);
   RESOLVE_TAG (&tag_iomsg, dt->iomsg);
   RESOLVE_TAG (&tag_iostat, dt->iostat);
   RESOLVE_TAG (&tag_size, dt->size);
@@ -2481,6 +2483,7 @@ gfc_resolve_dt (gfc_dt *dt)
   RESOLVE_TAG (&tag_e_round, dt->round);
   RESOLVE_TAG (&tag_e_blank, dt->blank);
   RESOLVE_TAG (&tag_e_decimal, dt->decimal);
+  RESOLVE_TAG (&tag_e_async, dt->asynchronous);
 
   e = dt->io_unit;
   if (gfc_resolve_expr (e) == SUCCESS
