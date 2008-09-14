@@ -483,10 +483,6 @@ do {									    \
 		           OPNUM, TYPE);				    \
 	      goto WIN;							    \
 	    }								    \
-	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	    \
-		       BASE_POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0,	    \
-		       OPNUM, TYPE);					    \
-          goto WIN;							    \
 	}								    \
       else if (! (frame_pointer_needed && XEXP (X,0) == frame_pointer_rtx)) \
 	{								    \

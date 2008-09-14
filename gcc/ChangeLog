@@ -1,3 +1,15 @@
+2008-09-14  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/19636
+	PR target/24894
+	PR target/31644
+	PR target/31786
+	* config/avr/avr.c (legitimate_address_p): Fix problem where subreg
+	is not recognized as a valid register usage. Allow REG_X to be used
+	as a base pointer.
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Remove code that
+	forces a reload when using a base register.
+
 2008-09-14  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming-crtend.c (register_frame_ctor): If
