@@ -1,3 +1,7 @@
+2008-09-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (movsf_ie): Fix length for TARGET_SH2A.
+
 2008-09-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000.md (floatsidf2): Rewrite PowerPC64 case to

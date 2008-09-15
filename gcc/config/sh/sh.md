@@ -6655,7 +6655,6 @@ label:
 	! move optimized away"
   [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,fstore,pcload,load,store,fmove,fmove,load,*,fpul_gp,gp_fpul,fstore,load,nil")
    (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
-   (set_attr "length" "*,*,*,*,4,2,2,*,*,*,2,2,2,4,2,2,2,2,0")
    (set_attr_alternative "length"
      [(const_int 2)
       (const_int 2)
@@ -6669,8 +6668,12 @@ label:
 	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
 	(const_int 4) (const_int 2))
       (const_int 2)
-      (const_int 2)
-      (const_int 2)
+      (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))
+      (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))
       (const_int 2)
       (const_int 2)
       (const_int 2)
