@@ -1,5 +1,19 @@
 2008-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-alias.c (init_alias_info): Call bitmap_obstack_release
+	in every call starting with the second one, instead of only when
+	alias_bitmap_obstack.elements != NULL.
+
+	* tree-predcom.c (filter_suitable_components): Free all refs in
+	act->refs vector before calling release_component.
+	(add_ref_to_chain): Free ref if not adding it to chain->refs.
+
+	* tree-data-ref.c (free_subscripts): Free all subscript objects.
+
+	* tree-loop-linear.c (linear_transform_loops): Initialize
+	lambda_obstack only after calling perfect_loop_nest_depth.
+	Goto free_and_continue instead of just continue for later failures.
+
 	PR middle-end/37479
 	* doc/invoke.texi: Document -fno-dwarf2-cfi-asm.
 
