@@ -1,6 +1,11 @@
+2008-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Declare the name of the compilation
+	unit as the first global name.
+
 2008-09-14  Jan Hubicka  <jh@suse.cz>
 
-	* gcc-interface/Make-lang.in (gnac1): Add CFLAGS.
+	* gcc-interface/Make-lang.in (gnat1): Add CFLAGS.
 
 2008-09-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
