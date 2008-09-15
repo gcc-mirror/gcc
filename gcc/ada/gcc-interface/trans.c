@@ -387,10 +387,17 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
     gnat_init_gcc_eh ();
 
   gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
+
+  /* Declare the name of the compilation unit as the first global
+     name in order to make the middle-end fully deterministic.  */
+  t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
+  first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
+
+  /* Now translate the compilation unit proper.  */
   start_stmt_group ();
   Compilation_Unit_to_gnu (gnat_root);
 
-  /* Now see if we have any elaboration procedures to deal with. */
+  /* Finally see if we have any elaboration procedures to deal with.  */
   for (info = elab_info_list; info; info = info->next)
     {
       tree gnu_body = DECL_SAVED_TREE (info->elab_proc);
