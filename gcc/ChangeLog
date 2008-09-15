@@ -1,5 +1,8 @@
 2008-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37479
+	* doc/invoke.texi: Document -fno-dwarf2-cfi-asm.
+
 	PR libmudflap/36397
 	* tree-mudflap.c (mf_xform_derefs_1): Handle VIEW_CONVERT_EXPR.
 
