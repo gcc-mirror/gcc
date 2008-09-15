@@ -21,7 +21,7 @@ class Y // { dg-error "1: error: new types may not be defined in a return type|1
   public:
     Y();
 }
-X::X( int xi ) // { dg-error "14: error: return type specification for constructor invalid|14: note: candidates are: X::X\\(int\\)" }
+X::X( int xi ) // { dg-error "14: error: return type specification for constructor invalid|1: note: candidates are: X::X\\(int\\)" }
 {
     x = xi;
 }

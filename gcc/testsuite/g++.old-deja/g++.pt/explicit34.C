@@ -1,10 +1,11 @@
 // { dg-do assemble  }
+// { dg-options "-fshow-column" }
 // GROUPS passed templates
 template <class T>
 void foo(T t);
 
 template <>
-void foo(int) {}; // { dg-error "" } previously defined here.
+void foo(int) {}; // { dg-error "6:" } previously defined here.
 
 template <>
-void foo<int>(int) {} // { dg-error "" } duplicate specialization.
+void foo<int>(int) {} // { dg-error "6:" } duplicate specialization.
