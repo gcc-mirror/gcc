@@ -1398,6 +1398,7 @@ free_subscripts (VEC (subscript_p, heap) *subscripts)
     {
       free_conflict_function (s->conflicting_iterations_in_a);
       free_conflict_function (s->conflicting_iterations_in_b);
+      free (s);
     }
   VEC_free (subscript_p, heap, subscripts);
 }

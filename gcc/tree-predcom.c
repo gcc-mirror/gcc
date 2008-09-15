@@ -877,7 +877,12 @@ filter_suitable_components (struct loop *loop, struct component *comps)
 	comp = &act->next;
       else
 	{
+	  dref ref;
+	  unsigned i;
+
 	  *comp = act->next;
+	  for (i = 0; VEC_iterate (dref, act->refs, i, ref); i++)
+	    free (ref);
 	  release_component (act);
 	}
     }
@@ -920,7 +925,10 @@ add_ref_to_chain (chain_p chain, dref ref)
   gcc_assert (double_int_scmp (root->offset, ref->offset) <= 0);
   dist = double_int_add (ref->offset, double_int_neg (root->offset));
   if (double_int_ucmp (uhwi_to_double_int (MAX_DISTANCE), dist) <= 0)
-    return;
+    {
+      free (ref);
+      return;
+    }
   gcc_assert (double_int_fits_in_uhwi_p (dist));
 
   VEC_safe_push (dref, heap, chain->refs, ref);
