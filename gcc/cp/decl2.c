@@ -638,8 +638,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  return OVL_CURRENT (fndecls);
 	}
       
-      error ("prototype for %q#D does not match any in class %qT",
-	     function, ctype);
+      error_at (DECL_SOURCE_LOCATION (function),
+		"prototype for %q#D does not match any in class %qT",
+		function, ctype);
       is_conv_op = DECL_CONV_FN_P (fndecl);
 
       if (is_conv_op)

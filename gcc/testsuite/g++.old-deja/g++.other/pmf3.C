@@ -3,9 +3,9 @@
 // Bug: g++ was crashing after giving errors.
 
 template<class T>
-  void connect_to_method(
+  void connect_to_method( // { dg-error "candidates are" }
     T *receiver,
-    void (T::*method)()) // { dg-error "candidates are" }
+    void (T::*method)())
   {}
 
 class Gtk_Base

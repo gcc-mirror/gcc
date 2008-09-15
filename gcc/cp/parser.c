@@ -12563,6 +12563,9 @@ cp_parser_init_declarator (cp_parser* parser,
 	}
       else
 	{
+	  location_t func_brace_location
+	    = cp_lexer_peek_token (parser->lexer)->location;
+
 	  /* Neither attributes nor an asm-specification are allowed
 	     on a function-definition.  */
 	  if (asm_specification)
@@ -12585,6 +12588,13 @@ cp_parser_init_declarator (cp_parser* parser,
 	    decl
 	      = (cp_parser_function_definition_from_specifiers_and_declarator
 		 (parser, decl_specifiers, prefix_attributes, declarator));
+
+	  if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
+	    {
+	      /* This is where the prologue starts...  */
+	      DECL_STRUCT_FUNCTION (decl)->function_start_locus
+		= func_brace_location;
+	    }
 
 	  return decl;
 	}
@@ -15791,6 +15801,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		  return;
 		}
 	      else
+		if (declarator->kind == cdk_function)
+		  declarator->id_loc = token->location;
 		/* Create the declaration.  */
 		decl = grokfield (declarator, &decl_specifiers,
 				  initializer, /*init_const_expr_p=*/true,

@@ -2,7 +2,7 @@
 // PR c++/16965
 
 template <typename T> struct B { 
-  static int Bar(T); // { dg-error "19: error: candidates are: |19: error:  " }
+  static int Bar(T); // { dg-error "14: error: candidates are: |14: error:  " }
 }; 
 struct D : B<int>, B<char> {}; 
  

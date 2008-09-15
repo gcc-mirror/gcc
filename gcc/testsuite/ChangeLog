@@ -1,3 +1,14 @@
+2008-09-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.old-deja/g++.brendan/crash16.C: Function name is the correct 
+	location for an error regarding a function.
+	* g++.old-deja/g++.other/pmf3.C: Same.
+	* g++.old-deja/g++.law/ctors5.C: Same.
+	* g++.old-deja/g++.pt/explicit34.C: Same.
+	* g++.dg/parse/error28.C: Same.
+	* g++.dg/parse/error17.C: Same.
+	* g++.dg/template/friend44.C: Same.
+
 2008-09-13  Raksit Ashok <raksit@google.com>
 
 	PR rtl-optimization/37489

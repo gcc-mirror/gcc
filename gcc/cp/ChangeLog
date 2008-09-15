@@ -1,3 +1,14 @@
+2008-09-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl.c (duplicate_decls): Call error_at.
+	(grokfndecl): New location argument.  Use location if available.
+	(grokdeclarator): Pass declarator location to grokfndecl.
+	* cp-tree.h (struct cp_declarator): Update comment for id_loc.
+	* decl2.c (check_classfn): Use error_at.
+	* parser.c (cp_parser_init_declarator): Set function_start_locus
+	to brace location.
+	(cp_parser_member_declaration): Set id_loc for function declarators.
+
 2008-09-09  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/37500
