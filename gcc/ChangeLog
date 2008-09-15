@@ -1,3 +1,12 @@
+2008-09-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000.md (floatsidf2): Rewrite PowerPC64 case to
+	use gen_floatdidf2 directly.
+	(floatunssidf2): Likewise.
+	(floatsidf_ppc64_mfpgpr): Remove.
+	(floatsidf_ppc64): Remove.
+	(floatunssidf_ppc64): Remove.
+
 2008-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* ira-color.c (finish_cost_update): Free update_cost_queue_elems
