@@ -1,5 +1,8 @@
 2008-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* ira-color.c (finish_cost_update): Free update_cost_queue_elems
+	rather than update_cost_queue.
+
 	* tree-ssa-alias.c (init_alias_info): Call bitmap_obstack_release
 	in every call starting with the second one, instead of only when
 	alias_bitmap_obstack.elements != NULL.

@@ -139,7 +139,7 @@ initiate_cost_update (void)
 static void
 finish_cost_update (void)
 {
-  ira_free (update_cost_queue);
+  ira_free (update_cost_queue_elems);
 }
 
 /* When we traverse allocnos to update hard register costs, the cost
