@@ -773,6 +773,13 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 		base = TREE_OPERAND (var, 0);
                 break;
               }
+            else if (TREE_CODE (var) == VIEW_CONVERT_EXPR)
+	      {
+		var = TREE_OPERAND (var, 0);
+		if (CONSTANT_CLASS_P (var)
+		    && TREE_CODE (var) != STRING_CST)
+		  return;
+	      }
             else 
               {
                 gcc_assert (TREE_CODE (var) == VAR_DECL 

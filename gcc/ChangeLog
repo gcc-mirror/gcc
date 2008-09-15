@@ -1,3 +1,8 @@
+2008-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libmudflap/36397
+	* tree-mudflap.c (mf_xform_derefs_1): Handle VIEW_CONVERT_EXPR.
+
 2008-09-14  Andreas Schwab  <schwab@suse.de>
 
 	* tree-call-cdce.c (check_target_format): Accept Motorola formats.
