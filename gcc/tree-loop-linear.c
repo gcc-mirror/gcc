@@ -333,12 +333,12 @@ linear_transform_loops (void)
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       struct obstack lambda_obstack;
-      gcc_obstack_init (&lambda_obstack);
 
       depth = perfect_loop_nest_depth (loop_nest);
       if (depth == 0)
 	continue;
 
+      gcc_obstack_init (&lambda_obstack);
       VEC_truncate (tree, oldivs, 0);
       VEC_truncate (tree, invariants, 0);
       VEC_truncate (tree, lambda_parameters, 0);
@@ -347,12 +347,12 @@ linear_transform_loops (void)
       dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
       if (!compute_data_dependences_for_loop (loop_nest, true, &datarefs,
 					      &dependence_relations))
-	continue;
+	goto free_and_continue;
       
       lambda_collect_parameters (datarefs, &lambda_parameters);
       if (!lambda_compute_access_matrices (datarefs, lambda_parameters,
 					   loop_nest->num))
-	continue;
+	goto free_and_continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_ddrs (dump_file, dependence_relations);
