@@ -307,7 +307,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftest-coverage  -ftime-report -fvar-tracking @gol
 -g  -g@var{level}  -gcoff -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
--fno-merge-debug-strings -fdebug-prefix-map=@var{old}=@var{new} @gol
+-fno-merge-debug-strings -fno-dwarf2-cfi-asm @gol
+-fdebug-prefix-map=@var{old}=@var{new} @gol
 -femit-struct-debug-baseonly -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
@@ -4344,6 +4345,12 @@ on by default.
 @opindex fdebug-prefix-map
 When compiling files in directory @file{@var{old}}, record debugging
 information describing them as in @file{@var{new}} instead.
+
+@item -fno-dwarf2-cfi-asm
+@opindex fdwarf2-cfi-asm
+@opindex fno-dwarf2-cfi-asm
+Emit DWARF 2 unwind info as compiler generated @code{.eh_frame} section
+instead of using GAS @code{.cfi_*} directives.
 
 @cindex @command{prof}
 @item -p
