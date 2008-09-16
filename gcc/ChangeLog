@@ -1,5 +1,11 @@
 2008-09-16  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/37380
+	* tree-sra.c (sra_build_assignment): Do not call the gimplifier
+	if not necessary.
+
+2008-09-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37508
 	* tree-vrp.c (simplify_truth_ops_using_ranges): Also allow -1.
 

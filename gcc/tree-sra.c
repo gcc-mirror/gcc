@@ -2308,8 +2308,14 @@ sra_build_assignment (tree dst, tree src)
 	   && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
     src = fold_convert (TREE_TYPE (dst), src);
 
-  src = force_gimple_operand (src, &seq2, false, NULL_TREE);
-  gimple_seq_add_seq (&seq, seq2);
+  /* ???  Only call the gimplifier if we need to.  Otherwise we may 
+     end up substituting with DECL_VALUE_EXPR - see PR37380.  */
+  if (!handled_component_p (src)
+      && !SSA_VAR_P (src))
+    {
+      src = force_gimple_operand (src, &seq2, false, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+    }
   stmt = gimple_build_assign (dst, src);
   gimple_seq_add_stmt (&seq, stmt);
   return seq;
