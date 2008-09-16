@@ -115,6 +115,7 @@
 #include <bits/c++config.h>
 #include <bits/stl_pair.h>
 #include <bits/stl_iterator_base_types.h>
+#include <initializer_list>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -316,6 +317,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _FIter, typename _Compare>
     pair<_FIter, _FIter>
     minmax_element(_FIter, _FIter, _Compare);
+
+  template<typename _Tp>
+    const _Tp&
+    min(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp&
+    min(initializer_list<_Tp>, _Compare);
+
+  template<typename _Tp>
+    const _Tp&
+    max(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp&
+    max(initializer_list<_Tp>, _Compare);
+
+  template<typename _Tp>
+    pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp>, _Compare);
 #endif
 
   // mismatch
