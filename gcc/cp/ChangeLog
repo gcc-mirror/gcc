@@ -1,5 +1,9 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/37531
+	* semantics.c (finish_compound_literal): Return error_mark_node if
+	type is errorneous.
+
 	PR c++/37532
 	* lex.c (init_reswords): Don't populate ridpointers for D_CONLY
 	reserved words.

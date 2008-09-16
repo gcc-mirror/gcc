@@ -2105,6 +2105,9 @@ finish_unary_op_expr (enum tree_code code, tree expr)
 tree
 finish_compound_literal (tree type, tree compound_literal)
 {
+  if (type == error_mark_node)
+    return error_mark_node;
+
   if (!TYPE_OBJ_P (type))
     {
       error ("compound literal of non-object type %qT", type);
