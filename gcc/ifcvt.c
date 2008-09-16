@@ -1869,7 +1869,7 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   rtx cond, t, m, c, seq;
   enum machine_mode mode;
   enum rtx_code code;
-  bool b_unconditional;
+  bool t_unconditional;
 
   cond = if_info->cond;
   code = GET_CODE (cond);
@@ -1898,16 +1898,19 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   if (GET_MODE (m) != mode)
     return FALSE;
 
-  /* This is only profitable if T is cheap, or T is unconditionally
-     executed/evaluated in the original insn sequence.  The latter
-     happens if INSN_B was taken from TEST_BB, or if there was no
-     INSN_B which can happen for e.g. conditional stores to memory.  */
-  b_unconditional = (if_info->insn_b == NULL_RTX
-		     || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb);
-  if (rtx_cost (t, SET, optimize_bb_for_speed_p (BLOCK_FOR_INSN (if_info->insn_b)))
-      >= COSTS_N_INSNS (2)
-      && (!b_unconditional
-          || t != if_info->b))
+  /* This is only profitable if T is unconditionally executed/evaluated in the
+     original insn sequence or T is cheap.  The former happens if B is the
+     non-zero (T) value and if INSN_B was taken from TEST_BB, or there was no
+     INSN_B which can happen for e.g. conditional stores to memory.  For the
+     cost computation use the block TEST_BB where the evaluation will end up
+     after the transformation.  */
+  t_unconditional =
+    (t == if_info->b
+     && (if_info->insn_b == NULL_RTX
+	 || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
+  if (!(t_unconditional
+	|| (rtx_cost (t, SET, optimize_bb_for_speed_p (if_info->test_bb))
+	    < COSTS_N_INSNS (2))))
     return FALSE;
 
   start_sequence ();
