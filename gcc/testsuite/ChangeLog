@@ -1,3 +1,10 @@
+2008-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/36889
+	* lib/fortran-torture.exp (get-fortran-torture-options): Only
+	set test_tree_vectorize on i?86/x86_64 resp. sparc* if sse2 resp.
+	ultrasparc hw is available.
+
 2008-09-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37380
