@@ -1,5 +1,9 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/37529
+	* gimplify.c (gimplify_expr) <case GOTO_EXPR>: If gimplification of
+	GOTO_DESTINATION failed, don't create GIMPLE_GOTO.
+
 	PR c++/37530
 	* gimplify.c (gimplify_expr) <case TRY_CATCH_EXPR>: Don't create
 	GIMPLE_TRY if cleanup sequence is empty.
