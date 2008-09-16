@@ -1,5 +1,8 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/37529
+	* gcc.dg/pr37529.c: New test.
+
 	PR c++/37530
 	* g++.dg/parse/crash48.C: New test.
 
