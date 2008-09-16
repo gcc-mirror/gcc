@@ -1,3 +1,9 @@
+2008-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37532
+	* lex.c (init_reswords): Don't populate ridpointers for D_CONLY
+	reserved words.
+
 2008-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl.c (duplicate_decls): Call error_at.
