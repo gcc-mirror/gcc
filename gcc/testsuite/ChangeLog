@@ -1,4 +1,11 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR rtl-optimization/37483
+	* gcc.c-torture/compile/pr37483.c: New test.
+	* gcc.c-torture/compile/pr37395.c: New test.
+
+2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37529
 	* gcc.dg/pr37529.c: New test.

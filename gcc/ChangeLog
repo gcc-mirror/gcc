@@ -1,4 +1,13 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR rtl-optimization/37483
+	* ifcvt.c (noce_try_sign_mask): Use if_info->test_bb instead of
+	if_info->insn_b's bb as argument to optimize_bb_for_speed_p.
+	Rearrange code to better match the original comment.  Check
+	t_unconditional first.  Improve comment.
+
+2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37529
 	* gimplify.c (gimplify_expr) <case GOTO_EXPR>: If gimplification of
