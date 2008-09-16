@@ -6331,7 +6331,8 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
           /* Exclude anything that should have been already folded.  */
 	  gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR
 		      || rhs_code == TRUTH_XOR_EXPR);
-	  gcc_assert (integer_zerop (op1) || integer_onep (op1));
+	  gcc_assert (integer_zerop (op1) || integer_onep (op1)
+		      || integer_all_onesp (op1));
 
 	  /* Limit the number of cases we have to consider.  */
 	  if (rhs_code == EQ_EXPR)

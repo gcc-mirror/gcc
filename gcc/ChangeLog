@@ -1,3 +1,8 @@
+2008-09-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37508
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Also allow -1.
+
 2008-09-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (movsf_ie): Fix length for TARGET_SH2A.
