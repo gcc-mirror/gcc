@@ -1,5 +1,8 @@
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/37531
+	* g++.dg/parse/crash47.C: New test.
+
 	PR c++/37532
 	* g++.dg/parse/crash46.C: New test.
 
