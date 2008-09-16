@@ -67,6 +67,7 @@
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
 #include <debug/debug.h>
+#include <initializer_list>
 
 // See concept_check.h for the __glibcxx_*_requires macros.
 
@@ -4091,6 +4092,45 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       return std::make_pair(__min, __max);
+    }
+
+  // N2722.
+  template<typename _Tp>
+    inline const _Tp&
+    min(initializer_list<_Tp> __l)
+    { return *std::min_element(__l.begin(), __l.end()); }
+
+  template<typename _Tp, typename _Compare>
+    inline const _Tp&
+    min(initializer_list<_Tp> __l, _Compare __comp)
+    { return *std::min_element(__l.begin(), __l.end(), __comp); }
+
+  template<typename _Tp>
+    inline const _Tp&
+    max(initializer_list<_Tp> __l)
+    { return *std::max_element(__l.begin(), __l.end()); }
+
+  template<typename _Tp, typename _Compare>
+    inline const _Tp&
+    max(initializer_list<_Tp> __l, _Compare __comp)
+    { return *std::max_element(__l.begin(), __l.end(), __comp); }
+
+  template<typename _Tp>
+    inline pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp> __l)
+    {
+      pair<const _Tp*, const _Tp*> __p =
+	std::minmax_element(__l.begin(), __l.end());
+      return std::make_pair(*__p.first, *__p.second);
+    }
+
+  template<typename _Tp, typename _Compare>
+    inline pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp> __l, _Compare __comp)
+    {
+      pair<const _Tp*, const _Tp*> __p =
+	std::minmax_element(__l.begin(), __l.end(), __comp);
+      return std::make_pair(*__p.first, *__p.second);
     }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

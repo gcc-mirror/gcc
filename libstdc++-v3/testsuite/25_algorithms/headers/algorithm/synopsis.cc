@@ -529,8 +529,32 @@ namespace std
     minmax_element(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
-    pair<_FIter, _FIter> 
+    pair<_FIter, _FIter>
     minmax_element(_FIter, _FIter, _Compare);
+
+  template<typename _Tp>
+    const _Tp&
+    min(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp&
+    min(initializer_list<_Tp>, _Compare);
+
+  template<typename _Tp>
+    const _Tp&
+    max(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp&
+    max(initializer_list<_Tp>, _Compare);
+
+  template<typename _Tp>
+    pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp>);
+
+  template<typename _Tp, typename _Compare>
+    pair<const _Tp&, const _Tp&>
+    minmax(initializer_list<_Tp>, _Compare);
 #endif
 
   template<typename _IIter1, typename _IIter2>

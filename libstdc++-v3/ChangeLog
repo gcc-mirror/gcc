@@ -1,3 +1,33 @@
+2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
+
+        * testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:
+        New.
+        * testsuite/25_algorithms/min/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+        * testsuite/25_algorithms/min/3.cc: Likewise.
+        * testsuite/25_algorithms/min/4.cc: Likewise.
+        * testsuite/25_algorithms/max/requirements/explicit_instantiation/3.cc:
+        Likewise.
+        * testsuite/25_algorithms/max/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+        * testsuite/25_algorithms/max/3.cc: Likewise.
+        * testsuite/25_algorithms/max/4.cc: Likewise.
+        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+        3.cc: Likewise.
+        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+        * testsuite/25_algorithms/minmax/2.cc: Likewise.
+        * testsuite/25_algorithms/minmax/3.cc: Likewise.
+
+2008-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (min(initializer_list<>),
+	min(initializer_list<>, Compare), max(initializer_list<>),
+	max(initializer_list<>, Compare), minmax(initializer_list<>),
+	minmax(initializer_list<>, Compare)): Add in C++0x mode.
+	* include/bits/algorithmfwd.h: Add.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Likewise.
+
 2008-09-13  Chris Fairles  <chris.fairles@gmail.com>
 
         * testsuite/30_threads/thread/algorithm/1.cc: Join thread before
