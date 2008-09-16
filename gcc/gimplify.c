@@ -6586,6 +6586,13 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    eval = cleanup = NULL;
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 0), &eval);
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);
+	    /* Don't create bogus GIMPLE_TRY with empty cleanup.  */
+	    if (gimple_seq_empty_p (cleanup))
+	      {
+		gimple_seq_add_seq (pre_p, eval);
+		ret = GS_ALL_DONE;
+		break;
+	      }
 	    try_ = gimple_build_try (eval, cleanup,
 				     TREE_CODE (*expr_p) == TRY_FINALLY_EXPR
 				     ? GIMPLE_TRY_FINALLY
