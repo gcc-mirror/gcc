@@ -1,3 +1,10 @@
+2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.c (get_callee_fndecl): Don't call the language hook.
+	* langhooks.h (lang_hooks): Remove lang_get_callee_fndecl.
+	* langhooks-def.h (LANG_HOOKS_GET_CALLEE_FNDECL): Kill.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_GET_CALLEE_FNDECL.
+
 2008-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (protected_set_expr_location): Don't unnecessarily

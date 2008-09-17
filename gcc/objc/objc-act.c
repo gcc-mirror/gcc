@@ -9510,25 +9510,4 @@ objc_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 #endif
 }
 
-/* Given a CALL expression, find the function being called.  The ObjC
-   version looks for the OBJ_TYPE_REF_EXPR which is used for objc_msgSend.  */
-
-tree
-objc_get_callee_fndecl (const_tree call_expr)
-{
-  tree addr = CALL_EXPR_FN (call_expr);
-  if (TREE_CODE (addr) != OBJ_TYPE_REF)
-    return 0;
-
-  addr = OBJ_TYPE_REF_EXPR (addr);
-
-  /* If the address is just `&f' for some function `f', then we know
-     that `f' is being called.  */
-  if (TREE_CODE (addr) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
-    return TREE_OPERAND (addr, 0);
-
-  return 0;
-}
-
 #include "gt-objc-objc-act.h"

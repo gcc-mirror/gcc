@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
 bool objc_init (void);
 const char *objc_printable_name (tree, int);
-tree objc_get_callee_fndecl (const_tree);
 void objc_finish_file (void);
 tree objc_fold_obj_type_ref (tree, tree);
 enum gimplify_status objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
