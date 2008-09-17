@@ -93,7 +93,11 @@ static bitmap all_module_statics;
 
 static struct pointer_set_t *visited_nodes;
 
-static bitmap_obstack ipa_obstack;
+/* Obstack holding bitmaps of local analysis (live from analysis to
+   propagation)  */
+static bitmap_obstack local_info_obstack;
+/* Obstack holding global analysis live forever.  */
+static bitmap_obstack global_info_obstack;
 
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_node_hook_list *function_insertion_hook_holder;
@@ -238,6 +242,7 @@ static inline void
 add_static_var (tree var) 
 {
   int uid = DECL_UID (var);
+  gcc_assert (TREE_CODE (var) == VAR_DECL);
   if (!bitmap_bit_p (all_module_statics, uid))
     {
       splay_tree_insert (reference_vars_to_consider,
@@ -281,147 +286,52 @@ has_proper_scope_for_analysis (tree t)
   return true;
 }
 
-/* If T is a VAR_DECL for a static that we are interested in, add the
-   uid to the bitmap.  */
+/* Mark tree T as having address taken.  */
 
 static void
-check_operand (ipa_reference_local_vars_info_t local, 
-	       tree t, bool checking_write)
+mark_address_taken (tree x)
 {
-  if (!t) return;
+  if (TREE_CODE (x) == VAR_DECL
+      && module_statics_escape && has_proper_scope_for_analysis (x))
+    bitmap_set_bit (module_statics_escape, DECL_UID (x));
+}
 
-  if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)
-      && (has_proper_scope_for_analysis (t))) 
+/* Mark load of T.  */
+
+static void
+mark_load (ipa_reference_local_vars_info_t local, 
+	   tree t)
+{
+  if (TREE_CODE (t) == VAR_DECL
+      && has_proper_scope_for_analysis (t))
+    bitmap_set_bit (local->statics_read, DECL_UID (t));
+}
+
+/* Mark store of T.  */
+
+static void
+mark_store (ipa_reference_local_vars_info_t local, 
+	   tree t)
+{
+  if (TREE_CODE (t) == VAR_DECL
+      && has_proper_scope_for_analysis (t))
     {
-      if (checking_write)
-	{
-	  if (local)
-	    bitmap_set_bit (local->statics_written, DECL_UID (t));
-	  /* Mark the write so we can tell which statics are
-	     readonly.  */
-	  if (module_statics_written)
-	    bitmap_set_bit (module_statics_written, DECL_UID (t));
-	}
-      else if (local)
-	bitmap_set_bit (local->statics_read, DECL_UID (t));
+      if (local)
+	bitmap_set_bit (local->statics_written, DECL_UID (t));
+      /* Mark the write so we can tell which statics are
+	 readonly.  */
+      if (module_statics_written)
+	bitmap_set_bit (module_statics_written, DECL_UID (t));
     }
 }
 
-/* Examine tree T for references to static variables. All internal
-   references like array references or indirect references are added
-   to the READ_BM. Direct references are added to either READ_BM or
-   WRITE_BM depending on the value of CHECKING_WRITE.   */
+/* Look for memory clobber and set read_all/write_all if present.  */
 
 static void
-check_tree (ipa_reference_local_vars_info_t local, tree t, bool checking_write)
+check_asm_memory_clobber (ipa_reference_local_vars_info_t local, gimple stmt)
 {
-  if ((TREE_CODE (t) == EXC_PTR_EXPR) || (TREE_CODE (t) == FILTER_EXPR))
-    return;
-
-  while (TREE_CODE (t) == REALPART_EXPR 
-	 || TREE_CODE (t) == IMAGPART_EXPR
-	 || handled_component_p (t))
-    {
-      if (TREE_CODE (t) == ARRAY_REF)
-	check_operand (local, TREE_OPERAND (t, 1), false);
-      t = TREE_OPERAND (t, 0);
-    }
-
-  /* The bottom of an indirect reference can only be read, not
-     written.  So just recurse and whatever we find, check it against
-     the read bitmaps.  */
-
-  /*  if (INDIRECT_REF_P (t) || TREE_CODE (t) == MEM_REF) */
-  /* FIXME when we have array_ref's of pointers.  */
-  if (INDIRECT_REF_P (t))
-    check_tree (local, TREE_OPERAND (t, 0), false);
-
-  if (SSA_VAR_P (t))
-    check_operand (local, t, checking_write);
-}
-
-/* Scan tree T to see if there are any addresses taken in within T.  */
-
-static void 
-look_for_address_of (tree t)
-{
-  if (TREE_CODE (t) == ADDR_EXPR)
-    {
-      tree x = get_base_var (t);
-      if (TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == FUNCTION_DECL) 
-	if (has_proper_scope_for_analysis (x) && module_statics_escape)
-	  bitmap_set_bit (module_statics_escape, DECL_UID (x));
-    }
-}
-
-/* Check to see if T is a read or address of operation on a static var
-   we are interested in analyzing.  LOCAL is passed in to get access
-   to its bit vectors.  Local is NULL if this is called from a static
-   initializer.  */
-
-static void
-check_rhs_var (ipa_reference_local_vars_info_t local, tree t)
-{
-  look_for_address_of (t);
-
-  if (local == NULL) 
-    return;
-
-  check_tree(local, t, false);
-}
-
-/* Check to see if T is an assignment to a static var we are
-   interested in analyzing.  LOCAL is passed in to get access to its bit
-   vectors.  */
-
-static void
-check_lhs_var (ipa_reference_local_vars_info_t local, tree t)
-{
-  if (local == NULL) 
-    return;
-   
-  check_tree(local, t, true);
-}
-
-/* This is a scaled down version of get_asm_expr_operands from
-   tree_ssa_operands.c.  The version there runs much later and assumes
-   that aliasing information is already available. Here we are just
-   trying to find if the set of inputs and outputs contain references
-   or address of operations to local static variables.  FN is the
-   function being analyzed and STMT is the actual asm statement.  */
-
-static void
-get_asm_stmt_operands (ipa_reference_local_vars_info_t local, gimple stmt)
-{
-  size_t noutputs = gimple_asm_noutputs (stmt);
-  const char **oconstraints
-    = (const char **) alloca ((noutputs) * sizeof (const char *));
   size_t i;
   tree op;
-  const char *constraint;
-  bool allows_mem, allows_reg, is_inout;
-  
-  for (i = 0; i < noutputs; i++)
-    {
-      op = gimple_asm_output_op (stmt, i);
-      oconstraints[i] = constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
-      parse_output_constraint (&constraint, i, 0, 0,
-			       &allows_mem, &allows_reg, &is_inout);
-      
-      check_lhs_var (local, TREE_VALUE (op));
-    }
-
-  for (i = 0; i < gimple_asm_ninputs (stmt); i++)
-    {
-      op = gimple_asm_input_op (stmt, i);
-      constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
-      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-			      oconstraints, &allows_mem, &allows_reg);
-      
-      check_rhs_var (local, TREE_VALUE (op));
-    }
   
   for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
     {
@@ -435,27 +345,14 @@ get_asm_stmt_operands (ipa_reference_local_vars_info_t local, gimple stmt)
     }
 }
 
-/* Check the parameters of a function call from CALLER to CALL_EXPR to
-   see if any of them are static vars.  Also check to see if this is
-   either an indirect call, a call outside the compilation unit, or
-   has special attributes that effect the clobbers.  The caller
-   parameter is the tree node for the caller and the second operand is
-   the tree node for the entire call expression.  */
+/* Look for external calls and set read_all/write_all correspondingly.  */
 
 static void
 check_call (ipa_reference_local_vars_info_t local, gimple stmt)
 {
   int flags = gimple_call_flags (stmt);
-  tree operand;
   tree callee_t = gimple_call_fndecl (stmt);
   enum availability avail = AVAIL_NOT_AVAILABLE;
-  size_t i;
-
-  if ((operand = gimple_call_lhs (stmt)) != NULL)
-    check_lhs_var (local, operand);
-
-  for (i = 0; i < gimple_call_num_args (stmt); i++)
-    check_rhs_var (local, gimple_call_arg (stmt, i));
 
   if (callee_t)
     {
@@ -466,7 +363,9 @@ check_call (ipa_reference_local_vars_info_t local, gimple stmt)
   if (avail == AVAIL_NOT_AVAILABLE || avail == AVAIL_OVERWRITABLE)
     if (local) 
       {
-	if (flags & ECF_PURE) 
+	if (flags & ECF_CONST) 
+	  ;
+	else if (flags & ECF_PURE)
 	  local->calls_read_all = true;
 	else 
 	  {
@@ -474,130 +373,78 @@ check_call (ipa_reference_local_vars_info_t local, gimple stmt)
 	    local->calls_write_all = true;
 	  }
       }
+   /* TODO: To be able to produce sane results, we should also handle
+      common builtins, in particular throw.
+      Indirect calls hsould be only counted and as inliner is replacing them
+      by direct calls, we can conclude if any indirect calls are left in body */
 }
 
 /* TP is the part of the tree currently under the microscope.
    WALK_SUBTREES is part of the walk_tree api but is unused here.
    DATA is cgraph_node of the function being walked.  */
 
-/* FIXME: When this is converted to run over SSA form, this code
-   should be converted to use the operand scanner.  */
-
 static tree
-scan_stmt_for_static_refs (gimple_stmt_iterator *gsip, bool *handled_ops_p,
-			   struct walk_stmt_info *data)
+scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
+			   struct cgraph_node *fn)
 {
-  struct cgraph_node *fn = (struct cgraph_node *) data->info;
   gimple stmt = gsi_stmt (*gsip);
   ipa_reference_local_vars_info_t local = NULL;
+  unsigned int i;
+  bitmap_iterator bi;
+
   if (fn)
     local = get_reference_vars_info_from_cgraph (fn)->local;
+
+  if (gimple_loaded_syms (stmt))
+    EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
+      mark_load (local, referenced_var_lookup (i));
+  if (gimple_stored_syms (stmt))
+    EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
+      mark_store (local, referenced_var_lookup (i));
+  if (gimple_addresses_taken (stmt))
+    EXECUTE_IF_SET_IN_BITMAP (gimple_addresses_taken (stmt), 0, i, bi)
+      mark_address_taken (referenced_var_lookup (i));
 
   switch (gimple_code (stmt))
     {
-    case GIMPLE_ASSIGN:
-      {
-	/* First look on the lhs and see what variable is stored to */
-	tree lhs = gimple_assign_lhs (stmt);
-	tree rhs1 = gimple_assign_rhs1 (stmt);
-	tree rhs2 = gimple_assign_rhs2 (stmt);
-	enum tree_code code = gimple_assign_rhs_code (stmt);
-
-	check_lhs_var (local, lhs);
-
-	/* For the purposes of figuring out what the cast affects */
-
-	/* Next check the operands on the rhs to see if they are ok. */
-	switch (TREE_CODE_CLASS (code))
-	  {
-	  case tcc_binary:	    
-	  case tcc_comparison:	    
- 	    check_rhs_var (local, rhs1);
- 	    check_rhs_var (local, rhs2);
-	    break;
-
-	  case tcc_unary:
-	  case tcc_reference:
-	  case tcc_declaration:
-	    check_rhs_var (local, rhs1);
-	    break;
-
-	  case tcc_expression:
-	    switch (code)
-	      {
-	      case ADDR_EXPR:
-		check_rhs_var (local, rhs1);
-		break;
-	      default:
-		break;
-	      }
-	    break;
-	  default:
-	    break;
-	  }
-	*handled_ops_p = true;
-      }
-      break;
-
-    case GIMPLE_LABEL:
-      if (DECL_NONLOCAL (gimple_label_label (stmt)))
-	{
-	  /* Target of long jump. */
-	  local->calls_read_all = true;
-	  local->calls_write_all = true;
-	}
-      break;
-
     case GIMPLE_CALL:
       check_call (local, stmt);
-      *handled_ops_p = true;
       break;
       
     case GIMPLE_ASM:
-      get_asm_stmt_operands (local, stmt);
-      *handled_ops_p = true;
+      check_asm_memory_clobber (local, stmt);
       break;
-      
+
+    /* We used to check nonlocal labels here and set them as potentially modifying
+       everything.  This is not needed, since we can get to nonlocal label only
+       from callee and thus we will get info propagated.  */
+
     default:
       break;
     }
+  
   return NULL;
 }
 
-/* Call-back to scan GIMPLE operands for static references.  This is supposed
-   to work with scan_stmt_for_static_refs so the real call-back data is stored
-   inside a walk_stmt_info struct.  Callers using the walk_tree interface must
-   also wrap the call-back data in a walk_stmt_info struct.  */
+/* Call-back to scan variable initializers for static references.  
+   Called using walk_tree.  */
 
 static tree
-scan_op_for_static_refs (tree *tp, int *walk_subtrees, void *data)
+scan_initializer_for_static_refs (tree *tp, int *walk_subtrees,
+				  void *data ATTRIBUTE_UNUSED)
 {
-  struct walk_stmt_info *wi = (struct walk_stmt_info*) data;
-  struct cgraph_node *fn = (struct cgraph_node *) wi->info;
   tree t = *tp;
-  ipa_reference_local_vars_info_t local = NULL;
-  if (fn)
-    local = get_reference_vars_info_from_cgraph (fn)->local;
 
-  switch (TREE_CODE (t))  
+  if (TREE_CODE (t) == ADDR_EXPR)
     {
-    case VAR_DECL:
-      if (DECL_INITIAL (t))
-	walk_tree (&DECL_INITIAL (t), scan_op_for_static_refs, data,
-		   wi->pset);
+      mark_address_taken (get_base_var (t));
       *walk_subtrees = 0;
-      break;
-
-    case ADDR_EXPR:
-      /* This case is here to find addresses on rhs of constructors in
-	 decl_initial of static variables. */
-      check_rhs_var (local, t);
-      *walk_subtrees = 0;
-      break;
-
-    default:
-      break;
     }
+  /* Save some cycles by not walking types and declaration as we
+     won't find anything useful there anyway.  */
+  else if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+ 
   return NULL;
 }
 
@@ -687,9 +534,7 @@ propagate_bits (struct cgraph_node *x)
 		}
 	    }
 	  else 
-	    {
-	      gcc_unreachable ();
-	    }
+	    gcc_unreachable ();
 	}
     }
 }
@@ -763,20 +608,16 @@ merge_callee_local_info (struct cgraph_node *target,
 static void 
 ipa_init (void) 
 {
-  struct cgraph_node *node;
   memory_identifier_string = build_string(7, "memory");
 
   reference_vars_to_consider =
     splay_tree_new_ggc (splay_tree_compare_ints);
 
-  bitmap_obstack_initialize (&ipa_obstack);
-  module_statics_escape = BITMAP_ALLOC (&ipa_obstack);
-  module_statics_written = BITMAP_ALLOC (&ipa_obstack);
-  all_module_statics = BITMAP_ALLOC (&ipa_obstack);
-
-  /* This will add NODE->DECL to the splay trees.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    has_proper_scope_for_analysis (node->decl);
+  bitmap_obstack_initialize (&local_info_obstack);
+  bitmap_obstack_initialize (&global_info_obstack);
+  module_statics_escape = BITMAP_ALLOC (&local_info_obstack);
+  module_statics_written = BITMAP_ALLOC (&local_info_obstack);
+  all_module_statics = BITMAP_ALLOC (&global_info_obstack);
 
   /* There are some shared nodes, in particular the initializers on
      static declarations.  We do not need to scan them more than once
@@ -799,7 +640,7 @@ analyze_variable (struct varpool_node *vnode)
 
   memset (&wi, 0, sizeof (wi));
   wi.pset = visited_nodes;
-  walk_tree (&DECL_INITIAL (global), scan_op_for_static_refs,
+  walk_tree (&DECL_INITIAL (global), scan_initializer_for_static_refs,
              &wi, wi.pset);
 }
 
@@ -818,8 +659,8 @@ init_function_info (struct cgraph_node *fn)
   get_function_ann (decl)->reference_vars_info = info;
 
   info->local = l;
-  l->statics_read = BITMAP_ALLOC (&ipa_obstack);
-  l->statics_written = BITMAP_ALLOC (&ipa_obstack);
+  l->statics_read = BITMAP_ALLOC (&local_info_obstack);
+  l->statics_written = BITMAP_ALLOC (&local_info_obstack);
 
   return l;
 }
@@ -830,15 +671,18 @@ init_function_info (struct cgraph_node *fn)
 static void
 analyze_function (struct cgraph_node *fn)
 {
-  ipa_reference_local_vars_info_t l = init_function_info (fn);
   tree decl = fn->decl;
-  struct walk_stmt_info wi;
   struct function *this_cfun = DECL_STRUCT_FUNCTION (decl);
   basic_block this_block;
+  tree step;
 
   if (dump_file)
     fprintf (dump_file, "\n local analysis of %s\n", cgraph_node_name (fn));
+
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  current_function_decl = decl;
   
+  init_function_info (fn);
   FOR_EACH_BB_FN (this_block, this_cfun)
     {
       gimple_stmt_iterator gsi;
@@ -857,39 +701,29 @@ analyze_function (struct cgraph_node *fn)
 	    {
 	      op = USE_FROM_PTR (use);
 	      if (TREE_CODE (op) == ADDR_EXPR)
-		check_rhs_var (l, op);
+		mark_address_taken (get_base_var (op));
 	    }
 	}
 
-      memset (&wi, 0, sizeof (wi));
-      wi.info = fn;
-      wi.pset = visited_nodes;
       for (gsi = gsi_start_bb (this_block); !gsi_end_p (gsi); gsi_next (&gsi))
-	walk_gimple_stmt (&gsi, scan_stmt_for_static_refs,
-			  scan_op_for_static_refs, &wi);
+	scan_stmt_for_static_refs (&gsi, fn);
     }
 
-  /* There may be const decls with interesting right hand sides.  */
-  if (DECL_STRUCT_FUNCTION (decl))
+#ifdef ENABLE_CHECKING
+  /* Verify that all local initializers was expanded by gimplifier.  */
+  for (step = DECL_STRUCT_FUNCTION (decl)->local_decls;
+       step;
+       step = TREE_CHAIN (step))
     {
-      tree step;
-      for (step = DECL_STRUCT_FUNCTION (decl)->local_decls;
-	   step;
-	   step = TREE_CHAIN (step))
-	{
-	  tree var = TREE_VALUE (step);
-	  if (TREE_CODE (var) == VAR_DECL 
-	      && DECL_INITIAL (var)
-	      && !TREE_STATIC (var))
-	    {
-	      memset (&wi, 0, sizeof (wi));
-	      wi.info = fn;
-	      wi.pset = visited_nodes;
-	      walk_tree (&DECL_INITIAL (var), scan_op_for_static_refs,
-		         &wi, wi.pset);
-	    }
-	}
+      tree var = TREE_VALUE (step);
+      if (TREE_CODE (var) == VAR_DECL 
+	  && DECL_INITIAL (var)
+	  && !TREE_STATIC (var))
+	gcc_unreachable ();
     }
+#endif
+  pop_cfun ();
+  current_function_decl = NULL;
 }
 
 /* If FN is avail == AVAIL_OVERWRITABLE, replace the effects bit
@@ -947,9 +781,7 @@ add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
      static declarations.  We do not need to scan them more than once
      since all we would be interested in are the addressof
      operations.  */
-  visited_nodes = pointer_set_create ();
   analyze_function (node);
-  pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
 }
 
@@ -969,8 +801,8 @@ generate_summary (void)
   function_insertion_hook_holder =
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
   ipa_init ();
-  module_statics_readonly = BITMAP_ALLOC (&ipa_obstack);
-  bm_temp = BITMAP_ALLOC (&ipa_obstack);
+  module_statics_readonly = BITMAP_ALLOC (&local_info_obstack);
+  bm_temp = BITMAP_ALLOC (&local_info_obstack);
 
   /* Process all of the variables first.  */
   FOR_EACH_STATIC_INITIALIZER (vnode)
@@ -1030,11 +862,6 @@ generate_summary (void)
   EXECUTE_IF_SET_IN_BITMAP (module_statics_readonly, 0, index, bi)
     {
       tree var = get_static_decl (index);
-      
-      /* Readonly on a function decl is very different from the
-	 variable.  */
-      if (TREE_CODE (var) == FUNCTION_DECL)
-	continue;
       
       /* Ignore variables in named sections - changing TREE_READONLY
 	 changes the section flags, potentially causing conflicts with
@@ -1186,7 +1013,7 @@ propagate (void)
 	node_g->statics_read = all_module_statics;
       else 
 	{
-	  node_g->statics_read = BITMAP_ALLOC (&ipa_obstack);
+	  node_g->statics_read = BITMAP_ALLOC (&global_info_obstack);
 	  bitmap_copy (node_g->statics_read, 
 		       node_l->statics_read);
 	}
@@ -1195,7 +1022,7 @@ propagate (void)
 	node_g->statics_written = all_module_statics;
       else
 	{
-	  node_g->statics_written = BITMAP_ALLOC (&ipa_obstack);
+	  node_g->statics_written = BITMAP_ALLOC (&global_info_obstack);
 	  bitmap_copy (node_g->statics_written, 
 		       node_l->statics_written);
 	}
@@ -1346,8 +1173,8 @@ propagate (void)
       
       /* Create the complimentary sets.  These are more useful for
 	 certain apis.  */
-      node_g->statics_not_read = BITMAP_ALLOC (&ipa_obstack);
-      node_g->statics_not_written = BITMAP_ALLOC (&ipa_obstack);
+      node_g->statics_not_read = BITMAP_ALLOC (&global_info_obstack);
+      node_g->statics_not_written = BITMAP_ALLOC (&global_info_obstack);
 
       if (node_g->statics_read != all_module_statics) 
 	{
@@ -1367,6 +1194,8 @@ propagate (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      ipa_reference_vars_info_t node_info;
+      node_info = get_reference_vars_info_from_cgraph (node);
       /* Get rid of the aux information.  */
       
       if (node->aux)
@@ -1378,7 +1207,18 @@ propagate (void)
       if (node->analyzed 
 	  && (cgraph_function_body_availability (node) == AVAIL_OVERWRITABLE))
 	clean_function (node);
+      else if (node_info)
+	{
+	  /* Remove local info we no longer need.  */
+	  if (node_info->local->statics_read
+	      && node_info->local->statics_read != all_module_statics)
+	    BITMAP_FREE (node_info->local->statics_read);
+	  if (node_info->local->statics_written
+	      && node_info->local->statics_written != all_module_statics)
+	    BITMAP_FREE (node_info->local->statics_written);
+	}
     }
+  bitmap_obstack_release (&local_info_obstack);
   return 0;
 }
 
