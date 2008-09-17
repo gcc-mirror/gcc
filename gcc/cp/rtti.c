@@ -722,7 +722,9 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
 	      result = save_expr (result);
 	      neq = c_common_truthvalue_conversion (result);
-	      return build3 (COND_EXPR, type, neq, result, bad);
+	      return cp_convert (type,
+				 build3 (COND_EXPR, TREE_TYPE (result),
+					 neq, result, bad));
 	    }
 
 	  /* Now back to the type we want from a void*.  */

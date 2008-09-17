@@ -1,3 +1,9 @@
+2008-09-17  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/22374
+	* rtti.c (build_dynamic_cast_1): Convert the COND_EXPR
+	result to the correct type.
+
 2008-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/37450
