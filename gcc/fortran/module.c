@@ -3944,6 +3944,48 @@ read_cleanup (pointer_info *p)
 }
 
 
+/* It is not quite enough to check for ambiguity in the symbols by
+   the loaded symbol and the new symbol not being identical.  */
+static bool
+check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
+{
+  gfc_symbol *rsym;
+  module_locus locus;
+  symbol_attribute attr;
+
+  rsym = info->u.rsym.sym;
+  if (st_sym == rsym)
+    return false;
+
+  /* Identical derived types are not ambiguous and will be rolled up
+     later.  */
+  if (st_sym->attr.flavor == FL_DERIVED
+	&& rsym->attr.flavor == FL_DERIVED
+	&& gfc_compare_derived_types (st_sym, rsym))
+    return false;
+
+  /* If the existing symbol is generic from a different module and
+     the new symbol is generic there can be no ambiguity.  */
+  if (st_sym->attr.generic
+	&& st_sym->module
+	&& strcmp (st_sym->module, module_name))
+    {
+      /* The new symbol's attributes have not yet been read.  Since
+	 we need attr.generic, read it directly.  */
+      get_module_locus (&locus);
+      set_module_locus (&info->u.rsym.where);
+      mio_lparen ();
+      attr.generic = 0;
+      mio_symbol_attribute (&attr);
+      set_module_locus (&locus);
+      if (attr.generic)
+	return false;
+    }
+
+  return true;
+}
+
+
 /* Read a module file.  */
 
 static void
@@ -4085,7 +4127,7 @@ read_module (void)
 	  if (st != NULL)
 	    {
 	      /* Check for ambiguous symbols.  */
-	      if (st->n.sym != info->u.rsym.sym)
+	      if (check_for_ambiguous (st->n.sym, info))
 		st->ambiguous = 1;
 	      info->u.rsym.symtree = st;
 	    }
@@ -4579,6 +4621,14 @@ write_symtree (gfc_symtree *st)
   pointer_info *p;
 
   sym = st->n.sym;
+
+  /* A symbol in an interface body must not be visible in the
+     module file.  */
+  if (sym->ns != gfc_current_ns
+	&& sym->ns->proc_name
+	&& sym->ns->proc_name->attr.if_source == IFSRC_IFBODY)
+    return;
+
   if (!gfc_check_access (sym->attr.access, sym->ns->default_access)
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
