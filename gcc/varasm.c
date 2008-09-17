@@ -4205,19 +4205,36 @@ initializer_constant_valid_p (tree value, tree endtype)
 	return op0;
       }
 
-    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
 
+    case VIEW_CONVERT_EXPR:
+      {
+	tree src = TREE_OPERAND (value, 0);
+	tree src_type = TREE_TYPE (src);
+	tree dest_type = TREE_TYPE (value);
+
+	/* Allow view-conversions from aggregate to non-aggregate type only
+	   if the bit pattern is fully preserved afterwards; otherwise, the
+	   RTL expander won't be able to apply a subsequent transformation
+	   to the underlying constructor.  */
+	if (AGGREGATE_TYPE_P (src_type) && !AGGREGATE_TYPE_P (dest_type))
+	  {
+	    if (TYPE_MODE (endtype) == TYPE_MODE (dest_type))
+	      return initializer_constant_valid_p (src, endtype);
+	    else
+	      return NULL_TREE;
+	  }
+
+	/* Allow all other kinds of view-conversion.  */
+	return initializer_constant_valid_p (src, endtype);
+      }
+
     CASE_CONVERT:
       {
-	tree src;
-	tree src_type;
-	tree dest_type;
-
-	src = TREE_OPERAND (value, 0);
-	src_type = TREE_TYPE (src);
-	dest_type = TREE_TYPE (value);
+	tree src = TREE_OPERAND (value, 0);
+	tree src_type = TREE_TYPE (src);
+	tree dest_type = TREE_TYPE (value);
 
 	/* Allow conversions between pointer types, floating-point
 	   types, and offset types.  */

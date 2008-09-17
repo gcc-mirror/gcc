@@ -1,3 +1,7 @@
+2008-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/static_initializer3.ads: New test.
+
 2008-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37552

@@ -1,3 +1,9 @@
+2008-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (initializer_constant_valid_p): Forbid view-conversions
+	from aggregate to non-aggregate type if the bit pattern is not fully
+	preserved afterwards.
+
 2008-09-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_types_in_gimple_assign): Rename to ...
