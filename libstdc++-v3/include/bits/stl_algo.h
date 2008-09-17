@@ -4094,38 +4094,38 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::make_pair(__min, __max);
     }
 
-  // N2722.
+  // N2722 + fixes.
   template<typename _Tp>
-    inline const _Tp&
+    inline _Tp
     min(initializer_list<_Tp> __l)
     { return *std::min_element(__l.begin(), __l.end()); }
 
   template<typename _Tp, typename _Compare>
-    inline const _Tp&
+    inline _Tp
     min(initializer_list<_Tp> __l, _Compare __comp)
     { return *std::min_element(__l.begin(), __l.end(), __comp); }
 
   template<typename _Tp>
-    inline const _Tp&
+    inline _Tp
     max(initializer_list<_Tp> __l)
     { return *std::max_element(__l.begin(), __l.end()); }
 
   template<typename _Tp, typename _Compare>
-    inline const _Tp&
+    inline _Tp
     max(initializer_list<_Tp> __l, _Compare __comp)
     { return *std::max_element(__l.begin(), __l.end(), __comp); }
 
   template<typename _Tp>
-    inline pair<const _Tp&, const _Tp&>
+    inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l)
     {
       pair<const _Tp*, const _Tp*> __p =
 	std::minmax_element(__l.begin(), __l.end());
-      return std::make_pair(*__p.first, *__p.second);
+      return std::pair<_Tp, _Tp>(*__p.first, *__p.second);
     }
 
   template<typename _Tp, typename _Compare>
-    inline pair<const _Tp&, const _Tp&>
+    inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l, _Compare __comp)
     {
       pair<const _Tp*, const _Tp*> __p =

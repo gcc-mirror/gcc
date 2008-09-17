@@ -319,27 +319,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     minmax_element(_FIter, _FIter, _Compare);
 
   template<typename _Tp>
-    const _Tp&
+    _Tp
     min(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
-    const _Tp&
+    _Tp
     min(initializer_list<_Tp>, _Compare);
 
   template<typename _Tp>
-    const _Tp&
+    _Tp
     max(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
-    const _Tp&
+    _Tp
     max(initializer_list<_Tp>, _Compare);
 
   template<typename _Tp>
-    pair<const _Tp&, const _Tp&>
+    pair<_Tp, _Tp>
     minmax(initializer_list<_Tp>);
 
   template<typename _Tp, typename _Compare>
-    pair<const _Tp&, const _Tp&>
+    pair<_Tp, _Tp>
     minmax(initializer_list<_Tp>, _Compare);
 #endif
 
