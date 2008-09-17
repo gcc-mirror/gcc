@@ -14,5 +14,5 @@ A* f();
 
 int main()
 {
-   B* b = dynamic_cast<B*>(f()); // { dg-error "error: " }
+   B* b = dynamic_cast<B*>(f()); // { dg-error "" }
 }

@@ -2,5 +2,5 @@
 // { dg-do compile }
 // { dg-options "" }
 // { dg-skip-if "-Wmain not enabled on SPU" { spu-*-* } } 
-int main(char a) {} /* { dg-warning "warning: first argument of .*main.* should be .int." } */
-/* { dg-warning "warning: .*main.* takes only zero or two arguments" "" { target *-*-* } 5 } */ 
+int main(char a) {} /* { dg-warning "first argument of .*main.* should be .int." } */
+/* { dg-warning "main.* takes only zero or two arguments" "" { target *-*-* } 5 } */ 

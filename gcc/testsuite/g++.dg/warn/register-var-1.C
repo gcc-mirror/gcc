@@ -10,5 +10,5 @@ void g(int *);
 void f(void) 
 { 
   register int x __asm ("eax");
-  g(&x);	/* { dg-error "error: address of explicit register variable" } */
+  g(&x);	/* { dg-error "address of explicit register variable" } */
 } 

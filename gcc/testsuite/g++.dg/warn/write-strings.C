@@ -3,5 +3,5 @@
 
 int main()
 {
-   char* p = "Asgaard";         // { dg-warning "warning:.*deprecated.*" }
+   char* p = "Asgaard";         // { dg-warning "deprecated" }
 }

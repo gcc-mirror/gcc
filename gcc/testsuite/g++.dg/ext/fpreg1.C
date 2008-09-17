@@ -8,7 +8,7 @@ double d;
 // Default initialized __fpreg is OK.
 __fpreg fpreg, fpreg2;
 // But explicitly zero-initialized is an invalid conversion.
-__fpreg fi = 0; // { dg-error "error: invalid conversion to '__fpreg'" }
+__fpreg fi = 0; // { dg-error "invalid conversion to '__fpreg'" }
 
 __fpreg f0 (__fpreg);
 int f1 (__float80);
@@ -36,47 +36,47 @@ f (void)
   d = sizeof (fpreg);
   (void)(fpreg, fpreg);
   // Invalid operations.
-  ++fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  --fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg++; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg--; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = -fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = ~fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = !fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = *fpreg; // { dg-error "error: invalid type argument" }
-  if (fpreg) // { dg-error "error: invalid conversion from '__fpreg'" }
+  ++fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  --fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg++; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg--; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = -fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = ~fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = !fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = *fpreg; // { dg-error "invalid type argument" }
+  if (fpreg) // { dg-error "invalid conversion from '__fpreg'" }
     return;
-  d = fpreg; // { dg-error "error: invalid conversion from '__fpreg'" }
-  d = (double) fpreg; // { dg-error "error: invalid conversion from '__fpreg'" }
-  fpreg = (__fpreg) d; // { dg-error "error: invalid conversion to '__fpreg'" }
-  fpreg = fpreg * fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg / fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg % fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg + fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg - fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg << fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  fpreg = fpreg >> fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg < fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg > fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg <= fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg >= fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg == fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg != fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg & fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg ^ fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg | fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg && fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = fpreg || fpreg; // { dg-error "error: invalid operation on '__fpreg'" }
-  d = (fpreg ? 1 : 2); // { dg-error "error: invalid conversion from '__fpreg'" }
-  fpreg = (d ? fpreg : d); // { dg-error "error: invalid conversion to '__fpreg'" }
-  fpreg *= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg /= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg %= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg += fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg -= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg <<= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg >>= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg &= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg ^= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
-  fpreg |= fpreg; // { dg-error "error: invalid operation on '__fpreg'|in evaluation" }
+  d = fpreg; // { dg-error "invalid conversion from '__fpreg'" }
+  d = (double) fpreg; // { dg-error "invalid conversion from '__fpreg'" }
+  fpreg = (__fpreg) d; // { dg-error "invalid conversion to '__fpreg'" }
+  fpreg = fpreg * fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg / fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg % fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg + fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg - fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg << fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  fpreg = fpreg >> fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg < fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg > fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg <= fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg >= fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg == fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg != fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg & fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg ^ fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg | fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg && fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = fpreg || fpreg; // { dg-error "invalid operation on '__fpreg'" }
+  d = (fpreg ? 1 : 2); // { dg-error "invalid conversion from '__fpreg'" }
+  fpreg = (d ? fpreg : d); // { dg-error "invalid conversion to '__fpreg'" }
+  fpreg *= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg /= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg %= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg += fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg -= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg <<= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg >>= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg &= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg ^= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
+  fpreg |= fpreg; // { dg-error "invalid operation on '__fpreg'|in evaluation" }
 }

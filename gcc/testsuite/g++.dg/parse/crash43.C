@@ -4,6 +4,6 @@ namespace N
 {
   void foo()
   {
-    extern int i = 0; // { dg-error "error: 'i' has both 'extern' and initializer" }
+    extern int i = 0; // { dg-error "'i' has both 'extern' and initializer" }
   }
 }

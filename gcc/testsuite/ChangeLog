@@ -1,3 +1,35 @@
+2008-09-17  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25241
+	* g++.old-deja/g++.brendan/crash7.C: Remove "error" or "warning" from
+	message for dg-error/dg-warning.
+	* g++.old-deja/g++.jason/crash11.C: Ditto.
+	* g++.old-deja/g++.oliva/template1.C: Ditto.
+	* g++.old-deja/g++.benjamin/tem03.C: Ditto.
+	* g++.dg/rtti/no-rtti.C: Ditto.
+	* g++.dg/cpp/pedantic-errors.C: Ditto.
+	* g++.dg/cpp/string-2.C: Ditto.
+	* g++.dg/ext/fpreg1.C: Ditto.
+	* g++.dg/ext/altivec-types-1.C: Ditto.
+	* g++.dg/warn/write-strings-default.C: Ditto.
+	* g++.dg/warn/Wvla-2.C: Ditto.
+	* g++.dg/warn/register-var-1.C: Ditto.
+	* g++.dg/warn/deprecated-3.C: Ditto.
+	* g++.dg/warn/pr30551-2.C: Ditto.
+	* g++.dg/warn/overflow-warn-1.C: Ditto.
+	* g++.dg/warn/pr30551.C: Ditto.
+	* g++.dg/warn/pointer-integer-comparison.C: Ditto.
+	* g++.dg/warn/pr12242.C: Ditto.
+	* g++.dg/warn/write-strings.C: Ditto.
+	* g++.dg/warn/overflow-warn-3.C: Ditto.
+	* g++.dg/warn/overflow-warn-4.C: Ditto.
+	* g++.dg/warn/overflow-warn-6.C: Ditto.
+	* g++.dg/parse/crash43.C: Ditto.
+	* g++.dg/parse/crash44.C: Ditto.
+	* g++.dg/parse/offsetof8.C: Ditto.
+	* g++.dg/gomp/pr35158.C: Ditto.
+	* g++.dg/template/crash81.C: Ditto.
+
 2008-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37274

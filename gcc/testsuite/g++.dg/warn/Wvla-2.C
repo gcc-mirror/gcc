@@ -3,5 +3,5 @@
 
 void func (int i)
 {
-  int array[i]; /* { dg-error "error: ISO C.* forbids variable.* array 'array'" } */
+  int array[i]; /* { dg-error "ISO C.* forbids variable.* array 'array'" } */
 }
