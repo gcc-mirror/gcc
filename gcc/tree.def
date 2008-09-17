@@ -1137,7 +1137,7 @@ DEFTREECODE (VEC_INTERLEAVE_LOW_EXPR, "vec_interleavelow_expr", tcc_binary, 2)
    outcome (0 for not taken and 1 for taken).  Once the profile is guessed
    all conditional branches leading to execution paths executing the
    PREDICT_EXPR will get predicted by the specified predictor.  */
-DEFTREECODE (PREDICT_EXPR, "predict_expr", tcc_unary, 1)
+DEFTREECODE (PREDICT_EXPR, "predict_expr", tcc_expression, 1)
 
 /* OPTIMIZATION_NODE.  Node to store the optimization options.  */
 DEFTREECODE (OPTIMIZATION_NODE, "optimization_node", tcc_exceptional, 0)

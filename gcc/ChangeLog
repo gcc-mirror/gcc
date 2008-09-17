@@ -1,3 +1,19 @@
+2008-09-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_assign): Rename to ...
+	(verify_gimple_assign): ... this.  Split into ...
+	(verify_gimple_assign_unary): ... this,
+	(verify_gimple_assign_binary): ... that,
+	(verify_gimple_assign_single): ... and this.
+	(verify_types_in_gimple_stmt): Call verify_gimple_assign.
+	Fix GIMPLE_CHANGE_DYNAMIC_TYPE handling.
+	(verify_types_in_gimple_min_lval): Handle TARGET_MEM_REF.
+	(verify_types_in_gimple_reference): Be forgiving with
+	VIEW_CONVERT_EXPRs.
+	(verify_gimple_phi): Deal with virtual operands.
+
+	* tree.def (PREDICT_EXPR): Change to tcc_expression.
+
 2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* tree.c (get_callee_fndecl): Don't call the language hook.
