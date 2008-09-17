@@ -35,8 +35,8 @@ typedef int foo::*foomPtr;
 int main ()
 {
   foofPtr fp = &foo::b;
-  barfPtr bp = (barfPtr)fp;         // { dg-warning "" } pointer to member
-  foofPtr fp2 = (foofPtr)bp;        // { dg-warning "" } pointer to member
+  barfPtr bp = (barfPtr)fp;         // { dg-error "pointer to member" }
+  foofPtr fp2 = (foofPtr)bp;        // { dg-error "pointer to member" } 
   
   if (fp2 != fp)
     return 1;
@@ -51,8 +51,8 @@ int main ()
   fobj.m = 78;
   
   foomPtr fmp = &foo::m;
-  barmPtr bmp = (barmPtr)fmp;          // { dg-warning "" } pointer to member
-  foomPtr fmp2 = (foomPtr)bmp;         // { dg-warning "" } pointer to member
+  barmPtr bmp = (barmPtr)fmp;          // { dg-error "pointer to member" } 
+  foomPtr fmp2 = (foomPtr)bmp;         // { dg-error "pointer to member" } 
   bar *bptr = &fobj;
   
   if (fmp != fmp2)

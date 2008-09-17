@@ -5,11 +5,11 @@
 typedef __SIZE_TYPE__ size_t;
 
 struct A {
-  int operator?:(int a, int b);	   // { dg-warning "" } 
-  static int operator()(int a);	   // { dg-error "" } must be nonstatic
-  static int operator+(A,A);	   // { dg-error "" } must be nonstatic
-  int operator+(int a, int b = 1); // { dg-error "" } two errors on this line
-  int operator++(char);		   // { dg-error "" } must take 'int'
+  int operator?:(int a, int b);	   // { dg-error "expected type-specifier" } 
+  static int operator()(int a);	   // { dg-error "must be a nonstatic member" }
+  static int operator+(A,A);	   // { dg-error "either a non-static member" } 
+  int operator+(int a, int b = 1); // { dg-error "either zero or one" }
+  int operator++(char);		   // { dg-error "must take 'int'" } 
   void operator delete (void *);   
   void operator delete (void *, unsigned long);	
 };
@@ -23,9 +23,10 @@ struct B {
   B * operator->();
 };
 
-int operator-(int a, int b);	// { dg-error "" } no class argument
+int operator-(int a, int b);	// { dg-error "argument of class or" }
 
-void * operator new (A a);	// { dg-error "" } invalid first argument
-void operator delete (A a);	// { dg-error "" } ditto
+void * operator new (A a);	// { dg-error "first parameter" }
+void operator delete (A a);	// { dg-error "first parameter" }
 
-char * operator char * (int);	// { dg-error "" } return value, nonmember
+char * operator char * (int);	// { dg-error "return type" "ret" }
+// { dg-error "nonstatic member function" "mem" { target *-*-* } 31 }

@@ -1,3 +1,69 @@
+2008-09-16  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25241
+	* testsuite/g++.dg/charset/attribute2.c: Replace dg-error with
+	dg-warning or vice versa.
+	* testsuite/g++.dg/conversion/dr195.C: Ditto.
+	* testsuite/g++.dg/cpp0x/variadic60.C: Ditto.
+	* testsuite/g++.dg/expr/cast2.C: Ditto.
+	* testsuite/g++.dg/ext/anon-struct4.C: Ditto.
+	* testsuite/g++.dg/ext/member-attr.C: Ditto.
+	* testsuite/g++.dg/ext/utf-array.C: Ditto.
+	* testsuite/g++.dg/ext/utf-array-short-wchar.C: Ditto.
+	* testsuite/g++.dg/ext/utf-typedef-cxx0x.C: Ditto.
+	* testsuite/g++.dg/ext/visibility/redecl1.C: Ditto.
+	* testsuite/g++.dg/ext/visibility/warn4.C: Ditto.
+	* testsuite/g++.dg/parse/defarg11.C: Ditto.
+	* testsuite/g++.dg/template/error17.C: Ditto.
+	* testsuite/g++.dg/warn/pedantic2.C: Ditto.
+	* testsuite/g++.dg/warn/pr21983.C: Ditto.
+	* testsuite/g++.dg/warn/return-reference2.C: Ditto.
+	* testsuite/g++.old-deja/g++.bob/inherit1.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/crash13.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/crash17.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/crash52.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/crash55.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/enum7.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/operators4.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/template17.C: Ditto.
+	* testsuite/g++.old-deja/g++.brendan/warnings1.C: Ditto.
+	* testsuite/g++.old-deja/g++.bugs/900205_03.C: Ditto.
+	* testsuite/g++.old-deja/g++.bugs/900227_01.C: Ditto.
+	* testsuite/g++.old-deja/g++.ext/arrnew.C: Ditto.
+	* testsuite/g++.old-deja/g++.ext/attrib4.C: Ditto.
+	* testsuite/g++.old-deja/g++.jason/cond.C: Ditto.
+	* testsuite/g++.old-deja/g++.jason/operator.C: Ditto.
+	* testsuite/g++.old-deja/g++.jason/report.C: Ditto.
+	* testsuite/g++.old-deja/g++.law/friend5.C: Ditto.
+	* testsuite/g++.old-deja/g++.law/temps1.C: Ditto.
+	* testsuite/g++.old-deja/g++.law/union4.C: Ditto.
+	* testsuite/g++.old-deja/g++.martin/pure1.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/empty.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/for2.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/misc9.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/p10769b.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/p2855.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/p3060c.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/p700.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/p9732c.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/pmf6.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/warn1.C: Ditto.
+	* testsuite/g++.old-deja/g++.mike/warn5.C: Ditto.
+	* testsuite/g++.old-deja/g++.niklas/t141.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/cast6.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/cond5.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/conv8.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/decl5.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/delete2.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/delete4.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/linkage1.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/ptrmem8.C: Ditto.
+	* testsuite/g++.old-deja/g++.other/typename1.C: Ditto.
+	* testsuite/g++.old-deja/g++.pt/typename14.C: Ditto.
+	* testsuite/g++.old-deja/g++.pt/typename4.C: Ditto.
+	* testsuite/g++.old-deja/g++.pt/typename5.C: Ditto.
+	* testsuite/g++.old-deja/g++.pt/typename7.C: Ditto.
+
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 

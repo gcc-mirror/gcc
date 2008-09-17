@@ -11,7 +11,8 @@ public:
 
 class B : public A {
 public:
-    char* m1 () { C::m1(); return ""; } // { dg-error "" } 
+    char* m1 () { C::m1(); return ""; } // { dg-error "cannot call" } 
+    // { dg-warning "deprecated" "depr" { target *-*-* } 14 }
 };
 
 int main () {

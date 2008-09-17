@@ -15,6 +15,8 @@ template <class T>
 struct D : public A <C <T> > {
   void f ()
     {
-      B* new_entries = (B *) 0;  // { dg-warning "" } implicit typename
+      B* new_entries = (B *) 0;  // { dg-error "'B' was not declared in this scope" "B" }
+      // { dg-error "'new_entries' was not declared in this scope" "new_entries" { target *-*-* } 18 }
+      // { dg-error "expected" "exp" { target *-*-* } 18 }
     }
 };

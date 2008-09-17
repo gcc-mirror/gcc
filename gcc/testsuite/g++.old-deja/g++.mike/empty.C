@@ -3,10 +3,10 @@
 #define NOPE
 
 void foo() {
-  while (1); /* { dg-error "suggest a space before " } */
+  while (1); /* { dg-warning "suggest a space before " } */
     {
     }
-  for (;;); /* { dg-error "suggest a space before " } */
+  for (;;); /* { dg-warning "suggest a space before " } */
     {
     }
   while (1)

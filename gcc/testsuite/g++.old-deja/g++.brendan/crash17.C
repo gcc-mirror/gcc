@@ -30,6 +30,6 @@ class GnWidget : public GnObject {
     virtual ~GnWidget();
 };
 
-class GnOptionGroup : public GnObject, public GnWidget {// { dg-error "" }  warning
+class GnOptionGroup : public GnObject, public GnWidget {// { dg-warning "inaccessible" }
 };
 

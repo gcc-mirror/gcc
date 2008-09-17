@@ -223,7 +223,7 @@ inline  void  Int::operator >>=(const int b)
 { rep >>= b;  ; }
 
 
-inline  int& operator  = (int& a,  const Int &   b)	// { dg-warning "" } 
+inline  int& operator  = (int& a,  const Int &   b)	// { dg-error "" } 
 { a = b.Int::val(); return a;}
 inline  int& operator += (int& a,  const Int &   b)
 { a += b.Int::val(); return a; }
@@ -562,7 +562,7 @@ inline  void  Char::operator >>=(const char b)
 { rep >>= b;  ; }
 
 
-inline  char& operator  = (char& a,  const Char &   b)	// { dg-warning "" } 
+inline  char& operator  = (char& a,  const Char &   b)	// { dg-error "" } 
 { a = b.Char::val(); return a;}
 inline  char& operator += (char& a,  const Char &   b)
 { a += b.Char::val(); return a; }

@@ -33,7 +33,9 @@
 
 int main ();
 
-short s = (short) &main;	// { dg-warning "" "" { xfail h8*-*-* xstormy16-*-* } } small integer 
-char c = (char) &main;		// { dg-warning "" } small integer
+short s = (short) &main;	// { dg-error "taking address" "addr" { xfail h8*-*-* xstormy16-*-* } }
+// { dg-error "loses precision" "lose" { xfail h8*-*-* xstormy16-*-* } 36 }
+char c = (char) &main;		// { dg-error "taking address" }
+// { dg-error "loses precision" "lose" { target *-*-* } 38 }
 
 int main () { return 0; }

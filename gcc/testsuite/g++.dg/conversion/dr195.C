@@ -22,8 +22,8 @@ void foo ()
   pv = reinterpret_cast <PV>(pf); // { dg-warning "casting between" "" }
 
   /* the following two might or might not be ok with 195.  */
-  pf = reinterpret_cast <PF>(po); // { dg-error "casting between" "" }
-  po = reinterpret_cast <PO>(pf); // { dg-error "casting between" "" }
+  pf = reinterpret_cast <PF>(po); // { dg-warning "casting between" "" }
+  po = reinterpret_cast <PO>(pf); // { dg-warning "casting between" "" }
 
   /* These will never be ok, as they are implicit.  */
   pv = pf; // { dg-error "invalid conversion" "" }

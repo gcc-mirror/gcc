@@ -4,5 +4,5 @@
 /* { dg-do compile }
    { dg-require-iconv "IBM1047" }
 */
-int foo __attribute__ ((walrus)); /* { dg-error "walrus" "ignored" } */
+int foo __attribute__ ((walrus)); /* { dg-warning "walrus" "ignored" } */
 char x[] = "foobar";

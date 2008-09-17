@@ -4,7 +4,7 @@
 
       int& f(int x)  // { dg-error "new declaration" }
       {
-          int local; // { dg-error "reference to local" }
+          int local; // { dg-warning "reference to local" }
 
           local = x+2;
       

@@ -18,18 +18,18 @@
 struct struct00 { };
 
 int global_function_0 () {
-}					// { dg-error "" } 
+}					// { dg-warning "no return" } 
 
 struct00 global_function_1 () {
-}					// { dg-error "" } 
+}					// { dg-warning "no return" } 
 
 struct struct0 {
 
   int struct0_member_function_0 () {
-  }					// { dg-error "" } 
+  }					// { dg-warning "no return" } 
 
   struct0 struct0_member_function_1 () {
-  }					// { dg-error "" } 
+  }					// { dg-warning "no return" } 
 };
 
 struct struct1 {
@@ -41,9 +41,9 @@ struct struct1 {
 };
 
 int struct1_member_function_0 () {
-}					// { dg-error "" } 
+}					// { dg-warning "no return" } 
 
 struct1 struct1::struct1_member_function_1 () {
-}				        // { dg-error "" } 
+}				        // { dg-warning "no return" } 
 
 int main () { return 0; }

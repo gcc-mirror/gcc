@@ -1,1 +1,1 @@
-template<typename... Args> class tuple; // { dg-warning "variadic templates" }
+template<typename... Args> class tuple; // { dg-error "variadic templates" }
