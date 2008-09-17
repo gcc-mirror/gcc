@@ -1,3 +1,13 @@
+2008-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/37324
+	* lib/target-supports.exp
+	(check_effective_target_wchar_t_char16_t_compatible,
+	check_effective_target_wchar_t_char32_t_compatible): New.
+	* gcc.dg/utf-array.c: Use __CHAR{16,32}_TYPE__ macros in typedefs.
+	Only require from incompatible errors for char{16,32}_t vs. wchar_t
+	initializations if those types are indeed incompatible.
+
 2008-09-16  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/25241
