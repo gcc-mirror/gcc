@@ -3035,13 +3035,16 @@ verify_types_in_gimple_min_lval (tree expr)
   if (is_gimple_id (expr))
     return false;
 
-  if (TREE_CODE (expr) != INDIRECT_REF
-      && TREE_CODE (expr) != ALIGN_INDIRECT_REF
-      && TREE_CODE (expr) != MISALIGNED_INDIRECT_REF)
+  if (!INDIRECT_REF_P (expr)
+      && TREE_CODE (expr) != TARGET_MEM_REF)
     {
       error ("invalid expression for min lvalue");
       return true;
     }
+
+  /* TARGET_MEM_REFs are strange beasts.  */
+  if (TREE_CODE (expr) == TARGET_MEM_REF)
+    return false;
 
   op = TREE_OPERAND (expr, 0);
   if (!is_gimple_val (op))
@@ -3131,6 +3134,9 @@ verify_types_in_gimple_reference (tree expr)
       /* For VIEW_CONVERT_EXPRs which are allowed here, too, there
 	 is nothing to verify.  Gross mismatches at most invoke
 	 undefined behavior.  */
+      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR
+	  && !handled_component_p (op))
+	return false;
 
       expr = op;
     }
@@ -3257,45 +3263,50 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
   return false;
 }
 
-/* Verify the contents of a GIMPLE_ASSIGN STMT.  Returns true when there
-   is a problem, otherwise false.
-
-   Verify that the types of the LHS and the RHS operands are
-   compatible.  This verification largely depends on what kind of
-   operation is done on the RHS of the assignment.  It is not always
-   the case that all the types of the operands must match (e.g., 'a =
-   (unsigned long) b' or 'ptr = ptr + 1').  */
+/* Verify a gimple assignment statement STMT with an unary rhs.
+   Returns true if anything is wrong.  */
 
 static bool
-verify_types_in_gimple_assign (gimple stmt)
+verify_gimple_assign_unary (gimple stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree lhs = gimple_assign_lhs (stmt);
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  tree rhs2 = (gimple_num_ops (stmt) == 3) ? gimple_assign_rhs2 (stmt) : NULL;
   tree lhs_type = TREE_TYPE (lhs);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs1_type = TREE_TYPE (rhs1);
-  tree rhs2_type = (rhs2) ? TREE_TYPE (rhs2) : NULL;
 
-  /* Special codes we cannot handle via their class.  */
+  if (!is_gimple_reg (lhs)
+      && !(optimize == 0
+	   && TREE_CODE (lhs_type) == COMPLEX_TYPE))
+    {
+      error ("non-register as LHS of unary operation");
+      return true;
+    }
+
+  if (!is_gimple_val (rhs1))
+    {
+      error ("invalid operand in unary operation");
+      return true;
+    }
+
+  /* First handle conversions.  */
   switch (rhs_code)
     {
     CASE_CONVERT:
       {
-	if (!is_gimple_val (rhs1))
-	  {
-	    error ("invalid operand in conversion");
-	    return true;
-	  }
-
 	/* Allow conversions between integral types and pointers only if
-	   there is no sign or zero extension involved.  */
-	if (((POINTER_TYPE_P (lhs_type) && INTEGRAL_TYPE_P (rhs1_type))
-	     || (POINTER_TYPE_P (rhs1_type) && INTEGRAL_TYPE_P (lhs_type)))
-	    && (TYPE_PRECISION (lhs_type) == TYPE_PRECISION (rhs1_type)
-		/* For targets were the precision of sizetype doesn't
-		   match that of pointers we need the following.  */
-		|| lhs_type == sizetype || rhs1_type == sizetype))
+	   there is no sign or zero extension involved.
+	   For targets were the precision of sizetype doesn't match that
+	   of pointers we need to allow arbitrary conversions from and
+	   to sizetype.  */
+	if ((POINTER_TYPE_P (lhs_type)
+	     && INTEGRAL_TYPE_P (rhs1_type)
+	     && (TYPE_PRECISION (lhs_type) >= TYPE_PRECISION (rhs1_type)
+		 || rhs1_type == sizetype))
+	    || (POINTER_TYPE_P (rhs1_type)
+		&& INTEGRAL_TYPE_P (lhs_type)
+		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
+		    || lhs_type == sizetype)))
 	  return false;
 
 	/* Allow conversion from integer to offset type and vice versa.  */
@@ -3320,12 +3331,6 @@ verify_types_in_gimple_assign (gimple stmt)
 
     case FIXED_CONVERT_EXPR:
       {
-	if (!is_gimple_val (rhs1))
-	  {
-	    error ("invalid operand in conversion");
-	    return true;
-	  }
-
 	if (!valid_fixed_convert_types_p (lhs_type, rhs1_type)
 	    && !valid_fixed_convert_types_p (rhs1_type, lhs_type))
 	  {
@@ -3340,12 +3345,6 @@ verify_types_in_gimple_assign (gimple stmt)
 
     case FLOAT_EXPR:
       {
-	if (!is_gimple_val (rhs1))
-	  {
-	    error ("invalid operand in int to float conversion");
-	    return true;
-	  }
-
 	if (!INTEGRAL_TYPE_P (rhs1_type) || !SCALAR_FLOAT_TYPE_P (lhs_type))
 	  {
 	    error ("invalid types in conversion to floating point");
@@ -3359,12 +3358,6 @@ verify_types_in_gimple_assign (gimple stmt)
 
     case FIX_TRUNC_EXPR:
       {
-	if (!is_gimple_val (rhs1))
-	  {
-	    error ("invalid operand in float to int conversion");
-	    return true;
-	  }
-
 	if (!INTEGRAL_TYPE_P (lhs_type) || !SCALAR_FLOAT_TYPE_P (rhs1_type))
 	  {
 	    error ("invalid types in conversion to integer");
@@ -3376,18 +3369,79 @@ verify_types_in_gimple_assign (gimple stmt)
         return false;
       }
 
+    case TRUTH_NOT_EXPR:
+      {
+      }
+
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+    case BIT_NOT_EXPR:
+    case PAREN_EXPR:
+    case NON_LVALUE_EXPR:
+    case CONJ_EXPR:
+    case REDUC_MAX_EXPR:
+    case REDUC_MIN_EXPR:
+    case REDUC_PLUS_EXPR:
+    case VEC_UNPACK_HI_EXPR:
+    case VEC_UNPACK_LO_EXPR:
+    case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FLOAT_LO_EXPR:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* For the remaining codes assert there is no conversion involved.  */
+  if (!useless_type_conversion_p (lhs_type, rhs1_type))
+    {
+      error ("non-trivial conversion in unary operation");
+      debug_generic_expr (lhs_type);
+      debug_generic_expr (rhs1_type);
+      return true;
+    }
+
+  return false;
+}
+
+/* Verify a gimple assignment statement STMT with a binary rhs.
+   Returns true if anything is wrong.  */
+
+static bool
+verify_gimple_assign_binary (gimple stmt)
+{
+  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs1_type = TREE_TYPE (rhs1);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
+  tree rhs2_type = TREE_TYPE (rhs2);
+
+  if (!is_gimple_reg (lhs)
+      && !(optimize == 0
+	   && TREE_CODE (lhs_type) == COMPLEX_TYPE))
+    {
+      error ("non-register as LHS of binary operation");
+      return true;
+    }
+
+  if (!is_gimple_val (rhs1)
+      || !is_gimple_val (rhs2))
+    {
+      error ("invalid operands in binary operation");
+      return true;
+    }
+
+  /* First handle operations that involve different types.  */
+  switch (rhs_code)
+    {
     case COMPLEX_EXPR:
       {
-	if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	  {
-	    error ("invalid operands in complex expression");
-	    return true;
-	  }
-
-	if (!TREE_CODE (lhs_type) == COMPLEX_TYPE
-	    || !(TREE_CODE (rhs1_type) == INTEGER_TYPE
+	if (TREE_CODE (lhs_type) != COMPLEX_TYPE
+	    || !(INTEGRAL_TYPE_P (rhs1_type)
 	         || SCALAR_FLOAT_TYPE_P (rhs1_type))
-	    || !(TREE_CODE (rhs2_type) == INTEGER_TYPE
+	    || !(INTEGRAL_TYPE_P (rhs2_type)
 	         || SCALAR_FLOAT_TYPE_P (rhs2_type)))
 	  {
 	    error ("type mismatch in complex expression");
@@ -3400,26 +3454,13 @@ verify_types_in_gimple_assign (gimple stmt)
 	return false;
       }
 
-    case CONSTRUCTOR:
-      {
-	/* In this context we know that we are on the RHS of an
-	   assignment, so CONSTRUCTOR operands are OK.  */
-	/* FIXME: verify constructor arguments.  */
-	return false;
-      }
-
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       {
-	if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	  {
-	    error ("invalid operands in shift expression");
-	    return true;
-	  }
-
-	if (!TREE_CODE (rhs1_type) == INTEGER_TYPE
+	if (!INTEGRAL_TYPE_P (rhs1_type)
+	    || !INTEGRAL_TYPE_P (rhs2_type)
 	    || !useless_type_conversion_p (lhs_type, rhs1_type))
 	  {
 	    error ("type mismatch in shift expression");
@@ -3431,6 +3472,83 @@ verify_types_in_gimple_assign (gimple stmt)
 
 	return false;
       }
+
+    case VEC_LSHIFT_EXPR:
+    case VEC_RSHIFT_EXPR:
+      {
+	if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+	    || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+	    || (!INTEGRAL_TYPE_P (rhs2_type)
+		&& (TREE_CODE (rhs2_type) != VECTOR_TYPE
+		    || !INTEGRAL_TYPE_P (TREE_TYPE (rhs2_type))))
+	    || !useless_type_conversion_p (lhs_type, rhs1_type))
+	  {
+	    error ("type mismatch in vector shift expression");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    debug_generic_expr (rhs2_type);
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case POINTER_PLUS_EXPR:
+      {
+	if (!POINTER_TYPE_P (rhs1_type)
+	    || !useless_type_conversion_p (lhs_type, rhs1_type)
+	    || !useless_type_conversion_p (sizetype, rhs2_type))
+	  {
+	    error ("type mismatch in pointer plus expression");
+	    debug_generic_stmt (lhs_type);
+	    debug_generic_stmt (rhs1_type);
+	    debug_generic_stmt (rhs2_type);
+	    return true;
+	  }
+
+	return false;
+      } 
+
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+      gcc_unreachable ();
+
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+      {
+	/* We allow any kind of integral typed argument and result.  */
+	if (!INTEGRAL_TYPE_P (rhs1_type)
+	    || !INTEGRAL_TYPE_P (rhs2_type)
+	    || !INTEGRAL_TYPE_P (lhs_type))
+	  {
+	    error ("type mismatch in binary truth expression");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    debug_generic_expr (rhs2_type);
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
+      /* Comparisons are also binary, but the result type is not
+	 connected to the operand types.  */
+      return verify_gimple_comparison (lhs_type, rhs1, rhs2);
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -3447,27 +3565,80 @@ verify_types_in_gimple_assign (gimple stmt)
 	break;
       }
 
-    case POINTER_PLUS_EXPR:
-      {
-      	if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	  {
-	    error ("invalid operands in pointer plus expression");
-	    return true;
-	  }
-	if (!POINTER_TYPE_P (rhs1_type)
-	    || !useless_type_conversion_p (lhs_type, rhs1_type)
-	    || !useless_type_conversion_p (sizetype, rhs2_type))
-	  {
-	    error ("type mismatch in pointer plus expression");
-	    debug_generic_stmt (lhs_type);
-	    debug_generic_stmt (rhs1_type);
-	    debug_generic_stmt (rhs2_type);
-	    return true;
-	  }
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case RDIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+    case WIDEN_SUM_EXPR:
+    case WIDEN_MULT_EXPR:
+    case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
+    case VEC_PACK_SAT_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+      /* Continue with generic binary expression handling.  */
+      break;
 
-	return false;
-      } 
+    default:
+      gcc_unreachable ();
+    }
 
+  if (!useless_type_conversion_p (lhs_type, rhs1_type)
+      || !useless_type_conversion_p (lhs_type, rhs2_type))
+    {
+      error ("type mismatch in binary expression");
+      debug_generic_stmt (lhs_type);
+      debug_generic_stmt (rhs1_type);
+      debug_generic_stmt (rhs2_type);
+      return true;
+    }
+
+  return false;
+}
+
+/* Verify a gimple assignment statement STMT with a single rhs.
+   Returns true if anything is wrong.  */
+
+static bool
+verify_gimple_assign_single (gimple stmt)
+{
+  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs1_type = TREE_TYPE (rhs1);
+  bool res = false;
+
+  if (!useless_type_conversion_p (lhs_type, rhs1_type))
+    {
+      error ("non-trivial conversion at assignment");
+      debug_generic_expr (lhs_type);
+      debug_generic_expr (rhs1_type);
+      return true;
+    }
+
+  if (handled_component_p (lhs))
+    res |= verify_types_in_gimple_reference (lhs);
+
+  /* Special codes we cannot handle via their class.  */
+  switch (rhs_code)
+    {
     case ADDR_EXPR:
       {
 	tree op = TREE_OPERAND (rhs1, 0);
@@ -3489,140 +3660,98 @@ verify_types_in_gimple_assign (gimple stmt)
 	    return true;
 	  }
 
-	return verify_types_in_gimple_reference (TREE_OPERAND (rhs1, 0));
+	return verify_types_in_gimple_reference (op);
       }
 
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      gcc_unreachable ();
+    /* tcc_reference  */
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
+    case MISALIGNED_INDIRECT_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case TARGET_MEM_REF:
+      if (!is_gimple_reg (lhs)
+	  && is_gimple_reg_type (TREE_TYPE (lhs)))
+	{
+	  error ("invalid rhs for gimple memory store");
+	  debug_generic_stmt (lhs);
+	  debug_generic_stmt (rhs1);
+	  return true;
+	}
+      return res || verify_types_in_gimple_reference (rhs1);
 
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-      {
-      	if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	  {
-	    error ("invalid operands in truth expression");
-	    return true;
-	  }
+    /* tcc_constant  */
+    case SSA_NAME:
+    case INTEGER_CST:
+    case REAL_CST:
+    case FIXED_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+    case STRING_CST:
+      return res;
 
-	/* We allow any kind of integral typed argument and result.  */
-	if (!INTEGRAL_TYPE_P (rhs1_type)
-	    || !INTEGRAL_TYPE_P (rhs2_type)
-	    || !INTEGRAL_TYPE_P (lhs_type))
-	  {
-	    error ("type mismatch in binary truth expression");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    debug_generic_expr (rhs2_type);
-	    return true;
-	  }
+    /* tcc_declaration  */
+    case CONST_DECL:
+      return res;
+    case VAR_DECL:
+    case PARM_DECL:
+      if (!is_gimple_reg (lhs)
+	  && !is_gimple_reg (rhs1)
+	  && is_gimple_reg_type (TREE_TYPE (lhs)))
+	{
+	  error ("invalid rhs for gimple memory store");
+	  debug_generic_stmt (lhs);
+	  debug_generic_stmt (rhs1);
+	  return true;
+	}
+      return res;
 
-	return false;
-      }
-
-    case TRUTH_NOT_EXPR:
-      {
-	if (!is_gimple_val (rhs1))
-	  {
-	    error ("invalid operand in unary not");
-	    return true;
-	  }
-
-	/* For TRUTH_NOT_EXPR we can have any kind of integral
-	   typed arguments and results.  */
-	if (!INTEGRAL_TYPE_P (rhs1_type)
-	    || !INTEGRAL_TYPE_P (lhs_type))
-	  {
-	    error ("type mismatch in not expression");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    return true;
-	  }
-
-	return false;
-      }
-
-    /* After gimplification we should not have any of these.  */
-    case ASM_EXPR:
-    case BIND_EXPR:
-    case CALL_EXPR:
     case COND_EXPR:
-    case TREE_LIST:
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case GOTO_EXPR:
-    case LABEL_EXPR:
-    case RETURN_EXPR:
-    case TRY_FINALLY_EXPR:
-    case TRY_CATCH_EXPR:
-    case EH_FILTER_EXPR:
-    case STATEMENT_LIST:
-      {
-	error ("tree node that should already be gimple.");
-	return true;
-      }
-
+    case CONSTRUCTOR:
     case OBJ_TYPE_REF:
+    case ASSERT_EXPR:
+    case WITH_SIZE_EXPR:
+    case EXC_PTR_EXPR:
+    case FILTER_EXPR:
+    case POLYNOMIAL_CHREC:
+    case DOT_PROD_EXPR:
+    case VEC_COND_EXPR:
+    case REALIGN_LOAD_EXPR:
       /* FIXME.  */
-      return false;
+      return res;
 
     default:;
     }
 
-  /* Generic handling via classes.  */
-  switch (TREE_CODE_CLASS (rhs_code))
-    {
-    case tcc_exceptional: /* for SSA_NAME */
-    case tcc_unary:
-      if (!useless_type_conversion_p (lhs_type, rhs1_type))
-	{
-	  error ("non-trivial conversion at assignment");
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  return true;
-	}
-      break;
-
-    case tcc_binary:
-      if (!is_gimple_val (rhs1) || !is_gimple_val (rhs2))
-	{
-	  error ("invalid operands in binary expression");
-	  return true;
-	}
-      if (!useless_type_conversion_p (lhs_type, rhs1_type)
-	  || !useless_type_conversion_p (lhs_type, rhs2_type))
-	{
-	  error ("type mismatch in binary expression");
-	  debug_generic_stmt (lhs_type);
-	  debug_generic_stmt (rhs1_type);
-	  debug_generic_stmt (rhs2_type);
-	  return true;
-	}
-      break;
-
-    case tcc_reference:
-      /* All tcc_reference trees are GIMPLE_SINGLE_RHS.  Verify that
-         no implicit type change happens here.  */
-      if (!useless_type_conversion_p (lhs_type, rhs1_type))
-	{
-	  error ("non-trivial conversion at assignment");
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  return true;
-	}
-      return verify_types_in_gimple_reference (rhs1);
-
-    case tcc_comparison:
-      return verify_gimple_comparison (lhs_type, rhs1, rhs2);
-
-    default:;
-    }
-
-  return false;
+  return res;
 }
 
+/* Verify the contents of a GIMPLE_ASSIGN STMT.  Returns true when there
+   is a problem, otherwise false.  */
+
+static bool
+verify_gimple_assign (gimple stmt)
+{
+  switch (gimple_assign_rhs_class (stmt))
+    {
+    case GIMPLE_SINGLE_RHS:
+      return verify_gimple_assign_single (stmt);
+
+    case GIMPLE_UNARY_RHS:
+      return verify_gimple_assign_unary (stmt);
+
+    case GIMPLE_BINARY_RHS:
+      return verify_gimple_assign_binary (stmt);
+
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* Verify the contents of a GIMPLE_RETURN STMT.  Returns true when there
    is a problem, otherwise false.  */
@@ -3719,7 +3848,10 @@ verify_gimple_phi (gimple stmt)
   for (i = 0; i < gimple_phi_num_args (stmt); i++)
     {
       tree arg = gimple_phi_arg_def (stmt, i);
-      if (!is_gimple_val (arg))
+      if ((is_gimple_reg (gimple_phi_result (stmt))
+	   && !is_gimple_val (arg))
+	  || (!is_gimple_reg (gimple_phi_result (stmt))
+	      && !is_gimple_addressable (arg)))
 	{
 	  error ("Invalid PHI argument");
 	  debug_generic_stmt (arg);
@@ -3758,7 +3890,7 @@ verify_types_in_gimple_stmt (gimple stmt)
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
-      return verify_types_in_gimple_assign (stmt);
+      return verify_gimple_assign (stmt);
 
     case GIMPLE_LABEL:
       return TREE_CODE (gimple_label_label (stmt)) != LABEL_DECL;
@@ -3784,7 +3916,7 @@ verify_types_in_gimple_stmt (gimple stmt)
       return false;
 
     case GIMPLE_CHANGE_DYNAMIC_TYPE:
-      return (!is_gimple_reg (gimple_cdt_location (stmt))
+      return (!is_gimple_val (gimple_cdt_location (stmt))
 	      || !POINTER_TYPE_P (TREE_TYPE (gimple_cdt_location (stmt))));
 
     case GIMPLE_PHI:
