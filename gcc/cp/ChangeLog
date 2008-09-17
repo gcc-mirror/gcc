@@ -1,3 +1,8 @@
+2008-09-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37588
+	* name-lookup.c (lookup_type_scope): Look through sk_function_parms.
+
 2008-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37552
