@@ -137,6 +137,9 @@ dwarf2out_do_cfi_asm (void)
 {
   int enc;
 
+#ifdef MIPS_DEBUGGING_INFO
+  return false;
+#endif
   if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
     return false;
   if (!eh_personality_libfunc)
