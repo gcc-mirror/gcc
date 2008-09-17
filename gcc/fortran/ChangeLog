@@ -1,3 +1,9 @@
+2008-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/37536
+	* trans-stmt.c (gfc_trans_do): Optimize integer type non-simple
+	do loop initialization.
+
 2008-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net.b.de>
 
