@@ -111,7 +111,7 @@ Texts.  A copy of the license is included in the section entitled
 @settitle @value{EDITION} User's Guide @value{PLATFORM}
 @dircategory GNU Ada tools
 @direntry
-* @value{EDITION} User's Guide (gnat_ugn) @value{PLATFORM}
+* @value{EDITION} User's Guide: (gnat_ugn). @value{PLATFORM}
 @end direntry
 
 @include gcc-common.texi
