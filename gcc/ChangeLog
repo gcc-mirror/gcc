@@ -1,3 +1,8 @@
+2008-09-17  Art Haas  <ahaas@impactweather.com>
+
+	* ipa-reference.c (analyze_function): Declare step only if
+	ENABLE_CHECKING is defined.
+
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/18071

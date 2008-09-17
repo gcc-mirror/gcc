@@ -674,7 +674,9 @@ analyze_function (struct cgraph_node *fn)
   tree decl = fn->decl;
   struct function *this_cfun = DECL_STRUCT_FUNCTION (decl);
   basic_block this_block;
+#ifdef ENABLE_CHECKING
   tree step;
+#endif
 
   if (dump_file)
     fprintf (dump_file, "\n local analysis of %s\n", cgraph_node_name (fn));
