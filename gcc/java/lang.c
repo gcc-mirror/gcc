@@ -61,7 +61,6 @@ static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (const_tree);
-static tree java_get_callee_fndecl (const_tree);
 
 static enum classify_record java_classify_record (tree type);
 
@@ -155,9 +154,6 @@ struct language_function GTY(())
 
 #undef LANG_HOOKS_DECL_OK_FOR_SIBCALL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL java_decl_ok_for_sibcall
-
-#undef LANG_HOOKS_GET_CALLEE_FNDECL
-#define LANG_HOOKS_GET_CALLEE_FNDECL java_get_callee_fndecl
 
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME java_mangle_decl
@@ -847,56 +843,6 @@ java_decl_ok_for_sibcall (const_tree decl)
   return (decl != NULL && DECL_CONTEXT (decl) == output_class
           && !DECL_UNINLINABLE (decl));
 }
-
-/* Given a call_expr, try to figure out what its target might be.  In
-   the case of an indirection via the atable, search for the decl.  If
-   the decl is external, we return NULL.  If we don't, the optimizer
-   will replace the indirection with a direct call, which undoes the
-   purpose of the atable indirection.  */
-static tree
-java_get_callee_fndecl (const_tree call_expr)
-{
-  tree method, table, element, atable_methods;
-
-  HOST_WIDE_INT index;
-
-  /* FIXME: This is disabled because we end up passing calls through
-     the PLT, and we do NOT want to do that.  */
-  return NULL;
-
-  if (TREE_CODE (call_expr) != CALL_EXPR)
-    return NULL;
-  method = CALL_EXPR_FN (call_expr);
-  STRIP_NOPS (method);
-  if (TREE_CODE (method) != ARRAY_REF)
-    return NULL;
-  table = TREE_OPERAND (method, 0);
-  if (! DECL_LANG_SPECIFIC(table)
-      || !DECL_OWNER (table)
-      || TYPE_ATABLE_DECL (DECL_OWNER (table)) != table)
-    return NULL;
-
-  atable_methods = TYPE_ATABLE_METHODS (DECL_OWNER (table));
-  index = TREE_INT_CST_LOW (TREE_OPERAND (method, 1));
-
-  /* FIXME: Replace this for loop with a hash table lookup.  */
-  for (element = atable_methods; element; element = TREE_CHAIN (element))
-    {
-      if (index == 1)
-	{
-	  tree purpose = TREE_PURPOSE (element);
-	  if (TREE_CODE (purpose) == FUNCTION_DECL
-	      && ! DECL_EXTERNAL (purpose))
-	    return purpose;
-	  else
-	    return NULL;
-	}
-      --index;
-    }
-
-  return NULL;
-}
-
 
 static enum classify_record
 java_classify_record (tree type)

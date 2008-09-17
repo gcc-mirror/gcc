@@ -1,3 +1,10 @@
+2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR objc/37460
+	* objc-lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): Don't define.
+	* objc-act.h (objc_get_callee_fndecl): Remove prototype.
+	* objc-act.c (objc_get_callee_fndecl): Kill.
+
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/18071

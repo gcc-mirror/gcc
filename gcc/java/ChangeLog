@@ -1,3 +1,8 @@
+2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): Don't define.
+	(java_get_callee_fndecl): Kill.
+
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/18071

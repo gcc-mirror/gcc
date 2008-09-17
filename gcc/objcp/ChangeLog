@@ -1,3 +1,8 @@
+2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR objc/37460
+	* objcp-lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): Don't define.
+
 2008-04-03  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (obj-c++_OBJS): New variable.
