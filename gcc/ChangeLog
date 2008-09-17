@@ -1,3 +1,10 @@
+2008-09-17  Jakub Jelinek  <jakub@redhat.com>
+	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/37441
+	* dwarf2out.c (dwarf2out_do_cfi_asm) [MIPS_DEBUGGING_INFO]: Return
+	false.
+
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c (ipa_obstack): Remove.
