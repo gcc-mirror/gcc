@@ -8800,7 +8800,6 @@ objc_finish_method_definition (tree fndecl)
   /* We cannot validly inline ObjC methods, at least not without a language
      extension to declare that a method need not be dynamically
      dispatched, so suppress all thoughts of doing so.  */
-  DECL_INLINE (fndecl) = 0;
   DECL_UNINLINABLE (fndecl) = 1;
 
 #ifndef OBJCPLUS

@@ -795,7 +795,7 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
   if (access_flags & ACC_PUBLIC) METHOD_PUBLIC (fndecl) = 1;
   if (access_flags & ACC_PROTECTED) METHOD_PROTECTED (fndecl) = 1;
   if (access_flags & ACC_PRIVATE)
-    METHOD_PRIVATE (fndecl) = DECL_INLINE (fndecl) = 1;
+    METHOD_PRIVATE (fndecl) = 1;
   if (access_flags & ACC_NATIVE)
     {
       METHOD_NATIVE (fndecl) = 1;
@@ -806,9 +806,9 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
        file.  */
     DECL_EXTERNAL (fndecl) = CLASS_FROM_CURRENTLY_COMPILED_P (this_class) == 0;
   if (access_flags & ACC_STATIC) 
-    METHOD_STATIC (fndecl) = DECL_INLINE (fndecl) = 1;
+    METHOD_STATIC (fndecl) = 1;
   if (access_flags & ACC_FINAL) 
-    METHOD_FINAL (fndecl) = DECL_INLINE (fndecl) = 1;
+    METHOD_FINAL (fndecl) = 1;
   if (access_flags & ACC_SYNCHRONIZED) METHOD_SYNCHRONIZED (fndecl) = 1;
   if (access_flags & ACC_ABSTRACT) METHOD_ABSTRACT (fndecl) = 1;
   if (access_flags & ACC_STRICT) METHOD_STRICTFP (fndecl) = 1;
@@ -1393,7 +1393,6 @@ make_local_function_alias (tree method)
   TREE_PUBLIC (alias) = 0;
   DECL_EXTERNAL (alias) = 0;
   DECL_ARTIFICIAL (alias) = 1;
-  DECL_INLINE (alias) = 0;
   DECL_INITIAL (alias) = error_mark_node;
   TREE_ADDRESSABLE (alias) = 1;
   TREE_USED (alias) = 1;

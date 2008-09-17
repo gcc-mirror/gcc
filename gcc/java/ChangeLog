@@ -1,3 +1,11 @@
+2008-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/18071
+	* class.c (add_method_1): Do not initialize DECL_INLINE.
+	(make_local_function_alias): Likewise.
+	* expr.c (rewrite_arglist_getcaller): Set DECL_UNINLINABLE.
+	* lang.c (java_decl_ok_for_sibcall): Use DECL_UNINLINABLE.
+
 2008-09-09  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (build_result_decl): Remove no longer applicable

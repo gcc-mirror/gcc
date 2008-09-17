@@ -2089,9 +2089,9 @@ rewrite_arglist_getcaller (tree arglist)
   tree retaddr 
     = build_call_expr (built_in_decls[BUILT_IN_RETURN_ADDRESS],
 		       1, integer_zero_node);
-  
-  DECL_INLINE (current_function_decl) = 0;
 
+  DECL_UNINLINABLE (current_function_decl) = 1;
+  
   return chainon (arglist, 
 		  tree_cons (NULL_TREE, retaddr, 
 			     NULL_TREE));

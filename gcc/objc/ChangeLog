@@ -1,3 +1,9 @@
+2008-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/18071
+	* objc/objc-act.c (objc_finish_method_definition): Do not set
+	DECL_INLINE.
+
 2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* objc-act.c (build_typed_selector_reference): Pass input_location to

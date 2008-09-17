@@ -1,3 +1,12 @@
+2008-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/18071
+	* tree.h (DECL_INLINE): remove.
+	(DECL_DECLARED_INLINE_P): Update docs.
+	(DECL_NO_INLINE_WARNING_P): new.
+	(tree_function_decl): Replace inline_flag by no_inline_warning_flag.
+	* tree-inline.c (inlinable_function_p): Set DECL_NO_INLINE_WARNING_P.
+
 2008-09-17  Jakub Jelinek  <jakub@redhat.com>
 	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 

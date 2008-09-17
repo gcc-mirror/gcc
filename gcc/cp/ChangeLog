@@ -1,3 +1,8 @@
+2008-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/18071
+	* cp/decl.c (start_method): Set DECL_NO_INLINE_WARNING_P.
+
 2008-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37531
