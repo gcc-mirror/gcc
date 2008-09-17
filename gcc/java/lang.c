@@ -845,7 +845,7 @@ static bool
 java_decl_ok_for_sibcall (const_tree decl)
 {
   return (decl != NULL && DECL_CONTEXT (decl) == output_class
-	  && DECL_INLINE (decl));
+          && !DECL_UNINLINABLE (decl));
 }
 
 /* Given a call_expr, try to figure out what its target might be.  In
