@@ -11,7 +11,7 @@ class Foo
   operator int ();
 };
 
-int Foo::operator int() { return x; } // { dg-warning "" } can't specify return type
+int Foo::operator int() { return x; } // { dg-error "return" } can't specify return type
 
 Foo foo(10, 11);
 

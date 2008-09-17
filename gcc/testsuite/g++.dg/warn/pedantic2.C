@@ -5,6 +5,6 @@ class foo
   foo() {};
   void bar() {};
 
-  foo(int) {};;  // { dg-error "extra" }
-  void bar(int) {};;  // { dg-error "extra" }
+  foo(int) {};;  // { dg-warning "extra" }
+  void bar(int) {};;  // { dg-warning "extra" }
 };

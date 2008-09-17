@@ -15,4 +15,5 @@ struct cookie
   cookie ( foo * x) { v=x; }
 };
 
-cookie cat(&foo("apabepa"));// { dg-error "" } .*
+cookie cat(&foo("apabepa"));// { dg-warning "deprecated conversion" "dep" }
+// { dg-warning "taking address of temporary" "add" { target *-*-* } 18 }

@@ -3,11 +3,11 @@
 // GROUPS passed qualifiers
 class bee {
  public:
-  int bee::bar;		// { dg-warning "" } there is an extra bee:: here
+  int bee::bar;		// { dg-error "extra" } there is an extra bee:: here
 };
 
 class foo {
  public:
-  int bee::bar;		// { dg-error "" } you cannot do this
+  int bee::bar;		// { dg-error "not derived" } you cannot do this
     int me();
 };

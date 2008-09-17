@@ -16,6 +16,6 @@ Ctest::operator const char *() const
 int main()
 {
   Ctest obj;
-  char* temp = (char *)obj;		// { dg-warning "" } 
+  char* temp = (char *)obj;		// { dg-error "invalid cast" } 
   temp[0] = '\0';
 }

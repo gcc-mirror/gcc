@@ -17,10 +17,11 @@ struct B : public A<U>
 template <class U>
 struct C : public B<U>
 {
-  void Func(A_Type);  // { dg-warning "" } implicit typename
+  void Func(A_Type);  // { dg-error "has not been declared" } implicit typename
 };
 
 
 template <class U>
-void C<U>::Func(A_Type) { // { dg-warning "" } implicit typename
+void C<U>::Func(A_Type) { // { dg-error "declared void" "void" } implicit typename
+// { dg-error "not declared" "decl" { target *-*-* } 25 }
 }

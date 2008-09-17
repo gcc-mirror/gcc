@@ -9,6 +9,6 @@ int *pp=&i;
 void foo() { }
 int main()
 {
- charptr(*pp)++;	// { dg-warning "" } 
+ charptr(*pp)++;	// { dg-error "lvalue" } 
  return 0;
 }

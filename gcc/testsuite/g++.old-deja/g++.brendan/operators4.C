@@ -54,11 +54,11 @@ int main ()
 	if (test3 (vp))
 		return fail ();
 	ptr_to_method_of_char p2 = &base::method;
-	vp = (void*) p2; // { dg-error "" } 
+	vp = (void*) p2; // { dg-warning "converting" } 
 	if (test4 (vp))
 		return fail ();
 	ptr_to_method_of_float p3 = &base::method;
-	vp = (void*) p3; // { dg-error "" } 
+	vp = (void*) p3; // { dg-warning "converting" } 
 	if (test5 (vp))
 		return fail ();
 
@@ -83,7 +83,7 @@ int test3 (void* vp)
 int test4 (void* vp)
 {
 	char ch = 'x';
-	ptr_to_method_of_char p = (ptr_to_method_of_char) vp; // { dg-error "" } bad type conversion
+	ptr_to_method_of_char p = (ptr_to_method_of_char) vp; // { dg-error "invalid cast" } bad type conversion
 
 	return ((base_ptr->*p)(ch) !=  9904);
 }
@@ -91,7 +91,7 @@ int test4 (void* vp)
 int test5 (void* vp)
 {
 	float flt = 9.9;
-	ptr_to_method_of_float p = (ptr_to_method_of_float) vp; // { dg-error "" } bad type conversion
+	ptr_to_method_of_float p = (ptr_to_method_of_float) vp; // { dg-error "invalid cast" } bad type conversion
 
 	if ((base_ptr->*p)(flt) !=  9905) {
 		return 1;

@@ -22,9 +22,9 @@ void fn(int i)
   double d;
   int j;
 
-  j = (i ? e1 : e2);    // { dg-warning "" } mismatch
-  d = (i ? e1 : 1.0);   // { dg-warning "" } mismatch
-  d = (i ? 1.0 : e2);   // { dg-warning "" } mismatch
+  j = (i ? e1 : e2);    // { dg-warning "mismatch" }
+  d = (i ? e1 : 1.0);   // { dg-warning "non-enumeral" }
+  d = (i ? 1.0 : e2);   // { dg-warning "non-enumeral" }
   E1 e = (i ? e1 : e1); // ok
   j = (i ? 1 : e2);     // ok
   j = (i ? e1 : 1);     // ok
@@ -35,11 +35,11 @@ void fn(int i)
   (i ? throw X() : throw X());  // ok, void
   
   (i ? i : j) = 1; // ok, int &
-  (i ? throw X() : j) = 1;    // { dg-error "" } non lvalue
-  (i ? j : throw X()) = 1;    // { dg-error "" } non lvalue
-  (i ? throw X() : throw X()) = 1;  // { dg-error "" } invalid use of void
+  (i ? throw X() : j) = 1;    // { dg-error "lvalue" }
+  (i ? j : throw X()) = 1;    // { dg-error "lvalue" }
+  (i ? throw X() : throw X()) = 1;  // { dg-error "lvalue" }
   
-  (i ? (void)1 : i++);        // { dg-warning "" } not a throw
-  (i ? i++ : (void)1);        // { dg-warning "" } not a throw
+  (i ? (void)1 : i++);        // { dg-error "throw-expression" }
+  (i ? i++ : (void)1);        // { dg-error "throw-expression" }
   
 }

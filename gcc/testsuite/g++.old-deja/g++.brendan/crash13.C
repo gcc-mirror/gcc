@@ -31,7 +31,7 @@ gen_op Spul_U_axis()
 {
   gen_op U1;
   U1 = Fe();
-} // { dg-error "" } reaches end of non-void function
+} // { dg-warning "no return" } reaches end of non-void function
 
 int
 main () {}

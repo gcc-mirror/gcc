@@ -27,5 +27,5 @@ void foo::a()
 {
     typedef void(foo::*t)();
     t c = & foo::b;
-    d = (T) c;			// { dg-warning "" } pointer to member cast
+    d = (T) c;			// { dg-error "pointer to member" }
 }

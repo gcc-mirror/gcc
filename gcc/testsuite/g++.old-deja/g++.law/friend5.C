@@ -16,10 +16,10 @@
         int good_friend(int)
         {
             obj.parts = 0;
-        } // { dg-error "" } non-void
+        } // { dg-warning "non-void" }
 
         int bad_friend()
         {
             obj.parts = 0;
-        } // { dg-error "" } non-void
+        } // { dg-warning "non-void" }
 

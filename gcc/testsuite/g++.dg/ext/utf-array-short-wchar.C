@@ -13,9 +13,9 @@ const char16_t	s16_1[]	= u"ab";
 const char16_t	s16_2[]	= U"ab";	/* { dg-error "from incompatible" } */
 const char16_t	s16_3[]	= L"ab";	/* { dg-error "from incompatible" } */
 
-const char16_t	s16_4[0] = u"ab";	/* { dg-warning "chars is too long" } */
-const char16_t	s16_5[1] = u"ab";	/* { dg-warning "chars is too long" } */
-const char16_t	s16_6[2] = u"ab";	/* { dg-warning "chars is too long" } */
+const char16_t	s16_4[0] = u"ab";	/* { dg-error "chars is too long" } */
+const char16_t	s16_5[1] = u"ab";	/* { dg-error "chars is too long" } */
+const char16_t	s16_6[2] = u"ab";	/* { dg-error "chars is too long" } */
 const char16_t	s16_7[3] = u"ab";
 const char16_t	s16_8[4] = u"ab";
 
@@ -24,9 +24,9 @@ const char32_t	s32_1[]	= u"ab";	/* { dg-error "from incompatible" } */
 const char32_t	s32_2[]	= U"ab";
 const char32_t	s32_3[]	= L"ab";	/* { dg-error "from incompatible" } */
 
-const char32_t	s32_4[0] = U"ab";	/* { dg-warning "chars is too long" } */
-const char32_t	s32_5[1] = U"ab";	/* { dg-warning "chars is too long" } */
-const char32_t	s32_6[2] = U"ab";	/* { dg-warning "chars is too long" } */
+const char32_t	s32_4[0] = U"ab";	/* { dg-error "chars is too long" } */
+const char32_t	s32_5[1] = U"ab";	/* { dg-error "chars is too long" } */
+const char32_t	s32_6[2] = U"ab";	/* { dg-error "chars is too long" } */
 const char32_t	s32_7[3] = U"ab";
 const char32_t	s32_8[4] = U"ab";
 

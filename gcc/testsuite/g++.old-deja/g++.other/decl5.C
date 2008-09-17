@@ -8,40 +8,41 @@
 
 
 struct A {
-  int A::fn();        // { dg-warning "" } extra qualification
-  int A::m;           // { dg-warning "" } extra qualification
+  int A::fn();        // { dg-error "extra qualification" } 
+  int A::m;           // { dg-error "extra qualification" } 
   struct e;
-  struct A::e {int i;}; // { dg-warning "" } extra qualification
-  struct A::expand {  // { dg-warning "" } extra qualification
+  struct A::e {int i;}; // { dg-error "extra qualification" "qual" } 
+  // { dg-error "anonymous struct" "anon" { target *-*-* } 14 }
+  struct A::expand {  // { dg-error "qualified name" } 
   int m;
   };
   struct Z;
-  expand me;          // { dg-error "error: 'expand' does not name a type" }
+  expand me;          // { dg-error "'expand' does not name a type" }
   void foo(struct A::e);
-  void foo(struct A::z);  // { dg-warning "" } extra qualification
+  void foo(struct A::z);  // { dg-error "does not name a type" }
 };
 
 struct Q;
 struct B {
-  struct A::fink {    // { dg-error "" } no such member
+  struct A::fink {    // { dg-error "does not name a class before" }
   int m;
   };
-  struct A::Z {       // { dg-error "" } A::Z not a member of B
+  struct A::Z {       // { dg-error "does not enclose" } A::Z not a member of B
     int m;
   };
   int m;
   int n;
-  struct ::Q {        // { dg-error "" } ::Q not a member of B
+  struct ::Q {        // { dg-error "global qual" } ::Q not a member of B
     int m;
   };
-  int A::fn() {       // { dg-error "" } A::fn not a member of B
+  int A::fn() {       // { dg-error "cannot define member" } A::fn not a member of B
     return 0;
   }
   void fn(struct ::Q &);
-  void foo(struct A::y);  // { dg-error "" } no such member
+  void foo(struct A::y);  // { dg-error "does not name a type" } no such member
 };
 
-struct ::C {          // { dg-warning "" } extra qualification
+struct ::C {          // { dg-error "invalid before" } extra qualification
   int i;
 };
 
@@ -52,26 +53,26 @@ namespace N {
 
 namespace NMS
 {
-  void NMS::fn();     // { dg-warning "" "" } extra qualification
-  int NMS::i;         // { dg-warning "" "" } extra qualification
-  struct NMS::D {     // { dg-warning "" } extra qualification
+  void NMS::fn();     // { dg-error "explicit qual" }
+  int NMS::i;         // { dg-error "explicit qual" }
+  struct NMS::D {     // { dg-error "does not name a class" }
     int i;
   };
-  struct N::E {       // { dg-error "" } no such type
+  struct N::E {       // { dg-error "does not name a class" } no such type
     int i;
   };
-  struct ::F {        // { dg-error "" } no such type
+  struct ::F {        // { dg-error "global qual" } no such type
     int i;
   };
-  int N::fn() {       // { dg-error "" } N::fn not a member of NMS
+  int N::fn() {       // { dg-error "namespace" } N::fn not a member of NMS
     return 0;
   }
-  struct N::F {       // { dg-error "" } N::F not a member of NMS
+  struct N::F {       // { dg-error "namespace" } N::F not a member of NMS
     int i;
   };
 }
 
-NMS::D thing;         // { dg-error "error: 'D' in namespace 'NMS' does not name a type" }
+NMS::D thing;         // { dg-error "'D' in namespace 'NMS' does not name a type" }
 void NMS::fn()
 {
   i = 3;

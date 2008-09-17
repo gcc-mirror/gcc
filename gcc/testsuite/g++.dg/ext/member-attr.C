@@ -9,6 +9,6 @@
 
 class T {
   public:
-    __attribute__ ((garbage1)) void member1(int) {} /* { dg-error "'garbage1' attribute directive ignored" "" } */
-    void __attribute__ ((garbage2)) member2(int) {} /* { dg-error "'garbage2' attribute directive ignored" "" } */
+    __attribute__ ((garbage1)) void member1(int) {} /* { dg-warning "'garbage1' attribute directive ignored" "" } */
+    void __attribute__ ((garbage2)) member2(int) {} /* { dg-warning "'garbage2' attribute directive ignored" "" } */
 };

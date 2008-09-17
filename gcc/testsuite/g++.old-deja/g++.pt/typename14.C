@@ -10,6 +10,6 @@ template <class T>
 struct S : public B<T>
 {
   struct I {
-    void f(X x);   // { dg-warning "" } implicit typename
+    void f(X x);   // { dg-error "'X' has not been declared" } implicit typename
   };
 };

@@ -13,22 +13,22 @@ typedef __SIZE_TYPE__ size_t;
 
 void *operator new(size_t)
 {
-  return 0; // { dg-error "" } cannot return NULL
+  return 0; // { dg-warning "NULL" } cannot return NULL
 }
 void *operator new[](size_t)
 {
-  return 0; // { dg-error "" } cannot return NULL
+  return 0; // { dg-warning "NULL" } cannot return NULL
 }
 
 struct X
 {
   void *operator new(size_t)
   {
-    return 0; // { dg-error "" } cannot return NULL
+    return 0; // { dg-warning "NULL" } cannot return NULL
   }
   void *operator new[](size_t)
   {
-    return 0; // { dg-error "" } cannot return NULL
+    return 0; // { dg-warning "NULL" } cannot return NULL
   }
 };
 

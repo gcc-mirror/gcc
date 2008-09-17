@@ -41,16 +41,16 @@ int main ()
 {
   {
     foofPtr fp = &foo::b;
-    barfPtr bp = static_cast <barfPtr> (fp);    // { dg-error "" } invalid static_cast
-    foofPtr fp2 = static_cast <foofPtr> (bp);   // { dg-error "" } invalid static_cast
-    foofPtr fp3 = bp;                           // { dg-error "" } cannot convert
-    fp3 = (foofPtr)bp;                          // { dg-warning "" } via virtual base
+    barfPtr bp = static_cast <barfPtr> (fp);    // { dg-error "via virtual base" } invalid static_cast
+    foofPtr fp2 = static_cast <foofPtr> (bp);   // { dg-error "via virtual base" } invalid static_cast
+    foofPtr fp3 = bp;                           // { dg-error "via virtual base" } cannot convert
+    fp3 = (foofPtr)bp;                          // { dg-error "via virtual base" } via virtual base
     
     foomPtr fmp = &foo::m;
-    barmPtr bmp = static_cast <barmPtr> (fmp);  // { dg-error "" } invalid static_cast
-    foomPtr fmp2 = static_cast <foomPtr> (bmp); // { dg-error "" } invalid static_cast
-    foomPtr fmp3 = bmp;                         // { dg-error "" } cannot convert
-    fmp3 = (foomPtr)bmp;                        // { dg-warning "" } via virtual base
+    barmPtr bmp = static_cast <barmPtr> (fmp);  // { dg-error "via virtual base" } invalid static_cast
+    foomPtr fmp2 = static_cast <foomPtr> (bmp); // { dg-error "via virtual base" } invalid static_cast
+    foomPtr fmp3 = bmp;                         // { dg-error "via virtual base" } cannot convert
+    fmp3 = (foomPtr)bmp;                        // { dg-error "via virtual base" } via virtual base
   }
   
   return 0;
