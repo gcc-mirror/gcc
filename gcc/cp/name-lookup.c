@@ -720,8 +720,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      /* Check for duplicate params.  */
-	      if (duplicate_decls (x, t, is_friend))
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
+	      tree d = duplicate_decls (x, t, is_friend);
+	      if (d)
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, d);
 	    }
 	  else if ((DECL_EXTERN_C_FUNCTION_P (x)
 		    || DECL_FUNCTION_TEMPLATE_P (x))
