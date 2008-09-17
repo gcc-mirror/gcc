@@ -4282,7 +4282,8 @@ lookup_type_scope (tree name, tag_scope scope)
 	  if (iter->scope == b)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
 
-	  if (b->kind == sk_cleanup || b->kind == sk_template_parms)
+	  if (b->kind == sk_cleanup || b->kind == sk_template_parms
+	      || b->kind == sk_function_parms)
 	    b = b->level_chain;
 	  else if (b->kind == sk_class
 		   && scope == ts_within_enclosing_non_class)
