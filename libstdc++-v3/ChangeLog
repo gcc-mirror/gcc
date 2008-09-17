@@ -1,3 +1,28 @@
+2008-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/37547
+	* include/bits/stl_algo.h (min(initializer_list<>),
+	min(initializer_list<>, Compare), max(initializer_list<>),
+	max(initializer_list<>, Compare), minmax(initializer_list<>),
+	minmax(initializer_list<>, Compare)): Fix return type.
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Likewise.
+	* testsuite/25_algorithms/max/requirements/explicit_instantiation/3.cc:
+        Likewise.
+        * testsuite/25_algorithms/max/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+	* testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:
+        Likewise.
+        * testsuite/25_algorithms/min/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+	3.cc: Likewise.
+        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+        pod2.cc: Likewise.
+	* testsuite/25_algorithms/max/37547.cc: New.
+	* testsuite/25_algorithms/min/37547.cc: Likewise.
+	* testsuite/25_algorithms/minmax/37547.cc: Likewise.
+
 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
         * testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:

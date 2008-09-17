@@ -42,8 +42,7 @@ namespace std
   typedef value_type* 		iterator_type;
   typedef std::less<value_type> compare_type;
 
-  template pair<const value_type&, const value_type&>
-    minmax(initializer_list<value_type>);
-  template pair<const value_type&, const value_type&>
-    minmax(initializer_list<value_type>, compare_type);
+  template pair<value_type, value_type> minmax(initializer_list<value_type>);
+  template pair<value_type, value_type> minmax(initializer_list<value_type>,
+					       compare_type);
 }
