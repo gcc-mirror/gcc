@@ -1,3 +1,8 @@
+2008-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (protected_set_expr_location): Don't unnecessarily
+	check for error_mark_node.
+
 2008-09-17  Art Haas  <ahaas@impactweather.com>
 
 	* ipa-reference.c (analyze_function): Declare step only if
