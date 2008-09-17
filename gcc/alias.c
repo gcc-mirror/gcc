@@ -604,8 +604,11 @@ get_alias_set (tree t)
     }
 
   /* Variant qualifiers don't affect the alias set, so get the main
-     variant. If this is a type with a known alias set, return it.  */
+     variant.  Always use the canonical type as well.
+     If this is a type with a known alias set, return it.  */
   t = TYPE_MAIN_VARIANT (t);
+  if (TYPE_CANONICAL (t))
+    t = TYPE_CANONICAL (t);
   if (TYPE_ALIAS_SET_KNOWN_P (t))
     return TYPE_ALIAS_SET (t);
 

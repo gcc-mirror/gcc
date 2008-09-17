@@ -5182,24 +5182,23 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       return false;
     }
 
-  /* The type of the vector store is determined by the rhs.  */
-  vectype = get_vectype_for_scalar_type (TREE_TYPE (op));
-
   /* If accesses through a pointer to vectype do not alias the original
-     memory reference we have a problem.  */
-  if (get_alias_set (vectype) != get_alias_set (TREE_TYPE (scalar_dest))
+     memory reference we have a problem.  This should never be the case.  */
+  if (get_alias_set (vectype) != get_alias_set (scalar_dest)
       && !alias_set_subset_of (get_alias_set (vectype), 
-                               get_alias_set (TREE_TYPE (scalar_dest))))
+                               get_alias_set (scalar_dest)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "vector type does not alias scalar type");
+        fprintf (vect_dump, "???  vector type does not alias scalar type");
       return false;
     }
 
-  if (!useless_type_conversion_p (TREE_TYPE (op), TREE_TYPE (scalar_dest)))
+  /* The scalar rhs type needs to be trivially convertible to the vector
+     component type.  This should always be the case.  */
+  if (!useless_type_conversion_p (TREE_TYPE (vectype), TREE_TYPE (op)))
     {      
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "operands of different types");
+        fprintf (vect_dump, "???  operands of different types");
       return false;
     }
 
@@ -5367,8 +5366,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		     Therefore, NEXT_STMT can't be NULL_TREE.  In case that 
 		     there is no interleaving, GROUP_SIZE is 1, and only one 
 		     iteration of the loop will be executed.  */
-		  gcc_assert (next_stmt);
-		  gcc_assert (gimple_assign_single_p (next_stmt));
+		  gcc_assert (next_stmt
+			      && gimple_assign_single_p (next_stmt));
 		  op = gimple_assign_rhs1 (next_stmt);
 
 		  vec_oprnd = vect_get_vec_def_for_operand (op, next_stmt, 
@@ -5379,9 +5378,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		}
 	    }
 
+	  /* We should have catched mismatched types earlier.  */
+	  gcc_assert (useless_type_conversion_p (vectype,
+						 TREE_TYPE (vec_oprnd)));
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE, 
 						  &dummy, &ptr_incr, false, 
-						  &inv_p, TREE_TYPE (vec_oprnd));
+						  &inv_p, NULL);
 	  gcc_assert (!inv_p);
 	}
       else 
@@ -6384,13 +6386,22 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     }
 
   /* If accesses through a pointer to vectype do not alias the original
-     memory reference we have a problem.  */
-  if (get_alias_set (vectype) != get_alias_set (scalar_type)
+     memory reference we have a problem.  This should never happen.  */
+  if (get_alias_set (vectype) != get_alias_set (gimple_assign_rhs1 (stmt))
       && !alias_set_subset_of (get_alias_set (vectype),
-                               get_alias_set (scalar_type)))
+                               get_alias_set (gimple_assign_rhs1 (stmt))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "vector type does not alias scalar type");
+        fprintf (vect_dump, "???  vector type does not alias scalar type");
+      return false;
+    }
+
+  /* The vector component type needs to be trivially convertible to the
+     scalar lhs.  This should always be the case.  */
+  if (!useless_type_conversion_p (TREE_TYPE (scalar_dest), TREE_TYPE (vectype)))
+    {      
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "???  operands of different types");
       return false;
     }
 
