@@ -2544,7 +2544,7 @@ build_array_ref (tree array, tree idx, location_t loc)
 	      build_array_ref (TREE_OPERAND (array, 1), idx, loc),
 	      build_array_ref (TREE_OPERAND (array, 2), idx, loc),
 	      tf_warning_or_error);
-      SET_EXPR_LOCATION (ret, loc);
+      protected_set_expr_location (ret, loc);
       return ret;
 
     default:
@@ -2623,7 +2623,7 @@ build_array_ref (tree array, tree idx, location_t loc)
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
       ret = require_complete_type (fold_if_not_in_template (rval));
-      SET_EXPR_LOCATION (ret, loc);
+      protected_set_expr_location (ret, loc);
       return ret;
     }
 

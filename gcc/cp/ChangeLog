@@ -1,3 +1,9 @@
+2008-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37552
+	* typeck.c (build_array_ref): Use protected_set_expr_location instead
+	of SET_EXPR_LOCATION when ret might not be an expression.
+
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/18071
