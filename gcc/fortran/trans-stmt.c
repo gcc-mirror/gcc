@@ -834,7 +834,6 @@ gfc_trans_do (gfc_code * code)
   tree from;
   tree to;
   tree step;
-  tree empty;
   tree countm1;
   tree type;
   tree utype;
@@ -875,43 +874,15 @@ gfc_trans_do (gfc_code * code)
       && (integer_onep (step)
 	|| tree_int_cst_equal (step, integer_minus_one_node)))
     return gfc_trans_simple_do (code, &block, dovar, from, to, step);
-      
-  /* We need a special check for empty loops:
-     empty = (step > 0 ? to < from : to > from);  */
+
   pos_step = fold_build2 (GT_EXPR, boolean_type_node, step,
 			  fold_convert (type, integer_zero_node));
-  empty = fold_build3 (COND_EXPR, boolean_type_node, pos_step,
-		       fold_build2 (LT_EXPR, boolean_type_node, to, from),
-		       fold_build2 (GT_EXPR, boolean_type_node, to, from));
 
-  /* Initialize loop count. This code is executed before we enter the
-     loop body. We generate: countm1 = abs(to - from) / abs(step).  */
   if (TREE_CODE (type) == INTEGER_TYPE)
-    {
-      tree ustep;
-
-      utype = unsigned_type_for (type);
-
-      /* tmp = abs(to - from) / abs(step) */
-      ustep = fold_convert (utype, fold_build1 (ABS_EXPR, type, step));
-      tmp = fold_build3 (COND_EXPR, type, pos_step,
-			 fold_build2 (MINUS_EXPR, type, to, from),
-			 fold_build2 (MINUS_EXPR, type, from, to));
-      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, fold_convert (utype, tmp),
-			 ustep);
-    }
+    utype = unsigned_type_for (type);
   else
-    {
-      /* TODO: We could use the same width as the real type.
-	 This would probably cause more problems that it solves
-	 when we implement "long double" types.  */
-      utype = unsigned_type_for (gfc_array_index_type);
-      tmp = fold_build2 (MINUS_EXPR, type, to, from);
-      tmp = fold_build2 (RDIV_EXPR, type, tmp, step);
-      tmp = fold_build1 (FIX_TRUNC_EXPR, utype, tmp);
-    }
+    utype = unsigned_type_for (gfc_array_index_type);
   countm1 = gfc_create_var (utype, "countm1");
-  gfc_add_modify (&block, countm1, tmp);
 
   /* Cycle and exit statements are implemented with gotos.  */
   cycle_label = gfc_build_label_decl (NULL_TREE);
@@ -921,10 +892,70 @@ gfc_trans_do (gfc_code * code)
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (&block, dovar, from);
 
-  /* If the loop is empty, go directly to the exit label.  */
-  tmp = fold_build3 (COND_EXPR, void_type_node, empty,
-		     build1_v (GOTO_EXPR, exit_label), build_empty_stmt ());
-  gfc_add_expr_to_block (&block, tmp);
+  /* Initialize loop count and jump to exit label if the loop is empty.
+     This code is executed before we enter the loop body. We generate:
+     if (step > 0)
+       {
+	 if (to < from) goto exit_label;
+	 countm1 = (to - from) / step;
+       }
+     else
+       {
+	 if (to > from) goto exit_label;
+	 countm1 = (from - to) / -step;
+       }  */
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      tree pos, neg;
+
+      tmp = fold_build2 (LT_EXPR, boolean_type_node, to, from);
+      pos = fold_build3 (COND_EXPR, void_type_node, tmp,
+			 build1_v (GOTO_EXPR, exit_label),
+			 build_empty_stmt ());
+      tmp = fold_build2 (MINUS_EXPR, type, to, from);
+      tmp = fold_convert (utype, tmp);
+      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
+			 fold_convert (utype, step));
+      tmp = build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
+      pos = build2 (COMPOUND_EXPR, void_type_node, pos, tmp);
+
+      tmp = fold_build2 (GT_EXPR, boolean_type_node, to, from);
+      neg = fold_build3 (COND_EXPR, void_type_node, tmp,
+			 build1_v (GOTO_EXPR, exit_label),
+			 build_empty_stmt ());
+      tmp = fold_build2 (MINUS_EXPR, type, from, to);
+      tmp = fold_convert (utype, tmp);
+      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
+			 fold_convert (utype, fold_build1 (NEGATE_EXPR,
+							   type, step)));
+      tmp = build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
+      neg = build2 (COMPOUND_EXPR, void_type_node, neg, tmp);
+
+      tmp = fold_build3 (COND_EXPR, void_type_node, pos_step, pos, neg);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else
+    {
+      /* TODO: We could use the same width as the real type.
+	 This would probably cause more problems that it solves
+	 when we implement "long double" types.  */
+
+      tmp = fold_build2 (MINUS_EXPR, type, to, from);
+      tmp = fold_build2 (RDIV_EXPR, type, tmp, step);
+      tmp = fold_build1 (FIX_TRUNC_EXPR, utype, tmp);
+      gfc_add_modify (&block, countm1, tmp);
+
+      /* We need a special check for empty loops:
+	 empty = (step > 0 ? to < from : to > from);  */
+      tmp = fold_build3 (COND_EXPR, boolean_type_node, pos_step,
+			 fold_build2 (LT_EXPR, boolean_type_node, to, from),
+			 fold_build2 (GT_EXPR, boolean_type_node, to, from));
+      /* If the loop is empty, go directly to the exit label.  */
+      tmp = fold_build3 (COND_EXPR, void_type_node, tmp,
+			 build1_v (GOTO_EXPR, exit_label),
+			 build_empty_stmt ());
+      gfc_add_expr_to_block (&block, tmp);
+    }
 
   /* Loop body.  */
   gfc_start_block (&body);
