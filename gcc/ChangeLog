@@ -1,3 +1,23 @@
+2008-09-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (ipa_obstack): Remove.
+	(local_info_obstack, global_info_obstack): New.
+	(add_static_var): We now handle variables only.
+	(mark_address_taken, mark_load, mark_store): New functions based on ...
+	(check_operand): ... remove.
+	(get_asm_stmt_operands): Rename to ...
+	(check_asm_memory_clobber): ... this. Look only for memory clobber.
+	(scan_stmt_for_static_refs): Rewrite.
+	(scan_op_for_static_refs): Rename to ...
+	(scan_initializer_for_static_refs): do not look for VAR_DECL
+	initializers; stop recursion on types and decls.
+	(ipa_init): Use proper obstacks.
+	(analyze_variable): Use scan_initializer_for_static_refs.
+	(init_function_info): Use local obstack.
+	(analyze_function): Simplify.
+	(add_new_function): We don't need visited_nodes obstack.
+	(generate_summary): Use proper obstacks; cleanup after propagation.
+
 2008-09-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37385
