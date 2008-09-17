@@ -1,3 +1,9 @@
+2008-09-13  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/35770
+	* primary.c (gfc_match_varspec): Added missing type-spec clearing
+	after wrong implicit character typing.
+
 2008-09-11  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36214
