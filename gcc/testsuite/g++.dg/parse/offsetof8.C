@@ -12,5 +12,5 @@ struct B
 
 void foo()
 {
-  __builtin_offsetof(B, a[0]); /* { dg-error "error: cannot apply 'offsetof' when 'operator\\\[\\\]' is overloaded" } */
+  __builtin_offsetof(B, a[0]); /* { dg-error "cannot apply 'offsetof' when 'operator\\\[\\\]' is overloaded" } */
 }

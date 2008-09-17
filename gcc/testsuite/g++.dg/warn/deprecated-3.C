@@ -10,5 +10,5 @@ struct Foo
 void g(void)
 {
   Foo f;
-  (int)f; // { dg-warning "warning: 'Foo::operator int\\(\\)' is deprecated \\(declared at" }
+  (int)f; // { dg-warning "'Foo::operator int\\(\\)' is deprecated \\(declared at" }
 }

@@ -2,5 +2,5 @@
 // { dg-do compile }
 // { dg-options "-pedantic-errors" }
 // { dg-skip-if "-Wmain not enabled with -pedantic on SPU" { spu-*-* } } 
-int main(char a) {} /* { dg-error "error: first argument of .*main.* should be .int." } */
-/* { dg-error "error: .*main.* takes only zero or two arguments" "" { target *-*-* } 5 } */ 
+int main(char a) {} /* { dg-error "first argument of .*main.* should be .int." } */
+/* { dg-error "main.* takes only zero or two arguments" "" { target *-*-* } 5 } */ 
