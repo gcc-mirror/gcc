@@ -1,3 +1,8 @@
+2008-09-17  Pascal Rigaux  <pixel@mandriva.com>
+
+	PR ada/21327
+	* gnat_ugn.texi: Use proper format in direntry.
+
 2008-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Declare the name of the compilation
