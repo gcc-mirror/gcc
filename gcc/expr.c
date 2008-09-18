@@ -2039,33 +2039,17 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
       HOST_WIDE_INT bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
       enum machine_mode mode = GET_MODE (tmps[i]);
       unsigned int bytelen = GET_MODE_SIZE (mode);
+      unsigned int adj_bytelen = bytelen;
       rtx dest = dst;
 
       /* Handle trailing fragments that run over the size of the struct.  */
       if (ssize >= 0 && bytepos + (HOST_WIDE_INT) bytelen > ssize)
-	{
-	  /* store_bit_field always takes its value from the lsb.
-	     Move the fragment to the lsb if it's not already there.  */
-	  if (
-#ifdef BLOCK_REG_PADDING
-	      BLOCK_REG_PADDING (GET_MODE (orig_dst), type, i == start)
-	      == (BYTES_BIG_ENDIAN ? upward : downward)
-#else
-	      BYTES_BIG_ENDIAN
-#endif
-	      )
-	    {
-	      int shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
-	      tmps[i] = expand_shift (RSHIFT_EXPR, mode, tmps[i],
-				      build_int_cst (NULL_TREE, shift),
-				      tmps[i], 0);
-	    }
-	  bytelen = ssize - bytepos;
-	}
+	adj_bytelen = ssize - bytepos;
 
       if (GET_CODE (dst) == CONCAT)
 	{
-	  if (bytepos + bytelen <= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0))))
+	  if (bytepos + adj_bytelen
+	      <= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0))))
 	    dest = XEXP (dst, 0);
 	  else if (bytepos >= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0))))
 	    {
@@ -2101,6 +2085,27 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 		}
 	      break;
 	    }
+	}
+
+      if (ssize >= 0 && bytepos + (HOST_WIDE_INT) bytelen > ssize)
+	{
+	  /* store_bit_field always takes its value from the lsb.
+	     Move the fragment to the lsb if it's not already there.  */
+	  if (
+#ifdef BLOCK_REG_PADDING
+	      BLOCK_REG_PADDING (GET_MODE (orig_dst), type, i == start)
+	      == (BYTES_BIG_ENDIAN ? upward : downward)
+#else
+	      BYTES_BIG_ENDIAN
+#endif
+	      )
+	    {
+	      int shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
+	      tmps[i] = expand_shift (RSHIFT_EXPR, mode, tmps[i],
+				      build_int_cst (NULL_TREE, shift),
+				      tmps[i], 0);
+	    }
+	  bytelen = adj_bytelen;
 	}
 
       /* Optimize the access just a bit.  */
