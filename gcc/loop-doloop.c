@@ -333,11 +333,13 @@ add_test (rtx cond, edge *e, basic_block dest)
    describes the loop, DESC describes the number of iterations of the
    loop, and DOLOOP_INSN is the low-overhead looping insn to emit at the
    end of the loop.  CONDITION is the condition separated from the
-   DOLOOP_SEQ.  COUNT is the number of iterations of the LOOP.  */
+   DOLOOP_SEQ.  COUNT is the number of iterations of the LOOP.
+   ZERO_EXTEND_P says to zero extend COUNT after the increment of it to
+   word_mode.  */
 
 static void
 doloop_modify (struct loop *loop, struct niter_desc *desc,
-	       rtx doloop_seq, rtx condition, rtx count)
+	       rtx doloop_seq, rtx condition, rtx count, bool zero_extend_p)
 {
   rtx counter_reg;
   rtx tmp, noloop = NULL_RTX;
@@ -412,6 +414,10 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 
   if (increment_count)
     count = simplify_gen_binary (PLUS, mode, count, const1_rtx);
+
+  if (zero_extend_p)
+    count = simplify_gen_unary (ZERO_EXTEND, word_mode,
+				count, mode);
 
   /* Insert initialization of the count register into the loop header.  */
   start_sequence ();
@@ -547,6 +553,7 @@ doloop_optimize (struct loop *loop)
   struct niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
+  bool zero_extend_p = false;
 
   if (dump_file)
     fprintf (dump_file, "Doloop: Processing loop %d.\n", loop->num);
@@ -621,8 +628,7 @@ doloop_optimize (struct loop *loop)
     {
       if (word_mode_size > GET_MODE_BITSIZE (mode))
 	{
-	  count = simplify_gen_unary (ZERO_EXTEND, word_mode,
-				      count, mode);
+	  zero_extend_p = true;
 	  iterations = simplify_gen_unary (ZERO_EXTEND, word_mode,
 					   iterations, mode);
 	  iterations_max = simplify_gen_unary (ZERO_EXTEND, word_mode,
@@ -666,7 +672,7 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
-  doloop_modify (loop, desc, doloop_seq, condition, count);
+  doloop_modify (loop, desc, doloop_seq, condition, count, zero_extend_p);
   return true;
 }
 
