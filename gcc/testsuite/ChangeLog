@@ -1,6 +1,14 @@
 2008-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
+        2008-04-08  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/35620
+	* gcc.dg/dfp/pr35620.c: New test.
+	* gcc.dg/dfp/func-pointer.c: New test.
+	* gcc.dg/dfp/func-deref.c: New test.
+
+	Backport from mainline:
 	2008-04-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/35712

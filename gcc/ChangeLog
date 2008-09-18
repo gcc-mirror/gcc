@@ -1,6 +1,12 @@
 2008-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
+        2008-04-08  Janis Johnson  <janis187@us.ibm.com>
+	PR target/35620
+	* config/rs6000/rs6000.c (rs6000_check_sdmode): Handle additional
+	kinds of indirect references.
+
+	Backport from mainline:
 	2008-04-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/35713
