@@ -1,10 +1,10 @@
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/37102
-	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the arguments from a PHI
-	node. If it is a final use of an SSA_NAME, check to see if another PHI is dead.
-	(eliminate_useless_phis): Rename from eliminate_virtual_phis and remove real 
-	PHIs which have no uses.
+	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args
+	from a node. Check to see if another PHI is dead.
+	(eliminate_useless_phis): Rename from eliminate_virtual_phis and 
+	remove real PHIs which have no uses.
 	(rewrite_out_of_ssa): Call eliminate_useless_phis.
 
 2008-09-18  Richard Guenther  <rguenther@suse.de>
