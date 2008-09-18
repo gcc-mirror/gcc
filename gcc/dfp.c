@@ -50,8 +50,6 @@ decimal_from_decnumber (REAL_VALUE_TYPE *r, decNumber *dn, decContext *context)
   memset (r, 0, sizeof (REAL_VALUE_TYPE));
 
   r->cl = rvc_normal;
-  if (decNumberIsZero (dn))
-    r->cl = rvc_zero;
   if (decNumberIsNaN (dn))
     r->cl = rvc_nan;
   if (decNumberIsInfinite (dn))

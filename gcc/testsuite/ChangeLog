@@ -1,3 +1,11 @@
+2008-09-18  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-04-03  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/35712
+	* gcc.dg/dfp/constants-zero.c: New test.
+
 2008-09-13  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35770
