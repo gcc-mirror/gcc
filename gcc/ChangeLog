@@ -1,3 +1,10 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37456
+	* tree-ssa-reassoc.c (build_and_add_sum): If the stmt we
+	want to insert after ends a BB insert on the single fallthru
+	outgoing edge.
+
 2008-09-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* doc/invoke.texi: Document -mhard-dfp, -mno-hard-dfp.
