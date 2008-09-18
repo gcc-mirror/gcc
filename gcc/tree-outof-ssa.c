@@ -606,25 +606,69 @@ replace_def_variable (var_map map, def_operand_p def_p, tree *expr)
 }
 
 
-/* Remove any PHI node which is a virtual PHI.  */
+/* Remove each argument from a PHI node.  If an arg was the last use of an SSA_NAME, 
+   check to see if this allows another PHI node to be removed.  */
 
 static void
-eliminate_virtual_phis (void)
+remove_gimple_phi_args (gimple phi)
+{
+  use_operand_p arg_p;
+  ssa_op_iter iter;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Removing Dead PHI definition: ");
+      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+    }
+
+  FOR_EACH_PHI_ARG (arg_p, phi, iter, SSA_OP_USE)
+    {
+      tree arg = USE_FROM_PTR (arg_p);
+      if (TREE_CODE (arg) == SSA_NAME)
+        {
+	  /* Remove the reference to the existing argument.  */
+	  SET_USE (arg_p, NULL_TREE);
+	  if (has_zero_uses (arg))
+	    {
+	      gimple stmt;
+	      gimple_stmt_iterator gsi;
+
+	      stmt = SSA_NAME_DEF_STMT (arg);
+
+	      /* Also remove the def if it is a PHI node.  */
+	      if (gimple_code (stmt) == GIMPLE_PHI)
+		{
+		  remove_gimple_phi_args (stmt);
+		  gsi = gsi_for_stmt (stmt);
+		  remove_phi_node (&gsi, true);
+		}
+
+	    }
+	}
+    }
+}
+
+/* Remove any PHI node which is a virtual PHI, or a PHI with no uses.  */
+
+static void
+eliminate_useless_phis (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
+  tree result;
 
   FOR_EACH_BB (bb)
     {
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
         {
 	  gimple phi = gsi_stmt (gsi);
-	  if (!is_gimple_reg (SSA_NAME_VAR (gimple_phi_result (phi))))
+	  result = gimple_phi_result (phi);
+	  if (!is_gimple_reg (SSA_NAME_VAR (result)))
 	    {
 #ifdef ENABLE_CHECKING
 	      size_t i;
-	      /* There should be no arguments of this PHI which are in
-		 the partition list, or we get incorrect results.  */
+	      /* There should be no arguments of this PHI which are not virtual, or we 
+	         get incorrect results.  */
 	      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	        {
 		  tree arg = PHI_ARG_DEF (phi, i);
@@ -642,7 +686,16 @@ eliminate_virtual_phis (void)
 	      remove_phi_node (&gsi, true);
 	    }
           else
-            gsi_next (&gsi);
+	    {
+	      /* Also remove real PHIs with no uses.  */
+	      if (has_zero_uses (result))
+	        {
+		  remove_gimple_phi_args (phi);
+		  remove_phi_node (&gsi, true);
+		}
+	      else
+		gsi_next (&gsi);
+	    }
 	}
     }
 }
@@ -1443,7 +1496,9 @@ rewrite_out_of_ssa (void)
      copies into the loop itself.  */
   insert_backedge_copies ();
 
-  eliminate_virtual_phis ();
+
+  /* Eliminate PHIs which are of no use, such as virtual or dead phis.  */
+  eliminate_useless_phis ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
