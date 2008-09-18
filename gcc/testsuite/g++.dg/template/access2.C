@@ -15,6 +15,6 @@ class B {
 
 int main()
 {
-  A<B> ab;				// { dg-error "instantiated" }
-  ab.f();				// { dg-error "instantiated" }
+  A<B> ab;				// { dg-message "instantiated" }
+  ab.f();				// { dg-message "instantiated" }
 }

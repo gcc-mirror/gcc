@@ -11,5 +11,5 @@ struct tuple_base { };
 template<typename... Values>
 struct tuple : tuple_base<Values> { }; // { dg-error "packs not expanded" }
 
-// { dg-error "args" "" { target *-*-* } 5 }
-// { dg-error "Values" "" { target *-*-* } 12 }
+// { dg-message "args" "note" { target *-*-* } 5 }
+// { dg-message "Values" "note" { target *-*-* } 12 }

@@ -18,5 +18,5 @@ template<> struct A<void>
 void bar()
 {
     A<void> a;
-    a.foo<int>();		// { dg-error "instantiated" }
+    a.foo<int>();		// { dg-message "instantiated" }
 }

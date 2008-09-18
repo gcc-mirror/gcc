@@ -9,13 +9,13 @@
 
 #include <fstream>
 
-class X : public std::ifstream { // { dg-error "" } candidate
+class X : public std::ifstream { // { dg-message "note" } candidate
     public:
-      X(int a, const char *b) {} // { dg-error "" } candidate
+      X(int a, const char *b) {} // { dg-message "note" } candidate
 };
 int main()
 {
     X *y = new X(10, "123");
     // the compiler must reject this constructor call:
-    X *x = new X("abc");// { dg-error "" } .*
+    X *x = new X("abc");// { dg-error "match" }
 }

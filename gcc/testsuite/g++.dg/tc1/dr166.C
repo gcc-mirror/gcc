@@ -32,7 +32,7 @@ namespace N {
     template <> void f<double>(double )
     { 
       M::B::x = 0; 
-      M::f<long>(0);   // { dg-error "instantiated" }
+      M::f<long>(0);   // { dg-message "instantiated" }
     }
 
     void g(void)
@@ -47,7 +47,7 @@ namespace N {
 
   template <> void f<int>(int )
   { 
-    N::f<long>(0);        // { dg-error "instantiated" }
+    N::f<long>(0);        // { dg-message "instantiated" }
     M::A::x = 0; 
     M::B::x = 0;       // { dg-error "within this context" }
   }

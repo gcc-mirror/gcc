@@ -5,24 +5,27 @@ class A {
     int _k;
   };
   T1 _t1;
-  T2 _t2; // { dg-error "instantiated" }
+  T2 _t2; // { dg-message "instantiated" }
 };
 
 template <class U>
-class B { // { dg-error "" }
+class B { // { dg-error "declaration" }
   class SubB1 {
-    B _i; // { dg-error "" }
+    B _i; // { dg-error "incomplete type" }
   };
 
   class SubB2 {
     int _j;
   };
-  A<U,SubB1>::SubA<SubB2> _a; // { dg-error "" }
+  A<U,SubB1>::SubA<SubB2> _a; // { dg-error "not a base type" "not base" }
+		// { dg-message "note" "note" { target *-*-* } 20 }
+		// { dg-message "instantiated" "inst" { target *-*-* } 20 }
+		// { dg-error "non-template" "non-template" { target *-*-* } 20 }
 };
 
 
 int main() {
-  B<char> objB; // { dg-error "instantiated" }
+  B<char> objB; // { dg-message "instantiated" }
 
   return 0;
 }

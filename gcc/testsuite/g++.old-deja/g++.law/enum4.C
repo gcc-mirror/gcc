@@ -11,7 +11,7 @@ enum Enum {enumerator1, enumerator2};
 struct Struct
 {
   int i;
-      int getI(Enum) {return i;} // { dg-error "" } candidates
+      int getI(Enum) {return i;} // { dg-message "candidates" }
 };
 
 int funct (Enum)
@@ -23,7 +23,7 @@ int main()
 {
   Enum e = enumerator1;
   Struct s;
-  int x = funct(e+1);// { dg-error "" } .*
-  int y = s.getI(e+1);// { dg-error "" } .*
+  int x = funct(e+1);// { dg-error "invalid" }
+  int y = s.getI(e+1);// { dg-error "match" }
   return x+y;
 }

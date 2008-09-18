@@ -1,4 +1,4 @@
-extern void *operator new(__SIZE_TYPE__); // { dg-error "candidate" }
+extern void *operator new(__SIZE_TYPE__); // { dg-message "candidate" }
 
 template <class T >
 struct C

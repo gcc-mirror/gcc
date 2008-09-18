@@ -10,4 +10,4 @@ template <typename T> struct S2 : S<T> {
     using S<T>::operator typename S<T>::I*; // { dg-error "operator S\\<int\\>" "" }
 };
 
-template struct S2<int>;  // { dg-error "instantiated" "" }
+template struct S2<int>;  // { dg-message "instantiated" "" }

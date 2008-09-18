@@ -4,8 +4,9 @@ template <typename T, bool=T::X> struct A
 };
 
 template <typename T> struct B : A<T>
-{ // { dg-error "" }
-  using A<T>::i; // { dg-error "" } 
+{ // { dg-error "incomplete" }
+  using A<T>::i; // { dg-error "incomplete" "incomplete" } 
+                 // { dg-error "using" "using" { target *-*-* } 8 }
 };
 
-B<void> b; // { dg-error "" }
+B<void> b; // { dg-message "instantiated" }

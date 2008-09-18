@@ -7,7 +7,7 @@ struct A {
   void operator delete(void *);
 };
 struct B { 
-  friend void A::foo() {} // { dg-error "22: error: cannot define member function 'A::foo' within 'B'" }
-  friend void A::operator delete(void*) {} // { dg-error "39: error: cannot define member function 'A::operator delete' within 'B'" }
-  friend A::A() {} // { dg-error "15: error: cannot define member function 'A::A' within 'B'" }
+  friend void A::foo() {} // { dg-error "22:cannot define member function 'A::foo' within 'B'" }
+  friend void A::operator delete(void*) {} // { dg-error "39:cannot define member function 'A::operator delete' within 'B'" }
+  friend A::A() {} // { dg-error "15:cannot define member function 'A::A' within 'B'" }
 };

@@ -15,15 +15,15 @@ typedef unsigned long uint_32;
 class sanjose {
 public:
    sanjose();
-   sanjose(const sanjose&);  // { dg-error "" } candidate
-   sanjose(int_8 value);  // { dg-error "" }  // ERROR -
-   sanjose(uint_32 value);  // { dg-error "" }  // ERROR -
+   sanjose(const sanjose&);  // { dg-message "note" }
+   sanjose(int_8 value);  // { dg-message "note" }
+   sanjose(uint_32 value);  // { dg-message "note" }
 };
 
 enum { first, last};
 
 void foo(void) {
-  sanjose obj(first); // { dg-error "" }  // ERROR -
+  sanjose obj(first); // { dg-error "ambiguous" }
 }
 
 

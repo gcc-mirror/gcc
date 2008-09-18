@@ -9,7 +9,7 @@ T f2 (T i)
 {
   switch (i)
   {
-    case low ... high : return i + 1; // { dg-error "non-standard" }
+    case low ... high : return i + 1; // { dg-warning "non-standard" }
     default : return 0;
   }
 }
@@ -17,7 +17,7 @@ T f2 (T i)
 int f (int i)
 {
   switch (i) {
-    case 1 ... 10: return i + 1;      // { dg-error "non-standard" }
-    default: return f2 (i);           // { dg-error "" }
+    case 1 ... 10: return i + 1;      // { dg-warning "non-standard" }
+    default: return f2 (i);           // { dg-message "instantiated" }
   }
 }

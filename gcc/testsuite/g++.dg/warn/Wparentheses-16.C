@@ -83,4 +83,4 @@ bar (T a, T b, T c)
   foo (6 >> (5 - 4));
 }
 
-template void bar<int> (int, int, int); // { dg-warning "instantiated" }
+template void bar<int> (int, int, int); // { dg-message "instantiated" }

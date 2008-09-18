@@ -7,12 +7,12 @@
 
 template <class T>
 struct Foo {
-  int i; // { dg-error "" "" }
+  int i; // { dg-error "Foo" }
 };
 
 struct Baz 
 {
-  int i; // { dg-error "" "" }
+  int i; // { dg-error "Baz" }
 };
 
 template <class T>
@@ -20,11 +20,11 @@ struct Bar : public Foo<T>, Baz {
   using Foo<T>::i;
   using Baz::i;
 
-  int foo () { return i; } // { dg-error "request for member" "" }
+  int foo () { return i; } // { dg-error "request for member" }
 };
 
 void foo (Bar<int> &bar)
 {
-  bar.foo(); // { dg-error "instantiated" "" }
+  bar.foo(); // { dg-message "instantiated" }
 }
 

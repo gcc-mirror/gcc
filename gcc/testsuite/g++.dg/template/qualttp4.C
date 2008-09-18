@@ -10,7 +10,7 @@ struct A
 template <template <class, class> class TT> // { dg-error "provided" }
 struct X
 {
-	TT<int> y; // { dg-error "number|type" }
+	TT<int> y; // { dg-error "number" }
 };
 
 template <class T> struct C
@@ -20,5 +20,5 @@ template <class T> struct C
 
 int main()
 {
-	C<A> c; // { dg-error "instantiated" }
+	C<A> c; // { dg-message "instantiated" }
 }

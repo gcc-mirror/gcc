@@ -7,14 +7,14 @@
 template<class F> void bind(F f) {}
 
 template<class F> void bindm(F f) {}
-template<class F, class T> void bindm(F (T::*f)(void)) {} // { dg-error "note" }
+template<class F, class T> void bindm(F (T::*f)(void)) {} // { dg-message "note" }
 
 template<class F> void bindn(F f) {}
 template<class F, class T> void bindn(F (*f)(T)) {}
 
 template<class F> void bindb(F f) {}
-template<class F, class T> void bindb(F (*f)(T)) {} // { dg-error "note" }
-template<class F, class T> void bindb(F (T::*f)(void)) {} // { dg-error "note" }
+template<class F, class T> void bindb(F (*f)(T)) {} // { dg-message "note" }
+template<class F, class T> void bindb(F (T::*f)(void)) {} // { dg-message "note" }
 
 struct foo {
   static int baist;

@@ -2,8 +2,8 @@
 // { dg-do compile }
 
 struct A
-{					// { dg-error "A::A\\(const A&\\)" }
-  A (int);				// { dg-error "candidates" }
+{					// { dg-message "A::A\\(const A&\\)" }
+  A (int);				// { dg-message "candidates" }
 };
 
 void

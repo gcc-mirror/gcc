@@ -5,5 +5,5 @@
 
 void foo ()
 {
-  cout << "blah"; // { dg-error "3: error: 'cout'" }
+  cout << "blah"; // { dg-error "3:'cout'" }
 }

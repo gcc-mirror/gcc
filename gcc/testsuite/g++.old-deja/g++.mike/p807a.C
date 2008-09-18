@@ -10,13 +10,13 @@ class B;
 
 class A {
 public:
-	A(B&);			// { dg-error "" } fn ref in err msg
+	A(B&);			// { dg-message "note" } fn ref in err msg
 };
 
 class B {
 public:
-	operator A();		// { dg-error "" } fn ref in err msg
+	operator A();		// { dg-message "candidates" } fn ref in err msg
 };
 
 B b;
-A a = b;  // { dg-error "" } should fail as it is ambigious.
+A a = b;  // { dg-error "ambiguous" } should fail as it is ambigious.

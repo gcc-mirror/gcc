@@ -1,5 +1,6 @@
 template <typename T> 
 void f() {
-  g(); // { dg-error "" }
-  h(3); // { dg-error "" }
+  g(); // { dg-error "must be available" "err" }
+       // { dg-message "note" "note" { target *-*-* } 3 }
+  h(3); // { dg-error "must be available" }
 }

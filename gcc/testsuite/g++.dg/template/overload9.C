@@ -7,7 +7,7 @@ template <typename T> A<T>& operator<<(A<T>&, const B<T>&);
 template <typename T>
 struct A 
 {
-  A<T>& operator<<(A<T>& (*)(A<T>&)); // { dg-error "candidate" }
+  A<T>& operator<<(A<T>& (*)(A<T>&)); // { dg-message "candidate" }
 };
 
 template <typename T> A<T>& foo(A<T>&);

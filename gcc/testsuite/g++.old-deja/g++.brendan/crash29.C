@@ -7,13 +7,13 @@ union Value
 };
 
 struct GlobalAddress
-{// { dg-error "" }  candidates .*
-	GlobalAddress(Value *nvar){}// { dg-error "" } .*
+{// { dg-message "note" }
+	GlobalAddress(Value *nvar){} // { dg-message "candidates" }
 };
 
 int
 main()
 {
-	new GlobalAddress(Value());		// internal error occured here// { dg-error "" }  no matching function .*
+	new GlobalAddress(Value());		// internal error occured here// { dg-error "no matching" }
 	//new GlobalAddress(new Value());	// This line is correct code
 }

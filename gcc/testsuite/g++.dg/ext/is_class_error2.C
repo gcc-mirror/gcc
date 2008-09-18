@@ -13,7 +13,7 @@ template<int> void foo()
   __is_abstract(int)(); // { dg-error "'__is_abstract\\(int\\)' cannot be used" }
   __is_base_of(int, float)(); // { dg-error "'__is_base_of\\(int, float\\)' cannot be used" }
   __is_class(int)(); // { dg-error "'__is_class\\(int\\)' cannot be used" }
-  __is_convertible_to(int, float)(); // { dg-error "unimplemented" }
+  __is_convertible_to(int, float)(); // { dg-message "unimplemented" }
   __is_empty(int)(); // { dg-error "'__is_empty\\(int\\)' cannot be used" }
   __is_enum(int)(); // { dg-error "'__is_enum\\(int\\)' cannot be used" }
   __is_pod(int)(); // { dg-error "'__is_pod\\(int\\)' cannot be used" }

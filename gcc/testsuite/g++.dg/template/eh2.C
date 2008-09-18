@@ -7,4 +7,4 @@ template<typename T> struct A
     void foo() throw(typename T::X);  // { dg-error "not a class" }
 };
 
-A<void> a;                            // { dg-error "instantiated" }
+A<void> a;                            // { dg-message "instantiated" }

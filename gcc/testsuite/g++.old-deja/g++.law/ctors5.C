@@ -6,7 +6,7 @@
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
 class X
-{ // { dg-error "1: note:                 X::X\\(const X&\\)" } implicit constructor
+{ // { dg-message "1:X::X\\(const X&\\)" } implicit constructor
   private:
     int x;
   public:
@@ -14,21 +14,23 @@ class X
     X( int );
 };
 
-class Y // { dg-error "1: error: new types may not be defined in a return type|1: note: \\(perhaps a semicolon is missing after the definition of 'Y'\\)" }
+class Y // { dg-error "1:new types may not be defined in a return type" "err" }
+        // { dg-message "1:\\(perhaps a semicolon is missing after the definition of 'Y'\\)" "note" { target *-*-* } 17 }
 {
   private:
     X xx;
   public:
     Y();
 }
-X::X( int xi ) // { dg-error "14: error: return type specification for constructor invalid|1: note: candidates are: X::X\\(int\\)" }
+X::X( int xi ) // { dg-error "14:return type specification for constructor invalid" "err" }
+// { dg-message "1:candidates are: X::X\\(int\\)" "note" { target *-*-* } 25 }
 {
     x = xi;
 }
 
 const X X::x0( 0 );
 
-Y::Y() // { dg-error "6: error: no matching function for call to 'X::X\\(\\)'" }
+Y::Y() // { dg-error "6:no matching function for call to 'X::X\\(\\)'" }
 {
     xx = X::x0;
 }

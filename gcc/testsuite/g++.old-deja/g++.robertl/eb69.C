@@ -5,13 +5,14 @@
 
 int r = 0;
 
-struct foo {		        // { dg-error "" } candidate
-  foo(int x) { r = 1; }		// { dg-error "" } candidate
+struct foo {		        // { dg-message "note" } candidate
+  foo(int x) { r = 1; }		// { dg-message "candidate" }
 };
 
 struct bar : foo {
   typedef int an_int;
-  bar() : bar::an_int(3) {}	// { dg-error "" } not a base
+  bar() : bar::an_int(3) {}	// { dg-error "match" "match" } not a base
+  // { dg-message "expected" "exp" { target *-*-* } 14 }
 };
 
 int

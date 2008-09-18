@@ -3,8 +3,10 @@
 
 template <class T>
 struct S {
-  typedef typename T::Y<T>::Z X; // { dg-error "" } No Y in A
-  X x; // { dg-error "" } No Y in A
+  typedef typename T::Y<T>::Z X; // { dg-error "non-template" "non-template" } No Y in A
+// { dg-message "note" "note" { target *-*-* } 6 }
+// { dg-error "does not declare" "not declare" { target *-*-* } 6 }
+  X x; // { dg-error "does not name a type" } No Y in A
 };
 
 struct A {

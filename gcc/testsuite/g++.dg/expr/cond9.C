@@ -1,7 +1,7 @@
 // PR c++/27666
 
-struct A { // { dg-error "A" }
-  A(int); // { dg-error "A" }
+struct A { // { dg-message "A" }
+  A(int); // { dg-message "A" }
 };
 
 void foo(volatile A a) { 

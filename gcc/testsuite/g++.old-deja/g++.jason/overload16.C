@@ -1,7 +1,7 @@
 // { dg-do assemble  }
-void f (int);			// { dg-error "" } 
-void f (long);			// { dg-error "" } 
+void f (int);			// { dg-message "candidates" } 
+void f (long);			// { dg-message "note" } 
 int main()
 {
-  f (1 & 0xffffff00UL);		// { dg-error "" } ambiguous
+  f (1 & 0xffffff00UL);		// { dg-error "ambiguous" }
 }

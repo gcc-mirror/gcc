@@ -85,4 +85,4 @@ template<int I> void Foo (X &x)
   __alignof__ (x++);           // { dg-warning "no effect" "" }
 }
 
-template void Foo<4> (X&);     // { dg-warning "instantiated" }
+template void Foo<4> (X&);     // { dg-message "instantiated" }

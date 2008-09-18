@@ -11,5 +11,5 @@ void foo ()
 {
   int one=1, two=2;
   X a(one), b(two);
-  a = b;			// { dg-error "synthesized" }
+  a = b;			// { dg-message "synthesized" }
 }

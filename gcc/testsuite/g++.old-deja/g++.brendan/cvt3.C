@@ -38,11 +38,11 @@ struct bar
 class nnyacc
 {
 public:
-      static void assign(void*& lval, void*& rval); // { dg-error "" } candidates
+      static void assign(void*& lval, void*& rval); // { dg-message "candidates" }
 };
 
 void
 foo (bar yylval, bar *yyvsp)
 {
-  nnyacc::assign(yylval.valueList, yyvsp[0].valueList);// { dg-error "" } 
+  nnyacc::assign(yylval.valueList, yyvsp[0].valueList);// { dg-error "no matching" } 
 }

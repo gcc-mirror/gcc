@@ -2,7 +2,7 @@
 // prms-id: 9068
 
 struct ostream {
-  void operator<< (int);	// { dg-error "" } fn ref in err msg
+  void operator<< (int);	// { dg-message "candidates" } fn ref in err msg
 };
 
 class C {
@@ -13,7 +13,7 @@ public:
 
 void foo (ostream& lhs, const C& rhs)
 {
-  lhs << rhs.i;		// { dg-error "" } no such i for any opr << ()
+  lhs << rhs.i;		// { dg-error "match" } no such i for any opr << ()
 }
 
 int& C::i () {

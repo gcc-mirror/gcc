@@ -6,8 +6,9 @@ template <int I> struct A
 {
     template <int> struct B
     {
-        enum { e = I * A<I-1>::B }; // { dg-error "" }
+        enum { e = I * A<I-1>::B }; // { dg-error "dependent-name" "depname" }
+         // { dg-message "note" "note" { target *-*-* } 9 }
     };
 };
 
-A<0>::B<0> a; // { dg-error "instantiated" }
+A<0>::B<0> a; // { dg-message "instantiated" }

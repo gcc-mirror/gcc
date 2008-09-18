@@ -5,8 +5,9 @@ template <int I> struct F
 {
   int operator()()
     {
-      F<I+1> f;			// { dg-error "" "" }
-      return f()*I;             // { dg-error "" "" }
+      F<I+1> f;			// { dg-error "incomplete type" "incomplete" }
+				// { dg-error "exceeds maximum" "exceeds" { target *-*-* } 8 }
+      return f()*I;             // { dg-message "instantiated" "recurse" }
     }
 };
 
@@ -18,5 +19,8 @@ template <> struct F<52>
 int main ()
 {
   F<1> f;
-  return f();		// { dg-error "instantiate" "excessive recursion" }
+  return f();		// { dg-message "instantiated from here" "excessive recursion" }
 }
+
+// Ignore excess messages from recursion.
+// { dg-prune-output "instantiated from 'int" }

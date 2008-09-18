@@ -9,7 +9,7 @@ foo ()
 {
 #pragma omp parallel
   {
-    int j;	// { dg-warning "note: 'j' was declared here" }
+    int j;	// { dg-message "note: 'j' was declared here" }
     i = j;	// { dg-warning "is used uninitialized" }
   }
 }

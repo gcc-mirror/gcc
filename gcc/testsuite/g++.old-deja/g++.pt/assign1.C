@@ -10,5 +10,5 @@ struct S { // { dg-error "assignment" }
 void f()
 {
   S<const int> s;
-  s = s; // { dg-error "synthesized" }
+  s = s; // { dg-message "synthesized" }
 }

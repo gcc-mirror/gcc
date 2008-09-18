@@ -14,14 +14,14 @@ public:
 
 class Something {
 public:
-  void DoSomething(Ding A);	// { dg-error "" } referred to
+  void DoSomething(Ding A);	// { dg-message "candidates" } referred to
 };
 
 void DoSomething(Ding A);
 
 void foo(Something* pX)
 {
-  DoSomething(1);		// { dg-error "" } 
-  pX->DoSomething(1);		// { dg-error "" } 
-  (*pX).DoSomething(1);		// { dg-error "" } 
+  DoSomething(1);		// { dg-error "conversion" } 
+  pX->DoSomething(1);		// { dg-error "no matching" } 
+  (*pX).DoSomething(1);		// { dg-error "no matching" } 
 }

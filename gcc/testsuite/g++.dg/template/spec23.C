@@ -8,18 +8,18 @@
 struct Foo
 {
   template <typename T>
-  Foo (const T &); // { dg-error "T = Bar" "" }
+  Foo (const T &); // { dg-message "T = Bar" }
 };
 
 struct Bar
 {
   template <typename T>
-  operator T () const;   // { dg-error "T = Foo" "" }
+  operator T () const;   // { dg-message "T = Foo" }
 };
 
 Foo Quux (Bar const &b)
 {
-  return b; // { dg-error "ambiguous" "" }
+  return b; // { dg-error "ambiguous" }
 }
 
 

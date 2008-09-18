@@ -1,14 +1,14 @@
 // { dg-do assemble  }
 template <class T, class U>    
-int func(U, T);			// { dg-error "" } ref below
+int func(U, T);			// { dg-message "candidates" }
 
 template <class T, class U>    
-int func(T, U)			// { dg-error "" } ref below
+int func(T, U)			// { dg-message "note" }
 {
         return 2;
 }
 
 int main ()
 {
-  func (0, 1);			// { dg-error "" } ambiguous
+  func (0, 1);			// { dg-error "ambiguous" }
 }

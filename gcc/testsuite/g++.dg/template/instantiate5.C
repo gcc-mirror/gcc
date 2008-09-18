@@ -13,7 +13,7 @@ int baz() { return A<0>::i; }
 
 struct B
 {
-  static void foo (int);	// { dg-error "candidates" }
+  static void foo (int);	// { dg-message "candidates" }
 };
 
 template <typename T> struct C
@@ -21,4 +21,4 @@ template <typename T> struct C
   virtual void bar() const { T::foo(); } // { dg-error "no matching function" }
 };
 
-C<B> c;				// { dg-error "instantiated" }
+C<B> c;				// { dg-message "instantiated" }

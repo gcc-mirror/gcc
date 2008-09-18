@@ -30,8 +30,8 @@ const volatile A cv_source();
 
 // 2 at a time
 
-one   sink_2_12(               A&);  // { dg-error "" }
-two   sink_2_12(const          A&);  // { dg-error "" }
+one   sink_2_12(               A&);  // { dg-message "candidates" }
+two   sink_2_12(const          A&);  // { dg-message "note" }
 
 int test2_12()
 {
@@ -46,8 +46,8 @@ int test2_12()
     return 0;
 }
 
-one   sink_2_13(               A&);  // { dg-error "" }
-three sink_2_13(volatile       A&);  // { dg-error "" }
+one   sink_2_13(               A&);  // { dg-message "candidates" }
+three sink_2_13(volatile       A&);  // { dg-message "note" }
 
 int test2_13()
 {
@@ -64,8 +64,8 @@ int test2_13()
     return 0;
 }
 
-one   sink_2_14(               A&);  // { dg-error "" }
-four  sink_2_14(const volatile A&);  // { dg-error "" }
+one   sink_2_14(               A&);  // { dg-message "candidates" }
+four  sink_2_14(const volatile A&);  // { dg-message "note" }
 
 int test2_14()
 {
@@ -80,8 +80,8 @@ int test2_14()
     return 0;
 }
 
-one   sink_2_15(               A&);  // { dg-error "" }
-five  sink_2_15(               A&&);  // { dg-error "" }
+one   sink_2_15(               A&);  // { dg-message "candidates" }
+five  sink_2_15(               A&&);  // { dg-message "note" }
 
 int test2_15()
 {
@@ -98,8 +98,8 @@ int test2_15()
     return 0;
 }
 
-one   sink_2_16(               A&);  // { dg-error "" }
-six   sink_2_16(const          A&&);  // { dg-error "" }
+one   sink_2_16(               A&);  // { dg-message "candidates" }
+six   sink_2_16(const          A&&);  // { dg-message "note" }
 
 int test2_16()
 {
@@ -114,8 +114,8 @@ int test2_16()
     return 0;
 }
 
-one   sink_2_17(               A&);  // { dg-error "" }
-seven sink_2_17(volatile       A&&);  // { dg-error "" }
+one   sink_2_17(               A&);  // { dg-message "candidates" }
+seven sink_2_17(volatile       A&&);  // { dg-message "note" }
 
 int test2_17()
 {
@@ -130,8 +130,8 @@ int test2_17()
     return 0;
 }
 
-two   sink_2_23(const          A&);  // { dg-error "" }
-three sink_2_23(volatile       A&);  // { dg-error "" }
+two   sink_2_23(const          A&);  // { dg-message "candidates" }
+three sink_2_23(volatile       A&);  // { dg-message "note" }
 
 int test2_23()
 {
@@ -146,8 +146,8 @@ int test2_23()
     return 0;
 }
 
-two   sink_2_24(const          A&);  // { dg-error "" }
-four  sink_2_24(const volatile A&);  // { dg-error "" }
+two   sink_2_24(const          A&);  // { dg-message "candidates" }
+four  sink_2_24(const volatile A&);  // { dg-message "note" }
 
 int test2_24()
 {
@@ -160,8 +160,8 @@ int test2_24()
     return 0;
 }
 
-three sink_2_34(volatile       A&);  // { dg-error "" }
-four  sink_2_34(const volatile A&);  // { dg-error "" }
+three sink_2_34(volatile       A&);  // { dg-message "candidate" }
+four  sink_2_34(const volatile A&);  // { dg-message "note" }
 
 int test2_34()
 {
@@ -176,8 +176,8 @@ int test2_34()
     return 0;
 }
 
-two   sink_2_25(const          A&);  // { dg-error "" }
-five  sink_2_25(               A&&);  // { dg-error "" }
+two   sink_2_25(const          A&);  // { dg-message "candidate" }
+five  sink_2_25(               A&&);  // { dg-message "note" }
 
 int test2_25()
 {
@@ -192,8 +192,8 @@ int test2_25()
     return 0;
 }
 
-two   sink_2_26(const          A&);  // { dg-error "" }
-six   sink_2_26(const          A&&);  // { dg-error "" }
+two   sink_2_26(const          A&);  // { dg-message "candidate" }
+six   sink_2_26(const          A&&);  // { dg-message "note" }
 
 int test2_26()
 {
@@ -208,8 +208,8 @@ int test2_26()
     return 0;
 }
 
-two   sink_2_27(const          A&);  // { dg-error "" }
-seven sink_2_27(volatile       A&&);  // { dg-error "" }
+two   sink_2_27(const          A&);  // { dg-message "candidate" }
+seven sink_2_27(volatile       A&&);  // { dg-message "note" }
 
 int test2_27()
 {
@@ -222,8 +222,8 @@ int test2_27()
     return 0;
 }
 
-three sink_2_35(volatile       A&);  // { dg-error "" }
-five  sink_2_35(               A&&);  // { dg-error "" }
+three sink_2_35(volatile       A&);  // { dg-message "candidate" }
+five  sink_2_35(               A&&);  // { dg-message "note" }
 
 int test2_35()
 {
@@ -239,8 +239,8 @@ int test2_35()
     return 0;
 }
 
-three sink_2_36(volatile       A&);  // { dg-error "" }
-six   sink_2_36(const          A&&);  // { dg-error "" }
+three sink_2_36(volatile       A&);  // { dg-message "candidate" }
+six   sink_2_36(const          A&&);  // { dg-message "note" }
 
 int test2_36()
 {
@@ -254,8 +254,8 @@ int test2_36()
     return 0;
 }
 
-three sink_2_37(volatile       A&);  // { dg-error "" }
-seven sink_2_37(volatile       A&&);  // { dg-error "" }
+three sink_2_37(volatile       A&);  // { dg-message "candidate" }
+seven sink_2_37(volatile       A&&);  // { dg-message "note" }
 
 int test2_37()
 {
@@ -270,8 +270,8 @@ int test2_37()
     return 0;
 }
 
-four  sink_2_45(const volatile A&);   // { dg-error "" }
-five  sink_2_45(               A&&);  // { dg-error "" }
+four  sink_2_45(const volatile A&);   // { dg-message "candidate" }
+five  sink_2_45(               A&&);  // { dg-message "note" }
 
 int test2_45()
 {
@@ -285,8 +285,8 @@ int test2_45()
     return 0;
 }
 
-four  sink_2_46(const volatile A&);   // { dg-error "" }
-six   sink_2_46(const          A&&);  // { dg-error "" }
+four  sink_2_46(const volatile A&);   // { dg-message "candidate" }
+six   sink_2_46(const          A&&);  // { dg-message "note" }
 
 int test2_46()
 {
@@ -299,8 +299,8 @@ int test2_46()
     return 0;
 }
 
-four  sink_2_47(const volatile A&);   // { dg-error "" }
-seven sink_2_47(volatile       A&&);  // { dg-error "" }
+four  sink_2_47(const volatile A&);   // { dg-message "candidate" }
+seven sink_2_47(volatile       A&&);  // { dg-message "note" }
 
 int test2_47()
 {
@@ -313,8 +313,8 @@ int test2_47()
     return 0;
 }
 
-five  sink_2_56(               A&&);  // { dg-error "" }
-six   sink_2_56(const          A&&);  // { dg-error "" }
+five  sink_2_56(               A&&);  // { dg-message "candidate" }
+six   sink_2_56(const          A&&);  // { dg-message "note" }
 
 int test2_56()
 {
@@ -329,8 +329,8 @@ int test2_56()
     return 0;
 }
 
-five  sink_2_57(               A&&);  // { dg-error "" }
-seven sink_2_57(volatile       A&&);  // { dg-error "" }
+five  sink_2_57(               A&&);  // { dg-message "candidate" }
+seven sink_2_57(volatile       A&&);  // { dg-message "note" }
 
 int test2_57()
 {
@@ -345,8 +345,8 @@ int test2_57()
     return 0;
 }
 
-six   sink_2_67(const          A&&);  // { dg-error "" }
-seven sink_2_67(volatile       A&&);  // { dg-error "" }
+six   sink_2_67(const          A&&);  // { dg-message "candidate" }
+seven sink_2_67(volatile       A&&);  // { dg-message "note" }
 
 int test2_67()
 {

@@ -7,12 +7,12 @@
 
 struct A1 
 {
-  operator int () const; // { dg-error "A1::operator" "" }
+  operator int () const; // { dg-message "A1::operator" "" }
 };
 
 struct A2
 {
-  operator int () const; // { dg-error "A2::operator" "" }
+  operator int () const; // { dg-message "A2::operator" "" }
 };
 
 struct B : A1, A2 

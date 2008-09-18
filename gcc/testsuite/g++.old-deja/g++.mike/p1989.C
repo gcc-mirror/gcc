@@ -196,7 +196,7 @@ Pix
 List_DLS<T>::search(const T& item) const
 {
     for (Pix x=this->first(); 0 != x; this->next(x)) {
-	if (item == this->operator()(x)) // { dg-error "" } const subversion
+	if (item == this->operator()(x)) // { dg-error "match" } const subversion
 	    return x;
     }
     return 0;
@@ -485,8 +485,8 @@ class STRLIdentifier {
     char buf[10];
 };
 
-extern int operator==(vertex<STRLIdentifier*>&, vertex<STRLIdentifier*>&); // { dg-error "" } const subversion
-extern int operator==(STRLIdentifier&, STRLIdentifier&); // { dg-error "" } fn ref in err msg
+extern int operator==(vertex<STRLIdentifier*>&, vertex<STRLIdentifier*>&); // { dg-message "candidates" } const subversion
+extern int operator==(STRLIdentifier&, STRLIdentifier&); // { dg-message "note" } fn ref in err msg
 
 extern int x(List_DLSp<STRLIdentifier *>);
 

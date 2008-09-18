@@ -14,7 +14,8 @@ using namespace std;
 template <class T>
 class Vector
 {
-  friend ostream& operator<< (ostream& out, const Vector<T> & vec); // { dg-warning "" } 
+  friend ostream& operator<< (ostream& out, const Vector<T> & vec); // { dg-warning "non-template" "warn" } 
+  // { dg-message "note" "note" { target *-*-* } 17 }
 };
 
 template <class T>

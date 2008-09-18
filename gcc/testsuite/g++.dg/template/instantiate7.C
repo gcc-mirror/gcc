@@ -7,4 +7,4 @@ template<typename T> struct A
     template<T&> struct B;  // { dg-error "reference to void" }
 };
 
-A<void> a;                  // { dg-error "instantiated" }
+A<void> a;                  // { dg-message "instantiated" }

@@ -5,4 +5,4 @@ template<typename T> struct A : T {};  // { dg-error "struct or class type" }
 
 struct B;
 
-A<void (B::*)()> a;  // { dg-error "instantiated" }
+A<void (B::*)()> a;  // { dg-message "instantiated" }

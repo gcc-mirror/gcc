@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 
-template <class T = int> // { dg-error "note: original definition" }
+template <class T = int> // { dg-message "note: original definition" }
 struct S
 { 
   template <class U = int>

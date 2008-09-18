@@ -11,7 +11,8 @@ namespace N1 {
   int foo() 
   { 
     X x; 
-    f(x);     // { dg-error "" "" }
+    f(x);     // { dg-error "matching" "matching" }
+	      // { dg-error "initializing" "initializing" { target *-*-* } 14 }
   }
 }
 
@@ -29,8 +30,9 @@ namespace N2 {
   int foo() 
   { 
     X<T> x; 
-    N2::f(x);   // { dg-error "" "" }
+    N2::f(x);   // { dg-error "matching" "matching" }
+		// { dg-error "initializing " initializing" { target *-*-* } 33 }
   }
 
-  template int foo<float>();  // { dg-error "instantiated from here" }
+  template int foo<float>();  // { dg-message "instantiated from here" }
 }

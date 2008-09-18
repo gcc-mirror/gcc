@@ -11,10 +11,11 @@ struct A
 template <class U>
 struct B : public A<U>
 {
-  A_Type Func(); // { dg-warning "" } implicit typename
+  A_Type Func(); // { dg-error "does not name a type" "err" } implicit typename
+  // { dg-message "note" "note" { target *-*-* } 14 }
 };
 
 
 template <class U>
-B<U>::A_Type B<U>::Func() { // { dg-warning "" } implicit typename
+B<U>::A_Type B<U>::Func() { // { dg-error "expected" } implicit typename
 }

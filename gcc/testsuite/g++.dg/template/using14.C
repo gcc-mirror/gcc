@@ -10,12 +10,12 @@ template <class T> struct C : public B1<T>, public B2
   void f()
   {
     i();			// should be accepted
-    i.i();			// { dg-error "" }
+    i.i();			// { dg-error "member" }
   }
 };
 
 int main()
 {
   C<int> c;
-  c.f();			// { dg-error "instantiated" }
+  c.f();			// { dg-message "instantiated" }
 }

@@ -6,4 +6,4 @@ template<typename T> struct A
     T A::* p;  // { dg-error "void" }
 };
 
-A<void> a;     // { dg-error "instantiated" }
+A<void> a;     // { dg-message "instantiated" }

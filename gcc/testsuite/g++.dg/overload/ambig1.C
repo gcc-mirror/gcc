@@ -14,8 +14,8 @@ struct B
   B(int);
 };
 
-void f(A);			// { dg-error "" "candidate" }
-void f(B);			// { dg-error "" "candidate" }
+void f(A);			// { dg-message "note" "candidate" }
+void f(B);			// { dg-message "note" "candidate" }
 
 int main()
 {

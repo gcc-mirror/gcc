@@ -15,6 +15,10 @@ template <int (D::*fun)() const> int Get();
 
 int main () 
 {
-  Get<&B::I>();   // { dg-error "" }
-  Get<&D::I>();   // { dg-error "" }
+  Get<&B::I>();   // { dg-error "not a valid template argument" "not valid" }
+  // { dg-error "no match" "no match" { target *-*-* } 18 }
+  // { dg-message "note" "note" { target *-*-* } 18 }
+  Get<&D::I>();   // { dg-error "not a valid template argument" "not valid" }
+  // { dg-error "no match" "no match" { target *-*-* } 21 }
+  // { dg-message "note" "note" { target *-*-* } 21 }
 }

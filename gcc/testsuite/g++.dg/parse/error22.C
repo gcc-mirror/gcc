@@ -2,5 +2,5 @@
 // PR c++/15786
 
 struct A {
-  void foo(bar* p); /* { dg-error "12: error: 'bar' has not been declared" } */
+  void foo(bar* p); /* { dg-error "12:'bar' has not been declared" } */
 };

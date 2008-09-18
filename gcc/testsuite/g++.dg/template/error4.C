@@ -5,4 +5,5 @@ template<class T> struct C1
 };
 
 template<class T, class U>
-void foo(typename C1<T>::C2<U>::Type *) { } // { dg-error "template" }
+void foo(typename C1<T>::C2<U>::Type *) { } // { dg-error "template" "error " }
+// { dg-message "note" "note" { target *-*-* } 8 }

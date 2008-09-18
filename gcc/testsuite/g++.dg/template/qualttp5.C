@@ -4,7 +4,7 @@
 
 template <class U> struct A
 {
-	template <class T> class B {}; // { dg-error "candidates" }
+	template <class T> class B {}; // { dg-message "candidates" }
 };
 
 template <template <class> class TT> void f()
@@ -15,11 +15,11 @@ template <template <class> class TT> void f()
 
 template <class T> struct C
 {
-	void g() { f<A<T>::template B>(); } // { dg-error "instantiated" }
+	void g() { f<A<T>::template B>(); } // { dg-message "instantiated" }
 };
 
 int main()
 {
 	C<int> c;
-	c.g(); // { dg-error "instantiated" }
+	c.g(); // { dg-message "instantiated" }
 }

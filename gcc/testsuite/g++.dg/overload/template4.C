@@ -3,14 +3,14 @@
 
 namespace
 {
-  template <int> void foo (...);	// { dg-error "" "candidate" }
-  template <int> void bar (int, ...);	// { dg-error "" "candidate" }
-  void baz (...);			// { dg-error "" "candidate" }
+  template <int> void foo (...);	// { dg-message "foo" }
+  template <int> void bar (int, ...);	// { dg-message "bar" }
+  void baz (...);			// { dg-message "baz" }
 }
 
-template <int> void foo (...);		// { dg-error "" "candidate" }
-template <int> void bar (int, ...);	// { dg-error "" "candidate" }
-void baz (...);				// { dg-error "" "candidate" }
+template <int> void foo (...);		// { dg-message "candidate" }
+template <int> void bar (int, ...);	// { dg-message "candidate" }
+void baz (...);				// { dg-message "candidate" }
 
 void
 test ()

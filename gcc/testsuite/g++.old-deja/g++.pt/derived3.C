@@ -6,11 +6,11 @@
 template<class T>
 class X {
 	class Y : public T
-	{ // { dg-error "base type .* fails to be" "" }
+	{ // { dg-error "base type .* fails to be" }
 	};
-	Y y;			// { dg-error "instantiated" "" }
+	Y y;			// { dg-message "instantiated" }
 };
 int main() {
-	X<int> x;		// { dg-error "instantiated" "" }
+	X<int> x;		// { dg-message "instantiated" }
 }
 

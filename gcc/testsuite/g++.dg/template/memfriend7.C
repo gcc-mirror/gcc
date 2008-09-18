@@ -116,18 +116,18 @@ template <> void A<char>::j<0>()
 int main()
 {
   A<int *> a1;
-  a1.f(0);				// { dg-error "instantiated" }
-  a1.g<char>();				// { dg-error "instantiated" }
-  a1.g<int>();				// { dg-error "instantiated" }
-  a1.h();				// { dg-error "instantiated" }
-  a1.i('a');				// { dg-error "instantiated" }
-  a1.j<1>();				// { dg-error "instantiated" }
+  a1.f(0);				// { dg-message "instantiated" }
+  a1.g<char>();				// { dg-message "instantiated" }
+  a1.g<int>();				// { dg-message "instantiated" }
+  a1.h();				// { dg-message "instantiated" }
+  a1.i('a');				// { dg-message "instantiated" }
+  a1.j<1>();				// { dg-message "instantiated" }
   A<char> a2;
   a2.f(0);
-  a2.g<char>();				// { dg-error "instantiated" }
+  a2.g<char>();				// { dg-message "instantiated" }
   a2.g<int>();
   a2.h();
   a2.i('a');
-  a2.j<1>();				// { dg-error "instantiated" }
+  a2.j<1>();				// { dg-message "instantiated" }
   a2.j<0>();
 }

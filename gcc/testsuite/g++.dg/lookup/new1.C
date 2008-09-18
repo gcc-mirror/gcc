@@ -10,4 +10,4 @@ int main() {
   return 0;
 }
 
-// { dg-error "candidate" "" { target *-*-* } 0 }
+// { dg-message "candidate" "" { target *-*-* } 0 }

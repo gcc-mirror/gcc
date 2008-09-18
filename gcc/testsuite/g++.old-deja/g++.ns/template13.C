@@ -5,7 +5,7 @@ namespace bar
   // trick it to provide some prior declaration
   template<class T>
   void foo(); // { dg-error "definition" }
-  template<class T>class X; // { dg-error "note: previous declaration" }
+  template<class T>class X; // { dg-message "note: previous declaration" }
 }
 
 template <typename T>
@@ -20,4 +20,4 @@ template<> void bar::foo<int>()     // { dg-error "different namespace" }
 }
 
 template<class T,class U>
-class bar::X{};         // { dg-error "error: redeclared with 2 template parameter" }
+class bar::X{};         // { dg-error "redeclared with 2 template parameter" }
