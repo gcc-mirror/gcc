@@ -3796,7 +3796,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 
   /* The allocate_array variants take the old pointer as first argument.  */
   if (allocatable_array)
-    tmp = gfc_allocate_array_with_status (&se->pre, pointer, size, pstat);
+    tmp = gfc_allocate_array_with_status (&se->pre, pointer, size, pstat, expr);
   else
     tmp = gfc_allocate_with_status (&se->pre, size, pstat);
   tmp = fold_build2 (MODIFY_EXPR, void_type_node, pointer, tmp);
@@ -3822,7 +3822,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 /*GCC ARRAYS*/
 
 tree
-gfc_array_deallocate (tree descriptor, tree pstat)
+gfc_array_deallocate (tree descriptor, tree pstat, gfc_expr* expr)
 {
   tree var;
   tree tmp;
@@ -3834,7 +3834,7 @@ gfc_array_deallocate (tree descriptor, tree pstat)
   STRIP_NOPS (var);
 
   /* Parameter is the address of the data component.  */
-  tmp = gfc_deallocate_with_status (var, pstat, false);
+  tmp = gfc_deallocate_with_status (var, pstat, false, expr);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */
@@ -5341,7 +5341,7 @@ gfc_trans_dealloc_allocated (tree descriptor)
   /* Call array_deallocate with an int * present in the second argument.
      Although it is ignored here, it's presence ensures that arrays that
      are already deallocated are ignored.  */
-  tmp = gfc_deallocate_with_status (var, NULL_TREE, true);
+  tmp = gfc_deallocate_with_status (var, NULL_TREE, true, NULL);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */

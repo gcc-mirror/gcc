@@ -450,6 +450,10 @@ void gfc_generate_constructors (void);
 /* Get the string length of an array constructor.  */
 bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor *, tree *);
 
+/* Generate a runtime error call.  */
+tree gfc_trans_runtime_error (bool, locus*, const char*, ...);
+tree gfc_trans_runtime_error_vararg (bool, locus*, const char*, va_list);
+
 /* Generate a runtime warning/error check.  */
 void gfc_trans_runtime_check (bool, bool, tree, stmtblock_t *, locus *,
 			      const char *, ...);
@@ -461,13 +465,13 @@ tree gfc_call_free (tree);
 tree gfc_call_malloc (stmtblock_t *, tree, tree);
 
 /* Allocate memory for arrays, with optional status variable.  */
-tree gfc_allocate_array_with_status (stmtblock_t *, tree, tree, tree);
+tree gfc_allocate_array_with_status (stmtblock_t*, tree, tree, tree, gfc_expr*);
 
 /* Allocate memory, with optional status variable.  */
 tree gfc_allocate_with_status (stmtblock_t *, tree, tree);
 
 /* Generate code to deallocate an array.  */
-tree gfc_deallocate_with_status (tree, tree, bool);
+tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);

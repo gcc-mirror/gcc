@@ -1,3 +1,25 @@
+2008-09-18  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37507
+	* trans.h (gfc_trans_runtime_error): New method.
+	(gfc_trans_runtime_error_vararg): New method.
+	(gfc_allocate_array_with_status): New argument `expr' for locus/varname.
+	(gfc_deallocate_array_with_status): Ditto.
+	* trans-array.h (gfc_array_deallocate): Ditto.
+	* trans.c (gfc_trans_runtime_error): New method.
+	(gfc_trans_runtime_error_vararg): New method, moved parts of the code
+	from gfc_trans_runtime_check here.
+	(gfc_trans_runtime_error_check): Moved code partly to new method.
+	(gfc_call_malloc): Fix tab-indentation.
+	(gfc_allocate_array_with_status): New argument `expr' and call
+	gfc_trans_runtime_error for error reporting to include locus.
+	(gfc_deallocate_with_status): Ditto.
+	* trans-stmt.c (gfc_trans_deallocate): Pass expr as new argument.
+	* trans-array.c (gfc_array_allocate): Ditto.
+	(gfc_array_deallocate): New argument `expr', passed on.
+	(gfc_trans_dealloc_allocated): Pass NULL for expr.
+	* trans-openmp.c (gfc_omp_clause_default): Ditto.
+
 2008-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37274

@@ -347,26 +347,30 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
 }
 
 
-/* Generate a runtime error if COND is true.  */
+/* Generate a call to print a runtime error possibly including multiple
+   arguments and a locus.  */
 
-void
-gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
-		     locus * where, const char * msgid, ...)
+tree
+gfc_trans_runtime_error (bool error, locus* where, const char* msgid, ...)
 {
   va_list ap;
+
+  va_start (ap, msgid);
+  return gfc_trans_runtime_error_vararg (error, where, msgid, ap);
+}
+
+tree
+gfc_trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
+				va_list ap)
+{
   stmtblock_t block;
-  tree body;
   tree tmp;
-  tree tmpvar = NULL;
   tree arg, arg2;
   tree *argarray;
   tree fntype;
   char *message;
   const char *p;
   int line, nargs, i;
-
-  if (integer_zerop (cond))
-    return;
 
   /* Compute the number of extra arguments from the format string.  */
   for (p = msgid, nargs = 0; *p; p++)
@@ -376,14 +380,6 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 	if (*p != '%')
 	  nargs++;
       }
-
-  if (once)
-    {
-       tmpvar = gfc_create_var (boolean_type_node, "print_warning");
-       TREE_STATIC (tmpvar) = 1;
-       DECL_INITIAL (tmpvar) = boolean_true_node;
-       gfc_add_expr_to_block (pblock, tmpvar);
-    }
 
   /* The code to generate the error.  */
   gfc_start_block (&block);
@@ -411,9 +407,8 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   argarray = (tree *) alloca (sizeof (tree) * (nargs + 2));
   argarray[0] = arg;
   argarray[1] = arg2;
-  va_start (ap, msgid);
   for (i = 0; i < nargs; i++)
-    argarray[2+i] = va_arg (ap, tree);
+    argarray[2 + i] = va_arg (ap, tree);
   va_end (ap);
   
   /* Build the function call to runtime_(warning,error)_at; because of the
@@ -431,6 +426,41 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 					      : gfor_fndecl_runtime_warning_at),
 				 nargs + 2, argarray);
   gfc_add_expr_to_block (&block, tmp);
+
+  return gfc_finish_block (&block);
+}
+
+
+/* Generate a runtime error if COND is true.  */
+
+void
+gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
+			 locus * where, const char * msgid, ...)
+{
+  va_list ap;
+  stmtblock_t block;
+  tree body;
+  tree tmp;
+  tree tmpvar = NULL;
+
+  if (integer_zerop (cond))
+    return;
+
+  if (once)
+    {
+       tmpvar = gfc_create_var (boolean_type_node, "print_warning");
+       TREE_STATIC (tmpvar) = 1;
+       DECL_INITIAL (tmpvar) = boolean_true_node;
+       gfc_add_expr_to_block (pblock, tmpvar);
+    }
+
+  gfc_start_block (&block);
+
+  /* The code to generate the error.  */
+  va_start (ap, msgid);
+  gfc_add_expr_to_block (&block,
+			 gfc_trans_runtime_error_vararg (error, where,
+							 msgid, ap));
 
   if (once)
     gfc_add_modify (&block, tmpvar, boolean_false_node);
@@ -524,30 +554,30 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       void *newmem;
     
       if (stat)
-        *stat = 0;
+	*stat = 0;
 
       // The only time this can happen is the size wraps around.
       if (size < 0)
       {
-        if (stat)
-        {
-          *stat = LIBERROR_ALLOCATION;
-          newmem = NULL;
-        }
-        else
-          runtime_error ("Attempt to allocate negative amount of memory. "
-                         "Possible integer overflow");
+	if (stat)
+	{
+	  *stat = LIBERROR_ALLOCATION;
+	  newmem = NULL;
+	}
+	else
+	  runtime_error ("Attempt to allocate negative amount of memory. "
+			 "Possible integer overflow");
       }
       else
       {
-        newmem = malloc (MAX (size, 1));
-        if (newmem == NULL)
-        {
-          if (stat)
-            *stat = LIBERROR_ALLOCATION;
-          else
-            runtime_error ("Out of memory");
-        }
+	newmem = malloc (MAX (size, 1));
+	if (newmem == NULL)
+	{
+	  if (stat)
+	    *stat = LIBERROR_ALLOCATION;
+	  else
+	    runtime_error ("Out of memory");
+	}
       }
 
       return newmem;
@@ -668,13 +698,16 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 	}
 	else
 	  runtime_error ("Attempting to allocate already allocated array");
-    }  */
+    }
+    
+    expr must be set to the original expression being allocated for its locus
+    and variable name in case a runtime error has to be printed.  */
 tree
 gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
-				tree status)
+				tree status, gfc_expr* expr)
 {
   stmtblock_t alloc_block;
-  tree res, tmp, null_mem, alloc, error, msg;
+  tree res, tmp, null_mem, alloc, error;
   tree type = TREE_TYPE (mem);
 
   if (TREE_TYPE (size) != TREE_TYPE (size_type_node))
@@ -692,9 +725,23 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
   alloc = gfc_finish_block (&alloc_block);
 
   /* Otherwise, we issue a runtime error or set the status variable.  */
-  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-			("Attempting to allocate already allocated array"));
-  error = build_call_expr (gfor_fndecl_runtime_error, 1, msg);
+  if (expr)
+    {
+      tree varname;
+
+      gcc_assert (expr->expr_type == EXPR_VARIABLE && expr->symtree);
+      varname = gfc_build_cstring_const (expr->symtree->name);
+      varname = gfc_build_addr_expr (pchar_type_node, varname);
+
+      error = gfc_trans_runtime_error (true, &expr->where,
+				       "Attempting to allocate already"
+				       " allocated array '%s'",
+				       varname);
+    }
+  else
+    error = gfc_trans_runtime_error (true, NULL,
+				     "Attempting to allocate already allocated"
+				     "array");
 
   if (status != NULL_TREE && !integer_zerop (status))
     {
@@ -775,12 +822,16 @@ gfc_call_free (tree var)
    Moreover, if CAN_FAIL is true, then we will not emit a runtime error,
    even when no status variable is passed to us (this is used for
    unconditional deallocation generated by the front-end at end of
-   each procedure).  */
+   each procedure).
+   
+   If a runtime-message is possible, `expr' must point to the original
+   expression being deallocated for its locus and variable name.  */
 tree
-gfc_deallocate_with_status (tree pointer, tree status, bool can_fail)
+gfc_deallocate_with_status (tree pointer, tree status, bool can_fail,
+			    gfc_expr* expr)
 {
   stmtblock_t null, non_null;
-  tree cond, tmp, error, msg;
+  tree cond, tmp, error;
 
   cond = fold_build2 (EQ_EXPR, boolean_type_node, pointer,
 		      build_int_cst (TREE_TYPE (pointer), 0));
@@ -790,10 +841,16 @@ gfc_deallocate_with_status (tree pointer, tree status, bool can_fail)
   gfc_start_block (&null);
   if (!can_fail)
     {
-      msg = gfc_build_addr_expr (pchar_type_node,
-				 gfc_build_localized_cstring_const
-				 ("Attempt to DEALLOCATE unallocated memory."));
-      error = build_call_expr (gfor_fndecl_runtime_error, 1, msg);
+      tree varname;
+
+      gcc_assert (expr && expr->expr_type == EXPR_VARIABLE && expr->symtree);
+
+      varname = gfc_build_cstring_const (expr->symtree->name);
+      varname = gfc_build_addr_expr (pchar_type_node, varname);
+
+      error = gfc_trans_runtime_error (true, &expr->where,
+				       "Attempt to DEALLOCATE unallocated '%s'",
+				       varname);
     }
   else
     error = build_empty_stmt ();
