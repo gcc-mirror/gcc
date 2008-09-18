@@ -616,9 +616,13 @@ extern struct sparc_cpu_select sparc_select[];
 #define LONG_LONG_TYPE_SIZE	64
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
+
 /* LONG_DOUBLE_TYPE_SIZE is defined per OS even though the
    SPARC ABI says that it is 128-bit wide.  */
 /* #define LONG_DOUBLE_TYPE_SIZE	128 */
+
+/* The widest floating-point format really supported by the hardware.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */

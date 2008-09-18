@@ -138,9 +138,6 @@ along with GCC; see the file COPYING3.  If not see
    SPARC ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-/* But indicate that it isn't supported by the hardware.  */
-#define WIDEST_HARDWARE_FP_SIZE 64
-
 /* Solaris's _Qp_* library routine implementation clobbers the output
    memory before the inputs are fully consumed.  */
 
