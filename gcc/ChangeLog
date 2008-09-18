@@ -1,3 +1,8 @@
+2008-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2.h (WIDEST_HARDWARE_FP_SIZE): Move to...
+	* config/sparc/sparc.h (WIDEST_HARDWARE_FP_SIZE): ...here.
+
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-outof-ssa.c (eliminate_useless_phis): fix formatting.
