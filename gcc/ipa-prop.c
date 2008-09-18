@@ -46,6 +46,7 @@ static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 
 /* Initialize worklist to contain all functions.  */
+
 struct ipa_func_list *
 ipa_init_func_list (void)
 {
@@ -67,6 +68,7 @@ ipa_init_func_list (void)
 
 /* Add cgraph node MT to the worklist. Set worklist element WL
    to point to MT.  */
+
 void
 ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *mt)
 {
@@ -80,6 +82,7 @@ ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *mt)
 
 /* Remove a function from the worklist. WL points to the first
    element in the list, which is removed.  */
+
 struct cgraph_node *
 ipa_pop_func_from_list (struct ipa_func_list ** wl)
 {
@@ -93,8 +96,9 @@ ipa_pop_func_from_list (struct ipa_func_list ** wl)
   return return_func;
 }
 
-/* Return index of the formal whose tree is ptree in function which corresponds
-   to info.  */
+/* Return index of the formal whose tree is PTREE in function which corresponds
+   to INFO.  */
+
 static int
 ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 {
@@ -110,6 +114,7 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
 /* Populate the param_decl field in parameter descriptors of INFO that
    corresponds to NODE.  */
+
 static void
 ipa_populate_param_decls (struct cgraph_node *node,
 			  struct ipa_node_params *info)
@@ -131,6 +136,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
 
 /* Count number of formal parameters in NOTE. Store the result to the
    appropriate field of INFO.  */
+
 static void
 ipa_count_formal_params (struct cgraph_node *node,
 			 struct ipa_node_params *info)
@@ -151,6 +157,7 @@ ipa_count_formal_params (struct cgraph_node *node,
 /* Initialize the ipa_node_params structure associated with NODE by counting
    the function parameters, creating the descriptors and populating their
    param_decls.  */
+
 void
 ipa_initialize_node_params (struct cgraph_node *node)
 {
@@ -170,6 +177,7 @@ ipa_initialize_node_params (struct cgraph_node *node)
    Directly means that this function does not check for modifications through
    pointers or escaping addresses because all TREE_ADDRESSABLE parameters are
    considered modified anyway.  */
+
 static void
 ipa_check_stmt_modifications (struct ipa_node_params *info, gimple stmt)
 {
@@ -206,6 +214,7 @@ ipa_check_stmt_modifications (struct ipa_node_params *info, gimple stmt)
    modified.  Parameters may be modified in NODE if they are TREE_ADDRESSABLE,
    if they appear on the left hand side of an assignment or if there is an
    ASM_EXPR in the function.  */
+
 void
 ipa_detect_param_modifications (struct cgraph_node *node)
 {
@@ -238,8 +247,9 @@ ipa_detect_param_modifications (struct cgraph_node *node)
   info->modification_analysis_done = 1;
 }
 
-/* Count number of arguments callsite CS has and store it in 
+/* Count number of arguments callsite CS has and store it in
    ipa_edge_args structure corresponding to this callsite.  */
+
 void
 ipa_count_arguments (struct cgraph_edge *cs)
 {
@@ -256,8 +266,9 @@ ipa_count_arguments (struct cgraph_edge *cs)
   ipa_set_cs_argument_count (IPA_EDGE_REF (cs), arg_num);
 }
 
-/* The following function prints the jump functions of all arguments on all
-   call graph edges going from NODE to file F.  */
+/* Print the jump functions of all arguments on all call graph edges going from
+   NODE to file F.  */
+
 void
 ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 {
@@ -309,6 +320,7 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 }
 
 /* Print ipa_jump_func data structures of all nodes in the call graph to F.  */
+
 void
 ipa_print_all_jump_functions (FILE *f)
 {
@@ -321,11 +333,12 @@ ipa_print_all_jump_functions (FILE *f)
     }
 }
 
-/* The following function determines the jump functions of scalar arguments.
-   Scalar means SSA names and constants of a number of selected types.  INFO is
-   the ipa_node_params structure associated with the caller, FUNCTIONS is a
-   pointer to an array of jump function structures associated with CALL which
-   is the call statement being examined.*/
+/* Determine the jump functions of scalar arguments.  Scalar means SSA names
+   and constants of a number of selected types.  INFO is the ipa_node_params
+   structure associated with the caller, FUNCTIONS is a pointer to an array of
+   jump function structures associated with CALL which is the call statement
+   being examined.*/
+
 static void
 compute_scalar_jump_functions (struct ipa_node_params *info,
 			       struct ipa_jump_func *functions,
@@ -356,10 +369,11 @@ compute_scalar_jump_functions (struct ipa_node_params *info,
     }
 }
 
-/* This function inspects the given TYPE and returns true iff it has the same
-   structure (the same number of fields of the same types) as a C++ member
-   pointer.  If METHOD_PTR and DELTA are non-NULL, the trees representing the
-   corresponding fields are stored there.  */
+/* Inspect the given TYPE and return true iff it has the same structure (the
+   same number of fields of the same types) as a C++ member pointer.  If
+   METHOD_PTR and DELTA are non-NULL, store the trees representing the
+   corresponding fields there.  */
+
 static bool
 type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
 {
@@ -388,11 +402,12 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
   return true;
 }
 
-/* This function goes through arguments of the CALL and for every one that
-   looks like a member pointer, it checks whether it can be safely declared
-   pass-through and if so, marks that to the corresponding item of jum
-   FUNCTIONS .  It returns true iff there were non-pass-through member pointers
-   within the arguments.  INFO describes formal parameters of the caller.  */
+/* Go through arguments of the CALL and for every one that looks like a member
+   pointer, check whether it can be safely declared pass-through and if so,
+   mark that to the corresponding item of jump FUNCTIONS.  Return true iff
+   there are non-pass-through member pointers within the arguments.  INFO
+   describes formal parameters of the caller.  */
+
 static bool
 compute_pass_through_member_ptrs (struct ipa_node_params *info,
 				  struct ipa_jump_func *functions,
@@ -431,6 +446,7 @@ compute_pass_through_member_ptrs (struct ipa_node_params *info,
 
 /* Simple function filling in a member pointer constant jump function (with PFN
    and DELTA as the constant value) into JFUNC.  */
+
 static void
 fill_member_ptr_cst_jump_function (struct ipa_jump_func *jfunc,
 				   tree pfn, tree delta)
@@ -449,6 +465,7 @@ fill_member_ptr_cst_jump_function (struct ipa_jump_func *jfunc,
      D.2515.__pfn ={v} printStuff;
      D.2515.__delta ={v} 0;
      i_1 = doprinting (D.2515);  */
+
 static void
 determine_cst_member_ptr (gimple call, tree arg, tree method_field,
 			  tree delta_field, struct ipa_jump_func *jfunc)
@@ -516,6 +533,7 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
    tries determine whether it is a constant.  If it is, create a corresponding
    constant jump function in FUNCTIONS which is an array of jump functions
    associated with the call.  */
+
 static void
 compute_cst_member_ptr_arguments (struct ipa_jump_func *functions,
 				  gimple call)
@@ -538,6 +556,7 @@ compute_cst_member_ptr_arguments (struct ipa_jump_func *functions,
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
+
 void
 ipa_compute_jump_functions (struct cgraph_edge *cs)
 {
@@ -561,13 +580,14 @@ ipa_compute_jump_functions (struct cgraph_edge *cs)
   if (!compute_pass_through_member_ptrs (info, arguments->jump_functions, call))
     return;
 
-  /* Finally, let's check whether we actually pass a new constant membeer
+  /* Finally, let's check whether we actually pass a new constant member
      pointer here...  */
   compute_cst_member_ptr_arguments (arguments->jump_functions, call);
 }
 
 /* If RHS looks like a rhs of a statement loading pfn from a member pointer
    formal parameter, return the parameter, otherwise return NULL.  */
+
 static tree
 ipa_get_member_ptr_load_param (tree rhs)
 {
@@ -590,7 +610,8 @@ ipa_get_member_ptr_load_param (tree rhs)
 }
 
 /* If STMT looks like a statement loading a value from a member pointer formal
-   parameter, this function retuns that parameter.  */
+   parameter, this function returns that parameter.  */
+
 static tree
 ipa_get_stmt_member_ptr_load_param (gimple stmt)
 {
@@ -604,6 +625,7 @@ ipa_get_stmt_member_ptr_load_param (gimple stmt)
 }
 
 /* Returns true iff T is an SSA_NAME defined by a statement.  */
+
 static bool
 ipa_is_ssa_with_stmt_def (tree t)
 {
@@ -617,6 +639,7 @@ ipa_is_ssa_with_stmt_def (tree t)
 /* Creates a new note describing a call to a parameter number FORMAL_ID and
    attaches it to the linked list of INFO.  It also sets the called flag of the
    parameter.  STMT is the corresponding call statement.  */
+
 static void
 ipa_note_param_call (struct ipa_node_params *info, int formal_id,
 		     gimple stmt)
@@ -808,6 +831,7 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
 /* Analyze the statement STMT with respect to formal parameters (described in
    INFO) and their uses.  Currently it only checks whether formal parameters
    are called.  */
+
 static void
 ipa_analyze_stmt_uses (struct ipa_node_params *info, gimple stmt)
 {
@@ -818,6 +842,7 @@ ipa_analyze_stmt_uses (struct ipa_node_params *info, gimple stmt)
 /* Scan the function body of NODE and inspect the uses of formal parameters.
    Store the findings in various structures of the associated ipa_node_params
    structure, such as parameter flags, notes etc.  */
+
 void
 ipa_analyze_params_uses (struct cgraph_node *node)
 {
@@ -843,9 +868,10 @@ ipa_analyze_params_uses (struct cgraph_node *node)
   info->uses_analysis_done = 1;
 }
 
-/* Update the jump functions assocated with call graph edge E when the call
+/* Update the jump functions associated with call graph edge E when the call
    graph edge CS is being inlined, assuming that E->caller is already (possibly
    indirectly) inlined into CS->callee and that E has not been inlined.  */
+
 static void
 update_jump_functions_after_inlining (struct cgraph_edge *cs,
 				      struct cgraph_edge *e)
@@ -875,8 +901,9 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 }
 
 /* Print out a debug message to file F that we have discovered that an indirect
-   call descibed by NT is in fact a call of a known constant function descibed
+   call described by NT is in fact a call of a known constant function described
    by JFUNC.  NODE is the node where the call is.  */
+
 static void
 print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
 			     struct ipa_jump_func *jfunc,
@@ -900,6 +927,7 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
    Moreover, if the callee is discovered to be constant, create a new cgraph
    edge for it.  Newly discovered indirect edges will be added to *NEW_EDGES,
    unless NEW_EDGES is NULL.  Return true iff a new edge(s) were created.  */
+
 static bool
 update_call_notes_after_inlining (struct cgraph_edge *cs,
 				  struct cgraph_node *node,
@@ -973,6 +1001,7 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
    of this subtree.  Newly discovered indirect edges will be added to
    *NEW_EDGES, unless NEW_EDGES is NULL.  Return true iff a new edge(s) were
    created.  */
+
 static bool
 propagate_info_to_inlined_callees (struct cgraph_edge *cs,
 				   struct cgraph_node *node,
@@ -997,6 +1026,7 @@ propagate_info_to_inlined_callees (struct cgraph_edge *cs,
    cgraph_clone_inline_nodes.  Newly discovered indirect edges will be added to
    *NEW_EDGES, unless NEW_EDGES is NULL.  Return true iff a new edge(s) were +
    created.  */
+
 bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
@@ -1012,6 +1042,7 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
 /* Frees all dynamically allocated structures that the argument info points
    to.  */
+
 void
 ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 {
@@ -1022,6 +1053,7 @@ ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 }
 
 /* Free all ipa_edge structures.  */
+
 void
 ipa_free_all_edge_args (void)
 {
@@ -1039,6 +1071,7 @@ ipa_free_all_edge_args (void)
 
 /* Frees all dynamically allocated structures that the param info points
    to.  */
+
 void
 ipa_free_node_params_substructures (struct ipa_node_params *info)
 {
@@ -1056,6 +1089,7 @@ ipa_free_node_params_substructures (struct ipa_node_params *info)
 }
 
 /* Free all ipa_node_params structures.  */
+
 void
 ipa_free_all_node_params (void)
 {
@@ -1072,6 +1106,7 @@ ipa_free_all_node_params (void)
 }
 
 /* Hook that is called by cgraph.c when an edge is removed.  */
+
 static void
 ipa_edge_removal_hook (struct cgraph_edge *cs,
 		       void *data __attribute__ ((unused)))
@@ -1084,6 +1119,7 @@ ipa_edge_removal_hook (struct cgraph_edge *cs,
 }
 
 /* Hook that is called by cgraph.c when a node is removed.  */
+
 static void
 ipa_node_removal_hook (struct cgraph_node *node,
 		       void *data __attribute__ ((unused)))
@@ -1093,6 +1129,7 @@ ipa_node_removal_hook (struct cgraph_node *node,
 
 /* Helper function to duplicate an array of size N that is at SRC and store a
    pointer to it to DST.  Nothing is done if SRC is NULL.  */
+
 static void *
 duplicate_array (void *src, size_t n)
 {
@@ -1107,6 +1144,7 @@ duplicate_array (void *src, size_t n)
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
+
 static void
 ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 			   __attribute__((unused)) void *data)
@@ -1127,6 +1165,7 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
+
 static void
 ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			   __attribute__((unused)) void *data)
@@ -1160,6 +1199,7 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 }
 
 /* Register our cgraph hooks if they are not already there.  */
+
 void
 ipa_register_cgraph_hooks (void)
 {
@@ -1178,6 +1218,7 @@ ipa_register_cgraph_hooks (void)
 }
 
 /* Unregister our cgraph hooks if they are not already there.  */
+
 static void
 ipa_unregister_cgraph_hooks (void)
 {
@@ -1193,6 +1234,7 @@ ipa_unregister_cgraph_hooks (void)
 
 /* Free all ipa_node_params and all ipa_edge_args structures if they are no
    longer needed after ipa-cp.  */
+
 void
 free_all_ipa_structures_after_ipa_cp (void)
 {
@@ -1206,6 +1248,7 @@ free_all_ipa_structures_after_ipa_cp (void)
 
 /* Free all ipa_node_params and all ipa_edge_args structures if they are no
    longer needed after indirect inlining.  */
+
 void
 free_all_ipa_structures_after_iinln (void)
 {
@@ -1216,6 +1259,7 @@ free_all_ipa_structures_after_iinln (void)
 
 /* Print ipa_tree_map data structures of all functions in the
    callgraph to F.  */
+
 void
 ipa_print_node_params (FILE * f, struct cgraph_node *node)
 {
@@ -1244,6 +1288,7 @@ ipa_print_node_params (FILE * f, struct cgraph_node *node)
 
 /* Print ipa_tree_map data structures of all functions in the
    callgraph to F.  */
+
 void
 ipa_print_all_params (FILE * f)
 {

@@ -1058,7 +1058,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
   /* If we will be able to fully replace orignal node, we never increase
      program size.  */
   if (!need_original)
-    return false;
+    return 0;
 
   info = IPA_NODE_REF (node);
   count = ipa_get_param_count (info);
