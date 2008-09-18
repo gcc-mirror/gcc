@@ -1,3 +1,19 @@
+2008-09-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv.h (IRA_COVER_CLASSES): Define.
+	(SECONDARY_INPUT_RELOAD_CLASS): Omit unused argument in call
+	to frv_secondary_reload_class.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	* config/frv/frv.c (TARGET_SECONDARY_RELOAD): Define.
+	(frv_secondary_reload_class): Omit unused parameter.
+	(frv_secondary_reload): New function.  Handle the case when
+	secondary_reload_class() is called before the reload_(in|out)
+	_optabs have been initialised.
+	* config/frv/frv-protos.h (frv_secondary_reload_class): Omit
+	unused parameter.
+	* config/frv/frv.md: Define an exclusion set between fr550_m0
+	and fr550_f0.
+
 2008-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37456

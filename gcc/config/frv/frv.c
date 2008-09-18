@@ -381,6 +381,9 @@ static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
   ATTRIBUTE_UNUSED;
+static bool frv_secondary_reload                (bool, rtx, enum reg_class,
+						 enum machine_mode,
+						 secondary_reload_info *);
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -461,6 +464,9 @@ static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL frv_output_dwarf_dtprel
 #endif
+
+#undef  TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD frv_secondary_reload
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6343,8 +6349,7 @@ frv_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
 enum reg_class
 frv_secondary_reload_class (enum reg_class rclass,
                             enum machine_mode mode ATTRIBUTE_UNUSED,
-                            rtx x,
-                            int in_p ATTRIBUTE_UNUSED)
+                            rtx x)
 {
   enum reg_class ret;
 
@@ -6391,7 +6396,7 @@ frv_secondary_reload_class (enum reg_class rclass,
       ret = GPR_REGS;
       break;
 
-      /* The accumulators need fpr registers */
+      /* The accumulators need fpr registers.  */
     case ACC_REGS:
     case EVEN_ACC_REGS:
     case QUAD_ACC_REGS:
@@ -6403,6 +6408,42 @@ frv_secondary_reload_class (enum reg_class rclass,
   return ret;
 }
 
+/* This hook exists to catch the case where secondary_reload_class() is
+   called from init_reg_autoinc() in regclass.c - before the reload optabs
+   have been initialised.  */
+   
+static bool
+frv_secondary_reload (bool in_p, rtx x, enum reg_class reload_class,
+		      enum machine_mode reload_mode,
+		      secondary_reload_info * sri)
+{
+  enum reg_class rclass = NO_REGS;
+
+  if (sri->prev_sri && sri->prev_sri->t_icode != CODE_FOR_nothing)
+    {
+      sri->icode = sri->prev_sri->t_icode;
+      return NO_REGS;
+    }
+
+  rclass = frv_secondary_reload_class (reload_class, reload_mode, x);
+
+  if (rclass != NO_REGS)
+    {
+      enum insn_code icode = (in_p ? reload_in_optab[(int) reload_mode]
+			      : reload_out_optab[(int) reload_mode]);
+      if (icode == 0)
+	{
+	  /* This happens when then the reload_[in|out]_optabs have
+	     not been initialised.  */
+	  sri->t_icode = CODE_FOR_nothing;
+	  return rclass;
+	}
+    }
+
+  /* Fall back to the default secondary reload handler.  */
+  return default_secondary_reload (in_p, x, reload_class, reload_mode, sri);
+
+}
 
 /* A C expression whose value is nonzero if pseudos that have been assigned to
    registers of class RCLASS would likely be spilled because registers of RCLASS
