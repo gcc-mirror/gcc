@@ -2395,9 +2395,9 @@ sets_likely_spilled_1 (rtx x, const_rtx pat, void *data)
     *ret = true;
 }
 
-/* An array used to hold the number of dependencies in which insn 
-   participates.  Used in add_branch_dependences.  */
-static int *ref_counts;
+/* A bitmap to note insns that participate in any dependency.  Used in
+   add_branch_dependences.  */
+static sbitmap insn_referenced;
 
 /* Add dependences so that branches are scheduled to run last in their
    block.  */
@@ -2424,8 +2424,6 @@ add_branch_dependences (rtx head, rtx tail)
      are not moved before reload because we can wind up with register
      allocation failures.  */
 
-#define INSN_REF_COUNT(INSN) (ref_counts[INSN_UID (INSN)])
-
   insn = tail;
   last = 0;
   while (CALL_P (insn)
@@ -2448,7 +2446,7 @@ add_branch_dependences (rtx head, rtx tail)
 	    {
 	      if (! sched_insns_conditions_mutex_p (last, insn))
 		add_dependence (last, insn, REG_DEP_ANTI);
-	      INSN_REF_COUNT (insn)++;
+	      SET_BIT (insn_referenced, INSN_LUID (insn));
 	    }
 
 	  CANT_MOVE (insn) = 1;
@@ -2470,12 +2468,11 @@ add_branch_dependences (rtx head, rtx tail)
       {
 	insn = prev_nonnote_insn (insn);
 
-	if (INSN_REF_COUNT (insn) != 0)
+	if (TEST_BIT (insn_referenced, INSN_LUID (insn)))
 	  continue;
 
 	if (! sched_insns_conditions_mutex_p (last, insn))
 	  add_dependence (last, insn, REG_DEP_ANTI);
-	INSN_REF_COUNT (insn) = 1;
       }
 
 #ifdef HAVE_conditional_execution
@@ -3086,14 +3083,15 @@ sched_rgn_compute_dependencies (int rgn)
       for (bb = 0; bb < current_nr_blocks; bb++)
 	init_deps (bb_deps + bb);
 
-      /* Initialize array used in add_branch_dependencies ().  */
-      ref_counts = XCNEWVEC (int, get_max_uid () + 1);
+      /* Initialize bitmap used in add_branch_dependences.  */
+      insn_referenced = sbitmap_alloc (sched_max_luid);
+      sbitmap_zero (insn_referenced);
       
       /* Compute backward dependencies.  */
       for (bb = 0; bb < current_nr_blocks; bb++)
 	compute_block_dependences (bb);
       
-      free (ref_counts);
+      sbitmap_free (insn_referenced);
       free_pending_lists ();
       finish_deps_global ();
       free (bb_deps);

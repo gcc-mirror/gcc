@@ -678,9 +678,6 @@ struct _haifa_insn_data
   /* A priority for each insn.  */
   int priority;
 
-  /* Number of instructions referring to this insn.  */
-  int ref_count;
-
   /* The minimum clock tick at which the insn becomes ready.  This is
      used to note timing constraints for the insns in the pending list.  */
   int tick;
