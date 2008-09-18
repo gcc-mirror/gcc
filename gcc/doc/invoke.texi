@@ -228,7 +228,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
--Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
+-Wno-attributes -Wno-builtin-macro-redefined @gol
+-Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
@@ -3730,6 +3731,13 @@ Do not warn if an unexpected @code{__attribute__} is used, such as
 unrecognized attributes, function attributes applied to variables,
 etc.  This will not stop errors for incorrect use of supported
 attributes.
+
+@item -Wno-builtin-macro-redefined
+@opindex Wno-builtin-macro-redefined
+@opindex Wbuiltin-macro-redefined
+Do not warn if certain built-in macros are redefined.  This suppresses
+warnings for redefinition of @code{__TIMESTAMP__}, @code{__TIME__},
+@code{__DATE__}, @code{__FILE__}, and @code{__BASE_FILE__}.
 
 @item -Wstrict-prototypes @r{(C and Objective-C only)}
 @opindex Wstrict-prototypes

@@ -131,6 +131,10 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types
 
+Wbuiltin-macro-redefined
+C ObjC C++ ObjC++ Warning
+Warn when a built-in preprocessor macro is undefined or redefined
+
 Wc++-compat
 C ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++

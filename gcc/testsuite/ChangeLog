@@ -1,3 +1,7 @@
+2008-09-18  Simon Baldwin  <simonb@google.com>
+
+	* gcc.dg/builtin-redefine.c: New.
+
 2008-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37258

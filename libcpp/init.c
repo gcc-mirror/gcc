@@ -163,6 +163,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, warn_dollars) = 1;
   CPP_OPTION (pfile, warn_variadic_macros) = 1;
+  CPP_OPTION (pfile, warn_builtin_macro_redefined) = 1;
   CPP_OPTION (pfile, warn_normalize) = normalized_C;
 
   /* Default CPP arithmetic to something sensible for the host for the
@@ -303,31 +304,41 @@ cpp_destroy (cpp_reader *pfile)
    altered through #define, and #if recognizes them as operators.  In
    C, these are not entered into the hash table at all (but see
    <iso646.h>).  The value is a token-type enumerator.  */
-struct builtin
+struct builtin_macro
 {
-  const uchar *name;
-  unsigned short len;
-  unsigned short value;
+  const uchar *const name;
+  const unsigned short len;
+  const unsigned short value;
+  const bool always_warn_if_redefined;
+};
+
+#define B(n, t, f)    { DSC(n), t, f }
+static const struct builtin_macro builtin_array[] =
+{
+  B("__TIMESTAMP__",	 BT_TIMESTAMP,     false),
+  B("__TIME__",		 BT_TIME,          false),
+  B("__DATE__",		 BT_DATE,          false),
+  B("__FILE__",		 BT_FILE,          false),
+  B("__BASE_FILE__",	 BT_BASE_FILE,     false),
+  B("__LINE__",		 BT_SPECLINE,      true),
+  B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
+  B("__COUNTER__",	 BT_COUNTER,       true),
+  /* Keep builtins not used for -traditional-cpp at the end, and
+     update init_builtins() if any more are added.  */
+  B("_Pragma",		 BT_PRAGMA,        true),
+  B("__STDC__",		 BT_STDC,          true),
+};
+#undef B
+
+struct builtin_operator
+{
+  const uchar *const name;
+  const unsigned short len;
+  const unsigned short value;
 };
 
 #define B(n, t)    { DSC(n), t }
-static const struct builtin builtin_array[] =
-{
-  B("__TIMESTAMP__",	 BT_TIMESTAMP),
-  B("__TIME__",		 BT_TIME),
-  B("__DATE__",		 BT_DATE),
-  B("__FILE__",		 BT_FILE),
-  B("__BASE_FILE__",	 BT_BASE_FILE),
-  B("__LINE__",		 BT_SPECLINE),
-  B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
-  B("__COUNTER__",	 BT_COUNTER),
-  /* Keep builtins not used for -traditional-cpp at the end, and
-     update init_builtins() if any more are added.  */
-  B("_Pragma",		 BT_PRAGMA),
-  B("__STDC__",		 BT_STDC),
-};
-
-static const struct builtin operator_array[] =
+static const struct builtin_operator operator_array[] =
 {
   B("and",	CPP_AND_AND),
   B("and_eq",	CPP_AND_EQ),
@@ -347,7 +358,7 @@ static const struct builtin operator_array[] =
 static void
 mark_named_operators (cpp_reader *pfile)
 {
-  const struct builtin *b;
+  const struct builtin_operator *b;
 
   for (b = operator_array;
        b < (operator_array + ARRAY_SIZE (operator_array));
@@ -363,7 +374,7 @@ mark_named_operators (cpp_reader *pfile)
 void
 cpp_init_special_builtins (cpp_reader *pfile)
 {
-  const struct builtin *b;
+  const struct builtin_macro *b;
   size_t n = ARRAY_SIZE (builtin_array);
 
   if (CPP_OPTION (pfile, traditional))
@@ -376,7 +387,10 @@ cpp_init_special_builtins (cpp_reader *pfile)
     {
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->type = NT_MACRO;
-      hp->flags |= NODE_BUILTIN | NODE_WARN;
+      hp->flags |= NODE_BUILTIN;
+      if (b->always_warn_if_redefined
+          || CPP_OPTION (pfile, warn_builtin_macro_redefined))
+	hp->flags |= NODE_WARN;
       hp->value.builtin = (enum builtin_type) b->value;
     }
 }
