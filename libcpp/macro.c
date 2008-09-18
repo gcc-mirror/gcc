@@ -1392,6 +1392,10 @@ warn_of_redefinition (cpp_reader *pfile, const cpp_hashnode *node,
   if (node->flags & NODE_WARN)
     return true;
 
+  /* Suppress warnings for builtins that lack the NODE_WARN flag.  */
+  if (node->flags & NODE_BUILTIN)
+    return false;
+
   /* Redefinitions of conditional (context-sensitive) macros, on
      the other hand, must be allowed silently.  */
   if (node->flags & NODE_CONDITIONAL)

@@ -1,3 +1,11 @@
+2008-09-18  Simon Baldwin  <simonb@google.com>
+
+	* c-opts.c (c_common_handle_option): Add handling for
+	-Wbuiltin-macro-redefined command line option.
+	* c.opt: Added builtin-macro-redefined option.
+	* doc/invoke.texi (Warning Options): Add -Wbuiltin-macro-redefined
+	documentation.
+
 2008-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37258

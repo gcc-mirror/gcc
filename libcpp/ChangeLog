@@ -1,3 +1,18 @@
+2008-09-18  Simon Baldwin  <simonb@google.com>
+
+	* include/cpplib.h (struct cpp_options): Add new boolean flag
+	warn_builtin_macro_redefined.
+	* init.c (cpp_create_reader): Initialize warn_builtin_macro_redefined.
+	* (struct builtin_operator): Split out from previous struct builtin,
+	enhance extra const correctness.
+	* (struct builtin_macro): Split out from previous struct builtin, add
+	new always_warn_if_redefined flag, enhance const correctness.
+	* (mark_named_operators): Use struct builtin_operator.
+	* (cpp_init_special_builtins): Use struct builtin_macro, add NODE_WARN
+	to builtins selectively.
+	* macro.c (warn_of_redefinition): Return false if a builtin macro
+	is not flagged with NODE_WARN.
+
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/36649

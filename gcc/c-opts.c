@@ -426,6 +426,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	warn_pointer_sign = 1;
       break;
 
+    case OPT_Wbuiltin_macro_redefined:
+      cpp_opts->warn_builtin_macro_redefined = value;
+      break;
+
     case OPT_Wcomment:
     case OPT_Wcomments:
       cpp_opts->warn_comments = value;

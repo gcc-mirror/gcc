@@ -349,6 +349,10 @@ struct cpp_options
      Presumably the usage is protected by the appropriate #ifdef.  */
   unsigned char warn_variadic_macros;
 
+  /* Nonzero means warn about builtin macros that are redefined or
+     explicitly undefined.  */
+  unsigned char warn_builtin_macro_redefined;
+
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 
