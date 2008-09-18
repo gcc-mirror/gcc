@@ -1,3 +1,7 @@
+2008-09-18  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c-torture/execute/20060420-1.c: Fix alignment logic.
+
 2008-09-18  Simon Baldwin  <simonb@google.com>
 
 	* gcc.dg/builtin-redefine.c: New.
