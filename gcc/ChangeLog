@@ -1,3 +1,8 @@
+2008-09-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (emit_group_store): Do not shift before moving via a
+	stack slot.
+
 2008-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (initializer_constant_valid_p): Forbid view-conversions
