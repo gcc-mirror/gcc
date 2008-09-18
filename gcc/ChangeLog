@@ -1,3 +1,11 @@
+2008-09-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-opt/37451
+	* loop-doloop.c (doloop_modify): New argument zero_extend_p and
+	zero extend count after the correction to it is done.
+	(doloop_optimize): Update call to doloop_modify, don't zero extend
+	count before call.
+
 2008-09-18  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_estimate_growth): Return 0 instead of false.
