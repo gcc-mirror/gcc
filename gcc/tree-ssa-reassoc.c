@@ -859,8 +859,20 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
 	}
       else
 	{
-	  gsi = gsi_for_stmt (op2def);
-	  gsi_insert_after (&gsi, sum, GSI_NEW_STMT);
+	  if (!stmt_ends_bb_p (op2def))
+	    {
+	      gsi = gsi_for_stmt (op2def);
+	      gsi_insert_after (&gsi, sum, GSI_NEW_STMT);
+	    }
+	  else
+	    {
+	      edge e;
+	      edge_iterator ei;
+
+	      FOR_EACH_EDGE (e, ei, gimple_bb (op2def)->succs)
+		if (e->flags & EDGE_FALLTHRU)
+		  gsi_insert_on_edge_immediate (e, sum);
+	    }
 	}
     }
   else
@@ -872,8 +884,20 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
 	}
       else
 	{
-	  gsi = gsi_for_stmt (op1def);
-	  gsi_insert_after (&gsi, sum, GSI_NEW_STMT);
+	  if (!stmt_ends_bb_p (op1def))
+	    {
+	      gsi = gsi_for_stmt (op1def);
+	      gsi_insert_after (&gsi, sum, GSI_NEW_STMT);
+	    }
+	  else
+	    {
+	      edge e;
+	      edge_iterator ei;
+
+	      FOR_EACH_EDGE (e, ei, gimple_bb (op1def)->succs)
+		if (e->flags & EDGE_FALLTHRU)
+		  gsi_insert_on_edge_immediate (e, sum);
+	    }
 	}
     }
   update_stmt (sum);

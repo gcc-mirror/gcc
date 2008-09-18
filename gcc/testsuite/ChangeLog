@@ -1,3 +1,8 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37456
+	* testsuite/g++.dg/torture/pr37456.C: New testcase.
+
 2008-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/37544
