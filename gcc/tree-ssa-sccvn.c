@@ -1402,8 +1402,16 @@ vn_phi_compute_hash (vn_phi_t vp1)
   hashval_t result = 0;
   int i;
   tree phi1op;
+  tree type;
 
   result = vp1->block->index;
+
+  /* If all PHI arguments are constants we need to distinguish
+     the PHI node via its type.  */
+  type = TREE_TYPE (VEC_index (tree, vp1->phiargs, 0));
+  result += (INTEGRAL_TYPE_P (type)
+	     + (INTEGRAL_TYPE_P (type)
+		? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
 
   for (i = 0; VEC_iterate (tree, vp1->phiargs, i, phi1op); i++)
     {
@@ -1436,6 +1444,12 @@ vn_phi_eq (const void *p1, const void *p2)
     {
       int i;
       tree phi1op;
+
+      /* If the PHI nodes do not have compatible types
+	 they are not the same.  */
+      if (!types_compatible_p (TREE_TYPE (VEC_index (tree, vp1->phiargs, 0)),
+			       TREE_TYPE (VEC_index (tree, vp2->phiargs, 0))))
+	return false;
 
       /* Any phi in the same block will have it's arguments in the
 	 same edge order, because of how we store phi nodes.  */
