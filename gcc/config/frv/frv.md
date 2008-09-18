@@ -1,5 +1,5 @@
 ;; Frv Machine Description
-;; Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007
+;; Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
@@ -1179,6 +1179,18 @@
 (define_cpu_unit "fr550_f0,fr550_f1,fr550_f2,fr550_f3" "fr550_float_media")
 (define_cpu_unit "fr550_m0,fr550_m1,fr550_m2,fr550_m3" "fr550_float_media")
 (exclusion_set "fr550_f1,fr550_f2,fr550_f3" "fr550_m1,fr550_m2,fr550_m3")
+(exclusion_set "fr550_m0" "fr550_f1,fr550_f2,fr550_f3")
+;; FIXME: This next exclusion set should be defined as well, so that we do
+;; not get a packet containing multiple media instructions plus a single
+;; floating point instruction.  At the moment we can get away with not
+;; defining it because gcc does not seem to generate such packets.
+;;
+;; If we do enable the exclusion however the insertion of fnop insns into
+;; a packet containing media instructions will stop working, because the
+;; fnop insn counts as a floating point instruction.  The correct solution
+;; is to fix the reservation for the fnop insn so that it does not have the
+;; same restrictions as ordinary floating point insns.
+;;(exclusion_set "fr550_f0" "fr550_m1,fr550_m2,fr550_m3")
 
 (define_reservation "fr550_float" "fr550_f0|fr550_f1|fr550_f2|fr550_f3")
 (define_reservation "fr550_media" "fr550_m0|fr550_m1|fr550_m2|fr550_m3")
@@ -2092,8 +2104,8 @@
     }
   else
     {
-      operands[4] = GEN_INT ((((unsigned HOST_WIDE_INT)INTVAL (op1) >> 16)
-			      >> 16) ^ ((unsigned HOST_WIDE_INT)1 << 31)
+      operands[4] = GEN_INT (((((unsigned HOST_WIDE_INT)INTVAL (op1) >> 16)
+			      >> 16) ^ ((unsigned HOST_WIDE_INT)1 << 31))
 			     - ((unsigned HOST_WIDE_INT)1 << 31));
       operands[5] = GEN_INT (trunc_int_for_mode (INTVAL (op1), SImode));
     }
