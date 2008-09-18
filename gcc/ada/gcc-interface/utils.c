@@ -1976,7 +1976,7 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   /* If this is a function nested inside an inlined external function, it
      means we aren't going to compile the outer function unless it is
      actually inlined, so do the same for us.  */
-  if (current_function_decl && DECL_INLINE (current_function_decl)
+  if (current_function_decl && DECL_DECLARED_INLINE_P (current_function_decl)
       && DECL_EXTERNAL (current_function_decl))
     extern_flag = true;
 
@@ -2231,10 +2231,6 @@ end_subprog_body (tree body, bool elab_p)
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
-
-  /* Deal with inline.  If declared inline or we should default to inline,
-     set the flag in the decl.  */
-  DECL_INLINE (fndecl) = 1;
 
   /* We handle pending sizes via the elaboration of types, so we don't
      need to save them.  */
