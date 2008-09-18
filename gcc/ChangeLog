@@ -1,3 +1,9 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37284
+	* tree-cfg.c (remove_useless_stmts_1): Remove
+	GIMPLE_CHANGE_DYNAMIC_TYPE if not optimizing.
+
 2008-09-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.h (IRA_COVER_CLASSES): Define.

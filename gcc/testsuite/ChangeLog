@@ -1,3 +1,8 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37284
+	* g++.dg/tree-ssa/pr37284.C: New testcase.
+
 2008-09-18  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37507
