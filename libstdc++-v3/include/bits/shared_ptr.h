@@ -249,7 +249,7 @@ namespace std
           try
             {
               _M_pi = __a2.allocate(1);
-              new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d);
+              ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d);
             }
           catch(...)
             {
@@ -269,7 +269,7 @@ namespace std
           try
             {
               _M_pi = __a2.allocate(1);
-              new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d, __a);
+              ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d, __a);
             }
           catch(...)
             {
@@ -290,8 +290,8 @@ namespace std
           try
             {
               _M_pi = __a2.allocate(1);
-              new(static_cast<void*>(_M_pi)) _Sp_cp_type(__a,
-                  std::forward<_Args>(__args)...);
+              ::new(static_cast<void*>(_M_pi)) _Sp_cp_type(__a,
+                    std::forward<_Args>(__args)...);
             }
           catch(...)
             {
