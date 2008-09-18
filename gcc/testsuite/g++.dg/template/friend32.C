@@ -17,5 +17,5 @@ template<class T> class B
 
 int f ()
 {
-  B<int> b;			// { dg-error "instantiated" }
+  B<int> b;			// { dg-message "instantiated" }
 }

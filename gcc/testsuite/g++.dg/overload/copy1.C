@@ -4,8 +4,8 @@ struct A;
 
 struct B
 {
-  B (A const &);		// { dg-warning "note" }
-  B (B &);			// { dg-warning "note" }
+  B (A const &);		// { dg-message "note" }
+  B (B &);			// { dg-message "note" }
 };
 
 struct A
@@ -16,5 +16,6 @@ struct A
 B
 f (B const& b)
 {
-  return b;			// { dg-error "" }
+  return b;			// { dg-error "matching" "matching" }
+                                // { dg-error "initializing" "initializing" { target *-*-* } 19 }
 }

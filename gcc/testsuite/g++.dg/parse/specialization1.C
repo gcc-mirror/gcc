@@ -3,4 +3,5 @@
 // { dg-do compile }
 
 template <typename T> class A;
-template <typename T> class A<T>::B; // { dg-error "declaration" }
+template <typename T> class A<T>::B; // { dg-error "declaration" "err" }
+// { dg-warning "declaration" "warn" { target *-*-* } 6 }

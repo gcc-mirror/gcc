@@ -4,14 +4,14 @@
 //  an ambiguous overload set to be created.
 
 namespace B {
-  void f(int);     // { dg-error "note" }
-  void f(double);  // { dg-error "note" }
+  void f(int);     // { dg-message "candidates" }
+  void f(double);  // { dg-message "note" }
 }
 
 namespace C {
-  void f(int);     // { dg-error "note" }
-  void f(double);  // { dg-error "note" }
-  void f(char);    // { dg-error "note" }
+  void f(int);     // { dg-message "note" }
+  void f(double);  // { dg-message "note" }
+  void f(char);    // { dg-message "note" }
 }
 
 void h()

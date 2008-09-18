@@ -9,4 +9,4 @@ struct push_front<list<Elements...>, Head> {
   typedef list<Head, Elements> type; // { dg-error "parameter packs not expanded" }
 };
 
-// { dg-error "Elements" "" { target *-*-* } 9 }
+// { dg-message "Elements" "note" { target *-*-* } 9 }

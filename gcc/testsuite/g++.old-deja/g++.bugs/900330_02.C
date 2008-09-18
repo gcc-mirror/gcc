@@ -19,12 +19,12 @@ struct B {
 };
 
 struct D : public B {
-  int f(struct B);		// { dg-error "" } referred to below
+  int f(struct B);		// { dg-message "candidates" } referred to below
 };
 
 void h(D* pd)
 {
-  pd->f(1);		// { dg-error "" } D::f(struct B) hides B::f(int)
+  pd->f(1);		// { dg-error "no matching" } D::f(struct B) hides B::f(int)
 }
 
 int main () { return 0; }

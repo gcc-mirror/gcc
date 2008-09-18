@@ -16,5 +16,5 @@ foo::foo() {
 
 int main(int argc, char **argv)
 {
-  bar x; // { dg-error "synthesized" }
+  bar x; // { dg-message "synthesized" }
 }

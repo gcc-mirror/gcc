@@ -7,9 +7,7 @@ template <class T> struct S {
     typedef int X;
   };
   struct I2 : public I1 {
-    X x;    // { dg-error "does not name a type" }
+    X x;    // { dg-error "does not name a type" "name" }
+	    // { dg-message "note" "note" { target *-*-* } 10 }
   };
 };
-
-// Additional notes on the same line are allowed
-// { dg-error "" "additional" { target *-*-* } 10 }

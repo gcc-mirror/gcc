@@ -22,5 +22,5 @@ struct b
 struct c
 {
   b bb;
-  c(const b& __a): bb(__a) {} // { dg-error "synthesized" "" { target { ! default_packed } } }
+  c(const b& __a): bb(__a) {} // { dg-message "synthesized" "" { target { ! default_packed } } }
 };

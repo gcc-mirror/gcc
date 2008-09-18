@@ -14,10 +14,10 @@ template <template <class> class TT> struct X
 
 template <class T> struct C
 {
-	X<T::template B> x; // { dg-error "type" "" }
+	X<T::template B> x; // { dg-error "type" }
 };
 
 int main()
 {
-	C<A> c; // { dg-error "instantiated" }
+	C<A> c; // { dg-message "instantiated" }
 }

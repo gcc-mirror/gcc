@@ -3,7 +3,8 @@
 // compiler.
 
 class f_class
-{ };				// { dg-error "" } candidates
+{ };				// { dg-message "candidates" "candidates" } 
+// { dg-message "note" "note" { target *-*-* } 6 }
 
 volatile f_class
 ret_v_f_class()
@@ -15,6 +16,6 @@ ret_v_f_class()
 int main(void)
 {
   volatile f_class vf;
-  0 ? ret_v_f_class() : vf;	// { dg-error "" } can't copy volatile lvalue
+  0 ? ret_v_f_class() : vf;	// { dg-error "match" } can't copy volatile lvalue
   return 0;
 }

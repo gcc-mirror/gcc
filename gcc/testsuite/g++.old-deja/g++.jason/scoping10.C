@@ -3,7 +3,7 @@
 
 void f (char *);
 struct A {
-  void f ();			// { dg-error "" } referred to 
+  void f ();			// { dg-message "candidates" } referred to 
 };
 struct B : public A {
   void g (char *);

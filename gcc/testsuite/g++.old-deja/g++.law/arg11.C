@@ -9,14 +9,14 @@ struct String { String(const char*); };
 
 struct Ack { Ack(String); };
 
-struct S { void method(Ack); };	// { dg-error "" } referenced below
+struct S { void method(Ack); };	// { dg-message "candidates" } referenced below
 
 void function(Ack);
 
 int
 foo(S *o)
 { // Neither call has a usable constructor for conversions of char[5] to Ack.
-  function("adsf");// { dg-error "" } 
-  o->method("adsf");// { dg-error "" } 
+  function("adsf");// { dg-error "conversion" } 
+  o->method("adsf");// { dg-error "no matching" } 
   return 0;
 }

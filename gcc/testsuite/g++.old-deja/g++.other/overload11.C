@@ -22,7 +22,9 @@
 
 
 void ovl (int);          // { dg-error "" } candidate
+// { dg-message "int" "int" { target *-*-* } 24 }
 void ovl (float);        // { dg-error "" } candidate
+// { dg-message "float" "float" { target *-*-* } 26 }
 void fn (int);
 void fna (int);
 
@@ -72,7 +74,7 @@ int main (int argc, char **argv)
   ptr = (argc ? fna : fn);
   ptr = (argc ? &fna : &fn);
   
-  f;                // { dg-warning "" } not a call
+  f;                // { dg-error "" } not a call
   ovl;              // { dg-error "" } not suitable for overload
   &ovl;             // { dg-error "" } not suitable for overload
   (void)f;          // ok

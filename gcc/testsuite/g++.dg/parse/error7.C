@@ -4,4 +4,4 @@
 void f(int x
        int y);
 
-// { dg-error "8: error: expected ',' or '...' before 'int'" "" { target *-*-* } { 5 } }
+// { dg-error "8:expected ',' or '...' before 'int'" "" { target *-*-* } 5 }

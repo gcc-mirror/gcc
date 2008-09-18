@@ -66,4 +66,4 @@ bar (T)
   foo (27);
 }
 
-template void bar<int> (int); // { dg-warning "instantiated" }
+template void bar<int> (int); // { dg-message "instantiated" }

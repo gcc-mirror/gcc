@@ -1,6 +1,6 @@
 //PR 26938
 
-template<int, int = 0> struct A;  // { dg-error "previous declaration" }
+template<int, int = 0> struct A;  // { dg-message "previous declaration" }
 
 template<int> struct A            // { dg-error "template" }
 {

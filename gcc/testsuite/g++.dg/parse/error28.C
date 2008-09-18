@@ -2,10 +2,10 @@
 // PR c++/21908
 
 struct virt { virt () {} virt (int i) {} };
-struct der : public virtual virt { // { dg-error "34: note:                 der::der" }
-  der (int i) : virt(i) {} // { dg-error "3: note: candidates are: der" }
+struct der : public virtual virt { // { dg-message "34:der::der" }
+  der (int i) : virt(i) {} // { dg-message "3:candidates are: der" }
 };
 struct top : public der { 
   top () {} // { dg-bogus "der\\(const" }
 };
-// { dg-error "10: error: no matching function for call to 'der" "" { target *-*-* } 9 }
+// { dg-error "10:no matching function for call to 'der" "" { target *-*-* } 9 }

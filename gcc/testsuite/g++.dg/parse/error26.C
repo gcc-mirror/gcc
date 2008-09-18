@@ -3,10 +3,12 @@
 
 void foo()
 {
-  if (({int c[2];})) ; // { dg-error "7: error: ISO C.. forbids|20: error: could not convert" }
+  if (({int c[2];})) ; // { dg-error "7:ISO C.. forbids" "7" }
+  // { dg-error "20:could not convert" "20" { target *-*-* } 6 }
 }
 
 void bar()
 {
-  if (({})); // { dg-error "7: error: ISO C.. forbids|11: error: could not convert" }
+  if (({})); // { dg-error "7:ISO C.. forbids" "7" }
+  // { dg-error "11:could not convert" "11" { target *-*-* } 12 }
 }

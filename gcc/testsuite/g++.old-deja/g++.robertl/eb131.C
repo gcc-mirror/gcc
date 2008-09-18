@@ -10,11 +10,11 @@ struct a {
 	void bar( double );
 	void bar( float );
 
-  void foo( void (a::*member)(float) );   // { dg-error "" } candidate
+  void foo( void (a::*member)(float) );   // { dg-message "candidate" } 
 };
 
 a::a()
 {
-	foo( &junk ); // { dg-error "" } junk is an unqualified-id.
-	foo( &bar );  // { dg-error "" } bar is an unqualified-id.
+	foo( &junk ); // { dg-error "match" } junk is an unqualified-id.
+	foo( &bar );  // { dg-error "match" } bar is an unqualified-id.
 }

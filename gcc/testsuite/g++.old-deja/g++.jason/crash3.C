@@ -3,11 +3,11 @@
 // and fails.
 
 struct Node
-{				// { dg-error "" } 
+{				// { dg-message "note" } 
   Node* child[2];
 };
 
 void bug(int i)
 {
-  Node* q = new Node(i);	// { dg-error "" } 
+  Node* q = new Node(i);	// { dg-error "no matching" } 
 }

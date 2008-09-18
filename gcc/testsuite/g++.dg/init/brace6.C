@@ -6,7 +6,7 @@ struct A {
 };
 
 struct B {
-   B(const B&);			// { dg-error "candidate" }
+   B(const B&);			// { dg-message "candidate" }
    int b;
 };
 

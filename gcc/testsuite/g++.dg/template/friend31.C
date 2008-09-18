@@ -5,7 +5,7 @@
 // PR c++/15410: Declaration of friend class template with wrong
 // template parameter.
 
-template <typename T, typename U> struct F; // { dg-error "previous declaration" }
+template <typename T, typename U> struct F; // { dg-message "previous declaration" }
 
 class W
 {

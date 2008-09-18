@@ -2,7 +2,8 @@
 
 template<typename T> struct A
 {
-  static const T i = 0; // { dg-error "" }
+  static const T i = 0; // { dg-error "declared void" "void" }
+			// { dg-error "invalid" "invalid" { target *-*-* } 5 }
 };
 
-A<void> a; // { dg-error "" }
+A<void> a; // { dg-message "instantiated" }

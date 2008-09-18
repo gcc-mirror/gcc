@@ -10,11 +10,11 @@
 
 template <typename T> void Foo (T const **);
 template <typename T> void Bar (T const * const *);
-void Foo (int);       // { dg-error "" } candidate
-void Foo (float);     // { dg-error "" } candidate
+void Foo (int);       // { dg-message "candidate" } 
+void Foo (float);     // { dg-message "note" } candidate
 
 void baz (int **p1)
 {
-  Foo (p1);   // { dg-error "" } no such function
+  Foo (p1);   // { dg-error "match" } no such function
   Bar (p1);   // OK
 }

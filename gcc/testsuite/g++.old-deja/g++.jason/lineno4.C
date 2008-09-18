@@ -8,6 +8,7 @@ public:
 
 # 200 "lineno4.C"
       int foo () { undef1(); } // { dg-error "" "" { target *-*-* } 200 }
+      // { dg-message "note" "note" { target *-*-* } 200 }
 };
 
 template class A<int>;

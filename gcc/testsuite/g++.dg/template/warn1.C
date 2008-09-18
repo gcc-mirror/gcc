@@ -17,7 +17,7 @@ template <class T>  void Foo(T i)
  
 void Bar ()
 { 
-  Foo (1);  // { dg-error "instantiated" "" }
+  Foo (1);  // { dg-message "instantiated" }
 }
 
 struct M {};
@@ -31,6 +31,6 @@ struct C
 
 void Baz (int i)
 {
-  i ? i + 1 : i + 2; // { dg-error "operand of" "" }
+  i ? i + 1 : i + 2; // { dg-warning "operand of" }
   i ? i++ : 0;
 }

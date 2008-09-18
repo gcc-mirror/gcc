@@ -30,5 +30,5 @@ template<class T> void A<T>::B2::f()
 int main()
 {
   A<int>::B2 b1;
-  b1.f();	// { dg-error "instantiated" }
+  b1.f();	// { dg-message "instantiated" }
 }

@@ -10,12 +10,12 @@ public:
   inline A(int x){printf("constructing A with %d\n", x);}
 };
 
-class B:public A{ // { dg-error "" } non-default constructor
+class B:public A{ // { dg-message "note" } non-default constructor
 private:
 public:
 };
 
 int main()
 {
-  B(10);// { dg-error "" } B doesn't have a constructor taking int
+  B(10);// { dg-error "match" } B doesn't have a constructor taking int
 }

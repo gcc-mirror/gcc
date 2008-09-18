@@ -16,11 +16,12 @@ template <> struct A::B<false> {};
 
 template <typename T> void foo()
 {
-  T::C (); // { dg-error "parsed as a non-type|if a type is meant" "" }
-  T::template B<false>(); // { dg-error "parsed as a non-type|if a type is meant" "" }
+  T::C (); // { dg-error "parsed as a non-type|if a type is meant" }
+  T::template B<false>(); // { dg-error "parsed as a non-type" "non-type" }
+			  // { dg-message "if a type" "if a type" { target *-*-* } 20 }
 }
 
 void bar()
 {
-  foo<A>(); // { dg-error "instantiated" "" }
+  foo<A>(); // { dg-message "instantiated" }
 }

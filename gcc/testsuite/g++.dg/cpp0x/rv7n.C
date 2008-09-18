@@ -1,6 +1,6 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
-// Test overlaod resolution among referece types
+// Test overload resolution among reference types
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
@@ -30,13 +30,13 @@ const volatile A cv_source();
 
 // 7 at a time
 
-one   sink_7_1234567(               A&);  // { dg-error "" }
-two   sink_7_1234567(const          A&);  // { dg-error "" }
-three sink_7_1234567(volatile       A&);  // { dg-error "" }
-four  sink_7_1234567(const volatile A&);  // { dg-error "" }
-five  sink_7_1234567(               A&&);  // { dg-error "" }
-six   sink_7_1234567(const          A&&);  // { dg-error "" }
-seven sink_7_1234567(volatile       A&&);  // { dg-error "" }
+one   sink_7_1234567(               A&);  // { dg-message "candidates" }
+two   sink_7_1234567(const          A&);  // { dg-message "note" }
+three sink_7_1234567(volatile       A&);  // { dg-message "note" }
+four  sink_7_1234567(const volatile A&);  // { dg-message "note" }
+five  sink_7_1234567(               A&&);  // { dg-message "note" }
+six   sink_7_1234567(const          A&&);  // { dg-message "note" }
+seven sink_7_1234567(volatile       A&&);  // { dg-message "note" }
 
 int test7_1234567()
 {
@@ -48,13 +48,13 @@ int test7_1234567()
     return 0;
 }
 
-two   sink_7_2345678(const          A&);  // { dg-error "" }
-three sink_7_2345678(volatile       A&);  // { dg-error "" }
-four  sink_7_2345678(const volatile A&);  // { dg-error "" }
-five  sink_7_2345678(               A&&);  // { dg-error "" }
-six   sink_7_2345678(const          A&&);  // { dg-error "" }
-seven sink_7_2345678(volatile       A&&);  // { dg-error "" }
-eight sink_7_2345678(const volatile A&&);  // { dg-error "" }
+two   sink_7_2345678(const          A&);  // { dg-message "candidates" }
+three sink_7_2345678(volatile       A&);  // { dg-message "note" }
+four  sink_7_2345678(const volatile A&);  // { dg-message "note" }
+five  sink_7_2345678(               A&&);  // { dg-message "note" }
+six   sink_7_2345678(const          A&&);  // { dg-message "note" }
+seven sink_7_2345678(volatile       A&&);  // { dg-message "note" }
+eight sink_7_2345678(const volatile A&&);  // { dg-message "note" }
 
 int test7_2345678()
 {
@@ -67,12 +67,12 @@ int test7_2345678()
 }
 
 one   sink_7_1234678(               A&);
-two   sink_7_1234678(const          A&);  // { dg-error "" }
+two   sink_7_1234678(const          A&);  // { dg-message "candidates" }
 three sink_7_1234678(volatile       A&);
 four  sink_7_1234678(const volatile A&);
-six   sink_7_1234678(const          A&&);  // { dg-error "" }
-seven sink_7_1234678(volatile       A&&);  // { dg-error "" }
-eight sink_7_1234678(const volatile A&&);  // { dg-error "" }
+six   sink_7_1234678(const          A&&);  // { dg-message "note" }
+seven sink_7_1234678(volatile       A&&);  // { dg-message "note" }
+eight sink_7_1234678(const volatile A&&);  // { dg-message "note" }
 
 int test7_1234678()
 {

@@ -20,5 +20,6 @@ void f(B b) {
 
 void g() {
   B h;
-  f(h); // { dg-error "synthesized|argument" } 
+  f(h); // { dg-error "argument" "arg" } 
+  // { dg-message "synthesized" "synth" { target *-*-* } 23 }
 }

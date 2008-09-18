@@ -5,13 +5,13 @@
 struct panama {
   panama();
   panama(panama &);
-  panama& operator=(panama&); // { dg-error "" } // ERROR -
+  panama& operator=(panama&); // { dg-message "candidates" }
 };
 
 extern panama dig();
 
 void foo() {
    panama obj;
-   obj = dig(); // { dg-error "" }  // ERROR -
+   obj = dig(); // { dg-error "no match" }
 }
 

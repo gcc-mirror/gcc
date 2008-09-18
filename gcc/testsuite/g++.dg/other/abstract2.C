@@ -19,22 +19,22 @@ namespace N1 {
     void g(X (*parm6)[2]);   // { dg-error "abstract" }
   };
 
-  struct X {  // { dg-error "note" }
-    virtual void xfunc(void) = 0;  // { dg-error "note" }
+  struct X {  // { dg-message "note" }
+    virtual void xfunc(void) = 0;  // { dg-message "note" }
   };
 }
 
 namespace N2 {
-  struct X1 { // { dg-error "note" }
-    virtual void xfunc(void) = 0;  // { dg-error "note" }
+  struct X1 { // { dg-message "note" }
+    virtual void xfunc(void) = 0;  // { dg-message "note" }
     void g(X1 parm7);        // { dg-error "abstract" }
     void g(X1 parm8[2]);     // { dg-error "abstract" }
     void g(X1 (*parm9)[2]);  // { dg-error "abstract" }
   };
 
   template <int N>
-  struct X2 { // { dg-error "note" }
-    virtual void xfunc(void) = 0; // { dg-error "note" }
+  struct X2 { // { dg-message "note" }
+    virtual void xfunc(void) = 0; // { dg-message "note" }
     void g(X2 parm10);        // { dg-error "abstract" }
     void g(X2 parm11[2]);     // { dg-error "abstract" }
     void g(X2 (*parm12)[2]);  // { dg-error "abstract" }
@@ -42,8 +42,8 @@ namespace N2 {
 }
 
 namespace N3 {
-  struct X { // { dg-error "note" "" }
-    virtual void xfunc(void) = 0;  // { dg-error "note" }
+  struct X { // { dg-message "note" "" }
+    virtual void xfunc(void) = 0;  // { dg-message "note" }
   };
   void g(X parm13);          // { dg-error "abstract" }
   void g(X parm14[2]);       // { dg-error "abstract" }

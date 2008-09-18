@@ -11,10 +11,10 @@ struct X
 {
   X (int);
 };
-void Foo (int, float, bool);	// { dg-warning "" } candidate
-void Foo (float, int, X);	// { dg-warning "" } candidate
+void Foo (int, float, bool);	// { dg-message "candidate" }
+void Foo (float, int, X);	// { dg-message "candidate" }
 
 void Baz ()
 {
-  Foo (1, 1, 0);    // { dg-warning "" } least worse
+  Foo (1, 1, 0);    // { dg-warning "worst" }
 }

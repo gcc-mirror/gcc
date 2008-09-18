@@ -9,10 +9,10 @@
 class foo
 {
   virtual void bar1 () = 0;
-  virtual void bar2 () = __null;  // { dg-error "32: error: invalid pure specifier" }
-  virtual void bar3 () = 4;       // { dg-error "27: error: invalid pure specifier" }
-  virtual void bar4 () = A::f;    // { dg-error "27: error: invalid pure specifier" }
-  virtual void bar5 () = 0l;      // { dg-error "28: error: invalid pure specifier" }
-  virtual void bar6 () = 00;      // { dg-error "28: error: invalid pure specifier" }
-  virtual void bar7 () = 0x0;     // { dg-error "29: error: invalid pure specifier" }
+  virtual void bar2 () = __null;  // { dg-error "32:invalid pure specifier" }
+  virtual void bar3 () = 4;       // { dg-error "27:invalid pure specifier" }
+  virtual void bar4 () = A::f;    // { dg-error "27:invalid pure specifier" }
+  virtual void bar5 () = 0l;      // { dg-error "28:invalid pure specifier" }
+  virtual void bar6 () = 00;      // { dg-error "28:invalid pure specifier" }
+  virtual void bar7 () = 0x0;     // { dg-error "29:invalid pure specifier" }
 };

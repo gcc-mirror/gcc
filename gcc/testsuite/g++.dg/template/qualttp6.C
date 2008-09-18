@@ -12,4 +12,4 @@ template <class T> struct D {
 struct E {
 };
 
-D<E> d; // { dg-error "instantiated" }
+D<E> d; // { dg-message "instantiated" }

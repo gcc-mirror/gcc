@@ -5,5 +5,5 @@ struct QChar {
   QChar( char c );
   QChar( const QChar& c );
   //following column number is not accurate enough but will make it for now
-  static const ; // { dg-error "10: error: declaration does not declare anything" }
+  static const ; // { dg-error "10:declaration does not declare anything" }
 };

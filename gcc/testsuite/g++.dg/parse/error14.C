@@ -19,5 +19,8 @@ struct X
         Zinc<int>( //);
 		  //    }
 
-}; // { dg-error "2: error: expected '.' at end of input|1: error: expected primary-expression before '.' token|1: error: expected ';' before '.' token|1: error: expected unqualified-id at end of input" }
+}; // { dg-error "2:expected '.' at end of input" "at end of input" }
+   // { dg-error "1:expected primary-expression before '.' token" "primary" { target *-*-* } 22 }
+   // { dg-error "1:expected ';' before '.' token" "semicolon" { target *-*-* } 22 }
+   // { dg-error "1:expected unqualified-id at end of input" "unqual" { target *-*-* } 22 }
 

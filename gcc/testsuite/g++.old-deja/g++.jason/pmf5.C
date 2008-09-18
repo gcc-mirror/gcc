@@ -15,4 +15,5 @@ struct ThingEntry {
 static ThingEntry KeyWordTable[] = {
         &Thing::FunctionA,
         Thing::OverloadFn,
-};				// { dg-warning "" } implicit &
+};				// { dg-error "assuming" "assuming" } implicit &
+// { dg-message "note" "note" { target *-*-* } 18 }

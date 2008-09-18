@@ -3,9 +3,9 @@
 // Simplified from bug report by Trevor Taylor <ttaylor@powerup.com.au>
 
 struct T {
-  int operator()(int) { } // { dg-error "" } candidate
+  int operator()(int) { } // { dg-message "candidates" }
 };
 
 int main() {
-  T()(); // { dg-error "" } no such operator
+  T()(); // { dg-error "match" } no such operator
 }

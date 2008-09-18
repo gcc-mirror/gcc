@@ -17,4 +17,4 @@ void S<T>::test()
 
 template struct S<int>;
 template struct S<long>;
-template struct S<float>;	// { dg-error "instantiated from here" }
+template struct S<float>;	// { dg-message "instantiated from here" }

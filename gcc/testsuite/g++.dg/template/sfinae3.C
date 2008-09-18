@@ -9,7 +9,7 @@ template<typename> struct A
 
 template<typename> struct B
 {
-  B(const B&); // { dg-error "candidate" }
+  B(const B&); // { dg-message "candidate" }
   typedef typename A<char[A<B>::i]>::X Y;
   template<typename T> B(T, Y); // { dg-error "call" }
 };

@@ -12,7 +12,7 @@ struct C {
 };
 int main() {
   C c;
-  A(c.p.i); // { dg-error "9: error: request for member 'i' in 'c.C::p', which is of non-class type 'B" }
+  A(c.p.i); // { dg-error "9:request for member 'i' in 'c.C::p', which is of non-class type 'B" }
   return 0;
 }
 

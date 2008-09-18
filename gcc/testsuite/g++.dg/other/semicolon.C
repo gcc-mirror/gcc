@@ -5,6 +5,7 @@
 
 struct A
 {
-  struct B { int i; } // { dg-error "3: error: new types may not be defined in a return type|note: \\(perhaps a semicolon is missing" }
-  void foo();   // { dg-error "12: error: two or more|return type" }
+  struct B { int i; } // { dg-error "3:new types may not be defined in a return type" }
+                      // { dg-message "perhaps a semicolon is missing" "note" { target *-*-* } 8 }
+  void foo();   // { dg-error "12:two or more" }
 };

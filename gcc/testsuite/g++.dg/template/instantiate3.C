@@ -14,4 +14,4 @@ struct ACE_Cleanup_Adapter
   TYPE object_;		// { dg-error "incomplete type" }
 };
 
-template class ACE_Cleanup_Adapter<ACE_Null_Mutex>; // { dg-error "instantiated from here" }
+template class ACE_Cleanup_Adapter<ACE_Null_Mutex>; // { dg-message "instantiated from here" }

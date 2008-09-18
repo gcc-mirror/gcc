@@ -32,5 +32,5 @@ template <typename T> struct B2 : T
   myconst b;
 };
 
-B1<AS> b1;	// { dg-error "instantiated" "" }
+B1<AS> b1;	// { dg-message "instantiated" "" }
 B2<AS> b2;

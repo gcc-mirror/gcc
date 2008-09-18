@@ -5,5 +5,5 @@ namespace a {
 }
 
 namespace b {
-  template <> class ::a::Foo<double> {}; // { dg-error "error: global qualification of class name is invalid" }
+  template <> class ::a::Foo<double> {}; // { dg-error "global qualification of class name is invalid" }
 }

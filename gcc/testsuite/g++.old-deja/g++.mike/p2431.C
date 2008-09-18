@@ -3,7 +3,7 @@
 class A
 {
 	public:
-      A(A &); // { dg-error "" } candidates are
+      A(A &); // { dg-message "candidates" }
 };
 
 class B
@@ -18,6 +18,6 @@ class C
 	C()
 	{
 		B	b;
-		A a = b;// { dg-error "" } 
+		A a = b;// { dg-error "match" } 
 	}
 };

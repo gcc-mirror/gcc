@@ -8,5 +8,5 @@ struct A
   A(int);
 };
 
-A a = -A();	// { dg-error "10: error: no match for.*operator-.*in.*-A\\(\\)" }
-A b = -A(5);	// { dg-error "11: error: no match for.*operator-.*in.*-A\\(5\\)" }
+A a = -A();	// { dg-error "10:no match for.*operator-.*in.*-A\\(\\)" }
+A b = -A(5);	// { dg-error "11:no match for.*operator-.*in.*-A\\(5\\)" }

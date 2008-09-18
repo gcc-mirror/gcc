@@ -7,13 +7,13 @@
 struct A 
 {
   void f();
-  void foo(void (A::*)(int));       // { dg-error "candidate" "" }
+  void foo(void (A::*)(int));       // { dg-message "candidate" "" }
   template<typename T>
     void g(T);
   void h()
   {
     void (A::*p)() = &A::f;
     void (A::*q)() = &(A::f);       // { dg-error "parenthesized" "" }
-    foo(&g<int>);                   // { dg-error "" "" }
+    foo(&g<int>);                   // { dg-error "no matching" "" }
   }
 };

@@ -2,7 +2,7 @@
 // { dg-do compile }
 
 struct A
-{		// { dg-error "candidates" }
+{		// { dg-message "candidates" }
   virtual A foo ();
 };
 

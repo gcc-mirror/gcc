@@ -5,7 +5,7 @@
 // c++/9256: Make sure that a pointer to an array of abstract elements
 //  cannot be created, not even during template substitution (DR337).
 
-struct Abstract { virtual void f() = 0; };  // { dg-error "" } 
+struct Abstract { virtual void f() = 0; };  // { dg-message "note" } 
 struct Complete { void f(); };
 
 
@@ -35,7 +35,7 @@ template <class T> struct K {
   T (*a)[2];   // { dg-error "abstract class type" }
 };
 
-template struct K<Abstract>;  // { dg-error "from here" }
+template struct K<Abstract>;  // { dg-message "instantiated" }
 
 
 
