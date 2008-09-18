@@ -2,6 +2,13 @@
 
 	Backport from mainline:
 	2008-04-03  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/35713
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Use integer
+	constants of the appropriate size for runtime calculations.
+
+	Backport from mainline:
+	2008-04-03  Janis Johnson  <janis187@us.ibm.com>
 	PR c/35712
 	* dfp.c (decimal_from_decnumber): Retain trailing zeroes for
 	decimal-float literal constant zero.

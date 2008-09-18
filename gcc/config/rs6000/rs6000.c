@@ -6786,7 +6786,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       else if (reg == fpr && TYPE_MODE (type) == TDmode)
 	{
 	  regalign = 1;
-	  t = build2 (BIT_IOR_EXPR, TREE_TYPE (reg), reg, size_int (1));
+	  t = build2 (BIT_IOR_EXPR, TREE_TYPE (reg), reg,
+		      build_int_cst (TREE_TYPE (reg), 1));
 	  u = build2 (MODIFY_EXPR, void_type_node, reg, t);
 	}
 
@@ -6826,7 +6827,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  /* Ensure that we don't find any more args in regs.
 	     Alignment has taken care of for special cases.  */
-	  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (reg), reg, size_int (8));
+	  t = build_gimple_modify_stmt (reg,
+					build_int_cst (TREE_TYPE (reg), 8));
 	  gimplify_and_add (t, pre_p);
 	}
     }
