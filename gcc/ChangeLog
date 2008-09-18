@@ -1,3 +1,11 @@
+2008-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37394
+	* config/ia64/ia64.c (ia64_optimization_options): Move
+	checking and setting flag_schedule_insns_after_reload and
+	ia64_flag_schedule_insns2 back to ...
+	(ia64_override_options): Here.
+
 2008-09-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-opt/37451

@@ -5233,6 +5233,9 @@ ia64_override_options (void)
       TARGET_INLINE_SQRT = INL_MAX_THR;
     }
 
+  ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
+  flag_schedule_insns_after_reload = 0;
+
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
@@ -9922,13 +9925,6 @@ void
 ia64_optimization_options (int level ATTRIBUTE_UNUSED,
                            int size ATTRIBUTE_UNUSED)
 {
-  /* Disable the second machine independent scheduling pass and use one for the
-     IA-64.  This needs to be here instead of in OVERRIDE_OPTIONS because this
-     is done whenever the optimization is changed via #pragma GCC optimize or
-     attribute((optimize(...))).  */
-  ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
-
   /* Let the scheduler form additional regions.  */
   set_param_value ("max-sched-extend-regions-iters", 2);
 
