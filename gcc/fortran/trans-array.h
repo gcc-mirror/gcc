@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Generate code to free an array.  */
-tree gfc_array_deallocate (tree, tree);
+tree gfc_array_deallocate (tree, tree, gfc_expr*);
 
 /* Generate code to initialize an allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */

@@ -4005,16 +4005,16 @@ gfc_trans_deallocate (gfc_code * code)
 		   && !(!last && expr->symtree->n.sym->attr.pointer))
 	    {
 	      tmp = gfc_deallocate_alloc_comp (expr->ts.derived, se.expr,
-						expr->rank);
+					       expr->rank);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
 	}
 
       if (expr->rank)
-	tmp = gfc_array_deallocate (se.expr, pstat);
+	tmp = gfc_array_deallocate (se.expr, pstat, expr);
       else
 	{
-	  tmp = gfc_deallocate_with_status (se.expr, pstat, false);
+	  tmp = gfc_deallocate_with_status (se.expr, pstat, false, expr);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  tmp = fold_build2 (MODIFY_EXPR, void_type_node,
