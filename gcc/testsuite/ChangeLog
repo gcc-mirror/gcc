@@ -1,3 +1,8 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37258
+	* gcc.c-torture/compile/pr37258.c: New testcase.
+
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/37102

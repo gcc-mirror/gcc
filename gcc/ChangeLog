@@ -1,3 +1,10 @@
+2008-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37258
+	* tree-ssa-sccvn.c (vn_phi_compute_hash): Include the precision
+	and signedness for integral types.
+	(vn_phi_eq): Require compatible types.
+
 2008-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/34037
