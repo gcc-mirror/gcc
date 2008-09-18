@@ -1,5 +1,10 @@
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-outof-ssa.c (eliminate_useless_phis): fix formatting.
+	* tree-flow-.h (struct immediate_use_iterator_d): Fix comment.
+
+2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
+
 	PR tree-optimization/37102
 	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args
 	from a node. Check to see if another PHI is dead.

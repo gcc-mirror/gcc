@@ -606,7 +606,7 @@ replace_def_variable (var_map map, def_operand_p def_p, tree *expr)
 }
 
 
-/* Remove each argument from a PHI node.  If an arg was the last use of an SSA_NAME, 
+/* Remove each argument from PHI.  If an arg was the last use of an SSA_NAME, 
    check to see if this allows another PHI node to be removed.  */
 
 static void
@@ -667,8 +667,8 @@ eliminate_useless_phis (void)
 	    {
 #ifdef ENABLE_CHECKING
 	      size_t i;
-	      /* There should be no arguments of this PHI which are not virtual, or we 
-	         get incorrect results.  */
+	      /* There should be no arguments which are not virtual, or the
+	         results will be incorrect.  */
 	      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	        {
 		  tree arg = PHI_ARG_DEF (phi, i);

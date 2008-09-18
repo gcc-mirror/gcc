@@ -508,7 +508,7 @@ typedef struct immediate_use_iterator_d
        {
          FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 	   {
-	     SET_USE (use_p) = blah;
+	     SET_USE (use_p, blah);
 	   }
 	 update_stmt (stmt);
        }							 */
