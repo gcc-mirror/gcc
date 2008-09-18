@@ -1,3 +1,15 @@
+2008-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/34037
+	* gimplify.c (gimplify_type_sizes): When not optimizing, ensure
+	TYPE_MIN_VALUE and TYPE_MAX_VALUE is not is not DECL_IGNORED_P
+	VAR_DECL.
+	* cfgexpand.c (expand_used_vars): Keep DECL_ARTIFICIAL
+	!DECL_IGNORED_P vars in local_decls list for instantiate_decls,
+	ggc_free other TREE_LIST nodes from that chain.
+	* function.c (instantiate_decls): Instantiate also DECL_RTL
+	of vars in cfun->local_decls, free that list afterwards.
+
 2008-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2.h (WIDEST_HARDWARE_FP_SIZE): Move to...
@@ -5,7 +17,7 @@
 
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-outof-ssa.c (eliminate_useless_phis): fix formatting.
+	* tree-outof-ssa.c (eliminate_useless_phis): Fix formatting.
 	* tree-flow-.h (struct immediate_use_iterator_d): Fix comment.
 
 2008-09-18  Andrew MacLeod  <amacleod@redhat.com>

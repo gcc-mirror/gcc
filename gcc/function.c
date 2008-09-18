@@ -1634,7 +1634,7 @@ instantiate_decls_1 (tree let)
 static void
 instantiate_decls (tree fndecl)
 {
-  tree decl;
+  tree decl, t, next;
 
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
@@ -1650,6 +1650,17 @@ instantiate_decls (tree fndecl)
 
   /* Now process all variables defined in the function or its subblocks.  */
   instantiate_decls_1 (DECL_INITIAL (fndecl));
+
+  t = cfun->local_decls;
+  cfun->local_decls = NULL_TREE;
+  for (; t; t = next)
+    {
+      next = TREE_CHAIN (t);
+      decl = TREE_VALUE (t);
+      if (DECL_RTL_SET_P (decl))
+	instantiate_decl_rtl (DECL_RTL (decl));
+      ggc_free (t);
+    }
 }
 
 /* Pass through the INSNS of function FNDECL and convert virtual register

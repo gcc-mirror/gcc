@@ -7117,6 +7117,18 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
       /* These types may not have declarations, so handle them here.  */
       gimplify_type_sizes (TREE_TYPE (type), list_p);
       gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
+      /* When not optimizing, ensure VLA bounds aren't removed.  */
+      if (!optimize
+	  && TYPE_DOMAIN (type)
+	  && INTEGRAL_TYPE_P (TYPE_DOMAIN (type)))
+	{
+	  t = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+	  if (t && TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t))
+	    DECL_IGNORED_P (t) = 0;
+	  t = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	  if (t && TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t))
+	    DECL_IGNORED_P (t) = 0;
+	}
       break;
 
     case RECORD_TYPE:
