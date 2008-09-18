@@ -1,3 +1,11 @@
+2008-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (__shared_count<>::
+	__shared_count(_Ptr, _Deleter), __shared_count<>::
+	__shared_count(_Ptr, _Deleter, _Alloc), __shared_count<>::
+	__shared_count(_Sp_make_shared_tag, _Tp*, _Alloc, _Args&&...)):
+	Qualify new with ::.
+
 2008-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37547
