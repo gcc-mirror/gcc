@@ -1,3 +1,8 @@
+2008-09-18  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/utils.c (create_subprog_decl): Use DECL_DECLARED_INLINE_P.
+	(end_subprog_body): Do not set DECL_INLINE.
+
 2008-09-17  Pascal Rigaux  <pixel@mandriva.com>
 
 	PR ada/21327
