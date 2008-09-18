@@ -1,3 +1,16 @@
+2008-09-18  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/37499
+	* sched-int.h (struct _haifa_insn_data): Remove unused field
+	ref_count.
+
+	* sched-rgn.c (ref_counts): Remove.
+	(insn_referenced): New static variable.
+	(INSN_REF_COUNT): Remove.
+	(sched_run_compute_dependencies): Use insn_referenced instead of
+	INSN_REF_COUNT.
+	(add_branch_dependences): Likewise.  Delete dead assignment.
+
 2008-09-17  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* haifa-sched.c (dep_cost_1): Recognize the producer even if the
