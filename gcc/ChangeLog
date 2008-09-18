@@ -1,3 +1,8 @@
+2008-09-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* doc/invoke.texi: Document -mhard-dfp, -mno-hard-dfp.
+	Mention -march=z9-109 and z9-ec.
+
 2008-09-12  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/37466

@@ -718,7 +718,8 @@ See RS/6000 and PowerPC Options.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mhard-float  -msoft-float -mlong-double-64 -mlong-double-128 @gol
+-mhard-float  -msoft-float  -mhard-dfp -mno-hard-dfp @gol
+-mlong-double-64 -mlong-double-128 @gol
 -mbackchain  -mno-backchain -mpacked-stack  -mno-packed-stack @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
@@ -13612,6 +13613,17 @@ functions in @file{libgcc.a} will be used to perform floating-point
 operations.  When @option{-mhard-float} is specified, the compiler
 generates IEEE floating-point instructions.  This is the default.
 
+@item -mhard-dfp
+@itemx -mno-hard-dfp
+@opindex mhard-dfp
+@opindex mno-hard-dfp
+Use (do not use) the hardware decimal-floating-point instructions for
+decimal-floating-point operations.  When @option{-mno-hard-dfp} is
+specified, functions in @file{libgcc.a} will be used to perform
+decimal-floating-point operations.  When @option{-mhard-dfp} is
+specified, the compiler generates decimal-floating-point hardware
+instructions.  This is the default for @option{-march=z9-ec} or higher.
+
 @item -mlong-double-64
 @itemx -mlong-double-128
 @opindex mlong-double-64
@@ -13722,7 +13734,8 @@ The default is to not print debug information.
 @opindex march
 Generate code that will run on @var{cpu-type}, which is the name of a system
 representing a certain processor type.  Possible values for
-@var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, and @samp{z990}.
+@var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, @samp{z990},
+@samp{z9-109} and @samp{z9-ec}.
 When generating code using the instructions available on z/Architecture,
 the default is @option{-march=z900}.  Otherwise, the default is
 @option{-march=g5}.
