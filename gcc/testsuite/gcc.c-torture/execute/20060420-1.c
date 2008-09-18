@@ -50,9 +50,11 @@ main (void)
 {
   int i;
   float *dst, *src[2];
+  char *cptr;
 
-  dst = buffer;
-  dst += (-(long int) buffer & (16 * sizeof (float) - 1)) / sizeof (float);
+  cptr = (char *)buffer;
+  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));
+  dst = (float *)cptr;
   src[0] = dst + 16;
   src[1] = dst + 32;
   for (i = 0; i < 16; ++i)
