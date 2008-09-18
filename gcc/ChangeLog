@@ -1,3 +1,9 @@
+2008-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/37544
+	* regrename.c (maybe_mode_change): Exit early when copy_mode
+	is narrower than orig_mode and narrower than new_mode.
+
 2008-09-18  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/37499
@@ -234,8 +240,8 @@
 
 2008-09-13  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_expand_movmem, ix86_expand_movstr): Avoid processing too
-	many bytes on misalligned blocks.
+	* i386.c (ix86_expand_movmem, ix86_expand_movstr): Avoid processing
+	too many bytes on misalligned blocks.
 
 2008-09-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -316,7 +322,8 @@
 
 2008-09-12  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* tree-scalar-evolution.c (set_instantiated_value): Set instantiated_below.
+	* tree-scalar-evolution.c (set_instantiated_value): Set
+	instantiated_below.
 
 2008-09-12  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -459,7 +466,8 @@
 	TRUTH_AND_EXPR for boolean (1-bit precision) expressions.
 	(do_jump) [BIT_IOR_EXPR]: Compile as TRUTH_OR_EXPR.
 
-	* tree-flow.h (simplify_stmt_using_ranges): Accept a GSI, return a bool.
+	* tree-flow.h (simplify_stmt_using_ranges): Accept a GSI, return
+	a bool.
 	* tree-ssa-propagate.c (substitute_and_fold): Pass a GSI to
 	VRP's simplify_stmt_using_ranges.  Do simplify_stmt_using_ranges
 	before finalizing the changes.
@@ -480,8 +488,8 @@
 2008-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_release_function_body): Plug memory leak on
-	ipa_transforms_to_apply and CFG; ggc_free gimple df and struct function
-	so we are sure we do not dangle it forever.
+	ipa_transforms_to_apply and CFG; ggc_free gimple df and struct
+	function so we are sure we do not dangle it forever.
 	* function.c (outer_function_chain, find_function_data): Remove.
 	(function_context_stack): New.
 	(push_function_context, pop_function_context): Update.
@@ -538,7 +546,8 @@
 	register_overhead, free_overhead, vec_heap_free): New functions.
 	(vec_gc_o_reserve_1): ggc_free when resizing to 0.
 	(vec_heap_o_reserve_1): free when resizing to 0; add statistics.
-	(cmp_statistic, add_statistics, dump_vec_loc_statistics): New functions.
+	(cmp_statistic, add_statistics, dump_vec_loc_statistics):
+	New functions.
 
 2008-09-11  Ira Rosen  <irar@il.ibm.com>
 
@@ -692,8 +701,8 @@
 	calls.
 
 	PR target/37438
-	* config/i386/i386.md (zero_extendqihi2_movzbl): Enable when optimizing
-	for size, not speed.
+	* config/i386/i386.md (zero_extendqihi2_movzbl): Enable when
+	optimizing for size, not speed.
 
 	PR rtl-optimization/37408
 	* function.c (assign_parm_find_stack_rtl): Set correct MEM_SIZE
@@ -702,18 +711,20 @@
 2008-09-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/37375
-	* tree-scalar-evolution.c (scev_info_str): Add field instantiated_below.
+	* tree-scalar-evolution.c (scev_info_str): Add field
+	instantiated_below.
 	(new_scev_info_str, eq_scev_info, find_var_scev_info,
 	set_scalar_evolution, get_scalar_evolution, get_instantiated_value,
 	set_instantiated_value): Pass instantiated_below.
-	(analyze_scalar_evolution_1, analyze_scalar_evolution): Update calls to
-	above functions.
+	(analyze_scalar_evolution_1, analyze_scalar_evolution): Update calls
+	to above functions.
 	(instantiate_scev_1, instantiate_scev): Pass a basic block above which
 	the definitions are not instantiated.
 
 	* tree-scalar-evolution.h (instantiate_scev): Update declaration.
 	(block_before_loop): New.
-	* tree-data-ref.c (dr_analyze_indices): Update uses of instantiate_scev.
+	* tree-data-ref.c (dr_analyze_indices): Update uses of
+	instantiate_scev.
 	* graphite.c (block_before_scop): New.
 	(loop_affine_expr, stmt_simple_for_scop_p, harmful_stmt_in_bb): Pass a
 	basic block, not a loop for determining the parameters.
@@ -1671,8 +1682,8 @@
 	openmp applications.
 	* pa-hpux11.h (LIB_SPEC): Likewise.
 
-	* ira.c (setup_eliminable_regset): Only declare i if ELIMINABLE_REGS is
-	defined.
+	* ira.c (setup_eliminable_regset): Only declare i if ELIMINABLE_REGS
+	is defined.
 
 2008-09-01  Jan Hubicka  <jh@suse.cz>
 
@@ -1782,8 +1793,7 @@
 
 	* sel-sched.h, sel-sched-dump.h, sel-sched-ir.h, sel-sched.c,
 	sel-sched-dump.c, sel-sched-ir.c: New files.
-	* Makefile.in (OBJS-common): Add selective scheduling object
-	files.
+	* Makefile.in (OBJS-common): Add selective scheduling object files.
 	(sel-sched.o, sel-sched-dump.o, sel-sched-ir.o): New entries.
 	(SEL_SCHED_IR_H, SEL_SCHED_DUMP_H): New entries.
 	(sched-vis.o): Add dependency on $(INSN_ATTR_H).
@@ -1905,8 +1915,7 @@
 	(setup_sched_dump): New function.
 	(haifa_init_only_bb): New static function.
 	(haifa_speculate_insn): New static function.
-	(try_ready): Use haifa_* instead of speculate_insn and
-	change_pattern.
+	(try_ready): Use haifa_* instead of speculate_insn and change_pattern.
 	(extend_ready, extend_all): Remove.
 	(sched_extend_ready_list, sched_finish_ready_list): New functions.
 	(create_check_block_twin, add_to_speculative_block): Use
@@ -1936,8 +1945,7 @@
 	(current_sched_info_var): Remove.
 	(move_block_after_check): Use common_sched_info.
 	(haifa_luid_for_non_insn): New static function.
-	(init_before_recovery): Use haifa_init_only_bb instead of
-	add_block.
+	(init_before_recovery): Use haifa_init_only_bb instead of add_block.
 	(increase_insn_priority): New.
 	* modulo-sched.c: (issue_rate): Remove static declaration.
 	(sms_sched_info): Change type to haifa_sched_info.
@@ -2351,7 +2359,8 @@
 	(noce_try_cmove_arith): Likewise.
 	(noce_try_sign_mask): LIkewise.
 	* expr.c (compress_float_constant): Update rtx_cost calls.
-	* tree-ssa-address.c (most_expensive_mult_to_index): Add speed argument.
+	* tree-ssa-address.c (most_expensive_mult_to_index): Add speed
+	argument.
 	(addr_to_parts): Likewise.
 	(create_mem_ref): Likewise.
 	* dse.c (find_shift_sequence): Add speed argument.
@@ -2370,7 +2379,8 @@
 	(expand_mult_highpart): Use profile.
 	(expand_smod_pow2): Use profile.
 	(expand_divmod): Use profile.
-	* simplify-rtx.c (simplify_binary_operation_1): Update call of rtx_cost.
+	* simplify-rtx.c (simplify_binary_operation_1): Update call of
+	rtx_cost.
 	* loop-invariant.c (create_new_invariant): Use profile.
 	(gain_for_invariant): Add speed parameter.
 	(best_gain_for_invariant): Likewise.
@@ -2638,7 +2648,8 @@
 	* config/sparc/sparc.h (BRANCH_COST): Update.
 	* config/m32r/m32r.h (BRANCH_COST): Update.
 	* config/i386/i386.h (BRANCH_COST): Update.
-	* config/i386/i386.c (ix86_expand_int_movcc): Update use of BRANCH_COST.
+	* config/i386/i386.c (ix86_expand_int_movcc): Update use of
+	BRANCH_COST.
 	* config/sh/sh.h (BRANCH_COST): Update.
 	* config/pdp11/pdp11.h (BRANCH_COST): Update.
 	* config/avr/avr.h (BRANCH_COST): Update.
@@ -2688,7 +2699,8 @@
 	* tree-ssa-pre.c (do_pre): Use optimize_function_for_speed_p.
 	* tree-predcom.c (tree_predictive_commoning): Use
 	optimize_loop_for_speed_p.
-	* varasm.c (assemble_start_function): Use optimize_function_for_speed_p.
+	* varasm.c (assemble_start_function): Use
+	optimize_function_for_speed_p.
 	* bb-reorder.c (rest_of_handle_reorder_blocks): Likewise.
 	* predict.c (optimize_loop_for_speed_p): Fix walk.
 
@@ -2909,16 +2921,17 @@
 
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
-	* tree.c (build_function_type_skip_args, build_function_decl_skip_args):
-	New functions.
-	* tree.h (build_function_type_skip_args, build_function_decl_skip_args):
-	Declare.
+	* tree.c (build_function_type_skip_args,
+	build_function_decl_skip_args): New functions.
+	* tree.h (build_function_type_skip_args,
+	build_function_decl_skip_args): Declare.
 	* gimple.c (giple_copy_call_skip_args): New function.
 	(giple_copy_call_skip_args): Declare.
 
 	* cgraph.h (cgraph_function_versioning): Add skip_args arugmnet
 	* ipa-cp.c (ipcp_node_not_modifiable_p): Rename to ...
-	(ipcp_node_modifiable_p): ... this one; use tree_versionable_function_p.
+	(ipcp_node_modifiable_p): ... this one; use
+	tree_versionable_function_p.
 	(ipcp_create_replace_map): Improve debug output.
 	(ipcp_need_redirect_p): Return false when not clonning.
 	(ipcp_update_callgraph): Skip args.
@@ -2927,13 +2940,15 @@
 	* cgraphunit.c (cgraph_function_versioning): Add skip_args argument.
 	(save_inline_function_body): Update call of tree_function_versioning.
 	* ipa-prop.c (ipa_edge_removal_hook): Do not ICE on unanalyzed nodes.
-	* tree-inline.c (copy_arguments_for_versioning): Add skip_args argument.
+	* tree-inline.c (copy_arguments_for_versioning): Add skip_args
+	argument.
 	(tree_function_versioning): Likewise.
 	* tree-inline.h (tree_function_versioning): Update prototype.
 
 2008-08-29  Jan Hubicka  <jh@suse.cz>
 
-	* loop-unswitch.c (unswitch_single_loop): Use optimize_loop_for_speed_p.
+	* loop-unswitch.c (unswitch_single_loop): Use
+	optimize_loop_for_speed_p.
 	* tree-ssa-threadupdate.c (mark_threaded_blocks):
 	Use optimize_function_for_size_p.
 	* tracer.c (ignore_bb_p): Use optimize_bb_for_size_p.
@@ -2947,7 +2962,8 @@
 	* builtins.c (fold_builtin_cabs): Use optimize_function_for_speed_p.
 	(fold_builtin_strcpy, fold_builtin_fputs): Use
 	optimize_function_for_size_p.
-	* fold-const.c (tree_swap_operands_p): Use optimize_function_for_size_p.
+	* fold-const.c (tree_swap_operands_p): Use
+	optimize_function_for_size_p.
 	* recog.c (relax_delay_slots): Likewise.
 	* tree-ssa-math-opts.c (replace_reciprocal):
 	Use optimize_bb_for_speed_p.
@@ -2963,11 +2979,12 @@
 	work it out from profile.
 	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely): Use
 	optimize_loop_for_speed_p.
-	* predict.c (optimize_bb_for_size_p, optimize_bb_for_speed_p): Constify
-	argument.
+	* predict.c (optimize_bb_for_size_p, optimize_bb_for_speed_p):
+	Constify argument.
 	(optimize_loop_nest_for_size_p, optimize_loop_nest_for_speed_p): New.
 	* tree-parloops.c (parallelize_loops): Use optimize_loop_for_size_p.
-	* tree-eh.c (decide_copy_try_finally): Use optimize_function_for_size_p.
+	* tree-eh.c (decide_copy_try_finally): Use
+	optimize_function_for_size_p.
 	* local-alloc.c (block_alloc): Pass BB pointer.
 	(find_free_reg): Add BB pointer, use optimize_bb_for_size_p.
 	* gcse.c (gcse_main): Use optimize_function_for_size_p.
@@ -4365,8 +4382,8 @@
 	(update_call_notes_after_inlining): Expect ADDR_EXPR in operand.
 	* ipa-prop.h (jump_func_type): Remove IPA_CONST_REF.
 	(jump_func_type): Remove IPA_CONST_VALUE_REF.
-	* tree-inline.c (tree_function_versioning): Add variables referenced by
-	replacing trees.
+	* tree-inline.c (tree_function_versioning): Add variables referenced
+	by replacing trees.
 
 2008-08-23  Jan Hubicka  <jh@suse.cz>
 
@@ -4766,9 +4783,9 @@
 	(vect_get_and_check_slp_defs): Detect patterns.
 	(vect_build_slp_tree): Add an argument, don't fail in case of multiple
 	types.
-	(vect_analyze_slp_instance): Don't fail in case of multiple types. Call
-	vect_build_slp_tree with correct arguments. Calculate unrolling factor
-	according to the smallest type in the loop.
+	(vect_analyze_slp_instance): Don't fail in case of multiple types.
+	Call vect_build_slp_tree with correct arguments. Calculate unrolling
+	factor according to the smallest type in the loop.
 	(vect_detect_hybrid_slp_stmts): Include statements from patterns.
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Call
 	supportable_widening_operation with correct arguments.
@@ -5581,7 +5598,8 @@
 
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/mips/mips.c (mips_unspec_address_offset): Move earlier in file.
+	* config/mips/mips.c (mips_unspec_address_offset): Move earlier
+	in file.
 	(mips_unspec_address, mips_unspec_offset_high): Likewise.
 	(mips_ok_for_lazy_binding_p, mips_load_call_address): Likewise.
 	(mips16_cfun_returns_in_fpr_p): Likewise.
@@ -6150,7 +6168,8 @@
 	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): New.
 	* config.in, configure: Rebuild.
 	* dwarf2asm.c (dw2_asm_output_data_raw): New.
-	(dw2_asm_output_data_uleb128_raw, dw2_asm_output_data_sleb128_raw): New.
+	(dw2_asm_output_data_uleb128_raw, dw2_asm_output_data_sleb128_raw):
+	New.
 	(dw2_force_const_mem): Externalize.
 	* dwarf2asm.h: Update.
 	* dwarf2out.c (dwarf2out_cfi_label): If flag_dwarf2_cfi_asm, don't
@@ -6185,8 +6204,10 @@
 
 	(MFC_MIN_DMA_LIST_ELEMENTS): New define.
 	(MFC_MAX_DMA_LIST_ELEMENTS): Likewise.
-	(MFC_MIN_DMA_LIST_SIZE): Redefine in terms of MFC_MIN_DMA_LIST_ELEMENTS.
-	(MFC_MAX_DMA_LIST_SIZE): Redefine in terms of MFC_MAX_DMA_LIST_ELEMENTS.
+	(MFC_MIN_DMA_LIST_SIZE): Redefine in terms of
+	MFC_MIN_DMA_LIST_ELEMENTS.
+	(MFC_MAX_DMA_LIST_SIZE): Redefine in terms of
+	MFC_MAX_DMA_LIST_ELEMENTS.
 
 	(MFC_START_ENABLE): Remove PPU-only define.
 	(MFC_PUTS_CMD, MFC_PUTFS_CMD, MFC_PUTBS_CMD): Likewise.
@@ -6861,7 +6882,8 @@
 
 	* configure.ac: Use the m4_do macro to concatenate the warnings into
 	one string in ACX_PROG_CC_WARNING_OPTS,
-	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC and ACX_PROG_CC_WARNINGS_ARE_ERRORS.
+	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC and
+	ACX_PROG_CC_WARNINGS_ARE_ERRORS.
 	* configure: Regenerate.
 
 2008-07-28  Richard Guenther  <rguenther@suse.de>
@@ -7363,7 +7385,8 @@
 	(ipa_analyze_params_uses): New function.
 	(ipa_free_node_params_substructures): Also free the param_calls linked
 	list.
-	(ipa_node_duplication_hook): Also duplicate the param_calls linked list.
+	(ipa_node_duplication_hook): Also duplicate the param_calls
+	linked list.
 	(ipa_print_node_param_flags): New function.
 	(ipa_print_all_params_modified): Renamed to ipa_print_all_param_flags.
 	(ipa_print_all_param_flags): Calls ipa_print_node_param_flags.
@@ -7912,15 +7935,16 @@
 	not optimizing so unused user vars remains visible.
 	* common.opt (flag_tree_ter): Always enable by default.
 	* tree-ssa-ter.c: Include flags.h
-	(is_replaceable_p): Check that locations match; when aliasing is missing
-	be conservative about loads.
+	(is_replaceable_p): Check that locations match; when aliasing
+	is missing be conservative about loads.
 	* tree-optimize.c (gate_init_datastructures): Remove.
 	(pass_init_datastructures): New.
 	* passes.c: Reorder passes so we always go into SSA.
 
 2008-07-19  Jan Hubicka  <jh@suse.cz>
 
-	* doc/extend.texi (flatten attribute): Remove note about unit-at-a-time
+	* doc/extend.texi (flatten attribute): Remove note about
+	unit-at-a-time.
 	* doc/invoke.texi (--combine): Likewise.
 	(-finline-functions-called-once): Update levels when enabled.
 	(-funit-at-a-time): Document new behaviour.
