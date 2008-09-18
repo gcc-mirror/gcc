@@ -2589,9 +2589,12 @@ gfc_match_call (void)
   if (sym->attr.flavor != FL_PROCEDURE && sym->ts.type == BT_DERIVED)
     return match_typebound_call (st);
 
-  /* If it does not seem to be callable...  */
+  /* If it does not seem to be callable (include functions so that the
+     right association is made.  They are thrown out in resolution.)
+     ...  */
   if (!sym->attr.generic
-	&& !sym->attr.subroutine)
+	&& !sym->attr.subroutine
+	&& !sym->attr.function)
     {
       if (!(sym->attr.external && !sym->attr.referenced))
 	{
