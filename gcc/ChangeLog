@@ -1,3 +1,11 @@
+2008-09-17  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* haifa-sched.c (dep_cost_1): Recognize the producer even if the
+	consumer is an asm.  Add comment why this is important.
+	(choose_ready): Add comment to the "INSN_CODE (insn) >= 0 ||
+	recog_memoized (insn) < 0" assert.  Put ENABLE_CHECKING around
+	it.
+
 2008-09-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* expr.c (emit_group_store): Do not shift before moving via a
