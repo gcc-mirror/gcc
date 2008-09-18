@@ -1,3 +1,57 @@
+2008-09-18  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/37448
+	* ipa-reference.c (ipa_reference_local_vars_info_d,
+	ipa_reference_global_vars_info_d,
+	ipa_reference_local_vars_info_t, ipa_reference_global_vars_info_t,
+	ipa_reference_vars_info_t): Move here from ipa-reference.h
+	(node_duplication_hook_holder, node_removal_hook_holder): New.
+	(get_reference_vars_info_from_cgraph): Rename to ...
+	(get_reference_vars_info): ... this one, use cgraph uids.
+	(get_local_reference_vars_info, get_global_reference_vars_info):
+	Use cgraph instead of decl.
+	(ipa_reference_get_read_local, ipa_reference_get_written_local): Remove.
+	(ipa_reference_get_read_global, ipa_reference_get_not_read_global
+	ipa_reference_get_written_global, ipa_reference_get_not_written_global): Use
+	cgraph argument.
+	(check_call): Simplify avail check.
+	(scan_stmt_for_static_refs): Update.
+	(propagate_bits): Update.
+	(merge_callee_local_info): Remove.
+	(init_function_info): Use cgraph nodes.
+	(clean_function_local_data): Break out from ...
+	(clean_function): ... here.
+	(copy_local_bitmap, copy_global_bitmap): New functions.
+	(duplicate_node_data, remove_node_data): New functions.
+	(generate_summary): Register hooks; use visibility instead of
+	master clones.
+	(propafate): Use cgraph nodes; copy bitmap to each node in cycle.
+	* ipa-reference.h (ipa_reference_local_vars_info_d,
+	ipa_reference_global_vars_info_d,
+	ipa_reference_local_vars_info_t, ipa_reference_global_vars_info_t,
+	ipa_reference_vars_info_t): Move to ipa-reference.c
+	(ipa_reference_get_read_local, ipa_reference_get_written_local):
+	Remove.
+	(ipa_reference_get_read_global, ipa_reference_get_written_global,
+	ipa_reference_get_not_read_global, ipa_reference_get_not_written_global):
+	Update prototype.
+	* ipa-pure-const.c (funct_state_vec): Turn into VECtor.
+	(init_state): Remove.
+	(node_duplication_hook_holder, node_removal_hook_holder): New.
+	(get_function_state, set_function_state): Use VECtor.
+	(analyze_function): Check body availability.
+	(add_new_function): Likewise.
+	(duplicate_node_data, remove_node_data): New.
+	(generate_summary): Register hooks; do not care about clones.
+	(propafate): Do not care about clones; recursive functions are not looping.
+	* ipa-utils.c (searchc, ipa_utils_reduced_inorder): Do not skip clones.
+	* ipa-prop.c (edge_removal_hook_holder, node_removal_hook_holder,
+	* edge_duplication_hook_holder, node_duplication_hook_holder): Make
+	static.
+	* tree-flow.h (function_ann_d): Remove reference_vars_info.
+	* tree-ssa-opreands.c (add_call_clobber_ops, add_call_read_ops): Update call of
+	ipa-reference accesors.
+
 2008-09-18  Simon Baldwin  <simonb@google.com>
 
 	* c-opts.c (c_common_handle_option): Add handling for

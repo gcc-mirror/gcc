@@ -40,10 +40,10 @@ VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
 VEC (ipa_edge_args_t, heap) *ipa_edge_args_vector;
 
 /* Holders of ipa cgraph hooks: */
-struct cgraph_edge_hook_list *edge_removal_hook_holder;
-struct cgraph_node_hook_list *node_removal_hook_holder;
-struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
-struct cgraph_2node_hook_list *node_duplication_hook_holder;
+static struct cgraph_edge_hook_list *edge_removal_hook_holder;
+static struct cgraph_node_hook_list *node_removal_hook_holder;
+static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
+static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 
 /* Initialize worklist to contain all functions.  */
 struct ipa_func_list *
