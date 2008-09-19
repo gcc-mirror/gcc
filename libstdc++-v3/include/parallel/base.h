@@ -105,14 +105,14 @@ namespace __gnu_parallel
 
 /** @brief Calculates the rounded-down logarithm of @c n for base 2.
   *  @param n Argument.
-  *  @return Returns 0 for argument 0.
+  *  @return Returns 0 for any argument <1.
   */
 template<typename Size>
   inline Size
-  log2(Size n)
+  __log2(Size n)
     {
       Size k;
-      for (k = 0; n != 1; n >>= 1)
+      for (k = 0; n > 1; n >>= 1)
         ++k;
       return k;
     }
