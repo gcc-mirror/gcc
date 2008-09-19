@@ -227,11 +227,6 @@ struct variable_info
   /* A link to the variable for the next field in this structure.  */
   struct variable_info *next;
 
-  /* True if the variable is directly the target of a dereference.
-     This is used to track which variables are *actually* dereferenced
-     so we can prune their points to listed. */
-  unsigned int directly_dereferenced:1;
-
   /* True if this is a variable created by the constraint analysis, such as
      heap variables and constraints we had to break up.  */
   unsigned int is_artificial_var:1;
@@ -364,7 +359,6 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->id = id;
   ret->name = name;
   ret->decl = t;
-  ret->directly_dereferenced = false;
   ret->is_artificial_var = false;
   ret->is_heap_var = false;
   ret->is_special_var = false;
@@ -2524,14 +2518,6 @@ process_constraint_1 (constraint_t t, bool from_call)
 
   gcc_assert (rhs.var < VEC_length (varinfo_t, varmap));
   gcc_assert (lhs.var < VEC_length (varinfo_t, varmap));
-
-  if (!from_call)
-    {
-      if (lhs.type == DEREF)
-	get_varinfo (lhs.var)->directly_dereferenced = true;
-      if (rhs.type == DEREF)
-	get_varinfo (rhs.var)->directly_dereferenced = true;
-    }
 
   if (!use_field_sensitive)
     {
@@ -4714,20 +4700,16 @@ shared_bitmap_add (bitmap pt_vars)
    the from set.  */
 
 static void
-set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
-		   bool no_tbaa_pruning)
+set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
 {
   unsigned int i;
   bitmap_iterator bi;
-  alias_set_type ptr_alias_set;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
-  ptr_alias_set = get_alias_set (TREE_TYPE (TREE_TYPE (ptr)));
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
       varinfo_t vi = get_varinfo (i);
-      alias_set_type var_alias_set;
 
       /* The only artificial variables that are allowed in a may-alias
 	 set are heap variables.  */
@@ -4779,41 +4761,22 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 		      && vi->size <= SFT_OFFSET (sft) - vi->offset)
 		    break;
 
-		  var_alias_set = get_alias_set (sft);
-		  if (no_tbaa_pruning
-		      || (!is_derefed && !vi->directly_dereferenced)
-		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
-		    {
-		      bitmap_set_bit (into, DECL_UID (sft));
-		      
-		      /* Pointed-to SFTs are needed by the operand scanner
-			 to adjust offsets when adding operands to memory
-			 expressions that dereference PTR.  This means
-			 that memory partitioning may not partition
-			 this SFT because the operand scanner will not
-			 be able to find the other SFTs next to this
-			 one.  But we only need to do this if the pointed
-			 to type is aggregate.  */
-		      if (SFT_BASE_FOR_COMPONENTS_P (sft))
-			SFT_UNPARTITIONABLE_P (sft) = true;
-		    }
+		  bitmap_set_bit (into, DECL_UID (sft));
+
+		  /* Pointed-to SFTs are needed by the operand scanner
+		     to adjust offsets when adding operands to memory
+		     expressions that dereference PTR.  This means
+		     that memory partitioning may not partition
+		     this SFT because the operand scanner will not
+		     be able to find the other SFTs next to this
+		     one.  But we only need to do this if the pointed
+		     to type is aggregate.  */
+		  if (SFT_BASE_FOR_COMPONENTS_P (sft))
+		    SFT_UNPARTITIONABLE_P (sft) = true;
 		}
 	    }
 	  else
-	    {
-	      /* Otherwise, just add VI->DECL to the alias set.
-		 Don't type prune artificial vars.  */
-	      if (vi->is_artificial_var)
-		bitmap_set_bit (into, DECL_UID (vi->decl));
-	      else
-		{
-		  var_alias_set = get_alias_set (vi->decl);
-		  if (no_tbaa_pruning
-		      || (!is_derefed && !vi->directly_dereferenced)
-		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
-		    bitmap_set_bit (into, DECL_UID (vi->decl));
-		}
-	    }
+	    bitmap_set_bit (into, DECL_UID (vi->decl));
 	}
     }
 }
@@ -5020,9 +4983,7 @@ find_what_p_points_to (tree p)
 	      pi->pt_global_mem = 1;
 	    }
 
-	  set_uids_in_ptset (p, finished_solution, vi->solution,
-			     vi->directly_dereferenced,
-			     vi->no_tbaa_pruning);
+	  set_uids_in_ptset (p, finished_solution, vi->solution);
 	  result = shared_bitmap_lookup (finished_solution);
 
 	  if (!result)

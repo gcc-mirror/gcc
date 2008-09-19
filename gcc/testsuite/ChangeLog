@@ -1,3 +1,8 @@
+2008-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36343
+	* gcc.c-torture/execute/pr36343.c: New testcase.
+
 2008-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

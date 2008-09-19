@@ -1,3 +1,14 @@
+2008-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36343
+	* tree-ssa-structalias.c (struct variable_info): Remove
+	directly_dereferenced member.
+	(new_var_info): Do not set it.
+	(process_constraint_1): Likewise.
+	(set_uids_in_ptset): Remove TBAA-pruning code.
+	(find_what_p_points_to): Do not pass TBAA-pruning related
+	parameters.
+
 2008-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
