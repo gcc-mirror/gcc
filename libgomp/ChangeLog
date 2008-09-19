@@ -2,7 +2,7 @@
 	    Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/bsd/proc.c: New file.
-	* configure.tgt (*-*-darwin*): Use config_path "darwin posix".
+	* configure.tgt (*-*-darwin*): Use config_path "bsd posix".
 	* configure.ac: Check for header <sys/sysctl.h>
 	* configure: Regenerate.
 	* config.h.in: Likewise.
