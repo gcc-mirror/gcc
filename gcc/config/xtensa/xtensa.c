@@ -131,6 +131,7 @@ static rtx gen_float_relational (enum rtx_code, rtx, rtx);
 static rtx gen_conditional_move (rtx);
 static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
+static rtx xtensa_legitimize_tls_address (rtx);
 static bool xtensa_return_in_msb (const_tree);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -218,6 +219,12 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD xtensa_secondary_reload
+
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS (TARGET_THREADPTR && HAVE_AS_TLS)
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM xtensa_tls_referenced_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -466,6 +473,18 @@ constantpool_mem_p (rtx op)
   if (GET_CODE (op) == MEM)
     return constantpool_address_p (XEXP (op, 0));
   return FALSE;
+}
+
+
+/* Return TRUE if X is a thread-local symbol.  */
+
+static bool
+xtensa_tls_symbol_p (rtx x)
+{
+  if (! TARGET_HAVE_TLS)
+    return false;
+
+  return GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0;
 }
 
 
@@ -910,12 +929,38 @@ xtensa_split_operand_pair (rtx operands[4], enum machine_mode mode)
 int
 xtensa_emit_move_sequence (rtx *operands, enum machine_mode mode)
 {
-  if (CONSTANT_P (operands[1])
-      && (GET_CODE (operands[1]) != CONST_INT
-	  || !xtensa_simm12b (INTVAL (operands[1]))))
+  rtx src = operands[1];
+
+  if (CONSTANT_P (src)
+      && (GET_CODE (src) != CONST_INT || ! xtensa_simm12b (INTVAL (src))))
     {
-      if (!TARGET_CONST16)
-	operands[1] = force_const_mem (SImode, operands[1]);
+      rtx dst = operands[0];
+
+      if (xtensa_tls_referenced_p (src))
+	{
+	  rtx addend = NULL;
+
+	  if (GET_CODE (src) == CONST && GET_CODE (XEXP (src, 0)) == PLUS)
+	    {
+	      addend = XEXP (XEXP (src, 0), 1);
+	      src = XEXP (XEXP (src, 0), 0);
+	    }
+
+	  src = xtensa_legitimize_tls_address (src);
+	  if (addend)
+	    {
+	      src = gen_rtx_PLUS (mode, src, addend);
+	      src = force_operand (src, dst);
+	    }
+	  emit_move_insn (dst, src);
+	  return 1;
+	}
+
+      if (! TARGET_CONST16)
+	{
+	  src = force_const_mem (SImode, src);
+	  operands[1] = src;
+	}
 
       /* PC-relative loads are always SImode, and CONST16 is only
 	 supported in the movsi pattern, so add a SUBREG for any other
@@ -923,16 +968,16 @@ xtensa_emit_move_sequence (rtx *operands, enum machine_mode mode)
 
       if (mode != SImode)
 	{
-	  if (register_operand (operands[0], mode))
+	  if (register_operand (dst, mode))
 	    {
-	      operands[0] = simplify_gen_subreg (SImode, operands[0], mode, 0);
-	      emit_move_insn (operands[0], operands[1]);
+	      emit_move_insn (simplify_gen_subreg (SImode, dst, mode, 0), src);
 	      return 1;
 	    }
 	  else
 	    {
-	      operands[1] = force_reg (SImode, operands[1]);
-	      operands[1] = gen_lowpart_SUBREG (mode, operands[1]);
+	      src = force_reg (SImode, src);
+	      src = gen_lowpart_SUBREG (mode, src);
+	      operands[1] = src;
 	    }
 	}
     }
@@ -1664,7 +1709,8 @@ xtensa_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
 {
   /* Allow constant pool addresses.  */
   if (mode != BLKmode && GET_MODE_SIZE (mode) >= UNITS_PER_WORD
-      && ! TARGET_CONST16 && constantpool_address_p (addr))
+      && ! TARGET_CONST16 && constantpool_address_p (addr)
+      && ! xtensa_tls_referenced_p (addr))
     return true;
 
   while (GET_CODE (addr) == SUBREG)
@@ -1709,11 +1755,97 @@ xtensa_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
 }
 
 
+/* Construct the SYMBOL_REF for the _TLS_MODULE_BASE_ symbol.  */
+
+static GTY(()) rtx xtensa_tls_module_base_symbol;
+
+static rtx
+xtensa_tls_module_base (void)
+{
+  if (! xtensa_tls_module_base_symbol)
+    {
+      xtensa_tls_module_base_symbol =
+	gen_rtx_SYMBOL_REF (Pmode, "_TLS_MODULE_BASE_");
+      SYMBOL_REF_FLAGS (xtensa_tls_module_base_symbol)
+        |= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
+    }
+
+  return xtensa_tls_module_base_symbol;
+}
+
+
+static rtx
+xtensa_call_tls_desc (rtx sym, rtx *retp)
+{
+  rtx fn, arg, a10, call_insn, insns;
+
+  start_sequence ();
+  fn = gen_reg_rtx (Pmode);
+  arg = gen_reg_rtx (Pmode);
+  a10 = gen_rtx_REG (Pmode, 10);
+
+  emit_insn (gen_tls_func (fn, sym));
+  emit_insn (gen_tls_arg (arg, sym));
+  emit_move_insn (a10, arg);
+  call_insn = emit_call_insn (gen_tls_call (a10, fn, sym, const1_rtx));
+  CALL_INSN_FUNCTION_USAGE (call_insn)
+    = gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, a10),
+			 CALL_INSN_FUNCTION_USAGE (call_insn));
+  insns = get_insns ();
+  end_sequence ();
+
+  *retp = a10;
+  return insns;
+}
+
+
+static rtx
+xtensa_legitimize_tls_address (rtx x)
+{
+  unsigned int model = SYMBOL_REF_TLS_MODEL (x);
+  rtx dest, tp, ret, modbase, base, addend, insns;
+
+  dest = gen_reg_rtx (Pmode);
+  switch (model)
+    {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      insns = xtensa_call_tls_desc (x, &ret);
+      emit_libcall_block (insns, dest, ret, x);
+      break;
+
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      base = gen_reg_rtx (Pmode);
+      modbase = xtensa_tls_module_base ();
+      insns = xtensa_call_tls_desc (modbase, &ret);
+      emit_libcall_block (insns, base, ret, modbase);
+      addend = force_reg (SImode, gen_sym_DTPOFF (x));
+      emit_insn (gen_addsi3 (dest, base, addend));
+      break;
+
+    case TLS_MODEL_INITIAL_EXEC:
+    case TLS_MODEL_LOCAL_EXEC:
+      tp = gen_reg_rtx (SImode);
+      emit_insn (gen_load_tp (tp));
+      addend = force_reg (SImode, gen_sym_TPOFF (x));
+      emit_insn (gen_addsi3 (dest, tp, addend));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return dest;
+}
+
+
 rtx
 xtensa_legitimize_address (rtx x,
 			   rtx oldx ATTRIBUTE_UNUSED,
 			   enum machine_mode mode)
 {
+  if (xtensa_tls_symbol_p (x))
+    return xtensa_legitimize_tls_address (x);
+
   if (GET_CODE (x) == PLUS)
     {
       rtx plus0 = XEXP (x, 0);
@@ -1742,6 +1874,46 @@ xtensa_legitimize_address (rtx x,
     }
 
   return NULL_RTX;
+}
+
+
+/* Helper for xtensa_tls_referenced_p.  */
+
+static int
+xtensa_tls_referenced_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (*x) == SYMBOL_REF)
+    return SYMBOL_REF_TLS_MODEL (*x) != 0;
+
+  /* Ignore TLS references that have already been legitimized.  */
+  if (GET_CODE (*x) == UNSPEC)
+    {
+      switch (XINT (*x, 1))
+	{
+	case UNSPEC_TPOFF:
+	case UNSPEC_DTPOFF:
+	case UNSPEC_TLS_FUNC:
+	case UNSPEC_TLS_ARG:
+	case UNSPEC_TLS_CALL:
+	  return -1;
+	default:
+	  break;
+	}
+    }
+
+  return 0;
+}
+
+
+/* Return TRUE if X contains any TLS symbol references.  */
+
+bool
+xtensa_tls_referenced_p (rtx x)
+{
+  if (! TARGET_HAVE_TLS)
+    return false;
+
+  return for_each_rtx (&x, xtensa_tls_referenced_p_1, NULL);
 }
 
 
@@ -2204,6 +2376,14 @@ xtensa_output_addr_const_extra (FILE *fp, rtx x)
     {
       switch (XINT (x, 1))
 	{
+	case UNSPEC_TPOFF:
+	  output_addr_const (fp, XVECEXP (x, 0, 0));
+	  fputs ("@TPOFF", fp);
+	  return true;
+	case UNSPEC_DTPOFF:
+	  output_addr_const (fp, XVECEXP (x, 0, 0));
+	  fputs ("@DTPOFF", fp);
+	  return true;
 	case UNSPEC_PLT:
 	  if (flag_pic)
 	    {
@@ -2760,6 +2940,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 enum xtensa_builtin
 {
   XTENSA_BUILTIN_UMULSIDI3,
+  XTENSA_BUILTIN_THREAD_POINTER,
+  XTENSA_BUILTIN_SET_THREAD_POINTER,
   XTENSA_BUILTIN_max
 };
 
@@ -2767,15 +2949,34 @@ enum xtensa_builtin
 static void
 xtensa_init_builtins (void)
 {
-  tree ftype;
+  tree ftype, decl;
 
   ftype = build_function_type_list (unsigned_intDI_type_node,
 				    unsigned_intSI_type_node,
 				    unsigned_intSI_type_node, NULL_TREE);
 
-  add_builtin_function ("__builtin_umulsidi3", ftype,
-			XTENSA_BUILTIN_UMULSIDI3, BUILT_IN_MD,
-			"__umulsidi3", NULL_TREE);
+  decl = add_builtin_function ("__builtin_umulsidi3", ftype,
+			       XTENSA_BUILTIN_UMULSIDI3, BUILT_IN_MD,
+			       "__umulsidi3", NULL_TREE);
+  TREE_NOTHROW (decl) = 1;
+  TREE_READONLY (decl) = 1;
+
+  if (TARGET_THREADPTR)
+    {
+      ftype = build_function_type (ptr_type_node, void_list_node);
+      decl = add_builtin_function ("__builtin_thread_pointer", ftype,
+				   XTENSA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+				   NULL, NULL_TREE);
+      TREE_READONLY (decl) = 1;
+      TREE_NOTHROW (decl) = 1;
+
+      ftype = build_function_type_list (void_type_node, ptr_type_node,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_set_thread_pointer", ftype,
+				   XTENSA_BUILTIN_SET_THREAD_POINTER,
+				   BUILT_IN_MD, NULL, NULL_TREE);
+      TREE_NOTHROW (decl) = 1;
+    }
 }
 
 
@@ -2785,8 +2986,9 @@ xtensa_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1;
 
-  if (fcode == XTENSA_BUILTIN_UMULSIDI3)
+  switch (fcode)
     {
+    case XTENSA_BUILTIN_UMULSIDI3:
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       if ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
@@ -2794,11 +2996,17 @@ xtensa_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
 	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,
 			    fold_convert (unsigned_intDI_type_node, arg0),
 			    fold_convert (unsigned_intDI_type_node, arg1));
-      else
-	return NULL;
+      break;
+
+    case XTENSA_BUILTIN_THREAD_POINTER:
+    case XTENSA_BUILTIN_SET_THREAD_POINTER:
+      break;
+
+    default:
+      internal_error ("bad builtin code");
+      break;
     }
 
-  internal_error ("bad builtin code");
   return NULL;
 }
 
@@ -2811,14 +3019,32 @@ xtensa_expand_builtin (tree exp, rtx target,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  rtx arg;
 
-  /* The umulsidi3 builtin is just a mechanism to avoid calling the real
-     __umulsidi3 function when the Xtensa configuration can directly
-     implement it.  If not, just call the function.  */
-  if (fcode == XTENSA_BUILTIN_UMULSIDI3)
-    return expand_call (exp, target, ignore);
+  switch (fcode)
+    {
+    case XTENSA_BUILTIN_UMULSIDI3:
+      /* The umulsidi3 builtin is just a mechanism to avoid calling the real
+	 __umulsidi3 function when the Xtensa configuration can directly
+	 implement it.  If not, just call the function.  */
+      return expand_call (exp, target, ignore);
 
-  internal_error ("bad builtin code");
+    case XTENSA_BUILTIN_THREAD_POINTER:
+      if (!target || !register_operand (target, Pmode))
+	target = gen_reg_rtx (Pmode);
+      emit_insn (gen_load_tp (target));
+      return target;
+
+    case XTENSA_BUILTIN_SET_THREAD_POINTER:
+      arg = expand_normal (CALL_EXPR_ARG (exp, 0));
+      if (!register_operand (arg, Pmode))
+	arg = copy_to_mode_reg (Pmode, arg);
+      emit_insn (gen_set_tp (arg));
+      return const0_rtx;
+
+    default:
+      internal_error ("bad builtin code");
+    }
   return NULL_RTX;
 }
 

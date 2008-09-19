@@ -2322,7 +2322,7 @@ AC_DEFINE_UNQUOTED(HAVE_COMDAT_GROUP,
   [`if test $gcc_cv_as_comdat_group = yes || test $gcc_cv_as_comdat_group_percent = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler and linker support COMDAT groups.])
 
-# Thread-local storage - the check is heavily parametrized.
+# Thread-local storage - the check is heavily parameterized.
 conftest_s=
 tls_first_major=
 tls_first_minor=
@@ -2654,6 +2654,17 @@ foo:	.long	25
 	tls_first_minor=14
 	tls_as_opt="-32 --fatal-warnings"
       fi
+	;;
+  xtensa*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	movi	a8, foo@TLSFUNC
+	movi	a10, foo@TLSARG
+	callx8.tls a8, foo@TLSCALL'
+	tls_first_major=2
+	tls_first_minor=19
 	;;
 changequote([,])dnl
 esac

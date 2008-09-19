@@ -1,3 +1,38 @@
+2008-09-18  Bob Wilson  <bob.wilson@acm.org>
+
+	* configure.ac: Add HAVE_AS_TLS check for Xtensa.
+	* config/xtensa/predicates.md (tls_symbol_operand): New.
+	* config/xtensa/xtensa.c (TARGET_HAVE_TLS): Define.
+	(TARGET_CANNOT_FORCE_MEM): Define.
+	(xtensa_tls_symbol_p): New.
+	(xtensa_emit_move_sequence): Check for and legitimize TLS addresses.
+	(xtensa_legitimate_address_p): Disallow constant pool TLS references.
+	(xtensa_tls_module_base): New.
+	(xtensa_call_tls_desc): New.
+	(xtensa_legitimize_tls_address): New.
+	(xtensa_legitimize_address): Handle TLS symbols.
+	(xtensa_tls_referenced_p_1): New.
+	(xtensa_tls_referenced_p): New.
+	(xtensa_output_addr_const_extra): Handle UNSPEC_TPOFF and UNSPEC_DTPOFF.
+	(XTENSA_BUILTIN_THREAD_POINTER): New.
+	(XTENSA_BUILTIN_SET_THREAD_POINTER): New.
+	(xtensa_init_builtins): Set NOTHROW and READONLY for umulsidi3 builtin.
+	Add declarations for __builtin_thread_pointer and
+	__builtin_set_thread_pointer.
+	(xtensa_fold_builtin): Recognize new builtins.
+	(xtensa_expand_builtin): Expand new builtins.
+	* config/xtensa/xtensa.h (XCHAL_HAVE_THREADPTR): Define default value.
+	(TARGET_THREADPTR): Define.
+	(HAVE_AS_TLS): Define default value.
+	(LEGITIMATE_CONSTANT_P): Disallow TLS references.
+	* config/xtensa/xtensa.md (UNSPEC_TPOFF, UNSPEC_DTPOFF): New.
+	(UNSPEC_TLS_FUNC, UNSPEC_TLS_ARG, UNSPEC_TLS_CALL, UNSPEC_TP): New.
+	(UNSPECV_SET_TP): New.
+	(sym_TPOFF, sym_DTPOFF): New.
+	(load_tp, set_tp, tls_func, tls_arg, tls_call): New.
+	* config/xtensa/xtensa-protos.h (xtensa_tls_referenced_p): Declare.
+	* configure: Regenerated.
+	
 2008-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37394

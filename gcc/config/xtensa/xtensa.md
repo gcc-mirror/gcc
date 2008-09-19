@@ -29,6 +29,12 @@
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
   (UNSPEC_RET_ADDR	4)
+  (UNSPEC_TPOFF		5)
+  (UNSPEC_DTPOFF	6)
+  (UNSPEC_TLS_FUNC	7)
+  (UNSPEC_TLS_ARG	8)
+  (UNSPEC_TLS_CALL	9)
+  (UNSPEC_TP		10)
 
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
@@ -36,6 +42,7 @@
   (UNSPECV_S32RI	4)
   (UNSPECV_S32C1I	5)
   (UNSPECV_EH_RETURN	6)
+  (UNSPECV_SET_TP	7)
 ])
 
 ;; This code iterator allows signed and unsigned widening multiplications
@@ -1560,9 +1567,9 @@
 })
 
 (define_insn "call_value_internal"
-   [(set (match_operand 0 "register_operand" "=a")
-         (call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
-               (match_operand 2 "" "i")))]
+  [(set (match_operand 0 "register_operand" "=a")
+        (call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
+              (match_operand 2 "" "i")))]
   ""
 {
   return xtensa_emit_call (1, operands);
@@ -1696,6 +1703,69 @@
   [(set_attr "type"	"nop")
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
+
+
+;; TLS support
+
+(define_expand "sym_TPOFF"
+  [(const (unspec [(match_operand:SI 0 "" "")] UNSPEC_TPOFF))]
+  ""
+  "")
+
+(define_expand "sym_DTPOFF"
+  [(const (unspec [(match_operand:SI 0 "" "")] UNSPEC_DTPOFF))]
+  ""
+  "")
+
+(define_insn "load_tp"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(const_int 0)] UNSPEC_TP))]
+  "TARGET_THREADPTR"
+  "rur\t%0, THREADPTR"
+  [(set_attr "type"	"rsr")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "set_tp"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    UNSPECV_SET_TP)]
+  "TARGET_THREADPTR"
+  "wur\t%0, THREADPTR"
+  [(set_attr "type"	"wsr")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "tls_func"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(match_operand:SI 1 "tls_symbol_operand" "")]
+		   UNSPEC_TLS_FUNC))]
+  "TARGET_THREADPTR && HAVE_AS_TLS"
+  "movi\t%0, %1@TLSFUNC"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "tls_arg"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(match_operand:SI 1 "tls_symbol_operand" "")]
+		   UNSPEC_TLS_ARG))]
+  "TARGET_THREADPTR && HAVE_AS_TLS"
+  "movi\t%0, %1@TLSARG"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "tls_call"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(call (mem:SI (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+				  (match_operand:SI 2 "tls_symbol_operand" "")]
+				  UNSPEC_TLS_CALL))
+	      (match_operand 3 "" "i")))]
+  "TARGET_THREADPTR && HAVE_AS_TLS"
+  "callx8.tls %1, %2@TLSCALL"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"3")])
 
 
 ;; Instructions for the Xtensa "boolean" option.
