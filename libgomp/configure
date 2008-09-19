@@ -13540,7 +13540,8 @@ fi
 
 
 
-for ac_header in unistd.h semaphore.h sys/loadavg.h sys/time.h
+
+for ac_header in unistd.h semaphore.h sys/loadavg.h sys/time.h sys/time.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
