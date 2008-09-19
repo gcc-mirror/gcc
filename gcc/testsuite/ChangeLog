@@ -1,3 +1,11 @@
+2008-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/37544
+	* gcc.dg/pr37544.c: New test.
+
 2008-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:

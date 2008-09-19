@@ -1315,6 +1315,10 @@ maybe_mode_change (enum machine_mode orig_mode, enum machine_mode copy_mode,
 		   enum machine_mode new_mode, unsigned int regno,
 		   unsigned int copy_regno ATTRIBUTE_UNUSED)
 {
+  if (GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (orig_mode)
+      && GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (new_mode))
+    return NULL_RTX;
+
   if (orig_mode == new_mode)
     return gen_rtx_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))
