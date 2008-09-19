@@ -1,3 +1,11 @@
+2008-09-19  Andrew MacLeod  <amacleod@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/37567
+	* tree-ssa-ter.c (free_temp_expr_table): Make sure fields are actually
+	empty before freeing them.
+	(find_replaceable_exprs): Move asserts to free_temp_expr_table.
+
 2008-09-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* configure.ac: Add HAVE_AS_TLS check for Xtensa.

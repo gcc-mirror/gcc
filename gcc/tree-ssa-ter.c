@@ -220,22 +220,22 @@ static gimple *
 free_temp_expr_table (temp_expr_table_p t)
 {
   gimple *ret = NULL;
-  unsigned i;
 
 #ifdef ENABLE_CHECKING
   unsigned x;
   for (x = 0; x <= num_var_partitions (t->map); x++)
     gcc_assert (!t->kill_list[x]);
+  for (x = 0; x < num_ssa_names + 1; x++)
+    {
+      gcc_assert (t->expr_decl_uids[x] == NULL);
+      gcc_assert (t->partition_dependencies[x] == NULL);
+    }
 #endif
 
   BITMAP_FREE (t->partition_in_use);
   BITMAP_FREE (t->new_replaceable_dependencies);
 
-  for (i = 0; i <= num_ssa_names; i++)
-    if (t->expr_decl_uids[i])
-      BITMAP_FREE (t->expr_decl_uids[i]);
   free (t->expr_decl_uids);
-
   free (t->kill_list);
   free (t->partition_dependencies);
   free (t->num_in_part);
@@ -664,27 +664,14 @@ find_replaceable_exprs (var_map map)
   FOR_EACH_BB (bb)
     {
       find_replaceable_in_bb (table, bb);
-      gcc_assert (bitmap_empty_p (table->partition_in_use));
-
 #ifdef ENABLE_CHECKING
-      {
-	unsigned i;
-	/* Make sure all the tables have been cleared out.  */
-	for (i = 0; i < num_ssa_names + 1; i++)
-	  {
-	    gcc_assert (table->partition_dependencies[i] == NULL);
-	    gcc_assert (table->expr_decl_uids[i] == NULL);
-	    if (i < num_var_partitions (map))
-	      gcc_assert (table->kill_list[i] == NULL);
-	  }
-      }
+      gcc_assert (bitmap_empty_p (table->partition_in_use));
 #endif
     }
 
   ret = free_temp_expr_table (table);
   return ret;
-}
-
+} 
 
 /* Dump TER expression table EXPR to file F.  */
 
