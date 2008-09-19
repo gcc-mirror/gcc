@@ -1,3 +1,9 @@
+2008-09-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/30930
+	* tree-ssa.c (execute_update_addresses_taken): Also update
+	DECL_GIMPLE_REG_P for vector and complex types.
+
 2008-09-19  Andrew MacLeod  <amacleod@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 
