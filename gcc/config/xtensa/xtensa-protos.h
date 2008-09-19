@@ -56,6 +56,7 @@ extern char *xtensa_emit_movcc (bool, bool, bool, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
 extern bool xtensa_legitimate_address_p (enum machine_mode, rtx, bool);
 extern rtx xtensa_legitimize_address (rtx, rtx, enum machine_mode);
+extern bool xtensa_tls_referenced_p (rtx);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
