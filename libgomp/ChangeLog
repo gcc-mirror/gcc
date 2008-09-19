@@ -1,3 +1,12 @@
+2008-09-19  Jakub Jelinek  <jakub@redhat.com>
+	    Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/bsd/proc.c: New file.
+	* configure.tgt (*-*-darwin*): Use config_path "darwin posix".
+	* configure.ac: Check for header <sys/sysctl.h>
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
 2008-09-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/ligbomp.c/c.exp: Unset lang_test_file only if it exists.
