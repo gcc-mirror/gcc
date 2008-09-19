@@ -105,7 +105,7 @@ public:
     ik = _k;
 
     // Compute log_2{k} for the Loser Tree
-    _M_log_k = log2(ik - 1) + 1;
+    _M_log_k = __log2(ik - 1) + 1;
 
     // Next greater power of 2.
     k = 1 << _M_log_k;
@@ -368,7 +368,7 @@ public:
     ik = _k;
 
     // Next greater power of 2.
-    k = 1 << (log2(ik - 1) + 1);
+    k = 1 << (__log2(ik - 1) + 1);
     offset = k;
     losers = new Loser[k * 2];
     for (unsigned int i = ik - 1; i < k; i++)
@@ -579,7 +579,7 @@ public:
     ik = _k;
 
     // Next greater power of 2.
-    k = 1 << (log2(ik - 1) + 1);
+    k = 1 << (__log2(ik - 1) + 1);
     offset = k;
     // Avoid default-constructing losers[].key
     losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
@@ -815,7 +815,7 @@ public:
     ik = _k;
 
     // Next greater power of 2.
-    k = 1 << (log2(ik - 1) + 1);
+    k = 1 << (__log2(ik - 1) + 1);
     offset = k;
     // Avoid default-constructing losers[].key
     losers = new Loser[2 * k];

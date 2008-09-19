@@ -183,7 +183,7 @@ namespace __gnu_parallel
 	  nmax = std::max(nmax, ns[i]);
 	}
 
-      r = log2(nmax) + 1;
+      r = __log2(nmax) + 1;
 
       // Pad all lists to this length, at least as long as any ns[i],
       // equality iff nmax = 2^k - 1.
@@ -429,7 +429,7 @@ namespace __gnu_parallel
 	  nmax = std::max(nmax, ns[i]);
 	}
 
-      r = log2(nmax) + 1;
+      r = __log2(nmax) + 1;
 
       // Pad all lists to this length, at least as long as any ns[i],
       // equality iff nmax = 2^k - 1

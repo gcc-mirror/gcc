@@ -1,3 +1,12 @@
+2008-09-19  Johannes Singler  <singler@ira.uka.de>
+
+        PR libstdc++/37470
+        * include/parallel/base.h: Rename log2 to __log2.
+	  (__log2) Avoid infinite loop for n <= 0, return 0.
+        * include/parallel/losertree.h: Rename log2 to __log2.
+        * include/parallel/multiseq_selection.h: Likewise.
+        * include/parallel/random_shuffle.h: Likewise.
+
 2008-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/shared_ptr.h (__shared_count<>::
