@@ -4064,9 +4064,10 @@ constructor_static_from_elts_p (const_tree ctor)
 }
 
 /* A subroutine of initializer_constant_valid_p.  VALUE is either a
-   MINUS_EXPR or a POINTER_PLUS_EXPR, and ENDTYPE is a narrowing
-   conversion to something smaller than a pointer.  This returns
-   null_pointer_node if the resulting value is an absolute constant
+   MINUS_EXPR or a POINTER_PLUS_EXPR.  This looks for cases of VALUE
+   which are valid when ENDTYPE is an integer of any size; in
+   particular, this does not accept a pointer minus a constant.  This
+   returns null_pointer_node if the VALUE is an absolute constant
    which can be used to initialize a static variable.  Otherwise it
    returns NULL.  */
 
@@ -4074,6 +4075,9 @@ static tree
 narrowing_initializer_constant_valid_p (tree value, tree endtype)
 {
   tree op0, op1;
+
+  if (!INTEGRAL_TYPE_P (endtype))
+    return NULL_TREE;
 
   op0 = TREE_OPERAND (value, 0);
   op1 = TREE_OPERAND (value, 1);

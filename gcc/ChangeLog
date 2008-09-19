@@ -1,3 +1,8 @@
+2008-09-19  Ian Lance Taylor  <iant@google.com>
+
+	* varasm.c (narrowing_initializer_constant_valid_p): Return
+	NULL_TREE if ENDTYPE is not an integer.
+
 2008-09-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/30930
