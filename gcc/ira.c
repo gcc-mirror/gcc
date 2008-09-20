@@ -714,8 +714,6 @@ enum reg_class ira_important_classes[N_REG_CLASSES];
    classes.  */
 int ira_important_class_nums[N_REG_CLASSES];
 
-#ifdef IRA_COVER_CLASSES
-
 /* Check IRA_COVER_CLASSES and sets the four global variables defined
    above.  */
 static void
@@ -723,9 +721,10 @@ setup_cover_and_important_classes (void)
 {
   int i, j;
   enum reg_class cl;
-  static enum reg_class classes[] = IRA_COVER_CLASSES;
+  const enum reg_class *classes;
   HARD_REG_SET temp_hard_regset2;
 
+  classes = targetm.ira_cover_classes ();
   ira_reg_class_cover_size = 0;
   for (i = 0; (cl = classes[i]) != LIM_REG_CLASSES; i++)
     {
@@ -761,14 +760,11 @@ setup_cover_and_important_classes (void)
 	  }
     }
 }
-#endif
 
 /* Map of all register classes to corresponding cover class containing
    the given class.  If given class is not a subset of a cover class,
    we translate it into the cheapest cover class.  */
 enum reg_class ira_class_translate[N_REG_CLASSES];
-
-#ifdef IRA_COVER_CLASSES
 
 /* Set up array IRA_CLASS_TRANSLATE.  */
 static void
@@ -837,7 +833,6 @@ setup_class_translate (void)
       ira_class_translate[cl] = best_class;
     }
 }
-#endif
 
 /* The biggest important reg_class inside of intersection of the two
    reg_classes (that is calculated taking only hard registers
@@ -855,8 +850,6 @@ enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
    account.  In other words, the value is the corresponding
    reg_class_subunion value.  */
 enum reg_class ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
-
-#ifdef IRA_COVER_CLASSES
 
 /* Set up IRA_REG_CLASS_INTERSECT and IRA_REG_CLASS_UNION.  */
 static void
@@ -943,8 +936,6 @@ setup_reg_class_intersect_union (void)
     }
 }
 
-#endif
-
 /* Output all cover classes and the translation map into file F.  */
 static void
 print_class_cover (FILE *f)
@@ -975,11 +966,12 @@ static void
 find_reg_class_closure (void)
 {
   setup_reg_subclasses ();
-#ifdef IRA_COVER_CLASSES
-  setup_cover_and_important_classes ();
-  setup_class_translate ();
-  setup_reg_class_intersect_union ();
-#endif
+  if (targetm.ira_cover_classes)
+    {
+      setup_cover_and_important_classes ();
+      setup_class_translate ();
+      setup_reg_class_intersect_union ();
+    }
 }
 
 

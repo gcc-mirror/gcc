@@ -899,6 +899,9 @@ struct gcc_target
      is not permitted on TYPE1 and TYPE2, NULL otherwise.  */
   const char *(*invalid_binary_op) (int op, const_tree type1, const_tree type2);
 
+  /* Return the array of IRA cover classes for the current target.  */
+  const enum reg_class *(*ira_cover_classes) (void);
+
   /* Return the class for a secondary reload, and fill in extra information.  */
   enum reg_class (*secondary_reload) (bool, rtx, enum reg_class,
 				      enum machine_mode,

@@ -1,3 +1,23 @@
+2008-09-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Define.
+	(IRA_COVER_CLASSES): Refer to TARGET_IRA_COVER_CLASSES.
+	* target.h (gcc_target): Add ira_cover_classes.
+	* ira.c: Remove IRA_COVER_CLASSES guards.
+	(setup_cover_and_important_classes): Use targetm.ira_cover_classes
+	instead of IRA_COVER_CLASSES.
+	(setup_cover_and_important_classes): Remove IRA_COVER_CLASSES guard.
+	(setup_class_translate): Likewise.
+	(setup_reg_class_intersect_union): Likewise.
+	(find_reg_class_closure): Replace IRA_COVER_CLASSES guard with a
+	test of targetm.ira_cover_classes.
+	* opts.c (decode_options): Use targetm.ira_cover_classes instead
+	of IRA_COVER_CLASSES.
+	* target-def.h (TARGET_IRA_COVER_CLASSES): Define.
+	(TARGET_INITIALIZER): Include it.
+	* targhooks.h (default_ira_cover_classes): Declare.
+	* targhooks.c (default_ira_cover_classes): New function.
+
 2008-09-19  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.md (reload<mode>_literal): Handle MEM operands.
