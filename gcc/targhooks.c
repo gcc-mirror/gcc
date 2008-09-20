@@ -575,6 +575,15 @@ default_internal_arg_pointer (void)
     return virtual_incoming_args_rtx;
 }
 
+#ifdef IRA_COVER_CLASSES
+const enum reg_class *
+default_ira_cover_classes (void)
+{
+  static enum reg_class classes[] = IRA_COVER_CLASSES;
+  return classes;
+}
+#endif
+
 enum reg_class
 default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 			  enum reg_class reload_class ATTRIBUTE_UNUSED,
