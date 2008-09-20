@@ -1,3 +1,7 @@
+2008-09-19  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.md (reload<mode>_literal): Handle MEM operands.
+	
 2008-09-19  Ian Lance Taylor  <iant@google.com>
 
 	* varasm.c (narrowing_initializer_constant_valid_p): Return
