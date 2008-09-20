@@ -1955,8 +1955,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       never be declared otherwise.  This is necessary to ensure
 	       that its subtrees are properly marked.  */
 	    if (tem != orig_tem)
-	      create_type_decl (TYPE_NAME (tem), tem, NULL, true, false,
-				gnat_entity);
+	      create_type_decl (TYPE_NAME (tem), tem, NULL, true,
+				debug_info_p, gnat_entity);
 	  }
 
 	if (Has_Volatile_Components (gnat_entity))
@@ -2324,7 +2324,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     to ensure that its subtrees are properly marked.  */
 		  if (gnu_type != orig_gnu_type)
 		    create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL,
-				      true, false, gnat_entity);
+				      true, debug_info_p, gnat_entity);
 		}
 
 	      if (Has_Volatile_Components (Base_Type (gnat_entity)))
@@ -5867,8 +5867,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
       if (size && TREE_CODE (size) != INTEGER_CST && definition)
 	create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
-			 bitsizetype, TYPE_SIZE (record), false, false, false,
-			 false, NULL, gnat_entity);
+			 sizetype, TYPE_SIZE_UNIT (record), false, false,
+			 false, false, NULL, gnat_entity);
     }
 
   rest_of_record_type_compilation (record);

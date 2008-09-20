@@ -1689,17 +1689,20 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   push_stack (&gnu_loop_label_stack, NULL_TREE,
 	      LOOP_STMT_LABEL (gnu_loop_stmt));
 
-  /* Set the condition that under which the loop should continue.
-     For "LOOP .... END LOOP;" the condition is always true.  */
+  /* Set the condition under which the loop must keep going.
+     For the case "LOOP .... END LOOP;" the condition is always true.  */
   if (No (gnat_iter_scheme))
     ;
-  /* The case "WHILE condition LOOP ..... END LOOP;" */
+
+  /* For the case "WHILE condition LOOP ..... END LOOP;" it's immediate.  */
   else if (Present (Condition (gnat_iter_scheme)))
     LOOP_STMT_TOP_COND (gnu_loop_stmt)
       = gnat_to_gnu (Condition (gnat_iter_scheme));
+
+  /* Otherwise we have an iteration scheme and the condition is given by
+     the bounds of the subtype of the iteration variable.  */
   else
     {
-      /* We have an iteration scheme.  */
       Node_Id gnat_loop_spec = Loop_Parameter_Specification (gnat_iter_scheme);
       Entity_Id gnat_loop_var = Defining_Entity (gnat_loop_spec);
       Entity_Id gnat_type = Etype (gnat_loop_var);
@@ -1745,7 +1748,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       gnu_loop_var = convert (get_base_type (gnu_type), gnu_loop_var);
 
       /* Set either the top or bottom exit condition as appropriate depending
-	 on whether or not we know an overflow cannot occur. */
+	 on whether or not we know an overflow cannot occur.  */
       if (gnu_cond_expr)
 	LOOP_STMT_BOT_COND (gnu_loop_stmt)
 	  = build_binary_op (NE_EXPR, integer_type_node,
@@ -1763,12 +1766,12 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 			   convert (TREE_TYPE (gnu_loop_var),
 				    integer_one_node));
       set_expr_location_from_node (LOOP_STMT_UPDATE (gnu_loop_stmt),
-			  gnat_iter_scheme);
+				   gnat_iter_scheme);
     }
 
   /* If the loop was named, have the name point to this loop.  In this case,
      the association is not a ..._DECL node, but the end label from this
-     LOOP_STMT. */
+     LOOP_STMT.  */
   if (Present (Identifier (gnat_node)))
     save_gnu_tree (Entity (Identifier (gnat_node)),
 		   LOOP_STMT_LABEL (gnu_loop_stmt), true);
@@ -1788,7 +1791,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
     }
 
   /* If we have an outer COND_EXPR, that's our result and this loop is its
-     "true" statement.  Otherwise, the result is the LOOP_STMT. */
+     "true" statement.  Otherwise, the result is the LOOP_STMT.  */
   if (gnu_cond_expr)
     {
       COND_EXPR_THEN (gnu_cond_expr) = gnu_loop_stmt;
@@ -1981,11 +1984,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       for (i = 0; VEC_iterate (parm_attr, cache, i, pa); i++)
 	{
 	  if (pa->first)
-	    add_stmt (pa->first);
+	    add_stmt_with_node (pa->first, gnat_node);
 	  if (pa->last)
-	    add_stmt (pa->last);
+	    add_stmt_with_node (pa->last, gnat_node);
 	  if (pa->length)
-	    add_stmt (pa->length);
+	    add_stmt_with_node (pa->length, gnat_node);
 	}
 
       add_stmt (gnu_result);
@@ -2017,7 +2020,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
       add_stmt_with_node
 	(build_return_expr (DECL_RESULT (gnu_subprog_decl), gnu_retval),
-	 gnat_node);
+	 End_Label (Handled_Statement_Sequence (gnat_node)));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
     }
