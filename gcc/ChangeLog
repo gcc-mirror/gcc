@@ -1,3 +1,14 @@
+2008-09-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-08-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37236
+	* tree-ssa-structalias.c (intra_create_variable_infos): Mark
+	PARAM_NOALIAS tags with is_heapvar.
+	* tree-ssa-operands.c (access_can_touch_variable): Offset
+	based tests do not apply for heapvars.  Fix offset test.
+
 2008-09-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36343

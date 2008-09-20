@@ -1347,11 +1347,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
 	   && !MTAG_P (alias)
+	   && !var_ann (alias)->is_heapvar
 	   && !POINTER_TYPE_P (TREE_TYPE (alias))
 	   && offsetgtz
 	   && DECL_SIZE (alias)
 	   && TREE_CODE (DECL_SIZE (alias)) == INTEGER_CST
-	   && uoffset > TREE_INT_CST_LOW (DECL_SIZE (alias)))
+	   && uoffset >= TREE_INT_CST_LOW (DECL_SIZE (alias)))
     {
 #ifdef ACCESS_DEBUGGING
       fprintf (stderr, "Access to ");

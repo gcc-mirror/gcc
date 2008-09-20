@@ -4587,6 +4587,7 @@ intra_create_variable_infos (void)
 	      heapvar_insert (t, heapvar);
 
 	      ann = get_var_ann (heapvar);
+	      ann->is_heapvar = 1;
 	      if (flag_argument_noalias == 1)
 		ann->noalias_state = NO_ALIAS;
 	      else if (flag_argument_noalias == 2)
