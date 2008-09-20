@@ -1,3 +1,9 @@
+2008-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/33642
+	* gcc.c-torture/compile/pr11832.c: XFAIL on SPARC.
+	* gcc.c-torture/compile/pr33009.c: Likewise.
+
 2008-09-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/30930
