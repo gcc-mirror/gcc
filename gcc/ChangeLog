@@ -1,3 +1,11 @@
+2008-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37571
+	* config/i386/i386.md (*jcc_fused_1): Removed.
+	(*jcc_fused_2): Likewise.
+	(*jcc_fused_3): Likewise.
+	(*jcc_fused_4): Likewise.
+
 2008-09-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Define.
