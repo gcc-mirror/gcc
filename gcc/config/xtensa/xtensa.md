@@ -898,13 +898,22 @@
   rtx lit, scratch;
   unsigned word_off, byte_off;
 
-  gcc_assert (GET_CODE (operands[1]) == SUBREG);
-  lit = SUBREG_REG (operands[1]);
-  scratch = operands[2];
-  word_off = SUBREG_BYTE (operands[1]) & ~(UNITS_PER_WORD - 1);
-  byte_off = SUBREG_BYTE (operands[1]) - word_off;
+  if (MEM_P (operands[1]))
+    {
+      lit = operands[1];
+      word_off = 0;
+      byte_off = 0;
+    }
+  else
+    {
+      gcc_assert (GET_CODE (operands[1]) == SUBREG);
+      lit = SUBREG_REG (operands[1]);
+      word_off = SUBREG_BYTE (operands[1]) & ~(UNITS_PER_WORD - 1);
+      byte_off = SUBREG_BYTE (operands[1]) - word_off;
+    }
 
   lit = adjust_address (lit, SImode, word_off);
+  scratch = operands[2];
   emit_insn (gen_movsi (scratch, lit));
   emit_insn (gen_mov<mode> (operands[0],
 			    gen_rtx_SUBREG (<MODE>mode, scratch, byte_off)));
