@@ -1,3 +1,10 @@
+2008-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/37585
+	* gcc-interface/utils.c (create_subprog_decl): Disable inlining for
+	inlined external functions if they contain a nested function not
+	declared inline.
+
 2008-09-18  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/utils.c (create_subprog_decl): Use DECL_DECLARED_INLINE_P.

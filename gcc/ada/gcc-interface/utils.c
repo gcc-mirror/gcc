@@ -1973,12 +1973,16 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   tree return_type  = TREE_TYPE (subprog_type);
   tree subprog_decl = build_decl (FUNCTION_DECL, subprog_name, subprog_type);
 
-  /* If this is a function nested inside an inlined external function, it
-     means we aren't going to compile the outer function unless it is
-     actually inlined, so do the same for us.  */
-  if (current_function_decl && DECL_DECLARED_INLINE_P (current_function_decl)
+  /* If this is a non-inline function nested inside an inlined external
+     function, we cannot honor both requests without cloning the nested
+     function in the current unit since it is private to the other unit.
+     We could inline the nested function as well but it's probably better
+     to err on the side of too little inlining.  */
+  if (!inline_flag
+      && current_function_decl
+      && DECL_DECLARED_INLINE_P (current_function_decl)
       && DECL_EXTERNAL (current_function_decl))
-    extern_flag = true;
+    DECL_DECLARED_INLINE_P (current_function_decl) = 0;
 
   DECL_EXTERNAL (subprog_decl)  = extern_flag;
   TREE_PUBLIC (subprog_decl)    = public_flag;
@@ -1986,6 +1990,7 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   TREE_READONLY (subprog_decl)  = TYPE_READONLY (subprog_type);
   TREE_THIS_VOLATILE (subprog_decl) = TYPE_VOLATILE (subprog_type);
   TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (subprog_type);
+  DECL_DECLARED_INLINE_P (subprog_decl) = inline_flag;
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
   DECL_RESULT (subprog_decl)    = build_decl (RESULT_DECL, 0, return_type);
   DECL_ARTIFICIAL (DECL_RESULT (subprog_decl)) = 1;
@@ -2003,9 +2008,6 @@ create_subprog_decl (tree subprog_name, tree asm_name,
       TREE_ADDRESSABLE (TREE_TYPE (result_decl)) = 0;
       DECL_BY_REFERENCE (result_decl) = 1;
     }
-
-  if (inline_flag)
-    DECL_DECLARED_INLINE_P (subprog_decl) = 1;
 
   if (asm_name)
     {
