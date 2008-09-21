@@ -1,3 +1,8 @@
+2008-09-21  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/typebound_proc_4.f03: Changed expected error for not
+	yet implemented PROCEDURE(interface).
+
 2008-09-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37539

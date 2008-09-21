@@ -6907,8 +6907,7 @@ match_procedure_in_type (void)
   /* TODO: Really implement PROCEDURE(interface).  */
   if (gfc_match (" (") == MATCH_YES)
     {
-      gfc_error ("Procedure with interface only allowed in abstract types at"
-		 " %C");
+      gfc_error ("PROCEDURE(interface) at %C is not yet implemented");
       return MATCH_ERROR;
     }
 
