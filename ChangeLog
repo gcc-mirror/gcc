@@ -1,3 +1,7 @@
+2008-09-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+        * MAINTAINERS: Add myself in "Write After Approval".
+
 2008-09-18  Steve Ellcey  <sje@cup.hp.com>
 
         * MAINTAINERS: Add myself as ia64 maintainer.
