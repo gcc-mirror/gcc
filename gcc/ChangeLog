@@ -1,3 +1,21 @@
+2008-09-21  Diego Novillo  <dnovillo@google.com>
+
+	* doc/gccint.texi: Include generic.texi and gimple.texi.
+	Re-order index.
+	* doc/tree-ssa.texi (GENERIC): Move to generic.texi.
+	(GIMPLE): Move to gimple.texi.
+	(Annotations): Remove references to to stmt_ann_t and
+	ssa_name_ann_t.
+	(SSA Operands): Rename from 'Statement Operands'.
+	* doc/generic.texi: New.
+	* doc/gimple.texi: New.
+	* Makefile.in (TEXI_GCCINT_FILES): Add generic.texi and
+	gimple.texi.
+	* Makefile.in (TEXI_GCCINT_FILES):
+	* gimple.c (gimple_copy_call_skip_args): Rename from
+	giple_copy_call_skip_args.  Update all users.
+	* doc/gimple.texi (gimple_copy_call_skip_args): Document.
+
 2008-09-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37539
