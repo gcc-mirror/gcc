@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* Currently ICEs for IA64, HPPA, MIPS, CRIS, Xtensa, PowerPC and SPARC; see PR33642.  */
-/* { dg-xfail-if "PR33642" { hppa*-*-* mips*-*-* powerpc*-*-linux* cris-*-* crisv32-*-* ia64-*-* xtensa*-*-* sparc*-*-* } { "*" } { "" } } */
+/* Currently ICEs for IA64, HPPA, MIPS, CRIS, Xtensa, PowerPC, SH and SPARC; see PR33642.  */
+/* { dg-xfail-if "PR33642" { hppa*-*-* mips*-*-* powerpc*-*-linux* cris-*-* crisv32-*-* ia64-*-* xtensa*-*-* sh*-*-* sparc*-*-* } { "*" } { "" } } */
 /* Currently ICEs for (x86 && ilp32 && pic).  */
 /* { dg-xfail-if "PR33642/36240" { { i?86-*-* x86_64-*-* } && { ilp32 && { ! nonpic } } } { "*" } { "" } } */
 /* { dg-prune-output ".*internal compiler error.*" }
