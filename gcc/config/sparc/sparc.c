@@ -2001,8 +2001,7 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
     }
 }
 
-/* X and Y are two things to compare using CODE.  Emit the compare insn and
-   return the rtx for the cc reg in the proper mode.  */
+/* Emit the compare insn and return the CC reg for a CODE comparison.  */
 
 rtx
 gen_compare_reg (enum rtx_code code)
@@ -2065,10 +2064,26 @@ gen_compare_reg (enum rtx_code code)
   else
     cc_reg = gen_rtx_REG (mode, SPARC_ICC_REG);
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
-			  gen_rtx_COMPARE (mode, x, y)));
+  /* We shouldn't get there for TFmode if !TARGET_HARD_QUAD.  If we do, this
+     will only result in an unrecognizable insn so no point in asserting.  */
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_COMPARE (mode, x, y)));
 
   return cc_reg;
+}
+
+/* Same as above but return the whole compare operator.  */
+
+rtx
+gen_compare_operator (enum rtx_code code)
+{
+  rtx cc_reg;
+
+  if (GET_MODE (sparc_compare_op0) == TFmode && !TARGET_HARD_QUAD)
+    code
+      = sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, code);
+
+  cc_reg = gen_compare_reg (code);
+  return gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
 }
 
 /* This function is used for v9 only.
@@ -6099,41 +6114,45 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 }
 
 /* Emit a library call comparison between floating point X and Y.
-   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
+   COMPARISON is the operator to compare with (EQ, NE, GT, etc).
+   Return the new operator to be used in the comparison sequence.
+
    TARGET_ARCH64 uses _Qp_* functions, which use pointers to TFmode
    values as arguments instead of the TFmode registers themselves,
    that's why we cannot call emit_float_lib_cmp.  */
-void
+
+enum rtx_code
 sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 {
   const char *qpfunc;
   rtx slot0, slot1, result, tem, tem2;
   enum machine_mode mode;
+  enum rtx_code new_comparison;
 
   switch (comparison)
     {
     case EQ:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_feq" : "_Q_feq";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_feq" : "_Q_feq");
       break;
 
     case NE:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_fne" : "_Q_fne";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_fne" : "_Q_fne");
       break;
 
     case GT:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_fgt" : "_Q_fgt";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_fgt" : "_Q_fgt");
       break;
 
     case GE:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_fge" : "_Q_fge";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_fge" : "_Q_fge");
       break;
 
     case LT:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_flt" : "_Q_flt";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_flt" : "_Q_flt");
       break;
 
     case LE:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_fle" : "_Q_fle";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_fle" : "_Q_fle");
       break;
 
     case ORDERED:
@@ -6144,7 +6163,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
     case UNGE:
     case UNLE:
     case LTGT:
-      qpfunc = (TARGET_ARCH64) ? "_Qp_cmp" : "_Q_cmp";
+      qpfunc = (TARGET_ARCH64 ? "_Qp_cmp" : "_Q_cmp");
       break;
 
     default:
@@ -6153,27 +6172,26 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 
   if (TARGET_ARCH64)
     {
-      if (GET_CODE (x) != MEM)
+      if (MEM_P (x))
+	slot0 = x;
+      else
 	{
 	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
 	  emit_move_insn (slot0, x);
 	}
-      else
-	slot0 = x;
 
-      if (GET_CODE (y) != MEM)
+      if (MEM_P (y))
+	slot1 = y;
+      else
 	{
 	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
 	  emit_move_insn (slot1, y);
 	}
-      else
-	slot1 = y;
 
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
 			 DImode, 2,
 			 XEXP (slot0, 0), Pmode,
 			 XEXP (slot1, 0), Pmode);
-
       mode = DImode;
     }
   else
@@ -6181,7 +6199,6 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
 			 SImode, 2,
 			 x, TFmode, y, TFmode);
-
       mode = SImode;
     }
 
@@ -6195,20 +6212,22 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
   switch (comparison)
     {
     default:
-      emit_cmp_insn (result, const0_rtx, NE, NULL_RTX, mode, 0);
+      new_comparison = NE;
+      emit_cmp_insn (result, const0_rtx, new_comparison, NULL_RTX, mode, 0);
       break;
     case ORDERED:
     case UNORDERED:
-      emit_cmp_insn (result, GEN_INT(3), comparison == UNORDERED ? EQ : NE,
-		     NULL_RTX, mode, 0);
+      new_comparison = (comparison == UNORDERED ? EQ : NE);
+      emit_cmp_insn (result, GEN_INT(3), new_comparison, NULL_RTX, mode, 0);
       break;
     case UNGT:
     case UNGE:
-      emit_cmp_insn (result, const1_rtx,
-		     comparison == UNGT ? GT : NE, NULL_RTX, mode, 0);
+      new_comparison = (comparison == UNGT ? GT : NE);
+      emit_cmp_insn (result, const1_rtx, new_comparison, NULL_RTX, mode, 0);
       break;
     case UNLE:
-      emit_cmp_insn (result, const2_rtx, NE, NULL_RTX, mode, 0);
+      new_comparison = NE;
+      emit_cmp_insn (result, const2_rtx, new_comparison, NULL_RTX, mode, 0);
       break;
     case UNLT:
       tem = gen_reg_rtx (mode);
@@ -6216,7 +6235,8 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	emit_insn (gen_andsi3 (tem, result, const1_rtx));
       else
 	emit_insn (gen_anddi3 (tem, result, const1_rtx));
-      emit_cmp_insn (tem, const0_rtx, NE, NULL_RTX, mode, 0);
+      new_comparison = NE;
+      emit_cmp_insn (tem, const0_rtx, new_comparison, NULL_RTX, mode, 0);
       break;
     case UNEQ:
     case LTGT:
@@ -6230,10 +6250,12 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	emit_insn (gen_andsi3 (tem2, tem, const2_rtx));
       else
 	emit_insn (gen_anddi3 (tem2, tem, const2_rtx));
-      emit_cmp_insn (tem2, const0_rtx, comparison == UNEQ ? EQ : NE,
-		     NULL_RTX, mode, 0);
+      new_comparison = (comparison == UNEQ ? EQ : NE);
+      emit_cmp_insn (tem2, const0_rtx, new_comparison, NULL_RTX, mode, 0);
       break;
     }
+
+  return new_comparison;
 }
 
 /* Generate an unsigned DImode to FP conversion.  This is the same code
