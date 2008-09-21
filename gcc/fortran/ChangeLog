@@ -1,5 +1,22 @@
 2008-09-21  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/35846
+	* trans.h (gfc_conv_string_length): New argument `expr'.
+	* trans-expr.c (flatten_array_ctors_without_strlen): New method.
+	(gfc_conv_string_length): New argument `expr' that is used in a new
+	special case handling if cl->length is NULL.
+	(gfc_conv_subref_array_arg): Pass expr to gfc_conv_string_length.
+	* trans-array.c (gfc_conv_expr_descriptor): Ditto.
+	(gfc_trans_auto_array_allocation): Pass NULL as new expr.
+	(gfc_trans_g77_array), (gfc_trans_dummy_array_bias): Ditto.
+	(gfc_trans_deferred_array): Ditto.
+	(gfc_trans_array_constructor): Save and restore old values of globals
+	used for bounds checking.
+	* trans-decl.c (gfc_trans_dummy_character): Ditto.
+	(gfc_trans_auto_character_variable): Ditto.
+
+2008-09-21  Daniel Kraft  <d@domob.eu>
+
 	* decl.c (match_procedure_in_type): Changed misleading error message
 	for not yet implemented PROCEDURE(interface) syntax.
 
