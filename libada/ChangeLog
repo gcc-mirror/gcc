@@ -1,3 +1,12 @@
+2008-09-21  Laurent Guerby  <laurent@guerby.net>
+            Paolo Bonzini  <bonzini@gnu.org>
+	
+	PR ada/5911
+	* Makefile.in (all, install, mostlyclean, clean, distclean): Add
+	multilib handling.
+	* configure.ac: Add multilib handling.
+	* configure: Regenerate.
+
 2008-08-29  Laurent Guerby  <laurent@guerby.net>
 	
 	* Makefile.in (FLAGS_TO_PASS): renamed to LIBADA_FLAGS_TO_PASS to

@@ -316,6 +316,18 @@ else
   osys:=$(word 3,$(targ))
 endif
 
+# Make arch match the current multilib so that the RTS selection code
+# picks up the right files. For a given target this must be coherent
+# with MULTILIB_DIRNAMES defined in gcc/config/target/t-*.
+
+ifeq ($(strip $(filter-out %x86_64, $(arch))),)
+  ifeq ($(strip $(MULTISUBDIR)),/32)
+    arch:=i686
+  endif
+endif
+
+# ???: handle more multilib targets
+
 # LIBGNAT_TARGET_PAIRS is a list of pairs of filenames.
 # The members of each pair must be separated by a '<' and no whitespace.
 # Each pair must be separated by some amount of whitespace from the following
@@ -1467,7 +1479,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+  LIBGNAT_TARGET_PAIRS_32 = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1481,6 +1493,27 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-sparc.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  a-intnam.ads<a-intnam-linux.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-intman.adb<s-intman-posix.adb \
+  s-linux.ads<s-linux.ads \
+  s-osinte.adb<s-osinte-posix.adb \
+  s-osinte.ads<s-osinte-linux.ads \
+  s-osprim.adb<s-osprim-posix.adb \
+  s-taprop.adb<s-taprop-linux.adb \
+  s-tasinf.ads<s-tasinf-linux.ads \
+  s-tasinf.adb<s-tasinf-linux.adb \
+  s-taspri.ads<s-taspri-posix-noaltstack.ads \
+  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  system.ads<system-linux-sparcv9.ads
+
+  ifeq ($(strip $(MULTISUBDIR)),/64)
+    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \

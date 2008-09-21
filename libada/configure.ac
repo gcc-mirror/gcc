@@ -49,6 +49,54 @@ AC_ARG_ENABLE([maintainer-mode],
   [MAINT='#'])
 AC_SUBST([MAINT])dnl
 
+AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$host_alias}
+
+AM_ENABLE_MULTILIB(, ..)
+# Calculate toolexeclibdir
+# Also toolexecdir, though it's only used in toolexeclibdir
+case ${enable_version_specific_runtime_libs} in
+  yes)
+    # Need the gcc compiler version to know where to install libraries
+    # and header files if --enable-version-specific-runtime-libs option
+    # is selected.
+    toolexecdir='$(libdir)/gcc/$(target_alias)'
+    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    ;;
+  no)
+    if test -n "$with_cross_host" &&
+       test x"$with_cross_host" != x"no"; then
+      # Install a library built with a cross compiler in tooldir, not libdir.
+      toolexecdir='$(exec_prefix)/$(target_alias)'
+      toolexeclibdir='$(toolexecdir)/lib'
+    else
+      toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+      toolexeclibdir='$(libdir)'
+    fi
+    multi_os_directory=`$CC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+    esac
+    ;;
+esac
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexeclibdir)
+#TODO: toolexeclibdir is currently disregarded
+
+# Check the compiler.
+# The same as in boehm-gc and libstdc++. Have to borrow it from there.
+# We must force CC to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
+
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
+AC_PROG_CC
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+
 AC_ARG_ENABLE([shared],
 [AC_HELP_STRING([--disable-shared],
                 [don't provide a shared libgnat])],
