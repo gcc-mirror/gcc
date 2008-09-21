@@ -1,3 +1,12 @@
+2008-09-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (TUNE_OCTEON): New macro.
+	* config/mips/mips.c (mips_issue_rate): Return 2 for Octeon.
+	(mips_multipass_dfa_lookahead): Return 2 for Octeon.
+	* config/mips/octeon.md: New file.
+	* config/mips/mips.md: Include octeon.md.  Restore
+	semi-alphabetical order of include files.
+
 2008-09-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37571

@@ -935,10 +935,11 @@
 (include "6000.md")
 (include "7000.md")
 (include "9000.md")
+(include "loongson2ef.md")
+(include "octeon.md")
 (include "sb1.md")
 (include "sr71k.md")
 (include "xlr.md")
-(include "loongson2ef.md")
 (include "generic.md")
 
 ;;
