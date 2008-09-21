@@ -17,6 +17,17 @@
 
 # Default target; must be first.
 all: gnatlib
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
+
+.PHONY: all install
+
+## Multilib support variables.
+MULTISRCTOP =
+MULTIBUILDTOP =
+MULTIDIRS =
+MULTISUBDIR =
+MULTIDO = true
+MULTICLEAN = true
 
 # Standard autoconf-set variables.
 SHELL = @SHELL@
@@ -48,12 +59,12 @@ GNATLIBCFLAGS= -g -O2
 
 # Get target-specific overrides for TARGET_LIBGCC2_CFLAGS.
 host_subdir = @host_subdir@
-GCC_DIR=../../$(host_subdir)/gcc
+GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc
 include $(GCC_DIR)/libgcc.mvars
 
 target_noncanonical:=@target_noncanonical@
 version := $(shell cat $(srcdir)/../gcc/BASE-VER)
-libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)
+libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)
 
 # exeext should not be used because it's the *host* exeext.  We're building
 # a *target* library, aren't we?!?  Likewise for CC.  Still, provide bogus
@@ -64,11 +75,12 @@ LIBADA_FLAGS_TO_PASS = \
         "LDFLAGS=$(LDFLAGS)" \
         "LN_S=$(LN_S)" \
         "SHELL=$(SHELL)" \
-        "GNATLIBFLAGS=$(GNATLIBFLAGS)" \
-        "GNATLIBCFLAGS=$(GNATLIBCFLAGS)" \
+        "GNATLIBFLAGS=$(GNATLIBFLAGS) $(MULTIFLAGS)" \
+        "GNATLIBCFLAGS=$(GNATLIBCFLAGS) $(MULTIFLAGS)" \
         "TARGET_LIBGCC2_CFLAGS=$(TARGET_LIBGCC2_CFLAGS)" \
         "THREAD_KIND=$(THREAD_KIND)" \
         "TRACE=$(TRACE)" \
+        "MULTISUBDIR=$(MULTISUBDIR)" \
         "libsubdir=$(libsubdir)" \
         "objext=$(objext)" \
         "prefix=$(prefix)" \
@@ -119,7 +131,8 @@ html:
 TAGS:
 
 # Installation rules.
-install:
+install: install-gnatlib
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do # $(MAKE)
 
 install-info:
 
@@ -129,10 +142,13 @@ install-html:
 
 # Cleaning rules.
 mostlyclean:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean # $(MAKE)
 
 clean:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean # $(MAKE)
 
 distclean:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 	$(RM) Makefile config.status config.log
 
 maintainer-clean:
