@@ -5489,15 +5489,21 @@ vect_transform_strided_load (tree stmt, VEC(tree,heap) *dr_chain, int size,
 	    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt)) = new_stmt;
 	  else
             {
-	      tree prev_stmt = STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
-	      tree rel_stmt = STMT_VINFO_RELATED_STMT (
-						       vinfo_for_stmt (prev_stmt));
-	      while (rel_stmt)
-		{
-		  prev_stmt = rel_stmt;
-		  rel_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (rel_stmt));
-		}
-	      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt)) = new_stmt;
+              if (!DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next_stmt)))
+                {
+ 	          tree prev_stmt = 
+                    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
+ 	          tree rel_stmt = STMT_VINFO_RELATED_STMT (
+					       vinfo_for_stmt (prev_stmt));
+ 	          while (rel_stmt)
+		    {
+		      prev_stmt = rel_stmt;
+		      rel_stmt = STMT_VINFO_RELATED_STMT (
+                                               vinfo_for_stmt (rel_stmt));
+		    }
+	          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt)) = 
+                    new_stmt;
+                }
             }
 	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 	  gap_count = 1;

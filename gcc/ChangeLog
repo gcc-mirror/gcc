@@ -1,3 +1,10 @@
+2008-09-21  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37539
+	* tree-vect-transform.c (vect_transform_strided_load): Save vector
+	statement in related statement field only for the first load of the
+	group of loads with the same data reference.
+
 2008-09-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
