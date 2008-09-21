@@ -1,3 +1,8 @@
+2008-09-21  Daniel Kraft  <d@domob.eu>
+
+	* decl.c (match_procedure_in_type): Changed misleading error message
+	for not yet implemented PROCEDURE(interface) syntax.
+
 2008-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
        PR fortran/35945

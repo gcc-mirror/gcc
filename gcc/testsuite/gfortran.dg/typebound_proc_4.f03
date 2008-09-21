@@ -33,7 +33,7 @@ MODULE testmod
 
     ! TODO: Correct these when things get implemented.
     PROCEDURE, DEFERRED :: x ! { dg-error "not yet implemented" }
-    PROCEDURE(abc) ! { dg-error "abstract type" }
+    PROCEDURE(abc) ! { dg-error "not yet implemented" }
   END TYPE t
 
 CONTAINS
