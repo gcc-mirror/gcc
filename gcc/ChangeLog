@@ -1,3 +1,37 @@
+2008-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (gen_compare_operator): Declare.
+	(sparc_emit_float_lib_cmp): Change return type.
+	* config/sparc/sparc.c (gen_compare_reg): Add comment about TFmode.
+	(gen_compare_operator): New function.
+	(sparc_emit_float_lib_cmp): Return the new operator to be used in
+	the comparison sequence.  Minor tweaks.
+	* config/sparc/sparc.md (seq, sne, sgt, slt, sge, sle): Assert
+	that the final operator and the result of sparc_emit_float_lib_cmp
+	match for software TFmode; use emit_insn in lieu of emit_jump_insn.
+	(beq, bne, bgt, blt, bge, ble, bunordered, bordered, bungt, bunlt,
+	buneq, bunge, bunle, bltgt): Assert that the final operator and the
+	result of sparc_emit_float_lib_cmp match for software TFmode.
+	(movqicc, movhicc, movsicc, movdicc): Merge into...
+	(mov<I:mode>cc): ...this.
+	(movsfcc, movdfcc, movtfcc): Merge into...
+	(mov<F:mode>cc): ...this.
+	(movqi_cc_sp64, movhi_cc_sp64, movsi_cc_sp64, movdi_cc_sp64): Merge
+	into...
+	(mov<I:mode>_cc_v9): ...this.
+	(movdi_cc_sp64_trunc): Delete.
+	(movqi_cc_reg_sp64, movhi_cc_reg_sp64, movsi_cc_reg_sp64,
+	movdi_cc_reg_sp64): Merge into...
+	(mov<I:mode>_cc_reg_sp64): ...this.
+	(movsf_cc_sp64): Rename into...
+	(movsf_cc_v9): ...this.
+	(movdf_cc_sp64): Rename into...
+	(movdf_cc_v9): ...this.
+	(movtf_cc_hq_sp64): Rename into...
+	(movtf_cc_hq_v9): ...this.
+	(movtf_cc_sp64): Rename into...
+	(movtf_cc_v9): ...this.  Adjust for renaming of movdf_cc_sp64.
+
 2008-09-21  Diego Novillo  <dnovillo@google.com>
 
 	* doc/gccint.texi: Include generic.texi and gimple.texi.

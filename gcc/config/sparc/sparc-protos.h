@@ -54,7 +54,8 @@ extern void sparc_output_scratch_registers (FILE *);
 extern enum machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
 /* Define the function that build the compare insn for scc and bcc.  */
 extern rtx gen_compare_reg (enum rtx_code code);
-extern void sparc_emit_float_lib_cmp (rtx, rtx, enum rtx_code);
+extern rtx gen_compare_operator (enum rtx_code code);
+extern enum rtx_code sparc_emit_float_lib_cmp (rtx, rtx, enum rtx_code);
 extern void sparc_emit_floatunsdi (rtx [2], enum machine_mode);
 extern void sparc_emit_fixunsdi (rtx [2], enum machine_mode);
 extern void emit_tfmode_binop (enum rtx_code, rtx *);
