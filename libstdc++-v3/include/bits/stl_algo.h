@@ -4121,7 +4121,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       pair<const _Tp*, const _Tp*> __p =
 	std::minmax_element(__l.begin(), __l.end());
-      return std::pair<_Tp, _Tp>(*__p.first, *__p.second);
+      return std::make_pair(*__p.first, *__p.second);
     }
 
   template<typename _Tp, typename _Compare>
