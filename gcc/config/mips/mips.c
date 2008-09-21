@@ -10377,6 +10377,7 @@ mips_issue_rate (void)
     case PROCESSOR_R5500:
     case PROCESSOR_R7000:
     case PROCESSOR_R9000:
+    case PROCESSOR_OCTEON:
       return 2;
 
     case PROCESSOR_SB1:
@@ -10517,6 +10518,9 @@ mips_multipass_dfa_lookahead (void)
 
   if (TUNE_LOONGSON_2EF)
     return 4;
+
+  if (TUNE_OCTEON)
+    return 2;
 
   return 0;
 }
