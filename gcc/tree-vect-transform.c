@@ -5947,17 +5947,24 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 	    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt)) = new_stmt;
 	  else
             {
-	      gimple prev_stmt =
-		STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
-	      gimple rel_stmt =
-		STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
-	      while (rel_stmt)
-		{
-		  prev_stmt = rel_stmt;
-		  rel_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (rel_stmt));
-		}
-	      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt)) = new_stmt;
+              if (!DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next_stmt)))
+                {
+ 	          gimple prev_stmt =
+		    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
+	          gimple rel_stmt =
+		    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
+	          while (rel_stmt)
+		    {
+		      prev_stmt = rel_stmt;
+		      rel_stmt = 
+                        STMT_VINFO_RELATED_STMT (vinfo_for_stmt (rel_stmt));
+		    }
+
+  	          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt)) = 
+                    new_stmt;
+                }
             }
+
 	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 	  gap_count = 1;
 	  /* If NEXT_STMT accesses the same DR as the previous statement,
