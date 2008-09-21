@@ -3188,9 +3188,11 @@ canonicalize_cond_expr_cond (tree t)
   return NULL_TREE;
 }
 
-/* Build call same as STMT but skipping arguments ARGS_TO_SKIP.  */
+/* Build a GIMPLE_CALL identical to STMT but skipping the arguments in
+   the positions marked by the set ARGS_TO_SKIP.  */
+
 gimple
-giple_copy_call_skip_args (gimple stmt, bitmap args_to_skip)
+gimple_copy_call_skip_args (gimple stmt, bitmap args_to_skip)
 {
   int i;
   tree fn = gimple_call_fn (stmt);
