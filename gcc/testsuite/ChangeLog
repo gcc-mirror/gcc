@@ -1,3 +1,7 @@
+2008-09-22  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/volatile3.adb: New test.
+
 2008-09-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37482
