@@ -1,3 +1,8 @@
+2008-09-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Define _GLIBCXX_HAS_GTHREADS for mutex,
+	condition_variable, and thread output.
+
 2008-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/html/ext/lwg-closed.html: Update to Revision R59.
@@ -12,12 +17,12 @@
 
 2008-09-19  Johannes Singler  <singler@ira.uka.de>
 
-        PR libstdc++/37470
-        * include/parallel/base.h: Rename log2 to __log2.
+	PR libstdc++/37470
+	* include/parallel/base.h: Rename log2 to __log2.
 	  (__log2) Avoid infinite loop for n <= 0, return 0.
-        * include/parallel/losertree.h: Rename log2 to __log2.
-        * include/parallel/multiseq_selection.h: Likewise.
-        * include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/losertree.h: Rename log2 to __log2.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
 
 2008-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -37,41 +42,41 @@
 	* include/bits/algorithmfwd.h: Adjust.
 	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Likewise.
 	* testsuite/25_algorithms/max/requirements/explicit_instantiation/3.cc:
-        Likewise.
-        * testsuite/25_algorithms/max/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
+	Likewise.
+	* testsuite/25_algorithms/max/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
 	* testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:
-        Likewise.
-        * testsuite/25_algorithms/min/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
+	Likewise.
+	* testsuite/25_algorithms/min/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
 	* testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
 	3.cc: Likewise.
-        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
 	* testsuite/25_algorithms/max/37547.cc: New.
 	* testsuite/25_algorithms/min/37547.cc: Likewise.
 	* testsuite/25_algorithms/minmax/37547.cc: Likewise.
 
 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
-        * testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:
-        New.
-        * testsuite/25_algorithms/min/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
-        * testsuite/25_algorithms/min/3.cc: Likewise.
-        * testsuite/25_algorithms/min/4.cc: Likewise.
-        * testsuite/25_algorithms/max/requirements/explicit_instantiation/3.cc:
-        Likewise.
-        * testsuite/25_algorithms/max/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
-        * testsuite/25_algorithms/max/3.cc: Likewise.
-        * testsuite/25_algorithms/max/4.cc: Likewise.
-        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
-        3.cc: Likewise.
-        * testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
-        pod2.cc: Likewise.
-        * testsuite/25_algorithms/minmax/2.cc: Likewise.
-        * testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/25_algorithms/min/requirements/explicit_instantiation/3.cc:
+	New.
+	* testsuite/25_algorithms/min/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
+	* testsuite/25_algorithms/min/3.cc: Likewise.
+	* testsuite/25_algorithms/min/4.cc: Likewise.
+	* testsuite/25_algorithms/max/requirements/explicit_instantiation/3.cc:
+	Likewise.
+	* testsuite/25_algorithms/max/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
+	* testsuite/25_algorithms/max/3.cc: Likewise.
+	* testsuite/25_algorithms/max/4.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/25_algorithms/minmax/requirements/explicit_instantiation/
+	pod2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
 
 2008-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -84,11 +89,11 @@
 
 2008-09-13  Chris Fairles  <chris.fairles@gmail.com>
 
-        * testsuite/30_threads/thread/algorithm/1.cc: Join thread before
-        program exits.
-        * testsuite/30_threads/thread/algorithm/2.cc: Likewise.
-        * testsuite/30_threads/thread/this_thread/3.cc: Define test variable.
-        * testsuite/30_threads/thread/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/thread/algorithm/1.cc: Join thread before
+	program exits.
+	* testsuite/30_threads/thread/algorithm/2.cc: Likewise.
+	* testsuite/30_threads/thread/this_thread/3.cc: Define test variable.
+	* testsuite/30_threads/thread/this_thread/4.cc: Likewise.
 
 2008-09-12  Chris Fairles  <chris.fairles@gmail.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
@@ -123,7 +128,7 @@
 	* testsuite/30_threads/headers/thread/types_std_c++0x.cc: Likewise.
 	* testsuite/30_threads/headers/thread/std_c++0x_neg.cc: Likewise.
 	* testsuite/17_intro/headers/c++200x/all.cc: Add thread.
-	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: 
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc:
 	Add thread, condition_variable and mutex.
 
 2008-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -159,7 +164,7 @@
 	* doc/xml/manual/abi.xml: Update for new releases.
 	* doc/doxygen/user.cfg.in: Include C compatibility headers.
 	* doc/html/*: Regenerate.
-	
+
 2008-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/cinttypes: Restore __STDC_FORMAT_MACROS after
@@ -232,9 +237,9 @@
 
 2008-09-04  Chris Fairles  <chris.fairles@gmail.com>
 
-        * include/std/mutex (once_flag): Construct __gthread_once_t in a
+	* include/std/mutex (once_flag): Construct __gthread_once_t in a
 	temporary variable before assigning to _M_once to avoid initialization
-	errors. 
+	errors.
 
 2008-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -263,8 +268,8 @@
 
 2008-09-03  Chris Fairles  <chris.fairles@gmail.com>
 
-        * include/std/condition_variable: Use new deleted ctors.
-        * include/std/mutex: Likewise plus implement timed_mutex, 
+	* include/std/condition_variable: Use new deleted ctors.
+	* include/std/mutex: Likewise plus implement timed_mutex,
 	recursive_timed_mutex and call_once.
 	* src/condition_variable.cc: Implement wait(). Use gthread types.
 	Remove _GTHREADS_HAS_COND checks in favor of global
@@ -288,22 +293,22 @@
 	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
 	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
 	Likewise.
-        * testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
 	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/requirements/typedefs.cc:
+	* testsuite/30_threads/recursive_mutex/requirements/typedefs.cc:
 	Likewise.
-        * testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
 	* testsuite/30_threads/unique_lock/requirements/
 	explicit_instantiation.cc: Likewise.
 	* testsuite/30_threads/unique_lock/requirements/typedefs.cc: Likewise.
-        * testsuite/30_threads/mutex/cons/assign_neg.cc: Also adjust dg-error
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Also adjust dg-error
 	lines for deleted members.
-        * testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
 	* testsuite/30_threads/call_once/once_flag.cc: New.
 	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
 	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
@@ -329,16 +334,16 @@
 	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
 	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
 	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
-	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc: 
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc:
 	Likewise.
-	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc: 
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
 	Likewise.
-	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc: 
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
 	Likewise.
-	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc: 
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc:
 	Likewise.
 	* testsuite/30_threads/recursive_timed_mutex/cons: Likewise.
-	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc: 
+	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc:
 	Likewise.
 	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
 	* testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc:
@@ -422,7 +427,7 @@
 
 2008-08-28  Chris Fairles  <chris.fairles@gmail.com>
 
-        * acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): New. Checks for gthread
+	* acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): New. Checks for gthread
 	support used by c++0x thread library.
 	* configure.ac: Test unconditionally.
 	* configure: Regenerate.
@@ -439,8 +444,8 @@
 	* doc/xml/manual/test.xml: Same.
 	* doc/xml/manual/build.xml: Remove.
 	* doc/xml/manual/prerequisites.xml: Add.
-	* doc/html/*: Regenerate. 
-	
+	* doc/html/*: Regenerate.
+
 2008-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable (_Hashtable<>): Add missing pointer and
@@ -474,7 +479,7 @@
 2008-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* linkage.m4 ([GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1],
-	[GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT]): Remove 
+	[GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT]): Remove
 	* configure.ac: Do not call the latter.
 	* crossconfig.m4: Likewise.
 	* libmath/mathconf.h: Adjust.
@@ -516,44 +521,44 @@
 	* testsuite/lib/libstdc++.exp (check_v3_target_atomic_builtins): Add.
 	* testsuite/lib/dg-options.exp (dg-require-atomic-builtins): Likewise.
 	* testsuite/18_support/exception_ptr/current_exception.cc: Use it.
-        * testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
-        * testsuite/18_support/exception_ptr/lifespan.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+	* testsuite/18_support/exception_ptr/lifespan.cc: Likewise.
 
 2008-08-23  Sebastian Redl <sebastian.redl@getdesigned.at>
 
 	Add (again) exception propagation support as per N2179.  Feature is
 	available only when _GLIBCXX_ATOMIC_BUILTINS_4 is defined.
 	* libsupc++/exception_ptr.h (exception_ptr, current_exception,
-        copy_exception, rethrow_exception): New file, implement exception
+	copy_exception, rethrow_exception): New file, implement exception
 	propagation.
-        * libsupc++/eh_ptr.cc (exception_ptr, current_exception,
-        rethrow_exception, __gxx_dependent_exception_cleanup): Likewise.
-        * libsupc++/unwind-cxx.h (__cxa_exception): Add reference count.
+	* libsupc++/eh_ptr.cc (exception_ptr, current_exception,
+	rethrow_exception, __gxx_dependent_exception_cleanup): Likewise.
+	* libsupc++/unwind-cxx.h (__cxa_exception): Add reference count.
 	(__cxa_dependent_exception, __cxa_allocate_dependent_exception,
-        __cxa_free_dependent_exception, __get_dependent_exception_from_ue,
-        __GXX_INIT_DEPENDENT_EXCEPTION_CLASS, __is_dependent_exception,
-        __gxx_dependent_exception_class, __get_object_from_ue,
-        __get_object_from_ambiguous_exception): Add.
-        (__GXX_INIT_EXCEPTION_CLASS, __gxx_exception_class): Rename.
-        (__is_gxx_exception_class): Handle dependent exceptions.
-        * libsupc++/eh_arm.cc (__cxa_type_match): Likewise.
-        * libsupc++/eh_call.cc (__cxa_call_unexpected): Likewise.
-        * libsupc++/eh_personality.cc (__gxx_personality_*): Likewise.
-        * libsupc++/eh_type.cc (__cxa_current_exception_type): Likewise.
-        * libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception,
-        __cxa_free_dependent_exception): Add.
-        * libsupc++/eh_throw.cc (__gxx_exception_cleanup): Handle reference
-        counting.
-        * libsupc++/exception: Conditionally include exception_ptr.h.
-        * libsupc++/Makefile.am: Register new files.
-        * libsupc++/Makefile.in: Regenerate.
-        * config/abi/pre/gnu.ver: Add new symbols.
-        * testsuite/18_support/exception_ptr/current_exception.cc: Test the
-        core functionality of current_exception().
-        * testsuite/18_support/exception_ptr/rethrow_exception.cc: Test the
-        core functionality of rethrow_exception().
-        * testsuite/18_support/exception_ptr/lifespan.cc: Test the life span of
-        exception objects during exception propagation.
+	__cxa_free_dependent_exception, __get_dependent_exception_from_ue,
+	__GXX_INIT_DEPENDENT_EXCEPTION_CLASS, __is_dependent_exception,
+	__gxx_dependent_exception_class, __get_object_from_ue,
+	__get_object_from_ambiguous_exception): Add.
+	(__GXX_INIT_EXCEPTION_CLASS, __gxx_exception_class): Rename.
+	(__is_gxx_exception_class): Handle dependent exceptions.
+	* libsupc++/eh_arm.cc (__cxa_type_match): Likewise.
+	* libsupc++/eh_call.cc (__cxa_call_unexpected): Likewise.
+	* libsupc++/eh_personality.cc (__gxx_personality_*): Likewise.
+	* libsupc++/eh_type.cc (__cxa_current_exception_type): Likewise.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception,
+	__cxa_free_dependent_exception): Add.
+	* libsupc++/eh_throw.cc (__gxx_exception_cleanup): Handle reference
+	counting.
+	* libsupc++/exception: Conditionally include exception_ptr.h.
+	* libsupc++/Makefile.am: Register new files.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* testsuite/18_support/exception_ptr/current_exception.cc: Test the
+	core functionality of current_exception().
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Test the
+	core functionality of rethrow_exception().
+	* testsuite/18_support/exception_ptr/lifespan.cc: Test the life span of
+	exception objects during exception propagation.
 
 2008-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -666,7 +671,7 @@
 	with -fno-exceptions as flags.
 	* configure.ac: Run unconditionally GLIBCXX_CHECK_LFS,
 	GLIBCXX_CHECK_POLL, GLIBCXX_CHECK_S_ISREG_OR_S_IFREG,
-	GLIBCXX_CHECK_WRITEV and commonized AC_CHECK_HEADERS. 
+	GLIBCXX_CHECK_WRITEV and commonized AC_CHECK_HEADERS.
 	* crossconfig.m4: Adjust; remove AC_CHECK_HEADERS commonized
 	in configure.ac.
 	* configure: Regenerate.
@@ -674,7 +679,7 @@
 2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Re-instate last patch, amended to use __exchange_and_add_dispatch
-	and __atomic_add_dispatch in eh_ptr.cc and eh_throw.cc. 
+	and __atomic_add_dispatch in eh_ptr.cc and eh_throw.cc.
 
 2008-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -683,37 +688,37 @@
 2008-08-13  Sebastian Redl <sebastian.redl@getdesigned.at>
 
 	Add exception propagation support as per N2179.
-        * libsupc++/exception_ptr.h (exception_ptr, current_exception,
-        copy_exception, rethrow_exception): New file, implement exception
+	* libsupc++/exception_ptr.h (exception_ptr, current_exception,
+	copy_exception, rethrow_exception): New file, implement exception
 	propagation.
-        * libsupc++/eh_ptr.cc (exception_ptr, current_exception,
-        rethrow_exception, __gxx_dependent_exception_cleanup): Likewise.
-        * libsupc++/unwind-cxx.h (__cxa_exception): Add reference count.
+	* libsupc++/eh_ptr.cc (exception_ptr, current_exception,
+	rethrow_exception, __gxx_dependent_exception_cleanup): Likewise.
+	* libsupc++/unwind-cxx.h (__cxa_exception): Add reference count.
 	(__cxa_dependent_exception, __cxa_allocate_dependent_exception,
-        __cxa_free_dependent_exception, __get_dependent_exception_from_ue,
-        __GXX_INIT_DEPENDENT_EXCEPTION_CLASS, __is_dependent_exception,
-        __gxx_dependent_exception_class, __get_object_from_ue,
-        __get_object_from_ambiguous_exception): Add.
-        (__GXX_INIT_EXCEPTION_CLASS, __gxx_exception_class): Rename.
-        (__is_gxx_exception_class): Handle dependent exceptions.
-        * libsupc++/eh_arm.cc (__cxa_type_match): Likewise.
-        * libsupc++/eh_call.cc (__cxa_call_unexpected): Likewise.
-        * libsupc++/eh_personality.cc (__gxx_personality_*): Likewise.
-        * libsupc++/eh_type.cc (__cxa_current_exception_type): Likewise.
-        * libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception,
-        __cxa_free_dependent_exception): Add.
-        * libsupc++/eh_throw.cc (__gxx_exception_cleanup): Handle reference
-        counting.
-        * libsupc++/exception: Conditionally include exception_ptr.h.
-        * libsupc++/Makefile.am: Register new files.
-        * libsupc++/Makefile.in: Regenerate.
-        * config/abi/pre/gnu.ver: Add new symbols.
-        * testsuite/18_support/exception_ptr/current_exception.cc: Test the
-        core functionality of current_exception().
-        * testsuite/18_support/exception_ptr/rethrow_exception.cc: Test the
-        core functionality of rethrow_exception().
-        * testsuite/18_support/exception_ptr/lifespan.cc: Test the life span of
-        exception objects during exception propagation.
+	__cxa_free_dependent_exception, __get_dependent_exception_from_ue,
+	__GXX_INIT_DEPENDENT_EXCEPTION_CLASS, __is_dependent_exception,
+	__gxx_dependent_exception_class, __get_object_from_ue,
+	__get_object_from_ambiguous_exception): Add.
+	(__GXX_INIT_EXCEPTION_CLASS, __gxx_exception_class): Rename.
+	(__is_gxx_exception_class): Handle dependent exceptions.
+	* libsupc++/eh_arm.cc (__cxa_type_match): Likewise.
+	* libsupc++/eh_call.cc (__cxa_call_unexpected): Likewise.
+	* libsupc++/eh_personality.cc (__gxx_personality_*): Likewise.
+	* libsupc++/eh_type.cc (__cxa_current_exception_type): Likewise.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception,
+	__cxa_free_dependent_exception): Add.
+	* libsupc++/eh_throw.cc (__gxx_exception_cleanup): Handle reference
+	counting.
+	* libsupc++/exception: Conditionally include exception_ptr.h.
+	* libsupc++/Makefile.am: Register new files.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* testsuite/18_support/exception_ptr/current_exception.cc: Test the
+	core functionality of current_exception().
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Test the
+	core functionality of rethrow_exception().
+	* testsuite/18_support/exception_ptr/lifespan.cc: Test the life span of
+	exception objects during exception propagation.
 
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -722,9 +727,9 @@
 
 2008-08-12  Johannes Singler  <singler@ira.uka.de>
 
-        * include/paralle/losertree.h 
-        (LoserTreePointerBase<>::~LoserTreePointerBase):
-        Replace delete by appropriate delete[].
+	* include/paralle/losertree.h
+	(LoserTreePointerBase<>::~LoserTreePointerBase):
+	Replace delete by appropriate delete[].
 
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -812,7 +817,7 @@
 	long or long long don't include <stdint.h> unnecessarily.
 	* configure: Regenerate.
 	* config.h.in: Likewise.
-	
+
 2008-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_api.h (diamond_derivation<>::test):
@@ -855,20 +860,20 @@
 	* acinclude.m4 ([GLIBCXX_CHECK_CLOCK_GETTIME]): Reinstate clock_gettime
 	search, but only in libposix4, never link librt.
 	* src/Makefile.am: Reinstate previous change to add GLIBCXX_LIBS.
-        * configure: Regenerate.
-        * configure.in: Likewise.
-        * Makefile.in: Likewise.
-        * src/Makefile.in: Likewise.
-        * libsup++/Makefile.in: Likewise.
-        * po/Makefile.in: Likewise.
-        * doc/Makefile.in: Likewise.
+	* configure: Regenerate.
+	* configure.in: Likewise.
+	* Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* libsup++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* doc/Makefile.in: Likewise.
 
 2008-07-31  Chris Fairles <chris.fairles@gmail.com>
 
-        * include/std/chrono (duration): Use explicitly defaulted ctor, cctor,
-	dtor and assignment. Add diagnostics as per 20.8.3 paragraphs 2, 3 
+	* include/std/chrono (duration): Use explicitly defaulted ctor, cctor,
+	dtor and assignment. Add diagnostics as per 20.8.3 paragraphs 2, 3
 	and 4 in WD. Other minor tweaks.
-        * testsuite/20_util/duration/cons/1_neg.cc: Adjust line numbers.
+	* testsuite/20_util/duration/cons/1_neg.cc: Adjust line numbers.
 	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: New.
 	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
 	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
@@ -934,25 +939,25 @@
 
 2008-07-23  Chris Fairles <chris.fairles@gmail.com>
 
-        * include/std/condition_variable: Update to N2691 WD.
-        * include/std/mutex: Likewise.
-        * testsuite/30_threads/mutex/cons/assign_neg.cc: Adjust line numbers.
-        * testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
-        * testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* include/std/condition_variable: Update to N2691 WD.
+	* include/std/mutex: Likewise.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
 
 2008-07-23  Chris Fairles <chris.fairles@gmail.com>
 
-        * acinclude.m4 ([GLIBCXX_CHECK_CLOCK_GETTIME]): Define GLIBCXX_LIBS.
+	* acinclude.m4 ([GLIBCXX_CHECK_CLOCK_GETTIME]): Define GLIBCXX_LIBS.
 	Holds the lib that defines clock_gettime (-lrt or -lposix4).
-        * src/Makefile.am: Use it.
-        * configure: Regenerate.
-        * configure.in: Likewise.
-        * Makefile.in: Likewise.
-        * src/Makefile.in: Likewise.
-        * libsup++/Makefile.in: Likewise.
-        * po/Makefile.in: Likewise.
-        * doc/Makefile.in: Likewise.
+	* src/Makefile.am: Use it.
+	* configure: Regenerate.
+	* configure.in: Likewise.
+	* Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* libsup++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* doc/Makefile.in: Likewise.
 
 2008-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1041,7 +1046,7 @@
 	Update error lineno.
 	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
 	Update error lineno.
-	
+
 2008-07-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/os/gnu-linux/arm-eabi-extra.ver: New file.
@@ -1106,38 +1111,38 @@
 
 2008-07-15  Chris Fairles  <chris.fairles@gmail.com>
 
-        * include/std/chrono: New, as per N2661.
-        * src/chrono.cc: New.
-        * include/Makefile.am: Update.
-        * src/Makefile.am: Likewise.
-        * include/Makefile.in: Regenerate.
-        * src/Makefile.in: Likewise.
-        * acinclude.m4: Add tests for clock_gettime and gettimeofday that
+	* include/std/chrono: New, as per N2661.
+	* src/chrono.cc: New.
+	* include/Makefile.am: Update.
+	* src/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.in: Likewise.
+	* acinclude.m4: Add tests for clock_gettime and gettimeofday that
 	define _GLIBCXX_HAS_CLOCK_GETTIME and/or _GLIBCXX_HAS_GETTIMEOFDAY.
-        * configure.ac: Use them.
-        * configure: Regenerate.
-        * config.h.in: Likewise.
-        * config/abi/pre/gnu.ver: Add symbols for system_clock::now() and
-        system_clock::is_monotonic.
-        * testsuite/20_util/duration/cons/1.cc: New.
-        * testsuite/20_util/duration/cons/2.cc: Likewise.
-        * testsuite/20_util/duration/cons/1_neg.cc: Likewise.
-        * testsuite/20_util/duration/requirements/explicit_instantiation/
-        explicit_instantiation.cc: Likewise.
-        * testsuite/20_util/duration/arithmetic/1.cc: Likewise.
-        * testsuite/20_util/duration/arithmetic/2.cc: Likewise.
-        * testsuite/20_util/duration/comparisons/1.cc: Likewise.
-        * testsuite/20_util/time_point/requirements/explicit_instantiation/
-        explicit_instantiation.cc: Likewise.
-        * testsuite/20_util/time_point/1.cc: Likewise.
-        * testsuite/20_util/time_point/2.cc: Likewise.
-        * testsuite/20_util/time_point/3.cc: Likewise.
-        * testsuite/20_util/clocks/1.cc: Likewise.
-        * testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: Add
-        missing headers.
-        * testsuite/17_intro/headers/c++200x/all.cc: Likewise.
-        * include/precompiled/stdc++.h: Likewise and remove <date_time>.
-        * doc/doxygen/user.cfg.in: Likewise.
+	* configure.ac: Use them.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* config/abi/pre/gnu.ver: Add symbols for system_clock::now() and
+	system_clock::is_monotonic.
+	* testsuite/20_util/duration/cons/1.cc: New.
+	* testsuite/20_util/duration/cons/2.cc: Likewise.
+	* testsuite/20_util/duration/cons/1_neg.cc: Likewise.
+	* testsuite/20_util/duration/requirements/explicit_instantiation/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/1.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/2.cc: Likewise.
+	* testsuite/20_util/duration/comparisons/1.cc: Likewise.
+	* testsuite/20_util/time_point/requirements/explicit_instantiation/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/time_point/1.cc: Likewise.
+	* testsuite/20_util/time_point/2.cc: Likewise.
+	* testsuite/20_util/time_point/3.cc: Likewise.
+	* testsuite/20_util/clocks/1.cc: Likewise.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: Add
+	missing headers.
+	* testsuite/17_intro/headers/c++200x/all.cc: Likewise.
+	* include/precompiled/stdc++.h: Likewise and remove <date_time>.
+	* doc/doxygen/user.cfg.in: Likewise.
 
 2008-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1148,14 +1153,14 @@
 
 2008-07-15  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/find_selectors.h:
-        Correct name for include guard #ifndef.
-        * include/parallel/balanced_quicksort.h: Likewise.
-        * include/parallel/unique_copy.h: Likewise.
-        * include/parallel/multiway_mergesort.h: Likewise.
-        * include/parallel/checkers.h: Likewise.
-        * include/parallel/[various files]:
-        Add/correct comment for #endif of include guard (at end of file) 
+	* include/parallel/find_selectors.h:
+	Correct name for include guard #ifndef.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/unique_copy.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/checkers.h: Likewise.
+	* include/parallel/[various files]:
+	Add/correct comment for #endif of include guard (at end of file)
 
 2008-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1179,8 +1184,8 @@
 
 2008-07-10  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/balanced_quicksort.h:
-        (qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
+	* include/parallel/balanced_quicksort.h:
+	(qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
 
 2008-07-09  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1213,17 +1218,17 @@
 2008-07-09  Johannes Singler  <singler@ira.uka.de>
 
 	PR libstdc++/36729
-        * include/parallel/random_shuffle.h:
-        (sequential_random_shuffle) Copy data back.
-        * testsuite/25_algorithms/random_shuffle/1.cc:
-        New. Generic random_shuffle functionality test.
+	* include/parallel/random_shuffle.h:
+	(sequential_random_shuffle) Copy data back.
+	* testsuite/25_algorithms/random_shuffle/1.cc:
+	New. Generic random_shuffle functionality test.
 
 2008-07-08  Chris Fairles  <chris.fairles@gmail.com>
 
-        * include/std/type_traits: Add common_type.
-        * testsuite/20_util/common_type/requirements/
+	* include/std/type_traits: Add common_type.
+	* testsuite/20_util/common_type/requirements/
 	explicit_instantiation.cc: New.
-        * testsuite/20_util/common_type/requirements/
+	* testsuite/20_util/common_type/requirements/
 	typedefs-1.cc: Likewise.
 
 2008-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -1259,11 +1264,11 @@
 
 2008-07-05  Chris Fairles  <chris.fairles@gmail.com>
 
-        * include/std/ratio: Documentation for std::ratio class. Add conditions 
-        to ratio_less to prevent overflow.
-        * testsuite/20_util/ratio/comparisons/comp2.cc: New.
-        * testsuite/20_util/ratio/cons/cons_overflow.cc: Update dg-error line
-        numbers.
+	* include/std/ratio: Documentation for std::ratio class. Add conditions
+	to ratio_less to prevent overflow.
+	* testsuite/20_util/ratio/comparisons/comp2.cc: New.
+	* testsuite/20_util/ratio/cons/cons_overflow.cc: Update dg-error line
+	numbers.
 
 2008-07-04  Chris Fairles  <chris.fairles@gmail.com>
 
@@ -1283,7 +1288,7 @@
 	PR libstdc++/36616
 	* testsuite/22_locale/time_put/put/char/4.cc: Just use es_ES instead.
 	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
-	
+
 2008-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
@@ -1304,7 +1309,7 @@
 
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
-	* libsupc++/initializer_list: Uglify and wrap in 
+	* libsupc++/initializer_list: Uglify and wrap in
 	__GXX_EXPERIMENTAL_CXX0X__.
 	* include/bits/stl_map.h (insert(initializer_list)): Wrap.
 
@@ -1316,7 +1321,7 @@
 2008-06-30  Alfred E. Heggestad  <aeh@db.org>
 
 	* include/backward/backward_warning.h: Fix typo.
-	
+
 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/string_conversions.cc: Remove.
@@ -1328,7 +1333,7 @@
 	define numeric conversion functions.
 	* include/ext/vstring.h: Likewise.
 	* src/Makefile.in: Regenerate.
-	* include/Makefile.in: Regenerate.	
+	* include/Makefile.in: Regenerate.
 
 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1348,7 +1353,7 @@
 	explicit_instantiation/2.cc: Likewise.
 	* testsuite/25_algorithms/partition_point/requirements/
 	explicit_instantiation/pod.cc: Likewise.
-	
+
 2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (partition_point): Add in C++0x mode.
@@ -1421,18 +1426,18 @@
 
 2008-06-26  Chris Fairles  <chris.fairles@gmail.com>
 
-        * testsuite/20_util/unique_ptr/cons/pointer_array.cc: New.
-        * testsuite/20_util/unique_ptr/cons/pointer.cc: Likewise.
-        * testsuite/20_util/unique_ptr/cons/pointer_array_convertible.cc:
-        Likewise.
-        * testsuite/20_util/unique_ptr/assign/move_array.cc: Likewise.
-        * testsuite/20_util/unique_ptr/assign/move.cc: Likewise.
-        * testsuite/20_util/unique_ptr/specialized_algorithms/
-        comparisons_array.cc: Likewise.
-        * testsuite/20_util/unique_ptr/specialized_algorithms/comparisons.cc:
-        Likewise
-        * testsuite/20_util/unique_ptr/specialized_algorithms/swap.cc:
-        Likewise.
+	* testsuite/20_util/unique_ptr/cons/pointer_array.cc: New.
+	* testsuite/20_util/unique_ptr/cons/pointer.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/assign/move_array.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/move.cc: Likewise.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/
+	comparisons_array.cc: Likewise.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/comparisons.cc:
+	Likewise
+	* testsuite/20_util/unique_ptr/specialized_algorithms/swap.cc:
+	Likewise.
 
 2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1497,7 +1502,7 @@
 	* doc/xml/manual/test.xml: Remove empty para tags.
 
 	* doc/html/*: Regenerate.
-	
+
 2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (remove_if): Cast __pred result to bool.
@@ -1644,7 +1649,7 @@
 	deque<>::push_front(const value_type&)): Add back.
 	(deque<>::emplace_back(_Args&&...),
 	deque<>::emplace_front(_Args&&...)): Declare...
-	* include/bits/deque.tcc: ... and define.	
+	* include/bits/deque.tcc: ... and define.
 	* include/bits/stl_list.h (list<>::push_back(_Args&&...),
 	list<>::push_front(_Args&&...)): Remove.
 	(list<>::push_back(value_type&&), list<>::push_front(value_type&&),
@@ -1730,7 +1735,7 @@
 2008-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable (_Hashtable<>::cbegin(size_type),
-	cend(size_type)): Add per DR 691. 
+	cend(size_type)): Add per DR 691.
 	* testsuite/23_containers/unordered_map/requirements/cliterators.cc:
 	New.
 	* testsuite/23_containers/unordered_multimap/requirements/
