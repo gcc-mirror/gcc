@@ -138,7 +138,8 @@ and warnings}.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -Wall  -Waliasing  -Wampersand  -Warray-bounds -Wcharacter-truncation @gol
 -Wconversion -Wimplicit-interface  -Wline-truncation  -Wintrinsics-std @gol
--Wsurprising -Wno-tabs  -Wunderflow -Wunused-parameter -Wintrinsics-shadow}
+-Wsurprising -Wno-tabs  -Wunderflow -Wunused-parameter -Wintrinsics-shadow @gol
+-Wno-align-commons}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -167,7 +168,7 @@ and warnings}.
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan>} @gol
--finit-logical=@var{<true|false>} -finit-character=@var{n}}
+-finit-logical=@var{<true|false>} -finit-character=@var{n} -fno-align-commons}
 @end table
 
 @menu
@@ -800,6 +801,14 @@ about unused dummy arguments, but about unused @code{PARAMETER} values.
 @option{-Wunused-parameter} is not included in @option{-Wall} but is
 implied by @option{-Wall -Wextra}.
 
+@item -Walign-commons
+@opindex @code{Walign-commons}
+@cindex warnings, alignment of COMMON blocks
+@cindex alignment of COMMON blocks
+By default, @command{gfortran} warns about any occasion of variables being
+padded for proper alignment inside a COMMON block. This warning can be turned
+off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
+
 @item -Werror
 @opindex @code{Werror}
 @cindex warnings, to errors
@@ -1275,6 +1284,18 @@ future releases).
 
 Note that the @option{-finit-real=nan} option initializes @code{REAL}
 and @code{COMPLEX} variables with a quiet NaN.
+
+@item -falign-commons
+@opindex @code{falign-commons}
+@cindex alignment of COMMON blocks
+By default, @command{gfortran} enforces proper alignment of all variables in a
+COMMON block by padding them as needed. On certain platforms this is mandatory,
+on others it increases performance. If a COMMON block is not declared with
+consistent data types everywhere, this padding can cause trouble, and
+@option{-fno-align-commons } can be used to disable automatic alignment. The
+same form of this option should be used for all files that share a COMMON block.
+To avoid potential alignment issues in COMMON blocks, it is recommended to order
+objects from largests to smallest.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

@@ -72,6 +72,10 @@ Waliasing
 Fortran Warning
 Warn about possible aliasing of dummy arguments
 
+Walign-commons
+Fortran Warning
+Warn about alignment of COMMON blocks
+
 Wampersand
 Fortran Warning
 Warn about missing ampersand in continued character constants
@@ -131,6 +135,10 @@ Disable preprocessing
 d
 Fortran Joined
 -d[DIMNU]	Dump details about macro names and definitions during preprocessing
+
+falign-commons
+Fortran
+Enable alignment of COMMON blocks
 
 fall-intrinsics
 Fortran RejectNegative

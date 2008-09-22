@@ -78,6 +78,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.warn_underflow = 1;
   gfc_option.warn_intrinsic_shadow = 0;
   gfc_option.warn_intrinsics_std = 0;
+  gfc_option.warn_align_commons = 1;
   gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
@@ -117,6 +118,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
+  gfc_option.flag_align_commons = 1;
   
   gfc_option.fpe = 0;
 
@@ -517,6 +519,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_intrinsic_shadow = value;
       break;
 
+    case OPT_Walign_commons:
+      gfc_option.warn_align_commons = value;
+      break;
+
     case OPT_fall_intrinsics:
       gfc_option.flag_all_intrinsics = 1;
       break;
@@ -824,6 +830,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_frecursive:
       gfc_option.flag_recursive = 1;
+      break;
+
+    case OPT_falign_commons:
+      gfc_option.flag_align_commons = value;
       break;
     }
 
