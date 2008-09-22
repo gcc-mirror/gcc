@@ -1172,6 +1172,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __cplusplus \
 		         __GTHREADS \
+			 _GLIBCXX_HAS_GTHREADS \
 			 __GXX_EXPERIMENTAL_CXX0X__ \
                          "_GLIBCXX_STD_P= " \
                          "_GLIBCXX_STD_D= " \
