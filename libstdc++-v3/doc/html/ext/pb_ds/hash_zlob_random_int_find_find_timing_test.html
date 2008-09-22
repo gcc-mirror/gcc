@@ -18,7 +18,7 @@
     time for <tt>find</tt> as a function of the number of values in
     the containers. The keys are generated as follows. First, a
     uniform integer is created; it is then shifted left 8 bits.</p>
-<p>(The test was executed with <a href="../../../../testsuite/performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc"><tt>hash_zlob_random_int_find_timing_test</tt></a>
+<p>(The test was executed with <a href="http://gcc.gnu.org/viewcvs/*checkout*/trunk/libstdc%2B%2B-v3/testsuite/performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc"><tt>hash_zlob_random_int_find_timing_test</tt></a>
     200 200 2100)</p>
 <h2><a name="purpose" id="purpose">Purpose</a></h2>
 <p>The test checks the effect of different range-hashing
@@ -145,7 +145,7 @@ with <tt>Comb_Hash_Fn</tt> = <a href="direct_mod_range_hashing.html"><tt>direct_
     more natural case in which mod-based range hashing is better.
     In our opnion, real-life key distributions are handled better
     with an appropriate hash function and a mask-based
-    range-hashing function. (<a href="../../../../testsuite/ext/pb_ds/example/hash_shift_mask.cc"><tt>shift_mask.cc</tt></a>
+    range-hashing function. (<a href="http://gcc.gnu.org/viewcvs/*checkout*/trunk/libstdc%2B%2B-v3/testsuite/ext/pb_ds/example/hash_shift_mask.cc"><tt>shift_mask.cc</tt></a>
     shows an example of handling this a-priori known skewed
     distribution with a mask-based range-hashing function). If hash
     performance is bad, a <i>&Chi;<sup>2</sup></i> test can be used
