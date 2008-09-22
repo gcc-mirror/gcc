@@ -1,3 +1,12 @@
+2008-09-22  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (rules): Add new rule for
+	gnu.java.lang.VMCPStringBuilder.toString.
+	(rewrite_rule.new_classname): New field.
+	(maybe_rewrite_invocation): Use new_classname field instead of
+	DECL_CONTEXT (*method_p).
+	Allow rewrite_arglist to be NULL.
+
 2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): Don't define.

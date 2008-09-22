@@ -2075,6 +2075,7 @@ typedef struct
   const char *classname;
   const char *method;
   const char *signature;
+  const char *new_classname;
   const char *new_signature;
   int flags;
   tree (*rewrite_arglist) (tree arglist);
@@ -2109,20 +2110,27 @@ rewrite_arglist_getclass (tree arglist)
 
 static rewrite_rule rules[] =
   {{"java.lang.Class", "getClassLoader", "()Ljava/lang/ClassLoader;", 
-    "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", 
+    "java.lang.Class", "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", 
     ACC_FINAL|ACC_PRIVATE, rewrite_arglist_getclass},
+
    {"java.lang.Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;",
-    "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Class;",
+    "java.lang.Class", "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Class;",
     ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getclass},
+
    {"gnu.classpath.VMStackWalker", "getCallingClass", "()Ljava/lang/Class;",
-    "(Lgnu/gcj/RawData;)Ljava/lang/Class;",
-    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getcaller},
-   {"gnu.classpath.VMStackWalker", "getCallingClassLoader", 
-    "()Ljava/lang/ClassLoader;",
-    "(Lgnu/gcj/RawData;)Ljava/lang/ClassLoader;",
+    "gnu.classpath.VMStackWalker", "(Lgnu/gcj/RawData;)Ljava/lang/Class;",
     ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getcaller},
 
-   {NULL, NULL, NULL, NULL, 0, NULL}};
+   {"gnu.classpath.VMStackWalker", "getCallingClassLoader", 
+    "()Ljava/lang/ClassLoader;",
+    "gnu.classpath.VMStackWalker", "(Lgnu/gcj/RawData;)Ljava/lang/ClassLoader;",
+    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getcaller},
+
+   {"gnu.java.lang.VMCPStringBuilder", "toString", "([CII)Ljava/lang/String;", 
+    "java.lang.String", "([CII)Ljava/lang/String;",
+    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, NULL},
+
+   {NULL, NULL, NULL, NULL, NULL, 0, NULL}};
 
 /* True if this method is special, i.e. it's a private method that
    should be exported from a DSO.  */
@@ -2163,20 +2171,25 @@ maybe_rewrite_invocation (tree *method_p, tree *arg_list_p,
 	  if (get_identifier (p->method) == method
 	      && get_identifier (p->signature) == *method_signature_p)
 	    {
-	      tree maybe_method
-		= lookup_java_method (DECL_CONTEXT (*method_p),
+	      tree maybe_method;
+	      tree destination_class 
+		= lookup_class (get_identifier (p->new_classname));
+	      gcc_assert (destination_class);
+	      maybe_method
+		= lookup_java_method (destination_class,
 				      method,
 				      get_identifier (p->new_signature));
 	      if (! maybe_method && ! flag_verify_invocations)
 		{
 		  maybe_method
-		    = add_method (DECL_CONTEXT (*method_p), p->flags, 
+		    = add_method (destination_class, p->flags, 
 				  method, get_identifier (p->new_signature));
 		  DECL_EXTERNAL (maybe_method) = 1;
 		}
 	      *method_p = maybe_method;
 	      gcc_assert (*method_p);
-	      *arg_list_p = p->rewrite_arglist (*arg_list_p);
+	      if (p->rewrite_arglist)
+		*arg_list_p = p->rewrite_arglist (*arg_list_p);
 	      *method_signature_p = get_identifier (p->new_signature);
 	      *special = integer_one_node;
 
