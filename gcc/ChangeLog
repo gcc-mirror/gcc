@@ -1,3 +1,9 @@
+2008-09-22  David Daney  <ddaney@avtrex.com>
+
+	PR target/37593
+	* config/mips/mips.h (FUNCTION_PROFILER): Call _mcount via a
+	register if TARGET_LONG_CALLS.
+
 2008-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37145

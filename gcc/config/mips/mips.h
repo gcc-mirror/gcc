@@ -2263,6 +2263,14 @@ typedef struct mips_args {
 {									\
   if (TARGET_MIPS16)							\
     sorry ("mips16 function profiling");				\
+  if (TARGET_LONG_CALLS)						\
+    {									\
+      /*  For TARGET_LONG_CALLS use $3 for the address of _mcount.  */	\
+      if (Pmode == DImode)						\
+	fprintf (FILE, "\tdla\t%s,_mcount\n", reg_names[GP_REG_FIRST + 3]); \
+      else								\
+	fprintf (FILE, "\tla\t%s,_mcount\n", reg_names[GP_REG_FIRST + 3]); \
+    }									\
   fprintf (FILE, "\t.set\tnoat\n");					\
   fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
 	   reg_names[GP_REG_FIRST + 1], reg_names[GP_REG_FIRST + 31]);	\
@@ -2279,7 +2287,10 @@ typedef struct mips_args {
 	       reg_names[STACK_POINTER_REGNUM],				\
 	       Pmode == DImode ? 16 : 8);				\
     }									\
-  fprintf (FILE, "\tjal\t_mcount\n");                                   \
+  if (TARGET_LONG_CALLS)						\
+    fprintf (FILE, "\tjalr\t%s\n", reg_names[GP_REG_FIRST + 3]);	\
+  else									\
+    fprintf (FILE, "\tjal\t_mcount\n");					\
   fprintf (FILE, "\t.set\tat\n");					\
   /* _mcount treats $2 as the static chain register.  */		\
   if (cfun->static_chain_decl != NULL)					\
