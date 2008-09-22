@@ -1,3 +1,16 @@
+2008-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/37170
+	PR middle-end/37280
+	* final.c (mark_symbol_ref_as_used): New helper function.
+	(output_operand): Instead of just looking inside MEMs for
+	SYMBOL_REFs, use new helper function and for_each_rtx.
+	* varasm.c (assemble_external): Move #ifndef ASM_OUTPUT_EXTERNAL
+	to after weak-handling.  Don't mark decls with TREE_STATIC as weak.
+	Make head comment more general.
+	* config/darwin.c (machopic_output_indirection): Handle weak
+	references here, like in assemble_external.
+
 2008-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (gen_compare_operator): Declare.
