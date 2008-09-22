@@ -12,5 +12,5 @@ __SIZE_TYPE__ mystrlen (const char *s)
   return strlen(s);
 }
 
-/* { dg-final { scan-tree-dump "= 0;" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "= 0;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

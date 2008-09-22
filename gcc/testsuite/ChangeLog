@@ -1,3 +1,8 @@
+2008-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37145
+	* gcc.dg/tree-ssa/ssa-pre-15.c: Remove XFAIL.
+
 2008-09-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/37486
