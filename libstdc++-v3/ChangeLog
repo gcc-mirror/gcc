@@ -1,5 +1,10 @@
 2008-09-22  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/37391
+	* doc/html/ext/pb_ds/*.html: Fix external links.
+	
+2008-09-22  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/doxygen/user.cfg.in: Define _GLIBCXX_HAS_GTHREADS for mutex,
 	condition_variable, and thread output.
 
