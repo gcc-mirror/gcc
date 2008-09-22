@@ -1,3 +1,8 @@
+2008-09-22  David Daney  <ddaney@avtrex.com>
+
+	PR target/37593
+	* gcc.target/mips/long-calls-pg.c: New test.
+
 2008-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37145
