@@ -1,3 +1,18 @@
+2008-09-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37482
+	* tree-vectorizer.h (struct _slp_instance): Add new field.
+	(SLP_INSTANCE_FIRST_LOAD_STMT): New.
+	(get_earlier_stmt): New function.
+	* tree-vect-analyze.c (vect_find_first_load_in_slp_instance): New
+	function.
+	(vect_analyze_slp_instance): Set SLP_INSTANCE_FIRST_LOAD_STMT.
+	* tree-vect-transform.c (vect_finish_stmt_generation): Remove the
+	asserts that GSI points to the scalar statement being vectorized.
+	Set new statement location according to GSI.
+	(vect_schedule_slp_instance): Use GSI of
+	SLP_INSTANCE_FIRST_LOAD_STMT when vectorizing loads.
+
 2008-09-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_estimate_growth): Check recursive calls.

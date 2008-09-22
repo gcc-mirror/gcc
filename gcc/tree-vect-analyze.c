@@ -3228,6 +3228,32 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   return false; 
 }
 
+
+/* Find the first load in the loop that belongs to INSTANCE. 
+   When loads are in several SLP nodes, there can be a case in which the first
+   load does not appear in the first SLP node to be transformed, causing 
+   incorrect order of statements. Since we generate all the loads together,
+   they must be inserted before the first load of the SLP instance and not
+   before the first load of the first node of the instance.  */
+static gimple 
+vect_find_first_load_in_slp_instance (slp_instance instance) 
+{
+  int i, j;
+  slp_tree load_node;
+  gimple first_load = NULL, load;
+
+  for (i = 0; 
+       VEC_iterate (slp_tree, SLP_INSTANCE_LOADS (instance), i, load_node); 
+       i++)
+    for (j = 0; 
+         VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (load_node), j, load);
+         j++)
+      first_load = get_earlier_stmt (load, first_load);
+  
+  return first_load;
+}
+
+
 /* Analyze an SLP instance starting from a group of strided stores. Call
    vect_build_slp_tree to build a tree of packed stmts if possible.  
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
@@ -3312,6 +3338,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
       SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (new_instance) = outside_cost;
       SLP_INSTANCE_INSIDE_OF_LOOP_COST (new_instance) = inside_cost;
       SLP_INSTANCE_LOADS (new_instance) = loads;
+      SLP_INSTANCE_FIRST_LOAD_STMT (new_instance) = NULL;
       SLP_INSTANCE_LOAD_PERMUTATION (new_instance) = load_permutation;
       if (VEC_length (slp_tree, loads))
         {
@@ -3328,6 +3355,9 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
               vect_free_slp_instance (new_instance);
               return false;
             }
+
+          SLP_INSTANCE_FIRST_LOAD_STMT (new_instance)
+             = vect_find_first_load_in_slp_instance (new_instance);
         }
       else
         VEC_free (int, heap, SLP_INSTANCE_LOAD_PERMUTATION (new_instance));

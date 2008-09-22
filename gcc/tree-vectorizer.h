@@ -133,6 +133,10 @@ typedef struct _slp_instance {
 
   /* The group of nodes that contain loads of this SLP instance.  */
   VEC (slp_tree, heap) *loads;
+
+  /* The first scalar load of the instance. The created vector loads will be
+     inserted before this statement.  */
+  gimple first_load;
 } *slp_instance;
 
 DEF_VEC_P(slp_instance);
@@ -146,6 +150,7 @@ DEF_VEC_ALLOC_P(slp_instance, heap);
 #define SLP_INSTANCE_INSIDE_OF_LOOP_COST(S)      (S)->cost.inside_of_loop
 #define SLP_INSTANCE_LOAD_PERMUTATION(S)         (S)->load_permutation
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
+#define SLP_INSTANCE_FIRST_LOAD_STMT(S)          (S)->first_load
 
 #define SLP_TREE_LEFT(S)                         (S)->left
 #define SLP_TREE_RIGHT(S)                        (S)->right
@@ -576,6 +581,32 @@ set_vinfo_for_stmt (gimple stmt, stmt_vec_info info)
     }
   else
     VEC_replace (vec_void_p, stmt_vec_info_vec, uid - 1, (vec_void_p) info);
+}
+
+static inline gimple
+get_earlier_stmt (gimple stmt1, gimple stmt2)
+{
+  unsigned int uid1, uid2;
+
+  if (stmt1 == NULL)
+    return stmt2;
+
+  if (stmt2 == NULL)
+    return stmt1;
+
+  uid1 = gimple_uid (stmt1);
+  uid2 = gimple_uid (stmt2);
+
+  if (uid1 == 0 || uid2 == 0)
+    return NULL;
+
+  gcc_assert (uid1 <= VEC_length (vec_void_p, stmt_vec_info_vec));
+  gcc_assert (uid2 <= VEC_length (vec_void_p, stmt_vec_info_vec));
+
+  if (uid1 < uid2)
+    return stmt1;
+  else
+    return stmt2;
 }
 
 static inline bool

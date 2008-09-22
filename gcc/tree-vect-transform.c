@@ -2155,7 +2155,6 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
 
-  gcc_assert (stmt == gsi_stmt (*gsi));
   gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
 
   gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
@@ -2168,10 +2167,7 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
       print_gimple_stmt (vect_dump, vec_stmt, 0, TDF_SLIM);
     }
 
-  /* Make sure gsi points to the stmt that is being vectorized.  */
-  gcc_assert (stmt == gsi_stmt (*gsi));
-
-  gimple_set_location (vec_stmt, gimple_location (stmt));
+  gimple_set_location (vec_stmt, gimple_location (gsi_stmt (*gsi)));
 }
 
 
@@ -8156,7 +8152,7 @@ vect_remove_stores (gimple first_stmt)
 
 static bool
 vect_schedule_slp_instance (slp_tree node, slp_instance instance,
-                            unsigned int vectorization_factor)
+                            unsigned int vectorization_factor) 
 {
   gimple stmt;
   bool strided_store, is_store;
@@ -8177,6 +8173,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   
   stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (node), 0);
   stmt_info = vinfo_for_stmt (stmt);
+
   /* VECTYPE is the type of the destination.  */
   vectype = get_vectype_for_scalar_type (TREE_TYPE (gimple_assign_lhs (stmt)));
   nunits = (unsigned int) TYPE_VECTOR_SUBPARTS (vectype);
@@ -8218,7 +8215,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
     }	
 
-  si = gsi_for_stmt (stmt);
+  /* Loads should be inserted before the first load.  */
+  if (SLP_INSTANCE_FIRST_LOAD_STMT (instance)
+      && STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      && !REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
+    si = gsi_for_stmt (SLP_INSTANCE_FIRST_LOAD_STMT (instance));
+  else
+    si = gsi_for_stmt (stmt);
+
   is_store = vect_transform_stmt (stmt, &si, &strided_store, node, instance);
   if (is_store)
     {
@@ -8252,8 +8256,7 @@ vect_schedule_slp (loop_vec_info loop_vinfo)
     {
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-                                          instance,
-                                          LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+                            instance, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 			  
       if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS)
 	  || vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
