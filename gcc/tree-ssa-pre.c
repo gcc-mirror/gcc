@@ -1155,6 +1155,52 @@ fully_constant_expression (pre_expr e)
 	    return e;
 	  }
       }
+    case REFERENCE:
+      {
+	vn_reference_t ref = PRE_EXPR_REFERENCE (e);
+	VEC (vn_reference_op_s, heap) *operands = ref->operands;
+	vn_reference_op_t op;
+
+	/* Try to simplify the translated expression if it is
+	   a call to a builtin function with at most two arguments.  */
+	op = VEC_index (vn_reference_op_s, operands, 0);
+	if (op->opcode == CALL_EXPR
+	    && TREE_CODE (op->op0) == ADDR_EXPR
+	    && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
+	    && DECL_BUILT_IN (TREE_OPERAND (op->op0, 0))
+	    && VEC_length (vn_reference_op_s, operands) >= 2
+	    && VEC_length (vn_reference_op_s, operands) <= 3)
+	  {
+	    vn_reference_op_t arg0, arg1 = NULL;
+	    bool anyconst = false;
+	    arg0 = VEC_index (vn_reference_op_s, operands, 1);
+	    if (VEC_length (vn_reference_op_s, operands) > 2)
+	      arg1 = VEC_index (vn_reference_op_s, operands, 2);
+	    if (TREE_CODE_CLASS (arg0->opcode) == tcc_constant
+		|| (arg0->opcode == ADDR_EXPR
+		    && is_gimple_min_invariant (arg0->op0)))
+	      anyconst = true;
+	    if (arg1
+		&& (TREE_CODE_CLASS (arg1->opcode) == tcc_constant
+		    || (arg1->opcode == ADDR_EXPR
+			&& is_gimple_min_invariant (arg1->op0))))
+	      anyconst = true;
+	    if (anyconst)
+	      {
+		tree folded = build_call_expr (TREE_OPERAND (op->op0, 0),
+					       arg1 ? 2 : 1,
+					       arg0->op0,
+					       arg1 ? arg1->op0 : NULL);
+		if (folded
+		    && TREE_CODE (folded) == NOP_EXPR)
+		  folded = TREE_OPERAND (folded, 0);
+		if (folded
+		    && is_gimple_min_invariant (folded))
+		  return get_or_alloc_expr_for_constant (folded);
+	      }
+	  }
+	  return e;
+	}
     default:
       return e;
     }
@@ -1469,6 +1515,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	return expr;
       }
       break;
+
     case REFERENCE:
       {
 	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
@@ -1570,11 +1617,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 
 	if (changed)
 	  {
+	    unsigned int new_val_id;
+	    pre_expr constant;
+
 	    tree result = vn_reference_lookup_pieces (newvuses,
 						      newoperands,
 						      &newref, true);
-	    unsigned int new_val_id;
-
 	    if (newref)
 	      VEC_free (vn_reference_op_s, heap, newoperands);
 
@@ -1591,6 +1639,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    if (newref)
 	      {
 		PRE_EXPR_REFERENCE (expr) = newref;
+		constant = fully_constant_expression (expr);
+		if (constant != expr)
+		  return constant;
+
 		new_val_id = newref->value_id;
 		get_or_alloc_expression_id (expr);
 	      }
@@ -1604,6 +1656,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						     result, new_val_id);
 		newoperands = NULL;
 		PRE_EXPR_REFERENCE (expr) = newref;
+		constant = fully_constant_expression (expr);
+		if (constant != expr)
+		  return constant;
 		get_or_alloc_expression_id (expr);
 	      }
 	    add_to_value (new_val_id, expr);
@@ -1613,6 +1668,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	return expr;
       }
       break;
+
     case NAME:
       {
 	gimple phi = NULL;

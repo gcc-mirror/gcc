@@ -1,3 +1,9 @@
+2008-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37145
+	* tree-ssa-pre.c (fully_constant_expression): Simplify builtin calls.
+	(phi_translate_1): Constant fold references.
+
 2008-09-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37482
