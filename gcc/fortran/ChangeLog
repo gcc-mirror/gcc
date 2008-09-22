@@ -1,3 +1,15 @@
+2008-09-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/37486
+	* gfortran.h (gfc_option_t): New members flag_align_commons and
+	warn_align_commons. 
+	* lang.opt: New options falign-commons and Walign-commons.
+	* invoke.texi: Documentation for new options.
+	* options.c (gfc_init_options): Initialize new options.
+	(gfc_handle_options): Handle new options.
+	* trans-common.c (translate_common): Implement new options.
+	(gfc_trans_common): Set correct locus.
+
 2008-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37583

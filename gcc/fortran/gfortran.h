@@ -1969,6 +1969,7 @@ typedef struct
   int warn_intrinsics_std;
   int warn_character_truncation;
   int warn_array_temp;
+  int warn_align_commons;
   int max_errors;
 
   int flag_all_intrinsics;
@@ -2006,6 +2007,7 @@ typedef struct
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
+  int flag_align_commons;
 
   int fpe;
 

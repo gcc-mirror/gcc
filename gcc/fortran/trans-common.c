@@ -1059,7 +1059,9 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   bool saw_equiv;
 
   common_segment = NULL;
+  offset = 0;
   current_offset = 0;
+  align = 1;
   max_align = 1;
   saw_equiv = false;
 
@@ -1100,16 +1102,27 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 		       "extension to COMMON '%s' at %L", sym->name,
 		       common->name, &common->where);
 
-	  offset = align_segment (&align);
+	  if (gfc_option.flag_align_commons)
+	    offset = align_segment (&align);
 
 	  if (offset & (max_align - 1))
 	    {
 	      /* The required offset conflicts with previous alignment
 		 requirements.  Insert padding immediately before this
 		 segment.  */
-	      gfc_warning ("Padding of %d bytes required before '%s' in "
-			   "COMMON '%s' at %L", (int)offset, s->sym->name,
-			   common->name, &common->where);
+	      if (gfc_option.warn_align_commons)
+		{
+		  if (strcmp (common->name, BLANK_COMMON_NAME))
+		    gfc_warning ("Padding of %d bytes required before '%s' in "
+				 "COMMON '%s' at %L; reorder elements or use "
+				 "-fno-align-commons", (int)offset,
+				 s->sym->name, common->name, &common->where);
+		  else
+		    gfc_warning ("Padding of %d bytes required before '%s' in "
+				 "COMMON at %L; reorder elements or use "
+				 "-fno-align-commons", (int)offset,
+				 s->sym->name, &common->where);
+		}
 	    }
 	  else
 	    {
@@ -1138,10 +1151,16 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
       return;
     }
 
-  if (common_segment->offset != 0)
+  if (common_segment->offset != 0 && gfc_option.warn_align_commons)
     {
-      gfc_warning ("COMMON '%s' at %L requires %d bytes of padding at start",
-		   common->name, &common->where, (int)common_segment->offset);
+      if (strcmp (common->name, BLANK_COMMON_NAME))
+	gfc_warning ("COMMON '%s' at %L requires %d bytes of padding at start; "
+		     "reorder elements or use -fno-align-commons",
+		     common->name, &common->where, (int)common_segment->offset);
+      else
+	gfc_warning ("COMMON at %L requires %d bytes of padding at start; "
+		     "reorder elements or use -fno-align-commons",
+		     &common->where, (int)common_segment->offset);
     }
 
   create_common (common, common_segment, saw_equiv);
@@ -1225,14 +1244,7 @@ gfc_trans_common (gfc_namespace *ns)
   if (ns->blank_common.head != NULL)
     {
       c = gfc_get_common_head ();
-
-      /* We've lost the real location, so use the location of the
-	 enclosing procedure.  */
-      if (ns->proc_name != NULL)
-	c->where = ns->proc_name->declared_at;
-      else
-	c->where = ns->blank_common.head->common_head->where;
-
+      c->where = ns->blank_common.head->common_head->where;
       strcpy (c->name, BLANK_COMMON_NAME);
       translate_common (c, ns->blank_common.head);
     }
