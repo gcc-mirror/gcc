@@ -2042,30 +2042,41 @@ update_curr_costs (ira_allocno_t a)
 /* Map: allocno number -> allocno priority.  */
 static int *allocno_priorities;
 
-/* Allocate array ALLOCNO_PRIORITIES and set up priorities for N allocnos in
-   array CONSIDERATION_ALLOCNOS.  */
+/* Set up priorities for N allocnos in array
+   CONSIDERATION_ALLOCNOS.  */
 static void
-start_allocno_priorities (ira_allocno_t *consideration_allocnos, int n)
+setup_allocno_priorities (ira_allocno_t *consideration_allocnos, int n)
 {
-  int i, length;
+  int i, length, nrefs, priority, max_priority, mult;
   ira_allocno_t a;
-  allocno_live_range_t r;
 
+  max_priority = 0;
   for (i = 0; i < n; i++)
     {
       a = consideration_allocnos[i];
-      for (length = 0, r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
-	length += r->finish - r->start + 1;
-      if (length == 0)
-	{
-	  allocno_priorities[ALLOCNO_NUM (a)] = 0;
-	  continue;
-	}
-      ira_assert (length > 0 && ALLOCNO_NREFS (a) >= 0);
+      nrefs = ALLOCNO_NREFS (a);
+      ira_assert (nrefs >= 0);
+      mult = floor_log2 (ALLOCNO_NREFS (a)) + 1;
+      ira_assert (mult >= 0);
       allocno_priorities[ALLOCNO_NUM (a)]
-	= (((double) (floor_log2 (ALLOCNO_NREFS (a)) * ALLOCNO_FREQ (a))
-	    / length)
-	   * (10000 / REG_FREQ_MAX) * PSEUDO_REGNO_SIZE (ALLOCNO_REGNO (a)));
+	= priority
+	= (mult
+	   * (ALLOCNO_MEMORY_COST (a) - ALLOCNO_COVER_CLASS_COST (a))
+	   * ira_reg_class_nregs[ALLOCNO_COVER_CLASS (a)][ALLOCNO_MODE (a)]);
+      if (priority < 0)
+	priority = -priority;
+      if (max_priority < priority)
+	max_priority = priority;
+    }
+  mult = max_priority == 0 ? 1 : INT_MAX / max_priority;
+  for (i = 0; i < n; i++)
+    {
+      a = consideration_allocnos[i];
+      length = ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
+      if (length <= 0)
+	length = 1;
+      allocno_priorities[ALLOCNO_NUM (a)]
+	= allocno_priorities[ALLOCNO_NUM (a)] * mult / length;
     }
 }
 
@@ -2137,7 +2148,7 @@ ira_reassign_conflict_allocnos (int start_regno)
   ira_free_bitmap (allocnos_to_color);
   if (allocnos_to_color_num > 1)
     {
-      start_allocno_priorities (sorted_allocnos, allocnos_to_color_num);
+      setup_allocno_priorities (sorted_allocnos, allocnos_to_color_num);
       qsort (sorted_allocnos, allocnos_to_color_num, sizeof (ira_allocno_t),
 	     allocno_priority_compare_func);
     }
@@ -2672,7 +2683,7 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
     }
   if (n != 0)
     {
-      start_allocno_priorities (sorted_allocnos, n);
+      setup_allocno_priorities (sorted_allocnos, n);
       qsort (sorted_allocnos, n, sizeof (ira_allocno_t),
 	     allocno_priority_compare_func);
       for (i = 0; i < n; i++)
@@ -3001,7 +3012,7 @@ ira_color (void)
 void
 ira_fast_allocation (void)
 {
-  int i, j, k, l, num, class_size, hard_regno;
+  int i, j, k, num, class_size, hard_regno;
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
@@ -3012,28 +3023,17 @@ ira_fast_allocation (void)
   allocno_live_range_t r;
   HARD_REG_SET conflict_hard_regs, *used_hard_regs;
 
-  allocno_priorities = (int *) ira_allocate (sizeof (int) * ira_allocnos_num);
-  FOR_EACH_ALLOCNO (a, ai)
-    {
-      l = ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
-      if (l <= 0)
-	l = 1;
-      allocno_priorities[ALLOCNO_NUM (a)]
-	= (((double) (floor_log2 (ALLOCNO_NREFS (a))
-		      * (ALLOCNO_MEMORY_COST (a)
-			 - ALLOCNO_COVER_CLASS_COST (a))) / l)
-	   * (10000 / REG_FREQ_MAX)
-	   * ira_reg_class_nregs[ALLOCNO_COVER_CLASS (a)][ALLOCNO_MODE (a)]);
-    }
-  used_hard_regs = (HARD_REG_SET *) ira_allocate (sizeof (HARD_REG_SET)
-						  * ira_max_point);
-  for (i = 0; i < ira_max_point; i++)
-    CLEAR_HARD_REG_SET (used_hard_regs[i]);
   sorted_allocnos = (ira_allocno_t *) ira_allocate (sizeof (ira_allocno_t)
 						    * ira_allocnos_num);
   num = 0;
   FOR_EACH_ALLOCNO (a, ai)
     sorted_allocnos[num++] = a;
+  allocno_priorities = (int *) ira_allocate (sizeof (int) * ira_allocnos_num);
+  setup_allocno_priorities (sorted_allocnos, num);
+  used_hard_regs = (HARD_REG_SET *) ira_allocate (sizeof (HARD_REG_SET)
+						  * ira_max_point);
+  for (i = 0; i < ira_max_point; i++)
+    CLEAR_HARD_REG_SET (used_hard_regs[i]);
   qsort (sorted_allocnos, ira_allocnos_num, sizeof (ira_allocno_t), 
 	 allocno_priority_compare_func);
   for (i = 0; i < num; i++)
