@@ -1051,7 +1051,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
   int growth;
 
   for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-    if (!ipcp_need_redirect_p (cs))
+    if (cs->caller == node || !ipcp_need_redirect_p (cs))
       redirectable_node_callers++;
     else
       need_original = true;
@@ -1159,7 +1159,6 @@ ipcp_insert_stage (void)
   int i;
   VEC (cgraph_edge_p, heap) * redirect_callers;
   varray_type replace_trees;
-  struct cgraph_edge *cs;
   int node_callers, count;
   tree parm_tree;
   struct ipa_replace_map *replace_param;
@@ -1209,6 +1208,7 @@ ipcp_insert_stage (void)
       struct ipa_node_params *info;
       int growth = 0;
       bitmap args_to_skip;
+      struct cgraph_edge *cs;
 
       node = (struct cgraph_node *)fibheap_extract_min (heap);
       node->aux = NULL;
@@ -1229,6 +1229,13 @@ ipcp_insert_stage (void)
 	}
 
       new_insns += growth;
+
+      /* Look if original function becomes dead after clonning.  */
+      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+	if (cs->caller == node || ipcp_need_redirect_p (cs))
+	  break;
+      if (!cs && !node->needed)
+	bitmap_set_bit (dead_nodes, node->uid);
 
       info = IPA_NODE_REF (node);
       count = ipa_get_param_count (info);
