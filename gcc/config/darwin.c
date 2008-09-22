@@ -1002,6 +1002,30 @@ machopic_output_indirection (void **slot, void *data)
       rtx init = const0_rtx;
 
       switch_to_section (darwin_sections[machopic_nl_symbol_ptr_section]);
+
+      /* Mach-O symbols are passed around in code through indirect
+	 references and the original symbol_ref hasn't passed through
+	 the generic handling and reference-catching in
+	 output_operand, so we need to manually mark weak references
+	 as such.  */
+      if (SYMBOL_REF_WEAK (symbol))
+	{
+	  tree decl = SYMBOL_REF_DECL (symbol);
+	  gcc_assert (DECL_P (decl));
+
+	  if (decl != NULL_TREE
+	      && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)
+	      /* Handle only actual external-only definitions, not
+		 e.g. extern inline code or variables for which
+		 storage has been allocated.  */
+	      && !TREE_STATIC (decl))
+	    {
+	      fputs ("\t.weak_reference ", asm_out_file);
+	      assemble_name (asm_out_file, sym_name);
+	      fputc ('\n', asm_out_file);
+	    }
+	}
+
       assemble_name (asm_out_file, ptr_name);
       fprintf (asm_out_file, ":\n");
 
