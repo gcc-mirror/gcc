@@ -612,21 +612,22 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	     a matching type is not necessary and a mismatching type
 	     is always a spurious difference.  */
 	  temp.type = NULL_TREE;
-#if FIXME
 	  /* If this is a reference to a union member, record the union
 	     member size as operand.  Do so only if we are doing
 	     expression insertion (during FRE), as PRE currently gets
 	     confused with this.  */
 	  if (may_insert
+	      && TREE_OPERAND (ref, 2) == NULL_TREE
 	      && TREE_CODE (DECL_CONTEXT (TREE_OPERAND (ref, 1))) == UNION_TYPE
 	      && integer_zerop (DECL_FIELD_OFFSET (TREE_OPERAND (ref, 1)))
 	      && integer_zerop (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1))))
 	    temp.op0 = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)));
 	  else
-#endif
-	    /* Record field as operand.  */
-	    temp.op0 = TREE_OPERAND (ref, 1);
-	    temp.op1 = TREE_OPERAND (ref, 2);	  
+	    {
+	      /* Record field as operand.  */
+	      temp.op0 = TREE_OPERAND (ref, 1);
+	      temp.op1 = TREE_OPERAND (ref, 2);
+	    }
 	  break;
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
@@ -1612,7 +1613,7 @@ defs_to_varying (gimple stmt)
 }
 
 static bool expr_has_constants (tree expr);
-static tree try_to_simplify (gimple stmt);
+static tree valueize_expr (tree expr);
 
 /* Visit a copy between LHS and RHS, return true if the value number
    changed.  */
@@ -1742,12 +1743,14 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 	 So first simplify and lookup this expression to see if it
 	 is already available.  */
       tree val = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
-      if (stmt
-	  && !is_gimple_min_invariant (val)
-	  && TREE_CODE (val) != SSA_NAME)
+      if ((CONVERT_EXPR_P (val)
+	   || TREE_CODE (val) == VIEW_CONVERT_EXPR)
+	  && TREE_CODE (TREE_OPERAND (val, 0)) == SSA_NAME)
         {
-	  tree tem = try_to_simplify (stmt);
-	  if (tem)
+	  tree tem = valueize_expr (vn_get_expr_for (TREE_OPERAND (val, 0)));
+	  if ((CONVERT_EXPR_P (tem)
+	       || TREE_CODE (tem) == VIEW_CONVERT_EXPR)
+	      && (tem = fold_unary (TREE_CODE (val), TREE_TYPE (val), tem)))
 	    val = tem;
 	}
       result = val;

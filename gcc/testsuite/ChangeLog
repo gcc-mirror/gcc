@@ -1,3 +1,11 @@
+2008-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37145
+	* gcc.c-torture/compile/20080922-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-7.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-9.c: Likewise.
+
 2008-09-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/octeon-baddu-1.c: New test.

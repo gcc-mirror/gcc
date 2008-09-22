@@ -28,6 +28,6 @@ intflt foo(int i, int b)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre" } } */
+/* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

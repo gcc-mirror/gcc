@@ -1,3 +1,12 @@
+2008-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37145
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Re-enable
+	value-numbering union accesses with their offset and size only.
+	(visit_reference_op_load): Fix simplification of inserted conversions.
+	* tree-ssa-pre.c (find_or_generate_expression): Do not
+	recursively generate expressions if running FRE.
+
 2008-09-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.h (ISA_HAS_BADDU): New macro.
