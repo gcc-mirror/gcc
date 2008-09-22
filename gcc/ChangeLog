@@ -1,3 +1,11 @@
+2008-09-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (start_allocno_priorities): Rename to
+	setup_allocno_priorities.  Use costs and
+	ALLOCNO_EXCESS_PRESSURE_POINTS_NUM instead of frequencies and
+	range lengths.  Get rid off doubles.
+	(ira_fast_allocations): Call start_allocno_priorities.
+	
 2008-09-22  David Daney  <ddaney@avtrex.com>
 
 	PR target/37593
