@@ -1010,6 +1010,9 @@ enum mips_code_readable_setting {
    ? TARGET_LLSC && !TARGET_MIPS16	\
    : ISA_HAS_LL_SC)
 
+/* ISA includes the baddu instruction.  */
+#define ISA_HAS_BADDU		TARGET_OCTEON
+
 /* ISA includes the bbit* instructions.  */
 #define ISA_HAS_BBIT		TARGET_OCTEON
 
