@@ -1,3 +1,8 @@
+2008-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_estimate_growth): Check recursive calls.
+	(ipcp_insert_stage): Update dead_nodes bitmap.
+
 2008-09-22  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/37528	
