@@ -2730,8 +2730,9 @@ find_or_generate_expression (basic_block block, pre_expr expr,
     }
 
   /* If it's still NULL, it must be a complex expression, so generate
-     it recursively.  */
-  if (genop == NULL)
+     it recursively.  Not so for FRE though.  */
+  if (genop == NULL
+      && !in_fre)
     {
       bitmap_set_t exprset;
       unsigned int lookfor = get_expr_value_id (expr);

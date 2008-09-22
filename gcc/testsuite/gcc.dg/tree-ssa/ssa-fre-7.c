@@ -29,10 +29,10 @@ intflt foo(intflt j)
   return a.u.k;
 }
 
-/* { dg-final { scan-tree-dump-times "Inserted pretmp" 1 "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Replaced a.u.f with pretmp" 3 "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Replaced a.u.k with j" 1 "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<float>\\\(j_" "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "return j" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Inserted pretmp" 1 "fre" } } */
+/* { dg-final { scan-tree-dump-times "Replaced a.u.f with pretmp" 3 "fre" } } */
+/* { dg-final { scan-tree-dump-times "Replaced a.u.k with j" 1 "fre" } } */
+/* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<float>\\\(j_" "fre" } } */
+/* { dg-final { scan-tree-dump "return j" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
