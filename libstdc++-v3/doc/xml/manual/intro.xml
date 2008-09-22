@@ -611,7 +611,7 @@
     <listitem><para>Follow the straightforward proposed resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#550">550</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#550">550</ulink>:
         <emphasis>What should the return type of pow(float,int) be?</emphasis>
     </term>
     <listitem><para>In C++0x mode, remove the pow(float,int), etc., signatures.
@@ -623,7 +623,7 @@
     <listitem><para>Change it to be a formatted output function (i.e. catch exceptions).
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#596">596</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#596">596</ulink>:
         <emphasis>27.8.1.3 Table 112 omits "a+" and "a+b" modes</emphasis>
     </term>
     <listitem><para>Add the missing modes to fopen_mode.
@@ -654,13 +654,13 @@
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#761">761</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#761">761</ulink>:
         <emphasis>unordered_map needs an at() member function</emphasis>
     </term>
     <listitem><para>In C++0x mode, add at() and at() const.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#775">775</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#775">775</ulink>:
         <emphasis>Tuple indexing should be unsigned?</emphasis>
     </term>
     <listitem><para>Implement the int -> size_t replacements.
@@ -672,14 +672,14 @@
     <listitem><para>In C++0x mode, remove assign, add fill.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#778">778</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#778">778</ulink>:
         <emphasis>std::bitset does not have any constructor taking a string 
 	          literal</emphasis>
     </term>
     <listitem><para>Add it.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#781">781</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#781">781</ulink>:
         <emphasis>std::complex should add missing C99 functions</emphasis>
     </term>
     <listitem><para>In C++0x mode, add std::proj.
