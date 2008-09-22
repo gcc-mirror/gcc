@@ -1,3 +1,10 @@
+2008-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/37170
+	PR middle-end/37280
+	* gcc.dg/weak/weak-15.c, gcc.dg/weak/weak-16.c,
+	g++.dg/ext/inline1.C: New tests.
+
 2008-09-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/33642
@@ -2738,7 +2745,7 @@
 	* gfortran.dg/cshift_char_3.f90:  New test case.
 	* gfortran.dg/cshift_nan_1.f90:  New test case.
 
-2008-08-14  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-08-14  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* gcc.dg/visibility-14.c: New test.
 	* gcc.dg/visibility-15.c: New test.
@@ -3460,7 +3467,7 @@
 	PR tree-optimization/36967
 	* gfortran.dg/pr36967.f: New testcase.
 
-2008-07-30  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-07-30  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* gcc.dg/visibility-14.c: New test.
 	* gcc.dg/visibility-15.c: New test.
@@ -5154,7 +5161,7 @@
 	dg-additional-sources.
 	(profopt-execute): Handle additional sources.
 
-2008-05-28  Rafael Espíndola  <espindola@google.com>
+2008-05-28  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* gcc.dg/20080528-1.c: New test.
 
@@ -5291,7 +5298,7 @@
 	* g++.dg/template/inline1.C: For the not-defined symbol, use the
 	pattern from g++.dg/template/qualttp17.C.
 
-2008-05-23  Rafael Espíndola  <espindola@google.com>
+2008-05-23  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* gcc.c-torture/compile/20080522-1.c: Move to gcc.dg.
 	* gcc.dg/20080522-1.c: Moved from gcc.c-torture.
@@ -5329,7 +5336,7 @@
 	* gfortran.dg/cshift_large_1.f90:  New test.
 	* gfortran.dg/eoshift_large_1.f90:  New test.
 
-2008-05-22  Rafael Espíndola  <espindola@google.com>
+2008-05-22  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* gcc.c-torture/compile/20080522-1.c: New testcase.
 
@@ -6094,7 +6101,7 @@
 	PR fortran/36162
 	* gfortran.dg/module_widestring_1.f90: New test.
 
-2008-05-08  Rafael Espíndola  <espindola@google.com>
+2008-05-08  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* gcc.dg/vect/vect-111.c: Rename to no-trapping-math-vect-111.c
 	* gcc.dg/vect/vect-ifcvt-11.c: Rename to no-trapping-math-vect-ifcvt-11.c
@@ -7033,7 +7040,7 @@
 	PR fortran/35780
 	* gfortran.dg/simplify_argN_1.f90: New test.
 
-2008-04-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-04-06  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/35832
 	* gfortran.dg/io_constraints_2.f90: Adapt to new error message.
@@ -8794,7 +8801,7 @@
 	* g++.dg/torture/pr35164-1.C: New testcase.
 	* g++.dg/torture/pr35164-2.C: Likewise.
 
-2008-02-15  Dominique d'Humières  <dominiq@lps.ens.fr>
+2008-02-15  Dominique d'HumiÃ¨res  <dominiq@lps.ens.fr>
 
 	PR testsuite/35119
 	* g++.dg/template/spec35.C: Change the regular expressions
