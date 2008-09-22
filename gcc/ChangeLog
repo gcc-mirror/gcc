@@ -1,3 +1,9 @@
+2008-09-22  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (ISA_HAS_BADDU): New macro.
+	* config/mips/mips.md (*baddu_si_eb, *baddu_si_el,
+	*baddu_di<mode>): New patterns.
+
 2008-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37145
