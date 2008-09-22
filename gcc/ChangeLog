@@ -1,3 +1,11 @@
+2008-09-22  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/37528	
+	* config/i386/t-cygming (SHLIB_LC): Remove.
+	(SHLIB_LINK): Don't add static objects to SHLIB_IMPLIB
+	* config/i386/t-cygwin (SHLIB_LC): Specify all required
+	libraries.
+
 2008-09-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/37170
