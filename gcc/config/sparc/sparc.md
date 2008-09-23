@@ -320,9 +320,10 @@
 (include "niagara2.md")
 
 
-;; Operand and operator predicates.
+;; Operand and operator predicates and constraints
 
 (include "predicates.md")
+(include "constraints.md")
 
 
 ;; Compare instructions.

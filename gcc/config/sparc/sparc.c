@@ -6744,21 +6744,49 @@ mems_ok_for_ldd_peep (rtx mem1, rtx mem2, rtx dependent_reg_rtx)
   return 1;
 }
 
-/* Return 1 if reg is a pseudo, or is the first register in 
-   a hard register pair.  This makes it a candidate for use in
+/* Return 1 if reg is a pseudo, or is the first register in
+   a hard register pair.  This makes it suitable for use in
    ldd and std insns.  */
 
 int
 register_ok_for_ldd (rtx reg)
 {
   /* We might have been passed a SUBREG.  */
-  if (GET_CODE (reg) != REG) 
+  if (!REG_P (reg))
     return 0;
 
   if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
     return (REGNO (reg) % 2 == 0);
-  else 
-    return 1;
+
+  return 1;
+}
+
+/* Return 1 if OP is a memory whose address is known to be
+   aligned to 8-byte boundary, or a pseudo during reload.
+   This makes it suitable for use in ldd and std insns.  */
+
+int
+memory_ok_for_ldd (rtx op)
+{
+  if (MEM_P (op))
+    {
+      /* In 64-bit mode, we assume that the address is word-aligned.  */
+      if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
+	return 0;
+
+      if ((reload_in_progress || reload_completed)
+	  && !strict_memory_address_p (Pmode, XEXP (op, 0)))
+	return 0;
+    }
+  else if (REG_P (op) && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+    {
+      if (!(reload_in_progress && reg_renumber [REGNO (op)] < 0))
+	return 0;
+    }
+  else
+    return 0;
+
+  return 1;
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
@@ -8356,68 +8384,6 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
   return NULL_TREE;
 }
 
-int
-sparc_extra_constraint_check (rtx op, int c, int strict)
-{
-  int reload_ok_mem;
-
-  if (TARGET_ARCH64
-      && (c == 'T' || c == 'U'))
-    return 0;
-
-  switch (c)
-    {
-    case 'Q':
-      return fp_sethi_p (op);
-
-    case 'R':
-      return fp_mov_p (op);
-
-    case 'S':
-      return fp_high_losum_p (op);
-
-    case 'U':
-      if (! strict
-	  || (GET_CODE (op) == REG
-	      && (REGNO (op) < FIRST_PSEUDO_REGISTER
-		  || reg_renumber[REGNO (op)] >= 0)))
-	return register_ok_for_ldd (op);
-
-      return 0;
-
-    case 'W':
-    case 'T':
-      break;
-
-    case 'Y':
-      return const_zero_operand (op, GET_MODE (op));
-
-    default:
-      return 0;
-    }
-
-  /* Our memory extra constraints have to emulate the
-     behavior of 'm' and 'o' in order for reload to work
-     correctly.  */
-  if (GET_CODE (op) == MEM)
-    {
-      reload_ok_mem = 0;
-      if ((TARGET_ARCH64 || mem_min_alignment (op, 8))
-	  && (! strict
-	      || strict_memory_address_p (Pmode, XEXP (op, 0))))
-	reload_ok_mem = 1;
-    }
-  else
-    {
-      reload_ok_mem = (reload_in_progress
-		       && GET_CODE (op) == REG
-		       && REGNO (op) >= FIRST_PSEUDO_REGISTER
-		       && reg_renumber [REGNO (op)] < 0);
-    }
-
-  return reload_ok_mem;
-}
-
 /* ??? This duplicates information provided to the compiler by the
    ??? scheduler description.  Some day, teach genautomata to output
    ??? the latencies and then CSE will just use that.  */

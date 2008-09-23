@@ -1210,42 +1210,6 @@ extern char leaf_reg_remap[];
 /* Local macro to handle the two v9 classes of FP regs.  */
 #define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS || (CLASS) == EXTRA_FP_REGS)
 
-/* Get reg_class from a letter such as appears in the machine description.
-   In the not-v9 case, coerce v9's 'e' class to 'f', so we can use 'e' in the
-   .md file for v8 and v9.
-   'd' and 'b' are used for single and double precision VIS operations,
-   if TARGET_VIS.
-   'h' is used for V8+ 64 bit global and out registers.  */
-
-#define REG_CLASS_FROM_LETTER(C)		\
-(TARGET_V9					\
- ? ((C) == 'f' ? FP_REGS			\
-    : (C) == 'e' ? EXTRA_FP_REGS 		\
-    : (C) == 'c' ? FPCC_REGS			\
-    : ((C) == 'd' && TARGET_VIS) ? FP_REGS\
-    : ((C) == 'b' && TARGET_VIS) ? EXTRA_FP_REGS\
-    : ((C) == 'h' && TARGET_V8PLUS) ? I64_REGS\
-    : NO_REGS)					\
- : ((C) == 'f' ? FP_REGS			\
-    : (C) == 'e' ? FP_REGS			\
-    : (C) == 'c' ? FPCC_REGS			\
-    : NO_REGS))
-
-/* The letters I, J, K, L, M, N, O, P in a register constraint string
-   can be used to stand for particular ranges of CONST_INTs.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   `I' is used for the range of constants an insn can actually contain.
-   `J' is used for the range which is just zero (since that is R0).
-   `K' is used for constants which can be loaded with a single sethi insn.
-   `L' is used for the range of constants supported by the movcc insns.
-   `M' is used for the range of constants supported by the movrcc insns.
-   `N' is like K, but for constants wider than 32 bits.
-   `O' is used for the range which is just 4096.
-   `P' is free.  */
-
 /* Predicates for 10-bit, 11-bit and 13-bit signed constants.  */
 #define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
 #define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
@@ -1271,24 +1235,6 @@ extern char leaf_reg_remap[];
 /* Version of the above predicate for SImode constants and below.  */
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? SPARC_SIMM13_P (VALUE)			\
-   : (C) == 'J' ? (VALUE) == 0				\
-   : (C) == 'K' ? SPARC_SETHI32_P (VALUE)		\
-   : (C) == 'L' ? SPARC_SIMM11_P (VALUE)		\
-   : (C) == 'M' ? SPARC_SIMM10_P (VALUE)		\
-   : (C) == 'N' ? SPARC_SETHI_P (VALUE)			\
-   : (C) == 'O' ? (VALUE) == 4096			\
-   : 0)
-
-/* Similar, but for CONST_DOUBLEs, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-  ((C) == 'G' ? const_zero_operand (VALUE, GET_MODE (VALUE))	\
-   : (C) == 'H' ? arith_double_operand (VALUE, DImode)		\
-   : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1888,28 +1834,6 @@ do {									\
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
-/* Optional extra constraints for this machine.
-
-   'Q' handles floating point constants which can be moved into
-       an integer register with a single sethi instruction.
-
-   'R' handles floating point constants which can be moved into
-       an integer register with a single mov instruction.
-
-   'S' handles floating point constants which can be moved into
-       an integer register using a high/lo_sum sequence.
-
-   'T' handles memory addresses where the alignment is known to
-       be at least 8 bytes.
-
-   `U' handles all pseudo registers or a hard even numbered
-       integer register, needed for ldd/std instructions.
-
-   'W' handles the memory operand when moving operands in/out
-       of 'e' constraint floating point registers.
-
-   'Y' handles the zero vector constant.  */
-
 #ifndef REG_OK_STRICT
 
 /* Nonzero if X is a hard reg that can be used as an index
@@ -1923,24 +1847,12 @@ do {									\
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_INDEX_P (X)
 
-/* 'T', 'U' are for aligned memory loads which aren't needed for arch64.
-   'W' is like 'T' but is assumed true on arch64.
-
-   Remember to accept pseudo-registers for memory constraints if reload is
-   in progress.  */
-
-#define EXTRA_CONSTRAINT(OP, C) \
-	sparc_extra_constraint_check(OP, C, 0)
-
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#define EXTRA_CONSTRAINT(OP, C) \
-	sparc_extra_constraint_check(OP, C, 1)
 
 #endif
 
