@@ -5353,8 +5353,10 @@ preserve functionality of inline assembly constructs using the
 @end defmac
 
 @defmac FIND_BASE_TERM (@var{x})
-A C expression to determine the base term of address @var{x}.
-This macro is used in only one place: `find_base_term' in alias.c.
+A C expression to determine the base term of address @var{x},
+or to provide a simplified version of @var{x} from which @file{alias.c}
+can easily find the base term.  This macro is used in only one place:
+@code{find_base_term} in @file{alias.c}.
 
 It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
