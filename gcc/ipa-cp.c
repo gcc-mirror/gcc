@@ -967,7 +967,7 @@ ipcp_update_callgraph (void)
 		current_function_decl = cs->caller->decl;
 	        push_cfun (DECL_STRUCT_FUNCTION (cs->caller->decl));
 		
-		new_stmt = gimple_copy_call_skip_args (cs->call_stmt,
+		new_stmt = gimple_call_copy_skip_args (cs->call_stmt,
 						       args_to_skip);
 		gsi = gsi_for_stmt (cs->call_stmt);
 		gsi_replace (&gsi, new_stmt, true);

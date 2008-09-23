@@ -752,7 +752,7 @@ cgraph_free_edge (struct cgraph_edge *e)
   int uid = e->uid;
 
   /* Clear out the edge so we do not dangle pointers.  */
-  memset (e, 0, sizeof (e));
+  memset (e, 0, sizeof (*e));
   e->uid = uid;
   NEXT_FREE_EDGE (e) = free_edges;
   free_edges = e;
@@ -846,13 +846,14 @@ cgraph_update_edges_for_call_stmt (gimple old_stmt, gimple new_stmt)
 void
 cgraph_node_remove_callees (struct cgraph_node *node)
 {
-  struct cgraph_edge *e;
+  struct cgraph_edge *e, *f;
 
   /* It is sufficient to remove the edges from the lists of callers of
      the callees.  The callee list of the node can be zapped with one
      assignment.  */
-  for (e = node->callees; e; e = e->next_callee)
+  for (e = node->callees; e; e = f)
     {
+      f = e->next_callee;
       cgraph_call_edge_removal_hooks (e);
       cgraph_edge_remove_callee (e);
       cgraph_free_edge (e);
@@ -870,13 +871,14 @@ cgraph_node_remove_callees (struct cgraph_node *node)
 static void
 cgraph_node_remove_callers (struct cgraph_node *node)
 {
-  struct cgraph_edge *e;
+  struct cgraph_edge *e, *f;
 
   /* It is sufficient to remove the edges from the lists of callees of
      the callers.  The caller list of the node can be zapped with one
      assignment.  */
-  for (e = node->callers; e; e = e->next_caller)
+  for (e = node->callers; e; e = f)
     {
+      f = e->next_caller;
       cgraph_call_edge_removal_hooks (e);
       cgraph_edge_remove_caller (e);
       cgraph_free_edge (e);

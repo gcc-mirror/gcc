@@ -875,11 +875,6 @@ Update statement @code{S} if it has been marked modified.
 Return a deep copy of statement @code{STMT}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple gimple_copy_call_skip_args (gimple stmt, bitmap args_to_skip)
-Build a @code{GIMPLE_CALL} identical to @code{STMT} but skipping the arguments
-in the positions marked by the set @code{ARGS_TO_SKIP}.
-@end deftypefn
-
 @node Tuple specific accessors
 @section Tuple specific accessors
 @cindex Tuple specific accessors
@@ -1259,6 +1254,11 @@ Return true if @code{GIMPLE_CALL} @code{S} cannot be inlined.
 
 @deftypefn {GIMPLE function} bool gimple_call_noreturn_p (gimple s)
 Return true if @code{S} is a noreturn call. 
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
+Build a @code{GIMPLE_CALL} identical to @code{STMT} but skipping the arguments
+in the positions marked by the set @code{ARGS_TO_SKIP}.
 @end deftypefn
 
 
