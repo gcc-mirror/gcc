@@ -1221,8 +1221,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
     void
     __pad<_CharT, _Traits>::_S_pad(ios_base& __io, _CharT __fill,
 				   _CharT* __news, const _CharT* __olds,
-				   const streamsize __newlen,
-				   const streamsize __oldlen)
+				   streamsize __newlen, streamsize __oldlen)
     {
       const size_t __plen = static_cast<size_t>(__newlen - __oldlen);
       const ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
