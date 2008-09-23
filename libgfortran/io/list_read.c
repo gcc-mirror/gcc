@@ -324,7 +324,8 @@ eat_separator (st_parameter_dt *dtp)
   switch (c)
     {
     case ',':
-      if (dtp->u.p.decimal_status == DECIMAL_COMMA)
+      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+	  && dtp->u.p.decimal_status == DECIMAL_COMMA)
 	{
 	  unget_char (dtp, c);
 	  break;
@@ -1116,7 +1117,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
       c = next_char (dtp);
     }
 
-  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+  if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+      && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
     c = '.';
   
   if (!isdigit (c) && c != '.')
@@ -1134,7 +1136,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   for (;;)
     {
       c = next_char (dtp);
-      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+	  && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
 	c = '.';
       switch (c)
 	{
@@ -1305,9 +1308,17 @@ eol_1:
   else
     unget_char (dtp, c);
 
-  if (next_char (dtp)
-      !=  (dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';'))
-    goto bad_complex;
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+    {
+      if (next_char (dtp)
+	  !=  (dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';'))
+	goto bad_complex;
+    }
+  else
+    {
+      if (next_char (dtp) != ',')
+	goto bad_complex;
+    }
 
 eol_2:
   eat_spaces (dtp);
@@ -1360,7 +1371,8 @@ read_real (st_parameter_dt *dtp, int length)
   seen_dp = 0;
 
   c = next_char (dtp);
-  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+  if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+      && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
     c = '.';
   switch (c)
     {
@@ -1397,7 +1409,8 @@ read_real (st_parameter_dt *dtp, int length)
   for (;;)
     {
       c = next_char (dtp);
-      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+	  && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
 	c = '.';
       switch (c)
 	{
@@ -1463,7 +1476,8 @@ read_real (st_parameter_dt *dtp, int length)
       c = next_char (dtp);
     }
 
-  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+  if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+      && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
     c = '.';
 
   if (!isdigit (c) && c != '.')
@@ -1488,7 +1502,8 @@ read_real (st_parameter_dt *dtp, int length)
   for (;;)
     {
       c = next_char (dtp);
-      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
+	  && c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
 	c = '.';
       switch (c)
 	{

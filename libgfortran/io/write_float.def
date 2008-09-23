@@ -55,6 +55,7 @@ calculate_sign (st_parameter_dt *dtp, int negative_flag)
 	s = S_NONE;
 	break;
       case SIGN_S:	/* Processor defined. */
+      case SIGN_UNSPECIFIED:
 	s = options.optional_plus ? S_PLUS : S_NONE;
 	break;
       }
@@ -403,7 +404,10 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       out += nbefore;
     }
   /* Output the decimal point.  */
-  *(out++) = dtp->u.p.decimal_status == DECIMAL_POINT ? '.' : ',';
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+    *(out++) = dtp->u.p.decimal_status == DECIMAL_POINT ? '.' : ',';
+  else
+    *(out++) = '.';
 
   /* Output leading zeros after the decimal point.  */
   if (nzero > 0)
