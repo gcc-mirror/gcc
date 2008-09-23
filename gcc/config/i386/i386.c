@@ -4099,6 +4099,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 
   /* Dllimport'd functions are also called indirectly.  */
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+      && !TARGET_64BIT
       && decl && DECL_DLLIMPORT_P (decl)
       && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
     return false;
