@@ -1,4 +1,4 @@
-2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+2008-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/32422, DR 23 [Ready in R60]
 	* config/locale/gnu/c_locale.cc (__convert_to_v(const char*, float&,
