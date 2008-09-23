@@ -1,5 +1,11 @@
 2008-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/i386/i386.c: Include cselib.h.
+	(ix86_pic_register_p): New function.
+	(ix86_delegitimize_address): Use it to check for the PIC register.
+
+2008-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/tm.texi (FIND_BASE_TERM): Expand documentation.
 	* config/i386/i386.c (ix86_find_base_term): Don't check for
 	SYMBOL_REF and LABEL_REF.
