@@ -1,5 +1,9 @@
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/vect/slp-widen-mult-s16.c: Fix typo.
+
+2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/cpp/cmdlne-dU-23.c: New test.
 
 2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
