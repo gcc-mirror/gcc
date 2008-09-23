@@ -952,6 +952,8 @@ GLIBCXX_3.4.11 {
     # chrono
     _ZNSt6chrono12system_clock12is_monotonicE;
     _ZNSt6chrono12system_clock3nowEv;
+    _ZNSt6chrono15monotonic_clock12is_monotonicE;
+    _ZNSt6chrono15monotonic_clock3nowEv;
 
     # string/wstring initializer_list overloads
     _ZNSs6appendESt16initializer_listIcE;

@@ -1,4 +1,4 @@
-// mutex -*- C++ -*-
+// condition_variable -*- C++ -*-
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //

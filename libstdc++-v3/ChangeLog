@@ -1,3 +1,24 @@
+2008-09-23  Chris Fairles <cfairles@gcc.gnu.org>
+
+	* include/std/chrono: If _GLIBCXX_USE_MONOTONIC_CLOCK is defined, don't
+	typedef monotonic_clock to system_clock and instead declare new class.
+	* src/chrono.cc: Conditionally define monotonic_clock::now().
+	* include/std/condition_variable (wait_until): Throw exception if
+	__gthread_cond_timedwait returns with error other than timed_out. Use
+	system_clock as known clock type (__clock_t) and add overloads for known
+	and unknown clocks. In the unknown case, sync to the known clock.
+	Implement overload taking a predicate.
+	(wait_for): Implement overload taking a predicate.
+	* config/abi/pre/gnu.ver: Add exports for monotonic_clock.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc: Modify
+	line numbers.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/condition_variable/member/1.cc: New.
+	* testsuite/30_threads/condition_variable/member/2.cc: Likewise.
+
 2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37624

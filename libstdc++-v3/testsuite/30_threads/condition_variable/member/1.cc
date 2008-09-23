@@ -1,5 +1,7 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
+// { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -30,15 +32,36 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <chrono>
 #include <condition_variable>
+#include <system_error>
+#include <testsuite_hooks.h>
 
-void test01()
+int main()
 {
-  // assign
-  std::condition_variable c1;
-  std::condition_variable c2;
-  c1 = c2;
-}
+  bool test __attribute__((unused)) = true;
 
-// { dg-error "used here" "" { target *-*-* } 40 }
-// { dg-error "deleted function" "" { target *-*-* } 62 }
+  try 
+    {
+      std::chrono::microseconds ms(500);
+      std::condition_variable c1;
+      std::mutex m;
+      std::unique_lock<std::mutex> l(m);
+
+      auto then = std::chrono::system_clock::now();
+      bool result = c1.wait_for(l, ms);
+      VERIFY( !result );
+      VERIFY( (std::chrono::system_clock::now() - then) >= ms );
+      VERIFY( l.owns_lock() );
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  return 0;
+}
