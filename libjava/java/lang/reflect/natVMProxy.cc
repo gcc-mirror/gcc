@@ -350,7 +350,8 @@ run_proxy (ffi_cif *cif,
   // than about Proxy.class itself.  FRAME_DESC has a destructor so it
   // cleans up automatically when this proxy invocation returns.
   Thread *thread = Thread::currentThread();
-  _Jv_InterpFrame frame_desc (self->self, thread, proxyClass);
+  _Jv_InterpFrame frame_desc (self->self, thread, proxyClass,
+			      NULL, frame_proxy);
 
   // The method to invoke is saved in $Proxy0.m[method_index].
   // FIXME: We could somewhat improve efficiency by storing a pointer
