@@ -1,3 +1,33 @@
+2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-tree.h: Add argument to c_objc_common_truthvalue_conversion,
+	parser_build_binary_op.
+	* c-decl.c (build_enumerator): Pass location to build_binary_op.
+	* c-typeck.c (build_array_ref): Same.
+	(parser_build_unary_op): New location argument.
+	(pointer_diff): Pass location to build_binary_op,
+	c_objc_common_truthvalue_conversion.
+	(build_modify_expr): Same.
+	(build_unary_op): New location argument.
+	(build_binary_op): New location argument.
+	(c_objc_common_truthvalue_conversion): Pass location to
+	c_*common_truthvalue_conversion.
+	* c-convert.c (convert): Same.
+	* c-common.c (binary_op_error): New location argument.
+	(pointer_int_sum): Pass location to build_binary_op.
+	(c_common_truthvalue_conversion): New location argument.
+	(warn_for_sign_compare): Same.
+	* c-common.h: Add location argument to c_common_truthvalue_conversion,
+	binary_op_error, build_binary_op, warn_for_sign_compare.
+	* c-parser.c (c_parser_condition): Pass location to
+	c_*common_truthvalue_conversion.
+	(c_parser_conditional_expression): Save condition's location and pass
+	it on down.
+	(c_parser_binary_expression): Same, but for the binary operator's
+	location.
+	(c_parser_omp_for_loop): Pass location to
+	c_objc_common_truthvalue_conversion.
+
 2008-09-23  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.c (cgraph_free_edge): Use sizeof(*e).

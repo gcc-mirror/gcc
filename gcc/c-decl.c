@@ -6027,8 +6027,10 @@ build_enumerator (struct c_enum_contents *the_enum, tree name, tree value,
 	     "ISO C restricts enumerator values to range of %<int%>");
 
   /* Set basis for default for next value.  */
-  the_enum->enum_next_value = build_binary_op (PLUS_EXPR, value,
-					       integer_one_node, 0);
+  the_enum->enum_next_value
+    = build_binary_op
+         (EXPR_HAS_LOCATION (value) ? EXPR_LOCATION (value) : input_location,
+	 PLUS_EXPR, value, integer_one_node, 0);
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
 
   /* Now create a declaration for the enum value name.  */

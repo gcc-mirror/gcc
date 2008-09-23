@@ -1,3 +1,10 @@
+2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (next_sjlj_build_enter_and_setjmp): Call
+	c_common_truthvalue_conversion with location.
+	(next_sjlj_build_catch_list): Same.
+	(next_sjlj_build_try_catch_finally): Same.
+
 2008-09-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR objc/37460

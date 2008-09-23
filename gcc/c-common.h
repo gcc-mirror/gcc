@@ -714,13 +714,13 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
 extern bool decl_with_nonnull_addr_p (const_tree);
-extern tree c_common_truthvalue_conversion (tree);
+extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (tree, bool, int);
 extern tree c_alignof_expr (tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
-extern void binary_op_error (enum tree_code, tree, tree);
+extern void binary_op_error (location_t, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
 struct varray_head_tag;
 extern void constant_expression_warning (tree);
@@ -817,7 +817,7 @@ extern tree build_case_label (tree, tree, tree);
    a variant of the C language.  They are used in c-common.c.  */
 
 extern tree build_unary_op (enum tree_code, tree, int);
-extern tree build_binary_op (enum tree_code, tree, tree, int);
+extern tree build_binary_op (location_t, enum tree_code, tree, tree, int);
 extern tree perform_integral_promotions (tree);
 
 /* These functions must be defined by each front-end which implements
@@ -917,7 +917,8 @@ extern void warn_about_parentheses (enum tree_code, enum tree_code,
 				    enum tree_code);
 extern void warn_for_unused_label (tree label);
 extern void warn_for_div_by_zero (tree divisor);
-extern void warn_for_sign_compare (tree orig_op0, tree orig_op1, 
+extern void warn_for_sign_compare (location_t,
+				   tree orig_op0, tree orig_op1, 
 				   tree op0, tree op1, 
 				   tree result_type, 
 				   enum tree_code resultcode);

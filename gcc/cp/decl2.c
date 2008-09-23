@@ -2530,14 +2530,16 @@ get_guard_cond (tree guard)
       guard_value = integer_one_node;
       if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
 	guard_value = convert (TREE_TYPE (guard), guard_value);
-      guard = cp_build_binary_op (BIT_AND_EXPR, guard, guard_value,
+      guard = cp_build_binary_op (input_location,
+				  BIT_AND_EXPR, guard, guard_value,
 				  tf_warning_or_error);
     }
 
   guard_value = integer_zero_node;
   if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
     guard_value = convert (TREE_TYPE (guard), guard_value);
-  return cp_build_binary_op (EQ_EXPR, guard, guard_value,
+  return cp_build_binary_op (input_location,
+			     EQ_EXPR, guard, guard_value,
 			     tf_warning_or_error);
 }
 
@@ -2927,20 +2929,22 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 	 last to destroy the variable.  */
       else if (initp)
 	guard_cond
-	  = cp_build_binary_op (EQ_EXPR,
+	  = cp_build_binary_op (input_location,
+				EQ_EXPR,
 				cp_build_unary_op (PREINCREMENT_EXPR,
-						guard,
-						/*noconvert=*/1,
-                                                tf_warning_or_error),
+						   guard,
+						   /*noconvert=*/1,
+						   tf_warning_or_error),
 				integer_one_node,
 				tf_warning_or_error);
       else
 	guard_cond
-	  = cp_build_binary_op (EQ_EXPR,
+	  = cp_build_binary_op (input_location,
+				EQ_EXPR,
 				cp_build_unary_op (PREDECREMENT_EXPR,
-						guard,
-						/*noconvert=*/1,
-                                                tf_warning_or_error),
+						   guard,
+						   /*noconvert=*/1,
+						   tf_warning_or_error),
 				integer_zero_node,
 				tf_warning_or_error);
 
@@ -2993,7 +2997,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
   /* Build the outer if-stmt to check for initialization or destruction.  */
   init_if_stmt = begin_if_stmt ();
   cond = initp ? integer_one_node : integer_zero_node;
-  cond = cp_build_binary_op (EQ_EXPR,
+  cond = cp_build_binary_op (input_location,
+			     EQ_EXPR,
 			     initialize_p_decl,
 			     cond,
 			     tf_warning_or_error);
@@ -3026,7 +3031,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
     /* Conditionalize this initialization on being in the right priority
        and being initializing/finalizing appropriately.  */
     priority_if_stmt = begin_if_stmt ();
-    cond = cp_build_binary_op (EQ_EXPR,
+    cond = cp_build_binary_op (input_location,
+			       EQ_EXPR,
 			       priority_decl,
 			       build_int_cst (NULL_TREE, priority),
 			       tf_warning_or_error);

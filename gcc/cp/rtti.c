@@ -721,7 +721,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	      tree neq;
 
 	      result = save_expr (result);
-	      neq = c_common_truthvalue_conversion (result);
+	      neq = c_common_truthvalue_conversion (input_location, result);
 	      return cp_convert (type,
 				 build3 (COND_EXPR, TREE_TYPE (result),
 					 neq, result, bad));
