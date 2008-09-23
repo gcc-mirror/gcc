@@ -1,3 +1,17 @@
+2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/constraints.md: New file.
+	* config/sparc/sparc.md: Include it.
+	* config/sparc/sparc-protos.h (memory_ok_for_ldd): Declare.
+	(sparc_extra_constraint_check): Delete.
+	* config/sparc/sparc.c (register_ok_for_ldd): Minor tweaks.
+	(memory_ok_for_ldd): New predicate.
+	(sparc_extra_constraint_check): Delete.
+	* config/sparc/sparc.h (REG_CLASS_FROM_LETTER): Likewise.
+	(CONST_OK_FOR_LETTER_P): Likewise.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Likewise.
+	(EXTRA_CONSTRAINT): Likewise.
+
 2008-08-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* regrename.c (do_replace): Copy REG_POINTER value to new reg.
