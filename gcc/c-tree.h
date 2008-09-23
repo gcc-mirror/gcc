@@ -521,7 +521,6 @@ extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 /* in c-objc-common.c */
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
-extern tree c_objc_common_truthvalue_conversion (tree expr);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
@@ -540,6 +539,7 @@ extern struct c_switch *c_switch_stack;
 extern struct c_label_context_se *label_context_stack_se;
 extern struct c_label_context_vm *label_context_stack_vm;
 
+extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
@@ -557,7 +557,8 @@ extern struct c_expr c_expr_sizeof_expr (struct c_expr);
 extern struct c_expr c_expr_sizeof_type (struct c_type_name *);
 extern struct c_expr parser_build_unary_op (enum tree_code, struct c_expr,
     					    location_t);
-extern struct c_expr parser_build_binary_op (enum tree_code, struct c_expr,
+extern struct c_expr parser_build_binary_op (location_t, 
+    					     enum tree_code, struct c_expr,
 					     struct c_expr);
 extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree, tree);

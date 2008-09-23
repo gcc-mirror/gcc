@@ -2655,7 +2655,8 @@ build_array_ref (tree array, tree idx, location_t loc)
 
     warn_array_subscript_with_type_char (idx);
 
-    ret = cp_build_indirect_ref (cp_build_binary_op (PLUS_EXPR, ar, ind,
+    ret = cp_build_indirect_ref (cp_build_binary_op (input_location,
+						     PLUS_EXPR, ar, ind,
 						     tf_warning_or_error),
                                  "array indexing",
                                  tf_warning_or_error);
@@ -2718,16 +2719,20 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
-	  e1 = cp_build_binary_op (BIT_AND_EXPR, idx, integer_one_node,
+	  e1 = cp_build_binary_op (input_location,
+				   BIT_AND_EXPR, idx, integer_one_node,
 				   tf_warning_or_error);
-	  idx = cp_build_binary_op (MINUS_EXPR, idx, integer_one_node,
+	  idx = cp_build_binary_op (input_location,
+				    MINUS_EXPR, idx, integer_one_node,
 				    tf_warning_or_error);
 	  break;
 
 	case ptrmemfunc_vbit_in_delta:
-	  e1 = cp_build_binary_op (BIT_AND_EXPR, delta, integer_one_node,
+	  e1 = cp_build_binary_op (input_location,
+				   BIT_AND_EXPR, delta, integer_one_node,
 				   tf_warning_or_error);
-	  delta = cp_build_binary_op (RSHIFT_EXPR, delta, integer_one_node,
+	  delta = cp_build_binary_op (input_location,
+				      RSHIFT_EXPR, delta, integer_one_node,
 				      tf_warning_or_error);
 	  break;
 
@@ -3141,15 +3146,16 @@ build_x_binary_op (enum tree_code code, tree arg1, enum tree_code arg1_code,
 
 /* For the c-common bits.  */
 tree
-build_binary_op (enum tree_code code, tree op0, tree op1,
+build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
 		 int convert_p ATTRIBUTE_UNUSED)
 {
-  return cp_build_binary_op(code, op0, op1, tf_warning_or_error);
+  return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
 
 
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
+   LOCATION is the location_t of the operator in the source code.
    This function differs from `build' in several ways:
    the data type of the result is computed and recorded in it,
    warnings are generated if arg data types are invalid,
@@ -3167,7 +3173,8 @@ build_binary_op (enum tree_code code, tree op0, tree op1,
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
+cp_build_binary_op (location_t location,
+		    enum tree_code code, tree orig_op0, tree orig_op1,
 		    tsubst_flags_t complain)
 {
   tree op0, op1;
@@ -3555,18 +3562,22 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	    {
 	      tree pfn0 = pfn_from_ptrmemfunc (op0);
 	      tree delta0 = delta_from_ptrmemfunc (op0);
-	      tree e1 = cp_build_binary_op (EQ_EXPR,
+	      tree e1 = cp_build_binary_op (location,
+					    EQ_EXPR,
 	  			            pfn0,	
 				      	    fold_convert (TREE_TYPE (pfn0),
 							  integer_zero_node),
 					    complain);
-	      tree e2 = cp_build_binary_op (BIT_AND_EXPR, 
+	      tree e2 = cp_build_binary_op (location,
+					    BIT_AND_EXPR, 
 					    delta0,
 				            integer_one_node,
 					    complain);
-	      e2 = cp_build_binary_op (EQ_EXPR, e2, integer_zero_node,
+	      e2 = cp_build_binary_op (location,
+				       EQ_EXPR, e2, integer_zero_node,
 				       complain);
-	      op0 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e1, e2,
+	      op0 = cp_build_binary_op (location,
+					TRUTH_ANDIF_EXPR, e1, e2,
 					complain);
 	      op1 = cp_convert (TREE_TYPE (op0), integer_one_node); 
 	    }
@@ -3578,7 +3589,7 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (op0))
-	return cp_build_binary_op (code, op1, op0, complain);
+	return cp_build_binary_op (location, code, op1, op0, complain);
       else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1))
 	{
 	  tree type;
@@ -3626,28 +3637,34 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	         pointer-to-member is any member with a zero PFN and
 	         LSB of the DELTA field is 0.  */
 
-	      e1 = cp_build_binary_op (BIT_AND_EXPR,
+	      e1 = cp_build_binary_op (location, BIT_AND_EXPR,
 				       delta0, 
 				       integer_one_node,
 				       complain);
-	      e1 = cp_build_binary_op (EQ_EXPR, e1, integer_zero_node,
+	      e1 = cp_build_binary_op (location,
+				       EQ_EXPR, e1, integer_zero_node,
 				       complain);
-	      e2 = cp_build_binary_op (BIT_AND_EXPR,
+	      e2 = cp_build_binary_op (location, BIT_AND_EXPR,
 				       delta1,
 				       integer_one_node,
 				       complain);
-	      e2 = cp_build_binary_op (EQ_EXPR, e2, integer_zero_node,
+	      e2 = cp_build_binary_op (location,
+				       EQ_EXPR, e2, integer_zero_node,
 				       complain);
-	      e1 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1,
+	      e1 = cp_build_binary_op (location,
+				       TRUTH_ANDIF_EXPR, e2, e1,
 				       complain);
-	      e2 = cp_build_binary_op (EQ_EXPR,
+	      e2 = cp_build_binary_op (location, EQ_EXPR,
 				       pfn0,
 				       fold_convert (TREE_TYPE (pfn0),
 						     integer_zero_node),
 				       complain);
-	      e2 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1, complain);
-	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1, complain);
-	      e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2, complain);
+	      e2 = cp_build_binary_op (location,
+				       TRUTH_ANDIF_EXPR, e2, e1, complain);
+	      e1 = cp_build_binary_op (location,
+				       EQ_EXPR, delta0, delta1, complain);
+	      e1 = cp_build_binary_op (location,
+				       TRUTH_ORIF_EXPR, e1, e2, complain);
 	    }
 	  else
 	    {
@@ -3660,19 +3677,24 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	         pointer-to-member is any member with a zero PFN; the
 	         DELTA field is unspecified.  */
  
-    	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1, complain);
-	      e2 = cp_build_binary_op (EQ_EXPR,
+    	      e1 = cp_build_binary_op (location,
+				       EQ_EXPR, delta0, delta1, complain);
+	      e2 = cp_build_binary_op (location,
+				       EQ_EXPR,
 		      		       pfn0,
 			   	       fold_convert (TREE_TYPE (pfn0),
 						     integer_zero_node),
 				       complain);
-	      e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2, complain);
+	      e1 = cp_build_binary_op (location,
+				       TRUTH_ORIF_EXPR, e1, e2, complain);
 	    }
 	  e2 = build2 (EQ_EXPR, boolean_type_node, pfn0, pfn1);
-	  e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1, complain);
+	  e = cp_build_binary_op (location,
+				  TRUTH_ANDIF_EXPR, e2, e1, complain);
 	  if (code == EQ_EXPR)
 	    return e;
-	  return cp_build_binary_op (EQ_EXPR, e, integer_zero_node, complain);
+	  return cp_build_binary_op (location,
+				     EQ_EXPR, e, integer_zero_node, complain);
 	}
       else
 	{
@@ -3773,7 +3795,7 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
 							TREE_TYPE (type1)))
 	    {
-	      binary_op_error (code, type0, type1);
+	      binary_op_error (location, code, type0, type1);
 	      return error_mark_node;
 	    }
 	  arithmetic_types_p = 1;
@@ -3857,8 +3879,8 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  && !processing_template_decl
           && (complain & tf_warning))
 	{
-            warn_for_sign_compare (orig_op0, orig_op1, op0, op1, 
-                                   result_type, resultcode);
+	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1, 
+				 result_type, resultcode);
 	}
     }
 
@@ -3954,7 +3976,8 @@ pointer_diff (tree op0, tree op1, tree ptrtype)
   /* First do the subtraction as integers;
      then drop through to build the divide operator.  */
 
-  op0 = cp_build_binary_op (MINUS_EXPR,
+  op0 = cp_build_binary_op (input_location,
+			    MINUS_EXPR,
 			    cp_convert (restype, op0),
 			    cp_convert (restype, op1),
 			    tf_warning_or_error);
@@ -4073,9 +4096,10 @@ cp_truthvalue_conversion (tree expr)
 {
   tree type = TREE_TYPE (expr);
   if (TYPE_PTRMEM_P (type))
-    return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
+    return build_binary_op (EXPR_LOCATION (expr),
+			    NE_EXPR, expr, integer_zero_node, 1);
   else
-    return c_common_truthvalue_conversion (expr);
+    return c_common_truthvalue_conversion (input_location, expr);
 }
 
 /* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
@@ -4968,12 +4992,14 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 	{
 	  tree cond, op1, op2;
 
-	  cond = cp_build_binary_op (EQ_EXPR,
+	  cond = cp_build_binary_op (input_location,
+				     EQ_EXPR,
 				     expr,
 				     build_int_cst (TREE_TYPE (expr), -1),
 				     tf_warning_or_error);
 	  op1 = build_nop (ptrdiff_type_node, expr);
-	  op2 = cp_build_binary_op (PLUS_EXPR, op1, delta,
+	  op2 = cp_build_binary_op (input_location,
+				    PLUS_EXPR, op1, delta,
 				    tf_warning_or_error);
 
 	  expr = fold_build3 (COND_EXPR, ptrdiff_type_node, cond, op1, op2);
@@ -5914,7 +5940,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
 	  lhs = stabilize_reference (lhs);
-	  newrhs = cp_build_binary_op (modifycode, lhs, rhs,
+	  newrhs = cp_build_binary_op (EXPR_LOCATION (lhs),
+				       modifycode, lhs, rhs,
 				       complain);
 	  if (newrhs == error_mark_node)
 	    {
@@ -6303,9 +6330,11 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p)
       gcc_assert  (same_type_ignoring_top_level_qualifiers_p
 		   (TREE_TYPE (delta), ptrdiff_type_node));
       if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
-	n = cp_build_binary_op (LSHIFT_EXPR, n, integer_one_node,
+	n = cp_build_binary_op (input_location,
+				LSHIFT_EXPR, n, integer_one_node,
 				tf_warning_or_error);
-      delta = cp_build_binary_op (PLUS_EXPR, delta, n, tf_warning_or_error);
+      delta = cp_build_binary_op (input_location,
+				  PLUS_EXPR, delta, n, tf_warning_or_error);
       return build_ptrmemfunc1 (to_type, delta, npfn);
     }
 

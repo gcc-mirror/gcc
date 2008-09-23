@@ -100,7 +100,8 @@ convert (tree type, tree expr)
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
-    return fold_convert (type, c_objc_common_truthvalue_conversion (expr));
+    return fold_convert 
+      (type, c_objc_common_truthvalue_conversion (input_location, expr));
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)

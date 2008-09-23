@@ -1,3 +1,30 @@
+2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (build_array_ref): Pass location to cp_build_binary_op.
+	(get_member_function_from_ptrfunc): Same.
+	(build_x_binary_op): Same.
+	(build_binary_op): Same.
+	(cp_build_binary_op): New location argument.
+	(pointer_diff): Pass location to cp_build_binary_op.
+	(cp_truthvalue_conversion): Pass location to build_binary_op.
+	(convert_ptrmem): Pass location to cp_build_binary_op.
+	(cp_build_modify_expr): Same.
+	(build_ptrmemfunc): Same.
+	* init.c (expand_cleanup_for_base): Pass location to
+	c_common_truthvalue_conversion.
+	(build_new_1): Pass location to cp_build_binary_op.
+	(build_vec_delete_1): Pass location to *build_binary_op,
+	c_common_truthvalue_conversion.
+	(build_vec_init): Same.
+	(build_delete): Same.
+	* decl.c (compute_array_index_type): Same.
+	* call.c (build_new_op): Same.
+	* rtti.c (build_dynamic_cast_1): Same.
+	* cp-tree.h: Add argument to cp_build_binary_op.
+	* semantics.c (handle_omp_for_class_iterator): Pass location to
+	*build_binary_op, c_common_truthvalue_conversion.
+	* decl2.c (get_guard_cond): Same.
+
 2008-09-17  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/22374

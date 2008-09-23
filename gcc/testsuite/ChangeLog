@@ -1,3 +1,10 @@
+2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Walways-true-1.c: Test column numbers.
+	* gcc.dg/c90-const-expr-5.c: Same.
+	* gcc.dg/compare4.c: Same.
+	* gcc.dg/Werror-1.c: Same.
+
 2008-09-23  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37588
@@ -619,6 +626,7 @@
 	PR tree-optimization/37508
 	* gcc.dg/tree-ssa/pr37508.c: New testcase.
 
+>>>>>>> .r140590
 2008-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* g++.old-deja/g++.brendan/crash16.C: Function name is the correct 
