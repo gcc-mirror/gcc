@@ -192,6 +192,12 @@
     <listitem><para>Re-opening a file stream does <emphasis>not</emphasis> clear the state flags.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#23">23</ulink>:
+        <emphasis>Num_get overflow result</emphasis>
+    </term>
+    <listitem><para>Implement the proposed resolution.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#25">25</ulink>:
         <emphasis>String operator&lt;&lt; uses width() value wrong</emphasis>
     </term>

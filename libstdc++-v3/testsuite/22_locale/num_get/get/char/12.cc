@@ -1,6 +1,6 @@
 // 2003-12-22  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2003, 2004, 2005 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -129,7 +129,7 @@ void test01()
   end = ng2.get(iss2.rdbuf(), 0, iss2, err, l);
   VERIFY( err == ios_base::failbit );
   VERIFY( *end == 'X' );
-  VERIFY( l == l3 );
+  VERIFY( l == 0 );
 
   iss2.str("000778");
   iss2.clear();

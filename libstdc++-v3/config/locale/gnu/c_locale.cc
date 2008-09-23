@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,6 +36,7 @@
 
 #include <locale>
 #include <stdexcept>
+#include <limits>
 #include <langinfo.h>
 #include <bits/c++locale_internal.h>
 
@@ -47,12 +48,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale& __cloc)
     {
       char* __sanity;
-      float __f = __strtof_l(__s, &__sanity, __cloc);
-      if (__sanity != __s && __f != __builtin_huge_valf()
-	  && __f != -__builtin_huge_valf())
-	__v = __f;
-      else
-	__err |= ios_base::failbit;
+      __v = __strtof_l(__s, &__sanity, __cloc);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
+	{
+	  __v = 0.0f;
+	  __err = ios_base::failbit;
+	}
+      else if (__v == numeric_limits<float>::infinity())
+	{
+	  __v = numeric_limits<float>::max();
+	  __err = ios_base::failbit;
+	}
+      else if (__v == -numeric_limits<float>::infinity())
+	{
+	  __v = -numeric_limits<float>::max();
+	  __err = ios_base::failbit;
+	}
     }
 
   template<>
@@ -61,12 +75,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale& __cloc)
     {
       char* __sanity;
-      double __d = __strtod_l(__s, &__sanity, __cloc);
-      if (__sanity != __s && __d != __builtin_huge_val()
-	  && __d != -__builtin_huge_val())
-	__v = __d;
-      else
-	__err |= ios_base::failbit;
+      __v = __strtod_l(__s, &__sanity, __cloc);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
+	{
+	  __v = 0.0;
+	  __err = ios_base::failbit;
+	}
+      else if (__v == numeric_limits<double>::infinity())
+	{
+	  __v = numeric_limits<double>::max();
+	  __err = ios_base::failbit;
+	}
+      else if (__v == -numeric_limits<double>::infinity())
+	{
+	  __v = -numeric_limits<double>::max();
+	  __err = ios_base::failbit;
+	}
     }
 
   template<>
@@ -78,15 +105,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       // Prefer strtold_l, as __strtold_l isn't prototyped in more recent
       // glibc versions.
-      long double __ld = strtold_l(__s, &__sanity, __cloc);
+      __v = strtold_l(__s, &__sanity, __cloc);
 #else
-      long double __ld = __strtold_l(__s, &__sanity, __cloc);
+      __v = __strtold_l(__s, &__sanity, __cloc);
 #endif
-      if (__sanity != __s && __ld != __builtin_huge_vall()
-	  && __ld != -__builtin_huge_vall())
-	__v = __ld;
-      else
-	__err |= ios_base::failbit;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
+	{
+	  __v = 0.0l;
+	  __err = ios_base::failbit;
+	}
+      else if (__v == numeric_limits<long double>::infinity())
+	{
+	  __v = numeric_limits<long double>::max();
+	  __err = ios_base::failbit;
+	}
+      else if (__v == -numeric_limits<long double>::infinity())
+	{
+	  __v = -numeric_limits<long double>::max();
+	  __err = ios_base::failbit;
+	}
     }
 
   void
