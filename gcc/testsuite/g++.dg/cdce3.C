@@ -1,24 +1,25 @@
 /* { dg-do run } */
 /* { dg-require-effective-target c99_runtime } */
-/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DNO_GNU_EXTENSION -lm" { target "*-*-darwin*" } } */
-/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -lm" { target { {! "*-*-darwin*" } && large_long_double } } }*/
-/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DNO_LONG_DOUBLE -lm" { target {! large_long_double } } } */
-/* { dg-final { scan-tree-dump  "cdce3.C:90: note: function call is shrink-wrapped into error conditions\." "cdce" { target {! "*-*-darwin*" } } } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:91: note: function call is shrink-wrapped into error conditions\." "cdce" { target {! "*-*-darwin*" } } } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:93: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:94: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:95: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:96: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:97: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:98: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:99: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:100: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:101: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:102: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:103: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:104: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:105: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
-/* { dg-final { scan-tree-dump  "cdce3.C:106: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -DGNU_EXTENSION -DLARGE_LONG_DOUBLE -lm" { target { pow10 && large_long_double } } } */
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DLARGE_LONG_DOUBLE -lm" { target { {! pow10 } && large_long_double } } } */
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DGNU_EXTENSION -lm" { target {pow10 && {! large_long_double } } } } */
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -lm" { target { {! pow10 } && {! large_long_double } } } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:91: note: function call is shrink-wrapped into error conditions\." "cdce" { target { pow10 } } } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:92: note: function call is shrink-wrapped into error conditions\." "cdce" { target { pow10 } } } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:94: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:95: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:96: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:97: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:98: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:99: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:100: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:101: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:102: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:103: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:104: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:105: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:106: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:107: note: function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { cleanup-tree-dump "cdce" } } */
 #include <stdlib.h>
 #include <math.h>
@@ -29,20 +30,7 @@
 typedef void (*FP) (int xp);
 #define NI __attribute__((noinline))
 
-#if defined(NO_LONG_DOUBLE)
-double result;
-
-#define DEF_MATH_FUNC(prefix, name) NI void prefix##name##f (int x) \
-{ \
-  float yy = name##f ((float) x); \
-  STORE_RESULT; \
-} \
-NI void prefix##name (int x) \
-{ \
-  double yy = name ((double)x); \
-  STORE_RESULT; \
-}
-#else
+#if defined(LARGE_LONG_DOUBLE)
 typedef long double ldouble; 
 ldouble result;
 
@@ -61,11 +49,24 @@ NI void prefix##name##l (int x) \
   ldouble yy = name##l ((ldouble)x); \
   STORE_RESULT; \
 }
+#else
+double result;
+
+#define DEF_MATH_FUNC(prefix, name) NI void prefix##name##f (int x) \
+{ \
+  float yy = name##f ((float) x); \
+  STORE_RESULT; \
+} \
+NI void prefix##name (int x) \
+{ \
+  double yy = name ((double)x); \
+  STORE_RESULT; \
+}
 #endif
 
 #undef STORE_RESULT
 #define STORE_RESULT result = yy
-#if !defined(NO_GNU_EXTENSION)
+#if defined(GNU_EXTENSION)
 DEF_MATH_FUNC (m,pow10)
 DEF_MATH_FUNC (m,exp10)
 #endif
@@ -86,7 +87,7 @@ DEF_MATH_FUNC (m,sqrt)
 
 #undef STORE_RESULT
 #define STORE_RESULT
-#if !defined(NO_GNU_EXTENSION)
+#if defined(GNU_EXTENSION)
 DEF_MATH_FUNC (o,pow10)
 DEF_MATH_FUNC (o,exp10)
 #endif
@@ -105,13 +106,13 @@ DEF_MATH_FUNC (o,log10)
 DEF_MATH_FUNC (o,log1p)
 DEF_MATH_FUNC (o,sqrt)
 
-#if defined(NO_LONG_DOUBLE)
-#define INIT_MATH_FUNC(prefix, name, lb, ub) { prefix##name##f, #name "f", 0, 0, lb, ub }, \
-{ prefix##name, #name, 0, 0, lb, ub },
-#else
+#if defined(LARGE_LONG_DOUBLE)
 #define INIT_MATH_FUNC(prefix, name, lb, ub) { prefix##name##f, #name "f", 0, 0, lb, ub }, \
 { prefix##name, #name, 0, 0, lb, ub }, \
 { prefix##name##l, #name "l" , 0, 0, lb, ub }, 
+#else
+#define INIT_MATH_FUNC(prefix, name, lb, ub) { prefix##name##f, #name "f", 0, 0, lb, ub }, \
+{ prefix##name, #name, 0, 0, lb, ub },
 #endif
 
 struct MathFuncInfo
@@ -123,7 +124,7 @@ struct MathFuncInfo
   bool has_lb;
   bool has_ub;
 } math_func_arr[] = { 
-#if !defined(NO_GNU_EXTENSION)
+#if defined(GNU_EXTENSION)
   INIT_MATH_FUNC (m,pow10, false, true)
   INIT_MATH_FUNC (m,exp10, false, true)
 #endif
@@ -145,7 +146,7 @@ struct MathFuncInfo
 
 MathFuncInfo opt_math_func_arr[] = 
 {
-#if !defined(NO_GNU_EXTENSION)
+#if defined(GNU_EXTENSION)
   INIT_MATH_FUNC (o,pow10, false, true)
   INIT_MATH_FUNC (o,exp10, false, true)
 #endif
