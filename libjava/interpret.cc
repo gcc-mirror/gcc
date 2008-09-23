@@ -78,10 +78,15 @@ static void find_catch_location (jthrowable, jthread, jmethodID *, jlong *);
 // the Class monitor as user code in another thread could hold it.
 static _Jv_Mutex_t compile_mutex;
 
+// See class ThreadCountAdjuster and REWRITE_INSN for how this is
+// used.
+_Jv_Mutex_t _Jv_InterpMethod::rewrite_insn_mutex;
+
 void
 _Jv_InitInterpreter()
 {
   _Jv_MutexInit (&compile_mutex);
+  _Jv_MutexInit (&_Jv_InterpMethod::rewrite_insn_mutex);
 }
 #else
 void _Jv_InitInterpreter() {}

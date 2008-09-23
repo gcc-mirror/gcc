@@ -175,6 +175,17 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   static pc_t breakpoint_insn;
 #ifdef DIRECT_THREADED
   static insn_slot bp_insn_slot;
+
+public:
+  // Mutex to prevent a data race between threads when rewriting
+  // instructions.  See interpret-run.cc for an explanation of its use.
+  static _Jv_Mutex_t rewrite_insn_mutex;
+
+  // The count of threads executing this method.
+  long thread_count;
+
+private:
+
 #else
   static unsigned char bp_insn_opcode;
 #endif
@@ -455,9 +466,10 @@ public:
   jobject obj_ptr;
 
   _Jv_InterpFrame (void *meth, java::lang::Thread *thr, jclass proxyCls = NULL,
-                   pc_t *pc = NULL)
+                   pc_t *pc = NULL, 
+		   _Jv_FrameType frame_type = frame_interpreter)
   : _Jv_Frame (reinterpret_cast<_Jv_MethodBase *> (meth), thr,
-	             frame_interpreter)
+	             frame_type)
   {
     next_interp = (_Jv_InterpFrame *) thr->interp_frame;
     proxyClass = proxyCls;
@@ -500,6 +512,76 @@ public:
   {
   }
 };
+
+#ifdef DIRECT_THREADED
+// This class increments and decrements the thread_count field in an
+// interpreted method.  On entry to the interpreter a
+// ThreadCountAdjuster is created when increments the thread_count in
+// the current method and uses the next_interp field in the frame to
+// find the previous method and decrement its thread_count.
+class ThreadCountAdjuster
+{
+
+  // A class used to handle the rewrite_insn_mutex while we're
+  // adjusting the thread_count in a method.  Unlocking the mutex in a
+  // destructor ensures that it's unlocked even if (for example) a
+  // segfault occurs in the critical section.
+  class MutexLock
+  {
+  private:
+    _Jv_Mutex_t *mutex;
+  public:
+    MutexLock (_Jv_Mutex_t *m)
+    {
+      mutex = m;
+      _Jv_MutexLock (mutex);
+    }
+    ~MutexLock ()
+    {
+      _Jv_MutexUnlock (mutex);
+    }
+  };
+
+  _Jv_InterpMethod *method;
+  _Jv_InterpMethod *next_method;
+
+public:
+
+  ThreadCountAdjuster (_Jv_InterpMethod *m, _Jv_InterpFrame *fr)
+  {
+    MutexLock lock (&::_Jv_InterpMethod::rewrite_insn_mutex);
+
+    method = m;
+    next_method = NULL;
+
+    _Jv_InterpFrame *next_interp = fr->next_interp;
+
+    // Record the fact that we're executing this method and that
+    // we're no longer executing the method that called us.
+    method->thread_count++;
+
+    if (next_interp && next_interp->frame_type == frame_interpreter)
+      {
+	next_method 
+	  = reinterpret_cast<_Jv_InterpMethod *> (next_interp->meth);
+	next_method->thread_count--;
+      }
+  }
+
+  ~ThreadCountAdjuster ()
+  {
+    MutexLock lock (&::_Jv_InterpMethod::rewrite_insn_mutex);
+
+    // We're going to return to the method that called us, so bump its
+    // thread_count and decrement our own.
+
+    method->thread_count--;
+
+    if (next_method)
+      next_method->thread_count++;
+  }
+};
+#endif // DIRECT_THREADED
 
 #endif /* INTERPRETER */
 

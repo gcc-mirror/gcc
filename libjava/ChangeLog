@@ -1,3 +1,24 @@
+2008-09-17  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/8995:
+	
+	* defineclass.cc (_Jv_ClassReader::handleCodeAttribute):
+	Initialize thread_count.
+	* include/java-interp.h (_Jv_InterpMethod::thread_count): New
+	field.
+	 (_Jv_InterpMethod::rewrite_insn_mutex): New mutex.
+	(_Jv_InterpFrame:: _Jv_InterpFrame): Pass frame_type.
+	* interpret.cc
+	(ThreadCountAdjuster): New class.
+	(_Jv_InterpMethod::thread_count): New field.
+	(_Jv_InitInterpreter): Initialize rewrite_insn_mutex.
+	Increment and decrement thread_count field in methods.
+	* interpret-run.cc (REWRITE_INSN): Check thread_count <= 1.
+	(REWRITE_INSN): Likewise.
+	Declare a ThreadCountAdjuster.
+	* java/lang/reflect/natVMProxy.cc (run_proxy): Initialize frame
+	type as frame_proxy.
+
 2008-09-05  David Daney  <ddaney@avtrex.com>
 
 	* configure.ac (reduced-reflection): New AC_ARG_ENABLE.

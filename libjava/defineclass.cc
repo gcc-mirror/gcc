@@ -1682,7 +1682,9 @@ void _Jv_ClassReader::handleCodeAttribute
   method->prepared       = NULL;
   method->line_table_len = 0;
   method->line_table     = NULL;
-
+#ifdef DIRECT_THREADED
+  method->thread_count   = 0;
+#endif
 
   // grab the byte code!
   memcpy ((void*) method->bytecode (),
