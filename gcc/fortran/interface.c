@@ -1818,9 +1818,9 @@ has_vector_subscript (gfc_expr *e)
    errors when things don't match instead of just returning the status
    code.  */
 
-int
-gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
-      			   int ranks_must_agree, int is_elemental, locus *where)
+static int
+compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
+	 	       int ranks_must_agree, int is_elemental, locus *where)
 {
   gfc_actual_arglist **new_arg, *a, *actual, temp;
   gfc_formal_arglist *f;
@@ -2448,13 +2448,36 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
       return;
     }
 
-  if (!gfc_compare_actual_formal (ap, sym->formal, 0,
-		  		  sym->attr.elemental, where))
+  if (!compare_actual_formal (ap, sym->formal, 0, sym->attr.elemental, where))
     return;
 
   check_intents (sym->formal, *ap);
   if (gfc_option.warn_aliasing)
     check_some_aliasing (sym->formal, *ap);
+}
+
+
+/* Try if an actual argument list matches the formal list of a symbol,
+   respecting the symbol's attributes like ELEMENTAL.  This is used for
+   GENERIC resolution.  */
+
+bool
+gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
+{
+  bool r;
+
+  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
+
+  r = !sym->attr.elemental;
+  if (compare_actual_formal (args, sym->formal, r, !r, NULL))
+    {
+      check_intents (sym->formal, *args);
+      if (gfc_option.warn_aliasing)
+	check_some_aliasing (sym->formal, *args);
+      return true;
+    }
+
+  return false;
 }
 
 
@@ -2467,8 +2490,6 @@ gfc_symbol *
 gfc_search_interface (gfc_interface *intr, int sub_flag,
 		      gfc_actual_arglist **ap)
 {
-  int r;
-
   for (; intr; intr = intr->next)
     {
       if (sub_flag && intr->sym->attr.function)
@@ -2476,15 +2497,8 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
       if (!sub_flag && intr->sym->attr.subroutine)
 	continue;
 
-      r = !intr->sym->attr.elemental;
-
-      if (gfc_compare_actual_formal (ap, intr->sym->formal, r, !r, NULL))
-	{
-	  check_intents (intr->sym->formal, *ap);
-	  if (gfc_option.warn_aliasing)
-	    check_some_aliasing (intr->sym->formal, *ap);
-	  return intr->sym;
-	}
+      if (gfc_arglist_matches_symbol (ap, intr->sym))
+	return intr->sym;
     }
 
   return NULL;
