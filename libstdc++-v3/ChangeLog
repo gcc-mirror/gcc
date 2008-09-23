@@ -1,3 +1,10 @@
+2008-09-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/37391 continued.
+	* doc/html/ext/pb_ds/assoc_examples.html: Don't use base tag,
+	specify full path for source file links.
+	* doc/html/ext/pb_ds/pq_examples.html: Same.
+
 2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/locale_facets.tcc (__pad<>::_S_pad): Don't use const
@@ -52,7 +59,7 @@
 
 	PR libstdc++/37391
 	* doc/html/ext/pb_ds/*.html: Fix external links.
-	
+
 2008-09-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Define _GLIBCXX_HAS_GTHREADS for mutex,
