@@ -1,3 +1,18 @@
+2008-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37274
+	* gfortran.dg/used_types_22.f90: New test.
+	* gfortran.dg/used_types_23.f90: New test.
+
+	PR fortran/36374
+	* gfortran.dg/generic_17.f90: New test.
+	* gfortran.dg/ambiguous_specific_2.f90: New test.
+	* gfortran.dg/generic_actual_arg.f90: Add test for case that is
+	not ambiguous.
+
+	PR fortran/36454
+	* gfortran.dg/access_spec_3.f90: New test.
+
 2008-09-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37236

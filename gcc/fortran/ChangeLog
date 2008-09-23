@@ -1,3 +1,28 @@
+2008-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37274
+	PR fortran/36374
+	* module.c (check_for_ambiguous): New function to test loaded
+	symbol for ambiguity with fixup symbol.
+	(read_module): Call check_for_ambiguous.
+	(write_symtree): Do not write the symtree for symbols coming
+	from an interface body.
+
+	PR fortran/36374
+	* resolve.c (count_specific_procs ): New function to count the
+	number of specific procedures with the same name as the generic
+	and emit appropriate errors for and actual argument reference.
+	(resolve_assumed_size_actual): Add new argument no_formal_args.
+	Correct logic around passing generic procedures as arguments.
+	Call count_specific_procs from two locations.
+	(resolve_function): Evaluate and pass no_formal_args.
+	(resolve call): The same and clean up a bit by using csym more
+	widely.
+
+	PR fortran/36454
+	* symbol.c (gfc_add_access): Access can be updated if use
+	associated and not private.
+
 2008-09-13  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35770
