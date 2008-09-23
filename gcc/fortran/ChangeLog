@@ -1,3 +1,9 @@
+2008-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37580
+	* expr.c (gfc_check_pointer_assign): Add checks for pointer
+	remapping.
+
 2008-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
 	PR fortran/37498
