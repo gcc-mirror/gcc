@@ -1,3 +1,18 @@
+2008-09-23  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37588
+	* gfortran.h (gfc_compare_actual_formal): Removed, made private.
+	(gfc_arglist_matches_symbol): New method.
+	* interface.c (compare_actual_formal): Made static.
+	(gfc_procedure_use): Use new name of compare_actual_formal.
+	(gfc_arglist_matches_symbol): New method.
+	(gfc_search_interface): Moved code partially to new
+	gfc_arglist_matches_symbol.
+	* resolve.c (resolve_typebound_generic_call): Resolve actual arglist
+	before checking against formal and use new gfc_arglist_matches_symbol
+	for checking.
+	(resolve_compcall): Set type-spec of generated expression.
+
 2008-09-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37580

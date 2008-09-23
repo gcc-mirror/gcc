@@ -1,3 +1,9 @@
+2008-09-23  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37588
+	* gfortran.dg/typebound_generic_4.f03: New test.
+	* gfortran.dg/typebound_generic_5.f03: New test.
+
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pragma-init-fini.c: Use dg-warning in lieu of dg-error.

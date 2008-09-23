@@ -2517,8 +2517,7 @@ gfc_try gfc_add_interface (gfc_symbol *);
 gfc_interface *gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
-int gfc_compare_actual_formal (gfc_actual_arglist**, gfc_formal_arglist*,
-      			       int, int, locus*);
+bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

@@ -4510,10 +4510,11 @@ resolve_typebound_generic_call (gfc_expr* e)
 
 	      args = update_arglist_pass (args, po, g->specific->pass_arg_num);
 	    }
+	  resolve_actual_arglist (args, target->attr.proc,
+				  is_external_proc (target) && !target->formal);
 
 	  /* Check if this arglist matches the formal.  */
-	  matches = gfc_compare_actual_formal (&args, target->formal, 1,
-					       target->attr.elemental, NULL);
+	  matches = gfc_arglist_matches_symbol (&args, target);
 
 	  /* Clean up and break out of the loop if we've found it.  */
 	  gfc_free_actual_arglist (args);
@@ -4606,6 +4607,7 @@ resolve_compcall (gfc_expr* e)
   e->value.function.isym = NULL;
   e->value.function.esym = NULL;
   e->symtree = target;
+  e->ts = target->n.sym->ts;
   e->expr_type = EXPR_FUNCTION;
 
   return gfc_resolve_expr (e);
