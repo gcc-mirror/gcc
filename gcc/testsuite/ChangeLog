@@ -1,3 +1,9 @@
+2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pragma-init-fini.c: Use dg-warning in lieu of dg-error.
+	* gcc.dg/pragma-align-2.c: Likewise.
+	* gcc.dg/format/cmn-err-1.c: Likewise.
+
 2008-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37274

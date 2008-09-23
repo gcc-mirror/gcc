@@ -4,13 +4,13 @@
 
 extern void abort ();
 
-#pragma init		/* { dg-error "malformed" } */
-#pragma init ()		/* { dg-error "malformed" } */
-#pragma init init_func	/* { dg-error "malformed" } */
+#pragma init		/* { dg-warning "malformed" } */
+#pragma init ()		/* { dg-warning "malformed" } */
+#pragma init init_func	/* { dg-warning "malformed" } */
 
-#pragma fini		/* { dg-error "malformed" } */
-#pragma fini ()		/* { dg-error "malformed" } */
-#pragma fini fini_func	/* { dg-error "malformed" } */
+#pragma fini		/* { dg-warning "malformed" } */
+#pragma fini ()		/* { dg-warning "malformed" } */
+#pragma fini fini_func	/* { dg-warning "malformed" } */
 
 #pragma init (init_func, init_static_func)
 
