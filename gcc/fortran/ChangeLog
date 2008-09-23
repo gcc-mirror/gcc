@@ -1,3 +1,10 @@
+2008-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR fortran/37498
+	* trans-io.c (gfc_build_io_library_fndecls): Bump pad size.
+	(build_dt): Set mask bit for IOPARM_dt_f2003.
+	* ioparm.def: Add IOPARM_dt_f2003.
+
 2008-09-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/37486

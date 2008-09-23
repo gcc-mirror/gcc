@@ -233,6 +233,10 @@ typedef enum
 { ASYNC_YES, ASYNC_NO, ASYNC_UNSPECIFIED }
 unit_async;
 
+typedef enum
+{ SIGN_S, SIGN_SS, SIGN_SP }
+unit_sign_s;
+
 #define CHARACTER1(name) \
 	      char * name; \
 	      gfc_charlen_type name ## _len
@@ -368,8 +372,179 @@ struct format_data;
 #define IOPARM_DT_HAS_PAD			(1 << 22)
 #define IOPARM_DT_HAS_ROUND			(1 << 23)
 #define IOPARM_DT_HAS_SIGN			(1 << 24)
+#define IOPARM_DT_HAS_F2003                     (1 << 25)
 /* Internal use bit.  */
 #define IOPARM_DT_IONML_SET			(1 << 31)
+
+
+typedef struct st_parameter_43
+{
+  void (*transfer) (struct st_parameter_dt *, bt, void *, int,
+		    size_t, size_t);
+  struct gfc_unit *current_unit;
+  /* Item number in a formatted data transfer.  Also used in namelist
+     read_logical as an index into line_buffer.  */
+  int item_count;
+  unit_mode mode;
+  unit_blank blank_status;
+  unit_sign sign_status;
+  int scale_factor;
+  int max_pos; /* Maximum righthand column written to.  */
+  /* Number of skips + spaces to be done for T and X-editing.  */
+  int skips;
+  /* Number of spaces to be done for T and X-editing.  */
+  int pending_spaces;
+  /* Whether an EOR condition was encountered. Value is:
+       0 if no EOR was encountered
+       1 if an EOR was encountered due to a 1-byte marker (LF)
+       2 if an EOR was encountered due to a 2-bytes marker (CRLF) */
+  int sf_seen_eor;
+  unit_advance advance_status;
+  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
+  unsigned first_item : 1;
+  unsigned seen_dollar : 1;
+  unsigned eor_condition : 1;
+  unsigned no_leading_blank : 1;
+  unsigned char_flag : 1;
+  unsigned input_complete : 1;
+  unsigned at_eol : 1;
+  unsigned comma_flag : 1;
+  /* A namelist specific flag used in the list directed library
+     to flag that calls are being made from namelist read (eg. to
+     ignore comments or to treat '/' as a terminator)  */
+  unsigned namelist_mode : 1;
+  /* A namelist specific flag used in the list directed library
+     to flag read errors and return, so that an attempt can be
+     made to read a new object name.  */
+  unsigned nml_read_error : 1;
+  /* A sequential formatted read specific flag used to signal that a
+     character string is being read so don't use commas to shorten a
+     formatted field width.  */
+  unsigned sf_read_comma : 1;
+  /* A namelist specific flag used to enable reading input from 
+     line_buffer for logical reads.  */
+  unsigned line_buffer_enabled : 1;
+  /* An internal unit specific flag used to identify that the associated
+     unit is internal.  */
+  unsigned unit_is_internal : 1;
+  /* An internal unit specific flag to signify an EOF condition for list
+     directed read.  */
+  unsigned at_eof : 1;
+  /* 16 unused bits.  */
+
+  char last_char;
+  char nml_delim;
+
+  int repeat_count;
+  int saved_length;
+  int saved_used;
+  bt saved_type;
+  char *saved_string;
+  char *scratch;
+  char *line_buffer;
+  struct format_data *fmt;
+  jmp_buf *eof_jump;
+  namelist_info *ionml;
+  /* A flag used to identify when a non-standard expanded namelist read
+     has occurred.  */
+  int expanded_read;
+  /* Storage area for values except for strings.  Must be large
+     enough to hold a complex value (two reals) of the largest
+     kind.  */
+  char value[32];
+  gfc_offset size_used;
+} st_parameter_43;
+
+
+typedef struct st_parameter_44
+{
+  GFC_IO_INT *id;
+  GFC_IO_INT pos;
+  CHARACTER1 (asynchronous);
+  CHARACTER2 (blank);
+  CHARACTER1 (decimal);
+  CHARACTER2 (delim);
+  CHARACTER1 (pad);
+  CHARACTER2 (round);
+  CHARACTER1 (sign);
+  void (*transfer) (struct st_parameter_dt *, bt, void *, int,
+		    size_t, size_t);
+  struct gfc_unit *current_unit;
+  /* Item number in a formatted data transfer.  Also used in namelist
+     read_logical as an index into line_buffer.  */
+  int item_count;
+  unit_mode mode;
+  unit_blank blank_status;
+  unit_sign sign_status;
+  int scale_factor;
+  int max_pos; /* Maximum righthand column written to.  */
+  /* Number of skips + spaces to be done for T and X-editing.  */
+  int skips;
+  /* Number of spaces to be done for T and X-editing.  */
+  int pending_spaces;
+  /* Whether an EOR condition was encountered. Value is:
+       0 if no EOR was encountered
+       1 if an EOR was encountered due to a 1-byte marker (LF)
+       2 if an EOR was encountered due to a 2-bytes marker (CRLF) */
+  int sf_seen_eor;
+  unit_advance advance_status;
+  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
+  unsigned first_item : 1;
+  unsigned seen_dollar : 1;
+  unsigned eor_condition : 1;
+  unsigned no_leading_blank : 1;
+  unsigned char_flag : 1;
+  unsigned input_complete : 1;
+  unsigned at_eol : 1;
+  unsigned comma_flag : 1;
+  /* A namelist specific flag used in the list directed library
+     to flag that calls are being made from namelist read (eg. to
+     ignore comments or to treat '/' as a terminator)  */
+  unsigned namelist_mode : 1;
+  /* A namelist specific flag used in the list directed library
+     to flag read errors and return, so that an attempt can be
+     made to read a new object name.  */
+  unsigned nml_read_error : 1;
+  /* A sequential formatted read specific flag used to signal that a
+     character string is being read so don't use commas to shorten a
+     formatted field width.  */
+  unsigned sf_read_comma : 1;
+  /* A namelist specific flag used to enable reading input from 
+     line_buffer for logical reads.  */
+  unsigned line_buffer_enabled : 1;
+  /* An internal unit specific flag used to identify that the associated
+     unit is internal.  */
+  unsigned unit_is_internal : 1;
+  /* An internal unit specific flag to signify an EOF condition for list
+     directed read.  */
+  unsigned at_eof : 1;
+  /* 16 unused bits.  */
+
+  char last_char;
+  char nml_delim;
+
+  int repeat_count;
+  int saved_length;
+  int saved_used;
+  bt saved_type;
+  char *saved_string;
+  char *scratch;
+  char *line_buffer;
+  struct format_data *fmt;
+  jmp_buf *eof_jump;
+  namelist_info *ionml;
+  /* A flag used to identify when a non-standard expanded namelist read
+     has occurred.  */
+  int expanded_read;
+  /* Storage area for values except for strings.  Must be large
+     enough to hold a complex value (two reals) of the largest
+     kind.  */
+  char value[32];
+  gfc_offset size_used;
+  unit_pad pad_status;
+  unit_decimal decimal_status;
+  unit_delim delim_status;
+} st_parameter_44;
 
 typedef struct st_parameter_dt
 {
@@ -381,104 +556,16 @@ typedef struct st_parameter_dt
   CHARACTER2 (advance);
   CHARACTER1 (internal_unit);
   CHARACTER2 (namelist_name);
-  GFC_IO_INT *id;
-  GFC_IO_INT pos;
-  CHARACTER1 (asynchronous);
-  CHARACTER2 (blank);
-  CHARACTER1 (decimal);
-  CHARACTER2 (delim);
-  CHARACTER1 (pad);
-  CHARACTER2 (round);
-  CHARACTER1 (sign);
   /* Private part of the structure.  The compiler just needs
      to reserve enough space.  */
   union
     {
-      struct
-	{
-	  void (*transfer) (struct st_parameter_dt *, bt, void *, int,
-			    size_t, size_t);
-	  struct gfc_unit *current_unit;
-	  /* Item number in a formatted data transfer.  Also used in namelist
-	       read_logical as an index into line_buffer.  */
-	  int item_count;
-	  unit_mode mode;
-	  unit_blank blank_status;
-          unit_pad pad_status;
-	  enum { SIGN_S, SIGN_SS, SIGN_SP } sign_status;
-	  int scale_factor;
-	  int max_pos; /* Maximum righthand column written to.  */
-	  /* Number of skips + spaces to be done for T and X-editing.  */
-	  int skips;
-	  /* Number of spaces to be done for T and X-editing.  */
-	  int pending_spaces;
-	  /* Whether an EOR condition was encountered. Value is:
-	       0 if no EOR was encountered
-	       1 if an EOR was encountered due to a 1-byte marker (LF)
-	       2 if an EOR was encountered due to a 2-bytes marker (CRLF) */
-	  int sf_seen_eor;
-	  unit_advance advance_status;
-	  unit_decimal decimal_status;
-          unit_delim delim_status;
-
-	  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
-	  unsigned first_item : 1;
-	  unsigned seen_dollar : 1;
-	  unsigned eor_condition : 1;
-	  unsigned no_leading_blank : 1;
-	  unsigned char_flag : 1;
-	  unsigned input_complete : 1;
-	  unsigned at_eol : 1;
-	  unsigned comma_flag : 1;
-	  /* A namelist specific flag used in the list directed library
-	     to flag that calls are being made from namelist read (eg. to
-	     ignore comments or to treat '/' as a terminator)  */
-	  unsigned namelist_mode : 1;
-	  /* A namelist specific flag used in the list directed library
-	     to flag read errors and return, so that an attempt can be
-	     made to read a new object name.  */
-	  unsigned nml_read_error : 1;
-	  /* A sequential formatted read specific flag used to signal that a
-	     character string is being read so don't use commas to shorten a
-	     formatted field width.  */
-	  unsigned sf_read_comma : 1;
-          /* A namelist specific flag used to enable reading input from 
-	     line_buffer for logical reads.  */
-	  unsigned line_buffer_enabled : 1;
-	  /* An internal unit specific flag used to identify that the associated
-	     unit is internal.  */
-	  unsigned unit_is_internal : 1;
-	  /* An internal unit specific flag to signify an EOF condition for list
-	     directed read.  */
-	  unsigned at_eof : 1;
-	  /* 16 unused bits.  */
-
-	  char last_char;
-	  char nml_delim;
-
-	  int repeat_count;
-	  int saved_length;
-	  int saved_used;
-	  bt saved_type;
-	  char *saved_string;
-	  char *scratch;
-	  char *line_buffer;
-	  struct format_data *fmt;
-	  jmp_buf *eof_jump;
-	  namelist_info *ionml;
-	  /* A flag used to identify when a non-standard expanded namelist read
-	     has occurred.  */
-	  int expanded_read;
-	  /* Storage area for values except for strings.  Must be large
-	     enough to hold a complex value (two reals) of the largest
-	     kind.  */
-	  char value[32];
-	  gfc_offset size_used;
-	} p;
+      st_parameter_43 q;
+      st_parameter_44 p;
       /* This pad size must be equal to the pad_size declared in
 	 trans-io.c (gfc_build_io_library_fndecls).  The above structure
 	 must be smaller or equal to this array.  */
-      char pad[16 * sizeof (char *) + 32 * sizeof (int)];
+      char pad[32 * sizeof (char *) + 32 * sizeof (int)];
     } u;
 }
 st_parameter_dt;
@@ -512,12 +599,12 @@ typedef struct
   unit_position position;
   unit_status status;
   unit_pad pad;
+  unit_convert convert;
+  int has_recl;
   unit_decimal decimal;
   unit_encoding encoding;
   unit_round round;
   unit_sign sign;
-  unit_convert convert;
-  int has_recl;
   unit_async async;
 }
 unit_flags;

@@ -65,7 +65,8 @@ write_default_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
     }
 
   /* Get ready to handle delimiters if needed.  */
-
+  d = ' ';
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
   switch (dtp->u.p.delim_status)
     {
     case DELIM_APOSTROPHE:
@@ -128,7 +129,8 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
     }
 
   /* Get ready to handle delimiters if needed.  */
-
+  d = ' ';
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
   switch (dtp->u.p.delim_status)
     {
     case DELIM_APOSTROPHE:
@@ -880,6 +882,8 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
   int i, extra;
   char *p, d;
 
+  d = ' ';
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
   switch (dtp->u.p.delim_status)
     {
     case DELIM_APOSTROPHE:
@@ -1018,7 +1022,10 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
 static void
 write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
 {
-  char semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
+  char semi_comma = ',';
+
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+    semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
 
   if (write_char (dtp, '('))
     return;
@@ -1065,9 +1072,17 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
     }
   else
     {
-      if (type != BT_CHARACTER || !dtp->u.p.char_flag ||
-	  dtp->u.p.delim_status != DELIM_NONE)
-	write_separator (dtp);
+      if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+	{
+	  if (type != BT_CHARACTER || !dtp->u.p.char_flag ||
+	      dtp->u.p.delim_status != DELIM_NONE)
+	    write_separator (dtp);
+	}
+      else
+	{
+          if (type != BT_CHARACTER || !dtp->u.p.char_flag)
+	    write_separator (dtp);
+	}
     }
 
   switch (type)
@@ -1182,7 +1197,10 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   /* Set the character to be used to separate values
      to a comma or semi-colon.  */
 
-  char semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
+  char semi_comma = ',';
+
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+    semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
 
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
@@ -1297,13 +1315,18 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
               break;
 
 	    case GFC_DTYPE_CHARACTER:
-	      tmp_delim = dtp->u.p.delim_status;
-	      if (dtp->u.p.nml_delim == '"')
-		dtp->u.p.delim_status = DELIM_QUOTE;
-	      if (dtp->u.p.nml_delim == '\'')
-		dtp->u.p.delim_status = DELIM_APOSTROPHE;
-	      write_character (dtp, p, 1, obj->string_length);
-	      dtp->u.p.delim_status = tmp_delim;
+	      if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+		{
+		  tmp_delim = dtp->u.p.delim_status;
+		  if (dtp->u.p.nml_delim == '"')
+		    dtp->u.p.delim_status = DELIM_QUOTE;
+		  if (dtp->u.p.nml_delim == '\'')
+		    dtp->u.p.delim_status = DELIM_APOSTROPHE;
+		  write_character (dtp, p, 1, obj->string_length);
+		  dtp->u.p.delim_status = tmp_delim;
+		}
+	      else
+		write_character (dtp, p, 1, obj->string_length);
               break;
 
 	    case GFC_DTYPE_REAL:
@@ -1438,10 +1461,11 @@ namelist_write (st_parameter_dt *dtp)
   index_type dummy_offset = 0;
   char c;
   char * dummy_name = NULL;
-  unit_delim tmp_delim;
+  unit_delim tmp_delim = DELIM_UNSPECIFIED;
 
   /* Set the delimiter for namelist output.  */
-
+if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+  {
   tmp_delim = dtp->u.p.delim_status;
   switch (tmp_delim)
     {
@@ -1460,7 +1484,7 @@ namelist_write (st_parameter_dt *dtp)
 
   /* Temporarily disable namelist delimters.  */
   dtp->u.p.delim_status = DELIM_NONE;
-
+  }
   write_character (dtp, "&", 1, 1);
 
   /* Write namelist name in upper case - f95 std.  */
@@ -1483,7 +1507,8 @@ namelist_write (st_parameter_dt *dtp)
   write_character (dtp, "  /", 1, 3);
   namelist_write_newline (dtp);
   /* Restore the original delimiter.  */
-  dtp->u.p.delim_status = tmp_delim;
+  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
+    dtp->u.p.delim_status = tmp_delim;
 }
 
 #undef NML_DIGITS

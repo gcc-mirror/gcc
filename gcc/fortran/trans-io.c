@@ -291,7 +291,7 @@ gfc_build_io_library_fndecls (void)
 			    = build_pointer_type (gfc_intio_type_node);
   types[IOPARM_type_parray] = pchar_type_node;
   types[IOPARM_type_pchar] = pchar_type_node;
-  pad_size = 16 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
+  pad_size = 32 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
   pad_size += 32 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (integer_type_node));
   pad_idx = build_index_type (build_int_cst (NULL_TREE, pad_size));
   types[IOPARM_type_pad] = build_array_type (char_type_node, pad_idx);
@@ -1641,7 +1641,7 @@ build_dt (tree function, gfc_code * code)
   tree tmp, var;
   gfc_expr *nmlname;
   gfc_namelist *nml;
-  unsigned int mask = 0;
+  unsigned int mask = IOPARM_dt_f2003;
 
   gfc_start_block (&block);
   gfc_init_block (&post_block);
