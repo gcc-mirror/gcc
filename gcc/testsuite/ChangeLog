@@ -1,3 +1,8 @@
+2008-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37533
+	* g++.dg/gomp/pr37533.C: New test.
+
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/slp-widen-mult-s16.c: Fix typo.
