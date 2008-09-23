@@ -1,6 +1,7 @@
 // Debugging bitset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,20 +126,31 @@ namespace __debug
 
       bitset(unsigned long __val) : _Base(__val) { }
 
-      template<typename _CharT, typename _Traits, typename _Allocator>
+      template<typename _CharT, typename _Traits, typename _Alloc>
         explicit
-        bitset(const std::basic_string<_CharT,_Traits,_Allocator>& __str,
-	       typename std::basic_string<_CharT,_Traits,_Allocator>::size_type
+        bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __str,
+	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
 	       __pos = 0,
-	       typename std::basic_string<_CharT,_Traits,_Allocator>::size_type
-	       __n = (std::basic_string<_CharT,_Traits,_Allocator>::npos))
+	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
+	       __n = (std::basic_string<_CharT, _Traits, _Alloc>::npos))
 	: _Base(__str, __pos, __n) { }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits, class _Alloc>
+	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __str,
+	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
+	       __pos,
+	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
+	       __n,
+	       _CharT __zero, _CharT __one = _CharT('1'))
+	: _Base(__str, __pos, __n, __zero, __one) { }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 778. std::bitset does not have any constructor taking a string literal
       explicit
-      bitset(const char* __s)
-      : _Base(__s) { }
+      bitset(const char* __s, char __zero = '0', char __one = '1')
+      : _Base(__s, __zero, __one) { }
 
       bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
 
@@ -245,10 +257,20 @@ namespace __debug
 
       using _Base::to_ulong;
 
-      template <typename _CharT, typename _Traits, typename _Allocator>
-        std::basic_string<_CharT, _Traits, _Allocator>
+      template <typename _CharT, typename _Traits, typename _Alloc>
+        std::basic_string<_CharT, _Traits, _Alloc>
         to_string() const
-        { return _M_base().template to_string<_CharT, _Traits, _Allocator>(); }
+        { return _M_base().template to_string<_CharT, _Traits, _Alloc>(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits, class _Alloc>
+	std::basic_string<_CharT, _Traits, _Alloc>
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{
+	  return _M_base().template
+	    to_string<_CharT, _Traits, _Alloc>(__zero, __one);
+	}
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 434. bitset::to_string() hard to use.
@@ -256,6 +278,14 @@ namespace __debug
         std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
         to_string() const
         { return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits>
+	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{ return to_string<_CharT, _Traits,
+	                   std::allocator<_CharT> >(__zero, __one); }
 
       template<typename _CharT>
         std::basic_string<_CharT, std::char_traits<_CharT>,
@@ -266,11 +296,27 @@ namespace __debug
                            std::allocator<_CharT> >();
         }
 
+      template<class _CharT>
+	std::basic_string<_CharT, std::char_traits<_CharT>,
+	                  std::allocator<_CharT> >
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{
+	  return to_string<_CharT, std::char_traits<_CharT>,
+	                   std::allocator<_CharT> >(__zero, __one);
+	}
+
       std::basic_string<char, std::char_traits<char>, std::allocator<char> >
-        to_string() const
-        {
-          return to_string<char,std::char_traits<char>,std::allocator<char> >();
-        }
+      to_string() const
+      {
+	return to_string<char,std::char_traits<char>,std::allocator<char> >();
+      }
+
+      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
+      to_string(char __zero, char __one = '1') const
+      {
+	return to_string<char, std::char_traits<char>,
+	                 std::allocator<char> >(__zero, __one);
+      }
 
       using _Base::count;
       using _Base::size;

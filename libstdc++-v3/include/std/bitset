@@ -764,7 +764,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    __throw_out_of_range(__N("bitset::bitset initial position "
 				     "not valid"));
 	  _M_copy_from_string(__s, __position,
-			      std::basic_string<_CharT, _Traits, _Alloc>::npos);
+			      std::basic_string<_CharT, _Traits, _Alloc>::npos,
+			      _CharT('0'), _CharT('1'));
 	}
 
       /**
@@ -784,15 +785,33 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  if (__position > __s.size())
 	    __throw_out_of_range(__N("bitset::bitset initial position "
 				     "not valid"));
-	  _M_copy_from_string(__s, __position, __n);
+	  _M_copy_from_string(__s, __position, __n, _CharT('0'), _CharT('1'));
+	}
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits, class _Alloc>
+	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
+	       size_t __position, size_t __n,
+	       _CharT __zero, _CharT __one = _CharT('1'))
+	: _Base()
+	{
+	  if (__position > __s.size())
+	    __throw_out_of_range(__N("bitset::bitset initial position "
+				     "not valid"));
+	  _M_copy_from_string(__s, __position, __n, __zero, __one);
 	}
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 778. std::bitset does not have any constructor taking a string literal
       explicit
-      bitset(const char* __s)
+      bitset(const char* __s, char __zero = '0', char __one = '1')
       : _Base()
-      { _M_copy_from_ptr(__s, char_traits<char>::length(__s), 0, size_t(-1)); }
+      {
+	_M_copy_from_ptr<char, char_traits<char> >(__s,
+			       char_traits<char>::length(__s), 0, size_t(-1),
+						   __zero, __one);
+      }
 
       // 23.3.5.2 bitset operations:
       //@{
@@ -1028,7 +1047,18 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	to_string() const
 	{
 	  std::basic_string<_CharT, _Traits, _Alloc> __result;
-	  _M_copy_to_string(__result);
+	  _M_copy_to_string(__result, _CharT('0'), _CharT('1'));
+	  return __result;
+	}
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits, class _Alloc>
+	std::basic_string<_CharT, _Traits, _Alloc>
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{
+	  std::basic_string<_CharT, _Traits, _Alloc> __result;
+	  _M_copy_to_string(__result, __zero, __one);
 	  return __result;
 	}
 
@@ -1039,6 +1069,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	to_string() const
 	{ return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      template<class _CharT, class _Traits>
+	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{ return to_string<_CharT, _Traits,
+	                   std::allocator<_CharT> >(__zero, __one); }
+
       template<class _CharT>
 	std::basic_string<_CharT, std::char_traits<_CharT>,
 	                  std::allocator<_CharT> >
@@ -1048,6 +1086,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	                   std::allocator<_CharT> >();
 	}
 
+      template<class _CharT>
+	std::basic_string<_CharT, std::char_traits<_CharT>,
+	                  std::allocator<_CharT> >
+	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
+	{
+	  return to_string<_CharT, std::char_traits<_CharT>,
+	                   std::allocator<_CharT> >(__zero, __one);
+	}
+
       std::basic_string<char, std::char_traits<char>, std::allocator<char> >
       to_string() const
       {
@@ -1055,20 +1102,43 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	                 std::allocator<char> >();
       }
 
+      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
+      to_string(char __zero, char __one = '1') const
+      {
+	return to_string<char, std::char_traits<char>,
+	                 std::allocator<char> >(__zero, __one);
+      }
+
       // Helper functions for string operations.
-      template<class _CharT>
+      template<class _CharT, class _Traits>
         void
-        _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t);
+        _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t,
+			 _CharT, _CharT);
 
       template<class _CharT, class _Traits, class _Alloc>
 	void
 	_M_copy_from_string(const std::basic_string<_CharT,
-			    _Traits, _Alloc>& __s, size_t __pos, size_t __n)
-	{ _M_copy_from_ptr(__s.data(), __s.size(), __pos, __n); }
+			    _Traits, _Alloc>& __s, size_t __pos, size_t __n,
+			    _CharT __zero, _CharT __one)
+	{ _M_copy_from_ptr<_CharT, _Traits>(__s.data(), __s.size(), __pos, __n,
+					    __zero, __one); }
 
       template<class _CharT, class _Traits, class _Alloc>
 	void
-	_M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&) const;
+        _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&,
+			  _CharT, _CharT) const;
+
+      // NB: Backward compat.
+      template<class _CharT, class _Traits, class _Alloc>
+	void
+	_M_copy_from_string(const std::basic_string<_CharT,
+			    _Traits, _Alloc>& __s, size_t __pos, size_t __n)
+	{ _M_copy_from_string(__s, __pos, __n, _CharT('0'), _CharT('1')); }
+
+      template<class _CharT, class _Traits, class _Alloc>
+	void
+        _M_copy_to_string(std::basic_string<_CharT, _Traits,_Alloc>& __s) const
+	{ _M_copy_to_string(__s, _CharT('0'), _CharT('1')); }
 
       /// Returns the number of bits which are set.
       size_t
@@ -1166,26 +1236,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   // Definitions of non-inline member functions.
   template<size_t _Nb>
-    template<class _CharT>
+    template<class _CharT, class _Traits>
       void
       bitset<_Nb>::
       _M_copy_from_ptr(const _CharT* __s, size_t __len,
-		       size_t __pos, size_t __n)
+		       size_t __pos, size_t __n, _CharT __zero, _CharT __one)
       {
 	reset();
 	const size_t __nbits = std::min(_Nb, std::min(__n, __len - __pos));
 	for (size_t __i = __nbits; __i > 0; --__i)
 	  {
-	    switch(__s[__pos + __nbits - __i])
-	      {
-	      case '0':
-		break;
-	      case '1':
-		_Unchecked_set(__i - 1);
-		break;
-	      default:
-		__throw_invalid_argument(__N("bitset::_M_copy_from_ptr"));
-	      }
+	    const _CharT __c = __s[__pos + __nbits - __i];
+	    if (_Traits::eq(__c, __zero))
+	      ;
+	    else if (_Traits::eq(__c, __one))
+	      _Unchecked_set(__i - 1);
+	    else
+	      __throw_invalid_argument(__N("bitset::_M_copy_from_ptr"));
 	  }
       }
 
@@ -1193,12 +1260,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     template<class _CharT, class _Traits, class _Alloc>
       void
       bitset<_Nb>::
-      _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>& __s) const
+      _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>& __s,
+			_CharT __zero, _CharT __one) const
       {
-	__s.assign(_Nb, '0');
+	__s.assign(_Nb, __zero);
 	for (size_t __i = _Nb; __i > 0; --__i)
 	  if (_Unchecked_test(__i - 1))
-	    __s[_Nb - __i] = '1';
+	    _Traits::assign(__s[_Nb - __i], __one);
       }
 
   // 23.3.5.3 bitset operations:
@@ -1259,16 +1327,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       std::basic_string<_CharT, _Traits> __tmp;
       __tmp.reserve(_Nb);
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 303. Bitset input operator underspecified
+      const char_type __zero = __is.widen('0');
+      const char_type __one = __is.widen('1');
+
       typename __ios_base::iostate __state = __ios_base::goodbit;
       typename __istream_type::sentry __sentry(__is);
       if (__sentry)
 	{
 	  try
 	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 303. Bitset input operator underspecified
-	      const char_type __zero = __is.widen('0');
-	      const char_type __one = __is.widen('1');
 	      for (size_t __i = _Nb; __i > 0; --__i)
 		{
 		  static typename _Traits::int_type __eof = _Traits::eof();
@@ -1282,10 +1351,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		  else
 		    {
 		      const char_type __c2 = _Traits::to_char_type(__c1);
-		      if (__c2 == __zero)
-			__tmp.push_back('0');
-		      else if (__c2 == __one)
-			__tmp.push_back('1');
+		      if (_Traits::eq(__c2, __zero))
+			__tmp.push_back(__zero);
+		      else if (_Traits::eq(__c2, __one))
+			__tmp.push_back(__one);
 		      else if (_Traits::
 			       eq_int_type(__is.rdbuf()->sputbackc(__c2),
 					   __eof))
@@ -1308,7 +1377,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       if (__tmp.empty() && _Nb)
 	__state |= __ios_base::failbit;
       else
-	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
+	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb,
+				__zero, __one);
       if (__state)
 	__is.setstate(__state);
       return __is;
@@ -1320,7 +1390,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	       const bitset<_Nb>& __x)
     {
       std::basic_string<_CharT, _Traits> __tmp;
-      __x._M_copy_to_string(__tmp);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 396. what are characters zero and one.
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__os.getloc());
+      __x._M_copy_to_string(__tmp, __ct.widen('0'), __ct.widen('1'));
       return __os << __tmp;
     }
   //@}

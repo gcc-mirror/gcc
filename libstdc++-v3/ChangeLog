@@ -1,3 +1,22 @@
+2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Implement DR 396 [Ready].
+	* include/std/bitset (bitset<>::bitset(const std::basic_string<>&,
+	size_t, size_t, _CharT, _CharT), bitset<>::bitset(const char*,
+	char, char), bitset<>::to_string(_CharT, _CharT),
+	bitset<>::_M_copy_from_string(const std::basic_string<>&, size_t,
+	size_t, _CharT, _CharT), bitset<>::_M_copy_to_string
+	(std::basic_string<>&, _CharT, _CharT), bitset<>::_M_copy_from_ptr(
+	const _CharT*, size_t, size_t, size_t, _CharT, _CharT)): Add.
+	(operator>>(std::basic_istream<>&, bitset<_Nb>&), operator<<(
+	std::basic_ostream<>&, const bitset<_Nb>&)): Adjust.
+	* include/debug/bitset (bitset<>::bitset(const std::basic_string<>&,
+	size_t, size_t, _CharT, _CharT), bitset<>::bitset(const char*,
+	char, char), bitset<>::to_string(_CharT, _CharT)): Add.
+	* doc/xml/manual/intro.xml: Add an entry for DR 396.
+	* testsuite/23_containers/bitset/cons/dr396.cc: Add.
+	* testsuite/23_containers/bitset/to_string/dr396.cc: Likewise.
+
 2008-09-23  Chris Fairles <cfairles@gcc.gnu.org>
 
 	* include/std/chrono: If _GLIBCXX_USE_MONOTONIC_CLOCK is defined, don't

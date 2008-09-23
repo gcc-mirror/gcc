@@ -522,6 +522,12 @@
     <listitem><para>Change it to return a <code>const T&amp;</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#396">396</ulink>:
+        <emphasis>what are characters zero and one</emphasis>
+    </term>
+    <listitem><para>Implement the proposed resolution.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#402">402</ulink>:
         <emphasis>Wrong new expression in [some_]allocator::construct</emphasis>
     </term>
