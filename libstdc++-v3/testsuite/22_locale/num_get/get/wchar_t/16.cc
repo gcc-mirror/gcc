@@ -1,6 +1,6 @@
 // 2005-04-26  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005 Free Software Foundation
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,7 +64,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, us0);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( us0 == 0 );
+  VERIFY( us0 == numeric_limits<unsigned short>::max() );
 
   ui0 = 0U;
   ss.clear();
@@ -82,7 +82,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, ui0);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( ui0 == 0U );
+  VERIFY( ui0 == numeric_limits<unsigned int>::max() );
 
   ul0 = 0UL;
   ss.clear();
@@ -100,7 +100,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, ul0);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( ul0 == 0UL );
+  VERIFY( ul0 == numeric_limits<unsigned long>::max() );
 
   l01 = 0L;
   ss.clear();
@@ -118,7 +118,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, l01);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( l01 == 0L );
+  VERIFY( l01 == numeric_limits<long>::max() );
 
   l02 = 0L;
   ss.clear();
@@ -136,7 +136,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, l02);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( l02 == 0L );
+  VERIFY( l02 == numeric_limits<long>::min() );
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   ull0 = 0ULL;
@@ -155,7 +155,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, ull0);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( ull0 == 0ULL );
+  VERIFY( ull0 == numeric_limits<unsigned long long>::max() );
 
   ll01 = 0LL;
   ss.clear();
@@ -173,7 +173,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, ll01);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( ll01 == 0LL );
+  VERIFY( ll01 == numeric_limits<long long>::max() );
 
   ll02 = 0LL;
   ss.clear();
@@ -191,7 +191,7 @@ void test01()
   err = ios_base::goodbit;
   end = ng.get(ss.rdbuf(), 0, ss, err, ll02);
   VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
-  VERIFY( ll02 == 0LL );
+  VERIFY( ll02 == numeric_limits<long long>::min() );
 #endif
 }
 

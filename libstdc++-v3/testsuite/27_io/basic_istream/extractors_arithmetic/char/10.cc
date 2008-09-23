@@ -1,6 +1,7 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -109,14 +110,16 @@ bool test10()
 
   is_05 >> f;
   VERIFY( f == 0 );
+  f = 1;
   is_05 >> f;
-  VERIFY( f == 5.0 );
-  VERIFY( is_05.rdstate() == std::ios_base::goodbit );
+  VERIFY( f == 0 );
+  VERIFY( is_05.rdstate() == std::ios_base::failbit );
   is_05.clear();
   is_05 >> c;
   VERIFY( c == 'a' );
+  f = 1;
   is_05 >> f;
-  VERIFY( f == 5.0 );
+  VERIFY( f == 0 );
   VERIFY( is_05.rdstate() == std::ios_base::failbit );
   is_05.clear();
   is_05.ignore();

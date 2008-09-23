@@ -1,6 +1,6 @@
 // 2004-03-01  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,21 +51,22 @@ void test01()
 
   ios_base::iostate err = ios_base::goodbit;
   iterator_type end;
-  double d = 0.0;
-  double d1 = 1.0;
-  double d2 = 3.0;
+  double d = 1.0;
   
   iss1.str(L"1e+2");
   err = ios_base::goodbit;
   end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
-  VERIFY( err == ios_base::goodbit );
-  VERIFY( d == d1 );
+  VERIFY( err == ios_base::failbit );
+  VERIFY( *end == L'+' );
+  VERIFY( d == 0.0 );
 
   iss2.str(L"3e-1");
   err = ios_base::goodbit;
+  d = 1.0;
   end = ng2.get(iss2.rdbuf(), 0, iss2, err, d);
-  VERIFY( err == ios_base::goodbit );
-  VERIFY( d == d2 );
+  VERIFY( err == ios_base::failbit );
+  VERIFY( *end == L'-' );
+  VERIFY( d == 0.0 );
 }
 
 int main()

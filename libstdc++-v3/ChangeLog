@@ -1,3 +1,47 @@
+2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/32422, DR 23 [Ready in R60]
+	* config/locale/gnu/c_locale.cc (__convert_to_v(const char*, float&,
+	ios_base::iostate&, const __c_locale&), __convert_to_v(const char*,
+	double&, ios_base::iostate&, const __c_locale&), __convert_to_v(const
+	char*, long double&, ios_base::iostate&, const __c_locale&)): Implement
+	DR 23 and deal correctly with broken exponents.
+	* config/locale/generic/c_locale.cc (__convert_to_v(const char*,
+	float&, ios_base::iostate&, const __c_locale&), __convert_to_v(const
+	char*, double&, ios_base::iostate&, const __c_locale&),
+	__convert_to_v(const char*, long double&, ios_base::iostate&, const
+	__c_locale&)): Likewise.
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int(_InIter,
+	_InIter, ios_base&, ios_base::iostate&, _ValueT&)): Likewise.
+	(num_get<>::_M_extract_float(_InIter, _InIter, ios_base&,
+	ios_base::iostate&, string&): Change grouping check to set instead of
+	OR failbit; do not check for eofbit here...
+	(num_get<>::do_get(iter_type, iter_type, ios_base&,
+	ios_base::iostate&, float&), num_get<>::do_get(iter_type, iter_type,
+	ios_base&, ios_base::iostate&, double&), num_get<>::do_get(iter_type,
+	iter_type, ios_base&, ios_base::iostate&, long double&),
+	num_get<>::__do_get(iter_type, iter_type, ios_base&,
+	ios_base::iostate&, double&)): ... do it here instead.
+	(num_get<>::do_get(iter_type, iter_type, ios_base&,
+	ios_base::iostate&, bool&)): Implement DR 23.
+	(num_get<>::do_get(iter_type, iter_type, ios_base&,
+	ios_base::iostate&, void*&)): Adjust.
+	* doc/xml/manual/intro.xml: Add and entry for DR 23.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/10.cc:
+	Adjust.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/15.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/16.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/10.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/16.cc: Likewise.
+
 2008-09-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/37391

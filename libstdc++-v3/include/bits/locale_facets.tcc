@@ -345,12 +345,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
           if (!std::__verify_grouping(__lc->_M_grouping, 
 				      __lc->_M_grouping_size,
 				      __found_grouping))
-	    __err |= ios_base::failbit;
+	    __err = ios_base::failbit;
         }
 
-      // Finish up.
-      if (__testeof)
-        __err |= ios_base::eofbit;
       return __beg;
     }
 
@@ -454,6 +451,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (__lc->_M_use_grouping)
 	  __found_grouping.reserve(32);
 	bool __testfail = false;
+	bool __testoverflow = false;
 	const __unsigned_type __max = __negative
 	  ? -__gnu_cxx::__numeric_traits<_ValueT>::__min
 	  : __gnu_cxx::__numeric_traits<_ValueT>::__max;
@@ -471,11 +469,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		break;
 	      
 	      if (__result > __smax)
-		__testfail = true;
+		__testoverflow = true;
 	      else
 		{
 		  __result *= __base;
-		  __testfail |= __result > __max - __digit;
+		  __testoverflow |= __result > __max - __digit;
 		  __result += __digit;
 		  ++__sep_pos;
 		}
@@ -518,11 +516,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		  if (__digit > 15)
 		    __digit -= 6;
 		  if (__result > __smax)
-		    __testfail = true;
+		    __testoverflow = true;
 		  else
 		    {
 		      __result *= __base;
-		      __testfail |= __result > __max - __digit;
+		      __testoverflow |= __result > __max - __digit;
 		      __result += __digit;
 		      ++__sep_pos;
 		    }
@@ -544,14 +542,27 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	    if (!std::__verify_grouping(__lc->_M_grouping,
 					__lc->_M_grouping_size,
 					__found_grouping))
-	      __err |= ios_base::failbit;
+	      __err = ios_base::failbit;
 	  }
 
-	if (!__testfail && (__sep_pos || __found_zero 
-			    || __found_grouping.size()))
-	  __v = __negative ? -__result : __result;
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 23. Num_get overflow result.
+	if ((!__sep_pos && !__found_zero && !__found_grouping.size())
+	    || __testfail)
+	  {
+	    __v = 0;
+	    __err = ios_base::failbit;
+	  }
+	else if (__testoverflow)
+	  {
+	    if (__negative)
+	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__min;
+	    else
+	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__max;
+	    __err = ios_base::failbit;
+	  }
 	else
-	  __err |= ios_base::failbit;
+	  __v = __negative ? -__result : __result;
 
 	if (__testeof)
 	  __err |= ios_base::eofbit;
@@ -576,7 +587,14 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  if (__l == 0 || __l == 1)
 	    __v = bool(__l);
 	  else
-            __err |= ios_base::failbit;
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 23. Num_get overflow result.
+	      __v = true;
+	      __err = ios_base::failbit;
+	      if (__beg == __end)
+		__err |= ios_base::eofbit;
+	    }
         }
       else
         {
@@ -621,7 +639,12 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  else if (__testt && __n == __lc->_M_truename_size)
 	    __v = true;
 	  else
-	    __err |= ios_base::failbit;
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 23. Num_get overflow result.
+	      __v = false;
+	      __err = ios_base::failbit;
+	    }
 
           if (__testeof)
             __err |= ios_base::eofbit;
@@ -683,6 +706,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
       std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
+      if (__beg == __end)
+	__err |= ios_base::eofbit;
       return __beg;
     }
 
@@ -696,6 +721,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
       std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
+      if (__beg == __end)
+	__err |= ios_base::eofbit;
       return __beg;
     }
 
@@ -710,6 +737,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
       std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
+      if (__beg == __end)
+	__err |= ios_base::eofbit;
       return __beg;
     }
 #endif
@@ -724,6 +753,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
       std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
+      if (__beg == __end)
+	__err |= ios_base::eofbit;
       return __beg;
     }
 
@@ -748,8 +779,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       // Reset from hex formatted input.
       __io.flags(__fmt);
 
-      if (!(__err & ios_base::failbit))
-	__v = reinterpret_cast<void*>(__ul);
+      __v = reinterpret_cast<void*>(__ul);
       return __beg;
     }
 

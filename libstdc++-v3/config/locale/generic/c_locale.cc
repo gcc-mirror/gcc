@@ -49,7 +49,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // Specializations for all types used in num_get.
   template<>
     void
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
@@ -62,40 +61,53 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       memcpy(__sav, __old, __len);
       setlocale(LC_ALL, "C");
       char* __sanity;
+      bool __overflow = false;
 
 #if !__FLT_HAS_INFINITY__
       errno = 0;
 #endif
 
-#if defined(_GLIBCXX_HAVE_STRTOF)
-      float __f = strtof(__s, &__sanity);
+#ifdef _GLIBCXX_HAVE_STRTOF
+      __v = strtof(__s, &__sanity);
 #else
       double __d = strtod(__s, &__sanity);
-      float __f = static_cast<float>(__d);
+      __v = static_cast<float>(__d);
 #ifdef _GLIBCXX_HAVE_FINITEF
-      if (!finitef (__f))
-	__s = __sanity;
+      if (!finitef (__v))
+	__overflow = true;
 #elif defined (_GLIBCXX_HAVE_FINITE)
-      if (!finite (static_cast<double> (__f)))
-	__s = __sanity;
+      if (!finite (static_cast<double> (__v)))
+	__overflow = true;
 #elif defined (_GLIBCXX_HAVE_ISINF)
-      if (isinf (static_cast<double> (__f)))
-	__s = __sanity;
+      if (isinf (static_cast<double> (__v)))
+	__overflow = true;
 #else
       if (fabs(__d) > numeric_limits<float>::max())
-	__s = __sanity;
+	__overflow = true;
 #endif
-#endif
+#endif // _GLIBCXX_HAVE_STRTOF
 
-      if (__sanity != __s
-#if !__FLT_HAS_INFINITY__
-	  && errno != ERANGE)
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
+	{
+	  __v = 0.0f;
+	  __err = ios_base::failbit;
+	}
+      else if (__overflow
+#if __FLT_HAS_INFINITY__
+	       || __v == numeric_limits<float>::infinity()
+	       || __v == -numeric_limits<float>::infinity())
 #else
-	  && __f != __builtin_huge_valf() && __f != -__builtin_huge_valf())
+	       || ((__v > 1.0f || __v < -1.0f) && errno == ERANGE)
 #endif
-	__v = __f;
-      else
-	__err |= ios_base::failbit;
+	{
+	  if (__v > 0.0f)
+	    __v = numeric_limits<float>::max();
+	  else
+	    __v = -numeric_limits<float>::max();
+	  __err = ios_base::failbit;
+	}
 
       setlocale(LC_ALL, __sav);
       delete [] __sav;
@@ -118,17 +130,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       errno = 0;
 #endif
 
-      double __d = strtod(__s, &__sanity);
+      __v = strtod(__s, &__sanity);
 
-      if (__sanity != __s
-#if !__DBL_HAS_INFINITY__
-          && errno != ERANGE) 
-#else
-	  && __d != __builtin_huge_val() && __d != -__builtin_huge_val())
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
+	{
+	  __v = 0.0;
+	  __err = ios_base::failbit;
+	}
+      else if (
+#if __DBL_HAS_INFINITY__
+	       __v == numeric_limits<double>::infinity()
+	       || __v == -numeric_limits<double>::infinity())
+#else          
+	       (__v > 1.0 || __v < -1.0) && errno == ERANGE)
 #endif
-	__v = __d;
-      else
-	__err |= ios_base::failbit;
+	{
+	  if (__v > 0.0)
+	    __v = numeric_limits<double>::max();
+	  else
+	    __v = -numeric_limits<double>::max();
+	  __err = ios_base::failbit;
+	}
 
       setlocale(LC_ALL, __sav);
       delete [] __sav;
@@ -152,32 +176,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #if defined(_GLIBCXX_HAVE_STRTOLD) && !defined(_GLIBCXX_HAVE_BROKEN_STRTOLD)
       char* __sanity;
-      long double __ld = strtold(__s, &__sanity);
+      __v = strtold(__s, &__sanity);
 
-      if (__sanity != __s
-#if !__LDBL_HAS_INFINITY__
-          && errno != ERANGE)
-#else
-	  && __ld != __builtin_huge_vall() && __ld != -__builtin_huge_vall())
-#endif
-	__v = __ld;
-
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 23. Num_get overflow result.
+      if (__sanity == __s || *__sanity != '\0')
 #else
       typedef char_traits<char>::int_type int_type;
-      long double __ld;
-      int __p = sscanf(__s, "%Lf", &__ld);
+      int __p = sscanf(__s, "%Lf", &__v);
 
-      if (__p && static_cast<int_type>(__p) != char_traits<char>::eof()
-#if !__LDBL_HAS_INFINITY__
-          && errno != ERANGE)
+      if (!__p || static_cast<int_type>(__p) == char_traits<char>::eof())
+#endif
+	{
+	  __v = 0.0l;
+	  __err = ios_base::failbit;
+	}
+       else if (
+#if __LDBL_HAS_INFINITY__
+	        __v == numeric_limits<long double>::infinity()
+	        || __v == -numeric_limits<long double>::infinity())
 #else
-          && __ld != __builtin_huge_vall() && __ld != -__builtin_huge_vall())
+	        (__v > 1.0l || __v < -1.0l) && errno == ERANGE)
 #endif
-	__v = __ld;
-
-#endif
-      else
-	__err |= ios_base::failbit;
+	{
+	  if (__v > 0.0l)
+	    __v = numeric_limits<long double>::max();
+	  else
+	    __v = -numeric_limits<long double>::max();
+	  __err = ios_base::failbit;
+	}
 
       setlocale(LC_ALL, __sav);
       delete [] __sav;
