@@ -10049,7 +10049,7 @@ ix86_delegitimize_address (rtx orig_x)
     return orig_x;
 
   if (const_addend)
-    result = gen_rtx_PLUS (Pmode, result, const_addend);
+    result = gen_rtx_CONST (Pmode, gen_rtx_PLUS (Pmode, result, const_addend));
   if (reg_addend)
     result = gen_rtx_PLUS (Pmode, reg_addend, result);
   return result;
