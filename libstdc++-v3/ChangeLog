@@ -1,3 +1,10 @@
+2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/37624
+	* testsuite/22_locale/num_get/get/char/10.cc: Skip long double case
+	when strtold is not available.
+	* testsuite/22_locale/num_get/get/wchar_t/10.cc: Likewise.
+
 2008-09-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/37391 continued.

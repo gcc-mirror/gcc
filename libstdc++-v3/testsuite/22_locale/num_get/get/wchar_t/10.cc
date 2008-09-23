@@ -35,12 +35,9 @@ void test01()
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 
   ios_base::iostate err = ios_base::goodbit;
   iterator_type end;
-  float f = 0.0f;
-  double d = 0.0;
-  long double ld = 0.0l;
-  float f1 = 1.0f;
-  double d1 = 3.0;
-  long double ld1 = 6.0l;
+  float f = 1.0f;
+  double d = 1.0;
+  long double ld = 1.0l;
   
   iss.str(L"1e.");
   err = ios_base::goodbit;
@@ -60,9 +57,14 @@ void test01()
   iss.clear();
   err = ios_base::goodbit;
   end = ng.get(iss.rdbuf(), 0, iss, err, ld);
-  VERIFY( err == ios_base::failbit );
   VERIFY( *end == L' ' );
+
+  // libstdc++/37624.  We can't always obtain the required behavior
+  // when sscanf is involved, because of, e.g., glibc/1765.
+#if defined(_GLIBCXX_HAVE_STRTOLD) && !defined(_GLIBCXX_HAVE_BROKEN_STRTOLD)
+  VERIFY( err == ios_base::failbit );
   VERIFY( ld == 0.0l );
+#endif
 }
 
 int main()
