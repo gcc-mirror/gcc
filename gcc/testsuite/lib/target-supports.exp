@@ -2612,3 +2612,16 @@ proc check_effective_target_wchar_t_char32_t_compatible { } {
         char t[(((__CHAR32_TYPE__) -1) < 0 == ((__WCHAR_TYPE__) -1) < 0) ? 1 : -1];
     }]
 }
+
+# Return 1 if pow10 function exists.
+
+proc check_effective_target_pow10 { } {
+    return [check_runtime pow10 {
+	#include <math.h>
+	int main () {
+	double x;
+	x = pow10 (1);
+	return 0;
+	}
+    } "-lm" ]
+}
