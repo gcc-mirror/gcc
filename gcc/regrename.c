@@ -357,11 +357,13 @@ do_replace (struct du_chain *chain, int reg)
     {
       unsigned int regno = ORIGINAL_REGNO (*chain->loc);
       struct reg_attrs * attr = REG_ATTRS (*chain->loc);
+      int reg_ptr = REG_POINTER (*chain->loc);
 
       *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
       if (regno >= FIRST_PSEUDO_REGISTER)
 	ORIGINAL_REGNO (*chain->loc) = regno;
       REG_ATTRS (*chain->loc) = attr;
+      REG_POINTER (*chain->loc) = reg_ptr;
       df_insn_rescan (chain->insn);
       chain = chain->next_use;
     }
