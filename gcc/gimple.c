@@ -3192,7 +3192,7 @@ canonicalize_cond_expr_cond (tree t)
    the positions marked by the set ARGS_TO_SKIP.  */
 
 gimple
-gimple_copy_call_skip_args (gimple stmt, bitmap args_to_skip)
+gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 {
   int i;
   tree fn = gimple_call_fn (stmt);

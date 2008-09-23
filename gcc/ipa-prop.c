@@ -1108,8 +1108,7 @@ ipa_free_all_node_params (void)
 /* Hook that is called by cgraph.c when an edge is removed.  */
 
 static void
-ipa_edge_removal_hook (struct cgraph_edge *cs,
-		       void *data __attribute__ ((unused)))
+ipa_edge_removal_hook (struct cgraph_edge *cs, void *data ATTRIBUTE_UNUSED)
 {
   /* During IPA-CP updating we can be called on not-yet analyze clones.  */
   if (VEC_length (ipa_edge_args_t, ipa_edge_args_vector)
@@ -1121,8 +1120,7 @@ ipa_edge_removal_hook (struct cgraph_edge *cs,
 /* Hook that is called by cgraph.c when a node is removed.  */
 
 static void
-ipa_node_removal_hook (struct cgraph_node *node,
-		       void *data __attribute__ ((unused)))
+ipa_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   ipa_free_node_params_substructures (IPA_NODE_REF (node));
 }
