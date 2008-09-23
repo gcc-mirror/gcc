@@ -406,6 +406,8 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
 		cpp_hashnode *node)
 {
   macro_queue *q;
+  if (node->flags & NODE_BUILTIN)
+    return;
   q = XNEW (macro_queue);
   q->macro = xstrdup ((const char *) cpp_macro_definition (pfile, node));
   q->next = define_queue;
