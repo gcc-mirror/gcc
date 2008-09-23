@@ -836,6 +836,11 @@ find_base_value (rtx src)
 {
   unsigned int regno;
 
+#if defined (FIND_BASE_TERM)
+  /* Try machine-dependent ways to find the base term.  */
+  src = FIND_BASE_TERM (src);
+#endif
+
   switch (GET_CODE (src))
     {
     case SYMBOL_REF:
