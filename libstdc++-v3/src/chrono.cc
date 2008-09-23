@@ -47,29 +47,37 @@ namespace std
     system_clock::time_point
     system_clock::now()
     {
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-        timespec tp;
-        // -EINVAL, -EFAULT
-        clock_gettime(CLOCK_MONOTONIC, &tp);
-        return time_point(duration(chrono::seconds(tp.tv_sec)
-                                   + chrono::nanoseconds(tp.tv_nsec)));
-#elif defined(_GLIBCXX_USE_CLOCK_REALTIME)
-        timespec tp;
-        // -EINVAL, -EFAULT
-        clock_gettime(CLOCK_REALTIME, &tp);
-        return time_point(duration(chrono::seconds(tp.tv_sec)
-                                   + chrono::nanoseconds(tp.tv_nsec)));
+#ifdef _GLIBCXX_USE_CLOCK_REALTIME
+      timespec tp;
+      // -EINVAL, -EFAULT
+      clock_gettime(CLOCK_REALTIME, &tp);
+      return time_point(duration(chrono::seconds(tp.tv_sec)
+				 + chrono::nanoseconds(tp.tv_nsec)));
 #elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
-        timeval tv;
-        // EINVAL, EFAULT
-        gettimeofday(&tv, NULL);
-        return time_point(duration(chrono::seconds(tv.tv_sec)
-                                   + chrono::microseconds(tv.tv_usec)));
+      timeval tv;
+      // EINVAL, EFAULT
+      gettimeofday(&tv, NULL);
+      return time_point(duration(chrono::seconds(tv.tv_sec)
+				 + chrono::microseconds(tv.tv_usec)));
 #else
-        std::time_t __sec = std::time(0);
-        return system_clock::from_time_t(__sec);
+      std::time_t __sec = std::time(0);
+      return system_clock::from_time_t(__sec);
 #endif
     }
+    
+#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
+    const bool monotonic_clock::is_monotonic;
+    
+    monotonic_clock::time_point
+    monotonic_clock::now()
+    {
+      timespec tp;
+      // -EINVAL, -EFAULT
+      clock_gettime(CLOCK_MONOTONIC, &tp);
+      return time_point(duration(chrono::seconds(tp.tv_sec)
+				 + chrono::nanoseconds(tp.tv_nsec)));
+    }
+#endif
   }
 }
 

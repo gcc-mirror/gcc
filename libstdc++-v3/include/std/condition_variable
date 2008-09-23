@@ -50,6 +50,8 @@ namespace std
   /// condition_variable
   class condition_variable
   {
+    typedef chrono::system_clock __clock_t;
+
   public:
     typedef __gthread_cond_t* native_handle_type;
 
@@ -76,44 +78,51 @@ namespace std
 	  wait(__lock);
       }
   
-    template<typename _Clock, typename _Duration>
+    template<typename _Duration>
       bool 
-      wait_until(unique_lock<mutex>& __lock, 
+      wait_until(unique_lock<mutex>& __lock,
+		 const chrono::time_point<__clock_t, _Duration>& __atime)
+      { return __wait_until_impl(__lock, __atime); }
+
+    template<typename _Clock, typename _Duration>
+      bool
+      wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	chrono::time_point<_Clock, chrono::seconds>  __s =
-          chrono::time_point_cast<chrono::seconds>(__atime);
+	// DR 887 - Sync unknown clock to known clock.
+	typename _Clock::time_point __c_entry = _Clock::now();
+	__clock_t::time_point __s_entry = __clock_t::now();
+	chrono::nanoseconds __delta = __atime - __c_entry;	
+	__clock_t::time_point __s_atime = __s_entry + __delta;
 
-	chrono::nanoseconds __ns =
-          chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-        __gthread_time_t __ts = {
-          static_cast<std::time_t>(__s.time_since_epoch().count()),
-          static_cast<long>(__ns.count())
-        };
-	
-	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(), &__ts);
-	
-	return __clock_t::now() < __atime;
+	return __wait_until_impl(__lock, __s_atime);
       }
 
     template<typename _Clock, typename _Duration, typename _Predicate>
       bool
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime,
-		 _Predicate __p);
+		 _Predicate __p)
+      {
+	while(!__p())
+	  if(!wait_until(__lock, __atime))
+	    return __p();
+	
+	return true;
+      }
 
     template<typename _Rep, typename _Period>
       bool
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime)
-      { return __wait_for_impl(__rtime); }
+      { return wait_until(__lock, __clock_t::now() + __rtime); }
 
     template<typename _Rep, typename _Period, typename _Predicate>
       bool
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime,
-	       _Predicate __p);
+	       _Predicate __p)
+      { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
 
     native_handle_type 
     native_handle() 
@@ -123,35 +132,28 @@ namespace std
     __gthread_cond_t _M_cond;
     mutex _M_internal_mutex;
 
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::monotonic_clock __clock_t;
-#else
-    typedef chrono::high_resolution_clock __clock_t;
-#endif
-
-    template<typename _Rep, typename _Period>
-      typename enable_if<
-        ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __wait_for_impl(unique_lock<mutex>& __lock,
-		      const chrono::duration<_Rep, _Period>& __rtime)
-      { 
-	__clock_t::time_point __atime = __clock_t::now()
-	  + chrono::duration_cast<__clock_t::duration>(__rtime);
+    template<typename _Clock, typename _Duration>
+      bool
+      __wait_until_impl(unique_lock<mutex>& __lock,
+			const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	chrono::time_point<__clock_t, chrono::seconds> __s =
+          chrono::time_point_cast<chrono::seconds>(__atime);
 	
-	return wait_until(__lock, __atime);
+	chrono::nanoseconds __ns =
+          chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+	
+        __gthread_time_t __ts =
+          {
+            static_cast<std::time_t>(__s.time_since_epoch().count()),
+            static_cast<long>(__ns.count())
+          };
+	
+        __gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
+                                 &__ts);
+	
+        return _Clock::now() < __atime;
       }
-    
-    template<typename _Rep, typename _Period>
-      typename enable_if<
-        !ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __wait_for_impl(unique_lock<mutex>& __lock,
-		      const chrono::duration<_Rep, _Period>& __rtime)
-      { 
-	__clock_t::time_point __atime = __clock_t::now()
-	  + ++chrono::duration_cast<__clock_t::duration>(__rtime);
-	
-	return wait_until(__lock, __atime);
-      }    
   };
 
   /// condition_variable_any
