@@ -1148,6 +1148,15 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  /* Just in case a specific was found for the expression.  */
 	  sym = e->symtree->n.sym;
 
+	  if (sym->attr.entry && sym->ns->entries
+		&& sym->ns == gfc_current_ns
+		&& !sym->ns->entries->sym->attr.recursive)
+	    {
+	      gfc_error ("Reference to ENTRY '%s' at %L is recursive, but procedure "
+			 "'%s' is not declared as RECURSIVE",
+			 sym->name, &e->where, sym->ns->entries->sym->name);
+	    }
+
 	  /* If the symbol is the function that names the current (or
 	     parent) scope, then we really have a variable reference.  */
 

@@ -4504,8 +4504,7 @@ gfc_match_entry (void)
      created symbols attached to the current namespace.  */
   if (get_proc_name (name, &entry,
 		     gfc_current_ns->parent != NULL
-		     && module_procedure
-		     && gfc_current_ns->proc_name->attr.function))
+		     && module_procedure))
     return MATCH_ERROR;
 
   proc = gfc_current_block ();

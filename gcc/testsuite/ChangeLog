@@ -1,3 +1,8 @@
+2008-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37583
+	* gfortran.dg/entry_18.f90: New test.
+
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pragma-init-fini.c: Use dg-warning in lieu of dg-error.
