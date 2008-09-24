@@ -1,3 +1,7 @@
+2008-09-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/utf-array.c: Fix syntax of dg-error stmts.
+
 2008-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37626
