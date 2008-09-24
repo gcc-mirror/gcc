@@ -1,3 +1,7 @@
+2008-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
 2008-09-24  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2.h (DW_OP_GNU_encoded_addr): New.
