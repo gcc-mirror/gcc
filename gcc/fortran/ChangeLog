@@ -1,3 +1,9 @@
+2008-09-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37626
+	* trans-array.c (gfc_trans_deferred_array): Don't auto-deallocate
+	result variables.
+
 2008-09-23  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37588
