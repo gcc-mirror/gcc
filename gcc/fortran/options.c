@@ -37,7 +37,8 @@ gfc_option_t gfc_option;
 
 
 /* Set flags that control warnings and errors for different
-   Fortran standards to their default values.  */
+   Fortran standards to their default values.  Keep in sync with
+   libgfortran/runtime/compile_options.c (init_compile_options).  */
 
 static void
 set_default_std_flags (void)
@@ -48,7 +49,9 @@ set_default_std_flags (void)
   gfc_option.warn_std = GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
-/* Get ready for options handling.  */
+
+/* Get ready for options handling. Keep in sync with
+   libgfortran/runtime/compile_options.c (init_compile_options). */
 
 unsigned int
 gfc_init_options (unsigned int argc, const char **argv)
