@@ -494,6 +494,14 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	  op_ptr += sizeof (void *);
 	  break;
 
+	case DW_OP_GNU_encoded_addr:
+	  {
+	    _Unwind_Ptr presult;
+	    op_ptr = read_encoded_value (context, *op_ptr, op_ptr+1, &presult);
+	    result = presult;
+	  }
+	  break;
+
 	case DW_OP_const1u:
 	  result = read_1u (op_ptr);
 	  op_ptr += 1;
