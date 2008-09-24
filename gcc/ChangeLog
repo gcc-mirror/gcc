@@ -1,3 +1,71 @@
+2008-09-24  Michael J. Eager  <eager@eagercon.com>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Single FP consts
+	are easy.
+	* config/rs6000/rs6000.c (rs6000_override_options): Move
+	rs6000_init_hard_regno_mode_ok after all options changed.
+	Set rs6000_single_float, rs6000_double_float if TARGET_HARD_FLOAT.
+	(rs6000_handle_option): Process -msingle-float, -mdouble-float,
+	-msimple-fpu flags.  Add warning messages if single FP not configured.
+	(rs6000_file_start): Output gnu_attribute for single-float.
+	(legitimate_lo_sum_address_p): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_emit_move): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(function_arg_advance): Likewise.
+	(function_arg): Likewise.
+	(setup_incoming_varargs): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_gimplify_va_arg): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(rs6000_split_multireg_move): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_function_value): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(rs6000_libcall_value): Likewise.
+	* config/rs6000/rs6000.h (TARGET_SINGLE_FLOAT): New default to 1.
+	(TARGET_DOUBLE_FLOAT): New default to 1
+	(TARGET_SIMPLE_FPU): New default to 0
+	(TARGET_SINGLE_FPU): New default to 0
+	(TARGET_SINGLE_FLOAT_MODE): New.
+	(TARGET_DOUBLE_FLOAT_MODE): New.
+	* config/rs6000/singlefp.h: New; redefine TARGET_SINGLE_FLOAT,
+	TARGET_DOUBLE_FLOAT, TARGET_SIMPLE_FPU, TARGET_SINGLE_FPU,
+	UNITS_PER_FP_WORD
+	* config/rs6000/rs6000.md (define_mode_iterator): Condition on
+	TARGET_DOUBLE_FLOAT, TARGET_SINGLE_FLOAT.
+	(extendsfdf2, extendsfdf2_fpr, truncdfsf2, truncdfsf2_fpr,
+	copysigndf3,fseldfsf4, negdf2, negdf2_fpr, absdf2, absdf2_fpr,
+	nabsdf2_fpr, adddf3, adddf3_fpr, subdf3, subdf3_fpr, muldf3,
+	muldf3_fpr, divdf3, divdf3_fpr, sqrtdf2, smaxdf3, smindf3,
+	movdfcc, *fseldfdf4, floatsidf2, *floatsidf2_internal,
+	floatunssidf2, *floatunssidf2_internal, fix_truncdfsi2,
+	*fix_truncdfsi2_internal, fix_truncdfsi2_internal_gfxopt,
+	fix_truncdfsi2_mfpgpr, fctiwz, btruncdf2, ceildf2, floordf2,
+	rounddf2, floatdidf2, floatsidf_ppc64_mfpgpr, floatsidf_ppc64,
+	floatunssidf_ppc64, fix_truncdfdi2, movdf_hardfloat32,
+	movdf_hardfloat64_mfpgpr, movdf_hardfloat64, extenddftf2_fprs,
+	extenddftf2_internal, trunctfdf2_internal2, fix_trunc_helper,
+	abstf2_internal, movdf_update1, movdf_update2, cmpdf_internal1,
+	cmptf_internal1, *cmptf_internal2): Condition on
+	TARGET_DOUBLE_FLOAT.
+	(aux_truncdfsf2, negsf2, *negsf2, abssf2, *abssf2, addsf3, subsf3,
+	mulsf3, divsf3, sqrtsf2, copysignsf3, smaxsf3, sminsf3, movsfcc,
+	*fselsfsf4, fixuns_truncsfsi2, fix_truncsfsi2, floatunssisf2,
+	btruncsf2, ceilsf2, floorsf2, roundsf2, floatdisf2_internal1,
+	floatdisf2_internal2, *movsf_hardfloat, trunctfsf2_fprs,
+	*movsf_update1, *movsf_update2, *cmpsf_internal1): Condition on
+	TARGET_SINGLE_FLOAT.
+	(divsf3, sqrtsf2, divdf3, divdf3_fpr): Condition on TARGET_SIMPLE_FPU.
+	* config/rs6000/rs6000.opt (-msingle-float): New.
+	(-mdouble-float): New.
+	(-msimple-fpu): New.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add
+	-msingle-float, -mdouble-float, -msimple-fpu options.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Set
+	_SOFT_DOUBLE for -msingle-float.
+	* config.gcc: New config for target=powerpc-xilinx-eabi.
+
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/constraints.md: New file.
@@ -7008,7 +7076,7 @@
 	PR ada/36554
 	* dwarf2out.c (is_subrange_type): Deal with BOOLEAN_TYPE.
 
-2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	PR 36974
 	* final.c (call_from_call_insn): Handle COND_EXEC.
@@ -7220,7 +7288,7 @@
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
 	vector modes.
 
-2008-07-30  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-30  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* final.c (call_from_call_insn): New.
 	(final_scan_insn): Call assemble_external on FUNCTION_DECLs.
@@ -8338,7 +8406,7 @@
 	(TARGET_OPTION_PRINT): Ditto.
 	(TARGET_CAN_INLINE_P): Ditto.
 
-2008-07-22  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-22  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-typeck.c (build_external_ref): Don't call assemble_external.
 	* final.c (output_operand): Call assemble_external.
@@ -8359,7 +8427,7 @@
 	highest magnitude if this is still less or equal to the true
 	quotient in magnitude.
 
-2008-07-21  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2008-07-21  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* Makefile.in: Replace toplev.h with TOPLEV_H.
 	* c-decl.c (merge_decls): Don't set DECL_IN_SYSTEM_HEADER.
@@ -8662,7 +8730,7 @@
 	(m32c_legitimate_address_p): Handle "++rii" addresses created by
 	m32c_legitimize_reload_address.
 
-2007-07-16  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2007-07-16  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
 	DECL_IN_SYSTEM_HEADER in sync.
@@ -8752,7 +8820,7 @@
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
 
-2007-07-14  Rafael ﾃ」ila de Espﾃｭndola  <espindola@google.com>
+2007-07-14  Rafael ﾃvila de Espﾃｭndola  <espindola@google.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
 	is set.

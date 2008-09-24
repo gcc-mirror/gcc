@@ -260,3 +260,15 @@ Specify alignment of structure fields default/natural
 mprioritize-restricted-insns=
 Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority)
 Specify scheduling priority for dispatch slot restricted insns
+
+msingle-float
+Target RejectNegative Var(rs6000_single_float)
+Single-precision floating point unit
+
+mdouble-float
+Target RejectNegative Var(rs6000_double_float)
+Double-precision floating point unit
+
+msimple-fpu
+Target RejectNegative Var(rs6000_simple_fpu)
+Floating point unit does not support divide & sqrt
