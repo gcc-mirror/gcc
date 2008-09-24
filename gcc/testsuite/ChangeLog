@@ -1,3 +1,7 @@
+2008-09-24  Steve Ellcey  <sje@cup.hp.com>
+
+	*  gcc.dg/vect/O3-vect-pr34223.c: Check vect_int_mult.
+
 2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/gomp/for-1.c: Test for columns.
