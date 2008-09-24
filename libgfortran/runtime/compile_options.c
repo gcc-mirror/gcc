@@ -140,10 +140,10 @@ set_options (int num, int options[])
 void
 init_compile_options (void)
 {
-  compile_options.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003 | GFC_STD_LEGACY;
+  compile_options.warn_std = GFC_STD_F95_DEL | GFC_STD_LEGACY;
   compile_options.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY;
+    | GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F95 | GFC_STD_F77
+    | GFC_STD_GNU | GFC_STD_LEGACY;
   compile_options.pedantic = 0;
   compile_options.dump_core = 0;
   compile_options.backtrace = 0;

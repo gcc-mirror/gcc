@@ -1,5 +1,10 @@
 2008-09-24  Tobias Burnus  <burnus@net-b.de>
 
+	* options.c (set_default_std_flags,gfc_init_options):
+	Add comment: keep in sync with libgfortran.
+
+2008-09-24  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37626
 	* trans-array.c (gfc_trans_deferred_array): Don't auto-deallocate
 	result variables.
