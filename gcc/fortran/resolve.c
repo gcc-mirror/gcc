@@ -7095,8 +7095,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
     {
       gfc_symbol *s;
       gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
-      if (s && (s->attr.flavor != FL_DERIVED
-		|| !gfc_compare_derived_types (s, sym->ts.derived)))
+      if (s && s->attr.flavor != FL_DERIVED)
 	{
 	  gfc_error ("The type '%s' cannot be host associated at %L "
 		     "because it is blocked by an incompatible object "
