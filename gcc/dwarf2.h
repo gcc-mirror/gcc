@@ -543,6 +543,7 @@ enum dwarf_location_atom
     DW_OP_GNU_push_tls_address = 0xe0,
     /* The following is for marking variables that are uninitialized.  */
     DW_OP_GNU_uninit     = 0xf0,
+    DW_OP_GNU_encoded_addr = 0xf1,
     /* HP extensions.  */
     DW_OP_HP_unknown     = 0xe0, /* Ouch, the same as GNU_push_tls_address.  */
     DW_OP_HP_is_value    = 0xe1,

@@ -1,3 +1,8 @@
+2008-09-24  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2.h (DW_OP_GNU_encoded_addr): New.
+	* unwind-dw2.c (execute_stack_op): Handle it.
+
 2008-09-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37539
