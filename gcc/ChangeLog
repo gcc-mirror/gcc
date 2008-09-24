@@ -1,3 +1,8 @@
+2008-09-24  David Edelsohn  <edelsohn@gnu.org>
+
+	Revert:
+	2008-09-24  Michael J. Eager  <eager@eagercon.com>
+
 2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.c (fname_decl): New location argument.
