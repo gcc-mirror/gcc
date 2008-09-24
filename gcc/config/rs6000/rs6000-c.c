@@ -297,8 +297,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__PAIRED__");
   if (TARGET_SOFT_FLOAT)
     builtin_define ("_SOFT_FLOAT");
-  if ((!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))
-      ||(TARGET_HARD_FLOAT && TARGET_FPRS && !TARGET_DOUBLE_FLOAT))
+  if (!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))
     builtin_define ("_SOFT_DOUBLE");
   /* Used by lwarx/stwcx. errata work-around.  */
   if (rs6000_cpu == PROCESSOR_PPC405)
