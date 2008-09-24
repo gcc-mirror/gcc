@@ -690,7 +690,7 @@ extern tree build_void_list_node (void);
 extern void start_fname_decls (void);
 extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
-extern tree fname_decl (unsigned, tree);
+extern tree fname_decl (location_t, unsigned, tree);
 
 extern void check_function_arguments (tree, int, tree *, tree);
 extern void check_function_arguments_recurse (void (*)

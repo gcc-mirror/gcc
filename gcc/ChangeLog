@@ -1,3 +1,29 @@
+2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-common.c (fname_decl): New location argument.
+	* c-common.h (fname_decl): Same.
+	* c-parser.c (c_lex_one_token): Use {warning,error}_at instead of
+	{warning,error}.
+	(c_parser_typeof_specifier): Same.
+	(c_parser_parms_list_declarator): Same.
+	(c_parser_asm_string_literal): Same.
+	(c_parser_compound_statement_nostart): Same.
+	(c_parser_label): Same.
+	(c_parser_do_statement): Same.
+	(c_parser_asm_statement): Same.
+	(c_parser_unary_expression): Same.
+	(c_parser_sizeof_expression): Same.
+	(c_parser_postfix_expression): Same.
+	(c_parser_pragma): Same.
+	(c_parser_omp_clause_collapse): Same.
+	(c_parser_omp_clause_num_threads): Same.
+	(c_parser_omp_clause_schedule): Same.
+	(c_parser_omp_all_clauses): Same.
+	(c_parser_omp_sections_scope): Same.
+	(c_parser_omp_for_loop): Same.  Pass condition's location to
+	c_objc_common_truthvalue_conversion.
+	(c_parser_enum_specifier): Remove comment.
+
 2008-09-24  Michael J. Eager  <eager@eagercon.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Single FP consts
@@ -115,6 +141,7 @@
 
 	* c-ppoutput.c (cb_used_define): Do nothing for a builtin node.
 
+>>>>>>> .r140641
 2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-tree.h: Add argument to c_objc_common_truthvalue_conversion,
