@@ -1,3 +1,9 @@
+2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/gomp/for-1.c: Test for columns.
+	* gcc.dg/func-outside-1.c: Same.
+	* gcc.dg/bitfld-7.c: Same.
+
 2008-09-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/utf-array.c: Fix syntax of dg-error stmts.

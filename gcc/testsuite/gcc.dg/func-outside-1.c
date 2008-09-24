@@ -2,8 +2,8 @@
    are OK there).  Test with no special options.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fshow-column" } */
 
-const char *a = __func__; /* { dg-warning "'__func__' is not defined outside of function scope" "undef" } */
+const char *a = __func__; /* { dg-warning "17:'__func__' is not defined outside of function scope" "undef" } */
 const char *b = __FUNCTION__;
 const char *c = __PRETTY_FUNCTION__;

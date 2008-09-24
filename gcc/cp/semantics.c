@@ -2165,7 +2165,7 @@ finish_fname (tree id)
 {
   tree decl;
 
-  decl = fname_decl (C_RID_CODE (id), id);
+  decl = fname_decl (input_location, C_RID_CODE (id), id);
   if (processing_template_decl)
     decl = DECL_NAME (decl);
   return decl;

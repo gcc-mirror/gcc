@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-fopenmp -fshow-column" } */
 
 void foo (int j, int k)
 {
@@ -23,7 +24,7 @@ void foo (int j, int k)
 
   /* Malformed parallel loops.  */
   #pragma omp for
-  i = 0;		/* { dg-error "for statement expected" } */
+  i = 0;		/* { dg-error "3:for statement expected" } */
   for ( ; i < 10; )
     {
       baz (i);
@@ -39,7 +40,7 @@ void foo (int j, int k)
     }
 
   #pragma omp for
-  for (i = 0; i < 10 && j > 4; i-=3)	/* { dg-error "invalid controlling predicate" } */
+  for (i = 0; i < 10 && j > 4; i-=3)	/* { dg-error "15:invalid controlling predicate" } */
     baz (i);
 
   #pragma omp for
