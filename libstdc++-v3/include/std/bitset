@@ -1070,7 +1070,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	{ return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 396. what are characters zero and one.
+      // 853. to_string needs updating with zero and one.
       template<class _CharT, class _Traits>
 	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
 	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
