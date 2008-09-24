@@ -1,3 +1,9 @@
+2008-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset: Adjust comment to reflect DR 853.
+	* include/debug/bitset: Likewise.
+	* doc/xml/manual/intro.xml: Add an entry for DR 853.
+
 2008-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Implement DR 396 [Ready].
