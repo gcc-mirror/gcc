@@ -148,14 +148,13 @@
 
 2008-09-23  Kai Tietz  <kai.tietz@onevision.com>
 
-	*config/i386/i386.c (ix86_function_ok_for_sibcall): Correct
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Correct
 	check for sibcall support for w64.
 
 2008-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ppoutput.c (cb_used_define): Do nothing for a builtin node.
 
->>>>>>> .r140641
 2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-tree.h: Add argument to c_objc_common_truthvalue_conversion,
