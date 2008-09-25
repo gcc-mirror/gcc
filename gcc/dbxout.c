@@ -3376,6 +3376,8 @@ dbxout_parms (tree parms)
 	       was passed.  */
 	    if (REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	      best_rtl = DECL_RTL (parms);
+	    else if (GET_CODE (DECL_INCOMING_RTL (parms)) == PARALLEL)
+	      best_rtl = XEXP (XVECEXP (DECL_INCOMING_RTL (parms), 0, 0), 0);
 	    else
 	      best_rtl = DECL_INCOMING_RTL (parms);
 
