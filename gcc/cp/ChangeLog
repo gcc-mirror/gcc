@@ -1,3 +1,9 @@
+2008-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37649
+	* name-lookup.c (maybe_process_template_type_declaration): Check
+	return value of push_template_decl_real for error_mark_node.
+
 2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* semantics.c (finish_fname): Pass location to fname_decl.
