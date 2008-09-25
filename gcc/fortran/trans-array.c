@@ -5621,7 +5621,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
-  if (sym->attr.allocatable && !sym->attr.save)
+  if (sym->attr.allocatable && !sym->attr.save && !sym->attr.result)
     {
       tmp = gfc_trans_dealloc_allocated (sym->backend_decl);
       gfc_add_expr_to_block (&fnblock, tmp);

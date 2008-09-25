@@ -1,10 +1,15 @@
+2008-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37626
+	* gfortran.dg/allocatable_function_4.f90: New test.
+
 2008-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/35945
-       * gfortran.dg/host_assoc_types_2.f90: New test.
+	PR fortran/35945
+	* gfortran.dg/host_assoc_types_2.f90: New test.
 
-       PR fortran/36700
-       * gfortran.dg/host_assoc_call_2.f90: New test.
+	PR fortran/36700
+	* gfortran.dg/host_assoc_call_2.f90: New test.
 
 2008-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -53,7 +58,7 @@
 2008-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
-        2008-04-08  Janis Johnson  <janis187@us.ibm.com>
+	2008-04-08  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/35620
 	* gcc.dg/dfp/pr35620.c: New test.

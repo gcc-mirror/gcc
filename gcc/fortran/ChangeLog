@@ -1,14 +1,20 @@
+2008-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37626
+	* trans-array.c (gfc_trans_deferred_array): Don't auto-deallocate
+	result variable.
+
 2008-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/35945
-       * resolve.c (resolve_fl_variable_derived):  Remove derived type
-       comparison for use associated derived types.  Host association
-       of a derived type will not arise if there is a local derived type
-       whose use name is the same.
+	PR fortran/35945
+	* resolve.c (resolve_fl_variable_derived):  Remove derived type
+	comparison for use associated derived types.  Host association
+	of a derived type will not arise if there is a local derived type
+	whose use name is the same.
 
-       PR fortran/36700
-       * match.c (gfc_match_call):  Use the existing symbol even if
-       it is a function.
+	PR fortran/36700
+	* match.c (gfc_match_call):  Use the existing symbol even if
+	it is a function.
 
 2008-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -66,7 +72,7 @@
 	array specs.
 
 2008-09-05  Daniel Kraft  <d@domob.eu>
- 
+
 	PR fortran/35837
 	* resolve.c (resolve_types): Restore gfc_current_ns on exit.
 	* symbol.c (gfc_save_all): Removed blank line.
