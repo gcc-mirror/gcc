@@ -1,3 +1,11 @@
+2008-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37504
+	* expr.c (gfc_check_pointer_assign): Allow assignment of
+	protected pointers.
+	* match.c (gfc_match_assignment,gfc_match_pointer_assignment):
+	Remove unreachable code.
+
 2008-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (set_default_std_flags,gfc_init_options):
