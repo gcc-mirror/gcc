@@ -1923,7 +1923,7 @@ __gnat_set_non_writable (char *name)
   __gnat_set_OWNER_ACL
     (wname, DENY_ACCESS,
      FILE_WRITE_DATA | FILE_APPEND_DATA |
-     FILE_WRITE_PROPERTIES | FILE_WRITE_ATTRIBUTES);
+     FILE_WRITE_EA | FILE_WRITE_ATTRIBUTES);
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
