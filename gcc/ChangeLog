@@ -1,3 +1,10 @@
+2008-09-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* combine.c (make_compound_operation): Handle the 'E' format.
+	(count_rtxs): Likewise.
+	(update_table_tick): Likewise.
+	(get_last_value_validate): Likewise.
+
 2008-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dbxout.c (dbxout_parms): Fetch the inner REG inside a PARALLEL.
