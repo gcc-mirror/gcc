@@ -1,3 +1,9 @@
+2008-09-25  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/37641
+	* adaint.c (__gnat_set_non_writable): Use FILE_WRITE_EA
+	instead of deprecated FILE_WRITE_PROPERTIES.
+
 2008-09-22  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Even when they
