@@ -1293,15 +1293,6 @@ gfc_match_assignment (void)
       return MATCH_NO;
     }
 
-  if (lvalue->symtree->n.sym->attr.is_protected
-      && lvalue->symtree->n.sym->attr.use_assoc)
-    {
-      gfc_current_locus = old_loc;
-      gfc_free_expr (lvalue);
-      gfc_error ("Setting value of PROTECTED variable at %C");
-      return MATCH_ERROR;
-    }
-
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
   if (m != MATCH_YES)
@@ -1352,14 +1343,6 @@ gfc_match_pointer_assignment (void)
   gfc_matching_procptr_assignment = 0;
   if (m != MATCH_YES)
     goto cleanup;
-
-  if (lvalue->symtree->n.sym->attr.is_protected
-      && lvalue->symtree->n.sym->attr.use_assoc)
-    {
-      gfc_error ("Assigning to a PROTECTED pointer at %C");
-      m = MATCH_ERROR;
-      goto cleanup;
-    }
 
   new_st.op = EXEC_POINTER_ASSIGN;
   new_st.expr = lvalue;

@@ -1,3 +1,8 @@
+2008-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37504
+	* gfortran.dg/protected_7.f90: New test.
+
 2008-09-24  Steve Ellcey  <sje@cup.hp.com>
 
 	*  gcc.dg/vect/O3-vect-pr34223.c: Check vect_int_mult.
