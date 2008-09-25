@@ -1,3 +1,8 @@
+2008-09-25 Sergei Dyshel <sergeid@il.ibm.com>
+
+      * matrix-reorg.c (transform_allocation_sites): Initializers 
+	added to avoid the warning.
+
 2008-09-25  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.c (free_nodes): New variable.
