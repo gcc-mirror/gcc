@@ -1,3 +1,11 @@
+2008-09-25  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (free_nodes): New variable.
+	(NEXT_FREE_NODE): New macro.
+	(cgraph_create_node): Reuse nodes from the free list.  Do not
+	update uid if doing so.
+	(cgraph_remove_node): Add the node to the free list.
+
 2008-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
