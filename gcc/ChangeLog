@@ -1,3 +1,8 @@
+2008-09-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md: Check cmp/branch fuse for cmp peephole
+	optimization.
+
 2008-09-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* combine.c (make_compound_operation): Handle the 'E' format.
@@ -11,7 +16,7 @@
 
 2008-09-25 Sergei Dyshel <sergeid@il.ibm.com>
 
-      * matrix-reorg.c (transform_allocation_sites): Initializers 
+	* matrix-reorg.c (transform_allocation_sites): Initializers 
 	added to avoid the warning.
 
 2008-09-25  Martin Jambor  <mjambor@suse.cz>
