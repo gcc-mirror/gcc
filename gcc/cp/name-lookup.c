@@ -4936,6 +4936,9 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 	  tree name = DECL_NAME (decl);
 
 	  decl = push_template_decl_real (decl, is_friend);
+	  if (decl == error_mark_node)
+	    return error_mark_node;
+
 	  /* If the current binding level is the binding level for the
 	     template parameters (see the comment in
 	     begin_template_parm_list) and the enclosing level is a class
