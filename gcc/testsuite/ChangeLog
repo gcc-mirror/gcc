@@ -1,3 +1,7 @@
+2008-09-25  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/slp-7.c: Add alignment attribute, change target tests.
+
 2008-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37649
