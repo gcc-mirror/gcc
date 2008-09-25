@@ -6834,7 +6834,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
   int mode_width = GET_MODE_BITSIZE (mode);
   rtx rhs, lhs;
   enum rtx_code next_code;
-  int i;
+  int i, j;
   rtx new_rtx = 0;
   rtx tem;
   const char *fmt;
@@ -7075,6 +7075,12 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	new_rtx = make_compound_operation (XEXP (x, i), next_code);
 	SUBST (XEXP (x, i), new_rtx);
       }
+    else if (fmt[i] == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	{
+	  new_rtx = make_compound_operation (XVECEXP (x, i, j), next_code);
+	  SUBST (XVECEXP (x, i, j), new_rtx);
+	}
 
   /* If this is a commutative operation, the changes to the operands
      may have made it noncanonical.  */
@@ -11190,7 +11196,7 @@ count_rtxs (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt;
-  int i, ret = 1;
+  int i, j, ret = 1;
 
   if (GET_RTX_CLASS (code) == '2'
       || GET_RTX_CLASS (code) == 'c')
@@ -11220,6 +11226,9 @@ count_rtxs (rtx x)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
       ret += count_rtxs (XEXP (x, i));
+    else if (fmt[i] == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	ret += count_rtxs (XVECEXP (x, i, j));
 
   return ret;
 }
@@ -11233,7 +11242,7 @@ update_table_tick (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
-  int i;
+  int i, j;
 
   if (code == REG)
     {
@@ -11251,8 +11260,6 @@ update_table_tick (rtx x)
     }
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    /* Note that we can't have an "E" in values stored; see
-       get_last_value_validate.  */
     if (fmt[i] == 'e')
       {
 	/* Check for identical subexpressions.  If x contains
@@ -11289,6 +11296,9 @@ update_table_tick (rtx x)
 
 	update_table_tick (XEXP (x, i));
       }
+    else if (fmt[i] == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	update_table_tick (XVECEXP (x, i, j));
 }
 
 /* Record that REG is set to VALUE in insn INSN.  If VALUE is zero, we
@@ -11696,7 +11706,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
   rtx x = *loc;
   const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
   int len = GET_RTX_LENGTH (GET_CODE (x));
-  int i;
+  int i, j;
 
   if (REG_P (x))
     {
@@ -11774,9 +11784,11 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 				       replace) == 0)
 	    return 0;
 	}
-      /* Don't bother with these.  They shouldn't occur anyway.  */
       else if (fmt[i] == 'E')
-	return 0;
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (get_last_value_validate (&XVECEXP (x, i, j),
+				       insn, tick, replace) == 0)
+	    return 0;
     }
 
   /* If we haven't found a reason for it to be invalid, it is valid.  */
