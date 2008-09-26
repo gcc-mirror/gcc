@@ -1641,7 +1641,7 @@ build_dt (tree function, gfc_code * code)
   tree tmp, var;
   gfc_expr *nmlname;
   gfc_namelist *nml;
-  unsigned int mask = IOPARM_dt_f2003;
+  unsigned int mask = 0;
 
   gfc_start_block (&block);
   gfc_init_block (&post_block);
