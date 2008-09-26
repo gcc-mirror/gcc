@@ -1,3 +1,8 @@
+2008-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37645
+	* gcc.dg/pr37645.c: New test.
+
 2008-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37626

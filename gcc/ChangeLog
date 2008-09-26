@@ -1,3 +1,9 @@
+2008-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37645
+	* c-common.c (handle_weakref_attribute): Ignore the attribute unless
+	the decl is a VAR_DECL or FUNCTION_DECL.
+
 2008-09-24  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2.h (DW_OP_GNU_encoded_addr): New.
