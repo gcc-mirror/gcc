@@ -1,3 +1,9 @@
+2008-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37576
+	* opts.c (common_handle_option): Don't call print_specific_help with
+	CL_SAVE as first argument.
+
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
             Steve Ellcey  <sje@cup.hp.com>
 
