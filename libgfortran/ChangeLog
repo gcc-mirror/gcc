@@ -1,3 +1,23 @@
+2008-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37498
+	* list_read.c (eat_separator): Revert previous patch and move
+	delim_status, decimal_status, and pad_status to gfc_unit.
+	(parse_real): Ditto. (read_real): Ditto.
+	* read.c (read_a): Likewise. (read_a_char4): Likewise.
+	(read_f): Likewise.
+	* inquire.c (inquire_via_unit): Add missing check for
+	IOPARM_INQUIRE_HAS_FLAGS2. (inquire_via_filename): Likewise.
+	* io.h (unit_sign_s): Move delim_status, decimal_status, and pad_status
+	to gfc_unit.
+	* transfer.c (read_sf): Ditto. (read_block_form): Ditto.
+	(formatted_transfer_scalar): Ditto. (data_transfer_init): Ditto.
+	* write.c (write_default_char4): Ditto. (write_utf8_char4): Ditto.
+	(write_character): Ditto. (write_real_g0): Ditto.
+	(list_formatted_write_scalar): Ditto. (nml_write_obj): Ditto.
+	(namelist_write): Ditto.
+	* write_float.def (calculate_sign): Ditto. (output_float): Ditto.
+
 2008-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	* runtime/compile_options.c (init_compile_options):

@@ -264,8 +264,7 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
 	  /* Without padding, terminate the I/O statement without assigning
 	     the value.  With padding, the value still needs to be assigned,
 	     so we can just continue with a short read.  */
-	  if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
-	      && dtp->u.p.pad_status == PAD_NO)
+	  if (dtp->u.p.current_unit->pad_status == PAD_NO)
 	    {
 	      if (no_error)
 		break;
@@ -333,8 +332,7 @@ read_block_form (st_parameter_dt *dtp, void *buf, size_t *nbytes)
             dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	  else
 	    {
-	      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
-		  && dtp->u.p.pad_status == PAD_NO)
+	      if (dtp->u.p.current_unit->pad_status == PAD_NO)
 		{
 		  /* Not enough data left.  */
 		  generate_error (&dtp->common, LIBERROR_EOR, NULL);
@@ -381,8 +379,7 @@ read_block_form (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
   if (nread != *nbytes)
     {				/* Short read, this shouldn't happen.  */
-      if ((dtp->common.flags & IOPARM_DT_HAS_F2003)
-	  && dtp->u.p.pad_status == PAD_YES)
+      if (dtp->u.p.current_unit->pad_status == PAD_YES)
 	*nbytes = nread;
       else
 	{
@@ -953,10 +950,8 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
   /* Set this flag so that commas in reads cause the read to complete before
      the entire field has been read.  The next read field will start right after
      the comma in the stream.  (Set to 0 for character reads).  */
-  dtp->u.p.sf_read_comma = 1;
-
-  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
-    dtp->u.p.sf_read_comma = dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
+  dtp->u.p.sf_read_comma =
+    dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA ? 0 : 1;
 
   dtp->u.p.line_buffer = scratch;
 
@@ -1375,12 +1370,12 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 
 	case FMT_DC:
 	  consume_data_flag = 0;
-	  dtp->u.p.decimal_status = DECIMAL_COMMA;
+	  dtp->u.p.current_unit->decimal_status = DECIMAL_COMMA;
 	  break;
 
 	case FMT_DP:
 	  consume_data_flag = 0;
-	  dtp->u.p.decimal_status = DECIMAL_POINT;
+	  dtp->u.p.current_unit->decimal_status = DECIMAL_POINT;
 	  break;
 
 	case FMT_P:
@@ -2073,57 +2068,52 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if (dtp->u.p.advance_status == ADVANCE_UNSPECIFIED)
     dtp->u.p.advance_status = ADVANCE_YES;
 
-  /* To maintain ABI check these only if we have the F2003 flag set.  */
-  if(cf & IOPARM_DT_HAS_F2003)
-    {
-      /* Check the decimal mode.  */
-      dtp->u.p.decimal_status
+  /* Check the decimal mode.  */
+  dtp->u.p.current_unit->decimal_status
 	= !(cf & IOPARM_DT_HAS_DECIMAL) ? DECIMAL_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->u.p.decimal, dtp->u.p.decimal_len,
 			decimal_opt, "Bad DECIMAL parameter in data transfer "
 			"statement");
 
-      if (dtp->u.p.decimal_status == DECIMAL_UNSPECIFIED)
-	dtp->u.p.decimal_status = dtp->u.p.current_unit->flags.decimal;
+  if (dtp->u.p.current_unit->decimal_status == DECIMAL_UNSPECIFIED)
+	dtp->u.p.current_unit->decimal_status = dtp->u.p.current_unit->flags.decimal;
 
-      /* Check the sign mode. */
-      dtp->u.p.sign_status
+  /* Check the sign mode. */
+  dtp->u.p.sign_status
 	= !(cf & IOPARM_DT_HAS_SIGN) ? SIGN_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->u.p.sign, dtp->u.p.sign_len, sign_opt,
 			"Bad SIGN parameter in data transfer statement");
   
-      if (dtp->u.p.sign_status == SIGN_UNSPECIFIED)
+  if (dtp->u.p.sign_status == SIGN_UNSPECIFIED)
 	dtp->u.p.sign_status = dtp->u.p.current_unit->flags.sign;
 
-      /* Check the blank mode.  */
-      dtp->u.p.blank_status
+  /* Check the blank mode.  */
+  dtp->u.p.blank_status
 	= !(cf & IOPARM_DT_HAS_BLANK) ? BLANK_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->u.p.blank, dtp->u.p.blank_len,
 			blank_opt,
 			"Bad BLANK parameter in data transfer statement");
   
-      if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
+  if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
 	dtp->u.p.blank_status = dtp->u.p.current_unit->flags.blank;
   
-      /* Check the delim mode.  */
-      dtp->u.p.delim_status
+  /* Check the delim mode.  */
+  dtp->u.p.current_unit->delim_status
 	= !(cf & IOPARM_DT_HAS_DELIM) ? DELIM_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->u.p.delim, dtp->u.p.delim_len,
-			delim_opt,
-			"Bad DELIM parameter in data transfer statement");
+	  delim_opt, "Bad DELIM parameter in data transfer statement");
   
-      if (dtp->u.p.delim_status == DELIM_UNSPECIFIED)
-	dtp->u.p.delim_status = dtp->u.p.current_unit->flags.delim;
+  if (dtp->u.p.current_unit->delim_status == DELIM_UNSPECIFIED)
+    dtp->u.p.current_unit->delim_status = dtp->u.p.current_unit->flags.delim;
 
-      /* Check the pad mode.  */
-      dtp->u.p.pad_status
+  /* Check the pad mode.  */
+  dtp->u.p.current_unit->pad_status
 	= !(cf & IOPARM_DT_HAS_PAD) ? PAD_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->u.p.pad, dtp->u.p.pad_len, pad_opt,
 			"Bad PAD parameter in data transfer statement");
   
-      if (dtp->u.p.pad_status == PAD_UNSPECIFIED)
-	dtp->u.p.pad_status = dtp->u.p.current_unit->flags.pad;
-    }
+  if (dtp->u.p.current_unit->pad_status == PAD_UNSPECIFIED)
+	dtp->u.p.current_unit->pad_status = dtp->u.p.current_unit->flags.pad;
 
   /* Sanity checks on the record number.  */
   if ((cf & IOPARM_DT_HAS_REC) != 0)
