@@ -1,3 +1,13 @@
+2008-09-26  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/37574
+	* tree-vectorizer.c (vect_is_simple_use): Fix indentation.
+	* tree-vect-transform.c (vect_get_constant_vectors): Use vectype
+	instead of vector_type for constants. Take computation out of loop.
+	(vect_get_vec_def_for_operand): Use only vectype for constant case,
+	and use only vector_type for invariant case.
+	(get_initial_def_for_reduction): Use vectype instead of vector_type.
+
 2008-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37645

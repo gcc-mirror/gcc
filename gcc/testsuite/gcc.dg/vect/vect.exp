@@ -242,6 +242,12 @@ lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# With --param ggc-min-expand=0 --param ggc-min-heapsize=0 
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "--param" "ggc-min-expand=0" "--param" "ggc-min-heapsize=0"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/ggc-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # With -O3
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-O3"
