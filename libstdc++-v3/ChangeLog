@@ -1,3 +1,17 @@
+2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
+            Steve Ellcey  <sje@cup.hp.com>
+
+	* configure: Regenerate for new libtool.
+	* aclocal.m4: Ditto.
+	* Makefile.in: Ditto.
+	* src/Makefile.in: Ditto.
+	* doc/Makefile.in: Ditto.
+	* po/Makefile.in: Ditto.
+	* libmath/Makefile.in: Ditto.
+	* include/Makefile.in: Ditto.
+	* libsupc++/Makefile.in: Ditto.
+	* testsuite/Makefile.in: Ditto.
+
 2008-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset: Adjust comment to reflect DR 853.
