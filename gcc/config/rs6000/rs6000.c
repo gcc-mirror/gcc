@@ -15438,6 +15438,8 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12, int copy_r11)
 
   if (TARGET_UPDATE)
     {
+      rtx par, set, mem;
+
       if (size > 32767)
 	{
 	  /* Need a note here so that try_split doesn't get confused.  */
@@ -15453,13 +15455,25 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12, int copy_r11)
 					    todec, stack_reg)
 			: gen_movdi_di_update (stack_reg, stack_reg,
 					    todec, stack_reg));
+      /* Since we didn't use gen_frame_mem to generate the MEM, grab
+	 it now and set the alias set/attributes. The above gen_*_update
+	 calls will generate a PARALLEL with the MEM set being the first
+	 operation. */
+      par = PATTERN (insn);
+      gcc_assert (GET_CODE (par) == PARALLEL);
+      set = XVECEXP (par, 0, 0);
+      gcc_assert (GET_CODE (set) == SET);
+      mem = SET_DEST (set);
+      gcc_assert (MEM_P (mem));
+      MEM_NOTRAP_P (mem) = 1;
+      set_mem_alias_set (mem, get_frame_alias_set ());
     }
   else
     {
       insn = emit_insn (TARGET_32BIT
 			? gen_addsi3 (stack_reg, stack_reg, todec)
 			: gen_adddi3 (stack_reg, stack_reg, todec));
-      emit_move_insn (gen_rtx_MEM (Pmode, stack_reg),
+      emit_move_insn (gen_frame_mem (Pmode, stack_reg),
 		      copy_r11
                       ? gen_rtx_REG (Pmode, 11)
                       : gen_rtx_REG (Pmode, 12));
