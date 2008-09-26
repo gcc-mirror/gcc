@@ -843,6 +843,52 @@ ira_rebuild_start_finish_chains (void)
   create_start_finish_chains ();
 }
 
+/* Compress allocno live ranges by removing program points where
+   nothing happens.  */
+static void
+remove_some_program_points_and_update_live_ranges (void)
+{
+  unsigned i;
+  int n;
+  int *map;
+  ira_allocno_t a;
+  ira_allocno_iterator ai;
+  allocno_live_range_t r;
+  bitmap born_or_died;
+  bitmap_iterator bi;
+  
+  born_or_died = ira_allocate_bitmap ();
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	{
+	  ira_assert (r->start <= r->finish);
+	  bitmap_set_bit (born_or_died, r->start);
+	  bitmap_set_bit (born_or_died, r->finish);
+	}
+    }
+  map = (int *) ira_allocate (sizeof (int) * ira_max_point);
+  n = 0;
+  EXECUTE_IF_SET_IN_BITMAP(born_or_died, 0, i, bi)
+    {
+      map[i] = n++;
+    }
+  ira_free_bitmap (born_or_died);
+  if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
+    fprintf (ira_dump_file, "Compressing live ranges: from %d to %d - %d%%\n",
+	     ira_max_point, n, 100 * n / ira_max_point);
+  ira_max_point = n;
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	{
+	  r->start = map[r->start];
+	  r->finish = map[r->finish];
+	}
+    }
+  ira_free (map);
+}
+
 /* Print live ranges R to file F.  */
 void
 ira_print_live_range_list (FILE *f, allocno_live_range_t r)
@@ -908,6 +954,19 @@ ira_create_allocno_live_ranges (void)
     print_live_ranges (ira_dump_file);
   /* Clean up.  */
   sparseset_free (allocnos_live);
+}
+
+/* Compress allocno live ranges.  */
+void
+ira_compress_allocno_live_ranges (void)
+{
+  remove_some_program_points_and_update_live_ranges ();
+  ira_rebuild_start_finish_chains ();
+  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+    {
+      fprintf (ira_dump_file, "Ranges after the compression:\n");
+      print_live_ranges (ira_dump_file);
+    }
 }
 
 /* Free arrays IRA_START_POINT_RANGES and IRA_FINISH_POINT_RANGES.  */

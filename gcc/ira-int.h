@@ -457,7 +457,7 @@ struct ira_allocno
 #define ALLOCNO_AVAILABLE_REGS_NUM(A) ((A)->available_regs_num)
 #define ALLOCNO_NEXT_BUCKET_ALLOCNO(A) ((A)->next_bucket_allocno)
 #define ALLOCNO_PREV_BUCKET_ALLOCNO(A) ((A)->prev_bucket_allocno)
-#define IRA_ALLOCNO_TEMP(A) ((A)->temp)
+#define ALLOCNO_TEMP(A) ((A)->temp)
 #define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
 #define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
 #define ALLOCNO_LIVE_RANGES(A) ((A)->live_ranges)
@@ -882,6 +882,7 @@ extern void ira_debug_live_range_list (allocno_live_range_t);
 extern void ira_debug_allocno_live_ranges (ira_allocno_t);
 extern void ira_debug_live_ranges (void);
 extern void ira_create_allocno_live_ranges (void);
+extern void ira_compress_allocno_live_ranges (void);
 extern void ira_finish_allocno_live_ranges (void);
 
 /* ira-conflicts.c */

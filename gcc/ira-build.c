@@ -2371,6 +2371,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
       ira_swap_allocno_copy_ends_if_necessary (cp);
     }
   rebuild_regno_allocno_maps ();
+  if (ira_max_point != ira_max_point_before_emit)
+    ira_compress_allocno_live_ranges ();
   ira_free (regno_top_level_allocno_map);
 }
 
@@ -2427,6 +2429,7 @@ ira_build (bool loops_p)
   ira_costs ();
   ira_create_allocno_live_ranges ();
   remove_unnecessary_regions ();
+  ira_compress_allocno_live_ranges ();
   loops_p = more_one_region_p ();
   if (loops_p)
     {
