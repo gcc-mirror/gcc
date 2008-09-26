@@ -1,3 +1,48 @@
+2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
+	    Steve Ellcey  <sje@cup.hp.com>
+
+	* configure: Regenerate for new libtool.
+	* Makefile.in: Ditto.
+	* aclocal.m4: Ditto.
+	* classpath/configure: Ditto.
+	* classpath/Makefile.in: Ditto.
+	* classpath/native/jni/Makefile.in: Ditto.
+	* classpath/native/jni/classpath/Makefile.in: Ditto.
+	* classpath/native/jni/midi-dssi/Makefile.in: Ditto.
+	* classpath/native/jni/gstreamer-peer/Makefile.in: Ditto.
+	* classpath/native/jni/gconf-peer/Makefile.in: Ditto.
+	* classpath/native/jni/java-io/Makefile.in: Ditto.
+	* classpath/native/jni/native-lib/Makefile.in: Ditto.
+	* classpath/native/jni/java-util/Makefile.in: Ditto.
+	* classpath/native/jni/java-lang/Makefile.in: Ditto.
+	* classpath/native/jni/midi-alsa/Makefile.in: Ditto.
+	* classpath/native/jni/java-nio/Makefile.in: Ditto.
+	* classpath/native/jni/java-net/Makefile.in: Ditto.
+	* classpath/native/jni/xmlj/Makefile.in: Ditto.
+	* classpath/native/jni/qt-peer/Makefile.in: Ditto.
+	* classpath/native/jni/gtk-peer/Makefile.in: Ditto.
+	* classpath/native/Makefile.in: Ditto.
+	* classpath/native/jawt/Makefile.in: Ditto.
+	* classpath/native/fdlibm/Makefile.in: Ditto.
+	* classpath/native/plugin/Makefile.in: Ditto.
+	* classpath/resource/Makefile.in: Ditto.
+	* classpath/scripts/Makefile.in: Ditto.
+	* classpath/tools/Makefile.in: Ditto.
+	* classpath/doc/Makefile.in: Ditto.
+	* classpath/doc/api/Makefile.in: Ditto.
+	* classpath/lib/Makefile.in: Ditto.
+	* classpath/external/Makefile.in: Ditto.
+	* classpath/external/jsr166/Makefile.in: Ditto.
+	* classpath/external/sax/Makefile.in: Ditto.
+	* classpath/external/w3c_dom/Makefile.in: Ditto.
+	* classpath/external/relaxngDatatype/Makefile.in: Ditto.
+	* classpath/include/Makefile.in: Ditto.
+	* classpath/aclocal.m4: Ditto.
+	* classpath/examples/Makefile.in: Ditto.
+	* include/Makefile.in: Ditto.
+	* testsuite/Makefile.in: Ditto.
+	* gcj/Makefile.in: Ditto.
+
 2008-09-17  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/8995:
