@@ -993,17 +993,17 @@ allocno_spill_priority_compare (splay_tree_key k1, splay_tree_key k2)
   int pri1, pri2, diff;
   ira_allocno_t a1 = (ira_allocno_t) k1, a2 = (ira_allocno_t) k2;
   
-  pri1 = (IRA_ALLOCNO_TEMP (a1)
+  pri1 = (ALLOCNO_TEMP (a1)
 	  / (ALLOCNO_LEFT_CONFLICTS_NUM (a1)
 	     * ira_reg_class_nregs[ALLOCNO_COVER_CLASS (a1)][ALLOCNO_MODE (a1)]
 	     + 1));
-  pri2 = (IRA_ALLOCNO_TEMP (a2)
+  pri2 = (ALLOCNO_TEMP (a2)
 	  / (ALLOCNO_LEFT_CONFLICTS_NUM (a2)
 	     * ira_reg_class_nregs[ALLOCNO_COVER_CLASS (a2)][ALLOCNO_MODE (a2)]
 	     + 1));
   if ((diff = pri1 - pri2) != 0)
     return diff;
-  if ((diff = IRA_ALLOCNO_TEMP (a1) - IRA_ALLOCNO_TEMP (a2)) != 0)
+  if ((diff = ALLOCNO_TEMP (a1) - ALLOCNO_TEMP (a2)) != 0)
     return diff;
   return ALLOCNO_NUM (a1) - ALLOCNO_NUM (a2);
 }
@@ -1078,7 +1078,7 @@ push_allocnos_to_stack (void)
 	  }
 	/* ??? Remove cost of copies between the coalesced
 	   allocnos.  */
-	IRA_ALLOCNO_TEMP (allocno) = cost;
+	ALLOCNO_TEMP (allocno) = cost;
       }
   /* Define place where to put uncolorable allocnos of the same cover
      class.  */
@@ -1170,7 +1170,7 @@ push_allocnos_to_stack (void)
 	      if (ALLOCNO_IN_GRAPH_P (i_allocno))
 		{
 		  i++;
-		  if (IRA_ALLOCNO_TEMP (i_allocno) == INT_MAX)
+		  if (ALLOCNO_TEMP (i_allocno) == INT_MAX)
 		    {
 		      ira_allocno_t a;
 		      int cost = 0;
@@ -1184,9 +1184,9 @@ push_allocnos_to_stack (void)
 			}
 		      /* ??? Remove cost of copies between the coalesced
 			 allocnos.  */
-		      IRA_ALLOCNO_TEMP (i_allocno) = cost;
+		      ALLOCNO_TEMP (i_allocno) = cost;
 		    }
-		  i_allocno_cost = IRA_ALLOCNO_TEMP (i_allocno);
+		  i_allocno_cost = ALLOCNO_TEMP (i_allocno);
 		  i_allocno_pri
 		    = (i_allocno_cost
 		       / (ALLOCNO_LEFT_CONFLICTS_NUM (i_allocno)
@@ -2316,6 +2316,53 @@ collect_spilled_coalesced_allocnos (int *pseudo_regnos, int n,
   return num;
 }
 
+/* Array of bitmaps of size IRA_MAX_POINT.  Bitmap for given point
+   contains numbers of coalesced allocnos living at this point.  */
+static regset_head *coalesced_allocnos_living_at_program_points;
+
+/* Return TRUE if coalesced allocnos represented by ALLOCNO live at
+   program points of coalesced allocnos with number N.  */
+static bool
+coalesced_allocnos_live_at_points_p (ira_allocno_t allocno, int n)
+{
+  int i;
+  ira_allocno_t a;
+  allocno_live_range_t r;
+
+  for (a = ALLOCNO_NEXT_COALESCED_ALLOCNO (allocno);;
+       a = ALLOCNO_NEXT_COALESCED_ALLOCNO (a))
+    {
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	for (i = r->start; i <= r->finish; i++)
+	  if (bitmap_bit_p (&coalesced_allocnos_living_at_program_points[i], n))
+	      return true;
+      if (a == allocno)
+	break;
+    }
+  return false;
+}
+
+/* Mark program points where coalesced allocnos represented by ALLOCNO
+   live.  */
+static void
+set_coalesced_allocnos_live_points (ira_allocno_t allocno)
+{
+  int i, n;
+  ira_allocno_t a;
+  allocno_live_range_t r;
+
+  n = ALLOCNO_TEMP (allocno);
+  for (a = ALLOCNO_NEXT_COALESCED_ALLOCNO (allocno);;
+       a = ALLOCNO_NEXT_COALESCED_ALLOCNO (a))
+    {
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	for (i = r->start; i <= r->finish; i++)
+	  bitmap_set_bit (&coalesced_allocnos_living_at_program_points[i], n);
+      if (a == allocno)
+	break;
+    }
+}
+
 /* We have coalesced allocnos involving in copies.  Coalesce allocnos
    further in order to share the same memory stack slot.  Allocnos
    representing sets of allocnos coalesced before the call are given
@@ -2324,10 +2371,15 @@ collect_spilled_coalesced_allocnos (int *pseudo_regnos, int n,
 static bool
 coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
 {
-  int i, j;
+  int i, j, last_coalesced_allocno_num;
   ira_allocno_t allocno, a;
   bool merged_p = false;
 
+  coalesced_allocnos_living_at_program_points
+    = (regset_head *) ira_allocate (sizeof (regset_head) * ira_max_point);
+  for (i = 0; i < ira_max_point; i++)
+    INIT_REG_SET (&coalesced_allocnos_living_at_program_points[i]);
+  last_coalesced_allocno_num = 0;
   /* Coalesce non-conflicting spilled allocnos preferring most
      frequently used.  */
   for (i = 0; i < num; i++)
@@ -2341,12 +2393,23 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
       for (j = 0; j < i; j++)
 	{
 	  a = spilled_coalesced_allocnos[j];
-	  if (ALLOCNO_FIRST_COALESCED_ALLOCNO (a) != a
-	      || (ALLOCNO_REGNO (a) < ira_reg_equiv_len
-		  && (ira_reg_equiv_invariant_p[ALLOCNO_REGNO (a)]
-		      || ira_reg_equiv_const[ALLOCNO_REGNO (a)] != NULL_RTX))
-	      || coalesced_allocno_conflict_p (allocno, a, true))
-	    continue;
+	  if (ALLOCNO_FIRST_COALESCED_ALLOCNO (a) == a
+	      && (ALLOCNO_REGNO (a) >= ira_reg_equiv_len
+		  || (! ira_reg_equiv_invariant_p[ALLOCNO_REGNO (a)]
+		      && ira_reg_equiv_const[ALLOCNO_REGNO (a)] == NULL_RTX))
+	      && ! coalesced_allocnos_live_at_points_p (allocno,
+							ALLOCNO_TEMP (a)))
+	    break;
+	}
+      if (j >= i)
+	{
+	  /* No coalescing: set up number for coalesced allocnos
+	     represented by ALLOCNO.  */
+	  ALLOCNO_TEMP (allocno) = last_coalesced_allocno_num++;
+	  set_coalesced_allocnos_live_points (allocno);
+	}
+      else
+	{
 	  allocno_coalesced_p = true;
 	  merged_p = true;
 	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
@@ -2354,10 +2417,15 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
 		     "      Coalescing spilled allocnos a%dr%d->a%dr%d\n",
 		     ALLOCNO_NUM (allocno), ALLOCNO_REGNO (allocno),
 		     ALLOCNO_NUM (a), ALLOCNO_REGNO (a));
+	  ALLOCNO_TEMP (allocno) = ALLOCNO_TEMP (a);
+	  set_coalesced_allocnos_live_points (allocno);
 	  merge_allocnos (a, allocno);
 	  ira_assert (ALLOCNO_FIRST_COALESCED_ALLOCNO (a) == a);
 	}
     }
+  for (i = 0; i < ira_max_point; i++)
+    CLEAR_REG_SET (&coalesced_allocnos_living_at_program_points[i]);
+  ira_free (coalesced_allocnos_living_at_program_points);
   return merged_p;
 }
 

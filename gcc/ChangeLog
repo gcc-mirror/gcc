@@ -1,3 +1,23 @@
+2008-09-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/37448
+	
+	* ira-int.h (IRA_ALLOCNO_TEMP): Rename to ALLOCNO_TEMP.
+	(ira_compress_allocno_live_ranges): New prototype.
+
+	* ira-color.c: Rename IRA_ALLOCNO_TEMP to ALLOCNO_TEMP.
+	(coalesced_allocnos_living_at_program_points): New.
+	(coalesced_allocnos_live_at_points_p,
+	set_coalesced_allocnos_live_points): New functions.
+	(coalesce_spill_slots): Rewrite.
+	
+	* ira-lives.c (remove_some_program_points_and_update_live_ranges,
+	ira_compress_allocno_live_ranges): New functions.
+
+	* ira-build.c (ira_flattening): Call
+	ira_compress_allocno_live_ranges.
+	(ira_build): Ditto.
+
 2008-09-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md: Check cmp/branch fuse for cmp peephole
