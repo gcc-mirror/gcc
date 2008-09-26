@@ -783,7 +783,9 @@ enum mips_code_readable_setting {
 				 && !TARGET_MIPS16)
 
 /* ISA has a three-operand multiplication instruction.  */
-#define ISA_HAS_DMUL3		(TARGET_64BIT && TARGET_OCTEON)
+#define ISA_HAS_DMUL3		(TARGET_64BIT				\
+				 && TARGET_OCTEON			\
+				 && !TARGET_MIPS16)
 
 /* ISA has the floating-point conditional move instructions introduced
    in mips4.  */
@@ -1011,22 +1013,22 @@ enum mips_code_readable_setting {
    : ISA_HAS_LL_SC)
 
 /* ISA includes the baddu instruction.  */
-#define ISA_HAS_BADDU		TARGET_OCTEON
+#define ISA_HAS_BADDU		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* ISA includes the bbit* instructions.  */
-#define ISA_HAS_BBIT		TARGET_OCTEON
+#define ISA_HAS_BBIT		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* ISA includes the cins instruction.  */
-#define ISA_HAS_CINS		TARGET_OCTEON
+#define ISA_HAS_CINS		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* ISA includes the exts instruction.  */
-#define ISA_HAS_EXTS		TARGET_OCTEON
+#define ISA_HAS_EXTS		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* ISA includes the seq and sne instructions.  */
-#define ISA_HAS_SEQ_SNE		TARGET_OCTEON
+#define ISA_HAS_SEQ_SNE		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* ISA includes the pop instruction.  */
-#define ISA_HAS_POP		TARGET_OCTEON
+#define ISA_HAS_POP		(TARGET_OCTEON && !TARGET_MIPS16)
 
 /* The CACHE instruction is available in non-MIPS16 code.  */
 #define TARGET_CACHE_BUILTIN (mips_isa >= 3)
