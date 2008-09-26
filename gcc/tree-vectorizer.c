@@ -2036,11 +2036,11 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, gimple *def_stmt,
       return true;
     }
   if (is_gimple_min_invariant (operand))
-   {
+    {
       *def = operand;
       *dt = vect_invariant_def;
       return true;
-   }
+    }
 
   if (TREE_CODE (operand) == PAREN_EXPR)
     {

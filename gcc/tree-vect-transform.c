@@ -1401,7 +1401,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   gimple stmt = VEC_index (gimple, stmts, 0);
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  int nunits;
   tree vec_cst;
   tree t = NULL_TREE;
   int j, number_of_places_left_in_vector;
@@ -1410,12 +1410,33 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   int group_size = VEC_length (gimple, stmts);
   unsigned int vec_num, i;
   int number_of_copies = 1;
-  bool is_store = false;
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
-  bool constant_p;
+  bool constant_p, is_store;
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
-    is_store = true;
+    {
+      is_store = true;
+      op = gimple_assign_rhs1 (stmt);
+    }
+  else
+    {
+      is_store = false;
+      op = gimple_op (stmt, op_num + 1);
+    }
+
+  if (CONSTANT_CLASS_P (op))
+    {
+      vector_type = vectype;
+      constant_p = true;
+    }
+  else
+    {
+      vector_type = get_vectype_for_scalar_type (TREE_TYPE (op)); 
+      gcc_assert (vector_type);
+      constant_p = false;
+    }
+
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
   /* NUMBER_OF_COPIES is the number of times we need to use the same values in
      created vectors. It is greater than 1 if unrolling is performed. 
@@ -1436,18 +1457,15 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   number_of_copies = least_common_multiple (nunits, group_size) / group_size;
 
   number_of_places_left_in_vector = nunits;
-  constant_p = true;
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; VEC_iterate (gimple, stmts, i, stmt); i--)
         {
-	  if (is_store)
-	    op = gimple_assign_rhs1 (stmt);
-	  else
-	    op = gimple_op (stmt, op_num + 1);
-	  if (!CONSTANT_CLASS_P (op))
-	    constant_p = false;
-
+          if (is_store)
+            op = gimple_assign_rhs1 (stmt);
+          else
+            op = gimple_op (stmt, op_num + 1);
+    
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           t = tree_cons (NULL_TREE, op, t);
 
@@ -1457,16 +1475,12 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
             {
               number_of_places_left_in_vector = nunits;
 
-	      vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-              gcc_assert (vector_type);
 	      if (constant_p)
 		vec_cst = build_vector (vector_type, t);
 	      else
 		vec_cst = build_constructor_from_list (vector_type, t);
-	      constant_p = true;
               VEC_quick_push (tree, voprnds,
-                              vect_init_vector (stmt, vec_cst, vector_type,
-						NULL));
+                              vect_init_vector (stmt, vec_cst, vector_type, NULL));
               t = NULL_TREE;
             }
         }
@@ -1886,7 +1900,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
   stmt_vec_info def_stmt_info = NULL;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   tree vec_inv;
   tree vec_cst;
@@ -1935,16 +1949,17 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
           {
             t = tree_cons (NULL_TREE, op, t);
           }
-        vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-        gcc_assert (vector_type);
-        vec_cst = build_vector (vector_type, t);
-
-        return vect_init_vector (stmt, vec_cst, vector_type, NULL);
+        vec_cst = build_vector (vectype, t);
+        return vect_init_vector (stmt, vec_cst, vectype, NULL);
       }
 
     /* Case 2: operand is defined outside the loop - loop invariant.  */
     case vect_invariant_def:
       {
+	vector_type = get_vectype_for_scalar_type (TREE_TYPE (def));
+	gcc_assert (vector_type);
+	nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+
 	if (scalar_def) 
 	  *scalar_def = def;
 
@@ -1958,8 +1973,6 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
           }
 
 	/* FIXME: use build_constructor directly.  */
-	vector_type = get_vectype_for_scalar_type (TREE_TYPE (def));
-        gcc_assert (vector_type);
         vec_inv = build_constructor_from_list (vector_type, t);
         return vect_init_vector (stmt, vec_inv, vector_type, NULL);
       }
@@ -2222,6 +2235,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
+  tree scalar_type = TREE_TYPE (vectype);
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree type = TREE_TYPE (init_val);
   tree vecdef;
@@ -2229,7 +2243,6 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   tree init_def;
   tree t = NULL_TREE;
   int i;
-  tree vector_type;
   bool nested_in_vect_loop = false; 
 
   gcc_assert (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type));
@@ -2250,15 +2263,14 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
     else
       *adjustment_def = init_val;
     /* Create a vector of zeros for init_def.  */
-    if (SCALAR_FLOAT_TYPE_P (type))
-      def_for_init = build_real (type, dconst0);
+    if (SCALAR_FLOAT_TYPE_P (scalar_type))
+      def_for_init = build_real (scalar_type, dconst0);
     else
-      def_for_init = build_int_cst (type, 0);
+      def_for_init = build_int_cst (scalar_type, 0);
+      
     for (i = nunits - 1; i >= 0; --i)
       t = tree_cons (NULL_TREE, def_for_init, t);
-    vector_type = get_vectype_for_scalar_type (TREE_TYPE (def_for_init));
-    gcc_assert (vector_type);
-    init_def = build_vector (vector_type, t);
+    init_def = build_vector (vectype, t);
     break;
 
   case MIN_EXPR:
@@ -6008,7 +6020,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
   for (i = mask_nunits - 1; i >= 0; --i)
     t = tree_cons (NULL_TREE, build_int_cst (mask_element_type, mask_array[i]),
                    t);
-
   mask_vec = build_vector (mask_type, t);
   mask = vect_init_vector (stmt, mask_vec, mask_type, NULL);
 
