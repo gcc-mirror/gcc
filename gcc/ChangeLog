@@ -1,5 +1,18 @@
 2008-09-25  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR middle-end/37535
+
+	* ira-lives.c (mark_reg_live, mark_reg_dead): New functions.
+	(mark_ref_live, mark_ref_dead): Use them.
+	(def_conflicts_with_inputs_p): Remove.
+	(mark_early_clobbers): New function.
+	(process_bb_node_lives): Call preprocess_constraints and
+	mark_early_clobbers.
+
+	* doc/rtl.texi (clobber): Change how RA deals with clobbers.
+
+2008-09-25  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR middle-end/37448
 	
 	* ira-int.h (IRA_ALLOCNO_TEMP): Rename to ALLOCNO_TEMP.
