@@ -763,9 +763,17 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   system.ads<system-solaris-sparcv9.ads
 
   ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
-    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+    ifeq ($(strip $(MULTISUBDIR)),/sparcv9)
+      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+    else
+      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+    endif
   else
-    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+    ifeq ($(strip $(MULTISUBDIR)),/sparcv7)
+      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+    else
+      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+    endif
   endif
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb
