@@ -1,3 +1,9 @@
+2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
+            Steve Ellcey  <sje@cup.hp.com>
+
+	* configure: Regenerate for new libtool.
+	* aclocal.m4: Ditto.
+
 2008-09-26  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Use correct
