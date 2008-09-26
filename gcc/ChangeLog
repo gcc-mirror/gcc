@@ -1,7 +1,12 @@
+2008-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37645
+	* c-common.c (handle_weakref_attribute): Ignore the attribute unless
+	the decl is a VAR_DECL or FUNCTION_DECL.
+
 2008-09-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37535
-
 	* ira-lives.c (mark_reg_live, mark_reg_dead): New functions.
 	(mark_ref_live, mark_ref_dead): Use them.
 	(def_conflicts_with_inputs_p): Remove.
@@ -14,7 +19,6 @@
 2008-09-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37448
-	
 	* ira-int.h (IRA_ALLOCNO_TEMP): Rename to ALLOCNO_TEMP.
 	(ira_compress_allocno_live_ranges): New prototype.
 
