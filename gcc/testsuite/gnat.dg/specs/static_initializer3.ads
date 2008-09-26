@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 with Unchecked_Conversion;
 
 package Static_Initializer3 is

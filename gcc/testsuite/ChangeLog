@@ -1,3 +1,8 @@
+2008-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/static_initializer4.ads: New test.
+	* gnat.dg/specs/static_initializer3.ads: Add missing marker.
+
 2008-09-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/compat/struct-layout-1_x1.h: Add __SIZE_TYPE__ cast

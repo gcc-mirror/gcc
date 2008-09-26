@@ -734,10 +734,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
 	  {
 	    /* No point in jumping through all the hoops needed in order
-	       to support BIGGEST_ALIGNMENT if we don't really have to.  */
+	       to support BIGGEST_ALIGNMENT if we don't really have to.
+	       So we cap to the smallest alignment that corresponds to
+	       a known efficient memory access pattern of the target.  */
 	    unsigned int align_cap = Is_Atomic (gnat_entity)
 				     ? BIGGEST_ALIGNMENT
-				     : get_mode_alignment (word_mode);
+				     : get_mode_alignment (ptr_mode);
 
 	    if (!host_integerp (TYPE_SIZE (gnu_type), 1)
 		|| compare_tree_int (TYPE_SIZE (gnu_type), align_cap) >= 0)
