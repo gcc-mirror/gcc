@@ -1,13 +1,13 @@
 # lt~obsolete.m4 -- aclocal satisfying obsolete definitions.    -*-Autoconf-*-
 #
-# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
-# Written by Scott James Remnant.
+#   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+#   Written by Scott James Remnant, 2004.
 #
 # This file is free software; the Free Software Foundation gives
 # unlimited permission to copy and/or distribute it, with or without
 # modifications, as long as this notice is preserved.
 
-# serial 2
+# serial 4 lt~obsolete.m4
 
 # These exist entirely to fool aclocal when bootstrapping libtool.
 #
@@ -31,6 +31,9 @@
 # Yes, that means every name once taken will need to remain here until
 # we give up compatibility with versions before 1.7, at which point
 # we need to keep only those names which we still refer to.
+
+# This is to help aclocal find these macros, as it can't see m4_define.
+AC_DEFUN([LTOBSOLETE_VERSION], [m4_if([1])])
 
 m4_ifndef([AC_LIBTOOL_LINKER_OPTION],	[AC_DEFUN([AC_LIBTOOL_LINKER_OPTION])])
 m4_ifndef([AC_PROG_EGREP],		[AC_DEFUN([AC_PROG_EGREP])])

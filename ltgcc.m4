@@ -30,6 +30,7 @@ _LT_COMPILER_BOILERPLATE
 _LT_LINKER_BOILERPLATE
 
 # Allow CC to be a program name with arguments.
+GCC=yes
 compiler=$CC
 _LT_TAGVAR(compiler, $1)=$CC
 _LT_CC_BASENAME([$compiler])
@@ -49,7 +50,6 @@ if test -n "$compiler"; then
   _LT_COMPILER_C_O($1)
   _LT_COMPILER_FILE_LOCKS($1)
   _LT_LINKER_SHLIBS($1)
-  _LT_SYS_DYNAMIC_LINKER($1)
   _LT_LINKER_HARDCODE_LIBPATH($1)
 
   _LT_CONFIG($1)

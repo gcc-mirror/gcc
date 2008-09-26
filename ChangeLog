@@ -1,3 +1,13 @@
+2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	* libtool.m4: Update to libtool 2.2.6.
+	* lt~obsolete.m4: Update to libtool 2.2.6.
+	* ltmain.sh: Update to libtool 2.2.6.
+	* ltsugar.m4: Update to libtool 2.2.6.
+	* ltversion.m4: Update to libtool 2.2.6.
+	* ltoptions.m4: Update to libtool 2.2.6.
+	* ltgcc.m4: Update to match changes from libtool 2.2.6.
+
 2008-09-22  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
