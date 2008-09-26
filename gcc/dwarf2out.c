@@ -9890,6 +9890,48 @@ concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode,
   return cc_loc_result;
 }
 
+/* Try to handle TLS MEMs, for which mem_loc_descriptor on XEXP (mem, 0)
+   failed.  */
+
+static dw_loc_descr_ref
+tls_mem_loc_descriptor (rtx mem)
+{
+  tree base;
+  dw_loc_descr_ref loc_result, loc_result2;
+
+  if (MEM_EXPR (mem) == NULL_TREE || MEM_OFFSET (mem) == NULL_RTX)
+    return NULL;
+
+  base = get_base_address (MEM_EXPR (mem));
+  if (base == NULL
+      || TREE_CODE (base) != VAR_DECL
+      || !DECL_THREAD_LOCAL_P (base))
+    return NULL;
+
+  loc_result = loc_descriptor_from_tree_1 (MEM_EXPR (mem), 2);
+  if (loc_result == NULL)
+    return NULL;
+
+  if (INTVAL (MEM_OFFSET (mem)))
+    {
+      if (INTVAL (MEM_OFFSET (mem)) >= 0)
+	add_loc_descr (&loc_result,
+		       new_loc_descr (DW_OP_plus_uconst,
+				      INTVAL (MEM_OFFSET (mem)), 0));
+      else
+	{
+	  loc_result2 = mem_loc_descriptor (MEM_OFFSET (mem), GET_MODE (mem),
+					    VAR_INIT_STATUS_INITIALIZED);
+	  if (loc_result2 == 0)
+	    return NULL;
+	  add_loc_descr (&loc_result, loc_result2);
+	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_plus, 0, 0));
+	}
+    }
+
+  return loc_result;
+}
+
 /* The following routine converts the RTL for a variable or parameter
    (resident in memory) into an equivalent Dwarf representation of a
    mechanism for getting the address of that same variable onto the top of a
@@ -9963,6 +10005,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case MEM:
       mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
 					   VAR_INIT_STATUS_INITIALIZED);
+      if (mem_loc_result == NULL)
+	mem_loc_result = tls_mem_loc_descriptor (rtl);
       if (mem_loc_result != 0)
 	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
@@ -10045,9 +10089,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 					  INTVAL (XEXP (rtl, 1)), 0));
 	  else
 	    {
-	      add_loc_descr (&mem_loc_result,
-			     mem_loc_descriptor (XEXP (rtl, 1), mode,
-						 VAR_INIT_STATUS_INITIALIZED));
+	      dw_loc_descr_ref mem_loc_result2
+		= mem_loc_descriptor (XEXP (rtl, 1), mode,
+				      VAR_INIT_STATUS_INITIALIZED);
+	      if (mem_loc_result2 == 0)
+		break;
+	      add_loc_descr (&mem_loc_result, mem_loc_result2);
 	      add_loc_descr (&mem_loc_result,
 			     new_loc_descr (DW_OP_plus, 0, 0));
 	    }
@@ -10095,6 +10142,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case CONCATN:
       mem_loc_result = concatn_mem_loc_descriptor (rtl, mode,
 						   VAR_INIT_STATUS_INITIALIZED);
+      break;
+
+    case UNSPEC:
+      /* If delegitimize_address couldn't do anything with the UNSPEC, we
+	 can't express it in the debug info.  This can happen e.g. with some
+	 TLS UNSPECs.  */
       break;
 
     default:
@@ -10193,6 +10246,8 @@ loc_descriptor (rtx rtl, enum var_init_status initialized)
     case MEM:
       loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
 				       initialized);
+      if (loc_result == NULL)
+	loc_result = tls_mem_loc_descriptor (rtl);
       break;
 
     case CONCAT:
@@ -10225,6 +10280,8 @@ loc_descriptor (rtx rtl, enum var_init_status initialized)
 	/* Create the first one, so we have something to add to.  */
 	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
 				     initialized);
+	if (loc_result == NULL)
+	  return NULL;
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
 	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
 	for (i = 1; i < num_elem; i++)
@@ -10233,6 +10290,8 @@ loc_descriptor (rtx rtl, enum var_init_status initialized)
 
 	    temp = loc_descriptor (XEXP (RTVEC_ELT (par_elems, i), 0),
 				   initialized);
+	    if (temp == NULL)
+	      return NULL;
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
 	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
@@ -10311,7 +10370,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	       /* The way DW_OP_GNU_push_tls_address is specified, we
 	     	  can only look up addresses of objects in the current
 	     	  module.  */
-	      if (DECL_EXTERNAL (loc))
+	      if (DECL_EXTERNAL (loc) && !targetm.binds_local_p (loc))
 		return 0;
 	      first_op = INTERNAL_DW_OP_tls_addr;
 	      second_op = DW_OP_GNU_push_tls_address;
@@ -10433,7 +10492,10 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	if (offset != NULL_TREE)
 	  {
 	    /* Variable offset.  */
-	    add_loc_descr (&ret, loc_descriptor_from_tree_1 (offset, 0));
+	    ret1 = loc_descriptor_from_tree_1 (offset, 0);
+	    if (ret1 == 0)
+	      return 0;
+	    add_loc_descr (&ret, ret1);
 	    add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
 	  }
 

@@ -1,5 +1,15 @@
 2008-09-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37275
+	* dwarf2out.c (tls_mem_loc_descriptor): New function.
+	(mem_loc_descriptor): Use it for MEM.  For PLUS fail if second
+	mem_loc_descriptor failed.  Accept UNSPEC.
+	(loc_descriptor): Use tls_mem_loc_descriptor for MEM.  For PARALLEL
+	fail if one of the loc_descriptor calls for pieces failed.
+	(loc_descriptor_from_tree_1): Handle even DECL_EXTERNAL __thread vars,
+	as long as they bind locally.  For COMPONENT_REF, ARRAY_REF etc. fail
+	if loc_descriptor_from_tree_1 on offset failed.
+
 	PR middle-end/37576
 	* opts.c (common_handle_option): Don't call print_specific_help with
 	CL_SAVE as first argument.
