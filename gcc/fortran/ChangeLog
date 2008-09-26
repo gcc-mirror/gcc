@@ -1,5 +1,11 @@
 2008-09-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37580
+	* expr.c (gfc_check_pointer_assign): Add checks for pointer
+	remapping.
+
+2008-09-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37504
 	* expr.c (gfc_check_pointer_assign): Allow assignment of
 	protected pointers.

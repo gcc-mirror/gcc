@@ -1,5 +1,11 @@
 2008-09-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37580
+	* gfortran.dg/pointer_assign_5.f90: New test.
+	* gfortran.dg/pointer_assign_6.f90: New test.
+
+2008-09-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37504
 	* gfortran.dg/protected_7.f90: New test.
 

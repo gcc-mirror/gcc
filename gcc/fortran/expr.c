@@ -2923,6 +2923,32 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
       if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
 	pointer = 1;
+
+      if (ref->type == REF_ARRAY && ref->next == NULL)
+	{
+	  if (ref->u.ar.type == AR_FULL)
+	    break;
+
+	  if (ref->u.ar.type != AR_SECTION)
+	    {
+	      gfc_error ("Expected bounds specification for '%s' at %L",
+			 lvalue->symtree->n.sym->name, &lvalue->where);
+	      return FAILURE;
+	    }
+
+	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Bounds "
+			      "specification for '%s' in pointer assignment "
+                              "at %L", lvalue->symtree->n.sym->name,
+			      &lvalue->where) == FAILURE)
+            return FAILURE;
+
+	  gfc_error ("Pointer bounds remapping at %L is not yet implemented "
+		     "in gfortran", &lvalue->where);
+	  /* TODO: See PR 29785. Add checks that all lbounds are specified and
+	     either never or always the upper-bound; strides shall not be
+	     present.  */
+	  return FAILURE;
+	}
     }
 
   if (check_intent_in && lvalue->symtree->n.sym->attr.intent == INTENT_IN)
