@@ -404,10 +404,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       out += nbefore;
     }
   /* Output the decimal point.  */
-  if (dtp->common.flags & IOPARM_DT_HAS_F2003)
-    *(out++) = dtp->u.p.decimal_status == DECIMAL_POINT ? '.' : ',';
-  else
-    *(out++) = '.';
+  *(out++) = dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? '.' : ',';
 
   /* Output leading zeros after the decimal point.  */
   if (nzero > 0)

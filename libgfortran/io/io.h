@@ -541,9 +541,6 @@ typedef struct st_parameter_44
      kind.  */
   char value[32];
   gfc_offset size_used;
-  unit_pad pad_status;
-  unit_decimal decimal_status;
-  unit_delim delim_status;
 } st_parameter_44;
 
 typedef struct st_parameter_dt
@@ -646,6 +643,9 @@ typedef struct gfc_unit
 
   unit_mode mode;
   unit_flags flags;
+  unit_pad pad_status;
+  unit_decimal decimal_status;
+  unit_delim delim_status;
 
   /* recl                 -- Record length of the file.
      last_record          -- Last record number read or written
