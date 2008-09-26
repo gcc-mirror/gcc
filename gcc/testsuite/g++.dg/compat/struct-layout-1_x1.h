@@ -56,7 +56,7 @@ void test##n (void)						\
   info.als = __alignof__ (s##n);				\
   info.ala0 = __alignof__ (a##n[0]);				\
   info.ala3 = __alignof__ (a##n[3]);				\
-  if (((long) &a##n[3]) & (info.als - 1))			\
+  if (((long) (__SIZE_TYPE__) &a##n[3]) & (info.als - 1))			\
     FAIL (n, 1);						\
   i = 0; j = 0;							\
   ops								\

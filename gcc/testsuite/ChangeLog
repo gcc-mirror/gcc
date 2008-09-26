@@ -1,3 +1,8 @@
+2008-09-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/compat/struct-layout-1_x1.h: Add __SIZE_TYPE__ cast
+	to avoid pointer truncation warning.
+
 2008-09-26  Dorit Nuzman  <dorit@il.ibm.com>
 	
 	PR tree-optimization/37574
