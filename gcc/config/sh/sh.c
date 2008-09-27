@@ -7385,7 +7385,9 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		= std_gimplify_va_arg_expr (next_fp_tmp, subtype, pre_p, NULL);
 	      real = get_initialized_tmp_var (real, pre_p, NULL);
 
-	      result = build2 (COMPLEX_EXPR, type, real, imag);
+	      result = build2 (COMPLEX_EXPR, eff_type, real, imag);
+	      if (type != eff_type)
+		result = build1 (VIEW_CONVERT_EXPR, type, result);
 	      result = get_initialized_tmp_var (result, pre_p, NULL);
 	    }
 #endif /* FUNCTION_ARG_SCmode_WART */
