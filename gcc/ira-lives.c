@@ -209,15 +209,20 @@ clear_allocno_live (ira_allocno_t a)
   sparseset_clear_bit (allocnos_live, ALLOCNO_NUM (a));
 }
 
-/* Mark the register REG as live.  Store a 1 in hard_regs_live or
-   allocnos_live for this register or the corresponding allocno,
-   record how many consecutive hardware registers it actually
-   needs.  */
+/* Mark the register referenced by use or def REF as live
+   Store a 1 in hard_regs_live or allocnos_live for this register or
+   the corresponding allocno, record how many consecutive hardware
+   registers it actually needs.  */
+
 static void
-mark_reg_live (rtx reg)
+mark_ref_live (struct df_ref *ref)
 {
+  rtx reg;
   int regno;
 
+  reg = DF_REF_REG (ref);
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
   regno = REGNO (reg);
 
@@ -264,25 +269,32 @@ mark_reg_live (rtx reg)
     }
 }
 
-/* Mark the register referenced by use or def REF as live.  */
-static void
-mark_ref_live (struct df_ref *ref)
+/* Return true if the definition described by DEF conflicts with the
+   instruction's inputs.  */
+static bool
+def_conflicts_with_inputs_p (struct df_ref *def)
 {
-  rtx reg;
-
-  reg = DF_REF_REG (ref);
-  if (GET_CODE (reg) == SUBREG)
-    reg = SUBREG_REG (reg);
-  mark_reg_live (reg);
+  /* Conservatively assume that the condition is true for all clobbers.  */
+  return DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER);
 }
 
-/* Mark the register REG as dead.  Store a 0 in hard_regs_live or
+/* Mark the register referenced by definition DEF as dead, if the
+   definition is a total one.  Store a 0 in hard_regs_live or
    allocnos_live for the register.  */
 static void
-mark_reg_dead (rtx reg)
+mark_ref_dead (struct df_ref *def)
 {
+  unsigned int i;
+  rtx reg;
   int regno;
 
+  if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
+      || DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL))
+    return;
+
+  reg = DF_REF_REG (def);
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
   regno = REGNO (reg);
 
@@ -300,7 +312,6 @@ mark_reg_dead (rtx reg)
     }
   else if (! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno))
     {
-      unsigned int i;
       int last = regno + hard_regno_nregs[regno][GET_MODE (reg)];
       enum reg_class cover_class;
 
@@ -330,71 +341,6 @@ mark_reg_dead (rtx reg)
 	  regno++;
 	}
     }
-}
-
-/* Mark the register referenced by definition DEF as dead, if the
-   definition is a total one.  */
-static void
-mark_ref_dead (struct df_ref *def)
-{
-  rtx reg;
-
-  if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
-      || DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL))
-    return;
-
-  reg = DF_REF_REG (def);
-  if (GET_CODE (reg) == SUBREG)
-    reg = SUBREG_REG (reg);
-  mark_reg_dead (reg);
-}
-
-/* Mark early clobber registers of the current INSN as live (if
-   LIVE_P) or dead.  Return true if there are such registers.  */
-static bool
-mark_early_clobbers (rtx insn, bool live_p)
-{
-  int alt;
-  int def;
-  struct df_ref **def_rec;
-  bool set_p = false;
-  bool asm_p = asm_noperands (PATTERN (insn)) >= 0;
-
-  if (asm_p)
-    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-      if (DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MUST_CLOBBER))
-	{
-	  if (live_p)
-	    mark_ref_live (*def_rec);
-	  else
-	    mark_ref_dead (*def_rec);
-	  set_p = true;
-	}
-
-  for (def = 0; def < recog_data.n_operands; def++)
-    {
-      rtx dreg = recog_data.operand[def];
-      
-      if (GET_CODE (dreg) == SUBREG)
-	dreg = SUBREG_REG (dreg);
-      if (! REG_P (dreg))
-	continue;
-
-      for (alt = 0; alt < recog_data.n_alternatives; alt++)
-	if ((recog_op_alt[def][alt].earlyclobber)
-	    && (recog_op_alt[def][alt].cl != NO_REGS))
-	  break;
-
-      if (alt >= recog_data.n_alternatives)
-	continue;
-
-      if (live_p)
-	mark_reg_live (dreg);
-      else
-	mark_reg_dead (dreg);
-      set_p = true;
-    }
-  return set_p;
 }
 
 /* Checks that CONSTRAINTS permits to use only one hard register.  If
@@ -634,7 +580,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
   bitmap_iterator bi;
   bitmap reg_live_out;
   unsigned int px;
-  bool set_p;
 
   bb = loop_tree_node->bb;
   if (bb != NULL)
@@ -753,7 +698,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      }
 	  
 	  extract_insn (insn);
-	  preprocess_constraints ();
 	  process_single_reg_class_operands (false, freq);
 	  
 	  /* See which defined values die here.  */
@@ -789,12 +733,19 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
 	    mark_ref_live (*use_rec);
 
-	  set_p = mark_early_clobbers (insn, true);
+	  /* If any defined values conflict with the inputs, mark those
+	     defined values as live.  */
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (def_conflicts_with_inputs_p (*def_rec))
+	      mark_ref_live (*def_rec);
 
 	  process_single_reg_class_operands (true, freq);
 	  
-	  if (set_p)
-	    mark_early_clobbers (insn, false);
+	  /* See which of the defined values we marked as live are dead
+	     before the instruction.  */
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (def_conflicts_with_inputs_p (*def_rec))
+	      mark_ref_dead (*def_rec);
 
 	  curr_point++;
 	}
