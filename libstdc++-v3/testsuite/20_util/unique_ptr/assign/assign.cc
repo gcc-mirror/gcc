@@ -40,13 +40,20 @@ void
 test02()
 {
   std::unique_ptr<int[]> p1(new int(420));
-  std::unique_ptr<int[]> p2 = p1; // { dg-error "within this context" }
+  std::unique_ptr<int[]> p2 = p1;
 }
 
 void
 test03()
 {
   std::unique_ptr<int[2]> p1(new int[3]);
-  std::unique_ptr<int[2]> p2 = p1; // { dg-error "within this context" }
+  std::unique_ptr<int[2]> p2 = p1;
 }
-// { dg-excess-errors "is private" }
+
+// { dg-error "used here" "" { target *-*-* } 43 }
+// { dg-error "no matching" "" { target *-*-* } 49 }
+// { dg-error "used here" "" { target *-*-* } 50 }
+// { dg-error "candidates are" "" { target *-*-* } 215 }
+// { dg-error "deleted function" "" { target *-*-* } 215 }
+// { dg-error "deleted function" "" { target *-*-* } 362 }
+// { dg-excess-errors "note" }
