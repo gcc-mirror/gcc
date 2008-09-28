@@ -1,3 +1,8 @@
+2008-09-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Unset flag_dwarf2_cfi_asm
+	for SHmedia.
+
 2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
             Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
 
