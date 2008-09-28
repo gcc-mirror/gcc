@@ -1,3 +1,19 @@
+2008-09-28  Chris Fairles <cfairles@gcc.gnu.org>
+
+	* include/std/mutex (try_lock): Implement generic try_lock.
+	* testsuite/30_threads/try_lock/1.cc: New.
+	* testsuite/30_threads/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc: Likewise.
+	
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
             Steve Ellcey  <sje@cup.hp.com>
 
