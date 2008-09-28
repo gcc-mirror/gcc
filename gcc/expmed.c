@@ -949,13 +949,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 		      && bitpos + bitsize != GET_MODE_BITSIZE (mode));
 
       if (GET_MODE (value) != mode)
-	{
-	  if ((REG_P (value) || GET_CODE (value) == SUBREG)
-	      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (value)))
-	    value = gen_lowpart (mode, value);
-	  else
-	    value = convert_to_mode (mode, value, 1);
-	}
+	value = convert_to_mode (mode, value, 1);
 
       if (must_and)
 	value = expand_binop (mode, and_optab, value,
@@ -1348,7 +1342,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	       ? bitpos + bitsize == BITS_PER_WORD
 	       : bitpos == 0)))
       && ((!MEM_P (op0)
-	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode1),
 				     GET_MODE_BITSIZE (GET_MODE (op0)))
 	   && GET_MODE_SIZE (mode1) != 0
 	   && byte_offset % GET_MODE_SIZE (mode1) == 0)

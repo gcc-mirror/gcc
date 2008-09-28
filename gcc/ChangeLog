@@ -1,3 +1,9 @@
+2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (store_fixed_bit_field): Always use convert_to_mode in
+	order to convert between modes.
+	(extract_bit_field_1): Test TRULY_NOOP_TRUNCATION on the right mode.
+
 2008-09-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_gimplify_va_arg_expr): Use VIEW_CONVERT_EXPR
