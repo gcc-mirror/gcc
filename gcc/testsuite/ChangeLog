@@ -1,4 +1,10 @@
 2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/37640
+	* gcc.c-torture/compile/sync-3.c: New testcase to check that
+	addresses of non zero offset works.
+
+2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
             Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
 
 	PR tree-opt/36891

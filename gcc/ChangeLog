@@ -1,3 +1,9 @@
+2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/37640
+	* config/rs6000/rs6000.c (rs6000_expand_compare_and_swapqhi): Force
+	address to a register before taking the lower part.
+
 2008-09-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (OVERRIDE_OPTIONS): Unset flag_dwarf2_cfi_asm
