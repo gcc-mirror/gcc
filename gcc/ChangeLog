@@ -1,3 +1,11 @@
+2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+            Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
+
+	PR tree-opt/36891
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Set DECL_GIMPLE_REG_P on
+	the newly created variable.
+	Create a VECTOR_CST of all 1s for vector types.
+
 2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/36575
