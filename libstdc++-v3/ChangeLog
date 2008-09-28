@@ -1,3 +1,13 @@
+2008-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unique_ptr.h (unique_ptr<_Tp[]>::template<typename U>
+	void reset(U)): Add as deleted function, per DR 821 [Ready].
+	* include/bits/unique_ptr.h: Prefer everywhere deleted to private
+	member function declarations; minor formatting tweaks.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign.cc: Adjust DejaGNU
+	directives.
+
 2008-09-28  Chris Fairles <cfairles@gcc.gnu.org>
 
 	* include/std/mutex (try_lock): Implement generic try_lock.
