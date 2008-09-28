@@ -624,6 +624,8 @@ do {									\
 		sh_div_strategy = SH_DIV_INV;				\
 	    }								\
 	  TARGET_CBRANCHDI4 = 0;					\
+	  /* Assembler CFI isn't yet fully supported for SHmedia.  */	\
+	  flag_dwarf2_cfi_asm = 0;					\
 	}								\
     }									\
   else									\
