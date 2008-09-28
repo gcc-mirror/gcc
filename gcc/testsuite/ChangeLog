@@ -1,3 +1,7 @@
+2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/conv_decimal.adb: New test.
+
 2008-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
