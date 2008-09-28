@@ -41,6 +41,7 @@
 # include <c++0x_warning.h>
 #else
 
+#include <tuple>
 #include <cstddef>
 #include <chrono>
 #include <exception>
@@ -601,9 +602,81 @@ namespace std
     swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>&& __y)
     { __x.swap(__y); }
 
-  template<typename _L1, typename _L2, typename ..._L3>
+  template<int _Idx>
+    struct __unlock_impl
+    {
+      template<typename... _Lock>
+        static void
+        __do_unlock(tuple<_Lock&...>& __locks)
+        {
+	  std::get<_Idx>(__locks).unlock();
+	  __unlock_impl<_Idx - 1>::__do_unlock(__locks);
+	}
+    };
+  
+  template<>
+    struct __unlock_impl<-1>
+    {
+      template<typename... _Lock>
+        static void
+        __do_unlock(tuple<_Lock&...>&)
+        { }
+    };
+
+  template<int _Idx, bool _Continue = true>
+    struct __try_lock_impl
+    {
+      template<typename... _Lock>
+        static int
+        __do_try_lock(tuple<_Lock&...>& __locks)
+        {
+	  if(std::get<_Idx>(__locks).try_lock())
+	    {
+	      return __try_lock_impl<_Idx + 1,
+		_Idx + 2 < sizeof...(_Lock)>::__do_try_lock(__locks);
+	    }
+	  else
+	    {
+	      __unlock_impl<_Idx>::__do_unlock(__locks);
+	      return _Idx;
+	    }
+	}
+    };
+  
+  template<int _Idx>
+    struct __try_lock_impl<_Idx, false>
+    {
+      template<typename... _Lock>
+        static int
+        __do_try_lock(tuple<_Lock&...>& __locks)
+        {
+	  if(std::get<_Idx>(__locks).try_lock())
+	    return -1;
+	  else
+	    {
+	      __unlock_impl<_Idx>::__do_unlock(__locks);
+	      return _Idx;
+	    }
+	}
+    };
+  
+  /** @brief Generic try_lock.
+   *  @param __l1 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l2 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l3 Meets Mutex requirements (try_lock() may throw).
+   *  @return Returns -1 if all try_lock() calls return true. Otherwise returns 
+   *          a 0-based index corresponding to the argument that returned false.
+   *  @post Either all arguments are locked, or none will be.
+   *
+   *  Sequentially calls try_lock() on each argument.
+   */
+  template<typename _Lock1, typename _Lock2, typename... _Lock3>
     int
-    try_lock(_L1& __l1, _L2& __l2, _L3&... __l3);
+    try_lock(_Lock1& __l1, _Lock2& __l2, _Lock3&... __l3)
+    {
+      tuple<_Lock1&, _Lock2&, _Lock3&...> __locks(__l1, __l2, __l3...);
+      return __try_lock_impl<0>::__do_try_lock(__locks);
+    }
 
   template<typename _L1, typename _L2, typename ..._L3>
     void

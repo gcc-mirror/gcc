@@ -1,5 +1,7 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
+// { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -31,14 +33,40 @@
 // the GNU General Public License.
 
 #include <mutex>
+#include <system_error>
+#include <testsuite_hooks.h>
 
-void test01()
+int main()
 {
-  // assign
-  typedef std::recursive_mutex mutex_type;
-  mutex_type m1;
-  mutex_type m2(m1);
-}
+  bool test __attribute__((unused)) = true;
+  typedef std::mutex mutex_type;
+  typedef std::unique_lock<mutex_type> lock_type;
 
-// { dg-error "used here" "" { target *-*-* } 40 } 
-// { dg-error "deleted function" "" { target *-*-* } 128 }
+  try
+    {
+      mutex_type m1, m2, m3;
+      lock_type l1(m1, std::defer_lock), 
+	l2(m2, std::defer_lock),
+	l3(m3, std::defer_lock);
+
+      try
+	{
+	  int result = std::try_lock(l1, l2, l3);
+	  VERIFY( result == -1 );
+	}
+      catch (const std::system_error& e)
+	{
+	  VERIFY( false );
+	}
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  return 0;
+}
