@@ -835,7 +835,7 @@ div_and_round_double (enum tree_code code, int uns,
 	if (hden < 0)
 	  neg_double (lden, hden, &labs_den, &habs_den);
 
-	/* If (2 * abs (lrem) >= abs (lden)) */
+	/* If (2 * abs (lrem) >= abs (lden)), adjust the quotient.  */
 	mul_double ((HOST_WIDE_INT) 2, (HOST_WIDE_INT) 0,
 		    labs_rem, habs_rem, &ltwice, &htwice);
 
@@ -843,7 +843,7 @@ div_and_round_double (enum tree_code code, int uns,
 	     < (unsigned HOST_WIDE_INT) htwice)
 	    || (((unsigned HOST_WIDE_INT) habs_den
 		 == (unsigned HOST_WIDE_INT) htwice)
-		&& (labs_den < ltwice)))
+		&& (labs_den <= ltwice)))
 	  {
 	    if (*hquo < 0)
 	      /* quo = quo - 1;  */
