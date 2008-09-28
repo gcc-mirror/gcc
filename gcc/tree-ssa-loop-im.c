@@ -763,6 +763,7 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
 {
   gimple stmt, stmt1, stmt2;
   tree var, name, lhs, type;
+  tree real_one;
 
   stmt = gsi_stmt (*bsi);
   lhs = gimple_assign_lhs (stmt);
@@ -770,9 +771,24 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
 
   var = create_tmp_var (type, "reciptmp");
   add_referenced_var (var);
+  DECL_GIMPLE_REG_P (var) = 1;
+
+  /* For vectors, create a VECTOR_CST full of 1's.  */
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      int i, len;
+      tree list = NULL_TREE;
+      real_one = build_real (TREE_TYPE (type), dconst1);
+      len = TYPE_VECTOR_SUBPARTS (type);
+      for (i = 0; i < len; i++)
+	list = tree_cons (NULL, real_one, list);
+      real_one = build_vector (type, list);
+    }
+  else
+    real_one = build_real (type, dconst1);
 
   stmt1 = gimple_build_assign_with_ops (RDIV_EXPR,
-		var, build_real (type, dconst1), gimple_assign_rhs2 (stmt));
+		var, real_one, gimple_assign_rhs2 (stmt));
   name = make_ssa_name (var, stmt1);
   gimple_assign_set_lhs (stmt1, name);
 
