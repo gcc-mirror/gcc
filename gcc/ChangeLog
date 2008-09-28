@@ -1,5 +1,10 @@
 2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR middle-end/36575
+	* fold-const (div_and_round_double) <ROUND_DIV_EXPR>: Fix typo.
+
+2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* expmed.c (store_fixed_bit_field): Always use convert_to_mode in
 	order to convert between modes.
 	(extract_bit_field_1): Test TRULY_NOOP_TRUNCATION on the right mode.
