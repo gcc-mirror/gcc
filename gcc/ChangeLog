@@ -1,3 +1,7 @@
+2008-09-11  Jeff Law <law@redhat.com>
+
+	* reload1.c (alter_reg): Add missing curly braces.
+
 2008-09-29  Michael J. Eager  <eager@eagercon.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Single FP consts
