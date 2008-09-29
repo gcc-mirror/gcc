@@ -1,4 +1,10 @@
-2008-09-11  Jeff Law <law@redhat.com>
+2008-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Force op0 to
+	non-constant memory if it cannot be forced to constant memory.
+	Overhaul surrounding code and factor out common condition.
+
+2008-09-29  Jeff Law <law@redhat.com>
 
 	* reload1.c (alter_reg): Add missing curly braces.
 
