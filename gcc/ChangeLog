@@ -1,3 +1,7 @@
+2008-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (constant_size): Use HOST_WIDE_INT in parameter type.
+
 2008-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* ifcvt.c (noce_emit_store_flag): If using condition from original

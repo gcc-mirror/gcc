@@ -4990,7 +4990,7 @@ static void record_comdat_symbol_number (dw_die_ref, htab_t, unsigned);
 static void add_sibling_attributes (dw_die_ref);
 static void build_abbrev_table (dw_die_ref);
 static void output_location_lists (dw_die_ref);
-static int constant_size (long unsigned);
+static int constant_size (unsigned HOST_WIDE_INT);
 static unsigned long size_of_die (dw_die_ref);
 static void calc_die_sizes (dw_die_ref);
 static void mark_dies (dw_die_ref);
@@ -7507,7 +7507,7 @@ build_abbrev_table (dw_die_ref die)
 /* Return the power-of-two number of bytes necessary to represent VALUE.  */
 
 static int
-constant_size (long unsigned int value)
+constant_size (unsigned HOST_WIDE_INT value)
 {
   int log;
 
