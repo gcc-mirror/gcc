@@ -1,3 +1,70 @@
+2008-09-29  Michael J. Eager  <eager@eagercon.com>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Single FP consts
+	are easy.
+	* config/rs6000/rs6000.c (rs6000_override_options): Move
+	rs6000_init_hard_regno_mode_ok after all options changed.
+	Set rs6000_single_float, rs6000_double_float if TARGET_HARD_FLOAT.
+	(rs6000_handle_option): Process -msingle-float, -mdouble-float,
+	-msimple-fpu flags.  Add warning messages if single FP not configured.
+	(rs6000_file_start): Output gnu_attribute for single-float.
+	(legitimate_lo_sum_address_p): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_emit_move): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(function_arg_advance): Likewise (partial conversion).
+	(setup_incoming_varargs): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_gimplify_va_arg): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(rs6000_split_multireg_move): Condition on TARGET_DOUBLE_FLOAT.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_function_value): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(rs6000_libcall_value): Likewise.
+	* config/rs6000/rs6000.h (TARGET_SINGLE_FLOAT): New default to 1.
+	(TARGET_DOUBLE_FLOAT): New default to 1
+	(TARGET_SIMPLE_FPU): New default to 0
+	(TARGET_SINGLE_FPU): New default to 0
+	(TARGET_SINGLE_FLOAT_MODE): New.
+	(TARGET_DOUBLE_FLOAT_MODE): New.
+	* config/rs6000/singlefp.h: New; redefine TARGET_SINGLE_FLOAT,
+	TARGET_DOUBLE_FLOAT, TARGET_SIMPLE_FPU, TARGET_SINGLE_FPU,
+	UNITS_PER_FP_WORD
+	* config/rs6000/rs6000.md (define_mode_iterator): Condition on
+	TARGET_DOUBLE_FLOAT, TARGET_SINGLE_FLOAT.
+	(extendsfdf2, extendsfdf2_fpr, truncdfsf2, truncdfsf2_fpr,
+	copysigndf3,fseldfsf4, negdf2, negdf2_fpr, absdf2, absdf2_fpr,
+	nabsdf2_fpr, adddf3, adddf3_fpr, subdf3, subdf3_fpr, muldf3,
+	muldf3_fpr, divdf3, divdf3_fpr, sqrtdf2, smaxdf3, smindf3,
+	movdfcc, *fseldfdf4, floatsidf2, *floatsidf2_internal,
+	floatunssidf2, *floatunssidf2_internal, fix_truncdfsi2,
+	*fix_truncdfsi2_internal, fix_truncdfsi2_internal_gfxopt,
+	fix_truncdfsi2_mfpgpr, fctiwz, btruncdf2, ceildf2, floordf2,
+	rounddf2, floatdidf2, floatsidf_ppc64_mfpgpr, floatsidf_ppc64,
+	floatunssidf_ppc64, fix_truncdfdi2, movdf_hardfloat32,
+	movdf_hardfloat64_mfpgpr, movdf_hardfloat64, extenddftf2_fprs,
+	extenddftf2_internal, trunctfdf2_internal2, fix_trunc_helper,
+	abstf2_internal, movdf_update1, movdf_update2, cmpdf_internal1,
+	cmptf_internal1, *cmptf_internal2): Condition on
+	TARGET_DOUBLE_FLOAT.
+	(aux_truncdfsf2, negsf2, *negsf2, abssf2, *abssf2, addsf3, subsf3,
+	mulsf3, divsf3, sqrtsf2, copysignsf3, smaxsf3, sminsf3, movsfcc,
+	*fselsfsf4, fixuns_truncsfsi2, fix_truncsfsi2, floatunssisf2,
+	btruncsf2, ceilsf2, floorsf2, roundsf2, floatdisf2_internal1,
+	floatdisf2_internal2, *movsf_hardfloat, trunctfsf2_fprs,
+	*movsf_update1, *movsf_update2, *cmpsf_internal1): Condition on
+	TARGET_SINGLE_FLOAT.
+	(divsf3, sqrtsf2, divdf3, divdf3_fpr): Condition on TARGET_SIMPLE_FPU.
+	* config/rs6000/rs6000.opt (-msingle-float): New.
+	(-mdouble-float): New.
+	(-msimple-fpu): New.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add
+	-msingle-float, -mdouble-float, -msimple-fpu options.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Set
+	_SOFT_DOUBLE for -msingle-float.
+	* config.gcc: New config for target=powerpc-xilinx-eabi.
+
 2008-09-29  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite.c (dot_all_scops_1): Remove unused checks. SCoPs always have

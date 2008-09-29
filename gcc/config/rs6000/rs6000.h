@@ -298,6 +298,14 @@ enum processor_type
    PROCESSOR_CELL
 };
 
+/* FPU operations supported. 
+   Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
+   also test TARGET_HARD_FLOAT.  */
+#define TARGET_SINGLE_FLOAT 1
+#define TARGET_DOUBLE_FLOAT 1
+#define TARGET_SINGLE_FPU   0
+#define TARGET_SIMPLE_FPU   0
+
 extern enum processor_type rs6000_cpu;
 
 /* Recast the processor type to the cpu attribute.  */
