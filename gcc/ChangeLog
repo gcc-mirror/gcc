@@ -1,3 +1,30 @@
+2008-09-29  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite.c (dot_all_scops_1): Remove unused checks. SCoPs always have
+	exit and entry.
+	(new_scop): Take entry and exit edge to define new SCoP.
+	(sd_region_p): New structure used during SCoP detection.
+	(move_scops): Delete.
+	(move_sd_regions): New.
+	(scopdet_info): Change the definition from edges back to basic_blocks.
+	(scopdet_edge_info):  Work on basic_blocks and rename to
+	scopdet_basic_block_info.
+	(split_difficult_bb): At the moment removed. We should later
+	add it at another place.
+	(build_scops_1): Work on basic_blocks.
+	(bb_in_sd_region): New.
+	(find_single_entry_edge): New.
+	(find_single_exit_edge): New.
+	(create_single_entry_edge): New.
+	(sd_region_without_exit): New.
+	(create_single_exit_edge): New.
+	(unmark_exit_edges): New.
+	(mark_exit_edges): New.
+	(create_sese_edges): New.
+	(build_graphite_scops): New.
+	(build_scops): Make SCoPs SESE.
+	(limit_scops): Use the new functions.
+
 2008-09-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (IRA_COVER_CLASSES): Define.
