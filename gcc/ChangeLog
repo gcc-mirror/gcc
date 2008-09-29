@@ -1,3 +1,8 @@
+2008-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* ifcvt.c (noce_emit_store_flag): If using condition from original
+	jump, reverse it if if_info->cond was reversed.
+
 2008-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <normal_inner_ref>: Force op0 to
