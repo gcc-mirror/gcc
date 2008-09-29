@@ -1,3 +1,8 @@
+2008-09-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/37669
+	* gcc.c-torture/compile/pr37669.c: New test.
+
 2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/37640
