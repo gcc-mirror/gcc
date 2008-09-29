@@ -1,7 +1,7 @@
 2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/36575
-	* fold-const (div_and_round_double) <ROUND_DIV_EXPR>: Fix typo.
+	* fold-const.c (div_and_round_double) <ROUND_DIV_EXPR>: Fix typo.
 
 2008-09-25  Jakub Jelinek  <jakub@redhat.com>
 
