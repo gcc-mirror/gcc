@@ -581,7 +581,7 @@ Objective-C and Objective-C++ Dialects}.
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
--mfused-madd -mno-fused-madd}
+-mfused-madd -mno-fused-madd -msse2avx}
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
@@ -11213,6 +11213,12 @@ Enable automatic generation of fused floating point multiply-add instructions
 if the ISA supports such instructions.  The -mfused-madd option is on by
 default.  The fused multiply-add instructions have a different
 rounding behavior compared to executing a multiply followed by an add.
+
+@item -msse2avx
+@itemx -mno-sse2avx
+@opindex msse2avx
+Specify that the assembler should encode SSE instructions with VEX
+prefix.  The option @option{-mavx} turns this on by default.
 @end table
 
 These @samp{-m} switches are supported in addition to the above

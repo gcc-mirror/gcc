@@ -56,6 +56,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
 #define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
 
+#undef ASM_SPEC
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} \
+ %{Wa,*:%*} %{m32:--32} %{m64:--64} \
+ %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
+
 #if TARGET_64BIT_DEFAULT
 #define SPEC_32 "m32"
 #define SPEC_64 "!m32"

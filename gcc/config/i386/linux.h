@@ -102,6 +102,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_EMULATION "elf_i386"
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
+#undef  ASM_SPEC
+#define ASM_SPEC \
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+  %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
+
 #undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "link_emulation", LINK_EMULATION },\
