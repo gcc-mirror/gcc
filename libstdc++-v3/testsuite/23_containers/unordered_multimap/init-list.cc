@@ -26,8 +26,6 @@
 // the GNU General Public License.
 
 // { dg-options "-std=gnu++0x" }
-// XFAIL this test until debug mode container is fixed.
-// { dg-excess-errors "" }
 
 #include <set>
 #include <unordered_map>
