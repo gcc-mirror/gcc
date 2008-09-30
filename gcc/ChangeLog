@@ -1,3 +1,11 @@
+2008-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37662
+	PR tree-optimization/37663
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Don't call
+	get_value_range with non-SSA_NAME.  Don't assert operands have been
+	folded, instead just bail out.
+
 2008-09-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000.md (fnmadds combiner): Revert typo.

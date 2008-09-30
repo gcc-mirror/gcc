@@ -1,3 +1,10 @@
+2008-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37662
+	PR tree-optimization/37663
+	* gcc.c-torture/compile/pr37662.c: New test.
+	* gcc.dg/pr37663.c: New test.
+
 2008-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36592
