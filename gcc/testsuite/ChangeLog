@@ -1,3 +1,8 @@
+2008-09-30  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/37555
+	* g++.dg/parse/error32.C: New test.
+
 2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/conv_decimal.adb: New test.

@@ -1,3 +1,9 @@
+2008-09-30  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/37555
+	* decl.c (grokdeclarator): Set the type for typedefs to a
+	nested-name-specifier to error_mark_node.
+
 2008-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37389
