@@ -22,7 +22,7 @@
 	* testsuite/20_util/unique_ptr/assign/assign.cc: Adjust DejaGNU
 	directives.
 
-2008-09-28  Chris Fairles <cfairles@gcc.gnu.org>
+2008-09-28  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/mutex (try_lock): Implement generic try_lock.
 	* testsuite/30_threads/try_lock/1.cc: New.
@@ -77,13 +77,13 @@
 	* testsuite/23_containers/bitset/cons/dr396.cc: Add.
 	* testsuite/23_containers/bitset/to_string/dr396.cc: Likewise.
 
-2008-09-23  Chris Fairles <cfairles@gcc.gnu.org>
+2008-09-23  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* testsuite/25_algorithms/min/37547.cc: Return void to avoid warnings.
 	* testsuite/25_algorithms/max/37547.cc: Likewise.
 	* testsuite/25_algorithms/minmax/37547.cc: Likewise.
 
-2008-09-23  Chris Fairles <cfairles@gcc.gnu.org>
+2008-09-23  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/chrono: If _GLIBCXX_USE_MONOTONIC_CLOCK is defined, don't
 	typedef monotonic_clock to system_clock and instead declare new class.
