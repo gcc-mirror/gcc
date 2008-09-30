@@ -8679,8 +8679,10 @@ grokdeclarator (const cp_declarator *declarator,
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
       else
 	decl = build_decl (TYPE_DECL, unqualified_id, type);
-      if (id_declarator && declarator->u.id.qualifying_scope)
+      if (id_declarator && declarator->u.id.qualifying_scope) {
 	error ("%Jtypedef name may not be a nested-name-specifier", decl);
+	TREE_TYPE (decl) = error_mark_node;
+      }
 
       if (decl_context != FIELD)
 	{
