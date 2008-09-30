@@ -7155,7 +7155,17 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	    /* Parse the then-clause.  */
 	    in_statement = parser->in_statement;
 	    parser->in_statement |= IN_IF_STMT;
-	    cp_parser_implicitly_scoped_statement (parser, &nested_if);
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	      {
+	        location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+		add_stmt (build_empty_stmt ());
+		cp_lexer_consume_token (parser->lexer);
+	        if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_ELSE))
+		  warning_at (loc, OPT_Wempty_body, "suggest braces around "
+			      "empty body in an %<if%> statement");
+	      }
+	    else
+	      cp_parser_implicitly_scoped_statement (parser, &nested_if);
 	    parser->in_statement = in_statement;
 
 	    finish_then_clause (statement);
@@ -7168,7 +7178,17 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 		cp_lexer_consume_token (parser->lexer);
 		begin_else_clause (statement);
 		/* Parse the else-clause.  */
-		cp_parser_implicitly_scoped_statement (parser, NULL);
+	        if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	          {
+		    warning_at (cp_lexer_peek_token (parser->lexer)->location,
+				OPT_Wempty_body, "suggest braces around "
+			        "empty body in an %<else%> statement");
+		    add_stmt (build_empty_stmt ());
+		    cp_lexer_consume_token (parser->lexer);
+		  }
+		else
+		  cp_parser_implicitly_scoped_statement (parser, NULL);
+
 		finish_else_clause (statement);
 
 		/* If we are currently parsing a then-clause, then

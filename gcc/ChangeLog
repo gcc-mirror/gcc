@@ -1,3 +1,11 @@
+2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (empty_if_body_warning): Remove.
+	* c-common.h (empty_if_body_warning): Remove.
+	* c-parser.c (c_parser_if_body, c_parser_else_body): Implement
+	here the -Wempty-body warning for `if' and `else' statements.
+	* c-typeck.c (c_finish_if_stmt): Do not call empty_body_warning.
+
 2008-09-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.opt: Add msse2avx.
