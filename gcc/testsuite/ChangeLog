@@ -1,5 +1,9 @@
 2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
 
+	* g++.dg/warn/if-empty-1.C: Copy from gcc.dg/if-empty-1.c.
+
+2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR testsuite/36891
 	PR testsuite/37675
 	* gcc.dg/torture/pr36891.c: Add -msse on 32-bit i386.

@@ -1,3 +1,9 @@
+2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* parser.c (cp_parser_selection_statement): Implement here the
+	-Wempty-body warning for `if' and `else' statements.
+	* semantics.c (finish_if_stmt): Do not call empty_body_warning.
+
 2008-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37649

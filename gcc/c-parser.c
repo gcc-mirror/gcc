@@ -3858,8 +3858,12 @@ c_parser_if_body (c_parser *parser, bool *if_p)
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
+      location_t loc = c_parser_peek_token (parser)->location;
       add_stmt (build_empty_stmt ());
       c_parser_consume_token (parser);
+      if (!c_parser_next_token_is_keyword (parser, RID_ELSE))
+	warning_at (loc, OPT_Wempty_body,
+		    "suggest braces around empty body in an %<if%> statement");
     }
   else if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     add_stmt (c_parser_compound_statement (parser));
@@ -3883,6 +3887,9 @@ c_parser_else_body (c_parser *parser)
     c_parser_label (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
+      warning_at (c_parser_peek_token (parser)->location,
+		  OPT_Wempty_body,
+	         "suggest braces around empty body in an %<else%> statement");
       add_stmt (build_empty_stmt ());
       c_parser_consume_token (parser);
     }

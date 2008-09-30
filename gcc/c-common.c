@@ -1291,31 +1291,6 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
   return false;
 }
 
-/* Print a warning about if (); or if () .. else; constructs
-   via the special empty statement node that we create.  INNER_THEN
-   and INNER_ELSE are the statement lists of the if and the else
-   block.  */
-
-void
-empty_if_body_warning (tree inner_then, tree inner_else)
-{
-  if (TREE_CODE (inner_then) == STATEMENT_LIST
-      && STATEMENT_LIST_TAIL (inner_then))
-    inner_then = STATEMENT_LIST_TAIL (inner_then)->stmt;
-
-  if (inner_else && TREE_CODE (inner_else) == STATEMENT_LIST
-      && STATEMENT_LIST_TAIL (inner_else))
-    inner_else = STATEMENT_LIST_TAIL (inner_else)->stmt;
-
-  if (IS_EMPTY_STMT (inner_then) && !inner_else)
-    warning (OPT_Wempty_body, "%Hsuggest braces around empty body "
-             "in an %<if%> statement", EXPR_LOCUS (inner_then));
-
-  else if (inner_else && IS_EMPTY_STMT (inner_else))
-    warning (OPT_Wempty_body, "%Hsuggest braces around empty body "
-             "in an %<else%> statement", EXPR_LOCUS (inner_else));
-}
-
 /* Warn for unlikely, improbable, or stupid DECL declarations
    of `main'.  */
 
