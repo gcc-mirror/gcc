@@ -6304,9 +6304,12 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   bool need_conversion;
 
   op0 = gimple_assign_rhs1 (stmt);
-  vr = get_value_range (op0);
   if (TYPE_PRECISION (TREE_TYPE (op0)) != 1)
     {
+      if (TREE_CODE (op0) != SSA_NAME)
+	return false;
+      vr = get_value_range (op0);
+
       val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
       if (!val || !integer_onep (val))
         return false;
@@ -6329,10 +6332,15 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
       if (is_gimple_min_invariant (op1))
 	{
           /* Exclude anything that should have been already folded.  */
-	  gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR
-		      || rhs_code == TRUTH_XOR_EXPR);
-	  gcc_assert (integer_zerop (op1) || integer_onep (op1)
-		      || integer_all_onesp (op1));
+	  if (rhs_code != EQ_EXPR
+	      && rhs_code != NE_EXPR
+	      && rhs_code != TRUTH_XOR_EXPR)
+	    return false;
+
+	  if (!integer_zerop (op1)
+	      && !integer_onep (op1)
+	      && !integer_all_onesp (op1))
+	    return false;
 
 	  /* Limit the number of cases we have to consider.  */
 	  if (rhs_code == EQ_EXPR)
