@@ -1,3 +1,17 @@
+2008-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/30085 (again)
+	* include/debug/unordered_map (unordered_map<>, unordered_multimap<>):
+	Do not derive from _Safe_association, derive from _GLIBCXX_STD_D::
+	unordered_map / unordered_multimap; add missing member functions.
+	* include/debug/unordered_set (unordered_set<>, unordered_multiset<>):
+	Likewise for _GLIBCXX_STD_D::unordered_set / unordered_multiset.
+	* include/debug/safe_association.h: Remove.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+	* testsuite/23_containers/unordered_multimap/init-list.cc: Remove
+	xfail.
+
 2008-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/unique_ptr.h (unique_ptr<_Tp[]>::template<typename U>
