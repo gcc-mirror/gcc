@@ -1,6 +1,6 @@
 // Debugging unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,43 +41,47 @@
 # include <c++0x_warning.h>
 #endif
 
-#include <initializer_list>
-#include <debug/safe_association.h>
+#include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
-
-#define _GLIBCXX_BASE unordered_set<_Value, _Hash, _Pred, _Alloc>
-#define _GLIBCXX_STD_BASE _GLIBCXX_STD_D::_GLIBCXX_BASE
+#include <initializer_list>
 
 namespace std
 {
 namespace __debug
 {
   template<typename _Value,
-	   typename _Hash  = std::hash<_Value>,
+	   typename _Hash = std::hash<_Value>,
 	   typename _Pred = std::equal_to<_Value>,
-	   typename _Alloc =  std::allocator<_Value> >
+	   typename _Alloc = std::allocator<_Value> >
     class unordered_set
-    : public __gnu_debug::_Safe_association<_GLIBCXX_STD_BASE>,
-      public __gnu_debug::_Safe_sequence<_GLIBCXX_BASE>
+    : public _GLIBCXX_STD_D::unordered_set<_Value, _Hash, _Pred, _Alloc>,
+      public __gnu_debug::_Safe_sequence<unordered_set<_Value, _Hash,
+						       _Pred, _Alloc> >
     {
-      typedef typename _GLIBCXX_STD_BASE _Base;
-      typedef __gnu_debug::_Safe_association<_Base> _Safe_assoc;
+      typedef _GLIBCXX_STD_D::unordered_set<_Value, _Hash,
+					    _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_set> _Safe_base;
 
     public:
-      typedef typename _Safe_assoc::size_type       size_type;
-      typedef typename _Safe_assoc::value_type      value_type;
-      typedef typename _Safe_assoc::hasher          hasher;
-      typedef typename _Safe_assoc::key_equal       key_equal;
-      typedef typename _Safe_assoc::allocator_type allocator_type;
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+
+      typedef typename _Base::key_type        key_type;
+      typedef typename _Base::value_type      value_type;
+
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
+					  unordered_set> iterator;
+      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
+					  unordered_set> const_iterator;
 
       explicit
       unordered_set(size_type __n = 10,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-      : _Safe_assoc(__n, __hf, __eql, __a)
-      { }
+      : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
         unordered_set(_InputIterator __f, _InputIterator __l, 
@@ -85,21 +89,32 @@ namespace __debug
 		      const hasher& __hf = hasher(), 
 		      const key_equal& __eql = key_equal(), 
 		      const allocator_type& __a = allocator_type())
-	: _Safe_assoc(__f, __l, __n, __hf, __eql, __a)
-        { }
+	: _Base(__gnu_debug::__check_valid_range(__f, __l), __l, __n,
+		__hf, __eql, __a), _Safe_base() { }
+
+      unordered_set(const unordered_set& __x) 
+      : _Base(__x), _Safe_base() { }
+
+      unordered_set(const _Base& __x) 
+      : _Base(__x), _Safe_base() { }
+
+      unordered_set(unordered_set&& __x) 
+      : _Base(std::forward<unordered_set>(__x)), _Safe_base() { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 10,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-	: _Safe_assoc(__l, __n, __hf, __eql, __a) { }
+      : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
 
-      unordered_set(const _Safe_assoc& __x) 
-      : _Safe_assoc(__x), _Safe_base() { }
-
-      unordered_set(unordered_set&& __x) 
-      : _Safe_assoc(std::forward<_Safe_assoc>(__x)), _Safe_base() { }
+      unordered_set&
+      operator=(const unordered_set& __x)
+      {
+	*static_cast<_Base*>(this) = __x;
+	this->_M_invalidate_all();
+	return *this;
+      }
 
       unordered_set&
       operator=(unordered_set&& __x)
@@ -121,7 +136,7 @@ namespace __debug
       void
       swap(unordered_set&& __x)
       {
-	_Safe_assoc::swap(__x);
+	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
 
@@ -132,13 +147,168 @@ namespace __debug
 	this->_M_invalidate_all();
       }
 
+      iterator 
+      begin()
+      { return iterator(_Base::begin(), this); }
+
+      const_iterator
+      begin() const
+      { return const_iterator(_Base::begin(), this); }
+
+      iterator
+      end()
+      { return iterator(_Base::end(), this); }
+
+      const_iterator
+      end() const
+      { return const_iterator(_Base::end(), this); }
+
+      const_iterator
+      cbegin() const
+      { return const_iterator(_Base::begin(), this); }
+
+      const_iterator
+      cend() const
+      { return const_iterator(_Base::end(), this); }
+
+      // local versions
+      using _Base::begin;
+      using _Base::end;
+      using _Base::cbegin;
+      using _Base::cend;
+
+      std::pair<iterator, bool>
+      insert(const value_type& __obj)
+      {
+	typedef std::pair<typename _Base::iterator, bool> __pair_type;
+	__pair_type __res = _Base::insert(__obj);
+	return std::make_pair(iterator(__res.first, this), __res.second);
+      }
+
+      iterator
+      insert(iterator, const value_type& __obj)
+      {
+	typedef std::pair<typename _Base::iterator, bool> __pair_type;
+	__pair_type __res = _Base::insert(__obj);
+	return iterator(__res.first, this);
+      }
+
+      const_iterator
+      insert(const_iterator, const value_type& __obj)
+      {
+	typedef std::pair<typename _Base::iterator, bool> __pair_type;
+	__pair_type __res = _Base::insert(__obj);
+	return const_iterator(__res.first, this);
+      }
+
+      void
+      insert(std::initializer_list<value_type> __l)
+      { _Base::insert(__l); }
+
+      template<typename _InputIterator>
+        void
+        insert(_InputIterator __first, _InputIterator __last)
+        {
+	  __glibcxx_check_valid_range(__first, __last);
+	  _Base::insert(__first, __last);
+	}
+
+      iterator
+      find(const key_type& __key)
+      { return iterator(_Base::find(__key), this); }
+
+      const_iterator
+      find(const key_type& __key) const
+      { return const_iterator(_Base::find(__key), this); }
+
+      std::pair<iterator, iterator>
+      equal_range(const key_type& __key)
+      {
+	typedef typename _Base::iterator _Base_iterator;
+	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
+	__pair_type __res = _Base::equal_range(__key);
+	return std::make_pair(iterator(__res.first, this),
+			      iterator(__res.second, this));
+      }
+
+      std::pair<const_iterator, const_iterator>
+      equal_range(const key_type& __key) const
+      {
+	typedef typename _Base::const_iterator _Base_iterator;
+	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
+	__pair_type __res = _Base::equal_range(__key);
+	return std::make_pair(const_iterator(__res.first, this),
+			      const_iterator(__res.second, this));
+      }
+
+      size_type
+      erase(const key_type& __key)
+      {
+	size_type __ret(0);
+	iterator __victim(_Base::find(__key), this);
+	if (__victim != end())
+	  {
+	    this->erase(__victim);
+	    __ret = 1;
+	  }
+	return __ret;
+      }
+
+      iterator
+      erase(iterator __it)
+      {
+	__glibcxx_check_erase(__it);
+	__it._M_invalidate();
+	return iterator(_Base::erase(__it.base()), this);
+      }
+
+      const_iterator
+      erase(const_iterator __it)
+      {
+	__glibcxx_check_erase(__it);
+	__it._M_invalidate();
+	return const_iterator(_Base::erase(__it.base()), this);
+      }
+
+      iterator
+      erase(iterator __first, iterator __last)
+      {
+	__glibcxx_check_erase_range(__first, __last);
+	for (iterator __tmp = __first; __tmp != __last;)
+	{
+	  iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
+      }
+
+      const_iterator
+      erase(const_iterator __first, const_iterator __last)
+      {
+	__glibcxx_check_erase_range(__first, __last);
+	for (const_iterator __tmp = __first; __tmp != __last;)
+	{
+	  const_iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return const_iterator(_Base::erase(__first.base(),
+					   __last.base()), this);
+      }
+
+      _Base&
+      _M_base() { return *this; }
+
+      const _Base&
+      _M_base() const { return *this; }
+
     private:
       void
       _M_invalidate_all()
       {
 	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(this->_M_base().end()));
+	this->_M_invalidate_if(_Not_equal(_M_base().end()));
       }
     };
 
@@ -160,59 +330,73 @@ namespace __debug
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>&& __y)
     { __x.swap(__y); }
 
-#undef _GLIBCXX_BASE
-#undef _GLIBCXX_STD_BASE
-#define _GLIBCXX_STD_BASE _GLIBCXX_STD_D::_GLIBCXX_BASE
-#define _GLIBCXX_BASE unordered_multiset<_Value, _Hash, _Pred, _Alloc>
 
   template<typename _Value,
-	   typename _Hash  = std::hash<_Value>,
+	   typename _Hash = std::hash<_Value>,
 	   typename _Pred = std::equal_to<_Value>,
-	   typename _Alloc =  std::allocator<_Value> >
+	   typename _Alloc = std::allocator<_Value> >
     class unordered_multiset
-    : public __gnu_debug::_Safe_association<_GLIBCXX_STD_BASE>,
-      public __gnu_debug::_Safe_sequence<_GLIBCXX_BASE>
+    : public _GLIBCXX_STD_D::unordered_multiset<_Value, _Hash, _Pred, _Alloc>,
+      public __gnu_debug::_Safe_sequence<unordered_multiset<_Value, _Hash,
+							    _Pred, _Alloc> >
     {
-      typedef typename _GLIBCXX_STD_BASE _Base;
-      typedef __gnu_debug::_Safe_association<_Base> _Safe_assoc;
+      typedef _GLIBCXX_STD_D::unordered_multiset<_Value, _Hash,
+						 _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_multiset> _Safe_base;
 
     public:
-      typedef typename _Safe_assoc::size_type       size_type;
-      typedef typename _Safe_assoc::value_type      value_type;
-      typedef typename _Safe_assoc::hasher          hasher;
-      typedef typename _Safe_assoc::key_equal       key_equal;
-      typedef typename _Safe_assoc::allocator_type allocator_type;
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+
+      typedef typename _Base::key_type        key_type;
+      typedef typename _Base::value_type      value_type;
+
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
+					  unordered_multiset> iterator;
+      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
+					  unordered_multiset> const_iterator;
 
       explicit
       unordered_multiset(size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
-      : _Safe_assoc(__n, __hf, __eql, __a)
-      { }
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
         unordered_multiset(_InputIterator __f, _InputIterator __l, 
-		      size_type __n = 10,
-		      const hasher& __hf = hasher(), 
-		      const key_equal& __eql = key_equal(), 
-		      const allocator_type& __a = allocator_type())
-	: _Safe_assoc(__f, __l, __n, __hf, __eql, __a)
-        { }
+			   size_type __n = 10,
+			   const hasher& __hf = hasher(), 
+			   const key_equal& __eql = key_equal(), 
+			   const allocator_type& __a = allocator_type())
+	: _Base(__gnu_debug::__check_valid_range(__f, __l), __l, __n,
+		__hf, __eql, __a), _Safe_base() { }
+
+      unordered_multiset(const unordered_multiset& __x) 
+      : _Base(__x), _Safe_base() { }
+
+      unordered_multiset(const _Base& __x) 
+      : _Base(__x), _Safe_base() { }
+
+      unordered_multiset(unordered_multiset&& __x) 
+      : _Base(std::forward<unordered_multiset>(__x)), _Safe_base() { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 10,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-	: _Safe_assoc(__l, __n, __hf, __eql, __a) { }
+      : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
 
-      unordered_multiset(const _Safe_assoc& __x) 
-      : _Safe_assoc(__x), _Safe_base() { }
-
-      unordered_multiset(unordered_multiset&& __x) 
-      : _Safe_assoc(std::forward<_Safe_assoc>(__x)), _Safe_base() { }
+      unordered_multiset&
+      operator=(const unordered_multiset& __x)
+      {
+	*static_cast<_Base*>(this) = __x;
+	this->_M_invalidate_all();
+	return *this;
+      }
 
       unordered_multiset&
       operator=(unordered_multiset&& __x)
@@ -234,16 +418,159 @@ namespace __debug
       void
       swap(unordered_multiset&& __x)
       {
-	_Safe_assoc::swap(__x);
+	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
 
-     void
+      void
       clear()
       {
 	_Base::clear();
 	this->_M_invalidate_all();
       }
+
+      iterator
+      begin()
+      { return iterator(_Base::begin(), this); }
+
+      const_iterator
+      begin() const
+      { return const_iterator(_Base::begin(), this); }
+
+      iterator
+      end()
+      { return iterator(_Base::end(), this); }
+
+      const_iterator
+      end() const
+      { return const_iterator(_Base::end(), this); }
+
+      const_iterator
+      cbegin() const
+      { return const_iterator(_Base::begin(), this); }
+
+      const_iterator
+      cend() const
+      { return const_iterator(_Base::end(), this); }
+
+      // local versions
+      using _Base::begin;
+      using _Base::end;
+      using _Base::cbegin;
+      using _Base::cend;
+
+      iterator
+      insert(const value_type& __obj)
+      { return iterator(_Base::insert(__obj), this); }
+
+      iterator
+      insert(iterator, const value_type& __obj)
+      { return iterator(_Base::insert(__obj), this); }
+
+      const_iterator
+      insert(const_iterator, const value_type& __obj)
+      { return const_iterator(_Base::insert(__obj), this); }
+
+      void
+      insert(std::initializer_list<value_type> __l)
+      { _Base::insert(__l); }
+
+      template<typename _InputIterator>
+        void
+        insert(_InputIterator __first, _InputIterator __last)
+        {
+	  __glibcxx_check_valid_range(__first, __last);
+	  _Base::insert(__first, __last);
+	}
+
+      iterator
+      find(const key_type& __key)
+      { return iterator(_Base::find(__key), this); }
+
+      const_iterator
+      find(const key_type& __key) const
+      { return const_iterator(_Base::find(__key), this); }
+
+      std::pair<iterator, iterator>
+      equal_range(const key_type& __key)
+      {
+	typedef typename _Base::iterator _Base_iterator;
+	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
+	__pair_type __res = _Base::equal_range(__key);
+	return std::make_pair(iterator(__res.first, this),
+			      iterator(__res.second, this));
+      }
+
+      std::pair<const_iterator, const_iterator>
+      equal_range(const key_type& __key) const
+      {
+	typedef typename _Base::const_iterator _Base_iterator;
+	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
+	__pair_type __res = _Base::equal_range(__key);
+	return std::make_pair(const_iterator(__res.first, this),
+			      const_iterator(__res.second, this));
+      }
+
+      size_type
+      erase(const key_type& __key)
+      {
+	size_type __ret(0);
+	iterator __victim(_Base::find(__key), this);
+	if (__victim != end())
+	  {
+	    this->erase(__victim);
+	    __ret = 1;
+	  }
+	return __ret;
+      }
+
+      iterator
+      erase(iterator __it)
+      {
+	__glibcxx_check_erase(__it);
+	__it._M_invalidate();
+	return iterator(_Base::erase(__it.base()), this);
+      }
+
+      const_iterator
+      erase(const_iterator __it)
+      {
+	__glibcxx_check_erase(__it);
+	__it._M_invalidate();
+	return const_iterator(_Base::erase(__it.base()), this);
+      }
+
+      iterator
+      erase(iterator __first, iterator __last)
+      {
+	__glibcxx_check_erase_range(__first, __last);
+	for (iterator __tmp = __first; __tmp != __last;)
+	{
+	  iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
+      }
+
+      const_iterator
+      erase(const_iterator __first, const_iterator __last)
+      {
+	__glibcxx_check_erase_range(__first, __last);
+	for (const_iterator __tmp = __first; __tmp != __last;)
+	{
+	  const_iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return const_iterator(_Base::erase(__first.base(),
+					   __last.base()), this);
+      }
+
+      _Base&
+      _M_base() { return *this; }
+
+      const _Base&
+      _M_base() const { return *this; }
 
     private:
       void
@@ -251,7 +578,7 @@ namespace __debug
       {
 	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(this->_M_base().end()));
+	this->_M_invalidate_if(_Not_equal(_M_base().end()));
       }
     };
 
@@ -275,8 +602,5 @@ namespace __debug
 
 } // namespace __debug
 } // namespace std
-
-#undef _GLIBCXX_BASE
-#undef _GLIBCXX_STD_BASE
 
 #endif

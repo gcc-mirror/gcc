@@ -696,7 +696,6 @@ debug_headers = \
 	${debug_srcdir}/map.h \
 	${debug_srcdir}/multimap.h \
 	${debug_srcdir}/multiset.h \
-	${debug_srcdir}/safe_association.h \
 	${debug_srcdir}/safe_base.h \
 	${debug_srcdir}/safe_iterator.h \
 	${debug_srcdir}/safe_iterator.tcc \
