@@ -1,3 +1,9 @@
+2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR testsuite/36891
+	PR testsuite/37675
+	* gcc.dg/torture/pr36891.c: Add -msse on 32-bit i386.
+
 2008-09-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/37669
