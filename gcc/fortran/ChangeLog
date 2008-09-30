@@ -1,3 +1,13 @@
+2008-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36592
+	* symbol.c (check_conflict): If a symbol in a COMMON block is a
+	procedure, it must be a procedure pointer.
+	(gfc_add_in_common): Symbols in COMMON blocks may be variables or
+	procedure pointers.
+	* trans-types.c (gfc_sym_type): Make procedure pointers in COMMON
+	blocks work.
+
 2008-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
 	PR fortran/37498

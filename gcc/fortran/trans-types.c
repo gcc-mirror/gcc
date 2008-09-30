@@ -1627,6 +1627,16 @@ gfc_sym_type (gfc_symbol * sym)
   tree type;
   int byref;
 
+  /* Procedure Pointers inside COMMON blocks.  */
+  if (sym->attr.proc_pointer && sym->attr.in_common)
+    {
+      /* Unset proc_pointer as gfc_get_function_type calls gfc_sym_type.  */
+      sym->attr.proc_pointer = 0;
+      type = build_pointer_type (gfc_get_function_type (sym));
+      sym->attr.proc_pointer = 1;
+      return type;
+    }
+
   if (sym->attr.flavor == FL_PROCEDURE && !sym->attr.function)
     return void_type_node;
 
