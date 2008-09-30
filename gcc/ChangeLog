@@ -1,3 +1,11 @@
+2008-09-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37491
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Properly
+	build restrict-qualified pointers.
+	(vectorizable_store): Move alias check later.
+	(vectorizable_load): Likewise.
+
 2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (empty_if_body_warning): Remove.
