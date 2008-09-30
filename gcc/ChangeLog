@@ -1,3 +1,12 @@
+2008-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.opt: Add msse2avx.
+
+	* config/i386/linux.h (ASM_SPEC): New.  Support -msse2avx.
+	* config/i386/linux64.h (ASM_SPEC): Likewise.
+
+	* doc/invoke.texi: Document -msse2avx.
+
 2008-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (constant_size): Use HOST_WIDE_INT in parameter type.

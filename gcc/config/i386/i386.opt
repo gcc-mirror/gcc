@@ -338,3 +338,7 @@ Support AES built-in functions and code generation
 mpclmul
 Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) VarExists Save
 Support PCLMUL built-in functions and code generation
+
+msse2avx
+Target Report Var(ix86_sse2avx)
+Encode SSE instructions with VEX prefix
