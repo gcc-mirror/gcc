@@ -1,3 +1,8 @@
+2008-09-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* ifcvt.c (noce_emit_store_flag): If using condition from original
+	jump, reverse it if if_info->cond was reversed.
+
 2008-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/36575
