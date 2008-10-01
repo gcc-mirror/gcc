@@ -1,3 +1,7 @@
+2008-10-01  Geert Bosch  <bosch@adacore.com>
+
+	* tree.c (contains_placeholder_p): Return 0 for a SAVE_EXPR.
+
 2008-10-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37617
