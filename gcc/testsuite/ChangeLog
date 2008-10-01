@@ -1,3 +1,14 @@
+2008-10-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/abi/offsetof.C (main): Use __SIZE_TYPE__ instead of
+	unsigned long for pointer cast.
+	* g++.dg/init/struct1.C: Likewise.
+	* g++.dg/init/struct2.C: Likewise.
+	* g++.dg/init/struct3.C: Likewise.
+	* g++.dg/ext/utf-cvt.C: Correct for w64.
+	* gcc.dg/utf-cvt.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_llp64): New.
+
 2008-09-30  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/37555

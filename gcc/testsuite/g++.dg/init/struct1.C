@@ -1,6 +1,6 @@
 struct bug {
   const char *name;
-  unsigned long type;
+  __SIZE_TYPE__ type;
 };
 
-struct bug s = { 0, (unsigned long) &s | 1 };
+struct bug s = { 0, (__SIZE_TYPE__) &s | 1 };
