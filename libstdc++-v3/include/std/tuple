@@ -81,6 +81,8 @@ namespace std
 
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
+
+      void __swap_impl(_Head&&) { /* no-op */ }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -98,6 +100,13 @@ namespace std
 
       _Head&       _M_head()       { return _M_head_impl; }
       const _Head& _M_head() const { return _M_head_impl; }        
+
+      void
+      __swap_impl(_Head&& __h)
+      { 
+	using std::swap;
+	swap(__h, _M_head_impl);
+      }
 
       _Head _M_head_impl; 
     };
@@ -118,7 +127,10 @@ namespace std
    * inheritance recursion.
    */
   template<std::size_t _Idx>
-    struct _Tuple_impl<_Idx> { };
+    struct _Tuple_impl<_Idx>
+    { 
+      void __swap_impl(_Tuple_impl&&) { /* no-op */ }
+    };
 
   /**
    * Recursive tuple implementation. Here we store the @c Head element
@@ -203,6 +215,13 @@ namespace std
 	  _M_tail() = std::move(__in._M_tail());
 	  return *this;
 	}
+
+      void
+      __swap_impl(_Tuple_impl&& __in)
+      {
+	_Base::__swap_impl(__in._M_head());
+	_Inherited::__swap_impl(__in._M_tail());
+      }
     };
 
   /// tuple
@@ -274,11 +293,19 @@ namespace std
 	  static_cast<_Inherited&>(*this) = std::move(__in);
 	  return *this;
 	}
+
+      void
+      swap(tuple&& __in)
+      { _Inherited::__swap_impl(__in); }
     };
 
 
   template<>  
-    class tuple<> { };
+    class tuple<>
+    {
+    public:
+      void swap(tuple&&) { /* no-op */ }
+    };
 
   /// tuple (2-element), with construction and assignment from a pair.
   template<typename _T1, typename _T2>
@@ -368,6 +395,14 @@ namespace std
 	  this->_M_tail()._M_head() = std::move(__in.second);
 	  return *this;
 	}
+
+      void
+      swap(tuple&& __in)
+      { 
+	using std::swap;
+	swap(this->_M_head(), __in._M_head());
+	swap(this->_M_tail()._M_head(), __in._M_tail()._M_head());	
+      }
     };
 
 
@@ -627,6 +662,21 @@ namespace std
     inline tuple<_Elements&...>
     tie(_Elements&... __args)
     { return tuple<_Elements&...>(__args...); }
+
+  template<typename... _Elements>
+    inline void 
+    swap(tuple<_Elements...>& __x, tuple<_Elements...>& __y)
+    { __x.swap(__y); }
+
+  template<typename... _Elements>
+    inline void
+    swap(tuple<_Elements...>&& __x, tuple<_Elements...>& __y)
+    { __x.swap(__y); }
+
+  template<typename... _Elements>
+    inline void
+    swap(tuple<_Elements...>& __x, tuple<_Elements...>&& __y)
+    { __x.swap(__y); }
 
   // A class (and instance) which can be used in 'tie' when an element
   // of a tuple is not required

@@ -1,3 +1,9 @@
+2008-09-30  Chris Fairles  <cfairles@gcc.gnu.org>
+
+	* include/std/tuple (tuple<>::swap): Implement swap for tuple as per 
+	DR 522 [Ready].
+	* testsuite/20_util/tuple/swap.cc: New.
+
 2008-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/30085 (again)
