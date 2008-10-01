@@ -18,7 +18,7 @@ To report problems in GCC, please visit:
 Maintainers
 ===========
 
-			Blanket Write Privs.
+			Global Reviewers
 
 Richard Earnshaw				richard.earnshaw@arm.com
 Richard Henderson				rth@redhat.com
@@ -32,6 +32,9 @@ Mark Mitchell					mark@codesourcery.com
 Bernd Schmidt					bernd.schmidt@analog.com
 Jim Wilson					wilson@tuliptree.org
 
+Note that while global reviewers can approve changes to any part of
+the compiler or associated libraries, they still need approval for
+their own patches from other maintainers or reviewers.
 
 			CPU Port Maintainers	(CPU alphabetical order)
 
