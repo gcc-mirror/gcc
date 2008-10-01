@@ -1,5 +1,11 @@
 2008-10-01  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/37617
+	* tree-ssa-pre.c (create_expression_by_pieces): During FRE
+	do not add to the NEW_SETS.
+
+2008-10-01  Richard Guenther  <rguenther@suse.de>
+
         PR middle-end/37285
         * tree-vrp.c (execute_vrp): If we optimized away the default
         case make sure to promote the label that got in place of it
