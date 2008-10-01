@@ -7149,9 +7149,16 @@ execute_vrp (void)
     {
       size_t j;
       size_t n = TREE_VEC_LENGTH (su->vec);
+      tree label;
       gimple_switch_set_num_labels (su->stmt, n);
       for (j = 0; j < n; j++)
 	gimple_switch_set_label (su->stmt, j, TREE_VEC_ELT (su->vec, j));
+      /* As we may have replaced the default label with a regular one
+	 make sure to make it a real default label again.  This ensures
+	 optimal expansion.  */
+      label = gimple_switch_default_label (su->stmt);
+      CASE_LOW (label) = NULL_TREE;
+      CASE_HIGH (label) = NULL_TREE;
     }
 
   if (VEC_length (edge, to_remove_edges) > 0)
