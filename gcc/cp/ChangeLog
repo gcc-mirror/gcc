@@ -1,3 +1,9 @@
+2008-09-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/37683
+	* parser.c (cp_parser_selection_statement): Fix uninitialized
+	variable.
+
 2008-09-30  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/37555

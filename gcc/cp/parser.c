@@ -7163,6 +7163,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	        if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_ELSE))
 		  warning_at (loc, OPT_Wempty_body, "suggest braces around "
 			      "empty body in an %<if%> statement");
+		nested_if = false;
 	      }
 	    else
 	      cp_parser_implicitly_scoped_statement (parser, &nested_if);
