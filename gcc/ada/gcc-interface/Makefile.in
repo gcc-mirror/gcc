@@ -1457,7 +1457,7 @@ ifeq ($(strip $(filter-out mipsel linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1470,8 +1470,21 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<g-sercom-linux.adb
+
+  LIBGNAT_TARGET_PAIRS_32 = \
   system.ads<system-linux-ppc.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  system.ads<system-linux-ppc64.ads
+
+  ifeq ($(strip $(MULTISUBDIR)),/64)
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
