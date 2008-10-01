@@ -1,3 +1,9 @@
+2008-10-01  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/35737
+	* tree-complex.c (set_component_ssa_name): Don't optimize
+	is_gimple_min_invariant values with ssa_names in abnormal phis.
+
 2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/37662
