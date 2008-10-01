@@ -1,3 +1,10 @@
+2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.target/powerpc/altivec_check.h (altivec_cell_check): New function.
+	* gcc.target/powerpc/altivec-cell-6.c: New test.
+	* gcc.target/powerpc/altivec-cell-7.c: New test.
+	* gcc.target/powerpc/altivec-cell-8.c: New test.
+
 2008-10-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37617
@@ -5,8 +12,8 @@
 
 2008-10-01  Richard Guenther  <rguenther@suse.de>
 
-        PR middle-end/37285
-        * gcc.c-torture/compile/pr37285.c: New testcase.
+	PR middle-end/37285
+	* gcc.c-torture/compile/pr37285.c: New testcase.
 
 2008-10-01  Kai Tietz  <kai.tietz@onevision.com>
 

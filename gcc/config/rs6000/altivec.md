@@ -130,6 +130,14 @@
    (UNSPEC_INTERLO_V8HI 233)
    (UNSPEC_INTERLO_V16QI 234)
    (UNSPEC_INTERLO_V4SF 235)
+   (UNSPEC_LVLX         236)
+   (UNSPEC_LVLXL        237)
+   (UNSPEC_LVRX         238)
+   (UNSPEC_LVRXL        239)
+   (UNSPEC_STVLX        240)
+   (UNSPEC_STVLXL       241)
+   (UNSPEC_STVRX        242)
+   (UNSPEC_STVRXL       243)
    (UNSPEC_VMULWHUB     308)
    (UNSPEC_VMULWLUB     309)
    (UNSPEC_VMULWHSB     310)
@@ -2676,6 +2684,76 @@
     
   DONE;
 }")
+
+;; Vector SIMD PEM v2.06c defines LVLX, LVLXL, LVRX, LVRXL,
+;; STVLX, STVLXL, STVVRX, STVRXL are available only on Cell.
+(define_insn "altivec_lvlx"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+		      UNSPEC_LVLX))]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "lvlx %0,%y1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "altivec_lvlxl"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+		      UNSPEC_LVLXL))]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "lvlxl %0,%y1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "altivec_lvrx"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+		      UNSPEC_LVRX))]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "lvrx %0,%y1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "altivec_lvrxl"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+		      UNSPEC_LVRXL))]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "lvrxl %0,%y1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "altivec_stvlx"
+  [(parallel
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
+	  (match_operand:V4SI 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVLX)])]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "stvlx %1,%y0"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "altivec_stvlxl"
+  [(parallel
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
+	  (match_operand:V4SI 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVLXL)])]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "stvlxl %1,%y0"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "altivec_stvrx"
+  [(parallel
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
+	  (match_operand:V4SI 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVRX)])]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "stvrx %1,%y0"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "altivec_stvrxl"
+  [(parallel
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
+	  (match_operand:V4SI 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVRXL)])]
+  "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
+  "stvrxl %1,%y0"
+  [(set_attr "type" "vecstore")])
 
 (define_expand "vec_extract_evenv4si"
  [(set (match_operand:V4SI 0 "register_operand" "")
