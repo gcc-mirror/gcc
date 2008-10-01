@@ -1,3 +1,8 @@
+2008-10-01  Richard Guenther  <rguenther@suse.de>
+
+        PR middle-end/37285
+        * gcc.c-torture/compile/pr37285.c: New testcase.
+
 2008-10-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/abi/offsetof.C (main): Use __SIZE_TYPE__ instead of

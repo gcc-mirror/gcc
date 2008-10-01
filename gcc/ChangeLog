@@ -1,3 +1,10 @@
+2008-10-01  Richard Guenther  <rguenther@suse.de>
+
+        PR middle-end/37285
+        * tree-vrp.c (execute_vrp): If we optimized away the default
+        case make sure to promote the label that got in place of it
+        to a default case label.
+
 2008-10-01  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/35737
