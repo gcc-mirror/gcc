@@ -1,3 +1,8 @@
+2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v): Fix
+	!__FLT_HAS_INFINITY__ case.
+
 2008-09-30  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/tuple (tuple<>::swap): Implement swap for tuple as per 

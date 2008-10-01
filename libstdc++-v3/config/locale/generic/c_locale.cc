@@ -97,10 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       else if (__overflow
 #if __FLT_HAS_INFINITY__
 	       || __v == numeric_limits<float>::infinity()
-	       || __v == -numeric_limits<float>::infinity())
+	       || __v == -numeric_limits<float>::infinity()
 #else
 	       || ((__v > 1.0f || __v < -1.0f) && errno == ERANGE)
 #endif
+	      )
 	{
 	  if (__v > 0.0f)
 	    __v = numeric_limits<float>::max();
