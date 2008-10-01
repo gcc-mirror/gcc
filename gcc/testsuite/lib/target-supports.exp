@@ -1057,6 +1057,18 @@ proc check_effective_target_lp64 { } {
     }]
 }
 
+# Return 1 if we're generating 64-bit code using default llp64 options,
+# 0 otherwise.
+
+proc check_effective_target_llp64 { } {
+    return [check_no_compiler_messages llp64 object {
+	int dummy[sizeof (int) == 4
+		  && sizeof (void *) == 8
+		  && sizeof (long long) == 8
+		  && sizeof (long) == 4 ? 1 : -1];
+    }]
+}
+
 # Return 1 if the target supports long double larger than double,
 # 0 otherwise.
 

@@ -12,4 +12,4 @@ struct SaveLoadEntry {
   int size;
 };    
 
-int foobar = ((long) (& ((Track *) 42)->soundName[0])) - 42;
+int foobar = ((long) (__SIZE_TYPE__) (& ((Track *) 42)->soundName[0])) - 42;

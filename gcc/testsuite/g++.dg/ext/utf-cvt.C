@@ -46,8 +46,8 @@ void m(char16_t c0, char32_t c1)
     f_i (c1);	/* { dg-warning "change the sign" } */
     fsi (c1);	/* { dg-warning "change the sign" } */
     fui (c1);
-    f_l (c1);	/* { dg-warning "change the sign" "" { target { ilp32 } } } */
-    fsl (c1);	/* { dg-warning "change the sign" "" { target { ilp32 } } } */
+    f_l (c1);	/* { dg-warning "change the sign" "" { target { llp64 || ilp32 } } } */
+    fsl (c1);	/* { dg-warning "change the sign" "" { target { llp64 || ilp32 } } } */
     ful (c1);
     f_ll (c1);
     fsll (c1);

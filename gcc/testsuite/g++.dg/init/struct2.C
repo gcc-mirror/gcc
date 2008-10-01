@@ -15,7 +15,7 @@ void saveOrLoad() {
     };    
 
     SaveLoadEntry trackEntries = {
-	((long) (&((Track *) 42)->soundName[0])) - 42,
+	((long) (__SIZE_TYPE__) (&((Track *) 42)->soundName[0])) - 42,
         0, 1
     };
     saveLoadEntries(&trackEntries);
