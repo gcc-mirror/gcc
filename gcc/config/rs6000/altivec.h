@@ -304,6 +304,11 @@
 #define vec_vsubuws __builtin_vec_vsubuws
 #define vec_xor __builtin_vec_xor
 
+#define vec_extract __builtin_vec_extract
+#define vec_insert __builtin_vec_insert
+#define vec_splats __builtin_vec_splats
+#define vec_promote __builtin_vec_promote
+
 /* Predicates.
    For C++, we use templates in order to allow non-parenthesized arguments.
    For C, instead, we use macros since non-parenthesized arguments were

@@ -2973,6 +2973,198 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
       || fcode > ALTIVEC_BUILTIN_OVERLOADED_LAST)
     return NULL_TREE;
 
+  /* For now treat vec_splats and vec_promote as the same.  */
+  if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS
+      || fcode == ALTIVEC_BUILTIN_VEC_PROMOTE)
+    {
+      tree type, arg;
+      int size;
+      int i;
+      bool unsigned_p;
+      VEC(constructor_elt,gc) *vec;
+      const char *name = fcode == ALTIVEC_BUILTIN_VEC_SPLATS ? "vec_splats": "vec_promote";
+
+      if (!arglist)
+	{
+	  error ("%s only accepts %d arguments", name, (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE)+1 );
+	  return error_mark_node;
+	}
+      if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS && TREE_CHAIN (arglist))
+	{
+	  error ("%s only accepts 1 argument", name);
+	  return error_mark_node;
+	}
+      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE && !TREE_CHAIN (arglist))
+	{
+	  error ("%s only accepts 2 arguments", name);
+	  return error_mark_node;
+	}
+      /* Ignore promote's element argument.  */
+      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE
+	  && TREE_CHAIN (TREE_CHAIN (arglist)))
+	{
+	  error ("%s only accepts 2 arguments", name);
+	  return error_mark_node;
+	}
+      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE
+	  && !INTEGRAL_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))))
+	goto bad;
+
+      arg = TREE_VALUE (arglist);
+      type = TREE_TYPE (arg);
+      if (!SCALAR_FLOAT_TYPE_P (type)
+	  && !INTEGRAL_TYPE_P (type))
+	goto bad;
+      unsigned_p = TYPE_UNSIGNED (type);
+      if (type == long_long_unsigned_type_node
+          || type == long_long_integer_type_node)
+	goto bad;
+      switch (TYPE_MODE (type))
+	{
+	  case SImode:
+	    type = (unsigned_p ? unsigned_V4SI_type_node : V4SI_type_node);
+	    size = 4;
+	    break;
+	  case HImode:
+	    type = (unsigned_p ? unsigned_V8HI_type_node : V8HI_type_node);
+	    size = 8;
+	    break;
+	  case QImode:
+	    type = (unsigned_p ? unsigned_V16QI_type_node : V16QI_type_node);
+	    size = 16;
+	    break;
+	  case SFmode: type = V4SF_type_node; size = 4; break;
+	  default:
+	    goto bad;
+	}
+      arg = save_expr (fold_convert (TREE_TYPE (type), arg));
+      vec = VEC_alloc (constructor_elt, gc, size);
+      for(i = 0; i < size; i++)
+	{
+	  constructor_elt *elt;
+
+	  elt = VEC_quick_push (constructor_elt, vec, NULL);
+	  elt->index = NULL_TREE;
+	  elt->value = arg;
+	}
+	return build_constructor (type, vec);
+    }
+
+  /* For now use pointer tricks to do the extaction.  */
+  if (fcode == ALTIVEC_BUILTIN_VEC_EXTRACT)
+    {
+      tree arg1;
+      tree arg1_type;
+      tree arg2;
+      tree arg1_inner_type;
+      tree decl, stmt;
+      tree innerptrtype;
+
+      /* No second argument. */
+      if (!arglist || !TREE_CHAIN (arglist)
+	  || TREE_CHAIN (TREE_CHAIN (arglist)))
+	{
+	  error ("vec_extract only accepts 2 arguments");
+	  return error_mark_node;
+	}
+
+      arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg1 = TREE_VALUE (arglist);
+      arg1_type = TREE_TYPE (arg1);
+
+      if (TREE_CODE (arg1_type) != VECTOR_TYPE)
+	goto bad; 
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
+	goto bad; 
+      /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2). */
+      arg1_inner_type = TREE_TYPE (arg1_type);
+      arg2 = build_binary_op (input_location, BIT_AND_EXPR, arg2,
+			      build_int_cst (TREE_TYPE (arg2),
+					     TYPE_VECTOR_SUBPARTS (arg1_type)
+					     - 1), 0);
+      decl = build_decl (VAR_DECL, NULL_TREE, arg1_type);
+      DECL_EXTERNAL (decl) = 0;
+      TREE_PUBLIC (decl) = 0;
+      DECL_CONTEXT (decl) = current_function_decl;
+      TREE_USED (decl) = 1;
+      TREE_TYPE (decl) = arg1_type;
+      TREE_READONLY (decl) = TYPE_READONLY (arg1_type);
+      DECL_INITIAL (decl) = arg1;
+      stmt = build1 (DECL_EXPR, arg1_type, decl);
+      TREE_ADDRESSABLE (decl) = 1;
+      SET_EXPR_LOCATION (stmt, input_location);
+      stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+
+      innerptrtype = build_pointer_type (arg1_inner_type);
+
+      stmt = build_unary_op (ADDR_EXPR, stmt, 0);
+      stmt = convert (innerptrtype, stmt);
+      stmt = build_binary_op (input_location, PLUS_EXPR, stmt, arg2, 1);
+      stmt = build_indirect_ref (stmt, NULL, input_location);
+
+      return stmt;
+    }
+
+  /* For now use pointer tricks to do the insertation.  */
+  if (fcode == ALTIVEC_BUILTIN_VEC_INSERT)
+    {
+      tree arg0;
+      tree arg1;
+      tree arg2;
+      tree arg1_type;
+      tree arg1_inner_type;
+      tree decl, stmt;
+      tree innerptrtype;
+      
+      /* No second or third arguments. */
+      if (!arglist || !TREE_CHAIN (arglist)
+	  || !TREE_CHAIN (TREE_CHAIN (arglist))
+	  || TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))))
+	{
+	  error ("vec_insert only accepts 3 arguments");
+	  return error_mark_node;
+	}
+
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg1_type = TREE_TYPE (arg1);
+      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+      if (TREE_CODE (arg1_type) != VECTOR_TYPE)
+	goto bad; 
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
+	goto bad; 
+      /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2) = arg0. */
+      arg1_inner_type = TREE_TYPE (arg1_type);
+      arg2 = build_binary_op (input_location, BIT_AND_EXPR, arg2,
+			      build_int_cst (TREE_TYPE (arg2),
+					     TYPE_VECTOR_SUBPARTS (arg1_type)
+					     - 1), 0);
+      decl = build_decl (VAR_DECL, NULL_TREE, arg1_type);
+      DECL_EXTERNAL (decl) = 0;
+      TREE_PUBLIC (decl) = 0;
+      DECL_CONTEXT (decl) = current_function_decl;
+      TREE_USED (decl) = 1;
+      TREE_TYPE (decl) = arg1_type;
+      TREE_READONLY (decl) = TYPE_READONLY (arg1_type);
+      DECL_INITIAL (decl) = arg1;
+      stmt = build1 (DECL_EXPR, arg1_type, decl);
+      TREE_ADDRESSABLE (decl) = 1;
+      SET_EXPR_LOCATION (stmt, input_location);
+      stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+
+      innerptrtype = build_pointer_type (arg1_inner_type);
+
+      stmt = build_unary_op (ADDR_EXPR, stmt, 0);
+      stmt = convert (innerptrtype, stmt);
+      stmt = build_binary_op (input_location, PLUS_EXPR, stmt, arg2, 1);
+      stmt = build_indirect_ref (stmt, NULL, input_location);
+      stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
+		     convert (TREE_TYPE (stmt), arg0));
+      stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+      return stmt;
+    }
+
   for (n = 0;
        !VOID_TYPE_P (TREE_VALUE (fnargs)) && arglist;
        fnargs = TREE_CHAIN (fnargs), arglist = TREE_CHAIN (arglist), n++)
