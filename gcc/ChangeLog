@@ -1,4 +1,22 @@
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Handle ALTIVEC_BUILTIN_VEC_SPLATS, ALTIVEC_BUILTIN_VEC_PROMOTE,
+	ALTIVEC_BUILTIN_VEC_EXTRACT, and ALTIVEC_BUILTIN_VEC_INSERT specially,
+	they translate to non builtins.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add new variable
+	opaque_ftype_opaque.  Define builtins __builtin_vec_splats,
+	__builtin_vec_promote, __builtin_vec_extract, and
+	__builtin_vec_insert.
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Add
+	ALTIVEC_BUILTIN_VEC_EXTRACT, ALTIVEC_BUILTIN_VEC_PROMOTE,
+	ALTIVEC_BUILTIN_VEC_INSERT, and ALTIVEC_BUILTIN_VEC_SPLATS.
+	* config/rs6000/altivec.h (vec_extract): Define
+	(vec_insert): Define.
+	(vec_splats): Define.
+	(vec_promote): Define.
+
+2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
             Yukishige Shibata  <shibata@rd.scei.sony.co.jp>
             Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
 

@@ -9784,7 +9784,9 @@ altivec_init_builtins (void)
   tree int_ftype_opaque
     = build_function_type_list (integer_type_node,
 				opaque_V4SI_type_node, NULL_TREE);
-
+  tree opaque_ftype_opaque
+    = build_function_type (integer_type_node,
+				NULL_TREE);
   tree opaque_ftype_opaque_int
     = build_function_type_list (opaque_V4SI_type_node,
 				opaque_V4SI_type_node, integer_type_node, NULL_TREE);
@@ -9953,9 +9955,13 @@ altivec_init_builtins (void)
       def_builtin (MASK_ALTIVEC, "__builtin_vec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRXL);
     }
   def_builtin (MASK_ALTIVEC, "__builtin_vec_step", int_ftype_opaque, ALTIVEC_BUILTIN_VEC_STEP);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_splats", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_SPLATS);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_promote", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_PROMOTE);
 
   def_builtin (MASK_ALTIVEC, "__builtin_vec_sld", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_SLD);
   def_builtin (MASK_ALTIVEC, "__builtin_vec_splat", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_SPLAT);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_extract", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_EXTRACT);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_insert", opaque_ftype_opaque_opaque_int, ALTIVEC_BUILTIN_VEC_INSERT);
   def_builtin (MASK_ALTIVEC, "__builtin_vec_vspltw", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTW);
   def_builtin (MASK_ALTIVEC, "__builtin_vec_vsplth", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTH);
   def_builtin (MASK_ALTIVEC, "__builtin_vec_vspltb", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_VSPLTB);

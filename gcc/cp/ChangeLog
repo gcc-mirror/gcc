@@ -1,3 +1,7 @@
+2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.c (lvalue_p_1): COMPOUND_LITERAL_EXPR is also an lvalue.
+
 2008-09-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/37683
