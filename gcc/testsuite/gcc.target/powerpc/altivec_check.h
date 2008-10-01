@@ -22,3 +22,17 @@ void altivec_check(void) {
 #endif
   signal (SIGILL, SIG_DFL);
 }
+
+void altivec_cell_check (void)
+{
+  /* Exit on systems without the Cell Altivec instructions.  */
+  signal (SIGILL, sig_ill_handler);
+#ifdef __MACH__
+  asm volatile ("vor v0,v0,v0");
+  asm volatile ("lvlx v0,r0,r0");
+#else
+  asm volatile ("vor 0,0,0");
+  asm volatile ("lvlx 0,0,0");
+#endif
+  signal (SIGILL, SIG_DFL);
+}

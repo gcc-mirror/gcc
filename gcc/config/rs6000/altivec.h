@@ -205,6 +205,13 @@
 #define vec_lvebx __builtin_vec_lvebx
 #define vec_lvehx __builtin_vec_lvehx
 #define vec_lvewx __builtin_vec_lvewx
+/* Cell only intrinsics.  */
+#ifdef __PPU__
+#define vec_lvlx __builtin_vec_lvlx
+#define vec_lvlxl __builtin_vec_lvlxl
+#define vec_lvrx __builtin_vec_lvrx
+#define vec_lvrxl __builtin_vec_lvrxl
+#endif
 #define vec_lvsl __builtin_vec_lvsl
 #define vec_lvsr __builtin_vec_lvsr
 #define vec_max __builtin_vec_max
@@ -239,6 +246,13 @@
 #define vec_stvebx __builtin_vec_stvebx
 #define vec_stvehx __builtin_vec_stvehx
 #define vec_stvewx __builtin_vec_stvewx
+/* Cell only intrinsics.  */
+#ifdef __PPU__
+#define vec_stvlx __builtin_vec_stvlx
+#define vec_stvlxl __builtin_vec_stvlxl
+#define vec_stvrx __builtin_vec_stvrx
+#define vec_stvrxl __builtin_vec_stvrxl
+#endif
 #define vec_sub __builtin_vec_sub
 #define vec_subs __builtin_vec_subs
 #define vec_sum __builtin_vec_sum
