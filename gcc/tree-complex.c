@@ -515,7 +515,8 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
   /* If we've nothing assigned, and the value we're given is already stable,
      then install that as the value for this SSA_NAME.  This preemptively
      copy-propagates the value, which avoids unnecessary memory allocation.  */
-  else if (is_gimple_min_invariant (value))
+  else if (is_gimple_min_invariant (value)
+	   && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name))
     {
       VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
       return NULL;
