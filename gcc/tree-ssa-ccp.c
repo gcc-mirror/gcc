@@ -2711,6 +2711,17 @@ fold_gimple_assign (gimple_stmt_iterator *si)
           STRIP_USELESS_TYPE_CONVERSION (result);
           if (valid_gimple_rhs_p (result))
 	    return result;
+
+	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
+	     we lose canonicalization opportunities.  Do not go again
+	     through fold here though, or the same non-GIMPLE will be
+	     produced.  */
+          if (commutative_tree_code (subcode)
+              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
+                                       gimple_assign_rhs2 (stmt), false))
+            return build2 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
+                           gimple_assign_rhs2 (stmt),
+                           gimple_assign_rhs1 (stmt));
         }
       break;
 

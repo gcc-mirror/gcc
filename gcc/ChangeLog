@@ -1,3 +1,10 @@
+2008-09-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/37662
+	* tree-ssa-ccp.c (fold_gimple_assign): Invert the operands of a
+	commutative binary operation if they are in the wrong order and
+	fold_build2 produces non-GIMPLE.
+
 2008-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37662
