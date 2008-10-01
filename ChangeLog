@@ -1,3 +1,7 @@
+2008-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* MAINTAINERS (Blanket Write Privs): Change to Global Reviewers.
+
 2008-09-29  David Daney	<david.daney@caviumnetworks.com>
 
 	* MAINTAINERS (Write After Approval): Update e-mail address.
