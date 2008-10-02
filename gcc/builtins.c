@@ -8459,9 +8459,13 @@ fold_builtin_pow (tree fndecl, tree arg0, tree arg1, tree type)
       real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
       if (real_identical (&c, &cint))
 	{
-	  /* Attempt to evaluate pow at compile-time.  */
+	  /* Attempt to evaluate pow at compile-time, unless this should
+	     raise an exception.  */
 	  if (TREE_CODE (arg0) == REAL_CST
-	      && !TREE_OVERFLOW (arg0))
+	      && !TREE_OVERFLOW (arg0)
+	      && (n > 0
+		  || (!flag_trapping_math && !flag_errno_math)
+		  || !REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), dconst0)))
 	    {
 	      REAL_VALUE_TYPE x;
 	      bool inexact;
