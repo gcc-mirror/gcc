@@ -1,3 +1,15 @@
+2008-10-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (USE_FP_FOR_ARG_P): Revert
+	TARGET_DOUBLE_FLOAT, TARGET_SINGLE_FLOAT.
+	(function_arg_advance): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	Revert SCALAR_FLOAT_MODE_P condition.
+	(function_arg): Condition on TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+	(rs6000_function_value): Revert TARGET_DOUBLE_FLOAT,
+	TARGET_SINGLE_FLOAT.
+
 2008-10-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* builtins.c (fold_builtin_pow): Check for 0 ** NEGATIVE.
