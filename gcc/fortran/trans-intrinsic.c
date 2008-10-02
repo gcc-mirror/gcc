@@ -2653,6 +2653,141 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   se->expr = fold_build3 (COND_EXPR, type, tmp, args[0], rrot);
 }
 
+/* LEADZ (i) = (i == 0) ? BIT_SIZE (i)
+			: __builtin_clz(i) - (BIT_SIZE('int') - BIT_SIZE(i))
+
+   The conditional expression is necessary because the result of LEADZ(0)
+   is defined, but the result of __builtin_clz(0) is undefined for most
+   targets.
+
+   For INTEGER kinds smaller than the C 'int' type, we have to subtract the
+   difference in bit size between the argument of LEADZ and the C int.  */
+ 
+static void
+gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
+{
+  tree arg;
+  tree arg_type;
+  tree cond;
+  tree result_type;
+  tree leadz;
+  tree bit_size;
+  tree tmp;
+  int arg_kind;
+  int i, n, s;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  /* Which variant of __builtin_clz* should we call?  */
+  arg_kind = expr->value.function.actual->expr->ts.kind;
+  i = gfc_validate_kind (BT_INTEGER, arg_kind, false);
+  switch (arg_kind)
+    {
+      case 1:
+      case 2:
+      case 4:
+        arg_type = unsigned_type_node;
+	n = BUILT_IN_CLZ;
+	break;
+
+      case 8:
+        arg_type = long_unsigned_type_node;
+	n = BUILT_IN_CLZL;
+	break;
+
+      case 16:
+        arg_type = long_long_unsigned_type_node;
+	n = BUILT_IN_CLZLL;
+	break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  /* Convert the actual argument to the proper argument type for the built-in
+     function.  But the return type is of the default INTEGER kind.  */
+  arg = fold_convert (arg_type, arg);
+  result_type = gfc_get_int_type (gfc_default_integer_kind);
+
+  /* Compute LEADZ for the case i .ne. 0.  */
+  s = TYPE_PRECISION (arg_type) - gfc_integer_kinds[i].bit_size;
+  tmp = fold_convert (result_type, build_call_expr (built_in_decls[n], 1, arg));
+  leadz = fold_build2 (MINUS_EXPR, result_type,
+		       tmp, build_int_cst (result_type, s));
+
+  /* Build BIT_SIZE.  */
+  bit_size = build_int_cst (result_type, gfc_integer_kinds[i].bit_size);
+
+  /* ??? For some combinations of targets and integer kinds, the condition
+	 can be avoided if CLZ_DEFINED_VALUE_AT_ZERO is used.  Later.  */
+  cond = fold_build2 (EQ_EXPR, boolean_type_node,
+		      arg, build_int_cst (arg_type, 0));
+  se->expr = fold_build3 (COND_EXPR, result_type, cond, bit_size, leadz);
+}
+
+/* TRAILZ(i) = (i == 0) ? BIT_SIZE (i) : __builtin_ctz(i)
+
+   The conditional expression is necessary because the result of TRAILZ(0)
+   is defined, but the result of __builtin_ctz(0) is undefined for most
+   targets.  */
+ 
+static void
+gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
+{
+  tree arg;
+  tree arg_type;
+  tree cond;
+  tree result_type;
+  tree trailz;
+  tree bit_size;
+  int arg_kind;
+  int i, n;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  /* Which variant of __builtin_clz* should we call?  */
+  arg_kind = expr->value.function.actual->expr->ts.kind;
+  i = gfc_validate_kind (BT_INTEGER, arg_kind, false);
+  switch (expr->ts.kind)
+    {
+      case 1:
+      case 2:
+      case 4:
+        arg_type = unsigned_type_node;
+	n = BUILT_IN_CTZ;
+	break;
+
+      case 8:
+        arg_type = long_unsigned_type_node;
+	n = BUILT_IN_CTZL;
+	break;
+
+      case 16:
+        arg_type = long_long_unsigned_type_node;
+	n = BUILT_IN_CTZLL;
+	break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  /* Convert the actual argument to the proper argument type for the built-in
+     function.  But the return type is of the default INTEGER kind.  */
+  arg = fold_convert (arg_type, arg);
+  result_type = gfc_get_int_type (gfc_default_integer_kind);
+
+  /* Compute TRAILZ for the case i .ne. 0.  */
+  trailz = fold_convert (result_type, build_call_expr (built_in_decls[n], 1, arg));
+
+  /* Build BIT_SIZE.  */
+  bit_size = build_int_cst (result_type, gfc_integer_kinds[i].bit_size);
+
+  /* ??? For some combinations of targets and integer kinds, the condition
+	 can be avoided if CTZ_DEFINED_VALUE_AT_ZERO is used.  Later.  */
+  cond = fold_build2 (EQ_EXPR, boolean_type_node,
+		      arg, build_int_cst (arg_type, 0));
+  se->expr = fold_build3 (COND_EXPR, result_type, cond, bit_size, trailz);
+}
 
 /* Process an intrinsic with unspecified argument-types that has an optional
    argument (which could be of type character), e.g. EOSHIFT.  For those, we
@@ -4480,6 +4615,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_ISHFTC:
       gfc_conv_intrinsic_ishftc (se, expr);
+      break;
+
+    case GFC_ISYM_LEADZ:
+      gfc_conv_intrinsic_leadz (se, expr);
+      break;
+
+    case GFC_ISYM_TRAILZ:
+      gfc_conv_intrinsic_trailz (se, expr);
       break;
 
     case GFC_ISYM_LBOUND:

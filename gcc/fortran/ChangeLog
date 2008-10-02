@@ -1,3 +1,19 @@
+2008-10-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/37635
+	* intrinsic.c (add_functions): Add LEADZ and TRAILZ as generics.
+	* intrinsic.h (gfc_simplify_leadz, gfc_simplify_trailz): New protos.
+	* gfortran.h <enum gfc_isym_id>: (GFC_ISYM_LEADZ, GFC_ISYM_TRAILZ): New.
+	* f95-lang (gfc_init_builtin_functions): Add BUILT_IN_CLZ,
+	BUILT_IN_CLZL, BUILT_IN_CLZLL, BUILT_IN_CTZ, BUILT_IN_CTZL, and
+	BUILT_IN_CTZLL.
+	* trans-intrinsic.c (gfc_conv_intrinsic_leadz,
+	gfc_conv_intrinsic_trails): New code-generation functions for LEADZ
+	and TRAILZ intrinsics.
+	(gfc_conv_intrinsic_function): Use them
+	* intrinsic.texi: Add documentation for LEADZ and TRAILZ.
+	* simplify.c (gfc_simplify_leadz, gfc_simplify_trailz): New functions.
+
 2008-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36592

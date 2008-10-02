@@ -1781,6 +1781,13 @@ add_functions (void)
 
   make_generic ("lbound", GFC_ISYM_LBOUND, GFC_STD_F95);
 
+  add_sym_1 ("leadz", GFC_ISYM_LEADZ, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_i, gfc_simplify_leadz, NULL,
+	     i, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("leadz", GFC_ISYM_LEADZ, GFC_STD_F2008);
+
   add_sym_2 ("len", GFC_ISYM_LEN, CLASS_INQUIRY, ACTUAL_YES,
 	     BT_INTEGER, di, GFC_STD_F77,
 	     gfc_check_len_lentrim, gfc_simplify_len, gfc_resolve_len,
@@ -2387,6 +2394,13 @@ add_functions (void)
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("tiny", GFC_ISYM_TINY, GFC_STD_F95);
+
+  add_sym_1 ("trailz", GFC_ISYM_TRAILZ, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_i, gfc_simplify_trailz, NULL,
+	     i, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("trailz", GFC_ISYM_TRAILZ, GFC_STD_F2008);
 
   add_sym_3 ("transfer", GFC_ISYM_TRANSFER, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_transfer, gfc_simplify_transfer, gfc_resolve_transfer,
