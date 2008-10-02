@@ -16,3 +16,6 @@ void RRB( __vector float vdist, __vector float vx)
    g(pullx);
   }
 }
+
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output ".*GCC vector returned by reference.*" } */
