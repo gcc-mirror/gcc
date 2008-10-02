@@ -1,5 +1,7 @@
 2008-10-02  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/torture/pr36891.c: Ignore an irrelevant warning.
+
 	* gcc.target/powerpc/ppc64-abi-3.c: Initialize variables to suppress
 	warning.
 
