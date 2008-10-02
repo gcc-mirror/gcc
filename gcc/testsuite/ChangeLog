@@ -1,3 +1,9 @@
+2008-10-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/37635
+	* gfortran.fortran-torture/execute/intrinsic_leadz.f90: New test.
+	* gfortran.fortran-torture/execute/intrinsic_trailz.f90: New test.
+
 2008-10-02  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/torture/pr36891.c: Ignore an irrelevant warning.

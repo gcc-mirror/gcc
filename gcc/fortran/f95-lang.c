@@ -1003,6 +1003,37 @@ gfc_init_builtin_functions (void)
 		          BUILT_IN_SINCOSF, "sincosf", false);
     }
 
+  /* For LEADZ / TRAILZ.  */
+  tmp = tree_cons (NULL_TREE, unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ,
+		      "__builtin_clz", true);
+
+  tmp = tree_cons (NULL_TREE, long_unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL,
+		      "__builtin_clzl", true);
+
+  tmp = tree_cons (NULL_TREE, long_long_unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL,
+		      "__builtin_clzll", true);
+
+  tmp = tree_cons (NULL_TREE, unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_ctz", ftype, BUILT_IN_CTZ,
+		      "__builtin_ctz", true);
+
+  tmp = tree_cons (NULL_TREE, long_unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_ctzl", ftype, BUILT_IN_CTZL,
+		      "__builtin_ctzl", true);
+
+  tmp = tree_cons (NULL_TREE, long_long_unsigned_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_ctzll", ftype, BUILT_IN_CTZLL,
+		      "__builtin_ctzll", true);
+
   /* Other builtin functions we use.  */
 
   tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);

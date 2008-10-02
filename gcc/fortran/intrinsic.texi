@@ -164,6 +164,7 @@ Some basic guidelines for editing this document:
 * @code{KILL}:          KILL,      Send a signal to a process
 * @code{KIND}:          KIND,      Kind of an entity
 * @code{LBOUND}:        LBOUND,    Lower dimension bounds of an array
+* @code{LEADZ}:         LEADZ,     Number of leading zero bits of an integer
 * @code{LEN}:           LEN,       Length of a character entity
 * @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
 * @code{LOG_GAMMA}:     LOG_GAMMA, Logarithm of the Gamma function
@@ -252,6 +253,7 @@ Some basic guidelines for editing this document:
 * @code{TIME}:          TIME,      Time function
 * @code{TIME8}:         TIME8,     Time function (64-bit)
 * @code{TINY}:          TINY,      Smallest positive number of a real kind
+* @code{TRAILZ}:        TRAILZ,    Number of trailing zero bits of an integer
 * @code{TRANSFER}:      TRANSFER,  Transfer bit patterns
 * @code{TRANSPOSE}:     TRANSPOSE, Transpose an array of rank two
 * @code{TRIM}:          TRIM,      Remove trailing blank characters of a string
@@ -6504,6 +6506,46 @@ dimension, the lower bound is taken to be 1.
 
 
 
+@node LEADZ
+@section @code{LEADZ} --- Number of leading zero bits of an integer
+@fnindex LEADZ
+@cindex zero bits
+
+@table @asis
+@item @emph{Description}:
+@code{LEADZ} returns the number of leading zero bits of an integer.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = LEADZ(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The type of the return value is the default @code{INTEGER}.
+If all the bits of @code{I} are zero, the result value is @code{BIT_SIZE(I)}.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_leadz
+  WRITE (*,*) LEADZ(1)  ! prints 8 if BITSIZE(I) has the value 32
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{BIT_SIZE}, @ref{TRAILZ}
+@end table
+
+
+
 @node LEN
 @section @code{LEN} --- Length of a character entity
 @fnindex LEN
@@ -10638,6 +10680,46 @@ The return value is of the same type and kind as @var{X}
 
 @item @emph{Example}:
 See @code{HUGE} for an example.
+@end table
+
+
+
+@node TRAILZ
+@section @code{TRAILZ} --- Number of trailing zero bits of an integer
+@fnindex TRAILZ
+@cindex zero bits
+
+@table @asis
+@item @emph{Description}:
+@code{TRAILZ} returns the number of trailing zero bits of an integer.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = TRAILZ(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The type of the return value is the default @code{INTEGER}.
+If all the bits of @code{I} are zero, the result value is @code{BIT_SIZE(I)}.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_trailz
+  WRITE (*,*) TRAILZ(8)  ! prints 3
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{BIT_SIZE}, @ref{LEADZ}
 @end table
 
 
