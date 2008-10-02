@@ -21,8 +21,8 @@ g(v2si v)
 int 
 main()
 {
-    v4si v;
-    v2si w;
+    v4si v = { 1, 2, 3, 4 };
+    v2si w = { 5, 6 };
     v = f (v); /* { dg-error "altivec instructions are disabled" "PR18631" { xfail *-*-* } } */
     w = g (w);
     return 0;

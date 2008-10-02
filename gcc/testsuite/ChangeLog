@@ -1,3 +1,8 @@
+2008-10-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-3.c: Initialize variables to suppress
+	warning.
+
 2008-10-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37713
