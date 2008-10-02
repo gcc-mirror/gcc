@@ -1,3 +1,7 @@
+2008-10-02  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* builtins.c (fold_builtin_pow): Check for 0 ** NEGATIVE.
+
 2008-10-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37713
