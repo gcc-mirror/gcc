@@ -13,7 +13,8 @@
 
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	* gcc.target/powerpc/altivec_check.h (altivec_cell_check): New function.
+	* gcc.target/powerpc/altivec_check.h (altivec_cell_check):
+	New function.
 	* gcc.target/powerpc/altivec-cell-6.c: New test.
 	* gcc.target/powerpc/altivec-cell-7.c: New test.
 	* gcc.target/powerpc/altivec-cell-8.c: New test.
@@ -82,7 +83,7 @@
 	addresses of non zero offset works.
 
 2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
+	    Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
 
 	PR tree-opt/36891
 	* gcc.dg/torture/pr36891.c: New testcase.
@@ -542,8 +543,8 @@
 	* g++.old-deja/g++.robertl/eb44.C: Ditto.
 	* g++.old-deja/g++.robertl/eb4.C: Ditto.
 	* g++.old-deja/g++.robertl/eb69.C: Ditto.
-	* g++.dg/parse/constructor1.C: Remove "error" from dg-error, preserving
-	column number.
+	* g++.dg/parse/constructor1.C: Remove "error" from dg-error,
+	preserving column number.
 	* g++.dg/parse/error10.C: Ditto.
 	* g++.dg/parse/error13.C: Ditto.
 	* g++.dg/parse/error14.C: Ditto.
