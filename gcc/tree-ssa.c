@@ -1159,15 +1159,15 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
   /* Recurse for complex types.  */
   else if (TREE_CODE (inner_type) == COMPLEX_TYPE
 	   && TREE_CODE (outer_type) == COMPLEX_TYPE)
-    return useless_type_conversion_p_1 (TREE_TYPE (outer_type),
-				        TREE_TYPE (inner_type));
+    return useless_type_conversion_p (TREE_TYPE (outer_type),
+				      TREE_TYPE (inner_type));
 
   /* Recurse for vector types with the same number of subparts.  */
   else if (TREE_CODE (inner_type) == VECTOR_TYPE
 	   && TREE_CODE (outer_type) == VECTOR_TYPE
 	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return useless_type_conversion_p_1 (TREE_TYPE (outer_type),
-				        TREE_TYPE (inner_type));
+    return useless_type_conversion_p (TREE_TYPE (outer_type),
+				      TREE_TYPE (inner_type));
 
   /* For aggregates we may need to fall back to structural equality
      checks.  */
