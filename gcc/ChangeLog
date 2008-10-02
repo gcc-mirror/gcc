@@ -216,8 +216,8 @@
 
 2008-09-29  Tobias Grosser  <grosser@fim.uni-passau.de>
 
-	* graphite.c (dot_all_scops_1): Remove unused checks. SCoPs always have
-	exit and entry.
+	* graphite.c (dot_all_scops_1): Remove unused checks. SCoPs always
+	have exit and entry.
 	(new_scop): Take entry and exit edge to define new SCoP.
 	(sd_region_p): New structure used during SCoP detection.
 	(move_scops): Delete.
@@ -257,7 +257,7 @@
 	for SHmedia.
 
 2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
+	    Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
 
 	PR tree-opt/36891
 	* tree-ssa-loop-im.c (rewrite_reciprocal): Set DECL_GIMPLE_REG_P on
@@ -310,7 +310,7 @@
 	CL_SAVE as first argument.
 
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* aclocal.m4: Ditto.
@@ -809,11 +809,12 @@
 	(xtensa_legitimize_address): Handle TLS symbols.
 	(xtensa_tls_referenced_p_1): New.
 	(xtensa_tls_referenced_p): New.
-	(xtensa_output_addr_const_extra): Handle UNSPEC_TPOFF and UNSPEC_DTPOFF.
+	(xtensa_output_addr_const_extra): Handle UNSPEC_TPOFF and
+	UNSPEC_DTPOFF.
 	(XTENSA_BUILTIN_THREAD_POINTER): New.
 	(XTENSA_BUILTIN_SET_THREAD_POINTER): New.
-	(xtensa_init_builtins): Set NOTHROW and READONLY for umulsidi3 builtin.
-	Add declarations for __builtin_thread_pointer and
+	(xtensa_init_builtins): Set NOTHROW and READONLY for umulsidi3
+	builtin.  Add declarations for __builtin_thread_pointer and
 	__builtin_set_thread_pointer.
 	(xtensa_fold_builtin): Recognize new builtins.
 	(xtensa_expand_builtin): Expand new builtins.
@@ -864,10 +865,11 @@
 	(get_reference_vars_info): ... this one, use cgraph uids.
 	(get_local_reference_vars_info, get_global_reference_vars_info):
 	Use cgraph instead of decl.
-	(ipa_reference_get_read_local, ipa_reference_get_written_local): Remove.
+	(ipa_reference_get_read_local, ipa_reference_get_written_local):
+	Remove.
 	(ipa_reference_get_read_global, ipa_reference_get_not_read_global
-	ipa_reference_get_written_global, ipa_reference_get_not_written_global): Use
-	cgraph argument.
+	ipa_reference_get_written_global,
+	ipa_reference_get_not_written_global): Use cgraph argument.
 	(check_call): Simplify avail check.
 	(scan_stmt_for_static_refs): Update.
 	(propagate_bits): Update.
@@ -887,8 +889,8 @@
 	(ipa_reference_get_read_local, ipa_reference_get_written_local):
 	Remove.
 	(ipa_reference_get_read_global, ipa_reference_get_written_global,
-	ipa_reference_get_not_read_global, ipa_reference_get_not_written_global):
-	Update prototype.
+	ipa_reference_get_not_read_global,
+	ipa_reference_get_not_written_global): Update prototype.
 	* ipa-pure-const.c (funct_state_vec): Turn into VECtor.
 	(init_state): Remove.
 	(node_duplication_hook_holder, node_removal_hook_holder): New.
@@ -897,14 +899,15 @@
 	(add_new_function): Likewise.
 	(duplicate_node_data, remove_node_data): New.
 	(generate_summary): Register hooks; do not care about clones.
-	(propafate): Do not care about clones; recursive functions are not looping.
+	(propafate): Do not care about clones; recursive functions are
+	not looping.
 	* ipa-utils.c (searchc, ipa_utils_reduced_inorder): Do not skip clones.
 	* ipa-prop.c (edge_removal_hook_holder, node_removal_hook_holder,
 	* edge_duplication_hook_holder, node_duplication_hook_holder): Make
 	static.
 	* tree-flow.h (function_ann_d): Remove reference_vars_info.
-	* tree-ssa-opreands.c (add_call_clobber_ops, add_call_read_ops): Update call of
-	ipa-reference accesors.
+	* tree-ssa-opreands.c (add_call_clobber_ops, add_call_read_ops):
+	Update call of ipa-reference accesors.
 
 2008-09-18  Simon Baldwin  <simonb@google.com>
 
@@ -1628,12 +1631,12 @@
 2008-09-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37385
-	* tree-vect-transform.c (vect_create_data_ref_ptr): Add a new argument,
-	and use it as a vector type if not NULL.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Add a new
+	argument, and use it as a vector type if not NULL.
 	(vectorizable_store): Call vect_create_data_ref_ptr with the type of
 	vectorized rhs.
-	(vect_setup_realignment): Call vect_create_data_ref_ptr with additional
-	argument.
+	(vect_setup_realignment): Call vect_create_data_ref_ptr with
+	additional argument.
 	(vectorizable_load): Likewise.
 
 2008-09-10  Jakub Jelinek  <jakub@redhat.com>
@@ -1682,8 +1685,8 @@
 	(update_call_notes_after_inlining): Likewise.  Push new indirect edge
 	to *new_edges instead of new_edges.  Reread IPA_EDGE_REF after
 	ipa_check_create_edge_args.
-	* ipa-inline.c (cgraph_decide_recursive_inlining): Change last argument
-	to pointer to vector pointer.
+	* ipa-inline.c (cgraph_decide_recursive_inlining): Change last
+	argument to pointer to vector pointer.
 	(cgraph_decide_inlining_of_small_function): Adjust
 	cgraph_decide_recursive_inlining and ipa_propagate_indirect_call_infos
 	calls.
