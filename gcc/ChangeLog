@@ -1,3 +1,9 @@
+2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>  
+
+	PR target/37528
+	* config/i386/mingw32.h (LIBGCC_SPEC) : Replace with ..
+	(REAL_LIBGCC_SPEC): New.  Always include -lgcc.
+
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):

@@ -89,10 +89,12 @@ along with GCC; see the file COPYING3.  If not see
   %(shared_libgcc_undefs)"
 
 /* Include in the mingw32 libraries with libgcc */
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC \
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC \
   "-lmingw32 \
-   %{shared-libgcc:-lgcc_s} -lgcc \
+   %{shared-libgcc:-lgcc_s} \
+   %{!shared-libgcc:-lgcc_eh} \
+   -lgcc \
    -lmoldname -lmingwex -lmsvcrt"
 
 #undef STARTFILE_SPEC
