@@ -1,3 +1,10 @@
+2008-10-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37713
+	* tree-ssa.c (useless_type_conversion_p_1): For COMPLEX_TYPE
+	and VECTOR_TYPE recurse with useless_type_conversion_p which
+	properly handles void pointer conversion.
+
 2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>  
 
 	PR target/37528
