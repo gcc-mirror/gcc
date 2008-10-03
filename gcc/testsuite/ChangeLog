@@ -1,3 +1,8 @@
+2008-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37719
+	* g++.dg/template/error36.C: New.
+
 2008-10-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR fortran/37635
