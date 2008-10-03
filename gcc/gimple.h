@@ -2602,7 +2602,7 @@ static inline void
 gimple_bind_set_block (gimple gs, tree block)
 {
   GIMPLE_CHECK (gs, GIMPLE_BIND);
-  gcc_assert (TREE_CODE (block) == BLOCK);
+  gcc_assert (block == NULL_TREE || TREE_CODE (block) == BLOCK);
   gs->gimple_bind.block = block;
 }
 
