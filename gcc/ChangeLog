@@ -1,3 +1,9 @@
+2008-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37726
+	* gimplify.c (declare_vars): Use gimple_bind_block instead of
+	gimple_block.
+
 2008-10-03  Pascal Obry  <obry@adacore.com>
 
 	* gcov.c (create_file_names): Properly handle UNIX and DOS
