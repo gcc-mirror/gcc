@@ -1,3 +1,9 @@
+2008-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37719
+	* error.c (dump_function_decl): Save the exceptions in case of
+	error about incompatible specifications in a specialization.
+
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* tree.c (lvalue_p_1): COMPOUND_LITERAL_EXPR is also an lvalue.
