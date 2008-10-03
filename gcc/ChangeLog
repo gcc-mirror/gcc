@@ -1,3 +1,8 @@
+2008-10-03  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (i386_pe_strip_name_encoding_full):
+	Revert previous change.
+
 2008-10-03  Tom Tromey  <tromey@redhat.com>
 
 	* stringpool.c (ggc_alloc_string): Terminate string.
@@ -18,6 +23,11 @@
 	directory separators.
 	(make_gcov_file_name): Likewise + convert the ':' DOS drive
 	separator to '~' to ensure clean filenames on Windows.
+
+2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (i386_pe_strip_name_encoding_full):
+	Add a null terminator to the stripped name.
 
 2008-10-02  David Edelsohn  <edelsohn@gnu.org>
 

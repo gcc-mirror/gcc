@@ -352,16 +352,8 @@ i386_pe_strip_name_encoding_full (const char *str)
   /* Strip trailing "@n".  */
   p = strchr (name, '@');
   if (p)
-    {
-      /*  We need to replace the suffix with a null terminator.
-          Do that before using ggc_alloc_string to allocate the
-          const char *.  */ 
-      size_t len = p - name;
-      char *newname = XALLOCAVEC (char, len + 1);
-      memcpy (newname, name, len);
-      newname [len] = 0;
-      return ggc_alloc_string  (newname, len);
-    }
+    return ggc_alloc_string (name, p - name);
+
   return name;
 }
 
@@ -523,7 +515,8 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
   
   i386_pe_maybe_record_exported_symbol (decl, name, 1);
 
-  fprintf (stream, "\t.comm\t");
+  switch_to_section (bss_section);
+  fprintf (stream, "\t.balign %d\n\t.comm \t", ((int) align) / BITS_PER_UNIT);
   assemble_name (stream, name);
   fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC "\t" ASM_COMMENT_START
 	   " " HOST_WIDE_INT_PRINT_DEC "\n",
