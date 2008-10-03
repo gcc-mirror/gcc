@@ -772,7 +772,7 @@ declare_vars (tree vars, gimple scope, bool debug_info)
 
       temps = nreverse (last);
 
-      block = gimple_block (scope);
+      block = gimple_bind_block (scope);
       gcc_assert (!block || TREE_CODE (block) == BLOCK);
       if (!block || !debug_info)
 	{
