@@ -352,8 +352,16 @@ i386_pe_strip_name_encoding_full (const char *str)
   /* Strip trailing "@n".  */
   p = strchr (name, '@');
   if (p)
-    return ggc_alloc_string (name, p - name);
-
+    {
+      /*  We need to replace the suffix with a null terminator.
+          Do that before using ggc_alloc_string to allocate the
+          const char *.  */ 
+      size_t len = p - name;
+      char *newname = XALLOCAVEC (char, len + 1);
+      memcpy (newname, name, len);
+      newname [len] = 0;
+      return ggc_alloc_string  (newname, len);
+    }
   return name;
 }
 
