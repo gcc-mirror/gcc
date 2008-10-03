@@ -1,3 +1,7 @@
+2008-10-03  Tom Tromey  <tromey@redhat.com>
+
+	* stringpool.c (ggc_alloc_string): Terminate string.
+
 2008-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_function_tree): For -finstrument-functions

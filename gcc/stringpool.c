@@ -18,9 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* String text, identifier text and identifier node allocator.  Strings
-   allocated by ggc_alloc_string are stored in an obstack which is
-   never shrunk.  Identifiers are uniquely stored in a hash table.
+/* String text, identifier text and identifier node allocator.
+   Identifiers are uniquely stored in a hash table.
 
    We use cpplib's hash table implementation.  libiberty's
    hashtab.c is not used because it requires 100% average space
@@ -76,9 +75,7 @@ alloc_node (hash_table *table ATTRIBUTE_UNUSED)
 
 /* Allocate and return a string constant of length LENGTH, containing
    CONTENTS.  If LENGTH is -1, CONTENTS is assumed to be a
-   nul-terminated string, and the length is calculated using strlen.
-   If the same string constant has been allocated before, that copy is
-   returned this time too.  */
+   nul-terminated string, and the length is calculated using strlen.  */
 
 const char *
 ggc_alloc_string (const char *contents, int length)
@@ -94,7 +91,8 @@ ggc_alloc_string (const char *contents, int length)
     return digit_string (contents[0] - '0');
 
   result = GGC_NEWVAR (char, length + 1);
-  memcpy (result, contents, length + 1);
+  memcpy (result, contents, length);
+  result[length] = '\0';
   return (const char *) result;
 }
 
