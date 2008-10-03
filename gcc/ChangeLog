@@ -1,3 +1,10 @@
+2008-10-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000.md (fseldfsf4): Add TARGET_SINGLE_FLOAT 
+	condition.
+	(fselsfdf4): Make condition on "TARGET_HARD_FLOAT && TARGET_FPRS &&
+	TARGET_DOUBLE_FLOAT && TARGET_SINGLE_FLOAT".
+
 2008-10-03  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/winnt.c (i386_pe_strip_name_encoding_full):
