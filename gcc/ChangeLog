@@ -1,3 +1,10 @@
+2008-10-03  Pascal Obry  <obry@adacore.com>
+
+	* gcov.c (create_file_names): Properly handle UNIX and DOS
+	directory separators.
+	(make_gcov_file_name): Likewise + convert the ':' DOS drive
+	separator to '~' to ensure clean filenames on Windows.
+
 2008-10-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (USE_FP_FOR_ARG_P): Revert
