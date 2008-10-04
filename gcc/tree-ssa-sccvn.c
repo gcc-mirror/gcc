@@ -387,7 +387,7 @@ vn_reference_op_eq (const void *p1, const void *p2)
   const_vn_reference_op_t const vro1 = (const_vn_reference_op_t) p1;
   const_vn_reference_op_t const vro2 = (const_vn_reference_op_t) p2;
   return vro1->opcode == vro2->opcode
-    && vro1->type == vro2->type
+    && types_compatible_p (vro1->type, vro2->type)
     && expressions_equal_p (vro1->op0, vro2->op0)
     && expressions_equal_p (vro1->op1, vro2->op1)
     && expressions_equal_p (vro1->op2, vro2->op2);
@@ -1184,7 +1184,7 @@ vn_nary_op_eq (const void *p1, const void *p2)
   unsigned i;
 
   if (vno1->opcode != vno2->opcode
-      || vno1->type != vno2->type)
+      || !types_compatible_p (vno1->type, vno2->type))
     return false;
 
   for (i = 0; i < vno1->length; ++i)
