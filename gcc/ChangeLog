@@ -1,3 +1,7 @@
+2008-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
 2000-10-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/37603
