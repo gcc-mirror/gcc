@@ -1,3 +1,9 @@
+2008-10-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_op_eq): Use types_compatible_p
+	instead of pointer equality.
+	(vn_nary_op_eq): Likewise.
+
 2008-10-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000.md (fseldfsf4): Add TARGET_SINGLE_FLOAT 
