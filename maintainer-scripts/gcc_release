@@ -232,10 +232,10 @@ EOF
   xargs md5sum >>MD5SUMS
 }
 
-# Buid a single tarfile.  The first argument is the name of the name
-# of the tarfile to build, without any suffixes.  They will be added
-# automatically.  The rest of the arguments are the files or
-# directories to include, and possibly other arguments to tar.
+# Build a single tarfile.  The first argument is the name of the tarfile
+# to build, without any suffixes.  They will be added automatically.  The
+# rest of the arguments are files or directories to include, and possibly
+# other arguments to tar.
 
 build_tarfile() {
   # Get the name of the destination tar file.
@@ -384,7 +384,7 @@ upload_files() {
   done
 }
 
-#Print description if snapshot exists
+# Print description if snapshot exists.
 snapshot_print() {
   if [ -e ${RELEASE}/$1 ]; then
      printf "%-38s%s\n\n" "$1" "$2" >> ${SNAPSHOT_README}
@@ -536,7 +536,7 @@ TAG=""
 OLD_TARS=""
 
 # The directory that will be used to construct the release.  The
-# release itself will be placed in a subdirectory of this diretory.
+# release itself will be placed in a subdirectory of this directory.
 DESTINATION=${HOME}
 # The subdirectory.
 WORKING_DIRECTORY=""
@@ -678,7 +678,7 @@ else
 
   # If diffs are requested when building locally on gcc.gnu.org, we (usually)
   # know what the last snapshot date was and take the corresponding tarballs,
-  # unless the user specified tarballs explictly.
+  # unless the user specified tarballs explicitly.
   if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ] && [ -z "${OLD_TARS}" ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
     OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2

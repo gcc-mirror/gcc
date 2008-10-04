@@ -1,3 +1,7 @@
+2008-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release: Fix a couple of comments.
+
 2008-07-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* crontab: Remove 4.1 snapshots job.
