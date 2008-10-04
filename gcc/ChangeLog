@@ -1,3 +1,9 @@
+2000-10-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/37603
+	* pa.c (legitimize_pic_address): Force function labels to memory in
+	word mode.
+
 2008-10-04  Anton Blanchard  <anton@samba.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_sync): Use gen_lwsync().
