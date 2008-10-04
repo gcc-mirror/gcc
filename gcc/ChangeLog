@@ -1,3 +1,9 @@
+2000-10-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/37603
+	* pa.c (legitimize_pic_address): Force function labels to memory in
+	word mode.
+
 2008-10-01  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/35737
