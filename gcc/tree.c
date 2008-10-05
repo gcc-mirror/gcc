@@ -343,6 +343,8 @@ init_ttree (void)
   tree_contains_struct[CONST_DECL][TS_CONST_DECL] = 1;
   tree_contains_struct[TYPE_DECL][TS_TYPE_DECL] = 1;
   tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL] = 1;
+  tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON] = 1;
 
   lang_hooks.init_ts ();
 }

@@ -926,6 +926,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	case TARGET_OPTION_NODE:
 	  cl_target_option_print (file, indent + 4, TREE_TARGET_OPTION (node));
 	  break;
+	case IMPORTED_DECL:
+	  fprintf (file, " imported declaration");
+	  print_node_brief (file, "associated declaration",
+			    IMPORTED_DECL_ASSOCIATED_DECL (node),
+			    indent + 4);
+	  break;
 
 	default:
 	  if (EXCEPTIONAL_CLASS_P (node))

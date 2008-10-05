@@ -1,3 +1,10 @@
+2008-10-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/37410
+	* cp-gimplify.c (cp_gimplify_expr): For each USING_STMT
+	make sure an IMPORTED_DECL node is added to the BLOCK_VARS list
+	of the innermost containing BLOCK.
+
 2008-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37719

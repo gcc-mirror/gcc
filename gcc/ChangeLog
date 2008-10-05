@@ -1,3 +1,17 @@
+2008-10-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/37410
+	* dwarf2out.c (dwarf2out_imported_module_or_decl): Split this
+	function in two, making it call a new and reusable
+	dwarf2out_imported_module_or_decl() that takes the containing
+	BLOCK of the declaration in argument.
+	(dwarf2out_imported_module_or_decl_real): New function.
+	(decls_for_scope, gen_decl_die, dwarf2out_decl): Take
+	IMPORTED_DECL in account.
+	* tree.def: Added IMPORTED_DECL node type.
+	* tree.h: Added accessors for IMPORTED_DECL nodes.
+	* tree.c (init_ttree): Initialise IMPORTED_DECL node type.
+
 2008-10-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/gimple.texi: Fix some typos, wrap some long lines,

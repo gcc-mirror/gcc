@@ -3484,7 +3484,6 @@ do_using_directive (tree name_space)
   if (!toplevel_bindings_p ())
     {
       push_using_directive (name_space);
-      context = current_scope ();
     }
   else
     {
@@ -3492,12 +3491,12 @@ do_using_directive (tree name_space)
       add_using_namespace (current_namespace, name_space, 0);
       if (current_namespace != global_namespace)
 	context = current_namespace;
-    }
 
-  /* Emit debugging info.  */
-  if (!processing_template_decl)
-    (*debug_hooks->imported_module_or_decl) (name_space, NULL_TREE,
-					     context, false);
+      /* Emit debugging info.  */
+      if (!processing_template_decl)
+	(*debug_hooks->imported_module_or_decl) (name_space, NULL_TREE,
+						 context, false);
+    }
 }
 
 /* Deal with a using-directive seen by the parser.  Currently we only
