@@ -471,6 +471,9 @@ struct cpp_reader
 
   /* Next value of __COUNTER__ macro. */
   unsigned int counter;
+
+  /* Table of comments, when state.save_comments is true.  */
+  cpp_comment_table comments;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.

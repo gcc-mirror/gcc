@@ -55,6 +55,7 @@ static int skip_line_comment (cpp_reader *);
 static void skip_whitespace (cpp_reader *, cppchar_t);
 static void lex_string (cpp_reader *, cpp_token *, const uchar *);
 static void save_comment (cpp_reader *, cpp_token *, const uchar *, cppchar_t);
+static void store_comment (cpp_reader *, cpp_token *);
 static void create_literal (cpp_reader *, cpp_token *, const uchar *,
 			    unsigned int, enum cpp_ttype);
 static bool warn_in_comment (cpp_reader *, _cpp_line_note *);
@@ -670,6 +671,51 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   create_literal (pfile, token, base, cur - base, type);
 }
 
+/* Return the comment table. The client may not make any assumption
+   about the ordering of the table.  */
+cpp_comment_table *
+cpp_get_comments (cpp_reader *pfile)
+{
+  return &pfile->comments;
+}
+
+/* Append a comment to the end of the comment table. */
+static void 
+store_comment (cpp_reader *pfile, cpp_token *token) 
+{
+  int len;
+
+  if (pfile->comments.allocated == 0)
+    {
+      pfile->comments.allocated = 256; 
+      pfile->comments.entries = (cpp_comment *) xmalloc
+	(pfile->comments.allocated * sizeof (cpp_comment));
+    }
+
+  if (pfile->comments.count == pfile->comments.allocated)
+    {
+      pfile->comments.allocated *= 2;
+      pfile->comments.entries = (cpp_comment *) xrealloc
+	(pfile->comments.entries,
+	 pfile->comments.allocated * sizeof (cpp_comment));
+    }
+
+  len = token->val.str.len;
+
+  /* Copy comment. Note, token may not be NULL terminated. */
+  pfile->comments.entries[pfile->comments.count].comment = 
+    (char *) xmalloc (sizeof (char) * (len + 1));
+  memcpy (pfile->comments.entries[pfile->comments.count].comment,
+	  token->val.str.text, len);
+  pfile->comments.entries[pfile->comments.count].comment[len] = '\0';
+
+  /* Set source location. */
+  pfile->comments.entries[pfile->comments.count].sloc = token->src_loc;
+
+  /* Increment the count of entries in the comment table. */
+  pfile->comments.count++;
+}
+
 /* The stored comment includes the comment start and any terminator.  */
 static void
 save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
@@ -709,6 +755,9 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
       buffer[clen - 2] = '*';
       buffer[clen - 1] = '/';
     }
+
+  /* Finally store this comment for use by clients of libcpp. */
+  store_comment (pfile, token);
 }
 
 /* Allocate COUNT tokens for RUN.  */

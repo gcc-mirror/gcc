@@ -1,3 +1,14 @@
+2008-10-05  Matthew Gingell  <gingell@adacore.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* include/cpplib.h (cpp_comments, cpp_comment_table): New structs.
+	(cpp_get_comments): New function.
+	* internal.h (struct cpp_reader): Add comments field.
+	* init.c (cpp_destroy): Free comments.
+	* lex.c (store_comment, cpp_get_comments): New functions.
+	(comments): New struct.
+	(save_comment): Store comments in comments struct.
+
 2008-09-18  Simon Baldwin  <simonb@google.com>
 
 	* include/cpplib.h (struct cpp_options): Add new boolean flag
