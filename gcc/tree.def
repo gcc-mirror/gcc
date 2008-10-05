@@ -371,6 +371,17 @@ DEFTREECODE (MEMORY_PARTITION_TAG, "memory_partition_tag", tcc_declaration, 0)
    _DECLs, providing a hierarchy of names.  */
 DEFTREECODE (NAMESPACE_DECL, "namespace_decl", tcc_declaration, 0)
 
+/* A declaration import.
+   The C++ FE uses this to represent a using-directive; eg:
+   "using namespace foo".
+   But it could be used to represent any declaration import construct.
+   Whenever a declaration import appears in a lexical block, the BLOCK node
+   representing that lexical block in GIMPLE will contain an IMPORTED_DECL
+   node, linked via BLOCK_VARS accessor of the said BLOCK.
+   For a given NODE which code is IMPORTED_DECL,
+   IMPORTED_DECL_ASSOCIATED_DECL (NODE) accesses the imported declaration.  */
+DEFTREECODE (IMPORTED_DECL, "imported_decl", tcc_declaration, 0)
+
 /* A translation unit.  This is not technically a declaration, since it
    can't be looked up, but it's close enough.  */
 DEFTREECODE (TRANSLATION_UNIT_DECL, "translation_unit_decl",\

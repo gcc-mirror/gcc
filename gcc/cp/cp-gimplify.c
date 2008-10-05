@@ -508,6 +508,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   int saved_stmts_are_full_exprs_p = 0;
   enum tree_code code = TREE_CODE (*expr_p);
   enum gimplify_status ret;
+  tree block = NULL;
+  VEC(gimple, heap) *bind_expr_stack = NULL;
 
   if (STATEMENT_CODE_P (code))
     {
@@ -574,8 +576,37 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     case USING_STMT:
-      /* Just ignore for now.  Eventually we will want to pass this on to
-	 the debugger.  */
+      /* Get the innermost inclosing GIMPLE_BIND that has a non NULL
+         BLOCK, and append an IMPORTED_DECL to its
+	 BLOCK_VARS chained list.  */
+
+      bind_expr_stack = gimple_bind_expr_stack ();
+      if (bind_expr_stack)
+	{
+	  int i;
+	  for (i = VEC_length (gimple, bind_expr_stack) - 1; i >= 0; i--)
+	    if ((block = gimple_bind_block (VEC_index (gimple,
+						       bind_expr_stack,
+						       i))))
+	      break;
+	}
+      if (block)
+	{
+	  tree using_directive;
+	  gcc_assert (TREE_OPERAND (*expr_p,0)
+		      && NAMESPACE_DECL_CHECK (TREE_OPERAND (*expr_p, 0)));
+
+	  using_directive = make_node (IMPORTED_DECL);
+	  TREE_TYPE (using_directive) = void_type_node;
+
+	  IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
+	    = TREE_OPERAND (*expr_p, 0);
+	  DECL_NAME (using_directive)
+	    = DECL_NAME (TREE_OPERAND (*expr_p, 0));
+	  TREE_CHAIN (using_directive) = BLOCK_VARS (block);
+	  BLOCK_VARS (block) = using_directive;
+	}
+      /* The USING_STMT won't appear in GIMPLE.  */
       *expr_p = NULL;
       ret = GS_ALL_DONE;
       break;

@@ -3334,6 +3334,11 @@ struct tree_function_decl GTY(())
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
   (TYPE_DECL_CHECK (NODE)->decl_common.decl_flag_2)
 
+/* Getter of the imported declaration associated to the
+   IMPORTED_DECL node.  */
+#define IMPORTED_DECL_ASSOCIATED_DECL(NODE) \
+(DECL_INITIAL (IMPORTED_DECL_CHECK (NODE)))
+
 struct tree_type_decl GTY(())
 {
   struct tree_decl_non_common common;

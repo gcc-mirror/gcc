@@ -1,3 +1,9 @@
+2008-10-05  Dodji Seketeli  <dodji@redhat.com>
+
+
+	PR c++/37410
+	* g++.dg/debug/dwarf2/imported-module.C: New test.
+
 2008-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35680
