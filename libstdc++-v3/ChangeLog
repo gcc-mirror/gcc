@@ -1,3 +1,9 @@
+2008-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/reference_wrapper/invoke.cc: New.
+	* testsuite/20_util/reference_wrapper/24803.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs.cc: Likewise.
+
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/locale/generic/c_locale.cc (__convert_to_v): Fix
