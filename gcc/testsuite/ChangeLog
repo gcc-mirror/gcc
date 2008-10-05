@@ -1,3 +1,8 @@
+2008-10-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37638
+	* gfortran.dg/typebound_call_9.f03: New test.
+
 2008-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37706

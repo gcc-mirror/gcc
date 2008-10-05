@@ -1,3 +1,14 @@
+2008-10-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37638
+	* gfortran.h (struct gfc_typebound_proc): New flag `error'.
+	* resolve.c (update_arglist_pass): Added assertion.
+	(update_compcall_arglist): Fail early for erraneous procedures to avoid
+	confusion later.
+	(resolve_typebound_generic_call): Ignore erraneous specific targets
+	and added assertions.
+	(resolve_typebound_procedure): Set new `error' flag.
+
 2008-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37706
