@@ -3465,11 +3465,14 @@ load_equiv (void)
 	mio_expr (&tail->expr);
       }
 
-    /* Unused equivalence members have a unique name.  */
+    /* Unused equivalence members have a unique name.  In addition, it
+       must be checked that the symbol is that from the module.  */
     unused = true;
     for (eq = head; eq; eq = eq->eq)
       {
-	if (!check_unique_name (eq->expr->symtree->name))
+	if (eq->expr->symtree->n.sym->module
+	      && strcmp (module_name, eq->expr->symtree->n.sym->module) == 0
+	      && !check_unique_name (eq->expr->symtree->name))
 	  {
 	    unused = false;
 	    break;
