@@ -870,6 +870,36 @@ extern const char *cpp_type2name (enum cpp_ttype);
 extern cppchar_t cpp_parse_escape (cpp_reader *, const unsigned char ** pstr,
 				   const unsigned char *limit, int wide);
 
+/* Structure used to hold a comment block at a given location in the
+   source code.  */
+
+typedef struct
+{
+  /* Text of the comment including the terminators.  */
+  char *comment;
+
+  /* source location for the given comment.  */
+  source_location sloc;
+} cpp_comment;
+
+/* Structure holding all comments for a given cpp_reader.  */
+
+typedef struct
+{
+  /* table of comment entries.  */
+  cpp_comment *entries;
+
+  /* number of actual entries entered in the table.  */
+  int count;
+
+  /* number of entries allocated currently.  */
+  int allocated;
+} cpp_comment_table;
+
+/* Returns the table of comments encountered by the preprocessor. This
+   table is only populated when pfile->state.save_comments is true. */
+extern cpp_comment_table *cpp_get_comments (cpp_reader *);
+
 /* In hash.c */
 
 /* Lookup an identifier in the hashtable.  Puts the identifier in the

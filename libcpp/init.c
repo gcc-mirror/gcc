@@ -245,6 +245,7 @@ cpp_destroy (cpp_reader *pfile)
 {
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
+  int i;
 
   free (pfile->op_stack);
 
@@ -285,6 +286,14 @@ cpp_destroy (cpp_reader *pfile)
     {
       contextn = context->next;
       free (context);
+    }
+
+  if (pfile->comments.entries)
+    {
+      for (i = 0; i < pfile->comments.count; i++)
+	free (pfile->comments.entries[i].comment);
+
+      free (pfile->comments.entries);
     }
 
   free (pfile);
