@@ -249,7 +249,7 @@ Array of trees with @code{num_ops} slots.
 This tuple is essentially identical to @code{gimple_statement_with_ops},
 except that it contains 4 additional fields to hold vectors
 related memory stores and loads.  Similar to the previous case,
-the structure is split in two to accomodate for the operand
+the structure is split in two to accommodate for the operand
 vector (@code{gimple_statement_with_memory_ops_base} and
 @code{gimple_statement_with_memory_ops}).
 
@@ -953,8 +953,8 @@ Set @code{IN_OP} to be input operand @code{INDEX} in @code{GIMPLE_ASM} @code{G}.
 Return output operand @code{INDEX} of @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_asm_set_output_op (gimple g, unsigne
-index, tree out_op)
+@deftypefn {GIMPLE function} void gimple_asm_set_output_op (gimple g, @
+unsigned index, tree out_op)
 Set @code{OUT_OP} to be output operand @code{INDEX} in @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
@@ -1012,7 +1012,8 @@ case they will be converted to a gimple operand if necessary.
 
 This function returns the newly created @code{GIMPLE_ASSIGN} tuple.
 
-@deftypefn {GIMPLE function} gimple gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1, tree op2)
+@deftypefn {GIMPLE function} gimple gimple_build_assign_with_ops @
+(enum tree_code subcode, tree lhs, tree op1, tree op2)
 This function is similar to @code{gimple_build_assign}, but is used to
 build a @code{GIMPLE_ASSIGN} statement when the operands of the
 right-hand side of the assignment are already split into
@@ -1031,8 +1032,8 @@ assignment statement @code{G}.
  
 
 @deftypefn {GIMPLE function} enum gimple_rhs_class gimple_assign_rhs_class (gimple g)
-Return the gimple rhs class of the code fo the expression
-computed on the rhs of assignment statment @code{G}.  This will never
+Return the gimple rhs class of the code for the expression
+computed on the rhs of assignment statement @code{G}.  This will never
 return @code{GIMPLE_INVALID_RHS}.
 @end deftypefn
 
@@ -1479,7 +1480,7 @@ Return the destination of the unconditional jump @code{G}.
 @end deftypefn
 
 @deftypefn {GIMPLE function} void gimple_goto_set_dest (gimple g, tree dest)
-Set @code{DEST} to be the destination of the unconditonal jump @code{G}. 
+Set @code{DEST} to be the destination of the unconditional jump @code{G}.
 @end deftypefn
 
 
@@ -1605,8 +1606,8 @@ Set @code{NAME} to be the name associated with @code{OMP} critical statement @co
 @subsection @code{GIMPLE_OMP_FOR}
 @cindex @code{GIMPLE_OMP_FOR}
 
-@deftypefn {GIMPLE function} gimple gimple_build_omp_for (gimple_seq body, tre
-clauses, tree index, tree initial, tree final, tree incr,
+@deftypefn {GIMPLE function} gimple gimple_build_omp_for (gimple_seq body, @
+tree clauses, tree index, tree initial, tree final, tree incr, @
 gimple_seq pre_body, enum tree_code omp_for_cond)
 Build a @code{GIMPLE_OMP_FOR} statement. @code{BODY} is sequence of statements
 inside the for loop.  @code{CLAUSES}, are any of the @code{OMP} loop
@@ -1651,7 +1652,7 @@ Return a pointer to the initial value for @code{OMP_FOR} @code{G}.
 @end deftypefn
 
 @deftypefn {GIMPLE function} void gimple_omp_for_set_initial (gimple g, tree initial)
-Set @code{INTIAL} to be the initial value for @code{OMP_FOR} @code{G}. 
+Set @code{INITIAL} to be the initial value for @code{OMP_FOR} @code{G}.
 @end deftypefn
 
 @deftypefn {GIMPLE function} tree gimple_omp_for_final (gimple g)
@@ -1791,7 +1792,7 @@ Set @code{DATA_ARG} to be the data argument for @code{OMP_PARALLEL} @code{G}.
 @end deftypefn
 
 @deftypefn {GIMPLE function} bool is_gimple_omp (gimple stmt)
-Returns true when the gimple statment @code{STMT} is any of the OpenMP
+Returns true when the gimple statement @code{STMT} is any of the OpenMP
 types. 
 @end deftypefn
 
@@ -1841,7 +1842,7 @@ Set the @code{GF_OMP_SECTION_LAST} flag on @code{G}.
 @deftypefn {GIMPLE function} gimple gimple_build_omp_sections (gimple_seq body, tree clauses)
 Build a @code{GIMPLE_OMP_SECTIONS} statement. @code{BODY} is a sequence of
 section statements.  @code{CLAUSES} are any of the @code{OMP} sections
-contsruct's clauses: private, firstprivate, lastprivate,
+construct's clauses: private, firstprivate, lastprivate,
 reduction, and nowait.
 @end deftypefn
 
@@ -2093,7 +2094,7 @@ clean-up expression.
 Return the cleanup sequence for cleanup statement @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_wce_set_canup (gimple g, gimple_seq cleanup)
+@deftypefn {GIMPLE function} void gimple_wce_set_cleanup (gimple g, gimple_seq cleanup)
 Set @code{CLEANUP} to be the cleanup sequence for @code{G}. 
 @end deftypefn
 

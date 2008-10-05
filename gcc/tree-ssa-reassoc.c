@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -154,7 +154,7 @@ along with GCC; see the file COPYING3.  If not see
     
     Thus, this is what we do.  When we have three ops left, we check to see
     what order to put them in, and call it a day.  As a nod to vector sum
-    reduction, we check if any of ops are a really a phi node that is a
+    reduction, we check if any of the ops are really a phi node that is a
     destructive update for the associating op, and keep the destructive
     update together for vector sum reduction recognition.  */
 

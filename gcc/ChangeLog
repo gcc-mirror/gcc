@@ -1,3 +1,9 @@
+2008-10-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/gimple.texi: Fix some typos, wrap some long lines,
+	fix some broken wraps with continuations.
+	* tree-ssa-reassoc.c: Fix comment typos.
+
 2000-10-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/37603
