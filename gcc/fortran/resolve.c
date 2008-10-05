@@ -4366,6 +4366,8 @@ fixup_charlen (gfc_expr *e)
 static gfc_actual_arglist*
 update_arglist_pass (gfc_actual_arglist* lst, gfc_expr* po, unsigned argpos)
 {
+  gcc_assert (argpos > 0);
+
   if (argpos == 1)
     {
       gfc_actual_arglist* result;
@@ -4416,6 +4418,9 @@ update_compcall_arglist (gfc_expr* e)
   gfc_typebound_proc* tbp;
 
   tbp = e->value.compcall.tbp;
+
+  if (tbp->error)
+    return FAILURE;
 
   po = extract_compcall_passed_object (e);
   if (!po)
@@ -4497,6 +4502,10 @@ resolve_typebound_generic_call (gfc_expr* e)
 	  bool matches;
 
 	  gcc_assert (g->specific);
+
+	  if (g->specific->error)
+	    continue;
+
 	  target = g->specific->u.specific->n.sym;
 
 	  /* Get the right arglist by handling PASS/NOPASS.  */
@@ -4508,6 +4517,8 @@ resolve_typebound_generic_call (gfc_expr* e)
 	      if (!po)
 		return FAILURE;
 
+	      gcc_assert (g->specific->pass_arg_num > 0);
+	      gcc_assert (!g->specific->error);
 	      args = update_arglist_pass (args, po, g->specific->pass_arg_num);
 	    }
 	  resolve_actual_arglist (args, target->attr.proc,
@@ -8448,10 +8459,12 @@ resolve_typebound_procedure (gfc_symtree* stree)
       goto error;
     }
 
+  stree->typebound->error = 0;
   return;
 
 error:
   resolve_bindings_result = FAILURE;
+  stree->typebound->error = 1;
 }
 
 static gfc_try

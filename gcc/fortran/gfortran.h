@@ -1037,6 +1037,7 @@ typedef struct gfc_typebound_proc
   unsigned non_overridable:1;
   unsigned is_generic:1;
   unsigned function:1, subroutine:1;
+  unsigned error:1; /* Ignore it, when an error occurred during resolution.  */
 }
 gfc_typebound_proc;
 
