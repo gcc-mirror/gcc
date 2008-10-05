@@ -637,10 +637,10 @@ typedef struct
   unsigned function:1, subroutine:1, procedure:1;
   unsigned generic:1, generic_copy:1;
   unsigned implicit_type:1;	/* Type defined via implicit rules.  */
-  unsigned untyped:1;           /* No implicit type could be found.  */
+  unsigned untyped:1;		/* No implicit type could be found.  */
 
-  unsigned is_bind_c:1;		/* say if is bound to C */
-  unsigned extension:1;		/* extends a derived type */
+  unsigned is_bind_c:1;		/* say if is bound to C.  */
+  unsigned extension:1;		/* extends a derived type.  */
 
   /* These flags are both in the typespec and attribute.  The attribute
      list is what gets read from/written to a module file.  The typespec
@@ -1546,6 +1546,10 @@ typedef struct gfc_expr
   /* True if the expression is a call to a function that returns an array,
      and if we have decided not to allocate temporary data for that array.  */
   unsigned int inline_noncopying_intrinsic : 1, is_boz : 1;
+
+  /* Sometimes, when an error has been emitted, it is necessary to prevent
+      it from recurring.  */
+  unsigned int error : 1;
 
   /* Used to quickly find a given constructor by its offset.  */
   splay_tree con_by_offset;
