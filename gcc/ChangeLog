@@ -1,3 +1,9 @@
+2008-10-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Update calls to build_unary_op and build_indirect_ref for location
+	changes.
+
 2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	build_modify_expr.
