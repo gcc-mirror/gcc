@@ -3097,10 +3097,10 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
 
       innerptrtype = build_pointer_type (arg1_inner_type);
 
-      stmt = build_unary_op (ADDR_EXPR, stmt, 0);
+      stmt = build_unary_op (input_location, ADDR_EXPR, stmt, 0);
       stmt = convert (innerptrtype, stmt);
       stmt = build_binary_op (input_location, PLUS_EXPR, stmt, arg2, 1);
-      stmt = build_indirect_ref (stmt, NULL, input_location);
+      stmt = build_indirect_ref (input_location, stmt, NULL);
 
       return stmt;
     }
@@ -3155,10 +3155,10 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
 
       innerptrtype = build_pointer_type (arg1_inner_type);
 
-      stmt = build_unary_op (ADDR_EXPR, stmt, 0);
+      stmt = build_unary_op (input_location, ADDR_EXPR, stmt, 0);
       stmt = convert (innerptrtype, stmt);
       stmt = build_binary_op (input_location, PLUS_EXPR, stmt, arg2, 1);
-      stmt = build_indirect_ref (stmt, NULL, input_location);
+      stmt = build_indirect_ref (input_location, stmt, NULL);
       stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
 		     convert (TREE_TYPE (stmt), arg0));
       stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
