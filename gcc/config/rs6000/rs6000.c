@@ -4455,6 +4455,27 @@ rs6000_mode_dependent_address (rtx addr)
   return false;
 }
 
+/* Implement FIND_BASE_TERM.  */
+
+rtx
+rs6000_find_base_term (rtx op)
+{
+  rtx base, offset;
+
+  split_const (op, &base, &offset);
+  if (GET_CODE (base) == UNSPEC)
+    switch (XINT (base, 1))
+      {
+      case UNSPEC_TOCREL:
+      case UNSPEC_MACHOPIC_OFFSET:
+	/* OP represents SYM [+ OFFSET] - ANCHOR.  SYM is the base term
+	   for aliasing purposes.  */
+	return XVECEXP (base, 0, 0);
+      }
+
+  return op;
+}
+
 /* More elaborate version of recog's offsettable_memref_p predicate
    that works around the ??? note of rs6000_mode_dependent_address.
    In particular it accepts

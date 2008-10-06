@@ -112,6 +112,7 @@ extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,
 extern int rs6000_legitimate_address (enum machine_mode, rtx, int);
 extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
 extern bool rs6000_mode_dependent_address (rtx);
+extern rtx rs6000_find_base_term (rtx);
 extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
