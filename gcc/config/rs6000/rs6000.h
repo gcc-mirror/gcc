@@ -1856,6 +1856,8 @@ do {								\
   if (rs6000_mode_dependent_address (ADDR))			\
     goto LABEL;							\
 } while (0)
+
+#define FIND_BASE_TERM rs6000_find_base_term
 
 /* The register number of the register used to address a table of
    static data addresses in memory.  In some cases this register is
