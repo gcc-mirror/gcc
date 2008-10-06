@@ -2559,7 +2559,7 @@ struct tree_memory_partition_tag GTY(())
 /* For a FUNCTION_DECL, holds the tree of BINDINGs.
    For a TRANSLATION_UNIT_DECL, holds the namespace's BLOCK.
    For a VAR_DECL, holds the initial value.
-   For a PARM_DECL, not used--default
+   For a PARM_DECL, used for DECL_ARG_TYPE--default
    values for parameters are encoded in the type of the function,
    not in the PARM_DECL slot.
    For a FIELD_DECL, this is used for enumeration values and the C

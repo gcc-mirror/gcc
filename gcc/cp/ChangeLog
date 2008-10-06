@@ -1,3 +1,16 @@
+2008-10-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37376, other mangling issues
+	* mangle.c (write_type): Update TYPE_PACK_EXPANSION mangling.
+	(write_member_name): Break out from...
+	(write_expression): ...here.  Handle dependent COMPONENT_REF.
+	(write_template_arg): Wrap an argument pack in 'I'/'E'.
+	(write_builtin_type): Update char16/32_t mangling.
+	(write_nested_name, write_prefix): Don't forget template args
+	for typename types.
+	* operators.def: Add ARROW_EXPR, update COMPONENT_REF and 
+	EXPR_PACK_EXPANSION.
+
 2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (build_x_indirect_ref): Add location argument.

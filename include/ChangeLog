@@ -1,3 +1,8 @@
+2008-10-06  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_PACK_EXPANSION.
+
 2008-09-09  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

@@ -1,3 +1,7 @@
+2008-10-06  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu.ver: Update char16/32_t manglings.
+
 2008-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/reference_wrapper/invoke.cc: New.

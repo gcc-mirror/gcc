@@ -1,3 +1,22 @@
+2008-10-06  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (struct d_print_info): Add pack_index.
+	(d_dump): Add DEMANGLE_COMPONENT_PACK_EXPANSION.
+	(d_make_comp): Likewise.  DEMANGLE_COMPONENT_ARGLIST and
+	DEMANGLE_COMPONENT_TEMPLATE_ARGLIST can have two null args.
+	(cplus_demangle_builtin_types): Add char16/32_t.
+	(cplus_demangle_type): Recognize them.
+	(d_template_args): Handle empty argument packs.
+	(d_template_arg): Handle argument packs.
+	(d_expression): Handle dependent name.
+	(d_index_template_argument): New fn.
+	(d_lookup_template_argument): New fn.
+	(d_find_pack, d_pack_length): New fn.
+	(d_print_subexpr): Split out...
+	(d_print_comp): ...from here.  Use d_*_template_argument.
+	Handle empty arg lists.  Support pack expansions.
+	* cp-demangle.h (D_BUILTIN_TYPE_COUNT): Increase to 32.
+
 2008-09-09  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_DECLTYPE.

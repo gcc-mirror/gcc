@@ -372,7 +372,9 @@ enum demangle_component_type
   /* A name formed by a single character.  */
   DEMANGLE_COMPONENT_CHARACTER,
   /* A decltype type.  */
-  DEMANGLE_COMPONENT_DECLTYPE
+  DEMANGLE_COMPONENT_DECLTYPE,
+  /* A pack expansion.  */
+  DEMANGLE_COMPONENT_PACK_EXPANSION
 };
 
 /* Types which are only used internally.  */
