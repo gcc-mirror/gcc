@@ -1,5 +1,48 @@
 2008-10-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/darwin-protos.h (machopic_function_base_name): Delete.
+	(machopic_function_base_sym): Likewise.
+	(machopic_gen_offset): Declare.
+	* config/darwin.h (MACHOPIC_FUNCTION_BASE_NAME): New macro.
+	(ASM_OUTPUT_LABELREF): Use it instead of a hard-coded string constant.
+	* config/darwin.c (machopic_function_base_name): Delete.
+	(machopic_function_base_sym): Likewise.
+	(gen_pic_offset): Rename to...
+	(machopic_gen_offset): ...this and remove the pic_base argument.
+	Instead use MACHO_DYNAMIC_NO_PIC_P to decide whether a PIC offset
+	is needed.  Create an UNSPEC_MACHOPIC_OFFSET if so, and set
+	crtl->uses_pic_offset_table.
+	(machopic_indirect_data_reference): Use new machopic_gen_offset
+	interface.
+	(machopic_legitimize_pic_address): Likewise.
+	(machopic_operand_p): Check for UNSPEC_MACHOPIC_OFFSET.
+
+	* config/i386/darwin.h (GOT_SYMBOL_NAME): Use
+	MACHOPIC_FUNCTION_BASE_NAME instead of machopic_function_base_name.
+	* config/i386/i386.c (output_set_got): Likewise.
+	(darwin_local_data_pic): Check for an UNSPEC_MACHOPIC_OFFSET
+	instead of a MINUS.
+	(legitimate_pic_operand_p): Handle UNSPEC_MACHOPIC_OFFSET.
+	(legitimate_address_p): Likewise.
+	(output_pic_addr_const): Likewise.
+	(output_addr_const_extra): Likewise.
+	(ix86_delegitimize_address): Expect darwin_local_data_pic to
+	match an UNSPEC rather than a MINUS.
+	* config/i386/i386.md (UNSPEC_MACHOPIC_OFFSET): Define.
+	(builtin_setjmp_receiver): Use machopic_gen_offset.
+	* config/i386/predicates.md (pic_symbolic_operand): Handle
+	UNSPEC_MACHOPIC_OFFSET.
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address):
+	Use machopic_gen_offset and machopic_operand_p.
+	(rs6000_output_addr_const_extra): Handle UNSPEC_MACHOPIC_OFFSET.
+	(rs6000_emit_prologue): Use MACHOPIC_FUNCTION_BASE_NAME.
+	* config/rs6000/rs6000.md (UNSPEC_MACHOPIC_OFFSET): Define.
+	(builtin_setjmp_receiver): Use MACHOPIC_FUNCTION_BASE_NAME.
+	Set crtl->uses_pic_offset_table.
+
+2008-10-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/rs6000/rs6000-protos.h (rs6000_output_addr_const_extra):
 	Declare.
 	* config/rs6000/rs6000.h (OUTPUT_ADDR_CONST_EXTRA): New macro.
