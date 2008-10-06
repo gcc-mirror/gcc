@@ -1,3 +1,8 @@
+2008-10-06  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Add thread cleanup
+	lib with -mthread switch.
+
 2008-10-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37410
