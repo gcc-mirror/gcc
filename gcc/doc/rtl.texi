@@ -2930,9 +2930,11 @@ constituent instructions might not.
 When a @code{clobber} expression for a register appears inside a
 @code{parallel} with other side effects, the register allocator
 guarantees that the register is unoccupied both before and after that
-insn.  However, the reload phase may allocate a register used for one of
-the inputs unless the @samp{&} constraint is specified for the selected
-alternative (@pxref{Modifiers}).  You can clobber either a specific hard
+insn if it is a hard register clobber or the @samp{&} constraint
+is specified for at least one alternative (@pxref{Modifiers}) of the
+clobber.  However, the reload phase may allocate a register used for
+one of the inputs unless the @samp{&} constraint is specified for the
+selected alternative.  You can clobber either a specific hard
 register, a pseudo register, or a @code{scratch} expression; in the
 latter two cases, GCC will allocate a hard register that is available
 there for use as a temporary.
