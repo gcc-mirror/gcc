@@ -1328,7 +1328,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && (definition || Sloc (gnat_entity) > Standard_Location)
 	    && ((Is_Public (gnat_entity)
 		 && !Present (Address_Clause (gnat_entity)))
-		|| optimize == 0
+		|| !optimize
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
 		|| Is_Aliased (Etype (gnat_entity))))
@@ -1343,7 +1343,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    /* As debugging information will be generated for the variable,
 	       do not generate information for the constant.  */
-	    DECL_IGNORED_P (gnu_decl) = true;
+	    DECL_IGNORED_P (gnu_decl) = 1;
 	  }
 
 	/* If this is declared in a block that contains a block with an

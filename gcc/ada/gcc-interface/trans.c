@@ -801,12 +801,12 @@ Pragma_to_gnu (Node_Id gnat_node)
 		     (First (Pragma_Argument_Associations (gnat_node)))))
 	{
 	case Name_Time:  case Name_Space:
-	  if (optimize == 0)
+	  if (!optimize)
 	    post_error ("insufficient -O value?", gnat_node);
 	  break;
 
 	case Name_Off:
-	  if (optimize != 0)
+	  if (optimize)
 	    post_error ("must specify -O0?", gnat_node);
 	  break;
 
