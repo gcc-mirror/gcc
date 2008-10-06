@@ -1,3 +1,15 @@
+2008-10-06  Joshua Kinard  <kumba@gentoo.org>
+
+	* doc/invoke.texi: List r1x000 family under the -march MIPS option.
+	* config/mips/mips.h (PROCESSOR_R10000): New processor_type.
+	* config/mips/mips.c (mips_cpu_info_table): Add r10000, r12000,
+	r14000 and r16000.
+	(mips_rtx_cost_data): Add a PROCESSOR_R10000 entry.
+	(mips_issue_rate): Handle PROCESSOR_R10000.
+	* config/mips/mips.md (cpu): Add r10000.
+	Include r10000.md.
+	* config/mips/10000.md: New file.
+
 2008-10-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_find_base_term): Declare.
