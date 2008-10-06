@@ -1618,7 +1618,7 @@ array_to_pointer_conversion (tree exp)
 
   /* This way is better for a COMPONENT_REF since it can
      simplify the offset for a component.  */
-  adr = build_unary_op (ADDR_EXPR, exp, 1);
+  adr = build_unary_op (EXPR_LOCATION (exp), ADDR_EXPR, exp, 1);
   return convert (ptrtype, adr);
 }
 
@@ -1635,7 +1635,7 @@ function_to_pointer_conversion (tree exp)
   if (TREE_NO_WARNING (orig_exp))
     TREE_NO_WARNING (exp) = 1;
 
-  return build_unary_op (ADDR_EXPR, exp, 0);
+  return build_unary_op (EXPR_LOCATION (exp), ADDR_EXPR, exp, 0);
 }
 
 /* Perform the default conversion of arrays and functions to pointers.
@@ -1972,7 +1972,7 @@ build_component_ref (tree datum, tree component)
    LOC is the location to use for the generated tree.  */
 
 tree
-build_indirect_ref (tree ptr, const char *errorstring, location_t loc)
+build_indirect_ref (location_t loc, tree ptr, const char *errorstring)
 {
   tree pointer = default_conversion (ptr);
   tree type = TREE_TYPE (pointer);
@@ -2008,11 +2008,11 @@ build_indirect_ref (tree ptr, const char *errorstring, location_t loc)
 
 	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {
-	      error ("dereferencing pointer to incomplete type");
+	      error_at (loc, "dereferencing pointer to incomplete type");
 	      return error_mark_node;
 	    }
 	  if (VOID_TYPE_P (t) && skip_evaluation == 0)
-	    warning (0, "dereferencing %<void *%> pointer");
+	    warning_at (loc, 0, "dereferencing %<void *%> pointer");
 
 	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
 	     so that we get the proper error message if the result is used
@@ -2030,7 +2030,8 @@ build_indirect_ref (tree ptr, const char *errorstring, location_t loc)
 	}
     }
   else if (TREE_CODE (pointer) != ERROR_MARK)
-    error ("invalid type argument of %qs (have %qT)", errorstring, type);
+    error_at (loc,
+	      "invalid type argument of %qs (have %qT)", errorstring, type);
   return error_mark_node;
 }
 
@@ -2164,8 +2165,8 @@ build_array_ref (tree array, tree index, location_t loc)
       gcc_assert (TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) != FUNCTION_TYPE);
 
       return build_indirect_ref
-	(build_binary_op (loc, PLUS_EXPR, ar, index, 0),
-	 "array indexing", loc);
+	(loc, build_binary_op (loc, PLUS_EXPR, ar, index, 0),
+	 "array indexing");
     }
 }
 
@@ -2748,8 +2749,7 @@ parser_build_unary_op (enum tree_code code, struct c_expr arg, location_t loc)
   struct c_expr result;
 
   result.original_code = ERROR_MARK;
-  result.value = build_unary_op (code, arg.value, 0);
-  protected_set_expr_location (result.value, loc);
+  result.value = build_unary_op (loc, code, arg.value, 0);
 
   if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
     overflow_warning (result.value);
@@ -2901,16 +2901,20 @@ pointer_diff (tree op0, tree op1)
    the default promotions (such as from short to int).
    For ADDR_EXPR, the default promotions are not applied; FLAG nonzero
    allows non-lvalues; this is only used to handle conversion of non-lvalue
-   arrays to pointers in C99.  */
+   arrays to pointers in C99.
+
+   LOCATION is the location of the operator.  */
 
 tree
-build_unary_op (enum tree_code code, tree xarg, int flag)
+build_unary_op (location_t location,
+		enum tree_code code, tree xarg, int flag)
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   tree arg = xarg;
   tree argtype = 0;
   enum tree_code typecode;
   tree val;
+  tree ret = error_mark_node;
   int noconvert = flag;
   const char *invalid_op_diag;
 
@@ -2926,7 +2930,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
   if ((invalid_op_diag
        = targetm.invalid_unary_op (code, TREE_TYPE (xarg))))
     {
-      error (invalid_op_diag);
+      error_at (location, invalid_op_diag);
       return error_mark_node;
     }
 
@@ -2940,7 +2944,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
 	    || typecode == VECTOR_TYPE))
 	{
-	  error ("wrong type argument to unary plus");
+	  error_at (location, "wrong type argument to unary plus");
 	  return error_mark_node;
 	}
       else if (!noconvert)
@@ -2953,7 +2957,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
 	    || typecode == VECTOR_TYPE))
 	{
-	  error ("wrong type argument to unary minus");
+	  error_at (location, "wrong type argument to unary minus");
 	  return error_mark_node;
 	}
       else if (!noconvert)
@@ -2972,14 +2976,14 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       else if (typecode == COMPLEX_TYPE)
 	{
 	  code = CONJ_EXPR;
-	  pedwarn (input_location, OPT_pedantic, 
+	  pedwarn (location, OPT_pedantic, 
 		   "ISO C does not support %<~%> for complex conjugation");
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
       else
 	{
-	  error ("wrong type argument to bit-complement");
+	  error_at (location, "wrong type argument to bit-complement");
 	  return error_mark_node;
 	}
       break;
@@ -2987,7 +2991,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
     case ABS_EXPR:
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
 	{
-	  error ("wrong type argument to abs");
+	  error_at (location, "wrong type argument to abs");
 	  return error_mark_node;
 	}
       else if (!noconvert)
@@ -2999,7 +3003,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
 	    || typecode == COMPLEX_TYPE))
 	{
-	  error ("wrong type argument to conjugation");
+	  error_at (location, "wrong type argument to conjugation");
 	  return error_mark_node;
 	}
       else if (!noconvert)
@@ -3011,27 +3015,31 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  && typecode != REAL_TYPE && typecode != POINTER_TYPE
 	  && typecode != COMPLEX_TYPE)
 	{
-	  error ("wrong type argument to unary exclamation mark");
+	  error_at (location,
+		    "wrong type argument to unary exclamation mark");
 	  return error_mark_node;
 	}
-      arg = c_objc_common_truthvalue_conversion (input_location, arg);
-      return invert_truthvalue (arg);
+      arg = c_objc_common_truthvalue_conversion (location, arg);
+      ret = invert_truthvalue (arg);
+      goto return_build_unary_op;
 
     case REALPART_EXPR:
       if (TREE_CODE (arg) == COMPLEX_CST)
-	return TREE_REALPART (arg);
+	ret = TREE_REALPART (arg);
       else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	return fold_build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
+	ret = fold_build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
-	return arg;
+	ret = arg;
+      goto return_build_unary_op;
 
     case IMAGPART_EXPR:
       if (TREE_CODE (arg) == COMPLEX_CST)
-	return TREE_IMAGPART (arg);
+	ret = TREE_IMAGPART (arg);
       else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	return fold_build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
+	ret = fold_build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
-	return convert (TREE_TYPE (arg), integer_zero_node);
+	ret = convert (TREE_TYPE (arg), integer_zero_node);
+      goto return_build_unary_op;
 
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:
@@ -3044,17 +3052,18 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	{
 	  tree real, imag;
 
-	  pedwarn (input_location, OPT_pedantic, 
+	  pedwarn (location, OPT_pedantic, 
 		   "ISO C does not support %<++%> and %<--%> on complex types");
 
 	  arg = stabilize_reference (arg);
-	  real = build_unary_op (REALPART_EXPR, arg, 1);
-	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);
-	  real = build_unary_op (code, real, 1);
+	  real = build_unary_op (EXPR_LOCATION (arg), REALPART_EXPR, arg, 1);
+	  imag = build_unary_op (EXPR_LOCATION (arg), IMAGPART_EXPR, arg, 1);
+	  real = build_unary_op (EXPR_LOCATION (arg), code, real, 1);
 	  if (real == error_mark_node || imag == error_mark_node)
 	    return error_mark_node;
-	  return build2 (COMPLEX_EXPR, TREE_TYPE (arg),
-			 real, imag);
+	  ret = build2 (COMPLEX_EXPR, TREE_TYPE (arg),
+			real, imag);
+	  goto return_build_unary_op;
 	}
 
       /* Report invalid types.  */
@@ -3063,9 +3072,9 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
-	    error ("wrong type argument to increment");
+	    error_at (location, "wrong type argument to increment");
 	  else
-	    error ("wrong type argument to decrement");
+	    error_at (location, "wrong type argument to decrement");
 
 	  return error_mark_node;
 	}
@@ -3086,18 +3095,20 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (result_type)))
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
-		  error ("increment of pointer to unknown structure");
+		  error_at (location,
+			    "increment of pointer to unknown structure");
 		else
-		  error ("decrement of pointer to unknown structure");
+		  error_at (location,
+			    "decrement of pointer to unknown structure");
 	      }
 	    else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
 		     || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
-		  pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+		  pedwarn (location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 			   "wrong type argument to increment");
 		else
-		  pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+		  pedwarn (location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 			   "wrong type argument to decrement");
 	      }
 
@@ -3154,7 +3165,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	val = convert (result_type, val);
 	if (TREE_CODE (val) != code)
 	  TREE_NO_WARNING (val) = 1;
-	return val;
+	ret = val;
+	goto return_build_unary_op;
       }
 
     case ADDR_EXPR:
@@ -3166,7 +3178,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  /* Don't let this be an lvalue.  */
 	  if (lvalue_p (TREE_OPERAND (arg, 0)))
 	    return non_lvalue (TREE_OPERAND (arg, 0));
-	  return TREE_OPERAND (arg, 0);
+	  ret = TREE_OPERAND (arg, 0);
+	  goto return_build_unary_op;
 	}
 
       /* For &x[y], return x+y */
@@ -3175,7 +3188,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  tree op0 = TREE_OPERAND (arg, 0);
 	  if (!c_mark_addressable (op0))
 	    return error_mark_node;
-	  return build_binary_op (EXPR_LOCATION (xarg), PLUS_EXPR,
+	  return build_binary_op (location, PLUS_EXPR,
 				  (TREE_CODE (TREE_TYPE (op0)) == ARRAY_TYPE
 				   ? array_to_pointer_conversion (op0)
 				   : op0),
@@ -3218,12 +3231,14 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  tree op0 = fold_convert (sizetype, fold_offsetof (arg, val)), op1;
 
 	  op1 = fold_convert (argtype, TREE_OPERAND (val, 0));
-	  return fold_build2 (POINTER_PLUS_EXPR, argtype, op1, op0);
+	  ret = fold_build2 (POINTER_PLUS_EXPR, argtype, op1, op0);
+	  goto return_build_unary_op;
 	}
 
       val = build1 (ADDR_EXPR, argtype, arg);
 
-      return val;
+      ret = val;
+      goto return_build_unary_op;
 
     default:
       gcc_unreachable ();
@@ -3231,8 +3246,12 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
   if (argtype == 0)
     argtype = TREE_TYPE (arg);
-  return require_constant_value ? fold_build1_initializer (code, argtype, arg)
-				: fold_build1 (code, argtype, arg);
+  ret = require_constant_value ? fold_build1_initializer (code, argtype, arg)
+			       : fold_build1 (code, argtype, arg);
+ return_build_unary_op:
+  gcc_assert (ret != error_mark_node);
+  protected_set_expr_location (ret, location);
+  return ret;
 }
 
 /* Return nonzero if REF is an lvalue valid for this language.
@@ -3837,10 +3856,13 @@ c_cast_expr (struct c_type_name *type_name, tree expr)
 /* Build an assignment expression of lvalue LHS from value RHS.
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.
-   Or else MODIFYCODE is NOP_EXPR meaning do a simple assignment.  */
+   Or else MODIFYCODE is NOP_EXPR meaning do a simple assignment.
+
+   LOCATION is the location of the MODIFYCODE operator.  */
 
 tree
-build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
+build_modify_expr (location_t location,
+		   tree lhs, enum tree_code modifycode, tree rhs)
 {
   tree result;
   tree newrhs;
@@ -3867,7 +3889,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (modifycode != NOP_EXPR)
     {
       lhs = stabilize_reference (lhs);
-      newrhs = build_binary_op (EXPR_LOCATION (lhs),
+      newrhs = build_binary_op (location,
 				modifycode, lhs, rhs, 1);
     }
 
@@ -3915,13 +3937,17 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     {
       result = objc_generate_write_barrier (lhs, modifycode, newrhs);
       if (result)
-	return result;
+	{
+	  protected_set_expr_location (result, location);
+	  return result;
+	}
     }
 
   /* Scan operands.  */
 
   result = build2 (MODIFY_EXPR, lhstype, lhs, newrhs);
   TREE_SIDE_EFFECTS (result) = 1;
+  protected_set_expr_location (result, location);
 
   /* If we got the LHS in a different type for storing in,
      convert the result back to the nominal type of LHS
@@ -3930,8 +3956,11 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
   if (olhstype == TREE_TYPE (result))
     return result;
-  return convert_for_assignment (olhstype, result, ic_assign,
-				 NULL_TREE, NULL_TREE, 0);
+
+  result = convert_for_assignment (olhstype, result, ic_assign,
+				   NULL_TREE, NULL_TREE, 0);
+  protected_set_expr_location (result, location);
+  return result;
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment
@@ -7942,6 +7971,7 @@ build_binary_op (location_t location, enum tree_code code,
   tree type0, type1;
   enum tree_code code0, code1;
   tree op0, op1;
+  tree ret = error_mark_node;
   const char *invalid_op_diag;
 
   /* Expression code to give to the expression when it is built.
@@ -8035,9 +8065,15 @@ build_binary_op (location_t location, enum tree_code code,
     case PLUS_EXPR:
       /* Handle the pointer + int case.  */
       if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
-	return pointer_int_sum (PLUS_EXPR, op0, op1);
+	{
+	  ret = pointer_int_sum (PLUS_EXPR, op0, op1);
+	  goto return_build_binary_op;
+	}
       else if (code1 == POINTER_TYPE && code0 == INTEGER_TYPE)
-	return pointer_int_sum (PLUS_EXPR, op1, op0);
+	{
+	  ret = pointer_int_sum (PLUS_EXPR, op1, op0);
+	  goto return_build_binary_op;
+	}
       else
 	common = 1;
       break;
@@ -8047,10 +8083,16 @@ build_binary_op (location_t location, enum tree_code code,
 	 We must subtract them as integers, then divide by object size.  */
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && comp_target_types (type0, type1))
-	return pointer_diff (op0, op1);
+	{
+	  ret = pointer_diff (op0, op1);
+	  goto return_build_binary_op;
+	}
       /* Handle pointer minus int.  Just like pointer plus int.  */
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
-	return pointer_int_sum (MINUS_EXPR, op0, op1);
+	{
+	  ret = pointer_int_sum (MINUS_EXPR, op0, op1);
+	  goto return_build_binary_op;
+	}
       else
 	common = 1;
       break;
@@ -8064,7 +8106,7 @@ build_binary_op (location_t location, enum tree_code code,
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      warn_for_div_by_zero (op1);
+      warn_for_div_by_zero (location, op1);
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == FIXED_POINT_TYPE
@@ -8111,7 +8153,7 @@ build_binary_op (location_t location, enum tree_code code,
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
-      warn_for_div_by_zero (op1);
+      warn_for_div_by_zero (location, op1);
 
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
@@ -8435,7 +8477,10 @@ build_binary_op (location_t location, enum tree_code code,
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
 
 	  if (val != 0)
-	    return val;
+	    {
+	      ret = val;
+	      goto return_build_binary_op;
+	    }
 
 	  op0 = xop0, op1 = xop1;
 	  converted = 1;
@@ -8477,18 +8522,19 @@ build_binary_op (location_t location, enum tree_code code,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
-  {
-    /* Treat expressions in initializers specially as they can't trap.  */
-    tree result = require_constant_value ? fold_build2_initializer (resultcode,
-								    build_type,
-								    op0, op1)
-					 : fold_build2 (resultcode, build_type,
-							op0, op1);
+  /* Treat expressions in initializers specially as they can't trap.  */
+  ret = require_constant_value ? fold_build2_initializer (resultcode,
+							  build_type,
+							  op0, op1)
+			       : fold_build2 (resultcode, build_type,
+					      op0, op1);
+  if (final_type != 0)
+    ret = convert (final_type, ret);
 
-    if (final_type != 0)
-      result = convert (final_type, result);
-    return result;
-  }
+ return_build_binary_op:
+  gcc_assert (ret != error_mark_node);
+  protected_set_expr_location (ret, location);
+  return ret;
 }
 
 

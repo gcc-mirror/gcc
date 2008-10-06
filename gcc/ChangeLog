@@ -1,3 +1,38 @@
+2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	build_modify_expr.
+	* c-decl.c (finish_decl): Pass input_location to build_unary_op.
+	* c-typeck.c (array_to_pointer_conversion): Pass location to
+	build_unary_op.
+	(function_to_pointer_conversion): Use error_at and warning_at.
+	(build_indirect_ref): Same.
+	(build_array_ref): Pass location to build_binary_op.
+	(parser_build_unary_op): Do not set location after calling
+	build_unary_op.
+	(build_unary_op): Add location argument.  Use it throughout.  Set
+	EXPR_LOCATION before returning new tree.
+	(build_modify_expr): Same.
+	(build_binary_op): Use location throughout.  Set EXPR_LOCATION before
+	returning node.
+	* c-omp.c (c_finish_omp_atomic): Pass location to build_unary_op,
+	build_indirect_ref, build_modify_expr.
+	(c_finish_omp_for): Same.  Use error_at instead of error.
+	* c-common.c (c_common_truthvalue_conversion): Pass location to
+	build_unary_op.
+	(warn_for_div_by_zero): Add location argument.
+	* c-common.h: Add argument to build_modify_expr, build_indirect_ref,
+	build_unary_op, warn_for_div_by_zero.
+	* c-parser.c (c_parser_typeof_specifier): Use
+	protected_set_expr_location.
+	(c_parser_statement_after_labels): Same.
+	(c_parser_condition): Same.
+	(c_parser_expr_no_commas): Pass correct location to build_modify_expr.
+	(c_parser_conditional_expression): Use protected_set_expr_location.
+	(c_parser_unary_expression): Pass location to build_indirect_ref.
+	(c_parser_postfix_expression_after_primary): Pass location to
+	build_indirect_ref, build_unary_op.
+	(c_parser_omp_for_loop): Set the increment expression's EXPR_LOCATION.
+
 2008-10-06  Joshua Kinard  <kumba@gentoo.org>
 
 	* doc/invoke.texi: List r1x000 family under the -march MIPS option.

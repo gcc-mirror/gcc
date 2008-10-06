@@ -1,3 +1,13 @@
+2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (build_x_indirect_ref): Add location argument.
+	(cp_build_binary_op): Pass location to warn_for_div_by_zero.
+	(cp_build_unary_op): Add location argument.
+	(cp_build_modify_expr): Same.
+	* class.c (build_base_path): Pass location to build_indirect_ref.
+	* semantics.c (handle_omp_for_class_iterator): Pass elocus to
+	build_modify_expr.
+
 2008-10-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37410

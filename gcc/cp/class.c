@@ -299,7 +299,7 @@ build_base_path (enum tree_code code,
     {
       expr = build_nop (build_pointer_type (target_type), expr);
       if (!want_pointer)
-	expr = build_indirect_ref (expr, NULL, EXPR_LOCATION (expr));
+	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, NULL);
       return expr;
     }
 
