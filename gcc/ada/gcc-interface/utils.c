@@ -4489,8 +4489,72 @@ maybe_unconstrained_array (tree exp)
   return exp;
 }
 
+/* Return true if EXPR is an expression that can be folded as an operand
+   of a VIEW_CONVERT_EXPR.  See the head comment of unchecked_convert for
+   the rationale.  */
+
+static bool
+can_fold_for_view_convert_p (tree expr)
+{
+  tree t1, t2;
+
+  /* The folder will fold NOP_EXPRs between integral types with the same
+     precision (in the middle-end's sense).  We cannot allow it if the
+     types don't have the same precision in the Ada sense as well.  */
+  if (TREE_CODE (expr) != NOP_EXPR)
+    return true;
+
+  t1 = TREE_TYPE (expr);
+  t2 = TREE_TYPE (TREE_OPERAND (expr, 0));
+
+  /* Defer to the folder for non-integral conversions.  */
+  if (!(INTEGRAL_TYPE_P (t1) && INTEGRAL_TYPE_P (t2)))
+    return true;
+
+  /* Only fold conversions that preserve both precisions.  */
+  if (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+      && operand_equal_p (rm_size (t1), rm_size (t2), 0))
+    return true;
+
+  return false;
+}
+
 /* Return an expression that does an unchecked conversion of EXPR to TYPE.
-   If NOTRUNC_P is true, truncation operations should be suppressed.  */
+   If NOTRUNC_P is true, truncation operations should be suppressed.
+
+   Special care is required with (source or target) integral types whose
+   precision is not equal to their size, to make sure we fetch or assign
+   the value bits whose location might depend on the endianness, e.g.
+
+     Rmsize : constant := 8;
+     subtype Int is Integer range 0 .. 2 ** Rmsize - 1;
+
+     type Bit_Array is array (1 .. Rmsize) of Boolean;
+     pragma Pack (Bit_Array);
+
+     function To_Bit_Array is new Unchecked_Conversion (Int, Bit_Array);
+
+     Value : Int := 2#1000_0001#;
+     Vbits : Bit_Array := To_Bit_Array (Value);
+
+   we expect the 8 bits at Vbits'Address to always contain Value, while
+   their original location depends on the endianness, at Value'Address
+   on a little-endian architecture but not on a big-endian one.
+
+   ??? There is a problematic discrepancy between what is called precision
+   here (and more generally throughout gigi) for integral types and what is
+   called precision in the middle-end.  In the former case it's the RM size
+   as given by TYPE_RM_SIZE (or rm_size) whereas it's TYPE_PRECISION in the
+   latter case, the hitch being that they are not equal when they matter,
+   that is when the number of value bits is not equal to the type's size:
+   TYPE_RM_SIZE does give the number of value bits but TYPE_PRECISION is set
+   to the size.  The sole exception are BOOLEAN_TYPEs for which both are 1.
+
+   The consequence is that gigi must duplicate code bridging the gap between
+   the type's size and its precision that exists for TYPE_PRECISION in the
+   middle-end, because the latter knows nothing about TYPE_RM_SIZE, and be
+   wary of transformations applied in the middle-end based on TYPE_PRECISION
+   because this value doesn't reflect the actual precision for Ada.  */
 
 tree
 unchecked_convert (tree type, tree expr, bool notrunc_p)
@@ -4517,14 +4581,10 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	       && TYPE_JUSTIFIED_MODULAR_P (etype))))
       || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
     {
-      tree rtype = type;
-      bool final_unchecked = false;
-
       if (TREE_CODE (etype) == INTEGER_TYPE
 	  && TYPE_BIASED_REPRESENTATION_P (etype))
 	{
 	  tree ntype = copy_type (etype);
-
 	  TYPE_BIASED_REPRESENTATION_P (ntype) = 0;
 	  TYPE_MAIN_VARIANT (ntype) = ntype;
 	  expr = build1 (NOP_EXPR, ntype, expr);
@@ -4533,15 +4593,18 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TYPE_BIASED_REPRESENTATION_P (type))
 	{
-	  rtype = copy_type (type);
+	  tree rtype = copy_type (type);
 	  TYPE_BIASED_REPRESENTATION_P (rtype) = 0;
 	  TYPE_MAIN_VARIANT (rtype) = rtype;
+	  expr = convert (rtype, expr);
+	  expr = build1 (NOP_EXPR, type, expr);
 	}
 
-      /* We have another special case: if we are unchecked converting subtype
-	 into a base type, we need to ensure that VRP doesn't propagate range
-	 information since this conversion may be done precisely to validate
-	 that the object is within the range it is supposed to have.  */
+      /* We have another special case: if we are unchecked converting either
+	 a subtype or a type with limited range into a base type, we need to
+	 ensure that VRP doesn't propagate range information because this
+	 conversion may be done precisely to validate that the object is
+	 within the range it is supposed to have.  */
       else if (TREE_CODE (expr) != INTEGER_CST
 	       && TREE_CODE (type) == INTEGER_TYPE && !TREE_TYPE (type)
 	       && ((TREE_CODE (etype) == INTEGER_TYPE && TREE_TYPE (etype))
@@ -4552,26 +4615,34 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	     in order not to be deemed an useless type conversion, it must
 	     be from subtype to base type.
 
+	     Therefore we first do the bulk of the conversion to a subtype of
+	     the final type.  And this conversion must itself not be deemed
+	     useless if the source type is not a subtype because, otherwise,
+	     the final VIEW_CONVERT_EXPR will be deemed so as well.  That's
+	     why we toggle the unsigned flag in this conversion, which is
+	     harmless since the final conversion is only a reinterpretation
+	     of the bit pattern.
+
 	     ??? This may raise addressability and/or aliasing issues because
 	     VIEW_CONVERT_EXPR gets gimplified as an lvalue, thus causing the
 	     address of its operand to be taken if it is deemed addressable
 	     and not already in GIMPLE form.  */
-	  rtype = gnat_type_for_mode (TYPE_MODE (type), TYPE_UNSIGNED (type));
+	  tree rtype
+	    = gnat_type_for_mode (TYPE_MODE (type), !TYPE_UNSIGNED (etype));
 	  rtype = copy_type (rtype);
 	  TYPE_MAIN_VARIANT (rtype) = rtype;
 	  TREE_TYPE (rtype) = type;
-	  final_unchecked = true;
+	  expr = convert (rtype, expr);
+	  expr = build1 (VIEW_CONVERT_EXPR, type, expr);
 	}
 
-      expr = convert (rtype, expr);
-      if (type != rtype)
-	expr = fold_build1 (final_unchecked ? VIEW_CONVERT_EXPR : NOP_EXPR,
-			    type, expr);
+      else
+	expr = convert (type, expr);
     }
 
-  /* If we are converting TO an integral type whose precision is not the
-     same as its size, first unchecked convert to a record that contains
-     an object of the output type.  Then extract the field. */
+  /* If we are converting to an integral type whose precision is not equal
+     to its size, first unchecked convert to a record that contains an
+     object of the output type.  Then extract the field. */
   else if (INTEGRAL_TYPE_P (type) && TYPE_RM_SIZE (type)
 	   && 0 != compare_tree_int (TYPE_RM_SIZE (type),
 				     GET_MODE_BITSIZE (TYPE_MODE (type))))
@@ -4587,8 +4658,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       expr = build_component_ref (expr, NULL_TREE, field, 0);
     }
 
-  /* Similarly for integral input type whose precision is not equal to its
-     size.  */
+  /* Similarly if we are converting from an integral type whose precision
+     is not equal to its size.  */
   else if (INTEGRAL_TYPE_P (etype) && TYPE_RM_SIZE (etype)
       && 0 != compare_tree_int (TYPE_RM_SIZE (etype),
 				GET_MODE_BITSIZE (TYPE_MODE (etype))))
@@ -4618,13 +4689,15 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
     {
       expr = maybe_unconstrained_array (expr);
       etype = TREE_TYPE (expr);
-      expr = fold_build1 (VIEW_CONVERT_EXPR, type, expr);
+      if (can_fold_for_view_convert_p (expr))
+	expr = fold_build1 (VIEW_CONVERT_EXPR, type, expr);
+      else
+	expr = build1 (VIEW_CONVERT_EXPR, type, expr);
     }
 
-  /* If the result is an integral type whose size is not equal to
-     the size of the underlying machine type, sign- or zero-extend
-     the result.  We need not do this in the case where the input is
-     an integral type of the same precision and signedness or if the output
+  /* If the result is an integral type whose precision is not equal to its
+     size, sign- or zero-extend the result.  We need not do this if the input
+     is an integral type of the same precision and signedness or if the output
      is a biased type or if both the input and output are unsigned.  */
   if (!notrunc_p
       && INTEGRAL_TYPE_P (type) && TYPE_RM_SIZE (type)
