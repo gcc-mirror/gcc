@@ -2238,10 +2238,11 @@ maybe_with_size_expr (tree *expr_p)
 
 
 /* Helper for gimplify_call_expr.  Gimplify a single argument *ARG_P
-   Store any side-effects in PRE_P.  */
+   Store any side-effects in PRE_P.  CALL_LOCATION is the location of
+   the CALL_EXPR.  */
 
 static enum gimplify_status
-gimplify_arg (tree *arg_p, gimple_seq *pre_p)
+gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
 {
   bool (*test) (tree);
   fallback_t fb;
@@ -2258,6 +2259,10 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p)
 
   /* If this is a variable sized type, we must remember the size.  */
   maybe_with_size_expr (arg_p);
+
+  /* Make sure arguments have the same location as the function call
+     itself.  */
+  protected_set_expr_location (*arg_p, call_location);
 
   /* There is a sequence point before a function call.  Side effects in
      the argument list must occur before the actual call. So, when
@@ -2448,7 +2453,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
              be the plain PARM_DECL.  */
           if ((i != 1) || !builtin_va_start_p)
             {
-              t = gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p);
+              t = gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p,
+				EXPR_LOCATION (*expr_p));
 
               if (t == GS_ERROR)
                 ret = GS_ERROR;
@@ -3095,10 +3101,10 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
   from = TREE_OPERAND (*expr_p, 1);
 
   from_ptr = build_fold_addr_expr (from);
-  gimplify_arg (&from_ptr, seq_p);
+  gimplify_arg (&from_ptr, seq_p, EXPR_LOCATION (*expr_p));
 
   to_ptr = build_fold_addr_expr (to);
-  gimplify_arg (&to_ptr, seq_p);
+  gimplify_arg (&to_ptr, seq_p, EXPR_LOCATION (*expr_p));
 
   t = implicit_built_in_decls[BUILT_IN_MEMCPY];
 
@@ -3145,7 +3151,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value,
   to = TREE_OPERAND (*expr_p, 0);
 
   to_ptr = build_fold_addr_expr (to);
-  gimplify_arg (&to_ptr, seq_p);
+  gimplify_arg (&to_ptr, seq_p, EXPR_LOCATION (*expr_p));
   t = implicit_built_in_decls[BUILT_IN_MEMSET];
 
   gs = gimple_build_call (t, 3, to_ptr, integer_zero_node, size);
