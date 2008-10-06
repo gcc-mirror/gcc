@@ -8,5 +8,5 @@ void g()
   f<int*, float*, double*>(0, 0, 0);
   f<int*>(0,0,0);
 }
-// { dg-final { scan-assembler "_Z1fIPiPfPdEvU10__variadicT_" } }
-// { dg-final { scan-assembler "_Z1fIPiiiEvU10__variadicT_" } }
+// { dg-final { scan-assembler "_Z1fIIPiPfPdEEvDpT_" } }
+// { dg-final { scan-assembler "_Z1fIIPiiiEEvDpT_" } }

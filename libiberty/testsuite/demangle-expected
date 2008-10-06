@@ -3345,7 +3345,7 @@ f<X>
 #
 --format=gnu-v3 --no-params
 _ZngILi42EEvN1AIXplT_Li2EEE1TE
-void operator-<42>(A<(42) + (2)>::T)
+void operator-<42>(A<(42)+(2)>::T)
 operator-<42>
 #
 --format=gnu-v3 --no-params
@@ -3385,7 +3385,7 @@ int* const volatile restrict _far
 # 
 --format=gnu-v3 --no-params
 _Z3fooILi2EEvRAplT_Li1E_i
-void foo<2>(int (&) [(2) + (1)])
+void foo<2>(int (&) [(2)+(1)])
 foo<2>
 # 
 --format=gnu-v3 --no-params
@@ -3612,13 +3612,13 @@ hairyfunc5
 # This is from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1ELc120EEv1AIXplT_cviLd810000000000000000703DAD7A370C5EEE
-void f<1, (char)120>(A<(1) + ((int)((double)[810000000000000000703DAD7A370C5]))>)
+void f<1, (char)120>(A<(1)+((int)((double)[810000000000000000703DAD7A370C5]))>)
 f<1, (char)120>
 #
 # This is also from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1EEv1AIXplT_cvingLf3f800000EEE
-void f<1>(A<(1) + ((int)(-((float)[3f800000])))>)
+void f<1>(A<(1)+((int)(-((float)[3f800000])))>)
 f<1>
 #
 # This is from a libstdc++ debug mode patch.
@@ -3643,7 +3643,7 @@ f
 # confusion with the '>' which ends the template parameters.
 --format=gnu-v3 --no-params
 _Z4dep9ILi3EEvP3fooIXgtT_Li2EEE
-void dep9<3>(foo<((3) > (2))>*)
+void dep9<3>(foo<((3)>(2))>*)
 dep9<3>
 #
 # Watch out for templated version of `operator<'--it needs an extra
@@ -3885,16 +3885,20 @@ java resource java/util/iso4217.properties
 # decltype/param placeholder test
 --format=gnu-v3
 _Z3addIidEDTplsTT_sTT0_ES0_S1_
-decltype ((int) + (double)) add<int, double>(int, double)
-# decltype/T() test
---format=gnu-v3
-_Z4add2IidEDTplcvT_vcvT0_vES0_S1_
-decltype (((int)()) + ((double)())) add2<int, double>(int, double)
+decltype ((int)+(double)) add<int, double>(int, double)
 # decltype/fn call test
 --format=gnu-v3
 _Z4add3IidEDTclL_Z1gEsTT_sTT0_EES0_S1_
-decltype (g (int, double)) add3<int, double>(int, double)
-# Extended floating point types test
+decltype (g(int, double)) add3<int, double>(int, double)
+# new (2008) built in types test
 --format=gnu-v3
-_Z1fDfDdDeDh
-f(decimal32, decimal64, decimal128, half)
+_Z1fDfDdDeDhDsDi
+f(decimal32, decimal64, decimal128, half, char16_t, char32_t)
+# pack expansion test
+--format=gnu-v3
+_Z1fIIPiPfPdEEvDpT_
+void f<int*, float*, double*>(int*, float*, double*)
+# '.' test
+--format=gnu-v3
+_Z1hI1AIiEdEDTcldtsTT_1gIT0_EEES2_S3_
+decltype (((A<int>).(g<double>))()) h<A<int>, double>(A<int>, double)

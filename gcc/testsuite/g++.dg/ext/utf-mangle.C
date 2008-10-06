@@ -8,7 +8,7 @@ void f1 (char32_t c) {}
 void f2 (char16_t *s) {}
 void f3 (char32_t *s) {}
 
-// { dg-final { scan-assembler "_Z2f0u8char16_t:" } }
-// { dg-final { scan-assembler "_Z2f1u8char32_t:" } }
-// { dg-final { scan-assembler "_Z2f2Pu8char16_t:" } }
-// { dg-final { scan-assembler "_Z2f3Pu8char32_t:" } }
+// { dg-final { scan-assembler "_Z2f0Ds:" } }
+// { dg-final { scan-assembler "_Z2f1Di:" } }
+// { dg-final { scan-assembler "_Z2f2PDs:" } }
+// { dg-final { scan-assembler "_Z2f3PDi:" } }
