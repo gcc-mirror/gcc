@@ -1,3 +1,21 @@
+2008-10-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_output_addr_const_extra):
+	Declare.
+	* config/rs6000/rs6000.h (OUTPUT_ADDR_CONST_EXTRA): New macro.
+	* config/rs6000/rs6000.md (UNSPEC_TOCREL): New constant.
+	* config/rs6000/rs6000.c (constant_pool_expr_1): Delete.
+	(constant_pool_expr_p): Use split_const and check the base.
+	(toc_relative_expr_p): Likewise, checking for an UNSPEC_TOCREL
+	instead of a MINUS.
+	(legitimate_constant_pool_address_p): Check toc_relative_p
+	instead of constant_pool_expr_p.
+	(print_operand_address): Always use output_addr_const for
+	constant pool addresses.
+	(rs6000_output_addr_const_extra): New function.
+	(create_TOC_reference): Create an UNSPEC_TOCREL instead of
+	a MINUS.
+
 2008-10-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37535

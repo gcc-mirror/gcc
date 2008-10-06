@@ -77,6 +77,7 @@ extern int extract_ME (rtx);
 extern void rs6000_output_function_entry (FILE *, const char *);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
+extern bool rs6000_output_addr_const_extra (FILE *, rtx);
 extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
 					       enum rtx_code);
 extern void rs6000_emit_sCOND (enum rtx_code, rtx);

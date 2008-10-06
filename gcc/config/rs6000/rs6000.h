@@ -2352,6 +2352,12 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
+#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL)		\
+  do								\
+    if (!rs6000_output_addr_const_extra (STREAM, X))		\
+      goto FAIL;						\
+  while (0)
+
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */
 /* #define  MACHINE_no_sched_speculative */
