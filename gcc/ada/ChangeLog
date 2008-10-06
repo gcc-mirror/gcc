@@ -1,3 +1,11 @@
+2008-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (can_fold_for_view_convert_p): New predicate.
+	(unchecked_convert): Use it to disable problematic folding with
+	VIEW_CONVERT_EXPR in the general case.  Always disable it for the
+	special VIEW_CONVERT_EXPR built for integral types and cope with
+	its addressability issues by preserving the first conversion.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.

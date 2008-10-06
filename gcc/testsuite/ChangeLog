@@ -1,3 +1,7 @@
+2008-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_convert2.adb: New test.
+
 2008-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37706
