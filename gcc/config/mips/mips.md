@@ -560,7 +560,7 @@
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 (define_attr "cpu"
-  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf2_1,24kf1_1,74kc,74kf2_1,74kf1_1,74kf3_2,loongson_2e,loongson_2f,m4k,octeon,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sb1a,sr71000,xlr"
+  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf2_1,24kf1_1,74kc,74kf2_1,74kf1_1,74kf3_2,loongson_2e,loongson_2f,m4k,octeon,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,r10000,sb1,sb1a,sr71000,xlr"
   (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
@@ -935,6 +935,7 @@
 (include "6000.md")
 (include "7000.md")
 (include "9000.md")
+(include "10000.md")
 (include "loongson2ef.md")
 (include "octeon.md")
 (include "sb1.md")

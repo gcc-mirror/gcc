@@ -607,6 +607,10 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
 
   /* MIPS IV processors. */
   { "r8000", PROCESSOR_R8000, 4, 0 },
+  { "r10000", PROCESSOR_R10000, 4, 0 },
+  { "r12000", PROCESSOR_R10000, 4, 0 },
+  { "r14000", PROCESSOR_R10000, 4, 0 },
+  { "r16000", PROCESSOR_R10000, 4, 0 },
   { "vr5000", PROCESSOR_R5000, 4, 0 },
   { "vr5400", PROCESSOR_R5400, 4, 0 },
   { "vr5500", PROCESSOR_R5500, 4, PTF_AVOID_BRANCHLIKELY },
@@ -1012,6 +1016,19 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
     COSTS_N_INSNS (8),            /* int_mult_di */
     COSTS_N_INSNS (69),           /* int_div_si */
     COSTS_N_INSNS (69),           /* int_div_di */
+		     1,           /* branch_cost */
+		     4            /* memory_latency */
+  },
+  { /* R1x000 */
+    COSTS_N_INSNS (2),            /* fp_add */
+    COSTS_N_INSNS (2),            /* fp_mult_sf */
+    COSTS_N_INSNS (2),            /* fp_mult_df */
+    COSTS_N_INSNS (12),           /* fp_div_sf */
+    COSTS_N_INSNS (19),           /* fp_div_df */
+    COSTS_N_INSNS (5),            /* int_mult_si */
+    COSTS_N_INSNS (9),            /* int_mult_di */
+    COSTS_N_INSNS (34),           /* int_div_si */
+    COSTS_N_INSNS (66),           /* int_div_di */
 		     1,           /* branch_cost */
 		     4            /* memory_latency */
   },
@@ -10369,7 +10386,10 @@ mips_issue_rate (void)
 	 but in reality only a maximum of 3 insns can be issued as
 	 floating-point loads and stores also require a slot in the
 	 AGEN pipe.  */
-     return 4;
+    case PROCESSOR_R10000:
+      /* All R10K Processors are quad-issue (being the first MIPS
+         processors to support this feature). */
+      return 4;
 
     case PROCESSOR_20KC:
     case PROCESSOR_R4130:
