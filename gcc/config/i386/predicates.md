@@ -428,7 +428,8 @@
 	  || !CONST_INT_P (XEXP (op, 1)))
 	return 0;
       op = XEXP (op, 0);
-      if (GET_CODE (op) == UNSPEC)
+      if (GET_CODE (op) == UNSPEC
+	  && XINT (op, 1) != UNSPEC_MACHOPIC_OFFSET)
 	return 1;
     }
   return 0;

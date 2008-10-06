@@ -267,44 +267,26 @@ machopic_define_symbol (rtx mem)
   SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 }
 
-static GTY(()) const char * function_base;
+/* Return either ORIG or:
 
-const char *
-machopic_function_base_name (void)
-{
-  /* if dynamic-no-pic is on, we should not get here */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+     (const:P (unspec:P [ORIG] UNSPEC_MACHOPIC_OFFSET))
 
-  if (function_base == NULL)
-    function_base = ggc_alloc_string ("<pic base>", sizeof ("<pic base>"));
-
-  crtl->uses_pic_offset_table = 1;
-
-  return function_base;
-}
-
-/* Return a SYMBOL_REF for the PIC function base.  */
-
+   depending on MACHO_DYNAMIC_NO_PIC_P.  */
 rtx
-machopic_function_base_sym (void)
+machopic_gen_offset (rtx orig)
 {
-  rtx sym_ref;
-
-  sym_ref = gen_rtx_SYMBOL_REF (Pmode, machopic_function_base_name ());
-  SYMBOL_REF_FLAGS (sym_ref)
-    |= (MACHO_SYMBOL_FLAG_VARIABLE | MACHO_SYMBOL_FLAG_DEFINED);
-  return sym_ref;
-}
-
-/* Return either ORIG or (const:P (minus:P ORIG PIC_BASE)), depending
-   on whether pic_base is NULL or not.  */
-static inline rtx
-gen_pic_offset (rtx orig, rtx pic_base)
-{
-  if (!pic_base)
+  if (MACHO_DYNAMIC_NO_PIC_P)
     return orig;
   else
-    return gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, orig, pic_base));
+    {
+      /* Play games to avoid marking the function as needing pic if we
+	 are being called as part of the cost-estimation process.  */
+      if (current_ir_type () != IR_GIMPLE)
+	crtl->uses_pic_offset_table = 1;
+      orig = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, orig),
+			     UNSPEC_MACHOPIC_OFFSET);
+      return gen_rtx_CONST (Pmode, orig);
+    }
 }
 
 static GTY(()) const char * function_base_func_name;
@@ -528,8 +510,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       else if (defined)
 	{
 #if defined (TARGET_TOC) || defined (HAVE_lo_sum)
-	  rtx pic_base = machopic_function_base_sym ();
-	  rtx offset = gen_pic_offset (orig, pic_base);
+	  rtx offset = machopic_gen_offset (orig);
 #endif
 
 #if defined (TARGET_TOC) /* i.e., PowerPC */
@@ -675,8 +656,6 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  ))
     {
       /* addr(foo) = &func+(foo-func) */
-      rtx pic_base;
-
       orig = machopic_indirect_data_reference (orig, reg);
 
       if (GET_CODE (orig) == PLUS
@@ -688,12 +667,6 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  emit_move_insn (reg, orig);
 	  return reg;
 	}
-
-      /* if dynamic-no-pic we don't have a pic base  */
-      if (MACHO_DYNAMIC_NO_PIC_P)
-	pic_base = NULL;
-      else
-	pic_base = machopic_function_base_sym ();
 
       if (GET_CODE (orig) == MEM)
 	{
@@ -731,7 +704,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  if (GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
 	      || GET_CODE (XEXP (orig, 0)) == LABEL_REF)
 	    {
-	      rtx offset = gen_pic_offset (XEXP (orig, 0), pic_base);
+	      rtx offset = machopic_gen_offset (XEXP (orig, 0));
 #if defined (TARGET_TOC) /* i.e., PowerPC */
 	      /* Generating a new reg may expose opportunities for
 		 common subexpression elimination.  */
@@ -787,8 +760,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      if (reload_in_progress)
 		df_set_regs_ever_live (REGNO (pic), true);
 	      pic_ref = gen_rtx_PLUS (Pmode, pic,
-				      gen_pic_offset (XEXP (orig, 0),
-						      pic_base));
+				      machopic_gen_offset (XEXP (orig, 0)));
 	    }
 
 #if !defined (TARGET_TOC)
@@ -803,7 +775,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  if (GET_CODE (orig) == SYMBOL_REF
 	      || GET_CODE (orig) == LABEL_REF)
 	    {
-	      rtx offset = gen_pic_offset (orig, pic_base);
+	      rtx offset = machopic_gen_offset (orig);
 #if defined (TARGET_TOC) /* i.e., PowerPC */
               rtx hi_sum_reg;
 
@@ -860,7 +832,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		    df_set_regs_ever_live (REGNO (pic), true);
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
-					  gen_pic_offset (orig, pic_base));
+					  machopic_gen_offset (orig));
 		}
 	    }
 	}
@@ -1064,27 +1036,12 @@ int
 machopic_operand_p (rtx op)
 {
   if (MACHOPIC_JUST_INDIRECT)
-    {
-      while (GET_CODE (op) == CONST)
-	op = XEXP (op, 0);
-
-      if (GET_CODE (op) == SYMBOL_REF)
-	return machopic_symbol_defined_p (op);
-      else
-	return 0;
-    }
-
-  while (GET_CODE (op) == CONST)
-    op = XEXP (op, 0);
-
-  if (GET_CODE (op) == MINUS
-      && GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (op, 1)) == SYMBOL_REF
-      && machopic_symbol_defined_p (XEXP (op, 0))
-      && machopic_symbol_defined_p (XEXP (op, 1)))
-      return 1;
-
-  return 0;
+    return (GET_CODE (op) == SYMBOL_REF
+	    && machopic_symbol_defined_p (op));
+  else
+    return (GET_CODE (op) == CONST
+	    && GET_CODE (XEXP (op, 0)) == UNSPEC
+	    && XINT (XEXP (op, 0), 1) == UNSPEC_MACHOPIC_OFFSET);
 }
 
 /* This function records whether a given name corresponds to a defined

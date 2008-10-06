@@ -176,7 +176,7 @@ extern void darwin_x86_file_end (void);
 #define TARGET_DYNAMIC_NO_PIC	  (target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
 
 #undef GOT_SYMBOL_NAME
-#define GOT_SYMBOL_NAME (machopic_function_base_name ())
+#define GOT_SYMBOL_NAME MACHOPIC_FUNCTION_BASE_NAME
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
