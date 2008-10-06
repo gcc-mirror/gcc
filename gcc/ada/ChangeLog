@@ -1,5 +1,10 @@
 2008-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Minor tweaks.
+	* gcc-interface/trans.c (Pragma_to_gnu): Likewise.
+
+2008-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (can_fold_for_view_convert_p): New predicate.
 	(unchecked_convert): Use it to disable problematic folding with
 	VIEW_CONVERT_EXPR in the general case.  Always disable it for the
