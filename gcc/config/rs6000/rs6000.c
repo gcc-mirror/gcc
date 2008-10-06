@@ -765,7 +765,6 @@ static void rs6000_emit_allocate_stack (HOST_WIDE_INT, int, int);
 static unsigned rs6000_hash_constant (rtx);
 static unsigned toc_hash_function (const void *);
 static int toc_hash_eq (const void *, const void *);
-static int constant_pool_expr_1 (rtx, int *, int *);
 static bool constant_pool_expr_p (rtx);
 static bool legitimate_small_data_p (enum machine_mode, rtx);
 static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
@@ -3505,58 +3504,28 @@ gpr_or_gpr_p (rtx op0, rtx op1)
 
 /* Subroutines of rs6000_legitimize_address and rs6000_legitimate_address.  */
 
-static int
-constant_pool_expr_1 (rtx op, int *have_sym, int *have_toc)
-{
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF:
-      if (RS6000_SYMBOL_REF_TLS_P (op))
-	return 0;
-      else if (CONSTANT_POOL_ADDRESS_P (op))
-	{
-	  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (op), Pmode))
-	    {
-	      *have_sym = 1;
-	      return 1;
-	    }
-	  else
-	    return 0;
-	}
-      else if (! strcmp (XSTR (op, 0), toc_label_name))
-	{
-	  *have_toc = 1;
-	  return 1;
-	}
-      else
-	return 0;
-    case PLUS:
-    case MINUS:
-      return (constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc)
-	      && constant_pool_expr_1 (XEXP (op, 1), have_sym, have_toc));
-    case CONST:
-      return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc);
-    case CONST_INT:
-      return 1;
-    default:
-      return 0;
-    }
-}
-
 static bool
 constant_pool_expr_p (rtx op)
 {
-  int have_sym = 0;
-  int have_toc = 0;
-  return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_sym;
+  rtx base, offset;
+
+  split_const (op, &base, &offset);
+  return (GET_CODE (base) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (base)
+	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (base), Pmode));
 }
 
 bool
 toc_relative_expr_p (rtx op)
 {
-  int have_sym = 0;
-  int have_toc = 0;
-  return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_toc;
+  rtx base, offset;
+
+  if (GET_CODE (op) != CONST)
+    return false;
+
+  split_const (op, &base, &offset);
+  return (GET_CODE (base) == UNSPEC
+	  && XINT (base, 1) == UNSPEC_TOCREL);
 }
 
 bool
@@ -3566,7 +3535,7 @@ legitimate_constant_pool_address_p (rtx x)
 	  && GET_CODE (x) == PLUS
 	  && GET_CODE (XEXP (x, 0)) == REG
 	  && (TARGET_MINIMAL_TOC || REGNO (XEXP (x, 0)) == TOC_REGISTER)
-	  && constant_pool_expr_p (XEXP (x, 1)));
+	  && toc_relative_expr_p (XEXP (x, 1)));
 }
 
 static bool
@@ -12572,43 +12541,35 @@ print_operand_address (FILE *file, rtx x)
 #endif
   else if (legitimate_constant_pool_address_p (x))
     {
-      if (TARGET_AIX && (!TARGET_ELF || !TARGET_MINIMAL_TOC))
-	{
-	  rtx contains_minus = XEXP (x, 1);
-	  rtx minus, symref;
-	  const char *name;
-
-	  /* Find the (minus (sym) (toc)) buried in X, and temporarily
-	     turn it into (sym) for output_addr_const.  */
-	  while (GET_CODE (XEXP (contains_minus, 0)) != MINUS)
-	    contains_minus = XEXP (contains_minus, 0);
-
-	  minus = XEXP (contains_minus, 0);
-	  symref = XEXP (minus, 0);
-	  gcc_assert (GET_CODE (XEXP (minus, 1)) == SYMBOL_REF);
-	  XEXP (contains_minus, 0) = symref;
-	  if (TARGET_ELF)
-	    {
-	      char *newname;
-
-	      name = XSTR (symref, 0);
-	      newname = XALLOCAVEC (char, strlen (name) + sizeof ("@toc"));
-	      strcpy (newname, name);
-	      strcat (newname, "@toc");
-	      XSTR (symref, 0) = newname;
-	    }
-	  output_addr_const (file, XEXP (x, 1));
-	  if (TARGET_ELF)
-	    XSTR (symref, 0) = name;
-	  XEXP (contains_minus, 0) = minus;
-	}
-      else
-	output_addr_const (file, XEXP (x, 1));
-
+      output_addr_const (file, XEXP (x, 1));
       fprintf (file, "(%s)", reg_names[REGNO (XEXP (x, 0))]);
     }
   else
     gcc_unreachable ();
+}
+
+/* Implement OUTPUT_ADDR_CONST_EXTRA for address X.  */
+
+bool
+rs6000_output_addr_const_extra (FILE *file, rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    switch (XINT (x, 1))
+      {
+      case UNSPEC_TOCREL:
+	x = XVECEXP (x, 0, 0);
+	gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	output_addr_const (file, x);
+	if (!TARGET_AIX || (TARGET_ELF && TARGET_MINIMAL_TOC))
+	  {
+	    putc ('-', file);
+	    assemble_name (file, toc_label_name);
+	  }
+	else if (TARGET_ELF)
+	  fputs ("@toc", file);
+	return true;
+      }
+  return false;
 }
 
 /* Target hook for assembling integer objects.  The PowerPC version has
@@ -15431,8 +15392,7 @@ create_TOC_reference (rtx symbol)
   return gen_rtx_PLUS (Pmode,
 	   gen_rtx_REG (Pmode, TOC_REGISTER),
 	     gen_rtx_CONST (Pmode,
-	       gen_rtx_MINUS (Pmode, symbol,
-		 gen_rtx_SYMBOL_REF (Pmode, toc_label_name))));
+	       gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_TOCREL)));
 }
 
 /* If _Unwind_* has been called from within the same module,
