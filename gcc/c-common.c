@@ -3411,7 +3411,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	     : truthvalue_false_node;
 
     case FUNCTION_DECL:
-      expr = build_unary_op (ADDR_EXPR, expr, 0);
+      expr = build_unary_op (location, ADDR_EXPR, expr, 0);
       /* Fall through.  */
 
     case ADDR_EXPR:
@@ -3514,10 +3514,12 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	      (EXPR_LOCATION (expr),
 	       (TREE_SIDE_EFFECTS (expr)
 		? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
-	c_common_truthvalue_conversion (location,
-					build_unary_op (REALPART_EXPR, t, 0)),
-	c_common_truthvalue_conversion (location,
-					build_unary_op (IMAGPART_EXPR, t, 0)),
+	c_common_truthvalue_conversion
+	       (location,
+		build_unary_op (location, REALPART_EXPR, t, 0)),
+	c_common_truthvalue_conversion
+	       (location,
+		build_unary_op (location, IMAGPART_EXPR, t, 0)),
 	       0));
     }
 
@@ -8182,10 +8184,11 @@ warn_for_unused_label (tree label)
 struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
 #endif
 
-/* Warn for division by zero according to the value of DIVISOR.  */
+/* Warn for division by zero according to the value of DIVISOR.  LOC
+   is the location of the division operator.  */
 
 void
-warn_for_div_by_zero (tree divisor)
+warn_for_div_by_zero (location_t loc, tree divisor)
 {
   /* If DIVISOR is zero, and has integral or fixed-point type, issue a warning
      about division by zero.  Do not issue a warning if DIVISOR has a
@@ -8193,7 +8196,7 @@ warn_for_div_by_zero (tree divisor)
      generating a NaN.  */
   if (skip_evaluation == 0
       && (integer_zerop (divisor) || fixed_zerop (divisor)))
-    warning (OPT_Wdiv_by_zero, "division by zero");
+    warning_at (loc, OPT_Wdiv_by_zero, "division by zero");
 }
 
 /* Subroutine of build_binary_op. Give warnings for comparisons

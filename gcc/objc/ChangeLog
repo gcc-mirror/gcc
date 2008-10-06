@@ -1,3 +1,29 @@
+2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (objc_build_string_object): Pass location to
+	build_unary_op.
+	(init_def_list): Same.
+	(init_objc_symtab): Same.
+	(init_module_descriptor): Same.
+	(build_module_initializer_routine): Same.
+	(generate_static_references): Same.
+	(build_typed_selector_reference): Same.
+	(add_objc_string): Same.
+	(objc_substitute_decl): Same.
+	(objc_build_ivar_assignment): Same.
+	(objc_build_global_assignment): Same.
+	(objc_build_strong_cast_assignment): Same.
+	(generate_protocols): Same.
+	(build_protocol_initializer): Same.
+	(build_dispatch_table_initializer): Same.
+	(generate_protocol_list): Same.
+	(build_category_initializer): Same.
+	(build_shared_structure_initializer): Same.
+	(generate_shared_structures): Same.
+	(objc_build_protocol_expr): Same.
+	(build_ivar_reference): Same.
+	(get_super_receiver): Same.
+
 2008-09-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* objc-act.c (next_sjlj_build_enter_and_setjmp): Call

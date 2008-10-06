@@ -3650,7 +3650,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  tree cleanup;
 
 	  /* Build "cleanup(&decl)" for the destructor.  */
-	  cleanup = build_unary_op (ADDR_EXPR, decl, 0);
+	  cleanup = build_unary_op (input_location, ADDR_EXPR, decl, 0);
 	  cleanup = build_tree_list (NULL_TREE, cleanup);
 	  cleanup = build_function_call (cleanup_decl, cleanup);
 

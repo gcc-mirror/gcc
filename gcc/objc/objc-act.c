@@ -1940,10 +1940,12 @@ objc_build_string_object (tree string)
       initlist
 	= build_tree_list (fields,
 			   flag_next_runtime
-			   ? build_unary_op (ADDR_EXPR, string_class_decl, 0)
+			   ? build_unary_op (input_location,
+					     ADDR_EXPR, string_class_decl, 0)
 			   : build_int_cst (NULL_TREE, 0));
       fields = TREE_CHAIN (fields);
-      initlist = tree_cons (fields, build_unary_op (ADDR_EXPR, string, 1),
+      initlist = tree_cons (fields, build_unary_op (input_location,
+						    ADDR_EXPR, string, 1),
 			    initlist);
       fields = TREE_CHAIN (fields);
       initlist = tree_cons (fields, build_int_cst (NULL_TREE, length),
@@ -1966,7 +1968,8 @@ objc_build_string_object (tree string)
     }
 
   addr = convert (build_pointer_type (constant_string_type),
-		  build_unary_op (ADDR_EXPR, desc->constructor, 1));
+		  build_unary_op (input_location,
+				  ADDR_EXPR, desc->constructor, 1));
 
   return addr;
 }
@@ -2104,7 +2107,8 @@ init_def_list (tree type)
       {
 	if (TREE_CODE (impent->imp_context) == CLASS_IMPLEMENTATION_TYPE)
 	  {
-	    expr = build_unary_op (ADDR_EXPR, impent->class_decl, 0);
+	    expr = build_unary_op (input_location,
+				   ADDR_EXPR, impent->class_decl, 0);
 	    initlist = tree_cons (NULL_TREE, expr, initlist);
 	  }
       }
@@ -2114,7 +2118,8 @@ init_def_list (tree type)
       {
 	if (TREE_CODE (impent->imp_context) == CATEGORY_IMPLEMENTATION_TYPE)
 	  {
-	    expr = build_unary_op (ADDR_EXPR, impent->class_decl, 0);
+	    expr = build_unary_op (input_location,
+				   ADDR_EXPR, impent->class_decl, 0);
 	    initlist = tree_cons (NULL_TREE, expr, initlist);
 	  }
       }
@@ -2125,7 +2130,8 @@ init_def_list (tree type)
       tree expr;
 
       if (static_instances_decl)
-	expr = build_unary_op (ADDR_EXPR, static_instances_decl, 0);
+	expr = build_unary_op (input_location,
+			       ADDR_EXPR, static_instances_decl, 0);
       else
 	expr = build_int_cst (NULL_TREE, 0);
 
@@ -2155,7 +2161,7 @@ init_objc_symtab (tree type)
     initlist
       = tree_cons (NULL_TREE,
 		   convert (build_pointer_type (objc_selector_type),
-			    build_unary_op (ADDR_EXPR,
+			    build_unary_op (input_location, ADDR_EXPR,
 					    UOBJC_SELECTOR_TABLE_decl, 1)),
 		   initlist);
 
@@ -2262,7 +2268,8 @@ init_module_descriptor (tree type)
   /* symtab = { ..., _OBJC_SYMBOLS, ... } */
 
   if (UOBJC_SYMBOLS_decl)
-    expr = build_unary_op (ADDR_EXPR, UOBJC_SYMBOLS_decl, 0);
+    expr = build_unary_op (input_location,
+			   ADDR_EXPR, UOBJC_SYMBOLS_decl, 0);
   else
     expr = build_int_cst (NULL_TREE, 0);
   initlist = tree_cons (NULL_TREE, expr, initlist);
@@ -2345,7 +2352,7 @@ build_module_initializer_routine (void)
 	    (execclass_decl,
 	     build_tree_list
 	     (NULL_TREE,
-	      build_unary_op (ADDR_EXPR,
+	      build_unary_op (input_location, ADDR_EXPR,
 			      UOBJC_MODULES_decl, 0))));
   add_stmt (c_end_compound_stmt (body, true));
 
@@ -2440,13 +2447,15 @@ generate_static_references (void)
       klass = TREE_VALUE (cl_chain);
       class_name = get_objc_string_decl (OBJC_TYPE_NAME (klass), class_names);
       initlist = build_tree_list (NULL_TREE,
-				  build_unary_op (ADDR_EXPR, class_name, 1));
+				  build_unary_op (input_location, 
+						  ADDR_EXPR, class_name, 1));
 
       /* Output {..., instance, ...}.  */
       for (in_chain = TREE_PURPOSE (cl_chain);
 	   in_chain; in_chain = TREE_CHAIN (in_chain))
 	{
-	  expr = build_unary_op (ADDR_EXPR, TREE_VALUE (in_chain), 1);
+	  expr = build_unary_op (input_location,
+				 ADDR_EXPR, TREE_VALUE (in_chain), 1);
 	  initlist = tree_cons (NULL_TREE, expr, initlist);
 	}
 
@@ -2456,7 +2465,8 @@ generate_static_references (void)
       expr = objc_build_constructor (TREE_TYPE (decl), nreverse (initlist));
       finish_var_decl (decl, expr);
       decls
-	= tree_cons (NULL_TREE, build_unary_op (ADDR_EXPR, decl, 1), decls);
+	= tree_cons (NULL_TREE, build_unary_op (input_location,
+						ADDR_EXPR, decl, 1), decls);
     }
 
   decls = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, 0), decls);
@@ -2628,7 +2638,7 @@ build_typed_selector_reference (tree ident, tree prototype)
   *chain = tree_cons (prototype, ident, NULL_TREE);
 
  return_at_index:
-  expr = build_unary_op (ADDR_EXPR,
+  expr = build_unary_op (input_location, ADDR_EXPR,
 			 build_array_ref (UOBJC_SELECTOR_TABLE_decl,
 					  build_int_cst (NULL_TREE, index),
 					  input_location),
@@ -2801,7 +2811,8 @@ add_objc_string (tree ident, enum string_section section)
     {
       if (TREE_VALUE (*chain) == ident)
 	return convert (string_type_node,
-			build_unary_op (ADDR_EXPR, TREE_PURPOSE (*chain), 1));
+			build_unary_op (input_location,
+					ADDR_EXPR, TREE_PURPOSE (*chain), 1));
 
       chain = &TREE_CHAIN (*chain);
     }
@@ -2820,7 +2831,8 @@ add_objc_string (tree ident, enum string_section section)
 
   *chain = tree_cons (decl, ident, NULL_TREE);
 
-  return convert (string_type_node, build_unary_op (ADDR_EXPR, decl, 1));
+  return convert (string_type_node, build_unary_op (input_location,
+						    ADDR_EXPR, decl, 1));
 }
 
 static GTY(()) int class_names_idx;
@@ -3052,10 +3064,10 @@ objc_substitute_decl (tree expr, tree oldexpr, tree newexpr)
 			      TREE_OPERAND (expr, 1),
 			      input_location);
     case INDIRECT_REF:
-      return build_indirect_ref (objc_substitute_decl (TREE_OPERAND (expr, 0),
+      return build_indirect_ref (input_location,
+				 objc_substitute_decl (TREE_OPERAND (expr, 0),
 						       oldexpr,
-						       newexpr), "->",
-				 input_location);
+						       newexpr), "->");
     default:
       return expr;
     }
@@ -3077,7 +3089,8 @@ objc_build_ivar_assignment (tree outervar, tree lhs, tree rhs)
        ? objc_assign_ivar_fast_decl
        : objc_assign_ivar_decl);
 
-  offs = convert (integer_type_node, build_unary_op (ADDR_EXPR, offs, 0));
+  offs = convert (integer_type_node, build_unary_op (input_location,
+						     ADDR_EXPR, offs, 0));
   offs = fold (offs);
   func_params = tree_cons (NULL_TREE,
 	convert (objc_object_type, rhs),
@@ -3095,7 +3108,7 @@ objc_build_global_assignment (tree lhs, tree rhs)
   tree func_params = tree_cons (NULL_TREE,
 	convert (objc_object_type, rhs),
 	    tree_cons (NULL_TREE, convert (build_pointer_type (objc_object_type),
-		      build_unary_op (ADDR_EXPR, lhs, 0)),
+		      build_unary_op (input_location, ADDR_EXPR, lhs, 0)),
 		    NULL_TREE));
 
   assemble_external (objc_assign_global_decl);
@@ -3108,7 +3121,7 @@ objc_build_strong_cast_assignment (tree lhs, tree rhs)
   tree func_params = tree_cons (NULL_TREE,
 	convert (objc_object_type, rhs),
 	    tree_cons (NULL_TREE, convert (build_pointer_type (objc_object_type),
-		      build_unary_op (ADDR_EXPR, lhs, 0)),
+		      build_unary_op (input_location, ADDR_EXPR, lhs, 0)),
 		    NULL_TREE));
 
   assemble_external (objc_assign_strong_cast_decl);
@@ -4672,7 +4685,8 @@ generate_protocols (void)
       if (refs_decl)
 	refs_expr = convert (build_pointer_type (build_pointer_type
 						 (objc_protocol_template)),
-			     build_unary_op (ADDR_EXPR, refs_decl, 0));
+			     build_unary_op (input_location,
+					     ADDR_EXPR, refs_decl, 0));
       else
 	refs_expr = build_int_cst (NULL_TREE, 0);
 
@@ -4709,7 +4723,8 @@ build_protocol_initializer (tree type, tree protocol_name,
   else
     {
       expr = convert (objc_method_proto_list_ptr,
-		      build_unary_op (ADDR_EXPR, instance_methods, 0));
+		      build_unary_op (input_location, 
+				      ADDR_EXPR, instance_methods, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -4718,7 +4733,8 @@ build_protocol_initializer (tree type, tree protocol_name,
   else
     {
       expr = convert (objc_method_proto_list_ptr,
-		      build_unary_op (ADDR_EXPR, class_methods, 0));
+		      build_unary_op (input_location, 
+				      ADDR_EXPR, class_methods, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5287,7 +5303,7 @@ build_dispatch_table_initializer (tree type, tree entries)
       elemlist
 	= tree_cons (NULL_TREE,
 		     convert (ptr_type_node,
-			      build_unary_op (ADDR_EXPR,
+			      build_unary_op (input_location, ADDR_EXPR,
 					      METHOD_DEFINITION (entries), 1)),
 		     elemlist);
 
@@ -5471,7 +5487,8 @@ generate_protocol_list (tree i_or_p)
       if (TREE_CODE (pval) == PROTOCOL_INTERFACE_TYPE
 	  && PROTOCOL_FORWARD_DECL (pval))
 	{
-	  e = build_unary_op (ADDR_EXPR, PROTOCOL_FORWARD_DECL (pval), 0);
+	  e = build_unary_op (input_location, ADDR_EXPR, 
+			      PROTOCOL_FORWARD_DECL (pval), 0);
 	  initlist = tree_cons (NULL_TREE, e, initlist);
 	}
     }
@@ -5514,7 +5531,8 @@ build_category_initializer (tree type, tree cat_name, tree class_name,
   else
     {
       expr = convert (objc_method_list_ptr,
-		      build_unary_op (ADDR_EXPR, instance_methods, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      instance_methods, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
   if (!class_methods)
@@ -5522,7 +5540,8 @@ build_category_initializer (tree type, tree cat_name, tree class_name,
   else
     {
       expr = convert (objc_method_list_ptr,
-		      build_unary_op (ADDR_EXPR, class_methods, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      class_methods, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5534,7 +5553,8 @@ build_category_initializer (tree type, tree cat_name, tree class_name,
       expr = convert (build_pointer_type
 		      (build_pointer_type
 		       (objc_protocol_template)),
-		      build_unary_op (ADDR_EXPR, protocol_list, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      protocol_list, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5599,7 +5619,8 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
   else
     {
       expr = convert (objc_ivar_list_ptr,
-		      build_unary_op (ADDR_EXPR, ivar_list, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      ivar_list, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5609,7 +5630,8 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
   else
     {
       expr = convert (objc_method_list_ptr,
-		      build_unary_op (ADDR_EXPR, dispatch_table, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      dispatch_table, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5636,7 +5658,8 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
       expr = convert (build_pointer_type
 		      (build_pointer_type
 		       (objc_protocol_template)),
-		      build_unary_op (ADDR_EXPR, protocol_list, 0));
+		      build_unary_op (input_location, ADDR_EXPR, 
+				      protocol_list, 0));
       initlist = tree_cons (NULL_TREE, expr, initlist);
     }
 
@@ -5790,7 +5813,7 @@ generate_shared_structures (int cls_flags)
   initlist
     = build_shared_structure_initializer
       (TREE_TYPE (decl),
-       build_unary_op (ADDR_EXPR, UOBJC_METACLASS_decl, 0),
+       build_unary_op (input_location, ADDR_EXPR, UOBJC_METACLASS_decl, 0),
        super_expr, name_expr,
        convert (integer_type_node,
 		TYPE_SIZE_UNIT (CLASS_STATIC_TEMPLATE
@@ -6582,7 +6605,8 @@ objc_build_protocol_expr (tree protoname)
   if (!PROTOCOL_FORWARD_DECL (p))
     build_protocol_reference (p);
 
-  expr = build_unary_op (ADDR_EXPR, PROTOCOL_FORWARD_DECL (p), 0);
+  expr = build_unary_op (input_location, 
+			 ADDR_EXPR, PROTOCOL_FORWARD_DECL (p), 0);
 
   /* ??? Ideally we'd build the reference with objc_protocol_type directly,
      if we have it, rather than converting it here.  */
@@ -6720,8 +6744,8 @@ build_ivar_reference (tree id)
       self_decl = convert (objc_instance_type, self_decl); /* cast */
     }
 
-  return objc_build_component_ref (build_indirect_ref (self_decl, "->",
-  						       input_location), id);
+  return objc_build_component_ref (build_indirect_ref (input_location,
+						       self_decl, "->"), id);
 }
 
 /* Compute a hash value for a given method SEL_NAME.  */
@@ -8701,7 +8725,8 @@ get_super_receiver (void)
 
       /* Set receiver to self.  */
       super_expr = objc_build_component_ref (UOBJC_SUPER_decl, self_id);
-      super_expr = build_modify_expr (super_expr, NOP_EXPR, self_decl);
+      super_expr = build_modify_expr (input_location, 
+				      super_expr, NOP_EXPR, self_decl);
       super_expr_list = super_expr;
 
       /* Set class to begin searching.  */
@@ -8713,7 +8738,7 @@ get_super_receiver (void)
 	  /* [_cls, __cls]Super are "pre-built" in
 	     synth_forward_declarations.  */
 
-	  super_expr = build_modify_expr (super_expr, NOP_EXPR,
+	  super_expr = build_modify_expr (input_location, super_expr, NOP_EXPR,
 					  ((TREE_CODE (objc_method_context)
 					    == INSTANCE_METHOD_DECL)
 					   ? ucls_super_ref
@@ -8744,8 +8769,9 @@ get_super_receiver (void)
 		   "isa" is the first ivar in a class (which it must be).  */
 		super_class
 		  = build_indirect_ref
-		    (build_c_cast (build_pointer_type (objc_class_type),
-				   super_class), "unary *", input_location);
+		      (input_location,
+		       build_c_cast (build_pointer_type (objc_class_type),
+				     super_class), "unary *");
 	    }
 	  else
 	    {
@@ -8764,14 +8790,15 @@ get_super_receiver (void)
 	    }
 
 	  super_expr
-	    = build_modify_expr (super_expr, NOP_EXPR,
+	    = build_modify_expr (input_location, super_expr, NOP_EXPR,
 				 build_c_cast (TREE_TYPE (super_expr),
 					       super_class));
 	}
 
       super_expr_list = build_compound_expr (super_expr_list, super_expr);
 
-      super_expr = build_unary_op (ADDR_EXPR, UOBJC_SUPER_decl, 0);
+      super_expr = build_unary_op (input_location, 
+				   ADDR_EXPR, UOBJC_SUPER_decl, 0);
       super_expr_list = build_compound_expr (super_expr_list, super_expr);
 
       return super_expr_list;

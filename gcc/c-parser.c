@@ -2098,8 +2098,7 @@ c_parser_typeof_specifier (c_parser *parser)
 	  if (DECL_P (e) || CONSTANT_CLASS_P (e))
 	    e = build1 (NOP_EXPR, void_type_node, e);
 
-	  if (CAN_HAVE_LOCATION_P (e))
-	    SET_EXPR_LOCATION (e, here);
+	  protected_set_expr_location (e, here);
 
 	  add_stmt (e);
 	}
@@ -3789,8 +3788,7 @@ c_parser_statement_after_labels (c_parser *parser)
      (recursively) all of the component statements should already have
      line numbers assigned.  ??? Can we discard no-op statements
      earlier?  */
-  if (stmt && CAN_HAVE_LOCATION_P (stmt))
-    SET_EXPR_LOCATION (stmt, loc);
+  protected_set_expr_location (stmt, loc);
 
   parser->in_if_block = in_if_block;
 }
@@ -3805,8 +3803,7 @@ c_parser_condition (c_parser *parser)
   loc = c_parser_peek_token (parser)->location;
   cond = c_objc_common_truthvalue_conversion 
     (loc, c_parser_expression_conv (parser).value);
-  if (CAN_HAVE_LOCATION_P (cond))
-    SET_EXPR_LOCATION (cond, loc);
+  protected_set_expr_location (cond, loc);
   if (warn_sequence_point)
     verify_sequence_points (cond);
   return cond;
@@ -4361,8 +4358,10 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
 {
   struct c_expr lhs, rhs, ret;
   enum tree_code code;
+  location_t op_location;
   gcc_assert (!after || c_dialect_objc ());
   lhs = c_parser_conditional_expression (parser, after);
+  op_location = c_parser_peek_token (parser)->location;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_EQ:
@@ -4404,7 +4403,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
   c_parser_consume_token (parser);
   rhs = c_parser_expr_no_commas (parser, NULL);
   rhs = default_function_array_conversion (rhs);
-  ret.value = build_modify_expr (lhs.value, code, rhs.value);
+  ret.value = build_modify_expr (op_location, lhs.value, code, rhs.value);
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
   else
@@ -4439,6 +4438,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 
   cond_loc = c_parser_peek_token (parser)->location;
   cond = c_parser_binary_expression (parser, after);
+  protected_set_expr_location (cond.value, cond_loc);
 
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
@@ -4836,7 +4836,7 @@ c_parser_unary_expression (c_parser *parser)
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
       op = default_function_array_conversion (op);
-      ret.value = build_indirect_ref (op.value, "unary *", loc);
+      ret.value = build_indirect_ref (loc, op.value, "unary *");
       ret.original_code = ERROR_MARK;
       return ret;
     case CPP_PLUS:
@@ -5594,8 +5594,9 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      return expr;
 	    }
 	  c_parser_consume_token (parser);
-	  expr.value = build_component_ref (build_indirect_ref (expr.value,
-								"->", loc),
+	  expr.value = build_component_ref (build_indirect_ref (loc,
+								expr.value,
+								"->"),
 					    ident);
 	  expr.original_code = ERROR_MARK;
 	  break;
@@ -5603,14 +5604,16 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  /* Postincrement.  */
 	  c_parser_consume_token (parser);
 	  expr = default_function_array_conversion (expr);
-	  expr.value = build_unary_op (POSTINCREMENT_EXPR, expr.value, 0);
+	  expr.value = build_unary_op (loc,
+				       POSTINCREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
 	  break;
 	case CPP_MINUS_MINUS:
 	  /* Postdecrement.  */
 	  c_parser_consume_token (parser);
 	  expr = default_function_array_conversion (expr);
-	  expr.value = build_unary_op (POSTDECREMENT_EXPR, expr.value, 0);
+	  expr.value = build_unary_op (loc,
+				       POSTDECREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
 	  break;
 	default:
@@ -7594,14 +7597,17 @@ c_parser_omp_for_loop (c_parser *parser, tree clauses, tree *par_clauses)
 	       && c_parser_peek_2nd_token (parser)->type == CPP_EQ)
 	{
 	  struct c_expr init_exp;
+	  location_t init_loc;
 
 	  decl = c_parser_postfix_expression (parser).value;
 
 	  c_parser_require (parser, CPP_EQ, "expected %<=%>");
+	  init_loc = c_parser_peek_token (parser)->location;
 
 	  init_exp = c_parser_expr_no_commas (parser, NULL);
 	  init_exp = default_function_array_conversion (init_exp);
-	  init = build_modify_expr (decl, NOP_EXPR, init_exp.value);
+	  init = build_modify_expr (init_loc,
+				    decl, NOP_EXPR, init_exp.value);
 	  init = c_process_expr_stmt (init);
 
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
@@ -7625,15 +7631,19 @@ c_parser_omp_for_loop (c_parser *parser, tree clauses, tree *par_clauses)
 
 	  cond = c_parser_expression_conv (parser).value;
 	  cond = c_objc_common_truthvalue_conversion (cond_loc, cond);
-	  if (CAN_HAVE_LOCATION_P (cond))
-	    SET_EXPR_LOCATION (cond, cond_loc);
+	  protected_set_expr_location (cond, cond_loc);
 	}
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 
       /* Parse the increment expression.  */
       incr = NULL_TREE;
       if (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN))
-	incr = c_process_expr_stmt (c_parser_expression (parser).value);
+	{
+	  location_t incr_loc = c_parser_peek_token (parser)->location;
+
+	  incr = c_process_expr_stmt (c_parser_expression (parser).value);
+	  protected_set_expr_location (incr, incr_loc);
+	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
 
       if (decl == NULL || decl == error_mark_node || init == error_mark_node)

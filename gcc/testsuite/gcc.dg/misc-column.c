@@ -1,5 +1,6 @@
 /* { dg-options "-fshow-column -Wall -Wfloat-equal -pedantic" } */
 
+int i, j;
 float a, b;
 
 int *p;
@@ -26,4 +27,14 @@ void foo (void)
 
   if (p < 0) /* { dg-warning "9:ordered comparison of pointer with" } */
     bar();
+
+  -q;	 /* { dg-error "3:wrong type argument to unary" } */
+
+  ~q;    /* { dg-error "3:wrong type argument to bit" } */
+
+  ++*q; /* { dg-error "3:wrong type argument to increment" } */
+
+  i = j / 0;  /* { dg-warning "9:division by zero" } */
+
+  i /= 0; /* { dg-warning "5:division by zero" } */
 }
