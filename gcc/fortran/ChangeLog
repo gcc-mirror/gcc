@@ -1,3 +1,12 @@
+2008-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (poplevel): Don't clear BLOCK_VARS if functionbody.
+	* trans-decl.c (gfc_build_qualified_array): Build accurate debug type
+	even if nest.
+	(build_entry_thunks, gfc_generate_function_code,
+	gfc_generate_constructors): Ensure DECL_SAVED_TREE is a BIND_EXPR
+	with DECL_INITIAL as its BLOCK.
+
 2008-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35680

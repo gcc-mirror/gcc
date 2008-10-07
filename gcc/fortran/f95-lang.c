@@ -430,14 +430,8 @@ poplevel (int keep, int reverse, int functionbody)
   current_binding_level = current_binding_level->level_chain;
 
   if (functionbody)
-    {
-      /* This is the top level block of a function. The ..._DECL chain stored
-         in BLOCK_VARS are the function's parameters (PARM_DECL nodes). Don't
-         leave them in the BLOCK because they are found in the FUNCTION_DECL
-         instead.  */
-      DECL_INITIAL (current_function_decl) = block_node;
-      BLOCK_VARS (block_node) = 0;
-    }
+    /* This is the top level block of a function. */
+    DECL_INITIAL (current_function_decl) = block_node;
   else if (current_binding_level == global_binding_level)
     /* When using gfc_start_block/gfc_finish_block from middle-end hooks,
        don't add newly created BLOCKs as subblocks of global_binding_level.  */
