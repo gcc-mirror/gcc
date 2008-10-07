@@ -1,3 +1,21 @@
+2008-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/29609
+	PR debug/36690
+	PR debug/37616
+	* gcc.dg/debug/pr29609-1.c: New test.
+	* gcc.dg/debug/pr29609-2.c: New test.
+	* gcc.dg/debug/pr36690-1.c: New test.
+	* gcc.dg/debug/pr36690-2.c: New test.
+	* gcc.dg/debug/pr36690-3.c: New test.
+	* gcc.dg/debug/pr37616.c: New test.
+	* gcc.dg/debug/dwarf2/pr29609-1.c: New test.
+	* gcc.dg/debug/dwarf2/pr29609-2.c: New test.
+	* gcc.dg/debug/dwarf2/pr36690-1.c: New test.
+	* gcc.dg/debug/dwarf2/pr36690-2.c: New test.
+	* gcc.dg/debug/dwarf2/pr36690-3.c: New test.
+	* gcc.dg/debug/dwarf2/pr37616.c: New test.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37731

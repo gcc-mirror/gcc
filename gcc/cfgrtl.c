@@ -1009,6 +1009,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   rtx note;
   edge new_edge;
   int abnormal_edge_flags = 0;
+  int loc;
 
   /* In the case the last instruction is conditional jump to the next
      instruction, first redirect the jump itself and then continue
@@ -1127,11 +1128,15 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   else
     jump_block = e->src;
 
+  if (e->goto_locus && e->goto_block == NULL)
+    loc = e->goto_locus;
+  else
+    loc = 0;
   e->flags &= ~EDGE_FALLTHRU;
   if (target == EXIT_BLOCK_PTR)
     {
 #ifdef HAVE_return
-	emit_jump_insn_after_noloc (gen_return (), BB_END (jump_block));
+	emit_jump_insn_after_setloc (gen_return (), BB_END (jump_block), loc);
 #else
 	gcc_unreachable ();
 #endif
@@ -1139,7 +1144,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   else
     {
       rtx label = block_label (target);
-      emit_jump_insn_after_noloc (gen_jump (label), BB_END (jump_block));
+      emit_jump_insn_after_setloc (gen_jump (label), BB_END (jump_block), loc);
       JUMP_LABEL (BB_END (jump_block)) = label;
       LABEL_NUSES (label)++;
     }
@@ -2605,6 +2610,32 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (JUMP_P (BB_END (a)))
     try_redirect_by_replacing_jump (EDGE_SUCC (a, 0), b, true);
   gcc_assert (!JUMP_P (BB_END (a)));
+
+  /* When not optimizing and the edge is the only place in RTL which holds
+     some unique locus, emit a nop with that locus in between.  */
+  if (!optimize && EDGE_SUCC (a, 0)->goto_locus)
+    {
+      rtx insn = BB_END (a);
+      int goto_locus = EDGE_SUCC (a, 0)->goto_locus;
+
+      if (NOTE_P (insn))
+	insn = prev_nonnote_insn (insn);
+      if (insn && INSN_P (insn) && INSN_LOCATOR (insn) == goto_locus)
+	goto_locus = 0;
+      else
+	{
+	  insn = BB_HEAD (b);
+	  if (!INSN_P (insn))
+	    insn = next_insn (insn);
+	  if (insn && INSN_P (insn) && INSN_LOCATOR (insn) == goto_locus)
+	    goto_locus = 0;
+	}
+      if (goto_locus)
+	{
+	  BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
+	  INSN_LOCATOR (BB_END (a)) = goto_locus;
+	}
+    }
 
   /* Possible line number notes should appear in between.  */
   if (b->il.rtl->header)

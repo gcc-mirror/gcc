@@ -1,3 +1,29 @@
+2008-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/29609
+	PR debug/36690
+	PR debug/37616
+	* basic-block.h (struct edge_def): Add goto_block field.
+	* cfglayout.c (fixup_reorder_chain): Ensure that there is at least
+	one insn with locus corresponding to edge's goto_locus if !optimize.
+	* profile.c (branch_prob): Copy edge's goto_block.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Use goto_locus for
+	emitted jumps.
+	(cfg_layout_merge_blocks): Emit a nop with edge's goto_locus
+	locator in between the merged basic blocks if !optimize and needed.
+	* cfgexpand.c (expand_gimple_cond): Convert goto_block and
+	goto_locus into RTL locator.  For unconditional jump use that
+	locator for the jump insn.
+	(expand_gimple_cond): Convert goto_block and goto_locus into
+	RTL locator for all remaining edges.  For unconditional jump
+	use that locator for the jump insn.
+	* cfgcleanup.c (try_forward_edges): Avoid the optimization if
+	there is more than one edge or insn locator along the forwarding
+	edges and !optimize.  If there is just one, set e->goto_locus.
+	* tree-cfg.c (make_cond_expr_edges, make_goto_expr_edges): Set also
+	edge's goto_block.
+	(move_block_to_fn): Adjust edge's goto_block.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37731

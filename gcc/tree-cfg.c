@@ -658,9 +658,13 @@ make_cond_expr_edges (basic_block bb)
 
   e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
   e->goto_locus = gimple_location (then_stmt);
+  e->goto_block = gimple_block (then_stmt);
   e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
   if (e)
-    e->goto_locus = gimple_location (else_stmt);
+    {
+      e->goto_locus = gimple_location (else_stmt);
+      e->goto_block = gimple_block (else_stmt);
+    }
 
   /* We do not need the labels anymore.  */
   gimple_cond_set_true_label (entry, NULL_TREE);
@@ -849,6 +853,7 @@ make_goto_expr_edges (basic_block bb)
       tree dest = gimple_goto_dest (goto_t);
       edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
       e->goto_locus = gimple_location (goto_t);
+      e->goto_block = gimple_block (goto_t);
       gsi_remove (&last, true);
       return;
     }
@@ -5743,6 +5748,23 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       update_stmt (stmt);
       pop_cfun ();
     }
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->goto_locus)
+      {
+	tree block = e->goto_block;
+	if (d->orig_block == NULL_TREE
+	    || block == d->orig_block)
+	  e->goto_block = d->new_block;
+#ifdef ENABLE_CHECKING
+	else if (block != d->new_block)
+	  {
+	    while (block && block != d->orig_block)
+	      block = BLOCK_SUPERCONTEXT (block);
+	    gcc_assert (block);
+	  }
+#endif
+      }
 }
 
 /* Examine the statements in BB (which is in SRC_CFUN); find and return
