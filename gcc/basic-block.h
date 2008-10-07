@@ -129,7 +129,8 @@ struct edge_def GTY(())
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
 
-  /* Location of any goto implicit in the edge, during tree-ssa.  */
+  /* Location of any goto implicit in the edge and associated BLOCK.  */
+  tree goto_block;
   location_t goto_locus;
 
   /* The index number corresponding to this edge in the edge vector

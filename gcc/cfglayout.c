@@ -887,6 +887,46 @@ fixup_reorder_chain (void)
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
     }
+
+  /* Ensure goto_locus from edges has some instructions with that locus
+     in RTL.  */
+  if (!optimize)
+    FOR_EACH_BB (bb)
+      {
+        edge e;
+        edge_iterator ei;
+
+        FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (e->goto_locus && !(e->flags & EDGE_ABNORMAL))
+	    {
+	      basic_block nb;
+
+	      if (simplejump_p (BB_END (e->src)))
+		{
+		  if (INSN_LOCATOR (BB_END (e->src)) == (int) e->goto_locus)
+		    continue;
+		  if (INSN_LOCATOR (BB_END (e->src)) == 0)
+		    {
+		      INSN_LOCATOR (BB_END (e->src)) = e->goto_locus;
+		      continue;
+		    }
+		}
+	      if (e->dest != EXIT_BLOCK_PTR)
+		{
+		  insn = BB_HEAD (e->dest);
+		  if (!INSN_P (insn))
+		    insn = next_insn (insn);
+		  if (insn && INSN_P (insn)
+		      && INSN_LOCATOR (insn) == (int) e->goto_locus)
+		    continue;
+		}
+	      nb = split_edge (e);
+	      if (!INSN_P (BB_END (nb)))
+		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
+						     nb);
+	      INSN_LOCATOR (BB_END (nb)) = e->goto_locus;
+	    }
+      }
 }
 
 /* Perform sanity checks on the insn chain.

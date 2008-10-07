@@ -429,7 +429,7 @@ try_forward_edges (int mode, basic_block b)
   for (ei = ei_start (b->succs); (e = ei_safe_edge (ei)); )
     {
       basic_block target, first;
-      int counter;
+      int counter, goto_locus;
       bool threaded = false;
       int nthreaded_edges = 0;
       bool may_thread = first_pass | df_get_bb_dirty (b);
@@ -447,6 +447,7 @@ try_forward_edges (int mode, basic_block b)
 
       target = first = e->dest;
       counter = NUM_FIXED_BLOCKS;
+      goto_locus = e->goto_locus;
 
       /* If we are partitioning hot/cold basic_blocks, we don't want to mess
 	 up jumps that cross between hot/cold sections.
@@ -476,6 +477,27 @@ try_forward_edges (int mode, basic_block b)
 	      new_target = single_succ (target);
 	      if (target == new_target)
 		counter = n_basic_blocks;
+	      else if (!optimize)
+		{
+		  /* When not optimizing, ensure that edges or forwarder
+		     blocks with different locus are not optimized out.  */
+		  int locus = single_succ_edge (target)->goto_locus;
+
+		  if (locus && goto_locus && locus != goto_locus)
+		    counter = n_basic_blocks;
+		  else if (locus)
+		    goto_locus = locus;
+
+		  if (INSN_P (BB_END (target)))
+		    {
+		      locus = INSN_LOCATOR (BB_END (target));
+
+		      if (locus && goto_locus && locus != goto_locus)
+			counter = n_basic_blocks;
+		      else if (locus)
+			goto_locus = locus;
+		    }
+		}
 	    }
 
 	  /* Allow to thread only over one edge at time to simplify updating
@@ -538,6 +560,8 @@ try_forward_edges (int mode, basic_block b)
 	  int edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
+
+	  e->goto_locus = goto_locus;
 
 	  /* Don't force if target is exit block.  */
 	  if (threaded && target != EXIT_BLOCK_PTR)
