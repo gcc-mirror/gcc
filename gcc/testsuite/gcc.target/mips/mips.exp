@@ -261,6 +261,7 @@ proc dg-mips-options {args} {
 	    -mips[12] -
 	    -mips32* -
 	    -march=mips32* -
+	    -march=r3900 -
 	    -march=24k* -
 	    -mabi=32 -
 	    -mgp32 {

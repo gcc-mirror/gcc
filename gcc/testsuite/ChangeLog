@@ -1,3 +1,9 @@
+2008-10-06  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp (dg-mips-options): Set mips_new_gp to
+	32 when -march=r3900 is passed.
+	* testsuite/gcc.target/mips/r3900-mult.c: New test.
+
 2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/gomp/for-1.c: Test column.
