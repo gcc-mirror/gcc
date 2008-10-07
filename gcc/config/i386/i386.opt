@@ -31,6 +31,10 @@ unsigned char tune
 TargetSave
 unsigned char fpmath
 
+;; CPU schedule model
+TargetSave
+unsigned char schedule
+
 ;; branch cost
 TargetSave
 unsigned char branch_cost
