@@ -1,3 +1,7 @@
+2008-10-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config.gcc (arm*-*-*): Add aapcs-linux to supported ABIs.
+
 2008-10-06  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (mulsi3_mul3, muldi3_mul3): Merge these ...
