@@ -1,3 +1,11 @@
+2008-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_iterator.h (operator-(const reverse_iterator<>&,
+	const reverse_iterator<>&), operator-(const __normal_iterator<>&,
+	const __normal_iterator<>&), operator-(const move_iterator<>&,
+	const move_iterator<>&)): Use the auto -> return type syntax,
+	implement DR 685.
+
 2008-10-06  Jason Merrill  <jason@redhat.com>
 
 	* config/abi/pre/gnu.ver: Update char16/32_t manglings.
