@@ -1,3 +1,8 @@
+2008-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p) <VIEW_CONVERT_EXPR>:
+	Return true for non-addressable GIMPLE operands.
+
 2008-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
