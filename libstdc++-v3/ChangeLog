@@ -1,3 +1,10 @@
+2008-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/37761
+	* testsuite/abi/demangle/abi_examples/20.cc: Adjust expected spacing.
+	* testsuite/abi/demangle/abi_text/02.cc: Likewise.
+	* testsuite/abi/demangle/regression/cw-16.cc: Likewise.
+
 2008-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_iterator.h (operator-(const reverse_iterator<>&,
