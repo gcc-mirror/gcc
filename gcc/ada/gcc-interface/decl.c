@@ -828,22 +828,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     "PAD", false, definition,
 				     gnu_size ? true : false);
 
-	/* Make a volatile version of this object's type if we are to make
-	   the object volatile.  We also interpret 13.3(19) conservatively
-	   and disallow any optimizations for an object covered by it.  */
-	if ((Treat_As_Volatile (gnat_entity)
-	     || (Is_Exported (gnat_entity)
-		 /* Exclude exported constants created by the compiler,
-		    which should boil down to static dispatch tables and
-		    make it possible to put them in read-only memory.  */
-		 && (Comes_From_Source (gnat_entity) || !const_flag))
-	     || Is_Imported (gnat_entity)
-	     || Present (Address_Clause (gnat_entity)))
-	    && !TYPE_VOLATILE (gnu_type))
-	  gnu_type = build_qualified_type (gnu_type,
-					   (TYPE_QUALS (gnu_type)
-					    | TYPE_QUAL_VOLATILE));
-
 	/* If this is a renaming, avoid as much as possible to create a new
 	   object.  However, in several cases, creating it is required.
 	   This processing needs to be applied to the raw expression so
@@ -991,22 +975,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 	  }
 
-	/* If this is an aliased object whose nominal subtype is unconstrained,
-	   the object is a record that contains both the template and
-	   the object.  If there is an initializer, it will have already
-	   been converted to the right type, but we need to create the
-	   template if there is no initializer.  */
-	else if (definition
-		 && TREE_CODE (gnu_type) == RECORD_TYPE
-		 && (TYPE_CONTAINS_TEMPLATE_P (gnu_type)
-		     /* Beware that padding might have been introduced
-			via maybe_pad_type above.  */
-		     || (TYPE_IS_PADDING_P (gnu_type)
-			 && TREE_CODE (TREE_TYPE (TYPE_FIELDS (gnu_type)))
-			    == RECORD_TYPE
-			 && TYPE_CONTAINS_TEMPLATE_P
-			    (TREE_TYPE (TYPE_FIELDS (gnu_type)))))
-		 && !gnu_expr)
+	/* Make a volatile version of this object's type if we are to make
+	   the object volatile.  We also interpret 13.3(19) conservatively
+	   and disallow any optimizations for an object covered by it.  */
+	if ((Treat_As_Volatile (gnat_entity)
+	     || (Is_Exported (gnat_entity)
+		 /* Exclude exported constants created by the compiler,
+		    which should boil down to static dispatch tables and
+		    make it possible to put them in read-only memory.  */
+		 && (Comes_From_Source (gnat_entity) || !const_flag))
+	     || Is_Imported (gnat_entity)
+	     || Present (Address_Clause (gnat_entity)))
+	    && !TYPE_VOLATILE (gnu_type))
+	  gnu_type = build_qualified_type (gnu_type,
+					   (TYPE_QUALS (gnu_type)
+					    | TYPE_QUAL_VOLATILE));
+
+	/* If we are defining an aliased object whose nominal subtype is
+	   unconstrained, the object is a record that contains both the
+	   template and the object.  If there is an initializer, it will
+	   have already been converted to the right type, but we need to
+	   create the template if there is no initializer.  */
+	if (definition
+	    && !gnu_expr
+	    && TREE_CODE (gnu_type) == RECORD_TYPE
+	    && (TYPE_CONTAINS_TEMPLATE_P (gnu_type)
+	        /* Beware that padding might have been introduced
+		   via maybe_pad_type above.  */
+		|| (TYPE_IS_PADDING_P (gnu_type)
+		    && TREE_CODE (TREE_TYPE (TYPE_FIELDS (gnu_type)))
+		       == RECORD_TYPE
+		    && TYPE_CONTAINS_TEMPLATE_P
+		       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
 	  {
 	    tree template_field
 	      = TYPE_IS_PADDING_P (gnu_type)
