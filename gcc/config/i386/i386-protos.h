@@ -272,3 +272,7 @@ extern enum rtx_code ix86_fp_compare_code_to_integer (enum rtx_code);
 extern rtx construct_plt_address (rtx);
 #endif
 extern int asm_preferred_eh_data_format (int, int);
+
+#ifdef HAVE_ATTR_cpu
+extern enum attr_cpu ix86_schedule;
+#endif

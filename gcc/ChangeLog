@@ -1,3 +1,21 @@
+2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_schedule): New.
+
+	* config/i386/i386.c (ix86_schedule): New.
+	(override_options): Add schedule to processor_alias_table.  Set
+	ix86_schedule from the schedule field in processor_alias_table.
+	(ix86_function_specific_save): Save ix86_schedule.
+	(ix86_function_specific_restore): Restore ix86_schedule.
+
+	* config/i386/i386.md (cpu): Map to ix86_schedule instead of
+	ix86_tune.  Add none and remove i386, i486, pentium4, nocona
+	and generic32.
+
+	* config/i386/i386.opt: Add schedule.
+
+	* config/i386/ppro.md: Remove generic32.
+
 2008-10-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/35437
