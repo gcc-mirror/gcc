@@ -6006,6 +6006,7 @@ start_cleanup_fn (void)
      actually needed.  It is unlikely that it will be inlined, since
      it is only called via a function pointer, but we avoid unnecessary
      emissions this way.  */
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
   DECL_INTERFACE_KNOWN (fndecl) = 1;
   /* Build the parameter.  */
   if (use_cxa_atexit)

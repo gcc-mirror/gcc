@@ -1,3 +1,7 @@
+2008-10-07  Steve Ellcey  <sje@cup.hp.com>
+
+	* decl.c (start_cleanup_fn): Declare as inline.
+
 2008-10-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37376, other mangling issues
