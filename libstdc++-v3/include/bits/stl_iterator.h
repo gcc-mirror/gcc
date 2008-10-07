@@ -365,9 +365,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return !(__x < __y); }
 
   template<typename _IteratorL, typename _IteratorR>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    // DR 685.
+    inline auto
+    operator-(const reverse_iterator<_IteratorL>& __x,
+	      const reverse_iterator<_IteratorR>& __y)
+    -> decltype(__y.base() - __x.base())
+#else
     inline typename reverse_iterator<_IteratorL>::difference_type
     operator-(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
+#endif
     { return __y.base() - __x.base(); }
   //@}
 
@@ -835,9 +843,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.
   template<typename _IteratorL, typename _IteratorR, typename _Container>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    // DR 685.
+    inline auto
+    operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	      const __normal_iterator<_IteratorR, _Container>& __rhs)
+    -> decltype(__lhs.base() - __rhs.base())
+#else
     inline typename __normal_iterator<_IteratorL, _Container>::difference_type
     operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
+#endif
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
@@ -1001,10 +1017,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const move_iterator<_IteratorR>& __y)
     { return !(__x < __y); }
 
+  // DR 685.
   template<typename _IteratorL, typename _IteratorR>
-    inline typename move_iterator<_IteratorL>::difference_type
+    inline auto
     operator-(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
+    -> decltype(__x.base() - __y.base())
     { return __x.base() - __y.base(); }
 
   template<typename _Iterator>
