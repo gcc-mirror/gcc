@@ -1459,8 +1459,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 	print_specific_help (0, undoc_mask, all_langs_mask);
 	/* Then display any remaining, non-language options.  */
 	for (i = CL_MIN_OPTION_CLASS; i <= CL_MAX_OPTION_CLASS; i <<= 1)
-	  if (i != CL_SAVE)
-	    print_specific_help (i, undoc_mask, 0);
+	  print_specific_help (i, undoc_mask, 0);
 	exit_after_options = true;
 	break;
       }
