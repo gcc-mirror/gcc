@@ -3163,7 +3163,8 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	{
 	  /* If we are multiplying in DImode, it may still be a win
 	     to try to work with shifts and adds.  */
-	  if (CONST_DOUBLE_HIGH (op1) == 0)
+	  if (CONST_DOUBLE_HIGH (op1) == 0
+	      && CONST_DOUBLE_LOW (op1) > 0)
 	    coeff = CONST_DOUBLE_LOW (op1);
 	  else if (CONST_DOUBLE_LOW (op1) == 0
 		   && EXACT_POWER_OF_2_OR_ZERO_P (CONST_DOUBLE_HIGH (op1)))
