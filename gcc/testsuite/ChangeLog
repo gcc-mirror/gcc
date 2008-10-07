@@ -1,3 +1,9 @@
+2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37731
+	* gcc.dg/torture/pr37731-1.c: New.
+	* gcc.dg/torture/pr37731-2.c: Likewise.
+
 2008-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/37738
