@@ -33,7 +33,7 @@ int main()
   // Equivalent, but formatting difference in void argument and parentheses.
   // icc, __cxa_demangle
   verify_demangle("_Z3fooILi2EEvRAplT_Li1E_i", 
-		  "void foo<2>(int (&) [(2) + (1)])");
+		  "void foo<2>(int (&) [(2)+(1)])");
   // cplus-dem
   // verify_demangle("_Z3fooILi2EEvRAplT_Li1E_i", 
   //      "void foo<(int)2>(int (&) [((int)2)+((int)1)])");
