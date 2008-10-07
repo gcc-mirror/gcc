@@ -1,5 +1,5 @@
 /* Structure layout test generator.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -41,6 +41,14 @@ along with GCC; see the file COPYING3.  If not see
 #else 
 #define COMPAT_PRLL "ll"
 #endif
+
+const char *dg_options[] = {
+"/* { dg-options \"%s-I%s\" } */\n",
+"/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
+"/* { dg-options \"%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n",
+"/* { dg-options \"%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n"
+#define NDG_OPTIONS (sizeof (dg_options) / sizeof (dg_options[0]))
+};
 
 typedef unsigned int hashval_t;
 
@@ -747,6 +755,8 @@ switchfiles (int fields)
 {
   static int filecnt;
   static char *destbuf, *destptr;
+  int i;
+
   ++filecnt;
   if (outfile)
     fclose (outfile);
@@ -774,11 +784,10 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
+  fprintf (outfile, "/* { dg-require-effective-target int32plus } */\n");
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "", srcdir_safe);
   fprintf (outfile, "\
-/* { dg-require-effective-target int32plus } */\n\
-/* { dg-options \"-I%s\" } */\n\
-/* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n\
-/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1.h\"\n\
 \n\
 #define TX(n, type, attrs, fields, ops) extern void test##n (void);\n\
@@ -796,33 +805,31 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
+}\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.c", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
   fprintf (outfile, "\
-/* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n\
-/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_y.c", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "-w ", srcdir_safe);
   fprintf (outfile, "\
-/* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n\
-/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir_safe, srcdir_safe, srcdir_safe, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");
