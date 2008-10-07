@@ -1,3 +1,11 @@
+2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/24765
+	* config/i386/i386.c (initial_ix86_tune_features): Remove
+	X86_TUNE_USE_BIT_TEST.
+	* config/i386/i386.h (ix86_tune_indices): Likewise.
+	(TARGET_USE_BIT_TEST): Removed.
+
 2008-10-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* config.gcc (arm*-*-*): Add aapcs-linux to supported ABIs.

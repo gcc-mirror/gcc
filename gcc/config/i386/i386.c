@@ -1229,9 +1229,6 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_ZERO_EXTEND_WITH_AND */
   m_486 | m_PENT,
 
-  /* X86_TUNE_USE_BIT_TEST */
-  m_386,
-
   /* X86_TUNE_UNROLL_STRLEN */
   m_486 | m_PENT | m_PPRO | m_AMD_MULTIPLE | m_K6 | m_CORE2 | m_GENERIC,
 
