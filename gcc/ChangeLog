@@ -1,3 +1,14 @@
+2008-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37738
+	* dwarf2out.c (common_block_die_table): New variable.
+	(common_block_die_table_hash, common_block_die_table_eq): New
+	functions.
+	(gen_variable_die): Look up a DW_TAG_common_block die for a particular
+	COMMON block in the current scope rather than globally.  Optimize
+	DW_OP_addr SYMBOL_REF DW_OP_plus_uconst off into
+	DW_OP_addr SYMBOL_REF+off.
+
 2008-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p) <VIEW_CONVERT_EXPR>:

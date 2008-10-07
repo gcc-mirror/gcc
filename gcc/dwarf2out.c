@@ -4748,6 +4748,10 @@ static GTY((param_is (struct dwarf_file_data))) htab_t file_table;
    The key is a DECL_UID() which is a unique number identifying each decl.  */
 static GTY ((param_is (struct die_struct))) htab_t decl_die_table;
 
+/* A hash table of references to DIE's that describe COMMON blocks.
+   The key is DECL_UID() ^ die_parent.  */
+static GTY ((param_is (struct die_struct))) htab_t common_block_die_table;
+
 /* Node of the variable location list.  */
 struct var_loc_node GTY ((chain_next ("%h.next")))
 {
@@ -4960,6 +4964,8 @@ static void equate_type_number_to_die (tree, dw_die_ref);
 static hashval_t decl_die_table_hash (const void *);
 static int decl_die_table_eq (const void *, const void *);
 static dw_die_ref lookup_decl_die (tree);
+static hashval_t common_block_die_table_hash (const void *);
+static int common_block_die_table_eq (const void *, const void *);
 static hashval_t decl_loc_table_hash (const void *);
 static int decl_loc_table_eq (const void *, const void *);
 static var_loc_list *lookup_decl_loc (const_tree);
@@ -13812,6 +13818,26 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 }
 
+/* Returns a hash value for X (which really is a die_struct).  */
+
+static hashval_t
+common_block_die_table_hash (const void *x)
+{
+  const_dw_die_ref d = (const_dw_die_ref) x;
+  return (hashval_t) d->decl_id ^ htab_hash_pointer (d->die_parent);
+}
+
+/* Return nonzero if decl_id and die_parent of die_struct X is the same
+   as decl_id and die_parent of die_struct Y.  */
+
+static int
+common_block_die_table_eq (const void *x, const void *y)
+{
+  const_dw_die_ref d = (const_dw_die_ref) x;
+  const_dw_die_ref e = (const_dw_die_ref) y;
+  return d->decl_id == e->decl_id && d->die_parent == e->die_parent;
+}
+
 /* Generate a DIE to represent a declared data object.  */
 
 static void
@@ -13853,6 +13879,7 @@ gen_variable_die (tree decl, dw_die_ref context_die)
       tree field;
       dw_die_ref com_die;
       dw_loc_descr_ref loc;
+      die_node com_die_arg;
 
       var_die = lookup_decl_die (decl);
       if (var_die)
@@ -13863,21 +13890,41 @@ gen_variable_die (tree decl, dw_die_ref context_die)
 	      if (loc)
 		{
 		  if (off)
-		    add_loc_descr (&loc, new_loc_descr (DW_OP_plus_uconst,
+		    {
+		      /* Optimize the common case.  */
+		      if (loc->dw_loc_opc == DW_OP_addr
+			  && loc->dw_loc_next == NULL
+			  && GET_CODE (loc->dw_loc_oprnd1.v.val_addr)
+			     == SYMBOL_REF)
+			loc->dw_loc_oprnd1.v.val_addr
+			  = plus_constant (loc->dw_loc_oprnd1.v.val_addr, off);
+			else
+			  add_loc_descr (&loc,
+					 new_loc_descr (DW_OP_plus_uconst,
 							off, 0));
+		    }
 		  add_AT_loc (var_die, DW_AT_location, loc);
 		  remove_AT (var_die, DW_AT_declaration);
 		}
 	    }
 	  return;
 	}
+
+      if (common_block_die_table == NULL)
+	common_block_die_table
+	  = htab_create_ggc (10, common_block_die_table_hash,
+			     common_block_die_table_eq, NULL);
+
       field = TREE_OPERAND (DECL_VALUE_EXPR (decl), 0);
-      com_die = lookup_decl_die (com_decl);
+      com_die_arg.decl_id = DECL_UID (com_decl);
+      com_die_arg.die_parent = context_die;
+      com_die = (dw_die_ref) htab_find (common_block_die_table, &com_die_arg);
       loc = loc_descriptor_from_tree (com_decl);
       if (com_die == NULL)
 	{
 	  const char *cnam
 	    = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (com_decl));
+	  void **slot;
 
 	  com_die = new_die (DW_TAG_common_block, context_die, decl);
 	  add_name_and_src_coords_attributes (com_die, com_decl);
@@ -13891,7 +13938,9 @@ gen_variable_die (tree decl, dw_die_ref context_die)
           else if (DECL_EXTERNAL (decl))
 	    add_AT_flag (com_die, DW_AT_declaration, 1);
 	  add_pubname_string (cnam, com_die); /* ??? needed? */
-	  equate_decl_number_to_die (com_decl, com_die);
+	  com_die->decl_id = DECL_UID (com_decl);
+	  slot = htab_find_slot (common_block_die_table, com_die, INSERT);
+	  *slot = (void *) com_die;
 	}
       else if (get_AT (com_die, DW_AT_location) == NULL && loc)
 	{
@@ -13907,7 +13956,17 @@ gen_variable_die (tree decl, dw_die_ref context_die)
       if (loc)
 	{
 	  if (off)
-	    add_loc_descr (&loc, new_loc_descr (DW_OP_plus_uconst, off, 0));
+	    {
+	      /* Optimize the common case.  */
+	      if (loc->dw_loc_opc == DW_OP_addr
+		  && loc->dw_loc_next == NULL
+		  && GET_CODE (loc->dw_loc_oprnd1.v.val_addr) == SYMBOL_REF)
+		loc->dw_loc_oprnd1.v.val_addr
+		  = plus_constant (loc->dw_loc_oprnd1.v.val_addr, off);
+	      else
+		add_loc_descr (&loc, new_loc_descr (DW_OP_plus_uconst,
+						    off, 0));
+	    }
 	  add_AT_loc (var_die, DW_AT_location, loc);
 	}
       else if (DECL_EXTERNAL (decl))
