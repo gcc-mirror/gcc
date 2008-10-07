@@ -1,3 +1,12 @@
+2008-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37576
+	* opts.h (CL_SAVE): Move up to flags range.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_TARGET,
+	CL_COMMON): Renumber.
+	(CL_MIN_OPTION_CLASS): Set to CL_PARAMS.
+	* opts.c (common_handle_option): Revert last change.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_schedule): New.
