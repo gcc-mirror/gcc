@@ -29,3 +29,4 @@ END PROGRAM main
 ! { dg-final { scan-tree-dump "_eoshift\[0-9_\]+char \\(\[&a-zA-Z0-9._, \]+, 1, 0\\)" "original" } }
 ! { dg-final { scan-tree-dump "_reshape\[0-9_\]+char \\(\[&a-zA-Z0-9._, \]+, 1, 0\\)" "original" } }
 ! { dg-final { scan-tree-dump "_pack\[0-9_\]+char \\(\[&a-zA-Z0-9._, \]+, 1, 0\\)" "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
