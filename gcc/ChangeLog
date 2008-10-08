@@ -1,3 +1,9 @@
+2008-10-08  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.h (ARM_FUNCTION_PROFILER): Define new EABI
+	compatible profiler (__gnu_mcount_nc).
+	(SUBTARGET_FRAME_POINTER_REQUIRED): Define.
+
 2008-10-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Add

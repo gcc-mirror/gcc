@@ -147,3 +147,20 @@
 #undef FINI_SECTION_ASM_OP
 #define INIT_ARRAY_SECTION_ASM_OP ARM_EABI_CTORS_SECTION_OP
 #define FINI_ARRAY_SECTION_ASM_OP ARM_EABI_DTORS_SECTION_OP
+
+/* The legacy _mcount implementation assumes r11 points to a
+    4-word APCS frame.  This is generally not true for EABI targets,
+    particularly not in Thumb mode.  We assume the mcount
+    implementation does not require a counter variable (No Counter).
+    Note that __gnu_mcount_nc will be entered with a misaligned stack.
+    This is OK because it uses a special calling convention anyway.  */
+
+#undef  ARM_FUNCTION_PROFILER
+#define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\
+{									\
+  fprintf (STREAM, "\tpush\t{lr}\n");					\
+  fprintf (STREAM, "\tbl\t__gnu_mcount_nc\n");				\
+}
+
+#undef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED 0
