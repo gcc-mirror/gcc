@@ -1,3 +1,8 @@
+2008-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (expand_gimple_cond): Convert also goto_block and
+	goto_locus of true_edge into RTL locator.
+
 2008-10-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*jcc_btdi_rex64): Clobber FLAGS_REG.

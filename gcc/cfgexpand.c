@@ -1725,6 +1725,14 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 
   maybe_dump_rtl_for_gimple_stmt (stmt, last2);
 
+  if (true_edge->goto_locus)
+    {
+      set_curr_insn_source_location (true_edge->goto_locus);
+      set_curr_insn_block (true_edge->goto_block);
+      true_edge->goto_locus = curr_insn_locator ();
+    }
+  true_edge->goto_block = NULL;
+
   ggc_free (pred);
   return new_bb;
 }
