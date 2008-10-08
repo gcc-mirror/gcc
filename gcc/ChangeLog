@@ -1,3 +1,17 @@
+2008-10-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/37448
+	alloc_pool_desc (elt_size): New field.
+	alloc_pool_desc (created, allocated, current, peak): Make unsigned
+	long.
+	output_info (count): Renamed total_created and made unsigned long.
+	output_info (size): Renamed total_allocated and made unsigned long.
+	alloc-pool.c (create_alloc_pool, empty_alloc_pool, pool_alloc,
+	pool_free): Properly keep track of desc->size.
+	(print_statistics, dump_alloc_pool_statistics): Enhance the
+	printing of statistics to print the number of elements and to use
+	unsigned longs.
+	
 2008-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37576
