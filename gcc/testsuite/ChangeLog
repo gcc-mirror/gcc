@@ -1,3 +1,12 @@
+2008-10-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/ggc-pr37574.c: Cleanup "vect" tree dump.
+	* gfortran.dg/intrinsic_optional_char_arg_1.f90: Cleanup
+	"original" tree dump.
+
+	* lib/gfortran-dg.exp (gfortran-dg-debug-runtest): Remove build
+	file trivial.S.
+
 2008-10-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/octeon-exts-2.c: Compile it with -meb.
