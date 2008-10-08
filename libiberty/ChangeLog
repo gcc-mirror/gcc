@@ -1,3 +1,7 @@
+2008-10-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* xstrdup.c: Include <sys/types.h> after "config.h"
+ 
 2008-10-07  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* configure.ac: Call AC_SYS_LARGEFILE.
