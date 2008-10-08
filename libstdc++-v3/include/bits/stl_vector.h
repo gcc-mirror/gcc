@@ -78,9 +78,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       struct _Vector_impl 
       : public _Tp_alloc_type
       {
-	_Tp*           _M_start;
-	_Tp*           _M_finish;
-	_Tp*           _M_end_of_storage;
+	typename _Tp_alloc_type::pointer _M_start;
+	typename _Tp_alloc_type::pointer _M_finish;
+	typename _Tp_alloc_type::pointer _M_end_of_storage;
 
 	_Vector_impl()
 	: _Tp_alloc_type(), _M_start(0), _M_finish(0), _M_end_of_storage(0)
@@ -140,12 +140,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     public:
       _Vector_impl _M_impl;
 
-      _Tp*
+      typename _Tp_alloc_type::pointer
       _M_allocate(size_t __n)
       { return __n != 0 ? _M_impl.allocate(__n) : 0; }
 
       void
-      _M_deallocate(_Tp* __p, size_t __n)
+      _M_deallocate(typename _Tp_alloc_type::pointer __p, size_t __n)
       {
 	if (__p)
 	  _M_impl.deallocate(__p, __n);
