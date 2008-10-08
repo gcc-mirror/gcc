@@ -1,13 +1,14 @@
+/* -mel version of octeon-exts-2.c.  */
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=octeon -meb" } */
+/* { dg-mips-options "-O -march=octeon -mel" } */
 /* { dg-final { scan-assembler-times "\texts\t" 4 } } */
 
 struct bar
 {
-  unsigned long long a:1;
-  long long b:14;
-  unsigned long long c:48;
   long long d:1;
+  unsigned long long c:48;
+  long long b:14;
+  unsigned long long a:1;
 };
 
 NOMIPS16 int

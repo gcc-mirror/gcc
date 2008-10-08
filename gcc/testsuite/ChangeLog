@@ -1,3 +1,10 @@
+2008-10-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-exts-2.c: Compile it with -meb.
+	* gcc.target/mips/octeon-exts-5.c: New test.
+	* gcc.target/mips/octeon-bbit-3.c: Compile with -meb.  Add
+	comment why this is necessary.
+
 2008-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36635
