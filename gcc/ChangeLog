@@ -1,3 +1,8 @@
+2008-10-08  Kai Tietz  <kai.tietz@onevision.com>
+
+	* sdbout.c (sdbout_one_type): Treat the value type
+	CONST_DECL for enumerals.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md: Remove trailing white spaces.
