@@ -1,3 +1,12 @@
+2008-10-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc_btdi_rex64): Clobber FLAGS_REG.
+	(*jcc_btdi_mask_rex64): Ditto.
+	(*jcc_btsi): Ditto.
+	(*jcc_btsi_mask): Ditto.
+	(*jcc_btsi_1): Ditto.
+	(*jcc_btsi_mask_1): Ditto.
+
 2008-10-08  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/bpabi.h (ARM_FUNCTION_PROFILER): Define new EABI
@@ -41,13 +50,15 @@
 2008-10-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37448
-	alloc_pool_desc (elt_size): New field.
-	alloc_pool_desc (created, allocated, current, peak): Make unsigned
-	long.
-	output_info (count): Renamed total_created and made unsigned long.
-	output_info (size): Renamed total_allocated and made unsigned long.
-	alloc-pool.c (create_alloc_pool, empty_alloc_pool, pool_alloc,
-	pool_free): Properly keep track of desc->size.
+	* alloc-pool.c (struct alloc_pool_descriptor) [elt_size]: New field.
+	(stuct alloc_pool_descriptor) [created, allocated, current, peak]:
+	Make unsigned long.
+	(struct output_info) [count]: Renamed total_created and made
+	unsigned long.
+	(struct output_info) [size]: Renamed total_allocated and made
+	unsigned long.
+	(create_alloc_pool, empty_alloc_pool, pool_alloc, pool_free):
+	Properly keep track of desc->size.
 	(print_statistics, dump_alloc_pool_statistics): Enhance the
 	printing of statistics to print the number of elements and to use
 	unsigned longs.
@@ -273,8 +284,7 @@
 	(print_operand_address): Always use output_addr_const for
 	constant pool addresses.
 	(rs6000_output_addr_const_extra): New function.
-	(create_TOC_reference): Create an UNSPEC_TOCREL instead of
-	a MINUS.
+	(create_TOC_reference): Create an UNSPEC_TOCREL instead of a MINUS.
 
 2008-10-06  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -376,10 +386,8 @@
 	* config/rs6000/rs6000.c (USE_FP_FOR_ARG_P): Revert
 	TARGET_DOUBLE_FLOAT, TARGET_SINGLE_FLOAT.
 	(function_arg_advance): Condition on TARGET_DOUBLE_FLOAT,
-	TARGET_SINGLE_FLOAT.
-	Revert SCALAR_FLOAT_MODE_P condition.
-	(function_arg): Condition on TARGET_DOUBLE_FLOAT,
-	TARGET_SINGLE_FLOAT.
+	TARGET_SINGLE_FLOAT.  Revert SCALAR_FLOAT_MODE_P condition.
+	(function_arg): Condition on TARGET_DOUBLE_FLOAT, TARGET_SINGLE_FLOAT.
 	(rs6000_function_value): Revert TARGET_DOUBLE_FLOAT,
 	TARGET_SINGLE_FLOAT.
 
@@ -419,8 +427,8 @@
 	(vec_promote): Define.
 
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Yukishige Shibata  <shibata@rd.scei.sony.co.jp>
-            Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
+	    Yukishige Shibata  <shibata@rd.scei.sony.co.jp>
+	    Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add Cell
 	Altivec intrinsics.
@@ -1027,8 +1035,8 @@
 2008-09-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.h (ISA_HAS_BADDU): New macro.
-	* config/mips/mips.md (*baddu_si_eb, *baddu_si_el,
-	*baddu_di<mode>): New patterns.
+	* config/mips/mips.md (*baddu_si_eb, *baddu_si_el, *baddu_di<mode>):
+	New patterns.
 
 2008-09-22  Richard Guenther  <rguenther@suse.de>
 
@@ -1061,8 +1069,7 @@
 	PR target/37528	
 	* config/i386/t-cygming (SHLIB_LC): Remove.
 	(SHLIB_LINK): Don't add static objects to SHLIB_IMPLIB
-	* config/i386/t-cygwin (SHLIB_LC): Specify all required
-	libraries.
+	* config/i386/t-cygwin (SHLIB_LC): Specify all required libraries.
 
 2008-09-22  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -1122,8 +1129,7 @@
 	(SSA Operands): Rename from 'Statement Operands'.
 	* doc/generic.texi: New.
 	* doc/gimple.texi: New.
-	* Makefile.in (TEXI_GCCINT_FILES): Add generic.texi and
-	gimple.texi.
+	* Makefile.in (TEXI_GCCINT_FILES): Add generic.texi and gimple.texi.
 	* Makefile.in (TEXI_GCCINT_FILES):
 	* gimple.c (gimple_copy_call_skip_args): Rename from
 	giple_copy_call_skip_args.  Update all users.
@@ -1400,8 +1406,7 @@
 2008-09-18  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/37499
-	* sched-int.h (struct _haifa_insn_data): Remove unused field
-	ref_count.
+	* sched-int.h (struct _haifa_insn_data): Remove unused field ref_count.
 
 	* sched-rgn.c (ref_counts): Remove.
 	(insn_referenced): New static variable.
@@ -1415,8 +1420,7 @@
 	* haifa-sched.c (dep_cost_1): Recognize the producer even if the
 	consumer is an asm.  Add comment why this is important.
 	(choose_ready): Add comment to the "INSN_CODE (insn) >= 0 ||
-	recog_memoized (insn) < 0" assert.  Put ENABLE_CHECKING around
-	it.
+	recog_memoized (insn) < 0" assert.  Put ENABLE_CHECKING around it.
 
 2008-09-17  Joseph Myers  <joseph@codesourcery.com>
 
@@ -2725,10 +2729,8 @@
 
 	* ira-emit.c (change_loop): Use all_allocnos.
 
-	* ira-build.c (create_loop_tree_nodes, finish_loop_tree_node):
-	Ditto.
-	(ira_create_allocno): Set up all_allocnos bit for the created
-	allocno.
+	* ira-build.c (create_loop_tree_nodes, finish_loop_tree_node): Ditto.
+	(ira_create_allocno): Set up all_allocnos bit for the created allocno.
 	(create_cap_allocno): Remove setting mentioned_allocnos.
 	(create_insn_allocnos): Ditto.
 	(remove_unnecessary_allocnos): Use all_allocnos.
