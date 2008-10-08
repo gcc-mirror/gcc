@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -603,7 +603,8 @@ static bool set_live_p (rtx, rtx, int *);
 static int cse_change_cc_mode (rtx *, void *);
 static void cse_change_cc_mode_insn (rtx, rtx);
 static void cse_change_cc_mode_insns (rtx, rtx, rtx);
-static enum machine_mode cse_cc_succs (basic_block, rtx, rtx, bool);
+static enum machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
+				       bool);
 
 
 #undef RTL_HOOKS_GEN_LOWPART
@@ -6587,13 +6588,17 @@ cse_change_cc_mode_insns (rtx start, rtx end, rtx newreg)
    permitted to change the mode of CC_SRC to a compatible mode.  This
    returns VOIDmode if no equivalent assignments were found.
    Otherwise it returns the mode which CC_SRC should wind up with.
+   ORIG_BB should be the same as BB in the outermost cse_cc_succs call,
+   but is passed unmodified down to recursive calls in order to prevent
+   endless recursion.
 
    The main complexity in this function is handling the mode issues.
    We may have more than one duplicate which we can eliminate, and we
    try to find a mode which will work for multiple duplicates.  */
 
 static enum machine_mode
-cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
+cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
+	      bool can_change_mode)
 {
   bool found_equiv;
   enum machine_mode mode;
@@ -6624,7 +6629,9 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 	continue;
 
       if (EDGE_COUNT (e->dest->preds) != 1
-	  || e->dest == EXIT_BLOCK_PTR)
+	  || e->dest == EXIT_BLOCK_PTR
+	  /* Avoid endless recursion on unreachable blocks.  */
+	  || e->dest == orig_bb)
 	continue;
 
       end = NEXT_INSN (BB_END (e->dest));
@@ -6729,7 +6736,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 	{
 	  enum machine_mode submode;
 
-	  submode = cse_cc_succs (e->dest, cc_reg, cc_src, false);
+	  submode = cse_cc_succs (e->dest, orig_bb, cc_reg, cc_src, false);
 	  if (submode != VOIDmode)
 	    {
 	      gcc_assert (submode == mode);
@@ -6857,7 +6864,7 @@ cse_condition_code_reg (void)
 	 the basic block.  */
 
       orig_mode = GET_MODE (cc_src);
-      mode = cse_cc_succs (bb, cc_reg, cc_src, true);
+      mode = cse_cc_succs (bb, bb, cc_reg, cc_src, true);
       if (mode != VOIDmode)
 	{
 	  gcc_assert (mode == GET_MODE (cc_src));
