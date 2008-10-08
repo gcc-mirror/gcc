@@ -1,5 +1,16 @@
 2008-10-08  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (initial_ix86_tune_features): Add
+	X86_TUNE_USE_VECTOR_FP_CONVERTS.
+	* config/i386/i386.h (ix86_tune_indices): Likewise.
+	(TARGET_USE_VECTOR_FP_CONVERTS): New.
+
+	* config/i386/i386.md: Check TARGET_USE_VECTOR_FP_CONVERTS
+	instead of (TARGET_USE_VECTOR_CONVERTS || TARGET_GENERIC)
+	for FP to FP splitters.
+
+2008-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.md: Add missing gen_sse2_cvtdq2p to convert
 	splitter.
 
