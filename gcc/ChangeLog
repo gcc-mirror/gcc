@@ -1,3 +1,8 @@
+2008-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md: Add missing gen_sse2_cvtdq2p to convert
+	splitter.
+
 2008-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36635
