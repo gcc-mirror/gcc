@@ -1,3 +1,10 @@
+2008-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36635
+	PR target/37290
+	PR rtl-optimization/37341
+	* gcc.c-torture/compile/pr37341.c: New test.
+
 2008-10-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/35437

@@ -1,3 +1,12 @@
+2008-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36635
+	PR target/37290
+	PR rtl-optimization/37341
+	* cse.c (cse_cc_succs): Add ORIG_BB argument, don't follow edges
+	to ORIG_BB, pass through ORIG_BB recursively.
+	(cse_condition_code_reg): Adjust caller.
+
 2008-10-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* sdbout.c (sdbout_one_type): Treat the value type
