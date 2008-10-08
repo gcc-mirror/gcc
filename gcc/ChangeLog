@@ -1,5 +1,8 @@
 2008-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* graphite.c (gloog): Don't call find_unreachable_blocks
+	before delte_unreachable_blocks.
+
 	* cfgexpand.c (expand_gimple_cond): Convert also goto_block and
 	goto_locus of true_edge into RTL locator.
 

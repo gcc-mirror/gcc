@@ -4162,7 +4162,6 @@ gloog (scop_p scop, struct clast_stmt *stmt)
   if (new_scop_exit_edge->dest == EXIT_BLOCK_PTR)
     new_scop_exit_edge->flags = 0;
  
-  find_unreachable_blocks ();
   delete_unreachable_blocks ();
   patch_phis_for_virtual_defs ();
   patch_scop_exit_phi_args (new_scop_exit_edge, phi_args);
