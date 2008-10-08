@@ -1,3 +1,8 @@
+2008-10-08  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c/35437
+	* expr.c (count_type_elements): Handle ERROR_MARK.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

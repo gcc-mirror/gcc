@@ -4994,6 +4994,9 @@ count_type_elements (const_tree type, bool allow_flexarr)
     case REFERENCE_TYPE:
       return 1;
 
+    case ERROR_MARK:
+      return 0;
+
     case VOID_TYPE:
     case METHOD_TYPE:
     case FUNCTION_TYPE:

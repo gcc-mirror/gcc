@@ -1,3 +1,9 @@
+2008-10-08  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c/35437
+	* gcc.dg/struct-parse-2.c: New test.
+	* g++.dg/parse/struct-4.C: New test.
+
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
