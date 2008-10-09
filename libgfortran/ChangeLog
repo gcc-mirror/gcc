@@ -1,3 +1,10 @@
+2008-10-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37707
+	* io/list_read.c (nml_get_obj_data): If the first namelist object rank is
+	greater than zero, call nml_object_read with the first object rather
+	than the sub-object.
+
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
             Steve Ellcey  <sje@cup.hp.com>
 
