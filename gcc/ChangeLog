@@ -1,3 +1,12 @@
+2008-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_locals): Mark all edge's goto_block
+	as used.
+	* gimple-low.c (lower_function_body, lower_gimple_return,
+	lower_builtin_setjmp): Set gimple_block on the newly created stmts.
+	* tree-cfg.c (make_cond_expr_edges, make_goto_expr_edges): Only set
+	goto_block on edges if goto_locus is known.
+
 2008-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* graphite.c (gloog): Don't call find_unreachable_blocks

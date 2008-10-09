@@ -600,6 +600,8 @@ remove_unused_locals (void)
     {
       gimple_stmt_iterator gsi;
       size_t i;
+      edge_iterator ei;
+      edge e;
 
       /* Walk the statements.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -634,6 +636,10 @@ remove_unused_locals (void)
 	      mark_all_vars_used (&arg, NULL);
             }
         }
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->goto_locus)
+	  TREE_USED (e->goto_block) = true;
     }
 
   /* Remove unmarked local vars from local_decls.  */

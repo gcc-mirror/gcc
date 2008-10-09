@@ -658,12 +658,14 @@ make_cond_expr_edges (basic_block bb)
 
   e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
   e->goto_locus = gimple_location (then_stmt);
-  e->goto_block = gimple_block (then_stmt);
+  if (e->goto_locus)
+    e->goto_block = gimple_block (then_stmt);
   e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
   if (e)
     {
       e->goto_locus = gimple_location (else_stmt);
-      e->goto_block = gimple_block (else_stmt);
+      if (e->goto_locus)
+	e->goto_block = gimple_block (else_stmt);
     }
 
   /* We do not need the labels anymore.  */
@@ -853,7 +855,8 @@ make_goto_expr_edges (basic_block bb)
       tree dest = gimple_goto_dest (goto_t);
       edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
       e->goto_locus = gimple_location (goto_t);
-      e->goto_block = gimple_block (goto_t);
+      if (e->goto_locus)
+	e->goto_block = gimple_block (goto_t);
       gsi_remove (&last, true);
       return;
     }
