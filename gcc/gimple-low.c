@@ -133,6 +133,7 @@ lower_function_body (void)
     {
       x = gimple_build_return (NULL);
       gimple_set_location (x, cfun->function_end_locus);
+      gimple_set_block (x, DECL_INITIAL (current_function_decl));
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
     }
 
@@ -659,6 +660,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
  found:
   t = gimple_build_goto (tmp_rs.label);
   gimple_set_location (t, gimple_location (stmt));
+  gimple_set_block (t, gimple_block (stmt));
   gsi_insert_before (gsi, t, GSI_SAME_STMT);
   gsi_remove (gsi, false);
 }
@@ -736,6 +738,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
   t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
   g = gimple_build_call (t, 2, gimple_call_arg (stmt, 0), arg);
   gimple_set_location (g, gimple_location (stmt));
+  gimple_set_block (g, gimple_block (stmt));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 0' and insert.  */
@@ -744,6 +747,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
       g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
 						   integer_zero_node));
       gimple_set_location (g, gimple_location (stmt));
+      gimple_set_block (g, gimple_block (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
 
@@ -760,6 +764,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
   t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
   g = gimple_build_call (t, 1, arg);
   gimple_set_location (g, gimple_location (stmt));
+  gimple_set_block (g, gimple_block (stmt));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 1' and insert.  */
@@ -768,6 +773,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
       g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
 						   integer_one_node));
       gimple_set_location (g, gimple_location (stmt));
+      gimple_set_block (g, gimple_block (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
 
