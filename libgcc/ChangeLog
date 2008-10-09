@@ -1,3 +1,7 @@
+2008-10-08  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* config.host: Fold `*-*-gnu*' cases into the Linux ones.
+
 2008-09-03  Hari Sandanagobalane  <hariharan@picochip.com>
 
 	Add picoChip port.

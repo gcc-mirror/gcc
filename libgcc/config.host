@@ -150,11 +150,8 @@ case ${host} in
   # machine-specific sections may refine and add to this
   # configuration.
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
-  # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu*)
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-  ;;
-*-*-gnu*)
   ;;
 *-*-netbsd*)
   ;;
@@ -176,11 +173,9 @@ case ${host} in
 	then tmake_file=${cpu_type}/t-$rest
 	fi
 	;;
-alpha*-*-linux*)
+alpha*-*-linux* | alpha*-*-gnu*)
 	tmake_file="${tmake_file} alpha/t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
-	;;
-alpha*-*-gnu*)
 	;;
 alpha*-*-freebsd*)
 	;;
@@ -299,15 +294,13 @@ i[34567]86-*-openbsd*)
 	;;
 i[34567]86-*-coff*)
 	;;
-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
-	;;
-i[34567]86-*-gnu*)
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	;;
@@ -576,7 +569,9 @@ m32c-*-elf*)
 esac
 
 case ${host} in
-i[34567]86-*-linux* | x86_64-*-linux*)
+i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
+	;;
+i[34567]86-*-linux* | x86_64-*-linux* | i[34567]86-*-gnu*)
 	tmake_file="${tmake_file} t-tls"
 	;;
 esac
