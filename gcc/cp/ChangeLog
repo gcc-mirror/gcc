@@ -1,3 +1,9 @@
+2008-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37568
+	* semantics.c (finalize_nrv_r): Clear DECL_INITIAL instead of
+	setting it to error_mark_node.
+
 2008-10-07  Steve Ellcey  <sje@cup.hp.com>
 
 	* decl.c (start_cleanup_fn): Declare as inline.

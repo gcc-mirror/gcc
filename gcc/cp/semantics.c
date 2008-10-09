@@ -3310,13 +3310,11 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       tree init;
       if (DECL_INITIAL (dp->var)
 	  && DECL_INITIAL (dp->var) != error_mark_node)
-	{
-	  init = build2 (INIT_EXPR, void_type_node, dp->result,
-			 DECL_INITIAL (dp->var));
-	  DECL_INITIAL (dp->var) = error_mark_node;
-	}
+	init = build2 (INIT_EXPR, void_type_node, dp->result,
+		       DECL_INITIAL (dp->var));
       else
 	init = build_empty_stmt ();
+      DECL_INITIAL (dp->var) = NULL_TREE;
       SET_EXPR_LOCUS (init, EXPR_LOCUS (*tp));
       *tp = init;
     }
