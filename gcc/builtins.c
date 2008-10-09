@@ -253,6 +253,82 @@ static bool called_as_built_in (tree node)
   return false;
 }
 
+/* Return the alignment in bits of EXP, an object.
+   Don't return more than MAX_ALIGN no matter what, ALIGN is the inital
+   guessed alignment e.g. from type alignment.  */
+
+int
+get_object_alignment (tree exp, unsigned int align, unsigned int max_align)
+{
+  unsigned int inner;
+
+  inner = max_align;
+  if (handled_component_p (exp))
+   {
+      HOST_WIDE_INT bitsize, bitpos;
+      tree offset;
+      enum machine_mode mode; 
+      int unsignedp, volatilep;
+
+      exp = get_inner_reference (exp, &bitsize, &bitpos, &offset,
+				 &mode, &unsignedp, &volatilep, true);
+      if (bitpos)
+	inner = MIN (inner, (unsigned) (bitpos & -bitpos));
+      while (offset)
+	{
+	  tree next_offset;
+
+	  if (TREE_CODE (offset) == PLUS_EXPR)
+	    {
+	      next_offset = TREE_OPERAND (offset, 0);
+	      offset = TREE_OPERAND (offset, 1);
+	    }
+	  else
+	    next_offset = NULL;
+	  if (host_integerp (offset, 1))
+	    {
+	      /* Any overflow in calculating offset_bits won't change
+		 the alignment.  */
+	      unsigned offset_bits
+		= ((unsigned) tree_low_cst (offset, 1) * BITS_PER_UNIT);
+
+	      if (offset_bits)
+		inner = MIN (inner, (offset_bits & -offset_bits));
+	    }
+	  else if (TREE_CODE (offset) == MULT_EXPR
+		   && host_integerp (TREE_OPERAND (offset, 1), 1))
+	    {
+	      /* Any overflow in calculating offset_factor won't change
+		 the alignment.  */
+	      unsigned offset_factor
+		= ((unsigned) tree_low_cst (TREE_OPERAND (offset, 1), 1)
+		   * BITS_PER_UNIT);
+
+	      if (offset_factor)
+		inner = MIN (inner, (offset_factor & -offset_factor));
+	    }
+	  else
+	    {
+	      inner = MIN (inner, BITS_PER_UNIT);
+	      break;
+	    }
+	  offset = next_offset;
+	}
+    }
+  if (DECL_P (exp))
+    align = MIN (inner, DECL_ALIGN (exp));
+#ifdef CONSTANT_ALIGNMENT
+  else if (CONSTANT_CLASS_P (exp))
+    align = MIN (inner, (unsigned)CONSTANT_ALIGNMENT (exp, align));
+#endif
+  else if (TREE_CODE (exp) == VIEW_CONVERT_EXPR
+	   || TREE_CODE (exp) == INDIRECT_REF)
+    align = MIN (TYPE_ALIGN (TREE_TYPE (exp)), inner);
+  else
+    align = MIN (align, inner);
+  return MIN (align, max_align);
+}
+
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
@@ -306,59 +382,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 
 	case ADDR_EXPR:
 	  /* See what we are pointing at and look at its alignment.  */
-	  exp = TREE_OPERAND (exp, 0);
-	  inner = max_align;
-	  if (handled_component_p (exp))
-	    {
-	      HOST_WIDE_INT bitsize, bitpos;
-	      tree offset;
-	      enum machine_mode mode; 
-	      int unsignedp, volatilep;
-
-	      exp = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-					 &mode, &unsignedp, &volatilep, true);
-	      if (bitpos)
-		inner = MIN (inner, (unsigned) (bitpos & -bitpos));
-	      if (offset && TREE_CODE (offset) == PLUS_EXPR
-		  && host_integerp (TREE_OPERAND (offset, 1), 1))
-	        {
-		  /* Any overflow in calculating offset_bits won't change
-		     the alignment.  */
-		  unsigned offset_bits
-		    = ((unsigned) tree_low_cst (TREE_OPERAND (offset, 1), 1)
-		       * BITS_PER_UNIT);
-
-		  if (offset_bits)
-		    inner = MIN (inner, (offset_bits & -offset_bits));
-		  offset = TREE_OPERAND (offset, 0);
-		}
-	      if (offset && TREE_CODE (offset) == MULT_EXPR
-		  && host_integerp (TREE_OPERAND (offset, 1), 1))
-	        {
-		  /* Any overflow in calculating offset_factor won't change
-		     the alignment.  */
-		  unsigned offset_factor
-		    = ((unsigned) tree_low_cst (TREE_OPERAND (offset, 1), 1)
-		       * BITS_PER_UNIT);
-
-		  if (offset_factor)
-		    inner = MIN (inner, (offset_factor & -offset_factor));
-		}
-	      else if (offset)
-		inner = MIN (inner, BITS_PER_UNIT);
-	    }
-	  if (DECL_P (exp))
-	    align = MIN (inner, DECL_ALIGN (exp));
-#ifdef CONSTANT_ALIGNMENT
-	  else if (CONSTANT_CLASS_P (exp))
-	    align = MIN (inner, (unsigned)CONSTANT_ALIGNMENT (exp, align));
-#endif
-	  else if (TREE_CODE (exp) == VIEW_CONVERT_EXPR
-		   || TREE_CODE (exp) == INDIRECT_REF)
-	    align = MIN (TYPE_ALIGN (TREE_TYPE (exp)), inner);
-	  else
-	    align = MIN (align, inner);
-	  return MIN (align, max_align);
+	  return get_object_alignment (TREE_OPERAND (exp, 0), align, max_align);
 
 	default:
 	  return align;

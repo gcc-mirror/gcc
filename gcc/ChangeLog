@@ -7,6 +7,15 @@
 	* tree-cfg.c (make_cond_expr_edges, make_goto_expr_edges): Only set
 	goto_block on edges if goto_locus is known.
 
+	PR middle-end/37774
+	* tree.h (get_object_alignment): Declare.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Call
+	get_object_alignment if needed.
+	* builtins.c (get_pointer_alignment): Move ADDR_EXPR operand handling
+	to ...
+	(get_object_alignment): ... here.  New function.  Try harder to
+	determine alignment from get_inner_reference returned offset.
+
 2008-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* graphite.c (gloog): Don't call find_unreachable_blocks
