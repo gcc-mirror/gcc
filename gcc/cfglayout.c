@@ -448,13 +448,12 @@ change_scope (rtx orig_insn, tree s1, tree s2)
     }
 }
 
-/* Return lexical scope block insn belong to.  */
+/* Return lexical scope block locator belongs to.  */
 static tree
-insn_scope (const_rtx insn)
+locator_scope (int loc)
 {
   int max = VEC_length (int, block_locators_locs);
   int min = 0;
-  int loc = INSN_LOCATOR (insn);
 
   /* When block_locators_locs was initialized, the pro- and epilogue
      insns didn't exist yet and can therefore not be found this way.
@@ -486,6 +485,13 @@ insn_scope (const_rtx insn)
 	}
     }
   return VEC_index (tree, block_locators_blocks, min);
+}
+
+/* Return lexical scope block insn belongs to.  */
+static tree
+insn_scope (const_rtx insn)
+{
+  return locator_scope (INSN_LOCATOR (insn));
 }
 
 /* Return line number of the statement specified by the locator.  */
@@ -549,6 +555,17 @@ const char *
 insn_file (const_rtx insn)
 {
   return locator_file (INSN_LOCATOR (insn));
+}
+
+/* Return true if LOC1 and LOC2 locators have the same location and scope.  */
+bool
+locator_eq (int loc1, int loc2)
+{
+  if (loc1 == loc2)
+    return true;
+  if (locator_location (loc1) != locator_location (loc2))
+    return false;
+  return locator_scope (loc1) == locator_scope (loc2);
 }
 
 /* Rebuild all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes based
@@ -900,24 +917,30 @@ fixup_reorder_chain (void)
 	  if (e->goto_locus && !(e->flags & EDGE_ABNORMAL))
 	    {
 	      basic_block nb;
+	      rtx end;
 
-	      if (simplejump_p (BB_END (e->src)))
+	      insn = BB_END (e->src);
+	      end = PREV_INSN (BB_HEAD (e->src));
+	      while (insn != end
+		     && (!INSN_P (insn) || INSN_LOCATOR (insn) == 0))
+		insn = PREV_INSN (insn);
+	      if (insn != end
+		  && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
+		continue;
+	      if (simplejump_p (BB_END (e->src))
+		  && INSN_LOCATOR (BB_END (e->src)) == 0)
 		{
-		  if (INSN_LOCATOR (BB_END (e->src)) == (int) e->goto_locus)
-		    continue;
-		  if (INSN_LOCATOR (BB_END (e->src)) == 0)
-		    {
-		      INSN_LOCATOR (BB_END (e->src)) = e->goto_locus;
-		      continue;
-		    }
+		  INSN_LOCATOR (BB_END (e->src)) = e->goto_locus;
+		  continue;
 		}
 	      if (e->dest != EXIT_BLOCK_PTR)
 		{
 		  insn = BB_HEAD (e->dest);
-		  if (!INSN_P (insn))
-		    insn = next_insn (insn);
-		  if (insn && INSN_P (insn)
-		      && INSN_LOCATOR (insn) == (int) e->goto_locus)
+		  end = NEXT_INSN (BB_END (e->dest));
+		  while (insn != end && !INSN_P (insn))
+		    insn = NEXT_INSN (insn);
+		  if (insn != end && INSN_LOCATOR (insn)
+		      && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
 		    continue;
 		}
 	      nb = split_edge (e);
