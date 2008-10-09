@@ -1,3 +1,8 @@
+2008-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/37753
+	* gfortran.dg/convert_2.f90:  New test case.
+
 2008-10-09  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35723

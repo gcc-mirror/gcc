@@ -738,8 +738,8 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 {
   size_t i, sz;
 
-  if (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE
-      || size == 1)
+  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE)
+      || kind == 1)
     {
       sz = size * nelems;
       if (type == BT_CHARACTER)
@@ -789,8 +789,8 @@ static void
 unformatted_write (st_parameter_dt *dtp, bt type,
 		   void *source, int kind, size_t size, size_t nelems)
 {
-  if (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE ||
-      size == 1)
+  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE) 
+      || kind == 1)
     {
       size_t stride = type == BT_CHARACTER ?
 		  size * GFC_SIZE_OF_CHAR_KIND(kind) : size;
