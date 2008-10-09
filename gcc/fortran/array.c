@@ -2073,14 +2073,13 @@ gfc_array_size (gfc_expr *array, mpz_t *result)
 {
   expand_info expand_save;
   gfc_ref *ref;
-  int i, flag;
+  int i;
   gfc_try t;
 
   switch (array->expr_type)
     {
     case EXPR_ARRAY:
-      flag = gfc_suppress_error;
-      gfc_suppress_error = 1;
+      gfc_push_suppress_errors ();
 
       expand_save = current_expand;
 
@@ -2091,7 +2090,8 @@ gfc_array_size (gfc_expr *array, mpz_t *result)
       iter_stack = NULL;
 
       t = expand_constructor (array->value.constructor);
-      gfc_suppress_error = flag;
+
+      gfc_pop_suppress_errors ();
 
       if (t == FAILURE)
 	mpz_clear (*result);

@@ -30,11 +30,31 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 
-int gfc_suppress_error = 0;
+static int suppress_errors = 0;
 
 static int terminal_width, buffer_flag, errors, warnings;
 
 static gfc_error_buf error_buffer, warning_buffer, *cur_error_buffer;
+
+
+/* Go one level deeper suppressing errors.  */
+
+void
+gfc_push_suppress_errors (void)
+{
+  gcc_assert (suppress_errors >= 0);
+  ++suppress_errors;
+}
+
+
+/* Leave one level of error suppressing.  */
+
+void
+gfc_pop_suppress_errors (void)
+{
+  gcc_assert (suppress_errors > 0);
+  --suppress_errors;
+}
 
 
 /* Per-file error initialization.  */
@@ -764,7 +784,7 @@ gfc_notify_std (int std, const char *nocmsgid, ...)
   if ((gfc_option.allow_std & std) != 0 && !warning)
     return SUCCESS;
 
-  if (gfc_suppress_error)
+  if (suppress_errors)
     return warning ? SUCCESS : FAILURE;
 
   cur_error_buffer = warning ? &warning_buffer : &error_buffer;
@@ -850,7 +870,7 @@ gfc_error (const char *nocmsgid, ...)
 {
   va_list argp;
 
-  if (gfc_suppress_error)
+  if (suppress_errors)
     return;
 
   error_buffer.flag = 1;

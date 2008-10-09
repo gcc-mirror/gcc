@@ -1,3 +1,19 @@
+2008-10-09  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/35723
+	* gfortran.h (gfc_suppress_error): Removed from header.
+	(gfc_push_suppress_errors), (gfc_pop_suppress_errors): New methods.
+	* array.c (gfc_array_size): Use new gfc_push/pop_suppress_errors
+	instead of directly changing gfc_suppress_error.
+	* intrinsic.c (gfc_intrinsic_func_interface): Ditto.
+	(gfc_intrinsic_sub_interface): Ditto.
+	* error.c (suppress_errors): Made static from `gfc_suppress_error'.
+	(gfc_push_suppress_errors), (gfc_pop_suppress_errors): New methods.
+	(gfc_notify_std), (gfc_error): Use new static name of global.
+	* expr.c (check_arglist), (check_references): New methods.
+	(check_restricted): Check arglists and references of EXPR_FUNCTIONs
+	and EXPR_VARAIBALEs, respectively.  Allow PARAMETER symbols.
+
 2008-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* f95-lang.c (poplevel): Don't clear BLOCK_VARS if functionbody.
