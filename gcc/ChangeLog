@@ -1,5 +1,16 @@
 2008-10-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* rtl.h (locator_eq): New decl.
+	* cfglayout.c (locator_scope): New function.
+	(insn_scope): Use it.
+	(locator_eq): New function.
+	(fixup_reorder_chain): Search for last insn in src bb
+	that has locator set or first insn in dest bb.  Use
+	locator_eq instead of == to compare locators.
+	* cfgrtl.c (cfg_layout_merge_blocks): Likewise.
+	* cfgcleanup.c (try_forward_edges): Use locator_eq instead of
+	== to compare locators.
+
 	* tree-ssa-live.c (remove_unused_locals): Mark all edge's goto_block
 	as used.
 	* gimple-low.c (lower_function_body, lower_gimple_return,

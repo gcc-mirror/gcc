@@ -2615,19 +2615,21 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
      some unique locus, emit a nop with that locus in between.  */
   if (!optimize && EDGE_SUCC (a, 0)->goto_locus)
     {
-      rtx insn = BB_END (a);
+      rtx insn = BB_END (a), end = PREV_INSN (BB_HEAD (a));
       int goto_locus = EDGE_SUCC (a, 0)->goto_locus;
 
-      if (NOTE_P (insn))
-	insn = prev_nonnote_insn (insn);
-      if (insn && INSN_P (insn) && INSN_LOCATOR (insn) == goto_locus)
+      while (insn != end && (!INSN_P (insn) || INSN_LOCATOR (insn) == 0))
+	insn = PREV_INSN (insn);
+      if (insn != end && locator_eq (INSN_LOCATOR (insn), goto_locus))
 	goto_locus = 0;
       else
 	{
 	  insn = BB_HEAD (b);
-	  if (!INSN_P (insn))
-	    insn = next_insn (insn);
-	  if (insn && INSN_P (insn) && INSN_LOCATOR (insn) == goto_locus)
+	  end = NEXT_INSN (BB_END (b));
+	  while (insn != end && !INSN_P (insn))
+	    insn = NEXT_INSN (insn);
+	  if (insn != end && INSN_LOCATOR (insn) != 0
+	      && locator_eq (INSN_LOCATOR (insn), goto_locus))
 	    goto_locus = 0;
 	}
       if (goto_locus)

@@ -483,7 +483,7 @@ try_forward_edges (int mode, basic_block b)
 		     blocks with different locus are not optimized out.  */
 		  int locus = single_succ_edge (target)->goto_locus;
 
-		  if (locus && goto_locus && locus != goto_locus)
+		  if (locus && goto_locus && !locator_eq (locus, goto_locus))
 		    counter = n_basic_blocks;
 		  else if (locus)
 		    goto_locus = locus;
@@ -492,7 +492,8 @@ try_forward_edges (int mode, basic_block b)
 		    {
 		      locus = INSN_LOCATOR (BB_END (target));
 
-		      if (locus && goto_locus && locus != goto_locus)
+		      if (locus && goto_locus
+			  && !locator_eq (locus, goto_locus))
 			counter = n_basic_blocks;
 		      else if (locus)
 			goto_locus = locus;

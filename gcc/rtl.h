@@ -1639,6 +1639,7 @@ extern int insn_line (const_rtx);
 extern const char * insn_file (const_rtx);
 extern int locator_line (int);
 extern const char * locator_file (int);
+extern bool locator_eq (int, int);
 extern int prologue_locator, epilogue_locator;
 
 /* In jump.c */
