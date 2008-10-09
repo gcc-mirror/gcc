@@ -3598,7 +3598,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
     return (do_simplify (expr->value.function.isym, expr) == FAILURE)
 	   ? MATCH_ERROR : MATCH_YES;
 
-  gfc_suppress_error = !error_flag;
+  if (!error_flag)
+    gfc_push_suppress_errors ();
   flag = 0;
 
   for (actual = expr->value.function.actual; actual; actual = actual->next)
@@ -3611,7 +3612,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
   isym = specific = gfc_find_function (name);
   if (isym == NULL)
     {
-      gfc_suppress_error = 0;
+      if (!error_flag)
+	gfc_pop_suppress_errors ();
       return MATCH_NO;
     }
 
@@ -3621,7 +3623,11 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Function '%s' "
 			 "as initialization expression at %L", name,
 			 &expr->where) == FAILURE)
-    return MATCH_ERROR;
+    {
+      if (!error_flag)
+	gfc_pop_suppress_errors ();
+      return MATCH_ERROR;
+    }
 
   gfc_current_intrinsic_where = &expr->where;
 
@@ -3633,7 +3639,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       if (gfc_check_min_max (expr->value.function.actual) == SUCCESS)
 	goto got_specific;
 
-      gfc_suppress_error = 0;
+      if (!error_flag)
+	gfc_pop_suppress_errors ();
       return MATCH_NO;
     }
 
@@ -3641,7 +3648,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
      incarnations.  If the generic name is also a specific, we check
      that name last, so that any error message will correspond to the
      specific.  */
-  gfc_suppress_error = 1;
+  gfc_push_suppress_errors ();
 
   if (isym->generic)
     {
@@ -3651,15 +3658,19 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 	  if (specific == isym)
 	    continue;
 	  if (check_specific (specific, expr, 0) == SUCCESS)
-	    goto got_specific;
+	    {
+	      gfc_pop_suppress_errors ();
+	      goto got_specific;
+	    }
 	}
     }
 
-  gfc_suppress_error = !error_flag;
+  gfc_pop_suppress_errors ();
 
   if (check_specific (isym, expr, error_flag) == FAILURE)
     {
-      gfc_suppress_error = 0;
+      if (!error_flag)
+	gfc_pop_suppress_errors ();
       return MATCH_NO;
     }
 
@@ -3669,7 +3680,9 @@ got_specific:
   expr->value.function.isym = specific;
   gfc_intrinsic_symbol (expr->symtree->n.sym);
 
-  gfc_suppress_error = 0;
+  if (!error_flag)
+    gfc_pop_suppress_errors ();
+
   if (do_simplify (specific, expr) == FAILURE)
     return MATCH_ERROR;
 
@@ -3709,7 +3722,8 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   if (isym == NULL)
     return MATCH_NO;
 
-  gfc_suppress_error = !error_flag;
+  if (!error_flag)
+    gfc_push_suppress_errors ();
 
   init_arglist (isym);
 
@@ -3729,7 +3743,8 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
 
   /* The subroutine corresponds to an intrinsic.  Allow errors to be
      seen at this point.  */
-  gfc_suppress_error = 0;
+  if (!error_flag)
+    gfc_pop_suppress_errors ();
 
   if (isym->resolve.s1 != NULL)
     isym->resolve.s1 (c);
@@ -3751,7 +3766,8 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   return MATCH_YES;
 
 fail:
-  gfc_suppress_error = 0;
+  if (!error_flag)
+    gfc_pop_suppress_errors ();
   return MATCH_NO;
 }
 
