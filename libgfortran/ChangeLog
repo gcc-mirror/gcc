@@ -1,3 +1,11 @@
+2008-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/37753
+	* io/transfer.c (unformatted_read):  CONVERT_NATIVE
+	is the usual case.  Check for kind==1 for non-byte-reversing
+	operation.
+	(unformatted_write):  Likewise.
+
 2008-10-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
 	PR libfortran/37707
