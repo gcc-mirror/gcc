@@ -110,9 +110,6 @@ test01()
   bool test __attribute__((unused)) = true;
   using std::chrono::duration;
   
-  duration<int> d0;
-  VERIFY(d0.count() == static_cast<duration<int>::rep>(0));
-
   int r = 3;
   duration<int> d1(r);
   VERIFY(d1.count() == static_cast<duration<int>::rep>(r));
