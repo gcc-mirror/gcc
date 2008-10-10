@@ -1,3 +1,9 @@
+2008-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37146
+	* cp-gimplify.c (cp_genericize_r): Fix up bitfield operands of
+	COND_EXPR.
+
 2008-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37568

@@ -1,3 +1,10 @@
+2008-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37146
+	* g++.dg/torture/pr37146-1.C: New test.
+	* g++.dg/torture/pr37146-2.C: New test.
+	* g++.dg/expr/bitfield10.C: New test.
+
 2008-10-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
 	PR libfortran/37707
