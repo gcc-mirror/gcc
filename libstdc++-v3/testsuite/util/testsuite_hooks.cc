@@ -2,7 +2,7 @@
 
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -283,6 +283,7 @@ namespace __gnu_test
   {
 #ifdef _GLIBCXX_SYSV_SEM
     union semun val;
+    val.val = 0; // Avoid uninitialized variable warning.
     // Destroy the semaphore set only in the process that created it. 
     if (pid_ == getpid())
       semctl(sem_set_, 0, IPC_RMID, val);

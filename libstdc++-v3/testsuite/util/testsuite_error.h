@@ -28,6 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <string>
 #include <testsuite_hooks.h>
 
 #ifndef _TESTSUITE_ERROR_H
@@ -35,8 +36,6 @@
 
 namespace __gnu_test
 {
-  using std::string;
-
   struct test_category : public std::error_category
   { 
     virtual const char*
@@ -46,10 +45,9 @@ namespace __gnu_test
       return s;
     }
 
-    virtual string 
+    virtual std::string 
     message(int) const
-    { return string("message to be determined"); }
-
+    { return std::string("message to be determined"); }
   };
 
   struct test_derived_category : public test_category
