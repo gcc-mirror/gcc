@@ -1415,10 +1415,10 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
   mpz_clear (stride);
   mpz_clear (delta);
 
-  /* In debug info represent packed arrays as multi-dimensional
-     if they have rank > 1 and with proper bounds, instead of flat
-     arrays.  */
-  if (known_offset && write_symbols != NO_DEBUG)
+  /* Represent packed arrays as multi-dimensional if they have rank >
+     1 and with proper bounds, instead of flat arrays.  This makes for
+     better debug info.  */
+  if (known_offset)
     {
       tree gtype = etype, rtype, type_decl;
 

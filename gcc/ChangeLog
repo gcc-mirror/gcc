@@ -1,5 +1,10 @@
 2008-10-10  Alexandre Oliva  <aoliva@redhat.com>
 
+	* fortran/trans-types.c (gfc_get_nodesc_array_type): Don't
+	vary types depending on debug info.
+
+2008-10-10  Alexandre Oliva  <aoliva@redhat.com>
+
 	* c-gimplify.c (c_genericize): Don't refer to DECL_ASSEMBLER_NAME
 	before ensuring it's already computed.
 
