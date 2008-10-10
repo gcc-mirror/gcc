@@ -59,29 +59,29 @@ void test01()
    const test_type* null_ttc = 0;
    int zero;
 
-   std::reference_wrapper<double (int)>* pr1;
+   std::reference_wrapper<double (int)>* pr1(0);
    verify_return_type((*pr1)(0), double());
-   std::reference_wrapper<double (*)(int)>* pr2;
+   std::reference_wrapper<double (*)(int)>* pr2(0);
    verify_return_type((*pr2)(0), double());
-   std::reference_wrapper<int (test_type::*)()>* pr3;
+   std::reference_wrapper<int (test_type::*)()>* pr3(0);
    verify_return_type((*pr3)(null_tt), int());
-   std::reference_wrapper<int (test_type::*)()const>* pr4;
+   std::reference_wrapper<int (test_type::*)()const>* pr4(0);
    verify_return_type((*pr4)(null_ttc), int());
-   std::reference_wrapper<functor1>* pr5;
+   std::reference_wrapper<functor1>* pr5(0);
 
    // libstdc++/24803
    // FIXME: verify_return_type((*pr5)(0), double());
    verify_return_type((*pr5)(zero), double());
 
-   std::reference_wrapper<double (int, char)>* pr1b;
+   std::reference_wrapper<double (int, char)>* pr1b(0);
    verify_return_type((*pr1b)(0,0), double());
-   std::reference_wrapper<double (*)(int, char)>* pr2b;
+   std::reference_wrapper<double (*)(int, char)>* pr2b(0);
    verify_return_type((*pr2b)(0,0), double());
-   std::reference_wrapper<int (test_type::*)(char)>* pr3b;
+   std::reference_wrapper<int (test_type::*)(char)>* pr3b(0);
    verify_return_type((*pr3b)(null_tt,zero), int());
-   std::reference_wrapper<int (test_type::*)()const>* pr4b;
+   std::reference_wrapper<int (test_type::*)()const>* pr4b(0);
    verify_return_type((*pr4b)(null_ttc), int());
-   std::reference_wrapper<functor2>* pr5b;
+   std::reference_wrapper<functor2>* pr5b(0);
 
    // libstdc++/24803
    // FIXME: verify_return_type((*pr5b)(0,0), double());

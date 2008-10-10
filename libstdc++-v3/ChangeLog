@@ -1,5 +1,10 @@
 2008-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/20_util/reference_wrapper/24803.cc: Avoid uninitialized
+	warnings.
+
+2008-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/system_error (native_category): Remove.
 	(posix_category): Add.
 	(error_code::error_code(_ErrorCodeEnum, typename enable_if<>:type*):
