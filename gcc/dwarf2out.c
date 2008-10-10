@@ -10008,6 +10008,16 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	 distinction between OP_REG and OP_BASEREG.  */
       if (REGNO (rtl) < FIRST_PSEUDO_REGISTER)
 	mem_loc_result = based_loc_descr (rtl, 0, VAR_INIT_STATUS_INITIALIZED);
+      else if (stack_realign_drap
+	       && crtl->drap_reg
+	       && crtl->args.internal_arg_pointer == rtl
+	       && REGNO (crtl->drap_reg) < FIRST_PSEUDO_REGISTER)
+	{
+	  /* If RTL is internal_arg_pointer, which has been optimized
+	     out, use DRAP instead.  */
+	  mem_loc_result = based_loc_descr (crtl->drap_reg, 0,
+					    VAR_INIT_STATUS_INITIALIZED);
+	}
       break;
 
     case MEM:
