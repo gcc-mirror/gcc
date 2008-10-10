@@ -1588,7 +1588,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   ((CLASS) == NO_REGS && TARGET_SHMEDIA \
    && (GET_CODE (X) == CONST_DOUBLE \
        || GET_CODE (X) == SYMBOL_REF \
-       || PIC_DIRECT_ADDR_P (X)) \
+       || PIC_ADDR_P (X)) \
    ? GENERAL_REGS \
    : (CLASS)) \
 
@@ -1661,7 +1661,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
       && TARGET_SHMEDIA && inqhi_operand ((X), (MODE)))			\
    ? GENERAL_REGS							\
    : (TARGET_SHMEDIA && (CLASS) == GENERAL_REGS				\
-      && (GET_CODE (X) == LABEL_REF || PIC_DIRECT_ADDR_P (X)))		\
+      && (GET_CODE (X) == LABEL_REF || PIC_ADDR_P (X)))			\
    ? TARGET_REGS							\
    : SECONDARY_INOUT_RELOAD_CLASS((CLASS),(MODE),(X), NO_REGS))
 #endif
@@ -2288,37 +2288,13 @@ struct sh_args {
        && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == LABEL_REF		\
        && GET_CODE (XEXP (XEXP ((OP), 0), 1)) == CONST_INT))
 
-#define IS_LITERAL_OR_SYMBOLIC_S16_P(OP)				\
-  (GET_CODE ((OP)) == SIGN_EXTEND					\
-   && (GET_MODE ((OP)) == DImode					\
-       || GET_MODE ((OP)) == SImode)					\
-   && GET_CODE (XEXP ((OP), 0)) == TRUNCATE				\
-   && GET_MODE (XEXP ((OP), 0)) == HImode				\
-   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP ((OP), 0), 0))		\
-       || (GET_CODE (XEXP (XEXP ((OP), 0), 0)) == ASHIFTRT		\
-	   && (MOVI_SHORI_BASE_OPERAND_P				\
-	       (XEXP (XEXP (XEXP ((OP), 0), 0), 0)))			\
-	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 1)) == CONST_INT)))
-
-#define IS_LITERAL_OR_SYMBOLIC_U16_P(OP)				\
-  (GET_CODE ((OP)) == ZERO_EXTEND					\
-   && (GET_MODE ((OP)) == DImode					\
-       || GET_MODE ((OP)) == SImode)					\
-   && GET_CODE (XEXP ((OP), 0)) == TRUNCATE				\
-   && GET_MODE (XEXP ((OP), 0)) == HImode				\
-   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP ((OP), 0), 0))		\
-       || (GET_CODE (XEXP (XEXP ((OP), 0), 0)) == ASHIFTRT		\
-	   && (MOVI_SHORI_BASE_OPERAND_P				\
-	       (XEXP (XEXP (XEXP ((OP), 0), 0), 0)))			\
-	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 1)) == CONST_INT)))
-
 #define IS_NON_EXPLICIT_CONSTANT_P(OP)					\
   (CONSTANT_P (OP)							\
    && GET_CODE (OP) != CONST_INT					\
    && GET_CODE (OP) != CONST_DOUBLE					\
    && (!flag_pic							\
        || (LEGITIMATE_PIC_OPERAND_P (OP)				\
-	   && (! PIC_ADDR_P (OP) || PIC_OFFSET_P (OP))			\
+	   && !PIC_ADDR_P (OP)						\
 	   && GET_CODE (OP) != LABEL_REF)))
 
 /* Check whether OP is a datalabel unspec.  */
@@ -2350,13 +2326,10 @@ struct sh_args {
   (GET_CODE (OP) == CONST && GET_CODE (XEXP ((OP), 0)) == UNSPEC \
    && XINT (XEXP ((OP), 0), 1) == UNSPEC_PIC)
 
-#define PIC_OFFSET_P(OP) \
-  (PIC_ADDR_P (OP) \
-   && GET_CODE (XVECEXP (XEXP ((OP), 0), 0, 0)) == MINUS \
-   && reg_mentioned_p (pc_rtx, XEXP (XVECEXP (XEXP ((OP), 0), 0, 0), 1)))
-
-#define PIC_DIRECT_ADDR_P(OP) \
-  (PIC_ADDR_P (OP) && GET_CODE (XVECEXP (XEXP ((OP), 0), 0, 0)) != MINUS)
+#define PCREL_SYMOFF_P(OP) \
+  (GET_CODE (OP) == CONST \
+   && GET_CODE (XEXP ((OP), 0)) == UNSPEC \
+   && XINT (XEXP ((OP), 0), 1) == UNSPEC_PCREL_SYMOFF)
 
 #define NON_PIC_REFERENCE_P(OP) \
   (GET_CODE (OP) == LABEL_REF || GET_CODE (OP) == SYMBOL_REF \
@@ -2377,7 +2350,7 @@ struct sh_args {
 #define MOVI_SHORI_BASE_OPERAND_P(OP) \
   (flag_pic \
    ? (GOT_ENTRY_P (OP) || GOTPLT_ENTRY_P (OP)  || GOTOFF_P (OP) \
-      || PIC_OFFSET_P (OP)) \
+      || PCREL_SYMOFF_P (OP)) \
    : NON_PIC_REFERENCE_P (OP))
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -3106,7 +3079,7 @@ struct sh_args {
    constants.  Used for PIC-specific UNSPECs.  */
 #define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
   do									\
-    if (GET_CODE (X) == UNSPEC && XVECLEN ((X), 0) == 1)	\
+    if (GET_CODE (X) == UNSPEC)						\
       {									\
 	switch (XINT ((X), 1))						\
 	  {								\
@@ -3154,6 +3127,52 @@ struct sh_args {
 		(name, "LPCS", INTVAL (XVECEXP ((X), 0, 0)));		\
 	      assemble_name ((STREAM), name);				\
 	    }								\
+	    break;							\
+	  case UNSPEC_EXTRACT_S16:					\
+	  case UNSPEC_EXTRACT_U16:					\
+	    {								\
+	      rtx val, shift;						\
+									\
+	      val = XVECEXP (X, 0, 0);					\
+	      shift = XVECEXP (X, 0, 1);				\
+	      fputc ('(', STREAM);					\
+	      if (shift != const0_rtx)					\
+		fputc ('(', STREAM);					\
+	      if (GET_CODE (val) == CONST				\
+		  || GET_RTX_CLASS (GET_CODE (val)) != RTX_OBJ)		\
+		{							\
+		  fputc ('(', STREAM);					\
+		  output_addr_const (STREAM, val);			\
+		  fputc (')', STREAM);					\
+		}							\
+	      else							\
+		output_addr_const (STREAM, val);			\
+	      if (shift != const0_rtx)					\
+		{							\
+		  fputs (" >> ", STREAM);				\
+		  output_addr_const (STREAM, shift);			\
+		  fputc (')', STREAM);					\
+		}							\
+	      fputs (" & 65535)", STREAM);				\
+	    }								\
+	    break;							\
+	  case UNSPEC_SYMOFF:						\
+	    output_addr_const (STREAM, XVECEXP (X, 0, 0));		\
+	    fputc ('-', STREAM);					\
+	    if (GET_CODE (XVECEXP (X, 0, 1)) == CONST)			\
+	      {								\
+		fputc ('(', STREAM);					\
+		output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
+		fputc (')', STREAM);					\
+	      }								\
+	    else							\
+	      output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
+	    break;							\
+	  case UNSPEC_PCREL_SYMOFF:					\
+	    output_addr_const (STREAM, XVECEXP (X, 0, 0));		\
+	    fputs ("-(", STREAM);					\
+	    output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
+	    fputs ("-.)", STREAM);					\
 	    break;							\
 	  default:							\
 	    goto FAIL;							\

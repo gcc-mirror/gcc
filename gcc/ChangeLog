@@ -1,3 +1,45 @@
+2008-10-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/sh/sh.h (PREFERRED_RELOAD_CLASS): Test PIC_ADDR_P
+	instead of PIC_DIRECT_ADDR_P.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+	(IS_LITERAL_OR_SYMBOLIC_S16_P, IS_LITERAL_OR_SYMBOLIC_U16_P): Delete.
+	(IS_NON_EXPLICIT_CONSTANT_P): Don't test PIC_OFFSET_P.
+	(PIC_OFFSET_P): Rename to...
+	(PCREL_SYMOFF_P): ...this.
+	(PIC_DIRECT_ADDR_P): Delete.
+	(MOVI_SHORI_BASE_OPERAND_P): Check PCREL_SYMOFF_P instead of
+	PIC_OFFSET_P.
+	(OUTPUT_ADDR_CONST_EXTRA): Don't require unspecs to have a
+	single argument.  Handle UNSPEC_EXTRACT_S16, UNSPEC_EXTRACT_U16,
+	UNSPEC_SYMOFF and UNSPEC_PCREL_SYMOFF.
+	* config/sh/sh.c (print_operand): Remove CONST handling.
+	(unspec_caller_rtx_p): Rewrite to use split_const and check
+	the operands of UNSPEC bases.
+	(fixup_mova): Replace (unspec [(minus A B)] UNSPEC_PIC)
+	with (unspec [A B] UNSPEC_SYMOFF).
+	(nonpic_symbol_mentioned_p): Check for UNSPEC_SYMOFF and
+	UNSPEC_PCREL_SYMOFF.
+	(sh_secondary_reload): Test PIC_ADDR_P instead of PIC_DIRECT_ADDR_P.
+	* config/sh/sh.md (UNSPEC_EXTRACT_S16): New unspec.
+	(UNSPEC_EXTRACT_U16): Likewise.
+	(UNSPEC_SYMOFF): Likewise.
+	(UNSPEC_PCREL_SYMOFF): Likewise.
+	(movsi_const): Use UNSPEC_EXTRACT_*16s to extract 16-bit portions
+	of constants.
+	(movsi_const_16bit): Likewise.
+	(movdi_const, movdi_const_32bit, movdi_const_16bit): Likewise.
+	(GOTaddr2picreg): Replace (unspec [(minus A (minus B pc))] UNSPEC_PIC)
+	with (unspec [A B] UNSPEC_PCREL_SYMOFF).
+	(sym_label2reg): Replace (minus (const (unspec [A] UNSPEC_PIC)) B)
+	with (unspec [A B] UNSPEC_SYMOFF).
+	(symPLT_label2reg): Replace (minus A (minus B pc)) with
+	 (unspec [A B] PCREL_UNSPEC_SYMOFF).
+	* config/sh/constraints.md (Css): Check for an UNSPEC_EXTRACT_S16.
+	(Csu): Likewise UNSPEC_EXTRACT_U16.
+	(Csy): Test PIC_ADDR_P instead of PIC_DIRECT_ADDR_P.
+	(Cpg): Update after changes to IS_NON_EXPLICIT_CONSTANT_P.
+
 2008-10-10  Stepan Kasal  <skasal@redhat.com>
 
 	* gcc/doc/invoke.texi (Optimize Options): Fix typo in examples

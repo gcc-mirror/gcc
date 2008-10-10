@@ -153,6 +153,17 @@
   (UNSPEC_SP_TEST	41)
   (UNSPEC_MOVUA		42)
 
+  ;; (unspec [VAL SHIFT] UNSPEC_EXTRACT_S16) computes (short) (VAL >> SHIFT).
+  ;; UNSPEC_EXTRACT_U16 is the unsigned equivalent.
+  (UNSPEC_EXTRACT_S16	43)
+  (UNSPEC_EXTRACT_U16	44)
+
+  ;; (unspec [TARGET ANCHOR] UNSPEC_SYMOFF) == TARGET - ANCHOR.
+  (UNSPEC_SYMOFF	45)
+
+  ;; (unspec [OFFSET ANCHOR] UNSPEC_PCREL_SYMOFF) == OFFSET - (ANCHOR - .).
+  (UNSPEC_PCREL_SYMOFF	46)
+
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
   (UNSPECV_ALIGN	1)
@@ -5134,16 +5145,12 @@ label:
 
 (define_expand "movsi_const"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(const:SI (sign_extend:SI
-		   (truncate:HI
-		    (ashiftrt:SI
-		     (match_operand:DI 1 "immediate_operand" "s")
-		     (const_int 16))))))
+	(const:SI (unspec:SI [(match_operand:DI 1 "immediate_operand" "s")
+			      (const_int 16)] UNSPEC_EXTRACT_S16)))
    (set (match_dup 0)
 	(ior:SI (ashift:SI (match_dup 0) (const_int 16))
-		(const:SI
-		  (zero_extend:SI
- 		   (truncate:HI (match_dup 1))))))]
+		(const:SI (unspec:SI [(match_dup 1)
+				      (const_int 0)] UNSPEC_EXTRACT_U16))))]
   "TARGET_SHMEDIA && reload_completed
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   "
@@ -5169,9 +5176,8 @@ label:
 
 (define_expand "movsi_const_16bit"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(const:SI (sign_extend:SI
-		   (truncate:HI
-		    (match_operand:DI 1 "immediate_operand" "s")))))]
+	(const:SI (unspec:SI [(match_operand:DI 1 "immediate_operand" "s")
+			      (const_int 0)] UNSPEC_EXTRACT_S16)))]
   "TARGET_SHMEDIA && flag_pic && reload_completed
    && GET_CODE (operands[1]) == SYMBOL_REF"
   "")
@@ -5588,33 +5594,20 @@ label:
 
 (define_expand "movdi_const"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(const:DI (sign_extend:DI
-		   (truncate:HI
-		    (ashiftrt:DI
-		     (match_operand:DI 1 "immediate_operand" "s")
-		     (const_int 48))))))
+	(const:DI (unspec:DI [(match_operand:DI 1 "immediate_operand" "s")
+		  	      (const_int 48)] UNSPEC_EXTRACT_S16)))
    (set (match_dup 0)
 	(ior:DI (ashift:DI (match_dup 0) (const_int 16))
-		(const:DI
-		 (zero_extend:DI
-		  (truncate:HI
-		   (ashiftrt:SI
-		    (match_dup 1)
-		    (const_int 32)))))))
+		(const:DI (unspec:DI [(match_dup 1)
+				      (const_int 32)] UNSPEC_EXTRACT_U16))))
    (set (match_dup 0)
 	(ior:DI (ashift:DI (match_dup 0) (const_int 16))
-		(const:DI
-		 (zero_extend:DI
-		  (truncate:HI
-		   (ashiftrt:SI
-		    (match_dup 1)
-		    (const_int 16)))))))
+		(const:DI (unspec:DI [(match_dup 1)
+				      (const_int 16)] UNSPEC_EXTRACT_U16))))
    (set (match_dup 0)
 	(ior:DI (ashift:DI (match_dup 0) (const_int 16))
-		(const:DI
-		 (zero_extend:DI
-		  (truncate:HI
-		   (match_dup 1))))))]
+		(const:DI (unspec:DI [(match_dup 1)
+				      (const_int 0)] UNSPEC_EXTRACT_U16))))]
   "TARGET_SHMEDIA64 && reload_completed
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   "
@@ -5624,17 +5617,12 @@ label:
 
 (define_expand "movdi_const_32bit"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(const:DI (sign_extend:DI
-		   (truncate:HI
-		    (ashiftrt:DI
-		     (match_operand:DI 1 "immediate_operand" "s")
-		     (const_int 16))))))
+	(const:DI (unspec:DI [(match_operand:DI 1 "immediate_operand" "s")
+			      (const_int 16)] UNSPEC_EXTRACT_S16)))
    (set (match_dup 0)
 	(ior:DI (ashift:DI (match_dup 0) (const_int 16))
-		(const:DI
-		 (zero_extend:DI
-		  (truncate:HI
-		   (match_dup 1))))))]
+		(const:DI (unspec:DI [(match_dup 1)
+				      (const_int 0)] UNSPEC_EXTRACT_U16))))]
   "TARGET_SHMEDIA32 && reload_completed
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   "
@@ -5644,9 +5632,8 @@ label:
 
 (define_expand "movdi_const_16bit"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(const:DI (sign_extend:DI
-		   (truncate:HI
-		    (match_operand:DI 1 "immediate_operand" "s")))))]
+	(const:DI (unspec:DI [(match_operand:DI 1 "immediate_operand" "s")
+			      (const_int 0)] UNSPEC_EXTRACT_S16)))]
   "TARGET_SHMEDIA && flag_pic && reload_completed
    && GET_CODE (operands[1]) == SYMBOL_REF"
   "")
@@ -8724,16 +8711,9 @@ label:
       rtx insn, equiv;
 
       equiv = operands[1];
-      operands[1] = gen_rtx_MINUS (Pmode,
-				   operands[1],
-				   gen_rtx_CONST
-				   (Pmode,
-				    gen_rtx_MINUS (Pmode,
-						   gen_rtx_CONST (Pmode,
-								  lab),
-						   pc_rtx)));
-      operands[1] = gen_sym2PIC (operands[1]);
-      PUT_MODE (operands[1], Pmode);
+      operands[1] = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, operands[1], lab),
+				    UNSPEC_PCREL_SYMOFF);
+      operands[1] = gen_rtx_CONST (Pmode, operands[1]);
 
       if (Pmode == SImode)
 	{
@@ -8819,13 +8799,10 @@ label:
 
 (define_expand "sym_label2reg"
   [(set (match_operand:SI 0 "" "")
-	(const:SI (minus:SI
-		   (const:SI
-		    (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PIC))
-		   (const:SI
-		    (plus:SI
-		     (match_operand:SI 2 "" "")
-		     (const_int 2))))))]
+	(const:SI (unspec:SI [(match_operand:SI 1 "" "")
+			      (const (plus:SI (match_operand:SI 2 "" "")
+					      (const_int 2)))]
+			     UNSPEC_SYMOFF)))]
   "TARGET_SH1" "")
 
 (define_expand "symGOT_load"
@@ -8952,15 +8929,11 @@ label:
 
 (define_expand "symPLT_label2reg"
   [(set (match_operand:SI 0 "" "")
-	(const:SI (minus:SI
-		   (const:SI
-		    (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PLT))
-		   (const:SI
-		    (minus:SI
-		     (const:SI (plus:SI
-				(match_operand:SI 2 "" "")
-				(const_int 2)))
-		     (const:SI (unspec:SI [(pc)] UNSPEC_PIC)))))))
+	(const:SI
+	 (unspec:SI
+	  [(const:SI (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PLT))
+	   (const:SI (plus:SI (match_operand:SI 2 "" "")
+			      (const_int 2)))] UNSPEC_PCREL_SYMOFF)))
    ;; Even though the PIC register is not really used by the call
    ;; sequence in which this is expanded, the PLT code assumes the PIC
    ;; register is set, so we must not skip its initialization.  Since
