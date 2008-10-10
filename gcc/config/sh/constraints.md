@@ -27,7 +27,7 @@
 ;;  Csy: label or symbol
 ;;  Cpg: non-explicit constants that can be directly loaded into a general
 ;;       purpose register in PIC code.  like 's' except we don't allow
-;;       PIC_DIRECT_ADDR_P
+;;       PIC_ADDR_P
 ;; IJKLMNOP: CONT_INT constants
 ;;  Ixx: signed xx bit
 ;;  J16: 0xffffffff00000000 | 0x00000000ffffffff
@@ -186,17 +186,19 @@
 (define_constraint "Css"
   "A signed 16-bit constant, literal or symbolic."
   (and (match_code "const")
-       (match_test "IS_LITERAL_OR_SYMBOLIC_S16_P (XEXP (op, 0))")))
+       (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
+       (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_EXTRACT_S16")))
 
 (define_constraint "Csu"
   "An unsigned 16-bit constant, literal or symbolic."
   (and (match_code "const")
-       (match_test "IS_LITERAL_OR_SYMBOLIC_U16_P (XEXP (op, 0))")))
+       (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
+       (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_EXTRACT_U16")))
 
 (define_constraint "Csy"
   "A label or a symbol."
   (ior (match_test "NON_PIC_REFERENCE_P (op)")
-       (match_test "PIC_DIRECT_ADDR_P (op)")))
+       (match_test "PIC_ADDR_P (op)")))
 
 (define_constraint "Z"
   "A zero in any shape or form."
@@ -213,7 +215,7 @@
 (define_constraint "Cpg"
   "A non-explicit constant that can be loaded directly into a general
    purpose register.  This is like 's' except we don't allow
-   PIC_DIRECT_ADDR_P."
+   PIC_ADDR_P."
   (match_test "IS_NON_EXPLICIT_CONSTANT_P (op)"))
 
 (define_constraint "Pso"

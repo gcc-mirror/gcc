@@ -1031,45 +1031,6 @@ print_operand (FILE *stream, rtx x, int code)
 	  output_address (XEXP (x, 0));
 	  break;
 
-	case CONST:
-	  if (TARGET_SHMEDIA
-	      && (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
-		  || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND)
-	      && (GET_MODE (XEXP (x, 0)) == DImode
-		  || GET_MODE (XEXP (x, 0)) == SImode)
-	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == TRUNCATE
-	      && GET_MODE (XEXP (XEXP (x, 0), 0)) == HImode)
-	    {
-	      rtx val = XEXP (XEXP (XEXP (x, 0), 0), 0);
-	      rtx val2 = val;
-	      bool nested_expr = false;
-
-	      fputc ('(', stream);
-	      if (GET_CODE (val) == ASHIFTRT)
-		{
-		  fputc ('(', stream);
-		  val2 = XEXP (val, 0);
-		}
-	      if (GET_CODE (val2) == CONST
-		  || GET_RTX_CLASS (GET_CODE (val2)) != RTX_OBJ)
-		{
-		  fputc ('(', stream);
-		  nested_expr = true;
-		}
-	      output_addr_const (stream, val2);
-	      if (nested_expr)
-		fputc (')', stream);
-	      if (GET_CODE (val) == ASHIFTRT)
-		{
-		  fputs (" >> ", stream);
-		  output_addr_const (stream, XEXP (val, 1));
-		  fputc (')', stream);
-		}
-	      fputs (" & 65535)", stream);
-	      break;
-	    }
-
-	  /* Fall through.  */
 	default:
 	  if (TARGET_SH1)
 	    fputc ('#', stream);
@@ -2191,22 +2152,18 @@ sh_file_start (void)
 static bool
 unspec_caller_rtx_p (rtx pat)
 {
-  switch (GET_CODE (pat))
-    {
-    case CONST:
-      return unspec_caller_rtx_p (XEXP (pat, 0));
-    case PLUS:
-    case MINUS:
-      if (unspec_caller_rtx_p (XEXP (pat, 0)))
-	return true;
-      return unspec_caller_rtx_p (XEXP (pat, 1));
-    case UNSPEC:
-      if (XINT (pat, 1) == UNSPEC_CALLER)
-	return true;
-    default:
-      break;
-    }
+  rtx base, offset;
+  int i;
 
+  split_const (pat, &base, &offset);
+  if (GET_CODE (base) == UNSPEC)
+    {
+      if (XINT (base, 1) == UNSPEC_CALLER)
+	return true;
+      for (i = 0; i < XVECLEN (base, 0); i++)
+	if (unspec_caller_rtx_p (XVECEXP (base, 0, i)))
+	  return true;
+    }
   return false;
 }
 
@@ -3830,7 +3787,7 @@ fixup_mova (rtx mova)
     {
       rtx worker = mova;
       rtx lab = gen_label_rtx ();
-      rtx wpat, wpat0, wpat1, wsrc, diff;
+      rtx wpat, wpat0, wpat1, wsrc, target, base, diff;
 
       do
 	{
@@ -3849,9 +3806,9 @@ fixup_mova (rtx mova)
 			   XEXP (XVECEXP (wsrc, 0, 2), 0), lab,
 			   XEXP (wpat1, 0)));
       INSN_CODE (worker) = -1;
-      diff = gen_rtx_MINUS (Pmode, XVECEXP (SET_SRC (PATTERN (mova)), 0, 0),
-			    gen_rtx_LABEL_REF (Pmode, lab));
-      diff = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, diff), UNSPEC_PIC);
+      target = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
+      base = gen_rtx_LABEL_REF (Pmode, lab);
+      diff = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, target, base), UNSPEC_SYMOFF);
       SET_SRC (PATTERN (mova)) = gen_rtx_CONST (Pmode, diff);
       INSN_CODE (mova) = -1;
     }
@@ -8853,7 +8810,9 @@ nonpic_symbol_mentioned_p (rtx x)
 	  || XINT (x, 1) == UNSPEC_GOTPLT
 	  || XINT (x, 1) == UNSPEC_GOTTPOFF
 	  || XINT (x, 1) == UNSPEC_DTPOFF
-	  || XINT (x, 1) == UNSPEC_PLT))
+	  || XINT (x, 1) == UNSPEC_PLT
+	  || XINT (x, 1) == UNSPEC_SYMOFF
+	  || XINT (x, 1) == UNSPEC_PCREL_SYMOFF))
     return 0;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -11224,7 +11183,7 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
 	  return NO_REGS;
 	}
       if (TARGET_SHMEDIA && rclass == GENERAL_REGS
-          && (GET_CODE (x) == LABEL_REF || PIC_DIRECT_ADDR_P (x)))
+          && (GET_CODE (x) == LABEL_REF || PIC_ADDR_P (x)))
         return TARGET_REGS;
     } /* end of input-only processing.  */
 
