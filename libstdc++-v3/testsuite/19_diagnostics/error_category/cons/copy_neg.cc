@@ -34,6 +34,6 @@ int main()
 }
 
 // { dg-error "is private" "" { target *-*-* } 105 }
-// { dg-error "within this context" "" { target *-*-* } 41 }
+// { dg-error "within this context" "" { target *-*-* } 40 }
 // { dg-error "first required here" "" { target *-*-* } 31 }
 // { dg-excess-errors "copy constructor" }
