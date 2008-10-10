@@ -2,7 +2,8 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -87,7 +88,8 @@ c_genericize (tree fndecl)
       fprintf (dump_orig, "\n;; Function %s",
 	       lang_hooks.decl_printable_name (fndecl, 2));
       fprintf (dump_orig, " (%s)\n",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
+	       (!DECL_ASSEMBLER_NAME_SET_P (fndecl) ? "null"
+		: IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl))));
       fprintf (dump_orig, ";; enabled by -%s\n", dump_flag_name (TDI_original));
       fprintf (dump_orig, "\n");
 
