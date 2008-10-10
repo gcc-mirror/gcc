@@ -1,3 +1,8 @@
+2008-10-10  Stepan Kasal  <skasal@redhat.com>
+
+	* gcc/doc/invoke.texi (Optimize Options): Fix typo in examples
+	for loop strip mining and loop blocking.
+
 2008-10-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* fortran/trans-types.c (gfc_get_nodesc_array_type): Don't

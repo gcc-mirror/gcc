@@ -6080,7 +6080,7 @@ ENDDO
 loop strip mining will transform the loop as if the user had written:
 @smallexample
 DO II = 1, N, 4
-  DO I = II, min (II + 4, N)
+  DO I = II, min (II + 3, N)
     A(I) = A(I) + C
   ENDDO
 ENDDO
@@ -6103,8 +6103,8 @@ loop blocking will transform the loop as if the user had written:
 @smallexample
 DO II = 1, N, 64
   DO JJ = 1, M, 64
-    DO I = II, min (II + 64, N)
-      DO J = JJ, min (JJ + 64, M)
+    DO I = II, min (II + 63, N)
+      DO J = JJ, min (JJ + 63, M)
         A(J, I) = B(I) + C(J)
       ENDDO
     ENDDO
