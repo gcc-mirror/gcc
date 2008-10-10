@@ -1,3 +1,8 @@
+2008-10-10  Chris Fairles  <cfairles@gcc.gnu.org>
+  
+	* testsuite/20_util/duration/cons/1.cc: Remove invalid check of 
+	uninitialized duration.
+        
 2008-10-08  Bob Walters  <bob.s.walters@gmail.com>
 
 	* include/bits/stl_vector.h (_Vector_base<>::_Vector_impl::_M_start,
