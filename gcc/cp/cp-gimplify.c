@@ -803,6 +803,34 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		      CLEANUP_BODY (stmt),
 		      CLEANUP_EXPR (stmt));
 
+  /* COND_EXPR might have incompatible types in branches if one or both
+     arms are bitfields.  Fix it up now.  */
+  else if (TREE_CODE (stmt) == COND_EXPR)
+    {
+      tree type_left
+	= (TREE_OPERAND (stmt, 1)
+	   ? is_bitfield_expr_with_lowered_type (TREE_OPERAND (stmt, 1))
+	   : NULL_TREE);
+      tree type_right
+	= (TREE_OPERAND (stmt, 2)
+	   ? is_bitfield_expr_with_lowered_type (TREE_OPERAND (stmt, 2))
+	   : NULL_TREE);
+      if (type_left)
+	{
+	  TREE_OPERAND (stmt, 1)
+	    = fold_convert (type_left, TREE_OPERAND (stmt, 1));
+	  gcc_assert (useless_type_conversion_p (TREE_TYPE (stmt),
+						 type_left));
+	}
+      if (type_right)
+	{
+	  TREE_OPERAND (stmt, 2)
+	    = fold_convert (type_right, TREE_OPERAND (stmt, 2));
+	  gcc_assert (useless_type_conversion_p (TREE_TYPE (stmt),
+						 type_right));
+	}
+    }
+
   pointer_set_insert (p_set, *stmt_p);
 
   return NULL;
