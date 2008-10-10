@@ -1,3 +1,8 @@
+2008-10-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-gimplify.c (c_genericize): Don't refer to DECL_ASSEMBLER_NAME
+	before ensuring it's already computed.
+
 2008-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* rtl.h (locator_eq): New decl.
