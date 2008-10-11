@@ -729,6 +729,9 @@ extern int fixuplabelno;
 
 #define LINK_OS_DEFAULT_SPEC ""
 
+#define DRIVER_SELF_SPECS "%{mfpu=none: %<mfpu=* \
+ 	%<msingle-float %<mdouble-float}"
+
 /* Override rs6000.h definition.  */
 #undef	CPP_SPEC
 #define	CPP_SPEC "%{posix: -D_POSIX_SOURCE} \

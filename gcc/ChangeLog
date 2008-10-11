@@ -1,3 +1,24 @@
+2008-10-11  Michael J. Eager  <eager@eagercon.com>
+
+	* config/rs6000/rs6000.c (rs6000_parse_fpu_option): Interpret
+	-mfpu options.
+	(rs6000_handle_option): Process -mfpu options.
+	* config/rs6000/rs6000.h: (TARGET_XILINX_FPU): New.
+	(enum fpu_type_t): New.
+	* config/rs6000/rs6000.md (attr fp_type): New.
+	Include xfpu.md.
+	(addsf3, subsf3, mulsf3, adddf3, subdf3, muldf3, trunctfdf2): Set
+	fp_type.
+	(floatsisf2): Remove TARGET_SINGLE_FPU condition.
+	(floatdidf2): Add TARGET_SINGLE_FPU condition.
+	* config/rs6000/rs6000.opt (-mfpu): New.
+	(-mxilinx-fpu): New.
+	* config/rs6000/sysv4.h: (DRIVER_SELF_SPECS): New.
+	* config/rs6000/xfpu.h: New. Define TARGET_XILINX_FPU.
+	* config/rs6000/xfpu.md: New. Define Xilinx pipeline.
+	* gcc/config.gcc: powerpc-xilinx-eabi target: New.
+	* gcc/doc/invoke.texi (RS/6000 and PowerPC Options): Add -mfpu option.
+
 2008-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35760

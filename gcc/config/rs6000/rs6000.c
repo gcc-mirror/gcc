@@ -2199,11 +2199,25 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
     flag_section_anchors = 2;
 }
 
+static enum fpu_type_t
+rs6000_parse_fpu_option (const char *option)
+{
+  if (!strcmp("none", option)) return FPU_NONE;
+  if (!strcmp("sp_lite", option)) return FPU_SF_LITE;
+  if (!strcmp("dp_lite", option)) return FPU_DF_LITE;
+  if (!strcmp("sp_full", option)) return FPU_SF_FULL;
+  if (!strcmp("dp_full", option)) return FPU_DF_FULL;
+  error("unknown value %s for -mfpu", option);
+  return FPU_NONE;
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
 rs6000_handle_option (size_t code, const char *arg, int value)
 {
+  enum fpu_type_t fpu_type = FPU_NONE;
+
   switch (code)
     {
     case OPT_mno_power:
@@ -2522,6 +2536,30 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_msoft_float:
       /* -msoft_float implies -mnosingle-float and -mnodouble-float. */
       rs6000_single_float = rs6000_double_float = 0;
+      break;
+
+    case OPT_mfpu_:
+      fpu_type = rs6000_parse_fpu_option(arg);
+      if (fpu_type != FPU_NONE) 
+      /* If -mfpu is not none, then turn off SOFT_FLOAT, turn on HARD_FLOAT. */
+      {
+        target_flags &= ~MASK_SOFT_FLOAT;
+        target_flags_explicit |= MASK_SOFT_FLOAT;
+        rs6000_xilinx_fpu = 1;
+        if (fpu_type == FPU_SF_LITE || fpu_type == FPU_SF_FULL) 
+        rs6000_single_float = 1;
+        if (fpu_type == FPU_DF_LITE || fpu_type == FPU_DF_FULL) 
+          rs6000_single_float = rs6000_double_float = 1;
+        if (fpu_type == FPU_SF_LITE || fpu_type == FPU_DF_LITE) 
+          rs6000_simple_fpu = 1;
+      }
+      else
+      {
+        /* -mfpu=none is equivalent to -msoft-float */
+        target_flags |= MASK_SOFT_FLOAT;
+        target_flags_explicit |= MASK_SOFT_FLOAT;
+        rs6000_single_float = rs6000_double_float = 0;
+      }
       break;
     }
   return true;
