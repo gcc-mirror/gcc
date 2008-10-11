@@ -1,3 +1,9 @@
+2008-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35760
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Only create
+	LO_SUM on Darwin if mode has just one unit.
+
 2008-10-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/37002

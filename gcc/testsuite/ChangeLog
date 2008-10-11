@@ -1,3 +1,8 @@
+2008-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35760
+	* gcc.c-torture/compile/pr35760.c: New test.
+
 2008-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37146
