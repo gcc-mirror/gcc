@@ -1,3 +1,10 @@
+2008-10-11  David Edelsohn  <edelsohn@gnu.org>
+
+        * config/rs6000/rs6000.md (aux_truncdfsf2): Remove TARGET_SINGLE_FLOAT.
+        (addsf3, subsf3, mulsf3 ! TARGET_POWERPC): Remove TARGET_SINGLE_FLOAT
+        and fp_type.
+        (divdf3): Reformat long line.
+
 2008-10-11  Michael J. Eager  <eager@eagercon.com>
 
 	* config/rs6000/rs6000.c (rs6000_parse_fpu_option): Interpret
