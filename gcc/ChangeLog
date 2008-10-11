@@ -1,3 +1,23 @@
+2008-10-11  Uros Bizjak  <ubizjak@gmail.com>
+	    Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/cpuid.h (__cpuid_count): New defines.
+	* config/i386/driver-i386.c (struct cache_desc): New structure.
+	(describe_cache): Use struct cache_desc to pass cache descriptions.
+	(detect_l2_cache): Ditto. Rename from decode_l2_cache.
+	(detect_caches_amd): Use struct cache_desc to describe caches.
+	(decode_caches_intel): Use struct cache_desc to pass cache
+	descriptions.  Update descriptions to match latest (rev -032,
+	December 2007) CPUID documentation.  Do not check valid bit here.
+	Check for Xeon MP value 0x49 problems.
+	(detect_caches_cpuid2): New function, split from detect_caches_intel.
+	Check valid bit before calling decode_caches_intel.  Detect number
+	of times to repeat CPUID instruction.
+	(detect_caches_cpuid4): New function.
+	(detect_caches_intel): Depending on max_level, call
+	detect_caches_cpuid2 or detect_caches_cpuid4.  Call detect_l2_cache
+	only when other methods fail to provide valid L2 cache description.
+
 2008-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/37608
@@ -13,10 +33,10 @@
 
 2008-10-11  David Edelsohn  <edelsohn@gnu.org>
 
-        * config/rs6000/rs6000.md (aux_truncdfsf2): Remove TARGET_SINGLE_FLOAT.
-        (addsf3, subsf3, mulsf3 ! TARGET_POWERPC): Remove TARGET_SINGLE_FLOAT
-        and fp_type.
-        (divdf3): Reformat long line.
+	* config/rs6000/rs6000.md (aux_truncdfsf2): Remove TARGET_SINGLE_FLOAT.
+	(addsf3, subsf3, mulsf3 ! TARGET_POWERPC): Remove TARGET_SINGLE_FLOAT
+	and fp_type.
+	(divdf3): Reformat long line.
 
 2008-10-11  Michael J. Eager  <eager@eagercon.com>
 
@@ -25,8 +45,7 @@
 	(rs6000_handle_option): Process -mfpu options.
 	* config/rs6000/rs6000.h: (TARGET_XILINX_FPU): New.
 	(enum fpu_type_t): New.
-	* config/rs6000/rs6000.md (attr fp_type): New.
-	Include xfpu.md.
+	* config/rs6000/rs6000.md (attr fp_type): New.  Include xfpu.md.
 	(addsf3, subsf3, mulsf3, adddf3, subdf3, muldf3, trunctfdf2): Set
 	fp_type.
 	(floatsisf2): Remove TARGET_SINGLE_FPU condition.
