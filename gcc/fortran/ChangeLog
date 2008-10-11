@@ -1,5 +1,10 @@
 2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/37794
+	* module.c (check_for_ambiguous): Remove redundant code.
+
+2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/35680
 	* gfortran.h : Add 'error' bit field to gfc_expr structure.
 	* expr.c (check_inquiry): When checking a restricted expression
