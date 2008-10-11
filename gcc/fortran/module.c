@@ -3960,13 +3960,6 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
   if (st_sym == rsym)
     return false;
 
-  /* Identical derived types are not ambiguous and will be rolled up
-     later.  */
-  if (st_sym->attr.flavor == FL_DERIVED
-	&& rsym->attr.flavor == FL_DERIVED
-	&& gfc_compare_derived_types (st_sym, rsym))
-    return false;
-
   /* If the existing symbol is generic from a different module and
      the new symbol is generic there can be no ambiguity.  */
   if (st_sym->attr.generic
