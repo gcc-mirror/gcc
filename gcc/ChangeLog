@@ -1,3 +1,16 @@
+2008-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/37608
+	* pa.md (call, call_value): Generate an rtx for register r4 and pass
+	it to PIC call patterns.
+	(call_symref_pic): Revise pattern to expose PIC register save.  Remove
+	code generation and attributes from pattern.  Change peephole2 to split
+	for noreturn case.  Revise split pattern for non noreturn case.
+	(call_symref_64bit, call_reg_pic, call_reg_64bit, call_val_symref_pic,
+	call_val_symref_64bit, call_val_reg_pic, call_val_reg_64bit): Likewise.
+	* pa.c (attr_length_call): Simplify extraction of call rtx.  Add some
+	asserts.
+
 2008-10-11  David Edelsohn  <edelsohn@gnu.org>
 
         * config/rs6000/rs6000.md (aux_truncdfsf2): Remove TARGET_SINGLE_FLOAT.
