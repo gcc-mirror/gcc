@@ -1,3 +1,144 @@
+2008-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/37448
+	* df.h: (df_ref_class): New enum.
+	(DF_REF_TYPE_NAMES, df_ref_extract): Removed.
+	(struct df_ref): Replaced with union df_ref_d.
+	(df_base_ref, df_artificial_ref, df_regular_ref, df_extract_ref):
+	New members of df_ref_d union.
+	(DF_REF_REAL_REG, DF_REF_REGNO, DF_REF_REAL_LOC, DF_REF_REG,
+	DF_REF_LOC, DF_REF_BB, DF_REF_INSN_INFO, DF_REF_INSN,
+	DF_REF_CLASS, DF_REF_TYPE, DF_REF_CHAIN, DF_REF_ID, DF_REF_FLAGS,
+	DF_REF_ORDER, DF_REF_IS_ARTIFICIAL, DF_REF_NEXT_REG,
+	DF_REF_PREV_REG, DF_REF_EXTRACT_WIDTH, DF_REF_EXTRACT_OFFSET,
+	DF_REF_EXTRACT_MODE): Replaced definition to access union
+	df_ref_d.
+       	(DF_MWS_REG_DEF_P, DF_MWS_REG_USE_P, DF_MWS_TYPE): New macros.
+	(df_scan_bb_info, df_bb_regno_first_def_find,
+	df_bb_regno_last_def_find, df_find_def, df_find_use,
+	df_refs_chain_dump, df_regs_chain_dump, df_ref_debug,
+	debug_df_ref, df_chain_create, df_chain_unlink, df_chain_copy,
+	df_ref_create, df_ref_remove, df_compute_accessed_bytes,
+	df_get_artificial_defs, df_get_artificial_uses, union_defs)
+	Replaced struct df_ref * with df_ref.
+	* df-scan.c (df_collection_rec, df_null_ref_rec,
+	df_ref_chain_delete_du_chain, df_ref_chain_delete, df_install_ref,
+	df_grow_ref_info, df_ref_create, df_reg_chain_unlink,
+	df_ref_compress_rec, df_ref_remove, df_ref_chain_delete_du_chain,
+	df_ref_chain_delete, df_free_collection_rec, df_insn_rescan,
+	df_reorganize_refs_by_reg_by_reg,
+	df_reorganize_refs_by_reg_by_insn, df_reorganize_refs_by_reg,
+	df_ref_change_reg_with_loc_1, df_notes_rescan, df_swap_refs,
+	df_sort_and_compress_refs, df_install_ref, df_install_refs,
+	df_ref_record, df_get_conditional_uses, df_get_call_refs,
+	df_bb_refs_record, df_exit_block_uses_collect,
+	df_record_exit_block_uses, df_reg_chain_mark,
+	df_reg_chain_verify_unmarked, df_refs_verify): Replaced struct
+	df_ref * with df_ref.
+	(df_ref_record, df_uses_record, df_ref_create_structure): Added
+	df_ref_class parameter.
+	(df_scan_problem_data): Added new pools for different types of
+	refs.
+	(df_scan_free_internal, df_scan_alloc, df_free_ref,
+	df_ref_create_structure): Processed new ref pools.
+	(df_scan_start_dump): Added counts of refs and insns.
+	(df_ref_create, df_notes_rescan, df_def_record_1, df_uses_record,
+	df_get_call_refs, df_insn_refs_collect, df_bb_refs_collect,
+	df_entry_block_defs_collect, df_exit_block_uses_collect): Added
+	code to pass df_ref_class down to ref creation functions.
+	(df_reg_chain_unlink, df_ref_remove, df_ref_change_reg_with_loc_1,
+	df_reg_chain_mark): Use macros to hide references to df_refs.
+	(df_ref_chain_change_bb): Removed.
+	(df_insn_change_bb): Remove calls to df_ref_insn_change_bb.
+	(df_ref_equal_p, df_ref_compare, df_ref_create_structure):
+	Enhanced to understand df_ref union structure.
+	* fwprop.c (local_ref_killed_between_p, use_killed_between,
+	all_uses_available_at, update_df, try_fwprop_subst,
+	forward_propagate_subreg, forward_propagate_and_simplify,
+	forward_propagate_into, fwprop, fwprop_addr): Replaced struct
+	df_ref * with df_ref.
+	(use_killed_between, all_uses_available_at): Use macros to hide
+	references to df_refs.
+	* regstat.c (regstat_bb_compute_ri,
+	regstat_bb_compute_calls_crossed): Replaced struct df_ref * with
+	df_ref.
+	* see.c (see_handle_relevant_defs, see_handle_relevant_uses,
+	see_handle_relevant_refs, see_analyze_one_def,
+	see_update_relevancy, see_propagate_extensions_to_uses): Replaced
+	struct df_ref * with df_ref.
+	* ra-conflict.c (record_one_conflict, clear_reg_in_live,
+	global_conflicts): Replaced struct df_ref * with df_ref.
+	* ddg.c (create_ddg_dep_from_intra_loop_link,
+	add_cross_iteration_register_deps, build_inter_loop_deps):
+	Replaced struct df_ref * with df_ref.
+	(create_ddg_dep_from_intra_loop_link,
+	add_cross_iteration_register_deps): Use macros to hide references
+	to df_refs.
+	* auto-inc-dec.c (find_inc, merge_in_block): Replaced struct
+	df_ref * with df_ref.
+	* df-core.c (df_bb_regno_first_def_find,
+	df_bb_regno_last_def_find, df_find_def, df_find_use,
+	df_refs_chain_dump, df_regs_chain_dump, df_ref_debug,
+	debug_df_ref): Replaced struct df_ref * with df_ref.
+	(df_mws_dump, df_ref_debug): Use macros to hide references to
+	df_refs.
+	* cse.c (cse_extended_basic_block): Replaced struct df_ref * with
+	df_ref.
+	* web.c (union_defs, entry_register, replace_ref, web_main):
+	Replaced struct df_ref * with df_ref.
+	(union_defs, replace_ref): Use macros to hide references to
+	df_refs.
+	* global.c (compute_regs_asm_clobbered, build_insn_chain):
+	Replaced struct df_ref * with df_ref.
+	* ifcvt.c (dead_or_predicable): Replaced struct df_ref * with
+	df_ref.
+	* sel-sched-ir.c (maybe_downgrade_id_to_use, setup_id_reg_sets, ):
+	Replaced struct df_ref * with df_ref.
+	* ira-lives.c (mark_ref_live, def_conflicts_with_inputs_p,
+	mark_ref_dead, process_bb_node_lives): Replaced struct df_ref *
+	with df_ref.
+	* local-alloc.c (block_alloc): Replaced struct df_ref * with
+	df_ref.
+	* df-byte-scan.c (df_compute_accessed_bytes_extract,
+	df_compute_accessed_bytes_strict_low_part,
+	df_compute_accessed_bytes_subreg, df_compute_accessed_bytes):
+	Replaced struct df_ref * with df_ref.
+	(df_compute_accessed_bytes): Use macros to hide references to
+	df_refs.
+	* init-regs.c (initialize_uninitialized_regs): Replaced struct
+	df_ref * with df_ref.
+	* loop-invariant.c (invariant_for_use, hash_invariant_expr_1,
+	check_dependency, check_dependencies, record_uses): Replaced
+	struct df_ref * with df_ref.
+	(invariant_for_use, check_dependency): Use macros to hide
+	references to df_refs.
+	* loop-iv.c (iv_analysis_loop_init, iv_get_reaching_def,
+	get_biv_step_1, get_biv_step, record_iv, iv_analyze_def,
+	iv_analyze, biv_p): Replaced struct df_ref * with df_ref.
+	(iv_analysis_loop_init, iv_get_reaching_def): Use macros to hide
+	references to df_refs.
+	* ira.c (compute_regs_asm_clobbered): Replaced struct df_ref * with df_ref.
+	* combine.c (create_log_links): Replaced struct df_ref * with df_ref.
+	* df-problems.c (df_rd_bb_local_compute_process_def,
+	df_lr_bb_local_compute, df_live_bb_local_compute, df_chain_create,
+	df_chain_unlink_1, df_chain_unlink, df_chain_copy,
+	df_chain_remove_problem, df_chain_create_bb_process_use,
+	df_chain_create_bb, df_chain_top_dump, df_chain_bottom_dump,
+	df_byte_lr_check_regs, df_byte_lr_bb_local_compute,
+	df_byte_lr_simulate_defs, df_byte_lr_simulate_uses,
+	df_byte_lr_simulate_artificial_refs_at_top,
+	df_byte_lr_simulate_artificial_refs_at_end, df_create_unused_note,
+	df_note_bb_compute, df_note_add_problem, df_simulate_defs,
+	df_simulate_uses, df_simulate_artificial_refs_at_end,
+	df_simulate_artificial_refs_at_top): Replaced struct df_ref * with df_ref.
+	(df_chain_dump): Use macros to hide
+	references to df_refs.
+	* config/mips/mips.c (r10k_simplify_address): Replaced struct
+	df_ref * with df_ref.
+	* dce.c (mark_nonreg_stores, delete_corresponding_reg_eq_notes,
+	mark_artificial_uses, mark_reg_dependencies,
+	byte_dce_process_block): Replaced struct df_ref * with df_ref.
+
 2008-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (contains_packed_reference): Mention ARRAY_RANGE_REF in

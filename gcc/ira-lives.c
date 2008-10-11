@@ -266,7 +266,7 @@ mark_reg_live (rtx reg)
 
 /* Mark the register referenced by use or def REF as live.  */
 static void
-mark_ref_live (struct df_ref *ref)
+mark_ref_live (df_ref ref)
 {
   rtx reg;
 
@@ -335,7 +335,7 @@ mark_reg_dead (rtx reg)
 /* Mark the register referenced by definition DEF as dead, if the
    definition is a total one.  */
 static void
-mark_ref_dead (struct df_ref *def)
+mark_ref_dead (df_ref def)
 {
   rtx reg;
 
@@ -356,7 +356,7 @@ mark_early_clobbers (rtx insn, bool live_p)
 {
   int alt;
   int def;
-  struct df_ref **def_rec;
+  df_ref *def_rec;
   bool set_p = false;
 
   for (def = 0; def < recog_data.n_operands; def++)
@@ -702,7 +702,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	 pessimistic, but it probably doesn't matter much in practice.  */
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  struct df_ref **def_rec, **use_rec;
+	  df_ref *def_rec, *use_rec;
 	  bool call_p;
 	  
 	  if (! INSN_P (insn))

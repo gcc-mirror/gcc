@@ -108,8 +108,8 @@ regstat_bb_compute_ri (unsigned int bb_index,
 {
   basic_block bb = BASIC_BLOCK (bb_index);
   rtx insn;
-  struct df_ref **def_rec;
-  struct df_ref **use_rec;
+  df_ref *def_rec;
+  df_ref *use_rec;
   int luid = 0;
   bitmap_iterator bi;
   unsigned int regno;
@@ -126,14 +126,14 @@ regstat_bb_compute_ri (unsigned int bb_index,
      to begin processing.  */
   for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
     {
-      struct df_ref *def = *def_rec;
+      df_ref def = *def_rec;
       if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
 	bitmap_clear_bit (live, DF_REF_REGNO (def));
     }
 
   for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
     {
-      struct df_ref *use = *use_rec;
+      df_ref use = *use_rec;
       if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
 	{
 	  regno = DF_REF_REGNO (use);
@@ -205,7 +205,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
       for (mws_rec = DF_INSN_UID_MWS (uid); *mws_rec; mws_rec++)
 	{
 	  struct df_mw_hardreg *mws = *mws_rec; 
-	  if (mws->type == DF_REF_REG_DEF) 
+	  if (DF_MWS_REG_DEF_P (mws)) 
 	    {
 	      bool all_dead = true;
 	      unsigned int r;
@@ -232,7 +232,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
 	 clobber.  This code is for the return.  */
       for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	{
-	  struct df_ref *def = *def_rec;
+	  df_ref def = *def_rec;
 	  if ((!CALL_P (insn))
 	      || (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
 	    {
@@ -281,7 +281,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
       
       for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  unsigned int uregno = DF_REF_REGNO (use);
 
 	  if (uregno >= FIRST_PSEUDO_REGISTER)
@@ -412,8 +412,8 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 {
   basic_block bb = BASIC_BLOCK (bb_index);
   rtx insn;
-  struct df_ref **def_rec;
-  struct df_ref **use_rec;
+  df_ref *def_rec;
+  df_ref *use_rec;
 
   bitmap_copy (live, df_get_live_out (bb));
 
@@ -421,14 +421,14 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
      to begin processing.  */
   for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
     {
-      struct df_ref *def = *def_rec;
+      df_ref def = *def_rec;
       if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
 	bitmap_clear_bit (live, DF_REF_REGNO (def));
     }
 
   for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
     {
-      struct df_ref *use = *use_rec;
+      df_ref use = *use_rec;
       if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
 	bitmap_set_bit (live, DF_REF_REGNO (use));
     }
@@ -456,7 +456,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 	 clobber.  This code is for the return.  */
       for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	{
-	  struct df_ref *def = *def_rec;
+	  df_ref def = *def_rec;
 	  if ((!CALL_P (insn))
 	      || (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
 	    {
@@ -468,7 +468,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
       
       for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  bitmap_set_bit (live, DF_REF_REGNO (use));
 	}
     }

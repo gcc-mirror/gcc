@@ -487,19 +487,19 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
    between FROM to (but not including) TO.  */
 
 static bool
-local_ref_killed_between_p (struct df_ref * ref, rtx from, rtx to)
+local_ref_killed_between_p (df_ref ref, rtx from, rtx to)
 {
   rtx insn;
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
-      struct df_ref **def_rec;
+      df_ref *def_rec;
       if (!INSN_P (insn))
 	continue;
 
       for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	{
-	  struct df_ref *def = *def_rec;
+	  df_ref def = *def_rec;
 	  if (DF_REF_REGNO (ref) == DF_REF_REGNO (def))
 	    return true;
 	}
@@ -517,12 +517,12 @@ local_ref_killed_between_p (struct df_ref * ref, rtx from, rtx to)
      we check if the definition is killed after DEF_INSN or before
      TARGET_INSN insn, in their respective basic blocks.  */
 static bool
-use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
+use_killed_between (df_ref use, rtx def_insn, rtx target_insn)
 {
   basic_block def_bb = BLOCK_FOR_INSN (def_insn);
   basic_block target_bb = BLOCK_FOR_INSN (target_insn);
   int regno;
-  struct df_ref * def;
+  df_ref def;
 
   /* In some obscure situations we can have a def reaching a use
      that is _before_ the def.  In other words the def does not
@@ -543,7 +543,7 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
   regno = DF_REF_REGNO (use);
   def = DF_REG_DEF_CHAIN (regno);
   if (def
-      && def->next_reg == NULL
+      && DF_REF_NEXT_REG (def) == NULL
       && regno >= FIRST_PSEUDO_REGISTER)
     return false;
 
@@ -555,7 +555,7 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
   if (single_pred_p (target_bb)
       && single_pred (target_bb) == def_bb)
     {
-      struct df_ref *x;
+      df_ref x;
 
       /* See if USE is killed between DEF_INSN and the last insn in the
 	 basic block containing DEF_INSN.  */
@@ -583,7 +583,7 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
 static bool
 all_uses_available_at (rtx def_insn, rtx target_insn)
 {
-  struct df_ref **use_rec;
+  df_ref *use_rec;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (def_insn);
   rtx def_set = single_set (def_insn);
 
@@ -600,14 +600,14 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
          invalid.  */
       for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	}
       for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
-	  if (rtx_equal_p (use->reg, def_reg))
+	  df_ref use = *use_rec;
+	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	}
     }
@@ -617,13 +617,13 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 	 killed between DEF_INSN and TARGET_INSN.  */
       for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  if (use_killed_between (use, def_insn, target_insn))
 	    return false;
 	}
       for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  if (use_killed_between (use, def_insn, target_insn))
 	    return false;
 	}
@@ -682,7 +682,7 @@ find_occurrence (rtx *px, rtx find)
    in the data flow object of the pass.  Mark any new uses as having the
    given TYPE.  */
 static void
-update_df (rtx insn, rtx *loc, struct df_ref **use_rec, enum df_ref_type type,
+update_df (rtx insn, rtx *loc, df_ref *use_rec, enum df_ref_type type,
 	   int new_flags)
 {
   bool changed = false;
@@ -690,8 +690,8 @@ update_df (rtx insn, rtx *loc, struct df_ref **use_rec, enum df_ref_type type,
   /* Add a use for the registers that were propagated.  */
   while (*use_rec)
     {
-      struct df_ref *use = *use_rec;
-      struct df_ref *orig_use = use, *new_use;
+      df_ref use = *use_rec;
+      df_ref orig_use = use, new_use;
       int width = -1;
       int offset = -1;
       enum machine_mode mode = 0;
@@ -731,7 +731,7 @@ update_df (rtx insn, rtx *loc, struct df_ref **use_rec, enum df_ref_type type,
    performed.  */
 
 static bool
-try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new_rtx, rtx def_insn, bool set_reg_equal)
+try_fwprop_subst (df_ref use, rtx *loc, rtx new_rtx, rtx def_insn, bool set_reg_equal)
 {
   rtx insn = DF_REF_INSN (use);
   enum df_ref_type type = DF_REF_TYPE (use);
@@ -821,7 +821,7 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new_rtx, rtx def_insn, bool 
 /* If USE is a paradoxical subreg, see if it can be replaced by a pseudo.  */
 
 static bool
-forward_propagate_subreg (struct df_ref *use, rtx def_insn, rtx def_set)
+forward_propagate_subreg (df_ref use, rtx def_insn, rtx def_set)
 {
   rtx use_reg = DF_REF_REG (use);
   rtx use_insn, src;
@@ -856,7 +856,7 @@ forward_propagate_subreg (struct df_ref *use, rtx def_insn, rtx def_set)
    result.  */
 
 static bool
-forward_propagate_and_simplify (struct df_ref *use, rtx def_insn, rtx def_set)
+forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
 {
   rtx use_insn = DF_REF_INSN (use);
   rtx use_set = single_set (use_insn);
@@ -952,10 +952,10 @@ forward_propagate_and_simplify (struct df_ref *use, rtx def_insn, rtx def_set)
    definition, try to forward propagate it into that insn.  */
 
 static void
-forward_propagate_into (struct df_ref *use)
+forward_propagate_into (df_ref use)
 {
   struct df_link *defs;
-  struct df_ref *def;
+  df_ref def;
   rtx def_insn, def_set, use_insn;
   rtx parent;
 
@@ -1064,7 +1064,7 @@ fwprop (void)
 
   for (i = 0; i < DF_USES_TABLE_SIZE (); i++)
     {
-      struct df_ref *use = DF_USES_GET (i);
+      df_ref use = DF_USES_GET (i);
       if (use)
 	if (DF_REF_TYPE (use) == DF_REF_REG_USE
 	    || DF_REF_BB (use)->loop_father == NULL
@@ -1109,7 +1109,7 @@ fwprop_addr (void)
 
   for (i = 0; i < DF_USES_TABLE_SIZE (); i++)
     {
-      struct df_ref *use = DF_USES_GET (i);
+      df_ref use = DF_USES_GET (i);
       if (use)
 	if (DF_REF_TYPE (use) != DF_REF_REG_USE
 	    && DF_REF_BB (use)->loop_father != NULL

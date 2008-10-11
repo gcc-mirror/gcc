@@ -54,7 +54,7 @@ HOST_WIDE_INT max_bitnum;
 alloc_pool adjacency_pool;
 adjacency_t **adjacency;
 
-typedef struct df_ref * df_ref_t;
+typedef df_ref df_ref_t;
 DEF_VEC_P(df_ref_t);
 DEF_VEC_ALLOC_P(df_ref_t,heap);
 
@@ -278,7 +278,7 @@ record_one_conflict (sparseset allocnos_live,
 static void
 mark_reg_store (sparseset allocnos_live, 
 		HARD_REG_SET *hard_regs_live, 
-		struct df_ref *ref)
+		df_ref ref)
 {
   rtx reg = DF_REF_REG (ref);
   unsigned int regno = DF_REF_REGNO (ref);
@@ -448,7 +448,7 @@ clear_reg_in_live (sparseset allocnos_live,
 		   sbitmap *live_subregs, 
 		   int *live_subregs_used,
 		   HARD_REG_SET *hard_regs_live, 
-		   rtx reg, struct df_ref *def)
+		   rtx reg, df_ref def)
 {
   unsigned int regno = (GET_CODE (reg) == SUBREG) 
     ? REGNO (SUBREG_REG (reg)): REGNO (reg);
@@ -813,8 +813,8 @@ global_conflicts (void)
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
 	  unsigned int uid = INSN_UID (insn);
-	  struct df_ref **def_rec;
-	  struct df_ref **use_rec;
+	  df_ref *def_rec;
+	  df_ref *use_rec;
 
 	  if (!INSN_P (insn))
 	    continue;	
@@ -849,7 +849,7 @@ global_conflicts (void)
 	     later.  */
 	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	    {
-	      struct df_ref *def = *def_rec;
+	      df_ref def = *def_rec;
 
 	      /* FIXME: Ignoring may clobbers is technically the wrong
 		 thing to do.  However the old version of the this
@@ -880,7 +880,7 @@ global_conflicts (void)
 	  /* Add the interferences for the defs.  */
 	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	    {
-	      struct df_ref *def = *def_rec;
+	      df_ref def = *def_rec;
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
 		mark_reg_store (allocnos_live, &renumbers_live, def);
 	    }
@@ -891,7 +891,7 @@ global_conflicts (void)
 	  VEC_truncate (df_ref_t, clobbers, 0);
 	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	    {
-	      struct df_ref *def = *def_rec;
+	      df_ref def = *def_rec;
 
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL))
 		{
@@ -931,7 +931,7 @@ global_conflicts (void)
 	  VEC_truncate (df_ref_t, dying_regs, 0);
 	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 	    {
-	      struct df_ref *use = *use_rec;
+	      df_ref use = *use_rec;
 	      unsigned int regno = DF_REF_REGNO (use);
 	      bool added = false;
 	      int renumber = reg_renumber[regno];
@@ -1079,12 +1079,12 @@ global_conflicts (void)
 		fprintf (dump_file, "  clobber conflicts\n");
 	      for (k = VEC_length (df_ref_t, clobbers) - 1; k >= 0; k--)
 		{
-		  struct df_ref *def = VEC_index (df_ref_t, clobbers, k);
+		  df_ref def = VEC_index (df_ref_t, clobbers, k);
 		  int j;
 
 		  for (j = VEC_length (df_ref_t, dying_regs) - 1; j >= 0; j--)
 		    {
-		      struct df_ref *use = VEC_index (df_ref_t, dying_regs, j);
+		      df_ref use = VEC_index (df_ref_t, dying_regs, j);
 		      record_one_conflict_between_regnos (GET_MODE (DF_REF_REG (def)),
 							  DF_REF_REGNO (def),
 							  GET_MODE (DF_REF_REG (use)),
@@ -1143,7 +1143,7 @@ global_conflicts (void)
 		  for (j = VEC_length (df_ref_t, dying_regs) - 1; j >= 0; j--)
 		    {
 		      int used_in_output = 0;
-		      struct df_ref *use = VEC_index (df_ref_t, dying_regs, j);
+		      df_ref use = VEC_index (df_ref_t, dying_regs, j);
 		      rtx reg = DF_REF_REG (use);
 		      int uregno = DF_REF_REGNO (use);
 		      enum machine_mode umode = GET_MODE (DF_REF_REG (use));

@@ -2552,7 +2552,7 @@ maybe_downgrade_id_to_use (idata_t id, insn_t insn)
 {
   bool must_be_use = false;
   unsigned uid = INSN_UID (insn);
-  struct df_ref **rec;
+  df_ref *rec;
   rtx lhs = IDATA_LHS (id);
   rtx rhs = IDATA_RHS (id);
   
@@ -2568,7 +2568,7 @@ maybe_downgrade_id_to_use (idata_t id, insn_t insn)
   
   for (rec = DF_INSN_UID_DEFS (uid); *rec; rec++)
     {
-      struct df_ref *def = *rec;
+      df_ref def = *rec;
       
       if (DF_REF_INSN (def)
           && DF_REF_FLAGS_IS_SET (def, DF_REF_PRE_POST_MODIFY)
@@ -2598,12 +2598,12 @@ static void
 setup_id_reg_sets (idata_t id, insn_t insn)
 {
   unsigned uid = INSN_UID (insn);
-  struct df_ref **rec;
+  df_ref *rec;
   regset tmp = get_clear_regset_from_pool ();
   
   for (rec = DF_INSN_UID_DEFS (uid); *rec; rec++)
     {
-      struct df_ref *def = *rec;
+      df_ref def = *rec;
       unsigned int regno = DF_REF_REGNO (def);
       
       /* Post modifies are treated like clobbers by sched-deps.c.  */
@@ -2629,7 +2629,7 @@ setup_id_reg_sets (idata_t id, insn_t insn)
       
   for (rec = DF_INSN_UID_USES (uid); *rec; rec++)
     {
-      struct df_ref *use = *rec;
+      df_ref use = *rec;
       unsigned int regno = DF_REF_REGNO (use);
 
       /* When these refs are met for the first time, skip them, as

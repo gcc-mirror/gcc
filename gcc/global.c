@@ -165,11 +165,11 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
       rtx insn;
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  struct df_ref **def_rec;
+	  df_ref *def_rec;
 	  if (insn_contains_asm (insn))
 	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	      {
-		struct df_ref *def = *def_rec;
+		df_ref def = *def_rec;
 		unsigned int dregno = DF_REF_REGNO (def);
 		if (dregno < FIRST_PSEUDO_REGISTER)
 		  {
@@ -1448,8 +1448,8 @@ build_insn_chain (void)
 	  if (!NOTE_P (insn) && !BARRIER_P (insn))
 	    {
 	      unsigned int uid = INSN_UID (insn);
-	      struct df_ref **def_rec;
-	      struct df_ref **use_rec;
+	      df_ref *def_rec;
+	      df_ref *use_rec;
 
 	      c = new_insn_chain ();
 	      c->next = next;
@@ -1463,7 +1463,7 @@ build_insn_chain (void)
 	      if (INSN_P (insn))
 		for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 		  {
-		    struct df_ref *def = *def_rec;
+		    df_ref def = *def_rec;
 		    unsigned int regno = DF_REF_REGNO (def);
 		    
 		    /* Ignore may clobbers because these are generated
@@ -1555,7 +1555,7 @@ build_insn_chain (void)
 	      if (INSN_P (insn))
 		for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		  {
-		    struct df_ref *use = *use_rec;
+		    df_ref use = *use_rec;
 		    unsigned int regno = DF_REF_REGNO (use);
 		    rtx reg = DF_REF_REG (use);
 		    
