@@ -1,3 +1,8 @@
+2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35680
+	* gfortran.dg/transfer_array_intrinsic_5.f90: New test.
+
 2008-10-08  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/35437

@@ -1,3 +1,12 @@
+2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35680
+	* gfortran.h : Add 'error' bit field to gfc_expr structure.
+	* expr.c (check_inquiry): When checking a restricted expression
+	check that arguments are either variables or restricted.
+	(check_restricted): Do not emit error if the expression has
+	'error' set.  Clean up detection of host-associated variable.
+
 2008-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37706

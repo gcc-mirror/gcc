@@ -1432,6 +1432,10 @@ typedef struct gfc_expr
      and if we have decided not to allocate temporary data for that array.  */
   unsigned int inline_noncopying_intrinsic : 1, is_boz : 1;
 
+  /* Sometimes, when an error has been emitted, it is necessary to prevent
+      it from recurring.  */
+  unsigned int error : 1;
+
   /* Used to quickly find a given constructor by its offset.  */
   splay_tree con_by_offset;
 
