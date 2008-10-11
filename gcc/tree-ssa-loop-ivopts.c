@@ -632,7 +632,7 @@ static bool
 idx_contains_abnormal_ssa_name_p (tree base, tree *index,
 				  void *data ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (base) == ARRAY_REF)
+  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
       if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
 	return false;
@@ -1356,8 +1356,13 @@ idx_find_step (tree base, tree *idx, void *data)
      reference out of the loop (in order to take its address in strength
      reduction).  In order for this to work we need both lower bound
      and step to be loop invariants.  */
-  if (TREE_CODE (base) == ARRAY_REF)
+  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
+      /* Moreover, for a range, the size needs to be invariant as well.  */
+      if (TREE_CODE (base) == ARRAY_RANGE_REF
+	  && !expr_invariant_in_loop_p (loop, TYPE_SIZE (TREE_TYPE (base))))
+	return false;
+
       step = array_ref_element_size (base);
       lbound = array_ref_low_bound (base);
 
@@ -1381,7 +1386,7 @@ idx_find_step (tree base, tree *idx, void *data)
   if (integer_zerop (iv->step))
     return true;
 
-  if (TREE_CODE (base) == ARRAY_REF)
+  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
       step = array_ref_element_size (base);
 
@@ -1418,7 +1423,7 @@ idx_record_use (tree base, tree *idx,
 {
   struct ivopts_data *data = (struct ivopts_data *) vdata;
   find_interesting_uses_op (data, *idx);
-  if (TREE_CODE (base) == ARRAY_REF)
+  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
       find_interesting_uses_op (data, array_ref_element_size (base));
       find_interesting_uses_op (data, array_ref_low_bound (base));
@@ -1918,6 +1923,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       return fold_convert (orig_type, expr);
 
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       if (!inside_addr)
 	return orig_expr;
 
@@ -5180,7 +5186,7 @@ idx_remove_ssa_names (tree base, tree *idx,
   if (TREE_CODE (*idx) == SSA_NAME)
     *idx = SSA_NAME_VAR (*idx);
 
-  if (TREE_CODE (base) == ARRAY_REF)
+  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
       op = &TREE_OPERAND (base, 2);
       if (*op
