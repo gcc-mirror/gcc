@@ -272,3 +272,13 @@ Double-precision floating point unit
 msimple-fpu
 Target RejectNegative Var(rs6000_simple_fpu)
 Floating point unit does not support divide & sqrt
+
+mfpu=
+Target RejectNegative Joined 
+-mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)
+
+mxilinx-fpu
+Target Var(rs6000_xilinx_fpu)
+Specify Xilinx FPU.
+
+
