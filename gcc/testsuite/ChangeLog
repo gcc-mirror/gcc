@@ -1,3 +1,8 @@
+2008-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization5.adb: New test.
+	* gnat.dg/loop_optimization5_pkg.adb: New helper.
+
 2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37794

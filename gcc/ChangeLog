@@ -1,3 +1,21 @@
+2008-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (contains_packed_reference): Mention ARRAY_RANGE_REF in
+	head comment.
+	(array_ref_element_size): Likewise.
+	(array_ref_low_bound): Likewise.
+	(array_ref_up_bound): Likewise.
+	* expr.c (contains_packed_reference): Likewise.
+	(array_ref_element_size): Likewise.
+	(array_ref_low_bound): Likewise.
+	(array_ref_up_bound): Likewise.
+	* tree-ssa-loop-ivopts.c (idx_contains_abnormal_ssa_name_p): Deal
+	with ARRAY_RANGE_REF.
+	(idx_find_step): Likewise.
+	(idx_record_use): Likewise.
+	(strip_offset_1): Likewise.
+	(idx_remove_ssa_names): Likewise.
+
 2008-10-11  Uros Bizjak  <ubizjak@gmail.com>
 	    Andi Kleen  <ak@linux.intel.com>
 
