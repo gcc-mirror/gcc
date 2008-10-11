@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
    df_compute_accessed_bytes for a description of MM.  */ 
 
 static bool 
-df_compute_accessed_bytes_extract (struct df_ref *ref,
+df_compute_accessed_bytes_extract (df_ref ref,
 				   enum df_mm mm ,
 				   unsigned int *start_byte, 
 				   unsigned int *last_byte)
@@ -148,7 +148,7 @@ df_compute_accessed_bytes_extract (struct df_ref *ref,
    otherwise and set START_BYTE and LAST_BYTE.  */ 
 
 static bool 
-df_compute_accessed_bytes_strict_low_part (struct df_ref *ref, 
+df_compute_accessed_bytes_strict_low_part (df_ref ref, 
 					   unsigned int *start_byte, 
 					   unsigned int *last_byte)
 {
@@ -200,7 +200,7 @@ df_compute_accessed_bytes_strict_low_part (struct df_ref *ref,
    otherwise and set START_BYTE and LAST_BYTE.  */ 
 
 static bool 
-df_compute_accessed_bytes_subreg (struct df_ref *ref, unsigned int *start_byte, 
+df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte, 
 				  unsigned int *last_byte)
 
 {
@@ -229,7 +229,7 @@ df_compute_accessed_bytes_subreg (struct df_ref *ref, unsigned int *start_byte,
     return true;
 
   /* Defs and uses are different in the amount of the reg that touch.  */
-  if (DF_REF_TYPE (ref) == DF_REF_REG_DEF)
+  if (DF_REF_REG_DEF_P (ref))
     {
       /* This is an lvalue.  */ 
 
@@ -300,14 +300,14 @@ df_compute_accessed_bytes_subreg (struct df_ref *ref, unsigned int *start_byte,
    This means that this use can be ignored.  */
 
 bool 
-df_compute_accessed_bytes (struct df_ref *ref, enum df_mm mm, 
+df_compute_accessed_bytes (df_ref ref, enum df_mm mm, 
 			   unsigned int *start_byte, 
 			   unsigned int *last_byte)
 {
   if (!dbg_cnt (df_byte_scan))
     return true;
 
-  if (DF_REF_TYPE (ref) != DF_REF_REG_DEF 
+  if (!DF_REF_REG_DEF_P (ref) 
       && DF_REF_FLAGS_IS_SET (ref, DF_REF_READ_WRITE))
     {
       if (DF_REF_FLAGS_IS_SET (ref, DF_REF_PRE_POST_MODIFY))

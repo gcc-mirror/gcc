@@ -12105,7 +12105,7 @@ static rtx
 r10k_simplify_address (rtx x, rtx insn)
 {
   rtx newx, op0, op1, set, def_insn, note;
-  struct df_ref *use, *def;
+  df_ref use, def;
   struct df_link *defs;
 
   newx = NULL_RTX;

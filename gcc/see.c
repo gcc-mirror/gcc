@@ -3242,7 +3242,7 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
    happened and the optimization should be aborted.  */
 
 static int
-see_handle_relevant_defs (struct df_ref *ref, rtx insn)
+see_handle_relevant_defs (df_ref ref, rtx insn)
 {
   struct web_entry *root_entry = NULL;
   rtx se_insn = NULL;
@@ -3311,7 +3311,7 @@ see_handle_relevant_defs (struct df_ref *ref, rtx insn)
    happened and the optimization should be aborted.  */
 
 static int
-see_handle_relevant_uses (struct df_ref *ref, rtx insn)
+see_handle_relevant_uses (df_ref ref, rtx insn)
 {
   struct web_entry *root_entry = NULL;
   rtx se_insn = NULL;
@@ -3367,12 +3367,12 @@ see_handle_relevant_refs (void)
 
 	  if (INSN_P (insn))
 	    {
-	      struct df_ref **use_rec;
-	      struct df_ref **def_rec;
+	      df_ref *use_rec;
+	      df_ref *def_rec;
 	      
 	      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  int result = see_handle_relevant_uses (use, insn);
 		  if (result == -1)
 		    return -1;
@@ -3380,7 +3380,7 @@ see_handle_relevant_refs (void)
 		}
 	      for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  int result = see_handle_relevant_uses (use, insn);
 		  if (result == -1)
 		    return -1;
@@ -3388,7 +3388,7 @@ see_handle_relevant_refs (void)
 		}
 	      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 		{
-		  struct df_ref *def = *def_rec;
+		  df_ref def = *def_rec;
 		  int result = see_handle_relevant_defs (def, insn);
 		  if (result == -1)
 		    return -1;
@@ -3404,7 +3404,7 @@ see_handle_relevant_refs (void)
 /* Initialized the use_entry field for REF in INSN at INDEX with ET.  */
 
 static void
-see_update_uses_relevancy (rtx insn, struct df_ref *ref, 
+see_update_uses_relevancy (rtx insn, df_ref ref, 
 			   enum entry_type et, unsigned int index)
 {
   struct see_entry_extra_info *curr_entry_extra_info;
@@ -3585,7 +3585,7 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 /* Initialized the def_entry field for REF in INSN at INDEX with ET.  */
 
 static void
-see_update_defs_relevancy (rtx insn, struct df_ref *ref,
+see_update_defs_relevancy (rtx insn, df_ref ref,
 			   enum entry_type et,
 			   enum machine_mode source_mode,
 			   enum machine_mode source_mode_unsigned,
@@ -3685,8 +3685,8 @@ see_update_relevancy (void)
 
   FOR_ALL_BB (bb)
     {
-      struct df_ref **use_rec;
-      struct df_ref **def_rec;
+      df_ref *use_rec;
+      df_ref *def_rec;
       rtx insn;
       FOR_BB_INSNS (bb, insn)
 	{
@@ -3697,14 +3697,14 @@ see_update_relevancy (void)
 
 	      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  see_update_uses_relevancy (insn, use, et, u);
 		  u++;
 		}
 	      
 	      for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  see_update_uses_relevancy (insn, use, et, u);
 		  u++;
 		}
@@ -3712,7 +3712,7 @@ see_update_relevancy (void)
 	      et = see_analyze_one_def (insn, &source_mode, &source_mode_unsigned);
 	      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 		{
-		  struct df_ref *def = *def_rec;
+		  df_ref def = *def_rec;
 		  see_update_defs_relevancy (insn, def, et, source_mode, 
 					       source_mode_unsigned, d);
 		  d++;
@@ -3722,14 +3722,14 @@ see_update_relevancy (void)
       
       for (use_rec = df_get_artificial_uses (bb->index); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  see_update_uses_relevancy (NULL, use, NOT_RELEVANT, u);
 	  u++;
 	}
 
       for (def_rec = df_get_artificial_defs (bb->index); *def_rec; def_rec++)
 	{
-	  struct df_ref *def = *def_rec;
+	  df_ref def = *def_rec;
 	  see_update_defs_relevancy (NULL, def, NOT_RELEVANT, 
 				       MAX_MACHINE_MODE, MAX_MACHINE_MODE, d);
 	  d++;
@@ -3766,7 +3766,7 @@ see_propagate_extensions_to_uses (void)
   FOR_ALL_BB (bb)
     {
       rtx insn;
-      struct df_ref **use_rec;
+      df_ref *use_rec;
 
       FOR_BB_INSNS (bb, insn)
 	{
@@ -3775,13 +3775,13 @@ see_propagate_extensions_to_uses (void)
 	    {
 	      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  union_defs (use, def_entry, use_entry, see_update_leader_extra_info);
 		}
 	      
 	      for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
 		{
-		  struct df_ref *use = *use_rec;
+		  df_ref use = *use_rec;
 		  union_defs (use, def_entry, use_entry, see_update_leader_extra_info);
 		}
 	    }
@@ -3789,7 +3789,7 @@ see_propagate_extensions_to_uses (void)
 
       for (use_rec = df_get_artificial_uses (bb->index); *use_rec; use_rec++)
 	{
-	  struct df_ref *use = *use_rec;
+	  df_ref use = *use_rec;
 	  union_defs (use, def_entry, use_entry, see_update_leader_extra_info);
 	}
     }

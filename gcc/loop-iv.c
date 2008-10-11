@@ -293,15 +293,15 @@ iv_analysis_loop_init (struct loop *loop)
    is set to NULL and true is returned.  */
 
 static bool
-latch_dominating_def (rtx reg, struct df_ref **def)
+latch_dominating_def (rtx reg, df_ref *def)
 {
-  struct df_ref *single_rd = NULL, *adef;
+  df_ref single_rd = NULL, adef;
   unsigned regno = REGNO (reg);
   struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (current_loop->latch);
 
-  for (adef = DF_REG_DEF_CHAIN (regno); adef; adef = adef->next_reg)
+  for (adef = DF_REG_DEF_CHAIN (regno); adef; adef = DF_REF_NEXT_REG (adef))
     {
-      if (!bitmap_bit_p (df->blocks_to_analyze, DF_REF_BB (adef)->index)
+      if (!bitmap_bit_p (df->blocks_to_analyze, DF_REF_BBNO (adef))
 	  || !bitmap_bit_p (bb_info->out, DF_REF_ID (adef)))
 	continue;
 
@@ -322,9 +322,9 @@ latch_dominating_def (rtx reg, struct df_ref **def)
 /* Gets definition of REG reaching its use in INSN and stores it to DEF.  */
 
 static enum iv_grd_result
-iv_get_reaching_def (rtx insn, rtx reg, struct df_ref **def)
+iv_get_reaching_def (rtx insn, rtx reg, df_ref *def)
 {
-  struct df_ref *use, *adef;
+  df_ref use, adef;
   basic_block def_bb, use_bb;
   rtx def_insn;
   bool dom_p;
@@ -349,7 +349,7 @@ iv_get_reaching_def (rtx insn, rtx reg, struct df_ref **def)
   adef = DF_REF_CHAIN (use)->ref;
 
   /* We do not handle setting only part of the register.  */
-  if (adef->flags & DF_REF_READ_WRITE)
+  if (DF_REF_FLAGS (adef) & DF_REF_READ_WRITE)
     return GRD_INVALID;
 
   def_insn = DF_REF_INSN (adef);
@@ -616,7 +616,7 @@ iv_shift (struct rtx_iv *iv, rtx mby)
    at get_biv_step.  */
 
 static bool
-get_biv_step_1 (struct df_ref *def, rtx reg,
+get_biv_step_1 (df_ref def, rtx reg,
 		rtx *inner_step, enum machine_mode *inner_mode,
 		enum rtx_code *extend, enum machine_mode outer_mode,
 		rtx *outer_step)
@@ -625,7 +625,7 @@ get_biv_step_1 (struct df_ref *def, rtx reg,
   rtx next, nextr, tmp;
   enum rtx_code code;
   rtx insn = DF_REF_INSN (def);
-  struct df_ref *next_def;
+  df_ref next_def;
   enum iv_grd_result res;
 
   set = single_set (insn);
@@ -783,7 +783,7 @@ get_biv_step_1 (struct df_ref *def, rtx reg,
    LAST_DEF is the definition of REG that dominates loop latch.  */
 
 static bool
-get_biv_step (struct df_ref *last_def, rtx reg, rtx *inner_step,
+get_biv_step (df_ref last_def, rtx reg, rtx *inner_step,
 	      enum machine_mode *inner_mode, enum rtx_code *extend,
 	      enum machine_mode *outer_mode, rtx *outer_step)
 {
@@ -803,7 +803,7 @@ get_biv_step (struct df_ref *last_def, rtx reg, rtx *inner_step,
 /* Records information that DEF is induction variable IV.  */
 
 static void
-record_iv (struct df_ref *def, struct rtx_iv *iv)
+record_iv (df_ref def, struct rtx_iv *iv)
 {
   struct rtx_iv *recorded_iv = XNEW (struct rtx_iv);
 
@@ -849,7 +849,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   rtx inner_step, outer_step;
   enum machine_mode inner_mode, outer_mode;
   enum rtx_code extend;
-  struct df_ref *last_def;
+  df_ref last_def;
 
   if (dump_file)
     {
@@ -1042,7 +1042,7 @@ iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
 /* Analyzes iv DEF and stores the result to *IV.  */
 
 static bool
-iv_analyze_def (struct df_ref *def, struct rtx_iv *iv)
+iv_analyze_def (df_ref def, struct rtx_iv *iv)
 {
   rtx insn = DF_REF_INSN (def);
   rtx reg = DF_REF_REG (def);
@@ -1107,7 +1107,7 @@ iv_analyze_def (struct df_ref *def, struct rtx_iv *iv)
 static bool
 iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 {
-  struct df_ref *def = NULL;
+  df_ref def = NULL;
   enum iv_grd_result res;
 
   if (dump_file)
@@ -1190,7 +1190,7 @@ iv_analyze (rtx insn, rtx val, struct rtx_iv *iv)
 bool
 iv_analyze_result (rtx insn, rtx def, struct rtx_iv *iv)
 {
-  struct df_ref *adef;
+  df_ref adef;
 
   adef = df_find_def (insn, def);
   if (!adef)
@@ -1207,7 +1207,7 @@ bool
 biv_p (rtx insn, rtx reg)
 {
   struct rtx_iv iv;
-  struct df_ref *def, *last_def;
+  df_ref def, last_def;
 
   if (!simple_reg_p (reg))
     return false;

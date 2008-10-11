@@ -1279,7 +1279,7 @@ block_alloc (basic_block b)
   int insn_count = 0;
   int max_uid = get_max_uid ();
   int *qty_order;
-  struct df_ref ** def_rec;
+  df_ref *def_rec;
 
   /* Count the instructions in the basic block.  */
 

@@ -70,13 +70,13 @@ initialize_uninitialized_regs (void)
       FOR_BB_INSNS (bb, insn)
 	{
 	  unsigned int uid = INSN_UID (insn);
-	  struct df_ref **use_rec;
+	  df_ref *use_rec;
 	  if (!INSN_P (insn))
 	    continue;
 
 	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 	    {
-	      struct df_ref *use = *use_rec;
+	      df_ref use = *use_rec;
 	      unsigned int regno = DF_REF_REGNO (use);
 
 	      /* Only do this for the pseudos.  */
