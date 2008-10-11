@@ -305,6 +305,7 @@ enum processor_type
 #define TARGET_DOUBLE_FLOAT 1
 #define TARGET_SINGLE_FPU   0
 #define TARGET_SIMPLE_FPU   0
+#define TARGET_XILINX_FPU   0
 
 extern enum processor_type rs6000_cpu;
 
@@ -320,6 +321,18 @@ extern enum processor_type rs6000_cpu;
 /* Define the default processor.  This is overridden by other tm.h files.  */
 #define PROCESSOR_DEFAULT   PROCESSOR_RIOS1
 #define PROCESSOR_DEFAULT64 PROCESSOR_RS64A
+
+/* FP processor type.  */
+enum fpu_type_t
+{
+	FPU_NONE,		/* No FPU */
+	FPU_SF_LITE,		/* Limited Single Precision FPU */
+	FPU_DF_LITE,		/* Limited Double Precision FPU */
+	FPU_SF_FULL,		/* Full Single Precision FPU */
+	FPU_DF_FULL		/* Full Double Single Precision FPU */
+};
+
+extern enum fpu_type_t fpu_type;
 
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one
    and the old mnemonics are dialect zero.  */
@@ -393,6 +406,7 @@ extern int rs6000_float_gprs;
 extern int rs6000_alignment_flags;
 extern const char *rs6000_sched_insert_nops_str;
 extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
+extern int rs6000_xilinx_fpu;
 
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.

@@ -649,6 +649,7 @@ Objective-C and Objective-C++ Dialects}.
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
 -mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
+-mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
 -mips3d  -mno-mips3d  -mmt  -mno-mt  -mllsc  -mno-llsc @gol
@@ -13655,6 +13656,17 @@ Generate code for single or double-precision floating point operations.
 @item -msimple-fpu
 @opindex msimple-fpu
 Do not generate sqrt and div instructions for hardware floating point unit.
+
+@item -mfpu
+@opindex mfpu
+Specify type of floating point unit.  Valid values are @var{sp_lite} 
+(equivalent to -msingle-float -msimple-fpu), @var{dp_lite} (equivalent
+to -mdouble-float -msimple-fpu), @var{sp_full} (equivalent to -msingle-float),
+and @var{dp_full} (equivalent to -mdouble-float).
+
+@item -mxilinx-fpu
+@opindex mxilinx-fpu
+Perform optimizations for floating point unit on Xilinx PPC 405/440.
 
 @item -mmultiple
 @itemx -mno-multiple
