@@ -1,3 +1,13 @@
+2008-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/37447
+	* Makefile.in (reload1.o): Depend on EMIT_RTL_H.
+	* alias.c (value_addr_p, stack_addr_p): Remove.
+	(nonoverlapping_memrefs_p): Remove IRA special case.
+	* emit-rtl.c (get_spill_slot_decl, set_mem_attrs_for_spill): New.
+	* emit-rtl.h (set_mem_attrs_for_spill): Declare.
+	* reload1.c (alter_reg): Use it.
+
 2008-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/driver-i386.c (detect_caches_cpuid2): Use array

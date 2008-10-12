@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "df.h"
 #include "target.h"
-#include "dse.h"
+#include "emit-rtl.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
@@ -2150,22 +2150,25 @@ alter_reg (int i, int from_reg, bool dont_share_p)
       && (reg_equiv_invariant[i] == 0 || reg_equiv_init[i] == 0)
       && reg_equiv_memory_loc[i] == 0)
     {
-      rtx x;
+      rtx x = NULL_RTX;
       enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
       unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
       unsigned int total_size = MAX (inherent_size, reg_max_ref_width[i]);
       unsigned int min_align = reg_max_ref_width[i] * BITS_PER_UNIT;
       int adjust = 0;
-      bool shared_p = false;
 
       if (flag_ira && optimize)
-	/* Mark the spill for IRA.  */
-	SET_REGNO_REG_SET (&spilled_pseudos, i);
-      x = (dont_share_p || ! flag_ira || ! optimize
-	   ? NULL_RTX : ira_reuse_stack_slot (i, inherent_size, total_size));
+	{
+	  /* Mark the spill for IRA.  */
+	  SET_REGNO_REG_SET (&spilled_pseudos, i);
+	  if (!dont_share_p)
+	    x = ira_reuse_stack_slot (i, inherent_size, total_size);
+	}
+
       if (x)
-	shared_p = true;
+	;
+
       /* Each pseudo reg has an inherent size which comes from its own mode,
 	 and a total size which provides room for paradoxical subregs
 	 which refer to the pseudo reg in wider modes.
@@ -2174,10 +2177,9 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	 enough inherent space and enough total space.
 	 Otherwise, we allocate a new slot, making sure that it has no less
 	 inherent space, and no less total space, then the previous slot.  */
-      else if (from_reg == -1 || (! dont_share_p && flag_ira && optimize))
+      else if (from_reg == -1 || (!dont_share_p && flag_ira && optimize))
 	{
 	  rtx stack_slot;
-	  alias_set_type alias_set = new_alias_set ();
 
 	  /* No known place to spill from => no slot to reuse.  */
 	  x = assign_stack_local (mode, total_size,
@@ -2186,12 +2188,11 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 
 	  stack_slot = x;
 
+	  /* Cancel the big-endian correction done in assign_stack_local.
+	     Get the address of the beginning of the slot.  This is so we
+	     can do a big-endian correction unconditionally below.  */
 	  if (BYTES_BIG_ENDIAN)
 	    {
-	      /* Cancel the  big-endian correction done in assign_stack_local.
-		 Get the address of the beginning of the slot.
-		 This is so we can do a big-endian correction unconditionally
-		 below.  */
 	      adjust = inherent_size - total_size;
 	      if (adjust)
 		stack_slot
@@ -2200,10 +2201,6 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 						         MODE_INT, 1),
 				       adjust);
 	    }
-
-	  /* Nothing can alias this slot except this pseudo.  */
-	  set_mem_alias_set (x, alias_set);
-	  dse_record_singleton_alias_set (alias_set, mode);
 
 	  if (! dont_share_p && flag_ira && optimize)
 	    /* Inform IRA about allocation a new stack slot.  */
@@ -2217,6 +2214,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 		   >= inherent_size)
 	       && MEM_ALIGN (spill_stack_slot[from_reg]) >= min_align)
 	x = spill_stack_slot[from_reg];
+
       /* Allocate a bigger slot.  */
       else
 	{
@@ -2241,27 +2239,11 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 				  || total_size > inherent_size ? -1 : 0);
 	  stack_slot = x;
 
-	  /* All pseudos mapped to this slot can alias each other.  */
-	  if (spill_stack_slot[from_reg])
-	    {
-	      alias_set_type alias_set 
-		= MEM_ALIAS_SET (spill_stack_slot[from_reg]);
-	      set_mem_alias_set (x, alias_set);
-	      dse_invalidate_singleton_alias_set (alias_set);
-	    }
-	  else
-	    {
-	      alias_set_type alias_set = new_alias_set ();
-	      set_mem_alias_set (x, alias_set);
-	      dse_record_singleton_alias_set (alias_set, mode);
-	    }
-
+	  /* Cancel the  big-endian correction done in assign_stack_local.
+	     Get the address of the beginning of the slot.  This is so we
+	     can do a big-endian correction unconditionally below.  */
 	  if (BYTES_BIG_ENDIAN)
 	    {
-	      /* Cancel the  big-endian correction done in assign_stack_local.
-		 Get the address of the beginning of the slot.
-		 This is so we can do a big-endian correction unconditionally
-		 below.  */
 	      adjust = GET_MODE_SIZE (mode) - total_size;
 	      if (adjust)
 		stack_slot
@@ -2284,30 +2266,8 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	 wrong mode, make a new stack slot.  */
       x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
 
-      /* If we have a decl for the original register, set it for the
-	 memory.  If this is a shared MEM, make a copy.  */
-      if (shared_p)
-	{
-	  x = copy_rtx (x);
-	  set_mem_attrs_from_reg (x, regno_reg_rtx[i]);
-	}
-      else if (REG_EXPR (regno_reg_rtx[i])
-	       && DECL_P (REG_EXPR (regno_reg_rtx[i])))
-	{
-	  rtx decl = DECL_RTL_IF_SET (REG_EXPR (regno_reg_rtx[i]));
-
-	  /* We can do this only for the DECLs home pseudo, not for
-	     any copies of it, since otherwise when the stack slot
-	     is reused, nonoverlapping_memrefs_p might think they
-	     cannot overlap.  */
-	  if (decl && REG_P (decl) && REGNO (decl) == (unsigned) i)
-	    {
-	      if (from_reg != -1 && spill_stack_slot[from_reg] == x)
-		x = copy_rtx (x);
-
-	      set_mem_attrs_from_reg (x, regno_reg_rtx[i]);
-	    }
-	}
+      /* Set all of the memory attributes as appropriate for a spill.  */
+      set_mem_attrs_for_spill (x);
 
       /* Save the stack slot for later.  */
       reg_equiv_memory_loc[i] = x;

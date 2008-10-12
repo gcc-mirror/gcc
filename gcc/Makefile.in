@@ -2868,7 +2868,7 @@ reload1.o : reload1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(EXPR_H) $(OPTABS_H) reload.h $(REGS_H) hard-reg-set.h insn-config.h \
    $(BASIC_BLOCK_H) $(RECOG_H) output.h $(FUNCTION_H) $(TOPLEV_H) $(TM_P_H) \
    addresses.h except.h $(TREE_H) $(REAL_H) $(FLAGS_H) $(MACHMODE_H) \
-   $(OBSTACK_H) $(DF_H) $(TARGET_H) dse.h ira.h
+   $(OBSTACK_H) $(DF_H) $(TARGET_H) $(EMIT_RTL_H) ira.h
 rtlhooks.o :  rtlhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    rtlhooks-def.h $(EXPR_H) $(RECOG_H)
 postreload.o : postreload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

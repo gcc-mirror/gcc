@@ -35,6 +35,9 @@ extern void set_mem_offset (rtx, rtx);
 /* Set the size for MEM to SIZE.  */
 extern void set_mem_size (rtx, rtx);
 
+/* Set the attributes for MEM appropriate for a spill slot.  */
+extern void set_mem_attrs_for_spill (rtx);
+
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
