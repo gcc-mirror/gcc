@@ -230,27 +230,22 @@ static void
 detect_caches_cpuid2 (bool xeon_mp, 
 		      struct cache_desc *level1, struct cache_desc *level2)
 {
-  unsigned eax, ebx, ecx, edx;
-  int nreps;
+  unsigned regs[4];
+  int nreps, i;
 
-  __cpuid (2, eax, ebx, ecx, edx);
+  __cpuid (2, regs[0], regs[1], regs[2], regs[3]);
 
-  nreps = eax & 0x0f;
-  eax &= ~0x0f;
+  nreps = regs[0] & 0x0f;
+  regs[0] &= ~0x0f;
 
   while (--nreps >= 0)
     {
-      if (!((eax >> 31) & 1))
-	decode_caches_intel (eax, xeon_mp, level1, level2);
-      if (!((ebx >> 31) & 1))
-	decode_caches_intel (ebx, xeon_mp, level1, level2);
-      if (!((ecx >> 31) & 1))
-	decode_caches_intel (ecx, xeon_mp, level1, level2);
-      if (!((edx >> 31) & 1))
-	decode_caches_intel (edx, xeon_mp, level1, level2);
+      for (i = 0; i < 4; i++)
+	if (regs[i] && !((regs[i] >> 31) & 1))
+	  decode_caches_intel (regs[i], xeon_mp, level1, level2);
 
       if (nreps)
-	__cpuid (2, eax, ebx, ecx, edx);
+	__cpuid (2, regs[0], regs[1], regs[2], regs[3]);
     }
 }
 
@@ -298,15 +293,10 @@ detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2)
 	    if (cache)
 	      {
 		unsigned sets = ecx + 1;
-		unsigned part;
+		unsigned part = ((ebx >> 12) & 0x03ff) + 1;
 
+		cache->assoc = ((ebx >> 22) & 0x03ff) + 1;
 		cache->line = (ebx & 0x0fff) + 1;
-		ebx >>= 12;
-
-		part = (ebx & 0x03ff) + 1;
-		ebx >>= 10;
-
-		cache->assoc = (ebx & 0x03ff) + 1;
 
 		cache->sizekb = (cache->assoc * part
 				 * cache->line * sets) / 1024;

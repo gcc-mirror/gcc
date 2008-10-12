@@ -1,3 +1,10 @@
+2008-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (detect_caches_cpuid2): Use array
+	of registers instead of eax, ebx, ecx and edx.  Use for loop
+	and check register for non-zero value before the call
+	to decode_caches_intel.
+
 2008-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37448
@@ -80,31 +87,26 @@
 	df_bb_regno_last_def_find, df_find_def, df_find_use,
 	df_refs_chain_dump, df_regs_chain_dump, df_ref_debug,
 	debug_df_ref): Replaced struct df_ref * with df_ref.
-	(df_mws_dump, df_ref_debug): Use macros to hide references to
-	df_refs.
+	(df_mws_dump, df_ref_debug): Use macros to hide references to df_refs.
 	* cse.c (cse_extended_basic_block): Replaced struct df_ref * with
 	df_ref.
 	* web.c (union_defs, entry_register, replace_ref, web_main):
 	Replaced struct df_ref * with df_ref.
-	(union_defs, replace_ref): Use macros to hide references to
-	df_refs.
+	(union_defs, replace_ref): Use macros to hide references to df_refs.
 	* global.c (compute_regs_asm_clobbered, build_insn_chain):
 	Replaced struct df_ref * with df_ref.
-	* ifcvt.c (dead_or_predicable): Replaced struct df_ref * with
-	df_ref.
+	* ifcvt.c (dead_or_predicable): Replaced struct df_ref * with df_ref.
 	* sel-sched-ir.c (maybe_downgrade_id_to_use, setup_id_reg_sets, ):
 	Replaced struct df_ref * with df_ref.
 	* ira-lives.c (mark_ref_live, def_conflicts_with_inputs_p,
 	mark_ref_dead, process_bb_node_lives): Replaced struct df_ref *
 	with df_ref.
-	* local-alloc.c (block_alloc): Replaced struct df_ref * with
-	df_ref.
+	* local-alloc.c (block_alloc): Replaced struct df_ref * with df_ref.
 	* df-byte-scan.c (df_compute_accessed_bytes_extract,
 	df_compute_accessed_bytes_strict_low_part,
 	df_compute_accessed_bytes_subreg, df_compute_accessed_bytes):
 	Replaced struct df_ref * with df_ref.
-	(df_compute_accessed_bytes): Use macros to hide references to
-	df_refs.
+	(df_compute_accessed_bytes): Use macros to hide references to df_refs.
 	* init-regs.c (initialize_uninitialized_regs): Replaced struct
 	df_ref * with df_ref.
 	* loop-invariant.c (invariant_for_use, hash_invariant_expr_1,
@@ -117,7 +119,8 @@
 	iv_analyze, biv_p): Replaced struct df_ref * with df_ref.
 	(iv_analysis_loop_init, iv_get_reaching_def): Use macros to hide
 	references to df_refs.
-	* ira.c (compute_regs_asm_clobbered): Replaced struct df_ref * with df_ref.
+	* ira.c (compute_regs_asm_clobbered): Replaced struct df_ref *
+	with df_ref.
 	* combine.c (create_log_links): Replaced struct df_ref * with df_ref.
 	* df-problems.c (df_rd_bb_local_compute_process_def,
 	df_lr_bb_local_compute, df_live_bb_local_compute, df_chain_create,
@@ -130,9 +133,9 @@
 	df_byte_lr_simulate_artificial_refs_at_end, df_create_unused_note,
 	df_note_bb_compute, df_note_add_problem, df_simulate_defs,
 	df_simulate_uses, df_simulate_artificial_refs_at_end,
-	df_simulate_artificial_refs_at_top): Replaced struct df_ref * with df_ref.
-	(df_chain_dump): Use macros to hide
-	references to df_refs.
+	df_simulate_artificial_refs_at_top): Replaced struct df_ref * with
+	df_ref.
+	(df_chain_dump): Use macros to hide references to df_refs.
 	* config/mips/mips.c (r10k_simplify_address): Replaced struct
 	df_ref * with df_ref.
 	* dce.c (mark_nonreg_stores, delete_corresponding_reg_eq_notes,
