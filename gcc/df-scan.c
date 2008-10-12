@@ -1980,7 +1980,8 @@ df_ref_change_reg_with_loc_1 (struct df_reg_info *old_df,
 	    DF_REF_PREV_REG (new_df->reg_chain) = the_ref;
 	  new_df->reg_chain = the_ref;
 	  new_df->n_refs++;
-	  df_set_bb_dirty (DF_REF_BB (the_ref));
+	  if (DF_REF_BB (the_ref))
+	    df_set_bb_dirty (DF_REF_BB (the_ref));
 
 	  /* Need to sort the record again that the ref was in because
 	     the regno is a sorting key.  First, find the right
