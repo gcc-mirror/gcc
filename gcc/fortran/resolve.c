@@ -7525,6 +7525,10 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	}
     }
 
+  /* Ensure that any initializer is simplified.  */
+  if (sym->value)
+    gfc_simplify_expr (sym->value, 1);
+
   /* Reject illegal initializers.  */
   if (!sym->mark && sym->value)
     {
