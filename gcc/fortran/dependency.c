@@ -547,10 +547,16 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
       || !e2->symtree->n.sym->attr.in_equivalence|| !e1->rank || !e2->rank)
     return 0;
 
+  if (e1->symtree->n.sym->ns
+	&& e1->symtree->n.sym->ns != gfc_current_ns)
+    l = e1->symtree->n.sym->ns->equiv_lists;
+  else
+    l = gfc_current_ns->equiv_lists;
+
   /* Go through the equiv_lists and return 1 if the variables
      e1 and e2 are members of the same group and satisfy the
      requirement on their relative offsets.  */
-  for (l = gfc_current_ns->equiv_lists; l; l = l->next)
+  for (; l; l = l->next)
     {
       fl1 = NULL;
       fl2 = NULL;
