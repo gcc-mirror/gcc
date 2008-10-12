@@ -3429,9 +3429,11 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
 
 /* Walk an expression tree and check each variable encountered for being typed.
    If strict is not set, a top-level variable is tolerated untyped in -std=gnu
-   mode; this is for things in legacy-code like:
+   mode as is a basic arithmetic expression using those; this is for things in
+   legacy-code like:
 
      INTEGER :: arr(n), n
+     INTEGER :: arr(n + 1), n
 
    The namespace is needed for IMPLICIT typing.  */
 
@@ -3458,9 +3460,26 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
 {
   bool error_found;
 
-  /* If this is a top-level variable, do the check with strict given to us.  */
-  if (!strict && e->expr_type == EXPR_VARIABLE && !e->ref)
-    return gfc_check_symbol_typed (e->symtree->n.sym, ns, strict, e->where);
+  /* If this is a top-level variable or EXPR_OP, do the check with strict given
+     to us.  */
+  if (!strict)
+    {
+      if (e->expr_type == EXPR_VARIABLE && !e->ref)
+	return gfc_check_symbol_typed (e->symtree->n.sym, ns, strict, e->where);
+
+      if (e->expr_type == EXPR_OP)
+	{
+	  gfc_try t = SUCCESS;
+
+	  gcc_assert (e->value.op.op1);
+	  t = gfc_expr_check_typed (e->value.op.op1, ns, strict);
+
+	  if (t == SUCCESS && e->value.op.op2)
+	    t = gfc_expr_check_typed (e->value.op.op2, ns, strict);
+
+	  return t;
+	}
+    }
 
   /* Otherwise, walk the expression and do it strictly.  */
   check_typed_ns = ns;
