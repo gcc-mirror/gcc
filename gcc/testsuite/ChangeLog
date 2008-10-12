@@ -1,3 +1,8 @@
+2008-10-12  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/37792
+	* gfortran.dg/arithmetic_overflow_1.f90: New test.
+
 2008-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization5.adb: New test.
