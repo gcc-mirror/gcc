@@ -3653,6 +3653,10 @@ information about using GCC on IRIX platforms.
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
+You will need
+@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.15}
+or newer for a working GCC@.
+
 @html
 <hr />
 @end html
@@ -3681,9 +3685,7 @@ PowerPC system in big endian mode, running System V.4.
 @end html
 @heading @anchor{powerpc-x-linux-gnu}powerpc*-*-linux-gnu*
 
-You will need
-@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.15}
-or newer for a working GCC@.
+PowerPC system in big endian mode running Linux.
 
 @html
 <hr />

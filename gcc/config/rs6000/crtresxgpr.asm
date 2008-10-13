@@ -48,24 +48,24 @@
 /* Called with r11 pointing to the stack header word of the caller of the */
 /* function, just beyond the end of the integer restore area.  */
 
-FUNC_START(_restgpr_14_x)	lwz	14,-72(11)	/* restore gp registers */
-FUNC_START(_restgpr_15_x)	lwz	15,-68(11)
-FUNC_START(_restgpr_16_x)	lwz	16,-64(11)
-FUNC_START(_restgpr_17_x)	lwz	17,-60(11)
-FUNC_START(_restgpr_18_x)	lwz	18,-56(11)
-FUNC_START(_restgpr_19_x)	lwz	19,-52(11)
-FUNC_START(_restgpr_20_x)	lwz	20,-48(11)
-FUNC_START(_restgpr_21_x)	lwz	21,-44(11)
-FUNC_START(_restgpr_22_x)	lwz	22,-40(11)
-FUNC_START(_restgpr_23_x)	lwz	23,-36(11)
-FUNC_START(_restgpr_24_x)	lwz	24,-32(11)
-FUNC_START(_restgpr_25_x)	lwz	25,-28(11)
-FUNC_START(_restgpr_26_x)	lwz	26,-24(11)
-FUNC_START(_restgpr_27_x)	lwz	27,-20(11)
-FUNC_START(_restgpr_28_x)	lwz	28,-16(11)
-FUNC_START(_restgpr_29_x)	lwz	29,-12(11)
-FUNC_START(_restgpr_30_x)	lwz	30,-8(11)
-FUNC_START(_restgpr_31_x)	lwz	0,4(11)
+HIDDEN_FUNC(_restgpr_14_x)	lwz	14,-72(11)	/* restore gp registers */
+HIDDEN_FUNC(_restgpr_15_x)	lwz	15,-68(11)
+HIDDEN_FUNC(_restgpr_16_x)	lwz	16,-64(11)
+HIDDEN_FUNC(_restgpr_17_x)	lwz	17,-60(11)
+HIDDEN_FUNC(_restgpr_18_x)	lwz	18,-56(11)
+HIDDEN_FUNC(_restgpr_19_x)	lwz	19,-52(11)
+HIDDEN_FUNC(_restgpr_20_x)	lwz	20,-48(11)
+HIDDEN_FUNC(_restgpr_21_x)	lwz	21,-44(11)
+HIDDEN_FUNC(_restgpr_22_x)	lwz	22,-40(11)
+HIDDEN_FUNC(_restgpr_23_x)	lwz	23,-36(11)
+HIDDEN_FUNC(_restgpr_24_x)	lwz	24,-32(11)
+HIDDEN_FUNC(_restgpr_25_x)	lwz	25,-28(11)
+HIDDEN_FUNC(_restgpr_26_x)	lwz	26,-24(11)
+HIDDEN_FUNC(_restgpr_27_x)	lwz	27,-20(11)
+HIDDEN_FUNC(_restgpr_28_x)	lwz	28,-16(11)
+HIDDEN_FUNC(_restgpr_29_x)	lwz	29,-12(11)
+HIDDEN_FUNC(_restgpr_30_x)	lwz	30,-8(11)
+HIDDEN_FUNC(_restgpr_31_x)	lwz	0,4(11)
 				lwz	31,-4(11)
 				mtlr	0
 				mr	1,11

@@ -50,24 +50,24 @@
 /* In addition to restoring the fp registers, it will return to the caller's */
 /* caller */
 
-FUNC_START(_restfpr_14_x)	lfd	14,-144(11)	/* restore fp registers */
-FUNC_START(_restfpr_15_x)	lfd	15,-136(11)
-FUNC_START(_restfpr_16_x)	lfd	16,-128(11)
-FUNC_START(_restfpr_17_x)	lfd	17,-120(11)
-FUNC_START(_restfpr_18_x)	lfd	18,-112(11)
-FUNC_START(_restfpr_19_x)	lfd	19,-104(11)
-FUNC_START(_restfpr_20_x)	lfd	20,-96(11)
-FUNC_START(_restfpr_21_x)	lfd	21,-88(11)
-FUNC_START(_restfpr_22_x)	lfd	22,-80(11)
-FUNC_START(_restfpr_23_x)	lfd	23,-72(11)
-FUNC_START(_restfpr_24_x)	lfd	24,-64(11)
-FUNC_START(_restfpr_25_x)	lfd	25,-56(11)
-FUNC_START(_restfpr_26_x)	lfd	26,-48(11)
-FUNC_START(_restfpr_27_x)	lfd	27,-40(11)
-FUNC_START(_restfpr_28_x)	lfd	28,-32(11)
-FUNC_START(_restfpr_29_x)	lfd	29,-24(11)
-FUNC_START(_restfpr_30_x)	lfd	30,-16(11)
-FUNC_START(_restfpr_31_x)	lwz	0,4(11)
+HIDDEN_FUNC(_restfpr_14_x)	lfd	14,-144(11)	/* restore fp registers */
+HIDDEN_FUNC(_restfpr_15_x)	lfd	15,-136(11)
+HIDDEN_FUNC(_restfpr_16_x)	lfd	16,-128(11)
+HIDDEN_FUNC(_restfpr_17_x)	lfd	17,-120(11)
+HIDDEN_FUNC(_restfpr_18_x)	lfd	18,-112(11)
+HIDDEN_FUNC(_restfpr_19_x)	lfd	19,-104(11)
+HIDDEN_FUNC(_restfpr_20_x)	lfd	20,-96(11)
+HIDDEN_FUNC(_restfpr_21_x)	lfd	21,-88(11)
+HIDDEN_FUNC(_restfpr_22_x)	lfd	22,-80(11)
+HIDDEN_FUNC(_restfpr_23_x)	lfd	23,-72(11)
+HIDDEN_FUNC(_restfpr_24_x)	lfd	24,-64(11)
+HIDDEN_FUNC(_restfpr_25_x)	lfd	25,-56(11)
+HIDDEN_FUNC(_restfpr_26_x)	lfd	26,-48(11)
+HIDDEN_FUNC(_restfpr_27_x)	lfd	27,-40(11)
+HIDDEN_FUNC(_restfpr_28_x)	lfd	28,-32(11)
+HIDDEN_FUNC(_restfpr_29_x)	lfd	29,-24(11)
+HIDDEN_FUNC(_restfpr_30_x)	lfd	30,-16(11)
+HIDDEN_FUNC(_restfpr_31_x)	lwz	0,4(11)
 				lfd	31,-8(11)
 				mtlr	0
 				mr	1,11

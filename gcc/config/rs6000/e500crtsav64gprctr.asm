@@ -43,41 +43,41 @@
    registers to be saved is passed in CTR, called by the compiler.  */
 /* "Bare" versions that return to their caller.  */
 
-FUNC_START(_save64gpr_ctr_14)	evstdd 14,0(11)
+HIDDEN_FUNC(_save64gpr_ctr_14)	evstdd 14,0(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_15)	evstdd 15,8(11)
+HIDDEN_FUNC(_save64gpr_ctr_15)	evstdd 15,8(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_16)	evstdd 16,16(11)
+HIDDEN_FUNC(_save64gpr_ctr_16)	evstdd 16,16(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_17)	evstdd 17,24(11)
+HIDDEN_FUNC(_save64gpr_ctr_17)	evstdd 17,24(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_18)	evstdd 18,32(11)
+HIDDEN_FUNC(_save64gpr_ctr_18)	evstdd 18,32(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_19)	evstdd 19,40(11)
+HIDDEN_FUNC(_save64gpr_ctr_19)	evstdd 19,40(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_20)	evstdd 20,48(11)
+HIDDEN_FUNC(_save64gpr_ctr_20)	evstdd 20,48(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_21)	evstdd 21,56(11)
+HIDDEN_FUNC(_save64gpr_ctr_21)	evstdd 21,56(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_22)	evstdd 22,64(11)
+HIDDEN_FUNC(_save64gpr_ctr_22)	evstdd 22,64(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_23)	evstdd 23,72(11)
+HIDDEN_FUNC(_save64gpr_ctr_23)	evstdd 23,72(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_24)	evstdd 24,80(11)
+HIDDEN_FUNC(_save64gpr_ctr_24)	evstdd 24,80(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_25)	evstdd 25,88(11)
+HIDDEN_FUNC(_save64gpr_ctr_25)	evstdd 25,88(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_26)	evstdd 26,96(11)
+HIDDEN_FUNC(_save64gpr_ctr_26)	evstdd 26,96(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_27)	evstdd 27,104(11)
+HIDDEN_FUNC(_save64gpr_ctr_27)	evstdd 27,104(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_28)	evstdd 28,112(11)
+HIDDEN_FUNC(_save64gpr_ctr_28)	evstdd 28,112(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_29)	evstdd 29,120(11)
+HIDDEN_FUNC(_save64gpr_ctr_29)	evstdd 29,120(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_30)	evstdd 30,128(11)
+HIDDEN_FUNC(_save64gpr_ctr_30)	evstdd 30,128(11)
 				bdz _save64_gpr_ctr_done
-FUNC_START(_save64gpr_ctr_31)	evstdd 31,136(11)
+HIDDEN_FUNC(_save64gpr_ctr_31)	evstdd 31,136(11)
 _save64gpr_ctr_done:		blr
 FUNC_END(_save64gpr_ctr_31)
 FUNC_END(_save64gpr_ctr_30)

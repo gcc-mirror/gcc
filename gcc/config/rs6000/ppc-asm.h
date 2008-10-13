@@ -110,6 +110,11 @@ name: \
 	.globl GLUE(.,name); \
 GLUE(.,name):
 
+#define HIDDEN_FUNC(name) \
+  FUNC_START(name) \
+  .hidden name;	\
+  .hidden GLUE(.,name);
+
 #define FUNC_END(name) \
 GLUE(.L,name): \
 	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
@@ -136,6 +141,11 @@ name: \
 	.globl GLUE(.,name); \
 GLUE(.,name):
 
+#define HIDDEN_FUNC(name) \
+  FUNC_START(name) \
+  .hidden name; \
+  .hidden GLUE(.,name);
+
 #define FUNC_END(name) \
 GLUE(.L,name): \
 	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
@@ -152,6 +162,10 @@ GLUE(.L,name): \
 	.type FUNC_NAME(name),@function; \
 	.globl FUNC_NAME(name); \
 FUNC_NAME(name):
+
+#define HIDDEN_FUNC(name) \
+  FUNC_START(name) \
+  .hidden FUNC_NAME(name);
 
 #define FUNC_END(name) \
 GLUE(.L,name): \
