@@ -1,3 +1,15 @@
+2008-10-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/s390/s390.md (UNSPEC_POOL_OFFSET): New constant.
+	* config/s390/s390.c (machine_function): Remove
+	decomposed_literal_pool_addresses_ok_p.
+	(s390_decompose_address): Check for UNSPEC_POOL_OFFSET instead of
+	the difference of two labels.
+	(s390_output_addr_const_extra): Handle UNSPEC_POOL_OFFSET.
+	(s390_pool_offset): New function.
+	(s390_find_constant, s390_find_execute, s390_dump_pool): Use it.
+	(s390_reorg): Don't set decomposed_literal_pool_addresses_ok_p.
+
 2008-10-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* doc/install.texi (powerpc-*-*): Require binutils 2.15.
