@@ -668,7 +668,6 @@ gfc_simplify_atan2 (gfc_expr *y, gfc_expr *x)
 gfc_expr *
 gfc_simplify_bessel_j0 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -678,16 +677,12 @@ gfc_simplify_bessel_j0 (gfc_expr *x ATTRIBUTE_UNUSED)
   mpfr_j0 (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_J0");
-#else
-  return NULL;
-#endif
 }
 
 
 gfc_expr *
 gfc_simplify_bessel_j1 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -697,9 +692,6 @@ gfc_simplify_bessel_j1 (gfc_expr *x ATTRIBUTE_UNUSED)
   mpfr_j1 (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_J1");
-#else
-  return NULL;
-#endif
 }
 
 
@@ -707,7 +699,6 @@ gfc_expr *
 gfc_simplify_bessel_jn (gfc_expr *order ATTRIBUTE_UNUSED,
 			gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
   long n;
 
@@ -719,16 +710,12 @@ gfc_simplify_bessel_jn (gfc_expr *order ATTRIBUTE_UNUSED,
   mpfr_jn (result->value.real, n, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_JN");
-#else
-  return NULL;
-#endif
 }
 
 
 gfc_expr *
 gfc_simplify_bessel_y0 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -738,16 +725,12 @@ gfc_simplify_bessel_y0 (gfc_expr *x ATTRIBUTE_UNUSED)
   mpfr_y0 (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_Y0");
-#else
-  return NULL;
-#endif
 }
 
 
 gfc_expr *
 gfc_simplify_bessel_y1 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -757,9 +740,6 @@ gfc_simplify_bessel_y1 (gfc_expr *x ATTRIBUTE_UNUSED)
   mpfr_y1 (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_Y1");
-#else
-  return NULL;
-#endif
 }
 
 
@@ -767,7 +747,6 @@ gfc_expr *
 gfc_simplify_bessel_yn (gfc_expr *order ATTRIBUTE_UNUSED,
 			gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
   long n;
 
@@ -779,9 +758,6 @@ gfc_simplify_bessel_yn (gfc_expr *order ATTRIBUTE_UNUSED,
   mpfr_yn (result->value.real, n, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_YN");
-#else
-  return NULL;
-#endif
 }
 
 
@@ -2483,7 +2459,6 @@ gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 gfc_expr *
 gfc_simplify_lgamma (gfc_expr *x ATTRIBUTE_UNUSED)
 {
-#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
   int sg;
 
@@ -2495,9 +2470,6 @@ gfc_simplify_lgamma (gfc_expr *x ATTRIBUTE_UNUSED)
   mpfr_lgamma (result->value.real, &sg, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "LGAMMA");
-#else
-  return NULL;
-#endif
 }
 
 

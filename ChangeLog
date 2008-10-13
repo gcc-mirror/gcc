@@ -1,3 +1,10 @@
+2008-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac (MPFR check): Bump minimum version to 2.3.0 and
+	recommended version to 2.3.2.
+
+	* configure: Regenerate.
+
 2008-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS (Blanket Write Privs): Change to Global Reviewers.
