@@ -181,5 +181,7 @@ extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 char *output_call (rtx, rtx *, int, int);
 #endif
 
+void rs6000_final_prescan_insn (rtx, rtx *operand, int num_operands);
+
 extern bool rs6000_hard_regno_mode_ok_p[][FIRST_PSEUDO_REGISTER];
 #endif  /* rs6000-protos.h */

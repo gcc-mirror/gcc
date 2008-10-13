@@ -1905,7 +1905,8 @@ do {								\
 /* Define this if some processing needs to be done immediately before
    emitting code for an insn.  */
 
-/* #define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) */
+#define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) \
+  rs6000_final_prescan_insn (INSN, OPERANDS, NOPERANDS)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

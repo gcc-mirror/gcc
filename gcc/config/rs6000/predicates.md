@@ -104,6 +104,14 @@
 		     || REGNO (op) > LAST_VIRTUAL_REGISTER
 		     || CR_REGNO_NOT_CR0_P (REGNO (op))")))
 
+;; Return 1 if op is a register that is a condition register field and if generating microcode, not cr0.
+(define_predicate "cc_reg_not_micro_cr0_operand"
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER
+		     || (rs6000_gen_cell_microcode && CR_REGNO_NOT_CR0_P (REGNO (op)))
+		     || (!rs6000_gen_cell_microcode && CR_REGNO_P (REGNO (op)))")))
+
 ;; Return 1 if op is a constant integer valid for D field
 ;; or non-special register register.
 (define_predicate "reg_or_short_operand"

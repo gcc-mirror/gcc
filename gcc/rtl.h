@@ -1637,6 +1637,7 @@ extern rtx prev_cc0_setter (rtx);
 /* In cfglayout.c  */
 extern int insn_line (const_rtx);
 extern const char * insn_file (const_rtx);
+extern location_t locator_location (int);
 extern int locator_line (int);
 extern const char * locator_file (int);
 extern bool locator_eq (int, int);

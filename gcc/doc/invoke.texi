@@ -735,6 +735,7 @@ See RS/6000 and PowerPC Options.
 -mspe -mno-spe @gol
 -mspe=yes  -mspe=no @gol
 -mpaired @gol
+-mgen-cell-microcode -mwarn-cell-microcode @gol
 -mvrsave -mno-vrsave @gol
 -mmulhw -mno-mulhw @gol
 -mdlmzb -mno-dlmzb @gol
@@ -13489,6 +13490,15 @@ enhancements.
 @opindex mvrsave
 @opindex mno-vrsave
 Generate VRSAVE instructions when generating AltiVec code.
+
+@item -mgen-cell-microcode
+@opindex mgen-cell-microcode
+Generate Cell microcode instructions
+
+@item -mwarn-cell-microcode
+@opindex mwarn-cell-microcode
+Warning when a Cell microcode instruction is going to emitted.  An example
+of a Cell microcode instruction is a variable shift.
 
 @item -msecure-plt
 @opindex msecure-plt
