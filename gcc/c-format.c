@@ -2714,6 +2714,9 @@ extern const format_kind_info TARGET_FORMAT_TYPES[];
 #ifdef TARGET_OVERRIDES_FORMAT_ATTRIBUTES
 extern const target_ovr_attr TARGET_OVERRIDES_FORMAT_ATTRIBUTES[];
 #endif
+#ifdef TARGET_OVERRIDES_FORMAT_INIT
+  extern void TARGET_OVERRIDES_FORMAT_INIT (void);
+#endif
 
 /* Attributes such as "printf" are equivalent to those such as
    "gnu_printf" unless this is overridden by a target.  */
@@ -2738,6 +2741,9 @@ convert_format_name_to_system_name (const char *attr_name)
   if (attr_name == NULL || *attr_name == 0
       || strncmp (attr_name, "gcc_", 4) == 0)
     return attr_name;
+#ifdef TARGET_OVERRIDES_FORMAT_INIT
+  TARGET_OVERRIDES_FORMAT_INIT ();
+#endif
 
 #ifdef TARGET_OVERRIDES_FORMAT_ATTRIBUTES
   /* Check if format attribute is overridden by target.  */

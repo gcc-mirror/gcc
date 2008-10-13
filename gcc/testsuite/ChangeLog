@@ -1,3 +1,7 @@
+2008-10-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* testsuite/gcc.dg/format/ms-format1.c: New.
+
 2008-10-12  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37688
