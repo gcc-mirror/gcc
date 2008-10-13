@@ -1,3 +1,7 @@
+2008-10-13  Doug Evans  <dje@google.com>
+
+	* cp-tree.h (DECL_MAIN_P): Fix parentheses around expression.
+
 2008-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37146
