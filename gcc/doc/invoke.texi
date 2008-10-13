@@ -250,7 +250,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wmissing-noreturn  -Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
 -Woverlength-strings  -Wpacked  -Wpadded @gol
--Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
+-Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
@@ -3571,6 +3572,14 @@ Warn if the loop cannot be optimized because the compiler could not
 assume anything on the bounds of the loop indices.  With
 @option{-funsafe-loop-optimizations} warn if the compiler made
 such assumptions.
+
+@item -Wno-pedantic-ms-format
+@opindex Wno-pedantic-ms-format
+@opindex Wpedantic-ms-format
+Disables the warnings about non-ISO @code{printf} / @code{scanf} format
+width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets
+depending on the MS runtime, when you are using the options @option{-Wformat}
+and @option{-pedantic} without gnu-extensions.
 
 @item -Wpointer-arith
 @opindex Wpointer-arith

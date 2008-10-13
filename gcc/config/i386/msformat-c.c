@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Mingw specific format attributes ms_printf, ms_scanf, and ms_strftime.  */
 
-static const format_length_info ms_printf_length_specs[] =
+static format_length_info ms_printf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, NULL, 0, 0 },
   { "l", FMT_LEN_l, STD_C89, NULL, 0, 0 },
@@ -173,3 +173,25 @@ const target_ovr_attr mingw_format_attribute_overrides[4] =
   { "ms_scanf", "scanf" },
   { "ms_strftime", "strftime" }
 };
+
+/* Setup for option Wpedantic-ms-format.  */
+
+#ifdef TARGET_OVERRIDES_FORMAT_INIT
+
+/* Make sure TARGET_OVERRIDES_FORMAT_INIT is prototyped.  */
+extern void TARGET_OVERRIDES_FORMAT_INIT (void);
+
+/* Helper.  */
+#define C89_OR_EXT (warn_pedantic_ms_format ? STD_EXT : STD_C89)
+
+void
+TARGET_OVERRIDES_FORMAT_INIT (void)
+{
+  ms_printf_length_specs[2].std = C89_OR_EXT; /* I32 */
+  ms_printf_length_specs[3].std = C89_OR_EXT; /* I64 */
+  ms_printf_length_specs[4].std = C89_OR_EXT; /* I */
+}
+
+#undef C89_OR_EXT
+
+#endif

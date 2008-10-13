@@ -10539,6 +10539,12 @@ If defined, this macro specifies the number of entries in
 @code{TARGET_OVERRIDES_FORMAT_ATTRIBUTES}.
 @end defmac
 
+@defmac TARGET_OVERRIDES_FORMAT_INIT
+If defined, this macro specifies the optional initialization
+routine for target specific customizations of the system printf
+and scanf formatter settings.
+@end defmac
+
 @deftypefn {Target Hook} bool TARGET_RELAXED_ORDERING
 If set to @code{true}, means that the target's memory model does not
 guarantee that loads which do not depend on one another will access

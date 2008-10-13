@@ -1,3 +1,16 @@
+2008-10-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	Fix PR/25502
+	* c-format.c (convert_format_name_to_system_name): Use
+	TARGET_OVERRIDES_FORMAT_INIT.
+	* config.gcc (extra_options): Add for mingw targets mingw.opt.
+	* config/i386/mingw.opt: New.
+	* config/i386/mingw32.h (TARGET_OVERRIDES_FORMAT_INIT): New.
+	* config/i386/msformat-c.c (TARGET_OVERRIDES_FORMAT_INIT): New.
+	(ms_printf_length_specs): Removed const specifier.
+	* doc/tm.texi (TARGET_OVERRIDES_FORMAT_INIT): New.
+	* doc/invoke.texi (Wno-pedantic-ms-format): New.
+
 2008-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c: Remove MPFR_VERSION_NUM(2,3,0) conditionals.
