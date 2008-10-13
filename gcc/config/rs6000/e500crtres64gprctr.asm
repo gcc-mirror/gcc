@@ -42,41 +42,41 @@
 /* Routines for restoring 64-bit integer registers where the number of
    registers to be restored is passed in CTR, called by the compiler.  */
 
-FUNC_START(_rest64gpr_ctr_14)	evldd 14,0(11)
+HIDDEN_FUNC(_rest64gpr_ctr_14)	evldd 14,0(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_15)	evldd 15,8(11)
+HIDDEN_FUNC(_rest64gpr_ctr_15)	evldd 15,8(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_16)	evldd 16,16(11)
+HIDDEN_FUNC(_rest64gpr_ctr_16)	evldd 16,16(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_17)	evldd 17,24(11)
+HIDDEN_FUNC(_rest64gpr_ctr_17)	evldd 17,24(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_18)	evldd 18,32(11)
+HIDDEN_FUNC(_rest64gpr_ctr_18)	evldd 18,32(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_19)	evldd 19,40(11)
+HIDDEN_FUNC(_rest64gpr_ctr_19)	evldd 19,40(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_20)	evldd 20,48(11)
+HIDDEN_FUNC(_rest64gpr_ctr_20)	evldd 20,48(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_21)	evldd 21,56(11)
+HIDDEN_FUNC(_rest64gpr_ctr_21)	evldd 21,56(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_22)	evldd 22,64(11)
+HIDDEN_FUNC(_rest64gpr_ctr_22)	evldd 22,64(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_23)	evldd 23,72(11)
+HIDDEN_FUNC(_rest64gpr_ctr_23)	evldd 23,72(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_24)	evldd 24,80(11)
+HIDDEN_FUNC(_rest64gpr_ctr_24)	evldd 24,80(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_25)	evldd 25,88(11)
+HIDDEN_FUNC(_rest64gpr_ctr_25)	evldd 25,88(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_26)	evldd 26,96(11)
+HIDDEN_FUNC(_rest64gpr_ctr_26)	evldd 26,96(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_27)	evldd 27,104(11)
+HIDDEN_FUNC(_rest64gpr_ctr_27)	evldd 27,104(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_28)	evldd 28,112(11)
+HIDDEN_FUNC(_rest64gpr_ctr_28)	evldd 28,112(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_29)	evldd 29,120(11)
+HIDDEN_FUNC(_rest64gpr_ctr_29)	evldd 29,120(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_30)	evldd 30,128(11)
+HIDDEN_FUNC(_rest64gpr_ctr_30)	evldd 30,128(11)
 				bdz _rest64_gpr_ctr_done
-FUNC_START(_rest64gpr_ctr_31)	evldd 31,136(11)
+HIDDEN_FUNC(_rest64gpr_ctr_31)	evldd 31,136(11)
 _rest64gpr_ctr_done:		blr
 
 #endif

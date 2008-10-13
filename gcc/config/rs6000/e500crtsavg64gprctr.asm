@@ -42,41 +42,41 @@
 /* Routines for saving 64-bit integer registers, called by the compiler.  */
 /* "GOT" versions that load the address of the GOT into lr before returning.  */
 
-FUNC_START(_save64gpr_ctr_14_g)	evstdd 14,0(11)
+HIDDEN_FUNC(_save64gpr_ctr_14_g)	evstdd 14,0(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_15_g)	evstdd 15,8(11)
+HIDDEN_FUNC(_save64gpr_ctr_15_g)	evstdd 15,8(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_16_g)	evstdd 16,16(11)
+HIDDEN_FUNC(_save64gpr_ctr_16_g)	evstdd 16,16(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_17_g)	evstdd 17,24(11)
+HIDDEN_FUNC(_save64gpr_ctr_17_g)	evstdd 17,24(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_18_g)	evstdd 18,32(11)
+HIDDEN_FUNC(_save64gpr_ctr_18_g)	evstdd 18,32(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_19_g)	evstdd 19,40(11)
+HIDDEN_FUNC(_save64gpr_ctr_19_g)	evstdd 19,40(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_20_g)	evstdd 20,48(11)
+HIDDEN_FUNC(_save64gpr_ctr_20_g)	evstdd 20,48(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_21_g)	evstdd 21,56(11)
+HIDDEN_FUNC(_save64gpr_ctr_21_g)	evstdd 21,56(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_22_g)	evstdd 22,64(11)
+HIDDEN_FUNC(_save64gpr_ctr_22_g)	evstdd 22,64(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_23_g)	evstdd 23,72(11)
+HIDDEN_FUNC(_save64gpr_ctr_23_g)	evstdd 23,72(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_24_g)	evstdd 24,80(11)
+HIDDEN_FUNC(_save64gpr_ctr_24_g)	evstdd 24,80(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_25_g)	evstdd 25,88(11)
+HIDDEN_FUNC(_save64gpr_ctr_25_g)	evstdd 25,88(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_26_g)	evstdd 26,96(11)
+HIDDEN_FUNC(_save64gpr_ctr_26_g)	evstdd 26,96(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_27_g)	evstdd 27,104(11)
+HIDDEN_FUNC(_save64gpr_ctr_27_g)	evstdd 27,104(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_28_g)	evstdd 28,112(11)
+HIDDEN_FUNC(_save64gpr_ctr_28_g)	evstdd 28,112(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_29_g)	evstdd 29,120(11)
+HIDDEN_FUNC(_save64gpr_ctr_29_g)	evstdd 29,120(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_30_g)	evstdd 30,128(11)
+HIDDEN_FUNC(_save64gpr_ctr_30_g)	evstdd 30,128(11)
 				bdz _save64_gpr_ctr_g_done
-FUNC_START(_save64gpr_ctr_31_g)	evstdd 31,136(11)
+HIDDEN_FUNC(_save64gpr_ctr_31_g)	evstdd 31,136(11)
 _save64gpr_ctr_g_done:		b _GLOBAL_OFFSET_TABLE_-4
 FUNC_END(_save64gpr_ctr_31_g)
 FUNC_END(_save64gpr_ctr_30_g)

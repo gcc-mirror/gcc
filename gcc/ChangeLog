@@ -1,3 +1,26 @@
+2008-10-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* doc/install.texi (powerpc-*-*): Require binutils 2.15.
+	(powerpc*-*-linux-gnu*): Describe.
+	* config/rs6000/ppc-asm.h (HIDDEN_FUNC): New macro.
+	* config/rs6000/crtresfpr.asm, config/rs6000/crtresgpr.asm,
+	config/rs6000/crtresxfpr.asm, config/rs6000/crtresxgpr.asm,
+	config/rs6000/crtsavfpr.asm, config/rs6000/crtsavgpr.asm,
+	config/rs6000/e500crtres32gpr.asm,
+	config/rs6000/e500crtres64gpr.asm,
+	config/rs6000/e500crtres64gprctr.asm,
+	config/rs6000/e500crtrest32gpr.asm,
+	config/rs6000/e500crtrest64gpr.asm,
+	config/rs6000/e500crtresx32gpr.asm,
+	config/rs6000/e500crtresx64gpr.asm,
+	config/rs6000/e500crtsav32gpr.asm,
+	config/rs6000/e500crtsav64gpr.asm,
+	config/rs6000/e500crtsav64gprctr.asm,
+	config/rs6000/e500crtsavg32gpr.asm,
+	config/rs6000/e500crtsavg64gpr.asm,
+	config/rs6000/e500crtsavg64gprctr.asm: Use it.
+	* config/rs6000/crtsavres.asm: Really remove.
+
 2008-10-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	Fix PR/25502
