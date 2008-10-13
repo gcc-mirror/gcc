@@ -1,3 +1,72 @@
+2008-10-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+            Kaushal Kantawala <Kaushal_Kantawala@playstation.sony.com>
+            Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
+            Grace Cao  <grace_cao@playstation.sony.com>
+
+	* doc/invoke.texi (-mgen-cell-microcode): Document.
+	(-mwarn-cell-microcode): Document.
+	* cfglayout.c (locator_location): Export.
+	* rtl.h (locator_location): Define prototype.
+	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand): New predicate.
+	* rs6000/rs6000-protos.h (rs6000_final_prescan_insn): Define prototype.
+	* config/rs6000/rs6000.opt (mgen-cell-microcode): New option.
+	(mwarn-cell-microcode): New option.
+	* rs6000/rs6000.c (rs6000_cell_dont_microcode): Delete unused variable.
+	(rs6000_override_options): Set rs6000_gen_cell_microcode if tuning for
+	cell and not already set.
+	Turn off string instructions if not generating cell microcode.
+	(rs6000_final_prescan_insn): New function that warns about microcoded
+	instructions.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Define.
+	* config/rs6000/rs6000.md
+	Replace cc_reg_not_cr0_operand with cc_reg_not_micro_cr0_operand if
+	the instruction would have been microcoded on the Cell.
+	Set cell_micro to always on unnamed patterns for the string instructions.
+	(cell_micro): Update definition, remove load/store conditional microcoded.
+	(sign_extend:DI): Define new pattern for non microcoded version.
+	(sign_extend:SI): Likewise.
+	(compare (div:P)): Set cell_micro to not.
+	(andsi3): Define as an expand.
+	(andsi3_mc): New pattern.
+	(andsi3_nomc): New pattern.
+	(andsi3_internal0_nomc): New pattern.
+	(andsi3_internal2): Rename to ...
+	(andsi3_internal2_mc): this and enable iff generating microcode.
+	(andsi3_internal3): Rename to ...
+	(andsi3_internal3_mc): this and enable iff generating microcode.
+	(andsi3_internal4): Enable iif generating microcode.
+	(andsi3_internal5): Rename to ..
+	(andsi3_internal5_mc): this and enable iff generating microcode.
+	(andsi3_internal5_nomc): New pattern.
+	(extzvdi_internal1): Enable iff generating microcode.
+	(extzvdi_internal2): Likewise.
+	(rotlsi3_internal7): Set cell_micro to always if non immediate form.
+	(anddi3): Change to expand.
+	(anddi3_mc): Rename from anddi3.
+	(anddi3_no_mc): New pattern.
+	(anddi3_internal2): Rename to ..
+	(anddi3_internal2_mc): this and enable iff generating microcode.
+	(anddi3_internal2_nomc): New pattern.
+	(anddi3_internal3): Rename to ..
+	(anddi3_internal3_mc): this and enable iff generating microcode.
+	(anddi3_internal3_nomc): New pattern.
+	(movti_string): Set cell_micro to always if TARGET_STRING.
+	(stmsi8): Set cell_micro to always.
+	(stmsi7): Likewise.
+	(stmsi6): Likewise.
+	(stmsi5): Likewise.
+	(stmsi4): Likewise.
+	(stmsi3): Likewise.
+	(stmsi8_power): Likewise.
+	(stmsi7_power): Likewise.
+	(stmsi6_power): Likewise.
+	(stmsi5_power): Likewise.
+	(stmsi4_power): Likewise.
+	(stmsi3_power): Likewise.
+	(movsi_update2): Enable iff generating microcode.
+	(movhi_update3): Likewise.
+	(lmw): Set cell_micro to always.
+
 2008-10-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/s390/s390.md (UNSPEC_POOL_OFFSET): New constant.

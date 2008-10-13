@@ -495,7 +495,7 @@ insn_scope (const_rtx insn)
 }
 
 /* Return line number of the statement specified by the locator.  */
-static location_t
+location_t
 locator_location (int loc)
 {
   int max = VEC_length (int, locations_locators_locs);

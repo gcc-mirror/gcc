@@ -233,6 +233,14 @@ mlongcall
 Target Report Var(rs6000_default_long_calls)
 Avoid all range limits on call instructions
 
+mgen-cell-microcode
+Target Report Var(rs6000_gen_cell_microcode) Init(-1)
+Generate Cell microcode
+
+mwarn-cell-microcode
+Target Var(rs6000_warn_cell_microcode) Init(0) Warning
+Emitting warning when a Cell microcode is emitted
+
 mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1)
 Warn about deprecated 'vector long ...' AltiVec type usage
