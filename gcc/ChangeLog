@@ -1,3 +1,8 @@
+2008-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* combine.c (simplify_set): Avoid calling LOAD_EXTEND_OP on
+	non-integer modes.
+
 2008-10-13  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc/config/pa/linux-atomic.c: Work around missing header file
