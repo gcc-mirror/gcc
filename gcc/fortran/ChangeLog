@@ -1,3 +1,7 @@
+2008-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* simplify.c: Remove MPFR_VERSION_NUM(2,3,0) conditionals.
+
 2008-10-12  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37688

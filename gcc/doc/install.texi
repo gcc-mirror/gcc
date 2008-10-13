@@ -309,7 +309,7 @@ library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also
 @option{--with-gmp-lib} and @option{--with-gmp-include}.
 
-@item MPFR Library version 2.3.0 (or later)
+@item MPFR Library version 2.3.2 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
 @uref{http://www.mpfr.org/}.  The version of MPFR that is bundled with
