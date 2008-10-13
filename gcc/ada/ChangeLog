@@ -1,3 +1,9 @@
+2008-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37601
+	* gcc-interface/utils.c (gnat_types_compatible_p): Handle
+	NULL TYPE_DOMAIN.
+
 2008-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Move code
