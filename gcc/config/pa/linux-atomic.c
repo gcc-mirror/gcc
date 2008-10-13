@@ -29,7 +29,13 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+/* FIXME: work around build failure for hppa64-linux-gnu target. */
+#ifndef _LP64
 #include <errno.h>
+#else 
+#define ENOSYS 251 
+#define EFAULT 14 
+#endif 
 
 /* All PA-RISC implementations supported by linux have strongly
    ordered loads and stores.  Only cache flushes and purges can be

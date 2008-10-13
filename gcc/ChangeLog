@@ -1,3 +1,8 @@
+2008-10-13  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc/config/pa/linux-atomic.c: Work around missing header file
+	for hppa64-linux-gnu targets.
+
 2008-10-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
             Kaushal Kantawala <Kaushal_Kantawala@playstation.sony.com>
             Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
