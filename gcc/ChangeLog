@@ -1,3 +1,12 @@
+2008-10-14  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/37553
+       * tree.c (build_type_attribute_qual_variant): Hash on the
+       unqualified type, and don't overwrite an existing
+       (type_hash_eq): Make the TYPE_NAME of the types significant, to
+       allow distinguishing between wchar_t and its underlying type. This
+       also means that we'll retain a little more typedef information.
+
 2008-10-14  Andrey Belevantsev  <abel@ispras.ru>
 	    Dmitry Melnik  <dm@ispras.ru>
 	    Dmitry Zhurikhin  <zhur@ispras.ru>
