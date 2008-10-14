@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**  Returns the size() of the largest possible %list.  */
       size_type
       max_size() const
-      { return _M_get_Tp_allocator().max_size(); }
+      { return _M_get_Node_allocator().max_size(); }
 
       /**
        *  @brief Resizes the %list to the specified number of elements.
