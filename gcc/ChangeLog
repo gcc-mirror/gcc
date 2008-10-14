@@ -1,3 +1,9 @@
+2008-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37805
+	* opts.c (common_handle_option): Don't ICE on -fhelp=joined
+	and -fhelp=separate.
+
 2008-10-14  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.md (cell_micro): Fix formatting.
@@ -9,7 +15,7 @@
 
 2008-10-13  Matthias Klose  <doko@ubuntu.com>
 
-	* gcc/config/pa/linux-atomic.c: Work around missing header file
+	* config/pa/linux-atomic.c: Work around missing header file
 	for hppa64-linux-gnu targets.
 
 2008-10-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
