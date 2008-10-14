@@ -1,3 +1,9 @@
+2008-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37819
+	* cp-gimplify.c (cp_genericize_r): Only fold_convert COND_EXPR
+	arguments if they don't already have COND_EXPR's type.
+
 2008-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37650
