@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -75,7 +75,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	{
 	  _Node* __tmp = __cur;
 	  __cur = static_cast<_Node*>(__cur->_M_next);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  _M_get_Node_allocator().destroy(__tmp);
+#else
 	  _M_get_Tp_allocator().destroy(&__tmp->_M_data);
+#endif
 	  _M_put_node(__tmp);
 	}
     }
