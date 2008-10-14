@@ -1072,14 +1072,13 @@
 (define_bypass  3 "2_ialu" "2_mmalua,2_mmmul,2_mmshf")
 (define_bypass  3 "2_mmalua,2_mmmul,2_mmshf" "2_ialu,2_ilog,2_ishf,2_st,2_ld,2_ldc")
 (define_bypass  6 "2_tofr"  "2_frfr,2_stf")
-(define_bypass  7 "2_fmac"  "2_frfr,2_stf")
 
 ;; We don't use here fcmp because scall may be predicated.
 (define_bypass  0 "2_fcvtfx,2_fld,2_flda,2_fldc,2_fmac,2_fmisc,2_frar_i,2_frar_m,\
                    2_frbr,2_frfr,2_frpr,2_ialu,2_ilog,2_ishf,2_ld,2_ldc,2_long_i,\
-                   2_mmalua,2_mmmul,2_mmshf,2_mmshfi,2_toar_m,2_tofr,\
+                   2_mmalua,2_mmmul,2_mmshf,2_mmshfi,2_toar_m,2_tobr,2_tofr,\
 		   2_xmpy,2_xtd"
-                  "2_scall")
+                  "2_br,2_scall")
 
 (define_bypass  0 "2_unknown,2_ignore,2_stop_bit,2_br,2_fcmp,2_fcvtfx,2_fld,2_flda,2_fldc,\
                    2_fmac,2_fmisc,2_frar_i,2_frar_m,2_frbr,2_frfr,2_frpr,\

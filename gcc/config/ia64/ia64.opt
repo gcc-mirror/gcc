@@ -105,7 +105,7 @@ Target Report Var(mflag_sched_ar_data_spec) Init(1)
 Use data speculation after reload
 
 msched-control-spec
-Target Report Var(mflag_sched_control_spec) Init(0)
+Target Report Var(mflag_sched_control_spec) Init(2)
 Use control speculation
 
 msched-br-in-data-spec
@@ -120,28 +120,44 @@ msched-in-control-spec
 Target Report Var(mflag_sched_in_control_spec) Init(1)
 Use in block control speculation
 
-msched-ldc
-Target Report Var(mflag_sched_ldc) Init(1)
+msched-spec-ldc
+Target Report Var(mflag_sched_spec_ldc) Init(1)
 Use simple data speculation check
 
-msched-control-ldc
-Target Report Var(mflag_control_ldc) Init(0)
+msched-spec-control-ldc
+Target Report Var(mflag_sched_spec_control_ldc) Init(0)
 Use simple data speculation check for control speculation
 
-msched-spec-verbose
-Common Report Var(mflag_sched_spec_verbose) Init(0)
-Print information about speculative motions.
-
 msched-prefer-non-data-spec-insns
-Common Report Var(mflag_sched_prefer_non_data_spec_insns) Init(0)
+Target Report Var(mflag_sched_prefer_non_data_spec_insns) Init(0)
 If set, data speculative instructions will be chosen for schedule only if there are no other choices at the moment 
 
 msched-prefer-non-control-spec-insns
-Common Report Var(mflag_sched_prefer_non_control_spec_insns) Init(0)
+Target Report Var(mflag_sched_prefer_non_control_spec_insns) Init(0)
 If set, control speculative instructions will be chosen for schedule only if there are no other choices at the moment 
 
 msched-count-spec-in-critical-path
-Common Report Var(mflag_sched_count_spec_in_critical_path) Init(0)
+Target Report Var(mflag_sched_count_spec_in_critical_path) Init(0)
 Count speculative dependencies while calculating priority of instructions
+
+msched-stop-bits-after-every-cycle
+Target Report Var(mflag_sched_stop_bits_after_every_cycle) Init(1)
+Place a stop bit after every cycle when scheduling
+
+msched-fp-mem-deps-zero-cost
+Target Report Var(mflag_sched_fp_mem_deps_zero_cost) Init(0)
+Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group
+
+msched-max-memory-insns=
+Target RejectNegative Joined UInteger Var(ia64_max_memory_insns) Init(1)
+Soft limit on number of memory insns per instruction group, giving lower priority to subsequent memory insns attempting to schedule in the same insn group. Frequently useful to prevent cache bank conflicts.  Default value is 1
+
+msched-max-memory-insns-hard-limit
+Target Report Var(mflag_sched_mem_insns_hard_limit) Init(0)
+Disallow more than `msched-max-memory-insns' in instruction group. Otherwise, limit is `soft' (prefer non-memory operations when limit is reached)
+
+msel-sched-dont-check-control-spec
+Target Report Var(mflag_sel_sched_dont_check_control_spec) Init(0)
+Don't generate checks for control speculation in selective scheduling
 
 ; This comment is to ensure we retain the blank line above.

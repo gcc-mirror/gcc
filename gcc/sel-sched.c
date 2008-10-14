@@ -1817,7 +1817,7 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
 
   /* Create a recovery block if target is going to emit branchy check, or if
      ORIG_INSN was speculative already.  */
-  if (targetm.sched.needs_block_p (EXPR_INSN_RTX (c_expr))
+  if (targetm.sched.needs_block_p (check_ds)
       || EXPR_SPEC_DONE_DS (INSN_EXPR (orig_insn)) != 0)
     {
       recovery_block = sel_create_recovery_block (orig_insn);
