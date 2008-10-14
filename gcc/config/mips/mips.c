@@ -9697,10 +9697,6 @@ mips_register_move_cost (enum machine_mode mode,
 {
   if (TARGET_MIPS16)
     {
-      /* ??? We cannot move general registers into HI and LO because
-	 MIPS16 has no MTHI and MTLO instructions.  Make the cost of
-	 moves in the opposite direction just as high, which stops the
-	 register allocators from using HI and LO for pseudos.  */
       if (reg_class_subset_p (from, GENERAL_REGS)
 	  && reg_class_subset_p (to, GENERAL_REGS))
 	{
@@ -9717,7 +9713,9 @@ mips_register_move_cost (enum machine_mode mode,
 	return 2;
       if (reg_class_subset_p (to, FP_REGS))
 	return 4;
-      if (reg_class_subset_p (to, ALL_COP_AND_GR_REGS))
+      if (reg_class_subset_p (to, COP0_REGS)
+	  || reg_class_subset_p (to, COP2_REGS)
+	  || reg_class_subset_p (to, COP3_REGS))
 	return 5;
       if (reg_class_subset_p (to, ACC_REGS))
 	return 6;
@@ -9729,7 +9727,9 @@ mips_register_move_cost (enum machine_mode mode,
       if (reg_class_subset_p (from, ST_REGS))
 	/* LUI followed by MOVF.  */
 	return 4;
-      if (reg_class_subset_p (from, ALL_COP_AND_GR_REGS))
+      if (reg_class_subset_p (from, COP0_REGS)
+	  || reg_class_subset_p (from, COP2_REGS)
+	  || reg_class_subset_p (from, COP3_REGS))
 	return 5;
       if (reg_class_subset_p (from, ACC_REGS))
 	return 6;
@@ -9745,6 +9745,25 @@ mips_register_move_cost (enum machine_mode mode,
     }
 
   return 12;
+}
+
+/* Implement TARGET_IRA_COVER_CLASSES.  */
+
+static const enum reg_class *
+mips_ira_cover_classes (void)
+{
+  static const enum reg_class acc_classes[] = {
+    GR_AND_ACC_REGS, FP_REGS, COP0_REGS, COP2_REGS, COP3_REGS,
+    ST_REGS, LIM_REG_CLASSES
+  };
+  static const enum reg_class no_acc_classes[] = {
+    GR_REGS, FP_REGS, COP0_REGS, COP2_REGS, COP3_REGS,
+    ST_REGS, LIM_REG_CLASSES
+  };
+
+  /* Don't allow the register allocators to use LO and HI in MIPS16 mode,
+     which has no MTLO or MTHI instructions.  */
+  return TARGET_MIPS16 ? no_acc_classes : acc_classes;
 }
 
 /* Return the register class required for a secondary register when
@@ -9769,10 +9788,6 @@ mips_secondary_reload_class (enum reg_class rclass,
     {
       /* In MIPS16 mode, every move must involve a member of M16_REGS.  */
       if (!reg_class_subset_p (rclass, M16_REGS) && !M16_REG_P (regno))
-	return M16_REGS;
-
-      /* We can't really copy to HI or LO at all in MIPS16 mode.  */
-      if (in_p ? reg_classes_intersect_p (rclass, ACC_REGS) : ACC_REG_P (regno))
 	return M16_REGS;
 
       return NO_REGS;
@@ -14202,6 +14217,9 @@ mips_order_regs_for_local_alloc (void)
 #endif
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN mips_dwarf_register_span
+
+#undef TARGET_IRA_COVER_CLASSES
+#define TARGET_IRA_COVER_CLASSES mips_ira_cover_classes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
