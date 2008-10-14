@@ -1,3 +1,8 @@
+2008-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37650
+	* g++.dg/template/crash83.C: New.
+
 2008-10-14  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/37553
