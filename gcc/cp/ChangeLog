@@ -1,3 +1,11 @@
+2008-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37650
+	* pt.c (push_template_decl_real): Check that current_template_parms
+	is not null.
+	(process_partial_specialization): Assert current_template_parms not
+	null.
+
 2008-10-13  Doug Evans  <dje@google.com>
 
 	* cp-tree.h (DECL_MAIN_P): Fix parentheses around expression.

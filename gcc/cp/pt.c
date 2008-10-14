@@ -3292,14 +3292,19 @@ process_partial_specialization (tree decl)
   tree maintmpl = CLASSTYPE_TI_TEMPLATE (type);
   tree specargs = CLASSTYPE_TI_ARGS (type);
   tree inner_args = INNERMOST_TEMPLATE_ARGS (specargs);
-  tree inner_parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
   tree main_inner_parms = DECL_INNERMOST_TEMPLATE_PARMS (maintmpl);
+  tree inner_parms;
   int nargs = TREE_VEC_LENGTH (inner_args);
-  int ntparms = TREE_VEC_LENGTH (inner_parms);
+  int ntparms;
   int  i;
   int did_error_intro = 0;
   struct template_parm_data tpd;
   struct template_parm_data tpd2;
+
+  gcc_assert (current_template_parms);
+
+  inner_parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+  ntparms = TREE_VEC_LENGTH (inner_parms);
 
   /* We check that each of the template parameters given in the
      partial specialization is used in the argument list to the
@@ -3749,8 +3754,8 @@ push_template_decl_real (tree decl, bool is_friend)
      [temp.mem].  */
   bool member_template_p = false;
 
-  if (decl == error_mark_node)
-    return decl;
+  if (decl == error_mark_node || !current_template_parms)
+    return error_mark_node;
 
   /* See if this is a partial specialization.  */
   is_partial = (DECL_IMPLICIT_TYPEDEF_P (decl)
