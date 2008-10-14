@@ -1,3 +1,9 @@
+2008-10-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37083
+	* io/list_read.c (next_char): Simplify EOF tests and set endfile flag.
+	(finish_list_read): Add EOF check.
+
 2008-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/37753
