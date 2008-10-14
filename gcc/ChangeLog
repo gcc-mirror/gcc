@@ -1,3 +1,7 @@
+2008-10-14  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.md (cell_micro): Fix formatting.
+
 2008-10-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* combine.c (simplify_set): Avoid calling LOAD_EXTEND_OP on
