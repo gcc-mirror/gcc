@@ -3704,10 +3704,10 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	  return build_qualified_type (ttype, quals);
 	}
 
+      ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
       ntype = build_distinct_type_copy (ttype);
 
       TYPE_ATTRIBUTES (ntype) = attribute;
-      set_type_quals (ntype, TYPE_UNQUALIFIED);
 
       hashcode = iterative_hash_object (code, hashcode);
       if (TREE_TYPE (ntype))
@@ -3746,12 +3746,11 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       /* If the target-dependent attributes make NTYPE different from
 	 its canonical type, we will need to use structural equality
-	 checks for this qualified type. */
-      ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
+	 checks for this type. */
       if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
           || !targetm.comp_type_attributes (ntype, ttype))
 	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
-      else
+      else if (TYPE_CANONICAL (ntype) == ntype)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
 
       ttype = build_qualified_type (ntype, quals);
@@ -4585,7 +4584,9 @@ type_hash_eq (const void *va, const void *vb)
       || !attribute_list_equal (TYPE_ATTRIBUTES (a->type),
 				 TYPE_ATTRIBUTES (b->type))
       || TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
-      || TYPE_MODE (a->type) != TYPE_MODE (b->type))
+      || TYPE_MODE (a->type) != TYPE_MODE (b->type)
+      || (TREE_CODE (a->type) != COMPLEX_TYPE 
+          && TYPE_NAME (a->type) != TYPE_NAME (b->type)))
     return 0;
 
   switch (TREE_CODE (a->type))
