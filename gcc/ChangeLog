@@ -1,3 +1,125 @@
+2008-10-14  Andrey Belevantsev  <abel@ispras.ru>
+	    Dmitry Melnik  <dm@ispras.ru>
+	    Dmitry Zhurikhin  <zhur@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* target.h (struct gcc_target): Update prototypes of needs_block_p
+	and gen_spec_check.
+	* haifa-sched.c (create_check_block_twin): Update calls to the above.
+	* sel-sched.c (create_speculation_check): Likewise.
+	* doc/tm.texi: Provide documentation for new target hooks.
+		
+	* config/ia64/ia64.c: Include sel-sched.h.  Rewrite speculation hooks.
+	(ia64_gen_spec_insn): Removed.
+	(get_spec_check_gen_function, insn_can_be_in_speculative_p,
+	ia64_gen_spec_check): New static functions.
+	(ia64_alloc_sched_context, ia64_init_sched_context, 
+	ia64_set_sched_context, ia64_clear_sched_context, 
+	ia64_free_sched_context, ia64_get_insn_spec_ds, 
+	ia64_get_insn_checked_ds, ia64_skip_rtx_p): Declare functions.
+	(ia64_needs_block_p): Change prototype.
+	(ia64_gen_check): Rename to ia64_gen_spec_check.
+	(ia64_adjust_cost): Rename to ia64_adjust_cost_2.  Add new parameter 
+	into declaration, add special memory dependencies handling.
+	(TARGET_SCHED_ALLOC_SCHED_CONTEXT, TARGET_SCHED_INIT_SCHED_CONTEXT,
+	TARGET_SCHED_SET_SCHED_CONTEXT, TARGET_SCHED_CLEAR_SCHED_CONTEXT,
+	TARGET_SCHED_FREE_SCHED_CONTEXT, TARGET_SCHED_GET_INSN_SPEC_DS,
+	TARGET_SCHED_GET_INSN_CHECKED_DS, TARGET_SCHED_SKIP_RTX_P): 
+	Define new target hooks.
+	(TARGET_SCHED_GEN_CHECK): Rename to TARGET_SCHED_GEN_SPEC_CHECK.
+	(ia64_optimization_options): Turn on selective scheduling with -O3, 
+	disable -fauto-inc-dec. Set mflag_sched_control_spec to true by default
+	with selective scheduling.
+	(ia64_override_options): Initialize align_loops and align_functions 
+	to 32 and 64, respectively.  Set global selective scheduling flags 
+	according to target-dependent flags.
+	(rtx_needs_barrier): Support UNSPEC_LDS_A.
+	(group_barrier_needed): Use new mstop-bit-before-check flag. 
+	Add heuristic.
+	(dfa_state_size): Make global.
+	(spec_check_no, max_uid): Remove.
+        (mem_ops_in_group, current_cycle): New variables.
+	(ia64_sched_init): Disable checks for !SCHED_GROUP_P after reload.
+        Initialize new variables.
+        (is_load_p, record_memory_reference): New functions.
+        (ia64_dfa_sched_reorder): Lower priority of loads when limit is
+        reached.
+	(ia64_variable_issue): Change use of current_sched_info to 
+	sched_deps_info.  Update comment.  Note if a load or a store is issued.
+        (ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Require a cycle
+        advance if maximal number of loads or stores was issued on current 
+        cycle.
+	(scheduled_good_insn): New static helper function.
+        (ia64_dfa_new_cycle): Assert that last_scheduled_insn is set when 
+        a group barrier is needed.  Fix vertical spacing.  Guard the code
+        doing state transition with last_scheduled_insn check.                
+        Mark that a stop bit should be before current insn if there was a 
+        cycle advance.  Update current_cycle and mem_ops_in_group.
+	(ia64_h_i_d_extended): Change use of current_sched_info to
+        sched_deps_info. Reallocate stops_p by larger chunks.
+	(struct _ia64_sched_context): New structure.
+	(ia64_sched_context_t): New typedef.
+	(ia64_alloc_sched_context, ia64_init_sched_context, 
+	ia64_set_sched_context, ia64_clear_sched_context,
+	ia64_free_sched_context): New static functions.
+	(gen_func_t): New typedef.
+	(get_spec_load_gen_function): New function.
+	(SPEC_GEN_EXTEND_OFFSET): Declare.	
+	(ia64_set_sched_flags): Check common_sched_info instead of *flags.
+	(get_mode_no_for_insn): Change the condition that prevents use of 
+	special hardware registers so it can now handle pseudos.
+	(get_spec_unspec_code): New function.
+	(ia64_skip_rtx_p, get_insn_spec_code, ia64_get_insn_spec_ds,
+	ia64_get_insn_checked_ds, ia64_gen_spec_load): New static functions.
+	(ia64_speculate_insn, ia64_needs_block_p): Support branchy checks
+	during selective scheduling.
+	(ia64_speculate_insn): Use ds_get_speculation_types when 
+	determining whether we need to change the pattern.
+	(SPEC_GEN_LD_MAP, SPEC_GEN_CHECK_OFFSET): Declare.
+	(ia64_spec_check_src_p): Support new speculation/check codes.
+	(struct bundle_state): New field.
+	(issue_nops_and_insn): Initialize it.
+	(insert_bundle_state): Minimize mid-bundle stop bits.
+	(important_for_bundling_p): New function.
+	(get_next_important_insn): Use important_for_bundling_p.
+	(bundling): When shifting TImode from unimportant insns, ignore 
+	also group barriers.  Assert that best state is found before 
+	the backward bundling pass.  Print number of mid-bundle stop bits.  
+	Minimize mid-bundle stop bits.  Check correct calculation of 
+	mid-bundle stop bits.
+	(ia64_sched_finish, final_emit_insn_group_barriers): Fix formatting.
+	(final_emit_insn_group_barriers): Emit stop bits before insns starting
+	a new cycle.
+	(sel2_run): New variable.
+	(ia64_reorg): When flag_selective_scheduling2 is set, run the selective 
+	scheduling pass instead of schedule_ebbs.  
+	
+	* config/ia64/ia64.md (speculable1, speculable2): New attributes.
+	(UNSPEC_LDS_A): New UNSPEC.
+	(movqi_internal, movhi_internal, movsi_internal, movdi_internal, 
+	movti_internal, movsf_internal, movdf_internal, 
+	movxf_internal): Make visible.  Add speculable* attributes.
+	(output_c_nc): New mode attribute.
+	(mov<mode>_speculative_a, zero_extend<mode>di2_speculative_a,
+	mov<mode>_nc, zero_extend<mode>di2_nc, 
+	advanced_load_check_nc_<mode>): New insns.
+	(zero_extend*): Add speculable* attributes.
+
+	* config/ia64/ia64.opt (msched_fp_mem_deps_zero_cost): New option.
+	(msched-stop-bits-after-every-cycle): Likewise.
+	(msched-max-memory-insns,
+        msched-max-memory-insns-hard-limit): Likewise.
+	(msched-spec-verbose): Remove.
+	(msched-prefer-non-data-spec-insns,
+        msched-prefer-non-control-spec-insns, msched-count-spec-in-critical-path,
+	msel-sched-dont-check-control-spec): Use Target 
+        Report Var instead of Common Report Var.
+
+	* config/ia64/itanium2.md: Remove incorrect bypass.
+	
+	* config/ia64/t-ia64 (ia64.o): Add dependency on sel-sched.h.
+
 2008-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37805

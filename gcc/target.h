@@ -397,7 +397,7 @@ struct gcc_target
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return true if the check instruction
        passed as the parameter needs a recovery block.  */
-    bool (* needs_block_p) (const_rtx);
+    bool (* needs_block_p) (int);
 
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return a pattern for the check
@@ -407,7 +407,7 @@ struct gcc_target
        simple check).  If the mutation of the check is requested (e.g. from
        ld.c to chk.a), the third parameter is true - in this case the first
        parameter is the previous check.  */
-    rtx (* gen_spec_check) (rtx, rtx, bool);
+    rtx (* gen_spec_check) (rtx, rtx, int);
 
     /* The following member value is a pointer to a function controlling
        what insns from the ready insn queue will be considered for the
