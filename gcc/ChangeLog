@@ -1,3 +1,20 @@
+2008-10-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (reg_class): Remove HI_AND_GR_REGS,
+	LO_AND_GR_REGS, HI_AND_FP_REGS, COP0_AND_GR_REGS, COP2_AND_GR_REGS,
+	COP3_AND_GR_REGS, ALL_COP_REGS and ALL_COP_AND_GR_REGS.
+	Add GR_AND_MD0_REGS, GR_AND_MD1_REGS, GR_AND_MD_REGS and
+	GR_AND_ACC_REGS.
+	(REG_CLASS_NAMES): Update accordingly.
+	(REG_CLASS_CONTENTS): Likewise.  Use the class name in the comments,
+	rather than an unpredictable descriptive string.
+	* config/mips/mips.c (mips_register_move_cost): Remove comment.
+	(mips_register_move_cost): Check for specific COP*_REGS classes,
+	instead of ALL_COP_AND_GR_REGS.
+	(mips_ira_cover_classes): New function.
+	(mips_secondary_reload_class): Remove MTLO and MTHI workarounds.
+	(TARGET_IRA_COVER_CLASSES): Define.
+
 2008-10-14  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/37553
