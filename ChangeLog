@@ -1,3 +1,7 @@
+2008-10-14  Antoniu Pop	<antoniu.pop@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Added myself.
+
 2008-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac (MPFR check): Bump minimum version to 2.3.0 and
