@@ -815,14 +815,18 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	= (TREE_OPERAND (stmt, 2)
 	   ? is_bitfield_expr_with_lowered_type (TREE_OPERAND (stmt, 2))
 	   : NULL_TREE);
-      if (type_left)
+      if (type_left
+	  && !useless_type_conversion_p (TREE_TYPE (stmt),
+					 TREE_TYPE (TREE_OPERAND (stmt, 1))))
 	{
 	  TREE_OPERAND (stmt, 1)
 	    = fold_convert (type_left, TREE_OPERAND (stmt, 1));
 	  gcc_assert (useless_type_conversion_p (TREE_TYPE (stmt),
 						 type_left));
 	}
-      if (type_right)
+      if (type_right
+	  && !useless_type_conversion_p (TREE_TYPE (stmt),
+					 TREE_TYPE (TREE_OPERAND (stmt, 2))))
 	{
 	  TREE_OPERAND (stmt, 2)
 	    = fold_convert (type_right, TREE_OPERAND (stmt, 2));
