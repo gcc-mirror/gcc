@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! PR28339, This test checks that internal unit array I/O handles a full record
-! and and advances to th enext record properly.  Test case derived from PR
+! and advances to the next record properly.  Test case derived from PR
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       program main
       integer          i
