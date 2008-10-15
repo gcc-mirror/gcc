@@ -1,3 +1,9 @@
+2008-10-15  Jan Sjodin  <jan.sjodin@amd.com>
+    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/37485
+	* gcc.dg/graphite/pr37485.c: New.
+
 2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
     	    Harsha Jagasia  <harsha.jagasia@amd.com>
 

@@ -1,3 +1,39 @@
+2008-10-15  Jan Sjodin  <jan.sjodin@amd.com>
+    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/37485
+	* graphite.c (gmp_cst_to_tree): Moved.
+	(iv_stack_entry_is_constant): New.
+	(iv_stack_entry_is_iv): New.
+	(loop_iv_stack_push): Renamed to loop_iv_stack_push_iv.
+	(loop_iv_stack_insert_constant): New.
+	(loop_iv_stack_pop): Use new datatpype.
+	(loop_iv_stack_get_iv): Same.
+	(loop_iv_stack_get_iv_from_name): Same.
+	(loop_iv_stack_debug): Renamed to debug_loop_iv_stack.
+	(loop_iv_stack_patch_for_consts): New.
+	(loop_iv_stack_remove_constants): New.
+	(graphite_create_new_loop): Use loop_iv_stack_push_iv.
+	(translate_clast): Call loop_iv_stack_patch_for_consts and
+	loop_iv_stack_remove_constants.
+	(gloog): Use new datatype.  Redirect construction edge to end
+	block to avoid accidental deletion.
+	* graphite.h (enum iv_stack_entry_kind): New.  Tag for data in
+	iv stack entry.
+	(union iv_stack_entry_data): New.  Data in iv stack entry.
+	(struct iv_stack_entry): New.  Datatype for iv stack entries.
+
+2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-data-ref.c (stmt_simple_memref_p): Fix memleak.
+	* graphite.c (free_scop): Same.
+	(build_scops): Same.
+	(free_scattering): New.
+	(build_cloog_prog): Call free_scattering.
+	(patch_phis_for_virtual_defs): Fix memleak.
+	(graphite_trans_bb_strip_mine): Same.
+	(limit_scops): Same.
+
 2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
     	    Harsha Jagasia  <harsha.jagasia@amd.com>
 

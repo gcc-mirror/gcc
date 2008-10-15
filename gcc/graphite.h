@@ -260,7 +260,7 @@ typedef struct name_tree
 {
   tree t;
   const char *name;
-  struct loop* loop;
+  struct loop *loop;
 } *name_tree;
 
 DEF_VEC_P(name_tree);
@@ -340,8 +340,34 @@ extern void debug_clast_stmt (struct clast_stmt *);
 extern void debug_loop_vec (graphite_bb_p gb);
 extern void debug_oldivs (scop_p);
 
-typedef VEC(name_tree, heap) **loop_iv_stack;
-extern void loop_iv_stack_debug (loop_iv_stack);
+/* Describes the type of an iv stack entry.  */
+typedef enum {
+  iv_stack_entry_unknown = 0,
+  iv_stack_entry_iv,
+  iv_stack_entry_const
+} iv_stack_entry_kind;
+
+/* Data contained in an iv stack entry.  */
+typedef union iv_stack_entry_data_union
+{
+  name_tree iv;
+  tree constant;
+} iv_stack_entry_data;
+
+/* Datatype for loop iv stack entry.  */
+typedef struct iv_stack_entry_struct
+{
+  iv_stack_entry_kind kind;
+  iv_stack_entry_data data;
+} iv_stack_entry;
+
+typedef iv_stack_entry *iv_stack_entry_p;
+
+DEF_VEC_P(iv_stack_entry_p);
+DEF_VEC_ALLOC_P(iv_stack_entry_p,heap);
+
+typedef VEC(iv_stack_entry_p, heap) **loop_iv_stack;
+extern void debug_loop_iv_stack (loop_iv_stack);
 
 
 /* Return the number of gimple loops contained in SCOP.  */
