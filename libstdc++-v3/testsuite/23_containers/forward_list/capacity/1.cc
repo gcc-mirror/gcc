@@ -39,7 +39,8 @@ test01()
   fld.resize(0);
   VERIFY(fld.empty() == true);
 
-  VERIFY(fld.max_size() == fld.get_allocator().max_size());
+  VERIFY( fld.max_size()
+	  == std::allocator<std::_Fwd_list_node<double> >().max_size() );
 }
 
 int
