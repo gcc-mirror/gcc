@@ -1,3 +1,13 @@
+2008-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* gfortran.dg/reshape_3.f90:  New test.
+	* gfortran.dg/reshape_4.f90:  New test.
+	* gfortran.dg/reshape_order_1.f90:  Use correct shape.
+	* gfortran.dg/reshape_order_2.f90:  Likewise.
+	* gfortran.dg/reshape_order_3.f90:  Likewise.
+	* gfortran.dg/reshape_order_4.f90:  Likewise.
+
 2008-10-15  Jan Sjodin  <jan.sjodin@amd.com>
     	    Harsha Jagasia  <harsha.jagasia@amd.com>
 

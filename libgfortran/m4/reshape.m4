@@ -125,6 +125,27 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
 
   if (unlikely (compile_options.bounds_check))
     {
+      index_type ret_extent, source_extent;
+
+      rs = 1;
+      for (n = 0; n < rdim; n++)
+	{
+	  rs *= shape_data[n];
+	  ret_extent = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  if (ret_extent != shape_data[n])
+	    runtime_error("Incorrect extent in return value of RESHAPE"
+			  " intrinsic in dimension %ld: is %ld,"
+			  " should be %ld", (long int) n+1,
+			  (long int) ret_extent, (long int) shape_data[n]);
+	}
+
+      source_extent = source->dim[0].ubound + 1 - source->dim[0].lbound;
+
+      if (rs != source_extent)
+	runtime_error("Incorrect size in SOURCE argument to RESHAPE"
+		      " intrinsic: is %ld, should be %ld",
+		      (long int) source_extent, (long int) rs);
+
       if (order)
 	{
 	  int seen[GFC_MAX_DIMENSIONS];
