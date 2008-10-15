@@ -18041,6 +18041,35 @@ toc_hash_eq (const void *h1, const void *h2)
   || strncmp ("_ZTI", name, strlen ("_ZTI")) == 0	\
   || strncmp ("_ZTC", name, strlen ("_ZTC")) == 0)
 
+#ifdef NO_DOLLAR_IN_LABEL
+/* Return a GGC-allocated character string translating dollar signs in
+   input NAME to underscores.  Used by XCOFF ASM_OUTPUT_LABELREF.  */
+
+const char *
+rs6000_xcoff_strip_dollar (const char *name)
+{
+  char *strip, *p;
+  int len;
+
+  p = strchr (name, '$');
+
+  if (p == 0 || p == name)
+    return name;
+
+  len = strlen (name);
+  strip = (char *) alloca (len + 1);
+  strcpy (strip, name);
+  p = strchr (strip, '$');
+  while (p)
+    {
+      *p = '_';
+      p = strchr (p + 1, '$');
+    }
+
+  return ggc_alloc_string (strip, len);
+}
+#endif
+
 void
 rs6000_output_symbol_ref (FILE *file, rtx x)
 {
