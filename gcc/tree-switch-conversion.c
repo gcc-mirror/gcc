@@ -296,12 +296,29 @@ check_final_bb (void)
 	{
 	  basic_block bb = gimple_phi_arg_edge (phi, i)->src;
 
-	  if ((bb == info.switch_bb
-	       || (single_pred_p (bb) && single_pred (bb) == info.switch_bb))
-	      && !is_gimple_ip_invariant (gimple_phi_arg_def (phi, i)))
+	  if (bb == info.switch_bb
+	      || (single_pred_p (bb) && single_pred (bb) == info.switch_bb))
 	    {
-	      info.reason = "   Non-invariant value from a case\n";
-	      return false; /* Non-invariant argument.  */
+	      tree reloc, val;
+
+	      val = gimple_phi_arg_def (phi, i);
+	      if (!is_gimple_ip_invariant (val))
+		{
+		  info.reason = "   Non-invariant value from a case\n";
+		  return false; /* Non-invariant argument.  */
+		}
+	      reloc = initializer_constant_valid_p (val, TREE_TYPE (val));
+	      if ((flag_pic && reloc != null_pointer_node)
+		  || (!flag_pic && reloc == NULL_TREE))
+		{
+		  if (reloc)
+		    info.reason
+		      = "   Value from a case would need runtime relocations\n";
+		  else
+		    info.reason
+		      = "   Value from a case is not a valid initializer\n";
+		  return false;
+		}
 	    }
 	}
     }
