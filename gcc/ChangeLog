@@ -1,3 +1,11 @@
+2008-10-15  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.h: (TARGET_DFP): This requires TARGET_HARD_FLOAT.
+	* config/s390/s390.md: Replace "TARGET_HARD_FLOAT &&
+	TARGET_(HARD_)DFP" with only TARGET_(HARD_)DFP since this
+	already implies hard float.  Also fix several insn condition
+	with TARGET_DFP which shall require TARGET_HARD_DFP instead.
+
 2008-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36881
