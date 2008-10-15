@@ -2786,17 +2786,15 @@ av_for_af (tree access_fun, lambda_vector cy, struct access_matrix *am)
 
 static bool
 build_access_matrix (data_reference_p data_reference,
-		     VEC (tree, heap) *parameters, int loop_nest_num)
+		     VEC (tree, heap) *parameters, VEC (loop_p, heap) *nest)
 {
   struct access_matrix *am = GGC_NEW (struct access_matrix);
   unsigned i, ndim = DR_NUM_DIMENSIONS (data_reference);
-  struct loop *loop = gimple_bb (DR_STMT (data_reference))->loop_father;
-  struct loop *loop_nest = get_loop (loop_nest_num);
-  unsigned nivs = loop_depth (loop) - loop_depth (loop_nest) + 1;
+  unsigned nivs = VEC_length (loop_p, nest);
   unsigned lambda_nb_columns;
   lambda_vector_vec_p matrix;
 
-  AM_LOOP_NEST_NUM (am) = loop_nest_num;
+  AM_LOOP_NEST (am) = nest;
   AM_NB_INDUCTION_VARS (am) = nivs;
   AM_PARAMETERS (am) = parameters;
 
@@ -2824,13 +2822,13 @@ build_access_matrix (data_reference_p data_reference,
 bool
 lambda_compute_access_matrices (VEC (data_reference_p, heap) *datarefs,
 				VEC (tree, heap) *parameters,
-				int loop_nest_num)
+				VEC (loop_p, heap) *nest)
 {
   data_reference_p dataref;
   unsigned ix;
 
   for (ix = 0; VEC_iterate (data_reference_p, datarefs, ix, dataref); ix++)
-    if (!build_access_matrix (dataref, parameters, loop_nest_num))
+    if (!build_access_matrix (dataref, parameters, nest))
       return false;
 
   return true;

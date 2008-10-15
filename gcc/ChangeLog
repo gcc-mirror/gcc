@@ -1,3 +1,18 @@
+2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/37686
+	* tree-loop-linear.c (linear_transform_loops): Build a
+	loop nest vector.  Pass it to lambda_compute_access_matrices.
+	* tree-data-ref.h (struct access_matrix): Store the loop nest
+	relative to which it encodes the information.
+	(AM_LOOP_NEST_NUM): Renamed AM_LOOP_NEST.
+	(am_vector_index_for_loop): Reimplemented: iterate over the
+	loop nest for finding the loop index in the access matrix.
+	(lambda_compute_access_matrices): Update declaration.
+	* lambda-code.c (build_access_matrix): Pass the loop nest and
+	record it.
+	(lambda_compute_access_matrices): Same.
+
 2008-10-15  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h: (TARGET_DFP): This requires TARGET_HARD_FLOAT.
