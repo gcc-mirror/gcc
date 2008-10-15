@@ -299,7 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		 size_type __n, const _Tp& __val)
     {
       _Fwd_list_node_base* __to
-	= const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+	= const_cast<_Fwd_list_node_base*>(__pos._M_node);
       _Fwd_list_node_base* __keep = __to->_M_next;
       for (size_type __i = 0; __i < __n; ++__i)
 	{
@@ -317,7 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   _InputIterator __first, _InputIterator __last)
       {
 	_Fwd_list_node_base* __to
-	  = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+	  = const_cast<_Fwd_list_node_base*>(__pos._M_node);
 	_Fwd_list_node_base* __keep = __to->_M_next;
 	_InputIterator __curr = __first;
 	while (__curr != __last)
@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
     {
       _Fwd_list_node_base* __to
-	= const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+	= const_cast<_Fwd_list_node_base*>(__pos._M_node);
       _Fwd_list_node_base* __keep = __to->_M_next;
       const _Tp* __item = __il.begin();
       while (__item != __il.end())
@@ -431,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         while (++__next != __last)
 	{
 	  if (__binary_pred(*__first, *__next))
-              erase_after(__first);
+	    erase_after(__first);
 	  else
 	    __first = __next;
 	  __next = __first;
