@@ -1,6 +1,6 @@
 2008-10-15  Paolo Bonzini  <bonzini@gnu.org>
 
-	PR bootstrap/37717
+	PR bootstrap/37137
 	* Makefile.in (LIBCFLAGS): Remove.
 	(FLAGS_TO_PASS): Don't mention it.
 	(COMPILE.c, MULTIOSDIR): Replace it with CFLAGS.
