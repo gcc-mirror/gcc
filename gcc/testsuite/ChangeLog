@@ -1,3 +1,8 @@
+2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/37686
+	* testsuite/gcc.dg/tree-ssa/pr37686.c: New.
+
 2008-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36881

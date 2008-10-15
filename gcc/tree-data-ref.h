@@ -128,13 +128,13 @@ typedef struct scop *scop_p;
 */
 struct access_matrix
 {
-  int loop_nest_num;
+  VEC (loop_p, heap) *loop_nest;
   int nb_induction_vars;
   VEC (tree, heap) *parameters;
   VEC (lambda_vector, heap) *matrix;
 };
 
-#define AM_LOOP_NEST_NUM(M) (M)->loop_nest_num
+#define AM_LOOP_NEST(M) (M)->loop_nest
 #define AM_NB_INDUCTION_VARS(M) (M)->nb_induction_vars
 #define AM_PARAMETERS(M) (M)->parameters
 #define AM_MATRIX(M) (M)->matrix
@@ -149,8 +149,14 @@ struct access_matrix
 static inline int
 am_vector_index_for_loop (struct access_matrix *access_matrix, int loop_num)
 {
-  gcc_assert (loop_num >= AM_LOOP_NEST_NUM (access_matrix));
-  return loop_num - AM_LOOP_NEST_NUM (access_matrix);
+  int i;
+  loop_p l;
+
+  for (i = 0; VEC_iterate (loop_p, AM_LOOP_NEST (access_matrix), i, l); i++)
+    if (l->num == loop_num)
+      return i;
+
+  gcc_unreachable();
 }
 
 int access_matrix_get_index_for_parameter (tree, struct access_matrix *);
@@ -581,7 +587,7 @@ bool lambda_transform_legal_p (lambda_trans_matrix, int,
 void lambda_collect_parameters (VEC (data_reference_p, heap) *,
 				VEC (tree, heap) **);
 bool lambda_compute_access_matrices (VEC (data_reference_p, heap) *,
-				     VEC (tree, heap) *, int);
+				     VEC (tree, heap) *, VEC (loop_p, heap) *);
 
 /* In tree-data-ref.c  */
 void split_constant_offset (tree , tree *, tree *);
