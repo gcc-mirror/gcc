@@ -68,7 +68,8 @@
   (if_then_else (match_test "flag_pic")
 	(and (match_test "GET_CODE (op) == UNSPEC")
 	     (ior (match_test "XINT (op, 1) == UNSPEC_PLT")
-		  (match_test "XINT (op, 1) == UNSPEC_PIC")))
+		  (match_test "XINT (op, 1) == UNSPEC_PIC")
+		  (match_test "XINT (op, 1) == UNSPEC_GOTSYM_OFF")))
 	(match_test "GET_CODE (op) == SYMBOL_REF")))
 
 ;; Integer constraints

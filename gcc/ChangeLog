@@ -1,3 +1,13 @@
+2008-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mn10300/mn10300.h (OUTPUT_ADDR_CONST_EXTRA): Handle
+	UNSPEC_GOTSYM_OFFs.
+	* config/mn10300/mn10300.c (legitimate_pic_operand_p): Return true
+	for UNSPEC_GOTSYM_OFFs.
+	* config/mn10300/mn10300.md (UNSPEC_GOTSYM_OFF): New unspec.
+	(add_GOT_to_pic_reg): Use it.
+	* config/mn10300/constraints.md (S): Allow UNSPEC_GOTSYM_OFF.
+
 2008-10-15  Jan Sjodin  <jan.sjodin@amd.com>
     	    Harsha Jagasia  <harsha.jagasia@amd.com>
 

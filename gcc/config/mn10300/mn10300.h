@@ -738,7 +738,7 @@ while (0)
    constants.  Used for PIC-specific UNSPECs.  */
 #define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
   do									\
-    if (GET_CODE (X) == UNSPEC && XVECLEN ((X), 0) == 1)	\
+    if (GET_CODE (X) == UNSPEC)						\
       {									\
 	switch (XINT ((X), 1))						\
 	  {								\
@@ -761,6 +761,12 @@ while (0)
 	  case UNSPEC_PLT:						\
 	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
 	    fputs ("@PLT", (STREAM));					\
+	    break;							\
+	  case UNSPEC_GOTSYM_OFF:					\
+	    assemble_name (STREAM, GOT_SYMBOL_NAME);			\
+	    fputs ("-(", STREAM);					\
+	    output_addr_const (STREAM, XVECEXP (X, 0, 0));		\
+	    fputs ("-.)", STREAM);					\
 	    break;							\
 	  default:							\
 	    goto FAIL;							\
