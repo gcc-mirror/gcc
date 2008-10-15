@@ -31,8 +31,8 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_FORWARD_LIST_H
-#define _GLIBCXX_FORWARD_LIST_H 1
+#ifndef _FORWARD_LIST_H
+#define _FORWARD_LIST_H 1
 
 #pragma GCC system_header
 
@@ -282,6 +282,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename _Alloc::template rebind<_Fwd_list_node<_Tp>>::other
         _Node_alloc_type;
 
+      typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+
       struct _Fwd_list_impl 
       : public _Node_alloc_type
       {
@@ -300,7 +302,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Fwd_list_impl _M_impl;
 
     public:
-      typedef _Alloc                          allocator_type;
       typedef _Fwd_list_iterator<_Tp>         iterator;
       typedef _Fwd_list_const_iterator<_Tp>   const_iterator;
 
@@ -314,15 +315,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_get_Node_allocator() const
       { return *static_cast<const _Node_alloc_type*>(&this->_M_impl); }
 
-      allocator_type
-      get_allocator() const
-      { return this->_M_get_Node_allocator(); }
-
       _Fwd_list_base()
       : _M_impl()
       { this->_M_impl._M_head._M_next = 0; }
 
-      _Fwd_list_base(const allocator_type& __a)
+      _Fwd_list_base(const _Alloc& __a)
       : _M_impl(__a)
       { this->_M_impl._M_head._M_next = 0; }
 
@@ -371,7 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         _M_insert_after(const_iterator __pos, _Args&&... __args)
         {
           _Fwd_list_node_base* __to
-            = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+            = const_cast<_Fwd_list_node_base*>(__pos._M_node);
           _Node* __thing = _M_create_node(std::forward<_Args>(__args)...);
           __thing->_M_next = __to->_M_next;
           __to->_M_next = __thing;
@@ -425,21 +422,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class forward_list : private _Fwd_list_base<_Tp, _Alloc>
     {
     private:
-      typedef _Fwd_list_base<_Tp, _Alloc>       _Base;
-      typedef _Fwd_list_node<_Tp>               _Node;
+      typedef _Fwd_list_base<_Tp, _Alloc>                  _Base;
+      typedef _Fwd_list_node<_Tp>                          _Node;
+      typedef typename _Base::_Tp_alloc_type               _Tp_alloc_type;
 
     public:
       // types:
-      typedef typename _Alloc::reference        reference;
-      typedef typename _Alloc::const_reference  const_reference;
-      typedef _Fwd_list_iterator<_Tp>           iterator;
-      typedef _Fwd_list_const_iterator<_Tp>     const_iterator;
-      typedef std::size_t                       size_type;
-      typedef std::ptrdiff_t                    difference_type;
-      typedef _Tp                               value_type;
-      typedef typename _Base::allocator_type    allocator_type;
-      typedef typename _Alloc::pointer          pointer;
-      typedef typename _Alloc::const_pointer    const_pointer;
+      typedef _Tp                                          value_type;
+      typedef typename _Tp_alloc_type::pointer             pointer;
+      typedef typename _Tp_alloc_type::const_pointer       const_pointer;
+      typedef typename _Tp_alloc_type::reference           reference;
+      typedef typename _Tp_alloc_type::const_reference     const_reference;
+      typedef _Fwd_list_iterator<_Tp>                      iterator;
+      typedef _Fwd_list_const_iterator<_Tp>                const_iterator;
+      typedef std::size_t                                  size_type;
+      typedef std::ptrdiff_t                               difference_type;
+      typedef _Alloc                                       allocator_type;
 
       // 23.2.3.1 construct/copy/destroy:
 
@@ -647,7 +645,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const
-      { return _Base::get_allocator(); }
+      { return this->_M_get_Node_allocator(); }
 
       // 23.2.3.2 iterators:
 
@@ -858,7 +856,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       insert_after(const_iterator __pos, const _Tp& __val)
       {
         _Fwd_list_node_base* __to
-          = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+	  = const_cast<_Fwd_list_node_base*>(__pos._M_node);
         _Node* __thing = _M_create_node(__val);
         __thing->_M_next = __to->_M_next;
         __to->_M_next = __thing;
@@ -872,7 +870,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       insert_after(const_iterator __pos, _Tp&& __val)
       {
         _Fwd_list_node_base* __to
-          = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
         _Node* __thing = _M_create_node(std::move(__val));
         __thing->_M_next = __to->_M_next;
         __to->_M_next = __thing;
@@ -950,7 +948,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       erase_after(const_iterator __pos)
       {
         _Fwd_list_node_base* __tmp
-          = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
         if (__tmp)
           return iterator(_Base::_M_erase_after(__tmp));
         else
@@ -980,7 +978,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       erase_after(const_iterator __pos, iterator __last)
       {
         _Fwd_list_node_base* __tmp
-          = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
         return iterator(_M_erase_after(__tmp, __last._M_node));
       }
 
@@ -1060,9 +1058,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         if (!__list.empty() && &__list != this)
           {
             _Fwd_list_node_base* __tmp
-              = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
+              = const_cast<_Fwd_list_node_base*>(__pos._M_node);
             const_iterator __before = __list.cbefore_begin();
-            __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base* const>
+            __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base*>
 				     (__before._M_node));
           }
       }
@@ -1100,10 +1098,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                    const_iterator __before, const_iterator __last)
       {
         _Fwd_list_node_base* __tmp
-          = const_cast<_Fwd_list_node_base* const>(__pos._M_node);
-        __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base* const>
+          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
+        __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base*>
 				 (__before._M_node),
-				 const_cast<_Fwd_list_node_base* const>
+				 const_cast<_Fwd_list_node_base*>
 				 (__last._M_node));
       }
 
@@ -1335,4 +1333,4 @@ _GLIBCXX_END_NAMESPACE // namespace std
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-#endif // _GLIBCXX_FORWARD_LIST_H
+#endif // _FORWARD_LIST_H
