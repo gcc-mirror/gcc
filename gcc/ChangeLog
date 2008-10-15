@@ -1,4 +1,11 @@
 2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/37828
+	* graphite.c (graphite_trans_loop_block): Do not loop block
+	single nested loops.
+
+2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/37686
 	* tree-loop-linear.c (linear_transform_loops): Build a

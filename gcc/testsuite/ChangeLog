@@ -1,4 +1,10 @@
 2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/37828
+	* testsuite/gcc.dg/graphite/pr37828.c: New.
+
+2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/37686
 	* testsuite/gcc.dg/tree-ssa/pr37686.c: New.
