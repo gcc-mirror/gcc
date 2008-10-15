@@ -604,9 +604,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  that the resulting %forward_list's size is the same as the number
        *  of elements assigned.  Old data may be lost.
        */
-      template<typename InputIterator>
+      template<typename _InputIterator>
         void
-        assign(InputIterator __first, InputIterator __last)
+        assign(_InputIterator __first, _InputIterator __last)
         {
           clear();
           insert_after(cbefore_begin(), __first, __last);
@@ -743,7 +743,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       size_type
       max_size() const
-      { return _Alloc().max_size(); }
+      { return this->_M_get_Node_allocator().max_size(); }
 
       // 23.2.3.3 element access:
 
@@ -783,9 +783,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  and references.
        */
       template<typename... _Args>
-      void
-      emplace_front(_Args&&... __args)
-      { _M_insert_after(cbefore_begin(), std::forward<_Args>(__args)...); }
+        void
+        emplace_front(_Args&&... __args)
+        { _M_insert_after(cbefore_begin(), std::forward<_Args>(__args)...); }
 
       /**
        *  @brief  Add data to the front of the %forward_list.
@@ -838,9 +838,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  and references.
        */
       template<typename... _Args>
-      iterator
-      emplace_after(const_iterator __pos, _Args&&... __args)
-      { _M_insert_after(__pos, std::forward<_Args>(__args)...); }
+        iterator
+        emplace_after(const_iterator __pos, _Args&&... __args)
+        { _M_insert_after(__pos, std::forward<_Args>(__args)...); }
 
       /**
        *  @brief  Inserts given value into %forward_list after specified
@@ -893,8 +893,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       void
-      insert_after(const_iterator __pos,
-                   size_type __n, const _Tp& __val);
+      insert_after(const_iterator __pos, size_type __n,
+		   const _Tp& __val);
 
       /**
        *  @brief  Inserts a range into the %forward_list.
@@ -1055,8 +1055,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Requires this != @a x.
        */
       void
-      splice_after(const_iterator __pos,
-                   forward_list&& __list)
+      splice_after(const_iterator __pos, forward_list&& __list)
       {
         if (!__list.empty() && &__list != this)
           {
@@ -1079,8 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  inserts it into the current list after @a pos.
        */
       void
-      splice_after(const_iterator __pos,
-                   forward_list&& __list,
+      splice_after(const_iterator __pos, forward_list&& __list,
                    const_iterator __it)
       { this->splice_after(__pos, __list, __it, __it._M_next()); }
 
@@ -1098,10 +1096,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Undefined if @a pos is in (before,last).
        */
       void
-      splice_after(const_iterator __pos,
-                   forward_list&& __list,
-                   const_iterator __before,
-                   const_iterator __last)
+      splice_after(const_iterator __pos, forward_list&& __list,
+                   const_iterator __before, const_iterator __last)
       {
         _Fwd_list_node_base* __tmp
           = const_cast<_Fwd_list_node_base* const>(__pos._M_node);

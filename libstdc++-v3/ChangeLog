@@ -1,3 +1,9 @@
+2008-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (forward_list<>::max_size): Use
+	Node_allocator; minor cosmetic changes.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Adjust.
+
 2008-10-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/std/forward_list: New.
