@@ -4767,13 +4767,19 @@ graphite_trans_loop_block (VEC (graphite_bb_p, heap) *bbs, int loops)
   /* TODO: - Calculate the stride size automatically.  */
   int stride_size = 64;
 
+  /* It makes no sense to block a single loop.  */
+  for (i = 0; VEC_iterate (graphite_bb_p, bbs, i, gb); i++)
+    if (gbb_nb_loops (gb) < 2)
+      return false;
+
   for (i = 0; VEC_iterate (graphite_bb_p, bbs, i, gb); i++)
     transform_done |= graphite_trans_bb_block (gb, stride_size, loops);
 
   return transform_done;
 }
 
-/* Loop block all basic blocks of SCOP.  */
+/* Loop block all basic blocks of SCOP.  Return false when the
+   transform is not performed.  */
 
 static bool
 graphite_trans_scop_block (scop_p scop)
@@ -4790,10 +4796,10 @@ graphite_trans_scop_block (scop_p scop)
   lambda_vector last_schedule = lambda_vector_new (max_schedule);
 
   if (VEC_length (graphite_bb_p, SCOP_BBS (scop)) == 0)
-    return transform_done;
+    return false;
 
   /* Get the data of the first bb.  */
-  gb = VEC_index (graphite_bb_p, SCOP_BBS (scop), 0); 
+  gb = VEC_index (graphite_bb_p, SCOP_BBS (scop), 0);
   last_nb_loops = gbb_nb_loops (gb);
   lambda_vector_copy (GBB_STATIC_SCHEDULE (gb), last_schedule,
                       last_nb_loops + 1);
