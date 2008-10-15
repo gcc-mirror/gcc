@@ -1869,7 +1869,8 @@ legitimate_pic_operand_p (rtx x)
       && (XINT (x, 1) == UNSPEC_PIC
 	  || XINT (x, 1) == UNSPEC_GOT
 	  || XINT (x, 1) == UNSPEC_GOTOFF
-	  || XINT (x, 1) == UNSPEC_PLT))
+	  || XINT (x, 1) == UNSPEC_PLT
+	  || XINT (x, 1) == UNSPEC_GOTSYM_OFF))
       return 1;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
