@@ -89,7 +89,7 @@ extern enum processor_flags s390_arch_flags;
 #define TARGET_EXTIMM \
        (TARGET_ZARCH && TARGET_CPU_EXTIMM)
 #define TARGET_DFP \
-       (TARGET_ZARCH && TARGET_CPU_DFP)
+       (TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
 #define TARGET_Z10 \
        (TARGET_ZARCH && TARGET_CPU_Z10)
 
