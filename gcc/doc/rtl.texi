@@ -1507,46 +1507,12 @@ Similarly, there is only one object for the integer whose value is
 @code{constm1_rtx} will point to the same object.
 
 @findex const_double
-@item (const_double:@var{m} @var{addr} @var{i0} @var{i1} @dots{})
+@item (const_double:@var{m} @var{i0} @var{i1} @dots{})
 Represents either a floating-point constant of mode @var{m} or an
 integer constant too large to fit into @code{HOST_BITS_PER_WIDE_INT}
 bits but small enough to fit within twice that number of bits (GCC
 does not provide a mechanism to represent even larger constants).  In
 the latter case, @var{m} will be @code{VOIDmode}.
-
-@findex const_fixed
-@item (const_fixed:@var{m} @var{addr})
-Represents a fixed-point constant of mode @var{m}.
-The data structure, which contains data with the size of two
-@code{HOST_BITS_PER_WIDE_INT} and the associated fixed-point mode,
-is access with the macro @code{CONST_FIXED_VALUE}.  The high part of data
-is accessed with @code{CONST_FIXED_VALUE_HIGH}; the low part is accessed
-with @code{CONST_FIXED_VALUE_LOW}.
-
-@findex const_vector
-@item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
-Represents a vector constant.  The square brackets stand for the vector
-containing the constant elements.  @var{x0}, @var{x1} and so on are
-the @code{const_int}, @code{const_double} or @code{const_fixed} elements.
-
-The number of units in a @code{const_vector} is obtained with the macro
-@code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
-
-Individual elements in a vector constant are accessed with the macro
-@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})}
-where @var{v} is the vector constant and @var{n} is the element
-desired.
-
-@findex CONST_DOUBLE_MEM
-@findex CONST_DOUBLE_CHAIN
-@var{addr} is used to contain the @code{mem} expression that corresponds
-to the location in memory that at which the constant can be found.  If
-it has not been allocated a memory location, but is on the chain of all
-@code{const_double} expressions in this compilation (maintained using an
-undisplayed field), @var{addr} contains @code{const0_rtx}.  If it is not
-on the chain, @var{addr} contains @code{cc0_rtx}.  @var{addr} is
-customarily accessed with the macro @code{CONST_DOUBLE_MEM} and the
-chain field via @code{CONST_DOUBLE_CHAIN}.
 
 @findex CONST_DOUBLE_LOW
 If @var{m} is @code{VOIDmode}, the bits of the value are stored in
@@ -1561,19 +1527,27 @@ machine's or host machine's floating point format.  To convert them to
 the precise bit pattern used by the target machine, use the macro
 @code{REAL_VALUE_TO_TARGET_DOUBLE} and friends (@pxref{Data Output}).
 
-@findex CONST0_RTX
-@findex CONST1_RTX
-@findex CONST2_RTX
-The macro @code{CONST0_RTX (@var{mode})} refers to an expression with
-value 0 in mode @var{mode}.  If mode @var{mode} is of mode class
-@code{MODE_INT}, it returns @code{const0_rtx}.  If mode @var{mode} is of
-mode class @code{MODE_FLOAT}, it returns a @code{CONST_DOUBLE}
-expression in mode @var{mode}.  Otherwise, it returns a
-@code{CONST_VECTOR} expression in mode @var{mode}.  Similarly, the macro
-@code{CONST1_RTX (@var{mode})} refers to an expression with value 1 in
-mode @var{mode} and similarly for @code{CONST2_RTX}.  The
-@code{CONST1_RTX} and @code{CONST2_RTX} macros are undefined
-for vector modes.
+@findex const_fixed
+@item (const_fixed:@var{m} @dots{})
+Represents a fixed-point constant of mode @var{m}.
+The operand is a data structure of type @code{struct fixed_value} and
+is accessed with the macro @code{CONST_FIXED_VALUE}.  The high part of
+data is accessed with @code{CONST_FIXED_VALUE_HIGH}; the low part is
+accessed with @code{CONST_FIXED_VALUE_LOW}.
+
+@findex const_vector
+@item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
+Represents a vector constant.  The square brackets stand for the vector
+containing the constant elements.  @var{x0}, @var{x1} and so on are
+the @code{const_int}, @code{const_double} or @code{const_fixed} elements.
+
+The number of units in a @code{const_vector} is obtained with the macro
+@code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
+
+Individual elements in a vector constant are accessed with the macro
+@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})}
+where @var{v} is the vector constant and @var{n} is the element
+desired.
 
 @findex const_string
 @item (const_string @var{str})
@@ -1605,6 +1579,7 @@ references is so that jump optimization can distinguish them.
 The @code{label_ref} contains a mode, which is usually @code{Pmode}.
 Usually that is the only mode for which a label is directly valid.
 
+@findex const
 @item (const:@var{m} @var{exp})
 Represents a constant that is the result of an assembly-time
 arithmetic computation.  The operand, @var{exp}, is an expression that
@@ -1626,6 +1601,20 @@ reference a global memory location.
 
 @var{m} should be @code{Pmode}.
 @end table
+
+@findex CONST0_RTX
+@findex CONST1_RTX
+@findex CONST2_RTX
+The macro @code{CONST0_RTX (@var{mode})} refers to an expression with
+value 0 in mode @var{mode}.  If mode @var{mode} is of mode class
+@code{MODE_INT}, it returns @code{const0_rtx}.  If mode @var{mode} is of
+mode class @code{MODE_FLOAT}, it returns a @code{CONST_DOUBLE}
+expression in mode @var{mode}.  Otherwise, it returns a
+@code{CONST_VECTOR} expression in mode @var{mode}.  Similarly, the macro
+@code{CONST1_RTX (@var{mode})} refers to an expression with value 1 in
+mode @var{mode} and similarly for @code{CONST2_RTX}.  The
+@code{CONST1_RTX} and @code{CONST2_RTX} macros are undefined
+for vector modes.
 
 @node Regs and Memory
 @section Registers and Memory
@@ -2707,7 +2696,12 @@ regarded as unsigned, to floating point mode @var{m}.
 
 @findex fix
 @item (fix:@var{m} @var{x})
-When @var{m} is a fixed point mode, represents the result of
+When @var{m} is a floating-point mode, represents the result of
+converting floating point value @var{x} (valid for mode @var{m}) to an
+integer, still represented in floating point mode @var{m}, by rounding
+towards zero.
+
+When @var{m} is a fixed-point mode, represents the result of
 converting floating point value @var{x} to mode @var{m}, regarded as
 signed.  How rounding is done is not specified, so this operation may
 be used validly in compiling C code only for integer-valued operands.
@@ -2717,13 +2711,6 @@ be used validly in compiling C code only for integer-valued operands.
 Represents the result of converting floating point value @var{x} to
 fixed point mode @var{m}, regarded as unsigned.  How rounding is done
 is not specified.
-
-@findex fix
-@item (fix:@var{m} @var{x})
-When @var{m} is a floating point mode, represents the result of
-converting floating point value @var{x} (valid for mode @var{m}) to an
-integer, still represented in floating point mode @var{m}, by rounding
-towards zero.
 
 @findex fract_convert
 @item (fract_convert:@var{m} @var{x})
