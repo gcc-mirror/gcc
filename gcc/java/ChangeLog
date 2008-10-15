@@ -1,3 +1,8 @@
+2008-10-14  Andrew Haley  <aph@redhat.com>
+
+	* constants.c (build_constant_data_ref): Make sure we only build
+	one copy of the decl for the constant pool.
+
 2008-09-22  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (rules): Add new rule for
