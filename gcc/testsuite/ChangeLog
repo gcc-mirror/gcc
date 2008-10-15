@@ -1,3 +1,8 @@
+2008-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36881
+	* gcc.dg/tree-ssa/pr36881.c: New test.
+
 2008-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37819

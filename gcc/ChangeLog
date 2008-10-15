@@ -1,3 +1,10 @@
+2008-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36881
+	* tree-switch-conversion.c (check_final_bb): For flag_pic, check
+	that each value doesn't need runtime relocations, for !flag_pic
+	check that each value is just a valid initializer constant.
+
 2008-10-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (reg_class): Remove HI_AND_GR_REGS,
