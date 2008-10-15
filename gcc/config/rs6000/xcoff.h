@@ -135,6 +135,7 @@
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and
    output the function descriptor.
+   Dollar signs are converted to underscores.
 
    The csect for the function will have already been created when
    text_section was selected.  We do have to go back to that csect, however.
@@ -143,36 +144,54 @@
    are placeholders which no longer have any use.  */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
-{ if (TREE_PUBLIC (DECL))					\
+{ char *buffer = (char *) alloca (strlen (NAME) + 1);		\
+  char *p;							\
+  int dollar_inside = 0;					\
+  strcpy (buffer, NAME);					\
+  p = strchr (buffer, '$');					\
+  while (p) {							\
+    *p = '_';							\
+    dollar_inside++;						\
+    p = strchr (p + 1, '$');					\
+  }								\
+  if (TREE_PUBLIC (DECL))					\
     {								\
       if (!RS6000_WEAK || !DECL_WEAK (decl))			\
 	{							\
+          if (dollar_inside) {					\
+              fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);	\
+              fprintf(FILE, "\t.rename %s,\"%s\"\n", buffer, NAME);	\
+	    }							\
 	  fputs ("\t.globl .", FILE);				\
-	  RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+	  RS6000_OUTPUT_BASENAME (FILE, buffer);		\
 	  putc ('\n', FILE);					\
 	}							\
     }								\
   else								\
     {								\
+      if (dollar_inside) {					\
+          fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);	\
+          fprintf(FILE, "\t.rename %s,\"%s\"\n", buffer, NAME);	\
+	}							\
       fputs ("\t.lglobl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      RS6000_OUTPUT_BASENAME (FILE, buffer);			\
       putc ('\n', FILE);					\
     }								\
   fputs ("\t.csect ", FILE);					\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
   fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", FILE);		\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
   fputs (":\n", FILE);						\
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
   fputs (", TOC[tc0], 0\n", FILE);				\
   in_section = NULL;						\
   switch_to_section (function_section (DECL));			\
   putc ('.', FILE);						\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
   fputs (":\n", FILE);						\
   if (write_symbols != NO_DEBUG)				\
-    xcoffout_declare_function (FILE, DECL, NAME);		\
+    xcoffout_declare_function (FILE, DECL, buffer);		\
 }
 
 /* Output a reference to SYM on FILE.  */
@@ -180,11 +199,28 @@
 #define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) \
   rs6000_output_symbol_ref (FILE, SYM)
 
-/* This says how to output an external.  */
+/* This says how to output an external.
+   Dollar signs are converted to underscores.  */
 
 #undef  ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
-{ rtx _symref = XEXP (DECL_RTL (DECL), 0);				\
+{ char *buffer = (char *) alloca (strlen (NAME) + 1);			\
+  char *p;								\
+  rtx _symref = XEXP (DECL_RTL (DECL), 0);				\
+  int dollar_inside = 0;						\
+  strcpy (buffer, NAME);						\
+  p = strchr (buffer, '$');						\
+  while (p) {								\
+    *p = '_';								\
+    dollar_inside++;							\
+    p = strchr (p + 1, '$');						\
+  }									\
+  if (dollar_inside) {							\
+      fputs ("\t.extern .", FILE);					\
+      RS6000_OUTPUT_BASENAME (FILE, buffer);				\
+      putc ('\n', FILE);						\
+      fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
+    }									\
   if ((TREE_CODE (DECL) == VAR_DECL					\
        || TREE_CODE (DECL) == FUNCTION_DECL)				\
       && (NAME)[strlen (NAME) - 1] != ']')				\
@@ -195,6 +231,12 @@
 				  NULL);				\
     }									\
 }
+
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
+
+#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
+  asm_fprintf ((FILE), "%U%s", rs6000_xcoff_strip_dollar (NAME));
 
 /* This is how to output an internal label prefix.  rs6000.c uses this
    when generating traceback tables.  */

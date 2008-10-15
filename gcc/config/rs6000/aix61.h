@@ -194,4 +194,11 @@ extern long long int    atoll(const char *);
 /* This target uses the aix64.opt file.  */
 #define TARGET_USES_AIX64_OPT 1
 
+/* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
+   but does not have crtbegin/end.  */
+
+#define TARGET_USE_JCR_SECTION 0
+
+/* Default to 128 bit long double.  */
+
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128

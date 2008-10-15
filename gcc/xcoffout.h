@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 	    fputs (_p+1, asm_out_file);					\
 	  else								\
 	    for (; *_p != '[' && *_p; _p++)				\
-	      putc (*_p, asm_out_file);					\
+	      putc (*_p != '$' ? *_p : '_', asm_out_file);		\
 	}								\
       else								\
 	output_addr_const (asm_out_file, ADDR);				\
