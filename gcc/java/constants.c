@@ -448,21 +448,25 @@ build_constant_data_ref (bool indirect)
     }
   else
     {
-      tree type, decl;
       tree decl_name = mangled_classname ("_CD_", output_class);
+      tree decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
 
-      /* Build a type with unspecified bounds.  The will make sure
-	 that targets do the right thing with whatever size we end
-	 up with at the end.  Using bounds that are too small risks
-	 assuming the data is in the small data section.  */
-      type = build_array_type (ptr_type_node, NULL_TREE);
+      if (! decl)
+	{
+	  /* Build a type with unspecified bounds.  The will make sure
+	     that targets do the right thing with whatever size we end
+	     up with at the end.  Using bounds that are too small risks
+	     assuming the data is in the small data section.  */
+	  tree type = build_array_type (ptr_type_node, NULL_TREE);
 
-      /* We need to lay out the type ourselves, since build_array_type
-	 thinks the type is incomplete.  */
-      layout_type (type);
+	  /* We need to lay out the type ourselves, since build_array_type
+	     thinks the type is incomplete.  */
+	  layout_type (type);
 
-      decl = build_decl (VAR_DECL, decl_name, type);
-      TREE_STATIC (decl) = 1;
+	  decl = build_decl (VAR_DECL, decl_name, type);
+	  TREE_STATIC (decl) = 1;
+	  IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
+	}
 
       return decl;
     }
