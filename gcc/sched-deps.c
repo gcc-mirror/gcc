@@ -2008,10 +2008,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
     case SYMBOL_REF:
     case CONST:
     case LABEL_REF:
-      /* Ignore constants.  Note that we must handle CONST_DOUBLE here
-         because it may have a cc0_rtx in its CONST_DOUBLE_CHAIN field, but
-         this does not mean that this insn is using cc0.  */
-
+      /* Ignore constants.  */
       if (cslr_p && sched_deps_info->finish_rhs)
 	sched_deps_info->finish_rhs ();
 

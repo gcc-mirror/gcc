@@ -1,5 +1,19 @@
 2008-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/rtl.texi (const_double): Remove the "addr" operand.
+	Describe CONST_DOUBLE_* macros under const_double rather
+	than const_vector.
+	(const_fixed): Fix the operand description.
+	(const): Add an @findex directive.
+	(CONST0_RTX, CONST1_RTX, CONST2_RTX): Move description
+	after the constant rtl table.
+	(fix): Combine floating-point and fixed-point descriptions.
+	Fix hyphenation.
+	* sched-deps.c (sched_analyze_2): Remove reference to
+	CONST_DOUBLE_CHAIN.
+
+2008-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mn10300/mn10300.h (OUTPUT_ADDR_CONST_EXTRA): Handle
 	UNSPEC_GOTSYM_OFFs.
 	* config/mn10300/mn10300.c (legitimate_pic_operand_p): Return true
