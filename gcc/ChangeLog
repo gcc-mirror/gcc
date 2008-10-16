@@ -1,3 +1,10 @@
+2008-10-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/37674
+	* ira-build.c (ira_flattening): Recalculate
+	ALLOCNO_TOTAL_NO_STACK_REG_P and ALLOCNO_TOTAL_CONFLICT_HARD_REGS
+	from the scratch instead of the propagation.
+	
 2008-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/rtl.texi (const_double): Remove the "addr" operand.
