@@ -1,3 +1,9 @@
+2008-10-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/37633
+	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Check
+	HARD_REGNO_CALL_PART_CLOBBERED.
+
 2008-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37535
