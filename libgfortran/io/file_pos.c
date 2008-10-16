@@ -120,7 +120,7 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
         goto io_error;
 
       /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
-      if (u->flags.convert == GFC_CONVERT_NATIVE)
+      if (likely (u->flags.convert == GFC_CONVERT_NATIVE))
 	{
 	  switch (length)
 	    {
