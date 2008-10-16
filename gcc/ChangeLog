@@ -1,3 +1,9 @@
+2008-10-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37418
+	* tree-ssa.c (useless_type_conversion_p_1): Do not treat
+	volatile qualified functions or methods as relevant.
+
 2008-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37525
