@@ -1,5 +1,19 @@
 2008-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* io/file_pos.c (unformatted_backspace): Normal case is
+	GFC_CONVERT_NATIVE.
+	* io/transfer.c (read_sf):  Mark paths leading to generate_error()
+	as unlikely.
+	(readl_block_form):  Likewise.
+	(read_block_direct):  Likewise.
+	(write_block):  Likewise.
+	(write_buf):  Likewise.
+	(us_read):  Likewise.  Normal case is GFC_CONVERT_NATIVE.
+	(next_record_w_unf):  Mark paths leading to generate_error()
+	as unlikely.
+
+2008-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR libfortran/34670
 	* generated/spread_r4.c: Regenerated.
 
