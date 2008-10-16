@@ -1,3 +1,11 @@
+2008-10-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/37418
+	* gcc.c-torture/compile/pr37418-1.c,
+	gcc.c-torture/compile/pr37418-2.c,
+	gcc.c-torture/compile/pr37418-3.c,
+	gcc.c-torture/compile/pr37418-4.c: New tests.
+
 2008-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
