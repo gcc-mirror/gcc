@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_reverse_after()
     {
       _Fwd_list_node_base* __tail = this->_M_next;
-      if (! __tail)
+      if (!__tail)
         return;
       while (_Fwd_list_node_base* __temp = __tail->_M_next)
         {
@@ -293,7 +293,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: _Node_alloc_type(), _M_head()
 	{ }
 
-	explicit
         _Fwd_list_impl(const _Node_alloc_type& __a)
 	: _Node_alloc_type(__a), _M_head()
 	{ }
@@ -347,32 +346,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename... _Args>
         _Node*
         _M_create_node(_Args&&... __args)
-        {
-          _Node* __node = this->_M_get_node();
-          try
-            {
-              _M_get_Node_allocator().construct(__node,
-						std::forward<_Args>(__args)...);
-              __node->_M_next = 0;
-            }
-          catch(...)
-            {
-              this->_M_put_node(__node);
-              __throw_exception_again;
-            }
-          return __node;
-        }
+	{
+	  _Node* __node = this->_M_get_node();
+	  try
+	    {
+	      _M_get_Node_allocator().construct(__node,
+					      std::forward<_Args>(__args)...);
+	      __node->_M_next = 0;
+	    }
+	  catch(...)
+	    {
+	      this->_M_put_node(__node);
+	      __throw_exception_again;
+	    }
+	  return __node;
+	}
 
       template<typename... _Args>
-        void
-        _M_insert_after(const_iterator __pos, _Args&&... __args)
-        {
-          _Fwd_list_node_base* __to
-            = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-          _Node* __thing = _M_create_node(std::forward<_Args>(__args)...);
-          __thing->_M_next = __to->_M_next;
-          __to->_M_next = __thing;
-        }
+        _Fwd_list_node_base*
+        _M_insert_after(const_iterator __pos, _Args&&... __args);
 
       void
       _M_put_node(_Node* __p)
@@ -583,7 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  elements in the initializer_list @a il.  This is linear in
        *  il.size().
        */
-      forward_list
+      forward_list&
       operator=(std::initializer_list<_Tp> __il)
       {
         assign(__il);
@@ -783,7 +775,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename... _Args>
         void
         emplace_front(_Args&&... __args)
-        { _M_insert_after(cbefore_begin(), std::forward<_Args>(__args)...); }
+        { this->_M_insert_after(cbefore_begin(),
+				std::forward<_Args>(__args)...); }
 
       /**
        *  @brief  Add data to the front of the %forward_list.
@@ -797,14 +790,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       push_front(const _Tp& __val)
-      { _M_insert_after(cbefore_begin(), __val); }
+      { this->_M_insert_after(cbefore_begin(), __val); }
 
       /**
        *
        */
       void
       push_front(_Tp&& __val)
-      { _M_insert_after(cbefore_begin(), std::move(__val)); }
+      { this->_M_insert_after(cbefore_begin(), std::move(__val)); }
 
       /**
        *  @brief  Removes first element.
@@ -820,7 +813,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       pop_front()
-      { _M_erase_after(&this->_M_impl._M_head); }
+      { this->_M_erase_after(&this->_M_impl._M_head); }
 
       /**
        *  @brief  Constructs object in %forward_list after the specified
@@ -838,7 +831,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename... _Args>
         iterator
         emplace_after(const_iterator __pos, _Args&&... __args)
-        { _M_insert_after(__pos, std::forward<_Args>(__args)...); }
+        { return iterator(this->_M_insert_after(__pos,
+					  std::forward<_Args>(__args)...)); }
 
       /**
        *  @brief  Inserts given value into %forward_list after specified
@@ -854,28 +848,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       iterator
       insert_after(const_iterator __pos, const _Tp& __val)
-      {
-        _Fwd_list_node_base* __to
-	  = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-        _Node* __thing = _M_create_node(__val);
-        __thing->_M_next = __to->_M_next;
-        __to->_M_next = __thing;
-        return iterator(__to->_M_next);
-      }
+      { return iterator(this->_M_insert_after(__pos, __val)); }
 
       /**
        *
        */
       iterator
       insert_after(const_iterator __pos, _Tp&& __val)
-      {
-        _Fwd_list_node_base* __to
-          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-        _Node* __thing = _M_create_node(std::move(__val));
-        __thing->_M_next = __to->_M_next;
-        __to->_M_next = __thing;
-        return iterator(__to->_M_next);
-      }
+      { return iterator(this->_M_insert_after(__pos, std::move(__val))); }
 
       /**
        *  @brief  Inserts a number of copies of given data into the
@@ -891,8 +871,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       void
-      insert_after(const_iterator __pos, size_type __n,
-		   const _Tp& __val);
+      insert_after(const_iterator __pos, size_type __n, const _Tp& __val);
 
       /**
        *  @brief  Inserts a range into the %forward_list.
@@ -950,7 +929,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         _Fwd_list_node_base* __tmp
           = const_cast<_Fwd_list_node_base*>(__pos._M_node);
         if (__tmp)
-          return iterator(_Base::_M_erase_after(__tmp));
+          return iterator(this->_M_erase_after(__tmp));
         else
           return end();
       }
@@ -979,7 +958,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
         _Fwd_list_node_base* __tmp
           = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-        return iterator(_M_erase_after(__tmp, __last._M_node));
+        return iterator(this->_M_erase_after(__tmp, __last._M_node));
       }
 
       /**
@@ -1010,7 +989,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       resize(size_type __sz)
-      { resize(__sz, _Tp(0)); }
+      { resize(__sz, _Tp()); }
 
       /**
        *  @brief Resizes the %forward_list to the specified number of
@@ -1037,7 +1016,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       clear()
-      { _M_erase_after(&this->_M_impl._M_head, 0); }
+      { this->_M_erase_after(&this->_M_impl._M_head, 0); }
 
       // 23.2.3.5 forward_list operations:
 
@@ -1053,17 +1032,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Requires this != @a x.
        */
       void
-      splice_after(const_iterator __pos, forward_list&& __list)
-      {
-        if (!__list.empty() && &__list != this)
-          {
-            _Fwd_list_node_base* __tmp
-              = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-            const_iterator __before = __list.cbefore_begin();
-            __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base*>
-				     (__before._M_node));
-          }
-      }
+      splice_after(const_iterator __pos, forward_list&& __list);
 
       /**
        *  @brief  Insert element from another %forward_list.
@@ -1095,15 +1064,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       splice_after(const_iterator __pos, forward_list&& __list,
-                   const_iterator __before, const_iterator __last)
-      {
-        _Fwd_list_node_base* __tmp
-          = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-        __tmp->_M_transfer_after(const_cast<_Fwd_list_node_base*>
-				 (__before._M_node),
-				 const_cast<_Fwd_list_node_base*>
-				 (__last._M_node));
-      }
+                   const_iterator __before, const_iterator __last);
 
       /**
        *  @brief  Remove all elements equal to value.
@@ -1224,8 +1185,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse()
-      { this->_M_impl._M_head._M_reverse_after(); }
+      reverse();
     };
 
   /**
@@ -1241,26 +1201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     bool
     operator==(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
-    {
-      //  We don't have size() so we need to walk through both lists
-      //  making sure both iterators are valid.
-      typename std::forward_list<_Tp, _Alloc>::const_iterator __ix
-        = __lx.cbegin();
-      typename std::forward_list<_Tp, _Alloc>::const_iterator __iy
-        = __ly.cbegin();
-      while (__ix != __lx.cend() && __iy != __ly.cend())
-        {
-          if (*__ix != *__iy)
-            return false;
-          ++__ix;
-          ++__iy;
-        }
-      if (__ix == __lx.cend() && __iy == __ly.cend())
-        return true;
-      else
-        return false;
-    }
+               const forward_list<_Tp, _Alloc>& __ly);
 
   /**
    *  @brief  Forward list ordering relation.
@@ -1285,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator!=(const forward_list<_Tp, _Alloc>& __lx,
                const forward_list<_Tp, _Alloc>& __ly)
-    { return ! (__lx == __ly); }
+    { return !(__lx == __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
@@ -1299,14 +1240,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(const forward_list<_Tp, _Alloc>& __lx,
                const forward_list<_Tp, _Alloc>& __ly)
-    { return ! (__lx < __ly); }
+    { return !(__lx < __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const forward_list<_Tp, _Alloc>& __lx,
                const forward_list<_Tp, _Alloc>& __ly)
-    { return ! (__ly < __lx); }
+    { return !(__ly < __lx); }
 
   /// See std::forward_list::forward_swap().
   template<typename _Tp, typename _Alloc>
