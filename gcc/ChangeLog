@@ -1,5 +1,21 @@
 2008-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR middle-end/37535
+	* ira-lives.c (mark_early_clobbers): Remove.
+	(make_pseudo_conflict, check_and_make_def_use_conflicts,
+	check_and_make_def_conflicts,
+	make_early_clobber_and_input_conflicts,
+	mark_hard_reg_early_clobbers): New functions.
+	(process_bb_node_lives): Call
+	make_early_clobber_and_input_conflicts and
+	mark_hard_reg_early_clobbers.  Make hard register inputs live
+	again.
+
+	* doc/rtl.texi (clobber): Change descriotion of RA behaviour for
+	early clobbers of pseudo-registers.
+	
+2008-10-15  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR middle-end/37674
 	* ira-build.c (ira_flattening): Recalculate
 	ALLOCNO_TOTAL_NO_STACK_REG_P and ALLOCNO_TOTAL_CONFLICT_HARD_REGS
