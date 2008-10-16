@@ -131,8 +131,7 @@ spread_r4 (gfc_array_r4 *ret, const gfc_array_r4 *source,
 	      if (n == along - 1)
 		{
 		  rdelta = ret->dim[n].stride;
-		  printf("ret_extent = %ld, ncopies = %ld\n",
-			 (long int) ret_extent, (long int) ncopies);
+
 		  if (ret_extent != ncopies)
 		    runtime_error("Incorrect extent in return value of SPREAD"
 				  " intrinsic in dimension %ld: is %ld,"
