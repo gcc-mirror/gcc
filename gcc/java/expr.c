@@ -41,6 +41,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "toplev.h"
 #include "except.h"
+#include "tm_p.h"
 #include "ggc.h"
 #include "tree-iterator.h"
 #include "gimple.h"
