@@ -349,39 +349,169 @@ mark_ref_dead (df_ref def)
   mark_reg_dead (reg);
 }
 
-/* Mark early clobber registers of the current INSN as live (if
-   LIVE_P) or dead.  Return true if there are such registers.  */
+/* Make pseudo REG conflicting with pseudo DREG, if the 1st pseudo
+   class is intersected with class CL.  Advance the current program
+   point before making the conflict if ADVANCE_P.  Return TRUE if we
+   will need to advance the current program point.  */
 static bool
-mark_early_clobbers (rtx insn, bool live_p)
+make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, bool advance_p)
+{
+  ira_allocno_t a;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  
+  if (! REG_P (reg) || REGNO (reg) < FIRST_PSEUDO_REGISTER)
+    return advance_p;
+  
+  a = ira_curr_regno_allocno_map[REGNO (reg)];
+  if (! reg_classes_intersect_p (cl, ALLOCNO_COVER_CLASS (a)))
+    return advance_p;
+
+  if (advance_p)
+    curr_point++;
+
+  mark_reg_live (reg);
+  mark_reg_live (dreg);
+  mark_reg_dead (reg);
+  mark_reg_dead (dreg);
+
+  return false;
+}
+
+/* Check and make if necessary conflicts for pseudo DREG of class
+   DEF_CL of the current insn with input operand USE of class USE_CL.
+   Advance the current program point before making the conflict if
+   ADVANCE_P.  Return TRUE if we will need to advance the current
+   program point.  */
+static bool
+check_and_make_def_use_conflict (rtx dreg, enum reg_class def_cl,
+				 int use, enum reg_class use_cl,
+				 bool advance_p)
+{
+  if (! reg_classes_intersect_p (def_cl, use_cl))
+    return advance_p;
+  
+  advance_p = make_pseudo_conflict (recog_data.operand[use],
+				    use_cl, dreg, advance_p);
+  /* Reload may end up swapping commutative operands, so you
+     have to take both orderings into account.  The
+     constraints for the two operands can be completely
+     different.  (Indeed, if the constraints for the two
+     operands are the same for all alternatives, there's no
+     point marking them as commutative.)  */
+  if (use < recog_data.n_operands + 1
+      && recog_data.constraints[use][0] == '%')
+    advance_p
+      = make_pseudo_conflict (recog_data.operand[use + 1],
+			      use_cl, dreg, advance_p);
+  if (use >= 1
+      && recog_data.constraints[use - 1][0] == '%')
+    advance_p
+      = make_pseudo_conflict (recog_data.operand[use - 1],
+			      use_cl, dreg, advance_p);
+  return advance_p;
+}
+
+/* Check and make if necessary conflicts for definition DEF of class
+   DEF_CL of the current insn with input operands.  Process only
+   constraints of alternative ALT.  */
+static void
+check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
+{
+  int use, use_match;
+  ira_allocno_t a;
+  enum reg_class use_cl, acl;
+  bool advance_p;
+  rtx dreg = recog_data.operand[def];
+	
+  if (def_cl == NO_REGS)
+    return;
+  
+  if (GET_CODE (dreg) == SUBREG)
+    dreg = SUBREG_REG (dreg);
+  
+  if (! REG_P (dreg) || REGNO (dreg) < FIRST_PSEUDO_REGISTER)
+    return;
+  
+  a = ira_curr_regno_allocno_map[REGNO (dreg)];
+  acl = ALLOCNO_COVER_CLASS (a);
+  if (! reg_classes_intersect_p (acl, def_cl))
+    return;
+  
+  advance_p = true;
+  
+  for (use = 0; use < recog_data.n_operands; use++)
+    {
+      if (use == def || recog_data.operand_type[use] == OP_OUT)
+	return;
+      
+      if (recog_op_alt[use][alt].anything_ok)
+	use_cl = ALL_REGS;
+      else
+	use_cl = recog_op_alt[use][alt].cl;
+      
+      advance_p = check_and_make_def_use_conflict (dreg, def_cl, use,
+						   use_cl, advance_p);
+      
+      if ((use_match = recog_op_alt[use][alt].matches) >= 0)
+	{
+	  if (use_match == def)
+	    return;
+	  
+	  if (recog_op_alt[use_match][alt].anything_ok)
+	    use_cl = ALL_REGS;
+	  else
+	    use_cl = recog_op_alt[use_match][alt].cl;
+	  advance_p = check_and_make_def_use_conflict (dreg, def_cl, use,
+						       use_cl, advance_p);
+	}
+    }
+}
+
+/* Make conflicts of early clobber pseudo registers of the current
+   insn with its inputs.  Avoid introducing unnecessary conflicts by
+   checking classes of the constraints and pseudos because otherwise
+   significant code degradation is possible for some targets.  */
+static void
+make_early_clobber_and_input_conflicts (void)
 {
   int alt;
-  int def;
+  int def, def_match;
+  enum reg_class def_cl;
+
+  for (alt = 0; alt < recog_data.n_alternatives; alt++)
+    for (def = 0; def < recog_data.n_operands; def++)
+      {
+	def_cl = NO_REGS;
+	if (recog_op_alt[def][alt].earlyclobber)
+	  {
+	    if (recog_op_alt[def][alt].anything_ok)
+	      def_cl = ALL_REGS;
+	    else
+	      def_cl = recog_op_alt[def][alt].cl;
+	    check_and_make_def_conflict (alt, def, def_cl);
+	  }
+	if ((def_match = recog_op_alt[def][alt].matches) >= 0
+	    && (recog_op_alt[def_match][alt].earlyclobber
+		|| recog_op_alt[def][alt].earlyclobber))
+	  {
+	    if (recog_op_alt[def_match][alt].anything_ok)
+	      def_cl = ALL_REGS;
+	    else
+	      def_cl = recog_op_alt[def_match][alt].cl;
+	    check_and_make_def_conflict (alt, def, def_cl);
+	  }
+      }
+}
+
+/* Mark early clobber hard registers of the current INSN as live (if
+   LIVE_P) or dead.  Return true if there are such registers.  */
+static bool
+mark_hard_reg_early_clobbers (rtx insn, bool live_p)
+{
   df_ref *def_rec;
   bool set_p = false;
-
-  for (def = 0; def < recog_data.n_operands; def++)
-    {
-      rtx dreg = recog_data.operand[def];
-      
-      if (GET_CODE (dreg) == SUBREG)
-	dreg = SUBREG_REG (dreg);
-      if (! REG_P (dreg))
-	continue;
-
-      for (alt = 0; alt < recog_data.n_alternatives; alt++)
-	if ((recog_op_alt[def][alt].earlyclobber)
-	    && (recog_op_alt[def][alt].cl != NO_REGS))
-	  break;
-
-      if (alt >= recog_data.n_alternatives)
-	continue;
-
-      if (live_p)
-	mark_reg_live (dreg);
-      else
-	mark_reg_dead (dreg);
-      set_p = true;
-    }
 
   for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
     if (DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MUST_CLOBBER))
@@ -792,25 +922,36 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		}
 	    }
 	  
+	  make_early_clobber_and_input_conflicts ();
+
 	  curr_point++;
 
 	  /* Mark each used value as live.  */
 	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
 	    mark_ref_live (*use_rec);
 
-	  set_p = mark_early_clobbers (insn, true);
-
 	  process_single_reg_class_operands (true, freq);
 	  
+	  set_p = mark_hard_reg_early_clobbers (insn, true);
+
 	  if (set_p)
 	    {
-	      mark_early_clobbers (insn, false);
+	      mark_hard_reg_early_clobbers (insn, false);
 
-	      /* Mark each used value as live again.  For example, a
+	      /* Mark each hard reg as live again.  For example, a
 		 hard register can be in clobber and in an insn
 		 input.  */
 	      for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-		mark_ref_live (*use_rec);
+		{
+		  rtx ureg = DF_REF_REG (*use_rec);
+		  
+		  if (GET_CODE (ureg) == SUBREG)
+		    ureg = SUBREG_REG (ureg);
+		  if (! REG_P (ureg) || REGNO (ureg) >= FIRST_PSEUDO_REGISTER)
+		    continue;
+		  
+		  mark_ref_live (*use_rec);
+		}
 	    }
 
 	  curr_point++;
