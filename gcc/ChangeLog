@@ -1,3 +1,8 @@
+2008-10-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (phi_translate_set): Add constants to phi
+	translation cache.
+
 2008-10-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/33192
