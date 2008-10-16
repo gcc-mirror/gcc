@@ -1,3 +1,9 @@
+2008-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37664
+	* fold-const.c (fold_binary): When optimizing comparison with
+	highest or lowest type's value, don't consider TREE_OVERFLOW.
+
 2008-10-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/35483
