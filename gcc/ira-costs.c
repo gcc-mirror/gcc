@@ -1572,8 +1572,8 @@ ira_tune_allocno_costs_and_cover_classes (void)
 	      regno = ira_class_hard_regs[cover_class][j];
 	      rclass = REGNO_REG_CLASS (regno);
 	      cost = 0;
-	      /* ??? If only part is call clobbered.  */
-	      if (! ira_hard_reg_not_in_set_p (regno, mode, call_used_reg_set))
+	      if (! ira_hard_reg_not_in_set_p (regno, mode, call_used_reg_set)
+		  || HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]
 			    + ira_memory_move_cost[mode][rclass][1]));
