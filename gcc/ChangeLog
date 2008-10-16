@@ -88,6 +88,23 @@
 	already implies hard float.  Also fix several insn condition
 	with TARGET_DFP which shall require TARGET_HARD_DFP instead.
 
+2008-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35483
+	Based on patches by Laurent Vivier.
+	* xcoffout.h (DBX_FINISH_STABS): Translate dollar sign to underscore.
+	* config/rs6000/rs6000-protos.h (rs6000_xcoff_strip_dollar): Declare.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Translate
+	dollar sign to underscore.
+	(ASM_OUTPUT_EXTERNAL): Same.
+	(ASM_OUTPUT_LABELREF): New.
+	* config/rs6000/rs6000.c (rs6000_xcoff_strip_dollar): New.
+
+	* config/rs6000/aix51.h (TARGET_USE_JCR_SECTION): Define.
+	* config/rs6000/aix52.h (TARGET_USE_JCR_SECTION): Define.
+	* config/rs6000/aix53.h (TARGET_USE_JCR_SECTION): Define.
+	* config/rs6000/aix61.h (TARGET_USE_JCR_SECTION): Define.
+
 2008-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36881
