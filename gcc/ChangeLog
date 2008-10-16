@@ -1,3 +1,8 @@
+2008-10-15  Jan Hubicka  <jh@suse.cz>
+
+	* ira-emit.c (change_regs): Return false when replacing reg by
+	itself.
+
 2008-10-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/37633

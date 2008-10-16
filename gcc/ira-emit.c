@@ -137,6 +137,7 @@ change_regs (rtx *loc)
   int i, regno, result = false;
   const char *fmt;
   enum rtx_code code;
+  rtx reg;
 
   if (*loc == NULL_RTX)
     return false;
@@ -151,7 +152,10 @@ change_regs (rtx *loc)
 	return false;
       if (ira_curr_regno_allocno_map[regno] == NULL)
 	return false;
-      *loc = ALLOCNO_REG (ira_curr_regno_allocno_map[regno]);
+      reg = ALLOCNO_REG (ira_curr_regno_allocno_map[regno]);
+      if (reg == *loc)
+	return false;
+      *loc = reg;
       return true;
     }
 
