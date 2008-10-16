@@ -1,3 +1,9 @@
+2008-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37525
+	* tree.c (int_fits_type_p): Rewrite using double_int.  Zero extend
+	sizetype unsigned constants, both in the case of C and bounds.
+
 2008-10-15  Jan Hubicka  <jh@suse.cz>
 
 	* ira-emit.c (change_regs): Return false when replacing reg by
