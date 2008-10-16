@@ -469,7 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         iterator __first = begin();
         iterator __last = end();
         if (__first == __last)
-	return;
+	  return;
         iterator __next = __first;
         while (++__next != __last)
 	{
@@ -518,10 +518,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       //  We don't have size() so we need to walk through both lists
       //  making sure both iterators are valid.
-      typename std::forward_list<_Tp, _Alloc>::const_iterator __ix
-        = __lx.cbegin();
-      typename std::forward_list<_Tp, _Alloc>::const_iterator __iy
-        = __ly.cbegin();
+      auto __ix = __lx.cbegin();
+      auto __iy = __ly.cbegin();
       while (__ix != __lx.cend() && __iy != __ly.cend())
         {
           if (*__ix != *__iy)
