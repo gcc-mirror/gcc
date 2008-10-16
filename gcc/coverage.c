@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "function.h"
 #include "toplev.h"
+#include "tm_p.h"
 #include "ggc.h"
 #include "coverage.h"
 #include "langhooks.h"

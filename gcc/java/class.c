@@ -38,6 +38,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "output.h"
 #include "parse.h"
 #include "function.h"
+#include "tm_p.h"
 #include "ggc.h"
 #include "stdio.h"
 #include "target.h"

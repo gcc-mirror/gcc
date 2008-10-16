@@ -1,3 +1,14 @@
+2008-10-16  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35483
+	* Makefile.in (coverage.o): Depend on $(TM_P_H).
+	* coverage.c: Include tm_p.h.
+	* config/rs6000/x-aix (jc1): Override LDFLAGS.
+	* config/rs6000/xcoff.h (ASM_GENERATE_INTERNAL_LABEL): Strip
+	dollar signs from PREFIX.
+	* config/rs6000/rs6000.c (output_toc): Use RS6000_OUTPUT_BASENAME
+	instead of manual strip_name_encoding.
+
 2008-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37418

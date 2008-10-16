@@ -1,3 +1,11 @@
+2008-10-16  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35483
+	* Make-lang.in (class.o): Depend on $(TM_P_H).
+	(expr.o): Same.
+	* class.c: Include tm_p.h.
+	* expr.c: Include tm_p.h.
+
 2008-10-14  Andrew Haley  <aph@redhat.com>
 
 	* constants.c (build_constant_data_ref): Make sure we only build

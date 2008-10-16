@@ -257,7 +257,7 @@
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s..%u", (PREFIX), (unsigned) (NUM))
+  sprintf (LABEL, "*%s..%u", rs6000_xcoff_strip_dollar (PREFIX), (unsigned) (NUM))
 
 /* This is how to output an assembler line to define N characters starting
    at P to FILE.  */
