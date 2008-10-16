@@ -3038,7 +3038,7 @@ build_unary_op (location_t location,
       else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
 	ret = fold_build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
-	ret = convert (TREE_TYPE (arg), integer_zero_node);
+	ret = omit_one_operand (TREE_TYPE (arg), integer_zero_node, arg);
       goto return_build_unary_op;
 
     case PREINCREMENT_EXPR:
