@@ -2102,7 +2102,7 @@ void
 ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 {
   int i, j, num;
-  bool propagate_p, stop_p, keep_p;
+  bool stop_p, keep_p;
   int hard_regs_num;
   bool new_pseudos_p, merged_p, mem_dest_p;
   unsigned int n;
@@ -2114,20 +2114,29 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   ira_allocno_iterator ai;
   ira_copy_iterator ci;
   sparseset allocnos_live;
-  bool *allocno_propagated_p;
 
   regno_top_level_allocno_map
     = (ira_allocno_t *) ira_allocate (max_reg_num () * sizeof (ira_allocno_t));
   memset (regno_top_level_allocno_map, 0,
 	  max_reg_num () * sizeof (ira_allocno_t));
-  allocno_propagated_p
-    = (bool *) ira_allocate (ira_allocnos_num * sizeof (bool));
-  memset (allocno_propagated_p, 0, ira_allocnos_num * sizeof (bool));
   new_pseudos_p = merged_p = false;
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      if (ALLOCNO_CAP_MEMBER (a) != NULL)
+	/* Caps are not in the regno allocno maps and they are never
+	   will be transformed into allocnos existing after IR
+	   flattening.  */
+	continue;
+      COPY_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
+			 ALLOCNO_CONFLICT_HARD_REGS (a));
+#ifdef STACK_REGS
+      ALLOCNO_TOTAL_NO_STACK_REG_P (a) = ALLOCNO_NO_STACK_REG_P (a);
+#endif
+    }
   /* Fix final allocno attributes.  */
   for (i = max_regno_before_emit - 1; i >= FIRST_PSEUDO_REGISTER; i--)
     {
-      mem_dest_p = propagate_p = false;
+      mem_dest_p = false;
       for (a = ira_regno_allocno_map[i];
 	   a != NULL;
 	   a = ALLOCNO_NEXT_REGNO_ALLOCNO (a))
@@ -2145,27 +2154,17 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      continue;
 	    }
 	  ira_assert (ALLOCNO_CAP_MEMBER (parent_a) == NULL);
+	  
 	  if (ALLOCNO_MEM_OPTIMIZED_DEST (a) != NULL)
 	    mem_dest_p = true;
-	  if (propagate_p)
+	  if (REGNO (ALLOCNO_REG (a)) == REGNO (ALLOCNO_REG (parent_a)))
 	    {
-	      if (!allocno_propagated_p [ALLOCNO_NUM (parent_a)])
-		COPY_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
-				   ALLOCNO_CONFLICT_HARD_REGS (parent_a));
 	      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
 				ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
 #ifdef STACK_REGS
-	      if (!allocno_propagated_p [ALLOCNO_NUM (parent_a)])
-		ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a)
-		  = ALLOCNO_NO_STACK_REG_P (parent_a);
-	      ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a)
-		= (ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a)
-		   || ALLOCNO_TOTAL_NO_STACK_REG_P (a));
+	      if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
+		ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
 #endif
-	      allocno_propagated_p [ALLOCNO_NUM (parent_a)] = true;
-	    }
-	  if (REGNO (ALLOCNO_REG (a)) == REGNO (ALLOCNO_REG (parent_a)))
-	    {
 	      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
 		{
 		  fprintf (ira_dump_file,
@@ -2188,7 +2187,6 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      continue;
 	    }
 	  new_pseudos_p = true;
-	  propagate_p = true;
 	  first = ALLOCNO_MEM_OPTIMIZED_DEST (a) == NULL ? NULL : a;
 	  stop_p = false;
 	  for (;;)
@@ -2240,7 +2238,6 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
       if (mem_dest_p && copy_live_ranges_to_removed_store_destinations (i))
 	merged_p = true;
     }
-  ira_free (allocno_propagated_p);
   ira_assert (new_pseudos_p || ira_max_point_before_emit == ira_max_point);
   if (merged_p || ira_max_point_before_emit != ira_max_point)
     ira_rebuild_start_finish_chains ();
