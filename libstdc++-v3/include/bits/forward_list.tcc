@@ -206,38 +206,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __pos;
     }
   
-  template<typename _Tp, typename _Alloc>
-    forward_list<_Tp, _Alloc>::
-    forward_list(size_type __n)
-    : _Base()
-    {
-      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      for (size_type __i = 0; __i < __n; ++__i)
-	{
-	  __to->_M_next = this->_M_create_node(_Tp());
-	  __to = __to->_M_next;
-	}
-    }
-
-  template<typename _Tp, typename _Alloc>
-    forward_list<_Tp, _Alloc>::
-    forward_list(size_type __n, const _Tp& __value, const _Alloc& __al)
-    : _Base(__al)
-    {
-      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      for (size_type __i = 0; __i < __n; ++__i)
-	{
-	  __to->_M_next = this->_M_create_node(__value);
-	  __to = __to->_M_next;
-	}
-    }
-
+  // Called by the range constructor to implement [23.1.1]/9
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
+      void
       forward_list<_Tp, _Alloc>::
-      forward_list(_InputIterator __first, _InputIterator __last,
-                   const _Alloc& __al)
-      : _Base(__al)
+      _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
+                             __false_type)
       {
         _Fwd_list_node_base* __to = &this->_M_impl._M_head;
         _InputIterator __curr = __first;
@@ -249,34 +224,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
           }
       }
 
+  // Called by forward_list(n,v,a), and the range constructor
+  // when it turns out to be the same thing.
   template<typename _Tp, typename _Alloc>
+    void
     forward_list<_Tp, _Alloc>::
-    forward_list(const forward_list& __list)
-    : _Base(__list._M_get_Node_allocator())
-    {
-      const _Fwd_list_node_base* __from = &__list._M_impl._M_head;
-      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      while (__from->_M_next != 0)
-	{
-	  const _Node* __temp = static_cast<_Node*>(__from->_M_next);
-	  __to->_M_next = this->_M_create_node(__temp->_M_value);
-	  __from = __from->_M_next;
-	  __to = __to->_M_next;
-	}
-    }
-
-  template<typename _Tp, typename _Alloc>
-    forward_list<_Tp, _Alloc>::
-    forward_list(std::initializer_list<_Tp> __il, const _Alloc& __al)
-    : _Base(__al)
+    _M_fill_initialize(size_type __n, const value_type& __value)
     {
       _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      for (const _Tp* __item = __il.begin();
-	   __item != __il.end(); ++__item)
-	{
-	  __to->_M_next = this->_M_create_node(*__item);
-	  __to = __to->_M_next;
-	}
+      for (; __n > 0; --__n)
+        {
+          __to->_M_next = this->_M_create_node(__value);
+          __to = __to->_M_next;
+        }
     }
 
   template<typename _Tp, typename _Alloc>
@@ -304,61 +264,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    insert_after(__prev1, __first2, __last2);
 	}
       return *this;
-    }
-
-  template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    insert_after(const_iterator __pos,
-		 size_type __n, const _Tp& __val)
-    {
-      _Fwd_list_node_base* __to
-	= const_cast<_Fwd_list_node_base*>(__pos._M_node);
-      _Fwd_list_node_base* __keep = __to->_M_next;
-      for (size_type __i = 0; __i < __n; ++__i)
-	{
-	  __to->_M_next = this->_M_create_node(__val);
-	  __to = __to->_M_next;
-	}
-      __to->_M_next = __keep;
-    }
-
-  template<typename _Tp, typename _Alloc>
-    template<typename _InputIterator>
-      void
-      forward_list<_Tp, _Alloc>::
-      insert_after(const_iterator __pos,
-		   _InputIterator __first, _InputIterator __last)
-      {
-	_Fwd_list_node_base* __to
-	  = const_cast<_Fwd_list_node_base*>(__pos._M_node);
-	_Fwd_list_node_base* __keep = __to->_M_next;
-	_InputIterator __curr = __first;
-	while (__curr != __last)
-	  {
-	    __to->_M_next = this->_M_create_node(*__curr);
-	    __to = __to->_M_next;
-	    ++__curr;
-	  }
-	__to->_M_next = __keep;
-      }
-
-  template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
-    {
-      _Fwd_list_node_base* __to
-	= const_cast<_Fwd_list_node_base*>(__pos._M_node);
-      _Fwd_list_node_base* __keep = __to->_M_next;
-      const _Tp* __item = __il.begin();
-      while (__item != __il.end())
-	{
-	  __to->_M_next = this->_M_create_node(*__item);
-	  __to = __to->_M_next;
-	  ++__item;
-	}
-      __to->_M_next = __keep;
     }
 
   template<typename _Tp, typename _Alloc>
@@ -439,26 +344,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __curr = static_cast<_Node*>(__curr->_M_next);
 	  }
       }
-
-  template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    unique()
-    {
-      iterator __first = begin();
-      iterator __last = end();
-      if (__first == __last)
-	return;
-      iterator __next = __first;
-      while (++__next != __last)
-	{
-	  if (*__first == *__next)
-	    erase_after(__first);
-	  else
-	    __first = __next;
-	  __next = __first;
-	}
-    }
 
   template<typename _Tp, typename _Alloc>
     template<typename _BinPred>
