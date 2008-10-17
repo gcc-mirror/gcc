@@ -888,7 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
       {
-        forward_list<_Tp, _Alloc> __tmp(__n, __val, this->get_allocator());
+        forward_list __tmp(__n, __val, this->get_allocator());
         this->splice_after(__pos, std::move(__tmp));
       }
 
@@ -910,7 +910,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         insert_after(const_iterator __pos,
                      _InputIterator __first, _InputIterator __last)
         {
-          forward_list<_Tp, _Alloc> __tmp(__first, __last, this->get_allocator());
+          forward_list __tmp(__first, __last, this->get_allocator());
           this->splice_after(__pos, std::move(__tmp));
         }
 
@@ -930,7 +930,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       {
-        forward_list<_Tp, _Alloc> __tmp(__il, this->get_allocator());
+        forward_list __tmp(__il, this->get_allocator());
         this->splice_after(__pos, std::move(__tmp));
       }
 
@@ -1227,8 +1227,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type);
 
-      // Called by forward_list(n,v,a), and the range constructor when it turns out
-      // to be the same thing.
+      // Called by forward_list(n,v,a), and the range constructor when it
+      // turns out to be the same thing.
       void
       _M_fill_initialize(size_type __n, const value_type& __value);
     };
