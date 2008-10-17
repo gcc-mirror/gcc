@@ -3563,32 +3563,40 @@ gnat_to_gnu (Node_Id gnat_node)
 	    /* Get the permitted bounds.  */
 	    tree gnu_base_index_type
 	      = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type));
-	    tree gnu_base_min_expr = TYPE_MIN_VALUE (gnu_base_index_type);
-	    tree gnu_base_max_expr = TYPE_MAX_VALUE (gnu_base_index_type);
+	    tree gnu_base_min_expr = SUBSTITUTE_PLACEHOLDER_IN_EXPR
+	      (TYPE_MIN_VALUE (gnu_base_index_type), gnu_result);
+	    tree gnu_base_max_expr = SUBSTITUTE_PLACEHOLDER_IN_EXPR
+	      (TYPE_MAX_VALUE (gnu_base_index_type), gnu_result);
 	    tree gnu_expr_l, gnu_expr_h, gnu_expr_type;
 
-	    /* Check to see that the minimum slice value is in range.  */
-	    gnu_expr_l = emit_index_check (gnu_result,
-					   gnu_min_expr,
-					   gnu_base_min_expr,
-					   gnu_base_max_expr);
-
-	    /* Check to see that the maximum slice value is in range.  */
-	    gnu_expr_h = emit_index_check (gnu_result,
-					   gnu_max_expr,
-					   gnu_base_min_expr,
-					   gnu_base_max_expr);
+	   gnu_min_expr = protect_multiple_eval (gnu_min_expr);
+	   gnu_max_expr = protect_multiple_eval (gnu_max_expr);
 
 	    /* Derive a good type to convert everything to.  */
-	    gnu_expr_type = get_base_type (TREE_TYPE (gnu_expr_l));
+	    gnu_expr_type = get_base_type (TREE_TYPE (gnu_index_type));
 
-	    /* Build a compound expression that does the range checks and
-	       returns the low bound.  */
-	    gnu_expr = build_binary_op (COMPOUND_EXPR, gnu_expr_type,
-					convert (gnu_expr_type, gnu_expr_h),
-					convert (gnu_expr_type, gnu_expr_l));
+	    /* Test whether the minimum slice value is too small.  */
+	    gnu_expr_l = build_binary_op (LT_EXPR, integer_type_node,
+					  convert (gnu_expr_type,
+						   gnu_min_expr),
+					  convert (gnu_expr_type,
+						   gnu_base_min_expr));
 
-	   /* Build a conditional expression that does the range check and
+	    /* Test whether the maximum slice value is too large.  */
+	    gnu_expr_h = build_binary_op (GT_EXPR, integer_type_node,
+					  convert (gnu_expr_type,
+						   gnu_max_expr),
+					  convert (gnu_expr_type,
+						   gnu_base_max_expr));
+
+	    /* Build a slice index check that returns the low bound,
+               assuming the slice is not empty.  */
+	    gnu_expr = emit_check
+	      (build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
+				gnu_expr_l, gnu_expr_h),
+	       gnu_min_expr, CE_Index_Check_Failed);
+
+	   /* Build a conditional expression that does the index checks and
 	      returns the low bound if the slice is not empty (max >= min),
 	      and returns the naked low bound otherwise (max < min), unless
 	      it is non-constant and the high bound is; this prevents VRP
@@ -6186,33 +6194,18 @@ emit_index_check (tree gnu_array_object,
 static tree
 emit_check (tree gnu_cond, tree gnu_expr, int reason)
 {
-  tree gnu_call;
-  tree gnu_result;
+  tree gnu_call = build_call_raise (reason, Empty, N_Raise_Constraint_Error);
+  tree gnu_result
+    = fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
+		   build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_call,
+			   convert (TREE_TYPE (gnu_expr), integer_zero_node)),
+		   gnu_expr);
 
-  gnu_call = build_call_raise (reason, Empty, N_Raise_Constraint_Error);
+  /* GNU_RESULT has side effects if and only if GNU_EXPR has:
+     we don't need to evaluate it just for the check.  */
+  TREE_SIDE_EFFECTS (gnu_result) = TREE_SIDE_EFFECTS (gnu_expr);
 
-  /* Use an outer COMPOUND_EXPR to make sure that GNU_EXPR will get evaluated
-     in front of the comparison in case it ends up being a SAVE_EXPR.  Put the
-     whole thing inside its own SAVE_EXPR so the inner SAVE_EXPR doesn't leak
-     out.  */
-  gnu_result = fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
-			    build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr),
-				    gnu_call, gnu_expr),
-			    gnu_expr);
-
-  /* If GNU_EXPR has side effects, make the outer COMPOUND_EXPR and
-     protect it.  Otherwise, show GNU_RESULT has no side effects: we
-     don't need to evaluate it just for the check.  */
-  if (TREE_SIDE_EFFECTS (gnu_expr))
-    gnu_result
-      = build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_expr, gnu_result);
-  else
-    TREE_SIDE_EFFECTS (gnu_result) = 0;
-
-  /* ??? Unfortunately, if we don't put a SAVE_EXPR around this whole thing,
-     we will repeatedly do the test.  It would be nice if GCC was able
-     to optimize this and only do it once.  */
-  return save_expr (gnu_result);
+  return gnu_result;
 }
 
 /* Return an expression that converts GNU_EXPR to GNAT_TYPE, doing

@@ -1,3 +1,11 @@
+2008-10-17  Geert Bosch  <bosch@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Slice>: Simplify expansion
+	to use only a single check instead of three, and avoid unnecessary
+	COMPOUND_EXPR.
+	(emit_check): Avoid useless COMPOUND_EXPRs and SAVE_EXPRs, sometimes
+	creating more opportunities for optimizations.
+
 2008-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37601
