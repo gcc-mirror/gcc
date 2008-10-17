@@ -4583,7 +4583,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
   } stack[NUM_PRECS];
   int sp;
   /* Location of the binary operator.  */
-  location_t binary_loc;
+  location_t binary_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
 #define POP								      \
   do {									      \
     switch (stack[sp].op)						      \
