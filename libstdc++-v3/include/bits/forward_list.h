@@ -470,7 +470,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       explicit
       forward_list(size_type __n)
-      : _Base(_Alloc())
+      : _Base()
       { _M_fill_initialize(__n, value_type()); }
 
       /**
@@ -517,8 +517,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       forward_list(const forward_list& __list)
       : _Base(__list.get_allocator())
-      { _M_initialize_dispatch(__list.begin(), __list.end(),
-                               __false_type()); }
+      { _M_initialize_dispatch(__list.begin(), __list.end(), __false_type()); }
 
       /**
        *  @brief  The %forward_list move constructor.
