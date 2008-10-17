@@ -1,5 +1,10 @@
 2008-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (forward_list<>::
+	forward_list(size_type)): Tweak, use _Base default constructor.
+
+2008-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/forward_list.h (forward_list<>::insert_after): Minor
 	cosmetic changes.
 
