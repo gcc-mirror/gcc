@@ -1,5 +1,11 @@
 2008-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.tcc (forward_list<>::
+	_M_initialize_dispatch(_InputIterator, _InputIterator, __false_type)):
+	Simplify.
+
+2008-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/forward_list.h (forward_list<>::
 	forward_list(size_type)): Tweak, use _Base default constructor.
 

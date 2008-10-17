@@ -215,12 +215,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                              __false_type)
       {
         _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-        _InputIterator __curr = __first;
-        while (__curr != __last)
+        for (; __first != __last; ++__first)
           {
-            __to->_M_next = this->_M_create_node(*__curr);
+            __to->_M_next = this->_M_create_node(*__first);
             __to = __to->_M_next;
-            ++__curr;
           }
       }
 
