@@ -469,7 +469,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  the default value.
        */
       explicit
-      forward_list(size_type __n);
+      forward_list(size_type __n)
+      : _Base(_Alloc())
+      { _M_fill_initialize(__n, value_type()); }
 
       /**
        *  @brief  Creates a %forward_list with copies of an exemplar element.
@@ -481,7 +483,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  value.
        */
       forward_list(size_type __n, const _Tp& __value,
-                   const _Alloc& __al = _Alloc());
+                   const _Alloc& __al = _Alloc())
+      : _Base(__al)
+      { _M_fill_initialize(__n, __value); }
 
       /**
        *  @brief  Builds a %forward_list from a range.
@@ -495,7 +499,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       template<typename _InputIterator>
         forward_list(_InputIterator __first, _InputIterator __last,
-		     const _Alloc& __al = _Alloc());
+                     const _Alloc& __al = _Alloc())
+        : _Base(__al)
+        {
+          // Check whether it's an integral type.  If so, it's not an iterator.
+          typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+          _M_initialize_dispatch(__first, __last, _Integral());
+        }
 
       /**
        *  @brief  The %forward_list copy constructor.
@@ -505,7 +515,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  The newly-created %forward_list uses a copy of the allocation
        *  object used by @a list.
        */
-      forward_list(const forward_list& __list);
+      forward_list(const forward_list& __list)
+      : _Base(__list.get_allocator())
+      { _M_initialize_dispatch(__list.begin(), __list.end(),
+                               __false_type()); }
 
       /**
        *  @brief  The %forward_list move constructor.
@@ -528,7 +541,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  in the initializer_list @a il.  This is linear in il.size().
        */
       forward_list(std::initializer_list<_Tp> __il,
-                   const _Alloc& __al = _Alloc());
+                   const _Alloc& __al = _Alloc())
+      : _Base(__al)
+      { _M_initialize_dispatch(__il.begin(), __il.end(), __false_type()); }
 
       /**
        *  @brief  The forward_list dtor.
@@ -871,7 +886,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       void
-      insert_after(const_iterator __pos, size_type __n, const _Tp& __val);
+      insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
+      {
+        forward_list<_Tp, _Alloc> __tmp(__n, __val, this->get_allocator());
+        this->splice_after(__pos, std::move(__tmp));
+      }
 
       /**
        *  @brief  Inserts a range into the %forward_list.
@@ -889,7 +908,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _InputIterator>
         void
         insert_after(const_iterator __pos,
-                     _InputIterator __first, _InputIterator __last);
+                     _InputIterator __first, _InputIterator __last)
+        {
+          forward_list<_Tp, _Alloc> __tmp(__first, __last, this->get_allocator());
+          this->splice_after(__pos, std::move(__tmp));
+        }
 
       /**
        *  @brief  Inserts the contents of an initializer_list into
@@ -905,7 +928,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       void
-      insert_after(const_iterator __pos, std::initializer_list<_Tp> __il);
+      insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
+      {
+        forward_list<_Tp, _Alloc> __tmp(__il, this->get_allocator());
+        this->splice_after(__pos, std::move(__tmp));
+      }
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
@@ -1106,7 +1133,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  the pointer is the user's responsibility.
        */
       void
-      unique();
+      unique()
+      { this->unique(std::equal_to<_Tp>()); }
 
       /**
        *  @brief  Remove consecutive elements satisfying a predicate.
@@ -1186,6 +1214,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       reverse();
+
+    private:
+      template<typename _Integer>
+	void
+	_M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
+	{ _M_fill_initialize(static_cast<size_type>(__n), __x); }
+
+      // Called by the range constructor to implement [23.1.1]/9
+      template<typename _InputIterator>
+	void
+	_M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
+			       __false_type);
+
+      // Called by forward_list(n,v,a), and the range constructor when it turns out
+      // to be the same thing.
+      void
+      _M_fill_initialize(size_type __n, const value_type& __value);
     };
 
   /**

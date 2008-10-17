@@ -51,7 +51,7 @@ test02()
 
   // Note: Calling l.insert_after(pos, 5, 42); without the long five
   // gets resolved to the iterator range version and fails to compile!
-  fl.insert_after(pos, 5L, 42);
+  fl.insert_after(pos, 5, 42);
   VERIFY(*pos == 1);
 
   ++pos;
