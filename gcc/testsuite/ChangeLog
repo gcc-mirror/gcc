@@ -1,3 +1,8 @@
+2008-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/37102
+	* gcc.c-torture/execute/pr37102.c: New Test.
+
 2008-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37794
