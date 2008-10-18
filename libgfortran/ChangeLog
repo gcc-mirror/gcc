@@ -1,6 +1,6 @@
 2008-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
-	PR libfortran/37707
+	PR libfortran/37863
 	* io/write_float.def (WRITE_FLOAT): Round to 1.0 correctly.
 	* io/io.h (st_parameter_44): Fix id type declaration.
 
