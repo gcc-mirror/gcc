@@ -1,3 +1,9 @@
+2008-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/dll-2.c: Revert 2008-08-09 change (R138893): Change
+        "dg-message" back to "dg-warning".
+	* gcc.dg/dll-3.c: Likewise.
+
 2008-10-16  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/37381
