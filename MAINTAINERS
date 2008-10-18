@@ -220,8 +220,8 @@ auto-vectorizer		Dorit Nuzman		dorit@il.ibm.com
 loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
 
-Note that individuals who maintain parts of the compiler need approval to check
-in changes outside of the parts of the compiler they maintain.
+Note that individuals who maintain parts of the compiler need approval to
+check in changes outside of the parts of the compiler they maintain.
 
 			Non-Algorithmic Maintainers
 

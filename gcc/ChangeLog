@@ -1,3 +1,14 @@
+2008-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (unnamed peephole2): Do not force memory
+	operands of arith or logical instructions into registers for
+	non-TARGET_READ_MODIFY targets.
+
+	(ffs_cmove): Change operand 0 predicate to register_operand.
+	Change operand 1 predicate to nonimmediate_operand.
+	(ffsdi2): Ditto.
+	(*ffs_no_cmove): Change operand 0 predicate to register_operand.
+
 2008-10-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Guard
@@ -69,8 +80,7 @@
 	mark_hard_reg_early_clobbers): New functions.
 	(process_bb_node_lives): Call
 	make_early_clobber_and_input_conflicts and
-	mark_hard_reg_early_clobbers.  Make hard register inputs live
-	again.
+	mark_hard_reg_early_clobbers.  Make hard register inputs live again.
 
 	* doc/rtl.texi (clobber): Change descriotion of RA behaviour for
 	early clobbers of pseudo-registers.
@@ -107,7 +117,7 @@
 	* config/mn10300/constraints.md (S): Allow UNSPEC_GOTSYM_OFF.
 
 2008-10-15  Jan Sjodin  <jan.sjodin@amd.com>
-    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR tree-optimization/37485
 	* graphite.c (gmp_cst_to_tree): Moved.
@@ -143,7 +153,7 @@
 	(limit_scops): Same.
 
 2008-10-15  Sebastian Pop  <sebastian.pop@amd.com>
-    	    Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR tree-optimization/37828
 	* graphite.c (graphite_trans_loop_block): Do not loop block
@@ -215,12 +225,12 @@
 
 2008-10-14  Douglas Gregor  <doug.gregor@gmail.com>
 
-       PR c++/37553
-       * tree.c (build_type_attribute_qual_variant): Hash on the
-       unqualified type, and don't overwrite an existing
-       (type_hash_eq): Make the TYPE_NAME of the types significant, to
-       allow distinguishing between wchar_t and its underlying type. This
-       also means that we'll retain a little more typedef information.
+	PR c++/37553
+	* tree.c (build_type_attribute_qual_variant): Hash on the
+	unqualified type, and don't overwrite an existing
+	(type_hash_eq): Make the TYPE_NAME of the types significant, to
+	allow distinguishing between wchar_t and its underlying type. This
+	also means that we'll retain a little more typedef information.
 
 2008-10-14  Andrey Belevantsev  <abel@ispras.ru>
 	    Dmitry Melnik  <dm@ispras.ru>
@@ -238,67 +248,67 @@
 	(ia64_gen_spec_insn): Removed.
 	(get_spec_check_gen_function, insn_can_be_in_speculative_p,
 	ia64_gen_spec_check): New static functions.
-	(ia64_alloc_sched_context, ia64_init_sched_context, 
-	ia64_set_sched_context, ia64_clear_sched_context, 
-	ia64_free_sched_context, ia64_get_insn_spec_ds, 
+	(ia64_alloc_sched_context, ia64_init_sched_context,
+	ia64_set_sched_context, ia64_clear_sched_context,
+	ia64_free_sched_context, ia64_get_insn_spec_ds,
 	ia64_get_insn_checked_ds, ia64_skip_rtx_p): Declare functions.
 	(ia64_needs_block_p): Change prototype.
 	(ia64_gen_check): Rename to ia64_gen_spec_check.
-	(ia64_adjust_cost): Rename to ia64_adjust_cost_2.  Add new parameter 
+	(ia64_adjust_cost): Rename to ia64_adjust_cost_2.  Add new parameter
 	into declaration, add special memory dependencies handling.
 	(TARGET_SCHED_ALLOC_SCHED_CONTEXT, TARGET_SCHED_INIT_SCHED_CONTEXT,
 	TARGET_SCHED_SET_SCHED_CONTEXT, TARGET_SCHED_CLEAR_SCHED_CONTEXT,
 	TARGET_SCHED_FREE_SCHED_CONTEXT, TARGET_SCHED_GET_INSN_SPEC_DS,
-	TARGET_SCHED_GET_INSN_CHECKED_DS, TARGET_SCHED_SKIP_RTX_P): 
+	TARGET_SCHED_GET_INSN_CHECKED_DS, TARGET_SCHED_SKIP_RTX_P):
 	Define new target hooks.
 	(TARGET_SCHED_GEN_CHECK): Rename to TARGET_SCHED_GEN_SPEC_CHECK.
-	(ia64_optimization_options): Turn on selective scheduling with -O3, 
+	(ia64_optimization_options): Turn on selective scheduling with -O3,
 	disable -fauto-inc-dec. Set mflag_sched_control_spec to true by default
 	with selective scheduling.
-	(ia64_override_options): Initialize align_loops and align_functions 
-	to 32 and 64, respectively.  Set global selective scheduling flags 
+	(ia64_override_options): Initialize align_loops and align_functions
+	to 32 and 64, respectively.  Set global selective scheduling flags
 	according to target-dependent flags.
 	(rtx_needs_barrier): Support UNSPEC_LDS_A.
-	(group_barrier_needed): Use new mstop-bit-before-check flag. 
+	(group_barrier_needed): Use new mstop-bit-before-check flag.
 	Add heuristic.
 	(dfa_state_size): Make global.
 	(spec_check_no, max_uid): Remove.
-        (mem_ops_in_group, current_cycle): New variables.
+	(mem_ops_in_group, current_cycle): New variables.
 	(ia64_sched_init): Disable checks for !SCHED_GROUP_P after reload.
-        Initialize new variables.
-        (is_load_p, record_memory_reference): New functions.
-        (ia64_dfa_sched_reorder): Lower priority of loads when limit is
-        reached.
-	(ia64_variable_issue): Change use of current_sched_info to 
+	Initialize new variables.
+	(is_load_p, record_memory_reference): New functions.
+	(ia64_dfa_sched_reorder): Lower priority of loads when limit is
+	reached.
+	(ia64_variable_issue): Change use of current_sched_info to
 	sched_deps_info.  Update comment.  Note if a load or a store is issued.
-        (ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Require a cycle
-        advance if maximal number of loads or stores was issued on current 
-        cycle.
+	(ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Require a cycle
+	advance if maximal number of loads or stores was issued on current
+	cycle.
 	(scheduled_good_insn): New static helper function.
-        (ia64_dfa_new_cycle): Assert that last_scheduled_insn is set when 
-        a group barrier is needed.  Fix vertical spacing.  Guard the code
-        doing state transition with last_scheduled_insn check.                
-        Mark that a stop bit should be before current insn if there was a 
-        cycle advance.  Update current_cycle and mem_ops_in_group.
+	(ia64_dfa_new_cycle): Assert that last_scheduled_insn is set when
+	a group barrier is needed.  Fix vertical spacing.  Guard the code
+	doing state transition with last_scheduled_insn check.
+	Mark that a stop bit should be before current insn if there was a 
+	cycle advance.  Update current_cycle and mem_ops_in_group.
 	(ia64_h_i_d_extended): Change use of current_sched_info to
-        sched_deps_info. Reallocate stops_p by larger chunks.
+	sched_deps_info. Reallocate stops_p by larger chunks.
 	(struct _ia64_sched_context): New structure.
 	(ia64_sched_context_t): New typedef.
-	(ia64_alloc_sched_context, ia64_init_sched_context, 
+	(ia64_alloc_sched_context, ia64_init_sched_context,
 	ia64_set_sched_context, ia64_clear_sched_context,
 	ia64_free_sched_context): New static functions.
 	(gen_func_t): New typedef.
 	(get_spec_load_gen_function): New function.
 	(SPEC_GEN_EXTEND_OFFSET): Declare.	
 	(ia64_set_sched_flags): Check common_sched_info instead of *flags.
-	(get_mode_no_for_insn): Change the condition that prevents use of 
+	(get_mode_no_for_insn): Change the condition that prevents use of
 	special hardware registers so it can now handle pseudos.
 	(get_spec_unspec_code): New function.
 	(ia64_skip_rtx_p, get_insn_spec_code, ia64_get_insn_spec_ds,
 	ia64_get_insn_checked_ds, ia64_gen_spec_load): New static functions.
 	(ia64_speculate_insn, ia64_needs_block_p): Support branchy checks
 	during selective scheduling.
-	(ia64_speculate_insn): Use ds_get_speculation_types when 
+	(ia64_speculate_insn): Use ds_get_speculation_types when
 	determining whether we need to change the pattern.
 	(SPEC_GEN_LD_MAP, SPEC_GEN_CHECK_OFFSET): Declare.
 	(ia64_spec_check_src_p): Support new speculation/check codes.
@@ -307,38 +317,39 @@
 	(insert_bundle_state): Minimize mid-bundle stop bits.
 	(important_for_bundling_p): New function.
 	(get_next_important_insn): Use important_for_bundling_p.
-	(bundling): When shifting TImode from unimportant insns, ignore 
-	also group barriers.  Assert that best state is found before 
-	the backward bundling pass.  Print number of mid-bundle stop bits.  
-	Minimize mid-bundle stop bits.  Check correct calculation of 
+	(bundling): When shifting TImode from unimportant insns, ignore
+	also group barriers.  Assert that best state is found before
+	the backward bundling pass.  Print number of mid-bundle stop bits.
+	Minimize mid-bundle stop bits.  Check correct calculation of
 	mid-bundle stop bits.
 	(ia64_sched_finish, final_emit_insn_group_barriers): Fix formatting.
 	(final_emit_insn_group_barriers): Emit stop bits before insns starting
 	a new cycle.
 	(sel2_run): New variable.
-	(ia64_reorg): When flag_selective_scheduling2 is set, run the selective 
-	scheduling pass instead of schedule_ebbs.  
+	(ia64_reorg): When flag_selective_scheduling2 is set, run the selective
+	scheduling pass instead of schedule_ebbs.
 	
 	* config/ia64/ia64.md (speculable1, speculable2): New attributes.
 	(UNSPEC_LDS_A): New UNSPEC.
-	(movqi_internal, movhi_internal, movsi_internal, movdi_internal, 
-	movti_internal, movsf_internal, movdf_internal, 
+	(movqi_internal, movhi_internal, movsi_internal, movdi_internal,
+	movti_internal, movsf_internal, movdf_internal,
 	movxf_internal): Make visible.  Add speculable* attributes.
 	(output_c_nc): New mode attribute.
 	(mov<mode>_speculative_a, zero_extend<mode>di2_speculative_a,
-	mov<mode>_nc, zero_extend<mode>di2_nc, 
+	mov<mode>_nc, zero_extend<mode>di2_nc,
 	advanced_load_check_nc_<mode>): New insns.
 	(zero_extend*): Add speculable* attributes.
 
 	* config/ia64/ia64.opt (msched_fp_mem_deps_zero_cost): New option.
 	(msched-stop-bits-after-every-cycle): Likewise.
-	(msched-max-memory-insns,
-        msched-max-memory-insns-hard-limit): Likewise.
+	(msched-max-memory-insns, msched-max-memory-insns-hard-limit):
+	Likewise.
 	(msched-spec-verbose): Remove.
 	(msched-prefer-non-data-spec-insns,
-        msched-prefer-non-control-spec-insns, msched-count-spec-in-critical-path,
-	msel-sched-dont-check-control-spec): Use Target 
-        Report Var instead of Common Report Var.
+	msched-prefer-non-control-spec-insns,
+	msched-count-spec-in-critical-path,
+	msel-sched-dont-check-control-spec): Use Target  Report Var
+	instead of Common Report Var.
 
 	* config/ia64/itanium2.md: Remove incorrect bypass.
 	
@@ -365,15 +376,16 @@
 	for hppa64-linux-gnu targets.
 
 2008-10-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Kaushal Kantawala <Kaushal_Kantawala@playstation.sony.com>
-            Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
-            Grace Cao  <grace_cao@playstation.sony.com>
+	    Kaushal Kantawala <Kaushal_Kantawala@playstation.sony.com>
+	    Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
+	    Grace Cao  <grace_cao@playstation.sony.com>
 
 	* doc/invoke.texi (-mgen-cell-microcode): Document.
 	(-mwarn-cell-microcode): Document.
 	* cfglayout.c (locator_location): Export.
 	* rtl.h (locator_location): Define prototype.
-	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand): New predicate.
+	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand):
+	New predicate.
 	* rs6000/rs6000-protos.h (rs6000_final_prescan_insn): Define prototype.
 	* config/rs6000/rs6000.opt (mgen-cell-microcode): New option.
 	(mwarn-cell-microcode): New option.
@@ -386,9 +398,10 @@
 	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Define.
 	* config/rs6000/rs6000.md
 	Replace cc_reg_not_cr0_operand with cc_reg_not_micro_cr0_operand if
-	the instruction would have been microcoded on the Cell.
-	Set cell_micro to always on unnamed patterns for the string instructions.
-	(cell_micro): Update definition, remove load/store conditional microcoded.
+	the instruction would have been microcoded on the Cell.  Set cell_micro
+	to always on unnamed patterns for the string instructions.
+	(cell_micro): Update definition, remove load/store conditional
+	microcoded.
 	(sign_extend:DI): Define new pattern for non microcoded version.
 	(sign_extend:SI): Likewise.
 	(compare (div:P)): Set cell_micro to not.
@@ -522,9 +535,8 @@
 	DF_REF_CLASS, DF_REF_TYPE, DF_REF_CHAIN, DF_REF_ID, DF_REF_FLAGS,
 	DF_REF_ORDER, DF_REF_IS_ARTIFICIAL, DF_REF_NEXT_REG,
 	DF_REF_PREV_REG, DF_REF_EXTRACT_WIDTH, DF_REF_EXTRACT_OFFSET,
-	DF_REF_EXTRACT_MODE): Replaced definition to access union
-	df_ref_d.
-       	(DF_MWS_REG_DEF_P, DF_MWS_REG_USE_P, DF_MWS_TYPE): New macros.
+	DF_REF_EXTRACT_MODE): Replaced definition to access union df_ref_d.
+	(DF_MWS_REG_DEF_P, DF_MWS_REG_USE_P, DF_MWS_TYPE): New macros.
 	(df_scan_bb_info, df_bb_regno_first_def_find,
 	df_bb_regno_last_def_find, df_find_def, df_find_use,
 	df_refs_chain_dump, df_regs_chain_dump, df_ref_debug,
@@ -548,8 +560,7 @@
 	df_ref * with df_ref.
 	(df_ref_record, df_uses_record, df_ref_create_structure): Added
 	df_ref_class parameter.
-	(df_scan_problem_data): Added new pools for different types of
-	refs.
+	(df_scan_problem_data): Added new pools for different types of refs.
 	(df_scan_free_internal, df_scan_alloc, df_free_ref,
 	df_ref_create_structure): Processed new ref pools.
 	(df_scan_start_dump): Added counts of refs and insns.
