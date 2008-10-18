@@ -458,7 +458,7 @@ typedef struct st_parameter_43
 
 typedef struct st_parameter_44
 {
-  GFC_IO_INT *id;
+  GFC_INTEGER_4 *id;
   GFC_IO_INT pos;
   CHARACTER1 (asynchronous);
   CHARACTER2 (blank);
