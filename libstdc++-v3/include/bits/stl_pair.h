@@ -65,7 +65,34 @@
 #include <bits/move.h> // for std::move / std::forward, std::decay, and
                        // std::swap
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <type_traits>
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+// A trait that determines whether the initialization of a T from
+// arguments of type Args could possibly be the initialization of a
+// pointer from a null pointer constant.
+template<typename, typename...>
+struct __may_be_null_pointer_init 
+  : public false_type { };
+
+template<typename _Tp, typename _Up>
+struct __may_be_null_pointer_init<_Tp*, _Up>  
+  : public integral_constant<bool,
+             (is_integral<typename remove_reference<_Up>::type>::value 
+              || is_enum<typename remove_reference<_Up>::type>::value)> 
+  { };
+
+template<typename _Class, typename _Tp, typename _Up>
+struct __may_be_null_pointer_init<_Tp _Class::*, _Up>  
+  : public integral_constant<bool,
+             (is_integral<typename remove_reference<_Up>::type>::value 
+              || is_enum<typename remove_reference<_Up>::type>::value)> 
+  { };
+#endif
 
   /// pair holds two objects of arbitrary type.
   template<class _T1, class _T2>
@@ -89,10 +116,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : first(__a), second(__b) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<class _U1, class _U2>
-        pair(_U1&& __x, _U2&& __y)
-	: first(std::forward<_U1>(__x)),
-	  second(std::forward<_U2>(__y)) { }
+      // Omitted the following constructor, which appears in the C++0x
+      // working paper but is redundant with the variadic constructors
+      // below.
+      //
+      //   template<class _U1, class _U2>
+      //     pair(_U1&& __x, _U2&& __y);
 
       pair(pair&& __p)
       : first(std::move(__p.first)),
@@ -111,12 +140,56 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: first(std::move(__p.first)),
 	  second(std::move(__p.second)) { }
 
-      // http://gcc.gnu.org/ml/libstdc++/2007-08/msg00052.html
-      template<class _U1, class _Arg0, class... _Args>
-        pair(_U1&& __x, _Arg0&& __arg0, _Args&&... __args)
+      // This constructor is required so that lvalue pairs don't get
+      // pushed to the variadic constructor below.
+      template<class _U1, class _U2>
+        pair(pair<_U1, _U2>& __p)
+          : first(const_cast<const pair<_U1, _U2>&>(__p).first),
+  	    second(const_cast<const pair<_U1, _U2>&>(__p).second) { }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 811.  pair of pointers no longer works with literal 0
+
+      // Variadic constructor. The enable_if makes sure that we won't
+      // try to initialize a pointer from an integral type, which
+      // needs to be handled by a different constructor that will
+      // convert a null pointer constant to that pointer type. See
+      // library issue 767.
+      template<class _U1, class... _Args,
+        class _Checker 
+          = typename enable_if<
+                       (!__may_be_null_pointer_init<_T1, _U1>::value
+                        && !__may_be_null_pointer_init<_T2, _Args...>::value), 
+                     void>::type>
+        pair(_U1&& __x, _Args&&... __args)
 	: first(std::forward<_U1>(__x)),
-	  second(std::forward<_Arg0>(__arg0),
-		 std::forward<_Args>(__args)...) { }
+	  second(std::forward<_Args>(__args)...) { }
+
+      // Variadic constructor. The enable_if makes sure that the
+      // second argument isn't going to try to initialize a pointer
+      // from an integral type. However, T1 may be a pointer whose
+      // argument was a null pointer constant.
+      template<class... _Args,
+        class _Checker 
+          = typename enable_if<
+                       !__may_be_null_pointer_init<_T2, _Args...>::value, 
+                     void>::type>
+        pair(const _T1& __x, _Args&&... __args)
+	: first(__x),
+	  second(std::forward<_Args>(__args)...) { }
+
+      // Constructor typically used when T2 is a pointer and the
+      // second argument was a null pointer constant. The enable_if
+      // makes sure that the first argument isn't going to try to
+      // initialize a pointer from an integral type.
+      template<class _U1,
+        class _Checker 
+          = typename enable_if<
+                     !__may_be_null_pointer_init<_T1, _U1>::value,
+                     void>::type>
+        pair(_U1&& __x, const _T2& __y)
+	: first(std::forward<_U1>(__x)),
+	  second(__y) { }
 
       pair&
       operator=(pair&& __p)
