@@ -1,3 +1,19 @@
+2008-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/37004
+	* typeck.c (cp_common_type): New. The same as
+	type_after_usual_arithmetic_conversions but without promotions.
+	(type_after_usual_arithmetic_conversions): Do the promotions and
+	call cp_common_type.
+	(common_type): Make it behave like the C version of this
+	function. Do not handle pointer types.
+	(common_pointer_type): Move handling of pointer types from
+	common_type to here.
+	(cp_build_binary_op): Use common_pointer_type instead of
+	common_type in call to pointer_diff.
+	Use cp_common_type instead of common_type.
+	* cp-tree.h (common_pointer_type): Declare.
+
 2008-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37819

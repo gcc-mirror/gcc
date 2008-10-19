@@ -5,7 +5,7 @@
 short  mask1(short x)
 {
   short y = 0x7fff;
-  return x & y; /* { dg-bogus "conversion" "conversion" { xfail *-*-* } 8 } */
+  return x & y; /* { dg-bogus "conversion" "bogus warning" } */
 }
 
 short  mask2(short ssx)

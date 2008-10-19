@@ -248,12 +248,13 @@ original_type (tree t)
   return cp_build_qualified_type (t, quals);
 }
 
-/* T1 and T2 are arithmetic or enumeration types.  Return the type
-   that will result from the "usual arithmetic conversions" on T1 and
-   T2 as described in [expr].  */
+/* Return the common type for two arithmetic types T1 and T2 under the
+   usual arithmetic conversions.  The default conversions have already
+   been applied, and enumerated types converted to their compatible
+   integer types.  */
 
-tree
-type_after_usual_arithmetic_conversions (tree t1, tree t2)
+static tree
+cp_common_type (tree t1, tree t2)
 {
   enum tree_code code1 = TREE_CODE (t1);
   enum tree_code code2 = TREE_CODE (t2);
@@ -306,13 +307,6 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
     return build_type_attribute_variant (t1, attributes);
   if (code2 == REAL_TYPE && code1 != REAL_TYPE)
     return build_type_attribute_variant (t2, attributes);
-
-  /* Perform the integral promotions.  */
-  if (code1 != REAL_TYPE)
-    {
-      t1 = type_promotes_to (t1);
-      t2 = type_promotes_to (t2);
-    }
 
   /* Both real or both integers; use the one with greater precision.  */
   if (TYPE_PRECISION (t1) > TYPE_PRECISION (t2))
@@ -391,6 +385,31 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 	 compelling reason to choose one or the other.  */
       return build_type_attribute_variant (t1, attributes);
     }
+}
+
+/* T1 and T2 are arithmetic or enumeration types.  Return the type
+   that will result from the "usual arithmetic conversions" on T1 and
+   T2 as described in [expr].  */
+
+tree
+type_after_usual_arithmetic_conversions (tree t1, tree t2)
+{
+  gcc_assert (ARITHMETIC_TYPE_P (t1)
+	      || TREE_CODE (t1) == VECTOR_TYPE
+	      || UNSCOPED_ENUM_P (t1));
+  gcc_assert (ARITHMETIC_TYPE_P (t2)
+	      || TREE_CODE (t2) == VECTOR_TYPE
+	      || UNSCOPED_ENUM_P (t2));
+
+  /* Perform the integral promotions.  We do not promote real types here.  */
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t1)
+      && INTEGRAL_OR_ENUMERATION_TYPE_P (t1)) 
+    {
+      t1 = type_promotes_to (t1);
+      t2 = type_promotes_to (t2);
+    }
+
+  return cp_common_type (t1, t2);
 }
 
 /* Subroutine of composite_pointer_type to implement the recursive
@@ -744,39 +763,42 @@ merge_types (tree t1, tree t2)
     return cp_build_type_attribute_variant (t1, attributes);
 }
 
-/* Return the common type of two types.
-   We assume that comptypes has already been done and returned 1;
-   if that isn't so, this may crash.
+/* Wrapper around cp_common_type that is used by c-common.c and other
+   front end optimizations that remove promotions.  
 
-   This is the type for the result of most arithmetic operations
-   if the operands have the given two types.  */
+   Return the common type for two arithmetic types T1 and T2 under the
+   usual arithmetic conversions.  The default conversions have already
+   been applied, and enumerated types converted to their compatible
+   integer types.  */
 
 tree
 common_type (tree t1, tree t2)
 {
-  enum tree_code code1;
-  enum tree_code code2;
+  /* If one type is nonsense, use the other  */
+  if (t1 == error_mark_node)
+    return t2;
+  if (t2 == error_mark_node)
+    return t1;
 
-  /* If one type is nonsense, bail.  */
-  if (t1 == error_mark_node || t2 == error_mark_node)
-    return error_mark_node;
+  return cp_common_type (t1, t2);
+}
 
-  code1 = TREE_CODE (t1);
-  code2 = TREE_CODE (t2);
+/* Return the common type of two pointer types T1 and T2.  This is the
+   type for the result of most arithmetic operations if the operands
+   have the given two types.
+ 
+   We assume that comp_target_types has already been done and returned
+   nonzero; if that isn't so, this may crash.  */
 
-  if ((ARITHMETIC_TYPE_P (t1) || UNSCOPED_ENUM_P (t1)
-       || code1 == VECTOR_TYPE)
-      && (ARITHMETIC_TYPE_P (t2) || UNSCOPED_ENUM_P (t2)
-	  || code2 == VECTOR_TYPE))
-    return type_after_usual_arithmetic_conversions (t1, t2);
+tree
+common_pointer_type (tree t1, tree t2)
+{
+  gcc_assert ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
+              || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2))
+              || (TYPE_PTRMEMFUNC_P (t1) && TYPE_PTRMEMFUNC_P (t2)));
 
-  else if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
-	   || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2))
-	   || (TYPE_PTRMEMFUNC_P (t1) && TYPE_PTRMEMFUNC_P (t2)))
-    return composite_pointer_type (t1, t2, error_mark_node, error_mark_node,
-				   "conversion", tf_warning_or_error);
-  else
-    gcc_unreachable ();
+  return composite_pointer_type (t1, t2, error_mark_node, error_mark_node,
+                                 "conversion", tf_warning_or_error);
 }
 
 /* Compare two exception specifier types for exactness or subsetness, if
@@ -3303,7 +3325,7 @@ cp_build_binary_op (location_t location,
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
 							TREE_TYPE (type1)))
-	return pointer_diff (op0, op1, common_type (type0, type1));
+	return pointer_diff (op0, op1, common_pointer_type (type0, type1));
       /* In all other cases except pointer - int, the usual arithmetic
 	 rules apply.  */
       else if (!(code0 == POINTER_TYPE && code1 == INTEGER_TYPE))
@@ -3805,7 +3827,7 @@ cp_build_binary_op (location_t location,
   if (!result_type
       && arithmetic_types_p
       && (shorten || common || short_compare))
-    result_type = common_type (type0, type1);
+    result_type = cp_common_type (type0, type1);
 
   if (!result_type)
     {
