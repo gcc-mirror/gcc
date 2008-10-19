@@ -1,5 +1,11 @@
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
+        PR fortran/37723
+        * dependency.c (gfc_dep_resolver ): If we find equal array
+	element references, go on to the next reference.
+
+2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
         PR fortran/37787
         * dependency.c (gfc_are_equivalenced_arrays): Look in symbol
         namespace rather than current namespace, if it is available.
