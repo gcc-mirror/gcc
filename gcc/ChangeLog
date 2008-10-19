@@ -1,3 +1,7 @@
+2008-10-19  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* doc/install.texi: Document in-tree building of gcc and mpfr.
+
 2008-10-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (may_alias_p): Remove bogus shortcut.

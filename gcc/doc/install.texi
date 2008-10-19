@@ -307,7 +307,9 @@ systems' @command{tar} programs will also work, only try GNU
 Necessary to build GCC@.  If you do not have it installed in your
 library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also
-@option{--with-gmp-lib} and @option{--with-gmp-include}.
+@option{--with-gmp-lib} and @option{--with-gmp-include}.  Alternatively,
+if a GMP source ditribution is found in a subdirectory of you GCC
+sources named @file{gmp}, it will be built together with GCC@.
 
 @item MPFR Library version 2.3.2 (or later)
 
@@ -319,8 +321,12 @@ fixed when using this version.  It is strongly recommended to upgrade
 to the recommended version of MPFR.
 
 The @option{--with-mpfr} configure option should be used if your MPFR
-Library is not installed in your default library search path.  See
-also @option{--with-mpfr-lib} and @option{--with-mpfr-include}.
+Library is not installed in your default library search path.  See also
+@option{--with-mpfr-lib} and @option{--with-mpfr-include}.
+Alternatively, if a MPFR source ditribution is found in a subdirectory
+of you GCC sources named @file{mpfr}, it will be built together with
+GCC@.
+
 
 @item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
 
@@ -495,6 +501,12 @@ a separate one.  In the latter case, add symbolic links to any
 components of the binutils you intend to build alongside the compiler
 (@file{bfd}, @file{binutils}, @file{gas}, @file{gprof}, @file{ld},
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
+
+Likewise, the GMP and MPFR libraries can be automatically built together
+with GCC.  Unpack the GMP and/or MPFR source distributions in the
+directory containing the GCC sources and rename their directories to
+@file{gmp} and @file{mpfr}, respectively (or use symbolic links with the
+same name).
 
 @html
 <hr />
