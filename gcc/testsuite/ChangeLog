@@ -1,3 +1,8 @@
+2008-10-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/30260
+	* gcc.dg/pr30260.c: New.
+
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37723

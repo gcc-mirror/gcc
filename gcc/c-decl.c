@@ -5926,17 +5926,15 @@ finish_enum (tree enumtype, tree values, tree attributes)
 	  /* The ISO C Standard mandates enumerators to have type int,
 	     even though the underlying type of an enum type is
 	     unspecified.  However, GCC allows enumerators of any
-	     integer type as an extensions.  Here we convert any
-	     enumerators that fit in an int to type int, to avoid
-	     promotions to unsigned types when comparing integers with
-	     enumerators that fit in the int range.  When -pedantic is
-	     given, build_enumerator() would have already warned about
-	     those that don't fit.  */
-	  if (int_fits_type_p (ini, integer_type_node))
-	    tem = integer_type_node;
-	  else
-	    tem = enumtype;
-	  ini = convert (tem, ini);
+	     integer type as an extensions.  build_enumerator()
+	     converts any enumerators that fit in an int to type int,
+	     to avoid promotions to unsigned types when comparing
+	     integers with enumerators that fit in the int range.
+	     When -pedantic is given, build_enumerator() would have
+	     already warned about those that don't fit. Here we
+	     convert the rest to the enumerator type. */
+	  if (TREE_TYPE (ini) != integer_type_node)
+	    ini = convert (enumtype, ini);
 
 	  DECL_INITIAL (enu) = ini;
 	  TREE_PURPOSE (pair) = DECL_NAME (enu);
@@ -6025,6 +6023,18 @@ build_enumerator (struct c_enum_contents *the_enum, tree name, tree value,
   else if (!int_fits_type_p (value, integer_type_node))
     pedwarn (value_loc, OPT_pedantic, 
 	     "ISO C restricts enumerator values to range of %<int%>");
+
+  /* The ISO C Standard mandates enumerators to have type int, even
+     though the underlying type of an enum type is unspecified.
+     However, GCC allows enumerators of any integer type as an
+     extensions.  Here we convert any enumerators that fit in an int
+     to type int, to avoid promotions to unsigned types when comparing
+     integers with enumerators that fit in the int range.  When
+     -pedantic is given, we would have already warned about those that
+     don't fit. We have to do this here rather than in finish_enum
+     because this value may be used to define more enumerators.  */
+  if (int_fits_type_p (value, integer_type_node))
+    value = convert (integer_type_node, value);
 
   /* Set basis for default for next value.  */
   the_enum->enum_next_value
