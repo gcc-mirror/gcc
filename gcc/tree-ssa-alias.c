@@ -2985,16 +2985,6 @@ may_alias_p (tree ptr, alias_set_type mem_alias_set,
       return false;
     }
 
-  /* If either MEM or VAR is a read-only global and the other one
-     isn't, then PTR cannot point to VAR.  */
-  if ((unmodifiable_var_p (mem) && !unmodifiable_var_p (var))
-      || (unmodifiable_var_p (var) && !unmodifiable_var_p (mem)))
-    {
-      alias_stats.alias_noalias++;
-      alias_stats.simple_resolved++;
-      return false;
-    }
-
   /* If the pointed to memory has alias set zero, or the pointer
      is ref-all, or the pointer decl is marked that no TBAA is to
      be applied, the MEM can alias VAR.  */
