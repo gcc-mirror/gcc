@@ -2946,16 +2946,6 @@ may_alias_p (tree ptr, alias_set_type mem_alias_set,
       return false;
     }
 
-  /* If either MEM or VAR is a read-only global and the other one
-     isn't, then PTR cannot point to VAR.  */
-  if ((unmodifiable_var_p (mem) && !unmodifiable_var_p (var))
-      || (unmodifiable_var_p (var) && !unmodifiable_var_p (mem)))
-    {
-      alias_stats.alias_noalias++;
-      alias_stats.simple_resolved++;
-      return false;
-    }
-
   gcc_assert (TREE_CODE (mem) == SYMBOL_MEMORY_TAG);
 
   if (!DECL_NO_TBAA_P (ptr))

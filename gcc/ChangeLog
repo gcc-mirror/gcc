@@ -1,3 +1,7 @@
+2008-10-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (may_alias_p): Remove bogus shortcut.
+
 2008-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/37102
