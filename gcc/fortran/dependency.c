@@ -1252,6 +1252,14 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 	      if (this_dep > fin_dep)
 		fin_dep = this_dep;
 	    }
+
+	  /* If this is an equal element, we have to keep going until we find
+	     the "real" array reference.  */
+	  if (lref->u.ar.type == AR_ELEMENT
+		&& rref->u.ar.type == AR_ELEMENT
+		&& fin_dep == GFC_DEP_EQUAL)
+	    break;
+
 	  /* Exactly matching and forward overlapping ranges don't cause a
 	     dependency.  */
 	  if (fin_dep < GFC_DEP_OVERLAP)
