@@ -133,6 +133,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       typedef _Rb_tree_node<_Val>* _Link_type;
       _Val _M_value_field;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+        _Rb_tree_node(_Args&&... __args)
+	: _Rb_tree_node_base(),
+	  _M_value_field(std::forward<_Args>(__args)...) { }
+#endif
     };
 
   _Rb_tree_node_base*
@@ -360,6 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_put_node(_Link_type __p)
       { _M_impl._Node_allocator::deallocate(__p, 1); }
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       _Link_type
       _M_create_node(const value_type& __x)
       {
@@ -374,6 +382,39 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return __tmp;
       }
 
+      void
+      _M_destroy_node(_Link_type __p)
+      {
+	get_allocator().destroy(&__p->_M_value_field);
+	_M_put_node(__p);
+      }
+#else
+      template<typename... _Args>
+        _Link_type
+        _M_create_node(_Args&&... __args)
+	{
+	  _Link_type __tmp = _M_get_node();
+	  try
+	    {
+	      _M_get_Node_allocator().construct(__tmp,
+					     std::forward<_Args>(__args)...);
+	    }
+	  catch(...)
+	    {
+	      _M_put_node(__tmp);
+	      __throw_exception_again;
+	    }
+	  return __tmp;
+	}
+
+      void
+      _M_destroy_node(_Link_type __p)
+      {
+	_M_get_Node_allocator().destroy(__p);
+	_M_put_node(__p);
+      }
+#endif
+
       _Link_type
       _M_clone_node(_Const_Link_type __x)
       {
@@ -382,13 +423,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__tmp->_M_left = 0;
 	__tmp->_M_right = 0;
 	return __tmp;
-      }
-
-      void
-      _M_destroy_node(_Link_type __p)
-      {
-	get_allocator().destroy(&__p->_M_value_field);
-	_M_put_node(__p);
       }
 
     protected:
