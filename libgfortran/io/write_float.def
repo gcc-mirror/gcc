@@ -728,7 +728,7 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	    if (tmp < 0.5)\
 	      tmp = 0.0;\
 	    else if (tmp < 1.0)\
-	      tmp = tmp + 0.5;\
+	      tmp = 1.0;\
 	  }\
 	zero_flag = (tmp == 0.0);\
 \

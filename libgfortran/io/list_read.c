@@ -2823,6 +2823,9 @@ get_name:
       goto nml_err_ret;
     }
 
+  if (first_nl != NULL && first_nl->var_rank > 0)
+    nl = first_nl;
+
   if (nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
 		    clow, chigh) == FAILURE)
     goto nml_err_ret;

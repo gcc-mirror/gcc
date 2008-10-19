@@ -1,3 +1,17 @@
+2008-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37863
+	Backport from trunk.
+	* io/write_float.def (WRITE_FLOAT): Round to 1.0 correctly.
+
+2008-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37707
+	Backport from trunk.
+	* io/list_read.c (nml_get_obj_data): If the first namelist object rank
+	is greater than zero, call nml_object_read with the first object rather
+	than the sub-object.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.
