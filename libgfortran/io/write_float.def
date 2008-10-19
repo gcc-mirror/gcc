@@ -119,6 +119,22 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	sign = calculate_sign (dtp, sign_bit);
       else
 	sign = calculate_sign (dtp, 0);
+
+      /* Handle special cases.  */
+      if (w == 0)
+	w = 2;
+
+      /* For this one we choose to not output a decimal point.
+	 F95 10.5.1.2.1  */
+      if (w == 1 && ft == FMT_F)
+	{
+	  out = write_block (dtp, w);
+	  if (out == NULL)
+	    return;
+	  *out = '0';
+	  return;
+	}
+	      
     }
 
   /* Normalize the fractional component.  */
