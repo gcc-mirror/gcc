@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,5 +42,5 @@ void test01()
   test &= itr == mapByName.end(); // { dg-error "no" } 
 }
  
-// { dg-error "candidates are" "" { target *-*-* } 210 }
-// { dg-error "candidates are" "" { target *-*-* } 214 }
+// { dg-error "candidates are" "" { target *-*-* } 217 }
+// { dg-error "candidates are" "" { target *-*-* } 221 }
