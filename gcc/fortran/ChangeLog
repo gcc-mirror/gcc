@@ -1,3 +1,9 @@
+2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37723
+        * dependency.c (gfc_dep_resolver ): If we find equal array
+	element references, go on to the next reference.
+
 2008-10-16  Daniel Kraft  <d@domob.eu>
 
 	* resolve.c (resolve_elemental_actual): Handle calls to intrinsic
