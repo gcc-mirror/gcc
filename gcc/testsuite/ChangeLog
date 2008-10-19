@@ -1,3 +1,8 @@
+2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37787
+        * gfortran.dg/module_equivalence_5.f90: New test.
+
 2008-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/37102
