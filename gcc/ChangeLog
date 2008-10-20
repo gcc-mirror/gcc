@@ -6,6 +6,9 @@
 	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW from
 	INTEGER_CSTs.
 
+	PR debug/37020
+	* c-decl.c (merge_decls): Don't call outlining_inline_function hook.
+
 2008-10-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (insert_into_preds_of_block): Don't rewrite constant

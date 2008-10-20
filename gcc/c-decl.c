@@ -1775,17 +1775,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	 throw it away, in case it was inlined into a function that
 	 hasn't been written out yet.  */
       if (new_is_definition && DECL_INITIAL (olddecl))
-	{
-	  if (TREE_USED (olddecl)
-	      /* We never inline re-defined extern inline functions.
-		 FIXME: This would be better handled by keeping both functions
-		 as separate declarations.  */
-	      && cgraph_function_possibly_inlined_p (olddecl))
-	    (*debug_hooks->outlining_inline_function) (olddecl);
-
-	  /* The new defn must not be inline.  */
-	  DECL_UNINLINABLE (newdecl) = 1;
-	}
+	/* The new defn must not be inline.  */
+	DECL_UNINLINABLE (newdecl) = 1;
       else
 	{
 	  /* If either decl says `inline', this fn is inline, unless
