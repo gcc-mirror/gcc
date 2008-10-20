@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,8 @@ void test01()
 
   std::tr1::unordered_multiset<int> ums;
 
-  VERIFY( ums.max_size() == ums.get_allocator().max_size() );
+  VERIFY( (ums.max_size() == std::allocator<std::tr1::__detail::_Hash_node<
+ 	   int, false> >().max_size()) );
 }
 
 int main()

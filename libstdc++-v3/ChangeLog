@@ -1,3 +1,22 @@
+2008-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/hashtable_policy.h (_Hash_node<>::_Hash_node<>
+	(_Args&&...)): Add in C++0x mode.
+	* include/tr1_impl/hashtable (_Hashtable<>::_M_allocate_node,
+	_Hashtable<>::_M_deallocate_node): Use _M_get_Node_allocator in
+	C++0x mode.
+
+	* include/tr1_impl/hashtable (_Hashtable<>::max_size): Use
+	Node_allocator for improved accuracy.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-multimap.cc: Adjust.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-map.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-multiset.cc: Adjust.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-set.cc: Likewise.
+
 2008-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_tree.h (_Rb_tree_node<>::_Rb_tree_node<>

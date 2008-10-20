@@ -99,6 +99,13 @@ namespace __detail
       _Value       _M_v;
       std::size_t  _M_hash_code;
       _Hash_node*  _M_next;
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      template<typename... _Args>
+        _Hash_node(_Args&&... __args)
+	  : _M_v(std::forward<_Args>(__args)...),
+	    _M_hash_code(), _M_next() { }
+#endif
     };
 
   template<typename _Value>
@@ -106,6 +113,13 @@ namespace __detail
     {
       _Value       _M_v;
       _Hash_node*  _M_next;
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      template<typename... _Args>
+        _Hash_node(_Args&&... __args)
+	  : _M_v(std::forward<_Args>(__args)...),
+	    _M_next() { }
+#endif
     };
 
   // Local iterators, used to iterate within a bucket but not between
