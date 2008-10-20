@@ -306,10 +306,10 @@ systems' @command{tar} programs will also work, only try GNU
 
 Necessary to build GCC@.  If you do not have it installed in your
 library search path, you will have to configure with the
-@option{--with-gmp} configure option.  See also
-@option{--with-gmp-lib} and @option{--with-gmp-include}.  Alternatively,
-if a GMP source ditribution is found in a subdirectory of you GCC
-sources named @file{gmp}, it will be built together with GCC@.
+@option{--with-gmp} configure option.  See also @option{--with-gmp-lib}
+and @option{--with-gmp-include}.  Alternatively, if a GMP source
+distribution is found in a subdirectory of your GCC sources named
+@file{gmp}, it will be built together with GCC@.
 
 @item MPFR Library version 2.3.2 (or later)
 
@@ -323,8 +323,8 @@ to the recommended version of MPFR.
 The @option{--with-mpfr} configure option should be used if your MPFR
 Library is not installed in your default library search path.  See also
 @option{--with-mpfr-lib} and @option{--with-mpfr-include}.
-Alternatively, if a MPFR source ditribution is found in a subdirectory
-of you GCC sources named @file{mpfr}, it will be built together with
+Alternatively, if a MPFR source distribution is found in a subdirectory
+of your GCC sources named @file{mpfr}, it will be built together with
 GCC@.
 
 
