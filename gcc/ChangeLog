@@ -1,5 +1,8 @@
 2008-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-inline.c (tree_inlinable_function_p): Remove tuples
+	debugging hack.
+
 	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW from
 	INTEGER_CSTs.
 
