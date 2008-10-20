@@ -1,3 +1,7 @@
+2008-10-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* doc/install.texi: Fix typos in previous patch.
+
 2008-10-19  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* doc/install.texi: Document in-tree building of gcc and mpfr.
