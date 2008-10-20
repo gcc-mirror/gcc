@@ -1,3 +1,7 @@
+2008-10-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* obstack.h (obstack_finish <!__GNUC__>): Cast result to void *.
+
 2008-10-06  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
