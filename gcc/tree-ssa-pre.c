@@ -3019,23 +3019,15 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	     should give us back a constant with the right type.
 	  */
 	  tree constant = PRE_EXPR_CONSTANT (eprime);
-	  if (TREE_TYPE (constant) != type)
+	  if (!useless_type_conversion_p (type, TREE_TYPE (constant)))
 	    {
 	      tree builtexpr = fold_convert (type, constant);
-	      if (is_gimple_min_invariant (builtexpr))
-		{
-		  PRE_EXPR_CONSTANT (eprime) = builtexpr;
-		}
-	      else
+	      if (!is_gimple_min_invariant (builtexpr)) 
 		{
 		  tree forcedexpr = force_gimple_operand (builtexpr,
 							  &stmts, true,
 							  NULL);
-		  if (is_gimple_min_invariant (forcedexpr))
-		    {
-		      PRE_EXPR_CONSTANT (eprime) = forcedexpr;
-		    }
-		  else
+		  if (!is_gimple_min_invariant (forcedexpr))
 		    {
 		      if (forcedexpr != builtexpr)
 			{
