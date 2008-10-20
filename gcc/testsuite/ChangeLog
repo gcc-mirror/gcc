@@ -1,4 +1,9 @@
 2008-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+        
+	PR 12603
+	* gcc.dg/pr12603.c: New testcase.
+
+2008-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/37004
 	* g++.dg/warn/Wconversion-pr34389.C: Remove XFAIL.
