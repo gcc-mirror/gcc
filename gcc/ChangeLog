@@ -1,3 +1,9 @@
+2008-10-21  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35485
+	* tree.c (get_file_function_name): Copy first_global_object_name.
+	Centralize call to clean_symbol_name.
+
 2008-10-21  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config.gcc (powerpc-*): Make t-ppcgas imply usegas.h.
