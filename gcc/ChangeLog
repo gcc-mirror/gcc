@@ -1,3 +1,9 @@
+2008-10-22  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35853
+	* doc/invoke.texi: Remove references to obsoleted -d dumps.
+
 2008-10-21  Richard Henderson  <rth@redhat.com>
 
 	PR 37815
