@@ -1,3 +1,8 @@
+2008-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/36795
+	* gfortran.dg/char_expr_3.f90:  Add the original test case.
+
 2008-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
