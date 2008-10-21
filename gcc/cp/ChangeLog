@@ -1,3 +1,9 @@
+2008-10-21  Richard Guenther  <rguenther@suse.de>
+
+	* semantics.c (simplify_aggr_init_exprs_r): Remove.
+	(expand_or_defer_fn): Do not walk the function body to
+	simplify aggr_init_exprs.
+
 2008-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/37004
