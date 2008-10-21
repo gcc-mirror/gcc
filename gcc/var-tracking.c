@@ -466,22 +466,31 @@ static void
 insn_stack_adjust_offset_pre_post (rtx insn, HOST_WIDE_INT *pre,
 				   HOST_WIDE_INT *post)
 {
+  rtx pattern;
+
   *pre = 0;
   *post = 0;
 
-  if (GET_CODE (PATTERN (insn)) == SET)
-    stack_adjust_offset_pre_post (PATTERN (insn), pre, post);
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL
-	   || GET_CODE (PATTERN (insn)) == SEQUENCE)
+  pattern = PATTERN (insn);
+  if (RTX_FRAME_RELATED_P (insn))
+    {
+      rtx expr = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
+      if (expr)
+	pattern = XEXP (expr, 0);
+    }
+
+  if (GET_CODE (pattern) == SET)
+    stack_adjust_offset_pre_post (pattern, pre, post);
+  else if (GET_CODE (pattern) == PARALLEL
+	   || GET_CODE (pattern) == SEQUENCE)
     {
       int i;
 
       /* There may be stack adjustments inside compound insns.  Search
 	 for them.  */
-      for ( i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET)
-	  stack_adjust_offset_pre_post (XVECEXP (PATTERN (insn), 0, i),
-					pre, post);
+      for ( i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
+	if (GET_CODE (XVECEXP (pattern, 0, i)) == SET)
+	  stack_adjust_offset_pre_post (XVECEXP (pattern, 0, i), pre, post);
     }
 }
 
