@@ -3182,7 +3182,16 @@ vt_add_function_parameters (void)
       if (!decl)
 	continue;
 
-      gcc_assert (parm == decl);
+      if (parm != decl)
+	{
+	  /* Assume that DECL_RTL was a pseudo that got spilled to
+	     memory.  The spill slot sharing code will force the
+	     memory to reference spill_slot_decl (%sfp), so we don't
+	     match above.  That's ok, the pseudo must have referenced
+	     the entire parameter, so just reset OFFSET.  */
+	  gcc_assert (decl == get_spill_slot_decl (false));
+	  offset = 0;
+	}
 
       if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
 	continue;
