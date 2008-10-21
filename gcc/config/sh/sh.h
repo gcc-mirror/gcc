@@ -1208,52 +1208,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
     ? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD/2 - 1) / (UNITS_PER_WORD/2)) \
     : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   We can allow any mode in any general register.  The special registers
-   only allow SImode.  Don't allow any mode in the PR.  */
+/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
-/* We cannot hold DCmode values in the XD registers because alter_reg
-   handles subregs of them incorrectly.  We could work around this by
-   spacing the XD registers like the DR registers, but this would require
-   additional memory in every compilation to hold larger register vectors.
-   We could hold SFmode / SCmode values in XD registers, but that
-   would require a tertiary reload when reloading from / to memory,
-   and a secondary reload to reload from / to general regs; that
-   seems to be a loosing proposition.  */
-/* We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
-   it won't be ferried through GP registers first.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)		\
-  (SPECIAL_REGISTER_P (REGNO) ? (MODE) == SImode \
-   : (REGNO) == FPUL_REG ? (MODE) == SImode || (MODE) == SFmode	\
-   : FP_REGISTER_P (REGNO) && (MODE) == SFmode \
-   ? 1 \
-   : (MODE) == V2SFmode \
-   ? ((FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 2 == 0) \
-      || GENERAL_REGISTER_P (REGNO)) \
-   : (MODE) == V4SFmode \
-   ? ((FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 4 == 0) \
-      || GENERAL_REGISTER_P (REGNO)) \
-   : (MODE) == V16SFmode \
-   ? (TARGET_SHMEDIA \
-      ? (FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 16 == 0) \
-      : (REGNO) == FIRST_XD_REG) \
-   : FP_REGISTER_P (REGNO) \
-   ? ((MODE) == SFmode || (MODE) == SImode \
-      || ((TARGET_SH2E || TARGET_SHMEDIA) && (MODE) == SCmode) \
-      || ((((TARGET_SH4 || TARGET_SH2A_DOUBLE) && (MODE) == DFmode) || (MODE) == DCmode \
-	   || (TARGET_SHMEDIA && ((MODE) == DFmode || (MODE) == DImode \
-				  || (MODE) == V2SFmode || (MODE) == TImode))) \
-	  && (((REGNO) - FIRST_FP_REG) & 1) == 0) \
-      || ((TARGET_SH4 || TARGET_SHMEDIA) \
-	  && (MODE) == TImode \
-	  && (((REGNO) - FIRST_FP_REG) & 3) == 0)) \
-   : XD_REGISTER_P (REGNO) \
-   ? (MODE) == DFmode \
-   : TARGET_REGISTER_P (REGNO) \
-   ? ((MODE) == DImode || (MODE) == SImode || (MODE) == PDImode) \
-   : (REGNO) == PR_REG ? (MODE) == SImode \
-   : (REGNO) == FPSCR_REG ? (MODE) == PSImode \
-   : 1)
+  sh_hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.

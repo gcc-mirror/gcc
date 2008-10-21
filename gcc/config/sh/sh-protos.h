@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006, 2007
+   2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -174,7 +174,7 @@ extern enum reg_class sh_secondary_reload (bool, rtx, enum reg_class,
 extern int sh2a_get_function_vector_number (rtx);
 extern int sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
-
+extern bool sh_hard_regno_mode_ok (unsigned int, enum machine_mode);
 #endif /* ! GCC_SH_PROTOS_H */
 
 #ifdef SYMBIAN

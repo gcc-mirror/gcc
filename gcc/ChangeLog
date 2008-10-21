@@ -1,3 +1,10 @@
+2008-10-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/37633
+	* config/sh/sh.c (sh_hard_regno_mode_ok): New function.
+	* config/sh/sh.h (HARD_REGNO_MODE_OK): Use it.
+	* config/sh/sh-protos.h (sh_hard_regno_mode_ok): Declare.
+
 2008-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37880
