@@ -1,3 +1,20 @@
+2008-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* intrinsics/transpose_generic.c:  Implement bounds checking.
+	* m4/transpose.m4:  Likewise.
+	* generated/transpose_c8.c: Regenerated.
+	* generated/transpose_c16.c: Regenerated.
+	* generated/transpose_r10.c: Regenerated.
+	* generated/transpose_i8.c: Regenerated.
+	* generated/transpose_c10.c: Regenerated.
+	* generated/transpose_r4.c: Regenerated.
+	* generated/transpose_c4.c: Regenerated.
+	* generated/transpose_i16.c: Regenerated.
+	* generated/transpose_i4.c: Regenerated.
+	* generated/transpose_r8.c: Regenerated.
+	* generated/transpose_r16.c: Regenerated.
+
 2008-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
 	PR libfortran/37834
