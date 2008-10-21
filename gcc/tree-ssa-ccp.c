@@ -2430,7 +2430,7 @@ ccp_fold_builtin (gimple stmt)
 {
   tree result, val[3];
   tree callee, a;
-  int arg_mask, i, type;
+  int arg_idx, type;
   bitmap visited;
   bool ignore;
   int nargs;
@@ -2466,12 +2466,12 @@ ccp_fold_builtin (gimple stmt)
     case BUILT_IN_STRLEN:
     case BUILT_IN_FPUTS:
     case BUILT_IN_FPUTS_UNLOCKED:
-      arg_mask = 1;
+      arg_idx = 0;
       type = 0;
       break;
     case BUILT_IN_STRCPY:
     case BUILT_IN_STRNCPY:
-      arg_mask = 2;
+      arg_idx = 1;
       type = 0;
       break;
     case BUILT_IN_MEMCPY_CHK:
@@ -2479,17 +2479,17 @@ ccp_fold_builtin (gimple stmt)
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET_CHK:
     case BUILT_IN_STRNCPY_CHK:
-      arg_mask = 4;
+      arg_idx = 2;
       type = 2;
       break;
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
-      arg_mask = 2;
+      arg_idx = 1;
       type = 1;
       break;
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
-      arg_mask = 2;
+      arg_idx = 1;
       type = 2;
       break;
     default:
@@ -2498,18 +2498,12 @@ ccp_fold_builtin (gimple stmt)
 
   /* Try to use the dataflow information gathered by the CCP process.  */
   visited = BITMAP_ALLOC (NULL);
+  bitmap_clear (visited);
 
   memset (val, 0, sizeof (val));
-  for (i = 0; i < nargs; i++)
-    {
-      if ((arg_mask >> i) & 1)
-        {
-          a = gimple_call_arg (stmt, i);
-          bitmap_clear (visited);
-          if (!get_maxval_strlen (a, &val[i], visited, type))
-            val[i] = NULL_TREE;
-        }
-    }
+  a = gimple_call_arg (stmt, arg_idx);
+  if (!get_maxval_strlen (a, &val[arg_idx], visited, type))
+    val[arg_idx] = NULL_TREE;
 
   BITMAP_FREE (visited);
 
