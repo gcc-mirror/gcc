@@ -10910,7 +10910,7 @@ their size as well as function calling convention for function taking
 @code{long double} will be modified.  Hence they will not be binary
 compatible with arrays or structures in code compiled without that switch.
 
-@item -mmlarge-data-threshold=@var{number}
+@item -mlarge-data-threshold=@var{number}
 @opindex mlarge-data-threshold=@var{number}
 When @option{-mcmodel=medium} is specified, the data greater than
 @var{threshold} are placed in large data section.  This value must be the
@@ -11281,9 +11281,10 @@ This model has to be used for Linux kernel code.
 @item -mcmodel=medium
 @opindex mcmodel=medium
 Generate code for the medium model: The program is linked in the lower 2
-GB of the address space but symbols can be located anywhere in the
-address space.  Programs can be statically or dynamically linked, but
-building of shared libraries are not supported with the medium model.
+GB of the address space and symbols with small size as well.  Symbols
+with sizes larger than @option{-mlarge-data-threshold} are put into
+large data or bss sections and can be located above 2GB.  Programs can
+be statically or dynamically linked.
 
 @item -mcmodel=large
 @opindex mcmodel=large

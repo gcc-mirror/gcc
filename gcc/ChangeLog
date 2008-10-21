@@ -1,3 +1,9 @@
+2008-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37880
+	* doc/invoke.texi: Fix spelling of -mlarge-data-threshold option.
+	Adjust -mcmodel=medium description for 2005-07-31 changes.
+
 2008-10-22  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
