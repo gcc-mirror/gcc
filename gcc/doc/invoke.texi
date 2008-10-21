@@ -406,7 +406,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
--Wl,@var{option}  -Xlinker @var{option} @gol
+-T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
 
 @item Directory Options
@@ -7856,6 +7856,14 @@ Bind references to global symbols when building a shared object.  Warn
 about any unresolved references (unless overridden by the link editor
 option @samp{-Xlinker -z -Xlinker defs}).  Only a few systems support
 this option.
+
+@item -T @var{script}
+@opindex T
+@cindex linker script
+Use @var{script} as the linker script.  This option is supported by most
+systems using the GNU linker.  On some targets, such as bare-board
+targets without an operating system, the @option{-T} option may be required 
+when linking to avoid references to undefined symbols.
 
 @item -Xlinker @var{option}
 @opindex Xlinker

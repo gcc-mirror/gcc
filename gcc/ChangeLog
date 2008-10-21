@@ -1,3 +1,13 @@
+2008-10-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config.gcc (powerpc-*): Make t-ppcgas imply usegas.h.
+	* config/svr4.h (SVR4_ASM_SPEC): New.
+	(ASM_SPEC): Inherit from SVR4_ASM_SPEC.
+	* config/rs6000/sysv4.h (ASM_SPEC): Inherit from SVR4_ASM_SPEC.
+
+	* doc/invoke.texi (Option Summary): Add -T to linker options.
+	(Link Options): Document -T.
+	
 2008-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-inline.c (tree_inlinable_function_p): Remove tuples
