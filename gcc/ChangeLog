@@ -1,3 +1,9 @@
+2008-10-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* var-tracking.c (insn_stack_adjust_offset_pre_post): If insn has a
+	REG_FRAME_RELATED_EXPR note, examine the pattern from the note instead
+	of from insn.
+
 2008-10-21  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/37669
