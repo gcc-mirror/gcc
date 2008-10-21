@@ -37,6 +37,7 @@ extern void set_mem_size (rtx, rtx);
 
 /* Set the attributes for MEM appropriate for a spill slot.  */
 extern void set_mem_attrs_for_spill (rtx);
+extern tree get_spill_slot_decl (bool);
 
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed

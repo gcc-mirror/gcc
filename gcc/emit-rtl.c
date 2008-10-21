@@ -2141,13 +2141,13 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 /* A fake decl that is used as the MEM_EXPR of spill slots.  */
 static GTY(()) tree spill_slot_decl;
 
-static tree
-get_spill_slot_decl (void)
+tree
+get_spill_slot_decl (bool force_build_p)
 {
   tree d = spill_slot_decl;
   rtx rd;
 
-  if (d)
+  if (d || !force_build_p)
     return d;
 
   d = build_decl (VAR_DECL, get_identifier ("%sfp"), void_type_node);
@@ -2179,7 +2179,7 @@ set_mem_attrs_for_spill (rtx mem)
   rtx addr, offset;
   tree expr;
 
-  expr = get_spill_slot_decl ();
+  expr = get_spill_slot_decl (true);
   alias = MEM_ALIAS_SET (DECL_RTL (expr));
 
   /* We expect the incoming memory to be of the form:
