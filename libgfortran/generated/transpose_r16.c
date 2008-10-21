@@ -69,6 +69,28 @@ transpose_r16 (gfc_array_r16 * const restrict ret,
 
       ret->data = internal_malloc_size (sizeof (GFC_REAL_16) * size0 ((array_t *) ret));
       ret->offset = 0;
+    } else if (unlikely (compile_options.bounds_check))
+    {
+      index_type ret_extent, src_extent;
+
+      ret_extent = ret->dim[0].ubound + 1 - ret->dim[0].lbound;
+      src_extent = source->dim[1].ubound + 1 - source->dim[1].lbound;
+
+      if (src_extent != ret_extent)
+	runtime_error ("Incorrect extent in return value of TRANSPOSE"
+		       " intrinsic in dimension 1: is %ld,"
+		       " should be %ld", (long int) src_extent,
+		       (long int) ret_extent);
+
+      ret_extent = ret->dim[1].ubound + 1 - ret->dim[1].lbound;
+      src_extent = source->dim[0].ubound + 1 - source->dim[0].lbound;
+
+      if (src_extent != ret_extent)
+	runtime_error ("Incorrect extent in return value of TRANSPOSE"
+		       " intrinsic in dimension 2: is %ld,"
+		       " should be %ld", (long int) src_extent,
+		       (long int) ret_extent);
+
     }
 
   sxstride = source->dim[0].stride;
