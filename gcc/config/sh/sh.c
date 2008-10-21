@@ -10193,6 +10193,108 @@ sh_expand_binop_v2sf (enum rtx_code code, rtx op0, rtx op1, rtx op2)
   emit_insn (gen_binary_sf_op1 (op0, op1, op2, op));
 }
 
+/* Return true if hard register REGNO can hold a value of machine-mode MODE.
+   We can allow any mode in any general register.  The special registers
+   only allow SImode.  Don't allow any mode in the PR.
+
+   We cannot hold DCmode values in the XD registers because alter_reg
+   handles subregs of them incorrectly.  We could work around this by
+   spacing the XD registers like the DR registers, but this would require
+   additional memory in every compilation to hold larger register vectors.
+   We could hold SFmode / SCmode values in XD registers, but that
+   would require a tertiary reload when reloading from / to memory,
+   and a secondary reload to reload from / to general regs; that
+   seems to be a loosing proposition.
+
+   We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
+   it won't be ferried through GP registers first.  */
+
+bool
+sh_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
+{
+  if (SPECIAL_REGISTER_P (regno))
+    return mode == SImode;
+
+  if (regno == FPUL_REG)
+    return (mode == SImode || mode == SFmode);
+
+  if (FP_REGISTER_P (regno) && mode == SFmode)
+    return true;
+
+  if (mode == V2SFmode)
+    {
+      if (((FP_REGISTER_P (regno) && (regno - FIRST_FP_REG) % 2 == 0)
+	   || GENERAL_REGISTER_P (regno)))
+	return true;
+      else
+	return false;
+    }
+
+  if (mode == V4SFmode)
+    {
+      if ((FP_REGISTER_P (regno) && (regno - FIRST_FP_REG) % 4 == 0)
+	  || GENERAL_REGISTER_P (regno))
+	return true;
+      else
+	return false;
+    }
+
+  if (mode == V16SFmode)
+    {
+      if (TARGET_SHMEDIA)
+	{
+	  if (FP_REGISTER_P (regno) && (regno - FIRST_FP_REG) % 16 == 0)
+	    return true;
+	  else
+	    return false;
+	}
+      else
+	return regno == FIRST_XD_REG;
+    }
+
+  if (FP_REGISTER_P (regno))
+    {
+      if (mode == SFmode
+	  || mode == SImode
+	  || ((TARGET_SH2E || TARGET_SHMEDIA) && mode == SCmode)
+	  || ((((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+	       || mode == DCmode
+	       || (TARGET_SHMEDIA
+		   && (mode == DFmode || mode == DImode
+		       || mode == V2SFmode || mode == TImode)))
+	      && ((regno - FIRST_FP_REG) & 1) == 0)
+	  || ((TARGET_SH4 || TARGET_SHMEDIA) && mode == TImode
+	      && ((regno - FIRST_FP_REG) & 3) == 0))
+	return true;
+      else
+	return false;
+    }
+
+  if (XD_REGISTER_P (regno))
+    return mode == DFmode;
+
+  if (TARGET_REGISTER_P (regno))
+    return (mode == DImode || mode == SImode || mode == PDImode);
+
+  if (regno == PR_REG)
+    return mode == SImode;
+
+  if (regno == FPSCR_REG)
+    return mode == PSImode;
+
+  /* FIXME.  This works around PR target/37633 for -O0.  */
+  if (!optimize && TARGET_SHMEDIA32 && GET_MODE_SIZE (mode) > 4)
+    {
+      unsigned int n = GET_MODE_SIZE (mode) / 8;
+
+      if (regno >= FIRST_GENERAL_REG + 10 - n + 1
+	  && regno <= FIRST_GENERAL_REG + 14)
+	return false;
+    }
+
+  return true;
+}
+
 /* Return the class of registers for which a mode change from FROM to TO
    is invalid.  */
 bool
