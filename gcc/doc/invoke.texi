@@ -97,8 +97,8 @@ options for compiling C++ programs.
 @cindex options, grouping
 The @command{gcc} program accepts options and file names as operands.  Many
 options have multi-letter names; therefore multiple single-letter options
-may @emph{not} be grouped: @option{-dr} is very different from @w{@samp{-d
--r}}.
+may @emph{not} be grouped: @option{-dv} is very different from @w{@samp{-d
+-v}}.
 
 @cindex order of options
 @cindex options, order
@@ -4515,8 +4515,8 @@ an executable, otherwise it is the basename of the source file. These
 switches may have different effects when @option{-E} is used for
 preprocessing.
 
-Most debug dumps can be enabled either passing a letter to the @option{-d}
-option, or with a long @option{-fdump-rtl} switch; here are the possible
+Debug dumps can be enabled with a @option{-fdump-rtl} switch or some
+@option{-d} option @var{letters}.  Here are the possible
 letters for use in @var{letters} and @var{pass}, and their meanings:
 
 @table @gcctabopt
@@ -4605,7 +4605,7 @@ Dump after local register allocation, to @file{@var{file}.138r.lreg}.
 
 @item -fdump-rtl-loop2
 @opindex fdump-rtl-loop2
-@option{-dL} and @option{-fdump-rtl-loop2} enable dumping after the
+@option{-fdump-rtl-loop2} enables dumping after the
 loop optimization pass, to @file{@var{file}.119r.loop2},
 @file{@var{file}.120r.loop2_init},
 @file{@var{file}.121r.loop2_invariant}, and
@@ -4705,14 +4705,14 @@ Also turns on @option{-dp} annotation.
 
 @item -dv
 @opindex dv
-For each of the other indicated dump files (either with @option{-d} or
-@option{-fdump-rtl-@var{pass}}), dump a representation of the control flow
-graph suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
+For each of the other indicated dump files (@option{-fdump-rtl-@var{pass}}),
+dump a representation of the control flow graph suitable for viewing with VCG
+to @file{@var{file}.@var{pass}.vcg}.
 
 @item -dx
 @opindex dx
 Just generate RTL for a function instead of compiling it.  Usually used
-with @samp{r} (@option{-fdump-rtl-expand}).
+with @option{-fdump-rtl-expand}.
 
 @item -dy
 @opindex dy
@@ -4721,17 +4721,17 @@ Dump debugging information during parsing, to standard error.
 
 @item -fdump-noaddr
 @opindex fdump-noaddr
-When doing debugging dumps (see @option{-d} option above), suppress
-address output.  This makes it more feasible to use diff on debugging
-dumps for compiler invocations with different compiler binaries and/or
-different text / bss / data / heap / stack / dso start locations.
+When doing debugging dumps, suppress address output.  This makes it more
+feasible to use diff on debugging dumps for compiler invocations with
+different compiler binaries and/or different
+text / bss / data / heap / stack / dso start locations.
 
 @item -fdump-unnumbered
 @opindex fdump-unnumbered
-When doing debugging dumps (see @option{-d} option above), suppress instruction
-numbers and address output.  This makes it more feasible to
-use diff on debugging dumps for compiler invocations with different
-options, in particular with and without @option{-g}.
+When doing debugging dumps, suppress instruction numbers and address output.
+This makes it more feasible to use diff on debugging dumps for compiler
+invocations with different options, in particular with and without
+@option{-g}.
 
 @item -fdump-translation-unit @r{(C++ only)}
 @itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
@@ -5002,18 +5002,19 @@ The @var{string} should be different for every file you compile.
 @opindex fsched-verbose
 On targets that use instruction scheduling, this option controls the
 amount of debugging output the scheduler prints.  This information is
-written to standard error, unless @option{-dS} or @option{-dR} is
-specified, in which case it is output to the usual dump
-listing file, @file{.sched} or @file{.sched2} respectively.  However
-for @var{n} greater than nine, the output is always printed to standard
-error.
+written to standard error, unless @option{-fdump-rtl-sched1} or
+@option{-fdump-rtl-sched2} is specified, in which case it is output
+to the usual dump listing file, @file{.sched} or @file{.sched2}
+respectively.  However for @var{n} greater than nine, the output is
+always printed to standard error.
 
 For @var{n} greater than zero, @option{-fsched-verbose} outputs the
-same information as @option{-dRS}.  For @var{n} greater than one, it
-also output basic block probabilities, detailed ready list information
-and unit/insn info.  For @var{n} greater than two, it includes RTL
-at abort point, control-flow and regions info.  And for @var{n} over
-four, @option{-fsched-verbose} also includes dependence info.
+same information as @option{-fdump-rtl-sched1} and @option{-fdump-rtl-sched2}.
+For @var{n} greater than one, it also output basic block probabilities,
+detailed ready list information and unit/insn info.  For @var{n} greater
+than two, it includes RTL at abort point, control-flow and regions info.
+And for @var{n} over four, @option{-fsched-verbose} also includes
+dependence info.
 
 @item -save-temps
 @opindex save-temps
