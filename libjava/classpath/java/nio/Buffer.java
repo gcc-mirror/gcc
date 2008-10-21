@@ -45,19 +45,21 @@ import gnu.classpath.Pointer;
  */
 public abstract class Buffer
 {
-  int cap = 0;
-  int limit = 0;
-  int pos = 0;
-  int mark = -1;
-  Pointer address;
+  private final int cap;
+  int limit;
+  int pos;
+  int mark;
+  final Pointer address;
 
   /**
    * Creates a new Buffer.
    *
    * Should be package private.
    */
-  Buffer (int capacity, int limit, int position, int mark)
+  Buffer (int capacity, int limit, int position, int mark, Pointer address)
   {
+    this.address = address;
+
     if (capacity < 0)
       throw new IllegalArgumentException ();
     
@@ -71,6 +73,10 @@ public abstract class Buffer
         throw new IllegalArgumentException ();
       
       this.mark = mark;
+    }
+    else
+    {
+      this.mark = -1;
     }
   }
   

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.jce.sig;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Registry;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
@@ -195,7 +197,7 @@ public class DSSParameters
 
   protected String engineToString()
   {
-    StringBuffer sb = new StringBuffer("p=");
+    CPStringBuilder sb = new CPStringBuilder("p=");
     if (p == null)
       sb.append("???");
     else

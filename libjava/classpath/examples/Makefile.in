@@ -52,6 +52,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../ltsugar.m4 \
 	$(top_srcdir)/../../ltversion.m4 \
 	$(top_srcdir)/../../lt~obsolete.m4 \
+	$(top_srcdir)/m4/ac_prog_antlr.m4 \
+	$(top_srcdir)/m4/ac_prog_java.m4 \
+	$(top_srcdir)/m4/ac_prog_java_works.m4 \
 	$(top_srcdir)/m4/ac_prog_javac.m4 \
 	$(top_srcdir)/m4/ac_prog_javac_works.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
@@ -83,6 +86,8 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+ANTLR = @ANTLR@
+ANTLR_JAR = @ANTLR_JAR@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -114,6 +119,12 @@ CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
 CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
 CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
+CREATE_GJDOC_FALSE = @CREATE_GJDOC_FALSE@
+CREATE_GJDOC_PARSER_FALSE = @CREATE_GJDOC_PARSER_FALSE@
+CREATE_GJDOC_PARSER_TRUE = @CREATE_GJDOC_PARSER_TRUE@
+CREATE_GJDOC_TRUE = @CREATE_GJDOC_TRUE@
+CREATE_GMPBI_LIBRARY_FALSE = @CREATE_GMPBI_LIBRARY_FALSE@
+CREATE_GMPBI_LIBRARY_TRUE = @CREATE_GMPBI_LIBRARY_TRUE@
 CREATE_GSTREAMER_PEER_LIBRARIES_FALSE = @CREATE_GSTREAMER_PEER_LIBRARIES_FALSE@
 CREATE_GSTREAMER_PEER_LIBRARIES_TRUE = @CREATE_GSTREAMER_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
@@ -152,11 +163,12 @@ ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 EXTRA_CFLAGS = @EXTRA_CFLAGS@
-FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
+GCJ_JAVAC_FALSE = @GCJ_JAVAC_FALSE@
+GCJ_JAVAC_TRUE = @GCJ_JAVAC_TRUE@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -166,6 +178,8 @@ GENINSRC_TRUE = @GENINSRC_TRUE@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GMP_CFLAGS = @GMP_CFLAGS@
+GMP_LIBS = @GMP_LIBS@
 GREP = @GREP@
 GSTREAMER_BASE_CFLAGS = @GSTREAMER_BASE_CFLAGS@
 GSTREAMER_BASE_LIBS = @GSTREAMER_BASE_LIBS@
@@ -187,7 +201,10 @@ INSTALL_GLIBJ_ZIP_TRUE = @INSTALL_GLIBJ_ZIP_TRUE@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JAR = @JAR@
+JAVA = @JAVA@
 JAVAC = @JAVAC@
+JAVAC_IS_GCJ = @JAVAC_IS_GCJ@
 JAVAC_MEM_OPT = @JAVAC_MEM_OPT@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
@@ -253,8 +270,10 @@ USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
-VM_BINARY = @VM_BINARY@
+WANT_NATIVE_BIG_INTEGER = @WANT_NATIVE_BIG_INTEGER@
 WARNING_CFLAGS = @WARNING_CFLAGS@
+WITH_JAR_FALSE = @WITH_JAR_FALSE@
+WITH_JAR_TRUE = @WITH_JAR_TRUE@
 XML_CFLAGS = @XML_CFLAGS@
 XML_LIBS = @XML_LIBS@
 XSLT_CFLAGS = @XSLT_CFLAGS@
@@ -265,6 +284,7 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
+ac_ct_ANTLR = @ac_ct_ANTLR@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -324,9 +344,11 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexeclibdir = @toolexeclibdir@
+uudecode = @uudecode@
 vm_classes = @vm_classes@
-GLIBJ_CLASSPATH = '$(top_builddir)/lib/glibj.zip'
-JCOMPILER = $(JAVAC) $(JAVACFLAGS) -source 1.5 -target 1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_CLASSPATH) -classpath '$(top_builddir)/tools/tools.zip'
+GLIBJ_CLASSPATH = '$(top_builddir)/lib/glibj.zip:$(top_builddir)/lib'
+@GCJ_JAVAC_FALSE@JCOMPILER = $(JAVAC) $(JAVACFLAGS) -source 1.5 -target 1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_CLASSPATH) -classpath '$(top_builddir)/tools/tools.zip'
+@GCJ_JAVAC_TRUE@JCOMPILER = $(JAVAC) $(JAVACFLAGS) -fsource=1.5 -ftarget=1.5 --encoding=UTF-8 --bootclasspath=$(GLIBJ_CLASSPATH) --classpath='$(top_builddir)/tools/tools.zip'
 
 # All our example java source files
 EXAMPLE_JAVA_FILES = $(srcdir)/gnu/classpath/examples/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*/*.java
@@ -362,6 +384,12 @@ exampledir = $(pkgdatadir)/examples
 
 # Make sure everything is included in the distribution.
 EXTRA_DIST = README Makefile.jawt.in Makefile.java2d.in
+@WITH_JAR_FALSE@CREATE_EXAMPLE_ZIP = $(ZIP) -r ../$(EXAMPLE_ZIP) .
+
+# To generate the example zip just depend on the sources and ignore the
+# class files. Always regenerate all .class files and remove them immediatly.
+# And copy the png icons we use to the classes dir so they get also included.
+@WITH_JAR_TRUE@CREATE_EXAMPLE_ZIP = $(JAR) cf ../$(EXAMPLE_ZIP) .
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -599,18 +627,14 @@ dist-hook:
 	  cp -p $$file $(distdir)/$$f; \
 	done
 
-# To generate the example zip just depend on the sources and ignore the
-# class files. Always regenerate all .class files and remove them immediatly.
-# And copy the png icons we use to the classes dir so they get also included.
 $(EXAMPLE_ZIP): $(EXAMPLE_JAVA_FILES)
-	mkdir -p classes/gnu/classpath/examples/icons
+	@mkdir_p@ classes/gnu/classpath/examples/icons
 	cp $(EXAMPLE_ICONS) classes/gnu/classpath/examples/icons
-	mkdir -p classes/gnu/classpath/examples/swing
+	@mkdir_p@ classes/gnu/classpath/examples/swing
 	cp $(EXAMPLE_HTML) classes/gnu/classpath/examples/swing
 	$(JCOMPILER) -d classes $(EXAMPLE_JAVA_FILES) 
 	(cd classes; \
-	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(EXAMPLE_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf ../$(EXAMPLE_ZIP) .; fi; \
+	$(CREATE_EXAMPLE_ZIP); \
 	cd ..)
 	rm -rf classes
 

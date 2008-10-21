@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -766,7 +768,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",floatable=").append(floatable);
     sb.append(",margin=");
     if (margin != null)

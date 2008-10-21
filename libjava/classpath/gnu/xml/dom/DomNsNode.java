@@ -54,7 +54,7 @@ public abstract class DomNsNode
   private String name;
   private String namespace;
   private String prefix;
-  String localName;
+  private String localName;
   
   /**
    * Constructs a node associated with the specified document, and
@@ -72,6 +72,33 @@ public abstract class DomNsNode
   {
     super(nodeType, owner);
     setNodeName(name);
+    setNamespaceURI(namespaceURI);
+  }
+
+  /**
+   * Constructs a node associated with the specified document, and
+   * with the specified namespace information.  The prefix and local part
+   * are given explicitly rather than being computed.  This allows them
+   * to be explicitly set to {@code null} as required by
+   * {@link Document#createElement(String)}.
+   *
+   * @param owner The document with which this entity is associated
+   * @param namespaceURI Combined with the local part of the name,
+   *	this identifies a type of element or attribute; may be null.
+   *  If this is the empty string, it is reassigned as null so that
+   *  applications only need to test that case.
+   * @param name Name of this node, which may include a prefix
+   * @param prefix the namespace prefix of the name.  May be {@code null}.
+   * @param localName the local part of the name.  May be {@code null}.
+   */
+  // package private
+  DomNsNode(short nodeType, DomDocument owner, String namespaceURI, String name,
+	    String prefix, String localName)
+  {
+    super(nodeType, owner);
+    this.name = name.intern();
+    this.prefix = prefix == null ? null : prefix.intern();
+    this.localName = localName == null ? null : localName.intern();
     setNamespaceURI(namespaceURI);
   }
 

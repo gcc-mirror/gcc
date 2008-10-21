@@ -43,6 +43,8 @@ import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.GIOP.ServiceContext;
 import gnu.CORBA.GIOP.CodeSetServiceContext;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The header of the standard reply.
  *
@@ -80,7 +82,7 @@ public class ReplyHeader
    */
   public String contexts()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int i = 0; i < service_context.length; i++)
       {
         b.append(service_context [ i ].toString());

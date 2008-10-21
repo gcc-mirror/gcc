@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.tree;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -224,7 +226,7 @@ public class DefaultTreeSelectionModel
       return "[selection empty]";
     else
       {
-        StringBuffer b = new StringBuffer("selected rows: [");
+        CPStringBuilder b = new CPStringBuilder("selected rows: [");
         for (int i = 0; i < selection.length; i++)
           {
             b.append(getRow(selection[i]));

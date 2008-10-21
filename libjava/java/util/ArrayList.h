@@ -40,6 +40,7 @@ public: // actually protected
 private:
   void checkBoundInclusive(jint);
   void checkBoundExclusive(jint);
+  void raiseBoundsError(jint);
 public: // actually package-private
   virtual jboolean removeAllInternal(::java::util::Collection *);
   virtual jboolean retainAllInternal(::java::util::Collection *);

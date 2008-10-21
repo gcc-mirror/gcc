@@ -1,0 +1,8 @@
+#
+# Default mailcap entries for GNU JAF
+#
+image/gif;;     x-java-view=gnu.javax.activation.viewers.ImageViewer
+image/jpeg;;    x-java-view=gnu.javax.activation.viewers.ImageViewer
+image/png;;     x-java-view=gnu.javax.activation.viewers.ImageViewer
+text/*;;        x-java-view=gnu.javax.activation.viewers.TextViewer
+text/*;;        x-java-edit=gnu.javax.activation.viewers.TextEditor

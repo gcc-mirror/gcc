@@ -65,6 +65,7 @@ public: // actually package-private
   JArray< ::java::lang::String * > * shortWeekdays;
   JArray< ::java::lang::String * > * weekdays;
 private:
+  static ::java::util::Properties * properties;
   JArray< JArray< ::java::lang::String * > * > * runtimeZoneStrings;
   JArray< JArray< ::java::lang::String * > * > * zoneStrings;
   static const jlong serialVersionUID = -5987973545549424702LL;

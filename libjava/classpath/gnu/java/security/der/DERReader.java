@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.der;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.OID;
 
 import java.io.BufferedInputStream;
@@ -286,7 +288,7 @@ public class DERReader implements DER
 
   private static String fromIso88591(byte[] bytes)
   {
-    StringBuffer str = new StringBuffer(bytes.length);
+    CPStringBuilder str = new CPStringBuilder(bytes.length);
     for (int i = 0; i < bytes.length; i++)
       str.append((char) (bytes[i] & 0xFF));
     return str.toString();
@@ -296,7 +298,7 @@ public class DERReader implements DER
   {
     if ((bytes.length & 0x01) != 0)
       throw new IOException("UTF-16 bytes are odd in length");
-    StringBuffer str = new StringBuffer(bytes.length / 2);
+    CPStringBuilder str = new CPStringBuilder(bytes.length / 2);
     for (int i = 0; i < bytes.length; i += 2)
       {
         char c = (char) ((bytes[i] << 8) & 0xFF);
@@ -308,7 +310,7 @@ public class DERReader implements DER
 
   private static String fromUtf8(byte[] bytes) throws IOException
   {
-    StringBuffer str = new StringBuffer((int)(bytes.length / 1.5));
+    CPStringBuilder str = new CPStringBuilder((int)(bytes.length / 1.5));
     for (int i = 0; i < bytes.length; )
       {
         char c = 0;

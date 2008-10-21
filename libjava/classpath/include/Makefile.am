@@ -133,6 +133,7 @@ $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
 $(GCONF_PREFS_FILES) \
+gnu_java_math_GMP.h \
 gnu_java_net_VMPlainSocketImpl.h \
 gnu_java_net_local_LocalSocketImpl.h \
 gnu_java_nio_EpollSelectorImpl.h \
@@ -370,6 +371,8 @@ gnu_javax_sound_sampled_gstreamer_lines_GstNativeDataLine.h: $(top_builddir)/gnu
 	$(JAVAH) -o $@ gnu.javax.sound.sampled.gstreamer.lines.GstNativeDataLine
 gnu_javax_sound_sampled_gstreamer_lines_GstPipeline.h: $(top_builddir)/gnu/javax/sound/sampled/gstreamer/lines/GstPipeline.java
 	$(JAVAH) -o $@ gnu.javax.sound.sampled.gstreamer.lines.GstPipeline
+gnu_java_math_GMP.h: $(top_srcdir)/gnu/java/math/GMP.java
+	$(JAVAH) -o $@ gnu.java.math.GMP
 gnu_java_net_VMPlainSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainSocketImpl.java
 	$(JAVAH) -o $@ gnu.java.net.VMPlainSocketImpl
 gnu_java_net_local_LocalSocketImpl.h: $(top_srcdir)/gnu/java/net/local/LocalSocketImpl.java

@@ -6,12 +6,16 @@ set -e
 TMPFILE=/tmp/check-jni-methods.$$.1
 TMPFILE2=/tmp/check-jni-methods.$$.2
 TMPFILE3=/tmp/check-jni-methods.$$.3
+TMPFILE4=/tmp/check-jni-methods.$$.4
 
 # Find all methods defined in the header files generated
 # from the java source files.
-grep -h '^JNIEXPORT .* Java_' @abs_top_builddir@/include/*.h @abs_top_srcdir@/include/*.h | \
-        LC_ALL=C sed -e 's,.*JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' | \
-	sort -u > $TMPFILE
+grep -h '^JNIEXPORT .* Java_' @abs_top_srcdir@/include/*.h | \
+        LC_ALL=C sed -e 's,.*JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' > $TMPFILE
+grep -h '^JNIEXPORT .* Java_' @abs_top_builddir@/include/*.h | \
+        LC_ALL=C sed -e 's,.*JNICALL \(Java_[a-z_A-Z0-9]*\).*$,\1,' >> $TMPFILE
+sort -u $TMPFILE > $TMPFILE4
+mv $TMPFILE4 $TMPFILE
 
 # Find all methods in the JNI C source files.
 find @abs_top_srcdir@/native/jni -name \*.c | \

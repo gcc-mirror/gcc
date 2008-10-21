@@ -52,7 +52,7 @@ import gnu.xml.xpath.DocumentOrderComparator;
 abstract class TemplateNode
 {
 
-  static final Comparator documentOrderComparator =
+  static final Comparator<Node> documentOrderComparator =
     new DocumentOrderComparator();
 
   TemplateNode children;

@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.security.cert;
 
 import gnu.classpath.SystemProperties;
+import gnu.java.lang.CPStringBuilder;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
@@ -335,7 +336,7 @@ public class X509CRLSelector implements CRLSelector, Cloneable
    */
   public String toString()
   {
-    StringBuffer str = new StringBuffer(X509CRLSelector.class.getName());
+    CPStringBuilder str = new CPStringBuilder(X509CRLSelector.class.getName());
     String nl = SystemProperties.getProperty("line.separator");
     String eol = ";" + nl;
 

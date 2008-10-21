@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Registry;
 import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.key.IKeyPairCodec;
@@ -178,7 +180,7 @@ public class GnuRSAPublicKey
       {
         String ls = (String) AccessController.doPrivileged
             (new GetPropertyAction("line.separator"));
-        str = new StringBuilder(this.getClass().getName()).append("(")
+        str = new CPStringBuilder(this.getClass().getName()).append("(")
             .append(super.toString()).append(",").append(ls)
             .append(")")
             .toString();

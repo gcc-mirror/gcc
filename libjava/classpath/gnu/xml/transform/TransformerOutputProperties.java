@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -95,7 +97,7 @@ class TransformerOutputProperties
         defaultProperties.put(OutputKeys.DOCTYPE_SYSTEM,
                               stylesheet.outputSystemId);
       }
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (Iterator i = stylesheet.outputCdataSectionElements.iterator();
          i.hasNext(); )
       {

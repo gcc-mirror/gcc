@@ -41,6 +41,8 @@ package java.awt.image;
 import gnu.java.awt.Buffers;
 import gnu.java.awt.ClasspathGraphicsEnvironment;
 import gnu.java.awt.ComponentDataBlitOp;
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -778,9 +780,9 @@ public class BufferedImage extends Image
     
   public String toString()
   {
-    StringBuffer buf;
+    CPStringBuilder buf;
 
-    buf = new StringBuffer(/* estimated length */ 120);
+    buf = new CPStringBuilder(/* estimated length */ 120);
     buf.append("BufferedImage@");
     buf.append(Integer.toHexString(hashCode()));
     buf.append(": type=");

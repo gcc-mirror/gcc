@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.x;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTError;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -675,7 +677,7 @@ public class XFontPeer
    */
   static String encodeFont(String name, int style, int size)
   {
-    StringBuilder key = new StringBuilder();
+    CPStringBuilder key = new CPStringBuilder();
     key.append(validName(name));
     key.append('.');
     switch (style)

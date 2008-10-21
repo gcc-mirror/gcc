@@ -116,7 +116,7 @@ public abstract class XMLOutputFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 return (XMLOutputFactory) t.newInstance();
               }

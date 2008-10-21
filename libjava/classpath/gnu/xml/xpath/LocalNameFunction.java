@@ -59,9 +59,9 @@ final class LocalNameFunction
 
   final Expr arg;
 
-  LocalNameFunction(List args)
+  LocalNameFunction(List<Expr> args)
   {
-    this(args.size() > 0 ? (Expr) args.get(0) : null);
+    this(args.size() > 0 ? args.get(0) : null);
   }
 
   LocalNameFunction(Expr arg)
@@ -69,11 +69,14 @@ final class LocalNameFunction
     this.arg = arg;
   }
 
+  @Override 
   public Object evaluate(Node context, int pos, int len)
   {
-    Object val = (arg == null) ? Collections.singleton(context) :
-        arg.evaluate(context, pos, len);
-    return _local_name(context, (Collection) val);
+    /* Suppression is safe, as we know context produces Collection<Node> */
+    @SuppressWarnings("unchecked")
+    Collection<Node> val = (arg == null) ? Collections.singleton(context) :
+      (Collection<Node>) arg.evaluate(context, pos, len);
+    return _local_name(context, val);
   }
 
   public Expr clone(Object context)

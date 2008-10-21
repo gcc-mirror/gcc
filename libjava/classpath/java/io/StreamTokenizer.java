@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * This class parses streams of characters into tokens.  There are a
  * million-zillion flags that can be set to control the parsing, as 
@@ -391,7 +393,7 @@ public class StreamTokenizer
 	      }
 	  }
 
-	StringBuffer tokbuf = new StringBuffer();
+	CPStringBuilder tokbuf = new CPStringBuilder();
 	tokbuf.append((char) ch);
 
 	int decCount = 0;
@@ -417,7 +419,7 @@ public class StreamTokenizer
       }
     else if (isAlphabetic(ch))
       {
-	StringBuffer tokbuf = new StringBuffer();
+	CPStringBuilder tokbuf = new CPStringBuilder();
 	tokbuf.append((char) ch);
 	while (isAlphabetic(ch = in.read()) || isNumeric(ch))
 	  tokbuf.append((char) ch);
@@ -440,7 +442,7 @@ public class StreamTokenizer
     else if (isQuote(ch))
       {
 	ttype = ch;
-	StringBuffer tokbuf = new StringBuffer();
+	CPStringBuilder tokbuf = new CPStringBuilder();
 	while ((ch = in.read()) != ttype && ch != '\n' && ch != '\r' &&
 	       ch != TT_EOF)
 	  {

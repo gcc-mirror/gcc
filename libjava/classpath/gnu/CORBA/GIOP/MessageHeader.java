@@ -47,6 +47,8 @@ import gnu.CORBA.CDR.LittleEndianOutputStream;
 import gnu.CORBA.CDR.AbstractDataInput;
 import gnu.CORBA.CDR.AbstractDataOutput;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.portable.IDLEntity;
 
@@ -286,7 +288,7 @@ public class MessageHeader
         int minor;
         if (! Arrays.equals(xMagic, MAGIC))
           {
-            StringBuffer b = new StringBuffer();
+            CPStringBuilder b = new CPStringBuilder();
             if (r == - 1)
               {
                 b.append("Immediate EOF");

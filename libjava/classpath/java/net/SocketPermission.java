@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -431,7 +433,7 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public String getActions()
   {
-    StringBuffer sb = new StringBuffer("");
+    CPStringBuilder sb = new CPStringBuilder("");
 
     for (int i = 0; i < ACTIONS.length; i++)
       {

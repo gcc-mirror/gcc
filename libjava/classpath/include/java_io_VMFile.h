@@ -28,6 +28,7 @@ JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setWritable (JNIEnv *env, jclass,
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setExecutable (JNIEnv *env, jclass, jstring, jboolean, jboolean);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isFile (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canWrite (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canWriteDirectory (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canRead (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canExecute (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isDirectory (JNIEnv *env, jclass, jstring);

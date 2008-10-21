@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.javax.naming.ictxImpl.trans;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
@@ -455,7 +457,7 @@ public class GnuName
    */
   public String toString()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int i = 0; i < length; i++)
       {
         b.append(get(i));

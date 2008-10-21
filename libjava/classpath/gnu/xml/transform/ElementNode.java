@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -238,7 +240,7 @@ final class ElementNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("element");
+    CPStringBuilder buf = new CPStringBuilder("element");
     buf.append('[');
     buf.append("name=");
     if (namespace != null)

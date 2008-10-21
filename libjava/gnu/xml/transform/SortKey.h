@@ -55,6 +55,10 @@ public: // actually package-private
   ::java::lang::String * key(::org::w3c::dom::Node *);
   void init(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   jboolean references(::javax::xml::namespace::QName *);
+  ::gnu::xml::transform::SortKey * clone(::gnu::xml::transform::Stylesheet *);
+private:
+  ::gnu::xml::transform::TemplateNode * cloneAttributeValueTemplate(::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::Stylesheet *);
+public: // actually package-private
   static const jint DEFAULT = 0;
   static const jint UPPER_FIRST = 1;
   static const jint LOWER_FIRST = 2;

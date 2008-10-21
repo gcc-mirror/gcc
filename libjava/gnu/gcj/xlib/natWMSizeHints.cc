@@ -23,7 +23,7 @@ void gnu::gcj::xlib::WMSizeHints::init(WMSizeHints* copyFrom)
   if (hints == 0)
     {
       jstring errorMessage = JvNewStringLatin1("XAllocSizeHints failed");
-      throw new java::lang::OutOfMemoryError(errorMessage);
+      throw new ::java::lang::OutOfMemoryError(errorMessage);
     }
 
   if (copyFrom != 0)

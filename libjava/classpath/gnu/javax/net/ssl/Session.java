@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 import java.security.Principal;
@@ -349,7 +351,7 @@ public abstract class Session implements SSLSession, Serializable
 
     public String toString()
     {
-      StringBuffer str = new StringBuffer (3 * id.length + 1);
+      CPStringBuilder str = new CPStringBuilder (3 * id.length + 1);
       for (int i = 0; i < id.length; i++)
         {
           int x = id[i] & 0xFF;

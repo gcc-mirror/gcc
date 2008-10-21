@@ -11,6 +11,13 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -31,7 +38,7 @@ class java::nio::ByteBuffer : public ::java::nio::Buffer
 {
 
 public: // actually package-private
-  ByteBuffer(jint, jint, jint, jint);
+  ByteBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *, JArray< jbyte > *, jint);
 public:
   static ::java::nio::ByteBuffer * allocateDirect(jint);
   static ::java::nio::ByteBuffer * allocate(jint);
@@ -96,8 +103,8 @@ public:
   virtual jint compareTo(::java::lang::Object *);
 public: // actually package-private
   ::java::nio::ByteOrder * __attribute__((aligned(__alignof__( ::java::nio::Buffer)))) endian;
-  jint array_offset;
   JArray< jbyte > * backing_buffer;
+  jint array_offset;
 public:
   static ::java::lang::Class class$;
 };

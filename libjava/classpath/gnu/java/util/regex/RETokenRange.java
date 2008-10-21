@@ -37,64 +37,83 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-final class RETokenRange extends REToken {
+import gnu.java.lang.CPStringBuilder;
+
+final class RETokenRange extends REToken
+{
   private char lo, hi;
   private boolean insens;
 
-  RETokenRange(int subIndex, char lo, char hi, boolean ins) {
-    super(subIndex);
+    RETokenRange (int subIndex, char lo, char hi, boolean ins)
+  {
+    super (subIndex);
     insens = ins;
     this.lo = lo;
     this.hi = hi;
   }
 
-  int getMinimumLength() {
+  int getMinimumLength ()
+  {
     return 1;
   }
 
-  int getMaximumLength() {
+  int getMaximumLength ()
+  {
     return 1;
   }
 
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	char c = input.charAt(mymatch.index);
-	if (matchOneChar(c)) {
-	    ++mymatch.index;
-	    return mymatch;
-	}
-	return null;
-    }
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    char c = input.charAt (mymatch.index);
+    if (matchOneChar (c))
+      {
+	++mymatch.index;
+	return mymatch;
+      }
+    return null;
+  }
 
-    boolean matchOneChar(char c) {
-	if (c == CharIndexed.OUT_OF_BOUNDS) return false;
-	boolean matches = (c >= lo) && (c <= hi);
-	if (! matches && insens) {
-	  char c1 = toLowerCase(c, unicodeAware);
-	  matches = (c1 >= lo) && (c1 <= hi);
-	  if (!matches) {
-	    c1 = toUpperCase(c, unicodeAware);
+  boolean matchOneChar (char c)
+  {
+    if (c == CharIndexed.OUT_OF_BOUNDS)
+      return false;
+    boolean matches = (c >= lo) && (c <= hi);
+    if (!matches && insens)
+      {
+	char c1 = toLowerCase (c, unicodeAware);
+	matches = (c1 >= lo) && (c1 <= hi);
+	if (!matches)
+	  {
+	    c1 = toUpperCase (c, unicodeAware);
 	    matches = (c1 >= lo) && (c1 <= hi);
 	  }
-	}
-	return matches;
-    }
+      }
+    return matches;
+  }
 
-    boolean returnsFixedLengthMatches() { return true; }
+  boolean returnsFixedLengthMatches ()
+  {
+    return true;
+  }
 
-    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
-        int index = mymatch.index;
-	int numRepeats = 0;
-	while (true) {
-	    if (numRepeats >= max) break;
-	    char ch = input.charAt(index++);
-	    if (! matchOneChar(ch)) break;
-	    numRepeats++;
-	}
-        return numRepeats;
-    }
-    
-  void dump(StringBuffer os) {
-    os.append(lo).append('-').append(hi);
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
+    int index = mymatch.index;
+    int numRepeats = 0;
+    while (true)
+      {
+	if (numRepeats >= max)
+	  break;
+	char ch = input.charAt (index++);
+	if (!matchOneChar (ch))
+	  break;
+	numRepeats++;
+      }
+    return numRepeats;
+  }
+
+  void dump (CPStringBuilder os)
+  {
+    os.append (lo).append ('-').append (hi);
   }
 }
-

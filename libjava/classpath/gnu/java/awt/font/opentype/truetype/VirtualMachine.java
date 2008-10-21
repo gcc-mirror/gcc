@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.opentype.truetype;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.FontFormatException;
 import java.awt.geom.AffineTransform;
 import java.nio.ByteBuffer;
@@ -514,7 +516,7 @@ class VirtualMachine
    */
   private void dumpInstruction(ByteBuffer inst)
   {
-    StringBuffer sbuf = new StringBuffer(40);
+    CPStringBuilder sbuf = new CPStringBuilder(40);
     int pc = inst.position();
     int bcode = inst.get(pc) & 0xff;
     int count;

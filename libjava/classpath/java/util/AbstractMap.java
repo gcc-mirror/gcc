@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -524,7 +526,7 @@ public abstract class AbstractMap<K, V> implements Map<K, V>
   public String toString()
   {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
-    StringBuilder r = new StringBuilder("{");
+    CPStringBuilder r = new CPStringBuilder("{");
     for (int pos = size(); pos > 0; pos--)
       {
         Map.Entry<K, V> entry = entries.next();

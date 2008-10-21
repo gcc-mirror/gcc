@@ -9,6 +9,16 @@
 #include <java/lang/Object.h>
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
   namespace java
   {
     namespace net
@@ -44,7 +54,7 @@ public:
   ::java::net::URI * normalize();
 private:
   ::java::lang::String * normalizePath(::java::lang::String *);
-  void removeLastSegment(::java::lang::StringBuilder *);
+  void removeLastSegment(::gnu::java::lang::CPStringBuilder *);
 public:
   ::java::net::URI * resolve(::java::net::URI *);
   ::java::net::URI * resolve(::java::lang::String *);

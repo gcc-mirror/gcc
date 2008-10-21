@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -73,7 +75,7 @@ public abstract class Expr
   implements XPathExpression
 {
 
-  protected static final Comparator documentOrderComparator =
+  protected static final Comparator<Node> documentOrderComparator =
     new DocumentOrderComparator();
 
   protected static final DecimalFormat decimalFormat =
@@ -84,14 +86,14 @@ public abstract class Expr
   static class ExprNodeSet implements NodeList
   {
 
-    private ArrayList list;
+    private ArrayList<Node> list;
 
-    ExprNodeSet(Collection collection)
+    ExprNodeSet(Collection<Node> collection)
     {
       if (collection instanceof ArrayList)
-        list = (ArrayList) collection;
+        list = (ArrayList<Node>) collection;
       else
-        list = new ArrayList(collection);
+        list = new ArrayList<Node>(collection);
     }
 
     public int getLength()
@@ -103,7 +105,7 @@ public abstract class Expr
     {
       try
         {
-          return (Node) list.get(index);
+          return list.get(index);
         }
       catch (ArrayIndexOutOfBoundsException e)
         {
@@ -141,14 +143,17 @@ public abstract class Expr
           {
             if (ret instanceof Collection)
               {
-                Collection ns = (Collection) ret;
+		/* Suppression is safe, as we know context
+		   produces Collection<Node> */
+		@SuppressWarnings("unchecked") 
+		  Collection<Node> ns = (Collection<Node>) ret;
                 switch (ns.size())
                   {
                   case 0:
                     ret = null;
                     break;
                   case 1:
-                    ret = (Node) ns.iterator().next();
+                    ret = ns.iterator().next();
                     break;
                   default:
                     throw new XPathExpressionException("multiple nodes in node-set");
@@ -166,7 +171,12 @@ public abstract class Expr
                 throw new XPathExpressionException("return value is not a node-set");
               }
             if (ret != null)
-              ret = new ExprNodeSet((Collection) ret);
+	      {
+		/* Suppression is safe, as we know context produces Collection<Node> */
+		@SuppressWarnings("unchecked")
+		  Collection<Node> nodes = (Collection<Node>) ret;
+		ret = new ExprNodeSet(nodes);
+	      }
           }
       }
     return ret;
@@ -229,15 +239,17 @@ public abstract class Expr
    * same document as the context node that have a unique ID equal to any of
    * the tokens in the list.
    */
-  public static Collection _id(Node context, Object object)
+  public static Collection<Node> _id(Node context, Object object)
   {
-    Set ret = new HashSet();
+    Set<Node> ret = new HashSet<Node>();
     if (object instanceof Collection)
       {
-        Collection nodeSet = (Collection) object;
-        for (Iterator i = nodeSet.iterator(); i.hasNext(); )
+	/* Suppression is safe, as the iteration will check each value is a Node */
+	@SuppressWarnings("unchecked")
+	  Collection<Node> nodeSet = (Collection<Node>) object;
+        for (Iterator<Node> i = nodeSet.iterator(); i.hasNext(); )
           {
-            String string = stringValue((Node) i.next());
+            String string = stringValue(i.next());
             ret.addAll(_id (context, string));
           }
       }
@@ -266,7 +278,7 @@ public abstract class Expr
    * an empty string is returned. If the argument is omitted, it defaults to
    * a node-set with the context node as its only member.
    */
-  public static String _local_name(Node context, Collection nodeSet)
+  public static String _local_name(Node context, Collection<Node> nodeSet)
   {
     if (nodeSet == null || nodeSet.isEmpty())
       return "";
@@ -283,7 +295,7 @@ public abstract class Expr
    * empty string is returned. If the argument is omitted, it defaults to a
    * node-set with the context node as its only member.
    */
-  public static String _namespace_uri(Node context, Collection nodeSet)
+  public static String _namespace_uri(Node context, Collection<Node> nodeSet)
   {
     if (nodeSet == null || nodeSet.isEmpty())
       return "";
@@ -308,7 +320,7 @@ public abstract class Expr
    * string is returned. If the argument it omitted, it defaults to a
    * node-set with the context node as its only member.
    */
-  public static String _name(Node context, Collection nodeSet)
+  public static String _name(Node context, Collection<Node> nodeSet)
   {
     if (nodeSet == null || nodeSet.isEmpty())
       return "";
@@ -327,11 +339,11 @@ public abstract class Expr
   /**
    * Returns the first node in the set in document order.
    */
-  static Node firstNode(Collection nodeSet)
+  static Node firstNode(Collection<Node> nodeSet)
   {
-    List list = new ArrayList(nodeSet);
+    List<Node> list = new ArrayList<Node>(nodeSet);
     Collections.sort(list, documentOrderComparator);
-    return (Node) list.get(0);
+    return list.get(0);
   }
 
   /* -- 4.2 String Functions -- */
@@ -387,7 +399,10 @@ public abstract class Expr
       }
     if (object instanceof Collection)
       {
-        Collection nodeSet = (Collection) object;
+	/* Suppression is safe, as we fail immediately if the
+	 * first element is not a Node and don't use the rest */
+	@SuppressWarnings("unchecked") 
+	  Collection<Node> nodeSet = (Collection<Node>) object;
         if (nodeSet.isEmpty())
           {
             return "";
@@ -422,7 +437,7 @@ public abstract class Expr
       }
     if (object instanceof Collection)
       {
-        return ((Collection) object).size() != 0;
+        return ((Collection<?>) object).size() != 0;
       }
     return false; // TODO user defined types
   }
@@ -448,8 +463,12 @@ public abstract class Expr
       }
     if (object instanceof Collection)
       {
+	/* Suppression is safe, as we fail immediately if one
+	 * of the elements is not a Node */
+	@SuppressWarnings("unchecked") 
+	  Collection<Node> nodeSet = (Collection<Node>) object;
         // Convert node-set to string
-        object = stringValue((Collection) object);
+        object = stringValue(nodeSet);
       }
     if (object instanceof String)
       {
@@ -469,12 +488,12 @@ public abstract class Expr
   /**
    * Computes the XPath string-value of the specified node-set.
    */
-  public static String stringValue(Collection nodeSet)
+  public static String stringValue(Collection<Node> nodeSet)
   {
-    StringBuffer buf = new StringBuffer();
-    for (Iterator i = nodeSet.iterator(); i.hasNext(); )
+    CPStringBuilder buf = new CPStringBuilder();
+    for (Iterator<Node> i = nodeSet.iterator(); i.hasNext(); )
       {
-        buf.append(stringValue((Node) i.next()));
+        buf.append(stringValue(i.next()));
       }
     return buf.toString();
   }
@@ -494,7 +513,7 @@ public abstract class Expr
       case Node.DOCUMENT_NODE: // 5.1 Root Node
       case Node.DOCUMENT_FRAGMENT_NODE:
       case Node.ELEMENT_NODE: // 5.2 Element Nodes
-        StringBuffer buf = new StringBuffer();
+        CPStringBuilder buf = new CPStringBuilder();
         for (Node ctx = node.getFirstChild(); ctx != null;
              ctx = ctx.getNextSibling())
           {

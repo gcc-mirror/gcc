@@ -152,7 +152,7 @@ public class ArrayType<T>
       throw new IllegalArgumentException("Dimensions must be greater " +
 					 "than or equal to 1.");
     if (elementType instanceof ArrayType)
-      return dim + ((ArrayType) elementType).getDimension();
+      return dim + ((ArrayType<?>) elementType).getDimension();
     return dim;
   }
 
@@ -236,7 +236,7 @@ public class ArrayType<T>
   private static final OpenType<?> getElementType(OpenType<?> elemType)
   {
     if (elemType instanceof ArrayType)
-      return ((ArrayType) elemType).getElementOpenType();
+      return ((ArrayType<?>) elemType).getElementOpenType();
     return elemType;
   }
 
@@ -257,7 +257,7 @@ public class ArrayType<T>
   {
     OpenType<?> trueElemType = getElementType(elemType);
     if (elemType instanceof ArrayType &&
-	((ArrayType) elemType).isPrimitiveArray())
+	((ArrayType<?>) elemType).isPrimitiveArray())
       return getPrimitiveTypeClass((SimpleType<?>) trueElemType).getName();
     return trueElemType.getClassName();
   }
@@ -323,7 +323,7 @@ public class ArrayType<T>
     dimension = getDimensions(elementType, dim);
     this.elementType = getElementType(elementType);
     primitiveArray = (elementType instanceof ArrayType &&
-		      ((ArrayType) elementType).isPrimitiveArray());
+		      ((ArrayType<?>) elementType).isPrimitiveArray());
   }
 
   /**
@@ -408,7 +408,7 @@ public class ArrayType<T>
   {
     if (!(obj instanceof ArrayType))
       return false;
-    ArrayType atype = (ArrayType) obj;
+    ArrayType<?> atype = (ArrayType<?>) obj;
     return (atype.getDimension() == dimension &&
 	    atype.getElementOpenType().equals(elementType) &&
 	    atype.isPrimitiveArray() == primitiveArray);
@@ -439,13 +439,14 @@ public class ArrayType<T>
    *                           is not in {@link OpenType#ALLOWED_CLASSNAMES_LIST}.
    * @since 1.6
    */ 
+  @SuppressWarnings("unchecked")
   public static <E> ArrayType<E[]> getArrayType(OpenType<E> elementType)
     throws OpenDataException
   {
     ArrayType<E[]> arr = (ArrayType<E[]>) cache.get(elementType);
     if (arr != null)
       return arr;
-    arr = new ArrayType(1, elementType);
+    arr = new ArrayType<E[]>(1, elementType);
     cache.put(elementType, arr);
     return arr;
   }
@@ -484,6 +485,7 @@ public class ArrayType<T>
    *                                  array.
    * @since 1.6
    */ 
+  @SuppressWarnings("unchecked")
   public static <T> ArrayType<T> getPrimitiveArrayType(Class<T> type)
   {
     ArrayType<T> arr = (ArrayType<T>) primCache.get(type);
@@ -499,10 +501,9 @@ public class ArrayType<T>
 	  throw new IllegalArgumentException("The given class is " +
 					     "not an array.");
       } while (comType.isArray());
-    String className = type.getName();
     try
       {
-	arr = new ArrayType(getPrimitiveType(comType), true);
+	arr = new ArrayType<T>(getPrimitiveType(comType), true);
       }
     catch (OpenDataException e)
       {
@@ -512,7 +513,7 @@ public class ArrayType<T>
     while (dim > 1)
       try
 	{
-	  arr = new ArrayType(1, arr);
+	  arr = new ArrayType<T>(1, arr);
 	  --dim;
 	}
       catch (OpenDataException e)
@@ -610,12 +611,12 @@ public class ArrayType<T>
   {
     if (obj == null)
       return false;
-    Class objClass = obj.getClass();
+    Class<?> objClass = obj.getClass();
     if (!(objClass.isArray()))
       return false;
     if (elementType instanceof SimpleType)
       return getClassName().equals(objClass.getName());
-    Class elementClass = null;
+    Class<?> elementClass = null;
     try
       {
 	elementClass = Class.forName(getClassName());

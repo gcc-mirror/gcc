@@ -45,11 +45,14 @@ target_triplet = @target@
 @CREATE_WRAPPERS_TRUE@	gserialver$(EXEEXT) gjavah$(EXEEXT) \
 @CREATE_WRAPPERS_TRUE@	grmiregistry$(EXEEXT) \
 @CREATE_WRAPPERS_TRUE@	gtnameserv$(EXEEXT) gorbd$(EXEEXT) \
-@CREATE_WRAPPERS_TRUE@	grmid$(EXEEXT) grmic$(EXEEXT)
+@CREATE_WRAPPERS_TRUE@	grmid$(EXEEXT) grmic$(EXEEXT) \
+@CREATE_WRAPPERS_TRUE@	$(am__EXEEXT_1)
+@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_TRUE@am__append_1 = gjdoc
+@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_FALSE@am__append_2 = gjdoc
 subdir = tools
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/gappletviewer.in $(srcdir)/gjar.in \
-	$(srcdir)/gjarsigner.in $(srcdir)/gjavah.in \
+	$(srcdir)/gjarsigner.in $(srcdir)/gjavah.in $(srcdir)/gjdoc.in \
 	$(srcdir)/gkeytool.in $(srcdir)/gnative2ascii.in \
 	$(srcdir)/gorbd.in $(srcdir)/grmic.in $(srcdir)/grmid.in \
 	$(srcdir)/grmiregistry.in $(srcdir)/gserialver.in \
@@ -66,6 +69,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../ltsugar.m4 \
 	$(top_srcdir)/../../ltversion.m4 \
 	$(top_srcdir)/../../lt~obsolete.m4 \
+	$(top_srcdir)/m4/ac_prog_antlr.m4 \
+	$(top_srcdir)/m4/ac_prog_java.m4 \
+	$(top_srcdir)/m4/ac_prog_java_works.m4 \
 	$(top_srcdir)/m4/ac_prog_javac.m4 \
 	$(top_srcdir)/m4/ac_prog_javac_works.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
@@ -82,7 +88,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = gappletviewer gjarsigner gkeytool gjar \
 	gnative2ascii gserialver grmiregistry gtnameserv gorbd grmid \
-	grmic gjavah
+	grmic gjavah gjdoc
+@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_TRUE@am__EXEEXT_1 =  \
+@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_TRUE@	gjdoc$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
@@ -105,6 +113,10 @@ am__gjavah_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@	gjavah-toolwrapper.$(OBJEXT)
 gjavah_OBJECTS = $(am_gjavah_OBJECTS)
 gjavah_LDADD = $(LDADD)
+am__gjdoc_SOURCES_DIST = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@am_gjdoc_OBJECTS = gjdoc-toolwrapper.$(OBJEXT)
+gjdoc_OBJECTS = $(am_gjdoc_OBJECTS)
+gjdoc_LDADD = $(LDADD)
 am__gkeytool_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gkeytool_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gkeytool-toolwrapper.$(OBJEXT)
@@ -156,16 +168,16 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(gappletviewer_SOURCES) $(gjar_SOURCES) \
-	$(gjarsigner_SOURCES) $(gjavah_SOURCES) $(gkeytool_SOURCES) \
-	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
-	$(grmid_SOURCES) $(grmiregistry_SOURCES) $(gserialver_SOURCES) \
-	$(gtnameserv_SOURCES)
+	$(gjarsigner_SOURCES) $(gjavah_SOURCES) $(gjdoc_SOURCES) \
+	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
+	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
+	$(gserialver_SOURCES) $(gtnameserv_SOURCES)
 DIST_SOURCES = $(am__gappletviewer_SOURCES_DIST) \
 	$(am__gjar_SOURCES_DIST) $(am__gjarsigner_SOURCES_DIST) \
-	$(am__gjavah_SOURCES_DIST) $(am__gkeytool_SOURCES_DIST) \
-	$(am__gnative2ascii_SOURCES_DIST) $(am__gorbd_SOURCES_DIST) \
-	$(am__grmic_SOURCES_DIST) $(am__grmid_SOURCES_DIST) \
-	$(am__grmiregistry_SOURCES_DIST) \
+	$(am__gjavah_SOURCES_DIST) $(am__gjdoc_SOURCES_DIST) \
+	$(am__gkeytool_SOURCES_DIST) $(am__gnative2ascii_SOURCES_DIST) \
+	$(am__gorbd_SOURCES_DIST) $(am__grmic_SOURCES_DIST) \
+	$(am__grmid_SOURCES_DIST) $(am__grmiregistry_SOURCES_DIST) \
 	$(am__gserialver_SOURCES_DIST) $(am__gtnameserv_SOURCES_DIST)
 DATA = $(noinst_DATA)
 ETAGS = etags
@@ -175,6 +187,8 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+ANTLR = @ANTLR@
+ANTLR_JAR = @ANTLR_JAR@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -206,6 +220,12 @@ CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
 CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
 CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
+CREATE_GJDOC_FALSE = @CREATE_GJDOC_FALSE@
+CREATE_GJDOC_PARSER_FALSE = @CREATE_GJDOC_PARSER_FALSE@
+CREATE_GJDOC_PARSER_TRUE = @CREATE_GJDOC_PARSER_TRUE@
+CREATE_GJDOC_TRUE = @CREATE_GJDOC_TRUE@
+CREATE_GMPBI_LIBRARY_FALSE = @CREATE_GMPBI_LIBRARY_FALSE@
+CREATE_GMPBI_LIBRARY_TRUE = @CREATE_GMPBI_LIBRARY_TRUE@
 CREATE_GSTREAMER_PEER_LIBRARIES_FALSE = @CREATE_GSTREAMER_PEER_LIBRARIES_FALSE@
 CREATE_GSTREAMER_PEER_LIBRARIES_TRUE = @CREATE_GSTREAMER_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
@@ -244,11 +264,12 @@ ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 EXTRA_CFLAGS = @EXTRA_CFLAGS@
-FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
+GCJ_JAVAC_FALSE = @GCJ_JAVAC_FALSE@
+GCJ_JAVAC_TRUE = @GCJ_JAVAC_TRUE@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -258,6 +279,8 @@ GENINSRC_TRUE = @GENINSRC_TRUE@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GMP_CFLAGS = @GMP_CFLAGS@
+GMP_LIBS = @GMP_LIBS@
 GREP = @GREP@
 GSTREAMER_BASE_CFLAGS = @GSTREAMER_BASE_CFLAGS@
 GSTREAMER_BASE_LIBS = @GSTREAMER_BASE_LIBS@
@@ -279,7 +302,10 @@ INSTALL_GLIBJ_ZIP_TRUE = @INSTALL_GLIBJ_ZIP_TRUE@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JAR = @JAR@
+JAVA = @JAVA@
 JAVAC = @JAVAC@
+JAVAC_IS_GCJ = @JAVAC_IS_GCJ@
 JAVAC_MEM_OPT = @JAVAC_MEM_OPT@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
@@ -345,8 +371,10 @@ USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
-VM_BINARY = @VM_BINARY@
+WANT_NATIVE_BIG_INTEGER = @WANT_NATIVE_BIG_INTEGER@
 WARNING_CFLAGS = @WARNING_CFLAGS@
+WITH_JAR_FALSE = @WITH_JAR_FALSE@
+WITH_JAR_TRUE = @WITH_JAR_TRUE@
 XML_CFLAGS = @XML_CFLAGS@
 XML_LIBS = @XML_LIBS@
 XSLT_CFLAGS = @XSLT_CFLAGS@
@@ -357,6 +385,7 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
+ac_ct_ANTLR = @ac_ct_ANTLR@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -416,12 +445,16 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexeclibdir = @toolexeclibdir@
+uudecode = @uudecode@
 vm_classes = @vm_classes@
 GLIBJ_BOOTCLASSPATH = '$(top_srcdir)/lib'
-GLIBJ_CLASSPATH = .:$(srcdir)/asm
+GLIBJ_CLASSPATH = .:$(srcdir)/asm:$(ANTLR_CLASSPATH)
+@GCJ_JAVAC_FALSE@JCOMPILER = $(JAVAC) $(JAVACFLAGS) -source 1.5 -target 1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH)
 
-# Setup the compiler to use the GNU Classpath library we just build
-JCOMPILER = $(JAVAC) -g -w --encoding=UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH)
+# Setup the compiler to use the GNU Classpath library we just built.
+@GCJ_JAVAC_TRUE@JCOMPILER = $(JAVAC) $(JAVACFLAGS) -fsource=1.5 -ftarget=1.5 --encoding=UTF-8 --bootclasspath=$(GLIBJ_BOOTCLASSPATH) --classpath=$(GLIBJ_CLASSPATH)
+@CREATE_GJDOC_TRUE@gjdoc_gendir = ${top_srcdir}/tools/generated
+@CREATE_GJDOC_TRUE@ANTLR_CLASSPATH = $(ANTLR_JAR):$(gjdoc_gendir)
 @CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
 @CREATE_WRAPPERS_TRUE@AM_CPPFLAGS = -Wall \
 @CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
@@ -490,21 +523,31 @@ JCOMPILER = $(JAVAC) -g -w --encoding=UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH
 @CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"rmic\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"grmic\""
 
-@CREATE_WRAPPERS_FALSE@noinst_SCRIPTS = gappletviewer gjarsigner gkeytool \
-@CREATE_WRAPPERS_FALSE@	gjar gnative2ascii gserialver gjavah grmiregistry \
-@CREATE_WRAPPERS_FALSE@	gtnameserv gorbd grmid grmic
+@CREATE_WRAPPERS_TRUE@gjdoc_SOURCES = toolwrapper.c
+@CREATE_WRAPPERS_TRUE@gjdoc_CFLAGS = \
+@CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"gjdoc\"" \
+@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gjdoc\""
 
+@CREATE_WRAPPERS_FALSE@noinst_SCRIPTS = gappletviewer gjarsigner \
+@CREATE_WRAPPERS_FALSE@	gkeytool gjar gnative2ascii gserialver \
+@CREATE_WRAPPERS_FALSE@	gjavah grmiregistry gtnameserv gorbd \
+@CREATE_WRAPPERS_FALSE@	grmid grmic $(am__append_2)
 EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 	gjar.in gnative2ascii.in gserialver.in gjavah.in grmiregistry.in \
-	gtnameserv.in gorbd.in grmid.in grmic.in
+	gtnameserv.in gorbd.in grmid.in grmic.in gjdoc.in
 
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
+	$(srcdir)/gnu/classpath/tools/*.java \
+	$(srcdir)/gnu/classpath/tools/*/*.java \
+	$(srcdir)/gnu/classpath/tools/*/*/*.java \
+	$(srcdir)/gnu/classpath/tools/*/*/*/*.java \
 	$(srcdir)/com/sun/javadoc/*.java \
 	$(srcdir)/com/sun/tools/doclets/*.java \
 	$(srcdir)/com/sun/tools/javac/*.java \
 	$(srcdir)/com/sun/tools/javah/*.java \
+	$(srcdir)/com/sun/tools/javadoc/*.java \
 	$(srcdir)/sun/rmi/rmic/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/attrs/*.java \
@@ -540,6 +583,103 @@ PROPERTY_FILES = $(srcdir)/external/asm/org/objectweb/asm/optimizer/shrink.prope
 # RMIC templates that must be included in the generated zip file.
 RMIC_TEMPLATES = $(srcdir)/resource/gnu/classpath/tools/rmic/templates/*.jav
 
+# gjdoc resource files.
+gnu_classpath_tools_gjdoc_jar_CSS = \
+	doctranslets/html/res/gjdochtml-clean.css \
+	doctranslets/html/res/gjdochtml-fixed.css \
+	doctranslets/html/res/gjdochtml-sclara.css \
+	doctranslets/html/res/gjdochtml.css \
+	htmldoclet/gjdochtml-vanilla.css \
+	htmldoclet/gjdochtml-clean-layout.css \
+	htmldoclet/gjdochtml-clean-color1.css
+
+gnu_classpath_tools_gjdoc_jar_DTDS = \
+	htmldoclet/xhtml11-target10.dtd \
+	dtd/gjdoc-alphaindex.dtd \
+	dtd/gjdoc.dtd
+
+gnu_classpath_tools_gjdoc_jar_ENTS = \
+	dtd/ent/iso-amsa.ent \
+	dtd/ent/iso-amsb.ent \
+	dtd/ent/iso-amsc.ent \
+	dtd/ent/iso-amsn.ent \
+	dtd/ent/iso-amso.ent \
+	dtd/ent/iso-amsr.ent \
+	dtd/ent/iso-box.ent \
+	dtd/ent/iso-cyr1.ent \
+	dtd/ent/iso-cyr2.ent \
+	dtd/ent/iso-dia.ent \
+	dtd/ent/iso-grk1.ent \
+	dtd/ent/iso-grk2.ent \
+	dtd/ent/iso-grk3.ent \
+	dtd/ent/iso-grk4.ent \
+	dtd/ent/iso-lat1.ent \
+	dtd/ent/iso-lat2.ent \
+	dtd/ent/iso-num.ent \
+	dtd/ent/iso-pub.ent \
+	dtd/ent/iso-tech.ent
+
+gnu_classpath_tools_gjdoc_jar_HTML = doctranslets/html/res/default_help_en.html
+gnu_classpath_tools_gjdoc_jar_JS = \
+	doctranslets/html/res/gjdoc.js \
+	htmldoclet/gjdoc.js
+
+gnu_classpath_tools_gjdoc_jar_PNG = \
+	htmldoclet/inherit.png
+
+gnu_classpath_tools_gjdoc_jar_MODS = dtd/dbcentx.mod
+gnu_classpath_tools_gjdoc_jar_PROPERTIES = htmldoclet/HtmlDoclet.properties
+gnu_classpath_tools_gjdoc_jar_RNGS = \
+	rng/gjdoc-classdoc.rng \
+	rng/gjdoc-common.rng \
+	rng/gjdoc-index.rng
+
+gnu_classpath_tools_gjdoc_jar_TXTS = \
+	java.lang-classes-1.2.txt \
+	java.lang-classes-1.3.txt \
+	java.lang-classes-1.4.txt \
+	java.lang-classes-1.5.txt
+
+gnu_classpath_tools_gjdoc_jar_XHTML = htmldoclet/help.xhtml
+gnu_classpath_tools_gjdoc_jar_XSLS = \
+	doctranslets/gjdoc_common.xsl \
+	doctranslets/html/about.xsl \
+	doctranslets/html/allclasses.xsl \
+	doctranslets/html/allpackages.xsl \
+	doctranslets/html/alphaindex.xsl \
+	doctranslets/html/alphaindex_chunked.xsl \
+	doctranslets/html/classdoc-source.xsl \
+	doctranslets/html/classdoc-uses.xsl \
+	doctranslets/html/classdoc.xsl \
+	doctranslets/html/deprecated.xsl \
+	doctranslets/html/descriptor.xsl \
+	doctranslets/html/doctranslet.xsl \
+	doctranslets/html/fulltree.xsl \
+	doctranslets/html/gjdoc.xsl \
+	doctranslets/html/help.xsl \
+	doctranslets/html/html_common.xsl \
+	doctranslets/html/index_noframes.xsl \
+	doctranslets/html/index.xsl \
+	doctranslets/html/packageclasses.xsl \
+	doctranslets/html/packagedoc.xsl
+
+
+# All our resources.
+gjdoc_resources = $(gnu_classpath_tools_gjdoc_jar_CSS) $(gnu_classpath_tools_gjdoc_jar_DTDS) \
+	$(gnu_classpath_tools_gjdoc_jar_ENTS) $(gnu_classpath_tools_gjdoc_jar_HTML) \
+	$(gnu_classpath_tools_gjdoc_jar_JS) $(gnu_classpath_tools_gjdoc_jar_MODS) \
+	$(gnu_classpath_tools_gjdoc_jar_PNG) $(gnu_classpath_tools_gjdoc_jar_PROPERTIES) \
+	$(gnu_classpath_tools_gjdoc_jar_RNGS) $(gnu_classpath_tools_gjdoc_jar_TXTS) \
+	$(gnu_classpath_tools_gjdoc_jar_XHTML) $(gnu_classpath_tools_gjdoc_jar_XSLS)
+
+@CREATE_GJDOC_FALSE@GJDOC_EX = -path '*gnu/classpath/tools/gjdoc' -prune -o \
+@CREATE_GJDOC_FALSE@	-path '*gnu/classpath/tools/doclets' -prune -o \
+@CREATE_GJDOC_FALSE@	-path '*gnu/classpath/tools/taglets' -prune -o \
+@CREATE_GJDOC_FALSE@	-path '*com/sun/javadoc' -prune -o \
+@CREATE_GJDOC_FALSE@	-path '*com/sun/tools/doclets' -prune -o \
+@CREATE_GJDOC_FALSE@	-path '*com/sun/tools/javadoc' -prune -o
+
+
 # The zip files with classes we want to produce.
 TOOLS_ZIP = tools.zip
 
@@ -547,7 +687,10 @@ TOOLS_ZIP = tools.zip
 BUILT_SOURCES = $(TOOLS_ZIP)
 
 # All the files we find "interesting"
-ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES) $(PROPERTY_FILES)
+ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES) $(PROPERTY_FILES) \
+  $(addprefix $(srcdir)/resource/gnu/classpath/tools/gjdoc/,$(gjdoc_resources))\
+  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
+
 
 # Some architecture independent data to be installed.
 # GCJ LOCAL: do not install this.
@@ -555,6 +698,10 @@ noinst_DATA = $(TOOLS_ZIP)
 
 # Where we want these data files installed.
 TOOLSdir = $(pkgdatadir)
+@WITH_JAR_FALSE@CREATE_TOOLS_ZIP = $(ZIP) -r ../$(TOOLS_ZIP) .
+@WITH_JAR_TRUE@CREATE_TOOLS_ZIP = $(JAR) cf ../$(TOOLS_ZIP) .
+@WITH_JAR_FALSE@UPDATE_TOOLS_ZIP = $(ZIP) -u -r ../$(TOOLS_ZIP) .
+@WITH_JAR_TRUE@UPDATE_TOOLS_ZIP = $(JAR) uf ../$(TOOLS_ZIP) .
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -613,6 +760,8 @@ grmic: $(top_builddir)/config.status $(srcdir)/grmic.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 gjavah: $(top_builddir)/config.status $(srcdir)/gjavah.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gjdoc: $(top_builddir)/config.status $(srcdir)/gjdoc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
@@ -669,6 +818,12 @@ installcheck-binPROGRAMS: $(bin_PROGRAMS)
 @CREATE_WRAPPERS_TRUE@gjavah$(EXEEXT): $(gjavah_OBJECTS) $(gjavah_DEPENDENCIES) 
 @CREATE_WRAPPERS_TRUE@	@rm -f gjavah$(EXEEXT)
 @CREATE_WRAPPERS_TRUE@	$(LINK) $(gjavah_LDFLAGS) $(gjavah_OBJECTS) $(gjavah_LDADD) $(LIBS)
+@CREATE_GJDOC_FALSE@gjdoc$(EXEEXT): $(gjdoc_OBJECTS) $(gjdoc_DEPENDENCIES) 
+@CREATE_GJDOC_FALSE@	@rm -f gjdoc$(EXEEXT)
+@CREATE_GJDOC_FALSE@	$(LINK) $(gjdoc_LDFLAGS) $(gjdoc_OBJECTS) $(gjdoc_LDADD) $(LIBS)
+@CREATE_WRAPPERS_TRUE@gjdoc$(EXEEXT): $(gjdoc_OBJECTS) $(gjdoc_DEPENDENCIES) 
+@CREATE_WRAPPERS_TRUE@	@rm -f gjdoc$(EXEEXT)
+@CREATE_WRAPPERS_TRUE@	$(LINK) $(gjdoc_LDFLAGS) $(gjdoc_OBJECTS) $(gjdoc_LDADD) $(LIBS)
 @CREATE_WRAPPERS_TRUE@gkeytool$(EXEEXT): $(gkeytool_OBJECTS) $(gkeytool_DEPENDENCIES) 
 @CREATE_WRAPPERS_TRUE@	@rm -f gkeytool$(EXEEXT)
 @CREATE_WRAPPERS_TRUE@	$(LINK) $(gkeytool_LDFLAGS) $(gkeytool_OBJECTS) $(gkeytool_LDADD) $(LIBS)
@@ -723,6 +878,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gjar-toolwrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gjarsigner-toolwrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gjavah-toolwrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gjdoc-toolwrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gkeytool-toolwrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnative2ascii-toolwrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gorbd-toolwrapper.Po@am__quote@
@@ -808,6 +964,20 @@ gjavah-toolwrapper.obj: toolwrapper.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gjavah-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjavah_CFLAGS) $(CFLAGS) -c -o gjavah-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
+
+gjdoc-toolwrapper.o: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjdoc_CFLAGS) $(CFLAGS) -MT gjdoc-toolwrapper.o -MD -MP -MF "$(DEPDIR)/gjdoc-toolwrapper.Tpo" -c -o gjdoc-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gjdoc-toolwrapper.Tpo" "$(DEPDIR)/gjdoc-toolwrapper.Po"; else rm -f "$(DEPDIR)/gjdoc-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gjdoc-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjdoc_CFLAGS) $(CFLAGS) -c -o gjdoc-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
+
+gjdoc-toolwrapper.obj: toolwrapper.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjdoc_CFLAGS) $(CFLAGS) -MT gjdoc-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/gjdoc-toolwrapper.Tpo" -c -o gjdoc-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gjdoc-toolwrapper.Tpo" "$(DEPDIR)/gjdoc-toolwrapper.Po"; else rm -f "$(DEPDIR)/gjdoc-toolwrapper.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gjdoc-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjdoc_CFLAGS) $(CFLAGS) -c -o gjdoc-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
 
 gkeytool-toolwrapper.o: toolwrapper.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gkeytool_CFLAGS) $(CFLAGS) -MT gkeytool-toolwrapper.o -MD -MP -MF "$(DEPDIR)/gkeytool-toolwrapper.Tpo" -c -o gkeytool-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
@@ -1121,6 +1291,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 @CREATE_WRAPPERS_FALSE@gorbd: gorbd.in
 @CREATE_WRAPPERS_FALSE@grmid: grmid.in
 @CREATE_WRAPPERS_FALSE@grmic: grmic.in
+@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_FALSE@gjdoc: gjdoc.in
 
 # Make sure everything is included in the distribution.
 dist-hook:
@@ -1145,9 +1316,11 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
+	     $(srcdir)/com/sun/tools/javadoc \
 	     $(srcdir)/com/sun/tools/javac \
 	     $(srcdir)/com/sun/tools/javah \
 	     $(srcdir)/sun/rmi/rmic \
+	     $(GJDOC_EX) \
 	     -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
 	    : > vm-tools.lst; \
@@ -1158,39 +1331,41 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 	    echo -n > vm-tools.lst; \
 	fi
 	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
+@CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	@mkdir_p@ $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr
+@CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	$(ANTLR) -o $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr \
+@CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
 @JAVA_MAINTAINER_MODE_TRUE@	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 @JAVA_MAINTAINER_MODE_TRUE@	  $$AC -g -w -d $(srcdir)/asm @asm.lst
-@JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
-@JAVA_MAINTAINER_MODE_TRUE@	@list=`cd $(srcdir)/resource && find gnu/classpath/tools com/sun/tools/javac \
-@JAVA_MAINTAINER_MODE_TRUE@	       sun/rmi/rmic -name \*.properties -print -o -name \*.jav -print`; \
-@JAVA_MAINTAINER_MODE_TRUE@	for p in $$list; do \
-@JAVA_MAINTAINER_MODE_TRUE@	  dirname=classes/`dirname $$p`; \
-@JAVA_MAINTAINER_MODE_TRUE@	  if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
-@JAVA_MAINTAINER_MODE_TRUE@	  echo "  cp $(srcdir)resource/$$p classes/$$p"; \
-@JAVA_MAINTAINER_MODE_TRUE@	  cp $(srcdir)/resource/$$p classes/$$p; \
-@JAVA_MAINTAINER_MODE_TRUE@	done
-	@list=`cd $(srcdir) && find gnu/classpath/tools -name \*.jav -print`; \
+@JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) $(USE_JAVAC_FLAGS) -g -d $(srcdir)/classes @classes.lst @vm-tools.lst
+	@list=`cd $(srcdir)/resource && find gnu/classpath/tools com/sun/tools/javac \
+	       sun/rmi/rmic $(GJDOC_EX) -name \*.properties -print -o -name \*.jav -print`; \
 	for p in $$list; do \
 	  dirname=classes/`dirname $$p`; \
-	  if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
-	  echo "  cp $(srcdir)/$$p classes/$$p"; \
-	  cp $(srcdir)/$$p classes/$$p; \
+	  if ! test -d "$$dirname"; then @mkdir_p@ "$$dirname"; fi; \
+	  echo "  cp $(srcdir)/resource/$$p classes/$$p"; \
+	  cp $(srcdir)/resource/$$p classes/$$p; \
 	done
 	cp -pR $(srcdir)/asm .
 	cp -pR $(srcdir)/classes .
+@CREATE_GJDOC_TRUE@	for res in $(gjdoc_resources); do \
+@CREATE_GJDOC_TRUE@	  dir=classes/`dirname $$res`; \
+@CREATE_GJDOC_TRUE@	  if ! test -d "$$dir"; then @mkdir_p@ "$$dir"; fi; \
+@CREATE_GJDOC_TRUE@	  echo "  cp $(srcdir)/resource/gnu/classpath/tools/gjdoc/$$res classes/$$res"; \
+@CREATE_GJDOC_TRUE@	  cp $(srcdir)/resource/gnu/classpath/tools/gjdoc/$$res classes/$$res; \
+@CREATE_GJDOC_TRUE@	done 
+
 	(cd classes; \
-	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" cf ../$(TOOLS_ZIP) .; fi; \
+	$(CREATE_TOOLS_ZIP); \
 	cd ..)
 	(cd asm; \
-	if test "$(ZIP)" != ""; then $(ZIP) -u -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" uf ../$(TOOLS_ZIP) .; fi; \
+	$(UPDATE_TOOLS_ZIP); \
 	cd ..)
 	rm -rf asm classes classes.lst asm.lst
 
 # Zip file be gone! (and make sure the classes are gone too)
 clean-local:
 	rm -rf $(TOOLS_ZIP) classes classes.lst asm asm.lst all-classes.lst
+@CREATE_GJDOC_PARSER_TRUE@	rm -rf $(gjdoc_gendir)
 
 # FIXME: remove this when GNU Classpath includes a bootstrap VM.
 installcheck-binSCRIPTS:

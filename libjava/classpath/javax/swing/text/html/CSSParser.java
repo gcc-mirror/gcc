@@ -163,11 +163,6 @@ class CSSParser
   private int pushedChar;
 
   /**
-   * Temporary place to hold identifiers.
-   */
-  private StringBuffer unitBuffer;
-
-  /**
    * Used to indicate blocks.
    */
   private int[] unitStack;
@@ -212,7 +207,6 @@ class CSSParser
    */
   CSSParser()
   {
-    unitBuffer = new StringBuffer();
     tokenBuffer = new char[10];
   }
 

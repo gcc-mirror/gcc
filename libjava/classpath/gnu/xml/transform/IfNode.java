@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Node;
@@ -99,7 +101,7 @@ final class IfNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("if");
+    CPStringBuilder buf = new CPStringBuilder("if");
     buf.append('[');
     buf.append("test=");
     buf.append(test);

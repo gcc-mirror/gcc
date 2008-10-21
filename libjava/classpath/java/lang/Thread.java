@@ -159,7 +159,7 @@ public class Thread implements Runnable
   /** Thread local storage. Package accessible for use by
     * InheritableThreadLocal.
     */
-  WeakIdentityHashMap locals;
+  final ThreadLocalMap locals;
 
   /** The uncaught exception handler.  */
   UncaughtExceptionHandler exceptionHandler;
@@ -367,6 +367,7 @@ public class Thread implements Runnable
     this.name = name.toString();
     this.runnable = target;
     this.stacksize = size;
+    this.locals = new ThreadLocalMap();
     
     synchronized (Thread.class)
       {
@@ -398,6 +399,7 @@ public class Thread implements Runnable
    */
   Thread(VMThread vmThread, String name, int priority, boolean daemon)
   {
+    this.locals = new ThreadLocalMap();
     this.vmThread = vmThread;
     this.runnable = null;
     if (name == null)
@@ -1063,21 +1065,15 @@ public class Thread implements Runnable
   {
     group.removeThread(this);
     vmThread = null;
-    locals = null;
+    locals.clear();
   }
 
   /**
    * Returns the map used by ThreadLocal to store the thread local values.
    */
-  static Map getThreadLocals()
+  static ThreadLocalMap getThreadLocals()
   {
-    Thread thread = currentThread();
-    Map locals = thread.locals;
-    if (locals == null)
-      {
-        locals = thread.locals = new WeakIdentityHashMap();
-      }
-    return locals;
+    return currentThread().locals;
   }
 
   /** 

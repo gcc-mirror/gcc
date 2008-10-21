@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.table;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 import java.util.EventListener;
 
@@ -80,7 +82,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    */
   public String getColumnName(int columnIndex)
   {
-    StringBuffer buffer = new StringBuffer();
+    CPStringBuilder buffer = new CPStringBuilder();
     while (columnIndex >= 0)
       {
         buffer.insert(0, (char) ('A' + columnIndex % 26));

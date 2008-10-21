@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Container;
@@ -2016,7 +2018,7 @@ public abstract class JTextComponent extends JComponent
           d.putProperty(Document.StreamDescriptionProperty, streamDescription);
       }
 
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     int c;
 
     // Read till -1 (EOF).

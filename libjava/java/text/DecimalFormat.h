@@ -9,6 +9,16 @@
 #include <java/text/NumberFormat.h>
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
   namespace java
   {
     namespace math
@@ -73,7 +83,7 @@ public:
 private:
   jboolean equals(::java::lang::String *, ::java::lang::String *);
   ::java::lang::String * patternChars(::java::text::DecimalFormatSymbols *);
-  ::java::lang::StringBuffer * quoteFix(::java::lang::String *, ::java::lang::String *);
+  ::gnu::java::lang::CPStringBuilder * quoteFix(::java::lang::String *, ::java::lang::String *);
   ::java::lang::String * computePattern(::java::text::DecimalFormatSymbols *);
   void applyPatternWithSymbols(::java::lang::String *, ::java::text::DecimalFormatSymbols *);
   jint scanFix(::java::lang::String *, ::java::text::DecimalFormatSymbols *, jint, jboolean);

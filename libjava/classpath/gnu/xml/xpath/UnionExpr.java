@@ -74,20 +74,29 @@ public final class UnionExpr
     return false;
   }
 
+  @Override 
   public Object evaluate(Node context, int pos, int len)
   {
     Object left = lhs.evaluate(context, pos, len);
     Object right = rhs.evaluate(context, pos, len);
+    List<Node> list;
     if (left instanceof Collection && right instanceof Collection)
       {
-        Set set = new HashSet();
-        set.addAll ((Collection) left);
-        set.addAll ((Collection) right);
-        List list = new ArrayList(set);
+        Set<Node> set = new HashSet<Node>();
+	/* Suppression is safe as addAll will check the types 
+	   of the elements and throw a ClassCastException as necessary */
+	@SuppressWarnings("unchecked")
+	  Collection<Node> l = (Collection<Node>) left;
+	@SuppressWarnings("unchecked")
+	  Collection<Node> r = (Collection<Node>) right;
+	set.addAll (l);
+        set.addAll (r);
+        list = new ArrayList<Node>(set);
         Collections.sort(list, documentOrderComparator);
-        return list;
       }
-    return Collections.EMPTY_SET;
+    else
+      list = Collections.emptyList();
+    return list;
   }
 
   public Expr clone(Object context)

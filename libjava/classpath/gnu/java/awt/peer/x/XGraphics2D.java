@@ -313,7 +313,7 @@ public class XGraphics2D
       {
         // TODO: Optimize for different standard bit-depths.
         Color c = (Color) p;
-        XToolkit tk = (XToolkit) Toolkit.getDefaultToolkit();
+       /* XToolkit tk = (XToolkit) Toolkit.getDefaultToolkit();
         HashMap colorMap = tk.colorMap;
         gnu.x11.Color col = (gnu.x11.Color) colorMap.get(c);
         if (col == null)
@@ -323,8 +323,10 @@ public class XGraphics2D
                                    c.getGreen() * 256,
                                    c.getBlue() * 256);
             colorMap.put(c, col);
-          }
-        xgc.set_foreground(col);
+          }*/
+        //xgc.set_foreground(col);
+        
+        xgc.set_foreground(c.getRGB());
         foreground = c;
       }
   }
@@ -392,9 +394,23 @@ public class XGraphics2D
                 xdrawable.put_image(xgc, zpixmap, x, y);
                 imageCache.put(image, zpixmap);
               } else {
-                ZPixmap zpixmap = (ZPixmap) xdrawable.image(x, y, w, h,
-                                                            0xffffffff,
-                                           gnu.x11.image.Image.Format.ZPIXMAP);
+                
+                // TODO optimize reusing the rectangles
+                Rectangle source =
+                  new Rectangle(0, 0, xdrawable.width, xdrawable.height);
+                Rectangle target = new Rectangle(x, y, w, h);
+                
+                Rectangle destination = source.intersection(target); 
+                
+                x = destination.x;
+                y = destination.y;
+                w = destination.width;
+                h = destination.height;
+                
+                ZPixmap zpixmap =
+                  (ZPixmap) xdrawable.image(x, y, w, h,
+                                            0xffffffff,
+                                            gnu.x11.image.Image.Format.ZPIXMAP);
                 for (int yy = 0; yy < h; yy++)
                   {
                     for (int xx = 0; xx < w; xx++)

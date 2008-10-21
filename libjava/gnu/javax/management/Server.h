@@ -91,11 +91,10 @@ public:
 private:
   void notify(::javax::management::ObjectName *, ::java::lang::String *);
   static ::javax::management::ObjectName * DELEGATE_NAME;
-  ::java::util::Map * __attribute__((aligned(__alignof__( ::java::lang::Object)))) beans;
+  ::java::util::concurrent::ConcurrentHashMap * __attribute__((aligned(__alignof__( ::java::lang::Object)))) beans;
   ::java::lang::String * defaultDomain;
   ::javax::management::MBeanServer * outer;
   ::javax::management::loading::ClassLoaderRepository * repository;
-  ::java::util::Map * listeners;
   ::javax::management::MBeanServerDelegate * delegate;
   static ::java::util::concurrent::atomic::AtomicLong * sequenceNumber;
 public:

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -259,7 +261,7 @@ public class Bindings
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     boolean next = false;
     Collection seen = new HashSet();
     Map wctx = (Map) withParameters.getFirst();

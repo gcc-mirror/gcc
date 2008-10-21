@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -1135,7 +1137,7 @@ public class Collections
      */
     public String toString()
     {
-      StringBuffer r = new StringBuffer("{");
+      CPStringBuilder r = new CPStringBuilder("{");
       for (int i = n - 1; --i > 0; )
         r.append(element).append(", ");
       r.append(element).append("}");

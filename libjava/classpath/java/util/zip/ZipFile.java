@@ -340,7 +340,7 @@ public class ZipFile implements ZipConstants
       }
     catch (IOException ioe)
       {
-	return EmptyEnumeration.getInstance();
+	return new EmptyEnumeration<ZipEntry>();
       }
   }
 

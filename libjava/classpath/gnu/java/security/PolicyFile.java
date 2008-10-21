@@ -39,6 +39,8 @@ package gnu.java.security;
 
 import gnu.classpath.debug.Component;
 import gnu.classpath.debug.SystemLogger;
+
+import gnu.java.lang.CPStringBuilder;
 import gnu.java.security.action.GetPropertyAction;
 
 import java.io.File;
@@ -150,7 +152,7 @@ public final class PolicyFile extends Policy
 
   protected static final Logger logger = SystemLogger.SYSTEM;
   // Added to cut redundant AccessController.doPrivileged calls
-  private static GetPropertyAction prop = new GetPropertyAction("file.seperator");
+  private static GetPropertyAction prop = new GetPropertyAction("file.separator");
   private static final String fs = (String) AccessController.doPrivileged(prop);
   
   private static final String DEFAULT_POLICY =
@@ -629,8 +631,8 @@ public final class PolicyFile extends Policy
    */
   private static String expand(final String s)
   {
-    final StringBuffer result = new StringBuffer();
-    final StringBuffer prop = new StringBuffer();
+    final CPStringBuilder result = new CPStringBuilder();
+    final CPStringBuilder prop = new CPStringBuilder();
     int state = 0;
     for (int i = 0; i < s.length(); i++)
       {

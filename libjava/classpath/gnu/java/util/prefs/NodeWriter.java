@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.util.prefs;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -273,7 +275,7 @@ public class NodeWriter {
                                     throws BackingStoreException, IOException
     {
         // construct String used for indentation
-        StringBuffer indentBuffer = new StringBuffer(2*indent);
+        CPStringBuilder indentBuffer = new CPStringBuilder(2*indent);
         for (int i=0; i < indent; i++)
             indentBuffer.append("  ");
         String indentString = indentBuffer.toString();

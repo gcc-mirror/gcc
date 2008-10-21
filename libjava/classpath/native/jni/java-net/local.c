@@ -73,27 +73,18 @@ local_create (int stream)
   return socket (PF_UNIX, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
 }
 
-static int gcc_sucks = 0;
-
 int
 local_bind (int fd, const char *addr)
 {
   struct sockaddr_un saddr;
 
-  /* For some reason, GCC 4.0.1 on Darwin/x86 MODIFIES the `addr'
-     pointer in the CALLER's STACK FRAME after calling this function,
-     but if we add this statement below, it doesn't!  */
-  if (gcc_sucks)
-    fprintf (stderr, "bind %p\n", addr);
-
-  if (strlen (addr) > sizeof (saddr.sun_path))
+  if (strlen (addr) >= sizeof (saddr.sun_path))
     {
       errno = ENAMETOOLONG;
       return -1;
     }
 
-  strncpy (saddr.sun_path, addr, sizeof (saddr.sun_path));
-  saddr.sun_path[sizeof (saddr.sun_path)] = '\0';
+  strcpy (saddr.sun_path, addr);
   saddr.sun_family = AF_LOCAL;
 
   return bind (fd, (struct sockaddr *) &saddr, SUN_LEN (&saddr));

@@ -101,4 +101,14 @@ public interface Configuration
    * com.sun.tools.javac implementation in tools.zip.
    */
   String ECJ_JAR = "@ECJ_JAR@";
+
+  /**
+   * Set to <code>true</code> if the config script found that (a) an
+   * implementation of java.math.BigInteger, based on the GNU MP library, is
+   * desired in preference to a pure Java one, and (b) the GNU MP library was
+   * found on the platform where the JVM is to run. Otherwise, this field is
+   * set to <code>false</code>.
+   */
+  boolean WANT_NATIVE_BIG_INTEGER = @WANT_NATIVE_BIG_INTEGER@;
+
 }

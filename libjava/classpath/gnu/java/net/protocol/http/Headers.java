@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.net.LineInputStream;
 
 import java.io.IOException;
@@ -280,7 +282,7 @@ class Headers implements Iterable<Headers.HeaderElement>
       (LineInputStream) in : new LineInputStream(in);
     
     String name = null;
-    StringBuilder value = new StringBuilder();
+    CPStringBuilder value = new CPStringBuilder();
     while (true)
       {
         String line = lin.readLine();

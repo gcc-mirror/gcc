@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The handshake body for a HelloRequest handshake message.
  *
@@ -51,7 +53,7 @@ public final class HelloRequest implements Handshake.Body
 
   public String toString (final String prefix)
   {
-    StringBuffer str = new StringBuffer ();
+    CPStringBuilder str = new CPStringBuilder ();
     if (prefix != null)
       str.append (prefix);
     str.append ("HelloRequest { };");

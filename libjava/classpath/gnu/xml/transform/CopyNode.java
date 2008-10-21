@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
@@ -152,7 +154,7 @@ final class CopyNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("copy");
+    CPStringBuilder buf = new CPStringBuilder("copy");
     if (uas != null)
       {
         buf.append('[');

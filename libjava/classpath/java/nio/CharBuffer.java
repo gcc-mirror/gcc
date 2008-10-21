@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package java.nio;
 
+// GCJ LOCAL: Use RawData instead of gnu.classpath.Pointer
+import gnu.gcj.RawData;
+
 import java.io.IOException;
 
 /**
@@ -46,13 +49,15 @@ import java.io.IOException;
 public abstract class CharBuffer extends Buffer
   implements Comparable<CharBuffer>, CharSequence, Readable, Appendable
 {
-  int array_offset;
-  char[] backing_buffer;
+  final int array_offset;
+  final char[] backing_buffer;
 
-  CharBuffer (int capacity, int limit, int position, int mark)
+  CharBuffer (int capacity, int limit, int position, int mark,
+	      RawData address, char[] backing_buffer, int array_offset)
   {
-    super (capacity, limit, position, mark);
-    array_offset = 0;
+    super (capacity, limit, position, mark, address);
+    this.backing_buffer = backing_buffer;
+    this.array_offset = array_offset;
   }
 
   /**
@@ -78,7 +83,8 @@ public abstract class CharBuffer extends Buffer
    */
   public static final CharBuffer wrap(char[] array, int offset, int length)
   {
-    return new CharBufferImpl(array, 0, array.length, offset + length, offset, -1, false);
+    return new CharBufferImpl(array, 0, array.length, offset + length, offset,
+			      -1, false);
   }
   
   /**

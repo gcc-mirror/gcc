@@ -55,7 +55,7 @@ final class StringLengthFunction
 
   final Expr arg;
 
-  StringLengthFunction(List args)
+  StringLengthFunction(List<Expr> args)
   {
     this(args.isEmpty() ? null : (Expr) args.get(0));
   }
@@ -65,6 +65,7 @@ final class StringLengthFunction
     this.arg = arg;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = (arg == null) ? null : arg.evaluate(context, pos, len);

@@ -43,7 +43,7 @@ package java.nio;
  */
 final class IntBufferImpl extends IntBuffer
 {
-  private boolean readOnly;
+  private final boolean readOnly;
 
   IntBufferImpl (int capacity)
   {
@@ -52,9 +52,7 @@ final class IntBufferImpl extends IntBuffer
   
   IntBufferImpl (int[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
-    super (capacity, limit, position, mark);
-    this.backing_buffer = buffer;
-    this.array_offset = offset;
+    super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
   

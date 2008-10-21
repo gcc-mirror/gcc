@@ -145,7 +145,7 @@ public class DemoServant
   {
     System.out.println("SERVER: ***** Transferring tree");
 
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     // This both creates the tree string representation
     // and changes the TreeNode names.
@@ -214,7 +214,7 @@ public class DemoServant
    * @param b the buffer to collect the string representation.
    * @param n the rott tree TreeNode.
    */
-  private void getImage(StringBuffer b, TreeNode n)
+  private void getImage(StringBuilder b, TreeNode n)
   {
     b.append(n.name);
     n.name = n.name + "++";

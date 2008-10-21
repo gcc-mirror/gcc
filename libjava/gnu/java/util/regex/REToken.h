@@ -13,6 +13,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -53,8 +57,8 @@ public: // actually package-private
   virtual jint findFixedLengthMatches(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint);
   virtual ::gnu::java::util::regex::REMatch * backtrack(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, ::java::lang::Object *);
   virtual jboolean chain(::gnu::java::util::regex::REToken *);
-  virtual void dump(::java::lang::StringBuffer *) = 0;
-  virtual void dumpAll(::java::lang::StringBuffer *);
+  virtual void dump(::gnu::java::lang::CPStringBuilder *) = 0;
+  virtual void dumpAll(::gnu::java::lang::CPStringBuilder *);
 public:
   virtual ::java::lang::String * toString();
   static jchar toLowerCase(jchar, jboolean);

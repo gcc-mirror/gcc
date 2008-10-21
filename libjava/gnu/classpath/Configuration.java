@@ -1,5 +1,5 @@
 /* Configuration.java --
-   Copyright (C) 1998, 2001, 2003, 2005, 2006, 2007
+   Copyright (C) 1998, 2001, 2003, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -66,7 +66,7 @@ public final class Configuration
    * It is set according to the value of 'version' in the configure[.in] file
    * and used to set the System property gnu.classpath.version.
    */
-  public static final String CLASSPATH_VERSION = "0.95";
+  public static final String CLASSPATH_VERSION = "0.98-pre";
 
   /**
    * The value of DEBUG is substituted according to whether the
@@ -110,4 +110,13 @@ public final class Configuration
    * com.sun.tools.javac implementation in tools.zip.
    */
   public static final String ECJ_JAR = ecj();
+
+  /**
+   * Set to <code>true</code> if the config script found that (a) an
+   * implementation of java.math.BigInteger, based on the GNU MP library, is
+   * desired in preference to a pure Java one, and (b) the GNU MP library was
+   * found on the platform where the JVM is to run. Otherwise, this field is
+   * set to <code>false</code>.
+   */
+  public static final boolean WANT_NATIVE_BIG_INTEGER = true;
 }

@@ -140,7 +140,7 @@ public class SourceGiopRmicCompiler
   /**
    * Clear data, preparing for the next compilation.
    */
-  public void reset()
+  public synchronized void reset()
   {
     packag = name = implName = stubName = null;
     implementedRemotes.clear();
@@ -329,7 +329,7 @@ public class SourceGiopRmicCompiler
    *          the class to name
    * @return the name of class as it should appear in java language
    */
-  public String name(Class nameIt)
+  public synchronized String name(Class nameIt)
   {
     if (nameIt.isArray())
       {
@@ -342,7 +342,7 @@ public class SourceGiopRmicCompiler
             dimension++;
           }
 
-        StringBuffer brackets = new StringBuffer();
+        StringBuilder brackets = new StringBuilder();
 
         for (int i = 0; i < dimension; i++)
           {
@@ -388,7 +388,7 @@ public class SourceGiopRmicCompiler
    */
   public String getIdList(Collection remotes)
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     // Keep the Ids sorted, ensuring, that the same order will be preserved
     // between compilations.
@@ -420,7 +420,7 @@ public class SourceGiopRmicCompiler
     String template = getResource("Stub.jav");
 
     // Generate methods.
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Iterator iter = methods.iterator();
     while (iter.hasNext())
       {
@@ -444,7 +444,7 @@ public class SourceGiopRmicCompiler
    */
   public String getAllInterfaces()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Iterator iter = implementedRemotes.iterator();
 
     while (iter.hasNext())
@@ -494,7 +494,7 @@ public class SourceGiopRmicCompiler
 
     iter = sortedMethods.iterator();
 
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     MethodGenerator prev = null;
 
@@ -539,7 +539,7 @@ public class SourceGiopRmicCompiler
         imp.add("import " + ic + ";\n");
       }
 
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     it = imp.iterator();
 
     while (it.hasNext())

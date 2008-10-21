@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.text.MessageFormat;
 
 /**
@@ -53,7 +55,8 @@ import java.text.MessageFormat;
  * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
  */
 
-public class REException extends Exception {
+public class REException extends Exception
+{
   private int type;
   private int pos;
 
@@ -64,25 +67,25 @@ public class REException extends Exception {
    * Invalid use of repetition operators such  as  using
    * `*' as the first character.
    */
-  public static final int REG_BADRPT  =  1;
+  public static final int REG_BADRPT = 1;
 
   /**
    * Error flag.
    * Invalid use of back reference operator.
    */
-  public static final int REG_BADBR   =  2;
+  public static final int REG_BADBR = 2;
 
   /**
    * Error flag.
    * Un-matched brace interval operators.
    */
-  public static final int REG_EBRACE  =  3;
+  public static final int REG_EBRACE = 3;
 
   /**
    * Error flag.
    * Un-matched bracket list operators.
    */
-  public static final int REG_EBRACK  =  4;
+  public static final int REG_EBRACK = 4;
 
   /**
    * Error flag.
@@ -90,65 +93,67 @@ public class REException extends Exception {
    * point of the range occurs  prior  to  the  starting
    * point.
    */
-  public static final int REG_ERANGE  =  5;
+  public static final int REG_ERANGE = 5;
 
   /**
    * Error flag.
    * Unknown character class name. <B>Not implemented</B>.
    */
-  public static final int REG_ECTYPE  =  6;
+  public static final int REG_ECTYPE = 6;
 
   /**
    * Error flag.
    * Un-matched parenthesis group operators.
    */
-  public static final int REG_EPAREN  =  7;
+  public static final int REG_EPAREN = 7;
 
   /**
    * Error flag.
    * Invalid back reference to a subexpression.
    */
-  public static final int REG_ESUBREG =  8;
+  public static final int REG_ESUBREG = 8;
 
   /**
    * Error flag.
    * Non specific error. <B>Not implemented</B>.
    */
-  public static final int REG_EEND    =  9;
+  public static final int REG_EEND = 9;
 
   /**
    * Error flag.
    * Invalid escape sequence. <B>Not implemented</B>.
    */
-  public static final int REG_ESCAPE  = 10;
+  public static final int REG_ESCAPE = 10;
 
   /**
    * Error flag.
    * Invalid  use  of pattern operators such as group or list.
    */
-  public static final int REG_BADPAT  = 11;
+  public static final int REG_BADPAT = 11;
 
   /**
    * Error flag.
    * Compiled  regular  expression  requires  a  pattern
    * buffer larger than 64Kb. <B>Not implemented</B>.
    */
-  public static final int REG_ESIZE   = 12;
+  public static final int REG_ESIZE = 12;
 
   /**
    * Error flag.
    * The regex routines ran out of memory. <B>Not implemented</B>.
    */
-  public static final int REG_ESPACE  = 13;
+  public static final int REG_ESPACE = 13;
 
-  REException(String msg, int type, int position) { 
-    super(msg); 
+    REException (String msg, int type, int position)
+  {
+    super (msg);
     this.type = type;
     this.pos = position;
   }
 
-  REException(String msg, Throwable cause, int type, int position) { 
-    super(msg, cause); 
+  REException (String msg, Throwable cause, int type, int position)
+  {
+    super (msg, cause);
     this.type = type;
     this.pos = position;
   }
@@ -157,7 +162,8 @@ public class REException extends Exception {
    * Returns the type of the exception, one of the constants listed above.
    */
 
-  public int getType() {
+  public int getType ()
+  {
     return type;
   }
 
@@ -167,7 +173,8 @@ public class REException extends Exception {
    * where the error was detected, not necessarily the starting index of
    * a bad subexpression.
    */
-  public int getPosition() {
+  public int getPosition ()
+  {
     return pos;
   }
 
@@ -176,13 +183,16 @@ public class REException extends Exception {
    * as well as its index position in the string or character array
    * being compiled.
    */
-  public String getMessage() {
-    Object[] args = {new Integer(pos)};
-    StringBuffer sb = new StringBuffer();
-    String prefix = RE.getLocalizedMessage("error.prefix");
-    sb.append(MessageFormat.format(prefix, args));
-    sb.append('\n');
-    sb.append(super.getMessage());
-    return sb.toString();
+  public String getMessage ()
+  {
+    Object[]args =
+    {
+    new Integer (pos)};
+    CPStringBuilder sb = new CPStringBuilder ();
+    String prefix = RE.getLocalizedMessage ("error.prefix");
+    sb.append (MessageFormat.format (prefix, args));
+    sb.append ('\n');
+    sb.append (super.getMessage ());
+    return sb.toString ();
   }
 }

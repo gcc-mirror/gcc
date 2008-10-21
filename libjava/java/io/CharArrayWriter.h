@@ -33,11 +33,11 @@ private:
   void resize(jint);
 public:
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
-  virtual ::java::io::Writer * CharArrayWriter$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *);
-  virtual ::java::io::Writer * CharArrayWriter$append(::java::lang::CharSequence *);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *);
   virtual ::java::lang::Appendable * append(jchar);
-  virtual ::java::io::Writer * CharArrayWriter$append(jchar);
+  virtual ::java::io::Writer * Writer$append(jchar);
 private:
   static const jint DEFAULT_INITIAL_BUFFER_SIZE = 32;
 public: // actually protected

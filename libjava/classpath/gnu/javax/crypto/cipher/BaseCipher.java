@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.cipher;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 
 import java.security.InvalidKeyException;
@@ -88,7 +90,7 @@ public abstract class BaseCipher
 
   public String name()
   {
-    StringBuffer sb = new StringBuffer(name).append('-');
+    CPStringBuilder sb = new CPStringBuilder(name).append('-');
     if (currentKey == null)
       sb.append(String.valueOf(8 * defaultBlockSize));
     else

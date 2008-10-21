@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Frame;
 import java.awt.Window;
 
@@ -270,7 +272,7 @@ public class WindowEvent extends ComponentEvent
    */
   public String paramString()
   {
-    StringBuffer s = new StringBuffer();
+    CPStringBuilder s = new CPStringBuilder();
     switch (id)
       {
       case WINDOW_OPENED:

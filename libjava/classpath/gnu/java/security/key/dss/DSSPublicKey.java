@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Registry;
 import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.key.IKeyPairCodec;
@@ -190,7 +192,7 @@ public class DSSPublicKey
       {
         String ls = (String) AccessController.doPrivileged
             (new GetPropertyAction("line.separator"));
-        str = new StringBuilder(this.getClass().getName()).append("(")
+        str = new CPStringBuilder(this.getClass().getName()).append("(")
             .append(super.toString()).append(",").append(ls)
             .append("y=0x").append(y.toString(16)).append(ls)
             .append(")")

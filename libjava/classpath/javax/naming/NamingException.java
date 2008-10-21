@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.naming;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
@@ -237,7 +239,7 @@ public class NamingException extends Exception
    */
   public String toString(boolean objectInfo)
   {
-    StringBuffer sb = new StringBuffer(super.toString());
+    CPStringBuilder sb = new CPStringBuilder(super.toString());
     Throwable cause = getRootCause();
     if (cause != null)
       {

@@ -54,12 +54,6 @@ public:
   static ::java::text::DateFormat$Field * HOUR1;
   static ::java::text::DateFormat$Field * HOUR0;
   static ::java::text::DateFormat$Field * TIME_ZONE;
-  static ::java::text::DateFormat$Field * ISO_YEAR;
-  static ::java::text::DateFormat$Field * LOCALIZED_DAY_OF_WEEK;
-  static ::java::text::DateFormat$Field * EXTENDED_YEAR;
-  static ::java::text::DateFormat$Field * MODIFIED_JULIAN_DAY;
-  static ::java::text::DateFormat$Field * MILLISECOND_IN_DAY;
-  static ::java::text::DateFormat$Field * RFC822_TIME_ZONE;
 public: // actually package-private
   static JArray< ::java::text::DateFormat$Field * > * allFields;
 public:

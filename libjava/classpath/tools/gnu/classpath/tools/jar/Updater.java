@@ -38,6 +38,7 @@
 
 package gnu.classpath.tools.jar;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,7 +71,8 @@ public class Updater
     inputJar = new JarFile(parameters.archiveFile);
 
     // Write all the new entries to a temporary file.
-    File tmpFile = File.createTempFile("jarcopy", null);
+    File tmpFile = File.createTempFile("jarcopy", null,
+				       parameters.archiveFile.getParentFile());
     OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile));
     writeCommandLineEntries(parameters, os);
 
@@ -86,6 +88,11 @@ public class Updater
       }
 
     close();
-    tmpFile.renameTo(parameters.archiveFile);
+    if (!tmpFile.renameTo(parameters.archiveFile))
+      {
+	  throw new IOException("Couldn't rename new JAR file " + tmpFile +
+				"to " + parameters.archiveFile);
+      }
   }
+
 }

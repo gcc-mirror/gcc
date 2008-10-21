@@ -13,6 +13,13 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
     namespace xml
     {
       namespace util
@@ -118,7 +125,7 @@ private:
   jint elementNestLevel;
   ::java::lang::String * eol;
   jshort dangerMask;
-  ::java::lang::StringBuffer * stringBuf;
+  ::gnu::java::lang::CPStringBuilder * stringBuf;
   ::org::xml::sax::Locator * locator;
   ::org::xml::sax::ErrorHandler * errHandler;
   jboolean expandingEntities;

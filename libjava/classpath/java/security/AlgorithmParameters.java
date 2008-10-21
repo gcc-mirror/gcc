@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 
 import java.io.IOException;
@@ -175,7 +177,7 @@ public class AlgorithmParameters
                                                 Provider provider)
       throws NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("AlgorithmParameters for algorithm [")
+    CPStringBuilder sb = new CPStringBuilder("AlgorithmParameters for algorithm [")
         .append(algorithm).append("] from provider[")
         .append(provider).append("] could not be created");
     Throwable cause;

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
@@ -1543,7 +1545,7 @@ public class JFileChooser extends JComponent implements Accessible
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",approveButtonText=");
     if (approveButtonText != null)
       sb.append(approveButtonText);

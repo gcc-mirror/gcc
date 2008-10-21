@@ -11,6 +11,13 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -25,7 +32,7 @@ class java::nio::ShortBuffer : public ::java::nio::Buffer
 {
 
 public: // actually package-private
-  ShortBuffer(jint, jint, jint, jint);
+  ShortBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *, JArray< jshort > *, jint);
 public:
   static ::java::nio::ShortBuffer * allocate(jint);
   static ::java::nio::ShortBuffer * wrap(JArray< jshort > *, jint, jint);

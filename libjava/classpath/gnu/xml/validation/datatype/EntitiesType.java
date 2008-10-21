@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.validation.datatype;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.relaxng.datatype.DatatypeException;
@@ -75,7 +77,7 @@ final class EntitiesType
     throws DatatypeException
   {
     super.checkValid(value, context);
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int len = value.length();
     for (int i = 0; i < len; i++)
       {

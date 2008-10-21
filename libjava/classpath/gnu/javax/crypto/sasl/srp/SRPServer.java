@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.srp;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.util.PRNG;
@@ -612,7 +614,7 @@ public class SRPServer
     s = (String) properties.get(SRPRegistry.SRP_REPLAY_DETECTION);
     final boolean replayDetection = (s == null ? SRPRegistry.DEFAULT_REPLAY_DETECTION
                                                : Boolean.valueOf(s).booleanValue());
-    final StringBuffer sb = new StringBuffer();
+    final CPStringBuilder sb = new CPStringBuilder();
     sb.append(SRPRegistry.OPTION_SRP_DIGEST).append("=")
       .append(srp.getAlgorithm()).append(",");
 

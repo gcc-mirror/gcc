@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.security.sasl;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -178,7 +180,7 @@ public class SaslException extends IOException implements Serializable
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(this.getClass().getName())
+    CPStringBuilder sb = new CPStringBuilder(this.getClass().getName())
       .append(": ").append(super.toString());
     if (_exception != null)
       sb.append("; caused by: ").append(_exception.toString());

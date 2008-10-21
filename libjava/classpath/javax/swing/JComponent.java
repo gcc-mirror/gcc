@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.applet.Applet;
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -2405,7 +2407,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(super.paramString());
     sb.append(",alignmentX=").append(getAlignmentX());
     sb.append(",alignmentY=").append(getAlignmentY());

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collection;
 import java.util.Iterator;
 import javax.xml.namespace.QName;
@@ -74,7 +76,8 @@ final class ValueOfNode
       ret.next = next.clone(stylesheet);
     return ret;
   }
-
+  
+  @Override
   void doApply(Stylesheet stylesheet, QName mode,
                Node context, int pos, int len,
                Node parent, Node nextSibling)
@@ -84,10 +87,9 @@ final class ValueOfNode
     String value;
     if (ret instanceof Collection)
       {
-        StringBuffer buf = new StringBuffer();
-        for (Iterator i = ((Collection) ret).iterator(); i.hasNext(); )
+        CPStringBuilder buf = new CPStringBuilder();
+        for (Node node : ((Collection<Node>) ret))
           {
-            Node node = (Node) i.next();
             buf.append(Expr.stringValue(node));
           }
         value = buf.toString();
@@ -126,7 +128,7 @@ final class ValueOfNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("value-of");
+    CPStringBuilder buf = new CPStringBuilder("value-of");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

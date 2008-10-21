@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -84,7 +86,7 @@ implements Text
         first = node;
         node = node.getPreviousSibling ();
       }
-    StringBuffer buf = new StringBuffer (first.getNodeValue ());
+    CPStringBuilder buf = new CPStringBuilder (first.getNodeValue ());
     node = first.getNextSibling ();
     while (node != null && node instanceof Text)
       {

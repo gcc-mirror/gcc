@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.w3c.dom.Entity;
 
 /**
@@ -83,7 +85,7 @@ implements Entity
   public String toString ()
   {
     String publicId = getPublicId ();
-    StringBuffer buffer = new StringBuffer (getClass ().getName ());
+    CPStringBuilder buffer = new CPStringBuilder (getClass ().getName ());
     buffer.append ("[");
     if (publicId != null)
       {

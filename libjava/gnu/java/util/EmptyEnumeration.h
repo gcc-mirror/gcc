@@ -24,8 +24,8 @@ extern "Java"
 class gnu::java::util::EmptyEnumeration : public ::java::lang::Object
 {
 
-  EmptyEnumeration();
 public:
+  EmptyEnumeration();
   static ::gnu::java::util::EmptyEnumeration * getInstance();
   jboolean hasMoreElements();
   ::java::lang::Object * nextElement();

@@ -53,7 +53,7 @@ public class Generator
                               + resourcePath);
 
     BufferedReader r = new BufferedReader(new InputStreamReader(in));
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     String s;
     try
@@ -90,7 +90,7 @@ public class Generator
   {
     BufferedReader r = new BufferedReader(new StringReader(template));
     String s;
-    StringBuffer b = new StringBuffer(template.length());
+    StringBuilder b = new StringBuilder(template.length());
     try
       {
         Iterator iter;

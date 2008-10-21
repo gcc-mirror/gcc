@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.lang.reflect.Array;
 
 /**
@@ -434,7 +436,7 @@ public abstract class AbstractCollection<E>
   public String toString()
   {
     Iterator itr = iterator();
-    StringBuffer r = new StringBuffer("[");
+    CPStringBuilder r = new CPStringBuilder("[");
     boolean hasNext = itr.hasNext();
     while (hasNext)
       {

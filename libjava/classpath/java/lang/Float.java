@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * Instances of class <code>Float</code> represent primitive
  * <code>float</code> values.
@@ -100,6 +102,16 @@ public final class Float extends Number implements Comparable<Float>
    * @since 1.5
    */
   public static final int SIZE = 32;
+
+  /**
+   * Cache representation of 0
+   */
+  private static final Float ZERO = new Float(0.0f);
+
+  /**
+   * Cache representation of 1
+   */
+  private static final Float ONE = new Float(1.0f);
 
   /**
    * The immutable value of this Float.
@@ -211,7 +223,7 @@ public final class Float extends Number implements Comparable<Float>
       return f < 0 ? "-Infinity" : "Infinity";
 
     int bits = floatToIntBits(f);
-    StringBuilder result = new StringBuilder();
+    CPStringBuilder result = new CPStringBuilder();
     
     if (bits < 0)
       result.append('-');
@@ -273,7 +285,7 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static Float valueOf(String s)
   {
-    return new Float(parseFloat(s));
+    return valueOf(parseFloat(s));
   }
 
   /**
@@ -287,8 +299,12 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static Float valueOf(float val)
   {
-    // We don't actually cache, but we could.
-    return new Float(val);
+    if ((val == 0.0) && (floatToRawIntBits(val) == 0))
+      return ZERO;
+    else if (val == 1.0)
+      return ONE;
+    else
+      return new Float(val);
   }
 
   /**
@@ -498,17 +514,13 @@ public final class Float extends Number implements Comparable<Float>
    */
   public boolean equals(Object obj)
   {
-    if (! (obj instanceof Float))
-      return false;
-
-    float f = ((Float) obj).value;
-
-    // Avoid call to native method. However, some implementations, like gcj,
-    // are better off using floatToIntBits(value) == floatToIntBits(f).
-    // Check common case first, then check NaN and 0.
-    if (value == f)
-      return (value != 0) || (1 / value == 1 / f);
-    return isNaN(value) && isNaN(f);
+    if (obj instanceof Float)
+      {
+        float f = ((Float) obj).value;
+        return (floatToRawIntBits(value) == floatToRawIntBits(f)) ||
+          (isNaN(value) && isNaN(f));
+      }
+    return false;
   }
 
   /**

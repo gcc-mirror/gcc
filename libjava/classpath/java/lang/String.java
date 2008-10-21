@@ -40,6 +40,7 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.java.lang.CharData;
+import gnu.java.lang.CPStringBuilder;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -2072,7 +2073,7 @@ public final class String
     int replaceLength = replacement.length();
     
     int startPos = this.indexOf(targetString);
-    StringBuilder result = new StringBuilder(this);    
+    CPStringBuilder result = new CPStringBuilder(this);    
     while (startPos != -1)
       {
         // Replace the target with the replacement

@@ -40,7 +40,9 @@ exception statement from your version. */
 package java.util;
 
 import gnu.classpath.SystemProperties;
+import gnu.java.lang.CPStringBuilder;
 import gnu.java.util.ZoneInfo;
+
 import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -1404,7 +1406,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   {
     int offset = getRawOffset() + (dst ? getDSTSavings() : 0);
 
-    StringBuffer sb = new StringBuffer(9);
+    CPStringBuilder sb = new CPStringBuilder(9);
     sb.append("GMT");
 
     offset = offset / (1000 * 60);
@@ -1564,7 +1566,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	      }
 
 	    // Custom IDs have to be normalized
-	    StringBuffer sb = new StringBuffer(9);
+	    CPStringBuilder sb = new CPStringBuilder(9);
 	    sb.append("GMT");
 
 	    sb.append(offset_direction >= 0 ? '+' : '-');

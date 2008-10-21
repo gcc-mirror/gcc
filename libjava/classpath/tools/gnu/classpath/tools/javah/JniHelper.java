@@ -92,7 +92,7 @@ public class JniHelper
 
   public static String mangle(String name)
   {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     for (int i = 0; i < name.length(); ++i)
       {
         char c = name.charAt(i);

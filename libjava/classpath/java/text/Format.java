@@ -81,7 +81,7 @@ public abstract class Format implements Serializable, Cloneable
    * It performs no actions, but acts as a default constructor for
    * subclasses.
    */
-  public Format ()
+  protected Format ()
   {
   }
 

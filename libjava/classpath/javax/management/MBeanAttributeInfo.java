@@ -117,7 +117,7 @@ public class MBeanAttributeInfo
       {
 	Type t = setter.getGenericParameterTypes()[0];
 	if (t instanceof Class)
-	  attributeType = ((Class) t).getName();
+	  attributeType = ((Class<?>) t).getName();
 	else
 	  attributeType = t.toString();
 	isRead = false;
@@ -127,7 +127,7 @@ public class MBeanAttributeInfo
       {
 	Type t = getter.getGenericReturnType();
 	if (t instanceof Class)
-	  attributeType = ((Class) t).getName();
+	  attributeType = ((Class<?>) t).getName();
 	else
 	  attributeType = t.toString();
 	isRead = true;

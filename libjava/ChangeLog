@@ -1,3 +1,221 @@
+2008-10-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* sources.am, Makfile.in: Regenerate.
+
+2008-10-17  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Fix bashisms.
+	* configure: Regenerate.
+
+2008-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Disable build of gjdoc, if configured without
+	--with-antlr-jar or if no antlr.jar found.
+	* configure: Regenerate.
+
+2008-10-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* classpath/configure.ac,
+	* classpath/m4/ac_prog_antlr.m4,
+	* classpath/m4/ac_prog_java.m4,
+	* classpath/tools/Makefile.am:
+	Ported --regen-gjdoc-parser patch and
+	cantlr support from GNU Classpath.
+
+2008-10-06  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Thread.java (Thread): Always create the ThreadLocalMap
+	when creating a thread.
+	(getThreadLocals) Don't lazily create the ThreadLocalMap.
+
+2008-09-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* classpath/java/lang/ThreadLocalMap.java,
+	* java/lang/ThreadLocalMap$Entry.h,
+	* java/lang/ThreadLocalMap.h,
+	* lib/java/lang/ThreadLocalMap.class,
+	* lib/java/lang/ThreadLocalMap$Entry.class:
+	Add the new files for the ThreadLocal patch.
+
+2008-09-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* classpath/ChangeLog,
+	* classpath/java/lang/InheritableThreadLocal.java,
+	* classpath/java/lang/Thread.java,
+	* classpath/java/lang/ThreadLocal.java:
+	Merge Daniel Frampton's ThreadLocal patch.
+	* gcj/javaprims.h: Updated.
+	* java/lang/Thread.h: Regenerated.
+	* java/lang/Thread.java:
+	Replace WeakIdentityHashMap with ThreadLocalMap.
+	(getThreadLocals()): Likewise.
+	* java/lang/ThreadLocal.h: Regenerated.
+	* java/lang/ThreadLocal.java:
+	(computeNextHash()): New method.
+	(ThreadLocal()): Initialise fastHash.
+	(internalGet()): Updated to match Classpath's get().
+	(internalSet(Object)): Likewise for set(Object).
+	(internalRemove()): Likewise for remove().
+	
+2008-09-25  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* classpath/configure,
+	* classpath/configure.ac:
+	Resynchronise with Classpath's configure.
+	* classpath/examples/Makefile.in:
+	Add equivalent support for building as in
+	tools/Makefile.in.
+	* classpath/java/nio/Buffer.java,
+	* classpath/java/nio/ByteBuffer.java,
+	* classpath/java/nio/ByteBufferImpl.java,
+	* classpath/java/nio/CharBuffer.java,
+	* classpath/java/nio/CharBufferImpl.java,
+	* classpath/java/nio/CharSequenceBuffer.java,
+	* classpath/java/nio/CharViewBufferImpl.java,
+	* classpath/java/nio/DirectByteBufferImpl.java,
+	* classpath/java/nio/DoubleBuffer.java,
+	* classpath/java/nio/DoubleBufferImpl.java,
+	* classpath/java/nio/DoubleViewBufferImpl.java,
+	* classpath/java/nio/FloatBuffer.java,
+	* classpath/java/nio/FloatBufferImpl.java,
+	* classpath/java/nio/FloatViewBufferImpl.java,
+	* classpath/java/nio/IntBuffer.java,
+	* classpath/java/nio/IntBufferImpl.java,
+	* classpath/java/nio/IntViewBufferImpl.java,
+	* classpath/java/nio/LongBuffer.java,
+	* classpath/java/nio/LongBufferImpl.java,
+	* classpath/java/nio/LongViewBufferImpl.java,
+	* classpath/java/nio/MappedByteBuffer.java,
+	* classpath/java/nio/MappedByteBufferImpl.java,
+	* classpath/java/nio/ShortBuffer.java,
+	* classpath/java/nio/ShortBufferImpl.java,
+	* classpath/java/nio/ShortViewBufferImpl.java:
+	Replace use of gnu.classpath.Pointer with gnu.gcj.RawData,
+	and fix some formatting issues.
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaLexer.java,
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaLexer.smap,
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaRecognizer.java,
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaRecognizer.smap,
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaTokenTypes.java,
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/JavaTokenTypes.txt:
+	Regenerated (later version of antlr).
+	* java/nio/Buffer.h: Regenerated.
+	* java/nio/Buffer.java: Ported changes from Classpath.
+	* java/nio/ByteBuffer.h,
+	* java/nio/CharBuffer.h: Regenerated.
+	* java/nio/DirectByteBufferImpl.java: Ported changes from
+	Classpath.
+	* java/nio/DoubleBuffer.h,
+	* java/nio/FloatBuffer.h,
+	* java/nio/IntBuffer.h,
+	* java/nio/LongBuffer.h,
+	* java/nio/MappedByteBuffer.h,
+	* java/nio/MappedByteBufferImpl.h: Regenerated.
+	* java/nio/MappedByteBufferImpl.java: Ported changes from
+	Classpath.
+	* java/nio/ShortBuffer.h: Regenerated.
+
+2008-09-24  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Search for antlr.jar, if not configured.
+	* configure: Regenerate.
+
+2008-09-24  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am: Build a gjdoc binary, if enabled.
+	* configure.ac: Add options --disable-gjdoc, --with-antlr-jar=file.
+	* Makefile.in, */Makefile.in, configure: Regenerate.
+
+2008-09-22  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/String.java (toString(char[], int, int)): New method.
+
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	Import GNU Classpath (libgcj-import-20080914).
+
+	* Regenerate class and header files.
+	* Regenerate auto* files.
+	* configure.ac: Don't pass --disable-gjdoc to classpath.
+	* sources.am: Regenerated.
+	* HACKING: Mention to build gjdoc in maintainer builds.
+	* gnu/classpath/Configuration.java: Update classpath version.
+	* gcj/javaprims.h: Update.
+
+2008-09-08  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* Makefile.am: Replace natStringBuffer.cc
+	and natStringBuilder.cc with natAbstractStringBuffer.cc.
+	* Makefile.in: Regenerated.
+	* java/lang/AbstractStringBuffer.java:
+	(append(int)): Made native.
+	(regionMatches(int,String)): Likewise.
+	* java/lang/StringBuffer.h: Regenerated.
+	* java/lang/StringBuffer.java: Remerged with GNU Classpath.
+	* java/lang/StringBuilder.h: Regenerated.
+	* java/lang/StringBuilder.java: Remerged with GNU Classpath.
+	* java/lang/natAbstractStringBuffer.cc: Provide common
+	native methods for StringBuffer and StringBuilder.
+	* java/lang/natStringBuffer.cc,
+	* java/lang/natStringBuilder.cc: Removed.
+
+2008-09-04  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* Makefile.in,
+	* classpath/configure: Regenerated.
+	* gnu/gcj/util/natDebug.cc,
+	* gnu/gcj/xlib/natColormap.cc,
+	* gnu/gcj/xlib/natDisplay.cc,
+	* gnu/gcj/xlib/natDrawable.cc,
+	* gnu/gcj/xlib/natFont.cc,
+	* gnu/gcj/xlib/natWMSizeHints.cc,
+	* gnu/gcj/xlib/natWindow.cc,
+	* gnu/gcj/xlib/natXImage.cc:
+	Add :: prefix to namespaces.
+	* java/io/CharArrayWriter.h,
+	* java/lang/StringBuffer.h:
+	Regenerated using patched gjavah.
+	* java/lang/natStringBuffer.cc:
+	Fix naming of append(jint).
+	* java/sql/Timestamp.h: Regenerated
+	using patched gjavah.
+	* jni.cc: Rename p to functions
+	to match change in GNU Classpath.
+	* scripts/makemake.tcl: Switch
+	gnu.java.math to BC compilation.
+	* sources.am: Regenerated.
+
+2008-08-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+	
+	* Makefile.in: Updated location of Configuration.java.
+	* classpath/lib/gnu/java/locale/LocaleData.class: Regenerated.
+
+2008-08-18  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+	
+	* Makefile.in: Updated with new Java files.
+	* classpath/configure: Regenerated.
+	* classpath/tools/Makefile.am: Add missing
+	use of GJDOC_EX so --disable-gjdoc works.
+	* classpath/tools/Makefile.in: Regenerated.
+
+2008-08-15  Matthias Klose  <doko@ubuntu.com>
+
+	Import GNU Classpath (libgcj-import-20080811).
+
+	* Regenerate class and header files.
+	* Regenerate auto* files.
+	* configure.ac: Don't pass --with-fastjar to classpath, substitute new
+	dummy value in classpath/gnu/classpath/Configuration.java.in, pass
+	--disable-gjdoc to classpath.
+	* scripts/makemake.tcl:
+	* sources.am: Regenerated.
+	* java/lang/AbstractStringBuffer.java, gnu/java/lang/VMCPStringBuilder.java:
+	New, copied from classpath, use System instead of VMSystem.
+	* java/lang/StringBuffer.java: Merge from classpath.
+	* java/lang/ClassLoader.java: Merge from classpath.
+	* gcj/javaprims.h: Update class definitions,
+	remove _Jv_jobjectRefType, jobjectRefType definitions.
+
 2008-09-30  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/lib/libjava.exp (libjava_arguments): Do not append

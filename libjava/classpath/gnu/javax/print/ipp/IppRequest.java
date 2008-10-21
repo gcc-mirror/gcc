@@ -469,7 +469,7 @@ public class IppRequest
         }
       else
         {
-          new IppException("Unknown target operation attribute combination.");
+          throw new IppException("Unknown target operation attribute combination.");
         }      
       
       writeAttributes(attributes);

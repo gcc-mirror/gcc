@@ -16,6 +16,9 @@ class java::lang::Integer : public ::java::lang::Number
 public:
   Integer(jint);
   Integer(::java::lang::String *);
+private:
+  static jint stringSize(jint, jint);
+public:
   static ::java::lang::String * toString(jint, jint);
   static ::java::lang::String * toHexString(jint);
   static ::java::lang::String * toOctalString(jint);

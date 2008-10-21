@@ -2118,7 +2118,7 @@ _Jv_GetJNIEnvNewFrameWithLoader (::java::lang::ClassLoader *loader)
   if (__builtin_expect (env == NULL, false))
     {
       env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
-      env->p = &_Jv_JNIFunctions;
+      env->functions = &_Jv_JNIFunctions;
       env->locals = NULL;
       // We set env->ex below.
 
@@ -2428,7 +2428,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv,
   env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
   if (env == NULL)
     return JNI_ERR;
-  env->p = &_Jv_JNIFunctions;
+  env->functions = &_Jv_JNIFunctions;
   env->ex = NULL;
   env->bottom_locals
     = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)

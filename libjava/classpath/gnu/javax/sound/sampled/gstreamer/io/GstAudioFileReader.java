@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.javax.sound.sampled.gstreamer.io;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.javax.sound.sampled.gstreamer.GStreamerMixer;
 
 import java.io.BufferedInputStream;
@@ -65,7 +67,7 @@ public class GstAudioFileReader
   public AudioFileFormat getAudioFileFormat(File file)
       throws UnsupportedAudioFileException, IOException
   {
-    StringBuffer name = new StringBuffer(file.getName());
+    CPStringBuilder name = new CPStringBuilder(file.getName());
     String _name = name.substring(name.lastIndexOf(".") + 1);
     
     return getAudioFileFormat(

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -2481,7 +2483,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",fixedCellHeight=").append(getFixedCellHeight());
     sb.append(",fixedCellWidth=").append(getFixedCellWidth());
     sb.append(",selectionBackground=");

@@ -13,6 +13,13 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
     namespace xml
     {
       namespace stream
@@ -145,13 +152,13 @@ private:
   void readMarkupdecl(jboolean);
   void readElementDecl();
   void readContentspec(::java::lang::String *);
-  ::gnu::xml::stream::XMLParser$ElementContentModel * readElements(::java::lang::StringBuffer *);
-  ::gnu::xml::stream::XMLParser$ContentParticle * readContentParticle(::java::lang::StringBuffer *);
+  ::gnu::xml::stream::XMLParser$ElementContentModel * readElements(::gnu::java::lang::CPStringBuilder *);
+  ::gnu::xml::stream::XMLParser$ContentParticle * readContentParticle(::gnu::java::lang::CPStringBuilder *);
   void readAttlistDecl();
   void readAttDef(::java::lang::String *);
-  ::java::lang::String * readAttType(::java::lang::StringBuffer *, ::java::util::HashSet *);
-  void readEnumeration(jboolean, ::java::lang::StringBuffer *, ::java::util::HashSet *);
-  void readNotationType(::java::lang::StringBuffer *, ::java::util::HashSet *);
+  ::java::lang::String * readAttType(::gnu::java::lang::CPStringBuilder *, ::java::util::HashSet *);
+  void readEnumeration(jboolean, ::gnu::java::lang::CPStringBuilder *, ::java::util::HashSet *);
+  void readNotationType(::gnu::java::lang::CPStringBuilder *, ::java::util::HashSet *);
   void readDefault(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::util::HashSet *);
   void readEntityDecl(jboolean);
   void readNotationDecl(jboolean);

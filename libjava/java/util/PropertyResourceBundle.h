@@ -13,6 +13,7 @@ class java::util::PropertyResourceBundle : public ::java::util::ResourceBundle
 
 public:
   PropertyResourceBundle(::java::io::InputStream *);
+  PropertyResourceBundle(::java::io::Reader *);
   virtual ::java::lang::Object * handleGetObject(::java::lang::String *);
   virtual ::java::util::Enumeration * getKeys();
 private:

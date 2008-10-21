@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.xml.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -623,7 +625,7 @@ public class XCat implements EntityResolver2
     private static String normalizePublicId (boolean full, String publicId)
     {
 	if (publicId.startsWith ("urn:publicid:")) {
-	    StringBuffer	buf = new StringBuffer ();
+	    CPStringBuilder	buf = new CPStringBuilder ();
 	    char		chars [] = publicId.toCharArray ();
 boolean hasbug = false;
 
@@ -814,7 +816,7 @@ System.err.println ("nyet unhexing public id: " + publicId);
 		    replace = (String) rewrites.get (temp);
 		}
 		if (prefix != null) {
-		    StringBuffer	buf = new StringBuffer (replace);
+		    CPStringBuilder	buf = new CPStringBuilder (replace);
 		    buf.append (uri.substring (prefixLen));
 		    // IF the URI is accessible ...
 		    return new InputSource (buf.toString ());

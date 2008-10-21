@@ -9,6 +9,13 @@
 #include <java/lang/Object.h>
 extern "Java"
 {
+  namespace java
+  {
+    namespace security
+    {
+        class Permission;
+    }
+  }
   namespace javax
   {
     namespace management
@@ -26,6 +33,7 @@ class javax::management::MBeanServerPermission$MBeanServerPermissionCollection$M
 public:
   MBeanServerPermission$MBeanServerPermissionCollection$MBeanServerPermissionEnumeration(::javax::management::MBeanServerPermission$MBeanServerPermissionCollection *, ::javax::management::MBeanServerPermission *);
   virtual jboolean hasMoreElements();
+  virtual ::java::security::Permission * MBeanServerPermission$MBeanServerPermissionCollection$MBeanServerPermissionEnumeration$nextElement();
   virtual ::java::lang::Object * nextElement();
 private:
   ::javax::management::MBeanServerPermission * __attribute__((aligned(__alignof__( ::java::lang::Object)))) p;

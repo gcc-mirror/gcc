@@ -53,7 +53,7 @@ public:
   static jboolean unexportObject(::java::rmi::Remote *, jboolean);
 public: // actually package-private
   static ::java::rmi::Remote * exportObject(::java::rmi::Remote *, jint, ::java::rmi::server::RMIServerSocketFactory *);
-public:
+private:
   static ::java::rmi::Remote * export$(::java::rmi::activation::ActivationID *, ::java::rmi::Remote *, jint, ::java::rmi::server::RMIServerSocketFactory *);
   static ::java::rmi::server::ObjID * makeId(::java::rmi::activation::ActivationID *);
 public: // actually package-private

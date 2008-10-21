@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
@@ -226,7 +228,7 @@ public class HierarchyEvent extends AWTEvent
    */
   public String paramString()
   {
-    StringBuffer r = new StringBuffer();
+    CPStringBuilder r = new CPStringBuilder();
     switch (id)
       {
       case HIERARCHY_CHANGED:

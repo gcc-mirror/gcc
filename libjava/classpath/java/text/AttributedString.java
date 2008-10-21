@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -182,7 +184,7 @@ public class AttributedString
     if ((begin < 0) || (end < begin) || end > aci.getEndIndex())
       throw new IllegalArgumentException("Bad index values");
 
-    StringBuffer sb = new StringBuffer("");
+    CPStringBuilder sb = new CPStringBuilder("");
 
     // Get the valid attribute list
     Set allAttribs = aci.getAllAttributeKeys();

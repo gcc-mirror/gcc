@@ -56,7 +56,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
     String template = getResource("Stub_12.jav");
 
     // Generate methods.
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Iterator iter = methods.iterator();
     while (iter.hasNext())
       {
@@ -99,7 +99,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
    */
   public String getStubMethodDeclarations()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     
     Iterator iter = methods.iterator();
      
@@ -122,7 +122,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
    */
   public String getStubMethodInitializations()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     
     Iterator iter = methods.iterator();
      

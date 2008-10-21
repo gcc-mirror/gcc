@@ -6,11 +6,11 @@
 
 #pragma interface
 
-#include <java/lang/Object.h>
+#include <java/lang/AbstractStringBuffer.h>
 #include <gcj/array.h>
 
 
-class java::lang::StringBuilder : public ::java::lang::Object
+class java::lang::StringBuilder : public ::java::lang::AbstractStringBuffer
 {
 
 public:
@@ -20,66 +20,75 @@ public:
   StringBuilder(::java::lang::CharSequence *);
   jint length();
   jint capacity();
-  void ensureCapacity(jint);
-  void setLength(jint);
-  jchar charAt(jint);
-  void getChars(jint, jint, JArray< jchar > *, jint);
-  void setCharAt(jint, jchar);
-  ::java::lang::StringBuilder * append(::java::lang::Object *);
-  ::java::lang::StringBuilder * append(::java::lang::String *);
-  ::java::lang::StringBuilder * append(::java::lang::StringBuffer *);
-  ::java::lang::StringBuilder * append(JArray< jchar > *);
-  ::java::lang::StringBuilder * append(JArray< jchar > *, jint, jint);
-  ::java::lang::StringBuilder * append(jboolean);
+  ::java::lang::StringBuilder * StringBuilder$append(::java::lang::Object *);
+  ::java::lang::StringBuilder * StringBuilder$append(::java::lang::String *);
+  ::java::lang::StringBuilder * StringBuilder$append(::java::lang::StringBuffer *);
+  ::java::lang::StringBuilder * StringBuilder$append(JArray< jchar > *);
+  ::java::lang::StringBuilder * StringBuilder$append(JArray< jchar > *, jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$append(jboolean);
   ::java::lang::StringBuilder * StringBuilder$append(jchar);
   ::java::lang::StringBuilder * StringBuilder$append(::java::lang::CharSequence *);
   ::java::lang::StringBuilder * StringBuilder$append(::java::lang::CharSequence *, jint, jint);
-  ::java::lang::StringBuilder * appendCodePoint(jint);
-  ::java::lang::StringBuilder * append(jint);
-  ::java::lang::StringBuilder * append(jlong);
-  ::java::lang::StringBuilder * append(jfloat);
-  ::java::lang::StringBuilder * append(jdouble);
-  ::java::lang::StringBuilder * delete$(jint, jint);
-  ::java::lang::StringBuilder * deleteCharAt(jint);
-  ::java::lang::StringBuilder * replace(jint, jint, ::java::lang::String *);
+  ::java::lang::StringBuilder * StringBuilder$append(jint);
+  ::java::lang::StringBuilder * StringBuilder$append(jlong);
+  ::java::lang::StringBuilder * StringBuilder$append(jfloat);
+  ::java::lang::StringBuilder * StringBuilder$append(jdouble);
+  ::java::lang::StringBuilder * StringBuilder$appendCodePoint(jint);
+  ::java::lang::StringBuilder * StringBuilder$delete(jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$deleteCharAt(jint);
+  ::java::lang::StringBuilder * StringBuilder$replace(jint, jint, ::java::lang::String *);
   ::java::lang::String * substring(jint);
   ::java::lang::CharSequence * subSequence(jint, jint);
   ::java::lang::String * substring(jint, jint);
-  ::java::lang::StringBuilder * insert(jint, JArray< jchar > *, jint, jint);
-  ::java::lang::StringBuilder * insert(jint, ::java::lang::Object *);
-  ::java::lang::StringBuilder * insert(jint, ::java::lang::String *);
-  ::java::lang::StringBuilder * insert(jint, ::java::lang::CharSequence *);
-  ::java::lang::StringBuilder * insert(jint, ::java::lang::CharSequence *, jint, jint);
-  ::java::lang::StringBuilder * insert(jint, JArray< jchar > *);
-  ::java::lang::StringBuilder * insert(jint, jboolean);
-  ::java::lang::StringBuilder * insert(jint, jchar);
-  ::java::lang::StringBuilder * insert(jint, jint);
-  ::java::lang::StringBuilder * insert(jint, jlong);
-  ::java::lang::StringBuilder * insert(jint, jfloat);
-  ::java::lang::StringBuilder * insert(jint, jdouble);
-  jint indexOf(::java::lang::String *);
-  jint indexOf(::java::lang::String *, jint);
-  jint lastIndexOf(::java::lang::String *);
-  jint lastIndexOf(::java::lang::String *, jint);
-  ::java::lang::StringBuilder * reverse();
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, JArray< jchar > *, jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, ::java::lang::Object *);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, ::java::lang::String *);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, ::java::lang::CharSequence *);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, ::java::lang::CharSequence *, jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, JArray< jchar > *);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jboolean);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jchar);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jlong);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jfloat);
+  ::java::lang::StringBuilder * StringBuilder$insert(jint, jdouble);
+  ::java::lang::StringBuilder * StringBuilder$reverse();
   ::java::lang::String * toString();
-private:
-  jboolean regionMatches(jint, ::java::lang::String *);
-public:
-  jint codePointAt(jint);
-  jint codePointBefore(jint);
-  jint codePointCount(jint, jint);
-  void trimToSize();
+  ::java::lang::AbstractStringBuffer * reverse();
+  ::java::lang::AbstractStringBuffer * deleteCharAt(jint);
+  ::java::lang::AbstractStringBuffer * replace(jint, jint, ::java::lang::String *);
+  ::java::lang::AbstractStringBuffer * delete$(jint, jint);
+  ::java::lang::AbstractStringBuffer * insert(jint, jdouble);
+  ::java::lang::AbstractStringBuffer * insert(jint, jfloat);
+  ::java::lang::AbstractStringBuffer * insert(jint, jlong);
+  ::java::lang::AbstractStringBuffer * insert(jint, jint);
+  ::java::lang::AbstractStringBuffer * insert(jint, jchar);
+  ::java::lang::AbstractStringBuffer * insert(jint, jboolean);
+  ::java::lang::AbstractStringBuffer * insert(jint, JArray< jchar > *);
+  ::java::lang::AbstractStringBuffer * insert(jint, ::java::lang::CharSequence *, jint, jint);
+  ::java::lang::AbstractStringBuffer * insert(jint, ::java::lang::CharSequence *);
+  ::java::lang::AbstractStringBuffer * insert(jint, ::java::lang::String *);
+  ::java::lang::AbstractStringBuffer * insert(jint, ::java::lang::Object *);
+  ::java::lang::AbstractStringBuffer * insert(jint, JArray< jchar > *, jint, jint);
+  ::java::lang::AbstractStringBuffer * append(jdouble);
+  ::java::lang::AbstractStringBuffer * append(jfloat);
+  ::java::lang::AbstractStringBuffer * append(jlong);
+  ::java::lang::AbstractStringBuffer * append(jint);
   ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
+  ::java::lang::AbstractStringBuffer * AbstractStringBuffer$append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::Appendable * append(::java::lang::CharSequence *);
+  ::java::lang::AbstractStringBuffer * AbstractStringBuffer$append(::java::lang::CharSequence *);
   ::java::lang::Appendable * append(jchar);
+  ::java::lang::AbstractStringBuffer * AbstractStringBuffer$append(jchar);
+  ::java::lang::AbstractStringBuffer * append(jboolean);
+  ::java::lang::AbstractStringBuffer * append(JArray< jchar > *, jint, jint);
+  ::java::lang::AbstractStringBuffer * append(JArray< jchar > *);
+  ::java::lang::AbstractStringBuffer * append(::java::lang::StringBuffer *);
+  ::java::lang::AbstractStringBuffer * append(::java::lang::String *);
+  ::java::lang::AbstractStringBuffer * append(::java::lang::Object *);
+  ::java::lang::AbstractStringBuffer * appendCodePoint(jint);
 private:
   static const jlong serialVersionUID = 4383685877147921099LL;
-public: // actually package-private
-  jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) count;
-  JArray< jchar > * value;
-private:
-  static const jint DEFAULT_CAPACITY = 16;
 public:
   static ::java::lang::Class class$;
 };

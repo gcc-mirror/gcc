@@ -38,9 +38,9 @@ extern "Java"
 class java::text::MessageFormat : public ::java::text::Format
 {
 
-  static jint scanString(::java::lang::String *, jint, ::java::lang::StringBuffer *);
-  static jint scanFormatElement(::java::lang::String *, jint, ::java::lang::StringBuffer *, jchar);
-  static jint scanFormat(::java::lang::String *, jint, ::java::lang::StringBuffer *, ::java::util::Vector *, ::java::util::Locale *);
+  static jint scanString(::java::lang::String *, jint, ::java::lang::StringBuilder *);
+  static jint scanFormatElement(::java::lang::String *, jint, ::java::lang::StringBuilder *, jchar);
+  static jint scanFormat(::java::lang::String *, jint, ::java::lang::StringBuilder *, ::java::util::Vector *, ::java::util::Locale *);
 public:
   virtual void applyPattern(::java::lang::String *);
   virtual ::java::lang::Object * clone();

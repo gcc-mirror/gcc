@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.NamingService;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.IntHolder;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextPackage.InvalidName;
@@ -125,7 +127,7 @@ public class NameTransformer
   {
     NameValidator.check(a_name);
 
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
 
     NameComponent n;
 
@@ -152,7 +154,7 @@ public class NameTransformer
    * @param b a buffer to append the contents to.
    * @param s a string to append.
    */
-  private void appEscaping(StringBuffer b, String s)
+  private void appEscaping(CPStringBuilder b, String s)
   {
     char c;
     for (int i = 0; i < s.length(); i++)
@@ -271,7 +273,7 @@ public class NameTransformer
    */
   private String readPart(IntHolder p, String[] t)
   {
-    StringBuffer part = new StringBuffer();
+    CPStringBuilder part = new CPStringBuilder();
 
     while (t [ p.value ] != null && !t [ p.value ].equals(".") &&
            !t [ p.value ].equals("/")

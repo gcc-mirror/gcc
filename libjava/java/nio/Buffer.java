@@ -45,22 +45,24 @@ import gnu.gcj.RawData;
  */
 public abstract class Buffer
 {
-  int cap = 0;
-  int limit = 0;
-  int pos = 0;
-  int mark = -1;
-  RawData address;
+  private final int cap;
+  int limit;
+  int pos;
+  int mark;
+  final RawData address;
 
   /**
    * Creates a new Buffer.
    *
    * Should be package private.
    */
-  Buffer (int capacity, int limit, int position, int mark)
+  Buffer (int capacity, int limit, int position, int mark,
+	  RawData address)
   {
     if (capacity < 0)
       throw new IllegalArgumentException ();
     
+    this.address = address;
     cap = capacity;
     limit (limit);
     position (position);
@@ -71,6 +73,10 @@ public abstract class Buffer
         throw new IllegalArgumentException ();
       
       this.mark = mark;
+    }
+    else
+    {
+      this.mark = -1;
     }
   }
   

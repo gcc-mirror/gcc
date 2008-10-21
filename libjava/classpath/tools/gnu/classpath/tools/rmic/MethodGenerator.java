@@ -93,7 +93,7 @@ public class MethodGenerator implements AbstractMethodGenerator
    */
   public String getArgumentList()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getParameterTypes();
 
@@ -115,7 +115,7 @@ public class MethodGenerator implements AbstractMethodGenerator
    */
   public String getArgumentNames()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getParameterTypes();
 
@@ -135,7 +135,7 @@ public class MethodGenerator implements AbstractMethodGenerator
    */
   public String getThrows()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getExceptionTypes();
 
@@ -239,7 +239,7 @@ public class MethodGenerator implements AbstractMethodGenerator
    */
   public String getRda()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Class[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)
@@ -263,7 +263,7 @@ public class MethodGenerator implements AbstractMethodGenerator
    */
   public String getStubParaWriteStatement()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Class[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)

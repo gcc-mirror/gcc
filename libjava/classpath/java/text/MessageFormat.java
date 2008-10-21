@@ -194,7 +194,7 @@ public class MessageFormat extends Format
   // Helper that returns the text up to the next format opener.  The
   // text is put into BUFFER.  Returns index of character after end of
   // string.  Throws IllegalArgumentException on error.
-  private static int scanString(String pat, int index, StringBuffer buffer)
+  private static int scanString(String pat, int index, StringBuilder buffer)
   {
     int max = pat.length();
     buffer.setLength(0);
@@ -234,7 +234,7 @@ public class MessageFormat extends Format
   // This helper retrieves a single part of a format element.  Returns
   // the index of the terminating character.
   private static int scanFormatElement(String pat, int index,
-                                       StringBuffer buffer, char term)
+                                       StringBuilder buffer, char term)
   {
     int max = pat.length();
     buffer.setLength(0);
@@ -281,7 +281,7 @@ public class MessageFormat extends Format
 
   // This is used to parse a format element and whatever non-format
   // text might trail it.
-  private static int scanFormat(String pat, int index, StringBuffer buffer,
+  private static int scanFormat(String pat, int index, StringBuilder buffer,
                                 Vector elts, Locale locale)
   {
     MessageFormatElement mfe = new MessageFormatElement ();
@@ -342,7 +342,7 @@ public class MessageFormat extends Format
   {
     pattern = newPattern;
 
-    StringBuffer tempBuffer = new StringBuffer ();
+    StringBuilder tempBuffer = new StringBuilder ();
 
     int index = scanString (newPattern, 0, tempBuffer);
     leader = tempBuffer.toString();

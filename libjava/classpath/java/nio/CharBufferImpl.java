@@ -43,7 +43,7 @@ package java.nio;
  */
 final class CharBufferImpl extends CharBuffer
 {
-  private boolean readOnly;
+  private final boolean readOnly;
 
   CharBufferImpl (int capacity)
   {
@@ -52,18 +52,14 @@ final class CharBufferImpl extends CharBuffer
   
   CharBufferImpl (char[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
-    super (capacity, limit, position, mark);
-    this.backing_buffer = buffer;
-    this.array_offset = offset;
+    super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
   
   public CharBufferImpl (CharBufferImpl copy)
   {
-    super (copy.capacity (), copy.limit (), copy.position (), 0);
-    backing_buffer = copy.backing_buffer;
-    array_offset = copy.array_offset;
-    readOnly = copy.isReadOnly ();
+    super (copy.capacity (), copy.limit (), copy.position (), 0, null, copy.backing_buffer, copy.array_offset);
+    this.readOnly = copy.isReadOnly ();
   }
   
   public boolean isReadOnly ()

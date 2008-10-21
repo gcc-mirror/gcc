@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
 
@@ -172,7 +174,7 @@ public class DomText
       {
         ref = ctx;
       }
-    StringBuffer buf = new StringBuffer(ref.getNodeValue());
+    CPStringBuilder buf = new CPStringBuilder(ref.getNodeValue());
     for (ctx = ref.next; ctx != null &&
          (ctx.nodeType == TEXT_NODE || ctx.nodeType == CDATA_SECTION_NODE);
          ctx = ctx.next)

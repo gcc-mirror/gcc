@@ -46,18 +46,12 @@ import org.w3c.dom.Node;
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DocumentOrderComparator
-  implements Comparator
+  implements Comparator<Node>
 {
   
-  public int compare(Object o1, Object o2)
+  public int compare(Node n1, Node n2)
   {
-    if (o1 instanceof Node && o2 instanceof Node)
-      {
-        Node n1 = (Node)o1;
-        Node n2 = (Node)o2;
-        return (int) n1.compareDocumentPosition(n2);
-      }
-    return 0;
+    return (int) n1.compareDocumentPosition(n2);
   }
 
 }

@@ -9,6 +9,19 @@
 #include <java/lang/Object.h>
 #include <gcj/array.h>
 
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
+}
 
 class java::lang::Throwable : public ::java::lang::Object
 {
@@ -28,7 +41,7 @@ public:
   virtual void printStackTrace(::java::io::PrintWriter *);
 private:
   ::java::lang::String * stackTraceString();
-  static void stackTraceStringBuffer(::java::lang::StringBuilder *, ::java::lang::String *, JArray< ::java::lang::StackTraceElement * > *, jint);
+  static void stackTraceStringBuffer(::gnu::java::lang::CPStringBuilder *, ::java::lang::String *, JArray< ::java::lang::StackTraceElement * > *, jint);
 public:
   virtual ::java::lang::Throwable * fillInStackTrace();
   virtual JArray< ::java::lang::StackTraceElement * > * getStackTrace();

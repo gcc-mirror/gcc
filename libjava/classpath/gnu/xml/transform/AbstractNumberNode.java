@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -140,7 +142,7 @@ abstract class AbstractNumberNode
         start = end;
       }
     // Process tokens
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     len = tokens.size();
     int pos = 0;
     for (int i = 0; i < len; i++)
@@ -188,7 +190,7 @@ abstract class AbstractNumberNode
       return l;
     }*/
 
-  void format(StringBuffer buf, int number, String formatToken)
+  void format(CPStringBuilder buf, int number, String formatToken)
   {
     int len = formatToken.length();
     char c = formatToken.charAt(len - 1);
@@ -254,7 +256,7 @@ abstract class AbstractNumberNode
 
   static final String alphabetic(char offset, int number)
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     while (number > 0)
       {
         int r = number % 26;
@@ -269,7 +271,7 @@ abstract class AbstractNumberNode
 
   static final String roman(boolean upper, int number)
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (int pos = roman_numbers.length - 1; pos >= 0; pos -= 2)
       {
         int f = number / roman_numbers[pos];
@@ -317,7 +319,7 @@ abstract class AbstractNumberNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("number");
+    CPStringBuilder buf = new CPStringBuilder("number");
     buf.append('[');
     buf.append("format=");
     buf.append(format);

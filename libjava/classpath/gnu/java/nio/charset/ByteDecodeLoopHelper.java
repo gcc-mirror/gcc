@@ -119,6 +119,8 @@ public abstract class ByteDecodeLoopHelper
     int inRemaining = in.remaining();
     int outRemaining = out.remaining();
     CoderResult result;
+
+	bailOut:
     if (inRemaining <= outRemaining)
       {
         for (int i = 0; i < inRemaining; i++)
@@ -129,7 +131,7 @@ public abstract class ByteDecodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-                break;
+				break bailOut;
               }
             char c = mapToChar(b);
             outArray[outPos] = c;
@@ -147,7 +149,7 @@ public abstract class ByteDecodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-                break;
+				break bailOut;
               }
             char c = mapToChar(b);
             outArray[outPos] = c;

@@ -89,7 +89,6 @@ public abstract class Enum<T extends Enum<T>>
    * @exception IllegalArgumentException when there is no value s in
    * the enum etype.
    */
-  @SuppressWarnings("unchecked")
   public static <S extends Enum<S>> S valueOf(Class<S> etype, String s)
   {
     if (etype == null || s == null)
@@ -103,7 +102,9 @@ public abstract class Enum<T extends Enum<T>>
         if (! f.isEnumConstant())
           throw new IllegalArgumentException(s);
         Class.setAccessible(f);
-        return (S) f.get(null);
+	@SuppressWarnings("unchecked")
+	  S val = (S) f.get(null);
+        return val;
       }
     catch (NoSuchFieldException exception)
       {

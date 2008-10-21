@@ -569,8 +569,8 @@ public class StandardMBean
     if (info != null)
       return info;
     Method[] methods = iface.getMethods();
-    Map attributes = new HashMap();
-    List operations = new ArrayList();
+    Map<String,Method[]> attributes = new HashMap<String,Method[]>();
+    List<MBeanOperationInfo> operations = new ArrayList<MBeanOperationInfo>();
     for (int a = 0; a < methods.length; ++a)
       {
 	String name = methods[a].getName();
@@ -614,16 +614,14 @@ public class StandardMBean
 	  operations.add(new MBeanOperationInfo(methods[a].getName(),
 						methods[a]));
       }
-    List attribs = new ArrayList(attributes.size());
-    Iterator it = attributes.entrySet().iterator();
-    while (it.hasNext())
+    List<MBeanAttributeInfo> attribs = new ArrayList<MBeanAttributeInfo>(attributes.size());
+    for (Map.Entry<String,Method[]> entry : attributes.entrySet())
       {
-	Map.Entry entry = (Map.Entry) it.next();
-	Method[] amethods = (Method[]) entry.getValue();
+	Method[] amethods = entry.getValue();
 	try
 	  {
-	    attribs.add(new MBeanAttributeInfo((String) entry.getKey(),
-					       (String) entry.getKey(),
+	    attribs.add(new MBeanAttributeInfo(entry.getKey(),
+					       entry.getKey(),
 					       amethods[0], amethods[1]));
 	  }
 	catch (IntrospectionException e)
@@ -646,7 +644,7 @@ public class StandardMBean
 					  oldInfo.isWritable(),
 					  oldInfo.isIs());
       }
-    Constructor[] cons = impl.getClass().getConstructors();
+    Constructor<?>[] cons = impl.getClass().getConstructors();
     MBeanConstructorInfo[] cinfo = new MBeanConstructorInfo[cons.length];
     for (int a = 0; a < cinfo.length; ++a)
       {
@@ -778,10 +776,10 @@ public class StandardMBean
 				    "Invocation of an attribute " +
 				    "method is disallowed.");
     ClassLoader loader = getClass().getClassLoader();
-    Class[] sigTypes;
+    Class<?>[] sigTypes;
     if (signature != null)
       {
-	sigTypes = new Class[signature.length];
+	sigTypes = new Class<?>[signature.length];
 	for (int a = 0; a < signature.length; ++a)
 	  try 
 	    {
@@ -892,7 +890,7 @@ public class StandardMBean
   public AttributeList setAttributes(AttributeList attributes)
   {
     AttributeList list = new AttributeList(attributes.size());
-    Iterator it = attributes.iterator();
+    Iterator<Object> it = attributes.iterator();
     while (it.hasNext())
       {
 	try

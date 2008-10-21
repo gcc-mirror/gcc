@@ -53,6 +53,8 @@ Partly derived from code which carried the following notice:
 
 package gnu.xml.stream;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -691,7 +693,7 @@ public class XMLParser
   {
     if (event != XMLStreamConstants.START_ELEMENT)
       throw new XMLStreamException("current event must be START_ELEMENT");
-    StringBuffer elementText = new StringBuffer();
+    CPStringBuilder elementText = new CPStringBuilder();
     int depth = stack.size();
     while (event != XMLStreamConstants.END_ELEMENT || stack.size() > depth)
       {
@@ -2011,7 +2013,7 @@ public class XMLParser
     else
       {
         ContentModel model;
-        StringBuffer acc = new StringBuffer();
+        CPStringBuilder acc = new CPStringBuilder();
         require('(');
         acc.append('(');
         skipWhitespace();
@@ -2058,7 +2060,7 @@ public class XMLParser
   /**
    * Parses an element content model.
    */
-  private ElementContentModel readElements(StringBuffer acc)
+  private ElementContentModel readElements(CPStringBuilder acc)
     throws IOException, XMLStreamException
   {
     int separator;
@@ -2159,7 +2161,7 @@ public class XMLParser
   /**
    * Parse a cp production.
    */
-  private ContentParticle readContentParticle(StringBuffer acc)
+  private ContentParticle readContentParticle(CPStringBuilder acc)
     throws IOException, XMLStreamException
   {
     ContentParticle cp = new ContentParticle();
@@ -2228,7 +2230,7 @@ public class XMLParser
   {
     String name = readNmtoken(true);
     requireWhitespace();
-    StringBuffer acc = new StringBuffer();
+    CPStringBuilder acc = new CPStringBuilder();
     HashSet values = new HashSet();
     String type = readAttType(acc, values);
     if (validating)
@@ -2277,7 +2279,7 @@ public class XMLParser
   /**
    * Parse an attribute type.
    */
-  private String readAttType(StringBuffer acc, HashSet values)
+  private String readAttType(CPStringBuilder acc, HashSet values)
     throws IOException, XMLStreamException
   {
     if (tryRead('('))
@@ -2313,7 +2315,7 @@ public class XMLParser
   /**
    * Parse an enumeration.
    */
-  private void readEnumeration(boolean isNames, StringBuffer acc,
+  private void readEnumeration(boolean isNames, CPStringBuilder acc,
                                HashSet values)
     throws IOException, XMLStreamException
   {
@@ -2344,7 +2346,7 @@ public class XMLParser
   /**
    * Parse a notation type for an attribute.
    */
-  private void readNotationType(StringBuffer acc, HashSet values)
+  private void readNotationType(CPStringBuilder acc, HashSet values)
     throws IOException, XMLStreamException
   {
     requireWhitespace();
@@ -3518,7 +3520,7 @@ public class XMLParser
   private char[] readCharacterRef(int base)
     throws IOException, XMLStreamException
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int c = readCh(); c != 0x3b && c != -1; c = readCh())
       b.append(Character.toChars(c));
     try
@@ -4246,7 +4248,7 @@ public class XMLParser
     throws XMLStreamException
   {
     // Use regular expression
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (Iterator i = children.iterator(); i.hasNext(); )
       {
         buf.append((String) i.next());
@@ -4266,7 +4268,7 @@ public class XMLParser
   {
     if (model.regex == null)
       {
-        StringBuffer buf = new StringBuffer();
+        CPStringBuilder buf = new CPStringBuilder();
         buf.append('(');
         for (Iterator i = model.contentParticles.iterator(); i.hasNext(); )
           {
@@ -4476,7 +4478,7 @@ public class XMLParser
    */
   private static String encodeText(String text)
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     int len = text.length();
     for (int i = 0; i < len; i++)
       {
@@ -4584,7 +4586,7 @@ public class XMLParser
 
     public String toString()
     {
-      StringBuffer buf = new StringBuffer(getClass().getName());
+      CPStringBuilder buf = new CPStringBuilder(getClass().getName());
       buf.append('[');
       buf.append("name=");
       buf.append(name);

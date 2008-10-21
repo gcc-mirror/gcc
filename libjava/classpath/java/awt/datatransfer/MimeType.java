@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -224,7 +226,7 @@ class MimeType
    */
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append(primaryType);
     s.append('/');
     s.append(subType);

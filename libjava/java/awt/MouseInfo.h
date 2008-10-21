@@ -26,8 +26,8 @@ extern "Java"
 class java::awt::MouseInfo : public ::java::lang::Object
 {
 
-public:
   MouseInfo();
+public:
   static ::java::awt::PointerInfo * getPointerInfo();
   static jint getNumberOfButtons();
 private:

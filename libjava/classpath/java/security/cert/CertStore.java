@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 
 import java.lang.reflect.InvocationTargetException;
@@ -207,7 +209,7 @@ public class CertStore
                                       Provider provider)
       throws InvalidAlgorithmParameterException, NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("CertStore of type [")
+    CPStringBuilder sb = new CPStringBuilder("CertStore of type [")
         .append(type).append("] from provider[")
         .append(provider).append("] could not be created");
     Throwable cause;

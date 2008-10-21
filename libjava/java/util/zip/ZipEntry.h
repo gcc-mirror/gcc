@@ -25,9 +25,6 @@ public:
   virtual ::java::lang::String * getName();
   virtual void setTime(jlong);
   virtual jlong getTime();
-private:
-  static ::java::util::Calendar * getCalendar();
-public:
   virtual void setSize(jlong);
   virtual jlong getSize();
   virtual void setCompressedSize(jlong);
@@ -47,21 +44,22 @@ public:
   virtual ::java::lang::String * toString();
   virtual jint hashCode();
 private:
-  static const jint KNOWN_SIZE = 1;
-  static const jint KNOWN_CSIZE = 2;
-  static const jint KNOWN_CRC = 4;
-  static const jint KNOWN_TIME = 8;
-  static const jint KNOWN_EXTRA = 16;
-  static ::java::util::Calendar * cal;
+  static const jbyte KNOWN_SIZE = 1;
+  static const jbyte KNOWN_CSIZE = 2;
+  static const jbyte KNOWN_CRC = 4;
+  static const jbyte KNOWN_TIME = 8;
+  static const jbyte KNOWN_DOSTIME = 16;
+  static const jbyte KNOWN_EXTRA = 32;
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   jint size;
   jlong compressedSize;
   jint crc;
-  jint dostime;
-  jshort known;
-  jshort method;
-  JArray< jbyte > * extra;
   ::java::lang::String * comment;
+  jbyte method;
+  jbyte known;
+  jint dostime;
+  jlong time;
+  JArray< jbyte > * extra;
 public: // actually package-private
   jint flags;
   jint offset;

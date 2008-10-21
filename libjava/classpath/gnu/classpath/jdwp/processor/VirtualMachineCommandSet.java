@@ -264,7 +264,7 @@ public class VirtualMachineCommandSet
     ThreadGroup root = getRootThreadGroup(jdwpGroup);
 
     os.writeInt(1); // Just one top level group allowed?
-    idMan.getObjectId(root);
+    idMan.getObjectId(root).write(os);
   }
 
   private void executeDispose(ByteBuffer bb, DataOutputStream os)

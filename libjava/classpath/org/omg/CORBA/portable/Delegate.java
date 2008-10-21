@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA.portable;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.Context;
 import org.omg.CORBA.ContextList;
@@ -417,7 +419,7 @@ public abstract class Delegate
     if (self instanceof ObjectImpl)
       {
         ObjectImpl x = (ObjectImpl) self;
-        StringBuffer b = new StringBuffer(x.getClass().getName());
+        CPStringBuilder b = new CPStringBuilder(x.getClass().getName());
         b.append(": [");
         for (int i = 0; i < x._ids().length; i++)
           {

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
@@ -1634,7 +1636,7 @@ public class DefaultEditorKit extends EditorKit
     BufferedReader reader = new BufferedReader(in);
 
     String line;
-    StringBuffer content = new StringBuffer();
+    CPStringBuilder content = new CPStringBuilder();
 
     while ((line = reader.readLine()) != null)
       {

@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.plain;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.action.GetPropertyAction;
 import gnu.javax.crypto.sasl.NoSuchUserException;
 import gnu.javax.crypto.sasl.UserAlreadyExistsException;
@@ -205,13 +207,13 @@ public class PasswordFile
             pw = new PrintWriter(fos);
             String key;
             String[] fields;
-            StringBuffer sb;
+            CPStringBuilder sb;
             Enumeration keys = entries.keys();
             while (keys.hasMoreElements())
               {
                 key = (String) keys.nextElement();
                 fields = (String[]) entries.get(key);
-                sb = new StringBuffer(fields[0]);
+                sb = new CPStringBuilder(fields[0]);
                 for (int i = 1; i < fields.length; i++)
                   sb.append(":" + fields[i]);
                 pw.println(sb.toString());

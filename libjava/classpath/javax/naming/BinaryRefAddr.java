@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.naming;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Arrays;
 
 /**
@@ -139,7 +141,7 @@ public class BinaryRefAddr extends RefAddr
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer("[RefAddr type: ");
+    CPStringBuilder sb = new CPStringBuilder("[RefAddr type: ");
     sb.append(getType());
     sb.append(" content: 0x");
     byte[] b = (byte[]) getContent();

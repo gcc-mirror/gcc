@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -483,7 +485,7 @@ public final class URI
    */
   private static String quote(String str, String legalCharacters)
   {
-    StringBuilder sb = new StringBuilder(str.length());
+    CPStringBuilder sb = new CPStringBuilder(str.length());
     for (int i = 0; i < str.length(); i++)
       {
 	char c = str.charAt(i);
@@ -778,8 +780,8 @@ public final class URI
        This follows the algorithm in section 5.2.4. of RFC3986,
        but doesn't modify the input buffer.
     */
-    StringBuilder input = new StringBuilder(relativePath);
-    StringBuilder output = new StringBuilder();
+    CPStringBuilder input = new CPStringBuilder(relativePath);
+    CPStringBuilder output = new CPStringBuilder();
     int start = 0;
     while (start < input.length())
       {
@@ -853,7 +855,7 @@ public final class URI
    *
    * @param buffer the buffer containing the path.
    */
-  private void removeLastSegment(StringBuilder buffer)
+  private void removeLastSegment(CPStringBuilder buffer)
   {
     int lastSlash = buffer.lastIndexOf("/");
     if (lastSlash == -1)
@@ -899,7 +901,7 @@ public final class URI
 	      path = "";
 	    if (! (path.startsWith("/")))
 	      {
-		StringBuilder basepath = new StringBuilder(this.path);
+		CPStringBuilder basepath = new CPStringBuilder(this.path);
 		int i = this.path.lastIndexOf('/');
 
 		if (i >= 0)
@@ -1388,8 +1390,8 @@ public final class URI
   {
     String strRep = toString();
     boolean inNonAsciiBlock = false;
-    StringBuilder buffer = new StringBuilder();
-    StringBuilder encBuffer = null;
+    CPStringBuilder buffer = new CPStringBuilder();
+    CPStringBuilder encBuffer = null;
     for (int i = 0; i < strRep.length(); i++)
       {
 	char c = strRep.charAt(i);
@@ -1406,7 +1408,7 @@ public final class URI
 	  {
 	    if (!inNonAsciiBlock)
 	      {
-		encBuffer = new StringBuilder();
+		encBuffer = new CPStringBuilder();
 		inNonAsciiBlock = true;
 	      }
 	    encBuffer.append(c);
@@ -1428,7 +1430,7 @@ public final class URI
   {
     try
       {
-	StringBuilder sb = new StringBuilder(); 
+	CPStringBuilder sb = new CPStringBuilder(); 
 	// this is far from optimal, but it works
 	byte[] utf8 = str.getBytes("utf-8");
 	for (int j = 0; j < utf8.length; j++)

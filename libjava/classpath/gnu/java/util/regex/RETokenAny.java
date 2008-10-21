@@ -38,62 +38,78 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-final class RETokenAny extends REToken {
+import gnu.java.lang.CPStringBuilder;
+
+final class RETokenAny extends REToken
+{
   /** True if '.' can match a newline (RE_DOT_NEWLINE) */
-  private boolean newline; 
+  private boolean newline;
 
   /** True if '.' can't match a null (RE_DOT_NOT_NULL) */
-  private boolean matchNull;    
-  
-  RETokenAny(int subIndex, boolean newline, boolean matchNull) { 
-    super(subIndex);
+  private boolean matchNull;
+
+    RETokenAny (int subIndex, boolean newline, boolean matchNull)
+  {
+    super (subIndex);
     this.newline = newline;
     this.matchNull = matchNull;
   }
 
-  int getMinimumLength() {
+  int getMinimumLength ()
+  {
     return 1;
   }
 
-  int getMaximumLength() {
+  int getMaximumLength ()
+  {
     return 1;
   }
 
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-      char ch = input.charAt(mymatch.index);
-      boolean retval = matchOneChar(ch);
-      if (retval) {
-        ++mymatch.index;
-        return mymatch;
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    char ch = input.charAt (mymatch.index);
+    boolean retval = matchOneChar (ch);
+    if (retval)
+      {
+	++mymatch.index;
+	return mymatch;
       }
-      return null;
-    }
-
-    boolean matchOneChar(char ch) {
-      if ((ch == CharIndexed.OUT_OF_BOUNDS)
-	  || (!newline && (ch == '\n'))
-	  || (matchNull && (ch == 0))) {
-	  return false;
-      }
-      return true;
+    return null;
   }
 
-  boolean returnsFixedLengthMatches() { return true; }
+  boolean matchOneChar (char ch)
+  {
+    if ((ch == CharIndexed.OUT_OF_BOUNDS)
+	|| (!newline && (ch == '\n')) || (matchNull && (ch == 0)))
+      {
+	return false;
+      }
+    return true;
+  }
 
-  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
+  boolean returnsFixedLengthMatches ()
+  {
+    return true;
+  }
+
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
     int index = mymatch.index;
     int numRepeats = 0;
-    while (true) {
-	if (numRepeats >= max) break;
-        char ch = input.charAt(index++);
-	if (! matchOneChar(ch)) break;
-        numRepeats++;
-    }
+    while (true)
+      {
+	if (numRepeats >= max)
+	  break;
+	char ch = input.charAt (index++);
+	if (!matchOneChar (ch))
+	  break;
+	numRepeats++;
+      }
     return numRepeats;
   }
 
-  void dump(StringBuffer os) {
-    os.append('.');
+  void dump (CPStringBuilder os)
+  {
+    os.append ('.');
   }
 }
-

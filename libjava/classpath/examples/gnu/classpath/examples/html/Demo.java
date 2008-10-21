@@ -94,7 +94,7 @@ public class Demo
     if (node == null)
       return;
 
-    StringBuffer tab = new StringBuffer();
+    StringBuilder tab = new StringBuilder();
     stream.println();
     for (int i = 0; i < ident; i++)
       {

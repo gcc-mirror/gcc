@@ -77,6 +77,8 @@ import java.util.List;
    * @throws ClassNotFoundException if all the class loaders fail
    *                                to load the class.
    */
+  // API issue with lack of <?> on Class
+  @SuppressWarnings("unchecked")
   public static Class loadClass(String name)
     throws ClassNotFoundException
   {
@@ -124,6 +126,8 @@ import java.util.List;
    * @throws ClassNotFoundException if all the class loaders fail
    *                                to load the class.
    */
+  // API issue with lack of <?> on Class
+  @SuppressWarnings("unchecked")
   public static Class loadClassWithout(ClassLoader exclude, String name)
     throws ClassNotFoundException
   {

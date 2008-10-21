@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 import java.nio.ByteBuffer;
 
@@ -146,7 +148,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   public static MessageDigest getInstance(String algorithm, Provider provider)
     throws NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("MessageDigest for algorithm [")
+    CPStringBuilder sb = new CPStringBuilder("MessageDigest for algorithm [")
         .append(algorithm).append("] from provider[")
         .append(provider).append("] ");
     Object o;
@@ -235,7 +237,7 @@ public abstract class MessageDigest extends MessageDigestSpi
    * @param input The input byte buffer.
    * @since 1.5
    */
-  public void update (ByteBuffer input)
+  public final void update (ByteBuffer input)
   {
     engineUpdate (input);
   }
@@ -363,7 +365,7 @@ public abstract class MessageDigest extends MessageDigestSpi
     if (digest == null)
       return "incomplete";
 
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int len = digest.length;
     for (int i = 0; i < len; ++i)
       {

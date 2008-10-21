@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -150,7 +152,7 @@ public final class Engine
     String alias;
     int count = 0;
     boolean algorithmFound = false;
-    StringBuilder sb = new StringBuilder();
+    CPStringBuilder sb = new CPStringBuilder();
     while (enumer.hasMoreElements())
       {
         key = (String) enumer.nextElement();

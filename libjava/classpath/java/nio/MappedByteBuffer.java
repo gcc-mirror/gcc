@@ -38,15 +38,19 @@ exception statement from your version. */
 
 package java.nio;
 
+// GCJ LOCAL: Use RawData instead of gnu.classpath.Pointer
+import gnu.gcj.RawData;
+
 /**
  * @author Michael Koch (konqueror@gmx.de)
  * @since 1.4
  */
 public abstract class MappedByteBuffer extends ByteBuffer
 {
-  MappedByteBuffer (int capacity, int limit, int position, int mark)
+  MappedByteBuffer (int capacity, int limit, int position, int mark,
+		    RawData address)
   {
-    super (capacity, limit, position, mark);
+    super (capacity, limit, position, mark, address, null, 0);
   }
   
   void forceImpl()

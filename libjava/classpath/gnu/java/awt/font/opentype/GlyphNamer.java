@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.opentype;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.CharBuffer;
@@ -1077,7 +1079,7 @@ final class GlyphNamer
         return name;
     }
     
-    StringBuffer buf = new StringBuffer(numChars * 8);
+    CPStringBuilder buf = new CPStringBuilder(numChars * 8);
     for (int i = 0; i < numChars; i++)
     {
       if (i > 0)

@@ -1,3 +1,19 @@
+New in release 0.98
+
+* Native support for BigInteger is now provided using the GMP
+library.  A new option, --enable/disable-gmp is provided, and
+the option is enabled by default if GMP is found.
+* Classpath now makes use of a new StringBuilder implementation
+internally called CPStringBuilder.  In addition to being
+unsynchronised, like StringBuilder, this also avoids copying the
+array when toString or substring is called.  While StringBuffer/Builder
+always retain their own array, which is only altered during resizing,
+CPStringBuilder gives away its array when the result is generated
+by toString()/substring() and starts afresh.  The default capacity of
+CPStringBuilder can also be configured using the
+gnu.classpath.cpstringbuilder.capacity property.
+* gjdoc is now built as part of tools.zip.
+
 Bug fixes in release 0.97.2 (Jun 06, 2007)
 
 * Include headers in the release tarball.

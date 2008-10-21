@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 
 import java.lang.reflect.InvocationTargetException;
@@ -165,7 +167,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 					     Provider provider)
     throws NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("KeyPairGenerator for algorithm [")
+    CPStringBuilder sb = new CPStringBuilder("KeyPairGenerator for algorithm [")
         .append(algorithm).append("] from provider[")
         .append(provider).append("] ");
     Object o;

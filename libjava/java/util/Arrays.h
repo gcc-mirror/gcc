@@ -9,6 +9,19 @@
 #include <java/lang/Object.h>
 #include <gcj/array.h>
 
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
+}
 
 class java::util::Arrays : public ::java::lang::Object
 {
@@ -144,7 +157,7 @@ public:
   static ::java::lang::String * toString(JArray< jdouble > *);
   static ::java::lang::String * toString(JArray< ::java::lang::Object * > *);
 private:
-  static void deepToString(JArray< ::java::lang::Object * > *, ::java::lang::StringBuilder *, ::java::util::HashSet *);
+  static void deepToString(JArray< ::java::lang::Object * > *, ::gnu::java::lang::CPStringBuilder *, ::java::util::HashSet *);
 public:
   static ::java::lang::String * deepToString(JArray< ::java::lang::Object * > *);
   static JArray< jboolean > * copyOf(JArray< jboolean > *, jint);

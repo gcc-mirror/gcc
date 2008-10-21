@@ -40,12 +40,17 @@ package java.text;
 
 import gnu.java.locale.LocaleHelper;
 
+import java.io.IOException;
+
 import java.text.spi.DateFormatSymbolsProvider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.TimeZone;
@@ -72,6 +77,27 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   String[] shortMonths;
   String[] shortWeekdays;
   String[] weekdays;
+
+  /**
+   * The set of properties for obtaining the metazone data.
+   */
+  private static transient final Properties properties;
+
+  /**
+   * Reads in the properties.
+   */
+  static
+  {
+    properties = new Properties();
+    try 
+      {
+        properties.load(DateFormatSymbols.class.getResourceAsStream("metazones.properties"));
+      }
+    catch (IOException exception)
+      {
+        System.out.println("Failed to load weeks resource: " + exception);
+      }
+  }
 
   /**
    * The timezone strings supplied by the runtime.
@@ -109,11 +135,71 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     List<String[]> allZones = new ArrayList<String[]>();
     try
       {
-        int index = 0;
-        String data = res.getString("zoneStrings");
-	String[] zones = data.split("\u00a9");
-	for (int a = 0; a < zones.length; ++a)
-	  allZones.add(zones[a].split("\u00ae"));
+	Map<String,String[]> systemZones = new HashMap<String,String[]>();
+	while (true)
+	  {
+	    int index = 0;
+	    String country = locale.getCountry();
+	    String data = res.getString("zoneStrings");
+	    String[] zones = data.split("\u00a9");
+	    for (int a = 0; a < zones.length; ++a)
+	      {
+		String[] strings = zones[a].split("\u00ae");
+		String type = properties.getProperty(strings[0] + "." + country);
+		if (type == null)
+		  type = properties.getProperty(strings[0] + ".DEFAULT");
+		if (type != null)
+		  strings[0] = type;
+		if (strings.length < 5)
+		  {
+		    String[] newStrings = new String[5];
+		    System.arraycopy(strings, 0, newStrings, 0, strings.length);
+		    for (int b = strings.length; b < newStrings.length; ++b)
+		      newStrings[b] = "";
+		    strings = newStrings;
+		  }
+		String[] existing = systemZones.get(strings[0]);
+		if (existing != null && existing.length > 1)
+		  {
+		    for (int b = 1; b < existing.length; ++b)
+		      if (!existing[b].equals(""))
+			strings[b] = existing[b];	   
+		  }
+		systemZones.put(strings[0], strings);
+	      }
+	    if (res.getLocale() == Locale.ROOT)
+	      break;
+	    else
+	      res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", 
+					     LocaleHelper.getFallbackLocale(res.getLocale()),
+					     ClassLoader.getSystemClassLoader());
+	  }
+	/* Final sanity check for missing values */
+	for (String[] zstrings : systemZones.values())
+	  {
+	    if (zstrings[1].equals("") && zstrings[2].equals(""))
+	      {
+		for (Map.Entry<Object,Object> entry : properties.entrySet())
+		  {
+		    String val = (String) entry.getValue();
+		    if (val.equals(zstrings[0]))
+		      {
+			String key = (String) entry.getKey();
+			String metazone = key.substring(0, key.indexOf("."));
+			String type = properties.getProperty(metazone + "." + locale.getCountry());
+			if (type == null)
+			  type = properties.getProperty(metazone + ".DEFAULT");
+			if (type != null)
+			  {
+			    String[] ostrings = systemZones.get(type);
+			    zstrings[1] = ostrings[1];
+			    zstrings[2] = ostrings[2];
+			  }
+		      }
+		  }
+	      }
+	  }
+	allZones.addAll(systemZones.values());	
       }
     catch (MissingResourceException e)
       {
@@ -189,9 +275,9 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     shortMonths = getStringArray(res, "shortMonths");
     shortWeekdays = getStringArray(res, "shortWeekdays");
     weekdays = getStringArray(res, "weekdays");
-    runtimeZoneStrings = getZoneStrings(res, locale);
     dateFormats = formatsForKey(res, "DateFormat");
     timeFormats = formatsForKey(res, "TimeFormat");
+    runtimeZoneStrings = getZoneStrings(res, locale);
   }
 
   /**

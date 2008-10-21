@@ -219,80 +219,6 @@ public abstract class DateFormat extends Format implements Cloneable
    * In the U.S. locale, this is 'z'.
    */
   public static final int TIMEZONE_FIELD = 17;
-  /**
-   * Represents the position of the ISO year
-   * pattern character in the array of
-   * localized pattern characters.
-   * In the U.S. locale, this is 'Y'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  This value may
-   * differ from the normal year value.
-   */
-  public static final int ISO_YEAR_FIELD = 18;
-  /**
-   * Represents the position of the localized
-   * day of the week pattern character in the
-   * array of localized pattern characters.
-   * In the U.S. locale, this is 'e'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  This value only
-   * differs from the day of the week with
-   * numeric formatting, in which case the
-   * locale's first day of the week is used.
-   */
-  public static final int LOCALIZED_DAY_OF_WEEK_FIELD = 19;
-  /**
-   * Represents the position of the extended year
-   * pattern character in the array of
-   * localized pattern characters.
-   * In the U.S. locale, this is 'u'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  This value modifies
-   * the year value, so as to incorporate the era.
-   * For example, in the Gregorian calendar system,
-   * the extended year is negative instead of being
-   * marked as BC.
-   */
-  public static final int EXTENDED_YEAR_FIELD = 20;
-  /**
-   * Represents the position of the modified Julian
-   * day pattern character in the array of
-   * localized pattern characters.
-   * In the U.S. locale, this is 'g'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  This value differs
-   * from the standard Julian day in that days
-   * are marked from midnight onwards rather than
-   * noon, and the local time zone affects the value.
-   * In simple terms, it can be thought of as all
-   * the date fields represented as a single number.
-   */
-  public static final int MODIFIED_JULIAN_DAY_FIELD = 21;
-  /**
-   * Represents the position of the millisecond
-   * in the day pattern character in the array of
-   * localized pattern characters.
-   * In the U.S. locale, this is 'A'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  This value represents
-   * all the time fields (excluding the time zone)
-   * numerically, giving the number of milliseconds
-   * into the day (e.g. 10 in the morning would
-   * be 10 * 60 * 60 * 1000).  Any daylight savings
-   * offset also affects this value.
-   */
-  public static final int MILLISECOND_IN_DAY_FIELD = 22;
-  /**
-   * Represents the position of the RFC822
-   * timezone pattern character in the array of
-   * localized pattern characters.
-   * In the U.S. locale, this is 'Z'.
-   * This is a GNU extension in accordance with
-   * the CLDR data used.  The value is the offset
-   * of the current time from GMT e.g. -0500 would
-   * be five hours prior to GMT.
-   */
-  public static final int RFC822_TIMEZONE_FIELD = 23;
 
   public static class Field extends Format.Field
   {
@@ -336,18 +262,6 @@ public abstract class DateFormat extends Format implements Cloneable
 	= new Field("hour0", Calendar.HOUR);
     public static final DateFormat.Field TIME_ZONE
 	= new Field("timezone", Calendar.ZONE_OFFSET);
-    public static final DateFormat.Field ISO_YEAR
-	= new Field("iso year", Calendar.YEAR);
-    public static final DateFormat.Field LOCALIZED_DAY_OF_WEEK
-	= new Field("localized day of week", Calendar.DAY_OF_WEEK);
-    public static final DateFormat.Field EXTENDED_YEAR
-      = new Field("extended year", Calendar.YEAR);
-    public static final DateFormat.Field MODIFIED_JULIAN_DAY
-	= new Field("julian day", -1);
-    public static final DateFormat.Field MILLISECOND_IN_DAY
-	= new Field("millisecond in day", -1);
-    public static final DateFormat.Field RFC822_TIME_ZONE
-	= new Field("rfc822 timezone", Calendar.ZONE_OFFSET);
 
     static final DateFormat.Field[] allFields =
     {
@@ -355,9 +269,7 @@ public abstract class DateFormat extends Format implements Cloneable
       HOUR_OF_DAY0, MINUTE, SECOND, MILLISECOND,
       DAY_OF_WEEK, DAY_OF_YEAR, DAY_OF_WEEK_IN_MONTH,
       WEEK_OF_YEAR, WEEK_OF_MONTH, AM_PM, HOUR1, HOUR0,
-      TIME_ZONE, ISO_YEAR, LOCALIZED_DAY_OF_WEEK,
-      EXTENDED_YEAR, MODIFIED_JULIAN_DAY, MILLISECOND_IN_DAY,
-      RFC822_TIME_ZONE
+      TIME_ZONE
     };
 
     // For deserialization

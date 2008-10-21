@@ -246,7 +246,6 @@ public class Inflater
    * Gets the total number of processed compressed input bytes.
    * @return the total number of bytes of processed input bytes.
    */
-  @Deprecated
   public int getTotalIn()
   {
     return (int) (totalIn - getRemaining());
@@ -266,7 +265,6 @@ public class Inflater
    * Gets the total number of output bytes returned by inflate().
    * @return the total number of output bytes.
    */
-  @Deprecated
   public int getTotalOut()
   {
     return (int) totalOut;

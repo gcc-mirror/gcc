@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Arrays;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -317,7 +319,7 @@ public final class Inet6Address extends InetAddress
    */
   public String getHostAddress()
   {
-    StringBuffer sbuf = new StringBuffer(40);
+    CPStringBuilder sbuf = new CPStringBuilder(40);
 
     for (int i = 0; i < 16; i += 2)
       {

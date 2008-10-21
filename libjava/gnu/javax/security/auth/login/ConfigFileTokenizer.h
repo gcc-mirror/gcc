@@ -11,6 +11,13 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
     namespace javax
     {
       namespace security
@@ -53,7 +60,7 @@ private:
 public: // actually package-private
   jboolean initialised;
 private:
-  ::java::lang::StringBuffer * sb;
+  ::gnu::java::lang::CPStringBuilder * sb;
   jint sbNdx;
 public:
   static ::java::lang::Class class$;

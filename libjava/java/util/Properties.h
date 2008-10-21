@@ -7,6 +7,19 @@
 #pragma interface
 
 #include <java/util/Hashtable.h>
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
+}
 
 class java::util::Properties : public ::java::util::Hashtable
 {
@@ -15,6 +28,7 @@ public:
   Properties();
   Properties(::java::util::Properties *);
   virtual ::java::lang::Object * setProperty(::java::lang::String *, ::java::lang::String *);
+  virtual void load(::java::io::Reader *);
   virtual void load(::java::io::InputStream *);
   virtual void save(::java::io::OutputStream *, ::java::lang::String *);
   virtual void store(::java::io::OutputStream *, ::java::lang::String *);
@@ -24,7 +38,7 @@ public:
   virtual void list(::java::io::PrintStream *);
   virtual void list(::java::io::PrintWriter *);
 private:
-  void formatForOutput(::java::lang::String *, ::java::lang::StringBuilder *, jboolean);
+  void formatForOutput(::java::lang::String *, ::gnu::java::lang::CPStringBuilder *, jboolean);
 public:
   virtual void storeToXML(::java::io::OutputStream *, ::java::lang::String *);
   virtual void storeToXML(::java::io::OutputStream *, ::java::lang::String *, ::java::lang::String *);

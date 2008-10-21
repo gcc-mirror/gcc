@@ -82,6 +82,9 @@ if NATIVE
 bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool \
 	gappletviewer gjarsigner gkeytool gjar gcjh gjavah gnative2ascii \
 	gorbd grmid gserialver gtnameserv gc-analyze
+if CREATE_GJDOC
+bin_PROGRAMS += gjdoc
+endif
 
 ## It is convenient to actually build and install the default database
 ## when gcj-dbtool is available.
@@ -1013,6 +1016,16 @@ grmiregistry_LINK = $(GCJLINK)
 grmiregistry_LDADD = -L$(here)/.libs libgcj-tools.la
 grmiregistry_DEPENDENCIES = libgcj-tools.la
 
+## This is a dummy definition.
+gjdoc_SOURCES =
+gjdoc_LDFLAGS = --main=gnu.classpath.tools.gjdoc.Main \
+	-Djava.class.path=$(ANTLR_JAR) \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
+gjdoc_LINK = $(GCJLINK)
+## See jv_convert_LDADD.
+gjdoc_LDADD = -L$(here)/.libs libgcj-tools.la
+gjdoc_DEPENDENCIES = libgcj-tools.la
+
 ## ################################################################
 if INTERPRETER
 nat_jdwp_source_files = \
@@ -1082,8 +1095,7 @@ java/lang/natMath.cc \
 java/lang/natObject.cc \
 java/lang/natRuntime.cc	\
 java/lang/natString.cc \
-java/lang/natStringBuffer.cc \
-java/lang/natStringBuilder.cc \
+java/lang/natAbstractStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natThreadLocal.cc \

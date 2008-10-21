@@ -28,7 +28,8 @@ TOOLS_MANFILES = \
 	grmid.1 \
 	grmiregistry.1 \
 	gserialver.1 \
-	gtnameserv.1
+	gtnameserv.1 \
+	gjdoc.1
 
 POD2MAN = pod2man --center="GNU" --release="$(VERSION)"
 TEXI2POD = perl $(srcdir)/texi2pod.pl
@@ -42,7 +43,7 @@ STAMP = echo timestamp >
 
 .INTERMEDIATE: gappletviewer.pod gjarsigner.pod gjar.pod gjavah.pod \
 	gkeytool.pod gnative2ascii.pod gorbd.pod grmid.pod grmiregistry.pod \
-	gserialver.pod gtnameserv.pod gcjh.pod
+	gserialver.pod gtnameserv.pod gcjh.pod gjdoc.pod
 
 gappletviewer.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gappletviewer < $< > $@
@@ -84,6 +85,12 @@ gserialver.pod: $(srcdir)/cp-tools.texinfo
 gtnameserv.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gtnameserv < $< > $@
 
+gjdoc.pod: $(srcdir)/cp-tools.texinfo
+	-$(TEXI2POD) -D gjdoc < $< > $@
+
+# GCJ LOCAL CHANGE
+#CLEANFILES = $(TOOLS_MANFILES)
+
 # GCJ LOCAL CHANGE
 # The following commands allow us to release tarballs with the man pages
 # and info documentation prebuilt.  This feature is enabled via 
@@ -102,6 +109,7 @@ stamp-geninsrc: $(TOOLS_MANFILES) cp-tools.info
 	-cp -p gjar.1 $(srcdir)/gjar.1
 	-cp -p gjarsigner.1 $(srcdir)/gjarsigner.1
 	-cp -p gjavah.1 $(srcdir)/gjavah.1
+	-cp -p gjdoc.1 $(srcdir)/gjdoc.1
 	-cp -p gkeytool.1 $(srcdir)/gkeytool.1
 	-cp -p gnative2ascii.1 $(srcdir)/gnative2ascii.1
 	-cp -p gorbd.1 $(srcdir)/gorbd.1
@@ -118,6 +126,7 @@ MAINTAINERCLEANFILES = \
 		$(srcdir)/gjar.1 \
 		$(srcdir)/gjarsigner.1 \
 		$(srcdir)/gjavah.1 \
+		$(srcdir)/gjdoc.1 \
 		$(srcdir)/gkeytool.1 \
 		$(srcdir)/gnative2ascii.1 \
 		$(srcdir)/gorbd.1 \

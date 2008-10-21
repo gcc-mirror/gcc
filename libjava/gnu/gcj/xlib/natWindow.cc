@@ -23,7 +23,7 @@ details.  */
 #include <gnu/gcj/xlib/Visual.h>
 #include <gnu/gcj/xlib/XException.h>
 
-jint gnu::gcj::xlib::Window::createChildXID(java::awt::Rectangle* bounds,
+jint gnu::gcj::xlib::Window::createChildXID(::java::awt::Rectangle* bounds,
 					jint borderWidth,
 					WindowAttributes* attributes,
 					jint windowIOClass, 

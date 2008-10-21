@@ -61,9 +61,9 @@ final class BooleanFunction
 
   final Expr arg;
   
-  BooleanFunction(List args)
+  BooleanFunction(List<Expr> args)
   {
-    this((Expr) args.get(0));
+    this(args.get(0));
   }
 
   BooleanFunction(Expr arg)

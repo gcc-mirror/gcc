@@ -324,6 +324,8 @@ public class JMX
    *         server using the given name.
    * @see #newMXBeanProxy(MBeanServerConnection, ObjectName, Class)
    */
+  // Suppress warnings as we know an instance of T will be returned.
+  @SuppressWarnings("unchecked")
   public static <T> T newMXBeanProxy(MBeanServerConnection conn,
 				    ObjectName name, Class<T> iface,
 				    boolean bcast)

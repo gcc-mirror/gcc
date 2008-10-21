@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
@@ -285,7 +287,7 @@ public class X500DistinguishedName implements Principal
   {
     if (fixed && stringRep != null)
       return stringRep;
-    StringBuffer str = new StringBuffer();
+    CPStringBuilder str = new CPStringBuilder();
     for (Iterator it = components.iterator(); it.hasNext(); )
       {
         Map m = (Map) it.next();
@@ -377,7 +379,7 @@ public class X500DistinguishedName implements Principal
 
   private String readAttributeType(Reader in) throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int ch;
     while ((ch = in.read()) != '=')
       {
@@ -399,7 +401,7 @@ public class X500DistinguishedName implements Principal
 
   private String readAttributeValue(Reader in) throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int ch = in.read();
     if (ch == '#')
       {
@@ -537,7 +539,7 @@ public class X500DistinguishedName implements Principal
 
   private static String compressWS(String str)
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     char lastChar = 0;
     for (int i = 0; i < str.length(); i++)
       {

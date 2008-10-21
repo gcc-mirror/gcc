@@ -148,7 +148,7 @@ public class Native2ASCII
             String s = rdr.readLine();
             if (s == null)
               break;
-            StringBuffer sb = new StringBuffer(s.length() + 80);
+            StringBuilder sb = new StringBuilder(s.length() + 80);
             for (int i = 0; i < s.length(); i++)
               {
                 char c = s.charAt(i);

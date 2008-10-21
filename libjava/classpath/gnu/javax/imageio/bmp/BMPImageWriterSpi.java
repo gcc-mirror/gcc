@@ -51,7 +51,7 @@ public class BMPImageWriterSpi
   static final String vendorName = "GNU";
   static final String version = "0.1";
   static final String writerClassName = "gnu.javax.imageio.bmp.BMPImageWriter";
-  static final String[] names = { "Microsoft Windows BMP" };
+  static final String[] names = { "bmp", "BMP", "Microsoft Windows BMP" };
   static final String[] suffixes = { ".bmp", ".bm" };
   static final String[] MIMETypes = { "image/bmp", "image/x-windows-bmp" };
   static final String[] readerSpiNames = { "gnu.javax.imageio.bmp.BMPImageReaderSpi" };

@@ -58,10 +58,10 @@ final class VMFile
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
-	System.loadLibrary("javaio");
+        System.loadLibrary("javaio");
       }
   }
-
+  
   /*
    * This native method does the actual work of getting the last file
    * modification time.  It also does the existence check to avoid the
@@ -167,19 +167,7 @@ final class VMFile
   /**
    * This methods checks if a directory can be written to.
    */
-  static boolean canWriteDirectory(File dir)
-  {
-    try
-      {
-        String filename = IS_DOS_8_3 ? "tst" : "test-dir-write";
-        File test = File.createTempFile(filename, null, dir);
-        return (test != null && test.delete());
-      }
-    catch (IOException ioe)
-      {
-        return false;
-      }
-  }
+  static native boolean canWriteDirectory(String path);
 
   /**
    * This native method checks file permissions for reading
@@ -198,6 +186,14 @@ final class VMFile
    */
   static native boolean isDirectory(String dirpath);
 
+  /**
+   * This methods checks if a directory can be written to.
+   */
+  static boolean canWriteDirectory(File path)
+  {
+    return canWriteDirectory(path.getAbsolutePath());
+  }
+  
   /**
    * This method returns an array of filesystem roots.  Some operating systems
    * have volume oriented filesystem.  This method provides a mechanism for

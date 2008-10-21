@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.autofit;
 
+import gnu.java.lang.CPStringBuilder;
+
 public class Width
 {
   int org;
@@ -50,7 +52,7 @@ public class Width
 
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[Width] org: ");
     s.append(org);
     s.append(", cur: ");

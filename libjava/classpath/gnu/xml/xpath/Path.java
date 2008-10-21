@@ -49,6 +49,6 @@ abstract class Path
   extends Pattern
 {
 
-  abstract Collection evaluate(Node context, Collection nodeSet);
+  abstract Collection<Node> evaluate(Node context, Collection<Node> nodeSet);
   
 }

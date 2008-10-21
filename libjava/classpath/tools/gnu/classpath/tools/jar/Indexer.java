@@ -57,7 +57,7 @@ import java.util.jar.Manifest;
 public class Indexer
     extends Updater
 {
-  private void indexJarFile(StringBuffer result, File fileName,
+  private void indexJarFile(StringBuilder result, File fileName,
                             boolean verbose)
     throws IOException
   {
@@ -129,7 +129,7 @@ public class Indexer
     super.writeCommandLineEntries(parameters, os);
 
     // Now compute our index file and write it.
-    StringBuffer contents = new StringBuffer();
+    StringBuilder contents = new StringBuilder();
     indexJarFile(contents, parameters.archiveFile, parameters.verbose);
     if (contents.length() != 0)
       {

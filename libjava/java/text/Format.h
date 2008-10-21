@@ -24,8 +24,9 @@ extern "Java"
 class java::text::Format : public ::java::lang::Object
 {
 
-public:
+public: // actually protected
   Format();
+public:
   virtual ::java::lang::String * format(::java::lang::Object *);
   virtual ::java::lang::StringBuffer * format(::java::lang::Object *, ::java::lang::StringBuffer *, ::java::text::FieldPosition *) = 0;
   virtual ::java::lang::Object * parseObject(::java::lang::String *);

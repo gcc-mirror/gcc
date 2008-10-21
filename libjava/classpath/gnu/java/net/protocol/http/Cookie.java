@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Date;
 
 /**
@@ -139,7 +141,7 @@ public class Cookie
   
   public String toString(boolean showPath, boolean showDomain)
   {
-    StringBuilder buf = new StringBuilder();
+    CPStringBuilder buf = new CPStringBuilder();
     buf.append(name);
     buf.append('=');
     buf.append(value);

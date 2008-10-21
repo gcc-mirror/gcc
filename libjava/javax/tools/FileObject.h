@@ -29,11 +29,11 @@ class javax::tools::FileObject : public ::java::lang::Object
 {
 
 public:
-  virtual ::java::net::URI * toURI() = 0;
+  virtual ::java::net::URI * toUri() = 0;
   virtual ::java::lang::String * getName() = 0;
   virtual ::java::io::InputStream * openInputStream() = 0;
   virtual ::java::io::OutputStream * openOutputStream() = 0;
-  virtual ::java::io::Reader * openReader() = 0;
+  virtual ::java::io::Reader * openReader(jboolean) = 0;
   virtual ::java::lang::CharSequence * getCharContent(jboolean) = 0;
   virtual ::java::io::Writer * openWriter() = 0;
   virtual jlong getLastModified() = 0;

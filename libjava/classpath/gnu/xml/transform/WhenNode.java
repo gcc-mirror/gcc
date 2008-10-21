@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Node;
@@ -102,7 +104,7 @@ final class WhenNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("when");
+    CPStringBuilder buf = new CPStringBuilder("when");
     buf.append('[');
     buf.append("test=");
     buf.append(test);

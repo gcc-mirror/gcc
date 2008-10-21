@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 
@@ -786,7 +788,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
   protected String paramString()
   {
     String superParamStr = super.paramString();
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(",orientation=");
     if (orientation == HORIZONTAL)
       sb.append("HORIZONTAL");

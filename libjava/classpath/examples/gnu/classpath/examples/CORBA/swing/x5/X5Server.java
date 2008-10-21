@@ -147,7 +147,7 @@ public class X5Server
 
             int length = GameManagerImpl.ior.length();
 
-            StringBuffer b = new StringBuffer();
+            StringBuilder b = new StringBuilder();
             b.append("HTTP/1.0 200 OK\r\n");
             b.append("Content-Length: " + length + "\r\n");
             b.append("Connection: close\r\n");

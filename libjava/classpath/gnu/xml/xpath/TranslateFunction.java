@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Node;
@@ -66,9 +68,9 @@ final class TranslateFunction
   final Expr arg2;
   final Expr arg3;
 
-  TranslateFunction(List args)
+  TranslateFunction(List<Expr> args)
   {
-    this((Expr) args.get(0), (Expr) args.get(1), (Expr) args.get(2));
+    this(args.get(0), args.get(1), args.get(2));
   }
 
   TranslateFunction(Expr arg1, Expr arg2, Expr arg3)
@@ -86,7 +88,7 @@ final class TranslateFunction
     String string = _string(context, val1);
     String search = _string(context, val2);
     String replace = _string(context, val3);
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int l1 = string.length();
     int l2 = search.length();
     int l3 = replace.length();
@@ -110,7 +112,7 @@ final class TranslateFunction
             buf.append(c);
           } 
       } 
-    return new String(buf);
+    return buf.toString();
   }
 
   public Expr clone(Object context)

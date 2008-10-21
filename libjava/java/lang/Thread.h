@@ -18,13 +18,6 @@ extern "Java"
         class RawData;
         class RawDataManaged;
     }
-    namespace java
-    {
-      namespace util
-      {
-          class WeakIdentityHashMap;
-      }
-    }
   }
 }
 
@@ -100,7 +93,7 @@ private:
   void initialize_native();
   static ::java::lang::String * gen_name();
 public: // actually package-private
-  static ::java::util::Map * getThreadLocals();
+  static ::java::lang::ThreadLocalMap * getThreadLocals();
 public:
   virtual void setUncaughtExceptionHandler(::java::lang::Thread$UncaughtExceptionHandler *);
   virtual ::java::lang::Thread$UncaughtExceptionHandler * getUncaughtExceptionHandler();
@@ -135,7 +128,7 @@ private:
   static jlong totalThreadsCreated;
   static ::java::lang::Thread$UncaughtExceptionHandler * defaultHandler;
 public: // actually package-private
-  ::gnu::java::util::WeakIdentityHashMap * locals;
+  ::java::lang::ThreadLocalMap * locals;
   ::java::lang::Thread$UncaughtExceptionHandler * exceptionHandler;
 private:
   ::java::lang::Object * parkBlocker;

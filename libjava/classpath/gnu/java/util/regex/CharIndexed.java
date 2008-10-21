@@ -48,13 +48,14 @@ package gnu.java.util.regex;
  *
  * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
  */
-public interface CharIndexed {
+public interface CharIndexed
+{
     /**
      * Defines a constant (0xFFFF was somewhat arbitrarily chosen)
      * that can be returned by the charAt() function indicating that
      * the specified index is out of range.
      */
-    char OUT_OF_BOUNDS = '\uFFFF';
+  char OUT_OF_BOUNDS = '\uFFFF';
 
     /**
      * Returns the character at the given offset past the current cursor
@@ -68,66 +69,66 @@ public interface CharIndexed {
      * @return the character at the specified index, or the OUT_OF_BOUNDS
      *   character defined by this interface.
      */
-    char charAt(int index);
+  char charAt (int index);
 
     /**
      * Shifts the input buffer by a given number of positions.  Returns
      * true if the new cursor position is valid.
      */
-    boolean move(int index);
+  boolean move (int index);
 
     /**
      * Shifts the input buffer by a given number of positions.  Returns
      * true if the new cursor position is valid or cursor position is at
      * the end of input.
      */
-    boolean move1(int index); // I cannot think of a better name for this.
+  boolean move1 (int index);	// I cannot think of a better name for this.
 
     /**
      * Returns true if the most recent move() operation placed the cursor
      * position at a valid position in the input.
      */
-    boolean isValid();
+  boolean isValid ();
 
     /**
      * Returns another CharIndexed containing length characters to the left
      * of the given index. The given length is an expected maximum and
      * the returned CharIndexed may not necessarily contain so many characters.
      */
-    CharIndexed lookBehind(int index, int length);
+  CharIndexed lookBehind (int index, int length);
 
     /**
      * Returns the effective length of this CharIndexed
      */
-    int length();
+  int length ();
 
     /**
      * Sets the REMatch last found on this input.
      */
-    void setLastMatch(REMatch match);
+  void setLastMatch (REMatch match);
 
     /**
      * Returns the REMatch last found on this input.
      */
-    REMatch getLastMatch();
+  REMatch getLastMatch ();
 
     /**
      * Sets the information used for hitEnd().
      */
-    void setHitEnd(REMatch match);
+  void setHitEnd (REMatch match);
 
     /**
      * Returns whether the matcher has hit the end of input.
      */
-    boolean hitEnd();
+  boolean hitEnd ();
 
     /**
      * Returns the anchor.
      */
-    int getAnchor();
+  int getAnchor ();
 
     /**
      * Sets the anchor.
      */
-    void setAnchor(int anchor);
+  void setAnchor (int anchor);
 }

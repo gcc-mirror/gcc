@@ -96,11 +96,30 @@ public class ThreadLocal<T>
   static final Object sentinel = new Object();
 
   /**
+   * The base for the computation of the next hash for a thread local.
+   */
+  private static int nextHashBase = 1;
+
+  /**
+   * Allocate a new hash.
+   */
+  private synchronized int computeNextHash() 
+  {
+    return nextHashBase++ * 6709;
+  }
+
+  /**
+   * Hash code computed for ThreadLocalMap
+   */
+  final int fastHash;
+
+  /**
    * Creates a ThreadLocal object without associating any value to it yet.
    */
   public ThreadLocal()
   {
     constructNative();
+    fastHash = computeNextHash();
   }
 
   /**
@@ -128,16 +147,16 @@ public class ThreadLocal<T>
 
   private final Object internalGet()
   {
-    Map<ThreadLocal<T>,T> map = (Map<ThreadLocal<T>,T>) Thread.getThreadLocals();
+    ThreadLocalMap map = Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    T value = map.get(this);
-    if (value == null)
+    T value = (T) map.get(this);
+    if (value == sentinel)
       {
         value = initialValue();
-        map.put(this, (T) (value == null ? sentinel : value));
+        map.set(this, value);
       }
-    return value == (T) sentinel ? null : value;
+    return value;
   }
 
   /**
@@ -152,10 +171,10 @@ public class ThreadLocal<T>
 
   private final void internalSet(Object value)
   {
-    Map map = Thread.getThreadLocals();
+    ThreadLocalMap map = Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    map.put(this, value == null ? sentinel : value);
+    map.set(this, value);
   }
 
   /**
@@ -167,7 +186,7 @@ public class ThreadLocal<T>
 
   private final void internalRemove()
   {
-    Map map = Thread.getThreadLocals();
+    ThreadLocalMap map = Thread.getThreadLocals();
     map.remove(this);
   }
 

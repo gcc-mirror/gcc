@@ -46,6 +46,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.CompositeContext;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -75,9 +76,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.ReplicateScaleFilter;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
@@ -86,6 +90,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * This is a 100% Java implementation of the Java2D rendering pipeline. It is
@@ -154,7 +159,14 @@ public abstract class AbstractGraphics2D
   extends Graphics2D
   implements Cloneable, Pixelizer
 {
-
+  /**
+   * Caches scaled versions of an image.
+   *
+   * @see #drawImage(Image, int, int, int, int, ImageObserver)
+   */
+  protected static final WeakHashMap<Image, HashMap<Dimension,Image>> imageCache =
+    new WeakHashMap<Image, HashMap<Dimension, Image>>();
+  
   /**
    * Wether we use anti aliasing for rendering text by default or not.
    */
@@ -210,13 +222,19 @@ public abstract class AbstractGraphics2D
   /**
    * The paint context during rendering.
    */
-  private PaintContext paintContext;
+  private PaintContext paintContext = null;
 
   /**
    * The background.
    */
-  private Color background;
+  private Color background = Color.WHITE;
 
+  /**
+   * Foreground color, as set by setColor.
+   */
+  private Color foreground = Color.BLACK;
+  private boolean isForegroundColorNull = true;
+  
   /**
    * The current font.
    */
@@ -266,15 +284,19 @@ public abstract class AbstractGraphics2D
 
   private static final BasicStroke STANDARD_STROKE = new BasicStroke();
 
-  private static final HashMap STANDARD_HINTS;
-  static {
-    HashMap hints = new HashMap();
-  hints.put(RenderingHints.KEY_TEXT_ANTIALIASING,
-            RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
-  hints.put(RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-  STANDARD_HINTS = hints;
-  }
+  private static final HashMap<Key, Object> STANDARD_HINTS;
+  static
+    {
+    
+      HashMap<Key, Object> hints = new HashMap<Key, Object>();
+      hints.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+      hints.put(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+    
+      STANDARD_HINTS = hints;
+    }
+  
   /**
    * Creates a new AbstractGraphics2D instance.
    */
@@ -626,14 +648,29 @@ public abstract class AbstractGraphics2D
     if (p != null)
       {
         paint = p;
-
+        
         if (! (paint instanceof Color))
-          isOptimized = false;
+          {
+            isOptimized = false;
+          }
         else
           {
+            this.foreground = (Color) paint;
+            isForegroundColorNull = false;
             updateOptimization();
           }
       }
+    else
+      {
+        this.foreground = Color.BLACK;
+        isForegroundColorNull = true;
+      }
+    
+    // free resources if needed, then put the paint context to null
+    if (this.paintContext != null)
+      this.paintContext.dispose();
+    
+    this.paintContext = null;
   }
 
   /**
@@ -1058,10 +1095,10 @@ public abstract class AbstractGraphics2D
    */
   public Color getColor()
   {
-    Color c = null;
-    if (paint instanceof Color)
-      c = (Color) paint;
-    return c;
+    if (isForegroundColorNull)
+      return null;
+    
+    return this.foreground;
   }
 
   /**
@@ -1070,8 +1107,8 @@ public abstract class AbstractGraphics2D
    * @param color the foreground to set
    */
   public void setColor(Color color)
-  {
-    setPaint(color);
+  { 
+    this.setPaint(color);
   }
 
   public void setPaintMode()
@@ -1468,11 +1505,19 @@ public abstract class AbstractGraphics2D
                            ImageObserver observer)
   {
     AffineTransform t = new AffineTransform();
-    t.translate(x, y);
-    double scaleX = (double) width / (double) image.getWidth(observer);
-    double scaleY =  (double) height / (double) image.getHeight(observer);
-    t.scale(scaleX, scaleY);
-    return drawImage(image, t, observer);
+    int imWidth = image.getWidth(observer);
+    int imHeight = image.getHeight(observer);
+    if (imWidth == width && imHeight == height)
+      {
+        // No need to scale, fall back to non-scaling loops.
+        return drawImage(image, x, y, observer);
+      }
+    else
+      {
+        Image scaled = prepareImage(image, width, height);
+        // Ideally, this should notify the observer about the scaling progress.
+        return drawImage(scaled, x, y, observer);
+      }
   }
 
   /**
@@ -1639,10 +1684,7 @@ public abstract class AbstractGraphics2D
    *
    * @return the bounds of the target
    */
-  protected Rectangle getDeviceBounds()
-  {
-    return destinationRaster.getBounds();
-  }
+  protected abstract Rectangle getDeviceBounds();
 
   /**
    * Draws a line in optimization mode. The implementation should respect the
@@ -1763,7 +1805,8 @@ public abstract class AbstractGraphics2D
    */
   public void renderScanline(int y, ScanlineCoverage c)
   {
-    PaintContext pCtx = paintContext;
+    PaintContext pCtx = getPaintContext();
+    
     int x0 = c.getMinX();
     int x1 = c.getMaxX();
     Raster paintRaster = pCtx.getRaster(x0, y, x1 - x0, 1);
@@ -1797,9 +1840,11 @@ public abstract class AbstractGraphics2D
     CompositeContext cCtx = composite.createContext(paintColorModel,
                                                     getColorModel(),
                                                     renderingHints);
-    WritableRaster targetChild = destinationRaster.createWritableTranslatedChild(-x0,- y);
+    WritableRaster raster = getDestinationRaster();
+    WritableRaster targetChild = raster.createWritableTranslatedChild(-x0, -y);
+    
     cCtx.compose(paintRaster, targetChild, targetChild);
-    updateRaster(destinationRaster, x0, y, x1 - x0, 1);
+    updateRaster(raster, x0, y, x1 - x0, 1);
     cCtx.dispose();
   }
 
@@ -1984,6 +2029,66 @@ public abstract class AbstractGraphics2D
       {
         scanlineConverters.addLast(sc);
       }
+  }
+
+  private PaintContext getPaintContext()
+  {
+    if (this.paintContext == null)
+      {
+        this.paintContext =
+          this.foreground.createContext(getColorModel(),
+                                        getDeviceBounds(),
+                                        getClipBounds(),
+                                        getTransform(),
+                                        getRenderingHints());
+      }
+   
+    return this.paintContext;
+  }
+
+  /**
+   * Scales an image to the specified width and height. This should also
+   * be used to implement
+   * {@link Toolkit#prepareImage(Image, int, int, ImageObserver)}.
+   * This uses {@link Toolkit#createImage(ImageProducer)} to create the actual
+   * image.
+   *
+   * @param image the image to prepare
+   * @param w the width
+   * @param h the height
+   *
+   * @return the scaled image
+   */
+  public static Image prepareImage(Image image, int w, int h)
+  {
+    // Try to find cached scaled image.
+    HashMap<Dimension,Image> scaledTable = imageCache.get(image);
+    Dimension size = new Dimension(w, h);
+    Image scaled = null;
+    if (scaledTable != null)
+      {
+        scaled = scaledTable.get(size);
+      }
+    if (scaled == null)
+      {
+        // No cached scaled image. Start scaling image now.
+        ImageProducer source = image.getSource();
+        ReplicateScaleFilter scaler = new ReplicateScaleFilter(w, h);
+        FilteredImageSource filteredSource =
+          new FilteredImageSource(source, scaler);
+        // Ideally, this should asynchronously scale the image.
+        Image scaledImage =
+          Toolkit.getDefaultToolkit().createImage(filteredSource);
+        scaled = scaledImage;
+        // Put scaled image in cache.
+        if (scaledTable == null)
+          {
+            scaledTable = new HashMap<Dimension,Image>();
+            imageCache.put(image, scaledTable);
+          }
+        scaledTable.put(size, scaledImage);
+      }
+    return scaled;
   }
 
 }

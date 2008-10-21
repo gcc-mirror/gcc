@@ -30,7 +30,7 @@ jlong gnu::gcj::xlib::Colormap::allocateColorPixel(XColor* color)
   ::XColor* col = (::XColor*) (color->structure);
   Status result = XAllocColor(dpy, xid, col);
   if (result == 0)
-    throw new java::lang::RuntimeException(
+    throw new ::java::lang::RuntimeException(
       JvNewStringLatin1("Unable to allocate color pixel."));
 
   return col->pixel;

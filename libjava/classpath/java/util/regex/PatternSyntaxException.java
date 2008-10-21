@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.util.regex;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * Indicates illegal pattern for regular expression.
  * Includes state to inspect the pattern and what and where the expression
@@ -115,7 +117,7 @@ public class PatternSyntaxException extends IllegalArgumentException
   public String getMessage()
   {
     String lineSep = System.getProperty("line.separator");
-    StringBuffer sb = new StringBuffer(desc);
+    CPStringBuilder sb = new CPStringBuilder(desc);
     sb.append(lineSep);
     sb.append('\t');
     sb.append(pattern);

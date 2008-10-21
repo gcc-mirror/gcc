@@ -54,9 +54,9 @@ final class CeilingFunction
 
   final Expr arg;
   
-  CeilingFunction(List args)
+  CeilingFunction(List<Expr> args)
   {
-    this((Expr) args.get(0));
+    this(args.get(0));
   }
   
   CeilingFunction(Expr arg)

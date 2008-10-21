@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.beans.PropertyVetoException;
 
@@ -306,7 +308,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
   protected String paramString()
   {
     String superParamStr = super.paramString();
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(",isOptimizedDrawingPossible=");
     sb.append(isOptimizedDrawingEnabled());
     sb.append(",desktopManager=");

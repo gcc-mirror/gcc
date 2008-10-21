@@ -43,6 +43,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -71,7 +73,7 @@ import java.util.Locale;
  * Generally, to get an instance of DecimalFormat you should call the factory
  * methods in the <code>NumberFormat</code> base class.
  * 
- * @author Mario Torre <neugens@limasoftware.net>
+ * @author Mario Torre (neugens@limasoftware.net)
  * @author Tom Tromey (tromey@cygnus.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
@@ -310,7 +312,7 @@ public class DecimalFormat extends NumberFormat
    * field. If used on output defines the offsets of the alignment field.
    * @return The String representation of this long.
    */
-  public StringBuffer format(Object obj, StringBuffer sbuf, FieldPosition pos)
+  public final StringBuffer format(Object obj, StringBuffer sbuf, FieldPosition pos)
   {
     if (obj instanceof BigInteger)
       {
@@ -588,7 +590,7 @@ public class DecimalFormat extends NumberFormat
       return Double.valueOf(Double.NaN);
    
     // this will be our final number
-    StringBuffer number = new StringBuffer();
+    CPStringBuilder number = new CPStringBuilder();
     
     // special character
     char minus = symbols.getMinusSign();
@@ -799,7 +801,30 @@ public class DecimalFormat extends NumberFormat
    */
   public void setCurrency(Currency currency)
   {
-    symbols.setCurrency(currency);
+    Currency current = symbols.getCurrency();
+    if (current != currency)
+      {
+	String oldSymbol = symbols.getCurrencySymbol();
+	int len = oldSymbol.length();
+	symbols.setCurrency(currency);
+	String newSymbol = symbols.getCurrencySymbol();
+	int posPre = positivePrefix.indexOf(oldSymbol);
+	if (posPre != -1)
+	  positivePrefix = positivePrefix.substring(0, posPre) +
+	    newSymbol + positivePrefix.substring(posPre+len);
+	int negPre = negativePrefix.indexOf(oldSymbol);
+	if (negPre != -1)
+	  negativePrefix = negativePrefix.substring(0, negPre) +
+	    newSymbol + negativePrefix.substring(negPre+len);
+	int posSuf = positiveSuffix.indexOf(oldSymbol);
+	if (posSuf != -1)
+	  positiveSuffix = positiveSuffix.substring(0, posSuf) +
+	    newSymbol + positiveSuffix.substring(posSuf+len);
+	int negSuf = negativeSuffix.indexOf(oldSymbol);
+	if (negSuf != -1)
+	  negativeSuffix = negativeSuffix.substring(0, negSuf) +
+	    newSymbol + negativeSuffix.substring(negSuf+len);
+      }
   }
   
   /**
@@ -1003,7 +1028,7 @@ public class DecimalFormat extends NumberFormat
    */
   private String patternChars (DecimalFormatSymbols syms)
   {
-    StringBuffer buf = new StringBuffer ();
+    CPStringBuilder buf = new CPStringBuilder ();
     
     buf.append(syms.getDecimalSeparator());
     buf.append(syms.getDigit());
@@ -1028,9 +1053,9 @@ public class DecimalFormat extends NumberFormat
    * @param patChars
    * @return A StringBuffer with special characters quoted.
    */
-  private StringBuffer quoteFix(String text, String patChars)
+  private CPStringBuilder quoteFix(String text, String patChars)
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     
     int len = text.length();
     char ch;
@@ -1058,7 +1083,7 @@ public class DecimalFormat extends NumberFormat
    */
   private String computePattern(DecimalFormatSymbols symbols)
   {
-    StringBuffer mainPattern = new StringBuffer();
+    StringBuilder mainPattern = new StringBuilder();
     
     // We have to at least emit a zero for the minimum number of
     // digits. Past that we need hash marks up to the grouping
@@ -1225,7 +1250,7 @@ public class DecimalFormat extends NumberFormat
   private int scanFix(String pattern, DecimalFormatSymbols sourceSymbols,
                       int start, boolean prefix)
   {
-    StringBuffer buffer = new StringBuffer();
+    CPStringBuilder buffer = new CPStringBuilder();
     
     // the number portion is always delimited by one of those
     // characters
@@ -1296,7 +1321,7 @@ public class DecimalFormat extends NumberFormat
             currencySymbol = this.symbols.getCurrencySymbol();
 
             // if \u00A4 is doubled, we use the international currency symbol
-            if (i < len && pattern.charAt(i + 1) == '\u00A4')
+            if ((i + 1) < len && pattern.charAt(i + 1) == '\u00A4')
               {
                 currencySymbol = this.symbols.getInternationalCurrencySymbol();
                 i++;
@@ -1320,7 +1345,7 @@ public class DecimalFormat extends NumberFormat
         else if (ch == '\'')
           {
             // QUOTE
-            if (i < len && pattern.charAt(i + 1) == '\'')
+            if ((i + 1) < len && pattern.charAt(i + 1) == '\'')
               {
                 // we need to add ' to the buffer 
                 buffer.append(ch);
@@ -1599,7 +1624,7 @@ public class DecimalFormat extends NumberFormat
                                    DecimalFormatSymbols sourceSymbols,
                                    int start)
   {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     
     // the number portion is always delimited by one of those
     // characters
@@ -1692,7 +1717,7 @@ public class DecimalFormat extends NumberFormat
         else if (ch == '\'')
           {
             // QUOTE
-            if (i < len && pattern.charAt(i + 1) == '\'')
+            if ((i + 1) < len && pattern.charAt(i + 1) == '\'')
               {
                 // we need to add ' to the buffer 
                 buffer.append(ch);
@@ -2180,7 +2205,7 @@ public class DecimalFormat extends NumberFormat
     else
       {
         char zero = symbols.getZeroDigit();
-        StringBuffer _result = new StringBuffer(src);
+        CPStringBuilder _result = new CPStringBuilder(src);
         for (int i = len; i < minimumDigits; i++)
           {
             _result.append(zero);

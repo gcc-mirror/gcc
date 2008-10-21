@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
@@ -95,7 +97,7 @@ final class MessageNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("message");
+    CPStringBuilder buf = new CPStringBuilder("message");
     if (terminate)
       {
         buf.append('[');

@@ -102,13 +102,14 @@ public class Stack<T> extends Vector<T>
    * @return the Object popped from the stack
    * @throws EmptyStackException if the stack is empty
    */
+  @SuppressWarnings("unchecked")
   public synchronized T pop()
   {
     if (elementCount == 0)
       throw new EmptyStackException();
 
     modCount++;
-    T obj = elementData[--elementCount];
+    T obj = (T) elementData[--elementCount];
 
     // Set topmost element to null to assist the gc in cleanup.
     elementData[elementCount] = null;
@@ -121,12 +122,13 @@ public class Stack<T> extends Vector<T>
    * @return the top Object on the stack
    * @throws EmptyStackException if the stack is empty
    */
+  @SuppressWarnings("unchecked")
   public synchronized T peek()
   {
     if (elementCount == 0)
       throw new EmptyStackException();
 
-    return elementData[elementCount - 1];
+    return (T) elementData[elementCount - 1];
   }
 
   /**

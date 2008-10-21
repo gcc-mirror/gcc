@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
@@ -2935,7 +2937,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -2957,7 +2959,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -2979,7 +2981,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3001,7 +3003,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3023,7 +3025,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3045,7 +3047,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3067,7 +3069,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3089,7 +3091,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3111,7 +3113,7 @@ public class Arrays
   {
     if (v == null)
       return "null";
-    StringBuilder b = new StringBuilder("[");
+    CPStringBuilder b = new CPStringBuilder("[");
     for (int i = 0; i < v.length; ++i)
       {
 	if (i > 0)
@@ -3122,7 +3124,7 @@ public class Arrays
     return b.toString();
   }
 
-  private static void deepToString(Object[] v, StringBuilder b, HashSet seen)
+  private static void deepToString(Object[] v, CPStringBuilder b, HashSet seen)
   {
     b.append("[");
     for (int i = 0; i < v.length; ++i)
@@ -3171,7 +3173,7 @@ public class Arrays
     if (v == null)
       return "null";
     HashSet seen = new HashSet();
-    StringBuilder b = new StringBuilder();
+    CPStringBuilder b = new CPStringBuilder();
     deepToString(v, b, seen);
     return b.toString();
   }

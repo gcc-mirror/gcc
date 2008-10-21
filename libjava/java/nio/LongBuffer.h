@@ -11,6 +11,13 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -25,7 +32,7 @@ class java::nio::LongBuffer : public ::java::nio::Buffer
 {
 
 public: // actually package-private
-  LongBuffer(jint, jint, jint, jint);
+  LongBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *, JArray< jlong > *, jint);
 public:
   static ::java::nio::LongBuffer * allocate(jint);
   static ::java::nio::LongBuffer * wrap(JArray< jlong > *, jint, jint);

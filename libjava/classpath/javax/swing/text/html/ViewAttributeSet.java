@@ -83,7 +83,7 @@ class ViewAttributeSet
   {
     styleSheet = ss;
     view = v;
-    ArrayList atts = new ArrayList();
+    ArrayList<AttributeSet> atts = new ArrayList<AttributeSet>();
 
     Element el = v.getElement();
     AttributeSet elAtts = el.getAttributes();
@@ -93,7 +93,7 @@ class ViewAttributeSet
 
     if (el.isLeaf())
       {
-        Enumeration n = elAtts.getAttributeNames();
+        Enumeration<?> n = elAtts.getAttributeNames();
         while (n.hasMoreElements())
           {
             Object key = n.nextElement();
@@ -115,7 +115,7 @@ class ViewAttributeSet
       }
 
     AttributeSet[] atts1 = new AttributeSet[atts.size()];
-    atts1 = (AttributeSet[]) atts.toArray(atts1);
+    atts1 = atts.toArray(atts1);
     init(atts1);
   }
 

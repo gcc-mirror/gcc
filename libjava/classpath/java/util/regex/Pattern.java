@@ -191,7 +191,7 @@ public final class Pattern implements Serializable
   public String[] split (CharSequence input, int limit)
   {
     Matcher matcher = new Matcher(this, input);
-    ArrayList list = new ArrayList();
+    ArrayList<String> list = new ArrayList<String>();
     int empties = 0;
     int count = 0;
     int start = 0;
@@ -251,9 +251,7 @@ public final class Pattern implements Serializable
 	  list.add(t);
       }
 
-    String[] output = new String [list.size()];
-    list.toArray(output);
-    return output;
+    return list.toArray(new String[list.size()]);
   }
   
   public String pattern ()

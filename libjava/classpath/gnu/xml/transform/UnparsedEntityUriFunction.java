@@ -61,27 +61,28 @@ final class UnparsedEntityUriFunction
   implements XPathFunction, Function
 {
 
-  List args;
+  List<Expr> args;
 
   public Object evaluate(List args)
     throws XPathFunctionException
   {
     // Useless...
-    return Collections.EMPTY_SET;
+    return Collections.emptySet();
   }
 
-  public void setArguments(List args)
+  public void setArguments(List<Expr> args)
   {
     this.args = args;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     int arity = args.size();
-    List values = new ArrayList(arity);
+    List<Object> values = new ArrayList<Object>(arity);
     for (int i = 0; i < arity; i++)
       {
-        Expr arg = (Expr) args.get(i);
+        Expr arg = args.get(i);
         values.add(arg.evaluate(context, pos, len));
       }
     String name = _string(context, values.get(0));
@@ -107,10 +108,10 @@ final class UnparsedEntityUriFunction
   {
     UnparsedEntityUriFunction f = new UnparsedEntityUriFunction();
     int len = args.size();
-    List args2 = new ArrayList(len);
+    List<Expr> args2 = new ArrayList<Expr>(len);
     for (int i = 0; i < len; i++)
       {
-        args2.add(((Expr) args.get(i)).clone(context));
+        args2.add(args.get(i).clone(context));
       }
     f.setArguments(args2);
     return f;
@@ -118,9 +119,9 @@ final class UnparsedEntityUriFunction
 
   public boolean references(QName var)
   {
-    for (Iterator i = args.iterator(); i.hasNext(); )
+    for (Iterator<Expr> i = args.iterator(); i.hasNext(); )
       {
-        if (((Expr) i.next()).references(var))
+        if (i.next().references(var))
           {
             return true;
           }

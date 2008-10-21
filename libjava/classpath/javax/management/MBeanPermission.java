@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.management;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.security.Permission;
 
 import java.io.IOException;
@@ -154,19 +156,19 @@ public class MBeanPermission
   /**
    * The list of actions as an ordered set.
    */
-  private transient Set actionSet;
+  private transient Set<String> actionSet;
 
   /**
    * The set of valid actions.
    */
-  private static final Set validSet;
+  private static final Set<String> validSet;
 
   /**
    * Initialise the set of valid actions.
    */
   static 
   {
-    validSet = new HashSet();
+    validSet = new HashSet<String>();
     validSet.add("addNotificationListener");
     validSet.add("getAttribute");
     validSet.add("getClassLoader");
@@ -263,8 +265,8 @@ public class MBeanPermission
    */
   public String getActions()
   {
-    Iterator it = actionSet.iterator();
-    StringBuilder builder = new StringBuilder();
+    Iterator<String> it = actionSet.iterator();
+    CPStringBuilder builder = new CPStringBuilder();
     while (it.hasNext())
       {
 	builder.append(it.next());
@@ -323,10 +325,8 @@ public class MBeanPermission
 	NameHolder name = new NameHolder(getName());
 	if (!(name.equals(pName)))
 	  return false;
-	Iterator i = mp.getActionSet().iterator();
-	while (i.hasNext())
+	for (String nextAction : mp.actionSet)
 	  {
-	    String nextAction = (String) i.next();
 	    boolean found = actions.contains(nextAction);
 	    if (!found)
 	      if (nextAction.equals("queryNames"))
@@ -502,23 +502,13 @@ public class MBeanPermission
   }
 
   /**
-   * Returns the set of actions.
-   *
-   * @return the actions as an ordered set.
-   */
-  Set getActionSet()
-  {
-    return actionSet;
-  }
-
-  /**
    * Updates the action set from the current value of
    * the actions string.
    */
   private void updateActionSet()
   {
     String[] actionsArray = actions.split(",");
-    actionSet = new TreeSet();
+    actionSet = new TreeSet<String>();
     for (int a = 0; a < actionsArray.length; ++a)
       actionSet.add(actionsArray[a].trim());
   }
@@ -548,10 +538,8 @@ public class MBeanPermission
    */
   private void checkActions()
   {
-    Iterator it = actionSet.iterator();
-    while (it.hasNext())
+    for (String action : actionSet)
       {
-	String action = (String) it.next();
 	if (!(validSet.contains(action)))
 	  throw new IllegalArgumentException("Invalid action " 
 					     + action + " found.");

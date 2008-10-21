@@ -37,6 +37,10 @@ exception statement from your version. */
 
 package gnu.java.awt.font;
 
+
+import gnu.java.awt.peer.ClasspathFontPeer;
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.font.FontRenderContext;
@@ -60,8 +64,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import gnu.java.awt.peer.ClasspathFontPeer;
 
 public class OpenTypeFontPeer
   extends ClasspathFontPeer
@@ -422,7 +424,7 @@ public class OpenTypeFontPeer
    */
   static String encodeFont(String name, int style)
   {
-    StringBuilder key = new StringBuilder();
+    CPStringBuilder key = new CPStringBuilder();
     key.append(validName(name));
     key.append('/');
     switch (style)

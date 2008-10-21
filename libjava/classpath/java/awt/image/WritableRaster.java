@@ -111,13 +111,8 @@ public class WritableRaster extends Raster
   public WritableRaster createWritableTranslatedChild(int childMinX,
                                                       int childMinY)
   {
-    // This mirrors the code from the super class
-    int tcx = sampleModelTranslateX - minX + childMinX;
-    int tcy = sampleModelTranslateY - minY + childMinY;
-    
-    return new WritableRaster(sampleModel, dataBuffer,
-        new Rectangle(childMinX, childMinY, width, height), 
-        new Point(tcx, tcy), this);
+    return createWritableChild(minX, minY, width, height,
+                               childMinX, childMinY, null);
   }
 
   /**
@@ -143,12 +138,14 @@ public class WritableRaster extends Raster
     SampleModel sm = (bandList == null) ?
       sampleModel :
       sampleModel.createSubsetSampleModel(bandList);
-    
-    return new WritableRaster(sm, dataBuffer,
-        new Rectangle(childMinX, childMinY, w, h),
-        new Point(sampleModelTranslateX + childMinX - parentX,
-                  sampleModelTranslateY + childMinY - parentY),
-        this);
+
+    return new WritableRaster(sm, getDataBuffer(),
+                              new Rectangle(childMinX, childMinY, w, h),
+                              new Point(sampleModelTranslateX + childMinX -
+                                          parentX,
+                                        sampleModelTranslateY + childMinY -
+                                          parentY),
+                              this);
   }
   
   public Raster createChild(int parentX, int parentY, int width,

@@ -32,6 +32,10 @@ public:
 private:
   static ::java::util::ResourceBundle * tryBundle(::java::lang::String *, ::java::lang::ClassLoader *);
   static ::java::util::ResourceBundle * tryBundle(::java::lang::String *, ::java::util::Locale *, ::java::lang::ClassLoader *, jboolean);
+public:
+  static void clearCache();
+  static void clearCache(::java::lang::ClassLoader *);
+private:
   static const jint CACHE_SIZE = 100;
 public: // actually protected
   ::java::util::ResourceBundle * __attribute__((aligned(__alignof__( ::java::lang::Object)))) parent;

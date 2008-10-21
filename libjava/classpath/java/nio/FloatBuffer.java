@@ -38,19 +38,24 @@ exception statement from your version. */
 
 package java.nio;
 
+// GCJ LOCAL: Change gnu.classpath.Pointer to RawData
+import gnu.gcj.RawData;
+
 /**
  * @since 1.4
  */
 public abstract class FloatBuffer extends Buffer
   implements Comparable<FloatBuffer>
 {
-  int array_offset;
-  float[] backing_buffer;
+  final int array_offset;
+  final float[] backing_buffer;
 
-  FloatBuffer (int capacity, int limit, int position, int mark)
+  FloatBuffer (int capacity, int limit, int position, int mark,
+	       RawData address, float[] backing_buffer, int array_offset)
   {
-    super (capacity, limit, position, mark);
-    array_offset = 0;
+    super (capacity, limit, position, mark, address);
+    this.backing_buffer = backing_buffer;
+    this.array_offset = array_offset;
   }
 
   /**

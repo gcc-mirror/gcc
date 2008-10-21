@@ -406,10 +406,12 @@ public abstract class Collator implements Comparator<Object>, Cloneable
   // Decompose a single character and append results to the buffer.
   // FIXME: for libgcj this is a native method which handles
   // decomposition.  For Classpath, for now, it does nothing.
+  /*
   final void decomposeCharacter (char c, StringBuffer buf)
   {
     buf.append (c);
   }
+  */
 
   /**
    * This is the current collation decomposition setting.

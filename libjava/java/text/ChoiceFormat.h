@@ -11,6 +11,16 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
   namespace java
   {
     namespace text
@@ -41,7 +51,7 @@ public:
   static jdouble previousDouble(jdouble);
   virtual void setChoices(JArray< jdouble > *, JArray< ::java::lang::String * > *);
 private:
-  void quoteString(::java::lang::StringBuffer *, ::java::lang::String *);
+  void quoteString(::gnu::java::lang::CPStringBuilder *, ::java::lang::String *);
 public:
   virtual ::java::lang::String * toPattern();
 private:

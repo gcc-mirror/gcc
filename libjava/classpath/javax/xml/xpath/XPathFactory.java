@@ -117,7 +117,7 @@ public abstract class XPathFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 XPathFactory ret = (XPathFactory) t.newInstance();
                 if (ret.isObjectModelSupported(uri))

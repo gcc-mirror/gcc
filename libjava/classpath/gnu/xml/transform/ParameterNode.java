@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collections;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
@@ -53,7 +55,7 @@ import gnu.xml.xpath.Expr;
  */
 final class ParameterNode
   extends TemplateNode
-  implements Comparable
+  implements Comparable<ParameterNode>
 {
 
   final QName name;
@@ -67,11 +69,12 @@ final class ParameterNode
     this.type = type;
   }
 
-  TemplateNode clone(Stylesheet stylesheet)
+  @Override
+  ParameterNode clone(Stylesheet stylesheet)
   {
-    TemplateNode ret = new ParameterNode(name,
-                                         select.clone(stylesheet),
-                                         type);
+    ParameterNode ret = new ParameterNode(name,
+					  select == null ? null : select.clone(stylesheet),
+					  type);
     if (children != null)
       ret.children = children.clone(stylesheet);
     if (next != null)
@@ -129,26 +132,22 @@ final class ParameterNode
     return super.references(var);
   }
 
-  public int compareTo(Object other)
+  public int compareTo(ParameterNode pn)
   {
-    if (other instanceof ParameterNode)
-      {
-        ParameterNode pn = (ParameterNode) other;
-        boolean r1 = references(pn.name);
-        boolean r2 = pn.references(name);
-        if (r1 && r2)
-          throw new IllegalArgumentException("circular definitions");
-        if (r1)
-          return 1;
-        if (r2)
-          return -1;
-      }
+    boolean r1 = references(pn.name);
+    boolean r2 = pn.references(name);
+    if (r1 && r2)
+      throw new IllegalArgumentException("circular definitions");
+    if (r1)
+      return 1;
+    if (r2)
+      return -1;
     return 0;
   }
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     switch (type)
       {
       case Bindings.VARIABLE:
@@ -164,11 +163,8 @@ final class ParameterNode
     buf.append('[');
     buf.append("name=");
     buf.append(name);
-    if (select != null)
-      {
-        buf.append(",select=");
-        buf.append(select);
-      }
+    buf.append(",select=");
+    buf.append(select);
     buf.append(']');
     return buf.toString();
   }

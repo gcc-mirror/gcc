@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 
 import java.lang.reflect.InvocationTargetException;
@@ -182,7 +184,7 @@ public class CertPathBuilder
   public static CertPathBuilder getInstance(String algorithm, Provider provider)
       throws NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("CertPathBuilder for algorithm [")
+    CPStringBuilder sb = new CPStringBuilder("CertPathBuilder for algorithm [")
         .append(algorithm).append("] from provider[")
         .append(provider).append("] could not be created");
     Throwable cause;

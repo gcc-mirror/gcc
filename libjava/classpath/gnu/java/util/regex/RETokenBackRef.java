@@ -38,49 +38,63 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-final class RETokenBackRef extends REToken {
+import gnu.java.lang.CPStringBuilder;
+
+final class RETokenBackRef extends REToken
+{
   private int num;
   private boolean insens;
-  
-  RETokenBackRef(int subIndex, int num, boolean insens) {
-    super(subIndex);
+
+    RETokenBackRef (int subIndex, int num, boolean insens)
+  {
+    super (subIndex);
     this.num = num;
     this.insens = insens;
   }
 
   // should implement getMinimumLength() -- any ideas?
 
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	if (num >= mymatch.start.length) return null;
-	if (num >= mymatch.end.length) return null;
-	int b,e;
-	b = mymatch.start[num];
-	e = mymatch.end[num];
-	if ((b==-1)||(e==-1)) return null; // this shouldn't happen, but...
-	if (b < 0) b += 1;
-	if (e < 0) e += 1;
-	for (int i=b; i<e; i++) {
-	    char c1 = input.charAt(mymatch.index+i-b);
-	    char c2 = input.charAt(i);
-	    if (c1 != c2) {
-		if (insens) {
-		    if (c1 != toLowerCase(c2, unicodeAware) &&
-			c1 != toUpperCase(c2, unicodeAware)) {
-			return null;
-		    }
-		}
-		else {
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    if (num >= mymatch.start.length)
+      return null;
+    if (num >= mymatch.end.length)
+      return null;
+    int b, e;
+    b = mymatch.start[num];
+    e = mymatch.end[num];
+    if ((b == -1) || (e == -1))
+      return null;		// this shouldn't happen, but...
+    if (b < 0)
+      b += 1;
+    if (e < 0)
+      e += 1;
+    for (int i = b; i < e; i++)
+      {
+	char c1 = input.charAt (mymatch.index + i - b);
+	char c2 = input.charAt (i);
+	if (c1 != c2)
+	  {
+	    if (insens)
+	      {
+		if (c1 != toLowerCase (c2, unicodeAware) &&
+		    c1 != toUpperCase (c2, unicodeAware))
+		  {
 		    return null;
-		}
-	    }
-	}
-	mymatch.index += e-b;
-	return mymatch;
-    }
-    
-    void dump(StringBuffer os) {
-	os.append('\\').append(num);
-    }
+		  }
+	      }
+	    else
+	      {
+		return null;
+	      }
+	  }
+      }
+    mymatch.index += e - b;
+    return mymatch;
+  }
+
+  void dump (CPStringBuilder os)
+  {
+    os.append ('\\').append (num);
+  }
 }
-
-

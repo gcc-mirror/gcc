@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.opentype.truetype;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * Encapsulates information regarding one point on a glyph outline.
  */
@@ -234,7 +236,7 @@ public class Point
 
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[Point] origX: ");
     s.append(origX);
     s.append(", origY: ");

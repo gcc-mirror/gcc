@@ -37,8 +37,9 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.io.IOException;
+import gnu.java.lang.CPStringBuilder;
 
+import java.io.IOException;
 
 /**
  * @since 1.4
@@ -132,7 +133,7 @@ public abstract class FileLock
    */
   public final String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    CPStringBuilder buf = new CPStringBuilder(getClass().getName());
     buf.append("[");
     buf.append(position);
     buf.append(":");

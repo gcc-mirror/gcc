@@ -89,7 +89,7 @@ public class SAXEventSink
     PREDEFINED_ENTITIES.add("apos");
   }
 
-  boolean namespaceAware;
+  private boolean namespaceAware;
   boolean ignoreWhitespace;
   boolean expandEntityReferences;
   boolean ignoreComments;
@@ -126,6 +126,11 @@ public class SAXEventSink
   public void setDocumentLocator(Locator locator)
   {
     this.locator = locator;
+  }
+
+  public void setNamespaceAware(boolean namespaceAware)
+  {
+    this.namespaceAware = namespaceAware;
   }
 
   public void startDocument()

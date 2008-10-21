@@ -39,6 +39,7 @@ package java.awt.image;
 import java.util.Arrays;
 
 import gnu.java.awt.BitMaskExtent;
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * A <code>SampleModel</code> used when all samples are stored in a single
@@ -569,7 +570,7 @@ public class SinglePixelPackedSampleModel extends SampleModel
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     result.append(getClass().getName());
     result.append("[");
     result.append("scanlineStride=").append(scanlineStride);

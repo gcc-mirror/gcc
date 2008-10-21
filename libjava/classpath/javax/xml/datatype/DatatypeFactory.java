@@ -44,7 +44,7 @@ import java.math.BigInteger;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Properties;
-import gnu.classpath.ServiceFactory;
+import java.util.ServiceLoader;
 
 /**
  * Factory class to create new datatype objects mapping XML to and from Java
@@ -97,11 +97,11 @@ public abstract class DatatypeFactory
               return (DatatypeFactory) Class.forName(className).newInstance();
           }
         // 3. services
-        Iterator i = ServiceFactory.lookupProviders(DatatypeFactory.class);
+        Iterator<DatatypeFactory> i = ServiceLoader.load(DatatypeFactory.class).iterator();
         if (i.hasNext())
-          return (DatatypeFactory) i.next();
+          return i.next();
         // 4. fallback
-        Class t = Class.forName(DATATYPEFACTORY_IMPLEMENTATION_CLASS);
+        Class<?> t = Class.forName(DATATYPEFACTORY_IMPLEMENTATION_CLASS);
         return (DatatypeFactory) t.newInstance();
       }
     catch (Exception e)

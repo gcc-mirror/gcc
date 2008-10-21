@@ -18,6 +18,7 @@ extern "Java"
         namespace java2d
         {
             class RasterGraphics;
+            class ScanlineCoverage;
         }
       }
     }
@@ -27,6 +28,7 @@ extern "Java"
     namespace awt
     {
         class GraphicsConfiguration;
+        class Rectangle;
       namespace image
       {
           class ColorModel;
@@ -41,11 +43,14 @@ class gnu::java::awt::java2d::RasterGraphics : public ::gnu::java::awt::java2d::
 
 public:
   RasterGraphics(::java::awt::image::WritableRaster *, ::java::awt::image::ColorModel *);
+  virtual void renderScanline(jint, ::gnu::java::awt::java2d::ScanlineCoverage *);
 public: // actually protected
   virtual ::java::awt::image::ColorModel * getColorModel();
   virtual ::java::awt::image::WritableRaster * getDestinationRaster();
 public:
   virtual ::java::awt::GraphicsConfiguration * getDeviceConfiguration();
+public: // actually protected
+  virtual ::java::awt::Rectangle * getDeviceBounds();
 private:
   ::java::awt::image::WritableRaster * __attribute__((aligned(__alignof__( ::gnu::java::awt::java2d::AbstractGraphics2D)))) raster;
   ::java::awt::image::ColorModel * colorModel;

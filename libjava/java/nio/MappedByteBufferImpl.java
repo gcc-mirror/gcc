@@ -44,7 +44,7 @@ import java.io.IOException;
 
 final class MappedByteBufferImpl extends MappedByteBuffer
 {
-  boolean readOnly;
+  private final boolean readOnly;
 
   /** Posix uses this for the pointer returned by mmap;
    * Win32 uses it for the pointer returned by MapViewOfFile. */
@@ -56,8 +56,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   public MappedByteBufferImpl(RawData address, int size, boolean readOnly)
     throws IOException
   {
-    super(size, size, 0, -1);
-    this.address = address;
+    super(size, size, 0, -1, address);
     this.readOnly = readOnly;
   }
 

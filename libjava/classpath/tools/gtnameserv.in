@@ -45,4 +45,4 @@ datarootdir=@datarootdir@
 tools_dir=@datadir@/@PACKAGE@
 tools_cp=${tools_dir}/tools.zip
 
-exec @VM_BINARY@ -Xbootclasspath/p:"${tools_cp}" gnu.classpath.tools.tnameserv.Main "$@"
+exec @JAVA@ -classpath "${tools_cp}" gnu.classpath.tools.tnameserv.Main "$@"

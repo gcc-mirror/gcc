@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -194,7 +196,7 @@ public class TabSet implements Serializable
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append("[ ");
     for (int i = 0; i < tabs.length; ++i)
       {

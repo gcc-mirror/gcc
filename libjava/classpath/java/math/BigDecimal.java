@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.math;
 
+import gnu.java.lang.CPStringBuilder;
+
 public class BigDecimal extends Number implements Comparable<BigDecimal>
 {
   private BigInteger intVal;
@@ -451,7 +453,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>
 
     // val is a StringBuilder from which we'll create a BigInteger
     // which will be the unscaled value for this BigDecimal
-    StringBuilder val = new StringBuilder(point - start - 1);
+    CPStringBuilder val = new CPStringBuilder(point - start - 1);
     if (dot != -1)
       {
         // If there was a decimal we must combine the two parts that 
@@ -1070,7 +1072,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>
     boolean negative = (bigStr.charAt(0) == '-');
     int point = bigStr.length() - scale - (negative ? 1 : 0);
 
-    StringBuilder val = new StringBuilder();
+    CPStringBuilder val = new CPStringBuilder();
 
     if (scale >= 0 && (point - 1) >= -6)
       {
@@ -1137,7 +1139,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>
 
     // This is the adjusted exponent described above.
     int adjExp = point - 1;
-    StringBuilder val = new StringBuilder();
+    CPStringBuilder val = new CPStringBuilder();
 
     if (scale >= 0 && adjExp >= -6)
       {
@@ -1242,8 +1244,8 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>
 
     int point = bigStr.length() - scale - (negative ? 1 : 0);
 
-    StringBuffer sb = new StringBuffer(bigStr.length() + 2
-                                       + (point <= 0 ? (-point + 1) : 0));
+    CPStringBuilder sb = new CPStringBuilder(bigStr.length() + 2
+					     + (point <= 0 ? (-point + 1) : 0));
     if (point <= 0)
       {
         // We have to prepend zeros and a decimal point.

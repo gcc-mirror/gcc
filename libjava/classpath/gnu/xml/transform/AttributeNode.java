@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
@@ -231,7 +233,7 @@ final class AttributeNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("attribute");
+    CPStringBuilder buf = new CPStringBuilder("attribute");
     buf.append('[');
     buf.append("name=");
     buf.append(name);

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.sound.sampled;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -329,7 +331,7 @@ public class AudioFormat
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     
     // usually at least encoding should be somewhat specified
     result.append(encoding);

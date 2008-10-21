@@ -32,6 +32,8 @@ public:
   static ::java::awt::AlphaComposite * getInstance(jint);
   static ::java::awt::AlphaComposite * getInstance(jint, jfloat);
   ::java::awt::CompositeContext * createContext(::java::awt::image::ColorModel *, ::java::awt::image::ColorModel *, ::java::awt::RenderingHints *);
+  ::java::awt::AlphaComposite * derive(jint);
+  ::java::awt::AlphaComposite * derive(jfloat);
   jfloat getAlpha();
   jint getRule();
   jint hashCode();

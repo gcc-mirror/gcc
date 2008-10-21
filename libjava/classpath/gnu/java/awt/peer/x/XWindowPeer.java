@@ -71,21 +71,16 @@ public class XWindowPeer
   private static int standardSelect = Event.BUTTON_PRESS_MASK
                                       | Event.BUTTON_RELEASE_MASK
                                       | Event.POINTER_MOTION_MASK
-                                      //| Event.RESIZE_REDIRECT_MASK
+                                     // | Event.RESIZE_REDIRECT_MASK //
                                       | Event.EXPOSURE_MASK
-                                      //| Event.PROPERTY_CHANGE_MASK
-                                      | Event.STRUCTURE_NOTIFY_MASK
+                                      | Event.PROPERTY_CHANGE_MASK
+                                      //| Event.STRUCTURE_NOTIFY_MASK
+                                      //| Event.SUBSTRUCTURE_NOTIFY_MASK
                                       | Event.KEY_PRESS_MASK
                                       | Event.KEY_RELEASE_MASK
+                                      //| Event.VISIBILITY_CHANGE_MASK //
                                       ;
-
-  /**
-   * Indicates if we are in callback mode, that is when a property (like size)
-   * is changed in reponse to a request from the X server and doesn't need
-   * to be propagated back to the X server.
-   */
-  boolean callback = false;
-
+  
   /**
    * The X window.
    */
@@ -110,8 +105,10 @@ public class XWindowPeer
     int h = Math.max(window.getHeight(), 1);
     xwindow = new Window(dev.getDisplay().default_root, x, y, w, h, 0, atts);
     xwindow.select_input(standardSelect);
+    
     dev.getEventPump().registerWindow(xwindow, window);
-
+    xwindow.set_wm_delete_window();
+    
     boolean undecorated;
     if (awtComponent instanceof Frame)
       {
@@ -269,14 +266,9 @@ public class XWindowPeer
    */
   public void reshape(int x, int y, int width, int height)
   {
-    // Need to substract insets because AWT size is including insets,
-    // and X size is excluding insets.
-    if (! callback)
-      {
-        Insets i = insets;
-        xwindow.move_resize(x - i.left, y - i.right, width - i.left - i.right,
-                            height - i.top - i.bottom);
-      }
+    Insets i = insets;
+    xwindow.move_resize(x - i.left, y - i.right, width - i.left - i.right,
+                        height - i.top - i.bottom);
   }
 
   public Insets insets()
@@ -302,5 +294,10 @@ public class XWindowPeer
   {
     XGraphicsDevice dev = XToolkit.getDefaultDevice();
     dev.getEventPump().unregisterWindow(xwindow);
+  }
+  
+  public Window getXwindow()
+  {
+    return xwindow;
   }
 }

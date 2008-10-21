@@ -12,6 +12,10 @@ extern "C"
 
 JNIEXPORT void JNICALL Java_java_net_VMNetworkInterface_initIds (JNIEnv *env, jclass);
 JNIEXPORT jobjectArray JNICALL Java_java_net_VMNetworkInterface_getVMInterfaces (JNIEnv *env, jclass);
+JNIEXPORT jboolean JNICALL Java_java_net_VMNetworkInterface_isUp (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_net_VMNetworkInterface_isLoopback (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_net_VMNetworkInterface_isPointToPoint (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_net_VMNetworkInterface_supportsMulticast (JNIEnv *env, jclass, jstring);
 
 #ifdef __cplusplus
 }

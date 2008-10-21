@@ -38,7 +38,19 @@ exception statement from your version. */
 
 package gnu.java.lang.reflect;
 
-import java.lang.reflect.*;
+import gnu.java.lang.CPStringBuilder;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.GenericSignatureFormatError;
+import java.lang.reflect.MalformedParameterizedTypeException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -184,7 +196,7 @@ final class ParameterizedTypeImpl extends TypeImpl implements ParameterizedType
 
     public String toString()
     {
-        StringBuilder sb = new StringBuilder();
+        CPStringBuilder sb = new CPStringBuilder();
         if (owner != null)
         {
             sb.append(owner);

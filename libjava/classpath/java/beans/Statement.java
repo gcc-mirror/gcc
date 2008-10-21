@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.beans;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -353,7 +355,7 @@ public class Statement
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer(); 
+    CPStringBuilder result = new CPStringBuilder(); 
 
     String targetName;
     if (target != null)

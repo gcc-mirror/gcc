@@ -13,6 +13,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -35,9 +39,9 @@ public: // actually package-private
 public:
   virtual jboolean hasMoreElements();
   virtual jboolean hasMoreMatches();
-  virtual jboolean hasMoreMatches(::java::lang::StringBuffer *);
+  virtual jboolean hasMoreMatches(::gnu::java::lang::CPStringBuilder *);
+  virtual ::gnu::java::util::regex::REMatch * REMatchEnumeration$nextElement();
   virtual ::java::lang::Object * nextElement();
-  virtual ::gnu::java::util::regex::REMatch * nextMatch();
 private:
   static const jint YES = 1;
   static const jint MAYBE = 0;

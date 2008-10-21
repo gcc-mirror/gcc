@@ -509,7 +509,7 @@ static jint get_free_space (int fd)
 
   result = GST_DETECTED_PIPE_CAPACITY - result;
   
-#elif
+#else
    g_warning("IMPLEMENT ME!!! - !defined (FIONSPACE), !defined (FIONREAD");
  
 #endif

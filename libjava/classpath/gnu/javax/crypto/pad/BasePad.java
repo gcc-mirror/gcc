@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.pad;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 
 import java.util.Map;
@@ -67,7 +69,7 @@ public abstract class BasePad
 
   public String name()
   {
-    final StringBuffer sb = new StringBuffer(name);
+    final CPStringBuilder sb = new CPStringBuilder(name);
     if (blockSize != -1)
       sb.append('-').append(String.valueOf(8 * blockSize));
     return sb.toString();

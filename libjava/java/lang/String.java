@@ -1440,6 +1440,14 @@ public final class String
     return count == 0;
   }
 
+  // Generate a String that shares the value array: subsequent changes
+  // to this array will affect the String.  A private internal method
+  // that is called from CPStringBuilder by compiler-generated code.
+  private static String toString(char[] value, int startIndex, int count)
+  {
+    return new String(value, startIndex, count, true);
+  }
+
   private native void init(char[] chars, int offset, int count,
 			   boolean dont_copy);
   private native void init(byte[] chars, int hibyte, int offset, int count);

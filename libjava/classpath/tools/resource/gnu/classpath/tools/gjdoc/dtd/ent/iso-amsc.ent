@@ -1,0 +1,52 @@
+<!-- ...................................................................... -->
+<!-- ISO Added Math Symbols: Delimiters Entities V0.3 ..................... -->
+<!-- File iso-amsc.ent .................................................... -->
+
+<!-- Copyright (C) 2001, 2002 Organization for the Advancement of Structured
+     Information Standards (OASIS).
+
+     $Id: iso-amsc.ent,v 1.1 2008/05/27 19:26:06 jsumali Exp $
+
+     Permission to use, copy, modify and distribute this entity set
+     and its accompanying documentation for any purpose and without
+     fee is hereby granted in perpetuity, provided that the above
+     copyright notice and this paragraph appear in all copies. The
+     copyright holders make no representation about the suitability of
+     the entities for any purpose. It is provided "as is" without
+     expressed or implied warranty.
+
+     Please direct all questions, bug reports, or suggestions for
+     changes to the docbook@lists.oasis-open.org mailing list. For more
+     information, see http://www.oasis-open.org/docbook/.
+
+     Derived, in part, from:
+
+       * iso-amsc.gml
+
+           Copyright (C) 1986 International Organization for Standardization
+           Permission to copy in any form is granted for use with
+           conforming SGML systems and applications as defined in
+           ISO 8879, provided this notice is included in all copies.
+
+       * http://www.tug.org/applications/jadetex/unicode.xml
+
+       * ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/MISC/SGML.TXT
+
+     Please use the following formal public identifier to identify it:
+
+       ISO 8879:1986//ENTITIES Added Math Symbols: Delimiters//EN//XML
+-->
+
+<!ENTITY rceil	"&#x2309;"> <!-- RIGHT CEILING -->
+<!ENTITY rfloor	"&#x230B;"> <!-- RIGHT FLOOR -->
+<!ENTITY rpargt	"&#xE291;"> <!--  -->
+<!ENTITY urcorn	"&#x231D;"> <!-- TOP RIGHT CORNER -->
+<!ENTITY drcorn	"&#x231F;"> <!-- BOTTOM RIGHT CORNER -->
+<!ENTITY lceil	"&#x2308;"> <!-- LEFT CEILING -->
+<!ENTITY lfloor	"&#x230A;"> <!-- LEFT FLOOR -->
+<!--     lpargt	Unknown unicode character -->
+<!ENTITY ulcorn	"&#x231C;"> <!-- TOP LEFT CORNER -->
+<!ENTITY dlcorn	"&#x231E;"> <!-- BOTTOM LEFT CORNER -->
+
+<!-- End of Added Math Symbols: Delimiters Entities V0.3 .................. -->
+<!-- ...................................................................... -->

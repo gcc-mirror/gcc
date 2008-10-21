@@ -55,8 +55,8 @@
 /** Reference count */
 static int reference_count = 0;
 
-/** GConfClient backend */
-static GConfClient *client = NULL;
+/** GConfEngine backend */
+static GConfEngine *engine = NULL;
 
 /** java.util.ArrayList class */
 static jclass jlist_class = NULL;
@@ -70,12 +70,10 @@ static jmethodID jlist_add_id = NULL;
 /* ***** PRIVATE FUNCTIONS DELCARATION ***** */
 
 /**
- * Gets the reference of the default GConfClient and initialize the
- * the type system.
+ * Gets the reference of the default GConfEngine..
  * The client reference should be released with g_object_unref after use.
- * This functions must be called with gdk lock held.
  */
-static void init_gconf_client (void);
+static void init_gconf (void);
 
 /**
  * Throws a new runtime exception after a failure, with the given message.
@@ -133,16 +131,14 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
 {
   reference_count++;
 
-  gdk_threads_enter ();
-  init_gconf_client ();
-  gdk_threads_leave ();
+  init_gconf ();
 
-  /* if client is null, there is probably an out of memory */
-  if (client == NULL)
+  /* if engine is null, there is probably an out of memory */
+  if (engine == NULL)
     {
       /* release the string and throw a runtime exception */
       throw_exception (env,
-      		"Unable to initialize GConfClient in native code\n");
+      		"Unable to initialize GConfEngine in native code\n");
       return;
     }
 
@@ -157,11 +153,11 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_all_keys
+ * Method:    gconf_all_keys
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1keys
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1all_1keys
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
 {
   /* TODO: check all the calls to gdk_threads_enter/leave */
@@ -183,9 +179,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1keys
       return NULL;
     }
 
-  gdk_threads_enter ();
-  entries = gconf_client_all_entries (client, dir, &err);
-  gdk_threads_leave ();
+  entries = gconf_engine_all_entries (engine, dir, &err);
   if (err != NULL)
     {
       throw_exception_by_name (env, "java/util/prefs/BackingStoreException",
@@ -235,11 +229,11 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1keys
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_all_nodes
+ * Method:    gconf_all_nodes
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1nodes
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1all_1nodes
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
 {
   const char *dir = NULL;
@@ -259,9 +253,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1nodes
       return NULL;
     }
 
-  gdk_threads_enter ();
-  entries = gconf_client_all_dirs (client, dir, &err);
-  gdk_threads_leave ();
+  entries = gconf_engine_all_dirs (engine, dir, &err);
   if (err != NULL)
     {
       throw_exception_by_name (env, "java/util/prefs/BackingStoreException",
@@ -311,18 +303,16 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1nodes
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_suggest_sync
+ * Method:    gconf_suggest_sync
  * Signature: ()V
  */
 JNIEXPORT void JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1suggest_1sync
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1suggest_1sync
   (JNIEnv *env, jclass clazz __attribute__ ((unused)))
 {
   GError *err = NULL;
 
-  gdk_threads_enter ();
-  gconf_client_suggest_sync (client, &err);
-  gdk_threads_leave ();
+  gconf_engine_suggest_sync (engine, &err);
   if (err != NULL)
     {
       throw_exception_by_name (env, "java/util/prefs/BackingStoreException",
@@ -334,11 +324,11 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1suggest_1sync
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_unset
+ * Method:    gconf_unset
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1unset
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1unset
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring key)
 {
   const char *_key = NULL;
@@ -351,9 +341,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1unset
       return JNI_FALSE;
     }
 
-  gdk_threads_enter ();
-  result = gconf_client_unset (client, _key, &err);
-  gdk_threads_leave ();
+  result = gconf_engine_unset (engine, _key, &err);
   if (err != NULL)
     {
       result = JNI_FALSE;
@@ -368,11 +356,11 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1unset
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_get_string
+ * Method:    gconf_get_string
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1get_1string
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1get_1string
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring key)
 {
   const char *_key = NULL;
@@ -386,9 +374,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1get_1string
       return NULL;
     }
 
-  gdk_threads_enter ();
-  _value = gconf_client_get_string (client, _key, &err);
-  gdk_threads_leave ();
+  _value = gconf_engine_get_string (engine, _key, &err);
   JCL_free_cstring (env, key, _key);
   if (err != NULL)
     {
@@ -407,17 +393,19 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1get_1string
       result = (*env)->NewStringUTF (env, _value);
       g_free ((gpointer) _value);
     }
-
+  
+  gconf_engine_suggest_sync (engine, NULL);
+  
   return result;
 }
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_set_string
+ * Method:    gconf_set_string
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1set_1string
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1set_1string
   (JNIEnv *env, jclass clazz __attribute__ ((unused)),
    jstring key, jstring value)
 {
@@ -435,9 +423,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1set_1string
       return JNI_FALSE;
     }
 
-  gdk_threads_enter ();
-  result = gconf_client_set_string (client, _key, _value, &err);
-  gdk_threads_leave ();
+  result = gconf_engine_set_string (engine, _key, _value, &err);
   if (err != NULL)
   	{
       g_error_free (err);
@@ -453,56 +439,11 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1set_1string
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_remove_dir
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1remove_1dir
-  (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
-{
-  const char *dir = NULL;
-
-  dir = JCL_jstring_to_cstring (env, node);
-  if (dir == NULL)
-    return;
-
-  gdk_threads_enter ();
-  gconf_client_remove_dir (client, dir, NULL);
-  gdk_threads_leave ();
-
-  JCL_free_cstring (env, node, dir);
-}
-
-/*
- * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_add_dir
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1add_1dir
-  (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
-{
-  const char *dir = NULL;
-
-  dir = JCL_jstring_to_cstring (env, node);
-  if (dir == NULL)
-    return;
-
-  /* ignore errors */
-  gdk_threads_enter ();
-  gconf_client_add_dir (client, dir, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
-  gdk_threads_leave ();
-
-  JCL_free_cstring (env, node, dir);
-}
-
-/*
- * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_dir_exists
+ * Method:    gconf_dir_exists
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1dir_1exists
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1dir_1exists
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
 {
   const char *dir = NULL;
@@ -514,9 +455,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1dir_1exists
     return value;
 
   /* on error return false */
-  gdk_threads_enter ();
-  value = gconf_client_dir_exists (client, dir, &err);
-  gdk_threads_leave ();
+  value = gconf_engine_dir_exists (engine, dir, &err);
   if (err != NULL)
     value = JNI_FALSE;
 
@@ -537,10 +476,8 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_finalize_1class
   if (reference_count == 0)
     {
       /* last reference, free all resources and return */
-      gdk_threads_enter ();
-      g_object_unref (G_OBJECT (client));
-      gdk_threads_leave ();
-
+      g_object_unref (G_OBJECT (engine));
+      
       (*env)->DeleteGlobalRef (env, jlist_class);
 
       jlist_class = NULL;
@@ -572,9 +509,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1escape_1key
       return NULL;
     }
 
-  gdk_threads_enter ();
   escaped = gconf_escape_key (_plain, strlen (_plain));
-  gdk_threads_leave ();
   
   JCL_free_cstring (env, plain, _plain);
   /* check for NULL, if so prevent string creation */
@@ -606,9 +541,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1unescape_1key
       return NULL;
     }
 
-  gdk_threads_enter ();
   plain = gconf_unescape_key (_escaped, strlen (_escaped));
-  gdk_threads_leave ();
   
   JCL_free_cstring (env, escaped, _escaped);
   /* check for NULL, if so prevent string creation */
@@ -636,10 +569,9 @@ throw_exception_by_name (JNIEnv *env, const char *name, const char *msg)
   JCL_ThrowException (env, name, msg);
 }
 
-static void init_gconf_client (void)
+static void init_gconf (void)
 {
-  g_type_init ();
-  client = gconf_client_get_default ();
+  engine = gconf_engine_get_default ();
 }
 
 static gboolean set_jlist_class (JNIEnv *env)

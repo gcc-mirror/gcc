@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+import gnu.xml.dom.DomNodeIterator;
+
 import java.util.Iterator;
 
 import org.w3c.dom.Attr;
@@ -65,8 +68,6 @@ import org.w3c.dom.xpath.XPathEvaluator;
 import org.w3c.dom.xpath.XPathException;
 import org.w3c.dom.xpath.XPathExpression;
 import org.w3c.dom.xpath.XPathNSResolver;
-
-import gnu.xml.dom.DomNodeIterator;
 
 /**
  * A DOM document node implemented in libxml2.
@@ -549,7 +550,7 @@ public class GnomeDocument
   
   public String toString()
   {
-    StringBuffer buffer = new StringBuffer(getClass().getName());
+    CPStringBuilder buffer = new CPStringBuilder(getClass().getName());
     buffer.append("[version=");
     buffer.append(getXmlVersion());
     buffer.append(",standalone=");

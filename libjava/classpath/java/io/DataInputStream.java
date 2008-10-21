@@ -38,6 +38,8 @@ exception statement from your version. */
  
 package java.io;
 
+import gnu.java.lang.CPStringBuilder;
+
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -350,7 +352,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final String readLine() throws IOException
   {
-    StringBuilder strb = new StringBuilder();
+    CPStringBuilder strb = new CPStringBuilder();
 
     while (true)
       {
@@ -747,7 +749,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
   {
     // Give StringBuffer an initial estimated size to avoid 
     // enlarge buffer frequently
-    StringBuilder strbuf = new StringBuilder (buf.length / 2 + 2);
+    CPStringBuilder strbuf = new CPStringBuilder (buf.length / 2 + 2);
 
     for (int i = 0; i < buf.length; )
       {

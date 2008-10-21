@@ -13,6 +13,13 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
     namespace xml
     {
       namespace transform
@@ -52,7 +59,7 @@ public: // actually package-private
   AbstractNumberNode(::gnu::xml::transform::TemplateNode *, ::java::lang::String *, jint, ::java::lang::String *, jint);
   virtual void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   virtual ::java::lang::String * format(::java::lang::String *, JArray< jint > *);
-  virtual void format(::java::lang::StringBuffer *, jint, ::java::lang::String *);
+  virtual void format(::gnu::java::lang::CPStringBuilder *, jint, ::java::lang::String *);
   static jboolean isAlphanumeric(jchar);
   static ::java::lang::String * alphabetic(jchar, jint);
   static ::java::lang::String * roman(jboolean, jint);

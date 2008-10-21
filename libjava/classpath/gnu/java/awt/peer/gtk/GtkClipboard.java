@@ -38,10 +38,25 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Image;
-import java.awt.datatransfer.*;
+import gnu.java.lang.CPStringBuilder;
 
-import java.io.*;
+import java.awt.Image;
+
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Reader;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
 import java.util.List;
 import java.util.Iterator;
@@ -247,7 +262,7 @@ public class GtkClipboard extends Clipboard
         Reader r = plainText.getReaderForText(contents);
         if (r != null)
           {
-            StringBuffer sb = new StringBuffer();
+            CPStringBuilder sb = new CPStringBuilder();
             char[] cs = new char[1024];
             int l = r.read(cs);
             while (l != -1)

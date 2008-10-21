@@ -90,6 +90,11 @@ public final class Short extends Number implements Comparable<Short>
   private static final int MIN_CACHE = -128;
   private static final int MAX_CACHE = 127;
   private static Short[] shortCache = new Short[MAX_CACHE - MIN_CACHE + 1];
+  static
+  {
+    for (short i=MIN_CACHE; i <= MAX_CACHE; i++)
+      shortCache[i - MIN_CACHE] = new Short(i);
+  }
 
   /**
    * The immutable value of this Short.
@@ -184,7 +189,7 @@ public final class Short extends Number implements Comparable<Short>
    */
   public static Short valueOf(String s, int radix)
   {
-    return new Short(parseShort(s, radix));
+    return valueOf(parseShort(s, radix));
   }
 
   /**
@@ -200,7 +205,7 @@ public final class Short extends Number implements Comparable<Short>
    */
   public static Short valueOf(String s)
   {
-    return new Short(parseShort(s, 10));
+    return valueOf(parseShort(s, 10));
   }
 
   /**
@@ -216,12 +221,8 @@ public final class Short extends Number implements Comparable<Short>
   {
     if (val < MIN_CACHE || val > MAX_CACHE)
       return new Short(val);
-    synchronized (shortCache)
-      {
-	if (shortCache[val - MIN_CACHE] == null)
-	  shortCache[val - MIN_CACHE] = new Short(val);
-	return shortCache[val - MIN_CACHE];
-      }
+    else
+      return shortCache[val - MIN_CACHE];
   }
 
   /**
@@ -260,7 +261,7 @@ public final class Short extends Number implements Comparable<Short>
     int i = Integer.parseInt(s, 10, true);
     if ((short) i != i)
       throw new NumberFormatException();
-    return new Short((short) i);
+    return valueOf((short) i);
   }
 
   /**

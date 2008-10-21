@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.beans.PropertyChangeEvent;
 
@@ -179,7 +181,7 @@ public class JToolTip extends JComponent implements Accessible
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",tiptext=");
     if (text != null)
       sb.append(text);

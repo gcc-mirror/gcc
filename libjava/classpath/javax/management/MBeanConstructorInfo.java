@@ -75,6 +75,8 @@ public class MBeanConstructorInfo
    * @param desc a description of the attribute.
    * @param cons the constructor.
    */
+  // API issue with lack of <?> on Constructor
+  @SuppressWarnings("unchecked")
   public MBeanConstructorInfo(String desc, Constructor cons)
   {
     super(cons.getName(), desc);
@@ -85,7 +87,7 @@ public class MBeanConstructorInfo
 	Type t = paramTypes[a];
 	if (t instanceof Class)
 	  signature[a] = new MBeanParameterInfo(null,
-						((Class) t).getName(),
+						((Class<?>) t).getName(),
 						null);
 	else
 	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);

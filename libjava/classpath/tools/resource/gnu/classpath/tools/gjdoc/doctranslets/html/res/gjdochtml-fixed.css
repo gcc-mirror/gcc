@@ -1,0 +1,286 @@
+/* gjdochtml-fixed.css
+ Copyright (C) 2004 Free Software Foundation, Inc.
+
+ This file is part of GNU Classpath.
+
+ GNU Classpath is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ 
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with GNU Classpath; see the file COPYING.  If not, write to the
+ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ 02111-1307 USA. */
+
+table  {
+   border: none !important;
+   border-top: none !important;
+   border-left: none !important;
+   border-right: none !important;
+   border-bottom: none !important;
+}
+
+td {
+   border: none !important;
+   border-top: none !important;
+   border-left: none !important;
+   border-right: none !important;
+   border-bottom: none !important;
+}
+
+body.classdoc { 
+   font-size: 100%;
+   margin: 0em;
+   padding: 0em;
+}
+
+table.navbar {
+   margin: 0em;
+   position: fixed;
+   z-index: 20;
+   left: 0em;
+   top: 0em;
+   width: 100%;
+   background: #0066B3;
+   color: white;
+   padding: 0.3em;
+   border-bottom: 3px solid black !important;
+   height: 5.3em;
+}
+
+table[class="navbar bottom"] {
+   visibility: hidden;
+}
+
+a.navi-button {
+   color: #FFB200;
+}
+
+.navbar-first-row {
+   font-size: 80%;
+   padding-bottom: 0.3em;
+}
+
+.navbar-second-row {
+   font-size: 70%;
+   text-align: right;
+   padding-right: 4.5em;
+}
+
+
+div.pagebody {
+  margin-top: 7em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 5em;
+  z-index: -100;
+}
+
+span.navsep:before {
+  padding-left: 0.25em;
+  content: "|";
+}
+
+span[class="navi-button current"] {
+  background: #003D6B;
+  color: white;
+}
+
+span[class="navi-button unavailable"] {
+  color: white;
+}
+
+.navi-button {
+  padding-left: 0.1em;                       
+  padding-right: 0.1em;                       
+
+}
+
+
+.classdoc-table-xxx { 
+   border-color: #aaaaaa;
+   border-style: solid;
+   border-collapse: collapse;
+}
+
+.classdoc-table { 
+   border: 0px;
+   border-collapse: collapse;
+}
+
+td {
+   vertical-align: top;
+   padding: 0.2em;
+}
+
+table {
+   margin-top: 1em;
+}
+
+span.index-category-current {
+  padding: 0.4em;
+  border: 1px black solid;
+}
+
+a.index-category-link {
+  width: 5em;
+  min-width: 5em;
+  padding: 0.3em;
+  margin-right: 0.4em;
+  color: #FFB200;
+  border: 1px #FFB200 solid;
+  text-decoration: none;
+}
+
+a[href] {
+  color: #991F00;
+}
+
+.classdoc-subtitle {
+  position: fixed;
+  left: 0.0em;
+  top: 2.7em;
+  font-size: 80%;
+  font-weight: bold;
+  color: #FFD980;
+  z-index: 30;
+  padding-left: 1.0em;
+  padding-top: 0.0em;
+  margin-top: 0.0em;
+}
+
+h1.classdoc-title {
+  position: fixed;
+  left: 0.0em;
+  top: 2.4em;
+  font-size: 130%;      
+  z-index: 30;
+  color: #FFD980;
+  padding-left: 0.5em;
+  padding-top: 0.0em;
+  margin-top: 0.0em;    
+}
+
+div.index-categories {
+  position: fixed;
+  left: 28em;
+  top: 5.8em;
+  font-size: 60%;
+  padding-top: 0.0em;
+  margin-top: 0.0em;
+}
+
+.before-details {
+}
+
+h3.menu-title {
+  width: 100%;
+  position: fixed;
+  left: 0em;
+  top: 0em;
+  margin-top: 0em;
+  background: #0066B3;
+  color: #FFD980;
+  padding: 0.3em;
+  padding-left: 0.8em;
+  border-bottom: 3px solid black;
+  font-size: 100%;
+}
+
+h3.menu-title > a {
+  color: #FFB200;
+}
+
+body.menu {
+  padding-top: 2em;
+}
+
+a.menu {
+  font-size: 85%;
+}
+
+a.classdoc {
+  position: relative;
+  top: -6em;
+}
+
+
+div.section-header, h1.classdoc-header {
+   background: #FFD980;
+   margin-bottom: 0px;
+   font-size: 130%;
+   font-weight: bolder;
+   padding-left: 2px;
+   margin-top: 1em;
+   padding-top: 4px;
+   padding-bottom: 4px;
+   position: relative;
+   left: -200px;
+   padding-left: 202px;
+   padding-right: 20px;
+   border: 1px solid black;
+   width: 60%;
+}
+
+div.sub-section-header {
+   background: #FFD980;
+   margin-bottom: 0px;
+   font-size: 110%;
+   font-weight: normal;
+   padding-left: 2px;
+   margin-top: 1em;
+   padding-top: 4px;
+   padding-bottom: 4px;
+   position: relative;
+   left: -200px;
+   padding-left: 202px;
+   padding-right: 20px;
+   border: 1px solid black;
+   width: 60%;
+}
+
+table {
+   width: 100%;
+}
+
+dl.classdoc-list {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 2.5em;
+}
+
+blockquote.member-summary {
+   margin: 0px;
+   font-style: oblique;
+   font-size: 90%;
+   margin-top: 0.1em;
+   margin-bottom: 0.2em;
+   margin-left: 1em;
+}
+
+td[class="member-summary method modifiers"] {
+  text-align: right;
+}
+
+div.classdoc-tag-section-header {
+   margin-top: 0.5em;
+   font-weight: bold;
+}
+
+div.navbar-style-selector {
+  position: fixed;
+  right: 1em;
+  top: 2.9em;
+  z-index: 50;
+  padding-right: 0.6em;
+  vertical-align: top;
+}
+
+/* triad @ 225 deg */
+

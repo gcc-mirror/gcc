@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
@@ -416,7 +418,7 @@ public final class CollationElementIterator
    */
   public void setText(CharacterIterator source)
   {
-    StringBuffer expand = new StringBuffer();
+    CPStringBuilder expand = new CPStringBuilder();
 
     // For now assume we read from the beginning of the string.
     for (char c = source.first();

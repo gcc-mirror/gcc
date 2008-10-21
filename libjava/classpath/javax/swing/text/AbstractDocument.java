@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.font.TextAttribute;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -2013,7 +2015,7 @@ public abstract class AbstractDocument implements Document, Serializable
      */
     public void dump(PrintStream stream, int indent)
     {
-      StringBuffer b = new StringBuffer();
+      CPStringBuilder b = new CPStringBuilder();
       for (int i = 0; i < indent; ++i)
         b.append(' ');
       b.append('<');

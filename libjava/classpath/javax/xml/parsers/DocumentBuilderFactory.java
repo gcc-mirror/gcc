@@ -99,7 +99,7 @@ public abstract class DocumentBuilderFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 return (DocumentBuilderFactory) t.newInstance();
               }

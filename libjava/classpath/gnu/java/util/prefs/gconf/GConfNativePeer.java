@@ -49,19 +49,11 @@ import java.util.prefs.BackingStoreException;
 public final class GConfNativePeer
 {
   /**
-   * Object to achieve locks for methods that need to be synchronized.
-   */
-  private static final Object[] semaphore = new Object[0];
-
-  /**
    * Creates a new instance of GConfNativePeer
    */
   public GConfNativePeer()
   {
-    synchronized (semaphore)
-      {
-        init_class();
-      }
+    init_class();
   }
 
   /**
@@ -72,31 +64,7 @@ public final class GConfNativePeer
    */
   public boolean nodeExist(String node)
   {
-    return gconf_client_dir_exists(node);
-  }
-
-  /**
-   * Add the node <code>node</code> to the list of nodes the GConf will watch.
-   * An event is raised everytime this node is changed. You can add a node
-   * multiple times.
-   * 
-   * @param node the node to track.
-   */
-  public void startWatchingNode(String node)
-  {
-    gconf_client_add_dir(node);
-  }
-
-  /**
-   * Remove the node <code>node</code> to the list of nodes the GConf is
-   * watching. Note that if a node has been added multiple times, you must
-   * remove it the same number of times before the remove takes effect.
-   * 
-   * @param node the node you don't want to track anymore.
-   */
-  public void stopWatchingNode(String node)
-  {
-    gconf_client_remove_dir(node);
+    return gconf_dir_exists(node);
   }
 
   /**
@@ -111,7 +79,7 @@ public final class GConfNativePeer
    */
   public boolean setString(String key, String value)
   {
-    return gconf_client_set_string(key, value);
+    return gconf_set_string(key, value);
   }
 
   /**
@@ -124,7 +92,7 @@ public final class GConfNativePeer
    */
   public boolean unset(String key)
   {
-    return gconf_client_unset(key);
+    return gconf_unset(key);
   }
 
   /**
@@ -135,7 +103,7 @@ public final class GConfNativePeer
    */
   public String getKey(String key)
   {
-    return gconf_client_get_string(key);
+    return gconf_get_string(key);
   }
 
   /**
@@ -149,7 +117,7 @@ public final class GConfNativePeer
    */
   public List<String> getKeys(String node) throws BackingStoreException
   {
-    return gconf_client_all_keys(node);
+    return gconf_all_keys(node);
   }
 
   /**
@@ -161,7 +129,7 @@ public final class GConfNativePeer
    */
   public List<String> getChildrenNodes(String node) throws BackingStoreException
   {
-    return gconf_client_all_nodes(node);
+    return gconf_all_nodes(node);
   }
 
   /**
@@ -185,17 +153,14 @@ public final class GConfNativePeer
    */
   public void suggestSync() throws BackingStoreException
   {
-    gconf_client_suggest_sync();
+    gconf_suggest_sync();
   }
   
   protected void finalize() throws Throwable
   {
     try
       {
-        synchronized (semaphore)
-          {
-            finalize_class();
-          }
+        finalize_class();
       }
     finally
       {
@@ -215,18 +180,18 @@ public final class GConfNativePeer
    * Initialize the GConf native peer and enable the object cache.
    * It is meant to be used by the static initializer.
    */
-  native static final private void init_id_cache();
+  native synchronized static final private void init_id_cache();
   
   /**
    * Initialize the GConf native peer. This is meant to be used by the
    * class constructor.
    */
-  native static final private void init_class();
+  native synchronized static final private void init_class();
 
   /**
    * Class finalizer.
    */
-  native static final private void finalize_class();
+  native synchronized static final private void finalize_class();
 
   /**
    * Queries the GConf database to see if the given node exists, returning
@@ -235,23 +200,8 @@ public final class GConfNativePeer
    * @param node the node to query for existence.
    * @return true if the node exist, false otherwise.
    */
-  native static final protected boolean gconf_client_dir_exists(String node);
-
-  /**
-   * Adds the given node to the list of nodes that GConf watches for
-   * changes.
-   * 
-   * @param node the node to watch for changes.
-   */
-  native static final protected void gconf_client_add_dir(String node);
-
-  /**
-   * Removes the given node from the list of nodes that GConf watches for
-   * changes.
-   * 
-   * @param node the node to remove from from the list of watched nodes.
-   */
-  native static final protected void gconf_client_remove_dir(String node);
+  native synchronized
+  static final protected boolean gconf_dir_exists(String node);
 
   /**
    * Sets the given key/value pair into the GConf database.
@@ -261,8 +211,8 @@ public final class GConfNativePeer
    * @param value the value to associate to the given key.
    * @return true if the change has effect, false otherwise.
    */
-  native static final protected boolean gconf_client_set_string(String key,
-                                                                String value);
+  native synchronized
+  static final protected boolean gconf_set_string(String key, String value);
 
   /**
    * Returns the key associated to the given key. Null is returned if the
@@ -271,7 +221,8 @@ public final class GConfNativePeer
    * @param key the key to return the value of.
    * @return The value associated to the given key, or null.
    */
-  native static final protected String gconf_client_get_string(String key);
+  native synchronized
+  static final protected String gconf_get_string(String key);
 
   /**
    * Usets the given key, removing the key from the database.
@@ -279,13 +230,13 @@ public final class GConfNativePeer
    * @param key the key to remove.
    * @return true if the operation success, false otherwise.
    */
-  native static final protected boolean gconf_client_unset(String key);
+  native synchronized static final protected boolean gconf_unset(String key);
 
   /**
    * Suggest to the GConf native peer a sync with the database.
    *
    */
-  native static final protected void gconf_client_suggest_sync()
+  native synchronized static final protected void gconf_suggest_sync()
     throws BackingStoreException;
   
   /**
@@ -295,7 +246,7 @@ public final class GConfNativePeer
    * @return A list of nodes under the given source node.
    */
   native
-  static final protected List<String> gconf_client_all_nodes(String node)
+  static synchronized final protected List<String> gconf_all_nodes(String node)
     throws BackingStoreException;
   
   /**
@@ -304,8 +255,8 @@ public final class GConfNativePeer
    * @param node the source node.
    * @return A list of all keys stored in the given node.
    */
-  native
-  static final protected List<String> gconf_client_all_keys(String node)
+  native synchronized 
+  static final protected List<String> gconf_all_keys(String node)
     throws BackingStoreException;
 
   /**
@@ -314,7 +265,7 @@ public final class GConfNativePeer
    * @param plain the String to escape.
    * @return An escaped String for use with GConf.
    */
-  native
+  native synchronized 
   static final protected String gconf_escape_key(String plain);
   
   /**
@@ -324,7 +275,7 @@ public final class GConfNativePeer
    * @param escaped key as returned by gconf_escape_key 
    * @return An unescaped key.
    */
-  native
+  native synchronized 
   static final protected String gconf_unescape_key(String escaped);
   
   static

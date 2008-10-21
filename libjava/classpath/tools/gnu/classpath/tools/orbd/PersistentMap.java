@@ -165,7 +165,7 @@ public class PersistentMap
      */
     public String getKey(String id, String kind)
     {
-      StringBuffer b = new StringBuffer(id.length() + 8);
+      StringBuilder b = new StringBuilder(id.length() + 8);
       appEscaping(b, id);
       b.append('.');
       if (kind != null && kind.length() > 0)
@@ -180,7 +180,7 @@ public class PersistentMap
      * @param b a buffer to append the contents to.
      * @param s a string to append.
      */
-    void appEscaping(StringBuffer b, String s)
+    void appEscaping(StringBuilder b, String s)
     {
       char c;
       for (int i = 0; i < s.length(); i++)

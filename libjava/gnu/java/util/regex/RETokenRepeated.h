@@ -15,6 +15,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -25,7 +29,6 @@ extern "Java"
             class REToken;
             class RETokenRepeated;
             class RETokenRepeated$DoablesFinder;
-            class RETokenRepeated$FindMatchControlStack;
             class RETokenRepeated$TryAnotherResult;
         }
       }
@@ -48,7 +51,7 @@ public: // actually package-private
   ::gnu::java::util::regex::REMatch * backtrack(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, ::java::lang::Object *);
 private:
   ::gnu::java::util::regex::REMatch * findMatch(::gnu::java::util::regex::BacktrackStack *);
-  ::gnu::java::util::regex::REMatch * findMatch(::gnu::java::util::regex::BacktrackStack *, ::gnu::java::util::regex::RETokenRepeated$FindMatchControlStack *);
+  ::gnu::java::util::regex::REMatch * findMatch(::gnu::java::util::regex::BacktrackStack *, ::java::util::Deque *);
   ::gnu::java::util::regex::RETokenRepeated$TryAnotherResult * tryAnother(::gnu::java::util::regex::BacktrackStack *, ::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint, ::gnu::java::util::regex::RETokenRepeated$DoablesFinder *, JArray< jint > *);
 public: // actually package-private
   jboolean match(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *);
@@ -61,7 +64,7 @@ private:
   ::gnu::java::util::regex::REMatch * backtrackFixedLength(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, ::java::lang::Object *);
   ::gnu::java::util::regex::REMatch * findMatchFixedLength(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint, jint);
 public: // actually package-private
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
 private:
   ::gnu::java::util::regex::REToken * __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) token;
   jint min;

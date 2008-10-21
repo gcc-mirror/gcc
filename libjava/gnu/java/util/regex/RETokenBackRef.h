@@ -13,6 +13,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -32,7 +36,7 @@ class gnu::java::util::regex::RETokenBackRef : public ::gnu::java::util::regex::
 public: // actually package-private
   RETokenBackRef(jint, jint, jboolean);
   ::gnu::java::util::regex::REMatch * matchThis(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *);
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
 private:
   jint __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) num;
   jboolean insens;

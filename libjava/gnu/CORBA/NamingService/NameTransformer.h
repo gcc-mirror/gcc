@@ -20,6 +20,13 @@ extern "Java"
           class NameTransformer;
       }
     }
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
   }
   namespace org
   {
@@ -45,7 +52,7 @@ public:
   virtual JArray< ::org::omg::CosNaming::NameComponent * > * toName(::java::lang::String *);
   virtual ::java::lang::String * toString(JArray< ::org::omg::CosNaming::NameComponent * > *);
 private:
-  void appEscaping(::java::lang::StringBuffer *, ::java::lang::String *);
+  void appEscaping(::gnu::java::lang::CPStringBuilder *, ::java::lang::String *);
   void assertEndOfNode(::org::omg::CORBA::IntHolder *, JArray< ::java::lang::String * > *);
   ::org::omg::CosNaming::NameComponent * readNode(::org::omg::CORBA::IntHolder *, JArray< ::java::lang::String * > *);
   ::java::lang::String * readPart(::org::omg::CORBA::IntHolder *, JArray< ::java::lang::String * > *);

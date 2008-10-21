@@ -36,8 +36,6 @@ public:
   virtual ::java::lang::String * getActions();
   virtual jint hashCode();
   virtual jboolean implies(::java::security::Permission *);
-public: // actually package-private
-  virtual ::java::util::Set * getActionSet();
 private:
   void updateActionSet();
   void readObject(::java::io::ObjectInputStream *);

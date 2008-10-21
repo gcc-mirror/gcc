@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
@@ -597,7 +599,7 @@ public class JSplitPane extends JComponent implements Accessible
   {
     // FIXME: the next line can be restored once PR27208 is fixed
     String superParamStr = ""; //super.paramString();
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(",continuousLayout=").append(isContinuousLayout());
     sb.append(",dividerSize=").append(getDividerSize());
     sb.append(",lastDividerLocation=").append(getLastDividerLocation());

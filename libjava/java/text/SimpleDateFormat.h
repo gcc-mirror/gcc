@@ -80,6 +80,7 @@ private:
   jint serialVersionOnStream;
   static const jlong serialVersionUID = 4774881970558875024LL;
   static ::java::lang::String * standardChars;
+  static const jint RFC822_TIMEZONE_FIELD = 18;
 public:
   static ::java::lang::Class class$;
 };

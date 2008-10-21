@@ -39,6 +39,8 @@ package gnu.xml.xpath;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+
 import javax.xml.namespace.QName;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -59,12 +61,14 @@ public final class Root
 
   public Object evaluate(Node context, int pos, int len)
   {
-    return evaluate(context, Collections.EMPTY_SET);
+    Set<Node> emptySet = Collections.emptySet();
+    return evaluate(context, emptySet);
   }
 
-  Collection evaluate(Node context, Collection ns)
+  @Override
+  Collection<Node> evaluate(Node context, Collection<Node> ns)
   {
-    Document doc = (context instanceof Document) ? (Document) context :
+    Node doc = (context instanceof Document) ? context :
       context.getOwnerDocument();
     return Collections.singleton(doc);
   }

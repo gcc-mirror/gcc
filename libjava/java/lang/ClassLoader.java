@@ -775,7 +775,7 @@ public abstract class ClassLoader
    */
   protected Enumeration<URL> findResources(String name) throws IOException
   {
-    return (Enumeration<URL>) EmptyEnumeration.getInstance();
+    return new EmptyEnumeration<URL>();
   }
 
   /**

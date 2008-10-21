@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * @author Ito Kazumitsu
  */
@@ -45,74 +47,90 @@ final class RETokenLookBehind extends REToken
   REToken re;
   boolean negative;
 
-  RETokenLookBehind(REToken re, boolean negative) throws REException {
-    super(0);
+    RETokenLookBehind (REToken re, boolean negative) throws REException
+  {
+    super (0);
     this.re = re;
     this.negative = negative;
   }
 
-  int getMaximumLength() {
+  int getMaximumLength ()
+  {
     return 0;
   }
 
-  REMatch matchThis(CharIndexed input, REMatch mymatch)
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
   {
-    int max = re.getMaximumLength();
-    CharIndexed behind = input.lookBehind(mymatch.index, max);
-    REMatch trymatch = (REMatch)mymatch.clone();
-    REMatch trymatch1 = (REMatch)mymatch.clone();
-    REMatch newMatch = null;
-    int diff = behind.length() - input.length();
+    int max = re.getMaximumLength ();
+    CharIndexed behind = input.lookBehind (mymatch.index, max);
+    REMatch trymatch = (REMatch) mymatch.clone ();
+    int diff = behind.length () - input.length ();
     int curIndex = trymatch.index + diff;
     trymatch.index = 0;
     trymatch.offset = 0;
-    RETokenMatchHereOnly stopper = new RETokenMatchHereOnly(curIndex);
-    REToken re1 = (REToken) re.clone();
-    re1.chain(stopper);
-    if (re1.match(behind, trymatch)) {
-      if (negative) return null;
-      for (int i = 0; i < trymatch.start.length; i++) {
-	  if (trymatch.start[i] != -1 && trymatch.end[i] != -1) {
-	      trymatch.start[i] -= diff;
-	      if (trymatch.start[i] < 0) trymatch.start[i] -= 1;
-	      trymatch.end[i] -= diff;
-	      if (trymatch.end[i] < 0) trymatch.end[i] -= 1;
+    RETokenMatchHereOnly stopper = new RETokenMatchHereOnly (curIndex);
+    REToken re1 = (REToken) re.clone ();
+    re1.chain (stopper);
+    if (re1.match (behind, trymatch))
+      {
+	if (negative)
+	  return null;
+	for (int i = 0; i < trymatch.start.length; i++)
+	  {
+	    if (trymatch.start[i] != -1 && trymatch.end[i] != -1)
+	      {
+		trymatch.start[i] -= diff;
+		if (trymatch.start[i] < 0)
+		  trymatch.start[i] -= 1;
+		trymatch.end[i] -= diff;
+		if (trymatch.end[i] < 0)
+		  trymatch.end[i] -= 1;
+	      }
 	  }
+	trymatch.index = mymatch.index;
+	trymatch.offset = mymatch.offset;
+	return trymatch;
       }
-      trymatch.index = mymatch.index;
-      trymatch.offset = mymatch.offset;
-      return trymatch;
-    }
-    else {
-      if (negative) return mymatch;
-      return null;
-    }
+    else
+      {
+	if (negative)
+	  return mymatch;
+	return null;
+      }
   }
 
-    void dump(StringBuffer os) {
-	os.append("(?<");
-	os.append(negative ? '!' : '=');
-	re.dumpAll(os);
-	os.append(')');
+  void dump (CPStringBuilder os)
+  {
+    os.append ("(?<");
+    os.append (negative ? '!' : '=');
+    re.dumpAll (os);
+    os.append (')');
+  }
+
+  private static class RETokenMatchHereOnly extends REToken
+  {
+
+    int getMaximumLength ()
+    {
+      return 0;
     }
 
-    private static class RETokenMatchHereOnly extends REToken {
+    private int index;
 
-        int getMaximumLength() { return 0; }
-
-	private int index;
-
-	RETokenMatchHereOnly(int index) {
-	    super(0);
-	    this.index = index;
-	}
-
-	REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	    return (index == mymatch.index ? mymatch : null);
-	}
-
-        void dump(StringBuffer os) {}
-
+    RETokenMatchHereOnly (int index)
+    {
+      super (0);
+      this.index = index;
     }
+
+    REMatch matchThis (CharIndexed input, REMatch mymatch)
+    {
+      return (index == mymatch.index ? mymatch : null);
+    }
+
+    void dump (CPStringBuilder os)
+    {
+    }
+
+  }
 }
-

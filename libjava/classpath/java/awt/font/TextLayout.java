@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
@@ -362,7 +364,7 @@ public final class TextLayout implements Cloneable
 
   private static String getText(AttributedCharacterIterator iter)
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     int idx = iter.getIndex();
     for(char c = iter.first(); c != CharacterIterator.DONE; c = iter.next()) 
       sb.append(c);

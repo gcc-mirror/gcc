@@ -89,7 +89,7 @@ public abstract class TransformerFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 return (TransformerFactory) t.newInstance();
               }
@@ -107,7 +107,7 @@ public abstract class TransformerFactory
     while (className == null && count < 3);
     try
       {
-        Class t =
+        Class<?> t =
           Class.forName("gnu.xml.transform.TransformerFactoryImpl");
         return (TransformerFactory) t.newInstance();
       }

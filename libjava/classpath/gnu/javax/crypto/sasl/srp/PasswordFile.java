@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.srp;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 import gnu.javax.crypto.key.srp6.SRPAlgorithm;
@@ -445,12 +447,12 @@ public class PasswordFile
   {
     String ndx;
     String[] mpi;
-    StringBuffer sb;
+    CPStringBuilder sb;
     for (Iterator it = configurations.keySet().iterator(); it.hasNext();)
       {
         ndx = (String) it.next();
         mpi = (String[]) configurations.get(ndx);
-        sb = new StringBuffer(ndx)
+        sb = new CPStringBuilder(ndx)
             .append(":").append(mpi[0])
             .append(":").append(mpi[1]);
         pw.println(sb.toString());
@@ -591,7 +593,7 @@ public class PasswordFile
   {
     String user, digestID;
     HashMap fields, verifiers;
-    StringBuffer sb1, sb2;
+    CPStringBuilder sb1, sb2;
     Iterator j;
     final Iterator i = entries.keySet().iterator();
     while (i.hasNext())
@@ -601,7 +603,7 @@ public class PasswordFile
         if (! user.equals(fields.get(USER_FIELD)))
           throw new IOException("Inconsistent SRP password data");
         verifiers = (HashMap) fields.get(VERIFIERS_FIELD);
-        sb1 = new StringBuffer(user)
+        sb1 = new CPStringBuilder(user)
             .append(":").append((String) verifiers.get("0"))
             .append(":").append((String) fields.get(SALT_FIELD))
             .append(":").append((String) fields.get(CONFIG_FIELD));
@@ -614,7 +616,7 @@ public class PasswordFile
             if (! "0".equals(digestID))
               {
                 // #0 is the default digest, already present in tpasswd!
-                sb2 = new StringBuffer(digestID)
+                sb2 = new CPStringBuilder(digestID)
                     .append(":").append(user)
                     .append(":").append((String) verifiers.get(digestID));
                 pw2.println(sb2.toString());

@@ -51,7 +51,7 @@ public interface Function
   /**
    * Sets the list of expressions to evaluate as parameter values.
    */
-  void setArguments(List args);
+  void setArguments(List<Expr> args);
 
 }
 

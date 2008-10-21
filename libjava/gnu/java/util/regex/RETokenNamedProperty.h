@@ -15,6 +15,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -42,7 +46,7 @@ private:
 public: // actually package-private
   jboolean returnsFixedLengthMatches();
   jint findFixedLengthMatches(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint);
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
 private:
   ::gnu::java::util::regex::RETokenNamedProperty$Handler * getHandler(::java::lang::String *);
 public: // actually package-private
