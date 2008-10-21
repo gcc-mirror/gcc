@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -86,7 +88,7 @@ public final class ByteArray
 
   public static String toHexString (byte[] buf, int off, int len, char sep)
   {
-    StringBuffer str = new StringBuffer();
+    CPStringBuilder str = new CPStringBuilder();
     for (int i = 0; i < len; i++)
       {
 	str.append (Character.forDigit (buf[i+off] >>> 4 & 0x0F, 16));
@@ -100,7 +102,7 @@ public final class ByteArray
   public static String formatInt (int value, int radix, int len)
   {
     String s = Integer.toString (value, radix);
-    StringBuffer buf = new StringBuffer ();
+    CPStringBuilder buf = new CPStringBuilder ();
     for (int j = 0; j < len - s.length(); j++)
       buf.append ("0");
     buf.append (s);

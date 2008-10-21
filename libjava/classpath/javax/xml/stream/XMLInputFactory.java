@@ -229,7 +229,7 @@ public abstract class XMLInputFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 return (XMLInputFactory) t.newInstance();
               }

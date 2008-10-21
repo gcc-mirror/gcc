@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ObjectStreamException;
 
 /*
@@ -212,7 +214,7 @@ public final class Inet4Address extends InetAddress
    */
   public String getHostAddress()
   {
-    StringBuffer sb = new StringBuffer(40);
+    CPStringBuilder sb = new CPStringBuilder(40);
 
     int len = addr.length;
     int i = 0;

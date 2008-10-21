@@ -64,7 +64,7 @@ jint gnu::gcj::xlib::Drawable::getDepth ()
 }
 
 java::awt::Rectangle*
-gnu::gcj::xlib::Drawable::getBounds(java::awt::Rectangle* rv)
+gnu::gcj::xlib::Drawable::getBounds(::java::awt::Rectangle* rv)
 {
   ::Display* dpy = (::Display*) (getDisplay()->display);
 
@@ -86,7 +86,7 @@ gnu::gcj::xlib::Drawable::getBounds(java::awt::Rectangle* rv)
  
   if (rv == 0)
     {
-      rv = new java::awt::Rectangle(x, y, w, h);
+      rv = new ::java::awt::Rectangle(x, y, w, h);
     }
   else
     {

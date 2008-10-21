@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.management;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 import java.util.Hashtable;
@@ -304,17 +306,14 @@ public class ObjectName
 					     "character.");
     char[] keychars = new char[] { '\n', ':', ',', '*', '?', '=' };
     char[] valchars = new char[] { '\n', ':', ',', '=' };
-    Iterator i = properties.entrySet().iterator();
-    while (i.hasNext())
+    for (Map.Entry<String,String> entry : properties.entrySet())
       {
-	Map.Entry entry = (Map.Entry) i.next();
-	String key = (String) entry.getKey();
 	for (int a = 0; a < keychars.length; ++a)
-	  if (key.indexOf(keychars[a]) != -1)
+	  if (entry.getKey().indexOf(keychars[a]) != -1)
 	    throw new MalformedObjectNameException("A key contains a '" +
 						   keychars[a] + "' " +
 						   "character.");
-	String value = (String) entry.getValue();
+	String value = entry.getValue();
 	int quote = value.indexOf('"');
 	if (quote == 0)
 	  {
@@ -387,15 +386,13 @@ public class ObjectName
 
     if (isPropertyPattern())
       {
-	Hashtable oProps = name.getKeyPropertyList();
-	Iterator i = properties.entrySet().iterator();
-	while (i.hasNext())
+	Hashtable<String,String> oProps = name.getKeyPropertyList();
+	for (Map.Entry<String,String> entry : properties.entrySet())
 	  {
-	    Map.Entry entry = (Map.Entry) i.next();
-	    String key = (String) entry.getKey();
+	    String key = entry.getKey();
 	    if (!(oProps.containsKey(key)))
 	      return false;
-	    String val = (String) entry.getValue();
+	    String val = entry.getValue();
 	    if (!(val.equals(oProps.get(key))))
 	      return false;
 	  }
@@ -476,11 +473,11 @@ public class ObjectName
    */
   public String getCanonicalKeyPropertyListString()
   {
-    StringBuilder builder = new StringBuilder();
-    Iterator i = properties.entrySet().iterator();
+    CPStringBuilder builder = new CPStringBuilder();
+    Iterator<Map.Entry<String,String>> i = properties.entrySet().iterator();
     while (i.hasNext())
       {
-	Map.Entry entry = (Map.Entry) i.next();
+	Map.Entry<String,String> entry = i.next();
 	builder.append(entry.getKey() + "=" + entry.getValue());
 	if (i.hasNext())
 	  builder.append(",");
@@ -795,7 +792,7 @@ public class ObjectName
    */
   public static String quote(String string)
   {
-    StringBuilder builder = new StringBuilder();
+    CPStringBuilder builder = new CPStringBuilder();
     builder.append('"');
     for (int a = 0; a < string.length(); ++a)
       {
@@ -863,7 +860,7 @@ public class ObjectName
     throws IOException
   {
     out.defaultWriteObject();
-    StringBuffer buffer = new StringBuffer(getDomain());
+    CPStringBuilder buffer = new CPStringBuilder(getDomain());
     buffer.append(':');
     String properties = getKeyPropertyListString();
     buffer.append(properties);
@@ -924,7 +921,7 @@ public class ObjectName
     if (q.charAt(q.length() - 1) != '"')
       throw new IllegalArgumentException("The string does " +
 					 "not end with a quote.");
-    StringBuilder builder = new StringBuilder();
+    CPStringBuilder builder = new CPStringBuilder();
     for (int a = 1; a < (q.length() - 1); ++a)
       {
 	char n = q.charAt(a);

@@ -182,7 +182,7 @@ public class StyleSheet extends StyleContext
    */
   private class CSSStyle
     extends SimpleAttributeSet
-    implements Style, Comparable
+    implements Style, Comparable<CSSStyle>
   {
 
     static final int PREC_UA = 0;
@@ -229,9 +229,8 @@ public class StyleSheet extends StyleContext
      * Sorts the rule according to the style's precedence and the
      * selectors specificity.
      */
-    public int compareTo(Object o)
+    public int compareTo(CSSStyle other)
     {
-      CSSStyle other = (CSSStyle) o;
       return other.precedence + other.selector.getSpecificity()
              - precedence - selector.getSpecificity();
     }
@@ -247,18 +246,18 @@ public class StyleSheet extends StyleContext
   /**
    * The linked style sheets stored.
    */
-  private ArrayList linked;
+  private ArrayList<StyleSheet> linked;
 
   /**
    * Maps element names (selectors) to AttributSet (the corresponding style
    * information).
    */
-  ArrayList css = new ArrayList();
+  ArrayList<CSSStyle> css = new ArrayList<CSSStyle>();
 
   /**
    * Maps selectors to their resolved styles.
    */
-  private HashMap resolvedStyles;
+  private HashMap<String,Style> resolvedStyles;
 
   /**
    * Constructs a StyleSheet.
@@ -267,7 +266,7 @@ public class StyleSheet extends StyleContext
   {
     super();
     baseFontSize = 4; // Default font size from CSS
-    resolvedStyles = new HashMap();
+    resolvedStyles = new HashMap<String,Style>();
   }
 
   /**
@@ -283,7 +282,7 @@ public class StyleSheet extends StyleContext
   {
     // Create list of the element and all of its parents, starting
     // with the bottommost element.
-    ArrayList path = new ArrayList();
+    ArrayList<Element> path = new ArrayList<Element>();
     Element el;
     AttributeSet atts;
     for (el = e; el != null; el = el.getParentElement())
@@ -295,7 +294,7 @@ public class StyleSheet extends StyleContext
     // We append the actual element after this loop.
     for (int i = count - 1; i > 0; i--)
       {
-        el = (Element) path.get(i);
+        el = path.get(i);
         atts = el.getAttributes();
         Object name = atts.getAttribute(StyleConstants.NameAttribute);
         selector.append(name.toString());
@@ -322,7 +321,7 @@ public class StyleSheet extends StyleContext
         selector.append(' ');
       }
     selector.append(t.toString());
-    el = (Element) path.get(0);
+    el = path.get(0);
     atts = el.getAttributes();
     // For leaf elements, we have to fetch the tag specific attributes.
     if (el.isLeaf())
@@ -372,7 +371,7 @@ public class StyleSheet extends StyleContext
    */
   private Style getResolvedStyle(String selector, List path, HTML.Tag tag)
   {
-    Style style = (Style) resolvedStyles.get(selector);
+    Style style = resolvedStyles.get(selector);
     if (style == null)
       style = resolveStyle(selector, path, tag);
     return style;
@@ -439,11 +438,9 @@ public class StyleSheet extends StyleContext
   {
     // FIXME: This style resolver is not correct. But it works good enough for
     // the default.css.
-    int count = tags.length;
-    ArrayList styles = new ArrayList();
-    for (Iterator i = css.iterator(); i.hasNext();)
+    ArrayList<CSSStyle> styles = new ArrayList<CSSStyle>();
+    for (CSSStyle style : css)
       {
-        CSSStyle style = (CSSStyle) i.next();
         if (style.selector.matches(tags, attributes))
           styles.add(style);
       }
@@ -453,10 +450,10 @@ public class StyleSheet extends StyleContext
       {
         for (int i = linked.size() - 1; i >= 0; i--)
           {
-            StyleSheet ss = (StyleSheet) linked.get(i);
+            StyleSheet ss = linked.get(i);
             for (int j = ss.css.size() - 1; j >= 0; j--)
               {
-                CSSStyle style = (CSSStyle) ss.css.get(j);
+                CSSStyle style = ss.css.get(j);
                 if (style.selector.matches(tags, attributes))
                   styles.add(style);
               }
@@ -615,7 +612,7 @@ public class StyleSheet extends StyleContext
     if (linked != null)
       {
         linkedSS = new StyleSheet[linked.size()];
-        linkedSS = (StyleSheet[]) linked.toArray(linkedSS);
+        linkedSS = linked.toArray(linkedSS);
       }
     else
       {
@@ -1074,7 +1071,7 @@ public class StyleSheet extends StyleContext
    */
   public void setBaseFontSize(String size)
   {
-    size.trim();
+    size = size.trim();
     int temp = 0;
     try
       {
@@ -1446,8 +1443,8 @@ public class StyleSheet extends StyleContext
    */
   private Map attributeSetToMap(AttributeSet atts)
   {
-    HashMap map = new HashMap();
-    Enumeration keys = atts.getAttributeNames();
+    HashMap<String,String> map = new HashMap<String,String>();
+    Enumeration<?> keys = atts.getAttributeNames();
     while (keys.hasMoreElements())
       {
         Object key = keys.nextElement();

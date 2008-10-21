@@ -34,6 +34,7 @@ public:
   static ::java::lang::String * default_awt_peer_toolkit;
   static const jboolean JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = 0;
   static ::java::lang::String * ECJ_JAR;
+  static const jboolean WANT_NATIVE_BIG_INTEGER = 1;
   static ::java::lang::Class class$;
 };
 

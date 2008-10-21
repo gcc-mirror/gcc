@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Registry;
 import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.util.FormatUtil;
@@ -181,7 +183,7 @@ public abstract class DSSKey
     if (str == null)
       {
         String ls = (String) AccessController.doPrivileged(new GetPropertyAction("line.separator"));
-        StringBuilder sb = new StringBuilder(ls)
+        CPStringBuilder sb = new CPStringBuilder(ls)
             .append("defaultFormat=").append(defaultFormat).append(",")
             .append(ls);
         if (hasInheritedParameters())

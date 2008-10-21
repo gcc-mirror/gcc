@@ -312,7 +312,7 @@ public class ComponentColorModel extends ColorModel
     /* TODO: provide better implementation based on the
        assumptions we can make due to the specific type of the
        color model. */
-    super.coerceDataWorker(raster, isAlphaPremultiplied);
+    coerceDataWorker(raster, isAlphaPremultiplied);
     
     return new ComponentColorModel(cspace, hasAlpha, isAlphaPremultiplied,
                                    transparency, transferType);

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.jar;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.net.URLParseError;
 
 import java.io.IOException;
@@ -180,7 +182,7 @@ public class Handler extends URLStreamHandler
 	  tokens.add(token);
       }
 
-    StringBuffer path = new StringBuffer(url_string.length());
+    CPStringBuilder path = new CPStringBuilder(url_string.length());
     path.append(url_string.substring(0, jar_stop + 1));
 
     Iterator<String> it = tokens.iterator();
@@ -205,7 +207,7 @@ public class Handler extends URLStreamHandler
     //  Do the concatenation manually to avoid resize StringBuffer's 
     //  internal buffer.  The length of ref is not taken into consideration
     //  as it's a rare path.
-    StringBuffer sb = new StringBuffer (file.length() + 5);
+    CPStringBuilder sb = new CPStringBuilder (file.length() + 5);
     sb.append ("jar:");
     sb.append (file);
     if (ref != null)

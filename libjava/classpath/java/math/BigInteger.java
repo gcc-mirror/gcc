@@ -38,12 +38,17 @@ exception statement from your version. */
 
 package java.math;
 
+import gnu.classpath.Configuration;
+
+import gnu.java.lang.CPStringBuilder;
+import gnu.java.math.GMP;
 import gnu.java.math.MPN;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -59,6 +64,8 @@ import java.util.Random;
  */
 public class BigInteger extends Number implements Comparable<BigInteger>
 {
+  private static final Logger log = Logger.getLogger(BigInteger.class.getName());
+
   /** All integers are stored in 2's-complement form.
    * If words == null, the ival is the value of this BigInteger.
    * Otherwise, the first ival elements of words make the value
@@ -67,9 +74,10 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   private transient int[] words;
 
   // Serialization fields.
+  // the first three, although not used in the code, are present for
+  // compatibility with older RI versions of this class. DO NOT REMOVE.
   private int bitCount = -1;
   private int bitLength = -1;
-  private int firstNonzeroByteNum = -2;
   private int lowestSetBit = -2;
   private byte[] magnitude;
   private int signum;
@@ -81,31 +89,52 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   private static final int minFixNum = -100;
   private static final int maxFixNum = 1024;
   private static final int numFixNum = maxFixNum-minFixNum+1;
-  private static final BigInteger[] smallFixNums = new BigInteger[numFixNum];
+  private static final BigInteger[] smallFixNums;
+  
+  /** The alter-ego GMP instance for this. */
+  private transient GMP mpz;
+
+  private static final boolean USING_NATIVE = Configuration.WANT_NATIVE_BIG_INTEGER
+                                              && initializeLibrary();
 
   static
   {
-    for (int i = numFixNum;  --i >= 0; )
-      smallFixNums[i] = new BigInteger(i + minFixNum);
+    if (USING_NATIVE)
+      {
+        smallFixNums = null;
+        ZERO = valueOf(0L);
+        ONE = valueOf(1L);
+        TEN = valueOf(10L);
+      }
+    else
+      {
+        smallFixNums = new BigInteger[numFixNum];
+	for (int i = numFixNum;  --i >= 0; )
+	  smallFixNums[i] = new BigInteger(i + minFixNum);
+
+        ZERO = smallFixNums[-minFixNum];
+        ONE = smallFixNums[1 - minFixNum];
+        TEN = smallFixNums[10 - minFixNum];
+      }
   }
 
   /**
    * The constant zero as a BigInteger.
    * @since 1.2
    */
-  public static final BigInteger ZERO = smallFixNums[0 - minFixNum];
+  public static final BigInteger ZERO;
 
   /**
    * The constant one as a BigInteger.
    * @since 1.2
    */
-  public static final BigInteger ONE = smallFixNums[1 - minFixNum];
+  public static final BigInteger ONE;
 
   /**
    * The constant ten as a BigInteger.
    * @since 1.5
    */
-  public static final BigInteger TEN = smallFixNums[10 - minFixNum];
+  public static final BigInteger TEN;
 
   /* Rounding modes: */
   private static final int FLOOR = 1;
@@ -130,19 +159,72 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   private BigInteger()
   {
+    super();
+
+    if (USING_NATIVE)
+      mpz = new GMP();
   }
 
   /* Create a new (non-shared) BigInteger, and initialize to an int. */
   private BigInteger(int value)
   {
+    super();
+
     ival = value;
   }
 
-  public BigInteger(String val, int radix)
+  public BigInteger(String s, int radix)
   {
-    BigInteger result = valueOf(val, radix);
-    this.ival = result.ival;
-    this.words = result.words;
+    this();
+
+    int len = s.length();
+    int i, digit;
+    boolean negative;
+    byte[] bytes;
+    char ch = s.charAt(0);
+    if (ch == '-')
+      {
+        negative = true;
+        i = 1;
+        bytes = new byte[len - 1];
+      }
+    else
+      {
+        negative = false;
+        i = 0;
+        bytes = new byte[len];
+      }
+    int byte_len = 0;
+    for ( ; i < len;  i++)
+      {
+        ch = s.charAt(i);
+        digit = Character.digit(ch, radix);
+        if (digit < 0)
+          throw new NumberFormatException("Invalid character at position #" + i);
+        bytes[byte_len++] = (byte) digit;
+      }
+
+    if (USING_NATIVE)
+      {
+        bytes = null;
+        if (mpz.fromString(s, radix) != 0)
+          throw new NumberFormatException("String \"" + s
+                                          + "\" is NOT a valid number in base "
+                                          + radix);
+      }
+    else
+      {
+        BigInteger result;
+        // Testing (len < MPN.chars_per_word(radix)) would be more accurate,
+        // but slightly more expensive, for little practical gain.
+        if (len <= 15 && radix <= 16)
+          result = valueOf(Long.parseLong(s, radix));
+        else
+          result = valueOf(bytes, byte_len, negative, radix);
+
+        this.ival = result.ival;
+        this.words = result.words;
+      }
   }
 
   public BigInteger(String val)
@@ -153,17 +235,26 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   /* Create a new (non-shared) BigInteger, and initialize from a byte array. */
   public BigInteger(byte[] val)
   {
+    this();
+
     if (val == null || val.length < 1)
       throw new NumberFormatException();
 
-    words = byteArrayToIntArray(val, val[0] < 0 ? -1 : 0);
-    BigInteger result = make(words, words.length);
-    this.ival = result.ival;
-    this.words = result.words;
+    if (USING_NATIVE)
+      mpz.fromByteArray(val);
+    else
+      {
+        words = byteArrayToIntArray(val, val[0] < 0 ? -1 : 0);
+        BigInteger result = make(words, words.length);
+        this.ival = result.ival;
+        this.words = result.words;
+      }
   }
 
   public BigInteger(int signum, byte[] magnitude)
   {
+    this();
+
     if (magnitude == null || signum > 1 || signum < -1)
       throw new NumberFormatException();
 
@@ -177,18 +268,25 @@ public class BigInteger extends Number implements Comparable<BigInteger>
         return;
       }
 
-    // Magnitude is always positive, so don't ever pass a sign of -1.
-    words = byteArrayToIntArray(magnitude, 0);
-    BigInteger result = make(words, words.length);
-    this.ival = result.ival;
-    this.words = result.words;
+    if (USING_NATIVE)
+      mpz.fromSignedMagnitude(magnitude, signum == -1);
+    else
+      {
+        // Magnitude is always positive, so don't ever pass a sign of -1.
+        words = byteArrayToIntArray(magnitude, 0);
+        BigInteger result = make(words, words.length);
+        this.ival = result.ival;
+        this.words = result.words;
 
-    if (signum < 0)
-      setNegative();
+        if (signum < 0)
+          setNegative();
+      }
   }
 
   public BigInteger(int numBits, Random rnd)
   {
+    this();
+
     if (numBits < 0)
       throw new IllegalArgumentException();
 
@@ -197,6 +295,22 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   private void init(int numBits, Random rnd)
   {
+    if (USING_NATIVE)
+      {
+        int length = (numBits + 7) / 8;
+        byte[] magnitude = new byte[length];
+        rnd.nextBytes(magnitude);
+        int discardedBitCount = numBits % 8;
+        if (discardedBitCount != 0)
+          {
+            discardedBitCount = 8 - discardedBitCount;
+            magnitude[0] = (byte)((magnitude[0] & 0xFF) >>> discardedBitCount);
+          }
+        mpz.fromSignedMagnitude(magnitude, false);
+        magnitude = null;
+        return;
+      }
+
     int highbits = numBits & 31;
     // minimum number of bytes to store the above number of bits
     int highBitByteCount = (highbits + 7) / 8;
@@ -235,20 +349,23 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger(int bitLength, int certainty, Random rnd)
   {
-    this(bitLength, rnd);
+    this();
 
-    // Keep going until we find a probable prime.
-    BigInteger result;
+    BigInteger result = new BigInteger();
     while (true)
       {
-        // ...but first ensure that BI has bitLength bits
-        result = setBit(bitLength - 1);
+        result.init(bitLength, rnd);
+        result = result.setBit(bitLength - 1);
+        if (result.isProbablePrime(certainty))
+          break;
+      }
+
+    if (USING_NATIVE)
+      mpz.fromBI(result.mpz);
+    else
+      {
         this.ival = result.ival;
         this.words = result.words;
-	if (isProbablePrime(certainty))
-	  return;
-
-	init(bitLength, rnd);
       }
   }
 
@@ -272,6 +389,13 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   /** Return a (possibly-shared) BigInteger with a given long value. */
   public static BigInteger valueOf(long val)
   {
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        result.mpz.fromLong(val);
+        return result;
+      }
+
     if (val >= minFixNum && val <= maxFixNum)
       return smallFixNums[(int) val - minFixNum];
     int i = (int) val;
@@ -281,6 +405,31 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     result.ival = 2;
     result.words[0] = i;
     result.words[1] = (int)(val >> 32);
+    return result;
+  }
+
+  /**
+   * @return <code>true</code> if the GMP-based native implementation library
+   *         was successfully loaded. Returns <code>false</code> otherwise.
+   */
+  private static boolean initializeLibrary()
+  {
+    boolean result;
+    try
+    {
+      System.loadLibrary("javamath");
+      GMP.natInitializeLibrary();
+      result = true;
+    }
+    catch (Throwable x)
+    {
+      result = false;
+      if (Configuration.DEBUG)
+        {
+          log.info("Unable to use native BigInteger: " + x);
+          log.info("Will use a pure Java implementation instead");
+        }
+    }
     return result;
   }
 
@@ -374,6 +523,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public int signum()
   {
+    if (USING_NATIVE)
+      return mpz.compare(ZERO.mpz);
+
     if (ival == 0 && words == null)
       return 0;
     int top = words == null ? ival : words[ival-1];
@@ -382,6 +534,12 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   private static int compareTo(BigInteger x, BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        return x.mpz.compare(y.mpz);
+      }
+
     if (x.words == null && y.words == null)
       return x.ival < y.ival ? -1 : x.ival > y.ival ? 1 : 0;
     boolean x_negative = x.isNegative();
@@ -586,11 +744,27 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger add(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = val.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.add(val.mpz, result.mpz);
+        return result;
+      }
+
     return add(this, val, 1);
   }
 
   public BigInteger subtract(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = val.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.subtract(val.mpz, result.mpz);
+        return result;
+      }
+
     return add(this, val, -1);
   }
 
@@ -672,6 +846,14 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger multiply(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.multiply(y.mpz, result.mpz);
+        return result;
+      }
+
     return times(this, y);
   }
 
@@ -947,6 +1129,16 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger divide(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        if (val.compareTo(ZERO) == 0)
+          throw new ArithmeticException("divisor is zero");
+
+        BigInteger result = new BigInteger();
+        mpz.quotient(val.mpz, result.mpz);
+        return result;
+      }
+
     if (val.isZero())
       throw new ArithmeticException("divisor is zero");
 
@@ -957,6 +1149,16 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger remainder(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        if (val.compareTo(ZERO) == 0)
+          throw new ArithmeticException("divisor is zero");
+
+        BigInteger result = new BigInteger();
+        mpz.remainder(val.mpz, result.mpz);
+        return result;
+      }
+
     if (val.isZero())
       throw new ArithmeticException("divisor is zero");
 
@@ -967,6 +1169,17 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger[] divideAndRemainder(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        if (val.compareTo(ZERO) == 0)
+          throw new ArithmeticException("divisor is zero");
+
+        BigInteger q = new BigInteger();
+        BigInteger r = new BigInteger();
+        mpz.quotientAndRemainder(val.mpz, q.mpz, r.mpz);
+        return new BigInteger[] { q, r };
+      }
+
     if (val.isZero())
       throw new ArithmeticException("divisor is zero");
 
@@ -981,6 +1194,17 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger mod(BigInteger m)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = m.signum; // force NPE check
+        if (m.compareTo(ZERO) < 1)
+          throw new ArithmeticException("non-positive modulus");
+
+        BigInteger result = new BigInteger();
+        mpz.modulo(m.mpz, result.mpz);
+        return result;
+      }
+
     if (m.isNegative() || m.isZero())
       throw new ArithmeticException("non-positive modulus");
 
@@ -1000,6 +1224,14 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 	  return ONE;
 	  throw new ArithmeticException("negative exponent");
       }
+
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.pow(exponent, result.mpz);
+        return result;
+      }
+
     if (isZero())
       return this;
     int plen = words == null ? 1 : ival;  // Length of pow2.
@@ -1097,6 +1329,17 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger modInverse(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        if (mpz.compare(ZERO.mpz) < 1)
+          throw new ArithmeticException("non-positive modulo");
+
+        BigInteger result = new BigInteger();
+        mpz.modInverse(y.mpz, result.mpz);
+        return result;
+      }
+
     if (y.isNegative() || y.isZero())
       throw new ArithmeticException("non-positive modulo");
 
@@ -1175,6 +1418,17 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger modPow(BigInteger exponent, BigInteger m)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = exponent.signum; // force NPE check
+        if (m.mpz.compare(ZERO.mpz) < 1)
+          throw new ArithmeticException("non-positive modulo");
+
+        BigInteger result = new BigInteger();
+        mpz.modPow(exponent.mpz, m.mpz, result.mpz);
+        return result;
+      }
+
     if (m.isNegative() || m.isZero())
       throw new ArithmeticException("non-positive modulo");
 
@@ -1228,6 +1482,14 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger gcd(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.gcd(y.mpz, result.mpz);
+        return result;
+      }
+
     int xval = ival;
     int yval = y.ival;
     if (words == null)
@@ -1280,6 +1542,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   {
     if (certainty < 1)
       return true;
+
+    if (USING_NATIVE)
+      return mpz.testPrimality(certainty) != 0;
 
     /** We'll use the Rabin-Miller algorithm for doing a probabilistic
      * primality test.  It is fast, easy and has faster decreasing odds of a
@@ -1460,15 +1725,41 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger shiftLeft(int n)
   {
+    if (n == 0)
+      return this;
+
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        if (n < 0)
+          mpz.shiftRight(-n, result.mpz);
+        else
+          mpz.shiftLeft(n, result.mpz);
+        return result;
+      }
+
     return shift(this, n);
   }
 
   public BigInteger shiftRight(int n)
   {
+    if (n == 0)
+      return this;
+
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        if (n < 0)
+          mpz.shiftLeft(-n, result.mpz);
+        else
+          mpz.shiftRight(n, result.mpz);
+        return result;
+      }
+
     return shift(this, -n);
   }
 
-  private void format(int radix, StringBuffer buffer)
+  private void format(int radix, CPStringBuilder buffer)
   {
     if (words == null)
       buffer.append(Integer.toString(ival, radix));
@@ -1537,18 +1828,27 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public String toString(int radix)
   {
+    if (USING_NATIVE)
+      return mpz.toString(radix);
+
     if (words == null)
       return Integer.toString(ival, radix);
     if (ival <= 2)
       return Long.toString(longValue(), radix);
     int buf_size = ival * (MPN.chars_per_word(radix) + 1);
-    StringBuffer buffer = new StringBuffer(buf_size);
+    CPStringBuilder buffer = new CPStringBuilder(buf_size);
     format(radix, buffer);
     return buffer.toString();
   }
 
   public int intValue()
   {
+    if (USING_NATIVE)
+      {
+        int result = mpz.absIntValue();
+        return mpz.compare(ZERO.mpz) < 0 ? - result : result;
+      }
+
     if (words == null)
       return ival;
     return words[0];
@@ -1556,6 +1856,15 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public long longValue()
   {
+    if (USING_NATIVE)
+      {
+        long result;
+        result = (abs().shiftRight(32)).mpz.absIntValue();
+        result <<= 32;
+        result |= mpz.absIntValue() & 0xFFFFFFFFL;
+        return this.compareTo(ZERO) < 0 ? - result : result;
+      }
+
     if (words == null)
       return ival;
     if (ival == 1)
@@ -1566,12 +1875,25 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   public int hashCode()
   {
     // FIXME: May not match hashcode of JDK.
+    if (USING_NATIVE)
+      {
+        // TODO: profile to decide whether to make it native
+        byte[] bytes = this.toByteArray();
+        int result = 0;
+        for (int i = 0; i < bytes.length; i++)
+          result ^= (bytes[i] & 0xFF) << (8 * (i % 4));
+        return result;
+      }
+
     return words == null ? ival : (words[0] + words[ival - 1]);
   }
 
   /* Assumes x and y are both canonicalized. */
   private static boolean equals(BigInteger x, BigInteger y)
   {
+    if (USING_NATIVE)
+      return x.mpz.compare(y.mpz) == 0;
+
     if (x.words == null && y.words == null)
       return x.ival == y.ival;
     if (x.words == null || y.words == null || x.ival != y.ival)
@@ -1592,43 +1914,6 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     return equals(this, (BigInteger) obj);
   }
 
-  private static BigInteger valueOf(String s, int radix)
-       throws NumberFormatException
-  {
-    int len = s.length();
-    // Testing (len < MPN.chars_per_word(radix)) would be more accurate,
-    // but slightly more expensive, for little practical gain.
-    if (len <= 15 && radix <= 16)
-      return valueOf(Long.parseLong(s, radix));
-
-    int i, digit;
-    boolean negative;
-    byte[] bytes;
-    char ch = s.charAt(0);
-    if (ch == '-')
-      {
-        negative = true;
-        i = 1;
-        bytes = new byte[len - 1];
-      }
-    else
-      {
-        negative = false;
-        i = 0;
-        bytes = new byte[len];
-      }
-    int byte_len = 0;
-    for ( ; i < len;  i++)
-      {
-        ch = s.charAt(i);
-        digit = Character.digit(ch, radix);
-        if (digit < 0)
-          throw new NumberFormatException();
-        bytes[byte_len++] = (byte) digit;
-      }
-    return valueOf(bytes, byte_len, negative, radix);
-  }
-
   private static BigInteger valueOf(byte[] digits, int byte_len,
 				    boolean negative, int radix)
   {
@@ -1646,6 +1931,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public double doubleValue()
   {
+    if (USING_NATIVE)
+      return mpz.doubleValue();
+
     if (words == null)
       return (double) ival;
     if (ival <= 2)
@@ -1827,6 +2115,13 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger abs()
   {
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.abs(result.mpz);
+        return result;
+      }
+
     return abs(this);
   }
 
@@ -1841,6 +2136,13 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public BigInteger negate()
   {
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+	mpz.negate(result.mpz);
+        return result;
+      }
+
     return neg(this);
   }
 
@@ -1849,6 +2151,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
    */
   public int bitLength()
   {
+    if (USING_NATIVE)
+      return mpz.bitLength();
+
     if (words == null)
       return MPN.intLength(ival);
       return MPN.intLength(words, ival);
@@ -1856,6 +2161,25 @@ public class BigInteger extends Number implements Comparable<BigInteger>
 
   public byte[] toByteArray()
   {
+    if (signum() == 0)
+      return new byte[1];
+
+    if (USING_NATIVE)
+      {
+        // the minimal number of bytes required to represent the MPI is function
+        // of (a) its bit-length, and (b) its sign.  only when this MPI is both
+        // positive, and its bit-length is a multiple of 8 do we add one zero
+        // bit for its sign.  we do this so if we construct a new MPI from the
+        // resulting byte array, we wouldn't mistake a positive number, whose
+        // bit-length is a multiple of 8, for a similar-length negative one.
+        int bits = bitLength();
+        if (bits % 8 == 0 || this.signum() == 1)
+          bits++;
+        byte[] bytes = new byte[(bits + 7) / 8];
+        mpz.toByteArray(bytes);
+        return bytes;
+      }
+
     // Determine number of bytes needed.  The method bitlength returns
     // the size without the sign bit, so add one bit for that and then
     // add 7 more to emulate the ceil function using integer math.
@@ -2112,6 +2436,14 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   /** Return the logical (bit-wise) "and" of two BigIntegers. */
   public BigInteger and(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.and(y.mpz, result.mpz);
+        return result;
+      }
+
     if (y.words == null)
       return and(this, y.ival);
     else if (words == null)
@@ -2135,23 +2467,54 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   /** Return the logical (bit-wise) "(inclusive) or" of two BigIntegers. */
   public BigInteger or(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.or(y.mpz, result.mpz);
+        return result;
+      }
+
     return bitOp(7, this, y);
   }
 
   /** Return the logical (bit-wise) "exclusive or" of two BigIntegers. */
   public BigInteger xor(BigInteger y)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = y.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.xor(y.mpz, result.mpz);
+        return result;
+      }
+
     return bitOp(6, this, y);
   }
 
   /** Return the logical (bit-wise) negation of a BigInteger. */
   public BigInteger not()
   {
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.not(result.mpz);
+        return result;
+      }
+
     return bitOp(12, this, ZERO);
   }
 
   public BigInteger andNot(BigInteger val)
   {
+    if (USING_NATIVE)
+      {
+        int dummy = val.signum; // force NPE check
+        BigInteger result = new BigInteger();
+        mpz.andNot(val.mpz, result.mpz);
+        return result;
+      }
+
     return and(val.not());
   }
 
@@ -2159,6 +2522,13 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   {
     if (n < 0)
       throw new ArithmeticException();
+
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.setBit(n, false, result.mpz);
+        return result;
+      }
 
     return and(ONE.shiftLeft(n).not());
   }
@@ -2168,6 +2538,13 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     if (n < 0)
       throw new ArithmeticException();
 
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.setBit(n, true, result.mpz);
+        return result;
+      }
+
     return or(ONE.shiftLeft(n));
   }
 
@@ -2175,6 +2552,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   {
     if (n < 0)
       throw new ArithmeticException();
+
+    if (USING_NATIVE)
+      return mpz.testBit(n) != 0;
 
     return !and(ONE.shiftLeft(n)).isZero();
   }
@@ -2184,11 +2564,21 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     if (n < 0)
       throw new ArithmeticException();
 
+    if (USING_NATIVE)
+      {
+        BigInteger result = new BigInteger();
+        mpz.flipBit(n, result.mpz);
+        return result;
+      }
+
     return xor(ONE.shiftLeft(n));
   }
 
   public int getLowestSetBit()
   {
+    if (USING_NATIVE)
+      return mpz.compare(ZERO.mpz) == 0 ? -1 : mpz.lowestSetBit();
+
     if (isZero())
       return -1;
 
@@ -2225,6 +2615,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
    * If argument is negative, count zero bits instead. */
   public int bitCount()
   {
+    if (USING_NATIVE)
+      return mpz.bitCount();
+
     int i, x_len;
     int[] x_words = words;
     if (x_words == null)
@@ -2243,19 +2636,30 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    s.defaultReadObject();
-    if (magnitude.length == 0 || signum == 0)
+    if (USING_NATIVE)
       {
-        this.ival = 0;
-        this.words = null;
+        mpz = new GMP();
+        s.defaultReadObject();
+        if (signum != 0)
+          mpz.fromByteArray(magnitude);
+        // else it's zero and we need to do nothing
       }
     else
       {
-        words = byteArrayToIntArray(magnitude, signum < 0 ? -1 : 0);
-        BigInteger result = make(words, words.length);
-        this.ival = result.ival;
-        this.words = result.words;        
-      }    
+	s.defaultReadObject();
+	if (magnitude.length == 0 || signum == 0)
+	  {
+	    this.ival = 0;
+	    this.words = null;
+	  }
+	else
+	  {
+	    words = byteArrayToIntArray(magnitude, signum < 0 ? -1 : 0);
+	    BigInteger result = make(words, words.length);
+	    this.ival = result.ival;
+	    this.words = result.words;        
+	  }    
+      }
   }
 
   private void writeObject(ObjectOutputStream s)
@@ -2264,5 +2668,9 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     signum = signum();
     magnitude = signum == 0 ? new byte[0] : toByteArray();
     s.defaultWriteObject();
+    magnitude = null; // not needed anymore
   }
+
+  // inner class(es) ..........................................................
+
 }

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.lang.reflect.TypeSignature;
 
 import java.io.ByteArrayOutputStream;
@@ -61,7 +63,7 @@ public class RMIHashes
         ByteArrayOutputStream digest_out = new ByteArrayOutputStream();
         DataOutputStream data_out = new DataOutputStream (digest_out);
         
-        StringBuffer sbuf = new StringBuffer();
+        CPStringBuilder sbuf = new CPStringBuilder();
         sbuf.append(meth.getName());
         sbuf.append('(');
         Class params[] = meth.getParameterTypes();

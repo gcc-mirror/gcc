@@ -143,14 +143,14 @@ public final class Translator
 	      throw new IllegalArgumentException(jtype + " has a " +
 						 "non-comparable element " +
 						 "type, " + elemClass);
-	    if (((SortedSet) jtype).comparator() != null)
+	    if (((SortedSet<?>) jtype).comparator() != null)
 	      throw new IllegalArgumentException(jtype + " does not " +
 						 "use natural ordering.");
 	  }
-	Collection<Object> elems = (Collection<Object>) jtype;
+	Collection<?> elems = (Collection<?>) jtype;
 	int numElems = elems.size();
 	Object[] celems = new Object[numElems];
-	Iterator<Object> i = elems.iterator();
+	Iterator<?> i = elems.iterator();
 	for (int a = 0; a < numElems; ++a)
 	  {
 	    Object elem = i.next();
@@ -159,7 +159,7 @@ public final class Translator
 	return makeArraySpecific(celems);
       }
     if (jtype instanceof Enum)
-      return ((Enum) jtype).name();
+      return ((Enum<?>) jtype).name();
     if (jtype instanceof Map || jtype instanceof SortedMap)
       {
 	int lparam = tName.indexOf("<");
@@ -177,13 +177,13 @@ public final class Translator
 	      throw new IllegalArgumentException(jtype + " has a " +
 						 "non-comparable element " +
 						 "type, " + keyClass);
-	    if (((SortedMap) jtype).comparator() != null)
+	    if (((SortedMap<?,?>) jtype).comparator() != null)
 	      throw new IllegalArgumentException(jtype + " does not " +
 						 "use natural ordering.");
 	    typeName = "java.util.SortedMap" + tName.substring(lparam);
 	  }
-	OpenType k = translate(key).getOpenType();
-	OpenType v = translate(value).getOpenType(); 
+	OpenType<?> k = translate(key).getOpenType();
+	OpenType<?> v = translate(value).getOpenType(); 
 	CompositeType rowType = new CompositeType(typeName, typeName,
 						  new String[] { "key", "value" },
 						  new String[] { "Map key", "Map value"},
@@ -191,7 +191,7 @@ public final class Translator
 	TabularType tabType = new TabularType(typeName, typeName, rowType,
 					      new String[]{"key"});
 	TabularData data = new TabularDataSupport(tabType);
-	for (Map.Entry entry : (Set<Map.Entry>) ((Map) jtype).entrySet())
+	for (Map.Entry<?,?> entry : ((Map<?,?>) jtype).entrySet())
 	  {
 	    try 
 	      {
@@ -258,15 +258,15 @@ public final class Translator
     if (returnType.isEnum())
       {
 	String ename = (String) otype;
-	Enum[] constants = (Enum[]) returnType.getEnumConstants();
-	for (Enum c : constants)
+	Enum<?>[] constants = (Enum[]) returnType.getEnumConstants();
+	for (Enum<?> c : constants)
 	  if (c.name().equals(ename))
 	    return c;
       }
     if (List.class.isAssignableFrom(returnType))
       {
 	Object[] elems = (Object[]) otype;
-	List l = new ArrayList(elems.length);
+	List<Object> l = new ArrayList<Object>(elems.length);
 	for (Object elem : elems)
 	  l.add(elem);
 	return l;
@@ -274,7 +274,7 @@ public final class Translator
     if (Map.class.isAssignableFrom(returnType))
       {
 	TabularData data = (TabularData) otype;
-	Map m = new HashMap(data.size());
+	Map<Object,Object> m = new HashMap<Object,Object>(data.size());
 	for (Object val : data.values())
 	  {
 	    CompositeData vals = (CompositeData) val;
@@ -401,8 +401,8 @@ public final class Translator
 	int comma = type.indexOf(",", lparam);
 	int rparam = type.indexOf(">", comma);
 	String key = type.substring(lparam + 1, comma).trim();
-	OpenType k = translate(key).getOpenType();
-	OpenType v = translate(type.substring(comma + 1, rparam).trim()).getOpenType(); 
+	OpenType<?> k = translate(key).getOpenType();
+	OpenType<?> v = translate(type.substring(comma + 1, rparam).trim()).getOpenType(); 
  	CompositeType ctype = new CompositeType(Map.class.getName(), Map.class.getName(),
 						new String[] { "key", "value" },
 						new String[] { "Map key", "Map value"},
@@ -417,13 +417,13 @@ public final class Translator
       {
 	int lparam = type.indexOf("<");
 	int rparam = type.indexOf(">");
-       	OpenType e = translate(type.substring(lparam + 1, rparam).trim()).getOpenType();
+       	OpenType<?> e = translate(type.substring(lparam + 1, rparam).trim()).getOpenType();
 	return new OpenMBeanParameterInfoSupport("TransParam",
 						 "Translated parameter",
-						 new ArrayType(1, e)
+						 new ArrayType<OpenType<?>>(1, e)
 						 );
       }	
-    Class c;
+    Class<?> c;
     try
       {
 	c = Class.forName(type);
@@ -450,15 +450,15 @@ public final class Translator
 	int depth;
 	for (depth = 0; c.getName().charAt(depth) == '['; ++depth)
           ;
-	OpenType ot = getTypeFromClass(c.getComponentType());
+	OpenType<?> ot = getTypeFromClass(c.getComponentType());
 	return new OpenMBeanParameterInfoSupport("TransParam",
 						 "Translated parameter",
-						 new ArrayType(depth, ot)
+						 new ArrayType<OpenType<?>>(depth, ot)
 						 );
       }
     Method[] methods = c.getDeclaredMethods();
     List<String> names = new ArrayList<String>();
-    List<OpenType> types = new ArrayList<OpenType>();
+    List<OpenType<?>> types = new ArrayList<OpenType<?>>();
     for (int a = 0; a < methods.length; ++a)
       {
 	String name = methods[a].getName();
@@ -495,7 +495,7 @@ public final class Translator
    * @return the appropriate instance.
    * @throws OpenDataException if the type is not open.
    */
-  private static final OpenType getTypeFromClass(Class c)
+  private static final OpenType<?> getTypeFromClass(Class<?> c)
     throws OpenDataException
   {
     return Translator.translate(c.getName()).getOpenType();

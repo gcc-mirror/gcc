@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -470,7 +472,7 @@ public final class Formatter
    * @param width the width of the numeric value.
    * @param isNegative true if the value is negative.
    */
-  private void applyLocalization(StringBuilder builder, int flags, int width,
+  private void applyLocalization(CPStringBuilder builder, int flags, int width,
 				 boolean isNegative)
   {
     DecimalFormatSymbols dfsyms;
@@ -741,9 +743,9 @@ public final class Formatter
    * @param conversion the conversion character.
    * @return the result.
    */
-  private StringBuilder basicIntegralConversion(Object arg, int flags,
-						int width, int precision,
-						int radix, char conversion)
+  private CPStringBuilder basicIntegralConversion(Object arg, int flags,
+						  int width, int precision,
+						  int radix, char conversion)
   {
     assert radix == 8 || radix == 10 || radix == 16;
     noPrecision(precision);
@@ -798,7 +800,7 @@ public final class Formatter
     else
       throw new IllegalFormatConversionException(conversion, arg.getClass());
 
-    return new StringBuilder(result);
+    return new CPStringBuilder(result);
   }
 
   /** 
@@ -819,9 +821,9 @@ public final class Formatter
   {
     assert radix == 8 || radix == 16;
 
-    StringBuilder builder = basicIntegralConversion(arg, flags, width,
-						    precision, radix,
-						    conversion);
+    CPStringBuilder builder = basicIntegralConversion(arg, flags, width,
+						      precision, radix,
+						      conversion);
     int insertPoint = 0;
 
     // Insert the sign.
@@ -897,9 +899,9 @@ public final class Formatter
 				 int precision, char conversion)
     throws IOException
   {
-    StringBuilder builder = basicIntegralConversion(arg, flags, width,
-						    precision, 10,
-						    conversion);
+    CPStringBuilder builder = basicIntegralConversion(arg, flags, width,
+						      precision, 10,
+						      conversion);
     boolean isNegative = false;
     if (builder.charAt(0) == '-')
       {
@@ -920,7 +922,7 @@ public final class Formatter
    * @param conversion the formatting character to specify the type of data.
    * @param syms the date formatting symbols.
    */
-  private void singleDateTimeConversion(StringBuilder builder, Calendar cal,
+  private void singleDateTimeConversion(CPStringBuilder builder, Calendar cal,
 					char conversion,
 					DateFormatSymbols syms)
   {
@@ -1151,7 +1153,7 @@ public final class Formatter
     else
       syms = new DateFormatSymbols(fmtLocale);
 
-    StringBuilder result = new StringBuilder();
+    CPStringBuilder result = new CPStringBuilder();
     singleDateTimeConversion(result, cal, subConversion, syms);
 
     genericFormat(result.toString(), flags, width, precision);

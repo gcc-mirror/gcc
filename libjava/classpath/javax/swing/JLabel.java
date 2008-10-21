@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -555,7 +557,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",defaultIcon=");
     if (icon != null)
       sb.append(icon);

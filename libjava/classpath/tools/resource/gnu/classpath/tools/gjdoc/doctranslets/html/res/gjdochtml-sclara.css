@@ -1,0 +1,266 @@
+/* gjdochtml-sclara.css
+ Copyright (C) 2004 Free Software Foundation, Inc.
+
+ This file is part of GNU Classpath.
+
+ GNU Classpath is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ 
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with GNU Classpath; see the file COPYING.  If not, write to the
+ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ 02111-1307 USA. */
+
+div.section-header,
+h1.classdoc-header {
+   background: #ccccff;
+   border: black ridge 2px;
+   border-collapse: collapse;
+   vertical-align: inherit;
+   text-align: inherit; 
+   margin-bottom: 0px;
+   font-size: 155%;
+   font-weight: bold;
+   padding-left: 2px;
+   margin-top: 1em;
+   padding-top: 2px;
+   padding-bottom: 2px;
+}
+
+td.section-header {
+   background: #ccccff;
+   margin-bottom: 0px;
+   font-size: 155%;
+   font-weight: bold;
+   padding-left: 2px;
+   margin-top: 1em;
+   padding-top: 2px;
+   padding-bottom: 2px;
+}
+
+td.sub-section-header {
+   background: #eeeeff;
+   margin-bottom: 0px;
+   font-size: 110%;
+   font-weight: normal;
+   padding-left: 2px;
+   margin-top: 1em;
+   padding-top: 2px;
+   padding-bottom: 2px;
+}
+
+table.classdoc-table {
+   margin-top: 1.5em;
+}
+
+div.navbar-first-row {
+   background: #eeeeff;
+   padding-top: 4px;
+   padding-bottom: 4px;
+   padding-left: 4px;
+   padding-right: 4px;
+   font-size: 100%;
+   color: black;
+   font-family: Arial, sans-serif;
+   font-weight: normal;
+}
+
+div.navbar-second-row {
+   padding-top: 0px;
+   padding-bottom: 9px;
+}
+
+div.navbar-second-row a[href] {
+   text-decoration: underline;
+   font-family: Arial, sans-serif;
+   font-weight: normal;
+   font-size: 60%;
+   text-transform: uppercase;
+   padding-top: 0px;
+   margin-top: 0px;
+   background: white;
+   margin-left: 8px;
+}
+
+div.navbar-second-row span {
+   padding: 0px;
+   margin: 0px;
+}
+
+span.navi-button {
+   padding-left: 0.4em;
+   padding-right: 0.4em;
+}
+
+div.navbar-first-row span[class="navi-button current"] {
+  background: #00008B;
+  color: white;
+  font-weight: bold;
+}
+
+div.navbar-first-row span[class="navi-button unavailable"] {
+  font-weight: normal;
+}
+
+div.navbar-first-row a[href] {
+   padding-bottom: 0px;
+   font-weight: lighter;
+   text-decoration: none;
+   border-bottom: 1px solid blue;
+   position: relative;
+   top: -1px;
+}
+
+div.navbar-first-row a:visited {
+   color: black;
+   font-weight: lighter;
+   text-decoration: none;
+   border-bottom: 1px solid black;
+}
+
+div.navbar-first-row span.navi-link {
+   padding: 0px;
+   margin: 0px;
+   color: black;
+   font-weight: bold;
+   position: relative;
+   top: 1px;
+}
+
+span.navsep {
+  padding-left: 0.15em;
+}
+
+a.menu {
+  font-family: Arial, Sans-Serif;
+  font-size: 90%;
+}
+
+table.navbar[class="navbar top"] {
+  padding-bottom: 4px;
+  border-bottom: inset 1px black;
+}
+
+table {
+  width: 100%;
+  margin: 0px;
+  border: none;
+  padding: 0px;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+tr.navbar {
+  margin: 0px;
+  padding: 0px;
+  border: none;
+}
+
+td.navbar {
+  margin: 0px;
+  padding: 0px;
+  border: none;
+}
+
+a.package-link,
+a.class-link {
+  font-weight: bold;
+}
+
+table,tr,td {
+}
+
+table.classdoc-table {
+}
+
+table.classdoc-table tr {
+}
+
+table.classdoc-table td {
+   border: ridge 2px black;
+   border-collapse: separate;
+}
+
+td {
+   padding: 2px;
+}
+
+h1.classdoc-title,
+h1.classdoc-sub-title {
+   font-size: 150%;
+   font-weight: bold;
+}
+
+div.pagebody {
+   padding-bottom: 1em;
+}
+
+h3.menu-title {
+   font-family: Arial, Sans-Serif;
+   font-weight: normal;
+   font-size: 105%;
+}
+
+p.member-summary {
+   margin: 0px;
+   padding: 0px;
+   font-family: Monospace;
+}
+
+p.modifiers {
+   font-size: 80%;
+}
+
+a.name {
+   font-weight: bold;
+}
+
+blockquote.member-summary {
+   text-indent: 3em;
+   margin: 0px;
+}
+
+td.member-summary {
+   vertical-align: top;
+}
+
+.classdoc-head-packagename {
+   font-weight: bold;
+   padding-top: 2em;
+   padding-bottom: 0em;
+   margin: 0em;
+}
+
+.classdoc-head-classname {
+   padding-top: 0em;
+   margin-top: 0em;
+}
+
+td.super {
+   font-family: Monospace;
+}
+
+.classdoc-tag-section-header {
+  font-weight: bold;
+}
+
+dl.classdoc-list {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 2.5em;
+}
+
+div.section-header,
+div.sub-section-header {
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  font-size: inherit;
+}

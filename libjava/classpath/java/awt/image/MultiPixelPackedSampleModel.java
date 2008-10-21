@@ -37,6 +37,7 @@ exception statement from your version. */
 package java.awt.image;
 
 import gnu.java.awt.Buffers;
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * MultiPixelPackedSampleModel provides a single band model that supports
@@ -587,7 +588,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     result.append(getClass().getName());
     result.append("[");
     result.append("scanlineStride=").append(scanlineStride);

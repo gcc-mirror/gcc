@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -106,7 +108,37 @@ public class DomAttr
     // and character data change events and when they happen,
     // report self-mutation
   }
-  
+
+  /**
+   * Constructs an Attr node associated with the specified document.
+   * The "specified" flag is initialized to true, since this DOM has
+   * no current "back door" mechanisms to manage default values so
+   * that every value must effectively be "specified".
+   *
+   * <p>This constructor should only be invoked by a Document as part of
+   * its createAttribute functionality, or through a subclass which is
+   * similarly used in a "Sub-DOM" style layer.
+   * <p>
+   * With this constructor, the prefix and local part are given explicitly
+   * rather than being computed.  This allows them to be explicitly set to
+   * {@code null} as required by {@link Document#createAttribute(String)}.   
+   * </p>
+   *
+   * @param owner The document with which this node is associated
+   * @param namespaceURI Combined with the local part of the name,
+   *	this is used to uniquely identify a type of attribute
+   * @param name Name of this attribute, which may include a prefix
+   * @param prefix the namespace prefix of the name.  May be {@code null}.
+   * @param localName the local part of the name.  May be {@code null}.
+   */
+  protected DomAttr(DomDocument owner, String namespaceURI, String name,
+		    String prefix, String localName)
+  {
+    super(ATTRIBUTE_NODE, owner, namespaceURI, name, prefix, localName);
+    specified = true;
+    length = 1;
+  }
+
   /**
    * <b>DOM L1</b>
    * Returns the attribute name (same as getNodeName)
@@ -147,7 +179,7 @@ public class DomAttr
         return (value == null) ? "" : value;
       }
     // Otherwise collect child node-values
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (DomNode ctx = first; ctx != null; ctx = ctx.next)
       {
         switch (ctx.nodeType)

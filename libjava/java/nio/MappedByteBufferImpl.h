@@ -88,6 +88,7 @@ public: // actually package-private
   jboolean isLoadedImpl();
   void loadImpl();
   void forceImpl();
+private:
   jboolean __attribute__((aligned(__alignof__( ::java::nio::MappedByteBuffer)))) readOnly;
 public:
   ::gnu::gcj::RawData * implPtr;

@@ -37,10 +37,6 @@ exception statement from your version. */
 
 package java.lang;
 
-import gnu.java.util.WeakIdentityHashMap;
-
-import java.util.Iterator;
-
 /**
  * A ThreadLocal whose value is inherited by child Threads. The value of the
  * InheritableThreadLocal associated with the (parent) Thread is copied to
@@ -97,24 +93,6 @@ public class InheritableThreadLocal<T> extends ThreadLocal<T>
   {
     // The currentThread is the parent of the new thread.
     Thread parentThread = Thread.currentThread();
-    if (parentThread.locals != null)
-      {
-        Iterator keys = parentThread.locals.keySet().iterator();
-        while (keys.hasNext())
-          {
-            Object key = keys.next();
-            if (key instanceof InheritableThreadLocal)
-              {
-		InheritableThreadLocal local = (InheritableThreadLocal)key;
-                Object parentValue = parentThread.locals.get(key);
-		Object childValue = local.childValue(parentValue == sentinel
-						? null : parentValue);
-                if (childThread.locals == null)
-                    childThread.locals = new WeakIdentityHashMap();
-                childThread.locals.put(key, (childValue == null
-                                             ? sentinel : childValue));
-              }
-          }
-      }
+    childThread.locals.inherit(parentThread.locals);
   }
 }

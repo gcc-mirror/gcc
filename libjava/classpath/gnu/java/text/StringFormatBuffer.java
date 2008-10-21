@@ -47,7 +47,7 @@ import java.util.HashMap;
  */
 public class StringFormatBuffer implements FormatBuffer
 {
-  private StringBuffer buffer;
+  private final StringBuffer buffer;
   private AttributedCharacterIterator.Attribute defaultAttr;
 
   public StringFormatBuffer(int prebuffer)

@@ -11,6 +11,16 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
   namespace java
   {
     namespace text
@@ -44,7 +54,7 @@ private:
   ::java::lang::String * getName(jint);
   void checkFlags(jint, jint, jchar);
   void noPrecision(jint);
-  void applyLocalization(::java::lang::StringBuilder *, jint, jint, jboolean);
+  void applyLocalization(::gnu::java::lang::CPStringBuilder *, jint, jint, jboolean);
   void genericFormat(::java::lang::String *, jint, jint, jint);
   void booleanFormat(::java::lang::Object *, jint, jint, jint, jchar);
   void hashCodeFormat(::java::lang::Object *, jint, jint, jint, jchar);
@@ -52,10 +62,10 @@ private:
   void characterFormat(::java::lang::Object *, jint, jint, jint, jchar);
   void percentFormat(jint, jint, jint);
   void newLineFormat(jint, jint, jint);
-  ::java::lang::StringBuilder * basicIntegralConversion(::java::lang::Object *, jint, jint, jint, jint, jchar);
+  ::gnu::java::lang::CPStringBuilder * basicIntegralConversion(::java::lang::Object *, jint, jint, jint, jint, jchar);
   void hexOrOctalConversion(::java::lang::Object *, jint, jint, jint, jint, jchar);
   void decimalConversion(::java::lang::Object *, jint, jint, jint, jchar);
-  void singleDateTimeConversion(::java::lang::StringBuilder *, ::java::util::Calendar *, jchar, ::java::text::DateFormatSymbols *);
+  void singleDateTimeConversion(::gnu::java::lang::CPStringBuilder *, ::java::util::Calendar *, jchar, ::java::text::DateFormatSymbols *);
   void dateTimeConversion(::java::lang::Object *, jint, jint, jint, jchar, jchar);
   void advance();
   jint parseInt();

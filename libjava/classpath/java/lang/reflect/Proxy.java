@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.lang.reflect;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.lang.reflect.TypeSignature;
 
 import java.io.Serializable;
@@ -1033,7 +1035,7 @@ public class Proxy implements Serializable
           code_length += 9; // new, dup_x1, swap, invokespecial, athrow
         }
       int handler_pc = code_length - 1;
-      StringBuilder signature = new StringBuilder("(");
+      CPStringBuilder signature = new CPStringBuilder("(");
       for (int j = 0; j < paramtypes.length; j++)
         signature.append(TypeSignature.getEncodingOfClass(paramtypes[j]));
       signature.append(")").append(TypeSignature.getEncodingOfClass(ret_type));
@@ -1492,7 +1494,7 @@ public class Proxy implements Serializable
       if (i == len)
         return str;
 
-      final StringBuilder sb = new StringBuilder(str);
+      final CPStringBuilder sb = new CPStringBuilder(str);
       sb.setLength(i);
       for ( ; i < len; i++)
         {

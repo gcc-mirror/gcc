@@ -60,9 +60,9 @@ final class RoundFunction
 
   final Expr arg;
 
-  RoundFunction(List args)
+  RoundFunction(List<Expr> args)
   {
-    this((Expr) args.get(0));
+    this(args.get(0));
   }
 
   RoundFunction(Expr arg)
@@ -70,6 +70,7 @@ final class RoundFunction
     this.arg = arg;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);

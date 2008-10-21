@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.stream;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Writer;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -141,7 +143,7 @@ public abstract class XMLEventImpl
   protected String encode(String text, boolean inAttr)
   {
     int len = text.length();
-    StringBuffer buf = null;
+    CPStringBuilder buf = null;
     for (int i = 0; i < len; i++)
       {
         char c = text.charAt(i);
@@ -149,7 +151,7 @@ public abstract class XMLEventImpl
           {
             if (buf == null)
               {
-                buf = new StringBuffer(text.substring(0, i));
+                buf = new CPStringBuilder(text.substring(0, i));
               }
             buf.append("&lt;");
           }
@@ -157,7 +159,7 @@ public abstract class XMLEventImpl
           {
             if (buf == null)
               {
-                buf = new StringBuffer(text.substring(0, i));
+                buf = new CPStringBuilder(text.substring(0, i));
               }
             buf.append("&gt;");
           }
@@ -165,7 +167,7 @@ public abstract class XMLEventImpl
           {
             if (buf == null)
               {
-                buf = new StringBuffer(text.substring(0, i));
+                buf = new CPStringBuilder(text.substring(0, i));
               }
             buf.append("&amp;");
           }
@@ -173,7 +175,7 @@ public abstract class XMLEventImpl
           {
             if (buf == null)
               {
-                buf = new StringBuffer(text.substring(0, i));
+                buf = new CPStringBuilder(text.substring(0, i));
               }
             buf.append("&apos;");
           }
@@ -181,7 +183,7 @@ public abstract class XMLEventImpl
           {
             if (buf == null)
               {
-                buf = new StringBuffer(text.substring(0, i));
+                buf = new CPStringBuilder(text.substring(0, i));
               }
             buf.append("&quot;");
           }

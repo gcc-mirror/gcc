@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.97.2],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.98-pre],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
 dnl GCJ LOCAL
@@ -284,6 +284,31 @@ AC_ARG_ENABLE([plugin],
 AM_CONDITIONAL(CREATE_PLUGIN, test "x${COMPILE_PLUGIN}" = xyes)
 
 dnl -----------------------------------------------------------
+dnl Native java.math.BigInteger (enabled by default)
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([gmp],
+              [AS_HELP_STRING(--enable-gmp,
+                              compile native java.math.BigInteger library (disabled by --disable-gmp) [default=yes])],
+              [case "${enableval}" in
+                yes|true) COMPILE_GMP=yes ;;
+                no|false) COMPILE_GMP=no ;;
+                *) COMPILE_GMP=yes ;;
+              esac],
+              [COMPILE_GMP=yes])
+
+dnl -----------------------------------------------------------
+dnl GJDoc (enabled by default)
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([gjdoc],
+              [AS_HELP_STRING(--disable-gjdoc,compile GJDoc (disabled by --disable-gjdoc) [default=yes])],
+              [case "${enableval}" in
+                yes) COMPILE_GJDOC=yes ;;
+                no) COMPILE_GJDOC=no ;;
+                *) COMPILE_GJDOC=yes ;;
+              esac],
+              [COMPILE_GJDOC=yes])
+AM_CONDITIONAL(CREATE_GJDOC, test "x${COMPILE_GJDOC}" = xyes)
+
 dnl GCJ LOCAL: Calculates and substitutes toolexeclibdir.  $libdir is
 dnl defined to the same value for all multilibs.  We define toolexeclibdir
 dnl so that we can refer to the multilib installation directories from
@@ -321,22 +346,21 @@ AC_ARG_WITH([glibj-dir],
 AC_SUBST(glibjdir)
 
 dnl -----------------------------------------------------------
-dnl Sets the VM name for use in tool wrapper scripts
+dnl Sets the Antlr jar to use for compiling gjdoc
 dnl -----------------------------------------------------------
-AC_ARG_WITH([vm],
-	    [AS_HELP_STRING(--with-vm,sets the VM binary name [default='${prefix}/bin/jamvm'])],
-	    [
-	     VM_BINARY=${withval}
-	    ],
-	    [
-	     VM_BINARY='${prefix}/bin/jamvm'
-	    ])
-
-AC_SUBST(VM_BINARY)
+AC_ARG_WITH([antlr-jar],
+            [AS_HELP_STRING([--with-antlr-jar=file],[Use ANTLR from the specified jar file])],
+            [
+             ANTLR_JAR=$withval
+            ],
+            [
+             ANTLR_JAR="$ANTLR_JAR"
+            ])
 
 dnl -----------------------------------------------------------
-dnl Regenerate headers at build time (disabled by default)
+dnl Regenerate headers at build time (enabled if not found)
 dnl -----------------------------------------------------------
+AC_MSG_CHECKING([whether to regenerate the headers])
 AC_ARG_ENABLE([regen-headers],
               [AS_HELP_STRING(--enable-regen-headers,automatically regenerate JNI headers [default=yes if headers don't exist])],
               [case "${enableval}" in
@@ -344,12 +368,32 @@ AC_ARG_ENABLE([regen-headers],
                 no) REGENERATE_JNI_HEADERS=no ;;
                 *) REGENERATE_JNI_HEADERS=yes ;;
               esac],
-              [if test -e include/java_lang_VMSystem.h; then
+              [if test -e ${srcdir}/include/java_lang_VMSystem.h; then
 			REGENERATE_JNI_HEADERS=no ;
 		   else
 			REGENERATE_JNI_HEADERS=yes ;
 	       fi])
+AC_MSG_RESULT(${REGENERATE_JNI_HEADERS})
 AM_CONDITIONAL(CREATE_JNI_HEADERS, test "x${REGENERATE_JNI_HEADERS}" = xyes)
+
+dnl ------------------------------------------------------------------------
+dnl Regenerate GJDoc parser at build time (enabled if not found)
+dnl ------------------------------------------------------------------------
+AC_MSG_CHECKING([whether to regenerate the GJDoc parser])
+AC_ARG_ENABLE([regen-gjdoc-parser],
+              [AS_HELP_STRING(--enable-regen-gjdoc-parser,automatically regenerate the GJDoc parser [default=yes if generated source doesn't exist])],
+              [case "${enableval}" in
+                yes) REGENERATE_GJDOC_PARSER=yes ;;
+                no) REGENERATE_GJDOC_PARSER=no ;;
+                *) REGENERATE_GJDOC_PARSER=yes ;;
+              esac],
+              [if test -e ${srcdir}/tools/generated/gnu/classpath/tools/gjdoc/expr/JavaLexer.java; then
+			REGENERATE_GJDOC_PARSER=no ;
+		   else
+			REGENERATE_GJDOC_PARSER=yes ;
+	       fi])
+AC_MSG_RESULT(${REGENERATE_GJDOC_PARSER})
+AM_CONDITIONAL(CREATE_GJDOC_PARSER, test "x${REGENERATE_GJDOC_PARSER}" = xyes)
 
 dnl -----------------------------------------------------------
 dnl Enable tool wrapper binaries (disabled by default)
@@ -422,6 +466,7 @@ if test "x${COMPILE_JNI}" = xyes; then
   dnl Check for crt_externs.h on Darwin.
   dnl Check for netinet/in_systm.h, netinet/ip.h and net/if.h for Windows CE.
   dnl Check for sys/loadavg.h for getloadavg() on Solaris 9.
+  dnl Check for sys/sockio.h for SIOCGIFFLAGS on OpenSolaris.
   AC_CHECK_HEADERS([unistd.h sys/types.h sys/config.h sys/ioctl.h \
 		    asm/ioctls.h \
 		    inttypes.h stdint.h utime.h sys/utime.h sys/filio.h \
@@ -434,14 +479,15 @@ if test "x${COMPILE_JNI}" = xyes; then
                     sys/event.h sys/epoll.h \
 		    ifaddrs.h \
 		    netinet/in_systm.h netinet/ip.h net/if.h \
-		    sys/loadavg.h])
+		    sys/loadavg.h sys/sockio.h])
 
   AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED, 1, [Define to 1 if you have uint32_t]))
   AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED, 1, [Define to 1 if you have uint32_t]))
   AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
   AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
 
-  AC_SEARCH_LIBS([inet_pton],[nsl]) 
+  AC_SEARCH_LIBS([inet_pton],[nsl])
+  AC_CHECK_LIB([socket], [gethostname]) 
   AC_CHECK_FUNCS([ftruncate fsync select \
 		  gethostname socket strerror fork pipe execve open close \
 		  lseek fstat read readv write writev htonl memset htons connect \
@@ -755,6 +801,26 @@ if test "x${COMPILE_JNI}" = xyes; then
 
     AC_SUBST(PLUGIN_DIR, $HOME/.mozilla/plugins/)
   fi
+
+  dnl Check for GNU MP library and header file
+  dnl for GNU MP versions >= 4.2 use __gmpz_combit; otherwise look for
+  dnl __gmpz_mul_si for earlier versions (>= 3.1).
+  dnl IMPORTANT: if you decide to look for __gmpz_combit, don't forget to
+  dnl change the name of the corresponding ac_ variable on lines 860...
+  if test "x${COMPILE_GMP}" = xyes; then
+    AC_CHECK_LIB(gmp, __gmpz_mul_si,
+      [GMP_CFLAGS=-I/usr/include
+       GMP_LIBS=-lgmp ],
+      [GMP_CFLAGS=
+       GMP_LIBS= ])
+    AC_SUBST(GMP_CFLAGS)
+    AC_SUBST(GMP_LIBS)
+
+    AC_CHECK_HEADERS([gmp.h])
+  fi
+
+else
+  COMPILE_GMP=no
 fi
 
 if test "x${REGENERATE_JNI_HEADERS}" = xyes; then
@@ -948,6 +1014,24 @@ esac;
 AM_CONDITIONAL(USE_PREBUILT_GLIBJ_ZIP, test x$use_glibj_zip = xtrue)
 AC_SUBST(PATH_TO_GLIBJ_ZIP)
 
+if test "x${TOOLSDIR}" != x; then
+  if test "x${COMPILE_WRAPPERS}" = xno && test "x${enable_java_maintainer_mode}" = xyes; then
+    AC_PROG_JAVA
+  fi
+  if test "x${COMPILE_GJDOC}" = xyes; then
+    AC_LIB_ANTLR
+    if test "x${REGENERATE_GJDOC_PARSER}" = xyes; then
+dnl GCJ LOCAL
+      if test "x${enable_java_maintainer_mode}" = xyes; then
+        AC_PROG_JAVA
+	AC_PROG_ANTLR(2,7,1)
+      fi
+dnl END GCJ LOCAL
+    fi
+  fi
+fi
+
+
 # Check for javac if we need to build either the class library,
 # the examples or the tools
 if test "x${use_glibj_zip}" = xfalse || \
@@ -1012,6 +1096,25 @@ dnl -----------------------------------------------------------
 AC_SUBST(DEFAULT_PREFS_PEER)
 
 dnl -----------------------------------------------------------
+dnl Set GNU MP related params
+dnl -----------------------------------------------------------
+WANT_NATIVE_BIG_INTEGER=false
+if test "x${COMPILE_GMP}" = xyes; then
+  if test "x${ac_cv_lib_gmp___gmpz_mul_si}" = xyes; then
+    if test "x${ac_cv_header_gmp_h}" = xyes; then
+      WANT_NATIVE_BIG_INTEGER=true
+      AC_DEFINE(WITH_GNU_MP, 1, [Define to 1 if gmp is usable])
+    else
+      COMPILE_GMP=no
+    fi
+  else
+    COMPILE_GMP=no
+  fi
+fi
+AC_SUBST(WANT_NATIVE_BIG_INTEGER)
+AM_CONDITIONAL(CREATE_GMPBI_LIBRARY, test "x${COMPILE_GMP}" = xyes)
+
+dnl -----------------------------------------------------------
 dnl output files
 dnl -----------------------------------------------------------
 AC_CONFIG_FILES([Makefile
@@ -1032,6 +1135,7 @@ native/jni/Makefile
 native/jni/classpath/Makefile
 native/jni/java-io/Makefile
 native/jni/java-lang/Makefile
+native/jni/java-math/Makefile
 native/jni/java-net/Makefile
 native/jni/java-nio/Makefile
 native/jni/java-util/Makefile
@@ -1086,6 +1190,12 @@ AC_CONFIG_COMMANDS([grmid],[chmod 755 tools/grmid])
 AC_CONFIG_COMMANDS([grmic],[chmod 755 tools/grmic])
 AC_CONFIG_COMMANDS([gjavah], [chmod 755 tools/gjavah])
 ])
+
+if test "x${COMPILE_GJDOC}" = xyes
+then
+AC_CONFIG_FILES([tools/gjdoc])
+AC_CONFIG_COMMANDS([gjdoc], [chmod 755 tools/gjdoc])
+fi
 
 AC_CONFIG_COMMANDS([gen-classlist],[chmod 755 lib/gen-classlist.sh])
 AC_CONFIG_COMMANDS([copy-vmresources],[chmod 755 lib/copy-vmresources.sh])

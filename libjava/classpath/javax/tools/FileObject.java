@@ -60,7 +60,7 @@ public interface FileObject
    *
    * @return a URI that represents this file object
    */
-  URI toURI();
+  URI toUri();
 
   /**
    * Returns a name for this file object. The exact name is implementation
@@ -99,6 +99,8 @@ public interface FileObject
   /**
    * Opens this file for reading and returns a reader.
    *
+   * @param ignoreEncodingErrors <code>true</code> when encoding errors should be ignored
+   *                             <code>false</code> otherwise
    * @return a reader for reading this file object
    *
    * @throws IOException if an I/O error occurs
@@ -107,7 +109,7 @@ public interface FileObject
    * @throws UnsupportedOperationException if this kind of file does not allow
    *         character reading
    */
-  Reader openReader() throws IOException;
+  Reader openReader(boolean ignoreEncodingErrors) throws IOException;
 
   /**
    * Returns the character content of the file, if available. Any byte

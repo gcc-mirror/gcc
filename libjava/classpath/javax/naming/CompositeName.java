@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.naming;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -85,7 +87,7 @@ public class CompositeName implements Name, Cloneable, Serializable
     final char no_quote = 'x';	// Use 'x' to mean no quoting.
     char quote = no_quote;
     boolean escaped = false;
-    StringBuffer new_element = new StringBuffer ();
+    StringBuilder new_element = new StringBuilder ();
     for (int i = 0; i < n.length (); ++i)
       {
 	char c = n.charAt (i);
@@ -294,7 +296,7 @@ public class CompositeName implements Name, Cloneable, Serializable
 
   public String toString ()
   {
-    StringBuffer result = new StringBuffer ();
+    CPStringBuilder result = new CPStringBuilder ();
     for (int i = 0; i < elts.size (); ++i)
       {
 	// For simplicity we choose to always quote using escapes and

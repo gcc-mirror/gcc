@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt.font.opentype.truetype;
 
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * A utility class for fixed-point arithmetics, where numbers are
@@ -164,7 +165,7 @@ public final class Fixed
 
   public static String toString(int x, int y)
   {
-    StringBuffer sbuf = new StringBuffer(40);
+    CPStringBuilder sbuf = new CPStringBuilder(40);
     sbuf.append('(');
     sbuf.append(((float) x) / 64);
     sbuf.append(", ");

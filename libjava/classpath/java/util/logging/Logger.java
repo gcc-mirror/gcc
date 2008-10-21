@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.util.logging;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -776,7 +778,7 @@ public class Logger
       {
         if (isLoggable(Level.FINER))
           {
-            StringBuffer buf = new StringBuffer(80);
+            CPStringBuilder buf = new CPStringBuilder(80);
             buf.append("ENTRY");
             for (int i = 0; i < params.length; i++)
               {

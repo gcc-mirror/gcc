@@ -404,7 +404,7 @@ public class RuleBasedCollator extends Collator
   {
     boolean ignoreChars = (base_offset == 0);
     int operator = -1;
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean doubleQuote = false;
     boolean eatingChars = false;
     boolean nextIsModifier = false;

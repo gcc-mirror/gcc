@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -368,7 +370,7 @@ class GnomeNode
       case ENTITY_NODE:
       case ENTITY_REFERENCE_NODE:
       case DOCUMENT_FRAGMENT_NODE:
-        StringBuffer buffer = new StringBuffer();
+        CPStringBuilder buffer = new CPStringBuilder();
         NodeList children = getChildNodes();
         int len = children.getLength();
         for (int i = 0; i < len; i++)
@@ -489,7 +491,7 @@ class GnomeNode
 
   public String toString()
   {
-    StringBuffer buffer = new StringBuffer(getClass().getName());
+    CPStringBuilder buffer = new CPStringBuilder(getClass().getName());
     buffer.append("[nodeName=");
     buffer.append(getNodeName());
     buffer.append("]");

@@ -44,69 +44,81 @@ package gnu.java.util.regex;
  *
  * @author Ito Kazumitsu</A>
  */
-final class BacktrackStack {
+final class BacktrackStack
+{
 
     /** A set of data to be used for backtracking. */
-    static class Backtrack {
-        /** REToken to which to go back */
-        REToken token;
+  static class Backtrack
+  {
+	/** REToken to which to go back */
+    REToken token;
 	/** CharIndexed on which matches are being searched for. */
-	CharIndexed input;
+    CharIndexed input;
 	/** REMatch to be used by the REToken token. */
-	REMatch match;
+    REMatch match;
 	/** Some parameter used by the token's backtrack method. */
-	Object param;
-        Backtrack(REToken token, CharIndexed input, REMatch match, Object param) {
-	    this.token = token;
-	    this.input = input;
-	    //  REMatch may change before backtracking is needed. So we
-	    //  keep a clone of it.
-	    this.match = (REMatch) match.clone();
-	    this.param = param;
-	}
+    Object param;
+      Backtrack (REToken token, CharIndexed input, REMatch match,
+		 Object param)
+    {
+      this.token = token;
+      this.input = input;
+      //  REMatch may change before backtracking is needed. So we
+      //  keep a clone of it.
+      this.match = (REMatch) match.clone ();
+      this.param = param;
     }
+  }
 
-    Backtrack[] stack;
-    private int size;
-    private int capacity;
-    private static final int INITIAL_CAPACITY = 32;
-    private static final int CAPACITY_INCREMENT = 16;
+  Backtrack[] stack;
+  private int size;
+  private int capacity;
+  private static final int INITIAL_CAPACITY = 32;
+  private static final int CAPACITY_INCREMENT = 16;
 
-    BacktrackStack() {
-        stack = new Backtrack[INITIAL_CAPACITY];
-	size = 0;
-	capacity = INITIAL_CAPACITY;
-    }
+  BacktrackStack ()
+  {
+    stack = new Backtrack[INITIAL_CAPACITY];
+    size = 0;
+    capacity = INITIAL_CAPACITY;
+  }
 
-    boolean empty() {
-	return size == 0;
-    }
+  boolean empty ()
+  {
+    return size == 0;
+  }
 
-    Backtrack peek() {
-	return stack[size - 1];
-    }
+  Backtrack peek ()
+  {
+    return stack[size - 1];
+  }
 
-    Backtrack pop() {
-	Backtrack bt = stack[--size];
-	stack[size] = null;
-	return bt;
-    }
+  Backtrack pop ()
+  {
+    Backtrack bt = stack[--size];
+    stack[size] = null;
+    return bt;
+  }
 
-    void clear() {
-	for (int i = 0; i < size; i++) {
-	    stack[i] = null;
-	}
-	size = 0;
-    }
+  void clear ()
+  {
+    for (int i = 0; i < size; i++)
+      {
+	stack[i] = null;
+      }
+    size = 0;
+  }
 
-    void push(Backtrack bt) {
-        if (size >= capacity) {
-	    capacity +=  CAPACITY_INCREMENT;
-	    Backtrack[] newStack = new Backtrack[capacity];
-	    System.arraycopy(stack, 0, newStack, 0, size);
-	    stack = newStack;
-	}
-	stack[size++] = bt;
-    }
+  void push (Backtrack bt)
+  {
+    if (size >= capacity)
+      {
+	capacity += CAPACITY_INCREMENT;
+	Backtrack[]newStack = new Backtrack[capacity];
+	System.arraycopy (stack, 0, newStack, 0, size);
+	stack = newStack;
+      }
+    stack[size++] = bt;
+  }
 
 }

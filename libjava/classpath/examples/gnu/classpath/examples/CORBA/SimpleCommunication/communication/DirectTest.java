@@ -269,7 +269,7 @@ public class DirectTest
     object.passTree(nh);
 
     // Convert the returned tree to some strig representation.
-    StringBuffer img = new StringBuffer();
+    StringBuilder img = new StringBuilder();
     getImage(img, nh.value);
 
     System.out.println("Returned tree: " + img.toString());
@@ -314,7 +314,7 @@ public class DirectTest
    * @param b the string buffer to accumulate the representation.
    * @param n the tree (root TreeNode).
    */
-  private void getImage(StringBuffer b, TreeNode n)
+  private void getImage(StringBuilder b, TreeNode n)
   {
     b.append(n.name);
     b.append(": (");

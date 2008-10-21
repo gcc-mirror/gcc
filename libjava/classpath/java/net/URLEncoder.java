@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.UnsupportedEncodingException;
 
 
@@ -113,7 +115,7 @@ public class URLEncoder
     int start = 0;
     int i = 0;
 
-    StringBuilder result = new StringBuilder(length);
+    CPStringBuilder result = new CPStringBuilder(length);
     while (true)
       {
 	while (i < length && isSafe(s.charAt(i)))

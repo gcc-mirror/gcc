@@ -48,7 +48,7 @@ final class CharSequenceBuffer
   /**
    * The wrapped char sequence.
    */
-  private CharSequence charSequence;
+  private final CharSequence charSequence;
 
   /**
    * Creates a new CharSequenceBuffer.
@@ -63,9 +63,8 @@ final class CharSequenceBuffer
   CharSequenceBuffer(CharSequence charSeq, int capacity, int limit,
                      int position, int mark, int offs)
   {
-    super(capacity, limit, position, mark);
-    charSequence = charSeq;
-    array_offset = offs;
+    super(capacity, limit, position, mark, null, null, offs);
+    this.charSequence = charSeq;
   }
 
   /**
@@ -105,7 +104,7 @@ final class CharSequenceBuffer
    */
   public CharBuffer duplicate()
   {
-    return new CharSequenceBuffer(charSequence, cap, limit, pos, mark, 0);
+    return new CharSequenceBuffer(charSequence, capacity(), limit, pos, mark, 0);
   }
 
   /**

@@ -19,7 +19,7 @@ public: // actually package-private
   ::java::util::prefs::AbstractPreferences * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:
   jboolean val$added;
-  ::java::util::prefs::NodeChangeListener * val$l;
+  ::java::util::prefs::NodeChangeListener * val$listener;
   ::java::util::prefs::NodeChangeEvent * val$event;
 public:
   static ::java::lang::Class class$;

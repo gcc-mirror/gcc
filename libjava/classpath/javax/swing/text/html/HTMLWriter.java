@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -574,7 +576,7 @@ public class HTMLWriter
   protected void output(char[] chars, int off, int len)
    throws IOException
   {
-    StringBuffer strBuffer = new StringBuffer();
+    CPStringBuilder strBuffer = new CPStringBuilder();
 
     for (int i = 0; i < chars.length; i++)
       {

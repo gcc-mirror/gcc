@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.java2d;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * A collection of active edges for scanline conversion.
  */
@@ -183,7 +185,7 @@ final class ActiveEdges
 
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[ActiveEdges] ");
     for (int i = 0; i < numActiveEdges; i++)
       {

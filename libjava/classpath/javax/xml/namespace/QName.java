@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.xml.namespace;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 import javax.xml.XMLConstants;
@@ -126,7 +128,7 @@ public class QName implements Serializable
   {
     if (qName == null)
       {
-	StringBuffer buf = new StringBuffer();
+	CPStringBuilder buf = new CPStringBuilder();
 	if (namespaceURI.length() > 0)
 	  {
 	    buf.append('{');

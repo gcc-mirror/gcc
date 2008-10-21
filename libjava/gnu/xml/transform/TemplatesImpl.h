@@ -41,6 +41,7 @@ public: // actually package-private
 public:
   virtual ::javax::xml::transform::Transformer * newTransformer();
   virtual ::java::util::Properties * getOutputProperties();
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   ::gnu::xml::transform::TransformerFactoryImpl * __attribute__((aligned(__alignof__( ::java::lang::Object)))) factory;
   ::gnu::xml::transform::Stylesheet * stylesheet;

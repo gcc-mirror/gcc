@@ -29,7 +29,7 @@ class java::nio::Buffer : public ::java::lang::Object
 {
 
 public: // actually package-private
-  Buffer(jint, jint, jint, jint);
+  Buffer(jint, jint, jint, jint, ::gnu::gcj::RawData *);
 public:
   virtual jint capacity();
   virtual ::java::nio::Buffer * clear();
@@ -52,7 +52,9 @@ public: // actually package-private
   virtual void checkIndex(jint);
   virtual void checkIfReadOnly();
   static void checkArraySize(jint, jint, jint);
+private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) cap;
+public: // actually package-private
   jint limit__;
   jint pos;
   jint mark__;

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -172,7 +174,7 @@ class GnomeElement
 
   public String toString()
   {
-    StringBuffer buffer = new StringBuffer(getClass().getName());
+    CPStringBuilder buffer = new CPStringBuilder(getClass().getName());
     buffer.append("[tagName=");
     buffer.append(getTagName());
     buffer.append("]");

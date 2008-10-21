@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.text.ParseException;
 
 import javax.swing.JFormattedTextField;
@@ -311,7 +313,7 @@ public class MaskFormatter extends DefaultFormatter
   private String convertStringToValue(String value)
     throws ParseException
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     char valueChar;
     boolean isPlaceHolder;
 
@@ -447,7 +449,7 @@ public class MaskFormatter extends DefaultFormatter
   private String convertValueToString(String value)
     throws ParseException
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     char valueChar;
     boolean isPlaceHolder;
 

@@ -11,6 +11,13 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -25,7 +32,7 @@ class java::nio::IntBuffer : public ::java::nio::Buffer
 {
 
 public: // actually package-private
-  IntBuffer(jint, jint, jint, jint);
+  IntBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *, JArray< jint > *, jint);
 public:
   static ::java::nio::IntBuffer * allocate(jint);
   static ::java::nio::IntBuffer * wrap(JArray< jint > *, jint, jint);

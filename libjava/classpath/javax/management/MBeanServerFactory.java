@@ -89,7 +89,8 @@ public class MBeanServerFactory
   /**
    * The map of registered servers (identifiers to servers).
    */
-  private static final Map<Object,MBeanServer> servers = new HashMap();
+  private static final Map<Object,MBeanServer> servers =
+    new HashMap<Object,MBeanServer>();
 
   /**
    * Private constructor to prevent instance creation.
@@ -212,7 +213,7 @@ public class MBeanServerFactory
     if (sm != null)
       sm.checkPermission(new MBeanServerPermission("findMBeanServer"));
     if (id == null)
-      return new ArrayList(servers.values());
+      return new ArrayList<MBeanServer>(servers.values());
     ArrayList<MBeanServer> list = new ArrayList<MBeanServer>();
     MBeanServer server = servers.get(id);
     if (server != null)
@@ -342,7 +343,7 @@ public class MBeanServerFactory
 	  cl = MBeanServerFactory.class.getClassLoader();
 	try
 	  {
-	    Class bClass = Class.forName(builderClass, true, cl);
+	    Class<?> bClass = Class.forName(builderClass, true, cl);
 	    builder = (MBeanServerBuilder) bClass.newInstance();
 	  }
 	catch (ClassNotFoundException e)

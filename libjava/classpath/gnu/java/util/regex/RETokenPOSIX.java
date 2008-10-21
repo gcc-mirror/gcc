@@ -38,130 +38,158 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-final class RETokenPOSIX extends REToken {
+import gnu.java.lang.CPStringBuilder;
+
+final class RETokenPOSIX extends REToken
+{
   int type;
   boolean insens;
   boolean negated;
 
-  static final int  ALNUM = 0;
-  static final int  ALPHA = 1;
-  static final int  BLANK = 2;
-  static final int  CNTRL = 3;
-  static final int  DIGIT = 4;
-  static final int  GRAPH = 5;
-  static final int  LOWER = 6;
-  static final int  PRINT = 7;
-  static final int  PUNCT = 8;
-  static final int  SPACE = 9;
-  static final int  UPPER = 10;
+  static final int ALNUM = 0;
+  static final int ALPHA = 1;
+  static final int BLANK = 2;
+  static final int CNTRL = 3;
+  static final int DIGIT = 4;
+  static final int GRAPH = 5;
+  static final int LOWER = 6;
+  static final int PRINT = 7;
+  static final int PUNCT = 8;
+  static final int SPACE = 9;
+  static final int UPPER = 10;
   static final int XDIGIT = 11;
 
   // Array indices correspond to constants defined above.
-  static final String[] s_nameTable =  {
+  static final String[] s_nameTable = {
     "alnum", "alpha", "blank", "cntrl", "digit", "graph", "lower",
-    "print", "punct", "space", "upper", "xdigit" 
+    "print", "punct", "space", "upper", "xdigit"
   };
 
   // The RE constructor uses this to look up the constant for a string
-  static int intValue(String key) {
-    for (int i = 0; i < s_nameTable.length; i++) {
-      if (s_nameTable[i].equals(key)) return i;
-    }
+  static int intValue (String key)
+  {
+    for (int i = 0; i < s_nameTable.length; i++)
+      {
+	if (s_nameTable[i].equals (key))
+	  return i;
+      }
     return -1;
   }
 
-  RETokenPOSIX(int subIndex, int type, boolean insens, boolean negated) {
-    super(subIndex);
+  RETokenPOSIX (int subIndex, int type, boolean insens, boolean negated)
+  {
+    super (subIndex);
     this.type = type;
     this.insens = insens;
     this.negated = negated;
   }
 
-    int getMinimumLength() {
-	return 1;
-    }
+  int getMinimumLength ()
+  {
+    return 1;
+  }
 
-    int getMaximumLength() {
-	return 1;
-    }
+  int getMaximumLength ()
+  {
+    return 1;
+  }
 
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-      char ch = input.charAt(mymatch.index);
-      boolean retval = matchOneChar(ch);
-      if (retval) {
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    char ch = input.charAt (mymatch.index);
+    boolean retval = matchOneChar (ch);
+    if (retval)
+      {
 	++mymatch.index;
 	return mymatch;
       }
-      return null;
-    }
+    return null;
+  }
 
-    boolean matchOneChar(char ch) {
+  boolean matchOneChar (char ch)
+  {
     if (ch == CharIndexed.OUT_OF_BOUNDS)
       return false;
-    
+
     boolean retval = false;
-    switch (type) {
-    case ALNUM:
+    switch (type)
+      {
+      case ALNUM:
 	// Note that there is some debate over whether '_' should be included
-	retval = Character.isLetterOrDigit(ch) || (ch == '_');
+	retval = Character.isLetterOrDigit (ch) || (ch == '_');
 	break;
-    case ALPHA:
-	retval = Character.isLetter(ch);
+      case ALPHA:
+	retval = Character.isLetter (ch);
 	break;
-    case BLANK:
+      case BLANK:
 	retval = ((ch == ' ') || (ch == '\t'));
 	break;
-    case CNTRL:
-	retval = Character.isISOControl(ch);
+      case CNTRL:
+	retval = Character.isISOControl (ch);
 	break;
-    case DIGIT:
-	retval = Character.isDigit(ch);
+      case DIGIT:
+	retval = Character.isDigit (ch);
 	break;
-    case GRAPH:
-	retval = (!(Character.isWhitespace(ch) || Character.isISOControl(ch)));
+      case GRAPH:
+	retval =
+	  (!(Character.isWhitespace (ch) || Character.isISOControl (ch)));
 	break;
-    case LOWER:
-	retval = ((insens && Character.isLetter(ch)) || Character.isLowerCase(ch));
+      case LOWER:
+	retval = ((insens && Character.isLetter (ch))
+		  || Character.isLowerCase (ch));
 	break;
-    case PRINT:
-	retval = (!(Character.isWhitespace(ch) || Character.isISOControl(ch)))
-	    || (ch == ' ');
+      case PRINT:
+	retval =
+	  (!(Character.isWhitespace (ch) || Character.isISOControl (ch)))
+	  || (ch == ' ');
 	break;
-    case PUNCT:
+      case PUNCT:
 	// This feels sloppy, especially for non-U.S. locales.
-	retval = ("`~!@#$%^&*()-_=+[]{}\\|;:'\"/?,.<>".indexOf(ch)!=-1);
+	retval = ("`~!@#$%^&*()-_=+[]{}\\|;:'\"/?,.<>".indexOf (ch) != -1);
 	break;
-    case SPACE:
-	retval = Character.isWhitespace(ch);
+      case SPACE:
+	retval = Character.isWhitespace (ch);
 	break;
-    case UPPER:
-	retval = ((insens && Character.isLetter(ch)) || Character.isUpperCase(ch));
+      case UPPER:
+	retval = ((insens && Character.isLetter (ch))
+		  || Character.isUpperCase (ch));
 	break;
-    case XDIGIT:
-	retval = (Character.isDigit(ch) || ("abcdefABCDEF".indexOf(ch)!=-1));
+      case XDIGIT:
+	retval = (Character.isDigit (ch)
+		  || ("abcdefABCDEF".indexOf (ch) != -1));
 	break;
-    }
+      }
 
-    if (negated) retval = !retval;
+    if (negated)
+      retval = !retval;
     return retval;
   }
 
-  boolean returnsFixedLengthMatches() { return true; }
-
-  int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
-      int index = mymatch.index;
-      int numRepeats = 0;
-      while (true) {
-	if (numRepeats >= max) break;
-	char ch = input.charAt(index++);
-	if (! matchOneChar(ch)) break;
-	numRepeats++;
-      }
-      return numRepeats;
+  boolean returnsFixedLengthMatches ()
+  {
+    return true;
   }
 
-  void dump(StringBuffer os) {
-    if (negated) os.append('^');
-    os.append("[:" + s_nameTable[type] + ":]");
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
+    int index = mymatch.index;
+    int numRepeats = 0;
+    while (true)
+      {
+	if (numRepeats >= max)
+	  break;
+	char ch = input.charAt (index++);
+	if (!matchOneChar (ch))
+	  break;
+	numRepeats++;
+      }
+    return numRepeats;
+  }
+
+  void dump (CPStringBuilder os)
+  {
+    if (negated)
+      os.append ('^');
+    os.append ("[:" + s_nameTable[type] + ":]");
   }
 }

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.ftp;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.net.CRLFInputStream;
 import gnu.java.net.CRLFOutputStream;
 import gnu.java.net.EmptyX509TrustManager;
@@ -621,7 +623,7 @@ public class FTPConnection
           }
         
         // Send PORT command
-        StringBuffer buf = new StringBuffer(PORT);
+        CPStringBuilder buf = new CPStringBuilder(PORT);
         buf.append(' ');
         // Construct the address/port string form
         byte[] address = localhost.getAddress();
@@ -686,7 +688,7 @@ public class FTPConnection
   public void setRepresentationType(int type)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer(TYPE);
+    CPStringBuilder buf = new CPStringBuilder(TYPE);
     buf.append(' ');
     switch (type)
       {
@@ -732,7 +734,7 @@ public class FTPConnection
   public void setFileStructure(int structure)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer(STRU);
+    CPStringBuilder buf = new CPStringBuilder(STRU);
     buf.append(' ');
     switch (structure)
       {
@@ -776,7 +778,7 @@ public class FTPConnection
   public void setTransferMode(int mode)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer(MODE);
+    CPStringBuilder buf = new CPStringBuilder(MODE);
     buf.append(' ');
     switch (mode)
       {
@@ -1286,7 +1288,7 @@ public class FTPConnection
       }
     else if (c == '-')
       {
-        StringBuffer buf = new StringBuffer(line.substring(4));
+        CPStringBuilder buf = new CPStringBuilder(line.substring(4));
         buf.append('\n');
         while(true)
           {

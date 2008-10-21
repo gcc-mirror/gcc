@@ -232,7 +232,7 @@ public final class SimpleType<T>
   {
     if (!(obj instanceof SimpleType))
       return false;
-    SimpleType sType = (SimpleType) obj;
+    SimpleType<?> sType = (SimpleType<?>) obj;
     return sType.getClassName().equals(getClassName());
   }
 

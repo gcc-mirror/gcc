@@ -121,14 +121,14 @@ public class MBeanOperationInfo
 	Type t = paramTypes[a];
 	if (t instanceof Class)
 	  signature[a] = new MBeanParameterInfo(null,
-						((Class) t).getName(),
+						((Class<?>) t).getName(),
 						 null);
 	else
 	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);
       }
     Type retType = method.getGenericReturnType();
     if (retType instanceof Class)
-      type = ((Class) retType).getName();
+      type = ((Class<?>) retType).getName();
     else
       type = retType.toString();
     if (method.getReturnType() == Void.TYPE)

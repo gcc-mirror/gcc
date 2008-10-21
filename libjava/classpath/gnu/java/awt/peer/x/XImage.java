@@ -39,13 +39,19 @@ exception statement from your version. */
 package gnu.java.awt.peer.x;
 
 import gnu.x11.Pixmap;
+import gnu.x11.image.ZPixmap;
 
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+
+import java.awt.image.ColorModel;
+import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
+
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class XImage
   extends Image
@@ -75,8 +81,7 @@ public class XImage
 
   public ImageProducer getSource()
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    return new XImageProducer(); 
   }
 
   /**
@@ -107,5 +112,67 @@ public class XImage
   protected void finalize()
   {
     pixmap.free();
+  }
+  
+  protected class XImageProducer implements ImageProducer
+  {
+    private Vector<ImageConsumer> consumers = new Vector<ImageConsumer>();
+    
+    public void addConsumer(ImageConsumer ic)
+    {
+      if (ic != null && !isConsumer(ic))
+        this.consumers.add(ic);
+    }
+
+    public boolean isConsumer(ImageConsumer ic)
+    {
+      return this.consumers.contains(ic);
+    }
+
+    public void removeConsumer(ImageConsumer ic)
+    {
+      if (ic != null)
+        this.consumers.remove(ic);
+    }
+
+    public void requestTopDownLeftRightResend(ImageConsumer ic)
+    {
+      /* just ignore the call */
+    }
+
+    public void startProduction(ImageConsumer ic)
+    {
+      this.addConsumer(ic);
+
+      for (ImageConsumer consumer : this.consumers)
+        {
+          int width = XImage.this.getWidth(null);
+          int height = XImage.this.getHeight(null);
+          
+          XGraphics2D graphics = (XGraphics2D) getGraphics();
+          ColorModel model = graphics.getColorModel();
+          graphics.dispose();
+          
+          ZPixmap zpixmap = (ZPixmap)
+            XImage.this.pixmap.image(0, 0, width, height,
+                                     0xffffffff,
+                                     gnu.x11.image.Image.Format.ZPIXMAP);
+          
+          int size = zpixmap.get_data_length();
+          System.out.println("size: " + size + ", w = " + width + ", h = " + height);
+          
+          int [] pixel = new int[size];
+          for (int i = 0; i < size; i++)
+            pixel[i] = zpixmap.get_data_element(i);
+
+          consumer.setHints(ImageConsumer.SINGLEPASS);
+          
+          consumer.setDimensions(width, height);
+          consumer.setPixels(0, 0, width, height, model, pixel, 0, width);
+          consumer.imageComplete(ImageConsumer.STATICIMAGEDONE);
+        }
+      
+      System.out.println("done!");
+    }
   }
 }

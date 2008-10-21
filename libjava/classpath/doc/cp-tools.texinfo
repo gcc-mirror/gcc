@@ -134,6 +134,59 @@ Other Tools
 * rmid Tool::                  RMI activation daemon
 * rmiregistry Tool::           Remote object registry
 * tnameserv Tool::             Naming service
+* gjdoc Tool::                 Documenation generator tool.
+
+Generating HTML Documentation
+
+* Invoking the Standard Doclet::   How to generate HTML documentation.
+* Invoking a Custom Doclet::       How to run third-party and other 
+                                   built-in Doclets.
+
+* Option Summary by Type::         Brief list of all options, grouped by type.
+* Gjdoc Option Summary::           List of all options accepted by Gjdoc.
+
+* Source Set Options::      Select the set of source codes to run Gjdoc on.
+* Source Format Options::   Specify the format of the source codes to document.
+
+* Interlinking Options::    Connection your documentation with other projects.
+* Output Control Options::  Specify the target directory and locale, and more.
+* Generation Options::      Select which pieces of information to generate.
+* Decoration Options::      Add or modify some titles, headers and footers or
+                            override/amend static resources like stylesheets.
+* Taglet Options::          Define your own javadoc @@tags.
+
+* Virtual Machine Options:: Controlling the kind of output:
+                            an executable, object files, assembler files,
+                            or preprocessed source.
+* Verbosity Options::
+* Doclet Options::
+
+* Other Doclets::           Generating Other Output Types. 
+
+* Built-in Doclets::        Using the Built-in Doclets.
+* Using XmlDoclet::
+* Using TexiDoclet::
+* Using IspellDoclet::
+* Using DebugDoclet::
+
+* Third-party Doclets::     Using Third-Party Doclets.
+* DocBook Doclet::
+* PDFDoclet::
+* JUnitDoclet::
+
+* Gjdoc Concepts::          Advanced Concepts.
+* Writing Doclets::
+
+* Doclet Invocation Interface::    Implementing the Doclet Invocation Interface
+* Using AbstractDoclet::           Deriving Your Doclet from AbstractDoclet.
+* GNU Doclet SPI::                 Preparing the GNU Doclet Service Provider
+                                   Interface.
+
+* Taglets::                        Adding Custom Tags to the Documentation.
+* XHTML Fragments::                Well-Formed Documentation Fragments.
+* First Sentence Detector::        How Gjdoc Determines where the First
+                                   Sentence Ends.
+* Adding Custom Resources::        Adding Images and Other Resources.
 
 I18N Issues
 
@@ -1229,6 +1282,7 @@ and @b{tnameserv}.
 * rmid Tool::                  RMI activation daemon
 * rmiregistry Tool::           Remote object registry
 * tnameserv Tool::             Naming service
+* gjdoc Tool::                 A documentation generator
 @end menu
 
 @comment ----------------------------------------------------------------------
@@ -1743,7 +1797,7 @@ java(1), @dots{}
 
 @comment ----------------------------------------------------------------------
 
-@node tnameserv Tool, , rmiregistry Tool, Other Tools
+@node tnameserv Tool, gjdoc Tool, rmiregistry Tool, Other Tools
 @comment node-name, next, previous, up
 @section The @command{tnameserv} Tool
 @c man title gtnameserv Naming service
@@ -1785,6 +1839,1364 @@ Pass argument to the Java runtime.
 @c man begin SEEALSO gtnameserv
 java(1), @dots{}
 @c man end
+
+@comment ----------------------------------------------------------------------
+
+@ignore
+@c man begin SYNOPSIS gjdoc
+gjdoc [@option{-sourcepath }@var{pathlist}]
+      [@option{-all}] [@option{-subpackages }@var{pkg:pkg:@dots{}}] [@option{-exclude }@var{pkglist}]
+      [@option{-encoding }@var{charset}] [@option{-locale }@var{name}] [@option{-source }@var{release}]
+      [@option{-public}] [@option{-protected}] [@option{-package}] [@option{-private}] 
+      [@option{-doctitle }@var{text}] [@option{-header }@var{text}] [@option{-footer }@var{text}] [@option{-bottom }@var{text}]
+      [@option{-link }@var{url}] [@option{-linkoffline }@var{url} @var{path}] [@option{-noqualifier }@var{pkg:pkg:@dots{}}] 
+      [@option{-tagletpath }@var{pathlist}] [@option{-taglet }@var{className}] [@option{-tag }@var{tagspec}]
+      [@option{-use}] [@option{-linksource}] [@option{-splitindex}] [@option{-noindex}] [@option{-notree}] 
+      [@option{-version}] [@option{-author}] [@option{-nosince}] [@option{-addstylesheet }@var{file}]
+      [@option{-d }@var{targetdir}] 
+      [@var{packages}@dots{}] [@var{sourcefiles}@dots{}] [@@@var{cmdfile}]
+
+gjdoc [@option{-sourcepath }@var{pathlist}]
+      [@option{-all}] [@option{-subpackages }@var{pkg:pkg:@dots{}}] [@option{-exclude }@var{pkglist}]
+      [@option{-encoding }@var{charset}] [@option{-locale }@var{name}] [@option{-source }@var{release}]
+      [@option{-public}] [@option{-protected}] [@option{-package}] [@option{-private}] 
+      [@option{-docletpath }@var{pathlist}] [@option{-doclet }@var{className}]
+      [@var{packages}@dots{}] [@var{sourcefiles}@dots{}] [@@@var{cmdfile}]
+      [doclet options]
+
+gjdoc @option{--help}
+
+gjdoc @option{--version}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@end ignore
+@c man begin SEEALSO gjdoc
+Info entry for @file{gjdoc}.
+@c man end
+@c man begin BUGS gjdoc
+Please report bugs to @w{@uref{http://savannah.gnu.org/bugs/?group=classpath}}.
+@c man end
+@c man begin AUTHOR gjdoc
+Julian Scheid
+@c man end
+
+@node gjdoc Tool, , tnameserv Tool, Other Tools
+@chapter Generating HTML Documentation
+@cindex Gjdoc command options
+@cindex command options
+@cindex options, Gjdoc command
+
+@c man begin DESCRIPTION gjdoc
+Gjdoc can be used in two ways: as a stand-alone documentation tool, or
+as a driver for a user-specified Doclet. @xref{Other Doclets}.
+
+In the default mode, Gjdoc will use the Standard Doclet
+@samp{HtmlDoclet} to generate a set of HTML pages.  The canonical
+usage is:
+
+@smallexample
+gjdoc -s src/java/ -all -d api-docs/
+@end smallexample
+
+Here, @samp{src/java/} is the root of your source code class
+hierarchy, @option{-all} means that all valid Java files found under
+this root directory should be processed, and @samp{api-docs/} is the
+directory where the generated documentation should be placed.
+
+To learn more about running Doclets other than the Standard Doclet,
+refer to the manual.  @xref{Invoking a Custom Doclet}.
+
+@menu
+* Invoking the Standard Doclet::   How to generate HTML documentation.
+* Invoking a Custom Doclet::       How to run third-party and other 
+                                   built-in Doclets.
+
+* Option Summary by Type::         Brief list of all options, grouped by type.
+* Gjdoc Option Summary::           List of all options accepted by Gjdoc.
+
+* Source Set Options::      Select the set of source codes to run Gjdoc on.
+* Source Format Options::   Specify the format of the source codes to document.
+
+* Interlinking Options::    Connection your documentation with other projects.
+* Output Control Options::  Specify the target directory and locale, and more.
+* Generation Options::       Select which pieces of information to generate.
+* Decoration Options::      Add or modify some titles, headers and footers or
+                              override/amend static resources like stylesheets.
+* Taglet Options::          Define your own javadoc @@tags
+
+* Virtual Machine Options::
+* Verbosity Options::
+* Doclet Options::
+
+* Other Doclets::                  Generating Other Output Types
+* Gjdoc Concepts::                 Advanced Concepts
+
+@end menu
+
+@c man end
+
+@comment ----------------------------------------------------------------------
+
+@node Invoking the Standard Doclet, Invoking a Custom Doclet, , gjdoc Tool
+@section Invoking the Standard Doclet
+@cindex Gjdoc command options
+@cindex command options
+@cindex options, Gjdoc command
+
+Running the Gjdoc Standard Doclet @samp{HtmlDoclet} is the default
+mode of operation for Gjdoc.  This section lists the command line
+options you can specify in this mode.  It doesn't distinguish between
+general Gjdoc options and options specific to the Standard Doclet.
+
+If you want to learn which options are accepted when Gjdoc is used as
+a doclet driver, @xref{Invoking a Custom Doclet}.
+
+@menu
+* Source Set Options::      Select the set of source codes to run Gjdoc on.
+* Source Format Options::   Specify the format of the source codes to document.
+
+* Output Control Options::  Specify the target directory and locale, and more.
+* Generation Options::       Select which pieces of information to generate.
+* Decoration Options::      Add or modify some titles, headers and footers or
+                              override/amend static resources like stylesheets.
+* Taglet Options::          Define your own javadoc @@tags
+
+* Virtual Machine Options::
+* Doclet Options::
+
+@end menu
+
+@c man begin OPTIONS gjdoc
+
+@node Option Summary by Type, Gjdoc Option Summary, Invoking a Custom Doclet, gjdoc Tool
+@section Option Summary by Type
+
+Here is a summary of all the options of both Gjdoc and the Standard
+Doclet, grouped by type.  Explanations are in the following sections.
+
+@table @emph
+@item Source Set Options
+@xref{Source Set Options,,Options For Specifying the Source Files To Operate on}.
+@gccoptlist{-sourcepath @var{pathlist}  -subpackages @var{pkglist}  -exclude @var{pkglist}}
+
+@item Source Format Options
+@xref{Source Format Options,,Options For Specifying the Source Format}.
+@gccoptlist{-source @var{release}  -encoding @var{encoding}  -breakiterator}
+
+@item Interlinking Options
+@xref{Interlinking Options,,Options For Specifying the Source Files To Operate on}.
+@gccoptlist{-link @var{url}  -linkoffline @var{url} @var{file}  -noqualifier @var{pkg:pkg:...}}
+
+@item Generation Options
+@xref{Generation Options,,Options Controlling What is Included in the Output}.
+@gccoptlist{-author  -licensetext  -use  -version  -splitindex  -noindex
+ -nodeprecated  -nodeprecatedlist  -nohelp  -nonavbar
+ -nosince  -notree  -public  -protected  -package  -private
+ -docfilessubdirs  -excludedocfilessubdir @var{dirname}
+ -linksource}
+
+@item Output Options
+@xref{Generation Options,,Options Controlling the Output}.
+@gccoptlist{-d  -locale @var{name}  -charset @var{charset}  -docencoding @var{charset}
+ -validhtml  -baseurl @var{url}}
+
+@item Decoration Options
+@gccoptlist{-windowtitle @var{text}  -doctitle @var{text}  -title @var{text}  
+ -header @var{text}  -footer @var{text}  -bottom @var{text}
+ -helpfile @var{file}  -stylesheetfile @var{file}  -addstylesheet @var{file}
+ -group @var{groupheading} @var{pkgpattern:pkgpattern:@dots{}}}
+
+@item Taglet Options
+@xref{Taglet Options,,Options For Specifying user-defined Taglets}.
+@gccoptlist{-tagletpath  -taglet @var{classname}  -tag @var{tagspec}}
+
+@item Doclet Options
+@xref{Doclet Options,,Options For Specifying the Doclet to use}.
+@gccoptlist{-docletpath  -doclet @var{classname}}
+
+@item Verbosity Options
+@xref{Verbosity Options,,Options Controlling Gjdoc Behavior}.
+@gccoptlist{-quiet  -verbose}
+
+@item Virtual Machine Options
+@xref{Virtual Machine Options,,Options Controlling Gjdoc Behavior}.
+@gccoptlist{-classpath}  @gccoptlist{-bootclasspath}  @gccoptlist{-J}@var{vmopt}
+
+@end table
+
+@menu
+* Virtual Machine Options::     Controlling the kind of output:
+                        an executable, object files, assembler files,
+                        or preprocessed source.
+@end menu
+
+@node Source Set Options, Source Format Options, Gjdoc Option Summary, gjdoc Tool
+@section Selecting which Source Files to Process
+
+@table @gcctabopt
+@item -s @var{pathlist}
+@item -sourcepath @var{pathlist}
+Look for source files in the specified directory or directories.
+
+@var{pathlist} should be one or more directory paths separated by your
+platform's path separator (usually @samp{:} or @samp{;}).
+
+If this option is not given, @command{gjdoc} will look for source
+files in the current directory.
+
+The directories specified should be root directories in terms of the
+Java package system.  For example, if you want to generate
+documentation for classes in package @samp{foo.bar}, you must specify
+the directory containing the top-level @samp{@file{foo}}
+sub-directory, not the directory @samp{@file{foo/bar/}} in which the
+Java source files reside.
+
+The short-hand alias @option{-s} is specific to @command{gjdoc} and
+not compatible to Sun @command{javadoc}.
+
+@item -all
+@emph{[EXPERIMENTAL]}
+Process all valid Java source files found in the directories listed in
+the source path and their sub-directories.
+
+This is an option specific to @command{gjdoc} and not compatible to
+Sun @command{javadoc}.
+
+@item -subpackages @var{pkg:pkg:@dots{}}
+Process the classes in the given Java packages and all sub-packages,
+recursively.  Note that multiple package names must be separated with
+colons instead of whitespace.
+
+@item -exclude @var{pkg:pkg:@dots{}}
+Do not process classes in the given Java packages and all
+sub-packages, recursively.  This option can be used in conjunction
+with @option{-all} or @option{-subpackages} in order to exclude
+individual packages or package sub-trees from the output.
+
+@item @var{packages}@dots{}
+Process all classes in the given Java packages.
+
+@item @var{sourcefiles}@dots{}
+Process the classes in the given Java source files.
+@end table
+
+@node Source Format Options, Interlinking Options, Source Set Options, gjdoc Tool
+@section Specifying the Format of Input Files
+
+@table @gcctabopt
+@item -source @var{release}
+Assume that the source files are targeted at the given release of the
+Java platform.
+
+@var{release} should be the version number of a Java platform release
+in the format MAJOR.MINOR, for example @samp{1.4}.
+
+This option is currently ignored except that an error is raised if a
+release number other than @samp{1.2}, @samp{1.3} or @samp{1.4} is
+specified.
+
+@item -encoding @var{charset}
+Assume that the source files are encoded using @var{charset}.
+
+Examples for @var{charset} are @samp{US-ASCII}, @samp{ISO-8859-1} or
+@samp{UTF-8}.
+
+The semantics of @var{charset} are identical to those of @samp{java.nio.charset.Charset.forName(String)}.
+
+@item -breakiterator
+Use the locale's java.text.BreakIterator instead of the internal
+first sentence detector.
+
+By default, @command{gjdoc} uses an internal algorithm to determine
+where a sentence ends. When this option is given, it will instead use
+the @samp{java.text.BreakIterator} instance for the locale given with
+@option{-locale} (or the default locale).
+
+This option should be specified when applying @command{gjdoc} to
+source code commented in a non-latin language for which the default
+first sentence detector does not work. For all other cases, the
+default (do not use BreakIterator) produces better results at the time
+of this writing.
+@end table
+
+@node Interlinking Options, Output Control Options, Source Format Options, gjdoc Tool
+@section Interlinking with other Documentation Sets
+
+@table @gcctabopt
+@item -link @var{url}
+
+Create hyperlinks to another documentation set.
+
+By default, @command{gjdoc} will only create hyperlinks to classes in
+the source set.  Use this option to additionally create hyperlinks to
+classes covered by the specified documentation set.
+
+@var{url} should be the root URL of the other documentation set. For
+example, to add hyperlinks to GNU Classpath, specify the following:
+
+@smallexample
+-link http://developer.classpath.org/doc/
+@end smallexample
+
+The @option{-link} option can be specified multiple times.
+
+Note that specifying the @option{-link} option will cause an HTTP
+access every time gjdoc is invoked. You can use @option{-linkoffline}
+instead to avoid this access.
+
+@item -linkoffline @var{url} @var{file}
+
+Create hyperlinks to another documentation set which is also present
+on the local file system.
+
+This option works exactly like @option{-link}, except that it accesses
+the local file system instead of the network for determining which
+classes are covered by the linked documentation set.
+
+When using @option{-linkoffline} the remote documentation set is not
+accessed at all, which can significantly speed up generation time
+depending on your network connection.  The generated hyperlinks to the
+documentation set however refer to the remote set, not to the local
+one, so that you can distribute the documentation without any further
+dependencies.
+
+The @option{-linkoffline} option can be specified multiple times.
+
+@item -noqualifier @var{pkg:pkg:@dots{}}
+
+Do not qualify names of classes in the given packages with their
+package name.
+
+By default, a class name is displayed unqualified only if the class is
+part of the source set or a linked documentation set, and qualified
+with the name of its containing package if it is not. You can use this
+option to force unqualified names for classes even if they are not
+part of the documentation set.
+
+For example, usually a reference to the String class is represented
+fully-qualified as @samp{java.lang.String} (unless you link to the
+appropriate documentation set using @option{-link}) because it isn't
+part of the documentation set.  You can specify @samp{-noqualifier
+java.lang} to render the same references just as @samp{String}.
+
+Note that for all unqualified class names, a tooltip is provided when
+you place your mouse pointer over it in the HTML documentation.
+
+@item -noqualifier @samp{all}
+Omit package name qualifier from all class names.
+
+Specify this option to omit package name qualifiers altogether,
+
+@end table
+
+@node Generation Options, Decoration Options, Output Control Options, gjdoc Tool
+@section Selecting which Information to Generate
+
+@table @gcctabopt
+@item -public
+Only include public members of public classes in the output.  By
+default, protected class members are included as well.
+
+@item -protected
+
+Include public or protected members of public classes in the output.
+This is the default.
+
+@item -package
+
+Include public, protected and package-private members of public and
+package-private classes.
+
+@item -private
+
+Include all classes and class members regardless of their access
+level.
+
+@item -splitindex
+Generate one index page per letter instead of a single, monolithic
+index page.
+
+By default, the index created by the Standard Doclet contains all
+entries on a single page.  This is fine for small documentation sets,
+but for large sets you should specify this option.
+
+@item -nosince
+Ignore @samp{@@since} tags in javadoc comments.
+
+By default, the generated output contains sections listing the version
+of your API since which the package, class or class member in question
+exists when this tag is encountered.  Specify this option to omit this
+information.
+
+@item -notree
+Do not generate any tree pages.
+
+By default, the generated output includes one inheritance tree per
+package, and - if the documentation set consists of multiple packages
+- a page with the full inheritance tree.  Specify this option to omit
+generation of these pages.
+
+@item -noindex
+Do not output the alphabetical index.
+
+By default, gjdoc generates an alphabetical index of all program
+elements in the documentation set (packages, classes, inner classes,
+constructors, methods, and fields).  Specify this option to omit this
+information.
+
+@item -nohelp
+Do not generate the help page.
+
+This option is currently ignored as the Standard Doclet doesn't
+provide a help page.
+
+@item -nodeprecated
+Do not output inline information about deprecated packages, classes or
+class members.
+
+By default, the Standard Doclet adds a highlighted paragraph with
+deprecation information to the description of each deprecated program
+element.  Specify this option to omit this information.
+
+@item -nodeprecatedlist
+Do not output the summary page for deprecated API elements.
+
+By default, the Standard Doclet generates a page listing all
+deprecated API elements along with a deprecation description which
+usually includes the reason for deprecation and possible
+alternatives.  Specify this option to omit this information.
+
+@item -nonavbar
+Do not output the navigation bar, header, and footer.
+
+By default, each output page is equipped with a top navigation bar
+(which may include a user-specified header) and a bottom navigation
+bar (which may include a user-specified footer).  Specify this option
+to omit this decoration.
+
+@item -nocomment
+
+Omit all documentation text from the generated files and output only
+declarations and program element relationships.
+
+This option is here for compatibility with @command{javadoc}.  If you
+plan on extracting information about your project via @command{gjdoc},
+you should consider using a different Doclet for your purposes
+instead, for example XmlDoclet.  You could also use the Doclet API
+directly by implementing a new Doclet.
+
+@item -linksource
+
+Generate a page with syntax-highlighted source code for each class.
+By default, this page is not generated.
+
+The source code can be accessed by clicking on the button labelled
+"Source" in the navigation bar, or by clicking on the name of a
+constructor, field, method, or inner class in the detail section of a
+class documentation page.
+
+@item -use
+
+Generate a page with cross-reference information. By default, this
+page is not generated.
+
+The cross-reference information can be accessed by clicking on the
+button labelled `Use' in the navigation bar.
+
+The `Use' page lists all classes/interfaces in the documentation set
+that extend/implement the class (type) in question; fields of the
+type; methods or constructors accepting a parameter of the type;
+methods returning the type; and methods or constructors throwing the
+type.
+
+@item -author
+Include author information in the output.
+
+When specified, author information as specified using the
+@samp{@@author} tag in javadoc comments is incorporated into the
+output. By default, @samp{@@author} tags are ignored.
+
+@item -version
+Include version information in the output.
+
+When specified, version information as specified using the
+@samp{@@version} tag in javadoc comments is incorporated into the
+output. By default, @samp{@@version} tags are ignored.
+
+@item -licensetext
+
+Assume that the first comment in each source file contains the license
+text, and add license information to the footer of each generated
+class page.
+
+This is an option specific to @command{gjdoc} and not compatible to
+Sun @command{javadoc}.
+
+This option is intended for use with free and open source projects
+where source code is typically prefixed with a boilerplate license
+comment, when there are legal reasons for including the license in the
+documentation.
+
+@item -docfilessubdirs
+
+Recursively copy all files in the @file{doc-files} sub-directory of each
+package directory.
+
+Usually, only the files in the @file{doc-files} sub-directory are copied
+without descending recursively.
+
+@xref{Adding Custom Resources}.
+
+@item -excludedocfilessubdir @var{name}:@var{name}:@dots{}
+
+Do not copy some directories directly under the @file{doc-files}
+sub-directories when descending recursively.
+
+The argument to this option should be a colon-separated list of
+directory names.
+
+This option only makes sense if @option{-docfilessubdirs} is also
+specified.  In this case, any sub-directory located directly beneath a
+@file{doc-files} directory is omitted if listed.
+
+@end table
+
+@node Taglet Options, Virtual Machine Options, Decoration Options, gjdoc Tool
+@section Custom Documentation Tags
+
+@table @gcctabopt
+@item -tagletpath @var{pathlist}
+Search @var{pathlist} when loading subsequent Taglet classes specified
+using @option{-taglet}.
+
+@var{pathlist} should be one or more paths to a directory or jar file,
+separated by your platform's path separator (usually @samp{:} or
+@samp{;}).
+
+@item -taglet @var{classname}
+Register a Taglet.
+
+@var{classname} should be the fully-qualified name of a Java class
+implementing @samp{com.sun.tools.doclets.Taglet}.
+
+The Taglet classes will be loaded from the classpath specified using
+@option{-tagletpath}, from the classpath specified using
+@option{-classpath} and from the default classpath.
+
+See the documentation of @samp{com.sun.tools.doclets.Taglet} for
+further information.
+
+Note that for simple tags, there is also @option{-tag}.
+
+@item -tag @var{tagspec}
+Register a generic Taglet.
+
+The format of @var{tagspec} must be @samp{<tagname>:<flags>:"<taghead>"}.
+
+@var{tagname} is the tag name to match, without the leading @@ sign. 
+
+@var{flags} is one or more of the following characters, where each
+character specifies a source code context in which the tag is to be
+recognized.
+
+@table @gcctabopt
+@item a  
+all contexts
+@item c  
+constructors
+@item f  
+fields
+@item m  
+methods
+@item o  
+overview
+@item p  
+packages
+@item t  
+types (classes, interfaces, exceptions, errors)
+@item X  
+special character which temporarily disables the
+Taglet altogether.
+@end table
+
+@var{taghead} is the string to display in the header of the section
+devoted to the tag in question.
+
+For example, to define a tag matching @samp{@@cvsid} which is to be
+accepted in overview, package and type pages and which is labelled
+with the header @samp{CVS ID}, you would specify:
+
+@smallexample
+-tag cvsid:tpo:"CVS ID"
+@end smallexample
+
+Let's say that a class javadoc comment contains
+
+@smallexample
+@@cvsid $Id: cp-tools.texinfo,v 1.7 2008/08/13 13:32:05 jsumali Exp $
+@end smallexample
+
+Then the HTML output will contain something like
+
+@smallexample
+CVS ID:
+  $Id: cp-tools.texinfo,v 1.7 2008/08/13 13:32:05 jsumali Exp $
+@end smallexample
+@end table
+
+@node Doclet Options, Other Doclets, Verbosity Options, gjdoc Tool
+@section Running Other Doclets
+
+@table @gcctabopt
+
+@item -docletpath @var{pathlist}
+Search @var{pathlist} when loading classes for the Doclet specified
+using @option{-doclet}.
+
+@var{pathlist} should be one or more paths to a directory or jar file,
+separated by your platform's path separator (usually @samp{:} or
+@samp{;}).
+
+@item -doclet @var{className}
+Run the specified doclet instead of the standard HtmlDoclet.
+
+@var{className} should be the fully-qualified name of a class which
+has a public default constructor and contain a method with the
+following signature:
+
+@smallexample
+   import com.sun.javadoc.RootDoc;
+   public static boolean start(RootDoc rootDoc) 
+@end smallexample
+
+The Doclet classes will be loaded from the classpath specified using
+@option{-docletpath}, from the classpath specified using
+@option{-classpath} and from the default classpath.
+
+The @samp{start} method should process the information exposed by the
+Doclet API via @samp{rootDoc} and return @samp{true} on success,
+@samp{false} on failure.
+
+If you are using a third-party doclet, refer to its documentation for
+further instructions.  Note that support for third-party doclets is
+experimental.  Please report any problems you encounter, or provide
+feedback when successfully running third-party applets.
+
+This option can be specified multiple times, in which case all doclets
+are executed with the same information tree exposed via the Doclet API
+for each Doclet run.
+
+@end table
+
+@node Decoration Options, Taglet Options, Generation Options, gjdoc Tool
+@section Adding Information to the Output
+
+@table @gcctabopt
+@item -windowtitle @var{text}
+Use @var{text} as the browser window title prefix.
+
+When specified, the browser window title for each page will be
+prefixed with @var{text} instead of the default string @samp{Generated
+API Documentation}.
+
+@var{text} should be plain text (it should not contain HTML tags).
+
+@item -doctitle @var{text}
+Set the header text of the overview page to @var{text}.
+
+@var{text} should be a short plain text string.
+
+When generating documentation for a single package, specifying this
+option forces generation of the overview page.
+
+@item -header @var{htmltext}
+
+Add @var{htmltext} to the right upper corner of every generated page.
+@var{htmltext} is usually set to the name of the project being
+documented.
+
+@item -footer @var{htmltext}
+
+Add @var{htmltext} to the right bottom corner of every generated page.
+@var{htmltext} is often set to the same value as for @option{-header}.
+
+@item -bottom @var{htmltext}
+
+Add @var{htmltext} to the very bottom of every generated page,
+spanning the whole width of the page.  When specified, @var{htmltext}
+usually consists of a copyright notice and/or links to other project
+pages.
+
+@item -addstylesheet @var{file}
+
+Augment the default CSS style sheets with the user-specified
+stylesheet @var{file}.
+
+The given stylesheet is simply loaded by each HTML page in addition to
+the default ones, as the last stylesheet.
+
+Note that the CSS cascading rules apply.  That is, your style
+properties will only be assigned if they have a higher cascading order
+than @command{gjdoc}'s default style.  One simple way to make sure
+that this is the case is to declare your overrides @samp{!important}.
+
+See @w{@uref{http://www.w3.org/TR/REC-CSS2/cascade.html#cascading-order}}.
+
+@item -group @var{heading} @var{pkgwildcard}:@var{pkgwildcard}:@dots{}
+
+Arrange the given packages in a separate group on the overview page.
+
+The first argument should be a short plain text which is used as the
+title of the package group.  The second argument should be a
+colon-separated list of package wildcards.  The group will consist of
+all packages in the documentation set whose name matches any of the
+given wildcards.
+
+There is only one wildcard character, @samp{*}, which matches both
+letters in package name components and the @samp{.} separating package
+name components.  For example, @samp{j*regex} would match package
+@samp{java.util.regex}.  A more useful example would be
+@samp{javax.swing*} to match @samp{javax.swing} and all of its
+sub-packages.
+
+This option can be given multiple times.  
+
+FIXME: Information about group nesting here.
+
+@smallexample
+gjdoc -group "Core Classes" 'java*' \
+      -group "Swing" 'javax.swing*' \
+      -group "XML APIs" 'javax.xml*' \
+      -group "Other Extensions" javax* \
+      @dots{}
+@end smallexample
+
+@item -overview @var{file}
+
+Add the XHTML body fragment from @var{file} to the overview page.
+
+@var{file} should contain an XHTML fragment with the HTML @samp{body}
+tag as the root node.  @xref{XHTML Fragments}.
+
+This option can be used to supply a description of the documentation
+set as a whole.
+
+When specified, the first sentence of the fragment will be put above
+the tables listing the documented packages, along with a link to the
+full copy of the fragment which is put below the tables.
+@xref{First Sentence Detector}.
+
+When generating documentation for a single package, specifying this
+option forces generation of the overview page.
+
+@item -stylesheetfile @var{file}
+
+Use the CSS stylesheet in @var{file} instead of the default CSS
+stylesheets.
+
+If you only want to override parts of the default stylesheets, use
+@option{-addstylesheet} instead.
+
+@item -title @var{text}
+
+@emph{Deprecated.} Use @option{-doctitle} @var{text} instead.
+
+@item -helpfile @var{file}
+
+This option is currently ignored.
+
+When implemented, it will use the XHTML fragment in @var{file} for the
+help page contents instead of the default help text.
+
+@end table
+
+@node Output Control Options, Generation Options, Interlinking Options, gjdoc Tool
+@section Controlling the Output.
+
+@table @gcctabopt
+@item -d @var{directory}
+Place all output files into @var{directory} (and
+sub-directories). @var{directory} will be created if it does not
+exist, including all non-existing parent directories and all required
+sub-directories.
+
+If not specified, output will be placed into the current directory.
+
+@item -locale @var{name}
+
+Use locale @var{name} instead of the default locale for all purposes.
+
+@var{name} should be a locale specifier in the form @samp{ll_CC[_VAR]}
+where @samp{ll} is a lowercase two-letter ISO-639 language code,
+@samp{CC} is an optional uppercase two-letter ISO-3166 country code,
+and @samp{VAR} is an optional variant code.  For example, @samp{en}
+specifies English, @samp{en_US} specifies US English, and
+@samp{en_US_WIN} specifies a deviant variant of the US English locale.
+
+Note that the semantics of this option correspond exactly to those of
+the constructors of class @samp{java.util.Locale}.
+
+This option currently only determines which Collator is being used for
+sorting output elements.  This means that the locale will only have an
+effect when you are using non-ASCII characters in identifiers.
+
+@item -charset @var{charset}
+
+@emph{Deprecated.} Override the specified encoding in output XHTML
+files with the one given by @samp{charset}.
+
+If this option is not given, the encoding specification in output
+XHTML is chosen to match the encoding used when writing the file (the
+encoding given with @option{-docencoding}, or your platform's default
+encoding).
+
+The semantics for @var{charset} are specified here:
+@w{@uref{http://www.w3.org/TR/2000/REC-xml-20001006#NT-EncName}}.  For
+all practical purposes, they are identical to those of the other
+options accepting charset parameters.
+
+This option is here for compatibility with @command{javadoc} and
+should be avoided.
+
+@item -docencoding @var{charset}
+
+Use the given charset encoding when writing output files instead of
+your platform's default encoding.
+
+Examples for @var{charset} are @samp{US-ASCII}, @samp{ISO-8859-1} or
+@samp{UTF-8}.
+
+The semantics of this option correspond exactly to those of the
+constructors of class @samp{java.util.Locale}.
+
+@item -validhtml
+
+Force generation of valid XHTML code.  This breaks compatibility to
+the traditional Javadoc tool to some extent.
+
+If this option is specified, anchor names will be mangled so that they
+are valid according to the XHTML 1.1 specification.  However, a
+documentation set generated with this option cannot be linked to
+properly using the traditional Javadoc tool.  It can be linked to just
+fine using Gjdoc, though.
+
+Without this option, anchor names for executable class members use the
+traditional format, for example: ``foo(String,int[])''.  This is
+compatible to the traditional Javadoc tool, but according to both the
+HTML 4.0 and XHTML 1.0 and 1.1 specifications, this format includes
+illegal characters.  Parentheses, square brackets, and the comma are
+not allowed in anchor names.
+
+@item -baseurl @var{url}
+
+Hardwire a page URL relative to @var{url} into each generated page.
+
+If you are generating documentation which will exclusively be
+available at a certain URL, you should use this option to specify this
+URL.
+
+This can help avoid certain redirect attacks used by spammers, and it
+can be helpful for certain web clients.
+
+@end table
+
+@node Verbosity Options, Doclet Options, Virtual Machine Options, gjdoc Tool
+@section Verbosity Options
+
+@table @gcctabopt
+@item -quiet
+Suppress all output except for warnings and error messages.
+
+@item -verbose
+Be very verbose about what @command{gjdoc} is doing.
+
+This option is currently ignored.
+
+@end table
+
+@node Virtual Machine Options, Verbosity Options, Taglet Options, gjdoc Tool
+@section Virtual Machine Options
+
+Sun's @command{javadoc} tool seems to be based on @command{javac} and
+as such it seems to operate on the VM level.  @command{gjdoc}, in
+contrast, is a pure Java application.
+
+Therefore, @command{gjdoc} can only fake, or simulate, the following
+VM-level options.
+
+@table @gcctabopt
+
+@item -classpath @var{pathlist}
+Set the Virtual Machine @samp{classpath} to @var{pathlist}.
+
+In most cases you should use @option{-docletpath} or
+@option{-tagletpath} instead of this option.
+
+@var{pathlist} should be one or more paths to a directory or jar file,
+separated by your platform's path separator (usually @samp{:} or
+@samp{;}).
+
+If this option is not intercepted at the wrapper level,
+@command{gjdoc} currently fakes it by calling
+@samp{System.setProperty("java.class.path", @var{pathlist});} and
+outputs a warning.
+
+@item -bootclasspath @var{pathlist}
+Set the Virtual Machine @samp{bootclasspath} to @var{pathlist}.
+
+If this option is not intercepted at the wrapper level,
+@command{gjdoc} outputs a warning.
+
+@item -J@var{vmopt}
+
+Pass an arbitrary parameter to the Virtual Machine @command{gjdoc}
+runs on.
+
+If this option is not intercepted at the wrapper level,
+@command{gjdoc} tries to emulate the option and outputs a warning.
+
+Currently, only the VM option @option{-D} for setting system
+properties is emulated.
+
+@end table
+
+@c man end
+
+@comment ----------------------------------------------------------------------
+
+@node Invoking a Custom Doclet, Option Summary by Type, Invoking the Standard Doclet, gjdoc Tool
+@section Invoking a Custom Doclet
+
+For invoking one of the other doclets shipping with @command{gjdoc} or
+a third-party doclet, the canonical usage is:
+
+@smallexample
+gjdoc -s src/java/ -all \
+  -docletpath /path/to/doclet.jar -doclet foo.BarDoclet \
+  (more Gjdoc core options and Doclet-specific options here)
+@end smallexample
+
+@samp{/path/to/doclet.jar} is a placeholder for a class path
+specifying where the Doclet classes and dependencies can be found and
+@samp{foo.BarDoclet} is the fully-qualified name of the Doclet's main
+class.
+
+@comment ----------------------------------------------------------------------
+
+@node Gjdoc Option Summary, Source Set Options, Option Summary by Type, gjdoc Tool
+@section Gjdoc Option Summary
+@cindex Gjdoc Options
+
+@comment ----------------------------------------------------------------------
+
+@node Other Doclets, Gjdoc Concepts, Doclet Options, gjdoc Tool
+@chapter Generating Other Output Types
+
+@menu
+* Built-in Doclets::
+* Third-party Doclets::
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Built-in Doclets, Third-party Doclets, , Other Doclets
+@section Using the Built-in Doclets
+@cindex Built-in Doclets
+
+@menu
+* Using XmlDoclet::
+* Using TexiDoclet::
+* Using IspellDoclet::
+* Using DebugDoclet::
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Using TexiDoclet, Using XmlDoclet, , Built-in Doclets
+@subsection TexiDoclet: Generating Info, PDF, and other formats
+@cindex TexiDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Using XmlDoclet, Using IspellDoclet, Using TexiDoclet, Built-in Doclets
+@subsection XmlDoclet: Generating XML Documentation
+@cindex HtmlDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Using IspellDoclet, Using DebugDoclet, Using XmlDoclet, Built-in Doclets
+@subsection IspellDoclet: Spell-checking Source Code
+@cindex IspellDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Using DebugDoclet, , Using IspellDoclet, Built-in Doclets
+@subsection DebugDoclet: Inspecting the Doclet API
+@cindex HtmlDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Third-party Doclets, , Built-in Doclets, Other Doclets
+@section Using Third-Party Doclets
+@cindex Third-party Doclets
+
+@menu
+* DocBook Doclet::
+* PDFDoclet::
+* JUnitDoclet::
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node DocBook Doclet,PDFDoclet, ,Third-party Doclets
+@subsection DocBook Doclet
+@cindex DocBook Doclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node PDFDoclet, JUnitDoclet, DocBook Doclet, Third-party Doclets
+@subsection PDFDoclet
+@cindex PDFDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node JUnitDoclet, , PDFDoclet, Third-party Doclets
+@subsection JUnitDoclet
+@cindex JUnitDoclet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Gjdoc Concepts, , Other Doclets, gjdoc Tool
+@chapter Advanced Concepts
+
+@menu
+* Writing Doclets::
+* Taglets::
+* XHTML Fragments::
+* First Sentence Detector::
+* Adding Custom Resources::
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Taglets, Writing Doclets, , Gjdoc Concepts
+@section Adding Custom Tags to the Documentation
+@cindex Taglet
+
+Missing.
+
+@comment ----------------------------------------------------------------------
+
+@node Writing Doclets, XHTML Fragments, Taglets, Gjdoc Concepts
+@section Writing Doclets
+@cindex Taglet
+
+If the various Doclets already available don't suit your needs, you
+can write a custom Doclet yourself.  
+
+@menu
+* Doclet Invocation Interface::
+* Using AbstractDoclet::
+* GNU Doclet SPI::
+@end menu
+
+@comment ----------------------------------------------------------------------
+
+@node Doclet Invocation Interface, Using AbstractDoclet, , Writing Doclets
+@subsection Implementing the Doclet Invocation Interface
+
+A Doclet is a class that contains a method with the following
+signature:
+
+@smallexample
+public static boolean start(RootDoc rootDoc);
+@end smallexample
+
+@var{rootDoc} is the root of an object hierarchy containing the
+information @command{gjdoc} extracted from the source files.  See the
+Doclet API for more details.
+
+@samp{start} should process all the information and return
+@samp{true} on success, @samp{false} on failure.
+
+For printing status information, the Doclet should use methods
+@samp{printNotice}, @samp{printWarning} and @samp{printError} instead
+of @samp{System.err}.  The Doclet can opt to use @samp{System.out} for
+redirectable output.
+
+@comment ----------------------------------------------------------------------
+
+@node Using AbstractDoclet, GNU Doclet SPI, Doclet Invocation Interface, Writing Doclets
+@subsection Deriving Your Doclet from AbstractDoclet
+@cindex AbstractDoclet
+
+You may want your Doclet to provide functionality similar to
+HtmlDoclet.  For example, you may want it to support Taglets, generate
+Index, Tree, and Uses pages, or show other cross-reference information
+like @samp{Overrides} and @samp{All Implementing Classes}.
+
+This information is not directly provided by the Doclet API, so your
+Doclet would normally have to assemble it itself.  For example, it
+would have to add the names of all program elements to a list and sort
+this list in order to create the Index page.
+
+If you want to provide this information or part of it, you should
+consider deriving your class from
+@samp{gnu.classpath.tools.doclets.AbstractDoclet}.  This class
+provides the following benefits:
+
+@itemize @bullet
+
+@item 
+Handles options @option{-tag}, @option{-taglet}, @option{-tagletpath}
+(Taglets)
+
+@item 
+Provides standard taglets for @@version, @@author, @@since, @@serial,
+@@deprecated, @@see, @@param, @@return and handles all related options
+(@option{-version}, @option{-author}, @option{-nosince},
+@option{-nodeprecated})
+
+@item 
+Handles option @option{-d} (destination directory)
+
+@item 
+Handles option @option{-noqualifier} (classes to omit qualifier for)
+
+@item 
+Handles options @option{-docfilessubdirs} and
+@option{-excludedocfilessubdir} (resource copying)
+
+@item 
+Can generate a full index or an index split by first letter
+
+@item 
+Can generate a full tree and package trees
+
+@item 
+Can generate cross-reference information
+
+@item 
+Can aggregate interface information (all superinterfaces, all
+subinterfaces, all implementing classes)
+
+@item 
+Provides convenient access to constructors, fields, methods, and inner
+classes sorted by name/signature instead of the default sort order.
+
+@item 
+Provides various other convenience methods
+
+@end itemize
+
+If you derive from @samp{AbstractDoclet}, there are a number of things
+you need to take care of:
+
+@itemize @bullet
+
+@item 
+
+@end itemize
+
+you should not implement the
+@samp{start(RootDoc)} method as it is already defined by
+@samp{AbstractDoclet} so that it can care about parsing the options.
+
+Instead, you implement method @samp{run()}, @samp{getOptions()} and
+the other abstract methods to define your Doclet's behavior.
+
+Note that all information provided by @samp{AbstractDoclet} is
+evaluated lazily.  That is, if your Doclet doesn't need to create an
+Index page, then @samp{AbstractDoclet} will not spend resources on
+creating the corresponding information.
+
+See the API documentation for
+@samp{gnu.classpath.tools.doclets.AbstractDoclet} for more details.
+
+You should be aware that if you base your Doclet on
+@samp{AbstractDoclet} then you have to bundle this and all related
+classes with your Doclet, with all implications such as possible
+licensing issues.  Otherwise, your Doclet will only be runnable on
+@samp{gjdoc} and not on other documentation systems.  Also note that
+@samp{AbstractDoclet} has not been extensively tested in environments
+other than @samp{gjdoc}.
+
+@comment ----------------------------------------------------------------------
+
+@node GNU Doclet SPI, , Using AbstractDoclet, Writing Doclets
+@subsection Preparing for the GNU Doclet Service Provider Interface
+@cindex GNU Doclet SPI, Service Provider, SPI
+
+In addition to the standard Doclet invocation interface described
+above, @command{gjdoc} also offers a Service Provider Interface
+conforming to the Java standard.  Adding support for this interface to
+your Doclet simplifies usage for @command{gjdoc} users because it
+makes your Doclet ``discoverable''.
+
+In order to provide the alternate interface, you have to add a class
+implementing @samp{gnu.classpath.tools.gjdoc.spi.DocletSpi} to your
+Doclet classes, and bundle all Doclet classes in a Jar file along with
+a file named
+@samp{META_INF/services/gnu.classpath.tools.gjdoc.spi.DocletSpi} which
+contains the name of your class implementing DocletSpi on a single
+line.
+
+Note that if your Doclet depends on third-party classes bundled in
+separate Jar files, you can link in these classes using the
+@samp{Class-path:} Manifest attribute of your Doclet Jar.
+
+Your Doclet can then be invoked in one of the following ways:
+@smallexample
+gjdoc -docletjar /path/to/doclet.jar
+gjdoc -docletpath /path/to/doclet.jar -docletname @var{docletname}
+gjdoc -docletname @var{docletname}
+@end smallexample
+
+Here, @var{docletname} is the name of your doclet as returned by
+@samp{DocletSpi.getDocletName()}.
+
+The last example will only work if your Doclet Jar is in
+@command{gjdoc}'s @file{doclets} directory or if it is on the
+classpath.
+
+@comment ----------------------------------------------------------------------
+
+@node XHTML Fragments, First Sentence Detector, Writing Doclets, Gjdoc Concepts
+@section Well-formed Documentation Fragments
+@cindex XHTML Fragments
+
+For many Doclets it is advantagous if the HTML code in the comments
+and HTML code passed via the command line is well-formed.  For
+example, HtmlDoclet outputs XHTML code, and XmlDoclet XML code, both
+of which results in invalid files if the user-specified HTML isn't
+wellformed.
+
+Unfortunately, comments were never required to contain well-formed
+HTML code, which means that every Doclet must deal with non-wellformed
+code as well.
+
+The @command{gjdoc} built-in Doclets deal with this problem by
+``fixing'' the HTML code - making sure that all tags are closed,
+attribute values are provided and quoted, tags are properly nested,
+etc.
+
+This approach works OK in most instances, but since it uses some crude
+heuristics it can sometimes produce undesirable result.
+
+Therefore, in order to make sure that your comments are always
+properly formatted, make sure they are well-formed as described in
+@w{@uref{http://www.w3.org/TR/xhtml1/#h-4.1, XHTML 1.0: Documents must
+be well-formed}}.
+
+In addition, you should use meaningful tags instead of text formatting
+tags to make your output look better in other output formats derived
+from your HTML code.  For example, you should use the <em> tag instead
+of <b> if you want to emphasize text.
+
+@comment ----------------------------------------------------------------------
+
+@node First Sentence Detector, Adding Custom Resources, XHTML Fragments, Gjdoc Concepts
+@section How Gjdoc Determines where the First Sentence Ends
+@cindex First Sentence Detector
+
+For a package, class or member summary, @command{gjdoc} only shows the
+first sentence of the documentation comment in question.  Because
+@command{gjdoc} is not human, it is not always obvious to
+@command{gjdoc} where the first sentence ends.
+
+You might be tempted to say that the first sentence ends at the first
+occurrence of a punctuation character like @samp{.} or
+@samp{!}. However, consider examples like this:
+@smallexample
+This work, by Thomas J. Shahan et al., is about the middle ages.
+@end smallexample
+
+As you can see, it is not trivial to determine the end of the
+sentence.
+
+@command{gjdoc} gives you the choice between two approaches.  By
+default it uses built-in heuristics which should be compatible to
+Sun's @command{javadoc} tool.  This approach works quiet well in most
+cases, at least for english comments.
+
+Alternatively, you can specify option @option{-breakiterator} in which
+case @command{gjdoc} will use
+@samp{java.text.BreakIterator.getSentenceInstance(@var{locale}).next()}
+to find the end of sentence, where @var{locale} is the locale
+specified by option @samp{-locale} or the default locale if none
+specified.
+
+@emph{NOT YET IMPLEMENTED:}
+
+@command{gjdoc} also allows you to explicitly delineate the first
+sentence by putting it in a @samp{<span>} tag with the CSS class
+@samp{first-sentence}.  For example:
+@smallexample
+/**
+ *  <span class="first-sentence">This. is. the. first. 
+ *  sentence.</span> This is the second sentence.
+ */
+@end smallexample
+
+Note that this will only work with @command{gjdoc}, but shouldn't hurt
+when using another documentation system since the @samp{<span>} tag
+usually doesn't show up in the output.
+
+@comment ----------------------------------------------------------------------
+
+@node Adding Custom Resources, , First Sentence Detector, Gjdoc Concepts
+@section Adding Images and Other Resources
+@cindex First Sentence Detector
+
+Sometimes you want to decorate your documentation with secondary
+resources such as images, SVG graphics, applets, and so on.  To do so,
+simply put the required files in a subdirectory 'doc-files' in the
+package directory corresponding to the documentation entry you want to
+decorate, and refer to it with the URL
+@samp{doc-files/@var{filename}}.
+
+For example, if you want to add an image to the description of class
+@samp{baz.FooBar}, create a directory @file{doc-files} in the
+directory @file{baz} containing @file{FooBar.java} and put your file,
+say @file{diagram.png}, into that directory.  Then, add the HTML code
+like this to a comment in @file{FooBar.java}:
+@smallexample
+<img src="doc-files/diagram.png" width="200" height="150"
+  alt="Foo Diagram"/>
+@end smallexample
+
+This works because the @file{doc-files} subdirectories will be copied
+to the target documentation directory every time you generate the
+documentation.  
+
+Note however that by default, the @file{doc-files} directory will not
+be copied deeply.  In other words, if you create subdirectories under
+@file{doc-files} they will not be copied and any resources located in
+these subdirectories will not be accessible in your generated
+documentation.  You can specify option @option{-docfilessubdirs} to
+remove this limitation.
+
+Sometimes you want to use option @option{-docfilessubdirs}, but there
+are certain directories which you don't want to be copied, for example
+because they contain source files for the resources in
+@file{doc-files}.  For cases like this, use
+@option{-excludedocfilessubdir} to specify directories to be omitted.
 
 @comment ----------------------------------------------------------------------
 

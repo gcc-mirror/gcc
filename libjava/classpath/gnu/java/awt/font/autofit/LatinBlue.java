@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.autofit;
 
+import gnu.java.lang.CPStringBuilder;
+
 public class LatinBlue
 {
   static final int FLAG_BLUE_ACTIVE = 1 << 0;
@@ -48,7 +50,7 @@ public class LatinBlue
   int flags;
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[BlueZone]");
     s.append(" ref: ");
     s.append(ref.org);

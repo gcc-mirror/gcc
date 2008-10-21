@@ -45,7 +45,22 @@ import org.w3c.dom.Node;
 import gnu.xml.xpath.Expr;
 
 /**
- * An XSL sort key.
+ * <p>
+ * An XSL sort key, as specified by section 10 of the XSL
+ * Transformations specification.  This takes the form:
+ * </p>
+ * <pre>
+ * &lt;xsl:sort
+ * select = string-expression
+ * lang = { nmtoken }
+ * data-type = { "text" | "number" | qname-but-not-ncname }
+ * order = { "ascending" | "descending" }
+ * case-order = { "upper-first" | "lower-first" } /&rt;
+ * </pre>
+ * <p>
+ * Note that all but the selection expression are optional,
+ * and so may be {@code null}.
+ * </p>
  *
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
@@ -67,6 +82,20 @@ final class SortKey
   transient boolean descending;
   transient int caseOrder;
 
+  /**
+   * Constructs a new {@link SortKey} to represent an &lt;xsl:sort&rt;
+   * tag.
+   *
+   * @param select the XPath expression which selects the nodes to be sorted.
+   * @param lang the language of the sort keys or {@code null} if unspecified.
+   * @param dataType the data type of the strings.  May be "string", "number",
+   *                 a QName or {@code null} if unspecified.
+   * @param order the ordering of the nodes, which may be "ascending", "descending"
+   *              or {@code null} if unspecified.
+   * @param caseOrder the treatment of case when the data type is a string.  This
+   *                  may be "upper-first", "lower-first" or {@code null} if
+   *                  unspecified.
+   */ 
   SortKey(Expr select, TemplateNode lang, TemplateNode dataType,
           TemplateNode order, TemplateNode caseOrder)
   {
@@ -176,4 +205,35 @@ final class SortKey
     return false;
   }
 
+  /**
+   * Provides a clone of this {@link SortKey}, using the given
+   * stylesheet as a context.
+   *
+   * @param stylesheet the stylesheet which provides context for the cloning.
+   * @return a clone of this instance.
+   */
+  SortKey clone(Stylesheet stylesheet)
+  {
+    return new SortKey(select.clone(stylesheet),
+		       langTemplate == null ? null : cloneAttributeValueTemplate(langTemplate, stylesheet),
+		       dataTypeTemplate == null ? null : cloneAttributeValueTemplate(dataTypeTemplate, stylesheet),
+		       orderTemplate == null ? null : cloneAttributeValueTemplate(orderTemplate, stylesheet),
+		       caseOrderTemplate == null ? null : cloneAttributeValueTemplate(caseOrderTemplate, stylesheet));
+  }
+
+  /**
+   * Clones an attribute value template as created by
+   * {@link Stylesheet#parseAttributeValueTemplate(String, Node)}.
+   * The node may either by a literal node or an xsl:value-of expression.
+   *
+   * @param node the node to clone.
+   * @param stylesheet the stylesheet which provides context for the cloning.
+   * @return the cloned node.
+   */
+  private TemplateNode cloneAttributeValueTemplate(TemplateNode node, Stylesheet stylesheet)
+  {
+    if (node instanceof ValueOfNode)
+      return ((ValueOfNode) node).clone(stylesheet);
+    return ((LiteralNode) node).clone(stylesheet);
+  }
 }

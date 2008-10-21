@@ -13,6 +13,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -34,7 +38,7 @@ public: // actually package-private
   RETokenLookAhead(::gnu::java::util::regex::REToken *, jboolean);
   jint getMaximumLength();
   ::gnu::java::util::regex::REMatch * matchThis(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *);
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
   ::gnu::java::util::regex::REToken * __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) re;
   jboolean negative;
 public:

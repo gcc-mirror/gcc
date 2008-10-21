@@ -39,7 +39,7 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual jboolean equals(::java::sql::Timestamp *);
   virtual jint compareTo(::java::sql::Timestamp *);
-  virtual jint Timestamp$compareTo(::java::util::Date *);
+  virtual jint Date$compareTo(::java::util::Date *);
 public: // actually package-private
   static const jlong serialVersionUID = 2745179027874758501LL;
 private:

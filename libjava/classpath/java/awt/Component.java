@@ -43,6 +43,8 @@ package java.awt;
 
 import gnu.java.awt.ComponentReshapeEvent;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
@@ -175,7 +177,7 @@ public abstract class Component
   /**
    * Constant returned by the <code>getAlignmentY</code> and
    * <code>getAlignmentX</code> methods to indicate
-   * that the component wishes to be aligned to the center relative to
+   * that the component wishes to be aligned to the centdisper relative to
    * other components.
    *
    * @see #getAlignmentX()
@@ -4991,7 +4993,7 @@ public abstract class Component
    */
   protected String paramString()
   {
-    StringBuffer param = new StringBuffer();
+    CPStringBuilder param = new CPStringBuilder();
     String name = getName();
     if (name != null)
       param.append(name).append(",");

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 
 import org.xml.sax.ErrorHandler;
@@ -271,7 +273,7 @@ final public class DoParse
 	String			label,
 	SAXParseException	e
     ) {
-	StringBuffer	buf = new StringBuffer ();
+	CPStringBuilder	buf = new CPStringBuilder ();
 	int		temp;
 
 	buf.append ("** ");

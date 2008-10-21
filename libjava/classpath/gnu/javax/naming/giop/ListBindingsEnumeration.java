@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.javax.naming.giop;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.naming.NamingEnumeration;
 
 import org.omg.CosNaming.Binding;
@@ -92,7 +94,7 @@ public class ListBindingsEnumeration extends GiopNamingEnumeration implements
    */
   public Object convert(Binding binding)
   {
-    StringBuffer name = new StringBuffer();
+    CPStringBuilder name = new CPStringBuilder();
 
     for (int i = 0; i < binding.binding_name.length; i++)
       {

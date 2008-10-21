@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.security.auth.x500;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
@@ -200,7 +202,7 @@ public final class X500Principal implements Principal, Serializable
     boolean canon   = CANONICAL.equalsIgnoreCase (format);
     if (! (rfc2253 || rfc1779 || canon))
       throw new IllegalArgumentException ("unsupported format " + format);
-    StringBuffer str = new StringBuffer();
+    CPStringBuilder str = new CPStringBuilder();
     for (Iterator it = components.iterator(); it.hasNext(); )
       {
         Map m = (Map) it.next();
@@ -323,7 +325,7 @@ public final class X500Principal implements Principal, Serializable
 
   private String readAttributeType(Reader in) throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int ch;
     while ((ch = in.read()) != '=')
       {
@@ -345,7 +347,7 @@ public final class X500Principal implements Principal, Serializable
 
   private String readAttributeValue(Reader in) throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     int ch = in.read();
     if (ch == '#')
       {
@@ -518,7 +520,7 @@ public final class X500Principal implements Principal, Serializable
 
   private static String compressWS(String str)
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     char lastChar = 0;
     for (int i = 0; i < str.length(); i++)
       {

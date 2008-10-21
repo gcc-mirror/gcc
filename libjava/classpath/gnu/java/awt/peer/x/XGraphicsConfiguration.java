@@ -146,8 +146,7 @@ public class XGraphicsConfiguration
 
   public AffineTransform getDefaultTransform()
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    return new AffineTransform();
   }
 
   public AffineTransform getNormalizingTransform()
@@ -158,8 +157,10 @@ public class XGraphicsConfiguration
 
   public Rectangle getBounds()
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    Display d = device.getDisplay();
+    Screen screen = d.default_screen;
+    
+    return new Rectangle(0, 0, screen.width, screen.height); 
   }
 
   /**

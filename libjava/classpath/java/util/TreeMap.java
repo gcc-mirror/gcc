@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -2720,7 +2722,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 
     public String toString()
     {
-      StringBuilder r = new StringBuilder("{");
+      CPStringBuilder r = new CPStringBuilder("{");
       final Iterator<Entry<DK,DV>> it = entrySet().iterator();
       while (it.hasNext())
       {
@@ -3158,7 +3160,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 
     public String toString()
     {
-      StringBuilder r = new StringBuilder("[");
+      CPStringBuilder r = new CPStringBuilder("[");
       final Iterator<D> it = iterator();
       while (it.hasNext())
       {

@@ -222,7 +222,7 @@ gnu/awt/xlib.list: $(gnu_awt_xlib_source_files)
 
 
 gnu_classpath_source_files = \
-gnu/classpath/Configuration.java \
+classpath/gnu/classpath/Configuration.java \
 classpath/gnu/classpath/NotImplementedException.java \
 classpath/gnu/classpath/Pair.java \
 classpath/gnu/classpath/Pointer.java \
@@ -1147,10 +1147,12 @@ gnu/java/io.list: $(gnu_java_io_source_files)
 
 gnu_java_lang_source_files = \
 classpath/gnu/java/lang/ArrayHelper.java \
+classpath/gnu/java/lang/CPStringBuilder.java \
 classpath/gnu/java/lang/CharData.java \
 classpath/gnu/java/lang/ClassHelper.java \
 classpath/gnu/java/lang/InstrumentationImpl.java \
 gnu/java/lang/MainThread.java \
+gnu/java/lang/VMCPStringBuilder.java \
 gnu/java/lang/VMInstrumentationImpl.java
 
 gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files)))
@@ -1222,16 +1224,13 @@ gnu/java/locale.list: $(gnu_java_locale_source_files)
 
 gnu_java_math_source_files = \
 classpath/gnu/java/math/Fixed.java \
+classpath/gnu/java/math/GMP.java \
 classpath/gnu/java/math/MPN.java
 
-gnu_java_math_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_math_source_files)))
-
-gnu/java/math.list: $(gnu_java_math_source_files)
-	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/gnu/java/math/*.class > gnu/java/math.list
-
--include gnu/java/math.deps
-
+gnu-java-math.lo: $(gnu_java_math_source_files)
+	@find $(srcdir)/classpath/lib/gnu/java/math -name '*.class' > gnu-java-math.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o gnu-java-math.lo @gnu-java-math.list
+	@rm -f gnu-java-math.list
 
 gnu_java_net_source_files = \
 classpath/gnu/java/net/CRLFInputStream.java \
@@ -2063,7 +2062,6 @@ gnu/java/util/jar.list: $(gnu_java_util_jar_source_files)
 
 
 gnu_java_util_prefs_source_files = \
-classpath/gnu/java/util/prefs/EventDispatcher.java \
 classpath/gnu/java/util/prefs/FileBasedFactory.java \
 classpath/gnu/java/util/prefs/FileBasedPreferences.java \
 classpath/gnu/java/util/prefs/GConfBasedFactory.java \
@@ -2130,6 +2128,20 @@ gnu/java/util/regex.list: $(gnu_java_util_regex_source_files)
 	echo $(srcdir)/classpath/lib/gnu/java/util/regex/*.class > gnu/java/util/regex.list
 
 -include gnu/java/util/regex.deps
+
+
+gnu_javax_activation_viewers_source_files = \
+classpath/gnu/javax/activation/viewers/ImageViewer.java \
+classpath/gnu/javax/activation/viewers/TextEditor.java \
+classpath/gnu/javax/activation/viewers/TextViewer.java
+
+gnu_javax_activation_viewers_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_activation_viewers_source_files)))
+
+gnu/javax/activation/viewers.list: $(gnu_javax_activation_viewers_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/gnu/javax/activation/viewers/*.class > gnu/javax/activation/viewers.list
+
+-include gnu/javax/activation/viewers.deps
 
 
 gnu_javax_crypto_source_files = \
@@ -4603,6 +4615,7 @@ java/io.list: $(java_io_source_files)
 
 java_lang_source_files = \
 classpath/java/lang/AbstractMethodError.java \
+java/lang/AbstractStringBuffer.java \
 classpath/java/lang/Appendable.java \
 classpath/java/lang/ArithmeticException.java \
 classpath/java/lang/ArrayIndexOutOfBoundsException.java \
@@ -4686,6 +4699,7 @@ java/lang/Thread.java \
 classpath/java/lang/ThreadDeath.java \
 classpath/java/lang/ThreadGroup.java \
 java/lang/ThreadLocal.java \
+classpath/java/lang/ThreadLocalMap.java \
 classpath/java/lang/Throwable.java \
 classpath/java/lang/TypeNotPresentException.java \
 classpath/java/lang/UnknownError.java \
@@ -5529,6 +5543,7 @@ classpath/external/jsr166/java/util/Queue.java \
 classpath/java/util/Random.java \
 classpath/java/util/RandomAccess.java \
 classpath/java/util/ResourceBundle.java \
+classpath/java/util/Scanner.java \
 classpath/java/util/ServiceConfigurationError.java \
 classpath/java/util/ServiceLoader.java \
 classpath/java/util/Set.java \
@@ -5818,6 +5833,37 @@ javax/accessibility.list: $(javax_accessibility_source_files)
 	echo $(srcdir)/classpath/lib/javax/accessibility/*.class > javax/accessibility.list
 
 -include javax/accessibility.deps
+
+
+javax_activation_source_files = \
+classpath/javax/activation/ActivationDataFlavor.java \
+classpath/javax/activation/CommandInfo.java \
+classpath/javax/activation/CommandMap.java \
+classpath/javax/activation/CommandObject.java \
+classpath/javax/activation/DataContentHandler.java \
+classpath/javax/activation/DataContentHandlerFactory.java \
+classpath/javax/activation/DataHandler.java \
+classpath/javax/activation/DataHandlerDataSource.java \
+classpath/javax/activation/DataSource.java \
+classpath/javax/activation/DataSourceDataContentHandler.java \
+classpath/javax/activation/FileDataSource.java \
+classpath/javax/activation/FileTypeMap.java \
+classpath/javax/activation/MailcapCommandMap.java \
+classpath/javax/activation/MimeType.java \
+classpath/javax/activation/MimeTypeParameterList.java \
+classpath/javax/activation/MimeTypeParseException.java \
+classpath/javax/activation/MimetypesFileTypeMap.java \
+classpath/javax/activation/ObjectDataContentHandler.java \
+classpath/javax/activation/URLDataSource.java \
+classpath/javax/activation/UnsupportedDataTypeException.java
+
+javax_activation_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_activation_source_files)))
+
+javax/activation.list: $(javax_activation_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/javax/activation/*.class > javax/activation.list
+
+-include javax/activation.deps
 
 
 javax_activity_source_files = \
@@ -8616,7 +8662,6 @@ all_packages_source_files = \
   gnu/java/lang.list \
   gnu/java/lang/reflect.list \
   gnu/java/locale.list \
-  gnu/java/math.list \
   gnu/java/net.list \
   gnu/java/net/loader.list \
   gnu/java/net/local.list \
@@ -8660,6 +8705,7 @@ all_packages_source_files = \
   gnu/java/util/jar.list \
   gnu/java/util/prefs.list \
   gnu/java/util/regex.list \
+  gnu/javax/activation/viewers.list \
   gnu/javax/crypto.list \
   gnu/javax/crypto/assembly.list \
   gnu/javax/crypto/cipher.list \
@@ -8778,6 +8824,7 @@ all_packages_source_files = \
   java/util/spi.list \
   java/util/zip.list \
   javax/accessibility.list \
+  javax/activation.list \
   javax/activity.list \
   javax/crypto.list \
   javax/crypto/interfaces.list \
@@ -8868,7 +8915,6 @@ ordinary_header_files = \
   $(gnu_java_lang_management_header_files) \
   $(gnu_java_lang_reflect_header_files) \
   $(gnu_java_locale_header_files) \
-  $(gnu_java_math_header_files) \
   $(gnu_java_net_header_files) \
   $(gnu_java_net_loader_header_files) \
   $(gnu_java_net_local_header_files) \
@@ -8912,6 +8958,7 @@ ordinary_header_files = \
   $(gnu_java_util_jar_header_files) \
   $(gnu_java_util_prefs_header_files) \
   $(gnu_java_util_regex_header_files) \
+  $(gnu_javax_activation_viewers_header_files) \
   $(gnu_javax_crypto_header_files) \
   $(gnu_javax_crypto_assembly_header_files) \
   $(gnu_javax_crypto_cipher_header_files) \
@@ -9025,6 +9072,7 @@ ordinary_header_files = \
   $(java_util_spi_header_files) \
   $(java_util_zip_header_files) \
   $(javax_accessibility_header_files) \
+  $(javax_activation_header_files) \
   $(javax_activity_header_files) \
   $(javax_crypto_header_files) \
   $(javax_crypto_interfaces_header_files) \
@@ -9093,6 +9141,7 @@ bc_objects = \
   gnu-java-awt-peer-swing.lo \
   gnu-java-beans.lo \
   gnu-java-lang-management.lo \
+  gnu-java-math.lo \
   gnu-java-util-prefs-gconf.lo \
   gnu-javax-management.lo \
   gnu-javax-rmi.lo \
@@ -9137,7 +9186,9 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_aa_ER_SAAHO.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_aa_ET.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_af.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_af_NA.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_af_ZA.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ak.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_am.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_am_ET.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ar.properties \
@@ -9160,11 +9211,14 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_bg_BG.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_bn.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_bn_IN.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_bo.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_bs.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_byn.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_byn_ER.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ca.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ca_ES.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_cch.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_cop.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_cs.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_cs_CZ.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_cy.properties \
@@ -9182,6 +9236,7 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_dv_MV.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_dz.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_dz_BT.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ee.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_el.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_el_CY.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_el_GR.properties \
@@ -9192,18 +9247,23 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_en_BW.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_BZ.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_CA.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_GB.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_GU.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_HK.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_IE.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_IN.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_en_JM.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_MH.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_MP.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_MT.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_en_NA.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_NZ.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_PH.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_PK.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_SG.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_en_Shaw.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_en_TT.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_UM.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_US.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_en_US_POSIX.properties \
@@ -9241,6 +9301,7 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_fa_IR.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fi.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fi_FI.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_fil.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fo.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fo_FO.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fr.properties \
@@ -9248,8 +9309,10 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_fr_CA.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fr_CH.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_fr_LU.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_fur.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ga.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ga_IE.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_gaa.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_gez.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_gez_ER.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_gez_ET.properties \
@@ -9259,6 +9322,8 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_gu_IN.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_gv.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_gv_GB.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ha.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ha_Arab.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_haw.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_haw_US.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_he.properties \
@@ -9271,8 +9336,11 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_hy.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_hy_AM.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_hy_AM_REVISED.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ia.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_id.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_id_ID.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ig.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ii.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_is.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_is_IS.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_it.properties \
@@ -9282,6 +9350,10 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ja.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ja_JP.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ka.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_kaj.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_kam.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_kcg.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_kfo.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kk.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kk_KZ.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kl.properties \
@@ -9294,9 +9366,14 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ko_KR.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kok.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kok_IN.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_kpe.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ku.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ku_Arab.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ku_Latn.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kw.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_kw_GB.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ky.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ln.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_lo.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_lo_LA.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_lt.properties \
@@ -9314,19 +9391,25 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ms_MY.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_mt.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_mt_MT.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_my.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nb.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nb_NO.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ne.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nl.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nl_BE.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nl_NL.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nn.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_nn_NO.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_nr.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_nso.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ny.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_om.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_om_ET.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_om_KE.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_or.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_or_IN.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_pa.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_pa_Arab.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_pa_IN.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_pl.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_pl_PL.properties \
@@ -9340,8 +9423,12 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ru.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ru_RU.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ru_UA.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_rw.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sa.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sa_IN.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_se.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_se_FI.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_si.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sid.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sid_ET.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sk.properties \
@@ -9360,6 +9447,11 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_sr_BA_Latn.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sr_Cyrl.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sr_Latn.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_sr_ME_Latn.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_sr_RS_Latn.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ss.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ssy.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_st.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sv.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sv_FI.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_sv_SE.properties \
@@ -9372,6 +9464,7 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ta_IN.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_te.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_te_IN.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_tg.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_th.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_th_TH.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ti.properties \
@@ -9379,20 +9472,30 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_ti_ET.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tig.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tig_ER.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_tn.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_to.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tr.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tr_TR.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_trv.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ts.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tt.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_tt_RU.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ug.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uk.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uk_UA.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_ur.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ur_IN.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uz.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uz_AF_Arab.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uz_Arab.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_uz_Latn.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_ve.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_vi.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_wal.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_wal_ET.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_wo.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_xh.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_yo.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_zh.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_zh_CN_Hans.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_zh_HK_Hant.properties \
@@ -9400,13 +9503,16 @@ property_files = \
   classpath/resource/gnu/java/locale/LocaleInformation_zh_MO_Hant.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_zh_SG_Hans.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_zh_TW_Hant.properties \
+  classpath/resource/gnu/java/locale/LocaleInformation_zu.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_fr.properties \
   classpath/resource/gnu/java/util/regex/MessagesBundle_it.properties \
   classpath/resource/gnu/javax/print/PrinterDialog.properties \
   classpath/resource/gnu/javax/print/PrinterDialog_de.properties \
   classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
+  classpath/resource/java/text/metazones.properties \
   classpath/resource/java/util/iso4217.properties \
+  classpath/resource/java/util/weeks.properties \
   classpath/resource/javax/imageio/plugins/jpeg/MessagesBundle.properties \
   classpath/resource/javax/swing/text/html/default.css \
   classpath/resource/org/ietf/jgss/MessagesBundle.properties \

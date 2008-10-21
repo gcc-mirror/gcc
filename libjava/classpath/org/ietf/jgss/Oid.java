@@ -67,6 +67,8 @@ MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. */
 
 package org.ietf.jgss;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -241,7 +243,7 @@ public class Oid
   {
     if (strOid == null)
       {
-        StringBuffer buf = new StringBuffer();
+        CPStringBuilder buf = new CPStringBuilder();
         for (int i = 0; i < components.length; i++)
           {
             buf.append(components[i]);

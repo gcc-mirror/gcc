@@ -168,7 +168,7 @@ public:
 public: // actually protected
   virtual void fillShape(::java::awt::Shape *, jboolean);
   virtual ::java::awt::image::ColorModel * getColorModel() = 0;
-  virtual ::java::awt::Rectangle * getDeviceBounds();
+  virtual ::java::awt::Rectangle * getDeviceBounds() = 0;
   virtual void rawDrawLine(jint, jint, jint, jint);
   virtual void rawDrawRect(jint, jint, jint, jint);
   virtual void rawClearRect(jint, jint, jint, jint);
@@ -189,6 +189,12 @@ private:
   void updateClip(::java::awt::geom::AffineTransform *);
   ::gnu::java::awt::java2d::ScanlineConverter * getScanlineConverter();
   void freeScanlineConverter(::gnu::java::awt::java2d::ScanlineConverter *);
+  ::java::awt::PaintContext * getPaintContext();
+public:
+  static ::java::awt::Image * prepareImage(::java::awt::Image *, jint, jint);
+public: // actually protected
+  static ::java::util::WeakHashMap * imageCache;
+private:
   static jboolean DEFAULT_TEXT_AA;
   static ::java::awt::Font * FONT;
   static const jint GV_CACHE_SIZE = 50;
@@ -202,6 +208,8 @@ private:
   ::java::awt::Paint * paint;
   ::java::awt::PaintContext * paintContext;
   ::java::awt::Color * background;
+  ::java::awt::Color * foreground;
+  jboolean isForegroundColorNull;
   ::java::awt::Font * font;
   ::java::awt::Composite * composite;
   ::java::awt::Stroke * stroke;

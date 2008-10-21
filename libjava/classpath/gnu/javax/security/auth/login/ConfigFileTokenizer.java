@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.javax.security.auth.login;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 
 import java.io.BufferedReader;
@@ -92,7 +94,7 @@ public class ConfigFileTokenizer
 
   private BufferedReader br;
   boolean initialised;
-  private StringBuffer sb;
+  private CPStringBuilder sb;
   private int sbNdx;
 
   // Constructor(s)
@@ -185,7 +187,7 @@ public class ConfigFileTokenizer
 
   private void init() throws IOException
   {
-    sb = new StringBuffer();
+    sb = new CPStringBuilder();
     String line;
     while ((line = br.readLine()) != null)
       {

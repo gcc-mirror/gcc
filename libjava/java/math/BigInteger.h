@@ -11,6 +11,20 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+      namespace math
+      {
+          class GMP;
+      }
+    }
+  }
   namespace java
   {
     namespace math
@@ -38,6 +52,7 @@ public:
   static ::java::math::BigInteger * probablePrime(jint, ::java::util::Random *);
   static ::java::math::BigInteger * valueOf(jlong);
 private:
+  static jboolean initializeLibrary();
   static ::java::math::BigInteger * make(JArray< jint > *, jint);
   static JArray< jint > * byteArrayToIntArray(JArray< jbyte > *, jint);
   static ::java::math::BigInteger * alloc(jint);
@@ -102,7 +117,7 @@ public:
   virtual ::java::math::BigInteger * shiftLeft(jint);
   virtual ::java::math::BigInteger * shiftRight(jint);
 private:
-  void format(jint, ::java::lang::StringBuffer *);
+  void format(jint, ::gnu::java::lang::CPStringBuilder *);
 public:
   virtual ::java::lang::String * toString();
   virtual ::java::lang::String * toString(jint);
@@ -114,7 +129,6 @@ private:
 public:
   virtual jboolean equals(::java::lang::Object *);
 private:
-  static ::java::math::BigInteger * valueOf(::java::lang::String *, jint);
   static ::java::math::BigInteger * valueOf(JArray< jbyte > *, jint, jboolean, jint);
 public:
   virtual jdouble doubleValue();
@@ -162,11 +176,11 @@ private:
 public:
   virtual jint compareTo(::java::lang::Object *);
 private:
+  static ::java::util::logging::Logger * log;
   jint __attribute__((aligned(__alignof__( ::java::lang::Number)))) ival;
   JArray< jint > * words;
   jint bitCount__;
   jint bitLength__;
-  jint firstNonzeroByteNum;
   jint lowestSetBit;
   JArray< jbyte > * magnitude;
   jint signum__;
@@ -175,6 +189,8 @@ private:
   static const jint maxFixNum = 1024;
   static const jint numFixNum = 1125;
   static JArray< ::java::math::BigInteger * > * smallFixNums;
+  ::gnu::java::math::GMP * mpz;
+  static jboolean USING_NATIVE;
 public:
   static ::java::math::BigInteger * ZERO;
   static ::java::math::BigInteger * ONE;

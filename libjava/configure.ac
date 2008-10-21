@@ -77,6 +77,63 @@ AC_ARG_ENABLE(gconf-peer,
     [gconf_enabled=no]
 )
 
+AC_ARG_WITH([antlr-jar],
+            [AS_HELP_STRING([--with-antlr-jar=file],[Use ANTLR from the specified jar file])],
+            [
+             ANTLR_JAR=$withval
+            ],
+            [
+             ANTLR_JAR=
+            ])
+
+AC_MSG_CHECKING([for antlr.jar])
+if test "x$ANTLR_JAR" = x; then
+    for antlr_lib_home in `ls -d /usr/local/share/antlr* 2> /dev/null` \
+	/usr/share/antlr/lib /usr/share/java /usr/lib;
+    do
+	if test -f "$antlr_lib_home/antlr.jar"; then
+	    # FIXME: version check for antlr needed without using a VM
+	    ANTLR_JAR="$antlr_lib_home/antlr.jar"
+	    break
+	fi
+    done
+    if test "x$ANTLR_JAR" = x; then
+	AC_MSG_RESULT([not found])
+    else
+	AC_MSG_RESULT($ANTLR_JAR)
+    fi
+else
+    if test -f "${ANTLR_JAR}"; then
+	AC_MSG_RESULT($ANTLR_JAR)
+    else
+	AC_MSG_ERROR([antlr jar file not found: $ANTLR_JAR])
+    fi
+fi
+AC_SUBST(ANTLR_JAR)
+
+AC_ARG_ENABLE([gjdoc],
+              [AS_HELP_STRING(--disable-gjdoc,compile GJDoc (disabled by --disable-gjdoc) [default=yes])],
+              [case "${enableval}" in
+                yes) BUILD_GJDOC=yes ;;
+                no) BUILD_GJDOC=no ;;
+                *) BUILD_GJDOC=yes ;;
+              esac],
+              [BUILD_GJDOC=maybe])
+
+AC_MSG_CHECKING([wether to build gjdoc])
+if test "x$BUILD_GJDOC" = xmaybe; then
+    if test -f "${ANTLR_JAR}"; then
+	BUILD_GJDOC=yes
+	AC_MSG_RESULT(yes)
+    else
+	BUILD_GJDOC=no
+	AC_MSG_RESULT([no, antlr.jar not found])
+    fi
+else
+    AC_MSG_RESULT($BUILD_GJDOC)
+fi
+AM_CONDITIONAL(CREATE_GJDOC, test "x${BUILD_GJDOC}" = xyes)
+
 AC_ARG_ENABLE(java-maintainer-mode,
 	AS_HELP_STRING([--enable-java-maintainer-mode],
 	[allow rebuilding of .class and .h files]))
@@ -386,7 +443,6 @@ test -f libgcj.spec || touch libgcj.spec
 
 # Set up to configure Classpath.
 # FIXME: no supported way to pass args in autoconf.
-ac_configure_args="$ac_configure_args --with-fastjar=$JAR"
 # Disable tool wrappers to avoid ltdl.h configure check.
 ac_configure_args="$ac_configure_args --disable-tool-wrappers"
 ac_configure_args="$ac_configure_args --disable-load-library"
@@ -425,12 +481,14 @@ else
     ac_configure_args="$ac_configure_args --with-escher=$with_escher"
   fi
 fi
+if test "x$BUILD_GJDOC" = xno; then
+  ac_configure_args="$ac_configure_args --disable-gjdoc"
+fi
 # -Werror causes unavoidable problems in code using alsa.
 ac_configure_args="$ac_configure_args --disable-regen-headers"
 ac_configure_args="$ac_configure_args --disable-Werror"
 dnl --with-gcj=$GCJ
 dnl --with-javah=$GCJH
-dnl gjdoc?
 dnl gtk-cairo -- just export here...
 dnl --enable-regen-headers?
 
@@ -1325,6 +1383,7 @@ if test ! -f gnu/classpath/Configuration.java; then
       -e "s,@JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@,false," \
       -e "s,@GTK_CAIRO_ENABLED@,false," \
       -e "s,@ECJ_JAR@,," \
+      -e "s,@WANT_NATIVE_BIG_INTEGER@,false," \
 	< $srcdir/classpath/gnu/classpath/Configuration.java.in \
 	> gnu/classpath/Configuration.java
   # We do not want to redirect the output of the grep below to /dev/null,
@@ -1671,7 +1730,7 @@ AC_ARG_ENABLE([aot-compile-rpm],
   esac],
   [AOT_RPM_ENABLED=no]
 )
-AM_CONDITIONAL(INSTALL_AOT_RPM, test "x${AOT_RPM_ENABLED}" == xyes)
+AM_CONDITIONAL(INSTALL_AOT_RPM, test "x${AOT_RPM_ENABLED}" = xyes)
 
 AC_ARG_ENABLE([java-home],
   [AS_HELP_STRING([--enable-java-home],
@@ -1683,10 +1742,10 @@ AC_ARG_ENABLE([java-home],
   esac],
   [JAVA_HOME_ENABLED=no]
 )
-AM_CONDITIONAL(CREATE_JAVA_HOME, test "x${JAVA_HOME_ENABLED}" == xyes)
+AM_CONDITIONAL(CREATE_JAVA_HOME, test "x${JAVA_HOME_ENABLED}" = xyes)
 
 # Only do these checks if java-home above is enabled.
-if test "x${JAVA_HOME_ENABLED}" == xyes
+if test "x${JAVA_HOME_ENABLED}" = xyes
 then
 
   AC_ARG_WITH([gcc-suffix],

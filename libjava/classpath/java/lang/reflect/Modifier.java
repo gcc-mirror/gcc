@@ -1,5 +1,5 @@
 /* java.lang.reflect.Modifier
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2008  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 
 package java.lang.reflect;
+
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * Modifier is a helper class with static methods to determine whether an
@@ -308,28 +310,16 @@ public class Modifier
    */
   public static String toString(int mod)
   {
-    return toString(mod, new StringBuilder()).toString();
+    return toString(mod, new CPStringBuilder()).toString();
   }
 
   /**
-   * Package helper method that can take a StringBuilder.
+   * Package helper method that can take a CPStringBuilder.
    * @param mod the modifier
-   * @param r the StringBuilder to which the String representation is appended
+   * @param r the CPStringBuilder to which the String representation is appended
    * @return r, with information appended
    */
-  static StringBuilder toString(int mod, StringBuilder r)
-  {
-    r.append(toString(mod, new StringBuffer()));
-    return r;
-  }
-
-  /**
-   * Package helper method that can take a StringBuffer.
-   * @param mod the modifier
-   * @param r the StringBuffer to which the String representation is appended
-   * @return r, with information appended
-   */
-  static StringBuffer toString(int mod, StringBuffer r)
+  static CPStringBuilder toString(int mod, CPStringBuilder r)
   {
     if (isPublic(mod))
       r.append("public ");

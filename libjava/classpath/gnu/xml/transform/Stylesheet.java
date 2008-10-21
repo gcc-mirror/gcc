@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -108,18 +110,18 @@ class Stylesheet
    */
   String version;
 
-  Collection extensionElementPrefixes;
-  Collection excludeResultPrefixes;
+  Collection<String> extensionElementPrefixes;
+  Collection<String> excludeResultPrefixes;
 
   /**
    * Set of element names for which we should strip whitespace.
    */
-  Set stripSpace;
+  Set<StrippingInstruction> stripSpace;
 
   /**
    * Set of element names for which we should preserve whitespace.
    */
-  Set preserveSpace;
+  Set<StrippingInstruction> preserveSpace;
 
   /**
    * Output options.
@@ -132,34 +134,34 @@ class Stylesheet
   boolean outputStandalone;
   String outputPublicId;
   String outputSystemId;
-  Collection outputCdataSectionElements;
+  Collection<String> outputCdataSectionElements;
   boolean outputIndent;
   String outputMediaType;
 
   /**
    * Keys.
    */
-  Collection keys;
+  Collection<Key> keys;
 
   /**
    * Decimal formats.
    */
-  Map decimalFormats;
+  Map<String,DecimalFormat> decimalFormats;
   
   /**
    * Namespace aliases.
    */
-  Map namespaceAliases;
+  Map<String,String> namespaceAliases;
 
   /**
    * Attribute-sets.
    */
-  List attributeSets;
+  List<AttributeSet> attributeSets;
 
   /**
    * Variables.
    */
-  List variables;
+  List<ParameterNode> variables;
 
   /**
    * Variable and parameter bindings.
@@ -169,7 +171,7 @@ class Stylesheet
   /**
    * Templates.
    */
-  LinkedList templates;
+  LinkedList<Template> templates;
 
   TemplateNode builtInNodeTemplate;
   TemplateNode builtInTextTemplate;
@@ -203,22 +205,22 @@ class Stylesheet
     this.systemId = systemId;
     this.precedence = precedence;
     this.parent = parent;
-    extensionElementPrefixes = new HashSet();
-    excludeResultPrefixes = new HashSet();
-    stripSpace = new LinkedHashSet();
-    preserveSpace = new LinkedHashSet();
-    outputCdataSectionElements = new LinkedHashSet();
+    extensionElementPrefixes = new HashSet<String>();
+    excludeResultPrefixes = new HashSet<String>();
+    stripSpace = new LinkedHashSet<StrippingInstruction>();
+    preserveSpace = new LinkedHashSet<StrippingInstruction>();
+    outputCdataSectionElements = new LinkedHashSet<String>();
     xpath = (XPathImpl) factory.xpathFactory.newXPath();
     xpath.setNamespaceContext(this);
     if (parent == null)
       {
         bindings = new Bindings(this);
-        attributeSets = new LinkedList();
-        variables = new LinkedList();
-        namespaceAliases = new LinkedHashMap();
-        templates = new LinkedList();
-        keys = new LinkedList();
-        decimalFormats = new LinkedHashMap();
+        attributeSets = new LinkedList<AttributeSet>();
+        variables = new LinkedList<ParameterNode>();
+        namespaceAliases = new LinkedHashMap<String,String>();
+        templates = new LinkedList<Template>();
+        keys = new LinkedList<Key>();
+        decimalFormats = new LinkedHashMap<String,DecimalFormat>();
         initDefaultDecimalFormat();
         xpath.setXPathFunctionResolver(this);
       }
@@ -247,7 +249,7 @@ class Stylesheet
     xpath.setXPathVariableResolver(bindings);
 
     Test anyNode = new NodeTypeTest((short) 0);
-    List tests = Collections.singletonList(anyNode);
+    List<Test> tests = Collections.singletonList(anyNode);
     builtInNodeTemplate =
       new ApplyTemplatesNode(new Selector(Selector.CHILD, tests),
                              null, null, null, true);
@@ -263,9 +265,8 @@ class Stylesheet
     if (debug)
       {
         System.err.println("Stylesheet: " + doc.getDocumentURI());
-        for (Iterator i = templates.iterator(); i.hasNext(); )
+	for (Template t : templates)
           {
-            Template t = (Template) i.next();
             t.list(System.err);
             System.err.println("--------------------");
           }
@@ -307,34 +308,30 @@ class Stylesheet
         Stylesheet clone = (Stylesheet) super.clone();
         clone.bindings = (Bindings) bindings.clone();
 
-        LinkedList templates2 = new LinkedList();
-        for (Iterator i = templates.iterator(); i.hasNext(); )
+        LinkedList<Template> templates2 = new LinkedList<Template>();
+	for (Template t : templates)
           {
-            Template t = (Template) i.next();
             templates2.add(t.clone(clone));
           }
         clone.templates = templates2;
 
-        LinkedList attributeSets2 = new LinkedList();
-        for (Iterator i = attributeSets.iterator(); i.hasNext(); )
+        LinkedList<AttributeSet> attributeSets2 = new LinkedList<AttributeSet>();
+	for (AttributeSet as : attributeSets)
           {
-            AttributeSet as = (AttributeSet) i.next();
             attributeSets2.add(as.clone(clone));
           }
         clone.attributeSets = attributeSets2;
 
-        LinkedList variables2 = new LinkedList();
-        for (Iterator i = variables.iterator(); i.hasNext(); )
+        LinkedList<ParameterNode> variables2 = new LinkedList<ParameterNode>();
+	for (ParameterNode var : variables)
           {
-            ParameterNode var = (ParameterNode) i.next();
             variables2.add(var.clone(clone));
           }
         clone.variables = variables2;
 
-        LinkedList keys2 = new LinkedList();
-        for (Iterator i = keys.iterator(); i.hasNext(); )
+        LinkedList<Key> keys2 = new LinkedList<Key>();
+	for (Key k : keys)
           {
-            Key k = (Key) i.next();
             keys2.add(k.clone(clone));
           }
         clone.keys = keys2;
@@ -357,11 +354,10 @@ class Stylesheet
     // See XSLT 11.4: "If the template or expression specifying the value of
     // a global variable x references a global variable y, then the value
     // for y must be computed before the value of x."
-    List topLevel = new ArrayList(variables);
+    List<ParameterNode> topLevel = new ArrayList<ParameterNode>(variables);
     Collections.sort(topLevel);
-    for (Iterator i = topLevel.iterator(); i.hasNext(); )
+    for (ParameterNode var : topLevel)
       {
-        ParameterNode var = (ParameterNode) i.next();
         bindings.set(var.name,
                      var.getValue(this, null, context, 1, 1),
                      var.type);
@@ -381,7 +377,7 @@ class Stylesheet
     return (current == null) ? null : current.lookupPrefix(namespaceURI);
   }
 
-  public Iterator getPrefixes(String namespaceURI)
+  public Iterator<String> getPrefixes(String namespaceURI)
   {
     // TODO
     return Collections.singleton(getPrefix(namespaceURI)).iterator();
@@ -408,9 +404,8 @@ class Stylesheet
     if (debug)
       System.err.println("getTemplate: mode="+mode+" context="+context);
     Template selected = null;
-    for (Iterator j = templates.iterator(); j.hasNext(); )
+    for (Template t : templates)
       {
-        Template t = (Template) j.next();
         boolean isMatch = t.matches(mode, context);
         if (applyImports)
           {
@@ -472,9 +467,8 @@ class Stylesheet
     throws TransformerException
   {
     Template selected = null;
-    for (Iterator j = templates.iterator(); j.hasNext(); )
+    for (Template t : templates)
       {
-        Template t = (Template) j.next();
         boolean isMatch = t.matches(name);
         if (isMatch)
           {
@@ -862,8 +856,8 @@ class Stylesheet
     // Tokenize
     int len = value.length();
     int off = 0;
-    List tokens = new ArrayList(); // text tokens
-    List types = new ArrayList(); // literal or expression
+    List<String> tokens = new ArrayList<String>(); // text tokens
+    List<Boolean> types = new ArrayList<Boolean>(); // literal or expression
     int depth = 0;
     for (int i = 0; i < len; i++)
       {
@@ -936,8 +930,8 @@ class Stylesheet
     len = tokens.size();
     for (int i = len - 1; i >= 0; i--)
       {
-        String token = (String) tokens.get(i);
-        Boolean type = (Boolean) types.get(i);
+        String token = tokens.get(i);
+        Boolean type = types.get(i);
         if (type == Boolean.TRUE)
           {
             // Expression text
@@ -989,9 +983,8 @@ class Stylesheet
           {
             // Conflict resolution
             StrippingInstruction ssi = null, psi = null;
-            for (Iterator i = stripSpace.iterator(); i.hasNext(); )
+	    for (StrippingInstruction si : stripSpace)
               {
-                StrippingInstruction si = (StrippingInstruction) i.next();
                 if (si.element.matches(ctx, 1, 1))
                   {
                     if (ssi != null)
@@ -1005,9 +998,8 @@ class Stylesheet
                     ssi = si;
                   }
               }
-            for (Iterator i = preserveSpace.iterator(); i.hasNext(); )
+	    for (StrippingInstruction si : preserveSpace)
               {
-                StrippingInstruction si = (StrippingInstruction) i.next();
                 if (si.element.matches(ctx, 1, 1))
                   {
                     if (psi != null)
@@ -1114,8 +1106,8 @@ class Stylesheet
     if (s == null)
       s = "child::node()";
     Node children = node.getFirstChild();
-    List sortKeys = parseSortKeys(children);
-    List withParams = parseWithParams(children);
+    List<SortKey> sortKeys = parseSortKeys(children);
+    List<WithParam> withParams = parseWithParams(children);
     Expr select = (Expr) xpath.compile(s);
     return new ApplyTemplatesNode(select, mode,
                                   sortKeys, withParams, false);
@@ -1131,7 +1123,7 @@ class Stylesheet
     String n = getRequiredAttribute(attrs, "name", node);
     QName name = getQName(n);
     Node children = node.getFirstChild();
-    List withParams = parseWithParams(children);
+    List<WithParam> withParams = parseWithParams(children);
     return new CallTemplateNode(name, withParams);
   }
   
@@ -1158,7 +1150,7 @@ class Stylesheet
     NamedNodeMap attrs = node.getAttributes();
     String s = getRequiredAttribute(attrs, "select", node);
     Node children = node.getFirstChild();
-    List sortKeys = parseSortKeys(children);
+    List<SortKey> sortKeys = parseSortKeys(children);
     Expr select = (Expr) xpath.compile(s);
     ForEachNode ret = new ForEachNode(select, sortKeys);
     ret.children = parse(children);
@@ -1620,10 +1612,10 @@ class Stylesheet
     return ret;
   }
 
-  final List parseSortKeys(Node node)
+  final List<SortKey> parseSortKeys(Node node)
     throws TransformerConfigurationException, XPathExpressionException
   {
-    List ret = new LinkedList();
+    List<SortKey> ret = new LinkedList<SortKey>();
     while (node != null)
       {
         String namespaceUri = node.getNamespaceURI();
@@ -1652,13 +1644,13 @@ class Stylesheet
           }
         node = node.getNextSibling();
       }
-    return ret.isEmpty() ? null : ret;
+    return ret;
   }
 
-  final List parseWithParams(Node node)
+  final List<WithParam> parseWithParams(Node node)
     throws TransformerConfigurationException, XPathExpressionException
   {
-    List ret = new LinkedList();
+    List<WithParam> ret = new LinkedList<WithParam>();
     while (node != null)
       {
         String namespaceUri = node.getNamespaceURI();
@@ -1688,7 +1680,7 @@ class Stylesheet
           }
         node = node.getNextSibling();
       }
-    return ret.isEmpty() ? null : ret;
+    return ret;
   }
 
   /**
@@ -1697,7 +1689,7 @@ class Stylesheet
    * exclude-result-prefixes.
    */
   final void addNamespaceNodes(Node source, Node target, Document doc,
-                               Collection elementExcludeResultPrefixes)
+                               Collection<String> elementExcludeResultPrefixes)
   {
     NamedNodeMap attrs = source.getAttributes();
     if (attrs != null)
@@ -1766,6 +1758,15 @@ class Stylesheet
   public void handle(short op, String key, Object data, Node src, Node dst)
   {
     dst.setUserData(key, data, this);
+  }
+
+  public String toString()
+  {
+    CPStringBuilder b = new CPStringBuilder(getClass().getName());
+    b.append("[templates=");
+    b.append(templates);
+    b.append("]");
+    return b.toString();
   }
 
 }

@@ -66,7 +66,6 @@ private:
   static JArray< jchar > * charMapping;
   jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) didPushChar;
   jint pushedChar;
-  ::java::lang::StringBuffer * unitBuffer;
   JArray< jint > * unitStack;
   jint stackCount;
   ::java::io::Reader * reader;

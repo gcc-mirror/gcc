@@ -68,7 +68,7 @@ public class DefaultMutableTreeNode
    * children.
    */
   public static final Enumeration<TreeNode> EMPTY_ENUMERATION =
-    EmptyEnumeration.getInstance();
+    new EmptyEnumeration<TreeNode>();
 
   /**
    * The parent of this node (possibly <code>null</code>).

@@ -43,18 +43,17 @@ package java.nio;
  */
 final class ShortBufferImpl extends ShortBuffer
 {
-  private boolean readOnly;
+  private final boolean readOnly;
 
   ShortBufferImpl (int capacity)
   {
     this (new short [capacity], 0, capacity, capacity, 0, -1, false);
   }
   
-  ShortBufferImpl (short[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  ShortBufferImpl (short[] buffer, int offset, int capacity,
+		   int limit, int position, int mark, boolean readOnly)
   {
-    super (capacity, limit, position, mark);
-    this.backing_buffer = buffer;
-    this.array_offset = offset;
+    super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
   
@@ -65,17 +64,20 @@ final class ShortBufferImpl extends ShortBuffer
   
   public ShortBuffer slice ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
+    return new ShortBufferImpl (backing_buffer, array_offset + position (),
+				remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
   public ShortBuffer duplicate ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
+    return new ShortBufferImpl (backing_buffer, array_offset, capacity (),
+				limit (), position (), mark, isReadOnly ());
   }
   
   public ShortBuffer asReadOnlyBuffer ()
   {
-    return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
+    return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (),
+				position (), mark, true);
   }
   
   public ShortBuffer compact ()

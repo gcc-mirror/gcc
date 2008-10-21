@@ -15,6 +15,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -87,9 +91,9 @@ public:
   virtual ::gnu::java::util::regex::REMatch * getMatch(::java::lang::Object *);
   virtual ::gnu::java::util::regex::REMatch * getMatch(::java::lang::Object *, jint);
   virtual ::gnu::java::util::regex::REMatch * getMatch(::java::lang::Object *, jint, jint);
-  virtual ::gnu::java::util::regex::REMatch * getMatch(::java::lang::Object *, jint, jint, ::java::lang::StringBuffer *);
+  virtual ::gnu::java::util::regex::REMatch * getMatch(::java::lang::Object *, jint, jint, ::gnu::java::lang::CPStringBuilder *);
 public: // actually package-private
-  virtual ::gnu::java::util::regex::REMatch * getMatchImpl(::gnu::java::util::regex::CharIndexed *, jint, jint, ::java::lang::StringBuffer *);
+  virtual ::gnu::java::util::regex::REMatch * getMatchImpl(::gnu::java::util::regex::CharIndexed *, jint, jint, ::gnu::java::lang::CPStringBuilder *);
 public:
   virtual ::gnu::java::util::regex::REMatchEnumeration * getMatchEnumeration(::java::lang::Object *);
   virtual ::gnu::java::util::regex::REMatchEnumeration * getMatchEnumeration(::java::lang::Object *, jint);
@@ -110,12 +114,12 @@ public:
 private:
   void addToken(::gnu::java::util::regex::REToken *);
   static ::gnu::java::util::regex::REToken * setRepeated(::gnu::java::util::regex::REToken *, jint, jint, jint);
-  static jint getPosixSet(JArray< jchar > *, jint, ::java::lang::StringBuffer *);
+  static jint getPosixSet(JArray< jchar > *, jint, ::gnu::java::lang::CPStringBuilder *);
   jint getMinMax(JArray< jchar > *, jint, ::gnu::java::util::regex::RE$IntPair *, ::gnu::java::util::regex::RESyntax *);
 public:
   virtual ::java::lang::String * toString();
 public: // actually package-private
-  virtual void dump(::java::lang::StringBuffer *);
+  virtual void dump(::gnu::java::lang::CPStringBuilder *);
 public:
   static ::gnu::java::util::regex::CharIndexed * makeCharIndexed(::java::lang::Object *, jint);
 private:

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.sound.sampled;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The DataLine interface adds data-related functionality to the Line
  * interface.  For example, it adds methods to start and stop the data
@@ -180,7 +182,7 @@ public interface DataLine extends Line
      */
     public String toString()
     {
-      StringBuffer result = new StringBuffer();
+      CPStringBuilder result = new CPStringBuilder();
       result.append("formats: [");
       for (int i = 0; i < formats.length; ++i)
         {

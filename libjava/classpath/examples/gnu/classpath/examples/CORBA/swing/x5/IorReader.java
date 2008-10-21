@@ -79,7 +79,7 @@ public class IorReader
       {
         InputStreamReader r = new InputStreamReader(u.openStream());
 
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         int c;
 
         while ((c = r.read()) > 0)

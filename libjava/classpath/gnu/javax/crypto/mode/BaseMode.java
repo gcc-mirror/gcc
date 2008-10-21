@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.mode;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.javax.crypto.cipher.IBlockCipher;
 
 import java.security.InvalidKeyException;
@@ -110,7 +112,7 @@ public abstract class BaseMode
 
   public String name()
   {
-    return new StringBuffer(name).append('(').append(cipher.name()).append(')')
+    return new CPStringBuilder(name).append('(').append(cipher.name()).append(')')
         .toString();
   }
 

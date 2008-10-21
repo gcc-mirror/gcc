@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -58,20 +60,24 @@ public final class FunctionCall
 
   final XPathFunctionResolver resolver;
   final String name;
-  final List args;
+  final List<Expr> args;
 
   public FunctionCall(XPathFunctionResolver resolver, String name)
   {
-    this(resolver, name, Collections.EMPTY_LIST);
+    this(resolver, name, null);
   }
 
-  public FunctionCall(XPathFunctionResolver resolver, String name, List args)
+  public FunctionCall(XPathFunctionResolver resolver, String name, List<Expr> args)
   {
     this.resolver = resolver;
     this.name = name;
-    this.args = args;
+    if (args == null)
+      this.args = Collections.emptyList();
+    else
+      this.args = args;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     if (resolver != null)
@@ -92,7 +98,7 @@ public final class FunctionCall
               }
             else
               {
-                List values = new ArrayList(arity);
+                List<Object> values = new ArrayList<Object>(arity);
                 for (int i = 0; i < arity; i++)
                   {
                     Expr arg = (Expr) args.get(i);
@@ -117,10 +123,10 @@ public final class FunctionCall
   public Expr clone(Object context)
   {
     int len = args.size();
-    List args2 = new ArrayList(len);
+    List<Expr> args2 = new ArrayList<Expr>(len);
     for (int i = 0; i < len; i++)
       {
-        args2.add(((Expr) args.get(i)).clone(context));
+        args2.add(args.get(i).clone(context));
       }
     XPathFunctionResolver r = resolver;
     if (context instanceof XPathFunctionResolver)
@@ -132,9 +138,9 @@ public final class FunctionCall
 
   public boolean references(QName var)
   {
-    for (Iterator i = args.iterator(); i.hasNext(); )
+    for (Iterator<Expr> i = args.iterator(); i.hasNext(); )
       {
-        if (((Expr) i.next()).references(var))
+        if (i.next().references(var))
           {
             return true;
           }
@@ -144,7 +150,7 @@ public final class FunctionCall
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     buf.append(name);
     buf.append('(');
     int len = args.size();

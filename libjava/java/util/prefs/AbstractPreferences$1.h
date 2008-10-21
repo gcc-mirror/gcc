@@ -18,7 +18,7 @@ public:
 public: // actually package-private
   ::java::util::prefs::AbstractPreferences * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:
-  ::java::util::prefs::PreferenceChangeListener * val$l;
+  ::java::util::prefs::PreferenceChangeListener * val$listener;
   ::java::util::prefs::PreferenceChangeEvent * val$event;
 public:
   static ::java::lang::Class class$;

@@ -36,65 +36,84 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package gnu.java.util.regex;
+
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
-abstract class REToken implements Serializable, Cloneable {
+abstract class REToken implements Serializable, Cloneable
+{
 
   protected REToken next = null;
   protected REToken uncle = null;
   protected int subIndex;
   protected boolean unicodeAware = true;
 
-  public Object clone() {
-    try {
-      REToken copy = (REToken) super.clone();
-      return copy;
-    } catch (CloneNotSupportedException e) {
-      throw new Error(); // doesn't happen
+  public Object clone ()
+  {
+    try
+    {
+      REToken copy = (REToken) super.clone ();
+        return copy;
+    }
+    catch (CloneNotSupportedException e)
+    {
+      throw new Error ();	// doesn't happen
     }
   }
 
-  protected REToken(int subIndex) {
-      this.subIndex = subIndex;
+  protected REToken (int subIndex)
+  {
+    this.subIndex = subIndex;
   }
 
-  int getMinimumLength() {
+  int getMinimumLength ()
+  {
     return 0;
   }
 
-  int getMaximumLength() {
+  int getMaximumLength ()
+  {
     return Integer.MAX_VALUE;
   }
 
-  void setUncle(REToken anUncle) {
+  void setUncle (REToken anUncle)
+  {
     uncle = anUncle;
   }
 
     /** Returns true if the match succeeded, false if it failed. */
-    boolean match(CharIndexed input, REMatch mymatch) {
-	return match(input, mymatch, false);
-    }
-    boolean matchFake(CharIndexed input, REMatch mymatch) {
-	return match(input, mymatch, true);
-    }
+  boolean match (CharIndexed input, REMatch mymatch)
+  {
+    return match (input, mymatch, false);
+  }
+  boolean matchFake (CharIndexed input, REMatch mymatch)
+  {
+    return match (input, mymatch, true);
+  }
 
-    private boolean match(CharIndexed input, REMatch mymatch, boolean fake) {
-	if (!fake) {
-	    setHitEnd(input, mymatch);
-	}
-	REMatch m = matchThis(input, mymatch);
-	if (m == null) return false;
-	if (next(input, m)) {
-	    mymatch.assignFrom(m);
-	    return true;
-	}
-	return false;
-    }
+  private boolean match (CharIndexed input, REMatch mymatch, boolean fake)
+  {
+    if (!fake)
+      {
+	setHitEnd (input, mymatch);
+      }
+    REMatch m = matchThis (input, mymatch);
+    if (m == null)
+      return false;
+    if (next (input, m))
+      {
+	mymatch.assignFrom (m);
+	return true;
+      }
+    return false;
+  }
 
     /** Sets whether the matching occurs at the end of input */
-    void setHitEnd(CharIndexed input, REMatch mymatch) {
-        input.setHitEnd(mymatch);
-    }
+  void setHitEnd (CharIndexed input, REMatch mymatch)
+  {
+    input.setHitEnd (mymatch);
+  }
 
     /** Returns true if the match succeeded, false if it failed.
       * The matching is done against this REToken only. Chained
@@ -106,22 +125,27 @@ abstract class REToken implements Serializable, Cloneable {
       * subclasses of REToken, which needs a special match method,
       * do not have to implement this method.
       */
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	throw new UnsupportedOperationException(
-	    "This REToken does not have a matchThis method");
-    }
-  
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    throw new
+      UnsupportedOperationException
+      ("This REToken does not have a matchThis method");
+  }
+
     /** Returns true if the rest of the tokens match, false if they fail. */
-    protected boolean next(CharIndexed input, REMatch mymatch) {
-	REToken nextToken = getNext();
-	if (nextToken == null) return true;
-	return nextToken.match(input, mymatch);
-    }
+  protected boolean next (CharIndexed input, REMatch mymatch)
+  {
+    REToken nextToken = getNext ();
+    if (nextToken == null)
+      return true;
+    return nextToken.match (input, mymatch);
+  }
 
     /** Returns the next REToken chained to this REToken. */
-    REToken getNext() {
-	return (next != null ? next : uncle);
-    }
+  REToken getNext ()
+  {
+    return (next != null ? next : uncle);
+  }
 
     /** Finds a match at the position specified by the given REMatch.
       * If necessary, adds a BacktrackStack.Backtrack object to backtrackStack
@@ -132,45 +156,55 @@ abstract class REToken implements Serializable, Cloneable {
       * @param mymatch Position at which a match should be found
       * @return REMatch object if a match was found, null otherwise.
       */
-    REMatch findMatch(CharIndexed input, REMatch mymatch) {
-        boolean b = match(input, mymatch);
-	if (b) return mymatch;
-	return null;
-    }
+  REMatch findMatch (CharIndexed input, REMatch mymatch)
+  {
+    boolean b = match (input, mymatch);
+    if (b)
+      return mymatch;
+    return null;
+  }
 
-    boolean returnsFixedLengthMatches() {
-	return false;
-    }
+  boolean returnsFixedLengthMatches ()
+  {
+    return false;
+  }
 
-    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
-	throw new UnsupportedOperationException(
-	    "This token does not support findFixedLengthMatches");
-    }
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
+    throw new
+      UnsupportedOperationException
+      ("This token does not support findFixedLengthMatches");
+  }
 
     /**
       * Backtrack to another possibility.
       * Ordinary REToken cannot do anything if this method is called.
       */
-    REMatch backtrack(CharIndexed input, REMatch mymatch, Object param) {
-	throw new IllegalStateException("This token cannot be backtracked to");
-    }
-
-  boolean chain(REToken token) {
-      next = token;
-      return true; // Token was accepted
+  REMatch backtrack (CharIndexed input, REMatch mymatch, Object param)
+  {
+    throw new IllegalStateException ("This token cannot be backtracked to");
   }
 
-  abstract void dump(StringBuffer os);
-
-  void dumpAll(StringBuffer os) {
-    dump(os);
-    if (next != null) next.dumpAll(os);
+  boolean chain (REToken token)
+  {
+    next = token;
+    return true;		// Token was accepted
   }
 
-  public String toString() {
-    StringBuffer os = new StringBuffer();
-    dump(os);
-    return os.toString();
+  abstract void dump (CPStringBuilder os);
+
+  void dumpAll (CPStringBuilder os)
+  {
+    dump (os);
+    if (next != null)
+      next.dumpAll (os);
+  }
+
+  public String toString ()
+  {
+    CPStringBuilder os = new CPStringBuilder ();
+    dump (os);
+    return os.toString ();
   }
 
   /**
@@ -181,9 +215,12 @@ abstract class REToken implements Serializable, Cloneable {
     * @return the lowercase equivalent of the character, if any;
     * otherwise, the character itself.
     */
-  public static char toLowerCase(char ch, boolean unicodeAware) {
-    if (unicodeAware) return Character.toLowerCase(ch);
-    if (ch >= 'A' && ch <= 'Z') return (char)(ch + 'a' - 'A');
+  public static char toLowerCase (char ch, boolean unicodeAware)
+  {
+    if (unicodeAware)
+      return Character.toLowerCase (ch);
+    if (ch >= 'A' && ch <= 'Z')
+      return (char) (ch + 'a' - 'A');
     return ch;
   }
 
@@ -195,9 +232,12 @@ abstract class REToken implements Serializable, Cloneable {
     * @return the uppercase equivalent of the character, if any;
     * otherwise, the character itself.
     */
-  public static char toUpperCase(char ch, boolean unicodeAware) {
-    if (unicodeAware) return Character.toUpperCase(ch);
-    if (ch >= 'a' && ch <= 'z') return (char)(ch + 'A' - 'a');
+  public static char toUpperCase (char ch, boolean unicodeAware)
+  {
+    if (unicodeAware)
+      return Character.toUpperCase (ch);
+    if (ch >= 'a' && ch <= 'z')
+      return (char) (ch + 'A' - 'a');
     return ch;
   }
 

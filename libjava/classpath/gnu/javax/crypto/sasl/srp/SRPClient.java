@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.srp;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.hash.MD5;
@@ -863,7 +865,7 @@ public class SRPClient
     // For now we just select the defaults. Later we need to add support for
     // properties (perhaps in a file) where a user can specify the list of
     // algorithms they would prefer to use.
-    final StringBuffer sb = new StringBuffer();
+    final CPStringBuilder sb = new CPStringBuilder();
     sb.append(SRPRegistry.OPTION_SRP_DIGEST)
       .append("=").append(mdName).append(",");
     if (replayDetection)

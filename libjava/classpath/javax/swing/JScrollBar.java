@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Adjustable;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
@@ -671,7 +673,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer(super.paramString());
+    CPStringBuilder sb = new CPStringBuilder(super.paramString());
     sb.append(",blockIncrement=").append(blockIncrement);
     sb.append(",orientation=");
     if (this.orientation == JScrollBar.HORIZONTAL)

@@ -1,0 +1,54 @@
+<!-- xhtml11-strict-target10.dtd
+     Copyright (C) 2005 Free Software Foundation, Inc.
+
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA. -->
+
+<!-- XHTML 1.1 plus Target 1.0 DTD  ................................ -->
+
+<!-- File: xhtml11-target10.dtd
+
+   XHTML 1.1 DTD which loads the optional Target 1.0 Module.
+
+   This file is based on a DTD by Jacques Distler. See
+   http://golem.ph.utexas.edu/~distler/blog/files/zeldman.html
+
+   Public and System Identifiers:
+
+        PUBLIC "-//gnu.org//DTD XHTML 1.1 plus Target 1.0//EN"
+        SYSTEM "http://gnu.org/DTD/xhtml11-target10.dtd"
+
+    The corresponding DOCTYPE declaration:
+
+        <!DOCTYPE html
+            PUBLIC "-//gnu.org//DTD XHTML 1.1 plus Target 1.0//EN"
+            "http://gnu.org/DTD/xhtml11-target10.dtd">
+
+    Original idea: Dave H <dmh@dmh.org.uk>
+                   http://www.dmh.org.uk/
+
+-->
+<!ENTITY % XHTML.version
+    "-//gnu.org//DTD XHTML 1.1 plus Target 1.0//EN" >
+<!ENTITY % xhtml11.mod
+    PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" >
+%xhtml11.mod;
+<!ENTITY % xhtml-target.mod
+    PUBLIC "-//W3C//ELEMENTS XHTML Target 1.0//EN"
+    "http://www.w3.org/TR/xhtml-modularization/DTD/xhtml-target-1.mod" >
+%xhtml-target.mod;

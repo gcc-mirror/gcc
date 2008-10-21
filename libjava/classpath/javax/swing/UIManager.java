@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -107,7 +109,7 @@ public class UIManager implements Serializable
      */
     public String toString()
     {
-      StringBuffer s = new StringBuffer();
+      CPStringBuilder s = new CPStringBuilder();
       s.append(getClass().getName());
       s.append('[');
       s.append(getName());

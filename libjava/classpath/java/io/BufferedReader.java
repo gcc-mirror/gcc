@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.java.lang.CPStringBuilder;
+
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
@@ -450,7 +452,7 @@ public class BufferedReader extends Reader
 	    pos++;
 	return str;
       }
-    StringBuilder sbuf = new StringBuilder(200);
+    CPStringBuilder sbuf = new CPStringBuilder(200);
     sbuf.append(buffer, pos, i - pos);
     pos = i;
     // We only want to return null when no characters were read before

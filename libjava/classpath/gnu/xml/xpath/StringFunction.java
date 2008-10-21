@@ -84,9 +84,9 @@ final class StringFunction
 
   final Expr arg;
 
-  StringFunction(List args)
+  StringFunction(List<Expr> args)
   {
-    this(args.size() > 0 ? (Expr) args.get(0) : null);
+    this(args.size() > 0 ? args.get(0) : null);
   }
   
   StringFunction(Expr arg)

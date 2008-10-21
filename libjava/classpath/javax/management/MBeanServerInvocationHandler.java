@@ -204,7 +204,7 @@ public class MBeanServerInvocationHandler
     throws Throwable
   {
     String mName = method.getName();
-    Class proxyClass = proxy.getClass();
+    Class<?> proxyClass = proxy.getClass();
     if (mName.equals("toString"))
       {
 	if (inInterface(mName, proxyClass))
@@ -352,6 +352,8 @@ public class MBeanServerInvocationHandler
    * @return a proxy for the specified bean.
    * @see JMX#newMBeanProxy(MBeanServerConnection,ObjectName,Class)
    */
+  // Suppress warnings as we know an instance of T will be returned.
+  @SuppressWarnings("unchecked")
   public static <T> T newProxyInstance(MBeanServerConnection conn,
 				       ObjectName name, Class<T> iface,
 				       boolean broadcaster)

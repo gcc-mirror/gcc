@@ -41,6 +41,8 @@ package gnu.CORBA.GIOP;
 import gnu.CORBA.CDR.AbstractCdrInput;
 import gnu.CORBA.CDR.AbstractCdrOutput;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.portable.IDLEntity;
 
 /**
@@ -123,7 +125,7 @@ public abstract class RequestHeader
    */
   public String bytes(byte[] array)
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int i = 0; i < array.length; i++)
       {
         b.append(Integer.toHexString(array[i] & 0xFF));

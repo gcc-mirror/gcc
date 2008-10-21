@@ -330,7 +330,7 @@ public class ClassRmicCompiler
       {
         Method m = remotemethods[i].meth;
 
-        StringBuffer desc = new StringBuffer();
+        StringBuilder desc = new StringBuilder();
         desc.append(getPrettyName(m.getReturnType()) + " ");
         desc.append(m.getName() + "(");
 
@@ -1712,7 +1712,7 @@ public class ClassRmicCompiler
 
   private static String getPrettyName(Class cls)
   {
-    StringBuffer str = new StringBuffer();
+    StringBuilder str = new StringBuilder();
     for (int count = 0;; count++)
       {
 	if (! cls.isArray())

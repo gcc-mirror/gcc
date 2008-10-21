@@ -64,6 +64,7 @@ public: // actually protected
 private:
   void checkBoundInclusive(jint);
   void checkBoundExclusive(jint);
+  void raiseBoundsError(jint, ::java::lang::String *);
   void writeObject(::java::io::ObjectOutputStream *);
   static const jlong serialVersionUID = -2767605614048989439LL;
 public: // actually protected

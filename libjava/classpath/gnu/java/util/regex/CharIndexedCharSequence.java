@@ -38,58 +38,82 @@ exception statement from your version. */
 package gnu.java.util.regex;
 import java.io.Serializable;
 
-class CharIndexedCharSequence implements CharIndexed, Serializable {
-    private CharSequence s;
-    private int anchor;
-    private int len;
-    
-    CharIndexedCharSequence(CharSequence s, int index) {
-	this.s = s;
-	len = s.length();
-	anchor = index;
-    }
+class CharIndexedCharSequence implements CharIndexed, Serializable
+{
+  private CharSequence s;
+  private int anchor;
+  private int len;
 
-    public char charAt(int index) {
-	int pos = anchor + index;
-	return ((pos < len) && (pos >= 0)) ? s.charAt(pos) : OUT_OF_BOUNDS;
-    }
-    
-    public boolean isValid() {
-	return (anchor < len);
-    }
-    
-    public boolean move(int index) {
-	return ((anchor += index) < len);
-    }
+    CharIndexedCharSequence (CharSequence s, int index)
+  {
+    this.s = s;
+    len = s.length ();
+    anchor = index;
+  }
 
-    public boolean move1(int index) {
-	return ((anchor += index) <= len);
-    }
+  public char charAt (int index)
+  {
+    int pos = anchor + index;
+    return ((pos < len) && (pos >= 0)) ? s.charAt (pos) : OUT_OF_BOUNDS;
+  }
 
-    public CharIndexed lookBehind(int index, int length) {
-	if (length > (anchor + index)) length = anchor + index;
-	return new CharIndexedCharSequence(s, anchor + index - length);
-    }
+  public boolean isValid ()
+  {
+    return (anchor < len);
+  }
 
-    public int length() {
-	return len - anchor;
-    }
+  public boolean move (int index)
+  {
+    return ((anchor += index) < len);
+  }
 
-    private REMatch lastMatch;
-    public void setLastMatch(REMatch match) {
-	lastMatch = (REMatch)match.clone();
-	lastMatch.anchor = anchor;
-    }
-    public REMatch getLastMatch() { return lastMatch; }
+  public boolean move1 (int index)
+  {
+    return ((anchor += index) <= len);
+  }
 
-    private int rightmostTriedPosition = 0;
-    public void setHitEnd(REMatch match) {
-        int pos = anchor + match.index;
-        if (pos > rightmostTriedPosition) rightmostTriedPosition = pos;
-    }
-    public boolean hitEnd() { return rightmostTriedPosition >= len; }
+  public CharIndexed lookBehind (int index, int length)
+  {
+    if (length > (anchor + index))
+      length = anchor + index;
+    return new CharIndexedCharSequence (s, anchor + index - length);
+  }
 
-    public int getAnchor() { return anchor; }
-    public void setAnchor(int anchor) { this.anchor = anchor; }
+  public int length ()
+  {
+    return len - anchor;
+  }
+
+  private REMatch lastMatch;
+  public void setLastMatch (REMatch match)
+  {
+    lastMatch = (REMatch) match.clone ();
+    lastMatch.anchor = anchor;
+  }
+  public REMatch getLastMatch ()
+  {
+    return lastMatch;
+  }
+
+  private int rightmostTriedPosition = 0;
+  public void setHitEnd (REMatch match)
+  {
+    int pos = anchor + match.index;
+    if (pos > rightmostTriedPosition)
+      rightmostTriedPosition = pos;
+  }
+  public boolean hitEnd ()
+  {
+    return rightmostTriedPosition >= len;
+  }
+
+  public int getAnchor ()
+  {
+    return anchor;
+  }
+  public void setAnchor (int anchor)
+  {
+    this.anchor = anchor;
+  }
 
 }

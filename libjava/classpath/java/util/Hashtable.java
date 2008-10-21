@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -579,7 +581,7 @@ public class Hashtable<K, V> extends Dictionary<K, V>
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized EntryIterator instead.
     Iterator<Map.Entry<K, V>> entries = new EntryIterator();
-    StringBuilder r = new StringBuilder("{");
+    CPStringBuilder r = new CPStringBuilder("{");
     for (int pos = size; pos > 0; pos--)
       {
         r.append(entries.next());

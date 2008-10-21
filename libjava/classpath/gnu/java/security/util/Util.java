@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.math.BigInteger;
 
 /**
@@ -296,7 +298,7 @@ public class Util
    */
   public static final String toUnicodeString(byte[] ba, int offset, int length)
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     int i = 0;
     int j = 0;
     int k;
@@ -328,7 +330,7 @@ public class Util
    */
   public static String toUnicodeString(int[] ia)
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     int i = 0;
     int j = 0;
     int k;
@@ -385,7 +387,7 @@ public class Util
   {
     if (data == null)
       return m + "null\n";
-    StringBuffer sb = new StringBuffer(length * 3);
+    CPStringBuilder sb = new CPStringBuilder(length * 3);
     if (length > 32)
       sb.append(m).append("Hexadecimal dump of ")
           .append(length).append(" bytes...\n");
@@ -466,7 +468,7 @@ public class Util
         b2 = buffer[1];
         break;
       }
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     int c;
     boolean notleading = false;
     do

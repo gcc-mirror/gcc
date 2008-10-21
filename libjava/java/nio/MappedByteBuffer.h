@@ -9,6 +9,13 @@
 #include <java/nio/ByteBuffer.h>
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -22,7 +29,7 @@ class java::nio::MappedByteBuffer : public ::java::nio::ByteBuffer
 {
 
 public: // actually package-private
-  MappedByteBuffer(jint, jint, jint, jint);
+  MappedByteBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *);
   virtual void forceImpl();
 public:
   virtual ::java::nio::MappedByteBuffer * force();

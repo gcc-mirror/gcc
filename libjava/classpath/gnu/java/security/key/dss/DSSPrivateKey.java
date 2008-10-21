@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.action.GetPropertyAction;
@@ -191,7 +193,7 @@ public class DSSPrivateKey
       {
         String ls = (String) AccessController.doPrivileged
             (new GetPropertyAction("line.separator"));
-        str = new StringBuilder(this.getClass().getName()).append("(")
+        str = new CPStringBuilder(this.getClass().getName()).append("(")
             .append(super.toString()).append(",").append(ls)
             .append("x=0x").append(Configuration.DEBUG ? x.toString(16)
                                                        : "**...*").append(ls)

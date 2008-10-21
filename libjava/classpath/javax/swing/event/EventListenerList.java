@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -295,7 +297,7 @@ public class EventListenerList
    */
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("EventListenerList: ");
+    CPStringBuilder buf = new CPStringBuilder("EventListenerList: ");
     buf.append(listenerList.length / 2);
     buf.append(" listeners: ");
     for (int i = 0; i < listenerList.length; i += 2)

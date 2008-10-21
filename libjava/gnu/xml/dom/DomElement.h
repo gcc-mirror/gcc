@@ -41,6 +41,7 @@ class gnu::xml::dom::DomElement : public ::gnu::xml::dom::DomNsNode
 
 public: // actually protected
   DomElement(::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *);
+  DomElement(::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
 public:
   virtual ::org::w3c::dom::NamedNodeMap * getAttributes();
   virtual jboolean hasAttributes();

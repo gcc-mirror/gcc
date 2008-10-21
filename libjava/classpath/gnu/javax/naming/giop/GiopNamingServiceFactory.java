@@ -40,6 +40,8 @@ package gnu.javax.naming.giop;
 
 import gnu.CORBA.OrbFunctional;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -161,7 +163,7 @@ public class GiopNamingServiceFactory
   {
      TreeMap map = new TreeMap();
      map.putAll(props);
-     StringBuffer b = new StringBuffer(50*props.size());
+     CPStringBuilder b = new CPStringBuilder(50*props.size());
      
      Iterator iter = map.entrySet().iterator();
      Map.Entry m;

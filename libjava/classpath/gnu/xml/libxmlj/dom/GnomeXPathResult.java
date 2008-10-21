@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.libxmlj.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.xpath.XPathException;
@@ -112,7 +114,7 @@ implements XPathResult
         case 1:
           return getSingleNodeValue ().toString ();
         default:
-          StringBuffer buffer = new StringBuffer ();
+          CPStringBuilder buffer = new CPStringBuilder ();
           for (int i = 0; i < len; i++)
             {
               if (i > 0)

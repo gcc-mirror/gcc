@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.UnsupportedEncodingException;
 
 
@@ -127,7 +129,7 @@ public class URLDecoder
     int start = 0;
     byte[] bytes = null;
     int length = str.length();
-    StringBuffer result = new StringBuffer(length);
+    CPStringBuilder result = new CPStringBuilder(length);
     while ((i = str.indexOf('%', start)) >= 0)
       {
 	// Add all non-encoded characters to the result buffer

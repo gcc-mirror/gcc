@@ -158,18 +158,53 @@ public final class AlphaComposite implements Composite
     return new AlphaCompositeContext(this, srcColorModel, dstColorModel);
   }
 
+  /**
+   * Return an <code>AlphaComposite</code> similar to <code>this</code>,
+   * that uses the specified rule. If <code>rule</code> is the same as
+   * <code>this.rule</code>, then <code>this</code> is returned.
+   * 
+   * @since 1.6
+   */
+  public AlphaComposite derive(int rule)
+  {
+    if (this.rule == rule)
+      return this;
+    else
+      return AlphaComposite.getInstance(rule, this.getAlpha());
+  }
+  
+  /**
+   * Return an <code>AlphaComposite</code> similar to <code>this</code>,
+   * that uses the specified <code>alpha</code>.
+   * 
+   * If <code>alph</code> is the same as <code>this.alpha</code>,
+   * then <code>this</code> is returned.
+   * 
+   * @since 1.6
+   */
+  public AlphaComposite derive(float alpha)
+  {
+      if (this.getAlpha() == alpha)
+        return this;
+      else
+        return AlphaComposite.getInstance(this.getRule(), alpha);
+  }
+  
   public float getAlpha()
   {
     return alpha;
   }
+  
   public int getRule()
   {
     return rule;
   }
+  
   public int hashCode()
   {
     return 31 * Float.floatToIntBits(alpha) + rule;
   }
+  
   public boolean equals(Object o)
   {
     if (! (o instanceof AlphaComposite))

@@ -27,6 +27,7 @@ class gnu::xml::dom::DomNsNode : public ::gnu::xml::dom::DomNode
 
 public: // actually package-private
   DomNsNode(jshort, ::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *);
+  DomNsNode(jshort, ::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
 public:
   virtual ::java::lang::String * getNodeName();
 public: // actually package-private
@@ -43,7 +44,6 @@ private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::gnu::xml::dom::DomNode)))) name;
   ::java::lang::String * namespace$;
   ::java::lang::String * prefix;
-public: // actually package-private
   ::java::lang::String * localName;
 public:
   static ::java::lang::Class class$;

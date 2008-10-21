@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.validation.datatype;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -79,7 +81,7 @@ final class NMTokensType
   {
     super.checkValid(value, context);
     int len = value.length();
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (int i = 0; i < len; i++)
       {
         char c = value.charAt(i);

@@ -74,7 +74,7 @@ public class RmiMethodGenerator
    */
   public String getArgumentList()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getParameterTypes();
 
@@ -96,7 +96,7 @@ public class RmiMethodGenerator
    */
   public String getArgumentNames()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getParameterTypes();
 
@@ -116,7 +116,7 @@ public class RmiMethodGenerator
    */
   public String getThrows()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
 
     Class[] args = method.getExceptionTypes();
 
@@ -173,7 +173,7 @@ public class RmiMethodGenerator
    */
   public String getStaticMethodDeclarations()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Class[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)
@@ -201,7 +201,7 @@ public class RmiMethodGenerator
     if (args.length==0)
       return "NO_ARGS";
     
-    StringBuffer b = new StringBuffer("new Object[] {");
+    StringBuilder b = new StringBuilder("new Object[] {");
 
     for (int i = 0; i < args.length; i++)
       {
@@ -246,7 +246,7 @@ public class RmiMethodGenerator
    */
   public String getArgListAsClassArray()
   {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     Class[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)

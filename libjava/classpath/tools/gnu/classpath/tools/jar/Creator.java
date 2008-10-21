@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -222,9 +223,15 @@ public class Creator
     throws IOException
   {
     manifest = createManifest(parameters);
+    /* If no version is specified, provide the same manifest version default
+     * as Sun's jar tool */
+    Attributes attr = manifest.getMainAttributes();
+    if (attr.getValue(Attributes.Name.MANIFEST_VERSION) == null)
+      attr.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+    attr.putValue("Created-By", System.getProperty("java.version") +
+		  " (" + System.getProperty("java.vendor") + ")");
     outputStream = new JarOutputStream(os, manifest);
-    // FIXME: in Classpath this sets the method too late for the
-    // manifest file.
+    // FIXME: this sets the method too late for the manifest file.
     outputStream.setMethod(parameters.storageMode);
     writeCommandLineEntries(parameters);
   }

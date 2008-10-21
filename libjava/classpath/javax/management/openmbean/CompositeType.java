@@ -118,7 +118,7 @@ public class CompositeType
 	|| names.length != types.length)
       throw new IllegalArgumentException("Arrays must be non-empty " +
 					 "and of equal size.");
-    nameToDescription = new TreeMap();
+    nameToDescription = new TreeMap<String,String>();
     for (int a = 0; a < names.length; ++a)
       {
 	if (names[a] == null)
@@ -243,10 +243,8 @@ public class CompositeType
     if (hashCode == null)
       {
 	int elementTotal = 0;
-	Iterator it = nameToType.entrySet().iterator();
-	while (it.hasNext())
+	for (Map.Entry<String,OpenType<?>> entry : nameToType.entrySet())
 	  {
-	    Map.Entry entry = (Map.Entry) it.next();
 	    elementTotal += (entry.getKey().hashCode() +
 			     entry.getValue().hashCode());
 	  }

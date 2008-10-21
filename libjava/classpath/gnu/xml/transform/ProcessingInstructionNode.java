@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
@@ -105,7 +107,7 @@ final class ProcessingInstructionNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("processing-instruction");
+    CPStringBuilder buf = new CPStringBuilder("processing-instruction");
     buf.append('[');
     buf.append("name=");
     buf.append(name);

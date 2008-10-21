@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.assembly;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
@@ -129,7 +131,7 @@ public class TransformerException
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(this.getClass().getName())
+    CPStringBuilder sb = new CPStringBuilder(this.getClass().getName())
         .append(": ").append(super.toString());
     if (_exception != null)
       sb.append("; caused by: ").append(_exception.toString());

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.dom.ls;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -82,7 +84,7 @@ public class DomLSInput
 
   public String getStringData()
   {
-    StringBuffer acc = new StringBuffer();
+    CPStringBuilder acc = new CPStringBuilder();
     Reader reader = getCharacterStream();
     try
       {

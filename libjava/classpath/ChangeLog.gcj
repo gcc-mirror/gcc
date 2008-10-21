@@ -1,3 +1,87 @@
+2008-10-21  Matthias Klose  <doko@ubuntu.com>
+
+	* classpath/tools/gnu/classpath/tools/gjdoc/expr/Java*: Move from ...
+	* classpath/tools/generated/gnu/classpath/tools/gjdoc/expr/ ... here.
+	* Update .class files.
+	
+2008-10-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/Makefile.am:
+	Always generate parser in the srcdir.
+
+2008-10-21  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/Makefile.am (MAINTAINERCLEANFILES): Add gjdoc.1.
+	* doc/Makefile.in: Regenerate.
+
+2008-10-20  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Fix path name in check for generated gjdoc parser files.
+	* configure: Regenerate.
+
+2008-10-20  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Don't check for working java, if not configured
+        with --enable-java-maintainer-mode.
+	* configure: Regenerate.
+
+2008-10-19  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_java.m4: Revert previous change.
+	* m4/ac_prog_javac.m4: Apply it here.
+	* configure: Regenerate.
+
+2008-10-19  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_javac.m4: Don't check for working javac, if not configured
+	with --enable-java-maintainer-mode.
+	* configure: Regenerate.
+	* Makefile.in, */Makefile.in: Regenerate.
+
+2008-09-30  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4: Check for cantlr binary as well.
+
+2008-09-29  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4: Check for antlr binary as well.
+
+2008-09-28  Matthias Klose  <doko@ubuntu.com>
+
+	* PR libgcj/37636. Revert:
+	2008-02-20  Matthias Klose  <doko@ubuntu.com>
+
+	* tools/Makefile.am ($(TOOLS_ZIP)): Revert part of previous change,
+	Do copy resource files in JAVA_MAINTAINER_MODE only.
+	* tools/Makefile.in: Regenerate.
+
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_javac_works.m4, m4/ac_prog_javac.m4, m4/acinclude.m4:
+	Revert local changes.
+	* m4/ac_prog_antlr.m4: Check for an runantlr binary.
+	* tools/Makefile.am, lib/Makefile.am: Revert local changes (JCOMPILER).
+	* tools/Makefile.am: Remove USE_JAVAC_FLAGS, pass ANTLR_JAR in
+	GLIBJ_CLASSPATH.
+
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	Revert:
+	Daniel Frampton  <zyridium at zyridium.net>
+
+	* AUTHORS: Added.
+	* java/lang/InheritableThreadLocal.java,
+	* java/lang/Thread.java,
+	* java/lang/ThreadLocal.java:
+	Modified to use java.lang.ThreadLocalMap.
+	* java/lang/ThreadLocalMap.java:
+	New cheaper ThreadLocal-specific WeakHashMap.
+
+2008-08-15  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/acinclude.m4 (CLASSPATH_JAVAC_MEM_CHECK): Remove unknown
+	args for javac.
+
 2008-08-17  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/awt/peer/gtk/CairoGraphics2D.java: Always loadLibrary

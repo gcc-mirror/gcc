@@ -90,6 +90,32 @@ public class DomElement
   }
 
   /**
+   * <p>
+   * Constructs an Element node associated with the specified document.
+   * This constructor should only be invoked by a Document as part
+   * of its createElement functionality, or through a subclass which is
+   * similarly used in a "Sub-DOM" style layer.
+   * </p>
+   * <p>
+   * With this constructor, the prefix and local part are given explicitly
+   * rather than being computed.  This allows them to be explicitly set to
+   * {@code null} as required by {@link Document#createElement(String)}.   
+   * </p>
+   *
+   * @param owner The document with which this node is associated
+   * @param namespaceURI Combined with the local part of the name,
+   *	this is used to uniquely identify a type of element
+   * @param name Name of this element, which may include a prefix
+   * @param prefix the namespace prefix of the name.  May be {@code null}.
+   * @param localName the local part of the name.  May be {@code null}.
+   */
+  protected DomElement(DomDocument owner, String namespaceURI, String name,
+		       String prefix, String localName)
+  {
+    super(ELEMENT_NODE, owner, namespaceURI, name, prefix, localName);
+  }
+
+  /**
    * <b>DOM L1</b>
    * Returns the element's attributes
    */

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.awt.Component;
 
@@ -114,7 +116,7 @@ public class ComponentEvent extends AWTEvent
    */
   public String paramString()
   {
-    StringBuffer s = new StringBuffer();
+    CPStringBuilder s = new CPStringBuilder();
     
     // Unlike Sun, we don't throw NullPointerException or ClassCastException
     // when source was illegally changed.

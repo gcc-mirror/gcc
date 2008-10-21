@@ -77,12 +77,12 @@ public class OpenMBeanAttributeInfoSupport
   /**
    * The minimum value of the attribute (may be <code>null</code>).
    */
-  private Comparable<Object> minValue;
+  private Comparable<?> minValue;
 
   /**
    * The maximum value of the attribute (may be <code>null</code>).
    */
-  private Comparable<Object> maxValue;
+  private Comparable<?> maxValue;
 
   /**
    * The hash code of this instance.
@@ -203,6 +203,7 @@ public class OpenMBeanAttributeInfoSupport
    *                                  the empty string.
    * @throws OpenDataException if any condition in the list above is broken.
    */
+  @SuppressWarnings("unchecked")
   public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
 					   boolean isReadable, boolean isWritable,
 					   boolean isIs, T defaultValue,
@@ -224,23 +225,23 @@ public class OpenMBeanAttributeInfoSupport
 				 type instanceof TabularType))
       throw new OpenDataException("Default values are not applicable for " +
 				  "array or tabular types.");
-    if (minValue != null && maxValue != null 
-	&& minValue.compareTo(maxValue) > 0)
+    if (minimumValue != null && maximumValue != null 
+	&& minimumValue.compareTo((T) maximumValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
 				  "maximum.");
-    if (minValue != null && defaultValue != null 
-	&& minValue.compareTo(defaultValue) > 0)
+    if (minimumValue != null && defaultValue != null 
+	&& minimumValue.compareTo(defaultValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
 				  "default.");
-    if (defaultValue != null && maxValue != null
-	&& maxValue.compareTo(defaultValue) < 0)
+    if (defaultValue != null && maximumValue != null
+	&& maximumValue.compareTo(defaultValue) < 0)
       throw new OpenDataException("The default value is greater than the " +
 				  "maximum.");
     
     openType = type;
     this.defaultValue = defaultValue;
-    minValue = (Comparable<Object>) minimumValue;
-    maxValue = (Comparable<Object>) maximumValue;
+    minValue = minimumValue;
+    maxValue = maximumValue;
   }
 
   /**
@@ -300,7 +301,7 @@ public class OpenMBeanAttributeInfoSupport
 				  "array or tabular types.");
     if (legalValues != null && legalValues.length > 0)
       {
-	Set lv = new HashSet(legalValues.length);
+	Set<T> lv = new HashSet<T>(legalValues.length);
 	for (int a = 0; a < legalValues.length; ++a)
 	  {
 	    if (legalValues[a] != null && 

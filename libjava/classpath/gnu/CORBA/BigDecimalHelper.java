@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -135,7 +137,7 @@ public class BigDecimalHelper
   public static void write(java.io.OutputStream out, BigDecimal x)
                     throws IOException, BadKind
   {
-    StringBuffer v = new StringBuffer(x.unscaledValue().toString());
+    CPStringBuilder v = new CPStringBuilder(x.unscaledValue().toString());
 
     boolean negative = v.charAt(0) == '-';
 
@@ -165,7 +167,7 @@ public class BigDecimalHelper
    */
   private static BigDecimal createFixed(int scale, byte[] d)
   {
-    StringBuffer s = new StringBuffer(2 * d.length);
+    CPStringBuilder s = new CPStringBuilder(2 * d.length);
 
     int last = d.length - 1;
 

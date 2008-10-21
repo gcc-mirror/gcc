@@ -13,6 +13,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -31,8 +35,8 @@ class gnu::java::util::regex::RETokenOneOf : public ::gnu::java::util::regex::RE
 
 public: // actually package-private
   RETokenOneOf(jint, ::java::lang::String *, jboolean, jboolean);
-  RETokenOneOf(jint, ::java::util::Vector *, jboolean);
-  RETokenOneOf(jint, ::java::util::Vector *, ::java::util::Vector *, jboolean);
+  RETokenOneOf(jint, ::java::util::List *, jboolean);
+  RETokenOneOf(jint, ::java::util::List *, ::java::util::List *, jboolean);
   jint getMinimumLength();
   jint getMaximumLength();
   jboolean match(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *);
@@ -49,12 +53,12 @@ private:
 public: // actually package-private
   jboolean returnsFixedLengthMatches();
   jint findFixedLengthMatches(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint);
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
 private:
-  ::java::util::Vector * __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) options;
+  ::java::util::List * __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) options;
   jboolean negative;
   jboolean matchesOneChar;
-  ::java::util::Vector * addition;
+  ::java::util::List * addition;
 public:
   static ::java::lang::Class class$;
 };

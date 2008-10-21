@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.net.loader.FileURLLoader;
 import gnu.java.net.loader.JarURLLoader;
 import gnu.java.net.loader.RemoteURLLoader;
@@ -452,7 +454,7 @@ public class URLClassLoader extends SecureClassLoader
   {
     // Compute the name of the package as it may appear in the
     // Manifest.
-    StringBuilder xform = new StringBuilder(name);
+    CPStringBuilder xform = new CPStringBuilder(name);
     for (int i = xform.length () - 1; i >= 0; --i)
       if (xform.charAt(i) == '.')
 	xform.setCharAt(i, '/');
@@ -641,7 +643,7 @@ public class URLClassLoader extends SecureClassLoader
       {
 	if (thisString == null)
 	  {
-	    StringBuilder sb = new StringBuilder();
+	    CPStringBuilder sb = new CPStringBuilder();
 	    sb.append(this.getClass().getName());
 	    sb.append("{urls=[" );
 	    URL[] thisURLs = getURLs();

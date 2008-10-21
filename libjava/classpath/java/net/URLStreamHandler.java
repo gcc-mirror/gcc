@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -510,7 +512,7 @@ public abstract class URLStreamHandler
     // Guess a reasonable size for the string buffer so we have to resize
     // at most once.
     int size = protocol.length() + authority.length() + file.length() + 24;
-    StringBuffer sb = new StringBuffer(size);
+    CPStringBuilder sb = new CPStringBuilder(size);
 
     if (protocol.length() > 0)
       {

@@ -40,6 +40,8 @@ package gnu.CORBA.CDR;
 
 import gnu.CORBA.Minor;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.MARSHAL;
 
@@ -318,7 +320,7 @@ public class gnuRuntime
    */
   public String dump()
   {
-    StringBuffer b = new StringBuffer(" Stream content: \n");
+    CPStringBuilder b = new CPStringBuilder(" Stream content: \n");
 
     // Sort by position.
     TreeSet t = new TreeSet(positions.keySet());

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
+import gnu.java.lang.CPStringBuilder;
 import gnu.java.net.LineInputStream;
 import gnu.java.util.Base64;
 
@@ -628,7 +629,7 @@ public class Request
   {
     int len = text.length();
     String key = null;
-    StringBuilder buf = new StringBuilder();
+    CPStringBuilder buf = new CPStringBuilder();
     Properties ret = new Properties();
     boolean inQuote = false;
     for (int i = 0; i < len; i++)
@@ -681,7 +682,7 @@ public class Request
   {
     int nc = connection.getNonceCount(nonce);
     String hex = Integer.toHexString(nc);
-    StringBuilder buf = new StringBuilder();
+    CPStringBuilder buf = new CPStringBuilder();
     for (int i = 8 - hex.length(); i > 0; i--)
       {
         buf.append('0');
@@ -752,7 +753,7 @@ public class Request
 
     int len = text.length();
     String attr = null;
-    StringBuilder buf = new StringBuilder();
+    CPStringBuilder buf = new CPStringBuilder();
     boolean inQuote = false;
     for (int i = 0; i <= len; i++)
       {

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
@@ -106,7 +108,7 @@ final class TextNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("text");
+    CPStringBuilder buf = new CPStringBuilder("text");
     if (disableOutputEscaping)
       {
         buf.append('[');

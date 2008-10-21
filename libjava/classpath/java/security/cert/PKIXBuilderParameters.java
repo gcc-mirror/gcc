@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -140,7 +142,7 @@ public class PKIXBuilderParameters extends PKIXParameters
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(super.toString());
+    CPStringBuilder buf = new CPStringBuilder(super.toString());
     buf.insert(buf.length() - 2, "; Max Path Length=" + maxPathLength);
     return buf.toString();
   }

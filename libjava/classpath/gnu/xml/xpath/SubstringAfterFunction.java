@@ -58,9 +58,9 @@ final class SubstringAfterFunction
   final Expr arg1;
   final Expr arg2;
 
-  SubstringAfterFunction(List args)
+  SubstringAfterFunction(List<Expr> args)
   {
-    this((Expr) args.get(0), (Expr) args.get(1));
+    this(args.get(0), args.get(1));
   }
 
   SubstringAfterFunction(Expr arg1, Expr arg2)

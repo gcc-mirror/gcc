@@ -55,15 +55,15 @@ public:
   virtual void putAll(::java::util::Map *);
   virtual ::java::lang::Object * remove(::java::lang::Object *);
   virtual ::javax::management::openmbean::CompositeData * remove(JArray< ::java::lang::Object * > *);
-public: // actually package-private
-  virtual void setMap(::java::util::Map *);
+private:
+  void setMap(::java::util::HashMap *);
 public:
   virtual jint size();
   virtual ::java::lang::String * toString();
   virtual ::java::util::Collection * values();
 private:
   static const jlong serialVersionUID = 5720150593236309827LL;
-  ::java::util::Map * __attribute__((aligned(__alignof__( ::java::lang::Object)))) dataMap;
+  ::java::util::HashMap * __attribute__((aligned(__alignof__( ::java::lang::Object)))) dataMap;
   ::javax::management::openmbean::TabularType * tabularType;
 public:
   static ::java::lang::Class class$;

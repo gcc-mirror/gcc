@@ -1,5 +1,5 @@
 /* StringBuilder.java -- Unsynchronized growable strings
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -75,6 +75,7 @@ import java.io.Serializable;
  * @since 1.5
  */
 public final class StringBuilder
+  extends AbstractStringBuffer
   implements Serializable, CharSequence, Appendable
 {
   // Implementation note: if you change this class, you usually will
@@ -86,33 +87,11 @@ public final class StringBuilder
   private static final long serialVersionUID = 4383685877147921099L;
 
   /**
-   * Index of next available character (and thus the size of the current
-   * string contents).  Note that this has permissions set this way so that
-   * String can get the value.
-   *
-   * @serial the number of characters in the buffer
-   */
-  int count;
-
-  /**
-   * The buffer.  Note that this has permissions set this way so that String
-   * can get the value.
-   *
-   * @serial the buffer
-   */
-  char[] value;
-
-  /**
-   * The default capacity of a buffer.
-   */
-  private static final int DEFAULT_CAPACITY = 16;
-
-  /**
    * Create a new StringBuilder with default capacity 16.
    */
   public StringBuilder()
   {
-    this(DEFAULT_CAPACITY);
+    super();
   }
 
   /**
@@ -124,7 +103,7 @@ public final class StringBuilder
    */
   public StringBuilder(int capacity)
   {
-    value = new char[capacity];
+    super(capacity);
   }
 
   /**
@@ -137,10 +116,7 @@ public final class StringBuilder
    */
   public StringBuilder(String str)
   {
-    // Unfortunately, because the size is 16 larger, we cannot share.
-    count = str.count;
-    value = new char[count + DEFAULT_CAPACITY];
-    str.getChars(0, count, value, 0);
+    super(str);
   }
 
   /**
@@ -154,11 +130,7 @@ public final class StringBuilder
    */
   public StringBuilder(CharSequence seq)
   {
-    int len = seq.length();
-    count = len <= 0 ? 0 : len;
-    value = new char[count + DEFAULT_CAPACITY];
-    for (int i = 0; i < len; ++i)
-      value[i] = seq.charAt(i);
+    super(seq);
   }
 
   /**
@@ -189,122 +161,6 @@ public final class StringBuilder
   }
 
   /**
-   * Increase the capacity of this <code>StringBuilder</code>. This will
-   * ensure that an expensive growing operation will not occur until
-   * <code>minimumCapacity</code> is reached. The buffer is grown to the
-   * larger of <code>minimumCapacity</code> and
-   * <code>capacity() * 2 + 2</code>, if it is not already large enough.
-   *
-   * @param minimumCapacity the new capacity
-   * @see #capacity()
-   */
-  public void ensureCapacity(int minimumCapacity)
-  {
-    if (minimumCapacity > value.length)
-      {
-        int max = value.length * 2 + 2;
-        minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
-        char[] nb = new char[minimumCapacity];
-        System.arraycopy(value, 0, nb, 0, count);
-        value = nb;
-      }
-  }
-
-  /**
-   * Set the length of this StringBuilder. If the new length is greater than
-   * the current length, all the new characters are set to '\0'. If the new
-   * length is less than the current length, the first <code>newLength</code>
-   * characters of the old array will be preserved, and the remaining
-   * characters are truncated.
-   *
-   * @param newLength the new length
-   * @throws IndexOutOfBoundsException if the new length is negative
-   *         (while unspecified, this is a StringIndexOutOfBoundsException)
-   * @see #length()
-   */
-  public void setLength(int newLength)
-  {
-    if (newLength < 0)
-      throw new StringIndexOutOfBoundsException(newLength);
-
-    int valueLength = value.length;
-
-    /* Always call ensureCapacity in order to preserve copy-on-write
-       semantics.  */
-    ensureCapacity(newLength);
-
-    if (newLength < valueLength)
-      {
-        /* If the StringBuilder's value just grew, then we know that
-           value is newly allocated and the region between count and
-           newLength is filled with '\0'.  */
-	count = newLength;
-      }
-    else
-      {
-	/* The StringBuilder's value doesn't need to grow.  However,
-	   we should clear out any cruft that may exist.  */
-	while (count < newLength)
-          value[count++] = '\0';
-      }
-  }
-
-  /**
-   * Get the character at the specified index.
-   *
-   * @param index the index of the character to get, starting at 0
-   * @return the character at the specified index
-   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
-   *         (while unspecified, this is a StringIndexOutOfBoundsException)
-   */
-  public char charAt(int index)
-  {
-    if (index < 0 || index >= count)
-      throw new StringIndexOutOfBoundsException(index);
-    return value[index];
-  }
-
-  /**
-   * Get the specified array of characters. <code>srcOffset - srcEnd</code>
-   * characters will be copied into the array you pass in.
-   *
-   * @param srcOffset the index to start copying from (inclusive)
-   * @param srcEnd the index to stop copying from (exclusive)
-   * @param dst the array to copy into
-   * @param dstOffset the index to start copying into
-   * @throws NullPointerException if dst is null
-   * @throws IndexOutOfBoundsException if any source or target indices are
-   *         out of range (while unspecified, source problems cause a
-   *         StringIndexOutOfBoundsException, and dest problems cause an
-   *         ArrayIndexOutOfBoundsException)
-   * @see System#arraycopy(Object, int, Object, int, int)
-   */
-  public void getChars(int srcOffset, int srcEnd,
-		       char[] dst, int dstOffset)
-  {
-    if (srcOffset < 0 || srcEnd > count || srcEnd < srcOffset)
-      throw new StringIndexOutOfBoundsException();
-    System.arraycopy(value, srcOffset, dst, dstOffset, srcEnd - srcOffset);
-  }
-
-  /**
-   * Set the character at the specified index.
-   *
-   * @param index the index of the character to set starting at 0
-   * @param ch the value to set that character to
-   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
-   *         (while unspecified, this is a StringIndexOutOfBoundsException)
-   */
-  public void setCharAt(int index, char ch)
-  {
-    if (index < 0 || index >= count)
-      throw new StringIndexOutOfBoundsException(index);
-    // Call ensureCapacity to enforce copy-on-write.
-    ensureCapacity(count);
-    value[index] = ch;
-  }
-
-  /**
    * Append the <code>String</code> value of the argument to this
    * <code>StringBuilder</code>. Uses <code>String.valueOf()</code> to convert
    * to <code>String</code>.
@@ -316,7 +172,8 @@ public final class StringBuilder
    */
   public StringBuilder append(Object obj)
   {
-    return append(obj == null ? "null" : obj.toString());
+    super.append(obj);
+    return this;
   }
 
   /**
@@ -328,12 +185,7 @@ public final class StringBuilder
    */
   public StringBuilder append(String str)
   {
-    if (str == null)
-      str = "null";
-    int len = str.count;
-    ensureCapacity(count + len);
-    str.getChars(0, len, value, count);
-    count += len;
+    super.append(str);
     return this;
   }
 
@@ -348,15 +200,7 @@ public final class StringBuilder
    */
   public StringBuilder append(StringBuffer stringBuffer)
   {
-    if (stringBuffer == null)
-      return append("null");
-    synchronized (stringBuffer)
-      {
-	int len = stringBuffer.count;
-	ensureCapacity(count + len);
-	System.arraycopy(stringBuffer.value, 0, value, count, len);
-	count += len;
-      }
+    super.append(stringBuffer);
     return this;
   }
 
@@ -372,7 +216,8 @@ public final class StringBuilder
    */
   public StringBuilder append(char[] data)
   {
-    return append(data, 0, data.length);
+    super.append(data, 0, data.length);
+    return this;
   }
 
   /**
@@ -391,11 +236,7 @@ public final class StringBuilder
    */
   public StringBuilder append(char[] data, int offset, int count)
   {
-    if (offset < 0 || count < 0 || offset > data.length - count)
-      throw new StringIndexOutOfBoundsException();
-    ensureCapacity(this.count + count);
-    System.arraycopy(data, offset, value, this.count, count);
-    this.count += count;
+    super.append(data, offset, count);
     return this;
   }
 
@@ -410,7 +251,8 @@ public final class StringBuilder
    */
   public StringBuilder append(boolean bool)
   {
-    return append(bool ? "true" : "false");
+    super.append(bool);
+    return this;
   }
 
   /**
@@ -421,8 +263,7 @@ public final class StringBuilder
    */
   public StringBuilder append(char ch)
   {
-    ensureCapacity(count + 1);
-    value[count++] = ch;
+    super.append(ch);
     return this;
   }
 
@@ -435,7 +276,8 @@ public final class StringBuilder
    */
   public StringBuilder append(CharSequence seq)
   {
-    return append(seq, 0, seq.length());
+    super.append(seq, 0, seq.length());
+    return this;
   }
 
   /**
@@ -451,33 +293,7 @@ public final class StringBuilder
   public StringBuilder append(CharSequence seq, int start,
 			      int end)
   {
-    if (seq == null)
-      return append("null");
-    if (end - start > 0)
-      {
-	ensureCapacity(count + end - start);
-	for (; start < end; ++start)
-	  value[count++] = seq.charAt(start);
-      }
-    return this;
-  }
-
-  /**
-   * Append the code point to this <code>StringBuilder</code>.
-   * This is like #append(char), but will append two characters
-   * if a supplementary code point is given.
-   *
-   * @param code the code point to append
-   * @return this <code>StringBuilder</code>
-   * @see Character#toChars(int, char[], int)
-   * @since 1.5
-   */
-  public synchronized StringBuilder appendCodePoint(int code)
-  {
-    int len = Character.charCount(code);
-    ensureCapacity(count + len);
-    Character.toChars(code, value, count);
-    count += len;
+    super.append(seq, start, end);
     return this;
   }
 
@@ -490,10 +306,11 @@ public final class StringBuilder
    * @return this <code>StringBuilder</code>
    * @see String#valueOf(int)
    */
-  // FIXME: this is native in libgcj in StringBuffer.
+  // This is native in libgcj, for efficiency.
   public StringBuilder append(int inum)
   {
-    return append(String.valueOf(inum));
+    super.append(inum);
+    return this;
   }
 
   /**
@@ -507,7 +324,8 @@ public final class StringBuilder
    */
   public StringBuilder append(long lnum)
   {
-    return append(Long.toString(lnum, 10));
+    super.append(lnum);
+    return this;
   }
 
   /**
@@ -521,7 +339,8 @@ public final class StringBuilder
    */
   public StringBuilder append(float fnum)
   {
-    return append(Float.toString(fnum));
+    super.append(fnum);
+    return this;
   }
 
   /**
@@ -535,7 +354,24 @@ public final class StringBuilder
    */
   public StringBuilder append(double dnum)
   {
-    return append(Double.toString(dnum));
+    super.append(dnum);
+    return this;
+  }
+
+  /**
+   * Append the code point to this <code>StringBuilder</code>.
+   * This is like #append(char), but will append two characters
+   * if a supplementary code point is given.
+   *
+   * @param code the code point to append
+   * @return this <code>StringBuilder</code>
+   * @see Character#toChars(int, char[], int)
+   * @since 1.5
+   */
+  public StringBuilder appendCodePoint(int code)
+  {
+    super.appendCodePoint(code);
+    return this;
   }
 
   /**
@@ -550,15 +386,7 @@ public final class StringBuilder
    */
   public StringBuilder delete(int start, int end)
   {
-    if (start < 0 || start > count || start > end)
-      throw new StringIndexOutOfBoundsException(start);
-    if (end > count)
-      end = count;
-    // This will unshare if required.
-    ensureCapacity(count);
-    if (count - end != 0)
-      System.arraycopy(value, end, value, start, count - end);
-    count -= end - start;
+    super.delete(start, end);
     return this;
   }
 
@@ -571,7 +399,8 @@ public final class StringBuilder
    */
   public StringBuilder deleteCharAt(int index)
   {
-    return delete(index, index + 1);
+    super.deleteCharAt(index);
+    return this;
   }
 
   /**
@@ -589,19 +418,7 @@ public final class StringBuilder
    */
   public StringBuilder replace(int start, int end, String str)
   {
-    if (start < 0 || start > count || start > end)
-      throw new StringIndexOutOfBoundsException(start);
-
-    int len = str.count;
-    // Calculate the difference in 'count' after the replace.
-    int delta = len - (end > count ? count : end) + start;
-    ensureCapacity(count + delta);
-
-    if (delta != 0 && end < count)
-      System.arraycopy(value, end, value, end + delta, count - end);
-
-    str.getChars(0, len, value, start);
-    count += delta;
+    super.replace(start, end, str);
     return this;
   }
 
@@ -672,13 +489,7 @@ public final class StringBuilder
   public StringBuilder insert(int offset,
 			      char[] str, int str_offset, int len)
   {
-    if (offset < 0 || offset > count || len < 0
-        || str_offset < 0 || str_offset > str.length - len)
-      throw new StringIndexOutOfBoundsException();
-    ensureCapacity(count + len);
-    System.arraycopy(value, offset, value, offset + len, count - offset);
-    System.arraycopy(str, str_offset, value, offset, len);
-    count += len;
+    super.insert(offset, str, str_offset, len);
     return this;
   }
 
@@ -695,7 +506,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, Object obj)
   {
-    return insert(offset, obj == null ? "null" : obj.toString());
+    super.insert(offset, obj);
+    return this;
   }
 
   /**
@@ -710,15 +522,7 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, String str)
   {
-    if (offset < 0 || offset > count)
-      throw new StringIndexOutOfBoundsException(offset);
-    if (str == null)
-      str = "null";
-    int len = str.count;
-    ensureCapacity(count + len);
-    System.arraycopy(value, offset, value, offset + len, count - offset);
-    str.getChars(0, len, value, offset);
-    count += len;
+    super.insert(offset, str);
     return this;
   }
 
@@ -732,11 +536,10 @@ public final class StringBuilder
    * @return this <code>StringBuilder</code>
    * @throws IndexOutOfBoundsException if offset is out of bounds
    */
-  public synchronized StringBuilder insert(int offset, CharSequence sequence)
+  public StringBuilder insert(int offset, CharSequence sequence)
   {
-    if (sequence == null)
-      sequence = "null";
-    return insert(offset, sequence, 0, sequence.length());
+    super.insert(offset, sequence);
+    return this;
   }
 
   /**
@@ -752,19 +555,10 @@ public final class StringBuilder
    * @throws IndexOutOfBoundsException if offset, start,
    * or end are out of bounds
    */
-  public synchronized StringBuilder insert(int offset, CharSequence sequence,
-                      int start, int end)
+  public StringBuilder insert(int offset, CharSequence sequence,
+			      int start, int end)
   {
-    if (sequence == null)
-      sequence = "null";
-    if (start < 0 || end < 0 || start > end || end > sequence.length())
-      throw new IndexOutOfBoundsException();
-    int len = end - start;
-    ensureCapacity(count + len);
-    System.arraycopy(value, offset, value, offset + len, count - offset);
-    for (int i = start; i < end; ++i)
-      value[offset++] = sequence.charAt(i);
-    count += len;
+    super.insert(offset, sequence, start, end);
     return this;
   }
 
@@ -781,7 +575,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, char[] data)
   {
-    return insert(offset, data, 0, data.length);
+    super.insert(offset, data);
+    return this;
   }
 
   /**
@@ -797,7 +592,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, boolean bool)
   {
-    return insert(offset, bool ? "true" : "false");
+    super.insert(offset, bool);
+    return this;
   }
 
   /**
@@ -810,12 +606,7 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, char ch)
   {
-    if (offset < 0 || offset > count)
-      throw new StringIndexOutOfBoundsException(offset);
-    ensureCapacity(count + 1);
-    System.arraycopy(value, offset, value, offset + 1, count - offset);
-    value[offset] = ch;
-    count++;
+    super.insert(offset, ch);
     return this;
   }
 
@@ -832,7 +623,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, int inum)
   {
-    return insert(offset, String.valueOf(inum));
+    super.insert(offset, inum);
+    return this;
   }
 
   /**
@@ -848,7 +640,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, long lnum)
   {
-    return insert(offset, Long.toString(lnum, 10));
+    super.insert(offset, lnum);
+    return this;
   }
 
   /**
@@ -864,7 +657,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, float fnum)
   {
-    return insert(offset, Float.toString(fnum));
+    super.insert(offset, fnum);
+    return this;
   }
 
   /**
@@ -880,75 +674,8 @@ public final class StringBuilder
    */
   public StringBuilder insert(int offset, double dnum)
   {
-    return insert(offset, Double.toString(dnum));
-  }
-
-  /**
-   * Finds the first instance of a substring in this StringBuilder.
-   *
-   * @param str String to find
-   * @return location (base 0) of the String, or -1 if not found
-   * @throws NullPointerException if str is null
-   * @see #indexOf(String, int)
-   */
-  public int indexOf(String str)
-  {
-    return indexOf(str, 0);
-  }
-
-  /**
-   * Finds the first instance of a String in this StringBuilder, starting at
-   * a given index.  If starting index is less than 0, the search starts at
-   * the beginning of this String.  If the starting index is greater than the
-   * length of this String, or the substring is not found, -1 is returned.
-   *
-   * @param str String to find
-   * @param fromIndex index to start the search
-   * @return location (base 0) of the String, or -1 if not found
-   * @throws NullPointerException if str is null
-   */
-  public int indexOf(String str, int fromIndex)
-  {
-    if (fromIndex < 0)
-      fromIndex = 0;
-    int limit = count - str.count;
-    for ( ; fromIndex <= limit; fromIndex++)
-      if (regionMatches(fromIndex, str))
-        return fromIndex;
-    return -1;
-  }
-
-  /**
-   * Finds the last instance of a substring in this StringBuilder.
-   *
-   * @param str String to find
-   * @return location (base 0) of the String, or -1 if not found
-   * @throws NullPointerException if str is null
-   * @see #lastIndexOf(String, int)
-   */
-  public int lastIndexOf(String str)
-  {
-    return lastIndexOf(str, count - str.count);
-  }
-
-  /**
-   * Finds the last instance of a String in this StringBuilder, starting at a
-   * given index.  If starting index is greater than the maximum valid index,
-   * then the search begins at the end of this String.  If the starting index
-   * is less than zero, or the substring is not found, -1 is returned.
-   *
-   * @param str String to find
-   * @param fromIndex index to start the search
-   * @return location (base 0) of the String, or -1 if not found
-   * @throws NullPointerException if str is null
-   */
-  public int lastIndexOf(String str, int fromIndex)
-  {
-    fromIndex = Math.min(fromIndex, count - str.count);
-    for ( ; fromIndex >= 0; fromIndex--)
-      if (regionMatches(fromIndex, str))
-        return fromIndex;
-    return -1;
+    super.insert(offset, dnum);
+    return this;
   }
 
   /**
@@ -959,14 +686,7 @@ public final class StringBuilder
    */
   public StringBuilder reverse()
   {
-    // Call ensureCapacity to enforce copy-on-write.
-    ensureCapacity(count);
-    for (int i = count >> 1, j = count - i; --i >= 0; ++j)
-      {
-        char c = value[i];
-        value[i] = value[j];
-        value[j] = c;
-      }
+    super.reverse();
     return this;
   }
 
@@ -983,80 +703,4 @@ public final class StringBuilder
     return new String(this);
   }
 
-  /**
-   * Predicate which determines if a substring of this matches another String
-   * starting at a specified offset for each String and continuing for a
-   * specified length. This is more efficient than creating a String to call
-   * indexOf on.
-   *
-   * @param toffset index to start comparison at for this String
-   * @param other non-null String to compare to region of this
-   * @return true if regions match, false otherwise
-   * @see #indexOf(String, int)
-   * @see #lastIndexOf(String, int)
-   * @see String#regionMatches(boolean, int, String, int, int)
-   */
-  // GCJ LOCAL: Native to access String internals properly.
-  private native boolean regionMatches(int toffset, String other);
-
-  /**
-   * Get the code point at the specified index.  This is like #charAt(int),
-   * but if the character is the start of a surrogate pair, and the
-   * following character completes the pair, then the corresponding
-   * supplementary code point is returned.
-   * @param index the index of the codepoint to get, starting at 0
-   * @return the codepoint at the specified index
-   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
-   * @since 1.5
-   */
-  public int codePointAt(int index)
-  {
-    return Character.codePointAt(value, index, count);
-  }
-
-    /**
-   * Get the code point before the specified index.  This is like
-   * #codePointAt(int), but checks the characters at <code>index-1</code> and
-   * <code>index-2</code> to see if they form a supplementary code point.
-   * @param index the index just past the codepoint to get, starting at 0
-   * @return the codepoint at the specified index
-   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
-   * @since 1.5
-   */
-  public int codePointBefore(int index)
-  {
-    // Character.codePointBefore() doesn't perform this check.  We
-    // could use the CharSequence overload, but this is just as easy.
-    if (index >= count)
-      throw new IndexOutOfBoundsException();
-    return Character.codePointBefore(value, index, 1);
-  }
-
-  /**
-   * Returns the number of Unicode code points in the specified sub sequence.
-   * Surrogate pairs count as one code point.
-   * @param beginIndex the start of the subarray
-   * @param endIndex the index after the last char in the subarray
-   * @return the number of code points
-   * @throws IndexOutOfBoundsException if beginIndex is less than zero or 
-   * greater than endIndex or if endIndex is greater than the length of this 
-   * StringBuilder
-   */
-  public int codePointCount(int beginIndex,int endIndex)
-  {
-    if (beginIndex < 0 || beginIndex > endIndex || endIndex > count)
-      throw new IndexOutOfBoundsException("invalid indices: " + beginIndex
-                                          + ", " + endIndex);
-    return Character.codePointCount(value, beginIndex, endIndex - beginIndex);
-  }
-
-  public void trimToSize()
-  {
-    if (count < value.length)
-      {
-        char[] newValue = new char[count];
-        System.arraycopy(value, 0, newValue, 0, count);
-        value = newValue;
-      }
-  }
 }

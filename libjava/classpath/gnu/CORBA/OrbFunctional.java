@@ -1194,7 +1194,7 @@ public class OrbFunctional extends OrbRestricted
    */
   protected void set_parameters(String[] para, Properties props)
   {
-    if (para.length > 1)
+    if ((para != null) && para.length > 1)
       {
         for (int i = 0; i < para.length - 1; i++)
           {

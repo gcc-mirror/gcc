@@ -851,6 +851,7 @@ public final class ImageIO
           }
         
         w.write(null, img, null);
+        w.dispose();
         output.close();
         return true;
       }

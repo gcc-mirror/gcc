@@ -52,7 +52,9 @@ public:
   virtual jint hashCode();
   virtual jboolean isGroupingUsed();
   virtual jboolean isParseIntegerOnly();
+public: // actually protected
   NumberFormat();
+public:
   virtual ::java::lang::Number * parse(::java::lang::String *, ::java::text::ParsePosition *) = 0;
   virtual ::java::lang::Number * parse(::java::lang::String *);
   virtual ::java::lang::Object * parseObject(::java::lang::String *, ::java::text::ParsePosition *);

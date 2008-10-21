@@ -93,8 +93,7 @@ public class XFramePeer
 
   public int getState()
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    return 0;
   }
 
   public void setState(int state)

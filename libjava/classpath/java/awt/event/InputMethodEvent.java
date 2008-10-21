@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -257,8 +259,8 @@ public class InputMethodEvent extends AWTEvent
    */
   public String paramString()
   {
-    StringBuffer s
-      = new StringBuffer(80 + (text == null ? 0
+    CPStringBuilder s
+      = new CPStringBuilder(80 + (text == null ? 0
                                : text.getEndIndex() - text.getBeginIndex()));
     s.append(id == INPUT_METHOD_TEXT_CHANGED ? "INPUT_METHOD_TEXT_CHANGED, "
              : "CARET_POSITION_CHANGED, ");

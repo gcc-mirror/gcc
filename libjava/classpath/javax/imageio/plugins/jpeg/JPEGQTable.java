@@ -38,6 +38,8 @@
 
 package javax.imageio.plugins.jpeg;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The JPEGQTable class represents a quantization table that can be
  * used to encode or decode a JPEG stream.  The standard JPEG
@@ -178,7 +180,7 @@ public class JPEGQTable
    */
   public String toString()
   {
-    StringBuffer buffer = new StringBuffer();
+    CPStringBuilder buffer = new CPStringBuilder();
 
     buffer.append("JPEGQTable:\n");
     for (int i = 0; i < 8; i++)

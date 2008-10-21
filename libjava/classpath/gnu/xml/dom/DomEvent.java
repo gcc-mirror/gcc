@@ -37,8 +37,15 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import gnu.java.lang.CPStringBuilder;
+
+import org.w3c.dom.Node;
+
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.events.MutationEvent;
+import org.w3c.dom.events.UIEvent;
+
 import org.w3c.dom.views.AbstractView;		// used by UIEvent
 
 /**
@@ -180,7 +187,7 @@ public class DomEvent
    */
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("[Event ");
+    CPStringBuilder buf = new CPStringBuilder("[Event ");
     buf.append(type);
     switch (eventPhase)
       {

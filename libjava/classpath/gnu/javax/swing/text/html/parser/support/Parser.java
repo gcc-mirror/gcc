@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.javax.swing.text.html.parser.support;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.javax.swing.text.html.parser.htmlAttributeSet;
 import gnu.javax.swing.text.html.parser.htmlValidator;
 import gnu.javax.swing.text.html.parser.support.low.Constants;
@@ -132,12 +134,12 @@ public class Parser
   /**
   * The buffer to collect the incremental output like text or coment.
   */
-  private StringBuffer buffer = new StringBuffer();
+  private final StringBuffer buffer = new StringBuffer();
 
   /**
    * The buffer to store the document title.
    */
-  private StringBuffer title = new StringBuffer();
+  private final StringBuffer title = new StringBuffer();
 
   /**
    * The current token.
@@ -994,7 +996,7 @@ public class Parser
                 // character, not as a token. The character may be part of
                 // the unquoted URL.
                   {
-                    StringBuffer image = new StringBuffer(value.getImage());
+                    CPStringBuilder image = new CPStringBuilder(value.getImage());
                     while (next.kind == NUMTOKEN || next.kind == SLASH
                            || next.kind == OTHER)
                       {
@@ -1025,7 +1027,7 @@ public class Parser
                 // character, not as a token. The slash may be part of
                 // the unquoted URL.
                   {
-                    StringBuffer image = new StringBuffer(value.getImage());
+                    CPStringBuilder image = new CPStringBuilder(value.getImage());
                     while (next.kind == NUMTOKEN || next.kind == SLASH)
                       {
                         image.append(getNextToken().getImage());

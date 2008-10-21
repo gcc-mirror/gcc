@@ -57,6 +57,7 @@ public:
   virtual ::java::lang::String * getName();
   virtual void addChangeListener(::javax::swing::event::ChangeListener *);
   virtual void removeChangeListener(::javax::swing::event::ChangeListener *);
+  virtual jint StyleSheet$CSSStyle$compareTo(::javax::swing::text::html::StyleSheet$CSSStyle *);
   virtual jint compareTo(::java::lang::Object *);
 public: // actually package-private
   static const jint PREC_UA = 0;

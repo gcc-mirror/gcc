@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathVariableResolver;
 import org.w3c.dom.Node;
@@ -86,7 +88,7 @@ public class VariableReference
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("$");
+    CPStringBuilder buf = new CPStringBuilder("$");
     String prefix = name.getPrefix();
     if (prefix != null && !"".equals(prefix))
       {

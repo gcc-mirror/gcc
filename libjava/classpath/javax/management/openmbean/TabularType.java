@@ -206,9 +206,8 @@ public class TabularType
     if (hashCode == null)
       {
 	int elementTotal = 0;
-	Iterator it = indexNames.iterator();
-	while (it.hasNext())
-	  elementTotal += it.next().hashCode();
+	for (String s : indexNames)
+	  elementTotal += s.hashCode();
 	hashCode = Integer.valueOf(elementTotal 
 				   + getTypeName().hashCode()
 				   + rowType.hashCode());

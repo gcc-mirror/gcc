@@ -83,6 +83,8 @@ DAMAGES.  */
 
 package gnu.java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -143,7 +145,7 @@ public final class Base64
     int srcLength = buf.length - offset;
     byte[] input = new byte[3];
     int[] output = new int[4];
-    StringBuffer out = new StringBuffer();
+    CPStringBuilder out = new CPStringBuilder();
     int i = offset;
     int chars = 0;
 

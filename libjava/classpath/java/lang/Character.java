@@ -2055,6 +2055,11 @@ public final class Character implements Serializable, Comparable<Character>
   // this constant controls how much we actually cache.
   private static final int MAX_CACHE = 127;
   private static Character[] charCache = new Character[MAX_CACHE + 1];
+  static
+  {
+     for (char i=0; i <= MAX_CACHE; i++)
+       charCache[i] = new Character(i);
+  }
 
   /**
    * Lu = Letter, Uppercase (Informative).
@@ -4208,12 +4213,8 @@ public final class Character implements Serializable, Comparable<Character>
   {
     if (val > MAX_CACHE)
       return new Character(val);
-    synchronized (charCache)
-      {
-	if (charCache[val - MIN_VALUE] == null)
-	  charCache[val - MIN_VALUE] = new Character(val);
-	return charCache[val - MIN_VALUE];
-      }
+    else
+      return charCache[val - MIN_VALUE];
   }
 
   /**

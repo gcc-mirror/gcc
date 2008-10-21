@@ -39,6 +39,7 @@ class gnu::xml::dom::DomAttr : public ::gnu::xml::dom::DomNsNode
 
 public: // actually protected
   DomAttr(::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *);
+  DomAttr(::gnu::xml::dom::DomDocument *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
 public:
   virtual ::java::lang::String * getName();
   virtual jboolean getSpecified();

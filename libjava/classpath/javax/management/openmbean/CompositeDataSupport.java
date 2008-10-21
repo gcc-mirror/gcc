@@ -154,7 +154,7 @@ public class CompositeDataSupport
       throw new IllegalArgumentException("The values array is null.");
     if (names.length != values.length)
       throw new IllegalArgumentException("The sizes of the arrays differ.");
-    Set typeKeys = type.keySet();
+    Set<String> typeKeys = type.keySet();
     if (typeKeys.size() != names.length)
       throw new OpenDataException("The number of field names does not match " +
 				  "the type description.");
@@ -227,10 +227,8 @@ public class CompositeDataSupport
     CompositeData data = (CompositeData) obj;
     if (!(data.getCompositeType().equals(compositeType)))
       return false;
-    Iterator it = contents.keySet().iterator();
-    while (it.hasNext())
+    for (String key : contents.keySet())
       {
-	String key = (String) it.next();
 	if (!(data.containsKey(key)))
 	  return false;
 	if (!(data.get(key).equals(contents.get(key))))
@@ -308,9 +306,8 @@ public class CompositeDataSupport
   public int hashCode()
   {
     int code = compositeType.hashCode();
-    Iterator it = values().iterator();
-    while (it.hasNext())
-      code += it.next().hashCode();
+    for (Object o : contents.values())
+      code += o.hashCode();
     return code;
   }
 

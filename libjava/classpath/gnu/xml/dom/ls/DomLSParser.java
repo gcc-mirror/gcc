@@ -253,7 +253,7 @@ public class DomLSParser
     eventSink = (filter == null) ? new SAXEventSink() :
       new FilteredSAXEventSink(filter);
     // configure sink
-    eventSink.namespaceAware = namespaceAware;
+    eventSink.setNamespaceAware(namespaceAware);
     eventSink.ignoreWhitespace = ignoreWhitespace;
     eventSink.expandEntityReferences = expandEntityReferences;
     eventSink.ignoreComments = ignoreComments;

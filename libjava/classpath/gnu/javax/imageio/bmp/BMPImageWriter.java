@@ -178,7 +178,6 @@ public class BMPImageWriter
       encoder.encode(out, streamMetadata, image, param);
     else
       throw new BMPException("Encoder has not been initialized.");
-    out.close();
   }
   
   /**

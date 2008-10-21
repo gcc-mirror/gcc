@@ -39,6 +39,8 @@ package java.security;
 
 import gnu.classpath.SystemProperties;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * This class represents a group of classes, along with their granted
  * permissions. The classes are identified by a {@link CodeSource}. Thus, any
@@ -204,7 +206,7 @@ public class ProtectionDomain
   public String toString()
   {
     String linesep = SystemProperties.getProperty("line.separator");
-    StringBuffer sb = new StringBuffer("ProtectionDomain (").append(linesep);
+    CPStringBuilder sb = new CPStringBuilder("ProtectionDomain (").append(linesep);
 
     if (code_source == null)
       sb.append("CodeSource:null");

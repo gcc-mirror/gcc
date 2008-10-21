@@ -631,8 +631,8 @@ public abstract class ColorModel implements Transparency
     throw new UnsupportedOperationException();
   }
 
-  protected void coerceDataWorker(WritableRaster raster,
-                                  boolean isAlphaPremultiplied)
+  void coerceDataWorker(WritableRaster raster,
+			boolean isAlphaPremultiplied)
   {
     int w = raster.getWidth();
     int h = raster.getHeight();

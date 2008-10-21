@@ -54,6 +54,7 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Label;
 import java.awt.List;
@@ -120,11 +121,16 @@ import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.font.OpenTypeFontPeer;
 import gnu.java.awt.image.ImageConverter;
+import gnu.java.awt.java2d.AbstractGraphics2D;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
+import gnu.java.awt.peer.swing.SwingButtonPeer;
 import gnu.java.awt.peer.swing.SwingCanvasPeer;
+import gnu.java.awt.peer.swing.SwingCheckboxPeer;
 import gnu.java.awt.peer.swing.SwingLabelPeer;
 import gnu.java.awt.peer.swing.SwingPanelPeer;
+import gnu.java.awt.peer.swing.SwingTextAreaPeer;
+import gnu.java.awt.peer.swing.SwingTextFieldPeer;
 
 public class XToolkit
   extends ClasspathToolkit
@@ -232,18 +238,24 @@ public class XToolkit
 
   protected ButtonPeer createButton(Button target)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    checkHeadLess("No ButtonPeer can be created in an headless" +
+    		      "graphics environment.");
+    
+    return new SwingButtonPeer(target);
   }
 
   protected TextFieldPeer createTextField(TextField target)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    checkHeadLess("No TextFieldPeer can be created in an headless " +
+    		      "graphics environment.");
+    
+    return new SwingTextFieldPeer(target);
   }
 
   protected LabelPeer createLabel(Label target)
   {
+    checkHeadLess("No LabelPeer can be created in an headless graphics " +
+    		      "environment.");
     return new SwingLabelPeer(target);
   }
 
@@ -255,8 +267,10 @@ public class XToolkit
 
   protected CheckboxPeer createCheckbox(Checkbox target)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    checkHeadLess("No CheckboxPeer can be created in an headless graphics " +
+                  "environment.");
+    
+    return new SwingCheckboxPeer(target);
   }
 
   protected ScrollbarPeer createScrollbar(Scrollbar target)
@@ -273,8 +287,10 @@ public class XToolkit
 
   protected TextAreaPeer createTextArea(TextArea target)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    checkHeadLess("No TextAreaPeer can be created in an headless graphics " +
+    		      "environment.");
+    
+    return new SwingTextAreaPeer(target);
   }
 
   protected ChoicePeer createChoice(Choice target)
@@ -514,14 +530,14 @@ public class XToolkit
 
   public boolean prepareImage(Image image, int width, int height, ImageObserver observer)
   {
-    // Images are loaded synchronously, so we don't bother and return true.
-    return true;
+    Image scaled = AbstractGraphics2D.prepareImage(image, width, height);
+    return checkImage(image, width, height, observer) == ImageObserver.ALLBITS;
   }
 
   public int checkImage(Image image, int width, int height, ImageObserver observer)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    // Images are loaded synchronously, so we don't bother and return true.
+    return ImageObserver.ALLBITS;
   }
 
   public Image createImage(ImageProducer producer)
@@ -638,4 +654,14 @@ public class XToolkit
     return false;
   }
 
+  private void checkHeadLess(String message) throws HeadlessException
+  {
+    if(GraphicsEnvironment.isHeadless())
+      {
+        if(message == null)
+          message = "This method cannot be called in headless mode.";
+      
+        throw new HeadlessException(message);
+      }
+  }
 }

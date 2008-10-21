@@ -96,6 +96,9 @@
 /* Define to 1 if you have the `getsockopt' function. */
 #undef HAVE_GETSOCKOPT
 
+/* Define to 1 if you have the <gmp.h> header file. */
+#undef HAVE_GMP_H
+
 /* Define if function attributes a la GCC 2.5 and higher are available. */
 #undef HAVE_GNUC25_ATTRIB
 
@@ -143,6 +146,9 @@
 
 /* Define to 1 if you have the `ltdl' library (-lltdl). */
 #undef HAVE_LIBLTDL
+
+/* Define to 1 if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
 
 /* Define to 1 if you have the `listen' function. */
 #undef HAVE_LISTEN
@@ -291,6 +297,9 @@
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
+/* Define to 1 if you have the <sys/sockio.h> header file. */
+#undef HAVE_SYS_SOCKIO_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -412,6 +421,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to 1 if gmp is usable */
+#undef WITH_GNU_MP
 
 /* whether byteorder is bigendian */
 #undef WORDS_BIGENDIAN

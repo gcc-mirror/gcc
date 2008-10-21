@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Vector;
 
 /**
@@ -98,8 +100,8 @@ public class ChoiceFormat extends NumberFormat
     int index = 0, max = newPattern.length();
     Vector stringVec = new Vector ();
     Vector limitVec = new Vector ();
-    StringBuffer buf = new StringBuffer ();
-    
+    final CPStringBuilder buf = new CPStringBuilder ();
+
     while (true)
       {
 	// Find end of double.
@@ -442,7 +444,7 @@ public class ChoiceFormat extends NumberFormat
     this.choiceLimits = (double[]) choiceLimits.clone();
   }
 
-  private void quoteString (StringBuffer dest, String text)
+  private void quoteString (CPStringBuilder dest, String text)
   {
     int max = text.length();
     for (int i = 0; i < max; ++i)
@@ -473,7 +475,7 @@ public class ChoiceFormat extends NumberFormat
    */
   public String toPattern ()
   {
-    StringBuffer result = new StringBuffer ();
+    CPStringBuilder result = new CPStringBuilder ();
     for (int i = 0; i < choiceLimits.length; ++i)
       {
 	result.append(choiceLimits[i]);

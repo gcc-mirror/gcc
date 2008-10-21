@@ -18,6 +18,7 @@ public: // actually package-private
 public:
   virtual jint hashCode();
   virtual jboolean equals(::java::lang::Object *);
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   ::java::util::Locale * __attribute__((aligned(__alignof__( ::java::lang::Object)))) defaultLocale;
   ::java::lang::String * baseName;

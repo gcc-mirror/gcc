@@ -38,79 +38,104 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * Represents a combination lookahead/lookbehind for POSIX [:alnum:].
  */
-final class RETokenWordBoundary extends REToken {
-    private boolean negated;
-    private int where;
-    static final int BEGIN = 1;
-    static final int END = 2;
+final class RETokenWordBoundary extends REToken
+{
+  private boolean negated;
+  private int where;
+  static final int BEGIN = 1;
+  static final int END = 2;
 
-    RETokenWordBoundary(int subIndex, int where, boolean negated) {
-	super(subIndex);
-	this.where = where;
-	this.negated = negated;
-    }
+    RETokenWordBoundary (int subIndex, int where, boolean negated)
+  {
+    super (subIndex);
+    this.where = where;
+    this.negated = negated;
+  }
 
-    int getMaximumLength() {
-        return 0;
-    }
+  int getMaximumLength ()
+  {
+    return 0;
+  }
 
-    
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	// Word boundary means input[index-1] was a word character
-	// and input[index] is not, or input[index] is a word character
-	// and input[index-1] was not
-	//  In the string "one two three", these positions match:
-	//  |o|n|e| |t|w|o| |t|h|r|e|e|
-	//  ^     ^ ^     ^ ^         ^
-	boolean after = false;  // is current character a letter or digit?
-	boolean before = false; // is previous character a letter or digit?
-	char ch;
 
-	// TODO: Also check REG_ANCHORINDEX vs. anchor
-	if (((mymatch.eflags & RE.REG_ANCHORINDEX) != RE.REG_ANCHORINDEX) 
-	    || (mymatch.offset + mymatch.index > mymatch.anchor)) {
-	    if ((ch = input.charAt(mymatch.index - 1)) != CharIndexed.OUT_OF_BOUNDS) {
-		before = Character.isLetterOrDigit(ch) || (ch == '_');
-	    }
-	}
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    // Word boundary means input[index-1] was a word character
+    // and input[index] is not, or input[index] is a word character
+    // and input[index-1] was not
+    //  In the string "one two three", these positions match:
+    //  |o|n|e| |t|w|o| |t|h|r|e|e|
+    //  ^     ^ ^     ^ ^         ^
+    boolean after = false;	// is current character a letter or digit?
+    boolean before = false;	// is previous character a letter or digit?
+    char ch;
 
-	if ((ch = input.charAt(mymatch.index)) != CharIndexed.OUT_OF_BOUNDS) {
-	    after = Character.isLetterOrDigit(ch) || (ch == '_');
-	}
+    // TODO: Also check REG_ANCHORINDEX vs. anchor
+    if (((mymatch.eflags & RE.REG_ANCHORINDEX) != RE.REG_ANCHORINDEX)
+	|| (mymatch.offset + mymatch.index > mymatch.anchor))
+      {
+	if ((ch =
+	     input.charAt (mymatch.index - 1)) != CharIndexed.OUT_OF_BOUNDS)
+	  {
+	    before = Character.isLetterOrDigit (ch) || (ch == '_');
+	  }
+      }
 
-	// if (before) and (!after), we're at end (\>)
-	// if (after) and (!before), we're at beginning (\<)
-	boolean doNext = false;
+    if ((ch = input.charAt (mymatch.index)) != CharIndexed.OUT_OF_BOUNDS)
+      {
+	after = Character.isLetterOrDigit (ch) || (ch == '_');
+      }
 
-	if ((where & BEGIN) == BEGIN) {
-	    doNext = after && !before;
-	}
-	if ((where & END) == END) {
-	    doNext ^= before && !after;
-	}
+    // if (before) and (!after), we're at end (\>)
+    // if (after) and (!before), we're at beginning (\<)
+    boolean doNext = false;
 
-	if (negated) doNext = !doNext;
+    if ((where & BEGIN) == BEGIN)
+      {
+	doNext = after && !before;
+      }
+    if ((where & END) == END)
+      {
+	doNext ^= before && !after;
+      }
 
-	return (doNext ? mymatch : null);
-    }
+    if (negated)
+      doNext = !doNext;
 
-    boolean returnsFixedLengthMatches() { return true; }
+    return (doNext ? mymatch : null);
+  }
 
-    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
-        if(matchThis(input, mymatch) != null) return max;
-	else return 0;
-    }
-    
-    void dump(StringBuffer os) {
-	if (where == (BEGIN | END)) {
-	    os.append( negated ? "\\B" : "\\b" );
-	} else if (where == BEGIN) {
-	    os.append("\\<");
-	} else {
-	    os.append("\\>");
-	}
-    }
+  boolean returnsFixedLengthMatches ()
+  {
+    return true;
+  }
+
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
+    if (matchThis (input, mymatch) != null)
+      return max;
+    else
+      return 0;
+  }
+
+  void dump (CPStringBuilder os)
+  {
+    if (where == (BEGIN | END))
+      {
+	os.append (negated ? "\\B" : "\\b");
+      }
+    else if (where == BEGIN)
+      {
+	os.append ("\\<");
+      }
+    else
+      {
+	os.append ("\\>");
+      }
+  }
 }

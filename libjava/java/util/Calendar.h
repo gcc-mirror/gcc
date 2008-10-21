@@ -138,6 +138,7 @@ public: // actually package-private
   static const jlong serialVersionUID = -1807547505821590642LL;
 private:
   static ::java::lang::String * bundleName;
+  static ::java::util::Properties * properties;
   static ::java::util::HashMap * cache;
   static JArray< ::java::lang::Class * > * ctorArgTypes;
   static JArray< ::java::lang::String * > * fieldNames;

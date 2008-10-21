@@ -653,7 +653,7 @@ public abstract class NumberFormat extends Format implements Cloneable
   /**
    * This is a default constructor for use by subclasses.
    */
-  public NumberFormat ()
+  protected NumberFormat ()
   {
   }
 

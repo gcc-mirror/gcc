@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Properties;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -76,5 +78,18 @@ class TemplatesImpl
   {
     return (Properties) outputProperties.clone();
   }
-  
+
+  public String toString()
+  {
+    CPStringBuilder b = new CPStringBuilder(getClass().getName());
+    b.append("[factory=");
+    b.append(factory);
+    b.append(",stylesheet=");
+    b.append(stylesheet);
+    b.append(",outputProperties=");
+    b.append(outputProperties);
+    b.append("]");
+    return b.toString();
+  }
+
 }

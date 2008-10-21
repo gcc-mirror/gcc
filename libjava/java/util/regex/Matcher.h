@@ -53,12 +53,26 @@ public:
   ::java::lang::String * toString();
 private:
   void assertMatchOp();
+public:
+  ::java::util::regex::Matcher * region(jint, jint);
+  jint regionStart();
+  jint regionEnd();
+  jboolean hasTransparentBounds();
+  ::java::util::regex::Matcher * useTransparentBounds(jboolean);
+  jboolean hasAnchoringBounds();
+  ::java::util::regex::Matcher * useAnchoringBounds(jboolean);
+  ::java::util::regex::MatchResult * toMatchResult();
+private:
   ::java::util::regex::Pattern * __attribute__((aligned(__alignof__( ::java::lang::Object)))) pattern__;
   ::java::lang::CharSequence * input;
   ::gnu::java::util::regex::CharIndexed * inputCharIndexed;
   jint position;
   jint appendPosition;
   ::gnu::java::util::regex::REMatch * match;
+  jint regionStart__;
+  jint regionEnd__;
+  jboolean transparentBounds;
+  jint anchoringBounds;
 public:
   static ::java::lang::Class class$;
 };

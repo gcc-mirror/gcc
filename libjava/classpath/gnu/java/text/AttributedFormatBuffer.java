@@ -36,21 +36,25 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 package gnu.java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * This class is an implementation of a FormatBuffer with attributes.
- * 
+ * Note that this class is not thread-safe; external synchronisation
+ * should be used if an instance is to be accessed from multiple threads.
+ *
  * @author Guilhem Lavaux <guilhem@kaffe.org>
  * @date April 10, 2004
  */
 public class AttributedFormatBuffer implements FormatBuffer
 {
-  private StringBuffer buffer;
-  private ArrayList ranges;
-  private ArrayList attributes;
+  private final CPStringBuilder buffer;
+  private final ArrayList ranges;
+  private final ArrayList attributes;
   private int[] a_ranges;
   private HashMap[] a_attributes; 
   private int startingRange;
@@ -60,9 +64,9 @@ public class AttributedFormatBuffer implements FormatBuffer
    * This constructor accepts a StringBuffer. If the buffer contains
    * already some characters they will not be attributed. 
    */
-  public AttributedFormatBuffer(StringBuffer buffer)
+  public AttributedFormatBuffer(CPStringBuilder buffer)
   {
-    this.buffer = buffer;
+    this.buffer = new CPStringBuilder(buffer);
     this.ranges = new ArrayList();
     this.attributes = new ArrayList();
     this.defaultAttr = null;
@@ -77,7 +81,7 @@ public class AttributedFormatBuffer implements FormatBuffer
 
   public AttributedFormatBuffer(int prebuffer)
   {
-    this(new StringBuffer(prebuffer));
+    this(new CPStringBuilder(prebuffer));
   }
 
   public AttributedFormatBuffer()
@@ -214,12 +218,12 @@ public class AttributedFormatBuffer implements FormatBuffer
   }
 
   /**
-   * This method returns the internal StringBuffer describing
+   * This method returns the internal CPStringBuilder describing
    * the attributed string.
    *
-   * @return An instance of StringBuffer which contains the string.
+   * @return An instance of CPStringBuilder which contains the string.
    */
-  public StringBuffer getBuffer()
+  public CPStringBuilder getBuffer()
   {
     return buffer;
   }

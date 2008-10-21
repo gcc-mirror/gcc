@@ -31,8 +31,12 @@ public class Object
   }
 }
 EOF
-dnl GCJ LOCAL: don't call JAVAC with $JAVACFLAGS -source 1.5 -target 1.5
-if AC_TRY_COMMAND($JAVAC $JAVA_TEST) >/dev/null 2>&1; then
+if test x$JAVAC_IS_GCJ = xyes; then
+  CMD="$JAVAC $JAVACFLAGS -fsource=1.5 -ftarget=1.5 $JAVA_TEST"
+else
+  CMD="$JAVAC $JAVACFLAGS -source 1.5 -target 1.5 $JAVA_TEST"
+fi
+if AC_TRY_COMMAND($CMD) >/dev/null 2>&1; then
   ac_cv_prog_javac_works=yes
 else
   AC_MSG_ERROR([The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)])

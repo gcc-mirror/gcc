@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.rmi.dgc;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -168,7 +170,7 @@ public final class VMID	implements Serializable
    */
   public String toString ()
   {
-    StringBuffer buf = new StringBuffer ("[VMID: ");
+    CPStringBuilder buf = new CPStringBuilder ("[VMID: ");
     
     for (int i = 0; i < addr.length; i++)
       {

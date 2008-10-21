@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.BufferedWriter;
 import java.io.CharConversionException;
 import java.io.IOException;
@@ -152,7 +154,7 @@ public class XMLWriter
     private String		eol = sysEOL;
 
     private short		dangerMask;
-    private StringBuffer	stringBuf;
+    private CPStringBuilder	stringBuf;
     private Locator		locator;
     private ErrorHandler	errHandler;
 
@@ -289,7 +291,7 @@ public class XMLWriter
 	    }
 
 	    if (dangerMask != 0)
-		stringBuf = new StringBuffer ();
+		stringBuf = new CPStringBuilder ();
 	}
 
 	this.encoding = encoding;

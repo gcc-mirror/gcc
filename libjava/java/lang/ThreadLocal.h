@@ -21,6 +21,7 @@ extern "Java"
 class java::lang::ThreadLocal : public ::java::lang::Object
 {
 
+  jint computeNextHash();
 public:
   ThreadLocal();
 public: // actually protected
@@ -44,7 +45,11 @@ private:
 public: // actually package-private
   static ::java::lang::Object * sentinel;
 private:
-  ::gnu::gcj::RawData * __attribute__((aligned(__alignof__( ::java::lang::Object)))) TLSPointer;
+  static jint nextHashBase;
+public: // actually package-private
+  jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) fastHash;
+private:
+  ::gnu::gcj::RawData * TLSPointer;
 public:
   static ::java::lang::Class class$;
 };

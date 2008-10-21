@@ -462,8 +462,8 @@ public abstract class Activatable
    *          means anonymous port.
    * @param serverSocketFactory the server socket factory
    */
-  public static Remote export(ActivationID id, Remote obj, int port,
-                              RMIServerSocketFactory serverSocketFactory)
+  private static Remote export(ActivationID id, Remote obj, int port,
+			       RMIServerSocketFactory serverSocketFactory)
       throws RemoteException
   {
     ActivatableServerRef sref = null;
@@ -479,7 +479,7 @@ public abstract class Activatable
    * 
    * @return the object id
    */
-  public static ObjID makeId(ActivationID aid)
+  private static ObjID makeId(ActivationID aid)
   {
     ObjID id = new ObjID(0);
     

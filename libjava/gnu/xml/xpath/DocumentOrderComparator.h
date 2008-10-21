@@ -19,6 +19,16 @@ extern "Java"
       }
     }
   }
+  namespace org
+  {
+    namespace w3c
+    {
+      namespace dom
+      {
+          class Node;
+      }
+    }
+  }
 }
 
 class gnu::xml::xpath::DocumentOrderComparator : public ::java::lang::Object
@@ -26,6 +36,7 @@ class gnu::xml::xpath::DocumentOrderComparator : public ::java::lang::Object
 
 public:
   DocumentOrderComparator();
+  virtual jint DocumentOrderComparator$compare(::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
   static ::java::lang::Class class$;
 };

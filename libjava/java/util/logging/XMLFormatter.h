@@ -9,6 +9,16 @@
 #include <java/util/logging/Formatter.h>
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
+  }
   namespace java
   {
     namespace text
@@ -24,8 +34,8 @@ class java::util::logging::XMLFormatter : public ::java::util::logging::Formatte
 public:
   XMLFormatter();
 private:
-  static void appendTag(::java::lang::StringBuffer *, jint, ::java::lang::String *, ::java::lang::String *);
-  static void appendTag(::java::lang::StringBuffer *, jint, ::java::lang::String *, jlong);
+  static void appendTag(::gnu::java::lang::CPStringBuilder *, jint, ::java::lang::String *, ::java::lang::String *);
+  static void appendTag(::gnu::java::lang::CPStringBuilder *, jint, ::java::lang::String *, jlong);
 public:
   virtual ::java::lang::String * format(::java::util::logging::LogRecord *);
   virtual ::java::lang::String * getHead(::java::util::logging::Handler *);

@@ -52,13 +52,17 @@ class gnu::xml::transform::ParameterNode : public ::gnu::xml::transform::Templat
 
 public: // actually package-private
   ParameterNode(::javax::xml::namespace::QName *, ::gnu::xml::xpath::Expr *, jint);
-  ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
+  ::gnu::xml::transform::ParameterNode * ParameterNode$clone(::gnu::xml::transform::Stylesheet *);
   void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   ::java::lang::Object * getValue(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint);
 public:
   jboolean references(::javax::xml::namespace::QName *);
-  jint compareTo(::java::lang::Object *);
+  jint ParameterNode$compareTo(::gnu::xml::transform::ParameterNode *);
   ::java::lang::String * toString();
+public: // actually package-private
+  ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
+public:
+  jint compareTo(::java::lang::Object *);
 public: // actually package-private
   ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::transform::TemplateNode)))) name;
   ::gnu::xml::xpath::Expr * select;

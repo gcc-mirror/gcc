@@ -111,7 +111,8 @@ To import a new release:
     | xargs -r rm -f
 - Build, fix, till everything works.
   Be sure to build all peers (--enable-java-awt=gtk,xlib,qt
-  --enable-gconf-peer --enable-gstreamer-peer)
+  --enable-gconf-peer --enable-gstreamer-peer).
+  Be sure to build gjdoc (--enable-gjdoc).
   Be sure to update gnu/classpath/Configuration.java to reflect
     the new version
   Possibly update the gcj/javaprims.h file with scripts/classes.pl

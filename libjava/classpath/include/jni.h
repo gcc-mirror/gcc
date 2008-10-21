@@ -1,5 +1,5 @@
 /* jni.h
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -136,16 +136,6 @@ struct _jfieldID;
 struct _jmethodID;
 typedef struct _jfieldID *jfieldID;
 typedef struct _jmethodID *jmethodID;
-
-enum _jobjectRefType
-{
-  JNIInvalidRefType    = 0,
-  JNILocalRefType      = 1,
-  JNIGlobalRefType     = 2,
-  JNIWeakGlobalRefType = 3 
-};
-
-typedef enum _jobjectRefType jobjectRefType;
 #endif 
 
 /* Version numbers.  */
@@ -164,6 +154,15 @@ typedef enum _jobjectRefType jobjectRefType;
 #define JNI_EDETACHED    (-2)
 #define JNI_EVERSION     (-3)
 
+enum _jobjectRefType
+{
+  JNIInvalidRefType    = 0,
+  JNILocalRefType      = 1,
+  JNIGlobalRefType     = 2,
+  JNIWeakGlobalRefType = 3 
+};
+
+typedef enum _jobjectRefType jobjectRefType;
 
 #ifdef __cplusplus
 extern "C"
@@ -661,894 +660,894 @@ class _Jv_JNIEnv
 {
 public:
   /* The method table.  */
-  struct JNINativeInterface_ *p;
+  struct JNINativeInterface_ *functions;
 
 #ifdef _CLASSPATH_JNIENV_CONTENTS
   _CLASSPATH_JNIENV_CONTENTS
 #endif
 
   jint GetVersion ()
-  { return p->GetVersion (this); }
+  { return functions->GetVersion (this); }
 
   jclass DefineClass (const char *name, jobject obj0, const jbyte * val1,
 		      jsize val2)
-  { return p->DefineClass (this, name, obj0, val1, val2); }
+  { return functions->DefineClass (this, name, obj0, val1, val2); }
 
   jclass FindClass (const char * val0)
-  { return p->FindClass (this, val0); }
+  { return functions->FindClass (this, val0); }
 
   jmethodID FromReflectedMethod (jobject obj0)
-  { return p->FromReflectedMethod (this, obj0); }
+  { return functions->FromReflectedMethod (this, obj0); }
 
   jfieldID FromReflectedField (jobject obj0)
-  { return p->FromReflectedField (this, obj0); }
+  { return functions->FromReflectedField (this, obj0); }
 
   jobject ToReflectedMethod (jclass cl0, jmethodID meth1, jboolean val2)
-  { return p->ToReflectedMethod (this, cl0, meth1, val2); }
+  { return functions->ToReflectedMethod (this, cl0, meth1, val2); }
 
   jclass GetSuperclass (jclass cl0)
-  { return p->GetSuperclass (this, cl0); }
+  { return functions->GetSuperclass (this, cl0); }
 
   jboolean IsAssignableFrom (jclass cl0, jclass cl1)
-  { return p->IsAssignableFrom (this, cl0, cl1); }
+  { return functions->IsAssignableFrom (this, cl0, cl1); }
 
   jobject ToReflectedField (jclass cl0, jfieldID fld1, jboolean val2)
-  { return p->ToReflectedField (this, cl0, fld1, val2); }
+  { return functions->ToReflectedField (this, cl0, fld1, val2); }
 
   jint Throw (jthrowable val0)
-  { return p->Throw (this, val0); }
+  { return functions->Throw (this, val0); }
 
   jint ThrowNew (jclass cl0, const char * val1)
-  { return p->ThrowNew (this, cl0, val1); }
+  { return functions->ThrowNew (this, cl0, val1); }
 
   jthrowable ExceptionOccurred ()
-  { return p->ExceptionOccurred (this); }
+  { return functions->ExceptionOccurred (this); }
 
   void ExceptionDescribe ()
-  { p->ExceptionDescribe (this); }
+  { functions->ExceptionDescribe (this); }
 
   void ExceptionClear ()
-  { p->ExceptionClear (this); }
+  { functions->ExceptionClear (this); }
 
   void FatalError (const char * val0)
-  { p->FatalError (this, val0); }
+  { functions->FatalError (this, val0); }
 
   jint PushLocalFrame (jint val0)
-  { return p->PushLocalFrame (this, val0); }
+  { return functions->PushLocalFrame (this, val0); }
 
   jobject PopLocalFrame (jobject obj0)
-  { return p->PopLocalFrame (this, obj0); }
+  { return functions->PopLocalFrame (this, obj0); }
 
   jobject NewGlobalRef (jobject obj0)
-  { return p->NewGlobalRef (this, obj0); }
+  { return functions->NewGlobalRef (this, obj0); }
 
   void DeleteGlobalRef (jobject obj0)
-  { p->DeleteGlobalRef (this, obj0); }
+  { functions->DeleteGlobalRef (this, obj0); }
 
   void DeleteLocalRef (jobject obj0)
-  { p->DeleteLocalRef (this, obj0); }
+  { functions->DeleteLocalRef (this, obj0); }
 
   jboolean IsSameObject (jobject obj0, jobject obj1)
-  { return p->IsSameObject (this, obj0, obj1); }
+  { return functions->IsSameObject (this, obj0, obj1); }
 
   jobject NewLocalRef (jobject obj0)
-  { return p->NewLocalRef (this, obj0); }
+  { return functions->NewLocalRef (this, obj0); }
 
   jint EnsureLocalCapacity (jint val0)
-  { return p->EnsureLocalCapacity (this, val0); }
+  { return functions->EnsureLocalCapacity (this, val0); }
 
   jobject AllocObject (jclass cl0)
-  { return p->AllocObject (this, cl0); }
+  { return functions->AllocObject (this, cl0); }
 
   jobject NewObject (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jobject result = p->NewObjectV (this, cl0, meth1, args);
+    jobject result = functions->NewObjectV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jobject NewObjectV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->NewObjectV (this, cl0, meth1, val2); }
+  { return functions->NewObjectV (this, cl0, meth1, val2); }
 
   jobject NewObjectA (jclass cl0, jmethodID meth1, jvalue * val2)
-  { return p->NewObjectA (this, cl0, meth1, val2); }
+  { return functions->NewObjectA (this, cl0, meth1, val2); }
 
   jclass GetObjectClass (jobject obj0)
-  { return p->GetObjectClass (this, obj0); }
+  { return functions->GetObjectClass (this, obj0); }
 
   jboolean IsInstanceOf (jobject obj0, jclass cl1)
-  { return p->IsInstanceOf (this, obj0, cl1); }
+  { return functions->IsInstanceOf (this, obj0, cl1); }
 
   jmethodID GetMethodID (jclass cl0, const char * val1, const char * val2)
-  { return p->GetMethodID (this, cl0, val1, val2); }
+  { return functions->GetMethodID (this, cl0, val1, val2); }
 
   jobject CallObjectMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jobject result = p->CallObjectMethodV (this, obj0, meth1, args);
+    jobject result = functions->CallObjectMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jobject CallObjectMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallObjectMethodV (this, obj0, meth1, val2); }
+  { return functions->CallObjectMethodV (this, obj0, meth1, val2); }
 
   jobject CallObjectMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
-  { return p->CallObjectMethodA (this, obj0, meth1, val2); }
+  { return functions->CallObjectMethodA (this, obj0, meth1, val2); }
 
   jboolean CallBooleanMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jboolean result = p->CallBooleanMethodV (this, obj0, meth1, args);
+    jboolean result = functions->CallBooleanMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jboolean CallBooleanMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallBooleanMethodV (this, obj0, meth1, val2); }
+  { return functions->CallBooleanMethodV (this, obj0, meth1, val2); }
 
   jboolean CallBooleanMethodA (jobject obj0, jmethodID meth1,
                                const jvalue * val2)
-  { return p->CallBooleanMethodA (this, obj0, meth1, val2); }
+  { return functions->CallBooleanMethodA (this, obj0, meth1, val2); }
 
   jbyte CallByteMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jbyte result = p->CallByteMethodV (this, obj0, meth1, args);
+    jbyte result = functions->CallByteMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jbyte CallByteMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallByteMethodV (this, obj0, meth1, val2); }
+  { return functions->CallByteMethodV (this, obj0, meth1, val2); }
 
   jbyte CallByteMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallByteMethodA (this, obj0, meth1, val2); }
+  { return functions->CallByteMethodA (this, obj0, meth1, val2); }
 
   jchar CallCharMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jchar result = p->CallCharMethodV (this, obj0, meth1, args);
+    jchar result = functions->CallCharMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jchar CallCharMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallCharMethodV (this, obj0, meth1, val2); }
+  { return functions->CallCharMethodV (this, obj0, meth1, val2); }
 
   jchar CallCharMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallCharMethodA (this, obj0, meth1, val2); }
+  { return functions->CallCharMethodA (this, obj0, meth1, val2); }
 
   jshort CallShortMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jshort result = p->CallShortMethodV (this, obj0, meth1, args);
+    jshort result = functions->CallShortMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jshort CallShortMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallShortMethodV (this, obj0, meth1, val2); }
+  { return functions->CallShortMethodV (this, obj0, meth1, val2); }
 
   jshort CallShortMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallShortMethodA (this, obj0, meth1, val2); }
+  { return functions->CallShortMethodA (this, obj0, meth1, val2); }
 
   jint CallIntMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jint result = p->CallIntMethodV (this, obj0, meth1, args);
+    jint result = functions->CallIntMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jint CallIntMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallIntMethodV (this, obj0, meth1, val2); }
+  { return functions->CallIntMethodV (this, obj0, meth1, val2); }
 
   jint CallIntMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
-  { return p->CallIntMethodA (this, obj0, meth1, val2); }
+  { return functions->CallIntMethodA (this, obj0, meth1, val2); }
 
   jlong CallLongMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jlong result = p->CallLongMethodV (this, obj0, meth1, args);
+    jlong result = functions->CallLongMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jlong CallLongMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallLongMethodV (this, obj0, meth1, val2); }
+  { return functions->CallLongMethodV (this, obj0, meth1, val2); }
 
   jlong CallLongMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallLongMethodA (this, obj0, meth1, val2); }
+  { return functions->CallLongMethodA (this, obj0, meth1, val2); }
 
   jfloat CallFloatMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jfloat result = p->CallFloatMethodV (this, obj0, meth1, args);
+    jfloat result = functions->CallFloatMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jfloat CallFloatMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallFloatMethodV (this, obj0, meth1, val2); }
+  { return functions->CallFloatMethodV (this, obj0, meth1, val2); }
 
   jfloat CallFloatMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallFloatMethodA (this, obj0, meth1, val2); }
+  { return functions->CallFloatMethodA (this, obj0, meth1, val2); }
 
   jdouble CallDoubleMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jdouble result = p->CallDoubleMethodV (this, obj0, meth1, args);
+    jdouble result = functions->CallDoubleMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
   jdouble CallDoubleMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { return p->CallDoubleMethodV (this, obj0, meth1, val2); }
+  { return functions->CallDoubleMethodV (this, obj0, meth1, val2); }
 
   jdouble CallDoubleMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { return p->CallDoubleMethodA (this, obj0, meth1, val2); }
+  { return functions->CallDoubleMethodA (this, obj0, meth1, val2); }
 
   void CallVoidMethod (jobject obj0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    p->CallVoidMethodV (this, obj0, meth1, args);
+    functions->CallVoidMethodV (this, obj0, meth1, args);
     va_end (args);
   }
 
   void CallVoidMethodV (jobject obj0, jmethodID meth1, va_list val2)
-  { p->CallVoidMethodV (this, obj0, meth1, val2); }
+  { functions->CallVoidMethodV (this, obj0, meth1, val2); }
 
   void CallVoidMethodA (jobject obj0, jmethodID meth1, const jvalue * val2)
-  { p->CallVoidMethodA (this, obj0, meth1, val2); }
+  { functions->CallVoidMethodA (this, obj0, meth1, val2); }
 
   jobject CallNonvirtualObjectMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jobject result = p->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, args);
+    jobject result = functions->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jobject CallNonvirtualObjectMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, val3); }
 
   jobject CallNonvirtualObjectMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualObjectMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualObjectMethodA (this, obj0, cl1, meth2, val3); }
 
   jboolean CallNonvirtualBooleanMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jboolean result = p->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, args);
+    jboolean result = functions->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jboolean CallNonvirtualBooleanMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, val3); }
 
   jboolean CallNonvirtualBooleanMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualBooleanMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualBooleanMethodA (this, obj0, cl1, meth2, val3); }
 
   jbyte CallNonvirtualByteMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jbyte result = p->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, args);
+    jbyte result = functions->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jbyte CallNonvirtualByteMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, val3); }
 
   jbyte CallNonvirtualByteMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualByteMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualByteMethodA (this, obj0, cl1, meth2, val3); }
 
   jchar CallNonvirtualCharMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jchar result = p->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, args);
+    jchar result = functions->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jchar CallNonvirtualCharMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, val3); }
 
   jchar CallNonvirtualCharMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualCharMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualCharMethodA (this, obj0, cl1, meth2, val3); }
 
   jshort CallNonvirtualShortMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jshort result = p->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, args);
+    jshort result = functions->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jshort CallNonvirtualShortMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, val3); }
 
   jshort CallNonvirtualShortMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualShortMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualShortMethodA (this, obj0, cl1, meth2, val3); }
 
   jint CallNonvirtualIntMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jint result = p->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, args);
+    jint result = functions->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jint CallNonvirtualIntMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, val3); }
 
   jint CallNonvirtualIntMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualIntMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualIntMethodA (this, obj0, cl1, meth2, val3); }
 
   jlong CallNonvirtualLongMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jlong result = p->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, args);
+    jlong result = functions->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jlong CallNonvirtualLongMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, val3); }
 
   jlong CallNonvirtualLongMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualLongMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualLongMethodA (this, obj0, cl1, meth2, val3); }
 
   jfloat CallNonvirtualFloatMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jfloat result = p->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, args);
+    jfloat result = functions->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jfloat CallNonvirtualFloatMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, val3); }
 
   jfloat CallNonvirtualFloatMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualFloatMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualFloatMethodA (this, obj0, cl1, meth2, val3); }
 
   jdouble CallNonvirtualDoubleMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    jdouble result = p->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, args);
+    jdouble result = functions->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
   jdouble CallNonvirtualDoubleMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { return p->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, val3); }
 
   jdouble CallNonvirtualDoubleMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { return p->CallNonvirtualDoubleMethodA (this, obj0, cl1, meth2, val3); }
+  { return functions->CallNonvirtualDoubleMethodA (this, obj0, cl1, meth2, val3); }
 
   void CallNonvirtualVoidMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     va_list args;
     va_start (args, meth2);
-    p->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, args);
+    functions->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
   }
 
   void CallNonvirtualVoidMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
-  { p->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, val3); }
+  { functions->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, val3); }
 
   void CallNonvirtualVoidMethodA (jobject obj0, jclass cl1, jmethodID meth2, const jvalue * val3)
-  { p->CallNonvirtualVoidMethodA (this, obj0, cl1, meth2, val3); }
+  { functions->CallNonvirtualVoidMethodA (this, obj0, cl1, meth2, val3); }
 
   jfieldID GetFieldID (jclass cl0, const char * val1, const char * val2)
-  { return p->GetFieldID (this, cl0, val1, val2); }
+  { return functions->GetFieldID (this, cl0, val1, val2); }
 
   jobject GetObjectField (jobject obj0, jfieldID fld1)
-  { return p->GetObjectField (this, obj0, fld1); }
+  { return functions->GetObjectField (this, obj0, fld1); }
 
   jboolean GetBooleanField (jobject obj0, jfieldID fld1)
-  { return p->GetBooleanField (this, obj0, fld1); }
+  { return functions->GetBooleanField (this, obj0, fld1); }
 
   jbyte GetByteField (jobject obj0, jfieldID fld1)
-  { return p->GetByteField (this, obj0, fld1); }
+  { return functions->GetByteField (this, obj0, fld1); }
 
   jchar GetCharField (jobject obj0, jfieldID fld1)
-  { return p->GetCharField (this, obj0, fld1); }
+  { return functions->GetCharField (this, obj0, fld1); }
 
   jshort GetShortField (jobject obj0, jfieldID fld1)
-  { return p->GetShortField (this, obj0, fld1); }
+  { return functions->GetShortField (this, obj0, fld1); }
 
   jint GetIntField (jobject obj0, jfieldID fld1)
-  { return p->GetIntField (this, obj0, fld1); }
+  { return functions->GetIntField (this, obj0, fld1); }
 
   jlong GetLongField (jobject obj0, jfieldID fld1)
-  { return p->GetLongField (this, obj0, fld1); }
+  { return functions->GetLongField (this, obj0, fld1); }
 
   jfloat GetFloatField (jobject obj0, jfieldID fld1)
-  { return p->GetFloatField (this, obj0, fld1); }
+  { return functions->GetFloatField (this, obj0, fld1); }
 
   jdouble GetDoubleField (jobject obj0, jfieldID fld1)
-  { return p->GetDoubleField (this, obj0, fld1); }
+  { return functions->GetDoubleField (this, obj0, fld1); }
 
   void SetObjectField (jobject obj0, jfieldID fld1, jobject obj2)
-  { p->SetObjectField (this, obj0, fld1, obj2); }
+  { functions->SetObjectField (this, obj0, fld1, obj2); }
 
   void SetBooleanField (jobject obj0, jfieldID fld1, jboolean val2)
-  { p->SetBooleanField (this, obj0, fld1, val2); }
+  { functions->SetBooleanField (this, obj0, fld1, val2); }
 
   void SetByteField (jobject obj0, jfieldID fld1, jbyte val2)
-  { p->SetByteField (this, obj0, fld1, val2); }
+  { functions->SetByteField (this, obj0, fld1, val2); }
 
   void SetCharField (jobject obj0, jfieldID fld1, jchar val2)
-  { p->SetCharField (this, obj0, fld1, val2); }
+  { functions->SetCharField (this, obj0, fld1, val2); }
 
   void SetShortField (jobject obj0, jfieldID fld1, jshort val2)
-  { p->SetShortField (this, obj0, fld1, val2); }
+  { functions->SetShortField (this, obj0, fld1, val2); }
 
   void SetIntField (jobject obj0, jfieldID fld1, jint val2)
-  { p->SetIntField (this, obj0, fld1, val2); }
+  { functions->SetIntField (this, obj0, fld1, val2); }
 
   void SetLongField (jobject obj0, jfieldID fld1, jlong val2)
-  { p->SetLongField (this, obj0, fld1, val2); }
+  { functions->SetLongField (this, obj0, fld1, val2); }
 
   void SetFloatField (jobject obj0, jfieldID fld1, jfloat val2)
-  { p->SetFloatField (this, obj0, fld1, val2); }
+  { functions->SetFloatField (this, obj0, fld1, val2); }
 
   void SetDoubleField (jobject obj0, jfieldID fld1, jdouble val2)
-  { p->SetDoubleField (this, obj0, fld1, val2); }
+  { functions->SetDoubleField (this, obj0, fld1, val2); }
 
   jmethodID GetStaticMethodID (jclass cl0, const char * val1, const char * val2)
-  { return p->GetStaticMethodID (this, cl0, val1, val2); }
+  { return functions->GetStaticMethodID (this, cl0, val1, val2); }
 
   jobject CallStaticObjectMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jobject result = p->CallStaticObjectMethodV (this, cl0, meth1, args);
+    jobject result = functions->CallStaticObjectMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jobject CallStaticObjectMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticObjectMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticObjectMethodV (this, cl0, meth1, val2); }
 
   jobject CallStaticObjectMethodA (jclass cl0, jmethodID meth1,
                                    const jvalue * val2)
-  { return p->CallStaticObjectMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticObjectMethodA (this, cl0, meth1, val2); }
 
   jboolean CallStaticBooleanMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jboolean result = p->CallStaticBooleanMethodV (this, cl0, meth1, args);
+    jboolean result = functions->CallStaticBooleanMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jboolean CallStaticBooleanMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticBooleanMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticBooleanMethodV (this, cl0, meth1, val2); }
 
   jboolean CallStaticBooleanMethodA (jclass cl0, jmethodID meth1,
                                      const jvalue * val2)
-  { return p->CallStaticBooleanMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticBooleanMethodA (this, cl0, meth1, val2); }
 
   jbyte CallStaticByteMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jbyte result = p->CallStaticByteMethodV (this, cl0, meth1, args);
+    jbyte result = functions->CallStaticByteMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jbyte CallStaticByteMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticByteMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticByteMethodV (this, cl0, meth1, val2); }
 
   jbyte CallStaticByteMethodA (jclass cl0, jmethodID meth1, const jvalue * val2)
-  { return p->CallStaticByteMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticByteMethodA (this, cl0, meth1, val2); }
 
   jchar CallStaticCharMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jchar result = p->CallStaticCharMethodV (this, cl0, meth1, args);
+    jchar result = functions->CallStaticCharMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jchar CallStaticCharMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticCharMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticCharMethodV (this, cl0, meth1, val2); }
 
   jchar CallStaticCharMethodA (jclass cl0, jmethodID meth1, const jvalue * val2)
-  { return p->CallStaticCharMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticCharMethodA (this, cl0, meth1, val2); }
 
   jshort CallStaticShortMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jshort result = p->CallStaticShortMethodV (this, cl0, meth1, args);
+    jshort result = functions->CallStaticShortMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jshort CallStaticShortMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticShortMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticShortMethodV (this, cl0, meth1, val2); }
 
   jshort CallStaticShortMethodA (jclass cl0, jmethodID meth1,
                                  const jvalue * val2)
-  { return p->CallStaticShortMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticShortMethodA (this, cl0, meth1, val2); }
 
   jint CallStaticIntMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jint result = p->CallStaticIntMethodV (this, cl0, meth1, args);
+    jint result = functions->CallStaticIntMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jint CallStaticIntMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticIntMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticIntMethodV (this, cl0, meth1, val2); }
 
   jint CallStaticIntMethodA (jclass cl0, jmethodID meth1, const jvalue * val2)
-  { return p->CallStaticIntMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticIntMethodA (this, cl0, meth1, val2); }
 
   jlong CallStaticLongMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jlong result = p->CallStaticLongMethodV (this, cl0, meth1, args);
+    jlong result = functions->CallStaticLongMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jlong CallStaticLongMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticLongMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticLongMethodV (this, cl0, meth1, val2); }
 
   jlong CallStaticLongMethodA (jclass cl0, jmethodID meth1, const jvalue * val2)
-  { return p->CallStaticLongMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticLongMethodA (this, cl0, meth1, val2); }
 
   jfloat CallStaticFloatMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jfloat result = p->CallStaticFloatMethodV (this, cl0, meth1, args);
+    jfloat result = functions->CallStaticFloatMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jfloat CallStaticFloatMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticFloatMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticFloatMethodV (this, cl0, meth1, val2); }
 
   jfloat CallStaticFloatMethodA (jclass cl0, jmethodID meth1,
                                  const jvalue * val2)
-  { return p->CallStaticFloatMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticFloatMethodA (this, cl0, meth1, val2); }
 
   jdouble CallStaticDoubleMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    jdouble result = p->CallStaticDoubleMethodV (this, cl0, meth1, args);
+    jdouble result = functions->CallStaticDoubleMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
   jdouble CallStaticDoubleMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { return p->CallStaticDoubleMethodV (this, cl0, meth1, val2); }
+  { return functions->CallStaticDoubleMethodV (this, cl0, meth1, val2); }
 
   jdouble CallStaticDoubleMethodA (jclass cl0, jmethodID meth1,
                                    const jvalue * val2)
-  { return p->CallStaticDoubleMethodA (this, cl0, meth1, val2); }
+  { return functions->CallStaticDoubleMethodA (this, cl0, meth1, val2); }
 
   void CallStaticVoidMethod (jclass cl0, jmethodID meth1, ...)
   {
     va_list args;
     va_start (args, meth1);
-    p->CallStaticVoidMethodV (this, cl0, meth1, args);
+    functions->CallStaticVoidMethodV (this, cl0, meth1, args);
     va_end (args);
   }
 
   void CallStaticVoidMethodV (jclass cl0, jmethodID meth1, va_list val2)
-  { p->CallStaticVoidMethodV (this, cl0, meth1, val2); }
+  { functions->CallStaticVoidMethodV (this, cl0, meth1, val2); }
 
   void CallStaticVoidMethodA (jclass cl0, jmethodID meth1, const jvalue * val2)
-  { p->CallStaticVoidMethodA (this, cl0, meth1, val2); }
+  { functions->CallStaticVoidMethodA (this, cl0, meth1, val2); }
 
   jfieldID GetStaticFieldID (jclass cl0, const char * val1, const char * val2)
-  { return p->GetStaticFieldID (this, cl0, val1, val2); }
+  { return functions->GetStaticFieldID (this, cl0, val1, val2); }
 
   jobject GetStaticObjectField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticObjectField (this, cl0, fld1); }
+  { return functions->GetStaticObjectField (this, cl0, fld1); }
 
   jboolean GetStaticBooleanField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticBooleanField (this, cl0, fld1); }
+  { return functions->GetStaticBooleanField (this, cl0, fld1); }
 
   jbyte GetStaticByteField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticByteField (this, cl0, fld1); }
+  { return functions->GetStaticByteField (this, cl0, fld1); }
 
   jchar GetStaticCharField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticCharField (this, cl0, fld1); }
+  { return functions->GetStaticCharField (this, cl0, fld1); }
 
   jshort GetStaticShortField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticShortField (this, cl0, fld1); }
+  { return functions->GetStaticShortField (this, cl0, fld1); }
 
   jint GetStaticIntField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticIntField (this, cl0, fld1); }
+  { return functions->GetStaticIntField (this, cl0, fld1); }
 
   jlong GetStaticLongField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticLongField (this, cl0, fld1); }
+  { return functions->GetStaticLongField (this, cl0, fld1); }
 
   jfloat GetStaticFloatField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticFloatField (this, cl0, fld1); }
+  { return functions->GetStaticFloatField (this, cl0, fld1); }
 
   jdouble GetStaticDoubleField (jclass cl0, jfieldID fld1)
-  { return p->GetStaticDoubleField (this, cl0, fld1); }
+  { return functions->GetStaticDoubleField (this, cl0, fld1); }
 
   void SetStaticObjectField (jclass cl0, jfieldID fld1, jobject obj2)
-  { p->SetStaticObjectField (this, cl0, fld1, obj2); }
+  { functions->SetStaticObjectField (this, cl0, fld1, obj2); }
 
   void SetStaticBooleanField (jclass cl0, jfieldID fld1, jboolean val2)
-  { p->SetStaticBooleanField (this, cl0, fld1, val2); }
+  { functions->SetStaticBooleanField (this, cl0, fld1, val2); }
 
   void SetStaticByteField (jclass cl0, jfieldID fld1, jbyte val2)
-  { p->SetStaticByteField (this, cl0, fld1, val2); }
+  { functions->SetStaticByteField (this, cl0, fld1, val2); }
 
   void SetStaticCharField (jclass cl0, jfieldID fld1, jchar val2)
-  { p->SetStaticCharField (this, cl0, fld1, val2); }
+  { functions->SetStaticCharField (this, cl0, fld1, val2); }
 
   void SetStaticShortField (jclass cl0, jfieldID fld1, jshort val2)
-  { p->SetStaticShortField (this, cl0, fld1, val2); }
+  { functions->SetStaticShortField (this, cl0, fld1, val2); }
 
   void SetStaticIntField (jclass cl0, jfieldID fld1, jint val2)
-  { p->SetStaticIntField (this, cl0, fld1, val2); }
+  { functions->SetStaticIntField (this, cl0, fld1, val2); }
 
   void SetStaticLongField (jclass cl0, jfieldID fld1, jlong val2)
-  { p->SetStaticLongField (this, cl0, fld1, val2); }
+  { functions->SetStaticLongField (this, cl0, fld1, val2); }
 
   void SetStaticFloatField (jclass cl0, jfieldID fld1, jfloat val2)
-  { p->SetStaticFloatField (this, cl0, fld1, val2); }
+  { functions->SetStaticFloatField (this, cl0, fld1, val2); }
 
   void SetStaticDoubleField (jclass cl0, jfieldID fld1, jdouble val2)
-  { p->SetStaticDoubleField (this, cl0, fld1, val2); }
+  { functions->SetStaticDoubleField (this, cl0, fld1, val2); }
 
   jstring NewString (const jchar * val0, jsize val1)
-  { return p->NewString (this, val0, val1); }
+  { return functions->NewString (this, val0, val1); }
 
   jint GetStringLength (jstring val0)
-  { return p->GetStringLength (this, val0); }
+  { return functions->GetStringLength (this, val0); }
 
   const jchar * GetStringChars (jstring val0, jboolean * val1)
-  { return p->GetStringChars (this, val0, val1); }
+  { return functions->GetStringChars (this, val0, val1); }
 
   void ReleaseStringChars (jstring val0, const jchar * val1)
-  { p->ReleaseStringChars (this, val0, val1); }
+  { functions->ReleaseStringChars (this, val0, val1); }
 
   jstring NewStringUTF (const char * val0)
-  { return p->NewStringUTF (this, val0); }
+  { return functions->NewStringUTF (this, val0); }
 
   jsize GetStringUTFLength (jstring val0)
-  { return p->GetStringUTFLength (this, val0); }
+  { return functions->GetStringUTFLength (this, val0); }
 
   const char * GetStringUTFChars (jstring val0, jboolean * val1)
-  { return p->GetStringUTFChars (this, val0, val1); }
+  { return functions->GetStringUTFChars (this, val0, val1); }
 
   void ReleaseStringUTFChars (jstring val0, const char * val1)
-  { p->ReleaseStringUTFChars (this, val0, val1); }
+  { functions->ReleaseStringUTFChars (this, val0, val1); }
 
   jsize GetArrayLength (jarray val0)
-  { return p->GetArrayLength (this, val0); }
+  { return functions->GetArrayLength (this, val0); }
 
   jobjectArray NewObjectArray (jsize val0, jclass cl1, jobject obj2)
-  { return p->NewObjectArray (this, val0, cl1, obj2); }
+  { return functions->NewObjectArray (this, val0, cl1, obj2); }
 
   jobject GetObjectArrayElement (jobjectArray val0, jsize val1)
-  { return p->GetObjectArrayElement (this, val0, val1); }
+  { return functions->GetObjectArrayElement (this, val0, val1); }
 
   void SetObjectArrayElement (jobjectArray val0, jsize val1, jobject obj2)
-  { p->SetObjectArrayElement (this, val0, val1, obj2); }
+  { functions->SetObjectArrayElement (this, val0, val1, obj2); }
 
   jbooleanArray NewBooleanArray (jsize val0)
-  { return p->NewBooleanArray (this, val0); }
+  { return functions->NewBooleanArray (this, val0); }
 
   jbyteArray NewByteArray (jsize val0)
-  { return p->NewByteArray (this, val0); }
+  { return functions->NewByteArray (this, val0); }
 
   jcharArray NewCharArray (jsize val0)
-  { return p->NewCharArray (this, val0); }
+  { return functions->NewCharArray (this, val0); }
 
   jshortArray NewShortArray (jsize val0)
-  { return p->NewShortArray (this, val0); }
+  { return functions->NewShortArray (this, val0); }
 
   jintArray NewIntArray (jsize val0)
-  { return p->NewIntArray (this, val0); }
+  { return functions->NewIntArray (this, val0); }
 
   jlongArray NewLongArray (jsize val0)
-  { return p->NewLongArray (this, val0); }
+  { return functions->NewLongArray (this, val0); }
 
   jfloatArray NewFloatArray (jsize val0)
-  { return p->NewFloatArray (this, val0); }
+  { return functions->NewFloatArray (this, val0); }
 
   jdoubleArray NewDoubleArray (jsize val0)
-  { return p->NewDoubleArray (this, val0); }
+  { return functions->NewDoubleArray (this, val0); }
 
   jboolean * GetBooleanArrayElements (jbooleanArray val0, jboolean * val1)
-  { return p->GetBooleanArrayElements (this, val0, val1); }
+  { return functions->GetBooleanArrayElements (this, val0, val1); }
 
   jbyte * GetByteArrayElements (jbyteArray val0, jboolean * val1)
-  { return p->GetByteArrayElements (this, val0, val1); }
+  { return functions->GetByteArrayElements (this, val0, val1); }
 
   jchar * GetCharArrayElements (jcharArray val0, jboolean * val1)
-  { return p->GetCharArrayElements (this, val0, val1); }
+  { return functions->GetCharArrayElements (this, val0, val1); }
 
   jshort * GetShortArrayElements (jshortArray val0, jboolean * val1)
-  { return p->GetShortArrayElements (this, val0, val1); }
+  { return functions->GetShortArrayElements (this, val0, val1); }
 
   jint * GetIntArrayElements (jintArray val0, jboolean * val1)
-  { return p->GetIntArrayElements (this, val0, val1); }
+  { return functions->GetIntArrayElements (this, val0, val1); }
 
   jlong * GetLongArrayElements (jlongArray val0, jboolean * val1)
-  { return p->GetLongArrayElements (this, val0, val1); }
+  { return functions->GetLongArrayElements (this, val0, val1); }
 
   jfloat * GetFloatArrayElements (jfloatArray val0, jboolean * val1)
-  { return p->GetFloatArrayElements (this, val0, val1); }
+  { return functions->GetFloatArrayElements (this, val0, val1); }
 
   jdouble * GetDoubleArrayElements (jdoubleArray val0, jboolean * val1)
-  { return p->GetDoubleArrayElements (this, val0, val1); }
+  { return functions->GetDoubleArrayElements (this, val0, val1); }
 
   void ReleaseBooleanArrayElements (jbooleanArray val0, jboolean * val1, jint val2)
-  { p->ReleaseBooleanArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseBooleanArrayElements (this, val0, val1, val2); }
 
   void ReleaseByteArrayElements (jbyteArray val0, jbyte * val1, jint val2)
-  { p->ReleaseByteArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseByteArrayElements (this, val0, val1, val2); }
 
   void ReleaseCharArrayElements (jcharArray val0, jchar * val1, jint val2)
-  { p->ReleaseCharArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseCharArrayElements (this, val0, val1, val2); }
 
   void ReleaseShortArrayElements (jshortArray val0, jshort * val1, jint val2)
-  { p->ReleaseShortArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseShortArrayElements (this, val0, val1, val2); }
 
   void ReleaseIntArrayElements (jintArray val0, jint * val1, jint val2)
-  { p->ReleaseIntArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseIntArrayElements (this, val0, val1, val2); }
 
   void ReleaseLongArrayElements (jlongArray val0, jlong * val1, jint val2)
-  { p->ReleaseLongArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseLongArrayElements (this, val0, val1, val2); }
 
   void ReleaseFloatArrayElements (jfloatArray val0, jfloat * val1, jint val2)
-  { p->ReleaseFloatArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseFloatArrayElements (this, val0, val1, val2); }
 
   void ReleaseDoubleArrayElements (jdoubleArray val0, jdouble * val1, jint val2)
-  { p->ReleaseDoubleArrayElements (this, val0, val1, val2); }
+  { functions->ReleaseDoubleArrayElements (this, val0, val1, val2); }
 
   void GetBooleanArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
-  { p->GetBooleanArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetBooleanArrayRegion (this, val0, val1, val2, val3); }
 
   void GetByteArrayRegion (jbyteArray val0, jsize val1, jsize val2, jbyte * val3)
-  { p->GetByteArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetByteArrayRegion (this, val0, val1, val2, val3); }
 
   void GetCharArrayRegion (jcharArray val0, jsize val1, jsize val2, jchar * val3)
-  { p->GetCharArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetCharArrayRegion (this, val0, val1, val2, val3); }
 
   void GetShortArrayRegion (jshortArray val0, jsize val1, jsize val2, jshort * val3)
-  { p->GetShortArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetShortArrayRegion (this, val0, val1, val2, val3); }
 
   void GetIntArrayRegion (jintArray val0, jsize val1, jsize val2, jint * val3)
-  { p->GetIntArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetIntArrayRegion (this, val0, val1, val2, val3); }
 
   void GetLongArrayRegion (jlongArray val0, jsize val1, jsize val2, jlong * val3)
-  { p->GetLongArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetLongArrayRegion (this, val0, val1, val2, val3); }
 
   void GetFloatArrayRegion (jfloatArray val0, jsize val1, jsize val2, jfloat * val3)
-  { p->GetFloatArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetFloatArrayRegion (this, val0, val1, val2, val3); }
 
   void GetDoubleArrayRegion (jdoubleArray val0, jsize val1, jsize val2, jdouble * val3)
-  { p->GetDoubleArrayRegion (this, val0, val1, val2, val3); }
+  { functions->GetDoubleArrayRegion (this, val0, val1, val2, val3); }
 
   void SetBooleanArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
-  { p->SetBooleanArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetBooleanArrayRegion (this, val0, val1, val2, val3); }
 
   void SetByteArrayRegion (jbyteArray val0, jsize val1, jsize val2, jbyte * val3)
-  { p->SetByteArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetByteArrayRegion (this, val0, val1, val2, val3); }
 
   void SetCharArrayRegion (jcharArray val0, jsize val1, jsize val2, jchar * val3)
-  { p->SetCharArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetCharArrayRegion (this, val0, val1, val2, val3); }
 
   void SetShortArrayRegion (jshortArray val0, jsize val1, jsize val2, jshort * val3)
-  { p->SetShortArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetShortArrayRegion (this, val0, val1, val2, val3); }
 
   void SetIntArrayRegion (jintArray val0, jsize val1, jsize val2, jint * val3)
-  { p->SetIntArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetIntArrayRegion (this, val0, val1, val2, val3); }
 
   void SetLongArrayRegion (jlongArray val0, jsize val1, jsize val2, jlong * val3)
-  { p->SetLongArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetLongArrayRegion (this, val0, val1, val2, val3); }
 
   void SetFloatArrayRegion (jfloatArray val0, jsize val1, jsize val2, jfloat * val3)
-  { p->SetFloatArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetFloatArrayRegion (this, val0, val1, val2, val3); }
 
   void SetDoubleArrayRegion (jdoubleArray val0, jsize val1, jsize val2, jdouble * val3)
-  { p->SetDoubleArrayRegion (this, val0, val1, val2, val3); }
+  { functions->SetDoubleArrayRegion (this, val0, val1, val2, val3); }
 
   jint RegisterNatives (jclass cl0, const JNINativeMethod * val1, jint val2)
-  { return p->RegisterNatives (this, cl0, val1, val2); }
+  { return functions->RegisterNatives (this, cl0, val1, val2); }
 
   jint UnregisterNatives (jclass cl0)
-  { return p->UnregisterNatives (this, cl0); }
+  { return functions->UnregisterNatives (this, cl0); }
 
   jint MonitorEnter (jobject obj0)
-  { return p->MonitorEnter (this, obj0); }
+  { return functions->MonitorEnter (this, obj0); }
 
   jint MonitorExit (jobject obj0)
-  { return p->MonitorExit (this, obj0); }
+  { return functions->MonitorExit (this, obj0); }
 
   jint GetJavaVM (JavaVM ** val0)
-  { return p->GetJavaVM (this, val0); }
+  { return functions->GetJavaVM (this, val0); }
 
   /* ---- JNI 1.2 functions ---- */
 
   void GetStringRegion (jstring val0, jsize val1, jsize val2, jchar * val3)
-  { p->GetStringRegion (this, val0, val1, val2, val3); }
+  { functions->GetStringRegion (this, val0, val1, val2, val3); }
 
   void GetStringUTFRegion (jstring val0, jsize val1, jsize val2, char * val3)
-  { p->GetStringUTFRegion (this, val0, val1, val2, val3); }
+  { functions->GetStringUTFRegion (this, val0, val1, val2, val3); }
 
   void * GetPrimitiveArrayCritical (jarray val0, jboolean * val1)
-  { return p->GetPrimitiveArrayCritical (this, val0, val1); }
+  { return functions->GetPrimitiveArrayCritical (this, val0, val1); }
 
   void ReleasePrimitiveArrayCritical (jarray val0, void * val1, jint val2)
-  { p->ReleasePrimitiveArrayCritical (this, val0, val1, val2); }
+  { functions->ReleasePrimitiveArrayCritical (this, val0, val1, val2); }
 
   const jchar * GetStringCritical (jstring val0, jboolean * val1)
-  { return p->GetStringCritical (this, val0, val1); }
+  { return functions->GetStringCritical (this, val0, val1); }
 
   void ReleaseStringCritical (jstring val0, const jchar * val1)
-  { p->ReleaseStringCritical (this, val0, val1); }
+  { functions->ReleaseStringCritical (this, val0, val1); }
 
   jweak NewWeakGlobalRef (jobject obj0)
-  { return p->NewWeakGlobalRef (this, obj0); }
+  { return functions->NewWeakGlobalRef (this, obj0); }
 
   void DeleteWeakGlobalRef (jweak val0)
-  { p->DeleteWeakGlobalRef (this, val0); }
+  { functions->DeleteWeakGlobalRef (this, val0); }
 
   jboolean ExceptionCheck ()
-  { return p->ExceptionCheck (this); }
+  { return functions->ExceptionCheck (this); }
 
   /* ---- JNI 1.4 functions ---- */
 
   jobject NewDirectByteBuffer (void *addr, jlong capacity)
-  { return p->NewDirectByteBuffer (this, addr, capacity); }
+  { return functions->NewDirectByteBuffer (this, addr, capacity); }
 
   void *GetDirectBufferAddress (jobject buf)
-  { return p->GetDirectBufferAddress (this, buf); }
+  { return functions->GetDirectBufferAddress (this, buf); }
 
   jlong GetDirectBufferCapacity (jobject buf)
-  { return p->GetDirectBufferCapacity (this, buf); }
+  { return functions->GetDirectBufferCapacity (this, buf); }
 
   /* ---- JNI 1.6 functions ---- */
 
   jobjectRefType GetObjectRefType (jobject obj)
-  { return p->GetObjectRefType (this, obj); }
+  { return functions->GetObjectRefType (this, obj); }
 };
 
 #endif /* __cplusplus */

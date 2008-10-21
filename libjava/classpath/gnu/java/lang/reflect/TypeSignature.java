@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.lang.reflect;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -239,7 +241,7 @@ public class TypeSignature
   public static String getEncodingOfMethod(Method m)
   {
     Class[] paramTypes = m.getParameterTypes();
-    StringBuilder buf = new StringBuilder("(");
+    CPStringBuilder buf = new CPStringBuilder("(");
     for (int i = 0; i < paramTypes.length; i++)
       buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
     buf.append(')').append(getEncodingOfClass(m.getReturnType().getName(),
@@ -261,7 +263,7 @@ public class TypeSignature
   public static String getEncodingOfConstructor(Constructor c)
   {
     Class[] paramTypes = c.getParameterTypes();
-    StringBuilder buf = new StringBuilder("(");
+    CPStringBuilder buf = new CPStringBuilder("(");
     for (int i = 0; i < paramTypes.length; i++)
       buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
     buf.append(")V");

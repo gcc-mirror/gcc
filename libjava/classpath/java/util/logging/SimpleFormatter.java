@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package java.util.logging;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
@@ -98,7 +100,7 @@ public class SimpleFormatter
    */
   public String format(LogRecord record)
   {
-    StringBuffer buf = new StringBuffer(180);
+    CPStringBuilder buf = new CPStringBuilder(180);
 
     if (dateFormat == null)
       dateFormat = DateFormat.getDateTimeInstance();

@@ -102,7 +102,7 @@ public class ClassHelper
     String name = klass.getName();
     if (arrayCount == 0)
       return name;
-    StringBuilder b = new StringBuilder(name.length() + 2 * arrayCount);
+    CPStringBuilder b = new CPStringBuilder(name.length() + 2 * arrayCount);
     b.append(name);
     for (int i = 0; i < arrayCount; ++i)
       b.append("[]");

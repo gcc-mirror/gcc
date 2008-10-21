@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1939,7 +1941,7 @@ public abstract class DomNode
       case ENTITY_NODE:
       case ENTITY_REFERENCE_NODE:
       case DOCUMENT_FRAGMENT_NODE:
-        StringBuffer buffer = new StringBuffer();
+        CPStringBuilder buffer = new CPStringBuilder();
         for (DomNode ctx = first; ctx != null; ctx = ctx.next)
           {
             String textContent = ctx.getTextContent(false);
@@ -2124,7 +2126,7 @@ public abstract class DomNode
   {
     String nodeName = getNodeName();
     String nodeValue = getNodeValue();
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    CPStringBuilder buf = new CPStringBuilder(getClass().getName());
     buf.append('[');
     if (nodeName != null)
       {
@@ -2146,7 +2148,7 @@ public abstract class DomNode
   
   String encode(String value)
   {
-    StringBuffer buf = null;
+    CPStringBuilder buf = null;
     int len = value.length();
     for (int i = 0; i < len; i++)
       {
@@ -2155,7 +2157,7 @@ public abstract class DomNode
           {
             if (buf == null)
               {
-                buf = new StringBuffer(value.substring(0, i));
+                buf = new CPStringBuilder(value.substring(0, i));
               }
             buf.append("\\n");
           }
@@ -2163,7 +2165,7 @@ public abstract class DomNode
           {
             if (buf == null)
               {
-                buf = new StringBuffer(value.substring(0, i));
+                buf = new CPStringBuilder(value.substring(0, i));
               }
             buf.append("\\r");
           }

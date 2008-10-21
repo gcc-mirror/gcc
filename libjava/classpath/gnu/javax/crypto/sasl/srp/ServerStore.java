@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.srp;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.HashMap;
 
 /**
@@ -84,7 +86,7 @@ public class ServerStore
   static synchronized final byte[] getNewSessionID()
   {
     final String sid = String.valueOf(++counter);
-    return new StringBuffer("SID-")
+    return new CPStringBuilder("SID-")
         .append("0000000000".substring(0, 10 - sid.length())).append(sid)
         .toString().getBytes();
   }

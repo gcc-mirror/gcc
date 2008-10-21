@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.naming;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -95,7 +97,7 @@ public class CompoundName implements Name, Cloneable, Serializable
     mySyntax = syntax;
     initializeSyntax ();
 
-    StringBuffer new_element = new StringBuffer ();
+    StringBuilder new_element = new StringBuilder ();
     int i = 0;
     // QUOTE==null means no quoting right now.  When it is set it is
     // the value of the closing quote.
@@ -376,7 +378,7 @@ public class CompoundName implements Name, Cloneable, Serializable
 
   public String toString ()
   {
-    StringBuffer result = new StringBuffer ();
+    CPStringBuilder result = new CPStringBuilder ();
     int size = elts.size ();
     for (int i = 0; i < size; ++i)
       {

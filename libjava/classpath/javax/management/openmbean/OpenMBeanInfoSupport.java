@@ -151,10 +151,10 @@ public class OpenMBeanInfoSupport
     if (hashCode == null)
       hashCode = 
 	Integer.valueOf(getClassName().hashCode() + 
-			new HashSet(Arrays.asList(getAttributes())).hashCode() +
-			new HashSet(Arrays.asList(getConstructors())).hashCode() +
-			new HashSet(Arrays.asList(getNotifications())).hashCode() +
-			new HashSet(Arrays.asList(getOperations())).hashCode());
+			new HashSet<MBeanAttributeInfo>(Arrays.asList(getAttributes())).hashCode() +
+			new HashSet<MBeanConstructorInfo>(Arrays.asList(getConstructors())).hashCode() +
+			new HashSet<MBeanNotificationInfo>(Arrays.asList(getNotifications())).hashCode() +
+			new HashSet<MBeanOperationInfo>(Arrays.asList(getOperations())).hashCode());
     return hashCode.intValue();
   }
 

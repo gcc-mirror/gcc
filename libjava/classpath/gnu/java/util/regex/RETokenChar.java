@@ -38,98 +38,125 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-final class RETokenChar extends REToken {
+import gnu.java.lang.CPStringBuilder;
+
+final class RETokenChar extends REToken
+{
   private char[] ch;
   private boolean insens;
 
-  RETokenChar(int subIndex, char c, boolean ins) {
-    super(subIndex);
+    RETokenChar (int subIndex, char c, boolean ins)
+  {
+    super (subIndex);
     insens = ins;
-    ch = new char [1];
-    ch[0] = c;
+    ch = new char[1];
+      ch[0] = c;
   }
 
-  int getMinimumLength() {
+  int getMinimumLength ()
+  {
     return ch.length;
   }
-  
-  int getMaximumLength() {
+
+  int getMaximumLength ()
+  {
     return ch.length;
   }
-  
-    REMatch matchThis(CharIndexed input, REMatch mymatch) {
-	if (matchOneString(input, mymatch.index)) {
-	    mymatch.index += matchedLength;
-	    return mymatch;
-	}
-	// java.util.regex.Matcher#hitEnd() requires that the length of
-	// partial match be counted.
+
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    if (matchOneString (input, mymatch.index))
+      {
 	mymatch.index += matchedLength;
-	input.setHitEnd(mymatch);
-	return null;
-    }
+	return mymatch;
+      }
+    // java.util.regex.Matcher#hitEnd() requires that the length of
+    // partial match be counted.
+    mymatch.index += matchedLength;
+    input.setHitEnd (mymatch);
+    return null;
+  }
 
-    private int matchedLength;
-    private boolean matchOneString(CharIndexed input, int index) {
-        matchedLength = 0;
-	int z = ch.length;
-	char c;
-	for (int i=0; i<z; i++) {
-	    c = input.charAt(index+i);
-	    if (! charEquals(c, ch[i])) {
-		return false;
-	    }
-	    ++matchedLength;
-	}
-	return true;
-    }
+  private int matchedLength;
+  private boolean matchOneString (CharIndexed input, int index)
+  {
+    matchedLength = 0;
+    int z = ch.length;
+    char c;
+    for (int i = 0; i < z; i++)
+      {
+	c = input.charAt (index + i);
+	if (!charEquals (c, ch[i]))
+	  {
+	    return false;
+	  }
+	++matchedLength;
+      }
+    return true;
+  }
 
-    private boolean charEquals(char c1, char c2) {
-	if (c1 == c2) return true;
-	if (! insens) return false;
-	if (toLowerCase(c1, unicodeAware) == c2) return true;
-	if (toUpperCase(c1, unicodeAware) == c2) return true;
-	return false;
-    }
+  private boolean charEquals (char c1, char c2)
+  {
+    if (c1 == c2)
+      return true;
+    if (!insens)
+      return false;
+    if (toLowerCase (c1, unicodeAware) == c2)
+      return true;
+    if (toUpperCase (c1, unicodeAware) == c2)
+      return true;
+    return false;
+  }
 
-    boolean returnsFixedLengthMatches() { return true; }
+  boolean returnsFixedLengthMatches ()
+  {
+    return true;
+  }
 
-    int findFixedLengthMatches(CharIndexed input, REMatch mymatch, int max) {
-        int index = mymatch.index;
-	int numRepeats = 0;
-	int z = ch.length;
-	while (true) {
-	    if (numRepeats >= max) break;
-	    if (matchOneString(input, index)) {
-	        index += z;
-	        numRepeats++;
-	    }
-	    else break;
-	}
-	return numRepeats;
-    }
+  int findFixedLengthMatches (CharIndexed input, REMatch mymatch, int max)
+  {
+    int index = mymatch.index;
+    int numRepeats = 0;
+    int z = ch.length;
+    while (true)
+      {
+	if (numRepeats >= max)
+	  break;
+	if (matchOneString (input, index))
+	  {
+	    index += z;
+	    numRepeats++;
+	  }
+	else
+	  break;
+      }
+    return numRepeats;
+  }
 
   // Overrides REToken.chain() to optimize for strings
-  boolean chain(REToken next) {
-    if (next instanceof RETokenChar && ((RETokenChar)next).insens == insens) {
-      RETokenChar cnext = (RETokenChar) next;
-      int newsize = ch.length + cnext.ch.length;
-      
-      char[] chTemp = new char [newsize];
-      
-      System.arraycopy(ch,0,chTemp,0,ch.length);
-      System.arraycopy(cnext.ch,0,chTemp,ch.length,cnext.ch.length);
-      
-      ch = chTemp;
-      if (cnext.next == null)
-        return false;
-      return chain(cnext.next);
-    } else return super.chain(next);
+  boolean chain (REToken next)
+  {
+    if (next instanceof RETokenChar && ((RETokenChar) next).insens == insens)
+      {
+	RETokenChar cnext = (RETokenChar) next;
+	int newsize = ch.length + cnext.ch.length;
+
+	char[] chTemp = new char[newsize];
+
+	System.arraycopy (ch, 0, chTemp, 0, ch.length);
+	System.arraycopy (cnext.ch, 0, chTemp, ch.length, cnext.ch.length);
+
+	ch = chTemp;
+	if (cnext.next == null)
+	  return false;
+	return chain (cnext.next);
+      }
+    else
+      return super.chain (next);
   }
 
-  void dump(StringBuffer os) {
-    os.append(ch);
+  void dump (CPStringBuilder os)
+  {
+    os.append (ch);
   }
 }
-
-

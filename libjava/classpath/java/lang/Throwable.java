@@ -39,6 +39,8 @@ package java.lang;
 
 import gnu.classpath.SystemProperties;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -411,7 +413,7 @@ public class Throwable implements Serializable
   // different threads to get mixed up when written to the same PrintWriter.
   private String stackTraceString()
   {
-    StringBuilder sb = new StringBuilder();
+    CPStringBuilder sb = new CPStringBuilder();
 
     // Main stacktrace
     StackTraceElement[] stack = getStackTrace();
@@ -455,7 +457,7 @@ public class Throwable implements Serializable
 
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
-  private static void stackTraceStringBuffer(StringBuilder sb, String name,
+  private static void stackTraceStringBuffer(CPStringBuilder sb, String name,
 					StackTraceElement[] stack, int equal)
   {
     String nl = StaticData.nl;

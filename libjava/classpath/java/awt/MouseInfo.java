@@ -51,6 +51,13 @@ public class MouseInfo
   private static MouseInfoPeer peer;
 
   /**
+   * Private constructor to prevent instance creation.
+   */
+  private MouseInfo()
+  {
+  }
+
+  /**
    * Returns a PointerInfo object containing information about the current
    * location of the mouse pointer
    *

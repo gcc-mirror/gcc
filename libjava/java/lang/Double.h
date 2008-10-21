@@ -49,6 +49,8 @@ public:
   static const jint SIZE = 64;
   static ::java::lang::Class * TYPE;
 private:
+  static ::java::lang::Double * ZERO;
+  static ::java::lang::Double * ONE;
   jdouble __attribute__((aligned(__alignof__( ::java::lang::Number)))) value;
 public:
   static ::java::lang::Class class$;

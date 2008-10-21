@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The result of calling the {@link
  * CertPathBuilder#build(java.security.cert.CertPathParameters)} method
@@ -95,7 +97,7 @@ public class PKIXCertPathBuilderResult extends PKIXCertPathValidatorResult
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(super.toString());
+    CPStringBuilder buf = new CPStringBuilder(super.toString());
     buf.insert(buf.length() - 2, "; CertPath=" + certPath);
     return buf.toString();
   }

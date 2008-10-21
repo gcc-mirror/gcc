@@ -1,0 +1,80 @@
+/* gjdochtml-clean-layout.css
+   Copyright (C) 2004 Free Software Foundation, Inc.
+
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA. */
+
+/* --- GNU Clean Style: Color Scheme #1 --- */
+
+[class~="title"],
+[class="table header"],
+[class="table sub header"],
+[class="section header"],
+[class="serialized package header"],
+[class="serialized class header"]
+{
+        background-color: #E8EAFF;
+}
+
+[class~="navbar"][class~="item"]
+{
+         border-color: #000000;
+         color: #000000;
+}
+
+[class~="navbar"][class~="item"][class~="disabled"]
+{
+         border-color: #aaaaaa;
+         color: #aaaaaa;
+}
+
+[class~="navbar"][class~="item"][class~="active"]
+{
+        color: #000000;
+        background-color: #E8EAFF;
+}
+
+[class~="navbar"][class~="item"][class~="active"]
+{
+        border-color:  #222222;
+}
+
+.navbar .header a
+{
+        color: #777777;
+}
+
+a[href] {
+  color: #141EB8;
+}
+
+a[href]:visited {
+  color: #0C126E;
+}
+
+
+/* ---- source highlighting ---- */
+
+.comment      { color: #777777; }
+.tag          { color: #444444; }
+.keyword      { color: #B36B00; }
+.header.type  { color: #00248F; }
+.type         { color: #0033CC; }
+.literal      { color: #809FFF; }
+.variable     { color: #007D48; }
+.method       { color: #B32400; }
+.line-number  { color: #AAAAAA; }

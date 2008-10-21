@@ -23,6 +23,13 @@ extern "Java"
         }
       }
     }
+    namespace java
+    {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
+    }
   }
 }
 
@@ -36,7 +43,7 @@ public:
   static ::java::lang::String * computeMethodSignature(::java::lang::reflect::Method *);
 private:
   static ::java::lang::String * _computeSignature(::java::lang::Class *, JArray< ::java::lang::Class * > *);
-  static void _addToSignature(::java::lang::StringBuffer *, ::java::lang::Class *);
+  static void _addToSignature(::gnu::java::lang::CPStringBuilder *, ::java::lang::Class *);
 public:
   static ::java::lang::Class class$;
 };

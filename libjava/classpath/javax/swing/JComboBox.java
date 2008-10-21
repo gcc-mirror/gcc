@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1104,7 +1106,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   protected String paramString()
   {
     String superParamStr = super.paramString();
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(",isEditable=").append(isEditable());
     sb.append(",lightWeightPopupEnabled=").append(isLightWeightPopupEnabled());
     sb.append(",maximumRowCount=").append(getMaximumRowCount());

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.util.logging;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -478,7 +480,7 @@ public class FileHandler
 					       int uniqueNumber,
 					       int count)
   {
-    StringBuffer buf = new StringBuffer(pattern);
+    CPStringBuilder buf = new CPStringBuilder(pattern);
     String       replaceWith;
     boolean      foundGeneration = false;
 

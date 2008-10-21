@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.security.auth.callback;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Dialog;
@@ -238,8 +240,8 @@ public class AWTCallbackHandler extends AbstractCallbackHandler
     int defind = 0;
     for (int i = 0; i < locales.length; i++)
       {
-        StringBuffer lang =
-          new StringBuffer(locales[i].getDisplayLanguage(locales[i]));
+        CPStringBuilder lang =
+          new CPStringBuilder(locales[i].getDisplayLanguage(locales[i]));
         String country = locales[i].getDisplayCountry(locales[i]);
         String variant = locales[i].getDisplayVariant(locales[i]);
         if (country.length() > 0 && variant.length() > 0)

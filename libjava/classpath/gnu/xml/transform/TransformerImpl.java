@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -722,7 +724,7 @@ class TransformerImpl
               }
             else
               {
-                StringBuffer buf = new StringBuffer();
+                CPStringBuilder buf = new CPStringBuilder();
                 buf.append('\n');
                 for (int i = 0; i < offset + 1; i++)
                   buf.append(INDENT_WHITESPACE);
@@ -733,7 +735,7 @@ class TransformerImpl
                     node.insertBefore(doc.createTextNode(ws), ctx);
                     reindent(doc, ctx, offset + 1);
                   }
-                buf = new StringBuffer();
+                buf = new CPStringBuilder();
                 buf.append('\n');
                 for (int i = 0; i < offset; i++)
                   buf.append(INDENT_WHITESPACE);

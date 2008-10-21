@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.security.Engine;
 
 import java.lang.reflect.InvocationTargetException;
@@ -198,7 +200,7 @@ public abstract class Signature extends SignatureSpi
   public static Signature getInstance(String algorithm, Provider provider)
     throws NoSuchAlgorithmException
   {
-    StringBuilder sb = new StringBuilder("Signature algorithm [")
+    CPStringBuilder sb = new CPStringBuilder("Signature algorithm [")
         .append(algorithm).append("] from provider[")
         .append(provider).append("] ");
     Object o;

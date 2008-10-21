@@ -15,6 +15,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace util
       {
         namespace regex
@@ -40,7 +44,7 @@ public: // actually package-private
   jboolean matchOneChar(jchar);
   jboolean returnsFixedLengthMatches();
   jint findFixedLengthMatches(::gnu::java::util::regex::CharIndexed *, ::gnu::java::util::regex::REMatch *, jint);
-  void dump(::java::lang::StringBuffer *);
+  void dump(::gnu::java::lang::CPStringBuilder *);
   jint __attribute__((aligned(__alignof__( ::gnu::java::util::regex::REToken)))) type;
   jboolean insens;
   jboolean negated;

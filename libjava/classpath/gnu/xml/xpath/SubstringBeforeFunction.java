@@ -57,9 +57,9 @@ final class SubstringBeforeFunction
   final Expr arg1;
   final Expr arg2;
 
-  SubstringBeforeFunction(List args)
+  SubstringBeforeFunction(List<Expr> args)
   {
-    this((Expr) args.get(0), (Expr) args.get(1));
+    this(args.get(0), args.get(1));
   }
 
   SubstringBeforeFunction(Expr arg1, Expr arg2)

@@ -45,6 +45,8 @@ import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.GIOP.CharSets_OSF;
 import gnu.CORBA.GIOP.CodeSetServiceContext;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.MARSHAL;
@@ -126,7 +128,7 @@ public class IOR
        */
       public String toString()
       {
-        StringBuffer b = new StringBuffer();
+        CPStringBuilder b = new CPStringBuilder();
         b.append("native " + name(native_set));
         if (conversion != null && conversion.length > 0)
           {
@@ -146,7 +148,7 @@ public class IOR
        */
       public String toStringFormatted()
       {
-        StringBuffer b = new StringBuffer();
+        CPStringBuilder b = new CPStringBuilder();
         b.append("\n  Native set " + name(native_set));
         if (conversion != null && conversion.length > 0)
           {
@@ -282,7 +284,7 @@ public class IOR
      */
     public String toString()
     {
-      StringBuffer b = new StringBuffer();
+      CPStringBuilder b = new CPStringBuilder();
       b.append(host);
       b.append(":");
       b.append(port);
@@ -591,7 +593,7 @@ public class IOR
    */
   public String toString()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     b.append(Id);
     b.append(" at ");
     b.append(Internet);
@@ -618,7 +620,7 @@ public class IOR
    */
   public String toStringFormatted()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     b.append("\nObject Id:\n  ");
     b.append(Id);
     b.append("\nObject is accessible at:\n  ");
@@ -656,7 +658,7 @@ public class IOR
 
     _write(out);
 
-    StringBuffer b = new StringBuffer("IOR:");
+    CPStringBuilder b = new CPStringBuilder("IOR:");
 
     byte[] binary = out.buffer.toByteArray();
     String s;

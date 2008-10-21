@@ -1,5 +1,5 @@
 /* LimitedLengthInputStream.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -57,20 +57,17 @@ class LimitedLengthInputStream
   private boolean eof;
   private InputStream in;
   private boolean doClose;
-  
-  
+
   private void handleClose()
     throws IOException
   {
     eof = true;
+
     if (doClose)
-      {
-        in.close();
-      }
+      in.close();
     else
-      {
-        connection.release();
-      }
+      connection.release();
+
     in = null;
     connection = null;
   }
@@ -85,7 +82,7 @@ class LimitedLengthInputStream
    * @param restrictLen if true the number of bytes that can be read
    * from this stream will be limited to maxLen, otherwise the number
    * of bytes is not restricted.
-   * 
+   *
    * @param con the HTTPConnection associated with this stream
    *
    * @param doClose if true con will be closed when finished reading,
@@ -98,7 +95,6 @@ class LimitedLengthInputStream
                            HTTPConnection con,
                            boolean doClose)
     throws IOException
-
   {
     this.in = in;
     this.remainingLen = maxLen;
@@ -122,7 +118,7 @@ class LimitedLengthInputStream
       return -1; // EOF
 
     int r;
-    
+
     if (restrictLen)
       {
         r = in.read();
@@ -138,7 +134,7 @@ class LimitedLengthInputStream
         if (r == -1)
           handleClose();
       }
-    
+
     return r;
   }
 
@@ -156,12 +152,12 @@ class LimitedLengthInputStream
 
     if (restrictLen && length > remainingLen)
       length = (int) remainingLen;
-      
+
     int r = in.read(buffer, offset, length);
-    
+
     if (-1 == r)
       handleClose();
-    
+
     if (restrictLen && r > 0)
       {
         remainingLen -= r;
@@ -182,7 +178,7 @@ class LimitedLengthInputStream
       n = remainingLen;
 
     long r = in.skip(n);
-    
+
     if (restrictLen)
       {
         remainingLen -= r;
@@ -214,7 +210,7 @@ class LimitedLengthInputStream
     // it away.
 
     doClose = true;
-    
+
     handleClose();
   }
 }

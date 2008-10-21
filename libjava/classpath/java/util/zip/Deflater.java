@@ -241,7 +241,6 @@ public class Deflater
   /** 
    * Gets the number of input bytes processed so far.
    */
-  @Deprecated
   public int getTotalIn()
   {
     return (int) engine.getTotalIn();
@@ -259,7 +258,6 @@ public class Deflater
   /** 
    * Gets the number of output bytes so far.
    */
-  @Deprecated
   public int getTotalOut()
   {
     return (int) totalOut;

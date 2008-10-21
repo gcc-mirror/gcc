@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -90,7 +92,7 @@ implements XPathParser.yyInput
     
   }
 
-  static final Map keywords = new TreeMap ();
+  static final Map<String,Integer> keywords = new TreeMap<String,Integer> ();
   static
   {
     keywords.put ("ancestor", new Integer (XPathParser.ANCESTOR));
@@ -314,7 +316,7 @@ implements XPathParser.yyInput
   XPathToken consume_literal (int delimiter)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer ();
+    CPStringBuilder buf = new CPStringBuilder ();
     while (true)
       {
         int c = in.read ();
@@ -336,7 +338,7 @@ implements XPathParser.yyInput
   XPathToken consume_digits (int c)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer ();
+    CPStringBuilder buf = new CPStringBuilder ();
     buf.append ((char) c);
     while (true)
       {
@@ -357,7 +359,7 @@ implements XPathParser.yyInput
   XPathToken consume_name (int c)
     throws IOException
   {
-    StringBuffer buf = new StringBuffer ();
+    CPStringBuilder buf = new CPStringBuilder ();
     buf.append ((char) c);
     while (true)
       {

@@ -40,7 +40,7 @@ void gnu::gcj::xlib::XImage::init(Visual* visual, jint depth,
   if (ximage == 0)
     {
       jstring errorMessage = JvNewStringLatin1("XCreateImage failed");
-      throw new java::lang::OutOfMemoryError(errorMessage);
+      throw new ::java::lang::OutOfMemoryError(errorMessage);
     }
     
   bool reinitialize = false;

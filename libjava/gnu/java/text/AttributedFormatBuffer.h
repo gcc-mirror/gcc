@@ -15,6 +15,10 @@ extern "Java"
   {
     namespace java
     {
+      namespace lang
+      {
+          class CPStringBuilder;
+      }
       namespace text
       {
           class AttributedFormatBuffer;
@@ -34,7 +38,7 @@ class gnu::java::text::AttributedFormatBuffer : public ::java::lang::Object
 {
 
 public:
-  AttributedFormatBuffer(::java::lang::StringBuffer *);
+  AttributedFormatBuffer(::gnu::java::lang::CPStringBuilder *);
   AttributedFormatBuffer(jint);
   AttributedFormatBuffer();
 private:
@@ -51,11 +55,11 @@ public:
   virtual jint length();
   virtual void clear();
   virtual void sync();
-  virtual ::java::lang::StringBuffer * getBuffer();
+  virtual ::gnu::java::lang::CPStringBuilder * getBuffer();
   virtual JArray< jint > * getRanges();
   virtual JArray< ::java::util::HashMap * > * getAttributes();
 private:
-  ::java::lang::StringBuffer * __attribute__((aligned(__alignof__( ::java::lang::Object)))) buffer;
+  ::gnu::java::lang::CPStringBuilder * __attribute__((aligned(__alignof__( ::java::lang::Object)))) buffer;
   ::java::util::ArrayList * ranges;
   ::java::util::ArrayList * attributes;
   JArray< jint > * a_ranges;

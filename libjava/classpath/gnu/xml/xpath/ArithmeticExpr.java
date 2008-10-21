@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.xml.namespace.QName;
 import org.w3c.dom.Node;
 
@@ -139,7 +141,7 @@ final class ArithmeticExpr
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     buf.append(lhs);
     buf.append(' ');
     switch (op)

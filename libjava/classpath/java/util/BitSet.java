@@ -36,6 +36,9 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util;
+
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -687,7 +690,7 @@ public class BitSet implements Cloneable, Serializable
    */
   public String toString()
   {
-    StringBuffer r = new StringBuffer("{");
+    CPStringBuilder r = new CPStringBuilder("{");
     boolean first = true;
     for (int i = 0; i < bits.length; ++i)
       {

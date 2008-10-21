@@ -280,6 +280,7 @@ public class MBeanServerPermission
      * @see #isReadOnly()
      * @see #setReadOnly(boolean)
      */
+    @Override
     public void add(Permission p)
     {
       if (isReadOnly())
@@ -305,13 +306,14 @@ public class MBeanServerPermission
 		      String cps = cp[b].trim();
 		      if (cps.equals(nps))
 			found = true;
-		      if (np.equals("newMBeanServer") 
+		      if (nps.equals("newMBeanServer") 
 			  && createms != -1)
 			found = true;
-		      if (np.equals("createMBeanServer")
+		      if (nps.equals("createMBeanServer")
 			  && newms != -1)
-			finalString.replace("newMBeanServer",
-					    "createMBeanServer");
+			finalString =
+			  finalString.replace("newMBeanServer",
+					      "createMBeanServer");
 		    }
 		  if (!found)
 		    finalString += "," + nps;
@@ -327,7 +329,8 @@ public class MBeanServerPermission
      *
      * @return an enumeration over the collection permission.
      */
-    public Enumeration elements()
+    @Override
+    public Enumeration<Permission> elements()
     {
       return new
 	MBeanServerPermissionEnumeration(collectionPermission);
@@ -341,7 +344,7 @@ public class MBeanServerPermission
      * @since 1.5
      */
     private class MBeanServerPermissionEnumeration
-      implements Enumeration
+      implements Enumeration<Permission>
     {
 
       /**
@@ -381,7 +384,7 @@ public class MBeanServerPermission
        *
        * @return the next capability.
        */
-      public Object nextElement()
+      public Permission nextElement()
       {
 	if (hasMoreElements())
 	  {
@@ -405,6 +408,7 @@ public class MBeanServerPermission
      * @param p the permission to check for implication.
      * @return true if this permission implies <code>p</code>.
      */
+    @Override
     public boolean implies(Permission p)
     {
       return collectionPermission.implies(p);

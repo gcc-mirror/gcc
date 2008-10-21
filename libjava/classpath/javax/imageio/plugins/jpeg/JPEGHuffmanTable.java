@@ -38,6 +38,8 @@
 
 package javax.imageio.plugins.jpeg;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * The JPEGHuffmanTable class represents a Huffman table read from a
  * JPEG image file.  The standard JPEG AC and DC chrominance and
@@ -263,7 +265,7 @@ public class JPEGHuffmanTable
    */
   public String toString()
   {
-    StringBuffer buffer = new StringBuffer();
+    CPStringBuilder buffer = new CPStringBuilder();
     
     buffer.append("JPEGHuffmanTable:\nlengths:");
     

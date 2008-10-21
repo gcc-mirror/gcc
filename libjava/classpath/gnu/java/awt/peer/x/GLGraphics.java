@@ -39,7 +39,9 @@ package gnu.java.awt.peer.x;
 
 import java.awt.Color;
 import java.awt.GraphicsConfiguration;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
+import java.util.Map;
 
 import gnu.java.awt.java2d.AbstractGraphics2D;
 import gnu.x11.extension.glx.GL;
@@ -70,7 +72,8 @@ public class GLGraphics extends AbstractGraphics2D
   public void setBackground(Color b)
   {
     super.setBackground(b);
-    gl.clear_color(b.getRed() / 255.F, b.getGreen() / 255.F,
+    
+    gl.clearColor(b.getRed() / 255.F, b.getGreen() / 255.F,
                    b.getBlue() / 255.F, b.getAlpha() / 255.F);
   }
 
@@ -120,4 +123,12 @@ public class GLGraphics extends AbstractGraphics2D
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
+  @Override
+  protected Rectangle getDeviceBounds()
+  {
+    // FIXME: not sure it's correct
+    return new Rectangle(0, 0,
+                         gl.display.default_screen.width, 
+                         gl.display.default_screen.height);
+  }
 }

@@ -70,28 +70,28 @@ gnu::gcj::util::Debug::getField (::java::lang::Object *o,
   if (! type->isPrimitive ())
     return * (jobject*) addr;
   if (type == JvPrimClass (double))
-    return new java::lang::Double (* (jdouble*) addr);
+    return new ::java::lang::Double (* (jdouble*) addr);
   if (type == JvPrimClass (float))
-    return new java::lang::Float (* (jfloat*) addr);
+    return new ::java::lang::Float (* (jfloat*) addr);
   if (type == JvPrimClass (long))
-    return new java::lang::Long (* (jlong*) addr);
+    return new ::java::lang::Long (* (jlong*) addr);
   if (type == JvPrimClass (int))
-    return new java::lang::Integer (* (jint*) addr);
+    return new ::java::lang::Integer (* (jint*) addr);
   if (type == JvPrimClass (short))
-    return new java::lang::Short (* (jshort*) addr);
+    return new ::java::lang::Short (* (jshort*) addr);
   if (type == JvPrimClass (byte))
-    return new java::lang::Byte (* (jbyte*) addr);
+    return new ::java::lang::Byte (* (jbyte*) addr);
   if (type == JvPrimClass (char))
-    return new java::lang::Character (* (jchar*) addr);
+    return new ::java::lang::Character (* (jchar*) addr);
   if (type == JvPrimClass (boolean))
     {
-      _Jv_InitClass (&java::lang::Boolean::class$);
+      _Jv_InitClass (&::java::lang::Boolean::class$);
       if (* (jboolean*) addr)
-	return java::lang::Boolean::TRUE;
+	return ::java::lang::Boolean::TRUE;
       else
-	return java::lang::Boolean::FALSE;
+	return ::java::lang::Boolean::FALSE;
     }
-  throw new java::lang::IllegalArgumentException;
+  throw new ::java::lang::IllegalArgumentException;
 }
 
 /* A simple method of printing an object that can be called from a

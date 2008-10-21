@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.security.provider;
 
 import gnu.java.io.Base64InputStream;
+import gnu.java.lang.CPStringBuilder;
 import gnu.java.security.x509.X509CRL;
 import gnu.java.security.x509.X509CertPath;
 import gnu.java.security.x509.X509Certificate;
@@ -193,7 +194,7 @@ public class X509CertificateFactory
     if (i != 0x30)
       {
         inStream.reset();
-        StringBuffer line = new StringBuffer(80);
+        CPStringBuilder line = new CPStringBuilder(80);
         do
           {
             line.setLength(0);
@@ -252,7 +253,7 @@ public class X509CertificateFactory
     if (i != 0x30)
       {
         inStream.reset();
-        StringBuffer line = new StringBuffer(80);
+        CPStringBuilder line = new CPStringBuilder(80);
         do
           {
             line.setLength(0);

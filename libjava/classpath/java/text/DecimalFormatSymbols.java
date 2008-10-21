@@ -170,6 +170,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
       {
 	res = null;
       }
+    locale = loc;
     currency = Currency.getInstance("XXX");
     currencySymbol = "?";
     intlCurrencySymbol = "XXX";
@@ -204,7 +205,6 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     percent = safeGetChar (res, "percent", '%');
     perMill = safeGetChar (res, "perMill", '\u2030');
     zeroDigit = safeGetChar (res, "zeroDigit", '0');
-    locale = loc;
   }
 
   /**
@@ -430,7 +430,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
   public void setCurrency (Currency currency)
   {
     intlCurrencySymbol = currency.getCurrencyCode();
-    currencySymbol = currency.getSymbol();
+    currencySymbol = currency.getSymbol(locale);
     this.currency = currency;
   }
 

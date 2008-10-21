@@ -53,9 +53,9 @@ final class NotFunction
 
   final Expr arg;
 
-  NotFunction(List args)
+  NotFunction(List<Expr> args)
   {
-    this((Expr) args.get(0));
+    this(args.get(0));
   }
 
   NotFunction(Expr arg)
@@ -63,6 +63,7 @@ final class NotFunction
     this.arg = arg;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);

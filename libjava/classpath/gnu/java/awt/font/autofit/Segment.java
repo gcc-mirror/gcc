@@ -40,6 +40,8 @@ package gnu.java.awt.font.autofit;
 
 import gnu.java.awt.font.opentype.truetype.Point;
 
+import gnu.java.lang.CPStringBuilder;
+
 class Segment
 {
 
@@ -65,7 +67,7 @@ class Segment
 
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[Segment] id: ");
     s.append(hashCode());
     s.append(", len:");

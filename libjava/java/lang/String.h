@@ -118,6 +118,7 @@ public:
   jint offsetByCodePoints(jint, jint);
   jboolean isEmpty();
 private:
+  static ::java::lang::String * toString(JArray< jchar > *, jint, jint);
   void init(JArray< jchar > *, jint, jint, jboolean);
   void init(JArray< jbyte > *, jint, jint, jint);
   void init(JArray< jbyte > *, jint, jint, ::java::lang::String *);

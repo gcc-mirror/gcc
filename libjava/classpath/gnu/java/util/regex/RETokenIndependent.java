@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * @author Ito Kazumitsu
  */
@@ -44,35 +46,40 @@ final class RETokenIndependent extends REToken
 {
   REToken re;
 
-  RETokenIndependent(REToken re) throws REException {
-    super(0);
+    RETokenIndependent (REToken re) throws REException
+  {
+    super (0);
     this.re = re;
   }
 
-  int getMinimumLength() {
-    return re.getMinimumLength();
-  }
-
-  int getMaximumLength() {
-    return re.getMaximumLength();
-  }
-
-  REMatch matchThis(CharIndexed input, REMatch mymatch)
+  int getMinimumLength ()
   {
-    boolean b = re.match(input, mymatch);
-    if (b) {
-      // Once we have found a match, we do not see other possible matches.
-      if (mymatch.backtrackStack != null) mymatch.backtrackStack.clear();
-      return mymatch;
+    return re.getMinimumLength ();
+  }
 
-    }
+  int getMaximumLength ()
+  {
+    return re.getMaximumLength ();
+  }
+
+  REMatch matchThis (CharIndexed input, REMatch mymatch)
+  {
+    boolean b = re.match (input, mymatch);
+    if (b)
+      {
+	// Once we have found a match, we do not see other possible matches.
+	if (mymatch.backtrackStack != null)
+	  mymatch.backtrackStack.clear ();
+	return mymatch;
+
+      }
     return null;
   }
 
-    void dump(StringBuffer os) {
-	os.append("(?>");
-	re.dumpAll(os);
-	os.append(')');
-    }
+  void dump (CPStringBuilder os)
+  {
+    os.append ("(?>");
+    re.dumpAll (os);
+    os.append (')');
+  }
 }
-

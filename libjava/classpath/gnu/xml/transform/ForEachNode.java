@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,9 +59,9 @@ final class ForEachNode
 {
 
   final Expr select;
-  final List sortKeys;
+  final List<SortKey> sortKeys;
 
-  ForEachNode(Expr select, List sortKeys)
+  ForEachNode(Expr select, List<SortKey> sortKeys)
   {
     this.select = select;
     this.sortKeys = sortKeys;
@@ -67,10 +69,10 @@ final class ForEachNode
 
   TemplateNode clone(Stylesheet stylesheet)
   {
-    int len = sortKeys != null ? sortKeys.size() : 0;
-    List sortKeys2 = new ArrayList(len);
+    int len = sortKeys.size();
+    List<SortKey> sortKeys2 = new ArrayList<SortKey>(len);
     for (int i = 0; i < len; i++)
-      sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
+      sortKeys2.add(sortKeys.get(i).clone(stylesheet));
     TemplateNode ret = new ForEachNode(select.clone(stylesheet),
                                        sortKeys2);
     if (children != null)
@@ -80,6 +82,7 @@ final class ForEachNode
     return ret;
   }
 
+  @Override
   void doApply(Stylesheet stylesheet, QName mode,
              Node context, int pos, int len,
              Node parent, Node nextSibling)
@@ -94,26 +97,26 @@ final class ForEachNode
         //System.err.println(toString() + ": " + context+" -> "+ret);
         if (ret instanceof Collection)
           {
-            Collection ns = (Collection) ret;
-            List list = new ArrayList(ns);
-            if (sortKeys != null)
-              {
-                for (Iterator i = sortKeys.iterator(); i.hasNext(); )
-                  {
-                    SortKey sortKey = (SortKey) i.next();
-                    sortKey.init(stylesheet, mode, context, pos, len, parent,
-                                 nextSibling);
-                  }
-                Collections.sort(list, new XSLComparator(sortKeys));
-              }
-            else
+	    /* Suppression is safe, as we know context produces Collection<Node> */
+	    @SuppressWarnings("unchecked")
+	      Collection<Node> ns = (Collection<Node>) ret;
+            List<Node> list = new ArrayList<Node>(ns);
+	    if (!sortKeys.isEmpty())
+	      {
+		for (SortKey sortKey : sortKeys)
+		  {
+		    sortKey.init(stylesheet, mode, context, pos, len, parent,
+				 nextSibling);
+		  }
+		Collections.sort(list, new XSLComparator(sortKeys));
+	      }
+	    else
               Collections.sort(list, documentOrderComparator);
             // Perform children for each node
             int l = list.size();
             int p = 1;
-            for (Iterator i = list.iterator(); i.hasNext(); )
+	    for (Node node : list)
               {
-                Node node = (Node) i.next();
                 stylesheet.current = node;
                 children.apply(stylesheet, mode,
                                node, p++, l,
@@ -129,24 +132,23 @@ final class ForEachNode
                  parent, nextSibling);
   }
 
+  @Override
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
       return true;
-    if (sortKeys != null)
+    for (Iterator<SortKey> i = sortKeys.iterator(); i.hasNext(); )
       {
-        for (Iterator i = sortKeys.iterator(); i.hasNext(); )
-          {
-            if (((SortKey) i.next()).references(var))
-              return true;
-          }
+	if (i.next().references(var))
+	  return true;
       }
     return super.references(var);
   }
-  
+
+  @Override
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("for-each");
+    CPStringBuilder buf = new CPStringBuilder("for-each");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -192,7 +194,7 @@ final class ApplyTemplatesNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("apply-templates");
+    CPStringBuilder buf = new CPStringBuilder("apply-templates");
     buf.append('[');
     boolean o = false;
     if (select != null)

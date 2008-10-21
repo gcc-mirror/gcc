@@ -99,7 +99,7 @@ public abstract class SAXParserFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                   Class.forName(className);
                 return (SAXParserFactory) t.newInstance();
               }

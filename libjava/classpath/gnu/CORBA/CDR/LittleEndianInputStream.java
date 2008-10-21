@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.CDR;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -360,7 +362,7 @@ public class LittleEndianInputStream
   public String readLine()
                   throws IOException
   {
-    StringBuffer strb = new StringBuffer();
+    CPStringBuilder strb = new CPStringBuilder();
 
     while (true)
       {

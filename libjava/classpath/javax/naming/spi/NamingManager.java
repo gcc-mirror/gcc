@@ -41,6 +41,8 @@ package javax.naming.spi;
 
 import gnu.classpath.VMStackWalker;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -197,7 +199,7 @@ public class NamingManager
     // The final default location, as specified in the documentation.
     String finalPrefix = "com.sun.jndi.url";
   
-    StringBuffer allPrefixes = new StringBuffer();
+    CPStringBuilder allPrefixes = new CPStringBuilder();
 
     String prefixes;
       if (environment != null)

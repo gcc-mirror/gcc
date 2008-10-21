@@ -38,19 +38,24 @@ exception statement from your version. */
 
 package java.nio;
 
+// GCJ LOCAL: Change gnu.classpath.Pointer to RawData
+import gnu.gcj.RawData;
+
 /**
  * @since 1.4
  */
 public abstract class LongBuffer extends Buffer
   implements Comparable<LongBuffer>
 {
-  int array_offset;
-  long[] backing_buffer;
+  final int array_offset;
+  final long[] backing_buffer;
 
-  LongBuffer (int capacity, int limit, int position, int mark)
+  LongBuffer (int capacity, int limit, int position, int mark,
+	      RawData address, long[] backing_buffer, int array_offset)
   {
-    super (capacity, limit, position, mark);
-    array_offset = 0;
+    super (capacity, limit, position, mark, address);
+    this.backing_buffer = backing_buffer;
+    this.array_offset = array_offset;
   }
 
   /**

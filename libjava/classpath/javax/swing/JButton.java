@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -225,7 +227,7 @@ public class JButton extends AbstractButton
     String superParam = super.paramString();
 
     // 41 is the maximum number of chars which may be needed.
-    StringBuffer sb = new StringBuffer(41);
+    CPStringBuilder sb = new CPStringBuilder(41);
     sb.append(",defaultButton=").append(isDefaultButton());
     sb.append(",defaultCapable=").append(defaultCapable);
 

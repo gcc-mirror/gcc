@@ -59,9 +59,9 @@ final class NamespaceUriFunction
 
   final Expr arg;
 
-  NamespaceUriFunction(List args)
+  NamespaceUriFunction(List<Expr> args)
   {
-    this(args.size() > 0 ? (Expr) args.get(0) : null);
+    this(args.size() > 0 ? args.get(0) : null);
   }
   
   NamespaceUriFunction(Expr arg)
@@ -69,11 +69,14 @@ final class NamespaceUriFunction
     this.arg = arg;
   }
 
+  @Override 
   public Object evaluate(Node context, int pos, int len)
   {
-    Object val = (arg == null) ? Collections.singleton(context) :
-        arg.evaluate(context, pos, len);
-    return _namespace_uri(context, (Collection) val);
+    /* Suppression is safe, as we know context produces Collection<Node> */
+    @SuppressWarnings("unchecked")
+    Collection<Node> val = (arg == null) ? Collections.singleton(context) :
+        (Collection<Node>) arg.evaluate(context, pos, len);
+    return _namespace_uri(context, val);
   }
 
   public Expr clone(Object context)

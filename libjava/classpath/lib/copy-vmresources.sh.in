@@ -11,7 +11,7 @@ for p in ${vmdirs}; do
 		(cd $p/META-INF; 
 		 dirs=`find . -name "CVS" -prune -o -type d -print`;
 		 for u in ${dirs}; do
-			 mkdir -p ${destMetaDir}/${u};
+			 @mkdir_p@ ${destMetaDir}/${u};
 		 done;
 		 files=`find . -name "CVS" -prune -o -name "*.in" -prune -o -type f -print`;
 		 for u in ${files}; do
@@ -31,7 +31,7 @@ for p in ${vmdirs}; do
   	  resnewdirs=`echo ${resdirs} | uniq`;
 
   	  for u in ${resnewdirs}; do
-  		  mkdir -p ${destResDir}/${u};
+  		  @mkdir_p@ ${destResDir}/${u};
   	  done
   
 	  for f in ${resfiles}; do

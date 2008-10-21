@@ -142,6 +142,7 @@ extern "Java"
     namespace lang
     {
       class AbstractMethodError;
+      class AbstractStringBuffer;
       class Appendable;
       class ArithmeticException;
       class ArrayIndexOutOfBoundsException;
@@ -239,6 +240,8 @@ extern "Java"
       class ThreadDeath;
       class ThreadGroup;
       class ThreadLocal;
+      class ThreadLocalMap;
+      class ThreadLocalMap$Entry;
       class Throwable;
       class Throwable$StaticData;
       class TypeNotPresentException;
@@ -519,6 +522,7 @@ extern "Java"
       class ResourceBundle;
       class ResourceBundle$1;
       class ResourceBundle$BundleKey;
+      class Scanner;
       class ServiceConfigurationError;
       class ServiceLoader;
       class ServiceLoader$1;
@@ -850,6 +854,7 @@ extern "Java"
       }
     }
   }
+  // end of output of the `classes.pl' script.
 }
   
 typedef struct java::lang::Object* jobject;
@@ -860,15 +865,6 @@ struct _Jv_JNIEnv;
 
 typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
-
-enum _Jv_jobjectRefType
-{
-  JNIInvalidRefType    = 0,
-  JNILocalRefType      = 1,
-  JNIGlobalRefType     = 2,
-  JNIWeakGlobalRefType = 3
-};
-typedef enum _Jv_jobjectRefType jobjectRefType;
 
 extern "C" jobject _Jv_AllocObject (jclass) __attribute__((__malloc__));
 extern "C" jobject _Jv_AllocObjectNoFinalizer (jclass) __attribute__((__malloc__));

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -341,7 +343,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     int c = -1;
     boolean eol = false;
-    StringBuffer buffer = new StringBuffer();
+    CPStringBuilder buffer = new CPStringBuilder();
 
     c = read();
     if (c == -1)

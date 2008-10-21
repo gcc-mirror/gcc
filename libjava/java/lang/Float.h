@@ -50,6 +50,8 @@ public:
   static ::java::lang::Class * TYPE;
   static const jint SIZE = 32;
 private:
+  static ::java::lang::Float * ZERO;
+  static ::java::lang::Float * ONE;
   jfloat __attribute__((aligned(__alignof__( ::java::lang::Number)))) value;
 public:
   static ::java::lang::Class class$;

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -52,19 +54,19 @@ final class ConcatFunction
   extends Expr
 {
 
-  final List args;
+  final List<Expr> args;
 
-  ConcatFunction(List args)
+  ConcatFunction(List<Expr> args)
   {
     this.args = args;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
-    StringBuffer buf = new StringBuffer();
-    for (Iterator i = args.iterator(); i.hasNext(); )
+    CPStringBuilder buf = new CPStringBuilder();
+    for (Expr arg : args)
       {
-        Expr arg = (Expr) i.next();
         Object val = arg.evaluate(context, pos, len);
         buf.append(_string(context, val));
       }
@@ -74,19 +76,19 @@ final class ConcatFunction
   public Expr clone(Object context)
   {
     int len = args.size();
-    List args2 = new ArrayList(len);
+    List<Expr> args2 = new ArrayList<Expr>(len);
     for (int i = 0; i < len; i++)
       {
-        args2.add(((Expr) args.get(i)).clone(context));
+        args2.add(args.get(i).clone(context));
       }
     return new ConcatFunction(args2);
   }
 
   public boolean references(QName var)
   {
-    for (Iterator i = args.iterator(); i.hasNext(); )
+    for (Iterator<Expr> i = args.iterator(); i.hasNext(); )
       {
-        if (((Expr) i.next()).references(var))
+        if (i.next().references(var))
           {
             return true;
           }
@@ -96,7 +98,7 @@ final class ConcatFunction
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("concat(");
+    CPStringBuilder buf = new CPStringBuilder("concat(");
     int len = args.size();
     for (int i = 0; i < len; i++)
       {

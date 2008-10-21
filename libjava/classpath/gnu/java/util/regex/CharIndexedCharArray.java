@@ -38,9 +38,11 @@ exception statement from your version. */
 package gnu.java.util.regex;
 import java.nio.CharBuffer;
 
-class CharIndexedCharArray extends CharIndexedCharSequence {
-    
-    CharIndexedCharArray(char[] str, int index) {
-	super(CharBuffer.wrap(str), index);
-    }
+class CharIndexedCharArray extends CharIndexedCharSequence
+{
+
+  CharIndexedCharArray (char[]str, int index)
+  {
+    super (CharBuffer.wrap (str), index);
+  }
 }

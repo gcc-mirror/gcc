@@ -7,8 +7,6 @@
 #pragma interface
 
 #include <java/lang/Object.h>
-#include <gcj/array.h>
-
 extern "Java"
 {
   namespace gnu
@@ -35,8 +33,6 @@ class gnu::java::util::prefs::gconf::GConfNativePeer : public ::java::lang::Obje
 public:
   GConfNativePeer();
   jboolean nodeExist(::java::lang::String *);
-  void startWatchingNode(::java::lang::String *);
-  void stopWatchingNode(::java::lang::String *);
   jboolean setString(::java::lang::String *, ::java::lang::String *);
   jboolean unset(::java::lang::String *);
   ::java::lang::String * getKey(::java::lang::String *);
@@ -52,19 +48,15 @@ private:
   static void init_class();
   static void finalize_class();
 public: // actually protected
-  static jboolean gconf_client_dir_exists(::java::lang::String *);
-  static void gconf_client_add_dir(::java::lang::String *);
-  static void gconf_client_remove_dir(::java::lang::String *);
-  static jboolean gconf_client_set_string(::java::lang::String *, ::java::lang::String *);
-  static ::java::lang::String * gconf_client_get_string(::java::lang::String *);
-  static jboolean gconf_client_unset(::java::lang::String *);
-  static void gconf_client_suggest_sync();
-  static ::java::util::List * gconf_client_all_nodes(::java::lang::String *);
-  static ::java::util::List * gconf_client_all_keys(::java::lang::String *);
+  static jboolean gconf_dir_exists(::java::lang::String *);
+  static jboolean gconf_set_string(::java::lang::String *, ::java::lang::String *);
+  static ::java::lang::String * gconf_get_string(::java::lang::String *);
+  static jboolean gconf_unset(::java::lang::String *);
+  static void gconf_suggest_sync();
+  static ::java::util::List * gconf_all_nodes(::java::lang::String *);
+  static ::java::util::List * gconf_all_keys(::java::lang::String *);
   static ::java::lang::String * gconf_escape_key(::java::lang::String *);
   static ::java::lang::String * gconf_unescape_key(::java::lang::String *);
-private:
-  static JArray< ::java::lang::Object * > * semaphore;
 public:
   static ::java::lang::Class class$;
 };

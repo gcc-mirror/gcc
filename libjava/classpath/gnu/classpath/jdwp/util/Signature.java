@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -59,7 +61,7 @@ public class Signature
    */
   public static String computeClassSignature (Class theClass)
   {
-    StringBuffer sb = new StringBuffer ();
+    CPStringBuilder sb = new CPStringBuilder ();
     _addToSignature (sb, theClass);
     return sb.toString ();
   }
@@ -93,7 +95,7 @@ public class Signature
   private static String _computeSignature (Class returnType,
 					   Class[] paramTypes)
   {
-    StringBuffer sb = new StringBuffer ("(");
+    CPStringBuilder sb = new CPStringBuilder ("(");
     if (paramTypes != null)
       {
 	for (int i = 0; i < paramTypes.length; ++i)
@@ -104,7 +106,7 @@ public class Signature
     return sb.toString();
   }
 
-  private static void _addToSignature (StringBuffer sb, Class k)
+  private static void _addToSignature (CPStringBuilder sb, Class k)
   {
     // For some reason there's no easy way to get the signature of a
     // class.

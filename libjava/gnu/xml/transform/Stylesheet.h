@@ -120,6 +120,7 @@ public: // actually package-private
   static ::java::lang::String * getRequiredAttribute(::org::w3c::dom::NamedNodeMap *, ::java::lang::String *, ::org::w3c::dom::Node *);
 public:
   virtual void handle(jshort, ::java::lang::String *, ::java::lang::Object *, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   static ::java::lang::String * XSL_NS;
 private:

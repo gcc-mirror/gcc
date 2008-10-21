@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.MenuContainer;
 import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
@@ -1104,7 +1106,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   protected String paramString()
   {
     String superParamStr = super.paramString();
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(",isInverted=").append(getInverted());
     sb.append(",majorTickSpacing=").append(getMajorTickSpacing());
     sb.append(",minorTickSpacing=").append(getMinorTickSpacing());

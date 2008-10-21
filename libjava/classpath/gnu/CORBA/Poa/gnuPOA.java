@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.Poa;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -1604,7 +1606,7 @@ public class gnuPOA
    */
   public String toString()
   {
-    StringBuffer b = new StringBuffer(name);
+    CPStringBuilder b = new CPStringBuilder(name);
 
     if (children.size() != 0)
       {

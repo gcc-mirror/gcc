@@ -75,7 +75,7 @@ jint gnu::gcj::xlib::Font::getDescent()
   return returnValue-1;  // -1 to exclude the baseline
 }
 
-jint gnu::gcj::xlib::Font::getStringWidth(java::lang::String* text)
+jint gnu::gcj::xlib::Font::getStringWidth(::java::lang::String* text)
 {
   XFontStruct* fontStruct = (XFontStruct*) structure;
   

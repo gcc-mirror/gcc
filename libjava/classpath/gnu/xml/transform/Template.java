@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintStream;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
@@ -226,7 +228,7 @@ class Template
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer(getClass().getName());
+    CPStringBuilder buf = new CPStringBuilder(getClass().getName());
     buf.append('[');
     if (name != null)
       {
@@ -243,6 +245,8 @@ class Template
         buf.append(",mode=");
         buf.append(mode);
       }
+    buf.append(",node=");
+    buf.append(node);
     buf.append(']');
     return buf.toString();
     

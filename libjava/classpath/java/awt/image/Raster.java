@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -920,7 +922,7 @@ public class Raster
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     
     result.append(getClass().getName());
     result.append("[(");

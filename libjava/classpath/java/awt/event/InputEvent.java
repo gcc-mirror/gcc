@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt.event;
 
 import gnu.java.awt.EventModifier;
+import gnu.java.lang.CPStringBuilder;
 
 import java.awt.Component;
 
@@ -376,7 +377,7 @@ public abstract class InputEvent extends ComponentEvent
     modifiers &= EventModifier.NEW_MASK;
     if (modifiers == 0)
       return "";
-    StringBuffer s = new StringBuffer();
+    CPStringBuilder s = new CPStringBuilder();
     if ((modifiers & META_DOWN_MASK) != 0)
       s.append("Meta+");
     if ((modifiers & CTRL_DOWN_MASK) != 0)

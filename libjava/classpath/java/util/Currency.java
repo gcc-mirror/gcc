@@ -139,7 +139,7 @@ public final class Currency
       }
     catch (IOException exception)
       {
-        System.out.println("Failed to load currency resource: " + exception);
+        throw new InternalError("Failed to load currency resource: " + exception);
       }
   }
 

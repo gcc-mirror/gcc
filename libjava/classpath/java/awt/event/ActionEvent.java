@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 
@@ -202,9 +204,9 @@ public class ActionEvent extends AWTEvent
    */
   public String paramString()
   {
-    StringBuffer s = new StringBuffer(id == ACTION_PERFORMED
-                                      ? "ACTION_PERFORMED,cmd="
-                                      : "unknown type,cmd=");
+    CPStringBuilder s = new CPStringBuilder(id == ACTION_PERFORMED
+					    ? "ACTION_PERFORMED,cmd="
+					    : "unknown type,cmd=");
     s.append(actionCommand).append(",when=").append(when).append(",modifiers");
     int len = s.length();
     s.setLength(len + 1);

@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.key;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -157,7 +159,7 @@ public class KeyAgreementException
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(this.getClass().getName()).append(": ")
+    CPStringBuilder sb = new CPStringBuilder(this.getClass().getName()).append(": ")
         .append(super.toString());
     if (cause != null)
       sb.append("; caused by: ").append(cause.toString());

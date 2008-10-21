@@ -91,12 +91,6 @@ public:
   static const jint HOUR1_FIELD = 15;
   static const jint HOUR0_FIELD = 16;
   static const jint TIMEZONE_FIELD = 17;
-  static const jint ISO_YEAR_FIELD = 18;
-  static const jint LOCALIZED_DAY_OF_WEEK_FIELD = 19;
-  static const jint EXTENDED_YEAR_FIELD = 20;
-  static const jint MODIFIED_JULIAN_DAY_FIELD = 21;
-  static const jint MILLISECOND_IN_DAY_FIELD = 22;
-  static const jint RFC822_TIMEZONE_FIELD = 23;
   static ::java::lang::Class class$;
 };
 

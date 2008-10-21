@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * Instances of class <code>Double</code> represent primitive
@@ -101,6 +102,16 @@ public final class Double extends Number implements Comparable<Double>
    * @since 1.1
    */
   public static final Class<Double> TYPE = (Class<Double>) VMClassLoader.getPrimitiveClass('D');
+
+  /**
+   * Cache representation of 0
+   */
+  private static final Double ZERO = new Double(0.0d);
+
+  /**
+   * Cache representation of 1
+   */
+  private static final Double ONE = new Double(1.0d);
 
   /**
    * The immutable value of this Double.
@@ -201,7 +212,7 @@ public final class Double extends Number implements Comparable<Double>
       return d < 0 ? "-Infinity" : "Infinity";
 
     long bits = doubleToLongBits(d);
-    StringBuilder result = new StringBuilder();
+    CPStringBuilder result = new CPStringBuilder();
     
     if (bits < 0)
       result.append('-');
@@ -260,8 +271,12 @@ public final class Double extends Number implements Comparable<Double>
    */
   public static Double valueOf(double val)
   {
-    // We don't actually cache, but we could.
-    return new Double(val);
+    if ((val == 0.0) && (doubleToRawLongBits(val) == 0L))
+      return ZERO;
+    else if (val == 1.0)
+      return ONE;
+    else
+      return new Double(val);
   }
 
  /**
@@ -276,7 +291,7 @@ public final class Double extends Number implements Comparable<Double>
    */
   public static Double valueOf(String s)
   {
-    return new Double(parseDouble(s));
+    return valueOf(parseDouble(s));
   }
 
   /**
@@ -489,17 +504,13 @@ public final class Double extends Number implements Comparable<Double>
    */
   public boolean equals(Object obj)
   {
-    if (! (obj instanceof Double))
-      return false;
-
-    double d = ((Double) obj).value;
-
-    // Avoid call to native method. However, some implementations, like gcj,
-    // are better off using floatToIntBits(value) == floatToIntBits(f).
-    // Check common case first, then check NaN and 0.
-    if (value == d)
-      return (value != 0) || (1 / value == 1 / d);
-    return isNaN(value) && isNaN(d);
+    if (obj instanceof Double)
+      {
+        double d = ((Double) obj).value;
+        return (doubleToRawLongBits(value) == doubleToRawLongBits(d)) ||
+          (isNaN(value) && isNaN(d));
+      }
+    return false;
   }
 
   /**

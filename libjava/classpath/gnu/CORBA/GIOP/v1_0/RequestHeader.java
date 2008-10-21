@@ -43,6 +43,8 @@ import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.GIOP.ServiceContext;
 import gnu.CORBA.GIOP.CodeSetServiceContext;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.portable.IDLEntity;
 
 /**
@@ -81,7 +83,7 @@ public class RequestHeader
 
   public String bytes(byte[] array)
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int i = 0; i < array.length; i++)
       {
         b.append(Integer.toHexString(array [ i ] & 0xFF));
@@ -95,7 +97,7 @@ public class RequestHeader
    */
   public String contexts()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     for (int i = 0; i < service_context.length; i++)
       {
         b.append(service_context [ i ].toString());

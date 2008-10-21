@@ -43,6 +43,8 @@ import gnu.CORBA.Unexpected;
 import gnu.CORBA.Version;
 import gnu.CORBA.NamingService.NameTransformer;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -288,7 +290,7 @@ public class CorbalocParser
             ior.Internet.version = new Version(major, minor);
 
             // Then host data goes till '/' or ':'.
-            StringBuffer bhost = new StringBuffer(corbaloc.length());
+            CPStringBuilder bhost = new CPStringBuilder(corbaloc.length());
             while (!t[p].equals(":") && !t[p].equals("/") && !t[p].equals(","))
               bhost.append(t[p++]);
 
@@ -381,7 +383,7 @@ public class CorbalocParser
       {
         InputStreamReader r = new InputStreamReader(u.openStream());
 
-        StringBuffer b = new StringBuffer();
+        CPStringBuilder b = new CPStringBuilder();
         int c;
 
         while ((c = r.read()) > 0)
@@ -418,7 +420,7 @@ public class CorbalocParser
               + "' found");
         }
 
-    StringBuffer bKey = new StringBuffer();
+    CPStringBuilder bKey = new CPStringBuilder();
     p++;
 
     while (p < t.length && !t[p].equals("#"))

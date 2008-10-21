@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.util;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -722,7 +724,7 @@ public class Date
     boolean localTimezone = true;
 
     // Trim out any nested stuff in parentheses now to make parsing easier.
-    StringBuilder buf = new StringBuilder();
+    CPStringBuilder buf = new CPStringBuilder();
     int parenNesting = 0;
     int len = string.length();
     for (int i = 0;  i < len;  i++)

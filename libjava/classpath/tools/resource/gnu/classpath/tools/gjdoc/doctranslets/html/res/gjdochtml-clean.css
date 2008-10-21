@@ -1,0 +1,382 @@
+/* gjdochtml-clean.css
+ Copyright (C) 2004 Free Software Foundation, Inc.
+
+ This file is part of GNU Classpath.
+
+ GNU Classpath is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ 
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with GNU Classpath; see the file COPYING.  If not, write to the
+ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ 02111-1307 USA. */
+
+body.classdoc { 
+   background: white;
+   font-size: 100%;
+   margin: 0.5em 1em 0.5em 1em;
+}
+
+hr {
+   border-style: solid none none none;
+   border-width: thin;
+   height: 1px;
+   color: black;
+}
+
+hr.footer {
+   margin-top: 2em;
+}
+
+table,tr,td  {
+   border: solid 1px #aaaaaa !important;
+   border-collapse: collapse !important;
+}
+
+table.classdoc-table {
+   border-width: 1px;                    
+   border-collapse: collapse;
+}
+
+table.classdoc-table tr {
+   border-width: 1px;                    
+   border-collapse: collapse;
+}
+
+table.classdoc-table td {
+   border: solid 1px #aaaaaa;
+   border-collapse: collapse;
+}
+
+.header {
+
+   border-style: solid;
+   padding: 0.2em;
+   margin: 0.3em;
+}
+
+ul {
+   padding-top: 0em;
+   margin-top: 0em;
+}
+
+td {
+   padding: 0.3em;
+   vertical-align: top;
+}
+
+td.with-border {  
+   border-color: #aaaaaa;
+   border-style: solid;
+   border-top: 0px;
+}
+
+td.no-border-r { 
+   border-color: #aaaaaa;
+   border-style: solid;
+   border-right: 0px;
+   border-top: 0px;
+}
+
+td.no-border-b { 
+   border-color: #aaaaaa;
+   border-style: solid;
+   border-bottom: 0px;
+}
+
+td.no-border-rb { 
+   border-color: #aaaaaa;
+   border-style: solid;
+   border-right: 0px;
+   border-bottom: 0px;
+}
+
+.classdoc-head { 
+   border: 1px;
+   border-style: solid;
+   padding: 0.3em 0.7em 0.5em 0.7em;
+   margin: 0.0em;
+} 
+
+.classdoc-head-packagename { 
+   font-size: 110%;
+   padding: 0.0em;
+   margin: 0.0em;
+}
+
+.classdoc-head-classname { 
+   font-size: 180%;
+   padding: 0.0em;
+   margin: 0.0em;
+}
+
+h1.classdoc-header {
+   border-width: 1px;
+   border-style: solid;
+   font-size: 140%;
+   padding: 0.2em 0.5em 0.3em 0.5em;
+   margin-top: 0.0em;
+}
+
+h2.classdoc-header {
+   border-width: 1px;
+   border-style: solid;
+   font-size: 140%;
+   padding: 0.2em 0.5em 0.3em 0.5em;
+   margin-top: 0.0em;
+}
+
+h1.classdoc-header,
+h2.classdoc-header,
+.classdoc-head,
+.classdoc-subheader,
+.section-header,
+.sub-section-header {
+   background: #80B9FF;
+   font-weight: bolder;
+}
+
+table.navbar {
+  background: #BFDCFF;
+}
+
+div[class="navbar top"] {
+  margin-bottom: 1em;
+}
+
+span[class="navi-button current"] {
+  color: white;
+  background: #0055BA;
+}
+
+span[class="navi-button unavailable"] {
+  color: #888888;
+}
+
+h3.classdoc-header {
+   font-size: 110%;
+}
+
+.classdoc-subheader {
+   border-width: 1px;
+   border-style: solid;
+   font-size: 120%;
+   padding: 1.0em;
+}
+
+.classdoc-prototype { 
+}
+
+.classdoc-summary-comment {
+   margin-top: 1.0em;
+   margin-bottom: 1.0em;
+   font-size: 100%;
+}
+
+.classdoc-tree-label {
+   font-size: 80%;
+   line-height: 2.0em;
+   padding: 0%;
+   vertical-align: top;
+   height: 2.0em;
+   margin: 0%;                  
+   padding-left: 1.0em;
+}
+
+.classdoc-comment-body { 
+   font-size: 100%;
+}
+
+blockquote.classdoc-summary-comment {
+   margin: 0.4em 0.0em 0.2em 2.0em;
+   padding: 0em;
+}
+
+div.classdoc-comment-body {
+   margin: 0.4em 0.0em 0.2em 2.0em;
+   padding: 0em;
+}
+
+div.classdoc-package-comment-body {
+   margin: 0.4em 0.0em 1.5em 0.0em;
+   padding: 0em;
+}
+
+div.classdoc-class-comment-body {
+   margin: 0.8em 0.0em 1.0em 0.0em;
+   padding: 0.0em;
+}
+
+ul.classdoc-list {
+   margin-top: 0.2em;
+   margin-left: 1.6em;
+}
+
+div.classdoc-tag-section-header {
+   margin-top: 0.5em;
+   font-weight: bold;
+}
+
+ol.classdoc-list {
+   margin-top: 0.2em;
+   margin-left: 1.6em;
+   list-style-type: circle;
+}
+
+dl.classdoc-list {
+   margin-top: 0.2em;
+   margin-left: 1.6em;
+}
+
+.navi-button {
+  padding: 0.0em;
+  margin: 0.0em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+
+.header {
+   width: 100%;
+   padding: 0.0em 0.7em 0.5em 0.0em;
+   margin: 0.0em 0.0em 0.9em 0.0em;
+   border: black 1px;
+   border-style: none none solid none;
+}
+
+.navbar-first-row {
+   width: 100%;
+   padding: 0.0em 0.7em 0.0em 0.0em;
+   margin: 0.0em 0.0em 0.4em 0.0em;
+   font-size: 80%;
+}
+
+.navbar-second-row {
+   width: 100%;
+   padding: 0.0em 0.7em 0.0em 0.0em;
+   margin: 0.0em 0.0em 0.0em 0.0em;
+   font-size: 70%;
+}
+
+.prototype {
+   text-indent:-2em; 
+   font-family:monospace; 
+   padding: 0em 0em 0em 2em;
+   margin: 0em; 
+}
+
+.prototype-type {
+   font-family:monospace; 
+   padding: 0em;
+   margin: 0em; 
+}
+
+.prototype-name {
+   font-family:monospace; 
+}
+
+span.parameter {
+   padding: 0em;
+   margin: 0em;
+   white-space: nowrap;
+}
+
+div.footer {
+   margin-bottom: 6cm;
+   font-style: italic;
+   font-size: 0.8em;
+}
+
+pre {
+   margin-left: 1.6em;
+}
+
+pre.inheritance-tree {
+   margin-left: 0.0em;
+}
+
+a.tree-class-link {
+   font-weight: bold;
+}
+
+span.index-category-current {
+  padding: 0.4em;
+  border: 1px black solid;
+}
+
+a.index-category-link {
+  padding: 0.4em;
+}
+
+a.menu {
+  font-size: 90%;
+}
+
+table.navbar {
+  width: 100%;
+  margin: 0px;
+  border: solid 1px #888888;
+  padding: 0px;
+}
+
+tr.navbar, td.navbar {
+  padding: 0.3em;
+  margin: 0px;
+}
+
+
+h1.overview-doctitle {
+  font-size: 170%;
+  text-align: center;
+  padding-bottom: 0.5em;
+}
+
+div.overview-description-top,
+div.overview-description-full {
+  margin-top: 1.5em;
+}
+
+table {
+  margin-top: 0em;
+  margin-bottom: 1em;
+  border-collapse: collapse;
+}
+
+span.navsep {
+}
+
+a[href] {
+  color: #0055BA;
+}
+
+a:visited {
+  color: #003B82;
+}
+
+a:active {
+  color: #80B9FF;
+}
+
+blockquote.member-summary {
+   text-indent: 2em;
+   margin: 0em;
+   margin-top: 0.2em;
+}
+
+table {
+   width: 100%;
+}
+
+td[class="member-summary method modifiers"] {
+  text-align: right;
+}
+
+td[class="member-summary field modifiers"] {
+  text-align: right;
+}

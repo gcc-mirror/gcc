@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,7 +163,7 @@ final class CopyOfNode
   
   public String toString()
   {
-    StringBuffer buf = new StringBuffer("copy-of");
+    CPStringBuilder buf = new CPStringBuilder("copy-of");
     buf.append('[');
     buf.append("select=");
     buf.append(select);

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.ByteArrayInputStream;
 import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
@@ -196,7 +198,7 @@ public abstract class CertPath implements Serializable
     List l = getCertificates();
     int size = l.size();
     int i = 0;
-    StringBuffer result = new StringBuffer(type);
+    CPStringBuilder result = new CPStringBuilder(type);
     result.append(" Cert Path: length = ").append(size).append(".\n[\n");
     while (--size >= 0)
       result.append(l.get(i++)).append('\n');

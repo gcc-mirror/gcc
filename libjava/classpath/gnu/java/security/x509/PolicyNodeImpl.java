@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.security.cert.PolicyNode;
 import java.security.cert.PolicyQualifierInfo;
 
@@ -186,7 +188,7 @@ public final class PolicyNodeImpl implements PolicyNode
 
   public String toString()
   {
-    StringBuffer buf = new StringBuffer();
+    CPStringBuilder buf = new CPStringBuilder();
     for (int i = 0; i < depth; i++)
       buf.append("  ");
     buf.append("(");

@@ -165,11 +165,7 @@ public class GConfBasedPreferences
     
     GConfBasedPreferences preferenceNode
       = new GConfBasedPreferences(this, name, this.isUser);
-    
-    // register the node for to GConf so that it can listen
-    // events outside the scope of the application
-    backend.startWatchingNode(this.node);
-    
+        
     return preferenceNode;
   }
 

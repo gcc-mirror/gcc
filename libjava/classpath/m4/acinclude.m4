@@ -55,18 +55,45 @@ dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_WITH_GLIBJ],
 [
   AC_PATH_PROG(ZIP, zip)
-  AC_ARG_WITH([fastjar],
-	      [AS_HELP_STRING([--with-fastjar=PATH], [define to use a fastjar style tool])],
+
+  AC_MSG_CHECKING(for a jar-like tool)
+  AC_ARG_WITH([jar],
+	      [AS_HELP_STRING([--with-jar=PATH], [define to use a jar style tool])],
 	      [
-		AC_MSG_CHECKING([for user supplied fastjar])
-		FASTJAR=${withval}
-		AC_MSG_RESULT([${FASTJAR}])
-	      ],
-	      [AC_PATH_PROGS([FASTJAR], [fastjar gjar jar])])
-dnl We disable ZIP by default if we find fastjar.
-  if test x"${FASTJAR}" != x; then
-    ZIP=""
+	        case "${withval}" in
+      		  yes)
+		    JAR=yes
+        	    ;;
+      		  no)
+		    JAR=no
+  		    AC_MSG_RESULT(${JAR})
+		    ;;
+		  *)
+    		    if test -f "${withval}"; then
+          	      JAR="${withval}"
+		      AC_MSG_RESULT(${JAR})
+        	    else
+	  	      AC_MSG_RESULT([not found])
+	              AC_MSG_ERROR([The jar tool ${withval} was not found.])
+        	    fi
+		    ;;
+     		esac
+  	      ],
+	      [
+		JAR=yes
+	      ])
+  if test x"${JAR}" = "xyes"; then
+    AC_MSG_RESULT([trying fastjar, gjar and jar])
+    AC_PATH_PROGS([JAR], [fastjar gjar jar])
+    if test x"${RHINO_JAR}" = "xyes"; then
+      AC_MSG_RESULT([not found])
+    fi
   fi
+  if test x"${JAR}" = "xno" && test x"${ZIP}" = ""; then
+    AC_MSG_ERROR([No zip or jar tool found.])
+  fi
+  AM_CONDITIONAL(WITH_JAR, test x"${JAR}" != "xno" && test x"${JAR}" != "xyes")
+  AC_SUBST(JAR)
   
   AC_ARG_WITH([glibj],
               [AS_HELP_STRING([--with-glibj],[define what to install (zip|flat|both|none|build) [default=zip]])],
@@ -111,7 +138,7 @@ dnl We disable ZIP by default if we find fastjar.
 		  *) AC_MSG_ERROR(bad value ${enableval} for --enable-examples) ;;
 		esac],
 		[EXAMPLESDIR="examples"])
-  if test "x${use_zip}" = xno && test "x${install_class_files}" = xno; then
+  if test "x${build_class_files}" = xno; then
     EXAMPLESDIR=""
   fi
   AC_SUBST(EXAMPLESDIR)
@@ -124,7 +151,7 @@ dnl We disable ZIP by default if we find fastjar.
 		  *) AC_MSG_ERROR(bad value ${enableval} for --enable-tools) ;;
 		esac],
 		[TOOLSDIR="tools"])
-  if test "x${use_zip}" = xno && test "x${install_class_files}" = xno; then
+  if test "x${build_class_files}" = xno; then
     TOOLSDIR=""
   fi
   AC_SUBST(TOOLSDIR)
@@ -155,8 +182,17 @@ AC_DEFUN([CLASSPATH_WITH_GJDOC],
 		               AC_MSG_ERROR("Cannot use ${withval} as gjdoc executable since it doesn't exist"))
 	       fi],
               [WITH_GJDOC=no])
-
   AM_CONDITIONAL(CREATE_API_DOCS, test "x${WITH_GJDOC}" = xyes)
+  if test "x${WITH_GJDOC}" = xyes; then
+    AC_MSG_CHECKING([version of GJDoc])
+    gjdoc_version=$(${GJDOC} --version|cut -d ' ' -f2)
+    AC_MSG_RESULT(${gjdoc_version})
+    case ${gjdoc_version} in
+      0.7.9) ;;
+      0.8*) ;;
+      *) AC_MSG_ERROR([Building documentation requires GJDoc >= 0.7.9, ${gjdoc_version} found.]) ;;
+    esac
+  fi
 ])
 
 dnl -----------------------------------------------------------
@@ -234,14 +270,16 @@ AC_DEFUN([CLASSPATH_JAVAC_MEM_CHECK],
     }
   }
 EOF
-  AC_MSG_CHECKING([whether javac supports -J])
-  $JAVAC $JAVACFLAGS -J-Xmx768M -sourcepath '' $JAVA_TEST
-  javac_result=$?
-  if test "x$javac_result" = "x0"; then
-    AC_MSG_RESULT([yes])
-    JAVAC_MEM_OPT="-J-Xmx768M"
-  else
-    AC_MSG_RESULT([no])
+  if test x$JAVAC_IS_GCJ != xyes; then
+    AC_MSG_CHECKING([whether javac supports -J])
+    $JAVAC $JAVACFLAGS -J-Xmx768M -sourcepath '' $JAVA_TEST
+    javac_result=$?
+    if test "x$javac_result" = "x0"; then
+      AC_MSG_RESULT([yes])
+      JAVAC_MEM_OPT="-J-Xmx768M"
+    else
+      AC_MSG_RESULT([no])
+    fi
   fi
   rm -f $JAVA_TEST $CLASS_TEST
   AC_SUBST(JAVAC_MEM_OPT)

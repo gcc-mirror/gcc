@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.autofit;
 
+import gnu.java.lang.CPStringBuilder;
+
 class Edge
 {
   int fpos;
@@ -54,7 +56,7 @@ class Edge
 
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
+    CPStringBuilder s = new CPStringBuilder();
     s.append("[Edge] id");
     s.append(hashCode());
     s.append(", fpos: ");

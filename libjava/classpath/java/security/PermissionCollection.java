@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.io.Serializable;
 import java.util.Enumeration;
 
@@ -156,7 +158,7 @@ public abstract class PermissionCollection implements Serializable
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(super.toString());
+    CPStringBuilder sb = new CPStringBuilder(super.toString());
 
     sb.append(" (\n");
     Enumeration<Permission> e = elements();

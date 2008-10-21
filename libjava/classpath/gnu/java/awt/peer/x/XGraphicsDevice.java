@@ -39,6 +39,7 @@ package gnu.java.awt.peer.x;
 
 import gnu.classpath.SystemProperties;
 import gnu.x11.Display;
+import gnu.x11.EscherServerConnectionException;
 
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -127,9 +128,16 @@ public class XGraphicsDevice
             Socket socket = createLocalSocket();
             if (socket != null)
               {
-                display = new Display(socket, "localhost",
-                                      displayName.display_no,
-                                      displayName.screen_no);
+                try
+                  {
+                    display = new Display(socket, "localhost",
+                                          displayName.display_no,
+                                          displayName.screen_no);
+                  }
+                catch (EscherServerConnectionException e)
+                  {
+                    throw new RuntimeException(e.getCause()); 
+                  }
               }
           }
 
@@ -137,8 +145,17 @@ public class XGraphicsDevice
         // when the connection is probably remote or when we couldn't load
         // the LocalSocket class stuff.
         if (display == null)
-          display = new Display(displayName);
-
+          {
+            try
+              {
+                display = new Display(displayName);
+              }
+            catch (EscherServerConnectionException e)
+              {
+                throw new RuntimeException(e.getCause());
+              }
+          }
+        
         eventPump = new XEventPump(display);
       }
     return display;

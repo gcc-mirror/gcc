@@ -61,6 +61,7 @@ public:
   virtual ::org::w3c::dom::Document * getDocument();
   virtual void setReader(::org::xml::sax::XMLReader *);
   virtual void setDocumentLocator(::org::xml::sax::Locator *);
+  virtual void setNamespaceAware(jboolean);
   virtual void startDocument();
   virtual void endDocument();
   virtual void startPrefixMapping(::java::lang::String *, ::java::lang::String *);
@@ -104,8 +105,8 @@ private:
   static ::java::lang::String * XMLNS_URI;
   static ::java::lang::String * XMLNS_PREFIX;
   static ::java::util::HashSet * PREDEFINED_ENTITIES;
-public: // actually package-private
   jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) namespaceAware;
+public: // actually package-private
   jboolean ignoreWhitespace;
   jboolean expandEntityReferences;
   jboolean ignoreComments;

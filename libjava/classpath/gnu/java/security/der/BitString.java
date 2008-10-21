@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.security.der;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -314,7 +316,7 @@ public class BitString implements Cloneable, Comparable
 
   public String toString()
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     for (int i = 0, j = 7, k = 0; i < size(); i++)
       {
         sb.append((bytes[k] & 1 << j) != 0 ? "1" : "0");

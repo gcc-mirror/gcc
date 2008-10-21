@@ -50,23 +50,39 @@ import java.util.Calendar;
  */
 public class ZipEntry implements ZipConstants, Cloneable
 {
-  private static final int KNOWN_SIZE   = 1;
-  private static final int KNOWN_CSIZE  = 2;
-  private static final int KNOWN_CRC    = 4;
-  private static final int KNOWN_TIME   = 8;
-  private static final int KNOWN_EXTRA  = 16;
+  private static final byte KNOWN_SIZE    = 1;
+  private static final byte KNOWN_CSIZE   = 2;
+  private static final byte KNOWN_CRC     = 4;
+  private static final byte KNOWN_TIME    = 8;
+  private static final byte KNOWN_DOSTIME = 16;
+  private static final byte KNOWN_EXTRA   = 32;
 
-  private static Calendar cal;
-
-  private String name;
+  /** Immutable name of the entry */
+  private final String name;
+  /** Uncompressed size */
   private int size;
+  /** Compressed size */
   private long compressedSize = -1;
+  /** CRC of uncompressed data */
   private int crc;
-  private int dostime;
-  private short known = 0;
-  private short method = -1;
-  private byte[] extra = null;
+  /** Comment or null if none */
   private String comment = null;
+  /** The compression method. Either DEFLATED or STORED, by default -1. */
+  private byte method = -1;
+  /** Flags specifying what we know about this entry */
+  private byte known = 0;
+  /**
+   * The 32bit DOS encoded format for the time of this entry. Only valid if
+   * KNOWN_DOSTIME is set in known.
+   */
+  private int dostime;
+  /**
+   * The 64bit Java encoded millisecond time since the beginning of the epoch.
+   * Only valid if KNOWN_TIME is set in known.
+   */
+  private long time;
+  /** Extra data */
+  private byte[] extra = null;
 
   int flags;              /* used by ZipOutputStream */
   int offset;             /* used by ZipFile and ZipOutputStream */
@@ -113,6 +129,7 @@ public class ZipEntry implements ZipConstants, Cloneable
     compressedSize = e.compressedSize;
     crc = e.crc;
     dostime = e.dostime;
+    time = e.time;
     method = e.method;
     extra = e.extra;
     comment = e.comment;
@@ -121,37 +138,60 @@ public class ZipEntry implements ZipConstants, Cloneable
   final void setDOSTime(int dostime)
   {
     this.dostime = dostime;
-    known |= KNOWN_TIME;
+    known |= KNOWN_DOSTIME;
+    known &= ~KNOWN_TIME;
   }
 
   final int getDOSTime()
   {
-    if ((known & KNOWN_TIME) == 0)
-      return 0;
-    else
+    if ((known & KNOWN_DOSTIME) != 0)
       return dostime;
+    else  if ((known & KNOWN_TIME) != 0)
+      {
+       Calendar cal = Calendar.getInstance();
+       cal.setTimeInMillis(time);
+       dostime = (cal.get(Calendar.YEAR) - 1980 & 0x7f) << 25
+          | (cal.get(Calendar.MONTH) + 1) << 21
+          | (cal.get(Calendar.DAY_OF_MONTH)) << 16
+          | (cal.get(Calendar.HOUR_OF_DAY)) << 11
+          | (cal.get(Calendar.MINUTE)) << 5
+          | (cal.get(Calendar.SECOND)) >> 1;
+       known |= KNOWN_DOSTIME;
+       return dostime;
+      }
+    else
+      return 0;
   }
 
   /**
    * Creates a copy of this zip entry.
    */
-  /**
-   * Clones the entry.
-   */
   public Object clone()
   {
-    try
+    // JCL defines this as being the same as the copy constructor above,
+    // except that value of the "extra" field is also copied. Take care
+    // that in the case of a subclass we use clone() rather than the copy
+    // constructor.
+    ZipEntry clone;
+    if (this.getClass() == ZipEntry.class)
+      clone = new ZipEntry(this);
+    else
       {
-	// The JCL says that the `extra' field is also copied.
-	ZipEntry clone = (ZipEntry) super.clone();
-	if (extra != null)
-	  clone.extra = (byte[]) extra.clone();
-	return clone;
+       try
+         {
+          clone = (ZipEntry) super.clone();
+         }
+       catch (CloneNotSupportedException e)
+         {
+          throw new InternalError();
+         }
       }
-    catch (CloneNotSupportedException ex)
+    if (extra != null)
       {
-	throw new InternalError();
+       clone.extra = new byte[extra.length];
+       System.arraycopy(extra, 0, clone.extra, 0, extra.length);
       }
+    return clone;
   }
 
   /**
@@ -169,18 +209,9 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public void setTime(long time)
   {
-    Calendar cal = getCalendar();
-    synchronized (cal)
-      {
-	cal.setTimeInMillis(time);
-	dostime = (cal.get(Calendar.YEAR) - 1980 & 0x7f) << 25
-	  | (cal.get(Calendar.MONTH) + 1) << 21
-	  | (cal.get(Calendar.DAY_OF_MONTH)) << 16
-	  | (cal.get(Calendar.HOUR_OF_DAY)) << 11
-	  | (cal.get(Calendar.MINUTE)) << 5
-	  | (cal.get(Calendar.SECOND)) >> 1;
-      }
+    this.time = time;
     this.known |= KNOWN_TIME;
+    this.known &= ~KNOWN_DOSTIME;
   }
 
   /**
@@ -192,39 +223,34 @@ public class ZipEntry implements ZipConstants, Cloneable
     // The extra bytes might contain the time (posix/unix extension)
     parseExtra();
 
-    if ((known & KNOWN_TIME) == 0)
+    if ((known & KNOWN_TIME) != 0)
+      return time;
+    else if ((known & KNOWN_DOSTIME) != 0)
+      {
+       int sec = 2 * (dostime & 0x1f);
+       int min = (dostime >> 5) & 0x3f;
+       int hrs = (dostime >> 11) & 0x1f;
+       int day = (dostime >> 16) & 0x1f;
+       int mon = ((dostime >> 21) & 0xf) - 1;
+       int year = ((dostime >> 25) & 0x7f) + 1980; /* since 1900 */
+
+       try
+         {
+          Calendar cal = Calendar.getInstance();
+          cal.set(year, mon, day, hrs, min, sec);
+          time = cal.getTimeInMillis();
+          known |= KNOWN_TIME;
+          return time;
+	 }
+       catch (RuntimeException ex)
+         {
+          /* Ignore illegal time stamp */
+          known &= ~KNOWN_TIME;
+          return -1;
+         }
+      }
+    else
       return -1;
-
-    int sec = 2 * (dostime & 0x1f);
-    int min = (dostime >> 5) & 0x3f;
-    int hrs = (dostime >> 11) & 0x1f;
-    int day = (dostime >> 16) & 0x1f;
-    int mon = ((dostime >> 21) & 0xf) - 1;
-    int year = ((dostime >> 25) & 0x7f) + 1980; /* since 1900 */
-   
-    try
-      {
-	cal = getCalendar();
-	synchronized (cal)
-	  {
-	    cal.set(year, mon, day, hrs, min, sec);
-	    return cal.getTimeInMillis();
-	  }
-      }
-    catch (RuntimeException ex)
-      {
-	/* Ignore illegal time stamp */
-	known &= ~KNOWN_TIME;
-	return -1;
-      }
-  }
-
-  private static synchronized Calendar getCalendar()
-  {
-    if (cal == null)
-      cal = Calendar.getInstance();
-
-    return cal;
   }
 
   /**
@@ -298,7 +324,7 @@ public class ZipEntry implements ZipConstants, Cloneable
     if (method != ZipOutputStream.STORED
 	&& method != ZipOutputStream.DEFLATED)
 	throw new IllegalArgumentException();
-    this.method = (short) method;
+    this.method = (byte) method;
   }
 
   /**

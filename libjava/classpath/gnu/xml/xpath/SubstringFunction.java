@@ -60,10 +60,10 @@ final class SubstringFunction
   final Expr arg2;
   final Expr arg3;
 
-  SubstringFunction(List args)
+  SubstringFunction(List<Expr> args)
   {
-    this((Expr) args.get(0), (Expr) args.get(1),
-         (args.size() > 2) ? (Expr) args.get(2) : null);
+    this(args.get(0), args.get(1),
+         (args.size() > 2) ? args.get(2) : null);
   }
 
   SubstringFunction(Expr arg1, Expr arg2, Expr arg3)
@@ -73,6 +73,7 @@ final class SubstringFunction
     this.arg3 = arg3;
   }
 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val1 = arg1.evaluate(context, pos, len);

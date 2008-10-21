@@ -37,8 +37,10 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-class CharIndexedString extends CharIndexedCharSequence {
-    CharIndexedString(String str, int index) {
-	super(str, index);
-    }
+class CharIndexedString extends CharIndexedCharSequence
+{
+  CharIndexedString (String str, int index)
+  {
+    super (str, index);
+  }
 }

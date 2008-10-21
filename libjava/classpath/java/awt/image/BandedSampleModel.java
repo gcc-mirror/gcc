@@ -37,6 +37,7 @@ exception statement from your version. */
 package java.awt.image;
 
 import gnu.java.awt.Buffers;
+import gnu.java.lang.CPStringBuilder;
 
 /**
  * A sample model that reads each sample value from a separate band in the
@@ -742,7 +743,7 @@ public final class BandedSampleModel extends ComponentSampleModel
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     result.append(getClass().getName());
     result.append("[");
     result.append("scanlineStride=").append(scanlineStride);

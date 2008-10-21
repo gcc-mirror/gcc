@@ -51,25 +51,19 @@ import java.util.NoSuchElementException;
  *
  * @author Mark Wielaard (mark@klomp.org)
  */
-public final class EmptyEnumeration implements Enumeration, Serializable
+public final class EmptyEnumeration<T> implements Enumeration<T>, Serializable
 {
   /** The only instance of this class */
-  private static final EmptyEnumeration instance = new EmptyEnumeration();
+  private static final EmptyEnumeration<Object> instance = 
+    new EmptyEnumeration<Object>();
 
   /**
-   * Private constructor that creates a new empty Enumeration.
-   */
-  private EmptyEnumeration()
-  {
-  }
-
-  /**
-   * Returns the only instance of this class.
+   * Returns an instance of this class for Object.
    * It can be shared by multiple objects and threads.
    *
    * @return the common empty enumeration
    */
-  public static EmptyEnumeration getInstance()
+  public static EmptyEnumeration<Object> getInstance()
   {
     return instance;
   }
@@ -89,7 +83,7 @@ public final class EmptyEnumeration implements Enumeration, Serializable
    *
    * @throws NoSuchElementException this is empty
    */
-  public Object nextElement()
+  public T nextElement()
   {
     throw new NoSuchElementException();
   }

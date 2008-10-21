@@ -11,6 +11,13 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawData;
+    }
+  }
   namespace java
   {
     namespace nio
@@ -25,7 +32,7 @@ class java::nio::FloatBuffer : public ::java::nio::Buffer
 {
 
 public: // actually package-private
-  FloatBuffer(jint, jint, jint, jint);
+  FloatBuffer(jint, jint, jint, jint, ::gnu::gcj::RawData *, JArray< jfloat > *, jint);
 public:
   static ::java::nio::FloatBuffer * allocate(jint);
   static ::java::nio::FloatBuffer * wrap(JArray< jfloat > *, jint, jint);

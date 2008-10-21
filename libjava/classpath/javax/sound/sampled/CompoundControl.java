@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.sound.sampled;
 
+import gnu.java.lang.CPStringBuilder;
+
 /**
  * A compound control provides control over several other controls.
  * @since 1.3
@@ -88,7 +90,7 @@ public abstract class CompoundControl extends Control
    */
   public String toString()
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     result.append(super.toString());
     result.append(": ");
     for (int i = 0; i < memberControls.length; ++i)

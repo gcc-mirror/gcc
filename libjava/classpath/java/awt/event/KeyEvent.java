@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt.event;
 
 import gnu.java.awt.EventModifier;
+import gnu.java.lang.CPStringBuilder;
 
 import java.awt.Component;
 import java.io.IOException;
@@ -1673,7 +1674,7 @@ public class KeyEvent extends InputEvent
    */
   public String paramString()
   {
-    StringBuffer s = new StringBuffer();
+    CPStringBuilder s = new CPStringBuilder();
 
     switch (id)
       {

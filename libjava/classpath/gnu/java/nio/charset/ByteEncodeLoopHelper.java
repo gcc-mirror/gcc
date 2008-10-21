@@ -120,6 +120,8 @@ public abstract class ByteEncodeLoopHelper
     int inRemaining = in.remaining();
     int outRemaining = out.remaining();
     CoderResult result;
+
+	bailOut:
     if (inRemaining <= outRemaining)
       {
         for (int i = 0; i < inRemaining; i++)
@@ -130,7 +132,7 @@ public abstract class ByteEncodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-                break;
+                break bailOut;
               }
             byte b = mapToByte(inChar);
             outArray[outPos] = b;
@@ -148,7 +150,7 @@ public abstract class ByteEncodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-                break;
+                break bailOut;
               }
             byte b = mapToByte(inChar);
             outArray[outPos] = b;

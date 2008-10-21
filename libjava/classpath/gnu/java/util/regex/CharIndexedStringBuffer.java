@@ -37,9 +37,11 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-class CharIndexedStringBuffer extends CharIndexedCharSequence {
+class CharIndexedStringBuffer extends CharIndexedCharSequence
+{
 
-    CharIndexedStringBuffer(StringBuffer str, int index) {
-	super(str, index);
-    }
+  CharIndexedStringBuffer (StringBuffer str, int index)
+  {
+    super (str, index);
+  }
 }

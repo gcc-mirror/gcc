@@ -118,8 +118,8 @@ void gnu::gcj::xlib::Display::staticInit()
 {
   if (XInitThreads() == 0)
     {
-      char msg[] = "threads is not supported on this platform";
-      throw new java::lang::RuntimeException(JvNewStringLatin1(msg));
+      char msg[] = "threads are not supported on this platform";
+      throw new ::java::lang::RuntimeException(JvNewStringLatin1(msg));
     }
   
   XSetErrorHandler(&handleXError);

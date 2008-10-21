@@ -89,7 +89,7 @@ public abstract class SchemaFactory
           {
             try
               {
-                Class t = (loader != null) ? loader.loadClass(className) :
+                Class<?> t = (loader != null) ? loader.loadClass(className) :
                     Class.forName(className);
                 return (SchemaFactory) t.newInstance();
               }
@@ -118,7 +118,7 @@ public abstract class SchemaFactory
                 for (String line = r.readLine(); line != null;
                         line = r.readLine())
                   {
-                    Class t = (loader != null) ? loader.loadClass(className) :
+                    Class<?> t = (loader != null) ? loader.loadClass(className) :
                         Class.forName(className);
                     SchemaFactory ret = (SchemaFactory) t.newInstance();
                     if (ret.isSchemaLanguageSupported(schemaLanguage))

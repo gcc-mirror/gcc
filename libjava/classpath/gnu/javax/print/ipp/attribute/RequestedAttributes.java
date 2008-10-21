@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,7 +119,7 @@ public final class RequestedAttributes implements Attribute
    */
   public String toString()
   {
-    StringBuffer b = new StringBuffer();
+    CPStringBuilder b = new CPStringBuilder();
     
     if (attributes.size() > 0)
       b.append(attributes.get(0));

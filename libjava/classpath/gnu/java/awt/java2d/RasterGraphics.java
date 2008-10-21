@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.java2d;
 
 import java.awt.GraphicsConfiguration;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 
@@ -71,6 +72,15 @@ public class RasterGraphics
     init();
   }
 
+  @Override
+  public void renderScanline(int y, ScanlineCoverage c)
+  {
+    if (y >= getDeviceBounds().width)
+      return;
+    
+    super.renderScanline(y, c);
+  }
+  
   /**
    * Returns the color model of this Graphics object.
    *
@@ -100,4 +110,9 @@ public class RasterGraphics
     return null;
   }
 
+  @Override
+  protected Rectangle getDeviceBounds()
+  {
+    return this.raster.getBounds();
+  }
 }

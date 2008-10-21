@@ -39,6 +39,9 @@ exception statement from your version. */
 package java.util;
 
 import gnu.classpath.SystemProperties;
+
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.locale.LocaleHelper;
 
 import java.io.IOException;
@@ -548,7 +551,7 @@ public final class Locale implements Serializable, Cloneable
       return "";
     else if (country.length() == 0 && variant.length() == 0)
       return language;
-    StringBuffer result = new StringBuffer(language);
+    CPStringBuilder result = new CPStringBuilder(language);
     result.append('_').append(country);
     if (variant.length() != 0)
       result.append('_').append(variant);
@@ -922,7 +925,7 @@ public final class Locale implements Serializable, Cloneable
    */
   public String getDisplayName(Locale locale)
   {
-    StringBuffer result = new StringBuffer();
+    CPStringBuilder result = new CPStringBuilder();
     int count = 0;
     String[] delimiters = {"", " (", ","};
     if (language.length() != 0)

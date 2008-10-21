@@ -51,6 +51,8 @@ import gnu.CORBA.Unexpected;
 import gnu.CORBA.ResponseHandlerImpl;
 import gnu.CORBA.StreamHolder;
 
+import gnu.java.lang.CPStringBuilder;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BAD_PARAM;
@@ -357,7 +359,7 @@ public class gnuServantObject extends ObjectImpl
    */
   public String toString()
   {
-    StringBuffer b = new StringBuffer("Servant object (");
+    CPStringBuilder b = new CPStringBuilder("Servant object (");
     for (int i = 0; i < Id.length; i++)
       {
         b.append(Integer.toHexString(Id [ i ] & 0xFF));

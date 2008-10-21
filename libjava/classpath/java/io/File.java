@@ -41,6 +41,8 @@ package java.io;
 
 import gnu.classpath.SystemProperties;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -158,7 +160,7 @@ public class File implements Serializable, Comparable<File>
       return false;
 
     if (VMFile.isDirectory(path))
-      return VMFile.canWriteDirectory(this);
+      return VMFile.canWriteDirectory(path);
     else
       return VMFile.canWrite(path);
   }
@@ -317,7 +319,7 @@ public class File implements Serializable, Comparable<File>
 	  return p;
       }
     
-    StringBuffer newpath = new StringBuffer(plen);
+    CPStringBuilder newpath = new CPStringBuilder(plen);
     int last = 0;
     while (dupIndex != -1)
       {

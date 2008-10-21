@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.java.lang.CPStringBuilder;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -767,7 +769,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   protected String paramString()
   {
-    StringBuffer sb = new StringBuffer();
+    CPStringBuilder sb = new CPStringBuilder();
     sb.append(super.paramString());
     sb.append(",label=");
     if (getLabel() != null)
