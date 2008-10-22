@@ -32,15 +32,15 @@ do \
  d##TYPE = f2_##TYPE(h3_##TYPE); \
 } while(0)
  
-DECIMAL_COMPOSITE_DECL(32);  /* { dg-error "incompatible types in assignment" } */
+DECIMAL_COMPOSITE_DECL(32);  /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
 /* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 35 } */
 
 
-DECIMAL_COMPOSITE_DECL(64);  /* { dg-error "incompatible types in assignment" } */
+DECIMAL_COMPOSITE_DECL(64);  /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
 /* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 39 } */
 
 
-DECIMAL_COMPOSITE_DECL(128); /* { dg-error "incompatible types in assignment" } */
+DECIMAL_COMPOSITE_DECL(128); /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
 /* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 43 } */
 
 

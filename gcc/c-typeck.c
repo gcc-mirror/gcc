@@ -4012,7 +4012,8 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (LOCATION, OPT, AR, parmnum, rname))                 \
-          inform (fundecl ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,   \
+          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))                \
+		  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,           \
                   "expected %qT but argument is of type %qT",            \
                   type, rhstype);                                        \
         break;                                                           \
@@ -4451,15 +4452,21 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       /* ??? This should not be an error when inlining calls to
 	 unprototyped functions.  */
       error ("incompatible type for argument %d of %qE", parmnum, rname);
+      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+	      ? DECL_SOURCE_LOCATION (fundecl) : input_location,
+	      "expected %qT but argument is of type %qT", type, rhstype);
       break;
     case ic_assign:
-      error ("incompatible types in assignment");
+      error ("incompatible types when assigning to type %qT from type %qT",
+	     type, rhstype);
       break;
     case ic_init:
-      error ("incompatible types in initialization");
+      error ("incompatible types when initializing type %qT using type %qT",
+	     type, rhstype);
       break;
     case ic_return:
-      error ("incompatible types in return");
+      error ("incompatible types when returning type %qT but %qT was expected",
+	     rhstype, type);
       break;
     default:
       gcc_unreachable ();

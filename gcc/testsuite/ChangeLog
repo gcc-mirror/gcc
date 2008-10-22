@@ -1,3 +1,16 @@
+2008-10-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/30949
+	* gcc.target/i386/sse-vect-types.c: Update.
+	* gcc.dg/simd-5.c: Update.
+	* gcc.dg/assign-warn-2.c: Update.
+	* gcc.dg/simd-2.c: Update.
+	* gcc.dg/simd-6.c: Update.
+	* gcc.dg/assign-warn-1.c: Update.
+	* gcc.dg/dfp/composite-type.c: Update.
+	* gcc.dg/simd-1.c: Update.
+	* gcc.dg/pr36997.c: Update.
+
 2008-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/36795

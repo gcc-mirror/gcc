@@ -113,13 +113,13 @@ struct s { int a; };
 
 TESTARG(stria, struct s, int); /* { dg-error "incompatible type for argument 1 of 'striaF'" } */
 TESTARP(strib, struct s, int); /* { dg-error "incompatible type for argument 1 of 'stribFp.x'" } */
-TESTASS(stric, struct s, int); /* { dg-error "incompatible types in assignment" } */
+TESTASS(stric, struct s, int); /* { dg-error "incompatible types when assigning to type 'struct s' from type 'int'" } */
 TESTINI(strid, struct s, int); /* { dg-error "invalid initializer" } */
-TESTRET(strie, struct s, int); /* { dg-error "incompatible types in return" } */
+TESTRET(strie, struct s, int); /* { dg-error "incompatible types when returning type 'int' but 'struct s' was expected" } */
 
 TESTARG(istra, int, struct s); /* { dg-error "incompatible type for argument 1 of 'istraF'" } */
 TESTARP(istrb, int, struct s); /* { dg-error "incompatible type for argument 1 of 'istrbFp.x'" } */
-TESTASS(istrc, int, struct s); /* { dg-error "incompatible types in assignment" } */
-TESTINI(istrd, int, struct s); /* { dg-error "incompatible types in initialization" } */
-TESTRET(istre, int, struct s); /* { dg-error "incompatible types in return" } */
+TESTASS(istrc, int, struct s); /* { dg-error "incompatible types when assigning to type 'int' from type 'struct s'" } */
+TESTINI(istrd, int, struct s); /* { dg-error "incompatible types when initializing type 'int' using type 'struct s'" } */
+TESTRET(istre, int, struct s); /* { dg-error "incompatible types when returning type 'struct s' but 'int' was expected" } */
 /* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 0 } */
