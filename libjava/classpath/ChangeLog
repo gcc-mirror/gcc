@@ -5,6 +5,23 @@
 	* tools/Makefile.am:
 	Use gjdoc_gendir when calling antlr.
 
+2008-10-17  Robert Lougher  <rob.lougher@gmail.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector):
+	Release 'fonts'.
+
+2008-10-16  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/jar/WorkSet.java (initSet): Use
+	foreach.  Change argument type.
+	(WorkSet): Change argument type.
+	* tools/gnu/classpath/tools/jar/Indexer.java (indexJarFile): Use
+	foreach.
+	* tools/gnu/classpath/tools/jar/Creator.java
+	(writeCommandLineEntries): Use foreach.
+	(getAllEntries): Likewise.
+
 2008-10-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* configure.ac:
@@ -18,7 +35,7 @@
 	Only build GJDoc parser when both
 	CREATE_GJDOC and CREATE_GJDOC_PARSER
 	are on.
-	
+
 2008-10-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* configure.ac:
@@ -32,15 +49,72 @@
 	* tools/Makefile.am:
 	Support CREATE_GJDOC_PARSER option.
 
+2008-09-29  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4:
+	Check for antlr binary as well.
+	
+2008-09-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Always check for JAVA prior to ANTLR check.
+	* java/lang/ThreadLocal.java,
+	* java/lang/ThreadLocalMap.java:
+	Rename notFound back to sentinel to avoid
+	potential issues with use of the old name.
+	Cleanup formatting.
+	* java/nio/Buffer.java,
+	* java/nio/ByteBuffer.java,
+	* java/nio/ByteBufferImpl.java,
+	* java/nio/CharBuffer.java,
+	* java/nio/CharViewBufferImpl.java,
+	* java/nio/DirectByteBufferImpl.java,
+	* java/nio/DoubleBuffer.java,
+	* java/nio/DoubleBufferImpl.java,
+	* java/nio/FloatBuffer.java,
+	* java/nio/FloatBufferImpl.java,
+	* java/nio/IntBuffer.java,
+	* java/nio/LongBuffer.java,
+	* java/nio/LongBufferImpl.java,
+	* java/nio/MappedByteBuffer.java,
+	* java/nio/ShortBuffer.java,
+	* java/nio/ShortBufferImpl.java,
+	* java/nio/ShortViewBufferImpl.java:
+	Cleanup formatting.
+
+2008-09-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/System.java (getenv): Reinstate
+	use of EnvironmentMap as opposed to raw
+	HashMap.
+
+2008-09-16  Mario Torre  <neugens@aicas.com>
+
+	* java/lang/System.java (getenv): Fix env entries of the form
+	key=value=value=value not parsed correctly. 
+	
+2008-09-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	Reported by: Matthias Klose
+	* tools/Makefile.am:
+	Simplify the addition of the ANTLR
+	JAR file to the classpath.
+	
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4:
+	Allow use of runantlr on systems
+	which have it (Debian/Ubuntu).
+	
 2008-09-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* examples/Makefile.am:
-        Check lib directly as well as glibj.zip
-        for boot classes.
+	Check lib directly as well as glibj.zip
+	for boot classes.
 	* m4/acinclude.m4:
-        Only require the class files to be built
-        to allow the tools and examples to be built,
-        not the installation of glibj.zip.
+	Only require the class files to be built
+	to allow the tools and examples to be built,
+	not the installation of glibj.zip.
 	* tools/Makefile.am:
 	Check lib directly as well as glibj.zip
 	for boot classes.
@@ -435,7 +509,6 @@
 
 	* m4/acinclude.m4 (CLASSPATH_COND_IF): New macro.
 	* configure.ac: Use it.
-	* configure: Regenerate.
 	* tools/Makefile.am (!CREATE_WRAPPERS): Update comment.
 
 2008-07-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
@@ -1578,10 +1651,6 @@
 	* javax/management/StandardMBean.java:
 	Fix warnings due to use of generics.
 	
-2008-06-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
-
-	* native/fdlibm/dtoa.c: include stdlib.h, for 'free'.
-
 2008-06-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* javax/management/openmbean/ArrayType.java,

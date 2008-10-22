@@ -1,5 +1,5 @@
 /* Creator.java - create a new jar file
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2008 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -179,13 +178,9 @@ public class Creator
 
   private ArrayList<Entry> getAllEntries(Main parameters)
   {
-    Iterator it = parameters.entries.iterator();
     ArrayList<Entry> allEntries = new ArrayList<Entry>();
-    while (it.hasNext())
-      {
-        Entry entry = (Entry) it.next();
-        addEntries(allEntries, entry);
-      }
+    for (Entry entry : parameters.entries)
+      addEntries(allEntries, entry);
     return allEntries;
   }
 
@@ -196,13 +191,9 @@ public class Creator
     writtenItems.add("META-INF/"); //$NON-NLS-1$
     writtenItems.add(JarFile.MANIFEST_NAME);
 
-    ArrayList allEntries = getAllEntries(parameters);
-    Iterator it = allEntries.iterator();
-    while (it.hasNext())
-      {
-        Entry entry = (Entry) it.next();
-        writeFile(entry.file, entry.name, parameters.verbose);
-      }
+    ArrayList<Entry> allEntries = getAllEntries(parameters);
+    for (Entry entry : allEntries)
+      writeFile(entry.file, entry.name, parameters.verbose);
   }
 
   protected Manifest createManifest(Main parameters)

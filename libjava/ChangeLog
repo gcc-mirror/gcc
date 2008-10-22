@@ -1,3 +1,10 @@
+2008-10-22  Matthias Klose  <doko@ubuntu.com>
+
+	Import GNU Classpath (libgcj-import-20081021).
+
+	* Regenerate class and header files.
+	* Regenerate auto* files.
+
 2008-10-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* sources.am, Makfile.in: Regenerate.

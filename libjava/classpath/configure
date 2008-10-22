@@ -28984,7 +28984,7 @@ fi
 
 
 if test "x${TOOLSDIR}" != x; then
-  if test "x${COMPILE_WRAPPERS}" = xno && test "x${enable_java_maintainer_mode}" = xyes; then
+    if test "x${COMPILE_WRAPPERS}" = xno && test "x${enable_java_maintainer_mode}" = xyes; then
 
 
 if test "x$JAVAPREFIX" = x; then
@@ -29372,7 +29372,7 @@ echo "${ECHO_T}$ac_cv_prog_java_works" >&6
 
 
   fi
-  if test "x${COMPILE_GJDOC}" = xyes; then
+    if test "x${COMPILE_GJDOC}" = xyes; then
 
   echo "$as_me:$LINENO: checking for the ANTLR parser generator JAR file" >&5
 echo $ECHO_N "checking for the ANTLR parser generator JAR file... $ECHO_C" >&6
@@ -29393,393 +29393,7 @@ echo "$as_me: error: specified ANTLR jar file $ANTLR_JAR not found." >&2;}
 echo "${ECHO_T}$ANTLR_JAR" >&6
 
 
-    if test "x${REGENERATE_GJDOC_PARSER}" = xyes; then
-      if test "x${enable_java_maintainer_mode}" = xyes; then
-
-if test "x$JAVAPREFIX" = x; then
-        test "x$JAVA" = x && for ac_prog in cacao$EXEEXT jamvm$EXEEXT kaffe$EXEEXT gij$EXEEXT java$EXEEXT
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_JAVA+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$JAVA"; then
-  ac_cv_prog_JAVA="$JAVA" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_JAVA="$ac_prog"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-JAVA=$ac_cv_prog_JAVA
-if test -n "$JAVA"; then
-  echo "$as_me:$LINENO: result: $JAVA" >&5
-echo "${ECHO_T}$JAVA" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  test -n "$JAVA" && break
-done
-
-else
-        test "x$JAVA" = x && for ac_prog in cacao$EXEEXT jamvm$EXEEXT kaffe$EXEEXT gij$EXEEXT java$EXEEXT
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_JAVA+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$JAVA"; then
-  ac_cv_prog_JAVA="$JAVA" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_JAVA="$ac_prog"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-JAVA=$ac_cv_prog_JAVA
-if test -n "$JAVA"; then
-  echo "$as_me:$LINENO: result: $JAVA" >&5
-echo "${ECHO_T}$JAVA" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  test -n "$JAVA" && break
-done
-test -n "$JAVA" || JAVA="$JAVAPREFIX"
-
-fi
-test "x$JAVA" = x && { { echo "$as_me:$LINENO: error: no acceptable Java virtual machine found in \$PATH" >&5
-echo "$as_me: error: no acceptable Java virtual machine found in \$PATH" >&2;}
-   { (exit 1); exit 1; }; }
-
-# Extract the first word of "uudecode$EXEEXT", so it can be a program name with args.
-set dummy uudecode$EXEEXT; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_uudecode+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$uudecode"; then
-  ac_cv_prog_uudecode="$uudecode" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_uudecode="yes"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-uudecode=$ac_cv_prog_uudecode
-if test -n "$uudecode"; then
-  echo "$as_me:$LINENO: result: $uudecode" >&5
-echo "${ECHO_T}$uudecode" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-if test x$uudecode = xyes; then
-echo "$as_me:$LINENO: checking if uudecode can decode base 64 file" >&5
-echo $ECHO_N "checking if uudecode can decode base 64 file... $ECHO_C" >&6
-if test "${ac_cv_prog_uudecode_base64+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-cat << \EOF > Test.uue
-begin-base64 644 Test.class
-yv66vgADAC0AFQcAAgEABFRlc3QHAAQBABBqYXZhL2xhbmcvT2JqZWN0AQAE
-bWFpbgEAFihbTGphdmEvbGFuZy9TdHJpbmc7KVYBAARDb2RlAQAPTGluZU51
-bWJlclRhYmxlDAAKAAsBAARleGl0AQAEKEkpVgoADQAJBwAOAQAQamF2YS9s
-YW5nL1N5c3RlbQEABjxpbml0PgEAAygpVgwADwAQCgADABEBAApTb3VyY2VG
-aWxlAQAJVGVzdC5qYXZhACEAAQADAAAAAAACAAkABQAGAAEABwAAACEAAQAB
-AAAABQO4AAyxAAAAAQAIAAAACgACAAAACgAEAAsAAQAPABAAAQAHAAAAIQAB
-AAEAAAAFKrcAErEAAAABAAgAAAAKAAIAAAAEAAQABAABABMAAAACABQ=
-====
-EOF
-if uudecode$EXEEXT Test.uue; then
-        ac_cv_prog_uudecode_base64=yes
-else
-        echo "configure: 29543: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
-        echo "configure: failed file was:" >&5
-        cat Test.uue >&5
-        ac_cv_prog_uudecode_base64=no
-fi
-rm -f Test.uue
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_uudecode_base64" >&5
-echo "${ECHO_T}$ac_cv_prog_uudecode_base64" >&6
-fi
-if test x$ac_cv_prog_uudecode_base64 != xyes; then
-        rm -f Test.class
-        { echo "$as_me:$LINENO: WARNING: I have to compile Test.class from scratch" >&5
-echo "$as_me: WARNING: I have to compile Test.class from scratch" >&2;}
-        if test x$ac_cv_prog_javac_works = xno; then
-                { { echo "$as_me:$LINENO: error: Cannot compile java source. $JAVAC does not work properly" >&5
-echo "$as_me: error: Cannot compile java source. $JAVAC does not work properly" >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-        if test x$ac_cv_prog_javac_works = x; then
-
-ECJ_OPTS="-warn:-deprecation,serial,unusedImport"
-JAVAC_OPTS="-Xlint:unchecked,cast,divzero,empty,finally,overrides"
-GCJ_OPTS="-g"
-if test "x$JAVAPREFIX" = x; then
-        test "x$JAVAC" = x && for ac_prog in "ecj$EXEEXT $ECJ_OPTS" "ecj-3.3$EXEEXT $ECJ_OPTS" "ecj-3.2$EXEEXT $ECJ_OPTS" "javac$EXEEXT $JAVAC_OPTS" "gcj$EXEEXT -C"
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_JAVAC+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$JAVAC"; then
-  ac_cv_prog_JAVAC="$JAVAC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_JAVAC="$ac_prog"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-JAVAC=$ac_cv_prog_JAVAC
-if test -n "$JAVAC"; then
-  echo "$as_me:$LINENO: result: $JAVAC" >&5
-echo "${ECHO_T}$JAVAC" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  test -n "$JAVAC" && break
-done
-
-else
-        test "x$JAVAC" = x && for ac_prog in "ecj$EXEEXT $ECJ_OPTS" "ecj-3.3$EXEEXT $ECJ_OPTS" "ecj-3.2$EXEEXT $ECJ_OPTS" "javac$EXEEXT $JAVAC_OPTS" "gcj$EXEEXT -C"
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_prog_JAVAC+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$JAVAC"; then
-  ac_cv_prog_JAVAC="$JAVAC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_JAVAC="$ac_prog"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-fi
-fi
-JAVAC=$ac_cv_prog_JAVAC
-if test -n "$JAVAC"; then
-  echo "$as_me:$LINENO: result: $JAVAC" >&5
-echo "${ECHO_T}$JAVAC" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  test -n "$JAVAC" && break
-done
-test -n "$JAVAC" || JAVAC="$JAVAPREFIX"
-
-fi
-test "x$JAVAC" = x && { { echo "$as_me:$LINENO: error: no acceptable Java compiler found in \$PATH" >&5
-echo "$as_me: error: no acceptable Java compiler found in \$PATH" >&2;}
-   { (exit 1); exit 1; }; }
-echo "$as_me:$LINENO: checking if $JAVAC is a version of gcj" >&5
-echo $ECHO_N "checking if $JAVAC is a version of gcj... $ECHO_C" >&6
-if test "${ac_cv_prog_javac_is_gcj+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-if $JAVAC --version | grep gcj > /dev/null; then
-  ac_cv_prog_javac_is_gcj=yes;
-  JAVAC="$JAVAC $GCJ_OPTS";
-fi
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_javac_is_gcj" >&5
-echo "${ECHO_T}$ac_cv_prog_javac_is_gcj" >&6
-JAVAC_IS_GCJ=$ac_cv_prog_javac_is_gcj
-
-
-
-if test x"${JAVAC_IS_GCJ}" = xyes; then
-  GCJ_JAVAC_TRUE=
-  GCJ_JAVAC_FALSE='#'
-else
-  GCJ_JAVAC_TRUE='#'
-  GCJ_JAVAC_FALSE=
-fi
-
-if test "$enable_java_maintainer_mode" = yes; then
-
-echo "$as_me:$LINENO: checking if $JAVAC works" >&5
-echo $ECHO_N "checking if $JAVAC works... $ECHO_C" >&6
-if test "${ac_cv_prog_javac_works+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-JAVA_TEST=Object.java
-CLASS_TEST=Object.class
-cat << \EOF > $JAVA_TEST
-/* #line 29690 "configure" */
-package java.lang;
-
-public class Object
-{
-  static <T> void doStuff()
-  {
-  }
-}
-EOF
-if test x$JAVAC_IS_GCJ = xyes; then
-  CMD="$JAVAC $JAVACFLAGS -fsource=1.5 -ftarget=1.5 $JAVA_TEST"
-else
-  CMD="$JAVAC $JAVACFLAGS -source 1.5 -target 1.5 $JAVA_TEST"
-fi
-if { ac_try='$CMD'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } >/dev/null 2>&1; then
-  ac_cv_prog_javac_works=yes
-else
-  { { echo "$as_me:$LINENO: error: The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)" >&5
-echo "$as_me: error: The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)" >&2;}
-   { (exit 1); exit 1; }; }
-  echo "configure: failed program was:" >&5
-  cat $JAVA_TEST >&5
-fi
-rm -f $JAVA_TEST $CLASS_TEST
-
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_javac_works" >&5
-echo "${ECHO_T}$ac_cv_prog_javac_works" >&6
-
-fi
-
-        fi
-fi
-echo "$as_me:$LINENO: checking if $JAVA works" >&5
-echo $ECHO_N "checking if $JAVA works... $ECHO_C" >&6
-if test "${ac_cv_prog_java_works+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-JAVA_TEST=Test.java
-CLASS_TEST=Test.class
-TEST=Test
-cat << \EOF > $JAVA_TEST
-/* [#]line 29739 "configure" */
-public class Test {
-public static void main (String args[]) {
-        System.exit (0);
-} }
-EOF
-if test x$ac_cv_prog_uudecode_base64 != xyes; then
-        if { ac_try='$JAVAC $JAVACFLAGS $JAVA_TEST'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } && test -s $CLASS_TEST; then
-                :
-        else
-          echo "configure: failed program was:" >&5
-          cat $JAVA_TEST >&5
-          { { echo "$as_me:$LINENO: error: The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)" >&5
-echo "$as_me: error: The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)" >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-fi
-if { ac_try='CLASSPATH=.:$CLASSPATH $JAVA $JAVAFLAGS $TEST'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } >/dev/null 2>&1; then
-  ac_cv_prog_java_works=yes
-else
-  echo "configure: failed program was:" >&5
-  cat $JAVA_TEST >&5
-  { { echo "$as_me:$LINENO: error: The Java VM $JAVA failed (see config.log, check the CLASSPATH?)" >&5
-echo "$as_me: error: The Java VM $JAVA failed (see config.log, check the CLASSPATH?)" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-rm -fr $JAVA_TEST $CLASS_TEST Test.uue
-
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_java_works" >&5
-echo "${ECHO_T}$ac_cv_prog_java_works" >&6
-
-
-
+        if test "x${REGENERATE_GJDOC_PARSER}" = xyes && test "x${enable_java_maintainer_mode}" = xyes; then
 
     if test -n "$ac_tool_prefix"; then
   for ac_prog in cantlr runantlr antlr
@@ -29895,7 +29509,6 @@ echo $ECHO_N "checking for antlr 2.7.1 or better... $ECHO_C" >&6
   echo "$as_me:$LINENO: result: $antlr_version_major.$antlr_version_minor.$antlr_version_micro" >&5
 echo "${ECHO_T}$antlr_version_major.$antlr_version_minor.$antlr_version_micro" >&6
 
-      fi
     fi
   fi
 fi
@@ -30034,7 +29647,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 30037 "configure" */
+/* #line 29650 "configure" */
 package java.lang;
 
 public class Object
@@ -30075,7 +29688,7 @@ fi
   JAVA_TEST=Test.java
   CLASS_TEST=Test.class
   cat << \EOF > $JAVA_TEST
-  /* #line 30078 "configure" */
+  /* #line 29691 "configure" */
   public class Test
   {
     public static void main(String args)
@@ -30803,13 +30416,6 @@ if test -z "${USE_PREBUILT_GLIBJ_ZIP_TRUE}" && test -z "${USE_PREBUILT_GLIBJ_ZIP
   { { echo "$as_me:$LINENO: error: conditional \"USE_PREBUILT_GLIBJ_ZIP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"USE_PREBUILT_GLIBJ_ZIP\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${GCJ_JAVAC_TRUE}" && test -z "${GCJ_JAVAC_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"GCJ_JAVAC\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"GCJ_JAVAC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
