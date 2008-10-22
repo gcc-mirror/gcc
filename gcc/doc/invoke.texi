@@ -9119,10 +9119,10 @@ size.
 @item -mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]}
 @opindex mcpu=
 Specifies the name of the target Blackfin processor.  Currently, @var{cpu}
-can be one of @samp{bf522}, @samp{bf523}, @samp{bf524},
-@samp{bf525}, @samp{bf526}, @samp{bf527},
-@samp{bf531}, @samp{bf532}, @samp{bf533}, @samp{bf534},
-@samp{bf536}, @samp{bf537}, @samp{bf538}, @samp{bf539},
+can be one of @samp{bf512}, @samp{bf514}, @samp{bf516}, @samp{bf518},
+@samp{bf522}, @samp{bf523}, @samp{bf524}, @samp{bf525}, @samp{bf526},
+@samp{bf527}, @samp{bf531}, @samp{bf532}, @samp{bf533},
+@samp{bf534}, @samp{bf536}, @samp{bf537}, @samp{bf538}, @samp{bf539},
 @samp{bf542}, @samp{bf544}, @samp{bf547}, @samp{bf548}, @samp{bf549},
 @samp{bf561}.
 The optional @var{sirevision} specifies the silicon revision of the target

@@ -1,3 +1,31 @@
+2008-10-22  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Mike Frysinger  <michael.frysinger@analog.com>
+	* gcc.target/bfin/mcpu-bf522.c: Check SILICON_REVISION is 0x0002.  Invert
+	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
+	* gcc.target/bfin/mcpu-bf523.c: Likewise.
+	* gcc.target/bfin/mcpu-bf524.c: Likewise.
+	* gcc.target/bfin/mcpu-bf525.c: Likewise.
+	* gcc.target/bfin/mcpu-bf526.c: Likewise.
+	* gcc.target/bfin/mcpu-bf527.c: Likewise.
+	* gcc.target/bfin/mcpu-bf531.c: Check SILICON_REVISION is 0x0006.  Invert
+	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0006+.
+	* gcc.target/bfin/mcpu-bf532.c: Likewise.
+	* gcc.target/bfin/mcpu-bf533.c: Likewise.
+	* gcc.target/bfin/mcpu-bf538.c: Check SILICON_REVISION is 0x0005.  Invert
+	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0005+.
+	* gcc.target/bfin/mcpu-bf539.c: Likewise.
+	* gcc.target/bfin/mcpu-bf542.c: Check SILICON_REVISION is 0x0002.  Invert
+	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
+	* gcc.target/bfin/mcpu-bf544.c: Likewise.
+	* gcc.target/bfin/mcpu-bf547.c: Likewise.
+	* gcc.target/bfin/mcpu-bf548.c: Likewise.
+	* gcc.target/bfin/mcpu-bf549.c: Likewise.
+	* gcc.target/bfin/mcpu-bf512.c: New file.
+	* gcc.target/bfin/mcpu-bf514.c: Likewise.
+	* gcc.target/bfin/mcpu-bf516.c: Likewise.
+	* gcc.target/bfin/mcpu-bf518.c: Likewise.
+
 2008-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37882
