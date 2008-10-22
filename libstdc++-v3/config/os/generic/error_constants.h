@@ -40,9 +40,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-namespace posix_error
-{
- enum posix_errno
+ enum class errc
     {
       address_family_not_supported = 		EAFNOSUPPORT,
       address_in_use = 				EADDRINUSE,
@@ -168,7 +166,7 @@ namespace posix_error
       too_many_files_open_in_system = 		ENFILE,
       too_many_files_open = 			EMFILE,
       too_many_links = 				EMLINK,
-      too_many_synbolic_link_levels = 		ELOOP,
+      too_many_symbolic_link_levels = 		ELOOP,
 
 #ifdef _GLIBCXX_HAVE_EOVERFLOW
       value_too_large = 			EOVERFLOW,
@@ -177,7 +175,6 @@ namespace posix_error
       wrong_protocol_type = 			EPROTOTYPE,
       no_posix_equivalent = 1L << 16
     };
-}
 
 _GLIBCXX_END_NAMESPACE
 

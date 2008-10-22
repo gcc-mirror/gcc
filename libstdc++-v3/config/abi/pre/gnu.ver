@@ -922,8 +922,8 @@ GLIBCXX_3.4.11 {
     _ZNSt6threadD2Ev;
 
     # system_error
-    _ZSt18get_posix_categoryv;
-    _ZSt19get_system_categoryv;
+    _ZSt15system_category;
+    _ZSt16generic_category;
 
     _ZNKSt10error_code23default_error_conditionEv;
     _ZNKSt14error_category23default_error_conditionEi;

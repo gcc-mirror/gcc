@@ -28,7 +28,7 @@ int main()
   bool test __attribute__((unused)) = true;
 
   std::error_code e1;
-  std::error_code e2(std::posix_error::operation_not_supported);
+  std::error_code e2(std::errc::operation_not_supported);
 
   VERIFY( !(e1 != e1) );
   VERIFY( e1 != e2 );
