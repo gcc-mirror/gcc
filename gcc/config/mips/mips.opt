@@ -241,7 +241,7 @@ Target Report RejectNegative Mask(SINGLE_FLOAT)
 Restrict the use of hardware floating-point instructions to 32-bit operations
 
 msmartmips
-Target Report RejectNegative Mask(SMARTMIPS)
+Target Report Mask(SMARTMIPS)
 Use SmartMIPS instructions
 
 msoft-float

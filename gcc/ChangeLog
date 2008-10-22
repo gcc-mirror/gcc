@@ -1,3 +1,7 @@
+2008-10-22  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips.opt (msmartmips): Accept -mno-smartmips.
+
 2008-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37882
