@@ -1,3 +1,8 @@
+2008-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37882
+	* gcc.c-torture/execute/pr37882.c: New test.
+
 2008-10-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/30949
