@@ -1,3 +1,9 @@
+2008-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias-warnings.c (skip_this_pointer): Skip pointers
+	for which we merged aliases of SMTs into their points-to sets.
+	* real.c (vax_f_format): Add missing initializer.
+
 2008-10-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (may_alias_p): Remove bogus shortcut.

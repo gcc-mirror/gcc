@@ -4218,6 +4218,7 @@ const struct real_format vax_f_format =
     false,
     false,
     false,
+    false,
     false
   };
 

@@ -896,7 +896,7 @@ skip_this_pointer (tree ptr ATTRIBUTE_UNUSED, struct ptr_info_def *pi)
     return true;
 
   /* This would probably cause too many false positives.  */
-  if (pi->value_escapes_p || pi->pt_anything)
+  if (pi->value_escapes_p || pi->pt_anything || pi->pt_global_mem)
     return true;
 
   return false;
