@@ -1,3 +1,8 @@
+2008-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37882
+	* gcc.c-torture/execute/pr37882.c: New test.
+
 2008-10-21  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/alias-19.c: New testcase.

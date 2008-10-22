@@ -1,3 +1,10 @@
+2008-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37882
+	* fold-const.c (build_range_type): For 1 .. signed_max
+	range call build_nonstandard_inter_type if signed_type_for
+	returned a type with bigger precision.
+
 2008-10-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias-warnings.c (skip_this_pointer): Skip pointers

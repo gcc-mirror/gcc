@@ -4710,7 +4710,12 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	{
 	  if (TYPE_UNSIGNED (etype))
 	    {
-	      etype = signed_type_for (etype);
+	      tree signed_etype = signed_type_for (etype);
+	      if (TYPE_PRECISION (signed_etype) != TYPE_PRECISION (etype))
+		etype
+		  = build_nonstandard_integer_type (TYPE_PRECISION (etype), 0);
+	      else
+		etype = signed_etype;
 	      exp = fold_convert (etype, exp);
 	    }
 	  return fold_build2 (GT_EXPR, type, exp,
