@@ -1852,6 +1852,12 @@ if test "x$CXXFLAGS_FOR_TARGET" = x; then
 fi
 AC_SUBST(CXXFLAGS_FOR_TARGET)
 
+# Other target tools.
+CPPFLAGS_FOR_TARGET=${CPPFLAGS_FOR_TARGET-${CPPFLAGS}}
+AC_SUBST(CPPFLAGS_FOR_TARGET)
+LDFLAGS_FOR_TARGET=${LDFLAGS_FOR_TARGET-${LDFLAGS}}
+AC_SUBST(LDFLAGS_FOR_TARGET)
+
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
 # the named directory are copied to $(tooldir)/sys-include.
 if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
@@ -2592,6 +2598,7 @@ esac
 # our build compiler if desired.
 if test x"${build}" = x"${host}" ; then
   CFLAGS_FOR_BUILD=${CFLAGS_FOR_BUILD-${CFLAGS}}
+  CPPFLAGS_FOR_BUILD=${CPPFLAGS_FOR_BUILD-${CPPFLAGS}}
   CXXFLAGS_FOR_BUILD=${CXXFLAGS_FOR_BUILD-${CXXFLAGS}}
   LDFLAGS_FOR_BUILD=${LDFLAGS_FOR_BUILD-${LDFLAGS}}
 fi
@@ -2657,6 +2664,7 @@ AC_SUBST(AR_FOR_BUILD)
 AC_SUBST(AS_FOR_BUILD)
 AC_SUBST(CC_FOR_BUILD)
 AC_SUBST(CFLAGS_FOR_BUILD)
+AC_SUBST(CPPFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS_FOR_BUILD)
 AC_SUBST(CXX_FOR_BUILD)
 AC_SUBST(DLLTOOL_FOR_BUILD)

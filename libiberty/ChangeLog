@@ -1,3 +1,8 @@
+2008-10-22  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (CPPFLAGS): Define.
+	(FLAGS_TO_PASS, COMPILE.c): Add CPPFLAGS.
+
 2008-10-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/37137
