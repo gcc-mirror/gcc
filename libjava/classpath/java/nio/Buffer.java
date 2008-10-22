@@ -56,7 +56,8 @@ public abstract class Buffer
    *
    * Should be package private.
    */
-  Buffer (int capacity, int limit, int position, int mark, Pointer address)
+  Buffer (int capacity, int limit, int position, int mark,
+	  Pointer address)
   {
     this.address = address;
 

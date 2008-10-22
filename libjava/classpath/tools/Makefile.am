@@ -1,5 +1,16 @@
 ## Input file for automake to generate the Makefile.in used by configure
 
+if CREATE_GJDOC
+## GCJ LOCAL: always put source files in srcdir
+## if CREATE_GJDOC_PARSER
+## gjdoc_gendir = ${top_builddir}/tools/generated
+## else
+gjdoc_gendir = ${top_srcdir}/tools/generated
+## endif
+## END GCJ LOCAL
+ANTLR_CLASSPATH = $(ANTLR_JAR):$(gjdoc_gendir)
+endif
+
 ## GCJ LOCAL: use srcdir to find core classes.
 GLIBJ_BOOTCLASSPATH='$(top_srcdir)/lib'
 GLIBJ_CLASSPATH=.:$(srcdir)/asm:$(ANTLR_CLASSPATH)
@@ -10,17 +21,6 @@ if GCJ_JAVAC
 JCOMPILER = $(JAVAC) $(JAVACFLAGS) -fsource=1.5 -ftarget=1.5 --encoding=UTF-8 --bootclasspath=$(GLIBJ_BOOTCLASSPATH) --classpath=$(GLIBJ_CLASSPATH)
 else
 JCOMPILER = $(JAVAC) $(JAVACFLAGS) -source 1.5 -target 1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH)
-endif
-
-if CREATE_GJDOC
-## GCJ LOCAL: always put source files in srcdir
-## if CREATE_GJDOC_PARSER
-## gjdoc_gendir = ${top_builddir}/tools/generated
-## else
-gjdoc_gendir = ${top_srcdir}/tools/generated
-## endif
-## END GCJ LOCAL
-ANTLR_CLASSPATH = $(ANTLR_JAR):$(gjdoc_gendir)
 endif
 
 if CREATE_WRAPPERS
@@ -320,8 +320,19 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 ## GCJ LOCAL: put classes in srcdir
 ##	@rm -rf classes asm
 ##	@mkdir_p@ classes asm
+if JAVA_MAINTAINER_MODE
+if CREATE_GJDOC
+if CREATE_GJDOC_PARSER
+## Generate antlr sources.
+	@mkdir_p@ $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr
+	$(ANTLR) -o $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr/ \
+	  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
+endif
+endif
 ## Compile ASM separately as it is latin-1 encoded.
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
+	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
+	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
@@ -339,20 +350,8 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 	else \
 	    echo -n > vm-tools.lst; \
 	fi
-	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
-if JAVA_MAINTAINER_MODE
-if CREATE_GJDOC
-if CREATE_GJDOC_PARSER
-## Generate antlr sources.
-	@mkdir_p@ $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr
-	$(ANTLR) -o $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr \
-	  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
-endif
-endif
-## Compile ASM separately as it is latin-1 encoded.
-	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
-	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	$(JCOMPILER) $(USE_JAVAC_FLAGS) -g -d $(srcdir)/classes @classes.lst @vm-tools.lst
+	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
 endif
 ## END GCJ LOCAL
 ## Copy over tools resource files.
@@ -364,8 +363,10 @@ endif
 	  echo "  cp $(srcdir)/resource/$$p classes/$$p"; \
 	  cp $(srcdir)/resource/$$p classes/$$p; \
 	done
+## BEGIN GCJ LOCAL
 	cp -pR $(srcdir)/asm .
 	cp -pR $(srcdir)/classes .
+## END GCJ LOCAL
 if CREATE_GJDOC
 ## Copy over gjdoc resource files.
 	for res in $(gjdoc_resources); do \

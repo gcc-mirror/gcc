@@ -50,8 +50,8 @@ public abstract class IntBuffer extends Buffer
   final int array_offset;
   final int[] backing_buffer;
 
-  IntBuffer (int capacity, int limit, int position, int mark, RawData address,
-	     int[] backing_buffer, int array_offset)
+  IntBuffer (int capacity, int limit, int position, int mark,
+	      RawData address, int[] backing_buffer, int array_offset)
   {
     super (capacity, limit, position, mark, address);
     this.backing_buffer = backing_buffer;

@@ -1015,18 +1015,17 @@ AM_CONDITIONAL(USE_PREBUILT_GLIBJ_ZIP, test x$use_glibj_zip = xtrue)
 AC_SUBST(PATH_TO_GLIBJ_ZIP)
 
 if test "x${TOOLSDIR}" != x; then
+  dnl GCJ LOCAL
   if test "x${COMPILE_WRAPPERS}" = xno && test "x${enable_java_maintainer_mode}" = xyes; then
     AC_PROG_JAVA
   fi
+  dnl END GCJ LOCAL
   if test "x${COMPILE_GJDOC}" = xyes; then
     AC_LIB_ANTLR
-    if test "x${REGENERATE_GJDOC_PARSER}" = xyes; then
-dnl GCJ LOCAL
-      if test "x${enable_java_maintainer_mode}" = xyes; then
-        AC_PROG_JAVA
+    dnl GCJ LOCAL
+    if test "x${REGENERATE_GJDOC_PARSER}" = xyes && test "x${enable_java_maintainer_mode}" = xyes; then
+    dnl END GCJ LOCAL
 	AC_PROG_ANTLR(2,7,1)
-      fi
-dnl END GCJ LOCAL
     fi
   fi
 fi

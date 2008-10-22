@@ -1,5 +1,5 @@
 /* WorkSet.java -- Helper to track what files to work on
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,21 +40,18 @@ package gnu.classpath.tools.jar;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 
 public class WorkSet
 {
   private HashSet<String> allItems;
 
-  private void initSet(ArrayList entries)
+  private void initSet(ArrayList<Entry> entries)
   {
     if (entries == null || entries.isEmpty())
       return;
     allItems = new HashSet<String>();
-    Iterator it = entries.iterator();
-    while (it.hasNext())
+    for (Entry entry : entries)
       {
-        Entry entry = (Entry) it.next();
         int len = entry.name.length();
         while (len > 0 && entry.name.charAt(len - 1) == '/')
           --len;
@@ -63,7 +60,7 @@ public class WorkSet
       }
   }
 
-  public WorkSet(ArrayList entries)
+  public WorkSet(ArrayList<Entry> entries)
   {
     initSet(entries);
   }

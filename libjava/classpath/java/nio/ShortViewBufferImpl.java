@@ -49,7 +49,8 @@ final class ShortViewBufferImpl extends ShortBuffer
   ShortViewBufferImpl (ByteBuffer bb, int capacity)
   {
     super (capacity, capacity, 0, -1, bb.isDirect() ?
-           VMDirectByteBuffer.adjustAddress(bb.address, bb.position()):null, null, 0);
+           VMDirectByteBuffer.adjustAddress(bb.address, bb.position()):null,
+	   null, 0);
     this.bb = bb;
     this.offset = bb.position();
     this.readOnly = bb.isReadOnly();
@@ -61,7 +62,8 @@ final class ShortViewBufferImpl extends ShortBuffer
 			      boolean readOnly, ByteOrder endian)
   {
     super (capacity, limit, position, mark, bb.isDirect() ?
-           VMDirectByteBuffer.adjustAddress(bb.address, offset):null, null, 0);
+           VMDirectByteBuffer.adjustAddress(bb.address, offset):null,
+	   null, 0);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;

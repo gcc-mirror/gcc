@@ -90,7 +90,7 @@ public class ThreadLocal<T>
    * user. Do not expose this to the public. Package visible for use by
    * InheritableThreadLocal
    */
-  static final Object notFound = new Object();
+  static final Object sentinel = new Object();
 
   /**
    * The base for the computation of the next hash for a thread local.
@@ -100,7 +100,8 @@ public class ThreadLocal<T>
   /**
    * Allocate a new hash.
    */
-  private synchronized int computeNextHash() {
+  private synchronized int computeNextHash() 
+  {
     return nextHashBase++ * 6709;
   }
 
@@ -144,7 +145,7 @@ public class ThreadLocal<T>
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
     T value = (T) map.get(this);
-    if (value == notFound)
+    if (value == sentinel)
       {
         value = initialValue();
         map.set(this, value);

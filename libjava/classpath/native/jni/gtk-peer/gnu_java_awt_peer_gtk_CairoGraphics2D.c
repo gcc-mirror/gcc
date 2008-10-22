@@ -1,5 +1,5 @@
 /* gnu_java_awt_peer_gtk_CairoGraphics2d.c
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
    
@@ -371,8 +371,9 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector
       cairo_font_face_destroy (ft);
       pango_fc_font_unlock_face(font);
     }
-    gdk_threads_leave();
+  gdk_threads_leave();
     
+  (*env)->ReleaseLongArrayElements (env, java_fontset, fonts, 0);
   g_free(glyphs);
 }
 

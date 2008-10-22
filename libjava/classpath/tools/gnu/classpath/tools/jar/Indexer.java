@@ -1,5 +1,5 @@
 /* Indexer.java -- add index.list file to jar
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
@@ -90,10 +89,9 @@ public class Indexer
         result.append(fileName);
         // Any line ending will do.
         result.append('\n');
-        Iterator i = entries.iterator();
-        while (i.hasNext())
+	for (String s : entries)
           {
-            result.append(i.next());
+            result.append(s);
             result.append('\n');
           }
         // Paragraph break.
