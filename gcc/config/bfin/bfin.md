@@ -2886,16 +2886,16 @@
 			 (match_operand:HI 1 "register_operand" "d,d")))]
   ""
   "@
-   %d0 = %h2 << 0%!
+   %d0 = %h1 << 0%!
    #"
   "reload_completed"
   [(set (match_dup 0)
 	(vec_concat:V2HI
 	 (vec_select:HI (match_dup 0) (parallel [(const_int 0)]))
-	 (match_dup 2)))
+	 (match_dup 1)))
    (set (match_dup 0)
 	(vec_concat:V2HI
-	 (match_dup 1)
+	 (match_dup 2)
 	 (vec_select:HI (match_dup 0) (parallel [(const_int 1)]))))]
   ""
   [(set_attr "type" "dsp32")])
