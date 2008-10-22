@@ -186,7 +186,8 @@ DEFTREECODE (REFERENCE_TYPE, "reference_type", tcc_type, 0)
    compiler.  COMPLEX_TYPE, VECTOR_TYPE, ARRAY_TYPE.  */
      
 /* Complex number types.  The TREE_TYPE field is the data type
-   of the real and imaginary parts.  */
+   of the real and imaginary parts.  It must be of scalar
+   arithmetic type, not including pointer type.  */
 DEFTREECODE (COMPLEX_TYPE, "complex_type", tcc_type, 0)
 
 /* Vector types.  The TREE_TYPE field is the data type of the vector

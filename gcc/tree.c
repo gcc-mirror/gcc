@@ -6168,6 +6168,10 @@ build_complex_type (tree component_type)
   tree t;
   hashval_t hashcode;
 
+  gcc_assert (INTEGRAL_TYPE_P (component_type)
+	      || SCALAR_FLOAT_TYPE_P (component_type)
+	      || FIXED_POINT_TYPE_P (component_type));
+
   /* Make a node of the sort we want.  */
   t = make_node (COMPLEX_TYPE);
 
