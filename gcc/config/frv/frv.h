@@ -592,6 +592,8 @@
 #define FDPIC_FPTR_REGNO  (GPR_FIRST + 14)        /* uClinux PIC function pointer register.  */
 #define FDPIC_REGNO   (GPR_FIRST + 15)        /* uClinux PIC register.  */
 
+#define HARD_REGNO_RENAME_OK(from,to) (TARGET_FDPIC ? ((to) != FDPIC_REG) : 1)
+
 #define OUR_FDPIC_REG	get_hard_reg_initial_val (SImode, FDPIC_REGNO)
 
 #define FPR_FIRST       64			/* First FP reg */

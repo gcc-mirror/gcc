@@ -1,3 +1,8 @@
+2008-10-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv.h (HARD_REGNO_RENAME_OK): Define.  Do not allow
+	the fdpic register to be a target when running in fdpic mode.
+
 2008-10-22 Rafael Espindola  <espindola@google.com>
 
 	* ipa-struct-reorg.c (create_new_alloc_sites): Properly insert the
@@ -74,11 +79,11 @@
 	* tree-ssa-pre.c (insert_into_preds_of_block): Don't rewrite constant
 	part of expression.
 
-2008-10-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-10-20  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* doc/install.texi: Fix typos in previous patch.
 
-2008-10-19  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-10-19  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* doc/install.texi: Document in-tree building of gcc and mpfr.
 
@@ -86,7 +91,7 @@
 
 	* tree-ssa-alias.c (may_alias_p): Remove bogus shortcut.
 
-2008-10-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2008-10-19  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR c/30260
 	* c-decl.c (finish_enum): Convert non-integer enumerators to enum
@@ -7062,7 +7067,7 @@
 	* passes.c (init_optimization_passes): Exchange store-ccp
 	with a ccp pass.
 
-2008-08-19  Rafael Espíndola  <espindola@google.com>
+2008-08-19  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* varasm.c (weak_decls): Move earlier in the file.
 	(assemble_external): Add weak decls to the weak_decls list.
@@ -8861,7 +8866,7 @@
 	PR ada/36554
 	* dwarf2out.c (is_subrange_type): Deal with BOOLEAN_TYPE.
 
-2008-07-30  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-07-30  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	PR 36974
 	* final.c (call_from_call_insn): Handle COND_EXEC.
@@ -9073,7 +9078,7 @@
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
 	vector modes.
 
-2008-07-30  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-07-30  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* final.c (call_from_call_insn): New.
 	(final_scan_insn): Call assemble_external on FUNCTION_DECLs.
@@ -10191,7 +10196,7 @@
 	(TARGET_OPTION_PRINT): Ditto.
 	(TARGET_CAN_INLINE_P): Ditto.
 
-2008-07-22  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-07-22  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* c-typeck.c (build_external_ref): Don't call assemble_external.
 	* final.c (output_operand): Call assemble_external.
@@ -10212,7 +10217,7 @@
 	highest magnitude if this is still less or equal to the true
 	quotient in magnitude.
 
-2008-07-21  Rafael Ávila de Espíndola  <espindola@google.com>
+2008-07-21  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* Makefile.in: Replace toplev.h with TOPLEV_H.
 	* c-decl.c (merge_decls): Don't set DECL_IN_SYSTEM_HEADER.
@@ -10515,7 +10520,7 @@
 	(m32c_legitimate_address_p): Handle "++rii" addresses created by
 	m32c_legitimize_reload_address.
 
-2007-07-16  Rafael Ávila de Espíndola  <espindola@google.com>
+2007-07-16  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
 	DECL_IN_SYSTEM_HEADER in sync.
@@ -10605,7 +10610,7 @@
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
 
-2007-07-14  Rafael Ávila de Espíndola  <espindola@google.com>
+2007-07-14  Rafael Ãvila de EspÃ­ndola  <espindola@google.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
 	is set.
@@ -14897,7 +14902,7 @@
 	Clear __gcov_indreict_call_callee variable to avoid misattribution
 	of the profile.
 
-2008-05-28  Rafael Espíndola  <espindola@google.com>
+2008-05-28  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* see.c (see_def_extension_not_merged): Use copy_rtx_if_shared to avoid
 	invalid sharing.
@@ -15315,7 +15320,7 @@
 	for A24 to PSImode.
 	(m32c_address_cost): Detail costs for indirect offsets.
 
-2008-05-23  Rafael Espíndola  <espindola@google.com>
+2008-05-23  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* see.c (see_get_extension_data): Don't use SUBREG_REG to test
 	if a node is a SUBREG.
@@ -15416,7 +15421,7 @@
 	* config/avr/avr.c (get_sequence_length): Add new function.
 	(expand_prologue, expand_epilogue): Remove duplicate code.
 
-2008-05-22  Rafael Espíndola  <espindola@google.com>
+2008-05-22  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* see.c (see_pre_insert_extensions): Use copy_rtx to avoid invalid rtx
 	sharing.
@@ -16708,7 +16713,7 @@
 	to one line.
 	* doc/invoke.texi (Wframe-larger-than=): Add more description.
 
-2008-05-08  Rafael Espíndola  <espindola@google.com>
+2008-05-08  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-complex.c (expand_complex_div_wide): Don't create CONDs that
 	trap.
@@ -17735,7 +17740,7 @@
 	(evaluate_stmt): Print the likely value.
 	(ccp_visit_stmt): Avoid excessive vertical spacing.
 
-2008-04-30  Rafael Espíndola  <espindola@google.com>
+2008-04-30  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* builtins.c (fold_call_expr): Return realret.
 	* tree-ssa-threadedge.c
@@ -18518,7 +18523,7 @@
 	* tree-vect-analyze.c (vect_analyze_group_access): SLP is
 	incapable of dealing with loads with gaps.
 
-2008-04-24  Rafael Espíndola  <espindola@google.com>
+2008-04-24  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-flow.h (vrp_evaluate_conditional): Change signature.
 	* tree-ssa-propagate.c (fold_predicate_in): Update call to
@@ -18842,7 +18847,7 @@
 
 	* Makefile.in (s-gtyp-input): Remove tmp-gi.list before writing it.
 
-2008-04-18  Rafael Espíndola  <espindola@google.com>
+2008-04-18  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-vrp.c (find_case_label_index): Fix the binary search.
 	(find_case_label_range): New.
@@ -19148,7 +19153,7 @@
 	* c-decl.c (finish_decl): If extern or static var has variable
 	size, set TREE_TYPE (decl) to error_mark_node.
 
-2008-04-15  Rafael Espíndola  <espindola@google.com>
+2008-04-15  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* fold-const.c (tree_call_nonnegative_warnv_p): Remove local
 	variable arg1.
@@ -19288,7 +19293,7 @@
 
 	* config/spu/spu.c (spu_init_builtins): Mark builtins as nothrow.
 
-2008-04-10  Rafael Espíndola  <espindola@google.com>
+2008-04-10  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr): Don't handle
 	TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
@@ -19383,7 +19388,7 @@
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Update
 	GNU Fortran language string.
 
-2008-04-08  Rafael Espíndola  <espindola@google.com>
+2008-04-08  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* fold-canst.c (tree_call_nonnegative_warnv_p): New.
 	(tree_invalid_nonnegative_warnv_p): Use tree_call_nonnegative_warnv_p.
@@ -20031,7 +20036,7 @@
 	make sure to fill gaps with a fallback label if default_label
 	is not present.
 
-2008-04-03  Dominique d'Humières <dominiq@lps.ens.fr>
+2008-04-03  Dominique d'HumiÃ¨res <dominiq@lps.ens.fr>
 
 	PR target/35801
 	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Free cfun.
@@ -20194,7 +20199,7 @@
 	(varying_mem_p): Move above propagate_rtx.
 	(all_uses_available_at): Do not check MEMs.
 
-2008-04-02  Rafael Espíndola  <espindola@google.com>
+2008-04-02  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-vrp.c (extract_code_and_val_from_cond): Remove.
 	(register_edge_assert_for_2): Split the cond argument.
@@ -20369,7 +20374,7 @@
 	(*sse4_1_smin<mode>3): Likewise.
 	(*sse4_1_umin<mode>3): Likewise.
 
-2008-04-01  Rafael Espíndola  <espindola@google.com>
+2008-04-01  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-cfg.c (verify_expr): remove in_phi.
 	(verify_stmt): Don't call walk_tree with verify_expr. Use
@@ -20390,7 +20395,7 @@
 	PR pch/13675
 	* c-pch.c (c_common_read_pch): On error close (fd) resp. fclose (f).
 
-2008-04-01  Rafael Espíndola  <espindola@google.com>
+2008-04-01  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* tree-vrp.c (extract_code_and_val_from_cond_with_ops): New.
 	(extract_code_and_val_from_cond): Use
@@ -20581,7 +20586,7 @@
 	vectorization support.
 	* doc/invoke.texi (-mveclibabi) [svml]: Document new target option.
 
-2008-03-28  Rafael Espíndola  <espindola@google.com>
+2008-03-28  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* fold-const.c (tree_unary_nonnegative_warnv_p): Make it public.
 	(tree_binary_nonnegative_warnv_p): Make it public.
@@ -22374,7 +22379,7 @@
 	on hpux10.
 	* configure: Rebuilt.
 
-2008-03-04  Rafael Espíndola  <espindola@google.com>
+2008-03-04  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* fold-const.c (tree_simple_nonnegative_warnv_p): New.
 	(tree_unary_nonnegative_warnv_p): New.
@@ -22395,7 +22400,7 @@
 	* config/i386/smmintrin.h (SIDD_XXX): Renamed to ...
 	(_SIDD_XXX): This.
 
-2008-03-04  Rafael Espíndola  <espindola@google.com>
+2008-03-04  Rafael EspÃ­ndola  <espindola@google.com>
 
 	* fold-const.c (tree_unary_nonzero_warnv_p): New.
 	(tree_binary_nonzero_warnv_p): New.
