@@ -1,5 +1,8 @@
 2008-10-22  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* gcc.target/bfin/hisilh.c: New file.
+	* gcc.target/bfin/hisilh-O0.c: New file.
+
 	From Mike Frysinger  <michael.frysinger@analog.com>
 	* gcc.target/bfin/mcpu-bf522.c: Check SILICON_REVISION is 0x0002.  Invert
 	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.

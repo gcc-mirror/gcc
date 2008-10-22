@@ -1,5 +1,8 @@
 2008-10-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin.c (bdesc_2arg): Add mulhisill, mulhisilh,
+	mulhisihl and mulhisihh builtins.
+
 	From Jie Zhang  <jie.zhang@analog.com>
 	* config/bfin/bfin.md (composev2hi): Put operands into vector
 	with correct order.
