@@ -20,7 +20,9 @@ TARGET_LIBGCC2_CFLAGS = -fpic
 MULTILIB_OPTIONS=mcpu=bf532-none
 MULTILIB_DIRNAMES=bf532-none
 
-MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf522-none mcpu?bf532-none=mcpu?bf523-none
+MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf512-none mcpu?bf532-none=mcpu?bf514-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf516-none mcpu?bf532-none=mcpu?bf518-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf522-none mcpu?bf532-none=mcpu?bf523-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf524-none mcpu?bf532-none=mcpu?bf525-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf526-none mcpu?bf532-none=mcpu?bf527-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-none

@@ -45,6 +45,22 @@ extern int target_flags;
 						\
       switch (bfin_cpu_type)			\
 	{					\
+	case BFIN_CPU_BF512:			\
+	  builtin_define ("__ADSPBF512__");	\
+	  builtin_define ("__ADSPBF51x__");	\
+	  break;				\
+	case BFIN_CPU_BF514:			\
+	  builtin_define ("__ADSPBF514__");	\
+	  builtin_define ("__ADSPBF51x__");	\
+	  break;				\
+	case BFIN_CPU_BF516:			\
+	  builtin_define ("__ADSPBF516__");	\
+	  builtin_define ("__ADSPBF51x__");	\
+	  break;				\
+	case BFIN_CPU_BF518:			\
+	  builtin_define ("__ADSPBF518__");	\
+	  builtin_define ("__ADSPBF51x__");	\
+	  break;				\
 	case BFIN_CPU_BF522:			\
 	  builtin_define ("__ADSPBF522__");	\
 	  builtin_define ("__ADSPBF52x__");	\

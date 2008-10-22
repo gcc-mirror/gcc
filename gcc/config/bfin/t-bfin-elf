@@ -21,7 +21,9 @@ MULTILIB_OPTIONS=mcpu=bf532-none
 MULTILIB_OPTIONS+=mid-shared-library/msep-data/mfdpic mleaf-id-shared-library
 MULTILIB_DIRNAMES=bf532-none mid-shared-library msep-data mfdpic mleaf-id-shared-library
 
-MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf522-none mcpu?bf532-none=mcpu?bf523-none
+MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf512-none mcpu?bf532-none=mcpu?bf514-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf516-none mcpu?bf532-none=mcpu?bf518-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf522-none mcpu?bf532-none=mcpu?bf523-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf524-none mcpu?bf532-none=mcpu?bf525-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf526-none mcpu?bf532-none=mcpu?bf527-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-none

@@ -1,3 +1,25 @@
+2008-10-22  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Mike Frysinger  <michael.frysinger@analog.com>
+	* config/bfin/bfin-protos.h (bfin_cpu_type): Add BFIN_CPU_BF512,
+	BFIN_CPU_BF514, BFIN_CPU_BF516, and BFIN_CPU_BF518.
+	* config/bfin/bfin.c (bfin_cpus[]): Add 0.0 for bf512, bf514, bf516,
+	and bf518.  Add 0.2 for bf522, bf523, bf524, bf526, and bf527.
+	Add 0.6 for bf533, bf532, and bf531.  Add 0.5 for bf538 and bf539.
+	Add 0.2 for bf542, bf544, bf547, bf548, and bf549.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __ADSPBF512__
+	for BFIN_CPU_BF512, __ADSPBF514__ for BFIN_CPU_BF514, __ADSPBF516__
+	for BFIN_CPU_BF516, and __ADSPBF518__ for BFIN_CPU_BF518.  Define
+	__ADSPBF51x__ for all of them.
+	* config/bfin/elf.h (LIB_SPEC): Select proper linker scripts for
+	-mcpu bf512, bf514, bf516, and bf518.
+	* config/bfin/t-bfin-elf (MULTILIB_MATCHES): Select bf532-none for
+	bf512-none, bf514-none, bf516-none, and bf518-none.
+	* config/bfin/t-bfin-linux (MULTILIB_MATCHES): Likewise.
+	* config/bfin/t-bfin-uclinux (MULTILIB_MATCHES): Likewise.
+	* doc/invoke.texi (Blackfin Options): Document that
+	-mcpu now accepts bf512, bf514, bf516, and bf518.
+
 2008-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37882
