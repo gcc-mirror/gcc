@@ -25,21 +25,21 @@ hanneke ()
   a = b;
 
   /* Assignment of different types.  */
-  b = c; /* { dg-error "incompatible types in assignment" } */
-  d = a; /* { dg-error "incompatible types in assignment" } */
+  b = c; /* { dg-error "incompatible types when assigning" } */
+  d = a; /* { dg-error "incompatible types when assigning" } */
 
   /* Casting between SIMDs of the same size.  */
   e = (typeof (e)) a;
 
   /* Different signed SIMD assignment.  */
   f = a; /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */
-  /* { dg-error "incompatible types in assignment" "" { target *-*-* } 35 } */
+  /* { dg-error "incompatible types when assigning" "" { target *-*-* } 35 } */
 
   /* Casted different signed SIMD assignment.  */
   f = (uv4si) a;
 
   /* Assignment between scalar and SIMD of different size.  */
-  foo = a; /* { dg-error "incompatible types in assignment" } */
+  foo = a; /* { dg-error "incompatible types when assigning" } */
 
   /* Casted assignment between scalar and SIMD of same size.  */
   foo = (typeof (foo)) foo2;

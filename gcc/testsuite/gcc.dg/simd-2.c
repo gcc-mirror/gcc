@@ -23,14 +23,14 @@ hanneke ()
   a = b;
 
   /* Assignment of different types.  */
-  b = c; /* { dg-error "incompatible types in assignment" } */
-  d = a; /* { dg-error "incompatible types in assignment" } */
+  b = c; /* { dg-error "incompatible types when assigning" } */
+  d = a; /* { dg-error "incompatible types when assigning" } */
 
   /* Casting between SIMDs of the same size.  */
   e = (typeof (e)) a;
 
   /* Assignment between scalar and SIMD of different size.  */
-  foo = a; /* { dg-error "incompatible types in assignment" } */
+  foo = a; /* { dg-error "incompatible types when assigning" } */
 
   /* Casted assignment between scalar and SIMD of same size.  */
   foo = (typeof (foo)) foo2; /* { dg-error "aggregate value used where a float was expected" } */
