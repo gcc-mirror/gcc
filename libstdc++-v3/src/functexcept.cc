@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   void
   __throw_system_error(int __i)
-  { throw system_error(error_code(__i, system_category)); }
+  { throw system_error(error_code(__i, generic_category)); }
 
   void
   __throw_ios_failure(const char* __s)

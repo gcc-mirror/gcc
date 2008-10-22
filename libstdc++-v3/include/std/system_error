@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct is_error_code_enum : public false_type { };
 
   template<> 
-    struct is_error_code_enum<posix_error::posix_errno>
+    struct is_error_code_enum<errc>
     : public true_type { };
 
   /// is_error_condition_enum
@@ -65,14 +65,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct is_error_condition_enum : public false_type { };
 
   template<> 
-    struct is_error_condition_enum<posix_error::posix_errno>
+    struct is_error_condition_enum<errc>
     : public true_type { };
 
 
   /// error_category
-  struct error_category
+  class error_category
   {
-    error_category() { }
+  protected:
+    error_category() = default;
+
+  public:
+    virtual ~error_category() { }
+
+    error_category(const error_category&) = delete;
+    error_category& operator=(const error_category&) = delete;
 
     virtual const char* 
     name() const = 0;
@@ -100,19 +107,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     bool 
     operator!=(const error_category& __other) const
     { return this != &__other; }
-
-  private:
-    error_category(const error_category&);
-
-    error_category& 
-    operator=(const error_category&);
   };
 
-  const error_category& get_posix_category();
-  const error_category& get_system_category();
-
-  static const error_category& posix_category = get_posix_category();
-  static const error_category& system_category = get_system_category();
+  // DR 890.
+  extern const error_category& system_category;
+  extern const error_category& generic_category;
 
   /// error_code
   // Implementation-specific error identification
@@ -127,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _ErrorCodeEnum>
       error_code(_ErrorCodeEnum __e,
       typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type* = 0)
-      : _M_value(__e), _M_cat(&posix_category)
+      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category)
       { }
 
     void 
@@ -139,10 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     void 
     clear()
-    { 
-      _M_value = 0;
-      _M_cat = &system_category;
-    } 
+    { assign(0, system_category); }
 
     // DR 804.
     template<typename _ErrorCodeEnum>
@@ -150,8 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			 error_code&>::type
       operator=(_ErrorCodeEnum __e)
       {
-	_M_value = __e;
-	_M_cat = &posix_category;
+	assign(static_cast<int>(__e), generic_category);
 	return *this;
       }
 
@@ -184,7 +179,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     const error_category* 	_M_cat;
   };
 
-  // 19.4.2.5 non-member functions
+  // 19.4.2.6 non-member functions
+  inline error_code
+  make_error_code(errc __e)
+  { return error_code(static_cast<int>(__e), generic_category); }
+
   inline bool
   operator<(const error_code& __lhs, const error_code& __rhs)
   { 
@@ -203,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Portable error identification
   struct error_condition 
   {
-    error_condition() : _M_value(0), _M_cat(&posix_category) { }
+    error_condition() : _M_value(0), _M_cat(&generic_category) { }
 
     error_condition(int __v, const error_category& __cat)     
     : _M_value(__v), _M_cat(&__cat) { }
@@ -212,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       error_condition(_ErrorConditionEnum __e,
 		      typename enable_if<is_error_condition_enum
 		                      <_ErrorConditionEnum>::value>::type* = 0)
-      : _M_value(__e), _M_cat(&posix_category) { }
+      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category) { }
 
     void
     assign(int __v, const error_category& __cat)
@@ -227,17 +226,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			 <_ErrorConditionEnum>::value, error_condition&>::type
       operator=(_ErrorConditionEnum __e)
       {
-	_M_value = __e;
-	_M_cat = &posix_category;
+	assign(static_cast<int>(__e), generic_category);
 	return *this;
       }
 
     void 
     clear()
-    {
-      _M_value = 0;
-      _M_cat = &posix_category;
-    }
+    { assign(0, generic_category); }
 
     // 19.4.3.4 observers
     int 
@@ -266,24 +261,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     const error_category* 	_M_cat;
   };
 
-  // 19.4.3.5 non-member functions
+  // 19.4.3.6 non-member functions
+  inline error_condition
+  make_error_condition(errc __e)
+  { return error_condition(static_cast<int>(__e), generic_category); }
+
   inline bool 
   operator<(const error_condition& __lhs, const error_condition& __rhs)
   {
     return (__lhs.category() < __rhs.category()
 	    || (__lhs.category() == __rhs.category()
 		&& __lhs.value() < __rhs.value()));
-  }
-
-  namespace posix_error
-  {
-    inline error_code 
-    make_error_code(posix_errno __e)
-    { return error_code(__e, posix_category); }
-
-    inline error_condition 
-    make_error_condition(posix_errno __e)
-    { return error_condition(__e, posix_category); }
   }
 
   // 19.4.4 Comparison operators
@@ -342,6 +330,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     system_error(error_code __ec, const string& __what)
     : runtime_error(__what), _M_code(__ec) { }
+    
+    /*
+     * TODO: Add const char* ctors to all exceptions.
+     *
+     * system_error(error_code __ec, const char* __what)
+     * : runtime_error(__what), _M_code(__ec) { }
+     *
+     * system_error(int __v, const error_category& __ecat, const char* __what)
+     * : runtime_error(__what), _M_code(error_code(__v, __ecat)) { }
+     */
 
     system_error(int __v, const error_category& __ecat)
     : runtime_error(""), _M_code(error_code(__v, __ecat)) { }

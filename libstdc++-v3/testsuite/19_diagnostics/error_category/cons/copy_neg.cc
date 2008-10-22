@@ -33,7 +33,7 @@ int main()
   return 0;
 }
 
-// { dg-error "is private" "" { target *-*-* } 105 }
-// { dg-error "within this context" "" { target *-*-* } 40 }
+// { dg-error "deleted function" "" { target *-*-* } 81 }
+// { dg-error "used here" "" { target *-*-* } 40 }
 // { dg-error "first required here" "" { target *-*-* } 31 }
 // { dg-excess-errors "copy constructor" }

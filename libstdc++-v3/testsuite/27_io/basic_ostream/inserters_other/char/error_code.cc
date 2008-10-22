@@ -33,7 +33,7 @@ void test()
 
   char buf[64];
   error_code e1;
-  error_code e2(posix_error::bad_address);
+  error_code e2(errc::bad_address);
   string s, s1, s2;
 
   {
