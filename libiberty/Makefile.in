@@ -55,6 +55,7 @@ AR_FLAGS = rc
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
 RANLIB = @RANLIB@
 MAKEINFO = @MAKEINFO@
 PERL = @PERL@
@@ -78,6 +79,7 @@ FLAGS_TO_PASS = \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC=$(CC)" \
 	"CFLAGS=$(CFLAGS)" \
+	"CPPFLAGS=$(CPPFLAGS)" \
 	"DESTDIR=$(DESTDIR)" \
 	"EXTRA_OFILES=$(EXTRA_OFILES)" \
 	"HDEFINES=$(HDEFINES)" \
@@ -109,7 +111,7 @@ installcheck: installcheck-subdir
 
 INCDIR=$(srcdir)/$(MULTISRCTOP)../include
 
-COMPILE.c = $(CC) -c @DEFS@ $(CFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiberty_warn_cflags@
+COMPILE.c = $(CC) -c @DEFS@ $(CFLAGS) $(CPPFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiberty_warn_cflags@
 
 # Just to make sure we don't use a built-in rule with VPATH
 .c.o:
