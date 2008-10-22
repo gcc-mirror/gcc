@@ -2765,8 +2765,7 @@ could_have_pointers (tree t)
   tree type = TREE_TYPE (t);
 
   if (POINTER_TYPE_P (type)
-      || AGGREGATE_TYPE_P (type)
-      || TREE_CODE (type) == COMPLEX_TYPE)
+      || AGGREGATE_TYPE_P (type))
     return true;
 
   return false;

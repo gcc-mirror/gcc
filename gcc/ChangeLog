@@ -1,3 +1,10 @@
+2008-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree.def (COMPLEX_TYPE): Constrain element type.
+	* tree.c (build_complex_type): Assert that.
+	* tree-ssa-structalias.c (could_have_pointers): Complex types
+	cannot have pointers.
+
 2008-10-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/30949
