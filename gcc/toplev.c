@@ -1707,7 +1707,8 @@ process_options (void)
   if (flag_graphite
       || flag_loop_block
       || flag_loop_interchange
-      || flag_loop_strip_mine)
+      || flag_loop_strip_mine
+      || flag_graphite_identity)
     sorry ("Graphite loop optimizations cannot be used");
 #endif
 

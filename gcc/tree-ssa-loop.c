@@ -305,7 +305,8 @@ gate_graphite_transforms (void)
 {
   /* Enable -fgraphite pass if any one of the graphite optimization flags 
      is turned on.  */
-  if (flag_loop_block || flag_loop_interchange || flag_loop_strip_mine)
+  if (flag_loop_block || flag_loop_interchange || flag_loop_strip_mine
+      || flag_graphite_identity)
     flag_graphite = 1;
 
   return flag_graphite != 0;
