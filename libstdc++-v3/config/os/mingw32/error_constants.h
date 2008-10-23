@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 // Most of the commented-out error codes are socket-related and could be
 // replaced by Winsock WSA-prefixed equivalents.
-  enum class errc
+  enum class errc : long
     {
 //    address_family_not_supported = 		EAFNOSUPPORT,
 //    address_in_use = 				EADDRINUSE,

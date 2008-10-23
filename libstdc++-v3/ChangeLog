@@ -1,3 +1,8 @@
+2008-10-23  Chris Fairles  <cfairles@gcc.gnu.org>
+
+	* config/os/generic/error_constants.h (errc): Use long type.
+	* config/os/mingw32/error_constants.h (errc): Likewise.
+
 2008-10-22  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/system_error (is_error_code_enum): Specialize for errc.

@@ -40,7 +40,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
- enum class errc
+  enum class errc : long
     {
       address_family_not_supported = 		EAFNOSUPPORT,
       address_in_use = 				EADDRINUSE,
