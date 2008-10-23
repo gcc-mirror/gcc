@@ -1315,28 +1315,28 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 @CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	@mkdir_p@ $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr
 @CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	$(ANTLR) -o $(gjdoc_gendir)/gnu/classpath/tools/gjdoc/expr/ \
 @CREATE_GJDOC_PARSER_TRUE@@CREATE_GJDOC_TRUE@@JAVA_MAINTAINER_MODE_TRUE@	  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
-@JAVA_MAINTAINER_MODE_TRUE@	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
+	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
+	find $(srcdir)/gnu/classpath/tools \
+	     $(srcdir)/com/sun/javadoc \
+	     $(srcdir)/com/sun/tools/doclets \
+	     $(srcdir)/com/sun/tools/javadoc \
+	     $(srcdir)/com/sun/tools/javac \
+	     $(srcdir)/com/sun/tools/javah \
+	     $(srcdir)/sun/rmi/rmic \
+	     $(GJDOC_EX) \
+	     -name '*.java' -print > classes.lst
+	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
+	    : > vm-tools.lst; \
+	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
+	      $(FIND) $(top_srcdir)/../$$pkg -follow -name '*.java' -print >> vm-tools.lst; \
+	    done \
+	else \
+	    echo -n > vm-tools.lst; \
+	fi
+	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
 @JAVA_MAINTAINER_MODE_TRUE@	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 @JAVA_MAINTAINER_MODE_TRUE@	  $$AC -g -w -d $(srcdir)/asm @asm.lst
-@JAVA_MAINTAINER_MODE_TRUE@	find $(srcdir)/gnu/classpath/tools \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/com/sun/javadoc \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/com/sun/tools/doclets \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/com/sun/tools/javadoc \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/com/sun/tools/javac \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/com/sun/tools/javah \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(srcdir)/sun/rmi/rmic \
-@JAVA_MAINTAINER_MODE_TRUE@	     $(GJDOC_EX) \
-@JAVA_MAINTAINER_MODE_TRUE@	     -name '*.java' -print > classes.lst
-@JAVA_MAINTAINER_MODE_TRUE@	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
-@JAVA_MAINTAINER_MODE_TRUE@	    : > vm-tools.lst; \
-@JAVA_MAINTAINER_MODE_TRUE@	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
-@JAVA_MAINTAINER_MODE_TRUE@	      $(FIND) $(top_srcdir)/../$$pkg -follow -name '*.java' -print >> vm-tools.lst; \
-@JAVA_MAINTAINER_MODE_TRUE@	    done \
-@JAVA_MAINTAINER_MODE_TRUE@	else \
-@JAVA_MAINTAINER_MODE_TRUE@	    echo -n > vm-tools.lst; \
-@JAVA_MAINTAINER_MODE_TRUE@	fi
 @JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) $(USE_JAVAC_FLAGS) -g -d $(srcdir)/classes @classes.lst @vm-tools.lst
-@JAVA_MAINTAINER_MODE_TRUE@	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
 	@list=`cd $(srcdir)/resource && find gnu/classpath/tools com/sun/tools/javac \
 	       sun/rmi/rmic $(GJDOC_EX) -name \*.properties -print -o -name \*.jav -print`; \
 	for p in $$list; do \

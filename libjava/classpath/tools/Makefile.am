@@ -329,10 +329,8 @@ if CREATE_GJDOC_PARSER
 	  $(srcdir)/gnu/classpath/tools/gjdoc/expr/java-expression.g
 endif
 endif
-## Compile ASM separately as it is latin-1 encoded.
+endif
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
-	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
-	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
@@ -350,8 +348,12 @@ endif
 	else \
 	    echo -n > vm-tools.lst; \
 	fi
-	$(JCOMPILER) $(USE_JAVAC_FLAGS) -g -d $(srcdir)/classes @classes.lst @vm-tools.lst
 	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
+if JAVA_MAINTAINER_MODE
+## Compile ASM separately as it is latin-1 encoded.
+	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
+	  $$AC -g -w -d $(srcdir)/asm @asm.lst
+	$(JCOMPILER) $(USE_JAVAC_FLAGS) -g -d $(srcdir)/classes @classes.lst @vm-tools.lst
 endif
 ## END GCJ LOCAL
 ## Copy over tools resource files.
