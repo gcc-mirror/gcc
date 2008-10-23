@@ -1,3 +1,11 @@
+2008-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR libfortran/37707
+	* io/list_read.c (read_character): Remove code to look ahead in namelist
+	reads to descriminate non-delimited strings from namelist objects.
+	* io/write.c (namelist_write): Delimit character strings with quote or
+	apostrophe, defaulting to quote.
+
 2008-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670

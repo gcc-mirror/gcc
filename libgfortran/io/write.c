@@ -1442,20 +1442,8 @@ namelist_write (st_parameter_dt *dtp)
 
   /* Set the delimiter for namelist output.  */
   tmp_delim = dtp->u.p.current_unit->delim_status;
-  switch (tmp_delim)
-    {
-    case (DELIM_QUOTE):
-      dtp->u.p.nml_delim = '"';
-      break;
 
-    case (DELIM_APOSTROPHE):
-      dtp->u.p.nml_delim = '\'';
-      break;
-
-    default:
-      dtp->u.p.nml_delim = '\0';
-      break;
-    }
+  dtp->u.p.nml_delim = tmp_delim == DELIM_APOSTROPHE ? '\'' : '"';
 
   /* Temporarily disable namelist delimters.  */
   dtp->u.p.current_unit->delim_status = DELIM_NONE;
