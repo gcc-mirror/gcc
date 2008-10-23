@@ -1,4 +1,4 @@
-2008-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+2008-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37707
 	* io/list_read.c (read_character): Remove code to look ahead in namelist
