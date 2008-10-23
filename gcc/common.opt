@@ -567,6 +567,10 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+fgraphite-identity
+Common Report Var(flag_graphite_identity) Optimization
+Enable Graphite Identity transformation
+
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities

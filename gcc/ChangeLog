@@ -1,3 +1,10 @@
+2008-10-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite.c (graphite_apply_transformations): Check for
+	-fgraphite-identity.
+	* toplev.c (process_options): Add graphite_identity.
+	* tree-ssa-loop.c (gate_graphite_transforms): Add graphite_identity.
+
 2008-10-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bdesc_2arg): Add mulhisill, mulhisilh,
