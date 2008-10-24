@@ -1,3 +1,8 @@
+2008-10-24  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Correct CPPFLAGS typo.
+	* Makefile.in: Regenerated.
+
 2008-10-23  Cary Coutant  <ccoutant@google.com>
 
 	* MAINTAINERS (Write after approval): Add myself.
