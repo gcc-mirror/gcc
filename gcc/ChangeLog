@@ -1,3 +1,15 @@
+2008-10-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/37841
+	* function.c (locate_and_pad_parm): If FUNCTION_ARG_ADJUST_OFFSET
+	is defined, use it to modify the constant offset.
+
+	* doc/tm.texi (FUNCTION_ARG_OFFSET): Document new macro.
+
+	* config/spu/spu.h (FUNCTION_ARG_OFFSET): New macro to move char
+	and short arguments to the correct location as mandated by the
+	ABI.
+
 2008-10-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/37769

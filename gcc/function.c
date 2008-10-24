@@ -3473,6 +3473,10 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
 
   locate->size.constant -= part_size_in_regs;
 #endif /* ARGS_GROW_DOWNWARD */
+
+#ifdef FUNCTION_ARG_OFFSET
+  locate->offset.constant += FUNCTION_ARG_OFFSET (passed_mode, type);
+#endif
 }
 
 /* Round the stack offset in *OFFSET_PTR up to a multiple of BOUNDARY.
