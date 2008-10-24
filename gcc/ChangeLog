@@ -1,3 +1,8 @@
+2008-10-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (enum impl_conv): Remove ic_argpass_nonproto.
+	(convert_for_assignment): Remove ic_argpass_nonproto cases.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36038
