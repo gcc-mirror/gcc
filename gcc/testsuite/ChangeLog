@@ -1,3 +1,11 @@
+2008-10-24  DJ Delorie  <dj@redhat.com>
+
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not,
+	scan-hidden, scan-not-hidden, scan-file, scan-file-not,
+	scan-assembler-times, scan-assembler-dem, scan-assembler-dem-not):
+	Extract first word of $testcase for all upvar uses, in case
+	$testvar has compiler switches appended.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36038
