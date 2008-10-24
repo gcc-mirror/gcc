@@ -40,7 +40,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  enum class errc : long
+  enum class errc
     {
       address_family_not_supported = 		EAFNOSUPPORT,
       address_in_use = 				EADDRINUSE,
@@ -172,8 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       value_too_large = 			EOVERFLOW,
 #endif
 
-      wrong_protocol_type = 			EPROTOTYPE,
-      no_posix_equivalent = 1L << 16
+      wrong_protocol_type = 			EPROTOTYPE
     };
 
 _GLIBCXX_END_NAMESPACE
