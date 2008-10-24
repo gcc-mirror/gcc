@@ -1,3 +1,8 @@
+2008-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37882
+	* gcc.c-torture/execute/pr37882.c: Remove a field.
+
 2008-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37707

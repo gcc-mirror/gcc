@@ -2,7 +2,6 @@
 
 struct S
 {
-  int a : 21;
   unsigned char b : 3;
 } s;
 
