@@ -4110,6 +4110,15 @@ on the stack.  The compiler knows how to track the amount of stack space
 used for arguments without any special help.
 @end defmac
 
+
+@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
+If defined, a C expression that is the number of bytes to add to the
+offset of the argument passed in memory.  This is needed for the SPU,
+which passes @code{char} and @code{short} arguments in the preferred
+slot that is in the middle of the quad word instead of starting at the
+top.
+@end defmac
+
 @defmac FUNCTION_ARG_PADDING (@var{mode}, @var{type})
 If defined, a C expression which determines whether, and in which direction,
 to pad out an argument with extra space.  The value should be of type

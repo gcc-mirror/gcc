@@ -354,6 +354,14 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
          : (MODE) == VOIDmode ? 1 \
 	 : HARD_REGNO_NREGS(CUM,MODE))
 
+
+/* The SPU ABI wants 32/64-bit types at offset 0 in the quad-word on the
+   stack.  8/16-bit types should be at offsets 3/2 respectively.  */
+#define FUNCTION_ARG_OFFSET(MODE, TYPE)					\
+(((TYPE) && INTEGRAL_TYPE_P (TYPE) && GET_MODE_SIZE (MODE) < 4)		\
+ ? (4 - GET_MODE_SIZE (MODE))						\
+ : 0)
+
 #define FUNCTION_ARG_PADDING(MODE,TYPE) upward
 
 #define PAD_VARARGS_DOWN 0
