@@ -1,3 +1,10 @@
+2008-10-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_canonicalize_move_class): New function.
+	(mips_move_to_gpr_cost): Likewise.
+	(mips_move_from_gpr_cost): Likewise.
+	(mips_register_move_cost): Make more fine-grained.
+
 2008-10-23  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite.c (graphite_apply_transformations): Check for
