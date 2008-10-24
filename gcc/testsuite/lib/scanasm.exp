@@ -67,6 +67,7 @@ proc dg-scan { name positive testcase output_file orig_args } {
 
 proc scan-assembler { args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     dg-scan "scan-assembler" 1 $testcase $output_file $args
@@ -77,6 +78,7 @@ proc scan-assembler { args } {
 
 proc scan-assembler-not { args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     dg-scan "scan-assembler-not" 0 $testcase $output_file $args
@@ -102,6 +104,7 @@ proc hidden-scan-for { symbol } {
 
 proc scan-hidden { args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     set symbol [lindex $args 0]
@@ -118,6 +121,7 @@ proc scan-hidden { args } {
 
 proc scan-not-hidden { args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     set symbol [lindex $args 0]
@@ -132,6 +136,7 @@ proc scan-not-hidden { args } {
 
 proc scan-file { output_file args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     dg-scan "scan-file" 1 $testcase $output_file $args
 }
 
@@ -140,6 +145,7 @@ proc scan-file { output_file args } {
 
 proc scan-file-not { output_file args } {
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     dg-scan "scan-file-not" 0 $testcase $output_file $args
 }
 
@@ -166,6 +172,7 @@ proc scan-assembler-times { args } {
     # it still stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new dejagnu release.
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
 
     # This must match the rule in gcc-dg.exp.
     set output_file "[file rootname [file tail $testcase]].s"
@@ -215,6 +222,7 @@ proc scan-assembler-dem { args } {
     }
 
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
@@ -260,6 +268,7 @@ proc scan-assembler-dem-not { args } {
     }
 
     upvar 2 name testcase
+    set testcase [lindex $testcase 0]
     set output_file "[file rootname [file tail $testcase]].s"
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
