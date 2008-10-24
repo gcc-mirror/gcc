@@ -1,3 +1,20 @@
+2008-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/7543
+	* value-prof.c (gimple_stringop_fixed_value): Use parentheses
+	around bit operation.
+	* profile.c (is_edge_inconsistent): Likewise.
+	* fold-const.c (truth_value_p): Move from here...
+	* tree.h (truth_value_p): ... to here.
+	* c-tree.h (c_expr): Update description of original_code.
+	* c-typeck.c (parser_build_unary_op): Set original_code.
+	(parser_build_binary_op): Update call to warn_about_parentheses.
+	* c-common.c (warn_about_parentheses): Take two additional
+	arguments of the operands. Use a switch. Quote operators
+	appropriately. Define macro APPEARS_TO_BE_BOOLEAN_EXPR_P.
+	Add warning about !x | y and !x & y.
+	* c-common.h (warn_about_parentheses): Update declaration.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (lang_checks_parallelized, check_gcc_parallelize,

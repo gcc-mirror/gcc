@@ -151,7 +151,7 @@ struct c_expr
 {
   /* The value of the expression.  */
   tree value;
-  /* Record the original binary operator of an expression, which may
+  /* Record the original unary/binary operator of an expression, which may
      have been changed by fold, STRING_CST for unparenthesized string
      constants, or ERROR_MARK for other expressions (including
      parenthesized expressions).  */

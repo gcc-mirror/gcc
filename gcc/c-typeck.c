@@ -2748,9 +2748,9 @@ parser_build_unary_op (enum tree_code code, struct c_expr arg, location_t loc)
 {
   struct c_expr result;
 
-  result.original_code = ERROR_MARK;
   result.value = build_unary_op (loc, code, arg.value, 0);
-
+  result.original_code = code;
+  
   if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
     overflow_warning (result.value);
 
@@ -2787,7 +2787,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
   /* Check for cases such as x+y<<z which users are likely
      to misinterpret.  */
   if (warn_parentheses)
-    warn_about_parentheses (code, code1, code2);
+    warn_about_parentheses (code, code1, arg1.value, code2, arg2.value);
 
   if (TREE_CODE_CLASS (code1) != tcc_comparison)
     warn_logical_operator (code, arg1.value, arg2.value);
