@@ -1,3 +1,7 @@
+2008-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (check-java-subtargets): New target.
+
 2008-10-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/35483

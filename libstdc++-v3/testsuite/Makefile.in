@@ -66,10 +66,6 @@ depcomp =
 am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
-DEJATOOL = $(PACKAGE)
-RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
-EXPECT = expect
-RUNTEST = runtest
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
@@ -272,7 +268,9 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toplevel_srcdir = @toplevel_srcdir@
-AUTOMAKE_OPTIONS = dejagnu nostdinc
+AUTOMAKE_OPTIONS = nostdinc
+RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
+EXPECT = expect
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -304,6 +302,7 @@ lists_of_files = \
 
 baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
+check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3)
 
 # Runs the testsuite, but in compile only mode.
 # Can be used to test sources with non-GNU FE's at various warning
@@ -381,23 +380,6 @@ ctags: CTAGS
 CTAGS:
 
 
-check-DEJAGNU: site.exp
-	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
-	EXPECT=$(EXPECT); export EXPECT; \
-	runtest=$(RUNTEST); \
-	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
-	  l='$(DEJATOOL)'; for tool in $$l; do \
-	    $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); \
-	  done; \
-	else echo "WARNING: could not find \`runtest'" 1>&2; :;\
-	fi
-
-distclean-DEJAGNU:
-	-rm -f site.exp site.bak
-	-l='$(DEJATOOL)'; for tool in $$l; do \
-	  rm -f $$tool.sum $$tool.log; \
-	done
-
 distdir: $(DISTFILES)
 	$(mkdir_p) $(distdir)/..
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
@@ -427,7 +409,6 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
 all-am: Makefile
 installdirs:
@@ -462,8 +443,7 @@ clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
-distclean-am: clean-am distclean-DEJAGNU distclean-generic \
-	distclean-libtool
+distclean-am: clean-am distclean-generic distclean-libtool
 
 dvi: dvi-am
 
@@ -503,16 +483,15 @@ ps-am:
 
 uninstall-am: uninstall-info-am
 
-.PHONY: all all-am check check-DEJAGNU check-am clean clean-generic \
-	clean-libtool clean-local distclean distclean-DEJAGNU \
-	distclean-generic distclean-libtool distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-info-am
+.PHONY: all all-am check check-am clean clean-generic clean-libtool \
+	clean-local distclean distclean-generic distclean-libtool \
+	distdir dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	uninstall uninstall-am uninstall-info-am
 
 
 # This rule generates all of the testsuite_files* lists at once.
@@ -564,6 +543,78 @@ new-abi-baseline:
 	    echo "Baseline file already exists, writing to $${t} instead."; \
 	  fi; \
 	  ${extract_symvers} ../src/.libs/libstdc++.so $${output})
+
+%/site.exp: site.exp
+	-test -d $* || mkdir $*
+	@srcdir=`cd $(srcdir); ${PWD_COMMAND}`;
+	objdir=`${PWD_COMMAND}`/$*; \
+	sed -e "s|^set srcdir .*$$|set srcdir $$srcdir|" \
+	    -e "s|^set objdir .*$$|set objdir $$objdir|" \
+	    site.exp > $*/site.exp.tmp
+	@-rm -f $*/site.bak
+	@test ! -f $*/site.exp || mv $*/site.exp $*/site.bak
+	@mv $*/site.exp.tmp $*/site.exp
+$(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
+
+# Run the testsuite in normal mode.
+check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
+	if [ -z "$*$(filter-out --target_board=%, $(RUNTESTFLAGS))" ] \
+	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	  $(MAKE) $(AM_MAKEFLAGS) check-DEJAGNUnormal0 check-DEJAGNUnormal1 \
+		  check-DEJAGNUnormal2 check-DEJAGNUnormal3; \
+	  for idx in 0 1 2 3; do \
+	    mv -f normal$$idx/libstdc++.sum normal$$idx/libstdc++.sum.sep; \
+	    mv -f normal$$idx/libstdc++.log normal$$idx/libstdc++.log.sep; \
+	  done; \
+	  mv -f libstdc++.sum libstdc++.sum.sep; \
+	  mv -f libstdc++.log libstdc++.log.sep; \
+	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh \
+	    libstdc++.sum.sep normal0/libstdc++.sum.sep \
+	    normal1/libstdc++.sum.sep normal2/libstdc++.sum.sep \
+	    normal3/libstdc++.sum.sep > libstdc++.sum; \
+	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh -L \
+	    libstdc++.log.sep normal0/libstdc++.log.sep \
+	    normal1/libstdc++.log.sep normal2/libstdc++.log.sep \
+	    normal3/libstdc++.log.sep > libstdc++.log; \
+	  exit 0; \
+	fi; \
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	runtest=$(RUNTEST); \
+	if [ -z "$$runtest" ]; then runtest=runtest; fi; \
+	tool=libstdc++; \
+	dirs=; \
+	case "$*" in \
+	  normal0) \
+	    if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
+	      $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) \
+			$(RUNTESTFLAGS) abi.exp; \
+	    else echo "WARNING: could not find \`runtest'" 1>&2; :;\
+	    fi; \
+	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/* [abep]*/*`";; \
+	  normal1) \
+	    dirs="`cd $$srcdir; echo 2[0-2]_*/*`";; \
+	  normal2) \
+	    dirs="`cd $$srcdir; echo 2[4-9]_*/*`";; \
+	  normal3) \
+	    dirs="`cd $$srcdir; echo 23_*/* t*/*`";; \
+	esac; \
+	if [ -n "$*" ]; then cd "$*"; fi; \
+	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
+	  if [ -n "$$dirs" ]; then \
+	    $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) \
+		    $(RUNTESTFLAGS) \
+		    "conformance.exp=`echo $$dirs | sed 's/ /* /g;s/$$/*/'`"; \
+	  else \
+	    $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) \
+		    $(RUNTESTFLAGS); \
+	  fi; \
+	else echo "WARNING: could not find \`runtest'" 1>&2; :;\
+	fi
+
+check-am:
+	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
+.PHONY: check-DEJAGNU
 
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.

@@ -150,6 +150,7 @@ java.srcman: $(JAVA_MANFILES)
 	-cp -p $^ $(srcdir)/doc
 
 check-java :
+check-java-subtargets :
 
 # Install hooks:
 # jc1, gcj, and jvgenmain are installed elsewhere as part

@@ -1,3 +1,13 @@
+2008-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/Make-lang.in (check-ada-subtargets): Depend on
+	check-acats-subtargets and check-gnat-subtargets.
+	(check_acats_targets): New variable.
+	(check-acats-subtargets, check-acats%): New targets.
+	(check-acats): If -j is used and CHAPTERS is empty, run the testing
+	in multiple make goals, possibly parallel, and afterwards run
+	dg-extract-results.sh to merge the sum and log files.
+
 2008-10-17  Geert Bosch  <bosch@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Slice>: Simplify expansion
