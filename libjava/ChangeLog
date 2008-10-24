@@ -1,3 +1,13 @@
+2008-10-23  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35485
+	* configure.ac: AIX threads are Posix threads.
+	Set signal handler to aix-signal.h
+	* configure: Regenerate.
+	* classpath/native/fdlibm/fdlibm.h: Undef hz.
+	* include/aix-signal.h: New file.
+	* sysdep/powerpc/locks.h: Avoid GNU Assembler syntax.
+
 2008-10-22  Matthias Klose  <doko@ubuntu.com>
 
 	Import GNU Classpath (libgcj-import-20081021).

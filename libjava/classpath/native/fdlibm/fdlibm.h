@@ -24,6 +24,14 @@
 #include <config.h>
 #include <stdlib.h>
 
+/*
+ * AIX includes a header that defines hz,
+ * which conflicts with an fdlibm variable in some functions.
+ */
+#ifdef _AIX
+#undef hz
+#endif
+
 /* GCJ LOCAL: Include files.  */
 #include "ieeefp.h"
 /* CLASSPATH LOCAL: */

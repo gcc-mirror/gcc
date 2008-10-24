@@ -938,7 +938,7 @@ case "$THREADS" in
  no | none | single)
     THREADS=none
     ;;
- posix | posix95 | pthreads)
+ aix | posix | posix95 | pthreads)
     THREADS=posix
     case "$host" in
      *-*-linux*)
@@ -1633,6 +1633,9 @@ case "${host}" in
     ;;
  powerpc*-*-darwin* | i?86-*-darwin9* | x86_64-*-darwin9*)
     SIGNAL_HANDLER=include/darwin-signal.h
+    ;;
+ powerpc*-*-aix*)
+    SIGNAL_HANDLER=include/aix-signal.h
     ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h
