@@ -6205,6 +6205,13 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
 
       overloaded_p = false;
+      /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
+	 ERROR_MARK for everything that is not a binary expression.
+	 This makes warn_about_parentheses miss some warnings that
+	 involve unary operators.  For unary expressions we should
+	 pass the correct tree_code unless the unary expression was
+	 surrounded by parentheses.
+      */
       lhs = build_x_binary_op (tree_type, lhs, lhs_type, rhs, rhs_type,
 			       &overloaded_p, tf_warning_or_error);
       lhs_type = tree_type;

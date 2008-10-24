@@ -4838,6 +4838,17 @@ extern bool tree_expr_nonzero_warnv_p (tree, bool *);
 
 extern bool fold_real_zero_addition_p (const_tree, const_tree, int);
 
+/* Return nonzero if CODE is a tree code that represents a truth value.  */
+static inline bool
+truth_value_p (enum tree_code code)
+{
+  return (TREE_CODE_CLASS (code) == tcc_comparison
+	  || code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
+	  || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
+	  || code == TRUTH_XOR_EXPR || code == TRUTH_NOT_EXPR);
+}
+
+
 /* In builtins.c */
 extern tree fold_call_expr (tree, bool);
 extern tree fold_builtin_fputs (tree, tree, bool, bool, tree);

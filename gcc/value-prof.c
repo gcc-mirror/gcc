@@ -1296,7 +1296,7 @@ gimple_stringop_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
     {
       edge_iterator ei;
       for (ei = ei_start (bb->succs); (e34 = ei_safe_edge (ei)); )
-	if (!e34->flags & EDGE_ABNORMAL)
+	if (!(e34->flags & EDGE_ABNORMAL))
 	  break;
     }
   else

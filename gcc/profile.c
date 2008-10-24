@@ -278,7 +278,7 @@ is_edge_inconsistent (VEC(edge,gc) *edges)
       if (!EDGE_INFO (e)->ignore)
         {
           if (e->count < 0
-	      && ((!e->flags & EDGE_FAKE)
+	      && (!(e->flags & EDGE_FAKE)
 	          || !block_ends_with_call_p (e->src)))
 	    {
 	      if (dump_file)
