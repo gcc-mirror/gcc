@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,7 +85,6 @@ void test01()
 #endif
 
   TEST_ERRC(no_message);
-  TEST_ERRC(no_posix_equivalent);
   TEST_ERRC(no_protocol_option);
   TEST_ERRC(no_space_on_device);
 

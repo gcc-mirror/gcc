@@ -1,3 +1,11 @@
+2008-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/os/generic/error_constants.h (enum errc): Remove
+	no_posix_equivalent.
+	* config/os/mingw32/error_constants.h (enum errc): Likewise.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Adjust.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
