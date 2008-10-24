@@ -1,3 +1,8 @@
+2008-10-24  Janis Johnson  <janis187@us.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* dg-extract-results.sh: New file.
+
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* check_makefile_deps.sh: New file.
