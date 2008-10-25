@@ -140,7 +140,6 @@ libcpp			All C and C++ front end maintainers
 fp-bit			Ian Lance Taylor	ian@airs.com
 libdecnumber		Ben Elliston		bje@au.ibm.com
 libgcc			Ian Lance Taylor	ian@airs.com
-libgcc-math		Richard Guenther	rguenther@suse.de
 libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		mckinlay@redhat.com
 libgomp			Richard Henderson	rth@redhat.com
@@ -198,6 +197,7 @@ testsuite		Janis Johnson		janis187@us.ibm.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
 middle-end		Diego Novillo		dnovillo@google.com
+middle-end		Richard Guenther	rguenther@suse.de
 tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
@@ -227,7 +227,6 @@ check in changes outside of the parts of the compiler they maintain.
 
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
-middle-end		Richard Guenther	rguenther@suse.de
 libcpp			Tom Tromey		tromey@redhat.com
 blanket write		Diego Novillo		dnovillo@google.com
 blanket write		Ian Lance Taylor	ian@airs.com

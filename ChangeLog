@@ -1,3 +1,9 @@
+2008-10-25  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS (Various Maintainers): Add myself as middle-end
+	maintainer.  Remove myself as libgcc-math maintainer.
+	(Non-Algorithmic Maintainers): Remove myself.
+
 2008-10-24  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.tpl (HOST_EXPORTS): Correct CPPFLAGS typo.
