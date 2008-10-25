@@ -1913,16 +1913,34 @@ enum reg_class
 
 #define SMALL_REGISTER_CLASSES (TARGET_MIPS16)
 
-/* REG_ALLOC_ORDER is to order in which to allocate registers.  This
-   is the default value (allocate the registers in numeric order).  We
-   define it just so that we can override it for the mips16 target in
-   ORDER_REGS_FOR_LOCAL_ALLOC.  */
+/* We generally want to put call-clobbered registers ahead of
+   call-saved ones.  (IRA expects this.)  */
 
 #define REG_ALLOC_ORDER							\
-{  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,	\
-  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,	\
+{ /* Call-clobbered GPRs.  */						\
+   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,		\
+  24, 25, 31,								\
+  /* The global pointer.  This is call-clobbered for o32 and o64	\
+     abicalls, call-saved for n32 and n64 abicalls, and a program	\
+     invariant otherwise.  Putting it between the call-clobbered	\
+     and call-saved registers should cope with all eventualities.  */	\
+  28,									\
+  /* Call-saved GPRs.  */						\
+  16, 17, 18, 19, 20, 21, 22, 23, 30,					\
+  /* GPRs that can never be exposed to the register allocator.  */	\
+   0, 26, 27, 29,							\
+  /* Call-clobbered FPRs.  */						\
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
-  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
+  48, 49, 50, 51,							\
+  /* FPRs that are usually call-saved.  The odd ones are actually	\
+     call-clobbered for n32, but listing them ahead of the even		\
+     registers might encourage the register allocator to fragment	\
+     the available FPR pairs.  We need paired FPRs to store long	\
+     doubles, so it isn't clear that using a different order		\
+     for n32 would be a win.  */					\
+  52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,			\
+  /* None of the remaining classes have defined call-saved		\
+     registers.  */							\
   64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,	\
   80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,	\
   96, 97, 98, 99, 100,101,102,103,104,105,106,107,108,109,110,111,	\
