@@ -1,3 +1,9 @@
+2008-10-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	* config/sh/t-sh: Use $(MULTILIB_CFLAGS) when compiling to
+	unwind-dw2-Os-4-200.o.
+
 2008-10-22  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.opt (msmartmips): Accept -mno-smartmips.
