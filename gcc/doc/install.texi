@@ -448,6 +448,17 @@ the GCC-specific entry point.  You can download a suitable jar from
 @uref{ftp://sourceware.org/pub/java/}, or by running the script
 @command{contrib/download_ecj}.
 
+@item antlr.jar version 2.7.1 (or later)
+@itemx antlr binary
+
+If you wish to build the @command{gjdoc} binary in libjava, you will
+need to have a @file{antlr.jar} library available. The library is
+searched in system locations but can be configured with
+@option{--with-antlr-jar=} instead.  When configuring with
+@option{--enable-java-maintainer-mode}, you will need to have one of
+the executables named @command{cantlr}, @command{runantlr} or
+@command{antlr} in your path.
+
 @end table
 
 @html

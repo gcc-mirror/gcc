@@ -1,3 +1,7 @@
+2008-10-26  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Document requirements on antlr.
+
 2008-10-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (REG_ALLOC_ORDER): Put call-clobbered registers
