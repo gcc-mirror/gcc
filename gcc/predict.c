@@ -1599,6 +1599,7 @@ tree_estimate_probability (void)
     {
       edge e;
       edge_iterator ei;
+      gimple last;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -1621,7 +1622,8 @@ tree_estimate_probability (void)
 	      && e->dest != EXIT_BLOCK_PTR
 	      && single_succ_p (e->dest)
 	      && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
-	      && gimple_code (last_stmt (e->dest)) == GIMPLE_RETURN)
+	      && (last = last_stmt (e->dest)) != NULL
+	      && gimple_code (last) == GIMPLE_RETURN)
 	    {
 	      edge e1;
 	      edge_iterator ei1;
