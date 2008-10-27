@@ -1,3 +1,10 @@
+2008-10-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/37316
+	* pa.c (function_arg_padding):  Pad complex and vector types upward in
+	64-bit runtime.
+	(function_arg): Use BLKmode for PARALLEL in 64-bit runtime.
+
 2008-10-26  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Document requirements on antlr.

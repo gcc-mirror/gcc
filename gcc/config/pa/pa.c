@@ -5888,7 +5888,11 @@ enum direction
 function_arg_padding (enum machine_mode mode, const_tree type)
 {
   if (mode == BLKmode
-      || (TARGET_64BIT && type && AGGREGATE_TYPE_P (type)))
+      || (TARGET_64BIT
+	  && type
+	  && (AGGREGATE_TYPE_P (type)
+	      || TREE_CODE (type) == COMPLEX_TYPE
+	      || TREE_CODE (type) == VECTOR_TYPE)))
     {
       /* Return none if justification is not required.  */
       if (type
@@ -9277,7 +9281,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	      offset += 8;
 	    }
 
-	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
+	  return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
 	}
      }
   else
