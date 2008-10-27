@@ -1,3 +1,14 @@
+2008-10-27  Janis Johnson  <janis187@us.ibm.com>
+
+	* decDouble.h (decDouble): Replace struct with union accessible
+	by more types.
+	* decSingle.h (decSingle): Ditto.
+	* decQuad.h (decQuad): Ditto.
+	* decNumberLocal.h (DFWORD, DFBYTE, DFWWORD): access decFloat via
+	new members.
+	* decBasic.c (decFloatCompareTotal): Avoid type-pun violation.
+	(decNumberCompare): Ditto.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in ($(srcdir)/aclocal.m4): Update dependencies.

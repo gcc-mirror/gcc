@@ -1660,8 +1660,10 @@ decFloat * decFloatCompareTotal(decFloat *result,
       /* decode the coefficients */
       /* (shift both right two if Quad to make a multiple of four) */
       #if QUAD
-	USHORTAT(bufl)=0;
-	USHORTAT(bufr)=0;
+	ub = bufl;                           /* avoid type-pun violation */
+	USHORTAT(ub)=0;
+	uc = bufr;                           /* avoid type-pun violation */
+	USHORTAT(uc)=0;
       #endif
       GETCOEFF(dfl, bufl+QUAD*2);	     /* decode from decFloat */
       GETCOEFF(dfr, bufr+QUAD*2);	     /* .. */
@@ -3542,8 +3544,10 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
   /* decode the coefficients */
   /* (shift both right two if Quad to make a multiple of four) */
   #if QUAD
-    UINTAT(bufl)=0;
-    UINTAT(bufr)=0;
+    ub=bufl;                            /* avoid type-pun violation */
+    UINTAT(ub)=0;
+    uc=bufr;                            /* avoid type-pun violation */
+    UINTAT(uc)=0;
   #endif
   GETCOEFF(dfl, bufl+QUAD*2);		/* decode from decFloat */
   GETCOEFF(dfr, bufr+QUAD*2);		/* .. */

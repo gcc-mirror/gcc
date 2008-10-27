@@ -59,9 +59,11 @@
   #include "decQuad.h"
   #include "decDouble.h"
 
-  /* The decSingle decimal 32-bit type, accessible by bytes */
-  typedef struct {
+  /* The decSingle decimal 32-bit type, accessible by various types */
+  typedef union {
     uint8_t bytes[DECSINGLE_Bytes];	/* fields: 1, 5, 6, 20 bits */
+    uint16_t shorts[DECSINGLE_Bytes/2];
+    uint32_t words[DECSINGLE_Bytes/4];
     } decSingle;
 
   /* ---------------------------------------------------------------- */
