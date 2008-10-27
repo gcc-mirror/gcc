@@ -1,3 +1,8 @@
+2008-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37879
+	* gcc.dg/pr37879.c: New test.
+
 2008-10-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/37841

@@ -1,3 +1,9 @@
+2008-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37879
+	* predict.c (tree_estimate_probability): Check if last_stmt is
+	non-NULL before dereferencing it.
+
 2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-int.h (ira_allocno): Add member updated_cover_class_cost.
