@@ -75,6 +75,11 @@ static HARD_REG_SET hard_regs_live;
 /* The loop tree node corresponding to the current basic block.  */
 static ira_loop_tree_node_t curr_bb_node;
 
+/* The number of the last processed call.  */
+static int last_call_num;
+/* The number of last call at which given allocno was saved.  */
+static int *allocno_saved_at_call;
+
 /* The function processing birth of register REGNO.  It updates living
    hard regs and conflict hard regs for living allocnos or starts a
    new live range for the allocno corresponding to REGNO if it is
@@ -163,6 +168,8 @@ set_allocno_live (ira_allocno_t a)
   int nregs;
   enum reg_class cover_class;
 
+  /* Invalidate because it is referenced.  */
+  allocno_saved_at_call[ALLOCNO_NUM (a)] = 0;
   if (sparseset_bit_p (allocnos_live, ALLOCNO_NUM (a)))
     return;
   sparseset_set_bit (allocnos_live, ALLOCNO_NUM (a));
@@ -189,6 +196,8 @@ clear_allocno_live (ira_allocno_t a)
   unsigned int i;
   enum reg_class cover_class;
 
+  /* Invalidate because it is referenced.  */
+  allocno_saved_at_call[ALLOCNO_NUM (a)] = 0;
   if (sparseset_bit_p (allocnos_live, ALLOCNO_NUM (a)))
     {
       cover_class = ALLOCNO_COVER_CLASS (a);
@@ -228,7 +237,11 @@ mark_reg_live (rtx reg)
       if (a != NULL)
 	{
 	  if (sparseset_bit_p (allocnos_live, ALLOCNO_NUM (a)))
-	    return;
+	    {
+	      /* Invalidate because it is referenced.  */
+	      allocno_saved_at_call[ALLOCNO_NUM (a)] = 0;
+	      return;
+	    }
 	  set_allocno_live (a);
 	}
       make_regno_born (regno);
@@ -293,7 +306,11 @@ mark_reg_dead (rtx reg)
       if (a != NULL)
 	{
 	  if (! sparseset_bit_p (allocnos_live, ALLOCNO_NUM (a)))
-	    return;
+	    {
+	      /* Invalidate because it is referenced.  */
+	      allocno_saved_at_call[ALLOCNO_NUM (a)] = 0;
+	      return;
+	    }
 	  clear_allocno_live (a);
 	}
       make_regno_dead (regno);
@@ -820,6 +837,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       if (freq == 0)
 	freq = 1;
 
+      /* Invalidate all allocno_saved_at_call entries.  */
+      last_call_num++;
+
       /* Scan the code of this basic block, noting which allocnos and
 	 hard regs are born or die.
 
@@ -901,12 +921,21 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 
 	  if (call_p)
 	    {
+	      last_call_num++;
 	      /* The current set of live allocnos are live across the call.  */
 	      EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
 	        {
 		  ira_allocno_t a = ira_allocnos[i];
 		  
-		  ALLOCNO_CALL_FREQ (a) += freq;
+		  if (allocno_saved_at_call[i] != last_call_num)
+		    /* Here we are mimicking caller-save.c behaviour
+		       which does not save hard register at a call if
+		       it was saved on previous call in the same basic
+		       block and the hard register was not mentioned
+		       between the two calls.  */
+		    ALLOCNO_CALL_FREQ (a) += freq;
+		  /* Mark it as saved at the next call.  */
+		  allocno_saved_at_call[i] = last_call_num + 1;
 		  ALLOCNO_CALLS_CROSSED_NUM (a)++;
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal
@@ -1152,6 +1181,10 @@ ira_create_allocno_live_ranges (void)
 {
   allocnos_live = sparseset_alloc (ira_allocnos_num);
   curr_point = 0;
+  last_call_num = 0;
+  allocno_saved_at_call
+    = (int *) ira_allocate (ira_allocnos_num * sizeof (int));
+  memset (allocno_saved_at_call, 0, ira_allocnos_num * sizeof (int));
   ira_traverse_loop_tree (true, ira_loop_tree_root, NULL,
 			  process_bb_node_lives);
   ira_max_point = curr_point;
@@ -1159,6 +1192,7 @@ ira_create_allocno_live_ranges (void)
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_live_ranges (ira_dump_file);
   /* Clean up.  */
+  ira_free (allocno_saved_at_call);
   sparseset_free (allocnos_live);
 }
 

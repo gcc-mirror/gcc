@@ -1407,8 +1407,7 @@ setup_allocno_cover_class_and_costs (void)
       mode = ALLOCNO_MODE (a);
       cover_class = ira_class_translate[allocno_pref[i]];
       ira_assert (allocno_pref[i] == NO_REGS || cover_class != NO_REGS);
-      ALLOCNO_MEMORY_COST (a) = ALLOCNO_UPDATED_MEMORY_COST (a)
-	= COSTS_OF_ALLOCNO (allocno_costs, i)->mem_cost;
+      ALLOCNO_MEMORY_COST (a) = COSTS_OF_ALLOCNO (allocno_costs, i)->mem_cost;
       ira_set_allocno_cover_class (a, cover_class);
       if (cover_class == NO_REGS)
 	continue;

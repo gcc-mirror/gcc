@@ -337,6 +337,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
   enum reg_class rclass, cover_class;
   enum machine_mode mode;
   ira_copy_t cp;
+  ira_loop_tree_node_t parent;
 
   gcc_assert (REG_SUBREG_P (reg1) && REG_SUBREG_P (reg2));
   only_regs_p = REG_P (reg1) && REG_P (reg2);
@@ -386,13 +387,23 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
     cost = ira_register_move_cost[mode][cover_class][rclass] * freq;
   else
     cost = ira_register_move_cost[mode][rclass][cover_class] * freq;
-  ira_allocate_and_set_costs
-    (&ALLOCNO_HARD_REG_COSTS (a), cover_class,
-     ALLOCNO_COVER_CLASS_COST (a));
-  ira_allocate_and_set_costs
-    (&ALLOCNO_CONFLICT_HARD_REG_COSTS (a), cover_class, 0);
-  ALLOCNO_HARD_REG_COSTS (a)[index] -= cost;
-  ALLOCNO_CONFLICT_HARD_REG_COSTS (a)[index] -= cost;
+  for (;;)
+    {
+      ira_allocate_and_set_costs
+	(&ALLOCNO_HARD_REG_COSTS (a), cover_class,
+	 ALLOCNO_COVER_CLASS_COST (a));
+      ira_allocate_and_set_costs
+	(&ALLOCNO_CONFLICT_HARD_REG_COSTS (a), cover_class, 0);
+      ALLOCNO_HARD_REG_COSTS (a)[index] -= cost;
+      ALLOCNO_CONFLICT_HARD_REG_COSTS (a)[index] -= cost;
+      if (ALLOCNO_HARD_REG_COSTS (a)[index] < ALLOCNO_COVER_CLASS_COST (a))
+	ALLOCNO_COVER_CLASS_COST (a) = ALLOCNO_HARD_REG_COSTS (a)[index];
+      if (ALLOCNO_CAP (a) != NULL)
+	a = ALLOCNO_CAP (a);
+      else if ((parent = ALLOCNO_LOOP_TREE_NODE (a)->parent) == NULL
+	       || (a = parent->regno_allocno_map[ALLOCNO_REGNO (a)]) == NULL)
+	break;
+    }
   return true;
 }
 
