@@ -308,13 +308,13 @@
   #define DECWORDS  (DECBYTES/4)
   #define DECWWORDS (DECWBYTES/4)
   #if DECLITEND
-    #define DFWORD(df, off) UINTAT((df)->bytes+(DECWORDS-1-(off))*4)
-    #define DFBYTE(df, off) UBYTEAT((df)->bytes+(DECBYTES-1-(off)))
-    #define DFWWORD(dfw, off) UINTAT((dfw)->bytes+(DECWWORDS-1-(off))*4)
+    #define DFWORD(df, off) ((df)->words[DECWORDS-1-(off)])
+    #define DFBYTE(df, off) ((df)->bytes[DECBYTES-1-(off)])
+    #define DFWWORD(dfw, off) ((dfw)->words[DECWWORDS-1-(off)])
   #else
-    #define DFWORD(df, off) UINTAT((df)->bytes+(off)*4)
-    #define DFBYTE(df, off) UBYTEAT((df)->bytes+(off))
-    #define DFWWORD(dfw, off) UINTAT((dfw)->bytes+(off)*4)
+    #define DFWORD(df, off) ((df)->words[off])
+    #define DFBYTE(df, off) ((df)->bytes[off])
+    #define DFWWORD(dfw, off) ((dfw)->words[off])
   #endif
 
   /* Tests for sign or specials, directly on DECFLOATs		      */
