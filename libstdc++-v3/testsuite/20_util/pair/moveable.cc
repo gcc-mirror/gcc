@@ -64,54 +64,9 @@ test2()
          r.second.size() == 2 && p.second.size() == 0);
 }
 
-struct X { 
-  explicit X(int, int) { }
-
-private:
-  X(const X&) = delete;
-};
-
-struct move_only {
-  move_only() { }
-  move_only(move_only&&) { }
-
-private:
-  move_only(const move_only&) = delete;
-};
-
-void
-test3()
-{
-  int *ip = 0;
-  int X::*mp = 0;
-  std::pair<int*, int*> p1(0, 0);
-  std::pair<int*, int*> p2(ip, 0);
-  std::pair<int*, int*> p3(0, ip);
-  std::pair<int*, int*> p4(ip, ip);
-
-  std::pair<int X::*, int*> p5(0, 0);
-  std::pair<int X::*, int X::*> p6(mp, 0);
-  std::pair<int X::*, int X::*> p7(0, mp);
-  std::pair<int X::*, int X::*> p8(mp, mp);
-
-  std::pair<int*, X> p9(0, 1, 2);
-  std::pair<int X::*, X> p10(0, 1, 2);
-  std::pair<int*, X> p11(ip, 1, 2);
-  std::pair<int X::*, X> p12(mp, 1, 2);
-
-  std::pair<int*, move_only> p13(0);
-  std::pair<int X::*, move_only> p14(0);
-
-  std::pair<int*, move_only> p15(0, move_only());
-  std::pair<int X::*, move_only> p16(0, move_only());
-  std::pair<move_only, int*> p17(move_only(), 0);
-  std::pair<move_only, int X::*> p18(move_only(), 0);
-}
-
 int 
 main() 
 {
   test1();
   test2();
-  test3();
 }
