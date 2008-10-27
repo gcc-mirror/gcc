@@ -1,3 +1,15 @@
+2008-10-27  Janis Johnson  <janis187@us.ibm.com>
+
+	PR other/37897
+	* decDouble.h (decDouble): Replace struct with union accessible
+	by more types.
+	* decSingle.h (decSingle): Ditto.
+	* decQuad.h (decQuad): Ditto.
+	* decNumberLocal.h (DFWORD, DFBYTE, DFWWORD): access decFloat via
+	new members.
+	* decBasic.c (decFloatCompareTotal): Avoid type-pun violation.
+	(decNumberCompare): Ditto.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.
