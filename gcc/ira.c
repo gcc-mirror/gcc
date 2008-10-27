@@ -976,6 +976,36 @@ find_reg_class_closure (void)
 
 
 
+/* Map: hard register number -> cover class it belongs to.  If the
+   corresponding class is NO_REGS, the hard register is not available
+   for allocation.  */
+enum reg_class ira_hard_regno_cover_class[FIRST_PSEUDO_REGISTER];
+
+/* Set up the array above.  */
+static void
+setup_hard_regno_cover_class (void)
+{
+  int i, j;
+  enum reg_class cl;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      ira_hard_regno_cover_class[i] = NO_REGS;
+      for (j = 0; j < ira_reg_class_cover_size; j++)
+	{
+	  cl = ira_reg_class_cover[j];
+	  if (ira_class_hard_reg_index[cl][i] >= 0)
+	    {
+	      ira_hard_regno_cover_class[i] = cl;
+	      break;
+	    }
+	}
+	    
+    }
+}
+
+
+
 /* Map: register class x machine mode -> number of hard registers of
    given class needed to store value of given mode.  If the number is
    different, the size will be negative.  */
@@ -1118,6 +1148,7 @@ ira_init (void)
   setup_alloc_regs (flag_omit_frame_pointer != 0);
   setup_class_subset_and_memory_move_costs ();
   find_reg_class_closure ();
+  setup_hard_regno_cover_class ();
   setup_reg_class_nregs ();
   setup_prohibited_class_mode_regs ();
   ira_init_costs ();

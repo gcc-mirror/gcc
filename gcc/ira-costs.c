@@ -86,7 +86,7 @@ static enum reg_class *cost_classes;
 static int cost_classes_num;
 
 /* Map: cost class -> order number (they start with 0) of the cost
-   class.  */
+   class.  The order number is negative for non-cost classes.  */
 static int cost_class_nums[N_REG_CLASSES];
 
 /* It is the current size of struct costs.  */
@@ -1112,6 +1112,8 @@ find_allocno_class_costs (void)
       /* We could use only cover classes.  Unfortunately it does not
 	 work well for some targets where some subclass of cover class
 	 is costly and wrong cover class is chosen.  */
+      for (i = 0; i < N_REG_CLASSES; i++)
+	cost_class_nums[i] = -1;
       for (cost_classes_num = 0;
 	   cost_classes_num < ira_important_classes_num;
 	   cost_classes_num++)
@@ -1392,7 +1394,7 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
 static void
 setup_allocno_cover_class_and_costs (void)
 {
-  int i, j, n, regno;
+  int i, j, n, regno, num;
   int *reg_costs;
   enum reg_class cover_class, rclass;
   enum machine_mode mode;
@@ -1411,9 +1413,10 @@ setup_allocno_cover_class_and_costs (void)
       if (cover_class == NO_REGS)
 	continue;
       ALLOCNO_AVAILABLE_REGS_NUM (a) = ira_available_class_regs[cover_class];
+      num = cost_class_nums[allocno_pref[i]];
+      ira_assert (num >= 0);
       ALLOCNO_COVER_CLASS_COST (a)
-	= (COSTS_OF_ALLOCNO (allocno_costs, i)
-	   ->cost[cost_class_nums[allocno_pref[i]]]);
+	= COSTS_OF_ALLOCNO (allocno_costs, i)->cost[num];
       if (optimize && ALLOCNO_COVER_CLASS (a) != allocno_pref[i])
 	{
 	  n = ira_class_hard_regs_num[cover_class];
@@ -1423,8 +1426,16 @@ setup_allocno_cover_class_and_costs (void)
 	    {
 	      regno = ira_class_hard_regs[cover_class][j];
 	      rclass = REGNO_REG_CLASS (regno);
-	      reg_costs[j] = (COSTS_OF_ALLOCNO (allocno_costs, i)
-			       ->cost[cost_class_nums[rclass]]);
+	      num = cost_class_nums[rclass];
+	      if (num < 0)
+		{
+		  /* The hard register class is not a cover class or a
+		     class not fully inside in a cover class -- use
+		     the allocno cover class.  */
+		  ira_assert (ira_hard_regno_cover_class[regno] == cover_class);
+		  num = cost_class_nums[cover_class];
+		}
+	      reg_costs[j] = COSTS_OF_ALLOCNO (allocno_costs, i)->cost[num];
 	    }
 	}
     }

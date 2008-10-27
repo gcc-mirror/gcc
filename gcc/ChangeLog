@@ -1,5 +1,25 @@
 2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR middle-end/37813
+	* ira-conflicts.c (process_regs_for_copy): Remove class subset
+	check.
+
+	* ira-int.h (ira_hard_regno_cover_class): New.
+
+	* ira-lives.c (mark_reg_live, mark_reg_dead,
+	process_bb_node_lives): Use ira_hard_regno_cover_class.
+
+	* ira.c (reg_class ira_hard_regno_cover_class): New global
+	variable.
+	(setup_hard_regno_cover_class): New function.
+	(ira_init): Call setup_hard_regno_cover_class.
+
+	* ira-costs.c (cost_class_nums): Add comment.
+	(find_allocno_class_costs): Initiate cost_class_nums.
+	(setup_allocno_cover_class_and_costs): Check cost_class_nums.
+
+2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR middle-end/37884
 	* ira-build.c (copy_live_ranges_to_removed_store_destinations):
 	Rename to copy_info_to_removed_store_destinations.  Propagate
