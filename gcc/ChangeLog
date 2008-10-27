@@ -1,5 +1,10 @@
 2008-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/37378
+	* df-scan.c (df_bb_refs_collect): Don't handle EH_USES here.
+	(df_get_entry_block_def_set): Neither here.
+	(df_get_regular_block_artificial_uses): Add EH_USES registers.
+
 	PR tree-optimization/37879
 	* predict.c (tree_estimate_probability): Check if last_stmt is
 	non-NULL before dereferencing it.

@@ -3555,29 +3555,6 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
     }
 #endif
 
-
-#ifdef EH_USES
-  if (bb_has_eh_pred (bb))
-    {
-      unsigned int i;
-      /* This code is putting in an artificial ref for the use at the
-	 TOP of the block that receives the exception.  It is too
-	 cumbersome to actually put the ref on the edge.  We could
-	 either model this at the top of the receiver block or the
-	 bottom of the sender block.
-
-         The bottom of the sender block is problematic because not all
-         out-edges of a block are eh-edges.  However, it is true
-         that all edges into a block are either eh-edges or none of
-         them are eh-edges.  Thus, we can model this at the top of the
-         eh-receiver for all of the edges at once. */
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (EH_USES (i))
-	  df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-			 bb, NULL, DF_REF_REG_USE, DF_REF_AT_TOP, -1, -1, 0);
-    }
-#endif
-
   /* Add the hard_frame_pointer if this block is the target of a
      non-local goto.  */
   if (bb->flags & BB_NON_LOCAL_GOTO_TARGET)
@@ -3667,6 +3644,10 @@ df_bb_refs_record (int bb_index, bool scan_insns)
 static void
 df_get_regular_block_artificial_uses (bitmap regular_block_artificial_uses)
 {
+#ifdef EH_USES
+  unsigned int i;
+#endif
+
   bitmap_clear (regular_block_artificial_uses);
 
   if (reload_completed)
@@ -3702,6 +3683,20 @@ df_get_regular_block_artificial_uses (bitmap regular_block_artificial_uses)
     }
   /* The all-important stack pointer must always be live.  */
   bitmap_set_bit (regular_block_artificial_uses, STACK_POINTER_REGNUM);
+
+#ifdef EH_USES
+  /* EH_USES registers are used:
+     1) at all insns that might throw (calls or with -fnon-call-exceptions
+	trapping insns)
+     2) in all EH edges
+     3) to support backtraces and/or debugging, anywhere between their
+	initialization and where they the saved registers are restored
+	from them, including the cases where we don't reach the epilogue
+	(noreturn call or infinite loop).  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (EH_USES (i))
+      bitmap_set_bit (regular_block_artificial_uses, i);
+#endif
 }
 
 
@@ -3826,16 +3821,6 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
   /* These registers are live everywhere.  */
   if (!reload_completed)
     {
-#ifdef EH_USES
-      /* The ia-64, the only machine that uses this, does not define these 
-	 until after reload.  */
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (EH_USES (i))
-	  {
-	    bitmap_set_bit (entry_block_defs, i);
-	  }
-#endif
-      
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
