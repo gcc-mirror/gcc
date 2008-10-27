@@ -1,4 +1,6 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
+
 // 2008-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
@@ -29,8 +31,6 @@
 void
 test01()
 {
-#ifdef _GLIBCXX_USE_C99
-
   bool test __attribute__((unused)) = false;
   using namespace std;
 
@@ -157,8 +157,6 @@ test01()
     }
   VERIFY( test );
   VERIFY( l1 == numeric_limits<long>::min() );
-
-#endif
 }
 
 int main()

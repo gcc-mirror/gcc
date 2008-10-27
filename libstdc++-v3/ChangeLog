@@ -1,3 +1,31 @@
+2008-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/37522
+	* config/os/mingw32/os_defines.h: Define _GLIBCXX_HAVE_BROKEN_VSWPRINTF
+	* include/bits/basic_string.h: Guard string conversions with 
+	!defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF) too.
+	* testsuite/lib/libstdc++.exp (check_v3_target_string_conversions):
+	New.
+	* testsuite/lib/dg-options.exp (dg-require-string-conversions): New.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Use the latter.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	stoull.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stold.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	to_string.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Likewise.
+
 2008-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* config/os/generic/error_constants.h (enum errc): Remove

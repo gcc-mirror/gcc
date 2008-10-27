@@ -1236,3 +1236,61 @@ proc check_v3_target_nanosleep { } {
     verbose "check_v3_target_nanosleep: $et_nanosleep" 2
     return $et_nanosleep
 }
+
+proc check_v3_target_string_conversions { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_string_conversions
+
+    global tool
+
+    if { ![info exists et_string_conversions_target_name] } {
+        set et_string_conversions_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_string_conversions_target_name } {
+        verbose "check_v3_target_string_conversions: `$et_string_conversions_target_name'" 2
+        set et_string_conversions_target_name $current_target
+        if [info exists et_string_conversions] {
+            verbose "check_v3_target_string_conversions: removing cached result" 2
+            unset et_string_conversions
+        }
+    }
+
+    if [info exists et_string_conversions] {
+        verbose "check_v3_target_string_conversions: using cached result" 2
+    } else {
+        set et_string_conversions 0
+	
+	# Set up and compile a C++0x test program that depends
+        # on the string_conversions facilities to be available.
+        set src string_conversions[pid].cc
+        set exe string_conversions[pid].exe
+
+        set f [open $src "w"]
+        puts $f "#include <bits/c++config.h>"
+        puts $f "int main()"
+        puts $f "#if defined(_GLIBCXX_USE_C99) && !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
+        puts $f "{ return 0; }"
+        puts $f "#endif"
+        close $f
+
+        set cxxflags_saved $cxxflags
+        set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+        set lines [v3_target_compile $src $exe executable ""]
+        set cxxflags $cxxflags_saved
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, compilation succeeded.
+            set et_string_conversions 1
+        } else {
+            verbose "check_v3_target_string_conversions: compilation failed" 2
+        }
+    }
+    verbose "check_v3_target_string_conversions: $et_string_conversions" 2
+    return $et_string_conversions
+}
