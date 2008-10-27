@@ -252,7 +252,7 @@ update_copy_costs (ira_allocno_t allocno, bool decr_p)
 
 	  ira_allocate_and_set_or_copy_costs
 	    (&ALLOCNO_UPDATED_HARD_REG_COSTS (another_allocno), cover_class,
-	     ALLOCNO_COVER_CLASS_COST (another_allocno),
+	     ALLOCNO_UPDATED_COVER_CLASS_COST (another_allocno),
 	     ALLOCNO_HARD_REG_COSTS (another_allocno));
 	  ira_allocate_and_set_or_copy_costs
 	    (&ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (another_allocno),
@@ -348,8 +348,8 @@ allocno_cost_compare_func (const void *v1p, const void *v2p)
   ira_allocno_t p2 = *(const ira_allocno_t *) v2p;
   int c1, c2;
 
-  c1 = ALLOCNO_UPDATED_MEMORY_COST (p1) - ALLOCNO_COVER_CLASS_COST (p1);
-  c2 = ALLOCNO_UPDATED_MEMORY_COST (p2) - ALLOCNO_COVER_CLASS_COST (p2);
+  c1 = ALLOCNO_UPDATED_MEMORY_COST (p1) - ALLOCNO_UPDATED_COVER_CLASS_COST (p1);
+  c2 = ALLOCNO_UPDATED_MEMORY_COST (p2) - ALLOCNO_UPDATED_COVER_CLASS_COST (p2);
   if (c1 - c2)
     return c1 - c2;
 
@@ -426,7 +426,9 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 #ifdef STACK_REGS
       no_stack_reg_p = no_stack_reg_p || ALLOCNO_TOTAL_NO_STACK_REG_P (a);
 #endif
-      for (cost = ALLOCNO_COVER_CLASS_COST (a), i = 0; i < class_size; i++)
+      for (cost = ALLOCNO_UPDATED_COVER_CLASS_COST (a), i = 0;
+	   i < class_size;
+	   i++)
 	if (a_costs != NULL)
 	  {
 	    costs[i] += a_costs[i];
@@ -959,7 +961,7 @@ calculate_allocno_spill_cost (ira_allocno_t a)
   ira_loop_tree_node_t parent_node, loop_node;
 
   regno = ALLOCNO_REGNO (a);
-  cost = ALLOCNO_UPDATED_MEMORY_COST (a) - ALLOCNO_COVER_CLASS_COST (a);
+  cost = ALLOCNO_UPDATED_MEMORY_COST (a) - ALLOCNO_UPDATED_COVER_CLASS_COST (a);
   if (ALLOCNO_CAP (a) != NULL)
     return cost;
   loop_node = ALLOCNO_LOOP_TREE_NODE (a);
@@ -1821,24 +1823,26 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  else
 	    {
 	      cover_class = ALLOCNO_COVER_CLASS (subloop_allocno);
-	      ira_allocate_and_set_costs
-		(&ALLOCNO_HARD_REG_COSTS (subloop_allocno), cover_class,
-		 ALLOCNO_COVER_CLASS_COST (subloop_allocno));
-	      ira_allocate_and_set_costs
-		(&ALLOCNO_CONFLICT_HARD_REG_COSTS (subloop_allocno),
-		 cover_class, 0);
 	      cost = (ira_register_move_cost[mode][rclass][rclass] 
 		      * (exit_freq + enter_freq));
-	      ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index] -= cost;
-	      ALLOCNO_CONFLICT_HARD_REG_COSTS (subloop_allocno)[index]
+	      ira_allocate_and_set_or_copy_costs
+		(&ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno), cover_class,
+		 ALLOCNO_UPDATED_COVER_CLASS_COST (subloop_allocno),
+		 ALLOCNO_HARD_REG_COSTS (subloop_allocno));
+	      ira_allocate_and_set_or_copy_costs
+		(&ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (subloop_allocno),
+		 cover_class, 0,
+		 ALLOCNO_CONFLICT_HARD_REG_COSTS (subloop_allocno));
+	      ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index] -= cost;
+	      ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (subloop_allocno)[index]
 		-= cost;
+	      if (ALLOCNO_UPDATED_COVER_CLASS_COST (subloop_allocno)
+		  > ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index])
+		ALLOCNO_UPDATED_COVER_CLASS_COST (subloop_allocno)
+		  = ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index];
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
 		+= (ira_memory_move_cost[mode][rclass][0] * enter_freq
 		    + ira_memory_move_cost[mode][rclass][1] * exit_freq);
-	      if (ALLOCNO_COVER_CLASS_COST (subloop_allocno)
-		  > ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index])
-		ALLOCNO_COVER_CLASS_COST (subloop_allocno)
-		  = ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index];
 	    }
 	}
     }
@@ -3054,8 +3058,8 @@ ira_finish_assign (void)
 
 
 /* Entry function doing color-based register allocation.  */
-void
-ira_color (void)
+static void
+color (void)
 {
   allocno_stack_vec = VEC_alloc (ira_allocno_t, heap, ira_allocnos_num);
   removed_splay_allocno_vec
@@ -3077,8 +3081,8 @@ ira_color (void)
 /* Do register allocation by not using allocno conflicts.  It uses
    only allocno live ranges.  The algorithm is close to Chow's
    priority coloring.  */
-void
-ira_fast_allocation (void)
+static void
+fast_allocation (void)
 {
   int i, j, k, num, class_size, hard_regno;
 #ifdef STACK_REGS
@@ -3147,4 +3151,25 @@ ira_fast_allocation (void)
   ira_free (allocno_priorities);
   if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
     ira_print_disposition (ira_dump_file);
+}
+
+
+
+/* Entry function doing coloring.  */
+void
+ira_color (void)
+{
+  ira_allocno_t a;
+  ira_allocno_iterator ai;
+
+  /* Setup updated costs.  */
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      ALLOCNO_UPDATED_MEMORY_COST (a) = ALLOCNO_MEMORY_COST (a);
+      ALLOCNO_UPDATED_COVER_CLASS_COST (a) = ALLOCNO_COVER_CLASS_COST (a);
+    }
+  if (optimize)
+    color ();
+  else
+    fast_allocation ();
 }

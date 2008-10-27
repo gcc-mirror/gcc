@@ -1,5 +1,43 @@
 2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* ira-int.h (ira_allocno): Add member updated_cover_class_cost.
+	(ALLOCNO_UPDATED_COVER_CLASS_COST): New.
+	(ira_fast_allocation): Remove the prototype.
+	
+	* ira-color.c (update_copy_costs, allocno_cost_compare_func,
+	assign_hard_reg, calculate_allocno_spill_cost): Use updated costs.
+	(color_pass): Modify the updated costs.
+	(ira_color): Rename to color.  Make it static.
+	(ira_fast_allocation): Rename to fast_allocation.  Make it static.
+	(ira_color): New function.
+	
+	* ira-conflicts.c (process_regs_for_copy): Propagate hard reg cost
+	change.
+
+	* ira-lives.c (last_call_num, allocno_saved_at_call): New
+	variables.
+	(set_allocno_live, clear_allocno_live, mark_ref_live,
+	mark_ref_dead): Invalidate corresponding element of
+	allocno_saved_at_call.
+	(process_bb_node_lives): Increment last_call_num.  Setup
+	allocno_saved_at_call.  Don't increase ALLOCNO_CALL_FREQ if the
+	allocno was already saved.
+	(ira_create_allocno_live_ranges): Initiate last_call_num and
+	allocno_saved_at_call.
+
+	* ira-build.c (ira_create_allocno): Initiate
+	ALLOCNO_UPDATED_COVER_CLASS_COST.
+	(create_cap_allocno, propagate_allocno_info,
+	remove_unnecessary_allocnos): Remove setting updated costs.
+	(ira_flattening): Set up ALLOCNO_UPDATED_COVER_CLASS_COST.
+
+	* ira.c (ira):  Don't call ira_fast_allocation.
+
+	* ira-costs.c (setup_allocno_cover_class_and_costs): Don't set up
+	updated costs.
+	
+2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR middle-end/37813
 	* ira-conflicts.c (process_regs_for_copy): Remove class subset
 	check.

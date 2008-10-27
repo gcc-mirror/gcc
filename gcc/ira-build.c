@@ -469,6 +469,7 @@ ira_create_allocno (int regno, bool cap_p, ira_loop_tree_node_t loop_tree_node)
   ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (a) = NULL;
   ALLOCNO_LEFT_CONFLICTS_NUM (a) = -1;
   ALLOCNO_COVER_CLASS (a) = NO_REGS;
+  ALLOCNO_UPDATED_COVER_CLASS_COST (a) = 0;
   ALLOCNO_COVER_CLASS_COST (a) = 0;
   ALLOCNO_MEMORY_COST (a) = 0;
   ALLOCNO_UPDATED_MEMORY_COST (a) = 0;
@@ -769,7 +770,6 @@ create_cap_allocno (ira_allocno_t a)
   ALLOCNO_CAP (a) = cap;
   ALLOCNO_COVER_CLASS_COST (cap) = ALLOCNO_COVER_CLASS_COST (a);
   ALLOCNO_MEMORY_COST (cap) = ALLOCNO_MEMORY_COST (a);
-  ALLOCNO_UPDATED_MEMORY_COST (cap) = ALLOCNO_UPDATED_MEMORY_COST (a);
   ira_allocate_and_copy_costs
     (&ALLOCNO_HARD_REG_COSTS (cap), cover_class, ALLOCNO_HARD_REG_COSTS (a));
   ira_allocate_and_copy_costs
@@ -1509,8 +1509,6 @@ propagate_allocno_info (void)
 	  ALLOCNO_COVER_CLASS_COST (parent_a)
 	    += ALLOCNO_COVER_CLASS_COST (a);
 	  ALLOCNO_MEMORY_COST (parent_a) += ALLOCNO_MEMORY_COST (a);
-	  ALLOCNO_UPDATED_MEMORY_COST (parent_a)
-	    += ALLOCNO_UPDATED_MEMORY_COST (a);
 	}
 }
 
@@ -1789,8 +1787,6 @@ remove_unnecessary_allocnos (void)
 		ALLOCNO_COVER_CLASS_COST (parent_a)
 		  += ALLOCNO_COVER_CLASS_COST (a);
 		ALLOCNO_MEMORY_COST (parent_a) += ALLOCNO_MEMORY_COST (a);
-		ALLOCNO_UPDATED_MEMORY_COST (parent_a)
-		  += ALLOCNO_UPDATED_MEMORY_COST (a);
 		finish_allocno (a);
 	      }
 	  }
@@ -2353,7 +2349,9 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
       ALLOCNO_LOOP_TREE_NODE (a) = ira_loop_tree_root;
       ALLOCNO_REGNO (a) = REGNO (ALLOCNO_REG (a));
       ALLOCNO_CAP (a) = NULL;
+      /* Restore updated costs for assignments from reload.  */
       ALLOCNO_UPDATED_MEMORY_COST (a) = ALLOCNO_MEMORY_COST (a);
+      ALLOCNO_UPDATED_COVER_CLASS_COST (a) = ALLOCNO_COVER_CLASS_COST (a);
       if (! ALLOCNO_ASSIGNED_P (a))
 	ira_free_allocno_updated_costs (a);
       ira_assert (ALLOCNO_UPDATED_HARD_REG_COSTS (a) == NULL);

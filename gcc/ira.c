@@ -1792,10 +1792,7 @@ ira (FILE *f)
   loops_p = ira_build (optimize
 		       && (flag_ira_algorithm == IRA_ALGORITHM_REGIONAL
 			   || flag_ira_algorithm == IRA_ALGORITHM_MIXED));
-  if (optimize)
-    ira_color ();
-  else
-    ira_fast_allocation ();
+  ira_color ();
       
   ira_max_point_before_emit = ira_max_point;
       
