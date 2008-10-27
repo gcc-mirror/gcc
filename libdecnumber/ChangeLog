@@ -1,5 +1,6 @@
 2008-10-27  Janis Johnson  <janis187@us.ibm.com>
 
+	PR other/37897
 	* decDouble.h (decDouble): Replace struct with union accessible
 	by more types.
 	* decSingle.h (decSingle): Ditto.
