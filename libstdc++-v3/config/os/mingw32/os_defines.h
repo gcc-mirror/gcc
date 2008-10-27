@@ -1,6 +1,7 @@
 // Specific definitions for generic platforms  -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,5 +52,8 @@
 
 // See libstdc++/20806.
 #define _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM 1
+
+// See  libstdc++/37522.
+#define _GLIBCXX_HAVE_BROKEN_VSWPRINTF 1
 
 #endif

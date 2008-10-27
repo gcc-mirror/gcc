@@ -124,3 +124,12 @@ proc dg-require-nanosleep { args } {
     }
     return
 }
+
+proc dg-require-string-conversions { args } {
+    if { ![ check_v3_target_string_conversions ] } {
+        upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+        return
+    }
+    return
+}

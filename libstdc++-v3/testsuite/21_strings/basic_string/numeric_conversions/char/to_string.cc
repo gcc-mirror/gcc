@@ -1,4 +1,6 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
+
 // 2008-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
@@ -27,8 +29,6 @@
 void
 test01()
 {
-#ifdef _GLIBCXX_USE_C99
-
   bool test __attribute__((unused)) = true;
   using namespace std;
   
@@ -55,8 +55,6 @@ test01()
   long double ld2 = -4.0L;
   string six(to_string(ld2));
   VERIFY( six == "-4.000000" );
-
-#endif
 }
 
 int main()
