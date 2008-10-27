@@ -243,7 +243,7 @@ mark_reg_live (rtx reg)
 	  if (! TEST_HARD_REG_BIT (hard_regs_live, regno)
 	      && ! TEST_HARD_REG_BIT (eliminable_regset, regno))
 	    {
-	      cover_class = ira_class_translate[REGNO_REG_CLASS (regno)];
+	      cover_class = ira_hard_regno_cover_class[regno];
 	      if (cover_class != NO_REGS)
 		{
 		  curr_reg_pressure[cover_class]++;
@@ -308,7 +308,7 @@ mark_reg_dead (rtx reg)
 	{
 	  if (TEST_HARD_REG_BIT (hard_regs_live, regno))
 	    {
-	      cover_class = ira_class_translate[REGNO_REG_CLASS (regno)];
+	      cover_class = ira_hard_regno_cover_class[regno];
 	      if (cover_class != NO_REGS)
 		{
 		  curr_reg_pressure[cover_class]--;
@@ -794,10 +794,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  {
 	    enum reg_class cover_class;
 	    
-	    cover_class = REGNO_REG_CLASS (i);
+	    cover_class = ira_hard_regno_cover_class[i];
 	    if (cover_class == NO_REGS)
 	      continue;
-	    cover_class = ira_class_translate[cover_class];
 	    curr_reg_pressure[cover_class]++;
 	    if (curr_bb_node->reg_pressure[cover_class]
 		< curr_reg_pressure[cover_class])

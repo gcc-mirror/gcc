@@ -547,6 +547,11 @@ extern int ira_reg_cost, ira_mem_cost;
 extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
 
+/* Map: hard register number -> cover class it belongs to.  If the
+   corresponding class is NO_REGS, the hard register is not available
+   for allocation.  */
+extern enum reg_class ira_hard_regno_cover_class[FIRST_PSEUDO_REGISTER];
+
 /* Map: register class x machine mode -> number of hard registers of
    given class needed to store value of given mode.  If the number for
    some hard-registers of the register class is different, the size
