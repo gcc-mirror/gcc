@@ -540,7 +540,7 @@ fp_regs_to_save (void)
     return 0;
 
   for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
       ++n;
 
   return n;
@@ -617,7 +617,7 @@ mn10300_get_live_callee_saved_regs (void)
 
   mask = 0;
   for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
-    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
       mask |= (1 << i);
   if ((mask & 0x3c000) != 0)
     mask |= 0x3c000;
@@ -804,7 +804,7 @@ expand_prologue (void)
 	 frame pointer, size is nonzero and the user hasn't
 	 changed the calling conventions of a0.  */
       if (! frame_pointer_needed && size
-	  && call_used_regs[FIRST_ADDRESS_REGNUM]
+	  && call_really_used_regs [FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
@@ -828,7 +828,7 @@ expand_prologue (void)
 
       /* Consider alternative save_a0_no_merge if the user hasn't
 	 changed the calling conventions of a0.  */
-      if (call_used_regs[FIRST_ADDRESS_REGNUM]
+      if (call_really_used_regs [FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -4 * num_regs_to_save, sp.  */
@@ -910,7 +910,7 @@ expand_prologue (void)
 
       /* Now actually save the FP registers.  */
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
 	  {
 	    rtx addr;
 
@@ -1046,7 +1046,7 @@ expand_epilogue (void)
 
 	  /* Consider using a1 in post-increment mode, as long as the
 	     user hasn't changed the calling conventions of a1.  */
-	  if (call_used_regs[FIRST_ADDRESS_REGNUM+1]
+	  if (call_really_used_regs [FIRST_ADDRESS_REGNUM + 1]
 	      && ! fixed_regs[FIRST_ADDRESS_REGNUM+1])
 	    {
 	      /* Insn: mov sp,a1.  */
@@ -1114,7 +1114,7 @@ expand_epilogue (void)
 	reg = gen_rtx_POST_INC (SImode, reg);
 
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
 	  {
 	    rtx addr;
 
@@ -1687,7 +1687,7 @@ output_tst (rtx operand, rtx insn)
 	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) != EXTENDED_REGS
 	  && REGNO (SET_DEST (set)) != REGNO (operand)
 	  && (!past_call
-	      || !call_used_regs[REGNO (SET_DEST (set))]))
+	      || ! call_really_used_regs [REGNO (SET_DEST (set))]))
 	{
 	  rtx xoperands[2];
 	  xoperands[0] = operand;
@@ -1706,7 +1706,7 @@ output_tst (rtx operand, rtx insn)
 	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) == EXTENDED_REGS
 	  && REGNO (SET_DEST (set)) != REGNO (operand)
 	  && (!past_call
-	      || !call_used_regs[REGNO (SET_DEST (set))]))
+	      || ! call_really_used_regs [REGNO (SET_DEST (set))]))
 	{
 	  rtx xoperands[2];
 	  xoperands[0] = operand;
