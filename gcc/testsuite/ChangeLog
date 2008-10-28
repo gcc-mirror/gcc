@@ -1,3 +1,8 @@
+2008-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37931
+	* gcc.c-torture/execute/pr37931.c: New test.
+
 2008-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37879

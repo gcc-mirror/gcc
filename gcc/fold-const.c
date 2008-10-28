@@ -3806,6 +3806,9 @@ distribute_bit_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     return 0;
 
+  common = fold_convert (type, common);
+  left = fold_convert (type, left);
+  right = fold_convert (type, right);
   return fold_build2 (TREE_CODE (arg0), type, common,
 		      fold_build2 (code, type, left, right));
 }
