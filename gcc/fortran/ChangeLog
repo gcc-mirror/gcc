@@ -1,3 +1,7 @@
+2008-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi: Update OpenMP section for OMPv3.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check-f95-subtargets, check-fortran-subtargets): New
@@ -7,8 +11,8 @@
 
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37723
-        * dependency.c (gfc_dep_resolver ): If we find equal array
+	PR fortran/37723
+	* dependency.c (gfc_dep_resolver ): If we find equal array
 	element references, go on to the next reference.
 
 2008-10-16  Daniel Kraft  <d@domob.eu>
