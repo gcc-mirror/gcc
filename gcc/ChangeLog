@@ -1,3 +1,10 @@
+2008-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37924
+	* combine.c (make_compound_operation): Don't call make_extraction with
+	non-positive length.
+	(simplify_shift_const_1): Canonicalize count even if complement_p.
+
 2008-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* convert.c (strip_float_extensions): Do not remove or introduce
