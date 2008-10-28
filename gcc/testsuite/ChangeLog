@@ -1,3 +1,8 @@
+2008-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37924
+	* gcc.c-torture/execute/pr37924.c: New test.
+
 2008-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/dfp/convert-bfp-12.c: New test.
