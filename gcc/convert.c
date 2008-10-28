@@ -81,7 +81,7 @@ strip_float_extensions (tree exp)
       it properly and handle it like (type)(narrowest_type)constant.
       This way we can optimize for instance a=a*2.0 where "a" is float
       but 2.0 is double constant.  */
-  if (TREE_CODE (exp) == REAL_CST)
+  if (TREE_CODE (exp) == REAL_CST && !DECIMAL_FLOAT_TYPE_P (TREE_TYPE (exp)))
     {
       REAL_VALUE_TYPE orig;
       tree type = NULL;
@@ -106,6 +106,9 @@ strip_float_extensions (tree exp)
   expt = TREE_TYPE (exp);
 
   if (!FLOAT_TYPE_P (subt))
+    return exp;
+
+  if (DECIMAL_FLOAT_TYPE_P (expt) != DECIMAL_FLOAT_TYPE_P (subt))
     return exp;
 
   if (TYPE_PRECISION (subt) > TYPE_PRECISION (expt))
