@@ -1,3 +1,11 @@
+2008-10-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (CALL_REALLY_USED_REGISTERS): Define.
+	* config/mn10300/mn10300.c (fp_regs_to_save): Test the
+	call_really_used_regs array rather than the call_used_regs array.
+	(mn10300_get_live_callee_saved_regs, expand_prologue,
+	expand_epilogue, output_tst): Likewise.
+
 2008-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/37378
