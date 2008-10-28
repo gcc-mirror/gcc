@@ -11309,7 +11309,7 @@ defined.
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v2.5
+OpenMP Application Program Interface v3.0
 @end table
 
 
@@ -11322,8 +11322,8 @@ the named constants defined in the @code{OMP_LIB_KINDS} module are listed
 below.
 
 For details refer to the actual
-@uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
-OpenMP Application Program Interface v2.5}.
+@uref{http://www.openmp.org/mp-documents/spec30.pdf,
+OpenMP Application Program Interface v3.0}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
@@ -11333,4 +11333,5 @@ named constants:
 @item @code{omp_logical_kind}
 @item @code{omp_lock_kind}
 @item @code{omp_nest_lock_kind}
+@item @code{omp_sched_kind}
 @end table
