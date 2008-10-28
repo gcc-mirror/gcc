@@ -1,5 +1,8 @@
 2008-10-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/37663
+	* gcc.dg/pr37663.c: Require int32plus.
+
 	PR c/37924
 	* gcc.c-torture/execute/pr37924.c: New test.
 

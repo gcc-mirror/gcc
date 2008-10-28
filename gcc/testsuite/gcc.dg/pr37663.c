@@ -1,6 +1,7 @@
 /* PR tree-optimization/37663 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fwrapv" } */
+/* { dg-require-effective-target int32plus } */
 
 extern void bar (void);
 
