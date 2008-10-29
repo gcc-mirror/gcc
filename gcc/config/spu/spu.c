@@ -1759,8 +1759,8 @@ direct_return (void)
    The stack frame looks like this:
          +-------------+
          |  incoming   | 
-      AP |    args     | 
-         +-------------+
+         |    args     | 
+   AP -> +-------------+
          | $lr save    |
          +-------------+
  prev SP | back chain  | 
@@ -1770,10 +1770,10 @@ direct_return (void)
          +-------------+
          |    ...      | 
          | saved regs  | spu_saved_regs_size() bytes
-         +-------------+
+   FP -> +-------------+
          |    ...      | 
-      FP |   vars      | get_frame_size()  bytes
-         +-------------+
+         |   vars      | get_frame_size()  bytes
+  HFP -> +-------------+
          |    ...      | 
          |  outgoing   | 
          |    args     | crtl->outgoing_args_size bytes
@@ -1781,8 +1781,8 @@ direct_return (void)
          | $lr of next |
          |   frame     | 
          +-------------+
-      SP | back chain  | 
-         +-------------+
+         | back chain  | 
+   SP -> +-------------+
 
 */
 void
@@ -3671,15 +3671,16 @@ spu_initial_elimination_offset (int from, int to)
       || get_frame_size () || saved_regs_size)
     sp_offset = STACK_POINTER_OFFSET;
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (sp_offset + crtl->outgoing_args_size);
+    return get_frame_size () + crtl->outgoing_args_size + sp_offset;
   else if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return 0;
+    return get_frame_size ();
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return sp_offset + crtl->outgoing_args_size
       + get_frame_size () + saved_regs_size + STACK_POINTER_OFFSET;
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return get_frame_size () + saved_regs_size + sp_offset;
-  return 0;
+  else
+    gcc_unreachable ();
 }
 
 rtx
