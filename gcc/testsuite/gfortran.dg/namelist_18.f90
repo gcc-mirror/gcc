@@ -14,7 +14,7 @@ program namelist_18
   read (10, '(a)', iostat = ier) buffer
   if (ier .ne. 0) call abort ()
   close (10)
-  If ((buffer(5:5) /= "f") .or. (buffer(9:9) /= " ")) call abort () 
+  If ((buffer(6:6) /= "f") .or. (buffer(9:9) /= """")) call abort () 
 
   open (10, status = "scratch", delim ="quote")
   write (10, mynml)
