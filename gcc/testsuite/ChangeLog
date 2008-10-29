@@ -1,3 +1,10 @@
+2008-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/36578
+	* gcc.dg/dfp/convert-bfp-13.c, gcc.dg/dfp/convert-bfp-14.c,
+	gcc.dg/dfp/convert-dfp-fold-2.c, gcc.target/i386/pr36578-1.c,
+	gcc.target/i386/pr36578-2.c: New tests.
+
 2008-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37870
