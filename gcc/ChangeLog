@@ -1,3 +1,9 @@
+2008-10-29  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/32277
+	* libgcov.c ( __gcov_indirect_call_profiler): Check
+	TARGET_VTABLE_USES_DESCRIPTORS.
+
 2008-10-29  Stefan Schulze Frielinghaus  <xxschulz@de.ibm.com>
 
 	* config/spu/spu.h (FRAME_GROWS_DOWNWARD): Define.
