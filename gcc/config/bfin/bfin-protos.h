@@ -75,6 +75,17 @@ extern unsigned int bfin_workarounds;
 #define ENABLE_WA_RETS \
   (bfin_workarounds & WA_RETS)
 
+#define WA_05000257 0x00000040
+#define ENABLE_WA_05000257 \
+  (bfin_workarounds & WA_05000257)
+
+#define WA_05000283 0x00000010
+#define ENABLE_WA_05000283 \
+  (bfin_workarounds & WA_05000283)
+
+#define WA_05000315 0x00000020
+#define ENABLE_WA_05000315 \
+  (bfin_workarounds & WA_05000315)
 
 #define Mmode enum machine_mode
 
