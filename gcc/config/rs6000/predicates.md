@@ -373,11 +373,23 @@
 
 ;; Return 1 if the operand is a memory operand with an address divisible by 4
 (define_predicate "word_offset_memref_operand"
-  (and (match_operand 0 "memory_operand")
-       (match_test "GET_CODE (XEXP (op, 0)) != PLUS
-		    || ! REG_P (XEXP (XEXP (op, 0), 0)) 
-		    || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT
-		    || INTVAL (XEXP (XEXP (op, 0), 1)) % 4 == 0")))
+  (match_operand 0 "memory_operand")
+{
+  /* Address inside MEM.  */
+  op = XEXP (op, 0);
+
+  /* Extract address from auto-inc/dec.  */
+  if (GET_CODE (op) == PRE_INC
+      || GET_CODE (op) == PRE_DEC)
+    op = XEXP (op, 0);
+  else if (GET_CODE (op) == PRE_MODIFY)
+    op = XEXP (op, 1);
+
+  return (GET_CODE (op) != PLUS
+	  || ! REG_P (XEXP (op, 0))
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT
+	  || INTVAL (XEXP (op, 1)) % 4 == 0);
+})
 
 ;; Return 1 if the operand is an indexed or indirect memory operand.
 (define_predicate "indexed_or_indirect_operand"

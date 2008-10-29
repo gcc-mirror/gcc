@@ -1,3 +1,9 @@
+2008-10-29  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/37878
+	* config/rs6000/predicates.md (word_offset_memref_operand):
+	Restructure code and look inside auto-inc/dec addresses.
+	
 2008-10-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32277
