@@ -937,52 +937,8 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     default:
       if (dtp->u.p.namelist_mode)
 	{
-	  if (dtp->u.p.current_unit->flags.delim == DELIM_APOSTROPHE
-	      || dtp->u.p.current_unit->flags.delim == DELIM_QUOTE
-	      || c == '&' || c == '$' || c == '/')
-	    {
-	      unget_char (dtp, c);
-	      return;
-	    }
-
-	  /* Check to see if we are seeing a namelist object name by using the
-	     line buffer and looking ahead for an '=' or '('.  */
-	  l_push_char (dtp, c);
-
-	  int i;
-	  for(i = 0; i < 63; i++)
-	    {
-	      c = next_char (dtp);
-	      if (is_separator(c))
-		{
-		  unget_char (dtp, c);
-		  eat_separator (dtp);
-		  c = next_char (dtp);
-		  if (c != '=')
-		    {
-		      l_push_char (dtp, c);
-		      dtp->u.p.item_count = 0;
-		      dtp->u.p.line_buffer_enabled = 1;
-		      goto get_string;
-		    }
-		}
-
-	      l_push_char (dtp, c);
-
-	      if (c == '=' || c == '(')
-		{
-		  dtp->u.p.item_count = 0;
-		  dtp->u.p.nml_read_error = 1;
-		  dtp->u.p.line_buffer_enabled = 1;
-		  return;
-		}
-	    }
-
-	  /* The string is too long to be a valid object name so assume that it
-	     is a string to be read in as a value.  */
-	  dtp->u.p.item_count = 0;
-	  dtp->u.p.line_buffer_enabled = 1;
-	  goto get_string;
+	  unget_char (dtp, c);
+	  return;
 	}
 
       push_char (dtp, c);
