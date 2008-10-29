@@ -1,3 +1,8 @@
+2008-10-29  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/37339
+	* gcc.dg/pr33545-3.c: Remove.
+
 2008-10-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 11492
