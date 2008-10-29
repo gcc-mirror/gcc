@@ -1,3 +1,20 @@
+2008-10-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+	
+	* config/bfin/bfin-protos.h (WA_05000257, WA_05000283, WA_05000315,
+	ENABLE_WA_05000257, ENABLE_WA_05000283, ENABLE_WA_05000315): New.
+	* config/bfin/bfin.c (bfin_cpus): Add these workaround bits as
+	appropriate.
+	(must_save_p): For some workarounds, interrupts need to clobber a
+	P register.
+	(expand_prologue_reg_save, expand_epilogue_reg_restore): Save LC0
+	and LC1 for WA_05000257.
+	(expand_interrupt_handler_prologue): Add dummy read of CHIPID for
+	WA_05000283 and WA_05000315.
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_DUMMY): New constant.
+	(movbi): Add alternative to set CC to 1; improve code for setting
+	CC to 0.
+	(dummy_load): New pattern.
+
 2008-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37870

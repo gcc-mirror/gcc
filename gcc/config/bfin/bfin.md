@@ -145,7 +145,8 @@
    (UNSPEC_VOLATILE_CSYNC 1)
    (UNSPEC_VOLATILE_SSYNC 2)
    (UNSPEC_VOLATILE_LOAD_FUNCDESC 3)
-   (UNSPEC_VOLATILE_STORE_EH_HANDLER 4)])
+   (UNSPEC_VOLATILE_STORE_EH_HANDLER 4)
+   (UNSPEC_VOLATILE_DUMMY 5)])
 
 (define_constants
   [(MACFLAG_NONE 0)
@@ -458,8 +459,8 @@
 })
 
 (define_insn "movbi"
-  [(set (match_operand:BI 0 "nonimmediate_operand" "=x,x,d,md,C,d,C")
-        (match_operand:BI 1 "general_operand" "x,xKs3,md,d,d,C,P0"))]
+  [(set (match_operand:BI 0 "nonimmediate_operand" "=x,x,d,md,C,d,C,P1")
+        (match_operand:BI 1 "general_operand" "x,xKs3,md,d,d,C,P0,P1"))]
 
   ""
   "@
@@ -469,10 +470,11 @@
    B %0 = %1;
    CC = %1;
    %0 = CC;
-   R0 = R0 | R0; CC = AC0;"
-  [(set_attr "type" "move,mvi,mcld,mcst,compare,compare,alu0")
-   (set_attr "length" "2,2,*,*,2,2,4")
-   (set_attr "seq_insns" "*,*,*,*,*,*,multi")])
+   CC = R0 < R0;
+   CC = R0 == R0;"
+  [(set_attr "type" "move,mvi,mcld,mcst,compare,compare,compare,compare")
+   (set_attr "length" "2,2,*,*,2,2,2,2")
+   (set_attr "seq_insns" "*,*,*,*,*,*,*,*")])
 
 (define_insn "movpdi"
   [(set (match_operand:PDI 0 "nonimmediate_operand" "=e,<,e")
@@ -2825,6 +2827,16 @@
     }
   gcc_unreachable ();
 })
+
+(define_insn "dummy_load"
+  [(unspec_volatile [(match_operand 0 "register_operand" "a")
+		     (match_operand 1 "register_operand" "C")]
+		    UNSPEC_VOLATILE_DUMMY)]
+  ""
+  "if cc jump 4;\n\tr7 = [%0];"
+ [(set_attr "type" "misc")
+  (set_attr "length" "4")
+  (set_attr "seq_insns" "multi")])
 
 (define_insn "csync"
   [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_CSYNC)]
