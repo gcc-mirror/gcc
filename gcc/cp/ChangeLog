@@ -1,3 +1,11 @@
+2008-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/26997
+	* parser.c (cp_parser_token_starts_cast_expression): New.
+	(cp_parser_cast_expression): Peek the next token to decide whether
+	this could be a parenthesized constructor or is definitely an
+	actual cast.
+
 2008-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/7543
