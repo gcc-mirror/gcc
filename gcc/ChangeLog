@@ -1,5 +1,10 @@
 2008-10-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37870
+	* expmed.c (extract_bit_field_1): If int_mode_for_mode returns
+	BLKmode for non-memory, convert using a wider MODE_INT mode
+	or through memory.
+
 	PR middle-end/37913
 	* tree-cfgcleanup.c (split_bbs_on_noreturn_calls): Only split bbs
 	that haven't been removed yet.
