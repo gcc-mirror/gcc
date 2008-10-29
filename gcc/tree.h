@@ -4022,6 +4022,7 @@ extern HOST_WIDE_INT tree_low_cst (const_tree, int);
 extern int tree_int_cst_msb (const_tree);
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
+extern unsigned int tree_int_cst_min_precision (tree, bool);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (const_tree);

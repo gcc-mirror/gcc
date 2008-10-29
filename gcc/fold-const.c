@@ -14016,15 +14016,38 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
       /* zero_extend(x) * zero_extend(y) is non-negative if x and y are
 	 both unsigned and their total bits is shorter than the result.  */
       if (TREE_CODE (type) == INTEGER_TYPE
-	  && TREE_CODE (op0) == NOP_EXPR
-	  && TREE_CODE (op1) == NOP_EXPR)
+	  && (TREE_CODE (op0) == NOP_EXPR || TREE_CODE (op0) == INTEGER_CST)
+	  && (TREE_CODE (op1) == NOP_EXPR || TREE_CODE (op1) == INTEGER_CST))
 	{
-	  tree inner1 = TREE_TYPE (TREE_OPERAND (op0, 0));
-	  tree inner2 = TREE_TYPE (TREE_OPERAND (op1, 0));
-	  if (TREE_CODE (inner1) == INTEGER_TYPE && TYPE_UNSIGNED (inner1)
-	      && TREE_CODE (inner2) == INTEGER_TYPE && TYPE_UNSIGNED (inner2))
-	    return TYPE_PRECISION (inner1) + TYPE_PRECISION (inner2)
-		   < TYPE_PRECISION (type);
+	  tree inner0 = (TREE_CODE (op0) == NOP_EXPR) 
+	    ? TREE_TYPE (TREE_OPERAND (op0, 0))
+	    : TREE_TYPE (op0);
+	  tree inner1 = (TREE_CODE (op1) == NOP_EXPR) 
+	    ? TREE_TYPE (TREE_OPERAND (op1, 0))
+	    : TREE_TYPE (op1);
+
+	  bool unsigned0 = TYPE_UNSIGNED (inner0);
+	  bool unsigned1 = TYPE_UNSIGNED (inner1);
+
+	  if (TREE_CODE (op0) == INTEGER_CST)
+	    unsigned0 = unsigned0 || tree_int_cst_sgn (op0) >= 0;
+
+	  if (TREE_CODE (op1) == INTEGER_CST)
+	    unsigned1 = unsigned1 || tree_int_cst_sgn (op1) >= 0;
+
+	  if (TREE_CODE (inner0) == INTEGER_TYPE && unsigned0
+	      && TREE_CODE (inner1) == INTEGER_TYPE && unsigned1)
+	    {
+	      unsigned int precision0 = (TREE_CODE (op0) == INTEGER_CST)
+		? tree_int_cst_min_precision (op0, /*unsignedp=*/true)
+		: TYPE_PRECISION (inner0);
+
+	      unsigned int precision1 = (TREE_CODE (op1) == INTEGER_CST)
+		? tree_int_cst_min_precision (op1, /*unsignedp=*/true)
+		: TYPE_PRECISION (inner1);
+
+	      return precision0 + precision1 < TYPE_PRECISION (type);
+	    }
 	}
       return false;
 

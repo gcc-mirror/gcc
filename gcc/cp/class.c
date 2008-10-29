@@ -2728,10 +2728,11 @@ check_bitfield_decl (tree field)
 	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > compare_tree_int (w,
-					 min_precision (TYPE_MIN_VALUE (type),
-							TYPE_UNSIGNED (type)))
+					 tree_int_cst_min_precision
+					 (TYPE_MIN_VALUE (type),
+					  TYPE_UNSIGNED (type)))
 		   ||  0 > compare_tree_int (w,
-					     min_precision
+					     tree_int_cst_min_precision
 					     (TYPE_MAX_VALUE (type),
 					      TYPE_UNSIGNED (type)))))
 	warning (0, "%q+D is too small to hold all values of %q#T", field, type);

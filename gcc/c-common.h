@@ -746,7 +746,6 @@ extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwis
 extern tree shorten_compare (tree *, tree *, tree *, enum tree_code *);
 
 extern tree pointer_int_sum (enum tree_code, tree, tree);
-extern unsigned int min_precision (tree, int);
 
 /* Add qualifiers to a type, in the fashion for C.  */
 extern tree c_build_qualified_type (tree, int);

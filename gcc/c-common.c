@@ -2795,34 +2795,6 @@ c_register_builtin_type (tree type, const char* name)
 
   registered_builtin_types = tree_cons (0, type, registered_builtin_types);
 }
-
-
-/* Return the minimum number of bits needed to represent VALUE in a
-   signed or unsigned type, UNSIGNEDP says which.  */
-
-unsigned int
-min_precision (tree value, int unsignedp)
-{
-  int log;
-
-  /* If the value is negative, compute its negative minus 1.  The latter
-     adjustment is because the absolute value of the largest negative value
-     is one larger than the largest positive value.  This is equivalent to
-     a bit-wise negation, so use that operation instead.  */
-
-  if (tree_int_cst_sgn (value) < 0)
-    value = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (value), value);
-
-  /* Return the number of bits needed, taking into account the fact
-     that we need one more bit for a signed than unsigned type.  */
-
-  if (integer_zerop (value))
-    log = 0;
-  else
-    log = tree_floor_log2 (value);
-
-  return log + 1 + !unsignedp;
-}
 
 /* Print an error message for invalid operands to arith operation
    CODE with TYPE0 for operand 0, and TYPE1 for operand 1.

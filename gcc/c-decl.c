@@ -3869,8 +3869,8 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
     {
       struct lang_type *lt = TYPE_LANG_SPECIFIC (*type);
       if (!lt
-	  || w < min_precision (lt->enum_min, TYPE_UNSIGNED (*type))
-	  || w < min_precision (lt->enum_max, TYPE_UNSIGNED (*type)))
+	  || w < tree_int_cst_min_precision (lt->enum_min, TYPE_UNSIGNED (*type))
+	  || w < tree_int_cst_min_precision (lt->enum_max, TYPE_UNSIGNED (*type)))
 	warning (0, "%qs is narrower than values of its type", name);
     }
 }
@@ -5866,8 +5866,8 @@ finish_enum (tree enumtype, tree values, tree attributes)
      that normally we only go as narrow as int - and signed iff any of
      the values are negative.  */
   unsign = (tree_int_cst_sgn (minnode) >= 0);
-  precision = MAX (min_precision (minnode, unsign),
-		   min_precision (maxnode, unsign));
+  precision = MAX (tree_int_cst_min_precision (minnode, unsign),
+		   tree_int_cst_min_precision (maxnode, unsign));
 
   if (TYPE_PACKED (enumtype) || precision > TYPE_PRECISION (integer_type_node))
     {

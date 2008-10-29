@@ -1,3 +1,10 @@
+2008-10-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 11492
+	* class.c (check_bitfield_decl): Rename min_precision to
+	tree_int_cst_min_precision.
+	* decl.c (finish_enum): Likewise.
+
 2008-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/26997
