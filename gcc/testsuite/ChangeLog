@@ -1,3 +1,8 @@
+2008-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/26997
+	* g++.dg/parse/pr26997.C: New.
+
 2008-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37913
