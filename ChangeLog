@@ -1,3 +1,7 @@
+2008-10-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself to reload.
+
 2008-10-25  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (Various Maintainers): Add myself as middle-end
