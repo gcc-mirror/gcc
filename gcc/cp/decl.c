@@ -10967,11 +10967,11 @@ finish_enum (tree enumtype)
 
   /* Compute the number of bits require to represent all values of the
      enumeration.  We must do this before the type of MINNODE and
-     MAXNODE are transformed, since min_precision relies on the
-     TREE_TYPE of the value it is passed.  */
+     MAXNODE are transformed, since tree_int_cst_min_precision relies
+     on the TREE_TYPE of the value it is passed.  */
   unsignedp = tree_int_cst_sgn (minnode) >= 0;
-  lowprec = min_precision (minnode, unsignedp);
-  highprec = min_precision (maxnode, unsignedp);
+  lowprec = tree_int_cst_min_precision (minnode, unsignedp);
+  highprec = tree_int_cst_min_precision (maxnode, unsignedp);
   precision = MAX (lowprec, highprec);
 
   if (!fixed_underlying_type_p)

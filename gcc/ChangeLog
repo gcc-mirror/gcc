@@ -1,3 +1,16 @@
+2008-10-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 11492
+	* c-common.c (min_precision): Move to...
+	* tree.c (tree_int_cst_min_precision): ... to here. Renamed.
+	* tree.h (tree_int_cst_min_precision): Declare.
+	* c-common.h (min_precision): Delete declaration.
+	* fold-const.c (tree_binary_nonnegative_warnv_p): Handle
+	multiplication of non-negative integer constants.
+	* c-decl.c (check_bitfield_type_and_width): Rename min_precision to
+	tree_int_cst_min_precision.
+	(finish_enum): Likewise.
+
 2008-10-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/36578
