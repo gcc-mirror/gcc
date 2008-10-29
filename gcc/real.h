@@ -438,6 +438,11 @@ extern rtx const_double_from_real_value (REAL_VALUE_TYPE, enum machine_mode);
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
 extern bool exact_real_inverse (enum machine_mode, REAL_VALUE_TYPE *);
 
+/* Return true if arithmetic on values in IMODE that were promoted
+   from values in TMODE is equivalent to direct arithmetic on values
+   in TMODE.  */
+bool real_can_shorten_arithmetic (enum machine_mode, enum machine_mode);
+
 /* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
 extern tree build_real (tree, REAL_VALUE_TYPE);
 
