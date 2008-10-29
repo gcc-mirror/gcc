@@ -1,4 +1,4 @@
-2008-10-28  Jakub Jelinek  <jakub@redhat.com>
+2008-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37913
 	* gcc.c-torture/compile/pr37913.c: New test.
