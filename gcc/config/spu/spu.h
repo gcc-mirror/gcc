@@ -251,6 +251,8 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define STACK_GROWS_DOWNWARD
 
+#define FRAME_GROWS_DOWNWARD 1
+
 #define STARTING_FRAME_OFFSET (0)
 
 #define STACK_POINTER_OFFSET 32
@@ -311,8 +313,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 /* Elimination */
 
 #define FRAME_POINTER_REQUIRED 0
-
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) ((DEPTH) = 0)
 
 #define ELIMINABLE_REGS  \
   {{ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM},				\

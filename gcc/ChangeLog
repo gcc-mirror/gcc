@@ -1,3 +1,13 @@
+2008-10-29  Stefan Schulze Frielinghaus  <xxschulz@de.ibm.com>
+
+	* config/spu/spu.h (FRAME_GROWS_DOWNWARD): Define.
+	(INITIAL_FRAME_POINTER_OFFSET): Remove.
+	* config/spu/spu.c (spu_initial_elimination_offset): Calculate new
+	offset if eliminating soft frame pointer.
+	* config/spu/spu.md (stack_protect_set, stack_protect_test)
+	(stack_protect_test_si): Add initial machine description
+	for Stack Smashing Protector
+
 2008-10-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 11492
