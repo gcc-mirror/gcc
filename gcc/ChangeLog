@@ -1,3 +1,13 @@
+2008-10-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (struct machine_function): New member
+	has_loopreg_clobber.
+	(bfin_expand_movmem): Set it when generating memcpy insns.
+	(n_regs_saved_by_prologue, expand_prologue_reg_save,
+	expand_epilogue_reg_restore): If we have hardware loops,
+	memcpy insns (indicated by has_loopreg_clobber) or function
+	calls, we need to save the loop registers.
+
 2008-10-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (core2_cost): Fix typos in comments.
