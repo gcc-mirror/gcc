@@ -60,7 +60,11 @@
    This is added to the cfun structure.  */
 struct machine_function GTY(())
 {
+  /* Set if we are notified by the doloop pass that a hardware loop
+     was created.  */
   int has_hardware_loops;
+  /* Set if we create a memcpy pattern that uses loop registers.  */
+  int has_loopreg_clobber;
 };
 
 /* Test and compare insns in bfin.md store the information needed to
@@ -544,7 +548,16 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
   if (saveall || is_inthandler)
     {
       rtx insn = emit_move_insn (predec, gen_rtx_REG (SImode, REG_ASTAT));
+
       RTX_FRAME_RELATED_P (insn) = 1;
+      if (! current_function_is_leaf
+	  || cfun->machine->has_hardware_loops
+	  || cfun->machine->has_loopreg_clobber)
+	for (dregno = REG_LT0; dregno <= REG_LB1; dregno++)
+	  {
+	    insn = emit_move_insn (predec, gen_rtx_REG (SImode, dregno));
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	  }
     }
 
   if (total_consec != 0)
@@ -714,7 +727,15 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   if (saveall || is_inthandler)
-    emit_move_insn (gen_rtx_REG (SImode, REG_ASTAT), postinc);
+    {
+      if (! current_function_is_leaf
+	  || cfun->machine->has_hardware_loops
+	  || cfun->machine->has_loopreg_clobber)
+	for (regno = REG_LB1; regno >= REG_LT0; regno--)
+	  emit_move_insn (gen_rtx_REG (SImode, regno), postinc);
+
+      emit_move_insn (gen_rtx_REG (SImode, REG_ASTAT), postinc);
+    }
 }
 
 /* Perform any needed actions needed for a function that is receiving a
@@ -813,8 +834,16 @@ n_regs_saved_by_prologue (void)
     }
 
   if (fkind != SUBROUTINE || all)
-    /* Increment once for ASTAT.  */
-    n++;
+    {
+      /* Increment once for ASTAT.  */
+      n++;
+      if (! current_function_is_leaf
+	  || cfun->machine->has_hardware_loops
+	  || cfun->machine->has_loopreg_clobber)
+	{
+	  n += 6;
+	}
+    }
 
   if (fkind != SUBROUTINE)
     {
@@ -3398,6 +3427,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	      countreg = copy_to_mode_reg (Pmode, GEN_INT (new_count));
 
 	      emit_insn (gen_rep_movsi (destreg, srcreg, countreg, destreg, srcreg));
+	      cfun->machine->has_loopreg_clobber = true;
 	    }
 	  if (count & 2)
 	    {
@@ -3418,6 +3448,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	      countreg = copy_to_mode_reg (Pmode, GEN_INT (new_count));
 
 	      emit_insn (gen_rep_movhi (destreg, srcreg, countreg, destreg, srcreg));
+	      cfun->machine->has_loopreg_clobber = true;
 	    }
 	}
       if (count & 1)
