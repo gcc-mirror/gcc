@@ -483,7 +483,12 @@ split_bbs_on_noreturn_calls (void)
       {
 	stmt = VEC_pop (gimple, MODIFIED_NORETURN_CALLS (cfun));
 	bb = gimple_bb (stmt);
+	/* BB might be deleted at this point, so verify first
+	   BB is present in the cfg.  */
 	if (bb == NULL
+	    || bb->index < NUM_FIXED_BLOCKS
+	    || bb->index >= n_basic_blocks
+	    || BASIC_BLOCK (bb->index) != bb
 	    || last_stmt (bb) == stmt
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;

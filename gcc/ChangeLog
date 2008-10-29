@@ -1,3 +1,9 @@
+2008-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37913
+	* tree-cfgcleanup.c (split_bbs_on_noreturn_calls): Only split bbs
+	that haven't been removed yet.
+
 2008-10-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (struct machine_function): New member
