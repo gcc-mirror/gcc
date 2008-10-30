@@ -1,5 +1,8 @@
 2008-10-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/s390/pr36822.c: Avoid cast to pointer from integer
+	of different size warning with -m31.
+
 	PR middle-end/37730
 	* gcc.dg/vect/pr37730.c: New test.
 
