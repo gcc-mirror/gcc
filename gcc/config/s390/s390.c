@@ -6664,6 +6664,24 @@ s390_chunkify_cancel (struct constant_pool *pool_list)
     }
 }
 
+/* Helper rtx-iteration-function for s390_output_pool_entry.  Marks
+   SYMBOL_REFs as referenced through use of assemble_external.  */
+
+static int
+s390_mark_symbol_ref_as_used (rtx *x, void *dummy ATTRIBUTE_UNUSED)
+{
+  /* If we have a used symbol, we may have to emit assembly
+     annotations corresponding to whether the symbol is external, weak
+     or has non-default visibility.  */
+  if (GET_CODE (*x) == SYMBOL_REF)
+    {
+      tree t = SYMBOL_REF_DECL (*x);
+      if (t)
+        assemble_external (t);
+      return -1;
+    }
+  return 0;
+}
 
 /* Output the constant pool entry EXP in mode MODE with alignment ALIGN.  */
 
@@ -6684,6 +6702,7 @@ s390_output_pool_entry (rtx exp, enum machine_mode mode, unsigned int align)
 
     case MODE_INT:
       assemble_integer (exp, GET_MODE_SIZE (mode), align, 1);
+      for_each_rtx (&exp, s390_mark_symbol_ref_as_used, NULL);
       break;
 
     default:

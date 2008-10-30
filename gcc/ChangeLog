@@ -1,5 +1,8 @@
 2008-10-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/s390/s390.c (s390_mark_symbol_ref_as_used): New function.
+	(s390_output_pool_entry): Call it through for_each_rtx.
+
 	PR middle-end/37730
 	* expr.c (store_constructor): For vectors, if target is a MEM, use
 	target's MEM_ALIAS_SET instead of elttype alias set.
