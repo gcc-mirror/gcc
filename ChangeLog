@@ -1,3 +1,8 @@
+2008-10-31  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac (spu-*-*): Remove special case.
+	* configure: Regenerate.
+
 2008-10-30  Catherine Moore  <clm@codesourcery.com>
 
 	* MAINTAINERS (Write after approval): Update my email address.
