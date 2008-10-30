@@ -1,3 +1,9 @@
+2008-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36668
+	* g++.dg/other/PR23205.C: Allow foobar to be defined as variable.
+	* g++.dg/other/pr23205-2.C: New test.
+
 2008-10-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.c-torture/compile/pr37878.c: New test.
