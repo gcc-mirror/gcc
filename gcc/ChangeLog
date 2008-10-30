@@ -1,3 +1,9 @@
+2008-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37730
+	* expr.c (store_constructor): For vectors, if target is a MEM, use
+	target's MEM_ALIAS_SET instead of elttype alias set.
+
 2008-10-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/37909
