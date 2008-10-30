@@ -51,7 +51,7 @@ struct spec_function
   || !strcmp (STR, "isysroot") \
   || !strcmp (STR, "-param") || !strcmp (STR, "specs") \
   || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ") \
-  || !strcmp (STR, "fintrinsic-modules-path"))
+  || !strcmp (STR, "fintrinsic-modules-path") || !strcmp (STR, "dumpbase"))
 
 
 /* These are exported by gcc.c.  */

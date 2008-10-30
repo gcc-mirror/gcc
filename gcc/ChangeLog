@@ -1,3 +1,8 @@
+2008-10-28  Luis Machado  <luisgpm@br.ibm.com>
+
+	* gcc.h (DEFAULT_WORD_SWITCH_TAKES_ARG): Add "dumpbase" to the
+	list of word switches that take args.
+
 2008-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (s390_mark_symbol_ref_as_used): New function.
