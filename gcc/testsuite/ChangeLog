@@ -1,4 +1,9 @@
-2008-10-16  Mikael Morin  <mikael.morin@tele2.fr>
+2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35840
+	* gfortran.dg/write_check4.f90: New test.
+
+2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35820
 	* gfortran.dg/nested_forall_1.f: New test.

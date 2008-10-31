@@ -1,5 +1,15 @@
 2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
 
+	PR fortran/35840
+	* expr.c (gfc_reduce_init_expr): New function, containing checking code
+	from gfc_match_init_expr, so that checking can be deferred. 
+	(gfc_match_init_expr): Use gfc_reduce_init_expr.
+	* io.c (check_io_constraints): Use gfc_reduce_init_expr instead of 
+	checking that the expression is a constant. 
+	* match.h (gfc_reduce_init_expr): Prototype added. 
+
+2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
+
 	PR fortran/35820
 	* resolve.c (gfc_count_forall_iterators): New function.
 	(gfc_resolve_forall): Use gfc_count_forall_iterators to evaluate 
