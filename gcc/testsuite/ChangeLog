@@ -1,3 +1,8 @@
+2008-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37965
+	* g++.dg/cpp0x/auto7.C: New test.
+
 2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35840
