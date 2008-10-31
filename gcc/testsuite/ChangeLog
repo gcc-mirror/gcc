@@ -1,3 +1,10 @@
+<<<<<<< .mine
+2008-10-30  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/37930
+	* gfortran.dg/int_conv_2.f90:  New test.
+
+=======
 2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
 
         PR fortran/37903
@@ -8,6 +15,7 @@
         PR fortran/37749
         * gfortran.dg/vector_subscript__5.f90: New test.
 
+>>>>>>> .r141488
 2008-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/s390/pr36822.c: Avoid cast to pointer from integer
