@@ -2378,6 +2378,41 @@ check_init_expr (gfc_expr *e)
   return t;
 }
 
+/* Reduces a general expression to an initialization expression (a constant).
+   This used to be part of gfc_match_init_expr.
+   Note that this function doesn't free the given expression on FAILURE.  */
+
+gfc_try
+gfc_reduce_init_expr (gfc_expr *expr)
+{
+  gfc_try t;
+
+  gfc_init_expr = 1;
+  t = gfc_resolve_expr (expr);
+  if (t == SUCCESS)
+    t = check_init_expr (expr);
+  gfc_init_expr = 0;
+
+  if (t == FAILURE)
+    return FAILURE;
+
+  if (expr->expr_type == EXPR_ARRAY
+      && (gfc_check_constructor_type (expr) == FAILURE
+      || gfc_expand_constructor (expr) == FAILURE))
+    return FAILURE;
+
+  /* Not all inquiry functions are simplified to constant expressions
+     so it is necessary to call check_inquiry again.  */ 
+  if (!gfc_is_constant_expr (expr) && check_inquiry (expr, 1) != MATCH_YES
+      && !gfc_in_match_data ())
+    {
+      gfc_error ("Initialization expression didn't reduce %C");
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
 
 /* Match an initialization expression.  We work by first matching an
    expression, then reducing it to a constant.  */
@@ -2389,36 +2424,16 @@ gfc_match_init_expr (gfc_expr **result)
   match m;
   gfc_try t;
 
+  expr = NULL;
+
   m = gfc_match_expr (&expr);
   if (m != MATCH_YES)
     return m;
 
-  gfc_init_expr = 1;
-  t = gfc_resolve_expr (expr);
-  if (t == SUCCESS)
-    t = check_init_expr (expr);
-  gfc_init_expr = 0;
-
-  if (t == FAILURE)
+  t = gfc_reduce_init_expr (expr);
+  if (t != SUCCESS)
     {
       gfc_free_expr (expr);
-      return MATCH_ERROR;
-    }
-
-  if (expr->expr_type == EXPR_ARRAY
-      && (gfc_check_constructor_type (expr) == FAILURE
-	  || gfc_expand_constructor (expr) == FAILURE))
-    {
-      gfc_free_expr (expr);
-      return MATCH_ERROR;
-    }
-
-  /* Not all inquiry functions are simplified to constant expressions
-     so it is necessary to call check_inquiry again.  */ 
-  if (!gfc_is_constant_expr (expr) && check_inquiry (expr, 1) != MATCH_YES
-      && !gfc_in_match_data ())
-    {
-      gfc_error ("Initialization expression didn't reduce %C");
       return MATCH_ERROR;
     }
 

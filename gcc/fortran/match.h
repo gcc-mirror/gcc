@@ -199,6 +199,7 @@ match gfc_match_literal_constant (gfc_expr **, int);
 /* expr.c -- FIXME: this one should be eliminated by moving the
    matcher to matchexp.c and a call to a new function in expr.c that
    only makes sure the init expr. is valid.  */
+gfc_try gfc_reduce_init_expr (gfc_expr *expr);
 match gfc_match_init_expr (gfc_expr **);
 
 /* array.c.  */

@@ -2973,7 +2973,7 @@ if (condition) \
     {
       static const char * asynchronous[] = { "YES", "NO", NULL };
 
-      if (dt->asynchronous->expr_type != EXPR_CONSTANT)
+      if (gfc_reduce_init_expr (dt->asynchronous) != SUCCESS)
 	{
 	  gfc_error ("ASYNCHRONOUS= specifier at %L must be an initialization "
 		     "expression", &dt->asynchronous->where);
