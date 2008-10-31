@@ -3785,6 +3785,10 @@ untangle_mova (int *num_mova, rtx *first_mova, rtx new_mova)
 
   if (optimize)
     {
+      /* If NEW_MOVA has no address yet, it will be handled later.  */
+      if (INSN_ADDRESSES_SIZE() <= (unsigned) INSN_UID (new_mova))
+	return -1;
+
       n_addr = INSN_ADDRESSES (INSN_UID (new_mova));
       n_target = INSN_ADDRESSES (INSN_UID (XEXP (MOVA_LABELREF (new_mova), 0)));
       if (n_addr > n_target || n_addr + 1022 < n_target)
