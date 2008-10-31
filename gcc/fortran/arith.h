@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 /* MPFR also does not have the conversion of a mpfr_t to a mpz_t, so declare
    a function for this as well.  */
 
-void gfc_mpfr_to_mpz (mpz_t, mpfr_t);
+void gfc_mpfr_to_mpz (mpz_t, mpfr_t, locus *);
 void gfc_set_model_kind (int);
 void gfc_set_model (mpfr_t);
 
