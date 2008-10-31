@@ -12382,6 +12382,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)/$(OS)
+@CREATE_JAVA_HOME_TRUE@	set -x ;
 @CREATE_JAVA_HOME_TRUE@	relative() { \
 @CREATE_JAVA_HOME_TRUE@	  $(PERL) -e 'use File::Spec; \
 @CREATE_JAVA_HOME_TRUE@	    print File::Spec->abs2rel($$ARGV[0], $$ARGV[1])' $$1 $$2; \
@@ -12433,11 +12434,15 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	version=$(JAVA_VERSION).$(BUILD_VERSION); \
 @CREATE_JAVA_HOME_TRUE@	working_dir=`pwd`; \
 @CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JVM_JAR_DIR); \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$(JRE_LIB_DIR) \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(JVM_JAR_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
 @CREATE_JAVA_HOME_TRUE@	    jndi-ldap jndi-rmi jsse sasl; \
 @CREATE_JAVA_HOME_TRUE@	  do \
-@CREATE_JAVA_HOME_TRUE@	    ln -s $$RELATIVE/$$jarname.jar $$jarname-$$version.jar; \
+@CREATE_JAVA_HOME_TRUE@	    ln -sf $$RELATIVE/rt.jar $$jarname-$$version.jar; \
 @CREATE_JAVA_HOME_TRUE@	  done; \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$(jardir) \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(JVM_JAR_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	  for jar in *-$$version.jar; \
 @CREATE_JAVA_HOME_TRUE@	  do \
 @CREATE_JAVA_HOME_TRUE@	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|-$(JAVA_VERSION).jar|g"); \
@@ -12454,14 +12459,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client; \
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server; \
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_LIB_DIR); \
-@CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JRE_LIB_DIR); \
-@CREATE_JAVA_HOME_TRUE@	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
-@CREATE_JAVA_HOME_TRUE@	    jndi-ldap jndi-rmi jsse sasl; \
-@CREATE_JAVA_HOME_TRUE@	  do \
-@CREATE_JAVA_HOME_TRUE@	    ln -s rt.jar $$jarname.jar; \
-@CREATE_JAVA_HOME_TRUE@	  done; \
-@CREATE_JAVA_HOME_TRUE@	cd $$working_dir; \
-@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libgcj-$(gcc_version).jar \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/rt.jar; \
@@ -12477,14 +12475,15 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server); \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libjvm.so \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server/libjvm.so;	\
-@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_LIB_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
 @CREATE_JAVA_HOME_TRUE@	for headername in jawt jni; do \
 @CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
 @CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
-@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+@CREATE_JAVA_HOME_TRUE@	  echo $$DIRECTORY ; \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $$DIRECTORY \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/$$headername.h \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
@@ -12492,12 +12491,12 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	for headername in jawt_md jni_md; do \
 @CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
 @CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
-@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $$DIRECTORY \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
 @CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/$$headername.h \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
 @CREATE_JAVA_HOME_TRUE@	done; \
-@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/src-$(gcc_version).zip \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;

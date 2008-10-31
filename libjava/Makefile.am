@@ -612,11 +612,15 @@ if CREATE_JAVA_HOME
 	version=$(JAVA_VERSION).$(BUILD_VERSION); \
 	working_dir=`pwd`; \
 	cd $(DESTDIR)$(JVM_JAR_DIR); \
+	  RELATIVE=$$(relative $(DESTDIR)$(JRE_LIB_DIR) \
+	    $(DESTDIR)$(JVM_JAR_DIR)); \
 	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
 	    jndi-ldap jndi-rmi jsse sasl; \
 	  do \
-	    ln -s $$RELATIVE/$$jarname.jar $$jarname-$$version.jar; \
+	    ln -sf $$RELATIVE/rt.jar $$jarname-$$version.jar; \
 	  done; \
+	  RELATIVE=$$(relative $(DESTDIR)$(jardir) \
+	    $(DESTDIR)$(JVM_JAR_DIR)); \
 	  for jar in *-$$version.jar; \
 	  do \
 	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|-$(JAVA_VERSION).jar|g"); \
@@ -633,14 +637,7 @@ if CREATE_JAVA_HOME
 	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client; \
 	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server; \
 	$(mkinstalldirs) $(DESTDIR)$(SDK_LIB_DIR); \
-	cd $(DESTDIR)$(JRE_LIB_DIR); \
-	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
-	    jndi-ldap jndi-rmi jsse sasl; \
-	  do \
-	    ln -s rt.jar $$jarname.jar; \
-	  done; \
-	cd $$working_dir; \
-	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 	  $(DESTDIR)$(JRE_LIB_DIR)); \
 	ln -sf $$RELATIVE/libgcj-$(gcc_version).jar \
 	  $(DESTDIR)$(JRE_LIB_DIR)/rt.jar; \
@@ -656,14 +653,14 @@ if CREATE_JAVA_HOME
 	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server); \
 	ln -sf $$RELATIVE/libjvm.so \
 	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server/libjvm.so;	\
-	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 	  $(DESTDIR)$(SDK_LIB_DIR)); \
 	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
 	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
 	for headername in jawt jni; do \
 	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
 	    -print-file-name=include/$$headername.h)); \
-	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+	  RELATIVE=$$(relative $$DIRECTORY \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
 	  ln -sf $$RELATIVE/$$headername.h \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
@@ -671,12 +668,12 @@ if CREATE_JAVA_HOME
 	for headername in jawt_md jni_md; do \
 	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
 	    -print-file-name=include/$$headername.h)); \
-	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+	  RELATIVE=$$(relative $$DIRECTORY \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
 	  ln -sf $$RELATIVE/$$headername.h \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
 	done; \
-	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
 	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
 	ln -sf $$RELATIVE/src-$(gcc_version).zip \
 	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;
