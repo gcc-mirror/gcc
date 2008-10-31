@@ -5488,11 +5488,20 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
   auto_node = type_uses_auto (type);
-  if (auto_node && !type_dependent_expression_p (init))
+  if (auto_node)
     {
-      type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
-      if (type == error_mark_node)
-	return;
+      if (init == NULL_TREE)
+	{
+	  error ("declaration of %q#D has no initializer", decl);
+	  TREE_TYPE (decl) = error_mark_node;
+	  return;
+	}
+      else if (!type_dependent_expression_p (init))
+	{
+	  type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
+	  if (type == error_mark_node)
+	    return;
+	}
     }
 
   if (processing_template_decl)
