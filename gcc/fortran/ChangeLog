@@ -1,3 +1,15 @@
+2008-10-30  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/37930
+	* fortran/arith.c (gfc_mpfr_to_mpz):  Test for NaN and Inf values.
+	Remove stale comment and kludge code for MPFR 2.0.1 and older.
+	(gfc_real2int): Error on conversion of NaN or Inf.
+	(gfc_complex2int): Ditto.
+	* fortran/arith.h: Update mpfr_to_mpz prototype.
+	* fortran/simplify.c (gfc_simplify_ceiling, gfc_simplify_floor,
+	gfc_simplify_ifix, gfc_simplify_idint, simplify_nint): Update function
+	calls to include locus
+
 2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
 
         PR fortran/37903

@@ -35,15 +35,19 @@ along with GCC; see the file COPYING3.  If not see
    It's easily implemented with a few calls though.  */
 
 void
-gfc_mpfr_to_mpz (mpz_t z, mpfr_t x)
+gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
 {
   mp_exp_t e;
 
+  if (mpfr_inf_p (x) || mpfr_nan_p (x))
+    {
+      gfc_error ("Conversion of an Infinity or Not-a-Number at %L "
+		 "to INTEGER", where);
+      mpz_set_ui (z, 0);
+      return;
+    }
+
   e = mpfr_get_z_exp (z, x);
-  /* MPFR 2.0.1 (included with GMP 4.1) has a bug whereby mpfr_get_z_exp
-     may set the sign of z incorrectly.  Work around that here.  */
-  if (mpfr_sgn (x) != mpz_sgn (z))
-    mpz_neg (z, z);
 
   if (e > 0)
     mpz_mul_2exp (z, z, e);
@@ -2177,7 +2181,7 @@ gfc_real2int (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_INTEGER, kind, &src->where);
 
-  gfc_mpfr_to_mpz (result->value.integer, src->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, src->value.real, &src->where);
 
   if ((rc = gfc_check_integer_range (result->value.integer, kind)) != ARITH_OK)
     {
@@ -2263,7 +2267,7 @@ gfc_complex2int (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_INTEGER, kind, &src->where);
 
-  gfc_mpfr_to_mpz (result->value.integer, src->value.complex.r);
+  gfc_mpfr_to_mpz (result->value.integer, src->value.complex.r, &src->where);
 
   if ((rc = gfc_check_integer_range (result->value.integer, kind)) != ARITH_OK)
     {

@@ -808,7 +808,7 @@ gfc_simplify_ceiling (gfc_expr *e, gfc_expr *k)
   ceil = gfc_copy_expr (e);
 
   mpfr_ceil (ceil->value.real, e->value.real);
-  gfc_mpfr_to_mpz (result->value.integer, ceil->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, ceil->value.real, &e->where);
 
   gfc_free_expr (ceil);
 
@@ -1341,7 +1341,7 @@ gfc_simplify_floor (gfc_expr *e, gfc_expr *k)
   mpfr_init (floor);
   mpfr_floor (floor, e->value.real);
 
-  gfc_mpfr_to_mpz (result->value.integer, floor);
+  gfc_mpfr_to_mpz (result->value.integer, floor, &e->where);
 
   mpfr_clear (floor);
 
@@ -1925,7 +1925,7 @@ gfc_simplify_ifix (gfc_expr *e)
   rtrunc = gfc_copy_expr (e);
 
   mpfr_trunc (rtrunc->value.real, e->value.real);
-  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real, &e->where);
 
   gfc_free_expr (rtrunc);
   return range_check (result, "IFIX");
@@ -1946,7 +1946,7 @@ gfc_simplify_idint (gfc_expr *e)
   rtrunc = gfc_copy_expr (e);
 
   mpfr_trunc (rtrunc->value.real, e->value.real);
-  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real, &e->where);
 
   gfc_free_expr (rtrunc);
   return range_check (result, "IDINT");
@@ -2969,7 +2969,7 @@ simplify_nint (const char *name, gfc_expr *e, gfc_expr *k)
 
   mpfr_round (itrunc->value.real, e->value.real);
 
-  gfc_mpfr_to_mpz (result->value.integer, itrunc->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, itrunc->value.real, &e->where);
 
   gfc_free_expr (itrunc);
 
