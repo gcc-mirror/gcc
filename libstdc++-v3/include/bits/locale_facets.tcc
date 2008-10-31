@@ -599,55 +599,73 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       else
         {
 	  // Parse bool values as alphanumeric.
-	  typedef __numpunct_cache<_CharT>              __cache_type;
+	  typedef __numpunct_cache<_CharT>  __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
 
-	  bool __testf = true;
-	  bool __testt = true;
+	  bool __testf = false;
+	  bool __donef = false;
+	  bool __testt = false;
+	  bool __donet = false;
 	  size_t __n;
 	  bool __testeof = __beg == __end;
           for (__n = 0; !__testeof; ++__n)
             {
 	      const char_type __c = *__beg;
 
-	      if (__testf)
-	        {
+	      if (!__donef)
+		{
 		  if (__n < __lc->_M_falsename_size)
-		    __testf = __c == __lc->_M_falsename[__n];
+		    {
+		      __testf = __c == __lc->_M_falsename[__n];
+		      if (!__testf)
+			__donef = true;
+		    }
 		  else
-		    break;
+		    __donef = true;
 		}
 
-	      if (__testt)
-	        {
+	      if (!__donet)
+		{
 		  if (__n < __lc->_M_truename_size)
-		    __testt = __c == __lc->_M_truename[__n];
+		    {
+		      __testt = __c == __lc->_M_truename[__n];
+		      if (!__testt)
+			__donet = true;
+		    }
 		  else
-		    break;
+		    __donet = true;
 		}
 
-	      if (!__testf && !__testt)
+	      if (__donef && __donet)
 		break;
 	      
 	      if (++__beg == __end)
 		__testeof = true;
             }
 	  if (__testf && __n == __lc->_M_falsename_size)
-	    __v = false;
+	    {
+	      __v = false;
+	      if (__testt && __n == __lc->_M_truename_size)
+		__err = ios_base::failbit;
+	      else
+		__err = __donet ? ios_base::goodbit : ios_base::eofbit;
+	    }
 	  else if (__testt && __n == __lc->_M_truename_size)
-	    __v = true;
+	    {
+	      __v = true;
+	      __err = __donef ? ios_base::goodbit : ios_base::eofbit;
+	    }
 	  else
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 23. Num_get overflow result.
 	      __v = false;
 	      __err = ios_base::failbit;
+	      if (__testeof && __n)
+		__err |= ios_base::eofbit;
 	    }
-
-          if (__testeof)
-            __err |= ios_base::eofbit;
         }
       return __beg;
     }
