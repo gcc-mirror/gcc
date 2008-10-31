@@ -1,5 +1,8 @@
 2008-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/37967
+	* g++.dg/cpp0x/auto8.C: New test.
+
 	PR c++/37965
 	* g++.dg/cpp0x/auto7.C: New test.
 

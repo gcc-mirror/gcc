@@ -8237,15 +8237,39 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
 
+	    /* Say it's a definition only for the CALL_EXPR
+	       closest to the identifier.  */
+	    funcdecl_p = inner_declarator && inner_declarator->kind == cdk_id;
+
 	    /* Handle a late-specified return type.  */
+	    if (funcdecl_p)
+	      {
+		if (type_uses_auto (type))
+		  {
+		    if (!declarator->u.function.late_return_type)
+		      {
+			error ("%qs function uses auto type specifier without"
+			       " late return type", name);
+			return error_mark_node;
+		      }
+		    else if (!is_auto (type))
+		      {
+			error ("%qs function with late return type not using"
+			       " auto type specifier as its type", name);
+			return error_mark_node;
+		      }
+		  }
+		else if (declarator->u.function.late_return_type)
+		  {
+		    error ("%qs function with late return type not declared"
+			   " with auto type specifier", name);
+		    return error_mark_node;
+		  }
+	      }
 	    type = splice_late_return_type
 	      (type, declarator->u.function.late_return_type);
 	    if (type == error_mark_node)
 	      return error_mark_node;
-
-	    /* Say it's a definition only for the CALL_EXPR
-	       closest to the identifier.  */
-	    funcdecl_p = inner_declarator && inner_declarator->kind == cdk_id;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD

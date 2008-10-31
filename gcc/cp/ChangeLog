@@ -1,5 +1,10 @@
 2008-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/37967
+	* decl.c (grokdeclarator): Diagnose auto function decl without
+	late return type and late return type function decl where type
+	is not auto.
+
 	PR c++/37965
 	* decl.c (cp_finish_decl): Diagnose type_uses_auto type with
 	no initializer.
