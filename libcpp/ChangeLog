@@ -1,3 +1,11 @@
+2008-10-31  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* expr.c (struct op): Add location.
+	(_cpp_parse_expr): Propagate locations throught the stack
+	of expressions.
+	(reduce): Likewise.
+	(check_promotion): Use explicit location in errors.
+
 2008-10-05  Matthew Gingell  <gingell@adacore.com>
 	    Arnaud Charlet  <charlet@adacore.com>
 

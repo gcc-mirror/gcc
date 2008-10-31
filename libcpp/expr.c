@@ -32,6 +32,7 @@ struct op
 {
   const cpp_token *token;	/* The token forming op (for diagnostics).  */
   cpp_num value;		/* The value logically "right" of op.  */
+  source_location loc;          /* The location of this value.         */
   enum cpp_ttype op;
 };
 
@@ -875,6 +876,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
       lex_count++;
       op.token = cpp_get_token (pfile);
       op.op = op.token->type;
+      op.loc = op.token->src_loc;
 
       switch (op.op)
 	{
@@ -978,6 +980,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 
       top->op = op.op;
       top->token = op.token;
+      top->loc = op.token->src_loc;
     }
 
   /* The controlling macro expression is only valid if we called lex 3
@@ -1031,6 +1034,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_NOT:
 	case CPP_COMPL:
 	  top[-1].value = num_unary_op (pfile, top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_PLUS:
@@ -1040,6 +1044,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_COMMA:
 	  top[-1].value = num_binary_op (pfile, top[-1].value,
 					 top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_GREATER:
@@ -1048,12 +1053,14 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_LESS_EQ:
 	  top[-1].value
 	    = num_inequality_op (pfile, top[-1].value, top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_EQ_EQ:
 	case CPP_NOT_EQ:
 	  top[-1].value
 	    = num_equality_op (pfile, top[-1].value, top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_AND:
@@ -1061,16 +1068,19 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_XOR:
 	  top[-1].value
 	    = num_bitwise_op (pfile, top[-1].value, top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_MULT:
 	  top[-1].value = num_mul (pfile, top[-1].value, top->value);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_DIV:
 	case CPP_MOD:
 	  top[-1].value = num_div_op (pfile, top[-1].value,
 				      top->value, top->op);
+	  top[-1].loc = top->loc;
 	  break;
 
 	case CPP_OR_OR:
@@ -1082,6 +1092,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	  top->value.high = 0;
 	  top->value.unsignedp = false;
 	  top->value.overflow = false;
+	  top->loc = top[1].loc;
 	  continue;
 
 	case CPP_AND_AND:
@@ -1093,16 +1104,20 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	  top->value.high = 0;
 	  top->value.unsignedp = false;
 	  top->value.overflow = false;
+	  top->loc = top[1].loc;
 	  continue;
 
 	case CPP_OPEN_PAREN:
 	  if (op != CPP_CLOSE_PAREN)
 	    {
-	      cpp_error (pfile, CPP_DL_ERROR, "missing ')' in expression");
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, 
+				   top->token->src_loc,
+				   0, "missing ')' in expression");
 	      return 0;
 	    }
 	  top--;
 	  top->value = top[1].value;
+	  top->loc = top[1].loc;
 	  return top;
 
 	case CPP_COLON:
@@ -1111,9 +1126,13 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	    {
 	      pfile->state.skip_eval--;
 	      top->value = top[1].value;
+	      top->loc = top[1].loc;
 	    }
 	  else
-	    top->value = top[2].value;
+	    {
+	      top->value = top[2].value;
+	      top->loc = top[2].loc;
+	    }
 	  top->value.unsignedp = (top[1].value.unsignedp
 				  || top[2].value.unsignedp);
 	  continue;
@@ -1168,12 +1187,12 @@ check_promotion (cpp_reader *pfile, const struct op *op)
   if (op->value.unsignedp)
     {
       if (!num_positive (op[-1].value, CPP_OPTION (pfile, precision)))
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "the left operand of \"%s\" changes sign when promoted",
-		   cpp_token_as_text (pfile, op->token));
+	cpp_error_with_line (pfile, CPP_DL_WARNING, op[-1].loc, 0,
+			     "the left operand of \"%s\" changes sign when promoted",
+			     cpp_token_as_text (pfile, op->token));
     }
   else if (!num_positive (op->value, CPP_OPTION (pfile, precision)))
-    cpp_error (pfile, CPP_DL_WARNING,
+    cpp_error_with_line (pfile, CPP_DL_WARNING, op->loc, 0,
 	       "the right operand of \"%s\" changes sign when promoted",
 	       cpp_token_as_text (pfile, op->token));
 }
