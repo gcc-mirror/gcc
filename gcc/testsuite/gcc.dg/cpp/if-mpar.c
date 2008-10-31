@@ -4,21 +4,27 @@
    missing parenthesis message.  */
 
 /* { dg-do preprocess } */
-
-#if (1          /* { dg-error "missing '\\)'" "missing ')' no. 1" } */
+/* { dg-options "-fshow-column" } */
+#if (1          /* { dg-error "5:missing '\\)'" "missing ')' no. 1" } */
 #endif
 
-#if 2 * (3 + 4	/* { dg-error "missing '\\)'" "missing ')' no. 2" } */
+#if 2 * (3 + 4	/* { dg-error "9:missing '\\)'" "missing ')' no. 2" } */
 #endif
 
-#if (2))	/* { dg-error "missing '\\('" "missing '(' no. 1" } */
+#if (2))	/* { dg-error "8:missing '\\('" "missing '(' no. 1" } */
 #endif
 
-#if )		/* { dg-error "missing '\\('" "missing '(' no. 2" } */
+#if )		/* { dg-error "5:missing '\\('" "missing '(' no. 2" } */
 #endif
 
-#if 4)		/* { dg-error "missing '\\('" "missing '(' no. 3" } */
+#if 4)		/* { dg-error "6:missing '\\('" "missing '(' no. 3" } */
 #endif
 
-#if (		/* { dg-error "missing '\\)'" "missing ')' no. 3" } */
+#if (		/* { dg-error "5:missing '\\)'" "missing ')' no. 3" } */
+#endif
+
+#if ((2 + 3) + 5 /* { dg-error "5:missing '\\)'" "missing ')' no. 3" } */
+#endif
+
+#if ((2 + 3 + 5 /* { dg-error "6:missing '\\)'" "missing ')' no. 3" } */
 #endif

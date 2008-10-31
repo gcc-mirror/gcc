@@ -1,3 +1,8 @@
+2008-10-31  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/Wsignprom.c: Add column numbers.
+	* gcc.dg/cpp/if-mpar.c: Likewise.
+
 2008-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37967
