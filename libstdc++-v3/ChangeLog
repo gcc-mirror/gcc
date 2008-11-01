@@ -1,5 +1,13 @@
 2008-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/37958 (cont again)
+	* include/bits/locale_facets.tcc (num_get<>::do_get(iter_type,
+	iter_type, ios_base&, ios_base::iostate&, bool&): Fix again.
+	* testsuite/22_locale/num_get/get/char/37958.cc: Extend.
+	* testsuite/22_locale/num_get/get/wchar_t/37958.cc: Likewise.
+
+2008-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/locale_facets.tcc (num_get<>::do_get(, long&),
 	num_get<>::do_get(, unsigned short&),
 	num_get<>::do_get(, unsigned int&),

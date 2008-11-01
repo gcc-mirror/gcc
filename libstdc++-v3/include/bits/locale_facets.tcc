@@ -606,11 +606,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 	  bool __testf = true;
 	  bool __testt = true;
+	  bool __donef = __lc->_M_falsename_size == 0;
+	  bool __donet = __lc->_M_truename_size == 0;
 	  bool __testeof = false;
-	  size_t __n;
-	  const size_t __lim = std::max(__lc->_M_falsename_size,
-					__lc->_M_truename_size);
-	  for (__n = 0; __n < __lim; ++__n, ++__beg)
+	  size_t __n = 0;
+	  while (!__donef || !__donet)
 	    {
 	      if (__beg == __end)
 		{
@@ -620,10 +620,10 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 	      const char_type __c = *__beg;
 
-	      if (__testf && __n < __lc->_M_falsename_size)
+	      if (!__donef)
 		__testf = __c == __lc->_M_falsename[__n];
 
-	      if (__testt && __n < __lc->_M_truename_size)
+	      if (!__donet)
 		__testt = __c == __lc->_M_truename[__n];
 
 	      if (!__testt && !__testf)
@@ -632,6 +632,12 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      if ((!__testt && __n >= __lc->_M_falsename_size)
 		  || (!__testf && __n >= __lc->_M_truename_size))
 		break;
+
+	      ++__n;
+	      ++__beg;
+
+	      __donef = !__testf || __n >= __lc->_M_falsename_size;
+	      __donet = !__testt || __n >= __lc->_M_truename_size;
 	    }
 	  if (__testf && __n == __lc->_M_falsename_size && __n)
 	    {
