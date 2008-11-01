@@ -1,3 +1,8 @@
+2008-11-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37976
+	* gcc.c-torture/compile/pr37976.c: New testcase.
+
 2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
 
 	PR fortran/37159
