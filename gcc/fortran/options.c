@@ -65,6 +65,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.max_continue_free = 255;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
   gfc_option.max_subrecord_length = 0;
+  gfc_option.flag_max_array_constructor = 65535;
   gfc_option.convert = GFC_CONVERT_NATIVE;
   gfc_option.record_marker = 0;
   gfc_option.dump_parse_tree = 0;
@@ -640,6 +641,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_fintrinsic_modules_path:
       gfc_add_include_path (arg, false);
       gfc_add_intrinsic_modules_path (arg);
+      break;
+
+    case OPT_fmax_array_constructor_:
+      gfc_option.flag_max_array_constructor = value > 65535 ? value : 65535;
       break;
 
     case OPT_fmax_errors_:

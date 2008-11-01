@@ -1303,7 +1303,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
             }
 	}
 
-      /* The frontend should already have done any expansions possible
+      /* The frontend should already have done any expansions
 	 at compile-time.  */
       if (!c->iterator)
 	{
@@ -3946,10 +3946,13 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
           if (c->iterator)
             {
               /* Problems occur when we get something like
-                 integer :: a(lots) = (/(i, i=1,lots)/)  */
-              /* TODO: Unexpanded array initializers.  */
-              internal_error
-                ("Possible frontend bug: array constructor not expanded");
+                 integer :: a(lots) = (/(i, i=1, lots)/)  */
+              gfc_error_now ("The number of elements in the array constructor "
+			     "at %L requires an increase of the allowed %d "
+			     "upper limit.   See -fmax-array-constructor "
+			     "option", &expr->where,
+			     gfc_option.flag_max_array_constructor);
+	      return NULL_TREE;
 	    }
           if (mpz_cmp_si (c->n.offset, 0) != 0)
             index = gfc_conv_mpz_to_tree (c->n.offset, gfc_index_integer_kind);

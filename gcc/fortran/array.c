@@ -24,13 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 
-/* This parameter is the size of the largest array constructor that we
-   will expand to an array constructor without iterators.
-   Constructors larger than this will remain in the iterator form.  */
-
-#define GFC_MAX_AC_EXPAND 65535
-
-
 /**************** Array reference matching subroutines *****************/
 
 /* Copy an array reference structure.  */
@@ -1463,7 +1456,7 @@ gfc_expand_constructor (gfc_expr *e)
   gfc_expr *f;
   gfc_try rc;
 
-  f = gfc_get_array_element (e, GFC_MAX_AC_EXPAND);
+  f = gfc_get_array_element (e, gfc_option.flag_max_array_constructor);
   if (f != NULL)
     {
       gfc_free_expr (f);

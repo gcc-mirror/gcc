@@ -1,3 +1,17 @@
+2008-11-01  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/19925
+	* trans-array.c (gfc_trans_array_constructor_value): Fix comment.
+	(gfc_conv_array_initializer): Convert internal_error() to gfc_error_now.
+	* array.c: Remove GFC_MAX_AC_EXPAND macro.
+	(gfc_expand_constructor): Use gfc_option.flag_max_array_constructor.
+	* gfortran.h (gfc_option): Add flag_max_array_constructor member.
+	* lang.opt: Add -fmax-array-constructor option.
+	* expr.c (gfc_match_init_expr): Fix error message to mention new option.
+	* invoke.texi: Document new option.
+	* options.c (gfc_init_options): Set default value for new option.
+	(gfc_handle_option): Deal with commandline.
+
 2008-11-01  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/35681
@@ -72,7 +86,7 @@
 	* fortran/arith.h: Update mpfr_to_mpz prototype.
 	* fortran/simplify.c (gfc_simplify_ceiling, gfc_simplify_floor,
 	gfc_simplify_ifix, gfc_simplify_idint, simplify_nint): Update function
-	calls to include locus
+	calls to include locus.
 
 2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
 
