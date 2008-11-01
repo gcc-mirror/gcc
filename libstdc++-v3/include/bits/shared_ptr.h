@@ -82,9 +82,8 @@ namespace std
       _M_get_deleter(const std::type_info& __ti)
       { return 0; }
       
-    private:
-      _Sp_counted_ptr(const _Sp_counted_ptr&);
-      _Sp_counted_ptr& operator=(const _Sp_counted_ptr&);
+      _Sp_counted_ptr(const _Sp_counted_ptr&) = delete;
+      _Sp_counted_ptr& operator=(const _Sp_counted_ptr&) = delete;
       
     protected:
       _Ptr             _M_ptr;  // copy constructor must not throw
@@ -142,10 +141,6 @@ namespace std
       virtual void*
       _M_get_deleter(const std::type_info& __ti)
       { return __ti == typeid(_Deleter) ? &_M_del._M_del : 0; }
-      
-    private:
-      _Sp_counted_deleter(const _Sp_counted_deleter&);
-      _Sp_counted_deleter& operator=(const _Sp_counted_deleter&);
       
     protected:
       _My_Deleter      _M_del;  // copy constructor must not throw
@@ -365,18 +360,23 @@ namespace std
       _M_unique() const // nothrow
       { return this->_M_get_use_count() == 1; }
 
-      friend inline bool
-      operator==(const __shared_count& __a, const __shared_count& __b)
-      { return __a._M_pi == __b._M_pi; }
-  
-      friend inline bool
-      operator<(const __shared_count& __a, const __shared_count& __b)
-      { return std::less<_Sp_counted_base<_Lp>*>()(__a._M_pi, __b._M_pi); }
-  
       void*
       _M_get_deleter(const std::type_info& __ti) const
       { return _M_pi ? _M_pi->_M_get_deleter(__ti) : 0; }
 
+      bool
+      _M_less(const __shared_count& __rhs) const
+      { return std::less<_Sp_counted_base<_Lp>*>()(this->_M_pi, __rhs._M_pi); }
+
+      bool
+      _M_less(const __weak_count<_Lp>& __rhs) const
+      { return std::less<_Sp_counted_base<_Lp>*>()(this->_M_pi, __rhs._M_pi); }
+
+      // friend function injected into enclosing namespace and found by ADL
+      friend inline bool
+      operator==(const __shared_count& __a, const __shared_count& __b)
+      { return __a._M_pi == __b._M_pi; }
+  
     private:
       friend class __weak_count<_Lp>;
 
@@ -468,13 +468,18 @@ namespace std
       _M_get_use_count() const // nothrow
       { return _M_pi != 0 ? _M_pi->_M_get_use_count() : 0; }
 
+      bool
+      _M_less(const __weak_count& __rhs) const
+      { return std::less<_Sp_counted_base<_Lp>*>()(this->_M_pi, __rhs._M_pi); }
+
+      bool
+      _M_less(const __shared_count<_Lp>& __rhs) const
+      { return std::less<_Sp_counted_base<_Lp>*>()(this->_M_pi, __rhs._M_pi); }
+
+      // friend function injected into enclosing namespace and found by ADL
       friend inline bool
-      operator==(const __weak_count<_Lp>& __a, const __weak_count<_Lp>& __b)
+      operator==(const __weak_count& __a, const __weak_count& __b)
       { return __a._M_pi == __b._M_pi; }
-      
-      friend inline bool
-      operator<(const __weak_count<_Lp>& __a, const __weak_count<_Lp>& __b)
-      { return std::less<_Sp_counted_base<_Lp>*>()(__a._M_pi, __b._M_pi); }
 
     private:
       friend class __shared_count<_Lp>;
@@ -838,6 +843,16 @@ namespace std
 	_M_refcount._M_swap(__other._M_refcount);
       }
 
+      template<typename _Tp1>
+        bool
+        owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const
+        { return _M_refcount._M_less(__rhs._M_refcount); }
+
+      template<typename _Tp1>
+        bool
+        owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
+        { return _M_refcount._M_less(__rhs._M_refcount); }
+
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
@@ -862,36 +877,69 @@ namespace std
       _M_get_deleter(const std::type_info& __ti) const
       { return _M_refcount._M_get_deleter(__ti); }
 
-      template<typename _Tp1, _Lock_policy _Lp1>
-        bool
-        _M_less(const __shared_ptr<_Tp1, _Lp1>& __rhs) const
-        { return _M_refcount < __rhs._M_refcount; }
-
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
       template<typename _Tp1, _Lock_policy _Lp1> friend class __weak_ptr;
 
       template<typename _Del, typename _Tp1, _Lock_policy _Lp1>
         friend _Del* get_deleter(const __shared_ptr<_Tp1, _Lp1>&);
 
-      // Friends injected into enclosing namespace and found by ADL:
-      template<typename _Tp1>
-        friend inline bool
-        operator==(const __shared_ptr& __a, const __shared_ptr<_Tp1, _Lp>& __b)
-        { return __a.get() == __b.get(); }
-
-      template<typename _Tp1>
-        friend inline bool
-        operator!=(const __shared_ptr& __a, const __shared_ptr<_Tp1, _Lp>& __b)
-        { return __a.get() != __b.get(); }
-
-      template<typename _Tp1>
-        friend inline bool
-        operator<(const __shared_ptr& __a, const __shared_ptr<_Tp1, _Lp>& __b)
-        { return __a._M_less(__b); }
-
       _Tp*         	   _M_ptr;         // Contained pointer.
       __shared_count<_Lp>  _M_refcount;    // Reference counter.
     };
+
+  // 20.8.13.2.7 shared_ptr comparisons
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator==(const __shared_ptr<_Tp1, _Lp>& __a,
+        const __shared_ptr<_Tp2, _Lp>& __b)
+    { return __a.get() == __b.get(); }
+
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator!=(const __shared_ptr<_Tp1, _Lp>& __a,
+        const __shared_ptr<_Tp2, _Lp>& __b)
+    { return __a.get() != __b.get(); }
+
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator<(const __shared_ptr<_Tp1, _Lp>& __a,
+        const __shared_ptr<_Tp2, _Lp>& __b)
+    { return __a.get() < __b.get(); }
+
+  template<typename _Sp>
+    struct _Sp_less : public binary_function<_Sp, _Sp, bool>
+    {
+      bool
+      operator()(const _Sp& __lhs, const _Sp& __rhs) const
+      {
+        return std::less<typename _Sp::element_type*>()(__lhs.get(),
+            __rhs.get());
+      }
+    };
+
+  template<typename _Tp, _Lock_policy _Lp>
+    struct less<__shared_ptr<_Tp, _Lp>>
+    : public _Sp_less<__shared_ptr<_Tp, _Lp>>
+    { };
+
+  // XXX LessThanComparable<_Tp> concept should provide >, >= and <=
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>(const __shared_ptr<_Tp, _Lp>& __a,
+        const __shared_ptr<_Tp, _Lp>& __b)
+    { return __a.get() > __b.get(); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>=(const __shared_ptr<_Tp, _Lp>& __a,
+        const __shared_ptr<_Tp, _Lp>& __b)
+    { return __a.get() >= __b.get(); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator<=(const __shared_ptr<_Tp, _Lp>& __a,
+        const __shared_ptr<_Tp, _Lp>& __b)
+    { return __a.get() <= __b.get(); }
 
   // 2.2.3.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
@@ -1053,7 +1101,17 @@ namespace std
       bool
       expired() const // never throws
       { return _M_refcount._M_get_use_count() == 0; }
-      
+
+      template<typename _Tp1>
+        bool
+        owner_before(const __shared_ptr<_Tp1, _Lp>& __rhs) const
+        { return _M_refcount._M_less(__rhs._M_refcount); }
+
+      template<typename _Tp1>
+        bool
+        owner_before(const __weak_ptr<_Tp1, _Lp>& __rhs) const
+        { return _M_refcount._M_less(__rhs._M_refcount); }
+
       void
       reset() // never throws
       { __weak_ptr().swap(*this); }
@@ -1065,6 +1123,16 @@ namespace std
 	_M_refcount._M_swap(__s._M_refcount);
       }
 
+      // comparisons
+      template<typename _Tp1>
+        bool operator<(const __weak_ptr<_Tp1, _Lp>&) const = delete;
+      template<typename _Tp1>
+        bool operator<=(const __weak_ptr<_Tp1, _Lp>&) const = delete;
+      template<typename _Tp1>
+        bool operator>(const __weak_ptr<_Tp1, _Lp>&) const = delete;
+      template<typename _Tp1>
+        bool operator>=(const __weak_ptr<_Tp1, _Lp>&) const = delete;
+
     private:
       // Used by __enable_shared_from_this.
       void
@@ -1074,31 +1142,48 @@ namespace std
 	_M_refcount = __refcount;
       }
 
-      template<typename _Tp1>
-        bool
-        _M_less(const __weak_ptr<_Tp1, _Lp>& __rhs) const
-        { return _M_refcount < __rhs._M_refcount; }
-
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
       template<typename _Tp1, _Lock_policy _Lp1> friend class __weak_ptr;
       friend class __enable_shared_from_this<_Tp, _Lp>;
       friend class enable_shared_from_this<_Tp>;
 
-      // Friend injected into namespace and found by ADL.
-      template<typename _Tp1>
-        friend inline bool
-        operator<(const __weak_ptr& __lhs, const __weak_ptr<_Tp1, _Lp>& __rhs)
-        { return __lhs._M_less(__rhs); }
-
       _Tp*       	 _M_ptr;         // Contained pointer.
       __weak_count<_Lp>  _M_refcount;    // Reference counter.
     };
 
-  // 2.2.4.7 weak_ptr specialized algorithms.
+  // 20.8.13.3.7 weak_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
     swap(__weak_ptr<_Tp, _Lp>& __a, __weak_ptr<_Tp, _Lp>& __b)
     { __a.swap(__b); }
+
+  /// owner_less
+  template<typename _Tp> struct owner_less;
+
+  template<typename _Tp, typename _Tp1>
+    struct _Sp_owner_less : public binary_function<_Tp, _Tp, bool>
+    {
+      bool
+      operator()(const _Tp& __lhs, const _Tp& __rhs) const
+      { return __lhs.owner_before(__rhs); }
+      bool
+      operator()(const _Tp& __lhs, const _Tp1& __rhs) const
+      { return __lhs.owner_before(__rhs); }
+      bool
+      operator()(const _Tp1& __lhs, const _Tp& __rhs) const
+      { return __lhs.owner_before(__rhs); }
+    };
+
+  template<typename _Tp, _Lock_policy _Lp>
+    struct owner_less<__shared_ptr<_Tp, _Lp>>
+    : public _Sp_owner_less<__shared_ptr<_Tp, _Lp>, __weak_ptr<_Tp, _Lp>>
+    { };
+
+  template<typename _Tp, _Lock_policy _Lp>
+    struct owner_less<__weak_ptr<_Tp, _Lp>>
+    : public _Sp_owner_less<__weak_ptr<_Tp, _Lp>, __shared_ptr<_Tp, _Lp>>
+    {
+    };
 
 
   template<typename _Tp, _Lock_policy _Lp>
@@ -1262,22 +1347,44 @@ namespace std
         allocate_shared(_Alloc __a, _Args&&... __args);
     };
 
-  // 20.7.12.2.9 shared_ptr specialized algorithms.
+  // 20.8.13.2.7 shared_ptr comparisons
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator==(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
+    { return __a.get() == __b.get(); }
+
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator!=(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
+    { return __a.get() != __b.get(); }
+
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator<(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
+    { return __a.get() < __b.get(); }
+
+  template<typename _Tp>
+    struct less<shared_ptr<_Tp>>
+    : public _Sp_less<shared_ptr<_Tp>>
+    { };
+
+  // 20.8.13.2.9 shared_ptr specialized algorithms.
   template<typename _Tp>
     inline void
-    swap(__shared_ptr<_Tp>& __a, __shared_ptr<_Tp>& __b)
+    swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b)
     { __a.swap(__b); }
 
   template<typename _Tp>
     inline void
-    swap(__shared_ptr<_Tp>&& __a, __shared_ptr<_Tp>& __b)
+    swap(shared_ptr<_Tp>&& __a, shared_ptr<_Tp>& __b)
     { __a.swap(__b); }
 
   template<typename _Tp>
     inline void
-    swap(__shared_ptr<_Tp>& __a, __shared_ptr<_Tp>&& __b)
+    swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>&& __b)
     { __a.swap(__b); }
 
+  // 20.8.13.2.10 shared_ptr casts.
   template<typename _Tp, typename _Tp1>
     inline shared_ptr<_Tp>
     static_pointer_cast(const shared_ptr<_Tp1>& __r)
@@ -1353,7 +1460,34 @@ namespace std
 	                       : shared_ptr<_Tp>(*this);
 #endif
       }
+
+      // comparisons
+      template<typename _Tp1>
+        bool operator<(const weak_ptr<_Tp1>&) const = delete;
+      template<typename _Tp1>
+        bool operator<=(const weak_ptr<_Tp1>&) const = delete;
+      template<typename _Tp1>
+        bool operator>(const weak_ptr<_Tp1>&) const = delete;
+      template<typename _Tp1>
+        bool operator>=(const weak_ptr<_Tp1>&) const = delete;
     };
+
+  // 20.8.13.3.7 weak_ptr specialized algorithms.
+  template<typename _Tp>
+    inline void
+    swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b)
+    { __a.swap(__b); }
+
+  /// owner_less
+  template<typename _Tp>
+    struct owner_less<shared_ptr<_Tp>>
+    : public _Sp_owner_less<shared_ptr<_Tp>, weak_ptr<_Tp>>
+    { };
+
+  template<typename _Tp>
+    struct owner_less<weak_ptr<_Tp>>
+    : public _Sp_owner_less<weak_ptr<_Tp>, shared_ptr<_Tp>>
+    { };
 
   /// enable_shared_from_this
   template<typename _Tp>

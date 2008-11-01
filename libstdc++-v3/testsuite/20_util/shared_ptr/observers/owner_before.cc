@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation
+// Copyright (C) 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,50 +18,71 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// 20.8.13.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
 #include <testsuite_hooks.h>
 
 struct A
 {
-  A() : i() {}
   int i;
+  virtual ~A() { }
+};
+
+struct B : A
+{
 };
 
 // 20.6.6.2.5 shared_ptr observers [util.smartptr.shared.obs]
 
-// get
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( p.get() == a );
+  // test empty shared_ptrs compare equivalent
+  std::shared_ptr<A> p1;
+  std::shared_ptr<B> p2;
+  VERIFY( !p1.owner_before(p2) && !p2.owner_before(p1) );
 }
 
-// operator*
+
+// Construction from pointer
 void
 test02()
 {
   bool test __attribute__((unused)) = true;
 
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( &*p == a );
+  std::shared_ptr<A> a0;
+
+  std::shared_ptr<A> a1(new A);
+  VERIFY( a1.owner_before(a0) || a0.owner_before(a1) );
+  VERIFY( !(a1.owner_before(a0) && a0.owner_before(a1)) );
+
+  std::shared_ptr<B> b1(new B);
+  VERIFY( a1.owner_before(b1) || b1.owner_before(a1) );
+  VERIFY( !(a1.owner_before(b1) && b1.owner_before(a1)) );
+
+  std::shared_ptr<A> a2(a1);
+  VERIFY( !a1.owner_before(a2) && !a2.owner_before(a1) );
+  a2 = b1;
+  VERIFY( !b1.owner_before(a2) && !a2.owner_before(b1) );
+
+  std::weak_ptr<A> w1(a1);
+  VERIFY( !a1.owner_before(w1) && !w1.owner_before(a1) );
+  std::weak_ptr<A> w2(a2);
+  VERIFY( !b1.owner_before(w2) && !w2.owner_before(b1) );
 }
 
-// operator->
+// Aliasing
 void
 test03()
 {
   bool test __attribute__((unused)) = true;
 
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( &p->i == &a->i );
+  std::shared_ptr<A> p1(new A());
+  std::shared_ptr<int> p2(p1, &p1->i);
+  VERIFY( !p1.owner_before(p2) && !p2.owner_before(p1) );
 }
 
 int 

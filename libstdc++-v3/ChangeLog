@@ -1,3 +1,35 @@
+2008-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        * include/bits/shared_ptr.h: Update comparisons to match WP.
+        (_Sp_counted_ptr): Make copy and assignment members deleted.
+        (_Sp_counted_deleter): Remove private copy and assignment members.
+        (__shared_count::_M_less,__weak_count::_M_less,operator<): Replace
+        friend operator< with overloaded _M_less member functions to allow
+        comparison with either shared_count or weak_count.
+        (__shared_ptr::_M_less,__weak_ptr::_M_less): Replace with...
+        (__shared_ptr::owner_before,__weak_ptr::owner_before): New overloads
+        for ownership-based ordering.
+        (operator<(__shared_ptr,__shared_ptr)): Compare stored pointers,
+        make non-friend.
+        (operator==(__shared_ptr,__shared_ptr)): Make non-friend.
+        (operator!=(__shared_ptr,__shared_ptr)): Likewise.
+        (less<__shared_ptr<>>,less<shared_ptr<>>,_Sp_less): Explicitly call
+        pointer specialization.
+        (__weak_ptr::operator<,weak_ptr::operator<=,weak_ptr::operator>,
+        weak_ptr::operator>=): Remove operator< and delete all comparisons.
+        (_Sp_owner_less,owner_less): Predicate for ownership-based ordering.
+        (operator<(shared_ptr,shared_ptr): Overload for derived shared_ptr.
+        (operator==(shared_ptr,shared_ptr): Likewise.
+        (operator!=(shared_ptr,shared_ptr): Likewise.
+        (swap(shared_ptr,shared_ptr)): Fix parameter types.
+        (swap(weak_ptr,weak_ptr)): Add missing overload.
+        * testsuite/20_util/owner_less/cmp.cc: New.
+        * testsuite/20_util/shared_ptr/comparison/cmp.cc: Test other ops.
+        * testsuite/20_util/shared_ptr/comparison/less.cc: New.
+        * testsuite/20_util/shared_ptr/observers/owner_before.cc: New.
+        * testsuite/20_util/weak_ptr/observers/owner_before.cc: New.
+        * testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: New.
+
 2008-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37958

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@ struct A { };
 // 20.6.6.2.5 shared_ptr observers [util.smartptr.shared.obs]
 
 // unique
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
@@ -37,11 +37,9 @@ test01()
   VERIFY( !p1.unique() );
   const std::shared_ptr<A> p2(p1);
   VERIFY( !p1.unique() );
-
-  return 0;
 }
 
-int
+void
 test02()
 {
   bool test __attribute__((unused)) = true;
@@ -53,11 +51,9 @@ test02()
   p1.reset();
   VERIFY( !p1.unique() );
   VERIFY( p2.unique() );
-
-  return 0;
 }
 
-int
+void
 test03()
 {
   bool test __attribute__((unused)) = true;
@@ -67,8 +63,6 @@ test03()
   p2.reset(new A);
   VERIFY( p1.unique() );
   VERIFY( p2.unique() );
-
-  return 0;
 }
 
 
