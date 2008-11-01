@@ -1,5 +1,18 @@
 2008-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/locale_facets.tcc (num_get<>::do_get(, long&),
+	num_get<>::do_get(, unsigned short&),
+	num_get<>::do_get(, unsigned int&),
+	num_get<>::do_get(, unsigned long&),
+	num_get<>::do_get(, long long&),
+	num_get<>::do_get(, unsigned long long&),
+	num_put<>::do_put(, long), num_put<>::do_put(, unsigned long),
+	num_put<>::do_put(, long long),
+	num_put<>::do_put(, unsigned long long)): Move inline...
+	* include/bits/locale_facets.h: ... here.
+
+2008-11-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/37958 (cont)
 	* include/bits/locale_facets.tcc (num_get<>::do_get(iter_type,
 	iter_type, ios_base&, ios_base::iostate&, bool&): Fix again.

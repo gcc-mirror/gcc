@@ -2104,12 +2104,12 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
       iter_type
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&,
-		       string& __xtrc) const;
+		       string&) const;
 
       template<typename _ValueT>
         iter_type
         _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&,
-		       _ValueT& __v) const;
+		       _ValueT&) const;
 
       template<typename _CharT2>
       typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, int>::__type
@@ -2167,30 +2167,36 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
 
+      virtual iter_type
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, long& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
       virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const;
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, unsigned short& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
       virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
-	      unsigned short&) const;
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, unsigned int& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
       virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
-	     unsigned int&) const;
-
-      virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
-	     unsigned long&) const;
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, unsigned long& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
       virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
-	     long long&) const;
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, long long& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }	
 
       virtual iter_type
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
-	     unsigned long long&) const;
+      do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, unsigned long long& __v) const
+      { return _M_extract_int(__beg, __end, __io, __err, __v); }
 #endif
 
       virtual iter_type
@@ -2461,17 +2467,24 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       do_put(iter_type, ios_base&, char_type __fill, bool __v) const;
 
       virtual iter_type
-      do_put(iter_type, ios_base&, char_type __fill, long __v) const;
+      do_put(iter_type __s, ios_base& __io, char_type __fill, long __v) const
+      { return _M_insert_int(__s, __io, __fill, __v); }	
 
       virtual iter_type
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long) const;
+      do_put(iter_type __s, ios_base& __io, char_type __fill,
+	     unsigned long __v) const
+      { return _M_insert_int(__s, __io, __fill, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
       virtual iter_type
-      do_put(iter_type, ios_base&, char_type __fill, long long __v) const;
+      do_put(iter_type __s, ios_base& __io, char_type __fill,
+	     long long __v) const
+      { return _M_insert_int(__s, __io, __fill, __v); }
 
       virtual iter_type
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const;
+      do_put(iter_type __s, ios_base& __io, char_type __fill,
+	     unsigned long long __v) const
+      { return _M_insert_int(__s, __io, __fill, __v); }
 #endif
 
       virtual iter_type
