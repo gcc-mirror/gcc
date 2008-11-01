@@ -1,3 +1,8 @@
+2008-11-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/37939
+	* gcc.target/cris/biap.c: New test.
+
 2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
 
         PR fortran/37903
