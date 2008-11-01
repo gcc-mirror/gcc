@@ -3511,12 +3511,11 @@ static bool
 replace_symbol (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
 {
   if ((expr->expr_type == EXPR_VARIABLE || expr->expr_type == EXPR_FUNCTION)
-      && expr->symtree->n.sym->ns != sym->formal_ns
-      && expr->symtree->n.sym->attr.dummy)
+      && expr->symtree->n.sym->ns == sym->ts.interface->formal_ns)
     {
       gfc_symtree *stree;
       gfc_get_sym_tree (expr->symtree->name, sym->formal_ns, &stree);
-      stree->n.sym->attr.referenced = expr->symtree->n.sym->attr.referenced;
+      stree->n.sym->attr = expr->symtree->n.sym->attr;
       expr->symtree = stree;
     }
   return false;
