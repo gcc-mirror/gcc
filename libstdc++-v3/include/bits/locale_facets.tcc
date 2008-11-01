@@ -604,58 +604,47 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
 
-	  bool __testf = false;
-	  bool __donef = false;
-	  bool __testt = false;
-	  bool __donet = false;
+	  bool __testf = true;
+	  bool __testt = true;
+	  bool __testeof = false;
 	  size_t __n;
-	  bool __testeof = __beg == __end;
-          for (__n = 0; !__testeof; ++__n)
-            {
+	  const size_t __lim = std::max(__lc->_M_falsename_size,
+					__lc->_M_truename_size);
+	  for (__n = 0; __n < __lim; ++__n, ++__beg)
+	    {
+	      if (__beg == __end)
+		{
+		  __testeof = true;
+		  break;
+		}
+
 	      const char_type __c = *__beg;
 
-	      if (!__donef)
-		{
-		  if (__n < __lc->_M_falsename_size)
-		    {
-		      __testf = __c == __lc->_M_falsename[__n];
-		      if (!__testf)
-			__donef = true;
-		    }
-		  else
-		    __donef = true;
-		}
+	      if (__testf && __n < __lc->_M_falsename_size)
+		__testf = __c == __lc->_M_falsename[__n];
 
-	      if (!__donet)
-		{
-		  if (__n < __lc->_M_truename_size)
-		    {
-		      __testt = __c == __lc->_M_truename[__n];
-		      if (!__testt)
-			__donet = true;
-		    }
-		  else
-		    __donet = true;
-		}
+	      if (__testt && __n < __lc->_M_truename_size)
+		__testt = __c == __lc->_M_truename[__n];
 
-	      if (__donef && __donet)
+	      if (!__testt && !__testf)
 		break;
-	      
-	      if (++__beg == __end)
-		__testeof = true;
-            }
-	  if (__testf && __n == __lc->_M_falsename_size)
+
+	      if ((!__testt && __n >= __lc->_M_falsename_size)
+		  || (!__testf && __n >= __lc->_M_truename_size))
+		break;
+	    }
+	  if (__testf && __n == __lc->_M_falsename_size && __n)
 	    {
 	      __v = false;
 	      if (__testt && __n == __lc->_M_truename_size)
 		__err = ios_base::failbit;
 	      else
-		__err = __donet ? ios_base::goodbit : ios_base::eofbit;
+		__err = __testeof ? ios_base::eofbit : ios_base::goodbit;
 	    }
-	  else if (__testt && __n == __lc->_M_truename_size)
+	  else if (__testt && __n == __lc->_M_truename_size && __n)
 	    {
 	      __v = true;
-	      __err = __donef ? ios_base::goodbit : ios_base::eofbit;
+	      __err = __testeof ? ios_base::eofbit : ios_base::goodbit;
 	    }
 	  else
 	    {
@@ -663,10 +652,10 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      // 23. Num_get overflow result.
 	      __v = false;
 	      __err = ios_base::failbit;
-	      if (__testeof && __n)
+	      if (__testeof)
 		__err |= ios_base::eofbit;
 	    }
-        }
+	}
       return __beg;
     }
 
