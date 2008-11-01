@@ -3502,3 +3502,28 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
 
   return error_found ? FAILURE : SUCCESS;
 }
+
+/* Walk an expression tree and replace all symbols with a corresponding symbol
+   in the formal_ns of "sym". Needed for copying interfaces in PROCEDURE
+   statements. The boolean return value is required by gfc_traverse_expr.  */
+
+static bool
+replace_symbol (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
+{
+  if ((expr->expr_type == EXPR_VARIABLE || expr->expr_type == EXPR_FUNCTION)
+      && expr->symtree->n.sym->ns != sym->formal_ns
+      && expr->symtree->n.sym->attr.dummy)
+    {
+      gfc_symtree *stree;
+      gfc_get_sym_tree (expr->symtree->name, sym->formal_ns, &stree);
+      stree->n.sym->attr.referenced = expr->symtree->n.sym->attr.referenced;
+      expr->symtree = stree;
+    }
+  return false;
+}
+
+void
+gfc_expr_replace_symbols (gfc_expr *expr, gfc_symbol *dest)
+{
+  gfc_traverse_expr (expr, dest, &replace_symbol, 0);
+}

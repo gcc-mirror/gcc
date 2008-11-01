@@ -2716,7 +2716,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      && parmse.string_length == NULL_TREE
 	      && e->ts.type == BT_PROCEDURE
 	      && e->symtree->n.sym->ts.type == BT_CHARACTER
-	      && e->symtree->n.sym->ts.cl->length != NULL)
+	      && e->symtree->n.sym->ts.cl->length != NULL
+	      && e->symtree->n.sym->ts.cl->length->expr_type == EXPR_CONSTANT)
 	    {
 	      gfc_conv_const_charlen (e->symtree->n.sym->ts.cl);
 	      parmse.string_length = e->symtree->n.sym->ts.cl->backend_decl;

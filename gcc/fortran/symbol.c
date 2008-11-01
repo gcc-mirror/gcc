@@ -219,7 +219,7 @@ gfc_get_default_type (gfc_symbol *sym, gfc_namespace *ns)
 			"implicitly typed variables");
 
   if (letter < 'a' || letter > 'z')
-    gfc_internal_error ("gfc_get_default_type(): Bad symbol");
+    gfc_internal_error ("gfc_get_default_type(): Bad symbol '%s'",sym->name);
 
   if (ns == NULL)
     ns = gfc_current_ns;
@@ -3790,6 +3790,7 @@ copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
       formal_arg->sym->attr = curr_arg->sym->attr;
       formal_arg->sym->ts = curr_arg->sym->ts;
       formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
+      copy_formal_args (formal_arg->sym, curr_arg->sym);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to

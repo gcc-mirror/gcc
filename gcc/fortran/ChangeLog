@@ -1,3 +1,16 @@
+2008-11-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36322
+	PR fortran/36463
+	* gfortran.h: New function gfc_expr_replace_symbols.
+	* decl.c (match_procedure_decl): Increase reference count for interface.
+	* expr.c: New functions replace_symbol and gfc_expr_replace_symbols.
+	* resolve.c (resolve_symbol): Correctly copy array spec and char len
+	of PROCEDURE declarations from their interface.
+	* symbol.c (gfc_get_default_type): Enhanced error message.
+	(copy_formal_args): Call copy_formal_args recursively for arguments.
+	* trans-expr.c (gfc_conv_function_call): Bugfix.
+
 2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
 
 	PR fortran/37159
