@@ -1,5 +1,10 @@
 2008-10-31  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/rs6000/rs6000.c (rs6000_file_start): Output gnu
+	attribute for struct return convention.
+
+2008-10-31  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/crtsavres.asm: Really, really delete.
 
 2008-10-31  Nathan Froyd  <froydnj@codesourcery.com>
