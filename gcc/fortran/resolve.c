@@ -8917,8 +8917,26 @@ resolve_symbol (gfc_symbol *sym)
 	  sym->attr.dimension = ifc->attr.dimension;
 	  sym->attr.recursive = ifc->attr.recursive;
 	  sym->attr.always_explicit = ifc->attr.always_explicit;
-	  sym->as = gfc_copy_array_spec (ifc->as);
 	  copy_formal_args (sym, ifc);
+	  /* Copy array spec.  */
+	  sym->as = gfc_copy_array_spec (ifc->as);
+	  if (sym->as)
+	    {
+	      int i;
+	      for (i = 0; i < sym->as->rank; i++)
+		{
+		  gfc_expr_replace_symbols (sym->as->lower[i], sym);
+		  gfc_expr_replace_symbols (sym->as->upper[i], sym);
+		}
+	    }
+	  /* Copy char length.  */
+	  if (ifc->ts.cl)
+	    {
+	      sym->ts.cl = gfc_get_charlen();
+	      sym->ts.cl->resolved = ifc->ts.cl->resolved;
+	      sym->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
+	      gfc_expr_replace_symbols (sym->ts.cl->length, sym);
+	    }
 	}
       else if (sym->ts.interface->name[0] != '\0')
 	{
