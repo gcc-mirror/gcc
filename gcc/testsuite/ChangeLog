@@ -1,3 +1,8 @@
+2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
+
+	PR fortran/37159
+	* gfortran.dg/random_seed_1.f90: New testcase.
+
 2008-10-31  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc.dg/cpp/Wsignprom.c: Add column numbers.
