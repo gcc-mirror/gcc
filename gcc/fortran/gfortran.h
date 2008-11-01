@@ -1886,6 +1886,7 @@ typedef struct gfc_code
      symbol for the interface definition.
   const char *sub_name;  */
   gfc_symbol *resolved_sym;
+  gfc_intrinsic_sym *resolved_isym;
 
   union
   {

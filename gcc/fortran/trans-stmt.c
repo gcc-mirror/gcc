@@ -251,6 +251,9 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	    && gfc_check_fncall_dependency (e, fsym->attr.intent,
 					    sym, arg0))
 	{
+	  tree initial;
+	  stmtblock_t temp_post;
+
 	  /* Make a local loopinfo for the temporary creation, so that
 	     none of the other ss->info's have to be renormalized.  */
 	  gfc_init_loopinfo (&tmp_loop);
@@ -261,26 +264,37 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	      tmp_loop.order[n] = loopse->loop->order[n];
 	    }
 
-	  /* Generate the temporary.  Merge the block so that the
-	     declarations are put at the right binding level.  */
-	  size = gfc_create_var (gfc_array_index_type, NULL);
-	  data = gfc_create_var (pvoid_type_node, NULL);
-	  gfc_start_block (&block);
-	  tmp = gfc_typenode_for_spec (&e->ts);
-	  tmp = gfc_trans_create_temp_array (&se->pre, &se->post,
-					      &tmp_loop, info, tmp,
-					      false, true, false,
-					     & arg->expr->where);
-	  gfc_add_modify (&se->pre, size, tmp);
-	  tmp = fold_convert (pvoid_type_node, info->data);
-	  gfc_add_modify (&se->pre, data, tmp);
-	  gfc_merge_block_scope (&block);
-
 	  /* Obtain the argument descriptor for unpacking.  */
 	  gfc_init_se (&parmse, NULL);
 	  parmse.want_pointer = 1;
 	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
+
+	  /* If we've got INTENT(INOUT), initialize the array temporary with
+	     a copy of the values.  */
+	  if (fsym->attr.intent == INTENT_INOUT)
+	    initial = parmse.expr;
+	  else
+	    initial = NULL_TREE;
+
+	  /* Generate the temporary.  Merge the block so that the
+	     declarations are put at the right binding level.  Cleaning up the
+	     temporary should be the very last thing done, so we add the code to
+	     a new block and add it to se->post as last instructions.  */
+	  size = gfc_create_var (gfc_array_index_type, NULL);
+	  data = gfc_create_var (pvoid_type_node, NULL);
+	  gfc_start_block (&block);
+	  gfc_init_block (&temp_post);
+	  tmp = gfc_typenode_for_spec (&e->ts);
+	  tmp = gfc_trans_create_temp_array (&se->pre, &temp_post,
+					     &tmp_loop, info, tmp,
+					     initial,
+					     false, true, false,
+					     &arg->expr->where);
+	  gfc_add_modify (&se->pre, size, tmp);
+	  tmp = fold_convert (pvoid_type_node, info->data);
+	  gfc_add_modify (&se->pre, data, tmp);
+	  gfc_merge_block_scope (&block);
 
 	  /* Calculate the offset for the temporary.  */
 	  offset = gfc_index_zero_node;
@@ -296,11 +310,16 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  info->offset = gfc_create_var (gfc_array_index_type, NULL);	  
 	  gfc_add_modify (&se->pre, info->offset, offset);
 
+
 	  /* Copy the result back using unpack.  */
 	  tmp = build_call_expr (gfor_fndecl_in_unpack, 2, parmse.expr, data);
 	  gfc_add_expr_to_block (&se->post, tmp);
 
+	  /* XXX: This is possibly not needed; but isn't it cleaner this way? */
+	  gfc_add_block_to_block (&se->pre, &parmse.pre);
+
 	  gfc_add_block_to_block (&se->post, &parmse.post);
+	  gfc_add_block_to_block (&se->post, &temp_post);
 	}
     }
 }
@@ -367,7 +386,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
       gfc_se loopse;
 
       /* gfc_walk_elemental_function_args renders the ss chain in the
-         reverse order to the actual argument order.  */
+	 reverse order to the actual argument order.  */
       ss = gfc_reverse_ss (ss);
 
       /* Initialize the loop.  */

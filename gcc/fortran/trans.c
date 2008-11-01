@@ -1102,7 +1102,15 @@ gfc_trans_code (gfc_code * code)
 	  break;
 
 	case EXEC_CALL:
-	  res = gfc_trans_call (code, false);
+	  /* For MVBITS we've got the special exception that we need a
+	     dependency check, too.  */
+	  {
+	    bool is_mvbits = false;
+	    if (code->resolved_isym
+		&& code->resolved_isym->id == GFC_ISYM_MVBITS)
+	      is_mvbits = true;
+	    res = gfc_trans_call (code, is_mvbits);
+	  }
 	  break;
 
 	case EXEC_ASSIGN_CALL:

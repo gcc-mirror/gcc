@@ -1,3 +1,30 @@
+2008-11-01  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/35681
+	* gfortran.h (struct gfc_code): New field `resolved_isym'.
+	* trans.h (gfc_build_memcpy_call): Made public.
+	* trans-array.h (gfc_trans_create_temp_array): New argument `initial'.
+	* intrinsic.c (gfc_intrinsic_sub_interface): Set resolved_isym.
+	* iresolve.c (create_formal_for_intents): New helper method.
+	(gfc_resolve_mvbits): Put dummy formal arglist on resolved_sym.
+	* resolve.c (resolve_call): Initialize resolved_isym to NULL.
+	* trans-array.c (gfc_trans_allocate_array_storage): New argument
+	`initial' to allow initializing the allocated storage to some initial
+	value copied from another array.
+	(gfc_trans_create_temp_array): Allow initialization of the temporary
+	with a copy of some other array by using the new extension.
+	(gfc_trans_array_constructor): Pass NULL_TREE for initial argument.
+	(gfc_conv_loop_setup): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer): Ditto.
+	* trans-expr.c (gfc_conv_function_call): Ditto.
+	(gfc_build_memcpy_call): Made public.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Initialize created
+	temporary for INTENT(INOUT) arguments to the value of the mirrored
+	array and clean up the temporary as very last intructions in the created
+	block.
+	* trans.c (gfc_trans_code): For EXEC_CALL, see if we have a MVBITS call
+	and enable elemental dependency checking if we have.
+
 2008-11-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36322

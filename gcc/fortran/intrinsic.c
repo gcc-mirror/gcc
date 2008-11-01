@@ -3746,6 +3746,7 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   if (!error_flag)
     gfc_pop_suppress_errors ();
 
+  c->resolved_isym = isym;
   if (isym->resolve.s1 != NULL)
     isym->resolve.s1 (c);
   else
