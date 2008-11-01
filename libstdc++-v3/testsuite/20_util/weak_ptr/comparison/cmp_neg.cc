@@ -1,6 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++0x " }
+// { dg-do compile }
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation
+// Copyright (C) 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,57 +19,27 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// 20.6.6.3 Template class weak_ptr [util.smartptr.weak]
 
 #include <memory>
 #include <testsuite_hooks.h>
 
-struct A
-{
-  A() : i() {}
-  int i;
-};
+struct A { };
 
-// 20.6.6.2.5 shared_ptr observers [util.smartptr.shared.obs]
+// 20.8.13.3.6 weak_ptr comparison [util.smartptr.weak.cmp] (removed)
 
-// get
-void
+int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( p.get() == a );
-}
-
-// operator*
-void
-test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( &*p == a );
-}
-
-// operator->
-void
-test03()
-{
-  bool test __attribute__((unused)) = true;
-
-  A * const a = new A;
-  const std::shared_ptr<A> p(a);
-  VERIFY( &p->i == &a->i );
+    std::weak_ptr<A> p1;
+    // { dg-excess-errors "deleted function" }
+    p1 < p1;  // { dg-error "used here" }
+    return 0;
 }
 
 int 
 main()
 {
   test01();
-  test02();
-  test03();
   return 0;
 }

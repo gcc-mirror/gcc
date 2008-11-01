@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation
+// Copyright (C) 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,59 +18,57 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// 20.8.13.3 Template class weak_ptr [util.smartptr.weak]
 
 #include <memory>
 #include <testsuite_hooks.h>
 
 struct A { };
+struct B { };
 
-// 20.6.6.2.5 shared_ptr observers [util.smartptr.shared.obs]
+// 20.6.6.3.5 weak_ptr observers [util.smartptr.weak.obs]
 
-// conversion to bool
-void
+int
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  // test empty weak_ptrs compare equivalent
+  std::weak_ptr<A> p1;
+  std::weak_ptr<B> p2;
+  VERIFY( !p1.owner_before(p2) && !p2.owner_before(p1) );
 
-  const std::shared_ptr<A> p1;
-  VERIFY( p1 == false );
-  const std::shared_ptr<A> p2(p1);
-  VERIFY( p2 == false );
+  std::shared_ptr<B> p3;
+  VERIFY( !p1.owner_before(p3) && !p3.owner_before(p1) );
+
+  return 0;
 }
 
-void
+
+int
 test02()
 {
-  bool test __attribute__((unused)) = true;
+  std::shared_ptr<A> a0;
+  std::weak_ptr<A> w0(a0);
 
-  std::shared_ptr<A> p1(new A);
-  VERIFY( p1 );
-  std::shared_ptr<A> p2(p1);
-  VERIFY( p2 );
-  p1.reset();
-  VERIFY( !p1 );
-  VERIFY( p2 );
+  std::shared_ptr<A> a1(new A);
+  std::weak_ptr<A> w1(a1);
+  VERIFY( !a1.owner_before(w1) && !w1.owner_before(a1) );
+
+  VERIFY( w1.owner_before(w0) || w0.owner_before(w1) );
+  VERIFY( !(w1.owner_before(w0) && w0.owner_before(w1)) );
+
+  VERIFY( w1.owner_before(a0) || a0.owner_before(w1) );
+  VERIFY( !(w1.owner_before(a0) && a0.owner_before(w1)) );
+
+  std::shared_ptr<B> b1(new B);
+  VERIFY( w1.owner_before(b1) || b1.owner_before(w1) );
+
+  return 0;
 }
-
-void
-test03()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::shared_ptr<A> p1(new A);
-  std::shared_ptr<A> p2(p1);
-  p2.reset(new A);
-  VERIFY( p1 );
-  VERIFY( p2 );
-}
-
 
 int 
 main()
 {
   test01();
   test02();
-  test03();
   return 0;
 }
