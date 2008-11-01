@@ -11398,7 +11398,7 @@ fold_builtin_strspn (tree s1, tree s2)
       if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
 	/* Evaluate and ignore both arguments in case either one has
 	   side-effects.  */
-	return omit_two_operands (integer_type_node, integer_zero_node,
+	return omit_two_operands (size_type_node, size_zero_node,
 				  s1, s2);
       return NULL_TREE;
     }
@@ -11444,8 +11444,8 @@ fold_builtin_strcspn (tree s1, tree s2)
 	{
 	  /* Evaluate and ignore argument s2 in case it has
 	     side-effects.  */
-	  return omit_one_operand (integer_type_node,
-				   integer_zero_node, s2);
+	  return omit_one_operand (size_type_node,
+				   size_zero_node, s2);
 	}
 
       /* If the second argument is "", return __builtin_strlen(s1).  */

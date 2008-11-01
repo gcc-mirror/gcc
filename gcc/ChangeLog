@@ -1,3 +1,9 @@
+2008-11-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37976
+	* builtins.c (fold_builtin_strspn): Return a size_t.
+	(fold_builtin_strcspn): Likewise.
+
 2008-10-31  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_file_start): Output gnu
