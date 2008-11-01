@@ -1,3 +1,10 @@
+2008-11-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36426
+	* expr.c (replace_symbol): Replace all symbols which lie in the
+	formal namespace of the interface and copy their attributes.
+	* resolve.c (resolve_symbol): Add charlen to namespace.
+
 2008-11-01  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/19925

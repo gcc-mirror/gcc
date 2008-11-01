@@ -8939,6 +8939,12 @@ resolve_symbol (gfc_symbol *sym)
 	      sym->ts.cl->resolved = ifc->ts.cl->resolved;
 	      sym->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
 	      gfc_expr_replace_symbols (sym->ts.cl->length, sym);
+	      /* Add charlen to namespace.  */
+	      if (sym->formal_ns)
+		{
+		  sym->ts.cl->next = sym->formal_ns->cl_list;
+		  sym->formal_ns->cl_list = sym->ts.cl;
+		}
 	    }
 	}
       else if (sym->ts.interface->name[0] != '\0')
