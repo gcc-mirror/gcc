@@ -1,3 +1,9 @@
+2008-11-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/37939
+	* config/cris/cris.c (cris_rtx_costs) <MULT>: Return 0 for an ADDI
+	operand.
+
 2008-11-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
