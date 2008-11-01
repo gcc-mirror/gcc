@@ -1796,6 +1796,21 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total,
       return true;
 
     case MULT:
+      /* If we have one arm of an ADDI, make sure it gets the cost of
+	 one insn, i.e. zero cost for this operand, and just the cost
+	 of the PLUS, as the insn is created by combine from a PLUS
+	 and an ASHIFT, and the MULT cost below would make the
+	 combined value be larger than the separate insns.  The insn
+	 validity is checked elsewhere by combine.
+
+	 FIXME: this case is a stop-gap for 4.3 and 4.4, this whole
+	 function should be rewritten.  */
+      if (outer_code == PLUS && BIAP_INDEX_P (x))
+	{
+	  *total = 0;
+	  return true;
+	}
+
       /* Identify values that are no powers of two.  Powers of 2 are
          taken care of already and those values should not be changed.  */
       if (!CONST_INT_P (XEXP (x, 1))
