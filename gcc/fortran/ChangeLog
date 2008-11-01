@@ -1,3 +1,9 @@
+2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
+
+	PR fortran/37159
+	* fortran/check.c (gfc_check_random_seed): Check PUT size
+	at compile time.
+
 2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35840

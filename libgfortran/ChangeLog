@@ -1,3 +1,10 @@
+2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
+
+	PR fortran/37159
+	* intrinsics/random.c: Added comment to adapt check.c, should
+	kiss_size change.
+	Few cosmetic changes to existing comments.
+
 2008-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37707

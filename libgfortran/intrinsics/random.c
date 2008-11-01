@@ -75,8 +75,7 @@ static __gthread_mutex_t random_lock;
    GFC_REAL_* types in the range of [0,1).  If GFC_REAL_*_RADIX are 2
    or 16, respectively, we mask off the bits that don't fit into the
    correct GFC_REAL_*, convert to the real type, then multiply by the
-   correct offset.
-*/
+   correct offset.  */
 
 
 static inline void
@@ -214,8 +213,7 @@ KISS algorithm.  */
    We do this by using three generators with different seeds, the
    first one always for the most significant bits, the second one
    for bits 33..64 (if present in the REAL kind), and the third one
-   (called twice) for REAL(16).
-*/
+   (called twice) for REAL(16).  */
 
 #define GFC_SL(k, n)	((k)^((k)<<(n)))
 #define GFC_SR(k, n)	((k)^((k)>>(n)))
@@ -229,8 +227,11 @@ KISS algorithm.  */
    with 0<=x<2^32, 0<y<2^32, 0<=z<2^32, 0<=c<698769069
    except that the two pairs
    z=0,c=0 and z=2^32-1,c=698769068
-   should be avoided.
-*/
+   should be avoided.  */
+
+/* Any modifications to the seeds that change kiss_size below need to be
+   reflected in check.c (gfc_check_random_seed) to enable correct
+   compile-time checking of PUT size for the RANDOM_SEED intrinsic.  */
 
 #define KISS_DEFAULT_SEED_1 123456789, 362436069, 521288629, 316191069
 #define KISS_DEFAULT_SEED_2 987654321, 458629013, 582859209, 438195021
@@ -390,7 +391,7 @@ arandom_r4 (gfc_array_r4 *x)
 
   while (dest)
     {
-      /* random_r4 (dest); */
+      /* random_r4 (dest);  */
       kiss = kiss_random_kernel (kiss_seed_1);
       rnumber_4 (dest, kiss);
 
@@ -457,7 +458,7 @@ arandom_r8 (gfc_array_r8 *x)
 
   while (dest)
     {
-      /* random_r8 (dest); */
+      /* random_r8 (dest);  */
       kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
       kiss += kiss_random_kernel (kiss_seed_2);
       rnumber_8 (dest, kiss);
@@ -527,7 +528,7 @@ arandom_r10 (gfc_array_r10 *x)
 
   while (dest)
     {
-      /* random_r10 (dest); */
+      /* random_r10 (dest);  */
       kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
       kiss += kiss_random_kernel (kiss_seed_2);
       rnumber_10 (dest, kiss);
@@ -599,7 +600,7 @@ arandom_r16 (gfc_array_r16 *x)
 
   while (dest)
     {
-      /* random_r16 (dest); */
+      /* random_r16 (dest);  */
       kiss1 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
       kiss1 += kiss_random_kernel (kiss_seed_2);
 

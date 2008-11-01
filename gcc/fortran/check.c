@@ -3120,9 +3120,16 @@ gfc_check_random_number (gfc_expr *harvest)
 gfc_try
 gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 {
-  unsigned int nargs = 0;
+  unsigned int nargs = 0, kiss_size;
   locus *where = NULL;
+  mpz_t put_size;
+  bool have_gfc_real_16; /* Try and mimic HAVE_GFC_REAL_16 in libgfortran.  */
 
+  have_gfc_real_16 = gfc_validate_kind (BT_REAL, 16, true) != -1;
+
+  /* Keep these values in sync with kiss_size in libgfortran/random.c.  */
+  kiss_size = have_gfc_real_16 ? 12 : 8;
+  
   if (size != NULL)
     {
       if (size->expr_type != EXPR_VARIABLE
@@ -3162,6 +3169,12 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
       if (kind_value_check (put, 1, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
+
+      if (gfc_array_size (put, &put_size) == SUCCESS
+	  && mpz_get_ui (put_size) < kiss_size)
+	gfc_error ("Array PUT of intrinsic %s is too small (%i/%i) at %L", 
+		   gfc_current_intrinsic, (int) mpz_get_ui (put_size),
+		   kiss_size, where);
     }
 
   if (get != NULL)
