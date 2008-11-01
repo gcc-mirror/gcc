@@ -663,50 +663,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, long& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, unsigned short& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, unsigned int& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, unsigned long& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, long long& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, unsigned long long& __v) const
-    { return _M_extract_int(__beg, __end, __io, __err, __v); }
-#endif
-
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
 	   ios_base::iostate& __err, float& __v) const
     {
       string __xtrc;
@@ -1143,34 +1099,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	}
       return __s;
     }
-
-  template<typename _CharT, typename _OutIter>
-    _OutIter
-    num_put<_CharT, _OutIter>::
-    do_put(iter_type __s, ios_base& __io, char_type __fill, long __v) const
-    { return _M_insert_int(__s, __io, __fill, __v); }
-
-  template<typename _CharT, typename _OutIter>
-    _OutIter
-    num_put<_CharT, _OutIter>::
-    do_put(iter_type __s, ios_base& __io, char_type __fill,
-           unsigned long __v) const
-    { return _M_insert_int(__s, __io, __fill, __v); }
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template<typename _CharT, typename _OutIter>
-    _OutIter
-    num_put<_CharT, _OutIter>::
-    do_put(iter_type __s, ios_base& __io, char_type __fill, long long __v) const
-    { return _M_insert_int(__s, __io, __fill, __v); }
-
-  template<typename _CharT, typename _OutIter>
-    _OutIter
-    num_put<_CharT, _OutIter>::
-    do_put(iter_type __s, ios_base& __io, char_type __fill,
-           unsigned long long __v) const
-    { return _M_insert_int(__s, __io, __fill, __v); }
-#endif
 
   template<typename _CharT, typename _OutIter>
     _OutIter
