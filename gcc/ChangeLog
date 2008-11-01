@@ -1,3 +1,11 @@
+2008-11-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	2008-10-24  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/37769
+	* regmove.c (optimize_reg_copy_2): Update REG_INC note if needed.
+
 2008-10-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/37909

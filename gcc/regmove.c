@@ -686,7 +686,16 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 	      {
 		if (reg_mentioned_p (dest, PATTERN (q)))
 		  {
+		    rtx note;
+
 		    PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
+		    note = FIND_REG_INC_NOTE (q, dest);
+		    if (note)
+		      {
+			remove_note (q, note);
+			REG_NOTES (q)
+			  = gen_rtx_EXPR_LIST (REG_INC, src, REG_NOTES (q));
+		      }
 		    df_insn_rescan (q);
 		  }
 
