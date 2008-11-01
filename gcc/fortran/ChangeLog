@@ -1,3 +1,24 @@
+2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
+
+        PR fortran/37903
+        * trans-array.c (gfc_trans_create_temp_array): If n is less
+	than the temporary dimension, assert that loop->from is
+	zero (reverts to earlier versions). If there is at least one
+	null loop->to[n], it is a callee allocated array so set the
+	size to NULL and break.
+	(gfc_trans_constant_array_constructor): Set the offset to zero.
+	(gfc_trans_array_constructor): Remove loop shifting around the
+	temporary creation.
+	(gfc_conv_loop_setup): Prefer zero-based descriptors if
+	possible.  Calculate the translation from loop variables to
+	array indices if an array constructor.
+
+2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
+
+        PR fortran/37749
+        * trans-array.c (gfc_trans_create_temp_array): If size is NULL
+	use the array bounds for loop->to.
+
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37723
