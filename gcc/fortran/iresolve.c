@@ -2608,9 +2608,43 @@ gfc_resolve_cpu_time (gfc_code *c)
 }
 
 
+/* Create a formal arglist based on an actual one and set the INTENTs given.  */
+
+static gfc_formal_arglist*
+create_formal_for_intents (gfc_actual_arglist* actual, const sym_intent* ints)
+{
+  gfc_formal_arglist* head;
+  gfc_formal_arglist* tail;
+  int i;
+
+  if (!actual)
+    return NULL;
+
+  head = tail = gfc_get_formal_arglist ();
+  for (i = 0; actual; actual = actual->next, tail = tail->next, ++i)
+    {
+      gfc_symbol* sym;
+
+      sym = gfc_new_symbol ("dummyarg", NULL);
+      sym->ts = actual->expr->ts;
+
+      sym->attr.intent = ints[i];
+      tail->sym = sym;
+
+      if (actual->next)
+	tail->next = gfc_get_formal_arglist ();
+    }
+
+  return head;
+}
+
+
 void
 gfc_resolve_mvbits (gfc_code *c)
 {
+  static const sym_intent INTENTS[] = {INTENT_IN, INTENT_IN, INTENT_IN,
+				       INTENT_INOUT, INTENT_IN};
+
   const char *name;
   gfc_typespec ts;
   gfc_clear_ts (&ts);
@@ -2632,6 +2666,10 @@ gfc_resolve_mvbits (gfc_code *c)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
   /* Mark as elemental subroutine as this does not happen automatically.  */
   c->resolved_sym->attr.elemental = 1;
+
+  /* Create a dummy formal arglist so the INTENTs are known later for purpose
+     of creating temporaries.  */
+  c->resolved_sym->formal = create_formal_for_intents (c->ext.actual, INTENTS);
 }
 
 

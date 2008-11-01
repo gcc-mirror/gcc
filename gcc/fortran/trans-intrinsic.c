@@ -3787,7 +3787,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
      FIXME callee_alloc is not set!  */
 
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, mold_type, false, true, false,
+			       info, mold_type, NULL_TREE, false, true, false,
 			       &expr->where);
 
   /* Cast the pointer to the result.  */

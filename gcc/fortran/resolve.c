@@ -2913,23 +2913,26 @@ resolve_call (gfc_code *c)
 
   t = SUCCESS;
   if (c->resolved_sym == NULL)
-    switch (procedure_kind (csym))
-      {
-      case PTYPE_GENERIC:
-	t = resolve_generic_s (c);
-	break;
+    {
+      c->resolved_isym = NULL;
+      switch (procedure_kind (csym))
+	{
+	case PTYPE_GENERIC:
+	  t = resolve_generic_s (c);
+	  break;
 
-      case PTYPE_SPECIFIC:
-	t = resolve_specific_s (c);
-	break;
+	case PTYPE_SPECIFIC:
+	  t = resolve_specific_s (c);
+	  break;
 
-      case PTYPE_UNKNOWN:
-	t = resolve_unknown_s (c);
-	break;
+	case PTYPE_UNKNOWN:
+	  t = resolve_unknown_s (c);
+	  break;
 
-      default:
-	gfc_internal_error ("resolve_subroutine(): bad function type");
-      }
+	default:
+	  gfc_internal_error ("resolve_subroutine(): bad function type");
+	}
+    }
 
   /* Some checks of elemental subroutine actual arguments.  */
   if (resolve_elemental_actual (NULL, c) == FAILURE)

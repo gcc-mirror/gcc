@@ -493,14 +493,17 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
    callee will allocate the array.  If DEALLOC is true, also generate code to
    free the array afterwards.
 
+   If INITIAL is not NULL, it is packed using internal_pack and the result used
+   as data instead of allocating a fresh, unitialized area of memory.
+
    Initialization code is added to PRE and finalization code to POST.
    DYNAMIC is true if the caller may want to extend the array later
    using realloc.  This prevents us from putting the array on the stack.  */
 
 static void
 gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
-                                  gfc_ss_info * info, tree size, tree nelem,
-                                  bool dynamic, bool dealloc)
+				  gfc_ss_info * info, tree size, tree nelem,
+				  tree initial, bool dynamic, bool dealloc)
 {
   tree tmp;
   tree desc;
@@ -517,7 +520,8 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
   else
     {
       /* Allocate the temporary.  */
-      onstack = !dynamic && gfc_can_put_var_on_stack (size);
+      onstack = !dynamic && initial == NULL_TREE
+			 && gfc_can_put_var_on_stack (size);
 
       if (onstack)
 	{
@@ -534,9 +538,53 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 	}
       else
 	{
-	  /* Allocate memory to hold the data.  */
-	  tmp = gfc_call_malloc (pre, NULL, size);
-	  tmp = gfc_evaluate_now (tmp, pre);
+	  /* Allocate memory to hold the data or call internal_pack.  */
+	  if (initial == NULL_TREE)
+	    {
+	      tmp = gfc_call_malloc (pre, NULL, size);
+	      tmp = gfc_evaluate_now (tmp, pre);
+	    }
+	  else
+	    {
+	      tree packed;
+	      tree source_data;
+	      tree was_packed;
+	      stmtblock_t do_copying;
+
+	      tmp = TREE_TYPE (initial); /* Pointer to descriptor.  */
+	      gcc_assert (TREE_CODE (tmp) == POINTER_TYPE);
+	      tmp = TREE_TYPE (tmp); /* The descriptor itself.  */
+	      tmp = gfc_get_element_type (tmp);
+	      gcc_assert (tmp == gfc_get_element_type (TREE_TYPE (desc)));
+	      packed = gfc_create_var (build_pointer_type (tmp), "data");
+
+	      tmp = build_call_expr (gfor_fndecl_in_pack, 1, initial);
+	      tmp = fold_convert (TREE_TYPE (packed), tmp);
+	      gfc_add_modify (pre, packed, tmp);
+
+	      tmp = build_fold_indirect_ref (initial);
+	      source_data = gfc_conv_descriptor_data_get (tmp);
+
+	      /* internal_pack may return source->data without any allocation
+		 or copying if it is already packed.  If that's the case, we
+		 need to allocate and copy manually.  */
+
+	      gfc_start_block (&do_copying);
+	      tmp = gfc_call_malloc (&do_copying, NULL, size);
+	      tmp = fold_convert (TREE_TYPE (packed), tmp);
+	      gfc_add_modify (&do_copying, packed, tmp);
+	      tmp = gfc_build_memcpy_call (packed, source_data, size);
+	      gfc_add_expr_to_block (&do_copying, tmp);
+
+	      was_packed = fold_build2 (EQ_EXPR, boolean_type_node,
+					packed, source_data);
+	      tmp = gfc_finish_block (&do_copying);
+	      tmp = build3_v (COND_EXPR, was_packed, tmp, build_empty_stmt ());
+	      gfc_add_expr_to_block (pre, tmp);
+
+	      tmp = fold_convert (pvoid_type_node, packed);
+	    }
+
 	  gfc_conv_descriptor_data_set (pre, desc, tmp);
 	}
     }
@@ -567,14 +615,15 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
    fields of info if known.  Returns the size of the array, or NULL for a
    callee allocated array.
 
-   PRE, POST, DYNAMIC and DEALLOC are as for gfc_trans_allocate_array_storage.
+   PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for
+   gfc_trans_allocate_array_storage.
  */
 
 tree
 gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			     gfc_loopinfo * loop, gfc_ss_info * info,
-			     tree eltype, bool dynamic, bool dealloc,
-			     bool callee_alloc, locus * where)
+			     tree eltype, tree initial, bool dynamic,
+			     bool dealloc, bool callee_alloc, locus * where)
 {
   tree type;
   tree desc;
@@ -600,8 +649,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
       else
 	{
 	  /* Callee allocated arrays may not have a known bound yet.  */
-          if (loop->to[n])
-              loop->to[n] = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+	  if (loop->to[n])
+	      loop->to[n] = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 					 loop->to[n], loop->from[n]);
 	  loop->from[n] = gfc_index_zero_node;
 	}
@@ -635,7 +684,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
        {
 	 stride[n] = size
 	 delta = ubound[n] + 1 - lbound[n];
-         size = size * delta;
+	 size = size * delta;
        }
      size = size * sizeof(element);
   */
@@ -654,17 +703,17 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   for (n = 0; n < info->dimen; n++)
      {
       if (size == NULL_TREE)
-        {
+	{
 	  /* For a callee allocated array express the loop bounds in terms
 	     of the descriptor fields.  */
-          tmp =
+	  tmp =
 	    fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			 gfc_conv_descriptor_ubound (desc, gfc_rank_cst[n]),
 			 gfc_conv_descriptor_lbound (desc, gfc_rank_cst[n]));
-          loop->to[n] = tmp;
-          continue;
-        }
-        
+	  loop->to[n] = tmp;
+	  continue;
+	}
+	
       /* Store the stride and bound components in the descriptor.  */
       tmp = gfc_conv_descriptor_stride (desc, gfc_rank_cst[n]);
       gfc_add_modify (pre, tmp, size);
@@ -712,8 +761,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
       size = NULL_TREE;
     }
 
-  gfc_trans_allocate_array_storage (pre, post, info, size, nelem, dynamic,
-			            dealloc);
+  gfc_trans_allocate_array_storage (pre, post, info, size, nelem, initial,
+				    dynamic, dealloc);
 
   if (info->dimen > loop->temp_dim)
     loop->temp_dim = info->dimen;
@@ -1811,7 +1860,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
     }
 
   gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
-			       type, dynamic, true, false, where);
+			       type, NULL_TREE, dynamic, true, false, where);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -3523,8 +3572,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
       gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
-				   &loop->temp_ss->data.info, tmp, false, true,
-				   false, where);
+				   &loop->temp_ss->data.info, tmp, NULL_TREE,
+				   false, true, false, where);
     }
 
   for (n = 0; n < loop->temp_dim; n++)

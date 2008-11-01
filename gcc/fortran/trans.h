@@ -464,6 +464,9 @@ tree gfc_call_free (tree);
 /* Allocate memory after performing a few checks.  */
 tree gfc_call_malloc (stmtblock_t *, tree, tree);
 
+/* Build a memcpy call.  */
+tree gfc_build_memcpy_call (tree, tree, tree);
+
 /* Allocate memory for arrays, with optional status variable.  */
 tree gfc_allocate_array_with_status (stmtblock_t*, tree, tree, tree, gfc_expr*);
 
