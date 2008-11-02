@@ -1,3 +1,9 @@
+2008-11-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/37977
+	* gcc-interface/Makefile.in: Add multilib handling for
+	s390-linux and s390x-linux.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/Make-lang.in (check-ada-subtargets): Depend on
