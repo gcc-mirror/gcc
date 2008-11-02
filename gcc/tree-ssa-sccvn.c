@@ -498,7 +498,7 @@ vuses_to_vec (gimple stmt, VEC (tree, gc) **result)
 /* Copy the VUSE names in STMT into a vector, and return
    the vector.  */
 
-VEC (tree, gc) *
+static VEC (tree, gc) *
 copy_vuses_from_stmt (gimple stmt)
 {
   VEC (tree, gc) *vuses = NULL;
@@ -1579,7 +1579,6 @@ set_ssa_val_to (tree from, tree to)
       print_generic_expr (dump_file, from, 0);
       fprintf (dump_file, " to ");
       print_generic_expr (dump_file, to, 0);
-      fprintf (dump_file, "\n");
     }
 
   currval = SSA_VAL (from);
@@ -1587,8 +1586,12 @@ set_ssa_val_to (tree from, tree to)
   if (currval != to  && !operand_equal_p (currval, to, OEP_PURE_SAME))
     {
       SSA_VAL (from) = to;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " (changed)\n");
       return true;
     }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n");
   return false;
 }
 
@@ -2113,6 +2116,8 @@ simplify_binary_expression (gimple stmt)
 
   result = fold_binary (gimple_assign_rhs_code (stmt),
 			TREE_TYPE (gimple_get_lhs (stmt)), op0, op1);
+  if (result)
+    STRIP_USELESS_TYPE_CONVERSION (result);
 
   fold_undefer_overflow_warnings (result && valid_gimple_rhs_p (result),
 				  stmt, 0);

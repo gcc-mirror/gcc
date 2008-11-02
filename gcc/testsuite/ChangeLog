@@ -1,3 +1,8 @@
+2008-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37991
+	* gcc.c-torture/compile/pr37991.c: New testcase.
+
 2008-11-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/37939
