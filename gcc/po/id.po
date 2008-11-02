@@ -6716,751 +6716,751 @@ msgstr "Argumen aktual berisi terlalu sedikit elemen untuk argumen dummy '%s' (%
 #: fortran/interface.c:1962
 #, no-c-format
 msgid "Expected a procedure for argument '%s' at %L"
-msgstr ""
+msgstr "Diduga sebuah prosedur untuk argumen '%s' di %L"
 
 #: fortran/interface.c:1972
 #, no-c-format
 msgid "Expected a PURE procedure for argument '%s' at %L"
-msgstr ""
+msgstr "Diduga sebuah PURE prosedur untuk argumen '%s' di %L"
 
 #: fortran/interface.c:1986
 #, no-c-format
 msgid "Actual argument for '%s' cannot be an assumed-size array at %L"
-msgstr ""
+msgstr "Aktual argumen untuk '%s' tidak dapat diasumsikan array berukuran di %L"
 
 #: fortran/interface.c:1995
 #, no-c-format
 msgid "Actual argument for '%s' must be a pointer at %L"
-msgstr ""
+msgstr "Aktual argumen untuk '%s' harus berupa sebuah penunjuk di %L"
 
 #: fortran/interface.c:2004
 #, no-c-format
 msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
-msgstr ""
+msgstr "Aktual argumen untuk '%s' harus DAPAT DIALOKASIKAN di %L"
 
 #: fortran/interface.c:2017
 #, no-c-format
 msgid "Actual argument at %L must be definable as the dummy argument '%s' is INTENT = OUT/INOUT"
-msgstr ""
+msgstr "Aktual argumen di %L harus dapat didefinisikan sebagai sebuah dummy argumen '%s' adalah INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2026
 #, no-c-format
 msgid "Actual argument at %L is use-associated with PROTECTED attribute and dummy argument '%s' is INTENT = OUT/INOUT"
-msgstr ""
+msgstr "Aktual argumen di %L adalah diassosiasikan guna dengan atribut TERPROTEKSI dan dummy argumen '%s' adalah INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2039
 #, no-c-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT) or VOLATILE attribute of the dummy argument '%s'"
-msgstr ""
+msgstr "Daerah array aktual argumen dengan vektor subscript di %L adalah tidak kompatibel dengan INTENT(OUT), INTENT(INOUT) atau VOLATILE atribut dari argumen dummy'%s'"
 
 #: fortran/interface.c:2056
 #, no-c-format
 msgid "Assumed-shape actual argument at %L is incompatible with the non-assumed-shape dummy argument '%s' due to VOLATILE attribute"
-msgstr ""
+msgstr "Bentuk-diasumsikan aktual argumen di %L adalah tidak kompatibel dengan bentuk tidak diasumsikan dummy argumen '%s' karena atribut VOLATILE"
 
 #: fortran/interface.c:2068
 #, no-c-format
 msgid "Array-section actual argument at %L is incompatible with the non-assumed-shape dummy argument '%s' due to VOLATILE attribute"
-msgstr ""
+msgstr "Daerah array aktual argumen di %L adalah tidak kompatibel dengan tidak-diasumsikanbentuk dummy argumen '%s' karena atribut VOLATILE"
 
 #: fortran/interface.c:2087
 #, no-c-format
 msgid "Pointer-array actual argument at %L requires an assumed-shape or pointer-array dummy argument '%s' due to VOLATILE attribute"
-msgstr ""
+msgstr "Penunjuk array aktual argumen di %L membutuhkan sebuah bentuk diasumsikan ataupenunjuk array dummy argumen '%s' karena atribut VOLATILE"
 
 #: fortran/interface.c:2117
 #, no-c-format
 msgid "Missing actual argument for argument '%s' at %L"
-msgstr ""
+msgstr "Hilang aktual argumen untuk argumen '%s' di %L"
 
 #: fortran/interface.c:2303
 #, no-c-format
 msgid "Same actual argument associated with INTENT(%s) argument '%s' and INTENT(%s) argument '%s' at %L"
-msgstr ""
+msgstr "Aktual argumen sama berasosiasi dengan INTENT(%s) argumen '%s' dan INTENT(%s) argumen '%s' di %L"
 
 #: fortran/interface.c:2359
 #, no-c-format
 msgid "Procedure argument at %L is INTENT(IN) while interface specifies INTENT(%s)"
-msgstr ""
+msgstr "Prosedur argumen di %L adalah INTENT(IN) ketika antar-muka menspesifikasikan INTENT(%s)"
 
 #: fortran/interface.c:2369
 #, no-c-format
 msgid "Procedure argument at %L is local to a PURE procedure and is passed to an INTENT(%s) argument"
-msgstr ""
+msgstr "Prosedur argumen di %L adalah lokal ke sebuah prosedur PURE dan adalah dilewatkan ke sebuah argumen INTENT(%s)"
 
 #: fortran/interface.c:2377
 #, no-c-format
 msgid "Procedure argument at %L is local to a PURE procedure and has the POINTER attribute"
-msgstr ""
+msgstr "Prosedur argumen di %L adalah lokal ke sebuah prosedur PURE dan memiliki atribut PENUNJUK"
 
 #: fortran/interface.c:2400
 #, no-c-format
 msgid "Procedure '%s' called with an implicit interface at %L"
-msgstr ""
+msgstr "Prosedur '%s' dipanggil dengan sebuah antar-muka implisit di %L"
 
 #: fortran/interface.c:2629
 #, no-c-format
 msgid "Function '%s' called in lieu of an operator at %L must be PURE"
-msgstr ""
+msgstr "Fungsi '%s' dipanggil dalam tempat dari sebuah operator di %L harus berupa PURE"
 
 #: fortran/interface.c:2708
 #, no-c-format
 msgid "Entity '%s' at %C is already present in the interface"
-msgstr ""
+msgstr "Entiti '%s' di %C telah ada dalam sebuah antar-muka"
 
 #: fortran/intrinsic.c:2923
 #, no-c-format
 msgid "Too many arguments in call to '%s' at %L"
-msgstr ""
+msgstr "Terlalu banyak argumen dalam panggilan ke '%s' di %L"
 
 #: fortran/intrinsic.c:2938
 #, no-c-format
 msgid "The argument list functions %%VAL, %%LOC or %%REF are not allowed in this context at %L"
-msgstr ""
+msgstr "Daftar argumen fungsi %%VAL, %%LOC atau %%REF tidak diperbolehkan dalam konteks ini di %L"
 
 #: fortran/intrinsic.c:2941
 #, no-c-format
 msgid "Can't find keyword named '%s' in call to '%s' at %L"
-msgstr ""
+msgstr "Tidak dapat menemukan kata kunci bernama '%s' dalam panggilan ke '%s' di %L"
 
 #: fortran/intrinsic.c:2948
 #, no-c-format
 msgid "Argument '%s' is appears twice in call to '%s' at %L"
-msgstr ""
+msgstr "Argumen '%s' muncul dua kali dalam panggilan ke '%s' di %L"
 
 #: fortran/intrinsic.c:2962
 #, no-c-format
 msgid "Missing actual argument '%s' in call to '%s' at %L"
-msgstr ""
+msgstr "Hilang aktual argumen '%s' dalam panggilan ke '%s' di %L"
 
 #: fortran/intrinsic.c:2977
 #, no-c-format
 msgid "ALTERNATE RETURN not permitted at %L"
-msgstr ""
+msgstr "ALTERNATIF KEMBALI tidak diijinkan di %L"
 
 #: fortran/intrinsic.c:3026
 #, no-c-format
 msgid "Type of argument '%s' in call to '%s' at %L should be %s, not %s"
-msgstr ""
+msgstr "Tipe dari argumen '%s' dalam panggilan ke '%s' di %L seharusnya %s, bukan %s"
 
 #: fortran/intrinsic.c:3342
 #, no-c-format
 msgid "Intrinsic '%s' at %L is not included in the selected standard"
-msgstr ""
+msgstr "Intrinsik '%s' di %L tidak termasuk dalam standar yang dipilih"
 
 #: fortran/intrinsic.c:3398
 #, no-c-format
 msgid "Fortran 2003: Function '%s' as initialization expression at %L"
-msgstr ""
+msgstr "Fortran 2003: Fungsi '%s' sebagai ekspresi inisialisasi di %L"
 
 #: fortran/intrinsic.c:3463
 #, no-c-format
 msgid "Fortran 2003: Elemental function as initialization expression with non-integer/non-character arguments at %L"
-msgstr ""
+msgstr "Fortran 2003: Fungsi elemental sebagai ekspresi inisialisasi dengan bukan integer/bukan-karakter argumen di %L"
 
 #: fortran/intrinsic.c:3524
 #, no-c-format
 msgid "Subroutine call to intrinsic '%s' at %L is not PURE"
-msgstr ""
+msgstr "Panggilan subroutine ke intrinsik '%s' di %L tidak PURE"
 
 #: fortran/intrinsic.c:3595
 #, no-c-format
 msgid "Extension: Conversion from %s to %s at %L"
-msgstr ""
+msgstr "Ekstensi: Konversi dari %s ke %s di %L"
 
 #: fortran/intrinsic.c:3598
 #, no-c-format
 msgid "Conversion from %s to %s at %L"
-msgstr ""
+msgstr "Konversi dari %s ke %s di %L"
 
 #: fortran/intrinsic.c:3645
 #, no-c-format
 msgid "Can't convert %s to %s at %L"
-msgstr ""
+msgstr "Tidak dapat mengubah %s ke %s di %L"
 
 #: fortran/io.c:156 fortran/primary.c:750
 #, no-c-format
 msgid "Extension: backslash character at %C"
-msgstr ""
+msgstr "Ekstensi: karakter backslash di %C"
 
 #: fortran/io.c:187 fortran/io.c:190
 #, no-c-format
 msgid "Extension: Tab character in format at %C"
-msgstr ""
+msgstr "Ekstensi: Karakter tab dalam format di %C"
 
 #: fortran/io.c:450
 msgid "Positive width required"
-msgstr ""
+msgstr "Lebar positif dibutuhkan"
 
 #: fortran/io.c:451
 msgid "Nonnegative width required"
-msgstr ""
+msgstr "lebar tidak negatif dibutuhkan"
 
 #: fortran/io.c:452
 msgid "Unexpected element"
-msgstr ""
+msgstr "Elemen tidak diduga"
 
 #: fortran/io.c:453
 msgid "Unexpected end of format string"
-msgstr ""
+msgstr "Akhir dari format string tidak terduga"
 
 #: fortran/io.c:472
 msgid "Missing leading left parenthesis"
-msgstr ""
+msgstr "Hilang leading left parenthesis"
 
 #: fortran/io.c:519
 msgid "Expected P edit descriptor"
-msgstr ""
+msgstr "Diduga P edit deskripsi"
 
 #. P requires a prior number.
 #: fortran/io.c:527
 msgid "P descriptor requires leading scale factor"
-msgstr ""
+msgstr "P pendeskripsi membutuhkan awalah faktor pengali"
 
 #. X requires a prior number if we're being pedantic.
 #: fortran/io.c:532
 #, no-c-format
 msgid "Extension: X descriptor requires leading space count at %C"
-msgstr ""
+msgstr "Ekstensi: X pendeskripsi membutuhkan awalan spasi dihitung di %C"
 
 #: fortran/io.c:554
 #, no-c-format
 msgid "Extension: $ descriptor at %C"
-msgstr ""
+msgstr "Ekstensi: $ pendeskripsi di %C"
 
 #: fortran/io.c:559
 #, no-c-format
 msgid "$ should be the last specifier in format at %C"
-msgstr ""
+msgstr "$ seharusnya penspesifikasi terakhir dalam format di %C"
 
 #: fortran/io.c:604
 msgid "Repeat count cannot follow P descriptor"
-msgstr ""
+msgstr "Jumlah pengulangan tidak dapat mengikuti pendeskripsi P"
 
 #: fortran/io.c:624
 #, no-c-format
 msgid "Extension: Missing positive width after L descriptor at %C"
-msgstr ""
+msgstr "Ekstensi: Hilang lebar positif setelah pendeskripsi L di %C"
 
 #: fortran/io.c:670 fortran/io.c:672 fortran/io.c:733 fortran/io.c:735
 #, no-c-format
 msgid "Period required in format specifier at %C"
-msgstr ""
+msgstr "Period dibutuhkan dalam format penspesifikasi di %C"
 
 #: fortran/io.c:704
 msgid "Positive exponent width required"
-msgstr ""
+msgstr "Lebar positif eksponen dibutuhkan"
 
 #: fortran/io.c:753
 #, no-c-format
 msgid "The H format specifier at %C is a Fortran 95 deleted feature"
-msgstr ""
+msgstr "Penspesifikasi format H di %C adalah sebuah feature Fortran 95 yang dihapus"
 
 #: fortran/io.c:838 fortran/io.c:895
 #, no-c-format
 msgid "Extension: Missing comma at %C"
-msgstr ""
+msgstr "Ekstensi: Hilang koma di %C"
 
 #: fortran/io.c:905
 #, no-c-format
 msgid "%s in format string at %C"
-msgstr ""
+msgstr "%s dalam format string di %C"
 
 #: fortran/io.c:946
 #, no-c-format
 msgid "Format statement in module main block at %C"
-msgstr ""
+msgstr "Pernyataan format dalam modul blok utama di %C"
 
 #: fortran/io.c:952
 #, no-c-format
 msgid "Missing format label at %C"
-msgstr ""
+msgstr "Hilang label format di %C"
 
 #: fortran/io.c:1010 fortran/io.c:1034
 #, no-c-format
 msgid "Duplicate %s specification at %C"
-msgstr ""
+msgstr "Duplikasi %s spesifikasi di %C"
 
 #: fortran/io.c:1041
 #, no-c-format
 msgid "Variable tag cannot be INTENT(IN) at %C"
-msgstr ""
+msgstr "Variabel tag tidak dapat berupa INTENT(IN) di %C"
 
 #: fortran/io.c:1048
 #, no-c-format
 msgid "Variable tag cannot be assigned in PURE procedure at %C"
-msgstr ""
+msgstr "Variabel tag tidak dapat ditempatkan dalam prosedur PURE di %C"
 
 #: fortran/io.c:1085
 #, no-c-format
 msgid "Duplicate %s label specification at %C"
-msgstr ""
+msgstr "Duplikasi %s label spesifikasi di %C"
 
 #: fortran/io.c:1106
 #, no-c-format
 msgid "Constant expression in FORMAT tag at %L must be of type default CHARACTER"
-msgstr ""
+msgstr "Ekspresi konstant dalam FORMAT tag di %L harus berupa tipe baku KARAKTER"
 
 #: fortran/io.c:1119
 #, no-c-format
 msgid "FORMAT tag at %L must be of type CHARACTER or INTEGER"
-msgstr ""
+msgstr "FORMAT tag di %L harus berupa tipe KARAKTER atau INTEGER"
 
 #: fortran/io.c:1125
 #, no-c-format
 msgid "Deleted feature: ASSIGNED variable in FORMAT tag at %L"
-msgstr ""
+msgstr "Featur terhapus: DITEMPATKAN variabel dalam FORMAT tag di %L"
 
 #: fortran/io.c:1131
 #, no-c-format
 msgid "Variable '%s' at %L has not been assigned a format label"
-msgstr ""
+msgstr "Variabel '%s' di %L belum ditempatkan sebuah label format"
 
 #: fortran/io.c:1138
 #, no-c-format
 msgid "Scalar '%s' in FORMAT tag at %L is not an ASSIGNED variable"
-msgstr ""
+msgstr "Skalar '%s' dalam FORMAT tag di %L bukan sebuah variabel DITEMPATKAN"
 
 #: fortran/io.c:1151
 #, no-c-format
 msgid "Extension: Character array in FORMAT tag at %L"
-msgstr ""
+msgstr "Ekstensi: Karakter array dalam FORMAT tag di %L"
 
 #: fortran/io.c:1157
 #, no-c-format
 msgid "Extension: Non-character in FORMAT tag at %L"
-msgstr ""
+msgstr "Ekstensi: Bukan-karakter dalam tag FORMAT di %L"
 
 #: fortran/io.c:1182
 #, no-c-format
 msgid "%s tag at %L must be of type %s"
-msgstr ""
+msgstr "%s tag di %L harus berupa tipe %s"
 
 #: fortran/io.c:1189
 #, no-c-format
 msgid "%s tag at %L must be scalar"
-msgstr ""
+msgstr "%s tag di %L harus berupa skalar"
 
 #: fortran/io.c:1195
 #, no-c-format
 msgid "Fortran 2003: IOMSG tag at %L"
-msgstr ""
+msgstr "Fortran 2003: IOMSG tag di %L"
 
 #: fortran/io.c:1203
 #, no-c-format
 msgid "Fortran 95 requires default INTEGER in %s tag at %L"
-msgstr ""
+msgstr "Fortran 95 membutuhkan INTEGER baku dalam tag %s di %L"
 
 #: fortran/io.c:1211
 #, no-c-format
 msgid "Extension: CONVERT tag at %L"
-msgstr ""
+msgstr "Ekstensi: CONVERT tag di %L"
 
 #: fortran/io.c:1367 fortran/io.c:1375
 #, no-c-format
 msgid "Fortran 2003: %s specifier in %s statement at %C has value '%s'"
-msgstr ""
+msgstr "Fortran 2003: penspesifikasi %s dalam pernyataan %s di %C memiliki nilai '%s'"
 
 #: fortran/io.c:1393 fortran/io.c:1401
 #, no-c-format
 msgid "Extension: %s specifier in %s statement at %C has value '%s'"
-msgstr ""
+msgstr "Ekstensi: penspesifikasi %s dalam pernyataan %s di %C memiliki nilai '%s'"
 
 #: fortran/io.c:1413 fortran/io.c:1419
 #, no-c-format
 msgid "%s specifier in %s statement at %C has invalid value '%s'"
-msgstr ""
+msgstr "penspesifikasi %s dalam pernyataan %s di %C memiliki nilai tidak valid '%s'"
 
 #: fortran/io.c:1473
 #, no-c-format
 msgid "OPEN statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "pernyataan OPEN tidak diperbolehkan dalam prosedur PURE di %C"
 
 #: fortran/io.c:1818
 #, no-c-format
 msgid "CLOSE statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "pernyataan CLOSE tidak diperbolehkan dalam prosedur PURE di %C"
 
 #: fortran/io.c:1955 fortran/match.c:1911
 #, no-c-format
 msgid "%s statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "pernyataan %s tidak diperbolehkan dalam prosedur PURE di %C"
 
 #: fortran/io.c:2011
 #, no-c-format
 msgid "Fortran 2003: FLUSH statement at %C"
-msgstr ""
+msgstr "Fortran 2003: pernyataan FLUSH di %C"
 
 #: fortran/io.c:2072
 #, no-c-format
 msgid "Duplicate UNIT specification at %C"
-msgstr ""
+msgstr "Duplikasi SATUAN spesifikasi di %C"
 
 #: fortran/io.c:2132
 #, no-c-format
 msgid "Duplicate format specification at %C"
-msgstr ""
+msgstr "Duplikasi format spesifikasi di %C"
 
 #: fortran/io.c:2149
 #, no-c-format
 msgid "Symbol '%s' in namelist '%s' is INTENT(IN) at %C"
-msgstr ""
+msgstr "Simbol '%s' dalam daftar nama '%s' adalah INTENT(IN) di %C"
 
 #: fortran/io.c:2185
 #, no-c-format
 msgid "Duplicate NML specification at %C"
-msgstr ""
+msgstr "Duplikasi spesifikasi NML di %C"
 
 #: fortran/io.c:2194
 #, no-c-format
 msgid "Symbol '%s' at %C must be a NAMELIST group name"
-msgstr ""
+msgstr "Simbol '%s' di %C harus berupa sebuah nama grup DAFTAR-NAMA"
 
 #: fortran/io.c:2235
 #, no-c-format
 msgid "END tag at %C not allowed in output statement"
-msgstr ""
+msgstr "tag AKHIR di %C tidak diperbolehkan dalam pernyataan keluaran"
 
 #: fortran/io.c:2292
 #, no-c-format
 msgid "UNIT specification at %L must be an INTEGER expression or a CHARACTER variable"
-msgstr ""
+msgstr "spesifikasi SATUAN di %L harus berupa sebuah ekspresi INTEGER atau sebuah KARAKTER variabel"
 
 #: fortran/io.c:2301
 #, no-c-format
 msgid "Internal unit with vector subscript at %L"
-msgstr ""
+msgstr "Satuan internal dengan vektor subscrip di %L"
 
 #: fortran/io.c:2308
 #, no-c-format
 msgid "External IO UNIT cannot be an array at %L"
-msgstr ""
+msgstr "Eksternal IO UNIT tidak dapat berupa sebuah array di %L"
 
 #: fortran/io.c:2318
 #, no-c-format
 msgid "ERR tag label %d at %L not defined"
-msgstr ""
+msgstr "ERR tag label %d di %L tidak didefinisikan"
 
 #: fortran/io.c:2330
 #, no-c-format
 msgid "END tag label %d at %L not defined"
-msgstr ""
+msgstr "END tag label %d di %L tidak didefinisikan"
 
 #: fortran/io.c:2342
 #, no-c-format
 msgid "EOR tag label %d at %L not defined"
-msgstr ""
+msgstr "EOR tag label %d di %L tidak didefinisikan"
 
 #: fortran/io.c:2352
 #, no-c-format
 msgid "FORMAT label %d at %L not defined"
-msgstr ""
+msgstr "FORMAT label %d di %L tidak didefinisikan"
 
 #: fortran/io.c:2473
 #, no-c-format
 msgid "Syntax error in I/O iterator at %C"
-msgstr ""
+msgstr "Sintaks error dalam iterasi I/O di %C"
 
 #: fortran/io.c:2504
 #, no-c-format
 msgid "Expected variable in READ statement at %C"
-msgstr ""
+msgstr "Diduga variabel dalam pernyataan BACA di %C"
 
 #: fortran/io.c:2510
 #, no-c-format
 msgid "Expected expression in %s statement at %C"
-msgstr ""
+msgstr "Diduga ekspresi dalam pernyataan %s di %C"
 
 #: fortran/io.c:2520
 #, no-c-format
 msgid "Variable '%s' in input list at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "Variabel '%s' dalam daftar masukan di %C tidak dapat INTENT(IN)"
 
 #: fortran/io.c:2529
 #, no-c-format
 msgid "Cannot read to variable '%s' in PURE procedure at %C"
-msgstr ""
+msgstr "Tidak dapat membaca ke variabel '%s' dalam prosedur PURE di %C"
 
 #: fortran/io.c:2545
 #, no-c-format
 msgid "Cannot write to internal file unit '%s' at %C inside a PURE procedure"
-msgstr ""
+msgstr "Tidak dapat menulis ke internal berkas satuan '%s' di %C didalam prosedur PURE"
 
 #. A general purpose syntax error.
 #: fortran/io.c:2606 fortran/io.c:3013 fortran/gfortran.h:2002
 #, no-c-format
 msgid "Syntax error in %s statement at %C"
-msgstr ""
+msgstr "Sintaks error dalam pernyataan %s di %C"
 
 #: fortran/io.c:2679
 #, no-c-format
 msgid "Fortran 2003: Internal file at %L with namelist"
-msgstr ""
+msgstr "Fortran 2003: Berkas internal di %L dengan daftar-nama"
 
 #: fortran/io.c:2842
 #, no-c-format
 msgid "PRINT namelist at %C is an extension"
-msgstr ""
+msgstr "daftar-nama PRINT di %C adalah sebuah ekstensi"
 
 #: fortran/io.c:2974
 #, no-c-format
 msgid "Extension: Comma before i/o item list at %C"
-msgstr ""
+msgstr "Ekstensi: Koma sebalum i/o daftar item di %C"
 
 #: fortran/io.c:2983
 #, no-c-format
 msgid "Expected comma in I/O list at %C"
-msgstr ""
+msgstr "Diduga koma dalam daftar I/O di %C"
 
 #: fortran/io.c:3045
 #, no-c-format
 msgid "PRINT statement at %C not allowed within PURE procedure"
-msgstr ""
+msgstr "pernyataan PRINT di %C tidak diperbolehkan dalam prosedur PURE"
 
 #: fortran/io.c:3185 fortran/io.c:3236
 #, no-c-format
 msgid "INQUIRE statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "pernyataan INQUIRE tidak diperbolehkan dalam prosedur di %C"
 
 #: fortran/io.c:3212
 #, no-c-format
 msgid "IOLENGTH tag invalid in INQUIRE statement at %C"
-msgstr ""
+msgstr "IOLENTH tag tidak valid dalam pernyataan INQUIRE di %C"
 
 #: fortran/io.c:3222 fortran/trans-io.c:1145
 #, no-c-format
 msgid "INQUIRE statement at %L cannot contain both FILE and UNIT specifiers"
-msgstr ""
+msgstr "pernyataan INQUIRE di %L tidak dapat berisi baik BERKAS dan penspesifikasi SATUAN"
 
 #: fortran/io.c:3229
 #, no-c-format
 msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
-msgstr ""
+msgstr "pernyataan INQUIRE di %L membutuhkan baik BERKAS atau penspesifikasi SATUAN"
 
 #: fortran/match.c:156
 #, no-c-format
 msgid "Missing ')' in statement before %L"
-msgstr ""
+msgstr "Hilang ')' dalam pernyataan sebelum %L"
 
 #: fortran/match.c:161
 #, no-c-format
 msgid "Missing '(' in statement before %L"
-msgstr ""
+msgstr "Hilang '(' dalam pernyataan sebelum %L"
 
 #: fortran/match.c:332
 #, no-c-format
 msgid "Integer too large at %C"
-msgstr ""
+msgstr "Integer terlalu besar di %C"
 
 #: fortran/match.c:425 fortran/parse.c:589
 #, no-c-format
 msgid "Too many digits in statement label at %C"
-msgstr ""
+msgstr "Terlalu banyak digit dalam pernyataan label di %C"
 
 #: fortran/match.c:431
 #, no-c-format
 msgid "Statement label at %C is zero"
-msgstr ""
+msgstr "Pernyataan label di %C adalah nol"
 
 #: fortran/match.c:464
 #, no-c-format
 msgid "Label name '%s' at %C is ambiguous"
-msgstr ""
+msgstr "Nama label '%s' di %C adalah ambigu"
 
 #: fortran/match.c:470
 #, no-c-format
 msgid "Duplicate construct label '%s' at %C"
-msgstr ""
+msgstr "Duplikasi konstruksi label '%s' di %C"
 
 #: fortran/match.c:500
 #, no-c-format
 msgid "Invalid character in name at %C"
-msgstr ""
+msgstr "Karakter tidak valid dalam nama di %C"
 
 #: fortran/match.c:513 fortran/match.c:585
 #, no-c-format
 msgid "Name at %C is too long"
-msgstr ""
+msgstr "Nama di %C adalah terlalu panjang"
 
 #: fortran/match.c:568 fortran/match.c:614
 #, no-c-format
 msgid "Invalid C name in NAME= specifier at %C"
-msgstr ""
+msgstr "Nama C tidak valid dalam penspesifikasi NAMA= di %C"
 
 #: fortran/match.c:605
 #, no-c-format
 msgid "Embedded space in NAME= specifier at %C"
-msgstr ""
+msgstr "Ruang terembed dalam penspesifikasi NAMA= di %C"
 
 #: fortran/match.c:930
 #, no-c-format
 msgid "Loop variable at %C cannot be a sub-component"
-msgstr ""
+msgstr "Variabel loop di %C tidak dapat berupa sebuah sub-komponen"
 
 #: fortran/match.c:936
 #, no-c-format
 msgid "Loop variable '%s' at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "Loop variabel '%s' di %C tidak dapat berupa INTENT(IN)"
 
 #: fortran/match.c:969
 #, no-c-format
 msgid "Expected a step value in iterator at %C"
-msgstr ""
+msgstr "Diduga sebuah nilai step dalam iterator di %C"
 
 #: fortran/match.c:981
 #, no-c-format
 msgid "Syntax error in iterator at %C"
-msgstr ""
+msgstr "Sintaks error dalam iterator di %C"
 
 #: fortran/match.c:1217
 #, no-c-format
 msgid "Invalid form of PROGRAM statement at %C"
-msgstr ""
+msgstr "Form tidak valid dari pernyataan APLIKASI di %C"
 
 #: fortran/match.c:1258
 #, no-c-format
 msgid "Setting value of PROTECTED variable at %C"
-msgstr ""
+msgstr "Nilai konfigurasi dari variabel TERPROTEKSI di %C"
 
 #: fortran/match.c:1311
 #, no-c-format
 msgid "Assigning to a PROTECTED pointer at %C"
-msgstr ""
+msgstr "Diassign ke sebuah penunjuk TERPROTEKSI di %C"
 
 #: fortran/match.c:1354 fortran/match.c:1435
 #, no-c-format
 msgid "Obsolescent: arithmetic IF statement at %C"
-msgstr ""
+msgstr "Obsolescent: aritmetik pernyataan IF di %C"
 
 #: fortran/match.c:1410
 #, no-c-format
 msgid "Syntax error in IF-expression at %C"
-msgstr ""
+msgstr "Sintaks error dalam pernyataan IF di %C"
 
 #: fortran/match.c:1421
 #, no-c-format
 msgid "Block label not appropriate for arithmetic IF statement at %C"
-msgstr ""
+msgstr "Label blok tidak sesuai untuk pernyataan aritmetik IF di %C"
 
 #: fortran/match.c:1459
 #, no-c-format
 msgid "Block label is not appropriate for IF statement at %C"
-msgstr ""
+msgstr "Label blok tidak sesuai untuk pernyataan IF di %C"
 
 #: fortran/match.c:1538 fortran/primary.c:2559
 #, no-c-format
 msgid "Cannot assign to a named constant at %C"
-msgstr ""
+msgstr "Tidak dapat assign ke sebuah konstanta bernama di %C"
 
 #: fortran/match.c:1548
 #, no-c-format
 msgid "Unclassifiable statement in IF-clause at %C"
-msgstr ""
+msgstr "Pernyataan tidak terklasifikasi dalam clause IF di %C"
 
 #: fortran/match.c:1555
 #, no-c-format
 msgid "Syntax error in IF-clause at %C"
-msgstr ""
+msgstr "Sintaks error dalam IF-clause di %C"
 
 #: fortran/match.c:1599
 #, no-c-format
 msgid "Unexpected junk after ELSE statement at %C"
-msgstr ""
+msgstr "Tidak terduga sampah setelah pernyataan ELSE di %C"
 
 #: fortran/match.c:1605 fortran/match.c:1640
 #, no-c-format
 msgid "Label '%s' at %C doesn't match IF label '%s'"
-msgstr ""
+msgstr "Label '%s' di %C tidak cocok dengan label IF '%s'"
 
 #: fortran/match.c:1634
 #, no-c-format
 msgid "Unexpected junk after ELSE IF statement at %C"
-msgstr ""
+msgstr "Tidak terduga sampah setelah pernyataan ELSE IF di %C"
 
 #: fortran/match.c:1797
 #, no-c-format
 msgid "Name '%s' in %s statement at %C is not a loop name"
-msgstr ""
+msgstr "Nama '%s' dalam pernyataan %s di %C bukan sebuah nama loop"
 
 #: fortran/match.c:1813
 #, no-c-format
 msgid "%s statement at %C is not within a loop"
-msgstr ""
+msgstr "pernyataan %s di %C tidak dalam jangkauan sebuah loop"
 
 #: fortran/match.c:1816
 #, no-c-format
 msgid "%s statement at %C is not within loop '%s'"
-msgstr ""
+msgstr "pernyataan %s di %C tidak dlam jangkauan loop '%s'"
 
 #: fortran/match.c:1824
 #, no-c-format
 msgid "%s statement at %C leaving OpenMP structured block"
-msgstr ""
+msgstr "pernyataan %s di %C meninggalkan OpenMP blok terstruktur"
 
 #: fortran/match.c:1837
 #, no-c-format
 msgid "EXIT statement at %C terminating !$OMP DO loop"
-msgstr ""
+msgstr "pernyataan EXIT di %C mengakhiri loop !$OMP DO"
 
 #: fortran/match.c:1889
 #, no-c-format
 msgid "Too many digits in STOP code at %C"
-msgstr ""
+msgstr "Terlalu banyak digits dalam kode STOP di %C"
 
 #: fortran/match.c:1942
 #, no-c-format
 msgid "Deleted feature: PAUSE statement at %C"
-msgstr ""
+msgstr "Featur terhapus: pernyataan PAUSE di %C"
 
 #: fortran/match.c:1990
 #, no-c-format
 msgid "Deleted feature: ASSIGN statement at %C"
-msgstr ""
+msgstr "Featur terhapus: pernyataan ASSIGN di %C"
 
 #: fortran/match.c:2036
 #, no-c-format
 msgid "Deleted feature: Assigned GOTO statement at %C"
-msgstr ""
+msgstr "Featur terhapus: Terassign pernyataan GOTO di %C"
 
 #: fortran/match.c:2083 fortran/match.c:2135
 #, no-c-format
 msgid "Statement label list in GOTO at %C cannot be empty"
-msgstr ""
+msgstr "Daftar pernyataan label dalam GOTO di %C tidak dapat kosong"
 
 #: fortran/match.c:2219
 #, no-c-format
 msgid "Bad allocate-object in ALLOCATE statement at %C for a PURE procedure"
-msgstr ""
+msgstr "Alokasi-objek buruk dalam pernyataan ALOKASI di %C untuk sebuah prosedur PURE"
 
 #: fortran/match.c:2287
 #, no-c-format
 msgid "Illegal variable in NULLIFY at %C for a PURE procedure"
-msgstr ""
+msgstr "variabel tidak legal dalam NULLIFY di %C untuk sebuah prosedur PURE"
 
 #: fortran/match.c:2364
 #, no-c-format
 msgid "Illegal deallocate-expression in DEALLOCATE at %C for a PURE procedure"
-msgstr ""
+msgstr "ekspresi deallokasi tidak legal dalam DEALLOCATE di %C untuk sebuah prosedur PURE"
 
 #: fortran/match.c:2417
 #, no-c-format
 msgid "Alternate RETURN statement at %C is only allowed within a SUBROUTINE"
-msgstr ""
+msgstr "Pernyataan alternatif RETURN di %C hanya diperbolehkan dalam sebuah SUBROUTINE"
 
 #: fortran/match.c:2448
 #, no-c-format
 msgid "Extension: RETURN statement in main program at %C"
-msgstr ""
+msgstr "Ekstensi: pernyataan RETURN dalam aplikasi utama di %C"
 
 #: fortran/match.c:2658
 #, no-c-format
 msgid "Syntax error in common block name at %C"
-msgstr ""
+msgstr "Sintaks error dalam nama blok umum di %C"
 
 #: fortran/match.c:2694
 #, no-c-format
 msgid "Symbol '%s' at %C is already an external symbol that is not COMMON"
-msgstr ""
+msgstr "Simbol '%s' di %C telah menjadi sebuah simbol eksternal yang tidak umum"
 
 #. If we find an error, just print it and continue,
 #. cause it's just semantic, and we can see if there
@@ -7468,1012 +7468,1012 @@ msgstr ""
 #: fortran/match.c:2753
 #, no-c-format
 msgid "Variable '%s' at %L in common block '%s' at %C must be declared with a C interoperable kind since common block '%s' is bind(c)"
-msgstr ""
+msgstr "Variabel '%s' di %L dalam blok umum '%s' di %C harus terdeklarasi dengan sebuah C interoperable kind karena blok umum '%s' adalah bind(c)"
 
 #: fortran/match.c:2762
 #, no-c-format
 msgid "Variable '%s' in common block '%s' at %C can not be bind(c) since it is not global"
-msgstr ""
+msgstr "Variabel '%s' dalam blok umum '%s' di %C tidak dapat bind(c) karena ini bukan global"
 
 #: fortran/match.c:2769
 #, no-c-format
 msgid "Symbol '%s' at %C is already in a COMMON block"
-msgstr ""
+msgstr "Simbol '%s' di %C telah dalam sebuah blok COMMON"
 
 #: fortran/match.c:2777
 #, no-c-format
 msgid "Initialized symbol '%s' at %C can only be COMMON in BLOCK DATA"
-msgstr ""
+msgstr "Simbol terinisialisasi '%s' di %C hanya dapat berupa COMMON dalam BLOK DATA"
 
 #: fortran/match.c:2804
 #, no-c-format
 msgid "Array specification for symbol '%s' in COMMON at %C must be explicit"
-msgstr ""
+msgstr "Spesifikasi array untuk simbol '%s' dalam COMMON di %C harus eksplisit"
 
 #: fortran/match.c:2814
 #, no-c-format
 msgid "Symbol '%s' in COMMON at %C cannot be a POINTER array"
-msgstr ""
+msgstr "Simbol '%s' dalam COMMON di %C tidak dapat berupa sebuah array PENUNJUK"
 
 #: fortran/match.c:2846
 #, no-c-format
 msgid "Symbol '%s', in COMMON block '%s' at %C is being indirectly equivalenced to another COMMON block '%s'"
-msgstr ""
+msgstr "Simbol '%s', dalam blok COMMON '%s' di %C sedang secara tidak langsung sama dengan ke COMMON blok '%s' lain"
 
 #: fortran/match.c:2954
 #, no-c-format
 msgid "Namelist group name '%s' at %C already has a basic type of %s"
-msgstr ""
+msgstr "Daftar-nama nama grup '%s' di %C telah memiliki sebuah tipe dasar dari %s"
 
 #: fortran/match.c:2962
 #, no-c-format
 msgid "Namelist group name '%s' at %C already is USE associated and cannot be respecified."
-msgstr ""
+msgstr "Daftar-nama nama grup '%s' di %C telah USE diasosiasikan dan tidak dapat berupa respecified."
 
 #: fortran/match.c:2989
 #, no-c-format
 msgid "Assumed size array '%s' in namelist '%s' at %C is not allowed"
-msgstr ""
+msgstr "Ukuran array yang diasumsikan '%s' dalam daftar nama '%s' di %C tidak diperbolehkan"
 
 #: fortran/match.c:2996
 #, no-c-format
 msgid "Assumed character length '%s' in namelist '%s' at %C is not allowed"
-msgstr ""
+msgstr "Panjang karakter yang diasumsikan '%s' dalam daftar nama '%s' di %C tidak diperbolehkan"
 
 #: fortran/match.c:3123
 #, no-c-format
 msgid "Derived type component %C is not a permitted EQUIVALENCE member"
-msgstr ""
+msgstr "Tipe komponen turunan %C bukan sebuah anggota EQUIVALENCE yang diijinkan"
 
 #: fortran/match.c:3131
 #, no-c-format
 msgid "Array reference in EQUIVALENCE at %C cannot be an array section"
-msgstr ""
+msgstr "Referensi array dalam EQUIVALENCE di %C tidak dapat berupa daerah array"
 
 #: fortran/match.c:3159
 #, no-c-format
 msgid "EQUIVALENCE at %C requires two or more objects"
-msgstr ""
+msgstr "EQUIVALENCE di %C membutuhkan dua atau lebih objek"
 
 #: fortran/match.c:3173
 #, no-c-format
 msgid "Attempt to indirectly overlap COMMON blocks %s and %s by EQUIVALENCE at %C"
-msgstr ""
+msgstr "Mencoba secara tidak langsung overlap blok COMMON %s dan %s dengan EQUIVALENCE di %C"
 
 #: fortran/match.c:3299
 #, no-c-format
 msgid "Statement function at %L is recursive"
-msgstr ""
+msgstr "Pernyataan fungsi di %L adalah rekursif"
 
 #: fortran/match.c:3387
 #, no-c-format
 msgid "Expected initialization expression in CASE at %C"
-msgstr ""
+msgstr "Diduga ekspresi inisialisasi dalam CASE di %C"
 
 #: fortran/match.c:3410
 #, no-c-format
 msgid "Expected the name of the SELECT CASE construct at %C"
-msgstr ""
+msgstr "Diduga nama dari SELECT CASE konstruk di %C"
 
 #: fortran/match.c:3422
 #, no-c-format
 msgid "Expected case name of '%s' at %C"
-msgstr ""
+msgstr "Diduga nama case dari '%s' di %C"
 
 #: fortran/match.c:3466
 #, no-c-format
 msgid "Unexpected CASE statement at %C"
-msgstr ""
+msgstr "Diduga pernyataan CASE di %C"
 
 #: fortran/match.c:3518
 #, no-c-format
 msgid "Syntax error in CASE-specification at %C"
-msgstr ""
+msgstr "Sintaks error dalam spesifikasi CASE di %C"
 
 #: fortran/match.c:3638
 #, no-c-format
 msgid "ELSEWHERE statement at %C not enclosed in WHERE block"
-msgstr ""
+msgstr "pernyataan ELSEWHERE di %C tidak terenklose dalam blok WHERE"
 
 #: fortran/match.c:3676
 #, no-c-format
 msgid "Label '%s' at %C doesn't match WHERE label '%s'"
-msgstr ""
+msgstr "Label '%s'di %C tidak cocok dengan label WHERE '%s'"
 
 #: fortran/match.c:3776
 #, no-c-format
 msgid "Syntax error in FORALL iterator at %C"
-msgstr ""
+msgstr "Sintaks error dalam iterasi FORALL di %C"
 
 #: fortran/matchexp.c:28
 #, c-format
 msgid "Syntax error in expression at %C"
-msgstr ""
+msgstr "Sintaks error dalam ekspresi di %C"
 
 #: fortran/matchexp.c:72
 #, no-c-format
 msgid "Bad character '%c' in OPERATOR name at %C"
-msgstr ""
+msgstr "Karakter buruk '%c' dalam nama OPERATOR di %C"
 
 #: fortran/matchexp.c:80
 #, no-c-format
 msgid "The name '%s' cannot be used as a defined operator at %C"
-msgstr ""
+msgstr "Nama '%s' tidak dapat digunakan sebagai sebuah operator terdefinisi di %C"
 
 #: fortran/matchexp.c:187
 #, no-c-format
 msgid "Expected a right parenthesis in expression at %C"
-msgstr ""
+msgstr "Diduga sebuah parenthesis kanan dalam ekspresi di %C"
 
 #: fortran/matchexp.c:312
 #, no-c-format
 msgid "Expected exponent in expression at %C"
-msgstr ""
+msgstr "Diduga eksponen dalam ekspresi di %C"
 
 #: fortran/matchexp.c:350 fortran/matchexp.c:355 fortran/matchexp.c:459
 #: fortran/matchexp.c:464
 #, no-c-format
 msgid "Extension: Unary operator following arithmetic operator (use parentheses) at %C"
-msgstr ""
+msgstr "Ekstensi: Operator unary mengikuti operator aritmetik (menggunakan parentheses) di %C"
 
 #: fortran/misc.c:39
 #, no-c-format
 msgid "Out of memory-- malloc() failed"
-msgstr ""
+msgstr "Kehabisan memori-- malloc() gagal"
 
 #: fortran/module.c:516
 #, no-c-format
 msgid "Fortran 2003: module nature in USE statement at %C"
-msgstr ""
+msgstr "Fortran 2003: modul alam dalam pernyataan USE di %C"
 
 #: fortran/module.c:528
 #, no-c-format
 msgid "Module nature in USE statement at %C shall be either INTRINSIC or NON_INTRINSIC"
-msgstr ""
+msgstr "Modul alam dalam pernyataan USE di %C seharusnya baik INTRINSIK atau NON_INTRINSIC"
 
 #: fortran/module.c:541
 #, no-c-format
 msgid "\"::\" was expected after module nature at %C but was not found"
-msgstr ""
+msgstr "\"::\" telah diduga setelah modul alam di %C tetapi tidak ditemukan"
 
 #: fortran/module.c:550
 #, no-c-format
 msgid "Fortran 2003: \"USE :: module\" at %C"
-msgstr ""
+msgstr "Fortran 2003: \"USE :: module\" di %C"
 
 #: fortran/module.c:602
 #, no-c-format
 msgid "Missing generic specification in USE statement at %C"
-msgstr ""
+msgstr "Hilang spesifikasi umum dalam pernyataan USE di %C"
 
 #: fortran/module.c:610
 #, no-c-format
 msgid "Fortran 2003: Renaming operators in USE statements at %C"
-msgstr ""
+msgstr "Fortran 2003: Mengubah nama operator dalam pernyataan USE di %C"
 
 #: fortran/module.c:652
 #, no-c-format
 msgid "The name '%s' at %C has already been used as an external module name."
-msgstr ""
+msgstr "Nama '%s' di %C telah digunakan sebagai nama modul eksternal"
 
 #: fortran/module.c:930
 #, no-c-format
 msgid "Reading module %s at line %d column %d: %s"
-msgstr ""
+msgstr "Membaca modul %s di baris %d kolom %d: %s"
 
 #: fortran/module.c:934
 #, no-c-format
 msgid "Writing module %s at line %d column %d: %s"
-msgstr ""
+msgstr "Menulis modul %s di baris %d kolom %d: %s"
 
 #: fortran/module.c:938
 #, no-c-format
 msgid "Module %s at line %d column %d: %s"
-msgstr ""
+msgstr "Modul %s di baris %d kolom %d: %s"
 
 #: fortran/module.c:978
 msgid "Unexpected EOF"
-msgstr ""
+msgstr "Tidak terduga EOF"
 
 #: fortran/module.c:1010
 msgid "Unexpected end of module in string constant"
-msgstr ""
+msgstr "Tidak terduga akhir dari modul dalam konstanta string"
 
 #: fortran/module.c:1064
 msgid "Integer overflow"
-msgstr ""
+msgstr "Integer overflow"
 
 #: fortran/module.c:1095
 msgid "Name too long"
-msgstr ""
+msgstr "Nama terlalu panjang"
 
 #: fortran/module.c:1202
 msgid "Bad name"
-msgstr ""
+msgstr "Nama buruk"
 
 #: fortran/module.c:1246
 msgid "Expected name"
-msgstr ""
+msgstr "Diduga nama"
 
 #: fortran/module.c:1249
 msgid "Expected left parenthesis"
-msgstr ""
+msgstr "Diduga parenthesis kiri"
 
 #: fortran/module.c:1252
 msgid "Expected right parenthesis"
-msgstr ""
+msgstr "Diduga parenthesis kanan"
 
 #: fortran/module.c:1255
 msgid "Expected integer"
-msgstr ""
+msgstr "Diduga integer"
 
 #: fortran/module.c:1258
 msgid "Expected string"
-msgstr ""
+msgstr "Diduga string"
 
 #: fortran/module.c:1282
 msgid "find_enum(): Enum not found"
-msgstr ""
+msgstr "find_enum(): Enum tidak ditemukan"
 
 #: fortran/module.c:1296
 #, no-c-format
 msgid "Error writing modules file: %s"
-msgstr ""
+msgstr "Error menulis berkas modul: %s"
 
 #: fortran/module.c:1691
 msgid "Expected attribute bit name"
-msgstr ""
+msgstr "Diduga nama atribut bit"
 
 #: fortran/module.c:2503
 msgid "Expected integer string"
-msgstr ""
+msgstr "Diduga integer string"
 
 #: fortran/module.c:2507
 msgid "Error converting integer"
-msgstr ""
+msgstr "Error mengubah integer"
 
 #: fortran/module.c:2529
 msgid "Expected real string"
-msgstr ""
+msgstr "Diduga real string"
 
 #: fortran/module.c:2730
 msgid "Expected expression type"
-msgstr ""
+msgstr "Diduga tipe ekspresi"
 
 #: fortran/module.c:2784
 msgid "Bad operator"
-msgstr ""
+msgstr "Operator buruk"
 
 #: fortran/module.c:2869
 msgid "Bad type in constant expression"
-msgstr ""
+msgstr "Tipe buruk dalam ekspresi konstanta"
 
 #: fortran/module.c:2906
 #, no-c-format
 msgid "Namelist %s cannot be renamed by USE association to %s"
-msgstr ""
+msgstr "Daftar-nama %s tidak dapat diubah namanya dengan assosiasi USE ke %s"
 
 #: fortran/module.c:3847
 #, no-c-format
 msgid "Symbol '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Simbol '%s' direferensikan di %L tidak ditemukan dalam modul '%s'"
 
 #: fortran/module.c:3854
 #, no-c-format
 msgid "User operator '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Operator pengguna '%s' direferensikan di %L tidak ditemukan dalam modul '%s'"
 
 #: fortran/module.c:3859
 #, no-c-format
 msgid "Intrinsic operator '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Operator intrinsik '%s' direferensikan di %L tidak ditemukan dalam modul '%s'"
 
 #: fortran/module.c:4400
 #, no-c-format
 msgid "Can't open module file '%s' for writing at %C: %s"
-msgstr ""
+msgstr "Tidak dapat membuka berkas modul '%s' untuk menulis di %C: %s"
 
 #: fortran/module.c:4438
 #, no-c-format
 msgid "Error writing module file '%s' for writing: %s"
-msgstr ""
+msgstr "Error menulis berkas modul '%s' untuk menulis: %s"
 
 #: fortran/module.c:4468 fortran/module.c:4550
 #, no-c-format
 msgid "Symbol '%s' referenced at %L does not exist in intrinsic module ISO_C_BINDING."
-msgstr ""
+msgstr "Simbol '%s' direferensikan di %L tidak ada dalam modul intrinsik ISO_C_BINDING."
 
 #: fortran/module.c:4581
 #, no-c-format
 msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_C_BINDING"
-msgstr ""
+msgstr "Simbol '%s' direferensikan di %L tidak ditemukan dalam modul intrinsik ISO_C_BINDING"
 
 #: fortran/module.c:4603
 #, no-c-format
 msgid "Symbol '%s' already declared"
-msgstr ""
+msgstr "Simbol '%s' telah terdeklarasi"
 
 #: fortran/module.c:4658
 #, no-c-format
 msgid "Use of intrinsic module '%s' at %C conflicts with non-intrinsic module name used previously"
-msgstr ""
+msgstr "Penggunaan daro modul intrinsik '%s' di %C konflik dengan tidak-intrinsik nama modul digunakan sebelumnya"
 
 #: fortran/module.c:4671
 #, no-c-format
 msgid "Symbol '%s' referenced at %L does not exist in intrinsic module ISO_FORTRAN_ENV"
-msgstr ""
+msgstr "Simbol '%s' direferensikan di %L tidak ada dalam modul intrinsik ISO_FORTRAN_ENV"
 
 #: fortran/module.c:4679
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %L is incompatible with option %s"
-msgstr ""
+msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %L adalah tidak kompatibel dengan opsi %s"
 
 #: fortran/module.c:4707
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %C is incompatible with option %s"
-msgstr ""
+msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %C adalah tidak kompatibel dengan opsi %s"
 
 #: fortran/module.c:4723
 #, no-c-format
 msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_FORTRAN_ENV"
-msgstr ""
+msgstr "Simbol '%s' direferensikan di %L tidak ditemukan dalam modul intrinsik ISO_FORTRAN_ENV"
 
 #: fortran/module.c:4756
 #, no-c-format
 msgid "Fortran 2003: ISO_FORTRAN_ENV intrinsic module at %C"
-msgstr ""
+msgstr "Fortran 2003: ISO_FORTRAN_ENV modul intrinsik di %C"
 
 #: fortran/module.c:4764
 #, no-c-format
 msgid "Fortran 2003: ISO_C_BINDING module at %C"
-msgstr ""
+msgstr "Fortran 2003: ISO_C_BINDING modul di %C"
 
 #: fortran/module.c:4774
 #, no-c-format
 msgid "Can't find an intrinsic module named '%s' at %C"
-msgstr ""
+msgstr "Tidak dapat menemukan modul intrinsik bernama '%s' di %C"
 
 #: fortran/module.c:4779
 #, no-c-format
 msgid "Can't open module file '%s' for reading at %C: %s"
-msgstr ""
+msgstr "Tidak dapat membuka berkas modul '%s' untuk pembacaan di %C: %s"
 
 #: fortran/module.c:4787
 #, no-c-format
 msgid "Use of non-intrinsic module '%s' at %C conflicts with intrinsic module name used previously"
-msgstr ""
+msgstr "Penggunaan dari modul tidak intrinsik '%s' di %C konflik dengan nama modul intrinsik yang digunakan sebelumnya"
 
 #: fortran/module.c:4802
 msgid "Unexpected end of module"
-msgstr ""
+msgstr "Tidak terduga akhir dari modul"
 
 #: fortran/module.c:4807
 #, no-c-format
 msgid "File '%s' opened at %C is not a GFORTRAN module file"
-msgstr ""
+msgstr "Berkas '%s' dibuka di %C bukan sebuah berkas modul GFORTRAN"
 
 #: fortran/module.c:4817
 #, no-c-format
 msgid "Can't USE the same module we're building!"
-msgstr ""
+msgstr "Tidak dapat MENGGUNAKAN module yang sama yang sedang kita buat!"
 
 #: fortran/openmp.c:134 fortran/openmp.c:499
 #, no-c-format
 msgid "COMMON block /%s/ not found at %C"
-msgstr ""
+msgstr "blok COMMON /%s/  tidak ditemukan di %C"
 
 #: fortran/openmp.c:165
 #, no-c-format
 msgid "Syntax error in OpenMP variable list at %C"
-msgstr ""
+msgstr "Sintaks error dalam daftar variabel OpenMP di %C"
 
 #: fortran/openmp.c:291
 #, no-c-format
 msgid "%s is not INTRINSIC procedure name at %C"
-msgstr ""
+msgstr "%s bukan sebuah nama prosedur INTRINSIK di %C"
 
 #: fortran/openmp.c:478
 #, no-c-format
 msgid "Threadprivate variable at %C is an element of a COMMON block"
-msgstr ""
+msgstr "Variabel threadprivate di %C bukan sebuah elemen dari sebuah blok COMMON"
 
 #: fortran/openmp.c:518
 #, no-c-format
 msgid "Syntax error in !$OMP THREADPRIVATE list at %C"
-msgstr ""
+msgstr "Sintaks error dalam daftar THREADPRIVATE !$OMP di %C"
 
 #: fortran/openmp.c:696 fortran/resolve.c:5970 fortran/resolve.c:6317
 #, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "IF clause di %L membutuhkan sebuah ekspresi skalara LOGIKAL"
 
 #: fortran/openmp.c:704
 #, no-c-format
 msgid "NUM_THREADS clause at %L requires a scalar INTEGER expression"
-msgstr ""
+msgstr "NUM_THREADS clause di %L membutuhkan sebuah ekspresi skalar INTEGER"
 
 #: fortran/openmp.c:712
 #, no-c-format
 msgid "SCHEDULE clause's chunk_size at %L requires a scalar INTEGER expression"
-msgstr ""
+msgstr "SCHEDULE clause chunk_size di %L membutuhkan sebuah ekspresi skalar INTEGER"
 
 #: fortran/openmp.c:726 fortran/openmp.c:736 fortran/openmp.c:743
 #: fortran/openmp.c:753
 #, no-c-format
 msgid "Symbol '%s' present on multiple clauses at %L"
-msgstr ""
+msgstr "Simbol '%s' ada dalam multiple clause di %L"
 
 #: fortran/openmp.c:776
 #, no-c-format
 msgid "Non-THREADPRIVATE object '%s' in COPYIN clause at %L"
-msgstr ""
+msgstr "Bukan-THREADPRIVATE objek '%s' dalam clause COPYIN di %L"
 
 #: fortran/openmp.c:779
 #, no-c-format
 msgid "COPYIN clause object '%s' is ALLOCATABLE at %L"
-msgstr ""
+msgstr "COPYIN clause objek '%s' adalah DAPAT DIALOKASIKAN di %L"
 
 #: fortran/openmp.c:782
 #, no-c-format
 msgid "COPYIN clause object '%s' at %L has ALLOCATABLE components"
-msgstr ""
+msgstr "COPYIN clause objek '%s' di %L memiliki komponen DAPAT DIALOKASIKAN"
 
 #: fortran/openmp.c:790
 #, no-c-format
 msgid "Assumed size array '%s' in COPYPRIVATE clause at %L"
-msgstr ""
+msgstr "Ukuran array diasumsikan '%s' dalam clause COPYPRIVATE di %L"
 
 #: fortran/openmp.c:793
 #, no-c-format
 msgid "COPYPRIVATE clause object '%s' is ALLOCATABLE at %L"
-msgstr ""
+msgstr "COPYPRIVATE clause objek '%s' adalah DAPAT DIALOKASIKAN di %L"
 
 #: fortran/openmp.c:796
 #, no-c-format
 msgid "COPYPRIVATE clause object '%s' at %L has ALLOCATABLE components"
-msgstr ""
+msgstr "COPYPRIVATE clause objek '%s' di %L memiliki komponen DAPAT DIALOKASIKAN"
 
 #: fortran/openmp.c:804
 #, no-c-format
 msgid "THREADPRIVATE object '%s' in SHARED clause at %L"
-msgstr ""
+msgstr "objek THREADPRIVATE '%s' dalam clause SHARED di %L"
 
 #: fortran/openmp.c:807
 #, no-c-format
 msgid "Cray pointee '%s' in SHARED clause at %L"
-msgstr ""
+msgstr "Cray pointee '%s' dalam SHARED clause di %L"
 
 #: fortran/openmp.c:815
 #, no-c-format
 msgid "THREADPRIVATE object '%s' in %s clause at %L"
-msgstr ""
+msgstr "THREADPRIVATE objek '%s' dalam clause %s di %L"
 
 #: fortran/openmp.c:818
 #, no-c-format
 msgid "Cray pointee '%s' in %s clause at %L"
-msgstr ""
+msgstr "Cray pointee '%s' dalam %s clause di %L"
 
 #: fortran/openmp.c:823
 #, no-c-format
 msgid "POINTER object '%s' in %s clause at %L"
-msgstr ""
+msgstr "objek PENUNJUK '%s' dalam %s clause di %L"
 
 #: fortran/openmp.c:826
 #, no-c-format
 msgid "%s clause object '%s' is ALLOCATABLE at %L"
-msgstr ""
+msgstr "%s objek clause '%s' adalah DAPAT DIALOKASIKAN di %L"
 
 #: fortran/openmp.c:831
 #, no-c-format
 msgid "%s clause object '%s' has ALLOCATABLE components at %L"
-msgstr ""
+msgstr "%s clause objek '%s' memiliki komponen DAPAT DIALOKASIKAN di %L"
 
 #: fortran/openmp.c:834
 #, no-c-format
 msgid "Cray pointer '%s' in %s clause at %L"
-msgstr ""
+msgstr "Cray penunjuk '%s' dalam clause %s di %L"
 
 #: fortran/openmp.c:838
 #, no-c-format
 msgid "Assumed size array '%s' in %s clause at %L"
-msgstr ""
+msgstr "Ukuran array yang diasumsikan '%s' dalam %s clause di %L"
 
 #: fortran/openmp.c:843
 #, no-c-format
 msgid "Variable '%s' in %s clause is used in NAMELIST statement at %L"
-msgstr ""
+msgstr "Variabel '%s' dalam clause %s digunakan dalam pernyataan NAMELIST di %L"
 
 #: fortran/openmp.c:852
 #, no-c-format
 msgid "%c REDUCTION variable '%s' at %L must be of numeric type, got %s"
-msgstr ""
+msgstr "%c REDUKSI variabel '%s' di %L harus berupa tipe numerik, diperoleh %s"
 
 #: fortran/openmp.c:863
 #, no-c-format
 msgid "%s REDUCTION variable '%s' must be LOGICAL at %L"
-msgstr ""
+msgstr "%s REDUKSI variabel '%s' harus berupa LOGIKAL di %L"
 
 #: fortran/openmp.c:874
 #, no-c-format
 msgid "%s REDUCTION variable '%s' must be INTEGER or REAL at %L"
-msgstr ""
+msgstr "%s REDUKSI variabel '%s' harus berupa INTEGER atau RIL di %L"
 
 #: fortran/openmp.c:883
 #, no-c-format
 msgid "%s REDUCTION variable '%s' must be INTEGER at %L"
-msgstr ""
+msgstr "%s REDUKSI variabel '%s' harus berupa INTEGER di %L"
 
 #: fortran/openmp.c:995
 #, no-c-format
 msgid "!$OMP ATOMIC statement must set a scalar variable of intrinsic type at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC pernyataan harus diset ke sebuah variabel skalar dari tipe intrinsik di %L"
 
 #: fortran/openmp.c:1035
 #, no-c-format
 msgid "!$OMP ATOMIC assignment operator must be +, *, -, /, .AND., .OR., .EQV. or .NEQV. at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC assignmen operator harus berupa +, *, -, /, .AND., .OR., .EQV. atau .NEQV. di %L"
 
 #: fortran/openmp.c:1083
 #, no-c-format
 msgid "!$OMP ATOMIC assignment must be var = var op expr or var = expr op var at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC assignmen harus berupa var = var op expr atau var = expr op var di %L"
 
 #: fortran/openmp.c:1097
 #, no-c-format
 msgid "!$OMP ATOMIC var = var op expr not mathematically equivalent to var = var op (expr) at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC var = var op expr tidak seacra matematik sama ekuivalen ke var = var op (expr) di %L"
 
 #: fortran/openmp.c:1129
 #, no-c-format
 msgid "expr in !$OMP ATOMIC assignment var = var op expr must be scalar and cannot reference var at %L"
-msgstr ""
+msgstr "expr dalam !$OMP ATOMIC assignment var = var op expr harus berupa skalar dan tidak dapat bereferensi var di %L"
 
 #: fortran/openmp.c:1153
 #, no-c-format
 msgid "!$OMP ATOMIC assignment intrinsic IAND, IOR or IEOR must have two arguments at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC assignmen intrinsik IAND, IOR, atau IEOR harus memiliki dua argumen di %L"
 
 #: fortran/openmp.c:1160
 #, no-c-format
 msgid "!$OMP ATOMIC assignment intrinsic must be MIN, MAX, IAND, IOR or IEOR at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC assignmen intrinsik harus berupa MIN, MAX, IAND, IOR atau IEOR di %L"
 
 #: fortran/openmp.c:1176
 #, no-c-format
 msgid "!$OMP ATOMIC intrinsic arguments except one must not reference '%s' at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC intrinsik argumen kecuali satu tidak boleh mereferensi '%s' di %L"
 
 #: fortran/openmp.c:1179
 #, no-c-format
 msgid "!$OMP ATOMIC intrinsic arguments must be scalar at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC intrinsik argumen harus berupa skalar di %L"
 
 #: fortran/openmp.c:1185
 #, no-c-format
 msgid "First or last !$OMP ATOMIC intrinsic argument must be '%s' at %L"
-msgstr ""
+msgstr "Pertama atau terakhir !$OMP ATOMIC intrinsik argumen harus berupa '%s' di %L"
 
 #: fortran/openmp.c:1203
 #, no-c-format
 msgid "!$OMP ATOMIC assignment must have an operator or intrinsic on right hand side at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC assignmen harus memiliki sebuah operator atau instrinsik di tangan sebelah kanan di %L"
 
 #: fortran/openmp.c:1305
 #, no-c-format
 msgid "!$OMP DO cannot be a DO WHILE or DO without loop control at %L"
-msgstr ""
+msgstr "!$OMP DO tidak dapat berupa sebuah DO WHILE atau DO tanpa pengontrol loop di %L"
 
 #: fortran/openmp.c:1311
 #, no-c-format
 msgid "!$OMP DO iteration variable must be of type integer at %L"
-msgstr ""
+msgstr "!$OMP DO variabel iterasi harus berupa tipe integer di %L"
 
 #: fortran/openmp.c:1315
 #, no-c-format
 msgid "!$OMP DO iteration variable must not be THREADPRIVATE at %L"
-msgstr ""
+msgstr "!$OMP DO variabel iterasi tidak boleh berupa THREADPRIVATE di %L"
 
 #: fortran/openmp.c:1323
 #, no-c-format
 msgid "!$OMP DO iteration variable present on clause other than PRIVATE or LASTPRIVATE at %L"
-msgstr ""
+msgstr "!$OMP DO variabel iterasi ada dalam clause selain dari PRIVATE atau LASTPRIVATE di %L"
 
 #: fortran/options.c:219
 #, no-c-format
 msgid "Option -fwhole-program is not supported for Fortran"
-msgstr ""
+msgstr "Opsi -fwhole-program tidak didukung untuk Fortran"
 
 #: fortran/options.c:273
 #, no-c-format
 msgid "Reading file '%s' as free form"
-msgstr ""
+msgstr "Membaca berkas '%s' sebagai bentuk bebas"
 
 #: fortran/options.c:283
 #, no-c-format
 msgid "'-fd-lines-as-comments' has no effect in free form"
-msgstr ""
+msgstr "'-fd-lines-as-comments' tidak memiliki efek dalam format bebas"
 
 #: fortran/options.c:286
 #, no-c-format
 msgid "'-fd-lines-as-code' has no effect in free form"
-msgstr ""
+msgstr "'-fd-lines-as-code' tidak memiliki efek dalam format bebas"
 
 #: fortran/options.c:312
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -fmax-stack-var-size=%d"
-msgstr ""
+msgstr "Opsi -fno-automatic overwrites -fmax-stack-var-size=%d"
 
 #: fortran/options.c:315
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive"
-msgstr ""
+msgstr "Opsi -fno-automatic overwrites -frecursive"
 
 #: fortran/options.c:317
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive implied by -fopenmp"
-msgstr ""
+msgstr "Opsi -fno-automatic overwrites -frecursive diimplikasikan dengan -fopenmp"
 
 #: fortran/options.c:321
 #, no-c-format
 msgid "Flag -frecursive overwrites -fmax-stack-var-size=%d"
-msgstr ""
+msgstr "Opsi -frecursive overwrites -fmax-stack-var-size=%d"
 
 #: fortran/options.c:325
 #, no-c-format
 msgid "Flag -fmax-stack-var-size=%d overwrites -frecursive implied by -fopenmp"
-msgstr ""
+msgstr "Opsi -fmax-stack-var-size=%d overwrites -frecursive diimplikasikan dengan -fopenmp"
 
 #: fortran/options.c:392
 #, c-format
 msgid "gfortran: Only one -M option allowed\n"
-msgstr ""
+msgstr "gfortran: Hanya satu opsi -M diperbolehkan\n"
 
 #: fortran/options.c:398
 #, c-format
 msgid "gfortran: Directory required after -M\n"
-msgstr ""
+msgstr "gfortran: Direktori ddibutuhkan setelah -M\n"
 
 #: fortran/options.c:443
 #, no-c-format
 msgid "Argument to -ffpe-trap is not valid: %s"
-msgstr ""
+msgstr "Argumen ke -ffpe-trap tidak valid: %s"
 
 #: fortran/options.c:573
 #, no-c-format
 msgid "Fixed line length must be at least seven."
-msgstr ""
+msgstr "Panjang baris tetap harus paling tidak tujuh."
 
 #: fortran/options.c:591
 #, no-c-format
 msgid "Free line length must be at least three."
-msgstr ""
+msgstr "Panjang baris bebas harus paling tidak tiga."
 
 #: fortran/options.c:605
 #, no-c-format
 msgid "-static-libgfortran is not supported in this configuration"
-msgstr ""
+msgstr "-static-libgfortran tidak didukung dalam konfigurasi ini"
 
 #: fortran/options.c:649
 #, no-c-format
 msgid "Maximum supported identifier length is %d"
-msgstr ""
+msgstr "Panjang maksimal identifier yang didukung adalah %d"
 
 #: fortran/options.c:681
 #, no-c-format
 msgid "Unrecognized option to -finit-logical: %s"
-msgstr ""
+msgstr "Opsi ke -finit-logical: %s tidak dikenal"
 
 #: fortran/options.c:695
 #, no-c-format
 msgid "Unrecognized option to -finit-real: %s"
-msgstr ""
+msgstr "Opsi ke -finit-real: %s tidak dikenal"
 
 #: fortran/options.c:711
 #, no-c-format
 msgid "The value of n in -finit-character=n must be between 0 and 127"
-msgstr ""
+msgstr "Nilai dari n dalam -finit-character=n harus berada diantara 0 dan 127"
 
 #: fortran/options.c:794
 #, no-c-format
 msgid "Maximum subrecord length cannot exceed %d"
-msgstr ""
+msgstr "Panjang maksimal subrecord tidak dapat melebihi %d"
 
 #: fortran/parse.c:451
 #, no-c-format
 msgid "Unclassifiable statement at %C"
-msgstr ""
+msgstr "Pernyataan tidak terklasifikasi di %C"
 
 #: fortran/parse.c:475
 #, no-c-format
 msgid "OpenMP directives at %C may not appear in PURE or ELEMENTAL procedures"
-msgstr ""
+msgstr "Direktif OpenMP di %C tidak boleh muncul dalam prosedur PURE atau ELEMENTAL"
 
 #: fortran/parse.c:553
 #, no-c-format
 msgid "Unclassifiable OpenMP directive at %C"
-msgstr ""
+msgstr "Direktif OpenMP tidak terklasifikasi di %C"
 
 #: fortran/parse.c:592 fortran/parse.c:733
 #, no-c-format
 msgid "Zero is not a valid statement label at %C"
-msgstr ""
+msgstr "Nol adalah bukan pernyataan label yang valid di %C"
 
 #: fortran/parse.c:599 fortran/parse.c:725
 #, no-c-format
 msgid "Non-numeric character in statement label at %C"
-msgstr ""
+msgstr "Karakter tidak-numerik dalam label pernyataan di %C"
 
 #: fortran/parse.c:611 fortran/parse.c:647 fortran/parse.c:773
 #, no-c-format
 msgid "Semicolon at %C needs to be preceded by statement"
-msgstr ""
+msgstr "Semikolon di %C melebihi pernyatan yang mengawalinya"
 
 #: fortran/parse.c:619 fortran/parse.c:785
 #, no-c-format
 msgid "Ignoring statement label in empty statement at %C"
-msgstr ""
+msgstr "mengabaikan label pernyataan dalam pernyataan kosong di %C"
 
 #: fortran/parse.c:712 fortran/parse.c:752
 #, no-c-format
 msgid "Bad continuation line at %C"
-msgstr ""
+msgstr "Baris kelanjutan buruk di %C"
 
 #: fortran/parse.c:811
 #, no-c-format
 msgid "Line truncated at %C"
-msgstr ""
+msgstr "Baris terpotong di %C"
 
 #: fortran/parse.c:997
 #, no-c-format
 msgid "FORMAT statement at %L does not have a statement label"
-msgstr ""
+msgstr "pernyataan FORMAT di %L tidak memiliki sebuah label pernyataan"
 
 #: fortran/parse.c:1069
 msgid "arithmetic IF"
-msgstr ""
+msgstr "aritmetik IF"
 
 #: fortran/parse.c:1075
 msgid "attribute declaration"
-msgstr ""
+msgstr "deklarasi atribut"
 
 #: fortran/parse.c:1105
 msgid "data declaration"
-msgstr ""
+msgstr "deklarasi data"
 
 #: fortran/parse.c:1114
 msgid "derived type declaration"
-msgstr ""
+msgstr "tipe deklarasi turunan"
 
 #: fortran/parse.c:1193
 msgid "block IF"
-msgstr ""
+msgstr "blok IF"
 
 #: fortran/parse.c:1202
 msgid "implied END DO"
-msgstr ""
+msgstr "Diimplikasikan END DO"
 
 #: fortran/parse.c:1275
 msgid "assignment"
-msgstr ""
+msgstr "assignment"
 
 #: fortran/parse.c:1278
 msgid "pointer assignment"
-msgstr ""
+msgstr "assignmen penunjuk"
 
 #: fortran/parse.c:1287
 msgid "simple IF"
-msgstr ""
+msgstr "IF sederhana"
 
 #: fortran/parse.c:1503
 #, no-c-format
 msgid "Unexpected %s statement at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s di %C"
 
 #: fortran/parse.c:1642
 #, no-c-format
 msgid "%s statement at %C cannot follow %s statement at %L"
-msgstr ""
+msgstr "pernyataan %s di %C tidak dapat mengikuti pernyataan %s di %L"
 
 #: fortran/parse.c:1659
 #, no-c-format
 msgid "Unexpected end of file in '%s'"
-msgstr ""
+msgstr "Tidak terduga akhir dari berkas dalam '%s'"
 
 #: fortran/parse.c:1714
 #, no-c-format
 msgid "Fortran 2003: Derived type definition at %C without components"
-msgstr ""
+msgstr "Fortran 2003: Definisi tipe turunan di %C tanpa komponen"
 
 #: fortran/parse.c:1725
 #, no-c-format
 msgid "PRIVATE statement in TYPE at %C must be inside a MODULE"
-msgstr ""
+msgstr "pernyataan PRIVATE dalam TYPE di %C harus berada didalam sebuah MODUL"
 
 #: fortran/parse.c:1733
 #, no-c-format
 msgid "PRIVATE statement at %C must precede structure components"
-msgstr ""
+msgstr "pernyataan PRIVATE di %C harus mengawali struktur komponen"
 
 #: fortran/parse.c:1741
 #, no-c-format
 msgid "Duplicate PRIVATE statement at %C"
-msgstr ""
+msgstr "Duplikasi pernyataan PRIVATE di %C"
 
 #: fortran/parse.c:1753
 #, no-c-format
 msgid "SEQUENCE statement at %C must precede structure components"
-msgstr ""
+msgstr "pernyataan SEQUENCE di %C harus mengawali struktur komponen"
 
 #: fortran/parse.c:1760
 #, no-c-format
 msgid "SEQUENCE attribute at %C already specified in TYPE statement"
-msgstr ""
+msgstr "atribut SEQUENCE di %C telah dispesifikasikan dalam pernyataan TIPE"
 
 #: fortran/parse.c:1765
 #, no-c-format
 msgid "Duplicate SEQUENCE statement at %C"
-msgstr ""
+msgstr "Duplikasi pernyataan SEQUENCE di %C"
 
 #: fortran/parse.c:1856
 #, no-c-format
 msgid "ENUM declaration at %C has no ENUMERATORS"
-msgstr ""
+msgstr "deklarasi ENUM di %C tidak memiliki ENUMERASI"
 
 #: fortran/parse.c:1934
 #, no-c-format
 msgid "Unexpected %s statement in INTERFACE block at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam ANTAR-MUKA blok di %C"
 
 #: fortran/parse.c:1960
 #, no-c-format
 msgid "SUBROUTINE at %C does not belong in a generic function interface"
-msgstr ""
+msgstr "SUBROUTINE di %C tidak termasuk dalam sebuah antar-muka fungsi umum"
 
 #: fortran/parse.c:1964
 #, no-c-format
 msgid "FUNCTION at %C does not belong in a generic subroutine interface"
-msgstr ""
+msgstr "FUNGSI di %C tidak termasuk dalam sebuah subrutin antar-muka umum"
 
 #: fortran/parse.c:1974
 #, no-c-format
 msgid "Name '%s' of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
-msgstr ""
+msgstr "Nama '%s' dari ANTAR-MUKA ABSTRAK di %C tidak dapat sama dengan sebuah tipe intrinsik"
 
 #: fortran/parse.c:2005
 #, no-c-format
 msgid "Unexpected %s statement at %C in INTERFACE body"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s di %C dalam tubuh ANTAR-MUKA"
 
 #: fortran/parse.c:2019
 #, no-c-format
 msgid "INTERFACE procedure '%s' at %L has the same name as the enclosing procedure"
-msgstr ""
+msgstr "prosedur ANTAR-MUKA '%s' di %L memiliki nama sama dengan prosedur yang melingkupinya"
 
 #: fortran/parse.c:2134
 #, no-c-format
 msgid "%s statement must appear in a MODULE"
-msgstr ""
+msgstr "pernyataan %s harus muncul dalam sebuah MODUL"
 
 #: fortran/parse.c:2141
 #, no-c-format
 msgid "%s statement at %C follows another accessibility specification"
-msgstr ""
+msgstr "pernyataan %s di %C mengikuti spesifikasi aksesbiliti lain"
 
 #: fortran/parse.c:2191
 #, no-c-format
 msgid "Bad kind expression for function '%s' at %L"
-msgstr ""
+msgstr "Jenis ekspresi buruk untuk fungsi '%s' di %L"
 
 #: fortran/parse.c:2195
 #, no-c-format
 msgid "The type for function '%s' at %L is not accessible"
-msgstr ""
+msgstr "Tipe dari fungsi '%s' di %L tidak dapat diakses"
 
 #: fortran/parse.c:2253
 #, no-c-format
 msgid "ELSEWHERE statement at %C follows previous unmasked ELSEWHERE"
-msgstr ""
+msgstr "pernyataan ELSEWHERE di %C mengikuti tidak bertopen ELSEWHERE"
 
 #: fortran/parse.c:2274
 #, no-c-format
 msgid "Unexpected %s statement in WHERE block at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam blok WHERE di %C"
 
 #: fortran/parse.c:2333
 #, no-c-format
 msgid "Unexpected %s statement in FORALL block at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam blok FORALL di %C"
 
 #: fortran/parse.c:2384
 #, no-c-format
 msgid "ELSE IF statement at %C cannot follow ELSE statement at %L"
-msgstr ""
+msgstr "pernyataan ELSE IF di %C tidak dapat mengikuti pernyataan ELSE di %L"
 
 #: fortran/parse.c:2402
 #, no-c-format
 msgid "Duplicate ELSE statements at %L and %C"
-msgstr ""
+msgstr "Duplikasi pernyataan ELSE di %L dan %C"
 
 #: fortran/parse.c:2463
 #, no-c-format
 msgid "Expected a CASE or END SELECT statement following SELECT CASE at %C"
-msgstr ""
+msgstr "Diduga sebuah pernyataan CASE atau END SELECT mengikuti SELECT CASE di %C"
 
 #: fortran/parse.c:2521
 #, no-c-format
 msgid "Variable '%s' at %C cannot be redefined inside loop beginning at %L"
-msgstr ""
+msgstr "Variabel '%s' di %C tidak dapat diredefinisi didalam loop berawal di %L"
 
 #: fortran/parse.c:2555
 #, no-c-format
 msgid "End of nonblock DO statement at %C is within another block"
-msgstr ""
+msgstr "Akhir dari pernyataan bukan blok DO di %C adalah didalam blok lain"
 
 #: fortran/parse.c:2564
 #, no-c-format
 msgid "End of nonblock DO statement at %C is interwoven with another DO loop"
-msgstr ""
+msgstr "Akhir dari pernyataan bukan blok DO di %C adalah interwoven dengan DO loop lainnya"
 
 #: fortran/parse.c:2613
 #, no-c-format
 msgid "Statement label in ENDDO at %C doesn't match DO label"
-msgstr ""
+msgstr "Pernyataan label dalam ENDDO di %C tidak cocok dengan label DO"
 
 #: fortran/parse.c:2629
 #, no-c-format
 msgid "named block DO at %L requires matching ENDDO name"
-msgstr ""
+msgstr "blok bernama DO di %L membutuhkan nama ENDDO yang sama"
 
 #: fortran/parse.c:2885
 #, no-c-format
 msgid "Name after !$omp critical and !$omp end critical does not match at %C"
-msgstr ""
+msgstr "Nama setelah !$omp kritis dan !$omp akhir kritis tidak cocok di %C"
 
 #: fortran/parse.c:2941
 #, no-c-format
 msgid "%s statement at %C cannot terminate a non-block DO loop"
-msgstr ""
+msgstr "pernyataan %s di %C tidak dapat mengakhiri sebuah bukan blok DO loop"
 
 #: fortran/parse.c:3126
 #, no-c-format
 msgid "Contained procedure '%s' at %C is already ambiguous"
-msgstr ""
+msgstr "Prosedur berisi '%s' di %C telah ambigu"
 
 #: fortran/parse.c:3176
 #, no-c-format
 msgid "Unexpected %s statement in CONTAINS section at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam daerah CONTAINS di %C"
 
 #. This is valid in Fortran 2008.
 #: fortran/parse.c:3201
 #, no-c-format
 msgid "Extension: CONTAINS statement without FUNCTION or SUBROUTINE statement at %C"
-msgstr ""
+msgstr "Ekstensi: pernyataan CONTAINS tanpa pernyataan FUNCTION atau SUBROUTINE di %C"
 
 #: fortran/parse.c:3272
 #, no-c-format
 msgid "CONTAINS statement at %C is already in a contained program unit"
-msgstr ""
+msgstr "pernyataan CONTAINS di %C telah berada dalam satuan aplikasi terisi"
 
 #: fortran/parse.c:3321
 #, no-c-format
 msgid "Global name '%s' at %L is already being used as a %s at %L"
-msgstr ""
+msgstr "Nama global '%s' di %L telah digunakan sebuah sebuah %s di %L"
 
 #: fortran/parse.c:3342
 #, no-c-format
 msgid "Blank BLOCK DATA at %C conflicts with prior BLOCK DATA at %L"
-msgstr ""
+msgstr "BLOK DATA kosong di %C konflik dengan BLOK DATA sebelumnya di %L"
 
 #: fortran/parse.c:3368
 #, no-c-format
 msgid "Unexpected %s statement in BLOCK DATA at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam BLOK DATA di %C"
 
 #: fortran/parse.c:3411
 #, no-c-format
 msgid "Unexpected %s statement in MODULE at %C"
-msgstr ""
+msgstr "Tidak terduga pernyataan %s dalam MODUL di %C"
 
 #. If we see a duplicate main program, shut down.  If the second
 #. instance is an implied main program, ie data decls or executable
@@ -8481,716 +8481,716 @@ msgstr ""
 #: fortran/parse.c:3594
 #, no-c-format
 msgid "Two main PROGRAMs at %L and %C"
-msgstr ""
+msgstr "Dua APLIKASI utama di %L dan %C"
 
 #: fortran/primary.c:87
 #, no-c-format
 msgid "Missing kind-parameter at %C"
-msgstr ""
+msgstr "Hilang parameter jenis di %C"
 
 #: fortran/primary.c:210
 #, no-c-format
 msgid "Integer kind %d at %C not available"
-msgstr ""
+msgstr "Jenis integer  %d di %C tidak tersedia"
 
 #: fortran/primary.c:218
 #, no-c-format
 msgid "Integer too big for its kind at %C. This check can be disabled with the option -fno-range-check"
-msgstr ""
+msgstr "Integer terlalu besar untuk jenis ini di %C. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
 
 #: fortran/primary.c:247
 #, no-c-format
 msgid "Extension: Hollerith constant at %C"
-msgstr ""
+msgstr "Ekstensi: Konstanta Hollerith di %C"
 
 #: fortran/primary.c:259
 #, no-c-format
 msgid "Invalid Hollerith constant: %L must contain at least one character"
-msgstr ""
+msgstr "Konstanta Hollerith tidak valid: %L harus berisi paling tidak satu karakter"
 
 #: fortran/primary.c:265
 #, no-c-format
 msgid "Invalid Hollerith constant: Integer kind at %L should be default"
-msgstr ""
+msgstr "Konstanta Hollerith tidak valid: Jenis integer di %L seharusnya baku"
 
 #: fortran/primary.c:353
 #, no-c-format
 msgid "Extension: Hexadecimal constant at %C uses non-standard syntax"
-msgstr ""
+msgstr "Ekstensi: Konstanta Heksadesimal di %C menggunakan sintaks tidak baku"
 
 #: fortran/primary.c:363
 #, no-c-format
 msgid "Empty set of digits in BOZ constant at %C"
-msgstr ""
+msgstr "Set kosong dari digits dalam konstanta BOZ di %C"
 
 #: fortran/primary.c:369
 #, no-c-format
 msgid "Illegal character in BOZ constant at %C"
-msgstr ""
+msgstr "Karakter tidak legal dalam konstanta BOZ di %C"
 
 #: fortran/primary.c:392
 #, no-c-format
 msgid "Extension: BOZ constant at %C uses non-standard postfix syntax"
-msgstr ""
+msgstr "Ekstensi: konstanta BOZ di %C menggunakan sintaks postfix tidak baku"
 
 #: fortran/primary.c:423
 #, no-c-format
 msgid "Integer too big for integer kind %i at %C"
-msgstr ""
+msgstr "Integer terlalu besar untuk jenis integer %i di %C"
 
 #: fortran/primary.c:429
 #, no-c-format
 msgid "Fortran 2003: BOZ used outside a DATA statement at %C"
-msgstr ""
+msgstr "Fortran2003: BOZ digunakan diluar dari pernyataan DATA di %C"
 
 #: fortran/primary.c:529
 #, no-c-format
 msgid "Missing exponent in real number at %C"
-msgstr ""
+msgstr "Hilang eksponen dalam nomor ril di %C"
 
 #: fortran/primary.c:585
 #, no-c-format
 msgid "Real number at %C has a 'd' exponent and an explicit kind"
-msgstr ""
+msgstr "Nomor ril di %C memiliki sebuah 'd' eksponen dan sebuah jenis eksplisit"
 
 #: fortran/primary.c:598
 #, no-c-format
 msgid "Invalid real kind %d at %C"
-msgstr ""
+msgstr "Jenis ril %d di %C tidak valid"
 
 #: fortran/primary.c:612
 #, no-c-format
 msgid "Real constant overflows its kind at %C"
-msgstr ""
+msgstr "Konstanta ril overflow jenisnya di %C"
 
 #: fortran/primary.c:617
 #, no-c-format
 msgid "Real constant underflows its kind at %C"
-msgstr ""
+msgstr "Konstanta ril underflow jenisnya di %C"
 
 #: fortran/primary.c:709
 #, no-c-format
 msgid "Syntax error in SUBSTRING specification at %C"
-msgstr ""
+msgstr "Sintaks error dalam spesifikasi SUBSTRING di %C"
 
 #: fortran/primary.c:914
 #, no-c-format
 msgid "Invalid kind %d for CHARACTER constant at %C"
-msgstr ""
+msgstr "Jenis tidak valid %d untuk konstanta KARAKTER di %C"
 
 #: fortran/primary.c:935
 #, no-c-format
 msgid "Unterminated character constant beginning at %C"
-msgstr ""
+msgstr "Konstanta karakter tidak terselesaikan berawal di %C"
 
 #: fortran/primary.c:1047
 #, no-c-format
 msgid "Bad kind for logical constant at %C"
-msgstr ""
+msgstr "Jenis buruk untuk konstanta logikal di %C"
 
 #: fortran/primary.c:1086
 #, no-c-format
 msgid "Expected PARAMETER symbol in complex constant at %C"
-msgstr ""
+msgstr "Diduga simbol PARAMETER dalam konstanta kompleks di %C"
 
 #: fortran/primary.c:1092
 #, no-c-format
 msgid "Numeric PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "PARAMETER numerik dibutuhkan dalam konstanta kompleks di %C"
 
 #: fortran/primary.c:1098
 #, no-c-format
 msgid "Scalar PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "Skalar PARAMETER dibutuhkan dalam konstanta kompleks di %C"
 
 #: fortran/primary.c:1102
 #, no-c-format
 msgid "Fortran 2003: PARAMETER symbol in complex constant at %C"
-msgstr ""
+msgstr "Fortran 2003: PARAMETER simbol dalam konstanta kompleks di %C"
 
 #: fortran/primary.c:1132
 #, no-c-format
 msgid "Error converting PARAMETER constant in complex constant at %C"
-msgstr ""
+msgstr "Error mengubah PARAMETER konstanta dalam konstanta kompleks di %C"
 
 #: fortran/primary.c:1261
 #, no-c-format
 msgid "Syntax error in COMPLEX constant at %C"
-msgstr ""
+msgstr "Sintaks error dalam konstanta COMPLEKS di %C"
 
 #: fortran/primary.c:1442
 #, no-c-format
 msgid "Keyword '%s' at %C has already appeared in the current argument list"
-msgstr ""
+msgstr "Kata-kunci '%s' di %C telah muncul dalam daftar argumen sekarang"
 
 #: fortran/primary.c:1506
 #, no-c-format
 msgid "Extension: argument list function at %C"
-msgstr ""
+msgstr "Ekstensi: daftar fungsi argumen di %C"
 
 #: fortran/primary.c:1573
 #, no-c-format
 msgid "Expected alternate return label at %C"
-msgstr ""
+msgstr "Diduga alternatif label kembali di %C"
 
 #: fortran/primary.c:1591
 #, no-c-format
 msgid "Missing keyword name in actual argument list at %C"
-msgstr ""
+msgstr "Hilang nama kata kunci dalam daftar argumen aktual di %C"
 
 #: fortran/primary.c:1636
 #, no-c-format
 msgid "Syntax error in argument list at %C"
-msgstr ""
+msgstr "Sintaks error dalam daftar argumen di %C"
 
 #: fortran/primary.c:1723
 #, no-c-format
 msgid "Expected structure component name at %C"
-msgstr ""
+msgstr "Diduga nama struktur komponen di %C"
 
 #: fortran/primary.c:1980
 #, no-c-format
 msgid "Too many components in structure constructor at %C"
-msgstr ""
+msgstr "Terlalu banyak komponen dalam struktur konstruktor di %C"
 
 #: fortran/primary.c:1993
 #, no-c-format
 msgid "Structure constructor for '%s' at %C has PRIVATE components"
-msgstr ""
+msgstr "Struktur konstruktor untuk '%s' di %C memiliki komponen PRIVATE"
 
 #: fortran/primary.c:2003
 #, no-c-format
 msgid "Too few components in structure constructor at %C"
-msgstr ""
+msgstr "Terlalu sedikit komponen dalam struktur konstruktor di %C"
 
 #: fortran/primary.c:2021
 #, no-c-format
 msgid "Syntax error in structure constructor at %C"
-msgstr ""
+msgstr "Sintaks error dalam struktur konstruktor di %C"
 
 #: fortran/primary.c:2105
 #, no-c-format
 msgid "'%s' at %C is the name of a recursive function and so refers to the result variable. Use an explicit RESULT variable for direct recursion (12.5.2.1)"
-msgstr ""
+msgstr "'%s' di %C adalah nama dari sebuah fungsi rekursi dan jadi merefer ke hasil variabel. Gunakan sebuah variabel RESULT eksplisit untuk rekursif langsung (12.5.2.1)"
 
 #: fortran/primary.c:2207
 #, no-c-format
 msgid "Unexpected use of subroutine name '%s' at %C"
-msgstr ""
+msgstr "Tidak diduga penggunaan dari nama subroutine '%s' di %C"
 
 #: fortran/primary.c:2238
 #, no-c-format
 msgid "Statement function '%s' requires argument list at %C"
-msgstr ""
+msgstr "Pernyataan fungsi '%s' membutuhkan daftar argumen di %C"
 
 #: fortran/primary.c:2241
 #, no-c-format
 msgid "Function '%s' requires an argument list at %C"
-msgstr ""
+msgstr "Fungsi '%s' membutuhkan sebuah daftar argumen di %C"
 
 #: fortran/primary.c:2286
 #, no-c-format
 msgid "Missing argument to '%s' at %C"
-msgstr ""
+msgstr "Hilang argumen ke '%s' di %C"
 
 #: fortran/primary.c:2427
 #, no-c-format
 msgid "Missing argument list in function '%s' at %C"
-msgstr ""
+msgstr "Hilang daftar argumen dalam fungsi '%s' di %C"
 
 #: fortran/primary.c:2455
 #, no-c-format
 msgid "Symbol at %C is not appropriate for an expression"
-msgstr ""
+msgstr "Simbol di %C tidak sesuai untuk sebuah ekspresi"
 
 #: fortran/primary.c:2523
 #, no-c-format
 msgid "Assigning to PROTECTED variable at %C"
-msgstr ""
+msgstr "Assigning ke variabel TERPROTEKSI di %C"
 
 #: fortran/primary.c:2557
 #, no-c-format
 msgid "Named constant at %C in an EQUIVALENCE"
-msgstr ""
+msgstr "Konstanta bernama di %C dalam sebuah EQUIVALENCE"
 
 #: fortran/primary.c:2579
 #, no-c-format
 msgid "'%s' at %C is not a variable"
-msgstr ""
+msgstr "'%s' di %C bukan sebuah variabel"
 
 #: fortran/resolve.c:121
 #, no-c-format
 msgid "Alternate return specifier in elemental subroutine '%s' at %L is not allowed"
-msgstr ""
+msgstr "Alternatif return penspesifikasi dalam subroutine elemental '%s' di %L tidak diperbolehkan"
 
 #: fortran/resolve.c:125
 #, no-c-format
 msgid "Alternate return specifier in function '%s' at %L is not allowed"
-msgstr ""
+msgstr "Alternatif return penspesifikasi dalam fungsi '%s' di %L tidak diperbolehkan"
 
 #: fortran/resolve.c:138
 #, no-c-format
 msgid "Dummy procedure '%s' of PURE procedure at %L must also be PURE"
-msgstr ""
+msgstr "Prosedur dummy '%s' dari prosedur PURE di %L harus juga PURE"
 
 #: fortran/resolve.c:145
 #, no-c-format
 msgid "Dummy procedure at %L not allowed in ELEMENTAL procedure"
-msgstr ""
+msgstr "Prosedur dummy di %L tidak diperbolehkan dalam prosedur ELEMENTAL"
 
 #: fortran/resolve.c:158 fortran/resolve.c:1138
 #, no-c-format
 msgid "Unable to find a specific INTRINSIC procedure for the reference '%s' at %L"
-msgstr ""
+msgstr "Tidak dapat menemukan sebuah prosedur INTRINSIK spesifik untuk referensi '%s' di %L"
 
 #: fortran/resolve.c:202
 #, no-c-format
 msgid "Argument '%s' of pure function '%s' at %L must be INTENT(IN)"
-msgstr ""
+msgstr "Argumen '%s' dari fungsi pure '%s' di %L harus berupa INTENT(IN)"
 
 #: fortran/resolve.c:207
 #, no-c-format
 msgid "Argument '%s' of pure subroutine '%s' at %L must have its INTENT specified"
-msgstr ""
+msgstr "Argumen '%s' dari subroutine pure '%s' di %L harus memiliki spesifikasi INTENT-nya"
 
 #: fortran/resolve.c:216
 #, no-c-format
 msgid "Argument '%s' of elemental procedure at %L must be scalar"
-msgstr ""
+msgstr "Argumen '%s' dari prosedur elemental di %L harus berupa skalar"
 
 #: fortran/resolve.c:223
 #, no-c-format
 msgid "Argument '%s' of elemental procedure at %L cannot have the POINTER attribute"
-msgstr ""
+msgstr "Argumen '%s' dari prosedur elemental di %L tidak dapat memiliki atribut POINTER"
 
 #: fortran/resolve.c:231
 #, no-c-format
 msgid "Dummy procedure '%s' not allowed in elemental procedure '%s' at %L"
-msgstr ""
+msgstr "Prosedur dummy '%s' tidak diperbolehkan dalam elemtal prosedur '%s' di %L"
 
 #: fortran/resolve.c:243
 #, no-c-format
 msgid "Argument '%s' of statement function at %L must be scalar"
-msgstr ""
+msgstr "Argumen '%s' dalam pernyataan fungsi di %L harus berupa skalar"
 
 #: fortran/resolve.c:253
 #, no-c-format
 msgid "Character-valued argument '%s' of statement function at %L must have constant length"
-msgstr ""
+msgstr "Nilai-karakter argumen '%s' dari pernyataan fungsi di %L harus memiliki panjang konstan"
 
 #: fortran/resolve.c:310
 #, no-c-format
 msgid "Contained function '%s' at %L has no IMPLICIT type"
-msgstr ""
+msgstr "Fungsi yang berisi '%s' di %L tidak memiliki tipe IMPLISIT"
 
 #: fortran/resolve.c:313
 #, no-c-format
 msgid "Result '%s' of contained function '%s' at %L has no IMPLICIT type"
-msgstr ""
+msgstr "Hasil '%s' dari fungsi yang berisi '%s' di %L tidak memiliki tipe IMPLISIT"
 
 #: fortran/resolve.c:330
 #, no-c-format
 msgid "Character-valued internal function '%s' at %L must not be assumed length"
-msgstr ""
+msgstr "Nilai-karakter fungsi internal '%s' di %L tidak boleh dengan panjang diasumsikan"
 
 #: fortran/resolve.c:501
 #, no-c-format
 msgid "Function %s at %L has entries with mismatched array specifications"
-msgstr ""
+msgstr "Fungsi %s di %L memiliki masukan dengan spesifikasi array tidak cocok"
 
 #: fortran/resolve.c:518
 #, no-c-format
 msgid "Extension: Function %s at %L with entries returning variables of different string lengths"
-msgstr ""
+msgstr "Ekstensi: Fungsi %s di %L dengan masukan mengembalikan variabel dari panjang string berbeda"
 
 #: fortran/resolve.c:545
 #, no-c-format
 msgid "FUNCTION result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil FUNGSI %s tidak dapat berupa sebuah array dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:549
 #, no-c-format
 msgid "ENTRY result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil MASUKAN %s tidak dapat berupa sebuah array dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:556
 #, no-c-format
 msgid "FUNCTION result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil FUNGSI %s tidak dapat berupa sebuah PENUNJUK dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:560
 #, no-c-format
 msgid "ENTRY result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil MASUKAN %s tidak dapat berupa sebuah PENUNJUK dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:598
 #, no-c-format
 msgid "FUNCTION result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil FUNGSI %s tidak dapat tipe %s dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:603
 #, no-c-format
 msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Hasil MASUKAN %s tidak dapat tipe %s dalam FUNGSI %s di %L"
 
 #: fortran/resolve.c:661
 #, no-c-format
 msgid "Variable '%s' at %L is in COMMON but only in BLOCK DATA initialization is allowed"
-msgstr ""
+msgstr "Variabel '%s' di %L adalah dalam COMMON tetapi hanya dalam inisialisasi BLOK DATA yang diperbolehkan"
 
 #: fortran/resolve.c:665
 #, no-c-format
 msgid "Initialized variable '%s' at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr ""
+msgstr "variabel terinisialisasi '%s' di %L adalah dalam sebuah kosong COMMON tetapi inisialisasi hanya diperbolehkan dalam blok umum bernama"
 
 #: fortran/resolve.c:676
 #, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L has neither the SEQUENCE nor the BIND(C) attribute"
-msgstr ""
+msgstr "Tipe variabel turunan '%s' dalam COMMON di %L memiliki bukan SEQUENCE ataupun atribut BIND(C)"
 
 #: fortran/resolve.c:680
 #, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L has an ultimate component that is allocatable"
-msgstr ""
+msgstr "Tipe variabel turunan '%s' dalam COMMON di %L memiliki sebuah komponen ultimate yang dapat dialokasikan"
 
 #: fortran/resolve.c:684
 #, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L may not have default initializer"
-msgstr ""
+msgstr "Tipe variabel turunan '%s' dalam COMMOND di %L tidak boleh memiliki penginisialisasi baku"
 
 #: fortran/resolve.c:711
 #, no-c-format
 msgid "COMMON block '%s' at %L is used as PARAMETER at %L"
-msgstr ""
+msgstr "blok COMMON '%s' di %L digunakan sebagai PARAMETER di %L"
 
 #: fortran/resolve.c:715
 #, no-c-format
 msgid "COMMON block '%s' at %L is also an intrinsic procedure"
-msgstr ""
+msgstr "blok COMMON '%s' di %L juga sebuah prosedur intrinsik"
 
 #: fortran/resolve.c:719
 #, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a function result"
-msgstr ""
+msgstr "Fortran 2003: blok common '%s' di %L yang juga sebuah hasil fungsi"
 
 #: fortran/resolve.c:724
 #, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a global procedure"
-msgstr ""
+msgstr "Fortran 2003: blok COMMON '%s' di %L yang juga sebuah prosedur global"
 
 #: fortran/resolve.c:786
 #, no-c-format
 msgid "Components of structure constructor '%s' at %L are PRIVATE"
-msgstr ""
+msgstr "Komponen dari struktur konstruktor '%s' di %L adalah PRIVATE"
 
 #: fortran/resolve.c:808
 #, no-c-format
 msgid "The rank of the element in the derived type constructor at %L does not match that of the component (%d/%d)"
-msgstr ""
+msgstr "Tingkat dari elemen dalam tipe konstruktor turunan di %L tidak cocok dengan komponen (%d/%d)"
 
 #: fortran/resolve.c:821
 #, no-c-format
 msgid "The element in the derived type constructor at %L, for pointer component '%s', is %s but should be %s"
-msgstr ""
+msgstr "Elemen dalam tipe konstruktor turunan di %L, untuk komponen penunjuk '%s', adalah %s tetapi seharusnya berupa %s"
 
 #: fortran/resolve.c:838
 #, no-c-format
 msgid "The element in the derived type constructor at %L, for pointer component '%s' should be a POINTER or a TARGET"
-msgstr ""
+msgstr "Elemen dalam tipe konstruktor turunan di %L, untuk komponen penunjuk '%s' seharusnya berupa sebuah PENUNJUK atau sebuah TARGET"
 
 #: fortran/resolve.c:965
 #, no-c-format
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L"
-msgstr ""
+msgstr "Batas atas dalam dimensi terakhir harus muncul dalam referensi ke ukuran array yang diasumsikan '%s' di %L"
 
 #: fortran/resolve.c:1029 fortran/resolve.c:5576 fortran/resolve.c:6282
 #, no-c-format
 msgid "Label %d referenced at %L is never defined"
-msgstr ""
+msgstr "Label %d direferensikan di %L tidak pernah terdefinisi"
 
 #: fortran/resolve.c:1039
 #, no-c-format
 msgid "'%s' at %L is ambiguous"
-msgstr ""
+msgstr "'%s' di %L adalah ambigu"
 
 #: fortran/resolve.c:1075
 #, no-c-format
 msgid "Statement function '%s' at %L is not allowed as an actual argument"
-msgstr ""
+msgstr "Pernyataan fungsi '%s' di %L tidak diperbolehkan sebagai argumen aktual"
 
 #: fortran/resolve.c:1083
 #, no-c-format
 msgid "Intrinsic '%s' at %L is not allowed as an actual argument"
-msgstr ""
+msgstr "Intrinsik '%s' di %L tidak diperbolehkan sebagai sebuah argumen aktual"
 
 #: fortran/resolve.c:1090
 #, no-c-format
 msgid "Internal procedure '%s' is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "Prosedur internal '%s' tidak diperbolehkan sebagai sebuah argumen aktual di %L"
 
 #: fortran/resolve.c:1096
 #, no-c-format
 msgid "ELEMENTAL non-INTRINSIC procedure '%s' is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "ELEMENTAL bukan INTRINSIK prosedur '%s' tidak diperbolehkan sebagai sebuah argumen aktual di %L"
 
 #: fortran/resolve.c:1116
 #, no-c-format
 msgid "GENERIC procedure '%s' is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "prosedur UMUM '%s' tidak diperbolehkan sebagai sebuah argumen aktual di %L"
 
 #: fortran/resolve.c:1157
 #, no-c-format
 msgid "Symbol '%s' at %L is ambiguous"
-msgstr ""
+msgstr "Simbol '%s' di %L adalah ambigu"
 
 #: fortran/resolve.c:1206
 #, no-c-format
 msgid "By-value argument at %L is not of numeric type"
-msgstr ""
+msgstr "Argumen dengan nilai di %L adalah bukan tipe numerik"
 
 #: fortran/resolve.c:1213
 #, no-c-format
 msgid "By-value argument at %L cannot be an array or an array section"
-msgstr ""
+msgstr "Argumen dengan nilai di %L tidak dapat berupa sebuah array atau sebuah daerah array"
 
 #: fortran/resolve.c:1227
 #, no-c-format
 msgid "By-value argument at %L is not allowed in this context"
-msgstr ""
+msgstr "Argumen dengan nilai di %L tidak diperbolehkan dalam konteks ini"
 
 #: fortran/resolve.c:1239
 #, no-c-format
 msgid "Passing internal procedure at %L by location not allowed"
-msgstr ""
+msgstr "Melewati prosedur internal di %L dengan lokasi tidak diperbolehkan"
 
 #: fortran/resolve.c:1356
 #, no-c-format
 msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
-msgstr ""
+msgstr "'%s' di %L adalah sebuah array dan OPSIONAL; JIKA INI HILANG, ini tidak dapat berupa argumen aktual dari sebual prosedur ELEMENTAL kecuali disana ada sebuah tidak opsional argumen dengan tingkat sama (12.4.1.5)"
 
 #: fortran/resolve.c:1378
 msgid "elemental procedure"
-msgstr ""
+msgstr "prosedur elemental"
 
 #: fortran/resolve.c:1395
 #, no-c-format
 msgid "Actual argument at %L for INTENT(%s) dummy '%s' of ELEMENTAL subroutine '%s' is a scalar, but another actual argument is an array"
-msgstr ""
+msgstr "Argumen aktual di %L untuk INTENT(%s) dummy '%s' dari subroutine ELEMENTAL '%s' adalah sebuah skalar, tetapi argumen aktual lain adalah sebuah array"
 
 #: fortran/resolve.c:1531
 #, no-c-format
 msgid "There is no specific function for the generic '%s' at %L"
-msgstr ""
+msgstr "Disana tidak ada fungsi spesifik untuk umum '%s' di %L"
 
 #: fortran/resolve.c:1540
 #, no-c-format
 msgid "Generic function '%s' at %L is not consistent with a specific intrinsic interface"
-msgstr ""
+msgstr "Fungsi umum '%s' di %L tidak konsisten dengan sebuah antar-muka spesifik intrinsik."
 
 #: fortran/resolve.c:1594
 #, no-c-format
 msgid "Function '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "Fungsi '%s' di %L adalah INTRINSIK tetapi tidak kompatibel dengan sebuah intrinsik"
 
 #: fortran/resolve.c:1640
 #, no-c-format
 msgid "Unable to resolve the specific function '%s' at %L"
-msgstr ""
+msgstr "Tidak dapat meresolf fungsi spesifik '%s'di %L"
 
 #: fortran/resolve.c:1696 fortran/resolve.c:8931
 #, no-c-format
 msgid "Function '%s' at %L has no IMPLICIT type"
-msgstr ""
+msgstr "Fungsi '%s' di %L tidak memiliki tipe IMPLISIT"
 
 #: fortran/resolve.c:1907
 #, no-c-format
 msgid "Argument to '%s' at %L is not a variable"
-msgstr ""
+msgstr "Argumen ke '%s' di %L bukan sebuah variabel"
 
 #: fortran/resolve.c:1979
 #, no-c-format
 msgid "More actual than formal arguments in '%s' call at %L"
-msgstr ""
+msgstr "Lebih aktual dari argumen formal dalam '%s' panggilan di %L"
 
 #: fortran/resolve.c:1991
 #, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be either a TARGET or an associated pointer"
-msgstr ""
+msgstr "Parameter '%s' ke '%s' di %L harus baik sebuah TARGET atau sebuah penunjuk berasosiasi"
 
 #: fortran/resolve.c:2017
 #, no-c-format
 msgid "Allocatable variable '%s' used as a parameter to '%s' at %L must not be an array of zero size"
-msgstr ""
+msgstr "Variabel yang dapat dialokasikan '%s' digunakan sebagai sebuah parameter ke '%s' di %L tidak boleh berupa sebuah array berukuran nol"
 
 #: fortran/resolve.c:2034
 #, no-c-format
 msgid "Assumed-shape array '%s' at %L cannot be an argument to the procedure '%s' because it is not C interoperable"
-msgstr ""
+msgstr "Diasumsikan-bentuk array '%s' di %L tidak dapat berupa sebuah argumen ke prosedur '%s' karena ini bukan C interoperable"
 
 #: fortran/resolve.c:2044
 #, no-c-format
 msgid "Deferred-shape array '%s' at %L cannot be an argument to the procedure '%s' because it is not C interoperable"
-msgstr ""
+msgstr "Deferred-shape array '%s' di %L tidak dapat berupa sebuah argumen ke prosedur '%s' karena ini bukan C interoperable"
 
 #: fortran/resolve.c:2067 fortran/resolve.c:2106
 #, no-c-format
 msgid "CHARACTER argument '%s' to '%s' at %L must have a length of 1"
-msgstr ""
+msgstr "argumen KARAKTER '%s' ke '%s' di %L harus memiliki panjang 1"
 
 #. Case 1c, section 15.1.2.5, J3/04-007: an associated
 #. scalar pointer.
 #: fortran/resolve.c:2082
 #, no-c-format
 msgid "Argument '%s' to '%s' at %L must be an associated scalar POINTER"
-msgstr ""
+msgstr "Argumen '%s' ke '%s' di %L harus berupa sebuah skalar PENUNJUK berasosiasi"
 
 #: fortran/resolve.c:2098
 #, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be a scalar"
-msgstr ""
+msgstr "Parameter '%s' ke '%s' di %L harus berupa sebuah skalar"
 
 #. TODO: Update this error message to allow for procedure
 #. pointers once they are implemented.
 #: fortran/resolve.c:2120
 #, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be a procedure"
-msgstr ""
+msgstr "Paramter '%s' ke '%s' di %L harus berupa sebuah prosedur"
 
 #: fortran/resolve.c:2128
 #, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be BIND(C)"
-msgstr ""
+msgstr "Parameter '%s' ke '%s' di %L harus berupa BIND(C)"
 
 #: fortran/resolve.c:2170
 #, no-c-format
 msgid "'%s' at %L is not a function"
-msgstr ""
+msgstr "'%s' di %L bukan sebuah fungsi"
 
 #: fortran/resolve.c:2176
 #, no-c-format
 msgid "ABSTRACT INTERFACE '%s' must not be referenced at %L"
-msgstr ""
+msgstr "ANTAR-MUKA ABSTRAK '%s' tidak boleh direferensikan di %L"
 
 #. Internal procedures are taken care of in resolve_contained_fntype.
 #: fortran/resolve.c:2219
 #, no-c-format
 msgid "Function '%s' is declared CHARACTER(*) and cannot be used at %L since it is not a dummy argument"
-msgstr ""
+msgstr "Fungsi '%s' adalah dideklarasikan KARAKTER(*) dan tidak dapat digunakan di %L karena ini bukan sebuah argumen dummy"
 
 #: fortran/resolve.c:2272
 #, no-c-format
 msgid "User defined non-ELEMENTAL function '%s' at %L not allowed in WORKSHARE construct"
-msgstr ""
+msgstr "Fungsi bukan-ELEMENTAL definisi pengguna '%s' di %L tidak diperbolehkan dalam WORKSHAREkonstruksi"
 
 #: fortran/resolve.c:2321
 #, no-c-format
 msgid "reference to non-PURE function '%s' at %L inside a FORALL %s"
-msgstr ""
+msgstr "referensi ke fungsi bukan-PURE '%s' di %L didalam sebuah FORALL %s"
 
 #: fortran/resolve.c:2328
 #, no-c-format
 msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE procedure"
-msgstr ""
+msgstr "Referensi fungsi ke '%s' di %L adalah ke sebuah prosedur bukan-PURE dalam sebuah prosedur PURE"
 
 #: fortran/resolve.c:2343
 #, no-c-format
 msgid "Function '%s' at %L cannot call itself, as it is not RECURSIVE"
-msgstr ""
+msgstr "Fungsi '%s' di %L tidak dapat memanggil dirinya sendiri, karena ini bukan REKURSIF"
 
 #: fortran/resolve.c:2351
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but function '%s' is not declared as RECURSIVE"
-msgstr ""
+msgstr "Panggilan ke MASUKAN '%s' di %L adalah rekursif, bukan fungsi '%s' tidak terdeklarasi sebagai REKURSIF"
 
 #: fortran/resolve.c:2393
 #, no-c-format
 msgid "Subroutine call to '%s' in FORALL block at %L is not PURE"
-msgstr ""
+msgstr "Panggilan subroutine ke '%s' dalam blok FORALL di %L tidak PURE"
 
 #: fortran/resolve.c:2396
 #, no-c-format
 msgid "Subroutine call to '%s' at %L is not PURE"
-msgstr ""
+msgstr "Panggilan subroutine ke '%s' di %L bukan PURE"
 
 #: fortran/resolve.c:2459
 #, no-c-format
 msgid "There is no specific subroutine for the generic '%s' at %L"
-msgstr ""
+msgstr "Disana tidak ada subroutine spesifik untuk umum '%s' di %L"
 
 #: fortran/resolve.c:2468
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not consistent with an intrinsic subroutine interface"
-msgstr ""
+msgstr "Subroutine umum '%s' di %L tidak konsisten dengan sebuah anta-muka subroutine intrinsik"
 
 #: fortran/resolve.c:2576
 #, no-c-format
 msgid "Missing SHAPE parameter for call to %s at %L"
-msgstr ""
+msgstr "Hilang parameter SHAPE untuk panggilan ke %s di %L"
 
 #: fortran/resolve.c:2584
 #, no-c-format
 msgid "SHAPE parameter for call to %s at %L must be a rank 1 INTEGER array"
-msgstr ""
+msgstr "Parameter SHAPE untuk panggilan ke %s di %L harus berupa tingkat 1 INTEGER array"
 
 #: fortran/resolve.c:2667
 #, no-c-format
 msgid "Subroutine '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "Subroutine '%s' di %L adalah INTRINSIK tetapi tidak kompatibel dengan sebuah intrinsik"
 
 #: fortran/resolve.c:2711
 #, no-c-format
 msgid "Unable to resolve the specific subroutine '%s' at %L"
-msgstr ""
+msgstr "Tidak dapat meresolf subroutine spesifik '%s' di %L"
 
 #: fortran/resolve.c:2768
 #, no-c-format
 msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
-msgstr ""
+msgstr "'%s' di %L memiliki sebuah tipe, yang tidak konsisten dengan CALL di %L"
 
 #: fortran/resolve.c:2787
 #, no-c-format
 msgid "SUBROUTINE '%s' at %L cannot call itself, as it is not RECURSIVE"
-msgstr ""
+msgstr "SUBROUTINE '%s' di %L tidak dapat memanggil dirinya sendiri, karena ini bukan REKURSIF"
 
 #: fortran/resolve.c:2795
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but subroutine '%s' is not declared as RECURSIVE"
-msgstr ""
+msgstr "Panggilan ke MASUKAN '%s' di %L adalah rekursif, tetapi subroutine '%s' tidak dideklarasikan sebagai REKURSIF"
 
 #: fortran/resolve.c:2865
 #, no-c-format
 msgid "Shapes for operands at %L and %L are not conformable"
-msgstr ""
+msgstr "Bentuk untuk operan di %L dan %L tidak konformant"
 
 #: fortran/resolve.c:2916
 #, c-format
 msgid "Invalid context for NULL() pointer at %%L"
-msgstr ""
+msgstr "Konteks tidak valid untuk penunjuk NULL() di %%L"
 
 #: fortran/resolve.c:2932
 #, c-format
 msgid "Operand of unary numeric operator '%s' at %%L is %s"
-msgstr ""
+msgstr "Operan dari operator numerik unary '%s' di %%L adalah %s"
 
 #: fortran/resolve.c:2948
 #, c-format
 msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operan dari operan binari numerik '%s' di %%L adalah %s/%s"
 
 #: fortran/resolve.c:2962
 #, c-format
 msgid "Operands of string concatenation operator at %%L are %s/%s"
-msgstr ""
+msgstr "Operan dari string operator konkatenasi di %%L adalah %s/%s"
 
 #: fortran/resolve.c:2981
 #, c-format
 msgid "Operands of logical operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operan dari operator logikal '%s' di %%L adalah %s/%s"
 
 #: fortran/resolve.c:2995
 #, c-format
 msgid "Operand of .not. operator at %%L is %s"
-msgstr ""
+msgstr "Operan dari operator .not. di %%L adalah %s"
 
 #: fortran/resolve.c:3009
 msgid "COMPLEX quantities cannot be compared at %L"
