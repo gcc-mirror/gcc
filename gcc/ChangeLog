@@ -1,3 +1,11 @@
+2008-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37991
+	* tree-ssa-sccvn.h (copy_vuses_from_stmt): Remove.
+	* tree-ssa-sccvn.c (copy_vuses_from_stmt): Make static.
+	(set_ssa_val_to): Print if the value changed.
+	(simplify_binary_expression): Strip useless conversions.
+
 2008-11-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/37939

@@ -196,5 +196,4 @@ unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
 VEC (tree, gc) *shared_vuses_from_stmt (gimple);
-VEC (tree, gc) *copy_vuses_from_stmt (gimple);
 #endif /* TREE_SSA_SCCVN_H  */
