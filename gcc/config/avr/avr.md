@@ -54,7 +54,6 @@
    (UNSPEC_INDEX_JMP	1)
    (UNSPEC_SEI		2)
    (UNSPEC_CLI		3)
-   (UNSPEC_SWAP		4)
 
    (UNSPECV_PROLOGUE_SAVES	0)
    (UNSPECV_EPILOGUE_RESTORES	1)
@@ -1407,15 +1406,170 @@
   [(set_attr "length" "4")
    (set_attr "cc" "set_n")])
 
+;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
 ;; swap
 
-(define_insn "*swap"
+(define_expand "rotlqi3"
+  [(set (match_operand:QI 0 "register_operand" "")
+	(rotate:QI (match_operand:QI 1 "register_operand" "")
+		   (match_operand:QI 2 "const_int_operand" "")))]
+  ""
+  "
+{
+  if (INTVAL (operands[2]) != 4)
+    FAIL;
+}")
+
+(define_insn "*rotlqi3_4"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(unspec:QI [(match_operand:QI 1 "register_operand" "0")]
-		   UNSPEC_SWAP))]
+	(rotate:QI (match_operand:QI 1 "register_operand" "0")
+		   (const_int 4)))]
   ""
   "swap %0"
   [(set_attr "length" "1")
+   (set_attr "cc" "none")])
+
+(define_expand "rotlhi3"
+  [(set (match_operand:HI 0 "register_operand" "")
+	(rotate:HI (match_operand:HI 1 "register_operand" "")
+		   (match_operand:HI 2 "const_int_operand" "")))]
+  ""
+  "
+{
+  if (INTVAL (operands[2]) != 8)
+    FAIL;
+}")
+
+(define_insn_and_split "*rotlhi3_8"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(rotate:HI (match_operand:HI 1 "register_operand" "r")
+		   (const_int 8)))]
+  ""
+  "mov __tmp_reg__,%A0
+	mov %A0,%B0
+	mov %B0, __tmp_reg__"
+  "reload_completed
+   && REGNO (operands[0]) != REGNO (operands[1])"
+  [(set (match_dup 2) (match_dup 5))
+   (set (match_dup 3) (match_dup 4))]
+  "operands[2] = gen_lowpart (QImode, operands[0]);
+   operands[3] = gen_highpart (QImode, operands[0]);
+
+   operands[4] = gen_lowpart (QImode, operands[1]);
+   operands[5] = gen_highpart (QImode, operands[1]);"
+   [(set_attr "length" "3")
+   (set_attr "cc" "none")])
+
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(rotate:SI (match_operand:SI 1 "register_operand" "")
+		   (match_operand:SI 2 "const_int_operand" "")))]
+  ""
+  "
+{
+  if (INTVAL (operands[2]) != 8
+      || INTVAL (operands[2]) != 16
+      || INTVAL (operands[2]) != 24)
+    FAIL;
+}")
+
+(define_insn_and_split "*rotlsi3_16"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (const_int 16)))]
+  ""
+  "{mov __tmp_reg__,%A0\;mov %A0,%D0\;mov %D0, __tmp_reg__\;mov __tmp_reg__,%B0\;mov %B0,%C0\;mov %C0, __tmp_reg__|movw __tmp_reg__,%A0\;movw %A0,%C0\;movw %C0, __tmp_reg__\;clr __zero_reg__}"
+  "reload_completed
+   && REGNO (operands[0]) != REGNO (operands[1])"
+  [(set (match_dup 2) (match_dup 5))
+   (set (match_dup 3) (match_dup 4))]
+  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
+   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
+
+   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
+   operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
+
+   operands[4] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
+   operands[5] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_have_movw" "yes")
+				      (const_int 4)
+				      (const_int 6)))
+   (set (attr "cc") (if_then_else (eq_attr "mcu_have_movw" "yes")
+				  (const_string "clobber")
+				  (const_string "none")))])
+
+(define_insn_and_split "*rotlsi3_8"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (const_int 8)))]
+  ""
+  "mov __tmp_reg__,%D0
+	mov %D0,%C0
+	mov %C0,%B0
+	mov %B0,%A0
+	mov %A0, __tmp_reg__"
+  "reload_completed
+   && REGNO (operands[0]) != REGNO (operands[1])"
+  [(set (match_dup 2) (match_dup 9))
+   (set (match_dup 3) (match_dup 6))
+   (set (match_dup 4) (match_dup 7))
+   (set (match_dup 5) (match_dup 8))]
+  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
+   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
+   unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
+   unsigned int hi_hi_off = subreg_highpart_offset (QImode, HImode);
+
+   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
+   operands[4] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
+   operands[3] = simplify_gen_subreg (QImode, operands[2], HImode, hi_hi_off);
+   operands[2] = simplify_gen_subreg (QImode, operands[2], HImode, hi_lo_off);
+   operands[5] = simplify_gen_subreg (QImode, operands[4], HImode, hi_hi_off);
+   operands[4] = simplify_gen_subreg (QImode, operands[4], HImode, hi_lo_off);
+
+   operands[6] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
+   operands[8] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
+   operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
+   operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
+   operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
+   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);"
+   [(set_attr "length" "5")
+   (set_attr "cc" "none")])
+
+(define_insn_and_split "*rotlsi3_24"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (const_int 24)))]
+  ""
+  "mov __tmp_reg__,%A0
+	mov %A0,%B0
+	mov %B0,%C0
+	mov %C0,%D0
+	mov %D0, __tmp_reg__"
+  "reload_completed
+   && REGNO (operands[0]) != REGNO (operands[1])"
+  [(set (match_dup 2) (match_dup 7))
+   (set (match_dup 3) (match_dup 8))
+   (set (match_dup 4) (match_dup 9))
+   (set (match_dup 5) (match_dup 6))]
+  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
+   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
+   unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
+   unsigned int hi_hi_off = subreg_highpart_offset (QImode, HImode);
+
+   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
+   operands[4] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
+   operands[3] = simplify_gen_subreg (QImode, operands[2], HImode, hi_hi_off);
+   operands[2] = simplify_gen_subreg (QImode, operands[2], HImode, hi_lo_off);
+   operands[5] = simplify_gen_subreg (QImode, operands[4], HImode, hi_hi_off);
+   operands[4] = simplify_gen_subreg (QImode, operands[4], HImode, hi_lo_off);
+
+   operands[6] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
+   operands[8] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
+   operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
+   operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
+   operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
+   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);"
+   [(set_attr "length" "5")
    (set_attr "cc" "none")])
 
 ;;<< << << << << << << << << << << << << << << << << << << << << << << << << <<
@@ -1433,7 +1587,7 @@
 	(ashift:QI (match_dup 0)
 		   (const_int 4)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int -16)))]
   "")
 
@@ -1442,7 +1596,7 @@
 	(ashift:QI (match_dup 0)
 		   (const_int 5)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 1)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int -32)))]
   "")
@@ -1452,7 +1606,7 @@
 	(ashift:QI (match_dup 0)
 		   (const_int 6)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 2)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int -64)))]
   "")
@@ -1492,7 +1646,7 @@
 		   (const_int 4)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 1) (const_int -16))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
   "")
@@ -1503,7 +1657,7 @@
 		   (const_int 5)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 1)))
    (set (match_dup 1) (const_int -32))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
@@ -1515,7 +1669,7 @@
 		   (const_int 6)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (ashift:QI (match_dup 0) (const_int 2)))
    (set (match_dup 1) (const_int -64))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
@@ -1648,7 +1802,7 @@
 	(lshiftrt:QI (match_dup 0)
 		     (const_int 4)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int 15)))]
   "")
 
@@ -1657,7 +1811,7 @@
 	(lshiftrt:QI (match_dup 0)
 		     (const_int 5)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 1)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int 7)))]
   "")
@@ -1667,7 +1821,7 @@
 	(lshiftrt:QI (match_dup 0)
 		     (const_int 6)))]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 2)))
    (set (match_dup 0) (and:QI (match_dup 0) (const_int 3)))]
   "")
@@ -1707,7 +1861,7 @@
 		     (const_int 4)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 1) (const_int 15))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
   "")
@@ -1718,7 +1872,7 @@
 		     (const_int 5)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 1)))
    (set (match_dup 1) (const_int 7))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
@@ -1730,7 +1884,7 @@
 		     (const_int 6)))
    (match_scratch:QI 1 "d")]
   ""
-  [(set (match_dup 0) (unspec:QI [(match_dup 0)] UNSPEC_SWAP))
+  [(set (match_dup 0) (rotate:QI (match_dup 0) (const_int 4)))
    (set (match_dup 0) (lshiftrt:QI (match_dup 0) (const_int 2)))
    (set (match_dup 1) (const_int 3))
    (set (match_dup 0) (and:QI (match_dup 0) (match_dup 1)))]
