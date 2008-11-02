@@ -1088,47 +1088,59 @@ fully_constant_expression (pre_expr e)
 	vn_nary_op_t nary = PRE_EXPR_NARY (e);
 	switch (TREE_CODE_CLASS (nary->opcode))
 	  {
+	  case tcc_expression:
+	    if (nary->opcode == TRUTH_NOT_EXPR)
+	      goto do_unary;
+	    if (nary->opcode != TRUTH_AND_EXPR
+		&& nary->opcode != TRUTH_OR_EXPR
+		&& nary->opcode != TRUTH_XOR_EXPR)
+	      return e;
+	    /* Fallthrough.  */
 	  case tcc_binary:
+	  case tcc_comparison:
 	    {
 	      /* We have to go from trees to pre exprs to value ids to
 		 constants.  */
 	      tree naryop0 = nary->op[0];
 	      tree naryop1 = nary->op[1];
-	      tree const0, const1, result;
-	      if (is_gimple_min_invariant (naryop0))
-		const0 = naryop0;
-	      else
+	      tree result;
+	      if (!is_gimple_min_invariant (naryop0))
 		{
 		  pre_expr rep0 = get_or_alloc_expr_for (naryop0);
 		  unsigned int vrep0 = get_expr_value_id (rep0);
-		  const0 = get_constant_for_value_id (vrep0);
+		  tree const0 = get_constant_for_value_id (vrep0);
+		  if (const0)
+		    naryop0 = fold_convert (TREE_TYPE (naryop0), const0);
 		}
-	      if (is_gimple_min_invariant (naryop1))
-		const1 = naryop1;
-	      else
+	      if (!is_gimple_min_invariant (naryop1))
 		{
 		  pre_expr rep1 = get_or_alloc_expr_for (naryop1);
 		  unsigned int vrep1 = get_expr_value_id (rep1);
-		  const1 = get_constant_for_value_id (vrep1);
+		  tree const1 = get_constant_for_value_id (vrep1);
+		  if (const1)
+		    naryop1 = fold_convert (TREE_TYPE (naryop1), const1);
 		}
-	      result = NULL;
-	      if (const0 && const1)
-		{
-		  tree type1 = TREE_TYPE (nary->op[0]);
-		  tree type2 = TREE_TYPE (nary->op[1]);
-		  const0 = fold_convert (type1, const0);
-		  const1 = fold_convert (type2, const1);
-		  result = fold_binary (nary->opcode, nary->type, const0,
-					const1);
-		}
+	      result = fold_binary (nary->opcode, nary->type,
+				    naryop0, naryop1);
 	      if (result && is_gimple_min_invariant (result))
 		return get_or_alloc_expr_for_constant (result);
+	      /* We might have simplified the expression to a
+		 SSA_NAME for example from x_1 * 1.  But we cannot
+		 insert a PHI for x_1 unconditionally as x_1 might
+		 not be available readily.  */
 	      return e;
 	    }
+	  case tcc_reference:
+	    if (nary->opcode != REALPART_EXPR
+		&& nary->opcode != IMAGPART_EXPR 
+		&& nary->opcode != VIEW_CONVERT_EXPR)
+	      return e;
+	    /* Fallthrough.  */
 	  case tcc_unary:
+do_unary:
 	    {
-	    /* We have to go from trees to pre exprs to value ids to
-	       constants.  */
+	      /* We have to go from trees to pre exprs to value ids to
+		 constants.  */
 	      tree naryop0 = nary->op[0];
 	      tree const0, result;
 	      if (is_gimple_min_invariant (naryop0))
@@ -1146,7 +1158,6 @@ fully_constant_expression (pre_expr e)
 		  const0 = fold_convert (type1, const0);
 		  result = fold_unary (nary->opcode, nary->type, const0);
 		}
-	      
 	      if (result && is_gimple_min_invariant (result))
 		return get_or_alloc_expr_for_constant (result);
 	      return e;

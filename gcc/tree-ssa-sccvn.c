@@ -258,8 +258,8 @@ vn_get_expr_for (tree name)
     {
     case tcc_reference:
       if (gimple_assign_rhs_code (def_stmt) == VIEW_CONVERT_EXPR
-	  && gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
-	  && gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR)
+	  || gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
+	  || gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR)
 	expr = fold_build1 (gimple_assign_rhs_code (def_stmt),
 			    gimple_expr_type (def_stmt),
 			    TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0));
@@ -1281,6 +1281,10 @@ vn_nary_op_lookup_stmt (gimple stmt, vn_nary_op_t *vnresult)
   vno1.type = TREE_TYPE (gimple_assign_lhs (stmt));
   for (i = 0; i < vno1.length; ++i)
     vno1.op[i] = gimple_op (stmt, i + 1);
+  if (vno1.opcode == REALPART_EXPR
+      || vno1.opcode == IMAGPART_EXPR
+      || vno1.opcode == VIEW_CONVERT_EXPR)
+    vno1.op[0] = TREE_OPERAND (vno1.op[0], 0);
   vno1.hashcode = vn_nary_op_compute_hash (&vno1);
   slot = htab_find_slot_with_hash (current_info->nary, &vno1, vno1.hashcode,
 				   NO_INSERT);
@@ -1385,6 +1389,10 @@ vn_nary_op_insert_stmt (gimple stmt, tree result)
   vno1->type = TREE_TYPE (gimple_assign_lhs (stmt));
   for (i = 0; i < vno1->length; ++i)
     vno1->op[i] = gimple_op (stmt, i + 1);
+  if (vno1->opcode == REALPART_EXPR
+      || vno1->opcode == IMAGPART_EXPR
+      || vno1->opcode == VIEW_CONVERT_EXPR)
+    vno1->op[0] = TREE_OPERAND (vno1->op[0], 0);
   vno1->result = result;
   vno1->hashcode = vn_nary_op_compute_hash (vno1);
   slot = htab_find_slot_with_hash (current_info->nary, vno1, vno1->hashcode,
@@ -2380,8 +2388,18 @@ visit_use (tree use)
 		    case GIMPLE_SINGLE_RHS:
 		      switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
 			{
-			case tcc_declaration:
 			case tcc_reference:
+			  /* VOP-less references can go through unary case.  */
+			  if ((gimple_assign_rhs_code (stmt) == REALPART_EXPR
+			       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR
+			       || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR )
+			      && TREE_CODE (TREE_OPERAND (gimple_assign_rhs1 (stmt), 0)) == SSA_NAME)
+			    {
+			      changed = visit_unary_op (lhs, stmt);
+			      break;
+			    }
+			  /* Fallthrough.  */
+			case tcc_declaration:
 			  changed = visit_reference_op_load
 			      (lhs, gimple_assign_rhs1 (stmt), stmt);
 			  break;

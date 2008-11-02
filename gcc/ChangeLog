@@ -1,3 +1,12 @@
+2008-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37542
+	* tree-ssa-pre.c (fully_constant_expression): Handle more cases.
+	* tree-ssa-sccvn.c (vn_get_expr_for): Fix typo.
+	(vn_nary_op_lookup_stmt): Adjust for unary reference trees.
+	(vn_nary_op_insert_stmt): Likewise.
+	(visit_use): Likewise.
+
 2008-11-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.md (UNSPEC_SWAP): Remove constants.
