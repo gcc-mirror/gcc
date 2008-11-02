@@ -5193,6 +5193,41 @@ avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
       *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, speed);
       return true;
 
+    case ROTATE:
+      switch (mode)
+	{
+	case QImode:
+	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 4)
+	    *total = COSTS_N_INSNS (1);
+
+	  break;
+
+	case HImode:
+	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 8)
+	    *total = COSTS_N_INSNS (3);
+
+	  break;
+
+	case SImode:
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 8:
+	      case 24:
+		*total = COSTS_N_INSNS (5);
+		break;
+	      case 16:
+		*total = COSTS_N_INSNS (AVR_HAVE_MOVW ? 4 : 6);
+		break;
+	      }
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, speed);
+      return true;    
+
     case ASHIFT:
       switch (mode)
 	{

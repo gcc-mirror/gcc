@@ -1,3 +1,15 @@
+2008-11-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.md (UNSPEC_SWAP): Remove constants.
+	(*swap): Remove.
+	(rotlqi3, *rotlqi3_4, rotlhi3, *rotlhi3_8,
+	rotlsi3, *rotlsi3_8, *rotlsi3_16, *rotlsi3_24): New patterns.
+	(ashlqi3_const4, ashlqi3_const5, ashlqi3_const6, ashlqi3_l_const4,
+	ashlqi3_l_const5, ashlqi3_l_const6, lshrqi3_const4, lshrqi3_const5,
+	lshrqi3_const6, lshrqi3_l_const4, lshrqi3_l_const4, lshrqi3_l_const6
+	peephole2's): Replace unspec with rotate.
+	* config/avr/avr.c (avr_rtx_costs): Add ROTATE.
+
 2008-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37991
