@@ -864,6 +864,33 @@ loop_affine_expr (basic_block scop_entry, struct loop *loop, tree expr)
 	  || evolution_function_is_affine_multivariate_p (scev, n));
 }
 
+/* Return false if the tree_code of the operand OP or any of its operands
+   is component_ref.  */
+
+static bool
+exclude_component_ref (tree op) 
+{
+  int i;
+  int len;
+
+  if (op)
+    {
+      if (TREE_CODE (op) == COMPONENT_REF)
+	return false;
+      else
+	{
+	  len = TREE_OPERAND_LENGTH (op);	  
+	  for (i = 0; i < len; ++i)
+	    {
+	      if (!exclude_component_ref (TREE_OPERAND (op, i)))
+		return false;
+	    }
+	}
+    }
+
+  return true;
+}
+
 /* Return true if the operand OP is simple.  */
 
 static bool
@@ -879,7 +906,7 @@ is_simple_operand (loop_p loop, gimple stmt, tree op)
 	  && !stmt_simple_memref_p (loop, stmt, op)))
     return false;
 
-  return true;
+  return exclude_component_ref (op);
 }
 
 /* Return true only when STMT is simple enough for being handled by
