@@ -2150,6 +2150,45 @@ if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden = yes; then
   [Define if your assembler and linker support .hidden.])
 fi
 
+AC_MSG_CHECKING(linker read-only and read-write section mixing)
+gcc_cv_ld_ro_rw_mix=unknown
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+    gcc_cv_ld_ro_rw_mix=read-write
+  fi
+elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+  echo '.section myfoosect, "a"' > conftest1.s
+  echo '.section myfoosect, "aw"' > conftest2.s
+  echo '.byte 1' >> conftest2.s
+  echo '.section myfoosect, "a"' > conftest3.s
+  echo '.byte 0' >> conftest3.s
+  if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
+     && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
+     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
+     && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
+	conftest2.o conftest3.o > /dev/null 2>&1; then
+    gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
+			 | sed -e '/myfoosect/!d' -e N`
+    if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
+      if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
+	gcc_cv_ld_ro_rw_mix=read-only
+      else
+	gcc_cv_ld_ro_rw_mix=read-write
+      fi
+    fi
+  fi
+changequote(,)dnl
+  rm -f conftest.* conftest[123].*
+changequote([,])dnl
+fi
+if test x$gcc_cv_ld_ro_rw_mix = xread-write; then
+	AC_DEFINE(HAVE_LD_RO_RW_SECTION_MIXING, 1,
+  [Define if your linker links a mix of read-only
+   and read-write sections into a read-write section.])
+fi
+AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
+
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
   [elf,2,11,0],,
@@ -2189,7 +2228,32 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
 	.cfi_same_value 1
 	.cfi_def_cfa 1, 2
 	.cfi_escape 1, 2, 3, 4, 5
-	.cfi_endproc])
+	.cfi_endproc],
+[case "$target" in
+  *-*-solaris*)
+    # If the linker used on Solaris (like Sun ld) isn't capable of merging
+    # read-only and read-write sections, we need to make sure that the
+    # assembler used emits read-write .eh_frame sections.
+    if test "x$gcc_cv_ld_ro_rw_mix" != xread-write; then
+      if test "x$gcc_cv_objdump" != x; then
+	if $gcc_cv_objdump -h conftest.o 2>/dev/null | \
+		sed -e /.eh_frame/!d -e N | grep READONLY > /dev/null; then
+	  gcc_cv_as_cfi_directive=no
+	else
+	  gcc_cv_as_cfi_directive=yes
+	fi
+      else
+        # no objdump, err on the side of caution
+	gcc_cv_as_cfi_directive=no
+      fi
+    else
+      gcc_cv_as_cfi_directive=yes
+    fi
+    ;;
+  *-*-*)
+    gcc_cv_as_cfi_directive=yes
+    ;;
+esac])
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
   [`if test $gcc_cv_as_cfi_directive = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports CFI directives.])
@@ -3217,45 +3281,6 @@ if test "x$gcc_cv_as_line_zero" = xyes; then
   AC_DEFINE([HAVE_AS_LINE_ZERO], 1,
 [Define if the assembler won't complain about a line such as # 0 "" 2.])
 fi
-
-AC_MSG_CHECKING(linker read-only and read-write section mixing)
-gcc_cv_ld_ro_rw_mix=unknown
-if test $in_tree_ld = yes ; then
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes; then
-    gcc_cv_ld_ro_rw_mix=read-write
-  fi
-elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-  echo '.section myfoosect, "a"' > conftest1.s
-  echo '.section myfoosect, "aw"' > conftest2.s
-  echo '.byte 1' >> conftest2.s
-  echo '.section myfoosect, "a"' > conftest3.s
-  echo '.byte 0' >> conftest3.s
-  if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
-     && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
-     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
-     && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
-	conftest2.o conftest3.o > /dev/null 2>&1; then
-    gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
-			 | sed -e '/myfoosect/!d' -e N`
-    if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
-      if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
-	gcc_cv_ld_ro_rw_mix=read-only
-      else
-	gcc_cv_ld_ro_rw_mix=read-write
-      fi
-    fi
-  fi
-changequote(,)dnl
-  rm -f conftest.* conftest[123].*
-changequote([,])dnl
-fi
-if test x$gcc_cv_ld_ro_rw_mix = xread-write; then
-	AC_DEFINE(HAVE_LD_RO_RW_SECTION_MIXING, 1,
-  [Define if your linker links a mix of read-only
-   and read-write sections into a read-write section.])
-fi
-AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 
 AC_MSG_CHECKING(linker PT_GNU_EH_FRAME support)
 gcc_cv_ld_eh_frame_hdr=no
