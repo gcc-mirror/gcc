@@ -1105,7 +1105,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  continue;
 	}
 
-      if (e->expr_type == FL_VARIABLE
+      if (e->expr_type == EXPR_VARIABLE
 	    && e->symtree->n.sym->attr.generic
 	    && no_formal_args
 	    && count_specific_procs (e) != 1)
@@ -2857,7 +2857,7 @@ resolve_call (gfc_code *c)
 {
   gfc_try t;
   procedure_type ptype = PROC_INTRINSIC;
-  gfc_symbol *csym;
+  gfc_symbol *csym, *sym;
   bool no_formal_args;
 
   csym = c->symtree ? c->symtree->n.sym : NULL;
@@ -2867,6 +2867,20 @@ resolve_call (gfc_code *c)
       gfc_error ("'%s' at %L has a type, which is not consistent with "
 		 "the CALL at %L", csym->name, &csym->declared_at, &c->loc);
       return FAILURE;
+    }
+
+  if (csym && gfc_current_ns->parent && csym->ns != gfc_current_ns)
+    {
+      gfc_find_symbol (csym->name, gfc_current_ns, 1, &sym);
+      if (sym && csym != sym
+	      && sym->ns == gfc_current_ns
+	      && sym->attr.flavor == FL_PROCEDURE
+	      && sym->attr.contained)
+	{
+	  sym->refs++;
+	  csym = sym;
+	  c->symtree->n.sym = sym;
+	}
     }
 
   /* If external, check for usage.  */
@@ -4248,14 +4262,12 @@ check_host_association (gfc_expr *e)
 
   old_sym = e->symtree->n.sym;
 
-  if (old_sym->attr.use_assoc)
-    return retval;
-
   if (gfc_current_ns->parent
 	&& old_sym->ns != gfc_current_ns)
     {
       gfc_find_symbol (old_sym->name, gfc_current_ns, 1, &sym);
       if (sym && old_sym != sym
+	      && sym->ts.type == old_sym->ts.type
 	      && sym->attr.flavor == FL_PROCEDURE
 	      && sym->attr.contained)
 	{
@@ -6117,12 +6129,14 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
       else
 	{
 	  /* If one of the FORALL index variables doesn't appear in the
-	     assignment target, then there will be a many-to-one
-	     assignment.  */
+	     assignment variable, then there could be a many-to-one
+	     assignment.  Emit a warning rather than an error because the
+	     mask could be resolving this problem.  */
 	  if (find_forall_index (code->expr, forall_index, 0) == FAILURE)
-	    gfc_error ("The FORALL with index '%s' cause more than one "
-		       "assignment to this object at %L",
-		       var_expr[n]->symtree->name, &code->expr->where);
+	    gfc_warning ("The FORALL with index '%s' is not used on the "
+			 "left side of the assignment at %L and so might "
+			 "cause multiple assignment to this object",
+			 var_expr[n]->symtree->name, &code->expr->where);
 	}
     }
 }
