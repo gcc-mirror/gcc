@@ -1,5 +1,15 @@
 2008-11-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/36908
+	* testsuite/gcc.dg/tree-ssa/pr36908.c: New.
+	* tree-loop-distribution.c (number_of_rw_in_rdg): New.
+	(number_of_rw_in_partition): New.
+	(partition_contains_all_rw): New.
+	(ldist_gen): Do not distribute when one of the partitions
+	contains all the memory operations.
+
+2008-11-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* cfghooks.c (split_block): Set BB_IRREDUCIBLE_LOOP and
 	EDGE_IRREDUCIBLE_LOOP.
 

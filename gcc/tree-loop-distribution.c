@@ -945,6 +945,64 @@ debug_rdg_partitions (VEC (bitmap, heap) *partitions)
   dump_rdg_partitions (stderr, partitions);
 }
 
+/* Returns the number of read and write operations in the RDG.  */
+
+static int
+number_of_rw_in_rdg (struct graph *rdg)
+{
+  int i, res = 0;
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    {
+      if (RDG_MEM_WRITE_STMT (rdg, i))
+	++res;
+
+      if (RDG_MEM_READS_STMT (rdg, i))
+	++res;
+    }
+
+  return res;
+}
+
+/* Returns the number of read and write operations in a PARTITION of
+   the RDG.  */
+
+static int
+number_of_rw_in_partition (struct graph *rdg, bitmap partition)
+{
+  int res = 0;
+  unsigned i;
+  bitmap_iterator ii;
+
+  EXECUTE_IF_SET_IN_BITMAP (partition, 0, i, ii)
+    {
+      if (RDG_MEM_WRITE_STMT (rdg, i))
+	++res;
+
+      if (RDG_MEM_READS_STMT (rdg, i))
+	++res;
+    }
+
+  return res;
+}
+
+/* Returns true when one of the PARTITIONS contains all the read or
+   write operations of RDG.  */
+
+static bool
+partition_contains_all_rw (struct graph *rdg, VEC (bitmap, heap) *partitions)
+{
+  int i;
+  bitmap partition;
+  int nrw = number_of_rw_in_rdg (rdg);
+
+  for (i = 0; VEC_iterate (bitmap, partitions, i, partition); i++)
+    if (nrw == number_of_rw_in_partition (rdg, partition))
+      return true;
+
+  return false;
+}
+
 /* Generate code from STARTING_VERTICES in RDG.  Returns the number of
    distributed loops.  */
 
@@ -992,7 +1050,8 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (processed);
   nbp = VEC_length (bitmap, partitions);
 
-  if (nbp <= 1)
+  if (nbp <= 1
+      || partition_contains_all_rw (rdg, partitions))
     goto ldist_done;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
