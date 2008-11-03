@@ -1,3 +1,11 @@
+2008-11-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* gfortran.dg/f2003_io_1.f03: XFAIL until PR37839 is fixed.
+	* gfortran.dg/f2003_io_4.f03: Ditto.
+	* gfortran.dg/f2003_io_5.f03: Ditto.
+	* gfortran.dg/f2003_io_6.f03: Ditto.
+	* gfortran.dg/f2003_io_7.f03: Ditto.
+
 2008-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/37241
