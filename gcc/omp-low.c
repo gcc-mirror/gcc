@@ -3681,8 +3681,20 @@ expand_omp_for_generic (struct omp_region *region,
       t4 = build_fold_addr_expr (iend0);
       t3 = build_fold_addr_expr (istart0);
       t2 = fold_convert (fd->iter_type, fd->loop.step);
-      t1 = fold_convert (fd->iter_type, fd->loop.n2);
-      t0 = fold_convert (fd->iter_type, fd->loop.n1);
+      if (POINTER_TYPE_P (type)
+	  && TYPE_PRECISION (type) != TYPE_PRECISION (fd->iter_type))
+	{
+	  /* Avoid casting pointers to integer of a different size.  */
+	  tree itype
+	    = lang_hooks.types.type_for_size (TYPE_PRECISION (type), 0);
+	  t1 = fold_convert (fd->iter_type, fold_convert (itype, fd->loop.n2));
+	  t0 = fold_convert (fd->iter_type, fold_convert (itype, fd->loop.n1));
+	}
+      else
+	{
+	  t1 = fold_convert (fd->iter_type, fd->loop.n2);
+	  t0 = fold_convert (fd->iter_type, fd->loop.n1);
+	}
       if (bias)
 	{
 	  t1 = fold_build2 (PLUS_EXPR, fd->iter_type, t1, bias);
