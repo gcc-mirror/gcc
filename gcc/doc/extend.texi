@@ -8698,6 +8698,12 @@ otherwise backwards-compatible with it.  You can select revision 2
 using the command-line option @option{-mdspr2}; this option implies
 @option{-mdsp}.
 
+The SCOUNT and POS bits of the DSP control register are global.  The
+WRDSP, EXTPDP, EXTPDPV and MTHLIP instructions modify the SCOUNT and
+POS bits.  During optimization, the compiler will not delete these
+instructions and it will not delete calls to functions containing
+these instructions.
+
 At present, GCC only provides support for operations on 32-bit
 vectors.  The vector type associated with 8-bit integer data is
 usually called @code{v4i8}, the vector type associated with Q7

@@ -14019,7 +14019,14 @@ mips_swap_registers (unsigned int i)
 void
 mips_conditional_register_usage (void)
 {
-  if (!ISA_HAS_DSP)
+
+  if (ISA_HAS_DSP)
+    {
+      /* These DSP control register fields are global.  */
+      global_regs[CCDSP_PO_REGNUM] = 1;
+      global_regs[CCDSP_SC_REGNUM] = 1;
+    }
+  else 
     {
       int regno;
 
