@@ -15842,8 +15842,7 @@ static bool
 no_global_regs_above (int first, bool gpr)
 {
   int i;
-  int last = gpr ? 32 : 64;
-  for (i = first; i < last; i++)
+  for (i = first; i < gpr ? 32 : 64 ; i++)
     if (global_regs[i])
       return false;
   return true;
@@ -16122,7 +16121,7 @@ rs6000_emit_prologue (void)
   int using_store_multiple;
   int using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
                               && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
-                              && call_used_regs[STATIC_CHAIN_REGNUM]);
+                              && !call_used_regs[STATIC_CHAIN_REGNUM]);
   HOST_WIDE_INT sp_offset = 0;
 
   if (TARGET_FIX_AND_CONTINUE)

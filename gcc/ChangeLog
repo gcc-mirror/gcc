@@ -1,3 +1,22 @@
+2008-11-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	Revert:
+	2008-10-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (no_global_regs_above): Fix precedence
+	problem.
+	(rs6000_emit_prologue): Invert logic.
+	* config/rs6000/rs6000.md (*save_gpregs_<mode>): Use explicit
+	(reg:P 11) instead of match_operand.
+	(*save_fpregs_<mode>): Likewise.
+	(*restore_gpregs_<mode>): Likewise.
+	(*return_and_restore_gpregs_<mode>): Likewise.
+	(*return_and_restore_fpregs_<mode>): Likewise.
+	* config/rs6000/spe.md (*save_gpregs_spe): Use explicit
+	(reg:P 11) insted of match_operand.
+	(*restore_gpregs_spe): Likewise.
+	(*return_and_restore_gpregs_spe): Likewise.
+
 2008-11-03  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR tree-optimization/37684
