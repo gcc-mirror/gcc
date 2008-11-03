@@ -1289,6 +1289,7 @@ execute_one_pass (struct opt_pass *pass)
   if (initializing_dump
       && dump_file
       && graph_dump_format != no_graph
+      && cfun
       && (cfun->curr_properties & (PROP_cfg | PROP_rtl))
 	  == (PROP_cfg | PROP_rtl))
     {
