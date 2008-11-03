@@ -425,6 +425,7 @@ edge
 split_block (basic_block bb, void *i)
 {
   basic_block new_bb;
+  edge res;
 
   if (!cfg_hooks->split_block)
     internal_error ("%s does not support split_block", cfg_hooks->name);
@@ -450,7 +451,15 @@ split_block (basic_block bb, void *i)
 	bb->loop_father->latch = new_bb;
     }
 
-  return make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
+  res = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
+
+  if (bb->flags & BB_IRREDUCIBLE_LOOP)
+    {
+      new_bb->flags |= BB_IRREDUCIBLE_LOOP;
+      res->flags |= EDGE_IRREDUCIBLE_LOOP;
+    }
+
+  return res;
 }
 
 /* Splits block BB just after labels.  The newly created edge is returned.  */

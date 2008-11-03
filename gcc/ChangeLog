@@ -1,3 +1,8 @@
+2008-11-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* cfghooks.c (split_block): Set BB_IRREDUCIBLE_LOOP and
+	EDGE_IRREDUCIBLE_LOOP.
+
 2008-11-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_optimize_loop): Properly handle case
