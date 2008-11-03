@@ -1,3 +1,12 @@
+2008-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37812
+	* gcc.target/powerpc/altivec_check.h (altivec_cell_check): Abort
+	if __PPU__ isn't defined.
+	* lib/target-supports.exp (check_effective_target_powerpc_ppu_ok):
+	New.
+	* gcc.target/powerpc/altivec-cell-8.c: Use powerpc_ppu_ok.
+
 2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20081103-1.c: New test.

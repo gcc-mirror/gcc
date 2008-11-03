@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008
 #    Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -1385,6 +1385,25 @@ proc check_effective_target_powerpc_altivec_ok { } {
 	return [check_no_compiler_messages powerpc_altivec_ok object {
 	    int dummy;
 	} "-maltivec"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -mcpu=cell.
+
+proc check_effective_target_powerpc_ppu_ok { } {
+    if [check_effective_target_powerpc_altivec_ok] {
+	return [check_no_compiler_messages cell_asm_available object {
+	    int main (void) {
+#ifdef __MACH__
+		asm volatile ("lvlx v0,v0,v0");
+#else
+		asm volatile ("lvlx 0,0,0");
+#endif
+		return 0;
+	    }
+	}]
     } else {
 	return 0
     }

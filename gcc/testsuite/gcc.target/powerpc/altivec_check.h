@@ -25,6 +25,7 @@ void altivec_check(void) {
 
 void altivec_cell_check (void)
 {
+#ifdef __PPU__
   /* Exit on systems without the Cell Altivec instructions.  */
   signal (SIGILL, sig_ill_handler);
 #ifdef __MACH__
@@ -35,4 +36,8 @@ void altivec_cell_check (void)
   asm volatile ("lvlx 0,0,0");
 #endif
   signal (SIGILL, SIG_DFL);
+#else
+  /* altivec_cell_check shouldn't be called without -mcpu=cell.  */
+  abort ();
+#endif
 }
