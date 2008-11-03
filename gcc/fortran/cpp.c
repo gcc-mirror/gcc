@@ -628,10 +628,9 @@ gfc_cpp_add_include_path (char *path, bool user_supplied)
 {
   /* CHAIN sets cpp_dir->sysp which differs from 0 if PATH is a system
      include path. Fortran does not define any system include paths.  */
-  int chain = 0;
   int cxx_aware = 0;
 
-  add_path (path, chain, cxx_aware, user_supplied);
+  add_path (path, BRACKET, cxx_aware, user_supplied);
 }
 
 void

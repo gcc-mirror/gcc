@@ -1,3 +1,18 @@
+2008-11-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37821
+	* cpp.c (gfc_cpp_add_include_path): Use BRACKET.
+	* scanner.c (add_path_to_list): Argument to add at head.
+	(gfc_add_include_path): Add new argument.
+	(gfc_add_intrinsic_modules_path) Update call.
+	(load_file): Print filename/line in the error message.
+	* gfortran.h (gfc_add_include_path): Update prototype.
+	* options.c (gfc_post_options,gfc_handle_module_path_options,
+	gfc_handle_option): Update call.
+	* lang-spec.h (F951_OPTIONS): Don't insert include path twice.
+
+	* arith.c (arith_error): Add -fno-range-error to the message.
+
 2008-11-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37445
