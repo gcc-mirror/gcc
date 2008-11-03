@@ -1,3 +1,11 @@
+2008-11-03  Steve Ellcey <sje@cup.hp.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (expand_omp_for_generic): If iter_type has different
+	precision than type and type is a pointer type, cast n1 and n2
+	first to an integer type with the same precision as pointers
+	and only afterwards to iter_type.
+
 2008-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/arm/arm.md (UNSPEC_PIC_BASE): Update documentation.
