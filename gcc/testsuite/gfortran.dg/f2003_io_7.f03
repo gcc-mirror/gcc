@@ -1,4 +1,5 @@
 ! { dg-do run { target fd_truncate } }
+! { dg-xfail-run-if "PR37839" { { ia64-*-hpux* hppa*-*-* powerpc*-*-* sparc*-sun-solaris2.* } && ilp32 } { "*" }  { "" } }
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 ! Test of sign=, decimal=, and blank= .
 program iotests
