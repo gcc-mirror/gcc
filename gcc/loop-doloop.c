@@ -335,11 +335,12 @@ add_test (rtx cond, edge *e, basic_block dest)
    end of the loop.  CONDITION is the condition separated from the
    DOLOOP_SEQ.  COUNT is the number of iterations of the LOOP.
    ZERO_EXTEND_P says to zero extend COUNT after the increment of it to
-   word_mode.  */
+   word_mode from FROM_MODE.  */
 
 static void
 doloop_modify (struct loop *loop, struct niter_desc *desc,
-	       rtx doloop_seq, rtx condition, rtx count, bool zero_extend_p)
+	       rtx doloop_seq, rtx condition, rtx count,
+	       bool zero_extend_p, enum machine_mode from_mode)
 {
   rtx counter_reg;
   rtx tmp, noloop = NULL_RTX;
@@ -413,11 +414,11 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     }
 
   if (increment_count)
-    count = simplify_gen_binary (PLUS, mode, count, const1_rtx);
+    count = simplify_gen_binary (PLUS, from_mode, count, const1_rtx);
 
   if (zero_extend_p)
     count = simplify_gen_unary (ZERO_EXTEND, word_mode,
-				count, mode);
+				count, from_mode);
 
   /* Insert initialization of the count register into the loop header.  */
   start_sequence ();
@@ -672,7 +673,8 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
-  doloop_modify (loop, desc, doloop_seq, condition, count, zero_extend_p);
+  doloop_modify (loop, desc, doloop_seq, condition, count,
+		 zero_extend_p, mode);
   return true;
 }
 
