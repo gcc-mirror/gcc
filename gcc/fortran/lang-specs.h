@@ -23,7 +23,7 @@
 
 #define F951_CPP_OPTIONS "%{!nocpp: -cpp %g.f90 %(cpp_options)\
                           %{E|M|MM:%(cpp_debug_options) -fsyntax-only} %{E}}"
-#define F951_OPTIONS     "%(cc1_options) %{J*} %{I*}\
+#define F951_OPTIONS     "%(cc1_options) %{J*} %{!cpp: %{I*}}\
                           %{!nostdinc:-fintrinsic-modules-path finclude%s}\
                           %{!fsyntax-only:%(invoke_as)}"
 #define F951_SOURCE_FORM  "%{!ffree-form:-ffixed-form}"

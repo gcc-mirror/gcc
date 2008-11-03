@@ -265,10 +265,10 @@ gfc_post_options (const char **pfilename)
       source_path = (char *) alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
-      gfc_add_include_path (source_path, true);
+      gfc_add_include_path (source_path, true, true);
     }
   else
-    gfc_add_include_path (".", true);
+    gfc_add_include_path (".", true, true);
 
   if (canon_source_file != gfc_source_file)
     gfc_free (CONST_CAST (char *, canon_source_file));
@@ -407,7 +407,7 @@ gfc_handle_module_path_options (const char *arg)
   strcpy (gfc_option.module_dir, arg);
   strcat (gfc_option.module_dir, "/");
 
-  gfc_add_include_path (gfc_option.module_dir, true);
+  gfc_add_include_path (gfc_option.module_dir, true, false);
 }
 
 
@@ -639,7 +639,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fintrinsic_modules_path:
-      gfc_add_include_path (arg, false);
+      gfc_add_include_path (arg, false, false);
       gfc_add_intrinsic_modules_path (arg);
       break;
 
@@ -744,7 +744,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_I:
-      gfc_add_include_path (arg, true);
+      gfc_add_include_path (arg, true, false);
       break;
 
     case OPT_J:
