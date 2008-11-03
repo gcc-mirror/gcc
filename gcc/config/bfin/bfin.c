@@ -4059,11 +4059,32 @@ bfin_optimize_loop (loop_info loop)
       print_rtl_single (dump_file, loop->loop_end);
     }
 
+  /* Create a sequence containing the loop setup.  */
   start_sequence ();
 
   if (loop->init != NULL_RTX)
     emit_insn (loop->init);
   seq_end = emit_insn (loop->loop_init);
+
+  /* If the loop isn't entered at the top, also create a jump to the entry
+     point.  */
+  if (!loop->incoming_src && loop->head != loop->incoming_dest)
+    {
+      rtx label = BB_HEAD (loop->incoming_dest);
+      /* If we're jumping to the final basic block in the loop, and there's
+	 only one cheap instruction before the end (typically an increment of
+	 an induction variable), we can just emit a copy here instead of a
+	 jump.  */
+      if (loop->incoming_dest == loop->tail
+	  && next_real_insn (label) == last_insn
+	  && asm_noperands (last_insn) < 0
+	  && GET_CODE (PATTERN (last_insn)) == SET)
+	{
+	  seq_end = emit_insn (copy_rtx (PATTERN (last_insn)));
+	}
+      else
+	seq_end = emit_insn (gen_jump (label));
+    }
 
   seq = get_insns ();
   end_sequence ();
@@ -4084,21 +4105,19 @@ bfin_optimize_loop (loop_info loop)
       basic_block new_bb;
       edge e;
       edge_iterator ei;
-      
+
+#ifdef ENABLE_CHECKING
       if (loop->head != loop->incoming_dest)
 	{
+	  /* We aren't entering the loop at the top.  Since we've established
+	     that the loop is entered only at one point, this means there
+	     can't be fallthru edges into the head.  Any such fallthru edges
+	     would become invalid when we insert the new block, so verify
+	     that this does not in fact happen.  */
 	  FOR_EACH_EDGE (e, ei, loop->head->preds)
-	    {
-	      if (e->flags & EDGE_FALLTHRU)
-		{
-		  rtx newjump = gen_jump (loop->start_label);
-		  emit_insn_before (newjump, BB_HEAD (loop->head));
-		  new_bb = create_basic_block (newjump, newjump, loop->head->prev_bb);
-		  gcc_assert (new_bb = loop->head->prev_bb);
-		  break;
-		}
-	    }
+	    gcc_assert (!(e->flags & EDGE_FALLTHRU));
 	}
+#endif
 
       emit_insn_before (seq, BB_HEAD (loop->head));
       seq = emit_label_before (gen_label_rtx (), seq);
