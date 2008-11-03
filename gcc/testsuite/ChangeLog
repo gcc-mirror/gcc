@@ -1,5 +1,9 @@
 2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.c-torture/execute/20081103-1.c: New test.
+
+2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array5.adb New test.
 
 2008-11-03  Richard Guenther  <rguenther@suse.de>
