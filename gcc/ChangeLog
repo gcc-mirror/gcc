@@ -1,3 +1,15 @@
+2008-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/arm/arm.md (UNSPEC_PIC_BASE): Update documentation.
+	(UNSPEC_GOTSYM_OFF): New unspec.
+	(pic_add_dot_plus_four): Simplify the UNSPEC_PIC_BASE operands.
+	(pic_add_dot_plus_eight): Likewise.
+	(tls_load_dot_plus_eight): Likewise.  Update peephole2.
+	* config/arm/thumb2.md (pic_load_dot_plus_four): Simplify the
+	UNSPEC_PIC_BASE operands.
+	* config/arm/arm.c (arm_load_pic_register): Use UNSPEC_GOTSYM_OFF.
+	(arm_output_addr_const_extra): Handle it.
+
 2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (classify_argument) <ARRAY_TYPE>: Promote partial
