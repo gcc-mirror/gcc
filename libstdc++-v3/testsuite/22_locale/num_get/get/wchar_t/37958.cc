@@ -42,6 +42,12 @@ struct Punct3: std::numpunct<wchar_t>
   std::wstring do_falsename() const { return L""; }
 };
 
+struct Punct4: std::numpunct<wchar_t>
+{
+  std::wstring do_truename() const { return L"one"; }
+  std::wstring do_falsename() const { return L"two"; }
+};
+
 // libstdc++/37958
 void test01()
 {
@@ -50,14 +56,16 @@ void test01()
   
   bool test __attribute__((unused)) = true;
 
-  wistringstream iss0, iss1, iss2, iss3;
+  wistringstream iss0, iss1, iss2, iss3, iss4;
   iss1.imbue(locale(iss1.getloc(), new Punct1));
   iss2.imbue(locale(iss2.getloc(), new Punct2));
   iss3.imbue(locale(iss3.getloc(), new Punct3));
+  iss4.imbue(locale(iss4.getloc(), new Punct4));
   const num_get<wchar_t>& ng0 = use_facet<num_get<wchar_t> >(iss0.getloc());
   const num_get<wchar_t>& ng1 = use_facet<num_get<wchar_t> >(iss1.getloc());
   const num_get<wchar_t>& ng2 = use_facet<num_get<wchar_t> >(iss2.getloc());
   const num_get<wchar_t>& ng3 = use_facet<num_get<wchar_t> >(iss3.getloc());
+  const num_get<wchar_t>& ng4 = use_facet<num_get<wchar_t> >(iss4.getloc());
 
   ios_base::iostate err = ios_base::goodbit;
   iterator_type end;
@@ -65,6 +73,7 @@ void test01()
   bool b1 = false;
   bool b2 = false;
   bool b3 = true;
+  bool b4 = false;
 
   iss0.str(L"true");
   iss0.setf(ios_base::boolalpha);
@@ -102,6 +111,14 @@ void test01()
   VERIFY( b1 == false );
   VERIFY( *end == L'c' );
 
+  iss1.str(L"ab");
+  iss1.clear();
+  b1 = true;
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, b1);
+  VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
+  VERIFY( b1 == false );
+
   iss2.str(L"1");
   iss2.setf(ios_base::boolalpha);
   err = ios_base::goodbit;
@@ -115,6 +132,15 @@ void test01()
   end = ng2.get(iss2.rdbuf(), 0, iss2, err, b2);
   VERIFY( err == ios_base::goodbit );
   VERIFY( b2 == false );
+
+  iss2.str(L"2");
+  iss2.clear();
+  b2 = true;
+  err = ios_base::goodbit;
+  end = ng2.get(iss2.rdbuf(), 0, iss2, err, b2);
+  VERIFY( err == ios_base::failbit );
+  VERIFY( b2 == false );
+  VERIFY( *end == L'2' );
 
   iss3.str(L"blah");
   iss3.setf(ios_base::boolalpha);
@@ -131,6 +157,37 @@ void test01()
   end = ng3.get(iss3.rdbuf(), 0, iss3, err, b3);
   VERIFY( err == ios_base::failbit );
   VERIFY( b3 == false );
+
+  iss4.str(L"one");
+  iss4.setf(ios_base::boolalpha);
+  err = ios_base::goodbit;
+  end = ng4.get(iss4.rdbuf(), 0, iss4, err, b4);
+  VERIFY( err == ios_base::goodbit );
+  VERIFY( b4 == true );
+
+  iss4.str(L"two");
+  iss4.clear();
+  err = ios_base::goodbit;
+  end = ng4.get(iss4.rdbuf(), 0, iss4, err, b4);
+  VERIFY( err == ios_base::goodbit );
+  VERIFY( b4 == false );
+
+  iss4.str(L"three");
+  iss4.clear();
+  b4 = true;
+  err = ios_base::goodbit;
+  end = ng4.get(iss4.rdbuf(), 0, iss4, err, b4);
+  VERIFY( err == ios_base::failbit );
+  VERIFY( b4 == false );
+  VERIFY( *end == L'h' );
+
+  iss4.str(L"on");
+  iss4.clear();
+  b4 = true;
+  err = ios_base::goodbit;
+  end = ng4.get(iss4.rdbuf(), 0, iss4, err, b4);
+  VERIFY( err == (ios_base::failbit | ios_base::eofbit) );
+  VERIFY( b4 == false );
 }
 
 int main()

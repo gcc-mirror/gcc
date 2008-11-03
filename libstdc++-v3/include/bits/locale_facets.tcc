@@ -623,14 +623,16 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      if (!__donef)
 		__testf = __c == __lc->_M_falsename[__n];
 
+	      if (!__testf && __donet)
+		break;
+
 	      if (!__donet)
 		__testt = __c == __lc->_M_truename[__n];
 
-	      if (!__testt && !__testf)
+	      if (!__testt && __donef)
 		break;
 
-	      if ((!__testt && __n >= __lc->_M_falsename_size)
-		  || (!__testf && __n >= __lc->_M_truename_size))
+	      if (!__testt && !__testf)
 		break;
 
 	      ++__n;
