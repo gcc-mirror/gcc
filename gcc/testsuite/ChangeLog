@@ -102,13 +102,13 @@
 
 2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
 
-        PR fortran/37903
-        * gfortran.dg/vector_subscript_4.f90: New test.
+	PR fortran/37903
+	* gfortran.dg/vector_subscript_4.f90: New test.
 
 2008-10-30  Mikael Morin  <mikael.morin@tele2.fr>
 
-        PR fortran/37749
-        * gfortran.dg/vector_subscript__5.f90: New test.
+	PR fortran/37749
+	* gfortran.dg/vector_subscript__5.f90: New test.
 
 2008-10-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -129,7 +129,7 @@
 2008-10-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/37339
-	* gcc.dg/pr33545-3.c: Remove.
+	* gcc.dg/pr33645-3.c: Remove.
 
 2008-10-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
@@ -286,7 +286,7 @@
 	* gcc.dg/tree-ssa/alias-19.c: New testcase.
 
 2008-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-        
+
 	PR 12603
 	* gcc.dg/pr12603.c: New testcase.
 
@@ -302,13 +302,13 @@
 
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37723
-        * gfortran.dg/dependency_22.f90: New test.
+	PR fortran/37723
+	* gfortran.dg/dependency_22.f90: New test.
 
 2008-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/dll-2.c: Revert 2008-08-09 change (R138893): Change
-        "dg-message" back to "dg-warning".
+	"dg-message" back to "dg-warning".
 	* gcc.dg/dll-3.c: Likewise.
 
 2008-10-16  Alexander Monakov  <amonakov@ispras.ru>
@@ -708,7 +708,7 @@
 	to avoid pointer truncation warning.
 
 2008-09-26  Dorit Nuzman  <dorit@il.ibm.com>
-	
+
 	PR tree-optimization/37574
 	* gcc.dg/vect/ggc-pr37574.c: New test.
 	* gcc.dg/vect/vect.exp: Compile some tests with ggc flags.
@@ -821,7 +821,7 @@
 	PR rtl-optimization/33642
 	* gcc.c-torture/compile/pr11832.c: Extend XFAIL to powerpc*-*-*.
 	* gcc.c-torture/compile/pr33009.c: Likewise.
-	
+
 2008-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37145
@@ -854,7 +854,7 @@
 	PR rtl-optimization/33642
 	* gcc.c-torture/compile/pr11832.c: XFAIL on sh*-*-*.
 	* gcc.c-torture/compile/pr33009.c: Likewise.
-	
+
 2008-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37583
@@ -893,10 +893,10 @@
 	* gcc.dg/tree-ssa/vector-3.c: New test.
 
 2008-09-18  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* gcc.c-torture/compile/pr11832.c: xfail on xtensa*-*-*.
 	* gcc.c-torture/compile/pr33009.c: Likewise.
-	
+
 2008-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/25241
@@ -1819,7 +1819,7 @@
 
 	PR c++/37342
 	* g++.dg/other/canon-37342.C: New.
-	
+
 2008-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c-torture/compile/20080903-1.c: New test.
@@ -1995,7 +1995,7 @@
 	* gfortran.dg/graphite/scop-{1,2}.f: New.
 	* gfortran.dg/graphite/block-{1,3,4}.f90: New.
 	* gfortran.dg/graphite/graphite.exp: New.
-	
+
 2008-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37327
@@ -2988,7 +2988,7 @@
 	* gcc.dg/assign-warn-1.c: Update.
 	* gcc.dg/dfp/composite-type.c: Update.
 	* gcc.dg/noncompile/20020213-1.c: Update.
-	
+
 2008-08-28  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/typebound_call_1.f03: New test.
@@ -3380,7 +3380,7 @@
 	(check_effective_target_vect_long_long): Remove spu-*-*.
 	* gcc.dg/vect/vect-multitypes-16.c: Make init loop unvectorizable.
 	* gcc.dg/vect/slp-widen-mult-u8.c: Likewise.
-	
+
 2008-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr20701.c: Scan vrp1 dump.
@@ -3567,7 +3567,7 @@
 	* gcc.dg/pr30551.c: Likewise.
 	* g++.dg/warn/pr30551-2.C: Likewise.
 	* g++.dg/warn/pr30551.C: Likewise.
-	
+
 2008-08-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36705
@@ -3680,7 +3680,7 @@
 	* g++.dg/warn/pr35635.C: New.
 	* g++.dg/warn/Wconversion-integer.C: Update.
 	* g++.dg/warn/Wsign-conversion.C: Update.
-	
+
 2008-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15255
@@ -3707,7 +3707,7 @@
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.old-deja/g++.other/decl5.C: Expand new expected errors.
-	
+
 2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37087
@@ -3814,7 +3814,7 @@
 
 	PR c++/12242
 	* g++.dg/warn/pr12242.C: New.
-	
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 36901
@@ -3870,13 +3870,13 @@
 	* gcc.dg/redecl-5.c: Update.
 	* gcc.dg/qual-return-3.c: Update.
 	* gcc.dg/label-decl-4.c: Update.
-	
+
 2008-08-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 7651
 	* g++.dg/warn/Wuninitializable-member.C: New.
 	* g++.dg/warn/Wuninitializable-member-no.C: New.
-	
+
 2008-08-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28875
@@ -3948,7 +3948,7 @@
 
 	PR 26785
 	* g++.dg/warn/pr26785.C: New.
-		
+
 2008-08-06  Victor Kaplansky  <victork@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: New test.
@@ -3958,7 +3958,7 @@
 	PR 8715
 	* gcc.dg/pr8715.c: New.
 	* g++.dg/warn/pr8715.C: New.
-	
+
 2008-08-06  Marc Gauthier  <marc@tensilica.com>
 
 	* lib/target-supports.exp (check_profiling_available): Match more
@@ -4114,7 +4114,7 @@
 	* gnat.dg/raise_from_pure.ad[bs],
 	* gnat.dg/wrap_raise_from_pure.ad[bs]: Support for ...
 	* gnat.dg/test_raise_from_pure.adb: New test.
-	
+
 2008-07-31  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/ext-1.c: New test.
@@ -4331,7 +4331,7 @@
 	PR 34389
 	* gcc.dg/Wconversion-pr34389.c: New.
 	* g++.dg/warn/Wconversion-pr34389.C: New.
-	
+
 2008-07-29  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/pr32370.c: Force 64 bits on IA64.
@@ -4368,7 +4368,7 @@
 	PR 34985
 	* gcc.dg/pr34985.c: New.
 	* g++.dg/warn/pr34985.C: New.
-	
+
 2008-07-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36403
@@ -4488,7 +4488,7 @@
 	PR 35058
 	* gcc.dg/Wdeclaration-after-statement-3.c: New.
 	* gcc/testsuite/gcc.dg/Wpointer-arith.c: New.
-	
+
 2008-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36852
@@ -4512,7 +4512,7 @@
 
 	PR 28079
 	* gcc.dg/cpp/line6.c: New.
-	
+
 2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gfortran.dg/fmt_g0_3.f08: Fix typo in expected error message.
