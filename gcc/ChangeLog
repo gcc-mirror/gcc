@@ -1,3 +1,8 @@
+2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (classify_argument) <ARRAY_TYPE>: Promote partial
+	integer class to full integer class if the offset is not word-aligned.
+
 2008-11-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-opt/37782
