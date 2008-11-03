@@ -67,10 +67,9 @@
    (UNSPEC_PIC_SYM   3) ; A symbol that has been treated properly for pic
 			;   usage, that is, we will add the pic_register
 			;   value to it before trying to dereference it.
-   (UNSPEC_PIC_BASE  4)	; Adding the PC value to the offset to the
-			;   GLOBAL_OFFSET_TABLE.  The operation is fully
-			;   described by the RTL but must be wrapped to
-			;   prevent combine from trying to rip it apart.
+   (UNSPEC_PIC_BASE  4)	; Add PC and all but the last operand together,
+			;   The last operand is the number of a PIC_LABEL
+			;   that points at the containing instruction.
    (UNSPEC_PRLG_STK  5) ; A special barrier that prevents frame accesses 
 			;   being scheduled before the stack adjustment insn.
    (UNSPEC_PROLOGUE_USE 6) ; As USE insns are not meaningful after reload,
@@ -98,6 +97,8 @@
 			   ; generate correct unwind information.
    (UNSPEC_PIC_OFFSET 23) ; A symbolic 12-bit OFFSET that has been treated
 			  ; correctly for PIC usage.
+   (UNSPEC_GOTSYM_OFF 24) ; The offset of the start of the the GOT from a
+			  ; a given symbolic address.
   ]
 )
 
@@ -5033,8 +5034,8 @@
 
 (define_insn "pic_add_dot_plus_four"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "0")
-			     (const (plus:SI (pc) (const_int 4))))
+	(unspec:SI [(match_operand:SI 1 "register_operand" "0")
+		    (const_int 4)
 		    (match_operand 2 "" "")]
 		   UNSPEC_PIC_BASE))]
   "TARGET_THUMB1"
@@ -5048,8 +5049,8 @@
 
 (define_insn "pic_add_dot_plus_eight"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
-			     (const (plus:SI (pc) (const_int 8))))
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (const_int 8)
 		    (match_operand 2 "" "")]
 		   UNSPEC_PIC_BASE))]
   "TARGET_ARM"
@@ -5063,8 +5064,8 @@
 
 (define_insn "tls_load_dot_plus_eight"
   [(set (match_operand:SI 0 "register_operand" "+r")
-	(mem:SI (unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
-				     (const (plus:SI (pc) (const_int 8))))
+	(mem:SI (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+			    (const_int 8)
 			    (match_operand 2 "" "")]
 			   UNSPEC_PIC_BASE)))]
   "TARGET_ARM"
@@ -5081,18 +5082,18 @@
 ;; tls_load_dot_plus_eight by a peephole.
 
 (define_peephole2
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (unspec:SI [(plus:SI (match_operand:SI 3 "register_operand" "")
-			     	 	(const (plus:SI (pc) (const_int 8))))]
-			      UNSPEC_PIC_BASE))
-   	      (use (label_ref (match_operand 1 "" "")))])
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec:SI [(match_operand:SI 3 "register_operand" "")
+		    (const_int 8)
+		    (match_operand 1 "" "")]
+		   UNSPEC_PIC_BASE))
    (set (match_operand:SI 2 "register_operand" "") (mem:SI (match_dup 0)))]
   "TARGET_ARM && peep2_reg_dead_p (2, operands[0])"
-  [(parallel [(set (match_dup 2)
-		   (mem:SI (unspec:SI [(plus:SI (match_dup 3)
-						(const (plus:SI (pc) (const_int 8))))]
-				      UNSPEC_PIC_BASE)))
-   	      (use (label_ref (match_dup 1)))])]
+  [(set (match_dup 2)
+	(mem:SI (unspec:SI [(match_dup 3)
+			    (const_int 8)
+			    (match_dup 1)]
+			   UNSPEC_PIC_BASE)))]
   ""
 )
 
