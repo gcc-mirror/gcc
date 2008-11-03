@@ -1,3 +1,8 @@
+2008-11-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_optimize_loop): Properly handle case
+	where we have one entry point in the loop which isn't the head.
+
 2008-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37573
