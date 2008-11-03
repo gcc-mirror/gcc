@@ -2961,8 +2961,13 @@ bitfield_overlaps_p (tree blen, tree bpos, struct sra_elt *fld,
     }
   else if (TREE_CODE (fld->element) == INTEGER_CST)
     {
+      tree domain_type = TYPE_DOMAIN (TREE_TYPE (fld->parent->element));
       flen = fold_convert (bitsizetype, TYPE_SIZE (fld->type));
       fpos = fold_convert (bitsizetype, fld->element);
+      if (domain_type && TYPE_MIN_VALUE (domain_type))
+	fpos = size_binop (MINUS_EXPR, fpos,
+			   fold_convert (bitsizetype,
+			   		 TYPE_MIN_VALUE (domain_type)));
       fpos = size_binop (MULT_EXPR, flen, fpos);
     }
   else
