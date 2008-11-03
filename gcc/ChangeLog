@@ -1,3 +1,10 @@
+2008-11-03  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/37684
+	* gcc.dg/graphite/pr37684.c: New.
+	* graphite.c (exclude_component_ref): New.
+	(is_simple_operand): Call exclude_component_ref.
+
 2008-11-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/36908
