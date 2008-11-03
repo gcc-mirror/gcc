@@ -551,6 +551,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	enum machine_mode pmode;
 	int punsignedp, pvolatilep;
 
+	op0 = TREE_OPERAND (op0, 0);
 	if (!handled_component_p (op0))
 	  return false;
 
