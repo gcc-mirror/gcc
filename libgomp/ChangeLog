@@ -1,3 +1,9 @@
+2008-11-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgomp/37935
+	* libgomp.texi (Runtime library routines, environment variables):
+	Update for OpenMP version 3.0.
+
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
 	    Steve Ellcey  <sje@cup.hp.com>
 
