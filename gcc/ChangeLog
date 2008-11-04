@@ -1,3 +1,9 @@
+2008-11-03  Mikael Pettersson  <mikpe@it.uu.se>
+
+        PR target/37989
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Only add libgcc_s.a
+	or libgcc_eh.a to spec if ENABLE_SHARED_LIBGCC.
+
 2008-11-03  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips.c (mips_conditional_register_usage):  Handle the
