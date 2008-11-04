@@ -1930,8 +1930,8 @@ else
   BUILD_GJDOC=maybe
 fi;
 
-echo "$as_me:$LINENO: checking wether to build gjdoc" >&5
-echo $ECHO_N "checking wether to build gjdoc... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking whether to build gjdoc" >&5
+echo $ECHO_N "checking whether to build gjdoc... $ECHO_C" >&6
 if test "x$BUILD_GJDOC" = xmaybe; then
     if test -f "${ANTLR_JAR}"; then
 	BUILD_GJDOC=yes

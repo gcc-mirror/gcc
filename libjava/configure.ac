@@ -120,7 +120,7 @@ AC_ARG_ENABLE([gjdoc],
               esac],
               [BUILD_GJDOC=maybe])
 
-AC_MSG_CHECKING([wether to build gjdoc])
+AC_MSG_CHECKING([whether to build gjdoc])
 if test "x$BUILD_GJDOC" = xmaybe; then
     if test -f "${ANTLR_JAR}"; then
 	BUILD_GJDOC=yes
