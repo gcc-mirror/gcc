@@ -3313,7 +3313,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
       gfc_find_sym_tree (sym->name, ns, 0, &st);
 
       if (!st || (st->n.sym->attr.dummy && ns == st->n.sym->ns))
-	continue;
+	goto fixup_contained;
 
       old_sym = st->n.sym;
       if (old_sym->ns == ns
@@ -3347,6 +3347,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 	    gfc_free_symbol (old_sym);
 	}
 
+fixup_contained:
       /* Do the same for any contained procedures.  */
       gfc_fixup_sibling_symbols (sym, ns->contained);
     }

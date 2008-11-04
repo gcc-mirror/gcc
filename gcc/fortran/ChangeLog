@@ -1,3 +1,9 @@
+2008-11-04  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37597
+        * parse.c (gfc_fixup_sibling_symbols ): Fixup contained, even
+	when symbol not found.
+
 2008-11-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37821
