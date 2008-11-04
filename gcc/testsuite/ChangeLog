@@ -1,3 +1,9 @@
+2008-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37106
+	* gcc.dg/pr37106-1.c: New test.
+	* gcc.dg/pr37106-2.c: New test.
+
 2008-11-03  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/dsp-ctrl.c: New test. 
