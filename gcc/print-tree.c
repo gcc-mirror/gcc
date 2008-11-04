@@ -502,7 +502,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	{
 	  print_node_brief (file, "attributes",
 			    DECL_ATTRIBUTES (node), indent + 4);
-	  print_node_brief (file, "initial", DECL_INITIAL (node), indent + 4);
+	  if (code != PARM_DECL)
+	    print_node_brief (file, "initial", DECL_INITIAL (node),
+			      indent + 4);
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
 	{

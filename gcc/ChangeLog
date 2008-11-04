@@ -1,5 +1,8 @@
 2008-11-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* print-tree.c (print_node): Don't print DECL_INITIAL
+	for PARM_DECL.
+
 	PR c/37106
 	* c-common.c (parse_optimize_options): Save and restore
 	flag_strict_aliasing around decode_options call.
