@@ -1,4 +1,11 @@
 2008-11-04  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c/35430
+	* gcc.dg/pr35430.c: New test.
+	* g++.dg/warn/Wsign-compare-2.C: New test.
+
+2008-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37106
 	* gcc.dg/pr37106-1.c: New test.
