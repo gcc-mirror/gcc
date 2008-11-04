@@ -6979,6 +6979,7 @@ parse_optimize_options (tree args, bool attr_p)
   bool ret = true;
   unsigned opt_argc;
   unsigned i;
+  int saved_flag_strict_aliasing;
   const char **opt_argv;
   tree ap;
 
@@ -7069,8 +7070,13 @@ parse_optimize_options (tree args, bool attr_p)
   for (i = 1; i < opt_argc; i++)
     opt_argv[i] = VEC_index (const_char_p, optimize_args, i);
 
+  saved_flag_strict_aliasing = flag_strict_aliasing;
+
   /* Now parse the options.  */
   decode_options (opt_argc, opt_argv);
+
+  /* Don't allow changing -fstrict-aliasing.  */
+  flag_strict_aliasing = saved_flag_strict_aliasing;
 
   VEC_truncate (const_char_p, optimize_args, 0);
   return ret;
