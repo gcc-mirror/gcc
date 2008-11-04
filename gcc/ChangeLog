@@ -1,3 +1,10 @@
+2008-11-04  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c/35430
+	* c-common.c (warn_for_sign_compare): For complex result_type
+	use component's type.
+
 2008-11-04  Jakub Jelinek  <jakuB@redhat.com>
 
 	* print-tree.c (print_node): Use code instead of TREE_CODE (node).
