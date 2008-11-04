@@ -333,6 +333,13 @@ detect_caches_intel (bool xeon_mp, unsigned max_level, unsigned max_ext_level)
   return describe_cache (level1, level2);
 }
 
+enum vendor_signatures
+{
+  SIG_INTEL =	0x756e6547 /* Genu */,
+  SIG_AMD =	0x68747541 /* Auth */,
+  SIG_GEODE =	0x646f6547 /* Geod */
+};
+
 /* This will be called by the spec parser in gcc.c when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "arch" or "tune" as argument depending on if -march=native
@@ -415,16 +422,16 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == *(const unsigned int*) "Auth")
+      if (vendor == SIG_AMD)
 	cache = detect_caches_amd (ext_level);
-      else if (vendor == *(const unsigned int*) "Genu")
+      else if (vendor == SIG_INTEL)
 	{
 	  bool xeon_mp = (family == 15 && model == 6);
 	  cache = detect_caches_intel (xeon_mp, max_level, ext_level);
 	}
     }
 
-  if (vendor == *(const unsigned int*) "Auth")
+  if (vendor == SIG_AMD)
     {
       processor = PROCESSOR_PENTIUM;
 
@@ -437,7 +444,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
     }
-  else if (vendor == *(const unsigned int*) "Geod")
+  else if (vendor == SIG_GEODE)
     processor = PROCESSOR_GEODE;
   else
     {
