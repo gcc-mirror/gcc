@@ -1,3 +1,9 @@
+2008-11-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37742
+	* decl.c (start_preparsed_function): Use the correct type for
+	building the RESULT_DECL.
+
 2008-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37967

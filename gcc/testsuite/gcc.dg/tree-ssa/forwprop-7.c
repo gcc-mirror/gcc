@@ -8,7 +8,9 @@ int foo(void)
   return *p + *p;
 }
 
-/* We should not convert the cast to a VCE in forwprop1 as we have a volatile reference.  */
+/* We should not convert the cast to a VCE in forwprop1 as we have a
+   volatile reference.  */
+
 /* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 0 "forwprop1"} } */
-/* { dg-final { scan-tree-dump-times "volatile int" 2 "forwprop1"} } */
+/* { dg-final { scan-tree-dump-times "={v}" 2 "forwprop1"} } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

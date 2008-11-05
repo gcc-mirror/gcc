@@ -1,3 +1,10 @@
+2008-11-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37742
+	* gcc.c-torture/compile/pr37742.c: New testcase.
+	* g++.dg/pr37742.C: Likewise.
+	* gcc.dg/tree-ssa/forwprop-7.c: Check for two volatile loads.
+
 2008-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/37286
