@@ -2243,6 +2243,7 @@ scan_tree_for_params (scop_p s, tree e, CloogMatrix *c, int r, Value k,
       break;
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
       scan_tree_for_params (s, TREE_OPERAND (e, 0), c, r, k, subtract);
       scan_tree_for_params (s, TREE_OPERAND (e, 1), c, r, k, subtract);
       break;
