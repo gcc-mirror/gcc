@@ -1,3 +1,9 @@
+2008-11-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/38025
+	* gcc.target/spu/intrinsics-1.c (f): Tune expected error messages
+	to match current compiler.
+
 2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38016
