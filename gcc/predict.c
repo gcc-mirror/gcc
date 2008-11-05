@@ -1374,6 +1374,7 @@ tree_estimate_probability (void)
     {
       edge e;
       edge_iterator ei;
+      tree last;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -1396,7 +1397,8 @@ tree_estimate_probability (void)
 	      && e->dest != EXIT_BLOCK_PTR
 	      && single_succ_p (e->dest)
 	      && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
-	      && TREE_CODE (last_stmt (e->dest)) == RETURN_EXPR)
+	      && (last = last_stmt (e->dest)) != NULL_TREE
+	      && TREE_CODE (last) == RETURN_EXPR)
 	    {
 	      edge e1;
 	      edge_iterator ei1;

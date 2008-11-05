@@ -1,5 +1,8 @@
 2008-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/37879
+	* gcc.dg/pr37879.c: New test.
+
 	PR middle-end/37858
 	* gcc.dg/pr37858.c: New test.
 

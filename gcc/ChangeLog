@@ -1,5 +1,9 @@
 2008-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/37879
+	* predict.c (tree_estimate_probability): Check if last_stmt is
+	non-NULL before dereferencing it.
+
 	PR middle-end/37858
 	* passes.c (execute_one_pass): Don't look at cfun->curr_properties
 	for ipa and simple ipa passes.
