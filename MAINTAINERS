@@ -29,6 +29,7 @@ Michael Meissner				gnu@the-meissners.org
 Jason Merrill					jason@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
+Diego Novillo					dnovillo@google.com
 Bernd Schmidt					bernd.schmidt@analog.com
 Jim Wilson					wilson@tuliptree.org
 
@@ -229,7 +230,6 @@ check in changes outside of the parts of the compiler they maintain.
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 libcpp			Tom Tromey		tromey@redhat.com
-blanket write		Diego Novillo		dnovillo@google.com
 blanket write		Ian Lance Taylor	ian@airs.com
 
 Note that individuals who maintain parts of the compiler as non-algorithmic

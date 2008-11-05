@@ -1,3 +1,8 @@
+2008-11-05  Diego Novillo  <dnovillo@google.com>
+
+	* MAINTAINERS (Global Reviewers): Add myself.
+	(Non-Algorithmic Maintainers): Remove myself.
+
 2008-11-04  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* MAINTAINERS (Write after approval): Add myself. 
