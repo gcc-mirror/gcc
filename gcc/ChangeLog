@@ -1,3 +1,9 @@
+2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/38016
+	* config/cris/cris.c (cris_order_for_addsi3): Test for !REG_P, not
+	just MEM_P.
+
 2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (bitfield_overlaps_p): Fix oversight.
