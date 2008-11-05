@@ -1,3 +1,8 @@
+2008-11-05  Fabien Chene <fabien.chene@gmail.com>
+
+	PR c++/32519
+	* g++.dg/template/pr32519.C: New test.
+
 2008-11-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37742
