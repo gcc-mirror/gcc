@@ -1,3 +1,7 @@
+2008-11-06  Ben Elliston  <bje@au.ibm.com>	
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Comment fix.
+
 2008-11-06  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.opt (mwarn-cell-microcode): Improve option

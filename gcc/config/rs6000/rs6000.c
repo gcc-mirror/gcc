@@ -1607,7 +1607,7 @@ rs6000_override_options (const char *default_cpu)
 	error ("Spe not supported in this target");
     }
 
-  /* Disable cell micro code if we are optimizing for the cell
+  /* Disable Cell microcode if we are optimizing for the Cell
      and not optimizing for size.  */
   if (rs6000_gen_cell_microcode == -1)
     rs6000_gen_cell_microcode = !(rs6000_cpu == PROCESSOR_CELL
