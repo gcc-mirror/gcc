@@ -169,9 +169,10 @@ Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs
   (*env)->ReleaseLongArrayElements (env, fonts, fontArray, 0);
 }
 
-JNIEXPORT jobject JNICALL 
+JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning
-(JNIEnv *env, jobject obj __attribute__((unused)), jint rightGlyph, jint leftGlyph, jlong fnt)
+  (JNIEnv *env, jobject obj __attribute__((unused)), jint rightGlyph,
+   jint leftGlyph, jlong fnt, jfloatArray p)
 {
   FT_Face ft_face;
   FT_Vector kern;
@@ -187,12 +188,10 @@ Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning
 
   pango_fc_font_unlock_face( font );
 
-  values[0].d = (jdouble)kern.x/64.0;
-  values[1].d = (jdouble)kern.y/64.0;
-
-  cls = (*env)->FindClass (env, "java/awt/geom/Point2D$Double");
-  method = (*env)->GetMethodID (env, cls, "<init>", "(DD)V");
-  return (*env)->NewObjectA(env, cls, method, values);
+  jfloat *pelements = (*env)->GetPrimitiveArrayCritical(env, p, NULL);
+  pelements[0] = (jfloat)kern.x/64.0;
+  pelements[1] = (jfloat)kern.y/64.0;
+  (*env)->ReleasePrimitiveArrayCritical (env, p, pelements, 0);
 }
 
 JNIEXPORT jdoubleArray JNICALL 

@@ -247,7 +247,8 @@ public class FreetypeGlyphVector extends GlyphVector
   /**
    * Returns the kerning of a glyph pair
    */
-  private native Point2D getKerning(int leftGlyph, int rightGlyph, long font);
+  private native void getKerning(int leftGlyph, int rightGlyph, long font, 
+				 float[] p);
 
   private native double[] getMetricsNative(int glyphCode, long font);
 
@@ -301,6 +302,7 @@ public class FreetypeGlyphVector extends GlyphVector
     GlyphMetrics gm = null;
     float x = 0;
     float y = 0;
+    float[] p = {0.0f, 0.0f};
     for(int i = 0; i < nGlyphs; i++)
       {
         gm = getGlyphMetrics( i );
@@ -314,9 +316,9 @@ public class FreetypeGlyphVector extends GlyphVector
         // using the same font
         if (i != nGlyphs-1 && fontSet[i] == fontSet[i+1])
           {
-            Point2D p = getKerning(glyphCodes[i], glyphCodes[i + 1], fontSet[i]);
-            x += p.getX();
-            y += p.getY();
+            getKerning(glyphCodes[i], glyphCodes[i + 1], fontSet[i], p);
+            x += p[0];
+            y += p[1];
           }
       }
     glyphPositions[nGlyphs * 2] = x;
