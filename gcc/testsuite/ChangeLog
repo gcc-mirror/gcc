@@ -1,3 +1,9 @@
+2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/38016
+	* gcc.c-torture/execute/ieee/pr38016.c,
+	gcc.c-torture/execute/ieee/pr38016.c: New test.
+
 2008-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array5.adb New test.
