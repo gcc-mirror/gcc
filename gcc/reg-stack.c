@@ -1527,15 +1527,30 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	    else
 	      {
 		/* Both operands are REG.  If neither operand is already
-		   at the top of stack, choose to make the one that is the dest
-		   the new top of stack.  */
+		   at the top of stack, choose to make the one that is the
+		   dest the new top of stack.  */
 
 		int src1_hard_regnum, src2_hard_regnum;
 
 		src1_hard_regnum = get_hard_regnum (regstack, *src1);
 		src2_hard_regnum = get_hard_regnum (regstack, *src2);
-		gcc_assert (src1_hard_regnum != -1);
-		gcc_assert (src2_hard_regnum != -1);
+
+		/* If the source is not live, this is yet another case of
+		   uninitialized variables.  Load up a NaN instead.  */
+		if (src1_hard_regnum == -1)
+		  {
+		    rtx pat2 = gen_rtx_CLOBBER (VOIDmode, *src1);
+		    rtx insn2 = emit_insn_before (pat2, insn);
+		    control_flow_insn_deleted
+		      |= move_nan_for_stack_reg (insn2, regstack, *src1);
+		  }
+		if (src2_hard_regnum == -1)
+		  {
+		    rtx pat2 = gen_rtx_CLOBBER (VOIDmode, *src2);
+		    rtx insn2 = emit_insn_before (pat2, insn);
+		    control_flow_insn_deleted
+		      |= move_nan_for_stack_reg (insn2, regstack, *src2);
+		  }
 
 		if (src1_hard_regnum != FIRST_STACK_REG
 		    && src2_hard_regnum != FIRST_STACK_REG)
