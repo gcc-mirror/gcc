@@ -1266,15 +1266,32 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       {
 	if (MEM_P (op0))
 	  op0 = adjust_address (op0, imode, 0);
-	else
+	else if (imode != BLKmode)
 	  {
-	    gcc_assert (imode != BLKmode);
 	    op0 = gen_lowpart (imode, op0);
 
 	    /* If we got a SUBREG, force it into a register since we
 	       aren't going to be able to do another SUBREG on it.  */
 	    if (GET_CODE (op0) == SUBREG)
 	      op0 = force_reg (imode, op0);
+	  }
+	else if (REG_P (op0))
+	  {
+	    rtx reg, subreg;
+	    imode = smallest_mode_for_size (GET_MODE_BITSIZE (GET_MODE (op0)),
+					    MODE_INT);
+	    reg = gen_reg_rtx (imode);
+	    subreg = gen_lowpart_SUBREG (GET_MODE (op0), reg);
+	    emit_move_insn (subreg, op0);
+	    op0 = reg;
+	    bitnum += SUBREG_BYTE (subreg) * BITS_PER_UNIT;
+	  }
+	else
+	  {
+	    rtx mem = assign_stack_temp (GET_MODE (op0),
+					 GET_MODE_SIZE (GET_MODE (op0)), 0);
+	    emit_move_insn (mem, op0);
+	    op0 = adjust_address (mem, BLKmode, 0);
 	  }
       }
   }

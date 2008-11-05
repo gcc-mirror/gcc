@@ -1,3 +1,10 @@
+2008-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37870
+	* expmed.c (extract_bit_field_1): If int_mode_for_mode returns
+	BLKmode for non-memory, convert using a wider MODE_INT mode
+	or through memory.
+
 2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38016

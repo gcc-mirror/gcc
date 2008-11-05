@@ -1,3 +1,8 @@
+2008-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37870
+	* gcc.target/i386/pr37870.c: New test.
+
 2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38016
