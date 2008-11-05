@@ -1,5 +1,13 @@
 2008-11-05  Andrew Haley  <aph@redhat.com>
 
+	* gnu/java/awt/peer/gtk/FreetypeGlyphVector.java (getKerning):
+	Return result in a float[], not a Point2D.
+	(performDefaultLayout): Call getKerning with a float[].
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
+	(getKerning): Return result in a float[], not a Point2D.
+	
+2008-11-05  Andrew Haley  <aph@redhat.com>
+
 	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
 	.svn directories.
 
