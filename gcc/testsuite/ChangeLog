@@ -1,7 +1,12 @@
+2008-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37286
+	* gfortran.dg/pr37286.f90: New test.
+
 2008-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37597
-        * gfortran.dg/host_assoc_call_5.f90: New test.
+	PR fortran/37597
+	* gfortran.dg/host_assoc_call_5.f90: New test.
 
 2008-11-04  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
@@ -274,22 +279,22 @@
 	* gcc.target/bfin/hisilh-O0.c: New file.
 
 	From Mike Frysinger  <michael.frysinger@analog.com>
-	* gcc.target/bfin/mcpu-bf522.c: Check SILICON_REVISION is 0x0002.  Invert
-	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
+	* gcc.target/bfin/mcpu-bf522.c: Check SILICON_REVISION is 0x0002.
+	Invert check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
 	* gcc.target/bfin/mcpu-bf523.c: Likewise.
 	* gcc.target/bfin/mcpu-bf524.c: Likewise.
 	* gcc.target/bfin/mcpu-bf525.c: Likewise.
 	* gcc.target/bfin/mcpu-bf526.c: Likewise.
 	* gcc.target/bfin/mcpu-bf527.c: Likewise.
-	* gcc.target/bfin/mcpu-bf531.c: Check SILICON_REVISION is 0x0006.  Invert
-	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0006+.
+	* gcc.target/bfin/mcpu-bf531.c: Check SILICON_REVISION is 0x0006.
+	Invert check for __WORKAROUND_RETS when SILICON_REVISION is 0x0006+.
 	* gcc.target/bfin/mcpu-bf532.c: Likewise.
 	* gcc.target/bfin/mcpu-bf533.c: Likewise.
-	* gcc.target/bfin/mcpu-bf538.c: Check SILICON_REVISION is 0x0005.  Invert
-	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0005+.
+	* gcc.target/bfin/mcpu-bf538.c: Check SILICON_REVISION is 0x0005.
+	Invert check for __WORKAROUND_RETS when SILICON_REVISION is 0x0005+.
 	* gcc.target/bfin/mcpu-bf539.c: Likewise.
-	* gcc.target/bfin/mcpu-bf542.c: Check SILICON_REVISION is 0x0002.  Invert
-	check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
+	* gcc.target/bfin/mcpu-bf542.c: Check SILICON_REVISION is 0x0002.
+	Invert check for __WORKAROUND_RETS when SILICON_REVISION is 0x0002+.
 	* gcc.target/bfin/mcpu-bf544.c: Likewise.
 	* gcc.target/bfin/mcpu-bf547.c: Likewise.
 	* gcc.target/bfin/mcpu-bf548.c: Likewise.
@@ -3192,8 +3197,8 @@
 
 2008-08-24  Daniel Kraft  <d@domob.eu>
 
-	* gfortran.dg/finalize_5.f03:  Adapted expected error message to changes
-	to handling of CONTAINS in derived-type declarations.
+	* gfortran.dg/finalize_5.f03:  Adapted expected error message to
+	changes to handling of CONTAINS in derived-type declarations.
 	* gfortran.dg/typebound_proc_1.f08:  New test.
 	* gfortran.dg/typebound_proc_2.f90:  New test.
 	* gfortran.dg/typebound_proc_3.f03:  New test.
@@ -7000,11 +7005,16 @@
 2008-05-08  Rafael Espíndola  <espindola@google.com>
 
 	* gcc.dg/vect/vect-111.c: Rename to no-trapping-math-vect-111.c
-	* gcc.dg/vect/vect-ifcvt-11.c: Rename to no-trapping-math-vect-ifcvt-11.c
-	* gcc.dg/vect/vect-ifcvt-12.c: Rename to no-trapping-math-vect-ifcvt-12.c
-	* gcc.dg/vect/vect-ifcvt-13.c: Rename to no-trapping-math-vect-ifcvt-13.c
-	* gcc.dg/vect/vect-ifcvt-14.c: Rename to no-trapping-math-vect-ifcvt-14.c
-	* gcc.dg/vect/vect-ifcvt-15.c: Rename to no-trapping-math-vect-ifcvt-15.c
+	* gcc.dg/vect/vect-ifcvt-11.c: Rename to
+	no-trapping-math-vect-ifcvt-11.c
+	* gcc.dg/vect/vect-ifcvt-12.c: Rename to
+	no-trapping-math-vect-ifcvt-12.c
+	* gcc.dg/vect/vect-ifcvt-13.c: Rename to
+	no-trapping-math-vect-ifcvt-13.c
+	* gcc.dg/vect/vect-ifcvt-14.c: Rename to
+	no-trapping-math-vect-ifcvt-14.c
+	* gcc.dg/vect/vect-ifcvt-15.c: Rename to
+	no-trapping-math-vect-ifcvt-15.c
 
 2008-05-08  David Daney  <ddaney@avtrex.com>
 
@@ -9083,8 +9093,7 @@
 	gfortran.dg/fmt_t_5.f90, gfortran.dg/namelist_12.f,
 	gfortran.dg/backspace_7.f90, gfortran.dg/write_rewind_2.f,
 	gfortran.dg/ftell_1.f90, gfortran.dg/fseek.f90,
-	gfortran.dg/write_back.f: Gate test on effective_target
-	fd_truncate.
+	gfortran.dg/write_back.f: Gate test on effective_target fd_truncate.
 
 2008-03-04  Joseph Myers  <joseph@codesourcery.com>
 
@@ -10493,7 +10502,8 @@
 
 2008-01-18  Tobias Burnus  <burnus@net-b.de>
 
-	* gfortran.dg/large_real_kind_form_io_1.f90: Enlarge string for internal I/O.
+	* gfortran.dg/large_real_kind_form_io_1.f90: Enlarge string for
+	internal I/O.
 
 2008-01-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -11049,8 +11059,8 @@
 2008-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/34562
-	* g++.dg/other/first-global.C: Also accept _GLOBAL__I_65535_0_foobar in
-	scan-assembler check.
+	* g++.dg/other/first-global.C: Also accept _GLOBAL__I_65535_0_foobar
+	in scan-assembler check.
 
 2008-01-03  Jakub Jelinek  <jakub@redhat.com>
 

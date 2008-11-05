@@ -1,3 +1,9 @@
+2008-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37286
+	* reg-stack.c (subst_stack_regs_pat) [MINUS, DIV, MULT, PLUS]:
+	Initialize uninitialized input registers with a NaN.
+
 2008-11-05  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	PR middle-end/37833
@@ -38,7 +44,7 @@
 
 2008-11-03  Mikael Pettersson  <mikpe@it.uu.se>
 
-        PR target/37989
+	PR target/37989
 	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Only add libgcc_s.a
 	or libgcc_eh.a to spec if ENABLE_SHARED_LIBGCC.
 
@@ -47,7 +53,7 @@
 	* config/mips.c (mips_conditional_register_usage):  Handle the
 	DSP control register.
 	* doc/extend.texi: Document the DSP control register.
-			    
+
 2008-11-03  Steve Ellcey <sje@cup.hp.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -404,16 +410,14 @@
 2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37813
-	* ira-conflicts.c (process_regs_for_copy): Remove class subset
-	check.
+	* ira-conflicts.c (process_regs_for_copy): Remove class subset check.
 
 	* ira-int.h (ira_hard_regno_cover_class): New.
 
 	* ira-lives.c (mark_reg_live, mark_reg_dead,
 	process_bb_node_lives): Use ira_hard_regno_cover_class.
 
-	* ira.c (reg_class ira_hard_regno_cover_class): New global
-	variable.
+	* ira.c (reg_class ira_hard_regno_cover_class): New global variable.
 	(setup_hard_regno_cover_class): New function.
 	(ira_init): Call setup_hard_regno_cover_class.
 
@@ -431,8 +435,8 @@
 2008-10-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/37316
-	* pa.c (function_arg_padding):  Pad complex and vector types upward in
-	64-bit runtime.
+	* pa.c (function_arg_padding):  Pad complex and vector types
+	upward in 64-bit runtime.
 	(function_arg): Use BLKmode for PARALLEL in 64-bit runtime.
 
 2008-10-26  Matthias Klose  <doko@ubuntu.com>
@@ -453,8 +457,7 @@
 	* doc/tm.texi (FUNCTION_ARG_OFFSET): Document new macro.
 
 	* config/spu/spu.h (FUNCTION_ARG_OFFSET): New macro to move char
-	and short arguments to the correct location as mandated by the
-	ABI.
+	and short arguments to the correct location as mandated by the ABI.
 
 2008-10-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -500,8 +503,7 @@
 	check_p_tool, check_p_vars, check_p_subno, check_p_comma,
 	check_p_subwork, check_p_numbers, check_p_subdir, check_p_subdirs):
 	New variables.
-	(check-subtargets, check-%-subtargets, check-parallel-%): New
-	targets.
+	(check-subtargets, check-%-subtargets, check-parallel-%): New targets.
 	(check-%): For test targets listed in lang_checks_parallelized
 	if -j is used and RUNTESTFLAGS doesn't specify tests to execute,
 	run the testing in multiple make goals, possibly parallel, and
@@ -740,8 +742,7 @@
 
 2008-10-15  Jan Hubicka  <jh@suse.cz>
 
-	* ira-emit.c (change_regs): Return false when replacing reg by
-	itself.
+	* ira-emit.c (change_regs): Return false when replacing reg by itself.
 
 2008-10-14  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -942,8 +943,8 @@
 	Define new target hooks.
 	(TARGET_SCHED_GEN_CHECK): Rename to TARGET_SCHED_GEN_SPEC_CHECK.
 	(ia64_optimization_options): Turn on selective scheduling with -O3,
-	disable -fauto-inc-dec. Set mflag_sched_control_spec to true by default
-	with selective scheduling.
+	disable -fauto-inc-dec. Set mflag_sched_control_spec to true by
+	default with selective scheduling.
 	(ia64_override_options): Initialize align_loops and align_functions
 	to 32 and 64, respectively.  Set global selective scheduling flags
 	according to target-dependent flags.
@@ -1005,8 +1006,8 @@
 	(final_emit_insn_group_barriers): Emit stop bits before insns starting
 	a new cycle.
 	(sel2_run): New variable.
-	(ia64_reorg): When flag_selective_scheduling2 is set, run the selective
-	scheduling pass instead of schedule_ebbs.
+	(ia64_reorg): When flag_selective_scheduling2 is set, run the
+	selective scheduling pass instead of schedule_ebbs.
 	
 	* config/ia64/ia64.md (speculable1, speculable2): New attributes.
 	(UNSPEC_LDS_A): New UNSPEC.
@@ -1077,8 +1078,8 @@
 	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Define.
 	* config/rs6000/rs6000.md
 	Replace cc_reg_not_cr0_operand with cc_reg_not_micro_cr0_operand if
-	the instruction would have been microcoded on the Cell.  Set cell_micro
-	to always on unnamed patterns for the string instructions.
+	the instruction would have been microcoded on the Cell.  Set
+	cell_micro to always on unnamed patterns for the string instructions.
 	(cell_micro): Update definition, remove load/store conditional
 	microcoded.
 	(sign_extend:DI): Define new pattern for non microcoded version.
@@ -1380,8 +1381,8 @@
 	* pa.md (call, call_value): Generate an rtx for register r4 and pass
 	it to PIC call patterns.
 	(call_symref_pic): Revise pattern to expose PIC register save.  Remove
-	code generation and attributes from pattern.  Change peephole2 to split
-	for noreturn case.  Revise split pattern for non noreturn case.
+	code generation and attributes from pattern.  Change peephole2 to
+	split for noreturn case.  Revise split pattern for non noreturn case.
 	(call_symref_64bit, call_reg_pic, call_reg_64bit, call_val_symref_pic,
 	call_val_symref_64bit, call_val_reg_pic, call_val_reg_64bit): Likewise.
 	* pa.c (attr_length_call): Simplify extraction of call rtx.  Add some
@@ -1507,8 +1508,8 @@
 	* tree.h (get_object_alignment): Declare.
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Call
 	get_object_alignment if needed.
-	* builtins.c (get_pointer_alignment): Move ADDR_EXPR operand handling
-	to ...
+	* builtins.c (get_pointer_alignment): Move ADDR_EXPR operand
+	handling to ...
 	(get_object_alignment): ... here.  New function.  Try harder to
 	determine alignment from get_inner_reference returned offset.
 
