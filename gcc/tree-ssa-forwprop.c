@@ -802,6 +802,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   array_ref = TREE_OPERAND (def_rhs, 0);
   if (TREE_CODE (array_ref) != ARRAY_REF
       || TREE_CODE (TREE_TYPE (TREE_OPERAND (array_ref, 0))) != ARRAY_TYPE
+      /* Avoid accessing hidden multidimensional arrays in this way or VRP
+	 might give out bogus warnings (see PR 37861) */
+      || TREE_CODE (TREE_OPERAND (array_ref, 0)) == INDIRECT_REF
       || !integer_zerop (TREE_OPERAND (array_ref, 1)))
     return false;
 

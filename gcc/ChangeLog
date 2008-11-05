@@ -1,3 +1,10 @@
+2008-11-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/37861
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Don't turn
+	pointer arithmetics into array_ref if the array is accessed
+	through an indirect_ref.
+
 2008-11-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37742
