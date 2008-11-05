@@ -1,3 +1,9 @@
+2008-11-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/37861
+	* gcc.dg/Warray-bounds-5.c: New test.
+	* gcc.dg/Warray-bounds-6.c: New test.
+
 2008-11-05  Fabien Chene <fabien.chene@gmail.com>
 
 	PR c++/32519
