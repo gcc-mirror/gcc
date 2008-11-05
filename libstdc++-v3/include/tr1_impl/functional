@@ -153,7 +153,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     class result_of;
 
-#ifdef _GLIBCXX_INCLUDE_AS_TR1
   /**
    *  Actual implementation of result_of. When _Has_result_type is
    *  true, gets its result from _Weak_result_type. Otherwise, uses
@@ -211,104 +210,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef void type;
     };
 
-#else
-  /**
-   *  Actual implementation of std::result_of.
-  */
-  template<bool _Is_mem_obj_ptr, bool _Is_mem_fun_ptr, typename _Signature>
-    struct _Result_of_impl;
-
-  // Helper functions used by _Result_of_impl.
-  template<typename _ArgT>
-    struct _Result_of_arg
-    {
-      // http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#904
-#if 0
-      static typename conditional<is_reference<_ArgT>::value,
-                      typename add_lvalue_reference<_ArgT>::type,
-                      typename add_rvalue_reference<_ArgT>::type>::type
-      _S_fwd();
-#else
-      static typename add_rvalue_reference<_ArgT>::type
-      _S_fwd();
-#endif
-    };
-
-  template<typename _Tp, bool _NoDeref>
-    struct _Result_of_lhs
-    {
-      static _Tp _S_fwd();
-    };
-  template<typename _Tp>
-    struct _Result_of_lhs<_Tp, false>
-    {
-      static decltype( *_Result_of_lhs<_Tp,true>::_S_fwd() ) _S_fwd();
-    };
-
-  // Handle member data pointers.
-  template<typename _Res, typename _Class, typename _T1>
-    class _Result_of_impl<true, false, _Res _Class::* (_T1)>
-    {
-      typedef typename remove_reference<_T1>::type _T2;
-      typedef _Result_of_lhs<_T1, is_base_of<_Class, _T2>::value> _Fwd_lhs;
-      typedef _Res _Class::*_MemPtr;
-
-    public:
-      typedef decltype( (_Fwd_lhs::_S_fwd().*(_MemPtr())) ) type;
-    };
-
-  // Handle member function pointers.
-  template<typename _MemFun, typename _T1, typename... _ArgTypes>
-    class _Result_of_impl<false, true, _MemFun (_T1, _ArgTypes...)>
-    {
-      template<typename>
-        struct _Get_class;
-
-      template<typename _Res, typename _Class, typename... _Args>
-        struct _Get_class<_Res (_Class::*)(_Args...)>
-        { typedef _Class type; };
-      template<typename _Res, typename _Class, typename... _Args>
-        struct _Get_class<_Res (_Class::*)(_Args...) const>
-        { typedef _Class type; };
-      template<typename _Res, typename _Class, typename... _Args>
-        struct _Get_class<_Res (_Class::*)(_Args...) volatile>
-        { typedef _Class type; };
-      template<typename _Res, typename _Class, typename... _Args>
-        struct _Get_class<_Res (_Class::*)(_Args...) const volatile>
-        { typedef _Class type; };
-
-      typedef typename _Get_class<_MemFun>::type _Class;
-      typedef typename remove_reference<_T1>::type _T2;
-      typedef _Result_of_lhs<_T1, is_base_of<_Class, _T2>::value> _Fwd_lhs;
-
-    public:
-      typedef decltype( (_Fwd_lhs::_S_fwd().*(_MemFun())) (
-            _Result_of_arg<_ArgTypes>::_S_fwd() ... ) ) type;
-    };
-
-  // Handle other callable types.
-  template<typename _Functor, typename... _ArgTypes>
-    class _Result_of_impl<false, false, _Functor(_ArgTypes...)>
-    {
-      // get an example of the callable type
-      static typename add_rvalue_reference<_Functor>::type
-      _S_fwd_functor();
-
-    public:
-      typedef decltype( _Result_of_impl::_S_fwd_functor() (
-            _Result_of_arg<_ArgTypes>::_S_fwd() ... ) ) type;
-    };
-
-  template<typename _Functor, typename... _ArgTypes>
-    class result_of<_Functor(_ArgTypes...)>
-    : public _Result_of_impl<
-      is_member_object_pointer<_Functor>::value,
-      is_member_function_pointer<_Functor>::value,
-      _Functor(_ArgTypes...)>
-    {
-    };
-#endif
-
   /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
     struct _Derives_from_unary_function : __sfinae_types
@@ -354,7 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef _Tp* type;
     };
 
-#ifdef _GLIBCXX_INCLUDE_AS_TR1
   /**
    * Invoke a function object, which may be either a member pointer or a
    * function object. The first parameter will tell which.
@@ -397,50 +297,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     {
       return __f(__args...);
     }
-#else
-  /**
-   * Invoke a function object, which may be either a member pointer or a
-   * function object. The first parameter will tell which.
-   */
-  template<typename _Functor, typename... _Args>
-    inline
-    typename enable_if<
-             (!is_member_pointer<_Functor>::value
-              && !is_function<_Functor>::value
-              && !is_function<typename remove_pointer<_Functor>::type>::value),
-             typename result_of<_Functor(_Args...)>::type
-           >::type
-    __invoke(_Functor& __f, _Args&&... __args)
-    {
-      return __f(std::forward<_Args>(__args)...);
-    }
-
-  template<typename _Functor, typename... _Args>
-    inline
-    typename enable_if<
-             (is_member_pointer<_Functor>::value
-              && !is_function<_Functor>::value
-              && !is_function<typename remove_pointer<_Functor>::type>::value),
-             typename result_of<_Functor(_Args...)>::type
-           >::type
-    __invoke(_Functor& __f, _Args&&... __args)
-    {
-      return mem_fn(__f)(std::forward<_Args>(__args)...);
-    }
-
-  // To pick up function references (that will become function pointers)
-  template<typename _Functor, typename... _Args>
-    inline
-    typename enable_if<
-             (is_pointer<_Functor>::value
-              && is_function<typename remove_pointer<_Functor>::type>::value),
-             typename result_of<_Functor(_Args...)>::type
-           >::type
-    __invoke(_Functor __f, _Args&&... __args)
-    {
-      return __f(std::forward<_Args>(__args)...);
-    }
-#endif
 
   /**
    *  Knowing which of unary_function and binary_function _Tp derives
@@ -584,17 +440,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     public:
       typedef _Tp type;
 
-#ifdef _GLIBCXX_INCLUDE_AS_TR1
       explicit
       reference_wrapper(_Tp& __indata): _M_data(&__indata)
       { }
-#else
-      reference_wrapper(_Tp& __indata): _M_data(&__indata)
-      { }
-
-      explicit
-      reference_wrapper(_Tp&&) = delete;
-#endif
 
       reference_wrapper(const reference_wrapper<_Tp>& __inref):
       _M_data(__inref._M_data)
@@ -614,21 +462,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       get() const
       { return *_M_data; }
 
-#ifdef _GLIBCXX_INCLUDE_AS_TR1
       template<typename... _Args>
         typename result_of<_M_func_type(_Args...)>::type
         operator()(_Args&... __args) const
         {
 	  return __invoke(get(), __args...);
 	}
-#else
-      template<typename... _Args>
-        typename result_of<_M_func_type(_Args...)>::type
-        operator()(_Args&&... __args) const
-        {
-	  return __invoke(get(), std::forward<_Args>(__args)...);
-	}
-#endif
     };
 
 
