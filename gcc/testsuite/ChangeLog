@@ -1,5 +1,8 @@
 2008-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37858
+	* gcc.dg/pr37858.c: New test.
+
 	PR middle-end/37870
 	* gcc.target/i386/pr37870.c: New test.
 
