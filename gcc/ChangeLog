@@ -1,3 +1,8 @@
+2008-11-06  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.opt (mwarn-cell-microcode): Improve option
+	description.
+
 2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38016

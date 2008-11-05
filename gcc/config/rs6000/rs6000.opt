@@ -239,7 +239,7 @@ Generate Cell microcode
 
 mwarn-cell-microcode
 Target Var(rs6000_warn_cell_microcode) Init(0) Warning
-Emitting warning when a Cell microcode is emitted
+Warn when a Cell microcoded instruction is emitted
 
 mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1)
