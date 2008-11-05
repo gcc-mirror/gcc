@@ -1,3 +1,9 @@
+2008-11-04  Andrew Haley  <aph@redhat.com>
+
+	PR java/37068
+	* jcf-parse.c (java_emit_static_constructor): Don't call
+	cgraph_build_static_cdtor.  Rewrite.
+
 2008-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check-java-subtargets): New target.

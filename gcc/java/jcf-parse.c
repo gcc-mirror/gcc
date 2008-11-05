@@ -1699,7 +1699,33 @@ java_emit_static_constructor (void)
   write_resource_constructor (&body);
 
   if (body)
-    cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
+    {
+      tree name = get_identifier ("_Jv_global_static_constructor");
+
+      tree decl 
+	= build_decl (FUNCTION_DECL, name,
+		      build_function_type (void_type_node, void_list_node));
+
+      tree resdecl = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+      DECL_ARTIFICIAL (resdecl) = 1;
+      DECL_RESULT (decl) = resdecl;
+      current_function_decl = decl;
+      allocate_struct_function (decl, false);
+
+      TREE_STATIC (decl) = 1;
+      TREE_USED (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
+      DECL_SAVED_TREE (decl) = body;
+      DECL_UNINLINABLE (decl) = 1;
+
+      DECL_INITIAL (decl) = make_node (BLOCK);
+      TREE_USED (DECL_INITIAL (decl)) = 1;
+
+      DECL_STATIC_CONSTRUCTOR (decl) = 1;
+      java_genericize (decl);
+      cgraph_finalize_function (decl, false);
+    }
 }
 
 
