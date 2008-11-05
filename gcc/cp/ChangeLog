@@ -1,3 +1,9 @@
+2008-11-05  Fabien Chene <fabien.chene@gmail.com>
+
+	PR c++/35219
+	* cp-tree.h: Fix DECL_NONSTATIC_MEMBER_P to handle member template
+	functions.
+
 2008-11-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37742
