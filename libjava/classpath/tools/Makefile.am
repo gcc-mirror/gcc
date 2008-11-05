@@ -380,11 +380,11 @@ if CREATE_GJDOC
 endif
 
 if WITH_JAR
-CREATE_TOOLS_ZIP=$(JAR) cf ../$(TOOLS_ZIP) .
-UPDATE_TOOLS_ZIP=$(JAR) uf ../$(TOOLS_ZIP) .
+CREATE_TOOLS_ZIP=$(JAR) cf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+UPDATE_TOOLS_ZIP=$(JAR) uf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
 else
-CREATE_TOOLS_ZIP=$(ZIP) -r ../$(TOOLS_ZIP) .
-UPDATE_TOOLS_ZIP=$(ZIP) -u -r ../$(TOOLS_ZIP) .
+CREATE_TOOLS_ZIP=$(ZIP) -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+UPDATE_TOOLS_ZIP=$(ZIP) -u -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
 endif
 
 ## First add classpath tools stuff.

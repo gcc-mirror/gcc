@@ -698,10 +698,10 @@ noinst_DATA = $(TOOLS_ZIP)
 
 # Where we want these data files installed.
 TOOLSdir = $(pkgdatadir)
-@WITH_JAR_FALSE@CREATE_TOOLS_ZIP = $(ZIP) -r ../$(TOOLS_ZIP) .
-@WITH_JAR_TRUE@CREATE_TOOLS_ZIP = $(JAR) cf ../$(TOOLS_ZIP) .
-@WITH_JAR_FALSE@UPDATE_TOOLS_ZIP = $(ZIP) -u -r ../$(TOOLS_ZIP) .
-@WITH_JAR_TRUE@UPDATE_TOOLS_ZIP = $(JAR) uf ../$(TOOLS_ZIP) .
+@WITH_JAR_FALSE@CREATE_TOOLS_ZIP = $(ZIP) -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+@WITH_JAR_TRUE@CREATE_TOOLS_ZIP = $(JAR) cf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+@WITH_JAR_FALSE@UPDATE_TOOLS_ZIP = $(ZIP) -u -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+@WITH_JAR_TRUE@UPDATE_TOOLS_ZIP = $(JAR) uf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

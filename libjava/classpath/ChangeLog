@@ -1,3 +1,8 @@
+2008-11-05  Andrew Haley  <aph@redhat.com>
+
+	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
+	.svn directories.
+
 2008-10-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* m4/ac_prog_antlr.m4:
