@@ -18,8 +18,8 @@
 2008-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38016
-	* gcc.c-torture/execute/ieee/pr38016.c,
-	gcc.c-torture/execute/ieee/pr38016.c: New test.
+	* gcc.c-torture/execute/ieee/pr38016.c: New test.
+	* gcc.c-torture/execute/ieee/pr38016.x: New file.
 
 2008-11-05  Martin Jambor  <mjambor@suse.cz>
 
