@@ -83,6 +83,10 @@
   return fp_high_losum_p (op);
 })
 
+;; Return true if OP is a const_double or const_vector.
+(define_predicate "const_double_or_vector_operand"
+  (match_code "const_double,const_vector"))
+
 
 ;; Predicates for symbolic constants.
 
