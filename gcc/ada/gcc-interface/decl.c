@@ -1318,6 +1318,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					       get_block_jmpbuf_decl ())),
 			      gnat_entity);
 
+	/* If we are defining an Out parameter and we're not optimizing,
+	   create a fake PARM_DECL for debugging purposes and make it
+	   point to the VAR_DECL.  Suppress debug info for the latter
+	   but make sure it will still live on the stack so it can be
+	   accessed from within the debugger through the PARM_DECL.  */
+	if (kind == E_Out_Parameter && definition && !optimize)
+	  {
+	    tree param = create_param_decl (gnu_entity_id, gnu_type, false);
+	    gnat_pushdecl (param, gnat_entity);
+	    SET_DECL_VALUE_EXPR (param, gnu_decl);
+	    DECL_HAS_VALUE_EXPR_P (param) = 1;
+	    if (debug_info_p)
+	      debug_info_p = false;
+	    else
+	      DECL_IGNORED_P (param) = 1;
+	    TREE_ADDRESSABLE (gnu_decl) = 1;
+	  }
+
 	/* If this is a public constant or we're not optimizing and we're not
 	   making a VAR_DECL for it, make one just for export or debugger use.
 	   Likewise if the address is taken or if either the object or type is
