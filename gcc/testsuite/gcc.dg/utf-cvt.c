@@ -4,8 +4,8 @@
 /* { dg-excess-errors "short and int are 16bit" { target { "avr-*-*" } } } */
 /* { dg-options "-std=gnu99 -Wall -Wconversion -Wsign-conversion" } */
 
-typedef short unsigned int	char16_t;
-typedef unsigned int		char32_t;
+typedef __CHAR16_TYPE__ char16_t;
+typedef __CHAR32_TYPE__ char32_t;
 
 extern void f_c (char);
 extern void fsc (signed char);

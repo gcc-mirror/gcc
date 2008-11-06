@@ -5,8 +5,8 @@
 
 #include <wchar.h>
 
-typedef short unsigned int	char16_t;
-typedef unsigned int		char32_t;
+typedef __CHAR16_TYPE__ char16_t;
+typedef __CHAR32_TYPE__ char32_t;
 
 const char	s_0[]	= "ab";
 const char	s_1[]	= u"ab";	/* { dg-error "from wide string" } */
