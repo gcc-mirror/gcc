@@ -1,3 +1,11 @@
+2008-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/utf-array-short-wchar.c, gcc.dg/utf-cvt.c,
+	gcc.dg/utf-inc-init.c, gcc.dg/utf16-1.c, gcc.dg/utf16-2.c,
+	gcc.dg/utf16-3.c, gcc.dg/utf16-4.c, gcc.dg/utf32-1.c,
+	gcc.dg/utf32-2.c, gcc.dg/utf32-3.c, gcc.dg/utf32-4.c: Use
+	__CHAR16_TYPE__ and __CHAR32_TYPE__ typedefs.
+
 2008-11-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/pr37969.c: New testcase.

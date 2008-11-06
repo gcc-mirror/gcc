@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu99 -Wall -Werror" } */
 
-typedef short unsigned int char16_t;
+typedef __CHAR16_TYPE__ char16_t;
 
 extern void abort (void);
 

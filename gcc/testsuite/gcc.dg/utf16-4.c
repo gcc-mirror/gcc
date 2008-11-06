@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
-typedef short unsigned int char16_t;
+typedef __CHAR16_TYPE__ char16_t;
 
 char16_t	c0 = u'';		/* { dg-error "empty character" } */
 char16_t	c1 = u'ab';		/* { dg-warning "constant too long" } */

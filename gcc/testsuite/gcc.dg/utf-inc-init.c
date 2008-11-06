@@ -4,8 +4,8 @@
 /* { dg-options "-std=gnu99" } */
 
 typedef __SIZE_TYPE__ size_t;
-typedef short unsigned int char16_t;
-typedef unsigned int char32_t;
+typedef __CHAR16_TYPE__ char16_t;
+typedef __CHAR32_TYPE__ char32_t;
 
 extern int memcmp (const void *, const void *, size_t);
 extern void abort (void);

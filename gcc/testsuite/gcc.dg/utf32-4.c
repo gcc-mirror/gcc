@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
-typedef unsigned int char32_t;
+typedef __CHAR32_TYPE__ char32_t;
 
 char32_t	c0 = U'';		/* { dg-error "empty character" } */
 char32_t	c1 = U'ab';		/* { dg-warning "constant too long" } */

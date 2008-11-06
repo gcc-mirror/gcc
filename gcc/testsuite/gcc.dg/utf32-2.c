@@ -4,7 +4,7 @@
 /* { dg-xfail-run-if "PR36470" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=gnu99 -Wall -Werror" } */
 
-typedef unsigned int char32_t;
+typedef __CHAR32_TYPE__ char32_t;
 
 extern void abort (void);
 
