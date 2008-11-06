@@ -53,6 +53,11 @@ if [info exists TORTURE_OPTIONS] {
 	{ -Os } ]
 }
 
+if [info exists ADDITIONAL_TORTURE_OPTIONS] {
+    set DG_TORTURE_OPTIONS \
+	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
+}
+
 global GCC_UNDER_TEST
 if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
