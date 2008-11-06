@@ -155,6 +155,8 @@
     Note that __gnu_mcount_nc will be entered with a misaligned stack.
     This is OK because it uses a special calling convention anyway.  */
 
+#undef  NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS 1
 #undef  ARM_FUNCTION_PROFILER
 #define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\
 {									\
@@ -164,3 +166,7 @@
 
 #undef SUBTARGET_FRAME_POINTER_REQUIRED
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
+
+/* __gnu_mcount_nc restores the original LR value before returning.  Ensure
+   that there is no unnecessary hook set up.  */
+#undef PROFILE_HOOK
