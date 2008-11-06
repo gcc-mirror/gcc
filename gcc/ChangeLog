@@ -1,3 +1,7 @@
+2008-11-06  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c: Remove ancient comment about a bug in Sun cc.
+
 2008-11-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Torture Tests): Add ADDITIONAL_TORTURE_OPTIONS.
