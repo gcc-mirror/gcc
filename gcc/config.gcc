@@ -1,6 +1,6 @@
 # GCC target-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-# Free Software Foundation, Inc.
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+# 2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1207,7 +1207,10 @@ i[34567]86-*-solaris2*)
 	*-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} i386/x86-64.h i386/sol2-10.h"
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-		tmake_file="$tmake_file i386/t-crtstuff i386/t-sol2-10"
+		tmake_file="$tmake_file i386/t-sol2-10"
+		if test x$gnu_ld = xyes; then
+			tmake_file="$tmake_file i386/t-crtstuff"
+		fi
 		need_64bit_hwint=yes
 		# FIXME: -m64 for i[34567]86-*-* should be allowed just
 		# like -m32 for x86_64-*-*.

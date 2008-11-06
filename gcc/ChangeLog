@@ -1,3 +1,9 @@
+2008-11-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/33100
+	* config.gcc (i[34567]86-*-solaris2*): Include i386/t-crtstuff
+	only with GNU ld.
+
 2008-10-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/37909
