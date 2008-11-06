@@ -82,6 +82,10 @@ proc get-fortran-torture-options { } {
 	lappend options $vectorizer_options
     }
 
+    if [info exists ADDITIONAL_TORTURE_OPTIONS] {
+	set options [concat $options $ADDITIONAL_TORTURE_OPTIONS]
+    }
+
     return $options
 }
 

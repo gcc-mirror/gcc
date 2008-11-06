@@ -1,3 +1,10 @@
+2008-11-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/c-torture.exp: Use ADDITIONAL_TORTURE_OPTIONS if defined.
+	* lib/gcc-dg.exp: Ditto.
+	* lib/fortran-torture.exp: Ditto.
+	* lib/objc-torture.exp: Ditto.
+
 2008-11-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/38025

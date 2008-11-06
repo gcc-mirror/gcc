@@ -60,6 +60,11 @@ if [info exists TORTURE_OPTIONS] {
 	" -Os " ]
 }
 
+if [info exists ADDITIONAL_TORTURE_OPTIONS] {
+  set OBJC_TORTURE_OPTIONS \
+	[concat $OBJC_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
+}
+
 #
 # objc-torture-compile -- runs the Tege OBJC-torture test
 #

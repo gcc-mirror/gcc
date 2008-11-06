@@ -1573,4 +1573,12 @@ to call the torture procedures if the tests should use the list in
 @var{DG_TORTURE_OPTIONS} defined in @file{gcc-dg.exp}.
 
 Most uses of torture options can override the default lists by defining
-@var{TORTURE_OPTIONS} in a @file{.dejagnurc} file.
+@var{TORTURE_OPTIONS} or add to the default list by defining
+@var{ADDITIONAL_TORTURE_OPTIONS}.  Define these in a @file{.dejagnurc}
+file or add them to the @file{site.exp} file; for example
+
+@smallexample
+set ADDITIONAL_TORTURE_OPTIONS  [list @\
+  @{ -O2 -ftree-loop-linear @} @\
+  @{ -O2 -fpeel-loops @} ]
+@end smallexample
