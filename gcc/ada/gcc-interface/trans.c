@@ -4159,12 +4159,33 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_rhs
 	    = maybe_unconstrained_array (gnat_to_gnu (Expression (gnat_node)));
 
-	  /* If range check is needed, emit code to generate it */
+	  /* If range check is needed, emit code to generate it.  */
 	  if (Do_Range_Check (Expression (gnat_node)))
 	    gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)));
 
 	  gnu_result
 	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
+
+	  /* If the type being assigned is an array type and the two sides
+	     are not completely disjoint, play safe and use memmove.  */
+	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
+	      && Is_Array_Type (Etype (Name (gnat_node)))
+	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
+	    {
+	      tree to, from, size, to_ptr, from_ptr, t;
+
+	      to = TREE_OPERAND (gnu_result, 0);
+	      from = TREE_OPERAND (gnu_result, 1);
+
+	      size = TYPE_SIZE_UNIT (TREE_TYPE (from));
+	      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, from);
+
+	      to_ptr = build_fold_addr_expr (to);
+	      from_ptr = build_fold_addr_expr (from);
+
+	      t = implicit_built_in_decls[BUILT_IN_MEMMOVE];
+	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
+	   }
 	}
       break;
 
