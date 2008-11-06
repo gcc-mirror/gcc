@@ -1,3 +1,8 @@
+2008-11-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/bpabi.h (PROFILE_HOOK): New undef.
+	(NO_PROFILE_COUNTERS): New define.
+
 2008-11-06  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/26397
