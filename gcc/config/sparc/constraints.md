@@ -100,6 +100,11 @@
 ;; Our memory extra constraints have to emulate the behavior of 'm' and 'o',
 ;; i.e. accept pseudo-registers during reload.
 
+(define_constraint "D"
+ "const_vector"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_INT")))
+
 (define_constraint "Q"
  "Floating-point constant that can be loaded with a sethi instruction"
  (and (match_code "const_double")
