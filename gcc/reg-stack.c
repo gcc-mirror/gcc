@@ -3198,7 +3198,7 @@ reg_to_stack (void)
   max_uid = get_max_uid ();
   stack_regs_mentioned_data = VEC_alloc (char, heap, max_uid + 1);
   memset (VEC_address (char, stack_regs_mentioned_data),
-	  0, sizeof (char) * max_uid + 1);
+	  0, sizeof (char) * (max_uid + 1));
 
   convert_regs ();
 
