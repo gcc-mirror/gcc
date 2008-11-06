@@ -1,3 +1,7 @@
+2008-11-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr37969.c: New testcase.
+
 2008-11-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/c-torture.exp: Use ADDITIONAL_TORTURE_OPTIONS if defined.
