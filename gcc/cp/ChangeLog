@@ -1,3 +1,10 @@
+2008-11-06  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/26397
+	* g++spec.c (LIBSTDCXX_STATIC): New.
+	(lang_spec_driver): Use LIBSTDCXX_STATIC when not
+	shared_libgcc.
+	
 2008-11-05  Fabien Chene <fabien.chene@gmail.com>
 
 	PR c++/35219
