@@ -1,3 +1,16 @@
+2008-11-06  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/35574
+	* config/sparc/predicates.md (const_double_or_vector_operand):
+	New.
+	* config/sparc/sparc.c (sparc_extra_constraint_check): Handle the
+	'D' constraint.
+	* config/sparc/sparc.h: Document the 'D' constraint.
+	* config/sparc/sparc.md (*movdf_insn_sp32_v9, *movdf_insn_sp64):
+	Use the 'D' constraint in addition to 'F' in some alternatives.
+	(DF splitter): Generalize for V64mode.
+	* doc/md.texi (SPARC): Document the 'D' constraint.
+
 2008-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37924

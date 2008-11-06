@@ -2722,6 +2722,9 @@ when the Visual Instruction Set is available.
 @item h
 64-bit global or out register for the SPARC-V8+ architecture.
 
+@item D
+A vector constant
+
 @item I
 Signed 13-bit constant
 

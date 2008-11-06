@@ -1870,6 +1870,8 @@ do {									\
 
 /* Optional extra constraints for this machine.
 
+   'D' handles vector constants.
+
    'Q' handles floating point constants which can be moved into
        an integer register with a single sethi instruction.
 

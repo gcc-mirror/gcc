@@ -475,3 +475,7 @@
   (and (match_code "mem")
        (and (match_operand 0 "memory_operand")
 	    (match_test "REG_P (XEXP (op, 0))"))))
+
+;; Return true if OP is a const_double or const_vector.
+(define_predicate "const_double_or_vector_operand"
+  (match_code "const_double,const_vector"))

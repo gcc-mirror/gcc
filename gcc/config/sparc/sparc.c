@@ -8334,6 +8334,10 @@ sparc_extra_constraint_check (rtx op, int c, int strict)
 
   switch (c)
     {
+    case 'D':
+      return (GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_INT
+	      && GET_CODE (op) == CONST_VECTOR);
+
     case 'Q':
       return fp_sethi_p (op);
 
