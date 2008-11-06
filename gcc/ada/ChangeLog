@@ -1,5 +1,10 @@
 2008-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c (gnat_printable_name): Always return a copy
+	in GC memory.
+
+2008-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/19419
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>:
 	Generate a call to memmove for an assignment between overlapping
