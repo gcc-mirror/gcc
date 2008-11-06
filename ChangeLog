@@ -1,3 +1,7 @@
+2008-11-06  Jeff Law <law@redhat.com>
+
+	* MAINTAINERS: Add myself as middle end maintainer.
+
 2008-11-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* MAINTAINERS (Write after approval): Add myself.
