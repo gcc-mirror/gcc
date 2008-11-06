@@ -1,5 +1,11 @@
 2008-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Makefile.in (SPARC/Solaris): Use a common set of
+	files for the target-dependent part of the runtime.
+	(SPARC/Linux): Likewise.
+
+2008-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Out_Parameter>: If not
 	optimizing, create a PARM_DECL pointing to the VAR_DECL for debugging
 	purposes.

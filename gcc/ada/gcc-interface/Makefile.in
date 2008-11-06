@@ -732,7 +732,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
 endif
 
 ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS_32 = \
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-solaris.adb \
@@ -744,35 +744,29 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-soliop.ads<g-soliop-solaris.ads \
+  g-soliop.ads<g-soliop-solaris.ads
+
+  LIBGNAT_TARGET_PAIRS_32 = \
   system.ads<system-solaris-sparc.ads
 
   LIBGNAT_TARGET_PAIRS_64 = \
-  a-intnam.ads<a-intnam-solaris.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-solaris.adb \
-  s-osinte.adb<s-osinte-solaris.adb \
-  s-osinte.ads<s-osinte-solaris.ads \
-  s-osprim.adb<s-osprim-solaris.adb \
-  s-taprop.adb<s-taprop-solaris.adb \
-  s-tasinf.adb<s-tasinf-solaris.adb \
-  s-tasinf.ads<s-tasinf-solaris.ads \
-  s-taspri.ads<s-taspri-solaris.ads \
-  s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-sparcv9.ads
 
   ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
     ifeq ($(strip $(MULTISUBDIR)),/sparcv9)
-      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
     else
-      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
     endif
   else
     ifeq ($(strip $(MULTISUBDIR)),/sparcv7)
-      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
     else
-      LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
     endif
   endif
 
@@ -1501,7 +1495,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
-  LIBGNAT_TARGET_PAIRS_32 = \
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1513,28 +1507,20 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   s-tasinf.ads<s-tasinf-linux.ads \
   s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  s-tpopsp.adb<s-tpopsp-posix-foreign.adb
+
+  LIBGNAT_TARGET_PAIRS_32 = \
   system.ads<system-linux-sparc.ads
 
   LIBGNAT_TARGET_PAIRS_64 = \
-  a-intnam.ads<a-intnam-linux.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-linux.ads<s-linux.ads \
-  s-osinte.adb<s-osinte-posix.adb \
-  s-osinte.ads<s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
-  s-taprop.adb<s-taprop-linux.adb \
-  s-tasinf.ads<s-tasinf-linux.ads \
-  s-tasinf.adb<s-tasinf-linux.adb \
-  s-taspri.ads<s-taspri-posix-noaltstack.ads \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-sparcv9.ads
 
   ifeq ($(strip $(MULTISUBDIR)),/64)
-    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
   else
-    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_32)
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
   endif
 
   TOOLS_TARGET_PAIRS =  \
