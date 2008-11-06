@@ -1,3 +1,12 @@
+2008-11-06  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-09-13  Raksit Ashok <raksit@google.com>
+
+	PR rtl-optimization/37489
+	* g++.dg/opt/cse3.C: New testcase.
+	* gcc.dg/c-torture/pr37969.c: New testcase.
+
 2008-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37924
