@@ -1,3 +1,7 @@
+2008-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (reg_to_stack): Generate +QNaN using real_nan.
+
 2008-11-06  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.c: Remove ancient comment about a bug in Sun cc.
@@ -35,7 +39,8 @@
 	qualified pointer conversion before stripping qualifiers.
 	* gimplify.c (create_tmp_from_val): Use correctly qualified type.
 	* tree-flow.h (may_propagate_address_into_dereference): Declare.
-	* tree-ssa-ccp.c (may_propagate_address_into_dereference): New function.
+	* tree-ssa-ccp.c (may_propagate_address_into_dereference): New
+	function.
 	(ccp_fold): Use it.
 	* tree-ssa-forwprop.c (rhs_to_tree): Remove useless conversions,
 	properly canonicalize binary ops.
@@ -718,8 +723,7 @@
 2008-10-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/30260
-	* c-decl.c (finish_enum): Convert non-integer enumerators to enum
-	type.
+	* c-decl.c (finish_enum): Convert non-integer enumerators to enum type.
 	(build_enumerator): Convert enumerators that fit in integer to
 	integer type.
 

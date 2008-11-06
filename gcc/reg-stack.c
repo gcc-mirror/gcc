@@ -3180,14 +3180,17 @@ reg_to_stack (void)
      ??? We can't load from constant memory in PIC mode, because
      we're inserting these instructions before the prologue and
      the PIC register hasn't been set up.  In that case, fall back
-     on zero, which we can get from `ldz'.  */
+     on zero, which we can get from `fldz'.  */
 
   if ((flag_pic && !TARGET_64BIT)
       || ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
     not_a_num = CONST0_RTX (SFmode);
   else
     {
-      not_a_num = gen_lowpart (SFmode, GEN_INT (0x7fc00000));
+      REAL_VALUE_TYPE r;
+
+      real_nan (&r, "", 1, SFmode);
+      not_a_num = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
       not_a_num = force_const_mem (SFmode, not_a_num);
     }
 
