@@ -1,3 +1,7 @@
+2008-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/tree-ssa/inline-2.c (foo): Add 'inline' keyword.
+
 2008-11-06  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/pr37943.c: Fix missing end of file.
