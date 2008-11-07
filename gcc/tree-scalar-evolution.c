@@ -2213,7 +2213,9 @@ instantiate_scev_1 (basic_block instantiate_below,
       break;
     }
 
-  gcc_assert (!VL_EXP_CLASS_P (chrec));
+  if (VL_EXP_CLASS_P (chrec))
+    return chrec_dont_know;
+
   switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
     {
     case 3:
