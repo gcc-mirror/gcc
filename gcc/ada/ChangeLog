@@ -1,3 +1,8 @@
+2008-11-07  Geert Bosch  <bosch@adacore.com>
+
+	* gcc-interface/trans.c (build_binary_op_trapv): Convert arguments
+	and result for call to __gnat_mulv64.
+
 2008-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c: Fix formatting nits.

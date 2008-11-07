@@ -6032,7 +6032,13 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       int needed_precision = precision * 2;
 
       if (code == MULT_EXPR && precision == 64)
-	return build_call_2_expr (mulv64_decl, lhs, rhs);
+	{ 
+	  tree int_64 = gnat_type_for_size (64, 0);
+
+	  return convert (gnu_type, build_call_2_expr (mulv64_decl,
+						       convert (int_64, lhs),
+						       convert (int_64, rhs)));
+	}
 
       else if (needed_precision <= BITS_PER_WORD
 	       || (code == MULT_EXPR 

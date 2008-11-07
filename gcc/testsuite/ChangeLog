@@ -1,3 +1,7 @@
+2008-11-07  Geert Bosch  <bosch@adacore.com>
+
+	* gnat.dg/test_8bitlong_overflow.adb: New test.
+
 2008-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/ipa/iinline-1.C: Remove -c flag, add -fpie for PIC
