@@ -1,3 +1,7 @@
+2008-11-07  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/hyper_flat.adb: New test.
+
 2008-11-07  Geert Bosch  <bosch@adacore.com>
 
 	* gnat.dg/test_8bitlong_overflow.adb: New test.

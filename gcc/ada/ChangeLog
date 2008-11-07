@@ -1,3 +1,8 @@
+2008-11-07  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu, case Attr_Length): Check
+	for empty range in original base type, not converted result type.
+
 2008-11-07  Geert Bosch  <bosch@adacore.com>
 
 	* gcc-interface/trans.c (build_binary_op_trapv): Convert arguments
