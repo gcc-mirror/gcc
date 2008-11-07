@@ -1,6 +1,7 @@
-// C++ includes used for precompiling extensions -*- C++ -*-
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,48 +28,28 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file extc++.h
- *  This is an implementation file for a precompiled header.
- */
-
-#include <bits/stdtr1c++.h>
-
-#include <ext/algorithm>
-#include <ext/array_allocator.h>
-#include <ext/atomicity.h>
-#include <ext/bitmap_allocator.h>
-#include <ext/cast.h>
-#include <ext/concurrence.h>
-#include <ext/debug_allocator.h>
+#include <vector>
+#include <testsuite_hooks.h>
 #include <ext/extptr_allocator.h>
-#include <ext/functional>
-#include <ext/iterator>
-#include <ext/malloc_allocator.h>
-#include <ext/memory>
-#include <ext/mt_allocator.h>
-#include <ext/new_allocator.h>
-#include <ext/numeric>
-#include <ext/pod_char_traits.h>
-#include <ext/pointer.h>
-#include <ext/pool_allocator.h>
-#include <ext/rb_tree>
-#include <ext/rope>
-#include <ext/slist>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
-#include <ext/throw_allocator.h>
-#include <ext/typelist.h>
-#include <ext/type_traits.h>
-#include <ext/vstring.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/priority_queue.hpp>
-#include <ext/pb_ds/exception.hpp>
-#include <ext/pb_ds/hash_policy.hpp>
-#include <ext/pb_ds/list_update_policy.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/trie_policy.hpp>
 
-#ifdef _GLIBCXX_HAVE_ICONV
- #include <ext/codecvt_specializations.h>
- #include <ext/enc_filebuf.h>
-#endif
+// Ensures equivalence of iterators based on low-level comparison
+// between const / non-const Pointer types.
+void
+test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > v(7);
+  VERIFY( v.cbegin() == v.begin() );
+  VERIFY( v.cend() == v.end() );
+  VERIFY( v.crbegin() == v.rbegin() );
+  VERIFY( v.crend() == v.rend() );
+  VERIFY( v.cbegin() != v.cend() );
+  VERIFY( v.crbegin() != v.crend() );  
+}
+
+int main()
+{
+  test01();
+  return 0;
+}

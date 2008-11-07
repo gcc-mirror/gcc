@@ -1,6 +1,7 @@
-// C++ includes used for precompiling extensions -*- C++ -*-
+// Test for Container using non-standard pointer types.
 
-// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,48 +28,35 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file extc++.h
- *  This is an implementation file for a precompiled header.
- */
-
-#include <bits/stdtr1c++.h>
-
-#include <ext/algorithm>
-#include <ext/array_allocator.h>
-#include <ext/atomicity.h>
-#include <ext/bitmap_allocator.h>
-#include <ext/cast.h>
-#include <ext/concurrence.h>
-#include <ext/debug_allocator.h>
+#include <vector>
+#include <testsuite_hooks.h>
 #include <ext/extptr_allocator.h>
-#include <ext/functional>
-#include <ext/iterator>
-#include <ext/malloc_allocator.h>
-#include <ext/memory>
-#include <ext/mt_allocator.h>
-#include <ext/new_allocator.h>
-#include <ext/numeric>
-#include <ext/pod_char_traits.h>
-#include <ext/pointer.h>
-#include <ext/pool_allocator.h>
-#include <ext/rb_tree>
-#include <ext/rope>
-#include <ext/slist>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
-#include <ext/throw_allocator.h>
-#include <ext/typelist.h>
-#include <ext/type_traits.h>
-#include <ext/vstring.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/priority_queue.hpp>
-#include <ext/pb_ds/exception.hpp>
-#include <ext/pb_ds/hash_policy.hpp>
-#include <ext/pb_ds/list_update_policy.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/trie_policy.hpp>
 
-#ifdef _GLIBCXX_HAVE_ICONV
- #include <ext/codecvt_specializations.h>
- #include <ext/enc_filebuf.h>
-#endif
+// libstdc++/23578
+void test01() 
+{ 
+  bool test __attribute__((unused)) = true;
+  typedef std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > vector_type;
+
+  {
+    const int A[] = { 0, 1, 2, 3, 4 };    
+    vector_type v(A, A + 5);
+    VERIFY( v.data() == &v.front() );
+    int* pi = &* v.data();
+    VERIFY( *pi == 0 );
+  }
+
+  {
+    const int A[] = { 4, 3, 2, 1, 0 };    
+    const vector_type cv(A, A + 5);
+    VERIFY( cv.data() == &cv.front() );
+    const int* pci = &* cv.data();
+    VERIFY( *pci == 4 );
+  }
+}
+
+int main()
+{
+  test01();
+  return 0;
+}

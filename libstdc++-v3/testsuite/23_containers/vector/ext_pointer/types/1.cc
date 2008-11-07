@@ -1,6 +1,7 @@
-// C++ includes used for precompiling extensions -*- C++ -*-
+// Test for Container using non-standard pointer types.
 
-// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,48 +28,43 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file extc++.h
- *  This is an implementation file for a precompiled header.
- */
+// This is a copy of vector/types/1.cc with altered allocator.
+// The operator+()s in this test initially failed the test -
+// they stress the accurate recognition, by the compiler,
+// of _Pointer_adapter's own pointer arithmetic functions,
+// which have to match perfectly on the int type to get
+// chosen by the compiler when it sees: _Pointer_adapter<T> + int, etc.
 
-#include <bits/stdtr1c++.h>
-
-#include <ext/algorithm>
-#include <ext/array_allocator.h>
-#include <ext/atomicity.h>
-#include <ext/bitmap_allocator.h>
-#include <ext/cast.h>
-#include <ext/concurrence.h>
-#include <ext/debug_allocator.h>
+#include <vector>
 #include <ext/extptr_allocator.h>
-#include <ext/functional>
-#include <ext/iterator>
-#include <ext/malloc_allocator.h>
-#include <ext/memory>
-#include <ext/mt_allocator.h>
-#include <ext/new_allocator.h>
-#include <ext/numeric>
-#include <ext/pod_char_traits.h>
-#include <ext/pointer.h>
-#include <ext/pool_allocator.h>
-#include <ext/rb_tree>
-#include <ext/rope>
-#include <ext/slist>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
-#include <ext/throw_allocator.h>
-#include <ext/typelist.h>
-#include <ext/type_traits.h>
-#include <ext/vstring.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/priority_queue.hpp>
-#include <ext/pb_ds/exception.hpp>
-#include <ext/pb_ds/hash_policy.hpp>
-#include <ext/pb_ds/list_update_policy.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/trie_policy.hpp>
 
-#ifdef _GLIBCXX_HAVE_ICONV
- #include <ext/codecvt_specializations.h>
- #include <ext/enc_filebuf.h>
-#endif
+namespace N
+{
+  struct X { };
+
+  template<typename T>
+    X operator+(T, std::size_t)
+    { return X(); }
+
+  template<typename T>
+    X operator-(T, T)
+    { return X(); }
+}
+
+int main()
+{
+  std::vector<N::X, __gnu_cxx::_ExtPtr_allocator<N::X> > v(5);
+  const std::vector<N::X, __gnu_cxx::_ExtPtr_allocator<N::X> > w(1);
+
+  v[0];
+  w[0];
+  v.size();
+  v.capacity();
+  v.resize(1);
+  v.insert(v.begin(), N::X());
+  v.insert(v.begin(), 1, N::X());
+  v.insert(v.begin(), w.begin(), w.end());
+  v = w;
+
+  return 0;
+}

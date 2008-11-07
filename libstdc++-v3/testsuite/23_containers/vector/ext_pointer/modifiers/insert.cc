@@ -1,6 +1,7 @@
-// C++ includes used for precompiling extensions -*- C++ -*-
+// Test for Container using non-standard pointer types.
 
-// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,48 +28,49 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file extc++.h
- *  This is an implementation file for a precompiled header.
- */
-
-#include <bits/stdtr1c++.h>
-
-#include <ext/algorithm>
-#include <ext/array_allocator.h>
-#include <ext/atomicity.h>
-#include <ext/bitmap_allocator.h>
-#include <ext/cast.h>
-#include <ext/concurrence.h>
-#include <ext/debug_allocator.h>
+#include <vector>
+#include <testsuite_hooks.h>
 #include <ext/extptr_allocator.h>
-#include <ext/functional>
-#include <ext/iterator>
-#include <ext/malloc_allocator.h>
-#include <ext/memory>
-#include <ext/mt_allocator.h>
-#include <ext/new_allocator.h>
-#include <ext/numeric>
-#include <ext/pod_char_traits.h>
-#include <ext/pointer.h>
-#include <ext/pool_allocator.h>
-#include <ext/rb_tree>
-#include <ext/rope>
-#include <ext/slist>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
-#include <ext/throw_allocator.h>
-#include <ext/typelist.h>
-#include <ext/type_traits.h>
-#include <ext/vstring.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/priority_queue.hpp>
-#include <ext/pb_ds/exception.hpp>
-#include <ext/pb_ds/hash_policy.hpp>
-#include <ext/pb_ds/list_update_policy.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/trie_policy.hpp>
+#include <stdexcept>
 
-#ifdef _GLIBCXX_HAVE_ICONV
- #include <ext/codecvt_specializations.h>
- #include <ext/enc_filebuf.h>
-#endif
+void test01() 
+{ 
+  bool test __attribute__((unused)) = true;
+
+  __gnu_cxx::_ExtPtr_allocator<int> alloc;
+  std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > iv(alloc);
+  VERIFY( iv.get_allocator() == alloc );
+  VERIFY( iv.size() == 0 );
+  
+  int A[] = { 0, 1, 2, 3, 4 };
+  int B[] = { 5, 5, 5, 5, 5 };
+  int C[] = { 6, 7 };
+  iv.insert(iv.end(), A, A+5 );
+  VERIFY( iv.size() == 5 );
+  iv.insert(iv.begin(), 5, 5 );
+  iv.insert(iv.begin()+5, 7);
+  iv.insert(iv.begin()+5, 6);
+  VERIFY( std::equal(iv.begin(), iv.begin()+5, B ));
+  VERIFY( std::equal(iv.begin()+5, iv.begin()+7, C));
+  VERIFY( std::equal(iv.begin()+7, iv.end(), A));
+  VERIFY( iv.size() == 12 );
+
+  try
+    {
+      iv.insert(iv.end(), iv.max_size() + 1, 1);
+    }
+  catch(std::length_error&)
+    {
+      VERIFY( true );
+    }
+  catch(...)
+    {
+      VERIFY( false );
+    }
+}
+
+int main()
+{
+  test01();
+  return 0;
+}
