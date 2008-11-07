@@ -1037,6 +1037,7 @@ fwprop_done (void)
     fprintf (dump_file,
 	     "\nNumber of successful forward propagations: %d\n\n",
 	     num_changes);
+  df_remove_problem (df_chain);
 }
 
 

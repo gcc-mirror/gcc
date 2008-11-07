@@ -1,3 +1,7 @@
+2008-11-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* fwprop.c (fwprop_done): Call df_remove_problem.
+
 2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/37379
