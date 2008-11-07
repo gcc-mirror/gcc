@@ -5998,58 +5998,93 @@ build_binary_op_trapv (enum tree_code code,
   tree gnu_expr;
   tree tmp1, tmp2;
   tree zero = convert (gnu_type, integer_zero_node);
-  tree rhs_ge_zero;
+  tree rhs_lt_zero;
   tree check_pos;
   tree check_neg;
+  tree check;
 
   int precision = TYPE_PRECISION (gnu_type);
 
-  /* Prefer a constant rhs to simplify checks */
+  gcc_assert (!(precision & (precision - 1))); /* ensure power of 2 */
 
-  if (TREE_CONSTANT (lhs) && !TREE_CONSTANT (rhs)
-      && commutative_tree_code (code))
+  /* Prefer a constant or known-positive rhs to simplify checks */
+
+  if (!TREE_CONSTANT (rhs)
+      && commutative_tree_code (code)
+      && (TREE_CONSTANT (lhs) || (!tree_expr_nonnegative_p (rhs)
+				  && tree_expr_nonnegative_p (lhs))))
     {
-      tree tmp = lhs;
-      lhs = rhs;
-      rhs = tmp;
-   }
+	  tree tmp = lhs;
+	  lhs = rhs;
+	  rhs = tmp;
+    }
 
-  /* In the case the right-hand size is still not constant, try to
-     use an exact operation in a wider type. */
+  rhs_lt_zero = tree_expr_nonnegative_p (rhs)
+    ? integer_zero_node 
+    : build_binary_op (LT_EXPR, integer_type_node, rhs, zero);
+
+  /* Should use more efficient check for operand_equal_p (lhs, rhs, 0) ??? */
+
+  /* Try a few strategies that may be cheaper than the general
+     code at the end of the function, if the RHS is not known.
+     The strategies are:
+       - Call library function for 64-bit multiplication (complex)
+       - Widen, if input arguments are sufficiently small
+       - Determine overflow using wrapped result for addition/subtraction */
 
   if (!TREE_CONSTANT (rhs))
     {
-      int needed_precision = code == MULT_EXPR ? 2 * precision : precision + 1;
+      /* Even for add/subtract double size in order to get another basetype */
+      int needed_precision = precision * 2;
 
       if (code == MULT_EXPR && precision == 64)
 	{
 	  return build_call_2_expr (mulv64_decl, lhs, rhs);
 	}
-      else if (needed_precision <= LONG_LONG_TYPE_SIZE)
+      else if (needed_precision <= BITS_PER_WORD
+	       || (code == MULT_EXPR 
+		   && needed_precision <= LONG_LONG_TYPE_SIZE))
 	{
-	  tree calc_type = gnat_type_for_size (needed_precision, 0);
-	  tree result;
-	  tree check;
+	  tree wide_type = gnat_type_for_size (needed_precision, 0);
 
-	  result = build_binary_op (code, calc_type,
-				    convert (calc_type, lhs),
-				    convert (calc_type, rhs));
+	  tree wide_result = build_binary_op (code, wide_type,
+					      convert (wide_type, lhs),
+					      convert (wide_type, rhs));
 
-	  check = build_binary_op
+	  tree check = build_binary_op
 	    (TRUTH_ORIF_EXPR, integer_type_node,
-	     build_binary_op (LT_EXPR, integer_type_node, result,
-			      convert (calc_type, type_min)),
-	     build_binary_op (GT_EXPR, integer_type_node, result,
-			      convert (calc_type, type_max)));
+	     build_binary_op (LT_EXPR, integer_type_node, wide_result,
+			      convert (wide_type, type_min)),
+	     build_binary_op (GT_EXPR, integer_type_node, wide_result,
+			      convert (wide_type, type_max)));
 
-	  result = convert (gnu_type, result);
+	  tree result = convert (gnu_type, wide_result);
+
 
 	  return emit_check (check, result, CE_Overflow_Check_Failed);
 	}
-    }
+      else if (code == PLUS_EXPR || code == MINUS_EXPR)
+	{
+	  tree unsigned_type = gnat_type_for_size (precision, 1);
+	  tree wrapped_expr = convert
+	    (gnu_type, build_binary_op (code, unsigned_type,
+					convert (unsigned_type, lhs),
+					convert (unsigned_type, rhs)));
 
-  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
-  rhs_ge_zero = build_binary_op (GE_EXPR, integer_type_node, rhs, zero);
+	  tree result = convert
+	    (gnu_type, build_binary_op (code, gnu_type, lhs, rhs));
+
+	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
+	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction */
+
+	  tree check = build_binary_op
+	    (TRUTH_XOR_EXPR, integer_type_node, rhs_lt_zero,
+	     build_binary_op (code == PLUS_EXPR ? LT_EXPR : GT_EXPR,
+			      integer_type_node, wrapped_expr, lhs));
+
+	  return emit_check (check, result, CE_Overflow_Check_Failed);
+	}
+   }
 
   switch (code)
     {
@@ -6079,6 +6114,7 @@ build_binary_op_trapv (enum tree_code code,
 
     case MULT_EXPR:
       /* The check here is designed to be efficient if the rhs is constant,
+         but it will work for any rhs by using integer division.
          Four different check expressions determine wether X * C overflows,
 	 depending on C.
 	   C ==  0  =>  false
@@ -6108,9 +6144,12 @@ build_binary_op_trapv (enum tree_code code,
       gcc_unreachable();
     }
 
-  return emit_check (fold_build3 (COND_EXPR, integer_type_node, rhs_ge_zero,
-				  check_pos, check_neg),
-		     gnu_expr, CE_Overflow_Check_Failed);
+  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
+
+  check = fold_build3 (COND_EXPR, integer_type_node,
+		       rhs_lt_zero,  check_neg, check_pos);
+
+  return emit_check (check, gnu_expr, CE_Overflow_Check_Failed);
 }
 
 /* Emit code for a range check. GNU_EXPR is the expression to be checked,
