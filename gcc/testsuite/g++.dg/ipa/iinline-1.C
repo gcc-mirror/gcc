@@ -1,7 +1,8 @@
 /* Verify that simple indirect calls are inlined even without early
    inlining..  */
 /* { dg-do compile } */
-/* { dg-options "-O3 -c -fdump-ipa-inline -fno-early-inlining"  } */
+/* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining"  } */
+/* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fpie" { target { ! nonpic } } } */
 
 extern void non_existent (const char *, int);
 

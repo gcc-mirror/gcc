@@ -1,5 +1,8 @@
 2008-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* g++.dg/ipa/iinline-1.C: Remove -c flag, add -fpie for PIC
+	targets.
+
 	* gcc.dg/tree-ssa/inline-2.c (foo): Add 'inline' keyword.
 
 2008-11-06  Sebastian Pop  <sebastian.pop@amd.com>
