@@ -5,7 +5,7 @@
    and the call to link_error optimized away.  */
 
 extern void link_error (void);
-int __attribute__((always_inline)) foo(void) { return 0; }
+inline int __attribute__((always_inline)) foo(void) { return 0; }
 
 int main()
 {
