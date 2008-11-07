@@ -1,3 +1,15 @@
+2008-11-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* system-irix-n64.ads: New file.
+	* gcc-interface/Makefile.in (mips-sgi-irix6*): Support O32 and N64
+	multilibs.
+
+2008-11-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR ada/37681
+	* system-solaris-x86_64.ads: New file.
+	* gcc-interface/Makefile.in (*86-solaris2*): Support x86_64 multilib.
+
 2008-11-07  Bechir Zalila  <bechir.zalila@gmail.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
