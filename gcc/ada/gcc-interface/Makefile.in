@@ -818,9 +818,16 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
-  g-bytswa.adb<g-bytswa-x86.adb \
-  g-soliop.ads<g-soliop-solaris.ads \
-  system.ads<system-solaris-x86.ads
+  g-soliop.ads<g-soliop-solaris.ads
+
+  ifeq ($(strip $(MULTISUBDIR)),/amd64)
+    LIBGNAT_TARGET_PAIRS += \
+    system.ads<system-solaris-x86_64.ads
+  else
+    LIBGNAT_TARGET_PAIRS += \
+    g-bytswa.adb<g-bytswa-x86.adb \
+    system.ads<system-solaris-x86.ads
+  endif
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb
 
@@ -1016,8 +1023,20 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
     s-tasinf.ads<s-tasinf-irix.ads \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix.adb \
-    s-traceb.adb<s-traceb-mastop.adb \
-    system.ads<system-irix-n32.ads
+    s-traceb.adb<s-traceb-mastop.adb
+
+    ifeq ($(strip $(MULTISUBDIR)),/64)
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-irix-n64.ads
+    else
+      ifeq ($(strip $(MULTISUBDIR)),/32)
+        LIBGNAT_TARGET_PAIRS += \
+        system.ads<system-irix-o32.ads
+      else
+        LIBGNAT_TARGET_PAIRS += \
+        system.ads<system-irix-n32.ads
+      endif
+    endif
 
     THREADSLIB = -lpthread
     GNATLIB_SHARED = gnatlib-shared-default
