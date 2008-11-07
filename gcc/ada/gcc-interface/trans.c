@@ -5961,16 +5961,14 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 }
 
 /* Make a unary operation of kind CODE using build_unary_op, but guard
-   the operation by an overflow check. CODE can be one of NEGATE_EXPR
-   or ABS_EXPR.  GNU_TYPE is the type desired for the result.
-   Usually the operation is to be performed in that type.  */
+   the operation by an overflow check.  CODE can be one of NEGATE_EXPR
+   or ABS_EXPR.  GNU_TYPE is the type desired for the result.  Usually
+   the operation is to be performed in that type.  */
 
 static tree
-build_unary_op_trapv (enum tree_code code,
-		      tree gnu_type,
-		      tree operand)
+build_unary_op_trapv (enum tree_code code, tree gnu_type, tree operand)
 {
-  gcc_assert ((code == NEGATE_EXPR) || (code == ABS_EXPR));
+  gcc_assert (code == NEGATE_EXPR || code == ABS_EXPR);
 
   operand = protect_multiple_eval (operand);
 
@@ -5980,15 +5978,13 @@ build_unary_op_trapv (enum tree_code code,
 		     CE_Overflow_Check_Failed);
 }
 
-/* Make a binary operation of kind CODE using build_binary_op, but
-   guard the operation by an overflow check. CODE can be one of
-   PLUS_EXPR, MINUS_EXPR or MULT_EXPR.  GNU_TYPE is the type desired
-   for the result.  Usually the operation is to be performed in that type.  */
+/* Make a binary operation of kind CODE using build_binary_op, but guard
+   the operation by an overflow check.  CODE can be one of PLUS_EXPR,
+   MINUS_EXPR or MULT_EXPR.  GNU_TYPE is the type desired for the result.
+   Usually the operation is to be performed in that type.  */
 
 static tree
-build_binary_op_trapv (enum tree_code code,
-		       tree gnu_type,
-		       tree left,
+build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 		       tree right)
 {
   tree lhs = protect_multiple_eval (left);
@@ -6002,45 +5998,42 @@ build_binary_op_trapv (enum tree_code code,
   tree check_pos;
   tree check_neg;
   tree check;
-
   int precision = TYPE_PRECISION (gnu_type);
 
   gcc_assert (!(precision & (precision - 1))); /* ensure power of 2 */
 
-  /* Prefer a constant or known-positive rhs to simplify checks */
-
+  /* Prefer a constant or known-positive rhs to simplify checks.  */
   if (!TREE_CONSTANT (rhs)
       && commutative_tree_code (code)
       && (TREE_CONSTANT (lhs) || (!tree_expr_nonnegative_p (rhs)
 				  && tree_expr_nonnegative_p (lhs))))
     {
-	  tree tmp = lhs;
-	  lhs = rhs;
-	  rhs = tmp;
+      tree tmp = lhs;
+      lhs = rhs;
+      rhs = tmp;
     }
 
   rhs_lt_zero = tree_expr_nonnegative_p (rhs)
-    ? integer_zero_node 
-    : build_binary_op (LT_EXPR, integer_type_node, rhs, zero);
+		? integer_zero_node
+		: build_binary_op (LT_EXPR, integer_type_node, rhs, zero);
 
-  /* Should use more efficient check for operand_equal_p (lhs, rhs, 0) ??? */
+  /* ??? Should use more efficient check for operand_equal_p (lhs, rhs, 0) */
 
   /* Try a few strategies that may be cheaper than the general
-     code at the end of the function, if the RHS is not known.
+     code at the end of the function, if the rhs is not known.
      The strategies are:
        - Call library function for 64-bit multiplication (complex)
        - Widen, if input arguments are sufficiently small
-       - Determine overflow using wrapped result for addition/subtraction */
+       - Determine overflow using wrapped result for addition/subtraction.  */
 
   if (!TREE_CONSTANT (rhs))
     {
-      /* Even for add/subtract double size in order to get another basetype */
+      /* Even for add/subtract double size to get another base type.  */
       int needed_precision = precision * 2;
 
       if (code == MULT_EXPR && precision == 64)
-	{
-	  return build_call_2_expr (mulv64_decl, lhs, rhs);
-	}
+	return build_call_2_expr (mulv64_decl, lhs, rhs);
+
       else if (needed_precision <= BITS_PER_WORD
 	       || (code == MULT_EXPR 
 		   && needed_precision <= LONG_LONG_TYPE_SIZE))
@@ -6060,9 +6053,9 @@ build_binary_op_trapv (enum tree_code code,
 
 	  tree result = convert (gnu_type, wide_result);
 
-
 	  return emit_check (check, result, CE_Overflow_Check_Failed);
 	}
+
       else if (code == PLUS_EXPR || code == MINUS_EXPR)
 	{
 	  tree unsigned_type = gnat_type_for_size (precision, 1);
@@ -6075,8 +6068,7 @@ build_binary_op_trapv (enum tree_code code,
 	    (gnu_type, build_binary_op (code, gnu_type, lhs, rhs));
 
 	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
-	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction */
-
+	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction.  */
 	  tree check = build_binary_op
 	    (TRUTH_XOR_EXPR, integer_type_node, rhs_lt_zero,
 	     build_binary_op (code == PLUS_EXPR ? LT_EXPR : GT_EXPR,
@@ -6089,24 +6081,24 @@ build_binary_op_trapv (enum tree_code code,
   switch (code)
     {
     case PLUS_EXPR:
-      /* When rhs >= 0, overflow when lhs > type_max - rhs */
+      /* When rhs >= 0, overflow when lhs > type_max - rhs.  */
       check_pos = build_binary_op (GT_EXPR, integer_type_node, lhs,
 				   build_binary_op (MINUS_EXPR, gnu_type,
 						    type_max, rhs)),
 
-      /* When rhs < 0, overflow when lhs < type_min - rhs */
+      /* When rhs < 0, overflow when lhs < type_min - rhs.  */
       check_neg = build_binary_op (LT_EXPR, integer_type_node, lhs,
 				   build_binary_op (MINUS_EXPR, gnu_type,
 						    type_min, rhs));
       break;
 
     case MINUS_EXPR:
-      /* When rhs >= 0, overflow when lhs < type_min + rhs */
+      /* When rhs >= 0, overflow when lhs < type_min + rhs.  */
       check_pos = build_binary_op (LT_EXPR, integer_type_node, lhs,
 				   build_binary_op (PLUS_EXPR, gnu_type,
 						    type_min, rhs)),
 
-      /* When rhs < 0, overflow when lhs > type_max + rhs */
+      /* When rhs < 0, overflow when lhs > type_max + rhs.  */
       check_neg = build_binary_op (GT_EXPR, integer_type_node, lhs,
 				   build_binary_op (PLUS_EXPR, gnu_type,
 						    type_max, rhs));
@@ -6147,8 +6139,9 @@ build_binary_op_trapv (enum tree_code code,
   gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
 
   /* If we can fold the expression to a constant, just return it.
-     The caller will deal with overflow, no need to generate a check. */
-  if (TREE_CONSTANT (gnu_expr)) return gnu_expr;
+     The caller will deal with overflow, no need to generate a check.  */
+  if (TREE_CONSTANT (gnu_expr))
+    return gnu_expr;
 
   check = fold_build3 (COND_EXPR, integer_type_node,
 		       rhs_lt_zero,  check_neg, check_pos);
@@ -6156,9 +6149,9 @@ build_binary_op_trapv (enum tree_code code,
   return emit_check (check, gnu_expr, CE_Overflow_Check_Failed);
 }
 
-/* Emit code for a range check. GNU_EXPR is the expression to be checked,
+/* Emit code for a range check.  GNU_EXPR is the expression to be checked,
    GNAT_RANGE_TYPE the gnat type or subtype containing the bounds against
-   which we have to check. */
+   which we have to check.  */
 
 static tree
 emit_range_check (tree gnu_expr, Entity_Id gnat_range_type)
