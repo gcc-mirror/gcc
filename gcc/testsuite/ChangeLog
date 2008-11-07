@@ -1,3 +1,7 @@
+2008-11-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/pr37943.c: Fix missing end of file.
+
 2008-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/utf-array-short-wchar.c, gcc.dg/utf-cvt.c,
