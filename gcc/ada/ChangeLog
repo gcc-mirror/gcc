@@ -1,5 +1,10 @@
 2008-11-07  Geert Bosch  <bosch@adacore.com>
 
+	* gcc-interface/trans.c (build_binary_op_trapv): Avoid emitting
+	overflow check for constant result.
+
+2008-11-07  Geert Bosch  <bosch@adacore.com>
+
 	* gcc-interface/trans.c (build_binary_op_trapv): Use more efficient
 	overflow check for addition/subtraction if neither operand is constant.
 
