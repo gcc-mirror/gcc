@@ -1287,7 +1287,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		   much rarer cases, for extremely large arrays we expect
 		   never to encounter in practice.  In addition, the former
 		   computation required the use of potentially constraining
-		   signed arithmetic while the latter doesn't.  */
+		   signed arithmetic while the latter doesn't. Note that the
+		   comparison must be done in the original index base type,
+		   otherwise the conversion of either bound to gnu_compute_type
+		   may overflow.  */
 		
 		tree gnu_compute_type = get_base_type (gnu_result_type);
 
@@ -1301,7 +1304,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		gnu_result
 		  = build3
 		    (COND_EXPR, gnu_compute_type,
-		     build_binary_op (LT_EXPR, gnu_compute_type, hb, lb),
+		     build_binary_op (LT_EXPR, get_base_type (index_type),
+				      TYPE_MAX_VALUE (index_type),
+				      TYPE_MIN_VALUE (index_type)),
 		     convert (gnu_compute_type, integer_zero_node),
 		     build_binary_op
 		     (PLUS_EXPR, gnu_compute_type,
