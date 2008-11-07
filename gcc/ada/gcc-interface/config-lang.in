@@ -39,5 +39,5 @@ outputs="ada/gcc-interface/Makefile ada/Makefile"
 target_libs="target-libada"
 lang_dirs="gnattools"
 
-# Ada will not work until the front end starts emitting GIMPLE trees.
+# Ada is not enabled by default for the time being.
 build_by_default=no
