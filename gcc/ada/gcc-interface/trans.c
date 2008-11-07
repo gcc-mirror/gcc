@@ -74,7 +74,7 @@
 #endif
 
 /* For efficient float-to-int rounding, it is necessary to know whether
-   floating-point arithmetic on may use wider intermediate results.
+   floating-point arithmetic may use wider intermediate results.
    When FP_ARITH_MAY_WIDEN is not defined, be conservative and only assume
    floating-point arithmetic does not widen if double precision is emulated. */
 
