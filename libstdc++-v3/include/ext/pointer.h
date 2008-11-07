@@ -1,0 +1,592 @@
+// Custom pointer adapter and sample storage policies
+
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/**
+ * @file ext/pointer.h
+ * @author Bob Walters
+ *
+ * Provides reusable _Pointer_adapter for assisting in the development of
+ * custom pointer types that can be used with libstdc++ STL containers via
+ * the allocator::pointer and allocator::const_pointer typedefs.
+ */
+
+#ifndef _EXT_POINTER_ADAPTER
+#define _EXT_POINTER_ADAPTER 1
+
+#include <ostream>
+#include <ext/cast.h>
+#include <bits/concept_check.h>
+
+
+// forward declaration of the iterator tag
+namespace std {
+  struct random_access_iterator_tag;
+};
+
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
+  /** 
+   * @brief A storage policy for use with _Pointer_adapter<> which yields a
+   *        standard pointer.
+   * 
+   *  A _Storage_policy is required to provide 4 things:
+   *    1) A get() API for returning the stored pointer value.
+   *    2) An set() API for storing a pointer value.
+   *    3) An element_type typedef to define the type this points to.
+   *    4) An operator<() to support pointer comparison.
+   *    5) An operator==() to support pointer comparison.
+   */
+  template<typename _Type> 
+    class _Std_pointer_impl 
+    {
+    public:
+      // the type this pointer points to.
+      typedef _Type element_type;
+  
+      // A method to fetch the pointer value as a standard T* value;
+      inline _Type* 
+      get() const 
+      { return _M_value; }
+  
+      // A method to set the pointer value, from a standard T* value;
+      inline void 
+      set(element_type* __arg) 
+      { _M_value = __arg; }
+  
+      // Comparison of pointers
+      inline bool
+      operator<(const _Std_pointer_impl& __rarg) const
+      { return (_M_value < __rarg._M_value); }
+  
+      inline bool
+      operator==(const _Std_pointer_impl& __rarg) const
+      { return (_M_value == __rarg._M_value); }
+
+    private:
+      element_type* _M_value;
+    };
+
+
+  /**
+   * @brief A storage policy for use with _Pointer_adapter<> which stores
+   *        the pointer's address as an offset value which is relative to
+   *        its own address.
+   * 
+   * This is intended for pointers
+   * within shared memory regions which might be mapped at different
+   * addresses by different processes.  For null pointers, a value of 1 is
+   * used.  (0 is legitimate sometimes for nodes in circularly linked lists)
+   * This value was chosen as the least likely to generate an incorrect null,
+   * As there is no reason why any normal pointer would point 1 byte into
+   * its own pointer address.
+   */
+  template<typename _Type> 
+    class _Relative_pointer_impl 
+    {
+    public:
+      typedef _Type element_type;
+  
+      _Type* 
+      get() const 
+      {
+        if (_M_diff == 1)
+          return NULL;
+        else
+          return reinterpret_cast<_Type*>(
+                 const_cast<char*>(reinterpret_cast<const char*>(this))
+                 + _M_diff);
+      }
+  
+      void 
+      set(_Type* __arg)
+      {
+        if (__arg == NULL)
+          _M_diff = 1;
+        else
+          _M_diff = reinterpret_cast<char*>(__arg) 
+                    - reinterpret_cast<char*>(this);
+      }
+  
+      // Comparison of pointers
+      inline bool
+      operator<(const _Relative_pointer_impl& __rarg) const
+      { return (this->get() < __rarg.get()); }
+
+      inline bool
+      operator==(const _Relative_pointer_impl& __rarg) const
+      { return (this->get() == __rarg.get()); }
+
+    private:
+      ptrdiff_t _M_diff;
+    };
+  
+  /**
+   * Relative_pointer_impl needs a specialization for const T because of
+   * the casting done during pointer arithmetic.
+   */
+  template<typename _Type> 
+    class _Relative_pointer_impl<const _Type> 
+    {
+    public:
+      typedef const _Type element_type;
+  
+      const _Type* 
+      get() const
+      {
+        if (_M_diff == 1)
+          return NULL;
+        else
+          return reinterpret_cast<const _Type*>(
+                  (reinterpret_cast<const char*>(this)) + _M_diff);
+      }
+  
+      void 
+      set(const _Type* __arg) 
+      {
+        if (__arg == NULL)
+          _M_diff = 1;
+        else
+          _M_diff = reinterpret_cast<const char*>(__arg) 
+                    - reinterpret_cast<const char*>(this);
+      }
+  
+      // Comparison of pointers
+      inline bool
+      operator<(const _Relative_pointer_impl& __rarg) const
+      { return (this->get() < __rarg.get()); }
+
+      inline bool
+      operator==(const _Relative_pointer_impl& __rarg) const
+      { return (this->get() == __rarg.get()); }
+  
+    private:
+      ptrdiff_t _M_diff;
+    };
+
+
+  /**
+   * The specialization on this type helps resolve the problem of
+   * reference to void, and eliminates the need to specialize _Pointer_adapter
+   * for cases of void*, const void*, and so on.
+   */
+  struct _Invalid_type { };
+  
+  template<typename _Tp>
+    struct _Reference_type 
+    {
+      typedef _Tp& reference;
+    };
+
+  template<> 
+    struct _Reference_type<void> 
+    {
+      typedef _Invalid_type& reference;
+    };
+
+  template<> 
+    struct _Reference_type<const void> 
+    {
+      typedef const _Invalid_type& reference;
+    };
+
+  template<> 
+    struct _Reference_type<volatile void> 
+    {
+      typedef volatile _Invalid_type&  reference;
+    };
+
+  template<> 
+    struct _Reference_type<volatile const void> 
+    {
+      typedef const volatile _Invalid_type&  reference;
+    };
+
+
+  /**
+   * This structure accomodates the way in which std::iterator_traits<>
+   * is normally specialized for const T*, so that value_type is still T.
+   */
+  template<typename _Tp> 
+    struct _Unqualified_type 
+    {
+      typedef _Tp type;
+    };
+    
+  template<typename _Tp> 
+    struct _Unqualified_type<const _Tp> 
+    {
+      typedef _Tp type;
+    };
+    
+  template<typename _Tp> 
+    struct _Unqualified_type<volatile _Tp> 
+    {
+      typedef volatile _Tp type;
+    };
+    
+  template<typename _Tp> 
+    struct _Unqualified_type<volatile const _Tp> 
+    {
+      typedef volatile _Tp type;
+    };
+    
+  
+  
+  /**
+   * The following provides an 'alternative pointer' that works with 
+   * libstdc++-v3 containers when specified as the pointer typedef of the 
+   * allocator.
+   * 
+   * The pointer type used with the containers doesn't have to be this class,
+   * but it must support the implicit conversions, pointer arithmetic,
+   * comparison operators, etc. that are supported by this class, and avoid
+   * raising compile-time ambiguities.  Because creating a working pointer can
+   * be challenging, this pointer template was designed to wrapper an 
+   * easier storage policy type, so that it becomes reusable for creating
+   * other pointer types. 
+   *
+   * A key point of this class is also that it allows container writers to
+   * 'assume' Alocator::pointer is a typedef for a normal pointer.  This class
+   * supports most of the conventions of a true pointer, and can, for instance
+   * handle implicit conversion to const and base class pointer types.  The
+   * only impositions on container writers to support extended pointers are:
+   * 1) use the Allocator::pointer typedef appropriately for pointer types.
+   * 2) if you need pointer casting, use the __pointer_cast<> functions
+   *    from ext/cast.h.  This allows pointer cast operations to be overloaded
+   *    is necessary by custom pointers.
+   *
+   * Note:  The const qualifier works with this pointer adapter as follows:
+   *
+   * _Tp*             == _Pointer_adapter<_Std_pointer_impl<_Tp> >;
+   * const _Tp*       == _Pointer_adapter<_Std_pointer_impl<const _Tp> >;
+   * _Tp* const       == const _Pointer_adapter<_Std_pointer_impl<_Tp> >;
+   * const _Tp* const == const _Pointer_adapter<_Std_pointer_impl<const _Tp> >;
+   */
+ 
+  template<typename _Storage_policy >
+    class _Pointer_adapter : public _Storage_policy 
+    {
+    public:
+      typedef typename _Storage_policy::element_type element_type;
+  
+      // These are needed for iterator_traits
+      typedef std::random_access_iterator_tag                iterator_category;
+      typedef typename _Unqualified_type<element_type>::type value_type;
+      typedef ptrdiff_t                                      difference_type;
+      typedef _Pointer_adapter                               pointer;
+      typedef typename _Reference_type<element_type>::reference  reference;
+  
+      // Reminder: 'const' methods mean that the method is valid when the 
+      // pointer is immutable, and has nothing to do with whether the 
+      // 'pointee' is const.
+
+      // Default Constructor (Convert from element_type*)
+      _Pointer_adapter(element_type* __arg = NULL)
+      { _Storage_policy::set(__arg); }
+  
+      // Copy constructor from _Pointer_adapter of same type.
+      _Pointer_adapter(const _Pointer_adapter& __arg) 
+      { _Storage_policy::set(__arg.get()); }
+  
+      // Convert from _Up* if conversion to element_type* is valid.
+      template<typename _Up>
+        _Pointer_adapter(_Up*__arg)
+        {
+          __glibcxx_function_requires(_ConvertibleConcept<element_type*, _Up*>);
+          _Storage_policy::set(__arg); 
+        }
+  
+      // Conversion from another _Pointer_adapter if _Up if static cast is
+      // valid.
+      template<typename _Up>
+        _Pointer_adapter(const _Pointer_adapter<_Up>& __arg)
+        { 
+          __glibcxx_function_requires(_ConvertibleConcept<element_type*, 
+            typename _Pointer_adapter<_Up>::element_type*>);
+          _Storage_policy::set(__arg.get()); 
+        }
+  
+      // Destructor
+      ~_Pointer_adapter() { }
+  
+      // Assignment operator
+      _Pointer_adapter&
+      operator=(const _Pointer_adapter& __arg) 
+      {
+        _Storage_policy::set(__arg.get()); 
+        return *this; 
+      }
+ 
+      template<typename _Up>
+        _Pointer_adapter&
+        operator=(const _Pointer_adapter<_Up>& __arg)
+        {
+          _Storage_policy::set(__arg.get()); 
+          return *this; 
+        }
+
+      template<typename _Up>
+        _Pointer_adapter&
+        operator=(_Up* __arg)
+        {
+          _Storage_policy::set(__arg); 
+          return *this; 
+        }
+
+      // Operator*, returns element_type&
+      inline reference 
+      operator*() const 
+      { return *(_Storage_policy::get()); }
+  
+      // Operator->, returns element_type*
+      inline element_type* 
+      operator->() const 
+      { return _Storage_policy::get(); }
+  
+      // Operator[], returns a element_type& to the item at that loc.
+      inline reference 
+      operator[](int __index) const
+      { return _Storage_policy::get()[__index]; }
+  
+      // To allow implicit conversion to "bool", for "if (ptr)..."
+    private:
+      typedef element_type*(_Pointer_adapter::*__unspecified_bool_type)() const;
+
+    public:
+      operator __unspecified_bool_type() const
+      {
+        return _Storage_policy::get() == 0 ? 0 : 
+                         &_Pointer_adapter::operator->; 
+      }
+
+      // ! operator (for: if (!ptr)...)
+      inline bool 
+      operator!() const 
+      { return (_Storage_policy::get()==NULL); }
+  
+      // Pointer differences
+      inline friend std::ptrdiff_t 
+      operator-(const _Pointer_adapter& __lhs, element_type* __rhs) 
+      { return (__lhs.get() - __rhs); }
+  
+      inline friend std::ptrdiff_t 
+      operator-(element_type* __lhs, const _Pointer_adapter& __rhs) 
+      { return (__lhs - __rhs.get()); }
+  
+      template<class _Up>
+        inline friend std::ptrdiff_t 
+        operator-(const _Pointer_adapter& __lhs, _Up* __rhs) 
+        { return (__lhs.get() - __rhs); }
+    
+      template<class _Up>
+        inline friend std::ptrdiff_t 
+        operator-(_Up* __lhs, const _Pointer_adapter& __rhs)
+        { return (__lhs - __rhs.get()); }
+
+      template<typename _Up>
+        inline std::ptrdiff_t 
+        operator-(const _Pointer_adapter<_Up>& __rhs) const 
+        { return (_Storage_policy::get() - __rhs.get()); }
+  
+      // Pointer math
+      // Note: There is a reason for all this overloading based on different
+      // integer types.  In some libstdc++-v3 test cases, a templated
+      // operator+ is declared which can match any types.  This operator
+      // tends to "steal" the recognition of _Pointer_adapter's own operator+ 
+      // unless the integer type matches perfectly.
+
+#define _CXX_POINTER_ARITH_OPERATOR_SET(INT_TYPE) \
+      inline friend _Pointer_adapter \
+      operator+(const _Pointer_adapter& __lhs, INT_TYPE __offset) \
+      { return _Pointer_adapter(__lhs.get() + __offset); } \
+\
+      inline friend _Pointer_adapter \
+      operator+(INT_TYPE __offset, const _Pointer_adapter& __rhs) \
+      { return _Pointer_adapter(__rhs.get() + __offset); } \
+\
+      inline friend _Pointer_adapter \
+      operator-(const _Pointer_adapter& __lhs, INT_TYPE __offset) \
+      { return _Pointer_adapter(__lhs.get() - __offset); } \
+\
+      inline _Pointer_adapter& \
+      operator+=(INT_TYPE __offset) \
+      { \
+        _Storage_policy::set(_Storage_policy::get() + __offset); \
+        return *this; \
+      } \
+\
+      inline _Pointer_adapter& \
+      operator-=(INT_TYPE __offset) \
+      { \
+        _Storage_policy::set(_Storage_policy::get() - __offset); \
+        return *this; \
+      } \
+// END of _CXX_POINTER_ARITH_OPERATOR_SET macro
+  
+      // Expand into the various pointer arithmatic operators needed.
+      _CXX_POINTER_ARITH_OPERATOR_SET(short);
+      _CXX_POINTER_ARITH_OPERATOR_SET(unsigned short);
+      _CXX_POINTER_ARITH_OPERATOR_SET(int);
+      _CXX_POINTER_ARITH_OPERATOR_SET(unsigned int);
+      _CXX_POINTER_ARITH_OPERATOR_SET(long);
+      _CXX_POINTER_ARITH_OPERATOR_SET(unsigned long);
+
+      // Mathematical Manipulators
+      inline _Pointer_adapter& 
+      operator++()
+      {
+        _Storage_policy::set(_Storage_policy::get() + 1); 
+        return *this;
+      }
+  
+      inline _Pointer_adapter 
+      operator++(int __unused) 
+      {
+        _Pointer_adapter tmp(*this);
+        _Storage_policy::set(_Storage_policy::get() + 1);
+        return tmp;
+      }
+  
+      inline _Pointer_adapter& 
+      operator--() 
+      {
+        _Storage_policy::set(_Storage_policy::get() - 1); 
+        return *this;
+      }
+  
+      inline _Pointer_adapter
+      operator--(int __unused) 
+      {
+        _Pointer_adapter tmp(*this);
+        _Storage_policy::set(_Storage_policy::get() - 1);
+        return tmp;
+      }
+  
+    }; // class _Pointer_adapter
+
+
+#define _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(OPERATOR,BLANK) \
+  template<typename _Tp1, typename _Tp2> \
+    inline bool \
+    operator OPERATOR##BLANK (const _Pointer_adapter<_Tp1>& __lhs, _Tp2 __rhs) \
+    { return __lhs.get() OPERATOR##BLANK __rhs; } \
+\
+  template<typename _Tp1, typename _Tp2> \
+    inline bool \
+    operator OPERATOR##BLANK (_Tp1 __lhs, const _Pointer_adapter<_Tp2>& __rhs) \
+    { return __lhs OPERATOR##BLANK __rhs.get(); } \
+\
+  template<typename _Tp1, typename _Tp2> \
+    inline bool \
+    operator OPERATOR##BLANK (const _Pointer_adapter<_Tp1>& __lhs, \
+                              const _Pointer_adapter<_Tp2>& __rhs) \
+    { return __lhs.get() OPERATOR##BLANK __rhs.get(); } \
+\
+// End GCC_CXX_POINTER_COMPARISON_OPERATION_SET Macro
+  
+  // Expand into the various comparison operators needed.
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(==,);
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(!=,);
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<,);
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<=,);
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>,);
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>=,);
+
+
+  // These are here for expressions like "ptr == 0", "ptr != 0"
+  template<typename _Tp>
+    inline bool
+    operator==(const _Pointer_adapter<_Tp>& __lhs, int __rhs)
+    { return __lhs.get() == reinterpret_cast<void*>(__rhs); } 
+
+  template<typename _Tp>
+    inline bool
+    operator==(int __lhs, const _Pointer_adapter<_Tp>& __rhs)
+    { return __rhs.get() == reinterpret_cast<void*>(__lhs); } 
+
+  template<typename _Tp>
+    inline bool
+    operator!=(const _Pointer_adapter<_Tp>& __lhs, int __rhs)
+    { return __lhs.get() != reinterpret_cast<void*>(__rhs); } 
+
+  template<typename _Tp>
+    inline bool
+    operator!=(int __lhs, const _Pointer_adapter<_Tp>& __rhs)
+    { return __rhs.get() != reinterpret_cast<void*>(__lhs); } 
+
+  /**
+   * Comparison operators for _Pointer_adapter defer to the base class'es
+   * comparison operators, when possible.
+   */
+  template<typename _Tp>
+    inline bool
+    operator==(const _Pointer_adapter<_Tp>& __lhs, 
+               const _Pointer_adapter<_Tp>& __rhs)
+    { return __lhs._Tp::operator==(__rhs); }
+  
+  template<typename _Tp>
+    inline bool
+    operator<=(const _Pointer_adapter<_Tp>& __lhs, 
+               const _Pointer_adapter<_Tp>& __rhs)
+    { return __lhs._Tp::operator<(__rhs) || __lhs._Tp::operator==(__rhs); }
+  
+  template<typename _Tp>
+    inline bool
+    operator!=(const _Pointer_adapter<_Tp>& __lhs, 
+               const _Pointer_adapter<_Tp>& __rhs)
+    { return !(__lhs._Tp::operator==(__rhs)); }
+  
+  template<typename _Tp>
+    inline bool
+    operator>(const _Pointer_adapter<_Tp>& __lhs, 
+              const _Pointer_adapter<_Tp>& __rhs)
+    { return !(__lhs._Tp::operator<(__rhs) || __lhs._Tp::operator==(__rhs)); }
+  
+  template<typename _Tp>
+    inline bool
+    operator>=(const _Pointer_adapter<_Tp>& __lhs, 
+               const _Pointer_adapter<_Tp>& __rhs)
+    { return !(__lhs._Tp::operator<(__rhs)); }
+  
+  
+  template<class _CharT, class _Traits, class _StoreT>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits> &os, 
+               const _Pointer_adapter<_StoreT>& __p)
+    {
+      os << __p.get();
+      return os;
+    }
+
+ 
+_GLIBCXX_END_NAMESPACE
+
+#endif /* _GCC_EXT_POINTER_ADAPTER */
