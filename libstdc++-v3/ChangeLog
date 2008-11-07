@@ -1,3 +1,31 @@
+2008-11-07  Bob Walters  <bob.s.walters@gmail.com>
+
+	* include/ext/pointer.h: Add experimental support for non-standard
+	pointer types in containers via the allocator::pointer typedef.
+	(Currently only supported/working with std::vector)
+	* include/ext/cast.h: Add overload-able pointer casting functions
+	for use in containers supporting non-standard pointer types.
+	* include/ext/extptr_allocator.h: Add _ExtPtr_allocator.
+	* include/Makefile.am: Update.
+	* include/precompiled/extc++.h: Likewise.
+	* include/Makefile.in: Regenerate.
+	* testsuite/ext/ext_pointer/1.cc: New.
+	* testsuite/ext/ext_pointer/1_neg.cc: Likewise.	
+	* testsuite/23_containers/vector/ext_pointer/citerators.cc: New.
+	* testsuite/23_containers/vector/ext_pointer/data_access.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/resize.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/types/1.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/modifiers/element.cc:
+	Likewise.
+	* testsuite/23_containers/vector/ext_pointer/modifiers/erase.cc:
+	Likewise.
+	* testsuite/23_containers/vector/ext_pointer/modifiers/insert.cc:
+	Likewise.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	1.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	3.cc: Likewise.
+
 2008-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/38017
