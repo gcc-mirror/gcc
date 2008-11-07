@@ -1,11 +1,11 @@
 2008-11-07  Bob Walters  <bob.s.walters@gmail.com>
 
-	* include/ext/pointer.h: Add experimental support for non-standard
+	* include/ext/pointer.h: New, add experimental support for non-standard
 	pointer types in containers via the allocator::pointer typedef.
 	(Currently only supported/working with std::vector)
-	* include/ext/cast.h: Add overload-able pointer casting functions
+	* include/ext/cast.h: New, add overload-able pointer casting functions
 	for use in containers supporting non-standard pointer types.
-	* include/ext/extptr_allocator.h: Add _ExtPtr_allocator.
+	* include/ext/extptr_allocator.h: New, add _ExtPtr_allocator.
 	* include/Makefile.am: Update.
 	* include/precompiled/extc++.h: Likewise.
 	* include/Makefile.in: Regenerate.
