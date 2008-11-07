@@ -6146,6 +6146,10 @@ build_binary_op_trapv (enum tree_code code,
 
   gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
 
+  /* If we can fold the expression to a constant, just return it.
+     The caller will deal with overflow, no need to generate a check. */
+  if (TREE_CONSTANT (gnu_expr)) return gnu_expr;
+
   check = fold_build3 (COND_EXPR, integer_type_node,
 		       rhs_lt_zero,  check_neg, check_pos);
 
