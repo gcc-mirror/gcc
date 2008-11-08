@@ -1,3 +1,15 @@
+2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37445
+        * resolve.c (resolve_call): Check host association is correct.
+        (resolve_actual_arglist ): Remove return is old_sym is use
+        associated.  Only reparse expression if old and new symbols
+        have different types.
+
+        PR fortran/PR35769
+        * resolve.c (gfc_resolve_assign_in_forall): Change error to a
+        warning.
+
 2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
 
         PR fortran/37903
