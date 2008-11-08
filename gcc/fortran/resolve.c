@@ -5941,6 +5941,40 @@ gfc_resolve_forall_body (gfc_code *code, int nvar, gfc_expr **var_expr)
 }
 
 
+/* Counts the number of iterators needed inside a forall construct, including
+   nested forall constructs. This is used to allocate the needed memory 
+   in gfc_resolve_forall.  */
+
+static int 
+gfc_count_forall_iterators (gfc_code *code)
+{
+  int max_iters, sub_iters, current_iters;
+  gfc_forall_iterator *fa;
+
+  gcc_assert(code->op == EXEC_FORALL);
+  max_iters = 0;
+  current_iters = 0;
+
+  for (fa = code->ext.forall_iterator; fa; fa = fa->next)
+    current_iters ++;
+  
+  code = code->block->next;
+
+  while (code)
+    {          
+      if (code->op == EXEC_FORALL)
+        {
+          sub_iters = gfc_count_forall_iterators (code);
+          if (sub_iters > max_iters)
+            max_iters = sub_iters;
+        }
+      code = code->next;
+    }
+
+  return current_iters + max_iters;
+}
+
+
 /* Given a FORALL construct, first resolve the FORALL iterator, then call
    gfc_resolve_forall_body to resolve the FORALL body.  */
 
@@ -5950,22 +5984,18 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   static gfc_expr **var_expr;
   static int total_var = 0;
   static int nvar = 0;
+  int old_nvar, tmp;
   gfc_forall_iterator *fa;
-  gfc_code *next;
   int i;
+
+  old_nvar = nvar;
 
   /* Start to resolve a FORALL construct   */
   if (forall_save == 0)
     {
       /* Count the total number of FORALL index in the nested FORALL
-	 construct in order to allocate the VAR_EXPR with proper size.  */
-      next = code;
-      while ((next != NULL) && (next->op == EXEC_FORALL))
-	{
-	  for (fa = next->ext.forall_iterator; fa; fa = fa->next)
-	    total_var ++;
-	  next = next->block->next;
-	}
+         construct in order to allocate the VAR_EXPR with proper size.  */
+      total_var = gfc_count_forall_iterators (code);
 
       /* Allocate VAR_EXPR with NUMBER_OF_FORALL_INDEX elements.  */
       var_expr = (gfc_expr **) gfc_getmem (total_var * sizeof (gfc_expr *));
@@ -5990,6 +6020,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
       var_expr[nvar] = gfc_copy_expr (fa->var);
 
       nvar++;
+
+      /* No memory leak.  */
+      gcc_assert (nvar <= total_var);
     }
 
   /* Resolve the FORALL body.  */
@@ -5998,13 +6031,21 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   /* May call gfc_resolve_forall to resolve the inner FORALL loop.  */
   gfc_resolve_blocks (code->block, ns);
 
-  /* Free VAR_EXPR after the whole FORALL construct resolved.  */
-  for (i = 0; i < total_var; i++)
-    gfc_free_expr (var_expr[i]);
+  tmp = nvar;
+  nvar = old_nvar;
+  /* Free only the VAR_EXPRs allocated in this frame.  */
+  for (i = nvar; i < tmp; i++)
+     gfc_free_expr (var_expr[i]);
 
-  /* Reset the counters.  */
-  total_var = 0;
-  nvar = 0;
+  if (nvar == 0)
+    {
+      /* We are in the outermost FORALL construct.  */
+      gcc_assert (forall_save == 0);
+
+      /* VAR_EXPR is not needed any more.  */
+      gfc_free (var_expr);
+      total_var = 0;
+    }
 }
 
 

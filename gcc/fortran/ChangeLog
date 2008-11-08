@@ -1,3 +1,11 @@
+2008-11-08  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35820
+	* resolve.c (gfc_count_forall_iterators): New function.
+	(gfc_resolve_forall): Use gfc_count_forall_iterators to evaluate 
+	the needed memory amount to allocate. Don't forget to free allocated 
+	memory.  Add an assertion to check for memory leaks. 
+
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37445

@@ -1,3 +1,8 @@
+2008-11-08  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35820
+	* gfortran.dg/nested_forall_1.f: New test.
+
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37445
