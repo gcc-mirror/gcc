@@ -943,21 +943,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case PREDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      /* In these, the result type and the left operand type should be the
-	 same.  Do the operation in the base type of those and convert the
-	 right operand (which is an integer) to that type.
-
-	 Note that these operations are only used in loop control where
-	 we guarantee that no overflow can occur.  So nothing special need
-	 be done for modular types.  */
-
-      gcc_assert (left_type == result_type);
-      operation_type = get_base_type (result_type);
-      left_operand = convert (operation_type, left_operand);
-      right_operand = convert (operation_type, right_operand);
-      has_side_effects = true;
-      modulus = NULL_TREE;
-      break;
+      /* These operations are not used anymore.  */
+      gcc_unreachable ();
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
@@ -1011,6 +998,16 @@ build_binary_op (enum tree_code op_code, tree result_type,
       right_operand = convert (sizetype, right_operand);
       break;
 
+    case PLUS_NOMOD_EXPR:
+    case MINUS_NOMOD_EXPR:
+      if (op_code == PLUS_NOMOD_EXPR)
+	op_code = PLUS_EXPR;
+      else
+	op_code = MINUS_EXPR;
+      modulus = NULL_TREE;
+
+      /* ... fall through ... */
+
     case PLUS_EXPR:
     case MINUS_EXPR:
       /* Avoid doing arithmetics in BOOLEAN_TYPE like the other compilers.
@@ -1018,7 +1015,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 but we can generate addition or subtraction for 'Succ and 'Pred.  */
       if (operation_type && TREE_CODE (operation_type) == BOOLEAN_TYPE)
 	operation_type = left_base_type = right_base_type = integer_type_node;
-      goto common;
+
+      /* ... fall through ... */
 
     default:
     common:
