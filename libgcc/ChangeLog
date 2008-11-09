@@ -1,3 +1,7 @@
+2008-11-09  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* config.host <t-tls>: Also enable for GNU/kFreeBSD and GNU/kNetBSD.
+
 2008-10-08  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* config.host: Fold `*-*-gnu*' cases into the Linux ones.
