@@ -22,6 +22,9 @@ main ()
     return 0;
 
   for (i = 0; i < N; i++)
+    p[i].b = i;
+
+  for (i = 0; i < N; i++)
     p[i].a = p[i].b + 1;
 
   for (i = 0; i < N; i++)

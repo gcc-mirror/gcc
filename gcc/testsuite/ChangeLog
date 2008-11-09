@@ -1,3 +1,14 @@
+2008-11-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2008-04-22  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/struct/wo_prof_global_var.c: Initialize array.
+	* gcc.dg/struct/wo_prof_malloc_size_var.c: Ditto.
+	* gcc.dg/struct/w_prof_local_var.c: Ditto.
+	* gcc.dg/struct/w_prof_global_var.c: Ditto.
+	* gcc.dg/struct/wo_prof_local_var.c: Ditto.
+
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37597
