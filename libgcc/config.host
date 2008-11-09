@@ -569,9 +569,9 @@ m32c-*-elf*)
 esac
 
 case ${host} in
-i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
-	;;
-i[34567]86-*-linux* | x86_64-*-linux* | i[34567]86-*-gnu*)
+i[34567]86-*-linux* | x86_64-*-linux* | \
+  i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | \
+  i[34567]86-*-gnu*)
 	tmake_file="${tmake_file} t-tls"
 	;;
 esac
