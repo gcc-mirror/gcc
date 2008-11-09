@@ -1,3 +1,14 @@
+2008-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.def (PLUS_NOMOD_EXPR): New tree code.
+	(MINUS_NOMOD_EXPR): Likewise.
+	* gcc-interface/utils2.c (build_binary_op) <PREINCREMENT_EXPR>: Make
+	unreachable.
+	<PLUS_NOMOD_EXPR>: New case.
+	<MINUS_NOMOD_EXPR>: Likewise.
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Build increment-and-
+	assignment statement instead of using an increment operator.
+
 2008-11-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* system-irix-n64.ads: New file.

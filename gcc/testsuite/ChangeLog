@@ -1,3 +1,7 @@
+2008-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_boolean.adb: New test.
+
 2008-11-07  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat.dg/hyper_flat.adb: New test.
