@@ -1,3 +1,15 @@
+2008-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-11-10  Ralph Loader  <suckfish@ihug.co.nz>
+
+	PR middle-end/37807
+	PR middle-end/37809
+	* combine.c (force_to_mode): Do not process vector types.
+
+	* rtlanal.c (nonzero_bits1): Do not process vector types.
+	(num_sign_bit_copies1): Likewise.
+
 2008-11-06  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:

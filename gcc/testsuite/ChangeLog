@@ -1,3 +1,12 @@
+2008-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-11-10  Ralph Loader  <suckfish@ihug.co.nz>
+
+	PR middle-end/37807
+	PR middle-end/37809
+	* gcc/testsuite/gcc.target/i386/mmx-8.c: New test.
+
 2008-11-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
@@ -11,8 +20,8 @@
 
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37597
-        * gfortran.dg/host_assoc_call_5.f90: New test.
+	PR fortran/37597
+	* gfortran.dg/host_assoc_call_5.f90: New test.
 
 2008-11-08  Mikael Morin  <mikael.morin@tele2.fr>
 
@@ -21,10 +30,10 @@
 
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37445
-        * gfortran.dg/host_assoc_call_3.f90: New test.
-        * gfortran.dg/host_assoc_call_4.f90: New test.
-        * gfortran.dg/host_assoc_function_4.f90: New test.
+	PR fortran/37445
+	* gfortran.dg/host_assoc_call_3.f90: New test.
+	* gfortran.dg/host_assoc_call_4.f90: New test.
+	* gfortran.dg/host_assoc_function_4.f90: New test.
 
 2008-11-06  Richard Guenther  <rguenther@suse.de>
 
@@ -66,13 +75,13 @@
 
 2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
 
-        PR fortran/37903
-        * gfortran.dg/vector_subscript_4.f90: New test.
+	PR fortran/37903
+	* gfortran.dg/vector_subscript_4.f90: New test.
 
 2008-11-01  Mikael Morin  <mikael.morin@tele2.fr>
 
-        PR fortran/37749
-        * gfortran.dg/vector_subscript__5.f90: New test.
+	PR fortran/37749
+	* gfortran.dg/vector_subscript__5.f90: New test.
 
 2008-10-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org
 
@@ -97,13 +106,13 @@
 
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37723
-        * gfortran.dg/dependency_22.f90: New test.
+	PR fortran/37723
+	* gfortran.dg/dependency_22.f90: New test.
 
 2008-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37787
-        * gfortran.dg/module_equivalence_5.f90: New test.
+	PR fortran/37787
+	* gfortran.dg/module_equivalence_5.f90: New test.
 
 2008-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -282,7 +291,7 @@
 	* gfortran.dg/string_compare_3.f90: New text.
 
 2008-09-07  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36630
 	* gcc.dg/vect/pr36630.c: New test.
