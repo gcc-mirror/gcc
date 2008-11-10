@@ -480,6 +480,12 @@ typedef struct VEC(T,A) GTY						  \
   VEC(T,B) base;							  \
 } VEC(T,A)
 
+#define VEC_TA(T,B,A)							  \
+typedef struct VEC(T,A)							  \
+{									  \
+  VEC(T,B) base;							  \
+} VEC(T,A)
+
 /* Convert to base type.  */
 #define VEC_BASE(P)  ((P) ? &(P)->base : 0)
 
@@ -491,11 +497,11 @@ static inline void VEC_OP (T,must_be,integral_type) (void) 		  \
 }									  \
 									  \
 VEC_T(T,base);								  \
-VEC_TA_GTY(T,base,none,);						  \
+VEC_TA(T,base,none);							  \
 DEF_VEC_FUNC_P(T)							  \
 struct vec_swallow_trailing_semi
 #define DEF_VEC_ALLOC_I(T,A)						  \
-VEC_TA_GTY(T,base,A,);							  \
+VEC_TA(T,base,A);							  \
 DEF_VEC_ALLOC_FUNC_I(T,A)						  \
 struct vec_swallow_trailing_semi
 
@@ -507,11 +513,11 @@ static inline void VEC_OP (T,must_be,pointer_type) (void) 		  \
 }									  \
 									  \
 VEC_T_GTY(T,base);							  \
-VEC_TA_GTY(T,base,none,);						  \
+VEC_TA(T,base,none);							  \
 DEF_VEC_FUNC_P(T)							  \
 struct vec_swallow_trailing_semi
 #define DEF_VEC_ALLOC_P(T,A)						  \
-VEC_TA_GTY(T,base,A,);							  \
+VEC_TA(T,base,A);							  \
 DEF_VEC_ALLOC_FUNC_P(T,A)						  \
 struct vec_swallow_trailing_semi
 
@@ -797,11 +803,11 @@ static inline T *VEC_OP (T,A,safe_insert)		     	  	  \
 /* Vector of object.  */
 #define DEF_VEC_O(T)							  \
 VEC_T_GTY(T,base);							  \
-VEC_TA_GTY(T,base,none,);						  \
+VEC_TA(T,base,none);						  \
 DEF_VEC_FUNC_O(T)							  \
 struct vec_swallow_trailing_semi
 #define DEF_VEC_ALLOC_O(T,A)						  \
-VEC_TA_GTY(T,base,A,);							  \
+VEC_TA(T,base,A);							  \
 DEF_VEC_ALLOC_FUNC_O(T,A)						  \
 struct vec_swallow_trailing_semi
 

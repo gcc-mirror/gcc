@@ -1,3 +1,19 @@
+2008-11-10  Andrew Haley  <aph@redhat.com>
+
+	Backport from mainline:
+
+        PR bootstrap/33304
+        * vec.h (VEC_TA): New.
+        (DEF_VEC_I, DEF_VEC_P, DEF_VEC_ALLOC_I, DEF_VEC_ALLOC_P,
+        DEF_VEC_O, DEF_VEC_ALLOC_O: Use VEC_TA.
+        * c-common.c (C_COMMON_FIXED_TYPES_SAT): New macro.
+        (C_COMMON_FIXED_MODE_TYPES_SAT): New macro.
+        (C_COMMON_FIXED_TYPES): Remove first arg.
+        (C_COMMON_FIXED_MODE_TYPES): Likewise.
+        * tree.c (MAKE_FIXED_TYPE_NODE): Break into two macros,
+        MAKE_FIXED_TYPE_NODE and MAKE_FIXED_TYPE_NODE_WIDTH in order
+        not to use empty macro arguments.
+
 2008-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

@@ -2232,53 +2232,77 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
   if (type1 == intQI_type_node || type1 == unsigned_intQI_type_node)
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
-#define C_COMMON_FIXED_TYPES(SAT,NAME) \
-  if (type1 == SAT ## short_ ## NAME ## _type_node \
-      || type1 == SAT ## unsigned_short_ ## NAME ## _type_node) \
-    return unsignedp ? SAT ## unsigned_short_ ## NAME ## _type_node \
-		     : SAT ## short_ ## NAME ## _type_node; \
-  if (type1 == SAT ## NAME ## _type_node \
-      || type1 == SAT ## unsigned_ ## NAME ## _type_node) \
-    return unsignedp ? SAT ## unsigned_ ## NAME ## _type_node \
-		     : SAT ## NAME ## _type_node; \
-  if (type1 == SAT ## long_ ## NAME ## _type_node \
-      || type1 == SAT ## unsigned_long_ ## NAME ## _type_node) \
-    return unsignedp ? SAT ## unsigned_long_ ## NAME ## _type_node \
-		     : SAT ## long_ ## NAME ## _type_node; \
-  if (type1 == SAT ## long_long_ ## NAME ## _type_node \
-      || type1 == SAT ## unsigned_long_long_ ## NAME ## _type_node) \
-    return unsignedp ? SAT ## unsigned_long_long_ ## NAME ## _type_node \
-		     : SAT ## long_long_ ## NAME ## _type_node;
+#define C_COMMON_FIXED_TYPES(NAME)	    \
+  if (type1 == short_ ## NAME ## _type_node \
+      || type1 == unsigned_short_ ## NAME ## _type_node) \
+    return unsignedp ? unsigned_short_ ## NAME ## _type_node \
+		     : short_ ## NAME ## _type_node; \
+  if (type1 == NAME ## _type_node \
+      || type1 == unsigned_ ## NAME ## _type_node) \
+    return unsignedp ? unsigned_ ## NAME ## _type_node \
+		     : NAME ## _type_node; \
+  if (type1 == long_ ## NAME ## _type_node \
+      || type1 == unsigned_long_ ## NAME ## _type_node) \
+    return unsignedp ? unsigned_long_ ## NAME ## _type_node \
+		     : long_ ## NAME ## _type_node; \
+  if (type1 == long_long_ ## NAME ## _type_node \
+      || type1 == unsigned_long_long_ ## NAME ## _type_node) \
+    return unsignedp ? unsigned_long_long_ ## NAME ## _type_node \
+		     : long_long_ ## NAME ## _type_node;
 
-#define C_COMMON_FIXED_MODE_TYPES(SAT,NAME) \
-  if (type1 == SAT ## NAME ## _type_node \
-      || type1 == SAT ## u ## NAME ## _type_node) \
-    return unsignedp ? SAT ## u ## NAME ## _type_node \
-		     : SAT ## NAME ## _type_node;
+#define C_COMMON_FIXED_MODE_TYPES(NAME) \
+  if (type1 == NAME ## _type_node \
+      || type1 == u ## NAME ## _type_node) \
+    return unsignedp ? u ## NAME ## _type_node \
+		     : NAME ## _type_node;
 
-  C_COMMON_FIXED_TYPES (, fract);
-  C_COMMON_FIXED_TYPES (sat_, fract);
-  C_COMMON_FIXED_TYPES (, accum);
-  C_COMMON_FIXED_TYPES (sat_, accum);
+#define C_COMMON_FIXED_TYPES_SAT(NAME) \
+  if (type1 == sat_ ## short_ ## NAME ## _type_node \
+      || type1 == sat_ ## unsigned_short_ ## NAME ## _type_node) \
+    return unsignedp ? sat_ ## unsigned_short_ ## NAME ## _type_node \
+		     : sat_ ## short_ ## NAME ## _type_node; \
+  if (type1 == sat_ ## NAME ## _type_node \
+      || type1 == sat_ ## unsigned_ ## NAME ## _type_node) \
+    return unsignedp ? sat_ ## unsigned_ ## NAME ## _type_node \
+		     : sat_ ## NAME ## _type_node; \
+  if (type1 == sat_ ## long_ ## NAME ## _type_node \
+      || type1 == sat_ ## unsigned_long_ ## NAME ## _type_node) \
+    return unsignedp ? sat_ ## unsigned_long_ ## NAME ## _type_node \
+		     : sat_ ## long_ ## NAME ## _type_node; \
+  if (type1 == sat_ ## long_long_ ## NAME ## _type_node \
+      || type1 == sat_ ## unsigned_long_long_ ## NAME ## _type_node) \
+    return unsignedp ? sat_ ## unsigned_long_long_ ## NAME ## _type_node \
+		     : sat_ ## long_long_ ## NAME ## _type_node;
 
-  C_COMMON_FIXED_MODE_TYPES (, qq);
-  C_COMMON_FIXED_MODE_TYPES (, hq);
-  C_COMMON_FIXED_MODE_TYPES (, sq);
-  C_COMMON_FIXED_MODE_TYPES (, dq);
-  C_COMMON_FIXED_MODE_TYPES (, tq);
-  C_COMMON_FIXED_MODE_TYPES (sat_, qq);
-  C_COMMON_FIXED_MODE_TYPES (sat_, hq);
-  C_COMMON_FIXED_MODE_TYPES (sat_, sq);
-  C_COMMON_FIXED_MODE_TYPES (sat_, dq);
-  C_COMMON_FIXED_MODE_TYPES (sat_, tq);
-  C_COMMON_FIXED_MODE_TYPES (, ha);
-  C_COMMON_FIXED_MODE_TYPES (, sa);
-  C_COMMON_FIXED_MODE_TYPES (, da);
-  C_COMMON_FIXED_MODE_TYPES (, ta);
-  C_COMMON_FIXED_MODE_TYPES (sat_, ha);
-  C_COMMON_FIXED_MODE_TYPES (sat_, sa);
-  C_COMMON_FIXED_MODE_TYPES (sat_, da);
-  C_COMMON_FIXED_MODE_TYPES (sat_, ta);
+#define C_COMMON_FIXED_MODE_TYPES_SAT(NAME)	\
+  if (type1 == sat_ ## NAME ## _type_node \
+      || type1 == sat_ ## u ## NAME ## _type_node) \
+    return unsignedp ? sat_ ## u ## NAME ## _type_node \
+		     : sat_ ## NAME ## _type_node;
+
+  C_COMMON_FIXED_TYPES (fract);
+  C_COMMON_FIXED_TYPES_SAT (fract);
+  C_COMMON_FIXED_TYPES (accum);
+  C_COMMON_FIXED_TYPES_SAT (accum);
+
+  C_COMMON_FIXED_MODE_TYPES (qq);
+  C_COMMON_FIXED_MODE_TYPES (hq);
+  C_COMMON_FIXED_MODE_TYPES (sq);
+  C_COMMON_FIXED_MODE_TYPES (dq);
+  C_COMMON_FIXED_MODE_TYPES (tq);
+  C_COMMON_FIXED_MODE_TYPES_SAT (qq);
+  C_COMMON_FIXED_MODE_TYPES_SAT (hq);
+  C_COMMON_FIXED_MODE_TYPES_SAT (sq);
+  C_COMMON_FIXED_MODE_TYPES_SAT (dq);
+  C_COMMON_FIXED_MODE_TYPES_SAT (tq);
+  C_COMMON_FIXED_MODE_TYPES (ha);
+  C_COMMON_FIXED_MODE_TYPES (sa);
+  C_COMMON_FIXED_MODE_TYPES (da);
+  C_COMMON_FIXED_MODE_TYPES (ta);
+  C_COMMON_FIXED_MODE_TYPES_SAT (ha);
+  C_COMMON_FIXED_MODE_TYPES_SAT (sa);
+  C_COMMON_FIXED_MODE_TYPES_SAT (da);
+  C_COMMON_FIXED_MODE_TYPES_SAT (ta);
 
   /* For ENUMERAL_TYPEs in C++, must check the mode of the types, not
      the precision; they have precision set to match their range, but
