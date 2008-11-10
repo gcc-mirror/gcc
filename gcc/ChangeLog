@@ -1,3 +1,11 @@
+2008-11-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/37514
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set
+	flag_ira_share_spill_slots to 2 if it's already non-zero.
+	(OVERRIDE_OPTIONS): Clear flag_ira_share_spill_slots if
+        flag_ira_share_spill_slots is 2.
+
 2008-11-10  Kevin Buettner  <kevinb@redhat.com>
 
 	* config/m32c/prologue.md (prologue_enter_16): Set FB to SP - 2.
