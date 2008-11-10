@@ -1,3 +1,8 @@
+2008-11-10  Kevin Buettner  <kevinb@redhat.com>
+
+	* config/m32c/prologue.md (prologue_enter_16): Set FB to SP - 2.
+	(prologue_enter_32): Set FB to SP - 4.
+
 2008-11-10  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_const_ok_for_constraint_p): Add ImB
