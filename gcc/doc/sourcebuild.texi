@@ -1578,7 +1578,7 @@ Most uses of torture options can override the default lists by defining
 file or add them to the @file{site.exp} file; for example
 
 @smallexample
-set ADDITIONAL_TORTURE_OPTIONS  [list @\
-  @{ -O2 -ftree-loop-linear @} @\
+set ADDITIONAL_TORTURE_OPTIONS  [list \
+  @{ -O2 -ftree-loop-linear @} \
   @{ -O2 -fpeel-loops @} ]
 @end smallexample
