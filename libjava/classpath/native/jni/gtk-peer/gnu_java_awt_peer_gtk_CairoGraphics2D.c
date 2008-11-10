@@ -353,7 +353,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector
   for (i = 0; i < n; i++)
     {
       PangoFcFont *font = JLONG_TO_PTR(PangoFcFont, fonts[i]);
-  gdk_threads_leave ();
 
       /* Draw as many glyphs as possible with the current font */
       int length = 0;
