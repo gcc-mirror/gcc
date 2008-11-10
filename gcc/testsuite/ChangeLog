@@ -1,3 +1,7 @@
+2008-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/anon5.C: Skip on Solaris.
+
 2008-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

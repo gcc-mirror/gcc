@@ -4,7 +4,7 @@
 // problem is that mips*-elf tests run from KSEG0 (which is in the upper
 // half of the address range), and the linker compares sign-extended
 // addresses from .debug_aranges with unextended addresses.
-// { dg-do link { target { ! { hppa*-*-hpux* mips*-*-elf* } } } }
+// { dg-do link { target { ! { hppa*-*-hpux* *-*-solaris2.* mips*-*-elf* } } } }
 // { dg-options "-g" }
 
 namespace {
