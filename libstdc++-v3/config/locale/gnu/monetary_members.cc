@@ -1,6 +1,7 @@
 // std::moneypunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -455,8 +456,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    {
 	      delete _M_data;
 	      _M_data = 0;
-	      delete __wcs_ps;
-	      delete __wcs_ns;	      
+	      delete [] __wcs_ps;
+	      delete [] __wcs_ns;	      
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	      __uselocale(__old);
 #else
@@ -601,8 +602,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    {
 	      delete _M_data;
               _M_data = 0;
-	      delete __wcs_ps;
-	      delete __wcs_ns;	      
+	      delete [] __wcs_ps;
+	      delete [] __wcs_ns;	      
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	      __uselocale(__old);
 #else

@@ -1,3 +1,10 @@
+2008-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38067
+	* config/locale/gnu/monetary_members.cc (moneypunct<>::
+	_M_initialize_moneypunct(__c_locale, const char*)): Use correct vector
+	delete for __wcs_ps and __wcs_ns.
+
 2008-11-07  Bob Walters  <bob.s.walters@gmail.com>
 
 	* include/ext/pointer.h: New, add experimental support for non-standard
