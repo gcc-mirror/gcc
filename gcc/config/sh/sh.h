@@ -496,6 +496,9 @@ do {									\
      the user explicitly requested this to be on or off.  */		\
   if (flag_schedule_insns > 0)						\
     flag_schedule_insns = 2;						\
+  /* Likewise for flag_ira_share_spill_slots.  */			\
+  if (flag_ira_share_spill_slots > 0)					\
+    flag_ira_share_spill_slots = 2;					\
 									\
   set_param_value ("simultaneous-prefetches", 2);			\
 } while (0)
@@ -729,6 +732,12 @@ do {									\
 	  flag_schedule_insns = 0;		 			\
 	}								\
     }									\
+									\
+  /* FIXME.  Currently -fira-share-spill-slots causes a wrong code	\
+     problem PR 37514, though the compiler generates lengthy codes	\
+     in some cases without it.  */					\
+  if (flag_ira_share_spill_slots == 2)					\
+    flag_ira_share_spill_slots = 0;					\
 									\
   if (align_loops == 0)							\
     align_loops =  1 << (TARGET_SH5 ? 3 : 2);				\
