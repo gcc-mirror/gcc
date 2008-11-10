@@ -1,7 +1,13 @@
+2008-11-02  Ralph Loader  <suckfish@ihug.co.nz>
+
+	PR middle-end/37807
+	PR middle-end/37809
+	* gcc/testsuite/gcc.target/i386/mmx-8.c: New test.
+
 2008-11-09  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37836
-        * gfortran.dg/minmaxval_1.f90: New test.
+	PR fortran/37836
+	* gfortran.dg/minmaxval_1.f90: New test.
 
 2008-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -17,8 +23,7 @@
 
 2008-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* g++.dg/ipa/iinline-1.C: Remove -c flag, add -fpie for PIC
-	targets.
+	* g++.dg/ipa/iinline-1.C: Remove -c flag, add -fpie for PIC targets.
 
 	* gcc.dg/tree-ssa/inline-2.c (foo): Add 'inline' keyword.
 
