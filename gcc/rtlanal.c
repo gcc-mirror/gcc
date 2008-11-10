@@ -3400,8 +3400,9 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
   enum rtx_code code;
   unsigned int mode_width = GET_MODE_BITSIZE (mode);
 
-  /* For floating-point values, assume all bits are needed.  */
-  if (FLOAT_MODE_P (GET_MODE (x)) || FLOAT_MODE_P (mode))
+  /* For floating-point and vector values, assume all bits are needed.  */
+  if (FLOAT_MODE_P (GET_MODE (x)) || FLOAT_MODE_P (mode)
+      || VECTOR_MODE_P (GET_MODE (x)) || VECTOR_MODE_P (mode))
     return nonzero;
 
   /* If X is wider than MODE, use its mode instead.  */
@@ -3914,7 +3915,8 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
   if (mode == VOIDmode)
     mode = GET_MODE (x);
 
-  if (mode == VOIDmode || FLOAT_MODE_P (mode) || FLOAT_MODE_P (GET_MODE (x)))
+  if (mode == VOIDmode || FLOAT_MODE_P (mode) || FLOAT_MODE_P (GET_MODE (x))
+      || VECTOR_MODE_P (GET_MODE (x)) || VECTOR_MODE_P (mode))
     return 1;
 
   /* For a smaller object, just ignore the high bits.  */
