@@ -1,3 +1,7 @@
+2008-11-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Torture Tests): Fix formatting in example.
+
 2008-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* calls.c (store_unaligned_arguments_into_pseudos): Deal only with
