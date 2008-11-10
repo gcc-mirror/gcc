@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\
   /* Make sure a -mips option is present.  This helps us to pick	\
      the right multilib, and also makes the later specs easier		\
@@ -46,7 +47,10 @@ along with GCC; see the file COPYING3.  If not see
      The latter trumps the former.  */					\
   "%{mno-data-in-code: -mcode-readable=no}",				\
   "%{!mcode-readable=no: %{mcode-xonly: -mcode-readable=pcrel}}",	\
-  "%<mno-data-in-code %<mcode-xonly"
+  "%<mno-data-in-code %<mcode-xonly",					\
+									\
+  /* Configuration-independent MIPS rules.  */				\
+  BASE_DRIVER_SELF_SPECS				
 
 /* Use trap rather than break for all but MIPS I ISA.  Force -no-mips16,
    so that MIPS16 assembler code requires an explicit ".set mips16".

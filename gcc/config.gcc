@@ -1672,7 +1672,7 @@ mips64-*-elf* | mips64el-*-elf*)
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
-        tm_file="mips/vr.h elfos.h ${tm_file} mips/elf.h"
+        tm_file="elfos.h ${tm_file} mips/vr.h mips/elf.h"
         tmake_file=mips/t-vr
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)

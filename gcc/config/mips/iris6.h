@@ -29,9 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Force the default ABI onto the command line in order to make the specs
    easier to write.  Default to the mips2 ISA for the O32 ABI.  */
-#define DRIVER_SELF_SPECS \
-  "%{!mabi=*: -mabi=n32}", \
-  "%{mabi=32: %{!mips*: %{!march*: -mips2}}}"
+#undef DRIVER_SELF_SPECS
+#define DRIVER_SELF_SPECS 			\
+  "%{!mabi=*: -mabi=n32}", 			\
+  "%{mabi=32: %{!mips*: %{!march*: -mips2}}}", 	\
+  /* Configuration-independent MIPS rules.  */	\
+  BASE_DRIVER_SELF_SPECS
 
 /* Force the generation of dwarf .debug_frame sections even if not
    compiling -g.  This guarantees that we can unwind the stack.  */
