@@ -496,6 +496,7 @@ struct ira_allocno_copy
   ira_allocno_t first, second;
   /* Execution frequency of the copy.  */
   int freq;
+  bool constraint_p;
   /* It is a move insn which is an origin of the copy.  The member
      value for the copy representing two operand insn constraints or
      for the copy created to remove register shuffle is NULL.  In last
@@ -859,12 +860,12 @@ extern allocno_live_range_t ira_create_allocno_live_range
 extern void ira_finish_allocno_live_range (allocno_live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
-				   int, rtx, ira_loop_tree_node_t);
+				   int, bool, rtx, ira_loop_tree_node_t);
 extern void ira_add_allocno_copy_to_list (ira_copy_t);
 extern void ira_swap_allocno_copy_ends_if_necessary (ira_copy_t);
 extern void ira_remove_allocno_copy_from_list (ira_copy_t);
-extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int, rtx,
-					ira_loop_tree_node_t);
+extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
+					bool, rtx, ira_loop_tree_node_t);
 
 extern int *ira_allocate_cost_vector (enum reg_class);
 extern void ira_free_cost_vector (int *, enum reg_class);
