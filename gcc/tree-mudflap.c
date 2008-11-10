@@ -669,6 +669,15 @@ mf_build_check_statement_for (tree base, tree limit,
 
   if (! flag_mudflap_threads)
     {
+      if (stmt_ends_bb_p (g))
+	{
+	  gsi = gsi_start_bb (then_bb);
+	  gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
+	  e = split_block (then_bb, g);
+	  then_bb = e->dest;
+	  seq = gimple_seq_alloc ();
+	}
+
       g = gimple_build_assign (mf_cache_shift_decl_l, mf_cache_shift_decl);
       gimple_seq_add_stmt (&seq, g);
 
