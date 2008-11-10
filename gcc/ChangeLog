@@ -1,3 +1,8 @@
+2008-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (store_unaligned_arguments_into_pseudos): Deal only with
+	values living in memory and use more precise alignment information.
+
 2008-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35314

@@ -1,3 +1,7 @@
+2008-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack11.adb: New test.
+
 2008-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38021
