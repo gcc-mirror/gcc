@@ -1,3 +1,8 @@
+2008-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35314
+	* testsuite/libmudflap.c/pass67-frag.c: New test.
+
 2008-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37568

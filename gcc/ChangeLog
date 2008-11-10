@@ -1,3 +1,9 @@
+2008-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35314
+	* tree-mudflap.c (mf_build_check_statement_for): Split then_block
+	after __mf_check call if the call must end a bb.
+
 2008-11-10  Ralph Loader  <suckfish@ihug.co.nz>
 
 	PR middle-end/37807
