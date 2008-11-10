@@ -1,3 +1,12 @@
+2008-11-10  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_const_ok_for_constraint_p): Add ImB
+	constraint for single-bit-clear in lower byte of HI constant, vs
+	Imb which just ignores the upper byte.
+	* config/m32c/predicates.md (m32c_1mask8_operand): Use it.
+	* config/m32c/bitops.md (andhi3_16, andhi3_24): Use it.
+	(iorhi3_16): Check for single bit set, not single bit clear.
+
 2008-11-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Torture Tests): Fix formatting for bullets.

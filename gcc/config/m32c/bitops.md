@@ -98,7 +98,7 @@
 (define_insn "andhi3_16"
   [(set (match_operand:HI 0 "mra_operand" "=Sp,Sp,Rhi,RhiSd,??Rmm,RhiSd,??Rmm")
 	(and:HI (match_operand:HI 1 "mra_operand" "%0,0,0,0,0,0,0")
-		(match_operand:HI 2 "mrai_operand" "Imb,Imw,Imw,iRhiSd,?Rmm,?Rmm,iRhiSd")))]
+		(match_operand:HI 2 "mrai_operand" "ImB,Imw,Imw,iRhiSd,?Rmm,?Rmm,iRhiSd")))]
   "TARGET_A16"
   "@
    
@@ -159,7 +159,7 @@
 (define_insn "iorhi3_16"
   [(set (match_operand:HI 0 "mra_operand" "=Sp,Sp,Rhi,RhiSd,RhiSd,??Rmm,??Rmm")
 	(ior:HI (match_operand:HI 1 "mra_operand" "%0,0,0,0,0,0,0")
-		(match_operand:HI 2 "mrai_operand" "Imb,Imw,Ilw,iRhiSd,?Rmm,iRhiSd,?Rmm")))]
+		(match_operand:HI 2 "mrai_operand" "Ilb,Ilw,Ilw,iRhiSd,?Rmm,iRhiSd,?Rmm")))]
   "TARGET_A16"
   "@
    bset %B2,%0
@@ -192,7 +192,7 @@
 (define_insn "andhi3_24"
   [(set (match_operand:HI 0 "mra_operand" "=Sd,Sd,Rqi,Rqi,RhiSd,??Rmm,RhiSd,??Rmm")
 	(and:HI (match_operand:HI 1 "mra_operand" "%0,0,0,0,0,0,0,0")
-		(match_operand:HI 2 "mrai_operand" "Imb,Imw,Imb,Imw,iRhiSd,?Rmm,?Rmm,iRhiSd")))]
+		(match_operand:HI 2 "mrai_operand" "ImB,Imw,ImB,Imw,iRhiSd,?Rmm,?Rmm,iRhiSd")))]
   "TARGET_A24"
   "@
    bclr\t%B2,%0

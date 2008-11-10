@@ -949,6 +949,11 @@ m32c_const_ok_for_constraint_p (HOST_WIDE_INT value,
       int b = exact_log2 ((value ^ 0xff) & 0xff);
       return (b >= 0 && b <= 7);
     }
+  if (memcmp (str, "ImB", 3) == 0)
+    {
+      int b = exact_log2 ((value ^ 0xffff) & 0xffff);
+      return (b >= 0 && b <= 7);
+    }
   if (memcmp (str, "Ilw", 3) == 0)
     {
       int b = exact_log2 (value);
