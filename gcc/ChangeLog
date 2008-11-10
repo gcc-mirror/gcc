@@ -1,3 +1,17 @@
+2008-11-10  Catherine Moore  <clm@codesourcery.com>
+
+	* config.gcc (mips64vrel-*-elf*): Include the tm_file
+	prior to vr.h.
+	* config/mips/linux.h (LINUX_DRIVER_SELF_SPECS): New.
+	(BASE_DRIVER_SELF_SPECS): Remove.
+	(DRIVER_SELF_SPECS): New definition.
+	* config/mips/elfoabi.h: (DRIVER_SELF_SPECS): Include
+	BASE_DRIVER_SELF_SPECS.
+	* config/mips/sde.h: Likewise.
+	* config/mips/iris6.h: Likewise.
+	* config/mips/vr.h: Likewise.
+	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): New. 
+
 2008-11-07  Vladimir Makarov  <vmakarov@redhat.com>
 	    
 	PR rtl-optimizations/37948

@@ -134,7 +134,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define MARCH_MTUNE_NATIVE_SPECS ""
 #endif
 
-#define BASE_DRIVER_SELF_SPECS \
+#define LINUX_DRIVER_SELF_SPECS \
   NO_SHARED_SPECS							\
   MARCH_MTUNE_NATIVE_SPECS,						\
   /* -mplt has no effect without -mno-shared.  Simplify later		\
@@ -142,4 +142,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   "%{!mno-shared:%<mplt}",						\
   /* -mplt likewise has no effect for -mabi=64 without -msym32.  */	\
   "%{mabi=64:%{!msym32:%<mplt}}"
-#define DRIVER_SELF_SPECS BASE_DRIVER_SELF_SPECS
+
+#undef DRIVER_SELF_SPECS
+#define DRIVER_SELF_SPECS \
+  BASE_DRIVER_SELF_SPECS, \
+  LINUX_DRIVER_SELF_SPECS

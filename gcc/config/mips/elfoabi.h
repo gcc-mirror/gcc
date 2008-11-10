@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\
   /* Make sure a -mips option is present.  This helps us to pick	\
      the right multilib, and also makes the later specs easier		\
@@ -32,4 +33,8 @@ along with GCC; see the file COPYING3.  If not see
   /* Remove a redundant -mfp64 for -mabi=o64; we want the !mfp64	\
      multilibs.  There's no need to check whether the architecture	\
      is 64-bit; cc1 will complain if it isn't.  */			\
-  "%{mabi=o64: %<mfp64}"
+  "%{mabi=o64: %<mfp64}",						\
+									\
+  /* Configuration-independent MIPS rules.*/				\
+  BASE_DRIVER_SELF_SPECS
+

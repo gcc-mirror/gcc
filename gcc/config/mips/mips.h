@@ -742,6 +742,12 @@ enum mips_code_readable_setting {
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }
 
 
+/* A spec that infers the -mdsp setting from an -march argument.  */
+#define BASE_DRIVER_SELF_SPECS \
+  "%{!mno-dsp:%{march=24ke*|march=34k*|march=74k*: -mdsp}}"
+
+#define DRIVER_SELF_SPECS BASE_DRIVER_SELF_SPECS
+
 #define GENERATE_DIVIDE_TRAPS (TARGET_DIVIDE_TRAPS \
                                && ISA_HAS_COND_TRAP)
 
