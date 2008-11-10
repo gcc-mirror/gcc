@@ -989,11 +989,14 @@ scan_one_insn (rtx insn)
       && (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != NULL_RTX
       && MEM_P (XEXP (note, 0)))
     {
-      COSTS_OF_ALLOCNO (allocno_costs,
-			ALLOCNO_NUM (ira_curr_regno_allocno_map
-				     [REGNO (SET_DEST (set))]))->mem_cost
-	-= (ira_memory_move_cost[GET_MODE (SET_DEST (set))][GENERAL_REGS][1]
-	    * frequency);
+      enum reg_class cl = GENERAL_REGS;
+      rtx reg = SET_DEST (set);
+      int num = ALLOCNO_NUM (ira_curr_regno_allocno_map[REGNO (reg)]);
+
+      if (allocno_pref)
+	cl = allocno_pref[num];
+      COSTS_OF_ALLOCNO (allocno_costs, num)->mem_cost
+	-= ira_memory_move_cost[GET_MODE (reg)][cl][1] * frequency;
       record_address_regs (GET_MODE (SET_SRC (set)), XEXP (SET_SRC (set), 0),
 			   0, MEM, SCRATCH, frequency * 2);
     }

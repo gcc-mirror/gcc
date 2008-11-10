@@ -329,7 +329,8 @@ go_through_subreg (rtx x, int *offset)
    registers.  When nothing is changed, the function returns
    FALSE.  */
 static bool
-process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
+process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
+		       rtx insn, int freq)
 {
   int allocno_preferenced_hard_regno, cost, index, offset1, offset2;
   bool only_regs_p;
@@ -363,7 +364,8 @@ process_regs_for_copy (rtx reg1, rtx reg2, rtx insn, int freq)
     {
       cp = ira_add_allocno_copy (ira_curr_regno_allocno_map[REGNO (reg1)],
 				 ira_curr_regno_allocno_map[REGNO (reg2)],
-				 freq, insn, ira_curr_loop_tree_node);
+				 freq, constraint_p, insn,
+				 ira_curr_loop_tree_node);
       bitmap_set_bit (ira_curr_loop_tree_node->local_copies, cp->num); 
       return true;
     }
@@ -426,7 +428,7 @@ process_reg_shuffles (rtx reg, int op_num, int freq)
 	  || recog_data.operand_type[i] != OP_OUT)
 	continue;
       
-      process_regs_for_copy (reg, another_reg, NULL_RTX, freq);
+      process_regs_for_copy (reg, another_reg, false, NULL_RTX, freq);
     }
 }
 
@@ -451,7 +453,7 @@ add_insn_allocno_copies (rtx insn)
 			REG_P (SET_SRC (set))
 			? SET_SRC (set)
 			: SUBREG_REG (SET_SRC (set))) != NULL_RTX)
-    process_regs_for_copy (SET_DEST (set), SET_SRC (set), insn, freq);
+    process_regs_for_copy (SET_DEST (set), SET_SRC (set), false, insn, freq);
   else
     {
       extract_insn (insn);
@@ -470,7 +472,8 @@ add_insn_allocno_copies (rtx insn)
 	      for (j = 0, commut_p = false; j < 2; j++, commut_p = true)
 		if ((dup = get_dup (i, commut_p)) != NULL_RTX
 		    && REG_SUBREG_P (dup)
-		    && process_regs_for_copy (operand, dup, NULL_RTX, freq))
+		    && process_regs_for_copy (operand, dup, true,
+					      NULL_RTX, freq))
 		  bound_p = true;
 	      if (bound_p)
 		continue;
@@ -524,8 +527,8 @@ propagate_copies (void)
 	parent_a2 = parent->regno_allocno_map[ALLOCNO_REGNO (a2)];
       ira_assert (parent_a1 != NULL && parent_a2 != NULL);
       if (! CONFLICT_ALLOCNO_P (parent_a1, parent_a2))
-	ira_add_allocno_copy (parent_a1, parent_a1, cp->freq,
-			      cp->insn, cp->loop_tree_node);
+	ira_add_allocno_copy (parent_a1, parent_a2, cp->freq,
+			      cp->constraint_p, cp->insn, cp->loop_tree_node);
     }
 }
 

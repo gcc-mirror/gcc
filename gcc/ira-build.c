@@ -961,9 +961,10 @@ find_allocno_copy (ira_allocno_t a1, ira_allocno_t a2, rtx insn,
 }
 
 /* Create and return copy with given attributes LOOP_TREE_NODE, FIRST,
-   SECOND, FREQ, and INSN.  */
+   SECOND, FREQ, CONSTRAINT_P, and INSN.  */
 ira_copy_t
-ira_create_copy (ira_allocno_t first, ira_allocno_t second, int freq, rtx insn,
+ira_create_copy (ira_allocno_t first, ira_allocno_t second, int freq,
+		 bool constraint_p, rtx insn,
 		 ira_loop_tree_node_t loop_tree_node)
 {
   ira_copy_t cp;
@@ -973,6 +974,7 @@ ira_create_copy (ira_allocno_t first, ira_allocno_t second, int freq, rtx insn,
   cp->first = first;
   cp->second = second;
   cp->freq = freq;
+  cp->constraint_p = constraint_p;
   cp->insn = insn;
   cp->loop_tree_node = loop_tree_node;
   VEC_safe_push (ira_copy_t, heap, copy_vec, cp);
@@ -1081,7 +1083,8 @@ ira_swap_allocno_copy_ends_if_necessary (ira_copy_t cp)
    LOOP_TREE_NODE.  */
 ira_copy_t
 ira_add_allocno_copy (ira_allocno_t first, ira_allocno_t second, int freq,
-		      rtx insn, ira_loop_tree_node_t loop_tree_node)
+		      bool constraint_p, rtx insn,
+		      ira_loop_tree_node_t loop_tree_node)
 {
   ira_copy_t cp;
 
@@ -1090,7 +1093,8 @@ ira_add_allocno_copy (ira_allocno_t first, ira_allocno_t second, int freq,
       cp->freq += freq;
       return cp;
     }
-  cp = ira_create_copy (first, second, freq, insn, loop_tree_node);
+  cp = ira_create_copy (first, second, freq, constraint_p, insn,
+			loop_tree_node);
   ira_assert (first != NULL && second != NULL);
   ira_add_allocno_copy_to_list (cp);
   ira_swap_allocno_copy_ends_if_necessary (cp);
@@ -1101,9 +1105,11 @@ ira_add_allocno_copy (ira_allocno_t first, ira_allocno_t second, int freq,
 static void
 print_copy (FILE *f, ira_copy_t cp)
 {
-  fprintf (f, "  cp%d:a%d(r%d)<->a%d(r%d)@%d\n", cp->num,
+  fprintf (f, "  cp%d:a%d(r%d)<->a%d(r%d)@%d:%s\n", cp->num,
 	   ALLOCNO_NUM (cp->first), ALLOCNO_REGNO (cp->first),
-	   ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second), cp->freq);
+	   ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second), cp->freq,
+	   cp->insn != NULL
+	   ? "move" : cp->constraint_p ? "constraint" : "shuffle");
 }
 
 /* Print info about copy CP into stderr.  */

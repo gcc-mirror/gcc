@@ -1,3 +1,42 @@
+2008-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+	    
+	PR rtl-optimizations/37948
+	* ira-int.h (struct ira_allocno_copy): New member constraint_p.
+	(ira_create_copy, ira_add_allocno_copy): New parameter.
+
+	* ira-conflicts.c (process_regs_for_copy): New parameter.  Pass it
+	to ira_add_allocno_copy.
+	(process_reg_shuffles, add_insn_allocno_copies): Pass a new
+	parameter to process_regs_for_copy.
+	(propagate_copies): Pass a new parameter to ira_add_allocno_copy.
+	Fix typo in passing second allocno to ira_add_allocno_copy.
+
+	* ira-color.c (update_conflict_hard_regno_costs): Use head of
+	coalesced allocnos list.
+	(assign_hard_reg): Ditto.  Check that assigned allocnos are not in
+	the graph.
+	(add_ira_allocno_to_bucket): Rename to add_allocno_to_bucket.
+	(add_ira_allocno_to_ordered_bucket): Rename to
+	add_allocno_to_ordered_bucket.
+	(push_ira_allocno_to_stack): Rename to push_allocno_to_stack.  Use
+	head of coalesced allocnos list.
+	(push_allocnos_to_stack): Remove calculation of ALLOCNO_TEMP.
+	Check that it is aready calculated.
+	(push_ira_allocno_to_spill): Rename to push_ira_allocno_to_spill.
+	(setup_allocno_left_conflicts_num): Use head of coalesced allocnos
+	list.
+	(coalesce_allocnos): Do extended coalescing too.
+
+	* ira-emit.c (add_range_and_copies_from_move_list): Pass a new
+	parameter to ira_add_allocno_copy.
+
+	* ira-build.c (ira_create_copy, ira_add_allocno_copy): Add a new
+	parameter.
+	(print_copy): Print copy origination too.
+
+	* ira-costs.c (scan_one_insn): Use alloc_pref for load from
+	equivalent memory.
+	
 2008-11-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/37514
