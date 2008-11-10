@@ -12,7 +12,7 @@
 	* config/mips/vr.h: Likewise.
 	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): New. 
 
-2008-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+2008-11-10  Vladimir Makarov  <vmakarov@redhat.com>
 	    
 	PR rtl-optimizations/37948
 	* ira-int.h (struct ira_allocno_copy): New member constraint_p.
@@ -57,7 +57,7 @@
 	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set
 	flag_ira_share_spill_slots to 2 if it's already non-zero.
 	(OVERRIDE_OPTIONS): Clear flag_ira_share_spill_slots if
-        flag_ira_share_spill_slots is 2.
+	flag_ira_share_spill_slots is 2.
 
 2008-11-10  Kevin Buettner  <kevinb@redhat.com>
 
