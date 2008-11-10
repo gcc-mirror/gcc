@@ -1558,7 +1558,7 @@ Finalize use of torture lists.
 The @file{.exp} file for a set of tests that use torture options must
 include calls to these three procecures if:
 
-@itemize bullet
+@itemize @bullet
 @item It calls @code{gcc-dg-runtest} and overrides @var{DG_TORTURE_OPTIONS}.
 
 @item It calls @var{$@{tool@}}@code{-torture} or
