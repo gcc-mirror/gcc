@@ -11780,6 +11780,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   tree type;
   tree attributes;
   bool scoped_enum_p = false;
+  bool has_underlying_type = false;
   tree underlying_type = NULL_TREE;
 
   /* Parse tentatively so that we can back up if we don't find a
@@ -11805,7 +11806,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 
       scoped_enum_p = true;
     }
-      
+
   attributes = cp_parser_attributes_opt (parser);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
@@ -11818,18 +11819,22 @@ cp_parser_enum_specifier (cp_parser* parser)
     {
       cp_decl_specifier_seq type_specifiers;
 
+      /* At this point this is surely not elaborated type specifier.  */
+      if (!cp_parser_parse_definitely (parser))
+	return NULL_TREE;
+
       if (cxx_dialect == cxx98)
         maybe_warn_cpp0x ("scoped enums");
 
       /* Consume the `:'.  */
       cp_lexer_consume_token (parser->lexer);
 
+      has_underlying_type = true;
+
       /* Parse the type-specifier-seq.  */
       cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
                                     &type_specifiers);
-      if (type_specifiers.type == error_mark_node)
-        return error_mark_node;
-     
+
       /* If that didn't work, stop.  */
       if (type_specifiers.type != error_mark_node)
         {
@@ -11838,15 +11843,17 @@ cp_parser_enum_specifier (cp_parser* parser)
           if (underlying_type == error_mark_node)
             underlying_type = NULL_TREE;
         }
-      else
-        cp_parser_error (parser, "expected underlying type of enumeration");
     }
 
   /* Look for the `{' but don't consume it yet.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-    cp_parser_simulate_error (parser);
+    {
+      cp_parser_error (parser, "expected %<{%>");
+      if (has_underlying_type)
+	return NULL_TREE;
+    }
 
-  if (!cp_parser_parse_definitely (parser))
+  if (!has_underlying_type && !cp_parser_parse_definitely (parser))
     return NULL_TREE;
 
   /* Issue an error message if type-definitions are forbidden here.  */

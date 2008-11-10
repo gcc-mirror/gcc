@@ -1,3 +1,10 @@
+2008-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38021
+	* parser.c (cp_parser_enum_specifier): After parsing :,
+	parse definitely.  Don't return early if type specifier
+	is erroneous.
+
 2008-11-06  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/26397
