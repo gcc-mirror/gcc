@@ -1,7 +1,6 @@
 // Custom pointer adapter and sample storage policies
 
-// Copyright (C) 2008
-// Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,23 +32,16 @@
  * @author Bob Walters
  *
  * Provides reusable _Pointer_adapter for assisting in the development of
- * custom pointer types that can be used with libstdc++ STL containers via
+ * custom pointer types that can be used with the standard containers via
  * the allocator::pointer and allocator::const_pointer typedefs.
  */
 
-#ifndef _EXT_POINTER_ADAPTER
-#define _EXT_POINTER_ADAPTER 1
+#ifndef _POINTER_H
+#define _POINTER_H 1
 
-#include <ostream>
+#include <iosfwd>
+#include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
-#include <bits/concept_check.h>
-
-
-// forward declaration of the iterator tag
-namespace std {
-  struct random_access_iterator_tag;
-};
-
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -64,15 +56,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *    4) An operator<() to support pointer comparison.
    *    5) An operator==() to support pointer comparison.
    */
-  template<typename _Type> 
+  template<typename _Tp> 
     class _Std_pointer_impl 
     {
     public:
       // the type this pointer points to.
-      typedef _Type element_type;
+      typedef _Tp element_type;
   
       // A method to fetch the pointer value as a standard T* value;
-      inline _Type* 
+      inline _Tp* 
       get() const 
       { return _M_value; }
   
@@ -94,7 +86,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       element_type* _M_value;
     };
 
-
   /**
    * @brief A storage policy for use with _Pointer_adapter<> which stores
    *        the pointer's address as an offset value which is relative to
@@ -108,27 +99,27 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    * As there is no reason why any normal pointer would point 1 byte into
    * its own pointer address.
    */
-  template<typename _Type> 
+  template<typename _Tp> 
     class _Relative_pointer_impl 
     {
     public:
-      typedef _Type element_type;
+      typedef _Tp element_type;
   
-      _Type* 
+      _Tp*
       get() const 
       {
         if (_M_diff == 1)
-          return NULL;
+          return 0;
         else
-          return reinterpret_cast<_Type*>(
+          return reinterpret_cast<_Tp*>(
                  const_cast<char*>(reinterpret_cast<const char*>(this))
                  + _M_diff);
       }
   
       void 
-      set(_Type* __arg)
+      set(_Tp* __arg)
       {
-        if (__arg == NULL)
+        if (!__arg)
           _M_diff = 1;
         else
           _M_diff = reinterpret_cast<char*>(__arg) 
@@ -145,33 +136,33 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return (this->get() == __rarg.get()); }
 
     private:
-      ptrdiff_t _M_diff;
+      std::ptrdiff_t _M_diff;
     };
   
   /**
    * Relative_pointer_impl needs a specialization for const T because of
    * the casting done during pointer arithmetic.
    */
-  template<typename _Type> 
-    class _Relative_pointer_impl<const _Type> 
+  template<typename _Tp> 
+    class _Relative_pointer_impl<const _Tp> 
     {
     public:
-      typedef const _Type element_type;
+      typedef const _Tp element_type;
   
-      const _Type* 
+      const _Tp*
       get() const
       {
         if (_M_diff == 1)
-          return NULL;
+          return 0;
         else
-          return reinterpret_cast<const _Type*>(
+          return reinterpret_cast<const _Tp*>(
                   (reinterpret_cast<const char*>(this)) + _M_diff);
       }
   
       void 
-      set(const _Type* __arg) 
+      set(const _Tp* __arg)
       {
-        if (__arg == NULL)
+        if (!__arg)
           _M_diff = 1;
         else
           _M_diff = reinterpret_cast<const char*>(__arg) 
@@ -188,9 +179,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return (this->get() == __rarg.get()); }
   
     private:
-      ptrdiff_t _M_diff;
+      std::ptrdiff_t _M_diff;
     };
-
 
   /**
    * The specialization on this type helps resolve the problem of
@@ -201,34 +191,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   
   template<typename _Tp>
     struct _Reference_type 
-    {
-      typedef _Tp& reference;
-    };
+    { typedef _Tp& reference; };
 
   template<> 
     struct _Reference_type<void> 
-    {
-      typedef _Invalid_type& reference;
-    };
+    { typedef _Invalid_type& reference; };
 
   template<> 
     struct _Reference_type<const void> 
-    {
-      typedef const _Invalid_type& reference;
-    };
+    { typedef const _Invalid_type& reference; };
 
   template<> 
     struct _Reference_type<volatile void> 
-    {
-      typedef volatile _Invalid_type&  reference;
-    };
+    { typedef volatile _Invalid_type&  reference; };
 
   template<> 
     struct _Reference_type<volatile const void> 
-    {
-      typedef const volatile _Invalid_type&  reference;
-    };
-
+    { typedef const volatile _Invalid_type&  reference; };
 
   /**
    * This structure accomodates the way in which std::iterator_traits<>
@@ -236,35 +215,24 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    */
   template<typename _Tp> 
     struct _Unqualified_type 
-    {
-      typedef _Tp type;
-    };
+    { typedef _Tp type; };
     
   template<typename _Tp> 
     struct _Unqualified_type<const _Tp> 
-    {
-      typedef _Tp type;
-    };
+    { typedef _Tp type; };
     
   template<typename _Tp> 
     struct _Unqualified_type<volatile _Tp> 
-    {
-      typedef volatile _Tp type;
-    };
+    { typedef volatile _Tp type; };
     
   template<typename _Tp> 
     struct _Unqualified_type<volatile const _Tp> 
-    {
-      typedef volatile _Tp type;
-    };
-    
-  
+    { typedef volatile _Tp type; };
   
   /**
-   * The following provides an 'alternative pointer' that works with 
-   * libstdc++-v3 containers when specified as the pointer typedef of the 
-   * allocator.
-   * 
+   * The following provides an 'alternative pointer' that works with the
+   * containers when specified as the pointer typedef of the allocator.
+   *
    * The pointer type used with the containers doesn't have to be this class,
    * but it must support the implicit conversions, pointer arithmetic,
    * comparison operators, etc. that are supported by this class, and avoid
@@ -290,50 +258,42 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    * _Tp* const       == const _Pointer_adapter<_Std_pointer_impl<_Tp> >;
    * const _Tp* const == const _Pointer_adapter<_Std_pointer_impl<const _Tp> >;
    */
- 
-  template<typename _Storage_policy >
+  template<typename _Storage_policy>
     class _Pointer_adapter : public _Storage_policy 
     {
     public:
       typedef typename _Storage_policy::element_type element_type;
-  
+
       // These are needed for iterator_traits
       typedef std::random_access_iterator_tag                iterator_category;
       typedef typename _Unqualified_type<element_type>::type value_type;
-      typedef ptrdiff_t                                      difference_type;
+      typedef std::ptrdiff_t                                 difference_type;
       typedef _Pointer_adapter                               pointer;
       typedef typename _Reference_type<element_type>::reference  reference;
-  
+
       // Reminder: 'const' methods mean that the method is valid when the 
       // pointer is immutable, and has nothing to do with whether the 
       // 'pointee' is const.
 
       // Default Constructor (Convert from element_type*)
-      _Pointer_adapter(element_type* __arg = NULL)
+      _Pointer_adapter(element_type* __arg = 0)
       { _Storage_policy::set(__arg); }
-  
+
       // Copy constructor from _Pointer_adapter of same type.
       _Pointer_adapter(const _Pointer_adapter& __arg) 
       { _Storage_policy::set(__arg.get()); }
-  
+
       // Convert from _Up* if conversion to element_type* is valid.
       template<typename _Up>
-        _Pointer_adapter(_Up*__arg)
-        {
-          __glibcxx_function_requires(_ConvertibleConcept<element_type*, _Up*>);
-          _Storage_policy::set(__arg); 
-        }
-  
+        _Pointer_adapter(_Up* __arg)
+        { _Storage_policy::set(__arg); }
+
       // Conversion from another _Pointer_adapter if _Up if static cast is
       // valid.
       template<typename _Up>
         _Pointer_adapter(const _Pointer_adapter<_Up>& __arg)
-        { 
-          __glibcxx_function_requires(_ConvertibleConcept<element_type*, 
-            typename _Pointer_adapter<_Up>::element_type*>);
-          _Storage_policy::set(__arg.get()); 
-        }
-  
+        { _Storage_policy::set(__arg.get()); }
+
       // Destructor
       ~_Pointer_adapter() { }
   
@@ -344,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         _Storage_policy::set(__arg.get()); 
         return *this; 
       }
- 
+
       template<typename _Up>
         _Pointer_adapter&
         operator=(const _Pointer_adapter<_Up>& __arg)
@@ -365,17 +325,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       inline reference 
       operator*() const 
       { return *(_Storage_policy::get()); }
-  
+
       // Operator->, returns element_type*
       inline element_type* 
       operator->() const 
       { return _Storage_policy::get(); }
-  
+
       // Operator[], returns a element_type& to the item at that loc.
-      inline reference 
-      operator[](int __index) const
+      inline reference
+      operator[](std::ptrdiff_t __index) const
       { return _Storage_policy::get()[__index]; }
-  
+
       // To allow implicit conversion to "bool", for "if (ptr)..."
     private:
       typedef element_type*(_Pointer_adapter::*__unspecified_bool_type)() const;
@@ -388,9 +348,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
 
       // ! operator (for: if (!ptr)...)
-      inline bool 
+      inline bool
       operator!() const 
-      { return (_Storage_policy::get()==NULL); }
+      { return (_Storage_policy::get() == 0); }
   
       // Pointer differences
       inline friend std::ptrdiff_t 
@@ -401,12 +361,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       operator-(element_type* __lhs, const _Pointer_adapter& __rhs) 
       { return (__lhs - __rhs.get()); }
   
-      template<class _Up>
+      template<typename _Up>
         inline friend std::ptrdiff_t 
         operator-(const _Pointer_adapter& __lhs, _Up* __rhs) 
         { return (__lhs.get() - __rhs); }
     
-      template<class _Up>
+      template<typename _Up>
         inline friend std::ptrdiff_t 
         operator-(_Up* __lhs, const _Pointer_adapter& __rhs)
         { return (__lhs - __rhs.get()); }
@@ -483,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
   
       inline _Pointer_adapter
-      operator--(int __unused) 
+      operator--(int) 
       {
         _Pointer_adapter tmp(*this);
         _Storage_policy::set(_Storage_policy::get() - 1);
@@ -520,7 +480,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>,);
   _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>=,);
 
-
   // These are here for expressions like "ptr == 0", "ptr != 0"
   template<typename _Tp>
     inline bool
@@ -551,42 +510,37 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     operator==(const _Pointer_adapter<_Tp>& __lhs, 
                const _Pointer_adapter<_Tp>& __rhs)
     { return __lhs._Tp::operator==(__rhs); }
-  
+
   template<typename _Tp>
     inline bool
     operator<=(const _Pointer_adapter<_Tp>& __lhs, 
                const _Pointer_adapter<_Tp>& __rhs)
     { return __lhs._Tp::operator<(__rhs) || __lhs._Tp::operator==(__rhs); }
-  
+
   template<typename _Tp>
     inline bool
     operator!=(const _Pointer_adapter<_Tp>& __lhs, 
                const _Pointer_adapter<_Tp>& __rhs)
     { return !(__lhs._Tp::operator==(__rhs)); }
-  
+
   template<typename _Tp>
     inline bool
     operator>(const _Pointer_adapter<_Tp>& __lhs, 
               const _Pointer_adapter<_Tp>& __rhs)
     { return !(__lhs._Tp::operator<(__rhs) || __lhs._Tp::operator==(__rhs)); }
-  
+
   template<typename _Tp>
     inline bool
     operator>=(const _Pointer_adapter<_Tp>& __lhs, 
                const _Pointer_adapter<_Tp>& __rhs)
     { return !(__lhs._Tp::operator<(__rhs)); }
-  
-  
-  template<class _CharT, class _Traits, class _StoreT>
-    std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits> &os, 
-               const _Pointer_adapter<_StoreT>& __p)
-    {
-      os << __p.get();
-      return os;
-    }
 
- 
+  template<typename _CharT, typename _Traits, typename _StoreT>
+    inline std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os, 
+               const _Pointer_adapter<_StoreT>& __p)
+    { return (__os << __p.get()); }
+
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _GCC_EXT_POINTER_ADAPTER */
+#endif // _POINTER_H

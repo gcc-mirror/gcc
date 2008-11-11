@@ -43,51 +43,26 @@
 #include <limits>
 #include <ext/pointer.h>
 
-using __gnu_cxx::_Pointer_adapter;
-using __gnu_cxx::_Relative_pointer_impl;
-
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
-  // forward declaration
-  template<typename _Tp>
-    class _ExtPtr_allocator;
-
-  // _ExtPtr_allocator<void> specialization.
-  template<>
-    class _ExtPtr_allocator<void>
-    {
-    public:
-      typedef size_t      size_type;
-      typedef ptrdiff_t   difference_type;
-      typedef void        value_type;
-
-      // Note the non-standard pointer types
-      typedef _Pointer_adapter<_Relative_pointer_impl<void> >       pointer;
-      typedef _Pointer_adapter<_Relative_pointer_impl<const void> >
-                                                              const_pointer;
-
-      template<typename _Up>
-        struct rebind
-        { typedef _ExtPtr_allocator<_Up> other; };
-    };
 
   /**
    * @brief An example allocator which uses a non-standard pointer type.
    *
    * This allocator specifies that containers use a 'relative pointer' as it's
-   * pointer type.  (See bits/pointer.h)  Memory allocation in this example
+   * pointer type.  (See ext/pointer.h)  Memory allocation in this example
    * is still performed using std::allocator.
    */
   template<typename _Tp>
     class _ExtPtr_allocator
     {
     public:
-      typedef size_t     size_type;
-      typedef ptrdiff_t  difference_type;
+      typedef std::size_t     size_type;
+      typedef std::ptrdiff_t  difference_type;
 
       // Note the non-standard pointer types.
       typedef _Pointer_adapter<_Relative_pointer_impl<_Tp> >       pointer;
-      typedef _Pointer_adapter<_Relative_pointer_impl<const _Tp> > const_pointer;
+      typedef _Pointer_adapter<_Relative_pointer_impl<const _Tp> > 
+                                                             const_pointer;
 
       typedef _Tp&       reference;
       typedef const _Tp& const_reference;
@@ -103,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _ExtPtr_allocator(const _ExtPtr_allocator &__rarg) throw()
       : _M_real_alloc(__rarg._M_real_alloc) { }
 
-      template<class _Up>
+      template<typename _Up>
         _ExtPtr_allocator(const _ExtPtr_allocator<_Up>& __rarg) throw()
         : _M_real_alloc(__rarg._M_getUnderlyingImp()) { }
 
@@ -158,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       template<typename _Up>
         inline friend void
-        swap(_ExtPtr_allocator<_Up>& __larg, _ExtPtr_allocator<_Up>& __rarg);
+        swap(_ExtPtr_allocator<_Up>&, _ExtPtr_allocator<_Up>&);
 
       // A method specific to this implementation.
       const std::allocator<_Tp>&
@@ -166,17 +141,38 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return _M_real_alloc; }
 
     private:
-      // simlated state data.
       std::allocator<_Tp>  _M_real_alloc;
+    };
+
+  // _ExtPtr_allocator<void> specialization.
+  template<>
+    class _ExtPtr_allocator<void>
+    {
+    public:
+      typedef std::size_t      size_type;
+      typedef std::ptrdiff_t   difference_type;
+      typedef void             value_type;
+
+      // Note the non-standard pointer types
+      typedef _Pointer_adapter<_Relative_pointer_impl<void> >       pointer;
+      typedef _Pointer_adapter<_Relative_pointer_impl<const void> >
+                                                              const_pointer;
+
+      template<typename _Up>
+        struct rebind
+        { typedef _ExtPtr_allocator<_Up> other; };
+
+    private:
+      std::allocator<void>  _M_real_alloc;
     };
 
   template<typename _Tp>
     inline void
     swap(_ExtPtr_allocator<_Tp>& __larg, _ExtPtr_allocator<_Tp>& __rarg)
     {
-      std::allocator<_Tp> temp( __rarg._M_real_alloc );
+      std::allocator<_Tp> __tmp( __rarg._M_real_alloc );
       __rarg._M_real_alloc = __larg._M_real_alloc;
-      __larg._M_real_alloc = temp;
+      __larg._M_real_alloc = __tmp;
     }
 
 _GLIBCXX_END_NAMESPACE

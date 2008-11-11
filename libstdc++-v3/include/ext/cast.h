@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _EXT_CAST_
-#define _EXT_CAST_ 1
+#ifndef _CAST_H
+#define _CAST_H 1
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx);
 
@@ -48,14 +48,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx);
    */
   template<typename _ToType>
     struct _Caster
-    {
-      typedef typename _ToType::element_type*  type;
-    };
+    { typedef typename _ToType::element_type*  type; };
+
   template<typename _ToType>
     struct _Caster<_ToType*>
-    {
-      typedef _ToType*  type;
-    };
+    { typedef _ToType*  type; };
 
   /**
    * Casting operations for cases where _FromType is not a standard pointer.
@@ -118,4 +115,4 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx);
 
 _GLIBCXX_END_NAMESPACE
 
-#endif
+#endif // _CAST_H

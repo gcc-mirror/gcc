@@ -1,3 +1,9 @@
+2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/extptr_allocator.h: Minor tweaks.
+	* include/ext/pointer.h: Likewise.
+	* include/ext/cast.h: Likewise.
+
 2008-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38067
