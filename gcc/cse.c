@@ -3171,33 +3171,15 @@ fold_rtx (rtx x, rtx insn)
     {
     case RTX_UNARY:
       {
-	int is_const = 0;
-
 	/* We can't simplify extension ops unless we know the
 	   original mode.  */
 	if ((code == ZERO_EXTEND || code == SIGN_EXTEND)
 	    && mode_arg0 == VOIDmode)
 	  break;
 
-	/* If we had a CONST, strip it off and put it back later if we
-	   fold.  */
-	if (const_arg0 != 0 && GET_CODE (const_arg0) == CONST)
-	  is_const = 1, const_arg0 = XEXP (const_arg0, 0);
-
 	new_rtx = simplify_unary_operation (code, mode,
 					const_arg0 ? const_arg0 : folded_arg0,
 					mode_arg0);
-	/* NEG of PLUS could be converted into MINUS, but that causes
-	   expressions of the form
-	   (CONST (MINUS (CONST_INT) (SYMBOL_REF)))
-	   which many ports mistakenly treat as LEGITIMATE_CONSTANT_P.
-	   FIXME: those ports should be fixed.  */
-	if (new_rtx != 0 && is_const
-	    && GET_CODE (new_rtx) == PLUS
-	    && (GET_CODE (XEXP (new_rtx, 0)) == SYMBOL_REF
-		|| GET_CODE (XEXP (new_rtx, 0)) == LABEL_REF)
-	    && GET_CODE (XEXP (new_rtx, 1)) == CONST_INT)
-	  new_rtx = gen_rtx_CONST (mode, new_rtx);
       }
       break;
 
