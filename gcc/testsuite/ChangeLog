@@ -1,3 +1,8 @@
+2008-11-10  Catherine Moore  <clm@codesourcery.com>
+
+	* gcc.target/mips/no-smartmips-lwxs.c: New test.
+	* gcc.target/mips/no-smartmips-ror-1.c: New test.
+
 2008-11-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.target/sh/pr37514.c: New test.
