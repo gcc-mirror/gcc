@@ -1,3 +1,8 @@
+2008-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira-lives.c (process_bb_node_lives): Restore EH_RETURN_DATA_REGNO
+	handling.
+
 2008-11-10  Catherine Moore  <clm@codesourcery.com>
 
 	* config.gcc (mips64vrel-*-elf*): Include the tm_file
