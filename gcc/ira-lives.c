@@ -785,8 +785,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
   unsigned int j;
   basic_block bb;
   rtx insn;
-  edge e;
-  edge_iterator ei;
   bitmap_iterator bi;
   bitmap reg_live_out;
   unsigned int px;
@@ -985,16 +983,23 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  curr_point++;
 	}
 
+#ifdef EH_RETURN_DATA_REGNO
+      if (bb_has_eh_pred (bb))
+	for (j = 0; ; ++j)
+	  {
+	    unsigned int regno = EH_RETURN_DATA_REGNO (j);
+	    if (regno == INVALID_REGNUM)
+	      break;
+	    make_regno_born (regno);
+	  }
+#endif
+
       /* Allocnos can't go in stack regs at the start of a basic block
 	 that is reached by an abnormal edge. Likewise for call
 	 clobbered regs, because caller-save, fixup_abnormal_edges and
 	 possibly the table driven EH machinery are not quite ready to
 	 handle such allocnos live across such edges.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  break;
-
-      if (e != NULL)
+      if (bb_has_abnormal_pred (bb))
 	{
 #ifdef STACK_REGS
 	  EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, px)
