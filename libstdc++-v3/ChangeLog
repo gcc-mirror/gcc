@@ -1,5 +1,9 @@
 2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/ext/ext_pointer/1_neg.cc: Adjust dg-error line numbers.
+
+2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/23_containers/vector/ext_pointer/modifiers/erase.cc: Fix.
 	* testsuite/23_containers/vector/ext_pointer/modifiers/element.cc:
 	Likewise.
