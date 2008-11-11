@@ -3678,24 +3678,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
      one CONST_INT, and the sort will have ensured that it is last
      in the array and that any other constant will be next-to-last.  */
 
-  if (GET_CODE (ops[n_ops - 1].op) == CONST_INT)
-    i = n_ops - 2;
-  else
-    i = n_ops - 1;
-
-  if (i >= 1
-      && ops[i].neg
-      && !ops[i - 1].neg
-      && CONSTANT_P (ops[i].op)
-      && GET_CODE (ops[i].op) == GET_CODE (ops[i - 1].op))
-    {
-      ops[i - 1].op = gen_rtx_MINUS (mode, ops[i - 1].op, ops[i].op);
-      ops[i - 1].op = gen_rtx_CONST (mode, ops[i - 1].op);
-      if (i < n_ops - 1)
-	ops[i] = ops[i + 1];
-      n_ops--;
-    }
-
   if (n_ops > 1
       && GET_CODE (ops[n_ops - 1].op) == CONST_INT
       && CONSTANT_P (ops[n_ops - 2].op))
