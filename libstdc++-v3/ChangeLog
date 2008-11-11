@@ -1,3 +1,9 @@
+2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/vector/ext_pointer/modifiers/erase.cc: Fix.
+	* testsuite/23_containers/vector/ext_pointer/modifiers/element.cc:
+	Likewise.
+
 2008-11-11  Bob Walters  <bob.s.walters@gmail.com>
 
 	* include/bits/forward_list.h: Support non-standard pointer types

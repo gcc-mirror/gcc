@@ -2,8 +2,7 @@
 
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008
-// Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,13 +55,9 @@ test01()
   typedef vec_type::iterator iterator_type;
 
   vec_type v(A, A + N);
-  std::cout << v.size() << std::endl;
-  std::cout << v.capacity() << std::endl;
-  std::cout << v.max_size() << std::endl;
 
   iterator_type it1 = v.erase(v.begin() + 1);
   VERIFY( it1 == v.begin() + 1 );
-  std::cout << N << std::endl << v.size() << std::endl;
   VERIFY( v.size() == N1 );
   VERIFY( std::equal(v.begin(), v.end(), A1) );
   
