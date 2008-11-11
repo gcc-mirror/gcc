@@ -1,5 +1,13 @@
 2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/37986
+	* include/tr1_impl/random (struct _Adaptor): Use remove_pointer
+	and remove_reference on _Engine.
+	* testsuite/tr1/5_numerical_facilities/random/variate_generator/
+	37986.cc: New.
+
+2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/ext/ext_pointer/1_neg.cc: Adjust dg-error line numbers.
 
 2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
