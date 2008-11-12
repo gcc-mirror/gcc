@@ -14,7 +14,7 @@ module m1
 
 contains
 
-    type(t1) function f1() ! { dg-error "cannot be of PRIVATE type" }
+    type(t1) function f1() ! { dg-error "of PRIVATE derived type" }
     end function
 
 end module
