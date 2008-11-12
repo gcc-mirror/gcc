@@ -300,7 +300,9 @@
   [(set_attr "flags" "x")]
   )  
 
-;; A cond_to_int followed by a compare against zero is essentially a no-op.
+;; A cond_to_int followed by a compare against zero is essentially a
+;; no-op.  However, the result of the cond_to_int may be used by later
+;; insns, so make sure it's dead before deleting its set.
 
 (define_peephole2
   [(set (match_operand:HI 0 "mra_qi_operand" "")
@@ -313,6 +315,7 @@
 	(compare (match_operand:HI 1 "mra_qi_operand" "")
 		 (const_int 0)))
    ]
-  "rtx_equal_p(operands[0], operands[1])"
+  "rtx_equal_p (operands[0], operands[1])
+     && dead_or_set_p (peep2_next_insn (1), operands[0])"
   [(const_int 1)]
   "")
