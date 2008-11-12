@@ -3707,6 +3707,14 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
       mold_type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
 
+  if (strcmp (expr->value.function.name, "__transfer_in_transfer") == 0)
+    {
+      /* If this TRANSFER is nested in another TRANSFER, use a type
+	 that preserves all bits.  */
+      if (arg->expr->ts.type == BT_LOGICAL)
+	mold_type = gfc_get_int_type (arg->expr->ts.kind);
+    }
+
   if (arg->expr->ts.type == BT_CHARACTER)
     {
       tmp = size_of_string_in_bytes (arg->expr->ts.kind, argse.string_length);
@@ -3835,6 +3843,13 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   arg = arg->next;
   type = gfc_typenode_for_spec (&expr->ts);
+  if (strcmp (expr->value.function.name, "__transfer_in_transfer") == 0)
+    {
+      /* If this TRANSFER is nested in another TRANSFER, use a type
+	 that preserves all bits.  */
+      if (expr->ts.type == BT_LOGICAL)
+	type = gfc_get_int_type (expr->ts.kind);
+    }
 
   if (expr->ts.type == BT_CHARACTER)
     {
@@ -4750,20 +4765,30 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_TRANSFER:
-      if (se->ss)
+      if (se->ss && se->ss->useflags)
 	{
-	  if (se->ss->useflags)
-	    {
-	      /* Access the previously obtained result.  */
-	      gfc_conv_tmp_array_ref (se);
-	      gfc_advance_se_ss_chain (se);
-	      break;
-	    }
-	  else
-	    gfc_conv_intrinsic_array_transfer (se, expr);
+	  /* Access the previously obtained result.  */
+	  gfc_conv_tmp_array_ref (se);
+	  gfc_advance_se_ss_chain (se);
 	}
       else
-	gfc_conv_intrinsic_transfer (se, expr);
+	{
+	  /* Ensure double transfer through LOGICAL preserves all
+	     the needed bits.  */
+	  gfc_expr *source = expr->value.function.actual->expr;
+	  if (source->expr_type == EXPR_FUNCTION
+	      && source->value.function.esym == NULL
+	      && source->value.function.isym != NULL
+	      && source->value.function.isym->id == GFC_ISYM_TRANSFER
+	      && source->ts.type == BT_LOGICAL
+	      && expr->ts.type != source->ts.type)
+	    source->value.function.name = "__transfer_in_transfer";
+
+	  if (se->ss)
+	    gfc_conv_intrinsic_array_transfer (se, expr);
+	  else
+	    gfc_conv_intrinsic_transfer (se, expr);
+	}
       break;
 
     case GFC_ISYM_TTYNAM:

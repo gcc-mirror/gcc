@@ -281,13 +281,19 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 
     case BT_LOGICAL:
       if (expr->representation.string)
-	return fold_build1 (VIEW_CONVERT_EXPR,
-			    gfc_get_logical_type (expr->ts.kind),
-			    gfc_build_string_const (expr->representation.length,
-						    expr->representation.string));
+	{
+	  tree tmp = fold_build1 (VIEW_CONVERT_EXPR,
+				  gfc_get_int_type (expr->ts.kind),
+				  gfc_build_string_const (expr->representation.length,
+							  expr->representation.string));
+	  if (!integer_zerop (tmp) && !integer_onep (tmp))
+	    gfc_warning ("Assigning value other than 0 or 1 to LOGICAL"
+			 " has undefined result at %L", &expr->where);
+	  return fold_convert (gfc_get_logical_type (expr->ts.kind), tmp);
+	}
       else
 	return build_int_cst (gfc_get_logical_type (expr->ts.kind),
-			    expr->value.logical);
+			      expr->value.logical);
 
     case BT_COMPLEX:
       if (expr->representation.string)

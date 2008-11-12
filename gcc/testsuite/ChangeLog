@@ -1,5 +1,15 @@
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/35366
+	PR fortran/33759
+	* gfortran.dg/hollerith.f90: Don't assume a 32-bit value
+	stored into logical variable will be preserved.
+	* gfortran.dg/transfer_simplify_4.f90: Remove undefined
+	cases.  Run at all optimization levels.  Add a couple of
+	new tests.
+	* gfortran.dg/hollerith5.f90: New test.
+	* gfortran.dg/hollerith_legacy.f90: Add dg-warning.
+
 	PR c++/35334
 	* gcc.dg/pr35334.c: New test.
 	* g++.dg/other/error29.C: New test.

@@ -1,3 +1,9 @@
+2008-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35366
+	* fold-const.c (native_encode_string): New function.
+	(native_encode_expr): Use it for STRING_CST.
+
 2008-11-12  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/cond.md (cond_to_int peephole2): Don't eliminate the

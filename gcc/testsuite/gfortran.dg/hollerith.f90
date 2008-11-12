@@ -8,7 +8,7 @@ character z1(4)
 character*4 z2(2,2)
 character*80 line
 integer i
-logical l
+integer j
 real r
 character*8 c
 
@@ -20,15 +20,15 @@ data z2/4h(i7),'xxxx','xxxx','xxxx'/
 
 z2 (1,2) = 4h(i8)
 i = 4hHell
-l = 4Ho wo
+j = 4Ho wo
 r = 4Hrld! 
-write (line, '(3A4)') i, l, r
+write (line, '(3A4)') i, j, r
 if (line .ne. 'Hello world!') call abort
 i = 2Hab
+j = 2Hab
 r = 2Hab
-l = 2Hab
 c = 2Hab
-write (line, '(3A4, 8A)') i, l, r, c
+write (line, '(3A4, 8A)') i, j, r, c
 if (line .ne. 'ab  ab  ab  ab      ') call abort
 
 write(line, '(4A8, "!")' ) x
