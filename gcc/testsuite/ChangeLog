@@ -1,5 +1,10 @@
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34269
+	* g++.dg/cpp0x/decltype13.C: New test.
+	* g++.dg/cpp0x/decltype-33837.C: Adjust dg-error pattern.
+	* g++.dg/cpp0x/pr33839.C: Likewise.
+
 	PR target/35366
 	PR fortran/33759
 	* gfortran.dg/hollerith.f90: Don't assume a 32-bit value
