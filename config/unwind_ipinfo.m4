@@ -1,22 +1,31 @@
 dnl
-dnl Check whether _Unwind_GetIPInfo is available.
+dnl Check whether _Unwind_GetIPInfo is available without doing a link
+dnl test so we can use this with libstdc++-v3 and libjava.  Need to
+dnl use $target to set defaults because automatic checking is not possible
+dnl without a link test (and maybe even with a link test).
 dnl
+
 AC_DEFUN([GCC_CHECK_UNWIND_GETIPINFO], [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
-  AC_MSG_CHECKING([for _Unwind_GetIPInfo])
-  AC_CACHE_VAL(gcc_cv_getipinfo, [
-  AC_TRY_LINK([extern "C" { extern void _Unwind_GetIPInfo(); }],
-      [_Unwind_GetIPInfo();],
-      [gcc_cv_getipinfo=yes],
-      [gcc_cv_getipinfo=no])
-  ])
-  if test $gcc_cv_getipinfo = yes; then
+  AC_ARG_WITH(system-libunwind,
+  [  --with-system-libunwind use installed libunwind])
+  # If system-libunwind was not specifically set, pick a default setting.
+  if test x$with_system_libunwind = x; then
+    case ${target} in
+      ia64-*-hpux*) with_system_libunwind=yes ;;
+      *) with_system_libunwind=no ;;
+    esac
+  fi
+  # Based on system-libunwind and target, do we have ipinfo?
+  if  test x$with_system_libunwind = xyes; then
+    case ${target} in
+      ia64-*-*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+  else
+     have_unwind_getipinfo=yes
+  fi
+
+  if test x$have_unwind_getipinfo = xyes; then
     AC_DEFINE(HAVE_GETIPINFO, 1, [Define if _Unwind_GetIPInfo is available.])
   fi
-  AC_MSG_RESULT($gcc_cv_getipinfo)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
 ])

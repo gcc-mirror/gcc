@@ -1,3 +1,8 @@
+2008-11-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure.ac: Move call to GCC_CHECK_UNWIND_GETIPINFO.
+	* configure: Regenerate to get new GCC_CHECK_UNWIND_GETIPINFO.
+
 2008-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37986 (cont)
