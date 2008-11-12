@@ -25,11 +25,16 @@ endif
 
 if CREATE_WRAPPERS
 bin_SCRIPTS =
-bin_PROGRAMS = gappletviewer gjarsigner gkeytool \
+bin_programs = gappletviewer gjarsigner gkeytool \
 	gjar gnative2ascii gserialver gjavah grmiregistry \
 	gtnameserv gorbd grmid grmic
 if CREATE_GJDOC
-bin_PROGRAMS += gjdoc
+bin_programs += gjdoc
+endif
+if INSTALL_BINARIES
+bin_PROGRAMS = $(bin_programs)
+else
+noinst_PROGRAMS = $(bin_programs)
 endif
 
 AM_CPPFLAGS = -Wall \

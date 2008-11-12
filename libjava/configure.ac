@@ -1429,6 +1429,7 @@ AC_SUBST(IEEESPEC)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes)
 AM_CONDITIONAL(ENABLE_SHARED, test "$enable_shared" = yes)
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
+AM_CONDITIONAL(INSTALL_BINARIES, test -z "${with_multisubdir}")
 AC_SUBST(GCC_UNWIND_INCLUDE)
 
 # Process the option "--enable-version-specific-runtime-libs"

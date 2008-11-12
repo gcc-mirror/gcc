@@ -79,11 +79,18 @@ db_pathtail = $(gcjsubdir)/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
-bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool \
+bin_programs = jv-convert gij grmic grmiregistry gcj-dbtool \
 	gappletviewer gjarsigner gkeytool gjar gcjh gjavah gnative2ascii \
 	gorbd grmid gserialver gtnameserv gc-analyze
 if CREATE_GJDOC
-bin_PROGRAMS += gjdoc
+bin_programs += gjdoc
+endif
+
+noinst_PROGRAMS =
+if INSTALL_BINARIES
+bin_PROGRAMS = $(bin_programs)
+else
+noinst_PROGRAMS += $(bin_programs)
 endif
 
 ## It is convenient to actually build and install the default database
@@ -734,7 +741,7 @@ write-entries-to-file-check:
 ## systems.
 if NATIVE
 if MAINTAINER_MODE
-noinst_PROGRAMS = gen-from-JIS
+noinst_PROGRAMS += gen-from-JIS
 
 gen_from_JIS_SOURCES = \
 	gnu/gcj/convert/gen-from-JIS.c \

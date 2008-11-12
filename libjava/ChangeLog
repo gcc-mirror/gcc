@@ -1,3 +1,12 @@
+2008-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/33764
+	* configure.ac (INSTALL_BINARIES): New AM_CONDITIONAL.
+	* Makefile.am: If not INSTALL_BINARIES, use noinst_PROGRAMS
+	instead of bin_PROGRAMS for binaries.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2008-11-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.ac: Fix typo.
