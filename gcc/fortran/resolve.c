@@ -10179,12 +10179,14 @@ resolve_fntype (gfc_namespace *ns)
     }
 
   if (sym->ts.type == BT_DERIVED && !sym->ts.derived->attr.use_assoc
+      && !sym->attr.contained
       && !gfc_check_access (sym->ts.derived->attr.access,
 			    sym->ts.derived->ns->default_access)
       && gfc_check_access (sym->attr.access, sym->ns->default_access))
     {
-      gfc_error ("PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'",
-		 sym->name, &sym->declared_at, sym->ts.derived->name);
+      gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC function '%s' at "
+		      "%L of PRIVATE type '%s'", sym->name,
+		      &sym->declared_at, sym->ts.derived->name);
     }
 
     if (ns->entries)
