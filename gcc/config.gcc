@@ -408,7 +408,7 @@ case ${target} in
 *-*-darwin*)
   tm_file="${tm_file} darwin.h"
   case ${target} in
-  *-*-darwin9*)
+  *-*-darwin[912]*)
     tm_file="${tm_file} darwin9.h"
     ;;
   esac
