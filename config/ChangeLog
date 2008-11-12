@@ -1,3 +1,9 @@
+2008-11-12  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/27880
+	* unwind_ipinfo.m4 (GCC_CHECK_UNWIND_GETIPINFO): Change from
+	link test to target based test.
+
 2008-08-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* mt-mips16-compat: New file, taken from mt-mips-elfoabi.
