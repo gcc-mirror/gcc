@@ -1,3 +1,10 @@
+2008-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2008-10-21  Jakub Jelinek  <jakub@redhat.com>
+	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW from
+	INTEGER_CSTs.
+
 2008-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38007
