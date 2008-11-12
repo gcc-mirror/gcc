@@ -13083,21 +13083,39 @@ fi
 
 # For platforms with the unwind ABI which includes an unwind library,
 # libunwind, we can choose to use the system libunwind.
+# config.gcc also contains tests of with_system_libunwind.
+
 
 # Check whether --with-system-libunwind or --without-system-libunwind was given.
 if test "${with_system_libunwind+set}" = set; then
   withval="$with_system_libunwind"
 
 fi;
+  # If system-libunwind was not specifically set, pick a default setting.
+  if test x$with_system_libunwind = x; then
+    case ${target} in
+      ia64-*-hpux*) with_system_libunwind=yes ;;
+      *) with_system_libunwind=no ;;
+    esac
+  fi
+  # Based on system-libunwind and target, do we have ipinfo?
+  if  test x$with_system_libunwind = xyes; then
+    case ${target} in
+      ia64-*-*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+  else
+     have_unwind_getipinfo=yes
+  fi
 
-# config.gcc also contains tests of with_system_libunwind.
-if test x$with_system_libunwind = xyes; then
+  if test x$have_unwind_getipinfo = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_GETIPINFO 1
 _ACEOF
 
-fi
+  fi
+
 
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
@@ -13463,150 +13481,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
-fi
-
-use_getipinfo=yes
-if test x$with_system_libunwind = xyes; then
-   if test x$host = x$target; then
-     echo "$as_me:$LINENO: checking for library containing _Unwind_GetIPInfo" >&5
-echo $ECHO_N "checking for library containing _Unwind_GetIPInfo... $ECHO_C" >&6
-if test "${ac_cv_search__Unwind_GetIPInfo+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-ac_cv_search__Unwind_GetIPInfo=no
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char _Unwind_GetIPInfo ();
-int
-main ()
-{
-_Unwind_GetIPInfo ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_search__Unwind_GetIPInfo="none required"
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-if test "$ac_cv_search__Unwind_GetIPInfo" = no; then
-  for ac_lib in unwind; do
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-    cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char _Unwind_GetIPInfo ();
-int
-main ()
-{
-_Unwind_GetIPInfo ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_search__Unwind_GetIPInfo="-l$ac_lib"
-break
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-  done
-fi
-LIBS=$ac_func_search_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_search__Unwind_GetIPInfo" >&5
-echo "${ECHO_T}$ac_cv_search__Unwind_GetIPInfo" >&6
-if test "$ac_cv_search__Unwind_GetIPInfo" != no; then
-  test "$ac_cv_search__Unwind_GetIPInfo" = "none required" || LIBS="$ac_cv_search__Unwind_GetIPInfo $LIBS"
-
-else
-  use_getipinfo=no
-fi
-
-   fi
-fi
-
-if test x$use_getipinfo = xyes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_GETIPINFO 1
-_ACEOF
-
-else
-   echo "The system unwind library does not support _Unwind_GetIPInfo."
 fi
 
 # Look for a file containing extra machine modes.
@@ -14629,13 +14503,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:14632: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:14506: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14635: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:14509: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14638: output\"" >&5)
+  (eval echo "\"\$as_me:14512: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -15792,7 +15666,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 15795 "configure"' > conftest.$ac_ext
+  echo '#line 15669 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -17091,11 +16965,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17094: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16968: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17098: \$? = $ac_status" >&5
+   echo "$as_me:16972: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17430,11 +17304,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17433: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17307: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17437: \$? = $ac_status" >&5
+   echo "$as_me:17311: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17535,11 +17409,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17538: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17412: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17542: \$? = $ac_status" >&5
+   echo "$as_me:17416: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17590,11 +17464,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17593: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17467: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17597: \$? = $ac_status" >&5
+   echo "$as_me:17471: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20387,7 +20261,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20390 "configure"
+#line 20264 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20483,7 +20357,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20486 "configure"
+#line 20360 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

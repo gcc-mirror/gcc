@@ -918,8 +918,11 @@
 #endif
 
 
-/* Define to 1 if system unwind library has _Unwind_GetIPInfo. */
+/* Define if _Unwind_GetIPInfo is available. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_GETIPINFO
+#endif
+
 
 /* Define to 1 if you have the `getrlimit' function. */
 #ifndef USED_FOR_TARGET
