@@ -1,3 +1,8 @@
+2008-11-12  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/cond.md (cond_to_int peephole2): Don't eliminate the
+	insns if the intermediate value will be used later.
+
 2008-11-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (print_operand): Mask off extra extension
