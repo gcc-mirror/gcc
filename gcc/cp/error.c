@@ -2068,6 +2068,7 @@ dump_expr (tree t, int flags)
     case UNGE_EXPR:
     case UNEQ_EXPR:
     case LTGT_EXPR:
+    case COMPLEX_EXPR:
       pp_expression (cxx_pp, t);
       break;
 
