@@ -42,4 +42,8 @@ void test01()
     std::tr1::mt19937*,
     std::tr1::uniform_real<double>
     > g3(&mt, dist);
+
+  g1();
+  g2();
+  g3();
 }
