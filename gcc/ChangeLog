@@ -1,3 +1,11 @@
+2008-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36478
+	Revert:
+	2007-05-07  Mike Stump  <mrs@apple.com>
+	* doc/invoke.texi (Warning Options): Document that -Wempty-body
+	also checks for and while statements in C++.
+
 2008-11-12  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/27574
