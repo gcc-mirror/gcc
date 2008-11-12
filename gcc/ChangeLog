@@ -1,3 +1,12 @@
+2008-11-12  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/27880
+	* configure.ac (GCC_CHECK_UNWIND_GETIPINFO): Use this macro
+	to set HAVE_GETIPINFO.
+	* aclocal.m4: Include ../config/unwind_ipinfo.m4.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2008-11-12  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/38010

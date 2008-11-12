@@ -1188,14 +1188,8 @@ fi
 
 # For platforms with the unwind ABI which includes an unwind library,
 # libunwind, we can choose to use the system libunwind.
-AC_ARG_WITH(system-libunwind,
-[  --with-system-libunwind use installed libunwind])
-
 # config.gcc also contains tests of with_system_libunwind.
-if test x$with_system_libunwind = xyes; then
-        AC_DEFINE(HAVE_GETIPINFO, 1,
-[Define to 1 if system unwind library has _Unwind_GetIPInfo.])
-fi
+GCC_CHECK_UNWIND_GETIPINFO
 
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
@@ -1419,20 +1413,6 @@ if test x$enable___cxa_atexit = xyes || \
       This is essential for fully standards-compliant handling of
       destructors, but requires __cxa_atexit in libc.])
   fi
-fi
-
-use_getipinfo=yes
-if test x$with_system_libunwind = xyes; then
-   if test x$host = x$target; then
-     AC_SEARCH_LIBS(_Unwind_GetIPInfo, unwind,, [use_getipinfo=no])
-   fi
-fi
-GCC_TARGET_TEMPLATE(HAVE_GETIPINFO)
-if test x$use_getipinfo = xyes; then
-   AC_DEFINE(HAVE_GETIPINFO, 1,
-	[Define to 1 if system unwind library has _Unwind_GetIPInfo.])
-else
-   echo "The system unwind library does not support _Unwind_GetIPInfo."
 fi
 
 # Look for a file containing extra machine modes.
