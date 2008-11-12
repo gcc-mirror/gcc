@@ -1,5 +1,9 @@
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35334
+	* c-pretty-print.c (pp_c_complex_expr): New function.
+	(pp_c_postfix_expression) <case COMPLEX_EXPR>: Call it.
+
 	PR target/35366
 	* expr.c (expand_expr_addr_expr_1): If EXP needs bigger alignment
 	than INNER and INNER is a constant, forcibly align INNER as much
