@@ -1,5 +1,9 @@
 2008-11-12  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	PR testsuite/38008
+	* gcc.c-torture/execute/builtins/lib/sprintf.c: Make
+	sprintf call more portable for darwin10.
+
 	PR testsuite/37202
 	* gcc.dg/visibility-14.c:  Skip on *-*-darwin*.
 	* gcc.dg/visibility-15.c:  Same.
