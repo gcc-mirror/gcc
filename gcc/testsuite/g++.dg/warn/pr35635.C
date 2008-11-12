@@ -32,7 +32,7 @@ void func1()
   /* At least one branch of ? does not fit in the destination, thus
      warn.  */
   unsigned_bit.x = bar != 0 ? 2 : 0; /* { dg-warning "conversion" } */
-  unsigned_bit.x = bar != 0 ? 0 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  unsigned_bit.x = bar != 0 ? 0 : -1; /* { dg-warning "conver" } */
 }
 
 void func2()

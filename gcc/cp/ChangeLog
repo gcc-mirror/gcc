@@ -1,3 +1,8 @@
+2008-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38007
+	* typeck.c (cp_build_modify_expr): Update bitfield handling.
+
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34269

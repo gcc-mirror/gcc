@@ -1,3 +1,11 @@
+2008-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38007
+	* g++.dg/conversion/bitfield10.C: New test.
+	* g++.dg/warn/pr35635.C (func1): Accept additional warning.
+	* g++.old-deja/g++.mike/enum1.C: Expect warn about assignment.
+	* g++.dg/expr/bitfield9.C: Pass -Wno-overflow.
+
 2008-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38065
