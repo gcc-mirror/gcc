@@ -1,7 +1,12 @@
+2008-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38065
+	* resolve.c (resolve_fntype): Fix private derived type checking.
+
 2008-11-09  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37836
-        * intrinsic.c (add_functions): Reference gfc_simplify._minval
+	PR fortran/37836
+	* intrinsic.c (add_functions): Reference gfc_simplify._minval
 	and gfc_simplify_maxval.
 	* intrinsic.h : Add prototypes for gfc_simplify._minval and
 	gfc_simplify_maxval.
@@ -13,8 +18,8 @@
 
 2008-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37597
-        * parse.c (gfc_fixup_sibling_symbols ): Fixup contained, even
+	PR fortran/37597
+	* parse.c (gfc_fixup_sibling_symbols ): Fixup contained, even
 	when symbol not found.
 
 2008-11-03  Tobias Burnus  <burnus@net-b.de>
