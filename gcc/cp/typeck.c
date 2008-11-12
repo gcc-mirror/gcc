@@ -5549,7 +5549,6 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   tree newrhs = rhs;
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
-  tree olhs = NULL_TREE;
   bool plain_assign = (modifycode == NOP_EXPR);
 
   /* Avoid duplicate error messages from operands that had errors.  */
@@ -5737,35 +5736,11 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	      && C_TYPE_FIELDS_READONLY (lhstype))))
     readonly_error (lhs, "assignment", 0);
 
-  /* If storing into a structure or union member, it has probably been
-     given type `int'.  Compute the type that would go with the actual
-     amount of storage the member occupies.  */
+  /* If storing into a structure or union member, it may have been given a
+     lowered bitfield type.  We need to convert to the declared type first,
+     so retrieve it now.  */
 
-  if (TREE_CODE (lhs) == COMPONENT_REF
-      && (TREE_CODE (lhstype) == INTEGER_TYPE
-	  || TREE_CODE (lhstype) == REAL_TYPE
-	  || TREE_CODE (lhstype) == ENUMERAL_TYPE))
-    {
-      lhstype = TREE_TYPE (get_unwidened (lhs, 0));
-
-      /* If storing in a field that is in actuality a short or narrower
-	 than one, we must store in the field in its actual type.  */
-
-      if (lhstype != TREE_TYPE (lhs))
-	{
-	  /* Avoid warnings converting integral types back into enums for
-	     enum bit fields.  */
-	  if (TREE_CODE (lhstype) == INTEGER_TYPE
-	      && TREE_CODE (olhstype) == ENUMERAL_TYPE)
-	    {
-	      if (TREE_SIDE_EFFECTS (lhs))
-		lhs = stabilize_reference (lhs);
-	      olhs = lhs;
-	    }
-	  lhs = copy_node (lhs);
-	  TREE_TYPE (lhs) = lhstype;
-	}
-    }
+  olhstype = unlowered_expr_type (lhs);
 
   /* Convert new value to destination type.  */
 
@@ -5801,21 +5776,17 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     }
 
   if (modifycode == INIT_EXPR)
-    newrhs = convert_for_initialization (lhs, lhstype, newrhs, LOOKUP_NORMAL,
+    newrhs = convert_for_initialization (lhs, olhstype, newrhs, LOOKUP_NORMAL,
 					 "initialization", NULL_TREE, 0);
   else
+    newrhs = convert_for_assignment (olhstype, newrhs, "assignment",
+				     NULL_TREE, 0);
+
+  if (!same_type_p (lhstype, olhstype))
+    newrhs = convert_and_check (lhstype, newrhs);
+
+  if (modifycode != INIT_EXPR)
     {
-      /* Avoid warnings on enum bit fields.  */
-      if (TREE_CODE (olhstype) == ENUMERAL_TYPE
-	  && TREE_CODE (lhstype) == INTEGER_TYPE)
-	{
-	  newrhs = convert_for_assignment (olhstype, newrhs, "assignment",
-					   NULL_TREE, 0);
-	  newrhs = convert_force (lhstype, newrhs, 0);
-	}
-      else
-	newrhs = convert_for_assignment (lhstype, newrhs, "assignment",
-					 NULL_TREE, 0);
       if (TREE_CODE (newrhs) == CALL_EXPR
 	  && TYPE_NEEDS_CONSTRUCTING (lhstype))
 	newrhs = build_cplus_new (lhstype, newrhs);
@@ -5847,21 +5818,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (!plain_assign)
     TREE_NO_WARNING (result) = 1;
 
-  /* If we got the LHS in a different type for storing in,
-     convert the result back to the nominal type of LHS
-     so that the value we return always has the same type
-     as the LHS argument.  */
-
-  if (olhstype == TREE_TYPE (result))
-    return result;
-  if (olhs)
-    {
-      result = build2 (COMPOUND_EXPR, olhstype, result, olhs);
-      TREE_NO_WARNING (result) = 1;
-      return result;
-    }
-  return convert_for_assignment (olhstype, result, "assignment",
-				 NULL_TREE, 0);
+  return result;
 }
 
 tree

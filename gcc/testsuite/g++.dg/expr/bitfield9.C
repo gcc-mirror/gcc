@@ -1,5 +1,6 @@
 // PR c++/32346
 // { dg-do run }
+// { dg-options "-Wno-overflow" }
 
 extern "C" void abort();
 
