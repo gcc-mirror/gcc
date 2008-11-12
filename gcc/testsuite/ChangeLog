@@ -1,3 +1,10 @@
+2008-11-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.target/s390/frame-addr1.c: New testcase.
+	* gcc.target/s390/frame-addr2.c: New testcase.
+	* gcc.target/s390/return-addr1.c: New testcase.
+	* gcc.target/s390/return-addr2.c: New testcase.
+
 2008-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/anon5.C: Skip on Solaris.

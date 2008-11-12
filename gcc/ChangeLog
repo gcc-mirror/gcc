@@ -1,3 +1,9 @@
+2008-11-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc/config/s390/s390.h (INITIAL_FRAME_ADDRESS_RTX): Remove
+	packed-stack special handling.
+	(FRAME_ADDR_RTX): Add definition.
+
 2008-11-12  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38079
