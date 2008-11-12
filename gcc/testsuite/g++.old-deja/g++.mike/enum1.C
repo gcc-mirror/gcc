@@ -8,4 +8,4 @@ struct Type {
   void setBTK();
 };
 
-void Type::setBTK() { kind = DTK; }
+void Type::setBTK() { kind = DTK; } // { dg-warning "truncate" }
