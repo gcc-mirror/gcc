@@ -44,29 +44,23 @@ target_triplet = @target@
 @USE_LIBGCJ_BC_TRUE@am__append_2 = libgcj_bc.la
 @XLIB_AWT_TRUE@am__append_3 = lib-gnu-awt-xlib.la
 @INSTALL_ECJ_JAR_TRUE@am__append_4 = $(ECJ_BUILD_JAR)
-@NATIVE_TRUE@bin_PROGRAMS = jv-convert$(EXEEXT) gij$(EXEEXT) \
-@NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
-@NATIVE_TRUE@	gcj-dbtool$(EXEEXT) gappletviewer$(EXEEXT) \
-@NATIVE_TRUE@	gjarsigner$(EXEEXT) gkeytool$(EXEEXT) \
-@NATIVE_TRUE@	gjar$(EXEEXT) gcjh$(EXEEXT) gjavah$(EXEEXT) \
-@NATIVE_TRUE@	gnative2ascii$(EXEEXT) gorbd$(EXEEXT) \
-@NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
-@NATIVE_TRUE@	gtnameserv$(EXEEXT) gc-analyze$(EXEEXT) \
-@NATIVE_TRUE@	$(am__EXEEXT_1)
 @CREATE_GJDOC_TRUE@@NATIVE_TRUE@am__append_5 = gjdoc
-@INSTALL_AOT_RPM_TRUE@am__append_6 = contrib/aot-compile-rpm
+@NATIVE_TRUE@noinst_PROGRAMS = $(am__EXEEXT_3) $(am__EXEEXT_4)
+@INSTALL_BINARIES_TRUE@@NATIVE_TRUE@bin_PROGRAMS = $(am__EXEEXT_2)
+@INSTALL_BINARIES_FALSE@@NATIVE_TRUE@am__append_6 = $(bin_programs)
+@INSTALL_AOT_RPM_TRUE@am__append_7 = contrib/aot-compile-rpm
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
-@ANONVERSCRIPT_TRUE@am__append_7 = -Wl,--version-script=$(srcdir)/libgcj.ver
-@USING_GCC_TRUE@am__append_8 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_9 = boehm.cc
-@USING_NOGC_TRUE@am__append_10 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_11 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_12 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_13 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_14 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_15 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_16 = no-threads.cc
-@ANONVERSCRIPT_TRUE@am__append_17 = $(srcdir)/libgcj.ver
+@ANONVERSCRIPT_TRUE@am__append_8 = -Wl,--version-script=$(srcdir)/libgcj.ver
+@USING_GCC_TRUE@am__append_9 = $(WARNINGS)
+@USING_BOEHMGC_TRUE@am__append_10 = boehm.cc
+@USING_NOGC_TRUE@am__append_11 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_12 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_13 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_14 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_15 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_16 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_17 = no-threads.cc
+@ANONVERSCRIPT_TRUE@am__append_18 = $(srcdir)/libgcj.ver
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -80,10 +74,9 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(top_srcdir)/contrib/aotcompile.py.in \
 	$(top_srcdir)/contrib/rebuild-gcj-db.in \
 	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
-@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
-@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_18 = libgcj_bc.la
-@XLIB_AWT_TRUE@am__append_19 = $(xlib_nat_headers)
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_19 = gen-from-JIS
+@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_20 = libgcj_bc.la
+@XLIB_AWT_TRUE@am__append_21 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
@@ -459,8 +452,20 @@ libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
 am_libjvm_la_OBJECTS = jni-libjvm.lo
 libjvm_la_OBJECTS = $(am_libjvm_la_OBJECTS)
 @CREATE_GJDOC_TRUE@@NATIVE_TRUE@am__EXEEXT_1 = gjdoc$(EXEEXT)
+@NATIVE_TRUE@am__EXEEXT_2 = jv-convert$(EXEEXT) gij$(EXEEXT) \
+@NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
+@NATIVE_TRUE@	gcj-dbtool$(EXEEXT) gappletviewer$(EXEEXT) \
+@NATIVE_TRUE@	gjarsigner$(EXEEXT) gkeytool$(EXEEXT) \
+@NATIVE_TRUE@	gjar$(EXEEXT) gcjh$(EXEEXT) gjavah$(EXEEXT) \
+@NATIVE_TRUE@	gnative2ascii$(EXEEXT) gorbd$(EXEEXT) \
+@NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
+@NATIVE_TRUE@	gtnameserv$(EXEEXT) gc-analyze$(EXEEXT) \
+@NATIVE_TRUE@	$(am__EXEEXT_1)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 libexecsubPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+@INSTALL_BINARIES_FALSE@@NATIVE_TRUE@am__EXEEXT_3 = $(am__EXEEXT_2)
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__EXEEXT_4 =  \
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexecsub_PROGRAMS) $(noinst_PROGRAMS)
 am_ecjx_OBJECTS =
 ecjx_OBJECTS = $(am_ecjx_OBJECTS)
@@ -654,6 +659,8 @@ IEEESPEC = @IEEESPEC@
 INCLTDL = @INCLTDL@
 INSTALL_AOT_RPM_FALSE = @INSTALL_AOT_RPM_FALSE@
 INSTALL_AOT_RPM_TRUE = @INSTALL_AOT_RPM_TRUE@
+INSTALL_BINARIES_FALSE = @INSTALL_BINARIES_FALSE@
+INSTALL_BINARIES_TRUE = @INSTALL_BINARIES_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_ECJ_JAR_FALSE = @INSTALL_ECJ_JAR_FALSE@
 INSTALL_ECJ_JAR_TRUE = @INSTALL_ECJ_JAR_TRUE@
@@ -829,7 +836,7 @@ dbexecdir = @dbexecdir@
 exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
-extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_7)
+extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_8)
 gcc_suffix = @gcc_suffix@
 gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
@@ -915,9 +922,13 @@ jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar \
 @JAVA_HOME_SET_TRUE@BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 db_name = classmap.db
 db_pathtail = $(gcjsubdir)/$(db_name)
+@NATIVE_TRUE@bin_programs = jv-convert gij grmic grmiregistry \
+@NATIVE_TRUE@	gcj-dbtool gappletviewer gjarsigner gkeytool gjar \
+@NATIVE_TRUE@	gcjh gjavah gnative2ascii gorbd grmid gserialver \
+@NATIVE_TRUE@	gtnameserv gc-analyze $(am__append_5)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk contrib/rebuild-gcj-db contrib/aot-compile \
-	$(am__append_6)
+	$(am__append_7)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
           $(LDFLAGS) -o $@
@@ -955,7 +966,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_8)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_9)
 @SUPPRESS_LIBGCJ_BC_FALSE@LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 @SUPPRESS_LIBGCJ_BC_TRUE@LIBGCJ_BC_FLAGS = 
 @BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@LIBGCJ_REDUCED_REFLECTION_FLAGS = 
@@ -982,9 +993,9 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 @INTERPRETER_TRUE@libgcj_interpret_source_files = jvmti.cc interpret.cc
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc verify.cc $(libgcj_interpret_source_files) \
-	$(nat_source_files) $(am__append_9) $(am__append_10) \
-	$(am__append_11) $(am__append_12) $(am__append_13) \
-	$(am__append_14) $(am__append_15) $(am__append_16)
+	$(nat_source_files) $(am__append_10) $(am__append_11) \
+	$(am__append_12) $(am__append_13) $(am__append_14) \
+	$(am__append_15) $(am__append_16) $(am__append_17)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -1008,7 +1019,7 @@ libgcj_la_LIBADD = \
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
 	java/lang/Class.lo java/process-$(PLATFORM).lo \
 	$(all_packages_source_files:.list=.lo) $(LIBLTDL) \
-	$(libgcj_la_LIBADD) $(am__append_17)
+	$(libgcj_la_LIBADD) $(am__append_18)
 libgcj_la_LINK = $(LIBLINK)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 libgcj_tools_la_SOURCES = classpath/tools/tools.zip
@@ -8345,7 +8356,7 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs libgcj.la
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
-@NATIVE_TRUE@	$(am__append_18)
+@NATIVE_TRUE@	$(am__append_20)
 gappletviewer_SOURCES = 
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8561,7 +8572,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_19)
+headers_to_make = $(nat_headers) $(am__append_21)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

@@ -46,6 +46,8 @@ dnl END GCJ LOCAL
 # Find the rest of the source tree framework.
 AM_ENABLE_MULTILIB(, ../..)
 
+AM_CONDITIONAL(INSTALL_BINARIES, test -z "${with_multisubdir}")
+
 dnl -----------------------------------------------------------
 dnl Fold all IA-32 CPU architectures into "x86"
 dnl -----------------------------------------------------------
