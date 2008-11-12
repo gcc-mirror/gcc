@@ -79,11 +79,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     template<typename _Engine, typename _Distribution>
       struct _Adaptor
       { 
-	typedef typename remove_reference<
-	  typename remove_pointer<_Engine>::type>::type _BEngine;
-
-	typedef typename _BEngine::result_type       _Engine_result_type;
-	typedef typename _Distribution::input_type   result_type;
+	typedef typename remove_reference<_Engine>::type _BEngine;
+	typedef typename _BEngine::result_type           _Engine_result_type;
+	typedef typename _Distribution::input_type       result_type;
 
       public:
 	_Adaptor(const _Engine& __g)
@@ -148,6 +146,69 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
       private:
 	_Engine _M_g;
+      };
+
+    // Specialization for _Engine*.
+    template<typename _Engine, typename _Distribution>
+      struct _Adaptor<_Engine*, _Distribution>
+      {
+	typedef typename _Engine::result_type      _Engine_result_type;
+	typedef typename _Distribution::input_type result_type;
+
+      public:
+	_Adaptor(_Engine* __g)
+	: _M_g(__g) { }
+
+	result_type
+	min() const
+	{
+	  result_type __return_value;
+	  if (is_integral<_Engine_result_type>::value
+	      && is_integral<result_type>::value)
+	    __return_value = _M_g->min();
+	  else
+	    __return_value = result_type(0);
+	  return __return_value;
+	}
+
+	result_type
+	max() const
+	{
+	  result_type __return_value;
+	  if (is_integral<_Engine_result_type>::value
+	      && is_integral<result_type>::value)
+	    __return_value = _M_g->max();
+	  else if (!is_integral<result_type>::value)
+	    __return_value = result_type(1);
+	  else
+	    __return_value = std::numeric_limits<result_type>::max() - 1;
+	  return __return_value;
+	}
+
+	result_type
+	operator()()
+	{
+	  result_type __return_value;
+	  if (is_integral<_Engine_result_type>::value
+	      && is_integral<result_type>::value)
+	    __return_value = (*_M_g)();
+	  else if (!is_integral<_Engine_result_type>::value
+		   && !is_integral<result_type>::value)
+	    __return_value = result_type((*_M_g)() - _M_g->min())
+	      / result_type(_M_g->max() - _M_g->min());
+	  else if (is_integral<_Engine_result_type>::value
+		   && !is_integral<result_type>::value)
+	    __return_value = result_type((*_M_g)() - _M_g->min())
+	      / result_type(_M_g->max() - _M_g->min() + result_type(1));
+	  else
+	    __return_value = ((((*_M_g)() - _M_g->min()) 
+			       / (_M_g->max() - _M_g->min()))
+			      * std::numeric_limits<result_type>::max());
+	  return __return_value;
+	}
+
+      private:
+	_Engine* _M_g;
       };
   } // namespace __detail
 

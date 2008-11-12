@@ -1,3 +1,12 @@
+2008-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/37986 (cont)
+	* include/tr1_impl/random (struct _Adaptor): Use only remove_reference
+	on _Engine.
+	(struct _Adaptor<_Engine*, _Distribution>): Add.
+	* testsuite/tr1/5_numerical_facilities/random/variate_generator/
+	37986.cc: Extend.
+
 2008-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/37986
