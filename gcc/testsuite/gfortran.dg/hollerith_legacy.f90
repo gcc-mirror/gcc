@@ -21,13 +21,13 @@ data z2/4h(i7),'xxxx','xxxx','xxxx'/
 
 z2 (1,2) = 4h(i8)
 i = 4hHell
-l = 4Ho wo
+l = 4Ho wo	! { dg-warning "has undefined result" }
 r = 4Hrld! 
 write (line, '(3A4)') i, l, r
 if (line .ne. 'Hello world!') call abort
 i = 2Hab
 r = 2Hab
-l = 2Hab
+l = 2Hab	! { dg-warning "has undefined result" }
 c = 2Hab
 write (line, '(3A4, 8A)') i, l, r, c
 if (line .ne. 'ab  ab  ab  ab      ') call abort

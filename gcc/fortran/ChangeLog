@@ -1,3 +1,15 @@
+2008-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35366
+	PR fortran/33759
+	* trans-const.c (gfc_conv_constant_to_tree): Warn when
+	converting an integer outside of LOGICAL's range to
+	LOGICAL.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function,
+	gfc_conv_intrinsic_array_transfer, gfc_conv_intrinsic_transfer):
+	Use INTEGER_TYPE instead of BOOLEAN_TYPE for TRANSFER as
+	argument of another TRANSFER.
+
 2008-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38065
