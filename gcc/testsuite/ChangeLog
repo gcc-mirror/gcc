@@ -1,3 +1,8 @@
+2008-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38094
+	* gfortran.dg/private_type_4.f90: Fix dg-error pattern.
+
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36478
