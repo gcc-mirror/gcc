@@ -3678,9 +3678,7 @@ integers are disabled by default in C++ unless
 @opindex Wempty-body
 @opindex Wno-empty-body
 Warn if an empty body occurs in an @samp{if}, @samp{else} or @samp{do
-while} statement.  Additionally, in C++, warn when an empty body occurs
-in a @samp{while} or @samp{for} statement with no whitespacing before
-the semicolon.  This warning is also enabled by @option{-Wextra}.
+while} statement.  This warning is also enabled by @option{-Wextra}.
 
 @item -Wenum-compare @r{(C++ and Objective-C++ only)}
 @opindex Wenum-compare
