@@ -1,3 +1,13 @@
+2008-11-12  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/37202
+	* gcc.dg/visibility-14.c:  Skip on *-*-darwin*.
+	* gcc.dg/visibility-15.c:  Same.
+	* gcc.dg/visibility-16.c:  Same.
+	* gcc.dg/visibility-17.c:  Same.
+	* gcc.dg/visibility-18.c:  Same.
+	* gcc.dg/visibility-19.c:  Same.
+
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34269
