@@ -3888,7 +3888,7 @@ print_operand (FILE *file, rtx op, int letter)
       long l;
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
       REAL_VALUE_TO_TARGET_SINGLE (r, l);
-      asm_fprintf (file, "%I0x%lx", l);
+      asm_fprintf (file, "%I0x%lx", l & 0xFFFFFFFF);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == XFmode)
     {
@@ -3896,7 +3896,8 @@ print_operand (FILE *file, rtx op, int letter)
       long l[3];
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
       REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
-      asm_fprintf (file, "%I0x%lx%08lx%08lx", l[0], l[1], l[2]);
+      asm_fprintf (file, "%I0x%lx%08lx%08lx", l[0] & 0xFFFFFFFF,
+		   l[1] & 0xFFFFFFFF, l[2] & 0xFFFFFFFF);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
     {
@@ -3904,7 +3905,7 @@ print_operand (FILE *file, rtx op, int letter)
       long l[2];
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
       REAL_VALUE_TO_TARGET_DOUBLE (r, l);
-      asm_fprintf (file, "%I0x%lx%08lx", l[0], l[1]);
+      asm_fprintf (file, "%I0x%lx%08lx", l[0] & 0xFFFFFFFF, l[1] & 0xFFFFFFFF);
     }
   else
     {
