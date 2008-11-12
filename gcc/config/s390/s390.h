@@ -574,9 +574,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Defining this macro makes __builtin_frame_address(0) and 
    __builtin_return_address(0) work with -fomit-frame-pointer.  */
 #define INITIAL_FRAME_ADDRESS_RTX                                             \
-  (TARGET_PACKED_STACK ?                                                      \
-   plus_constant (arg_pointer_rtx, -UNITS_PER_WORD) :                         \
-   plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
+  (plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
 
 /* The return address of the current frame is retrieved
    from the initial value of register RETURN_REGNUM.
@@ -585,6 +583,16 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define DYNAMIC_CHAIN_ADDRESS(FRAME)                                          \
   (TARGET_PACKED_STACK ?                                                      \
    plus_constant ((FRAME), STACK_POINTER_OFFSET - UNITS_PER_WORD) : (FRAME))
+
+/* For -mpacked-stack this adds 160 - 8 (96 - 4) to the output of
+   builtin_frame_address.  Otherwise arg pointer -
+   STACK_POINTER_OFFSET would be returned for
+   __builtin_frame_address(0) what might result in an address pointing
+   somewhere into the middle of the local variables since the packed
+   stack layout generally does not need all the bytes in the register
+   save area.  */
+#define FRAME_ADDR_RTX(FRAME)			\
+  DYNAMIC_CHAIN_ADDRESS ((FRAME))
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					      \
   s390_return_addr_rtx ((COUNT), DYNAMIC_CHAIN_ADDRESS ((FRAME)))
