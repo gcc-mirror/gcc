@@ -1,3 +1,9 @@
+2008-11-12  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/38079
+	* tree-vect-analyze.c (vect_analyze_data_refs): Replace dump_file
+	with vect_dump.
+
 2008-11-10  Andrew Haley  <aph@redhat.com>
 
 	Backport from mainline:
