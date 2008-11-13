@@ -1,3 +1,17 @@
+2008-11-13  Thomas Schwinge  <tschwinge@gnu.org>
+
+	PR target/28102
+	* config.gcc (*-*-gnu*): Move Alpha parts into the `alpha*-*-gnu*', x86
+	parts into the `i[34567]86-*-linux*' and parts that are independent of
+	the processor architecture into the `*-*-linux*' cases.
+	(*-*-linux*): Consider `linux.opt' only for Linux-based configurations.
+	* config/i386/gnu.h (GLIBC_DYNAMIC_LINKER): Redefine.
+	(TARGET_OS_CPP_BUILTINS, LINK_SPEC): Don't redefine.
+	[TARGET_LIBC_PROVIDES_SSP] (TARGET_THREAD_SSP_OFFSET): Undefine.
+	* config/gnu.h (NO_IMPLICIT_EXTERN_C): Don't redefine.
+	(HURD_TARGET_OS_CPP_BUILTINS): Don't define, but instead...
+	(LINUX_TARGET_OS_CPP_BUILTINS): Redefine.
+
 2008-11-13  Ruan Beihong  <ruanbeihong@gmail.com>
 
 	* config/mips/loongson.md (<u>div<mode>3, <u>mod<mode>3): New patterns.
