@@ -351,8 +351,10 @@
 ;; trap		trap if instructions
 ;; imul		integer multiply 2 operands
 ;; imul3	integer multiply 3 operands
+;; imul3nc	integer multiply 3 operands without clobbering HI/LO
 ;; imadd	integer multiply-add
-;; idiv		integer divide
+;; idiv		integer divide 2 operands
+;; idiv3	integer divide 3 operands
 ;; move		integer register move ({,D}ADD{,U} with rt = 0)
 ;; fmove	floating point register move
 ;; fadd		floating point add/subtract
@@ -376,9 +378,9 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mtc,mfc,mthilo,mfhilo,const,arith,logical,
-   shift,slt,signext,clz,pop,trap,imul,imul3,imadd,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,
-   frsqrt2,multi,nop,ghost"
+   shift,slt,signext,clz,pop,trap,imul,imul3,imul3nc,imadd,idiv,idiv3,move,
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,
+   frsqrt,frsqrt1,frsqrt2,multi,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -553,7 +555,7 @@
 		    (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0))))
 	  (const_int 8)
 
-	  (eq_attr "type" "idiv")
+	  (eq_attr "type" "idiv,idiv3")
 	  (symbol_ref "mips_idiv_insns () * 4")
 	  ] (const_int 4)))
 
@@ -787,6 +789,10 @@
 ;; from the same template.
 (define_code_iterator any_div [div udiv])
 
+;; This code iterator allows unsigned and signed modulus to be generated
+;; from the same template.
+(define_code_iterator any_mod [mod umod])
+
 ;; This code iterator allows all native floating-point comparisons to be
 ;; generated from the same template.
 (define_code_iterator fcond [unordered uneq unlt unle eq lt le])
@@ -809,6 +815,7 @@
 ;; "u" when doing an unsigned operation.
 (define_code_attr u [(sign_extend "") (zero_extend "u")
 		     (div "") (udiv "u")
+		     (mod "") (umod "u")
 		     (gt "") (gtu "u")
 		     (ge "") (geu "u")
 		     (lt "") (ltu "u")
@@ -1357,7 +1364,10 @@
 		  (match_operand:GPR 2 "register_operand")))]
   ""
 {
-  if (ISA_HAS_<D>MUL3)
+  if (TARGET_LOONGSON_2EF)
+    emit_insn (gen_mul<mode>3_mul3_ls2ef (operands[0], operands[1],
+                                          operands[2]));
+  else if (ISA_HAS_<D>MUL3)
     emit_insn (gen_mul<mode>3_mul3 (operands[0], operands[1], operands[2]));
   else if (TARGET_FIX_R4000)
     emit_insn (gen_mul<mode>3_r4000 (operands[0], operands[1], operands[2]));
@@ -1366,6 +1376,15 @@
       (gen_mul<mode>3_internal (operands[0], operands[1], operands[2]));
   DONE;
 })
+
+(define_insn "mul<mode>3_mul3_ls2ef"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (mult:GPR (match_operand:GPR 1 "register_operand" "d")
+                  (match_operand:GPR 2 "register_operand" "d")))]
+  "TARGET_LOONGSON_2EF"
+  "<d>multu.g\t%0,%1,%2"
+  [(set_attr "type" "imul3nc")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "mul<mode>3_mul3"
   [(set (match_operand:GPR 0 "register_operand" "=d,l")
@@ -6128,6 +6147,9 @@
 	     (match_operand 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
+  if (TARGET_LOONGSON_2EF)
+    /* Loongson 2[ef] use load to $0 to perform prefetching.  */
+    return "ld\t$0,%a0";
   operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
   return "pref\t%1,%a0";
 }
