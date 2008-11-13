@@ -159,4 +159,9 @@ Use Neon quad-word (rather than double-word) registers for vectorization
 
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
-+Only generate absolute relocations on word sized values.
+Only generate absolute relocations on word sized values.
+
+mfix-cortex-m3-ldrd
+Target Report Var(fix_cm3_ldrd) Init(2)
+Avoid overlapping destination and address registers on LDRD instructions
+that may trigger Cortex-M3 errata.
