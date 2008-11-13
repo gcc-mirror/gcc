@@ -12,7 +12,7 @@
 2008-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (dg-options): Add -mno-mmx
-	for i?86-*-* and x86_64-*-* targets
+	for i?86-*-* and x86_64-*-* targets.
 	* g++.dg/compat/struct-layout-1_generate.c (dg-options): Add
 	-fno-common for *-*-darwin* *-*-mingw32* *-*-cygwin* targets.
 
@@ -126,7 +126,7 @@
 	PR c++/38021
 	* g++.dg/cpp0x/enum1.C: New test.
 
-2008-11-02  Ralph Loader  <suckfish@ihug.co.nz>
+2008-11-10  Ralph Loader  <suckfish@ihug.co.nz>
 
 	PR middle-end/37807
 	PR middle-end/37809
@@ -6041,6 +6041,11 @@
 
 	PR c++/35327
 	* g++.dg/parse/crash41.C: New.
+
+2008-06-06  Uros Bizjak <ubizjak@gmail.com>
+
+	PR rtl-optimization/36438
+	* gcc.target/i386/pr36438.c
 
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
