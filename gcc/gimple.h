@@ -59,9 +59,6 @@ extern const unsigned char gimple_rhs_class_table[];
 extern void gimple_check_failed (const_gimple, const char *, int,          \
                                  const char *, enum gimple_code,           \
 				 enum tree_code) ATTRIBUTE_NORETURN;
-extern void gimple_range_check_failed (const_gimple, const char *, int,    \
-                                       const char *, enum gimple_code,     \
-				       enum gimple_code) ATTRIBUTE_NORETURN;
 
 #define GIMPLE_CHECK(GS, CODE)						\
   do {									\
