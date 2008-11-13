@@ -480,16 +480,28 @@ case ${target} in
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
-  # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu*)
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-  extra_options="${extra_options} linux.opt"
   gas=yes
   gnu_ld=yes
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
   tmake_file="t-slibgcc-elf-ver t-linux"
+  case $target in
+    *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
+      :;;
+    *-*-gnu*)
+      tmake_file="$tmake_file t-gnu";;
+  esac
+  # glibc / uclibc switch.  uclibc isn't usable for GNU/Hurd and neither for
+  # GNU/k*BSD.
+  case $target in
+    *linux*)
+      extra_options="$extra_options linux.opt";;
+    *)
+      tm_defines="$tm_defines OPTION_GLIBC=1";;
+  esac
   case ${target} in
     *-*-*uclibc*)
       tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
@@ -499,30 +511,6 @@ case ${target} in
       ;;
   esac
   # Assume that glibc or uClibc are being used and so __cxa_atexit is provided.
-  default_use_cxa_atexit=yes
-  use_gcc_tgmath=no
-  ;;
-*-*-gnu*)
-  # On the Hurd, the setup is just about the same on
-  # each different CPU.  The specific machines that we
-  # support are matched above and just set $cpu_type.
-  tm_file="${cpu_type}/gnu.h"
-  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-  # GNU tools are the only tools.
-  gas=yes
-  gnu_ld=yes
-  # These details are the same as for Linux.
-  # But here we need a little extra magic.
-  tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
-  case ${target} in
-    alpha*)
-      tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
-      ;;
-    i[34567]86-*-*)
-      tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
-      ;;
-  esac
-  # Assume that glibc is being used and so __cxa_atexit is provided.
   default_use_cxa_atexit=yes
   use_gcc_tgmath=no
   ;;
@@ -618,6 +606,7 @@ alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee alpha/t-linux"
 	;;
 alpha*-*-gnu*)
+	tm_file="$tm_file alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h alpha/gnu.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	;;
@@ -1085,7 +1074,7 @@ i[34567]86-*-openbsd*)
 i[34567]86-*-coff*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
 	;;
-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu*)
 			# Intel 80386's running GNU/*
 			# with ELF format using glibc 2
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h"
@@ -1116,6 +1105,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
 		;;
 	i[34567]86-*-knetbsd*-gnu) tm_file="${tm_file} i386/linux.h knetbsd-gnu.h i386/knetbsd-gnu.h" ;;
 	i[34567]86-*-kfreebsd*-gnu) tm_file="${tm_file} i386/linux.h kfreebsd-gnu.h i386/kfreebsd-gnu.h" ;;
+	i[34567]86-*-gnu*) tm_file="$tm_file i386/linux.h gnu.h i386/gnu.h";;
 	esac
 	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
@@ -1127,8 +1117,6 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
-	;;
-i[34567]86-*-gnu*)
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h

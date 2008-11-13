@@ -20,30 +20,17 @@ You should have received a copy of the GNU General Public License
 along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#undef GLIBC_DYNAMIC_LINKER
+#define GLIBC_DYNAMIC_LINKER "/lib/ld.so"
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
-
-#undef TARGET_OS_CPP_BUILTINS /* config.gcc includes i386/linux.h.  */
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-	HURD_TARGET_OS_CPP_BUILTINS();		\
-    }						\
-  while (0)
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu)"
-
-#undef	LINK_SPEC
-#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
-  %{!shared: \
-    %{!static: \
-      %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /lib/ld.so}} \
-    %{static:-static}}"
 
 #undef	STARTFILE_SPEC
 #if defined HAVE_LD_PIE
@@ -62,3 +49,8 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 
 /* FIXME: Is a Hurd-specific fallback mechanism necessary?  */
 #undef MD_UNWIND_SUPPORT
+
+#ifdef TARGET_LIBC_PROVIDES_SSP
+/* Not supported yet.  */
+#undef TARGET_THREAD_SSP_OFFSET
+#endif

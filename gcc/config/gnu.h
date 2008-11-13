@@ -32,10 +32,8 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/include"
 
-/* The system headers under GNU are C++-aware.  */
-#define NO_IMPLICIT_EXTERN_C
-
-#define HURD_TARGET_OS_CPP_BUILTINS()		\
+#undef LINUX_TARGET_OS_CPP_BUILTINS
+#define LINUX_TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define ("__gnu_hurd__");	\
 	builtin_define ("__GNU__");		\
