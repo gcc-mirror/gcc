@@ -45,7 +45,7 @@
 
 #pragma GCC system_header
 
-#include_next <limits.h>
+#include <limits.h>
 
 #ifndef _GLIBCXX_CLIMITS
 #define _GLIBCXX_CLIMITS 1

@@ -1,3 +1,39 @@
+2008-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38000
+	* include/c_global/csignal: Do not use include_next.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/cstdio: Likewise.
+	* include/c_global/cstdarg: Likewise.
+	* include/c_global/cctype: Likewise.
+	* include/c_global/cerrno: Likewise.
+	* include/c_global/cmath: Likewise.
+	* include/c_global/clocale: Likewise.
+	* include/c_global/climits: Likewise.
+	* include/c_global/cassert: Likewise.
+	* include/c_global/csetjmp: Likewise.
+	* include/c_global/cwchar: Likewise.
+	* include/c_global/cfloat: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/cstring: Likewise.
+	* include/c_global/cstddef: Likewise.
+	* include/c_global/cwctype: Likewise.
+	* include/tr1/cstdbool: Likewise.
+	* include/tr1_impl/cinttypes: Do not include <inttypes.h>.
+	* include/c_global/cinttypes: Do it here.
+	* include/tr1/cinttypes: Likewise.
+	* include/tr1_impl/cfenv: Do not include <fenv.h>.
+	* include/c_global/cfenv: Do it here.
+	* include/tr1/cfenv: Likewise.
+	* include/tr1_impl/cstdint: Do not include <stdint.h>.
+	* include/c_global/cstdint: Do it here.
+	* include/tr1/cstdint: Likewise.
+	* include/c_compatibility/fenv.h: Include <tr1_impl/cfenv>.
+	* include/c_compatibility/stdint.h: Include <tr1_impl/cstdint>.
+	* include/c_compatibility/inttypes.h: Include <tr1_impl/cinttypes>.
+
+	* include/c_compatibility/math.h: Minor tweak, add comment.
+
 2008-11-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure.ac: Move call to GCC_CHECK_UNWIND_GETIPINFO.

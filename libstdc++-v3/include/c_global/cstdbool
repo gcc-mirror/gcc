@@ -1,6 +1,6 @@
 // <cstdbool> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@
 #else
 #  include <bits/c++config.h>
 #  if _GLIBCXX_HAVE_STDBOOL_H
-#    include_next <stdbool.h>
+#    include <stdbool.h>
 #  endif
 #endif
 

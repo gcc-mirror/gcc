@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,17 +31,33 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <bits/c++config.h>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <cfenv>
-#else
-# if _GLIBCXX_HAVE_FENV_H
-#  include_next <fenv.h>
-# endif
-#endif
-
 #ifndef _GLIBCXX_FENV_H
 #define _GLIBCXX_FENV_H 1
 
+#pragma GCC system_header
+
+#include <bits/c++config.h>
+#if _GLIBCXX_HAVE_FENV_H
+# include_next <fenv.h>
 #endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#    error C++0x header cannot be included from TR1 header
+#  endif
+#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#    include <tr1_impl/cfenv>
+#  else
+#    define _GLIBCXX_INCLUDE_AS_CXX0X
+#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    define _GLIBCXX_END_NAMESPACE_TR1
+#    define _GLIBCXX_TR1
+#    include <tr1_impl/cfenv>
+#    undef _GLIBCXX_TR1
+#    undef _GLIBCXX_END_NAMESPACE_TR1
+#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    undef _GLIBCXX_INCLUDE_AS_CXX0X
+#  endif
+#endif
+
+#endif // _GLIBCXX_FENV_H
