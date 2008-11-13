@@ -34,7 +34,22 @@
 #ifndef _GLIBCXX_TR1_CINTTYPES
 #define _GLIBCXX_TR1_CINTTYPES 1
 
+#pragma GCC system_header
+
 #include <tr1/cstdint>
+
+// For 8.11.1/1 (see C99, Note 184)
+#if _GLIBCXX_HAVE_INTTYPES_H
+# ifndef __STDC_FORMAT_MACROS
+#  define _UNDEF__STDC_FORMAT_MACROS
+#  define __STDC_FORMAT_MACROS
+# endif
+# include <inttypes.h>
+# ifdef _UNDEF__STDC_FORMAT_MACROS
+#  undef __STDC_FORMAT_MACROS
+#  undef _UNDEF__STDC_FORMAT_MACROS
+# endif
+#endif
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  include <tr1_impl/cinttypes>

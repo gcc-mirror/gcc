@@ -1,6 +1,6 @@
 // TR1 cstdint -*- C++ -*-
 
-// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +41,27 @@
 #endif
 
 #include <bits/c++config.h>
+
+// For 8.22.1/1 (see C99, Notes 219, 220, 222)
+# if _GLIBCXX_HAVE_STDINT_H
+#  ifndef __STDC_LIMIT_MACROS
+#   define _UNDEF__STDC_LIMIT_MACROS
+#   define __STDC_LIMIT_MACROS
+#  endif
+#  ifndef __STDC_CONSTANT_MACROS
+#   define _UNDEF__STDC_CONSTANT_MACROS
+#   define __STDC_CONSTANT_MACROS
+#  endif
+#  include <stdint.h>
+#  ifdef _UNDEF__STDC_LIMIT_MACROS
+#   undef __STDC_LIMIT_MACROS
+#   undef _UNDEF__STDC_LIMIT_MACROS
+#  endif
+#  ifdef _UNDEF__STDC_CONSTANT_MACROS
+#   undef __STDC_CONSTANT_MACROS
+#   undef _UNDEF__STDC_CONSTANT_MACROS
+#  endif
+# endif
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  include <tr1_impl/cstdint>

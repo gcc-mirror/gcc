@@ -1,6 +1,6 @@
 // TR1 cfenv -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,6 @@
 #pragma GCC system_header
 
 #if _GLIBCXX_USE_C99_FENV_TR1
-
-#include_next <fenv.h>
 
 #undef feclearexcept
 #undef fegetexceptflag
