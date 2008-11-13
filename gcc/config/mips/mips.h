@@ -919,6 +919,7 @@ enum mips_code_readable_setting {
 
 /* ISA has data prefetch instructions.  This controls use of 'pref'.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
+				  || TARGET_LOONGSON_2EF		\
 				  || ISA_MIPS32				\
 				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64				\

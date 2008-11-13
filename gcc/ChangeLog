@@ -1,3 +1,17 @@
+2008-11-13  Ruan Beihong  <ruanbeihong@gmail.com>
+
+	* config/mips/loongson.md (<u>div<mode>3, <u>mod<mode>3): New patterns.
+	* config/mips/loongson2ef.md (ls2_imult): Handle imul3nc.
+	(ls2_idiv): Likewise idiv3.
+	(ls2_prefetch): New reservation.
+	* config/mips/mips.h (ISA_HAS_PREFETCH): Add TARGET_LOONGSON_2EF.
+	* config/mips/mips.md (type): Add imul3nc and idiv3.
+	(length): Handle idiv3.
+	(any_mod): New code_iterator.
+	(u): Handle MOD and UMOD.
+	(mul<mode>3): Generate mul<mode>3_mul3_ls2ef on Loongson targets.
+	(prefetch): Handle TARGET_LOONGSON_2EF.
+
 2008-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/27017

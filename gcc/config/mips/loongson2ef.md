@@ -160,20 +160,25 @@
 ;; Reservation for integer multiplication instructions.
 (define_insn_reservation "ls2_imult" 5
   (and (eq_attr "cpu" "loongson_2e,loongson_2f")
-       (eq_attr "type" "imul,imul3"))
+       (eq_attr "type" "imul,imul3nc"))
   "ls2_alu2,ls2_alu2_core")
 
 ;; Reservation for integer division / remainder instructions.
 ;; These instructions use the SRT algorithm and hence take 2-38 cycles.
 (define_insn_reservation "ls2_idiv" 20
   (and (eq_attr "cpu" "loongson_2e,loongson_2f")
-       (eq_attr "type" "idiv"))
+       (eq_attr "type" "idiv,idiv3"))
   "ls2_alu2,ls2_alu2_core*18")
 
 ;; Reservation for memory load instructions.
 (define_insn_reservation "ls2_load" 5
   (and (eq_attr "cpu" "loongson_2e,loongson_2f")
        (eq_attr "type" "load,fpload,mfc,mtc"))
+  "ls2_mem")
+
+(define_insn_reservation "ls2_prefetch" 0
+  (and (eq_attr "cpu" "loongson_2e,loongson_2f")
+       (eq_attr "type" "prefetch,prefetchx"))
   "ls2_mem")
 
 ;; Reservation for memory store instructions.
