@@ -1,3 +1,9 @@
+2008-11-13  Andrew Haley  <aph@redhat.com>
+
+	PR bootstrap/38088
+	* mcf.c (CAP_INFINITY): Use HOST_WIDEST_INT maximum, not GCC specific
+	__LONG_LONG_MAX__.
+
 2008-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36478
