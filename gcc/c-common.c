@@ -8116,7 +8116,7 @@ warn_about_parentheses (enum tree_code code,
       /* Check cases like !x | y */
       else if (code_left == TRUTH_NOT_EXPR
 	       && !APPEARS_TO_BE_BOOLEAN_EXPR_P (code_right, arg_right))
-	warning (OPT_Wparentheses, "suggest parentheses around operand of"
+	warning (OPT_Wparentheses, "suggest parentheses around operand of "
 		 "%<!%> or change %<|%> to %<||%> or %<!%> to %<~%>");
       return;
 
@@ -8149,7 +8149,7 @@ warn_about_parentheses (enum tree_code code,
       /* Check cases like !x & y */
       else if (code_left == TRUTH_NOT_EXPR
 	       && !APPEARS_TO_BE_BOOLEAN_EXPR_P (code_right, arg_right))
-	warning (OPT_Wparentheses, "suggest parentheses around operand of"
+	warning (OPT_Wparentheses, "suggest parentheses around operand of "
 		 "%<!%> or change %<&%> to %<&&%> or %<!%> to %<~%>");
       return;
 
