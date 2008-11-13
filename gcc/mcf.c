@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 
 /* CAP_INFINITY: Constant to represent infinite capacity.  */
-#define CAP_INFINITY __LONG_LONG_MAX__
+#define CAP_INFINITY INTTYPE_MAXIMUM (HOST_WIDEST_INT)
 
 /* COST FUNCTION.  */
 #define K_POS(b)        ((b))
