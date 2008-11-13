@@ -57,8 +57,7 @@
 
 	Revert:
 	2008-10-21  Jakub Jelinek  <jakub@redhat.com>
-	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW from
-	INTEGER_CSTs.
+	* gimplify.c (gimplify_expr): Drop TREE_OVERFLOW from INTEGER_CSTs.
 
 2008-11-12  Jason Merrill  <jason@redhat.com>
 
@@ -143,7 +142,7 @@
 	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): New. 
 
 2008-11-10  Vladimir Makarov  <vmakarov@redhat.com>
-	    
+
 	PR rtl-optimizations/37948
 	* ira-int.h (struct ira_allocno_copy): New member constraint_p.
 	(ira_create_copy, ira_add_allocno_copy): New parameter.
