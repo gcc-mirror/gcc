@@ -1,3 +1,12 @@
+2008-11-13  Paul Brook  <paul@codesourcery.com>
+
+	* doc/invoke.texi: Document --fix-cortex-m3.
+	* config/arm/arm.c (arm_override_options): Set fix_cm3_ldrd if
+	Cortex-M3 cpu is selected.
+	(output_move_double): Avoid overlapping base register and first
+	destination register when fix_cm3_ldrd.
+	* config/arm/arm.opt: Add mfix-cortex-m3-ldrd.
+
 2008-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/38100
