@@ -1,3 +1,9 @@
+2008-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/27017
+	* g++.dg/debug/dwarf2/localclass1.C: New test.
+	* g++.dg/debug/dwarf2/localclass2.C: New test.
+
 2008-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (dg-options): Add -mno-mmx
