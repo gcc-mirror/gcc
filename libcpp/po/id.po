@@ -1,0 +1,908 @@
+# Pesan bahasa indonesia untuk cpplib
+# Copyright (C) 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
+# Arif E. Nugroho <arif_endro@yahoo.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cpplib 4.3.0\n"
+"Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
+"POT-Creation-Date: 2008-02-01 16:21+0000\n"
+"PO-Revision-Date: 2008-11-10 13:30+0700\n"
+"Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
+"Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: charset.c:671
+#, c-format
+msgid "conversion from %s to %s not supported by iconv"
+msgstr "konversi dari %s ke %s tidak didukung oleh iconv"
+
+#: charset.c:674
+msgid "iconv_open"
+msgstr "iconv_open"
+
+#: charset.c:682
+#, c-format
+msgid "no iconv implementation, cannot convert from %s to %s"
+msgstr "tidak ada implementasi iconv, tidak dapat mengubah dari %s ke %s"
+
+#: charset.c:759
+#, c-format
+msgid "character 0x%lx is not in the basic source character set\n"
+msgstr "karakter 0x%lx tidak dalam sumber dasar set karaketer\n"
+
+#: charset.c:776 charset.c:1369
+msgid "converting to execution character set"
+msgstr "mengubah ke eksekusi set karakter"
+
+#: charset.c:782
+#, c-format
+msgid "character 0x%lx is not unibyte in execution character set"
+msgstr "karakter 0x%lx bukan unibyte dalam eksekusi set karakter"
+
+#: charset.c:906
+#, c-format
+msgid "Character %x might not be NFKC"
+msgstr "Karakter %x mungkin bukan NFKC"
+
+#: charset.c:966
+msgid "universal character names are only valid in C++ and C99"
+msgstr "nama karakter universal  hanya valid dalam C++ dan C99"
+
+#: charset.c:969
+#, c-format
+msgid "the meaning of '\\%c' is different in traditional C"
+msgstr "arti dari '\\%c' berbeda dalam tradisional C"
+
+#: charset.c:978
+msgid "In _cpp_valid_ucn but not a UCN"
+msgstr "Dalam _cpp_valid_ucn tetapi bukan sebuah UCN"
+
+#: charset.c:1003
+#, c-format
+msgid "incomplete universal character name %.*s"
+msgstr "nama karakter universal %.*s tidak lengkap"
+
+#: charset.c:1015
+#, c-format
+msgid "%.*s is not a valid universal character"
+msgstr "%.*s bukan sebuah karakter universal yang valid"
+
+#: charset.c:1025 lex.c:484
+msgid "'$' in identifier or number"
+msgstr "'$' dalam identifier atau angka"
+
+#: charset.c:1035
+#, c-format
+msgid "universal character %.*s is not valid in an identifier"
+msgstr "karakter universal %.*s tidak valid dalam sebuah pengidentifikasi"
+
+#: charset.c:1039
+#, c-format
+msgid "universal character %.*s is not valid at the start of an identifier"
+msgstr "karakter universal %.*s tidak valid di awal dari sebuah pengidentifikasi"
+
+#: charset.c:1073 charset.c:1588
+msgid "converting UCN to source character set"
+msgstr "mengubah UCN ke set karakter asal"
+
+#: charset.c:1077
+msgid "converting UCN to execution character set"
+msgstr "mengubah UCN ke set karakter eksekusi"
+
+#: charset.c:1149
+msgid "the meaning of '\\x' is different in traditional C"
+msgstr "arti dari '\\x' berbeda dalam tradisional C"
+
+#: charset.c:1166
+msgid "\\x used with no following hex digits"
+msgstr "\\x digunakan dengan tidak mengikuti hex digits"
+
+#: charset.c:1173
+msgid "hex escape sequence out of range"
+msgstr "hex escape sequence diluar dari jangkauan"
+
+#: charset.c:1212
+msgid "octal escape sequence out of range"
+msgstr "oktal escape sequence diluar dari jangkauan"
+
+#: charset.c:1280
+msgid "the meaning of '\\a' is different in traditional C"
+msgstr "arti dari '\\a' berbeda dalam tradisional C"
+
+#: charset.c:1287
+#, c-format
+msgid "non-ISO-standard escape sequence, '\\%c'"
+msgstr "bukan ISO standar escape sequence, '\\%c'"
+
+#: charset.c:1295
+#, c-format
+msgid "unknown escape sequence '\\%c'"
+msgstr "escape sequence '\\%c' tidak diketahui"
+
+#: charset.c:1303
+#, c-format
+msgid "unknown escape sequence: '\\%s'"
+msgstr "escape sequence: '\\%s' tidak diketahui"
+
+#: charset.c:1310
+msgid "converting escape sequence to execution character set"
+msgstr "mengubah escape sequence ke set karakter eksekusi"
+
+#: charset.c:1432 charset.c:1495
+msgid "character constant too long for its type"
+msgstr "konstanta karakter terlalu panjang untuk tipenya"
+
+#: charset.c:1435
+msgid "multi-character character constant"
+msgstr "konstanta karakter multi-karakter"
+
+#: charset.c:1527
+msgid "empty character constant"
+msgstr "konstanta karakter kosong"
+
+#: charset.c:1629
+#, c-format
+msgid "failure to convert %s to %s"
+msgstr "gagal untuk mengubah %s ke %s"
+
+#: directives.c:215 directives.c:241
+#, c-format
+msgid "extra tokens at end of #%s directive"
+msgstr "ekstra token di akhir dari #%s direktif"
+
+#: directives.c:344
+#, c-format
+msgid "#%s is a GCC extension"
+msgstr "#%s adalah sebuah ekstensi GCC"
+
+#: directives.c:356
+msgid "suggest not using #elif in traditional C"
+msgstr "disarankan tidak menggunakan #elif dalam tradisional C"
+
+#: directives.c:359
+#, c-format
+msgid "traditional C ignores #%s with the # indented"
+msgstr "tradisional C mengabaikan #%s dengan # terindentasi"
+
+#: directives.c:363
+#, c-format
+msgid "suggest hiding #%s from traditional C with an indented #"
+msgstr "disarankan menyembunyikan #%s dari tradisional C dengan sebuah indentasi #"
+
+#: directives.c:389
+msgid "embedding a directive within macro arguments is not portable"
+msgstr "embedding sebuah direktif didalam argumen makro yang bukan portabel"
+
+#: directives.c:409
+msgid "style of line directive is a GCC extension"
+msgstr "gaya dari baris direktif bukan sebuah ekstensi GCC"
+
+#: directives.c:464
+#, c-format
+msgid "invalid preprocessing directive #%s"
+msgstr "preprosesing direktif #%s tidak valid"
+
+#: directives.c:532
+msgid "\"defined\" cannot be used as a macro name"
+msgstr "\"defined\" tidak dapat digunakan sebagai sebuah nama makro"
+
+#: directives.c:538
+#, c-format
+msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
+msgstr "\"%s\" tidak dapat digunakan sebagai sebuah nama makro karena ini adalah sebuah operator dalam C++"
+
+#: directives.c:541
+#, c-format
+msgid "no macro name given in #%s directive"
+msgstr "tidak ada nama makro yang diberikan dalam direktif #%s"
+
+#: directives.c:544
+msgid "macro names must be identifiers"
+msgstr "nama makro harus berupa pengidentifikasi"
+
+#: directives.c:585
+#, c-format
+msgid "undefining \"%s\""
+msgstr "tidak terdefinisi \"%s\""
+
+#: directives.c:640
+msgid "missing terminating > character"
+msgstr "hilang karakter pengakhir >"
+
+#: directives.c:695
+#, c-format
+msgid "#%s expects \"FILENAME\" or <FILENAME>"
+msgstr "#%s diduga \"NAMA BERKAS\" atau <NAMA BERKAS>"
+
+#: directives.c:739
+#, c-format
+msgid "empty filename in #%s"
+msgstr "nama berkas kosong dalam #%s"
+
+#: directives.c:749
+msgid "#include nested too deeply"
+msgstr "#include nested terlalu dalam"
+
+#: directives.c:790
+msgid "#include_next in primary source file"
+msgstr "#include_next dalam berkas kode program utama"
+
+#: directives.c:816
+#, c-format
+msgid "invalid flag \"%s\" in line directive"
+msgstr "tanda \"%s\" tidak valid dalam baris direktif"
+
+#: directives.c:868
+msgid "unexpected end of file after #line"
+msgstr "tidak terduga akhir dari berkas setelah #line"
+
+#: directives.c:871
+#, c-format
+msgid "\"%s\" after #line is not a positive integer"
+msgstr "\"%s\" setelah #line bukan sebuah integer positif"
+
+#: directives.c:877
+msgid "line number out of range"
+msgstr "nomor baris diluar dari jangkauan"
+
+#: directives.c:890 directives.c:969
+#, c-format
+msgid "\"%s\" is not a valid filename"
+msgstr "\"%s\" bukan sebuah nama berkas yang valid"
+
+#: directives.c:929
+#, c-format
+msgid "\"%s\" after # is not a positive integer"
+msgstr "\"%s\" setelah # bukan sebuah integer positif"
+
+#: directives.c:1031
+#, c-format
+msgid "invalid #%s directive"
+msgstr "direktif #%s tidak valid"
+
+#: directives.c:1094
+#, c-format
+msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
+msgstr "mendaftarkan pragma dalam ruang-nama \"%s\" dengan ekspansi nama yang tidak cocok"
+
+#: directives.c:1103
+#, c-format
+msgid "registering pragma \"%s\" with name expansion and no namespace"
+msgstr "mendaftarkan pragma \"%s\" dengan ekspansi nama dan tidak ada ruang-nama"
+
+#: directives.c:1121
+#, c-format
+msgid "registering \"%s\" as both a pragma and a pragma namespace"
+msgstr "mendaftarkan \"%s\" sebagai baik sebuah pragma dan sebuah ruang-nama"
+
+#: directives.c:1124
+#, c-format
+msgid "#pragma %s %s is already registered"
+msgstr "#pragma %s %s telah terdaftar"
+
+#: directives.c:1127
+#, c-format
+msgid "#pragma %s is already registered"
+msgstr "#pragma %s telah terdaftar"
+
+#: directives.c:1157
+msgid "registering pragma with NULL handler"
+msgstr "mendaftarkan pragma dengan penanganan KOSONG"
+
+#: directives.c:1367
+msgid "#pragma once in main file"
+msgstr "#pragma sekali dalam berkas utama"
+
+#: directives.c:1390
+msgid "invalid #pragma GCC poison directive"
+msgstr "#pragma GCC tidak valid merusak direktif"
+
+#: directives.c:1399
+#, c-format
+msgid "poisoning existing macro \"%s\""
+msgstr "merusak makro \"%s\" yang sudah ada"
+
+#: directives.c:1418
+msgid "#pragma system_header ignored outside include file"
+msgstr "pragma system_header diabaikan diluar berkas include"
+
+#: directives.c:1442
+#, c-format
+msgid "cannot find source file %s"
+msgstr "tidak dapat menemukan berkas sumber %s"
+
+#: directives.c:1446
+#, c-format
+msgid "current file is older than %s"
+msgstr "berkas ini lebih lama daripada %s"
+
+#: directives.c:1625
+msgid "_Pragma takes a parenthesized string literal"
+msgstr "_Pragma mengambil sebuah string literal tanda kurung"
+
+#: directives.c:1698
+msgid "#else without #if"
+msgstr "#else tanpa #if"
+
+#: directives.c:1703
+msgid "#else after #else"
+msgstr "#else setelah #else"
+
+#: directives.c:1705 directives.c:1738
+msgid "the conditional began here"
+msgstr "kondisional berawal disini"
+
+#: directives.c:1731
+msgid "#elif without #if"
+msgstr "#elif tanpa #if"
+
+#: directives.c:1736
+msgid "#elif after #else"
+msgstr "#elif setelah #else"
+
+#: directives.c:1766
+msgid "#endif without #if"
+msgstr "#endif tanpa #if"
+
+#: directives.c:1843
+msgid "missing '(' after predicate"
+msgstr "hilang '(' setelah predikat"
+
+#: directives.c:1858
+msgid "missing ')' to complete answer"
+msgstr "hilang ')' untuk melengkapi jawaban"
+
+#: directives.c:1878
+msgid "predicate's answer is empty"
+msgstr "jawaban predikat kosong"
+
+#: directives.c:1905
+msgid "assertion without predicate"
+msgstr "assertion tanpa predikat"
+
+#: directives.c:1907
+msgid "predicate must be an identifier"
+msgstr "predikat harus berupa sebuah pengidentifikasi"
+
+#: directives.c:1993
+#, c-format
+msgid "\"%s\" re-asserted"
+msgstr "\"%s\" re-asserted"
+
+#: directives.c:2276
+#, c-format
+msgid "unterminated #%s"
+msgstr "tidak terselesaikan #%s"
+
+#: directives-only.c:221 lex.c:1016 traditional.c:162
+msgid "unterminated comment"
+msgstr "komentar tidak terselesaikan"
+
+#: errors.c:118
+msgid "warning: "
+msgstr "peringatan: "
+
+#: errors.c:120
+msgid "internal error: "
+msgstr "internal error: "
+
+#: errors.c:122
+msgid "error: "
+msgstr "error: "
+
+#: errors.c:186
+msgid "stdout"
+msgstr "stdout"
+
+#: errors.c:188
+#, c-format
+msgid "%s: %s"
+msgstr "%s: %s"
+
+#: expr.c:261
+msgid "too many decimal points in number"
+msgstr "terlalu banyak titik desimal dalam angka"
+
+#: expr.c:290 expr.c:365
+msgid "fixed-point constants are a GCC extension"
+msgstr "konstanta titik-tetap adalah sebuah ekstensi GCC"
+
+#: expr.c:303
+#, c-format
+msgid "invalid digit \"%c\" in binary constant"
+msgstr "digit \"%c\" tidak valid dalam konstanta binari"
+
+#: expr.c:305
+#, c-format
+msgid "invalid digit \"%c\" in octal constant"
+msgstr "digit \"%c\" tidak valid dalam konstanta oktal"
+
+#: expr.c:313
+msgid "invalid prefix \"0b\" for floating constant"
+msgstr "awalan \"0b\" tidak valid untuk konstanta pecahan"
+
+#: expr.c:319
+msgid "use of C99 hexadecimal floating constant"
+msgstr "penggunaan dari konstanta pecahan heksa desimal C99"
+
+#: expr.c:328
+msgid "exponent has no digits"
+msgstr "eksponen tidak memiliki digits"
+
+#: expr.c:335
+msgid "hexadecimal floating constants require an exponent"
+msgstr "konstanta pecahan heksa desimal membutuhkan sebuah eksponen"
+
+#: expr.c:341
+#, c-format
+msgid "invalid suffix \"%.*s\" on floating constant"
+msgstr "akhira \"%.*s\" tidak valid dalam konstanta pecahan"
+
+#: expr.c:351 expr.c:393
+#, c-format
+msgid "traditional C rejects the \"%.*s\" suffix"
+msgstr "tradisional C menolah akhiran \"%.*s\""
+
+#: expr.c:358
+#, c-format
+msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
+msgstr "akhiran \"%.*s\" tidak valid dengan konstanta pecahan heksa desimal"
+
+#: expr.c:369
+msgid "decimal float constants are a GCC extension"
+msgstr "konstanta pecahan desimal adalah sebuah ekstensi GCC"
+
+#: expr.c:379
+#, c-format
+msgid "invalid suffix \"%.*s\" on integer constant"
+msgstr "akhiran \"%.*s\" tidak valid dalam konstanta integer"
+
+#: expr.c:401
+msgid "use of C99 long long integer constant"
+msgstr "penggunaan dari konstanta integer long long C99"
+
+#: expr.c:409
+msgid "imaginary constants are a GCC extension"
+msgstr "konstanta imaginari adalah sebuah ekstensi GCC"
+
+#: expr.c:412
+msgid "binary constants are a GCC extension"
+msgstr "konstanta binari adalah sebuah ekstensi GCC"
+
+#: expr.c:505
+msgid "integer constant is too large for its type"
+msgstr "konstanta integer terlalu besar untuk tipenya"
+
+#: expr.c:517
+msgid "integer constant is so large that it is unsigned"
+msgstr "konstanta integer terlalu besar yang itu unsigned"
+
+#: expr.c:612
+msgid "missing ')' after \"defined\""
+msgstr "hilang ')' setelah \"defined\""
+
+#: expr.c:619
+msgid "operator \"defined\" requires an identifier"
+msgstr "operator \"defined\" membutuhkan sebuah pengidentifikasi"
+
+#: expr.c:627
+#, c-format
+msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
+msgstr "(\"%s\" adalah sebuah tanda alternatif untuk \"%s\" dalam C++)"
+
+#: expr.c:637
+msgid "this use of \"defined\" may not be portable"
+msgstr "penggunaan ini dari \"defined\" mungkin tidak portabel"
+
+#: expr.c:676
+msgid "floating constant in preprocessor expression"
+msgstr "konstanta pecahan dalam ekspresi preprosesor"
+
+#: expr.c:682
+msgid "imaginary number in preprocessor expression"
+msgstr "angka imaginari dalam ekspresi preprosesor"
+
+#: expr.c:727
+#, c-format
+msgid "\"%s\" is not defined"
+msgstr "\"%s\" tidak didefinisikan"
+
+#: expr.c:855 expr.c:884
+#, c-format
+msgid "missing binary operator before token \"%s\""
+msgstr "hilang operator binari sebelum tanda \"%s\""
+
+#: expr.c:875
+#, c-format
+msgid "token \"%s\" is not valid in preprocessor expressions"
+msgstr "tanda \"%s\" bukan sebuah ekspresi preprosesor yang valid"
+
+#: expr.c:892
+msgid "missing expression between '(' and ')'"
+msgstr "hilang ekspresi diantara '(' dan ')'"
+
+#: expr.c:895
+msgid "#if with no expression"
+msgstr "#if dengan tidak ada ekspresi"
+
+#: expr.c:898
+#, c-format
+msgid "operator '%s' has no right operand"
+msgstr "operator '%s' tidak memiliki operan kanan"
+
+#: expr.c:903
+#, c-format
+msgid "operator '%s' has no left operand"
+msgstr "operator '%s' tidak memiliki operan kiri"
+
+#: expr.c:929
+msgid " ':' without preceding '?'"
+msgstr " ':' tanpa awalan '?'"
+
+#: expr.c:956
+msgid "unbalanced stack in #if"
+msgstr "stack dalam #if tidak seimbang"
+
+#: expr.c:975
+#, c-format
+msgid "impossible operator '%u'"
+msgstr "operator '%u' tidak mungkin"
+
+#: expr.c:1065
+msgid "missing ')' in expression"
+msgstr "hilang ')' dalam ekspresi"
+
+#: expr.c:1086
+msgid "'?' without following ':'"
+msgstr "'?' tanpa diikuti ':'"
+
+#: expr.c:1096
+msgid "integer overflow in preprocessor expression"
+msgstr "integer overflow dalam ekspresi preprosesor"
+
+#: expr.c:1101
+msgid "missing '(' in expression"
+msgstr "hilang '(' dalam ekspresi"
+
+#: expr.c:1133
+#, c-format
+msgid "the left operand of \"%s\" changes sign when promoted"
+msgstr "operan kiri dari \"%s\" berubah tanda ketika dipromosikan"
+
+#: expr.c:1138
+#, c-format
+msgid "the right operand of \"%s\" changes sign when promoted"
+msgstr "operan kanan dari \"%s\" berubah tanda ketika dipromosikan"
+
+#: expr.c:1397
+msgid "traditional C rejects the unary plus operator"
+msgstr "tradisional C menolak operator unary plus"
+
+#: expr.c:1480
+msgid "comma operator in operand of #if"
+msgstr "operator koma dalam operator dari #if"
+
+#: expr.c:1612
+msgid "division by zero in #if"
+msgstr "pembagian oleh nol dalam #if"
+
+#: files.c:458
+msgid "NULL directory in find_file"
+msgstr "direktori KOSONG dalam find_file"
+
+#: files.c:496
+msgid "one or more PCH files were found, but they were invalid"
+msgstr "satu atau lebih berkas PCH telah ditemukan, tetapi mereka tidak valid"
+
+#: files.c:499
+msgid "use -Winvalid-pch for more information"
+msgstr "gunakan -Winvalid-pch untuk informasi lebih lanjut"
+
+#: files.c:589
+#, c-format
+msgid "%s is a block device"
+msgstr "%s adalah sebuah perangkat blok"
+
+#: files.c:606
+#, c-format
+msgid "%s is too large"
+msgstr "%s terlalu besar"
+
+#: files.c:641
+#, c-format
+msgid "%s is shorter than expected"
+msgstr "%s lebih pendek dari yang diduga"
+
+#: files.c:872
+#, c-format
+msgid "no include path in which to search for %s"
+msgstr "tidak ada jalur include yang biasa digunakan untuk pencarian untuk %s"
+
+#: files.c:1238
+msgid "Multiple include guards may be useful for:\n"
+msgstr "Multiple include guards mungkin berguna untuk:\n"
+
+#: init.c:426
+msgid "cppchar_t must be an unsigned type"
+msgstr "cppchar_t harus berupa sebuah tipe unsigned"
+
+#: init.c:430
+#, c-format
+msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
+msgstr "aritmetik preprosesor memiliki presisi maksimal dari %lu bits; target membutuhkan%lu bits"
+
+#: init.c:437
+msgid "CPP arithmetic must be at least as precise as a target int"
+msgstr "aritmetik CPP harus paling tidak sama tepatnya dengan sebuah target int"
+
+#: init.c:440
+msgid "target char is less than 8 bits wide"
+msgstr "target char lebih kecil dari 8 bits wide"
+
+#: init.c:444
+msgid "target wchar_t is narrower than target char"
+msgstr "target wchar_t lebih kecil dari target char"
+
+#: init.c:448
+msgid "target int is narrower than target char"
+msgstr "target int lebih kecil dari target char"
+
+#: init.c:453
+msgid "CPP half-integer narrower than CPP character"
+msgstr "CPP integer-setengah lebih kecil dari karakter CPP"
+
+#: init.c:457
+#, c-format
+msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
+msgstr "CPP di host ini tidak dapat menangani konstanta karakter lebar diatas %lu bits, tetapi target membutuhkan %lu bits"
+
+#: lex.c:283
+msgid "backslash and newline separated by space"
+msgstr "backslash dan baris baru dipisahkan dengan spasi"
+
+#: lex.c:288
+msgid "backslash-newline at end of file"
+msgstr "backslash baris baru diakhir dari berkas"
+
+#: lex.c:303
+#, c-format
+msgid "trigraph ??%c converted to %c"
+msgstr "trigraph ??%c diubah ke %c"
+
+#: lex.c:310
+#, c-format
+msgid "trigraph ??%c ignored, use -trigraphs to enable"
+msgstr "trigraph ??%c diabaikan, gunakan -trigraph untuk mengaktifkan"
+
+#: lex.c:356
+msgid "\"/*\" within comment"
+msgstr "\"/*\" dalam komentar"
+
+#: lex.c:414
+#, c-format
+msgid "%s in preprocessing directive"
+msgstr "%s dalam direktif preprosesing"
+
+#: lex.c:423
+msgid "null character(s) ignored"
+msgstr "karakter kosong diabaikan"
+
+#: lex.c:460
+#, c-format
+msgid "`%.*s' is not in NFKC"
+msgstr "`%.*s' tidak dalam NFKC"
+
+#: lex.c:463
+#, c-format
+msgid "`%.*s' is not in NFC"
+msgstr "`%.*s' tidak dalam NFC"
+
+#: lex.c:551
+#, c-format
+msgid "attempt to use poisoned \"%s\""
+msgstr "mencoba untuk menggunakan terusak \"%s\""
+
+#: lex.c:559
+msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
+msgstr "__VA_ARGS__ hanya dapat muncul dalam ekspansi dari sebuah variadik makro C99"
+
+#: lex.c:659
+msgid "null character(s) preserved in literal"
+msgstr "karakter kosong dijaga dalam literal"
+
+#: lex.c:662
+#, c-format
+msgid "missing terminating %c character"
+msgstr "hilang karakter pengakhir %c"
+
+#: lex.c:1027
+msgid "C++ style comments are not allowed in ISO C90"
+msgstr "komentar gaya C++ tidak diijinkan dalam ISO C90"
+
+#: lex.c:1029
+msgid "(this will be reported only once per input file)"
+msgstr "(ini hanya akan dilaporkan sekali setiap berkas masukan)"
+
+#: lex.c:1034
+msgid "multi-line comment"
+msgstr "komentar multi baris"
+
+#: lex.c:1347
+#, c-format
+msgid "unspellable token %s"
+msgstr "tanda %s tidak dapat disebutkan"
+
+#: line-map.c:320
+#, c-format
+msgid "In file included from %s:%u"
+msgstr "Dalam berkas dimasukan dari %s:%u"
+
+#: line-map.c:338
+#, c-format
+msgid ""
+",\n"
+"                 from %s:%u"
+msgstr ""
+",\n"
+"                 dari %s:%u"
+
+#: macro.c:87
+#, c-format
+msgid "macro \"%s\" is not used"
+msgstr "makro \"%s\" tidak digunakan"
+
+#: macro.c:126 macro.c:322
+#, c-format
+msgid "invalid built-in macro \"%s\""
+msgstr "makro bawaan \"%s\" tidak valid"
+
+#: macro.c:160
+msgid "could not determine file timestamp"
+msgstr "tidak dapat menentukan berkas timestamp"
+
+#: macro.c:257
+msgid "could not determine date and time"
+msgstr "tidak dapat menentukan tanggal dan waktu"
+
+#: macro.c:273
+msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
+msgstr "__COUNTER__ diekspans didalam direktif dengan -fdirectives-only"
+
+#: macro.c:426
+msgid "invalid string literal, ignoring final '\\'"
+msgstr "string literal tidak valid, mengabaikan final '\\'"
+
+#: macro.c:486
+#, c-format
+msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
+msgstr "pasting \"%s\" dan \"%s\" tidak memberikan sebuah tanda preprosesing valid"
+
+#: macro.c:561
+msgid "ISO C99 requires rest arguments to be used"
+msgstr "ISO C99 membutuhkan argumen rest untuk digunakan"
+
+#: macro.c:566
+#, c-format
+msgid "macro \"%s\" requires %u arguments, but only %u given"
+msgstr "makro \"%s\" membutuhkan %u argumen, tetapi hanya %u diberikan"
+
+#: macro.c:571
+#, c-format
+msgid "macro \"%s\" passed %u arguments, but takes just %u"
+msgstr "makro \"%s\" melewatkan %u argumen, tetapi hanya mengambil %u"
+
+#: macro.c:730 traditional.c:680
+#, c-format
+msgid "unterminated argument list invoking macro \"%s\""
+msgstr "daftar argumen tidak terselesaikan memanggil makro \"%s\""
+
+#: macro.c:840
+#, c-format
+msgid "function-like macro \"%s\" must be used with arguments in traditional C"
+msgstr "makro \"%s\" seperti fungsi harus digunakan dengan argumen dalam tradisional C"
+
+#: macro.c:1408
+#, c-format
+msgid "duplicate macro parameter \"%s\""
+msgstr "duplikasi parameter makro \"%s\""
+
+#: macro.c:1454
+#, c-format
+msgid "\"%s\" may not appear in macro parameter list"
+msgstr "\"%s\" mungkin tidak muncul dalam daftar parameter makro"
+
+#: macro.c:1462
+msgid "macro parameters must be comma-separated"
+msgstr "parameter makro yang berupa koma dipisahkan"
+
+#: macro.c:1479
+msgid "parameter name missing"
+msgstr "nama parameter hilang"
+
+#: macro.c:1496
+msgid "anonymous variadic macros were introduced in C99"
+msgstr "anonymous variadik makro diperkenalkan dalam C99"
+
+#: macro.c:1501
+msgid "ISO C does not permit named variadic macros"
+msgstr "ISO C tidak mengijinkan makro variadik bernama"
+
+#: macro.c:1510
+msgid "missing ')' in macro parameter list"
+msgstr "hilang ')' dalam daftar parameter makro"
+
+#: macro.c:1559
+msgid "'##' cannot appear at either end of a macro expansion"
+msgstr "'##' tidak dapat muncul baik diakhir dari sebuah ekspansi makro"
+
+#: macro.c:1593
+msgid "ISO C99 requires whitespace after the macro name"
+msgstr "ISO C99 membutuhkan whitespace setelah nama makro"
+
+#: macro.c:1617
+msgid "missing whitespace after the macro name"
+msgstr "hilang whitespace setelah nama makro"
+
+#: macro.c:1647
+msgid "'#' is not followed by a macro parameter"
+msgstr "'#' tidak diikuti dengan sebuah parameter makro"
+
+#: macro.c:1766
+#, c-format
+msgid "\"%s\" redefined"
+msgstr "\"%s\" redefinisi"
+
+#: macro.c:1771
+msgid "this is the location of the previous definition"
+msgstr "ini adalah lokasi dari definisi sebelumnya"
+
+#: macro.c:1828
+#, c-format
+msgid "macro argument \"%s\" would be stringified in traditional C"
+msgstr "argumen makro \"%s\" akan stringified dalam tradisional C"
+
+#: macro.c:1851
+#, c-format
+msgid "invalid hash type %d in cpp_macro_definition"
+msgstr "tipe hash %d tidak valid dalam cpp_macro_definition"
+
+#: pch.c:84 pch.c:332 pch.c:344 pch.c:362 pch.c:368 pch.c:377
+msgid "while writing precompiled header"
+msgstr "ketika menulis precompiled header"
+
+#: pch.c:485
+#, c-format
+msgid "%s: not used because `%.*s' not defined"
+msgstr "%s: tidak digunakan karena `%.*s' tidak didefinisikan"
+
+#: pch.c:497
+#, c-format
+msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
+msgstr "%s: tidak digunakan karena `%.*s' didefinisikan sebaga `%s' bukan `%.*s'"
+
+#: pch.c:538
+#, c-format
+msgid "%s: not used because `%s' is defined"
+msgstr "%s: tidak digunakan karena `%s' didefinisikan"
+
+#: pch.c:558
+#, c-format
+msgid "%s: not used because `__COUNTER__' is invalid"
+msgstr "%s: tidak digunakan karena `__COUNTER__' tidak valid"
+
+#: pch.c:567 pch.c:737
+msgid "while reading precompiled header"
+msgstr "ketika membaca precompiled header"
+
+#: traditional.c:750
+#, c-format
+msgid "detected recursion whilst expanding macro \"%s\""
+msgstr "terdeteksi rekursi ketika mengekspan makro \"%s\""
+
+#: traditional.c:968
+msgid "syntax error in macro parameter list"
+msgstr "sintaks erro dalam daftar parameter makro"
