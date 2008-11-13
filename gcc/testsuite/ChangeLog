@@ -1,3 +1,9 @@
+2008-11-13  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/test_raise_from_pure.adb: Adjust to match revised intent.
+	* gnat.dg/wrap_raise_from_pure.adb: Remove.
+	* gnat.dg/handle_raise_from_pure.adb: New test.
+
 2008-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38094
