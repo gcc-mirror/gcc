@@ -1,3 +1,8 @@
+2008-11-13  Martin Michlmayr  <tbm@cyrius.com>
+
+	* c-common.c (warn_about_parentheses): Add missing whitespace
+	in warning.
+
 2008-11-13  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document --fix-cortex-m3.
