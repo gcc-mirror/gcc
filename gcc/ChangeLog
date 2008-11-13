@@ -1,3 +1,11 @@
+2008-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/38100
+	* gimple.h (gimple_range_check_failed): Remove prototype.
+	* gimple.c (gimple_check_failed): Don't check GCC_VERSION
+	in guarding #if.
+	(gimple_range_check_failed): Removed.
+
 2008-11-13  Andrew Haley  <aph@redhat.com>
 
 	PR bootstrap/38088
