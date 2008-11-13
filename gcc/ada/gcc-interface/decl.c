@@ -3739,7 +3739,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	bool extern_flag
 	  = (Is_Public (gnat_entity) && !definition) || imported_p;
-	bool pure_flag = Is_Pure (gnat_entity);
+
+       /* The semantics of "pure" in Ada essentially matches that of "const"
+          in the back-end.  In particular, both properties are orthogonal to
+          the "nothrow" property if the EH circuitry is explicit in the
+          internal representation of the back-end.  If we are to completely
+          hide the EH circuitry from it, we need to declare that calls to pure
+          Ada subprograms that can throw have side effects since they can
+          trigger an "abnormal" transfer of control flow; thus they can be
+          neither "const" nor "pure" in the back-end sense.  */
+	bool const_flag
+	  = (Exception_Mechanism == Back_End_Exceptions
+	     && Is_Pure (gnat_entity));
+
 	bool volatile_flag = No_Return (gnat_entity);
 	bool returns_by_ref = false;
 	bool returns_unconstrained = false;
@@ -3972,12 +3984,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		/* If a parameter is a pointer, this function may modify
 		   memory through it and thus shouldn't be considered
-		   a pure function.  Also, the memory may be modified
+		   a const function.  Also, the memory may be modified
 		   between two calls, so they can't be CSE'ed.  The latter
 		   case also handles by-ref parameters.  */
 		if (POINTER_TYPE_P (gnu_param_type)
 		    || TYPE_FAT_POINTER_P (gnu_param_type))
-		  pure_flag = false;
+		  const_flag = false;
 	      }
 
 	    if (copy_in_copy_out)
@@ -4054,21 +4066,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				   returns_by_ref, returns_by_target_ptr);
 
 	/* A subprogram (something that doesn't return anything) shouldn't
-	   be considered Pure since there would be no reason for such a
+	   be considered const since there would be no reason for such a
 	   subprogram.  Note that procedures with Out (or In Out) parameters
 	   have already been converted into a function with a return type. */
 	if (TREE_CODE (gnu_return_type) == VOID_TYPE)
-	  pure_flag = false;
-
-	/* The semantics of "pure" in Ada used to essentially match that of
-	   "const" in the middle-end.  In particular, both properties were
-	   orthogonal to the "nothrow" property.  This is not true in the
-	   middle-end any more and we have no choice but to ignore the hint
-	   at this stage.  */
+	  const_flag = false;
 
 	gnu_type
 	  = build_qualified_type (gnu_type,
 				  TYPE_QUALS (gnu_type)
+				  | (TYPE_QUAL_CONST * const_flag)
 				  | (TYPE_QUAL_VOLATILE * volatile_flag));
 
 	Sloc_to_locus (Sloc (gnat_entity), &input_location);
@@ -4077,8 +4084,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_stub_type
 	    = build_qualified_type (gnu_stub_type,
 				    TYPE_QUALS (gnu_stub_type)
-				    | (Exception_Mechanism == Back_End_Exceptions
-				       ? TYPE_QUAL_CONST * pure_flag : 0)
+				    | (TYPE_QUAL_CONST * const_flag)
 				    | (TYPE_QUAL_VOLATILE * volatile_flag));
 
 	/* If we have a builtin decl for that function, check the signatures
