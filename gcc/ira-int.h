@@ -83,11 +83,11 @@ struct ira_loop_tree_node
   /* The node represents basic block if children == NULL.  */
   basic_block bb;    /* NULL for loop.  */
   struct loop *loop; /* NULL for BB.  */
-  /* The next (loop) node of with the same parent.  SUBLOOP_NEXT is
-     always NULL for BBs. */
+  /* NEXT/SUBLOOP_NEXT is the next node/loop-node of the same parent.
+     SUBLOOP_NEXT is always NULL for BBs.  */
   ira_loop_tree_node_t subloop_next, next;
-  /* The first (loop) node immediately inside the node.  SUBLOOPS is
-     always NULL for BBs.  */
+  /* CHILDREN/SUBLOOPS is the first node/loop-node immediately inside
+     the node.  They are NULL for BBs.  */
   ira_loop_tree_node_t subloops, children;
   /* The node immediately containing given node.  */
   ira_loop_tree_node_t parent;
