@@ -27,6 +27,9 @@
 	* g++.dg/compat/struct-layout-1_generate.c (dg-options): Add
 	-fno-common for *-*-darwin* *-*-mingw32* *-*-cygwin* targets.
 
+	* gcc.dg/compat/struct-layout-1.h: Do not include <mmintrin.h> and
+	<xmmintrin.h>, define __m64 and __m128 directly.
+
 2008-11-13  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/test_raise_from_pure.adb: Adjust to match revised intent.
