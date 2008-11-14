@@ -1,3 +1,8 @@
+2008-11-13  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/38004
+	* g++.dg/vect/pr36648.cc: Check alignment requirement.
+
 2008-11-14  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR testsuite/38098
