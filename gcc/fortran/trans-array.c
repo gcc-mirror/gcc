@@ -650,8 +650,10 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	{
 	  /* Callee allocated arrays may not have a known bound yet.  */
 	  if (loop->to[n])
-	      loop->to[n] = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-					 loop->to[n], loop->from[n]);
+	    loop->to[n] =
+		gfc_evaluate_now (fold_build2 (MINUS_EXPR,
+				  gfc_array_index_type, loop->to[n],
+				  loop->from[n]), pre);
 	  loop->from[n] = gfc_index_zero_node;
 	}
 
@@ -3511,8 +3513,13 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	      break;
 
 	    case GFC_SS_SECTION:
-	      loop->to[n] = gfc_conv_section_upper_bound (loopspec[n], n,
-							  &loop->pre);
+	      /* Use the end expression if it exists and is not constant,
+		 so that it is only evaluated once.  */
+	      if (info->end[n] && !INTEGER_CST_P (info->end[n]))
+		loop->to[n] = info->end[n];
+	      else
+		loop->to[n] = gfc_conv_section_upper_bound (loopspec[n], n,
+							    &loop->pre);
 	      break;
 
             case GFC_SS_FUNCTION:
