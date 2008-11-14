@@ -1,3 +1,8 @@
+2008-11-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Revert last change.
+	(OVERRIDE_OPTIONS): Likewise.
+
 2008-11-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Andrew Stubbs  <ams@codesourcery.com>
 	    Gunnar Von Boehn  <gunnar@genesi-usa.com>
