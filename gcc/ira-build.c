@@ -456,6 +456,7 @@ ira_create_allocno (int regno, bool cap_p, ira_loop_tree_node_t loop_tree_node)
   ALLOCNO_SOMEWHERE_RENAMED_P (a) = false;
   ALLOCNO_CHILD_RENAMED_P (a) = false;
   ALLOCNO_DONT_REASSIGN_P (a) = false;
+  ALLOCNO_BAD_SPILL_P (a) = false;
   ALLOCNO_IN_GRAPH_P (a) = false;
   ALLOCNO_ASSIGNED_P (a) = false;
   ALLOCNO_MAY_BE_SPILLED_P (a) = false;
@@ -775,6 +776,7 @@ create_cap_allocno (ira_allocno_t a)
   ira_allocate_and_copy_costs
     (&ALLOCNO_CONFLICT_HARD_REG_COSTS (cap), cover_class,
      ALLOCNO_CONFLICT_HARD_REG_COSTS (a));
+  ALLOCNO_BAD_SPILL_P (cap) = ALLOCNO_BAD_SPILL_P (a);
   ALLOCNO_NREFS (cap) = ALLOCNO_NREFS (a);
   ALLOCNO_FREQ (cap) = ALLOCNO_FREQ (a);
   ALLOCNO_CALL_FREQ (cap) = ALLOCNO_CALL_FREQ (a);
@@ -1490,6 +1492,8 @@ propagate_allocno_info (void)
 	  && bitmap_bit_p (ALLOCNO_LOOP_TREE_NODE (a)->border_allocnos,
 			   ALLOCNO_NUM (a)))
 	{
+	  if (! ALLOCNO_BAD_SPILL_P (a))
+	    ALLOCNO_BAD_SPILL_P (parent_a) = false;
 	  ALLOCNO_NREFS (parent_a) += ALLOCNO_NREFS (a);
 	  ALLOCNO_FREQ (parent_a) += ALLOCNO_FREQ (a);
 	  ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
@@ -1777,6 +1781,8 @@ remove_unnecessary_allocnos (void)
 		  += ALLOCNO_CALLS_CROSSED_NUM (a);
 		ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 		  += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
+		if (! ALLOCNO_BAD_SPILL_P (a))
+		  ALLOCNO_BAD_SPILL_P (parent_a) = false;
 #ifdef STACK_REGS
 		if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
 		  ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
@@ -1821,6 +1827,69 @@ remove_unnecessary_regions (void)
   while (VEC_length (ira_loop_tree_node_t, removed_loop_vec) > 0)
     finish_loop_tree_node (VEC_pop (ira_loop_tree_node_t, removed_loop_vec));
   VEC_free (ira_loop_tree_node_t, heap, removed_loop_vec);
+}
+
+
+
+/* At this point true value of allocno attribute bad_spill_p means
+   that there is an insn where allocno occurs and where the allocno
+   can not be used as memory.  The function updates the attribute, now
+   it can be true only for allocnos which can not be used as memory in
+   an insn and in whose live ranges there is other allocno deaths.
+   Spilling allocnos with true value will not improve the code because
+   it will not make other allocnos colorable and additional reloads
+   for the corresponding pseudo will be generated in reload pass for
+   each insn it occurs.
+
+   This is a trick mentioned in one classic article of Chaitin etc
+   which is frequently omitted in other implementations of RA based on
+   graph coloring.  */
+static void
+update_bad_spill_attribute (void)
+{
+  int i;
+  ira_allocno_t a;
+  ira_allocno_iterator ai;
+  allocno_live_range_t r;
+  enum reg_class cover_class;
+  bitmap_head dead_points[N_REG_CLASSES];
+
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    {
+      cover_class = ira_reg_class_cover[i];
+      bitmap_initialize (&dead_points[cover_class], &reg_obstack);
+    }
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      cover_class = ALLOCNO_COVER_CLASS (a);
+      if (cover_class == NO_REGS)
+	continue;
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	bitmap_set_bit (&dead_points[cover_class], r->finish);
+    }
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      cover_class = ALLOCNO_COVER_CLASS (a);
+      if (cover_class == NO_REGS)
+	continue;
+      if (! ALLOCNO_BAD_SPILL_P (a))
+	continue;
+      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	{
+	  for (i = r->start + 1; i < r->finish; i++)
+	    if (bitmap_bit_p (&dead_points[cover_class], i))
+	      break;
+	  if (i < r->finish)
+	    break;
+	}
+      if (r != NULL)
+	ALLOCNO_BAD_SPILL_P (a) = false;
+    }
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    {
+      cover_class = ira_reg_class_cover[i];
+      bitmap_clear (&dead_points[cover_class]);
+    }
 }
 
 
@@ -2438,6 +2507,7 @@ ira_build (bool loops_p)
   ira_create_allocno_live_ranges ();
   remove_unnecessary_regions ();
   ira_compress_allocno_live_ranges ();
+  update_bad_spill_attribute ();
   loops_p = more_one_region_p ();
   if (loops_p)
     {

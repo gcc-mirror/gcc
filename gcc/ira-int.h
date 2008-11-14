@@ -351,6 +351,10 @@ struct ira_allocno
      region and all its subregions recursively.  */
   unsigned int no_stack_reg_p : 1, total_no_stack_reg_p : 1;
 #endif
+  /* TRUE value means that there is no sense to spill the allocno
+     during coloring because the spill will result in additional
+     reloads in reload pass.  */
+  unsigned int bad_spill_p : 1;
   /* TRUE value means that the allocno was not removed yet from the
      conflicting graph during colouring.  */
   unsigned int in_graph_p : 1;
@@ -435,6 +439,7 @@ struct ira_allocno
 #define ALLOCNO_NO_STACK_REG_P(A) ((A)->no_stack_reg_p)
 #define ALLOCNO_TOTAL_NO_STACK_REG_P(A) ((A)->total_no_stack_reg_p)
 #endif
+#define ALLOCNO_BAD_SPILL_P(A) ((A)->bad_spill_p)
 #define ALLOCNO_IN_GRAPH_P(A) ((A)->in_graph_p)
 #define ALLOCNO_ASSIGNED_P(A) ((A)->assigned_p)
 #define ALLOCNO_MAY_BE_SPILLED_P(A) ((A)->may_be_spilled_p)

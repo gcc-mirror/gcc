@@ -1187,7 +1187,10 @@ push_allocnos_to_stack (void)
 			  * ira_reg_class_nregs[ALLOCNO_COVER_CLASS
 						(i_allocno)]
 			  [ALLOCNO_MODE (i_allocno)] + 1));
-		  if (allocno == NULL || allocno_pri > i_allocno_pri
+		  if (allocno == NULL
+		      || (! ALLOCNO_BAD_SPILL_P (i_allocno)
+			  && ALLOCNO_BAD_SPILL_P (allocno))
+		      || allocno_pri > i_allocno_pri
 		      || (allocno_pri == i_allocno_pri
 			  && (allocno_cost > i_allocno_cost
 			      || (allocno_cost == i_allocno_cost 

@@ -1,3 +1,21 @@
+2008-11-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/37397
+	* ira-int.h (struct ira_allocno): New member bad_spill_p.
+	(ALLOCNO_BAD_SPILL_P): New macro.
+
+	* ira-color.c (push_allocnos_to_stack): Check ALLOCNO_BAD_SPILL_P.
+
+	* ira-build.c (ira_create_allocno): Initialize
+	ALLOCNO_BAD_SPILL_P.
+	(create_cap_allocno, propagate_allocno_info,
+	remove_unnecessary_allocnos): Set up or update
+	ALLOCNO_BAD_SPILL_P.
+	(update_bad_spill_attribute): New function.
+	(ira_build): Call it.
+
+	* ira-costs.c (record_reg_classes): Set up ALLOCNO_BAD_SPILL_P.
+	
 2008-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38104

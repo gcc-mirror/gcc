@@ -187,6 +187,10 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
   int alt;
   int i, j, k;
   rtx set;
+  int insn_allows_mem[MAX_RECOG_OPERANDS];
+
+  for (i = 0; i < n_ops; i++)
+    insn_allows_mem[i] = 0;
 
   /* Process each alternative, each time minimizing an operand's cost
      with the cost for each operand in that alternative.  */
@@ -236,6 +240,8 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	      j = p[0] - '0';
 	      classes[i] = classes[j];
 	      allows_mem[i] = allows_mem[j];
+	      if (allows_mem[i])
+		insn_allows_mem[i] = 1;
 
 	      if (! REG_P (op) || REGNO (op) < FIRST_PSEUDO_REGISTER)
 		{
@@ -302,6 +308,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		       + (recog_data.operand_type[i] != OP_OUT
 			  ? ira_memory_move_cost[mode][classes[i]][1] : 0)
 		       - allows_mem[i]) * frequency;
+
 		  /* If we have assigned a class to this allocno in our
 		     first pass, add a cost to this alternative
 		     corresponding to what we would add if this allocno
@@ -380,7 +387,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  /* It doesn't seem worth distinguishing between
 		     offsettable and non-offsettable addresses
 		     here.  */
-		  allows_mem[i] = 1;
+		  insn_allows_mem[i] = allows_mem[i] = 1;
 		  if (MEM_P (op))
 		    win = 1;
 		  break;
@@ -456,7 +463,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      || (CONSTANT_P (op)
 			  && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))))
 		    win = 1;
-		  allows_mem[i] = 1;
+		  insn_allows_mem[i] = allows_mem[i] = 1;
 		case 'r':
 		  classes[i] = ira_reg_class_union[classes[i]][GENERAL_REGS];
 		  break;
@@ -472,7 +479,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
 		    {
 		      /* Every MEM can be reloaded to fit.  */
-		      allows_mem[i] = 1;
+		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
 			win = 1;
 		    }
@@ -623,6 +630,18 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	      pp->cost[k]
 		= MIN (pp->cost[k], (qq->cost[k] + op_cost_add) * scale);
 	  }
+    }
+
+  for (i = 0; i < n_ops; i++)
+    {
+      ira_allocno_t a;
+      rtx op = ops[i];
+
+      if (! REG_P (op) || REGNO (op) < FIRST_PSEUDO_REGISTER)
+	continue;
+      a = ira_curr_regno_allocno_map [REGNO (op)];
+      if (! ALLOCNO_BAD_SPILL_P (a) && insn_allows_mem[i] == 0)
+	ALLOCNO_BAD_SPILL_P (a) = true;
     }
 
   /* If this insn is a single set copying operand 1 to operand 0 and
@@ -867,6 +886,7 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
 	if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	  break;
 
+	ALLOCNO_BAD_SPILL_P (ira_curr_regno_allocno_map[REGNO (x)]) = true;
 	pp = COSTS_OF_ALLOCNO (allocno_costs,
 			       ALLOCNO_NUM (ira_curr_regno_allocno_map
 					    [REGNO (x)]));
