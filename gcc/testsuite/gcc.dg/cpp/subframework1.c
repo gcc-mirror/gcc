@@ -1,7 +1,7 @@
 /* Copyright (C) 2004 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess { target *-*-darwin* } } */
-/* { dg-options "-F$srcdir/gcc.dg/cpp/frame" } */
+/* { dg-options "-Wno-deprecated -F$srcdir/gcc.dg/cpp/frame" } */
 
 /* Contributed by Robert Bowdidge <bowdidge@apple.com>  */
 /* include a file from a subframework that will import two files that
