@@ -1,3 +1,11 @@
+2008-11-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+	    Gunnar Von Boehn  <gunnar@genesi-usa.com>
+
+	PR target/36134
+	* config/m68k/m68k.md (addsi3_5200): Add a new alternative preferring
+	the shorter LEA insn over ADD.L where possible.
+
 2008-11-14  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* configure.ac (gcc_cv_libc_provides_ssp): Also consider GNU/Hurd
