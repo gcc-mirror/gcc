@@ -895,6 +895,7 @@ process_init_constructor_record (tree type, tree init)
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
       tree next;
+      tree type;
 
       if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
 	{
@@ -905,6 +906,11 @@ process_init_constructor_record (tree type, tree init)
 
       if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	continue;
+
+      /* If this is a bitfield, first convert to the declared type.  */
+      type = TREE_TYPE (field);
+      if (DECL_BIT_FIELD_TYPE (field))
+	type = DECL_BIT_FIELD_TYPE (field);
 
       if (idx < VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)))
 	{
@@ -926,7 +932,7 @@ process_init_constructor_record (tree type, tree init)
 	    }
 
 	  gcc_assert (ce->value);
-	  next = digest_init (TREE_TYPE (field), ce->value);
+	  next = digest_init (type, ce->value);
 	  ++idx;
 	}
       else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
@@ -969,6 +975,9 @@ process_init_constructor_record (tree type, tree init)
 	    continue;
 	}
 
+      /* If this is a bitfield, now convert to the lowered type.  */
+      if (type != TREE_TYPE (field))
+	next = cp_convert_and_check (TREE_TYPE (field), next);
       flags |= picflag_from_initializer (next);
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }

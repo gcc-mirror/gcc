@@ -1,3 +1,8 @@
+2008-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37932
+	* g++.dg/conversion/bitfield11.C: New test.
+
 2008-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
