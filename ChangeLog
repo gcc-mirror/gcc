@@ -1,3 +1,33 @@
+2008-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR bootstrap/38014
+	PR bootstrap/37923
+
+	Revert:
+
+	2008-10-24  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Correct CPPFLAGS typo.
+	* Makefile.in: Regenerated.
+
+	2008-10-22  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR gdb/921
+	PR gdb/1646
+	PR gdb/2175
+	PR gdb/2176
+
+	* Makefile.def (flags_to_pass): Add CPPFLAGS_FOR_BUILD and CPPFLAGS.
+	* Makefile.tpl (BUILD_EXPORTS): Set CPPFLAGS.
+	(EXTRA_BUILD_FLAGS): Correct typo.  Pass CPPFLAGS.
+	(HOST_EXPORTS): Pass CPPFLAGS.
+	(CPPFLAGS_FOR_BUILD, CPPFLAGS, CPPFLAGS_FOR_TARGET): Define.
+	(LDFLAGS_FOR_TARGET): Initialize from configure script.
+	(EXTRA_TARGET_FLAGS): Set CPPFLAGS.
+	* Makefile.in, configure: Regenerated.
+	* configure.ac: Set CPPFLAGS_FOR_TARGET, LDFLAGS_FOR_TARGET,
+	and CPPFLAGS_FOR_BUILD.
+
 2008-11-06  Jeff Law <law@redhat.com>
 
 	* MAINTAINERS: Add myself as middle end maintainer.
