@@ -2452,6 +2452,65 @@ gfc_simplify_logical (gfc_expr *e, gfc_expr *k)
 }
 
 
+/* Selects bewteen current value and extremum for simplify_min_max
+   and simplify_minval_maxval.  */
+static void
+min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
+{
+      switch (arg->ts.type)
+	{
+	case BT_INTEGER:
+	  if (mpz_cmp (arg->value.integer,
+		       extremum->value.integer) * sign > 0)
+	    mpz_set (extremum->value.integer, arg->value.integer);
+	  break;
+
+	case BT_REAL:
+	  /* We need to use mpfr_min and mpfr_max to treat NaN properly.  */
+	  if (sign > 0)
+	    mpfr_max (extremum->value.real, extremum->value.real,
+		      arg->value.real, GFC_RND_MODE);
+	  else
+	    mpfr_min (extremum->value.real, extremum->value.real,
+		      arg->value.real, GFC_RND_MODE);
+	  break;
+
+	case BT_CHARACTER:
+#define LENGTH(x) ((x)->value.character.length)
+#define STRING(x) ((x)->value.character.string)
+	  if (LENGTH(extremum) < LENGTH(arg))
+	    {
+	      char * tmp = STRING(extremum);
+
+	      STRING(extremum) = gfc_getmem (LENGTH(arg) + 1);
+	      memcpy (STRING(extremum), tmp, LENGTH(extremum));
+	      memset (&STRING(extremum)[LENGTH(extremum)], ' ',
+		      LENGTH(arg) - LENGTH(extremum));
+	      STRING(extremum)[LENGTH(arg)] = '\0';  /* For debugger  */
+	      LENGTH(extremum) = LENGTH(arg);
+	      gfc_free (tmp);
+	    }
+
+	  if (gfc_compare_string (arg, extremum) * sign > 0)
+	    {
+	      gfc_free (STRING(extremum));
+	      STRING(extremum) = gfc_getmem (LENGTH(extremum) + 1);
+	      memcpy (STRING(extremum), STRING(arg), LENGTH(arg));
+	      memset (&STRING(extremum)[LENGTH(arg)], ' ',
+		      LENGTH(extremum) - LENGTH(arg));
+	      STRING(extremum)[LENGTH(extremum)] = '\0';  /* For debugger  */
+	    }
+#undef LENGTH
+#undef STRING
+	  break;
+	      
+
+	default:
+	  gfc_internal_error ("simplify_min_max(): Bad type in arglist");
+	}
+}
+
+
 /* This function is special since MAX() can take any number of
    arguments.  The simplified expression is a rewritten version of the
    argument list containing at most one constant element.  Other
@@ -2482,57 +2541,7 @@ simplify_min_max (gfc_expr *expr, int sign)
 	  continue;
 	}
 
-      switch (arg->expr->ts.type)
-	{
-	case BT_INTEGER:
-	  if (mpz_cmp (arg->expr->value.integer,
-		       extremum->expr->value.integer) * sign > 0)
-	    mpz_set (extremum->expr->value.integer, arg->expr->value.integer);
-	  break;
-
-	case BT_REAL:
-	  /* We need to use mpfr_min and mpfr_max to treat NaN properly.  */
-	  if (sign > 0)
-	    mpfr_max (extremum->expr->value.real, extremum->expr->value.real,
-		      arg->expr->value.real, GFC_RND_MODE);
-	  else
-	    mpfr_min (extremum->expr->value.real, extremum->expr->value.real,
-		      arg->expr->value.real, GFC_RND_MODE);
-	  break;
-
-	case BT_CHARACTER:
-#define LENGTH(x) ((x)->expr->value.character.length)
-#define STRING(x) ((x)->expr->value.character.string)
-	  if (LENGTH(extremum) < LENGTH(arg))
-	    {
-	      char * tmp = STRING(extremum);
-
-	      STRING(extremum) = gfc_getmem (LENGTH(arg) + 1);
-	      memcpy (STRING(extremum), tmp, LENGTH(extremum));
-	      memset (&STRING(extremum)[LENGTH(extremum)], ' ',
-		      LENGTH(arg) - LENGTH(extremum));
-	      STRING(extremum)[LENGTH(arg)] = '\0';  /* For debugger  */
-	      LENGTH(extremum) = LENGTH(arg);
-	      gfc_free (tmp);
-	    }
-
-	  if (gfc_compare_string (arg->expr, extremum->expr) * sign > 0)
-	    {
-	      gfc_free (STRING(extremum));
-	      STRING(extremum) = gfc_getmem (LENGTH(extremum) + 1);
-	      memcpy (STRING(extremum), STRING(arg), LENGTH(arg));
-	      memset (&STRING(extremum)[LENGTH(arg)], ' ',
-		      LENGTH(extremum) - LENGTH(arg));
-	      STRING(extremum)[LENGTH(extremum)] = '\0';  /* For debugger  */
-	    }
-#undef LENGTH
-#undef STRING
-	  break;
-	      
-
-	default:
-	  gfc_internal_error ("simplify_min_max(): Bad type in arglist");
-	}
+     min_max_choose (arg->expr, extremum->expr, sign);
 
       /* Delete the extra constant argument.  */
       if (last == NULL)
@@ -2574,6 +2583,69 @@ gfc_expr *
 gfc_simplify_max (gfc_expr *e)
 {
   return simplify_min_max (e, 1);
+}
+
+
+/* This is a simplified version of simplify_min_max to provide
+   simplification of minval and maxval for a vector.  */
+
+static gfc_expr *
+simplify_minval_maxval (gfc_expr *expr, int sign)
+{
+  gfc_constructor *ctr, *extremum;
+  gfc_intrinsic_sym * specific;
+
+  extremum = NULL;
+  specific = expr->value.function.isym;
+
+  ctr = expr->value.constructor;
+
+  for (; ctr; ctr = ctr->next)
+    {
+      if (ctr->expr->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      if (extremum == NULL)
+	{
+	  extremum = ctr;
+	  continue;
+	}
+
+      min_max_choose (ctr->expr, extremum->expr, sign);
+     }
+
+  if (extremum == NULL)
+    return NULL;
+
+  /* Convert to the correct type and kind.  */
+  if (expr->ts.type != BT_UNKNOWN) 
+    return gfc_convert_constant (extremum->expr,
+	expr->ts.type, expr->ts.kind);
+
+  if (specific->ts.type != BT_UNKNOWN) 
+    return gfc_convert_constant (extremum->expr,
+	specific->ts.type, specific->ts.kind); 
+ 
+  return gfc_copy_expr (extremum->expr);
+}
+
+
+gfc_expr *
+gfc_simplify_minval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
+{
+  if (array->expr_type != EXPR_ARRAY || array->rank != 1 || dim || mask)
+    return NULL;
+  
+  return simplify_minval_maxval (array, -1);
+}
+
+
+gfc_expr *
+gfc_simplify_maxval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
+{
+  if (array->expr_type != EXPR_ARRAY || array->rank != 1 || dim || mask)
+    return NULL;
+  return simplify_minval_maxval (array, 1);
 }
 
 

@@ -1,3 +1,8 @@
+2008-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37836
+        * gfortran.dg/minmaxval_1.f90: New test.
+
 2008-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37932

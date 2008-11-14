@@ -1,3 +1,16 @@
+2008-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37836
+        * intrinsic.c (add_functions): Reference gfc_simplify._minval
+	and gfc_simplify_maxval.
+	* intrinsic.h : Add prototypes for gfc_simplify._minval and
+	gfc_simplify_maxval.
+	* simplify.c (min_max_choose): New function extracted from
+	simplify_min_max.
+	(simplify_min_max): Call it.
+	(simplify_minval_maxval, gfc_simplify_minval,
+	gfc_simplify_maxval): New functions.
+
 2008-11-08  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37597
