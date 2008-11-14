@@ -1,3 +1,9 @@
+2008-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38104
+	* gimplify.c (gimple_regimplify_operands): Add referenced vars
+	before calling mark_symbols_for_renaming, not after it.
+
 2008-11-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Revert last change.

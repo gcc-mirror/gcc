@@ -7566,6 +7566,10 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
       break;
     }
 
+  if (gimple_referenced_vars (cfun))
+    for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
+      add_referenced_var (t);
+
   if (!gimple_seq_empty_p (pre))
     {
       if (gimple_in_ssa_p (cfun))
@@ -7579,10 +7583,6 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
     }
   if (post_stmt)
     gsi_insert_after (gsi_p, post_stmt, GSI_NEW_STMT);
-
-  if (gimple_referenced_vars (cfun))
-    for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
-      add_referenced_var (t);
 
   pop_gimplify_context (NULL);
 }
