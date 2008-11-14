@@ -1886,7 +1886,9 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
     {
       result = build3 (CALL_EXPR, TREE_TYPE (result), orig_fn,
 		       orig_args, NULL_TREE);
-      KOENIG_LOOKUP_P (result) = koenig_p;
+      /* Don't repeat arg-dependent lookup at instantiation time if this call
+         is not type-dependent.  */
+      KOENIG_LOOKUP_P (result) = 0;
     }
   return result;
 }
