@@ -1,3 +1,9 @@
+2008-11-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38030
+	* semantics.c (finish_call_expr): Don't repeat arg-dep lookup
+	for a non-dependent call.
+
 2008-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37932

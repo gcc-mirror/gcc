@@ -1,3 +1,8 @@
+2008-11-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38030
+	* g++.dg/template/lookup8.C: New test.
+
 2008-11-14  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/27574
