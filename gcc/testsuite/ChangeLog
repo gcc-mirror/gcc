@@ -1,3 +1,10 @@
+2008-11-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+	    Gunnar Von Boehn  <gunnar@genesi-usa.com>
+
+	PR target/36134
+	* gcc.target/m68k/pr36134.c: New test.
+
 2008-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36125
