@@ -1,3 +1,11 @@
+2008-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-06-06  Uros Bizjak <ubizjak@gmail.com>
+
+	PR rtl-optimization/36438
+	* gcc.target/i386/pr36438.c
+
 2008-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37932
@@ -17,7 +25,7 @@
 
 	PR middle-end/37807
 	PR middle-end/37809
-	* gcc/testsuite/gcc.target/i386/mmx-8.c: New test.
+	* gcc.target/i386/mmx-8.c: New test.
 
 2008-10-07  H.J. Lu  <hongjiu.lu@intel.com>
 
