@@ -163,6 +163,9 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
   unsigned needed : 1;
+  /* Set when decl is an abstract function pointed to by the
+     ABSTRACT_DECL_ORIGIN of a reachable function.  */
+  unsigned abstract_and_needed : 1;
   /* Set when function is reachable by call from other function
      that is either reachable or needed.  */
   unsigned reachable : 1;

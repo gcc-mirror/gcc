@@ -1,3 +1,13 @@
+2008-11-14  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/27574
+	* cgraph.h: New abstract_and_needed member to struct cgraph_node.
+	* cgraphunit.c (cgraph_analyze_functions): Flag abstract functions
+	-which clones are reachable - as "abstract and needed".
+	* cgraph.c (cgraph_release_function_body):  If a node is
+	"abstract and needed", do not release its DECL_INITIAL() content
+	will be needed to emit debug info.
+
 2008-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

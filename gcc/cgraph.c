@@ -540,7 +540,11 @@ cgraph_release_function_body (struct cgraph_node *node)
     }
   DECL_SAVED_TREE (node->decl) = NULL;
   DECL_STRUCT_FUNCTION (node->decl) = NULL;
-  DECL_INITIAL (node->decl) = error_mark_node;
+  /* If the node is abstract and needed, then do not clear DECL_INITIAL
+     of its associated function function declaration because it's
+     needed to emit debug info later.  */
+  if (!node->abstract_and_needed)
+    DECL_INITIAL (node->decl) = error_mark_node;
 }
 
 /* Remove the node from cgraph.  */

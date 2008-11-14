@@ -1008,6 +1008,15 @@ cgraph_analyze_functions (void)
 	if (!edge->callee->reachable)
 	  cgraph_mark_reachable_node (edge->callee);
 
+      /* If decl is a clone of an abstract function, mark that abstract
+	 function so that we don't release its body. The DECL_INITIAL() of that
+         abstract function declaration will be later needed to output debug info.  */
+      if (DECL_ABSTRACT_ORIGIN (decl))
+	{
+	  struct cgraph_node *origin_node = cgraph_node (DECL_ABSTRACT_ORIGIN (decl));
+	  origin_node->abstract_and_needed = true;
+	}
+
       /* We finalize local static variables during constructing callgraph
          edges.  Process their attributes too.  */
       process_function_and_variable_attributes (first_processed,

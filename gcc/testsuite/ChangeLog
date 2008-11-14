@@ -1,3 +1,8 @@
+2008-11-14  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/27574
+	* g++.dg/debug/dwarf2/local-var-in-contructor.C: New test.
+
 2008-11-14  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37836
