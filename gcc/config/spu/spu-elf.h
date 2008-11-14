@@ -24,6 +24,23 @@
             asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 
+/* The following macros define "native" directory locations; on the SPU,
+   these are used only when building the compiler with --with-sysroot.
+   This can be used to build a pair of PPU and SPU cross-compilers with
+   a common sysroot; the SPU compiler will search for its files in
+   ${sysroot}/include and ${sysroot}/lib.  */
+
+/* STANDARD_STARTFILE_PREFIX_1 is "/lib", which we keep.
+   STANDARD_STARTFILE_PREFIX_2 is "/usr/lib" -- we remove this.  */
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_2 ""
+
+/* Use "/include" instead of "/usr/include".  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/include"
+
+/* We do not provide any "/usr/local/include" directory on SPU.  */
+#undef LOCAL_INCLUDE_DIR
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which

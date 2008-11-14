@@ -1,3 +1,10 @@
+2008-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu-elf.h (STANDARD_STARTFILE_PREFIX_2): Disable default.
+	(STANDARD_INCLUDE_DIR): Redefine to "/include".
+	(LOCAL_INCLUDE_DIR): Undefine.
+	* config/spu/t-spu-elf (NATIVE_SYSTEM_HEADER_DIR): Define.
+
 2008-11-14  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/27574
