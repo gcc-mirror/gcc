@@ -1,3 +1,8 @@
+2008-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36125
+	* gcc.c-torture/compile/pr36125.c: New test.
+
 2008-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37932

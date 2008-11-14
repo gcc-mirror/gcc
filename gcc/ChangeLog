@@ -1,3 +1,9 @@
+2008-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36125
+	* function.c (gimplify_parameters): For callee copies parameters,
+	move TREE_ADDRESSABLE flag from the PARM_DECL to the local copy.
+
 2008-11-13  Thomas Schwinge  <tschwinge@gnu.org>
 
 	PR target/28102
