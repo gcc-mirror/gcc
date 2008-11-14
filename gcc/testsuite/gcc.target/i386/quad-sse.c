@@ -18,4 +18,4 @@ __float128 test_3(void)
   return __builtin_copysignq (x, y);
 }
 
-/* { dg-final { scan-assembler-not "call" } } */
+/* { dg-final { scan-assembler-not "call.*(neg|fabs|copysign)" } } */
