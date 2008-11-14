@@ -619,7 +619,7 @@ build_aggr_conv (tree type, tree ctor, int flags)
   conversion *c;
   tree field = TYPE_FIELDS (type);
 
-  for (; field; field = TREE_CHAIN (field))
+  for (; field; field = TREE_CHAIN (field), ++i)
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
