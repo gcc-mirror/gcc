@@ -3,7 +3,6 @@
 	PR c++/37932
 	* typeck2.c (process_init_constructor_record): Update bitfield
 	handling.
-	(check_narrowing): Update bitfield handling, print source type.
 	
 2008-11-12  Jason Merrill  <jason@redhat.com>
 
