@@ -1,3 +1,8 @@
+2008-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38104
+	* g++.dg/tree-ssa/pr38104.C: New test.
+
 2008-11-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.target/sh/pr37514.c: Remove.
