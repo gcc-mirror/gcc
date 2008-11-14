@@ -1,5 +1,9 @@
 2008-11-14  Thomas Schwinge  <tschwinge@gnu.org>
 
+	* configure.ac (gcc_cv_libc_provides_ssp): Also consider GNU/Hurd
+	systems, which are assumend to always provide SSP-support in glibc.
+	* configure: Regenerate.
+
 	* configure.ac (gcc_cv_libc_provides_ssp): Also consider GNU/kFreeBSD,
 	GNU/kNetBSD systems in the `*-*-linux*' case.
 	* configure: Regenerate.
