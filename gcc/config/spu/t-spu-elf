@@ -14,6 +14,9 @@
 #  along with GCC; see the file COPYING3.  If not see
 #  <http://www.gnu.org/licenses/>.
 
+# Define system directory to match STANDARD_INCLUDE_DIR in spu-elf.h,
+# allowing combined SPU/PPU sysroot builds.
+NATIVE_SYSTEM_HEADER_DIR = /include
 
 # Suppress building libgcc1.a
 LIBGCC1 =
