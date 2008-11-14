@@ -1,3 +1,8 @@
+2008-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/37517
+	* gcc.target/i386/quad-sse.c: Tighten scan-assembler-not pattern.
+
 2008-11-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Andrew Stubbs  <ams@codesourcery.com>
 	    Gunnar Von Boehn  <gunnar@genesi-usa.com>
