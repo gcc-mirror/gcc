@@ -1,3 +1,8 @@
+2008-11-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37740
+	* g++.dg/cpp0x/initlist8.C: New test.
+
 2008-11-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/38004
