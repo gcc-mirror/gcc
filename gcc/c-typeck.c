@@ -3080,9 +3080,7 @@ build_unary_op (location_t location,
 
       {
 	tree inc;
-	tree result_type = TREE_TYPE (arg);
 
-	arg = get_unwidened (arg, 0);
 	argtype = TREE_TYPE (arg);
 
 	/* Compute the increment.  */
@@ -3091,7 +3089,7 @@ build_unary_op (location_t location,
 	  {
 	    /* If pointer target is an undefined struct,
 	       we just cannot know how to do the arithmetic.  */
-	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (result_type)))
+	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (argtype)))
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		  error_at (location,
@@ -3100,8 +3098,8 @@ build_unary_op (location_t location,
 		  error_at (location,
 			    "decrement of pointer to unknown structure");
 	      }
-	    else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
-		     || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
+	    else if (TREE_CODE (TREE_TYPE (argtype)) == FUNCTION_TYPE
+		     || TREE_CODE (TREE_TYPE (argtype)) == VOID_TYPE)
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		  pedwarn (location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
@@ -3111,10 +3109,10 @@ build_unary_op (location_t location,
 			   "wrong type argument to decrement");
 	      }
 
-	    inc = c_size_in_bytes (TREE_TYPE (result_type));
+	    inc = c_size_in_bytes (TREE_TYPE (argtype));
 	    inc = fold_convert (sizetype, inc);
 	  }
-	else if (FRACT_MODE_P (TYPE_MODE (result_type)))
+	else if (FRACT_MODE_P (TYPE_MODE (argtype)))
 	  {
 	    /* For signed fract types, we invert ++ to -- or
 	       -- to ++, and change inc from 1 to -1, because
@@ -3161,7 +3159,6 @@ build_unary_op (location_t location,
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 	TREE_SIDE_EFFECTS (val) = 1;
-	val = convert (result_type, val);
 	if (TREE_CODE (val) != code)
 	  TREE_NO_WARNING (val) = 1;
 	ret = val;
