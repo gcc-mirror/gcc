@@ -1,3 +1,9 @@
+2008-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38051
+	* tree-ssa-alias.c (update_alias_info_1): Manually find
+	written variables.
+
 2008-11-15  Joshua Kinard  <kumba@gentoo.org>
 
 	* doc/invoke.texi (-mfix-r10000): Document.
