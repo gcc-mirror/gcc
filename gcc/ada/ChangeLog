@@ -1,3 +1,10 @@
+2008-11-15  Laurent Guerby  <laurent@guerby.net>
+
+	PR ada/37993
+	* gcc-interface/Makefile.in: Add multilib handling for x86_64
+	on darwin.
+	* system-darwin-x86_64.ads: New file.
+
 2008-11-13  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Function>:
