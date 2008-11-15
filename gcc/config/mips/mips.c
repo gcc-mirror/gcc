@@ -6909,6 +6909,7 @@ mips_print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
    '#'	Print a nop if in a ".set noreorder" block.
    '/'	Like '#', but do nothing within a delayed-branch sequence.
    '?'	Print "l" if mips_branch_likely is true
+   '~'	Print a nop if mips_branch_likely is true
    '.'	Print the name of the register with a hard-wired zero (zero or $0).
    '@'	Print the name of the assembler temporary register (at or $1).
    '^'	Print the name of the pic call-through register (t9 or $25).
@@ -6983,6 +6984,11 @@ mips_print_operand_punctuation (FILE *file, int ch)
 	putc ('l', file);
       break;
 
+    case '~':
+      if (mips_branch_likely)
+	fputs ("\n\tnop", file);
+      break;
+
     case '.':
       fputs (reg_names[GP_REG_FIRST + 0], file);
       break;
@@ -7026,7 +7032,7 @@ mips_init_print_operand_punct (void)
 {
   const char *p;
 
-  for (p = "()[]<>*#/?.@^+$|-"; *p; p++)
+  for (p = "()[]<>*#/?~.@^+$|-"; *p; p++)
     mips_print_operand_punct[(unsigned char) *p] = true;
 }
 
@@ -10248,6 +10254,17 @@ mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
       break;
     }
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
+}
+
+/* Return the assembly code for __sync_*() loop LOOP.  The loop should support
+   both normal and likely branches, using %? and %~ where appropriate.  */
+
+const char *
+mips_output_sync_loop (const char *loop)
+{
+  /* Use branch-likely instructions to work around the LL/SC R10000 errata.  */
+  mips_branch_likely = TARGET_FIX_R10000;
+  return loop;
 }
 
 /* Return the assembly code for DIV or DDIV instruction DIVISION, which has
@@ -13970,6 +13987,24 @@ mips_override_options (void)
   if ((target_flags_explicit & MASK_FIX_R4400) == 0
       && mips_matching_cpu_name_p (mips_arch_info->name, "r4400"))
     target_flags |= MASK_FIX_R4400;
+
+  /* Default to working around R10000 errata only if the processor
+     was selected explicitly.  */
+  if ((target_flags_explicit & MASK_FIX_R10000) == 0
+      && mips_matching_cpu_name_p (mips_arch_info->name, "r10000"))
+    target_flags |= MASK_FIX_R10000;
+
+  /* Make sure that branch-likely instructions available when using
+     -mfix-r10000.  The instructions are not available if either:
+
+	1. -mno-branch-likely was passed.
+	2. The selected ISA does not support branch-likely and
+	   the command line does not include -mbranch-likely.  */
+  if (TARGET_FIX_R10000
+      && ((target_flags_explicit & MASK_BRANCHLIKELY) == 0
+          ? !ISA_HAS_BRANCHLIKELY
+          : !TARGET_BRANCHLIKELY))
+    sorry ("%qs requires branch-likely instructions", "-mfix-r10000");
 
   /* Save base state of options.  */
   mips_base_target_flags = target_flags;
