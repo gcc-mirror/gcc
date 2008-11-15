@@ -1281,12 +1281,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If this is constant initialized to a static constant and the
 	   object has an aggregate type, force it to be statically
-	   allocated. */
-	if (const_flag && gnu_expr && TREE_CONSTANT (gnu_expr)
+	   allocated.  This will avoid an initialization copy.  */
+	if (!static_p && const_flag
+	    && gnu_expr && TREE_CONSTANT (gnu_expr)
+	    && AGGREGATE_TYPE_P (gnu_type)
 	    && host_integerp (TYPE_SIZE_UNIT (gnu_type), 1)
-	    && (AGGREGATE_TYPE_P (gnu_type)
-		&& !(TREE_CODE (gnu_type) == RECORD_TYPE
-		     && TYPE_IS_PADDING_P (gnu_type))))
+	    && !(TREE_CODE (gnu_type) == RECORD_TYPE
+		 && TYPE_IS_PADDING_P (gnu_type)
+		 && !host_integerp (TYPE_SIZE_UNIT
+				    (TREE_TYPE (TYPE_FIELDS (gnu_type))), 1)))
 	  static_p = true;
 
 	gnu_decl = create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
