@@ -1,3 +1,51 @@
+2008-11-15  Joshua Kinard  <kumba@gentoo.org>
+
+	* doc/invoke.texi (-mfix-r10000): Document.
+	* config/mips/mips.opt (mfix-r10000): New option.
+	* config/mips/mips-protos.h (mips_output_sync_loop): Declare.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP): Use %?.
+	(MIPS_COMPARE_AND_SWAP_12): Likewise.
+	(MIPS_SYNC_OP): Likewise.
+	(MIPS_SYNC_OP_12): Likewise.
+	(MIPS_SYNC_OLD_OP_12): Likewise.
+	(MIPS_SYNC_NEW_OP_12): Likewise.
+	(MIPS_SYNC_OLD_OP): Likewise.
+	(MIPS_SYNC_NAND): Likewise.
+	(MIPS_SYNC_OLD_NAND): Likewise.
+	(MIPS_SYNC_EXCHANGE): Likewise.
+	(MIPS_SYNC_EXCHANGE_12): Likewise.
+	(MIPS_SYNC_NEW_OP): Likewise, using %~ to fill branch-likely
+	delay slots.
+	(MIPS_SYNC_NEW_NAND): Likewise.
+	* config/mips/mips.c (mips_print_operand_punctuation): Handle '~'.
+	(mips_init_print_operand_punct): Treat '~' as a punctuation character.
+	(mips_output_sync_loop): New function.
+	(mips_override_options): Make -march=r10000 imply -mfix-r10000.
+	Make -mfix-r10000 require branch-likely instructions.
+	* config/mips/sync.md (sync_compare_and_swap<mode>): Use
+	mips_output_sync_loop.
+	(compare_and_swap_12): Likewise.
+	(sync_add<mode>): Likewise.
+	(sync_<optab>_12): Likewise.
+	(sync_old_<optab>_12): Likewise.
+	(sync_new_<optab>_12): Likewise.
+	(sync_nand_12): Likewise.
+	(sync_old_nand_12): Likewise.
+	(sync_new_nand_12): Likewise.
+	(sync_sub<mode>): Likewise.
+	(sync_old_add<mode>): Likewise.
+	(sync_old_sub<mode>): Likewise.
+	(sync_new_add<mode>): Likewise.
+	(sync_new_sub<mode>): Likewise.
+	(sync_<optab><mode>): Likewise.
+	(sync_old_<optab><mode>): Likewise.
+	(sync_new_<optab><mode>): Likewise.
+	(sync_nand<mode>): Likewise.
+	(sync_old_nand<mode>): Likewise.
+	(sync_new_nand<mode>): Likewise.
+	(sync_lock_test_and_set<mode>): Likewise.
+	(test_and_set_12): Likewise.
+
 2008-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c (cc1_options): Fix comment.

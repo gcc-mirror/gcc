@@ -1,3 +1,22 @@
+2008-11-15  Joshua Kinard  <kumba@gentoo.org>
+	    Richard Sandiford  <rdsandiford@goolemail.com>
+
+	* gcc.target/mips/fix-r10000-1.c: New test.
+	* gcc.target/mips/fix-r10000-2.c: Likewise.
+	* gcc.target/mips/fix-r10000-3.c: Likewise.
+	* gcc.target/mips/fix-r10000-4.c: Likewise.
+	* gcc.target/mips/fix-r10000-5.c: Likewise.
+	* gcc.target/mips/fix-r10000-6.c: Likewise.
+	* gcc.target/mips/fix-r10000-7.c: Likewise.
+	* gcc.target/mips/fix-r10000-8.c: Likewise.
+	* gcc.target/mips/fix-r10000-9.c: Likewise.
+	* gcc.target/mips/fix-r10000-10.c: Likewise.
+	* gcc.target/mips/fix-r10000-11.c: Likewise.
+	* gcc.target/mips/fix-r10000-12.c: Likewise.
+	* gcc.target/mips/fix-r10000-13.c: Likewise.
+	* gcc.target/mips/fix-r10000-14.c: Likewise.
+	* gcc.target/mips/fix-r10000-15.c: Likewise.
+
 2008-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37561

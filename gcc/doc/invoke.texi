@@ -668,8 +668,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-vr4120  -mno-fix-vr4120  -mfix-vr4130  -mno-fix-vr4130 @gol
--mfix-sb1  -mno-fix-sb1 @gol
+-mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
+-mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
@@ -12832,6 +12832,22 @@ Work around certain R4400 CPU errata:
 A double-word or a variable shift may give an incorrect result if executed
 immediately after starting an integer division.
 @end itemize
+
+@item -mfix-r10000
+@itemx -mno-fix-r10000
+@opindex mfix-r10000
+@opindex mno-fix-r10000
+Work around certain R10000 errata:
+@itemize @minus
+@item
+@code{ll}/@code{sc} sequences may not behave atomically on revisions
+prior to 3.0.  They may deadlock on revisions 2.6 and earlier.
+@end itemize
+
+This option can only be used if the target architecture supports
+branch-likely instructions.  @option{-mfix-r10000} is the default when
+@option{-march=r10000} is used; @option{-mno-fix-r10000} is the default
+otherwise.
 
 @item -mfix-vr4120
 @itemx -mno-fix-vr4120

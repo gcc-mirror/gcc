@@ -43,9 +43,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_COMPARE_AND_SWAP ("<d>", "li");
+    return mips_output_sync_loop (MIPS_COMPARE_AND_SWAP ("<d>", "li"));
   else
-    return MIPS_COMPARE_AND_SWAP ("<d>", "move");
+    return mips_output_sync_loop (MIPS_COMPARE_AND_SWAP ("<d>", "move"));
 }
   [(set_attr "length" "32")])
 
@@ -76,9 +76,11 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_NONZERO_OP);
+    return (mips_output_sync_loop
+	    (MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_NONZERO_OP)));
   else
-    return MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_ZERO_OP);
+    return (mips_output_sync_loop
+	    (MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_ZERO_OP)));
 }
   [(set_attr "length" "40,36")])
 
@@ -91,9 +93,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_OP ("<d>", "<d>addiu");	
+    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>addiu"));
   else
-    return MIPS_SYNC_OP ("<d>", "<d>addu");	
+    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>addu"));
 }
   [(set_attr "length" "28")])
 
@@ -124,7 +126,8 @@
    (clobber (match_scratch:SI 4 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_NOT_NOP);	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_NOT_NOP)));
 }
   [(set_attr "length" "40")])
 
@@ -160,8 +163,9 @@
    (clobber (match_scratch:SI 5 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_NOT_NOP,
-				MIPS_SYNC_OLD_OP_12_NOT_NOP_REG);	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_NOT_NOP,
+	    			  MIPS_SYNC_OLD_OP_12_NOT_NOP_REG)));
 }
   [(set_attr "length" "40")])
 
@@ -202,7 +206,8 @@
 	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_NOT_NOP);
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_NOT_NOP)));
 }
   [(set_attr "length" "40")])
 
@@ -233,7 +238,8 @@
    (clobber (match_scratch:SI 4 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_NOT_NOT);	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_NOT_NOT)));
 }
   [(set_attr "length" "44")])
 
@@ -267,8 +273,9 @@
    (clobber (match_scratch:SI 5 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_NOT_NOT,
-				MIPS_SYNC_OLD_OP_12_NOT_NOT_REG);	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_NOT_NOT,
+				  MIPS_SYNC_OLD_OP_12_NOT_NOT_REG)));
 }
   [(set_attr "length" "44")])
 
@@ -307,7 +314,8 @@
 	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_NOT_NOT);
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_NOT_NOT)));
 }
   [(set_attr "length" "40")])
 
@@ -319,7 +327,7 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
-  return MIPS_SYNC_OP ("<d>", "<d>subu");	
+  return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>subu"));
 }
   [(set_attr "length" "28")])
 
@@ -334,9 +342,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_OLD_OP ("<d>", "<d>addiu");	
+    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>addiu"));
   else
-    return MIPS_SYNC_OLD_OP ("<d>", "<d>addu");	
+    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>addu"));
 }
   [(set_attr "length" "28")])
 
@@ -350,7 +358,7 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
-  return MIPS_SYNC_OLD_OP ("<d>", "<d>subu");	
+  return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>subu"));
 }
   [(set_attr "length" "28")])
 
@@ -365,9 +373,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_NEW_OP ("<d>", "<d>addiu");	
+    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>addiu"));
   else
-    return MIPS_SYNC_NEW_OP ("<d>", "<d>addu");	
+    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>addu"));
 }
   [(set_attr "length" "28")])
 
@@ -381,7 +389,7 @@
 	 UNSPEC_SYNC_NEW_OP))]
   "GENERATE_LL_SC"
 {
-  return MIPS_SYNC_NEW_OP ("<d>", "<d>subu");	
+  return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>subu"));
 }
   [(set_attr "length" "28")])
 
@@ -394,9 +402,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_OP ("<d>", "<immediate_insn>");	
+    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<immediate_insn>"));
   else
-    return MIPS_SYNC_OP ("<d>", "<insn>");	
+    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<insn>"));
 }
   [(set_attr "length" "28")])
 
@@ -411,9 +419,10 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>");	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>")));
   else
-    return MIPS_SYNC_OLD_OP ("<d>", "<insn>");	
+    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<insn>"));
 }
   [(set_attr "length" "28")])
 
@@ -428,9 +437,10 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>");	
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>")));
   else
-    return MIPS_SYNC_NEW_OP ("<d>", "<insn>");	
+    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<insn>"));
 }
   [(set_attr "length" "28")])
 
@@ -441,9 +451,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_NAND ("<d>", "andi");	
+    return mips_output_sync_loop (MIPS_SYNC_NAND ("<d>", "andi"));
   else
-    return MIPS_SYNC_NAND ("<d>", "and");	
+    return mips_output_sync_loop (MIPS_SYNC_NAND ("<d>", "and"));
 }
   [(set_attr "length" "32")])
 
@@ -456,9 +466,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_OLD_NAND ("<d>", "andi");	
+    return mips_output_sync_loop (MIPS_SYNC_OLD_NAND ("<d>", "andi"));
   else
-    return MIPS_SYNC_OLD_NAND ("<d>", "and");	
+    return mips_output_sync_loop (MIPS_SYNC_OLD_NAND ("<d>", "and"));
 }
   [(set_attr "length" "32")])
 
@@ -471,9 +481,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_NEW_NAND ("<d>", "andi");	
+    return mips_output_sync_loop (MIPS_SYNC_NEW_NAND ("<d>", "andi"));
   else
-    return MIPS_SYNC_NEW_NAND ("<d>", "and");	
+    return mips_output_sync_loop (MIPS_SYNC_NEW_NAND ("<d>", "and"));
 }
   [(set_attr "length" "32")])
 
@@ -486,9 +496,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_EXCHANGE ("<d>", "li");
+    return mips_output_sync_loop (MIPS_SYNC_EXCHANGE ("<d>", "li"));
   else
-    return MIPS_SYNC_EXCHANGE ("<d>", "move");
+    return mips_output_sync_loop (MIPS_SYNC_EXCHANGE ("<d>", "move"));
 }
   [(set_attr "length" "24")])
 
@@ -516,8 +526,10 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_NONZERO_OP);
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_NONZERO_OP)));
   else
-    return MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_ZERO_OP);
+    return (mips_output_sync_loop
+	    (MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_ZERO_OP)));
 }
   [(set_attr "length" "28,24")])
