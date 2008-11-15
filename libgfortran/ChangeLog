@@ -1,3 +1,10 @@
+2008-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/37294
+	* io/write.c (namelist_write_newline): Use array loop specification to
+	advance to next internal array unit record. (namelist_write): Adjust to
+	accomodate the internal array unit behavior.
+
 2008-11-01  Dennis Wassel  <dennis.wassel@gmail.com>
 
 	PR fortran/37159
