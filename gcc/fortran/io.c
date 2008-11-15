@@ -107,10 +107,10 @@ static gfc_dt *current_dt;
 typedef enum
 {
   FMT_NONE, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
-  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_POS, FMT_LPAREN,
+  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_LPAREN,
   FMT_RPAREN, FMT_X, FMT_SIGN, FMT_BLANK, FMT_CHAR, FMT_P, FMT_IBOZ, FMT_F,
   FMT_E, FMT_EXT, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_ERROR, FMT_DC,
-  FMT_DP
+  FMT_DP, FMT_T, FMT_TR, FMT_TL
 }
 format_token;
 
@@ -314,10 +314,18 @@ format_lex (void)
 
     case 'T':
       c = next_char_not_space (&error);
-      if (c != 'L' && c != 'R')
-	unget_char ();
-
-      token = FMT_POS;
+      switch (c)
+	{
+	case 'L':
+	  token = FMT_TL;
+	  break;
+	case 'R':
+	  token = FMT_TR;
+	  break;
+	default:
+	  token = FMT_T;
+	  unget_char ();
+	}
       break;
 
     case '(':
@@ -596,7 +604,9 @@ format_item_1:
 
       goto finished;
 
-    case FMT_POS:
+    case FMT_T:
+    case FMT_TL:
+    case FMT_TR:
     case FMT_IBOZ:
     case FMT_F:
     case FMT_E:
@@ -646,7 +656,17 @@ data_desc:
 
       goto optional_comma;
 
-    case FMT_POS:
+    case FMT_T:
+    case FMT_TL:
+    case FMT_TR:
+      t = format_lex ();
+      if (t != FMT_POSINT)
+	{
+	  error = _("Positive width required with T descriptor");
+	  goto syntax;
+	}
+      break;
+
     case FMT_L:
       t = format_lex ();
       if (t == FMT_ERROR)
