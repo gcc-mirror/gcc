@@ -295,6 +295,11 @@ package body Switch.C is
 
                case Switch_Chars (Ptr) is
 
+                  when 'a' =>
+                     Store_Switch := False;
+                     Enable_Switch_Storing;
+                     Ptr := Ptr + 1;
+
                   --  -gnatec (configuration pragmas)
 
                   when 'c' =>

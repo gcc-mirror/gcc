@@ -1,3 +1,14 @@
+2008-11-15  Bechir Zalila  <bechir.zalila@gmail.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/34289
+	* lib.ads: (Enable_Switch_Storing): Declare.
+	* lib.adb: (Enable_Switch_Storing): New procedure.
+	* switch-c.adb (Scan_Front_End_Switches): Add support for -gnatea.
+	* make.adb: (Compile_Sources.Compile): Add -gnatea as first option.
+	(Display): Never display -gnatea
+	* lang-specs.h: If -gnatea is present, pass -gnatez.
+
 2008-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (can_fold_for_view_convert_p): New predicate.

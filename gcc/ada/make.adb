@@ -2893,7 +2893,7 @@ package body Make is
          Source_Index : Int;
          Args         : Argument_List) return Process_Id
       is
-         Comp_Args : Argument_List (Args'First .. Args'Last + 9);
+         Comp_Args : Argument_List (Args'First .. Args'Last + 10);
          Comp_Next : Integer := Args'First;
          Comp_Last : Integer;
          Arg_Index : Integer;
@@ -2949,6 +2949,9 @@ package body Make is
                Syntax_Only  := False;
             end if;
          end loop;
+
+         Comp_Args (Comp_Next) := new String'("-gnatea");
+         Comp_Next := Comp_Next + 1;
 
          Comp_Args (Comp_Next) := Comp_Flag;
          Comp_Next := Comp_Next + 1;
@@ -4032,9 +4035,11 @@ package body Make is
 
          for J in Args'Range loop
 
-            --  Never display -gnatez
+            --  Never display -gnatea nor -gnatez
 
-            if Args (J).all /= "-gnatez" then
+            if Args (J).all /= "-gnatea" and then
+              Args (J).all /= "-gnatez"
+            then
 
                --  Do not display the mapping file argument automatically
                --  created when using a project file.

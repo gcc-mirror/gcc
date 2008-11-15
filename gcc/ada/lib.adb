@@ -49,7 +49,7 @@ with Uname;   use Uname;
 package body Lib is
 
    Switch_Storing_Enabled : Boolean := True;
-   --  Set to False by Disable_Switch_Storing
+   --  Controlled by Enable_Switch_Storing/Disable_Switch_Storing
 
    -----------------------
    -- Local Subprograms --
@@ -422,6 +422,19 @@ package body Lib is
    begin
       return Compilation_Switches.Last;
    end Compilation_Switches_Last;
+
+   ---------------------------
+   -- Enable_Switch_Storing --
+   ---------------------------
+
+   procedure Enable_Switch_Storing is
+   begin
+      Switch_Storing_Enabled := True;
+   end Enable_Switch_Storing;
+
+   ----------------------------
+   -- Disable_Switch_Storing --
+   ----------------------------
 
    procedure Disable_Switch_Storing is
    begin

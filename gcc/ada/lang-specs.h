@@ -35,7 +35,8 @@
  gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet} %{nostdinc*}\
     %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*} %{g*&m*} "
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*}\
+    %{gnatea:-gnatez} %{g*&m*} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp:-mrtp} "
 #endif

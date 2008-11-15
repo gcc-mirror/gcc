@@ -556,9 +556,15 @@ package Lib is
    --  which may influence the generated output file(s). Switch is the text of
    --  the switch to store (except that -fRTS gets changed back to --RTS).
 
+   procedure Enable_Switch_Storing;
+   --  Enable registration of switches by Store_Compilation_Switch. Used to
+   --  avoid registering switches added automatically by the gcc driver at the
+   --  beginning of the command line.
+
    procedure Disable_Switch_Storing;
    --  Disable registration of switches by Store_Compilation_Switch. Used to
-   --  avoid registering switches added automatically by the gcc driver.
+   --  avoid registering switches added automatically by the gcc driver at the
+   --  end of the command line.
 
    procedure Store_Linker_Option_String (S : String_Id);
    --  This procedure is called to register the string from a pragma
