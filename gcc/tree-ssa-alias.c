@@ -2667,6 +2667,17 @@ update_alias_info_1 (gimple stmt, struct alias_info *ai)
 
       mem_ref_stats->num_mem_stmts++;
 
+      /* Add all decls written to to the list of written variables.  */
+      if (gimple_has_lhs (stmt)
+	  && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
+	{
+	  tree lhs = gimple_get_lhs (stmt);
+	  while (handled_component_p (lhs))
+	    lhs = TREE_OPERAND (lhs, 0);
+	  if (DECL_P (lhs))
+	    pointer_set_insert (ai->written_vars, lhs);
+	}
+
       /* Notice that we only update memory reference stats for symbols
 	 loaded and stored by the statement if the statement does not
 	 contain pointer dereferences and it is not a call/asm site.
@@ -2689,25 +2700,19 @@ update_alias_info_1 (gimple stmt, struct alias_info *ai)
 	 dereferences (e.g., MEMORY_VAR = *PTR) or if a call site has
 	 memory symbols in its argument list, but these cases do not
 	 occur so frequently as to constitute a serious problem.  */
-      if (gimple_stored_syms (stmt))
-	EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
-	  {
-	    tree sym = referenced_var (i);
-	    pointer_set_insert (ai->written_vars, sym);
-	    if (!stmt_dereferences_ptr_p
-		&& stmt_escape_type != ESCAPE_TO_CALL
-		&& stmt_escape_type != ESCAPE_TO_PURE_CONST
-		&& stmt_escape_type != ESCAPE_TO_ASM)
-	      update_mem_sym_stats_from_stmt (sym, stmt, 0, 1);
-	  }
-
       if (!stmt_dereferences_ptr_p
-	  && gimple_loaded_syms (stmt)
 	  && stmt_escape_type != ESCAPE_TO_CALL
 	  && stmt_escape_type != ESCAPE_TO_PURE_CONST
 	  && stmt_escape_type != ESCAPE_TO_ASM)
-	EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
-	  update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
+	{
+	  if (gimple_stored_syms (stmt))
+	    EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
+	      update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 0, 1);
+
+	  if (gimple_loaded_syms (stmt))
+	    EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
+	      update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
+	}
     }
 }
 
