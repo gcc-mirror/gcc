@@ -4348,12 +4348,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 
       {
 	tree inc;
-	tree declared_type;
-	tree result_type = TREE_TYPE (arg);
+	tree declared_type = unlowered_expr_type (arg);
 
-	declared_type = unlowered_expr_type (arg);
-
-	arg = get_unwidened (arg, 0);
 	argtype = TREE_TYPE (arg);
 
 	/* ARM $5.2.5 last annotation says this should be forbidden.  */
@@ -4427,7 +4423,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 
 	TREE_SIDE_EFFECTS (val) = 1;
-	return cp_convert (result_type, val);
+	return val;
       }
 
     case ADDR_EXPR:
