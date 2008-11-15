@@ -823,7 +823,7 @@ static const char *cpp_options =
    output will be used by another program.  */
 static const char *cpp_debug_options = "%{d*}";
 
-/* NB: This is shared amongst all front-ends.  */
+/* NB: This is shared amongst all front-ends, except for Ada.  */
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
