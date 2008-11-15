@@ -6289,7 +6289,10 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason)
      we don't need to evaluate it just for the check.  */
   TREE_SIDE_EFFECTS (gnu_result) = TREE_SIDE_EFFECTS (gnu_expr);
 
-  return gnu_result;
+  /* ??? Unfortunately, if we don't put a SAVE_EXPR around this whole thing,
+     we will repeatedly do the test and, at compile time, we will repeatedly
+     visit it during unsharing, which leads to an exponential explosion.  */
+  return save_expr (gnu_result);
 }
 
 /* Return an expression that converts GNU_EXPR to GNAT_TYPE, doing
