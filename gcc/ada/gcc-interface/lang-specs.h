@@ -35,13 +35,14 @@
  gnat1 %{I*} %{k8:-gnatk8} %{Wall:-gnatwa} %{w:-gnatws} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*}\
-    %{gnatea:-gnatez} %{g*&m*} "
-#if defined(TARGET_VXWORKS_RTP)
-   "%{fRTS=rtp:-mrtp} "
-#endif
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{d*} %{f*}\
+    %{coverage:-fprofile-arcs -ftest-coverage} "
 #if CONFIG_DUAL_EXCEPTIONS
    "%{fRTS=sjlj:-fsjlj} "
+#endif
+   "%{gnatea:-gnatez} %{g*&m*} "
+#if defined(TARGET_VXWORKS_RTP)
+   "%{fRTS=rtp:-mrtp} "
 #endif
    "%1 %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
