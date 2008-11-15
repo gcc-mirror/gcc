@@ -1,3 +1,9 @@
+2008-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38123
+	* config/i386/i386.c (ix86_gimplify_va_arg): Don't share valist between
+	gpr and other COMPONENT_REFs.
+
 2008-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38051
