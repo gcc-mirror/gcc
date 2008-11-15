@@ -1,3 +1,9 @@
+2008-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/37294
+	* gfortran.dg/namelist_57.f90: New test.
+	* gfortran.dg/namelist_print_1.f: Adjust test conditions.
+
 2008-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37926
