@@ -1,3 +1,10 @@
+2008-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/37926
+        * trans-expr.c (gfc_add_interface_mapping): Transfer the formal
+	arglist and the always_explicit attribute if the dummy arg is a
+	procedure.
+
 2008-11-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/37988
