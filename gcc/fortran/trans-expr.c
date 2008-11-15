@@ -1711,6 +1711,15 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   new_sym->attr.flavor = sym->attr.flavor;
   new_sym->attr.function = sym->attr.function;
 
+  /* Ensure that the interface is available and that
+     descriptors are passed for array actual arguments.  */
+  if (sym->attr.flavor == FL_PROCEDURE)
+    {
+      copy_formal_args (new_sym, expr->symtree->n.sym);
+      new_sym->attr.always_explicit
+	    = expr->symtree->n.sym->attr.always_explicit;
+    }
+
   /* Create a fake symtree for it.  */
   root = NULL;
   new_symtree = gfc_new_symtree (&root, sym->name);
