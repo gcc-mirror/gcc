@@ -644,18 +644,12 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   for (dim = 0; dim < info->dimen; dim++)
     {
       n = loop->order[dim];
-      if (n < loop->temp_dim)
-      gcc_assert (integer_zerop (loop->from[n]));
-      else
-	{
-	  /* Callee allocated arrays may not have a known bound yet.  */
-	  if (loop->to[n])
-	    loop->to[n] =
-		gfc_evaluate_now (fold_build2 (MINUS_EXPR,
-				  gfc_array_index_type, loop->to[n],
-				  loop->from[n]), pre);
-	  loop->from[n] = gfc_index_zero_node;
-	}
+      /* Callee allocated arrays may not have a known bound yet.  */
+      if (loop->to[n])
+	loop->to[n] = gfc_evaluate_now (fold_build2 (MINUS_EXPR,
+					gfc_array_index_type,
+					loop->to[n], loop->from[n]), pre);
+      loop->from[n] = gfc_index_zero_node;
 
       info->delta[dim] = gfc_index_zero_node;
       info->start[dim] = gfc_index_zero_node;
