@@ -2102,7 +2102,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
 	dtp->u.p.blank_status = dtp->u.p.current_unit->flags.blank;
-  
+
   /* Check the delim mode.  */
   dtp->u.p.current_unit->delim_status
 	= !(cf & IOPARM_DT_HAS_DELIM) ? DELIM_UNSPECIFIED :
