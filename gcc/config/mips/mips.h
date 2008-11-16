@@ -699,7 +699,8 @@ enum mips_code_readable_setting {
      %{march=mips1|march=r2000|march=r3000|march=r3900:-mips1} \
      %{march=mips2|march=r6000:-mips2} \
      %{march=mips3|march=r4*|march=vr4*|march=orion|march=loongson2*:-mips3} \
-     %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000:-mips4} \
+     %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000 \
+       |march=r10000|march=r12000|march=r14000|march=r16000:-mips4} \
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*: -mips32r2} \
