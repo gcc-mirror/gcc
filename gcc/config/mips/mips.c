@@ -292,7 +292,8 @@ struct machine_function GTY(()) {
   /* The current frame information, calculated by mips_compute_frame_info.  */
   struct mips_frame_info frame;
 
-  /* The register to use as the function's global pointer.  */
+  /* The register to use as the function's global pointer, or INVALID_REGNUM
+     if the function doesn't need one.  */
   unsigned int global_pointer;
 
   /* True if mips_adjust_insn_length should ignore an instruction's
@@ -8358,8 +8359,8 @@ mips16_cfun_returns_in_fpr_p (void)
 }
 
 /* Return the register that should be used as the global pointer
-   within this function.  Return 0 if the function doesn't need
-   a global pointer.  */
+   within this function.  Return INVALID_REGNUM if the function
+   doesn't need a global pointer.  */
 
 static unsigned int
 mips_global_pointer (void)
@@ -8394,7 +8395,7 @@ mips_global_pointer (void)
 	 -call_nonpic code, no new uses will be introduced during or after
 	 reload.  */
       if (TARGET_ABICALLS_PIC0)
-	return 0;
+	return INVALID_REGNUM;
 
       /* We need to handle the following implicit gp references:
 
@@ -8416,7 +8417,7 @@ mips_global_pointer (void)
 	   external libgcc routine.  */
       if (!crtl->uses_const_pool
 	  && !mips16_cfun_returns_in_fpr_p ())
-	return 0;
+	return INVALID_REGNUM;
     }
 
   /* We need a global pointer, but perhaps we can use a call-clobbered
@@ -8659,7 +8660,7 @@ mips_compute_frame_info (void)
 enum mips_loadgp_style
 mips_current_loadgp_style (void)
 {
-  if (!TARGET_USE_GOT || cfun->machine->global_pointer == 0)
+  if (!TARGET_USE_GOT || cfun->machine->global_pointer == INVALID_REGNUM)
     return LOADGP_NONE;
 
   if (TARGET_RTP_PIC)
@@ -8809,7 +8810,7 @@ mips_restore_gp (rtx temp)
 {
   gcc_assert (TARGET_ABICALLS && TARGET_OLDABI);
 
-  if (cfun->machine->global_pointer == 0)
+  if (cfun->machine->global_pointer == INVALID_REGNUM)
     return;
 
   if (TARGET_MIPS16)
@@ -8886,7 +8887,7 @@ static void
 mips_output_cplocal (void)
 {
   if (!TARGET_EXPLICIT_RELOCS
-      && cfun->machine->global_pointer > 0
+      && cfun->machine->global_pointer != INVALID_REGNUM
       && cfun->machine->global_pointer != GLOBAL_POINTER_REGNUM)
     output_asm_insn (".cplocal %+", 0);
 }
@@ -9122,7 +9123,7 @@ mips_expand_prologue (void)
   unsigned int nargs;
   rtx insn;
 
-  if (cfun->machine->global_pointer > 0)
+  if (cfun->machine->global_pointer != INVALID_REGNUM)
     SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
 
   frame = &cfun->machine->frame;
@@ -9240,7 +9241,7 @@ mips_expand_prologue (void)
 
   /* Initialize the $gp save slot.  */
   if (frame->cprestore_size > 0
-      && cfun->machine->global_pointer != 0)
+      && cfun->machine->global_pointer != INVALID_REGNUM)
     {
       if (TARGET_MIPS16)
 	mips_emit_move (mips_cprestore_slot (MIPS_PROLOGUE_TEMP (Pmode)),
