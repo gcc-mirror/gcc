@@ -437,6 +437,7 @@ get_internal_unit (st_parameter_dt *dtp)
 
   iunit->flags.access = ACCESS_SEQUENTIAL;
   iunit->flags.action = ACTION_READWRITE;
+  iunit->flags.blank = BLANK_UNSPECIFIED;
   iunit->flags.form = FORM_FORMATTED;
   iunit->flags.pad = PAD_YES;
   iunit->flags.status = STATUS_UNSPECIFIED;
@@ -448,7 +449,6 @@ get_internal_unit (st_parameter_dt *dtp)
   /* Initialize the data transfer parameters.  */
 
   dtp->u.p.advance_status = ADVANCE_YES;
-  dtp->u.p.blank_status = BLANK_UNSPECIFIED;
   dtp->u.p.seen_dollar = 0;
   dtp->u.p.skips = 0;
   dtp->u.p.pending_spaces = 0;
