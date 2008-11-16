@@ -1583,6 +1583,7 @@ gfc_free_interface_mapping (gfc_interface_mapping * mapping)
   for (sym = mapping->syms; sym; sym = nextsym)
     {
       nextsym = sym->next;
+      sym->new_sym->n.sym->formal = NULL;
       gfc_free_symbol (sym->new_sym->n.sym);
       gfc_free_expr (sym->expr);
       gfc_free (sym->new_sym);
@@ -1715,7 +1716,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
      descriptors are passed for array actual arguments.  */
   if (sym->attr.flavor == FL_PROCEDURE)
     {
-      copy_formal_args (new_sym, expr->symtree->n.sym);
+      new_sym->formal = expr->symtree->n.sym->formal;
       new_sym->attr.always_explicit
 	    = expr->symtree->n.sym->attr.always_explicit;
     }
