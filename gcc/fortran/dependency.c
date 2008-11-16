@@ -432,25 +432,81 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 
 static int
 gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
-				   gfc_expr *expr)
+				   gfc_expr *expr, gfc_dep_check elemental)
 {
+  gfc_expr *arg;
+
   gcc_assert (var->expr_type == EXPR_VARIABLE);
   gcc_assert (var->rank > 0);
 
   switch (expr->expr_type)
     {
     case EXPR_VARIABLE:
-      return (gfc_ref_needs_temporary_p (expr->ref)
-	      || gfc_check_dependency (var, expr, 1));
+      /* In case of elemental subroutines, there is no dependency 
+         between two same-range array references.  */
+      if (gfc_ref_needs_temporary_p (expr->ref)
+	  || gfc_check_dependency (var, expr, !elemental))
+	{
+	  if (elemental == ELEM_DONT_CHECK_VARIABLE)
+	    {
+	      /* Elemental procedures forbid unspecified intents, 
+		 and we don't check dependencies for INTENT_IN args.  */
+	      gcc_assert (intent == INTENT_OUT || intent == INTENT_INOUT);
+
+	      /* We are told not to check dependencies. 
+		 We do it, however, and issue a warning in case we find one. 
+		 If a dependency is found in the case 
+		 elemental == ELEM_CHECK_VARIABLE, we will generate
+		 a temporary, so we don't need to bother the user.  */
+	      gfc_warning ("INTENT(%s) actual argument at %L might interfere "
+			   "with actual argument at %L.", 
+			   intent == INTENT_OUT ? "OUT" : "INOUT", 
+			   &var->where, &expr->where);
+	      return 0;
+	    }
+	  else
+	    return 1; 
+	}
+      return 0;
 
     case EXPR_ARRAY:
       return gfc_check_dependency (var, expr, 1);
 
     case EXPR_FUNCTION:
-      if (intent != INTENT_IN && expr->inline_noncopying_intrinsic)
+      if (intent != INTENT_IN && expr->inline_noncopying_intrinsic
+	  && (arg = gfc_get_noncopying_intrinsic_argument (expr))
+	  && gfc_check_argument_var_dependency (var, intent, arg, elemental))
+	return 1;
+      if (elemental)
 	{
-	  expr = gfc_get_noncopying_intrinsic_argument (expr);
-	  return gfc_check_argument_var_dependency (var, intent, expr);
+	  if ((expr->value.function.esym
+	       && expr->value.function.esym->attr.elemental)
+	      || (expr->value.function.isym
+		  && expr->value.function.isym->elemental))
+	    return gfc_check_fncall_dependency (var, intent, NULL,
+						expr->value.function.actual,
+						ELEM_CHECK_VARIABLE);
+	}
+      return 0;
+
+    case EXPR_OP:
+      /* In case of non-elemental procedures, there is no need to catch
+	 dependencies, as we will make a temporary anyway.  */
+      if (elemental)
+	{
+	  /* If the actual arg EXPR is an expression, we need to catch 
+	     a dependency between variables in EXPR and VAR, 
+	     an intent((IN)OUT) variable.  */
+	  if (expr->value.op.op1
+	      && gfc_check_argument_var_dependency (var, intent, 
+						    expr->value.op.op1, 
+						    ELEM_CHECK_VARIABLE))
+	    return 1;
+	  else if (expr->value.op.op2
+		   && gfc_check_argument_var_dependency (var, intent, 
+							 expr->value.op.op2, 
+							 ELEM_CHECK_VARIABLE))
+	    return 1;
 	}
       return 0;
 
@@ -465,18 +521,19 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
 
 static int
 gfc_check_argument_dependency (gfc_expr *other, sym_intent intent,
-			       gfc_expr *expr)
+			       gfc_expr *expr, gfc_dep_check elemental)
 {
   switch (other->expr_type)
     {
     case EXPR_VARIABLE:
-      return gfc_check_argument_var_dependency (other, intent, expr);
+      return gfc_check_argument_var_dependency (other, intent, expr, elemental);
 
     case EXPR_FUNCTION:
       if (other->inline_noncopying_intrinsic)
 	{
 	  other = gfc_get_noncopying_intrinsic_argument (other);
-	  return gfc_check_argument_dependency (other, INTENT_IN, expr);
+	  return gfc_check_argument_dependency (other, INTENT_IN, expr, 
+						elemental);
 	}
       return 0;
 
@@ -491,7 +548,8 @@ gfc_check_argument_dependency (gfc_expr *other, sym_intent intent,
 
 int
 gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
-			     gfc_symbol *fnsym, gfc_actual_arglist *actual)
+			     gfc_symbol *fnsym, gfc_actual_arglist *actual,
+			     gfc_dep_check elemental)
 {
   gfc_formal_arglist *formal;
   gfc_expr *expr;
@@ -514,7 +572,7 @@ gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
 	  && formal->sym->attr.intent == INTENT_IN)
 	continue;
 
-      if (gfc_check_argument_dependency (other, intent, expr))
+      if (gfc_check_argument_dependency (other, intent, expr, elemental))
 	return 1;
     }
 
