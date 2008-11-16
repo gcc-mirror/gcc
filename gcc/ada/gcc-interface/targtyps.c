@@ -6,7 +6,7 @@
  *                                                                          *
  *                                  Body                                    *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -164,12 +164,13 @@ get_target_maximum_default_alignment (void)
    Stricter alignment requests trigger gigi's aligning_type circuitry for
    objects allocated by the default allocator.  */
 
+/* ??? Need a way to get info about __gnat_malloc from here (whether it is
+   handy and what alignment it honors).  In the meantime, resort to malloc
+   considerations only.  */
+
 Pos
 get_target_default_allocator_alignment (void)
 {
-  /* ??? Need a way to get info about __gnat_malloc from here (whether
-     it is handy and what alignment it honors).  */
-
   return MALLOC_ABI_ALIGNMENT / BITS_PER_UNIT;
 }
 
