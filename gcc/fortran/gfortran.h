@@ -1285,7 +1285,7 @@ typedef struct gfc_namespace
      this namespace.  */
   struct gfc_data *data;
 
-  gfc_charlen *cl_list;
+  gfc_charlen *cl_list, *old_cl_list;
 
   int save_all, seen_save, seen_implicit_none;
 
@@ -2335,6 +2335,7 @@ int gfc_symbols_could_alias (gfc_symbol *, gfc_symbol *);
 void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
 void gfc_commit_symbol (gfc_symbol *);
+void gfc_free_charlen (gfc_charlen *, gfc_charlen *);
 void gfc_free_namespace (gfc_namespace *);
 
 void gfc_symbol_init_2 (void);

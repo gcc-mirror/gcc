@@ -3003,6 +3003,24 @@ gfc_free_finalizer_list (gfc_finalizer* list)
 }
 
 
+/* Free the charlen list from cl to end (end is not freed). 
+   Free the whole list if end is NULL.  */
+
+void gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
+{
+  gfc_charlen *cl2;
+
+  for (; cl != end; cl = cl2)
+    {
+      gcc_assert (cl);
+
+      cl2 = cl->next;
+      gfc_free_expr (cl->length);
+      gfc_free (cl);
+    }
+}
+
+
 /* Free a namespace structure and everything below it.  Interface
    lists associated with intrinsic operators are not freed.  These are
    taken care of when a specific name is freed.  */
@@ -3010,7 +3028,6 @@ gfc_free_finalizer_list (gfc_finalizer* list)
 void
 gfc_free_namespace (gfc_namespace *ns)
 {
-  gfc_charlen *cl, *cl2;
   gfc_namespace *p, *q;
   gfc_intrinsic_op i;
 
@@ -3028,14 +3045,7 @@ gfc_free_namespace (gfc_namespace *ns)
   free_uop_tree (ns->uop_root);
   free_common_tree (ns->common_root);
   gfc_free_finalizer_list (ns->finalizers);
-
-  for (cl = ns->cl_list; cl; cl = cl2)
-    {
-      cl2 = cl->next;
-      gfc_free_expr (cl->length);
-      gfc_free (cl);
-    }
-
+  gfc_free_charlen (ns->cl_list, NULL);
   free_st_labels (ns->st_labels);
 
   gfc_free_equiv (ns->equiv);
