@@ -644,6 +644,12 @@ memory_partition (tree sym)
     return sym;
 
   gcc_assert (!is_gimple_reg (sym));
+  /* Autoparallelization moves statements from the original function (which has
+     aliases computed) to the new one (which does not).  When rebuilding
+     operands for the statement in the new function, we do not want to
+     record the memory partition tags of the original function.  */
+  if (!gimple_aliases_computed_p (cfun))
+    return NULL_TREE;
   tag = get_var_ann (sym)->mpt;
 
 #if defined ENABLE_CHECKING
