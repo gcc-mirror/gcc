@@ -1,6 +1,15 @@
 2008-11-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/38052
+	* config/mips/mips.c (mips_cfun_call_saved_reg_p)
+	(mips_cfun_might_clobber_call_saved_reg_p): New functions,
+	split out from...
+	(mips_save_reg_p): ...here.  Always consult TARGET_CALL_SAVED_GP
+	rather than call_really_used_regs when handling $gp.
+
+2008-11-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/38052
 	* config/mips/mips.c (machine_function): Update the comment
 	above global_pointer.
 	(mips_global_pointer): Use INVALID_REGNUM rather than 0 to indicate
