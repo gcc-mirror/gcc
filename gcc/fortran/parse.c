@@ -807,6 +807,7 @@ next_statement (void)
   locus old_locus;
   gfc_new_block = NULL;
 
+  gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
   for (;;)
     {
       gfc_statement_label = NULL;
@@ -1512,6 +1513,10 @@ accept_statement (gfc_statement st)
 static void
 reject_statement (void)
 {
+  /* Revert to the previous charlen chain.  */
+  gfc_free_charlen (gfc_current_ns->cl_list, gfc_current_ns->old_cl_list);
+  gfc_current_ns->cl_list = gfc_current_ns->old_cl_list;
+
   gfc_new_block = NULL;
   gfc_undo_symbols ();
   gfc_clear_warning ();

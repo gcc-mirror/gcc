@@ -1,3 +1,15 @@
+2008-11-16  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/37992
+	* gfortran.h (gfc_namespace): Added member old_cl_list, 
+	backup of cl_list.
+	(gfc_free_charlen): Added prototype.
+	* symbol.c (gfc_free_charlen): New function.
+	(gfc_free_namespace): Use gfc_free_charlen.
+	* parse.c (next_statement): Backup gfc_current_ns->cl_list.
+	(reject_statement): Restore gfc_current_ns->cl_list.
+	Free cl_list's elements before dropping them.
+
 2008-11-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38095
