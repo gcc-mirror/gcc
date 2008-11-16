@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -flax-vector-conversions -mmmx" } */
+/* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx" } */
 
 #include <mmintrin.h>
 
@@ -15,5 +15,4 @@ __v8qi test ()
 }
 
 /* { dg-final { scan-assembler-times "movq" 3 } } */
-/* { dg-final { scan-assembler-times "movl" 1 { target { ilp32 && nonpic } } } } */
-/* { dg-final { scan-assembler-times "movl" 2 { target { ilp32 && { ! nonpic } } } } } */
+/* { dg-final { scan-assembler-not "movl" { target nonpic } } } */
