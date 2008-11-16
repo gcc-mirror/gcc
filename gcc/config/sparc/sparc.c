@@ -5118,15 +5118,13 @@ function_arg_union_value (int size, enum machine_mode mode, int slotno,
    Return an expression valid as a return value for the two macros
    FUNCTION_ARG and FUNCTION_VALUE.
 
-   SIZE is the size in bytes of the vector.
-   BASE_MODE is the argument's base machine mode.
+   SIZE is the size in bytes of the vector (at least 8 bytes).
    REGNO is the FP hard register the vector will be passed in.  */
 
 static rtx
-function_arg_vector_value (int size, enum machine_mode base_mode, int regno)
+function_arg_vector_value (int size, int regno)
 {
-  unsigned short base_mode_size = GET_MODE_SIZE (base_mode);
-  int nregs = size / base_mode_size, i;
+  int i, nregs = size / 8;
   rtx regs;
 
   regs = gen_rtx_PARALLEL (BLKmode, rtvec_alloc (nregs));
@@ -5135,9 +5133,8 @@ function_arg_vector_value (int size, enum machine_mode base_mode, int regno)
     {
       XVECEXP (regs, 0, i)
 	= gen_rtx_EXPR_LIST (VOIDmode,
-			     gen_rtx_REG (base_mode, regno),
-			     GEN_INT (base_mode_size * i));
-      regno += base_mode_size / 4;
+			     gen_rtx_REG (DImode, regno + 2*i),
+			     GEN_INT (i*8));
     }
 
   return regs;
@@ -5183,7 +5180,6 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
 
       if (mode == BLKmode)
 	return function_arg_vector_value (size,
-					  TYPE_MODE (TREE_TYPE (type)),
 					  SPARC_FP_ARG_FIRST + 2*slotno);
       else
 	mclass = MODE_FLOAT;
@@ -5599,7 +5595,6 @@ function_value (const_tree type, enum machine_mode mode, int incoming_p)
 
       if (mode == BLKmode)
 	return function_arg_vector_value (size,
-					  TYPE_MODE (TREE_TYPE (type)),
 					  SPARC_FP_ARG_FIRST);
       else
 	mclass = MODE_FLOAT;

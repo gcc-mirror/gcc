@@ -1,3 +1,10 @@
+2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (function_arg_vector_value): Remove 'base_mode'
+	parameter.  Use DImode for computing the number of registers.
+	(function_arg): Adjust for above change.
+	(function_value): Likewise.
+
 2008-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-elf.h (STANDARD_STARTFILE_PREFIX_2): Disable default.
