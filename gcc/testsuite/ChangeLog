@@ -1,3 +1,11 @@
+2008-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr36246.c: Add -fomit-frame-pointer to dg-options.
+	* gcc.target/i386/pr32661-1.c: Ditto.
+	* gcc.target/i386/pr34256.c: Ditto.
+	* gcc.target/i386/pr22076.c: Ditto. Check for "movl" instruction on
+	nonpic targets only.
+
 2008-11-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38119
@@ -11,8 +19,8 @@
 
 2008-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37926
-        * gfortran.dg/dummy_procedure_3.f90: New test.
+	PR fortran/37926
+	* gfortran.dg/dummy_procedure_3.f90: New test.
 
 2008-11-15  Jakub Jelinek  <jakub@redhat.com>
 
