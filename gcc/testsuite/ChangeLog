@@ -1,3 +1,7 @@
+2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/boolean_bitfield.adb: New test.
+
 2008-11-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38095
