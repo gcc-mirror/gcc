@@ -1,3 +1,8 @@
+2008-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38097
+	* gfortran.dg/fmt_bz_bn.f: New test.
+
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_bitfield.adb: New test.
