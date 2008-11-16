@@ -7184,7 +7184,7 @@ static tree
 make_type_from_size (tree type, tree size_tree, bool for_biased)
 {
   unsigned HOST_WIDE_INT size;
-  bool biased_p, boolean_p;
+  bool biased_p;
   tree new_type;
 
   /* If size indicates an error, just return TYPE to avoid propagating
@@ -7202,19 +7202,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
 
-      boolean_p = (TREE_CODE (type) == BOOLEAN_TYPE
-		   || (TREE_CODE (type) == INTEGER_TYPE
-		       && TREE_TYPE (type)
-		       && TREE_CODE (TREE_TYPE (type)) == BOOLEAN_TYPE));
-
-      if (boolean_p)
-	size = round_up_to_align (size, BITS_PER_UNIT);
-
       /* Only do something if the type is not a packed array type and
 	 doesn't already have the proper size.  */
       if (TYPE_PACKED_ARRAY_TYPE_P (type)
-	  || (biased_p == for_biased && TYPE_PRECISION (type) == size)
-	  || (boolean_p && compare_tree_int (TYPE_SIZE (type), size) == 0))
+	  || (TYPE_PRECISION (type) == size && biased_p == for_biased))
 	break;
 
       biased_p |= for_biased;
@@ -7224,18 +7215,13 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	new_type = make_unsigned_type (size);
       else
 	new_type = make_signed_type (size);
-      if (boolean_p)
-	TYPE_PRECISION (new_type) = 1;
       TREE_TYPE (new_type) = TREE_TYPE (type) ? TREE_TYPE (type) : type;
       TYPE_MIN_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MIN_VALUE (type));
       TYPE_MAX_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MAX_VALUE (type));
       TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
-      if (boolean_p)
-	TYPE_RM_SIZE_NUM (new_type) = bitsize_int (1);
-      else
-	TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
+      TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
       return new_type;
 
     case RECORD_TYPE:
