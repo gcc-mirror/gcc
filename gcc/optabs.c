@@ -7182,12 +7182,13 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
       t1 = t0;
       if (code == NOT)
 	{
-	  t1 = expand_simple_unop (mode, NOT, t1, NULL_RTX, true);
-	  code = AND;
+	  t1 = expand_simple_binop (mode, AND, t1, val, NULL_RTX,
+				    true, OPTAB_LIB_WIDEN);
+	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
 	}
-      t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
-				true, OPTAB_LIB_WIDEN);
-
+      else
+	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
+				  true, OPTAB_LIB_WIDEN);
       insn = get_insns ();
       end_sequence ();
 
@@ -7315,9 +7316,17 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
 		}
 
 	      if (code == NOT)
-		target = expand_simple_unop (mode, NOT, target, NULL_RTX, true);
-	      target = expand_simple_binop (mode, code, target, val, NULL_RTX,
-					    true, OPTAB_LIB_WIDEN);
+		{
+		  target = expand_simple_binop (mode, AND, target, val,
+						NULL_RTX, true,
+						OPTAB_LIB_WIDEN);
+		  target = expand_simple_unop (mode, code, target,
+					       NULL_RTX, true);
+		}
+	      else
+		target = expand_simple_binop (mode, code, target, val,
+					      NULL_RTX, true,
+					      OPTAB_LIB_WIDEN);
 	    }
 
 	  return target;
@@ -7340,11 +7349,13 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
       t1 = t0;
       if (code == NOT)
 	{
-	  t1 = expand_simple_unop (mode, NOT, t1, NULL_RTX, true);
-	  code = AND;
+	  t1 = expand_simple_binop (mode, AND, t1, val, NULL_RTX,
+				    true, OPTAB_LIB_WIDEN);
+	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
 	}
-      t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
-				true, OPTAB_LIB_WIDEN);
+      else
+	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX,
+				  true, OPTAB_LIB_WIDEN);
       if (after)
 	emit_move_insn (target, t1);
 

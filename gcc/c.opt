@@ -428,6 +428,10 @@ Wstrict-selector-match
 ObjC ObjC++ Var(warn_strict_selector_match) Warning
 Warn if type signatures of candidate methods do not match exactly
 
+Wsync-nand
+C C++ Var(warn_sync_nand) Init(1) Warning
+Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used
+
 Wsynth
 C++ ObjC++ Var(warn_synth) Warning
 Deprecated.  This switch has no effect

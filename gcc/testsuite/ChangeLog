@@ -1,3 +1,33 @@
+2008-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37908
+	* gcc.dg/pr37908.c: New test.
+	* gcc.dg/ia64-sync-1.c: Correct __sync_fetch_and_nand and
+	__sync_nand_and_fetch results.  Add dg-message to look for the warning
+	about changed semantics of NAND builtin.
+	(init_si, init_di): Change init value for __sync_fetch_and_nand to -1.
+	(test_si, test_di): Change expected result of
+	__sync_nand_and_fetch to ~7.
+	* gcc.dg/ia64-sync-2.c: Correct __sync_fetch_and_nand and
+	__sync_nand_and_fetch results.  Add dg-message to look for the warning
+	about changed semantics of NAND builtin.
+	(init_noret_si, init_noret_di): Change init value for
+	__sync_fetch_and_nand to -1.
+	(init_noret_si, init_noret_di): Change expected result of
+	__sync_nand_and_fetch to ~7.
+	* gcc.dg/sync-2.c: Correct __sync_fetch_and_nand and
+	__sync_nand_and_fetch results.  Add dg-message to look for the warning
+	about changed semantics of NAND builtin.
+	(init_qi, init_qi): Change init value for __sync_fetch_and_nand to -1.
+	(init_hi, init_hi): Change expected result of
+	__sync_nand_and_fetch to ~7.
+	* gcc.dg/sync-3.c: Copy from sync-2.c instead of including
+	the c source file.
+	* gcc.c-torture/compile/sync-1.c: Add dg-message to look for the
+	warning about changed semantics of NAND builtin.
+	* gcc.c-torture/compile/sync-2.c: Ditto.
+	* gcc.c-torture/compile/sync-3.c: Ditto.
+
 2008-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36089
