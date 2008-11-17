@@ -1474,34 +1474,50 @@
 
 ;; Multiply-accumulate patterns
 
-;; For processors that can copy the output to a general register:
+;; This pattern is first matched by combine, which tries to use the
+;; pattern wherever it can.  We don't know until later whether it
+;; is actually profitable to use MADD over a "MUL; ADDIU" sequence,
+;; so we need to keep both options open.
 ;;
-;; The all-d alternative is needed because the combiner will find this
-;; pattern and then register alloc/reload will move registers around to
-;; make them fit, and we don't want to trigger unnecessary loads to LO.
+;; The second alternative has a "?" marker because it is generally
+;; one instruction more costly than the first alternative.  This "?"
+;; marker is enough to convey the relative costs to the register
+;; allocator.
 ;;
-;; The last alternative should be made slightly less desirable, but adding
-;; "?" to the constraint is too strong, and causes values to be loaded into
-;; LO even when that's more costly.  For now, using "*d" mostly does the
-;; trick.
+;; However, reload counts reloads of operands 4 and 5 in the same way as
+;; reloads of the other operands, even though operands 4 and 5 need no
+;; copy instructions.  Reload therefore thinks that the second alternative
+;; is two reloads more costly than the first.  We add "*?*?" to the first
+;; alternative as a counterweight.
 (define_insn "*mul_acc_si"
-  [(set (match_operand:SI 0 "register_operand" "=l,*d,*d")
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d?")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d")
+			  (match_operand:SI 2 "register_operand" "d,d"))
+		 (match_operand:SI 3 "register_operand" "0,d")))
+   (clobber (match_scratch:SI 4 "=X,l"))
+   (clobber (match_scratch:SI 5 "=X,&d"))]
+  "GENERATE_MADD_MSUB && !TARGET_MIPS16"
+  "@
+    madd\t%1,%2
+    #"
+  [(set_attr "type"	"imadd")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"4,8")])
+
+;; The same idea applies here.  The middle alternative needs one less
+;; clobber than the final alternative, so we add "*?" as a counterweight.
+(define_insn "*mul_acc_si_r3900"
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d*?,d?")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
 			  (match_operand:SI 2 "register_operand" "d,d,d"))
-		 (match_operand:SI 3 "register_operand" "0,l,*d")))
+		 (match_operand:SI 3 "register_operand" "0,l,d")))
    (clobber (match_scratch:SI 4 "=X,3,l"))
    (clobber (match_scratch:SI 5 "=X,X,&d"))]
-  "(TARGET_MIPS3900
-   || GENERATE_MADD_MSUB)
-   && !TARGET_MIPS16"
-{
-  static const char *const madd[] = { "madd\t%1,%2", "madd\t%0,%1,%2" };
-  if (which_alternative == 2)
-    return "#";
-  if (GENERATE_MADD_MSUB && which_alternative != 0)
-    return "#";
-  return madd[which_alternative];
-}
+  "TARGET_MIPS3900 && !TARGET_MIPS16"
+  "@
+    madd\t%1,%2
+    madd\t%0,%1,%2
+    #"
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,4,8")])
@@ -1521,23 +1537,6 @@
 	      (clobber (match_dup 4))])
    (set (match_dup 0) (plus:SI (match_dup 5) (match_dup 3)))]
   "")
-
-;; Split *mul_acc_si if the destination accumulator value is in a GPR
-;; and the source accumulator value is in LO.
-(define_split
-  [(set (match_operand:SI 0 "d_operand")
-        (plus:SI (mult:SI (match_operand:SI 1 "d_operand")
-                          (match_operand:SI 2 "d_operand"))
-                 (match_operand:SI 3 "lo_operand")))
-   (clobber (match_dup 3))
-   (clobber (scratch:SI))]
-  "reload_completed"
-  [(parallel [(set (match_dup 3)
-                   (plus:SI (mult:SI (match_dup 1) (match_dup 2))
-                            (match_dup 3)))
-              (clobber (scratch:SI))
-              (clobber (scratch:SI))])
-   (set (match_dup 0) (match_dup 3))])
 
 (define_insn "*macc"
   [(set (match_operand:SI 0 "register_operand" "=l,d")
@@ -1718,21 +1717,21 @@
 				operands[2], operands[0]);
 })
 
+;; See the comment above *mul_add_si for details.
 (define_insn "*mul_sub_si"
-  [(set (match_operand:SI 0 "register_operand" "=l,*d,*d")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,l,*d")
-                  (mult:SI (match_operand:SI 2 "register_operand" "d,d,d")
-                           (match_operand:SI 3 "register_operand" "d,d,d"))))
-   (clobber (match_scratch:SI 4 "=X,1,l"))
-   (clobber (match_scratch:SI 5 "=X,X,&d"))]
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d?")
+        (minus:SI (match_operand:SI 1 "register_operand" "0,d")
+                  (mult:SI (match_operand:SI 2 "register_operand" "d,d")
+                           (match_operand:SI 3 "register_operand" "d,d"))))
+   (clobber (match_scratch:SI 4 "=X,l"))
+   (clobber (match_scratch:SI 5 "=X,&d"))]
   "GENERATE_MADD_MSUB"
   "@
    msub\t%2,%3
-   #
    #"
   [(set_attr "type"     "imadd")
    (set_attr "mode"     "SI")
-   (set_attr "length"   "4,8,8")])
+   (set_attr "length"   "4,8")])
 
 ;; Split *mul_sub_si if both the source and destination accumulator
 ;; values are GPRs.
@@ -1748,24 +1747,6 @@
                    (mult:SI (match_dup 2) (match_dup 3)))
               (clobber (match_dup 4))])
    (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 5)))]
-  "")
-
-;; Split *mul_acc_si if the destination accumulator value is in a GPR
-;; and the source accumulator value is in LO.
-(define_split
-  [(set (match_operand:SI 0 "d_operand")
-        (minus:SI (match_operand:SI 1 "lo_operand")
-                  (mult:SI (match_operand:SI 2 "d_operand")
-                           (match_operand:SI 3 "d_operand"))))
-   (clobber (match_dup 1))
-   (clobber (scratch:SI))]
-  "reload_completed"
-  [(parallel [(set (match_dup 1)
-                   (minus:SI (match_dup 1)
-                             (mult:SI (match_dup 2) (match_dup 3))))
-              (clobber (scratch:SI))
-              (clobber (scratch:SI))])
-   (set (match_dup 0) (match_dup 1))]
   "")
 
 (define_insn "*muls"
