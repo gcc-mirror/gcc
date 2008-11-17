@@ -1,3 +1,8 @@
+2008-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36089
+	* g++.dg/template/init8.C: New test.
+
 2008-11-16  Mikael Morin <mikael.morin@tele2.fr>
 
 	PR fortran/35681
