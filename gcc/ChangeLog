@@ -1,3 +1,11 @@
+2008-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38140
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): If
+	propagating x = &a into *x = b, add a cast if not useless
+	type conversion or don't optimize if another stmt would be
+	needed.
+
 2008-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/37908
