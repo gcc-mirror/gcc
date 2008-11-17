@@ -1,5 +1,3 @@
-<<<<<<< .working
-=======
 2008-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38030
@@ -9,7 +7,6 @@
 	PR c++/37740
 	* call.c (build_aggr_conv): Increment i.
 
->>>>>>> .merge-right.r141866
 2008-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37932
