@@ -9886,8 +9886,12 @@ mips_ira_cover_classes (void)
   };
 
   /* Don't allow the register allocators to use LO and HI in MIPS16 mode,
-     which has no MTLO or MTHI instructions.  */
-  return TARGET_MIPS16 ? no_acc_classes : acc_classes;
+     which has no MTLO or MTHI instructions.  Also, using GR_AND_ACC_REGS
+     as a cover class only works well when we keep per-register costs.
+     Using it when not optimizing can cause us to think accumulators
+     have the same cost as GPRs in cases where GPRs are actually much
+     cheaper.  */
+  return TARGET_MIPS16 || !optimize ? no_acc_classes : acc_classes;
 }
 
 /* Return the register class required for a secondary register when

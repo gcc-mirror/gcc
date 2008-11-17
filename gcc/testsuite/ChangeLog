@@ -1,5 +1,10 @@
 2008-11-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/dspr2-MULT.c: Just check for $ac1 and $ac2.
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+
+2008-11-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/madd-5.c: New test.
 	* gcc.target/mips/madd-6.c: Likewise.
 	* gcc.target/mips/madd-7.c: Likewise.
