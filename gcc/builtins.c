@@ -5988,6 +5988,50 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
   rtx val, mem;
   enum machine_mode old_mode;
 
+  if (code == NOT && warn_sync_nand)
+    {
+      tree fndecl = get_callee_fndecl (exp);
+      enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+      static bool warned_f_a_n, warned_n_a_f;
+
+      switch (fcode)
+	{
+	case BUILT_IN_FETCH_AND_NAND_1:
+	case BUILT_IN_FETCH_AND_NAND_2:
+	case BUILT_IN_FETCH_AND_NAND_4:
+	case BUILT_IN_FETCH_AND_NAND_8:
+	case BUILT_IN_FETCH_AND_NAND_16:
+
+	  if (warned_f_a_n)
+	    break;
+
+	  fndecl = implicit_built_in_decls[BUILT_IN_FETCH_AND_NAND_N];
+	  inform (input_location,
+		  "%qD changed semantics in GCC 4.4", fndecl);
+	  warned_f_a_n = true;
+	  break;
+
+	case BUILT_IN_NAND_AND_FETCH_1:
+	case BUILT_IN_NAND_AND_FETCH_2:
+	case BUILT_IN_NAND_AND_FETCH_4:
+	case BUILT_IN_NAND_AND_FETCH_8:
+	case BUILT_IN_NAND_AND_FETCH_16:
+
+	  if (warned_n_a_f)
+	    break;
+
+	  fndecl = implicit_built_in_decls[BUILT_IN_NAND_AND_FETCH_N];
+	  inform (input_location,
+		  "%qD changed semantics in GCC 4.4", fndecl);
+	  warned_n_a_f = true;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 

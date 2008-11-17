@@ -5774,8 +5774,11 @@ returns the value that had previously been in memory.  That is,
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
-@{ tmp = *ptr; *ptr = ~tmp & value; return tmp; @}   // nand
+@{ tmp = *ptr; *ptr = ~(tmp & value); return tmp; @}   // nand
 @end smallexample
+
+@emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
+builtin as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 
 @item @var{type} __sync_add_and_fetch (@var{type} *ptr, @var{type} value, ...)
 @itemx @var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)
@@ -5794,8 +5797,12 @@ return the new value.  That is,
 
 @smallexample
 @{ *ptr @var{op}= value; return *ptr; @}
-@{ *ptr = ~*ptr & value; return *ptr; @}   // nand
+@{ *ptr = ~(*ptr & value); return *ptr; @}   // nand
 @end smallexample
+
+@emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
+builtin as @code{*ptr = ~(*ptr & value)} instead of
+@code{*ptr = ~*ptr & value}.
 
 @item bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval @var{type} newval, ...)
 @itemx @var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval @var{type} newval, ...)

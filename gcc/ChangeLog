@@ -1,3 +1,20 @@
+2008-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37908
+	* optabs.c (expand_sync_operation): Properly handle NAND case
+	by calculating ~(t1 & val) instead of (~t1 & val).
+	* builtins.c (expand_builtin_sync_operation): Warn for changed
+	semantics in NAND builtins.
+	* c.opt (Wsync-nand): New warning option.  Describe -Wsync-nand.
+	
+	* doc/invoke.texi (Warning options): Add Wsync-nand.
+	* doc/extend.texi (Atomic Builtins) [__sync_fetch_and_nand]: Correct
+	__sync_fetch_and_nand builtin operation in the example.  Add a note
+	about changed semantics in GCC 4.4.
+	[__sync_nand_and_fetch]: Correct __sync_nand_and_fetch builtin
+	operation in the example.  Add a note about changed semantics in
+	GCC 4.4.
+
 2008-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_function_body_availability): Fix test of externally
@@ -165,10 +182,8 @@
 
 	* configure.ac (gcc_cv_libc_provides_ssp): Also consider GNU/Hurd
 	systems, which are assumend to always provide SSP-support in glibc.
-	* configure: Regenerate.
-
-	* configure.ac (gcc_cv_libc_provides_ssp): Also consider GNU/kFreeBSD,
-	GNU/kNetBSD systems in the `*-*-linux*' case.
+	Also consider GNU/kFreeBSD, GNU/kNetBSD systems in the `*-*-linux*'
+	case.
 	* configure: Regenerate.
 
 2008-11-14  Jakub Jelinek  <jakub@redhat.com>
@@ -180,9 +195,9 @@
 2008-11-13  Thomas Schwinge  <tschwinge@gnu.org>
 
 	PR target/28102
-	* config.gcc (*-*-gnu*): Move Alpha parts into the `alpha*-*-gnu*', x86
-	parts into the `i[34567]86-*-linux*' and parts that are independent of
-	the processor architecture into the `*-*-linux*' cases.
+	* config.gcc (*-*-gnu*): Move Alpha parts into the `alpha*-*-gnu*',
+	x86 parts into the `i[34567]86-*-linux*' and parts that are
+	independent of the processor architecture into the `*-*-linux*' cases.
 	(*-*-linux*): Consider `linux.opt' only for Linux-based configurations.
 	* config/i386/gnu.h (GLIBC_DYNAMIC_LINKER): Redefine.
 	(TARGET_OS_CPP_BUILTINS, LINK_SPEC): Don't redefine.
@@ -340,8 +355,8 @@
 2008-11-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/37363
-	* simplify-rtx.c (simplify_plus_minus): Don't create (const (minus ...))
-	expresisons.
+	* simplify-rtx.c (simplify_plus_minus): Don't create
+	(const (minus ...)) expresisons.
 
 2008-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 

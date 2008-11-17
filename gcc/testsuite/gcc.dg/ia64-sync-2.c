@@ -4,6 +4,9 @@
 /* { dg-options "-march=i486" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-mcpu=v9" { target sparc*-*-* } } */
 
+/* { dg-message "note: '__sync_fetch_and_nand' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+
 /* Test basic functionality of the intrinsics.  */
 
 __extension__ typedef __SIZE_TYPE__ size_t;
@@ -12,8 +15,8 @@ extern void abort (void);
 extern void *memcpy (void *, const void *, size_t);
 
 static int AI[18];
-static int init_si[18] = { 0,0,0,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
-static int test_si[18] = { 1,1,1,1,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
+static int init_si[18] = { 0,0,0,1,0,0, 0,0  ,-1,0,0,-1,0,0  ,-1,0,0,-1 };
+static int test_si[18] = { 1,1,1,1,1,4,22,-12,7 ,8,9,~7,1,-12,7 ,8,9,~7 };
 
 static void
 do_si (void)
@@ -44,7 +47,7 @@ do_si (void)
     abort ();
   if (__sync_fetch_and_xor(AI+10, 9) != 0)
     abort ();
-  if (__sync_fetch_and_nand(AI+11, 7) != 0)
+  if (__sync_fetch_and_nand(AI+11, 7) != -1)
     abort ();
 
   if (__sync_add_and_fetch(AI+12, 1) != 1)
@@ -57,13 +60,13 @@ do_si (void)
     abort ();
   if (__sync_xor_and_fetch(AI+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AI+17, 7) != 7)
+  if (__sync_nand_and_fetch(AI+17, 7) != ~7)
     abort ();
 }
 
 static long AL[18];
-static long init_di[18] = { 0,0,0,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
-static long test_di[18] = { 1,1,1,1,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
+static long init_di[18] = { 0,0,0,1,0,0, 0,0  ,-1,0,0,-1,0,0  ,-1,0,0,-1 };
+static long test_di[18] = { 1,1,1,1,1,4,22,-12,7 ,8,9,~7,1,-12,7 ,8,9,~7 };
 
 static void
 do_di (void)
@@ -94,7 +97,7 @@ do_di (void)
     abort ();
   if (__sync_fetch_and_xor(AL+10, 9) != 0)
     abort ();
-  if (__sync_fetch_and_nand(AL+11, 7) != 0)
+  if (__sync_fetch_and_nand(AL+11, 7) != -1)
     abort ();
 
   if (__sync_add_and_fetch(AL+12, 1) != 1)
@@ -107,7 +110,7 @@ do_di (void)
     abort ();
   if (__sync_xor_and_fetch(AL+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AL+17, 7) != 7)
+  if (__sync_nand_and_fetch(AL+17, 7) != ~7)
     abort ();
 }
 

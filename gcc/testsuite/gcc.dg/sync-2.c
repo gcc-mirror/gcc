@@ -4,18 +4,17 @@
 /* { dg-options "-march=i486" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-mcpu=v9" { target sparc*-*-* } } */
 
+/* { dg-message "note: '__sync_fetch_and_nand' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+
 /* Test functionality of the intrinsics for 'short' and 'char'.  */
 
 extern void abort (void);
 extern void *memcpy (void *, const void *, __SIZE_TYPE__);
 
-#ifndef AI_ALIGN
-#define AI_ALIGN
-#endif
-
-static char AI[18] AI_ALIGN;
-static char init_qi[18] = { 3,5,7,9,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
-static char test_qi[18] = { 3,5,7,9,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
+static char AI[18];
+static char init_qi[18] = { 3,5,7,9,0,0,0 ,0  ,-1,0,0,-1,0,0  ,-1,0,0,-1 };
+static char test_qi[18] = { 3,5,7,9,1,4,22,-12,7 ,8,9,~7,1,-12,7 ,8,9,~7 };
 
 static void
 do_qi (void)
@@ -34,7 +33,7 @@ do_qi (void)
     abort ();
   if (__sync_fetch_and_xor(AI+10, 9) != 0)
     abort ();
-  if (__sync_fetch_and_nand(AI+11, 7) != 0)
+  if (__sync_fetch_and_nand(AI+11, 7) != (char)-1)
     abort ();
 
   if (__sync_add_and_fetch(AI+12, 1) != 1)
@@ -47,13 +46,13 @@ do_qi (void)
     abort ();
   if (__sync_xor_and_fetch(AI+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AI+17, 7) != 7)
+  if (__sync_nand_and_fetch(AI+17, 7) != ~7)
     abort ();
 }
 
 static short AL[18];
-static short init_hi[18] = { 3,5,7,9,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
-static short test_hi[18] = { 3,5,7,9,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
+static short init_hi[18] = { 3,5,7,9,0,0,0 ,0  ,-1,0,0,-1,0,0  ,-1,0,0,-1 };
+static short test_hi[18] = { 3,5,7,9,1,4,22,-12,7 ,8,9,~7,1,-12,7 ,8,9,~7 };
 
 static void
 do_hi (void)
@@ -72,7 +71,7 @@ do_hi (void)
     abort ();
   if (__sync_fetch_and_xor(AL+10, 9) != 0)
     abort ();
-  if (__sync_fetch_and_nand(AL+11, 7) != 0)
+  if (__sync_fetch_and_nand(AL+11, 7) != -1)
     abort ();
 
   if (__sync_add_and_fetch(AL+12, 1) != 1)
@@ -85,7 +84,7 @@ do_hi (void)
     abort ();
   if (__sync_xor_and_fetch(AL+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AL+17, 7) != 7)
+  if (__sync_nand_and_fetch(AL+17, 7) != ~7)
     abort ();
 }
 

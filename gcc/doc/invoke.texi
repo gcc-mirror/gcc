@@ -257,7 +257,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
--Wswitch  -Wswitch-default  -Wswitch-enum @gol
+-Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
@@ -3126,6 +3126,12 @@ Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.
+
+@item -Wsync-nand
+@opindex Wsync-nand
+@opindex Wno-sync-nand
+Warn when @code{__sync_fetch_and_nand} and @code{__sync_nand_and_fetch}
+built-in functions are used.  These functions changed semantics in GCC 4.4.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs
