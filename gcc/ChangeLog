@@ -1,3 +1,19 @@
+2008-11-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config.gcc (mips*-sde-elf*): Handle mipsisa64r2*.
+	(mipsisa64r2-*-elf*, mipsisa64r2el-*-elf*): Add new cases to
+	mipsisa*-*-elf*.  Handle mipsisa64r2*.
+	* config/mips/sde.h (LINK_SPEC): Handle -mips64r2.
+	* config/mips/t-isa3264 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add
+	mips64r2.
+	(MULTILIB_EXCLUSIONS): Add mips64r2/mfp64.
+	* config/mips/t-sde (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add
+	mips64r2.
+	(MULTILIB_EXCLUSIONS): Add mips64r2/mfp64.  Add mips64r2/mips16.
+	Fix mips16 if mips64 or mips64r2 are multilib defaults.
+	* config/mips/t-sdemtk (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add
+	mips64r2.
+
 2008-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38130

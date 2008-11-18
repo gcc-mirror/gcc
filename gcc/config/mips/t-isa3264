@@ -17,13 +17,13 @@ TARGET_LIBGCC2_CFLAGS = -G 0
 # Build the libraries for both hard and soft floating point
 
 ifneq ($(filter MIPS_ABI_DEFAULT=ABI_EABI,$(tm_defines)),)
-MULTILIB_OPTIONS = msoft-float EL/EB mips32/mips32r2/mips64
-MULTILIB_DIRNAMES = soft-float el eb mips32 mips32r2 mips64
+MULTILIB_OPTIONS = msoft-float EL/EB mips32/mips32r2/mips64/mips64r2
+MULTILIB_DIRNAMES = soft-float el eb mips32 mips32r2 mips64 mips64r2
 else
-MULTILIB_OPTIONS = msoft-float/mfp64 EL/EB mips32/mips32r2/mips64
-MULTILIB_DIRNAMES = soft-float fp64 el eb mips32 mips32r2 mips64
+MULTILIB_OPTIONS = msoft-float/mfp64 EL/EB mips32/mips32r2/mips64/mips64r2
+MULTILIB_DIRNAMES = soft-float fp64 el eb mips32 mips32r2 mips64 mips64r2
 ifneq ($(filter MIPS_ISA_DEFAULT=33,$(tm_defines)),)
-MULTILIB_EXCLUSIONS = mips32/mfp64 mips64/mfp64
+MULTILIB_EXCLUSIONS = mips32/mfp64 mips64/mfp64 mips64r2/mfp64
 else
 MULTILIB_EXCLUSIONS = !mips32r2/mfp64
 endif

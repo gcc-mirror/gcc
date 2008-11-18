@@ -395,6 +395,8 @@ mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	;;
+mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
+	;;
 mipsisa64sr71k-*-elf*)
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)

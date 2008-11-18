@@ -66,7 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
-%{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips32r2} %{mips64} \
+%{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32*} %{mips64*} \
 %{bestGnum} \
 %{shared} %{non_shared} %{call_shared} \
 %{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
