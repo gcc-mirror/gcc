@@ -55,7 +55,7 @@ SHLIB_OBJS = @shlib_objs@
 SHLIB_DIR = @multilib_dir@/shlib
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
 
-SHLIB_LINK = $(LN_S) $(SHLIB_MAP) $(SHLIB_MAP).def && \
+SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 	if [ ! -d $(SHLIB_DIR) ]; then \
 		mkdir $(SHLIB_DIR) \
 	else true; fi && \
