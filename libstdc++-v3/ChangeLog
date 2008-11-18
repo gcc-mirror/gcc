@@ -1,3 +1,9 @@
+2008-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/cinttypes: Remove redundant pragma system_header.
+	* include/tr1_impl/cfenv: Likewise.
+	* include/tr1_impl/cstdint: Likewise.
+
 2008-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38000
