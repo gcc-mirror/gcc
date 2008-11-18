@@ -188,18 +188,28 @@ int mymemcmp (const void *s1, const void *s2, size_t len)
     return mymemcmp3 (srcp1, srcp2, len / (sizeof (unsigned long int)));
 }
 
-char buf[256] __attribute__((aligned (16)));
-char buf2[256] __attribute__((aligned (16)));
+char buf[256];
 
 int
 main (void)
 {
-  __builtin_memcpy (buf + 9,
+  char *p;
+  union { long int l; char c[sizeof (long int)]; } u;
+
+  /* The test above assumes little endian and long being the same size
+     as pointer.  */
+  if (sizeof (long int) != sizeof (void *) || sizeof (long int) < 4)
+    return 0;
+  u.l = 0x12345678L;
+  if (u.c[0] != 0x78 || u.c[1] != 0x56 || u.c[2] != 0x34 || u.c[3] != 0x12)
+    return 0;
+
+  p = buf + 16 - (((long int) buf) & 15);
+  __builtin_memcpy (p + 9,
 "\x1\x37\x82\xa7\x55\x49\x9d\xbf\xf8\x44\xb6\x55\x17\x8e\xf9", 15);
-  __builtin_memcpy (buf2 + 24,
+  __builtin_memcpy (p + 128 + 24,
 "\x1\x37\x82\xa7\x55\x49\xd0\xf3\xb7\x2a\x6d\x23\x71\x49\x6a", 15);
-  if (mymemcmp (buf + 9, buf2 + 24, 33) != -51)
+  if (mymemcmp (p + 9, p + 128 + 24, 33) != -51)
     __builtin_abort ();
   return 0;
 }
-
