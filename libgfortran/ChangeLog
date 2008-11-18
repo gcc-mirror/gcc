@@ -1,3 +1,21 @@
+2008-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38135
+	* m4/reshape.m4:  Correct bounds checking when PAD is present.
+	Treat PAD as if it were SOURCE when SOURCE is empty.
+	* intrinsics/reshape_generic.c:  Likewise.
+	* generated/reshape_c10.c Regenerated.
+	* generated/reshape_c16.c Regenerated.
+	* generated/reshape_c4.c Regenerated.
+	* generated/reshape_c8.c Regenerated.
+	* generated/reshape_i16.c Regenerated.
+	* generated/reshape_i4.c Regenerated.
+	* generated/reshape_i8.c Regenerated.
+	* generated/reshape_r10.c Regenerated.
+	* generated/reshape_r16.c Regenerated.
+	* generated/reshape_r4.c Regenerated.
+	* generated/reshape_r8.c Regenerated.
+
 2008-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38097

@@ -137,7 +137,7 @@ reshape_4 (gfc_array_i4 * const restrict ret,
 
       source_extent = source->dim[0].ubound + 1 - source->dim[0].lbound;
 
-      if (rs != source_extent)
+      if (rs < source_extent || (rs > source_extent && !pad))
 	runtime_error("Incorrect size in SOURCE argument to RESHAPE"
 		      " intrinsic: is %ld, should be %ld",
 		      (long int) source_extent, (long int) rs);
@@ -262,16 +262,16 @@ reshape_4 (gfc_array_i4 * const restrict ret,
 
   if (sempty)
     {
-      /* Switch immediately to the pad array.  */
+      /* Pretend we are using the pad array the first time around, too.  */
       src = pptr;
-      sptr = NULL;
+      sptr = pptr;
       sdim = pdim;
       for (dim = 0; dim < pdim; dim++)
 	{
 	  scount[dim] = pcount[dim];
 	  sextent[dim] = pextent[dim];
 	  sstride[dim] = pstride[dim];
-	  sstride0 = sstride[0] * sizeof (GFC_INTEGER_4);
+	  sstride0 = pstride[0];
 	}
     }
 
