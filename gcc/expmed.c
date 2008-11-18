@@ -1533,7 +1533,13 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       if (GET_MODE (xtarget) != ext_mode)
 	{
-	  if (REG_P (xtarget))
+	  /* Don't use LHS paradoxical subreg if explicit truncation is needed
+	     between the mode of the extraction (word_mode) and the target
+	     mode.  Instead, create a temporary and use convert_move to set
+	     the target.  */
+	  if (REG_P (xtarget)
+	      && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (xtarget)),
+					GET_MODE_BITSIZE (ext_mode)))
 	    {
 	      xtarget = gen_lowpart (ext_mode, xtarget);
 	      if (GET_MODE_SIZE (ext_mode)
