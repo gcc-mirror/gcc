@@ -1,3 +1,12 @@
+2008-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38051
+	* gcc.c-torture/execute/pr38051.c (buf): Remove aligned attribute.
+	(buf2): Removed.
+	(main): Only run on little endian targets with
+	sizeof (long) == sizeof (void *).  Use just one buffer, align the
+	pointers at runtime.
+
 2008-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38135
