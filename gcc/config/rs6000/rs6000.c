@@ -13835,7 +13835,8 @@ rs6000_expand_compare_and_swapqhi (rtx dst, rtx mem, rtx oldval, rtx newval)
   HOST_WIDE_INT imask = GET_MODE_MASK (mode);
 
   /* Shift amount for subword relative to aligned word.  */
-  addrSI = force_reg (SImode, gen_lowpart_common (SImode, XEXP (mem, 0)));
+  addrSI = force_reg (GET_MODE (XEXP (mem, 0)), XEXP (mem, 0));
+  addrSI = force_reg (SImode, gen_lowpart_common (SImode, addrSI));
   shift = gen_reg_rtx (SImode);
   emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
 			 GEN_INT (shift_mask)));

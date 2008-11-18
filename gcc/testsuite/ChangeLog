@@ -1,3 +1,12 @@
+2008-11-18  Ben Elliston  <bje@rego11.ozlabs.ibm.com>
+
+	Backport from mainline:
+	2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/37640
+	* gcc.c-torture/compile/sync-3.c: New testcase to check that
+	addresses of non zero offset works.
+
 2008-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38030

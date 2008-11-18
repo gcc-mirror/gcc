@@ -1,3 +1,12 @@
+2008-11-18  Ben Elliston  <bje@au.ibm.com>
+
+	Backport from mainline:
+	2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/37640
+	* config/rs6000/rs6000.c (rs6000_expand_compare_and_swapqhi): Force
+	address to a register before taking the lower part.
+
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (function_arg_vector_value): Remove 'base_mode'
