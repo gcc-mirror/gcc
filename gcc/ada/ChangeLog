@@ -1,8 +1,8 @@
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/38127
-	* gcc-interface/decl.c (make_type_from_size): Do not special-case
-	boolean types.
+	* gcc-interface/decl.c (make_type_from_size) <INTEGER_TYPE>: Do not
+	special-case boolean types.  Propagate  the name.
 	* gcc-interface/targtyps.c: Tweak comment.
 
 2008-11-15  Geert Bosch  <bosch@adacore.com>
