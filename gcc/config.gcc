@@ -1602,6 +1602,9 @@ mips*-sde-elf*)
 	  mipsisa32*)
 	    tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_32"
 	    ;;
+	  mipsisa64r2*)
+	    tm_defines="MIPS_ISA_DEFAULT=65 MIPS_ABI_DEFAULT=ABI_N32"
+	    ;;
 	  mipsisa64*)
 	    tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_N32"
 	    ;;
@@ -1609,7 +1612,8 @@ mips*-sde-elf*)
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf* | \
 mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
-mipsisa64-*-elf* | mipsisa64el-*-elf*)
+mipsisa64-*-elf* | mipsisa64el-*-elf* | \
+mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-isa3264 mips/t-libgcc-mips16"
 	case ${target} in
@@ -1618,6 +1622,9 @@ mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	    ;;
 	  mipsisa32*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+	    ;;
+	  mipsisa64r2*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
 	    ;;
 	  mipsisa64*)
 	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64"

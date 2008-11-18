@@ -10,19 +10,23 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
 
-MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mfp64 mcode-readable=no
-MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof f64 spram
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16 msoft-float/mfp64 mcode-readable=no
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 sof f64 spram
 MULTILIB_MATCHES = EL=mel EB=meb
 
 # The -mfp64 option is only valid in conjunction with -mips32r2.
 ifneq ($(filter MIPS_ISA_DEFAULT=33,$(tm_defines)),)
-MULTILIB_EXCLUSIONS := mips32/mfp64 mips64/mfp64
+MULTILIB_EXCLUSIONS := mips32/mfp64 mips64/mfp64 mips64r2/mfp64
 else
 MULTILIB_EXCLUSIONS := !mips32r2/mfp64
 endif
 
 # Don't build 64-bit MIPS16 multilibs.
-MULTILIB_EXCLUSIONS += mips16/mips64
+ifneq ($(filter MIPS_ISA_DEFAULT=6%,$(tm_defines)),)
+MULTILIB_EXCLUSIONS += !mips32/!mips32r2/mips16
+else
+MULTILIB_EXCLUSIONS += mips64/mips16 mips64r2/mips16
+endif
 
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 

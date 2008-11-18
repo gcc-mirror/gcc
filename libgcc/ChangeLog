@@ -1,3 +1,8 @@
+2008-11-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config.host (mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*): New
+	case.
+
 2008-11-09  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* config.host <t-tls>: Also enable for GNU/kFreeBSD and GNU/kNetBSD.

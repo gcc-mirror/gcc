@@ -1,8 +1,8 @@
 # Override newlib settings in t-sde and set up for building
 # against SDE header files and libraries.
 
-MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mno-float/mfp64
-MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof nof f64
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16 msoft-float/mno-float/mfp64
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 sof nof f64
 
 # Remove stdarg.h and stddef.h from USER_H.
 USER_H = $(srcdir)/ginclude/float.h \
