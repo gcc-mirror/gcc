@@ -1,3 +1,12 @@
+2008-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38130
+	* config/i386/i386.md (allocate_stack_worker_32,
+	allocate_stack_worker_64): Don't use match_dup between input and
+	output operand.
+	(allocate_stack): Adjust gen_stack_worker_{32,64} caller.
+	* config/i386/i386.c (ix86_expand_prologue): Likewise.
+
 2008-11-18  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/t-cygming (SHLIB_LINK): Make sure that $(SHLIB_MAP).def
