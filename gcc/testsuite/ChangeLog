@@ -1,3 +1,11 @@
+2008-11-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37962
+	* g++.dg/cpp0x/auto[38].C: Adjust expected errors.
+	* g++.dg/cpp0x/auto9.C: New test.
+	* g++.dg/cpp0x/auto10.C: New test.
+
 2008-11-17  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.c-torture/execute/20081117-1.c: New test.
