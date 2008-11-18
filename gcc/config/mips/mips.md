@@ -4508,7 +4508,7 @@
       rtx low = mips_subword (operands[1], 0);
       rtx high = mips_subword (operands[1], 1);
       emit_insn (gen_load_low<mode> (operands[0], low));
-      if (ISA_HAS_MXHC1)
+      if (ISA_HAS_MXHC1 && reg_or_0_operand (high, <HALFMODE>mode))
  	emit_insn (gen_mthc1<mode> (operands[0], high, operands[0]));
       else
 	emit_insn (gen_load_high<mode> (operands[0], high, operands[0]));
@@ -4518,7 +4518,7 @@
       rtx low = mips_subword (operands[0], 0);
       rtx high = mips_subword (operands[0], 1);
       emit_insn (gen_store_word<mode> (low, operands[1], const0_rtx));
-      if (ISA_HAS_MXHC1)
+      if (ISA_HAS_MXHC1 && register_operand (high, <HALFMODE>mode))
 	emit_insn (gen_mfhc1<mode> (high, operands[1]));
       else
 	emit_insn (gen_store_word<mode> (high, operands[1], const1_rtx));
@@ -4573,7 +4573,7 @@
 ;; value in the low word.
 (define_insn "mthc1<mode>"
   [(set (match_operand:SPLITF 0 "register_operand" "=f")
-	(unspec:SPLITF [(match_operand:<HALFMODE> 1 "general_operand" "dJ")
+	(unspec:SPLITF [(match_operand:<HALFMODE> 1 "reg_or_0_operand" "dJ")
 		        (match_operand:SPLITF 2 "register_operand" "0")]
 		       UNSPEC_MTHC1))]
   "TARGET_HARD_FLOAT && ISA_HAS_MXHC1"

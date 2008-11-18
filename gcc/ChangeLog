@@ -1,3 +1,12 @@
+2008-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37362
+	* config/mips/mips.md (move_doubleword_fpr<mode>): Check that "high"
+	is a register or zero operand in the correct mode before generating
+	mtch1 insn or a register operand in the correct mode before generating
+	mfch1 insn.
+	(mtch1<mode>): Correct operand 1 predicate to reg_or_0_operand.
+
 2008-11-18  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config.gcc (mips*-sde-elf*): Handle mipsisa64r2*.
@@ -209,11 +218,9 @@
 
 	* ira-color.c (push_allocnos_to_stack): Check ALLOCNO_BAD_SPILL_P.
 
-	* ira-build.c (ira_create_allocno): Initialize
-	ALLOCNO_BAD_SPILL_P.
+	* ira-build.c (ira_create_allocno): Initialize ALLOCNO_BAD_SPILL_P.
 	(create_cap_allocno, propagate_allocno_info,
-	remove_unnecessary_allocnos): Set up or update
-	ALLOCNO_BAD_SPILL_P.
+	remove_unnecessary_allocnos): Set up or update ALLOCNO_BAD_SPILL_P.
 	(update_bad_spill_attribute): New function.
 	(ira_build): Call it.
 
