@@ -1,3 +1,8 @@
+2008-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/37362
+	* gcc.target/mips/pr37362.c: New test.
+
 2008-11-18  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -42,8 +47,8 @@
 	* gcc.dg/pr38140.c: New test.
 
 2008-11-17  Jack Howarth  <howarth@bromo.med.uc.edu>
-        
-        PR testsuite/38099
+
+	PR testsuite/38099
 	* gcc.dg/compat/struct-layout-1_generate.c: Also use -no-mmx on
 	i?86/x86_64 darwin.
 	* g++.dg/compat/struct-layout-1_generate.c: Same.
