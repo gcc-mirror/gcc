@@ -13693,6 +13693,13 @@ cp_parser_type_id (cp_parser* parser)
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL;
 
+  if (type_specifier_seq.type
+      && type_uses_auto (type_specifier_seq.type))
+    {
+      error ("invalid use of %<auto%>");
+      return error_mark_node;
+    }
+  
   return groktypename (&type_specifier_seq, abstract_declarator);
 }
 

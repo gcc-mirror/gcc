@@ -8053,6 +8053,12 @@ grokdeclarator (const cp_declarator *declarator,
 	       || storage_class == sc_extern
 	       || thread_p)
 	error ("storage class specifiers invalid in parameter declarations");
+
+      if (type_uses_auto (type))
+	{
+	  error ("parameter declared %<auto%>");
+	  type = error_mark_node;
+	}
     }
 
   /* Give error if `virtual' is used outside of class declaration.  */
@@ -8246,23 +8252,29 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (type_uses_auto (type))
 		  {
-		    if (!declarator->u.function.late_return_type)
+		    if (sfk == sfk_conversion)
 		      {
-			error ("%qs function uses auto type specifier without"
+			error ("invalid use of %<auto%> in conversion operator");
+			return error_mark_node;
+		      }
+		    else if (!declarator->u.function.late_return_type)
+		      {
+			error ("%qs function uses %<auto%> type specifier without"
 			       " late return type", name);
 			return error_mark_node;
 		      }
 		    else if (!is_auto (type))
 		      {
-			error ("%qs function with late return type not using"
-			       " auto type specifier as its type", name);
+			error ("%qs function with late return type has"
+			       " %qT as its type rather than plain %<auto%>",
+			       name, type);
 			return error_mark_node;
 		      }
 		  }
 		else if (declarator->u.function.late_return_type)
 		  {
 		    error ("%qs function with late return type not declared"
-			   " with auto type specifier", name);
+			   " with %<auto%> type specifier", name);
 		    return error_mark_node;
 		  }
 	      }

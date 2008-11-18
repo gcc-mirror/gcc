@@ -2824,7 +2824,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
-  (MAYBE_CLASS_TYPE_P (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
+  (CLASS_TYPE_P (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
 #define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_assign_ref)

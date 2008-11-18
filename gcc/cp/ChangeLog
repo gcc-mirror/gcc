@@ -1,3 +1,15 @@
+2008-11-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	
+	PR c++/37962
+	* parser.c (cp_parser_type_id): Complain about auto.
+	* decl.c (grokdeclarator): Complain about parameters and
+	conversion functions declared with auto.
+
+	* call.c (standard_conversion): Use CLASS_TYPE_P instead of
+	MAYBE_CLASS_TYPE_P.
+	* cp-tree.h (TYPE_NON_AGGREGATE_CLASS): Likewise.
+
 2008-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36089

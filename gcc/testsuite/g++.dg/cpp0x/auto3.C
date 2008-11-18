@@ -17,7 +17,7 @@ struct A { };
 
 A<int> A1;
 // CWG issue 625
-A<auto> A2 = A1;		// { dg-error "auto" }
+A<auto> A2 = A1;		// { dg-error "" }
 
 auto foo() { }			// { dg-error "auto" }
 
