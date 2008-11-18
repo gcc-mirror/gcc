@@ -32,8 +32,6 @@
  *  You should not attempt to use it directly.
  */
 
-#pragma GCC system_header
-
 #if _GLIBCXX_USE_C99_FENV_TR1
 
 #undef feclearexcept
