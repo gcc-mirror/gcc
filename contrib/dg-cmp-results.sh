@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2006 Free Software Foundation
+# Copyright (C) 2006, 2008 Free Software Foundation
 #
 # Analyze changes in GCC DejaGNU test logs for binutils, gcc, gdb, etc.
 # Original version written in 2005 by James Lemke <jwlemke@wasabisystems.com>.
@@ -27,8 +27,18 @@ while test "$1" = "-v"; do
     shift
 done
 
-if test $# -ne 3 -o ! -f "$2" -o ! -f "$3"; then
+if test $# -ne 3 ; then
     usage
+    exit 1
+fi
+
+if test ! -f "$2"; then
+    echo "unable to open $2" >&2
+    exit 1
+fi
+
+if test ! -f "$3"; then
+    echo "unable to open $3" >&2
     exit 1
 fi
 

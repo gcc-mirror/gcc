@@ -1,3 +1,8 @@
+2008-11-18  Ben Elliston  <bje@au.ibm.com>
+
+	* dg-cmp-results.sh: Do not print usage if either .sum file cannot
+	be opened; print a more meaningful error instead.
+
 2008-10-24  Janis Johnson  <janis187@us.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
