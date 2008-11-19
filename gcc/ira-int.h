@@ -862,7 +862,14 @@ extern void ira_add_allocno_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_print_expanded_allocno (ira_allocno_t);
 extern allocno_live_range_t ira_create_allocno_live_range
 	                    (ira_allocno_t, int, int, allocno_live_range_t);
+extern allocno_live_range_t ira_copy_allocno_live_range_list
+                            (allocno_live_range_t);
+extern allocno_live_range_t ira_merge_allocno_live_ranges
+                            (allocno_live_range_t, allocno_live_range_t);
+extern bool ira_allocno_live_ranges_intersect_p (allocno_live_range_t,
+						 allocno_live_range_t);
 extern void ira_finish_allocno_live_range (allocno_live_range_t);
+extern void ira_finish_allocno_live_range_list (allocno_live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
@@ -898,8 +905,6 @@ extern void ira_compress_allocno_live_ranges (void);
 extern void ira_finish_allocno_live_ranges (void);
 
 /* ira-conflicts.c */
-extern bool ira_allocno_live_ranges_intersect_p (ira_allocno_t, ira_allocno_t);
-extern bool ira_pseudo_live_ranges_intersect_p (int, int);
 extern void ira_debug_conflicts (bool);
 extern void ira_build_conflicts (void);
 
