@@ -4089,3 +4089,8 @@ SYM (__lesf2):
 	unlk	a6
 	rts
 #endif /* L_lesf2 */
+
+#if defined (__ELF__) && defined (__linux__)
+	/* Make stack non-executable for ELF linux targets.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif
