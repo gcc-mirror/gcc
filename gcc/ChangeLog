@@ -1,3 +1,10 @@
+2008-11-19  Razya Ladelsky  <razya@il.ibm.com>
+
+        PR target/38156
+        * tree-parloops.c (loop_parallel_p): NULL vect_dump.
+	(separate_decls_in_region): Create shared struct even when there 
+	are only reductions.
+
 2008-11-19  Hariharan Sandanagobalane <hariharan@picochip.com>
 	* config/picochip/picochip.c (headers): Remove an unnecessary
 	header file.

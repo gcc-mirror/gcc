@@ -278,6 +278,7 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list,
       return false;
     }
 
+  vect_dump = NULL;
   simple_loop_info = vect_analyze_loop_form (loop);
 
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1193,7 +1194,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
 
   VEC_free (basic_block, heap, body);
 
-  if (htab_elements (name_copies) == 0)
+  if (htab_elements (name_copies) == 0 && reduction_list == 0) 
     {
       /* It may happen that there is nothing to copy (if there are only
          loop carried and external variables in the loop).  */
