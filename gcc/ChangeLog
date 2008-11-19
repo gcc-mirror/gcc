@@ -1,3 +1,11 @@
+2008-11-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (build2_stat): Allow non-POINTER_PLUS_EXPRs with
+	non-sizetype offsets if their precision matches that of
+	the pointer.
+	* expr.c (expand_expr_real_1): Always sign-extend the offset
+	operand of a POINTER_PLUS_EXPR.
+
 2008-11-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc: Unobsolete mips-sgi-irix[56]*.
