@@ -1,3 +1,9 @@
+2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
+  
+ 	* gcc.gd/struct/wo_prof_global_var.c: Use uninitialized integer
+ 	values instead of uninitialized FP values to avoid NaNs.
+ 	* gcc.dg/struct/wo_prof_local_var.c: Same.
+
 2008-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gfortran.dg/f2003_io_1.f03: XFAIL for all SPARC targets.

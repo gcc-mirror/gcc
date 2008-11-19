@@ -32,10 +32,10 @@ main ()
     p[i].b = i;
 
   for (i = 0; i < N; i++)
-    p[i].a = p[i].b + 1;
+    p[i].b = p[i].a + 1;
 
   for (i = 0; i < N; i++)
-    if (p[i].a != p[i].b + 1)
+    if (p[i].b != p[i].a + 1)
       abort ();
 
   return 0;
