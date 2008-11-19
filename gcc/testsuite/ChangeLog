@@ -1,3 +1,8 @@
+2008-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38171
+	* gfortran.dg/module_equivalence_6.f90: New test.
+
 2008-11-18  Ben Elliston  <bje@rego11.ozlabs.ibm.com>
 
 	Backport from mainline:

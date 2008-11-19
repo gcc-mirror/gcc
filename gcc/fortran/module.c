@@ -3466,12 +3466,14 @@ load_equiv (void)
       }
 
     /* Unused equivalence members have a unique name.  In addition, it
-       must be checked that the symbol is that from the module.  */
+       must be checked that the symbols are from the same module.  */
     unused = true;
     for (eq = head; eq; eq = eq->eq)
       {
 	if (eq->expr->symtree->n.sym->module
-	      && strcmp (module_name, eq->expr->symtree->n.sym->module) == 0
+	      && head->expr->symtree->n.sym->module
+	      && strcmp (head->expr->symtree->n.sym->module,
+			 eq->expr->symtree->n.sym->module) == 0
 	      && !check_unique_name (eq->expr->symtree->name))
 	  {
 	    unused = false;

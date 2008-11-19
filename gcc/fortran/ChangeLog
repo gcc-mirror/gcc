@@ -1,3 +1,9 @@
+2008-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38171
+	* module.c (load_equiv): Regression fix; check that equivalence
+	members come from the same module only.
+
 2008-11-14  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/37836
