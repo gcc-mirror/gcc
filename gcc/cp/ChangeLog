@@ -1,3 +1,9 @@
+2008-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37256
+	* pt.c (instantiate_decl): Don't require a definition of
+	a template that is explicitly instantiated 'extern'.
+
 2008-11-18  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	

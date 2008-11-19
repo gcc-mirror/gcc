@@ -1,3 +1,8 @@
+2008-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37256
+	* g++.dg/cpp0x/extern_template-3.C: New test.
+
 2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/m68k/xgot-1.c (dg-options): Add -O2.
