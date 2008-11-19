@@ -803,7 +803,17 @@ grokfield (const cp_declarator *declarator,
 	value = push_template_decl (value);
 
       if (attrlist)
-	cplus_decl_attributes (&value, attrlist, 0);
+	{
+	  int attrflags = 0;
+
+	  /* If this is a typedef that names the class for linkage purposes
+	     (7.1.3p8), apply any attributes directly to the type.  */
+	  if (TAGGED_TYPE_P (TREE_TYPE (value))
+	      && value == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))))
+	    attrflags = ATTR_FLAG_TYPE_IN_PLACE;
+
+	  cplus_decl_attributes (&value, attrlist, attrflags);
+	}
 
       return value;
     }

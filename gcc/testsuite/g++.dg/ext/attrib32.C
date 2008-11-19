@@ -20,3 +20,17 @@ void bar2(U1 u1, U2 u2)
   foo2(u1);
   foo2(u2);
 }
+
+// PR c++/36410
+struct A
+{
+  typedef union
+  {
+    int i;
+  } B __attribute__((transparent_union));
+};
+
+void foo(A::B b)
+{
+  b.i;
+}
