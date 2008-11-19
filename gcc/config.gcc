@@ -217,7 +217,6 @@ case ${target} in
  | m68k-*-aout*		\
  | m68k-*-coff*		\
  | sh-*-*		\
- | mips-sgi-irix[56]*	\
  | pdp11-*-bsd		\
  | rs6000-ibm-aix4.[12]* \
  | powerpc-ibm-aix4.[12]* \
@@ -1527,7 +1526,6 @@ mips-sgi-irix[56]*)
 	case ${enable_threads}:${have_pthread_h} in
 	  "":yes | yes:yes ) thread_file=posix ;;
 	esac
-	use_fixproto=yes
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
