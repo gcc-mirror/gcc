@@ -5585,6 +5585,7 @@ lookup_template_class (tree d1,
       d1 = DECL_NAME (templ);
     }
   else if (TREE_CODE (d1) == TEMPLATE_DECL
+           && DECL_TEMPLATE_RESULT (d1)
 	   && TREE_CODE (DECL_TEMPLATE_RESULT (d1)) == TYPE_DECL)
     {
       templ = d1;
