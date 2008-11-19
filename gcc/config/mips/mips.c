@@ -5332,7 +5332,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	    {
 	      /* [1] Emit code for: off &= -rsize.	*/
 	      t = build2 (BIT_AND_EXPR, TREE_TYPE (off), off,
-			  build_int_cst (NULL_TREE, -rsize));
+			  build_int_cst (TREE_TYPE (off), -rsize));
 	      gimplify_assign (off, t, pre_p);
 	    }
 	  osize = rsize;

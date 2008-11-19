@@ -1,3 +1,8 @@
+2008-11-19  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.c (mips_gimplify_va_arg_expr): Use -rsize
+	with the same type as the first operand of the AND expression.
+
 2008-11-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/37859
