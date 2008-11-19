@@ -1,3 +1,8 @@
+2008-11-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc: Unobsolete mips-sgi-irix[56]*.
+	(mips-sgi-irix[56]*): No need to use fixproto.
+
 2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
 
