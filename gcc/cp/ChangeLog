@@ -1,3 +1,9 @@
+2008-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37563
+	* parser.c (cp_parser_pseudo_destructor_name): A pseudo-destructor
+	name is not a declaration.
+
 2008-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38030
