@@ -15226,7 +15226,8 @@ instantiate_decl (tree d, int defer_ok,
       input_location = saved_loc;
 
       if (at_eof && !pattern_defined
-	  && DECL_EXPLICIT_INSTANTIATION (d))
+	  && DECL_EXPLICIT_INSTANTIATION (d)
+	  && DECL_NOT_REALLY_EXTERN (d))
 	/* [temp.explicit]
 
 	   The definition of a non-exported function template, a
