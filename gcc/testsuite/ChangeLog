@@ -1,5 +1,8 @@
 2008-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36410
+	* g++.dg/ext/attrib32.C: Add member typedef case.
+
 	PR c++/37563
 	* g++.dg/template/pseudodtor5.C: New test.
 
