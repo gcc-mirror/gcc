@@ -1703,15 +1703,32 @@ print_loop_title (ira_loop_tree_node_t loop_tree_node)
 {
   unsigned int j;
   bitmap_iterator bi;
+  ira_loop_tree_node_t subloop_node, dest_loop_node;
+  edge e;
+  edge_iterator ei;
 
   ira_assert (loop_tree_node->loop != NULL);
   fprintf (ira_dump_file,
-	   "\n  Loop %d (parent %d, header bb%d, depth %d)\n    all:",
+	   "\n  Loop %d (parent %d, header bb%d, depth %d)\n    bbs:",
 	   loop_tree_node->loop->num,
 	   (loop_tree_node->parent == NULL
 	    ? -1 : loop_tree_node->parent->loop->num),
 	   loop_tree_node->loop->header->index,
 	   loop_depth (loop_tree_node->loop));
+  for (subloop_node = loop_tree_node->children;
+       subloop_node != NULL;
+       subloop_node = subloop_node->next)
+    if (subloop_node->bb != NULL)
+      {
+	fprintf (ira_dump_file, " %d", subloop_node->bb->index);
+	FOR_EACH_EDGE (e, ei, subloop_node->bb->succs)
+	  if (e->dest != EXIT_BLOCK_PTR
+	      && ((dest_loop_node = IRA_BB_NODE (e->dest)->parent)
+		  != loop_tree_node))
+	    fprintf (ira_dump_file, "(->%d:l%d)",
+		     e->dest->index, dest_loop_node->loop->num);
+      }
+  fprintf (ira_dump_file, "\n    all:");
   EXECUTE_IF_SET_IN_BITMAP (loop_tree_node->all_allocnos, 0, j, bi)
     fprintf (ira_dump_file, " %dr%d", j, ALLOCNO_REGNO (ira_allocnos[j]));
   fprintf (ira_dump_file, "\n    modified regnos:");
