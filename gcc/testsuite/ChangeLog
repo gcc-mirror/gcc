@@ -1,3 +1,8 @@
+2008-11-19  DJ Delorie  <dj@redhat.com>
+
+	* gcc.target/xstormy16/below100.S (.chip_info): Use
+	position-independent expressions for the fillers.
+
 2008-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36410
