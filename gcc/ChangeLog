@@ -1,3 +1,12 @@
+2008-11-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/36133
+	* config/m68k/m68k.h (CC_OVERFLOW_UNUSABLE, CC_NO_CARRY): New defines.
+	* config/m68k/m68k.c (notice_update_cc): Set cc_status properly for
+	shift instructions.
+	* config/m68k/m68k.md: Adjust all conditional branches that use the
+	carry and overflow flags so they understand CC_OVERFLOW_UNUSABLE.
+
 2008-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/37362
