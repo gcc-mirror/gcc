@@ -1,3 +1,8 @@
+2008-11-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/35405
+	* g++.dg/template/crash84.C: New test.
+
 2008-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/pr11832.c: XFAIL even on s390*-*-*.
