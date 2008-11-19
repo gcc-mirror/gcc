@@ -1,3 +1,52 @@
+2008-11-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/37790
+	* ira-int.h (ira_copy_allocno_live_range_list,
+	ira_merge_allocno_live_ranges,
+	ira_allocno_live_ranges_intersect_p,
+	ira_finish_allocno_live_range_list): New prototypes.
+	(ira_allocno_live_ranges_intersect_p,
+	ira_pseudo_live_ranges_intersect_p): Remove.
+	
+	* ira-conflicts.c (ira_allocno_live_ranges_intersect_p,
+	ira_pseudo_live_ranges_intersect_p): Rename to
+	allocnos_have_intersected_live_ranges_p and
+	pseudos_have_intersected_live_ranges_p.  Move them from here to
+	...
+
+	* ira-color.c: ... here
+	(coalesced_allocno_conflict_p): Use
+	allocnos_have_intersected_live_ranges_p.
+	(coalesced_allocnos_living_at_program_points,
+	coalesced_allocnos_live_at_points_p,
+	set_coalesced_allocnos_live_points): Remove.
+	(slot_coalesced_allocnos_live_ranges,
+	slot_coalesced_allocno_live_ranges_intersect_p,
+	setup_slot_coalesced_allocno_live_ranges): New.
+	(coalesce_spill_slots): Use ranges of coalesced allocnos.
+	(ira_sort_regnos_for_alter_reg): Use
+	allocnos_have_intersected_live_ranges_p.
+	(ira_reuse_stack_slot): Use
+	pseudos_have_intersected_live_ranges_p.
+
+	* global.c (pseudo_for_reload_consideration_p): Check
+	flag_ira_share_spill_slots too.
+
+	* ira-build.c (copy_allocno_live_range_list): Rename to
+	ira_copy_allocno_live_range_list.  Make it external.
+	(merge_ranges): Rename to ira_merge_allocno_live_ranges.  Make it
+	external.
+	(ira_allocno_live_ranges_intersect_p): New.
+	(ira_finish_allocno_live_range_list): New.
+	(finish_allocno): Use it.
+	(remove_unnecessary_allocnos): Use ira_merge_allocno_live_ranges.
+	(copy_info_to_removed_store_destinations): Ditto.  Use
+	ira_copy_allocno_live_range_list.
+	(ira_flattening): Use ira_merge_allocno_live_ranges.
+	
+	* ira.c (too_high_register_pressure_p): New function.
+	(ira): Switch off sharing spill slots if the pressure is too high.
+
 2008-11-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build2_stat): Allow non-POINTER_PLUS_EXPRs with

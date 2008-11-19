@@ -1393,7 +1393,8 @@ pseudo_for_reload_consideration_p (int regno)
 {
   /* Consider spilled pseudos too for IRA because they still have a
      chance to get hard-registers in the reload when IRA is used.  */
-  return reg_renumber[regno] >= 0 || (flag_ira && optimize);
+  return (reg_renumber[regno] >= 0
+	  || (flag_ira && optimize && flag_ira_share_spill_slots));
 }
 
 /* Walk the insns of the current function and build reload_insn_chain,

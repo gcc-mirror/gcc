@@ -532,52 +532,6 @@ propagate_copies (void)
     }
 }
 
-/* Return TRUE if live ranges of allocnos A1 and A2 intersect.  It is
-   used to find a conflict for new allocnos or allocnos with the
-   different cover classes.  */
-bool
-ira_allocno_live_ranges_intersect_p (ira_allocno_t a1, ira_allocno_t a2)
-{
-  allocno_live_range_t r1, r2;
-
-  if (a1 == a2)
-    return false;
-  if (ALLOCNO_REG (a1) != NULL && ALLOCNO_REG (a2) != NULL
-      && (ORIGINAL_REGNO (ALLOCNO_REG (a1))
-	  == ORIGINAL_REGNO (ALLOCNO_REG (a2))))
-    return false;
-  /* Remember the ranges are always kept ordered.  */
-  for (r1 = ALLOCNO_LIVE_RANGES (a1), r2 = ALLOCNO_LIVE_RANGES (a2);
-       r1 != NULL && r2 != NULL;)
-    {
-      if (r1->start > r2->finish)
-	r1 = r1->next;
-      else if (r2->start > r1->finish)
-	r2 = r2->next;
-      else
-	return true;
-    }
-  return false;
-}
-
-/* Return TRUE if live ranges of pseudo-registers REGNO1 and REGNO2
-   intersect.  This should be used when there is only one region.
-   Currently this is used during reload.  */
-bool
-ira_pseudo_live_ranges_intersect_p (int regno1, int regno2)
-{
-  ira_allocno_t a1, a2;
-
-  ira_assert (regno1 >= FIRST_PSEUDO_REGISTER
-	      && regno2 >= FIRST_PSEUDO_REGISTER);
-  /* Reg info caclulated by dataflow infrastructure can be different
-     from one calculated by regclass.  */
-  if ((a1 = ira_loop_tree_root->regno_allocno_map[regno1]) == NULL
-      || (a2 = ira_loop_tree_root->regno_allocno_map[regno2]) == NULL)
-    return false;
-  return ira_allocno_live_ranges_intersect_p (a1, a2);
-}
-
 /* Array used to collect all conflict allocnos for given allocno.  */
 static ira_allocno_t *collected_conflict_allocnos;
 
