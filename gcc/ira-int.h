@@ -107,6 +107,11 @@ struct ira_loop_tree_node
      one cap with the same regno in a region).  */
   ira_allocno_t *regno_allocno_map;
 
+  /* True if there is an entry to given loop not from its parent (or
+     grandparent) basic block.  For example, it is possible for two
+     adjacent loops inside another loop.  */
+  bool entered_from_non_parent_p;
+
   /* Maximal register pressure inside loop for given register class
      (defined only for the cover classes).  */
   int reg_pressure[N_REG_CLASSES];

@@ -2193,6 +2193,11 @@ copy_info_to_removed_store_destinations (int regno)
       if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
 	ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
 #endif
+      ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
+      ALLOCNO_CALLS_CROSSED_NUM (parent_a)
+	+= ALLOCNO_CALLS_CROSSED_NUM (a);
+      ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
+	+= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
       merged_p = true;
     }
   return merged_p;
@@ -2208,7 +2213,7 @@ void
 ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 {
   int i, j, num;
-  bool stop_p, keep_p;
+  bool keep_p;
   int hard_regs_num;
   bool new_pseudos_p, merged_p, mem_dest_p;
   unsigned int n;
@@ -2293,26 +2298,15 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      continue;
 	    }
 	  new_pseudos_p = true;
-	  first = ALLOCNO_MEM_OPTIMIZED_DEST (a) == NULL ? NULL : a;
-	  stop_p = false;
 	  for (;;)
 	    {
-	      if (first == NULL
-		  && ALLOCNO_MEM_OPTIMIZED_DEST (parent_a) != NULL)
-		first = parent_a;
 	      ALLOCNO_NREFS (parent_a) -= ALLOCNO_NREFS (a);
 	      ALLOCNO_FREQ (parent_a) -= ALLOCNO_FREQ (a);
-	      if (first != NULL
-		  && ALLOCNO_MEM_OPTIMIZED_DEST (first) == parent_a)
-		stop_p = true;
-	      else if (!stop_p)
-		{
-		  ALLOCNO_CALL_FREQ (parent_a) -= ALLOCNO_CALL_FREQ (a);
-		  ALLOCNO_CALLS_CROSSED_NUM (parent_a)
-		    -= ALLOCNO_CALLS_CROSSED_NUM (a);
-		  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
-		    -= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
-		}
+	      ALLOCNO_CALL_FREQ (parent_a) -= ALLOCNO_CALL_FREQ (a);
+	      ALLOCNO_CALLS_CROSSED_NUM (parent_a)
+		-= ALLOCNO_CALLS_CROSSED_NUM (a);
+	      ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
+		-= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	      ira_assert (ALLOCNO_CALLS_CROSSED_NUM (parent_a) >= 0
 			  && ALLOCNO_NREFS (parent_a) >= 0
 			  && ALLOCNO_FREQ (parent_a) >= 0);
