@@ -1,3 +1,10 @@
+2008-11-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/35405
+	* pt.c (lookup_template_class): Check pointers before dereferencing
+	  Them.
+	* error.c (dump_template_decl): Likewise.
+
 2008-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37563
