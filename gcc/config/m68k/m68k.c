@@ -4830,7 +4830,8 @@ sched_attr_op_type (rtx insn, bool opx_p, bool address_p)
 	}
     }
 
-  if (symbolic_operand (op, VOIDmode)
+  if (GET_CODE (op) == CONST
+      || symbolic_operand (op, VOIDmode)
       || LABEL_P (op))
     {
       switch (GET_MODE (op))
