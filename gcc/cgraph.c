@@ -593,6 +593,14 @@ cgraph_remove_node (struct cgraph_node *node)
 	      && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl))))
 	kill_body = true;
     }
+  /* We don't release the body of abstract functions, because they may
+     be needed when emitting debugging information.  In particular
+     this will happen for C++ constructors/destructors.  FIXME:
+     Ideally we would check to see whether there are any reachable
+     functions whose DECL_ABSTRACT_ORIGIN points to this decl.  */
+  if (DECL_ABSTRACT (node->decl))
+    kill_body = false;
+ 
 
   if (kill_body && flag_unit_at_a_time)
     {

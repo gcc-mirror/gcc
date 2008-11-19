@@ -1,3 +1,12 @@
+2008-11-17  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/27574
+	* gcc/cgraph.c (cgraph_remove_node): Do not remove the body of
+	  abstract functions. It might be useful to emit debugging
+	  information. This is a patch from Ian Lance Taylor.
+	* cgraphunit.c (cgraph_optimize): Do not cry when bodies of abstract
+	  functions are still around. They are useful to output debug info.
+
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (function_arg_vector_value): Remove 'base_mode'

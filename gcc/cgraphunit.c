@@ -1609,7 +1609,10 @@ cgraph_optimize (void)
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->analyzed
 	    && (node->global.inlined_to
-		|| DECL_SAVED_TREE (node->decl)))
+		|| DECL_SAVED_TREE (node->decl))
+            /* Abstract functions are needed to output debug info,
+               so don't complain about them if they are still around.  */
+            && !DECL_ABSTRACT (node->decl))
 	  {
 	    error_found = true;
 	    dump_cgraph_node (stderr, node);
