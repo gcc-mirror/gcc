@@ -8334,6 +8334,14 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* Even though the sizetype mode and the pointer's mode can be different
          expand is able to handle this correctly and get the correct result out 
          of the PLUS_EXPR code.  */
+      /* Make sure to sign-extend the sizetype offset in a POINTER_PLUS_EXPR
+         if sizetype precision is smaller than pointer precision.  */
+      if (TYPE_PRECISION (sizetype) < TYPE_PRECISION (type))
+	exp = build2 (PLUS_EXPR, type,
+		      TREE_OPERAND (exp, 0),
+		      fold_convert (type,
+				    fold_convert (ssizetype,
+						  TREE_OPERAND (exp, 1))));
     case PLUS_EXPR:
 
       /* Check if this is a case for multiplication and addition.  */
