@@ -1,3 +1,8 @@
+2008-11-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/36133
+	* gcc.target/m68k/pr36133.c: New test.
+
 2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
   
  	* gcc.gd/struct/wo_prof_global_var.c: Use uninitialized integer

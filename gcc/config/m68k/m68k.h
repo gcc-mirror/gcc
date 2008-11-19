@@ -855,6 +855,14 @@ __transfer_from_trampoline ()					\
    some or all of the saved cc's so they won't be used.  */
 #define NOTICE_UPDATE_CC(EXP,INSN) notice_update_cc (EXP, INSN)
 
+/* The shift instructions always clear the overflow bit.  */
+#define CC_OVERFLOW_UNUSABLE 01000
+
+/* The shift instructions use the carry bit in a way not compatible with
+   conditional branches.  conditions.h uses CC_NO_OVERFLOW for this purpose.
+   Rename it to something more understandable.  */
+#define CC_NO_CARRY CC_NO_OVERFLOW
+
 #define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV)  \
 do { if (cc_prev_status.flags & CC_IN_68881)			\
     return FLOAT;						\
