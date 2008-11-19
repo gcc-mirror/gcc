@@ -1,4 +1,10 @@
 2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/lb1sf68.asm: Add GNU-stack annotation to avoid
+	executable stack.
+
+2008-11-19  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.c (sched_attr_op_type): Handle all CONSTs.
 
