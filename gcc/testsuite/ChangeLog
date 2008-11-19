@@ -1,3 +1,9 @@
+2008-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36038
+	* gcc.c-torture/compile/pr36038.c: Moved to...
+	* gcc.c-torture/execute/pr36038.c: ... here.
+
 2008-11-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR target/36133
