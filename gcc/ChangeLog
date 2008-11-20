@@ -1,3 +1,9 @@
+2008-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38151
+	* config/i386/i386.c (classify_argument) [integer mode size <= 64bit]:
+	Handle cases when integer argument crosses argument register boundary.
+
 2008-11-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/33100
@@ -18,10 +24,10 @@
 	PR rtl-optimization/32283
 	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Use type of the base
 	of the induction variable to decide whether it may wrap.
-	* tree-ssa-loop-ivopts.c (rewrite_use_compare): Emit the initialization
-	of the bound before the loop.
-	* simplify-rtx.c (simplify_binary_operation_1): Add two simplifications
-	regarding AND.
+	* tree-ssa-loop-ivopts.c (rewrite_use_compare): Emit the
+	initialization of the bound before the loop.
+	* simplify-rtx.c (simplify_binary_operation_1): Add two
+	simplifications regarding AND.
 	(simplify_plus_minus): Only fail if no simplification is possible.
 	* loop-iv.c (simple_rhs_p): Consider reg + reg and reg << cst simple.
 
@@ -73,8 +79,7 @@
 	* ira-conflicts.c (ira_allocno_live_ranges_intersect_p,
 	ira_pseudo_live_ranges_intersect_p): Rename to
 	allocnos_have_intersected_live_ranges_p and
-	pseudos_have_intersected_live_ranges_p.  Move them from here to
-	...
+	pseudos_have_intersected_live_ranges_p.  Move them from here to ...
 
 	* ira-color.c: ... here
 	(coalesced_allocno_conflict_p): Use
@@ -112,8 +117,7 @@
 2008-11-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build2_stat): Allow non-POINTER_PLUS_EXPRs with
-	non-sizetype offsets if their precision matches that of
-	the pointer.
+	non-sizetype offsets if their precision matches that of the pointer.
 	* expr.c (expand_expr_real_1): Always sign-extend the offset
 	operand of a POINTER_PLUS_EXPR.
 
@@ -134,8 +138,8 @@
 
 2008-11-19  Razya Ladelsky  <razya@il.ibm.com>
 
-        PR target/38156
-        * tree-parloops.c (loop_parallel_p): NULL vect_dump.
+	PR target/38156
+	* tree-parloops.c (loop_parallel_p): NULL vect_dump.
 	(separate_decls_in_region): Create shared struct even when there 
 	are only reductions.
 
@@ -272,7 +276,7 @@
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (function_arg_vector_value): Remove 'base_mode'
-	parameter.  Use DImode for computing the number of registers.
+	parameter.  Use DImode for computing the number of registers.
 	(function_arg): Adjust for above change.
 	(function_value): Likewise.
 
