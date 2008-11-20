@@ -1,5 +1,9 @@
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Use
+	gfc_index_one_node.
+	(gfc_conv_intrinsic_size): Use gfc_index_{zero,one}_node.
+
 	PR fortran/38181
 	* trans-intrinsic.c (gfc_conv_intrinsic_size): Inline 2 argument
 	size if the second argument is not optional and one argument size
