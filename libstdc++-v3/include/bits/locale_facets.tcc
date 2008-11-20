@@ -1096,11 +1096,25 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  const streamsize __w = __io.width();
 	  if (__w > static_cast<streamsize>(__len))
 	    {
-	      _CharT* __cs
+	      const streamsize __plen = __w - __len;
+	      _CharT* __ps
 		= static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							* __w));
-	      _M_pad(__fill, __w, __io, __cs, __name, __len);
-	      __name = __cs;
+							* __plen));
+
+	      char_traits<_CharT>::assign(__ps, __plen, __fill);
+	      __io.width(0);
+
+	      if ((__flags & ios_base::adjustfield) == ios_base::left)
+		{
+		  __s = std::__write(__s, __name, __len);
+		  __s = std::__write(__s, __ps, __plen);
+		}
+	      else
+		{
+		  __s = std::__write(__s, __ps, __plen);
+		  __s = std::__write(__s, __name, __len);
+		}
+	      return __s;
 	    }
 	  __io.width(0);
 	  __s = std::__write(__s, __name, __len);

@@ -1,3 +1,11 @@
+2008-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38196
+	* include/bits/locale_facets.tcc (num_put<>::do_put(iter_type,
+	ios_base&, char_type, bool)): Fix.
+	* testsuite/22_locale/num_put/put/char/38196.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/38196.cc: Likewise.
+
 2008-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/cinttypes: Remove redundant pragma system_header.
