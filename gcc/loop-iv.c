@@ -1337,13 +1337,26 @@ simple_rhs_p (rtx rhs)
     case MINUS:
       op0 = XEXP (rhs, 0);
       op1 = XEXP (rhs, 1);
-      /* Allow reg + const sets only.  */
-      if (REG_P (op0) && !HARD_REGISTER_P (op0) && CONSTANT_P (op1))
-	return true;
-      if (REG_P (op1) && !HARD_REGISTER_P (op1) && CONSTANT_P (op0))
-	return true;
+      /* Allow reg + const and reg + reg.  */
+      if (!(REG_P (op0) && !HARD_REGISTER_P (op0))
+	  && !CONSTANT_P (op0))
+	return false;
+      if (!(REG_P (op1) && !HARD_REGISTER_P (op1))
+	  && !CONSTANT_P (op1))
+	return false;
 
-      return false;
+      return true;
+
+    case ASHIFT:
+      op0 = XEXP (rhs, 0);
+      op1 = XEXP (rhs, 1);
+      /* Allow reg << const.  */
+      if (!(REG_P (op0) && !HARD_REGISTER_P (op0)))
+	return false;
+      if (!CONSTANT_P (op1))
+	return false;
+
+      return true;
 
     default:
       return false;

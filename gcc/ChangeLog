@@ -1,3 +1,15 @@
+2008-11-19  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/32283
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Use type of the base
+	of the induction variable to decide whether it may wrap.
+	* tree-ssa-loop-ivopts.c (rewrite_use_compare): Emit the initialization
+	of the bound before the loop.
+	* simplify-rtx.c (simplify_binary_operation_1): Add two simplifications
+	regarding AND.
+	(simplify_plus_minus): Only fail if no simplification is possible.
+	* loop-iv.c (simple_rhs_p): Consider reg + reg and reg << cst simple.
+
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36631

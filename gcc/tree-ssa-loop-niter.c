@@ -3053,7 +3053,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   /* If we can use the fact that signed and pointer arithmetics does not
      wrap, we are done.  */
-  if (use_overflow_semantics && nowrap_type_p (type))
+  if (use_overflow_semantics && nowrap_type_p (TREE_TYPE (base)))
     return false;
 
   /* To be able to use estimates on number of iterations of the loop,
