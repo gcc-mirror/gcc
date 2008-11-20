@@ -1,3 +1,7 @@
+2008-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (init_gigi_decls): Fix type mismatch.
+
 2008-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/38127
