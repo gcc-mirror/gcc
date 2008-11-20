@@ -318,6 +318,17 @@ i[34567]86-*-nto-qnx*)
 i[34567]86-*-rtems*)
 	;;
 i[34567]86-*-solaris2*)
+	tmake_file="${tmake_file} i386/t-sol2"
+	case ${host} in
+	*-*-solaris2.1[0-9]*)
+		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
+		# part of the base system.
+		extra_parts="gmon.o crtbegin.o crtend.o"
+		;;
+	*)
+		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
+		;;
+	esac
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
