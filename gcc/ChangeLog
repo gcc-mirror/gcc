@@ -1,5 +1,14 @@
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/29215
+	* builtins.c (SLOW_UNALIGNED_ACCESS): Define if not defined.
+	(fold_builtin_memory_op): Handle even the case where just one
+	of src and dest is an address of a var decl component, using
+	TYPE_REF_CAN_ALIAS_ALL pointers.  Remove is_gimple_min_invariant
+	and readonly_data_expr src check.
+	* tree-ssa-sccvn.c (DFS): Use clear_and_done_ssa_iter to shut
+	up warnings.
+
 	PR rtl-optimization/36998
 	* dwarf2out.c (stack_adjust_offset): Add cur_args_size and cur_offset
 	arguments.  Handle sp = reg and (set (foo) (mem (pre_inc (reg sp)))).

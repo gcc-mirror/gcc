@@ -1,3 +1,10 @@
+2008-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29215
+	* gfortran.dg/array_memcpy_3.f90: Adjust pattern to match even
+	memcpy optimized into ref-all store.
+	* gcc.dg/pr29215.c: New test.
+
 2008-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38151

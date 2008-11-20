@@ -51,6 +51,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "diagnostic.h"
 
+#ifndef SLOW_UNALIGNED_ACCESS
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
+#endif
+
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif
@@ -8824,10 +8828,12 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
   else
     {
       tree srctype, desttype;
+      int src_align, dest_align;
+
       if (endp == 3)
 	{
-          int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-          int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+	  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
 
 	  /* Both DEST and SRC must be pointer types. 
 	     ??? This is what old code did.  Is the testing for pointer types
@@ -8862,44 +8868,95 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	  || !TYPE_SIZE_UNIT (srctype)
 	  || !TYPE_SIZE_UNIT (desttype)
 	  || TREE_CODE (TYPE_SIZE_UNIT (srctype)) != INTEGER_CST
-	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST
-	  || !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
-	  || !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
+	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST)
 	return NULL_TREE;
 
-      if (get_pointer_alignment (dest, BIGGEST_ALIGNMENT) 
-	  < (int) TYPE_ALIGN (desttype)
-	  || (get_pointer_alignment (src, BIGGEST_ALIGNMENT) 
-	      < (int) TYPE_ALIGN (srctype)))
+      src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      if (dest_align < (int) TYPE_ALIGN (desttype)
+	  || src_align < (int) TYPE_ALIGN (srctype))
 	return NULL_TREE;
 
       if (!ignore)
         dest = builtin_save_expr (dest);
 
-      srcvar = build_fold_indirect_ref (src);
-      if (TREE_THIS_VOLATILE (srcvar))
-	return NULL_TREE;
-      if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
-	return NULL_TREE;
-      /* With memcpy, it is possible to bypass aliasing rules, so without
-         this check i.e. execute/20060930-2.c would be misoptimized, because
-	 it use conflicting alias set to hold argument for the memcpy call.
-	 This check is probably unnecessary with -fno-strict-aliasing.
-	 Similarly for destvar.  See also PR29286.  */
-      if (!var_decl_component_p (srcvar)
-	  /* Accept: memcpy (*char_var, "test", 1); that simplify
-	     to char_var='t';  */
-	  || is_gimple_min_invariant (srcvar)
-	  || readonly_data_expr (src))
+      srcvar = NULL_TREE;
+      if (tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
+	{
+	  srcvar = build_fold_indirect_ref (src);
+	  if (TREE_THIS_VOLATILE (srcvar))
+	    srcvar = NULL_TREE;
+	  else if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
+	    srcvar = NULL_TREE;
+	  /* With memcpy, it is possible to bypass aliasing rules, so without
+	     this check i.e. execute/20060930-2.c would be misoptimized,
+	     because it use conflicting alias set to hold argument for the
+	     memcpy call.  This check is probably unnecessary with
+	     -fno-strict-aliasing.  Similarly for destvar.  See also
+	     PR29286.  */
+	  else if (!var_decl_component_p (srcvar))
+	    srcvar = NULL_TREE;
+	}
+
+      destvar = NULL_TREE;
+      if (tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
+	{
+	  destvar = build_fold_indirect_ref (dest);
+	  if (TREE_THIS_VOLATILE (destvar))
+	    destvar = NULL_TREE;
+	  else if (!tree_int_cst_equal (lang_hooks.expr_size (destvar), len))
+	    destvar = NULL_TREE;
+	  else if (!var_decl_component_p (destvar))
+	    destvar = NULL_TREE;
+	}
+
+      if (srcvar == NULL_TREE && destvar == NULL_TREE)
 	return NULL_TREE;
 
-      destvar = build_fold_indirect_ref (dest);
-      if (TREE_THIS_VOLATILE (destvar))
-	return NULL_TREE;
-      if (!tree_int_cst_equal (lang_hooks.expr_size (destvar), len))
-	return NULL_TREE;
-      if (!var_decl_component_p (destvar))
-	return NULL_TREE;
+      if (srcvar == NULL_TREE)
+	{
+	  tree srcptype;
+	  if (TREE_ADDRESSABLE (TREE_TYPE (destvar)))
+	    return NULL_TREE;
+
+	  srctype = desttype;
+	  if (src_align < (int) TYPE_ALIGN (srctype))
+	    {
+	      if (AGGREGATE_TYPE_P (srctype)
+		  || SLOW_UNALIGNED_ACCESS (TYPE_MODE (srctype), src_align))
+		return NULL_TREE;
+
+	      srctype = build_variant_type_copy (srctype);
+	      TYPE_ALIGN (srctype) = src_align;
+	      TYPE_USER_ALIGN (srctype) = 1;
+	      TYPE_PACKED (srctype) = 1;
+	    }
+	  srcptype = build_pointer_type_for_mode (srctype, ptr_mode, true);
+	  src = fold_convert (srcptype, src);
+	  srcvar = build_fold_indirect_ref (src);
+	}
+      else if (destvar == NULL_TREE)
+	{
+	  tree destptype;
+	  if (TREE_ADDRESSABLE (TREE_TYPE (srcvar)))
+	    return NULL_TREE;
+
+	  desttype = srctype;
+	  if (dest_align < (int) TYPE_ALIGN (desttype))
+	    {
+	      if (AGGREGATE_TYPE_P (desttype)
+		  || SLOW_UNALIGNED_ACCESS (TYPE_MODE (desttype), dest_align))
+		return NULL_TREE;
+
+	      desttype = build_variant_type_copy (desttype);
+	      TYPE_ALIGN (desttype) = dest_align;
+	      TYPE_USER_ALIGN (desttype) = 1;
+	      TYPE_PACKED (desttype) = 1;
+	    }
+	  destptype = build_pointer_type_for_mode (desttype, ptr_mode, true);
+	  dest = fold_convert (destptype, dest);
+	  destvar = build_fold_indirect_ref (dest);
+	}
 
       if (srctype == desttype
 	  || (gimple_in_ssa_p (cfun)

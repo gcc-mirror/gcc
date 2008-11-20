@@ -1,5 +1,9 @@
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/29215
+	* trans-array.c (trans_array_constructor_value,
+	gfc_build_constant_array_constructor): Fill in TREE_PURPOSE.
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Use
 	gfc_index_one_node.
 	(gfc_conv_intrinsic_size): Use gfc_index_{zero,one}_node.
