@@ -46,7 +46,7 @@ do_qi (void)
     abort ();
   if (__sync_xor_and_fetch(AI+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AI+17, 7) != ~7)
+  if (__sync_nand_and_fetch(AI+17, 7) != (char)~7)
     abort ();
 }
 
