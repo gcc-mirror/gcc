@@ -1,3 +1,10 @@
+2008-11-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37868
+	* gcc.dg/torture/pr37868.c: New testcase.
+	* gcc.c-torture/execute/pr38048-1.c: Likewise.
+	* gcc.c-torture/execute/pr38048-2.c: Likewise.
+
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/38181
