@@ -1,5 +1,10 @@
 2008-11-19  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/37142
+	* g++.dg/template/crash79.C: New test.
+
+2008-11-19  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/35405
 	* g++.dg/template/crash84.C: New test.
 

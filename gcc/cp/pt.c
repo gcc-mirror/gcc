@@ -4709,7 +4709,7 @@ coerce_template_template_parms (tree parm_parms,
 	       D<int, C> d;
 
 	     i.e. the parameter list of TT depends on earlier parameters.  */
-	  if (!dependent_type_p (TREE_TYPE (arg))
+	  if (!uses_template_parms (TREE_TYPE (arg))
 	      && !same_type_p
 		    (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
 			     TREE_TYPE (arg)))
