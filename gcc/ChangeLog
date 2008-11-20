@@ -1,3 +1,15 @@
+2008-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36998
+	* dwarf2out.c (stack_adjust_offset): Add cur_args_size and cur_offset
+	arguments.  Handle sp = reg and (set (foo) (mem (pre_inc (reg sp)))).
+	(compute_barrier_args_size_1, dwarf2out_frame_debug_expr): Adjust
+	stack_adjust_offset callers.
+	(dwarf2out_stack_adjust): Likewise.  Handle insns in annulled
+	branches properly.
+	(compute_barrier_args_size): Handle insns in annulled branches
+	properly.
+
 2008-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38151
