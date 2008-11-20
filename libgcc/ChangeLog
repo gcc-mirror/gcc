@@ -1,3 +1,15 @@
+2008-11-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/33100
+	* configure.ac (i?86-*-solaris2.1[0-9]*): Only include
+	i386/t-crtstuff if linker supports ZERO terminator unwind entries.
+	* configure: Regenerate.
+	* config.host (i[34567]86-*-solaris2*): Move i386/t-sol2 in
+	tmake_file here from gcc/config.gcc.
+	Move extra_parts here from gcc/config.gcc.
+	* config/i386/t-sol2: Move here from gcc/config/i386.
+	Use gcc_srcdir instead of srcdir.
+	
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.

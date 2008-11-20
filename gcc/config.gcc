@@ -1266,7 +1266,7 @@ i[34567]86-*-solaris2*)
 		;;
 	esac
 	tm_file="${tm_file} i386/sol2.h"
-	tmake_file="t-sol2 i386/t-sol2 t-svr4"
+	tmake_file="t-sol2 t-svr4"
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
 	extra_objs="sol2.o"
@@ -1289,7 +1289,10 @@ i[34567]86-*-solaris2*)
 	*-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} i386/x86-64.h i386/sol2-10.h"
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-		tmake_file="$tmake_file i386/t-crtstuff i386/t-sol2-10"
+		tmake_file="$tmake_file i386/t-sol2-10"
+		# i386/t-crtstuff only affects libgcc.  Its inclusion
+		# depends on a runtime test and is thus performed in
+		# libgcc/configure.ac instead.
 		need_64bit_hwint=yes
 		# FIXME: -m64 for i[34567]86-*-* should be allowed just
 		# like -m32 for x86_64-*-*.
@@ -1305,12 +1308,6 @@ i[34567]86-*-solaris2*)
 			exit 1
 			;;
 		esac
-		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
-		# part of the base system.
-		extra_parts="gmon.o crtbegin.o crtend.o"
-		;;
-	*)
-		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		;;
 	esac
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in

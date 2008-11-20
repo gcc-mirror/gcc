@@ -1,3 +1,11 @@
+2008-11-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/33100
+	* config.gcc (i[34567]86-*-solaris2*): Don't include
+	i386/t-crtstuff here.
+	Move extra_parts, i386/t-sol2 in tmake_file to libgcc/config.host.
+	* config/i386/t-sol2: Move to libgcc/config/i386.
+
 2008-11-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37868

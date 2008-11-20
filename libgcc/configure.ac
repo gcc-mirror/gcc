@@ -155,6 +155,26 @@ AC_SUBST(fixed_point)
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 
+# Check if Solaris/x86 linker supports ZERO terminator unwind entries.
+# This is after config.host so we can augment tmake_file.
+# Link with -nostartfiles -nodefaultlibs since neither are present while
+# building libgcc.
+case ${host} in
+i?86-*-solaris2.1[[0-9]]*)
+  cat > conftest.s <<EOF
+	.section	.eh_frame,"a",@unwind
+	.zero	4
+	.section	.jcr,"aw",@progbits
+	.zero	8
+EOF
+  if AC_TRY_COMMAND(${CC-cc} -shared -nostartfiles -nodefaultlibs -o conftest.so conftest.s 1>&AS_MESSAGE_LOG_FD); then
+      # configure expects config files in libgcc/config, so need a relative
+      # path here.
+      tmake_file="${tmake_file} ../../gcc/config/i386/t-crtstuff"
+  fi
+  ;;
+esac
+
 # Check for visibility support.  This is after config.host so that
 # we can check for asm_hidden_op.
 AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],
