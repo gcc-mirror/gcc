@@ -577,6 +577,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
   /* Build the special descriptor type and its null node if needed.  */
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     {
+      tree null_node = fold_convert (ptr_void_ftype, null_pointer_node);
       tree field_list = NULL_TREE, null_list = NULL_TREE;
       int j;
 
@@ -588,7 +589,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
 					  fdesc_type_node, 0, 0, 0, 1);
 	  TREE_CHAIN (field) = field_list;
 	  field_list = field;
-	  null_list = tree_cons (field, null_pointer_node, null_list);
+	  null_list = tree_cons (field, null_node, null_list);
 	}
 
       finish_record_type (fdesc_type_node, nreverse (field_list), 0, false);
