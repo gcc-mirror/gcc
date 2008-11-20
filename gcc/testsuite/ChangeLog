@@ -1,3 +1,8 @@
+2008-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36631
+	* g++.dg/template/call5.C: New test.
+
 2008-11-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.c-torture/compile/20081119-1.c: New test.

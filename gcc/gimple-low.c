@@ -1,6 +1,7 @@
 /* GIMPLE lowering pass.  Converts High GIMPLE into Low GIMPLE.
 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -218,6 +219,80 @@ struct gimple_opt_pass pass_lower_cf =
 };
 
 
+/* Verify if the type of the argument matches that of the function
+   declaration.  If we cannot verify this or there is a mismatch,
+   mark the call expression so it doesn't get inlined later.  */
+
+static void
+check_call_args (gimple stmt)
+{
+  tree fndecl, parms, p;
+  unsigned int i, nargs;
+
+  if (gimple_call_cannot_inline_p (stmt))
+    return;
+
+  nargs = gimple_call_num_args (stmt);
+
+  /* Get argument types for verification.  */
+  fndecl = gimple_call_fndecl (stmt);
+  parms = NULL_TREE;
+  if (fndecl)
+    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  else if (POINTER_TYPE_P (TREE_TYPE (gimple_call_fn (stmt))))
+    parms = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt))));
+
+  /* Verify if the type of the argument matches that of the function
+     declaration.  If we cannot verify this or there is a mismatch,
+     mark the call expression so it doesn't get inlined later.  */
+  if (fndecl && DECL_ARGUMENTS (fndecl))
+    {
+      for (i = 0, p = DECL_ARGUMENTS (fndecl);
+	   i < nargs;
+	   i++, p = TREE_CHAIN (p))
+	{
+	  /* We cannot distinguish a varargs function from the case
+	     of excess parameters, still deferring the inlining decision
+	     to the callee is possible.  */
+	  if (!p)
+	    break;
+	  if (p == error_mark_node
+	      || gimple_call_arg (stmt, i) == error_mark_node
+	      || !fold_convertible_p (DECL_ARG_TYPE (p),
+				      gimple_call_arg (stmt, i)))
+	    {
+	      gimple_call_set_cannot_inline (stmt, true);
+	      break;
+	    }
+	}
+    }
+  else if (parms)
+    {
+      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
+	{
+	  /* If this is a varargs function defer inlining decision
+	     to callee.  */
+	  if (!p)
+	    break;
+	  if (TREE_VALUE (p) == error_mark_node
+	      || gimple_call_arg (stmt, i) == error_mark_node
+	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
+	      || !fold_convertible_p (TREE_VALUE (p),
+				      gimple_call_arg (stmt, i)))
+	    {
+	      gimple_call_set_cannot_inline (stmt, true);
+	      break;
+	    }
+	}
+    }
+  else
+    {
+      if (nargs != 0)
+	gimple_call_set_cannot_inline (stmt, true);
+    }
+}
+
+
 /* Lower sequence SEQ.  Unlike gimplification the statements are not relowered
    when they are changed -- if this has to be done, the lowering routine must
    do it explicitly.  DATA is passed through the recursion.  */
@@ -320,6 +395,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	    lower_builtin_setjmp (gsi);
 	    return;
 	  }
+	check_call_args (stmt);
       }
       break;
 
