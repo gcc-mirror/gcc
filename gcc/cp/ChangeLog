@@ -1,3 +1,9 @@
+2008-11-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/37142
+	* pt.c (coerce_template_template_parm): Use the more robust
+	uses_template_parms instead of dependent_type_p.
+
 2008-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38030
