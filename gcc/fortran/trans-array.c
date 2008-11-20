@@ -1235,6 +1235,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      tree init;
 	      tree bound;
 	      tree tmptype;
+	      HOST_WIDE_INT idx = 0;
 
 	      p = c;
 	      list = NULL_TREE;
@@ -1253,7 +1254,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 				(gfc_get_pchar_type (p->expr->ts.kind),
 				 se.expr);
 
-		  list = tree_cons (NULL_TREE, se.expr, list);
+		  list = tree_cons (build_int_cst (gfc_array_index_type,
+						   idx++), se.expr, list);
 		  c = p;
 		  p = p->next;
 		}
@@ -1619,7 +1621,8 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
       if (c->expr->ts.type == BT_CHARACTER && POINTER_TYPE_P (type))
 	se.expr = gfc_build_addr_expr (gfc_get_pchar_type (c->expr->ts.kind),
 				       se.expr);
-      list = tree_cons (NULL_TREE, se.expr, list);
+      list = tree_cons (build_int_cst (gfc_array_index_type, nelem),
+			se.expr, list);
       c = c->next;
       nelem++;
     }
