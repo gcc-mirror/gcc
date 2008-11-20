@@ -5323,11 +5323,15 @@ rewrite_use_compare (struct ivopts_data *data,
     {
       tree var = var_at_stmt (data->current_loop, cand, use->stmt);
       tree var_type = TREE_TYPE (var);
+      gimple_seq stmts;
 
       compare = iv_elimination_compare (data, use);
       bound = unshare_expr (fold_convert (var_type, bound));
-      op = force_gimple_operand_gsi (&bsi, bound, true, NULL_TREE,
-				     true, GSI_SAME_STMT);
+      op = force_gimple_operand (bound, &stmts, true, NULL_TREE);
+      if (stmts)
+	gsi_insert_seq_on_edge_immediate (
+		loop_preheader_edge (data->current_loop),
+		stmts);
 
       gimple_cond_set_lhs (use->stmt, var);
       gimple_cond_set_code (use->stmt, compare);
