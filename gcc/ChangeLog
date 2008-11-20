@@ -1,3 +1,8 @@
+2008-11-20  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc/config/s390/s390.c (s390_expand_atomic): Adjust QI/HI atomic
+	nand to the changed 4.4 semantic.
+
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29215

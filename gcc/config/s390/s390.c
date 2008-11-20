@@ -4681,9 +4681,9 @@ s390_expand_atomic (enum machine_mode mode, enum rtx_code code,
 				 NULL_RTX, 1, OPTAB_DIRECT);
       break;
     case MULT: /* NAND */
-      new_rtx = expand_simple_binop (SImode, XOR, new_rtx, ac.modemask,
-				 NULL_RTX, 1, OPTAB_DIRECT);
       new_rtx = expand_simple_binop (SImode, AND, new_rtx, val,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      new_rtx = expand_simple_binop (SImode, XOR, new_rtx, ac.modemask,
 				 NULL_RTX, 1, OPTAB_DIRECT);
       break;
     default:
