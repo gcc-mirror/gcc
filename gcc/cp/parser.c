@@ -14767,6 +14767,9 @@ cp_parser_class_name (cp_parser *parser,
 		}
 	      return error_mark_node;
 	    }
+	  else if (decl != error_mark_node
+		   && !parser->scope)
+	    maybe_note_name_used_in_class (identifier, decl);
 	}
     }
   else
