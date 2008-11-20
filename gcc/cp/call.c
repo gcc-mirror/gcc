@@ -5103,7 +5103,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree expr;
       tree return_type;
       return_type = TREE_TYPE (TREE_TYPE (fn));
-      expr = build_call_list (return_type, fn, args);
+      expr = build_call_list (return_type, build_addr_func (fn), args);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
       if (!VOID_TYPE_P (return_type))
@@ -5964,10 +5964,16 @@ build_new_method_call (tree instance, tree fns, tree args,
     }
 
   if (processing_template_decl && call != error_mark_node)
-    call = (build_min_non_dep_call_list
-	    (call,
-	     build_min_nt (COMPONENT_REF, orig_instance, orig_fns, NULL_TREE),
-	     orig_args));
+    {
+      if (TREE_CODE (call) == INDIRECT_REF)
+	call = TREE_OPERAND (call, 0);
+      call = (build_min_non_dep_call_list
+	      (call,
+	       build_min (COMPONENT_REF, TREE_TYPE (CALL_EXPR_FN (call)),
+			  orig_instance, orig_fns, NULL_TREE),
+	       orig_args));
+      call = convert_from_reference (call);
+    }
 
  /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

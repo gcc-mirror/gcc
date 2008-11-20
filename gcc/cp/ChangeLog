@@ -1,3 +1,11 @@
+2008-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37540
+	* call.c (build_over_call): Take the address of the function even
+	in a template.
+	(build_new_method_call): Remember the type of the called function
+	in a template.
+
 2008-11-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37142
@@ -8,7 +16,7 @@
 
 	PR c++/35405
 	* pt.c (lookup_template_class): Check pointers before dereferencing
-	  Them.
+	them.
 	* error.c (dump_template_decl): Likewise.
 
 2008-11-19  Jason Merrill  <jason@redhat.com>

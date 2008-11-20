@@ -1,3 +1,8 @@
+2008-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37540
+	* g++.dg/cpp0x/decltype14.C: New test.
+
 2008-11-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37868
