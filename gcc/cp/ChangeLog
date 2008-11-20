@@ -1,5 +1,8 @@
 2008-11-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28513
+	* parser.c (cp_parser_class_name): Call maybe_note_name_used_in_class.
+
 	PR c++/37540
 	* call.c (build_over_call): Take the address of the function even
 	in a template.
