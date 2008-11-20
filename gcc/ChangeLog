@@ -1,5 +1,6 @@
 2008-11-20  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	PR driver/21706
 	* tlink.c: Include "libiberty.h".
 	(initial_cwd): Change type into char *.
 	(tlink_init): Call getpwd instead of getcwd.
