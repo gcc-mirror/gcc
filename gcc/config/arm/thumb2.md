@@ -949,7 +949,7 @@
 				 (label_ref (match_operand 2 "" ""))))
 		(label_ref (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
-	      (clobber (match_scratch:SI 4 "=r"))
+	      (clobber (match_scratch:SI 4 "=&r"))
 	      (use (label_ref (match_dup 2)))])]
   "TARGET_THUMB2 && !flag_pic"
   "* return thumb2_output_casesi(operands);"
@@ -966,7 +966,7 @@
 				 (label_ref (match_operand 2 "" ""))))
 		(label_ref (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
-	      (clobber (match_scratch:SI 4 "=r"))
+	      (clobber (match_scratch:SI 4 "=&r"))
 	      (clobber (match_scratch:SI 5 "=r"))
 	      (use (label_ref (match_dup 2)))])]
   "TARGET_THUMB2 && flag_pic"
