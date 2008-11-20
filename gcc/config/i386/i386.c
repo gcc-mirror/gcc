@@ -5029,11 +5029,33 @@ classify_argument (enum machine_mode mode, const_tree type,
     case CSImode:
     case CHImode:
     case CQImode:
-      if (bit_offset + GET_MODE_BITSIZE (mode) <= 32)
-	classes[0] = X86_64_INTEGERSI_CLASS;
-      else
-	classes[0] = X86_64_INTEGER_CLASS;
-      return 1;
+      {
+	int size = (bit_offset % 64)+ (int) GET_MODE_BITSIZE (mode);
+
+	if (size <= 32)
+	  {
+	    classes[0] = X86_64_INTEGERSI_CLASS;
+	    return 1;
+	  }
+	else if (size <= 64)
+	  {
+	    classes[0] = X86_64_INTEGER_CLASS;
+	    return 1;
+	  }
+	else if (size <= 64+32)
+	  {
+	    classes[0] = X86_64_INTEGER_CLASS;
+	    classes[1] = X86_64_INTEGERSI_CLASS;
+	    return 2;
+	  }
+	else if (size <= 64+64)
+	  {
+	    classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+	    return 2;
+	  }
+	else
+	  gcc_unreachable ();
+      }
     case CDImode:
     case TImode:
       classes[0] = classes[1] = X86_64_INTEGER_CLASS;
