@@ -2209,7 +2209,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
     tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 		       gfc_index_one_node, loop.from[0]);
   else
-    tmp = build_int_cst (gfc_array_index_type, 1);
+    tmp = gfc_index_one_node;
   
   gfc_add_modify (&block, offset, tmp);
 
@@ -3422,14 +3422,13 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       else
 	{
 	  se->expr = NULL_TREE;
-	  argse.expr = fold_build2 (MINUS_EXPR,
-				    gfc_array_index_type, argse.expr,
-				    build_int_cst (gfc_array_index_type, 1));
+	  argse.expr = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+				    argse.expr, gfc_index_one_node);
 	}
     }
   else if (expr->value.function.actual->expr->rank == 1)
     {
-      argse.expr = build_int_cst (gfc_array_index_type, 0);
+      argse.expr = gfc_index_zero_node;
       se->expr = NULL_TREE;
     }
   else
@@ -3445,9 +3444,9 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       se->expr = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			      ubound, lbound);
       se->expr = fold_build2 (PLUS_EXPR, gfc_array_index_type, se->expr,
-			      build_int_cst (gfc_array_index_type, 1));
+			      gfc_index_one_node);
       se->expr = fold_build2 (MAX_EXPR, gfc_array_index_type, se->expr,
-			      build_int_cst (gfc_array_index_type, 0));
+			      gfc_index_zero_node);
     }
 
   type = gfc_typenode_for_spec (&expr->ts);
