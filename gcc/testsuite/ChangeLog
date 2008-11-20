@@ -1,5 +1,9 @@
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/38181
+	* gfortran.dg/array_section_2.f90: Adjust pattern to match
+	the inlined size0 instead of a size0 call.
+
 	PR c++/36631
 	* g++.dg/template/call5.C: New test.
 

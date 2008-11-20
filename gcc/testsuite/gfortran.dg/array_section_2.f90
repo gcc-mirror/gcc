@@ -12,5 +12,5 @@ program test
    allocate(a(n), temp(n))
    temp(1:size(a)) = a
 end program
-! { dg-final { scan-tree-dump-times "size0" 1 "original" } }
+! { dg-final { scan-tree-dump-times "MAX_EXPR\[^\n\t\]+ubound\[^\n\t\]+lbound" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
