@@ -1,3 +1,33 @@
+2008-11-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37868
+	* tree-ssa-structalias.c (set_uids_in_ptset): Add SFTs based on
+	pointed to variable and access size.
+
+	Backport from mainline:
+	2008-07-07  Richard Guenther  <rguenther@suse.de>
+
+        * tree-ssa-structalias.c (struct variable_info): Add is_full_var flag.
+        (new_var_info): Set it to false.
+        (solution_set_add): Correctly handle pointers outside a var and
+        inside a field.
+        (type_safe): Treat variables with is_full_var properly.
+        (do_sd_constraint): Likewise.
+        (do_ds_constraint): Likewise.
+        (process_constraint): Remove zeroing offset for !use_field_sensitive.
+        (get_constraint_for_ptr_offset): New function.
+        (get_constraint_for_component_ref): Handle is_full_vars properly.
+        (get_constraint_for): Handle POINTER_PLUS_EXPR.
+        (handle_ptr_arith): Remove.
+        (find_func_aliases): Handle POINTER_PLUS_EXPR through generic
+	get_constraint_for code.
+        (create_function_info_for): For parameter and result varinfos set
+        is_full_var flag.
+        (create_variable_info_for): Set is_full_var flag whenever we
+        just created a single varinfo for a decl.
+        (init_alias_vars): Initialize use_field_sensitive from
+        max-fields-for-field-sensitive parameter.
+
 2008-11-18  Ben Elliston  <bje@au.ibm.com>
 
 	Backport from mainline:
