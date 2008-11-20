@@ -1,3 +1,11 @@
+2008-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36631
+	* gimplify.c (gimplify_call_expr): Defer most of the cannot inline
+	checking until GIMPLE lowering.
+	* gimple-low.c (check_call_args): New function.
+	(lower_stmt) <case GIMPLE_CALL>: Call it.
+
 2008-11-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_gimplify_va_arg_expr): Use -rsize
