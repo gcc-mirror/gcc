@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "demangle.h"
 #include "collect2.h"
+#include "libiberty.h"
 
 #define MAX_ITERATIONS 17
 
@@ -38,7 +39,7 @@ extern int prepends_underscore;
 
 static int tlink_verbose;
 
-static char initial_cwd[MAXPATHLEN + 1];
+static char *initial_cwd;
 
 /* Hash table boilerplate for working with htab_t.  We have hash tables
    for symbol names, file names, and demangled symbols.  */
@@ -273,7 +274,7 @@ tlink_init (void)
 	tlink_verbose = 3;
     }
 
-  getcwd (initial_cwd, sizeof (initial_cwd));
+  initial_cwd = getpwd ();
 }
 
 static int

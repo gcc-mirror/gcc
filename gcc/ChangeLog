@@ -1,3 +1,9 @@
+2008-11-20  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* tlink.c: Include "libiberty.h".
+	(initial_cwd): Change type into char *.
+	(tlink_init): Call getpwd instead of getcwd.
+
 2008-11-19  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR rtl-optimization/32283
