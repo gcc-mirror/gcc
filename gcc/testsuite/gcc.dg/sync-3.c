@@ -43,7 +43,7 @@ do_qi (void)
     abort ();
   if (__sync_xor_and_fetch(AI+16, 9) != 9)
     abort ();
-  if (__sync_nand_and_fetch(AI+17, 7) != ~7) /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" } */
+  if (__sync_nand_and_fetch(AI+17, 7) != (char)~7) /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" } */
     abort ();
 }
 
