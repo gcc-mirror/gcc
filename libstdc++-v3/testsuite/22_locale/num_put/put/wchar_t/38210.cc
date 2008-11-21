@@ -39,28 +39,24 @@ void test01()
   void* p = (void*)0x1;
 
   oss1.width(5);
-  oss1.setf(ios_base::boolalpha);
   ng1.put(oss1.rdbuf(), oss1, L'*', p);
   result1 = oss1.str();
   VERIFY( result1 == L"**0x1" );
 
   oss2.width(5);
   oss2.setf(ios_base::right, ios_base::adjustfield);
-  oss2.setf(ios_base::boolalpha);
   ng2.put(oss2.rdbuf(), oss2, L'*', p);
   result2 = oss2.str();
   VERIFY( result2 == L"**0x1" );
 
   oss3.width(5);
   oss3.setf(ios_base::internal, ios_base::adjustfield);
-  oss3.setf(ios_base::boolalpha);
   ng3.put(oss3.rdbuf(), oss3, L'*', p);
   result3 = oss3.str();
   VERIFY( result3 == L"0x**1" );
 
   oss4.width(5);
   oss4.setf(ios_base::left, ios_base::adjustfield);
-  oss4.setf(ios_base::boolalpha);
   ng4.put(oss4.rdbuf(), oss4, L'*', p);
   result4 = oss4.str();
   VERIFY( result4 == L"0x1**" );
