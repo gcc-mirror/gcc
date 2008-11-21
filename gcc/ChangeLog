@@ -1,3 +1,8 @@
+2008-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* caller-save.c (insert_one_insn): Take into account REG_INC notes
+	for the liveness computation of the new insn.
+
 2008-11-21  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.md (movqi_internal, movhi_internal):
