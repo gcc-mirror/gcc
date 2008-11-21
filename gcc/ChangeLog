@@ -1,3 +1,9 @@
+2008-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38208
+	* reload1.c (eliminate_regs_in_insn): For trunc_int_for_mode use
+	mode of PLUS, not mode of the eliminated register.
+
 2008-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (mmx_nand<mode>3): Rename to mmx_andnot<mode>3.
