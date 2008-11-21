@@ -132,8 +132,8 @@
   "{ xstormy16_expand_move (QImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,r")
-	(match_operand:QI 1 "general_operand"       "r,e,m,i,i,i,i,ir,W"))]
+  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,e")
+	(match_operand:QI 1 "general_operand"       "r,e,m,i,i,i,i,ie,W"))]
   ""
   "@
    mov %0,%1
@@ -184,7 +184,7 @@
   "{ xstormy16_expand_move (HImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,r")
+  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,e")
 	(match_operand:HI 1 "xs_hi_general_operand"          "r,e,m,L,L,i,i,ie,W"))]
   ""
   "@
