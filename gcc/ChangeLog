@@ -1,3 +1,8 @@
+2008-11-21  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.md (movqi_internal, movhi_internal):
+	Moves to/from below100 space (W) can only use r0-r7.
+
 2008-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR other/38214
