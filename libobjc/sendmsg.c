@@ -687,14 +687,14 @@ __objc_print_dtable_stats ()
 #endif
 
   printf ("arrays: %d = %ld bytes\n", narrays, 
-	  (long) (narrays * sizeof (struct sarray)));
+	  (long) ((size_t) narrays * sizeof (struct sarray)));
   total += narrays * sizeof (struct sarray);
   printf ("buckets: %d = %ld bytes\n", nbuckets, 
-	  (long) (nbuckets * sizeof (struct sbucket)));
+	  (long) ((size_t) nbuckets * sizeof (struct sbucket)));
   total += nbuckets * sizeof (struct sbucket);
 
   printf ("idxtables: %d = %ld bytes\n",
-	  idxsize, (long) (idxsize * sizeof (void *)));
+	  idxsize, (long) ((size_t) idxsize * sizeof (void *)));
   total += idxsize * sizeof (void *);
   printf ("-----------------------------------\n");
   printf ("total: %d bytes\n", total);

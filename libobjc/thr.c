@@ -114,6 +114,9 @@ __objc_thread_detach_function (struct __objc_thread_start_state *istate)
 
   /* Exit the thread */
   objc_thread_exit ();
+  
+  /* Make sure compiler detects no return.  */
+  __builtin_trap ();
 }
 
 /*

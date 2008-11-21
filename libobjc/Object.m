@@ -25,11 +25,10 @@ Boston, MA 02110-1301, USA.  */
    executable file might be covered by the GNU General Public License. */
 
 #include <stdarg.h>
+#include <errno.h>
 #include "objc/Object.h"
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
-
-extern int errno;
 
 #define MAX_CLASS_NAME_LEN 256
 
@@ -121,7 +120,7 @@ extern int errno;
     return 0;
   // Ordering objects by their address is pretty useless, 
   // so subclasses should override this is some useful way.
-  else if (self > anotherObject)
+  else if ((id)self > anotherObject)
     return 1;
   else 
     return -1;
