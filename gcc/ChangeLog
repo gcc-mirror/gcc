@@ -1,8 +1,17 @@
+2008-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37908
+	* config/ia64/ia64.c (ia64_expand_atomic_ope): Properly handle NAND
+	case by calculating ~(new_reg & val) instead of (~new_reg & val).
+	* config/ia64/sync.md (sync_nand<mode>): Change insn RTX
+	to (not:IMODE (and:IMODE (...))).
+	(sync_old_nand<mode>): Ditto.
+	(sync_new_nand<mode>): Ditto.
+
 2008-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/thumb2.md (thumb2_casesi_internal,
-	thumb2_casesi_internal_pic): Use earlyclobber for scratch operand
-	4.
+	thumb2_casesi_internal_pic): Use earlyclobber for scratch operand 4.
 
 2008-11-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -102,8 +111,7 @@
 
 	PR bootstrap/37790
 	* ira-int.h (ira_copy_allocno_live_range_list,
-	ira_merge_allocno_live_ranges,
-	ira_allocno_live_ranges_intersect_p,
+	ira_merge_allocno_live_ranges, ira_allocno_live_ranges_intersect_p,
 	ira_finish_allocno_live_range_list): New prototypes.
 	(ira_allocno_live_ranges_intersect_p,
 	ira_pseudo_live_ranges_intersect_p): Remove.
@@ -176,6 +184,7 @@
 	are only reductions.
 
 2008-11-19  Hariharan Sandanagobalane <hariharan@picochip.com>
+
 	* config/picochip/picochip.c (headers): Remove an unnecessary
 	header file.
 

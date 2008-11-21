@@ -57,8 +57,9 @@
 
 (define_expand "sync_nand<mode>"
   [(set (match_operand:IMODE 0 "memory_operand" "")
-	(and:IMODE (not:IMODE (match_dup 0))
-	  (match_operand:IMODE 1 "general_operand" "")))]
+	(not:IMODE
+	  (and:IMODE (match_dup 0)
+		     (match_operand:IMODE 1 "general_operand" ""))))]
   ""
 {
   ia64_expand_atomic_op (NOT, operands[0], operands[1], NULL, NULL);
@@ -78,9 +79,9 @@
 
 (define_expand "sync_old_nand<mode>"
   [(set (match_operand:IMODE 0 "gr_register_operand" "")
-	(and:IMODE 
-	  (not:IMODE (match_operand:IMODE 1 "memory_operand" ""))
-	  (match_operand:IMODE 2 "general_operand" "")))]
+	(not:IMODE 
+	  (and:IMODE (match_operand:IMODE 1 "memory_operand" "")
+		     (match_operand:IMODE 2 "general_operand" ""))))]
   ""
 {
   ia64_expand_atomic_op (NOT, operands[1], operands[2], operands[0], NULL);
@@ -100,9 +101,9 @@
 
 (define_expand "sync_new_nand<mode>"
   [(set (match_operand:IMODE 0 "gr_register_operand" "")
-	(and:IMODE 
-	  (not:IMODE (match_operand:IMODE 1 "memory_operand" ""))
-	  (match_operand:IMODE 2 "general_operand" "")))]
+	(not:IMODE 
+	  (and:IMODE (match_operand:IMODE 1 "memory_operand" "")
+		     (match_operand:IMODE 2 "general_operand" ""))))]
   ""
 {
   ia64_expand_atomic_op (NOT, operands[1], operands[2], NULL, operands[0]);

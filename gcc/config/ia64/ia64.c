@@ -2141,11 +2141,13 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   new_reg = cmp_reg;
   if (code == NOT)
     {
-      new_reg = expand_simple_unop (DImode, NOT, new_reg, NULL_RTX, true);
-      code = AND;
+      new_reg = expand_simple_binop (DImode, AND, new_reg, val, NULL_RTX,
+				     true, OPTAB_DIRECT);
+      new_reg = expand_simple_unop (DImode, code, new_reg, NULL_RTX, true);
     }
-  new_reg = expand_simple_binop (DImode, code, new_reg, val, NULL_RTX,
-				 true, OPTAB_DIRECT);
+  else
+    new_reg = expand_simple_binop (DImode, code, new_reg, val, NULL_RTX,
+				   true, OPTAB_DIRECT);
 
   if (mode != DImode)
     new_reg = gen_lowpart (mode, new_reg);
