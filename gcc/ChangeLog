@@ -1,3 +1,8 @@
+2008-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR other/38214
+	* doc/invoke.texi (Optimization Options): Fix typo.
+
 2008-11-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/33100
