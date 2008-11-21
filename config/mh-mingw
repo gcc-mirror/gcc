@@ -1,6 +1,6 @@
 # Add -D__USE_MINGW_ACCESS to enable the built compiler to work on Windows
 # Vista (see PR33281 for details).
-BOOT_CFLAGS += -D__USE_MINGW_ACCESS
+BOOT_CFLAGS += -D__USE_MINGW_ACCESS -Wno-pedantic-ms-format
 CFLAGS += -D__USE_MINGW_ACCESS
 # Increase stack limit to same as Linux default.
 LDFLAGS += -Wl,--stack,8388608
