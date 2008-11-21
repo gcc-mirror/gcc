@@ -39,6 +39,7 @@ extern "C" {
 #ifdef __vxworks
 typedef int BOOL;
 #else
+#undef BOOL
 typedef unsigned char  BOOL;
 #endif
 #define YES   (BOOL)1

@@ -70,7 +70,7 @@ __objc_thread_detach(void (*func)(void *arg), void *arg)
                                    arg, 0, &thread_id)))
     thread_id = 0;
   
-  return (objc_thread_t)thread_id;
+  return (objc_thread_t)(size_t) thread_id;
 }
 
 /* Set the current thread's priority. */
@@ -151,7 +151,7 @@ __objc_thread_exit(void)
 objc_thread_t
 __objc_thread_id(void)
 {
-  return (objc_thread_t)GetCurrentThreadId();
+  return (objc_thread_t)(size_t) GetCurrentThreadId();
 }
 
 /* Sets the thread's local storage pointer. */
