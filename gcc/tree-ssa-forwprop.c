@@ -719,30 +719,18 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
   if (TREE_CODE (lhs) == INDIRECT_REF
       && TREE_OPERAND (lhs, 0) == name
-      && may_propagate_address_into_dereference (def_rhs, lhs))
+      && may_propagate_address_into_dereference (def_rhs, lhs)
+      && (lhsp != gimple_assign_lhs_ptr (use_stmt)
+	  || useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (def_rhs, 0)),
+					TREE_TYPE (rhs))))
     {
-      bool valid = true;
-      if (lhsp == gimple_assign_lhs_ptr (use_stmt)
-	  && !useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (def_rhs, 0)),
-					 TREE_TYPE (rhs))
-	  && !CONVERT_EXPR_CODE_P (rhs_code))
-	{
-	  if (rhs_code == SSA_NAME)
-	    gimple_assign_set_rhs_code (use_stmt, NOP_EXPR);
-	  else
-	    valid = false;
-	}
-      if (valid)
-	{
-	  *lhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
-	  fold_stmt_inplace (use_stmt);
-	  tidy_after_forward_propagate_addr (use_stmt);
+      *lhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
+      fold_stmt_inplace (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
 
-	  /* Continue propagating into the RHS if this was not the only
-	     use.  */
-	  if (single_use_p)
-	    return true;
-	}
+      /* Continue propagating into the RHS if this was not the only use.  */
+      if (single_use_p)
+	return true;
     }
 
   /* Strip away any outer COMPONENT_REF, ARRAY_REF or ADDR_EXPR
