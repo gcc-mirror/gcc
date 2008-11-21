@@ -1027,7 +1027,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_nand<mode>3"
+(define_insn "mmx_andnot<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
 	(and:MMXMODEI
 	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0"))
