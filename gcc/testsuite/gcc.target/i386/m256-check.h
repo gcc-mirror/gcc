@@ -1,4 +1,4 @@
-#include <gmmintrin.h>
+#include <immintrin.h>
 #include "m128-check.h"
 
 #ifndef max

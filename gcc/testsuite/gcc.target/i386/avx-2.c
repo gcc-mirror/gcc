@@ -14,7 +14,7 @@
 
 #include <wmmintrin.h>
 #include <bmmintrin.h>
-#include <gmmintrin.h>
+#include <immintrin.h>
 #include <mm3dnow.h>
 
 #define _CONCAT(x,y) x ## y
@@ -53,7 +53,7 @@
 test_1x (_mm_extracti_si64, __m128i, __m128i, 1, 1)
 test_2x (_mm_inserti_si64, __m128i, __m128i, __m128i, 1, 1)
 
-/* gmmintrin.h */
+/* immintrin.h */
 test_2 (_mm256_blend_pd, __m256d, __m256d, __m256d, 1)
 test_2 (_mm256_blend_ps, __m256, __m256, __m256, 1)
 test_2 (_mm256_dp_ps, __m256, __m256, __m256, 1)
