@@ -1,3 +1,15 @@
+2008-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+	    Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* config.gcc (extra_headers): For x86 and x86-64, remove
+	gmmintrin.h, add immintrin.h and avxintrin.h.
+
+	* config/i386/gmmintrin.h: Renamed to ...
+	* config/i386/avxintrin.h: This.  Don't include intrinsics if
+	_IMMINTRIN_H_INCLUDED is undedined.
+
+	* config/i386/immintrin.h: New.
+
 2008-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38208

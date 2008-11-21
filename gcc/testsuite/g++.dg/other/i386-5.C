@@ -5,5 +5,5 @@
 
 #include <wmmintrin.h>
 #include <bmmintrin.h>
-#include <gmmintrin.h>
+#include <immintrin.h>
 #include <mm3dnow.h>

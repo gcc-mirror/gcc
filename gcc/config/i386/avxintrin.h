@@ -27,16 +27,9 @@
 /* Implemented from the specification included in the Intel C++ Compiler
    User Guide and Reference, version 11.0.  */
 
-#ifndef _GMMINTRIN_H_INCLUDED
-#define _GMMINTRIN_H_INCLUDED
-
-#ifndef __AVX__
-# error "AVX instruction set not enabled"
-#else
-
-/* We need definitions from the SSE4, SSSE3, SSE3, SSE2 and SSE header
-   files.  */
-#include <smmintrin.h>
+#ifndef _IMMINTRIN_H_INCLUDED
+# error "Never use <avxintrin.h> directly; include <immintrin.h> instead."
+#endif
 
 /* Internal data types for implementing the intrinsics.  */
 typedef double __v4df __attribute__ ((__vector_size__ (32)));
@@ -1476,7 +1469,3 @@ _mm256_castsi128_si256 (__m128i __A)
 {
   return (__m256i) __builtin_ia32_si256_si ((__v4si)__A);
 }
-
-#endif /* __AVX__ */
-
-#endif /* _GMMINTRIN_H_INCLUDED */
