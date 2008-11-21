@@ -1151,8 +1151,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     {
       const ios_base::fmtflags __flags = __io.flags();
       const ios_base::fmtflags __fmt = ~(ios_base::basefield
-					 | ios_base::uppercase
-					 | ios_base::internal);
+					 | ios_base::uppercase);
       __io.flags((__flags & __fmt) | (ios_base::hex | ios_base::showbase));
 
       typedef __gnu_cxx::__conditional_type<(sizeof(const void*)
