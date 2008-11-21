@@ -1,3 +1,7 @@
+2008-11-21  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c-torture/compile/sync-3.c: Remove dg-message directive.
+
 2008-11-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37868
