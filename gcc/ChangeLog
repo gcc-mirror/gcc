@@ -1,5 +1,23 @@
 2008-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/mmx.md (mmx_nand<mode>3): Rename to mmx_andnot<mode>3.
+	* config/i386/sse.md (avx_nand<mode>3): Rename to avx_andnot<mode>3.
+	(<sse>_nand<mode>3): Rename to <sse>_andnot<mode>3.
+	(sse2_nand<mode>3): Rename to sse2_andnot<mode>3.
+	(*sse_nand<mode>3): Rename to *sse_andnot<mode>3.
+	(*avx_nand<mode>3): Rename to *avx_andnot<mode>3.
+	(*nand<mode>3): Rename to *andnot<mode>3.
+	(*nandtf3): rename to *andnottf3.
+	* config/i386/i386.c (bdesc_args) [IX86_BUILTIN_PANDN]:
+	Use CODE_FOR_mmx_andnotv2si3.
+	[IX86_BUILTIN_ANDNPS]: Use CODE_FOR_sse_andnotv4sf3.
+	[IX86_BUILTIN_ANDNPD]: Use CODE_FOR_sse2_andnotv2df3.
+	[IX86_BUILTIN_PANDN128]: Use CODE_FOR_sse2_andnotv2di3.
+	[IX86_BUILTIN_ANDNPS256]: Use CODE_FOR_avx_andnotv8sf3.
+	[IX86_BUILTIN_ANDNPD256]: Use CODE_FOR_avx_andnotv4df3.
+
+2008-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/37908
 	* config/ia64/ia64.c (ia64_expand_atomic_ope): Properly handle NAND
 	case by calculating ~(new_reg & val) instead of (~new_reg & val).
