@@ -307,14 +307,24 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	cif->flags = FFI_TYPE_STRUCT;
       break;
 
+    case FFI_TYPE_SINT8:
+    case FFI_TYPE_UINT8:
+    case FFI_TYPE_SINT16:
+    case FFI_TYPE_UINT16:
+      if (cif->abi == FFI_V9)
+	cif->flags = FFI_TYPE_INT;
+      else
+	cif->flags = cif->rtype->type;
+      break;
+
     case FFI_TYPE_SINT64:
     case FFI_TYPE_UINT64:
-      if (cif->abi != FFI_V9)
-	{
-	  cif->flags = FFI_TYPE_SINT64;
-	  break;
-	}
-      /* FALLTHROUGH */
+      if (cif->abi == FFI_V9)
+	cif->flags = FFI_TYPE_INT;
+      else
+	cif->flags = FFI_TYPE_SINT64;
+      break;
+
     default:
       cif->flags = FFI_TYPE_INT;
       break;
