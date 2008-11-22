@@ -4725,12 +4725,12 @@
   "ISA_HAS_SYNCI"
   "synci\t0(%0)")
 
-(define_insn "rdhwr"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (unspec_volatile [(match_operand:SI 1 "const_int_operand" "n")]
+(define_insn "rdhwr_synci_step_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+        (unspec_volatile [(const_int 1)]
         UNSPEC_RDHWR))]
   "ISA_HAS_SYNCI"
-  "rdhwr\t%0,$%1")
+  "rdhwr\t%0,$1")
 
 (define_insn "clear_hazard"
   [(unspec_volatile [(const_int 0)] UNSPEC_CLEAR_HAZARD)
