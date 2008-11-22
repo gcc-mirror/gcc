@@ -2436,7 +2436,7 @@ assign_parm_remove_parallels (struct assign_parm_data_one *data)
   if (GET_CODE (entry_parm) == PARALLEL && GET_MODE (entry_parm) != BLKmode)
     {
       rtx parmreg = gen_reg_rtx (GET_MODE (entry_parm));
-      emit_group_store (parmreg, entry_parm, NULL_TREE,
+      emit_group_store (parmreg, entry_parm, data->passed_type,
 			GET_MODE_SIZE (GET_MODE (entry_parm)));
       entry_parm = parmreg;
     }
