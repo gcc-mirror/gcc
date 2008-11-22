@@ -3349,8 +3349,9 @@ output_asm_label (rtx x)
   assemble_name (asm_out_file, buf);
 }
 
-/* Helper rtx-iteration-function for output_operand.  Marks
-   SYMBOL_REFs as referenced through use of assemble_external.  */
+/* Helper rtx-iteration-function for mark_symbol_refs_as_used and
+   output_operand.  Marks SYMBOL_REFs as referenced through use of
+   assemble_external.  */
 
 static int
 mark_symbol_ref_as_used (rtx *xp, void *dummy ATTRIBUTE_UNUSED)
@@ -3372,6 +3373,14 @@ mark_symbol_ref_as_used (rtx *xp, void *dummy ATTRIBUTE_UNUSED)
     }
 
   return 0;
+}
+
+/* Marks SYMBOL_REFs in x as referenced through use of assemble_external.  */
+
+void
+mark_symbol_refs_as_used (rtx x)
+{
+  for_each_rtx (&x, mark_symbol_ref_as_used, NULL);
 }
 
 /* Print operand X using machine-dependent assembler syntax.
