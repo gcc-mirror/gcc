@@ -135,7 +135,14 @@ reshape_r8 (gfc_array_r8 * const restrict ret,
 			  (long int) ret_extent, (long int) shape_data[n]);
 	}
 
-      source_extent = source->dim[0].ubound + 1 - source->dim[0].lbound;
+      source_extent = 1;
+      sdim = GFC_DESCRIPTOR_RANK (source);
+      for (n = 0; n < sdim; n++)
+	{
+	  index_type se;
+	  se = source->dim[n].ubound + 1 - source->dim[0].lbound;
+	  source_extent *= se > 0 ? se : 0;
+	}
 
       if (rs < source_extent || (rs > source_extent && !pad))
 	runtime_error("Incorrect size in SOURCE argument to RESHAPE"
