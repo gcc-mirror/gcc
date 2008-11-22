@@ -1172,7 +1172,7 @@ find_allocno_class_costs (void)
 	  ira_allocno_t a, parent_a;
 	  int rclass, a_num, parent_a_num;
 	  ira_loop_tree_node_t parent;
-	  int best_cost;
+	  int best_cost, allocno_cost;
 	  enum reg_class best, alt_class, common_class;
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 	  int inc_dec_p = false;
@@ -1278,6 +1278,7 @@ find_allocno_class_costs (void)
 		  /* Finding best class which is subset of the common
 		     class.  */
 		  best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
+		  allocno_cost = best_cost;
 		  best = ALL_REGS;
 		  for (k = 0; k < cost_classes_num; k++)
 		    {
@@ -1302,12 +1303,21 @@ find_allocno_class_costs (void)
 			{
 			  best_cost
 			    = COSTS_OF_ALLOCNO (total_costs, a_num)->cost[k];
+			  allocno_cost
+			    = COSTS_OF_ALLOCNO (allocno_costs, a_num)->cost[k];
 			  best = (enum reg_class) rclass;
 			}
 		      else if (COSTS_OF_ALLOCNO (total_costs, a_num)->cost[k]
 			       == best_cost)
-			best = ira_reg_class_union[best][rclass];
+			{
+			  best = ira_reg_class_union[best][rclass];
+			  allocno_cost
+			    = MAX (allocno_cost,
+				   COSTS_OF_ALLOCNO (allocno_costs,
+						     a_num)->cost[k]);
+			}
 		    }
+		  ALLOCNO_COVER_CLASS_COST (a) = allocno_cost;
 		}
 	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL
 		  && (pass == 0 || allocno_pref[a_num] != best))
@@ -1421,6 +1431,7 @@ setup_allocno_cover_class_and_costs (void)
   int *reg_costs;
   enum reg_class cover_class, rclass;
   enum machine_mode mode;
+  HARD_REG_SET *pref;
   ira_allocno_t a;
   ira_allocno_iterator ai;
 
@@ -1435,10 +1446,7 @@ setup_allocno_cover_class_and_costs (void)
       if (cover_class == NO_REGS)
 	continue;
       ALLOCNO_AVAILABLE_REGS_NUM (a) = ira_available_class_regs[cover_class];
-      num = cost_class_nums[allocno_pref[i]];
-      ira_assert (num >= 0);
-      ALLOCNO_COVER_CLASS_COST (a)
-	= COSTS_OF_ALLOCNO (allocno_costs, i)->cost[num];
+      pref = &reg_class_contents[allocno_pref[i]];
       if (optimize && ALLOCNO_COVER_CLASS (a) != allocno_pref[i])
 	{
 	  n = ira_class_hard_regs_num[cover_class];
@@ -1447,17 +1455,23 @@ setup_allocno_cover_class_and_costs (void)
 	  for (j = n - 1; j >= 0; j--)
 	    {
 	      regno = ira_class_hard_regs[cover_class][j];
-	      rclass = REGNO_REG_CLASS (regno);
-	      num = cost_class_nums[rclass];
-	      if (num < 0)
+	      if (TEST_HARD_REG_BIT (*pref, regno))
+		reg_costs[j] = ALLOCNO_COVER_CLASS_COST (a);
+	      else
 		{
-		  /* The hard register class is not a cover class or a
-		     class not fully inside in a cover class -- use
-		     the allocno cover class.  */
-		  ira_assert (ira_hard_regno_cover_class[regno] == cover_class);
-		  num = cost_class_nums[cover_class];
+		  rclass = REGNO_REG_CLASS (regno);
+		  num = cost_class_nums[rclass];
+		  if (num < 0)
+		    {
+		      /* The hard register class is not a cover class or a
+			 class not fully inside in a cover class -- use
+			 the allocno cover class.  */
+		      ira_assert (ira_hard_regno_cover_class[regno]
+				  == cover_class);
+		      num = cost_class_nums[cover_class];
+		    }
+		  reg_costs[j] = COSTS_OF_ALLOCNO (allocno_costs, i)->cost[num];
 		}
-	      reg_costs[j] = COSTS_OF_ALLOCNO (allocno_costs, i)->cost[num];
 	    }
 	}
     }
