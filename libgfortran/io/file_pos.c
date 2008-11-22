@@ -300,7 +300,7 @@ st_endfile (st_parameter_filepos *fpp)
 	{
 	  st_parameter_dt dtp;
 	  dtp.common = fpp->common;
-	  memset (&dtp.u.p.transfer, 0, sizeof (dtp.u.q));
+	  memset (&dtp.u.p, 0, sizeof (dtp.u.p));
 	  dtp.u.p.current_unit = u;
 	  next_record (&dtp, 1);
 	}

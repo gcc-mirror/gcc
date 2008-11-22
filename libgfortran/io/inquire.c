@@ -43,7 +43,6 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 {
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
-  GFC_INTEGER_4 cf2 = iqp->flags2;
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
     {
@@ -254,6 +253,8 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if (cf & IOPARM_INQUIRE_HAS_FLAGS2)
     {
+      GFC_INTEGER_4 cf2 = iqp->flags2;
+
       if ((cf2 & IOPARM_INQUIRE_HAS_PENDING) != 0)
 	*iqp->pending = 0;
   
@@ -525,7 +526,6 @@ inquire_via_filename (st_parameter_inquire *iqp)
 {
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
-  GFC_INTEGER_4 cf2 = iqp->flags2;
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
     *iqp->exist = file_exists (iqp->file, iqp->file_len);
@@ -586,6 +586,8 @@ inquire_via_filename (st_parameter_inquire *iqp)
 
   if (cf & IOPARM_INQUIRE_HAS_FLAGS2)
     {
+      GFC_INTEGER_4 cf2 = iqp->flags2;
+
       if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
 	cf_strcpy (iqp->encoding, iqp->encoding_len, undefined);
   

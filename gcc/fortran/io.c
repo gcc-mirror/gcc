@@ -3540,9 +3540,11 @@ gfc_free_inquire (gfc_inquire *inquire)
   gfc_free_expr (inquire->convert);
   gfc_free_expr (inquire->strm_pos);
   gfc_free_expr (inquire->asynchronous);
+  gfc_free_expr (inquire->decimal);
   gfc_free_expr (inquire->pending);
   gfc_free_expr (inquire->id);
   gfc_free_expr (inquire->sign);
+  gfc_free_expr (inquire->size);
   gfc_free_expr (inquire->round);
   gfc_free (inquire);
 }
@@ -3584,7 +3586,7 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_vtag (&tag_s_async, &inquire->asynchronous);
   RETM m = match_vtag (&tag_s_delim, &inquire->delim);
   RETM m = match_vtag (&tag_s_decimal, &inquire->decimal);
-  RETM m = match_vtag (&tag_s_blank, &inquire->blank);
+  RETM m = match_vtag (&tag_size, &inquire->size);
   RETM m = match_vtag (&tag_s_encoding, &inquire->encoding);
   RETM m = match_vtag (&tag_s_round, &inquire->round);
   RETM m = match_vtag (&tag_s_sign, &inquire->sign);
@@ -3761,6 +3763,7 @@ gfc_resolve_inquire (gfc_inquire *inquire)
   RESOLVE_TAG (&tag_s_sign, inquire->sign);
   RESOLVE_TAG (&tag_s_round, inquire->round);
   RESOLVE_TAG (&tag_pending, inquire->pending);
+  RESOLVE_TAG (&tag_size, inquire->size);
   RESOLVE_TAG (&tag_id, inquire->id);
 
   if (gfc_reference_st_label (inquire->err, ST_LABEL_TARGET) == FAILURE)

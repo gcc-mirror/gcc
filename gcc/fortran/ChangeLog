@@ -1,3 +1,16 @@
+2008-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/37839
+	* trans-io.c (gfc_build_io_library_fndecls): Decrease pad size back
+	to 16 pointers plus 32 integers.  Don't use max integer kind
+	alignment, only gfc_intio_kind's alignment.
+	(gfc_trans_inquire): Only set flags2 if mask2 is non-zero.
+	* ioparm.def: Fix order, bitmasks and types of inquire round, sign
+	and pending fields.  Move u in dt before id.
+	* io.c (gfc_free_inquire): Free decimal and size exprs.
+	(match_inquire_element): Match size instead of matching blank twice.
+	(gfc_resolve_inquire): Resolve size.
+
 2008-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29215

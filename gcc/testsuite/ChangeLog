@@ -1,3 +1,13 @@
+2008-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/37839
+	* gfortran.dg/f2003_inquire_1.f03: New test.
+	* gfortran.dg/f2003_io_1.f03: Remove xfail.
+	* gfortran.dg/f2003_io_4.f03: Likewise.
+	* gfortran.dg/f2003_io_5.f03: Likewise.
+	* gfortran.dg/f2003_io_6.f03: Likewise.
+	* gfortran.dg/f2003_io_7.f03: Likewise.
+
 2008-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38200

@@ -291,9 +291,9 @@ gfc_build_io_library_fndecls (void)
 			    = build_pointer_type (gfc_intio_type_node);
   types[IOPARM_type_parray] = pchar_type_node;
   types[IOPARM_type_pchar] = pchar_type_node;
-  pad_size = 32 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
+  pad_size = 16 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
   pad_size += 32 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (integer_type_node));
-  pad_idx = build_index_type (build_int_cst (NULL_TREE, pad_size));
+  pad_idx = build_index_type (build_int_cst (NULL_TREE, pad_size - 1));
   types[IOPARM_type_pad] = build_array_type (char_type_node, pad_idx);
 
   /* pad actually contains pointers and integers so it needs to have an
@@ -301,7 +301,7 @@ gfc_build_io_library_fndecls (void)
      types.  See the st_parameter_dt structure in libgfortran/io/io.h for
      what really goes into this space.  */
   TYPE_ALIGN (types[IOPARM_type_pad]) = MAX (TYPE_ALIGN (pchar_type_node),
-		     TYPE_ALIGN (gfc_get_int_type (gfc_max_integer_kind)));
+		     TYPE_ALIGN (gfc_get_int_type (gfc_intio_kind)));
 
   for (ptype = IOPARM_ptype_common; ptype < IOPARM_ptype_num; ptype++)
     gfc_build_st_parameter (ptype, types);
@@ -1315,10 +1315,8 @@ gfc_trans_inquire (gfc_code * code)
     mask2 |= set_parameter_ref (&block, &post_block,var, IOPARM_inquire_id,
 				p->id);
 
-  set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);
-
   if (mask2)
-    mask |= IOPARM_inquire_flags2;
+    mask |= set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
