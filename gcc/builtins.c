@@ -1436,7 +1436,7 @@ expand_builtin_apply_args (void)
        chain current, so the code is placed at the start of the
        function.  */
     push_topmost_sequence ();
-    emit_insn_before (seq, NEXT_INSN (entry_of_function ()));
+    emit_insn_before (seq, parm_birth_insn);
     pop_topmost_sequence ();
     return temp;
   }
