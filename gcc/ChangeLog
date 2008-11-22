@@ -1,5 +1,9 @@
 2008-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37323
+	* builtins.c (expand_builtin_apply_args): Emit sequence before
+	parm_birth_insn instead of after entry_of_function's first insn.
+
 	PR middle-end/37316
 	* function.c (assign_parm_remove_parallels): Pass
 	data->passed_type as third argument to emit_group_store.
