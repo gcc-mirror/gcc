@@ -1,3 +1,8 @@
+2008-11-22  Andreas Schwab  <schwab@suse.de>
+
+	* varasm.c (default_file_start): Suppress ASM_APP_OFF also with
+	-dA and -dP.
+
 2008-11-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (rdhwr): Rename to rdhwr_synci_step_<mode>.
