@@ -1,3 +1,8 @@
+2008-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38225
+	* gfortran.dg/reshape_3.f90:  New test.
+
 2008-11-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38160
