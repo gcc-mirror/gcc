@@ -1,3 +1,11 @@
+2008-11-22  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (rdhwr): Rename to rdhwr_synci_step_<mode>.
+	Use constant 1 as the operand.
+	* config/mips/mips.c (mips_expand_synci_loop): Make INC Pmode.
+	Rename gen_rdhwr to gen_rdhwr_synci_step_si or
+	gen_rdhwr_synci_step_di depending on the size of Pmode.
+
 2008-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38222
