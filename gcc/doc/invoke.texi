@@ -11293,7 +11293,7 @@ This model has to be used for Linux kernel code.
 @item -mcmodel=medium
 @opindex mcmodel=medium
 Generate code for the medium model: The program is linked in the lower 2
-GB of the address space and symbols with small size as well.  Symbols
+GB of the address space.  Small symbols are also placed there.  Symbols
 with sizes larger than @option{-mlarge-data-threshold} are put into
 large data or bss sections and can be located above 2GB.  Programs can
 be statically or dynamically linked.
