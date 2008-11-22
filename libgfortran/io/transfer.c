@@ -300,7 +300,7 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
   dtp->u.p.current_unit->bytes_left -= *length;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (gfc_offset) *length;
+    dtp->u.p.size_used += (GFC_IO_INT) *length;
 
   return base;
 }
@@ -377,7 +377,7 @@ read_block_form (st_parameter_dt *dtp, void *buf, size_t *nbytes)
     }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (gfc_offset) nread;
+    dtp->u.p.size_used += (GFC_IO_INT) nread;
 
   if (nread != *nbytes)
     {				/* Short read, this shouldn't happen.  */
@@ -625,7 +625,7 @@ write_block (st_parameter_dt *dtp, int length)
     }
     
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (gfc_offset) length;
+    dtp->u.p.size_used += (GFC_IO_INT) length;
 
   dtp->u.p.current_unit->strm_pos += (gfc_offset) length;
 
@@ -1829,11 +1829,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   ionml = ((cf & IOPARM_DT_IONML_SET) != 0) ? dtp->u.p.ionml : NULL;
 
-  /* To maintain ABI, &transfer is the start of the private memory area in
-     in st_parameter_dt.  Memory from the beginning of the structure to this
-     point is set by the front end and must not be touched.  The number of
-     bytes to clear must stay within the sizeof q to avoid over-writing.  */
-  memset (&dtp->u.p.transfer, 0, sizeof (dtp->u.q));
+  memset (&dtp->u.p, 0, sizeof (dtp->u.p));
 
   dtp->u.p.ionml = ionml;
   dtp->u.p.mode = read_flag ? READING : WRITING;
@@ -2077,7 +2073,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   /* Check the decimal mode.  */
   dtp->u.p.current_unit->decimal_status
 	= !(cf & IOPARM_DT_HAS_DECIMAL) ? DECIMAL_UNSPECIFIED :
-	  find_option (&dtp->common, dtp->u.p.decimal, dtp->u.p.decimal_len,
+	  find_option (&dtp->common, dtp->decimal, dtp->decimal_len,
 			decimal_opt, "Bad DECIMAL parameter in data transfer "
 			"statement");
 
@@ -2087,7 +2083,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   /* Check the sign mode. */
   dtp->u.p.sign_status
 	= !(cf & IOPARM_DT_HAS_SIGN) ? SIGN_UNSPECIFIED :
-	  find_option (&dtp->common, dtp->u.p.sign, dtp->u.p.sign_len, sign_opt,
+	  find_option (&dtp->common, dtp->sign, dtp->sign_len, sign_opt,
 			"Bad SIGN parameter in data transfer statement");
   
   if (dtp->u.p.sign_status == SIGN_UNSPECIFIED)
@@ -2096,7 +2092,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   /* Check the blank mode.  */
   dtp->u.p.blank_status
 	= !(cf & IOPARM_DT_HAS_BLANK) ? BLANK_UNSPECIFIED :
-	  find_option (&dtp->common, dtp->u.p.blank, dtp->u.p.blank_len,
+	  find_option (&dtp->common, dtp->blank, dtp->blank_len,
 			blank_opt,
 			"Bad BLANK parameter in data transfer statement");
   
@@ -2106,7 +2102,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   /* Check the delim mode.  */
   dtp->u.p.current_unit->delim_status
 	= !(cf & IOPARM_DT_HAS_DELIM) ? DELIM_UNSPECIFIED :
-	  find_option (&dtp->common, dtp->u.p.delim, dtp->u.p.delim_len,
+	  find_option (&dtp->common, dtp->delim, dtp->delim_len,
 	  delim_opt, "Bad DELIM parameter in data transfer statement");
   
   if (dtp->u.p.current_unit->delim_status == DELIM_UNSPECIFIED)
@@ -2115,7 +2111,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   /* Check the pad mode.  */
   dtp->u.p.current_unit->pad_status
 	= !(cf & IOPARM_DT_HAS_PAD) ? PAD_UNSPECIFIED :
-	  find_option (&dtp->common, dtp->u.p.pad, dtp->u.p.pad_len, pad_opt,
+	  find_option (&dtp->common, dtp->pad, dtp->pad_len, pad_opt,
 			"Bad PAD parameter in data transfer statement");
   
   if (dtp->u.p.current_unit->pad_status == PAD_UNSPECIFIED)
@@ -2858,7 +2854,7 @@ finalize_transfer (st_parameter_dt *dtp)
   GFC_INTEGER_4 cf = dtp->common.flags;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size = (GFC_IO_INT) dtp->u.p.size_used;
+    *dtp->size = dtp->u.p.size_used;
 
   if (dtp->u.p.eor_condition)
     {

@@ -1,3 +1,26 @@
+2008-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/37839
+	* io/io.h (IOPARM_INQUIRE_HAS_ROUND, IOPARM_INQUIRE_HAS_SIGN,
+	IOPARM_INQUIRE_HAS_PENDING): Adjust values.
+	(st_parameter_inquire): Reorder and fix types of round, sign and
+	pending fields.
+	(st_parameter_43, st_parameter_44): Removed.
+	(st_parameter_dt): Put back struct definition directly to u.p
+	declaration.  Change type of u.p.size_used from gfc_offset to
+	GFC_IO_INT.  Decrease back size of u.pad to 16 pointers and
+	32 ints.  Put id, pos, asynchronous, blank, decimal, delim,
+	pad, round and sign fields after the union.
+	* io/inquire.c (inquire_via_unit, inquire_via_filename): Only read
+	flags2 if it is defined.
+	* io/transfer.c (read_sf, read_block_form, write_block): Cast
+	additions to size_used to GFC_IO_INT instead of gfc_offset.
+	(data_transfer_init): Clear whole u.p struct.  Adjust
+	for moving id, pos, asynchronous, blank, decimal, delim, pad,
+	round and sign fields from u.p directly into st_parameter_dt.
+	(finalize_transfer): Don't cast size_used to GFC_IO_INT.
+	* io/file_pos.c (st_endfile): Clear whole u.p struct.
+
 2008-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37472
