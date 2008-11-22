@@ -1,3 +1,16 @@
+2008-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38222
+	* config/i386/i386.md (SWI248): New mode iterator.
+	(SWI32): Remove mode iterator.
+	(popcount<mode>2): Rename from popcounthi2, popcountsi2 and
+	popcounthi2 insn patterns. Macroize pattern using SWI248 mode
+	iterator.  Generate popcnt mnemonic without mode extensions
+	for Darwin x86 targets.
+	(*popcount<mode>2_cmp): Ditto.
+	(*popcountsi2_cmp_zext): Generate popcnt mnemonic without mode
+	extensions for Darwin x86 targets.
+
 2008-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (TARGET_ASM_OUTPUT_DWARF_DTPREL): Define
