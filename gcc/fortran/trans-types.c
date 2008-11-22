@@ -117,20 +117,6 @@ int gfc_numeric_storage_size;
 int gfc_character_storage_size;
 
 
-/* Validate that the f90_type of the given gfc_typespec is valid for
-   the type it represents.  The f90_type represents the Fortran types
-   this C kind can be used with.  For example, c_int has a f90_type of
-   BT_INTEGER and c_float has a f90_type of BT_REAL.  Returns FAILURE
-   if a mismatch occurs between ts->f90_type and ts->type; SUCCESS if
-   they match.  */
-
-gfc_try
-gfc_validate_c_kind (gfc_typespec *ts)
-{
-   return ((ts->type == ts->f90_type) ? SUCCESS : FAILURE);
-}
-
-
 gfc_try
 gfc_check_any_c_kind (gfc_typespec *ts)
 {

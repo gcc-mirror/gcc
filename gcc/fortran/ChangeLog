@@ -1,3 +1,15 @@
+2008-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38160
+	* trans-types.c (gfc_validate_c_kind): Remove function.
+	* decl.c (gfc_match_kind_spec): Add C kind parameter check.
+	(verify_bind_c_derived_type): Remove gfc_validate_c_kind call.
+	(verify_c_interop_param): Update call.
+	* gfortran.h (verify_bind_c_derived_type): Update prototype.
+	(gfc_validate_c_kind): Remove.
+	* symbol.c (verify_bind_c_derived_type): Update verify_c_interop call.
+	* resolve.c (gfc_iso_c_func_interface): Ditto.
+
 2008-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/37839
