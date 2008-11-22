@@ -74,7 +74,7 @@
 	gmmintrin.h, add immintrin.h and avxintrin.h.
 
 	* config/i386/gmmintrin.h: Renamed to ...
-	* config/i386/avxintrin.h: This.  Don't include intrinsics if
+	* config/i386/avxintrin.h: This.  Issue an error if
 	_IMMINTRIN_H_INCLUDED is undedined.
 
 	* config/i386/immintrin.h: New.
