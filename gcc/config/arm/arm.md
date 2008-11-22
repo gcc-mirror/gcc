@@ -10836,6 +10836,7 @@
       }
       default:
         assemble_integer (operands[0], 4, BITS_PER_WORD, 1);
+	mark_symbol_refs_as_used (operands[0]);
         break;
       }
     return \"\";
