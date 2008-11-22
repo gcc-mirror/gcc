@@ -1,3 +1,8 @@
+2008-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (TARGET_ASM_OUTPUT_DWARF_DTPREL): Define
+	only if HAVE_AS_SPARC_UA_PCREL is defined.
+
 2008-11-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira-costs.c (find_allocno_class_costs): Work out the maximum
