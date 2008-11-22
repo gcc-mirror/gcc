@@ -1,3 +1,8 @@
+2008-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38222
+	* gcc.target/i386/funcspec-3.c: Scan for popcnt on Darwin targets.
+
 2008-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/37839

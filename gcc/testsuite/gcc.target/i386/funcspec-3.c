@@ -59,8 +59,9 @@ int main ()
   exit (0);
 }
 
-/* { dg-final { scan-assembler "popcntl" } } */
-/* { dg-final { scan-assembler "popcntq" } } */
+/* { dg-final { scan-assembler "popcntl" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler "popcntq" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler-times "popcnt" 2 { target *-*-darwin* } } } */
 /* { dg-final { scan-assembler "call\t(.*)sse4a_pop_i" } } */
 /* { dg-final { scan-assembler "call\t(.*)sse42_pop_l" } } */
 /* { dg-final { scan-assembler "call\t(.*)popcountdi2" } } */
