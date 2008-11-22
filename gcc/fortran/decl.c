@@ -918,7 +918,7 @@ verify_c_interop_param (gfc_symbol *sym)
       if (sym->ns->proc_name->attr.is_bind_c == 1)
 	{
 	  is_c_interop =
-	    (verify_c_interop (&(sym->ts), sym->name, &(sym->declared_at))
+	    (verify_c_interop (&(sym->ts))
 	     == SUCCESS ? 1 : 0);
 
 	  if (is_c_interop != 1)
@@ -1981,6 +1981,17 @@ kind_expr:
       gfc_current_locus = where;
       return MATCH_ERROR;
     }
+
+  /* Warn if, e.g., c_int is used for a REAL variable, but not
+     if, e.g., c_double is used for COMPLEX as the standard
+     explicitly says that the kind type parameter for complex and real
+     variable is the same, i.e. c_float == c_float_complex.  */
+  if (ts->f90_type != BT_UNKNOWN && ts->f90_type != ts->type
+      && !((ts->f90_type == BT_REAL && ts->type == BT_COMPLEX)
+	   || (ts->f90_type == BT_COMPLEX && ts->type == BT_REAL)))
+    gfc_error_now ("C kind type parameter is for type %s but type at %L "
+		   "is %s", gfc_basic_typename (ts->f90_type), &where,
+		   gfc_basic_typename (ts->type));
 
   gfc_gobble_whitespace ();
   if ((c = gfc_next_ascii_char ()) != ')'
@@ -3299,29 +3310,8 @@ set_com_block_bind_c (gfc_common_head *com_block, int is_bind_c)
 /* Verify that the given gfc_typespec is for a C interoperable type.  */
 
 gfc_try
-verify_c_interop (gfc_typespec *ts, const char *name, locus *where)
+verify_c_interop (gfc_typespec *ts)
 {
-  gfc_try t;
-
-  /* Make sure the kind used is appropriate for the type.
-     The f90_type is unknown if an integer constant was
-     used (e.g., real(4), bind(c) :: myFloat).  */
-  if (ts->f90_type != BT_UNKNOWN)
-    {
-      t = gfc_validate_c_kind (ts);
-      if (t != SUCCESS)
-        {
-          /* Print an error, but continue parsing line.  */
-          gfc_error_now ("C kind parameter is for type %s but "
-                         "symbol '%s' at %L is of type %s",
-                         gfc_basic_typename (ts->f90_type),
-                         name, where, 
-                         gfc_basic_typename (ts->type));
-        }
-    }
-
-  /* Make sure the kind is C interoperable.  This does not care about the
-     possible error above.  */
   if (ts->type == BT_DERIVED && ts->derived != NULL)
     return (ts->derived->ts.is_c_interop ? SUCCESS : FAILURE);
   else if (ts->is_c_interop != 1)
@@ -3396,8 +3386,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
      the given ts (current_ts), so look in both.  */
   if (tmp_sym->ts.type != BT_UNKNOWN || ts->type != BT_UNKNOWN) 
     {
-      if (verify_c_interop (&(tmp_sym->ts), tmp_sym->name,
-                            &(tmp_sym->declared_at)) != SUCCESS)
+      if (verify_c_interop (&(tmp_sym->ts)) != SUCCESS)
 	{
 	  /* See if we're dealing with a sym in a common block or not.	*/
 	  if (is_in_common == 1)
