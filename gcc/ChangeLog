@@ -1,5 +1,9 @@
 2008-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/37316
+	* function.c (assign_parm_remove_parallels): Pass
+	data->passed_type as third argument to emit_group_store.
+
 	PR target/37170
 	* final.c (mark_symbol_refs_as_used): New function.
 	* output.h (mark_symbol_refs_as_used): New prototype.
