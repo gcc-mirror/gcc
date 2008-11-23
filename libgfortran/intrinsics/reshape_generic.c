@@ -108,6 +108,37 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
   if (shape_empty)
     return;
 
+  if (pad)
+    {
+      pdim = GFC_DESCRIPTOR_RANK (pad);
+      psize = 1;
+      pempty = 0;
+      for (n = 0; n < pdim; n++)
+        {
+          pcount[n] = 0;
+          pstride[n] = pad->dim[n].stride;
+          pextent[n] = pad->dim[n].ubound + 1 - pad->dim[n].lbound;
+          if (pextent[n] <= 0)
+	    {
+	      pempty = 1;
+              pextent[n] = 0;
+	    }
+
+          if (psize == pstride[n])
+            psize *= pextent[n];
+          else
+            psize = 0;
+        }
+      pptr = pad->data;
+    }
+  else
+    {
+      pdim = 0;
+      psize = 1;
+      pempty = 1;
+      pptr = NULL;
+    }
+
   if (unlikely (compile_options.bounds_check))
     {
       index_type ret_extent, source_extent;
@@ -133,7 +164,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 	  source_extent *= se > 0 ? se : 0;
 	}
 
-      if (rs < source_extent || (rs > source_extent && !pad))
+      if (rs > source_extent && (!pad || pempty))
 	runtime_error("Incorrect size in SOURCE argument to RESHAPE"
 		      " intrinsic: is %ld, should be %ld",
 		      (long int) source_extent, (long int) rs);
@@ -204,37 +235,6 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
         ssize *= sextent[n];
       else
         ssize = 0;
-    }
-
-  if (pad)
-    {
-      pdim = GFC_DESCRIPTOR_RANK (pad);
-      psize = 1;
-      pempty = 0;
-      for (n = 0; n < pdim; n++)
-        {
-          pcount[n] = 0;
-          pstride[n] = pad->dim[n].stride;
-          pextent[n] = pad->dim[n].ubound + 1 - pad->dim[n].lbound;
-          if (pextent[n] <= 0)
-	    {
-	      pempty = 1;
-              pextent[n] = 0;
-	    }
-
-          if (psize == pstride[n])
-            psize *= pextent[n];
-          else
-            psize = 0;
-        }
-      pptr = pad->data;
-    }
-  else
-    {
-      pdim = 0;
-      psize = 1;
-      pempty = 1;
-      pptr = NULL;
     }
 
   if (rsize != 0 && ssize != 0 && psize != 0)

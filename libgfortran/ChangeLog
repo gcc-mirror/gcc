@@ -1,3 +1,21 @@
+2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38234
+	* intrinsics/reshape_generic.c (reshape_internal):
+	Source can be larger than shape.
+	* m4/reshape.m4:  Likewise.
+	* generated/reshape_c10.c Regenerated.
+	* generated/reshape_c16.c Regenerated.
+	* generated/reshape_c4.c Regenerated.
+	* generated/reshape_c8.c Regenerated.
+	* generated/reshape_i16.c Regenerated.
+	* generated/reshape_i4.c Regenerated.
+	* generated/reshape_i8.c Regenerated.
+	* generated/reshape_r10.c Regenerated.
+	* generated/reshape_r16.c Regenerated.
+	* generated/reshape_r4.c Regenerated.
+	* generated/reshape_r8.c Regenerated.
+
 2008-11-22  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* libgfortran.h (__mingw_snprintf): Declare with gnu_printf
