@@ -1,3 +1,22 @@
+2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38135
+	Backport from trunk.
+	* m4/reshape.m4:  Tread PAD as if it were SOURCE when SOURCE
+	is empty.
+	* intrinsics/reshape_generic.c:  Likewise.
+	* generated/reshape_c10.c Regenerated.
+	* generated/reshape_c16.c Regenerated.
+	* generated/reshape_c4.c Regenerated.
+	* generated/reshape_c8.c Regenerated.
+	* generated/reshape_i16.c Regenerated.
+	* generated/reshape_i4.c Regenerated.
+	* generated/reshape_i8.c Regenerated.
+	* generated/reshape_r10.c Regenerated.
+	* generated/reshape_r16.c Regenerated.
+	* generated/reshape_r4.c Regenerated.
+	* generated/reshape_r8.c Regenerated.
+
 2008-10-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37707

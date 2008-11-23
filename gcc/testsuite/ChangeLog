@@ -1,3 +1,9 @@
+2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/38135
+	Backport from trunk.
+	* gfortran.dg/reshape_pad_1.f90:  New test case.
+
 2008-11-21  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.c-torture/compile/sync-3.c: Remove dg-message directive.
