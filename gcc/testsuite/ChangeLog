@@ -1,3 +1,7 @@
+2008-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.old-deja/g++.pt/static6.C: Remove xfail for *-*-hpux*.
+
 2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38234
