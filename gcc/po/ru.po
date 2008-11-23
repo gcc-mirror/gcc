@@ -2,15 +2,15 @@
 # Copyright (C) 2006 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Nadezhda Vyukova <niva@niisi.msk.ru>, 2006.
-# Pavel Maryanov <acid_jack@ukr.net>, 2006, 2008.
 # Nickolay V. Shmyrev <nshmyrev@yandex.ru>, 2008.
+# Pavel Maryanov <acid_jack@ukr.net>, 2006, 2008.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-11-10 15:23+0200\n"
+"PO-Revision-Date: 2008-11-19 17:55+0200\n"
 "Last-Translator: Pavel Maryanov <acid_jack@ukr.net>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
 "MIME-Version: 1.0\n"
@@ -219,7 +219,7 @@ msgstr "флаг '^' в формате strfmon"
 
 #: c-format.c:487
 msgid "the '+' strfmon flag"
-msgstr "флаг '+' в формате STRFMON"
+msgstr "флаг '+' в формате strfmon"
 
 #: c-format.c:488
 msgid "'(' flag"
@@ -429,7 +429,7 @@ msgstr "повторная инициализация поля с побочны
 
 #: c-typeck.c:5851 c-typeck.c:5874 c-typeck.c:6348
 msgid "initialized field overwritten"
-msgstr "инициализированное поле переписано"
+msgstr "инициализированное поле перезаписано"
 
 #: c-typeck.c:6556
 msgid "excess elements in char array initializer"
@@ -543,7 +543,7 @@ msgstr "не удалось получить состояние программ
 #: collect2.c:1587
 #, c-format
 msgid "could not open response file %s"
-msgstr "не удалось найти отзыва %s"
+msgstr "не удалось найти файл отзыва %s"
 
 #: collect2.c:1592
 #, c-format
@@ -607,7 +607,7 @@ msgstr "в объекте %s найдена функция fini"
 #: collect2.c:2302
 #, c-format
 msgid "can't open ldd output"
-msgstr "не удалось открыть входной файл ldd"
+msgstr "не удалось открыть выходной файл ldd"
 
 #: collect2.c:2305
 #, c-format
@@ -661,7 +661,7 @@ msgstr "%s:%d: невозможно восстановление после пр
 #: diagnostic.c:235
 #, c-format
 msgid "compilation terminated due to -Wfatal-errors.\n"
-msgstr "компиляция прервана из за ошибок -Wfatal.\n"
+msgstr "компиляция прервана из за ошибок -Wfatal-errors.\n"
 
 #: diagnostic.c:244
 #, c-format
@@ -736,7 +736,7 @@ msgstr "операнд '%%l' не является меткой"
 #: config/pdp11/pdp11.c:1704
 #, c-format
 msgid "floating constant misused"
-msgstr "некорректное употребление плавающей константы"
+msgstr "некорректное использование плавающей константы"
 
 #: final.c:3507 vmsdbgout.c:544 config/i386/i386.c:8279
 #: config/pdp11/pdp11.c:1751
@@ -844,7 +844,7 @@ msgstr ""
 
 #: gcc.c:3013
 msgid "failed to get exit status"
-msgstr "не удалось получить состояние завершения"
+msgstr "не удалось получить код возврата"
 
 #: gcc.c:3019
 msgid "failed to get process times"
@@ -1023,11 +1023,11 @@ msgstr "  -V <версия>              Использовать <версию>
 
 #: gcc.c:3246
 msgid "  -v                       Display the programs invoked by the compiler\n"
-msgstr "  -v                       Отображать запускаемые командные строки компиляции\n"
+msgstr "  -v                       Отображать команды, запускаемые компилятором\n"
 
 #: gcc.c:3247
 msgid "  -###                     Like -v but options quoted and commands not executed\n"
-msgstr "  -###                     Как -v, но команды не запускаются\n"
+msgstr "  -###                     Как -v, но параметры берутся в кавычки и команды не запускаются\n"
 
 #: gcc.c:3248
 msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
@@ -1199,7 +1199,7 @@ msgstr "Обработка спецификации %c%s%c, т.е. '%s'\n"
 #: gcc.c:5459
 #, c-format
 msgid "unknown spec function '%s'"
-msgstr "неопознанная функция '%s' в спецификации"
+msgstr "неизвестная функция '%s' в спецификации"
 
 #: gcc.c:5478
 #, c-format
@@ -1276,7 +1276,7 @@ msgstr "Параметры конфигурации: %s\n"
 #: gcc.c:6519
 #, c-format
 msgid "Thread model: %s\n"
-msgstr "Модель многопотоковости: %s\n"
+msgstr "Модель многопоточности: %s\n"
 
 #: gcc.c:6530
 #, c-format
@@ -1301,7 +1301,7 @@ msgstr "нельзя использовать -o с -c или -S и нескол
 #: gcc.c:6623
 #, c-format
 msgid "spec '%s' is invalid"
-msgstr "параметр '%s' инициализирован"
+msgstr "недопустимый параметр '%s'"
 
 #: gcc.c:6759
 #, c-format
@@ -1368,7 +1368,7 @@ msgstr "слишком много аргументов в %%:version-compare"
 #: gcc.c:7931
 #, c-format
 msgid "unknown operator '%s' in %%:version-compare"
-msgstr "некорректный оператор '%s' в %%:version-compare"
+msgstr "Неизвестный оператор '%s' в %%:version-compare"
 
 #: gcc.c:7965
 #, c-format
@@ -1411,17 +1411,17 @@ msgstr ""
 #: gcov.c:402
 #, c-format
 msgid "  -h, --help                      Print this help, then exit\n"
-msgstr "  -h, --help                      Напечатать этот текст и выйти\n"
+msgstr "  -h, --help                      Показать эту справку и выйти\n"
 
 #: gcov.c:403
 #, c-format
 msgid "  -v, --version                   Print version number, then exit\n"
-msgstr "  -v, --version                   Напечатать номер версии и выйти\n"
+msgstr "  -v, --version                   Показать номер версии и выйти\n"
 
 #: gcov.c:404
 #, c-format
 msgid "  -a, --all-blocks                Show information for every basic block\n"
-msgstr "  -a, --all-blocks                Выдать информацию для каждого блока\n"
+msgstr "  -a, --all-blocks                Показать сведения для всех блоков\n"
 
 #: gcov.c:405
 #, c-format
@@ -1435,7 +1435,7 @@ msgid ""
 "                                    rather than percentages\n"
 msgstr ""
 "  -c, --branch-counts             При счётчиках переходов, заданных\n"
-"                                    в абсолютных, а не процентных значениях\n"
+"                                    в абсолютных, а не в процентных значениях\n"
 
 #: gcov.c:408
 #, c-format
@@ -1466,7 +1466,7 @@ msgstr ""
 #: gcov.c:413
 #, c-format
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr "  -p, --preserve-paths            Сохранить маршрутные имена\n"
+msgstr "  -p, --preserve-paths            Сохранить все компоненты полного имени\n"
 
 #: gcov.c:414
 #, c-format
@@ -1699,11 +1699,11 @@ msgstr "%s:ошибка открытия исходного файла\n"
 
 #: gcse.c:679
 msgid "GCSE disabled"
-msgstr "глобальная экономия общих подвыражений (GCSE) не выполнялась"
+msgstr "глобальная экономия общих подвыражений (GCSE) отключена"
 
 #: gcse.c:6584
 msgid "jump bypassing disabled"
-msgstr "оптимизация обхода переходов не выполнялась"
+msgstr "оптимизация обхода переходов отключена"
 
 #. Opening quotation mark.
 #: intl.c:57
@@ -1734,7 +1734,7 @@ msgstr "достигнут предел, установленный параме
 
 #: ipa-inline.c:435
 msgid "--param max-inline-insns-auto limit reached"
-msgstr "достигнут предел, установленный параметром max-inline-insns-single"
+msgstr "достигнут предел, установленный параметром max-inline-insns-auto"
 
 #: ipa-inline.c:461 ipa-inline.c:914 ipa-inline.c:1105 ipa-inline.c:1225
 msgid "recursive inlining"
@@ -1906,7 +1906,7 @@ msgstr "%s: некорректное имя файла: %s\n"
 #: protoize.c:1281
 #, c-format
 msgid "%s: %s: can't get status: %s\n"
-msgstr "%s: %s: ошибка выполнения stat: %s\n"
+msgstr "%s: %s: не удалось получить статус: %s\n"
 
 #: protoize.c:1302
 #, c-format
@@ -2045,7 +2045,7 @@ msgstr "%s: декларация функции '%s' не преобразова
 #: protoize.c:3037
 #, c-format
 msgid "%s: warning: too many parameter lists in declaration of '%s'\n"
-msgstr "%s: предупреждение: много списков параметров в декларации '%s'\n"
+msgstr "%s: предупреждение: слишком много списков параметров в декларации '%s' \n"
 
 #: protoize.c:3058
 #, c-format
@@ -2054,7 +2054,7 @@ msgid ""
 "%s: warning: too few parameter lists in declaration of '%s'\n"
 msgstr ""
 "\n"
-"%s: предупреждение: мало списков параметров в декларации '%s'\n"
+"%s: предупреждение: слишком мало списков параметров в декларации '%s'\n"
 
 #: protoize.c:3154
 #, c-format
@@ -2144,7 +2144,7 @@ msgstr ""
 #: protoize.c:4052
 #, c-format
 msgid "%s: can't create/open clean file '%s': %s\n"
-msgstr "%s: ошибка создания/открытия clean-файла '%s': %s\n"
+msgstr "%s: ошибка создания/открытия пустого файла '%s': %s\n"
 
 #: protoize.c:4157
 #, c-format
@@ -2154,7 +2154,7 @@ msgstr "%s: предупреждение: файл '%s' уже сохранён 
 #: protoize.c:4165
 #, c-format
 msgid "%s: can't link file '%s' to '%s': %s\n"
-msgstr "%s: ошибка переименования файла '%s' в '%s': %s\n"
+msgstr "%s: ошибка создания ссылки файла '%s' на '%s': %s\n"
 
 #: protoize.c:4195
 #, c-format
@@ -2192,7 +2192,7 @@ msgstr "не найден регистр для выталкивания"
 #. It's the compiler's fault.
 #: reload1.c:7038
 msgid "VOIDmode on an output"
-msgstr "выходной операнд имеет моду VOIDmode"
+msgstr "режим VOID выходного потока"
 
 #: reload1.c:8043
 msgid "Failure trying to reload:"
@@ -2247,12 +2247,12 @@ msgstr "collect: перекомпиляция %s\n"
 #: tlink.c:737
 #, c-format
 msgid "collect: tweaking %s in %s\n"
-msgstr "collect: tweaking %s in %s\n"
+msgstr ""
 
 #: tlink.c:787
 #, c-format
 msgid "collect: relinking\n"
-msgstr "collect: relinking\n"
+msgstr ""
 
 #: toplev.c:606
 #, c-format
@@ -2279,9 +2279,9 @@ msgid "GMP version %s, MPFR version %s.\n"
 msgstr "Версия GMP %s, версия MPFR %s.\n"
 
 #: toplev.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr "предупреждение: версия заголовка %s %s отличается от версии библиотеки %s.\n"
+msgstr "%s%sпредупреждение: версия заголовка %s %s отличается от версии библиотеки %s.\n"
 
 #: toplev.c:1190
 #, c-format
@@ -2430,7 +2430,7 @@ msgstr "Размер тела \"большой\" функции"
 
 #: params.def:201
 msgid "Maximal growth due to inlining of large function (in percent)"
-msgstr "Максимальный рост объема большой функции в результате inline-подстановок (в процентах)"
+msgstr "Максимальный рост объема \"большой\" функции в результате inline-подстановок (в процентах)"
 
 #: params.def:205
 msgid "The size of translation unit to be considered large"
@@ -2610,7 +2610,7 @@ msgstr "Если число использований индуктивных п
 
 #: params.def:460
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
-msgstr "Если число кандидатов в множестве меньше этого значения, то при оптимизации  множества всегда делается попытка удалить неиспользуемые инд. переменные"
+msgstr "Если число кандидатов в множестве меньше этого значения, то при оптимизации множества всегда делается попытка удалить неиспользуемые независимые переменные"
 
 #: params.def:465
 msgid "Bound on size of expressions used in the scalar evolutions analyzer"
@@ -2690,11 +2690,11 @@ msgstr "Максимальное число блоков в отрезке дл�
 
 #: params.def:565
 msgid "The maximum number of insns in a region to be considered for interblock scheduling"
-msgstr "Максимальное число инструкций в отрезке для междублочного планирования"
+msgstr "Максимальное число инструкций в отрезке для межблочного планирования"
 
 #: params.def:570
 msgid "The minimum probability of reaching a source block for interblock speculative scheduling"
-msgstr "Минимальная вероятность достижения блока для спекулятивного междублочного планирования"
+msgstr "Минимальная вероятность достижения блока для спекулятивного межблочного планирования"
 
 #: params.def:575
 #, fuzzy
@@ -2917,7 +2917,7 @@ msgstr "некорректный оператор сдвига"
 #: config/bfin/bfin.c:1573 config/bfin/bfin.c:1580
 #, c-format
 msgid "invalid operand for code '%c'"
-msgstr "некорректный код операнда '%c'"
+msgstr "недопустимый операнд для кода '%c'"
 
 #: config/arm/arm.c:12825
 #, c-format
@@ -2932,11 +2932,11 @@ msgstr "отсутствует операнд"
 #: config/avr/avr.c:1062
 #, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
-msgstr "Для операнда адреса должны задаваться ограничения один из регистров X, Y или Z"
+msgstr "для операнда адреса требуются ограничения одного из регистров X, Y или Z"
 
 #: config/avr/avr.c:1169
 msgid "bad address, not (reg+disp):"
-msgstr "некорректный адрес, не (рег+смещение)"
+msgstr "некорректный адрес, не (reg+disp)"
 
 #: config/avr/avr.c:1176
 msgid "bad address, not post_inc or pre_dec:"
@@ -2944,15 +2944,15 @@ msgstr "некорректный адрес, не post_inc или pre_dec:"
 
 #: config/avr/avr.c:1187
 msgid "internal compiler error.  Bad address:"
-msgstr "внутренняя ошибка компилятора: Некорректный адрес:"
+msgstr "внутренняя ошибка компилятора: некорректный адрес:"
 
 #: config/avr/avr.c:1200
 msgid "internal compiler error.  Unknown mode:"
-msgstr "внутренняя ошибка компилятора: Неизвестная мода:"
+msgstr "внутренняя ошибка компилятора: неизвестный режим:"
 
 #: config/avr/avr.c:1815 config/avr/avr.c:2503
 msgid "invalid insn:"
-msgstr "некорректная инструкция:"
+msgstr "недопустимая инструкция:"
 
 #: config/avr/avr.c:1854 config/avr/avr.c:1940 config/avr/avr.c:1989
 #: config/avr/avr.c:2017 config/avr/avr.c:2112 config/avr/avr.c:2281
@@ -2963,7 +2963,7 @@ msgstr "некорректная инструкция:"
 #: config/avr/avr.c:2036 config/avr/avr.c:2197 config/avr/avr.c:2352
 #: config/avr/avr.c:2720
 msgid "unknown move insn:"
-msgstr "некорректная инструкция move:"
+msgstr "некорректная инструкция перемещения:"
 
 #: config/avr/avr.c:2950
 msgid "bad shift insn:"
@@ -2971,7 +2971,7 @@ msgstr "некорректная инструкция сдвига:"
 
 #: config/avr/avr.c:3066 config/avr/avr.c:3486 config/avr/avr.c:3844
 msgid "internal compiler error.  Incorrect shift:"
-msgstr "Внутренняя ошибка компилятора: Некорректный сдвиг:"
+msgstr "Внутренняя ошибка компилятора: некорректный сдвиг:"
 
 #: config/bfin/bfin.c:1478
 #, c-format
@@ -3246,7 +3246,7 @@ msgstr "некорректные ограничения для операнда"
 
 #: config/i386/i386.c:16423
 msgid "unknown insn mode"
-msgstr "некорректная мода инструкции"
+msgstr "некорректный режим инструкции"
 
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
@@ -3389,11 +3389,11 @@ msgstr "'%%%c' не является корректным префиксом о�
 #: config/mips/mips.c:6514
 #, c-format
 msgid "invalid use of '%%%c'"
-msgstr "некорректное использование '%%%c'"
+msgstr "недопустимое использование '%%%c'"
 
 #: config/mips/mips.c:6761
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr "mips_debugger_offset вызвана не с указателем кадра"
+msgstr "mips_debugger_offset вызвана не с указателем стека/кадра/аргумента"
 
 #: config/mmix/mmix.c:1483 config/mmix/mmix.c:1613
 msgid "MMIX Internal: Expected a CONST_INT, not this"
@@ -3461,67 +3461,67 @@ msgstr "Попробуйте выполнить '%s' в командной ст�
 #: config/rs6000/rs6000.c:11645
 #, c-format
 msgid "invalid %%f value"
-msgstr "некорректное значение для кода %%f"
+msgstr "недопустимое значение для кода %%f"
 
 #: config/rs6000/rs6000.c:11654
 #, c-format
 msgid "invalid %%F value"
-msgstr "некорректное значение для кода %%F"
+msgstr "недопустимое значение для кода %%F"
 
 #: config/rs6000/rs6000.c:11663
 #, c-format
 msgid "invalid %%G value"
-msgstr "некорректное значение для кода %%G"
+msgstr "недопустимое значение для кода %%G"
 
 #: config/rs6000/rs6000.c:11698
 #, c-format
 msgid "invalid %%j code"
-msgstr "некорректное значение для кода %%j"
+msgstr "недопустимое значение для кода %%j"
 
 #: config/rs6000/rs6000.c:11708
 #, c-format
 msgid "invalid %%J code"
-msgstr "некорректное значение для кода %%J"
+msgstr "недопустимое значение для кода %%J"
 
 #: config/rs6000/rs6000.c:11718
 #, c-format
 msgid "invalid %%k value"
-msgstr "некорректное значение для кода %%k"
+msgstr "недопустимое значение для кода %%k"
 
 #: config/rs6000/rs6000.c:11738 config/xtensa/xtensa.c:2028
 #, c-format
 msgid "invalid %%K value"
-msgstr "некорректное значение для кода %%K"
+msgstr "недопустимое значение для кода %%K"
 
 #: config/rs6000/rs6000.c:11808
 #, c-format
 msgid "invalid %%O value"
-msgstr "некорректное значение для кода %%O"
+msgstr "недопустимое значение для кода %%O"
 
 #: config/rs6000/rs6000.c:11855
 #, c-format
 msgid "invalid %%q value"
-msgstr "неверное значение для кода %%q"
+msgstr "недопустимое значение для кода %%q"
 
 #: config/rs6000/rs6000.c:11899
 #, c-format
 msgid "invalid %%S value"
-msgstr "некорректное значение для кода %%S"
+msgstr "недопустимое значение для кода %%S"
 
 #: config/rs6000/rs6000.c:11939
 #, c-format
 msgid "invalid %%T value"
-msgstr "некорректное значение для кода %%T"
+msgstr "недопустимое значение для кода %%T"
 
 #: config/rs6000/rs6000.c:11949
 #, c-format
 msgid "invalid %%u value"
-msgstr "некорректное значение для кода %%u"
+msgstr "недопустимое значение для кода %%u"
 
 #: config/rs6000/rs6000.c:11958 config/xtensa/xtensa.c:1998
 #, c-format
 msgid "invalid %%v value"
-msgstr "некорректное значение для кода %%v"
+msgstr "недопустимое значение для кода %%v"
 
 #: config/rs6000/rs6000.c:21946
 msgid "AltiVec argument passed to unprototyped function"
@@ -9242,9 +9242,9 @@ msgid "Operands of comparison operator '%s' at %%L are %s/%s"
 msgstr ""
 
 #: fortran/resolve.c:3051
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown operator '%s' at %%L"
-msgstr "некорректный оператор '%s' в %%:version-compare"
+msgstr "Неизвестный оператор '%s' в %%L"
 
 #: fortran/resolve.c:3053
 #, c-format
@@ -17267,7 +17267,7 @@ msgstr ""
 #: c-common.c:5220
 #, gcc-internal-format
 msgid "unknown machine mode %qs"
-msgstr "неизвестная машинная мода %qs"
+msgstr "неизвестная машинный режим %qs"
 
 #: c-common.c:5249
 #, gcc-internal-format
@@ -17287,7 +17287,7 @@ msgstr "эмуляция %qs невозможна"
 #: c-common.c:5271
 #, gcc-internal-format
 msgid "invalid pointer mode %qs"
-msgstr "неизвестная машинная мода %qs для указателя"
+msgstr "неизвестная машинный режим %qs для указателя"
 
 #: c-common.c:5288
 #, gcc-internal-format
@@ -17297,17 +17297,17 @@ msgstr ""
 #: c-common.c:5299
 #, gcc-internal-format
 msgid "no data type for mode %qs"
-msgstr "тип данных, соответствующий моде %qs, не существует"
+msgstr "тип данных, соответствующий режиму %qs, не существует"
 
 #: c-common.c:5309
 #, gcc-internal-format
 msgid "cannot use mode %qs for enumeral types"
-msgstr "использование моды %qs для перечислимых типов недопустимо"
+msgstr "использование режима %qs для перечислимых типов недопустимо"
 
 #: c-common.c:5336
 #, gcc-internal-format
 msgid "mode %qs applied to inappropriate type"
-msgstr "мода %qs применена к неподходящему типу"
+msgstr "режим %qs применен к неподходящему типу"
 
 #: c-common.c:5367
 #, gcc-internal-format
@@ -18622,7 +18622,7 @@ msgstr "перечислимый тип превышает диапазон ма
 #: c-decl.c:5899
 #, gcc-internal-format
 msgid "specified mode too small for enumeral values"
-msgstr "заданная мода слишком мала для значений перечислимого типа"
+msgstr "заданный режим слишком мал для значений перечислимого типа"
 
 #: c-decl.c:5995
 #, gcc-internal-format
@@ -19605,9 +19605,9 @@ msgid "floating constant exceeds range of %qT"
 msgstr "плавающая константа превышает диапазон для %<%s%>"
 
 #: c-lex.c:732
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "floating constant truncated to zero"
-msgstr "некорректное употребление плавающей константы"
+msgstr "деление на ноль плавающей константы"
 
 #: c-lex.c:941
 #, gcc-internal-format
@@ -24854,9 +24854,9 @@ msgid "-mshared-library-id=%s is not between 0 and %d"
 msgstr "-mshared-library-id=%s не между 0 и %d"
 
 #: config/bfin/bfin.c:2372
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcpu=%s is not valid"
-msgstr "параметр '%s' инициализирован"
+msgstr "недопустимый параметр -mcpu=%s"
 
 #: config/bfin/bfin.c:2410
 #, gcc-internal-format
@@ -25935,9 +25935,9 @@ msgid "passing arg %d of %qE discards qualifiers frompointer target type"
 msgstr "приведение от %qT к %qT отменяет квалификаторы указуемого типа"
 
 #: config/rs6000/rs6000-c.c:2596
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid parameter combination for AltiVec intrinsic"
-msgstr "некорректная комбинация параметров для %qs AltiVec intrinsic"
+msgstr "недопустимая комбинация параметров для AltiVec intrinsic"
 
 #: config/rs6000/rs6000.c:1312
 #, gcc-internal-format
@@ -26504,9 +26504,9 @@ msgid "parameter list does not match a valid signature for %s()"
 msgstr ""
 
 #: config/spu/spu.c:341 config/spu/spu.c:352
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unknown architecture '%s'"
-msgstr "неизвестная машинная мода %qs"
+msgstr "неизвестная архитектура '%s'"
 
 #: config/spu/spu.c:3023
 #, fuzzy, gcc-internal-format
@@ -32776,9 +32776,9 @@ msgid "Function return value not set"
 msgstr "функция возвращает агрегатное значение"
 
 #: fortran/trans-expr.c:1177
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unknown intrinsic op"
-msgstr "некорректная мода инструкции"
+msgstr "Неизвестный операнд intrinsic"
 
 #: fortran/trans-intrinsic.c:714
 #, fuzzy, gcc-internal-format
