@@ -1,4 +1,5 @@
 // PR c++/34937, 34962
+// { dg-require-weak "" }
 // { dg-options "" }
 
 struct A
