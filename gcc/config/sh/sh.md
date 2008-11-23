@@ -10237,7 +10237,10 @@ mov.l\\t1f,r0\\n\\
  "*
 {
   if (operands[1] != const0_rtx)
-    assemble_integer (operands[0], 4, BITS_PER_UNIT * 4, 1);
+    {
+      assemble_integer (operands[0], 4, BITS_PER_UNIT * 4, 1);
+      mark_symbol_refs_as_used (operands[0]);
+    }
   return \"\";
 }"
  [(set_attr "length" "4")
