@@ -1,3 +1,9 @@
+2008-11-22  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libgfortran.h (__mingw_snprintf): Declare with gnu_printf
+	format attribute.
+
+
 2008-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38225

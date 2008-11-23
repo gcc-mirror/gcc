@@ -113,7 +113,7 @@ typedef off_t gfc_offset;
    __mingw_snprintf(), because the mingw headers currently don't have one.  */
 #if HAVE_MINGW_SNPRINTF
 extern int __mingw_snprintf (char *, size_t, const char *, ...)
-     __attribute__ ((format (printf, 3, 4)));
+     __attribute__ ((format (gnu_printf, 3, 4)));
 #undef snprintf
 #define snprintf __mingw_snprintf
 #endif
