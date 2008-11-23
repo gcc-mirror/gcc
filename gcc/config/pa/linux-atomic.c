@@ -33,8 +33,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef _LP64
 #include <errno.h>
 #else 
+#define EFAULT  14 
+#define EBUSY   16
 #define ENOSYS 251 
-#define EFAULT 14 
 #endif 
 
 /* All PA-RISC implementations supported by linux have strongly
@@ -74,6 +75,13 @@ __kernel_cmpxchg (int oldval, int newval, int *mem)
   );
   if (__builtin_expect (lws_errno == -EFAULT || lws_errno == -ENOSYS, 0))
     ABORT_INSTRUCTION;
+
+  /* If the kernel LWS call succeeded (lws_errno == 0), lws_ret contains
+     the old value from memory.  If this value is equal to OLDVAL, the
+     new value was written to memory.  If not, return -EBUSY.  */
+  if (!lws_errno && lws_ret != oldval)
+    lws_errno = -EBUSY;
+
   return lws_errno;
 }
 
