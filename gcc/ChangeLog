@@ -1,3 +1,7 @@
+2008-11-23  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (consttable_4): Call mark_symbol_refs_as_used.
+
 2008-11-22  Andreas Schwab  <schwab@suse.de>
 
 	* varasm.c (default_file_start): Suppress ASM_APP_OFF also with
