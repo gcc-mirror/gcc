@@ -1,3 +1,7 @@
+2008-11-24  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c-torture/execute/pr36321.c: Don't rely on argv[0] being set.
+
 2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38184
