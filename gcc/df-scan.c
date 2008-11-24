@@ -3171,7 +3171,22 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
     }
 
   BITMAP_FREE (defs_generated);
-  return;
+
+#ifdef EH_USES
+  if ((flags & DF_REF_CONDITIONAL) == 0
+      && find_reg_note (insn, REG_NORETURN, 0))
+    {
+      unsigned int i;
+      /* This code is putting in an artificial ref for the use at the
+	 BOTTOM of the block with noreturn call, as EH_USES registers need
+	 to be live until epilogue or noreturn call, for debugging purposes
+	 as well as any insns that might throw.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (EH_USES (i))
+	  df_ref_record (collection_rec, regno_reg_rtx[i],
+			 NULL, bb, NULL, DF_REF_REG_USE, 0);
+    }
+#endif
 }
 
 /* Collect all refs in the INSN. This function is free of any
@@ -3592,16 +3607,6 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
   /* These registers are live everywhere.  */
   if (!reload_completed)
     {
-#ifdef EH_USES
-      /* The ia-64, the only machine that uses this, does not define these 
-	 until after reload.  */
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (EH_USES (i))
-	  {
-	    bitmap_set_bit (entry_block_defs, i);
-	  }
-#endif
-      
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */

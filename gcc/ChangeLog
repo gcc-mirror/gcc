@@ -1,9 +1,16 @@
-22008-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+2008-11-24  Jakub Jelinek  <jakub@redhat.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-scan.c (df_get_call_refs): For unconditional noreturn calls
+	add EH_USES regs as artificial uses.
+	(df_get_entry_block_def_set): Don't handle EH_USES here.
+
+2008-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (TARGET_ASM_OUTPUT_DWARF_DTPREL): Define
 	only if HAVE_AS_SPARC_UA_PCREL is defined.
 
-008-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
+2008-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR other/38214
 	* doc/invoke.texi (Optimization Options): Fix typo.
