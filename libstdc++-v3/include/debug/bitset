@@ -146,12 +146,6 @@ namespace __debug
 	       _CharT __zero, _CharT __one = _CharT('1'))
 	: _Base(__str, __pos, __n, __zero, __one) { }
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 778. std::bitset does not have any constructor taking a string literal
-      explicit
-      bitset(const char* __s, char __zero = '0', char __one = '1')
-      : _Base(__s, __zero, __one) { }
-
       bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
 
       // 23.3.5.2 bitset operations:
