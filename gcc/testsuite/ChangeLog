@@ -1,3 +1,8 @@
+2008-11-24  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR target/35018
+	* gcc.target/m68k/pr35018.c: New.
+
 2008-11-24  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37779
