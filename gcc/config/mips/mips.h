@@ -2845,6 +2845,32 @@ while (0)
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
   sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long)(NUM))
 
+/* Print debug labels as "foo = ." rather than "foo:" because they should
+   represent a byte pointer rather than an ISA-encoded address.  This is
+   particularly important for code like:
+
+	$LFBxxx = .
+		.cfi_startproc
+		...
+		.section .gcc_except_table,...
+		...
+		.uleb128 foo-$LFBxxx
+
+   The .uleb128 requies $LFBxxx to match the FDE start address, which is
+   likewise a byte pointer rather than an ISA-encoded address.
+
+   At the time of writing, this hook is not used for the function end
+   label:
+
+   	$LFExxx:
+		.end foo
+
+   But this doesn't matter, because GAS doesn't treat a pre-.end label
+   as a MIPS16 one anyway.  */
+
+#define ASM_OUTPUT_DEBUG_LABEL(FILE, PREFIX, NUM)			\
+  fprintf (FILE, "%s%s%d = .\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
