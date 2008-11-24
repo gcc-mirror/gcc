@@ -1,5 +1,11 @@
 2008-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/38244 (cont, debug bits)
+	* include/debug/bitset (bitset<>::bitset(const char*, char, char)):
+	Remove, do not implement DR 778.
+
+2008-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/38244
 	* include/std/bitset (bitset<>::bitset(const char*, char, char)):
 	Remove, do not implement DR 778.
