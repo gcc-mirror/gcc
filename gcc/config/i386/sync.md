@@ -31,6 +31,24 @@
 (define_mode_attr doublemodesuffix [(DI "8") (TI "16")])
 (define_mode_attr DCASHMODE [(DI "SI") (TI "DI")])
 
+(define_expand "memory_barrier"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
+  ""
+{
+  if (!TARGET_SSE2)
+    {
+      /* Emit a locked no-operation when SSE2 is not available.  */
+      int slot = virtuals_instantiated ? SLOT_TEMP : SLOT_VIRTUAL;
+      rtx temp = assign_386_stack_local (QImode, slot);
+      emit_insn (gen_sync_iorqi (temp, CONST0_RTX (QImode)));
+      DONE;
+    }
+
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
 ;; ??? It would be possible to use cmpxchg8b on pentium for DImode
 ;; changes.  It's complicated because the insn uses ecx:ebx as the
 ;; new value; note that the registers are reversed from the order
@@ -46,7 +64,7 @@
 	    [(match_dup 1)
 	     (match_operand:CASMODE 2 "register_operand" "")
 	     (match_operand:CASMODE 3 "register_operand" "")]
-	    UNSPECV_CMPXCHG_1))
+	    UNSPECV_CMPXCHG))
      (clobber (reg:CC FLAGS_REG))])]
   "TARGET_CMPXCHG"
 {
@@ -78,10 +96,10 @@
 	  [(match_dup 1)
 	   (match_operand:IMODE 2 "register_operand" "a")
 	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_CMPXCHG"
-  "lock{%;| } cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
+  "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
 
 (define_insn "sync_double_compare_and_swap<mode>"
   [(set (match_operand:DCASMODE 0 "register_operand" "=A")
@@ -92,7 +110,7 @@
 	   (match_operand:DCASMODE 2 "register_operand" "A")
 	   (match_operand:<DCASHMODE> 3 "register_operand" "b")
 	   (match_operand:<DCASHMODE> 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   ""
   "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
@@ -115,7 +133,7 @@
 	   (match_operand:DI 2 "register_operand" "A")
 	   (match_operand:SI 3 "register_operand" "SD")
 	   (match_operand:SI 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
   "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
@@ -129,11 +147,11 @@
 	    [(match_dup 1)
 	     (match_operand:CASMODE 2 "register_operand" "")
 	     (match_operand:CASMODE 3 "register_operand" "")]
-	    UNSPECV_CMPXCHG_1))
+	    UNSPECV_CMPXCHG))
      (set (match_dup 4)
 	  (compare:CCZ
 	    (unspec_volatile:CASMODE
-	      [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2)
+	      [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
 	    (match_dup 2)))])]
   "TARGET_CMPXCHG"
 {
@@ -169,11 +187,11 @@
 	  [(match_dup 1)
 	   (match_operand:IMODE 2 "register_operand" "a")
 	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
 	(compare:CCZ
 	  (unspec_volatile:IMODE
-	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2)
+	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   "TARGET_CMPXCHG"
   "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
@@ -187,12 +205,12 @@
 	   (match_operand:DCASMODE 2 "register_operand" "A")
 	   (match_operand:<DCASHMODE> 3 "register_operand" "b")
 	   (match_operand:<DCASHMODE> 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
 	(compare:CCZ
 	  (unspec_volatile:DCASMODE
 	    [(match_dup 1) (match_dup 2) (match_dup 3) (match_dup 4)]
-	    UNSPECV_CMPXCHG_2)
+	    UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   ""
   "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
@@ -208,12 +226,12 @@
 	   (match_operand:DI 2 "register_operand" "A")
 	   (match_operand:SI 3 "register_operand" "SD")
 	   (match_operand:SI 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
 	(compare:CCZ
 	  (unspec_volatile:DI
 	    [(match_dup 1) (match_dup 2) (match_dup 3) (match_dup 4)]
-	    UNSPECV_CMPXCHG_2)
+	    UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
   "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
