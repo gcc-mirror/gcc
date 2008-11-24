@@ -1,5 +1,8 @@
 2008-11-24  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	PR testsuite/38076
+	* g++.dg/other/anon5.C: Skip on Darwin.
+
 	* gfortran.dg/default_format_denormal_1.f90: XFAIL on darwin8
 	and darwin9 subversions.
 
