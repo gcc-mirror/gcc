@@ -684,13 +684,6 @@
     <listitem><para>In C++0x mode, remove assign, add fill.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-defects.html#778">778</ulink>:
-        <emphasis>std::bitset does not have any constructor taking a string 
-	          literal</emphasis>
-    </term>
-    <listitem><para>Add it.
-    </para></listitem></varlistentry>
-
     <varlistentry><term><ulink url="../ext/lwg-defects.html#781">781</ulink>:
         <emphasis>std::complex should add missing C99 functions</emphasis>
     </term>

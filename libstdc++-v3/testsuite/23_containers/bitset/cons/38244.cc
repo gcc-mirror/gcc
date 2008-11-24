@@ -1,5 +1,3 @@
-// 2008-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
-
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,32 +16,29 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-do compile }
+
 #include <bitset>
-#include <testsuite_hooks.h>
 
-// DR 778. std::bitset does not have any constructor taking a string literal.
-void test01()
+class C0
 {
-  bool test __attribute__((unused)) = true;
+ public:
+  C0() : b(0) { }
+ private:
+  std::bitset<1> b;
+};
 
-  std::bitset<4> z1("1101");
-  std::bitset<4> z1_ref(std::string("1101"));
-  VERIFY( z1.to_string() == "1101" );
-  VERIFY( z1 == z1_ref );
-
-  std::bitset<8> z2("1011");
-  std::bitset<8> z2_ref(std::string("1011"));
-  VERIFY( z2.to_string() == "00001011" );
-  VERIFY( z2 == z2_ref );
-
-  std::bitset<2> z3("1101");
-  std::bitset<2> z3_ref(std::string("1101"));
-  VERIFY( z3.to_string() == "11" );
-  VERIFY( z3 == z3_ref );
-}
-
-int main()
+class C1
 {
-  test01();
-  return 0;
+ public:
+  C1() : b(1) { }
+ private:
+  std::bitset<1> b;
+};
+
+// libstdc++/38244
+void func()
+{
+  C0 val0;
+  C1 val1;
 }
