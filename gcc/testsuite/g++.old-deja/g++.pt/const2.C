@@ -1,5 +1,6 @@
 // { dg-do link }
 // This test should get a linker error for the reference to A<int>::i.
+// { dg-prune-output "ld: symbol" }
 // { dg-message "i" "" { target *-*-* } 0 }
 
 template <class T> struct B { static const int i = 3; };
