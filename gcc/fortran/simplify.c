@@ -3410,9 +3410,6 @@ is_constant_array_expr (gfc_expr *e)
   if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
     return false;
   
-  if (e->value.constructor == NULL)
-    return false;
-  
   for (c = e->value.constructor; c; c = c->next)
     if (c->expr->expr_type != EXPR_CONSTANT)
       return false;

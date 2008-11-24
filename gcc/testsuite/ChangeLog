@@ -1,3 +1,8 @@
+2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38184
+	* gfortran.dg/reshape_empty_1.f03: New test.
+
 2008-11-24  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR testsuite/38241
