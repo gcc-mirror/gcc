@@ -1,5 +1,13 @@
 2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/38033
+	* trans-array.c (gfc_trans_create_temp_array): Stabilize the
+	'to' expression.
+	(gfc_conv_loop_setup): Use the end expression for the loop 'to'
+	if it is available.
+
+2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/37926
 	* trans-expr.c (gfc_free_interface_mapping): Null sym->formal
 	(gfc_add_interface_mapping): Copy the pointer to the formal
