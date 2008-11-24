@@ -26,35 +26,23 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::bitset<4> z1("bbab", 'a', 'b');
-  std::bitset<4> z1_ref(std::string("bbab"), 0, std::string::npos, 'a', 'b');
+  std::bitset<4> z1(std::string("bbab"), 0, std::string::npos, 'a', 'b');
   VERIFY( z1.to_string('a', 'b') == "bbab" );
-  VERIFY( z1 == z1_ref );
 
-  std::bitset<4> z2("11a1", 'a');
-  std::bitset<4> z2_ref(std::string("11a1"), 0, std::string::npos, 'a');
+  std::bitset<4> z2(std::string("11a1"), 0, std::string::npos, 'a');
   VERIFY( z2.to_string('a') == "11a1" );
-  VERIFY( z2 == z2_ref );
 
-  std::bitset<8> z3("babb", 'a', 'b');
-  std::bitset<8> z3_ref(std::string("babb"), 0, std::string::npos, 'a', 'b');
+  std::bitset<8> z3(std::string("babb"), 0, std::string::npos, 'a', 'b');
   VERIFY( z3.to_string('a', 'b') == "aaaababb" );
-  VERIFY( z3 == z3_ref );
 
-  std::bitset<8> z4("1a11", 'a');
-  std::bitset<8> z4_ref(std::string("1a11"), 0, std::string::npos, 'a');
+  std::bitset<8> z4(std::string("1a11"), 0, std::string::npos, 'a');
   VERIFY( z4.to_string('a') == "aaaa1a11" );
-  VERIFY( z4 == z4_ref );
 
-  std::bitset<2> z5("bbab", 'a', 'b');
-  std::bitset<2> z5_ref(std::string("bbab"), 0, std::string::npos, 'a', 'b');
+  std::bitset<2> z5(std::string("bbab"), 0, std::string::npos, 'a', 'b');
   VERIFY( z5.to_string('a', 'b') == "bb" );
-  VERIFY( z5 == z5_ref );
 
-  std::bitset<2> z6("11a1", 'a');
-  std::bitset<2> z6_ref(std::string("11a1"), 0, std::string::npos, 'a');
+  std::bitset<2> z6(std::string("11a1"), 0, std::string::npos, 'a');
   VERIFY( z6.to_string('a') == "11" );
-  VERIFY( z6 == z6_ref );
 }
 
 int main()

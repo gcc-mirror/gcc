@@ -802,17 +802,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _M_copy_from_string(__s, __position, __n, __zero, __one);
 	}
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 778. std::bitset does not have any constructor taking a string literal
-      explicit
-      bitset(const char* __s, char __zero = '0', char __one = '1')
-      : _Base()
-      {
-	_M_copy_from_ptr<char, char_traits<char> >(__s,
-			       char_traits<char>::length(__s), 0, size_t(-1),
-						   __zero, __one);
-      }
-
       // 23.3.5.2 bitset operations:
       //@{
       /**
