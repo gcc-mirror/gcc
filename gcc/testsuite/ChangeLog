@@ -1,3 +1,11 @@
+2008-11-24  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37779
+	* gfortran.dg/c_funloc_tests.f03: Added missing `RECURSIVE'.
+	* gfortran.dg/c_funloc_tests_2.f03: Ditto.
+	* gfortran.dg/recursive_check_4.f03: New test.
+	* gfortran.dg/recursive_check_5.f03: New test.
+
 2008-11-24  Mikael Morin <mikael.morin@tele2.fr>
 
 	PR fortran/35681

@@ -4,7 +4,7 @@ module c_funloc_tests_2
   implicit none
 
 contains
-  subroutine sub0() bind(c)
+  recursive subroutine sub0() bind(c)
     type(c_funptr) :: my_c_funptr
     integer :: my_local_variable
     

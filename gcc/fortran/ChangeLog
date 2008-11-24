@@ -1,3 +1,10 @@
+2008-11-24  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37779
+	* resolve.c (resolve_procedure_expression): New method.
+	(resolve_variable): Call it.
+	(resolve_actual_arglist): Call gfc_resolve_expr for procedure arguments.
+
 2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34820
