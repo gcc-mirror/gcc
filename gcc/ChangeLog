@@ -1,3 +1,7 @@
+2008-11-24  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.md (cmpdi): Use (scratch) instead of pseudo.
+
 2008-11-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (ASM_OUTPUT_DEBUG_LABEL): Define.
