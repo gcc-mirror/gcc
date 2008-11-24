@@ -1,3 +1,13 @@
+2008-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (UNSPECV_CMPXCHG): Rename from
+	UNSPECV_CMPXCHG_[12].
+	* config/i386/sync.md: Use UNSPECV_CMPXCHG instead of
+	UNSPECV_CMPXCHG_[12].
+
+	PR target/36793
+	* config/i386/sync.md (memory_barrier): New expander.
+
 2008-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37135
