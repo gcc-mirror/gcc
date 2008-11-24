@@ -1,3 +1,7 @@
+2008-11-24  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* MAINTAINERS: Added my full name.
+
 2008-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR bootstrap/38014
