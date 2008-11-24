@@ -1,3 +1,9 @@
+2008-11-24  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/37792
+	* fortran/resolve.c (resolve_fl_variable): Simplify the
+	initializer if there is one.
+
 2008-11-24  Mikael Morin <mikael.morin@tele2.fr>
 
 	PR fortran/35681

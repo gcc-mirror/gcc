@@ -1,6 +1,16 @@
 2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35681
+	* gfortran.dg/elemental_dependency_1.f90: Correct strings in test.
+
+2008-11-24  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/37792
+	* gfortran.dg/arithmetic_overflow_1.f90: New test.
+
+2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35681
 	* gfortran.dg/elemental_dependency_1.f90: Really commit it.
 
 2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
