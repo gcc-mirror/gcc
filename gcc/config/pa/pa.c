@@ -9281,7 +9281,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	      offset += 8;
 	    }
 
-	  return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
+	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
 	}
      }
   else

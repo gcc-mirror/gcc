@@ -1,3 +1,7 @@
+2008-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (function_arg): Revert 2008-10-26 change.
+
 2008-11-23  Helge Deller  <deller@gmx.de>
 
 	* pa/linux-atomic.c (EBUSY): Define if not _LP64.
