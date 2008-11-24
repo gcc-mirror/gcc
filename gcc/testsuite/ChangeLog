@@ -1,5 +1,8 @@
 2008-11-24  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	PR testsuite/38241
+	* g++.old-deja/g++.pt/const2.C: Prune output for Darwin.
+
 	PR testsuite/38076
 	* g++.dg/other/anon5.C: Skip on Darwin.
 
