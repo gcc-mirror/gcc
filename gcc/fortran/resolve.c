@@ -1455,7 +1455,8 @@ find_noncopying_intrinsics (gfc_symbol *fnsym, gfc_actual_arglist *actual)
   for (ap = actual; ap; ap = ap->next)
     if (ap->expr
 	&& (expr = gfc_get_noncopying_intrinsic_argument (ap->expr))
-	&& !gfc_check_fncall_dependency (expr, INTENT_IN, fnsym, actual))
+	&& !gfc_check_fncall_dependency (expr, INTENT_IN, fnsym, actual,
+					 NOT_ELEMENTAL))
       ap->expr->inline_noncopying_intrinsic = 1;
 }
 

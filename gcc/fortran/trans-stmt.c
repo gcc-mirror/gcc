@@ -200,7 +200,8 @@ gfc_trans_entry (gfc_code * code)
    can be used, as is, to copy the result back to the variable.  */
 static void
 gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
-				 gfc_symbol * sym, gfc_actual_arglist * arg)
+				 gfc_symbol * sym, gfc_actual_arglist * arg,
+				 gfc_dep_check check_variable)
 {
   gfc_actual_arglist *arg0;
   gfc_expr *e;
@@ -248,7 +249,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	    && e->rank && fsym
 	    && fsym->attr.intent != INTENT_IN
 	    && gfc_check_fncall_dependency (e, fsym->attr.intent,
-					    sym, arg0))
+					    sym, arg0, check_variable))
 	{
 	  /* Make a local loopinfo for the temporary creation, so that
 	     none of the other ss->info's have to be renormalized.  */
@@ -312,6 +313,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
   gfc_se se;
   gfc_ss * ss;
   int has_alternate_specifier;
+  gfc_dep_check check_variable;
 
   /* A CALL starts a new block because the actual arguments may have to
      be evaluated first.  */
@@ -374,6 +376,10 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
       gfc_add_ss_to_loop (&loop, ss);
 
       gfc_conv_ss_startstride (&loop);
+      /* TODO: gfc_conv_loop_setup generates a temporary for vector 
+	 subscripts.  This could be prevented in the elemental case  
+	 as temporaries are handled separatedly 
+	 (below in gfc_conv_elemental_dependencies).  */
       gfc_conv_loop_setup (&loop);
       gfc_mark_ss_chain_used (ss, 1);
 
@@ -383,12 +389,11 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
 
       /* For operator assignment, do dependency checking.  */
       if (dependency_check)
-	{
-	  gfc_symbol *sym;
-	  sym = code->resolved_sym;
-	  gfc_conv_elemental_dependencies (&se, &loopse, sym,
-					   code->ext.actual);
-	}
+	check_variable = ELEM_CHECK_VARIABLE;
+      else
+	check_variable = ELEM_DONT_CHECK_VARIABLE;
+      gfc_conv_elemental_dependencies (&se, &loopse, code->resolved_sym,
+				       code->ext.actual, check_variable);
 
       /* Generate the loop body.  */
       gfc_start_scalarized_body (&loop, &body);

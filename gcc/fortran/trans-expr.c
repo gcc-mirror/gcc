@@ -3989,7 +3989,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* Check for a dependency.  */
   if (gfc_check_fncall_dependency (expr1, INTENT_OUT,
 				   expr2->value.function.esym,
-				   expr2->value.function.actual))
+				   expr2->value.function.actual,
+				   NOT_ELEMENTAL))
     return NULL;
 
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
