@@ -16,9 +16,11 @@ void foo(char *str)
     }
 }
 
+static char * volatile argp = "pr36321.x";
+
 int main(int argc, char **argv)
 {
-  foo (argv[0]);
+  foo (argp);
   return 0;
 }
 
