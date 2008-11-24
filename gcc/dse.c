@@ -1447,6 +1447,29 @@ find_shift_sequence (int access_size,
       rtx target, new_reg, shift_seq, insn, new_lhs;
       int cost;
 
+      /* If a constant was stored into memory, try to simplify it here,
+	 otherwise the cost of the shift might preclude this optimization
+	 e.g. at -Os, even when no actual shift will be needed.  */
+      if (CONSTANT_P (store_info->rhs))
+	{
+	  unsigned int byte = subreg_lowpart_offset (new_mode, store_mode);
+	  rtx ret = simplify_subreg (new_mode, store_info->rhs, store_mode,
+				     byte);
+	  if (ret && CONSTANT_P (ret))
+	    {
+	      ret = simplify_const_binary_operation (LSHIFTRT, new_mode,
+						     ret, GEN_INT (shift));
+	      if (ret && CONSTANT_P (ret))
+		{
+		  byte = subreg_lowpart_offset (read_mode, new_mode);
+		  ret = simplify_subreg (read_mode, ret, new_mode, byte);
+		  if (ret && CONSTANT_P (ret)
+		      && rtx_cost (ret, SET, speed) <= COSTS_N_INSNS (1))
+		    return ret;
+		}
+	    }
+	}
+
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
       if (GET_MODE_BITSIZE (new_mode) < GET_MODE_BITSIZE (store_mode)

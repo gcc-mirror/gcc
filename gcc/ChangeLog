@@ -1,3 +1,8 @@
+2008-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/37135
+	* dse.c (find_shift_sequence): Optimize extraction from a constant.
+
 2008-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (function_arg): Revert 2008-10-26 change.
