@@ -1,3 +1,9 @@
+2008-11-24  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR target/35018
+	* config/m68k/m68k.md (ok_for_coldfire, enabled): New attributes.
+	(addsi_lshrsi_31): Add ColdFire-friendly alternatives.
+
 2008-11-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (UNSPECV_CMPXCHG): Rename from
