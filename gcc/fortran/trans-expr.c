@@ -1421,6 +1421,7 @@ gfc_free_interface_mapping (gfc_interface_mapping * mapping)
   for (sym = mapping->syms; sym; sym = nextsym)
     {
       nextsym = sym->next;
+      sym->new->n.sym->formal = NULL;
       gfc_free_symbol (sym->new->n.sym);
       gfc_free_expr (sym->expr);
       gfc_free (sym->new);
@@ -1548,6 +1549,15 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   new_sym->attr.allocatable = sym->attr.allocatable;
   new_sym->attr.flavor = sym->attr.flavor;
   new_sym->attr.function = sym->attr.function;
+
+  /* Ensure that the interface is available and that
+     descriptors are passed for array actual arguments.  */
+  if (sym->attr.flavor == FL_PROCEDURE)
+    {
+      new_sym->formal = expr->symtree->n.sym->formal;
+      new_sym->attr.always_explicit
+	    = expr->symtree->n.sym->attr.always_explicit;
+    }
 
   /* Create a fake symtree for it.  */
   root = NULL;
