@@ -1072,6 +1072,33 @@ count_specific_procs (gfc_expr *e)
   return n;
 }
 
+
+/* Resolve a procedure expression, like passing it to a called procedure or as
+   RHS for a procedure pointer assignment.  */
+
+static gfc_try
+resolve_procedure_expression (gfc_expr* expr)
+{
+  gfc_symbol* sym;
+
+  if (expr->ts.type != BT_PROCEDURE || expr->expr_type != EXPR_VARIABLE)
+    return SUCCESS;
+  gcc_assert (expr->symtree);
+  sym = expr->symtree->n.sym;
+  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
+
+  /* A non-RECURSIVE procedure that is used as procedure expression within its
+     own body is in danger of being called recursively.  */
+  if (!sym->attr.recursive && sym == gfc_current_ns->proc_name
+      && !gfc_option.flag_recursive)
+    gfc_warning ("Non-RECURSIVE procedure '%s' at %L is possibly calling"
+		 " itself recursively.  Declare it RECURSIVE or use"
+		 " -frecursive", sym->name, &expr->where);
+  
+  return SUCCESS;
+}
+
+
 /* Resolve an actual argument list.  Most of the time, this is just
    resolving the expressions in the list.
    The exception is that we sometimes have to decide whether arguments
@@ -1180,8 +1207,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		&& sym->ns == gfc_current_ns
 		&& !sym->ns->entries->sym->attr.recursive)
 	    {
-	      gfc_error ("Reference to ENTRY '%s' at %L is recursive, but procedure "
-			 "'%s' is not declared as RECURSIVE",
+	      gfc_error ("Reference to ENTRY '%s' at %L is recursive, but"
+			 " procedure '%s' is not declared as RECURSIVE",
 			 sym->name, &e->where, sym->ns->entries->sym->name);
 	    }
 
@@ -1211,6 +1238,9 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	      sym->attr.intrinsic = 1;
 	      sym->attr.function = 1;
 	    }
+
+	  if (gfc_resolve_expr (e) == FAILURE)
+	    return FAILURE;
 	  goto argument_list;
 	}
 
@@ -1235,6 +1265,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  || sym->attr.intrinsic
 	  || sym->attr.external)
 	{
+	  if (gfc_resolve_expr (e) == FAILURE)
+	    return FAILURE;
 	  goto argument_list;
 	}
 
@@ -4155,7 +4187,7 @@ resolve_variable (gfc_expr *e)
   if (sym->attr.flavor == FL_PROCEDURE && !sym->attr.function)
     {
       e->ts.type = BT_PROCEDURE;
-      return SUCCESS;
+      goto resolve_procedure;
     }
 
   if (sym->ts.type != BT_UNKNOWN)
@@ -4236,6 +4268,10 @@ resolve_variable (gfc_expr *e)
 	/* Update the symbol's entry level.  */
 	sym->entry_id = current_entry_id + 1;
     }
+
+resolve_procedure:
+  if (t == SUCCESS && resolve_procedure_expression (e) == FAILURE)
+    t = FAILURE;
 
   return t;
 }

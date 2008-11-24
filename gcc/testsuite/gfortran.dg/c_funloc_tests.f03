@@ -5,7 +5,7 @@ module c_funloc_tests
   use, intrinsic :: iso_c_binding, only: c_funptr, c_funloc
 
 contains
-  subroutine sub0() bind(c)
+  recursive subroutine sub0() bind(c)
     type(c_funptr) :: my_c_funptr
 
     my_c_funptr = c_funloc(sub0)
