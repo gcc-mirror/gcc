@@ -1,3 +1,9 @@
+2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38184
+	* simplify.c (is_constant_array_expr): Return true instead of false
+	if the array constructor is empty.
+
 2008-11-24  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37779
