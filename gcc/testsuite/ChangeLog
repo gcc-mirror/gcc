@@ -1,3 +1,11 @@
+2008-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37843
+	* gcc.target/i386/align-main-3.c: New.
+	* gcc.target/i386/pr37843-1.c: Likewise.
+	* gcc.target/i386/pr37843-2.c: Likewise.
+	* gcc.target/i386/pr37843-3.c: Likewise.
+
 2008-11-25  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/36463

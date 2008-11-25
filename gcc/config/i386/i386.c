@@ -4112,6 +4112,11 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
     return false;
 
+  /* If we need to align the outgoing stack, then sibcalling would
+     unalign the stack, which may break the called function.  */
+  if (ix86_incoming_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    return false;
+
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
@@ -7769,6 +7774,11 @@ ix86_update_stack_boundary (void)
       && lookup_attribute (ix86_force_align_arg_pointer_string,
 			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
     ix86_incoming_stack_boundary = MIN_STACK_BOUNDARY;
+
+  /* The incoming stack frame has to be aligned at least at
+     parm_stack_boundary.  */
+  if (ix86_incoming_stack_boundary < crtl->parm_stack_boundary)
+    ix86_incoming_stack_boundary = crtl->parm_stack_boundary;
 
   /* Stack at entrance of main is aligned by runtime.  We use the
      smallest incoming stack boundary. */
