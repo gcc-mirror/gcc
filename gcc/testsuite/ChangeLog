@@ -1,3 +1,7 @@
+2008-11-25  Janis Johnson  <janis187@us.ibm.com>
+
+	* gfortran.dg/default_format_denormal_1.f90: Fix xfail for darwin.
+
 2008-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37843
