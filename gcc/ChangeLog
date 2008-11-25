@@ -1,3 +1,11 @@
+2008-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+	    Joey Ye  <joey.ye@intel.com>
+
+	PR middle-end/37843
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Return
+	false if we need to align the outgoing stack.
+	(ix86_update_stack_boundary): Check parm_stack_boundary.
+
 2008-11-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38151
