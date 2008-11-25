@@ -7603,10 +7603,10 @@ be disabled.  The default maximum SCC size is 10000.
 
 @item ira-max-loops-num
 IRA uses a regional register allocation by default.  If a function
-contains loops more than number given by the parameter, non-regional
-register allocator will be used even when option
-@option{-fira-algorithm} is given.  The default value of the parameter
-is 20.
+contains loops more than number given by the parameter, only at most
+given number of the most frequently executed loops will form regions
+for the regional register allocation.  The default value of the
+parameter is 100.
 
 @end table
 @end table

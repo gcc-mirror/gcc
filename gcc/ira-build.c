@@ -1677,19 +1677,80 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
   return true;
 }
 
-/* Return TRUE if NODE represents a loop with should be removed from
-   regional allocation.  We remove a loop with low register pressure
-   inside another loop with register pressure.  In this case a
-   separate allocation of the loop hardly helps (for irregular
-   register file architecture it could help by choosing a better hard
-   register in the loop but we prefer faster allocation even in this
-   case).  */
-static bool
-loop_node_to_be_removed_p (ira_loop_tree_node_t node)
+/* Sort loops for marking them for removal.  We put already marked
+   loops first, then less frequent loops next, and then outer loops
+   next.  */
+static int
+loop_compare_func (const void *v1p, const void *v2p)
 {
-  return (node->parent != NULL && low_pressure_loop_node_p (node->parent)
-	  && low_pressure_loop_node_p (node));
+  int diff;
+  ira_loop_tree_node_t l1 = *(const ira_loop_tree_node_t *) v1p;
+  ira_loop_tree_node_t l2 = *(const ira_loop_tree_node_t *) v2p;
+
+  ira_assert (l1->parent != NULL && l2->parent != NULL);
+  if (l1->to_remove_p && ! l2->to_remove_p)
+    return -1;
+  if (! l1->to_remove_p && l2->to_remove_p)
+    return 1;
+  if ((diff = l1->loop->header->frequency - l2->loop->header->frequency) != 0)
+    return diff;
+  if ((diff = (int) loop_depth (l1->loop) - (int) loop_depth (l2->loop)) != 0)
+    return diff;
+  /* Make sorting stable.  */
+  return l1->loop->num - l2->loop->num;
 }
+
+
+/* Mark loops which should be removed from regional allocation.  We
+   remove a loop with low register pressure inside another loop with
+   register pressure.  In this case a separate allocation of the loop
+   hardly helps (for irregular register file architecture it could
+   help by choosing a better hard register in the loop but we prefer
+   faster allocation even in this case).  We also remove cheap loops
+   if there are more than IRA_MAX_LOOPS_NUM of them.  */
+static void
+mark_loops_for_removal (void)
+{
+  int i, n;
+  ira_loop_tree_node_t *sorted_loops;
+  loop_p loop;
+
+  sorted_loops
+    = (ira_loop_tree_node_t *) ira_allocate (sizeof (ira_loop_tree_node_t)
+					     * VEC_length (loop_p,
+							   ira_loops.larray));
+  for (n = i = 0; VEC_iterate (loop_p, ira_loops.larray, i, loop); i++)
+    if (ira_loop_nodes[i].regno_allocno_map != NULL)
+      {
+	if (ira_loop_nodes[i].parent == NULL)
+	  {
+	    /* Don't remove the root.  */
+	    ira_loop_nodes[i].to_remove_p = false;
+	    continue;
+	  }
+	sorted_loops[n++] = &ira_loop_nodes[i];
+	ira_loop_nodes[i].to_remove_p
+	  = (low_pressure_loop_node_p (ira_loop_nodes[i].parent)
+	     && low_pressure_loop_node_p (&ira_loop_nodes[i]));
+      }
+  qsort (sorted_loops, n, sizeof (ira_loop_tree_node_t), loop_compare_func);
+  for (i = 0; n - i + 1 > IRA_MAX_LOOPS_NUM; i++)
+    {
+      sorted_loops[i]->to_remove_p = true;
+      if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
+	fprintf
+	  (ira_dump_file,
+	   "  Mark loop %d (header %d, freq %d, depth %d) for removal (%s)\n",
+	   sorted_loops[i]->loop->num, sorted_loops[i]->loop->header->index,
+	   sorted_loops[i]->loop->header->frequency,
+	   loop_depth (sorted_loops[i]->loop),
+	   low_pressure_loop_node_p (sorted_loops[i]->parent)
+	   && low_pressure_loop_node_p (sorted_loops[i])
+	   ? "low pressure" : "cheap loop");
+    }
+  ira_free (sorted_loops);
+}
+
 
 /* Definition of vector of loop tree nodes.  */
 DEF_VEC_P(ira_loop_tree_node_t);
@@ -1710,7 +1771,7 @@ remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_node_t node)
   bool remove_p;
   ira_loop_tree_node_t subnode;
 
-  remove_p = loop_node_to_be_removed_p (node);
+  remove_p = node->to_remove_p;
   if (! remove_p)
     VEC_safe_push (ira_loop_tree_node_t, heap, children_vec, node);
   start = VEC_length (ira_loop_tree_node_t, children_vec);
@@ -1759,13 +1820,13 @@ remove_unnecessary_allocnos (void)
       {
 	next_a = ALLOCNO_NEXT_REGNO_ALLOCNO (a);
 	a_node = ALLOCNO_LOOP_TREE_NODE (a);
-	if (! loop_node_to_be_removed_p (a_node))
+	if (! a_node->to_remove_p)
 	  prev_a = a;
 	else
 	  {
 	    for (parent = a_node->parent;
 		 (parent_a = parent->regno_allocno_map[regno]) == NULL
-		   && loop_node_to_be_removed_p (parent);
+		   && parent->to_remove_p;
 		 parent = parent->parent)
 	      ;
 	    if (parent_a == NULL)
@@ -1843,6 +1904,7 @@ remove_unnecessary_allocnos (void)
 static void
 remove_unnecessary_regions (void)
 {
+  mark_loops_for_removal ();
   children_vec
     = VEC_alloc (ira_loop_tree_node_t, heap,
 		 last_basic_block + VEC_length (loop_p, ira_loops.larray));

@@ -1725,7 +1725,6 @@ ira (FILE *f)
   bool loops_p;
   int max_regno_before_ira, ira_max_point_before_emit;
   int rebuild_p;
-  int saved_flag_ira_algorithm;
   int saved_flag_ira_share_spill_slots;
   basic_block bb;
 
@@ -1801,9 +1800,6 @@ ira (FILE *f)
   ira_assert (current_loops == NULL);
   flow_loops_find (&ira_loops);
   current_loops = &ira_loops;
-  saved_flag_ira_algorithm = flag_ira_algorithm;
-  if (optimize && number_of_loops () > (unsigned) IRA_MAX_LOOPS_NUM)
-    flag_ira_algorithm = IRA_ALGORITHM_CB;
       
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
@@ -1934,8 +1930,6 @@ ira (FILE *f)
   FOR_ALL_BB (bb)
     bb->loop_father = NULL;
   current_loops = NULL;
-
-  flag_ira_algorithm = saved_flag_ira_algorithm;
 
   regstat_free_ri ();
   regstat_free_n_sets_and_refs ();

@@ -1,3 +1,25 @@
+2008-11-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/invoke.texi (ira-max-loops-num): Change semantics.
+
+	* ira-int.h (struct ira_loop_tree_node): New member to_remove_p.
+
+	* ira-color.c (allocno_spill_priority): New function.
+	(remove_allocno_from_bucket_and_push, push_allocno_to_spill):
+	Print more info about the spilled allocno.
+	(push_allocnos_to_stack): Use allocno_spill_priority.  Add more
+	checks on bad spill.
+
+	* ira-build.c (loop_node_to_be_removed_p): Remove.
+	(loop_compare_func, mark_loops_for_removal): New functions.
+	(remove_uneccesary_loop_nodes_from_loop_t): Use member
+	to_remove_p.
+	(remove_unnecessary_allocnos): Call mark_loops_for_removal.
+
+	* ira.c (ira): Don't change flag_ira_algorithm.
+
+	* params.def (ira-max-loops-num): Change the value.
+
 2008-11-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.md (extendsidi2, extendsidi2_mem): Merge, clean up.
