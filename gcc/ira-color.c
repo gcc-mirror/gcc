@@ -655,6 +655,17 @@ static ira_allocno_t uncolorable_allocno_bucket;
    of given *cover* class in the uncolorable_bucket.  */
 static int uncolorable_allocnos_num[N_REG_CLASSES];
 
+/* Return the current spill priority of allocno A.  The less the
+   number, the more preferable the allocno for spilling.  */
+static int
+allocno_spill_priority (ira_allocno_t a)
+{
+  return (ALLOCNO_TEMP (a)
+	  / (ALLOCNO_LEFT_CONFLICTS_NUM (a)
+	     * ira_reg_class_nregs[ALLOCNO_COVER_CLASS (a)][ALLOCNO_MODE (a)]
+	     + 1));
+}
+
 /* Add ALLOCNO to bucket *BUCKET_PTR.  ALLOCNO should be not in a bucket
    before the call.  */
 static void
@@ -925,7 +936,12 @@ remove_allocno_from_bucket_and_push (ira_allocno_t allocno, bool colorable_p)
     {
       fprintf (ira_dump_file, "      Pushing");
       print_coalesced_allocno (allocno);
-      fprintf (ira_dump_file, "%s\n", colorable_p ? "" : "(potential spill)");
+      if (colorable_p)
+	fprintf (ira_dump_file, "\n");
+      else
+	fprintf (ira_dump_file, "(potential spill: %spri=%d, cost=%d)\n",
+		 ALLOCNO_BAD_SPILL_P (allocno) ? "bad spill, " : "",
+		 allocno_spill_priority (allocno), ALLOCNO_TEMP (allocno));
     }
   cover_class = ALLOCNO_COVER_CLASS (allocno);
   ira_assert ((colorable_p
@@ -959,7 +975,7 @@ push_allocno_to_spill (ira_allocno_t allocno)
   delete_allocno_from_bucket (allocno, &uncolorable_allocno_bucket);
   ALLOCNO_MAY_BE_SPILLED_P (allocno) = true;
   if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-    fprintf (ira_dump_file, "      Pushing p%d(%d) (potential spill)\n",
+    fprintf (ira_dump_file, "      Pushing p%d(%d) (spill for NO_REGS)\n",
 	     ALLOCNO_NUM (allocno), ALLOCNO_REGNO (allocno));
   push_allocno_to_stack (allocno);
 }
@@ -1224,21 +1240,18 @@ push_allocnos_to_stack (void)
 		  i++;
 		  ira_assert (ALLOCNO_TEMP (i_allocno) != INT_MAX);
 		  i_allocno_cost = ALLOCNO_TEMP (i_allocno);
-		  i_allocno_pri
-		    = (i_allocno_cost
-		       / (ALLOCNO_LEFT_CONFLICTS_NUM (i_allocno)
-			  * ira_reg_class_nregs[ALLOCNO_COVER_CLASS
-						(i_allocno)]
-			  [ALLOCNO_MODE (i_allocno)] + 1));
+		  i_allocno_pri = allocno_spill_priority (i_allocno);
 		  if (allocno == NULL
 		      || (! ALLOCNO_BAD_SPILL_P (i_allocno)
 			  && ALLOCNO_BAD_SPILL_P (allocno))
-		      || allocno_pri > i_allocno_pri
-		      || (allocno_pri == i_allocno_pri
-			  && (allocno_cost > i_allocno_cost
-			      || (allocno_cost == i_allocno_cost 
-				  && (ALLOCNO_NUM (allocno)
-				      > ALLOCNO_NUM (i_allocno))))))
+		      || (! (ALLOCNO_BAD_SPILL_P (i_allocno)
+			     && ! ALLOCNO_BAD_SPILL_P (allocno))
+			  && (allocno_pri > i_allocno_pri
+			      || (allocno_pri == i_allocno_pri
+				  && (allocno_cost > i_allocno_cost
+				      || (allocno_cost == i_allocno_cost 
+					  && (ALLOCNO_NUM (allocno)
+					      > ALLOCNO_NUM (i_allocno))))))))
 		    {
 		      allocno = i_allocno;
 		      allocno_cost = i_allocno_cost;

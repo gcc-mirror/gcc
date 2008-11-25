@@ -98,6 +98,10 @@ struct ira_loop_tree_node
   /* All the following members are defined only for nodes representing
      loops.  */
 
+  /* True if the loop was marked for removal from the register
+     allocation.  */
+  bool to_remove_p;
+
   /* Allocnos in the loop corresponding to their regnos.  If it is
      NULL the loop does not form a separate register allocation region
      (e.g. because it has abnormal enter/exit edges and we can not put
