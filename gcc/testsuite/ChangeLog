@@ -1,3 +1,10 @@
+2008-11-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38151
+	PR middle-end/38236
+	* gcc.c-torture/execute/pr38151.c: New testcase.
+	* gcc.c-torture/execute/pr38236.c: Likewise.
+
 2008-11-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/eh/weak1.C: Don't xfail hppa*64*-*-*.
