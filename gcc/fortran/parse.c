@@ -2265,8 +2265,9 @@ match_deferred_characteristics (gfc_typespec * ts)
 
   /* Set the function locus correctly.  If we have not found the
      function name, there is an error.  */
-  gfc_match ("function% %n", name);
-  if (m == MATCH_YES && strcmp (name, gfc_current_block ()->name) == 0)
+  if (m == MATCH_YES
+      && gfc_match ("function% %n", name) == MATCH_YES
+      && strcmp (name, gfc_current_block ()->name) == 0)
     {
       gfc_current_block ()->declared_at = gfc_current_locus;
       gfc_commit_symbols ();
