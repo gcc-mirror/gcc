@@ -1,3 +1,9 @@
+2008-11-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.md (extendsidi2, extendsidi2_mem): Merge, clean up.
+	Disable unsupported alternative for ColdFire,
+	add new alternative that ColdFire can handle.
+
 2008-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* regrename.c (merge_overlapping_regs): Add registers artificially

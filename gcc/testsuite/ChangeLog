@@ -1,3 +1,7 @@
+2008-11-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.c-torture/compile/20080929-1.c: New.
+
 2008-11-25  Janis Johnson  <janis187@us.ibm.com>
 
 	* gfortran.dg/default_format_denormal_1.f90: Fix xfail for darwin.
