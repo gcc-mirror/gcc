@@ -36,18 +36,29 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
   ""
 {
-  if (!TARGET_SSE2)
-    {
-      /* Emit a locked no-operation when SSE2 is not available.  */
-      int slot = virtuals_instantiated ? SLOT_TEMP : SLOT_VIRTUAL;
-      rtx temp = assign_386_stack_local (QImode, slot);
-      emit_insn (gen_sync_iorqi (temp, CONST0_RTX (QImode)));
-      DONE;
-    }
-
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
   MEM_VOLATILE_P (operands[0]) = 1;
+
+  if (!TARGET_SSE2)
+    {
+      emit_insn (gen_memory_barrier_nosse (operands[0]));
+      DONE;
+    }
 })
+
+(define_insn "memory_barrier_nosse"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
+   (clobber (reg:CC FLAGS_REG))]
+
+  "!TARGET_SSE2"
+{
+  if (TARGET_64BIT)
+    return "lock{%;| }or{q}\t{$0, (%%rsp)|QWORD PTR [rsp], 0}";
+  else
+    return "lock{%;| }or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}";
+}
+  [(set_attr "memory" "unknown")])
 
 ;; ??? It would be possible to use cmpxchg8b on pentium for DImode
 ;; changes.  It's complicated because the insn uses ecx:ebx as the
