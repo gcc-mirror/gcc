@@ -1,3 +1,9 @@
+2008-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38256
+	* config/i386/sync.md (memory_barrier_nosse): New insn
+	(memory_barrier): Generate memory_barrier_nosse insn for !TARGET_SSE2.
+
 2008-11-24  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.md (cmpdi): Use (scratch) instead of pseudo.
