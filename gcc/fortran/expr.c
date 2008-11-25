@@ -3510,11 +3510,18 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
 static bool
 replace_symbol (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
 {
-  if ((expr->expr_type == EXPR_VARIABLE || expr->expr_type == EXPR_FUNCTION)
+  if ((expr->expr_type == EXPR_VARIABLE 
+       || (expr->expr_type == EXPR_FUNCTION
+	   && !gfc_is_intrinsic (expr->symtree->n.sym, 0, expr->where)))
       && expr->symtree->n.sym->ns == sym->ts.interface->formal_ns)
     {
       gfc_symtree *stree;
-      gfc_get_sym_tree (expr->symtree->name, sym->formal_ns, &stree);
+      gfc_namespace *ns = sym->formal_ns;
+      /* Don't use gfc_get_symtree as we prefer to fail badly if we don't find
+	 the symtree rather than create a new one (and probably fail later).  */
+      stree = gfc_find_symtree (ns ? ns->sym_root : gfc_current_ns->sym_root,
+		      		expr->symtree->n.sym->name);
+      gcc_assert (stree);
       stree->n.sym->attr = expr->symtree->n.sym->attr;
       expr->symtree = stree;
     }

@@ -1,3 +1,11 @@
+2008-11-25  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/36463
+	* expr.c (replace_symbol): Don't replace the symtree
+	if the expresion is an intrinsic function. Don't create
+	non-existent symtrees.  Use symbol's name instead of symtree's,
+	different in case of module procedure dummy arguments.
+
 2008-11-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	PR fortran/38248
