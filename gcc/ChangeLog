@@ -1,3 +1,9 @@
+2008-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* regrename.c (merge_overlapping_regs): Add registers artificially
+	defined at the top of the basic block to the set of live ones just
+	before the first insn.
+
 2008-11-24  Jakub Jelinek  <jakub@redhat.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 

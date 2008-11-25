@@ -137,8 +137,15 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
   struct du_chain *t = chain;
   rtx insn;
   HARD_REG_SET live;
+  struct df_ref **def_rec;
 
   REG_SET_TO_HARD_REG_SET (live, df_get_live_in (b));
+  for (def_rec = df_get_artificial_defs (b->index); *def_rec; def_rec++)
+    {
+      struct df_ref *def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	SET_HARD_REG_BIT (live, DF_REF_REGNO (def));
+    }
   insn = BB_HEAD (b);
   while (t)
     {
