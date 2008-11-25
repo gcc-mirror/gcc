@@ -4850,11 +4850,19 @@ gfc_dump_module (const char *name, int dump_flag)
       || memcmp (md5_old, md5_new, sizeof (md5_old)) != 0)
     {
       /* Module file have changed, replace the old one.  */
-      unlink (filename);
-      rename (filename_tmp, filename);
+      if (unlink (filename))
+	gfc_fatal_error ("Can't delete module file '%s': %s", filename,
+			 strerror (errno));
+      if (rename (filename_tmp, filename))
+	gfc_fatal_error ("Can't rename module file '%s' to '%s': %s",
+			 filename_tmp, filename, strerror (errno));
     }
   else
-    unlink (filename_tmp);
+    {
+      if (unlink (filename_tmp))
+	gfc_fatal_error ("Can't delete temporary module file '%s': %s",
+			 filename_tmp, strerror (errno));
+    }
 }
 
 

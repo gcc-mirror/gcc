@@ -1,3 +1,8 @@
+2008-11-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	PR fortran/38248
+	* module.c (gfc_dump_module): Check rename/unlink syscalls errors.
+
 2008-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR fortran/37319
