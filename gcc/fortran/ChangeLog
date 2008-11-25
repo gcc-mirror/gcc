@@ -1,3 +1,9 @@
+2008-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/37803
+	* arith.c (gfc_check_real_range): Add mpfr_check_range.
+	* simplify.c (gfc_simplify_nearest): Add mpfr_check_range.
+
 2008-11-24  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38184
