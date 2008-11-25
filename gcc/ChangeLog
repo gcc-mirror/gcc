@@ -1,3 +1,20 @@
+2008-11-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38151
+	PR middle-end/38236
+	* tree-ssa-alias.c (struct alias_info): Remove written_vars.
+	Remove dereferenced_ptrs_store and dereferenced_ptrs_load
+	in favor of dereferenced_ptrs.
+	(init_alias_info): Adjust.
+	(delete_alias_info): Likewise.
+	(compute_flow_insensitive_aliasing): Properly
+	include all aliased variables.
+	(update_alias_info_1): Use dereferenced_ptrs.
+	(setup_pointers_and_addressables): Likewise.
+	(get_smt_for): Honor ref-all pointers and pointers with known alias
+	set properly.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Use ref-all pointers.
+
 2008-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38254
