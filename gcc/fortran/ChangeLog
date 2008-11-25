@@ -1,3 +1,8 @@
+2008-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* module.c (gfc_dump_module): Report error on unlink only if
+	errno != ENOENT.
+
 2008-11-25  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/36463
