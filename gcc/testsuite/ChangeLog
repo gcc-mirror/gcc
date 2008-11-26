@@ -1,3 +1,7 @@
+2008-11-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/callabi/func-indirect.c: New.
+
 2008-11-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28743
