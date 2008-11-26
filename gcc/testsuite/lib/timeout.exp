@@ -1,0 +1,81 @@
+# Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# unset_timeout_vars -- Unset variables used for timeouts
+#
+
+proc unset_timeout_vars { args } {
+    global individual_timeout
+    global timeout_factor
+
+    if [info exists individual_timeout] {
+	unset individual_timeout
+    }
+    if [info exists timeout_factor] {
+	unset timeout_factor
+    }
+}
+
+#
+# timeout_value -- Return the integer timeout value to use for this test
+#
+
+proc timeout_value { args } {
+    global tool_timeout
+    global individual_timeout
+    global timeout_factor
+
+    # Find the current timeout limit, in seconds.
+    if [info exists individual_timeout] {
+	set val $individual_timeout
+    } elseif [info exists tool_timeout] {
+	set val $tool_timeout
+    } elseif [target_info exists gcc,timeout] {
+	set val [target_info gcc,timeout]
+    } else {
+	# This is really, REALLY ugly, but this is the default from
+	# remote.exp deep within DejaGnu.
+	set val 300
+    }
+
+    # If the test specified a timeout factor, adjust by that.
+    if [info exists timeout_factor] {
+	set val [expr int([expr $val * $timeout_factor])]
+    }
+
+    return $val
+}
+
+#
+# standard_wait -- Set the timeout value used by DejaGnu
+#
+
+# Override standard_wait from DejaGnu to use timeout value specified by
+# by the user or by the target board, possibly multiplied by a factor
+# for a particular test.
+
+if { [info procs standard_wait] != [list] \
+     && [info procs saved_standard_wait] == [list] } {
+    rename standard_wait saved_standard_wait
+    proc standard_wait { dest timeout } {
+	set val [timeout_value]
+	if { $val != 0 } {
+	    set timeout $val
+	}
+	saved_standard_wait $dest $timeout
+    }
+}

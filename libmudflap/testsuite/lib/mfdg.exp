@@ -40,8 +40,7 @@ proc dg-test { args } {
     set keep 0
     set i 0
     set dg-repetitions 1 ;# may be overridden by { dg-repetitions N }
-    global dg-timeout
-    set dg-timeout 0 ;# likewise by { dg-timeout N }
+    unset_timeout_vars
 
     if { [string index [lindex $args 0] 0] == "-" } {
 	for { set i 0 } { $i < [llength $args] } { incr i } {
@@ -346,32 +345,4 @@ proc dg-test { args } {
 proc dg-repetitions { line value } {
     upvar dg-repetitions repetitions
     set repetitions $value
-}
-
-
-# 
-# Indicate that this test case is to be run with a short timeout.
-# The embedded format is "{ dg-timeout N }", where N is in seconds.
-#
-proc dg-timeout { line value } {
-    global dg-timeout
-    set dg-timeout $value
-}
-
-
-# dejagnu's config/unix.exp hard-codes 300 seconds as the timeout
-# for any natively run executable.  That's too long for tests run
-# multiple times and that may possibly hang.  So we override it here
-# to provide some degree of control.
-rename standard_wait hooked_standard_wait
-proc standard_wait { dest timeout } {
-    global dg-timeout
-    if {[info exists dg-timeout]} {
-	if {${dg-timeout} > 0} {
-	    verbose -log "Overriding timeout = ${dg-timeout}"
-	    set timeout ${dg-timeout}
-	}
-    }
-
-    hooked_standard_wait $dest $timeout
 }

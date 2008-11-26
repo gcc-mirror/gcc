@@ -1,3 +1,9 @@
+2008-11-26  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/28870
+	* doc/sourcebuild.texi (Test Directives): Add dg-timeout and
+	dg-timeout-factor.
+
 2008-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (memory_barrier_nosse): Disable also for
