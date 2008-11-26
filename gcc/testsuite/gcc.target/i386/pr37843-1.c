@@ -1,4 +1,5 @@
 /* Test for stack alignment with sibcall optimization.  */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -mpreferred-stack-boundary=6 -mincoming-stack-boundary=5" } */
 /* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-64,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler "call\[\\t \]*foo" } } */

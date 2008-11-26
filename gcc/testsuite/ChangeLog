@@ -1,3 +1,9 @@
+2008-11-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37843
+	* gcc.target/i386/pr37843-1.c: Make it Linux only.
+	* gcc.target/i386/pr37843-2.c: Likewise.
+
 2008-11-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/callabi/func-indirect.c: New.
