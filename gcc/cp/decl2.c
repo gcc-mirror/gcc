@@ -572,9 +572,14 @@ check_classfn (tree ctype, tree function, tree template_parms)
      either were not passed, or they are the same of DECL_TEMPLATE_PARMS.  */
   if (TREE_CODE (function) == TEMPLATE_DECL)
     {
-      gcc_assert (!template_parms
-		  || comp_template_parms (template_parms,
-					  DECL_TEMPLATE_PARMS (function)));
+      if (template_parms
+	  && !comp_template_parms (template_parms,
+				   DECL_TEMPLATE_PARMS (function)))
+	{
+	  error ("template parameter lists provided don't match the "
+		 "template parameters of %qD", function);
+	  return error_mark_node;
+	}
       template_parms = DECL_TEMPLATE_PARMS (function);
     }
 

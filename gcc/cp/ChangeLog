@@ -1,3 +1,9 @@
+2008-11-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28743
+	* decl2.c (check_classfn): Error rather than abort on parameter
+	list mismatch.
+
 2008-11-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28513
