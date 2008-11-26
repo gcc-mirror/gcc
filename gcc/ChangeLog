@@ -1,5 +1,12 @@
+2008-11-26  Fredrik Unger  <fred@tree.se>
+
+	* config/soft-fp/floatuntisf.c (__floatuntisf): Correct
+	function name from __floatundisf.
+	* config/soft-fp/fixdfti.c (__fixdfti): Correct argument type to
+	DFtype.
+
 2008-11-25  Daniel Berlin  <dberlin@dberlin.org>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37869
 	* tree-ssa-structalias.c (struct constraint_graph): Remove
