@@ -1,3 +1,11 @@
+2008-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (memory_barrier_nosse): Disable also for
+	TARGET_64BIT.  Remove special asm template for TARGET_64BIT case.
+	(memory_barrier): Do not generate memory_barrier_nosse instruction
+	for TARGET_64BIT.
+	* config/i386/sse.md (*sse2_mfence): Also enable for TARGET_64BIT.
+
 2008-11-26  Fredrik Unger  <fred@tree.se>
 
 	* config/soft-fp/floatuntisf.c (__floatuntisf): Correct
@@ -78,7 +86,7 @@
 2008-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38254
-	* config/i386/sync.md (memory_barrier_nosse): New insn
+	* config/i386/sync.md (memory_barrier_nosse): New insn pattern.
 	(memory_barrier): Generate memory_barrier_nosse insn for !TARGET_SSE2.
 
 2008-11-24  Maxim Kuvyrkov  <maxim@codesourcery.com>
