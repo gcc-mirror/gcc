@@ -1,3 +1,8 @@
+2008-11-26  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac: Test m32c-elf-gas for .loc.
+	* configure: Likewise.
+
 2008-11-26  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/28870
