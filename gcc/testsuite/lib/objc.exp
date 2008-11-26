@@ -194,7 +194,7 @@ proc objc_target_compile { source dest type options } {
 	set source [concat "-x objective-c-header" $source]
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
-    lappend options "timeout=[timeout_value]
+    lappend options "timeout=[timeout_value]"
 
     set_ld_library_path_env_vars
 

@@ -1,5 +1,8 @@
 2008-11-26  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/objc.exp (objc_target_compile): Fix typo from previous change.
+	* lib/gnat.exp (gnat_target_compile): Fix typo from previous change.
+
 	PR testsuite/28870
 	* lib/timeout.exp: New.
 	* lib/timeout-dg.exp: New.
