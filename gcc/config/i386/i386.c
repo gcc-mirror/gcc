@@ -4552,9 +4552,11 @@ ix86_reg_parm_stack_space (const_tree fndecl)
   /* For libcalls it is possible that there is no fndecl at hand.
      Therefore assume for this case the default abi of the target.  */
   if (!fndecl)
-    call_abi = DEFAULT_ABI;
-  else
+    call_abi = (cfun ? cfun->machine->call_abi : DEFAULT_ABI);
+  else if (TREE_CODE (fndecl) == FUNCTION_DECL)
     call_abi = ix86_function_abi (fndecl);
+  else
+    call_abi = ix86_function_type_abi (fndecl);
   if (call_abi == 1)
     return 32;
   return 0;
