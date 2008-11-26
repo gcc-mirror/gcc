@@ -24,6 +24,7 @@
 #
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib timeout.exp
 load_lib target-libpath.exp
 
 #
@@ -193,6 +194,7 @@ proc gfortran_target_compile { source dest type options } {
     }
 
     lappend options "compiler=$GFORTRAN_UNDER_TEST"
+    lappend options "timeout=[timeout_value]"
 
     set options [concat "$ALWAYS_GFORTRANFLAGS" $options]
     set options [dg-additional-files-options $options $source]

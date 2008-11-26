@@ -1,3 +1,9 @@
+2008-11-26  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/28870
+	* testsuite/lib/libgomp.exp: Include new timeout library files.
+	(libgomp_target_compile): Set timeout value from new proc.
+
 2008-11-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR libgomp/37938
