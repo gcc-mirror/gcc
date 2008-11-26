@@ -1,3 +1,10 @@
+2008-11-26  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (clear_hazard): Rename to
+	clear_hazard_<mode>.  Use mode-specific addition.
+	(clear_cache): Rename gen_clear_hazard to gen_clear_hazard_si
+	or gen_clear_hazard_di depending on the size of Pmode.
+
 2008-11-26  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac: Test m32c-elf-gas for .loc.
