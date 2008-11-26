@@ -1,3 +1,10 @@
+2008-11-26  Fredrik Unger  <fred@tree.se>
+
+	* config/soft-fp/floatuntisf.c (__floatuntisf): Correct
+	function name from __floatundisf.
+	* config/soft-fp/fixdfti.c (__fixdfti): Correct argument type to
+	DFtype.
+
 2008-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* regrename.c (merge_overlapping_regs): Add registers artificially
