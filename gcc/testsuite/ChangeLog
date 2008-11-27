@@ -1,3 +1,8 @@
+2008-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36526
+	* gfortran.dg/pure_formal_proc_2.f90: New test.
+
 2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38119

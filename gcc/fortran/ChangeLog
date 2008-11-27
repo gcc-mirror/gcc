@@ -1,3 +1,9 @@
+2008-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36526
+	* interface.c (check_intents):  Correct error where the actual
+	arg was checked for a pointer argument, rather than the formal.
+
 2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38033
