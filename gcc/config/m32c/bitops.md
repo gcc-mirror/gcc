@@ -43,7 +43,7 @@
   [(set (match_operand:QI 0 "memsym_operand" "+Si")
 	(ior:QI (subreg:QI (ashift:HI (const_int 1)
 				      (subreg:QI (match_operand:HI 1 "a_qi_operand" "Raa") 0)) 0)
-		(match_operand:QI 2 "" "0")))]
+		(match_operand:QI 2 "memsym_operand" "0")))]
   "TARGET_A16"
   "bset\t%0[%1]"
   [(set_attr "flags" "n")]
@@ -190,7 +190,7 @@
   )
 
 (define_insn "andhi3_24"
-  [(set (match_operand:HI 0 "mra_operand" "=Sd,Sd,Rqi,Rqi,RhiSd,??Rmm,RhiSd,??Rmm")
+  [(set (match_operand:HI 0 "mra_operand" "=Sd,Sd,?Rhl,?Rhl,RhiSd,??Rmm,RhiSd,??Rmm")
 	(and:HI (match_operand:HI 1 "mra_operand" "%0,0,0,0,0,0,0,0")
 		(match_operand:HI 2 "mrai_operand" "ImB,Imw,ImB,Imw,iRhiSd,?Rmm,?Rmm,iRhiSd")))]
   "TARGET_A24"
@@ -223,7 +223,7 @@
   )
 
 (define_insn "iorhi3_24"
-  [(set (match_operand:HI 0 "mra_operand" "=Sd,Sd,Rqi,Rqi,RhiSd,RhiSd,??Rmm,??Rmm")
+  [(set (match_operand:HI 0 "mra_operand" "=Sd,Sd,?Rhl,?Rhl,RhiSd,RhiSd,??Rmm,??Rmm")
 	(ior:HI (match_operand:HI 1 "mra_operand" "%0,0,0,0,0,0,0,0")
 		(match_operand:HI 2 "mrai_operand" "Ilb,Ilw,Ilb,Ilw,iRhiSd,?Rmm,iRhiSd,?Rmm")))]
   "TARGET_A24"

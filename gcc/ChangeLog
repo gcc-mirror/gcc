@@ -1,3 +1,12 @@
+2008-11-26  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/mov.md ("extendhipsi2"): New.
+
+	* config/m32c/bitops.md (bset_qi): Add memsym_operand predicate.
+
+	* config/m32c/bitops.md (andhi3_24, iorhi3_24): Don't prefer HL class.
+	* config/m32c/mov.md (zero_extendqihi2): Likewise.
+
 2008-11-26  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (clear_hazard): Rename to
