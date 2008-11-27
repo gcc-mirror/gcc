@@ -4560,6 +4560,15 @@ intra_create_variable_infos (void)
 	    make_constraint_from (p, nonlocal_id);
 	}
     }
+
+  /* Add a constraint for the incoming static chain parameter.  */
+  if (cfun->static_chain_decl != NULL_TREE)
+    {
+      varinfo_t p, chain_vi = get_vi_for_tree (cfun->static_chain_decl);
+
+      for (p = chain_vi; p; p = p->next)
+	make_constraint_from (p, nonlocal_id);
+    }
 }
 
 /* Structure used to put solution bitmaps in a hashtable so they can

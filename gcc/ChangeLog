@@ -1,3 +1,8 @@
+2008-11-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (intra_create_variable_infos): Make
+	a constraint for the static chain parameter.
+
 2008-11-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.opt (micplb): New option.
