@@ -468,7 +468,8 @@ Objective-C and Objective-C++ Dialects}.
 -mno-id-shared-library  -mshared-library-id=@var{n} @gol
 -mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
 -msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls @gol
--mfast-fp -minline-plt -mmulticore  -mcorea  -mcoreb  -msdram}
+-mfast-fp -minline-plt -mmulticore  -mcorea  -mcoreb  -msdram @gol
+-micplb}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -9312,6 +9313,12 @@ Build standalone application for SDRAM. Proper start files and
 link scripts will be used to put the application into SDRAM.
 Loader should initialize SDRAM before loading the application
 into SDRAM. This option defines @code{__BFIN_SDRAM}.
+
+@item -micplb
+@opindex micplb
+Assume that ICPLBs are enabled at runtime.  This has an effect on certain
+anomaly workarounds.  For Linux targets, the default is to assume ICPLBs
+are enabled; for standalone applications the default is off.
 @end table
 
 @node CRIS Options

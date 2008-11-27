@@ -95,3 +95,7 @@ Build for Core B
 msdram
 Target Report Mask(SDRAM)
 Build for SDRAM
+
+micplb
+Target Report Mask(ICPLB)
+Assume ICPLBs are enabled at runtime.

@@ -1,3 +1,18 @@
+2008-11-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.opt (micplb): New option.
+	* config/bfin/linux.h (SUBTARGET_DRIVER_SELF_SPECS): Set it.
+	* config/bfin/bfin-protos.h (WA_INDIRECT_CALLS,
+	ENABLE_WA_INDIRECT_CALLS): New macros.
+	* config/bfin/bfin.c (bfin_cpus): Add WA_INDIRECT_CALLS to
+	all 54x CPUs.
+	(indirect_call_p): New function.
+	(workaround_speculation): Handle anomaly 05-00-0426 when
+	ENABLE_WA_INDIRECT_CALLS is true.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__WORKAROUND_INDIRECT_CALLS if ENABLE_WA_INDIRECT_CALLS.
+	* doc/invoke.texi (Blackfin Options): Document -micplb.
+
 2008-11-26  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/mov.md ("extendhipsi2"): New.
