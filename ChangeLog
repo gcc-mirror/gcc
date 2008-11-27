@@ -1,3 +1,7 @@
+2008-11-27  Toon Moene <toon@moene.org>
+
+	* MAINTAINERS: Change e-mail address.
+
 2008-11-27  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Build gdb for i?86-*-darwin*
