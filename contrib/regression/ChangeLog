@@ -1,3 +1,7 @@
+2008-11-27  Geoff Keating  <geoffk@geoffk.org>
+
+	* mkindex.pl: New.
+
 2007-12-24  Geoff Keating  <geoffk@geoffk.org>
 
 	* objs-gcc.sh: Revert previous change.
