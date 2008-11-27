@@ -1,3 +1,7 @@
+2008-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Fix various nits.
+
 2008-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (init_gigi_decls): Fix type mismatch.
