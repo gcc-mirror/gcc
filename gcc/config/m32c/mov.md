@@ -338,6 +338,16 @@
   [(set_attr "flags" "x")]
   )
 
+(define_insn "extendhipsi2"
+  [(set (match_operand:PSI 0 "register_operand" "=R03")
+	(sign_extend:PSI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "*
+   if (REGNO(operands[0]) == 0) return \"exts.w\t%1\";
+   else return \"mov.w r1,r3 | sha.w #-8,r3 | sha.w #-7,r3\";"
+  [(set_attr "flags" "x")]
+  )
+
 (define_insn "extendpsisi2"
   [(set (match_operand:SI 0 "mr_operand" "=R03Sd*Rmm")
 	(sign_extend:SI (match_operand:PSI 1 "mr_operand" "0")))]
@@ -371,7 +381,7 @@
   )
 
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "m32c_nonimmediate_operand" "=Rhl,RhiSd*Rmm")
+  [(set (match_operand:HI 0 "m32c_nonimmediate_operand" "=?Rhl,RhiSd*Rmm")
 	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "0,0")))]
   ""
   "@
