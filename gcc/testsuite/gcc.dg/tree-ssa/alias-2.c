@@ -1,3 +1,4 @@
+/* { dg-do compile { target { nonpic } } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 static int a;
 int f;

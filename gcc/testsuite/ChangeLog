@@ -1,3 +1,9 @@
+2008-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/38261
+	* gcc.dg/tree-ssa/alias-2.c: Only compile on nonpic targets.
+	* gcc.dg/torture/ipa-pta-1.c: Likewise.
+
 2008-11-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/objc.exp (objc_target_compile): Fix typo from previous change.
