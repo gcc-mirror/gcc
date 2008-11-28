@@ -1,3 +1,9 @@
+2008-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37843
+	* gcc.target/i386/pr37843-1.c: Make it nonpic targets only.
+	* gcc.target/i386/pr37843-2.c: Likewise.
+
 2008-11-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37955
