@@ -1,3 +1,11 @@
+2008-11-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37955
+	PR tree-optimization/37742
+	* tree-vect-transform.c (vectorizable_store): Remove assert for
+	compatible aliases.
+	(vectorizable_load): Likewise.
+
 2008-11-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (intra_create_variable_infos): Make
