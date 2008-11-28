@@ -10560,8 +10560,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			     pack expansion where the parameter packs
 			     used in that expansion were of length
 			     zero.  */
-			  init = build_default_init (TREE_TYPE (decl),
-                                                     NULL_TREE);
+			  init = build_value_init (TREE_TYPE (decl));
 			else
 			  init = t;
 		      }

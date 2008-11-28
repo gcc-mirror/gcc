@@ -266,52 +266,6 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
   return init;
 }
 
-/* Build an expression for the default-initialization of an object of
-   the indicated TYPE.  If NELTS is non-NULL, and TYPE is an
-   ARRAY_TYPE, NELTS is the number of elements in the array.  If
-   initialization of TYPE requires calling constructors, this function
-   returns NULL_TREE; the caller is responsible for arranging for the
-   constructors to be called.  */
-
-tree
-build_default_init (tree type, tree nelts)
-{
-  /* [dcl.init]:
-
-    To default-initialize an object of type T means:
-
-    --if T is a non-POD class type (clause _class_), the default construc-
-      tor  for  T is called (and the initialization is ill-formed if T has
-      no accessible default constructor);
-
-    --if T is an array type, each element is default-initialized;
-
-    --otherwise, the storage for the object is zero-initialized.
-
-    A program that calls for default-initialization of an entity of refer-
-    ence type is ill-formed.  */
-
-  /* If TYPE_NEEDS_CONSTRUCTING is true, the caller is responsible for
-     performing the initialization.  This is confusing in that some
-     non-PODs do not have TYPE_NEEDS_CONSTRUCTING set.  (For example,
-     a class with a pointer-to-data member as a non-static data member
-     does not have TYPE_NEEDS_CONSTRUCTING set.)  Therefore, we end up
-     passing non-PODs to build_zero_init below, which is contrary to
-     the semantics quoted above from [dcl.init].
-
-     It happens, however, that the behavior of the constructor the
-     standard says we should have generated would be precisely the
-     same as that obtained by calling build_zero_init below, so things
-     work out OK.  */
-  if (TYPE_NEEDS_CONSTRUCTING (type)
-      || (nelts && TREE_CODE (nelts) != INTEGER_CST))
-    return NULL_TREE;
-
-  /* At this point, TYPE is either a POD class type, an array of POD
-     classes, or something even more innocuous.  */
-  return build_zero_init (type, nelts, /*static_storage_p=*/false);
-}
-
 /* Return a suitable initializer for value-initializing an object of type
    TYPE, as described in [dcl.init].  If HAVE_CTOR is true, the initializer
    for an enclosing object is already calling the constructor for this
@@ -442,6 +396,10 @@ build_value_init_1 (tree type, bool have_ctor)
 				max_index);
 
 	  ce->value = build_value_init_1 (TREE_TYPE (type), have_ctor);
+
+	  /* The gimplifier can't deal with a RANGE_EXPR of TARGET_EXPRs.  */
+	  gcc_assert (TREE_CODE (ce->value) != TARGET_EXPR
+		      && TREE_CODE (ce->value) != AGGR_INIT_EXPR);
 	}
 
       /* Build a constructor to contain the initializations.  */
@@ -469,18 +427,12 @@ perform_member_init (tree member, tree init)
 {
   tree decl;
   tree type = TREE_TYPE (member);
-  bool is_explicit;
-
-  is_explicit = (init != NULL_TREE);
 
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
-  if (warn_ecpp && !is_explicit && TREE_CODE (type) != ARRAY_TYPE)
+  if (warn_ecpp && init == NULL_TREE && TREE_CODE (type) != ARRAY_TYPE)
     warning (OPT_Weffc__, "%J%qD should be initialized in the member initialization "
 	     "list", current_function_decl, member);
-
-  if (init == void_type_node)
-    init = NULL_TREE;
 
   /* Get an lvalue for the data member.  */
   decl = build_class_member_access_expr (current_class_ref, member,
@@ -490,10 +442,28 @@ perform_member_init (tree member, tree init)
   if (decl == error_mark_node)
     return;
 
+  if (init == void_type_node)
+    {
+      /* mem() means value-initialization.  */
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	init = build_vec_init (decl, NULL_TREE, NULL_TREE,
+			       /*explicit_value_init_p=*/true,
+			       /* from_array=*/0,
+			       tf_warning_or_error);
+      else
+	{
+	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	    warning (0, "%Jdefault-initialization of %q#D, "
+		     "which has reference type",
+		     current_function_decl, member);
+	  init = build2 (INIT_EXPR, type, decl, build_value_init (type));
+	}
+      finish_expr_stmt (init);
+    }
   /* Deal with this here, as we will get confused if we try to call the
      assignment op for an anonymous union.  This can happen in a
      synthesized copy constructor.  */
-  if (ANON_AGGR_TYPE_P (type))
+  else if (ANON_AGGR_TYPE_P (type))
     {
       if (init)
 	{
@@ -503,9 +473,8 @@ perform_member_init (tree member, tree init)
     }
   else if (TYPE_NEEDS_CONSTRUCTING (type))
     {
-      if (is_explicit
+      if (init != NULL_TREE
 	  && TREE_CODE (type) == ARRAY_TYPE
-	  && init != NULL_TREE
 	  && TREE_CHAIN (init) == NULL_TREE
 	  && TREE_CODE (TREE_TYPE (TREE_VALUE (init))) == ARRAY_TYPE)
 	{
@@ -532,16 +501,8 @@ perform_member_init (tree member, tree init)
     {
       if (init == NULL_TREE)
 	{
-	  if (is_explicit)
-	    {
-	      init = build_default_init (type, /*nelts=*/NULL_TREE);
-	      if (TREE_CODE (type) == REFERENCE_TYPE)
-		warning (0, "%Jdefault-initialization of %q#D, "
-			 "which has reference type",
-			 current_function_decl, member);
-	    }
 	  /* member traversal: note it leaves init NULL */
-	  else if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    permerror (input_location, "%Juninitialized reference member %qD",
 		       current_function_decl, member);
 	  else if (CP_TYPE_CONST_P (type))
