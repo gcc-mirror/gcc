@@ -1,5 +1,14 @@
 2008-11-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38233
+	* init.c (perform_member_init): Fix value-initialization.
+	(build_value_init_1): Add assert to catch cases that will break
+	in the gimplifier.
+	(build_default_init): Remove.
+	* cp-tree.h: Remove its prototype.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Use build_value_init for
+	value-initialization.
+
 	PR c++/38278
 	* parser.c (cp_parser_class_name): Only call 
 	maybe_note_name_used_in_class if we actually found a class name.

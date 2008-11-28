@@ -1,5 +1,9 @@
 2008-11-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38233
+	* g++.dg/init/array25.C: New test.
+	* g++.dg/init/value4.C: New test.
+
 	PR c++/38278
 	* g++.dg/lookup/name-clash8.C: New test.
 
