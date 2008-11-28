@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { nonpic } } } */
 /* { dg-options "-fipa-pta -fdump-ipa-pta" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
