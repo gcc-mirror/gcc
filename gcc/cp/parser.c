@@ -14686,6 +14686,7 @@ cp_parser_class_name (cp_parser *parser,
   tree scope;
   bool typename_p;
   cp_token *token;
+  tree identifier = NULL_TREE;
 
   /* All class-names start with an identifier.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -14711,7 +14712,6 @@ cp_parser_class_name (cp_parser *parser,
       && !cp_parser_nth_token_starts_template_argument_list_p (parser, 2))
     {
       cp_token *identifier_token;
-      tree identifier;
       bool ambiguous_p;
 
       /* Look for the identifier.  */
@@ -14767,9 +14767,6 @@ cp_parser_class_name (cp_parser *parser,
 		}
 	      return error_mark_node;
 	    }
-	  else if (decl != error_mark_node
-		   && !parser->scope)
-	    maybe_note_name_used_in_class (identifier, decl);
 	}
     }
   else
@@ -14819,6 +14816,8 @@ cp_parser_class_name (cp_parser *parser,
 
   if (decl == error_mark_node)
     cp_parser_error (parser, "expected class-name");
+  else if (identifier && !parser->scope)
+    maybe_note_name_used_in_class (identifier, decl);
 
   return decl;
 }
