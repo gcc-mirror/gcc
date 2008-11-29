@@ -1,3 +1,7 @@
+2008-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-array.c (gfc_conv_array_parameter): Guard union access.
+
 2008-11-29  Janus Weil  <janus@gcc.gnu.org>
 	    Mikael Morin <mikael@gcc.gnu.org>
 
