@@ -2543,14 +2543,11 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&post, &parmse.post);
 
       /* Allocated allocatable components of derived types must be
-	 deallocated for INTENT(OUT) dummy arguments and non-variable
-         scalars.  Non-variable arrays are dealt with in trans-array.c
-         (gfc_conv_array_parameter).  */
+	 deallocated for non-variable scalars.  Non-variable arrays are
+	 dealt with in trans-array.c(gfc_conv_array_parameter).  */
       if (e && e->ts.type == BT_DERIVED
 	    && e->ts.derived->attr.alloc_comp
-	    && ((formal && formal->sym->attr.intent == INTENT_OUT)
-		   ||
-		(e->expr_type != EXPR_VARIABLE && !e->rank)))
+	    && (e->expr_type != EXPR_VARIABLE && !e->rank))
         {
 	  int parm_rank;
 	  tmp = build_fold_indirect_ref (parmse.expr);
@@ -2565,24 +2562,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    case (SCALAR_POINTER):
               tmp = build_fold_indirect_ref (tmp);
 	      break;
-	    case (ARRAY):
-              tmp = parmse.expr;
-	      break;
 	    }
 
-          tmp = gfc_deallocate_alloc_comp (e->ts.derived, tmp, parm_rank);
-	  if (e->expr_type == EXPR_VARIABLE && e->symtree->n.sym->attr.optional)
-	    tmp = build3_v (COND_EXPR, gfc_conv_expr_present (e->symtree->n.sym),
-			    tmp, build_empty_stmt ());
-
-	  if (e->expr_type != EXPR_VARIABLE)
-	    /* Don't deallocate non-variables until they have been used.  */
-	    gfc_add_expr_to_block (&se->post, tmp);
-	  else 
-	    {
-	      gcc_assert (formal && formal->sym->attr.intent == INTENT_OUT);
-	      gfc_add_expr_to_block (&se->pre, tmp);
-	    }
+	  tmp = gfc_deallocate_alloc_comp (e->ts.derived, tmp, parm_rank);
+	  gfc_add_expr_to_block (&se->post, tmp);
         }
 
       /* Character strings are passed as two parameters, a length and a
@@ -3330,9 +3313,10 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 					     cm->as->rank);
 
 	  gfc_add_expr_to_block (&block, tmp);
-
 	  gfc_add_block_to_block (&block, &se.post);
-	  gfc_conv_descriptor_data_set (&block, se.expr, null_pointer_node);
+
+	  if (expr->expr_type != EXPR_VARIABLE)
+	    gfc_conv_descriptor_data_set (&block, se.expr, null_pointer_node);
 
 	  /* Shift the lbound and ubound of temporaries to being unity, rather
 	     than zero, based.  Calculate the offset for all cases.  */
@@ -3363,6 +3347,35 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	      gfc_add_modify_expr (&block, tmp2, tmp);
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, offset, tmp2);
 	      gfc_add_modify_expr (&block, offset, tmp);
+	    }
+
+	  if (expr->expr_type == EXPR_FUNCTION
+		&& expr->value.function.isym
+		&& expr->value.function.isym->conversion
+		&& expr->value.function.actual->expr
+		&& expr->value.function.actual->expr->expr_type
+						== EXPR_VARIABLE)
+	    {
+	      /* If a conversion expression has a null data pointer
+		 argument, nullify the allocatable component.  */
+	      gfc_symbol *s;
+	      tree non_null_expr;
+	      tree null_expr;
+	      s = expr->value.function.actual->expr->symtree->n.sym;
+	      if (s->attr.allocatable || s->attr.pointer)
+		{
+		  non_null_expr = gfc_finish_block (&block);
+		  gfc_start_block (&block);
+		  gfc_conv_descriptor_data_set (&block, dest,
+						null_pointer_node);
+		  null_expr = gfc_finish_block (&block);
+		  tmp = gfc_conv_descriptor_data_get (s->backend_decl);
+		  tmp = build2 (EQ_EXPR, boolean_type_node, tmp,
+			        fold_convert (TREE_TYPE (tmp),
+					      null_pointer_node));
+		  return build3_v (COND_EXPR, tmp, null_expr,
+				   non_null_expr);
+		}
 	    }
 	}
       else
@@ -4244,6 +4257,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   stmtblock_t block;
   stmtblock_t body;
   bool l_is_temp;
+  bool scalar_to_array;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -4327,9 +4341,24 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   else
     gfc_conv_expr (&lse, expr1);
 
+  /* Assignments of scalar derived types with allocatable components
+     to arrays must be done with a deep copy and the rhs temporary
+     must have its components deallocated afterwards.  */
+  scalar_to_array = (expr2->ts.type == BT_DERIVED
+		       && expr2->ts.derived->attr.alloc_comp
+		       && expr2->expr_type != EXPR_VARIABLE
+		       && !gfc_is_constant_expr (expr2)
+		       && expr1->rank && !expr2->rank);
+  if (scalar_to_array)
+    {
+      tmp = gfc_deallocate_alloc_comp (expr2->ts.derived, rse.expr, 0);
+      gfc_add_expr_to_block (&loop.post, tmp);
+    }
+
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 				 l_is_temp || init_flag,
-				 expr2->expr_type == EXPR_VARIABLE);
+				 (expr2->expr_type == EXPR_VARIABLE)
+				    || scalar_to_array);
   gfc_add_expr_to_block (&body, tmp);
 
   if (lss == gfc_ss_terminator)

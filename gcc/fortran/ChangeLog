@@ -1,3 +1,28 @@
+2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34820
+	* trans-expr.c (gfc_conv_function_call): Remove all code to
+	deallocate intent out derived types with allocatable
+	components.
+	(gfc_trans_assignment_1): An assignment from a scalar to an
+	array of derived types with allocatable components, requires
+	a deep copy to each array element and deallocation of the
+	converted rhs expression afterwards.
+	* trans-array.c : Minor whitespace.
+	* trans-decl.c (init_intent_out_dt): Add code to deallocate
+	allocatable components of derived types with intent out.
+	(generate_local_decl): If these types are unused, set them
+	referenced anyway but allow the uninitialized warning.
+
+	PR fortran/34143
+	* trans-expr.c (gfc_trans_subcomponent_assign): If a conversion
+	expression has a null data pointer argument, nullify the
+	allocatable component.
+
+	PR fortran/32795
+	* trans-expr.c (gfc_trans_subcomponent_assign): Only nullify
+	the data pointer if the source is not a variable.
+
 2008-11-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37735

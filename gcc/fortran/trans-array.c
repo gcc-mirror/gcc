@@ -5131,7 +5131,6 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
       gfc_conv_expr_descriptor (se, expr, ss);
     }
 
-
   /* Deallocate the allocatable components of structures that are
      not variable.  */
   if (expr->ts.type == BT_DERIVED

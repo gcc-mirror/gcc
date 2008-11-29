@@ -2589,20 +2589,34 @@ gfc_init_default_dt (gfc_symbol * sym, tree body)
 }
 
 
-/* Initialize INTENT(OUT) derived type dummies.  */
+/* Initialize INTENT(OUT) derived type dummies.  As well as giving
+   them their default initializer, if they do not have allocatable
+   components, they have their allocatable components deallocated. */
+
 static tree
 init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 {
   stmtblock_t fnblock;
   gfc_formal_arglist *f;
+  tree tmp;
 
   gfc_init_block (&fnblock);
   for (f = proc_sym->formal; f; f = f->next)
     if (f->sym && f->sym->attr.intent == INTENT_OUT
-	  && f->sym->ts.type == BT_DERIVED
-	  && !f->sym->ts.derived->attr.alloc_comp
-	  && f->sym->value)
-      body = gfc_init_default_dt (f->sym, body);
+	  && f->sym->ts.type == BT_DERIVED)
+      {
+	if (f->sym->ts.derived->attr.alloc_comp)
+	  {
+	    tmp = gfc_deallocate_alloc_comp (f->sym->ts.derived,
+					     f->sym->backend_decl,
+					     f->sym->as ? f->sym->as->rank : 0);
+	    gfc_add_expr_to_block (&fnblock, tmp);
+	  }
+
+	if (!f->sym->ts.derived->attr.alloc_comp
+	      && f->sym->value)
+	  body = gfc_init_default_dt (f->sym, body);
+      }
 
   gfc_add_expr_to_block (&fnblock, body);
   return gfc_finish_block (&fnblock);
@@ -2966,10 +2980,10 @@ generate_local_decl (gfc_symbol * sym)
 	getting stuck in a circular dependency.  */
       sym->mark = 1;
       if (!sym->attr.dummy && !sym->ns->proc_name->attr.entry_master)
-        generate_dependency_declarations (sym);
+	generate_dependency_declarations (sym);
 
       if (sym->attr.referenced)
-        gfc_get_symbol_decl (sym);
+	gfc_get_symbol_decl (sym);
       /* INTENT(out) dummy arguments are likely meant to be set.  */
       else if (warn_unused_variable
 	       && sym->attr.dummy
@@ -2999,6 +3013,19 @@ generate_local_decl (gfc_symbol * sym)
 	  sym->attr.referenced = 1;
 	  gfc_get_symbol_decl (sym);
 	}
+
+      /* INTENT(out) dummy arguments with allocatable components are reset
+	 by default and need to be set referenced to generate the code for
+	 automatic lengths.  */
+      if (sym->attr.dummy && !sym->attr.referenced
+	    && sym->ts.type == BT_DERIVED
+	    && sym->ts.derived->attr.alloc_comp
+	    && sym->attr.intent == INTENT_OUT)
+	{
+	  sym->attr.referenced = 1;
+	  gfc_get_symbol_decl (sym);
+	}
+
 
       /* We do not want the middle-end to warn about unused parameters
          as this was already done above.  */
