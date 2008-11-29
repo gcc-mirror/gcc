@@ -1,3 +1,8 @@
+2008-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29987
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Redefine.
+
 2008-11-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_sync): Remove support for
