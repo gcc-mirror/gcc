@@ -1,3 +1,8 @@
+2008-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37843
+	* gcc.target/i386/pr37843-3.c: Make it nonpic targets only.
+
 2008-11-29  Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus <burnus@gcc.gnu.org>
 
