@@ -1,5 +1,5 @@
 /* Test for stack alignment with sibcall optimization.  */
-/* { dg-do compile { target { *-*-linux* && ilp32 } } } */
+/* { dg-do compile { target { *-*-linux* && { ilp32 && nonpic } } } } */
 /* { dg-options "-O2 -std=gnu99 -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2" } */
 /* { dg-final { scan-assembler-not "andl\[\\t \]*\\$-16,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler-not "call\[\\t \]*foo" } } */
