@@ -1,3 +1,8 @@
+2008-11-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR testsuite/38311
+	* ssp-2.c: Link with -Wl,-multiply_defined,suppress on darwin.
+
 2008-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38233
