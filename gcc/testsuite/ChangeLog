@@ -1,3 +1,7 @@
+2008-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/test_version.adb: Adjust to new string length.
+
 2008-11-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR testsuite/38311
