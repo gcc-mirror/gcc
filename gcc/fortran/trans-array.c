@@ -5206,7 +5206,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
   stmtblock_t block;
 
   full_array_var = (expr->expr_type == EXPR_VARIABLE
-		      && expr->ref->u.ar.type == AR_FULL);
+		    && expr->ref->type == REF_ARRAY
+		    && expr->ref->u.ar.type == AR_FULL);
   sym = full_array_var ? expr->symtree->n.sym : NULL;
 
   /* The symbol should have an array specification.  */
