@@ -51,6 +51,11 @@ program prog
   procedure(f) :: q  ! { dg-error "may not be a statement function" }
   procedure(oo) :: p  ! { dg-error "must be explicit" }
 
+  procedure ( ) :: r 
+  procedure ( up ) :: s  ! { dg-error "must be explicit" }
+
+  call s
+
 contains
 
   subroutine foo(a,c)  ! { dg-error "PROCEDURE attribute conflicts with INTENT attribute" }

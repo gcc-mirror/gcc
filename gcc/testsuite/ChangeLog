@@ -1,3 +1,10 @@
+2008-11-29  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/38289
+	PR fortran/38290
+	* gfortran.dg/proc_decl_1.f90: Extended test case.
+
 2008-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/cpp/stringop-1.C: New test.

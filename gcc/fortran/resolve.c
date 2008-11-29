@@ -2748,7 +2748,8 @@ resolve_specific_s0 (gfc_code *c, gfc_symbol *sym)
 
   /* See if we have an intrinsic interface.  */
   if (sym->ts.interface != NULL && !sym->ts.interface->attr.abstract
-      && !sym->ts.interface->attr.subroutine)
+      && !sym->ts.interface->attr.subroutine
+      && sym->ts.interface->attr.intrinsic)
     {
       gfc_intrinsic_sym *isym;
 
