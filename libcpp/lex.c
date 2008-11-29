@@ -1362,7 +1362,7 @@ cpp_token_len (const cpp_token *token)
 
   switch (TOKEN_SPELL (token))
     {
-    default:		len = 4;				break;
+    default:		len = 6;				break;
     case SPELL_LITERAL:	len = token->val.str.len;		break;
     case SPELL_IDENT:	len = NODE_LEN (token->val.node) * 10;	break;
     }

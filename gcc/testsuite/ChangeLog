@@ -1,3 +1,7 @@
+2008-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp/stringop-1.C: New test.
+
 2008-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/test_version.adb: Adjust to new string length.
