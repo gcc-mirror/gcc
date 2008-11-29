@@ -1,3 +1,9 @@
+2008-11-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37735
+	* trans-array.c (structure_alloc_comps): Do not duplicate the
+	descriptor if this is a descriptorless array!
+
 2008-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36526
