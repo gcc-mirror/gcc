@@ -1,3 +1,7 @@
+2008-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.c (cpp_token_len): Use 6 as default length.
+
 2008-10-31  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* expr.c (struct op): Add location.
