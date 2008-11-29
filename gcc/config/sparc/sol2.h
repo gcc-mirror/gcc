@@ -176,3 +176,21 @@ along with GCC; see the file COPYING3.  If not see
       fprintf (FILE, "\n\tnop\n");				\
     }								\
   while (0)
+
+/* Solaris 'as' has a bug: a .common directive in .tbss section
+   behaves as .tls_common rather than normal non-TLS .common.  */
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+  do									\
+    {									\
+      if (TARGET_SUN_TLS						\
+	  && in_section							\
+	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
+	      == (SECTION_TLS | SECTION_BSS)))				\
+	switch_to_section (bss_section);				\
+      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
+	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
+    }									\
+  while (0)
