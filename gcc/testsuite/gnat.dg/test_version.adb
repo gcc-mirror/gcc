@@ -5,8 +5,8 @@ procedure Test_Version is
    use Vsn;
    X : constant String := Version;
 begin
-   if X'Length = 46 then
-      -- 46 = Ver_Len_Max + Ver_Prefix
+   if X'Length = 78 then
+      -- 78 = Ver_Len_Max + Ver_Prefix'Length
       -- actual version should be shorter than this
       raise Program_Error;
    end if;
