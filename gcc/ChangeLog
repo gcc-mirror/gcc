@@ -1,3 +1,18 @@
+2008-11-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_sync): Remove support for
+	operand wrapped in NOT.  Emit NAND as (ior (not X) (not Y)).
+	(rs6000_split_atomic_op): Emit NAND as (ior (not X) (not Y)).
+	* config/rs6000/sync.md (sync_nand<mode>): Represent NAND in RTL.
+	Call rs6000_emit_sync with CODE=NOT and unmodified operands.
+	Ignore sub-word case for now.
+	(sync_nand<mode>_internal): Represent NAND in RTL.
+	(sync_old_nand<mode): Same.
+	(sync_old_name<mode>_internal): Same.
+	(sync_new_nand<mode>): Same.
+	(sync_new_nand<mode>_internal): Same.
+	(sync_boolcshort_internal): Expect NAND.
+
 2008-11-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37955

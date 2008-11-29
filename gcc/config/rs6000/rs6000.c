@@ -13826,9 +13826,6 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
   if (sync_p)
     emit_insn (gen_lwsync ());
 
-  if (GET_CODE (m) == NOT)
-    used_m = XEXP (m, 0);
-  else
     used_m = m;
 
   /* If this is smaller than SImode, we'll have to use SImode with
@@ -13870,10 +13867,7 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
       /* It's safe to keep the old alias set of USED_M, because
 	 the operation is atomic and only affects the original
 	 USED_M.  */
-      if (GET_CODE (m) == NOT)
-	m = gen_rtx_NOT (SImode, used_m);
-      else
-	m = used_m;
+      m = used_m;
 
       if (GET_CODE (op) == NOT)
 	{
@@ -13891,6 +13885,13 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 				oldop, GEN_INT (imask), NULL_RTX,
 				1, OPTAB_LIB_WIDEN);
 	  emit_insn (gen_ashlsi3 (newop, newop, shift));
+	  break;
+
+	case NOT: /* NAND */
+	  newop = expand_binop (SImode, ior_optab,
+				oldop, GEN_INT (~imask), NULL_RTX,
+				1, OPTAB_LIB_WIDEN);
+	  emit_insn (gen_rotlsi3 (newop, newop, shift));
 	  break;
 
 	case AND:
@@ -13930,19 +13931,6 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	  gcc_unreachable ();
 	}
 
-      if (GET_CODE (m) == NOT)
-	{
-	  rtx mask, xorm;
-
-	  mask = gen_reg_rtx (SImode);
-	  emit_move_insn (mask, GEN_INT (imask));
-	  emit_insn (gen_ashlsi3 (mask, mask, shift));
-
-	  xorm = gen_rtx_XOR (SImode, used_m, mask);
-	  /* Depending on the value of 'op', the XOR or the operation might
-	     be able to be simplified away.  */
-	  newop = simplify_gen_binary (code, SImode, xorm, newop);
-	}
       op = newop;
       used_mode = SImode;
       before = gen_reg_rtx (used_mode);
@@ -13960,11 +13948,15 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	after = gen_reg_rtx (used_mode);
     }
 
-  if ((code == PLUS || code == MINUS || GET_CODE (m) == NOT)
+  if ((code == PLUS || code == MINUS)
       && used_mode != mode)
     the_op = op;  /* Computed above.  */
   else if (GET_CODE (op) == NOT && GET_CODE (m) != NOT)
     the_op = gen_rtx_fmt_ee (code, used_mode, op, m);
+  else if (code == NOT)
+    the_op = gen_rtx_fmt_ee (IOR, used_mode,
+			     gen_rtx_NOT (used_mode, m),
+			     gen_rtx_NOT (used_mode, op));
   else
     the_op = gen_rtx_fmt_ee (code, used_mode, m, op);
 
@@ -14075,7 +14067,9 @@ rs6000_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
   emit_load_locked (mode, before, mem);
 
   if (code == NOT)
-    x = gen_rtx_AND (mode, gen_rtx_NOT (mode, before), val);
+    x = gen_rtx_IOR (mode,
+		     gen_rtx_NOT (mode, before),
+		     gen_rtx_NOT (mode, val));
   else if (code == AND)
     x = gen_rtx_UNSPEC (mode, gen_rtvec (2, before, val), UNSPEC_AND);
   else
