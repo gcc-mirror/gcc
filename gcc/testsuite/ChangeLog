@@ -1,3 +1,7 @@
+2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/reload3.C: New test.
+
 2008-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34820

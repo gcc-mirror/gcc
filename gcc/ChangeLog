@@ -1,3 +1,13 @@
+2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/38287
+	* config/sparc/sparc.md (divsi3 expander): Remove constraints.
+	(divsi3_sp32): Add new alternative with 'K' for operand #2.
+	(cmp_sdiv_cc_set): Factor common string.
+	(udivsi3_sp32): Add new alternative with 'K' for operand #2.
+	Add TARGET_V9 case.
+	(cmp_udiv_cc_set): Factor common string.
+
 2008-11-26  Fredrik Unger  <fred@tree.se>
 
 	* config/soft-fp/floatuntisf.c (__floatuntisf): Correct
