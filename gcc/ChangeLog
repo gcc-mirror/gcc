@@ -1,3 +1,8 @@
+2008-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/38283
+	* varasm.c (emutls_finish): Fix common registration.
+
 2008-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/29987
