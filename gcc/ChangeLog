@@ -1,3 +1,13 @@
+2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/38287
+	* config/sparc/sparc.md (divsi3 expander): Remove constraints.
+	(divsi3_sp32): Add new alternative with 'K' for operand #2.
+	(cmp_sdiv_cc_set): Factor common string.
+	(udivsi3_sp32): Add new alternative with 'K' for operand #2.
+	Add TARGET_V9 case.
+	(cmp_udiv_cc_set): Factor common string.
+
 2008-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/38283
