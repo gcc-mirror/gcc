@@ -1,3 +1,8 @@
+2008-11-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35824
+	* gfortran.dg/alloc_comp_assign_8.f90 : New test.
+
 2008-11-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/37843
