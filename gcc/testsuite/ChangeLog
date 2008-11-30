@@ -1,3 +1,14 @@
+2008-11-30  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37779
+	* gfortran.dg/recursive_check_1.f: Changed expected error message to
+	the more general new one.
+	* gfortran.dg/recursive_check_2.f90: Ditto.
+	* gfortran.dg/entry_18.f90: Ditto.
+	* gfortran.dg/recursive_check_4.f03: Do "the same" check also for
+	FUNCTIONS, as this is different in details from SUBROUTINES.
+	* gfortran.dg/recursive_check_6.f03: New test.
+
 2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/opt/reload3.C: New test.

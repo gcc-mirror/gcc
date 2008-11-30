@@ -12,6 +12,6 @@
    return
  contains
    function barbar ()
-     barbar = b () ! { dg-error "is not declared as RECURSIVE" }
+     barbar = b () ! { dg-error "is not RECURSIVE" }
    end function barbar
  end function

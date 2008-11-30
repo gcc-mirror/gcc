@@ -1157,7 +1157,7 @@ typedef struct gfc_entry_list
   int id;
   /* The LABEL_EXPR marking this entry point.  */
   tree label;
-  /* The nest item in the list.  */
+  /* The next item in the list.  */
   struct gfc_entry_list *next;
 }
 gfc_entry_list;
