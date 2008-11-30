@@ -27,7 +27,7 @@ subroutine subb( g )
        end function
    end interface
    real :: x, y
-   call mysub( glocalb ) ! { dg-error "is recursive" }
+   call mysub( glocalb ) ! { dg-warning "Non-RECURSIVE" }
    return
 entry glocalb( x, y )
    y = x

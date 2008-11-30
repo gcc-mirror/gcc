@@ -1,3 +1,14 @@
+2008-11-30  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37779
+	* gfortran.h (struct gfc_entry_list): Fixed typo in comment.
+	* resolve.c (is_illegal_recursion): New method.
+	(resolve_procedure_expression): Use new is_illegal_recursion instead of
+	direct check and handle function symbols correctly.
+	(resolve_actual_arglist): Removed useless recursion check.
+	(resolve_function): Use is_illegal_recursion instead of direct check.
+	(resolve_call): Ditto.
+
 2008-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans-array.c (gfc_conv_array_parameter): Guard union access.
