@@ -1,3 +1,7 @@
+2008-12-01  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.host: Add m32c*-*-rtems*.
+
 2008-11-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/33100
