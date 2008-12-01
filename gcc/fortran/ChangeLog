@@ -1,3 +1,9 @@
+2008-12-01  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38252
+	* parse.c (parse_spec): Skip statement order check in case
+	of a CONTAINS statement.
+
 2008-11-30  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37779
