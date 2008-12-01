@@ -1,3 +1,14 @@
+2008-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38254
+	* config/i386/sync.md (memory_barrier_nosse): New insn pattern.
+	(memory_barrier): Generate memory_barrier_nosse insn for
+	!(TARGET_64BIT || TARGET_SSE2).
+	* config/i386/sse.md (*sse2_mfence): Also enable for TARGET_64BIT.
+
 2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/38287

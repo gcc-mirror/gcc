@@ -5941,7 +5941,7 @@
 (define_insn "*sse2_mfence"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "TARGET_SSE2"
+  "TARGET_64BIT || TARGET_SSE2"
   "mfence"
   [(set_attr "type" "sse")
    (set_attr "memory" "unknown")])
