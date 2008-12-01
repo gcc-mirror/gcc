@@ -1,3 +1,7 @@
+2008-12-01  Chen Liqin  <liqin.chen@sunplusct.com>
+
+	* config/score/score.h (IRA_COVER_CLASSES): Define.
+
 2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/38287
