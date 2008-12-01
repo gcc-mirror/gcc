@@ -2338,7 +2338,7 @@ loop:
     {
       bool verify_now = false;
 
-      if (st == ST_END_FUNCTION)
+      if (st == ST_END_FUNCTION || st == ST_CONTAINS)
 	verify_now = true;
       else
 	{
