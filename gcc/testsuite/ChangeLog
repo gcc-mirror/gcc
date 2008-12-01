@@ -1,5 +1,8 @@
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38348
+	* g++.dg/gomp/for-19.C: New test.
+
 	PR rtl-optimization/38245
 	* gcc.dg/pr38245-1.c: New test.
 	* gcc.dg/pr38245-2.c: New test.

@@ -357,7 +357,8 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 		break;
 
 	      incr_ok = true;
-	      if (POINTER_TYPE_P (TREE_TYPE (decl)))
+	      if (POINTER_TYPE_P (TREE_TYPE (decl))
+		  && TREE_OPERAND (incr, 1))
 		{
 		  tree t = fold_convert (sizetype, TREE_OPERAND (incr, 1));
 
