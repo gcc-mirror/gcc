@@ -1,3 +1,13 @@
+2008-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/37908
+	* config/alpha/alpha.c (alpha_split_atomic_op): Properly handle NAND
+	case by calculating ~(new_reg & val) instead of (~new_reg & val).
+	* config/alpha/sync.md (sync_nand<mode>): Change insn RTX
+	to (not:I48MODE (and:I48MODE (...))).
+	(sync_old_nand<mode>): Ditto.
+	(sync_new_nand<mode>): Ditto.
+
 2008-12-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.md (CARRY_REG): New constant.
@@ -365,7 +375,7 @@
 2008-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/37908
-	* config/ia64/ia64.c (ia64_expand_atomic_ope): Properly handle NAND
+	* config/ia64/ia64.c (ia64_expand_atomic_op): Properly handle NAND
 	case by calculating ~(new_reg & val) instead of (~new_reg & val).
 	* config/ia64/sync.md (sync_nand<mode>): Change insn RTX
 	to (not:IMODE (and:IMODE (...))).
