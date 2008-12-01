@@ -1,3 +1,9 @@
+2008-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/33642
+	* gcc.c-torture/compile/pr11832.c: Extend XFAIL to alpha*-*-*.
+	* gcc.c-torture/compile/pr33009.c: Likewise.
+
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38348
