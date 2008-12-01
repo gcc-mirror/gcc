@@ -1,5 +1,9 @@
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38348
+	* c-omp.c (c_finish_omp_for): Only transform pointer
+	++ or -- into MODIFY_EXPR if second argument is non-NULL.
+
 	PR rtl-optimization/38245
 	* tree-vrp.c (abs_extent_range): New function.
 	(extract_range_from_binary_expr): Compute range
