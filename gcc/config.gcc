@@ -2374,6 +2374,12 @@ am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no
 	;;
+m32c-*-rtems*)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} m32c/rtems.h rtems.h"
+	tmake_file="${tmake_file} t-rtems"
+	c_target_objs="m32c-pragma.o"
+	cxx_target_objs="m32c-pragma.o"
+ 	;;
 m32c-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	c_target_objs="m32c-pragma.o"
