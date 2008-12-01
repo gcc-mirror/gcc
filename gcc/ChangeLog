@@ -1,3 +1,9 @@
+2008-12-01  David Daney  <ddaney@caviumnetworks.com>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/linux64.h (DRIVER_SELF_SPECS): Add
+	LINUX_DRIVER_SELF_SPECS.
+
 2008-12-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/37514
