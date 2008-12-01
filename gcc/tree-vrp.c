@@ -599,6 +599,42 @@ set_value_range_to_undefined (value_range_t *vr)
 }
 
 
+/* If abs (min) < abs (max), set VR to [-max, max], if
+   abs (min) >= abs (max), set VR to [-min, min].  */
+
+static void
+abs_extent_range (value_range_t *vr, tree min, tree max)
+{
+  int cmp;
+
+  gcc_assert (TREE_CODE (min) == INTEGER_CST);
+  gcc_assert (TREE_CODE (max) == INTEGER_CST);
+  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (min)));
+  gcc_assert (!TYPE_UNSIGNED (TREE_TYPE (min)));
+  min = fold_unary (ABS_EXPR, TREE_TYPE (min), min);
+  max = fold_unary (ABS_EXPR, TREE_TYPE (max), max);
+  if (TREE_OVERFLOW (min) || TREE_OVERFLOW (max))
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+  cmp = compare_values (min, max);
+  if (cmp == -1)
+    min = fold_unary (NEGATE_EXPR, TREE_TYPE (min), max);
+  else if (cmp == 0 || cmp == 1)
+    {
+      max = min;
+      min = fold_unary (NEGATE_EXPR, TREE_TYPE (min), min);
+    }
+  else
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
+}
+
+
 /* Return value range information for VAR.  
 
    If we have no values ranges recorded (ie, VRP is not running), then
@@ -2108,11 +2144,17 @@ extract_range_from_binary_expr (value_range_t *vr,
   /* Refuse to operate on VARYING ranges, ranges of different kinds
      and symbolic ranges.  As an exception, we allow BIT_AND_EXPR
      because we may be able to derive a useful range even if one of
-     the operands is VR_VARYING or symbolic range.  TODO, we may be
-     able to derive anti-ranges in some cases.  */
+     the operands is VR_VARYING or symbolic range.  Similarly for
+     divisions.  TODO, we may be able to derive anti-ranges in
+     some cases.  */
   if (code != BIT_AND_EXPR
       && code != TRUTH_AND_EXPR
       && code != TRUTH_OR_EXPR
+      && code != TRUNC_DIV_EXPR
+      && code != FLOOR_DIV_EXPR
+      && code != CEIL_DIV_EXPR
+      && code != EXACT_DIV_EXPR
+      && code != ROUND_DIV_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2276,6 +2318,86 @@ extract_range_from_binary_expr (value_range_t *vr,
 	    }
 	}
 
+      else if ((code == TRUNC_DIV_EXPR
+		|| code == FLOOR_DIV_EXPR
+		|| code == CEIL_DIV_EXPR
+		|| code == EXACT_DIV_EXPR
+		|| code == ROUND_DIV_EXPR)
+	       && (vr0.type != VR_RANGE || symbolic_range_p (&vr0)))
+	{
+	  /* For division, if op1 has VR_RANGE but op0 does not, something
+	     can be deduced just from that range.  Say [min, max] / [4, max]
+	     gives [min / 4, max / 4] range.  */
+	  if (vr1.type == VR_RANGE
+	      && !symbolic_range_p (&vr1)
+	      && !range_includes_zero_p (&vr1))
+	    {
+	      vr0.type = type = VR_RANGE;
+	      vr0.min = vrp_val_min (TREE_TYPE (op0));
+	      vr0.max = vrp_val_max (TREE_TYPE (op1));
+	    }
+	  else
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+	}
+
+      /* For divisions, if op0 is VR_RANGE, we can deduce a range
+	 even if op1 is VR_VARYING, VR_ANTI_RANGE, symbolic or can
+	 include 0.  */
+      if ((code == TRUNC_DIV_EXPR
+	   || code == FLOOR_DIV_EXPR
+	   || code == CEIL_DIV_EXPR
+	   || code == EXACT_DIV_EXPR
+	   || code == ROUND_DIV_EXPR)
+	  && vr0.type == VR_RANGE
+	  && (vr1.type != VR_RANGE
+	      || symbolic_range_p (&vr1)
+	      || range_includes_zero_p (&vr1)))
+	{
+	  tree zero = build_int_cst (TREE_TYPE (vr0.min), 0);
+	  int cmp;
+
+	  sop = false;
+	  min = NULL_TREE;
+	  max = NULL_TREE;
+	  if (vrp_expr_computes_nonnegative (op1, &sop) && !sop)
+	    {
+	      /* For unsigned division or when divisor is known
+		 to be non-negative, the range has to cover
+		 all numbers from 0 to max for positive max
+		 and all numbers from min to 0 for negative min.  */
+	      cmp = compare_values (vr0.max, zero);
+	      if (cmp == -1)
+		max = zero;
+	      else if (cmp == 0 || cmp == 1)
+		max = vr0.max;
+	      else
+		type = VR_VARYING;
+	      cmp = compare_values (vr0.min, zero);
+	      if (cmp == 1)
+		min = zero;
+	      else if (cmp == 0 || cmp == -1)
+		min = vr0.min;
+	      else
+		type = VR_VARYING;
+	    }
+	  else
+	    {
+	      /* Otherwise the range is -max .. max or min .. -min
+		 depending on which bound is bigger in absolute value,
+		 as the division can change the sign.  */
+	      abs_extent_range (vr, vr0.min, vr0.max);
+	      return;
+	    }
+	  if (type == VR_VARYING)
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+	}
+
       /* Multiplications and divisions are a bit tricky to handle,
 	 depending on the mix of signs we have in the two ranges, we
 	 need to operate on different values to get the minimum and
@@ -2288,84 +2410,82 @@ extract_range_from_binary_expr (value_range_t *vr,
 	 (MIN0 OP MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP
 	 MAX1) and then figure the smallest and largest values to form
 	 the new range.  */
-
-      /* Divisions by zero result in a VARYING value.  */
-      else if (code != MULT_EXPR
-	       && (vr0.type == VR_ANTI_RANGE || range_includes_zero_p (&vr1)))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* Compute the 4 cross operations.  */
-      sop = false;
-      val[0] = vrp_int_const_binop (code, vr0.min, vr1.min);
-      if (val[0] == NULL_TREE)
-	sop = true;
-
-      if (vr1.max == vr1.min)
-	val[1] = NULL_TREE;
       else
 	{
-	  val[1] = vrp_int_const_binop (code, vr0.min, vr1.max);
-	  if (val[1] == NULL_TREE)
+	  gcc_assert ((vr0.type == VR_RANGE
+		       || (code == MULT_EXPR && vr0.type == VR_ANTI_RANGE))
+		      && vr0.type == vr1.type);
+
+	  /* Compute the 4 cross operations.  */
+	  sop = false;
+	  val[0] = vrp_int_const_binop (code, vr0.min, vr1.min);
+	  if (val[0] == NULL_TREE)
 	    sop = true;
-	}
 
-      if (vr0.max == vr0.min)
-	val[2] = NULL_TREE;
-      else
-	{
-	  val[2] = vrp_int_const_binop (code, vr0.max, vr1.min);
-	  if (val[2] == NULL_TREE)
-	    sop = true;
-	}
-
-      if (vr0.min == vr0.max || vr1.min == vr1.max)
-	val[3] = NULL_TREE;
-      else
-	{
-	  val[3] = vrp_int_const_binop (code, vr0.max, vr1.max);
-	  if (val[3] == NULL_TREE)
-	    sop = true;
-	}
-
-      if (sop)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* Set MIN to the minimum of VAL[i] and MAX to the maximum
-	 of VAL[i].  */
-      min = val[0];
-      max = val[0];
-      for (i = 1; i < 4; i++)
-	{
-	  if (!is_gimple_min_invariant (min)
-	      || (TREE_OVERFLOW (min) && !is_overflow_infinity (min))
-	      || !is_gimple_min_invariant (max)
-	      || (TREE_OVERFLOW (max) && !is_overflow_infinity (max)))
-	    break;
-
-	  if (val[i])
+	  if (vr1.max == vr1.min)
+	    val[1] = NULL_TREE;
+	  else
 	    {
-	      if (!is_gimple_min_invariant (val[i])
-		  || (TREE_OVERFLOW (val[i])
-		      && !is_overflow_infinity (val[i])))
+	      val[1] = vrp_int_const_binop (code, vr0.min, vr1.max);
+	      if (val[1] == NULL_TREE)
+		sop = true;
+	    }
+
+	  if (vr0.max == vr0.min)
+	    val[2] = NULL_TREE;
+	  else
+	    {
+	      val[2] = vrp_int_const_binop (code, vr0.max, vr1.min);
+	      if (val[2] == NULL_TREE)
+		sop = true;
+	    }
+
+	  if (vr0.min == vr0.max || vr1.min == vr1.max)
+	    val[3] = NULL_TREE;
+	  else
+	    {
+	      val[3] = vrp_int_const_binop (code, vr0.max, vr1.max);
+	      if (val[3] == NULL_TREE)
+		sop = true;
+	    }
+
+	  if (sop)
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+
+	  /* Set MIN to the minimum of VAL[i] and MAX to the maximum
+	     of VAL[i].  */
+	  min = val[0];
+	  max = val[0];
+	  for (i = 1; i < 4; i++)
+	    {
+	      if (!is_gimple_min_invariant (min)
+		  || (TREE_OVERFLOW (min) && !is_overflow_infinity (min))
+		  || !is_gimple_min_invariant (max)
+		  || (TREE_OVERFLOW (max) && !is_overflow_infinity (max)))
+		break;
+
+	      if (val[i])
 		{
-		  /* If we found an overflowed value, set MIN and MAX
-		     to it so that we set the resulting range to
-		     VARYING.  */
-		  min = max = val[i];
-		  break;
+		  if (!is_gimple_min_invariant (val[i])
+		      || (TREE_OVERFLOW (val[i])
+			  && !is_overflow_infinity (val[i])))
+		    {
+		      /* If we found an overflowed value, set MIN and MAX
+			 to it so that we set the resulting range to
+			 VARYING.  */
+		      min = max = val[i];
+		      break;
+		    }
+
+		  if (compare_values (val[i], min) == -1)
+		    min = val[i];
+
+		  if (compare_values (val[i], max) == 1)
+		    max = val[i];
 		}
-
-	      if (compare_values (val[i], min) == -1)
-		min = val[i];
-
-	      if (compare_values (val[i], max) == 1)
-		max = val[i];
 	    }
 	}
     }
