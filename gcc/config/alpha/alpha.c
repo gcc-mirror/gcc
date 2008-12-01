@@ -4466,7 +4466,12 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
   emit_load_locked (mode, before, mem);
 
   if (code == NOT)
-    x = gen_rtx_AND (mode, gen_rtx_NOT (mode, before), val);
+    {
+      x = gen_rtx_AND (mode, before, val);
+      emit_insn (gen_rtx_SET (VOIDmode, val, x));
+
+      x = gen_rtx_NOT (mode, val);
+    }
   else
     x = gen_rtx_fmt_ee (code, mode, before, val);
   if (after)
