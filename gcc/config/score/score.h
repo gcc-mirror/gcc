@@ -438,6 +438,18 @@ enum reg_class
    also contains the register.  */
 #define REGNO_REG_CLASS(REGNO)         score_reg_class (REGNO)
 
+/* The following macro defines cover classes for Integrated Register
+   Allocator.  Cover classes is a set of non-intersected register
+   classes covering all hard registers used for register allocation
+   purpose.  Any move between two registers of a cover class should be
+   cheaper than load or store of the registers.  The macro value is
+   array of register classes with LIM_REG_CLASSES used as the end
+   marker.  */
+#define IRA_COVER_CLASSES					\
+{								\
+  G32_REGS, CE_REGS, SP_REGS, LIM_REG_CLASSES			\
+}
+
 /* A macro whose definition is the name of the class to which a
    valid base register must belong.  A base register is one used in
    an address which is the register value plus a displacement.  */
