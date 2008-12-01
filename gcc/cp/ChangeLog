@@ -1,3 +1,9 @@
+2008-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38257
+	* parser.c (cp_parser_omp_for_loop): Handle auto.
+	* pt.c (tsubst_omp_for_iterator): Likewise.
+
 2008-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38233

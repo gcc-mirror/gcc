@@ -10324,12 +10324,25 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
 #define RECUR(NODE)				\
   tsubst_expr ((NODE), args, complain, in_decl,	\
 	       integral_constant_expression_p)
-  tree decl, init, cond, incr;
+  tree decl, init, cond, incr, auto_node;
 
   init = TREE_VEC_ELT (OMP_FOR_INIT (t), i);
   gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
   decl = RECUR (TREE_OPERAND (init, 0));
   init = TREE_OPERAND (init, 1);
+  auto_node = type_uses_auto (TREE_TYPE (decl));
+  if (auto_node && init)
+    {
+      tree init_expr = init;
+      tree orig_type;
+      if (TREE_CODE (init_expr) == DECL_EXPR)
+	init_expr = DECL_INITIAL (DECL_EXPR_DECL (init_expr));
+      orig_type = TREE_TYPE (init_expr);
+      TREE_TYPE (init_expr) = RECUR (TREE_TYPE (init_expr));
+      TREE_TYPE (decl)
+	= do_auto_deduction (TREE_TYPE (decl), init_expr, auto_node);
+      TREE_TYPE (init_expr) = orig_type;
+    }
   gcc_assert (!type_dependent_expression_p (decl));
 
   if (!CLASS_TYPE_P (TREE_TYPE (decl)))

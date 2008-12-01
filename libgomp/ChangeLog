@@ -1,5 +1,8 @@
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38257
+	* testsuite/libgomp.c++/for-7.C: New test.
+
 	PR c++/38348
 	* testsuite/libgomp.c++/for-6.C: New test.
 
