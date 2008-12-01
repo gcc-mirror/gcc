@@ -1,3 +1,9 @@
+2008-12-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/37514
+	* reload1.c (reload_as_needed): Invalidate reg_last_reload
+	from previous insns.
+
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38348
