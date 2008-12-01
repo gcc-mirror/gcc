@@ -1,3 +1,21 @@
+2008-12-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md (CARRY_REG): New constant.
+	Replace uses of the "y" register class with direct references to
+	the CARRY_REG register.
+	* config/stormy16/stormy16.c: Replace clobbers of a BImode scratch
+	register with clobbers of the carry register.
+	(xstormy16_secondary_reload_class): Do not return CARRY_REGS.
+	(xstormy16_split_cbranch): Remove redundant carry parameter.
+	(xstormy16_expand_arith): Likewise.
+	* config/stormy16/stormy16.h (enum reg_class): Remove CARRY_REGS.
+	(IRA_COVER_CLASSES, REG_CLASS_NAMES, REG_CLASS_CONTENTS,
+	REGNO_REG_CLASS, REG_CLASS_FROM_LETTER): Likewise.
+	(CARRY_REGNUM): Define.
+	* config/stormy16/stormy16-protos.h (xstormy16_split_cbranch):
+	Update prototype.
+	(xstormy16_expand_arith): Likewise.
+
 2008-12-01  Chen Liqin  <liqin.chen@sunplusct.com>
 
 	* config/score/score.h (IRA_COVER_CLASSES): Define.

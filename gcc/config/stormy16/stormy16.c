@@ -214,7 +214,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 			gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
 					      loc_ref, pc_rtx));
 
-  cy_clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (BImode));
+  cy_clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
 
   if (mode == HImode)
     vec = gen_rtvec (2, branch, cy_clobber);
@@ -240,7 +240,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 
 void
 xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
-			 rtx dest, rtx carry)
+			 rtx dest)
 {
   rtx op0 = XEXP (comparison, 0);
   rtx op1 = XEXP (comparison, 1);
@@ -248,7 +248,7 @@ xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
   rtx compare;
   
   start_sequence ();
-  xstormy16_expand_arith (mode, COMPARE, dest, op0, op1, carry);
+  xstormy16_expand_arith (mode, COMPARE, dest, op0, op1);
   seq = get_insns ();
   end_sequence ();
 
@@ -473,11 +473,6 @@ xstormy16_secondary_reload_class (enum reg_class rclass,
 	       || true_regnum (x) >= FIRST_PSEUDO_REGISTER)))
       && ! reg_class_subset_p (rclass, EIGHT_REGS))
     return EIGHT_REGS;
-
-  /* When reloading a PLUS, the carry register will be required
-     unless the inc or dec instructions can be used.  */
-  if (xstormy16_carry_plus_operand (x, mode))
-    return CARRY_REGS;
 
   return NO_REGS;
 }
@@ -978,7 +973,7 @@ struct xstormy16_stack_layout
 #define REG_NEEDS_SAVE(REGNUM, IFUN)					\
   ((df_regs_ever_live_p (REGNUM) && ! call_used_regs[REGNUM])		\
    || (IFUN && ! fixed_regs[REGNUM] && call_used_regs[REGNUM]		\
-       && (REGNO_REG_CLASS (REGNUM) != CARRY_REGS)			\
+       && (REGNUM != CARRY_REGNUM)					\
        && (df_regs_ever_live_p (REGNUM) || ! current_function_is_leaf)))
 
 /* Compute the stack layout.  */
@@ -1967,13 +1962,12 @@ xstormy16_expand_call (rtx retval, rtx dest, rtx counter)
 
    (set DEST (CODE:MODE SRC0 SRC1))
    
-   using CARRY as a temporary.  When CODE is COMPARE, a branch
-   template is generated (this saves duplicating code in
-   xstormy16_split_cbranch).  */
+   When CODE is COMPARE, a branch template is generated
+   (this saves duplicating code in xstormy16_split_cbranch).  */
 
 void 
 xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
-			rtx dest, rtx src0, rtx src1, rtx carry)
+			rtx dest, rtx src0, rtx src1)
 {
   int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
   int i;
@@ -2000,9 +1994,9 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	    continue;
 	  
 	  if (firstloop)
-	    insn = gen_addchi4 (w_dest, w_src0, w_src1, carry);
+	    insn = gen_addchi4 (w_dest, w_src0, w_src1);
 	  else
-	    insn = gen_addchi5 (w_dest, w_src0, w_src1, carry, carry);
+	    insn = gen_addchi5 (w_dest, w_src0, w_src1);
 	  break;
 
 	case NEG:
@@ -2013,10 +2007,10 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	      rtx branch, sub, clobber, sub_1;
 	      
 	      sub_1 = gen_rtx_MINUS (HImode, w_src0, 
-				     gen_rtx_ZERO_EXTEND (HImode, carry));
+				     gen_rtx_ZERO_EXTEND (HImode, gen_rtx_REG (BImode, 16)));
 	      sub = gen_rtx_SET (VOIDmode, w_dest,
 				 gen_rtx_MINUS (HImode, sub_1, w_src1));
-	      clobber = gen_rtx_CLOBBER (VOIDmode, carry);
+	      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
 	      branch = gen_rtx_SET (VOIDmode, pc_rtx,
 				    gen_rtx_IF_THEN_ELSE (VOIDmode,
 							  gen_rtx_EQ (HImode,
@@ -2032,9 +2026,9 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 		   && GET_CODE (w_src1) == CONST_INT && INTVAL (w_src1) == 0)
 	    continue;
 	  else if (firstloop)
-	    insn = gen_subchi4 (w_dest, w_src0, w_src1, carry);
+	    insn = gen_subchi4 (w_dest, w_src0, w_src1);
 	  else
-	    insn = gen_subchi5 (w_dest, w_src0, w_src1, carry, carry);
+	    insn = gen_subchi5 (w_dest, w_src0, w_src1);
 	  break;
 
 	case IOR:
