@@ -1,3 +1,9 @@
+2008-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/38245
+	* gcc.dg/pr38245-1.c: New test.
+	* gcc.dg/pr38245-2.c: New test.
+
 2008-11-30  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37779
