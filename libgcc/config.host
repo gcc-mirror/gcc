@@ -573,7 +573,7 @@ xtensa*-*-linux*)
 am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	;;
-m32c-*-elf*)
+m32c-*-elf*|m32c-*-rtems*)
  	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2
