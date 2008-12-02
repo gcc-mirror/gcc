@@ -9,7 +9,7 @@
 MODULE TT
 CONTAINS
   FUNCTION K(I) RESULT(J)
-    ENTRY J() ! { dg-error "conflicts with PROCEDURE attribute" }
+    ENTRY J() ! { dg-error "conflicts with RESULT attribute" }
   END FUNCTION K
 
   integer function foo ()

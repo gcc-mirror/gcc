@@ -2327,7 +2327,7 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
-  if (sym && sym->attr.flavor == FL_VARIABLE)
+  if (sym && (sym->attr.flavor == FL_VARIABLE || sym->attr.subroutine))
     {
       gfc_error ("'%s' at %L is not a function", sym->name, &expr->where);
       return FAILURE;

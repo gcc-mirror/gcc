@@ -2509,11 +2509,10 @@ gfc_match_rvalue (gfc_expr **result)
       if (gfc_matching_procptr_assignment)
 	{
 	  gfc_gobble_whitespace ();
-	  if (sym->attr.function && gfc_peek_ascii_char () == '(')
+	  if (gfc_peek_ascii_char () == '(')
 	    /* Parse functions returning a procptr.  */
 	    goto function0;
 
-	  if (sym->attr.flavor == FL_UNKNOWN) sym->attr.flavor = FL_PROCEDURE;
 	  if (gfc_is_intrinsic (sym, 0, gfc_current_locus)
 	      || gfc_is_intrinsic (sym, 1, gfc_current_locus))
 	    sym->attr.intrinsic = 1;

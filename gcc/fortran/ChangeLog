@@ -1,3 +1,18 @@
+2008-12-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36704
+	PR fortran/38290
+	* decl.c (match_result): Result may be a standard variable or a
+	procedure pointer.
+	* expr.c (gfc_check_pointer_assign): Additional checks for procedure
+	pointer assignments.
+	* primary.c (gfc_match_rvalue): Bugfix for procedure pointer
+	assignments.
+	* resolve.c (resolve_function): Check for attr.subroutine.
+	* symbol.c (check_conflict): Addtional checks for RESULT statements.
+	* trans-types.c (gfc_sym_type,gfc_get_function_type): Support procedure
+	pointers as function result.
+
 2008-12-01  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38252
