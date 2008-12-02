@@ -1,3 +1,7 @@
+2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* gcc.misc-tests/linkage.exp: Correct file type check for Darwin.
+
 2008-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38343
