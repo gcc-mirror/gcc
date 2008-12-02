@@ -215,7 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       failure(const string& __str) throw();
 
       // This declaration is not useless:
-      // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
+      // http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Vague-Linkage.html
       virtual
       ~failure() throw();
 
@@ -368,8 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     /// Perform input and output in binary mode (as opposed to text mode).
     /// This is probably not what you think it is; see
-    /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#3 and
-    /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#7 for more.
+    /// http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch27s02.html
     static const openmode binary =	_S_bin;
 
     /// Open for input.  Default for @c ifstream and fstream.
@@ -663,7 +662,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  The synchronization referred to is @e only that between the standard
      *  C facilities (e.g., stdout) and the standard C++ objects (e.g.,
      *  cout).  User-declared streams are unaffected.  See
-     *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#8 for more.
+     *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch28s02.html
     */
     static bool
     sync_with_stdio(bool __sync = true);

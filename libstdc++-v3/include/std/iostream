@@ -1,6 +1,6 @@
 // Standard iostream objects -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,8 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  The &lt;iostream&gt; header declares the eight <em>standard stream
    *  objects</em>.  For other declarations, see
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#10 and the
-   *  @link s27_2_iosfwd I/O forward declarations @endlink
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
+   *  and the @link s27_2_iosfwd I/O forward declarations @endlink
    *
    *  They are required by default to cooperate with the global C library's
    *  @c FILE streams, and to be available during program startup and

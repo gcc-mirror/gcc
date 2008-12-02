@@ -43,5 +43,5 @@ void test01()
 }
 // { dg-error "synthesized" "" { target *-*-* } 42 } 
 // { dg-error "within this context" "" { target *-*-* } 35 } 
-// { dg-error "is private" "" { target *-*-* } 786 } 
+// { dg-error "is private" "" { target *-*-* } 785 } 
 // { dg-error "operator=" "" { target *-*-* } 0 } 

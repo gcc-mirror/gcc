@@ -634,7 +634,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *     }
    *  @endcode
    *
-   *  Also see http://gcc.gnu.org/onlinedocs/libstdc++/ext/sgiexts.html#ch23
+   *  Also see:
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch33s02.html
    *  for a description of extensions.
    *
    *  Most of the actual code isn't contained in %bitset<> itself, but in the
