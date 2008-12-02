@@ -2871,6 +2871,10 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
      build_identity_conv (TREE_TYPE (expr), expr));
   conv->cand = cand;
 
+  /* Remember that this was a list-initialization.  */
+  if (flags & LOOKUP_NO_NARROWING)
+    conv->check_narrowing = true;
+
   /* Combine it with the second conversion sequence.  */
   cand->second_conv = merge_conversion_sequences (conv,
 						  cand->second_conv);
@@ -4579,7 +4583,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* If this is a constructor or a function returning an aggr type,
 	   we need to build up a TARGET_EXPR.  */
 	if (DECL_CONSTRUCTOR_P (convfn))
-	  expr = build_cplus_new (totype, expr);
+	  {
+	    expr = build_cplus_new (totype, expr);
+
+	    /* Remember that this was list-initialization.  */
+	    if (convs->check_narrowing)
+	      TARGET_EXPR_LIST_INIT_P (expr) = true;
+	  }
 
 	return expr;
       }
@@ -5314,9 +5324,15 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else
 	arg = cp_build_indirect_ref (arg, 0, complain);
 
+      if (TREE_CODE (arg) == TARGET_EXPR
+	  && TARGET_EXPR_LIST_INIT_P (arg))
+	{
+	  /* Copy-list-initialization doesn't require the copy constructor
+	     to be defined.  */
+	}
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn)))
+      else if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn)))
 	{
 	  mark_used (fn);
 	  already_used = true;
