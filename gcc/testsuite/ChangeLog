@@ -1,3 +1,21 @@
+2008-12-02  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-11-26  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/28870
+	* lib/timeout.exp: New.
+	* lib/timeout-dg.exp: New.
+	* lib/gcc-dg.exp: Include new timeout library files.
+	(dg-test): Unset timeout variables.
+	* lib/gcc.exp (gcc_target_compile): Set timeout value from new proc.
+	* lib/g++.exp (g++_target_compile): Ditto.
+	* lib/gfortran.exp (gfortran_target_compile): Ditto.
+	* lib/objc.exp (objc_target_compile): Ditto.
+	* lib/obj-c++.exp (obj-c++_target_compile): Ditto.
+	* lib/obj-c++.exp (obj-c++_target_compile): Ditto.
+	* lib/gnat.exp (gnat_target_compile): Ditto.
+
 2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/opt/reload3.C: New test.

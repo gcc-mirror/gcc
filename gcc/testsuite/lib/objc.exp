@@ -28,6 +28,7 @@
 load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib timeout.exp
 load_lib target-libpath.exp
 
 #
@@ -193,6 +194,7 @@ proc objc_target_compile { source dest type options } {
 	set source [concat "-x objective-c-header" $source]
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
+    lappend options "timeout=[timeout_value]"
 
     set_ld_library_path_env_vars
 

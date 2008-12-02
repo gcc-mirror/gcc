@@ -1,3 +1,15 @@
+2008-12-02  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-11-26  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/28870
+	* testsuite/lib/mfdg.exp (dg-test): Use new timeout support.
+	(dg-timeout): Remove.
+	(standard-wait): Remove.
+	* testsuite/lib/libmudflap.exp: Include new timeout library files.
+	(libmudflap_target_compile): Set timeout value from new proc.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.

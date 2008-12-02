@@ -29,6 +29,8 @@ proc load_gcc_lib { filename } {
 load_lib mfdg.exp
 load_lib libgloss.exp
 load_gcc_lib target-libpath.exp
+load_gcc_lib timeout.exp
+load_gcc_lib timeout-dg.exp
 
 proc libmudflap-init { language } {
     global env
@@ -213,6 +215,7 @@ proc libmudflap_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $libs]
 
     lappend options "compiler=$cxx_final"
+    lappend options "timeout=[timeout_value]"
 
     # Picks up the freshly-built testsuite library corresponding to the
     # multilib under test.

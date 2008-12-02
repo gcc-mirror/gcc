@@ -23,6 +23,8 @@ load_lib scanasm.exp
 load_lib scanrtl.exp
 load_lib scantree.exp
 load_lib scanipa.exp
+load_lib timeout.exp
+load_lib timeout-dg.exp
 load_lib prune.exp
 load_lib libgloss.exp
 load_lib target-libpath.exp
@@ -553,12 +555,14 @@ if { [info procs saved-dg-test] == [list] } {
 	    if [info exists compiler_conditional_xfail_data] {
 		unset compiler_conditional_xfail_data
 	    }
+	    unset_timeout_vars
 	    error $errmsg $saved_info
 	}
 	set additional_files ""
 	set additional_sources ""
 	set additional_prunes ""
 	set shouldfail 0
+	unset_timeout_vars
 	if [info exists compiler_conditional_xfail_data] {
 	    unset compiler_conditional_xfail_data
 	}

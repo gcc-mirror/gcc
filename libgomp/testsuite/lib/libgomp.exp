@@ -21,6 +21,8 @@ load_gcc_lib prune.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 load_gcc_lib gcc-defs.exp
+load_gcc_lib timeout.exp
+load_gcc_lib timeout-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
@@ -169,6 +171,7 @@ proc libgomp_target_compile { source dest type options } {
     }
 
     lappend options "additional_flags=[libio_include_flags]"
+    lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
 
     set options [concat $libgomp_compile_options $options]

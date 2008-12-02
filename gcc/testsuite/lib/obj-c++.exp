@@ -23,6 +23,7 @@
 #
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib timeout.exp
 load_lib target-libpath.exp
 
 #
@@ -324,6 +325,7 @@ proc obj-c++_target_compile { source dest type options } {
 
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "compiler=$OBJCXX_UNDER_TEST";
+    lappend options "timeout=[timeout_value]"
 
     set options [concat $gpp_compile_options $options]
 

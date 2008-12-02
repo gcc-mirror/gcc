@@ -1,3 +1,15 @@
+2008-12-02  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-11-26  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/28870
+	* testsuite/lib/libstdc++.exp: Include new timeout library files.
+	(libstdc++_init): Define tool_timeout.
+	(dg-test): Override DejaGnu proc.
+	(v3_target_compile): Set timeout value from new proc.
+	(v3_target_compile_as_c): Ditto.
+
 2008-12-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/38080

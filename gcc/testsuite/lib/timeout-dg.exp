@@ -1,0 +1,49 @@
+# Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# dg-timeout -- Set the timout limit, in seconds, for a particular test
+#
+
+proc dg-timeout { args } {
+    global individual_timeout
+
+    set args [lreplace $args 0 0]
+    if { [llength $args] > 1 } {
+	if { [dg-process-target [lindex $args 1]] == "S" } {
+	    set individual_timeout [lindex $args 0]
+	}
+    } else {
+	set individual_timeout [lindex $args 0]
+    }
+}
+
+#
+# dg-timeout-factor -- Scale the timeout limit for a particular test
+#
+
+proc dg-timeout-factor { args } {
+    global timeout_factor
+
+    set args [lreplace $args 0 0]
+    if { [llength $args] > 1 } {
+	if { [dg-process-target [lindex $args 1]] == "S" } {
+	    set timeout_factor [lindex $args 0]
+	}
+    } else {
+	set timeout_factor [lindex $args 0]
+    }
+}

@@ -27,6 +27,7 @@
 load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib timeout.exp
 
 #
 # GNAT_UNDER_TEST is the compiler under test.
@@ -131,6 +132,7 @@ proc gnat_target_compile { source dest type options } {
     set ld_library_path ".:${gnat_libgcc_s_path}"
     lappend options "compiler=$GNAT_UNDER_TEST -q -f"
     lappend options "incdir=${rootme}/ada/rts"
+    lappend options "timeout=[timeout_value]"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"

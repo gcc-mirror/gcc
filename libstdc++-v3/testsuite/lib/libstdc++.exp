@@ -53,6 +53,8 @@ load_gcc_lib target-supports-dg.exp
 load_lib prune.exp
 load_lib dg-options.exp
 load_gcc_lib target-libpath.exp
+load_gcc_lib timeout.exp
+load_gcc_lib timeout-dg.exp
 load_gcc_lib wrapper.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
@@ -89,6 +91,7 @@ proc libstdc++_init { testfile } {
     global ld_library_path
     global target_triplet
     global flags_file
+    global tool_timeout
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -180,6 +183,9 @@ proc libstdc++_init { testfile } {
     } else {
 	set compiler [transform "g++"]
     }
+
+    # Set the default timeout for v3 tests.
+    set tool_timeout 600
 
     # Default settings.
     set cxx [transform "g++"]
@@ -343,6 +349,24 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     return [list $comp_output $output_file]
 }
 
+# Override the DejaGnu dg-test in order to clear flags after a test, as
+# is done for compiler tests in gcc-dg.exp.
+
+if { [info procs saved-dg-test] == [list] } {
+    rename dg-test saved-dg-test
+
+    proc dg-test { args } {
+	global errorInfo
+
+	if { [ catch { eval saved-dg-test $args } errmsg ] } {
+	    set saved_info $errorInfo
+	    unset_timeout_vars
+	    error $errmsg $saved_info
+	}
+	unset_timeout_vars
+    }
+}
+
 # True if the library supports wchar_t.
 set v3-wchar_t 0
 
@@ -386,7 +410,7 @@ proc v3_target_compile { source dest type options } {
     }
 
     lappend options "compiler=$cxx_final"
-    lappend options "timeout=600"
+    lappend options "timeout=[timeout_value]"
 
     return [target_compile $source $dest $type $options]
 }
@@ -451,7 +475,7 @@ proc v3_target_compile_as_c { source dest type options } {
     set cc_final [concat $cc_final "-L$libsup"]
 
     lappend options "compiler=$cc_final"
-    lappend options "timeout=600"
+    lappend options "timeout=[timeout_value]"
 
     return [target_compile $source $dest $type $options]
 }

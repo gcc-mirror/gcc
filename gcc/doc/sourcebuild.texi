@@ -988,6 +988,26 @@ The target's C99 runtime (both headers and libraries).
 and only then in certain modes.
 @end table
 
+@item @{ dg-timeout @var{n} [@{target @var{selector} @}] @}
+Set the time limit for the compilation and for the execution of the test
+to the specified number of seconds.
+
+@item @{ dg-timeout-factor @var{x} [@{ target @var{selector} @}] @}
+Multiply the normal time limit for compilation and execution of the test
+by the specified floating-point factor.  The normal timeout limit, in
+seconds, is found by searching the following in order:
+
+@itemize @bullet
+@item the value defined by an earlier @code{dg-timeout} directive in
+the test
+
+@item variable @var{tool_timeout} defined by the set of tests
+
+@item @var{gcc,,timeout} set in the target board
+
+@item 300
+@end itemize
+
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
 Skip the test if the test system is included in @var{selector} and if
 each of the options in @var{include-opts} is in the set of options with
