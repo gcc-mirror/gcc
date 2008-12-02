@@ -21,6 +21,9 @@
    however invalidate any other reasons why the executable file might be covered
    by the GNU General Public License. */
 
+/* Prototype.  */
+float __floatdisf (long long x);
+
 float __floatdisf (long long x)
 {
   /* The SPU back-end now generates inline code for this conversion.

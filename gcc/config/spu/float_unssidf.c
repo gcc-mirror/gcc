@@ -42,6 +42,6 @@ __float_unssidf (qword SI)
   t4 = si_sf (t0, t1);
   t5 = si_a (t2, t2);
   t6 = si_andc (t4, t3);
-  t7 = si_shufb (t6, t5, *(qword *)__sidf_pat);
+  t7 = si_shufb (t6, t5, *(const qword *) __sidf_pat);
   return si_shlqbii (t7, 4);
 }

@@ -1,3 +1,10 @@
+2008-12-02  Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/float_disf.c (__floatdisf): Prototype.
+	* config/spu/float_unsdisf.c (__float_undisf): Likewise.
+	* config/spu/float_unssidf.c (__float_unssidf): Constify cast.
+	* config/spu/float_unsdidf.c (__float_unsdidf): Likewise.
+
 2008-12-02  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.h (INCOMING_FRAME_SP_OFFSET): Negate.
