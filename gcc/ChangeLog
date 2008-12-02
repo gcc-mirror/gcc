@@ -1,3 +1,9 @@
+2008-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38343
+	* builtins.c (fold_builtin_memory_op): Convert len to sizetype
+	before using it in POINTER_PLUS_EXPR.
+
 2008-12-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38359
