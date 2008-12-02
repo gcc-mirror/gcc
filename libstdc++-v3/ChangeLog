@@ -3,8 +3,8 @@
 	PR libstdc++/38365 (cont)
 	* src/localename.cc (locale::locale(const locale&, const locale&,
 	category)): Revert last changes.
-	* src/localename.cc (locale::_Impl::_M_replace_categories(const
-	_Impl*, category)): Fix here instead; rework.
+	(locale::_Impl::_M_replace_categories(const _Impl*, category)):
+	Fix here instead; rework.
 
 2008-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
