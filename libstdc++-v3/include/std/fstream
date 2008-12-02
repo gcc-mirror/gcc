@@ -325,7 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  If no file has been opened, and both @a s and @a n are zero, then
        *  the stream becomes unbuffered.  Otherwise, @c s is used as a
        *  buffer; see
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#2
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
        *  for more.
       */
       virtual __streambuf_type*

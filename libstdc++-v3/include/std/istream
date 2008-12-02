@@ -630,10 +630,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  Objects of this class are created before all of the standard
    *  extractors are run.  It is responsible for "exception-safe prefix and
    *  suffix operations," although only prefix actions are currently required
-   *  by the standard.  Additional actions may be added by the
-   *  implementation, and we list them in
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#5
-   *  under [27.6] notes.
+   *  by the standard. 
   */
   template<typename _CharT, typename _Traits>
     class basic_istream<_CharT, _Traits>::sentry

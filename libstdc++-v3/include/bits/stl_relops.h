@@ -60,8 +60,8 @@
  *  Inclusion of this file has been removed from
  *  all of the other STL headers for safety reasons, except std_utility.h.
  *  For more information, see the thread of about twenty messages starting
- *  with http://gcc.gnu.org/ml/libstdc++/2001-01/msg00223.html , or the
- *  FAQ at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#4_4 .
+ *  with http://gcc.gnu.org/ml/libstdc++/2001-01/msg00223.html, or
+ *  http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.ambiguous_overloads
  *
  *  Short summary:  the rel_ops operators should be avoided for the present.
  */
