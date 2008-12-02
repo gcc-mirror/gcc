@@ -1,3 +1,7 @@
+2008-12-02  Kai Tietz  <kai.tietz@onevision.com>
+
+	* MAINTAINERS:  Add myself as mingw maintainer.
+
 2008-12-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.

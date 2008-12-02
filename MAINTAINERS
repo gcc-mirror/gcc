@@ -116,6 +116,7 @@ RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	me.gcc@gcc.gnu.org
 windows, cygwin, mingw	Danny Smith		dannysmith@users.sourceforge.net
+windows, cygwin, mingw	Kai Tietz		kai.tietz@onevision.com
 
 			Language Front Ends Maintainers
 
@@ -444,7 +445,6 @@ Gabriele Svelto					gabriele.svelto@st.com
 Samuel Tardieu					sam@rfc1149.net
 Kresten Krab Thorup				krab@gcc.gnu.org
 Caroline Tice					ctice@apple.com
-Kai Tietz					kai.tietz@onevision.com
 David Ung					davidu@mips.com
 Kris Van Hees					kris.van.hees@oracle.com
 Jonathan Wakely					redi@gcc.gnu.org
