@@ -46,10 +46,10 @@ __float_unsdidf (qword DI)
   t0 = si_clz (DI);
   t1 = si_shl (DI, t0);
   t2 = si_ceqi (t0, 32);
-  t3 = si_sf (t0, *(qword *) __didf_scale);
+  t3 = si_sf (t0, *(const qword *) __didf_scale);
   t4 = si_a (t1, t1);
   t5 = si_andc (t3, t2);
-  t6 = si_shufb (t5, t4, *(qword *) __didf_pat);
+  t6 = si_shufb (t5, t4, *(const qword *) __didf_pat);
   t7 = si_shlqbii (t6, 4);
   t8 = si_shlqbyi (t7, 8);
   return si_dfa (t7, t8);
