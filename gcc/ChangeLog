@@ -1,4 +1,12 @@
-2008-12-02  Danny Smith   <dannysmith@users.sourceforge.net>
+2008-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38343
+	* builtins.c (expand_builtin_mempcpy_args): Handle COMPOUND_EXPRs
+	potentially returned from folding memcpy.
+	(expand_builtin_stpcpy_args): Similarly for folding strcpy.
+	(fold_builtin_2): Handle BUILT_IN_STPCPY if result is ignored.
+
+2008-12-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
         PR target/38054
 	* config/i386/winnt.c (i386_pe_encode_section_info): Condition stdcall
