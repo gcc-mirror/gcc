@@ -214,7 +214,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 			gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
 					      loc_ref, pc_rtx));
 
-  cy_clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+  cy_clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
 
   if (mode == HImode)
     vec = gen_rtvec (2, branch, cy_clobber);
@@ -895,7 +895,7 @@ xstormy16_expand_move (enum machine_mode mode, rtx dest, rtx src)
       rtx dest_reg = XEXP (pmv, 0);
       rtx dest_mod = XEXP (pmv, 1);
       rtx set      = gen_rtx_SET (Pmode, dest_reg, dest_mod);
-      rtx clobber  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+      rtx clobber  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
     
       dest = gen_rtx_MEM (mode, dest_reg);
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
@@ -906,7 +906,7 @@ xstormy16_expand_move (enum machine_mode mode, rtx dest, rtx src)
       rtx src_reg = XEXP (pmv, 0);
       rtx src_mod = XEXP (pmv, 1);
       rtx set     = gen_rtx_SET (Pmode, src_reg, src_mod);
-      rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+      rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
     
       src = gen_rtx_MEM (mode, src_reg);
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
@@ -1002,17 +1002,17 @@ xstormy16_compute_stack_layout (void)
   
   if (crtl->args.size <= 2048 && crtl->args.size != -1)
     {
-      if (layout.frame_size + INCOMING_FRAME_SP_OFFSET 
+      if (layout.frame_size - INCOMING_FRAME_SP_OFFSET 
 	  + crtl->args.size <= 2048)
-	layout.fp_minus_ap = layout.frame_size + INCOMING_FRAME_SP_OFFSET;
+	layout.fp_minus_ap = layout.frame_size - INCOMING_FRAME_SP_OFFSET;
       else
 	layout.fp_minus_ap = 2048 - crtl->args.size;
     }
   else
     layout.fp_minus_ap = (layout.stdarg_save_size 
 			  + layout.register_save_size
-			  + INCOMING_FRAME_SP_OFFSET);
-  layout.sp_minus_fp = (layout.frame_size + INCOMING_FRAME_SP_OFFSET 
+			  - INCOMING_FRAME_SP_OFFSET);
+  layout.sp_minus_fp = (layout.frame_size - INCOMING_FRAME_SP_OFFSET 
 			- layout.fp_minus_ap);
   layout.first_local_minus_ap = layout.sp_minus_fp - layout.locals_size;
   return layout;
@@ -1030,11 +1030,11 @@ xstormy16_initial_elimination_offset (int from, int to)
   if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     result = layout.sp_minus_fp - layout.locals_size;
   else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    result = -layout.locals_size;
+    result = - layout.locals_size;
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    result = -layout.fp_minus_ap;
+    result = - layout.fp_minus_ap;
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    result = -(layout.sp_minus_fp + layout.fp_minus_ap);
+    result = - (layout.sp_minus_fp + layout.fp_minus_ap);
   else
     gcc_unreachable ();
 
@@ -1047,7 +1047,7 @@ emit_addhi3_postreload (rtx dest, rtx src0, rtx src1)
   rtx set, clobber, insn;
   
   set = gen_rtx_SET (VOIDmode, dest, gen_rtx_PLUS (HImode, src0, src1));
-  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
   insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
   return insn;
 }
@@ -1134,7 +1134,10 @@ xstormy16_expand_prologue (void)
   /* It's just possible that the SP here might be what we need for
      the new FP...  */
   if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
-    emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+    {
+      insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   /* Allocate space for local variables.  */
   if (layout.locals_size)
@@ -1148,11 +1151,15 @@ xstormy16_expand_prologue (void)
   if (frame_pointer_needed && layout.sp_minus_fp != layout.locals_size)
     {
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
 
       if (layout.sp_minus_fp)
-	emit_addhi3_postreload (hard_frame_pointer_rtx,
-				hard_frame_pointer_rtx,
-				GEN_INT (-layout.sp_minus_fp));
+	{
+	  insn = emit_addhi3_postreload (hard_frame_pointer_rtx,
+					 hard_frame_pointer_rtx,
+					 GEN_INT (- layout.sp_minus_fp));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 }
 
@@ -1191,36 +1198,19 @@ xstormy16_expand_epilogue (void)
       if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
 	emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
       else
-        {
-	  insn = emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
-					 GEN_INT (- layout.locals_size));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
+	emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (- layout.locals_size));
     }
 
   /* Restore any call-saved registers.  */
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
     if (REG_NEEDS_SAVE (regno, ifun))
-      {
-        rtx dwarf;
-
-	insn = emit_move_insn (gen_rtx_REG (HImode, regno), mem_pop_rtx);
-	RTX_FRAME_RELATED_P (insn) = 1;
-	dwarf = gen_rtx_SET (Pmode, stack_pointer_rtx,
-			     plus_constant (stack_pointer_rtx,
-					    -GET_MODE_SIZE (Pmode)));
-	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					      dwarf,
-					      REG_NOTES (insn));
-      }
+      emit_move_insn (gen_rtx_REG (HImode, regno), mem_pop_rtx);
   
   /* Pop the stack for the stdarg save area.  */
   if (layout.stdarg_save_size)
-    {
-      insn = emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
-				     GEN_INT (- layout.stdarg_save_size));
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+    emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
+			    GEN_INT (- layout.stdarg_save_size));
 
   /* Return.  */
   if (ifun)
@@ -1342,7 +1332,7 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 		  NULL_TREE);
 
   t = make_tree (TREE_TYPE (base), virtual_incoming_args_rtx);
-  u = build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET);
+  u = build_int_cst (NULL_TREE, - INCOMING_FRAME_SP_OFFSET);
   u = fold_convert (TREE_TYPE (count), u);
   t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base), t, u);
   t = build2 (MODIFY_EXPR, TREE_TYPE (base), base, t);
@@ -1430,7 +1420,7 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     }
 
   t = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD
-		- INCOMING_FRAME_SP_OFFSET);
+		+ INCOMING_FRAME_SP_OFFSET);
   t = fold_convert (TREE_TYPE (count), t);
   t = build2 (MINUS_EXPR, TREE_TYPE (count), count_tmp, t);
   t = build2 (PLUS_EXPR, TREE_TYPE (count), t,
@@ -2007,10 +1997,10 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	      rtx branch, sub, clobber, sub_1;
 	      
 	      sub_1 = gen_rtx_MINUS (HImode, w_src0, 
-				     gen_rtx_ZERO_EXTEND (HImode, gen_rtx_REG (BImode, 16)));
+				     gen_rtx_ZERO_EXTEND (HImode, gen_rtx_REG (BImode, CARRY_REGNUM)));
 	      sub = gen_rtx_SET (VOIDmode, w_dest,
 				 gen_rtx_MINUS (HImode, sub_1, w_src1));
-	      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, 16));
+	      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
 	      branch = gen_rtx_SET (VOIDmode, pc_rtx,
 				    gen_rtx_IF_THEN_ELSE (VOIDmode,
 							  gen_rtx_EQ (HImode,

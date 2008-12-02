@@ -332,22 +332,6 @@
    add %0,%2"
   [(set_attr "length" "2,2,0,2,2,2,2,4")])
 
-;; ; Reload can generate addition operations.  The SECONDARY_RELOAD_CLASS
-;; ; macro causes it to allocate the carry register; this pattern
-;; ; shows it how to place the register in RTL to make the addition work.
-;; (define_expand "reload_inhi"
-;;   [(parallel [(set (match_operand:HI 0 "register_operand" "=r")
-;; 		   (match_operand:HI 1 "xstormy16_carry_plus_operand" ""))
-;; 	      (clobber (reg:BI CARRY_REG))])]
-;;   ""
-;;   "if (! rtx_equal_p (operands[0], XEXP (operands[1], 0)))
-;;     {
-;;       emit_insn (gen_rtx_SET (VOIDmode, operands[0], XEXP (operands[1], 0)));
-;;       operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]), operands[0],
-;; 				  XEXP (operands[1], 1));
-;;     }
-;;  ")
-
 (define_insn "addchi4"
   [(set (match_operand:HI 0 "register_operand" "=T,r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
