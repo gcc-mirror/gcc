@@ -1,3 +1,8 @@
+2008-12-02  Andreas Tobler  <a.tobler@schweiz.org>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* config/i386/t-darwin64: Add m32 multilib support.
+
 2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* testsuite/gcc.dg/darwin-comm.c: Expand to darwin10 and later.
