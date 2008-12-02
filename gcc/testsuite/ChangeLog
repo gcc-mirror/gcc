@@ -1,3 +1,11 @@
+2008-12-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35782, c++/37860
+	* g++.dg/cpp0x/initlist9.C: New test.
+
+	PR c++/37234
+	* g++.dg/cpp0x/defaulted5.C: New test.
+
 2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gcc.misc-tests/linkage.exp: Correct file type check for Darwin.

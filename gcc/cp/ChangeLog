@@ -1,3 +1,17 @@
+2008-12-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35782, c++/37860
+	* call.c (build_user_type_conversion_1): Remember
+	list-initialization.
+	(convert_like_real): Likewise.
+	(build_over_call): Don't require the copy constructor
+	for copy-list-initialization.
+	* cp-tree.h (TARGET_EXPR_LIST_INIT_P): New macro.
+
+	PR c++/37234
+	* decl.c (cp_finish_decl): Handle =default and =delete for
+	templates, too.
+
 2008-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38257

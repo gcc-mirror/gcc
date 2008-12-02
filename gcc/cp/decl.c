@@ -5504,6 +5504,25 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
     }
 
+  if (init && TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (init == ridpointers[(int)RID_DELETE])
+	{
+	  /* FIXME check this is 1st decl.  */
+	  DECL_DELETED_FN (decl) = 1;
+	  DECL_DECLARED_INLINE_P (decl) = 1;
+	  DECL_INITIAL (decl) = error_mark_node;
+	  init = NULL_TREE;
+	}
+      else if (init == ridpointers[(int)RID_DEFAULT])
+	{
+	  if (!defaultable_fn_p (decl))
+	    error ("%qD cannot be defaulted", decl);
+	  else
+	    DECL_DEFAULTED_FN (decl) = 1;
+	}
+    }
+    
   if (processing_template_decl)
     {
       bool type_dependent_p;
@@ -5765,25 +5784,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	{
 	  if (init)
 	    {
-	      if (init == ridpointers[(int)RID_DELETE])
+	      if (init == ridpointers[(int)RID_DEFAULT])
 		{
-		  /* fixme check this is 1st decl */
-		  DECL_DELETED_FN (decl) = 1;
-		  DECL_DECLARED_INLINE_P (decl) = 1;
-		  DECL_INITIAL (decl) = error_mark_node;
-		}
-	      else if (init == ridpointers[(int)RID_DEFAULT])
-		{
-		  if (!defaultable_fn_p (decl))
-		    error ("%qD cannot be defaulted", decl);
-		  else
-		    {
-		      /* An out-of-class default definition is defined at
-			 the point where it is explicitly defaulted.  */
-		      DECL_DEFAULTED_FN (decl) = 1;
-		      if (DECL_INITIAL (decl) == error_mark_node)
-			synthesize_method (decl);
-		    }
+		  /* An out-of-class default definition is defined at
+		     the point where it is explicitly defaulted.  */
+		  if (DECL_INITIAL (decl) == error_mark_node)
+		    synthesize_method (decl);
 		}
 	      else
 		error ("function %q#D is initialized like a variable", decl);
