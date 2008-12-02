@@ -6,14 +6,12 @@
 
 real function e1(x)
   real :: x
-  print *,'e1!',x
   e1 = x * 3.0
 end function
 
 subroutine e2(a,b)
   real, intent(inout) :: a
   real, intent(in) :: b
-  print *,'e2!',a,b
   a = a + b
 end subroutine
 
@@ -29,7 +27,15 @@ interface
   end subroutine sp
 end interface
 
-external :: e1,e2
+external :: e1
+
+interface
+  subroutine e2(a,b)
+    real, intent(inout) :: a
+    real, intent(in) :: b
+  end subroutine e2
+end interface
+
 real :: c = 1.2
 
 fp => e1

@@ -1613,8 +1613,8 @@ gfc_sym_type (gfc_symbol * sym)
   tree type;
   int byref;
 
-  /* Procedure Pointers inside COMMON blocks.  */
-  if (sym->attr.proc_pointer && sym->attr.in_common)
+  /* Procedure Pointers inside COMMON blocks or as function result.  */
+  if (sym->attr.proc_pointer && (sym->attr.in_common || sym->attr.result))
     {
       /* Unset proc_pointer as gfc_get_function_type calls gfc_sym_type.  */
       sym->attr.proc_pointer = 0;
@@ -2143,6 +2143,9 @@ gfc_get_function_type (gfc_symbol * sym)
       type = gfc_typenode_for_spec (&sym->ts);
       sym->ts.kind = gfc_default_real_kind;
     }
+  else if (sym->result && sym->result->attr.proc_pointer)
+    /* Procedure pointer return values.  */
+    type = gfc_sym_type (sym->result);
   else
     type = gfc_sym_type (sym);
 

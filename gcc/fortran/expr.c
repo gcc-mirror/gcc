@@ -3112,9 +3112,30 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   if (rvalue->expr_type == EXPR_NULL && rvalue->ts.type == BT_UNKNOWN)
     return SUCCESS;
 
-  /* TODO checks on rvalue for a procedure pointer assignment.  */
+  /* Checks on rvalue for procedure pointer assignments.  */
   if (lvalue->symtree->n.sym->attr.proc_pointer)
-    return SUCCESS;
+    {
+      attr = gfc_expr_attr (rvalue);
+      if (!((rvalue->expr_type == EXPR_NULL)
+	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE
+		&& attr.flavor == FL_PROCEDURE)))
+	{
+	  gfc_error ("Invalid procedure pointer assignment at %L",
+		     &rvalue->where);
+	  return FAILURE;
+	}
+      if (rvalue->expr_type == EXPR_VARIABLE
+	  && lvalue->symtree->n.sym->attr.if_source != IFSRC_UNKNOWN
+	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
+				      rvalue->symtree->n.sym, 0))
+	{
+	  gfc_error ("Interfaces don't match "
+		     "in procedure pointer assignment at %L", &rvalue->where);
+	  return FAILURE;
+	}
+      return SUCCESS;
+    }
 
   if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
     {

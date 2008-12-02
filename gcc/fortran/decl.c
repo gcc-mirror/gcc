@@ -3974,8 +3974,7 @@ match_result (gfc_symbol *function, gfc_symbol **result)
   if (gfc_get_symbol (name, NULL, &r))
     return MATCH_ERROR;
 
-  if (gfc_add_flavor (&r->attr, FL_VARIABLE, r->name, NULL) == FAILURE
-      || gfc_add_result (&r->attr, r->name, NULL) == FAILURE)
+  if (gfc_add_result (&r->attr, r->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   *result = r;
