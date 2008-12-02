@@ -1,3 +1,12 @@
+2008-12-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/37861
+        * tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do not check
+        for INDIRECT_REFs.
+        (forward_propagate_addr_into_variable_array_index): Check that the
+        offset is not computed from a MULT_EXPR, use is_gimple_assign rather
+        than the gimple code directly.
+        
 2008-12-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/float_disf.c (__floatdisf): Prototype.
