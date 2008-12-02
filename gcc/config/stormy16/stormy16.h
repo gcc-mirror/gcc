@@ -352,7 +352,7 @@ enum reg_class
 #define INCOMING_RETURN_ADDR_RTX  \
    gen_rtx_MEM (SImode, gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-4)))
 
-#define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? 6 : 4)
+#define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? -6 : -4)
 
 
 /* Register That Address the Stack Frame.  */
@@ -730,7 +730,8 @@ do  {						\
 
 /* Assembler Commands for Exception Regions.  */
 
-#define DWARF2_UNWIND_INFO 0
+#define DWARF2_UNWIND_INFO 		0
+#define DWARF_CIE_DATA_ALIGNMENT	1
 
 /* Don't use __builtin_setjmp for unwinding, since it's tricky to get
    at the high 16 bits of an address.  */

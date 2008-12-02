@@ -1,3 +1,14 @@
+2008-12-02  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.h (INCOMING_FRAME_SP_OFFSET): Negate.
+	(DWARF_CIE_DATA_ALIGNMENT): Define.
+
+	* config/stormy16/stormy16.c (xstormy16_compute_stack_layout):
+	Invert add/sub for INCOMING_FRAME_SP_OFFSET.
+	(xstormy16_expand_prologue): Likewise.
+	(xstormy16_expand_builtin_va_start): Likewise.
+	(xstormy16_gimplify_va_arg_expr): Likewise.
+
 2008-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38343
