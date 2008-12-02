@@ -5,7 +5,7 @@
 	* config/mips/mips.md (IMOVE32): New mode iterator.
 	(movsi): Generalize with IMOVE32.
 	(*movsi_internal): Likewise.
-	(*mov<mode>_mips16): Likewise, and its define_splits.
+	(*mov<mode>_mips16): Likewise.
 	(*lwxs): Likewise.
 
 2008-12-02  Nathan Sidwell  <nathan@codesourcery.com>

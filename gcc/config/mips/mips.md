@@ -3985,9 +3985,9 @@
 ;; load are 2 2 byte instructions.
 
 (define_split
-  [(set (match_operand:IMOVE32 0 "d_operand")
-	(mem:IMOVE32 (plus:SI (match_dup 0)
-			      (match_operand:SI 1 "const_int_operand"))))]
+  [(set (match_operand:SI 0 "d_operand")
+	(mem:SI (plus:SI (match_dup 0)
+			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
    && ((INTVAL (operands[1]) < 0
 	&& INTVAL (operands[1]) >= -0x80)
@@ -3996,8 +3996,8 @@
        || (INTVAL (operands[1]) >= 0
 	   && INTVAL (operands[1]) < 32 * 4
 	   && (INTVAL (operands[1]) & 3) != 0))"
-  [(set (match_dup 3) (plus:SI (match_dup 0) (match_dup 1)))
-   (set (match_dup 0) (mem:IMOVE32 (plus:SI (match_dup 3) (match_dup 2))))]
+  [(set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))
+   (set (match_dup 0) (mem:SI (plus:SI (match_dup 0) (match_dup 2))))]
 {
   HOST_WIDE_INT val = INTVAL (operands[1]);
 
@@ -4017,7 +4017,6 @@
       operands[1] = GEN_INT (off);
       operands[2] = GEN_INT (val - off);
     }
-  operands[3] = gen_rtx_REG (SImode, REGNO (operands[0]));
 })
 
 ;; On the mips16, we can split a load of certain constants into a load
