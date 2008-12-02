@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse2" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -w" { target { powerpc*-*-linux* } } } */
+/* { dg-options "-O2 -maltivec" { target { powerpc*-*-linux* && powerpc_altivec_ok } } } */
 
 typedef unsigned __attribute__ ((__mode__ (__pointer__))) uintptr_t;
 

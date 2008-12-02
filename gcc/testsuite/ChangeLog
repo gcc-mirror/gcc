@@ -1,6 +1,51 @@
 2008-12-02  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
+	2008-08-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: Ignore a warning.
+	* g++.dg/ext/altivec-3.C: Move AltiVec code out of main.
+
+	Backport from mainline:
+	2008-07-10 2008-07-10  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/29056
+	* gcc.target/powerpc/ppc-negeq0-1.c: Use long instead of int.
+	Adjust shift and scan-assembler-not pattern to allow for 64-bit
+	case.
+
+	Backport from mainline:
+	2008-06-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/pr34856.c: Condition use of -maltivec on
+	powerpc_altivec_ok.  Use -w on other powerpc*-*-linux*.
+
+	Backport from mainline:
+	2008-05-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/ext/vector14.C: Ignore a possible warning.
+
+	Backport from mainline:
+	2008-04-21  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/pr33953.c:  XFAIL if vect_no_align.
+
+	Backport from mainline:
+	2008-04-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/var-expand3.c: Skip for powerpc-linux if not on AltiVec HW.
+
+	* gcc.dg/torture/builtin-modf-1.c: Use special options for
+	powerpc*-*-linux*.
+
+	Backport from mainline:
+	2008-04-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/other/anon5.C: Don't depend on line number for error message.
+
+2008-12-02  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
 	2008-11-26  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/28870

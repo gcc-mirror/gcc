@@ -1,15 +1,15 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-int foo(int x)
+long foo(long x)
 {
   return -(x == 0);
 }
 
-int bar(int x)
+long bar(long x)
 {
-  int t = __builtin_clz(x);
-  return -(t>>5);
+  long t = __builtin_clzl(x);
+  return -(t>>(sizeof(long) == 8 ? 6 : 5));
 }
 
-/* { dg-final { scan-assembler-not "cntlzw" } } */
+/* { dg-final { scan-assembler-not "cntlz" } } */

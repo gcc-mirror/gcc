@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-* && powerpc_altivec_ok } } }} */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } }} */
 /* { dg-options "-O2 -funroll-loops -ffast-math -fvariable-expansion-in-unroller -maltivec -dL" } */
 
 #include "altivec.h"

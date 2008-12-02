@@ -16,7 +16,9 @@ namespace {
 
 const bool &f()
 {
-  return c::t;			// { dg-error "undefined" }
+  return c::t;	// { dg-error "undefined" "undefined" { target *-*-* } 0 }
+		// Some targets report the error for the previous line, others
+		// don't give line number information for it, so use line 0.
 }
 
 int main(void)
