@@ -1,3 +1,12 @@
+2008-12-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/38280
+	* ira-build.c (loop_is_inside_p, regno_allocno_order_compare_func,
+	ira_rebuild_regno_allocno_list): New functions.
+	(regno_allocnos): New static variable.
+	(remove_unnecessary_allocnos): Allocate/deallocate regno_allocnos.
+	Call ira_rebuild_regno_allocno_list.
+
 2008-12-01  David Daney  <ddaney@caviumnetworks.com>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 
