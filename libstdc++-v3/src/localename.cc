@@ -1,5 +1,5 @@
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -157,7 +157,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   locale::locale(const locale& __base, const locale& __add, category __cat)
   : _M_impl(0)
-  { _M_coalesce(__base, __add, __cat); }
+  {
+    _M_coalesce(__base, __add, __cat);
+    if (!__base._M_impl->_M_names[0] || !__add._M_impl->_M_names[0])
+      {
+	delete [] _M_impl->_M_names[0];
+	_M_impl->_M_names[0] = 0;   // Unnamed.
+      }
+  }
 
   void
   locale::_M_coalesce(const locale& __base, const locale& __add, 
