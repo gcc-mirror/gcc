@@ -55703,6 +55703,7 @@ all-send-pr: maybe-all-prms
 all-tar: maybe-all-build-texinfo
 all-uudecode: maybe-all-build-texinfo
 configure-target-boehm-gc: maybe-configure-target-qthreads
+configure-target-boehm-gc: maybe-all-target-libstdc++-v3
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 all-target-fastjar: maybe-all-target-libiberty
