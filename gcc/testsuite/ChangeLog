@@ -1,3 +1,7 @@
+2008-12-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/pr18096-1.c: Adjust location of expected error.
+
 2008-12-01  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38252
