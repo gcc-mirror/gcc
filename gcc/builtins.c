@@ -3406,7 +3406,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
    stpcpy.  */
 
 static rtx
-expand_builtin_mempcpy(tree exp, rtx target, enum machine_mode mode)
+expand_builtin_mempcpy (tree exp, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3433,15 +3433,18 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len, tree type,
 			     rtx target, enum machine_mode mode, int endp)
 {
     /* If return value is ignored, transform mempcpy into memcpy.  */
-  if (target == const0_rtx)
+  if (target == const0_rtx && implicit_built_in_decls[BUILT_IN_MEMCPY])
     {
       tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+      tree result = build_call_expr (fn, 3, dest, src, len);
 
-      if (!fn)
-	return NULL_RTX;
-
-      return expand_expr (build_call_expr (fn, 3, dest, src, len),
-			  target, mode, EXPAND_NORMAL);
+      while (TREE_CODE (result) == COMPOUND_EXPR)
+	{
+	  expand_expr (TREE_OPERAND (result, 0), const0_rtx, VOIDmode,
+		       EXPAND_NORMAL);
+	  result = TREE_OPERAND (result, 1);
+	}
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
   else
     {
@@ -3707,14 +3710,19 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
   src = CALL_EXPR_ARG (exp, 1);
 
   /* If return value is ignored, transform stpcpy into strcpy.  */
-  if (target == const0_rtx)
+  if (target == const0_rtx && implicit_built_in_decls[BUILT_IN_STRCPY])
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
-      if (!fn)
-	return NULL_RTX;
+      tree result = build_call_expr (fn, 2, dst, src);
 
-      return expand_expr (build_call_expr (fn, 2, dst, src),
-  			  target, mode, EXPAND_NORMAL);
+      STRIP_NOPS (result);
+      while (TREE_CODE (result) == COMPOUND_EXPR)
+	{
+	  expand_expr (TREE_OPERAND (result, 0), const0_rtx, VOIDmode,
+		       EXPAND_NORMAL);
+	  result = TREE_OPERAND (result, 1);
+	}
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
   else
     {
@@ -10462,6 +10470,17 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
 
     case BUILT_IN_STRCPY:
       return fold_builtin_strcpy (fndecl, arg0, arg1, NULL_TREE);
+
+    case BUILT_IN_STPCPY:
+      if (ignore)
+	{
+	  tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+	  if (!fn)
+	    break;
+
+	  return build_call_expr (fn, 2, arg0, arg1);
+	}
+      break;
 
     case BUILT_IN_STRCMP:
       return fold_builtin_strcmp (arg0, arg1);
