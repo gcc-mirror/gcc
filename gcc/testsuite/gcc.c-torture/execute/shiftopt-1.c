@@ -43,12 +43,6 @@ stest (int x)
 
   if (0 >> x != 0)
     link_error ();
-
-  if (-1 >> x != -1)
-    link_error ();
-
-  if (~0 >> x != ~0)
-    link_error ();
 }
 
 int
