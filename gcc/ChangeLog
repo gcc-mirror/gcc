@@ -1,3 +1,13 @@
+2008-12-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_expand_builtin): Fix the mode of the
+	error return value.
+	* config/mips/mips.md (IMOVE32): New mode iterator.
+	(movsi): Generalize with IMOVE32.
+	(*movsi_internal): Likewise.
+	(*mov<mode>_mips16): Likewise, and its define_splits.
+	(*lwxs): Likewise.
+
 2008-12-02  Nathan Sidwell  <nathan@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 

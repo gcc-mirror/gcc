@@ -11923,8 +11923,7 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
 
 static rtx
 mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
+		     enum machine_mode mode, int ignore)
 {
   tree fndecl;
   unsigned int fcode, avail;
@@ -11940,7 +11939,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
       error ("built-in function %qs not supported for MIPS16",
 	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
-      return const0_rtx;
+      return ignore ? const0_rtx : CONST0_RTX (mode);
     }
   switch (d->builtin_type)
     {
