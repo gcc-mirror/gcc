@@ -1,3 +1,11 @@
+2008-12-02  Nathan Sidwell  <nathan@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/lb1sf68.asm (PICCALL, PICJUMP): Use GOT instead of
+	PC-relative addressing when compiling for uclinux PIC.
+	(__cmpdf_internal, __cmpsf_internal): Hide.
+	(__cmpdf, __cmpsf): Use PIC call sequence.
+
 2008-12-02  Andreas Tobler  <a.tobler@schweiz.org>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 

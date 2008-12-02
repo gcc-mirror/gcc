@@ -129,8 +129,45 @@ Boston, MA 02110-1301, USA.  */
 
 #else /* __PIC__ */
 
-	/* Common for Linux and uClinux, the latter with either
-	   -mid-shared-library or -msep-data.  */
+# if defined (__uClinux__)
+
+	/* Versions for uClinux */
+
+#  if defined(__ID_SHARED_LIBRARY__)
+
+	/* -mid-shared-library versions  */
+
+	.macro PICLEA sym, reg
+	movel	a5@(_current_shared_library_a5_offset_), \reg
+	movel	\sym@GOT(\reg), \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	movel	a5@(_current_shared_library_a5_offset_), \areg
+	movel	\sym@GOT(\areg), sp@-
+	.endm
+
+	.macro PICCALL addr
+	PICLEA	\addr,a0
+	jsr	a0@
+	.endm
+
+	.macro PICJUMP addr
+	PICLEA	\addr,a0
+	jmp	a0@
+	.endm
+
+#  else /* !__ID_SHARED_LIBRARY__ */
+
+	/* Versions for -msep-data */
+
+	.macro PICLEA sym, reg
+	movel	\sym@GOT(a5), \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	movel	\sym@GOT(a5), sp@-
+	.endm
 
 	.macro PICCALL addr
 #if defined (__mcoldfire__) && !defined (__mcfisab__) && !defined (__mcfisac__)
@@ -153,36 +190,6 @@ Boston, MA 02110-1301, USA.  */
 #endif
 	.endm
 
-# if defined (__uClinux__)
-
-	/* Versions for uClinux */
-
-#  if defined(__ID_SHARED_LIBRARY__)
-
-	/* -mid-shared-library versions  */
-
-	.macro PICLEA sym, reg
-	movel	a5@(_current_shared_library_a5_offset_), \reg
-	movel	\sym@GOT(\reg), \reg
-	.endm
-
-	.macro PICPEA sym, areg
-	movel	a5@(_current_shared_library_a5_offset_), \areg
-	movel	\sym@GOT(\areg), sp@-
-	.endm
-
-#  else /* !__ID_SHARED_LIBRARY__ */
-
-	/* Versions for -msep-data */
-
-	.macro PICLEA sym, reg
-	movel	\sym@GOT(a5), \reg
-	.endm
-
-	.macro PICPEA sym, areg
-	movel	\sym@GOT(a5), sp@-
-	.endm
-
 #  endif
 
 # else /* !__uClinux__ */
@@ -199,6 +206,27 @@ Boston, MA 02110-1301, USA.  */
 	movel	#_GLOBAL_OFFSET_TABLE_@GOTPC, \areg
 	lea	(-6, pc, \areg), \areg
 	movel	\sym@GOT(\areg), sp@-
+	.endm
+
+	.macro PICCALL addr
+#if defined (__mcoldfire__) && !defined (__mcfisab__) && !defined (__mcfisac__)
+	lea	\addr-.-8,a0
+	jsr	pc@(a0)
+#else
+	bsr	\addr
+#endif
+	.endm
+
+	.macro PICJUMP addr
+	/* ISA C has no bra.l instruction, and since this assembly file
+	   gets assembled into multiple object files, we avoid the
+	   bra instruction entirely.  */
+#if defined (__mcoldfire__) && !defined (__mcfisab__)
+	lea	\addr-.-8,a0
+	jmp	pc@(a0)
+#else
+	bra	\addr
+#endif
 	.endm
 
 # endif
@@ -648,6 +676,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 	.globl SYM (__negdf2)
 	.globl SYM (__cmpdf2)
 	.globl SYM (__cmpdf2_internal)
+	.hidden SYM (__cmpdf2_internal)
 
 	.text
 	.even
@@ -2410,7 +2439,7 @@ SYM (__cmpdf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	bsr	SYM (__cmpdf2_internal)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 
@@ -2562,6 +2591,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 	.globl SYM (__negsf2)
 	.globl SYM (__cmpsf2)
 	.globl SYM (__cmpsf2_internal)
+	.hidden SYM (__cmpsf2_internal)
 
 | These are common routines to return and signal exceptions.	
 
@@ -3816,7 +3846,7 @@ SYM (__cmpsf2):
 	pea	1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	bsr (__cmpsf2_internal)
+	PICCALL SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 
