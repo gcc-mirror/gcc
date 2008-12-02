@@ -1,3 +1,9 @@
+2008-12-02  Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (install-finclude-dir): Use mkinstalldirs
+	and don't remove the finclude directory beforehand.
+
 2008-12-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36704
