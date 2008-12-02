@@ -375,10 +375,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  Objects of this class are created before all of the standard
    *  inserters are run.  It is responsible for "exception-safe prefix and
-   *  suffix operations."  Additional actions may be added by the
-   *  implementation, and we list them in
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#5
-   *  under [27.6] notes.
+   *  suffix operations." 
   */
   template <typename _CharT, typename _Traits>
     class basic_ostream<_CharT, _Traits>::sentry

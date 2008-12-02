@@ -1,3 +1,25 @@
+2008-12-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/38080
+	* include/std/iostream: Correct URL.
+	* include/std/streambuf: Same.
+	* include/std/bitset: Same.
+	* include/std/iosfwd: Same.
+	* include/std/fstream: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/std/sstream: Same.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/stl_relops.h: Same.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Ditto.
+
 2008-11-26  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/28870
@@ -125,45 +147,45 @@
 	(_Fwd_list_node<>): Likewise.
 	(_Fwd_list_iterator<>): Likewise.
 	(_Fwd_list_const_iterator<>): Likewise.
-	(_Fwd_list_node_base::_M_next, _M_transfer_after, _M_reverse_after): 
+	(_Fwd_list_node_base::_M_next, _M_transfer_after, _M_reverse_after):
 	Use _Alloc<_Tp>::pointer.
 	(_Fwd_list_iterator<>::_M_node): Use _Node_base::_Pointer.
-	(_Fwd_list_base<>::_M_get_node, _M_create_node, _M_create_node, 
+	(_Fwd_list_base<>::_M_get_node, _M_create_node, _M_create_node,
 	_M_insert_after, _M_put_node, _M_erase_after): Likewise.
 	(_Fwd_list_const_iterator<>::_M_node): use _Node_base::_Const_pointer.
 	(forward_list<>): Use __static_pointer_cast in place of static_cast,
 	and __const_pointer_cast in place of const_cast.
 	* include/bits/forward_list.tcc
-	(_Fwd_list_node<>::_M_sort_after): Using _Pointer typedefs in place 
+	(_Fwd_list_node<>::_M_sort_after): Using _Pointer typedefs in place
 	of standard pointers, __static_pointer_cast in place of static_cast.
 	(_Fwd_list_base<>::_Fwd_list_base, _M_insert_after, _M_erase_after):
 	Likewise.
-	(forward_list<>::_M_initialize_dispatch, _M_fill_initialize, 
+	(forward_list<>::_M_initialize_dispatch, _M_fill_initialize,
 	splice_after, remove, remove_if, merge): Likewise.
 	* testsuite/23_containers/forward_list/ext_pointer/modifiers/1.cc: New.
-	* testsuite/23_containers/forward_list/ext_pointer/modifiers/2.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/2.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/modifiers/3.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/3.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/modifiers/4.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/4.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/modifiers/5.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/5.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/1.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/1.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/2.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/2.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/3.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/3.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/4.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/4.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/5.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/5.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/6.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/6.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/operations/7.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/operations/7.cc:
 	Likewise.
-	* testsuite/23_containers/forward_list/ext_pointer/requirements/1.cc: 
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/1.cc:
 	Likewise.
 	* testsuite/23_containers/forward_list/ext_pointer/requirements/
 	explicit_instantiation/1.cc: Likewise.
@@ -196,7 +218,7 @@
 	* include/precompiled/extc++.h: Likewise.
 	* include/Makefile.in: Regenerate.
 	* testsuite/ext/ext_pointer/1.cc: New.
-	* testsuite/ext/ext_pointer/1_neg.cc: Likewise.	
+	* testsuite/ext/ext_pointer/1_neg.cc: Likewise.
 	* testsuite/23_containers/vector/ext_pointer/citerators.cc: New.
 	* testsuite/23_containers/vector/ext_pointer/data_access.cc: Likewise.
 	* testsuite/23_containers/vector/ext_pointer/resize.cc: Likewise.
@@ -274,35 +296,35 @@
 
 2008-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-        * include/bits/shared_ptr.h: Update comparisons to match WP.
-        (_Sp_counted_ptr): Make copy and assignment members deleted.
-        (_Sp_counted_deleter): Remove private copy and assignment members.
-        (__shared_count::_M_less,__weak_count::_M_less,operator<): Replace
-        friend operator< with overloaded _M_less member functions to allow
-        comparison with either shared_count or weak_count.
-        (__shared_ptr::_M_less,__weak_ptr::_M_less): Replace with...
-        (__shared_ptr::owner_before,__weak_ptr::owner_before): New overloads
-        for ownership-based ordering.
-        (operator<(__shared_ptr,__shared_ptr)): Compare stored pointers,
-        make non-friend.
-        (operator==(__shared_ptr,__shared_ptr)): Make non-friend.
-        (operator!=(__shared_ptr,__shared_ptr)): Likewise.
-        (less<__shared_ptr<>>,less<shared_ptr<>>,_Sp_less): Explicitly call
-        pointer specialization.
-        (__weak_ptr::operator<,weak_ptr::operator<=,weak_ptr::operator>,
-        weak_ptr::operator>=): Remove operator< and delete all comparisons.
-        (_Sp_owner_less,owner_less): Predicate for ownership-based ordering.
-        (operator<(shared_ptr,shared_ptr): Overload for derived shared_ptr.
-        (operator==(shared_ptr,shared_ptr): Likewise.
-        (operator!=(shared_ptr,shared_ptr): Likewise.
-        (swap(shared_ptr,shared_ptr)): Fix parameter types.
-        (swap(weak_ptr,weak_ptr)): Add missing overload.
-        * testsuite/20_util/owner_less/cmp.cc: New.
-        * testsuite/20_util/shared_ptr/comparison/cmp.cc: Test other ops.
-        * testsuite/20_util/shared_ptr/comparison/less.cc: New.
-        * testsuite/20_util/shared_ptr/observers/owner_before.cc: New.
-        * testsuite/20_util/weak_ptr/observers/owner_before.cc: New.
-        * testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: New.
+	* include/bits/shared_ptr.h: Update comparisons to match WP.
+	(_Sp_counted_ptr): Make copy and assignment members deleted.
+	(_Sp_counted_deleter): Remove private copy and assignment members.
+	(__shared_count::_M_less,__weak_count::_M_less,operator<): Replace
+	friend operator< with overloaded _M_less member functions to allow
+	comparison with either shared_count or weak_count.
+	(__shared_ptr::_M_less,__weak_ptr::_M_less): Replace with...
+	(__shared_ptr::owner_before,__weak_ptr::owner_before): New overloads
+	for ownership-based ordering.
+	(operator<(__shared_ptr,__shared_ptr)): Compare stored pointers,
+	make non-friend.
+	(operator==(__shared_ptr,__shared_ptr)): Make non-friend.
+	(operator!=(__shared_ptr,__shared_ptr)): Likewise.
+	(less<__shared_ptr<>>,less<shared_ptr<>>,_Sp_less): Explicitly call
+	pointer specialization.
+	(__weak_ptr::operator<,weak_ptr::operator<=,weak_ptr::operator>,
+	weak_ptr::operator>=): Remove operator< and delete all comparisons.
+	(_Sp_owner_less,owner_less): Predicate for ownership-based ordering.
+	(operator<(shared_ptr,shared_ptr): Overload for derived shared_ptr.
+	(operator==(shared_ptr,shared_ptr): Likewise.
+	(operator!=(shared_ptr,shared_ptr): Likewise.
+	(swap(shared_ptr,shared_ptr)): Fix parameter types.
+	(swap(weak_ptr,weak_ptr)): Add missing overload.
+	* testsuite/20_util/owner_less/cmp.cc: New.
+	* testsuite/20_util/shared_ptr/comparison/cmp.cc: Test other ops.
+	* testsuite/20_util/shared_ptr/comparison/less.cc: New.
+	* testsuite/20_util/shared_ptr/observers/owner_before.cc: New.
+	* testsuite/20_util/weak_ptr/observers/owner_before.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: New.
 
 2008-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -331,7 +353,7 @@
 
 	PR libstdc++/37522
 	* config/os/mingw32/os_defines.h: Define _GLIBCXX_HAVE_BROKEN_VSWPRINTF
-	* include/bits/basic_string.h: Guard string conversions with 
+	* include/bits/basic_string.h: Guard string conversions with
 	!defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF) too.
 	* testsuite/lib/libstdc++.exp (check_v3_target_string_conversions):
 	New.
@@ -382,7 +404,7 @@
 	* include/std/system_error (is_error_code_enum): Specialize for errc.
 	(error_category::error_category): Defaulted and protected.
 	(error_category::~error_category): New, virtual.
-	(error_category::error_category(const error_category&), 
+	(error_category::error_category(const error_category&),
 	error_category::operator=(const error_category&)): Deleted.
 	(get_system_category, get_posix_category): Remove (DR 890).
 	(system_category): External linkage (DR 890).
@@ -391,11 +413,11 @@
 	(error_code::error_code<>(_ErrorCodeEnum)): Use generic_category.
 	(error_code::clear, error_code::operator=<>(_ErrorCodeEnum)): Forward to
 	error_code::assign, use generic_category.
-	(error_condition::error_condition, 
-	error_condition::error_condition<>(_ErrorConditionEnum)): Use 
+	(error_condition::error_condition,
+	error_condition::error_condition<>(_ErrorConditionEnum)): Use
 	generic_category.
-	(error_condition::clear, 
-	error_condition::operator=<>(_ErrorConditionEnum)): Forward to 
+	(error_condition::clear,
+	error_condition::operator=<>(_ErrorConditionEnum)): Forward to
 	error_code::assign, use generic_category.
 	(make_error_code, make_error_condition): Define in namespace std.
 	* include/std/mutex (unique_lock<>::lock, unique_lock<>::try_lock,
@@ -412,21 +434,21 @@
 	* config/os/generic/error_constants.h (posix_errno): Rename to errc, use
 	enum class type. Fix spelling.
 	* config/os/mingw32/error_constants.h (posix_errno): Likewise.
-	* testsuite/19_diagnostics/error_code/cons/1.cc: Use errc and 
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Use errc and
 	generic_category.
 	* testsuite/19_diagnostics/error_code/operators/bool.cc: Use errc.
 	* testsuite/19_diagnostics/error_code/operators/equal.cc: Likewise.
 	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Likewise.
-	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Update 
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Update
 	dg-error line numbers.
-	* testsuite/19_diagnostics/error_condition/cons/1.cc: Use 
+	* testsuite/19_diagnostics/error_condition/cons/1.cc: Use
 	generic_category.
 	* testsuite/19_diagnostics/error_condition/operators/bool.cc: Use errc.
 	* testsuite/19_diagnostics/error_condition/operators/equal.cc: Likewise.
-	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc: 
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc:
 	Likewise.
 	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc: New.
-	* testsuite/19_diagnostics/headers/system_error/types_std_c++0x.cc: 
+	* testsuite/19_diagnostics/headers/system_error/types_std_c++0x.cc:
 	Remove using tests since errc is not a namespace.
 	* testsuite/19_diagnostics/system_error/cons-1.cc: Use errc.
 	* testsuite/19_diagnostics/system_error/what-4.cc: Likewise.
@@ -435,7 +457,7 @@
 	* testsuite/27_io/basic_ostream/inserters_other/char/error_code.cc:
 	Likewise.
 	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
-	
+
 2008-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable_policy.h (_Hash_node<>::_Hash_node<>
@@ -499,7 +521,7 @@
 	* include/bits/forward_list.h: Factor list construction to dispatch
 	routines.
 	* include/bits/forward_list.tcc: Likewise.
-	* testsuite/23_containers/forward_list/modifiers/2.cc: 
+	* testsuite/23_containers/forward_list/modifiers/2.cc:
 
 2008-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -630,7 +652,7 @@
 	(operator<<(basic_ostream<>&, const error_code&)): Define here.
 	* include/std/ostream (operator<<(basic_ostream<>&,
 	const error_code&)): Do not define here.
-	* testsuite/19_diagnostics/error_condition/cons/1.cc: New.	
+	* testsuite/19_diagnostics/error_condition/cons/1.cc: New.
 	* testsuite/19_diagnostics/error_condition/operators/bool.cc: Likewise.
 	* testsuite/19_diagnostics/error_condition/operators/bool_neg.cc:
 	Likewise.
@@ -647,10 +669,10 @@
 	* testsuite/util/testsuite_hooks.cc: Avoid uninitialized warning.
 
 2008-10-10  Chris Fairles  <cfairles@gcc.gnu.org>
-  
-	* testsuite/20_util/duration/cons/1.cc: Remove invalid check of 
+
+	* testsuite/20_util/duration/cons/1.cc: Remove invalid check of
 	uninitialized duration.
-        
+
 2008-10-08  Bob Walters  <bob.s.walters@gmail.com>
 
 	* include/bits/stl_vector.h (_Vector_base<>::_Vector_impl::_M_start,
@@ -689,7 +711,7 @@
 
 2008-09-30  Chris Fairles  <cfairles@gcc.gnu.org>
 
-	* include/std/tuple (tuple<>::swap): Implement swap for tuple as per 
+	* include/std/tuple (tuple<>::swap): Implement swap for tuple as per
 	DR 522 [Ready].
 	* testsuite/20_util/tuple/swap.cc: New.
 
@@ -732,9 +754,9 @@
 	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc:
 	Likewise.
 	* testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc: Likewise.
-	
+
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* aclocal.m4: Ditto.
