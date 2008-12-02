@@ -1,3 +1,10 @@
+2008-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38365
+	* src/localename.cc (locale::locale(const locale&, const locale&,
+	category)): Fix.
+	* testsuite/22_locale/locale/cons/38365.cc: New.
+
 2008-12-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/38080
