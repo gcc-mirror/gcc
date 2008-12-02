@@ -1,3 +1,9 @@
+2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* configure.ac: Expand to darwin10 and later.
+	* configure: Regenerate.
+	* testsuite/lib/libjava.exp: Expand to darwin10 and later.
+
 2008-11-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate to get new GCC_CHECK_UNWIND_GETIPINFO.
