@@ -9099,15 +9099,6 @@ grokdeclarator (const cp_declarator *declarator,
 	       is called a converting constructor.  */
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
-	    else if (DECL_CONSTRUCTOR_P (decl))
-	      {
-		/* A constructor with no parms is not a conversion.
-		   Ignore any compiler-added parms.  */
-		tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (decl);
-
-		if (arg_types == void_list_node)
-		  DECL_NONCONVERTING_P (decl) = 1;
-	      }
 	  }
 	else if (TREE_CODE (type) == METHOD_TYPE)
 	  {

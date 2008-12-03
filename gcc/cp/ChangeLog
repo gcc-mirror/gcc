@@ -1,3 +1,11 @@
+2008-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38380
+	* decl.c (grokdeclarator): Only set DECL_NONCONVERTING_P
+	on explicit constructors.
+	* pt.c (tsubst_copy_and_build) [CONSTRUCTOR]: Propagate
+	CONSTRUCTOR_IS_DIRECT_INIT.
+
 2008-12-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35782, c++/37860
