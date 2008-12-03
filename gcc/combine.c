@@ -12653,6 +12653,8 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			  distribute_links (LOG_LINKS (tem));
 
 			  SET_INSN_DELETED (tem);
+			  if (tem == i2)
+			    i2 = NULL_RTX;
 
 #ifdef HAVE_cc0
 			  /* Delete the setter too.  */
@@ -12668,6 +12670,8 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			      distribute_links (LOG_LINKS (cc0_setter));
 
 			      SET_INSN_DELETED (cc0_setter);
+			      if (cc0_setter == i2)
+				i2 = NULL_RTX;
 			    }
 #endif
 			}

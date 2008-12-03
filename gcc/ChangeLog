@@ -1,3 +1,13 @@
+2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+            Jakub Jelinek  <jakub@redhat.com>
+            Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-optimization/38281
+	* combine.c (distribute_notes): When invoking SET_INSN_DELETED on i2,
+	set it to NULL_RTX afterwards.
+
+	* emit-rtl.c (set_insn_deleted): Fix formatting.
+
 2008-12-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_expand_builtin): Fix the mode of the

@@ -3620,7 +3620,8 @@ add_insn_before (rtx insn, rtx before, basic_block bb)
 
 /* Replace insn with an deleted instruction note.  */
 
-void set_insn_deleted (rtx insn)
+void
+set_insn_deleted (rtx insn)
 {
   df_insn_delete (BLOCK_FOR_INSN (insn), INSN_UID (insn));
   PUT_CODE (insn, NOTE);
