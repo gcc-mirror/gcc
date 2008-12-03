@@ -1,5 +1,9 @@
 2008-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/37716
+	* tree-sra.c (sra_build_assignment): For scalar bitfield SRC construct
+	all the needed operations as trees and gimplify_assign it to dst.
+
 	PR target/37610
 	* configure.ac (gcc_cv_readelf): Look for readelf.
 	(gcc_cv_as_cfi_advance_working): Check for working

@@ -1,3 +1,8 @@
+2008-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37716
+	* g++.dg/torture/pr37716.C: New test.
+
 2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr37868.c: Skip on the SPARC.
