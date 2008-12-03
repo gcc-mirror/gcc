@@ -8,7 +8,7 @@ struct b
   b() = default;
   ~b() = default;
   b& operator=(const b&) = delete;
-  b(const b&) = delete;
+  b(const b&) = delete;		// { dg-error "deleted" }
 
   b(bool _t): t (_t) { }
 };
@@ -19,7 +19,7 @@ int main()
   b tst1 = { false };
 
   // copy initialization.
-  b tst2 = false;		// { dg-error "deleted" }
+  b tst2 = false;		// { dg-error "used here" }
 
   // direct list initialization
   b tst3 { false };
