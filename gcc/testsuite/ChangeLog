@@ -1,3 +1,7 @@
+2008-12-03  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* g++.old-deja/g++.eh/badalloc1.C: Omit XFAIL on obsolete Darwin.
+
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38256
