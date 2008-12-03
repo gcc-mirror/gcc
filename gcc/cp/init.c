@@ -267,12 +267,10 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 }
 
 /* Return a suitable initializer for value-initializing an object of type
-   TYPE, as described in [dcl.init].  If HAVE_CTOR is true, the initializer
-   for an enclosing object is already calling the constructor for this
-   object.  */
+   TYPE, as described in [dcl.init].  */
 
-static tree
-build_value_init_1 (tree type, bool have_ctor)
+tree
+build_value_init (tree type)
 {
   /* [dcl.init]
 
@@ -300,17 +298,38 @@ build_value_init_1 (tree type, bool have_ctor)
 
   if (CLASS_TYPE_P (type))
     {
-      if (type_has_user_provided_constructor (type) && !have_ctor)
+      if (type_has_user_provided_constructor (type))
 	return build_aggr_init_expr
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL_TREE, type, LOOKUP_NORMAL,
 				      tf_warning_or_error));
+      else if (TREE_CODE (type) != UNION_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
+	{
+	  /* This is a class that needs constructing, but doesn't have
+	     a user-provided constructor.  So we need to zero-initialize
+	     the object and then call the implicitly defined ctor.
+	     Implement this by sticking the zero-initialization inside
+	     the TARGET_EXPR for the constructor call;
+	     cp_gimplify_init_expr will know how to handle it.  */
+	  tree init = build_zero_init (type, NULL_TREE,
+				       /*static_storage_p=*/false);
+	  tree ctor = build_special_member_call
+	    (NULL_TREE, complete_ctor_identifier,
+	     NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error);
+
+	  ctor = build_cplus_new (type, ctor);
+	  init = build2 (INIT_EXPR, void_type_node,
+			 TARGET_EXPR_SLOT (ctor), init);
+	  init = build2 (COMPOUND_EXPR, void_type_node, init,
+			 TARGET_EXPR_INITIAL (ctor));
+	  TARGET_EXPR_INITIAL (ctor) = init;
+	  return ctor;
+	}
       else if (TREE_CODE (type) != UNION_TYPE)
 	{
-	  tree field, init;
+	  tree field;
 	  VEC(constructor_elt,gc) *v = NULL;
-	  bool call_ctor = !have_ctor && TYPE_NEEDS_CONSTRUCTING (type);
 
 	  /* Iterate over the fields, building initializations.  */
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -335,35 +354,14 @@ build_value_init_1 (tree type, bool have_ctor)
 		 corresponding to base classes as well.  Thus, iterating
 		 over TYPE_FIELDs will result in correct initialization of
 		 all of the subobjects.  */
-	      value = build_value_init_1 (ftype, have_ctor || call_ctor);
+	      value = build_value_init (ftype);
 
 	      if (value)
 		CONSTRUCTOR_APPEND_ELT(v, field, value);
 	    }
 
 	  /* Build a constructor to contain the zero- initializations.  */
-	  init = build_constructor (type, v);
-	  if (call_ctor)
-	    {
-	      /* This is a class that needs constructing, but doesn't have
-		 a user-defined constructor.  So we need to zero-initialize
-		 the object and then call the implicitly defined ctor.
-		 Implement this by sticking the zero-initialization inside
-		 the TARGET_EXPR for the constructor call;
-		 cp_gimplify_init_expr will know how to handle it.  */
-	      tree ctor = build_special_member_call
-		(NULL_TREE, complete_ctor_identifier,
-		 NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error);
-
-	      ctor = build_cplus_new (type, ctor);
-	      init = build2 (INIT_EXPR, void_type_node,
-			     TARGET_EXPR_SLOT (ctor), init);
-	      init = build2 (COMPOUND_EXPR, void_type_node, init,
-			     TARGET_EXPR_INITIAL (ctor));
-	      TARGET_EXPR_INITIAL (ctor) = init;
-	      return ctor;
-	    }
-	  return init;
+	  return build_constructor (type, v);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -395,7 +393,7 @@ build_value_init_1 (tree type, bool have_ctor)
 	    ce->index = build2 (RANGE_EXPR, sizetype, size_zero_node,
 				max_index);
 
-	  ce->value = build_value_init_1 (TREE_TYPE (type), have_ctor);
+	  ce->value = build_value_init (TREE_TYPE (type));
 
 	  /* The gimplifier can't deal with a RANGE_EXPR of TARGET_EXPRs.  */
 	  gcc_assert (TREE_CODE (ce->value) != TARGET_EXPR
@@ -407,15 +405,6 @@ build_value_init_1 (tree type, bool have_ctor)
     }
 
   return build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
-}
-
-/* Return a suitable initializer for value-initializing an object of type
-   TYPE, as described in [dcl.init].  */
-
-tree
-build_value_init (tree type)
-{
-  return build_value_init_1 (type, false);
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of

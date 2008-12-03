@@ -1,5 +1,11 @@
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38232
+	* init.c (build_value_init): Do initial zero-initialization
+	of a class with an implicitly-defined constructor using
+	build_zero_init rather than in build_value_init.
+	(build_value_init_1): Fold into build_value_init.
+
 	PR c++/38256
 	* parser.c (cp_parser_conversion_type_id): Diagnose
 	'operator auto'	here.
