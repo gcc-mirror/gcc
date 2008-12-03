@@ -252,6 +252,7 @@ Fortran			Toon Moene		toon@moene.org
 Fortran			Brooks Moses		brooks.moses@codesourcery.com
 Fortran			Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 Fortran			Paul Thomas		pault@gcc.gnu.org
+Fortran			Janus Weil		janus@gcc.gnu.org
 Graphite		Daniel Berlin		dberlin@dberlin.org
 Graphite		Sebastian Pop		sebastian.pop@amd.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
@@ -451,7 +452,6 @@ Jonathan Wakely					redi@gcc.gnu.org
 Feng Wang					fengwang@nudt.edu.cn
 Stephen M. Webb					stephen.webb@bregmasoft.com
 John Wehle					john@feith.com
-Janus Weil					janus@gcc.gnu.org
 Florian Weimer					fw@deneb.enyo.de
 Zack Weinberg					zackw@panix.com
 Mark Wielaard					mark@gcc.gnu.org
