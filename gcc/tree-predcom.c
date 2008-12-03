@@ -1026,9 +1026,6 @@ valid_initializer_p (struct data_reference *ref,
   aff_tree diff, base, step;
   double_int off;
 
-  if (!DR_BASE_ADDRESS (ref))
-    return false;
-
   /* Both REF and ROOT must be accessing the same object.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
     return false;
@@ -1115,7 +1112,8 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
   memset (&init_dr, 0, sizeof (struct data_reference));
   DR_REF (&init_dr) = init_ref;
   DR_STMT (&init_dr) = phi;
-  dr_analyze_innermost (&init_dr);
+  if (!dr_analyze_innermost (&init_dr))
+    return NULL;
 
   if (!valid_initializer_p (&init_dr, ref->distance + 1, root->ref))
     return NULL;

@@ -1,3 +1,16 @@
+2008-12-03  Tomas Bily  <tbily@suse.cz>
+
+        PR middle-end/38250
+        * tree-loop-distribution.c (build_size_arg): New function.
+        (generate_memset_zero): Checks if dr_analyze_innermost succeed.
+        Reorganized generating of stmts.
+        * testsuite/gcc.dg/tree-ssa/pr38250.c: New file.
+        * tree-data-ref.c (dr_analyze_innermost): Returns bool.
+        Indicate if analysis succeed.
+        * tree-data-ref.h (dr_analyze_innermost): Returns bool.
+        * tree-predcom.c (valid_initializer_p, find_looparound_phi):
+        Uses new definition of dr_analyze_innermost.
+
 2008-12-03  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-ssa-pre.c (do_regular_insertion): Initialise edoubleprime.
