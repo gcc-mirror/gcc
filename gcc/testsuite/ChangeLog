@@ -1,3 +1,7 @@
+2008-12-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vect/pr33953.c: XFAIL dump scans for powerpc.
+
 2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr37868.c: Skip on the SPARC.
