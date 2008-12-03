@@ -1,5 +1,8 @@
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38256
+	* g++.dg/cpp0x/auto11.C: New test.
+
 	PR c++/38380
 	* g++.dg/cpp0x/initlist10.C: New test.
 	* g++.old-deja/g++.eh/ctor1.C: Default ctor is a candidate too.

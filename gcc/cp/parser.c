@@ -8966,6 +8966,16 @@ cp_parser_conversion_type_id (cp_parser* parser)
 				    /*initialized=*/0, &attributes);
   if (attributes)
     cplus_decl_attributes (&type_specified, attributes, /*flags=*/0);
+
+  /* Don't give this error when parsing tentatively.  This happens to
+     work because we always parse this definitively once.  */
+  if (! cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && type_uses_auto (type_specified))
+    {
+      error ("invalid use of %<auto%> in conversion operator");
+      return error_mark_node;
+    }
+
   return type_specified;
 }
 
