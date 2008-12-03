@@ -3224,7 +3224,7 @@ do_regular_insertion (basic_block block, basic_block dom)
 	  basic_block bprime;
 	  pre_expr eprime = NULL;
 	  edge_iterator ei;
-	  pre_expr edoubleprime;
+	  pre_expr edoubleprime = NULL;
 
 	  val = get_expr_value_id (expr);
 	  if (bitmap_set_contains_value (PHI_GEN (block), val))

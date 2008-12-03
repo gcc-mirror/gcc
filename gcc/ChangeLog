@@ -1,3 +1,7 @@
+2008-12-03  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-ssa-pre.c (do_regular_insertion): Initialise edoubleprime.
+
 2008-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37716
