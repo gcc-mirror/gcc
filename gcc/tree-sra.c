@@ -2158,9 +2158,10 @@ sra_build_assignment (tree dst, tree src)
   if (scalar_bitfield_p (src))
     {
       tree var, shift, width;
-      tree utype, stype, stmp, utmp, dtmp;
+      tree utype, stype;
       bool unsignedp = (INTEGRAL_TYPE_P (TREE_TYPE (src))
 		        ? TYPE_UNSIGNED (TREE_TYPE (src)) : true);
+      struct gimplify_ctx gctx;
 
       var = TREE_OPERAND (src, 0);
       width = TREE_OPERAND (src, 1);
@@ -2191,28 +2192,15 @@ sra_build_assignment (tree dst, tree src)
       else if (!TYPE_UNSIGNED (utype))
 	utype = unsigned_type_for (utype);
 
-      stmp = make_rename_temp (stype, "SR");
-
       /* Convert the base var of the BIT_FIELD_REF to the scalar type
 	 we use for computation if we cannot use it directly.  */
-      if (!useless_type_conversion_p (stype, TREE_TYPE (var)))
-	{
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
-	    stmt = gimple_build_assign (stmp, fold_convert (stype, var));
-	  else
-	    stmt = gimple_build_assign (stmp, fold_build1 (VIEW_CONVERT_EXPR,
-							   stype, var));
-	  gimple_seq_add_stmt (&seq, stmt);
-	  var = stmp;
-	}
+      if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+	var = fold_convert (stype, var);
+      else
+	var = fold_build1 (VIEW_CONVERT_EXPR, stype, var);
 
       if (!integer_zerop (shift))
-	{
-	  stmt = gimple_build_assign (stmp, fold_build2 (RSHIFT_EXPR, stype,
-							 var, shift));
-	  gimple_seq_add_stmt (&seq, stmt);
-	  var = stmp;
-	}
+	var = fold_build2 (RSHIFT_EXPR, stype, var, shift);
 
       /* If we need a masking operation, produce one.  */
       if (TREE_INT_CST_LOW (width) == TYPE_PRECISION (stype))
@@ -2222,24 +2210,11 @@ sra_build_assignment (tree dst, tree src)
 	  tree one = build_int_cst_wide (stype, 1, 0);
 	  tree mask = int_const_binop (LSHIFT_EXPR, one, width, 0);
 	  mask = int_const_binop (MINUS_EXPR, mask, one, 0);
-
-	  stmt = gimple_build_assign (stmp, fold_build2 (BIT_AND_EXPR, stype,
-							 var, mask));
-	  gimple_seq_add_stmt (&seq, stmt);
-	  var = stmp;
+	  var = fold_build2 (BIT_AND_EXPR, stype, var, mask);
 	}
 
       /* After shifting and masking, convert to the target type.  */
-      utmp = stmp;
-      if (!useless_type_conversion_p (utype, stype))
-	{
-	  utmp = make_rename_temp (utype, "SR");
-
-	  stmt = gimple_build_assign (utmp, fold_convert (utype, var));
-	  gimple_seq_add_stmt (&seq, stmt);
-
-	  var = utmp;
-	}
+      var = fold_convert (utype, var);
 
       /* Perform sign extension, if required.
 	 ???  This should never be necessary.  */
@@ -2250,40 +2225,29 @@ sra_build_assignment (tree dst, tree src)
 					  size_binop (MINUS_EXPR, width,
 						      bitsize_int (1)), 0);
 
-	  stmt = gimple_build_assign (utmp, fold_build2 (BIT_XOR_EXPR, utype,
-							 var, signbit));
-	  gimple_seq_add_stmt (&seq, stmt);
-
-	  stmt = gimple_build_assign (utmp, fold_build2 (MINUS_EXPR, utype,
-							 utmp, signbit));
-	  gimple_seq_add_stmt (&seq, stmt);
-
-	  var = utmp;
+	  var = fold_build2 (BIT_XOR_EXPR, utype, var, signbit);
+	  var = fold_build2 (MINUS_EXPR, utype, var, signbit);
 	}
 
       /* fold_build3 (BIT_FIELD_REF, ...) sometimes returns a cast.  */
       STRIP_NOPS (dst);
 
       /* Finally, move and convert to the destination.  */
-      if (!useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (var)))
-	{
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (dst)))
-	    var = fold_convert (TREE_TYPE (dst), var);
-	  else
-	    var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (dst)))
+	var = fold_convert (TREE_TYPE (dst), var);
+      else
+	var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
 
-	  /* If the destination is not a register the conversion needs
-	     to be a separate statement.  */
-	  if (!is_gimple_reg (dst))
-	    {
-	      dtmp = make_rename_temp (TREE_TYPE (dst), "SR");
-	      stmt = gimple_build_assign (dtmp, var);
-	      gimple_seq_add_stmt (&seq, stmt);
-	      var = dtmp;
-	    }
-	}
-      stmt = gimple_build_assign (dst, var);
-      gimple_seq_add_stmt (&seq, stmt);
+      push_gimplify_context (&gctx);
+      gctx.into_ssa = true;
+      gctx.allow_rhs_cond_expr = true;
+
+      gimplify_assign (dst, var, &seq);
+
+      if (gimple_referenced_vars (cfun))
+	for (var = gctx.temps; var; var = TREE_CHAIN (var))
+	  add_referenced_var (var);
+      pop_gimplify_context (NULL);
 
       return seq;
     }
