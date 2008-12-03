@@ -1,3 +1,7 @@
+2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr37868.c: Skip on the SPARC.
+
 2008-12-02  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
