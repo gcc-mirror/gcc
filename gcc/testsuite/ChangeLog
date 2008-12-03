@@ -8,6 +8,9 @@
 
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38232
+	* g++.dg/init/value5.C: New test.
+
 	PR c++/38256
 	* g++.dg/cpp0x/auto11.C: New test.
 
