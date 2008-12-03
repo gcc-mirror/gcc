@@ -2517,6 +2517,9 @@ ccp_fold_builtin (gimple stmt)
       return NULL_TREE;
     }
 
+  if (arg_idx >= nargs)
+    return NULL_TREE;
+
   /* Try to use the dataflow information gathered by the CCP process.  */
   visited = BITMAP_ALLOC (NULL);
   bitmap_clear (visited);
@@ -2532,7 +2535,7 @@ ccp_fold_builtin (gimple stmt)
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_STRLEN:
-      if (val[0])
+      if (val[0] && nargs == 1)
 	{
 	  tree new_val =
               fold_convert (TREE_TYPE (gimple_call_lhs (stmt)), val[0]);
@@ -2564,22 +2567,24 @@ ccp_fold_builtin (gimple stmt)
       break;
 
     case BUILT_IN_FPUTS:
-      result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
-                                   gimple_call_arg (stmt, 1),
-				   ignore, false, val[0]);
+      if (nargs == 2)
+	result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
+				     gimple_call_arg (stmt, 1),
+				     ignore, false, val[0]);
       break;
 
     case BUILT_IN_FPUTS_UNLOCKED:
-      result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
-				   gimple_call_arg (stmt, 1),
-                                   ignore, true, val[0]);
+      if (nargs == 2)
+	result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
+				     gimple_call_arg (stmt, 1),
+				     ignore, true, val[0]);
       break;
 
     case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMPCPY_CHK:
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET_CHK:
-      if (val[2] && is_gimple_val (val[2]))
+      if (val[2] && is_gimple_val (val[2]) && nargs == 4)
 	result = fold_builtin_memory_chk (callee,
                                           gimple_call_arg (stmt, 0),
                                           gimple_call_arg (stmt, 1),
@@ -2591,7 +2596,7 @@ ccp_fold_builtin (gimple stmt)
 
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
-      if (val[1] && is_gimple_val (val[1]))
+      if (val[1] && is_gimple_val (val[1]) && nargs == 3)
 	result = fold_builtin_stxcpy_chk (callee,
                                           gimple_call_arg (stmt, 0),
                                           gimple_call_arg (stmt, 1),
@@ -2601,7 +2606,7 @@ ccp_fold_builtin (gimple stmt)
       break;
 
     case BUILT_IN_STRNCPY_CHK:
-      if (val[2] && is_gimple_val (val[2]))
+      if (val[2] && is_gimple_val (val[2]) && nargs == 4)
 	result = fold_builtin_strncpy_chk (gimple_call_arg (stmt, 0),
                                            gimple_call_arg (stmt, 1),
                                            gimple_call_arg (stmt, 2),
