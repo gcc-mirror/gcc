@@ -1,3 +1,8 @@
+2008-12-03  Daniel Kraft  <d@domob.eu>
+
+	* MAINTAINERS:  Moved myself and Mikael Morin from Write After
+	Approval to Reviewer section (for Fortran front-end).
+
 2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.ac: Expand to darwin10 and later.
