@@ -1,3 +1,13 @@
+2008-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/37610
+	* configure.ac (gcc_cv_readelf): Look for readelf.
+	(gcc_cv_as_cfi_advance_working): Check for working
+	cfi advances with code alignment factor > 1.
+	(HAVE_GAS_CFI_DIRECTIVE): Don't define if cfi advances
+	don't work properly.
+	* configure: Regenerated.
+
 2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
             Jakub Jelinek  <jakub@redhat.com>
             Andrew Pinski  <andrew_pinski@playstation.sony.com>
