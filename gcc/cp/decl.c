@@ -8258,12 +8258,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (type_uses_auto (type))
 		  {
-		    if (sfk == sfk_conversion)
-		      {
-			error ("invalid use of %<auto%> in conversion operator");
-			return error_mark_node;
-		      }
-		    else if (!declarator->u.function.late_return_type)
+		    if (!declarator->u.function.late_return_type)
 		      {
 			error ("%qs function uses %<auto%> type specifier without"
 			       " late return type", name);

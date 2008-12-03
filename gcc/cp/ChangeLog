@@ -1,5 +1,10 @@
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38256
+	* parser.c (cp_parser_conversion_type_id): Diagnose
+	'operator auto'	here.
+	* decl.c (grokdeclarator): Not here.
+
 	PR c++/38380
 	* decl.c (grokdeclarator): Only set DECL_NONCONVERTING_P
 	on explicit constructors.
