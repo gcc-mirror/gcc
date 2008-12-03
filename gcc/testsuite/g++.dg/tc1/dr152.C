@@ -4,7 +4,7 @@
 
 namespace N1 {
   struct X {
-    X();
+    X();			// { dg-message "candidate" }
     explicit X(const X&);
   };
   void f(X);
@@ -19,7 +19,7 @@ namespace N1 {
 namespace N2 {
   template <class T>
   struct X {
-    X();
+    X();			// { dg-message "candidate" }
     explicit X(const X&);
   };
 

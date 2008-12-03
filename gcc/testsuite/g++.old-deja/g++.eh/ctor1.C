@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 struct A
 {
-  A();
+  A();				// { dg-message "" } candidate
   A(A&);			// { dg-message "candidates" } referenced below
 };
 
