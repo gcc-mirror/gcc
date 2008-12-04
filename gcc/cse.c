@@ -3651,7 +3651,7 @@ equiv_constant (rtx x)
 
       if (REG_P (SUBREG_REG (x))
 	  && (new_rtx = equiv_constant (SUBREG_REG (x))) != 0)
-        return simplify_subreg (GET_MODE (x), SUBREG_REG (x),
+        return simplify_subreg (GET_MODE (x), new_rtx,
 				GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 
       return 0;

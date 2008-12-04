@@ -1,3 +1,7 @@
+2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (equiv_constant): Fix pasto.
+
 2008-12-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.md: Remove extraneous spaces and
