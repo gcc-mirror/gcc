@@ -1,3 +1,7 @@
+2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/union-4.c: New test.
+
 2008-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/vect/pr33953.c: XFAIL dump scans for powerpc.

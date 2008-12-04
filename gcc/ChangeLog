@@ -1,3 +1,6 @@
+2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (equiv_constant): Fix pasto.
 
 2008-12-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
