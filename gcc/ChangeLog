@@ -1,3 +1,9 @@
+2008-12-05  Ben Elliston  <bje@au.ibm.com>
+
+	* c-parser.c (c_parser_enum_specifier): Initialise ident_loc and
+	comma_loc.
+	(c_parser_initelt): Initialise des_loc and ellipsis_loc.
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
             Gary Funck  <gary@intrepid.com>
 
