@@ -1,3 +1,9 @@
+2008-12-04  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/38334
+	* typeck.c (get_member_function_from_ptrfunc): Mark the vtbl
+	pointer access with TREE_NO_WARNING.
+
 2008-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38232

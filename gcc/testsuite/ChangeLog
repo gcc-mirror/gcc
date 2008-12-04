@@ -1,3 +1,10 @@
+2008-12-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36509
+	* gcc.dg/Wstrict-aliasing-float-ptr-int-obj.c: Adjust, remove XFAIL.
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Adjust.
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Likewise.
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/union-4.c: New test.

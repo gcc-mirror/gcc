@@ -1243,7 +1243,6 @@ OBJS-common = \
 	tree-switch-conversion.o \
 	tree-ssa-address.o \
 	tree-ssa-alias.o \
-	tree-ssa-alias-warnings.o \
 	tree-ssa-ccp.o \
 	tree-ssa-coalesce.o \
 	tree-ssa-copy.o \
@@ -2089,7 +2088,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TOPLEV_H)
 tree-ssa-structalias.o: tree-ssa-structalias.c tree-ssa-structalias.h \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(GGC_H) $(OBSTACK_H) $(BITMAP_H) \
-   $(FLAGS_H) $(RTL_H) $(TM_P_H) hard-reg-set.h $(BASIC_BLOCK_H) output.h errors.h \
+   $(FLAGS_H) $(RTL_H) $(TM_P_H) hard-reg-set.h $(BASIC_BLOCK_H) output.h \
    $(DIAGNOSTIC_H) $(TREE_H) $(C_COMMON_H) $(TREE_FLOW_H) $(TREE_INLINE_H) varray.h \
    $(C_TREE_H) $(GIMPLE_H) $(HASHTAB_H) $(FUNCTION_H) $(CGRAPH_H) tree-pass.h \
    $(TIMEVAR_H) alloc-pool.h $(SPLAY_TREE_H) $(PARAMS_H) gt-tree-ssa-structalias.h \
@@ -2309,11 +2308,6 @@ tree-ssa-loop-im.o : tree-ssa-loop-im.c $(TREE_FLOW_H) $(CONFIG_H) \
 tree-ssa-math-opts.o : tree-ssa-math-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(FLAGS_H) $(TREE_H) $(TREE_FLOW_H) $(REAL_H) $(TIMEVAR_H) tree-pass.h \
    alloc-pool.h $(BASIC_BLOCK_H) $(TARGET_H)
-tree-ssa-alias-warnings.o : tree-ssa-alias-warnings.c \
-   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(TREE_DUMP_H) \
-   $(TREE_FLOW_H) $(PARAMS_H) $(FUNCTION_H) $(EXPR_H) $(TOPLEV_H) \
-   tree-ssa-structalias.h tree-ssa-propagate.h langhooks.h alloc-pool.h \
-   $(DIAGNOSTIC_H)
 tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(TREE_INLINE_H) $(FLAGS_H) \
    $(FUNCTION_H) $(TIMEVAR_H) convert.h $(TM_H) coretypes.h langhooks.h \
@@ -2321,7 +2315,7 @@ tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    hard-reg-set.h $(GIMPLE_H) vec.h tree-ssa-structalias.h \
    $(IPA_TYPE_ESCAPE_H) vecprim.h pointer-set.h alloc-pool.h
 tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
-   $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) errors.h $(TIMEVAR_H) \
+   $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) tree-pass.h $(FLAGS_H) tree-iterator.h\
    $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_INLINE_H) vec.h langhooks.h \
    alloc-pool.h pointer-set.h $(CFGLOOP_H)

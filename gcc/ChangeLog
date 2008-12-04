@@ -1,3 +1,19 @@
+2008-12-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36509
+	* Makefile.in (tree-ssa-alias-warnings.o): Remove.
+	(tree-ssa-structalias.o): Remove errors.h dependency.
+	(tree-ssa-reassoc.o): Likewise.
+	* tree-ssa-reassoc.c: Do not include errors.h.
+	* tree-ssa-alias-warnings.c: Remove.
+	* tree-ssa-alias.c (compute_may_aliases): Remove call to
+	strict_aliasing_warning_backend.
+	* tree-ssa-structalias.c (emit_pointer_definition): New function.
+	(emit_alias_warning): Likewise.
+	(set_uids_in_ptset): Warn for clear cases of type-punning.
+	* tree-inline.c (remap_gimple_op_r): Preserve TREE_NO_WARNING
+	on INDIRECT_REFs.
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (equiv_constant): Fix pasto.
