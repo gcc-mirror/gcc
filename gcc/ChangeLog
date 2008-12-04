@@ -1,3 +1,13 @@
+
+2008-12-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Backport from mainline:
+	2008-12-02  Danny Smith   <dannysmith@users.sourceforge.net>
+
+        PR target/38054
+	* config/i386/winnt.c (i386_pe_encode_section_info): Condition stdcall
+	decoration of function RTL names here on Ada language.
+
 2008-12-02  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:

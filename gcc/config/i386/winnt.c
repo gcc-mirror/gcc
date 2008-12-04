@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "toplev.h"
 #include "hashtab.h"
+#include "langhooks.h"
 #include "ggc.h"
 #include "target.h"
 
@@ -258,27 +259,19 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
-      if (first)
+      /* FIXME:  Imported stdcall names are not modified by the Ada frontend.
+	 Check and decorate the RTL name now.  */
+      if  (strcmp (lang_hooks.name, "GNU Ada") == 0)
 	{
-	  /* FIXME: In Ada, and perhaps other language frontends,
-	     imported stdcall names may not yet have been modified.
-	     Check and do it know.  */
-         tree new_id;
-         tree old_id = DECL_ASSEMBLER_NAME (decl);
-     	  const char* asm_str = IDENTIFIER_POINTER (old_id);
-          /* Do not change the identifier if a verbatim asmspec
+	  tree new_id;
+	  tree old_id = DECL_ASSEMBLER_NAME (decl);
+	  const char* asm_str = IDENTIFIER_POINTER (old_id);
+	  /* Do not change the identifier if a verbatim asmspec
 	     or if stdcall suffix already added. */
-      	  if (*asm_str == '*' || strchr (asm_str, '@'))
-            break;
-	  if ((new_id = i386_pe_maybe_mangle_decl_assembler_name (decl, old_id)))
-	    {
-	      /* These attributes must be present on first declaration,
-		 change_decl_assembler_name will warn if they are added
-		 later and the decl has been referenced, but duplicate_decls
-		 should catch the mismatch first.  */
-	      change_decl_assembler_name (decl, new_id);
-	      XSTR (symbol, 0) = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	    }
+	  if (!(*asm_str == '*' || strchr (asm_str, '@'))
+	      && (new_id = i386_pe_maybe_mangle_decl_assembler_name (decl,
+								     old_id)))
+	    XSTR (symbol, 0) = IDENTIFIER_POINTER (new_id);
 	}
       break;
 
