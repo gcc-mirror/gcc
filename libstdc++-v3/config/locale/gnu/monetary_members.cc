@@ -220,6 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_data->_M_thousands_sep = ',';
 	  _M_data->_M_grouping = "";
 	  _M_data->_M_grouping_size = 0;
+	  _M_data->_M_use_grouping = false;
 	  _M_data->_M_curr_symbol = "";
 	  _M_data->_M_curr_symbol_size = 0;
 	  _M_data->_M_positive_sign = "";
@@ -240,10 +241,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							__cloc));
 	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, 
 							__cloc));
-	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 	  _M_data->_M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  _M_data->_M_positive_sign_size = strlen(_M_data->_M_positive_sign);
+
+	  // Check for NULL, which implies no grouping.
+	  if (_M_data->_M_thousands_sep == '\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = ',';
+	    }
+	  else
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
+
+	  // Check for NULL, which implies no fractional digits.
+	  if (_M_data->_M_decimal_point == '\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_frac_digits = 0;
+	      _M_data->_M_decimal_point = '.';
+	    }
+	  else
+	    _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
+							__cloc));
 
 	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
 	  if (!__nposn)
@@ -256,8 +281,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  // _Intl == true
 	  _M_data->_M_curr_symbol = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
 	  _M_data->_M_curr_symbol_size = strlen(_M_data->_M_curr_symbol);
-	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
-						      __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
@@ -285,6 +308,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_data->_M_thousands_sep = ',';
 	  _M_data->_M_grouping = "";
 	  _M_data->_M_grouping_size = 0;
+	  _M_data->_M_use_grouping = false;
 	  _M_data->_M_curr_symbol = "";
 	  _M_data->_M_curr_symbol_size = 0;
 	  _M_data->_M_positive_sign = "";
@@ -305,10 +329,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							__cloc));
 	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, 
 							__cloc));
-	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 	  _M_data->_M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  _M_data->_M_positive_sign_size = strlen(_M_data->_M_positive_sign);
+
+	  // Check for NULL, which implies no grouping.
+	  if (_M_data->_M_thousands_sep == '\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = ',';
+	    }
+	  else
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
+
+	  // Check for NULL, which implies no fractional digits.
+	  if (_M_data->_M_decimal_point == '\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_frac_digits = 0;
+	      _M_data->_M_decimal_point = '.';
+	    }
+	  else
+	    _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS,
+							__cloc));
 
 	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
 	  if (!__nposn)
@@ -321,7 +369,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  // _Intl == false
 	  _M_data->_M_curr_symbol = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
 	  _M_data->_M_curr_symbol_size = strlen(_M_data->_M_curr_symbol);
-	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));
@@ -362,6 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_data->_M_thousands_sep = L',';
 	  _M_data->_M_grouping = "";
 	  _M_data->_M_grouping_size = 0;
+	  _M_data->_M_use_grouping = false;
 	  _M_data->_M_curr_symbol = L"";
 	  _M_data->_M_curr_symbol_size = 0;
 	  _M_data->_M_positive_sign = L"";
@@ -397,8 +445,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	  __u.__s = __nl_langinfo_l(_NL_MONETARY_THOUSANDS_SEP_WC, __cloc);
 	  _M_data->_M_thousands_sep = __u.__w;
-	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+
+	  // Check for NULL, which implies no grouping.
+	  if (_M_data->_M_thousands_sep == L'\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = L',';
+	    }
+	  else
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
+
+	  // Check for NULL, which implies no fractional digits.
+	  if (_M_data->_M_decimal_point == L'\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_frac_digits = 0;
+	      _M_data->_M_decimal_point = L'.';
+	    }
+	  else
+	    _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
+							__cloc));
 
 	  const char* __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
@@ -467,8 +539,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __throw_exception_again;
 	    } 
 	  
-	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
-						      __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
@@ -507,6 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_data->_M_thousands_sep = L',';
 	  _M_data->_M_grouping = "";
           _M_data->_M_grouping_size = 0;
+	  _M_data->_M_use_grouping = false;
 	  _M_data->_M_curr_symbol = L"";
 	  _M_data->_M_curr_symbol_size = 0;
 	  _M_data->_M_positive_sign = L"";
@@ -542,8 +613,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	  __u.__s = __nl_langinfo_l(_NL_MONETARY_THOUSANDS_SEP_WC, __cloc);
 	  _M_data->_M_thousands_sep = __u.__w;
-	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-          _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+
+	  // Check for NULL, which implies no grouping.
+	  if (_M_data->_M_thousands_sep == L'\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = L',';
+	    }
+	  else
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
+
+	  // Check for NULL, which implies no fractional digits.
+	  if (_M_data->_M_decimal_point == L'\0')
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_frac_digits = 0;
+	      _M_data->_M_decimal_point = L'.';
+	    }
+	  else
+	    _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS,
+							__cloc));
 
 	  const char* __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
@@ -613,7 +708,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
               __throw_exception_again;
 	    }
 
-	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));

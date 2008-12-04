@@ -1,3 +1,17 @@
+2008-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38368
+	* config/locale/gnu/numeric_members.cc (numpunct<char>::
+	_M_initialize_numpunct, numpunct<wchar_t>::_M_initialize_numpunct):
+	Fix for THOUSANDS_SEP == '\0' consistently with "C" locale.
+	* config/locale/gnu/monetary_members.cc (moneypunct<char, true>::
+	_M_initialize_moneypunct, moneypunct<char, false>::
+	_M_initialize_moneypunct, moneypunct<wchar_t, true>::
+	_M_initialize_moneypunct, moneypunct<wchar_t, false>::
+	_M_initialize_moneypunct): Fix for __MON_DECIMAL_POINT == '\0' or
+	__MON_THOUSANDS_SEP == '\0' consistently with "C" locale.
+	* testsuite/22_locale/locale/cons/38368.cc: New.
+
 2008-12-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38365 (cont)
