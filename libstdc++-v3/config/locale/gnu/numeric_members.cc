@@ -1,6 +1,7 @@
 // std::numpunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,10 +72,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	  // Check for NULL, which implies no grouping.
 	  if (_M_data->_M_thousands_sep == '\0')
-	    _M_data->_M_grouping = "";
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = ',';
+	    }
 	  else
-	    _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
-	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
 	}
 
       // NB: There is no way to extact this info from posix locales.
@@ -128,11 +137,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc);
 	  _M_data->_M_thousands_sep = __u.__w;
 
+	  // Check for NULL, which implies no grouping.
 	  if (_M_data->_M_thousands_sep == L'\0')
-	    _M_data->_M_grouping = "";
+	    {
+	      // Like in "C" locale.
+	      _M_data->_M_grouping = "";
+	      _M_data->_M_grouping_size = 0;
+	      _M_data->_M_use_grouping = false;
+	      _M_data->_M_thousands_sep = L',';
+	    }
 	  else
-	    _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
-	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    {
+	      _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
+	    }
 	}
 
       // NB: There is no way to extact this info from posix locales.
