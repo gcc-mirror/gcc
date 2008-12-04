@@ -1,3 +1,9 @@
+2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+            Gary Funck  <gary@intrepid.com>
+
+	* cse.c (lookup_as_function): Delete mode frobbing code.
+	(fold_rtx_subreg): Re-implement it there for SUBREGs.
+
 2008-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/38287

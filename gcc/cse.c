@@ -1455,17 +1455,6 @@ lookup_as_function (rtx x, enum rtx_code code)
   struct table_elt *p
     = lookup (x, SAFE_HASH (x, VOIDmode), GET_MODE (x));
 
-  /* If we are looking for a CONST_INT, the mode doesn't really matter, as
-     long as we are narrowing.  So if we looked in vain for a mode narrower
-     than word_mode before, look for word_mode now.  */
-  if (p == 0 && code == CONST_INT
-      && GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (word_mode))
-    {
-      x = copy_rtx (x);
-      PUT_MODE (x, word_mode);
-      p = lookup (x, SAFE_HASH (x, VOIDmode), word_mode);
-    }
-
   if (p == 0)
     return 0;
 
@@ -3258,6 +3247,7 @@ static rtx
 fold_rtx_subreg (rtx x, rtx insn)
 {
   enum machine_mode mode = GET_MODE (x);
+  enum machine_mode imode = GET_MODE (SUBREG_REG (x));
   rtx folded_arg0;
   rtx const_arg0;
   rtx new;
@@ -3267,6 +3257,21 @@ fold_rtx_subreg (rtx x, rtx insn)
       || (new = lookup_as_function (x, CONST_DOUBLE)) != 0)
     return new;
 
+  /* If we didn't and if doing so makes sense, see if we previously
+     assigned a constant value to the enclosing word mode SUBREG.  */
+  if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
+      && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+    {
+      int byte = SUBREG_BYTE (x) - subreg_lowpart_offset (mode, word_mode);
+      if (byte >= 0 && (byte % UNITS_PER_WORD) == 0)
+	{
+	  rtx y = gen_rtx_SUBREG (word_mode, SUBREG_REG (x), byte);
+	  new = lookup_as_function (y, CONST_INT);
+	  if (new)
+	    return gen_lowpart (mode, new);
+	}
+    }
+
   /* If this is a paradoxical SUBREG, we have no idea what value the
      extra bits would have.  However, if the operand is equivalent to
      a SUBREG whose operand is the same as our mode, and all the modes
@@ -3275,9 +3280,8 @@ fold_rtx_subreg (rtx x, rtx insn)
 
      Similarly if we find an integer constant.  */
 
-  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (imode))
     {
-      enum machine_mode imode = GET_MODE (SUBREG_REG (x));
       struct table_elt *elt;
 
       if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
@@ -3310,8 +3314,7 @@ fold_rtx_subreg (rtx x, rtx insn)
 
   if (folded_arg0 != SUBREG_REG (x))
     {
-      new = simplify_subreg (mode, folded_arg0,
-			     GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+      new = simplify_subreg (mode, folded_arg0, imode, SUBREG_BYTE (x));
       if (new)
 	return new;
     }
