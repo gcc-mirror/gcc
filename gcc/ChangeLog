@@ -1,3 +1,10 @@
+2008-12-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md: Remove extraneous spaces and
+	quotes.
+	* config/stormy16/stormy16.c: Remove extraneous spaces and fix up
+	formatting of quotes.
+
 2008-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38371
