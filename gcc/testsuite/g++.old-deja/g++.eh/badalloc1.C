@@ -2,7 +2,7 @@
 // __cxa_allocate_exception's emergency buffer mutex will
 // itself call malloc(), and will fail if there is no more
 // memory available.
-// { dg-do run { xfail { { xstormy16-*-* *-*-darwin[3-7]* } || vxworks_rtp } }
+// { dg-do run { xfail { { xstormy16-*-* *-*-darwin[3-7]* } || vxworks_rtp } } }
 // Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 
