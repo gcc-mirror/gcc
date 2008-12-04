@@ -13364,9 +13364,11 @@ recursive_label:
       expr = (tree) &buf;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
-	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)
+	   && (TYPE_POINTER_TO (expr)
+	       || TYPE_REFERENCE_TO (expr)
 	       || TYPE_CACHED_VALUES_P (expr)
-	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)))
+	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)
+	       || TYPE_NEXT_VARIANT (expr)))
     {
       /* Allow these fields to be modified.  */
       tree tmp;
@@ -13375,6 +13377,7 @@ recursive_label:
       TYPE_CONTAINS_PLACEHOLDER_INTERNAL (tmp) = 0;
       TYPE_POINTER_TO (tmp) = NULL;
       TYPE_REFERENCE_TO (tmp) = NULL;
+      TYPE_NEXT_VARIANT (tmp) = NULL;
       if (TYPE_CACHED_VALUES_P (tmp))
 	{
 	  TYPE_CACHED_VALUES_P (tmp) = 0;
