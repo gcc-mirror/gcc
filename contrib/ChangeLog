@@ -1,3 +1,11 @@
+2008-12-04  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-10-18  Jakub Jelinek  <jakub@redhat.com>
+	            Janis Johnson  <janis187@us.ibm.com>
+
+	* dg-extract-results.sh: New file.
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.

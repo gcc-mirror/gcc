@@ -859,15 +859,47 @@ ada.stagefeedback: stagefeedback-start
 lang_checks += check-gnat
 
 check-ada: check-acats check-gnat
+check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 
+check_acats_targets = $(patsubst %,check-acats%, 0 1 2)
+
 check-acats:
-	test -d $(ACATSDIR) || mkdir -p $(ACATSDIR)
+	@test -d $(ACATSDIR) || mkdir -p $(ACATSDIR); \
+	if [ -z "$(CHAPTERS)" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; \
+	then \
+	  $(MAKE) $(check_acats_targets); \
+	  for idx in 0 1 2; do \
+	    mv -f $(ACATSDIR)$$idx/acats.sum $(ACATSDIR)$$idx/acats.sum.sep; \
+	    mv -f $(ACATSDIR)$$idx/acats.log $(ACATSDIR)$$idx/acats.log.sep; \
+	  done; \
+	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh \
+	    $(ACATSDIR)0/acats.sum.sep $(ACATSDIR)1/acats.sum.sep \
+	    $(ACATSDIR)2/acats.sum.sep > $(ACATSDIR)/acats.sum; \
+	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L \
+	    $(ACATSDIR)0/acats.log.sep $(ACATSDIR)1/acats.log.sep \
+	    $(ACATSDIR)2/acats.log.sep > $(ACATSDIR)/acats.log; \
+	  exit 0; \
+	fi; \
 	testdir=`cd ${srcdir}/${ACATSDIR}; ${PWD_COMMAND}`; \
 	export testdir; cd $(ACATSDIR); $(SHELL) $${testdir}/run_acats $(CHAPTERS)
 
-.PHONY: check-acats
+check-acats-subtargets:
+	@echo $(check_acats_targets)
+
+# Parallelized check-acats
+$(check_acats_targets): check-acats%:
+	test -d $(ACATSDIR)$* || mkdir -p $(ACATSDIR)$*; \
+	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
+	case "$*" in \
+	  0) chapters="`cd $$testdir/tests; echo [a-b]* c[0-4]*`";; \
+	  1) chapters="`cd $$testdir/tests; echo c[5-9ab]*`";; \
+	  2) chapters="`cd $$testdir/tests; echo c[c-z]* [d-z]*`";; \
+	esac; \
+	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats $$chapters
+
+.PHONY: check-acats $(check_acats_targets)
 
 
 # Bootstrapping targets for just GNAT - use the same stage directories

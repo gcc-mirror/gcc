@@ -1,3 +1,51 @@
+2008-12-04  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-10-18  Jakub Jelinek  <jakub@redhat.com>
+	            Janis Johnson  <janis187@us.ibm.com>
+
+	* Make-lang.in (check-java-subtargets): New target.
+
+contrib/
+	* dg-extract-results.sh: New file.
+gcc/
+	* Makefile.in (lang_checks_parallelized, check_gcc_parallelize,
+	check_p_tool, check_p_vars, check_p_subno, check_p_comma,
+	check_p_subwork, check_p_numbers, check_p_subdir, check_p_subdirs):
+	New variables.
+	(check-subtargets, check-%-subtargets, check-parallel-%): New
+	targets.
+	(check-%): For test targets listed in lang_checks_parallelized
+	if -j is used and RUNTESTFLAGS doesn't specify tests to execute,
+	run the testing in multiple make goals, possibly parallel, and
+	afterwards run dg-extract-results.sh to merge the sum and log files.
+gcc/cp/
+	* Make-lang.in (check-c++-subtargets): New alias for
+	check-g++-subtargets.
+	(lang_checks_parallelized): Add check-g++.
+	(check_g++_parallelize): New variable.
+gcc/fortran/
+	* Make-lang.in (check-f95-subtargets, check-fortran-subtargets): New
+	aliases for check-gfortran-subtargets.
+	(lang_checks_parallelized): Add check-gfortran.
+	(check_gfortran_parallelize): New variable.
+gcc/ada/
+	* Make-lang.in (check-ada-subtargets): Depend on
+	check-acats-subtargets and check-gnat-subtargets.
+	(check_acats_targets): New variable.
+	(check-acats-subtargets, check-acats%): New targets.
+	(check-acats): If -j is used and CHAPTERS is empty, run the testing
+	in multiple make goals, possibly parallel, and afterwards run
+	dg-extract-results.sh to merge the sum and log files.
+gcc/java/
+	* Make-lang.in (check-java-subtargets): New target.
+libstdc++-v3/
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
+	(RUNTESTDEFAULTFLAGS, EXPECT, check_DEJAGNU_normal_targets): New
+	variables.
+	(%/site.exp, check-DEJAGNU%): New targets.
+	(check-am): Run $(MAKE) check-DEJAGNU.
+	* testsuite/Makefile.in: Regenerated.
 2008-10-14  Andrew Haley  <aph@redhat.com>
 
 	* constants.c (build_constant_data_ref): Make sure we only build
