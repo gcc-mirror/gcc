@@ -710,6 +710,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 		    {
 	              *tp = build1 (INDIRECT_REF, type, new_tree);
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
+		      TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
 		    }
 		}
 	      *walk_subtrees = 0;

@@ -31,14 +31,14 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "errors.h"
-#include "diagnostic.h"
 #include "tree.h"
 #include "c-common.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
 #include "varray.h"
 #include "c-tree.h"
+#include "diagnostic.h"
+#include "toplev.h"
 #include "gimple.h"
 #include "hashtab.h"
 #include "function.h"
@@ -4648,14 +4648,15 @@ shared_bitmap_add (bitmap pt_vars)
    IS_DEREFED is true if PTR was directly dereferenced, which we use to
    help determine whether we are we are allowed to prune using TBAA.
    If NO_TBAA_PRUNING is true, we do not perform any TBAA pruning of
-   the from set.  */
+   the from set.  Returns the number of pruned variables.  */
 
-static void
+static unsigned
 set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 		   bool no_tbaa_pruning)
 {
   unsigned int i;
   bitmap_iterator bi;
+  unsigned pruned = 0;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 
@@ -4688,13 +4689,96 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 	      if (may_alias_p (SSA_NAME_VAR (ptr), mem_alias_set,
 			       vi->decl, var_alias_set, true))
 	        bitmap_set_bit (into, DECL_UID (vi->decl));
+	      else
+		++pruned;
 	    }
 	}
     }
+
+  return pruned;
 }
 
 
 static bool have_alias_info = false;
+
+/* Emit a note for the pointer initialization point DEF.  */
+
+static void
+emit_pointer_definition (gimple def)
+{
+  if (gimple_code (def) == GIMPLE_PHI)
+    {
+      use_operand_p argp;
+      ssa_op_iter oi;
+
+      FOR_EACH_PHI_ARG (argp, def, oi, SSA_OP_USE)
+	{
+	  tree arg = USE_FROM_PTR (argp);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    emit_pointer_definition (SSA_NAME_DEF_STMT (arg));
+	  else
+	    inform (0, "initialized from %qE", arg);
+	}
+    }
+  else if (!gimple_nop_p (def))
+    inform (gimple_location (def), "initialized from here");
+}
+
+/* Emit a strict aliasing warning for dereferencing the pointer PTR.  */
+
+static void
+emit_alias_warning (tree ptr)
+{
+  gimple def = SSA_NAME_DEF_STMT (ptr);
+  gimple use;
+  imm_use_iterator ui;
+  unsigned warned = 0;
+
+  FOR_EACH_IMM_USE_STMT (use, ui, ptr)
+    {
+      tree deref = NULL_TREE;
+
+      if (gimple_has_lhs (use))
+	{
+	  tree lhs = get_base_address (gimple_get_lhs (use));
+	  if (lhs
+	      && INDIRECT_REF_P (lhs)
+	      && TREE_OPERAND (lhs, 0) == ptr)
+	    deref = lhs;
+	}
+      if (gimple_assign_single_p (use))
+	{
+	  tree rhs = get_base_address (gimple_assign_rhs1 (use));
+	  if (rhs
+	      && INDIRECT_REF_P (rhs)
+	      && TREE_OPERAND (rhs, 0) == ptr)
+	    deref = rhs;
+	}
+      else if (is_gimple_call (use))
+	{
+	  unsigned i;
+	  for (i = 0; i < gimple_call_num_args (use); ++i)
+	    {
+	      tree op = get_base_address (gimple_call_arg (use, i));
+	      if (op
+		  && INDIRECT_REF_P (op)
+		  && TREE_OPERAND (op, 0) == ptr)
+		deref = op;
+	    }
+	}
+      if (deref
+	  && !TREE_NO_WARNING (deref))
+	{
+	  TREE_NO_WARNING (deref) = 1;
+	  warning_at (gimple_location (use), OPT_Wstrict_aliasing,
+		      "dereferencing pointer %qD does break strict-aliasing "
+		      "rules", SSA_NAME_VAR (ptr));
+	  ++warned;
+	}
+    }
+  if (warned > 0)
+    emit_pointer_definition (def);
+}
 
 /* Given a pointer variable P, fill in its points-to set, or return
    false if we can't.
@@ -4740,7 +4824,7 @@ find_what_p_points_to (tree p)
       else
 	{
 	  struct ptr_info_def *pi = get_ptr_info (p);
-	  unsigned int i;
+	  unsigned int i, pruned;
 	  bitmap_iterator bi;
 	  bool was_pt_anything = false;
 	  bitmap finished_solution;
@@ -4792,9 +4876,9 @@ find_what_p_points_to (tree p)
 	  finished_solution = BITMAP_GGC_ALLOC ();
 	  stats.points_to_sets_created++;
 
-	  set_uids_in_ptset (p, finished_solution, vi->solution,
-			     pi->is_dereferenced,
-			     vi->no_tbaa_pruning);
+	  pruned = set_uids_in_ptset (p, finished_solution, vi->solution,
+				      pi->is_dereferenced,
+				      vi->no_tbaa_pruning);
 	  result = shared_bitmap_lookup (finished_solution);
 
 	  if (!result)
@@ -4809,7 +4893,22 @@ find_what_p_points_to (tree p)
 	    }
 
 	  if (bitmap_empty_p (pi->pt_vars))
-	    pi->pt_vars = NULL;
+	    {
+	      pi->pt_vars = NULL;
+	      if (pruned > 0
+		  && pi->is_dereferenced
+		  && warn_strict_aliasing > 0
+		  && !SSA_NAME_IS_DEFAULT_DEF (p))
+		{
+		  if (dump_file && dump_flags & TDF_DETAILS)
+		    {
+		      fprintf (dump_file, "alias warning for ");
+		      print_generic_expr (dump_file, p, 0);
+		      fprintf (dump_file, "\n");
+		    }
+		  emit_alias_warning (p);
+		}
+	    }
 
 	  return true;
 	}
