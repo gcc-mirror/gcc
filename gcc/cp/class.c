@@ -4301,8 +4301,7 @@ check_bases_and_members (tree t)
     |= (CLASSTYPE_NON_AGGREGATE (t)
 	|| saved_nontrivial_dtor || saved_complex_asn_ref);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_CONTAINS_VPTR_P (t);
-  TYPE_HAS_COMPLEX_DFLT (t)
-    |= (TYPE_HAS_DEFAULT_CONSTRUCTOR (t) || TYPE_CONTAINS_VPTR_P (t));
+  TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
   /* If the class has no user-declared constructor, but does have
      non-static const or reference data members that can never be

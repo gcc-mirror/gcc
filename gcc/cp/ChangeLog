@@ -1,3 +1,11 @@
+2008-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37906
+	* decl.c (grok_special_member_properties): Set TYPE_HAS_COMPLEX_DFLT
+	here.
+	* class.c (check_bases_and_members): Rather than assuming any
+	user-declared default constructor is complex here.
+
 2008-12-04  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/38334
@@ -179,7 +187,7 @@
 	
 2008-11-05  Fabien Chene <fabien.chene@gmail.com>
 
-	PR c++/35219
+	PR c++/32519
 	* cp-tree.h: Fix DECL_NONSTATIC_MEMBER_P to handle member template
 	functions.
 
