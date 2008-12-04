@@ -1,3 +1,9 @@
+2008-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38371
+	* fold-const.c (fold_checksum_tree): Allow modification of
+	TYPE_NEXT_VARIANT.
+
 2008-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38360
