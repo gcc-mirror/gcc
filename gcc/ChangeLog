@@ -1,4 +1,10 @@
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+            Gary Funck  <gary@intrepid.com>
+
+	* cse.c (lookup_as_function): Delete mode frobbing code.
+	(equiv_constant): Re-implement it there for SUBREGs.
+
+2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (equiv_constant): Fix pasto.
 

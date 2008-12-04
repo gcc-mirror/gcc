@@ -1363,17 +1363,6 @@ lookup_as_function (rtx x, enum rtx_code code)
   struct table_elt *p
     = lookup (x, SAFE_HASH (x, VOIDmode), GET_MODE (x));
 
-  /* If we are looking for a CONST_INT, the mode doesn't really matter, as
-     long as we are narrowing.  So if we looked in vain for a mode narrower
-     than word_mode before, look for word_mode now.  */
-  if (p == 0 && code == CONST_INT
-      && GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (word_mode))
-    {
-      x = copy_rtx (x);
-      PUT_MODE (x, word_mode);
-      p = lookup (x, SAFE_HASH (x, VOIDmode), word_mode);
-    }
-
   if (p == 0)
     return 0;
 
@@ -3626,6 +3615,8 @@ equiv_constant (rtx x)
 
   if (GET_CODE (x) == SUBREG)
     {
+      enum machine_mode mode = GET_MODE (x);
+      enum machine_mode imode = GET_MODE (SUBREG_REG (x));
       rtx new;
 
       /* See if we previously assigned a constant value to this SUBREG.  */
@@ -3634,10 +3625,25 @@ equiv_constant (rtx x)
           || (new = lookup_as_function (x, CONST_FIXED)) != 0)
         return new;
 
+      /* If we didn't and if doing so makes sense, see if we previously
+	 assigned a constant value to the enclosing word mode SUBREG.  */
+      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
+	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+	{
+	  int byte = SUBREG_BYTE (x) - subreg_lowpart_offset (mode, word_mode);
+	  if (byte >= 0 && (byte % UNITS_PER_WORD) == 0)
+	    {
+	      rtx y = gen_rtx_SUBREG (word_mode, SUBREG_REG (x), byte);
+	      new = lookup_as_function (y, CONST_INT);
+	      if (new)
+		return gen_lowpart (mode, new);
+	    }
+	}
+
+      /* Otherwise see if we already have a constant for the inner REG.  */
       if (REG_P (SUBREG_REG (x))
 	  && (new = equiv_constant (SUBREG_REG (x))) != 0)
-        return simplify_subreg (GET_MODE (x), new,
-				GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+        return simplify_subreg (mode, new, imode, SUBREG_BYTE (x));
 
       return 0;
     }
