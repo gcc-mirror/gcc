@@ -2325,3 +2325,12 @@ proc check_effective_target_c99_runtime { } {
 	    $contents [add_options_for_c99_runtime ""]
     }]
 }
+
+# Return 1 if current options generate DFP instructions, 0 otherwise.
+
+proc check_effective_target_hard_dfp {} {
+    return [check_no_messages_and_pattern hard_dfp "!adddd3" assembly {
+	_Decimal64 x, y, z;
+	void foo (void) { z = x + y; }
+    }]
+}

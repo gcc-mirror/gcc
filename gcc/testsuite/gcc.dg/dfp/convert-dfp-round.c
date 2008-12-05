@@ -1,4 +1,5 @@
 /* { dg-options "-O0 -std=gnu99" } */
+/* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
 
 /* N1150 5.2: Conversions among decimal floating types and between
    decimal floating types and generic floating types.
