@@ -1,5 +1,16 @@
 2008-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/38399
+	* include/bits/locale_facets_nonio.tcc (money_get<>::
+	_M_extract(iter_type, iter_type, ios_base&, ios_base::iostate&,
+	string&)): Fix, reject decimal point when frac_digits <= 0.
+	* testsuite/22_locale/money_get/get/char/38399.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/38399.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/5.cc: Adjust.
+	* testsuite/22_locale/money_get/get/wchar_t/5.cc: Likewise.
+
+2008-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/38411
 	* testsuite/22_locale/numpunct/members/char/2.cc: Use is_IS instead
 	of fr_FR.

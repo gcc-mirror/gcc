@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -229,6 +229,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		    else if (__c == __lc->_M_decimal_point 
 			     && !__testdecfound)
 		      {
+			if (__lc->_M_frac_digits <= 0)
+			  break;
+
 			__last_pos = __n;
 			__n = 0;
 			__testdecfound = true;
@@ -311,11 +314,10 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      }
 	    
 	    // Iff not enough digits were supplied after the decimal-point.
-	    if (__testdecfound && __lc->_M_frac_digits > 0
-		&& __n != __lc->_M_frac_digits)
+	    if (__testdecfound && __n != __lc->_M_frac_digits)
 	      __testvalid = false;
 	  }
-	
+
 	// Iff valid sequence is not recognized.
 	if (!__testvalid)
 	  __err |= ios_base::failbit;
