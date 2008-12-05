@@ -1,4 +1,10 @@
-2008-12-05 Uros Bizjak <ubizjak@gmail.com>
+2008-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37716
+	* gimplify.c (gimplify_expr): Allow COND_EXPR if
+	gimplify_ctxp->allow_rhs_cond_expr.
+
+2008-12-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_fold_vector_minmax): Create
 	VIEW_CONVERT_EXPR to convert output to long_integer_type_node.

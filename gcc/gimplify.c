@@ -6941,7 +6941,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != ASM_EXPR
 		  && code != BIND_EXPR
 		  && code != CATCH_EXPR
-		  && code != COND_EXPR
+		  && (code != COND_EXPR || gimplify_ctxp->allow_rhs_cond_expr)
 		  && code != EH_FILTER_EXPR
 		  && code != GOTO_EXPR
 		  && code != LABEL_EXPR
