@@ -1444,6 +1444,36 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       }
       break;
 
+    case BIT_FIELD_REF:
+      {
+	tree type = TREE_TYPE (e);
+
+	type = signed_or_unsigned_type_for (TYPE_UNSIGNED (type), type);
+	if (type
+	    && tree_int_cst_equal (TYPE_SIZE (type), TREE_OPERAND (e, 1)))
+	  {
+	    HOST_WIDE_INT bitpos = tree_low_cst (TREE_OPERAND (e, 2), 0);
+	    HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 0);
+	    if ((bitpos % size) == 0)
+	      {
+		pp_c_left_paren (pp);
+		pp_c_left_paren (pp);
+		pp_type_id (pp, type);
+		pp_c_star (pp);
+		pp_c_right_paren (pp);
+		pp_c_ampersand (pp);
+		pp_expression (pp, TREE_OPERAND (e, 0));
+		pp_c_right_paren (pp);
+		pp_c_left_bracket (pp);
+		pp_wide_integer (pp, bitpos / size);
+		pp_c_right_bracket (pp);
+		break;
+	      }
+	  }
+	pp_unsupported_tree (pp, e);
+      }
+      break;
+
     case COMPLEX_CST:
     case VECTOR_CST:
       pp_c_compound_literal (pp, e);
@@ -1955,6 +1985,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case ARRAY_REF:
     case CALL_EXPR:
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
     case COMPLEX_CST:
     case COMPLEX_EXPR:
     case VECTOR_CST:
