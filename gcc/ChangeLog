@@ -1,3 +1,9 @@
+2008-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38408
+	* fold-const.c (fold_checksum_tree): Change buf type to union
+	tree_node.
+
 2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/38262
