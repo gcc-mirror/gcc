@@ -1,3 +1,11 @@
+2008-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38411
+	* testsuite/22_locale/numpunct/members/char/2.cc: Use is_IS instead
+	of fr_FR.
+	* testsuite/22_locale/numpunct/members/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/7.cc: Likewise.
+
 2008-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38368

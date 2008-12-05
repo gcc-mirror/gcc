@@ -2,7 +2,8 @@
 
 // 2001-01-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,17 +35,17 @@ void test02()
   // basic construction
   locale loc_c = locale::classic();
   locale loc_us = locale("en_US");
-  locale loc_fr = locale("fr_FR");
+  locale loc_is = locale("is_IS");
   locale loc_de = locale("de_DE");
   VERIFY( loc_c != loc_de );
-  VERIFY( loc_us != loc_fr );
+  VERIFY( loc_us != loc_is );
   VERIFY( loc_us != loc_de );
-  VERIFY( loc_de != loc_fr );
+  VERIFY( loc_de != loc_is );
 
   // cache the numpunct facets
   const numpunct<char>& nump_c = use_facet<numpunct<char> >(loc_c); 
   const numpunct<char>& nump_us = use_facet<numpunct<char> >(loc_us); 
-  const numpunct<char>& nump_fr = use_facet<numpunct<char> >(loc_fr); 
+  const numpunct<char>& nump_is = use_facet<numpunct<char> >(loc_is); 
   const numpunct<char>& nump_de = use_facet<numpunct<char> >(loc_de); 
 
   // sanity check the data is correct.
@@ -58,11 +59,11 @@ void test02()
   string t2 = nump_us.truename();
   string f2 = nump_us.falsename();
 
-  char dp3 = nump_fr.decimal_point();
-  char th3 = nump_fr.thousands_sep();
-  string g3 = nump_fr.grouping();
-  string t3 = nump_fr.truename();
-  string f3 = nump_fr.falsename();
+  char dp3 = nump_is.decimal_point();
+  char th3 = nump_is.thousands_sep();
+  string g3 = nump_is.grouping();
+  string t3 = nump_is.truename();
+  string f3 = nump_is.falsename();
 
   char dp4 = nump_de.decimal_point();
   char th4 = nump_de.thousands_sep();

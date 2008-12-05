@@ -2,7 +2,8 @@
 
 // 2001-01-19 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003, 2005 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,9 +38,9 @@ test02()
 
   // construct a locale object with the specialized facet.
   locale		loc_c = locale::classic();
-  locale		loc_fr = locale("fr_FR");
+  locale		loc_is = locale("is_IS");
   locale 		loc_1(locale::classic(), 
-			      new numpunct_byname<char>("fr_FR"));
+			      new numpunct_byname<char>("is_IS"));
 
   // check names
   VERIFY( loc_c.name() == name_c );
@@ -58,7 +59,7 @@ test02()
   const numpunct<char>&	nump_1 = use_facet<numpunct<char> >(loc_1); 
   const numpunct<char>&	nump_2 = use_facet<numpunct<char> >(loc_2); 
   const numpunct<char>&	nump_c = use_facet<numpunct<char> >(loc_c); 
-  const numpunct<char>&	nump_fr = use_facet<numpunct<char> >(loc_fr); 
+  const numpunct<char>&	nump_is = use_facet<numpunct<char> >(loc_is); 
 
   // sanity check the data is correct.
   char dp1 = nump_c.decimal_point();
@@ -79,11 +80,11 @@ test02()
   string t3 = nump_2.truename();
   string f3 = nump_2.falsename();
 
-  char dp4 = nump_fr.decimal_point();
-  char th4 = nump_fr.thousands_sep();
-  string g4 = nump_fr.grouping();
-  string t4 = nump_fr.truename();
-  string f4 = nump_fr.falsename();
+  char dp4 = nump_is.decimal_point();
+  char th4 = nump_is.thousands_sep();
+  string g4 = nump_is.grouping();
+  string t4 = nump_is.truename();
+  string f4 = nump_is.falsename();
   VERIFY( dp1 != dp2 );
   VERIFY( th1 != th2 );
 
