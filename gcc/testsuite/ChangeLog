@@ -1,3 +1,9 @@
+2008-12-05  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/28614
+	* gcc.c-torture/compile/20001226-1.c: Add dg-timeout-factor.
+	* g++.dg/torture/pr31863.C: Ditto.
+
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37248

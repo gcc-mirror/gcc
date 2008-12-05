@@ -6,6 +6,9 @@
 /* { dg-xfail-if "jump beyond 128K not supported" { xtensa*-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "PR36698" { spu-*-* } { "-O0" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
+/* If list of targets on dg-timeout-factor grows to 3, make it unconditional
+   for all targets.  */
+/* { dg-timeout-factor 2.0 { target hppa*-*-* } } */
 
 /* This testcase exposed two branch shortening bugs on powerpc.  */
 

@@ -1,4 +1,7 @@
 /* { dg-do link } */
+/* If list of targets on dg-timeout-factor grows to 3, make it unconditional  
+   for all targets.  */
+/* { dg-timeout-factor 2.0 { target hppa*-*-* } } */
 
 namespace Loki
 {
