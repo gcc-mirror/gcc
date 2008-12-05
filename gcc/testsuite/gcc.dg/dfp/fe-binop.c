@@ -1,4 +1,5 @@
 /* { dg-options "-std=gnu99" } */
+/* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
 
 /* Touch tests that check for raising appropriate exceptions for binary
    arithmetic operations on decimal float values.  */

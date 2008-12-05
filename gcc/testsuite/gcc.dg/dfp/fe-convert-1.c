@@ -1,4 +1,5 @@
 /* { dg-options "-std=gnu99" } */
+/* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
 
 /* Check that appropriate exceptions are raised for conversions involving
    decimal float values.  */
