@@ -1,3 +1,8 @@
+2008-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35336
+	* error.c (dump_expr): Handle BIT_FIELD_REF.
+
 2008-12-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/38262

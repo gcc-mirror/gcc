@@ -2071,6 +2071,7 @@ dump_expr (tree t, int flags)
     case UNEQ_EXPR:
     case LTGT_EXPR:
     case COMPLEX_EXPR:
+    case BIT_FIELD_REF:
       pp_expression (cxx_pp, t);
       break;
 
