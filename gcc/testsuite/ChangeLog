@@ -1,3 +1,9 @@
+2008-12-05  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/38406
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Restrict PTA
+	alias warning to lp64 targets.
+
 2008-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/union-5.c: Run only on x86 and x86-64.
