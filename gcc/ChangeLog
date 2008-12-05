@@ -1,3 +1,11 @@
+2008-12-05 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_fold_vector_minmax): Create
+	VIEW_CONVERT_EXPR to convert output to long_integer_type_node.
+
+	(alpha_emit_conditional_branch): Do not generate direct branch
+	for UNORDERED comparisons.
+
 2008-12-05  Andreas Schwab  <schwab@suse.de>
 
 	* config/rs6000/linux-unwind.h (frob_update_context): Check for
@@ -50,8 +58,7 @@
 
 2008-12-04  Nick Clifton  <nickc@redhat.com>
 
-	* config/stormy16/stormy16.md: Remove extraneous spaces and
-	quotes.
+	* config/stormy16/stormy16.md: Remove extraneous spaces and quotes.
 	* config/stormy16/stormy16.c: Remove extraneous spaces and fix up
 	formatting of quotes.
 
