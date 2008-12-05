@@ -1,6 +1,6 @@
 /* Valid __ea declarations.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -pedantic-errors" } */
+/* { dg-options "-O2 -std=gnu99 -pedantic-errors" } */
 
 /* Typedefs.  */
 typedef __ea int ea_int_t;
