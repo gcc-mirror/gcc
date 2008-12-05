@@ -34,17 +34,17 @@ void test02()
   // basic construction
   locale loc_c = locale::classic();
   locale loc_us = locale("en_US");
-  locale loc_fr = locale("fr_FR");
+  locale loc_is = locale("is_IS");
   locale loc_de = locale("de_DE");
   VERIFY( loc_c != loc_de );
-  VERIFY( loc_us != loc_fr );
+  VERIFY( loc_us != loc_is );
   VERIFY( loc_us != loc_de );
-  VERIFY( loc_de != loc_fr );
+  VERIFY( loc_de != loc_is );
 
   // cache the numpunct facets
   const numpunct<wchar_t>& nump_c = use_facet<numpunct<wchar_t> >(loc_c); 
   const numpunct<wchar_t>& nump_us = use_facet<numpunct<wchar_t> >(loc_us); 
-  const numpunct<wchar_t>& nump_fr = use_facet<numpunct<wchar_t> >(loc_fr); 
+  const numpunct<wchar_t>& nump_is = use_facet<numpunct<wchar_t> >(loc_is); 
   const numpunct<wchar_t>& nump_de = use_facet<numpunct<wchar_t> >(loc_de); 
 
   // sanity check the data is correct.
@@ -58,11 +58,11 @@ void test02()
   wstring t2 = nump_us.truename();
   wstring f2 = nump_us.falsename();
 
-  wchar_t dp3 = nump_fr.decimal_point();
-  wchar_t th3 = nump_fr.thousands_sep();
-  string g3 = nump_fr.grouping();
-  wstring t3 = nump_fr.truename();
-  wstring f3 = nump_fr.falsename();
+  wchar_t dp3 = nump_is.decimal_point();
+  wchar_t th3 = nump_is.thousands_sep();
+  string g3 = nump_is.grouping();
+  wstring t3 = nump_is.truename();
+  wstring f3 = nump_is.falsename();
 
   wchar_t dp4 = nump_de.decimal_point();
   wchar_t th4 = nump_de.thousands_sep();
