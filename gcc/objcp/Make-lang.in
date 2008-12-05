@@ -56,7 +56,7 @@ obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
 		$(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS) $(GMPLIBS)
+		$(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 cc1objplus-checksum.c : cc1objplus-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1objplus-dummy$(exeext) > $@
@@ -65,7 +65,7 @@ cc1objplus-checksum.o : cc1objplus-checksum.c
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS) $(GMPLIBS)
+		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Objective C++ language specific files.
 
