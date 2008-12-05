@@ -3135,7 +3135,7 @@
 	(unspec:CCFP [(match_operand 1 "cc_reg_operand" "y")
 		      (match_operand 2 "cc_reg_operand" "y")]
 		     E500_CR_IOR_COMPARE))]
-  "TARGET_E500"
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
   "cror 4*%0+gt,4*%1+gt,4*%2+gt"
   [(set_attr "type" "cr_logical")])
 

@@ -1,3 +1,9 @@
+2008-12-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.md (move_from_CR_gt_bit): Enable for
+	TARGET_HARD_FLOAT && !TARGET_FPRS, not TARGET_E500.
+	* config/rs6000/spe.md (e500_cr_ior_compare): Likewise.
+
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37716
