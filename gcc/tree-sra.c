@@ -3013,11 +3013,9 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 
 	  infld = fld->replacement;
 
-	  type = TREE_TYPE (infld);
+	  type = unsigned_type_for (TREE_TYPE (infld));
 	  if (TYPE_PRECISION (type) != TREE_INT_CST_LOW (flen))
-	    type = lang_hooks.types.type_for_size (TREE_INT_CST_LOW (flen), 1);
-	  else
-	    type = unsigned_type_for (type);
+	    type = build_nonstandard_integer_type (TREE_INT_CST_LOW (flen), 1);
 
 	  if (TREE_CODE (infld) == BIT_FIELD_REF)
 	    {
