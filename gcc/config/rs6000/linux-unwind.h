@@ -361,7 +361,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 	 we have no good way to determine at compile time what to do.  */
       unsigned int *insn
 	= (unsigned int *) _Unwind_GetGR (context, R_LR);
-      if (*insn == 0xE8410028)
+      if (insn && *insn == 0xE8410028)
 	_Unwind_SetGRPtr (context, 2, context->cfa + 40);
     }
 #endif

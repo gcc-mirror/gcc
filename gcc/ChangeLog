@@ -1,3 +1,8 @@
+2008-12-05  Andreas Schwab  <schwab@suse.de>
+
+	* config/rs6000/linux-unwind.h (frob_update_context): Check for
+	NULL lr.
+
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/38408
@@ -18,7 +23,7 @@
 	(c_parser_initelt): Initialise des_loc and ellipsis_loc.
 
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
-            Gary Funck  <gary@intrepid.com>
+	    Gary Funck  <gary@intrepid.com>
 
 	* cse.c (lookup_as_function): Delete mode frobbing code.
 	(equiv_constant): Re-implement it there for SUBREGs.
@@ -70,16 +75,16 @@
 
 2008-12-03  Tomas Bily  <tbily@suse.cz>
 
-        PR middle-end/38250
-        * tree-loop-distribution.c (build_size_arg): New function.
-        (generate_memset_zero): Checks if dr_analyze_innermost succeed.
-        Reorganized generating of stmts.
-        * testsuite/gcc.dg/tree-ssa/pr38250.c: New file.
-        * tree-data-ref.c (dr_analyze_innermost): Returns bool.
-        Indicate if analysis succeed.
-        * tree-data-ref.h (dr_analyze_innermost): Returns bool.
-        * tree-predcom.c (valid_initializer_p, find_looparound_phi):
-        Uses new definition of dr_analyze_innermost.
+	PR middle-end/38250
+	* tree-loop-distribution.c (build_size_arg): New function.
+	(generate_memset_zero): Checks if dr_analyze_innermost succeed.
+	Reorganized generating of stmts.
+	* testsuite/gcc.dg/tree-ssa/pr38250.c: New file.
+	* tree-data-ref.c (dr_analyze_innermost): Returns bool.
+	Indicate if analysis succeed.
+	* tree-data-ref.h (dr_analyze_innermost): Returns bool.
+	* tree-predcom.c (valid_initializer_p, find_looparound_phi):
+	Uses new definition of dr_analyze_innermost.
 
 2008-12-03  Ben Elliston  <bje@au.ibm.com>
 
@@ -100,8 +105,8 @@
 	* configure: Regenerated.
 
 2008-12-03  Eric Botcazou  <ebotcazou@adacore.com>
-            Jakub Jelinek  <jakub@redhat.com>
-            Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-optimization/38281
 	* combine.c (distribute_notes): When invoking SET_INSN_DELETED on i2,
@@ -151,12 +156,12 @@
 2008-12-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/37861
-        * tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do not check
-        for INDIRECT_REFs.
-        (forward_propagate_addr_into_variable_array_index): Check that the
-        offset is not computed from a MULT_EXPR, use is_gimple_assign rather
-        than the gimple code directly.
-        
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do not check
+	for INDIRECT_REFs.
+	(forward_propagate_addr_into_variable_array_index): Check that the
+	offset is not computed from a MULT_EXPR, use is_gimple_assign rather
+	than the gimple code directly.
+
 2008-12-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/float_disf.c (__floatdisf): Prototype.
@@ -185,7 +190,7 @@
 
 2008-12-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
-        PR target/38054
+	PR target/38054
 	* config/i386/winnt.c (i386_pe_encode_section_info): Condition stdcall
 	decoration of function RTL names here on Ada language.
 
@@ -699,13 +704,13 @@
 	(generate_edge_moves): Use store_can_be_removed_p instead of
 	not_modified_p.
 	(ira_emit): Call setup_entered_from_non_parent_p.
-	
+
 	* ira-build.c (copy_info_to_removed_store_destinations):
 	Accumulate CALL_FREQ, CALL_CROSSED_NUM, and
 	ALLOCNO_EXCESS_PRESSURE_POINTS_NUM.
 	(ira_flattening): Don't CHECK MEM_OPTIMIZED_DEST[_P], always
 	update all accumulated attributes.
-	
+
 2008-11-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/37790
@@ -714,7 +719,7 @@
 	ira_finish_allocno_live_range_list): New prototypes.
 	(ira_allocno_live_ranges_intersect_p,
 	ira_pseudo_live_ranges_intersect_p): Remove.
-	
+
 	* ira-conflicts.c (ira_allocno_live_ranges_intersect_p,
 	ira_pseudo_live_ranges_intersect_p): Rename to
 	allocnos_have_intersected_live_ranges_p and
@@ -749,7 +754,7 @@
 	(copy_info_to_removed_store_destinations): Ditto.  Use
 	ira_copy_allocno_live_range_list.
 	(ira_flattening): Use ira_merge_allocno_live_ranges.
-	
+
 	* ira.c (too_high_register_pressure_p): New function.
 	(ira): Switch off sharing spill slots if the pressure is too high.
 
@@ -779,7 +784,7 @@
 
 	PR target/38156
 	* tree-parloops.c (loop_parallel_p): NULL vect_dump.
-	(separate_decls_in_region): Create shared struct even when there 
+	(separate_decls_in_region): Create shared struct even when there
 	are only reductions.
 
 2008-11-19  Hariharan Sandanagobalane <hariharan@picochip.com>
@@ -873,7 +878,7 @@
 	* builtins.c (expand_builtin_sync_operation): Warn for changed
 	semantics in NAND builtins.
 	* c.opt (Wsync-nand): New warning option.  Describe -Wsync-nand.
-	
+
 	* doc/invoke.texi (Warning options): Add Wsync-nand.
 	* doc/extend.texi (Atomic Builtins) [__sync_fetch_and_nand]: Correct
 	__sync_fetch_and_nand builtin operation in the example.  Add a note
@@ -1023,7 +1028,7 @@
 	(ira_build): Call it.
 
 	* ira-costs.c (record_reg_classes): Set up ALLOCNO_BAD_SPILL_P.
-	
+
 2008-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38104
@@ -1240,7 +1245,7 @@
 	* config/mips/sde.h: Likewise.
 	* config/mips/iris6.h: Likewise.
 	* config/mips/vr.h: Likewise.
-	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): New. 
+	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): New.
 
 2008-11-10  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -1280,7 +1285,7 @@
 
 	* ira-costs.c (scan_one_insn): Use alloc_pref for load from
 	equivalent memory.
-	
+
 2008-11-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/37514
@@ -1343,7 +1348,7 @@
 	PR middle-end/37379
 	* tree-scalar-evolution.c (instantiate_scev_1): Return
 	chrec_dont_know for VL_EXP_CLASS_P.
-	
+
 2008-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (reg_to_stack): Add missing braces in memset
@@ -1358,7 +1363,7 @@
 
 	PR target/26397
 	* config/rs6000/aix.h (LIBSTDCXX_STATIC): Define.
-	
+
 2008-11-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/35574
@@ -1383,7 +1388,7 @@
 
 	* doc/sourcebuild.texi (Torture Tests): Add ADDITIONAL_TORTURE_OPTIONS.
 
-2008-11-06  Ben Elliston  <bje@au.ibm.com>	
+2008-11-06  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Comment fix.
 
@@ -1521,7 +1526,7 @@
 	merging read-only and read-write sections or assembler emits
 	read-write .eh_frame sections.
 	* configure: Regenerate.
-	
+
 2008-11-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	Revert:
@@ -1670,7 +1675,7 @@
 	PR target/37878
 	* config/rs6000/predicates.md (word_offset_memref_operand):
 	Restructure code and look inside auto-inc/dec addresses.
-	
+
 2008-10-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32277
@@ -1713,7 +1718,7 @@
 	* real.h (real_can_shorten_arithmetic): Declare.
 
 2008-10-29  Bernd Schmidt  <bernd.schmidt@analog.com>
-	
+
 	* config/bfin/bfin-protos.h (WA_05000257, WA_05000283, WA_05000315,
 	ENABLE_WA_05000257, ENABLE_WA_05000283, ENABLE_WA_05000315): New.
 	* config/bfin/bfin.c (bfin_cpus): Add these workaround bits as
@@ -1796,14 +1801,14 @@
 	* ira-int.h (ira_allocno): Add member updated_cover_class_cost.
 	(ALLOCNO_UPDATED_COVER_CLASS_COST): New.
 	(ira_fast_allocation): Remove the prototype.
-	
+
 	* ira-color.c (update_copy_costs, allocno_cost_compare_func,
 	assign_hard_reg, calculate_allocno_spill_cost): Use updated costs.
 	(color_pass): Modify the updated costs.
 	(ira_color): Rename to color.  Make it static.
 	(ira_fast_allocation): Rename to fast_allocation.  Make it static.
 	(ira_color): New function.
-	
+
 	* ira-conflicts.c (process_regs_for_copy): Propagate hard reg cost
 	change.
 
@@ -1828,7 +1833,7 @@
 
 	* ira-costs.c (setup_allocno_cover_class_and_costs): Don't set up
 	updated costs.
-	
+
 2008-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37813
@@ -1953,7 +1958,7 @@
 	From Jie Zhang  <jie.zhang@analog.com>
 	* config/bfin/bfin.md (composev2hi): Put operands into vector
 	with correct order.
-	
+
 2008-10-22  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.opt (msmartmips): Accept -mno-smartmips.
@@ -2065,7 +2070,7 @@
 
 	* doc/invoke.texi (Option Summary): Add -T to linker options.
 	(Link Options): Document -T.
-	
+
 2008-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-inline.c (tree_inlinable_function_p): Remove tuples
@@ -2185,14 +2190,14 @@
 
 	* doc/rtl.texi (clobber): Change descriotion of RA behaviour for
 	early clobbers of pseudo-registers.
-	
+
 2008-10-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/37674
 	* ira-build.c (ira_flattening): Recalculate
 	ALLOCNO_TOTAL_NO_STACK_REG_P and ALLOCNO_TOTAL_CONFLICT_HARD_REGS
 	from the scratch instead of the propagation.
-	
+
 2008-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/rtl.texi (const_double): Remove the "addr" operand.
@@ -2344,7 +2349,7 @@
 	* haifa-sched.c (create_check_block_twin): Update calls to the above.
 	* sel-sched.c (create_speculation_check): Likewise.
 	* doc/tm.texi: Provide documentation for new target hooks.
-		
+
 	* config/ia64/ia64.c: Include sel-sched.h.  Rewrite speculation hooks.
 	(ia64_gen_spec_insn): Removed.
 	(get_spec_check_gen_function, insn_can_be_in_speculative_p,
@@ -2389,7 +2394,7 @@
 	(ia64_dfa_new_cycle): Assert that last_scheduled_insn is set when
 	a group barrier is needed.  Fix vertical spacing.  Guard the code
 	doing state transition with last_scheduled_insn check.
-	Mark that a stop bit should be before current insn if there was a 
+	Mark that a stop bit should be before current insn if there was a
 	cycle advance.  Update current_cycle and mem_ops_in_group.
 	(ia64_h_i_d_extended): Change use of current_sched_info to
 	sched_deps_info. Reallocate stops_p by larger chunks.
@@ -2400,7 +2405,7 @@
 	ia64_free_sched_context): New static functions.
 	(gen_func_t): New typedef.
 	(get_spec_load_gen_function): New function.
-	(SPEC_GEN_EXTEND_OFFSET): Declare.	
+	(SPEC_GEN_EXTEND_OFFSET): Declare.
 	(ia64_set_sched_flags): Check common_sched_info instead of *flags.
 	(get_mode_no_for_insn): Change the condition that prevents use of
 	special hardware registers so it can now handle pseudos.
@@ -2429,7 +2434,7 @@
 	(sel2_run): New variable.
 	(ia64_reorg): When flag_selective_scheduling2 is set, run the
 	selective scheduling pass instead of schedule_ebbs.
-	
+
 	* config/ia64/ia64.md (speculable1, speculable2): New attributes.
 	(UNSPEC_LDS_A): New UNSPEC.
 	(movqi_internal, movhi_internal, movsi_internal, movdi_internal,
@@ -2453,7 +2458,7 @@
 	instead of Common Report Var.
 
 	* config/ia64/itanium2.md: Remove incorrect bypass.
-	
+
 	* config/ia64/t-ia64 (ia64.o): Add dependency on sel-sched.h.
 
 2008-10-14  Jakub Jelinek  <jakub@redhat.com>
@@ -2605,7 +2610,7 @@
 	PR middle-end/37808
 	* df-scan.c (df_ref_change_reg_with_loc_1): Added test to make
 	sure that ref has valid bb.
-	
+
 2008-10-12  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/37447
@@ -3006,7 +3011,7 @@
 	(print_statistics, dump_alloc_pool_statistics): Enhance the
 	printing of statistics to print the number of elements and to use
 	unsigned longs.
-	
+
 2008-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/37576
@@ -3289,7 +3294,7 @@
 
 2008-10-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	* config/rs6000/rs6000.md (fseldfsf4): Add TARGET_SINGLE_FLOAT 
+	* config/rs6000/rs6000.md (fseldfsf4): Add TARGET_SINGLE_FLOAT
 	condition.
 	(fselsfdf4): Make condition on "TARGET_HARD_FLOAT && TARGET_FPRS &&
 	TARGET_DOUBLE_FLOAT && TARGET_SINGLE_FLOAT".
@@ -3346,7 +3351,7 @@
 	and VECTOR_TYPE recurse with useless_type_conversion_p which
 	properly handles void pointer conversion.
 
-2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>  
+2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/37528
 	* config/i386/mingw32.h (LIBGCC_SPEC) : Replace with ..
@@ -3714,7 +3719,7 @@
 	(coalesced_allocnos_live_at_points_p,
 	set_coalesced_allocnos_live_points): New functions.
 	(coalesce_spill_slots): Rewrite.
-	
+
 	* ira-lives.c (remove_some_program_points_and_update_live_ranges,
 	ira_compress_allocno_live_ranges): New functions.
 
@@ -3740,7 +3745,7 @@
 
 2008-09-25 Sergei Dyshel <sergeid@il.ibm.com>
 
-	* matrix-reorg.c (transform_allocation_sites): Initializers 
+	* matrix-reorg.c (transform_allocation_sites): Initializers
 	added to avoid the warning.
 
 2008-09-25  Martin Jambor  <mjambor@suse.cz>
@@ -3960,7 +3965,7 @@
 	ALLOCNO_EXCESS_PRESSURE_POINTS_NUM instead of frequencies and
 	range lengths.  Get rid off doubles.
 	(ira_fast_allocations): Call start_allocno_priorities.
-	
+
 2008-09-22  David Daney  <ddaney@avtrex.com>
 
 	PR target/37593
@@ -4010,7 +4015,7 @@
 
 2008-09-22  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	PR target/37528	
+	PR target/37528
 	* config/i386/t-cygming (SHLIB_LC): Remove.
 	(SHLIB_LINK): Don't add static objects to SHLIB_IMPLIB
 	* config/i386/t-cygwin (SHLIB_LC): Specify all required libraries.
@@ -4124,9 +4129,9 @@
 	* targhooks.c (default_ira_cover_classes): New function.
 
 2008-09-19  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.md (reload<mode>_literal): Handle MEM operands.
-	
+
 2008-09-19  Ian Lance Taylor  <iant@google.com>
 
 	* varasm.c (narrowing_initializer_constant_valid_p): Return
@@ -4181,7 +4186,7 @@
 	(load_tp, set_tp, tls_func, tls_arg, tls_call): New.
 	* config/xtensa/xtensa-protos.h (xtensa_tls_referenced_p): Declare.
 	* configure: Regenerated.
-	
+
 2008-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37394
@@ -4303,7 +4308,7 @@
 	PR tree-optimization/37102
 	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args
 	from a node. Check to see if another PHI is dead.
-	(eliminate_useless_phis): Rename from eliminate_virtual_phis and 
+	(eliminate_useless_phis): Rename from eliminate_virtual_phis and
 	remove real PHIs which have no uses.
 	(rewrite_out_of_ssa): Call eliminate_useless_phis.
 
