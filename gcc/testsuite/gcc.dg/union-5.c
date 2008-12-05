@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O -fgcse -fno-split-wide-types" } */
 
 extern void abort(void);
