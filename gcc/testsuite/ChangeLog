@@ -1,3 +1,7 @@
+2008-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/union-5.c: Run only on x86 and x86-64.
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/union-5.c: New test.
