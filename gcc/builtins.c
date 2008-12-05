@@ -1434,9 +1434,15 @@ expand_builtin_apply_args (void)
     /* Put the insns after the NOTE that starts the function.
        If this is inside a start_sequence, make the outer-level insn
        chain current, so the code is placed at the start of the
-       function.  */
+       function.  If internal_arg_pointer is a non-virtual pseudo,
+       it needs to be placed after the function that initializes
+       that pseudo.  */
     push_topmost_sequence ();
-    emit_insn_before (seq, parm_birth_insn);
+    if (REG_P (crtl->args.internal_arg_pointer)
+	&& REGNO (crtl->args.internal_arg_pointer) > LAST_VIRTUAL_REGISTER)
+      emit_insn_before (seq, parm_birth_insn);
+    else
+      emit_insn_before (seq, NEXT_INSN (entry_of_function ()));
     pop_topmost_sequence ();
     return temp;
   }

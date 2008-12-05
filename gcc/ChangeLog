@@ -1,3 +1,9 @@
+2008-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38338
+	* builtins.c (expand_builtin_apply_args): Put before parm_birth_insn
+	only if internal_arg_pointer is a non-virtual pseudo.
+
 2008-12-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.md (move_from_CR_gt_bit): Enable for
