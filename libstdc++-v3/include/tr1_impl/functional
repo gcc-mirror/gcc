@@ -943,7 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
    *  function object [TR1 3.6.3/5]. Only the first parameter should
    *  be specified: the rest are used to determine among the various
    *  implementations. Note that, although this class is a function
-   *  object, isn't not entirely normal because it takes only two
+   *  object, it isn't entirely normal because it takes only two
    *  parameters regardless of the number of parameters passed to the
    *  bind expression. The first parameter is the bound argument and
    *  the second parameter is a tuple containing references to the
