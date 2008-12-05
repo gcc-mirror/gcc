@@ -18,7 +18,7 @@
 #define __builtin_ia32_extrqi(X, I, L)  __builtin_ia32_extrqi(X, 1, 1)
 #define __builtin_ia32_insertqi(X, Y, I, L) __builtin_ia32_insertqi(X, Y, 1, 1)
 
-/* avxintrin.h */
+/* immintrin.h */
 #define __builtin_ia32_blendpd256(X, Y, M) __builtin_ia32_blendpd256(X, Y, 1)
 #define __builtin_ia32_blendps256(X, Y, M) __builtin_ia32_blendps256(X, Y, 1)
 #define __builtin_ia32_dpps256(X, Y, M) __builtin_ia32_dpps256(X, Y, 1)
@@ -133,7 +133,7 @@
 #define __builtin_ia32_protdi(A, B) __builtin_ia32_protdi(A,1)
 #define __builtin_ia32_protqi(A, B) __builtin_ia32_protqi(A,1)
 
-#include <avxintrin.h>
 #include <wmmintrin.h>
 #include <bmmintrin.h>
+#include <immintrin.h>
 #include <mm3dnow.h>
