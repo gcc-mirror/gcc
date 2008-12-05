@@ -819,6 +819,7 @@ here; FIXME: document the others.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
 * compat Testing::  Support for testing binary compatibility.
+* Torture Tests::   Support for torture testing using multiple options.
 @end menu
 
 @node Test Idioms
@@ -1548,3 +1549,43 @@ This command can be used in a secondary source file to specify that
 compilation is expected to fail for particular options on particular
 targets.
 @end table
+
+@node Torture Tests
+@subsection Support for torture testing using multiple options
+
+Throughout the compiler testsuite there are several directories whose
+tests are run multiple times, each with a different set of options.
+These are known as torture tests.
+@file{gcc/testsuite/lib/torture-options.exp} defines procedures to
+set up these lists:
+
+@table @code
+@item torture-init
+Initialize use of torture lists.
+@item set-torture-options
+Set lists of torture options to use for tests with and without loops.
+Optionally combine a set of torture options with a set of other
+options, as is done with Objective-C runtime options.
+@item torture-finish
+Finalize use of torture lists.
+@end table
+
+The @file{.exp} file for a set of tests that use torture options must
+include calls to these three procecures if:
+
+@itemize @bullet
+@item It calls @code{gcc-dg-runtest} and overrides @var{DG_TORTURE_OPTIONS}.
+
+@item It calls @var{$@{tool@}}@code{-torture} or
+@var{$@{tool@}}@code{-torture-execute}, where @var{tool} is @code{c},
+@code{fortran}, or @code{objc}.
+
+@item It calls @code{dg-pch}.
+@end itemize
+
+It is not necessary for a @file{.exp} file that calls @code{gcc-dg-runtest}
+to call the torture procedures if the tests should use the list in
+@var{DG_TORTURE_OPTIONS} defined in @file{gcc-dg.exp}.
+
+Most uses of torture options can override the default lists by defining
+@var{TORTURE_OPTIONS} in a @file{.dejagnurc} file.

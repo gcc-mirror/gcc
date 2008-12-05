@@ -1,3 +1,52 @@
+2008-12-05  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-05-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/torture-options.exp: New support for torture options.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Use new torture procs.
+	* lib/c-torture.exp: Define C_TORTURE_OPTIONS instead of
+	TORTURE_OPTIONS; don't define torture_with_loops and
+	torture_without_loops.
+	* lib/gcc-dg.exp: Define DG_TORTURE_OPTIONS instead of
+	TORTURE_OPTIONS; don't define torture_with_loops and
+	torture_without_loops.
+	(gcc-dg-runtest): Use new torture procs if no torture options defined.
+	* lib/fortran-torture.exp: Define FORTRAN_TORTURE_OPTIONS instead of
+	TORTURE_OPTIONS.
+	(fortran-torture-execute): Use torture_with_loops instead of
+	TORTURE_OPTIONS.
+	(fortran-torture): Ditto.
+	* lib/objc-torture.exp: Define OBJC_TORTURE_OPTIONS instead of
+	TORTURE_OPTIONS; don't define torture_with_loops and
+	torture_without_loops.
+	* gcc.c-torture/execute/execute.exp: Use new torture procs.
+	* gcc.c-torture/execute/builtins/builtins.exp: Ditto.
+	* gcc.c-torture/execute/ieee/ieee.exp: Ditto.
+	* gcc.c-torture/unsorted/unsorted.exp: Ditto.
+	* gfortran.fortran-torture/execute/execute.exp: Ditto.
+	* gfortran.fortran-torture/compile/compile.exp: Ditto.
+	* gcc.target/x86_64/abi/abi-x86_64.exp: Ditto.
+	* gcc.target/i386/math-torture/math-torture.exp: Define
+	MATH_TORTURE_OPTIONS, use new torture procs.
+	* gcc.dg/pch/pch.exp: Use new torture procs.
+	* gcc.dg/format/format.exp: Ditto.
+	* gcc.misc-tests/i386-prefetch.exp: Ditto.
+	* gcc.misc-tests/dectest.exp: Ditto.
+	* objc.dg/pch/pch.exp: Ditto.
+	* objc/execute/execute.exp: Ditto.
+	* objc/execute/exceptions/exceptions.exp: Ditto.
+	* objc/compile/compile.exp: Ditto.
+
+	Backport from mainline:
+	2008-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/fortran-torture.exp (get-fortran-torture-options):
+	New function, replacing old FORTRAN_TORTURE_OPTIONS code.
+	* gfortran.fortran-torture/compile/compile.exp: Use
+	[get-fortran-torture-options] instead of $FORTRAN_TORTURE_OPTIONS.
+	* gfortran.fortran-torture/execute/execute.exp: Likewise.
+
 2008-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/union-5.c: Run only on x86 and x86-64.

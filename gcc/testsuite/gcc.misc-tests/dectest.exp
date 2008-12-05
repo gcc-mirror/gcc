@@ -20,7 +20,7 @@
 #
 # Contributed by Ben Elliston <bje@au.ibm.com>.
 
-set TORTURE_OPTIONS [list {} -O1 -O2 -O3 -Os -msoft-float]
+set DEC_TORTURE_OPTIONS [list {} -O1 -O2 -O3 -Os -msoft-float]
 
 proc target-specific-flags {} {
   set result "-frounding-math "
@@ -30,6 +30,7 @@ proc target-specific-flags {} {
 # Load support procs (borrow these from c-torture).
 load_lib c-torture.exp
 load_lib target-supports.exp
+load_lib torture-options.exp
 
 # Skip these tests for targets that don't support this extension.
 if { ![check_effective_target_dfp] } {
@@ -516,6 +517,11 @@ if [catch {set testdir $env(DECTEST)}] {
     return
 }
 
+torture-init
+set-torture-options $DEC_TORTURE_OPTIONS
+
 note "Using tests in $testdir"
 dfp-run-tests [lsort [glob -nocomplain $testdir/*.decTest]]
 unset testdir
+
+torture-finish

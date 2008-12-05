@@ -84,32 +84,24 @@ if $tracelevel then {
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib torture-options.exp
 
 # Initialize harness.
 dg-init
+torture-init
 
-# Save these.  They are needed if testsuite loops over multiple ABIs
-set saved_torture_with_loops $torture_with_loops
-set saved_torture_without_loops $torture_without_loops
-
-set torture_with_loops $PREFETCH_NONE
-set torture_without_loops $PREFETCH_NONE
+set-torture-options $PREFETCH_NONE
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-none-*.c]] ""
 
-set torture_with_loops $PREFETCH_SSE
-set torture_without_loops $PREFETCH_SSE
+set-torture-options $PREFETCH_SSE
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-sse-*.c]] ""
 
-set torture_with_loops $PREFETCH_3DNOW
-set torture_without_loops $PREFETCH_3DNOW
+set-torture-options $PREFETCH_3DNOW
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-3dnow-*.c]] ""
 
-set torture_with_loops $PREFETCH_ATHLON
-set torture_without_loops $PREFETCH_ATHLON
+set-torture-options $PREFETCH_ATHLON
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-athlon-*.c]] ""
 
-set torture_with_loops $saved_torture_with_loops
-set torture_without_loops $saved_torture_without_loops
-
+torture-finish
 dg-finish
 

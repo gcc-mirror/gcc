@@ -13,7 +13,11 @@
 # that needs them.  They shouldn't call any external functions in case
 # those functions were overridden too.
 
+load_lib torture-options.exp
 load_lib c-torture.exp
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
 
 set additional_flags ""
 if [istarget "powerpc-*-darwin*"] {
@@ -28,3 +32,5 @@ foreach src [lsort [find $srcdir/$subdir *.c]] {
 				$additional_flags
     }
 }
+
+torture-finish

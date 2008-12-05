@@ -22,10 +22,16 @@
 
 load_lib target-supports.exp
 
+# Return the list of options to use for fortran torture tests.
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+proc get-fortran-torture-options { } {
+    global TORTURE_OPTIONS
 
-if ![info exists TORTURE_OPTIONS] {
+    if [info exists TORTURE_OPTIONS] {
+	return $TORTURE_OPTIONS
+    }
+
     # determine if host supports vectorization, and the necessary set
     # of options, based on code from testsuite/vect/vect.exp
 
@@ -59,17 +65,22 @@ if ![info exists TORTURE_OPTIONS] {
 	set test_tree_vectorize 0
     }
 
-    set TORTURE_OPTIONS [list \
-	{ -O0 } { -O1 } { -O2 } \
+    set options {}
+
+    lappend options \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
 	{ -O2 -fbounds-check } \
 	{ -O3 -g } \
-	{ -Os }]
-
+	{ -Os }
     if { $test_tree_vectorize } {
-	lappend TORTURE_OPTIONS $vectorizer_options
+	lappend options $vectorizer_options
     }
+
+    return $options
 }
 
 
@@ -174,7 +185,7 @@ proc fortran-torture-execute { src } {
     global srcdir tmpdir
     global tool
     global compiler_conditional_xfail_data
-    global TORTURE_OPTIONS
+    global torture_with_loops
 
     # Check for alternate driver.
     set additional_flags ""
@@ -188,7 +199,7 @@ proc fortran-torture-execute { src } {
     }
 
     # Setup the options for the testcase run.
-    set option_list $TORTURE_OPTIONS
+    set option_list $torture_with_loops
     set executable $tmpdir/[file tail [file rootname $src].x]
     regsub "(?q)$srcdir/" $src "" testcase
 
@@ -348,7 +359,7 @@ proc search_for_re { file pattern } {
 proc fortran-torture { args } {
     global srcdir subdir
     global compiler_conditional_xfail_data
-    global TORTURE_OPTIONS
+    global torture_with_loops
 
     set src [lindex $args 0]
     if { [llength $args] > 1 } {
@@ -373,7 +384,7 @@ proc fortran-torture { args } {
     }
    
     # loop through all the options
-    set option_list $TORTURE_OPTIONS
+    set option_list $torture_with_loops
     foreach option $option_list {
 
 	# torture_compile_xfail is set by the .x script (if present)

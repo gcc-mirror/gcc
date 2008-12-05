@@ -24,6 +24,10 @@ if $tracelevel then {
 
 # load support procs
 load_lib objc-torture.exp
+load_lib torture-options.exp
+
+torture-init
+set-torture-options $OBJC_TORTURE_OPTIONS $OBJC_RUNTIME_OPTIONS
 
 #
 # main test loop
@@ -37,3 +41,5 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.m]] {
 
     objc-torture-execute $src
 }
+
+torture-finish

@@ -15,6 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 load_lib gcc-dg.exp
+load_lib torture-options.exp
 
 # Define gfortran callbacks for dg.exp.
 
@@ -82,7 +83,10 @@ proc gfortran-dg-prune { system text } {
 # as c-torture does.
 proc gfortran-dg-runtest { testcases default-extra-flags } {
     global runtests
-    global TORTURE_OPTIONS
+    global DG_TORTURE_OPTIONS torture_with_loops
+
+    torture-init
+    set-torture-options $DG_TORTURE_OPTIONS
 
     foreach test $testcases {
 	# If we're only testing specific files and this isn't one of
@@ -94,7 +98,7 @@ proc gfortran-dg-runtest { testcases default-extra-flags } {
 	# look if this is dg-do-run test, in which case
 	# we cycle through the option list, otherwise we don't
 	if [expr [search_for $test "dg-do run"]] {
-	    set option_list $TORTURE_OPTIONS
+	    set option_list $torture_with_loops
 	} else {
 	    set option_list [list { -O } ]
 	}
@@ -106,4 +110,6 @@ proc gfortran-dg-runtest { testcases default-extra-flags } {
 	    dg-test $test $flags ${default-extra-flags}
 	}
     }
+
+    torture-finish
 }

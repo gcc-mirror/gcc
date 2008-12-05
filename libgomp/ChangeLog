@@ -1,3 +1,10 @@
+2008-12-05  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-05-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/lib/libgomp.exp: Load new torture support.
+
 2008-12-02  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
