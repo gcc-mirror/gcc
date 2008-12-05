@@ -1,3 +1,9 @@
+2008-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/38285
+	* write_float.def (WRITE_FLOAT): Zero the float value for special case
+	only if	scale_factor = 0.
+	
 2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38234
