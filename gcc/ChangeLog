@@ -4,7 +4,7 @@
 	* fold-const.c (fold_checksum_tree): Change buf type to union
 	tree_node.
 
-2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
+2008-12-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/38262
 	* Makefile.in (LIBS): Remove GMPLIBS, CLOOGLIBS and PPLLIBS.
