@@ -1,3 +1,7 @@
+2008-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* include/tr1_impl/functional (_Mu): Fix typo.
+
 2008-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38399
