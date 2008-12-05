@@ -1,0 +1,54 @@
+#   Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+load_lib gcc-dg.exp
+load_lib target-supports.exp
+
+# Exit immediately if this isn't a MIPS target.
+if ![istarget mips*-*-*] {
+  return
+}
+
+# Pic and nonpic are not link-compatible for VXWorks targets.
+if [istarget mips*-*-vxworks] {
+  return
+}
+
+if { ![check_effective_target_fpic] } {
+  return
+}
+
+dg-init
+
+set old-dg-do-what-default "${dg-do-what-default}"
+set dg-do-what-default "assemble"
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/pic-*.c]] {
+    verbose "Compiling [file tail [file dirname $testcase]]/[file tail $testcase]"
+    dg-test -keep-output $testcase "-fpic" ""
+}
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/nonpic-*.c]] {
+    verbose "Compiling [file tail [file dirname $testcase]]/[file tail $testcase]"
+    dg-test -keep-output $testcase "-fno-pic" ""
+}
+
+set dg-do-what-default "run"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/main-*.c]] "-fno-pic" ""
+
+set dg-do-what-default "${old-dg-do-what-default}"
+dg-finish

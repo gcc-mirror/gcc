@@ -1,0 +1,20 @@
+These tests are meant to test the interoperability of PIC and nonpic objects for mips.
+This table shows the various combinations and each case is tested by one of the nonpic tests.
+Test Case	The PIC code        	The non-PIC code        The result (stub and/or PLT)
+
+main-1.c	nothing           	nothing              	Neither (trivial)
+main-2.c	nothing           	call only		PLT entry
+main-3.c	nothing           	address taken only	Neither (* But creating a PLT entry is valid)
+main-4.c	nothing           	address and call	PLT entry
+main-5.c	call only           	nothing			.MIPS.stubs entry
+main-6.c	call only           	call only		.MIPS.stubs and PLT
+main-7.c	call only           	address taken only	.MIPS.stubs (* Also creating a PLT entry is valid)
+main-8.c	call only           	address and call	.MIPS.stubs and PLT entry
+main-9.c	address taken only	nothing			Neither
+main-10.c	address taken only	call only		PLT entry
+main-11.c	address taken only	address taken only	Neither (* But creating a PLT entry is valid)
+main-12.c	address taken only	address and call	PLT entry
+main-13.c	address and call	nothing			Neither
+main-14.c	address and call	call only		PLT entry
+main-15.c	address and call	address taken only	Neither (* But creating a PLT entry is valid)
+main-16.c	address and call	address and call	PLT entry
