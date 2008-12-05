@@ -1,5 +1,9 @@
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-sra.c (sra_explode_bitfield_assignment): Always
+	call unsigned_type_for, if the precision is higher than
+	needed, call build_nonstandard_integer_type.
+
 	PR debug/38367
 	* function.c (assign_parm_find_stack_rtl): If promoted_mode
 	is wider than DECL_MODE, adjust MEM_OFFSET (stack_parm) for
