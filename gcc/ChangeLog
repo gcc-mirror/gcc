@@ -1,3 +1,16 @@
+2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrap/38262
+	* java/Make-lang.in (jc1): Add BACKENDLIBS, remove GMPLIBS.
+	* objc/Make-lang.in (cc1obj-dummy, cc1obj): Same.
+	* objcp/Make-lang.in (cc1objplus-dummy, cc1objplus): Same.
+	* cp/Make-lang.in (cc1plus-dummy, cc1plus): Same.
+	* ada/gcc-interface/Make-lang.in (gnat1): Same.
+	* fortran/Make-lang.in (f951): Same.
+	* Makefile.in (LIBS): Remove GMPLIBS, CLOOGLIBS and PPLLIBS.
+	(BACKENDLIBS): New.
+	(cc1-dummy, cc1): Add BACKENDLIBS, remove GMPLIBS.
+
 2008-12-05  Ben Elliston  <bje@au.ibm.com>
 
 	* c-parser.c (c_parser_enum_specifier): Initialise ident_loc and

@@ -98,7 +98,7 @@ gfortran-cross$(exeext): gfortran$(exeext)
 f951$(exeext): $(F95_OBJS) \
 		$(BACKEND) $(LIBDEPS) attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(F95_OBJS) $(BACKEND) $(LIBS) attribs.o $(GMPLIBS)
+		$(F95_OBJS) $(BACKEND) $(LIBS) attribs.o $(BACKENDLIBS)
 
 gt-fortran-trans.h    : s-gtype; @true
 #

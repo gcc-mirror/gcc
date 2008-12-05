@@ -101,7 +101,7 @@ jvspec.o-warn = -Wno-error
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
 	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(GMPLIBS)
+		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
 
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@
