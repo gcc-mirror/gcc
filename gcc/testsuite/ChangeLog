@@ -1,3 +1,8 @@
+2008-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38285
+	gfortran.dg/fmt_f_an_p.f: New test.
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/union-5.c: New test.
