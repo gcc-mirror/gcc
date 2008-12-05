@@ -1,3 +1,9 @@
+2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrap/38262
+	* Make-lang.in (cc1obj-dummy, cc1obj): Add BACKENDLIBS,
+	remove GMPLIBS.
+
 2008-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* objc-act.c (objc_build_string_object): Pass location to

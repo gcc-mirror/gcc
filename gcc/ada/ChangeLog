@@ -1,3 +1,8 @@
+2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrap/38262
+	* gcc-interface/Make-lang.in (gnat1): Add BACKENDLIBS, remove GMPLIBS.
+
 2008-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/30827
