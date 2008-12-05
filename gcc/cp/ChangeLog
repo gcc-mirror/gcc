@@ -1,3 +1,9 @@
+2008-11-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrap/38262
+	* Make-lang.in (cc1plus-dummy, cc1plus): Add BACKENDLIBS,
+	remove GMPLIBS.
+
 2008-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37906
