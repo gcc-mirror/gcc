@@ -1,6 +1,7 @@
 // 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +37,7 @@ void test05()
   const ios_base::iostate goodbit = ios_base::goodbit;
   ios_base::iostate err = goodbit;
   const locale loc_c = locale::classic();
-  const wstring str = L"0.01Eleanor Roosevelt";
+  const wstring str = L"1Eleanor Roosevelt";
 
   wistringstream iss; 
   iss.imbue(locale(loc_c, new mon_get_type));
