@@ -1,5 +1,10 @@
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/38367
+	* function.c (assign_parm_find_stack_rtl): If promoted_mode
+	is wider than DECL_MODE, adjust MEM_OFFSET (stack_parm) for
+	big endian.
+
 	PR middle-end/38338
 	* builtins.c (expand_builtin_apply_args): Put before parm_birth_insn
 	only if internal_arg_pointer is a non-virtual pseudo.
