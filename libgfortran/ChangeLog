@@ -1,3 +1,10 @@
+2008-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38291
+	* io/transfer.c (data_transfer_init): Add fbuf_flush inadvertently
+	ommitted.  Add check for invalid use of REC= with ACCESS="stream".  Fix
+	comment.
+
 2008-12-06  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* runtime/main.c (store_exe_path): Don't crash if argv0 is NULL.

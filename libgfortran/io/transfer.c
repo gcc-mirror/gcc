@@ -1967,7 +1967,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       return;
     }
 
-  /* Check the record or position number.  */
+  /* Check the record number.  */
 
   if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT
       && (cf & IOPARM_DT_HAS_REC) == 0)
@@ -1982,6 +1982,15 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     {
       generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
 		      "Record number not allowed for sequential access "
+		      "data transfer");
+      return;
+    }
+
+  if (dtp->u.p.current_unit->flags.access == ACCESS_STREAM
+      && (cf & IOPARM_DT_HAS_REC) != 0)
+    {
+      generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
+		      "Record number not allowed for stream access "
 		      "data transfer");
       return;
     }
@@ -2146,7 +2155,10 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	      /* Required for compatibility between 4.3 and 4.4 runtime. Check
 	      to see if we might be reading what we wrote before  */
 	      if (dtp->u.p.current_unit->mode == WRITING)
-		flush(dtp->u.p.current_unit->s);
+		{
+		  fbuf_flush (dtp->u.p.current_unit, 1);      
+		  flush(dtp->u.p.current_unit->s);
+		}
 
 	      if (dtp->pos < file_length (dtp->u.p.current_unit->s))
 		dtp->u.p.current_unit->endfile = NO_ENDFILE;
