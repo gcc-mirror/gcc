@@ -2412,7 +2412,7 @@ match_dt_element (io_kind k, gfc_dt *dt)
   m = match_etag (&tag_rec, &dt->rec);
   if (m != MATCH_NO)
     return m;
-  m = match_etag (&tag_spos, &dt->rec);
+  m = match_etag (&tag_spos, &dt->pos);
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iomsg, &dt->iomsg);
@@ -2478,6 +2478,7 @@ gfc_free_dt (gfc_dt *dt)
   gfc_free_expr (dt->blank);
   gfc_free_expr (dt->decimal);
   gfc_free_expr (dt->extra_comma);
+  gfc_free_expr (dt->pos);
   gfc_free (dt);
 }
 
@@ -2491,7 +2492,7 @@ gfc_resolve_dt (gfc_dt *dt)
 
   RESOLVE_TAG (&tag_format, dt->format_expr);
   RESOLVE_TAG (&tag_rec, dt->rec);
-  RESOLVE_TAG (&tag_spos, dt->rec);
+  RESOLVE_TAG (&tag_spos, dt->pos);
   RESOLVE_TAG (&tag_advance, dt->advance);
   RESOLVE_TAG (&tag_id, dt->id);
   RESOLVE_TAG (&tag_iomsg, dt->iomsg);
