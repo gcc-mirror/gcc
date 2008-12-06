@@ -1,3 +1,9 @@
+2008-12-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-optimization/38272
+	* reload1.c (choose_reload_regs): Keep reload_spill_index correct
+	in all cases.
+
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35336
