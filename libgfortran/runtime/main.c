@@ -111,7 +111,8 @@ store_exe_path (const char * argv0)
 
   char buf[PATH_MAX], *cwd, *path;
 
-  if (argv0[0] == '/')
+  /* On the simulator argv is not set.  */
+  if (argv0 == NULL || argv0[0] == '/')
     {
       exe_path = argv0;
       please_free_exe_path_when_done = 0;
