@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3.0\n"
+"Project-Id-Version: cpplib 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2008-03-14 20:31+0100\n"
+"PO-Revision-Date: 2008-11-30 16:45+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -163,9 +163,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s är en GCC-utvidgning"
 
 #: directives.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s är en GCC-utvidgning"
+msgstr "#%s är en GCC-utvidgning som avrådes ifrån"
 
 #: directives.c:366
 msgid "suggest not using #elif in traditional C"
@@ -270,7 +270,7 @@ msgstr "\"%s\" efter # är inte ett positivt heltal"
 #: directives.c:1042
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: directives.c:1066
 #, c-format
@@ -525,14 +525,12 @@ msgid "\"%s\" is not defined"
 msgstr "\"%s\" är inte definierad"
 
 #: expr.c:756
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "binära konstanter är en GCC-utvidgning"
+msgstr "försäkringar är en GCC-utvidgning"
 
 #: expr.c:759
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "binära konstanter är en GCC-utvidgning"
+msgstr "försäkringar är en GCC-utvidgning som avrådes ifrån"
 
 #: expr.c:892 expr.c:921
 #, c-format
@@ -549,9 +547,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "saknat uttryck mellan \"(\" och \")\""
 
 #: expr.c:932
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if utan uttryck"
+msgstr "%s utan uttryck"
 
 #: expr.c:935
 #, c-format
@@ -568,9 +566,9 @@ msgid " ':' without preceding '?'"
 msgstr "\":\" utan föregående \"?\""
 
 #: expr.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "obalanserad stack i #if"
+msgstr "obalanserad stack i %s"
 
 #: expr.c:1014
 #, c-format
@@ -833,7 +831,7 @@ msgstr "funktionsliknande makrot \"%s\" måste användas med ett argument i tradit
 #: macro.c:1016
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "vid anrop av makro %s argument %d: tomma makroargument är odefinierade i ISO C90 och ISO C++98"
 
 #: macro.c:1453
 #, c-format

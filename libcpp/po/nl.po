@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3.0\n"
+"Project-Id-Version: cpplib 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2008-03-18 20:16+0100\n"
+"PO-Revision-Date: 2008-12-06 09:21+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -163,9 +163,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s is een uitbreiding van GCC"
 
 #: directives.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s is een uitbreiding van GCC"
+msgstr "#%s is een afgekeurde uitbreiding van GCC"
 
 #: directives.c:366
 msgid "suggest not using #elif in traditional C"
@@ -270,10 +270,11 @@ msgstr "\"%s\" is geen geldige bestandsnaam"
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" (na #) is geen positieve integer"
 
+# Shouldn't have been marked as translatable I think
 #: directives.c:1042
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: directives.c:1066
 #, c-format
@@ -540,14 +541,12 @@ msgid "\"%s\" is not defined"
 msgstr "\"%s\" is niet gedefinieerd"
 
 #: expr.c:756
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "binaire constantes zijn een uitbreiding van GCC"
+msgstr "assertions zijn een uitbreiding van GCC"
 
 #: expr.c:759
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "binaire constantes zijn een uitbreiding van GCC"
+msgstr "assertions zijn een afgekeurde uitbreiding"
 
 #: expr.c:892 expr.c:921
 #, c-format
@@ -564,9 +563,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "expressie ontbreekt tussen '(' en ')'"
 
 #: expr.c:932
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if zonder expressie"
+msgstr "%s zonder expressie"
 
 #: expr.c:935
 #, c-format
@@ -583,9 +582,9 @@ msgid " ':' without preceding '?'"
 msgstr " ':' zonder voorafgaande '?'"
 
 #: expr.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "niet-gebalanceerde stack in #if"
+msgstr "niet-gebalanceerde stack in %s"
 
 #: expr.c:1014
 #, c-format
@@ -852,7 +851,7 @@ msgstr "functie-achtige macro \"%s\" moet in traditionele C altijd met argumente
 #: macro.c:1016
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "oproep van macro %s argument %d: lege macro-argumenten zijn niet gedefinieerd in ISO C90 and ISO C++98"
 
 #: macro.c:1453
 #, c-format
