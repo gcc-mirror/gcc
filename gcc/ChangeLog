@@ -1,3 +1,10 @@
+2008-12-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/36365
+	* df-core.c (df_worklist_dataflow_overeager): Remove.
+	(df_worklist_dataflow): Don't call it, use double-queue only.
+	* params.def (PARAM_DF_DOUBLE_QUQUQ_THRESHOLD_FACTOR): Remove.
+
 2008-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38428

@@ -745,12 +745,6 @@ DEFPARAM (PARAM_SCCVN_MAX_SCC_SIZE,
 	  "Maximum size of a SCC before SCCVN stops processing a function",
 	  10000, 10, 0)
 
-
-DEFPARAM (PARAM_DF_DOUBLE_QUEUE_THRESHOLD_FACTOR,
-	  "df-double-queue-threshold-factor",
-	  "Multiplier used for determining the double-queueing threshold",
-	  2, 0, 0)
-
 DEFPARAM (PARAM_IRA_MAX_LOOPS_NUM,
 	  "ira-max-loops-num",
 	  "max loops number for regional RA",

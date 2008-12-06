@@ -943,47 +943,6 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
 
 
 /* This will free "pending". */
-static void 
-df_worklist_dataflow_overeager (struct dataflow *dataflow,
-				bitmap pending,
-                                sbitmap considered,
-                                int *blocks_in_postorder,
-				unsigned *bbindex_to_postorder)
-{
-  enum df_flow_dir dir = dataflow->problem->dir;
-  int count = 0;
-
-  while (!bitmap_empty_p (pending))
-    {
-      unsigned bb_index;
-      int index;
-      count++;
-
-      index = bitmap_first_set_bit (pending);
-      bitmap_clear_bit (pending, index);
-
-      bb_index = blocks_in_postorder[index];
-
-      if (dir == DF_FORWARD)
-	df_worklist_propagate_forward (dataflow, bb_index,
-				       bbindex_to_postorder,
-				       pending, considered);
-      else 
-	df_worklist_propagate_backward (dataflow, bb_index,
-					bbindex_to_postorder,
-					pending, considered);
-    }
-
-  BITMAP_FREE (pending);
-
-  /* Dump statistics. */
-  if (dump_file)
-    fprintf (dump_file, "df_worklist_dataflow_overeager:"
-	     "n_basic_blocks %d n_edges %d"
-	     " count %d (%5.2g)\n",
-	     n_basic_blocks, n_edges,
-	     count, count / (float)n_basic_blocks);
-}
 
 static void 
 df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
@@ -1042,23 +1001,10 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 
 /* Worklist-based dataflow solver. It uses sbitmap as a worklist,
    with "n"-th bit representing the n-th block in the reverse-postorder order. 
-   This is so-called over-eager algorithm where it propagates
-   changes on demand. This algorithm may visit blocks more than
-   iterative method if there are deeply nested loops. 
-   Worklist algorithm works better than iterative algorithm
-   for CFGs with no nested loops.
-   In practice, the measurement shows worklist algorithm beats 
-   iterative algorithm by some margin overall.  
-   Note that this is slightly different from the traditional textbook worklist solver,
-   in that the worklist is effectively sorted by the reverse postorder.
-   For CFGs with no nested loops, this is optimal. 
-   
-   The overeager algorithm while works well for typical inputs,
-   it could degenerate into excessive iterations given CFGs with high loop nests
-   and unstructured loops. To cap the excessive iteration on such case,
-   we switch to double-queueing when the original algorithm seems to 
-   get into such.
-   */
+   The solver is a double-queue algorithm similar to the "double stack" solver
+   from Cooper, Harvey and Kennedy, "Iterative data-flow analysis, Revisited".
+   The only significant difference is that the worklist in this implementation
+   is always sorted in RPO of the CFG visiting direction.  */
 
 void 
 df_worklist_dataflow (struct dataflow *dataflow,
@@ -1103,26 +1049,10 @@ df_worklist_dataflow (struct dataflow *dataflow,
   if (dataflow->problem->init_fun)
     dataflow->problem->init_fun (blocks_to_consider);
 
-  /* Solve it. Determine the solving algorithm
-     based on a simple heuristic. */
-  if (n_edges > PARAM_VALUE (PARAM_DF_DOUBLE_QUEUE_THRESHOLD_FACTOR)
-      * n_basic_blocks)
-    {
-      /* High average connectivity, meaning dense graph
-         with more likely deep nested loops
-	 or unstructured loops. */
-      df_worklist_dataflow_doublequeue (dataflow, pending, considered,
-					blocks_in_postorder,
-					bbindex_to_postorder);
-    }
-  else 
-    {
-      /* Most inputs fall into this case
-        with relatively flat or structured CFG. */
-      df_worklist_dataflow_overeager (dataflow, pending, considered,
-				      blocks_in_postorder,
-				      bbindex_to_postorder);
-    }
+  /* Solve it.  */
+  df_worklist_dataflow_doublequeue (dataflow, pending, considered,
+				    blocks_in_postorder,
+				    bbindex_to_postorder);
 
   sbitmap_free (considered);
   free (bbindex_to_postorder);
