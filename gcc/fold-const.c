@@ -8351,11 +8351,16 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    mult_type = type;
 	  else
 	    mult_type = unsigned_type_for (type);
-	  
-	  tem = fold_build2 (MULT_EXPR, mult_type,
-			     fold_convert (mult_type, TREE_OPERAND (op0, 0)),
-			     fold_convert (mult_type, TREE_OPERAND (op0, 1)));
-	  return fold_convert (type, tem);
+
+	  if (TYPE_PRECISION (mult_type) < TYPE_PRECISION (TREE_TYPE (op0)))
+	    {
+	      tem = fold_build2 (MULT_EXPR, mult_type,
+				 fold_convert (mult_type,
+					       TREE_OPERAND (op0, 0)),
+				 fold_convert (mult_type,
+					       TREE_OPERAND (op0, 1)));
+	      return fold_convert (type, tem);
+	    }
 	}
 
       tem = fold_convert_const (code, type, op0);
