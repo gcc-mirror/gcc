@@ -1,3 +1,14 @@
+2008-12-06  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek <jakub@redhat.com>
+
+	PR tree-optimization/38074
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Fix handling of 0
+	entry frequency.
+	* predict.c (combine_predictions_for_bb): Ignore predictor predicting
+	in both dirrection for first match heuristics.
+	(tree_bb_level_predictions): Disable noreturn heuristic when there
+	is no returning path.
+
 2008-12-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR rtl-optimization/38272
