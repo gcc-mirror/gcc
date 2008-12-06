@@ -1,3 +1,7 @@
+2008-12-06  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* runtime/main.c (store_exe_path): Don't crash if argv0 is NULL.
+
 2008-12-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38291
