@@ -2116,6 +2116,62 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   
   if (dtp->u.p.current_unit->pad_status == PAD_UNSPECIFIED)
 	dtp->u.p.current_unit->pad_status = dtp->u.p.current_unit->flags.pad;
+  
+  /* Check the POS= specifier: that it is in range and that it is used with a
+     unit that has been connected for STREAM access. F2003 9.5.1.10.  */
+  
+  if (((cf & IOPARM_DT_HAS_POS) != 0))
+    {
+      if (is_stream_io (dtp))
+	{
+
+	  if (dtp->pos <= 0)
+	    {
+	      generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+			      "POS=specifier must be positive");
+	      return;
+	    }
+
+	  if (dtp->rec >= dtp->u.p.current_unit->maxrec)
+	    {
+	      generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+			      "POS=specifier too large");
+	      return;
+	    }
+
+	  dtp->rec = dtp->pos;
+
+	  if (dtp->u.p.mode == READING)
+	    {
+	      /* Required for compatibility between 4.3 and 4.4 runtime. Check
+	      to see if we might be reading what we wrote before  */
+	      if (dtp->u.p.current_unit->mode == WRITING)
+		flush(dtp->u.p.current_unit->s);
+
+	      if (dtp->pos < file_length (dtp->u.p.current_unit->s))
+		dtp->u.p.current_unit->endfile = NO_ENDFILE;
+	    }
+
+	  if (dtp->pos != dtp->u.p.current_unit->strm_pos)
+	    {
+	      fbuf_flush (dtp->u.p.current_unit, 1);
+	      flush (dtp->u.p.current_unit->s);
+	      if (sseek (dtp->u.p.current_unit->s, dtp->pos - 1) == FAILURE)
+		{
+		  generate_error (&dtp->common, LIBERROR_OS, NULL);
+		  return;
+		}
+	      dtp->u.p.current_unit->strm_pos = dtp->pos;
+	    }
+	}
+      else
+	{
+	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+			  "POS=specifier not allowed, "
+			  "Try OPEN with ACCESS='stream'");
+	  return;
+	}
+    }
 
   /* Sanity checks on the record number.  */
   if ((cf & IOPARM_DT_HAS_REC) != 0)
@@ -2139,10 +2195,10 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       if (dtp->u.p.mode == READING
 	  && dtp->u.p.current_unit->mode == WRITING
 	  && !is_internal_unit (dtp))
-        {
-          fbuf_flush (dtp->u.p.current_unit, 1);      
+	{
+	  fbuf_flush (dtp->u.p.current_unit, 1);      
 	  flush(dtp->u.p.current_unit->s);
-        }
+	}
 
       /* Check whether the record exists to be read.  Only
 	 a partial record needs to exist.  */
@@ -2156,29 +2212,17 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
 
       /* Position the file.  */
-      if (!is_stream_io (dtp))
+      if (sseek (dtp->u.p.current_unit->s, (gfc_offset) (dtp->rec - 1)
+		 * dtp->u.p.current_unit->recl) == FAILURE)
 	{
-	  if (sseek (dtp->u.p.current_unit->s, (gfc_offset) (dtp->rec - 1)
-		     * dtp->u.p.current_unit->recl) == FAILURE)
-	    {
-	      generate_error (&dtp->common, LIBERROR_OS, NULL);
-	      return;
-	    }
+	  generate_error (&dtp->common, LIBERROR_OS, NULL);
+	  return;
 	}
-      else
-        {
-	  if (dtp->u.p.current_unit->strm_pos != dtp->rec)
-	    {
-	      fbuf_flush (dtp->u.p.current_unit, 1);
-	      flush (dtp->u.p.current_unit->s);
-	      if (sseek (dtp->u.p.current_unit->s, dtp->rec - 1) == FAILURE)
-	        {
-	          generate_error (&dtp->common, LIBERROR_OS, NULL);
-	          return;
-	        }
-	      dtp->u.p.current_unit->strm_pos = dtp->rec;
-	    }
-        }
+
+      /* This is required to maintain compatibility between
+	 4.3 and 4.4 runtime.  */
+      if (is_stream_io (dtp))
+	dtp->u.p.current_unit->strm_pos = dtp->rec;
 
     }
 
