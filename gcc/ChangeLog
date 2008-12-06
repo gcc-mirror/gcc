@@ -1,3 +1,9 @@
+2008-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38428
+	* tree-ssa-operands.c (get_expr_operands) <case BIT_FIELD_REF>: Set
+	gimple_set_has_volatile_ops if the BIT_FIELD_REF is volatile.
+
 2008-12-07  Ben Elliston  <bje@au.ibm.com>
 
 	* gthr-single.h (__gthread_once): Adjust prototype to match all
