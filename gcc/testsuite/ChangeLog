@@ -1,3 +1,9 @@
+2008-12-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/38415
+	* gfortran.dg/proc_ptr_2.f90: Extended.
+	* gfortran.dg/proc_ptr_11.f90: Modified.
+
 2008-12-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/38291

@@ -14,8 +14,12 @@ program bsp
   end interface
 
   procedure( up ) , pointer :: pptr
+  procedure(isign), pointer :: q
 
-  pptr => add   ! { dg-error "Interfaces don't match" }
+  ! TODO. See PR 38290.
+  !pptr => add   ! { "Interfaces don't match" }
+
+  q => add
 
   print *, pptr()   ! { dg-error "is not a function" }
 
