@@ -2010,6 +2010,10 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
       }
 
     case BIT_FIELD_REF:
+      if (TREE_THIS_VOLATILE (expr))
+	gimple_set_has_volatile_ops (stmt, true);
+      /* FALLTHRU */
+
     case TRUTH_NOT_EXPR:
     case VIEW_CONVERT_EXPR:
     do_unary:
