@@ -1,3 +1,10 @@
+2008-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38421
+	* include/tr1/ell_integral.tcc: Avoid __ea, future SPU badname.
+	* doc/xml/manual/appendix_contributing.xml: Add __ea to the list
+	of badnames.
+
 2008-12-05  Tom Tromey  <tromey@redhat.com>
 
 	* include/tr1_impl/functional (_Mu): Fix typo.
