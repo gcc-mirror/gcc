@@ -1,3 +1,9 @@
+2008-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38422
+	* fold-const.c (fold_unary) <CASE_CONVERT>: Don't convert MULT_EXPR
+	operands to mult_type if it isn't narrower than op0's type.
+
 2008-12-06  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek <jakub@redhat.com>
 
