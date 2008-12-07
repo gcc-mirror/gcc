@@ -1,3 +1,9 @@
+2008-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/38425
+	* io.c (check_io_constraints): Check constraints on REC=, POS=, and
+	internal unit with POS=. Fix punctuation on a few error messages.
+
 2008-12-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/38415
