@@ -3226,12 +3226,20 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (!elt->use_block_copy)
 	{
 	  tree type = TREE_TYPE (bfexpr);
-	  tree var, vpos;
+	  tree var = make_rename_temp (type, "SR"), tmp, st = NULL, vpos;
+
+	  GIMPLE_STMT_OPERAND (stmt, 1) = var;
+	  update = true;
 
 	  if (!TYPE_UNSIGNED (type))
-	    type = unsigned_type_for (type);
-
-	  var = make_rename_temp (type, "SR");
+	    {
+	      type = unsigned_type_for (type);
+	      tmp = make_rename_temp (type, "SR");
+	      st = build_gimple_modify_stmt (var,
+					     fold_convert (TREE_TYPE (var),
+							   tmp));
+	      var = tmp;
+	    }
 
 	  append_to_statement_list (build_gimple_modify_stmt
 				    (var, build_int_cst_wide (type, 0, 0)),
@@ -3248,8 +3256,8 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	  sra_explode_bitfield_assignment
 	    (var, vpos, true, &list, blen, bpos, elt);
 
-	  GIMPLE_STMT_OPERAND (stmt, 1) = var;
-	  update = true;
+	  if (st)
+	    append_to_statement_list (st, &list);
 	}
       else
 	sra_sync_for_bitfield_assignment

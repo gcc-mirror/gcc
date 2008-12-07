@@ -1,3 +1,8 @@
+2008-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (scalarize_use): Create another temporary with the proper
+	type for signed types in the use_all && !is_output bitfield case.
+
 2008-12-05  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
