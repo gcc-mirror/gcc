@@ -1,3 +1,8 @@
+2008-12-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/38405
+	* gcc.dg/torture/pr38405.c: New.
+
 2008-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr10.adb: New test.
