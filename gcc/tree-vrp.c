@@ -6512,6 +6512,12 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
     !useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
 			        TREE_TYPE (op0));
 
+  /* Make sure to not sign-extend -1 as a boolean value.  */
+  if (need_conversion
+      && !TYPE_UNSIGNED (TREE_TYPE (op0))
+      && TYPE_PRECISION (TREE_TYPE (op0)) == 1)
+    return false;
+
   switch (rhs_code)
     {
     case TRUTH_AND_EXPR:
