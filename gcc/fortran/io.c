@@ -2931,6 +2931,10 @@ if (condition) \
       io_constraint (dt->rec != NULL,
 		     "REC tag at %L is incompatible with internal file",
 		     &dt->rec->where);
+    
+      io_constraint (dt->pos != NULL,
+		     "POS tag at %L is incompatible with internal file",
+		     &dt->pos->where);
 
       io_constraint (unformatted,
 		     "Unformatted I/O not allowed with internal unit at %L",
@@ -3169,7 +3173,7 @@ if (condition) \
 
       io_constraint (dt->format_expr,
 		     "IO spec-list cannot contain both NAMELIST group name "
-		     "and format specification at %L.",
+		     "and format specification at %L",
 		     &dt->format_expr->where);
 
       io_constraint (dt->format_label,
@@ -3178,22 +3182,26 @@ if (condition) \
 
       io_constraint (dt->rec,
 		     "NAMELIST IO is not allowed with a REC= specifier "
-		     "at %L.", &dt->rec->where);
+		     "at %L", &dt->rec->where);
 
       io_constraint (dt->advance,
 		     "NAMELIST IO is not allowed with a ADVANCE= specifier "
-		     "at %L.", &dt->advance->where);
+		     "at %L", &dt->advance->where);
     }
 
   if (dt->rec)
     {
       io_constraint (dt->end,
 		     "An END tag is not allowed with a "
-		     "REC= specifier at %L.", &dt->end_where);
+		     "REC= specifier at %L", &dt->end_where);
 
       io_constraint (dt->format_label == &format_asterisk,
 		     "FMT=* is not allowed with a REC= specifier "
-		     "at %L.", spec_end);
+		     "at %L", spec_end);
+
+      io_constraint (dt->pos,
+		     "POS= is not allowed with REC= specifier "
+		     "at %L", &dt->pos->where);
     }
 
   if (dt->advance)
