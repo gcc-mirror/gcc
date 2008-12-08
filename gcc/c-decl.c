@@ -5302,7 +5302,7 @@ parser_xref_tag (enum tree_code code, tree name)
     {
       /* Give the type a default layout like unsigned int
 	 to avoid crashing if it does not get defined.  */
-      TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
+      SET_TYPE_MODE (ref, TYPE_MODE (unsigned_type_node));
       TYPE_ALIGN (ref) = TYPE_ALIGN (unsigned_type_node);
       TYPE_USER_ALIGN (ref) = 0;
       TYPE_UNSIGNED (ref) = 1;
@@ -5952,7 +5952,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
       TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
       TYPE_SIZE_UNIT (tem) = TYPE_SIZE_UNIT (enumtype);
-      TYPE_MODE (tem) = TYPE_MODE (enumtype);
+      SET_TYPE_MODE (tem, TYPE_MODE (enumtype));
       TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
       TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
       TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);

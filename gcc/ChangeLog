@@ -1,3 +1,23 @@
+2008-12-08  Richard Henderson  <rth@redhat.com>
+
+	PR 38240
+	* tree.h (TYPE_MODE): Invoke vector_type_mode when needed.
+	(SET_TYPE_MODE): New.
+	* c-decl.c (parser_xref_tag): Use it.
+	(finish_enum): Likewise.
+	* tree.c (build_pointer_type_for_mode): Likewise.
+	(build_reference_type_for_mode, build_index_type): Likewise.
+	(build_range_type, make_vector_type): Likewise.
+	(build_common_tree_nodes_2): Likewise.
+	* stor-layout.c (compute_record_mode): Likewise.
+	(finalize_type_size, layout_type, make_fract_type): Likewise.
+	(make_accum_type, initialize_sizetypes): Likewise.
+	(vector_type_mode): New.
+	* function.c (allocate_struct_function): Call
+	invoke_set_current_function_hook before querying anything else.
+
+	* config/i386/i386.c (ix86_valid_target_attribute_inner_p): Add avx.
+
 2008-12-08  Luis Machado  <luisgpm@br.ibm.com>
 
 	* alias.c (find_base_term): Synch LO_SUM handling with what

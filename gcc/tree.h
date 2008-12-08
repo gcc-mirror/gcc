@@ -2050,7 +2050,6 @@ struct tree_block GTY(())
 #define TYPE_UID(NODE) (TYPE_CHECK (NODE)->type.uid)
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type.size)
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type.size_unit)
-#define TYPE_MODE(NODE) (TYPE_CHECK (NODE)->type.mode)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
 #define TYPE_DOMAIN(NODE) (ARRAY_TYPE_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
@@ -2077,6 +2076,14 @@ struct tree_block GTY(())
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type.main_variant)
 #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type.context)
+
+/* Vector types need to check target flags to determine type.  */
+extern enum machine_mode vector_type_mode (const_tree);
+#define TYPE_MODE(NODE) \
+  (TREE_CODE (TYPE_CHECK (NODE)) == VECTOR_TYPE \
+   ? vector_type_mode (NODE) : (NODE)->type.mode)
+#define SET_TYPE_MODE(NODE, MODE) \
+  (TYPE_CHECK (NODE)->type.mode = (MODE))
 
 /* The "canonical" type for this type node, which can be used to
    compare the type for equality with another type. If two types are
