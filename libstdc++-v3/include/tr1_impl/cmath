@@ -119,8 +119,8 @@
 #undef remainderf
 #undef remainderl
 #undef remquo
-#undef remquo
-#undef remquo
+#undef remquof
+#undef remquol
 #undef rint
 #undef rintf
 #undef rintl
@@ -266,8 +266,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   using ::remainderl;
 
   using ::remquo;
-  using ::remquo;
-  using ::remquo;
+  using ::remquof;
+  using ::remquol;
 
   using ::rint;
   using ::rintf;

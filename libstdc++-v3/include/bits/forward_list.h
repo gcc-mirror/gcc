@@ -1311,21 +1311,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                const forward_list<_Tp, _Alloc>& __ly)
     { return !(__ly < __lx); }
 
-  /// See std::forward_list::forward_swap().
+  /// See std::forward_list::swap().
   template<typename _Tp, typename _Alloc>
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
          forward_list<_Tp, _Alloc>& __ly)
     { __lx.swap(__ly); }
 
-  /// See std::forward_list::forward_swap().
+  /// See std::forward_list::swap().
   template<typename _Tp, typename _Alloc>
     inline void
     swap(forward_list<_Tp, _Alloc>&& __lx,
          forward_list<_Tp, _Alloc>& __ly)
     { __lx.swap(__ly); }
 
-  /// See std::forward_list::forward_swap().
+  /// See std::forward_list::swap().
   template<typename _Tp, typename _Alloc>
     inline void 
     swap(forward_list<_Tp, _Alloc>& __lx,

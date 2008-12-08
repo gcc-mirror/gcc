@@ -2,7 +2,7 @@
 
 // 2006-02-07  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -156,8 +156,8 @@ void test01()
   ldret = std::tr1::remainderl(ld0, ld0);
 
   ret = std::tr1::remquo(d0, d0, pquo);
-  fret = std::tr1::remquo(f0, f0, pquo);
-  ldret = std::tr1::remquo(ld0, ld0, pquo);
+  fret = std::tr1::remquof(f0, f0, pquo);
+  ldret = std::tr1::remquol(ld0, ld0, pquo);
 
   ret = std::tr1::rint(d0);
   fret = std::tr1::rintf(f0);

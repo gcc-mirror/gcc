@@ -1523,8 +1523,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	          remainderf(0.0f, 0.0f);
 	          remainderl(0.0l, 0.0l);
 	          remquo(0.0, 0.0, 0);
-	          remquo(0.0f, 0.0f, 0);
-	          remquo(0.0l, 0.0l, 0);
+	          remquof(0.0f, 0.0f, 0);
+	          remquol(0.0l, 0.0l, 0);
 	          rint(0.0);
 	          rintf(0.0f);
 	          rintl(0.0l);
