@@ -7,4 +7,4 @@ int bar(int i)
 	return (foo() + 1);
 }
 
-/* { dg-final { scan-assembler "alias.*foo.*foo{20040821}" } } */
+/* { dg-final { scan-assembler "alias.*foo.*foo\\\{20040821\\\}" } } */
