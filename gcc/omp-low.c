@@ -760,10 +760,10 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 	  omp_context *up;
 
 	  for (up = shared_ctx->outer; up; up = up->outer)
-	    if (maybe_lookup_decl (decl, up))
+	    if (is_taskreg_ctx (up) && maybe_lookup_decl (decl, up))
 	      break;
 
-	  if (up && is_taskreg_ctx (up))
+	  if (up)
 	    {
 	      tree c;
 
