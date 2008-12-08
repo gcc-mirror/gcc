@@ -1,5 +1,9 @@
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
 
+	*  g++.dg/other/packed1.C: Remove ia64-hp-hpux* XFAIL.
+
+2008-12-08  Steve Ellcey  <sje@cup.hp.com>
+
 	* gcc.target/ia64/versionid-1.c (dg-final): Fix syntax.
 	* gcc.target/ia64/versionid-2.c (dg-final): Ditto.
 
