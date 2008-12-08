@@ -1,3 +1,7 @@
+2008-12-08  Steve Ellcey  <sje@cup.hp.com>
+
+	* decl2.c (mark_used): Remove assemble_external call.
+
 2008-12-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/38390
