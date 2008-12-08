@@ -1,3 +1,11 @@
+2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/mips/fix-r10000-6.c: Add dg-message to look for
+	the note about changed semantics of NAND builtin.
+	* gcc.target/mips/fix-r10000-6.c: Ditto.
+	* gcc.target/mips/atomic-memory-1.c: Ditto.
+	(main): Correct __sync_nand_and_fetch results.
+
 2008-12-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/38390
@@ -5,7 +13,7 @@
 
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
 
-	*  g++.dg/other/packed1.C: Remove ia64-hp-hpux* XFAIL.
+	* g++.dg/other/packed1.C: Remove ia64-hp-hpux* XFAIL.
 
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
 
@@ -1859,7 +1867,7 @@
 
 2008-09-24  Steve Ellcey  <sje@cup.hp.com>
 
-	*  gcc.dg/vect/O3-vect-pr34223.c: Check vect_int_mult.
+	* gcc.dg/vect/O3-vect-pr34223.c: Check vect_int_mult.
 
 2008-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
