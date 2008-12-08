@@ -1,3 +1,8 @@
+2008-12-08  Luis Machado  <luisgpm@br.ibm.com>
+
+	* alias.c (find_base_term): Synch LO_SUM handling with what
+	find_base_value does.
+
 2008-12-08  Andrew Haley  <aph@redhat.com>
             Kamaraju Kusumanchi <raju.mailinglists@gmail.com>
 
