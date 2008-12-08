@@ -3849,8 +3849,6 @@ mark_used (tree decl)
       note_vague_linkage_fn (decl);
     }
 
-  assemble_external (decl);
-
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
