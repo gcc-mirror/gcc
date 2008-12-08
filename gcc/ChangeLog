@@ -1,3 +1,9 @@
+2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35442
+	* c-pretty-print.c (pp_c_cast_expression, pp_c_expression): Handle
+	VIEW_CONVERT_EXPR the same as CASE_CONVERT.
+
 2008-12-08  Richard Henderson  <rth@redhat.com>
 
 	PR 38240

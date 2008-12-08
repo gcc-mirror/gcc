@@ -1,3 +1,8 @@
+2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35442
+	* gcc.dg/pr35442.c: New test.
+
 2008-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/string_comparison.adb: New test.
