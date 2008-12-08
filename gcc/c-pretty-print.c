@@ -2103,6 +2103,12 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       pp_postfix_expression (pp, TREE_OPERAND (e, 1));
       break;
 
+    case BIND_EXPR:
+      /* We don't yet have a way of dumping statements in a
+         human-readable format.  */
+      pp_string (pp, "({...})");
+      break;
+
     default:
       pp_unsupported_tree (pp, e);
       break;
