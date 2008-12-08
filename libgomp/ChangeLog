@@ -1,3 +1,10 @@
+2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36802
+	* testsuite/libgomp.c/pr36802-1.c: New test.
+	* testsuite/libgomp.c/pr36802-2.c: New test.
+	* testsuite/libgomp.c/pr36802-3.c: New test.
+
 2008-12-01  Janis Johnson  <janis187@us.ibm.com>
 
 	PR libgomp/38270

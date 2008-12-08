@@ -1,3 +1,9 @@
+2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36802
+	* omp-low.c (use_pointer_for_field): Only call maybe_lookup_decl
+	on parallel and task contexts.
+
 2008-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (recalculate_side_effects) <tcc_constant>: New case.
