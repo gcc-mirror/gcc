@@ -1,4 +1,7 @@
 /* { dg-do run } */
+
+/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+
 extern void abort (void);
 extern void exit (int);
 
@@ -16,9 +19,9 @@ NOMIPS16 int main ()
   __sync_sub_and_fetch (&v, 0x7fff);
   if (v != 34465)
     abort();
-  if (__sync_nand_and_fetch (&v, 0xff) != 94)
+  if (__sync_nand_and_fetch (&v, 0xff) != -162)
     abort();
-  if (__sync_fetch_and_add (&v, 6) != 94)
+  if (__sync_fetch_and_add (&v, 262) != -162)
     abort();
   if (v != 100)
     abort();

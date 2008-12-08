@@ -2,6 +2,8 @@
 /* { dg-mips-options "-O2 -march=mips4 -mfix-r10000" } */
 /* { dg-final { scan-assembler-times "\tbeql\t" 3 } } */
 
+/* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" { target *-*-* } 0 } */
+
 NOMIPS16 int
 f1 (int *z)
 {
