@@ -793,7 +793,7 @@ gimple gimple_build_asm_vec (const char *, VEC(tree,gc) *, VEC(tree,gc) *,
                              VEC(tree,gc) *);
 gimple gimple_build_catch (tree, gimple_seq);
 gimple gimple_build_eh_filter (tree, gimple_seq);
-gimple gimple_build_try (gimple_seq, gimple_seq, unsigned int);
+gimple gimple_build_try (gimple_seq, gimple_seq, enum gimple_try_flags);
 gimple gimple_build_wce (gimple_seq);
 gimple gimple_build_resx (int);
 gimple gimple_build_switch (unsigned, tree, tree, ...);

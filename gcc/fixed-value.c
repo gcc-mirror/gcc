@@ -291,9 +291,17 @@ do_fixed_add (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 	      const FIXED_VALUE_TYPE *b, bool subtract_p, bool sat_p)
 {
   bool overflow_p = false;
-  double_int temp = subtract_p ? double_int_neg (b->data) : b->data;
-  bool unsigned_p = UNSIGNED_FIXED_POINT_MODE_P (a->mode);
-  int i_f_bits = GET_MODE_IBIT (a->mode) + GET_MODE_FBIT (a->mode);
+  bool unsigned_p;
+  double_int temp;
+  int i_f_bits;
+
+  if (subtract_p)
+    temp = double_int_neg (b->data);
+  else
+    temp = b->data;
+
+  unsigned_p = UNSIGNED_FIXED_POINT_MODE_P (a->mode);
+  i_f_bits = GET_MODE_IBIT (a->mode) + GET_MODE_FBIT (a->mode);
   f->mode = a->mode;
   f->data = double_int_add (a->data, temp);
   if (unsigned_p) /* Unsigned type.  */
