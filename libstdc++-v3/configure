@@ -1075,10 +1075,10 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
-  --with-system-libunwind use installed libunwind
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-system-libunwind use installed libunwind
   --with-gxx-include-dir=DIR
                           installation directory for include files
 
@@ -20965,8 +20965,8 @@ typedef double_t  my_double_t;
 	          remainderf(0.0f, 0.0f);
 	          remainderl(0.0l, 0.0l);
 	          remquo(0.0, 0.0, 0);
-	          remquo(0.0f, 0.0f, 0);
-	          remquo(0.0l, 0.0l, 0);
+	          remquof(0.0f, 0.0f, 0);
+	          remquol(0.0l, 0.0l, 0);
 	          rint(0.0);
 	          rintf(0.0f);
 	          rintl(0.0l);
@@ -41960,40 +41960,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
-
-  # For _Unwind_GetIPInfo.
-
-
-# Check whether --with-system-libunwind or --without-system-libunwind was given.
-if test "${with_system_libunwind+set}" = set; then
-  withval="$with_system_libunwind"
-
-fi;
-  # If system-libunwind was not specifically set, pick a default setting.
-  if test x$with_system_libunwind = x; then
-    case ${target} in
-      ia64-*-hpux*) with_system_libunwind=yes ;;
-      *) with_system_libunwind=no ;;
-    esac
-  fi
-  # Based on system-libunwind and target, do we have ipinfo?
-  if  test x$with_system_libunwind = xyes; then
-    case ${target} in
-      ia64-*-*) have_unwind_getipinfo=no ;;
-      *) have_unwind_getipinfo=yes ;;
-    esac
-  else
-     have_unwind_getipinfo=yes
-  fi
-
-  if test x$have_unwind_getipinfo = xyes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_GETIPINFO 1
-_ACEOF
-
-  fi
-
 
   # For iconv support.
 
@@ -104361,13 +104327,42 @@ _ACEOF
 _ACEOF
 
   fi
+fi
 
-  # Assume we have _Unwind_GetIPInfo for cross-compiles.
-  cat >>confdefs.h <<\_ACEOF
+# Check for _Unwind_GetIPInfo.
+
+
+# Check whether --with-system-libunwind or --without-system-libunwind was given.
+if test "${with_system_libunwind+set}" = set; then
+  withval="$with_system_libunwind"
+
+fi;
+  # If system-libunwind was not specifically set, pick a default setting.
+  if test x$with_system_libunwind = x; then
+    case ${target} in
+      ia64-*-hpux*) with_system_libunwind=yes ;;
+      *) with_system_libunwind=no ;;
+    esac
+  fi
+  # Based on system-libunwind and target, do we have ipinfo?
+  if  test x$with_system_libunwind = xyes; then
+    case ${target} in
+      ia64-*-*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+  else
+     have_unwind_getipinfo=yes
+  fi
+
+  if test x$have_unwind_getipinfo = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_GETIPINFO 1
 _ACEOF
 
-fi
+  fi
+
+
 
  # Check whether --enable-linux-futex or --disable-linux-futex was given.
 if test "${enable_linux_futex+set}" = set; then

@@ -1,3 +1,15 @@
+2008-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/cmath: Undef remquof / remquol too; add using
+	declarations.
+	* acinclude.m4 [GLIBCXX_CHECK_C99_TR1]: Check remquof / remquol too.
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: Adjust.
+	* configure: Regenerate.
+
+2008-12-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/forward_list.h: Fixed spurious "forward_swap" in doxy.
+
 2008-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38421
