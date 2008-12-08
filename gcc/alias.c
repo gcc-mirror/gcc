@@ -1408,6 +1408,9 @@ find_base_term (rtx x)
 	return 0;
       /* Fall through.  */
     case LO_SUM:
+      /* The standard form is (lo_sum reg sym) so look only at the
+         second operand.  */
+      return find_base_term (XEXP (x, 1));
     case PLUS:
     case MINUS:
       {
