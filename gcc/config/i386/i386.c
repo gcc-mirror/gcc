@@ -3408,6 +3408,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
     IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
     IX86_ATTR_ISA ("abm",	OPT_mabm),
     IX86_ATTR_ISA ("aes",	OPT_maes),
+    IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),

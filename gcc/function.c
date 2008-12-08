@@ -3987,6 +3987,8 @@ allocate_struct_function (tree fndecl, bool abstract_p)
   OVERRIDE_ABI_FORMAT (fndecl);
 #endif
 
+  invoke_set_current_function_hook (fndecl);
+
   if (fndecl != NULL_TREE)
     {
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
@@ -4012,8 +4014,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;
       cfun->va_list_fpr_size = VA_LIST_MAX_FPR_SIZE;
     }
-
-  invoke_set_current_function_hook (fndecl);
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL

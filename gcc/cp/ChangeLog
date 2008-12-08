@@ -1,3 +1,10 @@
+2008-12-08  Richard Henderson  <rth@redhat.com>
+
+	PR 38240
+	* class.c (finish_struct_bits): Use SET_TYPE_MODE.
+	* decl.c (record_unknown_type): Likewise.
+	(start_enum, finish_enum): Likewise.
+
 2008-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35336

@@ -1494,7 +1494,7 @@ finish_struct_bits (tree t)
       DECL_MODE (TYPE_MAIN_DECL (t)) = BLKmode;
       for (variants = t; variants; variants = TYPE_NEXT_VARIANT (variants))
 	{
-	  TYPE_MODE (variants) = BLKmode;
+	  SET_TYPE_MODE (variants, BLKmode);
 	  TREE_ADDRESSABLE (variants) = 1;
 	}
     }

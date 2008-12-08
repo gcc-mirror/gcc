@@ -3199,7 +3199,7 @@ record_unknown_type (tree type, const char* name)
   TYPE_SIZE (type) = TYPE_SIZE (void_type_node);
   TYPE_ALIGN (type) = 1;
   TYPE_USER_ALIGN (type) = 0;
-  TYPE_MODE (type) = TYPE_MODE (void_type_node);
+  SET_TYPE_MODE (type, TYPE_MODE (void_type_node));
 }
 
 /* A string for which we should create an IDENTIFIER_NODE at
@@ -10912,7 +10912,7 @@ start_enum (tree name, tree underlying_type, bool scoped_enum_p)
           TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (underlying_type);
           TYPE_SIZE (enumtype) = TYPE_SIZE (underlying_type);
           TYPE_SIZE_UNIT (enumtype) = TYPE_SIZE_UNIT (underlying_type);
-          TYPE_MODE (enumtype) = TYPE_MODE (underlying_type);
+          SET_TYPE_MODE (enumtype, TYPE_MODE (underlying_type));
           TYPE_PRECISION (enumtype) = TYPE_PRECISION (underlying_type);
           TYPE_ALIGN (enumtype) = TYPE_ALIGN (underlying_type);
           TYPE_USER_ALIGN (enumtype) = TYPE_USER_ALIGN (underlying_type);
@@ -11065,7 +11065,7 @@ finish_enum (tree enumtype)
          applied to the underlying type.  */
       TYPE_SIZE (enumtype) = TYPE_SIZE (underlying_type);
       TYPE_SIZE_UNIT (enumtype) = TYPE_SIZE_UNIT (underlying_type);
-      TYPE_MODE (enumtype) = TYPE_MODE (underlying_type);
+      SET_TYPE_MODE (enumtype, TYPE_MODE (underlying_type));
       TYPE_ALIGN (enumtype) = TYPE_ALIGN (underlying_type);
       TYPE_USER_ALIGN (enumtype) = TYPE_USER_ALIGN (underlying_type);
       TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (underlying_type);
@@ -11133,7 +11133,7 @@ finish_enum (tree enumtype)
       TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (enumtype);
       TYPE_SIZE (t) = TYPE_SIZE (enumtype);
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (enumtype);
-      TYPE_MODE (t) = TYPE_MODE (enumtype);
+      SET_TYPE_MODE (t, TYPE_MODE (enumtype));
       TYPE_PRECISION (t) = TYPE_PRECISION (enumtype);
       TYPE_ALIGN (t) = TYPE_ALIGN (enumtype);
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (enumtype);
