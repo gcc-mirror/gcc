@@ -1,3 +1,8 @@
+2008-12-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/38390
+	* g++.dg/debug/dwarf2/imported-module-2.C: New test.
+
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
 
 	*  g++.dg/other/packed1.C: Remove ia64-hp-hpux* XFAIL.
