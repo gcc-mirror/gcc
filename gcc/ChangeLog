@@ -1,3 +1,8 @@
+2008-12-08  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (UNSPECV_GOTO_RECEIVER): New constant.
+	(nonlocal_goto_receiver): New instruction.
+
 2008-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35443
