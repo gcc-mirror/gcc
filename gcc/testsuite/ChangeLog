@@ -1,3 +1,13 @@
+2008-12-08  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/36889
+	* lib/fortran-torture.exp (get-fortran-torture-options): Only
+	set test_tree_vectorize on i?86/x86_64 resp. sparc* if sse2 resp.
+	ultrasparc hw is available.
+
 2008-12-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_hard_dfp): New.
