@@ -2,7 +2,7 @@
 
 	* gcc.target/mips/fix-r10000-6.c: Add dg-message to look for
 	the note about changed semantics of NAND builtin.
-	* gcc.target/mips/fix-r10000-6.c: Ditto.
+	* gcc.target/mips/fix-r10000-12.c: Ditto.
 	* gcc.target/mips/atomic-memory-1.c: Ditto.
 	(main): Correct __sync_nand_and_fetch results.
 

@@ -33,12 +33,11 @@
 	find_base_value does.
 
 2008-12-08  Andrew Haley  <aph@redhat.com>
-            Kamaraju Kusumanchi <raju.mailinglists@gmail.com>
+	    Kamaraju Kusumanchi <raju.mailinglists@gmail.com>
 
 	* gimple.h (gimple_build_try): Fix declaration.
 
-	* builtins.c (fold_builtin_sqrt): Don't use a conditional
-	operator.
+	* builtins.c (fold_builtin_sqrt): Don't use a conditional operator.
 	* fixed-value.c (do_fixed_add): Likewise.
 	* tree-ssa-loop-ivopts.c (iv_ca_cost): Likewise.
 
