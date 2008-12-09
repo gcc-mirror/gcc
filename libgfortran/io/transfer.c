@@ -1986,15 +1986,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       return;
     }
 
-  if (dtp->u.p.current_unit->flags.access == ACCESS_STREAM
-      && (cf & IOPARM_DT_HAS_REC) != 0)
-    {
-      generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
-		      "Record number not allowed for stream access "
-		      "data transfer");
-      return;
-    }
-
   /* Process the ADVANCE option.  */
 
   dtp->u.p.advance_status
@@ -2141,7 +2132,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	      return;
 	    }
 
-	  if (dtp->rec >= dtp->u.p.current_unit->maxrec)
+	  if (dtp->pos >= dtp->u.p.current_unit->maxrec)
 	    {
 	      generate_error (&dtp->common, LIBERROR_BAD_OPTION,
 			      "POS=specifier too large");
@@ -2231,10 +2222,20 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  return;
 	}
 
-      /* This is required to maintain compatibility between
-	 4.3 and 4.4 runtime.  */
+      /* TODO: This is required to maintain compatibility between
+	 4.3 and 4.4 runtime. Remove when ABI changes from 4.3 */
+
       if (is_stream_io (dtp))
 	dtp->u.p.current_unit->strm_pos = dtp->rec;
+      
+      /* TODO: Un-comment this code when ABI changes from 4.3.
+      if (dtp->u.p.current_unit->flags.access == ACCESS_STREAM)
+	{
+	  generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
+		      "Record number not allowed for stream access "
+		      "data transfer");
+	  return;
+	}  */
 
     }
 
