@@ -293,6 +293,7 @@ execute_fixup_cfg (void)
   int todo = gimple_in_ssa_p (cfun) ? TODO_verify_ssa : 0;
 
   cfun->after_inlining = true;
+  cfun->always_inline_functions_inlined = true;
 
   if (cfun->eh)
     FOR_EACH_BB (bb)

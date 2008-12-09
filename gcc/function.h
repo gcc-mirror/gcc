@@ -578,6 +578,7 @@ struct function GTY(())
   unsigned int dont_save_pending_sizes_p : 1;
 
   unsigned int after_inlining : 1;
+  unsigned int always_inline_functions_inlined : 1;
 
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */

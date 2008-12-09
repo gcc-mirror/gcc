@@ -10797,6 +10797,22 @@ fold_builtin_varargs (tree fndecl, tree exp, bool ignore ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
+/* Return true if FNDECL shouldn't be folded right now.
+   If a built-in function has an inline attribute always_inline
+   wrapper, defer folding it after always_inline functions have
+   been inlined, otherwise e.g. -D_FORTIFY_SOURCE checking
+   might not be performed.  */
+
+static bool
+avoid_folding_inline_builtin (tree fndecl)
+{
+  return (DECL_DECLARED_INLINE_P (fndecl)
+	  && DECL_DISREGARD_INLINE_LIMITS (fndecl)
+	  && cfun
+	  && !cfun->always_inline_functions_inlined
+	  && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fndecl)));
+}
+
 /* A wrapper function for builtin folding that prevents warnings for
    "statement without effect" and the like, caused by removing the
    call node earlier than the warning is generated.  */
@@ -10828,6 +10844,9 @@ fold_call_expr (tree exp, bool ignore)
 	      && DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
 	    return NULL_TREE;
 	}
+
+      if (avoid_folding_inline_builtin (fndecl))
+	return NULL_TREE;
 
       /* FIXME: Don't use a list in this interface.  */
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
@@ -10931,6 +10950,8 @@ fold_builtin_call_array (tree type,
 		&& DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
 	      return build_call_array (type, fn, n, argarray);
 	  }
+	if (avoid_folding_inline_builtin (fndecl))
+	  return build_call_array (type, fn, n, argarray);
         if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
           {
             tree arglist = NULL_TREE;
@@ -10939,6 +10960,7 @@ fold_builtin_call_array (tree type,
             ret = targetm.fold_builtin (fndecl, arglist, false);
             if (ret)
               return ret;
+	    return build_call_array (type, fn, n, argarray);
           }
         else if (n <= MAX_ARGS_TO_FOLD_BUILTIN)
           {
@@ -13647,6 +13669,8 @@ fold_call_stmt (gimple stmt, bool ignore)
     {
       int nargs = gimple_call_num_args (stmt);
 
+      if (avoid_folding_inline_builtin (fndecl))
+	return NULL_TREE;
       /* FIXME: Don't use a list in this interface.  */
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
         {

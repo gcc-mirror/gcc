@@ -1,3 +1,9 @@
+2008-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38454
+	* gcc.dg/memset-1.c: New test.
+	* gcc.dg/memcpy-2.c: New test.
+
 2008-12-09  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35983

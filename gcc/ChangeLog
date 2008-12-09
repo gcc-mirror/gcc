@@ -1,5 +1,16 @@
 2008-12-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/38454
+	* function.h (struct function): Add always_inline_functions_inlined.
+	* ipa-inline.c (cgraph_early_inlining): Set it to true.
+	* tree-optimize.c (execute_fixup_cfg): Likewise.
+	* builtins.c (avoid_folding_inline_builtin): New function.
+	(fold_call_expr): Don't optimize always_inline builtins before
+	inlining.
+	(fold_call_stmt): Likewise.
+	(fold_builtin_call_array): Likewise.  Don't call
+	fold_builtin_varargs for BUILT_IN_MD builtins.
+
 	PR tree-optimization/37416
 	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs): Handle NOP_EXPR.
 
