@@ -1318,7 +1318,7 @@ scopdet_basic_block_info (basic_block bb, VEC (sd_region, heap) **scops,
 
     case GBB_LOOP_MULT_EXIT_HEADER:
       {
-        /* XXX: For now we just do not join loops with multiple exits. If the 
+        /* XXX: For now we just do not join loops with multiple exits.  If the 
            exits lead to the same bb it may be possible to join the loop.  */
         VEC (sd_region, heap) *tmp_scops = VEC_alloc (sd_region, heap, 3);
         VEC (edge, heap) *exits = get_loop_exit_edges (loop);
@@ -1326,28 +1326,27 @@ scopdet_basic_block_info (basic_block bb, VEC (sd_region, heap) **scops,
         int i;
         build_scops_1 (bb, &tmp_scops, loop);
 
-
-	/* Start at all bbs dominated by a loop exit that only exists in this
-	   loop.  */ 
+	/* Scan the code dominated by this loop.  This means all bbs, that are
+	   are dominated by a bb in this loop, but are not part of this loop.
+	   
+	   The easiest case:
+	     - The loop exit destination is dominated by the exit sources.  
+	 
+	   TODO: We miss here the more complex cases:
+		  - The exit destinations are dominated by another bb inside the
+		    loop.
+		  - The loop dominates bbs, that are not exit destinations.  */
         for (i = 0; VEC_iterate (edge, exits, i, e); i++)
-          if (e->src->loop_father == loop)
-            {  
-	      VEC (basic_block, heap) *dominated;
-	      basic_block b;
-	      int j;
-	      dominated = get_dominated_by (CDI_DOMINATORS, e->src);
-	      for (j = 0; VEC_iterate (basic_block, dominated, j, b); j++)
-		/* Loop exit.  */
-		if (loop_depth (find_common_loop (loop, b->loop_father))
-		    < loop_depth (loop))
-		  {
-		    /* Pass loop_outer to recognize b as loop header in
-		       build_scops_1.  */
-		    if (b->loop_father->header == b)
-		      build_scops_1 (b, &tmp_scops, loop_outer (b->loop_father));
-		    else
-		      build_scops_1 (b, &tmp_scops, b->loop_father);
-		  }
+          if (e->src->loop_father == loop
+	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src))
+	    {
+	      /* Pass loop_outer to recognize e->dest as loop header in
+		 build_scops_1.  */
+	      if (e->dest->loop_father->header == e->dest)
+		build_scops_1 (e->dest, &tmp_scops,
+			       loop_outer (e->dest->loop_father));
+	      else
+		build_scops_1 (e->dest, &tmp_scops, e->dest->loop_father);
 	    }
 
         result.next = NULL; 
