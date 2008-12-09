@@ -1,3 +1,7 @@
+2008-12-09  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Directives): Fix formatting.
+
 2008-12-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Modify description.
