@@ -1,3 +1,12 @@
+2008-12-09 Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	PR middle-end/38084
+	Fix testsuite/gfortran.dg/graphite/id-3.f90.
+	* graphite.c (scopdet_basic_block_info): Fix bug that found some
+	regions more than once.
+	* testsuite/gfortran.dg/graphite/id-3.f90: New.
+	* gcc/testsuite/gcc.dg/graphite/pr38084.c: New.
+
 2008-12-09  Ben Elliston  <bje@au.ibm.com>
 
 	* config/dfp-bit.c (DFP_TO_INT): Remove unnecessary cast.
