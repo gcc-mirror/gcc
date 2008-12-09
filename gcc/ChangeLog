@@ -1,5 +1,9 @@
 2008-12-09  Ben Elliston  <bje@au.ibm.com>
 
+	* config/dfp-bit.c (DFP_TO_INT): Remove unnecessary cast.
+
+2008-12-09  Ben Elliston  <bje@au.ibm.com>
+
 	* config/rs6000/darwin-ldouble.c (fmsub): Remove unused variable, v.
 
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
