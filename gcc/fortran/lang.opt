@@ -360,6 +360,10 @@ fworking-directory
 Fortran
 ; Documented in C
 
+idirafter
+Fortran Joined Separate
+; Documented in C
+
 imultilib
 Fortran Joined Separate
 ; Documented in C

@@ -1,3 +1,14 @@
+2008-12-09  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/36457
+	* lang.opt: Added option idirafter.
+	* cpp.h (gfc_cpp_add_include_path_after): New prototype.
+	* cpp.c (gfc_cpp_handle_option): Recognize and handle OPT_dirafter.
+	(gfc_cpp_add_include_path_after): New, adds user-defined search path
+	after any other paths.
+	* invoke.texi (idirafter): New.
+	(no-range-check): Fixed entry in option-index.
+
 2008-12-09  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/37469
