@@ -1004,7 +1004,7 @@ the test
 
 @item variable @var{tool_timeout} defined by the set of tests
 
-@item @var{gcc,,timeout} set in the target board
+@item @var{gcc},@var{timeout} set in the target board
 
 @item 300
 @end itemize
