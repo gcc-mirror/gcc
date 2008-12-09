@@ -387,7 +387,7 @@ fmsub (double a, double b, double c)
     FP_DECL_Q(V);
     FP_DECL_D(R);
     double r;
-    long double u, v, x, y, z;
+    long double u, x, y, z;
 
     FP_INIT_ROUNDMODE;
     FP_UNPACK_RAW_D (A, a);
