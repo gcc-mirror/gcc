@@ -1,5 +1,13 @@
 2008-12-09  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/36376
+	PR fortran/37468
+	* lang-specs.h: Pass on -i* options to f951 to (probably) report
+	them as unknown. Duplicate gcc.c (cpp_options), but omit
+	-fpch-preprocess on -save-temps.
+
+2008-12-09  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/36457
 	* lang.opt: Added option idirafter.
 	* cpp.h (gfc_cpp_add_include_path_after): New prototype.
