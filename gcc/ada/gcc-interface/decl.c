@@ -2032,7 +2032,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   corresponding fat pointer.  */
 	TREE_TYPE (gnu_type) = TYPE_POINTER_TO (gnu_type)
 	  = TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
-	TYPE_MODE (gnu_type) = BLKmode;
+	SET_TYPE_MODE (gnu_type, BLKmode);
 	TYPE_ALIGN (gnu_type) = TYPE_ALIGN (tem);
 	SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 
@@ -2873,7 +2873,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   that these objects will always be placed in memory.  Do the
 	   same thing for limited record types.  */
 	if (Is_Tagged_Type (gnat_entity) || Is_Limited_Record (gnat_entity))
-	  TYPE_MODE (gnu_type) = BLKmode;
+	  SET_TYPE_MODE (gnu_type, BLKmode);
 
 	/* If this is a derived type, we must make the alias set of this type
 	   the same as that of the type we are derived from.  We assume here
@@ -5572,7 +5572,7 @@ make_aligning_type (tree type, unsigned int align, tree size,
     = size_binop (PLUS_EXPR, size,
 		  size_int (room + align / BITS_PER_UNIT));
 
-  TYPE_MODE (record_type) = BLKmode;
+  SET_TYPE_MODE (record_type, BLKmode);
 
   copy_alias_set (record_type, type);
   return record_type;
@@ -5721,8 +5721,8 @@ make_packable_type (tree type, bool in_record)
   /* Try harder to get a packable type if necessary, for example
      in case the record itself contains a BLKmode field.  */
   if (in_record && TYPE_MODE (new_type) == BLKmode)
-    TYPE_MODE (new_type)
-      = mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1);
+    SET_TYPE_MODE (new_type,
+		   mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1));
 
   /* If neither the mode nor the size has shrunk, return the old type.  */
   if (TYPE_MODE (new_type) == BLKmode && new_size >= size)
