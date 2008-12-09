@@ -446,6 +446,15 @@ but this can be inhibited with the negated form
 in the command line, this option has no effect, since no @code{#line}
 directives are emitted whatsoever.
 
+@item -idirafter @var{dir}
+@opindex @code{idirafter @var{dir}}
+@cindex preprocessing, include path
+Search @var{dir} for include files, but do it after all directories
+specified with @option{-I} and the standard system directories have
+been exhausted. @var{dir} is treated as a system include directory.
+If dir begins with @code{=}, then the @code{=} will be replaced by
+the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
+
 @item -imultilib @var{dir}
 @opindex @code{imultilib @var{dir}}
 @cindex preprocessing, include path
@@ -977,7 +986,7 @@ variable override the default specified by @option{-fconvert}.}
 
 
 @item -fno-range-check
-@opindex @code{-fno-range-check}
+@opindex @code{fno-range-check}
 Disable range checking of input values during integer @code{READ} operations.
 For example, GNU Fortran will give an error if an input value is
 outside of the relevant range of [@code{-HUGE()}:@code{HUGE()}]. In other words,

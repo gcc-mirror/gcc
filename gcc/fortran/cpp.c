@@ -346,6 +346,10 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
       gfc_cpp_option.working_directory = value;
       break;
 
+    case OPT_idirafter:
+      gfc_cpp_add_include_path_after (xstrdup(arg), true);
+      break;
+
     case OPT_imultilib:
       gfc_cpp_option.multilib = arg;
       break;
@@ -631,6 +635,13 @@ gfc_cpp_add_include_path (char *path, bool user_supplied)
   int cxx_aware = 0;
 
   add_path (path, BRACKET, cxx_aware, user_supplied);
+}
+
+void
+gfc_cpp_add_include_path_after (char *path, bool user_supplied)
+{
+  int cxx_aware = 0;
+  add_path (path, AFTER, cxx_aware, user_supplied);
 }
 
 void
