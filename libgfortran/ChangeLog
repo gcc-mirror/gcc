@@ -1,3 +1,12 @@
+2008-12-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38430
+	* io/transfer.c (data_transfer_init): Move constraint check for REC=
+	and STREAM access into condition for other REC= constraints to simplify.
+	Comment out this constraint to avoid breaking compatibility with 4.3
+	until later.  Added a TODO for above comment and this one.
+	Fix test for max pos.
+
 2008-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38291
