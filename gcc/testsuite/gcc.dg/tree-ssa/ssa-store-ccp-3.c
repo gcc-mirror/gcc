@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { *-*-darwin* hppa*64*-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -fno-common -fdump-tree-optimized" } */
 
 const int conststaticvariable;
