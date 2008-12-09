@@ -162,10 +162,10 @@ get_regs (struct _Unwind_Context *context)
   /* li r0, 0x0077; sc  (sigreturn new)  */
   /* li r0, 0x6666; sc  (rt_sigreturn old)  */
   /* li r0, 0x00AC; sc  (rt_sigreturn new)  */
-  if (*(unsigned int *) (pc + 4) != 0x44000002)
+  if (*(const unsigned int *) (pc + 4) != 0x44000002)
     return NULL;
-  if (*(unsigned int *) (pc + 0) == 0x38007777
-      || *(unsigned int *) (pc + 0) == 0x38000077)
+  if (*(const unsigned int *) (pc + 0) == 0x38007777
+      || *(const unsigned int *) (pc + 0) == 0x38000077)
     {
       struct sigframe {
 	char gap[SIGNAL_FRAMESIZE];
@@ -174,8 +174,8 @@ get_regs (struct _Unwind_Context *context)
       } *frame = (struct sigframe *) context->cfa;
       return frame->regs;
     }
-  else if (*(unsigned int *) (pc + 0) == 0x38006666
-	   || *(unsigned int *) (pc + 0) == 0x380000AC)
+  else if (*(const unsigned int *) (pc + 0) == 0x38006666
+	   || *(const unsigned int *) (pc + 0) == 0x380000AC)
     {
       struct rt_sigframe {
 	char gap[SIGNAL_FRAMESIZE + 16];

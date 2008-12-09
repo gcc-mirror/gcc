@@ -1,3 +1,7 @@
+2008-12-10  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/linux-unwind.h (get_regs): Constify casts.
+
 2008-12-09  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_bb_frequencies): Fix test if profile is present.
