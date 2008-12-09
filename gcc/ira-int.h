@@ -819,6 +819,16 @@ extern enum reg_class ira_class_translate[N_REG_CLASSES];
    taking all hard-registers including fixed ones into account.  */
 extern enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
 
+/* True if the two classes (that is calculated taking only hard
+   registers available for allocation into account) are
+   intersected.  */
+extern bool ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
+
+/* Classes with end marker LIM_REG_CLASSES which are intersected with
+   given class (the first index).  That includes given class itself.
+   This is calculated taking only hard registers available for
+   allocation into account.  */
+extern enum reg_class ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
 /* The biggest important class inside of union of the two classes
    (that is calculated taking only hard registers available for
    allocation into account).  If the both classes contain no hard

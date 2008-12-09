@@ -1025,6 +1025,7 @@ void
 ira_emit (bool loops_p)
 {
   basic_block bb;
+  rtx insn;
   edge_iterator ei;
   edge e;
   ira_allocno_t a;
@@ -1085,6 +1086,14 @@ ira_emit (bool loops_p)
   ira_free (allocno_last_set_check);
   ira_free (allocno_last_set);
   commit_edge_insertions ();
+  /* Fix insn codes.  It is necessary to do it before reload because
+     reload assumes initial insn codes defined.  The insn codes can be
+     invalidated by CFG infrastructure for example in jump
+     redirection.  */
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS_REVERSE (bb, insn)
+      if (INSN_P (insn))
+	recog_memoized (insn);
   ira_free (at_bb_end);
   ira_free (at_bb_start);
 }

@@ -1,3 +1,94 @@
+2008-12-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Modify description.
+
+	* doc/invoke.texi (-fira-region): Describe new option.
+	(-fira-algorithm): Change the values.
+
+	* ira-conflicts.c (build_conflict_bit_table,
+	build_allocno_conflicts): Use ira_reg_classes_intersect_p.
+	(ira_build_conflicts): Use flag flag_ira_region instead of
+	flag_ira_algorithm.  Prohibit usage of callee-saved likely spilled
+	base registers for allocnos crossing calls.
+
+	* flags.h (enum ira_algorithm): Redefine.
+	(enum ira_region): New.
+	(flag_ira_region): New.
+
+	* cfgloopanal.c (estimate_reg_pressure_cost): Use flag_ira_region
+	instead of flag_ira_algorithm.
+
+	* toplev.c (flag_ira_algorithm): Change the initial value.
+	(flag_ira_region): New.
+
+	* ira-int.h (ira_reg_classes_intersect_p,
+	ira_reg_class_super_classes): New.
+
+	* ira-color.c (update_copy_costs): Use
+	ira_reg_classes_intersect_p.  Use right class to find hard reg
+	index.
+	(update_conflict_hard_regno_costs): Ditto.  Add a new parameter.
+	(assign_hard_reg): Ditto.  Pass additional argument to
+	update_conflict_hard_regno_costs.  Do not uncoalesce for priority
+	coloring.
+	(allocno_priorities, setup_allocno_priorities,
+	allocno_priority_compare_func): Move before color_allocnos.
+	(color_allocnos): Add priority coloring.  Use flag flag_ira_region
+	instead of flag_ira_algorithm.
+	(move_spill_restore): Check classes of the same reg allocno from
+	different regions.
+	(update_curr_costs): Use ira_reg_classes_intersect_p.
+	(ira_reassign_conflict_allocnos): Ditto.
+
+	* opts.c (decode_options): Always set up flag_ira.  Set up
+	flag_ira_algorithm.  Warn CB can not be used for architecture.
+	(common_handle_option): Modify code for -fira-algorithm.  Add code
+	to process -fira-region.
+
+	* ira-lives.c (update_allocno_pressure_excess_length): Process
+	superclasses too.
+	(set_allocno_live, clear_allocno_live, mark_reg_live,
+	mark_reg_dead, process_bb_node_lives): Ditto.
+
+	* ira-emit.c (ira_emit): Fix insn codes.
+	
+	* ira-build.c (propagate_allocno_info): Use flag flag_ira_region
+	instead of flag_ira_algorithm.
+	(allocno_range_compare_func): Ignore classes for priority
+	coloring.
+	(setup_min_max_conflict_allocno_ids): Ditto.
+	(ira_flattening): Use ira_reg_classes_intersect_p.
+
+	* genpreds.c (write_enum_constraint_num): Output
+	CONSTRAINT__LIMIT.
+	
+	* common.opt (fira-algorithm): Modify.
+	(fira-region): New.
+
+	* ira.c (setup_class_hard_regs): Initialize.
+	(setup_cover_and_important_classes): Modify code setting class
+	related info for priority coloring.
+	(setup_class_translate): Ditto.
+	(ira_reg_classes_intersect_p, ira_reg_class_super_classes): New.
+	(setup_reg_class_intersect_union): Rename to
+	setup_reg_class_relations.  Add code for setting up new variables.
+	(find_reg_class_closure): Do not check targetm.ira_cover_classes.
+	(ira): Use flag flag_ira_region instead of flag_ira_algorithm.
+
+	* ira-costs.c (common_classes): New.
+	(print_costs): Use flag flag_ira_region instead of
+	flag_ira_algorithm.
+	(find_allocno_class_costs): Ditto.  Use common_classes.  Translate
+	alt_class.
+	(ira_costs): Allocate/deallocate common_classes.
+	
+	* config/m32c/m32.h (REG_ALLOC_ORDER): Add reg 19.
+	(REG_CLASS_CONTENTS, reg_class, REG_CLASS_NAMES): New entries for
+	R02A_REGS.
+
+	* reload1.c (choose_reload_regs): Use MODE_INT for partial ints in
+	smallest_mode_for_size.
+	
 2008-12-10  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/linux-unwind.h (get_regs): Constify casts.

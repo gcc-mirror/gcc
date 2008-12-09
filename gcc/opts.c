@@ -870,9 +870,11 @@ decode_options (unsigned int argc, const char **argv)
 	}
     }
   
-  /* Use IRA if it is implemented for the target.  */
-  if (targetm.ira_cover_classes)
-    flag_ira = 1;
+  flag_ira = 1;
+  /* Use priority coloring if cover classes is not defined for the
+     target.  */
+  if (targetm.ira_cover_classes == NULL)
+    flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
 
   /* -O1 optimizations.  */
   opt1 = (optimize >= 1);
@@ -1096,10 +1098,12 @@ decode_options (unsigned int argc, const char **argv)
   if (!flag_sel_sched_pipelining)
     flag_sel_sched_pipelining_outer_loops = 0;
 
-  if (flag_ira && !targetm.ira_cover_classes)
+  if (flag_ira && !targetm.ira_cover_classes
+      && flag_ira_algorithm == IRA_ALGORITHM_CB)
     {
-      inform (input_location, "-fira does not work on this architecture");
-      flag_ira = 0;
+      inform (input_location,
+	      "-fira-algorithm=CB does not work on this architecture");
+      flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
     }
 
   /* Save the current optimization options if this is the first call.  */
@@ -1976,14 +1980,23 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fira_algorithm_:
-      if (!strcmp (arg, "regional"))
-	flag_ira_algorithm = IRA_ALGORITHM_REGIONAL;
-      else if (!strcmp (arg, "CB"))
+      if (!strcmp (arg, "CB"))
 	flag_ira_algorithm = IRA_ALGORITHM_CB;
-      else if (!strcmp (arg, "mixed"))
-	flag_ira_algorithm = IRA_ALGORITHM_MIXED;
+      else if (!strcmp (arg, "priority"))
+	flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
       else
 	warning (0, "unknown ira algorithm \"%s\"", arg);
+      break;
+
+    case OPT_fira_region_:
+      if (!strcmp (arg, "one"))
+	flag_ira_region = IRA_REGION_ONE;
+      else if (!strcmp (arg, "all"))
+	flag_ira_region = IRA_REGION_ALL;
+      else if (!strcmp (arg, "mixed"))
+	flag_ira_region = IRA_REGION_MIXED;
+      else
+	warning (0, "unknown ira region \"%s\"", arg);
       break;
 
     case OPT_fira_verbose_:
