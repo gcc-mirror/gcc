@@ -1,3 +1,11 @@
+2008-12-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md (movti, movdi_64, movdi_31,
+	  *movsi_zarch, *movhi, *movqi, *mov<mode>_64, *mov<mode>_31,
+	  *mov<mode>_64dfp, *mov<mode>_64, *mov<mode>_31, mov<mode>): Remove
+	  Q->Q alternative.
+	  (Integer->BLKmode splitter): Removed.
+
 2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_set_memflags): Process memory
