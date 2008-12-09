@@ -1229,6 +1229,18 @@ follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
     case GIMPLE_SINGLE_RHS:
       return follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
 				   halting_phi, evolution_of_loop, limit);
+    case GIMPLE_UNARY_RHS:
+      if (code == NOP_EXPR)
+	{
+	  /* This assignment is under the form "a_1 = (cast) rhs.  */
+	  t_bool res
+	    = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
+				    halting_phi, evolution_of_loop, limit);
+	  *evolution_of_loop = chrec_convert (type, *evolution_of_loop, stmt);
+	  return res;
+	}
+      /* FALLTHRU */
+
     default:
       return t_false;
     }

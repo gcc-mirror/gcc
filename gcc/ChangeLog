@@ -1,3 +1,8 @@
+2008-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37416
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs): Handle NOP_EXPR.
+
 2008-12-09  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives): Fix formatting.
