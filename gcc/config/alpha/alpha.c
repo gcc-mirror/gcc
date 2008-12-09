@@ -1603,18 +1603,17 @@ alpha_set_memflags_1 (rtx *xp, void *data)
   return -1;
 }
 
-/* Given INSN, which is an INSN list or the PATTERN of a single insn
-   generated to perform a memory operation, look for any MEMs in either
+/* Given SEQ, which is an INSN list, look for any MEMs in either
    a SET_DEST or a SET_SRC and copy the in-struct, unchanging, and
    volatile flags from REF into each of the MEMs found.  If REF is not
    a MEM, don't do anything.  */
 
 void
-alpha_set_memflags (rtx insn, rtx ref)
+alpha_set_memflags (rtx seq, rtx ref)
 {
-  rtx *base_ptr;
+  rtx insn;
 
-  if (GET_CODE (ref) != MEM)
+  if (!MEM_P (ref))
     return;
 
   /* This is only called from alpha.md, after having had something
@@ -1627,11 +1626,11 @@ alpha_set_memflags (rtx insn, rtx ref)
       && !MEM_READONLY_P (ref))
     return;
 
-  if (INSN_P (insn))
-    base_ptr = &PATTERN (insn);
-  else
-    base_ptr = &insn;
-  for_each_rtx (base_ptr, alpha_set_memflags_1, (void *) ref);
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      for_each_rtx (&PATTERN (insn), alpha_set_memflags_1, (void *) ref);
+    else
+      gcc_unreachable ();
 }
 
 static rtx alpha_emit_set_const (rtx, enum machine_mode, HOST_WIDE_INT,
