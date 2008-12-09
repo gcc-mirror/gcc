@@ -6084,9 +6084,10 @@ choose_reload_regs (struct insn_chain *chain)
 		    need_mode = mode;
 		  else
 		    need_mode
-		      = smallest_mode_for_size (GET_MODE_BITSIZE (mode)
-						+ byte * BITS_PER_UNIT,
-						GET_MODE_CLASS (mode));
+		      = smallest_mode_for_size
+		        (GET_MODE_BITSIZE (mode) + byte * BITS_PER_UNIT,
+			 GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
+			 ? MODE_INT : GET_MODE_CLASS (mode));
 
 		  if ((GET_MODE_SIZE (GET_MODE (last_reg))
 		       >= GET_MODE_SIZE (need_mode))

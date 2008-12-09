@@ -2841,7 +2841,8 @@ options have been processed. It is then re-examined by every call to
 The default implementation returns @code{IRA_COVER_CLASSES}, if defined,
 otherwise there is no default implementation.  You must define either this
 macro or @code{IRA_COVER_CLASSES} in order to use the integrated register
-allocator for the target.
+allocator with Chaitin-Briggs coloring. If the macro is not defined,
+the only available coloring algorithm is Chow's priority coloring.
 @end deftypefn
 
 @defmac IRA_COVER_CLASSES

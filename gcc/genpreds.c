@@ -959,7 +959,7 @@ write_enum_constraint_num (void)
 	 "  CONSTRAINT__UNKNOWN = 0", stdout);
   FOR_ALL_CONSTRAINTS (c)
     printf (",\n  CONSTRAINT_%s", c->c_name);
-  puts ("\n};\n");
+  puts (",\n  CONSTRAINT__LIMIT\n};\n");
 }
 
 /* Write out a function which looks at a string and determines what

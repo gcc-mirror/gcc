@@ -396,8 +396,8 @@ estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed)
        one.  */
     cost = target_spill_cost [speed] * n_new;
 
-  if (optimize && flag_ira && (flag_ira_algorithm == IRA_ALGORITHM_REGIONAL
-			       || flag_ira_algorithm == IRA_ALGORITHM_MIXED)
+  if (optimize && flag_ira && (flag_ira_region == IRA_REGION_ALL
+			       || flag_ira_region == IRA_REGION_MIXED)
       && number_of_loops () <= (unsigned) IRA_MAX_LOOPS_NUM)
     /* IRA regional allocation deals with high register pressure
        better.  So decrease the cost (to do more accurate the cost

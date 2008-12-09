@@ -338,7 +338,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg -fipa-pta @gol 
 -fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
 -fipa-type-escape -fira -fira-algorithm=@var{algorithm} @gol
--fira-coalesce -fno-ira-share-save-slots @gol
+-fira-region=@var{region} -fira-coalesce -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-interchange -floop-strip-mine @gol
@@ -5728,17 +5728,25 @@ allocation.  It is a default if @acronym{IRA} has been ported for the
 target.
 
 @item -fira-algorithm=@var{algorithm}
-Use specified algorithm for the integrated register allocator.  The
-@var{algorithm} argument should be one of @code{regional}, @code{CB},
-or @code{mixed}.  The second algorithm specifies Chaitin-Briggs
-coloring, the first one specifies regional coloring based on
-Chaitin-Briggs coloring, and the third one which is the default
-specifies a mix of Chaitin-Briggs and regional algorithms where loops
-with small register pressure are ignored.  The first algorithm can
-give best result for machines with small size and irregular register
-set, the second one is faster and generates decent code and the
-smallest size code, and the mixed algorithm usually give the best
-results in most cases and for most architectures.
+Use specified coloring algorithm for the integrated register
+allocator.  The @var{algorithm} argument should be @code{priority} or
+@code{CB}.  The first algorithm specifies Chow's priority coloring,
+the second one specifies Chaitin-Briggs coloring.  The second
+algorithm can be unimplemented for some architectures.  If it is
+implemented, it is the default because Chaitin-Briggs coloring as a
+rule generates a better code.
+
+@item -fira-region=@var{region}
+Use specified regions for the integrated register allocator.  The
+@var{region} argument should be one of @code{all}, @code{mixed}, or
+@code{one}.  The first value means using all loops as register
+allocation regions, the second value which is the default means using
+all loops except for loops with small register pressure as the
+regions, and third one means using all function as a single region.
+The first value can give best result for machines with small size and
+irregular register set, the third one results in faster and generates
+decent code and the smallest size code, and the default value usually
+give the best results in most cases and for most architectures.
 
 @item -fira-coalesce
 @opindex fira-coalesce

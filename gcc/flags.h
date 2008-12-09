@@ -209,12 +209,21 @@ extern int flag_dump_rtl_in_asm;
 /* The algorithm used for the integrated register allocator (IRA).  */
 enum ira_algorithm
 {
-  IRA_ALGORITHM_REGIONAL,
   IRA_ALGORITHM_CB,
-  IRA_ALGORITHM_MIXED
+  IRA_ALGORITHM_PRIORITY
 };
 
 extern enum ira_algorithm flag_ira_algorithm;
+
+/* The regions used for the integrated register allocator (IRA).  */
+enum ira_region
+{
+  IRA_REGION_ONE,
+  IRA_REGION_ALL,
+  IRA_REGION_MIXED
+};
+
+extern enum ira_region flag_ira_region;
 
 extern unsigned int flag_ira_verbose;
 

@@ -224,7 +224,7 @@ machine_function;
 
 #define REG_ALLOC_ORDER { \
 	0, 1, 2, 3, 4, 5, /* r0..r3, a0, a1 */ \
-	12, 13, 14, 15, 16, 17, 18, /* mem0..mem7 */  \
+        12, 13, 14, 15, 16, 17, 18, 19, /* mem0..mem7 */	\
 	6, 7, 8, 9, 10, 11 /* sb, fb, sp, pc, flg, ap */ }
 
 /* How Values Fit in Registers */
@@ -270,6 +270,7 @@ machine_function;
   { 0x000001f0 }, /* PS  - a0 a1 sb fp sp */\
   { 0x0000000f }, /* SI  - r0r2 r1r3 a0a1 */\
   { 0x0000003f }, /* HI  - r0 r1 r2 r3 a0 a1 */\
+  { 0x00000033 }, /* R02A  - r0r2 a0 a1 */ \
   { 0x0000003f }, /* RA  - r0..r3 a0 a1 */\
   { 0x0000007f }, /* GENERAL */\
   { 0x00000400 }, /* FLG */\
@@ -308,6 +309,7 @@ enum reg_class
   PS_REGS,
   SI_REGS,
   HI_REGS,
+  R02A_REGS,
   RA_REGS,
   GENERAL_REGS,
   FLG_REGS,
@@ -348,6 +350,7 @@ enum reg_class
 "PS_REGS", \
 "SI_REGS", \
 "HI_REGS", \
+"R02A_REGS", \
 "RA_REGS", \
 "GENERAL_REGS", \
 "FLG_REGS", \

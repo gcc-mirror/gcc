@@ -1583,8 +1583,8 @@ propagate_allocno_info (void)
   ira_loop_tree_node_t parent;
   enum reg_class cover_class;
 
-  if (flag_ira_algorithm != IRA_ALGORITHM_REGIONAL
-      && flag_ira_algorithm != IRA_ALGORITHM_MIXED)
+  if (flag_ira_region != IRA_REGION_ALL
+      && flag_ira_region != IRA_REGION_MIXED)
     return;
   for (i = max_reg_num () - 1; i >= FIRST_PSEUDO_REGISTER; i--)
     for (a = ira_regno_allocno_map[i];
@@ -2116,9 +2116,10 @@ setup_min_max_allocno_live_range_point (void)
 }
 
 /* Sort allocnos according to their live ranges.  Allocnos with
-   smaller cover class are put first.  Allocnos with the same cove
-   class are ordered according their start (min).  Allocnos with the
-   same start are ordered according their finish (max).  */
+   smaller cover class are put first unless we use priority coloring.
+   Allocnos with the same cove class are ordered according their start
+   (min).  Allocnos with the same start are ordered according their
+   finish (max).  */
 static int
 allocno_range_compare_func (const void *v1p, const void *v2p)
 {
@@ -2126,7 +2127,8 @@ allocno_range_compare_func (const void *v1p, const void *v2p)
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
 
-  if ((diff = ALLOCNO_COVER_CLASS (a1) - ALLOCNO_COVER_CLASS (a2)) != 0)
+  if (flag_ira_algorithm != IRA_ALGORITHM_PRIORITY
+      && (diff = ALLOCNO_COVER_CLASS (a1) - ALLOCNO_COVER_CLASS (a2)) != 0)
     return diff;
   if ((diff = ALLOCNO_MIN (a1) - ALLOCNO_MIN (a2)) != 0)
     return diff;
@@ -2161,7 +2163,7 @@ sort_conflict_id_allocno_map (void)
 static void
 setup_min_max_conflict_allocno_ids (void)
 {
-  enum reg_class cover_class;
+  int cover_class;
   int i, j, min, max, start, finish, first_not_finished, filled_area_start;
   int *live_range_min, *last_lived;
   ira_allocno_t a;
@@ -2174,7 +2176,9 @@ setup_min_max_conflict_allocno_ids (void)
       a = ira_conflict_id_allocno_map[i];
       if (a == NULL)
 	continue;
-      if (cover_class != ALLOCNO_COVER_CLASS (a))
+      if (cover_class < 0
+	  || (flag_ira_algorithm != IRA_ALGORITHM_PRIORITY
+	      && cover_class != (int) ALLOCNO_COVER_CLASS (a)))
 	{
 	  cover_class = ALLOCNO_COVER_CLASS (a);
 	  min = i;
@@ -2208,7 +2212,9 @@ setup_min_max_conflict_allocno_ids (void)
       a = ira_conflict_id_allocno_map[i];
       if (a == NULL)
 	continue;
-      if (cover_class != ALLOCNO_COVER_CLASS (a))
+      if (cover_class < 0
+	  || (flag_ira_algorithm != IRA_ALGORITHM_PRIORITY
+	      && cover_class != (int) ALLOCNO_COVER_CLASS (a)))
 	{
 	  cover_class = ALLOCNO_COVER_CLASS (a);
 	  for (j = 0; j < ira_max_point; j++)
@@ -2503,7 +2509,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		{
 		  ira_allocno_t live_a = ira_allocnos[n];
 
-		  if (cover_class == ALLOCNO_COVER_CLASS (live_a)
+		  if (ira_reg_classes_intersect_p
+		      [cover_class][ALLOCNO_COVER_CLASS (live_a)]
 		      /* Don't set up conflict for the allocno with itself.  */
 		      && num != (int) n)
 		    ira_add_allocno_conflict (a, live_a);
