@@ -4704,8 +4704,9 @@ static bool have_alias_info = false;
 /* Emit a note for the pointer initialization point DEF.  */
 
 static void
-emit_pointer_definition (gimple def)
+emit_pointer_definition (tree ptr, bitmap visited)
 {
+  gimple def = SSA_NAME_DEF_STMT (ptr);
   if (gimple_code (def) == GIMPLE_PHI)
     {
       use_operand_p argp;
@@ -4715,7 +4716,10 @@ emit_pointer_definition (gimple def)
 	{
 	  tree arg = USE_FROM_PTR (argp);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    emit_pointer_definition (SSA_NAME_DEF_STMT (arg));
+	    {
+	      if (bitmap_set_bit (visited, SSA_NAME_VERSION (arg)))
+		emit_pointer_definition (arg, visited);
+	    }
 	  else
 	    inform (0, "initialized from %qE", arg);
 	}
@@ -4729,7 +4733,6 @@ emit_pointer_definition (gimple def)
 static void
 emit_alias_warning (tree ptr)
 {
-  gimple def = SSA_NAME_DEF_STMT (ptr);
   gimple use;
   imm_use_iterator ui;
   unsigned warned = 0;
@@ -4777,7 +4780,11 @@ emit_alias_warning (tree ptr)
 	}
     }
   if (warned > 0)
-    emit_pointer_definition (def);
+    {
+      bitmap visited = BITMAP_ALLOC (NULL);
+      emit_pointer_definition (ptr, visited);
+      BITMAP_FREE (visited);
+    }
 }
 
 /* Given a pointer variable P, fill in its points-to set, or return
