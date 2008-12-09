@@ -1,3 +1,18 @@
+2008-12-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/38366
+	* function.c (aggregate_value_p): Get fntype from CALL_EXPR in any
+	case.
+	* calls.c (nitialize_argument_information): Add fntype argument 
+	and use it for calls.promote_function_args.
+        (expand_call): Pass fntype to aggregate_value_p if no fndecl
+	available and pass additional fntype to
+	initialize_argument_information.
+	* config/i386/i386.c (ix86_reg_parm_stack_space): Remove cfun part
+	to get function abi type.
+	(init_cumulative_args): Use for abi kind detection fntype, when no
+	fndecl is available.
+
 2008-12-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md (movti, movdi_64, movdi_31,
