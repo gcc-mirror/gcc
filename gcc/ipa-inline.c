@@ -1528,6 +1528,7 @@ cgraph_early_inlining (void)
       todo = optimize_inline_calls (current_function_decl);
       timevar_pop (TV_INTEGRATION);
     }
+  cfun->always_inline_functions_inlined = true;
   return todo;
 }
 
