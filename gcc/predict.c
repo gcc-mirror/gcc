@@ -2052,7 +2052,7 @@ estimate_bb_frequencies (void)
   basic_block bb;
   sreal freq_max;
 
-  if (cfun->function_frequency != PROFILE_READ || !counts_to_freqs ())
+  if (profile_status != PROFILE_READ || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 

@@ -1,3 +1,7 @@
+2008-12-09  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_bb_frequencies): Fix test if profile is present.
+
 2008-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/35468
