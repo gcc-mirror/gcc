@@ -166,6 +166,9 @@
 
 2008-12-09  Jason Merrill  <jason@redhat.com>
 
+	* gimplify.c (gimplify_init_constructor): Revert to using < rather
+	than <= for sparseness test.
+
 	PR c++/38410
 	* gimplify.c (gimplify_init_constructor): Don't write out a static
 	copy of the CONSTRUCTOR for TREE_ADDRESSABLE types or small sparse
