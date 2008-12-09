@@ -1,3 +1,9 @@
+2008-12-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/38420
+	* gcc.target/i386/pr37248-2.c: Support hex dump on 32bit host.
+	* gcc.target/i386/pr37248-3.c: Likewise.
+
 2008-12-09  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/37326
