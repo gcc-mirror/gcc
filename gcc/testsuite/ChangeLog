@@ -1,3 +1,8 @@
+2008-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38410
+	* gcc.dg/ctor1.c: New test.
+
 2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/mips/fix-r10000-6.c: Add dg-message to look for
