@@ -1,3 +1,8 @@
+2008-12-09  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/37326
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Skip on hppa*64-*-*.
+
 2008-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/35468
