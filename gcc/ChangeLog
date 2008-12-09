@@ -9,6 +9,9 @@
 
 2008-12-09  Ben Elliston  <bje@au.ibm.com>
 
+	* emutls.c (__emutls_get_address): Prototype.
+	(__emutls_register_common): Likewise.
+
 	* config/dfp-bit.c (DFP_TO_INT): Remove unnecessary cast.
 
 2008-12-09  Ben Elliston  <bje@au.ibm.com>

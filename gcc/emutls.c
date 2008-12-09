@@ -54,6 +54,9 @@ struct __emutls_array
   void **data[];
 };
 
+void *__emutls_get_address (struct __emutls_object *);
+void __emutls_register_common (struct __emutls_object *, word, word, void *);
+
 #ifdef __GTHREADS
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t emutls_mutex = __GTHREAD_MUTEX_INIT;
