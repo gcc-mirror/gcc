@@ -1,3 +1,9 @@
+2008-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/35468
+	* tree-ssa-ccp.c (fold_stmt_r): Don't fold reads from constant
+	string on LHS.
+
 2008-12-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38445
