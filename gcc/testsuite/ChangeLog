@@ -1,3 +1,9 @@
+2008-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/35468
+	* gcc.dg/pr35468.c: New test.
+	* gcc.c-torture/compile/pr35468.c: New test.
+
 2008-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38410

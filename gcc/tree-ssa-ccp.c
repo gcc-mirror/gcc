@@ -2191,6 +2191,9 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 
       t = maybe_fold_stmt_indirect (expr, TREE_OPERAND (expr, 0),
 				    integer_zero_node);
+      /* Avoid folding *"abc" = 5 into 'a' = 5.  */
+      if (wi->is_lhs && t && TREE_CODE (t) == INTEGER_CST)
+	t = NULL_TREE;
       if (!t
 	  && TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
 	/* If we had a good reason for propagating the address here,
@@ -2219,8 +2222,10 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 	 Otherwise we'd be wasting time.  */
     case ARRAY_REF:
       /* If we are not processing expressions found within an
-	 ADDR_EXPR, then we can fold constant array references.  */
-      if (!*inside_addr_expr_p)
+	 ADDR_EXPR, then we can fold constant array references.
+	 Don't fold on LHS either, to avoid folding "abc"[0] = 5
+	 into 'a' = 5.  */
+      if (!*inside_addr_expr_p && !wi->is_lhs)
 	t = fold_read_from_constant_string (expr);
       else
 	t = NULL;
