@@ -7681,6 +7681,8 @@ fold_builtin_sqrt (tree arg, tree type)
 	  tree arg0 = CALL_EXPR_ARG (arg, 0);
 	  tree tree_root;
 	  /* The inner root was either sqrt or cbrt.  */
+	  /* This was a conditional expression but it triggered a bug
+	     in the Solaris 8 compiler.  */
 	  REAL_VALUE_TYPE dconstroot;
 	  if (BUILTIN_SQRT_P (fcode))
 	    dconstroot = dconsthalf;

@@ -1,3 +1,9 @@
+2008-12-09  Andrew Haley  <aph@redhat.com>
+
+	* fixed-value.c (do_fixed_add): Add comment.
+	* tree-ssa-loop-ivopts.c (iv_ca_cost): Likewise.
+	* builtins.c (fold_builtin_sqrt): Likewise.
+
 2008-12-09  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/38366
