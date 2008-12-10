@@ -3713,6 +3713,7 @@ compute_avail (void)
 		    if (is_exception_related (stmt))
 		      continue;
 		  case tcc_binary:
+		  case tcc_comparison:
 		    {
 		      vn_nary_op_t nary;
 		      unsigned int i;
