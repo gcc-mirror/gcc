@@ -1,3 +1,8 @@
+2008-12-10  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_type): Support fixed-point types.
+	(d_print_comp, d_dump): Likewise.
+
 2008-10-22  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.in (CPPFLAGS): Define.
