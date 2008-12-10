@@ -3560,20 +3560,22 @@ typedef enum linkage_kind {
 
 /* Bitmask flags to control type substitution.  */
 typedef enum tsubst_flags_t {
-  tf_none = 0,			/* nothing special */
-  tf_error = 1 << 0,		/* give error messages  */
-  tf_warning = 1 << 1,		/* give warnings too  */
-  tf_ignore_bad_quals = 1 << 2,	/* ignore bad cvr qualifiers */
-  tf_keep_type_decl = 1 << 3,	/* retain typedef type decls
-				   (make_typename_type use) */
-  tf_ptrmem_ok = 1 << 4,	/* pointers to member ok (internal
-				   instantiate_type use) */
-  tf_user = 1 << 5,		/* found template must be a user template
-				   (lookup_template_class use) */
-  tf_conv = 1 << 6,		/* We are determining what kind of
-				   conversion might be permissible,
-				   not actually performing the
-				   conversion.  */
+  tf_none = 0,			 /* nothing special */
+  tf_error = 1 << 0,		 /* give error messages  */
+  tf_warning = 1 << 1,	 	 /* give warnings too  */
+  tf_ignore_bad_quals = 1 << 2,	 /* ignore bad cvr qualifiers */
+  tf_keep_type_decl = 1 << 3,	 /* retain typedef type decls
+				    (make_typename_type use) */
+  tf_ptrmem_ok = 1 << 4,	 /* pointers to member ok (internal
+				    instantiate_type use) */
+  tf_user = 1 << 5,		 /* found template must be a user template
+				    (lookup_template_class use) */
+  tf_conv = 1 << 6,		 /* We are determining what kind of
+				    conversion might be permissible,
+				    not actually performing the
+				    conversion.  */
+  tf_no_access_control = 1 << 7, /* Do not perform access checks, even
+				    when issuing other errors.   */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 } tsubst_flags_t;
