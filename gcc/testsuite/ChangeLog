@@ -1,3 +1,8 @@
+2008-12-10  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37416
+	* gcc.dg/vect/pr36630.c: Expect 1 vectorized loop.
+
 2008-12-10 Uros Bizjak <ubizjak@gmail.com>
 
 	* gcc.dg/20020919-1.c: Correct target selector to alpha*-*-*.
