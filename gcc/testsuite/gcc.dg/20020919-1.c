@@ -8,7 +8,7 @@
    You must be this tall ---> fit two long longs in asm-declared registers
    to enter this amusement.  */
 
-/* { dg-do compile { target alpha-*-* cris-*-* crisv32-*-* i?86-*-* mmix-*-* powerpc*-*-* rs6000-*-* x86_64-*-* } } */
+/* { dg-do compile { target alpha*-*-* cris-*-* crisv32-*-* i?86-*-* mmix-*-* powerpc*-*-* rs6000-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
 /* Constructed examples; input/output (same register), output, input, and

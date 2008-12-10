@@ -1,5 +1,5 @@
 /* PR tree-optimization/31866 */
-/* { dg-do compile { target alpha-*-* cris-*-* crisv32-*-* i?86-*-* mmix-*-* powerpc*-*-* rs6000-*-* x86_64-*-* } } */
+/* { dg-do compile { target alpha*-*-* cris-*-* crisv32-*-* i?86-*-* mmix-*-* powerpc*-*-* rs6000-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
 #if defined (__alpha__)

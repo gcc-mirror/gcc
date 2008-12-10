@@ -2,7 +2,7 @@
 !
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
-! { dg-options "-fno-range-check -pedantic-errors -mieee" { target sh*-*-* } }
+! { dg-options "-fno-range-check -pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } }
 !
   implicit none
   character(len=1) :: s

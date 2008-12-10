@@ -1,3 +1,35 @@
+2008-12-10 Uros Bizjak <ubizjak@gmail.com>
+
+	* gcc.dg/20020919-1.c: Correct target selector to alpha*-*-*.
+	* gcc.dg/pr31866.c: Ditto.
+	* gcc.dg/torture/type-generic-1.c: Add -mieee for alpha*-*-* targets.
+	* g++.dg/torture/type-generic-1.C: Ditto.
+	* gfortran.dg/boz_9.f90: Ditto.
+	* gfortran.dg/boz_14.f90: Ditto.
+	* gfortran.dg/init_flag_3.f90: Ditto.
+	* gfortran.dg/init_flag_4.f90: Ditto.
+	* gfortran.dg/init_flag_5.f90: Ditto.
+	* gfortran.dg/integer_exponentiation_1.f90: Ditto.
+	* gfortran.dg/integer_exponentiation_5.F90: Ditto.
+	* gfortran.dg/isnan_1.f90: Ditto.
+	* gfortran.dg/isnan_2.f90: Ditto.
+	* gfortran.dg/module_nan.f90: Ditto.
+	* gfortran.dg/nan_1.f90: Ditto.
+	* gfortran.dg/nan_2.f90: Ditto.
+	* gfortran.dg/nan_3.f90: Ditto.
+	* gfortran.dg/nan_4.f90: Ditto.
+	* gfortran.dg/namelist_42.f90: Ditto.
+	* gfortran.dg/namelist_43.f90: Ditto.
+	* gfortran.dg/nearest_1.f90: Ditto.
+	* gfortran.dg/nearest_2.f90: Ditto.
+	* gfortran.dg/nearest_3.f90: Ditto.
+	* gfortran.dg/pr37243.f: Ditto.
+	* gfortran.dg/real_const_3.f90: Ditto.
+	* gfortran.dg/transfer_simplify_2.f90: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_spacing.x: New file.
+
+	* gfortran.dg/default_format_denormal_1.f90: XFAIL on alpha.
+
 2008-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/37971

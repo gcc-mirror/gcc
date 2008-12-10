@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-pedantic-errors -mieee" { target sh*-*-* } } 
+! { dg-options "-pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } } 
 !
 ! PR fortran/34209
 !
