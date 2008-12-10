@@ -1,4 +1,4 @@
-// PR c++/37391
+// PR c++/37971
 // { dg-do compile }
 
 class C {
