@@ -1,3 +1,9 @@
+2008-12-10  Martin Guy <martinwguy@yahoo.it>
+
+	PR target/37668
+	* arm.c (arm_size_rtx_costs, case NEG): Don't fall through if the
+	result will be in an FPU register.
+
 2008-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/37170
