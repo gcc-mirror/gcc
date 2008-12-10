@@ -2354,14 +2354,17 @@ sra_build_bf_assignment (tree dst, tree src)
       tmp = var;
       if (!is_gimple_variable (tmp))
 	tmp = unshare_expr (var);
+      else
+	TREE_NO_WARNING (var) = true;
 
       tmp2 = make_rename_temp (utype, "SR");
 
       if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
-	stmt = gimple_build_assign (tmp2, fold_convert (utype, tmp));
+	tmp = fold_convert (utype, tmp);
       else
-	stmt = gimple_build_assign (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
-						       utype, tmp));
+	tmp = fold_build1 (VIEW_CONVERT_EXPR, utype, tmp);
+
+      stmt = gimple_build_assign (tmp2, tmp);
       gimple_seq_add_stmt (&seq, stmt);
     }
   else
