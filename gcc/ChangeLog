@@ -1,5 +1,11 @@
 2008-12-09  Tobias Grosser  <grosser@fim.uni-passau.de>
 
+	* graphite.c (graphite_transform_loops): Always call find_transform ()
+	in ENABLE_CHECKING.  So we test these code paths, even if we do not
+	generate code.
+
+2008-12-09  Tobias Grosser  <grosser@fim.uni-passau.de>
+
 	* graphite.c (print_graphite_bb): Fix printing to file != dump_file.
 
 2008-12-09  Jakub Jelinek  <jakub@redhat.com>

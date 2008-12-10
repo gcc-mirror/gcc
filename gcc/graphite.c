@@ -5237,6 +5237,13 @@ graphite_transform_loops (void)
 
       if (graphite_apply_transformations (scop))
         gloog (scop, find_transform (scop));
+#ifdef ENABLE_CHECKING
+      else
+	{
+	  struct clast_stmt *stmt = find_transform (scop);
+	  cloog_clast_free (stmt);
+	}
+#endif
     }
 
   /* Cleanup.  */
