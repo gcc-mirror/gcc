@@ -1,3 +1,14 @@
+2008-12-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/37971
+	* class.c (resolve_address_of_overloaded_function): Check
+	accessibility of member functions unless FLAGS indicates
+	otherwise.
+	* call.c (standard_conversion): Adjust flags passed to
+	instantiate_type.
+	(convert_default_arg): Do not perform access checks.
+	* cp-tree.h (tsubst_flags_t): Add tf_no_access_control.
+
 2008-12-08  Steve Ellcey  <sje@cup.hp.com>
 
 	* decl2.c (mark_used): Remove assemble_external call.
