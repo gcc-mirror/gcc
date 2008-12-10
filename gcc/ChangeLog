@@ -1,3 +1,11 @@
+2008-12-10  Richard Guenther  <rguenther@suse.de>
+
+	Backport from trunk the fix for PR38051.
+
+	PR tree-optimization/38478
+	* tree-ssa-structalias.c (update_alias_info): Manually find
+	written variables.
+
 2008-12-09  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives): Fix formatting.
