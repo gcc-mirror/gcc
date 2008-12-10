@@ -495,7 +495,7 @@ print_graphite_bb (FILE *file, graphite_bb_p gb, int indent, int verbosity)
   if (GBB_DOMAIN (gb))
     {
       fprintf (file, "       (domain: \n");
-      cloog_matrix_print (dump_file, GBB_DOMAIN (gb));
+      cloog_matrix_print (file, GBB_DOMAIN (gb));
       fprintf (file, "       )\n");
     }
 
@@ -525,7 +525,7 @@ print_graphite_bb (FILE *file, graphite_bb_p gb, int indent, int verbosity)
   if (GBB_CONDITIONS (gb))
     {
       fprintf (file, "       (conditions: \n");
-      dump_gbb_conditions (dump_file, gb);
+      dump_gbb_conditions (file, gb);
       fprintf (file, "       )\n");
     }
 
