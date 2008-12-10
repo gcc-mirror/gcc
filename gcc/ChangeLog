@@ -1,3 +1,36 @@
+2008-12-09 David Daney <ddaney@caviumnetworks.com>
+
+	* config/mips/sync.md (sync_<optab>_12): Replace
+	MIPS_SYNC_OP_12_NOT_NOP with MIPS_SYNC_OP_12_AND.
+	(sync_old_<optab>_12): Remove third paramater to
+	MIPS_SYNC_OLD_OP_12 macro, replace MIPS_SYNC_OLD_OP_12_NOT_NOP
+	with MIPS_SYNC_OLD_OP_12_AND.
+	(sync_new_<optab>_12): Replace MIPS_SYNC_NEW_OP_12_NOT_NOP
+	with MIPS_SYNC_NEW_OP_12_AND.
+	(sync_nand_12): Replace MIPS_SYNC_OP_12_NOT_NOT with
+	MIPS_SYNC_OP_12_XOR, reduce length attribute to 40.
+	(sync_old_nand_12): Remove third paramater to MIPS_SYNC_OLD_OP_12
+	macro, replace MIPS_SYNC_OLD_OP_12_NOT_NOT with
+	MIPS_SYNC_OLD_OP_12_XOR and reduce length attribute to 40.
+	(sync_new_nand_12): Replace MIPS_SYNC_NEW_OP_12_NOT_NOT with
+	MIPS_SYNC_NEW_OP_12_XOR.
+	* config/mips/mips.h (MIPS_SYNC_OP_12, MIPS_SYNC_OP_12_NOT_NOP,
+	MIPS_SYNC_OP_12_NOT_NOT,MIPS_SYNC_OLD_OP_12_NOT_NOP,
+	MIPS_SYNC_OLD_OP_12_NOT_NOT, MIPS_SYNC_NEW_OP_12,
+	MIPS_SYNC_NEW_OP_12_NOT_NOP, MIPS_SYNC_NEW_OP_12_NOT_NOT,
+	MIPS_SYNC_NAND, MIPS_SYNC_OLD_NAND, MIPS_SYNC_NEW_NAND): Rewritten
+	to implement new __sync_nand semantics.
+	(MIPS_SYNC_OLD_OP_12): Implement new __sync_nand semantics, and
+	remove third parameter.
+	(MIPS_SYNC_OLD_OP_12_NOT_NOP_REG,
+	MIPS_SYNC_OLD_OP_12_NOT_NOT_REG): Removed.
+	(MIPS_SYNC_OP_12_NOT_NOP): Renamed to MIPS_SYNC_OP_12_AND.
+	(MIPS_SYNC_OP_12_NOT_NOT): Renamed to MIPS_SYNC_OP_12_XOR.
+	(MIPS_SYNC_OLD_OP_12_NOT_NOP): Renamed to MIPS_SYNC_OLD_OP_12_AND.
+	(MIPS_SYNC_OLD_OP_12_NOT_NOT): Renamed to MIPS_SYNC_OLD_OP_12_XOR.
+	(MIPS_SYNC_NEW_OP_12_NOT_NOP): Renamed to MIPS_SYNC_NEW_OP_12_AND.
+	(MIPS_SYNC_NEW_OP_12_NOT_NOT): Renamed to MIPS_SYNC_NEW_OP_12_XOR
+
 2008-12-09  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite.c (graphite_transform_loops): Always call find_transform ()
