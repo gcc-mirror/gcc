@@ -110,6 +110,9 @@ static void dwarf2out_source_line (unsigned int, const char *);
 #define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
 #endif
 
+/* Save the result of dwarf2out_do_frame across PCH.  */
+static GTY(()) bool saved_do_cfi_asm = 0;
+
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -121,7 +124,7 @@ dwarf2out_do_frame (void)
      we're not going to output frame or unwind info.  */
   return (write_symbols == DWARF2_DEBUG
 	  || write_symbols == VMS_AND_DWARF2_DEBUG
-	  || DWARF2_FRAME_INFO
+	  || DWARF2_FRAME_INFO || saved_do_cfi_asm
 #ifdef DWARF2_UNWIND_INFO
 	  || (DWARF2_UNWIND_INFO
 	      && (flag_unwind_tables
@@ -142,7 +145,7 @@ dwarf2out_do_cfi_asm (void)
 #endif
   if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
     return false;
-  if (!eh_personality_libfunc)
+  if (saved_do_cfi_asm || !eh_personality_libfunc)
     return true;
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     return false;
@@ -156,6 +159,7 @@ dwarf2out_do_cfi_asm (void)
   if ((enc & 0x70) != 0 && (enc & 0x70) != DW_EH_PE_pcrel)
     return false;
 
+  saved_do_cfi_asm = true;
   return true;
 }
 

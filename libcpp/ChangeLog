@@ -1,3 +1,9 @@
+2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/37033
+	* pch.c (cpp_valid_state): Improve message for poisoned symbols.
+	Allow for differences in __GCC_HAVE_DWARF2_CFI_ASM.
+
 2008-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lex.c (cpp_token_len): Use 6 as default length.
