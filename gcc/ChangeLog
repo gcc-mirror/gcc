@@ -1,3 +1,10 @@
+2008-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/37170
+	PR target/38448
+	* final.c (output_addr_const) <SYMBOL_REF>: Call assemble_external
+	on the associated SYMBOL_REF_DECL node, if any.
+
 2008-12-09 David Daney <ddaney@caviumnetworks.com>
 
 	* config/mips/sync.md (sync_<optab>_12): Replace
