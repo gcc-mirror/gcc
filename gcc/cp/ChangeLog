@@ -1,3 +1,10 @@
+2008-12-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35319
+	* mangle.c (write_builtin_type): Add mangling for decimal floating 
+	point and fixed point types.
+	(write_type): Pass FIXED_POINT_TYPE along.
+
 2008-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/37971
