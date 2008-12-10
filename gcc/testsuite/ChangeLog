@@ -1,3 +1,8 @@
+2008-12-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/36792
+	* gcc.dg/tree-ssa/ssa-fre-10.c: Update expected results.
+
 2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/38271
