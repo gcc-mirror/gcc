@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check -pedantic" }
-! { dg-options "-fno-range-check -pedantic -mieee" { target sh*-*-* } }
+! { dg-options "-fno-range-check -pedantic -mieee" { target alpha*-*-* sh*-*-* } }
 !
 ! PR fortran/34333
 !
