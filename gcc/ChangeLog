@@ -1,3 +1,9 @@
+2008-12-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/36792
+	* tree-ssa-pre.c (compute_avail): Don't insert defs into maximal
+	set.
+
 2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/37033

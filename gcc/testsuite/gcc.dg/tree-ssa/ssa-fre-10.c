@@ -4,6 +4,8 @@
 union loc {  unsigned reg; signed offset; };
 void __frame_state_for (volatile char *state_in, int x)
 {
+  /* We should move all the loads out of this loop. Right now, we only
+     move one.  It takes two insertions because we insert a cast.  */
     union loc fs;
     int reg;
     for (;;)     {
@@ -16,5 +18,5 @@ void __frame_state_for (volatile char *state_in, int x)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "Insertions:" "pre" } } */
+/* { dg-final { scan-tree-dump "Insertions: 2" "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
