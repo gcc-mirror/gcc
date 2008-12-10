@@ -1,5 +1,12 @@
 2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR target/37033
+	* dwarf2out.c (saved_do_cfi_asm): New.
+	(dwarf2out_do_frame): Take it into account.
+	(dwarf2out_d_cfi_asm): Likewise.  Set it when appropriate.
+
+2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/38271
 	* tree-sra.c (sra_build_bf_assignment): Avoid warnings for
 	variables initialized from SRAed bit fields.

@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2008
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -477,9 +477,30 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 
       h = cpp_lookup (r, namebuf, m.name_length);
       if (m.flags & NODE_POISONED
-	  || h->type != NT_MACRO
 	  || h->flags & NODE_POISONED)
 	{
+	  if (CPP_OPTION (r, warn_invalid_pch))
+	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
+		       "%s: not used because `%.*s' is poisoned",
+		       name, m.name_length, namebuf);
+	  goto fail;
+	}
+
+      if (h->type != NT_MACRO)
+	{
+	  /* It's ok if __GCC_HAVE_DWARF2_CFI_ASM becomes undefined,
+	     as in, when the PCH file is created with -g and we're
+	     attempting to use it without -g.  Restoring the PCH file
+	     is supposed to bring in this definition *and* enable the
+	     generation of call frame information, so that precompiled
+	     definitions that take this macro into accout, to decide
+	     what asm to emit, won't issue .cfi directives when the
+	     compiler doesn't.  */
+	  if (!(h->flags & NODE_USED)
+	      && m.name_length == sizeof ("__GCC_HAVE_DWARF2_CFI_ASM") - 1
+	      && !memcmp (namebuf, "__GCC_HAVE_DWARF2_CFI_ASM", m.name_length))
+	    continue;
+
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
 		       "%s: not used because `%.*s' not defined",
