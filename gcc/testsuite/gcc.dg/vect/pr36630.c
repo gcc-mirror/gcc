@@ -13,4 +13,5 @@ foo (unsigned char *x, short y)
       i = i + 1;
     }
 }
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
