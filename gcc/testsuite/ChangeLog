@@ -1,3 +1,8 @@
+2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/38271
+	* gcc.dg/torture/pr38271.c: New.
+
 2008-12-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37416
