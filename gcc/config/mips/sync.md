@@ -127,7 +127,7 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_NOT_NOP)));
+	    (MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_AND)));
 }
   [(set_attr "length" "40")])
 
@@ -164,8 +164,7 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_NOT_NOP,
-	    			  MIPS_SYNC_OLD_OP_12_NOT_NOP_REG)));
+	    (MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_AND)));
 }
   [(set_attr "length" "40")])
 
@@ -207,7 +206,7 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_NOT_NOP)));
+	    (MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_AND)));
 }
   [(set_attr "length" "40")])
 
@@ -239,9 +238,9 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_NOT_NOT)));
+	    (MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_XOR)));
 }
-  [(set_attr "length" "44")])
+  [(set_attr "length" "40")])
 
 (define_expand "sync_old_nand<mode>"
   [(parallel [
@@ -274,10 +273,9 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_NOT_NOT,
-				  MIPS_SYNC_OLD_OP_12_NOT_NOT_REG)));
+	    (MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_XOR)));
 }
-  [(set_attr "length" "44")])
+  [(set_attr "length" "40")])
 
 (define_expand "sync_new_nand<mode>"
   [(parallel [
@@ -315,7 +313,7 @@
   "GENERATE_LL_SC"
 {
     return (mips_output_sync_loop
-	    (MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_NOT_NOT)));
+	    (MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_XOR)));
 }
   [(set_attr "length" "40")])
 
