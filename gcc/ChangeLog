@@ -1,3 +1,9 @@
+2008-12-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (*branch_bit<bbv><mode>,
+	*branch_bit<bbv><mode>_inverted): Renumber operands so that the
+	label becomes operands[1].
+
 2008-12-11  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR tree-optimization/38446
