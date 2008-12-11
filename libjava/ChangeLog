@@ -1,7 +1,13 @@
+2008-12-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/38006
+	* classpath/tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/inherit.png:
+	Set svn:mime-type to application/octet-stream.
+
 2008-12-04  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-        * configure.ac: Add double brackets on darwin[912].
-        * configure: Regenerate.
+	* configure.ac: Add double brackets on darwin[912].
+	* configure: Regenerate.
 
 2008-12-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
