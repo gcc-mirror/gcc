@@ -1,3 +1,9 @@
+2008-12-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/35677
+	* emutls.c (__emutls_get_address): Make sure offset is really zero
+	before initializing the object's offset.
+
 2008-12-10  Richard Guenther  <rguenther@suse.de>
 
 	Backport from trunk the fix for PR38051.
