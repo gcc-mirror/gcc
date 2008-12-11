@@ -5203,18 +5203,18 @@
   [(set (pc)
 	(if_then_else
 	 (equality_op (zero_extract:GPR
-		       (match_operand:GPR 1 "register_operand" "d")
+		       (match_operand:GPR 0 "register_operand" "d")
 		       (const_int 1)
 		       (match_operand 2 "const_int_operand" ""))
 		      (const_int 0))
-	 (label_ref (match_operand 0 ""))
+	 (label_ref (match_operand 1 ""))
 	 (pc)))]
   "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
 {
   return
     mips_output_conditional_branch (insn, operands,
-				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"),
-				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"));
+				    MIPS_BRANCH ("bbit<bbv>", "%0,%2,%1"),
+				    MIPS_BRANCH ("bbit<bbinv>", "%0,%2,%1"));
 }
   [(set_attr "type"	     "branch")
    (set_attr "mode"	     "none")
@@ -5224,18 +5224,18 @@
   [(set (pc)
 	(if_then_else
 	 (equality_op (zero_extract:GPR
-		       (match_operand:GPR 1 "register_operand" "d")
+		       (match_operand:GPR 0 "register_operand" "d")
 		       (const_int 1)
 		       (match_operand 2 "const_int_operand" ""))
 		      (const_int 0))
 	 (pc)
-	 (label_ref (match_operand 0 ""))))]
+	 (label_ref (match_operand 1 ""))))]
   "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
 {
   return
     mips_output_conditional_branch (insn, operands,
-				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"),
-				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"));
+				    MIPS_BRANCH ("bbit<bbinv>", "%0,%2,%1"),
+				    MIPS_BRANCH ("bbit<bbv>", "%0,%2,%1"));
 }
   [(set_attr "type"	     "branch")
    (set_attr "mode"	     "none")
