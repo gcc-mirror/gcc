@@ -1,3 +1,8 @@
+2008-12-11  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/29071
+	* gcc.dg/20020919-1.c: Fix a preprocessor check.
+
 2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/38413

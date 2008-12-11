@@ -41,7 +41,7 @@
 	|| defined (__POWERPC__) || defined (PPC) || defined (_IBMR2)
 # define REG1 "6"
 # define REG2 "7"
-# ifndef __powerpc64__
+# if !defined(__powerpc64__) && !defined(__LP64__)
 #  define REG3 "8"
 #  define REG4 "9"
 # endif
