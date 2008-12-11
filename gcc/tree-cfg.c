@@ -2072,14 +2072,9 @@ struct gimple_opt_pass pass_remove_useless_stmts =
 static void
 remove_phi_nodes_and_edges_for_unreachable_block (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
-
   /* Since this block is no longer reachable, we can just delete all
      of its PHI nodes.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
-    remove_phi_node (&gsi, true);
-
-  set_phi_nodes (bb, NULL);
+  remove_phi_nodes (bb);
 
   /* Remove edges to BB's successors.  */
   while (EDGE_COUNT (bb->succs) > 0)
