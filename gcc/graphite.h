@@ -193,6 +193,7 @@ typedef struct graphite_bb
   lambda_vector compressed_alpha_matrix;
   CloogMatrix *dynamic_schedule;
   VEC (data_reference_p, heap) *data_refs;
+  htab_t cloog_iv_types;
 } *gbb_p;
 
 #define GBB_BB(GBB) GBB->bb
@@ -205,6 +206,7 @@ typedef struct graphite_bb
 #define GBB_CONDITIONS(GBB) GBB->conditions
 #define GBB_CONDITION_CASES(GBB) GBB->condition_cases
 #define GBB_LOOPS(GBB) GBB->loops
+#define GBB_CLOOG_IV_TYPES(GBB) GBB->cloog_iv_types
 
 /* Return the loop that contains the basic block GBB.  */
 
@@ -274,10 +276,12 @@ DEF_VEC_ALLOC_P (name_tree, heap);
 typedef struct sese
 {
   edge entry, exit;
+  struct pointer_set_t *region_basic_blocks;
 } *sese;
 
 #define SESE_ENTRY(S) (S->entry)
 #define SESE_EXIT(S) (S->exit)
+#define SESE_REGION_BBS(S) (S->region_basic_blocks)
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */
@@ -327,6 +331,7 @@ struct scop
    but just a boundary.  SCOP_ENTRY is considered part of the scop.  */
 #define SCOP_ENTRY(S) (SESE_ENTRY (SCOP_REGION (S))->dest)
 #define SCOP_EXIT(S) (SESE_EXIT (SCOP_REGION (S))->dest)
+#define SCOP_REGION_BBS(S) (SESE_REGION_BBS (SCOP_REGION (S)))
 #define SCOP_STATIC_SCHEDULE(S) S->static_schedule
 #define SCOP_LOOPS(S) S->loops
 #define SCOP_LOOP_NEST(S) S->loop_nest
@@ -345,7 +350,8 @@ extern void dot_scop (scop_p);
 extern void dot_all_scops (void);
 extern void debug_clast_stmt (struct clast_stmt *);
 extern void debug_rename_map (htab_t);
-extern void debug_loop_vec (graphite_bb_p gb);
+extern void debug_ivtype_map (htab_t);
+extern void debug_loop_vec (graphite_bb_p);
 extern void debug_oldivs (scop_p);
 
 /* Describes the type of an iv stack entry.  */
@@ -376,6 +382,25 @@ DEF_VEC_ALLOC_P(iv_stack_entry_p,heap);
 
 typedef VEC(iv_stack_entry_p, heap) **loop_iv_stack;
 extern void debug_loop_iv_stack (loop_iv_stack);
+
+/* Return the old induction variable of the LOOP that is in normal
+   form in SCOP.  */
+
+static inline tree
+oldiv_for_loop (scop_p scop, loop_p loop)
+{
+  int i;
+  name_tree iv;
+
+  if (!loop)
+    return NULL_TREE;
+
+  for (i = 0; VEC_iterate (name_tree, SCOP_OLDIVS (scop), i, iv); i++)
+    if (iv->loop == loop)
+      return iv->t;
+
+  return NULL_TREE;
+}
 
 /* Return the number of gimple loops contained in SCOP.  */
 
