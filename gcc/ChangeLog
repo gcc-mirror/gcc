@@ -1,3 +1,9 @@
+2008-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38253
+	* gimplify.c (gimplify_init_constructor): Don't force constructor
+	into memory if there is just one nonzero element.
+
 2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Fix testsuite/gfortran.dg/graphite/id-4.f90.

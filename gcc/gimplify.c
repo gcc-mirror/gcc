@@ -3610,7 +3610,9 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    else
 	      align = TYPE_ALIGN (type);
 
-	    if (size > 0 && !can_move_by_pieces (size, align))
+	    if (size > 0
+		&& num_nonzero_elements > 1
+		&& !can_move_by_pieces (size, align))
 	      {
 		tree new_tree;
 
