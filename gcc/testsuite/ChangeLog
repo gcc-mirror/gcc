@@ -1,3 +1,23 @@
+2008-12-11  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/38446
+	* gcc.dg/graphite/pr38446.c: New.
+
+2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/scop-16.c: Test only scop specific info.
+	* gcc.dg/graphite/scop-17.c: Same.
+	* gcc.dg/graphite/block-5.c: New.
+	* gcc.dg/graphite/block-6.c: New.
+	* gcc.dg/graphite/pr37485.c: Clean dump file after.
+	* gcc.dg/graphite/pr37684.c: Same.
+	* gcc.dg/graphite/block-2.c: Same.
+
+2008-12-10  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	PR middle-end/38459
+	* gfortran.dg/graphite/pr38459.f90: New.
+
 2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/37852
