@@ -1,3 +1,8 @@
+2008-12-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/spu/ea: Delete __ea testsuite directory accidently
+	committed to 4.3 branch.
+
 2008-12-08  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
