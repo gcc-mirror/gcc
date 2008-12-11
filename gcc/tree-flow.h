@@ -787,6 +787,7 @@ extern gimple create_phi_node (tree, basic_block);
 extern void add_phi_arg (gimple, tree, edge);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (gimple_stmt_iterator *, bool);
+extern void remove_phi_nodes (basic_block);
 extern void init_phinodes (void);
 extern void fini_phinodes (void);
 extern void release_phi_node (gimple);
@@ -988,6 +989,7 @@ unsigned int tree_ssa_prefetch_arrays (void);
 unsigned int remove_empty_loops (void);
 void tree_ssa_iv_optimize (void);
 unsigned tree_predictive_commoning (void);
+tree canonicalize_loop_ivs (struct loop *, htab_t, tree);
 bool parallelize_loops (void);
 
 bool loop_only_exit_p (const struct loop *, const_edge);

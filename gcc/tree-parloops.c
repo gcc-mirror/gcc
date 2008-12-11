@@ -1325,9 +1325,10 @@ create_loop_fn (void)
 /* Bases all the induction variables in LOOP on a single induction variable
    (unsigned with base 0 and step 1), whose final value is compared with
    NIT.  The induction variable is incremented in the loop latch.  
-   REDUCTION_LIST describes the reductions in LOOP.  */
+   REDUCTION_LIST describes the reductions in LOOP.  Return the induction 
+   variable that was created.  */
 
-static void
+tree
 canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
 {
   unsigned precision = TYPE_PRECISION (TREE_TYPE (nit));
@@ -1368,7 +1369,12 @@ canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
 	}
 
       ok = simple_iv (loop, phi, res, &iv, true);
-      red = reduction_phi (reduction_list, phi);
+
+      if (reduction_list)
+	red = reduction_phi (reduction_list, phi);
+      else
+	red = NULL;
+
       /* We preserve the reduction phi nodes.  */
       if (!ok && red)
 	{
@@ -1406,6 +1412,9 @@ canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
   gimple_cond_set_code (stmt, LT_EXPR);
   gimple_cond_set_lhs (stmt, var_before);
   gimple_cond_set_rhs (stmt, nit);
+  update_stmt (stmt);
+
+  return var_before;
 }
 
 /* Moves the exit condition of LOOP to the beginning of its header, and

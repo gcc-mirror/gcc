@@ -1,3 +1,30 @@
+2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/37852
+	PR middle-end/37883
+	PR middle-end/37928
+	PR middle-end/37980
+	PR middle-end/38038
+	PR middle-end/38039
+	PR middle-end/38073
+	PR middle-end/38083
+	PR middle-end/38125
+	* gcc.dg/graphite/pr37928.c: New.
+	* gcc.dg/graphite/pr37883.c: New.
+	* gcc.dg/graphite/pr38073.c: New.
+	* gcc.dg/graphite/pr38125.c: New.
+	* gfortran.dg/graphite/pr38083.f90: New.
+	* gfortran.dg/graphite/pr37852.f90: New.
+	* gfortran.dg/graphite/pr37980.f90: New.
+	* gfortran.dg/graphite/id-2.f90: New.
+	* gfortran.dg/graphite/id-4.f90: New.
+
+	* gcc.dg/graphite/scop-18.c: Remove reduction, test for
+	the number of detected scops.  Copy exact same test for loop blocking...
+	* gcc.dg/graphite/block-1.c: Fix the number of expected loops
+	to be blocked as reductions are not handled.
+	* gcc.dg/graphite/block-4.c: ...here.  New.
+
 2008-12-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38464
@@ -94,6 +121,12 @@
 
 	PR c++/38410
 	* gcc.dg/ctor1.c: New test.
+
+2008-12-09 Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	PR middle-end/38084
+	* gfortran.dg/graphite/id-3.f90: New.
+	* gcc.dg/graphite/pr38084.c: New.
 
 2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
 

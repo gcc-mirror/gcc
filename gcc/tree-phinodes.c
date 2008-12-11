@@ -474,4 +474,17 @@ remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
     release_ssa_name (gimple_phi_result (phi));
 }
 
+/* Remove all the phi nodes from BB.  */
+
+void
+remove_phi_nodes (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
+    remove_phi_node (&gsi, true);
+
+  set_phi_nodes (bb, NULL);
+}
+
 #include "gt-tree-phinodes.h"

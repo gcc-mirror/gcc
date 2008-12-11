@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgraphite -fdump-tree-graphite-all" } */
+/* { dg-options "-O2 -floop-block -fdump-tree-graphite-all" } */
 
 #define N 24
 #define M 1000
@@ -22,5 +22,5 @@ void test (void)
         A[i][j] = B[i][k] * C[k][j];
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite"} } */ 
+/* { dg-final { scan-tree-dump-times "Strip Mining is not profitable" 2 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
