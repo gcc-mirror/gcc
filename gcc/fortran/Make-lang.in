@@ -211,7 +211,7 @@ doc/gfc-internals.pdf: $(GFC_INTERNALS_TEXI)
 
 # Create or recreate the gfortran private include file directory.
 install-finclude-dir: installdirs
-	$(mkinstalldirs) -m a+rx $(DESTDIR)$(libsubdir)/finclude
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(libsubdir)/finclude
 #
 # Install hooks:
 # f951 is installed elsewhere as part of $(COMPILERS).
