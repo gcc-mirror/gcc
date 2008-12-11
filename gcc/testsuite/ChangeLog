@@ -1,6 +1,11 @@
 2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
 
-	PR middle-end/38459
+	PR middle-end/38413
+	* gcc.dg/graphite/pr38413.c: New.
+
+2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/37857
 	* gfortran.dg/graphite/pr37857.f90: New.
 
 2008-12-11  Harsha Jagasia  <harsha.jagasia@amd.com>
