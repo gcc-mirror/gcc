@@ -3844,7 +3844,12 @@ may_eliminate_iv (struct ivopts_data *data,
     return false;
 
   cand_value_at (loop, cand, use->stmt, nit, &bnd);
+
   *bound = aff_combination_to_tree (&bnd);
+  /* It is unlikely that computing the number of iterations using division
+     would be more profitable than keeping the original induction variable.  */
+  if (expression_expensive_p (*bound))
+    return false;
   return true;
 }
 

@@ -1,3 +1,9 @@
+2008-12-12  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/32044
+	* gcc.dg/pr34027-1.c: Change outcome.
+	* gcc.dg/tree-ssa/pr32044.c: New test.
+
 2008-12-12  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/11594

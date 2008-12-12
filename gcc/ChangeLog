@@ -1,3 +1,11 @@
+2008-12-12  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/32044
+	* tree-scalar-evolution.h (expression_expensive_p): Declare.
+	* tree-scalar-evolution.c (expression_expensive_p): New function.
+	(scev_const_prop): Avoid introducing expensive expressions.
+	* tree-ssa-loop-ivopts.c (may_eliminate_iv): Ditto.
+
 2008-12-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/38409
