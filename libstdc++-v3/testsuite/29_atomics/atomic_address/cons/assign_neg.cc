@@ -38,5 +38,5 @@ void test01()
   test_type t2;
   t1 = t2;
 }
-// { dg-error "within this context" "" { target *-*-* } 39 } 
-// { dg-error "is private" "" { target *-*-* } 167 } 
+// { dg-error "used here" "" { target *-*-* } 39 } 
+// { dg-excess-errors "deleted function" } 

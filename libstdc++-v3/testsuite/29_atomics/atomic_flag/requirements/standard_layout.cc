@@ -36,6 +36,10 @@ int main()
   bool test __attribute__((unused)) = true;
 
   typedef std::atomic_flag test_type;
+  
+  // libstdc++/37907
+  // VERIFY( std::is_standard_layout<test_type>::value );
+
   VERIFY( std::has_trivial_default_constructor<test_type>::value );
   VERIFY( std::has_trivial_destructor<test_type>::value );
 

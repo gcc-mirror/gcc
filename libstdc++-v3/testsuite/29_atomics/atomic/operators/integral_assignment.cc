@@ -28,11 +28,12 @@
 // the GNU General Public License.
 
 #include <cstdatomic>
+#include <testsuite_hooks.h>
 #include <testsuite_common_types.h>
 
 int main()
 {
-  __gnu_test::explicit_value_constructible test;
+  __gnu_test::integral_assignable test;
   __gnu_cxx::typelist::apply_generator(test, __gnu_test::atomics_tl(), 
 				       __gnu_test::integral_types::type());
   return 0;

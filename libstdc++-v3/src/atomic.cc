@@ -30,12 +30,17 @@
 
 #include "gstdint.h"
 #include <cstdatomic>
+#include <mutex>
 
 #define LOGSIZE 4
 
 namespace
 {
-  atomic_flag volatile __atomic_flag_anon_table__[ 1 << LOGSIZE ] =
+#ifdef _GLIBCXX_HAS_GTHREADS
+  std::mutex atomic_mutex;
+#endif
+
+  std::__atomic_flag_base volatile flag_table[ 1 << LOGSIZE ] =
     {
       ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
       ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
@@ -46,73 +51,66 @@ namespace
 
 namespace std
 {
-  extern "C" {
-
-  const atomic_flag atomic_global_fence_compatibility = ATOMIC_FLAG_INIT;
-
-  bool 
-  atomic_flag_test_and_set_explicit(volatile atomic_flag* __a, 
-				    memory_order __x
-				    __attribute__ ((__unused__)))
+  namespace __atomic0
   {
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_1
-    if (__x >= memory_order_acq_rel)
-      __sync_synchronize();
-    return __sync_lock_test_and_set(&(__a->_M_base._M_b), 1);
-#else
-    bool result = __a->_M_base._M_b;
-     __a->_M_base._M_b = true;
-    return result;
+    bool
+    atomic_flag::test_and_set(memory_order) volatile
+    {
+#ifdef _GLIBCXX_HAS_GTHREADS
+      lock_guard<mutex> __lock(atomic_mutex);
 #endif
+      bool result = _M_i;
+      _M_i = true;
+      return result;
+    }
+
+    void
+    atomic_flag::clear(memory_order) volatile
+    {
+#ifdef _GLIBCXX_HAS_GTHREADS
+      lock_guard<mutex> __lock(atomic_mutex);
+#endif
+      _M_i = false;
+    }
   }
 
-  bool 
-  atomic_flag_test_and_set(volatile atomic_flag* __a)
-  { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
-  
-  void 
-  atomic_flag_clear_explicit(volatile atomic_flag* __a,
-			     memory_order __x __attribute__ ((__unused__)))
+  extern "C"
   {
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_1
-    __sync_lock_release(&(__a->_M_base._M_b));
-    if (__x >= memory_order_acq_rel)
-      __sync_synchronize();
-#else
-     __a->_M_base._M_b = false;
-#endif
-  } 
+    bool
+    atomic_flag_test_and_set_explicit(volatile __atomic_flag_base* __a,
+				      memory_order __m)
+    {
+      volatile atomic_flag d(__a->_M_i);
+      return d.test_and_set(__m);
+    }
 
-  void 
-  atomic_flag_clear(volatile atomic_flag* __a)
-  { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
-  
-  void 
-  atomic_flag_fence(const volatile atomic_flag*, memory_order)
-  {
-#ifdef _GLIBCXX_ATOMIC_BUILTINS_1
-    __sync_synchronize(); 
-#endif
-  } 
+    void
+    atomic_flag_clear_explicit(volatile __atomic_flag_base* __a,
+			       memory_order __m)
+    {
+      volatile atomic_flag d(__a->_M_i);
+      return d.clear(__m);
+    }
 
-  void 
-  __atomic_flag_wait_explicit(volatile atomic_flag* __a, memory_order __x)
-  { 
-    while (atomic_flag_test_and_set_explicit(__a, __x))
-      { }; 
-  }
+    void
+    __atomic_flag_wait_explicit(volatile __atomic_flag_base* __a,
+				memory_order __x)
+    {
+      while (atomic_flag_test_and_set_explicit(__a, __x))
+	{ };
+    }
 
-  volatile atomic_flag* 
-  __atomic_flag_for_address(const volatile void* __z)
-  {
-    uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
-    __u += (__u >> 2) + (__u << 4);
-    __u += (__u >> 7) + (__u << 5);
-    __u += (__u >> 17) + (__u << 13);
-    if (sizeof(uintptr_t) > 4) __u += (__u >> 31);
-    __u &= ~((~uintptr_t(0)) << LOGSIZE);
-    return __atomic_flag_anon_table__ + __u;
-  }
-
+    volatile __atomic_flag_base*
+    __atomic_flag_for_address(const volatile void* __z)
+    {
+      uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
+      __u += (__u >> 2) + (__u << 4);
+      __u += (__u >> 7) + (__u << 5);
+      __u += (__u >> 17) + (__u << 13);
+      if (sizeof(uintptr_t) > 4)
+	__u += (__u >> 31);
+      __u &= ~((~uintptr_t(0)) << LOGSIZE);
+      return flag_table + __u;
+    }
   } // extern "C"
 } // namespace std

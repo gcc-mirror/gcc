@@ -24,11 +24,20 @@
 namespace gnu
 {
 #ifndef ATOMIC_INTEGRAL_LOCK_FREE
-    #error "ATOMIC_INTEGRAL_LOCK_FREE_must_be_a_macro"
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
+    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# endif
 #endif
 
 #ifndef ATOMIC_ADDRESS_LOCK_FREE
-    #error "ATOMIC_ADDRESS_LOCK_FREE_must_be_a_macro"
+# error "ATOMIC_ADDRESS_LOCK_FREE must be a macro"
+# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
+    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# endif
 #endif
 
 #ifndef ATOMIC_FLAG_INIT

@@ -1677,41 +1677,6 @@ m4_popdef([n_syserr])dnl
 ])
 
 dnl
-dnl Check whether C++200x's standard layout types are supported. 
-dnl
-AC_DEFUN([GLIBCXX_CHECK_STANDARD_LAYOUT], [
-
-  AC_MSG_CHECKING([for ISO C++200x standard layout type support])
-  AC_CACHE_VAL(ac_standard_layout, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-std=gnu++0x'
-
-  AC_TRY_COMPILE([struct b
-                  {
-  		    bool t;
-
-		    // Need standard layout relaxation from POD
-		    private:	    
-  		    b& operator=(const b&);
-  		    b(const b&);
-		    };],
-		 [b tst1 = { false };],
-		 [ac_standard_layout=yes], [ac_standard_layout=no])
-
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-  AC_MSG_RESULT($ac_standard_layout)
-  if test x"$ac_standard_layout" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_STANDARD_LAYOUT, 1,
-              [Define if standard layout types are supported in C++200x.])
-  fi
-])
-
-dnl
 dnl Check for what type of C headers to use.
 dnl
 dnl --enable-cheaders= [does stuff].
@@ -2456,7 +2421,9 @@ dnl see: CHECK_SYNC_FETCH_AND_ADD
 dnl
 dnl Defines:
 dnl  _GLIBCXX_ATOMIC_BUILTINS_1 
+dnl  _GLIBCXX_ATOMIC_BUILTINS_2
 dnl  _GLIBCXX_ATOMIC_BUILTINS_4
+dnl  _GLIBCXX_ATOMIC_BUILTINS_8
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
   AC_LANG_SAVE
@@ -2468,6 +2435,66 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
 
   # Fake what AC_TRY_COMPILE does, without linking as this is
   # unnecessary for a builtins test.
+
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+int main()
+{
+  typedef bool atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
+}
+EOF
+
+    AC_MSG_CHECKING([for atomic builtins for bool])
+    if AC_TRY_EVAL(ac_compile); then
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinsb=no
+      else
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_1, 1,
+      [Define if builtin atomic operations for bool are supported on this host.])
+        enable_atomic_builtinsb=yes
+      fi
+    fi
+    AC_MSG_RESULT($enable_atomic_builtinsb)
+    rm -f conftest*
+
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+int main()
+{
+  typedef short atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
+}
+EOF
+
+    AC_MSG_CHECKING([for atomic builtins for short])
+    if AC_TRY_EVAL(ac_compile); then
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinss=no
+      else
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_2, 1,
+      [Define if builtin atomic operations for short are supported on this host.])
+        enable_atomic_builtinss=yes
+      fi
+    fi
+    AC_MSG_RESULT($enable_atomic_builtinss)
+    rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
@@ -2504,7 +2531,7 @@ EOF
 [#]line __oline__ "configure"
 int main()
 {
-  typedef bool atomic_type;
+  typedef long long atomic_type;
   atomic_type c1;
   atomic_type c2;
   const atomic_type c3(0);
@@ -2517,18 +2544,19 @@ int main()
 }
 EOF
 
-    AC_MSG_CHECKING([for atomic builtins for bool])
+    AC_MSG_CHECKING([for atomic builtins for long long])
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsb=no
+        enable_atomic_builtinsll=no
       else
-      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_1, 1,
-      [Define if builtin atomic operations for bool are supported on this host.])
-        enable_atomic_builtinsb=yes
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_8, 1,
+      [Define if builtin atomic operations for long long are supported on this host.])
+        enable_atomic_builtinsll=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtinsb)
+    AC_MSG_RESULT($enable_atomic_builtinsll)
     rm -f conftest*
+
 
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
