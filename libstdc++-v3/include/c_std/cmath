@@ -157,9 +157,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_atan2l(__y, __x); }
 
   template<typename _Tp, typename _Up>
-    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value
-    					   && __is_integer<_Up>::__value, 
-					   double>::__type
+    inline
+    typename __gnu_cxx::__enable_if<__traitand<__is_integer<_Tp>,
+					       __is_integer<_Up> >::__value,
+				    double>::__type
     atan2(_Tp __y, _Up __x)
     { return __builtin_atan2(__y, __x); }
 

@@ -100,6 +100,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename __truth_type<__value>::__type __type;
     };
 
+  // N.B. The conversions to bool are needed due to the issue
+  // explained in c++/19404.
+  template<class _Sp, class _Tp>
+    struct __traitand
+    {
+      enum { __value = bool(_Sp::__value) && bool(_Tp::__value) };
+      typedef typename __truth_type<__value>::__type __type;
+    };
+
   // Compare for equality of types.
   template<typename, typename>
     struct __are_same

@@ -168,8 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Up>
     inline
     typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
+    typename __gnu_cxx::__enable_if<__traitand<__is_arithmetic<_Tp>,
+					       __is_arithmetic<_Up> >::__value,
 				    _Tp>::__type, _Up>::__type
     atan2(_Tp __y, _Up __x)
     {
@@ -383,8 +383,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Up>
     inline
     typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
+    typename __gnu_cxx::__enable_if<__traitand<__is_arithmetic<_Tp>,
+					       __is_arithmetic<_Up> >::__value,
 				    _Tp>::__type, _Up>::__type
     pow(_Tp __x, _Up __y)
     {
