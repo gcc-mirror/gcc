@@ -1,3 +1,10 @@
+2008-12-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/36355
+	* check.c (gfc_check_matmul): Fixed error message for invalid
+	types to correctly identify the offending argument, added check
+	for mismatching types.
+
 2008-12-11  Richard Guenther  <rguenther@suse.de>
 
 	* Make-lang.in (install-finclude-dir): Use correct mode argument

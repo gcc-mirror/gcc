@@ -1794,7 +1794,7 @@ gfc_check_malloc (gfc_expr *size)
 gfc_try
 gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 {
-  if ((matrix_a->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_b->ts))
+  if ((matrix_a->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_a->ts))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[0],
@@ -1802,12 +1802,21 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       return FAILURE;
     }
 
-  if ((matrix_b->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_a->ts))
+  if ((matrix_b->ts.type != BT_LOGICAL) && !gfc_numeric_ts (&matrix_b->ts))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[1],
 		 gfc_current_intrinsic, &matrix_b->where);
       return FAILURE;
+    }
+
+  if ((matrix_a->ts.type == BT_LOGICAL && gfc_numeric_ts (&matrix_b->ts))
+      || (gfc_numeric_ts (&matrix_a->ts) && matrix_b->ts.type == BT_LOGICAL))
+    {
+      gfc_error ("Argument types of '%s' intrinsic at %L must match (%s/%s)",
+		 gfc_current_intrinsic, &matrix_a->where,
+		 gfc_typename(&matrix_a->ts), gfc_typename(&matrix_b->ts));
+       return FAILURE;
     }
 
   switch (matrix_a->rank)
