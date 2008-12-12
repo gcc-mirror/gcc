@@ -1,3 +1,8 @@
+2008-12-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/38409
+	* gcc.dg/graphite/pr38409.c: New.
+
 2008-12-12 Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/36355
