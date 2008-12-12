@@ -1,3 +1,25 @@
+2008-12-12  Andrew Pinski  <andrew_pinskia@playstation.sony.com>
+            Peter Bergner <bergner@vnet.ibm.com>
+
+	PR target/24779
+	* config/rs6000/rs6000.md (call_indirect_aix32): Move the load of the
+	TOC into the call pattern.
+	(call_indirect_aix64): Likewise.
+	(call_value_indirect_aix32): Likewise.
+	(call_value_indirect_aix64): Likewise.
+	(call_indirect_nonlocal_aix32_internal): New insn and split patterns
+	to split off the load of the TOC.
+	(call_indirect_nonlocal_aix32): Enable only after reload.
+	(call_indirect_nonlocal_aix64_internal): New insn and split patterns
+	to split off the load of the TOC.
+	(call_indirect_nonlocal_aix64): Enable only after reload.
+	(call_value_indirect_nonlocal_aix32_internal): New insn and split
+	patterns to split off the load of the TOC.
+	(call_value_indirect_nonlocal_aix32): Enable only after reload.
+	(call_value_indirect_nonlocal_aix64_internal): New insn and split
+	patterns to split off the load of the TOC.
+	(call_value_indirect_nonlocal_aix64): Enable only after reload.
+
 2008-12-12  Andreas Schwab  <schwab@suse.de>
 
 	Revert:
