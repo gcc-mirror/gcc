@@ -1,3 +1,9 @@
+2008-12-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/sync.md (memory_barrier): Remove mem:BLK from operands.
+	Use Pmode for scratch reg.
+	(*mb_internal): Use (match_dup 0) for unspec operand.
+
 2008-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr): Don't shift by
@@ -103,7 +109,7 @@
 
 2008-12-11  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
-            Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR middle-end/37852
 	PR middle-end/37883
@@ -116,7 +122,8 @@
 	PR middle-end/38125
 
 	* tree-phinodes.c (remove_phi_nodes): New, extracted from...
-	* tree-cfg.c (remove_phi_nodes_and_edges_for_unreachable_block): ...here.
+	* tree-cfg.c (remove_phi_nodes_and_edges_for_unreachable_block):
+	... here.
 	* tree-flow.h (remove_phi_nodes, canonicalize_loop_ivs): Declared.
 	* Makefile.in (graphite.o): Depend on value-prof.h.
 	(graphite.o-warn): Removed -Wno-error.
@@ -195,8 +202,8 @@
 	block loops with less than two loops.
 	(graphite_apply_transformations): Remove the call to
 	scop_remove_ignoreable_gbbs.
-	(limit_scops): When build_scop_loop_nests fails, continue on next scop.
-	Fix open_scop.entry.
+	(limit_scops): When build_scop_loop_nests fails, continue on next
+	scop.  Fix open_scop.entry.
 	(graphite_transform_loops): Call recompute_all_dominators: force the
 	recomputation of correct CDI_DOMINATORS and CDI_POST_DOMINATORS.
 	Call initialize_original_copy_tables and free_original_copy_tables
@@ -214,8 +221,7 @@
 2008-12-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/36792
-	* tree-ssa-pre.c (compute_avail): Don't insert defs into maximal
-	set.
+	* tree-ssa-pre.c (compute_avail): Don't insert defs into maximal set.
 
 2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -431,7 +437,7 @@
 	case.
 	* calls.c (nitialize_argument_information): Add fntype argument 
 	and use it for calls.promote_function_args.
-        (expand_call): Pass fntype to aggregate_value_p if no fndecl
+	(expand_call): Pass fntype to aggregate_value_p if no fndecl
 	available and pass additional fntype to
 	initialize_argument_information.
 	* config/i386/i386.c (ix86_reg_parm_stack_space): Remove cfun part
