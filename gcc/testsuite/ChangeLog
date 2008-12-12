@@ -1,3 +1,8 @@
+2008-12-12  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/11594
+	* gcc.dg/20020103-1.c: Remove XFAIL for powerpc.
+
 2008-12-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/38409
