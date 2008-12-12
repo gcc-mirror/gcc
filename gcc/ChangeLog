@@ -1,3 +1,10 @@
+2008-12-12  Andreas Schwab  <schwab@suse.de>
+
+	Revert:
+	2008-12-12  Andreas Schwab  <schwab@suse.de>
+	* cfgrtl.c (rtl_verify_flow_info_1): Don't apply BLOCK_FOR_INSN on
+	a BARRIER insn.
+
 2008-12-12  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/32044
@@ -13,10 +20,10 @@
 
 2008-12-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
-	* config/i386/x86intrin.h: New header file to support all x86 
+	* config/i386/x86intrin.h: New header file to support all x86
 	intrinsics
 	* config.gcc (extra_headers): For x86 and x86-64, add x86intrin.h
-	
+
 2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38402
@@ -157,8 +164,8 @@
 	* tree-flow.h (remove_phi_nodes, canonicalize_loop_ivs): Declared.
 	* Makefile.in (graphite.o): Depend on value-prof.h.
 	(graphite.o-warn): Removed -Wno-error.
-	* tree-parloops.c (canonicalize_loop_ivs): Allow reduction_list 
-	to be a NULL pointer.  Call update_stmt.  Return the newly created 
+	* tree-parloops.c (canonicalize_loop_ivs): Allow reduction_list
+	to be a NULL pointer.  Call update_stmt.  Return the newly created
 	cannonical induction variable.
 
 	* graphite.h (debug_rename_map): Declared.  Fix some comments.
@@ -171,7 +178,7 @@
 	(new_graphite_bb): Test for useful statements before building a
 	graphite statement for the basic block.
 	(free_graphite_bb): Do not free GBB_DATA_REFS: this is a bug
-	in free_data_ref that calls BITMAP_FREE (DR_VOPS (dr)) without 
+	in free_data_ref that calls BITMAP_FREE (DR_VOPS (dr)) without
 	reason.
 	(recompute_all_dominators, graphite_verify,
 	nb_reductions_in_loop, graphite_loop_normal_form): New.
@@ -191,7 +198,7 @@
 	(debug_rename_elt, debug_rename_map_1, debug_rename_map): New.
 	(remove_all_edges_1, remove_all_edges): Removed.
 	(get_new_name_from_old_name): New.
-	(graphite_rename_variables_in_stmt): Renamed 
+	(graphite_rename_variables_in_stmt): Renamed
 	rename_variables_in_stmt.  Call get_new_name_from_old_name.
 	Use replace_exp	and update_stmt.
 	(is_old_iv): Renamed is_iv.
@@ -211,7 +218,7 @@
 	copy_bb_and_scalar_dependences): New.
 	(translate_clast): Heavily reimplemented: copy basic blocks,
 	do not move them.  Finally, in call cleanup_tree_cfg in gloog.
-	At each translation step call graphite_verify ensuring the 
+	At each translation step call graphite_verify ensuring the
 	consistency of the SSA, loops and dominators information.
 	(collect_virtual_phis, find_vdef_for_var_in_bb,
 	find_vdef_for_var_1, find_vdef_for_var,
@@ -222,13 +229,13 @@
 	(remove_sese_region, ifsese, if_region_entry, if_region_exit,
 	if_region_get_condition_block, if_region_set_false_region,
 	create_if_region_on_edge, move_sese_in_condition, bb_in_sese_p,
-	sese_find_uses_to_rename_use, sese_find_uses_to_rename_bb, 
+	sese_find_uses_to_rename_use, sese_find_uses_to_rename_bb,
 	sese_add_exit_phis_edge, sese_add_exit_phis_var,
 	rewrite_into_sese_closed_ssa): New.
 	(gloog): Remove dead code.  Early return if code cannot be
 	generated.  Call cleanup_tree_cfg once the scop has been code
 	generated.
-	(graphite_trans_scop_block, graphite_trans_loop_block): Do not 
+	(graphite_trans_scop_block, graphite_trans_loop_block): Do not
 	block loops with less than two loops.
 	(graphite_apply_transformations): Remove the call to
 	scop_remove_ignoreable_gbbs.
@@ -395,7 +402,7 @@
 	mark_reg_dead, process_bb_node_lives): Ditto.
 
 	* ira-emit.c (ira_emit): Fix insn codes.
-	
+
 	* ira-build.c (propagate_allocno_info): Use flag flag_ira_region
 	instead of flag_ira_algorithm.
 	(allocno_range_compare_func): Ignore classes for priority
@@ -405,7 +412,7 @@
 
 	* genpreds.c (write_enum_constraint_num): Output
 	CONSTRAINT__LIMIT.
-	
+
 	* common.opt (fira-algorithm): Modify.
 	(fira-region): New.
 
@@ -425,14 +432,14 @@
 	(find_allocno_class_costs): Ditto.  Use common_classes.  Translate
 	alt_class.
 	(ira_costs): Allocate/deallocate common_classes.
-	
+
 	* config/m32c/m32.h (REG_ALLOC_ORDER): Add reg 19.
 	(REG_CLASS_CONTENTS, reg_class, REG_CLASS_NAMES): New entries for
 	R02A_REGS.
 
 	* reload1.c (choose_reload_regs): Use MODE_INT for partial ints in
 	smallest_mode_for_size.
-	
+
 2008-12-10  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/linux-unwind.h (get_regs): Constify casts.
@@ -465,7 +472,7 @@
 	PR/38366
 	* function.c (aggregate_value_p): Get fntype from CALL_EXPR in any
 	case.
-	* calls.c (nitialize_argument_information): Add fntype argument 
+	* calls.c (nitialize_argument_information): Add fntype argument
 	and use it for calls.promote_function_args.
 	(expand_call): Pass fntype to aggregate_value_p if no fndecl
 	available and pass additional fntype to
