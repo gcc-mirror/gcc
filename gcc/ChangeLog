@@ -1,3 +1,8 @@
+2008-12-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/38409
+	* graphite.c (nb_reductions_in_loop): Use simple_iv.
+
 2008-12-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
 	* config/i386/x86intrin.h: New header file to support all x86 

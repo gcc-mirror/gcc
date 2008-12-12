@@ -2119,13 +2119,14 @@ nb_reductions_in_loop (loop_p loop)
     {
       gimple phi = gsi_stmt (gsi);
       tree scev;
+      affine_iv iv;
 
       if (!is_gimple_reg (PHI_RESULT (phi)))
 	continue;
 
       scev = analyze_scalar_evolution (loop, PHI_RESULT (phi));
       scev = instantiate_parameters (loop, scev);
-      if (chrec_contains_undetermined (scev))
+      if (!simple_iv (loop, phi, PHI_RESULT (phi), &iv, true))
 	res++;
     }
 
