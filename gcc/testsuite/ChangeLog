@@ -1,3 +1,9 @@
+2008-12-12  Uros Bizjak <ubizjak@gmail.com>
+
+	PR testsuite/38163
+	* gcc.dg/tree-ssa/loop-3.c: Compile only on nonpic x86 targets.
+	Remove dg-skip-if directive.
+
 2008-12-12  Janis Johnson  <janis187@us.ibm.com>
 
 	PR libgfortran/24685
@@ -118,7 +124,7 @@
 	PR tree-optimization/37416
 	* gcc.dg/vect/pr36630.c: Expect 1 vectorized loop.
 
-2008-12-10 Uros Bizjak <ubizjak@gmail.com>
+2008-12-10  Uros Bizjak <ubizjak@gmail.com>
 
 	* gcc.dg/20020919-1.c: Correct target selector to alpha*-*-*.
 	* gcc.dg/pr31866.c: Ditto.
@@ -7107,7 +7113,7 @@
 	PR c++/35327
 	* g++.dg/parse/crash41.C: New.
 
-2008-06-06  Uros Bizjak <ubizjak@gmail.com>
+2008-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/36438
 	* gcc.target/i386/pr36438.c

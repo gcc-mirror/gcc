@@ -2,9 +2,8 @@
    Target is restricted to x86 type architectures, so that we may
    assume something about memory addressing modes.  */
 
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-fpic" "-fPIC" } { "" } } */
-/* { dg-options "-O1 -fno-pic -fno-PIC -fdump-tree-optimized" } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && nonpic } } } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 int arr_base[100];
 

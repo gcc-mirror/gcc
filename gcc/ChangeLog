@@ -48,8 +48,8 @@
 
 2008-12-12  Ben Elliston  <bje@au.ibm.com>
 
-	* config/fp-bit.c (nan): Rename from this ..
-	(makenan): .. to this.
+	* config/fp-bit.c (nan): Rename from this ...
+	(makenan): ... to this.
 
 2008-12-11  Adam Nemet  <anemet@caviumnetworks.com>
 
@@ -178,8 +178,7 @@
 	(new_graphite_bb): Test for useful statements before building a
 	graphite statement for the basic block.
 	(free_graphite_bb): Do not free GBB_DATA_REFS: this is a bug
-	in free_data_ref that calls BITMAP_FREE (DR_VOPS (dr)) without
-	reason.
+	in free_data_ref that calls BITMAP_FREE (DR_VOPS (dr)) without reason.
 	(recompute_all_dominators, graphite_verify,
 	nb_reductions_in_loop, graphite_loop_normal_form): New.
 	(scop_record_loop): Call graphite_loop_normal_form.
@@ -198,7 +197,7 @@
 	(debug_rename_elt, debug_rename_map_1, debug_rename_map): New.
 	(remove_all_edges_1, remove_all_edges): Removed.
 	(get_new_name_from_old_name): New.
-	(graphite_rename_variables_in_stmt): Renamed
+	(graphite_rename_variables_in_stmt): Renamed.
 	rename_variables_in_stmt.  Call get_new_name_from_old_name.
 	Use replace_exp	and update_stmt.
 	(is_old_iv): Renamed is_iv.
@@ -225,7 +224,7 @@
 	patch_phis_for_virtual_defs): Removed huge hack.
 	(mark_old_loops, remove_dead_loops, skip_phi_defs,
 	collect_scop_exit_phi_args, patch_scop_exit_phi_args,
-	gbb_can_be_ignored, scop_remove_ignoreable_gbbs, ): Removed.
+	gbb_can_be_ignored, scop_remove_ignoreable_gbbs): Removed.
 	(remove_sese_region, ifsese, if_region_entry, if_region_exit,
 	if_region_get_condition_block, if_region_set_false_region,
 	create_if_region_on_edge, move_sese_in_condition, bb_in_sese_p,
@@ -376,8 +375,7 @@
 	ira_reg_class_super_classes): New.
 
 	* ira-color.c (update_copy_costs): Use
-	ira_reg_classes_intersect_p.  Use right class to find hard reg
-	index.
+	ira_reg_classes_intersect_p.  Use right class to find hard reg index.
 	(update_conflict_hard_regno_costs): Ditto.  Add a new parameter.
 	(assign_hard_reg): Ditto.  Pass additional argument to
 	update_conflict_hard_regno_costs.  Do not uncoalesce for priority
@@ -405,13 +403,11 @@
 
 	* ira-build.c (propagate_allocno_info): Use flag flag_ira_region
 	instead of flag_ira_algorithm.
-	(allocno_range_compare_func): Ignore classes for priority
-	coloring.
+	(allocno_range_compare_func): Ignore classes for priority coloring.
 	(setup_min_max_conflict_allocno_ids): Ditto.
 	(ira_flattening): Use ira_reg_classes_intersect_p.
 
-	* genpreds.c (write_enum_constraint_num): Output
-	CONSTRAINT__LIMIT.
+	* genpreds.c (write_enum_constraint_num): Output CONSTRAINT__LIMIT.
 
 	* common.opt (fira-algorithm): Modify.
 	(fira-region): New.
@@ -427,8 +423,7 @@
 	(ira): Use flag flag_ira_region instead of flag_ira_algorithm.
 
 	* ira-costs.c (common_classes): New.
-	(print_costs): Use flag flag_ira_region instead of
-	flag_ira_algorithm.
+	(print_costs): Use flag flag_ira_region instead of flag_ira_algorithm.
 	(find_allocno_class_costs): Ditto.  Use common_classes.  Translate
 	alt_class.
 	(ira_costs): Allocate/deallocate common_classes.
@@ -485,10 +480,10 @@
 2008-12-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md (movti, movdi_64, movdi_31,
-	  *movsi_zarch, *movhi, *movqi, *mov<mode>_64, *mov<mode>_31,
-	  *mov<mode>_64dfp, *mov<mode>_64, *mov<mode>_31, mov<mode>): Remove
-	  Q->Q alternative.
-	  (Integer->BLKmode splitter): Removed.
+	*movsi_zarch, *movhi, *movqi, *mov<mode>_64, *mov<mode>_31,
+	*mov<mode>_64dfp, *mov<mode>_64, *mov<mode>_31, mov<mode>): Remove
+	Q->Q alternative.
+	(Integer->BLKmode splitter): Removed.
 
 2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -3419,7 +3414,7 @@
 	* global.c (compute_regs_asm_clobbered, build_insn_chain):
 	Replaced struct df_ref * with df_ref.
 	* ifcvt.c (dead_or_predicable): Replaced struct df_ref * with df_ref.
-	* sel-sched-ir.c (maybe_downgrade_id_to_use, setup_id_reg_sets, ):
+	* sel-sched-ir.c (maybe_downgrade_id_to_use, setup_id_reg_sets):
 	Replaced struct df_ref * with df_ref.
 	* ira-lives.c (mark_ref_live, def_conflicts_with_inputs_p,
 	mark_ref_dead, process_bb_node_lives): Replaced struct df_ref *
@@ -19070,7 +19065,7 @@
 
 	* doc/rtl.texi: Removed reference to REG_NO_CONFLICT notes.
 	* optabs.c (expand_binop, expand_absneg_bit, expand_unop,
-	expand_copysign_bit, ): Change call to emit_no_conflict_block to
+	expand_copysign_bit): Change call to emit_no_conflict_block to
 	emit_insn and remove unneeded code to construct extra args.
 	(emit_no_conflict_block): Removed.
 	* optabls.h: (emit_no_conflict_block): Removed.
@@ -19350,7 +19345,7 @@
 	* dojump.c (do_jump): Likewise.
 	* tree-ssa-sccvn.c (simplify_unary_expression): Likewise.
 	* tree-gimple.c (is_gimple_cast): Likewise.
-	* fold-const.c (decode_field_reference, )
+	* fold-const.c (decode_field_reference)
 	(fold_sign_changed_comparison, fold_unary, fold_comparison)
 	(fold_binary): Likewise.
 	* tree-ssa-alias-warnings.c (find_alias_site_helper)
@@ -21353,7 +21348,7 @@
 	(compute_reloc_for_constant, output_addressed_constants): Likewise.
 	* emit-rtl.c (component_ref_for_mem_expr)
 	(set_mem_attributes_minus_bitpos): Likewise.
-	* expr.c (highest_pow2_factor, expand_expr_real_1, )
+	* expr.c (highest_pow2_factor, expand_expr_real_1)
 	(is_aligning_offset): Likewise.
 	* dwarf2out.c (loc_descriptor_from_tree_1, add_bound_info): Likewise.
 	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Likewise.
