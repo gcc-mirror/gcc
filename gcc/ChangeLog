@@ -1,3 +1,8 @@
+2008-12-12  Andreas Schwab  <schwab@suse.de>
+
+	* cfgrtl.c (rtl_verify_flow_info_1): Don't apply BLOCK_FOR_INSN on
+	a BARRIER insn.
+
 2008-12-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/sync.md (memory_barrier): Remove mem:BLK from operands.

@@ -1731,7 +1731,8 @@ rtl_verify_flow_info_1 (void)
 	}
 
       FOR_BB_INSNS (bb, insn)
-	if (BLOCK_FOR_INSN (insn) != bb)
+	if (!BARRIER_P (insn)
+	    && BLOCK_FOR_INSN (insn) != bb)
 	  {
 	    error ("insn %d basic block pointer is %d, should be %d",
 		   INSN_UID (insn),
