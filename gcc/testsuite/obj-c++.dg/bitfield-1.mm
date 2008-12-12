@@ -5,9 +5,9 @@
    superclasses should be removed).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-/* { dg-xfail-if "PR31032" { *-*-* } { "*" }  { "" } } */
-/* { dg-prune-output ".*internal compiler error.*" } */
 /* { dg-options "-Wpadded -Wabi" } */
+
+/* Leave blank lines here to keep warnings on the same lines.  */
 
 #include <objc/objc.h>
 #include <objc/Object.h>

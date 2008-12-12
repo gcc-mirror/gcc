@@ -1,5 +1,8 @@
 2008-12-12  Janis Johnson  <janis187@us.ibm.com>
 
+	PR objc++/31032
+	* obj-c++.dg/bitfield-1.mm: Remove XFAIL for ICE.
+
 	* gcc.dg/pr35442.c: Ignore a possible warning.
 
 2008-12-12  Zdenek Dvorak  <ook@ucw.cz>
