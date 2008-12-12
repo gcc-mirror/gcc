@@ -1,5 +1,9 @@
 2008-12-12  Janis Johnson  <janis187@us.ibm.com>
 
+	PR libgfortran/24685
+	* gfortran.dg/default_format_denormal_2.f90: Change XFAIL to check
+	for size of long double.
+
 	PR objc++/31032
 	* obj-c++.dg/bitfield-1.mm: Remove XFAIL for ICE.
 
