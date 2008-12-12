@@ -1,3 +1,9 @@
+2008-12-12  Janis Johnson  <janis187@us.ibm.com>
+
+	PR libgfortran/24685
+	* gfortran.dg/default_format_denormal_2.f90: Change XFAIL to check
+	for size of long double.
+
 2008-12-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/spu/ea: Delete __ea testsuite directory accidently
