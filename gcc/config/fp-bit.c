@@ -140,7 +140,7 @@ extern const fp_number_type __thenan_df;
 
 INLINE
 static fp_number_type *
-nan (void)
+makenan (void)
 {
   /* Discard the const qualifier...  */
 #ifdef TFLOAT
@@ -621,7 +621,7 @@ _fpadd_parts (fp_number_type * a,
     {
       /* Adding infinities with opposite signs yields a NaN.  */
       if (isinf (b) && a->sign != b->sign)
-	return nan ();
+	return makenan ();
       return a;
     }
   if (isinf (b))
@@ -802,7 +802,7 @@ _fpmul_parts ( fp_number_type *  a,
   if (isinf (a))
     {
       if (iszero (b))
-	return nan ();
+	return makenan ();
       a->sign = a->sign != b->sign;
       return a;
     }
@@ -810,7 +810,7 @@ _fpmul_parts ( fp_number_type *  a,
     {
       if (iszero (a))
 	{
-	  return nan ();
+	  return makenan ();
 	}
       b->sign = a->sign != b->sign;
       return b;
@@ -988,7 +988,7 @@ _fpdiv_parts (fp_number_type * a,
   if (isinf (a) || iszero (a))
     {
       if (a->class == b->class)
-	return nan ();
+	return makenan ();
       return a;
     }
 

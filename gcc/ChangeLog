@@ -1,3 +1,8 @@
+2008-12-12  Ben Elliston  <bje@au.ibm.com>
+
+	* config/fp-bit.c (nan): Rename from this ..
+	(makenan): .. to this.
+
 2008-12-11  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*branch_bit<bbv><mode>,
