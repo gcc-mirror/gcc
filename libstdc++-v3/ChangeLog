@@ -1,3 +1,8 @@
+2008-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/37582
+	* testsuite/26_numerics/headers/cmath/37582.cc: New.
+
 2008-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/cmath: Undef remquof / remquol too; add using
