@@ -1,3 +1,8 @@
+2008-12-12  Sebastian Pop <sebastian.pop@amd.com>
+
+	* configure.ac (ppllibs): Add by default the lib flags.
+	* configure: Regenerate.
+
 2008-12-08  Luis Machado  <luisgpm@br.ibm.com>
 
 	* MAINTAINERS:  Add myself to the write after approval list.

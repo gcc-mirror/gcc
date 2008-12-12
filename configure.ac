@@ -1315,7 +1315,7 @@ AC_SUBST(gmpinc)
 # Check for PPL
 ppl_major_version=0
 ppl_minor_version=10
-ppllibs=
+ppllibs=" -lppl_c -lppl -lgmpxx "
 pplinc=
 
 AC_ARG_WITH(ppl, [  --with-ppl=PATH         Specify prefix directory for the installed PPL package

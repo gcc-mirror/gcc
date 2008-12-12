@@ -4809,7 +4809,7 @@ fi
 # Check for PPL
 ppl_major_version=0
 ppl_minor_version=10
-ppllibs=
+ppllibs=" -lppl_c -lppl -lgmpxx "
 pplinc=
 
 
