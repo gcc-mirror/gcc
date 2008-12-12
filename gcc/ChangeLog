@@ -1,3 +1,8 @@
+2008-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Don't shift by
+	floor_log2 of zero.  Negate widened zero.
+
 2008-12-12  Ben Elliston  <bje@au.ibm.com>
 
 	* config/fp-bit.c (nan): Rename from this ..
