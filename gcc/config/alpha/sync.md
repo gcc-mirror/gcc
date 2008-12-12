@@ -28,17 +28,17 @@
 
 
 (define_expand "memory_barrier"
-  [(set (mem:BLK (match_dup 0))
-	(unspec:BLK [(mem:BLK (match_dup 0))] UNSPEC_MB))]
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MB))]
   ""
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (DImode));
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
   MEM_VOLATILE_P (operands[0]) = 1;
 })
 
 (define_insn "*mb_internal"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_operand:BLK 1 "" "")] UNSPEC_MB))]
+	(unspec:BLK [(match_dup 0)] UNSPEC_MB))]
   ""
   "mb"
   [(set_attr "type" "mb")])
