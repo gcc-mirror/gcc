@@ -1,3 +1,8 @@
+2008-12-12 Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/36355
+	* gfortran.dg/matmul_argument_types.f90: New.
+
 2008-12-11  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/29071
