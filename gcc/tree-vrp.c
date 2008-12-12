@@ -2557,11 +2557,11 @@ extract_range_from_binary_expr (value_range_t *vr,
 	  ior_max.high = vr0_max.high | vr1_max.high;
 	  if (ior_max.high != 0)
 	    {
-	      ior_max.low = ~0u;
+	      ior_max.low = ~(unsigned HOST_WIDE_INT)0u;
 	      ior_max.high |= ((HOST_WIDE_INT) 1
 			       << floor_log2 (ior_max.high)) - 1;
 	    }
-	  else
+	  else if (ior_max.low != 0)
 	    ior_max.low |= ((unsigned HOST_WIDE_INT) 1u
 			    << floor_log2 (ior_max.low)) - 1;
 
