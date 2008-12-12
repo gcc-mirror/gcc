@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
@@ -30,13 +29,10 @@
 
 #include <cstdatomic>
 
-void test01()
+int main()
 {
-  // Assign.
-  typedef std::atomic_flag test_type;
-  test_type t1;
-  test_type t2;
-  t1 = t2;
+  // Single value constructor.
+  void* v = NULL;
+  std::atomic_address a(v);
+  return 0;
 }
-// { dg-error "used here" "" { target *-*-* } 39 } 
-// { dg-excess-errors "deleted function" } 

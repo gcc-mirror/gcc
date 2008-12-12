@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +19,14 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// As a special exception, you may use this file as part of a free software
-// library without restriction.  Specifically, if other files instantiate
-// templates or use macros or inline functions from this file, or you compile
-// this file and link it with other files to produce an executable, this
-// file does not by itself cause the resulting executable to be covered by
-// the GNU General Public License.  This exception does not however
-// invalidate any other reasons why the executable file might be covered by
-// the GNU General Public License.
-
 #include <cstdatomic>
+#include <testsuite_common_types.h>
 
 void test01()
 {
-  // Assign.
-  typedef std::atomic_flag test_type;
-  test_type t1;
-  test_type t2;
-  t1 = t2;
+  // Check for required base class.
+  __gnu_test::has_required_base_class test;
+  __gnu_cxx::typelist::apply_generator(test, 
+				       __gnu_test::atomic_integrals::type(), 
+                                       __gnu_test::atomics_tl());
 }
-// { dg-error "used here" "" { target *-*-* } 39 } 
-// { dg-excess-errors "deleted function" } 

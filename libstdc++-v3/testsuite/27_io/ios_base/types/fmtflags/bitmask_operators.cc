@@ -1,7 +1,7 @@
 // { dg-do compile }
 // -*- C++ -*-
  
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2008 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,7 +31,7 @@
 // Benjamin Kosnik  <bkoz@redhat.com>
 
 #include <ios>
-#include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 int main()
 {

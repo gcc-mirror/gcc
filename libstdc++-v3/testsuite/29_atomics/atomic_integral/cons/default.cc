@@ -28,11 +28,12 @@
 // the GNU General Public License.
 
 #include <cstdatomic>
+#include <testsuite_common_types.h>
 
 int main()
 {
-  // Explicit value constructor.
-  void* v = NULL;
-  std::atomic_address a(v);
+  __gnu_test::default_constructible test;
+  __gnu_cxx::typelist::apply_generator(test,
+				       __gnu_test::atomic_integrals::type());
   return 0;
 }

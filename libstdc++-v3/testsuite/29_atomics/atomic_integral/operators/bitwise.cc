@@ -1,7 +1,8 @@
+// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 // -*- C++ -*-
  
-// Copyright (C) 2004, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,12 +29,12 @@
 // reasons why the executable file might be covered by the GNU General
 // Public License.
  
-// Benjamin Kosnik  <bkoz@redhat.com>
-
-#include <ios>
+#include <cstdatomic>
 #include <testsuite_common_types.h>
 
 int main()
 {
-  __gnu_test::bitmask_operators<std::ios_base::iostate>();
+  __gnu_test::has_bitwise_operators test;
+  using __gnu_test::atomic_integrals_no_bool;
+  __gnu_cxx::typelist::apply_generator(test, atomic_integrals_no_bool::type());
 };

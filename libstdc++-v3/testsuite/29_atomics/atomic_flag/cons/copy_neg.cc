@@ -37,5 +37,5 @@ void test01()
   test_type t1;
   test_type t2(t1);
 }
-// { dg-error "within this context" "" { xfail *-*-* } 38 } 
-// { dg-error "is private" "" { xfail *-*-* } 88 } 
+// { dg-error "used here" "" { target *-*-* } 38 } 
+// { dg-excess-errors "deleted function" } 

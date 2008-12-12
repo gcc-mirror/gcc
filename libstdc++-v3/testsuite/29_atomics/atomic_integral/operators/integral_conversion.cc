@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
@@ -29,14 +28,14 @@
 // the GNU General Public License.
 
 #include <cstdatomic>
+#include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
-void test01()
+int main()
 {
-  // Assign.
-  typedef std::atomic_flag test_type;
-  test_type t1;
-  test_type t2;
-  t1 = t2;
+  __gnu_test::integral_convertable test;
+  __gnu_cxx::typelist::apply_generator(test,
+				       __gnu_test::atomic_integrals::type(), 
+				       __gnu_test::integral_types::type());
+  return 0;
 }
-// { dg-error "used here" "" { target *-*-* } 39 } 
-// { dg-excess-errors "deleted function" } 

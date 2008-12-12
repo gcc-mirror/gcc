@@ -55,24 +55,20 @@ int main()
     #error "atomic_store_must_be_a_macro"
 #endif
 
-#ifndef atomic_swap_explicit
-    #error "atomic_swap_explicit_must_be_a_macro"
+#ifndef atomic_exchange_explicit
+    #error "atomic_exchange_explicit_must_be_a_macro"
 #endif
 
-#ifndef atomic_swap
-    #error "atomic_swap_must_be_a_macro"
+#ifndef atomic_exchange
+    #error "atomic_exchange_must_be_a_macro"
 #endif
 
-#ifndef atomic_compare_swap
-    #error "atomic_compare_swap_must_be_a_macro"
+#ifndef atomic_compare_exchange
+    #error "atomic_compare_exchange_must_be_a_macro"
 #endif
 
-#ifndef atomic_compare_swap_explicit
-    #error "atomic_compare_swap_explicit_must_be_a_macro"
-#endif
-
-#ifndef atomic_fence
-    #error "atomic_fence_must_be_a_macro"
+#ifndef atomic_compare_exchange_explicit
+    #error "atomic_compare_exchange_explicit_must_be_a_macro"
 #endif
 
 #ifndef atomic_fetch_add_explicit

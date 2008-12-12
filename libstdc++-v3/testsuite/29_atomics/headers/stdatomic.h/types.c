@@ -75,7 +75,4 @@ void test01()
   typedef atomic_uintmax_t t_45;
 
   typedef atomic_address t_46;
-
-  const atomic_flag* p __attribute__((unused))
-    = &atomic_global_fence_compatibility;
 }

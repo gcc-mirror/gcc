@@ -29,14 +29,22 @@
 // the GNU General Public License.
 
 #include <cstdatomic>
+#include <testsuite_common_types.h>
 
-void test01()
+int main()
 {
-  // Assign.
-  typedef std::atomic_flag test_type;
-  test_type t1;
-  test_type t2;
-  t1 = t2;
+  __gnu_test::copy_constructible test;
+  __gnu_cxx::typelist::apply_generator(test, 
+				       __gnu_test::atomic_integrals::type());
+  return 0;
 }
-// { dg-error "used here" "" { target *-*-* } 39 } 
+
+// { dg-error "used here" "" { target *-*-* } 549 }
 // { dg-excess-errors "deleted function" } 
+// { dg-excess-errors "deleted function" } 
+// { dg-error "instantiated from" "" { target *-*-* } 38 } 
+// { dg-error "instantiated from" "" { target *-*-* } 555 } 
+// { dg-error "instantiated from" "" { target *-*-* } 173 } 
+// { dg-error "instantiated from" "" { target *-*-* } 404 }
+// { dg-error "instantiated from" "" { target *-*-* } 175 }  
+// { dg-excess-errors "In member function" }

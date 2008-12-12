@@ -45,201 +45,46 @@ _GLIBCXX_BEGIN_EXTERN_C
   typedef enum memory_order 
     {
       memory_order_relaxed, 
+      memory_order_consume, 
       memory_order_acquire, 
       memory_order_release,
       memory_order_acq_rel, 
       memory_order_seq_cst
     } memory_order;
 
-
   // Base for atomic_flag.
-  struct __atomic_flag_base
-  {
-    bool _M_b;
-  };
-
-  // Base for atomic_address
-  struct __atomic_address_base
-  {
-    void* _M_i;
-  };
-
-  // POD base classes for atomic intgral types.
-  struct __atomic_bool_base
+  typedef struct __atomic_flag_base
   {
     bool _M_i;
-  };
+  } __atomic_flag_base;
 
-  struct __atomic_char_base
-  {
-    char _M_i;
-  };
+#define ATOMIC_FLAG_INIT { false } 
 
-  struct __atomic_schar_base
-  {
-    signed char _M_i;
-  };
+  /// 29.2 Lock-free Property
+#if defined(_GLIBCXX_ATOMIC_BUILTINS_1) && defined(_GLIBCXX_ATOMIC_BUILTINS_2) \
+  && defined(_GLIBCXX_ATOMIC_BUILTINS_4) && defined(_GLIBCXX_ATOMIC_BUILTINS_8)
+# define _GLIBCXX_ATOMIC_PROPERTY 2
+# define _GLIBCXX_ATOMIC_NAMESPACE __atomic2
+#elif defined(_GLIBCXX_ATOMIC_BUILTINS_1)
+# define _GLIBCXX_ATOMIC_PROPERTY 1
+# define _GLIBCXX_ATOMIC_NAMESPACE __atomic1
+#else
+# define _GLIBCXX_ATOMIC_PROPERTY 0
+# define _GLIBCXX_ATOMIC_NAMESPACE __atomic0
+#endif
 
-  struct __atomic_uchar_base
-  {
-    unsigned char _M_i;
-  };
-
-  struct __atomic_short_base
-  {
-    short _M_i;
-  };
-
-  struct __atomic_ushort_base
-  {
-    unsigned short _M_i;
-  };
-
-  struct __atomic_int_base
-  {
-    int _M_i;
-  };
-
-  struct __atomic_uint_base
-  {
-    unsigned int _M_i;
-  };
-
-  struct __atomic_long_base
-  {
-    long _M_i;
-  };
-
-  struct __atomic_ulong_base
-  {
-    unsigned long _M_i;
-  };
-
-  struct __atomic_llong_base
-  {
-    long long _M_i;
-  };
-
-  struct __atomic_ullong_base
-  {
-    unsigned long long _M_i;
-  };
-
-  struct __atomic_wchar_t_base
-  {
-    wchar_t _M_i;
-  };
+#define ATOMIC_INTEGRAL_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
+#define ATOMIC_ADDRESS_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 
   // Switch atomic integral base types based on C or C++.  In
   // addition, for "C" only provide type-generic macros for atomic
   // operations. (As C++ accomplishes the same thing with sets of
   // overloaded functions.
 #ifdef __cplusplus
-
-#define ATOMIC_FLAG_INIT { { false } }
-#define _ATOMIC_MEMBER_ ((__a)->_M_base._M_i)
-
-extern "C++"
-{
-  struct atomic_flag;
-  struct atomic_address;
-  struct atomic_bool;
-  struct atomic_char;
-  struct atomic_schar;
-  struct atomic_uchar;
-  struct atomic_short;
-  struct atomic_ushort;
-  struct atomic_int;
-  struct atomic_uint;
-  struct atomic_long;
-  struct atomic_ulong;
-  struct atomic_llong;
-  struct atomic_ullong;
-  struct atomic_wchar_t;
-  template<typename _Tp>
-    struct atomic;
-}
+  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
+# include <bits/atomicfwd_cxx.h>
 #else
-
-#define ATOMIC_FLAG_INIT { false }
-#define _ATOMIC_MEMBER_ ((__a)->_M_i)
-
-  typedef struct __atomic_flag_base 	atomic_flag;
-  typedef struct __atomic_address_base 	atomic_address;
-  typedef struct __atomic_bool_base	atomic_bool;
-  typedef struct __atomic_char_base 	atomic_char;
-  typedef struct __atomic_schar_base 	atomic_schar;
-  typedef struct __atomic_uchar_base 	atomic_uchar;
-  typedef struct __atomic_short_base 	atomic_short;
-  typedef struct __atomic_ushort_base 	atomic_ushort;
-  typedef struct __atomic_int_base 	atomic_int;
-  typedef struct __atomic_uint_base 	atomic_uint;
-  typedef struct __atomic_long_base 	atomic_long;
-  typedef struct __atomic_ulong_base 	atomic_ulong;
-  typedef struct __atomic_llong_base 	atomic_llong;
-  typedef struct __atomic_ullong_base 	atomic_ullong;
-  typedef struct __atomic_wchar_t_base 	atomic_wchar_t;
-
-#define atomic_is_lock_free(__a)				\
-  false
-
-#define atomic_load(__a)					\
-  _ATOMIC_LOAD_(__a, memory_order_seq_cst)
-
-#define atomic_load_explicit(__a, __x)				\
-  _ATOMIC_LOAD_(__a, __x)
-
-#define atomic_store(__a, __m)					\
-  _ATOMIC_STORE_(__a, __m, memory_order_seq_cst)
-
-#define atomic_store_explicit(__a, __m, __x)			\
-  _ATOMIC_STORE_(__a, __m, __x)
-
-#define atomic_swap(__a, __m)					\
-  _ATOMIC_MODIFY_(__a, =, __m, memory_order_seq_cst)
-
-#define atomic_swap_explicit(__a, __m, __x)			\
-  _ATOMIC_MODIFY_(__a, =, __m, __x)
-
-#define atomic_compare_swap(__a, __e, __m)			\
-  _ATOMIC_CMPSWP_(__a, __e, __m, memory_order_seq_cst)
-
-#define atomic_compare_swap_explicit(__a, __e, __m, __x, __y)	\
-  _ATOMIC_CMPSWP_(__a, __e, __m, __x)
-
-#define atomic_fence(__a, __x)					\
-  ({ _ATOMIC_FENCE_(__a, __x); })
-
-#define atomic_fetch_add_explicit(__a, __m, __x)		\
-  _ATOMIC_MODIFY_(__a, +=, __m, __x)
-
-#define atomic_fetch_add(__a, __m)				\
-  _ATOMIC_MODIFY_(__a, +=, __m, memory_order_seq_cst)
-
-#define atomic_fetch_sub_explicit(__a, __m, __x)		\
-  _ATOMIC_MODIFY_(__a, -=, __m, __x)
-
-#define atomic_fetch_sub(__a, __m)				\
-  _ATOMIC_MODIFY_(__a, -=, __m, memory_order_seq_cst)
-
-#define atomic_fetch_and_explicit(__a, __m, __x)		\
-  _ATOMIC_MODIFY_(__a, &=, __m, __x)
-
-#define atomic_fetch_and(__a, __m)				\
-  _ATOMIC_MODIFY_(__a, &=, __m, memory_order_seq_cst)
-
-#define atomic_fetch_or_explicit(__a, __m, __x) 		\
-  _ATOMIC_MODIFY_(__a, |=, __m, __x)
-
-#define atomic_fetch_or(__a, __m)				\
-  _ATOMIC_MODIFY_(__a, |=, __m, memory_order_seq_cst)
-
-#define atomic_fetch_xor_explicit(__a, __m, __x)		\
-  _ATOMIC_MODIFY_(__a, ^=, __m, __x)
-
-#define atomic_fetch_xor(__a, __m)				\
-  _ATOMIC_MODIFY_(__a, ^=, __m, memory_order_seq_cst)
-
+# include <bits/atomicfwd_c.h>
 #endif
   
   // Typedefs for other atomic integral types.
@@ -272,42 +117,31 @@ extern "C++"
 
   typedef atomic_long 		atomic_ptrdiff_t;
 
-  typedef atomic_int_least16_t	atomic_char16_t;
-  typedef atomic_int_least32_t	atomic_char32_t;
+  // Accessor functions for base atomic_flag type.
+  bool 
+  atomic_flag_test_and_set_explicit(volatile __atomic_flag_base*, memory_order);
 
-  // Accessor functions for atomic_flag.
-  extern bool 
-  atomic_flag_test_and_set(volatile atomic_flag*);
+  inline bool 
+  atomic_flag_test_and_set(volatile __atomic_flag_base* __a)
+  { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
   
-  extern bool 
-  atomic_flag_test_and_set_explicit(volatile atomic_flag*, memory_order);
+  void 
+  atomic_flag_clear_explicit(volatile __atomic_flag_base*, memory_order);
+
+  inline void 
+  atomic_flag_clear(volatile __atomic_flag_base* __a)
+  { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
+
+  void 
+  __atomic_flag_wait_explicit(volatile __atomic_flag_base*, memory_order);
   
-  extern void 
-  atomic_flag_clear(volatile atomic_flag*);
-  
-  extern void 
-  atomic_flag_clear_explicit(volatile atomic_flag*, memory_order);
-  
-  extern void 
-  atomic_flag_fence(const volatile atomic_flag*, memory_order);
-  
-  extern void 
-  __atomic_flag_wait_explicit(volatile atomic_flag*, memory_order);
-  
-  extern volatile atomic_flag* 
+  volatile __atomic_flag_base* 
   __atomic_flag_for_address(const volatile void* __z) __attribute__((const));
-   
-  // External object.
-  extern const atomic_flag atomic_global_fence_compatibility;
-  
-  /// 29.2 Lock-free Property
-#define ATOMIC_INTEGRAL_LOCK_FREE 0
-#define ATOMIC_ADDRESS_LOCK_FREE 0
 
   // Implementation specific defines.
 #define _ATOMIC_LOAD_(__a, __x)						\
   ({ volatile __typeof__ _ATOMIC_MEMBER_* __p = &_ATOMIC_MEMBER_;	\
-    volatile atomic_flag* __g = __atomic_flag_for_address(__p); 	\
+     volatile atomic_flag* __g = __atomic_flag_for_address(__p); 	\
     __atomic_flag_wait_explicit(__g, __x);				\
     __typeof__ _ATOMIC_MEMBER_ __r = *__p;				\
     atomic_flag_clear_explicit(__g, __x);		       		\
@@ -332,7 +166,7 @@ extern "C++"
     atomic_flag_clear_explicit(__g, __x);		       		\
     __r; })
 
-#define _ATOMIC_CMPSWP_(__a, __e, __m, __x)				\
+#define _ATOMIC_CMPEXCHNG_(__a, __e, __m, __x)				\
   ({ volatile __typeof__ _ATOMIC_MEMBER_* __p = &_ATOMIC_MEMBER_;	\
     __typeof__(__e) __q = (__e);			       		\
     __typeof__(__m) __v = (__m);			       		\
@@ -345,26 +179,19 @@ extern "C++"
     atomic_flag_clear_explicit(__g, __x);		       		\
     __r; })
 
-#define _ATOMIC_FENCE_(__a, __x)			       		\
-  ({ volatile __typeof__ _ATOMIC_MEMBER_* __p = &_ATOMIC_MEMBER_;	\
-    volatile atomic_flag* __g = __atomic_flag_for_address(__p); 	\
-    atomic_flag_fence(__g, __x);			       		\
-  })
-
 _GLIBCXX_END_EXTERN_C
 _GLIBCXX_END_NAMESPACE
 
-#ifdef __cplusplus
-// Inject into global namespace iff C++.
+// Inject into global namespace. XXX
+#if defined(__cplusplus) && !defined(_GLIBCXX_STDATOMIC)
 using std::memory_order;
 using std::memory_order_relaxed;
+using std::memory_order_consume;
 using std::memory_order_acquire;
 using std::memory_order_release;
 using std::memory_order_acq_rel;
 using std::memory_order_seq_cst;
-
 using std::atomic_flag;
-
 using std::atomic_bool;
 using std::atomic_char;
 using std::atomic_schar;
@@ -378,10 +205,10 @@ using std::atomic_ulong;
 using std::atomic_llong;
 using std::atomic_ullong;
 using std::atomic_wchar_t;
-
+using std::atomic_char16_t;
+using std::atomic_char32_t;
 using std::atomic_address;
 using std::atomic;
-
 #endif
 
 #endif

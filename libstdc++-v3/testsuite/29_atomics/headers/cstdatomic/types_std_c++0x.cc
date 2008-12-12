@@ -25,6 +25,7 @@ void test01()
 {
   using std::memory_order;
   using std::memory_order_relaxed;
+  using std::memory_order_consume;
   using std::memory_order_acquire;
   using std::memory_order_release;
   using std::memory_order_acq_rel;
@@ -75,7 +76,4 @@ void test01()
   using std::atomic_uintmax_t;
 
   using std::atomic_address;
-
-  const std::atomic_flag* p __attribute__((unused))
-    = &std::atomic_global_fence_compatibility;
 }

@@ -14712,6 +14712,84 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 #line 14712 "configure"
 int main()
 {
+  typedef bool atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
+}
+EOF
+
+    echo "$as_me:$LINENO: checking for atomic builtins for bool" >&5
+echo $ECHO_N "checking for atomic builtins for bool... $ECHO_C" >&6
+    if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinsb=no
+      else
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_ATOMIC_BUILTINS_1 1
+_ACEOF
+
+        enable_atomic_builtinsb=yes
+      fi
+    fi
+    echo "$as_me:$LINENO: result: $enable_atomic_builtinsb" >&5
+echo "${ECHO_T}$enable_atomic_builtinsb" >&6
+    rm -f conftest*
+
+    cat > conftest.$ac_ext << EOF
+#line 14751 "configure"
+int main()
+{
+  typedef short atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
+}
+EOF
+
+    echo "$as_me:$LINENO: checking for atomic builtins for short" >&5
+echo $ECHO_N "checking for atomic builtins for short... $ECHO_C" >&6
+    if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinss=no
+      else
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_ATOMIC_BUILTINS_2 1
+_ACEOF
+
+        enable_atomic_builtinss=yes
+      fi
+    fi
+    echo "$as_me:$LINENO: result: $enable_atomic_builtinss" >&5
+echo "${ECHO_T}$enable_atomic_builtinss" >&6
+    rm -f conftest*
+
+    cat > conftest.$ac_ext << EOF
+#line 14790 "configure"
+int main()
+{
   // NB: _Atomic_word not necessarily int.
   typedef int atomic_type;
   atomic_type c1;
@@ -14749,10 +14827,10 @@ echo "${ECHO_T}$enable_atomic_builtinsi" >&6
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 14752 "configure"
+#line 14830 "configure"
 int main()
 {
-  typedef bool atomic_type;
+  typedef long long atomic_type;
   atomic_type c1;
   atomic_type c2;
   const atomic_type c3(0);
@@ -14765,27 +14843,28 @@ int main()
 }
 EOF
 
-    echo "$as_me:$LINENO: checking for atomic builtins for bool" >&5
-echo $ECHO_N "checking for atomic builtins for bool... $ECHO_C" >&6
+    echo "$as_me:$LINENO: checking for atomic builtins for long long" >&5
+echo $ECHO_N "checking for atomic builtins for long long... $ECHO_C" >&6
     if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsb=no
+        enable_atomic_builtinsll=no
       else
 
 cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_ATOMIC_BUILTINS_1 1
+#define _GLIBCXX_ATOMIC_BUILTINS_8 1
 _ACEOF
 
-        enable_atomic_builtinsb=yes
+        enable_atomic_builtinsll=yes
       fi
     fi
-    echo "$as_me:$LINENO: result: $enable_atomic_builtinsb" >&5
-echo "${ECHO_T}$enable_atomic_builtinsb" >&6
+    echo "$as_me:$LINENO: result: $enable_atomic_builtinsll" >&5
+echo "${ECHO_T}$enable_atomic_builtinsll" >&6
     rm -f conftest*
+
 
   CXXFLAGS="$old_CXXFLAGS"
   ac_ext=c
@@ -14939,100 +15018,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
-
-  echo "$as_me:$LINENO: checking for ISO C++200x standard layout type support" >&5
-echo $ECHO_N "checking for ISO C++200x standard layout type support... $ECHO_C" >&6
-  if test "${ac_standard_layout+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-
-
-  ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-std=gnu++0x'
-
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-struct b
-                  {
-  		    bool t;
-
-		    // Need standard layout relaxation from POD
-		    private:
-  		    b& operator=(const b&);
-  		    b(const b&);
-		    };
-int
-main ()
-{
-b tst1 = { false };
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_standard_layout=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_standard_layout=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-fi
-
-  echo "$as_me:$LINENO: result: $ac_standard_layout" >&5
-echo "${ECHO_T}$ac_standard_layout" >&6
-  if test x"$ac_standard_layout" = x"yes"; then
-
-cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_USE_STANDARD_LAYOUT 1
-_ACEOF
-
-  fi
-
+GLIBCXX_CHECK_STANDARD_LAYOUT
 
 # Enable all the variable C++ runtime options that don't require linking.
 

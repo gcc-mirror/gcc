@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -99,22 +99,6 @@ namespace __gnu_test
   // Check mangled name demangles (using __cxa_demangle) as expected.
   void
   verify_demangle(const char* mangled, const char* wanted);
-
-  // 17.3.2.1.2 - Bitmask types [lib.bitmask.types]
-  // bitmask_operators
-  template<typename bitmask_type>
-    void
-    bitmask_operators(bitmask_type a = bitmask_type(),
-		      bitmask_type b = bitmask_type())
-    {
-      a | b;
-      a & b;
-      a ^ b;
-      ~b;
-      a |= b; // set
-      a &= ~b; // clear
-      a ^= b;
-    }
 
   // Simple callback structure for variable numbers of tests (all with
   // same signature).  Assume all unit tests are of the signature

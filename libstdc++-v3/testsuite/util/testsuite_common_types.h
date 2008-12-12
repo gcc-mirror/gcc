@@ -54,6 +54,7 @@
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <cstdatomic>
+#include <type_traits>
 #endif
 
 namespace __gnu_test
@@ -279,14 +280,63 @@ namespace __gnu_test
     typedef long long 		a11;
     typedef unsigned long long 	a12;
     typedef wchar_t 		a13;
-    // typedef char16_t 		a14;
-    // typedef char16_t 		a15;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    typedef char16_t 		a14;
+    typedef char32_t 		a15;
 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15)> type;
+#else
     typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
 					   a10, a11, a12, a13)> type;
+#endif
   };
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct atomic_integrals_no_bool
+  {
+    typedef std::atomic_char        	a2;
+    typedef std::atomic_schar 		a3;
+    typedef std::atomic_uchar 		a4;
+    typedef std::atomic_short       	a5;
+    typedef std::atomic_ushort 		a6;
+    typedef std::atomic_int 		a7;
+    typedef std::atomic_uint 		a8;
+    typedef std::atomic_long        	a9;
+    typedef std::atomic_ulong 		a10;
+    typedef std::atomic_llong       	a11;
+    typedef std::atomic_ullong 		a12;
+    typedef std::atomic_wchar_t     	a13;
+    typedef std::atomic_char16_t    	a14;
+    typedef std::atomic_char32_t    	a15;
+    
+    typedef node<_GLIBCXX_TYPELIST_CHAIN14(a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15)> type;
+  };
+
+  struct atomic_integrals
+  {
+    typedef std::atomic_bool        	a1;
+    typedef std::atomic_char        	a2;
+    typedef std::atomic_schar 		a3;
+    typedef std::atomic_uchar 		a4;
+    typedef std::atomic_short       	a5;
+    typedef std::atomic_ushort 		a6;
+    typedef std::atomic_int 		a7;
+    typedef std::atomic_uint 		a8;
+    typedef std::atomic_long        	a9;
+    typedef std::atomic_ulong 		a10;
+    typedef std::atomic_llong       	a11;
+    typedef std::atomic_ullong 		a12;
+    typedef std::atomic_wchar_t     	a13;
+    typedef std::atomic_char16_t    	a14;
+    typedef std::atomic_char32_t    	a15;
+    
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13, a14, a15)> type;
+  };
+
+
   template<typename Tp>
     struct atomics
     {
@@ -296,6 +346,156 @@ namespace __gnu_test
 
   typedef transform<integral_types::type, atomics>::type atomics_tl;
 #endif
+
+
+  struct has_increment_operators
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    _Tp a; 
+	    ++a; // prefix
+	    a++; // postfix
+	    a += a;
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  struct has_decrement_operators
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    _Tp a; 
+	    --a; // prefix
+	    a--; // postfix
+	    a -= a;
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  template<typename _Tp>
+    void
+    bitwise_operators()
+    {
+      _Tp a; 
+      _Tp b;
+      a | b;
+      a & b;
+      a ^ b;
+      ~b;
+    }
+
+  template<typename _Tp>
+    void
+    bitwise_assignment_operators()
+    {
+      _Tp a; 
+      _Tp b;
+      a |= b; // set
+      a &= ~b; // clear
+      a ^= b;
+    }
+
+  // 17.3.2.1.2 - Bitmask types [lib.bitmask.types]
+  // bitmask_operators
+  template<typename _BitmTp>
+    void
+    bitmask_operators()
+    {
+      bitwise_operators<_BitmTp>();
+      bitwise_assignment_operators<_BitmTp>();
+    }
+
+  struct has_bitwise_operators
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    bitwise_assignment_operators<_Tp>();
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  // Generator to test standard layout
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct standard_layout
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    // libstdc++/37907
+	    // typedef std::is_standard_layout<_Tp> standard_layout_p;
+	    // static_assert(standard_layout_p::value, "not standard_layout");
+	    
+	    typedef std::has_trivial_default_constructor<_Tp> ctor_p;
+	    static_assert(ctor_p::value, "default ctor not trivial");
+
+	    typedef std::has_trivial_destructor<_Tp> dtor_p;
+	    static_assert(dtor_p::value, "dtor not trivial");
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+#endif
+
+  // Generator to test base class
+  struct has_required_base_class
+  {
+    template<typename _TBase, typename _TDerived>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    const _TDerived& obj = __a;
+	    const _TBase* base __attribute__((unused)) = &obj;
+	  }
+	  
+	  _TDerived __a;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
 
   // Generator to test assignment operator.
   struct assignable
@@ -356,8 +556,8 @@ namespace __gnu_test
       }
   };
 
-  // Generator to test explicit value constructor.
-  struct explicit_value_constructible
+  // Generator to test direct initialization, single value constructor.
+  struct single_value_constructible
   {
     template<typename _Ttype, typename _Tvalue>
       void 
@@ -376,5 +576,102 @@ namespace __gnu_test
       }
   };
 
+  // Generator to test direct list initialization
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct direct_list_initializable
+  {
+    template<typename _Ttype, typename _Tvalue>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  { 
+	    _Ttype __v1 { }; // default ctor
+	    _Ttype __v2 { __a };  // single-argument ctor
+	  }
+	  
+	  _Tvalue __a;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+#endif
+
+  // Generator to test copy list initialization, aggregate initialization
+  struct copy_list_initializable
+  {
+    template<typename _Ttype, typename _Tvalue>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  { _Ttype __v = {__a}; }
+	  
+	  _Tvalue __a;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  // Generator to test integral conversion operator
+  struct integral_convertable
+  {
+    template<typename _Ttype, typename _Tvalue>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    _Tvalue __v0(0);
+	    _Tvalue __v1(1);
+	    _Ttype __a(__v1);
+	    __v0 = __a;
+
+	    bool test __attribute__((unused)) = true;
+	    VERIFY( __v1 == __v0 );
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  // Generator to test integral assignment operator 
+  struct integral_assignable
+  {
+    template<typename _Ttype, typename _Tvalue>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    _Tvalue __v0(0);
+	    _Tvalue __v1(1);
+	    _Ttype __a(__v0);
+	    __a = __v1;
+	    _Tvalue __vr = __a;
+
+	    bool test __attribute__((unused)) = true;
+	    VERIFY( __v1 == __vr );
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
 } // namespace __gnu_test
 #endif

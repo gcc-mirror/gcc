@@ -692,8 +692,16 @@
 /* Define if builtin atomic operations for bool are supported on this host. */
 #undef _GLIBCXX_ATOMIC_BUILTINS_1
 
+/* Define if builtin atomic operations for short are supported on this host.
+   */
+#undef _GLIBCXX_ATOMIC_BUILTINS_2
+
 /* Define if builtin atomic operations for int are supported on this host. */
 #undef _GLIBCXX_ATOMIC_BUILTINS_4
+
+/* Define if builtin atomic operations for long long are supported on this
+   host. */
+#undef _GLIBCXX_ATOMIC_BUILTINS_8
 
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
@@ -803,9 +811,6 @@
 /* Define if /dev/random and /dev/urandom are available for the random_device
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
-
-/* Define if standard layout types are supported in C++200x. */
-#undef _GLIBCXX_USE_STANDARD_LAYOUT
 
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T

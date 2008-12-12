@@ -27,9 +27,8 @@ namespace gnu
   using std::atomic_flag_test_and_set_explicit;
   using std::atomic_flag_clear;
   using std::atomic_flag_clear_explicit;
-  using std::atomic_flag_fence;
 
-  using std::atomic_global_fence_compatibility;
+  using std::kill_dependency;
 
   // Sloppy testing for integral types (en masse).
   using std::atomic_is_lock_free;
@@ -37,11 +36,12 @@ namespace gnu
   using std::atomic_store_explicit;
   using std::atomic_load;
   using std::atomic_load_explicit;
-  using std::atomic_swap;
-  using std::atomic_swap_explicit;
-  using std::atomic_compare_swap;
-  using std::atomic_compare_swap_explicit;
-  using std::atomic_fence;
+  using std::atomic_exchange;
+  using std::atomic_exchange_explicit;
+  using std::atomic_compare_exchange_weak;
+  using std::atomic_compare_exchange_strong;
+  using std::atomic_compare_exchange_weak_explicit;
+  using std::atomic_compare_exchange_strong_explicit;
 
   using std::atomic_fetch_add;
   using std::atomic_fetch_add_explicit;

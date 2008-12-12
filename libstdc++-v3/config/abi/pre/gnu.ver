@@ -866,13 +866,11 @@ GLIBCXX_3.4.11 {
     # atomic
     __atomic_flag_for_address;
     __atomic_flag_wait_explicit;
-    atomic_flag_clear;
     atomic_flag_clear_explicit;
-    atomic_flag_fence;
-    atomic_flag_test_and_set;
     atomic_flag_test_and_set_explicit;
-    atomic_global_fence_compatibility;
-    
+    _ZNVSt9__atomic011atomic_flag12test_and_setESt12memory_order;
+    _ZNVSt9__atomic011atomic_flag5clearESt12memory_order;
+
     # mutex
     _ZSt10adopt_lock;
     _ZSt10defer_lock;
