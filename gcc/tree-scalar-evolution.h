@@ -35,6 +35,7 @@ extern void gather_stats_on_scev_database (void);
 extern void scev_analysis (void);
 unsigned int scev_const_prop (void);
 
+bool expression_expensive_p (tree);
 extern bool simple_iv (struct loop *, gimple, tree, affine_iv *, bool);
 
 /* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the
