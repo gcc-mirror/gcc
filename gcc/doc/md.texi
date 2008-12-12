@@ -2036,9 +2036,18 @@ Any MMX register.
 @item x
 Any SSE register.
 
+@item Yz
+First SSE register (@code{%xmm0}).
+
 @ifset INTERNALS
-@item Y
-Any SSE2 register.
+@item Y2
+Any SSE register, when SSE2 is enabled.
+
+@item Yi
+Any SSE register, when SSE2 and inter-unit moves are enabled.
+
+@item Ym
+Any MMX register, when inter-unit moves are enabled.
 @end ifset
 
 @item I
