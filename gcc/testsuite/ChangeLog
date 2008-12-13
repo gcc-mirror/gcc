@@ -1,3 +1,7 @@
+2008-12-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/pr38409.c: Fixed commit problem.
+
 2008-12-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-12.c: Include x86intrin.h.
