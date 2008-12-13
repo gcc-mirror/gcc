@@ -38,8 +38,6 @@
 
 #pragma GCC system_header
 
-#include <cassert> // XXX static_assert vs. constant-expression PR38502
-
 // _GLIBCXX_BEGIN_NAMESPACE(std)
 
 // 2 == __atomic2 == Always lock-free
