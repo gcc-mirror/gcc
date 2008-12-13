@@ -1,3 +1,9 @@
+2008-12-12  Rainer Emrich  <r.emrich@de.tecosim.com>
+
+	PR bootstrap/38383
+	* pa64-hpux.h (LINK_GCC_C_SEQUENCE_SPEC): Don't hardcode search path
+	for the milli.a library.
+
 2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

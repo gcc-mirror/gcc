@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "\
   %G %L %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
-  /usr/lib/pa20_64/milli.a}}"
+  milli.a%s}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
