@@ -29,8 +29,8 @@
 // the GNU General Public License.
 
 #include "gstdint.h"
-#include <mutex>
 #include <cstdatomic>
+#include <mutex>
 
 #define LOGSIZE 4
 
