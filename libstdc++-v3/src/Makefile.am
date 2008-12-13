@@ -274,9 +274,9 @@ limits_c++0x.o: limits_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 atomic.lo: atomic.cc
-	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 atomic.o: atomic.cc
-	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 string-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<

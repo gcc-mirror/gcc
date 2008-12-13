@@ -1,3 +1,9 @@
+2008-12-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am: Remove -x c++ for atomic build rules.
+	* src/Makefile.in: Regenerate.
+	* src/atomic.cc: Move mutex include before cstdatomic.
+
 2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/37144
