@@ -36,7 +36,7 @@
 
 namespace
 {
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
   std::mutex atomic_mutex;
 #endif
 
@@ -56,7 +56,7 @@ namespace std
     bool
     atomic_flag::test_and_set(memory_order) volatile
     {
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(atomic_mutex);
 #endif
       bool result = _M_i;
@@ -67,7 +67,7 @@ namespace std
     void
     atomic_flag::clear(memory_order) volatile
     {
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(atomic_mutex);
 #endif
       _M_i = false;

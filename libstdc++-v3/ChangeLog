@@ -1,3 +1,7 @@
+2008-12-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/atomic.cc: Correct guards to match mutex.cc.
+
 2008-12-11  Benjamin Kosnik  <bkoz@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
