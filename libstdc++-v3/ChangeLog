@@ -1,3 +1,12 @@
+2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/37144
+	* testsuite/util/regression/trait/assoc/type_trait.hpp
+	(regression_test_type_traits): Add const to pair_type_rebind.
+
 2008-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/37582

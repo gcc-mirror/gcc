@@ -87,7 +87,7 @@ namespace __gnu_pbds
 	
 	typedef typename basic_type_rebind::const_reference basic_type_const_reference;
 
-	typedef typename cntnr::allocator::template rebind<std::pair<basic_type, basic_type> >::other pair_type_rebind;
+	typedef typename cntnr::allocator::template rebind<std::pair<const basic_type, basic_type> >::other pair_type_rebind;
 	typedef typename pair_type_rebind::const_reference pair_type_const_reference;
 
 	template<typename Gen>
