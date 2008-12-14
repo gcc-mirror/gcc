@@ -1,3 +1,11 @@
+2008-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/38062
+	Backport from mainline:
+	2008-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* collect2.c (write_c_file): Don't wrap in "#ifdef __cplusplus".
+
 2008-12-12  Rainer Emrich  <r.emrich@de.tecosim.com>
 
 	PR bootstrap/38383

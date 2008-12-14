@@ -2043,14 +2043,12 @@ write_c_file_glob (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 static void
 write_c_file (FILE *stream, const char *name)
 {
-  fprintf (stream, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 #ifndef LD_INIT_SWITCH
   if (! shared_obj)
     write_c_file_glob (stream, name);
   else
 #endif
     write_c_file_stat (stream, name);
-  fprintf (stream, "#ifdef __cplusplus\n}\n#endif\n");
 }
 
 #ifdef COLLECT_EXPORT_LIST
