@@ -1,3 +1,9 @@
+2008-12-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38504
+	io/write.c (write_decimal): Skip extra sign '-' at beginning of string
+	returned by gfc_itoa.
+
 2008-12-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38430
