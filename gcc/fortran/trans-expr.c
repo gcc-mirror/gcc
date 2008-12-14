@@ -1668,7 +1668,7 @@ gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
 	gfc_apply_interface_mapping_to_expr (mapping, expr);
 	gfc_init_se (&se, NULL);
 	gfc_conv_expr (&se, expr);
-
+	se.expr = fold_convert (gfc_charlen_type_node, se.expr);
 	se.expr = gfc_evaluate_now (se.expr, &se.pre);
 	gfc_add_block_to_block (pre, &se.pre);
 	gfc_add_block_to_block (post, &se.post);

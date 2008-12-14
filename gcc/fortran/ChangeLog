@@ -1,3 +1,9 @@
+2008-12-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35937
+	* trans-expr.c (gfc_finish_interface_mapping): Fold convert the
+	character length to gfc_charlen_type_node.
+
 2008-12-04  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:

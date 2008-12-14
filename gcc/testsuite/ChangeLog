@@ -1,3 +1,8 @@
+2008-12-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35937
+	* gfortran.dg/char_length_14.f90: New test.
+
 2008-12-12  Janis Johnson  <janis187@us.ibm.com>
 
 	PR libgfortran/24685
