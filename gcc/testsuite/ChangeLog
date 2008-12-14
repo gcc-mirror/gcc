@@ -27,6 +27,8 @@
 	(dg-options): Use -mavx instead of -msse4.
 	* g++.dg/other/i386-3.C: Include x86intrin.h.
 	(dg-options): Use -mavx instead of -msse4.
+	* g++.dg/other/i386-5.C: Include x86intrin.h.
+	* g++.dg/other/i386-6.C: Ditto.
 
 2008-12-12  Uros Bizjak <ubizjak@gmail.com>
 
