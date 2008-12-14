@@ -1,3 +1,8 @@
+2008-12-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38504
+	* gfortran.dg/fmt_int_sign.f90: New test.
+
 2008-12-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/pr38409.c: Fixed commit problem.
