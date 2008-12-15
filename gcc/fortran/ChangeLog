@@ -1,3 +1,11 @@
+2008-12-15  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38113
+	* error.c (show_locus): Start counting columns at 0.
+	* primary.c (match_actual_arg): Eat spaces
+	before copying the current locus.
+	(match_variable): Copy the locus before matching.
+
 2008-12-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35937
