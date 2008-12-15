@@ -1,3 +1,8 @@
+2008-12-15  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.c (mips_output_conditional_branch): Assert that
+	openrands[1] is a CODE_LABEL.
+
 2008-12-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_expand_builtin_direct): Set TARGET to
