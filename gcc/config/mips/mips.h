@@ -529,6 +529,11 @@ enum mips_code_readable_setting {
 	  builtin_define ("_MIPSEL");					\
 	}								\
                                                                         \
+      /* Whether calls should go through $25.  The separate __PIC__	\
+	 macro indicates whether abicalls code might use a GOT.  */	\
+      if (TARGET_ABICALLS)						\
+	builtin_define ("__mips_abicalls");				\
+									\
       /* Whether Loongson vector modes are enabled.  */                 \
       if (TARGET_LOONGSON_VECTORS)					\
         builtin_define ("__mips_loongson_vector_rev");                  \
