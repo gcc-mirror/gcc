@@ -1,5 +1,12 @@
-2008-12-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
+2008-12-15  Hariharan Sandanagobalane <hariharan@picochip.com>
 
+	* config/picochip/picochip.c (picochip_override_options): Disable CFI
+	asm and change the signature of brev and byteSwap functions to use
+	unsigned values.
+	* config/picochip/picochip.md (commsTestPort): This is a complex
+	instruction and should not be vliwed. Dont set insn type.
+
+2008-12-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
 	* config/s390/s390.c (s390_swap_cmp): New function.
 	(s390_non_addr_reg_read_p): New function.
 	(s390_z10_optimize_cmp): New function.
