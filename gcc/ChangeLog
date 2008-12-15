@@ -1,3 +1,8 @@
+2008-12-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md (move_doubleword_fpr<mode>): Use
+	TARGET_FLOAT64 && !TARGET_64BIT to detect the mxhc1 case.
+
 2008-12-15  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_override_options): Disable CFI
