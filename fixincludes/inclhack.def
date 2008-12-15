@@ -1927,7 +1927,7 @@ fix = {
 fix = {
     hackname = hpux_spu_info;
     mach     = "*-hp-hpux*";
-    files    = ia64/sys/getppdp.h;
+    files    = "*/sys/getppdp.h";
     select   = "^.*extern.*spu_info.*";
 
     c_fix     = format;
