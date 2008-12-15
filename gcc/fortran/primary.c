@@ -1360,6 +1360,7 @@ match_actual_arg (gfc_expr **result)
   gfc_expr *e;
   char c;
 
+  gfc_gobble_whitespace ();
   where = gfc_current_locus;
 
   switch (gfc_match_name (name))
@@ -2820,10 +2821,10 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       || gfc_current_state () == COMP_CONTAINS)
     host_flag = 0;
 
+  where = gfc_current_locus;
   m = gfc_match_sym_tree (&st, host_flag);
   if (m != MATCH_YES)
     return m;
-  where = gfc_current_locus;
 
   sym = st->n.sym;
 
