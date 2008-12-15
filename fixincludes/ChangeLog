@@ -1,3 +1,8 @@
+2008-12-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_spu_info): Match PA as well as IA64.
+	* fixincl.x: Regenerate.
+
 2008-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Fix a typo.
