@@ -1,3 +1,11 @@
+2008-12-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.c (s390_swap_cmp): New function.
+	(s390_non_addr_reg_read_p): New function.
+	(s390_z10_optimize_cmp): New function.
+	(s390_reorg): Added call to s390_optimize_cmp.
+	* config/s390/s390.md (nop1): New insn.
+
 2008-12-12  Rainer Emrich  <r.emrich@de.tecosim.com>
 
 	PR bootstrap/38383
