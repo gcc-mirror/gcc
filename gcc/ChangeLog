@@ -1,5 +1,10 @@
 2008-12-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_expand_builtin_direct): Set TARGET to
+	the result of mips_prepare_builtin_target.
+
+2008-12-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define __mips_abicalls
 	if TARGET_ABICALLS is true.
 

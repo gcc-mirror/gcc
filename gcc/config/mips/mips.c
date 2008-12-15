@@ -11736,7 +11736,8 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
   opno = 0;
   if (has_target_p)
     {
-      ops[opno] = mips_prepare_builtin_target (icode, opno, target);
+      target = mips_prepare_builtin_target (icode, opno, target);
+      ops[opno] = target;
       opno++;
     }
 
