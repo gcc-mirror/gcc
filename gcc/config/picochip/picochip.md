@@ -2367,8 +2367,7 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   "// %0 := TestPort(%1)\;TSTPORT %1\;COPYSW.0 %0\;AND.0 %0,8,%0"
-  [(set_attr "length" "9")
-   (set_attr "type" "picoAlu")])
+  [(set_attr "length" "9")])
 
 ; Entry point for array tstport (the actual port index is computed as the
 ; sum of the index, and the base).

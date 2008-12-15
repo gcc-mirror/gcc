@@ -324,6 +324,9 @@ picochip_override_options (void)
      This isnt the default at O2 as yet. */
   flag_section_anchors = 1;
 
+  /* CFI asm labels are not supported by the picochip assembler yet */
+  flag_dwarf2_cfi_asm = 0;
+
   /* Turn off the second scheduling pass, and move it to
      picochip_reorg, to avoid having the second jump optimisation
      trash the instruction modes (e.g., instructions are changed to
@@ -3914,6 +3917,7 @@ picochip_init_builtins (void)
 {
   tree endlink = void_list_node;
   tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
+  tree unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
   tree long_endlink = tree_cons (NULL_TREE, long_integer_type_node, endlink);
   tree int_int_endlink =
     tree_cons (NULL_TREE, integer_type_node, int_endlink);
@@ -3929,7 +3933,7 @@ picochip_init_builtins (void)
   tree long_ftype_int, long_ftype_int_int, long_ftype_int_int_int;
   tree void_ftype_int_long, int_ftype_int_int_int,
     void_ftype_long_int_int_int;
-  tree void_ftype_void, void_ftype_int;
+  tree void_ftype_void, void_ftype_int, unsigned_ftype_unsigned;
 
   /* void func (void) */
   void_ftype_void = build_function_type (void_type_node, endlink);
@@ -3947,6 +3951,9 @@ picochip_init_builtins (void)
 
   /* int func (int) */
   int_ftype_int = build_function_type (integer_type_node, int_endlink);
+
+  /* unsigned int func (unsigned int) */
+  unsigned_ftype_unsigned = build_function_type (unsigned_type_node, unsigned_endlink);
 
   /* int func(int, int) */
   int_ftype_int_int
@@ -3991,18 +3998,18 @@ picochip_init_builtins (void)
 			       NULL_TREE);
 
   /* Initialise the bit reverse function. */
-  add_builtin_function ("__builtin_brev", int_ftype_int,
+  add_builtin_function ("__builtin_brev", unsigned_ftype_unsigned,
 			       PICOCHIP_BUILTIN_BREV, BUILT_IN_MD, NULL,
 			       NULL_TREE);
-  add_builtin_function ("picoBrev", int_ftype_int,
+  add_builtin_function ("picoBrev", unsigned_ftype_unsigned,
 			       PICOCHIP_BUILTIN_BREV, BUILT_IN_MD, NULL,
 			       NULL_TREE);
 
   /* Initialise the byte swap function. */
-  add_builtin_function ("__builtin_byteswap", int_ftype_int,
+  add_builtin_function ("__builtin_byteswap", unsigned_ftype_unsigned,
 			       PICOCHIP_BUILTIN_BYTESWAP, BUILT_IN_MD, NULL,
 			       NULL_TREE);
-  add_builtin_function ("picoByteSwap", int_ftype_int,
+  add_builtin_function ("picoByteSwap", unsigned_ftype_unsigned,
 			       PICOCHIP_BUILTIN_BYTESWAP, BUILT_IN_MD, NULL,
 			       NULL_TREE);
 
