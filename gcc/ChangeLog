@@ -1,3 +1,9 @@
+2008-12-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_hidden): Sun ld on Solaris 9 and up
+	supports hidden.
+	* configure: Regenerate.
+
 2008-12-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/37436
