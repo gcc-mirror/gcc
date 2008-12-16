@@ -838,14 +838,16 @@ mmcu=*:-mmcu=%*}"
   mmcu=at76*|\
   mmcu=at90usb82|\
   mmcu=at90usb162|\
-  mmcu=attiny167: -m avr3}\
+  mmcu=attiny16*|\
+  mmcu=attiny32*: -m avr3}\
 %{mmcu=atmega8*|\
   mmcu=atmega4*|\
   mmcu=at90pwm1|\
   mmcu=at90pwm2|\
   mmcu=at90pwm2b|\
   mmcu=at90pwm3|\
-  mmcu=at90pwm3b: -m avr4}\
+  mmcu=at90pwm3b|\
+  mmcu=at90pwm81: -m avr4}\
 %{mmcu=atmega16*|\
   mmcu=atmega32*|\
   mmcu=atmega406|\
@@ -854,9 +856,12 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90can*|\
   mmcu=at90pwm216|\
   mmcu=at90pwm316|\
+  mmcu=at90scr100|\
   mmcu=at90usb64*|\
   mmcu=at90usb128*|\
-  mmcu=at94k: -m avr5}\
+  mmcu=at94k|\
+  mmcu=m3000*|\
+  mmcu=m3001*: -m avr5}\
 %{mmcu=atmega256*:-m avr6}\
 %{mmcu=atmega324*|\
   mmcu=atmega325*|\
@@ -882,20 +887,27 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega32hv*|\
   mmcu=attiny48|\
   mmcu=attiny88|\
+  mmcu=attiny87|\
   mmcu=attiny167|\
+  mmcu=attiny327|\
   mmcu=at90can*|\
   mmcu=at90pwm*|\
   mmcu=atmega32c1|\
   mmcu=atmega64c1|\
+  mmcu=atmega16m1|\
   mmcu=atmega32m1|\
   mmcu=atmega64m1|\
   mmcu=atmega16u4|\
   mmcu=atmega32u*|\
+  mmcu=at90scr100|\
   mmcu=at90usb*: -Tdata 0x800100}\
 %{mmcu=atmega640|\
   mmcu=atmega1280|\
   mmcu=atmega1281|\
-  mmcu=atmega256*: -Tdata 0x800200} "
+  mmcu=atmega256*|\
+  mmcu=atmega128rfa1: -Tdata 0x800200}\
+%{mmcu=m3000*|\
+  mmcu=m3001*: -Tdata 0x801000}"
 
 #define LIB_SPEC \
   "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lc }}}}}"
@@ -942,15 +954,17 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=attiny461:crttn461.o%s} \
 %{mmcu=attiny861:crttn861.o%s} \
 %{mmcu=attiny43u:crttn43u.o%s} \
+%{mmcu=attiny87:crttn87.o%s} \
 %{mmcu=attiny48:crttn48.o%s} \
 %{mmcu=attiny88:crttn88.o%s} \
-%{mmcu=attiny167:crttn167.o%s} \
 %{mmcu=at43usb355|mmcu=avr3:crt43355.o%s} \
 %{mmcu=at76c711:crt76711.o%s} \
 %{mmcu=atmega103|mmcu=avr31:crtm103.o%s} \
 %{mmcu=at43usb320:crt43320.o%s} \
 %{mmcu=at90usb162|mmcu=avr35:crtusb162.o%s} \
 %{mmcu=at90usb82:crtusb82.o%s} \
+%{mmcu=attiny167:crttn167.o%s} \
+%{mmcu=attiny327:crttn327.o%s} \
 %{mmcu=atmega8|mmcu=avr4:crtm8.o%s} \
 %{mmcu=atmega48:crtm48.o%s} \
 %{mmcu=atmega48p:crtm48p.o%s} \
@@ -963,6 +977,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=at90pwm2b:crt90pwm2b.o%s} \
 %{mmcu=at90pwm3:crt90pwm3.o%s} \
 %{mmcu=at90pwm3b:crt90pwm3b.o%s} \
+%{mmcu=at90pwm81:crt90pwm81.o%s} \
 %{mmcu=atmega16:crtm16.o%s} \
 %{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
 %{mmcu=atmega162:crtm162.o%s} \
@@ -1007,11 +1022,13 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=at90pwm316:crt90pwm316.o%s} \
 %{mmcu=atmega32c1:crtm32c1.o%s} \
 %{mmcu=atmega64c1:crtm64c1.o%s} \
+%{mmcu=atmega16m1:crtm16m1.o%s} \
 %{mmcu=atmega32m1:crtm32m1.o%s} \
 %{mmcu=atmega64m1:crtm64m1.o%s} \
 %{mmcu=atmega16u4:crtm16u4.o%s} \
 %{mmcu=atmega32u4:crtm32u4.o%s} \
 %{mmcu=atmega32u6:crtm32u6.o%s} \
+%{mmcu=at90scr100:crt90scr100.o%s} \
 %{mmcu=at90usb646:crtusb646.o%s} \
 %{mmcu=at90usb647:crtusb647.o%s} \
 %{mmcu=at94k:crtat94k.o%s} \
@@ -1019,11 +1036,15 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=atmega1280:crtm1280.o%s} \
 %{mmcu=atmega1281:crtm1281.o%s} \
 %{mmcu=atmega1284p:crtm1284p.o%s} \
-%{mmcu=atmega2560:crtm2560.o%s} \
-%{mmcu=atmega2561:crtm2561.o%s} \
 %{mmcu=at90can128:crtcan128.o%s} \
+%{mmcu=atmega128rfa1:crtm128rfa1.o%s} \
 %{mmcu=at90usb1286:crtusb1286.o%s} \
-%{mmcu=at90usb1287:crtusb1287.o%s}"
+%{mmcu=at90usb1287:crtusb1287.o%s} \
+%{mmcu=m3000f:crtm3000f.o%s} \
+%{mmcu=m3000s:crtm3000s.o%s} \
+%{mmcu=m3001b:crtm3001b.o%s} \
+%{mmcu=atmega2560|mmcu=avr6:crtm2560.o%s} \
+%{mmcu=atmega2561:crtm2561.o%s}"
 
 #define EXTRA_SPECS {"crt_binutils", CRT_BINUTILS_SPECS},
 

@@ -1,3 +1,11 @@
+2008-12-12  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_t): Add attiny87, attiny327, at90pwm81,
+	atmega16m1, at90scr100, atmega128rfa1, m3000f, m3000s and m3001b
+	devices.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2008-12-16  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	PR target/38842
