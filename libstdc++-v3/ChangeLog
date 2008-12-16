@@ -1,3 +1,14 @@
+2008-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_global/cstdatomic: Remove assert include.
+	* include/debug/debug.h: Consolidate __replacement_assert...
+	* include/parallel/base.h: Consolidate __replacement_assert...
+	* include/bits/c++config: ...here.
+	* include/bits/atomic_0.h: Use it.
+	* include/bits/atomic_2.h: Same.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+
 2008-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/atomic.cc: Revert last change.

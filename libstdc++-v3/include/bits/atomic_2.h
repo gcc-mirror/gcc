@@ -98,9 +98,9 @@ namespace __atomic2
     void
     store(void* __v, memory_order __m = memory_order_seq_cst) volatile
     {
-      assert(__m == memory_order_acquire);
-      assert(__m == memory_order_acq_rel);
-      assert(__m == memory_order_consume);
+      __glibcxx_assert(__m == memory_order_acquire);
+      __glibcxx_assert(__m == memory_order_acq_rel);
+      __glibcxx_assert(__m == memory_order_consume);
 
       if (__m == memory_order_relaxed)
 	_M_i = __v;
@@ -116,8 +116,8 @@ namespace __atomic2
     void*
     load(memory_order __m = memory_order_seq_cst) const volatile
     {
-      assert(__m == memory_order_release);
-      assert(__m == memory_order_acq_rel);
+      __glibcxx_assert(__m == memory_order_release);
+      __glibcxx_assert(__m == memory_order_acq_rel);
 
       __sync_synchronize();
       void* __ret = _M_i;
@@ -149,9 +149,9 @@ namespace __atomic2
     compare_exchange_strong(void*& __v1, void* __v2, memory_order __m1,
 			    memory_order __m2) volatile
     {
-      assert(__m2 == memory_order_release);
-      assert(__m2 == memory_order_acq_rel);
-      assert(__m2 <= __m1);
+      __glibcxx_assert(__m2 == memory_order_release);
+      __glibcxx_assert(__m2 == memory_order_acq_rel);
+      __glibcxx_assert(__m2 <= __m1);
 
       void* __v1o = __v1;
       void* __v1n = __sync_val_compare_and_swap(&_M_i, __v1o, __v2);
@@ -289,9 +289,9 @@ namespace __atomic2
       store(__integral_type __i,
 	    memory_order __m = memory_order_seq_cst) volatile
       {
-	assert(__m == memory_order_acquire);
-	assert(__m == memory_order_acq_rel);
-	assert(__m == memory_order_consume);
+	__glibcxx_assert(__m == memory_order_acquire);
+	__glibcxx_assert(__m == memory_order_acq_rel);
+	__glibcxx_assert(__m == memory_order_consume);
 
 	if (__m == memory_order_relaxed)
 	  _M_i = __i;
@@ -307,8 +307,8 @@ namespace __atomic2
       __integral_type
       load(memory_order __m = memory_order_seq_cst) const volatile
       {
-	assert(__m == memory_order_release);
-	assert(__m == memory_order_acq_rel);
+	__glibcxx_assert(__m == memory_order_release);
+	__glibcxx_assert(__m == memory_order_acq_rel);
 
 	__sync_synchronize();
 	__integral_type __ret = _M_i;
@@ -341,9 +341,9 @@ namespace __atomic2
       compare_exchange_strong(__integral_type& __i1, __integral_type __i2,
 			      memory_order __m1, memory_order __m2) volatile
       {
-	assert(__m2 == memory_order_release);
-	assert(__m2 == memory_order_acq_rel);
-	assert(__m2 <= __m1);
+	__glibcxx_assert(__m2 == memory_order_release);
+	__glibcxx_assert(__m2 == memory_order_acq_rel);
+	__glibcxx_assert(__m2 <= __m1);
 
 	__integral_type __i1o = __i1;
 	__integral_type __i1n = __sync_val_compare_and_swap(&_M_i, __i1o, __i2);

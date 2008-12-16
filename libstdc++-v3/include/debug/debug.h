@@ -86,33 +86,9 @@ namespace __gnu_debug
 
 #else
 
-# include <cstdio>
 # include <debug/macros.h>
 
-namespace std
-{
-  namespace __debug
-  { 
-    // Avoid the use of assert, because we're trying to keep the <cassert>
-    // include out of the mix.
-    inline void
-    __replacement_assert(const char* __file, int __line, 
-			 const char* __function, const char* __condition)
-    {
-      printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
-	     __function, __condition);
-      __builtin_abort();
-    }
-  } // namespace __debug
-} // namespace std
-
-#define _GLIBCXX_DEBUG_ASSERT(_Condition)                                   \
-  do 									    \
-  {									    \
-    if (! (_Condition))                                                     \
-      std::__debug::__replacement_assert(__FILE__, __LINE__,		    \
-					 __PRETTY_FUNCTION__, #_Condition); \
-  } while (false)
+#define _GLIBCXX_DEBUG_ASSERT(_Condition) __glibcxx_assert(_Condition)
 
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
 # define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ASSERT(_Condition)
