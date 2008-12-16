@@ -2104,10 +2104,10 @@ AC_CACHE_CHECK(linker for .hidden support, gcc_cv_ld_hidden,
      gcc_cv_ld_hidden=yes
   fi
 else
+changequote(,)dnl
   gcc_cv_ld_hidden=yes
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
   if echo "$ld_ver" | grep GNU > /dev/null; then
-changequote(,)dnl
     ld_vers=`echo $ld_ver | sed -n \
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
@@ -2131,18 +2131,21 @@ changequote(,)dnl
 	  gcc_cv_ld_hidden=no
 	fi
       fi
-changequote([,])dnl
     fi
   else
     case "${target}" in
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
+      *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
+        gcc_cv_ld_hidden=yes
+	;;
       *)
 	gcc_cv_ld_hidden=no
 	;;
     esac
   fi
+changequote([,])dnl
 fi])
 libgcc_visibility=no
 AC_SUBST(libgcc_visibility)

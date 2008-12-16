@@ -21394,6 +21394,9 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
+      *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
+        gcc_cv_ld_hidden=yes
+	;;
       *)
 	gcc_cv_ld_hidden=no
 	;;
