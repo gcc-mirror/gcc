@@ -1,3 +1,15 @@
+2008-12-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/37436
+	* arm.c (arm_legitimate_index): Only accept addresses that are in
+	canonical form.
+	* predicates.md (arm_reg_or_extendqisi_mem_op): New predicate.
+	* arm.md (extendqihi2): Use arm_reg_or_extendqisi_mem_op predicate
+	for operand1.
+	(extendqisi2): Likewise.
+	(arm_extendqisi, arm_extendqisi_v6): Use arm_extendqisi_mem_op
+	predicate for operand1.
+	
 2008-12-15  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_output_conditional_branch): Assert that
