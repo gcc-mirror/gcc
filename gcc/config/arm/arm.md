@@ -4299,7 +4299,7 @@
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
-	(ashift:SI (match_operand:QI 1 "general_operand" "")
+	(ashift:SI (match_operand:QI 1 "arm_reg_or_extendqisi_mem_op" "")
 		   (const_int 24)))
    (set (match_operand:HI 0 "s_register_operand" "")
 	(ashiftrt:SI (match_dup 2)
@@ -4324,7 +4324,7 @@
 
 (define_insn "*arm_extendqihi_insn"
   [(set (match_operand:HI 0 "s_register_operand" "=r")
-	(sign_extend:HI (match_operand:QI 1 "memory_operand" "Uq")))]
+	(sign_extend:HI (match_operand:QI 1 "arm_extendqisi_mem_op" "Uq")))]
   "TARGET_ARM && arm_arch4"
   "ldr%(sb%)\\t%0, %1"
   [(set_attr "type" "load_byte")
@@ -4335,7 +4335,7 @@
 
 (define_expand "extendqisi2"
   [(set (match_dup 2)
-	(ashift:SI (match_operand:QI 1 "general_operand" "")
+	(ashift:SI (match_operand:QI 1 "arm_reg_or_extendqisi_mem_op" "")
 		   (const_int 24)))
    (set (match_operand:SI 0 "s_register_operand" "")
 	(ashiftrt:SI (match_dup 2)
@@ -4367,7 +4367,7 @@
 
 (define_insn "*arm_extendqisi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "memory_operand" "Uq")))]
+	(sign_extend:SI (match_operand:QI 1 "arm_extendqisi_mem_op" "Uq")))]
   "TARGET_ARM && arm_arch4 && !arm_arch6"
   "ldr%(sb%)\\t%0, %1"
   [(set_attr "type" "load_byte")
@@ -4378,7 +4378,8 @@
 
 (define_insn "*arm_extendqisi_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,Uq")))]
+	(sign_extend:SI
+	 (match_operand:QI 1 "arm_reg_or_extendqisi_mem_op" "r,Uq")))]
   "TARGET_ARM && arm_arch6"
   "@
    sxtb%?\\t%0, %1
