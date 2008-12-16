@@ -1,3 +1,9 @@
+2008-12-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	PR target/38842
+	* config/picochip/picochip.opt (mae): Squeezed the comments onto one
+	line.
+
 2008-12-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_hidden): Sun ld on Solaris 9 and up

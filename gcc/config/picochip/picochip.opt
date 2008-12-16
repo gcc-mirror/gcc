@@ -20,8 +20,7 @@
 
 mae=
 Target RejectNegative Joined Var(picochip_ae_type_string)
-Specify which type of AE to target. This option sets the mul-type
-and byte-access.
+Specify which type of AE to target. This option sets the mul-type and byte-access.
 
 mmul-type=
 Target RejectNegative Undocumented Joined Var(picochip_mul_type_string)
@@ -37,8 +36,7 @@ Enable debug output to be generated.
 
 msymbol-as-address
 Target Mask(SYMBOL_AS_ADDRESS)
-Allow a symbol value to be used as an immediate value in an
-instruction.
+Allow a symbol value to be used as an immediate value in an instruction.
 
 minefficient-warnings
 Target Mask(INEFFICIENT_WARNINGS)
