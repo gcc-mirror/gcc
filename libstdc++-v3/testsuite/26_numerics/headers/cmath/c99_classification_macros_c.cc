@@ -29,7 +29,7 @@
 
 // { dg-do compile }
 // { dg-xfail-if "" { { *-*-linux* *-*-darwin* } || { uclibc || newlib } } { "*" } { "" } }
-// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin* } || { uclibc || newlib } } } }
+// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin[3-7]* } || { uclibc || newlib } } } }
 
 #include <math.h>
 
