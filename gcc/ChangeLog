@@ -1,3 +1,9 @@
+2008-12-12  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
+	* calls.c (expand_call): Do not sibcall if
+	outgoing_reg_parm_stack_space does not match.
+
 2008-12-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_t): Add attiny87, attiny327, at90pwm81,
