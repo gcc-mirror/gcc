@@ -2329,7 +2329,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
   orig_init = init;
 
   if (nelts == NULL_TREE && init != void_zero_node && list_length (init) == 1
-      && !any_type_dependent_arguments_p (init))
+      && describable_type (TREE_VALUE (init)))
     {
       tree auto_node = type_uses_auto (type);
       if (auto_node)

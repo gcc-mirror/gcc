@@ -30,6 +30,12 @@ auto add3(T t, U u) -> decltype (ag(t,u))
   return ag(t,u);
 }
 
+template<class T, class U>
+decltype(*(T*)0+*(U*)0) add4(T t, U u)
+{
+  return t+u;
+}
+
 template <class T>
 struct A
 {
@@ -72,13 +78,28 @@ auto k(T t, U u, V v) -> decltype (t.U::template B<V>::MEM)
   return t.U::template B<V>::MEM;
 }
 
+// For these two examples we can elide the 'decltype' and just mangle the type.
+template <class T>
+auto l(T t) -> decltype (t)
+{
+  return t;
+}
+
+template <class T, T u>
+auto m(T t) -> decltype (u)
+{
+  return t;
+}
+
 A<int> a, *p;
 
 int main()
 {
-  // { dg-final { scan-assembler "_Z3addIidEDTplsTT_sTT0_ES0_S1_" } }
+  // { dg-final { scan-assembler  "_Z3addIidEDTplsTT_sTT0_ES0_S1_" } }
   auto i = add(1, 2.0);
-  // { dg-final { scan-assembler "_Z4add2IidEDTplcvT_vcvT0_vES0_S1_" } }
+  // { dg-final { scan-assembler "_Z4add4IidEDTplsTT_sTT0_ES0_S1_" } }
+  auto i4 = add4(1, 2.0);
+  // { dg-final { scan-assembler "_Z4add2IidEDTplsRT_sRT0_ES0_S1_" } }
   auto i2 = add2(1, 2.0);
   // { dg-final { scan-assembler "_Z4add3IidEDTclL_Z2agEsTT_sTT0_EES0_S1_" } }
   auto i3 = add3(1, 2.0);
@@ -90,4 +111,8 @@ int main()
   h(a,1.0);
   // { dg-final { scan-assembler "_Z1kI1C1AIiE1DEDtdtsTT_srNT0_1BIT1_EE3MEMES4_S5_S7_" } }
   k( C(), A<int>(), D() );
+  // { dg-final { scan-assembler "_Z1lIiET_S0_" } }
+  l(1);
+  // { dg-final { scan-assembler "_Z1mIiLi1EET_S0_" } }
+  m<int,1>(1);
 }
