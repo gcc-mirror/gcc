@@ -1680,7 +1680,9 @@ write_type (tree type)
                 write_char ('t');
               else
                 write_char ('T');
+	      ++skip_evaluation;
               write_expression (DECLTYPE_TYPE_EXPR (type));
+	      --skip_evaluation;
               write_char ('E');
               break;
 
@@ -2139,9 +2141,28 @@ write_member_name (tree member)
 static void
 write_expression (tree expr)
 {
-  enum tree_code code;
+  enum tree_code code = TREE_CODE (expr);
 
-  code = TREE_CODE (expr);
+  /* Inside decltype we can simplify some expressions, since we're only
+     interested in the type.  */
+  if (skip_evaluation)
+    {
+      tree type = describable_type (expr);
+      if (type == NULL_TREE)
+	;
+      else if (TREE_CODE (type) == REFERENCE_TYPE)
+	{
+	  write_string ("sT");
+	  write_type (TREE_TYPE (type));
+	  return;
+	}
+      else
+	{
+	  write_string ("sR");
+	  write_type (type);
+	  return;
+	}
+    }
 
   /* Skip NOP_EXPRs.  They can occur when (say) a pointer argument
      is converted (via qualification conversions) to another

@@ -5496,7 +5496,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
-      else if (!type_dependent_expression_p (init))
+      else if (describable_type (init))
 	{
 	  type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
 	  if (type == error_mark_node)

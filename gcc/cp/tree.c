@@ -1857,8 +1857,17 @@ cp_tree_equal (tree t1, tree t2)
 	return false;
       return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
 
-    case VAR_DECL:
     case PARM_DECL:
+      /* For comparing uses of parameters in late-specified return types
+	 with an out-of-class definition of the function.  */
+      if ((!DECL_CONTEXT (t1) || !DECL_CONTEXT (t2))
+	  && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	  && DECL_NAME (t1) == DECL_NAME (t2))
+	return true;
+      else
+	return false;
+
+    case VAR_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
     case TEMPLATE_DECL:

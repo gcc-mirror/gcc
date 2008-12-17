@@ -1,3 +1,16 @@
+2008-12-17  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (describable_type): New function.
+	(finish_decltype_type): Use it for dependent exprs.
+	* cp-tree.h: Declare it.
+	* mangle.c (write_type) [DECLTYPE_TYPE]: Set skip_evaluation.
+	(write_expression): If skip_evaluation, use type stubs.
+	* tree.c (cp_tree_equal): Handle PARM_DECLs from different
+	declarations of a function.
+	* init.c (build_new): Do auto deduction if type is describable.
+	* decl.c (cp_finish_decl): Likewise.
+	* parser.c (cp_parser_omp_for_loop): Likewise.
+
 2008-12-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35319

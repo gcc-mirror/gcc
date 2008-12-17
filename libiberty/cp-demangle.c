@@ -2561,7 +2561,8 @@ d_expression (struct d_info *di)
 			    d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
 					 d_template_args (di)));
     }
-  else if (peek == 's' && d_peek_next_char (di) == 'T')
+  else if (peek == 's'
+	   && (d_peek_next_char (di) == 'T' || d_peek_next_char (di) == 'R'))
     {
       /* Just demangle a parameter placeholder as its type.  */
       d_advance (di, 2);
@@ -2608,20 +2609,22 @@ d_expression (struct d_info *di)
 	  args = op->u.s_extended_operator.args;
 	  break;
 	case DEMANGLE_COMPONENT_CAST:
-	  if (d_peek_char (di) == 'v')
-	    /* T() encoded as an operand of void.  */
-	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-				cplus_demangle_type (di));
-	  else
-	    args = 1;
+	  args = 1;
 	  break;
 	}
 
       switch (args)
 	{
 	case 1:
-	  return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-			      d_expression (di));
+	  {
+	    struct demangle_component *operand;
+	    if (op->type == DEMANGLE_COMPONENT_CAST)
+	      operand = d_exprlist (di);
+	    else
+	      operand = d_expression (di);
+	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
+				operand);
+	  }
 	case 2:
 	  {
 	    struct demangle_component *left;
@@ -3763,8 +3766,14 @@ d_print_comp (struct d_print_info *dpi,
 	d_print_comp (dpi, d_left (dc));
       if (d_right (dc) != NULL)
 	{
+	  size_t len;
 	  d_append_string (dpi, ", ");
+	  len = dpi->len;
 	  d_print_comp (dpi, d_right (dc));
+	  /* If that didn't print anything (which can happen with empty
+	     template argument packs), remove the comma and space.  */
+	  if (dpi->len == len)
+	    dpi->len -= 2;
 	}
       return;
 
@@ -3800,12 +3809,7 @@ d_print_comp (struct d_print_info *dpi,
 	  d_print_cast (dpi, d_left (dc));
 	  d_append_char (dpi, ')');
 	}
-      if (d_left (dc)->type == DEMANGLE_COMPONENT_CAST
-	  && d_right (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
-	/* type() -- FIXME what about type(multiple,args) */
-	d_append_string (dpi, "()");
-      else
-	d_print_subexpr (dpi, d_right (dc));
+      d_print_subexpr (dpi, d_right (dc));
       return;
 
     case DEMANGLE_COMPONENT_BINARY:
