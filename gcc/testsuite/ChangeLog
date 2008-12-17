@@ -1,3 +1,8 @@
+2008-12-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38137
+	* gfortran.dg/merge_char_3.f90: New test.
+
 2008-12-15  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38487

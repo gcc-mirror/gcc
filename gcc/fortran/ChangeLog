@@ -1,3 +1,9 @@
+2008-12-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38137
+	* trans-intrinsic.c (conv_same_strlen_check): New method.
+	(gfc_conv_intrinsic_merge): Call it here to actually do the check.
+
 2008-12-15  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38487
