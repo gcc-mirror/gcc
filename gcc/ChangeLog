@@ -1,3 +1,10 @@
+2008-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+	
+        * doc/install.texi (Prerequisites): Document PPL and CLooG-PPL
+        dependences and the configure options.
+        (Configuration): Document --with-cloog, --with-ppl, --with-cloog-lib,
+         --with-ppl-lib, --with-cloog-incude, --with-ppl-include.
+
 2008-12-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/38556

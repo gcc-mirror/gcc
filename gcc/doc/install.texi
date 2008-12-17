@@ -327,6 +327,24 @@ Alternatively, if a MPFR source distribution is found in a subdirectory
 of your GCC sources named @file{mpfr}, it will be built together with
 GCC@.
 
+@item Parma Polyhedra Library (PPL) version 0.10
+
+Necessary to build GCC with the Graphite loop optimizations.
+It can be downloaded from @uref{http://www.cs.unipr.it/ppl/Download/}.
+
+The @option{--with-ppl} configure option should be used if PPL is not
+installed in your default library search path.
+
+@item CLooG-PPL version 0.15
+
+Necessary to build GCC with the Graphite loop optimizations.  It can
+be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
+The code in @file{cloog-ppl-0.15.tar.gz} comes from a branch of CLooG
+available from @uref{http://repo.or.cz/w/cloog-ppl.git}.  CLooG-PPL
+should be configured with @option{--with-ppl}.
+
+The @option{--with-cloog} configure option should be used if CLooG is
+not installed in your default library search path.
 
 @item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
 
@@ -1425,6 +1443,26 @@ GCC, you can explicitly specify the directory where they are installed
 @option{--with-mpfr=@var{mpfrinstalldir}} option is shorthand for
 @option{--with-mpfr-lib=@var{mpfrinstalldir}/lib} and
 @option{--with-mpfr-include=@var{mpfrinstalldir}/include}.  If these
+shorthand assumptions are not correct, you can use the explicit
+include and lib options directly.
+
+@item --with-ppl=@var{pathname}
+@itemx --with-ppl-include=@var{pathname}
+@itemx --with-ppl-lib=@var{pathname}
+@itemx --with-cloog=@var{pathname}
+@itemx --with-cloog-include=@var{pathname}
+@itemx --with-cloog-lib=@var{pathname}
+If you do not have PPL (the Parma Polyhedra Library) and the CLooG
+libraries installed in a standard location and you want to build GCC,
+you can explicitly specify the directory where they are installed
+(@samp{--with-ppl=@var{pplinstalldir}},
+@samp{--with-cloog=@var{clooginstalldir}}). The
+@option{--with-ppl=@var{pplinstalldir}} option is shorthand for
+@option{--with-ppl-lib=@var{pplinstalldir}/lib} and
+@option{--with-ppl-include=@var{pplinstalldir}/include}.  Likewise the
+@option{--with-cloog=@var{clooginstalldir}} option is shorthand for
+@option{--with-cloog-lib=@var{clooginstalldir}/lib} and
+@option{--with-cloog-include=@var{clooginstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
 
