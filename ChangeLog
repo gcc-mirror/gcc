@@ -1,3 +1,7 @@
+2008-12-02  Ben Elliston  <bje@au.ibm.com>
+
+	* config.sub, config.guess: Update from upstream sources.
+
 2008-12-12  Sebastian Pop <sebastian.pop@amd.com>
 
 	* configure.ac (ppllibs): Add by default the lib flags.
