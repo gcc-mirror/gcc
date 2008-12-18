@@ -1,3 +1,12 @@
+2008-12-18  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
+	Add xfail on all targets except darwin.
+	* libstdc++-v3/testsuite/21_strings/basic_string/element_access/char/
+	1674.cc: Same.
+	* libstdc++-v3/testsuite/22_locale/ctype/is/char/2.cc: Correct syntax
+	for xfailing on all targets except linux.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
