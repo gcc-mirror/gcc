@@ -1,3 +1,20 @@
+2008-12-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Condition
+	choice of e500 comparison instructions on flag_finite_math_only &&
+	!flag_trapping_math, not flag_unsafe_math_optimizations.
+	* config/rs6000/rs6000.md (abstf2): Condition choice of e500
+	instructions on flag_finite_math_only && !flag_trapping_math, not
+	flag_unsafe_math_optimizations.
+	(bltgt, sltgt): Disable for TARGET_HARD_FLOAT && !TARGET_FPRS.
+	* config/rs6000/spe.md (cmpsfeq_gpr, tstsfeq_gpr, cmpsfgt_gpr,
+	tstsfgt_gpr, cmpsflt_gpr, tstsflt_gpr, cmpdfeq_gpr, tstdfeq_gpr,
+	cmpdfgt_gpr, tstdfgt_gpr, cmpdflt_gpr, tstdflt_gpr, cmptfeq_gpr,
+	tsttfeq_gpr, cmptfgt_gpr, tsttfgt_gpr, cmptflt_gpr, tsttflt_gpr):
+	Condition choice of comparison instructions on
+	flag_finite_math_only && !flag_trapping_math, not
+	flag_unsafe_math_optimizations.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
