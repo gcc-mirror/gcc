@@ -2580,4 +2580,7 @@ void gfc_global_used (gfc_gsymbol *, locus *);
 /* dependency.c */
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
 
+/* check.c */
+gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
+
 #endif /* GCC_GFORTRAN_H  */

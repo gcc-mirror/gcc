@@ -396,8 +396,8 @@ identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
 /* Check whether two character expressions have the same length;
    returns SUCCESS if they have or if the length cannot be determined.  */
 
-static gfc_try
-check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
+gfc_try
+gfc_check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
 {
    long len_a, len_b;
    len_a = len_b = -1;
@@ -423,8 +423,8 @@ check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
    if (len_a == len_b)
      return SUCCESS;
 
-   gfc_error ("Unequal character lengths (%ld and %ld) in %s intrinsic "
-	      "at %L", len_a, len_b, name, &a->where);
+   gfc_error ("Unequal character lengths (%ld/%ld) in %s at %L",
+	      len_a, len_b, name, &a->where);
    return FAILURE;
 }
 
@@ -2011,7 +2011,7 @@ gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
     return FAILURE;
 
   if (tsource->ts.type == BT_CHARACTER)
-    return check_same_strlen (tsource, fsource, "MERGE");
+    return gfc_check_same_strlen (tsource, fsource, "MERGE intrinsic");
 
   return SUCCESS;
 }

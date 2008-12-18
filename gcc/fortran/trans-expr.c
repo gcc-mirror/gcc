@@ -4016,7 +4016,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   tree tmp;
   tree decl;
 
-
   gfc_start_block (&block);
 
   gfc_init_se (&lse, NULL);
@@ -4039,15 +4038,32 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);
+
+      /* Check character lengths if character expression.  The test is only
+	 really added if -fbounds-check is enabled.  */
+      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
+	{
+	  gcc_assert (expr2->ts.type == BT_CHARACTER);
+	  gcc_assert (lse.string_length && rse.string_length);
+	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
+				       lse.string_length, rse.string_length,
+				       &block);
+	}
+
       gfc_add_modify (&block, lse.expr,
 			   fold_convert (TREE_TYPE (lse.expr), rse.expr));
+
       gfc_add_block_to_block (&block, &rse.post);
       gfc_add_block_to_block (&block, &lse.post);
     }
   else
     {
+      tree strlen_lhs;
+      tree strlen_rhs = NULL_TREE;
+
       /* Array pointer.  */
       gfc_conv_expr_descriptor (&lse, expr1, lss);
+      strlen_lhs = lse.string_length;
       switch (expr2->expr_type)
 	{
 	case EXPR_NULL:
@@ -4057,8 +4073,9 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 
 	case EXPR_VARIABLE:
 	  /* Assign directly to the pointer's descriptor.  */
-          lse.direct_byref = 1;
+	  lse.direct_byref = 1;
 	  gfc_conv_expr_descriptor (&lse, expr2, rss);
+	  strlen_rhs = lse.string_length;
 
 	  /* If this is a subreference array pointer assignment, use the rhs
 	     descriptor element size for the lhs span.  */
@@ -4071,7 +4088,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	      tmp = gfc_get_element_type (TREE_TYPE (rse.expr));
 	      tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
 	      if (!INTEGER_CST_P (tmp))
-	        gfc_add_block_to_block (&lse.post, &rse.pre);
+		gfc_add_block_to_block (&lse.post, &rse.pre);
 	      gfc_add_modify (&lse.post, GFC_DECL_SPAN(decl), tmp);
 	    }
 
@@ -4086,10 +4103,23 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  lse.expr = tmp;
 	  lse.direct_byref = 1;
 	  gfc_conv_expr_descriptor (&lse, expr2, rss);
+	  strlen_rhs = lse.string_length;
 	  gfc_add_modify (&lse.pre, desc, tmp);
 	  break;
-        }
+	}
+
       gfc_add_block_to_block (&block, &lse.pre);
+
+      /* Check string lengths if applicable.  The check is only really added
+	 to the output code if -fbounds-check is enabled.  */
+      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
+	{
+	  gcc_assert (expr2->ts.type == BT_CHARACTER);
+	  gcc_assert (strlen_lhs && strlen_rhs);
+	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
+				       strlen_lhs, strlen_rhs, &block);
+	}
+
       gfc_add_block_to_block (&block, &lse.post);
     }
   return gfc_finish_block (&block);

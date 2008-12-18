@@ -1,3 +1,19 @@
+2008-12-18  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/31822
+	* gfortran.h (gfc_check_same_strlen): Made public.
+	* trans.h (gfc_trans_same_strlen_check): Made public.
+	* check.c (gfc_check_same_strlen): Made public and adapted error
+	message output to be useful not only for intrinsics.
+	(gfc_check_merge): Adapt to gfc_check_same_strlen change.
+	* expr.c (gfc_check_pointer_assign): Use gfc_check_same_strlen for
+	string length compile-time check.
+	* trans-expr.c (gfc_trans_pointer_assignment): Add runtime-check for
+	equal string lengths using gfc_trans_same_strlen_check.
+	* trans-intrinsic.c (gfc_trans_same_strlen_check): Renamed and made
+	public from conv_same_strlen_check.
+	(gfc_conv_intrinsic_merge): Adapted accordingly.
+
 2008-12-17  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38137

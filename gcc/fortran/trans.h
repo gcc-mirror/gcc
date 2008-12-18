@@ -458,6 +458,10 @@ tree gfc_trans_runtime_error_vararg (bool, locus*, const char*, va_list);
 void gfc_trans_runtime_check (bool, bool, tree, stmtblock_t *, locus *,
 			      const char *, ...);
 
+/* Generate a runtime check for same string length.  */
+void gfc_trans_same_strlen_check (const char*, locus*, tree, tree,
+				  stmtblock_t*);
+
 /* Generate a call to free() after checking that its arg is non-NULL.  */
 tree gfc_call_free (tree);
 

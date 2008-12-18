@@ -751,9 +751,9 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
    string lengths for both expressions are the same (needed for e.g. MERGE).
    If bounds-checking is not enabled, does nothing.  */
 
-static void
-conv_same_strlen_check (const char* intr_name, locus* where, tree a, tree b,
-			stmtblock_t* target)
+void
+gfc_trans_same_strlen_check (const char* intr_name, locus* where,
+			     tree a, tree b, stmtblock_t* target)
 {
   tree cond;
   tree name;
@@ -769,8 +769,7 @@ conv_same_strlen_check (const char* intr_name, locus* where, tree a, tree b,
   name = gfc_build_cstring_const (intr_name);
   name = gfc_build_addr_expr (pchar_type_node, name);
   gfc_trans_runtime_check (true, false, cond, target, where,
-			   "Unequal character lengths (%ld/%ld) for arguments"
-			   " to %s",
+			   "Unequal character lengths (%ld/%ld) in %s",
 			   fold_convert (long_integer_type_node, a),
 			   fold_convert (long_integer_type_node, b), name);
 }
@@ -3081,8 +3080,8 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
       fsource = args[3];
       mask = args[4];
 
-      conv_same_strlen_check ("MERGE", &expr->where, len, len2, &se->post);
-
+      gfc_trans_same_strlen_check ("MERGE intrinsic", &expr->where, len, len2,
+				   &se->pre);
       se->string_length = len;
     }
   type = TREE_TYPE (tsource);

@@ -6,6 +6,6 @@
   character(5), pointer :: ch3(:)
 
   ch2 => ch1  ! Check correct is OK
-  ch3 => ch1  ! { dg-error "Different character lengths" }
+  ch3 => ch1  ! { dg-error "Unequal character lengths \\(5/4\\)" }
 
 end
