@@ -1,5 +1,9 @@
 2008-12-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/38533
+	* gcc.dg/tree-ssa/pr38533.c: New test.
+	* gcc.c-torture/execute/pr38533.c: New test.
+
 	PR middle-end/38505
 	* gcc.c-torture/compile/pr38505.c: New test.
 

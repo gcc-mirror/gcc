@@ -1265,13 +1265,36 @@ is_phi_for_stmt (gimple stmt, tree operand)
   return false;
 }
 
+/* Remove def stmt of VAR if VAR has zero uses and recurse
+   on rhs1 operand if so.  */
+
+static void
+remove_visited_stmt_chain (tree var)
+{
+  gimple stmt;
+  gimple_stmt_iterator gsi;
+
+  while (1)
+    {
+      if (TREE_CODE (var) != SSA_NAME || !has_zero_uses (var))
+	return;
+      stmt = SSA_NAME_DEF_STMT (var);
+      if (!gimple_visited_p (stmt))
+	return;
+      var = gimple_assign_rhs1 (stmt);
+      gsi = gsi_for_stmt (stmt);
+      gsi_remove (&gsi, true);
+      release_defs (stmt);
+    }
+}
+
 /* Recursively rewrite our linearized statements so that the operators
    match those in OPS[OPINDEX], putting the computation in rank
    order.  */
 
 static void
 rewrite_expr_tree (gimple stmt, unsigned int opindex,
-		   VEC(operand_entry_t, heap) * ops)
+		   VEC(operand_entry_t, heap) * ops, bool moved)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
@@ -1348,6 +1371,8 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	  gimple_assign_set_rhs1 (stmt, oe1->op);
 	  gimple_assign_set_rhs2 (stmt, oe2->op);
 	  update_stmt (stmt);
+	  if (rhs1 != oe1->op && rhs1 != oe2->op)
+	    remove_visited_stmt_chain (rhs1);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1367,6 +1392,24 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 
   if (oe->op != rhs2)
     {
+      if (!moved)
+	{
+	  gimple_stmt_iterator gsinow, gsirhs1;
+	  gimple stmt1 = stmt, stmt2;
+	  unsigned int count;
+
+	  gsinow = gsi_for_stmt (stmt);
+	  count = VEC_length (operand_entry_t, ops) - opindex - 2;
+	  while (count-- != 0)
+	    {
+	      stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt1));
+	      gsirhs1 = gsi_for_stmt (stmt2);
+	      gsi_move_before (&gsirhs1, &gsinow);
+	      gsi_prev (&gsinow);
+	      stmt1 = stmt2;
+	    }
+	  moved = true;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1385,7 +1428,7 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
     }
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
-  rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops);
+  rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops, moved);
 }
 
 /* Transform STMT, which is really (A +B) + (C + D) into the left
@@ -1561,7 +1604,6 @@ static void
 linearize_expr_tree (VEC(operand_entry_t, heap) **ops, gimple stmt,
 		     bool is_associative, bool set_visited)
 {
-  gimple_stmt_iterator gsinow, gsilhs;
   tree binlhs = gimple_assign_rhs1 (stmt);
   tree binrhs = gimple_assign_rhs2 (stmt);
   gimple binlhsdef, binrhsdef;
@@ -1642,9 +1684,6 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, gimple stmt,
   gcc_assert (TREE_CODE (binrhs) != SSA_NAME
 	      || !is_reassociable_op (SSA_NAME_DEF_STMT (binrhs),
 				      rhscode, loop));
-  gsinow = gsi_for_stmt (stmt);
-  gsilhs = gsi_for_stmt (SSA_NAME_DEF_STMT (binlhs));
-  gsi_move_before (&gsilhs, &gsinow);
   linearize_expr_tree (ops, SSA_NAME_DEF_STMT (binlhs),
 		       is_associative, set_visited);
   add_to_ops_vec (ops, binrhs);
@@ -1862,11 +1901,13 @@ reassociate_bb (basic_block bb)
 		      fprintf (dump_file, "Transforming ");
 		      print_gimple_stmt (dump_file, stmt, 0, 0);
 		    }
-		  
+
+		  rhs1 = gimple_assign_rhs1 (stmt);
 		  gimple_assign_set_rhs_from_tree (&gsi,
 						   VEC_last (operand_entry_t,
 							     ops)->op);
 		  update_stmt (stmt);
+		  remove_visited_stmt_chain (rhs1);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
@@ -1875,9 +1916,7 @@ reassociate_bb (basic_block bb)
 		    }
 		}
 	      else
-		{
-		  rewrite_expr_tree (stmt, 0, ops);
-		}
+		rewrite_expr_tree (stmt, 0, ops, false);
 
 	      VEC_free (operand_entry_t, heap, ops);
 	    }
