@@ -43,7 +43,7 @@ int main()
   A<int>().fr(1);
   // { dg-final { scan-assembler  "_ZN1AIiE3frrIiEEDTplsTT_sTiES2_" } }
   A<int>().frr(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE1gIiEEDTplsTT_sRjES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE1gIiEEDTplsTT_sR.ES2_" } }
   A<int>().g(1);
   // { dg-final { scan-assembler  "_ZN1AIiE1hIiEEDTplsTT_sr1BIS2_E1iES2_" } }
   A<int>().h(1);
