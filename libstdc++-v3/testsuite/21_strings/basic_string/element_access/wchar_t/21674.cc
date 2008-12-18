@@ -1,6 +1,6 @@
+// { dg-do run { xfail { ! { *-*-darwin* } } } }
 // { dg-require-debug-mode "" }
 // { dg-options "-O0 -D_GLIBCXX_DEBUG" }
-// { dg-do run { xfail *-*-* } }
 
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
