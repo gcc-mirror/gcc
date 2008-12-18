@@ -5953,6 +5953,7 @@ cp_parser_token_starts_cast_expression (cp_token *token)
     case CPP_XOR:
     case CPP_OR:
     case CPP_OR_OR:
+    case CPP_EOF:
       return false;
 
       /* '[' may start a primary-expression in obj-c++.  */
