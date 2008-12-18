@@ -774,7 +774,7 @@ global_conflicts (void)
       bitmap_iterator bi;
 
       bitmap_copy (live, DF_LIVE_OUT (bb));
-      df_simulate_artificial_refs_at_end (bb, live);
+      df_simulate_initialize_backwards (bb, live);
 
       sparseset_clear (allocnos_live);
       memset (live_subregs_used, 0, max_allocno * sizeof (int));

@@ -1,3 +1,44 @@
+2008-12-18  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/37922
+	* dse.c (bb_info): Added regs_live field.
+	(look_for_hardregs): New function.
+	(replace_read): Added regs_live parameter and code to check that
+	shift sequence does not clobber live hardregs.
+	(check_mem_read_rtx): Added parameter to replace_read.
+	(dse_step1): Added regs_live bitmap and initialize it.
+	(rest_of_handle_dse): Added DF_NOTES problem and earlier call to
+	df_analyze.
+	* df-problems.c Renamed to 
+	df_simulate_initialize_backwards.
+	(df_simulate_one_insn): Renamed to
+	df_simulate_one_insn_backwards.
+	(df_simulate_artificial_refs_at_top): Renamed to 
+	df_simulate_finalize_backwards.
+	(df_simulate_initialized_forwards,
+	df_simulate_one_insn_forwards,
+	df_simulate_finalize_backwards): New functions.
+	* df.h (df_simulate_artificial_refs_at_end): Renamed to 
+	df_simulate_initialize_backwards.
+	(df_simulate_one_insn): Renamed to
+	df_simulate_one_insn_backwards.
+	(df_simulate_artificial_refs_at_top): Renamed to 
+	df_simulate_finalize_backwards.
+	(df_simulate_initialized_forwards,
+	df_simulate_one_insn_forwards,
+	df_simulate_finalize_backwards): New functions.
+	* ra-conflict.c (global_conflicts): Renamed
+	df_simulate_artificial_refs_at_end to
+	df_simulate_initialize_backwards.
+	* sel-sched.c (propagate_lv_set): Renamed df_simulate_one_insn to
+	df_simulate_one_insn_backwards.
+	* ifcvt.c (dead_or_predicable): Renamed
+	df_simulate_artificial_refs_at_end to
+	df_simulate_initialize_backwards. Renamed df_simulate_one_insn to
+	df_simulate_one_insn_backwards.
+	* recog.c (peephole2_optimize): Ditto.
+	* rtl-factoring (collect_pattern_seqs, clear_regs_live_in_seq): Ditto.
+
 2008-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38533

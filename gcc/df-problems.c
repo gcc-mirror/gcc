@@ -3759,24 +3759,19 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
    The following three functions are used only for BACKWARDS scanning:
    i.e. they process the defs before the uses.
 
-   df_simulate_artificial_refs_at_end should be called first with a
+   df_simulate_initialize_backwards should be called first with a
    bitvector copyied from the DF_LIVE_OUT or DF_LR_OUT.  Then
-   df_simulate_one_insn should be called for each insn in the block,
-   starting with the last on.  Finally,
-   df_simulate_artificial_refs_at_top can be called to get a new value
+   df_simulate_one_insn_backwards should be called for each insn in
+   the block, starting with the last on.  Finally,
+   df_simulate_finalize_backwards can be called to get a new value
    of the sets at the top of the block (this is rarely used).
-
-   It would be not be difficult to define a similar set of functions
-   that work in the forwards direction.  In that case the functions
-   would ignore the use sets and look for the REG_DEAD and REG_UNUSED
-   notes.
-----------------------------------------------------------------------------*/
+   ----------------------------------------------------------------------------*/
 
 /* Apply the artificial uses and defs at the end of BB in a backwards
    direction.  */
 
 void 
-df_simulate_artificial_refs_at_end (basic_block bb, bitmap live)
+df_simulate_initialize_backwards (basic_block bb, bitmap live)
 {
   df_ref *def_rec;
   df_ref *use_rec;
@@ -3801,7 +3796,7 @@ df_simulate_artificial_refs_at_end (basic_block bb, bitmap live)
 /* Simulate the backwards effects of INSN on the bitmap LIVE.  */
 
 void 
-df_simulate_one_insn (basic_block bb, rtx insn, bitmap live)
+df_simulate_one_insn_backwards (basic_block bb, rtx insn, bitmap live)
 {
   if (! INSN_P (insn))
     return;	
@@ -3816,7 +3811,7 @@ df_simulate_one_insn (basic_block bb, rtx insn, bitmap live)
    direction.  */
 
 void 
-df_simulate_artificial_refs_at_top (basic_block bb, bitmap live)
+df_simulate_finalize_backwards (basic_block bb, bitmap live)
 {
   df_ref *def_rec;
 #ifdef EH_USES
@@ -3840,3 +3835,92 @@ df_simulate_artificial_refs_at_top (basic_block bb, bitmap live)
     }
 #endif
 }
+/*----------------------------------------------------------------------------
+   The following three functions are used only for FORWARDS scanning:
+   i.e. they process the defs and the REG_DEAD and REG_UNUSED notes.
+   Thus it is important to add the DF_NOTES problem to the stack of 
+   problems computed before using these functions.
+
+   df_simulate_initialize_forwards should be called first with a
+   bitvector copyied from the DF_LIVE_IN or DF_LR_IN.  Then
+   df_simulate_one_insn_forwards should be called for each insn in
+   the block, starting with the last on.  Finally,
+   df_simulate_finalize_forwards can be called to get a new value
+   of the sets at the bottom of the block (this is rarely used).
+   ----------------------------------------------------------------------------*/
+
+/* Apply the artificial uses and defs at the top of BB in a backwards
+   direction.  */
+
+void 
+df_simulate_initialize_forwards (basic_block bb, bitmap live)
+{
+  df_ref *def_rec;
+  int bb_index = bb->index;
+  
+  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	bitmap_clear_bit (live, DF_REF_REGNO (def));
+    }
+}
+
+/* Simulate the backwards effects of INSN on the bitmap LIVE.  */
+
+void 
+df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
+{
+  rtx link;
+  if (! INSN_P (insn))
+    return;	
+
+  /* Make sure that the DF_NOTES really is an active df problem.  */ 
+  gcc_assert (df_note);
+
+  df_simulate_defs (insn, live);
+
+  /* Clear all of the registers that go dead.  */
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    {
+      switch (REG_NOTE_KIND (link))
+	case REG_DEAD:
+	case REG_UNUSED:
+	{
+	  rtx reg = XEXP (link, 0);
+	  int regno = REGNO (reg);
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      int n = hard_regno_nregs[regno][GET_MODE (reg)];
+	      while (--n >= 0)
+		bitmap_clear_bit (live, regno + n);
+	    }
+	  else 
+	    bitmap_clear_bit (live, regno);
+	  break;
+	default:
+	  break;
+	}
+    }
+  df_simulate_fixup_sets (bb, live);
+}
+
+
+/* Apply the artificial uses and defs at the end of BB in a backwards
+   direction.  */
+
+void 
+df_simulate_finalize_forwards (basic_block bb, bitmap live)
+{
+  df_ref *def_rec;
+  int bb_index = bb->index;
+  
+  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
+	bitmap_clear_bit (live, DF_REF_REGNO (def));
+    }
+}
+
+
