@@ -1,3 +1,9 @@
+2008-12-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/38565
+	* gimplifier.c (gimplify_init_constructor): For constant vector
+	CONSTRUCTORs use GENERIC_TREE_OPERAND instead of TREE_OPERAND.
+
 2008-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/38062

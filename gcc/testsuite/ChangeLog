@@ -1,3 +1,8 @@
+2008-12-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/38565
+	* testsuite/g++.dg/torture/pr38565.C: New test.
+
 2008-12-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35937

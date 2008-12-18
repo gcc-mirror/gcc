@@ -3416,7 +3416,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 
 	    if (constant_p)
 	      {
-		TREE_OPERAND (*expr_p, 1) = build_vector_from_ctor (type, elts);
+		GENERIC_TREE_OPERAND (*expr_p, 1)
+		  = build_vector_from_ctor (type, elts);
 		break;
 	      }
 
