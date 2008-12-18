@@ -1,3 +1,13 @@
+2008-12-18  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
+	* i386.h (CONDITIONAL_REGISTER_USAGE): Initialize for current function
+	ABI.
+	* i386.c (ix86_call_abi_override): Do not trigger target re-init and
+	do not try to modify call used regs.
+	(ix86_maybe_switch_abi): New function.
+	(TARGET_EXPAND_TO_RTL_HOOK): New macro.
+
 2008-12-18  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37922

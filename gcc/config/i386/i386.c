@@ -4600,9 +4600,7 @@ extern void init_regs (void);
 
 /* Implementation of call abi switching target hook. Specific to FNDECL
    the specific call register sets are set. See also CONDITIONAL_REGISTER_USAGE
-   for more details.
-   To prevent redudant calls of costy function init_regs (), it checks not to
-   reset register usage for default abi.  */
+   for more details.  */
 void
 ix86_call_abi_override (const_tree fndecl)
 {
@@ -4610,24 +4608,17 @@ ix86_call_abi_override (const_tree fndecl)
     cfun->machine->call_abi = DEFAULT_ABI;
   else
     cfun->machine->call_abi = ix86_function_type_abi (TREE_TYPE (fndecl));
-  if (TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
-    {
-      if (call_used_regs[4 /*RSI*/] != 0 || call_used_regs[5 /*RDI*/] != 0)
-        {
-          call_used_regs[4 /*RSI*/] = 0;
-          call_used_regs[5 /*RDI*/] = 0;
-          init_regs ();
-        }
-    }
-  else if (TARGET_64BIT)
-    {
-      if (call_used_regs[4 /*RSI*/] != 1 || call_used_regs[5 /*RDI*/] != 1)
-        {
-          call_used_regs[4 /*RSI*/] = 1;
-          call_used_regs[5 /*RDI*/] = 1;
-          init_regs ();
-        }
-    }
+}
+
+/* MS and SYSV ABI have different set of call used registers.  Avoid expensive
+   re-initialization of init_regs each time we switch function context since
+   this is needed only during RTL expansion.  */
+static void
+ix86_maybe_switch_abi (void)
+{
+  if (TARGET_64BIT &&
+      call_used_regs[4 /*RSI*/] ==  (cfun->machine->call_abi == MS_ABI))
+    init_regs ();
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -29242,6 +29233,9 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_OPTION_CAN_INLINE_P
 #define TARGET_OPTION_CAN_INLINE_P ix86_can_inline_p
+
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK ix86_maybe_switch_abi
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
