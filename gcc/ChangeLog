@@ -1,6 +1,22 @@
 2008-12-18  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
+	* df-scan.c (persistent_obstack, df_invalidated_by_call): Remove.
+	(df_scan_start_dump, df_get_call_refs, df_hard_reg_init): Rename
+	df_invalidated_by_call to invalidated_by_call_regset.
+	* df.h (df_invalidated_by_call): Remove.
+	* regclass.c (regs_invalidated_by_call_regset, persistent_obstack): New
+	variables.
+	(init_reg_sets_1): Initialize regs_invalidated_by_call_regset.
+	(globalize_reg): Likewise.
+	* df-problems.c (df_rd_local_compute, df_lr_confluence_n,
+	df_byte_lr_alloc): Rename df_invalidated_by_call to
+	invalidated_by_call_regset.
+	* basic-block.h (regs_invalidated_by_call_regset): Declare.
+
+2008-12-18  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
 	* ira-cost.c (copy_cost): Lazilly initialize move_cost if needed.
 
 2008-12-18  Jan Hubicka  <jh@suse.cz>

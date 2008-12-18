@@ -75,19 +75,9 @@ along with GCC; see the file COPYING3.  If not see
       free (V);  \
   } while (0)
 
-/* The bitmap_obstack is used to hold some static variables that
-   should not be reset after each function is compiled.  */
-
-static bitmap_obstack persistent_obstack;
-
 /* The set of hard registers in eliminables[i].from. */
 
 static HARD_REG_SET elim_reg_set;
-
-/* This is a bitmap copy of regs_invalidated_by_call so that we can
-   easily add it into bitmaps, etc. */ 
-
-bitmap df_invalidated_by_call = NULL;
 
 /* Initialize ur_in and ur_out as if all hard registers were partially
    available.  */
@@ -436,7 +426,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   rtx insn;
 
   fprintf (file, ";;  invalidated by call \t");
-  df_print_regset (file, df_invalidated_by_call);
+  df_print_regset (file, regs_invalidated_by_call_regset);
   fprintf (file, ";;  hardware regs used \t");
   df_print_regset (file, df->hardware_regs_used);
   fprintf (file, ";;  regular block artificial uses \t");
@@ -3391,7 +3381,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
       }
 
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
-  EXECUTE_IF_SET_IN_BITMAP (df_invalidated_by_call, 0, ui, bi)
+  EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, ui, bi)
     {
       if (!global_regs[ui]
 	  && (!bitmap_bit_p (defs_generated, ui))
@@ -4121,8 +4111,6 @@ df_hard_reg_init (void)
   if (initialized)
     return;
 
-  bitmap_obstack_initialize (&persistent_obstack);
-
   /* Record which registers will be eliminated.  We use this in
      mark_used_regs.  */
   CLEAR_HARD_REG_SET (elim_reg_set);
@@ -4133,14 +4121,6 @@ df_hard_reg_init (void)
 #else
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
 #endif
-  
-  df_invalidated_by_call = BITMAP_ALLOC (&persistent_obstack);
-  
-  /* Inconveniently, this is only readily available in hard reg set
-     form.  */
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
-    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-      bitmap_set_bit (df_invalidated_by_call, i);
   
   initialized = true;
 }
