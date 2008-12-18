@@ -964,7 +964,9 @@ do {									\
 	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
 	  reg_names[i] = "";						\
       }									\
-    if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)				\
+    if (TARGET_64BIT							\
+        && ((cfun && cfun->machine->call_abi == MS_ABI)			\
+            || (!cfun && DEFAULT_ABI == MS_ABI)))			\
       {									\
         call_used_regs[4 /*RSI*/] = 0;                                  \
         call_used_regs[5 /*RDI*/] = 0;                                  \
