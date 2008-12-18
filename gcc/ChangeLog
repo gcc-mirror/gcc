@@ -1,3 +1,7 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-12-18  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
@@ -85,7 +89,7 @@
 	false if inner_type is incomplete and outer_type is complete.
 
 2008-12-17  Sebastian Pop  <sebastian.pop@amd.com>
-	
+
         * doc/install.texi (Prerequisites): Document PPL and CLooG-PPL
         dependences and the configure options.
         (Configuration): Document --with-cloog, --with-ppl, --with-cloog-lib,

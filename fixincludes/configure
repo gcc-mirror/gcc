@@ -1357,11 +1357,9 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 
 # libtool.m4 - Configure libtool for the host system. -*-Autoconf-*-
 #
-# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
-# 2006, 2007 Free Software Foundation, Inc.
-#
-# This file is part of GNU Libtool:
-# Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
+#   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
+#                 2006, 2007, 2008 Free Software Foundation, Inc.
+#   Written by Gordon Matzigkeit, 1996
 #
 # This file is free software; the Free Software Foundation gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -1369,7 +1367,7 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 
 
 
-# serial 53 LT_INIT
+# serial 56 LT_INIT
 
 
 # LT_PREREQ(VERSION)
@@ -1378,9 +1376,15 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 
 
 
+# _LT_CHECK_BUILDDIR
+# ------------------
+# Complain if the absolute build directory name contains unusual characters
+
+
+
 # LT_INIT([OPTIONS])
 # ------------------
-# _LT_INIT
+# LT_INIT
 
 # Old names:
 
@@ -1644,6 +1648,15 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 # Check for linker boilerplate output or warnings with
 # the simple link test code.
 # _LT_LINKER_BOILERPLATE
+
+# _LT_REQUIRED_DARWIN_CHECKS
+# -------------------------
+
+
+
+# _LT_DARWIN_LINKER_FEATURES
+# --------------------------
+# Checks for linker and compiler features on darwin
 
 
 # _LT_SYS_MODULE_PATH_AIX
@@ -1945,6 +1958,13 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 # _LT_DECL_EGREP
 # --------------
 # If we don't have a new enough Autoconf to choose the best grep
+# available, choose the one first in the user's PATH.
+
+
+
+# _LT_DECL_OBJDUMP
+# --------------
+# If we don't have a new enough Autoconf to choose the best objdump
 # available, choose the one first in the user's PATH.
 
 
