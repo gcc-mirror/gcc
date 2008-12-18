@@ -762,11 +762,6 @@ struct df
 
 extern bitmap_obstack df_bitmap_obstack;
 
-/* This is a bitmap copy of regs_invalidated_by_call so that we can
-   easily add it into bitmaps, etc. */ 
-
-extern bitmap df_invalidated_by_call;
-
 
 /* One of these structures is allocated for every basic block.  */
 struct df_scan_bb_info

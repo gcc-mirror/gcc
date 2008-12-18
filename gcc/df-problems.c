@@ -443,7 +443,7 @@ df_rd_local_compute (bitmap all_blocks)
     }
   
   /* Set up the knockout bit vectors to be applied across EH_EDGES.  */
-  EXECUTE_IF_SET_IN_BITMAP (df_invalidated_by_call, 0, regno, bi)
+  EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, regno, bi)
     {
       if (DF_DEFS_COUNT (regno) > DF_SPARSE_THRESHOLD)
 	bitmap_set_bit (sparse_invalidated, regno);
@@ -975,7 +975,7 @@ df_lr_confluence_n (edge e)
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    bitmap_ior_and_compl_into (op1, op2, df_invalidated_by_call);
+    bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
   else
     bitmap_ior_into (op1, op2);
 
@@ -2542,7 +2542,7 @@ df_byte_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   df_byte_lr_expand_bitmap (problem_data->hardware_regs_used, 
 			    df->hardware_regs_used);
   df_byte_lr_expand_bitmap (problem_data->invalidated_by_call, 
-			    df_invalidated_by_call);
+			    regs_invalidated_by_call_regset);
 
   EXECUTE_IF_SET_IN_BITMAP (df_byte_lr->out_of_date_transfer_functions, 0, bb_index, bi)
     {
