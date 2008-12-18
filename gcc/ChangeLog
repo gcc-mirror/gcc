@@ -1,6 +1,11 @@
 2008-12-18  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
+	* ira-cost.c (copy_cost): Lazilly initialize move_cost if needed.
+
+2008-12-18  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
 	* i386.h (CONDITIONAL_REGISTER_USAGE): Initialize for current function
 	ABI.
 	* i386.c (ix86_call_abi_override): Do not trigger target re-init and

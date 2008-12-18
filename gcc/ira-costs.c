@@ -142,8 +142,12 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
     ira_init_register_move_cost (mode);
 
   if (secondary_class != NO_REGS)
-    return (move_cost[mode][secondary_class][rclass] + sri.extra_cost
-	    + copy_cost (x, mode, secondary_class, to_p, &sri));
+    {
+      if (!move_cost[mode])
+        init_move_cost (mode);
+      return (move_cost[mode][secondary_class][rclass] + sri.extra_cost
+	      + copy_cost (x, mode, secondary_class, to_p, &sri));
+    }
 
   /* For memory, use the memory move cost, for (hard) registers, use
      the cost to move between the register classes, and use 2 for
@@ -151,8 +155,11 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
   if (MEM_P (x) || rclass == NO_REGS)
     return sri.extra_cost + ira_memory_move_cost[mode][rclass][to_p != 0];
   else if (REG_P (x))
-    return
-      (sri.extra_cost + move_cost[mode][REGNO_REG_CLASS (REGNO (x))][rclass]);
+    {
+      if (!move_cost[mode])
+        init_move_cost (mode);
+      return (sri.extra_cost + move_cost[mode][REGNO_REG_CLASS (REGNO (x))][rclass]);
+    }
   else
     /* If this is a constant, we may eventually want to call rtx_cost
        here.  */
