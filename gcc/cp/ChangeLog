@@ -1,3 +1,10 @@
+2008-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38427
+	* init.c (perform_member_init): For value-initialized
+	references call permerror instead of warning and don't emit any
+	INIT_EXPR.
+
 2008-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38485
