@@ -435,19 +435,25 @@ perform_member_init (tree member, tree init)
     {
       /* mem() means value-initialization.  */
       if (TREE_CODE (type) == ARRAY_TYPE)
-	init = build_vec_init (decl, NULL_TREE, NULL_TREE,
-			       /*explicit_value_init_p=*/true,
-			       /* from_array=*/0,
-			       tf_warning_or_error);
+	{
+	  init = build_vec_init (decl, NULL_TREE, NULL_TREE,
+				 /*explicit_value_init_p=*/true,
+				 /* from_array=*/0,
+				 tf_warning_or_error);
+	  finish_expr_stmt (init);
+	}
       else
 	{
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
-	    warning (0, "%Jdefault-initialization of %q#D, "
-		     "which has reference type",
-		     current_function_decl, member);
-	  init = build2 (INIT_EXPR, type, decl, build_value_init (type));
+	    permerror (input_location, "%Jvalue-initialization of %q#D, "
+				       "which has reference type",
+		       current_function_decl, member);
+	  else
+	    {
+	      init = build2 (INIT_EXPR, type, decl, build_value_init (type));
+	      finish_expr_stmt (init);
+	    }
 	}
-      finish_expr_stmt (init);
     }
   /* Deal with this here, as we will get confused if we try to call the
      assignment op for an anonymous union.  This can happen in a
