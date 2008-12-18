@@ -1,3 +1,9 @@
+2008-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38505
+	* tree-ssa.c (useless_type_conversion_p_1): Return
+	false if inner_type is incomplete and outer_type is complete.
+
 2008-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 	
         * doc/install.texi (Prerequisites): Document PPL and CLooG-PPL

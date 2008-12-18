@@ -1,3 +1,8 @@
+2008-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38505
+	* gcc.c-torture/compile/pr38505.c: New test.
+
 2008-12-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto6.C: Test more stuff.
