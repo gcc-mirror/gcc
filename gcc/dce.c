@@ -607,7 +607,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 
   bitmap_copy (local_live, DF_LR_OUT (bb));
 
-  df_simulate_artificial_refs_at_end (bb, local_live);
+  df_simulate_initialize_backwards (bb, local_live);
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
@@ -636,7 +636,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	  df_simulate_uses (insn, local_live);
       }
   
-  df_simulate_artificial_refs_at_top (bb, local_live);
+  df_simulate_finalize_backwards (bb, local_live);
 
   block_changed = !bitmap_equal_p (local_live, DF_LR_IN (bb));
   if (block_changed)

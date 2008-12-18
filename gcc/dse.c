@@ -374,6 +374,10 @@ struct bb_info
      operations.  */
   bool apply_wild_read;
 
+  /* The following 4 bitvectors hold information about which positions
+     of which stores are live or dead.  They are indexed by
+     get_bitmap_index.  */
+
   /* The set of store positions that exist in this block before a wild read.  */
   bitmap gen;
   
@@ -401,6 +405,14 @@ struct bb_info
      just initializes the vector from one of the out sets of the
      successors of the block.  */
   bitmap out;
+
+  /* The following bitvector is indexed by the reg number.  It
+     contains the set of regs that are live at the current instruction
+     being processed.  While it contains info for all of the
+     registers, only the pseudos are actually examined.  It is used to
+     assure that shift sequences that are inserted do not accidently
+     clobber live hard regs.  */
+  bitmap regs_live;
 };
 
 typedef struct bb_info *bb_info_t;
@@ -1533,6 +1545,25 @@ find_shift_sequence (int access_size,
 }
 
 
+/* Call back for note_stores to find the hard regs set or clobbered by
+   insn.  Data is a bitmap of the hardregs set so far.  */
+
+static void
+look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
+{
+  bitmap regs_set = (bitmap) data;
+
+  if (REG_P (x)
+      && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    {
+      int regno = REGNO (x);
+      int n = hard_regno_nregs[regno][GET_MODE (x)];
+      while (--n >= 0)
+	bitmap_set_bit (regs_set, regno + n);
+    }
+}
+
+
 /* Take a sequence of:
      A <- r1
      ...
@@ -1566,13 +1597,13 @@ find_shift_sequence (int access_size,
 
 static bool
 replace_read (store_info_t store_info, insn_info_t store_insn, 
-	      read_info_t read_info, insn_info_t read_insn, rtx *loc)
+	      read_info_t read_info, insn_info_t read_insn, rtx *loc, bitmap regs_live)
 {
   enum machine_mode store_mode = GET_MODE (store_info->mem);
   enum machine_mode read_mode = GET_MODE (read_info->mem);
   int shift;
   int access_size; /* In bytes.  */
-  rtx insns, read_reg;
+  rtx insns, this_insn, read_reg;
 
   if (!dbg_cnt (dse))
     return false;
@@ -1623,6 +1654,34 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
   read_reg = copy_to_mode_reg (read_mode, read_reg);
   insns = get_insns ();
   end_sequence ();
+
+  if (insns != NULL_RTX)
+    {
+      /* Now we have to scan the set of new instructions to see if the
+	 sequence contains and sets of hardregs that happened to be
+	 live at this point.  For instance, this can happen if one of
+	 the insns sets the CC and the CC happened to be live at that
+	 point.  This does occasionally happen, see PR 37922.  */
+      bitmap regs_set = BITMAP_ALLOC (NULL);
+
+      for (this_insn = insns; this_insn != NULL_RTX; this_insn = NEXT_INSN (this_insn))
+	note_stores (PATTERN (this_insn), look_for_hardregs, regs_set);
+      
+      bitmap_and_into (regs_set, regs_live);
+      if (!bitmap_empty_p (regs_set))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, 
+		       "abandoning replacement because sequence clobbers live hardregs:");
+	      df_print_regset (dump_file, regs_set);
+	    }
+	  
+	  BITMAP_FREE (regs_set);
+	  return false;
+	}
+      BITMAP_FREE (regs_set);
+    }
 
   if (validate_change (read_insn->insn, loc, read_reg, 0))
     {
@@ -1842,7 +1901,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
 		      if ((store_info->positions_needed & mask) == mask
 			  && replace_read (store_info, i_ptr, 
-					   read_info, insn_info, loc))
+					   read_info, insn_info, loc, bb_info->regs_live))
 			return 0;
 		    }
 		  /* The bases are the same, just see if the offsets
@@ -1911,7 +1970,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
 	      if ((store_info->positions_needed & mask) == mask
 		  && replace_read (store_info, i_ptr, 
-				   read_info, insn_info, loc))
+				   read_info, insn_info, loc, bb_info->regs_live))
 		return 0;
 	    }
 
@@ -2139,7 +2198,8 @@ static void
 dse_step1 (void)
 {
   basic_block bb;
-
+  bitmap regs_live = BITMAP_ALLOC (NULL);
+  
   cselib_init (false);
   all_blocks = BITMAP_ALLOC (NULL);
   bitmap_set_bit (all_blocks, ENTRY_BLOCK);
@@ -2152,6 +2212,10 @@ dse_step1 (void)
 
       memset (bb_info, 0, sizeof (struct bb_info));
       bitmap_set_bit (all_blocks, bb->index);
+      bb_info->regs_live = regs_live;
+
+      bitmap_copy (regs_live, DF_LR_IN (bb));
+      df_simulate_initialize_forwards (bb, regs_live);
 
       bb_table[bb->index] = bb_info;
       cselib_discard_hook = remove_useless_values;
@@ -2172,6 +2236,8 @@ dse_step1 (void)
 	      if (INSN_P (insn))
 		scan_insn (bb_info, insn);
 	      cselib_process_insn (insn);
+	      if (INSN_P (insn))
+		df_simulate_one_insn_forwards (bb, insn, regs_live);
 	    }
 	  
 	  /* This is something of a hack, because the global algorithm
@@ -2238,8 +2304,10 @@ dse_step1 (void)
 
 	  free_alloc_pool (cse_store_info_pool);
 	}
+      bb_info->regs_live = NULL;
     }
 
+  BITMAP_FREE (regs_live);
   cselib_finish ();
   htab_empty (rtx_group_table);
 }
@@ -3238,6 +3306,11 @@ rest_of_handle_dse (void)
   bool did_global = false;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  /* Need the notes since we must track live hardregs in the forwards
+     direction.  */
+  df_note_add_problem ();
+  df_analyze ();
 
   dse_step0 ();
   dse_step1 ();

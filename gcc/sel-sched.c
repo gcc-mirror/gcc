@@ -2947,7 +2947,7 @@ propagate_lv_set (regset lv, insn_t insn)
   if (INSN_NOP_P (insn))
     return;
 
-  df_simulate_one_insn (BLOCK_FOR_INSN (insn), insn, lv);
+  df_simulate_one_insn_backwards (BLOCK_FOR_INSN (insn), insn, lv);
 }
 
 /* Return livness set at the end of BB.  */

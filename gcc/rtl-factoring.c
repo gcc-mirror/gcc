@@ -464,7 +464,7 @@ collect_pattern_seqs (void)
     /* Initialize liveness propagation.  */
     INIT_REG_SET (&live);
     bitmap_copy (&live, DF_LR_OUT (bb));
-    df_simulate_artificial_refs_at_end (bb, &live);
+    df_simulate_initialize_backwards (bb, &live);
 
     /* Propagate liveness info and mark insns where a stack reg is live.  */
     insn = BB_END (bb);
@@ -486,7 +486,7 @@ collect_pattern_seqs (void)
 	  }
 	if (insn == BB_HEAD (bb))
 	  break;
-	df_simulate_one_insn (bb, insn, &live);
+	df_simulate_one_insn_backwards (bb, insn, &live);
 	insn = prev;
       }
 
@@ -572,11 +572,11 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
   bb = BLOCK_FOR_INSN (insn);
   INIT_REG_SET (&live);
   bitmap_copy (&live, DF_LR_OUT (bb));
-  df_simulate_artificial_refs_at_end (bb, &live);
+  df_simulate_initialize_backwards (bb, &live);
 
   /* Propagate until INSN if found.  */
   for (x = BB_END (bb); x != insn; x = PREV_INSN (x))
-    df_simulate_one_insn (bb, x, &live);
+    df_simulate_one_insn_backwards (bb, x, &live);
 
   /* Clear registers live after INSN.  */
   renumbered_reg_set_to_hard_reg_set (&hlive, &live);
@@ -586,7 +586,7 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
   for (i = 0; i < length;)
     {
       rtx prev = PREV_INSN (x);
-      df_simulate_one_insn (bb, x, &live);
+      df_simulate_one_insn_backwards (bb, x, &live);
 
       if (INSN_P (x))
         {

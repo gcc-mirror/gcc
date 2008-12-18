@@ -3950,13 +3950,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       /* The loop below takes the set of live registers 
          after JUMP, and calculates the live set before EARLIEST. */
       bitmap_copy (test_live, df_get_live_in (other_bb));
-      df_simulate_artificial_refs_at_end (test_bb, test_live);
+      df_simulate_initialize_backwards (test_bb, test_live);
       for (insn = jump; ; insn = prev)
 	{
 	  if (INSN_P (insn))
 	    {
 	      df_simulate_find_defs (insn, test_set);
-	      df_simulate_one_insn (test_bb, insn, test_live);
+	      df_simulate_one_insn_backwards (test_bb, insn, test_live);
 	    }
 	  prev = PREV_INSN (insn);
 	  if (insn == earliest)
