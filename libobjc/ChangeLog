@@ -1,3 +1,7 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-11-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	*  Object.m (errno): Replaced by errno.h include.

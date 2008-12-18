@@ -1,3 +1,7 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36802

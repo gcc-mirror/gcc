@@ -1,3 +1,11 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Backport from upstream Libtool:
+	* libltdl.m4 (_LT_SYS_DYNAMIC_LINKER, _LT_LINKER_SHLIBS):
+	Add cache variables to tests that require the linker to work.
+	For shlibpath_overrides_runpath, this also changes the semantics
+	to let the result from the C compiler take precedence.
+
 2008-12-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.

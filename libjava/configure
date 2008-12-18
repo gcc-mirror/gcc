@@ -11219,44 +11219,50 @@ x|xyes)
       # to ld, don't add -lc before -lgcc.
       echo "$as_me:$LINENO: checking whether -lc should be explicitly linked in" >&5
 echo $ECHO_N "checking whether -lc should be explicitly linked in... $ECHO_C" >&6
-      $RM conftest*
-      echo "$lt_simple_compile_test_code" > conftest.$ac_ext
+if test "${lt_cv_archive_cmds_need_lc+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  $RM conftest*
+	echo "$lt_simple_compile_test_code" > conftest.$ac_ext
 
-      if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+	if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } 2>conftest.err; then
-        soname=conftest
-        lib=conftest
-        libobjs=conftest.$ac_objext
-        deplibs=
-        wl=$lt_prog_compiler_wl
-	pic_flag=$lt_prog_compiler_pic
-        compiler_flags=-v
-        linker_flags=-v
-        verstring=
-        output_objdir=.
-        libname=conftest
-        lt_save_allow_undefined_flag=$allow_undefined_flag
-        allow_undefined_flag=
-        if { (eval echo "$as_me:$LINENO: \"$archive_cmds 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
+	  soname=conftest
+	  lib=conftest
+	  libobjs=conftest.$ac_objext
+	  deplibs=
+	  wl=$lt_prog_compiler_wl
+	  pic_flag=$lt_prog_compiler_pic
+	  compiler_flags=-v
+	  linker_flags=-v
+	  verstring=
+	  output_objdir=.
+	  libname=conftest
+	  lt_save_allow_undefined_flag=$allow_undefined_flag
+	  allow_undefined_flag=
+	  if { (eval echo "$as_me:$LINENO: \"$archive_cmds 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
   (eval $archive_cmds 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }
-        then
-	  archive_cmds_need_lc=no
-        else
-	  archive_cmds_need_lc=yes
-        fi
-        allow_undefined_flag=$lt_save_allow_undefined_flag
-      else
-        cat conftest.err 1>&5
-      fi
-      $RM conftest*
-      echo "$as_me:$LINENO: result: $archive_cmds_need_lc" >&5
-echo "${ECHO_T}$archive_cmds_need_lc" >&6
+	  then
+	    lt_cv_archive_cmds_need_lc=no
+	  else
+	    lt_cv_archive_cmds_need_lc=yes
+	  fi
+	  allow_undefined_flag=$lt_save_allow_undefined_flag
+	else
+	  cat conftest.err 1>&5
+	fi
+	$RM conftest*
+
+fi
+echo "$as_me:$LINENO: result: $lt_cv_archive_cmds_need_lc" >&5
+echo "${ECHO_T}$lt_cv_archive_cmds_need_lc" >&6
+      archive_cmds_need_lc=$lt_cv_archive_cmds_need_lc
       ;;
     esac
   fi
@@ -11836,12 +11842,17 @@ linux* | k*bsd*-gnu)
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
+
   # Some binutils ld are patched to set DT_RUNPATH
-  save_LDFLAGS=$LDFLAGS
-  save_libdir=$libdir
-  eval "libdir=/foo; wl=\"$lt_prog_compiler_wl\"; \
-       LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec\""
-  if test x$gcc_no_link = xyes; then
+  if test "${lt_cv_shlibpath_overrides_runpath+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  lt_cv_shlibpath_overrides_runpath=no
+    save_LDFLAGS=$LDFLAGS
+    save_libdir=$libdir
+    eval "libdir=/foo; wl=\"$lt_prog_compiler_wl\"; \
+	 LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec\""
+    if test x$gcc_no_link = xyes; then
   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
 echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
    { (exit 1); exit 1; }; }
@@ -11884,7 +11895,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   if  ($OBJDUMP -p conftest$ac_exeext) 2>/dev/null | grep "RUNPATH.*$libdir" >/dev/null; then
-  shlibpath_overrides_runpath=yes
+  lt_cv_shlibpath_overrides_runpath=yes
 fi
 
 else
@@ -11894,8 +11905,12 @@ sed 's/^/| /' conftest.$ac_ext >&5
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-  LDFLAGS=$save_LDFLAGS
-  libdir=$save_libdir
+    LDFLAGS=$save_LDFLAGS
+    libdir=$save_libdir
+
+fi
+
+  shlibpath_overrides_runpath=$lt_cv_shlibpath_overrides_runpath
 
   # This implies no fast_install, which is unacceptable.
   # Some rework will be needed to allow for fast_install
@@ -12890,7 +12905,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12893 "configure"
+#line 12908 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12986,7 +13001,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12989 "configure"
+#line 13004 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15012,11 +15027,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15015: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15030: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15019: \$? = $ac_status" >&5
+   echo "$as_me:15034: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15111,11 +15126,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15114: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15129: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15118: \$? = $ac_status" >&5
+   echo "$as_me:15133: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15163,11 +15178,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15166: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15181: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15170: \$? = $ac_status" >&5
+   echo "$as_me:15185: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15275,44 +15290,50 @@ x|xyes)
       # to ld, don't add -lc before -lgcc.
       echo "$as_me:$LINENO: checking whether -lc should be explicitly linked in" >&5
 echo $ECHO_N "checking whether -lc should be explicitly linked in... $ECHO_C" >&6
-      $RM conftest*
-      echo "$lt_simple_compile_test_code" > conftest.$ac_ext
+if test "${lt_cv_archive_cmds_need_lc_CXX+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  $RM conftest*
+	echo "$lt_simple_compile_test_code" > conftest.$ac_ext
 
-      if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+	if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } 2>conftest.err; then
-        soname=conftest
-        lib=conftest
-        libobjs=conftest.$ac_objext
-        deplibs=
-        wl=$lt_prog_compiler_wl_CXX
-	pic_flag=$lt_prog_compiler_pic_CXX
-        compiler_flags=-v
-        linker_flags=-v
-        verstring=
-        output_objdir=.
-        libname=conftest
-        lt_save_allow_undefined_flag=$allow_undefined_flag_CXX
-        allow_undefined_flag_CXX=
-        if { (eval echo "$as_me:$LINENO: \"$archive_cmds_CXX 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
+	  soname=conftest
+	  lib=conftest
+	  libobjs=conftest.$ac_objext
+	  deplibs=
+	  wl=$lt_prog_compiler_wl_CXX
+	  pic_flag=$lt_prog_compiler_pic_CXX
+	  compiler_flags=-v
+	  linker_flags=-v
+	  verstring=
+	  output_objdir=.
+	  libname=conftest
+	  lt_save_allow_undefined_flag=$allow_undefined_flag_CXX
+	  allow_undefined_flag_CXX=
+	  if { (eval echo "$as_me:$LINENO: \"$archive_cmds_CXX 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
   (eval $archive_cmds_CXX 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }
-        then
-	  archive_cmds_need_lc_CXX=no
-        else
-	  archive_cmds_need_lc_CXX=yes
-        fi
-        allow_undefined_flag_CXX=$lt_save_allow_undefined_flag
-      else
-        cat conftest.err 1>&5
-      fi
-      $RM conftest*
-      echo "$as_me:$LINENO: result: $archive_cmds_need_lc_CXX" >&5
-echo "${ECHO_T}$archive_cmds_need_lc_CXX" >&6
+	  then
+	    lt_cv_archive_cmds_need_lc_CXX=no
+	  else
+	    lt_cv_archive_cmds_need_lc_CXX=yes
+	  fi
+	  allow_undefined_flag_CXX=$lt_save_allow_undefined_flag
+	else
+	  cat conftest.err 1>&5
+	fi
+	$RM conftest*
+
+fi
+echo "$as_me:$LINENO: result: $lt_cv_archive_cmds_need_lc_CXX" >&5
+echo "${ECHO_T}$lt_cv_archive_cmds_need_lc_CXX" >&6
+      archive_cmds_need_lc_CXX=$lt_cv_archive_cmds_need_lc_CXX
       ;;
     esac
   fi
@@ -15747,12 +15768,17 @@ linux* | k*bsd*-gnu)
   finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
   shlibpath_var=LD_LIBRARY_PATH
   shlibpath_overrides_runpath=no
+
   # Some binutils ld are patched to set DT_RUNPATH
-  save_LDFLAGS=$LDFLAGS
-  save_libdir=$libdir
-  eval "libdir=/foo; wl=\"$lt_prog_compiler_wl_CXX\"; \
-       LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec_CXX\""
-  if test x$gcc_no_link = xyes; then
+  if test "${lt_cv_shlibpath_overrides_runpath+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  lt_cv_shlibpath_overrides_runpath=no
+    save_LDFLAGS=$LDFLAGS
+    save_libdir=$libdir
+    eval "libdir=/foo; wl=\"$lt_prog_compiler_wl_CXX\"; \
+	 LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec_CXX\""
+    if test x$gcc_no_link = xyes; then
   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
 echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
    { (exit 1); exit 1; }; }
@@ -15795,7 +15821,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   if  ($OBJDUMP -p conftest$ac_exeext) 2>/dev/null | grep "RUNPATH.*$libdir" >/dev/null; then
-  shlibpath_overrides_runpath=yes
+  lt_cv_shlibpath_overrides_runpath=yes
 fi
 
 else
@@ -15805,8 +15831,12 @@ sed 's/^/| /' conftest.$ac_ext >&5
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-  LDFLAGS=$save_LDFLAGS
-  libdir=$save_libdir
+    LDFLAGS=$save_LDFLAGS
+    libdir=$save_libdir
+
+fi
+
+  shlibpath_overrides_runpath=$lt_cv_shlibpath_overrides_runpath
 
   # This implies no fast_install, which is unacceptable.
   # Some rework will be needed to allow for fast_install
@@ -16565,11 +16595,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16568: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16598: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16572: \$? = $ac_status" >&5
+   echo "$as_me:16602: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16898,11 +16928,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16901: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16931: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16905: \$? = $ac_status" >&5
+   echo "$as_me:16935: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16997,11 +17027,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17000: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17030: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17004: \$? = $ac_status" >&5
+   echo "$as_me:17034: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17049,11 +17079,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17052: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17082: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17056: \$? = $ac_status" >&5
+   echo "$as_me:17086: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18218,44 +18248,50 @@ x|xyes)
       # to ld, don't add -lc before -lgcc.
       echo "$as_me:$LINENO: checking whether -lc should be explicitly linked in" >&5
 echo $ECHO_N "checking whether -lc should be explicitly linked in... $ECHO_C" >&6
-      $RM conftest*
-      echo "$lt_simple_compile_test_code" > conftest.$ac_ext
+if test "${lt_cv_archive_cmds_need_lc_GCJ+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  $RM conftest*
+	echo "$lt_simple_compile_test_code" > conftest.$ac_ext
 
-      if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+	if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } 2>conftest.err; then
-        soname=conftest
-        lib=conftest
-        libobjs=conftest.$ac_objext
-        deplibs=
-        wl=$lt_prog_compiler_wl_GCJ
-	pic_flag=$lt_prog_compiler_pic_GCJ
-        compiler_flags=-v
-        linker_flags=-v
-        verstring=
-        output_objdir=.
-        libname=conftest
-        lt_save_allow_undefined_flag=$allow_undefined_flag_GCJ
-        allow_undefined_flag_GCJ=
-        if { (eval echo "$as_me:$LINENO: \"$archive_cmds_GCJ 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
+	  soname=conftest
+	  lib=conftest
+	  libobjs=conftest.$ac_objext
+	  deplibs=
+	  wl=$lt_prog_compiler_wl_GCJ
+	  pic_flag=$lt_prog_compiler_pic_GCJ
+	  compiler_flags=-v
+	  linker_flags=-v
+	  verstring=
+	  output_objdir=.
+	  libname=conftest
+	  lt_save_allow_undefined_flag=$allow_undefined_flag_GCJ
+	  allow_undefined_flag_GCJ=
+	  if { (eval echo "$as_me:$LINENO: \"$archive_cmds_GCJ 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1\"") >&5
   (eval $archive_cmds_GCJ 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }
-        then
-	  archive_cmds_need_lc_GCJ=no
-        else
-	  archive_cmds_need_lc_GCJ=yes
-        fi
-        allow_undefined_flag_GCJ=$lt_save_allow_undefined_flag
-      else
-        cat conftest.err 1>&5
-      fi
-      $RM conftest*
-      echo "$as_me:$LINENO: result: $archive_cmds_need_lc_GCJ" >&5
-echo "${ECHO_T}$archive_cmds_need_lc_GCJ" >&6
+	  then
+	    lt_cv_archive_cmds_need_lc_GCJ=no
+	  else
+	    lt_cv_archive_cmds_need_lc_GCJ=yes
+	  fi
+	  allow_undefined_flag_GCJ=$lt_save_allow_undefined_flag
+	else
+	  cat conftest.err 1>&5
+	fi
+	$RM conftest*
+
+fi
+echo "$as_me:$LINENO: result: $lt_cv_archive_cmds_need_lc_GCJ" >&5
+echo "${ECHO_T}$lt_cv_archive_cmds_need_lc_GCJ" >&6
+      archive_cmds_need_lc_GCJ=$lt_cv_archive_cmds_need_lc_GCJ
       ;;
     esac
   fi
@@ -18739,7 +18775,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 18742 "configure"
+#line 18778 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

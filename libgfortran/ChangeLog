@@ -1,3 +1,7 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-12-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38504

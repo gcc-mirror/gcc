@@ -1,3 +1,7 @@
+2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-11-10  Andrew Haley  <aph@redhat.com>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c 
@@ -11,7 +15,7 @@
 	(performDefaultLayout): Call getKerning with a float[].
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
 	(getKerning): Return result in a float[], not a Point2D.
-	
+
 2008-11-05  Andrew Haley  <aph@redhat.com>
 
 	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
