@@ -2609,22 +2609,20 @@ d_expression (struct d_info *di)
 	  args = op->u.s_extended_operator.args;
 	  break;
 	case DEMANGLE_COMPONENT_CAST:
-	  args = 1;
+	  if (d_peek_char (di) == 'v')
+	    /* T() encoded as an operand of void.  */
+	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
+				cplus_demangle_type (di));
+	  else
+	    args = 1;
 	  break;
 	}
 
       switch (args)
 	{
 	case 1:
-	  {
-	    struct demangle_component *operand;
-	    if (op->type == DEMANGLE_COMPONENT_CAST)
-	      operand = d_exprlist (di);
-	    else
-	      operand = d_expression (di);
-	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-				operand);
-	  }
+	  return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
+			      d_expression (di));
 	case 2:
 	  {
 	    struct demangle_component *left;
@@ -3809,7 +3807,12 @@ d_print_comp (struct d_print_info *dpi,
 	  d_print_cast (dpi, d_left (dc));
 	  d_append_char (dpi, ')');
 	}
-      d_print_subexpr (dpi, d_right (dc));
+      if (d_left (dc)->type == DEMANGLE_COMPONENT_CAST
+	  && d_right (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
+	/* type() -- FIXME what about type(multiple,args) */
+	d_append_string (dpi, "()");
+      else
+	d_print_subexpr (dpi, d_right (dc));
       return;
 
     case DEMANGLE_COMPONENT_BINARY:
