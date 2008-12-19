@@ -1,3 +1,12 @@
+2008-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/37739
+	* config.host: For powerpc*-*-linux* host with 32-bit GCC,
+	use rs6000/x-linux-relax snippet if ld is new enough,
+	otherwise use rs6000/x-linux-O1.
+	* config/rs6000/x-linux-relax: New file.
+	* config/x-cflags-O1: New file.
+
 2008-12-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_generate_compare): Condition
