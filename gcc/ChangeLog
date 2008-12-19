@@ -1,3 +1,13 @@
+2008-12-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR bootstrap/38578
+	* arm.c (load_multiple_sequence): Initialize ORDER array.
+	(store_multiple_sequence): Likewise.
+	(output_move_double): Make reg0 unsigned.
+	(arm_output_epilogue): Make amount unsigned.
+	(arm_expand_prologue): Move declaration of dwarf before block
+	statements.
+
 2008-12-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* df-scan.c ( df_hard_reg_init): Move declaration of i.
