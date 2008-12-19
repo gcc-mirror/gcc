@@ -14914,7 +14914,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     atomicity_dir=cpu/generic/atomicity_mutex
     { echo "$as_me:$LINENO: WARNING: No native atomic operations are provided for this platform." >&5
 echo "$as_me: WARNING: No native atomic operations are provided for this platform." >&2;}
-      if test $target_thread_file = single; then
+      if test "x$target_thread_file" = xsingle; then
         { echo "$as_me:$LINENO: WARNING: They cannot be faked when thread support is disabled." >&5
 echo "$as_me: WARNING: They cannot be faked when thread support is disabled." >&2;}
         { echo "$as_me:$LINENO: WARNING: Thread-safety of certain classes is not guaranteed." >&5

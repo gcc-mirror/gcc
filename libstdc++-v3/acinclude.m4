@@ -2570,7 +2570,7 @@ EOF
   if test $atomicity_dir = "cpu/generic" ; then
     atomicity_dir=cpu/generic/atomicity_mutex
     AC_MSG_WARN([No native atomic operations are provided for this platform.])
-      if test $target_thread_file = single; then
+      if test "x$target_thread_file" = xsingle; then
         AC_MSG_WARN([They cannot be faked when thread support is disabled.])
         AC_MSG_WARN([Thread-safety of certain classes is not guaranteed.])
       else

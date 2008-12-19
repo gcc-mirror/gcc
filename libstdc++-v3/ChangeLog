@@ -1,3 +1,8 @@
+2008-12-19  Ben Elliston  <bje@au.ibm.com>
+
+	* acinclude.m4: Guard a variable test against an empty string.
+	* configure: Regenerate.
+
 2008-12-18  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
