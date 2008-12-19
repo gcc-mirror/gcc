@@ -1,3 +1,8 @@
+2008-12-19  Andrew Haley  <aph@redhat.com>
+
+	* builtins.c, tree-ssa-loop-ivopts.c, fixed-value.c:
+	Fix comments.
+
 2008-12-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/38548
