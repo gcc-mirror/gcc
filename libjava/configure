@@ -20903,6 +20903,9 @@ else
   USING_NO_THREADS_FALSE=
 fi
 
+if test "$enable_shared" != yes; then
+  use_libgcj_bc=no
+fi
 
 
 if test "$use_libgcj_bc" = yes; then
@@ -20924,7 +20927,7 @@ if test -d sysdep; then true; else mkdir sysdep; fi
 
 LIBGCJ_SPEC="%{s-bc-abi:} -lgcj"
 if test "$use_libgcj_bc" = yes; then
-  LIBGCJ_SPEC="%{s-bc-abi:-lgcj_bc;:-lgcj}"
+  LIBGCJ_SPEC="%{static|static-libgcj|!s-bc-abi:-lgcj;:-lgcj_bc}"
 fi
 
 

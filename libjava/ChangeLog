@@ -1,3 +1,16 @@
+2008-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/38396
+	* configure.ac (use_libgcj_bc): Set to no if not enable_shared.
+	(LIBGCJ_SPEC): Use -lgcj instead of -lgcj_bc even for -static
+	or -static-libgcj.
+	* Makefile.am (ecjx_SOURCES): Add ecjx.cc.
+	(ecjx_LDADD): Don't add libgcj.la when
+	NATIVE && USE_LIBBGCJ_BC.
+	* ecjx.cc: New file.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
