@@ -4360,8 +4360,8 @@ iv_ca_add_use (struct ivopts_data *data, struct iv_ca *ivs,
 static comp_cost
 iv_ca_cost (struct iv_ca *ivs)
 {
-  /* This was a conditional expression but it triggered a bug in the
-     Solaris 8 compiler.  */
+  /* This was a conditional expression but it triggered a bug in
+     Sun C 5.5.  */
   if (ivs->bad_uses)
     return infinite_cost;
   else
