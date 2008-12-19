@@ -1,3 +1,7 @@
+2008-12-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* df-scan.c ( df_hard_reg_init): Move declaration of i.
+
 2008-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/37739
