@@ -13263,6 +13263,31 @@ _ACEOF
     fi
 fi
 
+if test x$TARGET = xX86 || test x$TARGET = xX86_64; then
+    echo "$as_me:$LINENO: checking assembler supports pc related relocs" >&5
+echo $ECHO_N "checking assembler supports pc related relocs... $ECHO_C" >&6
+if test "${libffi_cv_as_x86_pcrel+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+	libffi_cv_as_x86_pcrel=yes
+	echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+	    libffi_cv_as_x86_pcrel=no
+	fi
+
+fi
+echo "$as_me:$LINENO: result: $libffi_cv_as_x86_pcrel" >&5
+echo "${ECHO_T}$libffi_cv_as_x86_pcrel" >&6
+    if test "x$libffi_cv_as_x86_pcrel" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_X86_PCREL 1
+_ACEOF
+
+    fi
+fi
+
 echo "$as_me:$LINENO: checking whether .eh_frame section should be read-only" >&5
 echo $ECHO_N "checking whether .eh_frame section should be read-only... $ECHO_C" >&6
 if test "${libffi_cv_ro_eh_frame+set}" = set; then

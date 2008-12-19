@@ -1,3 +1,17 @@
+2008-12-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libffi/26048
+	* configure.ac (HAVE_AS_X86_PCREL): New test.
+	* configure: Regenerate.
+	* fficonfig.h.in: Regenerate.
+	* src/x86/sysv.S [!FFI_NO_RAW_API]: Precalculate
+	RAW_CLOSURE_CIF_OFFSET, RAW_CLOSURE_FUN_OFFSET,
+	RAW_CLOSURE_USER_DATA_OFFSET for the Solaris 10/x86 assembler.
+	(.eh_frame): Only use SYMBOL-. iff HAVE_AS_X86_PCREL.
+	* src/x86/unix64.S (.Lstore_table): Move to .text section.
+	(.Lload_table): Likewise.
+	(.eh_frame): Only use SYMBOL-. iff HAVE_AS_X86_PCREL.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
