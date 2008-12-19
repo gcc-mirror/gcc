@@ -5993,6 +5993,15 @@ build_new_method_call (tree instance, tree fns, tree args,
 
   if (processing_template_decl && call != error_mark_node)
     {
+      bool cast_to_void = false;
+
+      if (TREE_CODE (call) == COMPOUND_EXPR)
+	call = TREE_OPERAND (call, 1);
+      else if (TREE_CODE (call) == NOP_EXPR)
+	{
+	  cast_to_void = true;
+	  call = TREE_OPERAND (call, 0);
+	}
       if (TREE_CODE (call) == INDIRECT_REF)
 	call = TREE_OPERAND (call, 0);
       call = (build_min_non_dep_call_list
@@ -6001,6 +6010,8 @@ build_new_method_call (tree instance, tree fns, tree args,
 			  orig_instance, orig_fns, NULL_TREE),
 	       orig_args));
       call = convert_from_reference (call);
+      if (cast_to_void)
+	call = build_nop (void_type_node, call);
     }
 
  /* Free all the conversions we allocated.  */
