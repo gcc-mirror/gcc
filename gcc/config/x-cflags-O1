@@ -1,0 +1,5 @@
+# At -O0 cc1 etc. are too large on some targets for successful
+# link; force building libbackend.a with -O1.
+ifeq ($(filter-out -O0,$(lastword $(filter -O%,$(CFLAGS)))),)
+$(OBJS) : override CFLAGS += -O1
+endif

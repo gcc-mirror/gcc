@@ -124,6 +124,27 @@ case ${host} in
         host_xmake_file="${host_xmake_file} rs6000/x-rs6000"
         ;;
     esac
+    case ${host} in
+      *-*-linux* )
+	if test "${GCC}:${ac_cv_sizeof_long}" = yes:4; then
+	  # On powerpc*-*-linux* use -Wl,--relax to link cc1,
+	  # if ld is new enough, otherwise force -O1 in CFLAGS.
+	  host_ppc_relax_xmake_file=
+	  host_ld_ver=`${CC} -Wl,--version 2>/dev/null | sed 1q`
+	  if echo "$host_ld_ver" | grep GNU > /dev/null; then
+	    host_ld_date=`echo $host_ld_ver \
+			  | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+	    if test 0"$host_ld_date" -gt 20080806; then
+	      host_ppc_relax_xmake_file=rs6000/x-linux-relax
+	    fi
+	  fi
+	  if test -z "${host_ppc_relax_xmake_file}"; then
+	    host_ppc_relax_xmake_file=x-cflags-O1
+	  fi
+	  host_xmake_file="${host_xmake_file} ${host_ppc_relax_xmake_file}"
+	fi
+	;;
+    esac
     ;;
 esac
 
