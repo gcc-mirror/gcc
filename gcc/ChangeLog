@@ -1,5 +1,11 @@
 2008-12-19  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/38548
+	* arm/t-linux (LIB1ASMFUNCS): Add _arm_addsubdf3 and _arm_addsubsf3.
+	* arm/lib1funcs.asm (clzsi2): Use RET macro for return instruction.
+
+2008-12-19  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR bootstrap/38578
 	* arm.c (load_multiple_sequence): Initialize ORDER array.
 	(store_multiple_sequence): Likewise.

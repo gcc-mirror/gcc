@@ -1280,7 +1280,7 @@ ARM_FUNC_START clzsi2
 	adr	r2, 1f
 	ldrb	r0, [r2, r0]
 	add	r0, r0, r1
-	bx lr
+	RET
 .align 2
 1:
 .byte 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
