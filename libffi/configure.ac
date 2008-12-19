@@ -240,6 +240,21 @@ if test x$TARGET = xSPARC; then
     fi
 fi
 
+if test x$TARGET = xX86 || test x$TARGET = xX86_64; then
+    AC_CACHE_CHECK([assembler supports pc related relocs],
+	libffi_cv_as_x86_pcrel, [
+	libffi_cv_as_x86_pcrel=yes
+	echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
+	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+	    libffi_cv_as_x86_pcrel=no
+	fi
+	])
+    if test "x$libffi_cv_as_x86_pcrel" = xyes; then
+	AC_DEFINE(HAVE_AS_X86_PCREL, 1,
+		  [Define if your assembler supports PC relative relocs.])
+    fi
+fi
+
 AC_CACHE_CHECK([whether .eh_frame section should be read-only],
     libffi_cv_ro_eh_frame, [
 	libffi_cv_ro_eh_frame=no
