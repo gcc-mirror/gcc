@@ -4104,8 +4104,8 @@ static bool initialized = false;
 void 
 df_hard_reg_init (void)
 {
-  int i;
 #ifdef ELIMINABLE_REGS
+  int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   if (initialized)
