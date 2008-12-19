@@ -1,3 +1,8 @@
+2008-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38577
+	* g++.dg/template/call6.C: New test.
+
 2008-12-19  Janis Johnson  <janis187@us.ibm.com>
 
 	Revert:
