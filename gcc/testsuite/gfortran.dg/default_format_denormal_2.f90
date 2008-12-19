@@ -1,5 +1,5 @@
 ! { dg-require-effective-target fortran_large_real }
-! { dg-do run { xfail { "powerpc*-apple-darwin* *-*-freebsd* powerpc*-*-linux*" && { ! large_long_double } } } }
+! { dg-do run { xfail powerpc*-apple-darwin* *-*-freebsd* powerpc*-*-linux* } }
 ! Test XFAILed on these platforms because the system's printf() lacks
 ! proper support for denormalized long doubles. See PR24685
 !

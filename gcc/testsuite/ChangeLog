@@ -1,3 +1,11 @@
+2008-12-19  Janis Johnson  <janis187@us.ibm.com>
+
+	Revert:
+	2008-12-12  Janis Johnson  <janis187@us.ibm.com>
+	PR libgfortran/24685
+	* gfortran.dg/default_format_denormal_2.f90: Change XFAIL to check
+	for size of long double.
+
 2008-12-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/38565
