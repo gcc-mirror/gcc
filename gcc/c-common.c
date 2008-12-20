@@ -8059,7 +8059,7 @@ warn_array_subscript_with_type_char (tree index)
 
 void
 warn_about_parentheses (enum tree_code code,
-			enum tree_code code_left, tree ARG_UNUSED (arg_left),
+			enum tree_code code_left, tree arg_left,
 			enum tree_code code_right, tree arg_right)
 {
   if (!warn_parentheses)
@@ -8169,9 +8169,11 @@ warn_about_parentheses (enum tree_code code,
     default:
       if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && ((TREE_CODE_CLASS (code_left) == tcc_comparison
-		&& code_left != NE_EXPR && code_left != EQ_EXPR)
+		&& code_left != NE_EXPR && code_left != EQ_EXPR
+		&& INTEGRAL_TYPE_P (TREE_TYPE (arg_left)))
 	       || (TREE_CODE_CLASS (code_right) == tcc_comparison
-		   && code_right != NE_EXPR && code_right != EQ_EXPR)))
+		   && code_right != NE_EXPR && code_right != EQ_EXPR
+		   && INTEGRAL_TYPE_P (TREE_TYPE (arg_right)))))
 	warning (OPT_Wparentheses, "comparisons like %<X<=Y<=Z%> do not "
 		 "have their mathematical meaning");
       return;

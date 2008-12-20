@@ -1,3 +1,11 @@
+2008-12-20  Jakub Jelinek  <jakub@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/36921
+	* c-common.c (warn_about_parentheses): Remove ARG_UNUSED from
+	arg_left.  Don't warn about X<=Y<=Z if comparison's type isn't
+	integral.
+
 2008-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38577

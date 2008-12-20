@@ -1,3 +1,9 @@
+2008-12-20  Jakub Jelinek  <jakub@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/36921
+	* g++.dg/warn/pr36921.C: New.
+
 2008-12-19  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* lib/target-supports.exp: Add *-*-rtems* to list
