@@ -2278,7 +2278,8 @@ fi
 changequote([,])dnl
 ])
 else
-  gcc_cv_as_cfi_advance_working=yes
+  # no readelf, err on the side of caution
+  gcc_cv_as_cfi_advance_working=no
 fi
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
   [`if test $gcc_cv_as_cfi_directive = yes \
