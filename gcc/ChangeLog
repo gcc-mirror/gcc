@@ -1,3 +1,10 @@
+2008-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/37610
+	* configure.ac (gcc_cv_as_cfi_advance_working): Fall back to 'no'
+	if readelf is nowhere to be found.
+	* configure: Regenerate.
+
 2008-12-19  Andrew Haley  <aph@redhat.com>
 
 	* builtins.c, tree-ssa-loop-ivopts.c, fixed-value.c:
