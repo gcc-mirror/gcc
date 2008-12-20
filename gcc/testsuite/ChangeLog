@@ -1,3 +1,8 @@
+2008-12-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* lib/target-supports.exp: Add *-*-rtems* to list
+	of targets without profiling support.
+
 2008-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38577
