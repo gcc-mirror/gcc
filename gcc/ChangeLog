@@ -1,3 +1,12 @@
+2008-12-21  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
+	* i376.md (UNSPEC_MS_TO_SYSV_CALL): New constant.
+	(call_1_rex64_ms_sysv, call_value_0_rex64_ms_sysv,
+	call_value_1_rex64_ms_sysv): New patterns.
+	* i386.c (function_arg_ms_64): Pass magical value of -2 as callarg.
+	(ix86_expand_call): Emit extra clobbers for ms->sysv ABI calls.
+
 2008-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_pad_noreturn): New static function.

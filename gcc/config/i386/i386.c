@@ -5690,9 +5690,10 @@ function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 {
   unsigned int regno;
 
-  /* Avoid the AL settings for the Unix64 ABI.  */
+  /* We need to add clobber for MS_ABI->SYSV ABI calls in expand_call.
+     We use value of -2 to specify that current function call is MSABI.  */
   if (mode == VOIDmode)
-    return constm1_rtx;
+    return GEN_INT (-2);
 
   /* If we've run out of registers, it goes on the stack.  */
   if (cum->nregs == 0)
@@ -18095,11 +18096,16 @@ construct_plt_address (rtx symbol)
 
 void
 ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
-		  rtx callarg2 ATTRIBUTE_UNUSED,
+		  rtx callarg2,
 		  rtx pop, int sibcall)
 {
   rtx use = NULL, call;
+  enum calling_abi function_call_abi;
 
+  if (callarg2 && INTVAL (callarg2) == -2)
+    function_call_abi = MS_ABI;
+  else
+    function_call_abi = SYSV_ABI;
   if (pop == const0_rtx)
     pop = NULL;
   gcc_assert (!TARGET_64BIT || !pop);
@@ -18155,6 +18161,18 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       pop = gen_rtx_PLUS (Pmode, stack_pointer_rtx, pop);
       pop = gen_rtx_SET (VOIDmode, stack_pointer_rtx, pop);
       call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, call, pop));
+      gcc_assert (ix86_cfun_abi () != MS_ABI || function_call_abi != SYSV_ABI);
+    }
+  /* We need to represent that SI and DI registers are clobbered by SYSV calls.
+     */
+  if (ix86_cfun_abi () == MS_ABI && function_call_abi == SYSV_ABI)
+    {
+      rtx clobber1 = gen_rtx_CLOBBER (DImode, gen_rtx_REG (DImode, SI_REG));
+      rtx clobber2 = gen_rtx_CLOBBER (DImode, gen_rtx_REG (DImode, DI_REG));
+      rtx unspec = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx),
+      				   UNSPEC_MS_TO_SYSV_CALL);
+      call = gen_rtx_PARALLEL (VOIDmode,
+      			       gen_rtvec (4, call, unspec, clobber1, clobber2));
     }
 
   call = emit_call_insn (call);
