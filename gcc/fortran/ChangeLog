@@ -1,5 +1,13 @@
 2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
 
+	PR fortran/38487
+	* dependency.c (gfc_is_data_pointer): New function.
+	(gfc_check_argument_var_dependency): Disable the warning
+	in the pointer case.
+	(gfc_check_dependency): Use gfc_is_data_pointer.
+
+2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
+
 	PR fortran/38113
 	* error.c (show_locus): Start counting columns at 0.
 	* primary.c (match_actual_arg): Eat spaces

@@ -422,6 +422,24 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 }
 
 
+static int
+gfc_is_data_pointer (gfc_expr *e)
+{
+  gfc_ref *ref;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  if (e->symtree->n.sym->attr.pointer)
+    return 1;
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
+      return 1;
+
+  return 0;
+}
+
+
 /* Return true if array variable VAR could be passed to the same function
    as argument EXPR without interfering with EXPR.  INTENT is the intent
    of VAR.
@@ -447,7 +465,9 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
       if (gfc_ref_needs_temporary_p (expr->ref)
 	  || gfc_check_dependency (var, expr, !elemental))
 	{
-	  if (elemental == ELEM_DONT_CHECK_VARIABLE)
+	  if (elemental == ELEM_DONT_CHECK_VARIABLE
+	      && !gfc_is_data_pointer (var)
+	      && !gfc_is_data_pointer (expr))
 	    {
 	      /* Elemental procedures forbid unspecified intents, 
 		 and we don't check dependencies for INTENT_IN args.  */
@@ -664,7 +684,6 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 {
   gfc_actual_arglist *actual;
   gfc_constructor *c;
-  gfc_ref *ref;
   int n;
 
   gcc_assert (expr1->expr_type == EXPR_VARIABLE);
@@ -700,17 +719,8 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 
 	  /* If either variable is a pointer, assume the worst.  */
 	  /* TODO: -fassume-no-pointer-aliasing */
-	  if (expr1->symtree->n.sym->attr.pointer)
+	  if (gfc_is_data_pointer (expr1) || gfc_is_data_pointer (expr2))
 	    return 1;
-	  for (ref = expr1->ref; ref; ref = ref->next)
-	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
-	      return 1;
-
-	  if (expr2->symtree->n.sym->attr.pointer)
-	    return 1;
-	  for (ref = expr2->ref; ref; ref = ref->next)
-	    if (ref->type == REF_COMPONENT && ref->u.c.component->pointer)
-	      return 1;
 
 	  /* Otherwise distinct symbols have no dependencies.  */
 	  return 0;
