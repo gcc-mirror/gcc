@@ -1,3 +1,8 @@
+2008-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38597
+	* name-lookup.c (arg_assoc_type): Handle DECLTYPE_TYPE.
+
 2008-12-20  Jakub Jelinek  <jakub@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
