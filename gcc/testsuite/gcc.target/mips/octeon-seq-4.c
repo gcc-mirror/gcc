@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -march=octeon" } */
+/* { dg-options "-O2 -march=octeon" } */
 /* { dg-final { scan-assembler-not "xor" } } */
 
 unsigned

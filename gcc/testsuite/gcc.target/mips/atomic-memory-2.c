@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -mips32 -mabi=32" } */
+/* { dg-options "-O2 isa>=2 -mabi=32" } */
 /* { dg-final { scan-assembler "addiu" } } */
 /* { dg-final { scan-assembler-not "subu" } } */
 

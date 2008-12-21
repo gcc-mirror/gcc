@@ -1,4 +1,4 @@
-/* { dg-mips-options "-march=r4000 -mfix-r4000 -O2 -dp" } */
+/* { dg-options "-march=r4000 -mfix-r4000 -O2 -dp" } */
 typedef int int32_t;
 typedef int uint32_t;
 int32_t foo (int32_t x, int32_t y) { return x * y; }

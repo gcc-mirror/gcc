@@ -1,31 +1,30 @@
-/* { dg-do run { target mips*-*-* } } */
-/* { dg-options "-O2" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -mdsp -mgp32" } */
 
 extern void abort (void);
 extern void exit (int);
-#if __mips_dsp
 
-void __attribute__ ((noinline))
+NOMIPS16 void __attribute__ ((noinline))
 test1 (int i)
 {
   __builtin_mips_wrdsp (i, 63);
 }
 
-void __attribute__ ((noinline))
+NOMIPS16 void __attribute__ ((noinline))
 test2 ()
 {
   long long a = 0;
   __builtin_mips_extpdp (a, 3);
 }
 
-void __attribute__ ((noinline))
+NOMIPS16 void __attribute__ ((noinline))
 test3 (int i)
 {
   long long a = 0;
   __builtin_mips_extpdp (a, i);
 }
 
-void __attribute__ ((noinline))
+NOMIPS16 void __attribute__ ((noinline))
 test4 ()
 {
   long long a = 0;
@@ -33,7 +32,7 @@ test4 ()
   __builtin_mips_mthlip (a, i);
 }
 
-int
+NOMIPS16 int
 main ()
 {
   int cntl;
@@ -68,13 +67,3 @@ main ()
 
   exit (0);
 }
-
-#else
-
-int
-main ()
-{
-  exit (0); 
-}
-
-#endif

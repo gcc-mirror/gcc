@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 2007 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2007, 2008 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,371 +14,1113 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# GCC testsuite that uses the `dg.exp' driver.
+# A MIPS version of the GCC dg.exp driver.
+#
+# There are many MIPS features that we want to test, and many of those
+# features are specific to certain architectures, certain ABIs and so on.
+# There are therefore many cases in which we want to test something that
+# is incompatible with the user's chosen test options.
+#
+# In most dg testsuites, the options added by dg-options have a lower
+# priority than the options chosen by the user.  For example, if a test
+# specifies:
+#
+#    { dg-options "-mips1" }
+#
+# and the user passes the following option to runtest:
+#
+#    --target_board unix/-mips3
+#
+# the test would be compiled as MIPS III rather than MIPS I.  If the
+# test really wouldn't work with -mips3, normal practice would be to
+# have something like:
+#
+#    { dg-do compile { target can_force_mips1 } }
+#
+# so that the test is skipped when an option like -mips3 is passed.
+#
+# Sticking to the same approach here would cause us to skip many tests,
+# even though the toolchain can generate the required code.  For example,
+# there are 6 MIPS ABIs, plus variants.  Some configurations support
+# more than one ABI, so it is natural to use something like:
+#
+#    --target_board unix{-mabi=n32,-mabi=32,-mabi=64}
+#
+# when testing them.  But these -mabi=* options would normally prevent any
+# EABI and o64 tests from running.
+#
+# This testsuite therefore defines a local version of dg-options that
+# overrides any user options that are incompatible with the test options.
+# It tries to keep the other user options intact.
+#
+#
+# Most of the tests in this testsuite are scan-assembler tests, but
+# sometimes we need a link test instead.  In these cases, we must not
+# try to link code with options that are incompatible with the current
+# multilib, because xgcc is passed -L and -B options that are specific
+# to that multilib.
+#
+# Normal GCC practice would be to skip incompatible link tests as
+# unsupported, but in this particular case, it seems better to downgrade
+# them to an assemble test instead.  At least that way we get some
+# test-for-ICE and code-sanity coverage.
+#
+# The same problem applies to run tests.  If a test requires runtime
+# support for a particular feature, and if the current target does not
+# provide that support, normal practice would be to skip the test.
+# But in this case it seems better to downgrade it to a link test instead.
+# (We might then have to downgrade it to an assembler test according to
+# the constraints just mentioned.)
+#
+# The local dg-options therefore checks whether the new options are
+# link-compatiable with the user's options.  If not, it automatically
+# downgrades link tests to assemble tests.  It does the same for run
+# tests, but in addition, it downgrades run tests to link tests if the
+# target does not provide runtime support for a required feature or ASE.
+#
+#
+# Another problem is that many of the options we want to test require
+# certain other features.  For example, -mips3d requires both 64-bit
+# FPRs and a MIPS32 or MIPS64 target; -mfix-r10000 requires branch-
+# likely instructions; and so on.  We could handle this by specifying
+# a set of options that are guaranteed to give us what we want, such as:
+#
+#   dg-options "-mips3d -mpaired-single -mhard-float -mgp64 -mfp64 -mabi=n32 -march=mips64 -mips64"
+#
+# With the new dg-options semantics, this would override any troublesome
+# user options like -mips3, -march=vr4100, -mfp32, -mgp32, -msoft-float,
+# -mno-paired-single and so on.  But there are three major problems with
+# this:
+#
+#   - It is easy to forget options.
+#
+#   - If a new option is added, all tests that are incompatible with that
+#     option must be updated.
+#
+#   - We want to be able to test MIPS-3D with things like -march=mips32,
+#     -march=mips64r2, -march=sb1, and so on.
+#
+# The local version of dg-options therefore works out the requirements
+# of each test option.  As with the test options themselves, the local
+# dg-options overrides any user options that incompatible with these
+# requirements, but it keeps the other user options the same.
+#
+# For example, if the user passes -mips3, a MIPS-3D test will choose
+# a different architecture like -mips64 instead.  But if the user
+# passes -march=sb1, MIPS-3D tests will be run with that option.
+#
+#
+# Sometimes it is useful to say "I want an environment that is compatible
+# with option X, but I don't want to pass option X itself".  The main example
+# of this is -mips16: we want to be able to test __attribute__((mips16))
+# without requiring the test itself to be compiled as -mips16.  The local
+# version of dg-options lets you do this by putting X in parentheses.
+# For example:
+#
+#   { dg-options "(-mips16)" }
+#
+# selects a MIPS16-compatible target without passing -mips16 itself.
+#
+# It is also useful to say "any architecture within this ISA range is fine".
+# This can be done using special pseudo-options of the form:
+#
+#   PROP=VALUE PROP<=VALUE PROP>=VALUE
+#
+# where PROP can be:
+#
+#   isa:
+#	the value of the __mips macro.
+#
+#   isa_rev:
+#	the value of the __mips_isa_rev macro, or 0 if it isn't defined.
+#
+# For example, "isa_rev>=1" selects a MIPS32 or MIPS64 processor,
+# "isa=4" selects a MIPS IV processor, and so on.  There are also
+# the following special pseudo-options:
+#
+#   isa=loongson:
+#	select a Loongson processor
+#
+#   addressing=absolute
+#	force absolute addresses to be used
+#
+#
+# In summary:
+#
+#   (1) Try to avoid { target ... } requirements wherever possible.
+#       Specify the requirements as dg-options instead.
+#
+#   (2) Don't worry about the consequences of (1) for link and run tests.
+#       If the test uses { dg-do link } or { dg-do run }, and its
+#       dg-options are incompatible with the current target, the
+#       testsuite will downgrade them where necessary.
+#
+#   (3) Try to use the bare minimum of options and leave dg-options
+#       to work out the dependencies.  For example, if you want
+#       a MIPS-3D test, you should generally just specify -mips3d.
+#       Don't specify an architecture option like -mips64 unless
+#       the test really doesn't work with -mips32r2, -mips64r2,
+#       -march=sb1, etc.
+#
+#   (4) If you want something compatible with a particular option,
+#       but don't want to pass the option itself, wrap that option
+#       in parentheses.  In particular, pass '(-mips16)' if you
+#       want to use "mips16" attributes.
+#
+#   (5) When testing a feature of a generic ISA (as opposed to a
+#	processor-specific extension), try to use the "isa" and
+#	"isa_rev" pseudo-options instead of specific architecture
+#	options.  For example, if the feature is present on revision 2
+#	processors and above, try to use "isa_rev>=2" instead of
+#	"-mips32r2" or "-mips64r2".
 
 # Exit immediately if this isn't a MIPS target.
 if ![istarget mips*-*-*] {
-  return
+    return
 }
 
 # Load support procs.
 load_lib gcc-dg.exp
 
-# Find out which target is selected by the default compiler flags.
-# Also remember which aspects of the target are forced on the command
-# line (as opposed to being overridable defaults).
-#
-#    $mips_isa:		 the ISA level specified by __mips
-#    $mips_isa_rev:	 the ISA revision specified by __mips_isa_rev
-#    $mips_arch:	 the architecture specified by _MIPS_ARCH
-#    $mips_mips16:	 true if MIPS16 output is selected
-#    $mips_gp:		 the number of bytes in a general register
-#    $mips_fp:		 the number of bytes in a floating-point register
-#    $mips_float:	 "hard" or "soft"
-#    $mips_abi:		 the ABI specified by _MIPS_SIM
-#
-#    $mips_forced_isa:	 true if the command line uses -march=* or -mips*
-#    $mips_forced_abi:	 true if the command line uses -mabi=*
-#    $mips_forced_regs:  true if the command line uses -mgp* or -mfp*
-#    $mips_forced_float: true if the command line uses -mhard/soft-float
-#    $mips_forced_be	 true if the command line uses -EB or -meb
-#    $mips_forced_le	 true if the command line uses -EL or -mel
-#    $mips_forced_gp	 true if the command line forces a particular GP mode
-#    $mips_forced_no_abicalls
-#			 true if the command line contains -mno-abicalls
-#    $mips_forced_no_shared
-#			 true if the command line contains -mno-shared
-#    $mips_forced_no_er  true if the command line contains -mno-explicit-relocs
-proc setup_mips_tests {} {
-    global mips_isa
-    global mips_isa_rev
-    global mips_arch
-    global mips_mips16
-    global mips_gp
-    global mips_fp
-    global mips_float
-    global mips_abi
+# A list of GROUP REGEXP pairs.  Each GROUP represents a logical group of
+# options from which only option should be chosen.  REGEXP matches all the
+# options in that group; it is implicitly wrapped in "^(...)$".
+set mips_option_groups {
+    abi "-mabi=.*"
+    addressing "addressing=.*"
+    arch "-mips([1-5]|32.*|64.*)|-march=.*|isa(|_rev)(=|<=|>=).*"
+    dump_pattern "-dp"
+    endianness "-E(L|B)|-me(l|b)"
+    float "-m(hard|soft)-float"
+    fp "-mfp(32|64)"
+    gp "-mgp(32|64)"
+    long "-mlong(32|64)"
+    mips16 "-mips16|-mno-mips16"
+    mips3d "-mips3d|-mno-mips3d"
+    optimization "-O(|[0-3s])"
+    pic "-f(no-|)(pic|PIC)"
+    profiling "-pg"
+    small-data "-G[0-9]+"
+    warnings "-w"
+}
 
-    global mips_forced_isa
-    global mips_forced_abi
-    global mips_forced_float
-    global mips_forced_be
-    global mips_forced_le
-    global mips_forced_gp
-    global mips_forced_no_abicalls
-    global mips_forced_no_shared
-    global mips_forced_no_er
-    global mips_forced_regs
+# Add -mfoo/-mno-foo options to mips_option_groups.
+foreach option {
+    abicalls
+    branch-likely
+    dsp
+    dspr2
+    explicit-relocs
+    extern-sdata
+    fix-r4000
+    fix-r10000
+    fix-vr4130
+    gpopt
+    local-sdata
+    long-calls
+    paired-single
+    plt
+    shared
+    smartmips
+    sym32
+} {
+    lappend mips_option_groups $option "-m(no-|)$option"
+}
 
-    global compiler_flags
+# Add -mfoo= options to mips_option_groups.
+foreach option {
+    branch-cost
+    code-readable
+    r10k-cache-barrier
+} {
+    lappend mips_option_groups $option "-m$option=.*"
+}
+
+# Add -ffoo/-fno-foo options to mips_option_groups.
+foreach option {
+    delayed-branch
+    fast-math
+    finite-math-only
+    fixed-hi
+    fixed-lo
+    lax-vector-conversions
+    split-wide-types
+    tree-vectorize
+} {
+    lappend mips_option_groups $option "-f(no-|)$option"
+}
+
+# A list of option groups that have an impact on the ABI.
+set mips_abi_groups {
+    abi
+    abicalls
+    arch
+    endianness
+    float
+    fp
+    gp
+    gpopt
+    long
+    pic
+    small-data
+}
+
+# mips_option_tests(OPTION) is some assembly code that will run to completion
+# on a target that supports OPTION.
+set mips_option_tests(-mips16) {
+    move $2,$31
+    jal 1f
+    b 2f
+    .align 2
+    .set mips16
+1:
+    jr $31
+    .set nomips16
+    .align 2
+2:
+    move $31,$2
+}
+set mips_option_tests(-mpaired-single) {
+    .set mips64
+    lui $2,0x3f80
+    mtc1 $2,$f0
+    cvt.ps.s $f2,$f0,$f0
+}
+set mips_option_tests(-mips3d) {
+    .set mips64
+    .set mips3d
+    lui $2,0x3f80
+    mtc1 $2,$f0
+    cvt.ps.s $f2,$f0,$f0
+    mulr.ps $f2,$f2,$f2
+    rsqrt1.s $f2,$f0
+    mul.s $f4,$f2,$f0
+    rsqrt2.s $f4,$f4,$f2
+    madd.s $f4,$f2,$f2,$f4
+}
+set mips_option_tests(-mdsp) {
+    .set mips64r2
+    .set dsp
+    addsc $2,$2,$2
+}
+set mips_option_tests(-mdspr2) {
+    .set mips64r2
+    .set dspr2
+    prepend $2,$3,11
+}
+
+# Canonicalize command-line option OPTION.
+proc mips_canonicalize_option { option } {
+    regsub {^-mips([1-5]|32*|64*)$} $option {-march=mips\1} option
+
+    regsub {^-mel$} $option {-EL} option
+    regsub {^-meb$} $option {-EB} option
+
+    regsub {^-O$} $option {-O1} option
+
+    # MIPS doesn't use -fpic and -fPIC to distinguish between code models.
+    regsub {^-f(no-|)PIC} $option {-f\1pic} option
+
+    return $option
+}
+
+# Return true if OPTION1 and OPTION2 represent the same command-line option.
+proc mips_same_option_p { option1 option2 } {
+    return [string equal \
+		[mips_canonicalize_option $option1] \
+		[mips_canonicalize_option $option2]]
+}
+
+# Preprocess CODE using target_compile options OPTIONS.  Return the
+# compiler output.
+proc mips_preprocess { options code } {
     global tool
 
     set src dummy[pid].c
     set f [open $src "w"]
-    puts $f {
-	int isa = __mips;
-	#ifdef __mips_isa_rev
-	int isa_rev = __mips_isa_rev;
-	#else
-	int isa_rev = 1;
-	#endif
-	const char *arch = _MIPS_ARCH;
-	#ifdef __mips16
-	int mips16 = 1;
-	#endif
-	#ifdef __mips64
-	int gp = 64;
-	#else
-	int gp = 32;
-	#endif
-	int fp = __mips_fpr;
-	#ifdef __mips_hard_float
-	const char *float = "hard";
-	#else
-	const char *float = "soft";
-	#endif
-	#if !defined _MIPS_SIM
-	const char *abi = "eabi";
-	#elif _MIPS_SIM==_ABIO32
-	const char *abi = "32";
-	#elif _MIPS_SIM==_ABIO64
-	const char *abi = "o64";
-	#elif _MIPS_SIM==_ABIN32
-	const char *abi = "n32";
-	#else
-	const char *abi = "64";
-	#endif
-    }
+    puts $f $code
     close $f
-    set output [${tool}_target_compile $src "" preprocess ""]
+    set output [${tool}_target_compile $src "" preprocess $options]
     file delete $src
 
-    regexp {isa = ([^;]*)} $output dummy mips_isa
-    regexp {isa_rev = ([^;]*)} $output dummy mips_isa_rev
-    regexp {arch = "([^"]*)} $output dummy mips_arch
-    set mips_mips16 [regexp {mips16 = 1} $output]
-    regexp {gp = ([^;]*)} $output dummy mips_gp
-    regexp {fp = ([^;]*)} $output dummy mips_fp
-    regexp {float = "([^"]*)} $output dummy mips_float
-    regexp {abi = "([^"]*)} $output dummy mips_abi
+    return $output
+}
 
-    set mips_forced_isa [regexp -- {(-mips[1-5][[:>:]]|-mips32*|-mips64*|-march)} $compiler_flags]
-    set mips_forced_abi [regexp -- {-mabi} $compiler_flags]
-    set mips_forced_regs [regexp -- {(-mgp|-mfp)} $compiler_flags]
-    set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
-    set mips_forced_be [regexp -- {-(EB|meb)[[:>:]]} $compiler_flags]
-    set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
-    set mips_forced_gp [regexp -- {-(G|m(|no-)((extern|local)-sdata|gpopt)|mabicalls|mrtp)} $compiler_flags]
-    set mips_forced_no_abicalls [regexp -- {-mno-abicalls} $compiler_flags]
-    set mips_forced_no_shared [regexp -- {-mno-shared} $compiler_flags]
-    set mips_forced_no_er [regexp -- {-mno-explicit-relocs} $compiler_flags]
+# Set the target board's command-line options to NEW_OPTIONS, storing the
+# old values in UPVAR.
+proc mips_push_test_options { upvar new_options } {
+    upvar $upvar var
+    global board_info
 
-    if {$mips_forced_regs && $mips_gp == 32 && $mips_fp == 64} {
-	set mips_forced_abi 1
-	set mips_forced_isa 1
+    array unset var
+    set var(name) board_info([target_info name],multilib_flags)
+    if { [info exists $var(name)] } {
+	set var(old_options) [set $var(name)]
+	set $var(name) [join $new_options " "]
     }
 }
 
-# Like dg-options, but treats certain MIPS-specific options specially:
+# Undo the effects of [mips_push_test_options UPVAR ...]
+proc mips_pop_test_options { upvar } {
+    upvar $upvar var
+    global board_info
+
+    if { [info exists var(old_options)] } {
+	set $var(name) $var(old_options)
+    }
+}
+
+# Return property PROP for architecture option ARCH (which belongs to
+# the "arch" group in mips_option_groups).  See the comment at the
+# top of the file for the valid property names.
 #
-#    -mgp32
-#    -march=mips32*
-#	Force 32-bit code.  Skip the test if the multilib flags force
-#	a 64-bit ABI.
+# Cache the results in mips_arch_info (which can be reused between test
+# variants).
+proc mips_arch_info { arch prop } {
+    global mips_arch_info
+    global board_info
+
+    set arch [mips_canonicalize_option $arch]
+    if { ![info exists mips_arch_info($arch,$prop)] } {
+	mips_push_test_options saved_options {}
+	set output [mips_preprocess [list "additional_flags=$arch -mabi=32"] {
+	    int isa = __mips;
+	    #ifdef __mips_isa_rev
+	    int isa_rev = __mips_isa_rev;
+	    #else
+	    int isa_rev = 0;
+	    #endif
+	}]
+	foreach lhs { isa isa_rev } {
+	    regsub ".*$lhs = (\[^;\]*).*" $output {\1} rhs
+	    verbose -log "Architecture $arch has $lhs $rhs"
+	    set mips_arch_info($arch,$lhs) $rhs
+	}
+	mips_pop_test_options saved_options
+    }
+    return $mips_arch_info($arch,$prop)
+}
+
+# Return the option group associated with OPTION, or "" if none.
+proc mips_option_maybe_group { option } {
+    global mips_option_groups
+
+    foreach { group regexp } $mips_option_groups {
+	if { [regexp -- "^($regexp)\$" $option] } {
+	    return $group
+	}
+    }
+    return ""
+}
+
+# Return the option group associated with OPTION.  Raise an error if
+# there is none.
+proc mips_option_group { option } {
+    set group [mips_option_maybe_group $option]
+    if { [string equal $group ""] } {
+	error "Unrecognised option: $option"
+    }
+    return $group
+}
+
+# Return the option for option group GROUP, or "" if no option in that
+# group has been chosen.  UPSTATUS describes the option status.
+proc mips_option { upstatus group } {
+    upvar $upstatus status
+
+    return $status(option,$group)
+}
+
+# If the default options for this test run include an option in group GROUP,
+# return that option, otherwise return "".
+proc mips_original_option { group } {
+    global mips_base_options
+
+    return [mips_option mips_base_options $group]
+}
+
+# Return true if the test described up UPSTATUS requires a specific
+# option in group GROUP.
+proc mips_test_option_p { upstatus group } {
+    upvar $upstatus status
+
+    return $status(test_option_p,$group)
+}
+
+# If the test described by UPSTATUS requires a particular option in group
+# GROUP, return that option, otherwise return "".
+proc mips_test_option { upstatus group } {
+    upvar $upstatus status
+
+    if { [mips_test_option_p status $group] } {
+	return [mips_option status $group]
+    } else {
+	return ""
+    }
+}
+
+# Return true if the options described by UPSTATUS include OPTION.
+proc mips_have_option_p { upstatus option } {
+    upvar $upstatus status
+
+    return [mips_same_option_p \
+		[mips_option status [mips_option_group $option]] \
+		$option]
+}
+
+# Return true if the test described by UPSTATUS requires option OPTION.
+proc mips_have_test_option_p { upstatus option } {
+    upvar $upstatus status
+
+    set group [mips_option_group $option]
+    return [mips_same_option_p [mips_test_option status $group] $option]
+}
+
+# If the test described by UPSTATUS does not specify an option in
+# OPTION's group, act as though it had specified OPTION.
 #
-#    -mgp64
-#	Force 64-bit code.  Also force a 64-bit target architecture
-#	if the other flags don't do so.  Skip the test if the multilib
-#	flags force a 32-bit ABI or a 32-bit architecture.
+# The first optional argument indicates whether the option should be
+# treated as though it were wrapped in parentheses; see the comment at
+# the top of the file for details about this convention.  The default is 0.
+proc mips_make_test_option { upstatus option args } {
+    upvar $upstatus status
+
+    set group [mips_option_group $option]
+    if { ![mips_test_option_p status $group] } {
+	set status(option,$group) $option
+	set status(test_option_p,$group) 1
+	if { [llength $args] == 0 || ![lindex $args 0] } {
+	    set status(explicit_p,$group) 1
+	}
+    }
+}
+
+# If the test described by UPSTATUS requires option FROM, assume that
+# it implicitly requires option TO.
+proc mips_option_dependency { upstatus from to } {
+    upvar $upstatus status
+
+    if { [mips_have_test_option_p status $from] } {
+	mips_make_test_option status $to
+    }
+}
+
+# Return true if the given arch-group option specifies a 32-bit ISA.
+proc mips_32bit_arch_p { option } {
+    set isa [mips_arch_info $option isa]
+    return [expr { $isa < 3 || $isa == 32 }]
+}
+
+# Return true if the given arch-group option specifies a 64-bit ISA.
+proc mips_64bit_arch_p { option } {
+    return [expr { ![mips_32bit_arch_p $option] }]
+}
+
+# Return true if the given abi-group option implicitly requires -mgp32.
+proc mips_32bit_abi_p { option } {
+    switch -glob -- $option {
+	-mabi=32 {
+	    return 1
+	}
+    }
+    return 0
+}
+
+# Return true if the given abi-group option implicitly requires -mgp64.
+proc mips_64bit_abi_p { option } {
+    switch -glob -- $option {
+	-mabi=o64 -
+	-mabi=n32 -
+	-mabi=64 {
+	    return 1
+	}
+    }
+    return 0
+}
+
+# Check whether the current target supports all the options that the
+# current test requires.  Return "" if so, otherwise return one of
+# the incompatible options.  UPSTATUS describes the option status.
+proc mips_first_unsupported_option { upstatus } {
+    global mips_option_tests
+    upvar $upstatus status
+
+    foreach { option code } [array get mips_option_tests] {
+	if { [mips_have_test_option_p status $option] } {
+	    regsub -all "\n" $code "\\n\\\n" asm
+	    # Use check_runtime from target-supports.exp, which caches
+	    # the result for us.
+	    if { ![check_runtime mips_option_$option [subst {
+		__attribute__((nomips16)) int
+		main (void)
+		{
+		    asm (".set push\
+		    $asm\
+		    .set pop");
+		    return 0;
+		}
+	    }]] } {
+		return $option
+	    }
+	}
+    }
+    return ""
+}
+
+# Initialize this testsuite for a new test variant.
+proc mips-dg-init {} {
+    # Invariant information.
+    global mips_option_groups
+
+    # Internally-generated information about this run.
+    global mips_base_options
+    global mips_extra_options
+
+    # Override dg-options with our mips-dg-options routine.
+    rename dg-options mips-old-dg-options
+    rename mips-dg-options dg-options
+
+    # Start with a fresh option status.
+    array unset mips_base_options
+    foreach { group regexp } $mips_option_groups {
+	set mips_base_options(option,$group) ""
+	set mips_base_options(explicit_p,$group) 0
+	set mips_base_options(test_option_p,$group) 0
+    }
+
+    # Use preprocessor macros to work out as many implicit options as we can.
+    set output [mips_preprocess "" {
+	const char *options[] = {
+	    #if !defined _MIPS_SIM
+	    "-mabi=eabi",
+	    #elif _MIPS_SIM==_ABIO32
+	    "-mabi=32",
+	    #elif _MIPS_SIM==_ABIO64
+	    "-mabi=o64",
+	    #elif _MIPS_SIM==_ABIN32
+	    "-mabi=n32",
+	    #else
+	    "-mabi=64",
+	    #endif
+
+	    "-march=" _MIPS_ARCH,
+
+	    #ifdef _MIPSEB
+	    "-EB",
+	    #else
+	    "-EL",
+	    #endif
+
+	    #ifdef __mips_hard_float
+	    "-mhard-float",
+	    #else
+	    "-msoft-float",
+	    #endif
+
+	    #if __mips_fpr == 64
+	    "-mfp64",
+	    #else
+	    "-mfp32",
+	    #endif
+
+	    #ifdef __mips64
+	    "-mgp64",
+	    #else
+	    "-mgp32",
+	    #endif
+
+	    #if _MIPS_SZLONG == 64
+	    "-mlong64",
+	    #else
+	    "-mlong32",
+	    #endif
+
+	    #ifdef __mips16
+	    "-mips16",
+	    #else
+	    "-mno-mips16",
+	    #endif
+
+	    #ifdef __mips3d
+	    "-mips3d",
+	    #else
+	    "-mno-mips3d",
+	    #endif
+
+	    #ifdef __mips_paired_single_float
+	    "-mpaired-single",
+	    #else
+	    "-mno-paired-single",
+	    #endif
+
+	    #if __mips_abicalls
+	    "-mabicalls",
+	    #else
+	    "-mno-abicalls",
+	    #endif
+
+	    #if __mips_dsp_rev >= 2
+	    "-mdspr2",
+	    #else
+	    "-mno-dspr2",
+	    #endif
+
+	    #if __mips_dsp_rev >= 1
+	    "-mdsp",
+	    #else
+	    "-mno-dsp",
+	    #endif
+
+	    #ifndef __PIC__
+	    "addressing=absolute",
+	    #endif
+
+	    #ifdef __mips_smartmips
+	    "-msmartmips",
+	    #else
+	    "-mno-smartmips",
+	    #endif
+
+	    0
+	};
+    }]
+    foreach line [split $output "\r\n"] {
+	# Poor man's string concatenation.
+	regsub -all {" "} $line "" line
+	if { [regexp {"(.*)",} $line dummy option] } {
+	    set group [mips_option_group $option]
+	    set mips_base_options(option,$group) $option
+	}
+    }
+
+    # Process the target's multilib options, saving any unrecognized
+    # ones in mips_extra_options.
+    set mips_extra_options {}
+    foreach option [split [board_info target multilib_flags]] {
+	set group [mips_option_maybe_group $option]
+	if { ![string equal $group ""] } {
+	    set mips_base_options(option,$group) $option
+	    set mips_base_options(explicit_p,$group) 1
+	} else {
+	    lappend mips_extra_options $option
+	}
+    }
+}
+
+# Finish a test run started by mips-dg-init.
+proc mips-dg-finish {} {
+    rename dg-options mips-dg-options
+    rename mips-old-dg-options dg-options
+}
+
+# Override dg-options so that we can do some MIPS-specific processing.
+# All options used in this testsuite must appear in mips_option_groups.
 #
-#    -mfp64
-#	Force the use of 64-bit floating-point registers, even on a
-#	32-bit target.  Also force -mhard-float and an architecture that
-#	supports such a combination, unless these things are already
-#	specified by other parts of the given flags.
+# Test options override multilib options.  Certain test options can
+# also imply other test options, which also override multilib options.
+# These dependencies are ordered as follows:
 #
-#    -mabi=*
-#	Force a particular ABI.  Skip the test if the multilib flags
-#	force a specific ABI or a different register size.  If testing
-#	MIPS16 multilibs, try to force -msoft-float for ABIs other than
-#	o32 and o64, and skip the test if this is not possible.
+#          START                        END
+#            |                           |
+#         -mips16                     -mno-mips16
+#            |                           |
+#         -mips3d                     -mno-mips3d
+#            |                           |
+#         -mpaired-single             -mno-paired-single
+#            |                           |
+#         -mfp64                      -mfp32
+#            |                           |
+#         -mhard-float                -msoft-float
+#            |                           |
+#         -mno-sym32                  -msym32
+#            |                           |
+#         -fpic                       -fno-pic
+#            |                           |
+#         -mshared                    -mno-shared
+#            |                           |
+#         -mno-plt                    -mplt
+#            |                           |
+#         addressing=unknown          addressing=absolute
+#            |                           |
+#         -mabicalls                  -mno-abicalls
+#            |                           |
+#         -G0                         <other value>
+#            |                           |
+#         <other value>               -mr10k-cache-barrier=none
+#            |                           |
+#         -mfix-r10000                -mno-fix-r10000
+#            |                           |
+#         -mbranch-likely             -mno-branch-likely
+#            |                           |
+#         -msmartmips                 -mno-smartmips
+#            |                           |
+#         -mno-gpopt                  -mgpopt
+#            |                           |
+#         -mexplicit-relocs           -mno-explicit-relocs
+#            |                           |
+#            +-- gp, abi & arch ---------+
 #
-#    -march=*
-#    -mips*
-#	Select the target architecture.  Skip the test if the multilib
-#	flags force a different architecture.
-#
-#    -msoft-float
-#    -mhard-float
-#	Select the given floating-point mode.  Skip the test if the
-#	multilib flags force a different selection.
-#
-#    -EB
-#    -EL
-#	Select the given endianness.  Skip the test if the multilib flags
-#	force the opposite endianness.
-#
-#    -G*
-#    -m(no-)extern-sdata
-#    -m(no-)local-sdata
-#    -m(no-)gpopt
-#	Select the small-data mode, and -mno-abcialls.  Skip the test if
-#	the multilib flags already contain such an option, or specify
-#	something that might be incompatible with them.
-#
-#    -mabicalls
-#    -mshared
-#	Select the form of SVR4 PIC.  Skip the test if the multilib flags
-#	conflict with the required setting.
-#
-#    -mexplicit-relocs
-#	Select explicit relocations.  Skip the test if the multilib flags
-#	force -mno-explicit-relocs.
-#
-#    -mpaired-single
-#	Select paired-single instructions.  Also behave as for -mfp64.
-proc dg-mips-options {args} {
+# For these purposes, the "gp", "abi" & "arch" option groups are treated
+# as a single node.
+proc mips-dg-options { args } {
+    # dg.exp variables.
     upvar dg-extra-tool-flags extra_tool_flags
     upvar dg-do-what do_what
 
-    global mips_isa
-    global mips_isa_rev
-    global mips_arch
-    global mips_mips16
-    global mips_gp
-    global mips_fp
-    global mips_float
-    global mips_abi
+    # Invariant information.
+    global mips_option_groups
+    global mips_abi_groups
 
-    global mips_forced_isa
-    global mips_forced_abi
-    global mips_forced_regs
-    global mips_forced_float
-    global mips_forced_be
-    global mips_forced_le
-    global mips_forced_gp
-    global mips_forced_no_abicalls
-    global mips_forced_no_shared
-    global mips_forced_no_er
+    # Information about this run.
+    global mips_base_options
 
-    set flags [lindex $args 1]
-    set matches 1
+    # Start out with the default option state.
+    array set options [array get mips_base_options]
 
-    # Add implied flags.
-    foreach flag $flags {
-	if {[string match -mpaired-single $flag]
-	    && [lsearch $flags -mfp*] < 0} {
-	    append flags " -mfp64"
-	} elseif {[regexp -- {^-mabi=(.*)} $flag dummy abi]
-		  && $mips_mips16
-		  && $abi != "32"
-		  && $abi != "o64"} {
-	    if {[lsearch $flags -mhard-float] >= 0} {
-		set matches 0
-	    } else {
-		append flags " -msoft-float"
-	    }
-	} elseif {[regexp -- {^-mr10k-cache-barrier=(load|store)} $flag]
-		  && $mips_isa < 3
-		  && [lsearch -regexp $flags {^(-mips|-march)}] < 0} {
-	    append flags " -mips3"
-	}
-    }
-    foreach flag $flags {
-	if {[string match -mfp* $flag]
-	    && [lsearch -regexp $flags {^-m(hard|soft)-float$}] < 0} {
-	    append flags " -mhard-float"
+    # Record the options that this test explicitly needs.
+    foreach option [lindex $args 1] {
+	set all_but_p [regexp {^\((.*)\)$} $option dummy option]
+	set group [mips_option_group $option]
+	if { [mips_test_option_p options $group] } {
+	    set old [mips_option options $group]
+	    error "Inconsistent $group option: $old vs. $option"
+	} else {
+	    mips_make_test_option options $option $all_but_p
 	}
     }
 
-    # Handle options that force a particular register size.  Add
-    # architecture and ABI options if necessary.
-    set mips_new_gp $mips_gp
-    set mips_new_fp $mips_fp
-    foreach flag $flags {
-	switch -glob -- $flag {
-	    -msmartmips -
-	    -mips[12] -
-	    -mips32* -
-	    -march=mips32* -
-	    -march=r3900 -
-	    -march=24k* -
-	    -mabi=32 -
-	    -mgp32 {
-		set mips_new_gp 32
-	    }
-	    -mabi=64 -
-	    -mabi=o64 -
-	    -mabi=n32 -
-	    -mgp64 {
-		set mips_new_gp 64
-	    }
-	    -mfp64 {
-		set mips_new_fp 64
-	    }
+    # Handle dependencies between options on the left of the
+    # dependency diagram.
+    mips_option_dependency options "-mips3d" "-mpaired-single"
+    mips_option_dependency options "-mpaired-single" "-mfp64"
+    mips_option_dependency options "-mfp64" "-mhard-float"
+    mips_option_dependency options "-fpic" "-mshared"
+    mips_option_dependency options "-mshared" "-mno-plt"
+    mips_option_dependency options "-mno-plt" "addressing=unknown"
+    mips_option_dependency options "-mabicalls" "-G0"
+    mips_option_dependency options "-mno-gpopt" "-mexplicit-relocs"
+
+    # Work out information about the current ABI.
+    set abi_test_option_p [mips_test_option_p options abi]
+    set abi [mips_option options abi]
+    set eabi_p [mips_same_option_p $abi "-mabi=eabi"]
+
+    # If the test forces a particular ABI, set the register size
+    # accordingly.
+    if { $abi_test_option_p } {
+	if { [mips_32bit_abi_p $abi] } {
+	    mips_make_test_option options "-mgp32"
+	} elseif { [mips_64bit_abi_p $abi] } {
+	    mips_make_test_option options "-mgp64"
 	}
     }
 
-    if {$mips_new_gp != $mips_gp || $mips_new_fp != $mips_fp} {
-	if {$mips_forced_regs} {
-	    set matches 0
-	}
-	# Select an appropriate ABI.
-	if {[lsearch $flags "-mabi=*"] < 0} {
-	    if {$mips_new_gp == 32} {
-		append flags " -mabi=32"
-	    } else {
-		append flags " -mabi=o64"
+    # Interpret the special "isa" and "isa_rev" options.  If we have
+    # a choice of a 32-bit or a 64-bit architecture, prefer to keep
+    # the -mgp setting the same.
+    set spec [mips_option options arch]
+    if { [regexp {^[^-]} $spec] } {
+	set arch [mips_option mips_base_options arch]
+	if { [string equal $spec "isa=loongson"] } {
+	    if { ![regexp {^-march=loongson} $arch] } {
+		set arch "-march=loongson2f"
 	    }
-	}
-	# And an appropriate architecture.
-	if {[lsearch -regexp $flags {^(-mips|-march)}] < 0} {
-	    if {$mips_new_gp == 64 && $mips_gp == 32} {
-		append flags " -mips3"
-	    } elseif {$mips_new_gp == 32 && $mips_new_fp == 64} {
-		append flags " -mips32r2"
+	} else {
+	    if { ![regexp {^(isa(?:|_rev))(=|<=|>=)([0-9]+)$} $spec \
+		       dummy prop relation value] } {
+		error "Unrecognized isa specification: $isa_spec"
 	    }
-	}
-    }
-
-    foreach flag $flags {
-	if {[string match -mabicalls $flag]} {
-	    # EABI has no SVR4-style PIC mode, so try to force another ABI.
-	    if {$mips_abi == "eabi" && [lsearch $flags "-mabi=*"] < 0} {
-		if {$mips_new_gp == 32} {
-		    append flags " -mabi=32"
+	    set current [mips_arch_info $arch $prop]
+	    if { ($current < $value && ![string equal $relation "<="])
+		 || ($current > $value && ![string equal $relation ">="])
+		 || ([mips_have_test_option_p options "-mgp64"]
+		     && [mips_32bit_arch_p $arch]) } {
+		# The current setting is out of range; it cannot
+		# possibly be used.  Find a replacement that can.
+		if { [string equal $prop "isa"] } {
+		    set arch "-mips$value"
+		} elseif { $value == 0 } {
+		    set arch "-mips4"
 		} else {
-		    append flags " -mabi=n32"
+		    if { [mips_have_option_p options "-mgp32"] } {
+			set arch "-mips32"
+		    } else {
+			set arch "-mips64"
+		    }
+		    if { $value > 1 } {
+			append arch "r$value"
+		    }
 		}
 	    }
-	    # Turn off small data, if on by default.
-	    append flags " -G0"
+	}
+	set options(option,arch) $arch
+    }
+
+    # Work out information about the current architecture.
+    set arch_test_option_p [mips_test_option_p options arch]
+    set arch [mips_option options arch]
+    set isa [mips_arch_info $arch isa]
+    set isa_rev [mips_arch_info $arch isa_rev]
+
+    # If the test forces a 32-bit architecture, force -mgp32.
+    # Force the current -mgp setting otherwise; if we don't,
+    # some configurations would make a 64-bit architecture
+    # imply -mgp64.
+    if { $arch_test_option_p } {
+	if { [mips_32bit_arch_p $arch] } {
+	    mips_make_test_option options "-mgp32"
+	} else {
+	    mips_make_test_option options [mips_option options gp]
 	}
     }
 
-    # Handle the other options.
-    foreach flag $flags {
-	if {[regexp -- {^-mabi=(.*)} $flag dummy abi]} {
-	    if {$abi != $mips_abi && $mips_forced_abi} {
-		set matches 0
+    # We've now fixed the GP register size.  Make it easily available.
+    set gp_size [expr { [mips_have_option_p options "-mgp32"] ? 32 : 64 }]
+
+    # Handle dependencies between the pre-arch options and the arch option.
+    # This should mirror the arch and post-arch code below.
+    if { !$arch_test_option_p } {
+	# We need a revision 2 or better ISA for:
+	#
+	#   - the combination of -mgp32 -mfp64
+	#   - the DSP ASE
+	if { $isa_rev < 2
+	     && (($gp_size == 32 && [mips_have_test_option_p options "-mfp64"])
+		 || [mips_have_test_option_p options "-mdsp"]
+		 || [mips_have_test_option_p options "-mdspr2"]) } {
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mips32r2"
+	    } else {
+		mips_make_test_option options "-mips64r2"
 	    }
-	} elseif {[regexp -- {^-mips(.*)} $flag dummy isa]
-		  || [regexp -- {^-march=mips(.*)} $flag dummy isa]} {
-	    if {![regexp {(.*)r(.*)} $isa dummy isa isa_rev]} {
-		set isa_rev 1
+        # We need a MIPS32 or MIPS64 ISA for:
+	#
+        #   - paired-single instructions(*)
+        #
+	# (*) Note that we don't support MIPS V at the moment.
+	} elseif { $isa_rev < 1
+		   && [mips_have_test_option_p options "-mpaired-single"] } {
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mips32"
+	    } else {
+		mips_make_test_option options "-mips64"
 	    }
-	    if {($isa != $mips_isa || $isa_rev != $mips_isa_rev)
-		&& $mips_forced_isa} {
-		set matches 0
+        # We need MIPS III or higher for:
+	#
+	#   - the "cache" instruction
+	} elseif { $isa < 3
+		   && ([mips_have_test_option_p options \
+			    "-mr10k-cache-barrier=load-store"]
+		       || [mips_have_test_option_p options \
+			       "-mr10k-cache-barrier=store"]) } {
+	    mips_make_test_option options "-mips3"
+        # We need MIPS II or higher for:
+	#
+	#   - branch-likely instructions(*)
+        #
+	# (*) needed by both -mbranch-likely and -mfix-r10000
+	} elseif { $isa < 2
+		   && ([mips_have_test_option_p options "-mbranch-likely"]
+		       || [mips_have_test_option_p options "-mfix-r10000"]) } {
+	    mips_make_test_option options "-mips2"
+	# Check whether we need to switch from a 32-bit processor to the
+	# "nearest" 64-bit processor.
+	} elseif { $gp_size == 64 && [mips_32bit_arch_p $arch] } {
+	    if { $isa_rev == 0 } {
+		mips_make_test_option options "-mips3"
+	    } elseif { $isa_rev == 1 } {
+		mips_make_test_option options "-mips64"
+	    } else {
+		mips_make_test_option options "-mips64r$isa_rev"
 	    }
-	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
-	    if {$arch != $mips_arch && $mips_forced_isa} {
-		set matches 0
+	}
+	unset arch
+	unset isa
+	unset isa_rev
+    }
+
+    # Set an appropriate ABI, handling dependencies between the pre-abi
+    # options and the abi options.  This should mirror the abi and post-abi
+    # code below.
+    if { !$abi_test_option_p } {
+	if { ($eabi_p
+	      && ([mips_have_option_p options "-mabicalls"]
+		  || ($gp_size == 32
+		      && [mips_have_option_p options "-mfp64"]))) } {
+	    # EABI doesn't support -mabicalls.
+	    # EABI doesn't support the combination -mgp32 -mfp64.
+	    set force_abi 1
+	} elseif { [mips_have_option_p options "-mips16"]
+		   && ![mips_same_option_p $abi "-mabi=32"]
+		   && ![mips_same_option_p $abi "-mabi=o64"]
+		   && (![mips_have_option_p options "addressing=absolute"]
+		       || [mips_have_option_p options "-mhard-float"]) } {
+	    # -mips16 -mhard-float requires o32 or o64.
+	    # -mips16 PIC requires o32 or o64.
+	    set force_abi 1
+	} else {
+	    set force_abi 0
+	}
+	if { $gp_size == 32 } {
+	    if { $force_abi || [mips_64bit_abi_p $abi] } {
+		mips_make_test_option options "-mabi=32"
 	    }
-	} elseif {[regexp -- {^-m(hard|soft)-float} $flag dummy float]} {
-	    if {$mips_float != $float && $mips_forced_float} {
-		set matches 0
+	} else {
+	    if { $force_abi || [mips_32bit_abi_p $abi] } {
+		# All configurations should have an assembler that
+		# supports o64, since it requires the same BFD target
+		# vector as o32.  In contrast, many assembler
+		# configurations do not have n32 or n64 support.
+		mips_make_test_option options "-mabi=o64"
 	    }
-	} elseif {[regexp -- {^-(EB|meb)$} $flag]} {
-	    if {$mips_forced_le} {
-		set matches 0
+	}
+	unset abi
+	unset eabi_p
+    }
+
+    # Handle dependencies between the abi options and the post-abi options.
+    # This should mirror the abi and pre-abi code above.
+    if { $abi_test_option_p } {
+	if { $eabi_p } {
+	    mips_make_test_option options "-mno-abicalls"
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mfp32"
 	    }
-	} elseif {[regexp -- {^-(EL|mel)$} $flag]} {
-	    if {$mips_forced_be} {
-		set matches 0
+	}
+	if { [mips_have_option_p options "-mips16"]
+	     && ![mips_same_option_p $abi "-mabi=32"]
+	     && ![mips_same_option_p $abi "-mabi=o64"]
+	     && (![mips_have_option_p options "addressing=absolute"]
+		 || [mips_have_option_p options "-mhard-float"]) } {
+	    if { [mips_test_option_p options mips16] } {
+		mips_make_test_option options "addressing=absolute"
+		mips_make_test_option options "-msoft-float"
+	    } else {
+		mips_make_test_option options "-mno-mips16"
 	    }
-	} elseif {[regexp -- {^-(G|m(|no-)((extern|local)-sdata|gpopt))} $flag]} {
-	    if {$flag != "-G0"} {
-		append flags " -mno-abicalls"
+	}
+	unset abi
+	unset eabi_p
+    }
+
+    # Handle dependencies between the arch option and the post-arch options.
+    # This should mirror the arch and pre-arch code above.
+    if { $arch_test_option_p } {
+	if { $isa < 2 } {
+	    mips_make_test_option options "-mno-branch-likely"
+	    mips_make_test_option options "-mno-fix-r10000"
+	}
+	if { $isa < 3 } {
+	    mips_make_test_option options "-mr10k-cache-barrier=none"
+	}
+	if { $isa_rev < 1 } {
+	    mips_make_test_option options "-mno-paired-single"
+	}
+	if { $isa_rev < 2 } {
+	    if { $gp_size == 32 } {
+		mips_make_test_option options "-mfp32"
 	    }
-	    if {$mips_forced_gp} {
-		set matches 0
-	    }
-	} elseif {[regexp -- {^-mabicalls$} $flag]} {
-	    if {$mips_forced_no_abicalls} {
-		set matches 0
-	    }
-	} elseif {[regexp -- {^-mshared$} $flag]} {
-	    if {$mips_forced_no_shared} {
-		set matches 0
-	    }
-	} elseif {[regexp -- {^-mexplicit-relocs$} $flag]} {
-	    if {$mips_forced_no_er} {
-		set matches 0
+	    mips_make_test_option options "-mno-dsp"
+	    mips_make_test_option options "-mno-dspr2"
+	}
+	unset arch
+	unset isa
+	unset isa_rev
+    }
+
+    # Handle dependencies between options on the right of the diagram.
+    mips_option_dependency options "-mno-explicit-relocs" "-mgpopt"
+    switch -- [mips_test_option options small-data] {
+	"" -
+	-G0 {}
+	default {
+	    mips_make_test_option options "-mno-abicalls"
+	}
+    }
+    if { [mips_have_option_p options "-mabicalls"] } {
+	mips_option_dependency options "addressing=absolute" "-mplt"
+    }
+    mips_option_dependency options "-mplt" "-msym32"
+    mips_option_dependency options "-mplt" "-mno-shared"
+    mips_option_dependency options "-mno-shared" "-fno-pic"
+    mips_option_dependency options "-mfp32" "-mno-paired-single"
+    mips_option_dependency options "-msoft-float" "-mno-paired-single"
+    mips_option_dependency options "-mno-paired-single" "-mno-mips3d"
+
+    # If the test requires an unsupported option, change run tests
+    # to link tests.
+
+    switch -- [lindex $do_what 0] {
+	run {
+	    set option [mips_first_unsupported_option options]
+	    if { ![string equal $option ""] } {
+		set do_what [lreplace $do_what 0 0 link]
+		verbose -log "Downgraded to a 'link' test due to unsupported option '$option'"
 	    }
 	}
     }
-    if {$matches} {
-	append extra_tool_flags " " $flags
-    } else {
-	set do_what [list [lindex $do_what 0] "N" "P"]
+
+    # If the test has overridden a option that changes the ABI,
+    # downgrade a link or execution test to an assembler test.
+    foreach group $mips_abi_groups {
+	set old_option [mips_original_option $group]
+	set new_option [mips_option options $group]
+	if { ![mips_same_option_p $old_option $new_option] } {
+	    switch -- [lindex $do_what 0] {
+		link -
+		run {
+		    set do_what [lreplace $do_what 0 0 assemble]
+		    verbose -log "Downgraded to an 'assemble' test due to incompatible $group option ($old_option changed to $new_option)"
+		}
+	    }
+	    break
+	}
+    }
+
+    # Add all options to the dg variable.
+    set options(explicit_p,addressing) 0
+    foreach { group regexp } $mips_option_groups {
+	if { $options(explicit_p,$group) } {
+	    append extra_tool_flags " " $options(option,$group)
+	}
+    }
+
+    # If the test is MIPS16-compatible, provide a counterpart to the
+    # NOMIPS16 convenience macro.
+    if { [mips_have_test_option_p options "-mips16"] } {
+	append extra_tool_flags " -DMIPS16=__attribute__((mips16))"
+    }
+
+    # Use our version of gcc-dg-test for this test.
+    if { ![string equal [info procs "mips-gcc-dg-test"] ""] } {
+	rename gcc-dg-test mips-old-gcc-dg-test
+	rename mips-gcc-dg-test gcc-dg-test
     }
 }
 
-setup_mips_tests
+# A version of gcc-dg-test that is used by dg-options tests.
+proc mips-gcc-dg-test { prog do_what extra_tool_flags } {
+    global board_info
+    global mips_extra_options
+
+    # Override the user's chosen test options with the combined test/user
+    # version.
+    mips_push_test_options saved_options $mips_extra_options
+    set result [gcc-dg-test-1 gcc_target_compile $prog \
+		    $do_what $extra_tool_flags]
+    mips_pop_test_options saved_options
+
+    # Restore the usual gcc-dg-test.
+    rename gcc-dg-test mips-gcc-dg-test
+    rename mips-old-gcc-dg-test gcc-dg-test
+
+    return $result
+}
 
 dg-init
-# MIPS16 is defined in add_options_for_mips16_attribute.
+mips-dg-init
+# MIPS16 is defined by "-mips16" or "(-mips16)" in dg-options.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" \
     "-DNOMIPS16=__attribute__((nomips16))"
+mips-dg-finish
 dg-finish

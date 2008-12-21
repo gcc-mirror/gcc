@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=mips32r2" } */
+/* { dg-options "isa_rev>=2" } */
 /* { dg-final { scan-assembler "ext" } } */
 /* { dg-final { scan-assembler "ins" } } */
 

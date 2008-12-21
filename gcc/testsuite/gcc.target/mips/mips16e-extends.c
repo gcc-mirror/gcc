@@ -1,6 +1,5 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-Os -march=mips32" } */
-/* { dg-add-options mips16_attribute } */
+/* -mlong32 added because of PR target/38595.  */
+/* { dg-options "(-mips16) -Os isa_rev>=1 -mlong32" } */
 
 MIPS16 short cksum16 (unsigned long n)
 {

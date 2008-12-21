@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=vr4130 -mfix-vr4130" } */
+/* { dg-options "-march=vr4130 -mfix-vr4130" } */
 NOMIPS16 unsigned int
 foo (unsigned int x, unsigned int y)
 {

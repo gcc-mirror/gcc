@@ -1,4 +1,4 @@
-/* { dg-mips-options "-mabi=32 -mhard-float -mips1 -O2 -EL" } */
+/* { dg-options "-mabi=32 -mhard-float -mips1 -O2 -EL" } */
 
 NOMIPS16 void
 foo (double d, double *x)

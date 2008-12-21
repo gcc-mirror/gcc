@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP REV 2 instructions */
-/* { dg-do run { target mipsisa32r2*-*-* } } */
-/* { dg-mips-options "-march=mips32r2 -mdspr2 -O2" } */
+/* { dg-do run } */
+/* { dg-options "-mdspr2 -O2" } */
 
 typedef signed char v4q7 __attribute__ ((vector_size(4)));
 typedef signed char v4i8 __attribute__ ((vector_size(4)));
@@ -13,7 +13,7 @@ typedef long long a64;
 
 void abort (void);
 
-void test_MIPS_DSPR2 (void);
+NOMIPS16 void test_MIPS_DSPR2 (void);
 
 int little_endian;
 
@@ -28,7 +28,7 @@ int main ()
   return 0;
 }
 
-void test_MIPS_DSPR2 ()
+NOMIPS16 void test_MIPS_DSPR2 ()
 {
   v4q7 v4q7_a,v4q7_b,v4q7_c,v4q7_r,v4q7_s;
   v4i8 v4i8_a,v4i8_b,v4i8_c,v4i8_r,v4i8_s;

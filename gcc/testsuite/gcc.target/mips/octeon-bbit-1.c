@@ -1,8 +1,10 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -march=octeon" } */
+/* { dg-options "-O2 -march=octeon" } */
 /* { dg-final { scan-assembler-times "\tbbit1\t" 4 } } */
 /* { dg-final { scan-assembler-times "\tbbit0\t" 2 } } */
 /* { dg-final { scan-assembler-not "andi\t" } } */
+
+NOMIPS16 void foo (void);
 
 NOMIPS16 void
 f1 (long long i)
@@ -51,5 +53,5 @@ NOMIPS16 void
 f6 ()
 {
   if (!test_bit(0, &r))
-    g ();
+    foo ();
 }

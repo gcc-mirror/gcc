@@ -1,6 +1,4 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-O2 -mr10k-cache-barrier=store" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) -O2 -mr10k-cache-barrier=store" } */
 
 /* Test that indirect calls are protected.  */
 

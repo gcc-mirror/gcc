@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -mips32r2" } */
+/* { dg-options "-O2 isa_rev>=2" } */
 /* { dg-final { scan-assembler "synci" } } */
 /* { dg-final { scan-assembler "jr.hb" } } */
 /* { dg-final { scan-assembler-not "_flush_cache" } } */

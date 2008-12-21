@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -march=5kc" } */
+/* { dg-options "-O2 -march=5kc" } */
 /* { dg-final { scan-assembler-not "\tmadd\t" } } */
 /* { dg-final { scan-assembler "\tmul\t" } } */
 /* { dg-final { scan-assembler "\taddu\t" } } */

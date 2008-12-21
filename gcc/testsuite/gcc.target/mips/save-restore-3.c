@@ -1,8 +1,6 @@
 /* Check that we can use the save instruction to save spilled arguments
    when the argument save area is out of range of a direct load or store.  */
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mips32r2 -mabi=32 -O2" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) isa_rev>=1 -mabi=32 -O2" } */
 
 void bar (int *);
 

@@ -1,4 +1,4 @@
-/* { dg-mips-options "-G4 -mexplicit-relocs" } */
+/* { dg-options "-G4 -mexplicit-relocs" } */
 
 /* { dg-final { scan-assembler     "%gp_?rel\\(l4a\\)" } } */
 /* { dg-final { scan-assembler     "%gp_?rel\\(l4b\\)" } } */

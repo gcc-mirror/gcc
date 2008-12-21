@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* The tests also work with -mgp32.  For long long tests, only one of
    the 32-bit parts is used.  */
-/* { dg-mips-options "-O -march=octeon" } */
+/* { dg-options "-O -march=octeon" } */
 /* { dg-final { scan-assembler-times "\tcins\t" 3 } } */
 /* { dg-final { scan-assembler-not "\tandi\t|sll\t" } } */
 

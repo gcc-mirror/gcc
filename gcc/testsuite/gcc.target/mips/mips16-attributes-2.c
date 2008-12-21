@@ -1,6 +1,5 @@
-/* { dg-do compile { target mips16_attribute } } */
 /* { dg-skip-if "" { *-*-* } { "-mflip-mips16" } { "" } } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16)" } */
 
 void f1 (void);
 void __attribute__((mips16)) f1 (void) {} /* { dg-error "conflicting" } */

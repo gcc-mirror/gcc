@@ -1,8 +1,6 @@
 /* Check that we save all call-saved GPRs in a MIPS16 __builtin_eh_return
    function.  */
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mips2" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) isa_rev=0" } */
 
 void bar (void);
 

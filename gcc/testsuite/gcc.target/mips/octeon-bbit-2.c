@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -march=octeon -mbranch-likely" } */
+/* { dg-options "-O2 -march=octeon -mbranch-likely" } */
 /* { dg-final { scan-assembler "\tbbit\[01\]\t" } } */
 /* { dg-final { scan-assembler-not "\tbbit\[01\]l\t" } } */
 /* { dg-final { scan-assembler "\tbnel\t" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-mips64 -O2 -mpaired-single -mgp64 -ftree-vectorize" } */
+/* { dg-options "-O2 -mpaired-single -mgp64 -ftree-vectorize" } */
 
 extern float a[], b[], c[];
 

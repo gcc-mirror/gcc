@@ -1,4 +1,4 @@
-/* { dg-mips-options "-G4 -mexplicit-relocs -mno-extern-sdata" } */
+/* { dg-options "-G4 -mexplicit-relocs -mno-extern-sdata" } */
 
 /* { dg-final { scan-assembler     "%gp_?rel\\(l4a\\)" } } */
 /* { dg-final { scan-assembler     "%gp_?rel\\(l4b\\)" } } */

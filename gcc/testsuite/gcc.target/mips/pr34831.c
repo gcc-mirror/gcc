@@ -1,4 +1,4 @@
-/* { dg-mips-options "-ffast-math -mips64 -mgp32" } */
+/* { dg-options "-ffast-math -mips64 -mgp32" } */
 
 double
 foo (void)

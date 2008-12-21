@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-mlong-calls" } */
-/* { dg-require-effective-target nonpic } */
+/* { dg-options "-mlong-calls addressing=absolute" } */
 
 extern int long_call_func () __attribute__((long_call));
 extern int far_func () __attribute__((far));

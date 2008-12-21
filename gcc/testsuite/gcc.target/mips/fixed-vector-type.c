@@ -1,6 +1,6 @@
 /* Test vector fixed-point instructions */
-/* { dg-do compile { target {fixed_point} } } */
-/* { dg-mips-options "-march=mips32r2 -mdspr2 -O2" } */
+/* { dg-do compile } */
+/* { dg-options "-mdspr2 -O2" } */
 /* { dg-final { scan-assembler-times "\taddq_s.ph\t" 2 } } */
 /* { dg-final { scan-assembler-times "\tsubq_s.ph\t" 2 } } */
 /* { dg-final { scan-assembler-times "\taddu_s.qb\t" 1 } } */

@@ -1,4 +1,4 @@
-/* { dg-mips-options "-mabi=32 -mfp64 -O2 -EB" } */
+/* { dg-options "-mabi=32 -mfp64 -O2 -EB" } */
 
 NOMIPS16 double
 foo (double d)

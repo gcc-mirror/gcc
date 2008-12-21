@@ -1,8 +1,6 @@
 /* Check that we save all call-saved GPRs in a MIPS16 __builtin_setjmp
    function.  */
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mips2 -O2" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) isa_rev=0 -O2" } */
 
 void bar (void);
 extern int buf[];

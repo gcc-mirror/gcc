@@ -1,5 +1,327 @@
 2008-12-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/mips.exp: Rewrite.
+
+	* gcc.target/mips/20020620-1.c: Use dg-options instead of
+	dg-mips-options.  Remove target restrictions from dg-do.
+	* gcc.target/mips/mips-ps-1.c: Likewise.
+	* gcc.target/mips/mips-ps-2.c: Likewise.
+	* gcc.target/mips/mips-ps-3.c: Likewise.
+	* gcc.target/mips/mips-ps-4.c: Likewise.
+	* gcc.target/mips/mips-ps-6.c: Likewise.
+
+	* gcc.target/mips/asm-1.c: Use dg-options instead of dg-mips-options.
+	* gcc.target/mips/branch-1.c: Likewise.
+	* gcc.target/mips/clear-cache-2.c: Likewise.
+	* gcc.target/mips/dse-1.c: Likewise.
+	* gcc.target/mips/fix-r4000-1.c: Likewise.
+	* gcc.target/mips/fix-r4000-2.c: Likewise.
+	* gcc.target/mips/fix-r4000-3.c: Likewise.
+	* gcc.target/mips/fix-r4000-4.c: Likewise.
+	* gcc.target/mips/fix-r4000-5.c: Likewise.
+	* gcc.target/mips/fix-r4000-6.c: Likewise.
+	* gcc.target/mips/fix-r4000-7.c: Likewise.
+	* gcc.target/mips/fix-r4000-8.c: Likewise.
+	* gcc.target/mips/fix-r4000-9.c: Likewise.
+	* gcc.target/mips/fix-r4000-10.c: Likewise.
+	* gcc.target/mips/fix-r4000-11.c: Likewise.
+	* gcc.target/mips/fix-r4000-12.c: Likewise.
+	* gcc.target/mips/fix-vr4130-1.c: Likewise.
+	* gcc.target/mips/fix-vr4130-2.c: Likewise.
+	* gcc.target/mips/fix-vr4130-3.c: Likewise.
+	* gcc.target/mips/fix-vr4130-4.c: Likewise.
+	* gcc.target/mips/fpcmp-1.c: Likewise.
+	* gcc.target/mips/fpcmp-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-1.c: Likewise.
+	* gcc.target/mips/fpr-moves-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-3.c: Likewise.
+	* gcc.target/mips/fpr-moves-4.c: Likewise.
+	* gcc.target/mips/fpr-moves-5.c: Likewise.
+	* gcc.target/mips/fpr-moves-6.c: Likewise.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Likewise.
+	* gcc.target/mips/madd-1.c: Likewise.
+	* gcc.target/mips/madd-2.c: Likewise.
+	* gcc.target/mips/madd-5.c: Likewise.
+	* gcc.target/mips/madd-6.c: Likewise.
+	* gcc.target/mips/madd-7.c: Likewise.
+	* gcc.target/mips/madd-8.c: Likewise.
+	* gcc.target/mips/maddu-1.c: Likewise.
+	* gcc.target/mips/maddu-2.c: Likewise.
+	* gcc.target/mips/memcpy-1.c: Likewise.
+	* gcc.target/mips/mips-sched-madd.c: Likewise.
+	* gcc.target/mips/msub-1.c: Likewise.
+	* gcc.target/mips/msub-2.c: Likewise.
+	* gcc.target/mips/msub-5.c: Likewise.
+	* gcc.target/mips/msub-6.c: Likewise.
+	* gcc.target/mips/msub-7.c: Likewise.
+	* gcc.target/mips/msub-8.c: Likewise.
+	* gcc.target/mips/msubu-1.c: Likewise.
+	* gcc.target/mips/msubu-2.c: Likewise.
+	* gcc.target/mips/neg-abs-1.c: Likewise.
+	* gcc.target/mips/neg-abs-2.c: Likewise.
+	* gcc.target/mips/no-smartmips-lwxs.c: Likewise.
+	* gcc.target/mips/no-smartmips-ror-1.c: Likewise.
+	* gcc.target/mips/octeon-baddu-1.c: Likewise.
+	* gcc.target/mips/octeon-bbit-2.c: Likewise.
+	* gcc.target/mips/octeon-bbit-3.c: Likewise.
+	* gcc.target/mips/octeon-cins-1.c: Likewise.
+	* gcc.target/mips/octeon-cins-2.c: Likewise.
+	* gcc.target/mips/octeon-dmul-1.c: Likewise.
+	* gcc.target/mips/octeon-dmul-2.c: Likewise.
+	* gcc.target/mips/octeon-exts-1.c: Likewise.
+	* gcc.target/mips/octeon-exts-2.c: Likewise.
+	* gcc.target/mips/octeon-exts-3.c: Likewise.
+	* gcc.target/mips/octeon-exts-4.c: Likewise.
+	* gcc.target/mips/octeon-exts-5.c: Likewise.
+	* gcc.target/mips/octeon-pop-1.c: Likewise.
+	* gcc.target/mips/octeon-seq-1.c: Likewise.
+	* gcc.target/mips/octeon-seq-2.c: Likewise.
+	* gcc.target/mips/octeon-seq-3.c: Likewise.
+	* gcc.target/mips/octeon-seq-4.c: Likewise.
+	* gcc.target/mips/pr26765.c: Likewise.
+	* gcc.target/mips/pr33256.c: Likewise.
+	* gcc.target/mips/pr33635-1.c: Likewise.
+	* gcc.target/mips/pr33755.c: Likewise.
+	* gcc.target/mips/pr34831.c: Likewise.
+	* gcc.target/mips/pr35802.c: Likewise.
+	* gcc.target/mips/pr37362.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-1.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-2.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-3.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-4.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-5.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-6.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-7.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-8.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-9.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-10.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-11.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-12.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-13.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-15.c: Likewise.
+	* gcc.target/mips/r3900-mult.c: Likewise.
+	* gcc.target/mips/rsqrt-4.c: Likewise.
+	* gcc.target/mips/sb1-1.c: Likewise.
+	* gcc.target/mips/scc-2.c: Likewise.
+	* gcc.target/mips/scc-4.c: Likewise.
+	* gcc.target/mips/sdata-1.c: Likewise.
+	* gcc.target/mips/sdata-2.c: Likewise.
+	* gcc.target/mips/sdata-3.c: Likewise.
+	* gcc.target/mips/sdata-4.c: Likewise.
+	* gcc.target/mips/smartmips-lwxs.c: Likewise.
+	* gcc.target/mips/smartmips-ror-1.c: Likewise.
+	* gcc.target/mips/smartmips-ror-2.c: Likewise.
+	* gcc.target/mips/smartmips-ror-3.c: Likewise.
+	* gcc.target/mips/smartmips-ror-4.c: Likewise.
+	* gcc.target/mips/timode-1.c: Likewise.
+	* gcc.target/mips/truncate-1.c: Likewise.
+	* gcc.target/mips/truncate-2.c: Likewise.
+	* gcc.target/mips/vr-mult-1.c: Likewise.
+	* gcc.target/mips/vr-mult-2.c: Likewise.
+
+	* gcc.target/mips/atomic-memory-2.c: Use dg-options instead of
+	dg-mips-options.  Use isa>=2 instead of -mips32.
+
+	* gcc.target/mips/branch-cost-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa>=4 instead of -mips64.
+	* gcc.target/mips/branch-cost-2.c: Likewise.
+
+	* gcc.target/mips/cache-1.c: Use dg-options instead of
+	dg-mips-options.  Add isa>=3 and NOMIPS16 attributes.
+
+	* gcc.target/mips/call-saved-1.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Use isa_rev=0 instead of -mips2.
+	* gcc.target/mips/call-saved-2.c: Likewise.
+	* gcc.target/mips/call-saved-3.c: Likewise.
+
+	* gcc.target/mips/clear-cache-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa_rev>=2 instead of -mips32r2.
+	* gcc.target/mips/ext_ins.c: Likewise.
+
+	* gcc.target/mips/code-readable-1.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Use addressing=absolute too.
+	* gcc.target/mips/code-readable-2.c: Likewise.
+	* gcc.target/mips/code-readable-3.c: Likewise.
+
+	* gcc.target/mips/dmult-1.c: Use dg-options instead of
+	dg-mips-options.  Remove the mips16_attribute directives.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-4.c: Likewise.
+
+	* gcc.target/mips/dpaq_sa_l_w.c: Use dg-options instead of
+	dg-mips-options.  Remove target restrictions from dg-do.
+	Use -mgp32 instead of -mips32r2.
+	* gcc.target/mips/dpsq_sa_l_w.c: Likewise.
+
+	* gcc.target/mips/dsp-ctrl.c: Use dg-options instead of
+	dg-mips-options.  Remove target restrictions from dg-do.
+	Remove the !__mips_dsp code and add -mdsp -mgp32 to dg-options
+	instead.  Add NOMIPS16 attributes.
+
+	* gcc.target/mips/dspr2-MULT.c: Use dg-options instead of
+	dg-mips-options.  Replace -march=mips32r2 with -mgp32.
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+
+	* gcc.target/mips/ext-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa_rev>=2 instead of -mips64r2.
+
+	* gcc.target/mips/fix-r10000-1.c: Use dg-options instead of
+	dg-mips-options.  Remove -march=mips4.  
+	* gcc.target/mips/fix-r10000-2.c: Likewise.
+	* gcc.target/mips/fix-r10000-3.c: Likewise.
+	* gcc.target/mips/fix-r10000-4.c: Likewise.
+	* gcc.target/mips/fix-r10000-5.c: Likewise.
+	* gcc.target/mips/fix-r10000-6.c: Likewise.
+	* gcc.target/mips/fix-r10000-7.c: Likewise.
+	* gcc.target/mips/fix-r10000-8.c: Likewise.
+	* gcc.target/mips/fix-r10000-9.c: Likewise.
+	* gcc.target/mips/fix-r10000-10.c: Likewise.
+	* gcc.target/mips/fix-r10000-11.c: Likewise.
+	* gcc.target/mips/fix-r10000-12.c: Likewise.
+	* gcc.target/mips/fix-r10000-13.c: Likewise.
+	* gcc.target/mips/fix-r10000-14.c: Likewise.
+	* gcc.target/mips/fix-r10000-15.c: Likewise.
+
+	* gcc.target/mips/fixed-scalar-type.c: Use dg-options instead
+	of dg-mips-options.  Remove target restrictions from dg-do.
+	Remove -march=mips32r2.
+	* gcc.target/mips/fixed-vector-type.c: Likewise.
+	* gcc.target/mips/mips32-dsp-run.c: Likewise.
+	* gcc.target/mips/mips32-dspr2.c: Likewise.  Add NOMIPS16 attributes.
+
+	* gcc.target/mips/fpr-moves-7.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Remove -msoft-float.
+	* gcc.target/mips/fpr-moves-8.c: Likewise.
+	* gcc.target/mips/int-moves-1.c: Likewise.
+	* gcc.target/mips/int-moves-2.c: Likewise.
+
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Use dg-options
+	instead of dg-mips-options.  Use isa>=2 instead of -mips2.
+	Add -mgp32.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-3.c: Likewise.
+
+	* gcc.target/mips/ins-1.c: Use dg-options instead of
+	dg-mips-options.  Use "isa_rev>=2 -mgp32" instead of -march=mips32r2.
+
+	* gcc.target/mips/loongson-muldiv-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa=loongson instead of -march=loongson2e.
+	* gcc.target/mips/loongson-muldiv-2.c: Likewise.
+
+	* gcc.target/mips/loongson-simd.c: Remove mips_loongson
+	target requirement and use isa=loongson instead.  Add -mhard-float,
+	-mno-mips16 and -flax-vector-conversions.
+
+	* gcc.target/mips/lazy-binding-1.c: Use dg-options instead of
+	dg-mips-options.  Remove target restrictions from dg-do.
+	Add NOMIPS16 attributes.
+
+	* gcc.target/mips/long-calls-pg.c: Use dg-options instead of
+	dg-mips-options.  Remove -march=mips32 and -fno-pic.
+	Add NOMIPS16 attributes.
+
+	* gcc.target/mips/madd-3.c: Use dg-options instead of
+	dg-mips-options.  Use isa_rev>=1 instead of -mips32.
+	* gcc.target/mips/maddu-3.c: Likewise.
+	* gcc.target/mips/msub-3.c: Likewise.
+	* gcc.target/mips/msubu-3.c: Likewise.
+
+	* gcc.target/mips/madd-4.c: Use dg-options instead of
+	dg-mips-options.  Remove -mips32r2.
+	* gcc.target/mips/maddu-4.c: Likewise.
+	* gcc.target/mips/msub-4.c: Likewise.
+	* gcc.target/mips/msubu-4.c: Likewise.
+
+	* gcc.target/mips/mips-3d-1.c: Use dg-options instead of
+	dg-mips-options.  Remove target restrictions from dg-do.
+	Remove -mips64, -mhard-float and -mgp64.
+	* gcc.target/mips/mips-3d-2.c: Likewise.
+	* gcc.target/mips/mips-3d-3.c: Likewise.
+	* gcc.target/mips/mips-3d-4.c: Likewise.
+	* gcc.target/mips/mips-3d-5.c: Likewise.
+	* gcc.target/mips/mips-3d-6.c: Likewise.
+	* gcc.target/mips/mips-3d-7.c: Likewise.
+	* gcc.target/mips/mips-3d-8.c: Likewise.
+	* gcc.target/mips/mips-3d-9.c: Likewise.
+
+	* gcc.target/mips/mips-ps-5.c: Use dg-options instead of
+	dg-mips-options.  Remove -mips64.
+	* gcc.target/mips/mips-ps-type.c: Likewise.
+
+	* gcc.target/mips/mips-ps-7.c: Use dg-options instead of
+	dg-mips-options.  Replace -mips32r2 with -mgp32.
+
+	* gcc.target/mips/mips-ps-type-2.c: Use dg-options instead of
+	dg-mips-options.  Use "isa_rev>=2 -mgp32" instead of -mips32r2.
+
+	* gcc.target/mips/mips16-attributes.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.
+	* gcc.target/mips/mips16-attributes-2.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-14.c: Likewise.
+	* gcc.target/mips/scc-3.c: Likewise.
+
+	* gcc.target/mips/mips16-attributes-3.c: Add { dg-options "(-mips16)" }.
+
+	* gcc.target/mips/mips16e-extends.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Use isa_rev>=1 instead of -march=mips32.
+	Add -mlong32.
+
+	* gcc.target/mips/mips32-dsp.c: Use dg-options instead of
+	dg-mips-options.  Replace -march=mips32 with -mgp32.
+
+	* gcc.target/mips/mips32-dsp-type.c: Use dg-options instead of
+	dg-mips-options.  Remove -march=mips32.
+
+	* gcc.target/mips/mips32-dspr2-type.c: Use dg-options instead of
+	dg-mips-options.  Remove -march=mips32r2.
+
+	* gcc.target/mips/mips32r2-mxhc1.c: Use dg-options instead of
+	dg-mips-options.  Add NOMIPS16 attributes.
+
+	* gcc.target/mips/movcc-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa>=4 instead of -mips4.
+	* gcc.target/mips/movcc-2.c: Likewise.
+	* gcc.target/mips/movcc-3.c: Likewise.
+
+	* gcc.target/mips/octeon-bbit-1.c: Use dg-options instead of
+	dg-mips-options.  Declare foo as a NOMIPS16 function.
+	Use foo instead of g.
+
+	* gcc.target/mips/near-far-1.c: Use dg-options instead of
+	dg-mips-options.  Replace the nonpic directives with an
+	addressing=absolute option.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+	* gcc.target/mips/nmadd-1.c: Use dg-options instead of
+	dg-mips-options.  Use isa=4 instead of -mips4.
+	* gcc.target/mips/nmadd-2.c: Likewise.
+	* gcc.target/mips/nmadd-3.c: Likewise.
+	* gcc.target/mips/rsqrt-1.c: Likewise.
+	* gcc.target/mips/rsqrt-2.c: Likewise.
+	* gcc.target/mips/rsqrt-3.c: Likewise.
+
+	* gcc.target/mips/save-restore-1.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Use isa_rev>=1 instead of -mips32r2.
+	* gcc.target/mips/save-restore-2.c: Likewise.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.
+
+	* gcc.target/mips/scc-1.c: Use dg-options instead of
+	dg-mips-options.  Replace the mips16_attribute directives with
+	a (-mips16) dg-option.  Use isa_rev>=1 instead of -mips32.
+
+	* gcc.target/mips/timode-2.c: Remove target restrictions from dg-do.
+	Use -mgp64.
+
+2008-12-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/35899
 	* gcc.target/mips/smartmips-lwxs.c: Add -mlong32.
 

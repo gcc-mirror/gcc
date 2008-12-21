@@ -1,6 +1,4 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mabi=64 -msoft-float -O2 -EB" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) -mabi=64 -O2 -EB" } */
 
 extern long double g[16];
 extern unsigned char gstuff[0x10000];

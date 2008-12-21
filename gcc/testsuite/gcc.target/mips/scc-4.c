@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -mabi=o64" } */
+/* { dg-options "-O -mabi=o64" } */
 
 /* { dg-final { scan-assembler "slt\t" } } */
 /* { dg-final { scan-assembler "sltu\t\|xor\t\|xori\t" } } */

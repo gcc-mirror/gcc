@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -mr10k-cache-barrier=store -mips4 -mbranch-likely -mno-abicalls" } */
+/* { dg-options "-O2 -mr10k-cache-barrier=store -mips4 -mbranch-likely -mno-abicalls" } */
 int bar (int);
 
 /* Test that code after a branch-likely does not get an unnecessary

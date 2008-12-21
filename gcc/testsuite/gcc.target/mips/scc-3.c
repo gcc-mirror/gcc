@@ -1,6 +1,4 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-O -mabi=o64" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) -O -mabi=o64" } */
 
 /* { dg-final { scan-assembler-not "and\t\|andi\t\|ext\t\|sll\t\|srl\t" } } */
 /* { dg-final { scan-assembler-times "slt\t\|slti?u\t" 8 } } */

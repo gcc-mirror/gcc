@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-mgp64 -O" } */
+/* { dg-options "-mgp64 -O" } */
 
 #define TEST(ID, TYPE1, TYPE2)					\
   union u##ID {							\

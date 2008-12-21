@@ -1,24 +1,24 @@
-/* { dg-mips-options "-O2" } */
+/* { dg-options "-O2 isa>=3" } */
 
-void
+NOMIPS16 void
 f1 (int *area)
 {
   __builtin_mips_cache (20, area);
 }
 
-void
+NOMIPS16 void
 f2 (const short *area)
 {
   __builtin_mips_cache (24, area + 10);
 }
 
-void
+NOMIPS16 void
 f3 (volatile unsigned int *area, int offset)
 {
   __builtin_mips_cache (0, area + offset);
 }
 
-void
+NOMIPS16 void
 f4 (const volatile unsigned char *area)
 {
   __builtin_mips_cache (4, area - 80);

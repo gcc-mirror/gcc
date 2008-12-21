@@ -1,4 +1,5 @@
-/* { dg-do run { target mips64 } } */
+/* { dg-do run } */
+/* { dg-options "-mgp64" } */
 typedef int int128_t __attribute__((mode(TI)));
 typedef unsigned int uint128_t __attribute__((mode(TI)));
 

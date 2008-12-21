@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=octeon" } */
+/* { dg-options "-O -march=octeon" } */
 /* { dg-final { scan-assembler-times "\tbaddu\t" 4 } } */
 /* { dg-final { scan-assembler-not "\tandi\t" } } */
 

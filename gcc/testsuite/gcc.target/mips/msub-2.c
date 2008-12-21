@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -march=vr5500 -mgp32" } */
+/* { dg-options "-O2 -march=vr5500 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmsub\t" 2 } } */
 
 NOMIPS16 long long

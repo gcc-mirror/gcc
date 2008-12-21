@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=octeon -mgp64" } */
+/* { dg-options "-O -march=octeon -mgp64" } */
 /* { dg-final { scan-assembler-not "\tsll\t\[^\n\]*,0" } } */
 /* { dg-final { scan-assembler-times "\texts\t" 6 } } */
 

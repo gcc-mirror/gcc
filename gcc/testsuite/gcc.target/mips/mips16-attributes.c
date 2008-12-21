@@ -1,8 +1,8 @@
 /* Verify that mips16 and nomips16 attributes work, checking all combinations
    of calling a nomips16/mips16/default function from a nomips16/mips16/default
    function.  */
-/* { dg-do run { target { mipsisa*-*-elf* && mips16_attribute } } } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-do run } */
+/* { dg-options "(-mips16)" } */
 
 #include <stdlib.h>
 

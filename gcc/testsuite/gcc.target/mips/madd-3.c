@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -mips32 -mgp32" } */
+/* { dg-options "-O2 isa_rev>=1 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmadd\t" 3 } } */
 
 NOMIPS16 long long
