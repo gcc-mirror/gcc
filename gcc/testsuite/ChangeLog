@@ -1,3 +1,8 @@
+2008-12-22  Ben Elliston  <bje@au.ibm.com>
+
+	PR c++/38362
+	* g++.dg/ext/altivec-types-1.C (dg-options): Pass -std=c++98.
+
 2008-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38398
