@@ -263,14 +263,13 @@ code designed to be efficiently translated and processed
 by a machine such as your computer.
 Humans usually aren't as good writing machine code
 as they are at writing Fortran (or C++, Ada, or Java),
-because is easy to make tiny mistakes writing machine code.
+because it is easy to make tiny mistakes writing machine code.
 
 @item
 Provide the user with information about the reasons why
 the compiler is unable to create a binary from the source code.
 Usually this will be the case if the source code is flawed.
-When writing Fortran, it is easy to make big mistakes.
-The Fortran 90 requires that the compiler can point out
+The Fortran 90 standard requires that the compiler can point out
 mistakes to the user.
 An incorrect usage of the language causes an @dfn{error message}.
 
@@ -986,8 +985,14 @@ equivalent to the standard-conforming declaration
       TYPESPEC(k) x,y,z
 @end smallexample
 @noindent
-where @code{k} is equal to @code{size} for most types, but is equal to
-@code{size/2} for the @code{COMPLEX} type.
+where @code{k} is the kind parameter suitable for the intended precision.  As
+kind parameters are implementation-dependent, use the @code{KIND},
+@code{SELECTED_INT_KIND} and @code{SELECTED_REAL_KIND} intrinsics to retrieve
+the correct value, for instance @code{REAL*8 x} can be replaced by:
+@smallexample
+INTEGER, PARAMETER :: dbl = KIND(1.0d0)
+REAL(KIND=dbl) :: x
+@end smallexample
 
 @node Old-style variable initialization
 @subsection Old-style variable initialization
@@ -1561,9 +1566,9 @@ worth a look.
 The long history of the Fortran language, its wide use and broad
 userbase, the large number of different compiler vendors and the lack of
 some features crucial to users in the first standards have lead to the
-existence of an important number of extensions to the language. While
+existence of a number of important extensions to the language.  While
 some of the most useful or popular extensions are supported by the GNU
-Fortran compiler, not all existing extensions are supported. This section
+Fortran compiler, not all existing extensions are supported.  This section
 aims at listing these extensions and offering advice on how best make
 code that uses them running with the GNU Fortran compiler.
 
@@ -1617,7 +1622,7 @@ store_catalog(7).id = 7831
 store_catalog(7).description = "milk bottle"
 store_catalog(7).price = 1.2
 
-! We can also manipulates the whole structure
+! We can also manipulate the whole structure
 store_catalog(12) = pear
 print *, store_catalog(12)
 @end example

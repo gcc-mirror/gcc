@@ -318,8 +318,10 @@ the applicable standard for each intrinsic procedure is noted.
 @table @asis
 @item @emph{Description}:
 @code{ABORT} causes immediate termination of the program.  On operating
-systems that support a core dump, @code{ABORT} will produce a core dump,
-which is suitable for debugging purposes.
+systems that support a core dump, @code{ABORT} will produce a core dump even if
+the option @option{-fno-dump-core} is in effect, which is suitable for debugging
+purposes.
+@c TODO: Check if this (with -fno-dump-core) is correct.
 
 @item @emph{Standard}:
 GNU extension
@@ -540,7 +542,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL} with a magnitude that is
-less than one.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
@@ -632,7 +634,7 @@ Inverse function: @ref{COSH}
 Spaces are inserted at the end of the string as needed.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -973,7 +975,7 @@ is @code{.TRUE.}; otherwise, it returns @code{.FALSE.}
 program test_allocated
   integer :: i = 4
   real(4), allocatable :: x(:)
-  if (allocated(x) .eqv. .false.) allocate(x(i))
+  if (.not. allocated(x)) allocate(x(i))
 end program test_allocated
 @end smallexample
 @end table
@@ -1179,7 +1181,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL}, and a magnitude that is
-less than one.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
@@ -1797,7 +1799,8 @@ end program test_besyn
 @table @asis
 @item @emph{Description}:
 @code{BIT_SIZE(I)} returns the number of bits (integer precision plus sign bit)
-represented by the type of @var{I}.
+represented by the type of @var{I}.  The result of @code{BIT_SIZE(I)} is
+independent of the actual value of @var{I}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -1837,7 +1840,7 @@ end program test_bit_size
 @table @asis
 @item @emph{Description}:
 @code{BTEST(I,POS)} returns logical @code{.TRUE.} if the bit at @var{POS}
-in @var{I} is set.
+in @var{I} is set.  The counting of the bits starts at 0.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -2688,8 +2691,9 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is of type @code{REAL} and it is positive
-(@math{ \cosh (x) \geq 0 }. The return value is of the same
-kind as @var{X}.
+(@math{ \cosh (x) \geq 0 }).  For a @code{REAL} argument @var{X},
+@math{ \cosh (x) \geq 1 }.
+The return value is of the same kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -2724,7 +2728,7 @@ Inverse function: @ref{ACOSH}
 
 @code{COUNT(MASK [, DIM [, KIND]])} counts the number of @code{.TRUE.}
 elements of @var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is
-omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
+omitted it is taken to be @code{1}.  @var{DIM} is a scalar of type
 @code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n}
 is the rank of @var{MASK}.
 
@@ -2844,7 +2848,7 @@ end program test_cpu_time
 @item @emph{Description}:
 @code{CSHIFT(ARRAY, SHIFT [, DIM])} performs a circular shift on elements of
 @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
-taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
+taken to be @code{1}.  @var{DIM} is a scalar of type @code{INTEGER} in the
 range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{ARRAY}.
 If the rank of @var{ARRAY} is one, then all elements of @var{ARRAY} are shifted
 by @var{SHIFT} places.  If rank is greater than one, then all complete rank one
@@ -3155,14 +3159,14 @@ end program test_dfloat
 
 
 @node DIGITS
-@section @code{DIGITS} --- Significant digits function
+@section @code{DIGITS} --- Significant binary digits function
 @fnindex DIGITS
 @cindex model representation, significant digits
 
 @table @asis
 @item @emph{Description}:
-@code{DIGITS(X)} returns the number of significant digits of the internal model
-representation of @var{X}.  For example, on a system using a 32-bit
+@code{DIGITS(X)} returns the number of significant binary digits of the internal
+model representation of @var{X}.  For example, on a system using a 32-bit
 floating point representation, a default real number would likely return 24.
 
 @item @emph{Standard}:
@@ -3282,7 +3286,7 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-If the arguments are numeric, the return value is a scaler of numeric type,
+If the arguments are numeric, the return value is a scalar of numeric type,
 @code{INTEGER}, @code{REAL}, or @code{COMPLEX}.  If the arguments are
 @code{LOGICAL}, the return value is @code{.TRUE.} or @code{.FALSE.}.
 
@@ -3483,7 +3487,7 @@ end program test_dtime
 @item @emph{Description}:
 @code{EOSHIFT(ARRAY, SHIFT[, BOUNDARY, DIM])} performs an end-off shift on
 elements of @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is
-omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
+omitted it is taken to be @code{1}.  @var{DIM} is a scalar of type
 @code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n} is the
 rank of @var{ARRAY}.  If the rank of @var{ARRAY} is one, then all elements of
 @var{ARRAY} are shifted by @var{SHIFT} places.  If rank is greater than one,
@@ -3511,7 +3515,7 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY}  @tab May be any type, not scaler.
+@item @var{ARRAY}  @tab May be any type, not scalar.
 @item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
 @item @var{BOUNDARY} @tab Same type as @var{ARRAY}. 
 @item @var{DIM}    @tab The type shall be @code{INTEGER}.
@@ -3546,7 +3550,8 @@ end program test_eoshift
 
 @table @asis
 @item @emph{Description}:
-@code{EPSILON(X)} returns a nearly negligible number relative to @code{1}.
+@code{EPSILON(X)} returns the smallest number @var{E} of the same kind
+as @var{X} such that @math{1 + E > 1}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -4875,11 +4880,12 @@ After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the
 @var{NUMBER}-th command line argument. If @var{VALUE} can not hold the argument, it is 
 truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
 arguments specified at the command line, @var{VALUE} will be filled with blanks. 
-If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on systems
-that support this feature). The @var{LENGTH} argument contains the length of the
-@var{NUMBER}-th command line argument. If the argument retrival fails, @var{STATUS}
-is a positiv number; if @var{VALUE} contains a truncated command line argument,
-@var{STATUS} is -1; and otherwise the @var{STATUS} is zero.
+If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on
+systems that support this feature). The @var{LENGTH} argument contains the
+length of the @var{NUMBER}-th command line argument. If the argument retrieval
+fails, @var{STATUS} is a positive number; if @var{VALUE} contains a truncated
+command line argument, @var{STATUS} is -1; and otherwise the @var{STATUS} is
+zero.
 
 @item @emph{Example}:
 @smallexample
@@ -5722,7 +5728,7 @@ the kind shall be the default integer kind.
 @end multitable
 
 @item @emph{Return value}:
-Does not return.
+Does not return anything.
 
 @item @emph{Example}:
 @smallexample
@@ -6368,7 +6374,7 @@ and the kind shall be the default integer kind.
 @end multitable
 
 @item @emph{Return value}:
-Does not return.
+Does not return anything.
 
 
 @item @emph{Example}:
@@ -6957,6 +6963,8 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
+If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
+@math{-\pi \leq \omega \leq \pi}.
 
 @item @emph{Example}:
 @smallexample
@@ -7563,9 +7571,9 @@ the @var{DIM} argument is supplied, determines the maximum value along
 each row of the array in the @var{DIM} direction.  If @var{MASK} is
 present, only the elements for which @var{MASK} is @code{.TRUE.} are
 considered.  If the array has zero size, or all of the elements of
-@var{MASK} are @code{.FALSE.}, then the result is the most negative
-number of the type and kind of @var{ARRAY} if @var{ARRAY} is numeric, or
-a string of nulls if @var{ARRAY} is of character type.
+@var{MASK} are @code{.FALSE.}, then the result is @code{-HUGE(ARRAY)}
+if @var{ARRAY} is numeric, or a string of nulls if @var{ARRAY} is of character
+type.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -9472,8 +9480,8 @@ end program large_integers
 
 @table @asis
 @item @emph{Description}:
-@code{SELECTED_REAL_KIND(P,R)} return the kind value of a real data type
-with decimal precision greater of at least @code{P} digits and exponent
+@code{SELECTED_REAL_KIND(P,R)} returns the kind value of a real data type
+with decimal precision of at least @code{P} digits and exponent
 range greater at least @code{R}. 
 
 @item @emph{Standard}:
@@ -9709,6 +9717,7 @@ Subroutine, function
 @item @var{STATUS} @tab (Optional) @var{STATUS} shall be a scalar
 integer. It has @code{INTENT(OUT)}.
 @end multitable
+@c TODO: What should the interface of the handler be?  Does it take arguments?
 
 @item @emph{Return value}:
 The @code{SIGNAL} function returns the value returned by @code{signal(2)}.
@@ -10173,7 +10182,7 @@ Subroutine
 @end multitable
 
 @item @emph{Return value}:
-Does not return.
+Does not return anything.
 
 @item @emph{Example}:
 See @code{RAND} and @code{IRAND} for examples.
@@ -11242,6 +11251,8 @@ manual.
 @item @code{C_FUNLOC}
 @item @code{C_LOC}
 @end table
+@c TODO: Vertical spacing between C_FUNLOC and C_LOC wrong in PDF,
+@c don't really know why.
 
 The @code{ISO_C_BINDING} module provides the following named constants of the
 type integer, which can be used as KIND type parameter. Note that GNU
@@ -11290,7 +11301,7 @@ C_INT_LEAST128_T, C_INT_FAST128_T}.
 @item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
 @end multitable
 
-Additionally, the following @code{(CHARACTER(KIND=C_CHAR)} are
+Additionally, the following @code{(CHARACTER(KIND=C_CHAR))} are
 defined.
 
 @multitable @columnfractions .20 .45 .15

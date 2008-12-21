@@ -210,12 +210,12 @@ form is determined by the file extension.
 
 @item -fall-intrinsics
 @opindex @code{fall-intrinsics}
-Accept all of the intrinsic procedures provided in libgfortran 
-without regard to the setting of @option{-std}.  In particular, 
-this option can be quite useful with @option{-std=f95}.  Additionally,
-@command{gfortran} will ignore @option{-Wintrinsics-std} and will never try
-to link to an @code{EXTERNAL} version if the intrinsic is not included in the
-selected standard.
+This option causes all intrinsic procedures (including the GNU-specific
+extensions) to be accepted.  This can be useful with @option{-std=f95} to
+force standard-compliance but get access to the full range of intrinsics
+available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
+will be ignored and no user-defined procedure with the same name as any
+intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 
 @item -fd-lines-as-code
 @item -fd-lines-as-comments
@@ -229,17 +229,26 @@ comment lines.
 
 @item -fdefault-double-8
 @opindex @code{fdefault-double-8}
-Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.
+Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.  If
+@option{-fdefault-real-8} is given, @code{DOUBLE PRECISION} would
+instead be promoted to 16 bytes if possible, and @option{-fdefault-double-8}
+can be used to prevent this.  The kind of real constants like @code{1.d0} will
+not be changed by @option{-fdefault-real-8} though, so also
+@option{-fdefault-double-8} does not affect it.
 
 @item -fdefault-integer-8
 @opindex @code{fdefault-integer-8}
 Set the default integer and logical types to an 8 byte wide type.
-Do nothing if this is already the default.
+Do nothing if this is already the default.  This option also affects
+the kind of integer constants like @code{42}.
 
 @item -fdefault-real-8
 @opindex @code{fdefault-real-8}
 Set the default real type to an 8 byte wide type.
-Do nothing if this is already the default.
+Do nothing if this is already the default.  This option also affects
+the kind of non-double real constants like @code{1.0}, and does promote
+the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
+@code{-fdefault-double-8} is given, too.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
@@ -861,7 +870,7 @@ zero), @samp{overflow} (overflow in a floating point operation),
 (operation produced a denormal value).
 
 Some of the routines in the Fortran runtime library, like
-@samp{CPU_TIME}, are likely to to trigger floating point exceptions when
+@samp{CPU_TIME}, are likely to trigger floating point exceptions when
 @code{ffpe-trap=precision} is used. For this reason, the use of 
 @code{ffpe-trap=precision} is not recommended.
 
@@ -1183,13 +1192,15 @@ by use of the @option{-ff2c} option.
 Enable generation of run-time checks for array subscripts
 and against the declared minimum and maximum values.  It also
 checks array indices for assumed and deferred
-shape arrays against the actual allocated bounds.
+shape arrays against the actual allocated bounds and ensures that all string
+lengths are equal for character array constructors without an explicit
+typespec.
 
 Some checks require that @option{-fbounds-check} is set for
 the compilation of the main program.
 
-In the future this may also include other forms of checking, e.g., checking
-substring references.
+Note: In the future this may also include other forms of checking, e.g.,
+checking substring references.
 
 
 @item fcheck-array-temporaries
