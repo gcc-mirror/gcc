@@ -9299,12 +9299,66 @@ alpha_align_insns (unsigned int max_align,
       i = next;
     }
 }
+
+/* Insert an unop between a noreturn function call and GP load.  */
+
+static void
+alpha_pad_noreturn (void)
+{
+  rtx insn, next;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (!CALL_P (insn)
+	  || !find_reg_note (insn, REG_NORETURN, NULL_RTX))
+        continue;
+
+      next = next_active_insn (insn);
+
+      if (next)
+	{
+	  rtx pat = PATTERN (next);
+
+	  if (GET_CODE (pat) == SET
+	      && GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
+	      && XINT (SET_SRC (pat), 1) == UNSPECV_LDGP1)
+	    emit_insn_after (gen_unop (), insn);
+	}
+    }
+}
 
 /* Machine dependent reorg pass.  */
 
 static void
 alpha_reorg (void)
 {
+  /* Workaround for a linker error that triggers when an
+     exception handler immediatelly follows a noreturn function.
+
+     The instruction stream from an object file:
+
+  54:   00 40 5b 6b     jsr     ra,(t12),58 <__func+0x58>
+  58:   00 00 ba 27     ldah    gp,0(ra)
+  5c:   00 00 bd 23     lda     gp,0(gp)
+  60:   00 00 7d a7     ldq     t12,0(gp)
+  64:   00 40 5b 6b     jsr     ra,(t12),68 <__func+0x68>
+
+     was converted in the final link pass to:
+
+   fdb24:       a0 03 40 d3     bsr     ra,fe9a8 <_called_func+0x8>
+   fdb28:       00 00 fe 2f     unop
+   fdb2c:       00 00 fe 2f     unop
+   fdb30:       30 82 7d a7     ldq     t12,-32208(gp)
+   fdb34:       00 40 5b 6b     jsr     ra,(t12),fdb38 <__func+0x68>
+
+     GP load instructions were wrongly cleared by the linker relaxation
+     pass.  This workaround prevents removal of GP loads by inserting
+     an unop instruction between a noreturn function call and
+     exception handler prologue.  */
+
+  if (current_function_has_exception_handlers ())
+    alpha_pad_noreturn ();
+
   if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
     alpha_handle_trap_shadows ();
 
