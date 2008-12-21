@@ -1221,12 +1221,7 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 		break;
 	      case BT_REAL:
 		if (f->u.real.w == 0)
-		  {
-		    if (f->u.real.d == 0)
-		      write_real (dtp, p, kind);
-		    else
-		      write_real_g0 (dtp, p, kind, f->u.real.d);
-		  }
+		  write_real_g0 (dtp, p, kind, f->u.real.d);
 		else
 		  write_d (dtp, f, p, kind);
 		break;
