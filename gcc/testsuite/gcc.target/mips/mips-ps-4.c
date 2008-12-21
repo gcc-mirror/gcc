@@ -1,5 +1,5 @@
-/* { dg-do run { target mpaired_single } } */
-/* { dg-mips-options "-O2 -mpaired-single" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -mpaired-single" } */
 
 /* Test MIPS paired-single comparisons */
 #include <stdlib.h>

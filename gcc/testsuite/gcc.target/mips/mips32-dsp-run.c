@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP instructions */
-/* { dg-do run { target mipsisa32r2*-*-* } } */
-/* { dg-mips-options "-march=mips32r2 -mdsp -O2" } */
+/* { dg-do run } */
+/* { dg-options "-mdsp -O2" } */
 
 #include <stdlib.h>
 #include <stdio.h>

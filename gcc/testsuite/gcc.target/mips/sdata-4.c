@@ -1,4 +1,4 @@
-/* { dg-mips-options "-G4 -mexplicit-relocs -mno-gpopt" } */
+/* { dg-options "-G4 -mexplicit-relocs -mno-gpopt" } */
 
 /* { dg-final { scan-assembler-not "%gp_?rel" } } */
 /* { dg-final { scan-assembler-not "\\\$gp" } } */

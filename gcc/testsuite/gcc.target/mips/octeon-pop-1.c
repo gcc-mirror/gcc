@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=octeon -mgp64" } */
+/* { dg-options "-O -march=octeon -mgp64" } */
 /* { dg-final { scan-assembler "\tpop\t" } } */
 /* { dg-final { scan-assembler "\tdpop\t" } } */
 

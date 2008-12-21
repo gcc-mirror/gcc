@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -msmartmips" } */
+/* { dg-options "-O -msmartmips" } */
 
 #define S 13
 

@@ -1,7 +1,7 @@
 /* The same code as nmadd-2.c, but compiled with -fno-finite-math-only.
    We can't use nmadd and nmsub in that case.  */
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -fno-fast-math -fno-finite-math-only -mips4 -mhard-float" } */
+/* { dg-options "-O2 -fno-fast-math -fno-finite-math-only isa=4 -mhard-float" } */
 /* { dg-final { scan-assembler-not "nmadd.s" } } */
 /* { dg-final { scan-assembler-not "nmadd.d" } } */
 /* { dg-final { scan-assembler-not "nmsub.s" } } */

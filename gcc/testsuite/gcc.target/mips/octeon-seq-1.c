@@ -1,7 +1,7 @@
 /* Check if we expand seq and sne.  */
 
 /* { dg-do compile } */
-/* { dg-mips-options "-march=octeon" } */
+/* { dg-options "-march=octeon" } */
 /* { dg-final { scan-assembler-times "\tseq\t|\tseqi\t" 4 } } */
 /* { dg-final { scan-assembler-times "\tsne\t|\tsnei\t" 4 } } */
 

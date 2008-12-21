@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -march=loongson2e -mgp64" } */
+/* { dg-options "-O2 isa=loongson -mgp64" } */
 
 typedef long long st;
 typedef unsigned long long ut;

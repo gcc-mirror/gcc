@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=mips64r2 -mabi=n32" } */
+/* { dg-options "-march=mips64r2 -mabi=n32" } */
 
 typedef float TFtype __attribute__((mode(TF)));
 

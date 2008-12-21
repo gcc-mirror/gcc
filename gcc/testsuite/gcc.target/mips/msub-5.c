@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -march=5kc" } */
+/* { dg-options "-O2 -march=5kc" } */
 /* { dg-final { scan-assembler-times "\tmsub\t" 4 } } */
 /* { dg-final { scan-assembler-not "\tmtlo\t" } } */
 /* { dg-final { scan-assembler-times "\tmflo\t" 3 } } */

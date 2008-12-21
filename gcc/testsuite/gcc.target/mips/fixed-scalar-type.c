@@ -1,6 +1,6 @@
 /* Test scalar fixed-point instructions */
-/* { dg-do compile { target {fixed_point} } } */
-/* { dg-mips-options "-march=mips32r2 -mdspr2 -O2" } */
+/* { dg-do compile } */
+/* { dg-options "-mdspr2 -O2" } */
 /* { dg-final { scan-assembler-times "\taddu\t" 10 } } */
 /* { dg-final { scan-assembler-times "\tsubu\t" 10 } } */
 /* { dg-final { scan-assembler "\taddu_s.qb\t" } } */

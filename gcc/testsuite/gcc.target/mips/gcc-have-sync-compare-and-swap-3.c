@@ -1,6 +1,4 @@
-/* { dg-do preprocess { target mips16_attribute } } */
-/* { dg-mips-options "-mips2 -mips16" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "isa>=2 -mgp32 -mips16" } */
 
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
 #error nonono

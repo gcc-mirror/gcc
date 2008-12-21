@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -msmartmips" } */
+/* { dg-options "-O -msmartmips" } */
 
 NOMIPS16 int rotate_right (unsigned a, unsigned s)
 {

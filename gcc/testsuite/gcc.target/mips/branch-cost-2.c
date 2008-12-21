@@ -1,4 +1,4 @@
-/* { dg-mips-options "-mbranch-cost=10 -mips64 -O2" } */
+/* { dg-options "-mbranch-cost=10 isa>=4 -O2" } */
 NOMIPS16 int
 foo (int x, int y, int z, int k)
 {

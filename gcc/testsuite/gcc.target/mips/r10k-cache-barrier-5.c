@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -mr10k-cache-barrier=store -mno-abicalls -mabi=64" } */
+/* { dg-options "-O2 -mr10k-cache-barrier=store -mno-abicalls -mabi=64" } */
 
 /* Test that in-range stores to static objects do not get an unnecessary
    cache barrier.  */

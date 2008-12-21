@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=r3900" } */
+/* { dg-options "-march=r3900" } */
 /* { dg-final { scan-assembler "\tmult\t\[^\n\]*,\[^\n\]*," } } */
 
 NOMIPS16 int

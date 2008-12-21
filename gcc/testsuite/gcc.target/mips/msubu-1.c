@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -march=vr5400 -mgp32" } */
+/* { dg-options "-O2 -march=vr5400 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmsacu\t\\\$0," 2 } } */
 
 typedef unsigned int ui;

@@ -11,7 +11,7 @@
 
   which does not get recognized as a valid bbit pattern.  The
   middle-end should be able to simplify this further.  */
-/* { dg-mips-options "-O2 -march=octeon -meb" } */
+/* { dg-options "-O2 -march=octeon -meb" } */
 
 /* { dg-final { scan-assembler-times "\tbbit\[01\]\t|\tbgez\t" 2 } } */
 /* { dg-final { scan-assembler-not "ext\t" } } */

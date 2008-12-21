@@ -19,7 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* { dg-do run } */
-/* { dg-require-effective-target mips_loongson } */
+/* loongson.h does not handle or check for MIPS16ness.  There doesn't
+   seem any good reason for it to, given that the Loongson processors
+   do not support MIPS16.  */
+/* { dg-options "isa=loongson -mhard-float -mno-mips16 -flax-vector-conversions" } */
 
 #include "loongson.h"
 #include <stdio.h>

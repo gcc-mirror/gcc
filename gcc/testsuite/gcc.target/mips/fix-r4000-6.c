@@ -1,4 +1,4 @@
-/* { dg-mips-options "-march=r4000 -mfix-r4000 -mgp64 -O2 -dp" } */
+/* { dg-options "-march=r4000 -mfix-r4000 -mgp64 -O2 -dp" } */
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 int64_t foo (int64_t x, int64_t y) { return x * y; }

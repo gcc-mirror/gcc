@@ -1,9 +1,9 @@
-/* { dg-do compile { target nomips16 } } */
-/* { dg-mips-options "-mabicalls -mshared -mexplicit-relocs -O2 -fno-delayed-branch" } */
+/* { dg-do compile } */
+/* { dg-options "-mabicalls -mshared -mexplicit-relocs -O2 -fno-delayed-branch" } */
 
 void bar (void);
 
-void
+NOMIPS16 void
 foo (int n)
 {
   while (n--)

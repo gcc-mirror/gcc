@@ -1,4 +1,4 @@
-/* { dg-mips-options "-mips1 -mfix-r4000 -O2 -dp -EB" } */
+/* { dg-options "-mips1 -mfix-r4000 -O2 -dp -EB" } */
 typedef int int32_t;
 typedef long long int64_t;
 int32_t foo (int32_t x, int32_t y) { return ((int64_t) x * y) >> 32; }

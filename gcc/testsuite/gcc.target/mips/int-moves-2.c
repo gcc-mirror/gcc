@@ -1,6 +1,4 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mgp64 -msoft-float -O2 -EB" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) -mgp64 -O2 -EB" } */
 
 typedef unsigned uint128_t __attribute__((mode(TI)));
 

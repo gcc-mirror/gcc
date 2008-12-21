@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -mips4 -mhard-float" } */
+/* { dg-options "-O2 isa=4 -mhard-float" } */
 /* { dg-final { scan-assembler-not "rsqrt.d" } } */
 /* { dg-final { scan-assembler-not "rsqrt.s" } } */
 

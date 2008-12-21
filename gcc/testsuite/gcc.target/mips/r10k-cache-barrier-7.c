@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -mr10k-cache-barrier=store -mno-abicalls" } */
+/* { dg-options "-O2 -mr10k-cache-barrier=store -mno-abicalls" } */
 
 void bar1 (void);
 void bar2 (void);

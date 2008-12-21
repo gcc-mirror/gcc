@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=octeon -mgp64" } */
+/* { dg-options "-march=octeon -mgp64" } */
 /* { dg-final { scan-assembler-times "\tseq\t|\tseqi\t" 3 } } */
 /* { dg-final { scan-assembler-times "\tsne\t|\tsnei\t" 3 } } */
 

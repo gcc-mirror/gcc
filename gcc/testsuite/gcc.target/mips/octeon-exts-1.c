@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-march=octeon" } */
+/* { dg-options "-march=octeon" } */
 /* { dg-final { scan-assembler "\texts\t" } } */
 
 struct foo

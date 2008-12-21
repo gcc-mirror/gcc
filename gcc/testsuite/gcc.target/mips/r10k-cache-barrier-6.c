@@ -1,4 +1,4 @@
-/* { dg-mips-options "-O2 -mr10k-cache-barrier=store -mabi=64" } */
+/* { dg-options "-O2 -mr10k-cache-barrier=store -mabi=64" } */
 
 int x[4];
 void bar (void);

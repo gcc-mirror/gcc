@@ -1,6 +1,6 @@
 /* We should implement these "if" statements using an "andi" instruction
    followed by a branch on zero.  */
-/* { dg-mips-options "-O2" } */
+/* { dg-options "-O2" } */
 
 void bar (void);
 NOMIPS16 void f1 (int x) { if (x & 4) bar (); }

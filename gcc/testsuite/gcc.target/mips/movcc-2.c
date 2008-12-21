@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -mips4" } */
+/* { dg-options "-O2 isa>=4" } */
 /* { dg-final { scan-assembler "movz" } } */
 /* { dg-final { scan-assembler "movn" } } */
 

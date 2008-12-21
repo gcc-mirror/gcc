@@ -1,5 +1,5 @@
-/* { dg-do compile { target {fixed_point} } } */
-/* { dg-mips-options "-O2 -mips32r2 -mdsp" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -mgp32 -mdsp" } */
 /* { dg-final { scan-assembler-times "\tdpaq_sa.l.w\t\\\$ac" 3 } } */
 
 NOMIPS16 _Sat long long _Fract

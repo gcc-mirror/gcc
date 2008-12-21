@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2" } */
+/* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not "\tlbu\t" } } */
 
 #include <string.h>

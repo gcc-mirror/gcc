@@ -1,4 +1,4 @@
-/* { dg-mips-options "-mips1 -mfix-r4000 -O2 -dp -EB" } */
+/* { dg-options "-mips1 -mfix-r4000 -O2 -dp -EB" } */
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 uint32_t foo (uint32_t x, uint32_t y) { return ((uint64_t) x * y) >> 32; }

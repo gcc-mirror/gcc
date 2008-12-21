@@ -1,7 +1,7 @@
 /* mips-ps-2.c with an extra -ffinite-math-only option.  This option
    changes the way that abs.ps is handled.  */
-/* { dg-do run { target mpaired_single } } */
-/* { dg-mips-options "-O2 -mpaired-single -ffinite-math-only" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -mpaired-single -ffinite-math-only" } */
 
 /* Test MIPS paired-single builtin functions */
 #include <stdlib.h>

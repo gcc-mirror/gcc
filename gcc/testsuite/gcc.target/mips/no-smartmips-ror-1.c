@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -mno-smartmips -march=mips32" } */
+/* { dg-options "-O -mno-smartmips -march=mips32" } */
 
 NOMIPS16 int rotate_left (unsigned a, unsigned s)
 {

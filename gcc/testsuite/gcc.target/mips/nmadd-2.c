@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O2 -fno-fast-math -ffinite-math-only -mips4 -mhard-float" } */
+/* { dg-options "-O2 -fno-fast-math -ffinite-math-only isa=4 -mhard-float" } */
 /* { dg-final { scan-assembler "nmadd.s" } } */
 /* { dg-final { scan-assembler "nmadd.d" } } */
 /* { dg-final { scan-assembler "nmsub.s" } } */

@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP REV 2 MULTU instruction */
 /* { dg-do compile } */
-/* { dg-mips-options "-march=mips32r2 -mdspr2 -O2 -ffixed-hi -ffixed-lo" } */
+/* { dg-options "-mgp32 -mdspr2 -O2 -ffixed-hi -ffixed-lo" } */
 
 /* { dg-final { scan-assembler "\tmultu\t" } } */
 /* { dg-final { scan-assembler "ac1" } } */

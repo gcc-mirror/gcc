@@ -1,6 +1,4 @@
-/* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mcode-readable=yes -mgp32" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) -mcode-readable=yes -mgp32 addressing=absolute" } */
 
 MIPS16 int
 foo (int i)

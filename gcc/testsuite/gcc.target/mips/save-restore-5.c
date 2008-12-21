@@ -1,7 +1,5 @@
 /* Check that we don't try to save the same register twice.  */
-/* { dg-do assemble { target mips16_attribute } } */
-/* { dg-mips-options "-mips32r2 -mgp32 -O2" } */
-/* { dg-add-options mips16_attribute } */
+/* { dg-options "(-mips16) isa_rev>=1 -mgp32 -O2" } */
 
 int bar (int, int, int, int);
 void frob (void);
