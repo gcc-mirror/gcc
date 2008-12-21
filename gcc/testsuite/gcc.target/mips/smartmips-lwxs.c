@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -msmartmips" } */
+/* -mlong32 added because of PR target/38599.  */
+/* { dg-mips-options "-O -msmartmips -mlong32" } */
 
 NOMIPS16 int scaled_indexed_word_load (int a[], int b)
 {
