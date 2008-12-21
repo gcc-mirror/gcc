@@ -1008,32 +1008,72 @@
 
 ;; Table 2-7. MIPS DSP ASE Instructions: Indexed-Load
 ;; L*X
-(define_insn "mips_lbux"
+(define_expand "mips_lbux"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand 1 "pmode_register_operand")
+   (match_operand:SI 2 "register_operand")]
+  "ISA_HAS_DSP"
+{
+  operands[2] = convert_to_mode (Pmode, operands[2], false);
+  if (Pmode == SImode)
+    emit_insn (gen_mips_lbux_si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_mips_lbux_di (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "mips_lbux_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(zero_extend:SI (mem:QI (plus:SI (match_operand:SI 1
-					  "register_operand" "d")
-					 (match_operand:SI 2
-					  "register_operand" "d")))))]
+   	(zero_extend:SI
+	  (mem:QI (plus:P (match_operand:P 1 "register_operand" "d")
+			  (match_operand:P 2 "register_operand" "d")))))]
   "ISA_HAS_DSP"
   "lbux\t%0,%2(%1)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"SI")])
 
-(define_insn "mips_lhx"
+(define_expand "mips_lhx"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand 1 "pmode_register_operand")
+   (match_operand:SI 2 "register_operand")]
+  "ISA_HAS_DSP"
+{
+  operands[2] = convert_to_mode (Pmode, operands[2], false);
+  if (Pmode == SImode)
+    emit_insn (gen_mips_lhx_si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_mips_lhx_di (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "mips_lhx_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(sign_extend:SI (mem:HI (plus:SI (match_operand:SI 1
-					  "register_operand" "d")
-					 (match_operand:SI 2
-					  "register_operand" "d")))))]
+	(zero_extend:SI
+	  (mem:HI (plus:P (match_operand:P 1 "register_operand" "d")
+			  (match_operand:P 2 "register_operand" "d")))))]
   "ISA_HAS_DSP"
   "lhx\t%0,%2(%1)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"SI")])
 
-(define_insn "mips_lwx"
+(define_expand "mips_lwx"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand 1 "pmode_register_operand")
+   (match_operand:SI 2 "register_operand")]
+  "ISA_HAS_DSP"
+{
+  operands[2] = convert_to_mode (Pmode, operands[2], false);
+  if (Pmode == SImode)
+    emit_insn (gen_mips_lwx_si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_mips_lwx_di (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "mips_lwx_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "d")
-			 (match_operand:SI 2 "register_operand" "d"))))]
+	(mem:SI (plus:P (match_operand:P 1 "register_operand" "d")
+	    		(match_operand:P 2 "register_operand" "d"))))]
   "ISA_HAS_DSP"
   "lwx\t%0,%2(%1)"
   [(set_attr "type"	"load")

@@ -1,3 +1,12 @@
+2008-12-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-dsp.md (mips_lbux): Turn into a define_expand,
+	changing operand 1 to a pmode_register_operand.
+	(mips_lhx, mips_lwx): Likewise.
+	(mips_lbux_<mode>, mips_lhx_<mode>, mips_lwx_<mode>): New patterns.
+	* config/mips/mips.c (mips_prepare_builtin_arg): Get the mode of
+	the value from the argument expression.
+
 2008-12-21  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
