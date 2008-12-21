@@ -1,3 +1,8 @@
+2008-12-21  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/38300
+	* unwind_ipinfo.m4: Darwin before 9 does not have _Unwind_GetIPInfo.
+
 2008-11-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	Fix PR/25502
