@@ -1,5 +1,10 @@
 2008-12-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/35899
+	* gcc.target/mips/smartmips-lwxs.c: Add -mlong32.
+
+2008-12-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/38598
 	* gcc.target/mips/madd-7.c: Add -mlong32.
 	* gcc.target/mips/msub-7.c: Likewise.
