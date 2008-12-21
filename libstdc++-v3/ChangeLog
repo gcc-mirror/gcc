@@ -1,7 +1,7 @@
 2008-12-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38596
-	* include/tr1_impl/function (function<>::target,
+	* include/tr1_impl/functional (function<>::target,
 	function<>::target_type): Provide only when __GXX_RTTI is defined.
 	(_Function_base::_M_manager, _Ref_manager<>::_M_manager,
 	_Function_handler<void(_ArgTypes...), _Member _Class::*>::_M_manager):
