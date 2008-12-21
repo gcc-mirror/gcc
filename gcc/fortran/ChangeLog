@@ -1,3 +1,12 @@
+2008-12-21  Arjen Markus  <arjen.markus@wldelft.nl>
+	    Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37605
+	* gfortran.texi: Fixed some typos and some minor style improvements.
+	* intrinsic.texi: Some clarifications and typo-fixes.
+	* invoke.texi: Better documenation of the behaviour of the
+	-fdefault-*-8 options and some other fixes.
+
 2008-12-18  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/31822
