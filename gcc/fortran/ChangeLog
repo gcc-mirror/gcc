@@ -1,3 +1,11 @@
+2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35983
+	* trans-expr.c (gfc_trans_subcomponent_assign):
+	Add se's pre and post blocks to current block.
+	(gfc_trans_structure_assign): Remove specific handling
+	of C_NULL_PTR and C_NULL_FUNPTR.
+
 2008-12-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35937

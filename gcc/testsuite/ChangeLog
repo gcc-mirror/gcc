@@ -1,3 +1,8 @@
+2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35983
+	* gfortran.dg/pr35983.f90: New test.
+
 2008-12-19  Janis Johnson  <janis187@us.ibm.com>
 
 	Revert:
