@@ -22,7 +22,13 @@ AC_DEFUN([GCC_CHECK_UNWIND_GETIPINFO], [
       *) have_unwind_getipinfo=yes ;;
     esac
   else
-     have_unwind_getipinfo=yes
+    # Darwin before version 9 does not have _Unwind_GetIPInfo.
+    changequote(,)
+    case ${target} in
+      *-*-darwin[3-8]|*-*-darwin[3-8].*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+    changequote([,])
   fi
 
   if test x$have_unwind_getipinfo = xyes; then
