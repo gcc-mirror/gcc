@@ -1,4 +1,5 @@
-/* { dg-mips-options "-O2 -march=5kc" } */
+/* -mlong32 added because of PR target/38598.  */
+/* { dg-mips-options "-O2 -march=5kc -mlong32" } */
 /* { dg-final { scan-assembler-not "\tmul\t" } } */
 /* { dg-final { scan-assembler "\tmadd\t" } } */
 
