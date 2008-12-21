@@ -1531,10 +1531,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	{
 	  switch (__op)
 	    {
+#ifdef __GXX_RTTI
 	    case __get_type_info:
 	      __dest._M_access<const type_info*>() = &typeid(_Functor);
 	      break;
-
+#endif
 	    case __get_functor_ptr:
 	      __dest._M_access<_Functor*>() = _M_get_pointer(__source);
 	      break;
@@ -1596,10 +1597,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	{
 	  switch (__op)
 	    {
+#ifdef __GXX_RTTI
 	    case __get_type_info:
 	      __dest._M_access<const type_info*>() = &typeid(_Functor);
 	      break;
-	      
+#endif
 	    case __get_functor_ptr:
 	      __dest._M_access<_Functor*>() = *_Base::_M_get_pointer(__source);
 	      return is_const<_Functor>::value;
@@ -1730,10 +1732,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       {
         switch (__op)
 	  {
+#ifdef __GXX_RTTI
 	  case __get_type_info:
 	    __dest._M_access<const type_info*>() = &typeid(_Functor);
 	    break;
-	    
+#endif	    
 	  case __get_functor_ptr:
 	    __dest._M_access<_Functor*>() =
 	      &_Base::_M_get_pointer(__source)->__value;
@@ -1935,7 +1938,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
        *  stored by @c this.
        */
       _Res operator()(_ArgTypes... __args) const;
-      
+
+#ifdef __GXX_RTTI
       // [3.7.2.5] function target access
       /**
        *  @brief Determine the type of the target of this function object
@@ -1961,7 +1965,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       
       /// @overload
       template<typename _Functor> const _Functor* target() const;
-      
+#endif
+
     private:
       // [3.7.2.6] undefined operators
       template<typename _Function>
@@ -2020,6 +2025,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return _M_invoker(_M_functor, __args...);
     }
 
+#ifdef __GXX_RTTI
   template<typename _Res, typename... _ArgTypes>
     const type_info&
     function<_Res(_ArgTypes...)>::
@@ -2069,6 +2075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	else
 	  return 0;
       }
+#endif
 
   // [3.7.2.7] null pointer comparisons
 
