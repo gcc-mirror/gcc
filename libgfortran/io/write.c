@@ -1010,13 +1010,12 @@ void
 write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
 {
   fnode f ;
-  int org_scale = dtp->u.p.scale_factor;
-  dtp->u.p.scale_factor = 1;
   set_fnode_default (dtp, &f, length);
-  f.format = FMT_ES;
-  f.u.real.d = d;
+  if (d > 0)
+    f.u.real.d = d;
+  dtp->u.p.g0_no_blanks = 1;
   write_float (dtp, &f, source , length);
-  dtp->u.p.scale_factor = org_scale;
+  dtp->u.p.g0_no_blanks = 0;
 }
 
 

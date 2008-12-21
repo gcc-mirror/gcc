@@ -333,15 +333,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   else
     edigits = 0;
 
-  /* Pick a field size if none was specified.  */
-  if (w <= 0)
-    w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
-
-  /* Create the ouput buffer.  */
-  out = write_block (dtp, w);
-  if (out == NULL)
-    return;
-
   /* Zero values always output as positive, even if the value was negative
      before rounding.  */
   for (i = 0; i < ndigits; i++)
@@ -359,10 +350,25 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	sign = calculate_sign (dtp, 0);
     }
 
+  /* Pick a field size if none was specified.  */
+  if (w <= 0)
+    w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+  
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
   if (sign != S_NONE)
     nblanks--;
+
+  if (dtp->u.p.g0_no_blanks)
+    {
+      w -= nblanks;
+      nblanks = 0;
+    }
+
+  /* Create the ouput buffer.  */
+  out = write_block (dtp, w);
+  if (out == NULL)
+    return;
 
   /* Check the value fits in the specified field width.  */
   if (nblanks < 0 || edigits == -1)
@@ -419,6 +425,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       digits += i;
       out += nbefore;
     }
+
   /* Output the decimal point.  */
   *(out++) = dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? '.' : ',';
 
@@ -461,12 +468,14 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 #endif
       memcpy (out, buffer, edigits);
     }
+
   if (dtp->u.p.no_leading_blank)
     {
       out += edigits;
       memset( out , ' ' , nblanks );
       dtp->u.p.no_leading_blank = 0;
     }
+
 #undef STR
 #undef STR1
 #undef MIN_FIELD_WIDTH
@@ -606,7 +615,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   int save_scale_factor, nb = 0;\
 \
   save_scale_factor = dtp->u.p.scale_factor;\
-  newf = get_mem (sizeof (fnode));\
+  newf = (fnode *) get_mem (sizeof (fnode));\
 \
   exp_d = calculate_exp_ ## x (d);\
   if ((m > 0.0 && m < 0.1 - 0.05 / exp_d) || (m >= exp_d - 0.5 ) ||\
@@ -680,7 +689,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 \
   free_mem(newf);\
 \
-  if (nb > 0)\
+  if (nb > 0 && !dtp->u.p.g0_no_blanks)\
     { \
       p = write_block (dtp, nb);\
       if (p == NULL)\

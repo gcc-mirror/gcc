@@ -444,7 +444,9 @@ typedef struct st_parameter_dt
 	  /* An internal unit specific flag to signify an EOF condition for list
 	     directed read.  */
 	  unsigned at_eof : 1;
-	  /* 16 unused bits.  */
+	  /* Used for g0 floating point output.  */
+	  unsigned g0_no_blanks : 1;
+	  /* 15 unused bits.  */
 
 	  char last_char;
 	  char nml_delim;

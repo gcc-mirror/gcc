@@ -1,3 +1,17 @@
+2008-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38398
+	* io/io.h (st_parameter_dt): Add new bit to keep track of when to
+	suppress blanks for g0 formatting.
+	* io/transfer.c (formatted_transfer_scalar): Always call write_real_g0
+	for g0 formatting.
+	* io.c (write.c): Do not use ES formatting and use new bit to suppress
+	blanks.
+	* io/write_float.def (output_float): Adjust the location of setting the
+	width so that it can be adjusted when suppressing blanks.  Set number of
+	blanks to zero when dtp->u.p.g0_no_blanks is set. Do some minor code
+	clean-up and add some white space for readability.
+	
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
