@@ -1,3 +1,7 @@
+2008-12-21  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md ("andsi3"): Fix wrong cc attribute.
+
 2008-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/37610

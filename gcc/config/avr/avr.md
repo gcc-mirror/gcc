@@ -1263,7 +1263,7 @@
   return \"bug\";
 }"
   [(set_attr "length" "4,4")
-   (set_attr "cc" "set_n,set_n")])
+   (set_attr "cc" "set_n,clobber")])
 
 (define_peephole2 ; andi
   [(set (match_operand:QI 0 "d_register_operand" "")
