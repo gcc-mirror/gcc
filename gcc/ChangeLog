@@ -1,3 +1,8 @@
+2008-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pad_noreturn): New static function.
+	(alpha_reorg): Call alpha_pad_noreturn.
+
 2008-12-21  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md ("andsi3"): Fix wrong cc attribute.
@@ -152,10 +157,10 @@
 
 2008-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
-        * doc/install.texi (Prerequisites): Document PPL and CLooG-PPL
-        dependences and the configure options.
-        (Configuration): Document --with-cloog, --with-ppl, --with-cloog-lib,
-         --with-ppl-lib, --with-cloog-incude, --with-ppl-include.
+	* doc/install.texi (Prerequisites): Document PPL and CLooG-PPL
+	dependences and the configure options.
+	(Configuration): Document --with-cloog, --with-ppl, --with-cloog-lib,
+	--with-ppl-lib, --with-cloog-incude, --with-ppl-include.
 
 2008-12-17  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -243,7 +248,7 @@
 	for the milli.a library.
 
 2008-12-12  Andrew Pinski  <andrew_pinskia@playstation.sony.com>
-            Peter Bergner <bergner@vnet.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
 
 	PR target/24779
 	* config/rs6000/rs6000.md (call_indirect_aix32): Move the load of the
