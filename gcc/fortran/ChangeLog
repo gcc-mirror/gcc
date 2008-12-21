@@ -1,5 +1,13 @@
 2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
 
+	PR fortran/38113
+	* error.c (show_locus): Start counting columns at 0.
+	* primary.c (match_actual_arg): Eat spaces
+	before copying the current locus.
+	(match_variable): Copy the locus before matching.
+
+2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
+
 	PR fortran/35983
 	* trans-expr.c (gfc_trans_subcomponent_assign):
 	Add se's pre and post blocks to current block.

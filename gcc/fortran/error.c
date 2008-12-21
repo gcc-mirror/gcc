@@ -222,14 +222,6 @@ show_locus (locus *loc, int c1, int c2)
 
   offset = 0;
 
-  /* When the loci is not associated with a column, it will have a
-     value of zero.  We adjust this to 1 so that it will appear.  */
-     
-  if (c1 == 0)
-    c1 = 1;
-  if (c2 == 0)
-    c2 = 1;
-
   /* If the two loci would appear in the same column, we shift
      '2' one column to the right, so as to print '12' rather than
      just '1'.  We do this here so it will be accounted for in the
@@ -289,7 +281,7 @@ show_locus (locus *loc, int c1, int c2)
   c1 -= offset;
   c2 -= offset;
 
-  for (i = 1; i <= cmax; i++)
+  for (i = 0; i <= cmax; i++)
     {
       if (i == c1)
 	error_char ('1');
