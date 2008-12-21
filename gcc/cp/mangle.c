@@ -2348,12 +2348,12 @@ write_expression (tree expr)
 
 	case CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
-	  /* There is no way to mangle a zero-operand cast like
-	     "T()".  */
 	  if (!TREE_OPERAND (expr, 0))
-	    sorry ("zero-operand casts cannot be mangled due to a defect "
-		   "in the C++ ABI");
+	    /* "T()" is mangled as "T(void)".  */
+	    write_char ('v');
 	  else if (list_length (TREE_OPERAND (expr, 0)) > 1)
+	    /* FIXME the above hack for T() needs to be replaced with
+	       something more general.  */
 	    sorry ("mangling function-style cast with more than one argument");
 	  else
 	    write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
