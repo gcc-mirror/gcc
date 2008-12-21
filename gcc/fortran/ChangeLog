@@ -1,3 +1,9 @@
+2008-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/38398
+	* io.c: Add error checks for g0 formatting and provide adjustment of
+	error loci for improved error messages.
+
 2008-12-21  Arjen Markus  <arjen.markus@wldelft.nl>
 	    Daniel Kraft  <d@domob.eu>
 

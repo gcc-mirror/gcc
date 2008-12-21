@@ -118,6 +118,7 @@ format_token;
    used to back up by a single format token during the parsing
    process.  */
 static gfc_char_t *format_string;
+static int format_string_pos;
 static int format_length, use_last_char;
 static char error_element;
 static locus format_locus;
@@ -169,6 +170,8 @@ next_char (int in_string)
 
   if (mode != MODE_STRING)
     format_locus = gfc_current_locus;
+
+  format_string_pos++;
 
   c = gfc_wide_toupper (c);
   return c;
@@ -503,6 +506,7 @@ check_format (bool is_input)
   level = 0;
   repeat = 0;
   rv = SUCCESS;
+  format_string_pos = 0;
 
   t = format_lex ();
   if (t == FMT_ERROR)
@@ -729,15 +733,19 @@ data_desc:
 	      saved_token = u;
 	      break;
 	    }
-
 	  u = format_lex ();
-	  if (u == FMT_ERROR)
-	    goto fail;
 	  if (u != FMT_POSINT)
 	    {
 	      error = posint_required;
 	      goto syntax;
 	    }
+	  u = format_lex ();
+	  if (u == FMT_E)
+	    {
+	      error = _("E specifier not allowed with g0 descriptor");
+	      goto syntax;
+	    }
+	  saved_token = u;
 	  break;
 	}
 
@@ -983,6 +991,8 @@ extension_optional_comma:
   goto format_item;
 
 syntax:
+  if (mode != MODE_FORMAT)
+    format_locus.nextc += format_string_pos;
   if (error == unexpected_element)
     gfc_error (error, error_element, &format_locus);
   else
