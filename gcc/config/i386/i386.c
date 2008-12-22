@@ -16636,6 +16636,22 @@ expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
       destexp = gen_rtx_PLUS (Pmode, destptr, countreg);
       srcexp = gen_rtx_PLUS (Pmode, srcptr, countreg);
     }
+  if (CONST_INT_P (count))
+    {
+      count = GEN_INT (INTVAL (count)
+		       & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
+      destmem = shallow_copy_rtx (destmem);
+      srcmem = shallow_copy_rtx (srcmem);
+      set_mem_size (destmem, count);
+      set_mem_size (srcmem, count);
+    }
+  else
+    {
+      if (MEM_SIZE (destmem))
+	set_mem_size (destmem, NULL_RTX);
+      if (MEM_SIZE (srcmem))
+	set_mem_size (srcmem, NULL_RTX);
+    }
   emit_insn (gen_rep_mov (destptr, destmem, srcptr, srcmem, countreg,
 			  destexp, srcexp));
 }
@@ -16644,8 +16660,8 @@ expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
    Arguments have same meaning as for previous function */
 static void
 expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
-			    rtx count,
-			    enum machine_mode mode)
+			    rtx count, enum machine_mode mode,
+			    rtx orig_value)
 {
   rtx destexp;
   rtx countreg;
@@ -16662,6 +16678,15 @@ expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
     }
   else
     destexp = gen_rtx_PLUS (Pmode, destptr, countreg);
+  if (orig_value == const0_rtx && CONST_INT_P (count))
+    {
+      count = GEN_INT (INTVAL (count)
+		       & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
+      destmem = shallow_copy_rtx (destmem);
+      set_mem_size (destmem, count);
+    }
+  else if (MEM_SIZE (destmem))
+    set_mem_size (destmem, NULL_RTX);
   emit_insn (gen_rep_stos (destptr, countreg, destmem, value, destexp));
 }
 
@@ -16995,6 +17020,85 @@ expand_movmem_prologue (rtx destmem, rtx srcmem,
   gcc_assert (desired_alignment <= 8);
 }
 
+/* Copy enough from DST to SRC to align DST known to DESIRED_ALIGN.
+   ALIGN_BYTES is how many bytes need to be copied.  */
+static rtx
+expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
+				 int desired_align, int align_bytes)
+{
+  rtx src = *srcp;
+  rtx src_size, dst_size;
+  int off = 0;
+  int src_align_bytes = get_mem_align_offset (src, desired_align * BITS_PER_UNIT);
+  if (src_align_bytes >= 0)
+    src_align_bytes = desired_align - src_align_bytes;
+  src_size = MEM_SIZE (src);
+  dst_size = MEM_SIZE (dst);
+  if (align_bytes & 1)
+    {
+      dst = adjust_automodify_address_nv (dst, QImode, destreg, 0);
+      src = adjust_automodify_address_nv (src, QImode, srcreg, 0);
+      off = 1;
+      emit_insn (gen_strmov (destreg, dst, srcreg, src));
+    }
+  if (align_bytes & 2)
+    {
+      dst = adjust_automodify_address_nv (dst, HImode, destreg, off);
+      src = adjust_automodify_address_nv (src, HImode, srcreg, off);
+      if (MEM_ALIGN (dst) < 2 * BITS_PER_UNIT)
+	set_mem_align (dst, 2 * BITS_PER_UNIT);
+      if (src_align_bytes >= 0
+	  && (src_align_bytes & 1) == (align_bytes & 1)
+	  && MEM_ALIGN (src) < 2 * BITS_PER_UNIT)
+	set_mem_align (src, 2 * BITS_PER_UNIT);
+      off = 2;
+      emit_insn (gen_strmov (destreg, dst, srcreg, src));
+    }
+  if (align_bytes & 4)
+    {
+      dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
+      src = adjust_automodify_address_nv (src, SImode, srcreg, off);
+      if (MEM_ALIGN (dst) < 4 * BITS_PER_UNIT)
+	set_mem_align (dst, 4 * BITS_PER_UNIT);
+      if (src_align_bytes >= 0)
+	{
+	  unsigned int src_align = 0;
+	  if ((src_align_bytes & 3) == (align_bytes & 3))
+	    src_align = 4;
+	  else if ((src_align_bytes & 1) == (align_bytes & 1))
+	    src_align = 2;
+	  if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
+	    set_mem_align (src, src_align * BITS_PER_UNIT);
+	}
+      off = 4;
+      emit_insn (gen_strmov (destreg, dst, srcreg, src));
+    }
+  dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
+  src = adjust_automodify_address_nv (src, BLKmode, srcreg, off);
+  if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
+    set_mem_align (dst, desired_align * BITS_PER_UNIT);
+  if (src_align_bytes >= 0)
+    {
+      unsigned int src_align = 0;
+      if ((src_align_bytes & 7) == (align_bytes & 7))
+	src_align = 8;
+      else if ((src_align_bytes & 3) == (align_bytes & 3))
+	src_align = 4;
+      else if ((src_align_bytes & 1) == (align_bytes & 1))
+	src_align = 2;
+      if (src_align > (unsigned int) desired_align)
+	src_align = desired_align;
+      if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
+	set_mem_align (src, src_align * BITS_PER_UNIT);
+    }
+  if (dst_size)
+    set_mem_size (dst, GEN_INT (INTVAL (dst_size) - align_bytes));
+  if (src_size)
+    set_mem_size (dst, GEN_INT (INTVAL (src_size) - align_bytes));
+  *srcp = src;
+  return dst;
+}
+
 /* Set enough from DEST to align DEST known to by aligned by ALIGN to
    DESIRED_ALIGNMENT.  */
 static void
@@ -17029,6 +17133,47 @@ expand_setmem_prologue (rtx destmem, rtx destptr, rtx value, rtx count,
       LABEL_NUSES (label) = 1;
     }
   gcc_assert (desired_alignment <= 8);
+}
+
+/* Set enough from DST to align DST known to by aligned by ALIGN to
+   DESIRED_ALIGN.  ALIGN_BYTES is how many bytes need to be stored.  */
+static rtx
+expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
+				 int desired_align, int align_bytes)
+{
+  int off = 0;
+  rtx dst_size = MEM_SIZE (dst);
+  if (align_bytes & 1)
+    {
+      dst = adjust_automodify_address_nv (dst, QImode, destreg, 0);
+      off = 1;
+      emit_insn (gen_strset (destreg, dst,
+			     gen_lowpart (QImode, value)));
+    }
+  if (align_bytes & 2)
+    {
+      dst = adjust_automodify_address_nv (dst, HImode, destreg, off);
+      if (MEM_ALIGN (dst) < 2 * BITS_PER_UNIT)
+	set_mem_align (dst, 2 * BITS_PER_UNIT);
+      off = 2;
+      emit_insn (gen_strset (destreg, dst,
+			     gen_lowpart (HImode, value)));
+    }
+  if (align_bytes & 4)
+    {
+      dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
+      if (MEM_ALIGN (dst) < 4 * BITS_PER_UNIT)
+	set_mem_align (dst, 4 * BITS_PER_UNIT);
+      off = 4;
+      emit_insn (gen_strset (destreg, dst,
+			     gen_lowpart (SImode, value)));
+    }
+  dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
+  if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
+    set_mem_align (dst, desired_align * BITS_PER_UNIT);
+  if (dst_size)
+    set_mem_size (dst, GEN_INT (INTVAL (dst_size) - align_bytes));
+  return dst;
 }
 
 /* Given COUNT and EXPECTED_SIZE, decide on codegen of string operation.  */
@@ -17262,7 +17407,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   unsigned HOST_WIDE_INT count = 0;
   HOST_WIDE_INT expected_size = -1;
   int size_needed = 0, epilogue_size_needed;
-  int desired_align = 0;
+  int desired_align = 0, align_bytes = 0;
   enum stringop_alg alg;
   int dynamic_check;
   bool need_zero_guard = false;
@@ -17273,6 +17418,11 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   if (CONST_INT_P (expected_align_exp)
       && INTVAL (expected_align_exp) > align)
     align = INTVAL (expected_align_exp);
+  /* ALIGN is the minimum of destination and source alignment, but we care here
+     just about destination alignment.  */
+  else if (MEM_ALIGN (dst) > (unsigned HOST_WIDE_INT) align * BITS_PER_UNIT)
+    align = MEM_ALIGN (dst) / BITS_PER_UNIT;
+
   if (CONST_INT_P (count_exp))
     count = expected_size = INTVAL (count_exp);
   if (CONST_INT_P (expected_size_exp) && count == 0)
@@ -17332,7 +17482,20 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   /* Alignment code needs count to be in register.  */
   if (CONST_INT_P (count_exp) && desired_align > align)
-    count_exp = force_reg (counter_mode (count_exp), count_exp);
+    {
+      if (INTVAL (count_exp) > desired_align
+	  && INTVAL (count_exp) > size_needed)
+	{
+	  align_bytes
+	    = get_mem_align_offset (dst, desired_align * BITS_PER_UNIT);
+	  if (align_bytes <= 0)
+	    align_bytes = 0;
+	  else
+	    align_bytes = desired_align - align_bytes;
+	}
+      if (align_bytes == 0)
+	count_exp = force_reg (counter_mode (count_exp), count_exp);
+    }
   gcc_assert (desired_align >= 1 && align >= 1);
 
   /* Ensure that alignment prologue won't copy past end of block.  */
@@ -17391,14 +17554,26 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   if (desired_align > align)
     {
-      /* Except for the first move in epilogue, we no longer know
-         constant offset in aliasing info.  It don't seems to worth
-	 the pain to maintain it for the first move, so throw away
-	 the info early.  */
-      src = change_address (src, BLKmode, srcreg);
-      dst = change_address (dst, BLKmode, destreg);
-      expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
-			      desired_align);
+      if (align_bytes == 0)
+	{
+	  /* Except for the first move in epilogue, we no longer know
+	     constant offset in aliasing info.  It don't seems to worth
+	     the pain to maintain it for the first move, so throw away
+	     the info early.  */
+	  src = change_address (src, BLKmode, srcreg);
+	  dst = change_address (dst, BLKmode, destreg);
+	  expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
+				  desired_align);
+	}
+      else
+	{
+	  /* If we know how many bytes need to be stored before dst is
+	     sufficiently aligned, maintain aliasing info accurately.  */
+	  dst = expand_constant_movmem_prologue (dst, &src, destreg, srcreg,
+						 desired_align, align_bytes);
+	  count_exp = plus_constant (count_exp, -align_bytes);
+	  count -= align_bytes;
+	}
       if (need_zero_guard && !count)
 	{
 	  /* It is possible that we copied enough so the main loop will not
@@ -17607,7 +17782,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   unsigned HOST_WIDE_INT count = 0;
   HOST_WIDE_INT expected_size = -1;
   int size_needed = 0, epilogue_size_needed;
-  int desired_align = 0;
+  int desired_align = 0, align_bytes = 0;
   enum stringop_alg alg;
   rtx promoted_val = NULL;
   bool force_loopy_epilogue = false;
@@ -17678,10 +17853,23 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   /* Alignment code needs count to be in register.  */
   if (CONST_INT_P (count_exp) && desired_align > align)
     {
-      enum machine_mode mode = SImode;
-      if (TARGET_64BIT && (count & ~0xffffffff))
-	mode = DImode;
-      count_exp = force_reg (mode, count_exp);
+      if (INTVAL (count_exp) > desired_align
+	  && INTVAL (count_exp) > size_needed)
+	{
+	  align_bytes
+	    = get_mem_align_offset (dst, desired_align * BITS_PER_UNIT);
+	  if (align_bytes <= 0)
+	    align_bytes = 0;
+	  else
+	    align_bytes = desired_align - align_bytes;
+	}
+      if (align_bytes == 0)
+	{
+	  enum machine_mode mode = SImode;
+	  if (TARGET_64BIT && (count & ~0xffffffff))
+	    mode = DImode;
+	  count_exp = force_reg (mode, count_exp);
+	}
     }
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
@@ -17693,7 +17881,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   if (size_needed > 1 || (desired_align > 1 && desired_align > align))
     {
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
-      /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
+      /* Epilogue always copies COUNT_EXP & (EPILOGUE_SIZE_NEEDED - 1) bytes.
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
 
@@ -17736,13 +17924,25 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 
   if (desired_align > align)
     {
-      /* Except for the first move in epilogue, we no longer know
-         constant offset in aliasing info.  It don't seems to worth
-	 the pain to maintain it for the first move, so throw away
-	 the info early.  */
-      dst = change_address (dst, BLKmode, destreg);
-      expand_setmem_prologue (dst, destreg, promoted_val, count_exp, align,
-			      desired_align);
+      if (align_bytes == 0)
+	{
+	  /* Except for the first move in epilogue, we no longer know
+	     constant offset in aliasing info.  It don't seems to worth
+	     the pain to maintain it for the first move, so throw away
+	     the info early.  */
+	  dst = change_address (dst, BLKmode, destreg);
+	  expand_setmem_prologue (dst, destreg, promoted_val, count_exp, align,
+				  desired_align);
+	}
+      else
+	{
+	  /* If we know how many bytes need to be stored before dst is
+	     sufficiently aligned, maintain aliasing info accurately.  */
+	  dst = expand_constant_setmem_prologue (dst, destreg, promoted_val,
+						 desired_align, align_bytes);
+	  count_exp = plus_constant (count_exp, -align_bytes);
+	  count -= align_bytes;
+	}
       if (need_zero_guard && !count)
 	{
 	  /* It is possible that we copied enough so the main loop will not
@@ -17785,15 +17985,15 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       break;
     case rep_prefix_8_byte:
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
-				  DImode);
+				  DImode, val_exp);
       break;
     case rep_prefix_4_byte:
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
-				  SImode);
+				  SImode, val_exp);
       break;
     case rep_prefix_1_byte:
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
-				  QImode);
+				  QImode, val_exp);
       break;
     }
   /* Adjust properly the offset of src and dest memory for aliasing.  */
