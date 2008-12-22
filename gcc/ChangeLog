@@ -1,5 +1,69 @@
 2008-12-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/31150
+	* dse.c (struct store_info): Add const_rhs field.
+	(clear_rhs_from_active_local_stores): Clear also const_rhs.
+	(record_store): Try also cselib_expand_value_rtx to get a constant.
+	(find_shift_sequence, get_stored_val): Use const_rhs instead of
+	rhs if worthwhile.
+	* cselib.c (cselib_record_sets): If !cselib_record_memory and
+	there is just one set from read-only MEM, look at REG_EQUAL or
+	REG_EQUIV note.
+
+	* dse.c (struct store_info): Add redundant_reason field.
+	(record_store): When storing the same constant as has been
+	stored by an earlier store, set redundant_reason field
+	to the earlier store's insn_info_t.  Don't delete cannot_delete
+	insns.
+	(find_shift_sequence): Remove read_info argument, add read_mode
+	and require_cst arguments.  Return early if require_cst and
+	constant wouldn't be returned.
+	(get_stored_val): New function.
+	(replace_read): Use it.
+	(scan_insn): Put even cannot_delete insns with exactly 1 store
+	into active_local_stores.
+	(dse_step1): Don't delete cannot_delete insns.  Remove redundant
+	constant stores if contains_cselib_groups and earlier store storing
+	the same value hasn't been eliminated.
+	(dse_step6): Renamed to dse_step7.  New function.
+	(dse_step7): Renamed from dse_step6.
+	(rest_of_handle_dse): Call dse_step6 and dse_step7 at the end.
+	* cselib.c (cselib_expand_value_rtx): Don't wrap CONST_INTs
+	into CONST unless really necessary.  Handle SUBREG, unary,
+	ternary, bitfield and compares specially, to be able to simplify
+	operations on constants.
+	(expand_loc): Try to optimize LO_SUM.
+
+	* dse.c (get_call_args): New function.
+	(scan_insn): Don't handle BUILT_IN_BZERO.  For memset, attempt
+	to get call arguments and if successful and both len and val are
+	constants, handle the call as (mem:BLK) (const_int) store.
+
+	* dse.c (struct store_info): Add is_large bool field, change
+	positions_needed into a union of a bitmask and bitmap + count.
+	(free_store_info): Free bitmap if is_large.
+	(set_usage_bits): Don't look at stores where
+	offset + width >= MAX_OFFSET.
+	(set_position_unneeded, set_all_positions_unneeded,
+	any_positions_needed_p, all_positions_needed_p): New static inline
+	functions.
+	(record_store): Handle BLKmode stores of CONST_INT, if
+	MEM_SIZE is set on the MEM.  Use the new positions_needed
+	accessor inlines.
+	(replace_read): Handle reads from BLKmode CONST_INT stores.
+	(check_mem_read_rtx): Use all_positions_needed_p function.
+	(dse_step1): Free large positions_needed bitmaps and clear is_large.
+
+	* dse.c (struct store_info): Change begin and end types to
+	HOST_WIDE_INT.
+
+	* dse.c (record_store): Fix check for unused store.
+
+	* expr.c (block_clear_fn): No longer static.
+	* expr.h (block_clear_fn): Declare.
+	* dse.c (scan_insn): Memset and bzero can just read their
+	arguments.
+
 	* config/i386/i386.c (expand_setmem_via_rep_stos): Add ORIG_VALUE
 	argument.  If ORIG_VALUE is const0_rtx and COUNT is constant,
 	set MEM_SIZE on DESTMEM.

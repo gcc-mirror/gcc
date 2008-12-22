@@ -1,3 +1,8 @@
+2008-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/31150
+	* gcc.c-torture/execute/20081218-1.c: New test.
+
 2008-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35780
