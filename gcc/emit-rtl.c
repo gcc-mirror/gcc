@@ -1490,6 +1490,90 @@ mem_expr_equal_p (const_tree expr1, const_tree expr2)
   return 0;
 }
 
+/* Return OFFSET if XEXP (MEM, 0) - OFFSET is known to be ALIGN
+   bits aligned for 0 <= OFFSET < ALIGN / BITS_PER_UNIT, or
+   -1 if not known.  */
+
+int
+get_mem_align_offset (rtx mem, int align)
+{
+  tree expr;
+  unsigned HOST_WIDE_INT offset;
+
+  /* This function can't use
+     if (!MEM_EXPR (mem) || !MEM_OFFSET (mem)
+	 || !CONST_INT_P (MEM_OFFSET (mem))
+	 || (get_object_alignment (MEM_EXPR (mem), MEM_ALIGN (mem), align)
+	     < align))
+       return -1;
+     else
+       return (- INTVAL (MEM_OFFSET (mem))) & (align / BITS_PER_UNIT - 1);
+     for two reasons:
+     - COMPONENT_REFs in MEM_EXPR can have NULL first operand,
+       for <variable>.  get_inner_reference doesn't handle it and
+       even if it did, the alignment in that case needs to be determined
+       from DECL_FIELD_CONTEXT's TYPE_ALIGN.
+     - it would do suboptimal job for COMPONENT_REFs, even if MEM_EXPR
+       isn't sufficiently aligned, the object it is in might be.  */
+  gcc_assert (MEM_P (mem));
+  expr = MEM_EXPR (mem);
+  if (expr == NULL_TREE
+      || MEM_OFFSET (mem) == NULL_RTX
+      || !CONST_INT_P (MEM_OFFSET (mem)))
+    return -1;
+
+  offset = INTVAL (MEM_OFFSET (mem));
+  if (DECL_P (expr))
+    {
+      if (DECL_ALIGN (expr) < align)
+	return -1;
+    }
+  else if (INDIRECT_REF_P (expr))
+    {
+      if (TYPE_ALIGN (TREE_TYPE (expr)) < (unsigned int) align)
+	return -1;
+    }
+  else if (TREE_CODE (expr) == COMPONENT_REF)
+    {
+      while (1)
+	{
+	  tree inner = TREE_OPERAND (expr, 0);
+	  tree field = TREE_OPERAND (expr, 1);
+	  tree byte_offset = component_ref_field_offset (expr);
+	  tree bit_offset = DECL_FIELD_BIT_OFFSET (field);
+
+	  if (!byte_offset
+	      || !host_integerp (byte_offset, 1)
+	      || !host_integerp (bit_offset, 1))
+	    return -1;
+
+	  offset += tree_low_cst (byte_offset, 1);
+	  offset += tree_low_cst (bit_offset, 1) / BITS_PER_UNIT;
+
+	  if (inner == NULL_TREE)
+	    {
+	      if (TYPE_ALIGN (DECL_FIELD_CONTEXT (field))
+		  < (unsigned int) align)
+		return -1;
+	      break;
+	    }
+	  else if (DECL_P (inner))
+	    {
+	      if (DECL_ALIGN (inner) < align)
+		return -1;
+	      break;
+	    }
+	  else if (TREE_CODE (inner) != COMPONENT_REF)
+	    return -1;
+	  expr = inner;
+	}
+    }
+  else
+    return -1;
+
+  return offset & ((align / BITS_PER_UNIT) - 1);
+}
+
 /* Given REF (a MEM) and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  BITPOS is nonzero if

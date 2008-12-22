@@ -1,3 +1,24 @@
+2008-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (expand_setmem_via_rep_stos): Add ORIG_VALUE
+	argument.  If ORIG_VALUE is const0_rtx and COUNT is constant,
+	set MEM_SIZE on DESTMEM.
+	(ix86_expand_setmem): Adjust callers.
+
+	PR target/38488
+	* expr.h (get_mem_align_offset): New prototype.
+	* emit-rtl.c (get_mem_align_offset): New function.
+	* config/i386/i386.c (expand_movmem_via_rep_mov): Set MEM_SIZE correctly.
+	(expand_constant_movmem_prologue, expand_constant_setmem_prologue):
+	New functions.
+	(ix86_expand_movmem): Optimize if COUNT_EXP
+	is constant, desired_align > align and dst & (desired_align - 1)
+	is computable at compile time.
+	(ix86_expand_setmem): Likewise.
+
+	* builtins.c (get_memory_rtx): Try to derive MEM_ATTRS from not yet
+	resolved SAVE_EXPR or POINTER_PLUS_EXPR.
+
 2008-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.h (ASM_OUTPUT_EXTERNAL): New macro.

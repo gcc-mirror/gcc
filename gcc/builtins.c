@@ -1094,8 +1094,17 @@ expand_builtin_prefetch (tree exp)
 static rtx
 get_memory_rtx (tree exp, tree len)
 {
-  rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_NORMAL);
-  rtx mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
+  tree orig_exp = exp;
+  rtx addr, mem;
+  HOST_WIDE_INT off;
+
+  /* When EXP is not resolved SAVE_EXPR, MEM_ATTRS can be still derived
+     from its expression, for expr->a.b only <variable>.a.b is recorded.  */
+  if (TREE_CODE (exp) == SAVE_EXPR && !SAVE_EXPR_RESOLVED_P (exp))
+    exp = TREE_OPERAND (exp, 0);
+
+  addr = expand_expr (orig_exp, NULL_RTX, ptr_mode, EXPAND_NORMAL);
+  mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
 
   /* Get an expression we can use to find the attributes to assign to MEM.
      If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
@@ -1104,7 +1113,13 @@ get_memory_rtx (tree exp, tree len)
 	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     exp = TREE_OPERAND (exp, 0);
 
-  if (TREE_CODE (exp) == ADDR_EXPR)
+  off = 0;
+  if (TREE_CODE (exp) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+      && host_integerp (TREE_OPERAND (exp, 1), 0)
+      && (off = tree_low_cst (TREE_OPERAND (exp, 1), 0)) > 0)
+    exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  else if (TREE_CODE (exp) == ADDR_EXPR)
     exp = TREE_OPERAND (exp, 0);
   else if (POINTER_TYPE_P (TREE_TYPE (exp)))
     exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
@@ -1117,6 +1132,9 @@ get_memory_rtx (tree exp, tree len)
   if (exp)
     {
       set_mem_attributes (mem, exp, 0);
+
+      if (off)
+	mem = adjust_automodify_address_nv (mem, BLKmode, NULL, off);
 
       /* Allow the string and memory builtins to overflow from one
 	 field into another, see http://gcc.gnu.org/PR23561.
