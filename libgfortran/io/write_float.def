@@ -640,8 +640,8 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
-      temp = 0.1 * calculate_exp_ ## x (mid) - 0.5\
-	     * calculate_exp_ ## x (mid - d - 1);\
+      temp = (calculate_exp_ ## x (mid) - \
+	      5 * calculate_exp_ ## x (mid - d - 1)) / 10;\
 \
       if (m < temp)\
         { \
