@@ -1,3 +1,8 @@
+2008-12-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38602
+	* trans-decl.c (init_intent_out_dt): Allow for optional args.
+
 2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38487

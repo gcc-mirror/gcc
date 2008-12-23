@@ -2599,6 +2599,7 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
   stmtblock_t fnblock;
   gfc_formal_arglist *f;
   tree tmp;
+  tree present;
 
   gfc_init_block (&fnblock);
   for (f = proc_sym->formal; f; f = f->next)
@@ -2610,6 +2611,11 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 	    tmp = gfc_deallocate_alloc_comp (f->sym->ts.derived,
 					     f->sym->backend_decl,
 					     f->sym->as ? f->sym->as->rank : 0);
+
+	    present = gfc_conv_expr_present (f->sym);
+	    tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
+			  tmp, build_empty_stmt ());
+
 	    gfc_add_expr_to_block (&fnblock, tmp);
 	  }
 
