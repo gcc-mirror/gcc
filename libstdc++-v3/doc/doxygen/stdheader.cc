@@ -11,6 +11,7 @@ const char* const usage =
 "Takes no command-line arguments.\n"
 "\n";
 
+#include <cstdlib>
 #include <string>
 #include <map>
 #include <iostream>
@@ -157,7 +158,7 @@ int main (int argc, char**)
     if (argc > 1)
     {
         std::cerr << usage;
-        exit(0);
+	std::exit(0);
     }
 
     init_map();
