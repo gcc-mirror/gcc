@@ -1,3 +1,9 @@
+2008-12-23  Andrew Pinski  <pinski@gmail.com>
+
+	PR middle-end/38590
+	* fold-const.c (fold_binary): Call fold_convert on arguments to
+	fold_build2 for negative divide optimization.
+
 2008-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/31150
