@@ -1,3 +1,8 @@
+2008-12-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38602
+	* gfortran.dg/alloc_comp_optional_1.f90: New test.
+
 2008-12-21  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38487
