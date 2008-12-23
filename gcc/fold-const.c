@@ -11678,7 +11678,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_build2 (code, type,
 			      fold_convert (type, TREE_OPERAND (arg0, 0)),
-			      negate_expr (arg1));
+			      fold_convert (type, negate_expr (arg1)));
 	}
       if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	  && TREE_CODE (arg1) == NEGATE_EXPR
@@ -11689,8 +11689,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				    "when distributing negation across "
 				    "division"),
 				   WARN_STRICT_OVERFLOW_MISC);
-	  return fold_build2 (code, type, negate_expr (arg0),
-			      TREE_OPERAND (arg1, 0));
+	  return fold_build2 (code, type,
+			      fold_convert (type, negate_expr (arg0)),
+			      fold_convert (type, TREE_OPERAND (arg1, 0)));
 	}
 
       /* If arg0 is a multiple of arg1, then rewrite to the fastest div
