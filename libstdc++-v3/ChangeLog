@@ -1,3 +1,8 @@
+2008-12-22  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/ext/concurrence.h: Fix __gthread_cond_t initialisation
+	function macro name.
+
 2008-12-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/stdheader.cc: Add cstdlib.

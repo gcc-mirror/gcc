@@ -281,7 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
 	  _M_cond = __tmp;
 #else
-	  __GTHREAD_MUTEX_INIT_FUNCTION(&_M_cond);
+	  __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
 #endif
 	}
 #endif 
