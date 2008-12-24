@@ -1,3 +1,8 @@
+2008-12-24  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in (GTFILES): Add $(srcdir)/expr.h.
+	* expr.h: Fix the declaration of block_clear_fn.
+
 2008-12-23  Andrew Pinski  <pinski@gmail.com>
 
 	PR middle-end/38590
