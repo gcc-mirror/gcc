@@ -1,3 +1,13 @@
+2008-12-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR bootstrap/37295
+	Backport from mainline:
+	2007-08-23  Brian Sidebotham  <brian.sidebotham@gmail.com>
+
+        * configure.ac (leb128): Modify sed statement to work with any
+	binutils version string.
+	* configure: Regenerate
+
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
             Gary Funck  <gary@intrepid.com>
 

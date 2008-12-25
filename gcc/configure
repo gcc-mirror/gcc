@@ -14045,9 +14045,16 @@ L2:' > conftest.s
   # arbitrary sections are supported and try the test.
   as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
   if echo "$as_ver" | grep GNU > /dev/null; then
-    as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
-    as_major=`echo $as_ver | sed 's/\..*//'`
-    as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
+    as_vers=`echo $as_ver | sed -n \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[ 	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[ 	].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 -].*$,\1,p'`
+    as_major=`expr "$as_vers" : '\([0-9]*\)'`
+    as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
     if test $as_major -eq 2 && test $as_minor -lt 11
     then :
     else gcc_cv_as_leb128=yes
