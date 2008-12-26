@@ -22,10 +22,9 @@
 	REG_EQUIV note.
 
 	* dse.c (struct store_info): Add redundant_reason field.
-	(record_store): When storing the same constant as has been
-	stored by an earlier store, set redundant_reason field
-	to the earlier store's insn_info_t.  Don't delete cannot_delete
-	insns.
+	(record_store): When storing the same constant as has been stored by
+	an earlier store, set redundant_reason field to the earlier store's
+	insn_info_t.  Don't delete cannot_delete insns.
 	(find_shift_sequence): Remove read_info argument, add read_mode
 	and require_cst arguments.  Return early if require_cst and
 	constant wouldn't be returned.
@@ -72,8 +71,7 @@
 
 	* expr.c (block_clear_fn): No longer static.
 	* expr.h (block_clear_fn): Declare.
-	* dse.c (scan_insn): Memset and bzero can just read their
-	arguments.
+	* dse.c (scan_insn): Memset and bzero can just read their arguments.
 
 	* config/i386/i386.c (expand_setmem_via_rep_stos): Add ORIG_VALUE
 	argument.  If ORIG_VALUE is const0_rtx and COUNT is constant,
@@ -83,7 +81,8 @@
 	PR target/38488
 	* expr.h (get_mem_align_offset): New prototype.
 	* emit-rtl.c (get_mem_align_offset): New function.
-	* config/i386/i386.c (expand_movmem_via_rep_mov): Set MEM_SIZE correctly.
+	* config/i386/i386.c (expand_movmem_via_rep_mov): Set MEM_SIZE
+	correctly.
 	(expand_constant_movmem_prologue, expand_constant_setmem_prologue):
 	New functions.
 	(ix86_expand_movmem): Optimize if COUNT_EXP
@@ -96,7 +95,7 @@
 
 2008-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/alpha/alpha.h (ASM_OUTPUT_EXTERNAL): New macro.
+	* config/alpha/elf.h (ASM_OUTPUT_EXTERNAL): New macro.
 
 	PR target/34571
 	* config/alpha/predicates.md (symbolic_operand): Return 1 for a
@@ -119,7 +118,7 @@
 2008-12-21  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
-	* i376.md (UNSPEC_MS_TO_SYSV_CALL): New constant.
+	* i386.md (UNSPEC_MS_TO_SYSV_CALL): New constant.
 	(call_1_rex64_ms_sysv, call_value_0_rex64_ms_sysv,
 	call_value_1_rex64_ms_sysv): New patterns.
 	* i386.c (function_arg_ms_64): Pass magical value of -2 as callarg.
@@ -164,7 +163,7 @@
 
 2008-12-19  Steve Ellcey  <sje@cup.hp.com>
 
-	* df-scan.c ( df_hard_reg_init): Move declaration of i.
+	* df-scan.c (df_hard_reg_init): Move declaration of i.
 
 2008-12-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -238,23 +237,18 @@
 	(dse_step1): Added regs_live bitmap and initialize it.
 	(rest_of_handle_dse): Added DF_NOTES problem and earlier call to
 	df_analyze.
-	* df-problems.c Renamed to 
-	df_simulate_initialize_backwards.
-	(df_simulate_one_insn): Renamed to
-	df_simulate_one_insn_backwards.
-	(df_simulate_artificial_refs_at_top): Renamed to 
+	* df-problems.c Renamed to df_simulate_initialize_backwards.
+	(df_simulate_one_insn): Renamed to df_simulate_one_insn_backwards.
+	(df_simulate_artificial_refs_at_top): Renamed to
 	df_simulate_finalize_backwards.
-	(df_simulate_initialized_forwards,
-	df_simulate_one_insn_forwards,
+	(df_simulate_initialized_forwards, df_simulate_one_insn_forwards,
 	df_simulate_finalize_backwards): New functions.
-	* df.h (df_simulate_artificial_refs_at_end): Renamed to 
+	* df.h (df_simulate_artificial_refs_at_end): Renamed to
 	df_simulate_initialize_backwards.
-	(df_simulate_one_insn): Renamed to
-	df_simulate_one_insn_backwards.
-	(df_simulate_artificial_refs_at_top): Renamed to 
+	(df_simulate_one_insn): Renamed to df_simulate_one_insn_backwards.
+	(df_simulate_artificial_refs_at_top): Renamed to
 	df_simulate_finalize_backwards.
-	(df_simulate_initialized_forwards,
-	df_simulate_one_insn_forwards,
+	(df_simulate_initialized_forwards, df_simulate_one_insn_forwards,
 	df_simulate_finalize_backwards): New functions.
 	* ra-conflict.c (global_conflicts): Renamed
 	df_simulate_artificial_refs_at_end to
@@ -359,7 +353,7 @@
 	asm and change the signature of brev and byteSwap functions to use
 	unsigned values.
 	* config/picochip/picochip.md (commsTestPort): This is a complex
-	instruction and should not be vliwed. Dont set insn type.
+	instruction and should not be vliwed. Don't set insn type.
 
 2008-12-15  Wolfgang Gellerich  <gellerich@de.ibm.com>
 	* config/s390/s390.c (s390_swap_cmp): New function.
@@ -2335,7 +2329,7 @@
 	* config/mips/linux.h (LINUX_DRIVER_SELF_SPECS): New.
 	(BASE_DRIVER_SELF_SPECS): Remove.
 	(DRIVER_SELF_SPECS): New definition.
-	* config/mips/elfoabi.h: (DRIVER_SELF_SPECS): Include
+	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Include
 	BASE_DRIVER_SELF_SPECS.
 	* config/mips/sde.h: Likewise.
 	* config/mips/iris6.h: Likewise.
@@ -2774,7 +2768,7 @@
 2008-10-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32277
-	* libgcov.c ( __gcov_indirect_call_profiler): Check
+	* libgcov.c (__gcov_indirect_call_profiler): Check
 	TARGET_VTABLE_USES_DESCRIPTORS.
 
 2008-10-29  Stefan Schulze Frielinghaus  <xxschulz@de.ibm.com>
@@ -3377,7 +3371,7 @@
 
 2008-10-15  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.h: (TARGET_DFP): This requires TARGET_HARD_FLOAT.
+	* config/s390/s390.h (TARGET_DFP): This requires TARGET_HARD_FLOAT.
 	* config/s390/s390.md: Replace "TARGET_HARD_FLOAT &&
 	TARGET_(HARD_)DFP" with only TARGET_(HARD_)DFP since this
 	already implies hard float.  Also fix several insn condition
@@ -3726,7 +3720,7 @@
 2008-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37448
-	* df.h: (df_ref_class): New enum.
+	* df.h (df_ref_class): New enum.
 	(DF_REF_TYPE_NAMES, df_ref_extract): Removed.
 	(struct df_ref): Replaced with union df_ref_d.
 	(df_base_ref, df_artificial_ref, df_regular_ref, df_extract_ref):
@@ -3921,7 +3915,7 @@
 	* config/rs6000/rs6000.c (rs6000_parse_fpu_option): Interpret
 	-mfpu options.
 	(rs6000_handle_option): Process -mfpu options.
-	* config/rs6000/rs6000.h: (TARGET_XILINX_FPU): New.
+	* config/rs6000/rs6000.h (TARGET_XILINX_FPU): New.
 	(enum fpu_type_t): New.
 	* config/rs6000/rs6000.md (attr fp_type): New.  Include xfpu.md.
 	(addsf3, subsf3, mulsf3, adddf3, subdf3, muldf3, trunctfdf2): Set
@@ -3930,7 +3924,7 @@
 	(floatdidf2): Add TARGET_SINGLE_FPU condition.
 	* config/rs6000/rs6000.opt (-mfpu): New.
 	(-mxilinx-fpu): New.
-	* config/rs6000/sysv4.h: (DRIVER_SELF_SPECS): New.
+	* config/rs6000/sysv4.h (DRIVER_SELF_SPECS): New.
 	* config/rs6000/xfpu.h: New. Define TARGET_XILINX_FPU.
 	* config/rs6000/xfpu.md: New. Define Xilinx pipeline.
 	* gcc/config.gcc: powerpc-xilinx-eabi target: New.
@@ -4449,7 +4443,7 @@
 2008-10-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/37528
-	* config/i386/mingw32.h (LIBGCC_SPEC) : Replace with ..
+	* config/i386/mingw32.h (LIBGCC_SPEC): Replace with ..
 	(REAL_LIBGCC_SPEC): New.  Always include -lgcc.
 
 2008-10-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
@@ -6306,8 +6300,8 @@
 	PR target/36609
 	* config/avr/avr.c (avr_reorg): Create RTL for reversed compare with
 	zero.
-	* config/avr/avr.md  (QISI) : Define mode iterator.
-	(negated_tst<mode>) : Redefine as split using mode macro.
+	* config/avr/avr.md  (QISI): Define mode iterator.
+	(negated_tst<mode>): Redefine as split using mode macro.
 	(reversed_tstqi): Define insn as reversed compare with zero.
 	(reversed_tsthi): Ditto.
 	(reversed_tstsi): Ditto.
@@ -6457,10 +6451,10 @@
 
 	Improved branch hints, safe hints, and scheduling.
 
-	* haifa-sched.c (sched_emit_insn) : Define.
-	* sched-int.h (sched_emit_insn) : Add prototype.
+	* haifa-sched.c (sched_emit_insn): Define.
+	* sched-int.h (sched_emit_insn): Add prototype.
 	* doc/invoke.texi (-mdual-nops, -mhint-max-nops,
-	-mhint-max-distance -msafe-hints) : Document.
+	-mhint-max-distance -msafe-hints): Document.
 	* config/spu/spu.c (spu_flag_var_tracking): New.
 	(TARGET_SCHED_INIT_GLOBAL, TARGET_SCHED_INIT,
 	TARGET_SCHED_REORDER, TARGET_SCHED_REORDER2,
@@ -7386,7 +7380,7 @@
 	(haifa_luid_for_non_insn): New static function.
 	(init_before_recovery): Use haifa_init_only_bb instead of add_block.
 	(increase_insn_priority): New.
-	* modulo-sched.c: (issue_rate): Remove static declaration.
+	* modulo-sched.c (issue_rate): Remove static declaration.
 	(sms_sched_info): Change type to haifa_sched_info.
 	(sms_sched_deps_info, sms_common_sched_info): New variables.
 	(setup_sched_infos): New.
@@ -7944,7 +7938,7 @@
 	TI_CURRENT_OPTION_PRAGMA.
 	(current_target_pragma): Rename from current_option_pragma.
 
-	* target.h: (struct target_option): Delete booleans for changing
+	* target.h (struct target_option): Delete booleans for changing
 	the optimization level on hot/cold functions.  Change signature of
 	pragma_parse hook to take a second tree.
 
@@ -10848,7 +10842,7 @@
 	* tree-vectorizer.h (supportable_widening_operation): Add two
 	arguments.
 	(supportable_narrowing_operation): Likewise.
-	* tree-vect-patterns.c (vect_recog_widen_mult_pattern) : Call
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Call
 	supportable_widening_operation with correct arguments.
 	* tree-vect-transform.c (vectorizable_conversion): Likewise.
 	(vectorizable_type_demotion): Support double type conversions.
@@ -11447,7 +11441,7 @@
 2008-08-06  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (write_entries_to_file): Quote words.
-	* gengtype.c: (read_input_line): Skip over leading white-space.
+	* gengtype.c (read_input_line): Skip over leading white-space.
 
 2008-08-06  Marc Gauthier  <marc@tensilica.com>
 
@@ -13807,7 +13801,7 @@
 2008-07-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/36745
-	* config/s390/s390.c: (s390_secondary_reload): Add a secondary
+	* config/s390/s390.c (s390_secondary_reload): Add a secondary
 	reload for symbol refs moved to r0 with -fPIC.
 	(legitimize_pic_address): Use the target register as temporary
 	reg if possible.
@@ -14902,7 +14896,7 @@
 	* Makefile.in (tree-switch-conversion.o): Add.
 	(OBJS-common): Add tree-swtch-conversion.o.
 	* passes.c (init_optimization_passes): Add pass_convert_switch.
-	* tree-pass.h: (pass_convert_switch): Add.
+	* tree-pass.h (pass_convert_switch): Add.
 	* tree-switch-conversion.c: New file.
 	* gcc.dg/tree-ssa/cswtch.c: New testcase.
 	* common.opt (ftree-cswtch): New option.
@@ -15713,7 +15707,7 @@
 2008-06-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36627
-	* config/i386/i386.md : Change constraints of HImode and QImode
+	* config/i386/i386.md: Change constraints of HImode and QImode
 	immediate operands from "i" to "n".  Change SImode "ni" constraint to
 	"i" and SImode "rmi" constraint to "g".  Remove all constraints
 	from const0_operand and const1_operand predicated operands.
@@ -16971,7 +16965,7 @@
 	* configure: Regenerate.
 	* doc/cpp.texi: Don't mention BeOS.
 	* doc/extend.texi (interrupt): Don't mention MS1.
-	* doc/install.texi: (i386-@var{any}-sysv, m68k-bull-sysv,
+	* doc/install.texi (i386-@var{any}-sysv, m68k-bull-sysv,
 	m68k-hp-hpux, m68000-hp-hpux, m68000-att-sysv,
 	alphaev5-cray-unicosmk*, xscale-*-*, i?86-*-linux*aout,
 	i?86-*-sco3.2v5*, i?86-*-udk, m68k-hp-hpux, powerpc-*-sysv4,
@@ -16981,7 +16975,7 @@
 	(-mwindiss): Remove.
 	(CRIS Options): Remove cris-axis-aout references.
 	(HPPA Options): Don't mention hppa1.1-*-pro.
-	* doc/md.texi: (MorphoTech family): Remove.
+	* doc/md.texi (MorphoTech family): Remove.
 	* libgcc2.c: Don't handle UWIN.
 	* config/alpha/t-unicosmk: Remove.
 	* config/alpha/unicosmk.h: Remove.
@@ -17557,7 +17551,7 @@
 	(tree_call_cdce): Ditto.
 	(gate_call_cdce): Ditto.
 	(pass_call_cdce): New gimple pass.
-	* passes.c: (init_optimization_passes): New pass.
+	* passes.c (init_optimization_passes): New pass.
 	* tree-pass.h: New pass declaration.
 	* opts.c (decode_options): New flag setting.
 	* common.opt: Add -ftree-builtin-call-dce flag.
@@ -18180,7 +18174,7 @@
 
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* reload.c: (find_reloads): Skip alternatives according to the
+	* reload.c (find_reloads): Skip alternatives according to the
 	"enabled" attribute. Constify the constraint variable.
 	* recog.c (get_attr_enabled): Add default implementation.
 	(extract_insn): Set the alternative_enabled_p array
@@ -18189,7 +18183,7 @@
 	alternatives according to the "enabled" attribute
 	* recog.h (struct recog_data): New field alternative_enabled_p.
 	(skip_alternative): New inline function.
-	* regclass.c: (record_operand_costs): Check the "enabled" attribute.
+	* regclass.c (record_operand_costs): Check the "enabled" attribute.
 	(record_reg_classes): Skip alternative according to the
 	"enabled" attribute.
 
@@ -19466,7 +19460,7 @@
 	expand_copysign_bit): Change call to emit_no_conflict_block to
 	emit_insn and remove unneeded code to construct extra args.
 	(emit_no_conflict_block): Removed.
-	* optabls.h: (emit_no_conflict_block): Removed.
+	* optabls.h (emit_no_conflict_block): Removed.
 	* cse.c (cse_extended_basic_block): Remove search for
 	REG_NO_CONFLICT note.
 	* global.c: Removed incorrect comment added in revision 117.
@@ -21252,7 +21246,7 @@
 
 	* config/i386/i386.md (fix_trunc<mode>_i387_fisttp_with_temp): Use 'X'
 	constraint for operand 2 when operand 0 is memory operand.
-	(fix_truncdi_i387_with_temp): : Use 'X' constraint for operand 4 when
+	(fix_truncdi_i387_with_temp): Use 'X' constraint for operand 4 when
 	operand 0 is memory operand.
 	(fix_trunc<mode>_i387_with_temp): Ditto.
 	(*floatsi<mode>2_vector_mixed_with_temp): Use 'X' constraint for
@@ -22505,7 +22499,7 @@
 	2008-04-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/PR28690
-	* rtlanal.c: (commutative_operand_precedence): Give SYMBOL_REF's the
+	* rtlanal.c (commutative_operand_precedence): Give SYMBOL_REF's the
 	same precedence as REG_POINTER and MEM_POINTER operands.
 
 2008-04-08  Richard Guenther  <rguenther@suse.de>
@@ -24368,7 +24362,7 @@
 	* config/i386/t-cygming: Add build rule for msformat-c.o.
 	* doc/extend.texi: Add new format names gnu_* and ms_* and
 	further details.
-	* doc/tm.texi: (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): New.
+	* doc/tm.texi (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): New.
 
 2008-03-20  Ira Rosen  <irar@il.ibm.com>
 
@@ -25584,7 +25578,7 @@
 	* flags.h (flag_permissive): Declare. Update description.
 	* diagnostic.c (pedwarn): Update.
 	(permerror): New.
-	* diagnostic.h: (pedantic_error_kind): Rename as pedantic_warning_kind.
+	* diagnostic.h (pedantic_error_kind): Rename as pedantic_warning_kind.
 	(permissive_error_kind): New.
 	* toplev.c (flag_permissive): Define. Update description.
 	* toplev.h (permissive_error_kind): Declare.
@@ -27136,7 +27130,7 @@
 
 2008-02-11  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/cygwin.asm: (__alloca): Correct calling
+	* config/i386/cygwin.asm (__alloca): Correct calling
 	convention and alignment.
 	(__chkstk): Force 8 byte stack alignment.
 
@@ -27791,7 +27785,7 @@
 	xstormy16_gimplify_va_arg_expr.
 	Fix up some formatting issues.
 
-	* config/stormy16/stormy16.c: (xstormy16_carry_plus_operand):
+	* config/stormy16/stormy16.c (xstormy16_carry_plus_operand):
 	Move to predicates.md.
 	(xs_hi_general_operand): Likewise.
 	(xs_hi_nonmemory_operand): Likewise.
@@ -28435,7 +28429,7 @@
 
 2008-01-12  Doug Kwan  <dougkwan@google.com>
 
-	* c-decl.c: (grokdeclarator): Use OPT_Wignored_qualifiers
+	* c-decl.c (grokdeclarator): Use OPT_Wignored_qualifiers
 	instead of OPT_Wreturn_type in warning due to ignored return type
 	qualifiers.
 	* c-opt.c (c_common_post_option): Add -Wignored-qualifiers to
