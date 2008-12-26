@@ -7182,7 +7182,7 @@
 2008-06-19  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* lib/target-supports.exp 
-	(check_effective_target_keeps_null_pointer_checks) : New function.
+	(check_effective_target_keeps_null_pointer_checks): New function.
 	* gcc.dg/tree-ssa/20030730-1.c: Use keeps_null_pointer_checks to 
 	determine correct test response.
 	* gcc.dg/tree-ssa/20030730-2.c: Ditto.
