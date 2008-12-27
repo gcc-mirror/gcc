@@ -1,5 +1,13 @@
 2008-12-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/38641
+	* gimple-pretty-print.c (dump_binary_rhs): Print
+	VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR,
+	VEC_PACK_TRUNC_EXPR, VEC_PACK_SAT_EXPR, VEC_PACK_FIX_TRUNC_EXPR,
+	VEC_EXTRACT_EVEN_EXPR, VEC_EXTRACT_ODD_EXPR
+	VEC_INTERLEAVE_HIGH_EXPR and VEC_INTERLEAVE_LOW_EXPR similarly
+	to COMPLEX_EXPR, MIN_EXPR and MAX_EXPR.
+
 	PR middle-end/38633
 	* tree-cfg.c (replace_block_vars_by_duplicates): Only call
 	replace_by_duplicate_decl for VAR_DECLs or CONST_DECLs.
