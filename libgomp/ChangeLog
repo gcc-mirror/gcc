@@ -1,3 +1,7 @@
+2008-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/collapse-1.c (main): Add private(k) clause.
+
 2008-12-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libgomp.c/atomic-6.c: Add -mieee for alpha*-*-* targets.
