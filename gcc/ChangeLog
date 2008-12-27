@@ -1,3 +1,9 @@
+2008-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38633
+	* tree-cfg.c (replace_block_vars_by_duplicates): Only call
+	replace_by_duplicate_decl for VAR_DECLs or CONST_DECLs.
+
 2008-12-24  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (GTFILES): Add $(srcdir)/expr.h.

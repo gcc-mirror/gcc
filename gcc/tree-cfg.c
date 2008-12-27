@@ -5835,6 +5835,8 @@ replace_block_vars_by_duplicates (tree block, struct pointer_map_t *vars_map,
   for (tp = &BLOCK_VARS (block); *tp; tp = &TREE_CHAIN (*tp))
     {
       t = *tp;
+      if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != CONST_DECL)
+	continue;
       replace_by_duplicate_decl (&t, vars_map, to_context);
       if (t != *tp)
 	{
