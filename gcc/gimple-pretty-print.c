@@ -308,30 +308,29 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 static void
 dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
-  switch (gimple_assign_rhs_code (gs))
+  const char *p;
+  enum tree_code code = gimple_assign_rhs_code (gs);
+  switch (code)
     {
     case COMPLEX_EXPR:
-      pp_string (buffer, "COMPLEX_EXPR <");
-      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-      pp_string (buffer, ">");
-      break;
-      
     case MIN_EXPR:
-      pp_string (buffer, "MIN_EXPR <");
-      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-      pp_string (buffer, ">");
-      break;
-      
     case MAX_EXPR:
-      pp_string (buffer, "MAX_EXPR <");
+    case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
+    case VEC_PACK_SAT_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+      for (p = tree_code_name [(int) code]; *p; p++)
+	pp_character (buffer, TOUPPER (*p));
+      pp_string (buffer, " <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-      pp_string (buffer, ">");
+      pp_character (buffer, '>');
       break;
 
     default:
