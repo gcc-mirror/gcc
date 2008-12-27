@@ -1,3 +1,8 @@
+2008-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38639
+	* g++.dg/gomp/pr38639.C: New test.
+
 2008-12-23  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/38590

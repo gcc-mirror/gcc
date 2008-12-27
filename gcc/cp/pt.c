@@ -10334,14 +10334,11 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
   if (auto_node && init)
     {
       tree init_expr = init;
-      tree orig_type;
       if (TREE_CODE (init_expr) == DECL_EXPR)
 	init_expr = DECL_INITIAL (DECL_EXPR_DECL (init_expr));
-      orig_type = TREE_TYPE (init_expr);
-      TREE_TYPE (init_expr) = RECUR (TREE_TYPE (init_expr));
+      init_expr = RECUR (init_expr);
       TREE_TYPE (decl)
 	= do_auto_deduction (TREE_TYPE (decl), init_expr, auto_node);
-      TREE_TYPE (init_expr) = orig_type;
     }
   gcc_assert (!type_dependent_expression_p (decl));
 

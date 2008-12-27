@@ -1,3 +1,9 @@
+2008-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38639
+	* pt.c (tsubst_omp_for_iterator): RECUR on whole init_expr instead of
+	just its type.
+
 2008-12-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38597
