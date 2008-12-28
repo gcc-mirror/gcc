@@ -4262,13 +4262,25 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 	}
       else
 	init = build2 (MODIFY_EXPR, void_type_node, decl, init);
-      if (cond && TREE_SIDE_EFFECTS (cond) && COMPARISON_CLASS_P (cond))
+      if (cond
+	  && TREE_SIDE_EFFECTS (cond)
+	  && COMPARISON_CLASS_P (cond)
+	  && !processing_template_decl)
 	{
-	  int n = TREE_SIDE_EFFECTS (TREE_OPERAND (cond, 1)) != 0;
-	  tree t = TREE_OPERAND (cond, n);
+	  tree t = TREE_OPERAND (cond, 0);
+	  if (TREE_SIDE_EFFECTS (t)
+	      && t != decl
+	      && (TREE_CODE (t) != NOP_EXPR
+		  || TREE_OPERAND (t, 0) != decl))
+	    TREE_OPERAND (cond, 0)
+	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 
-	  if (!processing_template_decl)
-	    TREE_OPERAND (cond, n)
+	  t = TREE_OPERAND (cond, 1);
+	  if (TREE_SIDE_EFFECTS (t)
+	      && t != decl
+	      && (TREE_CODE (t) != NOP_EXPR
+		  || TREE_OPERAND (t, 0) != decl))
+	    TREE_OPERAND (cond, 1)
 	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 	}
       if (decl == error_mark_node || init == error_mark_node)
@@ -4292,21 +4304,31 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INCR (omp_for)); i++)
     {
-      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), i);
+      decl = TREE_OPERAND (TREE_VEC_ELT (OMP_FOR_INIT (omp_for), i), 0);
+      incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), i);
 
       if (TREE_CODE (incr) != MODIFY_EXPR)
 	continue;
 
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (incr, 1))
-	  && BINARY_CLASS_P (TREE_OPERAND (incr, 1)))
+	  && BINARY_CLASS_P (TREE_OPERAND (incr, 1))
+	  && !processing_template_decl)
 	{
-	  tree t = TREE_OPERAND (incr, 1);
-	  int n = TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)) != 0;
+	  tree t = TREE_OPERAND (TREE_OPERAND (incr, 1), 0);
+	  if (TREE_SIDE_EFFECTS (t)
+	      && t != decl
+	      && (TREE_CODE (t) != NOP_EXPR
+		  || TREE_OPERAND (t, 0) != decl))
+	    TREE_OPERAND (TREE_OPERAND (incr, 1), 0)
+	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 
-	  if (!processing_template_decl)
-	    TREE_OPERAND (t, n)
-	      = fold_build_cleanup_point_expr (TREE_TYPE (TREE_OPERAND (t, n)),
-					       TREE_OPERAND (t, n));
+	  t = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
+	  if (TREE_SIDE_EFFECTS (t)
+	      && t != decl
+	      && (TREE_CODE (t) != NOP_EXPR
+		  || TREE_OPERAND (t, 0) != decl))
+	    TREE_OPERAND (TREE_OPERAND (incr, 1), 1)
+	      = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 	}
 
       if (orig_incr)

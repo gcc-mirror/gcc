@@ -1,3 +1,9 @@
+2008-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38650
+	* testsuite/libgomp.c/pr38650.c: New test.
+	* testsuite/libgomp.c++/pr38650.C: New test.
+
 2008-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/collapse-1.c (main): Add private(k) clause.
