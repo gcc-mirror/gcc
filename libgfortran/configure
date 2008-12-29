@@ -33243,6 +33243,30 @@ _ACEOF
   fi
 
 
+# Check for a broken powf implementation
+
+  echo "$as_me:$LINENO: checking whether powf is broken" >&5
+echo $ECHO_N "checking whether powf is broken... $ECHO_C" >&6
+if test "${libgfor_cv_have_broken_powf+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+case "${target}" in
+  hppa*64*-*-hpux*) libgfor_cv_have_broken_powf=yes ;;
+  *) libgfor_cv_have_broken_powf=no;;
+esac
+fi
+echo "$as_me:$LINENO: result: $libgfor_cv_have_broken_powf" >&5
+echo "${ECHO_T}$libgfor_cv_have_broken_powf" >&6
+  if test x"$libgfor_cv_have_broken_powf" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_BROKEN_POWF 1
+_ACEOF
+
+  fi
+
+
 # Check for GNU libc feenableexcept
 echo "$as_me:$LINENO: checking for feenableexcept in -lm" >&5
 echo $ECHO_N "checking for feenableexcept in -lm... $ECHO_C" >&6
