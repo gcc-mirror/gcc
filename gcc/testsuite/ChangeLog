@@ -1,3 +1,14 @@
+2008-12-15  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* gcc.c-torture/execute/builtins/fprintf.x: Disable test for
+	freestanding targets.
+	* gcc.c-torture/execute/pr37573.x: Disable test for 16-bit targets.
+	* gcc.c-torture/execute/20081117-1.x: Disable test for 16-bit targets.
+	* gcc.c-torture/compile/limits-stringlit.c: Disable test for picochip.
+	* gcc.dg/array-quals-1.c: Disable test for picochip.
+	* lib/target-supports.exp: Add support for freestanding ports and
+	disable picochip for profiling tests.
+
 2008-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38637
