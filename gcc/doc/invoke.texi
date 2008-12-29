@@ -8601,7 +8601,8 @@ example, if a cross-compiler was configured with @samp{configure
 arm-elf}, meaning to compile for an arm processor with elf binaries,
 then you would specify @option{-b arm-elf} to run that cross compiler.
 Because there are other options beginning with @option{-b}, the
-configuration must contain a hyphen.
+configuration must contain a hyphen, or @option{-b} alone should be one
+argument followed by the configuration in the next argument.
 
 @item -V @var{version}
 @opindex V

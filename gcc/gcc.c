@@ -3371,8 +3371,10 @@ process_command (int argc, const char **argv)
      Use heuristic that all configuration names must have at least
      one dash '-'. This allows us to pass options starting with -b.  */
   if (argc > 1 && argv[1][0] == '-'
-      && (argv[1][1] == 'V' ||
-	 ((argv[1][1] == 'b') && (NULL != strchr(argv[1] + 2,'-')))))
+      && (argv[1][1] == 'V'
+	  || (argv[1][1] == 'b'
+	      && (argv[1][2] == '\0'
+		  || NULL != strchr (argv[1] + 2, '-')))))
     {
       const char *new_version = DEFAULT_TARGET_VERSION;
       const char *new_machine = DEFAULT_TARGET_MACHINE;
@@ -3382,8 +3384,10 @@ process_command (int argc, const char **argv)
       int baselen;
 
       while (argc > 1 && argv[1][0] == '-'
-	     && (argv[1][1] == 'V' ||
-		((argv[1][1] == 'b') && ( NULL != strchr(argv[1] + 2,'-')))))
+	     && (argv[1][1] == 'V'
+		 || (argv[1][1] == 'b'
+		     && (argv[1][2] == '\0'
+			 || NULL != strchr (argv[1] + 2, '-')))))
 	{
 	  char opt = argv[1][1];
 	  const char *arg;
@@ -3842,7 +3846,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  switch (c)
 	    {
 	    case 'b':
-	      if (NULL == strchr(argv[i] + 2, '-'))
+	      if (p[1] && NULL == strchr (argv[i] + 2, '-'))
 		goto normal_switch;
 
 	      /* Fall through.  */

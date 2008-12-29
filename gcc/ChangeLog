@@ -1,3 +1,11 @@
+2008-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/38381
+	* gcc.c (process_command): Accept also -b with configuration name
+	in the next argument.
+	* doc/invoke.texi (-b): Document that no hyphen is required if
+	configuration name is in the next argument after -b.
+
 2008-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38641
