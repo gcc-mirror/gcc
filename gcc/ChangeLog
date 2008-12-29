@@ -1,3 +1,8 @@
+2008-12-29  Seongbae Park  <seongbae.park@gmail.com>
+
+	* tree-profile.c (tree_init_ic_make_global_vars): Make static
+	variables TLS.
+
 2008-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36191
