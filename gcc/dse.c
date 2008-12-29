@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dse.h"
 #include "optabs.h"
 #include "dbgcnt.h"
+#include "target.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).  

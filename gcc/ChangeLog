@@ -1,3 +1,9 @@
+2008-12-28 Uros Bizjak <ubizjak@gmail.com>
+
+	PR middle-end/38652
+	* dse.c: Include target.h.
+	* Makefile.in (dse.o): Depend on $(TARGET_H).
+
 2008-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/38381
