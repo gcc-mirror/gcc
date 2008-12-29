@@ -1,3 +1,8 @@
+2008-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36191
+	* g++.dg/torture/pr36191.C: New test.
+
 2008-12-15  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* gcc.c-torture/execute/builtins/fprintf.x: Disable test for
