@@ -1,4 +1,11 @@
-2008-12-28 Uros Bizjak <ubizjak@gmail.com>
+2008-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36191
+	* tree-complex.c (expand_complex_libcall): Call
+	maybe_clean_or_replace_eh_stmt and gimple_purge_dead_eh_edges
+	instead of passing true as 3rd argument to gsi_replace.
+
+2008-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/38652
 	* dse.c: Include target.h.
