@@ -1,5 +1,8 @@
 2008-12-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38635
+	* g++.dg/parse/cond4.C: New test.
+
 	PR c++/36191
 	* g++.dg/torture/pr36191.C: New test.
 

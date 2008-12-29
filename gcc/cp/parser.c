@@ -7398,7 +7398,7 @@ cp_parser_condition (cp_parser* parser)
 	  else
 	    {
 	      /* Consume the `='.  */
-	      cp_lexer_consume_token (parser->lexer);
+	      cp_parser_require (parser, CPP_EQ, "%<=%>");
 	      initializer = cp_parser_initializer_clause (parser, &non_constant_p);
 	    }
 	  if (BRACE_ENCLOSED_INITIALIZER_P (initializer))
