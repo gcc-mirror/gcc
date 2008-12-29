@@ -452,11 +452,6 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
-    # At present, there is no profiling support on NetWare.
-    if { [istarget *-*-netware*] } {
-	return 0
-    }
-
     # uClibc does not have gcrt1.o.
     if { [check_effective_target_uclibc]
 	 && ([lindex $test_what 1] == "-p"
@@ -470,6 +465,8 @@ proc check_profiling_available { test_what } {
 	# missing other needed machinery.
 	if { [istarget mmix-*-*]
 	     || [istarget arm*-*-eabi*]
+	     || [istarget picochip-*-*]
+	     || [istarget *-*-netware*]
 	     || [istarget arm*-*-elf]
 	     || [istarget arm*-*-symbianelf*]
 	     || [istarget avr-*-*]
@@ -494,6 +491,17 @@ proc check_profiling_available { test_what } {
     }
 
     return $profiling_available_saved
+}
+
+# Check to see if a target is "freestanding". This is as per the definition
+# in Section 4 of C99 standard. Effectively, it is a target which supports no
+# extra headers or libraries other than what is considered essential.
+proc check_effective_target_freestanding { } {
+    if { [istarget picochip-*-*] } then {
+        return 1
+    } else {
+        return 0
+    }
 }
 
 # Return 1 if target has packed layout of structure members by
