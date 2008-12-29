@@ -1,3 +1,8 @@
+2008-12-28  Andrew Pinski  <pinskia@gmail.com>
+
+	PR libobjc/36610
+	* objc/execute/forward-1.m: New test.
+
 2008-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38633
