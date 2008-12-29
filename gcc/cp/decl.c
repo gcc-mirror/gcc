@@ -10891,6 +10891,9 @@ start_enum (tree name, tree underlying_type, bool scoped_enum_p)
       enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
     }
 
+  if (enumtype == error_mark_node)
+    return enumtype;
+
   if (scoped_enum_p)
     {
       SET_SCOPED_ENUM_P (enumtype, 1);

@@ -1,3 +1,8 @@
+2008-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38637
+	* decl.c (start_enum): If enumtype is error_mark_node, exit early.
+
 2008-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38650
