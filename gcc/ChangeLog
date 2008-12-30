@@ -1,3 +1,9 @@
+2008-12-30  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/38661
+	* tree-switch-conversion.c (build_constructors): Test for wrapping of
+	pos case.
+
 2008-12-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/38584

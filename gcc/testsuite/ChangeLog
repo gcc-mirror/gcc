@@ -1,3 +1,9 @@
+2008-12-30  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/38661
+	* gcc.c-torture/compile/pr38661.c: New testcase.
+	* gcc.c-torture/compile/pr38661-1.c: New testcase.
+
 2008-12-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38564
