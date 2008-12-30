@@ -1,3 +1,8 @@
+2008-12-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38645
+	* gcc.dg/pr38645.c: New testcase.
+
 2008-12-30  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/38661
