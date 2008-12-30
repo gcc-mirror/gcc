@@ -860,6 +860,10 @@ may_propagate_address_into_dereference (tree addr, tree deref)
   gcc_assert (INDIRECT_REF_P (deref)
 	      && TREE_CODE (addr) == ADDR_EXPR);
 
+  /* Don't propagate if ADDR's operand has incomplete type.  */
+  if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_OPERAND (addr, 0))))
+    return false;
+
   /* If the address is invariant then we do not need to preserve restrict
      qualifications.  But we do need to preserve volatile qualifiers until
      we can annotate the folded dereference itself properly.  */
