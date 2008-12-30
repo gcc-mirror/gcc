@@ -1188,11 +1188,6 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
       if (TREE_CODE (inner_type) != TREE_CODE (outer_type))
 	return false;
 
-      /* Conversion from an incomplete to a complete type is never
-	 useless.  */
-      if (!COMPLETE_TYPE_P (inner_type) && COMPLETE_TYPE_P (outer_type))
-	return false;
-
       /* ???  This seems to be necessary even for aggregates that don't
 	 have TYPE_STRUCTURAL_EQUALITY_P set.  */
 
