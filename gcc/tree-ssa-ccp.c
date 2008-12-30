@@ -2720,10 +2720,19 @@ fold_gimple_assign (gimple_stmt_iterator *si)
     case GIMPLE_BINARY_RHS:
       /* Try to fold pointer addition.  */
       if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
-        result = maybe_fold_stmt_addition (
-                   TREE_TYPE (gimple_assign_lhs (stmt)),
-                   gimple_assign_rhs1 (stmt),
-                   gimple_assign_rhs2 (stmt));
+	{
+	  tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+	  if (TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+	    {
+	      type = build_pointer_type (TREE_TYPE (TREE_TYPE (type)));
+	      if (!useless_type_conversion_p
+		    (TREE_TYPE (gimple_assign_lhs (stmt)), type))
+		type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+	    }
+	  result = maybe_fold_stmt_addition (type,
+					     gimple_assign_rhs1 (stmt),
+					     gimple_assign_rhs2 (stmt));
+	}
 
       if (!result)
         result = fold_binary (subcode,

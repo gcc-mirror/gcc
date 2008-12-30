@@ -1,3 +1,11 @@
+2008-12-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38645
+	* tree-ssa-ccp.c (fold_gimple_assign): Use the correct pointer
+	type.
+	* tree-ssa-dom.c (cprop_operand): Simplify.  Do not propagate
+	volatileness changing operands.
+
 2008-12-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-cfg.c (verify_eh_throw_stmt_node): Return nonzero,

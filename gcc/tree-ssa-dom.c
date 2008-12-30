@@ -2045,8 +2045,6 @@ cprop_operand (gimple stmt, use_operand_p op_p)
   val = SSA_NAME_VALUE (op);
   if (val && val != op)
     {
-      tree op_type, val_type;
-
       /* Do not change the base variable in the virtual operand
 	 tables.  That would make it impossible to reconstruct
 	 the renamed virtual operand if we later modify this
@@ -2063,38 +2061,20 @@ cprop_operand (gimple stmt, use_operand_p op_p)
 	  && !may_propagate_copy_into_asm (op))
 	return false;
 
-      /* Get the toplevel type of each operand.  */
-      op_type = TREE_TYPE (op);
-      val_type = TREE_TYPE (val);
-
-      /* While both types are pointers, get the type of the object
-	 pointed to.  */
-      while (POINTER_TYPE_P (op_type) && POINTER_TYPE_P (val_type))
-	{
-	  op_type = TREE_TYPE (op_type);
-	  val_type = TREE_TYPE (val_type);
-	}
-
-      /* Make sure underlying types match before propagating a constant by
-	 converting the constant to the proper type.  Note that convert may
-	 return a non-gimple expression, in which case we ignore this
-	 propagation opportunity.  */
-      if (TREE_CODE (val) != SSA_NAME)
-	{
-	  if (!useless_type_conversion_p (op_type, val_type))
-	    {
-	      val = fold_convert (TREE_TYPE (op), val);
-	      if (!is_gimple_min_invariant (val))
-		return false;
-	    }
-	}
-
       /* Certain operands are not allowed to be copy propagated due
 	 to their interaction with exception handling and some GCC
 	 extensions.  */
-      else if (!may_propagate_copy (op, val))
+      if (!may_propagate_copy (op, val))
 	return false;
-      
+
+      /* Do not propagate addresses that point to volatiles into memory
+	 stmts without volatile operands.  */
+      if (POINTER_TYPE_P (TREE_TYPE (val))
+	  && TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (val)))
+	  && gimple_has_mem_ops (stmt)
+	  && !gimple_has_volatile_ops (stmt))
+	return false;
+
       /* Do not propagate copies if the propagated value is at a deeper loop
 	 depth than the propagatee.  Otherwise, this may move loop variant
 	 variables outside of their loops and prevent coalescing
