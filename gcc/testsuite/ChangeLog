@@ -1,5 +1,8 @@
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38640
+	* g++.dg/cpp0x/decltype15.C: New test.
+
 	PR middle-end/38676
 	* gcc.dg/gomp/pr38676.c: New test.
 

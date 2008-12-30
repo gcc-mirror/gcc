@@ -1,3 +1,8 @@
+2008-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38640
+	* semantics.c (finish_decltype_type): Handle TEMPLATE_PARM_INDEX.
+
 2008-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38635
