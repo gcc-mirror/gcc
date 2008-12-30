@@ -4149,7 +4149,7 @@ verify_eh_throw_stmt_node (void **slot, void *data)
       debug_gimple_stmt (node->stmt);
       eh_error_found = true;
     }
-  return 0;
+  return 1;
 }
 
 
