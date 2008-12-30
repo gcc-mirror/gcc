@@ -440,9 +440,10 @@ build_constructors (gimple swtch)
 	{
 	  gimple phi = gsi_stmt (gsi);
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	  tree low = CASE_LOW (cs);
 	  pos = CASE_LOW (cs);
 
-	  while (!tree_int_cst_lt (high, pos))
+	  do 
 	    {
 	      constructor_elt *elt;
 
@@ -452,7 +453,7 @@ build_constructors (gimple swtch)
 	      elt->value = val;
 
 	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node, 0);
-	    }
+	    } while (!tree_int_cst_lt (high, pos) && tree_int_cst_lt (low, pos));
 	  j++;
 	}
     }
