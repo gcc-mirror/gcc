@@ -1,3 +1,8 @@
+2008-12-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-cfg.c (verify_eh_throw_stmt_node): Return nonzero,
+	to visit all EH statement and fix EH checking.
+
 2008-12-31  Seongbae Park  <seongbae.park@gmail.com>
 
 	Revert:
