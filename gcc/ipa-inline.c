@@ -1592,18 +1592,30 @@ struct simple_ipa_opt_pass pass_ipa_early_inline =
 unsigned int
 compute_inline_parameters (struct cgraph_node *node)
 {
+  HOST_WIDE_INT self_stack_size;
+
   gcc_assert (!node->global.inlined_to);
-  inline_summary (node)->estimated_self_stack_size
-    = estimated_stack_frame_size ();
-  node->global.estimated_stack_size
-    = inline_summary (node)->estimated_self_stack_size;
+
+  /* Estimate the stack size for the function.  But not at -O0
+     because estimated_stack_frame_size is a quadratic problem.  */
+  self_stack_size = optimize ? estimated_stack_frame_size () : 0;
+  inline_summary (node)->estimated_self_stack_size = self_stack_size;
+  node->global.estimated_stack_size = self_stack_size;
   node->global.stack_frame_offset = 0;
+
+  /* Can this function be inlined at all?  */
   node->local.inlinable = tree_inlinable_function_p (current_function_decl);
+
+  /* Estimate the number of instructions for this function.
+     ??? At -O0 we don't use this information except for the dumps, and
+	 even then only for always_inline functions.  But disabling this
+	 causes ICEs in the inline heuristics...  */
   inline_summary (node)->self_insns
       = estimate_num_insns_fn (current_function_decl, &eni_inlining_weights);
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
       = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
+
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.insns = inline_summary (node)->self_insns;
   return 0;

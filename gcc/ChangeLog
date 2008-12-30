@@ -1,3 +1,9 @@
+2008-12-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/38584
+	* ipa-inline.c (compute_inline_parameters): When not optimizing,
+	don't compute the inline parameters, just set them to 0 instead.
+
 2008-12-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38572
