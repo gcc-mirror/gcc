@@ -1,3 +1,8 @@
+2008-12-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38564
+	* fold-const.c (fold_comparison): Use the correct result type.
+
 2008-12-30  Dorit Nuzman  <dorit@il.ibm.com>
             Ira Rosen  <irar@il.ibm.com>
 
