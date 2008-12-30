@@ -1,3 +1,11 @@
+2008-12-30  Dorit Nuzman  <dorit@il.ibm.com>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/38529
+	* tree-vect-transform (vect_transform_stmt): Handle inner-loop stmts
+	whose DEF is used in the loop-nest that is being vectorized, but
+	outside the immediately enclosing loop.
+
 2008-12-29  Seongbae Park  <seongbae.park@gmail.com>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
