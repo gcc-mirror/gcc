@@ -1,3 +1,7 @@
+2008-12-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Make whitespace consistent.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	Backport from upstream Libtool:
