@@ -1,3 +1,9 @@
+2008-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38676
+	* gimplify.c (gimple_regimplify_operands): For GIMPLE_SWITCH
+	only regimplify switch index.
+
 2008-12-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38645
