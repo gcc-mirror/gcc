@@ -1,3 +1,8 @@
+2008-12-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38564
+	* gcc.c-torture/compile/pr38564.c: New testcase.
+
 2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
             Ira Rosen  <irar@il.ibm.com>
 
