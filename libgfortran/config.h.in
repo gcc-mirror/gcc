@@ -96,6 +96,9 @@
 /* Define if isnan is broken. */
 #undef HAVE_BROKEN_ISNAN
 
+/* Define if powf is broken. */
+#undef HAVE_BROKEN_POWF
+
 /* libm includes cabs */
 #undef HAVE_CABS
 

@@ -1,3 +1,14 @@
+2008-12-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/31832
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_POWF): New autoconf check for
+	broken powf.
+	* configure.ac (LIBGFOR_CHECK_FOR_BROKEN_POWF): Use it.
+	* intrinsics/c99_functions.c: Use internal powf implementation if
+	HAVE_BROKEN_POWF is defined.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
 2008-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/38135

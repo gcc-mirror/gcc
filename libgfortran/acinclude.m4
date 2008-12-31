@@ -382,3 +382,15 @@ __mingw_snprintf (NULL, 0, "%d\n", 1);
     AC_DEFINE(HAVE_MINGW_SNPRINTF, 1, [Define if you have __mingw_snprintf.])
   fi
 ])
+
+dnl Check whether we have a broken powf implementation
+AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_POWF], [
+  AC_CACHE_CHECK([whether powf is broken], libgfor_cv_have_broken_powf, [
+case "${target}" in
+  hppa*64*-*-hpux*) libgfor_cv_have_broken_powf=yes ;;
+  *) libgfor_cv_have_broken_powf=no;;
+esac])
+  if test x"$libgfor_cv_have_broken_powf" = xyes; then
+    AC_DEFINE(HAVE_BROKEN_POWF, 1, [Define if powf is broken.])
+  fi
+])
