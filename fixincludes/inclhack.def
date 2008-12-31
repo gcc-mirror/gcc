@@ -2541,6 +2541,19 @@ fix = {
     test_text = "*((void **) (h)->next_free)++ = (aptr)";
 };
 
+/* 
+ * Fix OpenBSD's va_start define.
+ */
+fix = {
+  hackname  = openbsd_va_start;
+  mach      = "*-*-openbsd*";
+  files     = stdarg.h;
+  select    = '__builtin_stdarg_start';
+  c_fix     = format;
+  c_fix_arg = __builtin_va_start;
+
+  test_text = "#define va_start(v,l)   __builtin_stdarg_start((v),l)";
+};
 
 /*
  *  sys/lc_core.h on some versions of OSF1/4.x pollutes the namespace by
