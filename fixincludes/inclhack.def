@@ -2516,6 +2516,44 @@ fix = {
     test_text = "char *na_addr\t";
 };
 
+/* 
+ * Fix OpenBSD's NULL definition.
+ */
+fix = {
+  hackname  = openbsd_null_definition;
+  mach      = "*-*-openbsd*";
+  files     = locale.h, stddef.h, stdio.h, string.h,
+  time.h, unistd.h, wchar.h, sys/param.h;
+  select    = "__GNUG__";
+  c_fix = format;
+  c_fix_arg = "#ifndef NULL\n"
+	      "#ifdef __cplusplus\n"
+	      "#ifdef __GNUG__\n"
+	      "#define NULL\t__null\n"
+	      "#else\t /* ! __GNUG__  */\n"
+	      "#define NULL\t0L\n"
+              "#endif\t /* __GNUG__  */\n"
+	      "#else\t /* ! __cplusplus  */\n"
+	      "#define NULL\t((void *)0)\n"
+              "#endif\t /* __cplusplus  */\n"
+              "#endif\t /* !NULL  */";
+
+  c_fix_arg = "^#ifndef[ \t]*NULL\n"
+	      "^#ifdef[ \t]*__GNUG__\n"
+  	      "^#define[ \t]*NULL[ \t]*__null\n"
+  	      "^#else\n"
+              "^#define[ \t]*NULL[ \t]*0L\n"
+              "^#endif\n"
+              "^#endif";
+  test_text = 
+	"#ifndef NULL\n"
+	"#ifdef  __GNUG__\n"
+	"#define NULL    __null\n"
+	"#else\n"
+	"#define NULL    0L\n"
+	"#endif\n"
+	"#endif\n";
+};
 
 /*
  *  obstack.h used casts as lvalues.
