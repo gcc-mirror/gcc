@@ -1,5 +1,8 @@
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38647
+	* g++.dg/template/function1.C: New test.
+
 	PR c++/38640
 	* g++.dg/cpp0x/decltype15.C: New test.
 

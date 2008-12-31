@@ -1,5 +1,10 @@
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38647
+	* parser.c (cp_parser_primary_expression) <case RID_FUNCTION_NAME>:
+	Return error_mark_node if cp_parser_non_integral_constant_expression
+	returns true.
+
 	PR c++/38640
 	* semantics.c (finish_decltype_type): Handle TEMPLATE_PARM_INDEX.
 
