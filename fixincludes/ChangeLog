@@ -1,3 +1,9 @@
+2009-01-01  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* inclhack.def (openbsd_null_definition): Redefine NULL to (void *)0
+	in case of C.
+	* fixincl.x: Regenerate.
+
 2008-12-31  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR target/35460
