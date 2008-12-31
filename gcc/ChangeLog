@@ -1,3 +1,8 @@
+2008-12-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sched-deps.c (sched_analyze_2) [UNSPEC_VOLATILE]: Flush pending
+	memory loads and stores.
+
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38505
@@ -60,7 +65,7 @@
 	* fold-const.c (fold_comparison): Use the correct result type.
 
 2008-12-30  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38529
 	* tree-vect-transform (vect_transform_stmt): Handle inner-loop stmts
