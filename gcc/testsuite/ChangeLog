@@ -1,3 +1,7 @@
+2008-12-31  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/mapping_2.f90: Fixed testcase.
+	
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38647
