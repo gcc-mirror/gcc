@@ -339,16 +339,21 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   gfc_array_ref *ar;
   int rank;
 
-  if (dim->expr_type != EXPR_CONSTANT || array->expr_type != EXPR_VARIABLE)
+  if (dim->expr_type != EXPR_CONSTANT
+      || (array->expr_type != EXPR_VARIABLE
+	  && array->expr_type != EXPR_ARRAY))
     return SUCCESS;
 
-  ar = gfc_find_array_ref (array);
   rank = array->rank;
-  if (ar->as->type == AS_ASSUMED_SIZE
-      && !allow_assumed
-      && ar->type != AR_ELEMENT
-      && ar->type != AR_SECTION)
-    rank--;
+  if (array->expr_type == EXPR_VARIABLE)
+    {
+      ar = gfc_find_array_ref (array);
+      if (ar->as->type == AS_ASSUMED_SIZE
+	  && !allow_assumed
+	  && ar->type != AR_ELEMENT
+	  && ar->type != AR_SECTION)
+	rank--;
+    }
 
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
       || mpz_cmp_ui (dim->value.integer, rank) > 0)

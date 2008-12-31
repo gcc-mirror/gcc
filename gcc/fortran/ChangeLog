@@ -1,3 +1,8 @@
+2008-12-31  Daniel Franke  <franke.daniel@gmail.com>
+
+	* check.c (dim_rank_check): Fixed checking of dimension argument
+	if array is of type EXPR_ARRAY.
+
 2008-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38602
