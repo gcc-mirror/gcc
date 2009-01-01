@@ -1,3 +1,20 @@
+2009-01-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/38675
+	Backport from mainline:
+	2008-12-09  Mikael Morin  <mikael.morin@tele2.fr>
+
+        PR fortran/37469
+	* expr.c (find_array_element): Simplify array bounds.
+	Assert that both bounds are constant expressions.
+
+	2008-10-31  Mikael Morin  <mikael.morin@tele2.fr>
+
+	* expr.c (gfc_reduce_init_expr): New function, containing checking code
+	from gfc_match_init_expr, so that checking can be deferred. 
+	(gfc_match_init_expr): Use gfc_reduce_init_expr.
+	* match.h (gfc_reduce_init_expr): Prototype added. 
+
 2008-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38602
