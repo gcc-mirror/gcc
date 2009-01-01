@@ -1,3 +1,17 @@
+2009-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38678
+	* include/std/istream (basic_istream<>::_M_read): New.
+	* include/bits/istream.tcc (basic_istream<>::_M_read): Define.
+	(basic_istream<>::read, basic_istream<>::readsome): Use it.
+	* include/std/ostream (basic_ostream<>::_M_write_): New.
+	(basic_ostream<>::_M_write): Adjust.
+	* include/bits/ostream.tcc (basic_ostream<>::_M_write_): Define.
+	* testsuite/27_io/basic_istream/read/char/38678.cc: New.
+	* testsuite/27_io/basic_istream/read/wchar_t/38678.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/char/38678.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/wchar_t/38678.cc: Likewise.
+
 2008-12-22  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/ext/concurrence.h: Fix __gthread_cond_t initialisation
