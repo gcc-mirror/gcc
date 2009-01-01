@@ -1,7 +1,7 @@
 // Input streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -586,10 +586,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _M_gcount(streamsize(0))
       { this->init(0); }
 
+      streamsize
+      _M_read(char_type* __s, streamsize __n);
+
       template<typename _ValueT>
         __istream_type&
         _M_extract(_ValueT& __v);
     };
+
+  template<>
+    inline streamsize
+    basic_istream<char>::
+    _M_read(char_type* __s, streamsize __n)
+    { return this->rdbuf()->__streambuf_type::xsgetn(__s, __n); }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    inline streamsize
+    basic_istream<wchar_t>::
+    _M_read(char_type* __s, streamsize __n)
+    { return this->rdbuf()->__streambuf_type::xsgetn(__s, __n); }
+#endif
 
   // Explicit specialization declarations, defined in src/istream.cc.
   template<> 
