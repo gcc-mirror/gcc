@@ -415,10 +415,10 @@ typedef union
 }
 FLO_union_type;
 
-/* Prototypes */
+/* Prototypes.  */
 
 #if defined(L_pack_df) || defined(L_pack_sf) || defined(L_pack_tf)
-extern FLO_type pack_d (fp_number_type *);
+extern FLO_type pack_d (const fp_number_type *);
 #endif
 
 extern void unpack_d (FLO_union_type *, fp_number_type *);
