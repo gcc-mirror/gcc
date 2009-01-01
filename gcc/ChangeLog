@@ -1,3 +1,15 @@
+2009-01-02  Ben Elliston  <bje@au.ibm.com>
+
+	* config/fp-bit.h (pack_d): Constify argument.
+	* config/fp-bit.c (makenan): Constify return type. Remove casts.
+	(isnan): Constify argument.
+	(isinf): Likewise.
+	(iszero): Likewise.
+	(pack_d): Likewise.
+	(_fpadd_parts): Constify return type.
+	(_fpmul_parts): Likewise.
+	(_fpdiv_parts): Likewise.
+
 2009-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/36489
