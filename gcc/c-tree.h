@@ -1,6 +1,7 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -575,7 +576,7 @@ extern void push_init_level (int);
 extern struct c_expr pop_init_level (int);
 extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
-extern void process_init_element (struct c_expr);
+extern void process_init_element (struct c_expr, bool);
 extern tree build_compound_literal (tree, tree);
 extern tree c_start_case (tree);
 extern void c_finish_case (tree);

@@ -1,3 +1,22 @@
+2009-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/36489
+	* c-typeck.c (add_pending_init): Add IMPLICIT argument.  Only
+	warn about overwriting initializer with side-effects or
+	-Woverride-init if !IMPLICIT.
+	(output_init_element): Likewise.  Pass IMPLICIT down to
+	add_pending_init.
+	(process_init_element): Add IMPLICIT argument.  Pass it down
+	to output_init_element.
+	(push_init_element, pop_init_level, set_designator): Adjust
+	process_init_element callers.
+	(set_nonincremental_init, set_nonincremental_init_from_string):
+	Adjust add_pending_init callers.
+	(output_pending_init_elements): Adjust output_init_element callers.
+	* c-tree.h (process_init_element): Adjust prototype.
+	* c-parser.c (c_parser_initelt, c_parser_initval): Adjust
+	process_init_element callers.
+
 2008-12-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sched-deps.c (sched_analyze_2) [UNSPEC_VOLATILE]: Flush pending

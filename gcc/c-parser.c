@@ -1,6 +1,6 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
@@ -3090,7 +3090,7 @@ c_parser_initelt (c_parser *parser)
 		  init.original_code = ERROR_MARK;
 		  c_parser_error (parser, "expected identifier");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init);
+		  process_init_element (init, false);
 		  return;
 		}
 	    }
@@ -3213,7 +3213,7 @@ c_parser_initelt (c_parser *parser)
 		  init.original_code = ERROR_MARK;
 		  c_parser_error (parser, "expected %<=%>");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init);
+		  process_init_element (init, false);
 		  return;
 		}
 	    }
@@ -3243,7 +3243,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after)
 	  && TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR)
 	init = default_function_array_conversion (init);
     }
-  process_init_element (init);
+  process_init_element (init, false);
 }
 
 /* Parse a compound statement (possibly a function body) (C90 6.6.2,
