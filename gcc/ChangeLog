@@ -1,3 +1,7 @@
+2009-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/extend.texi: Fix '#pragma GCC option' typo.
+
 2009-01-02 Richard Guenther <rguenther@suse.de>
 
        * doc/install.texi (--enable-checking): Mention different
