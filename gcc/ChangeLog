@@ -1,3 +1,19 @@
+2009-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38690
+	* tree-flow.h (op_code_prio, op_prio): New prototypes.
+	* tree-pretty-print.c (op_code_prio): New function.
+	(op_prio): No longer static.  Use op_code_prio.
+	* gimple-pretty-print.c (dump_unary_rhs, dump_binary_rhs):
+	Use op_prio and op_code_prio to determine if () should be
+	printed around operand(s) or not.
+
+	* gimple-pretty-print.c (dump_unary_rhs, dump_binary_rhs,
+	dump_gimple_call, dump_gimple_switch, dump_gimple_cond,
+	dump_gimple_label, dump_gimple_try, dump_symbols, dump_gimple_phi,
+	dump_gimple_mem_ops, dump_bb_header, dump_bb_end, pp_cfg_jump): Use
+	pp_character instead of pp_string for single letter printing.
+
 2009-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/extend.texi: Fix '#pragma GCC option' typo.

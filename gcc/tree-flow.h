@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -752,6 +752,8 @@ extern bool cleanup_tree_cfg (void);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);
+extern int op_code_prio (enum tree_code);
+extern int op_prio (const_tree);
 extern const char *op_symbol_code (enum tree_code);
 
 /* In tree-dfa.c  */
