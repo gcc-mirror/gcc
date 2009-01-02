@@ -1,3 +1,8 @@
+2009-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/fixed-point/composite-type.c: Update wording of messages.
+	Allow extra informative notes.
+
 2009-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/36489
