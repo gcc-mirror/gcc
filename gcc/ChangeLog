@@ -1,3 +1,9 @@
+2009-01-02 Richard Guenther <rguenther@suse.de>
+
+       * doc/install.texi (--enable-checking): Mention different
+       default for stage1.
+       (--enable-stage1-checking): Document.
+
 2009-01-01  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/30142
