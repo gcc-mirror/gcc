@@ -2825,7 +2825,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case MODIFY_EXPR:
       error ("MODIFY_EXPR not expected while having tuples.");
-      return x;
+      return *tp;
 
     case ADDR_EXPR:
       {
