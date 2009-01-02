@@ -2848,7 +2848,7 @@ are assumed to be used with a @code{-f} prefix.  You can also use the
 @samp{#pragma GCC optimize} pragma to set the optimization options
 that affect more than one function.
 @xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC option} pragma.
+@samp{#pragma GCC optimize} pragma.
 
 This can be used for instance to have frequently executed functions
 compiled with more aggressive optimization options that produce faster
