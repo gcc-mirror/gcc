@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 
 /* Local functions, macros and variables.  */
-static int op_prio (const_tree);
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*);
 static void print_call_name (pretty_printer *, const_tree);
@@ -2223,7 +2222,7 @@ print_struct_decl (pretty_printer *buffer, const_tree node, int spc, int flags)
   pp_character (buffer, '}');
 }
 
-/* Return the priority of the operator OP.
+/* Return the priority of the operator CODE.
 
    From lowest to highest precedence with either left-to-right (L-R)
    or right-to-left (R-L) associativity]:
@@ -2247,13 +2246,10 @@ print_struct_decl (pretty_printer *buffer, const_tree node, int spc, int flags)
    unary +, - and * have higher precedence than the corresponding binary
    operators.  */
 
-static int
-op_prio (const_tree op)
+int
+op_code_prio (enum tree_code code)
 {
-  if (op == NULL)
-    return 9999;
-
-  switch (TREE_CODE (op))
+  switch (code)
     {
     case TREE_LIST:
     case COMPOUND_EXPR:
@@ -2374,10 +2370,6 @@ op_prio (const_tree op)
     case VEC_PACK_SAT_EXPR:
       return 16;
 
-    case SAVE_EXPR:
-    case NON_LVALUE_EXPR:
-      return op_prio (TREE_OPERAND (op, 0));
-
     default:
       /* Return an arbitrarily high precedence to avoid surrounding single
 	 VAR_DECLs in ()s.  */
@@ -2385,6 +2377,22 @@ op_prio (const_tree op)
     }
 }
 
+/* Return the priority of the operator OP.  */
+
+int
+op_prio (const_tree op)
+{
+  enum tree_code code;
+
+  if (op == NULL)
+    return 9999;
+
+  code = TREE_CODE (op);
+  if (code == SAVE_EXPR || code == NON_LVALUE_EXPR)
+    return op_prio (TREE_OPERAND (op, 0));
+
+  return op_code_prio (code);
+}
 
 /* Return the symbol associated with operator CODE.  */
 
