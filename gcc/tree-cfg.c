@@ -2805,6 +2805,15 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       break;
 
+    case INDIRECT_REF:
+      x = TREE_OPERAND (t, 0);
+      if (!is_gimple_reg (x) && !is_gimple_min_invariant (x))
+	{
+	  error ("Indirect reference's operand is not a register or a constant.");
+	  return x;
+	}
+      break;
+
     case ASSERT_EXPR:
       x = fold (ASSERT_EXPR_COND (t));
       if (x == boolean_false_node)
@@ -2815,14 +2824,8 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     case MODIFY_EXPR:
-      x = TREE_OPERAND (t, 0);
-      if (TREE_CODE (x) == BIT_FIELD_REF
-	  && is_gimple_reg (TREE_OPERAND (x, 0)))
-	{
-	  error ("GIMPLE register modified with BIT_FIELD_REF");
-	  return t;
-	}
-      break;
+      error ("MODIFY_EXPR not expected while having tuples.");
+      return x;
 
     case ADDR_EXPR:
       {

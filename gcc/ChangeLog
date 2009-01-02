@@ -1,3 +1,9 @@
+2009-01-01  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/30142
+	* tree-cfg.c (verify_expr): Add INDIRECT_REF case.  Change MODIFY_EXPR
+	case to be an error.
+
 2009-01-02  Ben Elliston  <bje@au.ibm.com>
 
 	* config/fp-bit.h (pack_d): Constify argument.
