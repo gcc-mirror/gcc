@@ -1,3 +1,8 @@
+2009-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR 33649
+	* tree-ssa-pre.c (compute_antic): Correct loop bounds.
+
 2009-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38690
