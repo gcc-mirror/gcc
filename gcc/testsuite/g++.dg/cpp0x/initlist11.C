@@ -1,4 +1,5 @@
 // PR c++/38684
+// { dg-options "-std=c++0x" }
 
 #include <initializer_list>
 
