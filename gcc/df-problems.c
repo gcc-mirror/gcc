@@ -1001,25 +1001,34 @@ df_lr_transfer_function (int bb_index)
 /* Run the fast dce as a side effect of building LR.  */
 
 static void
-df_lr_finalize (bitmap all_blocks ATTRIBUTE_UNUSED)
+df_lr_finalize (bitmap all_blocks)
 {
+  df_lr->solutions_dirty = false;
   if (df->changeable_flags & DF_LR_RUN_DCE)
     {
       run_fast_df_dce ();
-      if (df_lr->problem_data && df_lr->solutions_dirty)
+
+      /* If dce deletes some instructions, we need to recompute the lr
+	 solution before proceeding further.  The problem is that fast
+	 dce is a pessimestic dataflow algorithm.  In the case where
+	 it deletes a statement S inside of a loop, the uses inside of
+	 S may not be deleted from the dataflow solution because they
+	 were carried around the loop.  While it is conservatively
+	 correct to leave these extra bits, the standards of df
+	 require that we maintain the best possible (least fixed
+	 point) solution.  The only way to do that is to redo the
+	 iteration from the beginning.  See PR35805 for an
+	 example.  */
+      if (df_lr->solutions_dirty)
 	{
-	  /* If we are here, then it is because we are both verifying
-	  the solution and the dce changed the function.  In that case
-	  the verification info built will be wrong.  So we leave the
-	  dirty flag true so that the verifier will skip the checking
-	  part and just clean up.*/
-	  df_lr->solutions_dirty = true;
+	  df_clear_flags (DF_LR_RUN_DCE);
+	  df_lr_alloc (all_blocks);
+	  df_lr_local_compute (all_blocks);
+	  df_worklist_dataflow (df_lr, all_blocks, df->postorder, df->n_blocks);
+	  df_lr_finalize (all_blocks);
+	  df_set_flags (DF_LR_RUN_DCE);
 	}
-      else
-	df_lr->solutions_dirty = false;
     }
-  else
-    df_lr->solutions_dirty = false;
 }
 
 
