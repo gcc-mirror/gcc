@@ -1,7 +1,7 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -532,6 +532,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       int icode = optab_handler (movstrict_optab, fieldmode)->insn_code;
       rtx insn;
       rtx start = get_last_insn ();
+      rtx arg0 = op0;
 
       /* Get appropriate low part of the value being stored.  */
       if (GET_CODE (value) == CONST_INT || REG_P (value))
@@ -552,11 +553,11 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  gcc_assert (GET_MODE (SUBREG_REG (op0)) == fieldmode
 		      || GET_MODE_CLASS (fieldmode) == MODE_INT
 		      || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT);
-	  op0 = SUBREG_REG (op0);
+	  arg0 = SUBREG_REG (op0);
 	}
 
       insn = (GEN_FCN (icode)
-		 (gen_rtx_SUBREG (fieldmode, op0,
+		 (gen_rtx_SUBREG (fieldmode, arg0,
 				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
 				  + (offset * UNITS_PER_WORD)),
 				  value));
