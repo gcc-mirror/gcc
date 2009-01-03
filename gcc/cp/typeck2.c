@@ -820,7 +820,8 @@ digest_init_r (tree type, tree init, bool nested)
 	      || TREE_CODE (type) == UNION_TYPE
 	      || TREE_CODE (type) == COMPLEX_TYPE);
 
-  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+      && !TYPE_NON_AGGREGATE_CLASS (type))
     return process_init_constructor (type, init);
   else
     {
@@ -1081,6 +1082,9 @@ process_init_constructor_record (tree type, tree init)
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }
 
+  if (idx < VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)))
+    error ("too many initializers for %qT", type);
+    
   CONSTRUCTOR_ELTS (init) = v;
   return flags;
 }
@@ -1093,12 +1097,19 @@ static int
 process_init_constructor_union (tree type, tree init)
 {
   constructor_elt *ce;
+  int len;
 
   /* If the initializer was empty, use default zero initialization.  */
   if (VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (init)))
     return 0;
 
-  gcc_assert (VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) == 1);
+  len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init));
+  if (len > 1)
+    {
+      error ("too many initializers for %qT", type);
+      VEC_block_remove (constructor_elt, CONSTRUCTOR_ELTS (init), 1, len-1);
+    }
+
   ce = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (init), 0);
 
   /* If this element specifies a field, initialize via that field.  */
