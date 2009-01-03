@@ -1,3 +1,7 @@
+2009-01-03  Daniel Franke  <franke.daniel@gmail.com>
+
+	* symbol.c (save_symbol): Don't SAVE function results.
+
 2009-01-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38594

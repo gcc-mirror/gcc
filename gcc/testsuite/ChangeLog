@@ -1,3 +1,7 @@
+2009-01-03  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/func_result_4.f90: New.
+
 2009-01-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38594
