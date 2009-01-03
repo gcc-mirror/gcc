@@ -1,7 +1,7 @@
 // ostream classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -180,21 +180,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    this->setstate(__err);
 	}
       return *this;
-    }
-
-  template<typename _CharT, typename _Traits>
-    streamsize
-    basic_ostream<_CharT, _Traits>::
-    _M_write_(const char_type* __s, streamsize __n)
-    {
-      streamsize __ret = 0;
-      for (; __ret < __n; ++__ret, ++__s)
-	{
-	  const int_type __c = this->rdbuf()->sputc(*__s);
-	  if (traits_type::eq_int_type(__c, traits_type::eof()))
-	    break;
-	}
-      return __ret;
     }
 
   template<typename _CharT, typename _Traits>

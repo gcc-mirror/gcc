@@ -1,7 +1,7 @@
 // istream classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -600,22 +600,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _CharT, typename _Traits>
-    streamsize
-    basic_istream<_CharT, _Traits>::
-    _M_read(char_type* __s, streamsize __n)
-    {
-      streamsize __ret = 0;
-      for (; __ret < __n; ++__ret, ++__s)
-	{
-	  const int_type __c = this->rdbuf()->sbumpc();
-	  if (traits_type::eq_int_type(__c, traits_type::eof()))
-	    break;
-	  traits_type::assign(*__s, traits_type::to_char_type(__c));
-	}
-      return __ret;
-    }
-
-  template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     basic_istream<_CharT, _Traits>::
     read(char_type* __s, streamsize __n)
@@ -627,7 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	  try
 	    {
-	      _M_gcount = _M_read(__s, __n);
+	      _M_gcount = this->rdbuf()->sgetn(__s, __n);
 	      if (_M_gcount != __n)
 		__err |= (ios_base::eofbit | ios_base::failbit);
 	    }
@@ -659,7 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      // Cannot compare int_type with streamsize generically.
 	      const streamsize __num = this->rdbuf()->in_avail();
 	      if (__num > 0)
-		_M_gcount = _M_read(__s, std::min(__num, __n));
+		_M_gcount = this->rdbuf()->sgetn(__s, std::min(__num, __n));
 	      else if (__num == -1)
 		__err |= ios_base::eofbit;
 	    }

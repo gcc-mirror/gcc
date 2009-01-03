@@ -1,3 +1,7 @@
+2009-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* Revert last commit, reopen and suspend libstdc++/38678.
+
 2009-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38678
