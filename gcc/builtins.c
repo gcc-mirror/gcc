@@ -8907,7 +8907,9 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	  || !TYPE_SIZE_UNIT (srctype)
 	  || !TYPE_SIZE_UNIT (desttype)
 	  || TREE_CODE (TYPE_SIZE_UNIT (srctype)) != INTEGER_CST
-	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST)
+	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST
+	  || TYPE_VOLATILE (srctype)
+	  || TYPE_VOLATILE (desttype))
 	return NULL_TREE;
 
       src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
@@ -8924,7 +8926,7 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	{
 	  srcvar = build_fold_indirect_ref (src);
 	  if (TREE_THIS_VOLATILE (srcvar))
-	    srcvar = NULL_TREE;
+	    return NULL_TREE;
 	  else if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
 	    srcvar = NULL_TREE;
 	  /* With memcpy, it is possible to bypass aliasing rules, so without
@@ -8942,7 +8944,7 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	{
 	  destvar = build_fold_indirect_ref (dest);
 	  if (TREE_THIS_VOLATILE (destvar))
-	    destvar = NULL_TREE;
+	    return NULL_TREE;
 	  else if (!tree_int_cst_equal (lang_hooks.expr_size (destvar), len))
 	    destvar = NULL_TREE;
 	  else if (!var_decl_component_p (destvar))
@@ -8958,7 +8960,7 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	  if (TREE_ADDRESSABLE (TREE_TYPE (destvar)))
 	    return NULL_TREE;
 
-	  srctype = desttype;
+	  srctype = build_qualified_type (desttype, 0);
 	  if (src_align < (int) TYPE_ALIGN (srctype))
 	    {
 	      if (AGGREGATE_TYPE_P (srctype)
@@ -8980,7 +8982,7 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	  if (TREE_ADDRESSABLE (TREE_TYPE (srcvar)))
 	    return NULL_TREE;
 
-	  desttype = srctype;
+	  desttype = build_qualified_type (srctype, 0);
 	  if (dest_align < (int) TYPE_ALIGN (desttype))
 	    {
 	      if (AGGREGATE_TYPE_P (desttype)

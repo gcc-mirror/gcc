@@ -1,5 +1,8 @@
 2009-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38705
+	* g++.dg/torture/pr38705.C: New test.
+
 	PR c/38700
 	* gcc.dg/pr38700.c: New test.
 
