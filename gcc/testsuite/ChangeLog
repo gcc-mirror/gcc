@@ -1,3 +1,10 @@
+2009-01-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38594
+	* gfortran.dg/host_assoc_call_3.f90: Make sure that the generic
+	interface still works, in addition to original tests.
+	* gfortran.dg/host_assoc_call_6.f90: New test.
+
 2009-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38705
