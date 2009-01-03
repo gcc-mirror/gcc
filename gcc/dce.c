@@ -601,7 +601,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 
   if (dump_file)
     {
-      fprintf (dump_file, "processing block %d live out = ", bb->index);
+      fprintf (dump_file, "processing block %d lr out = ", bb->index);
       df_print_regset (dump_file, DF_LR_OUT (bb));
     }
 
