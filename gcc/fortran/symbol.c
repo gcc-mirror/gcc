@@ -3197,6 +3197,7 @@ save_symbol (gfc_symbol *sym)
 
   if (sym->attr.in_common
       || sym->attr.dummy
+      || sym->attr.result
       || sym->attr.flavor != FL_VARIABLE)
     return;
   /* Automatic objects are not saved.  */
