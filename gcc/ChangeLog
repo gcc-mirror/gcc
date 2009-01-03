@@ -1,5 +1,10 @@
 2009-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38705
+	* builtins.c (fold_builtin_memory_op): Give up if either operand
+	is volatile.  Set srctype or desttype to non-qualified version
+	of the other type.
+
 	PR c/38700
 	* builtins.c (fold_builtin_expect): Only check DECL_WEAK for VAR_DECLs
 	and FUNCTION_DECLs.
