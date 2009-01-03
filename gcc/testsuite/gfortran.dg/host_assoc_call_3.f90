@@ -11,8 +11,10 @@ MODULE M1
   END INTERFACE
 CONTAINS
   SUBROUTINE S1(I)
+      i = 3
   END SUBROUTINE
   SUBROUTINE S2(F)
+      f = 4.0
   END SUBROUTINE
 END MODULE
 
@@ -36,9 +38,18 @@ CONTAINS
       end if
     END SUBROUTINE
   END SUBROUTINE
+  subroutine S4
+    integer :: check = 0
+    REAL :: rcheck = 0.0
+    call putaline(check)
+    if (check .ne. 3) call abort
+    call putaline(rcheck)
+    if (rcheck .ne. 4.0) call abort
+  end subroutine s4
 END MODULE
 
   USE M2
   CALL S3
+  call S4
 END
 ! { dg-final { cleanup-modules "M1 M2" } }

@@ -2944,15 +2944,20 @@ resolve_call (gfc_code *c)
 
   if (csym && gfc_current_ns->parent && csym->ns != gfc_current_ns)
     {
-      gfc_find_symbol (csym->name, gfc_current_ns, 1, &sym);
+      gfc_symtree *st;
+      gfc_find_sym_tree (csym->name, gfc_current_ns, 1, &st);
+      sym = st ? st->n.sym : NULL;
       if (sym && csym != sym
 	      && sym->ns == gfc_current_ns
 	      && sym->attr.flavor == FL_PROCEDURE
 	      && sym->attr.contained)
 	{
 	  sym->refs++;
-	  csym = sym;
-	  c->symtree->n.sym = sym;
+	  if (csym->attr.generic)
+	    c->symtree->n.sym = sym;
+	  else
+	    c->symtree = st;
+	  csym = c->symtree->n.sym;
 	}
     }
 
