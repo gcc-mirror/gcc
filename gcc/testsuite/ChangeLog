@@ -1,3 +1,8 @@
+2009-01-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist11.C: New test.
+	* g++.dg/cpp0x/initlist12.C: New test.
+
 2009-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/fixed-point/composite-type.c: Update wording of messages.

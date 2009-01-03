@@ -1,3 +1,14 @@
+2009-01-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38698
+	* typeck2.c (process_init_constructor_union): Handle excess
+	initializers.
+	(process_init_constructor_record): Likewise.
+
+	PR c++/38684
+	* typeck2.c (digest_init_r): Don't use process_init_constructor
+	for non-aggregate classes.
+
 2008-12-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38647
