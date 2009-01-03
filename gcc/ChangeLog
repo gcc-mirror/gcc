@@ -1,3 +1,7 @@
+2009-01-03  Diego Novillo  <dnovillo@google.com>
+
+	* doc/contrib.texi: Update contributions.
+
 2009-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38705
