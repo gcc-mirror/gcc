@@ -1,3 +1,9 @@
+2009-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38700
+	* builtins.c (fold_builtin_expect): Only check DECL_WEAK for VAR_DECLs
+	and FUNCTION_DECLs.
+
 2009-01-02  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/35805
