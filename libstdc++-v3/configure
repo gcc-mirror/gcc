@@ -14722,6 +14722,32 @@ echo "${ECHO_T}$enable_libstdcxx_pch" >&6
 
 
 
+  echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
+echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  echo "$as_me:$LINENO: result: $target_thread_file" >&5
+echo "${ECHO_T}$target_thread_file" >&6
+
+  if test $target_thread_file != single; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GTHR_DEFAULT 1
+_ACEOF
+
+  fi
+
+  glibcxx_thread_h=gthr-$target_thread_file.h
+
+    gthread_file=${toplevel_srcdir}/gcc/${glibcxx_thread_h}
+  if grep __GTHREADS $gthread_file >/dev/null 2>&1 ; then
+    enable_thread=yes
+  else
+   enable_thread=no
+  fi
+
+
+
+
 
 
   ac_ext=cc
@@ -14739,7 +14765,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for a builtins test.
 
     cat > conftest.$ac_ext << EOF
-#line 14742 "configure"
+#line 14768 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -14778,7 +14804,7 @@ echo "${ECHO_T}$enable_atomic_builtinsb" >&6
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 14781 "configure"
+#line 14807 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -14817,7 +14843,7 @@ echo "${ECHO_T}$enable_atomic_builtinss" >&6
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 14820 "configure"
+#line 14846 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -14857,7 +14883,7 @@ echo "${ECHO_T}$enable_atomic_builtinsi" >&6
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 14860 "configure"
+#line 14886 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -14926,32 +14952,6 @@ echo "$as_me: WARNING: They will be faked using a mutex." >&2;}
 echo "$as_me: WARNING: Performance of certain classes will degrade as a result." >&2;}
       fi
   fi
-
-
-
-  echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
-echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  echo "$as_me:$LINENO: result: $target_thread_file" >&5
-echo "${ECHO_T}$target_thread_file" >&6
-
-  if test $target_thread_file != single; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_GTHR_DEFAULT 1
-_ACEOF
-
-  fi
-
-  glibcxx_thread_h=gthr-$target_thread_file.h
-
-    gthread_file=${toplevel_srcdir}/gcc/${glibcxx_thread_h}
-  if grep __GTHREADS $gthread_file >/dev/null 2>&1 ; then
-    enable_thread=yes
-  else
-   enable_thread=no
-  fi
-
 
 
 

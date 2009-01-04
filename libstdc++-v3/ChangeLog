@@ -1,3 +1,9 @@
+2009-01-05  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac: Exchange the order of GLIBCXX_ENABLE_THREADS and
+	GLIBCXX_ENABLE_ATOMIC_BUILTINS macro invocations.
+	* configure: Regenerate.
+
 2009-01-04  Richard Guenther  <rguenther@suse.de>
 
 	PR libstdc++/38720
