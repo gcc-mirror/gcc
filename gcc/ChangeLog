@@ -1,3 +1,8 @@
+2009-01-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/sync.md (*mb_barrier): Rename to...
+	(*memory_barrier): ...this.
+
 2009-01-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (Function Attributes): Move @cindex after @item
