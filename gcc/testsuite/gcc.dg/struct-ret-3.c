@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 unsigned long ossAlignX(unsigned long i, unsigned long X)
 {
@@ -69,6 +70,11 @@ int main(void)
 
    char buf[sizeof(struct stuff)+4096];
    struct stuff *u = (struct stuff *)ossAlignX((unsigned long)&buf[0], 4096);
+
+   /* This test assumes system memory page size of 4096 bytes or less.  */
+   if (sysconf(_SC_PAGESIZE) > 4096)
+     return 0;
+
    memset(u, 1, sizeof(struct stuff));
    u->c1[0] = '\xAA';
    u->c2[0] = '\xBB';
