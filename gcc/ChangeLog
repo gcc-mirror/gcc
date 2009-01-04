@@ -1,3 +1,10 @@
+2009-01-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/38584
+	* cfgexpand.c (estimate_stack_frame_size): Simplify the estimate:
+	Calculate the size of all stack vars assuming no packing of stack
+	vars will happen, replacing a quadratic algorithm with a linear one.
+
 2009-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38707
