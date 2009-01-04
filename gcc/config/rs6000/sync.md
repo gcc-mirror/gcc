@@ -33,8 +33,8 @@
   [(plus "rIL") (minus "r") (ior "rKJF") (xor "rKJF") (and "rSTKJ")])
 
 (define_expand "memory_barrier"
-  [(set (mem:BLK (match_dup 0))
-	(unspec:BLK [(mem:BLK (match_dup 0))] UNSPEC_SYNC))]
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_SYNC))]
   ""
 {
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -43,7 +43,7 @@
 
 (define_insn "*sync_internal"
   [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_operand:BLK 1 "" "")] UNSPEC_SYNC))]
+	(unspec:BLK [(match_dup 0)] UNSPEC_SYNC))]
   ""
   "{dcs|sync}"
   [(set_attr "type" "sync")])

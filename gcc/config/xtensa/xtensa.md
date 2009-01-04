@@ -35,10 +35,10 @@
   (UNSPEC_TLS_ARG	8)
   (UNSPEC_TLS_CALL	9)
   (UNSPEC_TP		10)
+  (UNSPEC_MEMW		11)
 
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
-  (UNSPECV_MEMW		3)
   (UNSPECV_S32RI	4)
   (UNSPECV_S32C1I	5)
   (UNSPECV_EH_RETURN	6)
@@ -1819,17 +1819,17 @@
 ;; Atomic operations
 
 (define_expand "memory_barrier"
-  [(set (mem:BLK (match_dup 0))
-	(unspec_volatile:BLK [(mem:BLK (match_dup 0))] UNSPECV_MEMW))]
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMW))]
   ""
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (SImode));
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
   MEM_VOLATILE_P (operands[0]) = 1;
 })
 
 (define_insn "*memory_barrier"
   [(set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_operand:BLK 1 "" "")] UNSPECV_MEMW))]
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMW))]
   ""
   "memw"
   [(set_attr "type"	"unknown")

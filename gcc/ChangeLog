@@ -1,3 +1,42 @@
+2009-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/s390/s390.md (UNSPEC_MB): Rename from UNSPECV_MB.
+	(memory_barrier): Expand as unspec instead of unspec_volatile.
+	Remove mem:BLK from insn operands.  Use Pmode scratch register.
+	(*memory_barrier): Define as unspec instead of unspec_volatile.
+	Use (match_dup 0) as input operand.
+
+	* config/sparc/sparc.md (UNSPEC_MEMBAR): Rename from UNSPECV_MEMBAR.
+	* config/sparc/sync.md (memory_barrier): Expand as unspec instead of
+	unspec_volatile.  Remove mem:BLK from insn operands.  Use Pmode
+	scratch register.  Remove operand 1.
+	(*stbar): Define as unspec instead of unspec_volatile.
+	Use (match_dup 0) as input operand, remove (const_int 8).
+	(*membar): Define as unspec instead of unspec_volatile.
+	Use (match_dup 0) as input operand, remove input operand 2.
+
+	* config/xtensa/xtensa.md (UNSPEC_MEMW): Rename from UNSPECV_MEMW.
+	(memory_barrier): Expand as unspec instead of unspec_volatile.
+	Remove mem:BLK from insn operands.  Use Pmode scratch register.
+	(*memory_barrier): Define as unspec instead of unspec_volatile.
+	Use (match_dup 0) as input operand.
+
+	* config/ia64/sync.md (memory_barrier): Redefine as expander pattern.
+	Remove mem:BLK from insn operands.  Use Pmode scratch register.
+	Set volatile flag on operand 0.
+	(*memory_barrier): New insn pattern.
+
+	* config/rs6000/sync.md (memory_barrier): Remove mem:BLK from
+	insn operands.
+	(*memory_barrier): Use (match_dup 0) as input operand.
+
+	* config/mips/sync.md (memory_barrier): Redefine as expander pattern.
+	Remove mem:BLK from insn operands.  Use Pmode scratch register.
+	Set volatile flag on operand 0.
+	(*memory_barrier): New insn pattern.
+
+	* config/alpha/sync.md (*memory_barrier): Rename from *mb_internal.
+
 2009-01-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/38586
