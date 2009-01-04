@@ -1,3 +1,12 @@
+2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38536
+	* gfortran.h (gfc_is_data_pointer): Added prototype
+	* resolve.c (gfc_iso_c_func_interface):
+	Use gfc_is_data_pointer to test for pointer attribute.
+	* dependency.c (gfc_is_data_pointer):
+	Support pointer-returning functions.
+
 2009-01-03  Daniel Franke  <franke.daniel@gmail.com>
 
 	* symbol.c (save_symbol): Don't SAVE function results.

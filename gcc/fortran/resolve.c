@@ -2047,12 +2047,10 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
-  int optional_arg = 0;
+  int optional_arg = 0, is_pointer = 0;
   gfc_try retval = SUCCESS;
   gfc_symbol *args_sym;
   gfc_typespec *arg_ts;
-  gfc_ref *parent_ref;
-  gfc_ref *curr_ref;
 
   if (args->expr->expr_type == EXPR_CONSTANT
       || args->expr->expr_type == EXPR_OP
@@ -2070,32 +2068,8 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
      the actual expression could be a part-ref of the expr symbol.  */
   arg_ts = &(args->expr->ts);
 
-  /* Get the parent reference (if any) for the expression.  This happens for
-     cases such as a%b%c.  */
-  parent_ref = args->expr->ref;
-  curr_ref = NULL;
-  if (parent_ref != NULL)
-    {
-      curr_ref = parent_ref->next;
-      while (curr_ref != NULL && curr_ref->next != NULL)
-        {
-	  parent_ref = curr_ref;
-	  curr_ref = curr_ref->next;
-	}
-    }
-
-  /* If curr_ref is non-NULL, we had a part-ref expression.  If the curr_ref
-     is for a REF_COMPONENT, then we need to use it as the parent_ref for
-     the name, etc.  Otherwise, the current parent_ref should be correct.  */
-  if (curr_ref != NULL && curr_ref->type == REF_COMPONENT)
-    parent_ref = curr_ref;
-
-  if (parent_ref == args->expr->ref)
-    parent_ref = NULL;
-  else if (parent_ref != NULL && parent_ref->type != REF_COMPONENT)
-    gfc_internal_error ("Unexpected expression reference type in "
-			"gfc_iso_c_func_interface");
-
+  is_pointer = gfc_is_data_pointer (args->expr);
+    
   if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
     {
       /* If the user gave two args then they are providing something for
@@ -2137,10 +2111,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
       else if (sym->intmod_sym_id == ISOCBINDING_LOC)
         {
           /* Make sure we have either the target or pointer attribute.  */
-	  if (!(args_sym->attr.target)
-	      && !(args_sym->attr.pointer)
-	      && (parent_ref == NULL ||
-		  !parent_ref->u.c.component->attr.pointer))
+	  if (!args_sym->attr.target && !is_pointer)
             {
               gfc_error_now ("Parameter '%s' to '%s' at %L must be either "
                              "a TARGET or an associated pointer",
@@ -2223,9 +2194,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 			  }
                     }
                 }
-              else if ((args_sym->attr.pointer == 1 ||
-			(parent_ref != NULL 
-			 && parent_ref->u.c.component->attr.pointer))
+              else if (is_pointer
 		       && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   /* Case 1c, section 15.1.2.5, J3/04-007: an associated
