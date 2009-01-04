@@ -1,5 +1,11 @@
 2009-01-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* tree.def (LSHIFT_EXPR, RSHIFT_EXPR): Add commentary.
+	* tree-cfg.c (verify_gimple_assign_binary): Allow shifts of
+	fixed-point types, and vectors of the same.
+
+2009-01-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/sync.md (*mb_barrier): Rename to...
 	(*memory_barrier): ...this.
 

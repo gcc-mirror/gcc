@@ -3474,6 +3474,12 @@ verify_gimple_assign_binary (gimple stmt)
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+      if (FIXED_POINT_TYPE_P (rhs1_type)
+	  && INTEGRAL_TYPE_P (rhs2_type)
+	  && useless_type_conversion_p (lhs_type, rhs1_type))
+	return false;
+      /* Fall through.  */
+
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       {
@@ -3495,7 +3501,8 @@ verify_gimple_assign_binary (gimple stmt)
     case VEC_RSHIFT_EXPR:
       {
 	if (TREE_CODE (rhs1_type) != VECTOR_TYPE
-	    || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+	    || !(INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+		 || FIXED_POINT_TYPE_P (TREE_TYPE (rhs1_type)))
 	    || (!INTEGRAL_TYPE_P (rhs2_type)
 		&& (TREE_CODE (rhs2_type) != VECTOR_TYPE
 		    || !INTEGRAL_TYPE_P (TREE_TYPE (rhs2_type))))
