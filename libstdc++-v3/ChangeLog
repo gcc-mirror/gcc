@@ -1,3 +1,10 @@
+2009-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR libstdc++/38720
+	* include/ext/pointer.h (_Relative_pointer_impl): Use an unsigned
+	integer type for storage, arithmetic and comparisons.
+	* testsuite/ext/ext_pointer/1_neg.cc: Adjust line numbers.
+
 2009-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38719
