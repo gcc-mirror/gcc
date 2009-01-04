@@ -42,6 +42,7 @@
 #include <iosfwd>
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
+#include <ext/type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -111,9 +112,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         if (_M_diff == 1)
           return 0;
         else
-          return reinterpret_cast<_Tp*>(
-                 const_cast<char*>(reinterpret_cast<const char*>(this))
-                 + _M_diff);
+          return reinterpret_cast<_Tp*>(reinterpret_cast<_UIntPtrType>(this)
+					+ _M_diff);
       }
   
       void 
@@ -122,21 +122,26 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         if (!__arg)
           _M_diff = 1;
         else
-          _M_diff = reinterpret_cast<char*>(__arg) 
-                    - reinterpret_cast<char*>(this);
+          _M_diff = reinterpret_cast<_UIntPtrType>(__arg) 
+                    - reinterpret_cast<_UIntPtrType>(this);
       }
   
       // Comparison of pointers
       inline bool
       operator<(const _Relative_pointer_impl& __rarg) const
-      { return (this->get() < __rarg.get()); }
+      { return (reinterpret_cast<_UIntPtrType>(this->get())
+		< reinterpret_cast<_UIntPtrType>(__rarg.get())); }
 
       inline bool
       operator==(const _Relative_pointer_impl& __rarg) const
-      { return (this->get() == __rarg.get()); }
+      { return (reinterpret_cast<_UIntPtrType>(this->get())
+		== reinterpret_cast<_UIntPtrType>(__rarg.get())); }
 
     private:
-      std::ptrdiff_t _M_diff;
+      typedef __gnu_cxx::__conditional_type<
+	 (sizeof(unsigned long) >= sizeof(void*)),
+	 unsigned long, unsigned long long>::__type _UIntPtrType;
+      _UIntPtrType _M_diff;
     };
   
   /**
@@ -155,8 +160,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         if (_M_diff == 1)
           return 0;
         else
-          return reinterpret_cast<const _Tp*>(
-                  (reinterpret_cast<const char*>(this)) + _M_diff);
+          return reinterpret_cast<const _Tp*>
+	      (reinterpret_cast<_UIntPtrType>(this) + _M_diff);
       }
   
       void 
@@ -165,21 +170,26 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         if (!__arg)
           _M_diff = 1;
         else
-          _M_diff = reinterpret_cast<const char*>(__arg) 
-                    - reinterpret_cast<const char*>(this);
+          _M_diff = reinterpret_cast<_UIntPtrType>(__arg) 
+                    - reinterpret_cast<_UIntPtrType>(this);
       }
   
       // Comparison of pointers
       inline bool
       operator<(const _Relative_pointer_impl& __rarg) const
-      { return (this->get() < __rarg.get()); }
+      { return (reinterpret_cast<_UIntPtrType>(this->get())
+		< reinterpret_cast<_UIntPtrType>(__rarg.get())); }
 
       inline bool
       operator==(const _Relative_pointer_impl& __rarg) const
-      { return (this->get() == __rarg.get()); }
+      { return (reinterpret_cast<_UIntPtrType>(this->get())
+		== reinterpret_cast<_UIntPtrType>(__rarg.get())); }
   
     private:
-      std::ptrdiff_t _M_diff;
+      typedef __gnu_cxx::__conditional_type
+	<(sizeof(unsigned long) >= sizeof(void*)),
+	 unsigned long, unsigned long long>::__type _UIntPtrType;
+      _UIntPtrType _M_diff;
     };
 
   /**
