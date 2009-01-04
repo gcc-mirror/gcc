@@ -1,5 +1,29 @@
 2009-01-04  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR middle-end/38586
+	* function.c (struct temp_slot): Move to the section of the file
+	that deals with temp slots.  Remove field 'address'.
+	(temp_slot_address_table): New hash table of address -> temp slot.
+	(struct temp_slot_address_entry): New struct, items for the table.
+	(temp_slot_address_compute_hash, temp_slot_address_hash,
+	temp_slot_address_eq, insert_temp_slot_address): Support functions
+	for the new table.
+	(find_temp_slot_from_address): Rewrite to use the new hash table.
+	(remove_unused_temp_slot_addresses): Remove addresses of temp
+	slots that have been made available.
+	(remove_unused_temp_slot_addresses_1): Call-back for htab_traverse,
+	worker function for remove_unused_temp_slot_addresses.
+	(assign_stack_temp_for_type): Don't clear the temp slot address list.
+	Add the temp slot address to the address -> temp slot map.
+	(update_temp_slot_address): Update via insert_temp_slot_address.
+	(free_temp_slots): Call remove_unused_temp_slot_addresses.
+	(pop_temp_slots): Likewise.
+	(init_temp_slots): Allocate the address -> temp slot map, or empty
+	the map if it is already allocated.
+	(prepare_function_start): Initialize temp slot processing.
+
+2009-01-04  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR middle-end/38584
 	* cfgexpand.c (estimate_stack_frame_size): Simplify the estimate:
 	Calculate the size of all stack vars assuming no packing of stack

@@ -132,61 +132,6 @@ static VEC(int,heap) *epilogue;
    in this function.  */
 static VEC(int,heap) *sibcall_epilogue;
 
-/* In order to evaluate some expressions, such as function calls returning
-   structures in memory, we need to temporarily allocate stack locations.
-   We record each allocated temporary in the following structure.
-
-   Associated with each temporary slot is a nesting level.  When we pop up
-   one level, all temporaries associated with the previous level are freed.
-   Normally, all temporaries are freed after the execution of the statement
-   in which they were created.  However, if we are inside a ({...}) grouping,
-   the result may be in a temporary and hence must be preserved.  If the
-   result could be in a temporary, we preserve it if we can determine which
-   one it is in.  If we cannot determine which temporary may contain the
-   result, all temporaries are preserved.  A temporary is preserved by
-   pretending it was allocated at the previous nesting level.
-
-   Automatic variables are also assigned temporary slots, at the nesting
-   level where they are defined.  They are marked a "kept" so that
-   free_temp_slots will not free them.  */
-
-struct temp_slot GTY(())
-{
-  /* Points to next temporary slot.  */
-  struct temp_slot *next;
-  /* Points to previous temporary slot.  */
-  struct temp_slot *prev;
-
-  /* The rtx to used to reference the slot.  */
-  rtx slot;
-  /* The rtx used to represent the address if not the address of the
-     slot above.  May be an EXPR_LIST if multiple addresses exist.  */
-  rtx address;
-  /* The alignment (in bits) of the slot.  */
-  unsigned int align;
-  /* The size, in units, of the slot.  */
-  HOST_WIDE_INT size;
-  /* The type of the object in the slot, or zero if it doesn't correspond
-     to a type.  We use this to determine whether a slot can be reused.
-     It can be reused if objects of the type of the new slot will always
-     conflict with objects of the type of the old slot.  */
-  tree type;
-  /* Nonzero if this temporary is currently in use.  */
-  char in_use;
-  /* Nonzero if this temporary has its address taken.  */
-  char addr_taken;
-  /* Nesting level at which this slot is being used.  */
-  int level;
-  /* Nonzero if this should survive a call to free_temp_slots.  */
-  int keep;
-  /* The offset of the slot from the frame_pointer, including extra space
-     for alignment.  This info is for combine_temp_slots.  */
-  HOST_WIDE_INT base_offset;
-  /* The size of the slot, including extra space for alignment.  This
-     info is for combine_temp_slots.  */
-  HOST_WIDE_INT full_size;
-};
-
 /* Forward declarations.  */
 
 static struct temp_slot *find_temp_slot_from_address (rtx);
@@ -486,6 +431,70 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
   return assign_stack_local_1 (mode, size, align, false);
 }
 
+
+/* In order to evaluate some expressions, such as function calls returning
+   structures in memory, we need to temporarily allocate stack locations.
+   We record each allocated temporary in the following structure.
+
+   Associated with each temporary slot is a nesting level.  When we pop up
+   one level, all temporaries associated with the previous level are freed.
+   Normally, all temporaries are freed after the execution of the statement
+   in which they were created.  However, if we are inside a ({...}) grouping,
+   the result may be in a temporary and hence must be preserved.  If the
+   result could be in a temporary, we preserve it if we can determine which
+   one it is in.  If we cannot determine which temporary may contain the
+   result, all temporaries are preserved.  A temporary is preserved by
+   pretending it was allocated at the previous nesting level.
+
+   Automatic variables are also assigned temporary slots, at the nesting
+   level where they are defined.  They are marked a "kept" so that
+   free_temp_slots will not free them.  */
+
+struct temp_slot GTY(())
+{
+  /* Points to next temporary slot.  */
+  struct temp_slot *next;
+  /* Points to previous temporary slot.  */
+  struct temp_slot *prev;
+  /* The rtx to used to reference the slot.  */
+  rtx slot;
+  /* The alignment (in bits) of the slot.  */
+  unsigned int align;
+  /* The size, in units, of the slot.  */
+  HOST_WIDE_INT size;
+  /* The type of the object in the slot, or zero if it doesn't correspond
+     to a type.  We use this to determine whether a slot can be reused.
+     It can be reused if objects of the type of the new slot will always
+     conflict with objects of the type of the old slot.  */
+  tree type;
+  /* Nonzero if this temporary is currently in use.  */
+  char in_use;
+  /* Nonzero if this temporary has its address taken.  */
+  char addr_taken;
+  /* Nesting level at which this slot is being used.  */
+  int level;
+  /* Nonzero if this should survive a call to free_temp_slots.  */
+  int keep;
+  /* The offset of the slot from the frame_pointer, including extra space
+     for alignment.  This info is for combine_temp_slots.  */
+  HOST_WIDE_INT base_offset;
+  /* The size of the slot, including extra space for alignment.  This
+     info is for combine_temp_slots.  */
+  HOST_WIDE_INT full_size;
+};
+
+/* A table of addresses that represent a stack slot.  The table is a mapping
+   from address RTXen to a temp slot.  */
+static GTY((param_is(struct temp_slot_address_entry))) htab_t temp_slot_address_table;
+
+/* Entry for the above hash table.  */
+struct temp_slot_address_entry GTY(())
+{
+  hashval_t hash;
+  rtx address;
+  struct temp_slot *temp_slot;
+};
+
 /* Removes temporary slot TEMP from LIST.  */
 
 static void
@@ -554,6 +563,114 @@ make_slot_available (struct temp_slot *temp)
   insert_slot_to_list (temp, &avail_temp_slots);
   temp->in_use = 0;
   temp->level = -1;
+}
+
+/* Compute the hash value for an address -> temp slot mapping.
+   The value is cached on the mapping entry.  */
+static hashval_t
+temp_slot_address_compute_hash (struct temp_slot_address_entry *t)
+{
+  int do_not_record = 0;
+  return hash_rtx (t->address, GET_MODE (t->address),
+		   &do_not_record, NULL, false);
+}
+
+/* Return the hash value for an address -> temp slot mapping.  */
+static hashval_t
+temp_slot_address_hash (const void *p)
+{
+  const struct temp_slot_address_entry *t;
+  t = (const struct temp_slot_address_entry *) p;
+  return t->hash;
+}
+
+/* Compare two address -> temp slot mapping entries.  */
+static int
+temp_slot_address_eq (const void *p1, const void *p2)
+{
+  const struct temp_slot_address_entry *t1, *t2;
+  t1 = (const struct temp_slot_address_entry *) p1;
+  t2 = (const struct temp_slot_address_entry *) p2;
+  return exp_equiv_p (t1->address, t2->address, 0, true);
+}
+
+/* Add ADDRESS as an alias of TEMP_SLOT to the addess -> temp slot mapping.  */
+static void
+insert_temp_slot_address (rtx address, struct temp_slot *temp_slot)
+{
+  void **slot;
+  struct temp_slot_address_entry *t = GGC_NEW (struct temp_slot_address_entry);
+  t->address = address;
+  t->temp_slot = temp_slot;
+  t->hash = temp_slot_address_compute_hash (t);
+  slot = htab_find_slot_with_hash (temp_slot_address_table, t, t->hash, INSERT);
+  *slot = t;
+}
+
+/* Remove an address -> temp slot mapping entry if the temp slot is
+   not in use anymore.  Callback for remove_unused_temp_slot_addresses.  */
+static int
+remove_unused_temp_slot_addresses_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  const struct temp_slot_address_entry *t;
+  t = (const struct temp_slot_address_entry *) *slot;
+  if (! t->temp_slot->in_use)
+    *slot = NULL;
+  return 1;
+}
+
+/* Remove all mappings of addresses to unused temp slots.  */
+static void
+remove_unused_temp_slot_addresses (void)
+{
+  htab_traverse (temp_slot_address_table,
+		 remove_unused_temp_slot_addresses_1,
+		 NULL);
+}
+
+/* Find the temp slot corresponding to the object at address X.  */
+
+static struct temp_slot *
+find_temp_slot_from_address (rtx x)
+{
+  struct temp_slot *p;
+  struct temp_slot_address_entry tmp, *t;
+
+  /* First try the easy way:
+     See if X exists in the address -> temp slot mapping.  */
+  tmp.address = x;
+  tmp.temp_slot = NULL;
+  tmp.hash = temp_slot_address_compute_hash (&tmp);
+  t = (struct temp_slot_address_entry *)
+    htab_find_with_hash (temp_slot_address_table, &tmp, tmp.hash);
+  if (t)
+    return t->temp_slot;
+
+  /* If we have a sum involving a register, see if it points to a temp
+     slot.  */
+  if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 0))
+      && (p = find_temp_slot_from_address (XEXP (x, 0))) != 0)
+    return p;
+  else if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 1))
+	   && (p = find_temp_slot_from_address (XEXP (x, 1))) != 0)
+    return p;
+
+  /* Last resort: Address is a virtual stack var address.  */
+  if (GET_CODE (x) == PLUS
+      && XEXP (x, 0) == virtual_stack_vars_rtx
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      int i;
+      for (i = max_slot_level (); i >= 0; i--)
+	for (p = *temp_slots_at_level (i); p; p = p->next)
+	  {
+	    if (INTVAL (XEXP (x, 1)) >= p->base_offset
+		&& INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size)
+	      return p;
+	  }
+    }
+
+  return NULL;
 }
 
 /* Allocate a temporary stack slot and record it for possible later
@@ -641,7 +758,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	      p->full_size = best_p->full_size - rounded_size;
 	      p->slot = adjust_address_nv (best_p->slot, BLKmode, rounded_size);
 	      p->align = best_p->align;
-	      p->address = 0;
 	      p->type = best_p->type;
 	      insert_slot_to_list (p, &avail_temp_slots);
 
@@ -700,7 +816,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	  p->base_offset = frame_offset_old;
 	  p->full_size = frame_offset - frame_offset_old;
 	}
-      p->address = 0;
 
       selected = p;
     }
@@ -714,6 +829,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 
   pp = temp_slots_at_level (p->level);
   insert_slot_to_list (p, pp);
+  insert_temp_slot_address (XEXP (p->slot, 0), p);
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
   slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
@@ -882,45 +998,6 @@ combine_temp_slots (void)
     }
 }
 
-/* Find the temp slot corresponding to the object at address X.  */
-
-static struct temp_slot *
-find_temp_slot_from_address (rtx x)
-{
-  struct temp_slot *p;
-  rtx next;
-  int i;
-
-  for (i = max_slot_level (); i >= 0; i--)
-    for (p = *temp_slots_at_level (i); p; p = p->next)
-      {
-	if (XEXP (p->slot, 0) == x
-	    || p->address == x
-	    || (GET_CODE (x) == PLUS
-		&& XEXP (x, 0) == virtual_stack_vars_rtx
-		&& GET_CODE (XEXP (x, 1)) == CONST_INT
-		&& INTVAL (XEXP (x, 1)) >= p->base_offset
-		&& INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size))
-	  return p;
-
-	else if (p->address != 0 && GET_CODE (p->address) == EXPR_LIST)
-	  for (next = p->address; next; next = XEXP (next, 1))
-	    if (XEXP (next, 0) == x)
-	      return p;
-      }
-
-  /* If we have a sum involving a register, see if it points to a temp
-     slot.  */
-  if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 0))
-      && (p = find_temp_slot_from_address (XEXP (x, 0))) != 0)
-    return p;
-  else if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 1))
-	   && (p = find_temp_slot_from_address (XEXP (x, 1))) != 0)
-    return p;
-
-  return 0;
-}
-
 /* Indicate that NEW_RTX is an alternate way of referring to the temp
    slot that previously was known by OLD_RTX.  */
 
@@ -967,15 +1044,7 @@ update_temp_slot_address (rtx old_rtx, rtx new_rtx)
     }
 
   /* Otherwise add an alias for the temp's address.  */
-  else if (p->address == 0)
-    p->address = new_rtx;
-  else
-    {
-      if (GET_CODE (p->address) != EXPR_LIST)
-	p->address = gen_rtx_EXPR_LIST (VOIDmode, p->address, NULL_RTX);
-
-      p->address = gen_rtx_EXPR_LIST (VOIDmode, new_rtx, p->address);
-    }
+  insert_temp_slot_address (new_rtx, p);
 }
 
 /* If X could be a reference to a temporary slot, mark the fact that its
@@ -1103,6 +1172,7 @@ free_temp_slots (void)
 	make_slot_available (p);
     }
 
+  remove_unused_temp_slot_addresses ();
   combine_temp_slots ();
 }
 
@@ -1128,6 +1198,7 @@ pop_temp_slots (void)
       make_slot_available (p);
     }
 
+  remove_unused_temp_slot_addresses ();
   combine_temp_slots ();
 
   temp_slot_level--;
@@ -1142,6 +1213,15 @@ init_temp_slots (void)
   avail_temp_slots = 0;
   used_temp_slots = 0;
   temp_slot_level = 0;
+
+  /* Set up the table to map addresses to temp slots.  */
+  if (! temp_slot_address_table)
+    temp_slot_address_table = htab_create_ggc (32,
+					       temp_slot_address_hash,
+					       temp_slot_address_eq,
+					       NULL);
+  else
+    htab_empty (temp_slot_address_table);
 }
 
 /* These routines are responsible for converting virtual register references
@@ -4035,6 +4115,7 @@ static void
 prepare_function_start (void)
 {
   gcc_assert (!crtl->emit.x_last_insn);
+  init_temp_slots ();
   init_emit ();
   init_varasm_status ();
   init_expr ();
