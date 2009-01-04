@@ -270,6 +270,7 @@ gfc_expr *gfc_simplify_llt (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_log (gfc_expr *);
 gfc_expr *gfc_simplify_log10 (gfc_expr *);
 gfc_expr *gfc_simplify_logical (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_merge (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_min (gfc_expr *);
 gfc_expr *gfc_simplify_minval (gfc_expr *, gfc_expr*, gfc_expr*);
 gfc_expr *gfc_simplify_max (gfc_expr *);
