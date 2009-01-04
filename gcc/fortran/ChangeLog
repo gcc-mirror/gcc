@@ -1,3 +1,10 @@
+2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/38718
+	* simplify.c (gfc_simplify_merge): New.
+	* intrinsic.h (gfc_simplify_merge): New prototype.
+	* intrinsic.c (add_functions): Added simplification for MERGE.
+
 2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38536

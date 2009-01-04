@@ -1,3 +1,8 @@
+2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/38718
+	* gfortran.dg/merge_init_expr.f90: New.
+
 2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38536

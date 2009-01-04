@@ -2619,6 +2619,18 @@ gfc_simplify_logical (gfc_expr *e, gfc_expr *k)
 }
 
 
+gfc_expr *
+gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
+{
+  if (tsource->expr_type != EXPR_CONSTANT
+      || fsource->expr_type != EXPR_CONSTANT
+      || mask->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  return gfc_copy_expr (mask->value.logical ? tsource : fsource);
+}
+
+
 /* Selects bewteen current value and extremum for simplify_min_max
    and simplify_minval_maxval.  */
 static void
