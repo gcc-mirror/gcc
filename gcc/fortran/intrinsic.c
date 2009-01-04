@@ -3335,9 +3335,6 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
       goto finish;
     }
 
-  /* TODO: Warn if -pedantic and initialization expression and arg
-     types not integer or character */
-
   if (arg == NULL)
     result = (*specific->simplify.f1) (a1);
   else

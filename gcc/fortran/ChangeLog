@@ -1,5 +1,9 @@
 2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
 
+	* intrinsic.c (do_simplify): Removed already implemented TODO.
+
+2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/38718
 	* simplify.c (gfc_simplify_merge): New.
 	* intrinsic.h (gfc_simplify_merge): New prototype.
