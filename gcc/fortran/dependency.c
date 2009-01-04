@@ -422,16 +422,20 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 }
 
 
-static int
+int
 gfc_is_data_pointer (gfc_expr *e)
 {
   gfc_ref *ref;
 
-  if (e->expr_type != EXPR_VARIABLE)
+  if (e->expr_type != EXPR_VARIABLE && e->expr_type != EXPR_FUNCTION)
     return 0;
+
+  /* No subreference if it is a function  */
+  gcc_assert (e->expr_type == EXPR_VARIABLE || !e->ref);
 
   if (e->symtree->n.sym->attr.pointer)
     return 1;
+
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
       return 1;
