@@ -1934,16 +1934,16 @@ In C++, this attribute does not depend on @code{extern} in any way,
 but it still requires the @code{inline} keyword to enable its special
 behavior.
 
-@cindex @code{artificial} function attribute
 @item artificial
+@cindex @code{artificial} function attribute
 This attribute is useful for small inline wrappers which if possible
 should appear during debugging as a unit, depending on the debug
 info format it will either mean marking the function as artificial
 or using the caller location for all instructions within the inlined
 body.
 
-@cindex @code{flatten} function attribute
 @item flatten
+@cindex @code{flatten} function attribute
 Generally, inlining into a function is limited.  For a function marked with
 this attribute, every call inside this function will be inlined, if possible.
 Whether the function itself is considered for inlining depends on its size and
@@ -2158,6 +2158,12 @@ Use this attribute on the Blackfin to indicate that the specified function
 is an exception handler.  The compiler will generate function entry and
 exit sequences suitable for use in an exception handler when this
 attribute is present.
+
+@item externally_visible
+@cindex @code{externally_visible} attribute.
+This attribute, attached to a global variable or function, nullifies
+the effect of the @option{-fwhole-program} command-line option, so the
+object remains visible outside the current compilation unit.
 
 @item far
 @cindex functions which handle memory bank switching
@@ -2664,179 +2670,6 @@ with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.  The @code{nothrow} attribute is not
 implemented in GCC versions earlier than 3.3.
 
-@item option
-@cindex @code{target} function attribute
-The @code{target} attribute is used to specify that a function is to
-be compiled with different target options than specified on the
-command line.  This can be used for instance to have functions
-compiled with a different ISA (instruction set architecture) than the
-default.  You can also use the @samp{#pragma GCC target} pragma to set
-more than one function to be compiled with specific target options.
-@xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC target} pragma.
-
-For instance on a 386, you could compile one function with
-@code{target("sse4.1,arch=core2")} and another with
-@code{target("sse4a,arch=amdfam10")} that would be equivalent to
-compiling the first function with @option{-msse4.1} and
-@option{-march=core2} options, and the second function with
-@option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
-user to make sure that a function is only invoked on a machine that
-supports the particular ISA it was compiled for (for example by using
-@code{cpuid} on 386 to determine what feature bits and architecture
-family are used).
-
-@smallexample
-int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
-int sse3_func (void) __attribute__ ((__target__ ("sse3")));
-@end smallexample
-
-On the 386, the following options are allowed:
-
-@table @samp
-@item abm
-@itemx no-abm
-@cindex @code{target("abm")} attribute
-Enable/disable the generation of the advanced bit instructions.
-
-@item aes
-@itemx no-aes
-@cindex @code{target("aes")} attribute
-Enable/disable the generation of the AES instructions.
-
-@item mmx
-@itemx no-mmx
-@cindex @code{target("mmx")} attribute
-Enable/disable the generation of the MMX instructions.
-
-@item pclmul
-@itemx no-pclmul
-@cindex @code{target("pclmul")} attribute
-Enable/disable the generation of the PCLMUL instructions.
-
-@item popcnt
-@itemx no-popcnt
-@cindex @code{target("popcnt")} attribute
-Enable/disable the generation of the POPCNT instruction.
-
-@item sse
-@itemx no-sse
-@cindex @code{target("sse")} attribute
-Enable/disable the generation of the SSE instructions.
-
-@item sse2
-@itemx no-sse2
-@cindex @code{target("sse2")} attribute
-Enable/disable the generation of the SSE2 instructions.
-
-@item sse3
-@itemx no-sse3
-@cindex @code{target("sse3")} attribute
-Enable/disable the generation of the SSE3 instructions.
-
-@item sse4
-@itemx no-sse4
-@cindex @code{target("sse4")} attribute
-Enable/disable the generation of the SSE4 instructions (both SSE4.1
-and SSE4.2).
-
-@item sse4.1
-@itemx no-sse4.1
-@cindex @code{target("sse4.1")} attribute
-Enable/disable the generation of the sse4.1 instructions.
-
-@item sse4.2
-@itemx no-sse4.2
-@cindex @code{target("sse4.2")} attribute
-Enable/disable the generation of the sse4.2 instructions.
-
-@item sse4a
-@itemx no-sse4a
-@cindex @code{target("sse4a")} attribute
-Enable/disable the generation of the SSE4A instructions.
-
-@item sse5
-@itemx no-sse5
-@cindex @code{target("sse5")} attribute
-Enable/disable the generation of the SSE5 instructions.
-
-@item ssse3
-@itemx no-ssse3
-@cindex @code{target("ssse3")} attribute
-Enable/disable the generation of the SSSE3 instructions.
-
-@item cld
-@itemx no-cld
-@cindex @code{target("cld")} attribute
-Enable/disable the generation of the CLD before string moves.
-
-@item fancy-math-387
-@itemx no-fancy-math-387
-@cindex @code{target("fancy-math-387")} attribute
-Enable/disable the generation of the @code{sin}, @code{cos}, and
-@code{sqrt} instructions on the 387 floating point unit.
-
-@item fused-madd
-@itemx no-fused-madd
-@cindex @code{target("fused-madd")} attribute
-Enable/disable the generation of the fused multiply/add instructions.
-
-@item ieee-fp
-@itemx no-ieee-fp
-@cindex @code{target("ieee-fp")} attribute
-Enable/disable the generation of floating point that depends on IEEE arithmetic.
-
-@item inline-all-stringops
-@itemx no-inline-all-stringops
-@cindex @code{target("inline-all-stringops")} attribute
-Enable/disable inlining of string operations.
-
-@item inline-stringops-dynamically
-@itemx no-inline-stringops-dynamically
-@cindex @code{target("inline-stringops-dynamically")} attribute
-Enable/disable the generation of the inline code to do small string
-operations and calling the library routines for large operations.
-
-@item align-stringops
-@itemx no-align-stringops
-@cindex @code{target("align-stringops")} attribute
-Do/do not align destination of inlined string operations.
-
-@item recip
-@itemx no-recip
-@cindex @code{target("recip")} attribute
-Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
-instructions followed an additional Newton-Rhapson step instead of
-doing a floating point division.
-
-@item arch=@var{ARCH}
-@cindex @code{target("arch=@var{ARCH}")} attribute
-Specify the architecture to generate code for in compiling the function.
-
-@item tune=@var{TUNE}
-@cindex @code{target("tune=@var{TUNE}")} attribute
-Specify the architecture to tune for in compiling the function.
-
-@item fpmath=@var{FPMATH}
-@cindex @code{target("fpmath=@var{FPMATH}")} attribute
-Specify which floating point unit to use.  The
-@code{target("fpmath=sse,387")} option must be specified as
-@code{target("fpmath=sse+387")} because the comma would separate
-different options.
-@end table
-
-On the 386, you can use either multiple strings to specify multiple
-options, or you can separate the option with a comma (@code{,}).
-
-On the 386, the inliner will not inline a function that has different
-target options than the caller, unless the callee has a subset of the
-target options of the caller.  For example a function declared with
-@code{target("sse5")} can inline a function with
-@code{target("sse2")}, since @code{-msse5} implies @code{-msse2}.
-
-The @code{target} attribute is not implemented in GCC versions earlier
-than 4.4, and at present only the 386 uses it.
-
 @item optimize
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
@@ -3052,6 +2885,179 @@ On the Intel 386, the @code{stdcall} attribute causes the compiler to
 assume that the called function will pop off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
+@item target
+@cindex @code{target} function attribute
+The @code{target} attribute is used to specify that a function is to
+be compiled with different target options than specified on the
+command line.  This can be used for instance to have functions
+compiled with a different ISA (instruction set architecture) than the
+default.  You can also use the @samp{#pragma GCC target} pragma to set
+more than one function to be compiled with specific target options.
+@xref{Function Specific Option Pragmas}, for details about the
+@samp{#pragma GCC target} pragma.
+
+For instance on a 386, you could compile one function with
+@code{target("sse4.1,arch=core2")} and another with
+@code{target("sse4a,arch=amdfam10")} that would be equivalent to
+compiling the first function with @option{-msse4.1} and
+@option{-march=core2} options, and the second function with
+@option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
+user to make sure that a function is only invoked on a machine that
+supports the particular ISA it was compiled for (for example by using
+@code{cpuid} on 386 to determine what feature bits and architecture
+family are used).
+
+@smallexample
+int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
+int sse3_func (void) __attribute__ ((__target__ ("sse3")));
+@end smallexample
+
+On the 386, the following options are allowed:
+
+@table @samp
+@item abm
+@itemx no-abm
+@cindex @code{target("abm")} attribute
+Enable/disable the generation of the advanced bit instructions.
+
+@item aes
+@itemx no-aes
+@cindex @code{target("aes")} attribute
+Enable/disable the generation of the AES instructions.
+
+@item mmx
+@itemx no-mmx
+@cindex @code{target("mmx")} attribute
+Enable/disable the generation of the MMX instructions.
+
+@item pclmul
+@itemx no-pclmul
+@cindex @code{target("pclmul")} attribute
+Enable/disable the generation of the PCLMUL instructions.
+
+@item popcnt
+@itemx no-popcnt
+@cindex @code{target("popcnt")} attribute
+Enable/disable the generation of the POPCNT instruction.
+
+@item sse
+@itemx no-sse
+@cindex @code{target("sse")} attribute
+Enable/disable the generation of the SSE instructions.
+
+@item sse2
+@itemx no-sse2
+@cindex @code{target("sse2")} attribute
+Enable/disable the generation of the SSE2 instructions.
+
+@item sse3
+@itemx no-sse3
+@cindex @code{target("sse3")} attribute
+Enable/disable the generation of the SSE3 instructions.
+
+@item sse4
+@itemx no-sse4
+@cindex @code{target("sse4")} attribute
+Enable/disable the generation of the SSE4 instructions (both SSE4.1
+and SSE4.2).
+
+@item sse4.1
+@itemx no-sse4.1
+@cindex @code{target("sse4.1")} attribute
+Enable/disable the generation of the sse4.1 instructions.
+
+@item sse4.2
+@itemx no-sse4.2
+@cindex @code{target("sse4.2")} attribute
+Enable/disable the generation of the sse4.2 instructions.
+
+@item sse4a
+@itemx no-sse4a
+@cindex @code{target("sse4a")} attribute
+Enable/disable the generation of the SSE4A instructions.
+
+@item sse5
+@itemx no-sse5
+@cindex @code{target("sse5")} attribute
+Enable/disable the generation of the SSE5 instructions.
+
+@item ssse3
+@itemx no-ssse3
+@cindex @code{target("ssse3")} attribute
+Enable/disable the generation of the SSSE3 instructions.
+
+@item cld
+@itemx no-cld
+@cindex @code{target("cld")} attribute
+Enable/disable the generation of the CLD before string moves.
+
+@item fancy-math-387
+@itemx no-fancy-math-387
+@cindex @code{target("fancy-math-387")} attribute
+Enable/disable the generation of the @code{sin}, @code{cos}, and
+@code{sqrt} instructions on the 387 floating point unit.
+
+@item fused-madd
+@itemx no-fused-madd
+@cindex @code{target("fused-madd")} attribute
+Enable/disable the generation of the fused multiply/add instructions.
+
+@item ieee-fp
+@itemx no-ieee-fp
+@cindex @code{target("ieee-fp")} attribute
+Enable/disable the generation of floating point that depends on IEEE arithmetic.
+
+@item inline-all-stringops
+@itemx no-inline-all-stringops
+@cindex @code{target("inline-all-stringops")} attribute
+Enable/disable inlining of string operations.
+
+@item inline-stringops-dynamically
+@itemx no-inline-stringops-dynamically
+@cindex @code{target("inline-stringops-dynamically")} attribute
+Enable/disable the generation of the inline code to do small string
+operations and calling the library routines for large operations.
+
+@item align-stringops
+@itemx no-align-stringops
+@cindex @code{target("align-stringops")} attribute
+Do/do not align destination of inlined string operations.
+
+@item recip
+@itemx no-recip
+@cindex @code{target("recip")} attribute
+Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
+instructions followed an additional Newton-Rhapson step instead of
+doing a floating point division.
+
+@item arch=@var{ARCH}
+@cindex @code{target("arch=@var{ARCH}")} attribute
+Specify the architecture to generate code for in compiling the function.
+
+@item tune=@var{TUNE}
+@cindex @code{target("tune=@var{TUNE}")} attribute
+Specify the architecture to tune for in compiling the function.
+
+@item fpmath=@var{FPMATH}
+@cindex @code{target("fpmath=@var{FPMATH}")} attribute
+Specify which floating point unit to use.  The
+@code{target("fpmath=sse,387")} option must be specified as
+@code{target("fpmath=sse+387")} because the comma would separate
+different options.
+@end table
+
+On the 386, you can use either multiple strings to specify multiple
+options, or you can separate the option with a comma (@code{,}).
+
+On the 386, the inliner will not inline a function that has different
+target options than the caller, unless the callee has a subset of the
+target options of the caller.  For example a function declared with
+@code{target("sse5")} can inline a function with
+@code{target("sse2")}, since @code{-msse5} implies @code{-msse2}.
+
+The @code{target} attribute is not implemented in GCC versions earlier
+than 4.4, and at present only the 386 uses it.
+
 @item tiny_data
 @cindex tiny data section on the H8/300H and H8S
 Use this attribute on the H8/300H and H8S to indicate that the specified
@@ -3250,12 +3256,6 @@ performing a reloadable link on them.
 
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
-
-@item externally_visible
-@cindex @code{externally_visible} attribute.
-This attribute, attached to a global variable or function nullify
-effect of @option{-fwhole-program} command line option, so the object
-remain visible outside the current compilation unit
 
 @end table
 
