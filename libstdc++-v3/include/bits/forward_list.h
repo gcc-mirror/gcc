@@ -1,6 +1,6 @@
 // <forward_list.h> -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator!=(const _Self& __x) const
       { return this->_M_node != __x._M_node; }
 
-      const _Self&
+      _Self
       _M_next() const
       {
         if (_M_node)
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator!=(const _Self& __x) const
       { return this->_M_node != __x._M_node; }
 
-      const _Self&
+      _Self
       _M_next() const
       {
         if (this->_M_node)
