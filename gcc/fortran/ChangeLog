@@ -1,3 +1,17 @@
+2009-01-04  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35681
+	* ChangeLog-2008: Fix function name.
+
+	PR fortran/38487
+	* dependency.c (gfc_check_argument_var_dependency):
+	Move the check for pointerness inside the if block
+	so that it doesn't affect the return value.
+
+	PR fortran/38669
+	* trans-stmt.c (gfc_trans_call):
+	Add the dependency code after the loop bounds calculation one.
+
 2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.c (do_simplify): Removed already implemented TODO.
