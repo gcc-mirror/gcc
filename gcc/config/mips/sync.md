@@ -27,9 +27,18 @@
 
 ;; Atomic memory operations.
 
-(define_insn "memory_barrier"
-  [(set (mem:BLK (scratch))
-        (unspec:BLK [(const_int 0)] UNSPEC_MEMORY_BARRIER))]
+(define_expand "memory_barrier"
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+  "GENERATE_SYNC"
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*mb_internal"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
   "GENERATE_SYNC"
   "%|sync%-")
 

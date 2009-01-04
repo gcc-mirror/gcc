@@ -24,36 +24,28 @@
 (define_mode_attr modesuffix [(SI "") (DI "x")])
 
 (define_expand "memory_barrier"
-  [(set (mem:BLK (match_dup 0))
-	(unspec_volatile:BLK [(mem:BLK (match_dup 0)) (match_dup 1)]
-			     UNSPECV_MEMBAR))]
+  [(set (match_dup 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
   "TARGET_V8 || TARGET_V9"
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (DImode));
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
   MEM_VOLATILE_P (operands[0]) = 1;
-  if (TARGET_V9)
-    /* member #StoreStore | #LoadStore | #StoreLoad | #LoadLoad */
-    operands[1] = GEN_INT (15);
-  else
-    /* stbar */
-    operands[1] = GEN_INT (8);
+
 })
 
 (define_insn "*stbar"
   [(set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_operand:BLK 1 "" "")
-			      (const_int 8)] UNSPECV_MEMBAR))]
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
   "TARGET_V8"
   "stbar"
   [(set_attr "type" "multi")])
 
+;; membar #StoreStore | #LoadStore | #StoreLoad | #LoadLoad
 (define_insn "*membar"
   [(set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_operand:BLK 1 "" "")
-			      (match_operand:SI 2 "immediate_operand" "I")]
-			      UNSPECV_MEMBAR))]
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
   "TARGET_V9"
-  "membar\t%2"
+  "membar\t15"
   [(set_attr "type" "multi")])
 
 (define_expand "sync_compare_and_swap<mode>"

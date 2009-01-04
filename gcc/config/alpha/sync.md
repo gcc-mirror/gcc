@@ -36,7 +36,7 @@
   MEM_VOLATILE_P (operands[0]) = 1;
 })
 
-(define_insn "*mb_internal"
+(define_insn "*memory_barrier"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MB))]
   ""
