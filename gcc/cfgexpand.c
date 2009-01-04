@@ -1392,16 +1392,23 @@ fini_vars_expansion (void)
   stack_vars_conflict_alloc = 0;
 }
 
+/* Make a fair guess for the size of the stack frame of the current
+   function.  This doesn't have to be exact, the result is only used
+   in the inline heuristics.  So we don't want to run the full stack
+   var packing algorithm (which is quadratic in the number of stack
+   vars).  Instead, we calculate the total size of all stack vars.
+   This turns out to be a pretty fair estimate -- packing of stack
+   vars doesn't happen very often.  */
+
 HOST_WIDE_INT
 estimated_stack_frame_size (void)
 {
   HOST_WIDE_INT size = 0;
+  size_t i;
   tree t, outer_block = DECL_INITIAL (current_function_decl);
 
   init_vars_expansion ();
 
-  /* At this point all variables on the local_decls with TREE_USED
-     set are not associated with any block scope.  Lay them out.  */
   for (t = cfun->local_decls; t; t = TREE_CHAIN (t))
     {
       tree var = TREE_VALUE (t);
@@ -1411,27 +1418,17 @@ estimated_stack_frame_size (void)
       TREE_USED (var) = 1;
     }
   size += account_used_vars_for_block (outer_block, true);
+
   if (stack_vars_num > 0)
     {
-      /* Due to the way alias sets work, no variables with non-conflicting
-	 alias sets may be assigned the same address.  Add conflicts to
-	 reflect this.  */
-      add_alias_set_conflicts ();
-
-      /* If stack protection is enabled, we don't share space between
-	 vulnerable data and non-vulnerable data.  */
-      if (flag_stack_protect)
-	add_stack_protection_conflicts ();
-
-      /* Now that we have collected all stack variables, and have computed a
-	 minimal interference graph, attempt to save some stack space.  */
-      partition_stack_vars ();
-      if (dump_file)
-	dump_stack_var_partition ();
-
+      /* Fake sorting the stack vars for account_stack_vars ().  */
+      stack_vars_sorted = XNEWVEC (size_t, stack_vars_num);
+      for (i = 0; i < stack_vars_num; ++i)
+	stack_vars_sorted[i] = i;
       size += account_stack_vars ();
       fini_vars_expansion ();
     }
+
   return size;
 }
 
