@@ -2670,6 +2670,7 @@ gfc_extend_expr (gfc_expr *e)
   e->value.function.esym = NULL;
   e->value.function.isym = NULL;
   e->value.function.name = NULL;
+  e->user_operator = 1;
 
   if (gfc_pure (NULL) && !gfc_pure (sym))
     {
