@@ -1,3 +1,9 @@
+2009-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/struct-ret-3.c: Include unistd.h.
+	(main): Exit early if system memory page size is
+	larger than 4096 bytes.
+
 2009-01-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/38718
@@ -75,7 +81,7 @@
 	* gcc.c-torture/compile/pr38564.c: New testcase.
 
 2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38529
 	* gcc.dg/vect/pr38529.c: New test.
