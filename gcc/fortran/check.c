@@ -3136,14 +3136,15 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 {
   unsigned int nargs = 0, kiss_size;
   locus *where = NULL;
-  mpz_t put_size;
+  mpz_t put_size, get_size;
   bool have_gfc_real_16; /* Try and mimic HAVE_GFC_REAL_16 in libgfortran.  */
 
   have_gfc_real_16 = gfc_validate_kind (BT_REAL, 16, true) != -1;
 
-  /* Keep these values in sync with kiss_size in libgfortran/random.c.  */
-  kiss_size = have_gfc_real_16 ? 12 : 8;
-  
+  /* Keep the number of bytes in sync with kiss_size in
+     libgfortran/intrinsics/random.c.  */
+  kiss_size = (have_gfc_real_16 ? 48 : 32) / gfc_default_integer_kind;
+
   if (size != NULL)
     {
       if (size->expr_type != EXPR_VARIABLE
@@ -3186,9 +3187,10 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
       if (gfc_array_size (put, &put_size) == SUCCESS
 	  && mpz_get_ui (put_size) < kiss_size)
-	gfc_error ("Array PUT of intrinsic %s is too small (%i/%i) at %L", 
-		   gfc_current_intrinsic, (int) mpz_get_ui (put_size),
-		   kiss_size, where);
+	gfc_error ("Size of '%s' argument of '%s' intrinsic at %L "
+		   "too small (%i/%i)",
+		   gfc_current_intrinsic_arg[1], gfc_current_intrinsic, where, 
+		   (int) mpz_get_ui (put_size), kiss_size);
     }
 
   if (get != NULL)
@@ -3214,6 +3216,13 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
       if (kind_value_check (get, 2, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
+
+       if (gfc_array_size (get, &get_size) == SUCCESS
+ 	  && mpz_get_ui (get_size) < kiss_size)
+	gfc_error ("Size of '%s' argument of '%s' intrinsic at %L "
+		   "too small (%i/%i)",
+		   gfc_current_intrinsic_arg[2], gfc_current_intrinsic, where, 
+		   (int) mpz_get_ui (get_size), kiss_size);
     }
 
   /* RANDOM_SEED may not have more than one non-optional argument.  */
