@@ -1,3 +1,9 @@
+2009-01-05  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (.po.gmo): Use mkinstalldirs, not test -d || mkdir.
+	(.po.pox): Likewise.
+	(po/gcc.pot): Likewise.
+
 2009-01-04  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED_RTX): Delete.
