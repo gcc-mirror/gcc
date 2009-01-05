@@ -1,3 +1,8 @@
+2009-01-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/38472
+	* typeck.c (type_after_usual_arithmetic_conversions): Fix a typo.
+
 2009-01-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38701

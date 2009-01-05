@@ -403,7 +403,7 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 
   /* Perform the integral promotions.  We do not promote real types here.  */
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (t1)
-      && INTEGRAL_OR_ENUMERATION_TYPE_P (t1)) 
+      && INTEGRAL_OR_ENUMERATION_TYPE_P (t2))
     {
       t1 = type_promotes_to (t1);
       t2 = type_promotes_to (t2);
