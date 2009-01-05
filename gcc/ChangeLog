@@ -1,3 +1,35 @@
+2009-01-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/38492
+	* graphite.c (rename_map_elt, debug_rename_elt,
+        debug_rename_map_1, debug_rename_map, new_rename_map_elt,
+        rename_map_elt_info, eq_rename_map_elts,
+        get_new_name_from_old_name, bb_in_sese_p): Moved around.
+	(sese_find_uses_to_rename_use): Renamed sese_build_livein_liveouts_use.
+	(sese_find_uses_to_rename_bb): Renamed sese_build_livein_liveouts_bb.
+	(sese_build_livein_liveouts): New.
+	(new_sese, free_sese): New.
+	(new_scop): Call new_sese.
+	(free_scop): Call free_sese.
+	(rename_variables_from_edge, rename_phis_end_scop): Removed.
+	(register_old_new_names): Renamed register_old_and_new_names.
+	(register_scop_liveout_renames, add_loop_exit_phis,
+	insert_loop_close_phis, struct igp,
+	default_liveout_before_guard, add_guard_exit_phis,
+	insert_guard_phis, copy_renames): New.
+	(translate_clast): Call insert_loop_close_phis and insert_guard_phis.
+	(sese_add_exit_phis_edge): Renamed scop_add_exit_phis_edge.
+	(rewrite_into_sese_closed_ssa): Renamed scop_insert_phis_for_liveouts.
+	(scop_adjust_phis_for_liveouts): New.
+	(gloog): Call scop_adjust_phis_for_liveouts.
+
+	* graphite.h (struct sese): Documented.  Added fields liveout,
+        num_ver and livein.
+	(SESE_LIVEOUT, SESE_LIVEIN, SESE_LIVEIN_VER, SESE_NUM_VER): New.
+	(new_sese, free_sese, sese_build_livein_liveouts): Declared.
+	(struct scop): Added field liveout_renames.
+	(SCOP_LIVEOUT_RENAMES): New.
+
 2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR tree-optimization/38510

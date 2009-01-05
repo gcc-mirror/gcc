@@ -1183,6 +1183,169 @@ free_graphite_bb (struct graphite_bb *gbb)
   XDELETE (gbb);
 }
 
+
+
+/* Structure containing the mapping between the old names and the new
+   names used after block copy in the new loop context.  */
+typedef struct rename_map_elt
+{
+  tree old_name, new_name;
+} *rename_map_elt;
+
+
+/* Print to stderr the element ELT.  */
+
+static void
+debug_rename_elt (rename_map_elt elt)
+{
+  fprintf (stderr, "(");
+  print_generic_expr (stderr, elt->old_name, 0);
+  fprintf (stderr, ", ");
+  print_generic_expr (stderr, elt->new_name, 0);
+  fprintf (stderr, ")\n");
+}
+
+/* Helper function for debug_rename_map.  */
+
+static int
+debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
+{
+  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  debug_rename_elt (entry);
+  return 1;
+}
+
+/* Print to stderr all the elements of MAP.  */
+
+void
+debug_rename_map (htab_t map)
+{
+  htab_traverse (map, debug_rename_map_1, NULL);
+}
+
+/* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
+
+static inline rename_map_elt
+new_rename_map_elt (tree old_name, tree new_name)
+{
+  rename_map_elt res;
+  
+  res = XNEW (struct rename_map_elt);
+  res->old_name = old_name;
+  res->new_name = new_name;
+
+  return res;
+}
+
+/* Computes a hash function for database element ELT.  */
+
+static hashval_t
+rename_map_elt_info (const void *elt)
+{
+  return htab_hash_pointer (((const struct rename_map_elt *) elt)->old_name);
+}
+
+/* Compares database elements E1 and E2.  */
+
+static int
+eq_rename_map_elts (const void *e1, const void *e2)
+{
+  const struct rename_map_elt *elt1 = (const struct rename_map_elt *) e1;
+  const struct rename_map_elt *elt2 = (const struct rename_map_elt *) e2;
+
+  return (elt1->old_name == elt2->old_name);
+}
+
+/* Returns the new name associated to OLD_NAME in MAP.  */
+
+static tree
+get_new_name_from_old_name (htab_t map, tree old_name)
+{
+  struct rename_map_elt tmp;
+  PTR *slot;
+
+  tmp.old_name = old_name;
+  slot = htab_find_slot (map, &tmp, NO_INSERT);
+
+  if (slot && *slot)
+    return ((rename_map_elt) *slot)->new_name;
+
+  return old_name;
+}
+
+
+
+/* Returns true when BB is in REGION.  */
+
+static bool
+bb_in_sese_p (basic_block bb, sese region)
+{
+  return pointer_set_contains (SESE_REGION_BBS (region), bb);
+}
+
+/* For a USE in BB, if BB is outside REGION, mark the USE in the
+   SESE_LIVEIN and SESE_LIVEOUT sets.  */
+
+static void
+sese_build_livein_liveouts_use (sese region, basic_block bb, tree use)
+{
+  unsigned ver;
+  basic_block def_bb;
+
+  if (TREE_CODE (use) != SSA_NAME)
+    return;
+
+  ver = SSA_NAME_VERSION (use);
+  def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
+  if (!def_bb
+      || !bb_in_sese_p (def_bb, region)
+      || bb_in_sese_p (bb, region))
+    return;
+
+  if (!SESE_LIVEIN_VER (region, ver))
+    SESE_LIVEIN_VER (region, ver) = BITMAP_ALLOC (NULL);
+
+  bitmap_set_bit (SESE_LIVEIN_VER (region, ver), bb->index);
+  bitmap_set_bit (SESE_LIVEOUT (region), ver);
+}
+
+/* Marks for rewrite all the SSA_NAMES defined in REGION and that are
+   used in BB that is outside of the REGION.  */
+
+static void
+sese_build_livein_liveouts_bb (sese region, basic_block bb)
+{
+  gimple_stmt_iterator bsi;
+  edge e;
+  edge_iterator ei;
+  ssa_op_iter iter;
+  tree var;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
+      sese_build_livein_liveouts_use (region, bb,
+				      PHI_ARG_DEF_FROM_EDGE (gsi_stmt (bsi), e));
+
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+    FOR_EACH_SSA_TREE_OPERAND (var, gsi_stmt (bsi), iter, SSA_OP_ALL_USES)
+      sese_build_livein_liveouts_use (region, bb, var);
+}
+
+/* Build the SESE_LIVEIN and SESE_LIVEOUT for REGION.  */
+
+void
+sese_build_livein_liveouts (sese region)
+{
+  basic_block bb;
+
+  SESE_LIVEOUT (region) = BITMAP_ALLOC (NULL);
+  SESE_NUM_VER (region) = num_ssa_names;
+  SESE_LIVEIN (region) = XCNEWVEC (bitmap, SESE_NUM_VER (region));
+
+  FOR_EACH_BB (bb)
+    sese_build_livein_liveouts_bb (region, bb);
+}
+
 /* Register basic blocks belonging to a region in a pointer set.  */
 
 static void
@@ -1203,6 +1366,47 @@ register_bb_in_sese (basic_block entry_bb, basic_block exit_bb, sese region)
     }
 }
 
+/* Builds a new SESE region from edges ENTRY and EXIT.  */
+
+sese
+new_sese (edge entry, edge exit)
+{
+  sese res = XNEW (struct sese);
+
+  SESE_ENTRY (res) = entry;
+  SESE_EXIT (res) = exit;
+  SESE_REGION_BBS (res) = pointer_set_create ();
+  register_bb_in_sese (entry->dest, exit->dest, res);
+
+  SESE_LIVEOUT (res) = NULL;
+  SESE_NUM_VER (res) = 0;
+  SESE_LIVEIN (res) = NULL;
+
+  return res;
+}
+
+/* Deletes REGION.  */
+
+void
+free_sese (sese region)
+{
+  int i;
+
+  for (i = 0; i < SESE_NUM_VER (region); i++)
+    BITMAP_FREE (SESE_LIVEIN_VER (region, i));
+
+  if (SESE_LIVEIN (region))
+    free (SESE_LIVEIN (region));
+
+  if (SESE_LIVEOUT (region))
+    BITMAP_FREE (SESE_LIVEOUT (region));
+
+  pointer_set_destroy (SESE_REGION_BBS (region));
+  XDELETE (region);
+}
+
+
+
 /* Creates a new scop starting with ENTRY.  */
 
 static scop_p
@@ -1212,12 +1416,7 @@ new_scop (edge entry, edge exit)
 
   gcc_assert (entry && exit);
 
-  SCOP_REGION (scop) = XNEW (struct sese);
-  SESE_ENTRY (SCOP_REGION (scop)) = entry;
-  SESE_EXIT (SCOP_REGION (scop)) = exit;
-  SESE_REGION_BBS (SCOP_REGION (scop)) = pointer_set_create ();
-  register_bb_in_sese (SCOP_ENTRY (scop), SCOP_EXIT (scop),
-		       SCOP_REGION (scop));
+  SCOP_REGION (scop) = new_sese (entry, exit);
   SCOP_BBS (scop) = VEC_alloc (graphite_bb_p, heap, 3);
   SCOP_OLDIVS (scop) = VEC_alloc (name_tree, heap, 3);
   SCOP_BBS_B (scop) = BITMAP_ALLOC (NULL);
@@ -1230,6 +1429,8 @@ new_scop (edge entry, edge exit)
   SCOP_LOOP2CLOOG_LOOP (scop) = htab_create (10, hash_loop_to_cloog_loop,
 					     eq_loop_to_cloog_loop,
 					     free);
+  SCOP_LIVEOUT_RENAMES (scop) = htab_create (10, rename_map_elt_info,
+					     eq_rename_map_elts, free);
   return scop;
 }
 
@@ -1261,7 +1462,8 @@ free_scop (scop_p scop)
   VEC_free (name_tree, heap, SCOP_PARAMS (scop));
   cloog_program_free (SCOP_PROG (scop));
   htab_delete (SCOP_LOOP2CLOOG_LOOP (scop)); 
-  XDELETE (SCOP_REGION (scop));
+  htab_delete (SCOP_LIVEOUT_RENAMES (scop));
+  free_sese (SCOP_REGION (scop));
   XDELETE (scop);
 }
 
@@ -3754,94 +3956,6 @@ graphite_create_new_loop (scop_p scop, edge entry_edge,
   return loop;
 }
 
-/* Structure containing the mapping between the old names and the new
-   names used after block copy in the new loop context.  */
-typedef struct rename_map_elt
-{
-  tree old_name, new_name;
-} *rename_map_elt;
-
-
-/* Print to stderr the element ELT.  */
-
-static void
-debug_rename_elt (rename_map_elt elt)
-{
-  fprintf (stderr, "(");
-  print_generic_expr (stderr, elt->old_name, 0);
-  fprintf (stderr, ", ");
-  print_generic_expr (stderr, elt->new_name, 0);
-  fprintf (stderr, ")\n");
-}
-
-/* Helper function for debug_rename_map.  */
-
-static int
-debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
-{
-  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
-  debug_rename_elt (entry);
-  return 1;
-}
-
-/* Print to stderr all the elements of MAP.  */
-
-void
-debug_rename_map (htab_t map)
-{
-  htab_traverse (map, debug_rename_map_1, NULL);
-}
-
-/* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
-
-static inline rename_map_elt
-new_rename_map_elt (tree old_name, tree new_name)
-{
-  rename_map_elt res;
-  
-  res = XNEW (struct rename_map_elt);
-  res->old_name = old_name;
-  res->new_name = new_name;
-
-  return res;
-}
-
-/* Computes a hash function for database element ELT.  */
-
-static hashval_t
-rename_map_elt_info (const void *elt)
-{
-  return htab_hash_pointer (((const struct rename_map_elt *) elt)->old_name);
-}
-
-/* Compares database elements E1 and E2.  */
-
-static int
-eq_rename_map_elts (const void *e1, const void *e2)
-{
-  const struct rename_map_elt *elt1 = (const struct rename_map_elt *) e1;
-  const struct rename_map_elt *elt2 = (const struct rename_map_elt *) e2;
-
-  return (elt1->old_name == elt2->old_name);
-}
-
-/* Returns the new name associated to OLD_NAME in MAP.  */
-
-static tree
-get_new_name_from_old_name (htab_t map, tree old_name)
-{
-  struct rename_map_elt tmp;
-  PTR *slot;
-
-  tmp.old_name = old_name;
-  slot = htab_find_slot (map, &tmp, NO_INSERT);
-
-  if (slot && *slot)
-    return ((rename_map_elt) *slot)->new_name;
-
-  return old_name;
-}
-
 /* Rename the SSA_NAMEs used in STMT and that appear in IVSTACK.  */
 
 static void 
@@ -4032,38 +4146,6 @@ rename_variables (basic_block bb, htab_t map)
     rename_variables_in_stmt (gsi_stmt (gsi), map);
 }
 
-/* Rename following the information from MAP the PHI node argument
-   corresponding to the edge E.  In order to allow several renames of
-   that argument, we match the original SSA_NAME on the argument
-   coming from the edge different than E.  */
-
-static void
-rename_variables_from_edge (edge e, gimple phi, htab_t map)
-{
-  int n = e->dest_idx == 0 ? 1 : 0;
-  tree old_name = gimple_phi_arg_def (phi, n);
-  tree new_name = get_new_name_from_old_name (map, old_name);
-
-  gcc_assert (gimple_phi_num_args (phi) == 2
-	      && gimple_phi_arg_edge (phi, e->dest_idx) == e);
-
-  SET_PHI_ARG_DEF (phi, n, new_name);
-}
-
-/* Rename all the phi arguments for the edges comming from the scop
-   according to the MAP.  */
-
-static void
-rename_phis_end_scop (scop_p scop, htab_t map)
-{
-  basic_block after_scop = SCOP_EXIT (scop);
-  edge e = SESE_EXIT (SCOP_REGION (scop));
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_phis (after_scop); !gsi_end_p (gsi); gsi_next (&gsi))
-    rename_variables_from_edge (e, gsi_stmt (gsi), map);
-}
-
 /* Remove condition from BB.  */
 
 static void
@@ -4144,7 +4226,7 @@ build_iv_mapping (loop_iv_stack ivstack, htab_t map, gbb_p gbb, scop_p scop)
 /* Register in MAP the tuple (old_name, new_name).  */
 
 static void
-register_old_new_names (htab_t map, tree old_name, tree new_name)
+register_old_and_new_names (htab_t map, tree old_name, tree new_name)
 {
   struct rename_map_elt tmp;
   PTR *slot;
@@ -4193,9 +4275,30 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t map)
 	{
 	  tree old_name = DEF_FROM_PTR (def_p);
 	  tree new_name = create_new_def_for (old_name, copy, def_p);
-	  register_old_new_names (map, old_name, new_name);
+	  register_old_and_new_names (map, old_name, new_name);
 	}
     }
+}
+
+/* Records in SCOP_LIVEOUT_RENAMES the names that are live out of
+   the SCOP and that appear in the RENAME_MAP.  */
+
+static void
+register_scop_liveout_renames (scop_p scop, htab_t rename_map)
+{
+  int i;
+  sese region = SCOP_REGION (scop);
+
+  for (i = 0; i < SESE_NUM_VER (region); i++)
+    if (bitmap_bit_p (SESE_LIVEOUT (region), i)
+	&& is_gimple_reg (ssa_name (i)))
+      {
+	tree old_name = ssa_name (i);
+	tree new_name = get_new_name_from_old_name (rename_map, old_name);
+
+	register_old_and_new_names (SCOP_LIVEOUT_RENAMES (scop),
+				    old_name, new_name);
+      }
 }
 
 /* Copies BB and includes in the copied BB all the statements that can
@@ -4215,15 +4318,153 @@ copy_bb_and_scalar_dependences (basic_block bb, scop_p scop,
   rename_variables (new_bb, map);
   remove_phi_nodes (new_bb);
   expand_scalar_variables (new_bb, scop, context_loop, map);
-  rename_phis_end_scop (scop, map);
+  register_scop_liveout_renames (scop, map);
 
   return next_e;
 }
 
-/* Translates a CLAST statement STMT to GCC representation.  NEXT_E is
-   the edge where new generated code should be attached.  BB_EXIT is the last
-   basic block that defines the scope of code generation.  CONTEXT_LOOP is the
-   loop in which the generated code will be placed (might be NULL).  */
+/* Helper function for htab_traverse in insert_loop_close_phis.  */
+
+static int
+add_loop_exit_phis (void **slot, void *s)
+{
+  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  tree new_name = entry->new_name;
+  basic_block bb = (basic_block) s;
+  gimple phi = create_phi_node (new_name, bb);
+  tree res = create_new_def_for (gimple_phi_result (phi), phi,
+				 gimple_phi_result_ptr (phi));
+
+  add_phi_arg (phi, new_name, single_pred_edge (bb));
+
+  entry->new_name = res;
+  *slot = entry;
+  return 1;
+}
+
+/* Iterate over the SCOP_LIVEOUT_RENAMES (SCOP) and get tuples of the
+   form (OLD_NAME, NEW_NAME).  Insert in BB "RES = phi (NEW_NAME)",
+   and finally register in SCOP_LIVEOUT_RENAMES (scop) the tuple
+   (OLD_NAME, RES).  */
+
+static void
+insert_loop_close_phis (scop_p scop, basic_block bb)
+{
+  update_ssa (TODO_update_ssa);
+  htab_traverse (SCOP_LIVEOUT_RENAMES (scop), add_loop_exit_phis, bb);
+  update_ssa (TODO_update_ssa);
+}
+
+/* Helper structure for htab_traverse in insert_guard_phis.  */
+
+struct igp {
+  basic_block bb;
+  edge true_edge, false_edge;
+  htab_t liveout_before_guard;
+};
+
+/* Return the default name that is before the guard.  */
+
+static tree
+default_liveout_before_guard (htab_t liveout_before_guard, tree old_name)
+{
+  tree res = get_new_name_from_old_name (liveout_before_guard, old_name);
+
+  if (res == old_name)
+    {
+      if (is_gimple_reg (res))
+	return fold_convert (TREE_TYPE (res), integer_zero_node);
+      return gimple_default_def (cfun, res);
+    }
+
+  return res;
+}
+
+/* Helper function for htab_traverse in insert_guard_phis.  */
+
+static int
+add_guard_exit_phis (void **slot, void *s)
+{
+  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  struct igp *i = (struct igp *) s;
+  basic_block bb = i->bb;
+  edge true_edge = i->true_edge;
+  edge false_edge = i->false_edge;
+  tree name1 = entry->new_name;
+  tree name2 = default_liveout_before_guard (i->liveout_before_guard,
+					     entry->old_name);
+  gimple phi = create_phi_node (name1, bb);
+  tree res = create_new_def_for (gimple_phi_result (phi), phi,
+				 gimple_phi_result_ptr (phi));
+
+  add_phi_arg (phi, name1, true_edge);
+  add_phi_arg (phi, name2, false_edge);
+
+  entry->new_name = res;
+  *slot = entry;
+  return 1;
+}
+
+/* Iterate over the SCOP_LIVEOUT_RENAMES (SCOP) and get tuples of the
+   form (OLD_NAME, NAME1).  If there is a correspondent tuple of
+   OLD_NAME in LIVEOUT_BEFORE_GUARD, i.e. (OLD_NAME, NAME2) then
+   insert in BB
+   
+   | RES = phi (NAME1 (on TRUE_EDGE), NAME2 (on FALSE_EDGE))"
+
+   if there is no tuple for OLD_NAME in LIVEOUT_BEFORE_GUARD, insert
+
+   | RES = phi (NAME1 (on TRUE_EDGE),
+   |            DEFAULT_DEFINITION of NAME1 (on FALSE_EDGE))".
+
+   Finally register in SCOP_LIVEOUT_RENAMES (scop) the tuple
+   (OLD_NAME, RES).  */
+
+static void
+insert_guard_phis (scop_p scop, basic_block bb, edge true_edge,
+		   edge false_edge, htab_t liveout_before_guard)
+{
+  struct igp i;
+  i.bb = bb;
+  i.true_edge = true_edge;
+  i.false_edge = false_edge;
+  i.liveout_before_guard = liveout_before_guard;
+
+  update_ssa (TODO_update_ssa);
+  htab_traverse (SCOP_LIVEOUT_RENAMES (scop), add_guard_exit_phis, &i);
+  update_ssa (TODO_update_ssa);
+}
+
+/* Helper function for htab_traverse.  */
+
+static int
+copy_renames (void **slot, void *s)
+{
+  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  htab_t res = (htab_t) s;
+  tree old_name = entry->old_name;
+  tree new_name = entry->new_name;
+  struct rename_map_elt tmp;
+  PTR *x;
+
+  tmp.old_name = old_name;
+  x = htab_find_slot (res, &tmp, INSERT);
+
+  if (!*x)
+    *x = new_rename_map_elt (old_name, new_name);
+
+  return 1;
+}
+
+/* Translates a CLAST statement STMT to GCC representation in the
+   context of a SCOP.
+
+   - NEXT_E is the edge where new generated code should be attached.
+   - CONTEXT_LOOP is the loop in which the generated code will be placed
+     (might be NULL).  
+   - IVSTACK contains the surrounding loops around the statement to be
+     translated.
+*/
 
 static edge
 translate_clast (scop_p scop, struct loop *context_loop,
@@ -4264,14 +4505,16 @@ translate_clast (scop_p scop, struct loop *context_loop,
 				    ivstack, context_loop ? context_loop
 				    : get_loop (0));
       edge last_e = single_exit (loop);
-	
+
       next_e = translate_clast (scop, loop, ((struct clast_for *) stmt)->body,
 				single_pred_edge (loop->latch), ivstack);
       redirect_edge_succ_nodup (next_e, loop->latch);
-	
+
       set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
       loop_iv_stack_pop (ivstack);
       last_e = single_succ_edge (split_edge (last_e));
+      insert_loop_close_phis (scop, last_e->src);
+
       recompute_all_dominators ();
       graphite_verify ();
       return translate_clast (scop, context_loop, stmt->next, last_e, ivstack);
@@ -4279,15 +4522,28 @@ translate_clast (scop_p scop, struct loop *context_loop,
 
   if (CLAST_STMT_IS_A (stmt, stmt_guard))
     {
+      htab_t liveout_before_guard = htab_create (10, rename_map_elt_info,
+						 eq_rename_map_elts, free);
       edge last_e = graphite_create_new_guard (scop, next_e,
 					       ((struct clast_guard *) stmt),
 					       ivstack);
       edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+      edge false_e = get_false_edge_from_guard_bb (next_e->dest);
+      edge exit_true_e = single_succ_edge (true_e->dest);
+      edge exit_false_e = single_succ_edge (false_e->dest);
+
+      htab_traverse (SCOP_LIVEOUT_RENAMES (scop), copy_renames,
+		     liveout_before_guard);
+
       next_e = translate_clast (scop, context_loop, 
 				((struct clast_guard *) stmt)->then,
 				true_e, ivstack);
+      insert_guard_phis (scop, last_e->src, exit_true_e, exit_false_e,
+			 liveout_before_guard);
+      htab_delete (liveout_before_guard);
       recompute_all_dominators ();
       graphite_verify ();
+
       return translate_clast (scop, context_loop, stmt->next, last_e, ivstack);
     }
 
@@ -4710,72 +4966,10 @@ move_sese_in_condition (sese region)
   return if_region;
 }
 
-/* Returns true when BB is in REGION.  */
-
-static bool
-bb_in_sese_p (basic_block bb, sese region)
-{
-  return pointer_set_contains (SESE_REGION_BBS (region), bb);
-}
-
-/* For USE in BB, if it is used outside of the REGION it is defined in,
-   mark it for rewrite.  Record basic block BB where it is used
-   to USE_BLOCKS.  Record the ssa name index to NEED_PHIS bitmap.  */
-
-static void
-sese_find_uses_to_rename_use (sese region, basic_block bb, tree use,
-			      bitmap *use_blocks, bitmap need_phis)
-{
-  unsigned ver;
-  basic_block def_bb;
-
-  if (TREE_CODE (use) != SSA_NAME)
-    return;
-
-  ver = SSA_NAME_VERSION (use);
-  def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
-  if (!def_bb
-      || !bb_in_sese_p (def_bb, region)
-      || bb_in_sese_p (bb, region))
-    return;
-
-  if (!use_blocks[ver])
-    use_blocks[ver] = BITMAP_ALLOC (NULL);
-  bitmap_set_bit (use_blocks[ver], bb->index);
-
-  bitmap_set_bit (need_phis, ver);
-}
-
-/* Marks names that are used in BB and outside of the loop they are
-   defined in for rewrite.  Records the set of blocks in that the ssa
-   names are defined to USE_BLOCKS.  Record the SSA names that will
-   need exit PHIs in NEED_PHIS.  */
-
-static void
-sese_find_uses_to_rename_bb (sese region, basic_block bb,
-			     bitmap *use_blocks, bitmap need_phis)
-{
-  gimple_stmt_iterator bsi;
-  edge e;
-  edge_iterator ei;
-  ssa_op_iter iter;
-  tree var;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
-      sese_find_uses_to_rename_use (region, bb,
-				    PHI_ARG_DEF_FROM_EDGE (gsi_stmt (bsi), e),
-				    use_blocks, need_phis);
-
-  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-    FOR_EACH_SSA_TREE_OPERAND (var, gsi_stmt (bsi), iter, SSA_OP_ALL_USES)
-      sese_find_uses_to_rename_use (region, bb, var, use_blocks, need_phis);
-}
-
 /* Add exit phis for USE on EXIT.  */
 
 static void
-sese_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
+scop_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
 {
   gimple phi = create_phi_node (use, exit);
 
@@ -4786,10 +4980,10 @@ sese_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
 }
 
 /* Add phi nodes for VAR that is used in LIVEIN.  Phi nodes are
-   inserted in block WHERE.  */
+   inserted in block BB.  */
 
 static void
-sese_add_exit_phis_var (basic_block where, tree var, bitmap livein,
+scop_add_exit_phis_var (basic_block bb, tree var, bitmap livein,
 			edge false_e, edge true_e)
 {
   bitmap def;
@@ -4805,39 +4999,82 @@ sese_add_exit_phis_var (basic_block where, tree var, bitmap livein,
   compute_global_livein (livein, def);
   BITMAP_FREE (def);
 
-  sese_add_exit_phis_edge (where, var, false_e, true_e);
+  scop_add_exit_phis_edge (bb, var, false_e, true_e);
 }
 
-/* Insert in the block WHERE phi nodes for variables defined in REGION
-   and used outside the REGION.  */
+/* Insert in the block BB phi nodes for variables defined in REGION
+   and used outside the REGION.  The code generation moves REGION in
+   the else clause of an "if (1)" and generates code in the then
+   clause that is at this point empty:
+
+   | if (1)
+   |   empty;
+   | else
+   |   REGION;
+*/
 
 static void
-rewrite_into_sese_closed_ssa (sese region, basic_block where,
-			      edge false_e, edge true_e)
+scop_insert_phis_for_liveouts (sese region, basic_block bb,
+			       edge false_e, edge true_e)
 {
   unsigned i;
-  basic_block bb;
   bitmap_iterator bi;
-  bitmap names_to_rename = BITMAP_ALLOC (NULL);
-  unsigned old_num_ssa_names = num_ssa_names;
-  bitmap *use_blocks = XCNEWVEC (bitmap, old_num_ssa_names);
 
   update_ssa (TODO_update_ssa);
 
-  FOR_EACH_BB (bb)
-    sese_find_uses_to_rename_bb (region, bb, use_blocks, names_to_rename);
-
-  EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i, bi)
-    sese_add_exit_phis_var (where, ssa_name (i), use_blocks[i],
+  EXECUTE_IF_SET_IN_BITMAP (SESE_LIVEOUT (region), 0, i, bi)
+    scop_add_exit_phis_var (bb, ssa_name (i), SESE_LIVEIN_VER (region, i),
 			    false_e, true_e);
 
   update_ssa (TODO_update_ssa);
+}
 
-  for (i = 0; i < old_num_ssa_names; i++)
-    BITMAP_FREE (use_blocks[i]);
+/* Adjusts the phi nodes in the block BB for variables defined in
+   SCOP_REGION and used outside the SCOP_REGION.  The code generation
+   moves SCOP_REGION in the else clause of an "if (1)" and generates
+   code in the then clause:
 
-  free (use_blocks);
-  BITMAP_FREE (names_to_rename);
+   | if (1)
+   |   generated code from REGION;
+   | else
+   |   REGION;
+
+   To adjust the phi nodes after the condition, SCOP_LIVEOUT_RENAMES
+   hash table is used: this stores for a name that is part of the
+   LIVEOUT of SCOP_REGION its new name in the generated code.  */
+
+static void
+scop_adjust_phis_for_liveouts (scop_p scop, basic_block bb, edge false_e,
+			       edge true_e)
+{
+  gimple_stmt_iterator si;
+
+  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      unsigned i, false_i;
+      gimple phi = gsi_stmt (si);
+
+      if (!is_gimple_reg (PHI_RESULT (phi)))
+	continue;
+
+      for (i = 0; i < gimple_phi_num_args (phi); i++)
+	if (gimple_phi_arg_edge (phi, i) == false_e)
+	  {
+	    false_i = i;
+	    break;
+	  }
+
+      for (i = 0; i < gimple_phi_num_args (phi); i++)
+	if (gimple_phi_arg_edge (phi, i) == true_e)
+	  {
+	    tree old_name = gimple_phi_arg_def (phi, false_i);
+	    tree new_name = get_new_name_from_old_name
+	      (SCOP_LIVEOUT_RENAMES (scop), old_name);
+
+	    gcc_assert (old_name != new_name);
+	    SET_PHI_ARG_DEF (phi, i, new_name);
+	  }
+    }
 }
 
 /* Returns the first cloog name used in EXPR.  */
@@ -4976,24 +5213,33 @@ gloog (scop_p scop, struct clast_stmt *stmt)
     }
 
   if_region = move_sese_in_condition (SCOP_REGION (scop));
-  rewrite_into_sese_closed_ssa (SCOP_REGION (scop),
-				if_region->region->exit->src,
-				if_region->false_region->exit,
-				if_region->true_region->exit);
+  sese_build_livein_liveouts (SCOP_REGION (scop));
+  scop_insert_phis_for_liveouts (SCOP_REGION (scop),
+				 if_region->region->exit->src,
+				 if_region->false_region->exit,
+				 if_region->true_region->exit);
   recompute_all_dominators ();
   graphite_verify ();
   context_loop = SESE_ENTRY (SCOP_REGION (scop))->src->loop_father;
   compute_cloog_iv_types (stmt);
-  new_scop_exit_edge = translate_clast (scop, context_loop,
-					stmt, if_region->true_region->entry,
+
+  new_scop_exit_edge = translate_clast (scop, context_loop, stmt,
+					if_region->true_region->entry,
 					&ivstack);
+  free_loop_iv_stack (&ivstack);
+  cloog_clast_free (stmt);
+
+  graphite_verify ();
+  scop_adjust_phis_for_liveouts (scop,
+				 if_region->region->exit->src,
+				 if_region->false_region->exit,
+				 if_region->true_region->exit);
+
   recompute_all_dominators ();
   graphite_verify ();
   cleanup_tree_cfg ();
   recompute_all_dominators ();
   graphite_verify ();
-  free_loop_iv_stack (&ivstack);
-  cloog_clast_free (stmt);
 }
 
 /* Returns the number of data references in SCOP.  */
