@@ -1,3 +1,9 @@
+2009-01-05  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (.po.gmo): Use mkinstalldirs, not test -d || mkdir.
+	(.po.pox): Likewise.
+	(po/$(PACKAGE).pot): Likewise.
+
 2008-12-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/37033
