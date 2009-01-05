@@ -43,7 +43,7 @@
 2009-01-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (Function Attributes): Move @cindex after @item
-	for 'artifical' and 'flatten'. Fix grammar for 'externally_visible'
+	for 'artificial' and 'flatten'. Fix grammar for 'externally_visible'
 	and put in alphabetical order. Fix 'target' name and put in order.
 	* doc/invoke.texi (-Wstrict-null-sentinel, -fipa-matrix-reorg): Fix
 	typos.
