@@ -2131,6 +2131,9 @@ cplus_demangle_type (struct d_info *di)
 	  peek = d_next_char (di);
 	  ret->u.s_fixed.sat = (peek == 's');
 	  break;
+
+	default:
+	  return NULL;
 	}
       break;
 
