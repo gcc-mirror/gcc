@@ -1,3 +1,8 @@
+2009-01-05  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/37159
+	* gfortran.dg/random_seed_1.f90: Updated.
+
 2009-01-05  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38669

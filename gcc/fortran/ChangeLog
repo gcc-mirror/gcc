@@ -1,3 +1,9 @@
+2009-01-05  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/37159
+	* check.c (gfc_check_random_seed): Added size check for GET
+	dummy argument, reworded error messages to follow common pattern.
+
 2009-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38672
