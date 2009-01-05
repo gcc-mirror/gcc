@@ -1878,7 +1878,7 @@ struct lang_decl GTY(())
   (IDENTIFIER_OPNAME_P (DECL_NAME (NODE))		\
    ? DECL_LANG_SPECIFIC (NODE)->u.f.operator_code : ERROR_MARK)
 
-/* Nonzero if NODE is an assignment operator.  */
+/* Nonzero if NODE is an assignment operator (including += and such).  */
 #define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.assignment_operator_p)
 
