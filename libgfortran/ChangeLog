@@ -1,3 +1,9 @@
+2009-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38735
+	* io/unit.c (get_internal_unit): Set default BLANK= status to NULL for
+	internal units.
+
 2008-12-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/31832
