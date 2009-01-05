@@ -275,13 +275,36 @@ DEF_VEC_ALLOC_P (name_tree, heap);
    by two edges.  */
 typedef struct sese
 {
+  /* Single ENTRY and single EXIT from the SESE region.  */
   edge entry, exit;
+
+  /* REGION_BASIC_BLOCKS contains the set of all the basic blocks
+     belonging to the SESE region.  */
   struct pointer_set_t *region_basic_blocks;
+
+  /* An SSA_NAME version is flagged in the LIVEOUT bitmap if the
+     SSA_NAME is defined inside and used outside the SESE region.  */
+  bitmap liveout;
+
+  /* The overall number of SSA_NAME versions used to index LIVEIN.  */
+  int num_ver;
+
+  /* For each SSA_NAME version VER in LIVEOUT, LIVEIN[VER] contains
+     the set of basic blocks indices that contain a use of VER.  */
+  bitmap *livein;
 } *sese;
 
 #define SESE_ENTRY(S) (S->entry)
 #define SESE_EXIT(S) (S->exit)
 #define SESE_REGION_BBS(S) (S->region_basic_blocks)
+#define SESE_LIVEOUT(S) (S->liveout)
+#define SESE_LIVEIN(S) (S->livein)
+#define SESE_LIVEIN_VER(S, I) (S->livein[I])
+#define SESE_NUM_VER(S) (S->num_ver)
+
+extern sese new_sese (edge, edge);
+extern void free_sese (sese);
+extern void sese_build_livein_liveouts (sese);
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */
@@ -319,6 +342,10 @@ struct scop
      can only add new params before generating the bb domains, otherwise they
      become invalid.  */
   bool add_params;
+
+  /* LIVEOUT_RENAMES registers the rename mapping that has to be
+     applied after code generation.  */
+  htab_t liveout_renames;
 };
 
 #define SCOP_BBS(S) S->bbs
@@ -341,6 +368,7 @@ struct scop
 #define SCOP_PROG(S) S->program
 #define SCOP_LOOP2CLOOG_LOOP(S) S->loop2cloog_loop
 #define SCOP_LOOPS_MAPPING(S) S->loops_mapping
+#define SCOP_LIVEOUT_RENAMES(S) S->liveout_renames
 
 extern void debug_scop (scop_p, int);
 extern void debug_scops (int);
