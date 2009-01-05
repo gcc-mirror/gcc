@@ -15048,7 +15048,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-GLIBCXX_CHECK_STANDARD_LAYOUT
 
 # Enable all the variable C++ runtime options that don't require linking.
 
