@@ -1,3 +1,10 @@
+2009-01-05  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38669
+	PR fortran/38726
+	* gfortran.dg/elemental_subroutine_7.f90: 
+	Fix p values so that it can be used as vector subscript.
+
 2009-01-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted7.C: New test.

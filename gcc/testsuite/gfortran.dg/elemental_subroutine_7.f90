@@ -14,7 +14,7 @@ program gfcbu84_main
   jplev = 42
   k_lev = 1
   call random_number (r)
-  p = 20 * r - 10
+  p = 41 * r + 1
   allocate (q(jplev))
 
   q = 0
