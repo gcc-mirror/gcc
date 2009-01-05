@@ -81410,6 +81410,10 @@ _ACEOF
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
+#define HAVE_FABSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_FREXPF 1
 _ACEOF
 
