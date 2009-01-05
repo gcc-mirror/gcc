@@ -1,3 +1,14 @@
+2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/38510
+	* gcc.dg/graphite/pr38510.c: New.
+
+2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Jan Sjodin <jan.sjodin@amd.com>
+
+	PR tree-optimization/38500
+	* gcc.dg/graphite/pr38500.c: New.
+
 2009-01-05  Laurent GUERBY  <laurent@guerby.net>
 
 	* gcc.c-torture/compile/20001226-1.c: Generalize 
