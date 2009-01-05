@@ -4147,7 +4147,8 @@ defaultable_fn_p (tree fn)
     }
   else if (DECL_DESTRUCTOR_P (fn))
     return true;
-  else if (DECL_ASSIGNMENT_OPERATOR_P (fn))
+  else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
+	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
     return copy_fn_p (fn);
   else
     return false;
