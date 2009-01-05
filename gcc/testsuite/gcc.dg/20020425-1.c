@@ -1,5 +1,6 @@
 /* PR c/2161: parser stack overflow.  */
 /* { dg-do compile } */
+/* { dg-timeout-factor 4.0 } */
 
 #define ONE	else if (0) { }
 #define TEN	ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
