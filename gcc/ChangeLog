@@ -1,3 +1,18 @@
+2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR tree-optimization/38510
+	* graphite.c (recompute_all_dominators): Call mark_irreducible_loops.
+	(translate_clast): Call recompute_all_dominators before
+	graphite_verify.
+	(gloog): Call recompute_all_dominators before graphite_verify.
+
+2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Jan Sjodin <jan.sjodin@amd.com>
+
+	PR tree-optimization/38500
+	* graphite.c (create_sese_edges): Call fix_loop_structure after
+	splitting blocks.
+
 2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config.gcc: Add m32r*-*-rtems*.
