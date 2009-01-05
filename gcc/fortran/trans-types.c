@@ -1930,7 +1930,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 
   gfc_finish_type (typenode);
   gfc_set_decl_location (TYPE_STUB_DECL (typenode), &derived->declared_at);
-  if (derived->module && derived->ns->proc_name->attr.flavor == FL_MODULE)
+  if (derived->module && derived->ns->proc_name
+      && derived->ns->proc_name->attr.flavor == FL_MODULE)
     {
       if (derived->ns->proc_name->backend_decl
 	  && TREE_CODE (derived->ns->proc_name->backend_decl)
