@@ -356,7 +356,7 @@ ia64*-*-hpux*)
 	;;
 iq2000*-*-elf*)
         ;;
-m32r-*-elf*)
+m32r-*-elf*|m32r-*-rtems*)
  	;;
 m32rle-*-elf*)
 	;;
