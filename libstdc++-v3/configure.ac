@@ -102,7 +102,6 @@ GLIBCXX_ENABLE_ATOMIC_BUILTINS
 
 # Checks for compiler support that doesn't require linking.
 GLIBCXX_CHECK_COMPILER_FEATURES
-GLIBCXX_CHECK_STANDARD_LAYOUT
 
 # Enable all the variable C++ runtime options that don't require linking.
 GLIBCXX_ENABLE_CSTDIO

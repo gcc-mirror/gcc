@@ -1,5 +1,10 @@
 2009-01-05  Ben Elliston  <bje@au.ibm.com>
 
+        * configure.ac (GLIBCXX_CHECK_STANDARD_LAYOUT): Remove invocation.
+        * configure: Regenerate.
+
+2009-01-05  Ben Elliston  <bje@au.ibm.com>
+
 	* configure.ac: Exchange the order of GLIBCXX_ENABLE_THREADS and
 	GLIBCXX_ENABLE_ATOMIC_BUILTINS macro invocations.
 	* configure: Regenerate.
