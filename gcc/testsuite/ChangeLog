@@ -1,3 +1,8 @@
+2009-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/38735
+	* gfortran.dg/fmt_bz_bn.f: Update test.
+
 2009-01-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38472
