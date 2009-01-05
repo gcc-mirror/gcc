@@ -1,5 +1,9 @@
 2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
+	* config.host: Add m32r*-*-rtems*.
+
+2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+
 	* config.gcc: Add m32r*-*-rtems*.
 	* config/m32r/rtems.h: New file.
 
