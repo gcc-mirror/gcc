@@ -1,3 +1,8 @@
+2009-01-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_spu_info):  Add files line.
+	* fixincl.x: Regenerate.
+
 2009-01-01  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* inclhack.def (openbsd_null_definition): Redefine NULL to (void *)0
