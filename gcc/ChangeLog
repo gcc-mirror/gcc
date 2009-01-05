@@ -1,3 +1,8 @@
+2009-01-04  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED_RTX): Delete.
+	(STARTING_FRAME_OFFSET): Always set to zero.
+
 2009-01-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree.def (LSHIFT_EXPR, RSHIFT_EXPR): Add commentary.

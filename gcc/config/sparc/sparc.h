@@ -1317,16 +1317,6 @@ extern char leaf_reg_remap[];
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
   (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
 
-/* Return the stack location to use for secondary memory needed reloads.
-   We want to use the reserved location just below the frame pointer.
-   However, we must ensure that there is a frame, so use assign_stack_local
-   if the frame size is zero.  */
-#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  (get_frame_size () == 0						\
-   ? assign_stack_local (MODE, GET_MODE_SIZE (MODE), 0)			\
-   : gen_rtx_MEM (MODE, plus_constant (frame_pointer_rtx,		\
-				       STARTING_FRAME_OFFSET)))
-
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
    For v8 we copy the default definition.  */
@@ -1362,11 +1352,7 @@ extern char leaf_reg_remap[];
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-/* This allows space for one TFmode floating point value, which is used
-   by SECONDARY_MEMORY_NEEDED_RTX.  */
-#define STARTING_FRAME_OFFSET \
-  (TARGET_ARCH64 ? -16 \
-   : (-SPARC_STACK_ALIGN (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)))
+#define STARTING_FRAME_OFFSET 0
 
 /* Offset of first parameter from the argument pointer register value.
    !v9: This is 64 for the ins and locals, plus 4 for the struct-return reg
