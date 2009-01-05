@@ -1351,6 +1351,11 @@ m32rle-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h m32r/little.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
 	;;
+m32r-*-rtems*)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} m32r/rtems.h rtems.h"
+	tmake_file="m32r/t-m32r t-rtems"
+	extra_parts="crtinit.o crtfini.o"
+ 	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?

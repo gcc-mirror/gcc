@@ -1,3 +1,8 @@
+2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.gcc: Add m32r*-*-rtems*.
+	* config/m32r/rtems.h: New file.
+
 2009-01-05  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (.po.gmo): Use mkinstalldirs, not test -d || mkdir.
