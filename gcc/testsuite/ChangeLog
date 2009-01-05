@@ -1,3 +1,12 @@
+2009-01-05  Laurent GUERBY  <laurent@guerby.net>
+
+	* gcc.c-torture/compile/20001226-1.c: Generalize 
+	dg-timeout-factor.
+	* gcc.c-torture/compile/limits-fnargs.c: Add
+	dg-timeout-factor.
+	* gcc.dg/20020425-1.c: Likewise.
+	* gcc.dg/pch/pch.exp: Likewise.
+	
 2009-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38657

@@ -1,3 +1,5 @@
+/* { dg-timeout-factor 4.0 } */
+
 #define PAR1 int, int, int, int, int, int, int, int, int, int
 #define PAR2 PAR1, PAR1, PAR1, PAR1, PAR1, PAR1, PAR1, PAR1, PAR1, PAR1
 #define PAR3 PAR2, PAR2, PAR2, PAR2, PAR2, PAR2, PAR2, PAR2, PAR2, PAR2
