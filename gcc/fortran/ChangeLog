@@ -1,3 +1,11 @@
+2009-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38672
+	* trans-types.c (gfc_get_derived_type):  Check for the
+	presence of derived->ns->proc_name before
+	accessing derived->ns->proc_name->attr.flavor .
+	* resolve.c (resolve_symbol):  Likewise.
+
 2009-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38665
