@@ -48,7 +48,8 @@ const char *dg_options[] = {
 "/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -fno-common\" { target i?86-*-darwin* x86_64-*-darwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n",
-"/* { dg-options \"%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n"
+"/* { dg-options \"%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n",
+"/* { dg-options \"%s-I%s -mieee\" { target alpha*-*-* } } */\n"
 #define NDG_OPTIONS (sizeof (dg_options) / sizeof (dg_options[0]))
 };
 
