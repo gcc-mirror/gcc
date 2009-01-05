@@ -17,7 +17,7 @@ c     Test case derived from reporter.
       if (f .ne. 2003.0) call abort
       f = 0.0
       read (c,'(E11.0)') f
-      if (f .ne. 2.0020) call abort
+      if (f .ne. 20.020) call abort
       f = 0.0
       read (c,'(BZ,E11.0)') f
       if (f .ne. 2.002e10) call abort
