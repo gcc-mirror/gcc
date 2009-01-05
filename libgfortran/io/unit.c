@@ -437,7 +437,7 @@ get_internal_unit (st_parameter_dt *dtp)
 
   iunit->flags.access = ACCESS_SEQUENTIAL;
   iunit->flags.action = ACTION_READWRITE;
-  iunit->flags.blank = BLANK_UNSPECIFIED;
+  iunit->flags.blank = BLANK_NULL;
   iunit->flags.form = FORM_FORMATTED;
   iunit->flags.pad = PAD_YES;
   iunit->flags.status = STATUS_UNSPECIFIED;
