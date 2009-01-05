@@ -5517,7 +5517,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else if (init == ridpointers[(int)RID_DEFAULT])
 	{
 	  if (!defaultable_fn_p (decl))
-	    error ("%qD cannot be defaulted", decl);
+	    {
+	      error ("%qD cannot be defaulted", decl);
+	      DECL_INITIAL (decl) = NULL_TREE;
+	    }
 	  else
 	    DECL_DEFAULTED_FN (decl) = 1;
 	}

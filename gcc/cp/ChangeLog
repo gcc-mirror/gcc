@@ -1,3 +1,13 @@
+2009-01-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38701
+	* decl.c (cp_finish_decl): Clear DECL_INITIAL for invalid
+	defaulting.
+
+	PR c++/38702
+	* class.c (defaultable_fn_p): Only operator== can be a copy
+	assignment operator.
+
 2009-01-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38698
