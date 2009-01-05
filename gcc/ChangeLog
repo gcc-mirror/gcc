@@ -1,3 +1,8 @@
+2009-01-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c/34911
+	* c-common.c (handle_vector_size_attribute): Also reject BOOLEAN_TYPE types.
+
 2009-01-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/38492
