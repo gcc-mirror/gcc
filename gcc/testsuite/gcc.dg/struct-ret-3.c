@@ -9,6 +9,12 @@
 #include <errno.h>
 #include <unistd.h>
 
+#if defined(STACK_SIZE) && (STACK_SIZE < 128*1024)
+ #define CHUNK_SIZE 4096
+#else
+ #define CHUNK_SIZE 16384
+#endif
+
 unsigned long ossAlignX(unsigned long i, unsigned long X)
 {
    return ((i + (X - 1)) & ~(unsigned long) (X - 1));
@@ -59,20 +65,22 @@ int main(void)
 
    struct stuff
    {
-      char c0[4096-sizeof(struct XXX)];
+      char c0[CHUNK_SIZE-sizeof(struct XXX)];
       struct XXX o;
-      char c1[4096*2-sizeof(struct SQLU_DATAPART_0)];
+      char c1[CHUNK_SIZE*2-sizeof(struct SQLU_DATAPART_0)];
       struct SQLU_DATAPART_0 dp;
-      char c2[4096*2-sizeof(struct SQLU_DICT_INFO_0)];
+      char c2[CHUNK_SIZE*2-sizeof(struct SQLU_DICT_INFO_0)];
       struct SQLU_DICT_INFO_0 di;
-      char c3[4096];
+      char c3[CHUNK_SIZE];
    };
 
-   char buf[sizeof(struct stuff)+4096];
-   struct stuff *u = (struct stuff *)ossAlignX((unsigned long)&buf[0], 4096);
+   char buf[sizeof(struct stuff)+CHUNK_SIZE];
+   struct stuff *u
+     = (struct stuff *)ossAlignX((unsigned long)&buf[0], CHUNK_SIZE);
 
-   /* This test assumes system memory page size of 4096 bytes or less.  */
-   if (sysconf(_SC_PAGESIZE) > 4096)
+   /* This test assumes system memory page
+      size of CHUNK_SIZE bytes or less.  */
+   if (sysconf(_SC_PAGESIZE) > CHUNK_SIZE)
      return 0;
 
    memset(u, 1, sizeof(struct stuff));
@@ -80,15 +88,15 @@ int main(void)
    u->c2[0] = '\xBB';
    u->c3[0] = '\xCC';
 
-   rc = mprotect(u->c1, 4096, PROT_NONE);
+   rc = mprotect(u->c1, CHUNK_SIZE, PROT_NONE);
    if (rc == -1)
       printf("mprotect:c1: %d: %d(%s)\n", rc, errno, strerror(errno));
 
-   rc = mprotect(u->c2, 4096, PROT_NONE);
+   rc = mprotect(u->c2, CHUNK_SIZE, PROT_NONE);
    if (rc == -1)
       printf("mprotect:c2: %d: %d(%s)\n", rc, errno, strerror(errno));
 
-   rc = mprotect(u->c3, 4096, PROT_NONE);
+   rc = mprotect(u->c3, CHUNK_SIZE, PROT_NONE);
    if (rc == -1)
       printf("mprotect:c3: %d: %d(%s)\n", rc, errno, strerror(errno));
 
@@ -96,9 +104,9 @@ int main(void)
    u->dp.pDictRidderInfo = &u->di;
    Initialize(&u->o, 0);
 
-   mprotect(u->c1, 4096, PROT_READ|PROT_WRITE);
-   mprotect(u->c2, 4096, PROT_READ|PROT_WRITE);
-   mprotect(u->c3, 4096, PROT_READ|PROT_WRITE);
+   mprotect(u->c1, CHUNK_SIZE, PROT_READ|PROT_WRITE);
+   mprotect(u->c2, CHUNK_SIZE, PROT_READ|PROT_WRITE);
+   mprotect(u->c3, CHUNK_SIZE, PROT_READ|PROT_WRITE);
 
    return 0;
 }

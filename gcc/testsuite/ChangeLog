@@ -1,3 +1,9 @@
+2009-01-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/struct-ret-3.c (CHUNK_SIZE): New define.  Use CHUNK_SIZE
+	instead of hardcoded number.  Increase CHUNK_SIZE to 16384 for
+	large stack sizes.
+
 2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (December, 2008)
