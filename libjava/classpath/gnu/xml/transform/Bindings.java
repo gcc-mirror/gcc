@@ -68,17 +68,17 @@ public class Bindings
   /**
    * Global variables.
    */
-  final LinkedList variables;
+  final LinkedList<Map<QName,Object>> variables;
 
   /**
    * Parameter value stack.
    */
-  final LinkedList parameters;
+  final LinkedList<Map<QName,Object>> parameters;
 
   /**
    * Argument (with-param) value stack.
    */
-  final LinkedList withParameters;
+  final LinkedList<Map<QName,Object>> withParameters;
 
   /**
    * Only search globals.
@@ -88,9 +88,9 @@ public class Bindings
   Bindings(Stylesheet stylesheet)
   {
     this.stylesheet = stylesheet;
-    variables = new LinkedList();
-    parameters = new LinkedList();
-    withParameters = new LinkedList();
+    variables = new LinkedList<Map<QName,Object>>();
+    parameters = new LinkedList<Map<QName,Object>>();
+    withParameters = new LinkedList<Map<QName,Object>>();
     for (int i = 0; i < 3; i++)
       {
         push(i);
@@ -114,13 +114,13 @@ public class Bindings
     switch (type)
       {
       case VARIABLE:
-        variables.addFirst(new HashMap());
+        variables.addFirst(new HashMap<QName,Object>());
         break;
       case PARAM:
-        parameters.addFirst(new HashMap());
+        parameters.addFirst(new HashMap<QName,Object>());
         break;
       case WITH_PARAM:
-        withParameters.addFirst(new HashMap());
+        withParameters.addFirst(new HashMap<QName,Object>());
         break;
       }
   }
@@ -145,11 +145,11 @@ public class Bindings
   {
     if (global)
       {
-        Map ctx1 = (Map) variables.getLast();
-        Map ctx2 = (Map) parameters.getLast();
+        Map<QName,Object> ctx1 = variables.getLast();
+        Map<QName,Object> ctx2 = parameters.getLast();
         return (ctx1.containsKey(name) || ctx2.containsKey(name));
       }
-    Iterator i = null;
+    Iterator<Map<QName,Object>> i = null;
     switch (type)
       {
       case VARIABLE:
@@ -159,14 +159,14 @@ public class Bindings
         i = parameters.iterator();
         break;
       case WITH_PARAM:
-        Map ctx = (Map) withParameters.getFirst();
+        Map<QName,Object> ctx = withParameters.getFirst();
         return ctx.containsKey(name);
       }
     if (i != null)
       {
         while (i.hasNext())
           {
-            Map ctx = (Map) i.next();
+            Map<QName,Object> ctx = i.next();
             if (ctx.containsKey(name))
               {
                 return true;
@@ -180,11 +180,11 @@ public class Bindings
   {
     if (global)
       {
-        Map ctx = (Map) variables.getLast();
+        Map<QName,Object> ctx = variables.getLast();
         Object ret = ctx.get(name);
         if (ret == null)
           {
-            ctx = (Map) parameters.getLast();
+            ctx = parameters.getLast();
             ret = ctx.get(name);
           }
         return ret;
@@ -195,24 +195,26 @@ public class Bindings
     //if (parameters.size() > 1 && containsKey(name, PARAM))
       // check that template defines parameter
       {
-        Map cwp = (Map) withParameters.getFirst();
+        Map<QName,Object> cwp = withParameters.getFirst();
         ret = cwp.get(name);
         //System.err.println("\twith-param: ret="+ret);
       }
     if (ret == null)
       {
-        for (Iterator i = variables.iterator(); i.hasNext() && ret == null; )
+        for (Iterator<Map<QName,Object>> i = variables.iterator();
+	     i.hasNext() && ret == null; )
           {
-            Map vctx = (Map) i.next();
+            Map<QName,Object> vctx = i.next();
             ret = vctx.get(name);
           }
         //System.err.println("\tvariable: ret="+ret);
       }
     if (ret == null)
       {
-        for (Iterator i = parameters.iterator(); i.hasNext() && ret == null; )
+        for (Iterator<Map<QName,Object>> i = parameters.iterator();
+	     i.hasNext() && ret == null; )
           {
-            Map pctx = (Map) i.next();
+            Map<QName,Object> pctx = i.next();
             ret = pctx.get(name);
           }
         //System.err.println("\tparam: ret="+ret);
@@ -239,15 +241,15 @@ public class Bindings
     switch (type)
       {
       case VARIABLE:
-        Map vctx = (Map) variables.getFirst();
+        Map<QName,Object> vctx = variables.getFirst();
         vctx.put(name, value);
         break;
       case PARAM:
-        Map pctx = (Map) parameters.getFirst();
+        Map<QName,Object> pctx = parameters.getFirst();
         pctx.put(name, value);
         break;
       case WITH_PARAM:
-        Map wctx = (Map) withParameters.getFirst();
+        Map<QName,Object> wctx = withParameters.getFirst();
         wctx.put(name, value);
         break;
       }
@@ -263,10 +265,10 @@ public class Bindings
   {
     CPStringBuilder buf = new CPStringBuilder();
     boolean next = false;
-    Collection seen = new HashSet();
-    Map wctx = (Map) withParameters.getFirst();
+    Collection<QName> seen = new HashSet<QName>();
+    Map<QName,Object> wctx = withParameters.getFirst();
     buf.append('(');
-    for (Iterator i = wctx.entrySet().iterator(); i.hasNext(); )
+    for (Map.Entry<QName,Object> entry : wctx.entrySet())
       {
         if (next)
           {
@@ -276,8 +278,7 @@ public class Bindings
           {
             next = true;
           }
-        Map.Entry entry = (Map.Entry) i.next();
-        Object key = entry.getKey();
+        QName key = entry.getKey();
         if (!seen.contains(key))
           {
             buf.append(key);
@@ -290,10 +291,9 @@ public class Bindings
     next = false;
     seen.clear();
     buf.append('{');
-    for (Iterator i = variables.iterator(); i.hasNext(); )
+    for (Map<QName,Object> ctx : variables)
       {
-        Map ctx = (Map) i.next();
-        for (Iterator j = ctx.entrySet().iterator(); j.hasNext(); )
+        for (Map.Entry<QName,Object> entry : ctx.entrySet())
           {
             if (next)
               {
@@ -303,8 +303,7 @@ public class Bindings
               {
                 next = true;
               }
-            Map.Entry entry = (Map.Entry) j.next();
-            Object key = entry.getKey();
+            QName key = entry.getKey();
             if (!seen.contains(key))
               {
                 buf.append(key);
@@ -318,10 +317,9 @@ public class Bindings
     next = false;
     seen.clear();
     buf.append('[');
-    for (Iterator i = parameters.iterator(); i.hasNext(); )
+    for (Map<QName,Object> ctx : parameters)
       {
-        Map ctx = (Map) i.next();
-        for (Iterator j = ctx.entrySet().iterator(); j.hasNext(); )
+        for (Map.Entry<QName,Object> entry : ctx.entrySet())
           {
             if (next)
               {
@@ -331,8 +329,7 @@ public class Bindings
               {
                 next = true;
               }
-            Map.Entry entry = (Map.Entry) j.next();
-            Object key = entry.getKey();
+            QName key = entry.getKey();
             if (!seen.contains(key))
               {
                 buf.append(key);

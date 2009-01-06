@@ -70,7 +70,7 @@ private:
 public:
   virtual void getGlyphs(JArray< jint > *, JArray< jint > *, JArray< jlong > *);
 private:
-  ::java::awt::geom::Point2D * getKerning(jint, jint, jlong);
+  void getKerning(jint, jint, jlong, JArray< jfloat > *);
   JArray< jdouble > * getMetricsNative(jint, jlong);
   ::java::awt::geom::GeneralPath * getGlyphOutlineNative(jint, jlong);
 public:
