@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -214,13 +214,13 @@ Boston, MA 02110-1301, USA.  */
 #define DEC64_MIN	__DEC64_MIN__
 #define DEC128_MIN	__DEC128_MIN__
 
-/* Minimum denormalized positive floating-point number. */
-#undef DEC32_DEN
-#undef DEC64_DEN
-#undef DEC128_DEN
-#define DEC32_DEN       __DEC32_DEN__
-#define DEC64_DEN       __DEC64_DEN__
-#define DEC128_DEN      __DEC128_DEN__
+/* Minimum subnormal positive floating-point number. */
+#undef DEC32_SUBNORMAL_MIN
+#undef DEC64_SUBNORMAL_MIN
+#undef DEC128_SUBNORMAL_MIN
+#define DEC32_SUBNORMAL_MIN       __DEC32_SUBNORMAL_MIN__
+#define DEC64_SUBNORMAL_MIN       __DEC64_SUBNORMAL_MIN__
+#define DEC128_SUBNORMAL_MIN      __DEC128_SUBNORMAL_MIN__
 
 /* The floating-point expression evaluation method.
          -1  indeterminate

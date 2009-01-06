@@ -1,3 +1,16 @@
+2009-01-06  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/34252
+	* ginclude/float.h: Rename DECnn_DEN to DECnn_SUBNORMAL_MIN.
+	* real.c (decimal_single_format): Correct values of emin and emax.
+	(decimal_double_format): Ditto.
+	(decimal_quad_format): Ditto.
+	* c-cppbuiltin.c (builtin_define_decimal_float_constants): Adjust
+	computation of DECnn_MIN and DECnn_MAX for corrected values of
+	emin and emax.  Define __DECnn_SUBNORMAL_MIN__ instead of
+	__DECnn_MIN__, and adjust its computation for the corrected value
+	of emin.
+
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/38744

@@ -1,6 +1,6 @@
 /* real.c - software floating point emulation.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
+   2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson <rth@redhat.com>
 
@@ -4447,8 +4447,8 @@ const struct real_format decimal_single_format =
     10, 
     7,
     7,
-    -95,
-    96,
+    -94,
+    97,
     31,
     31,
     false,
@@ -4469,8 +4469,8 @@ const struct real_format decimal_double_format =
     10,
     16,
     16,
-    -383,
-    384,
+    -382,
+    385,
     63,
     63,
     false,
@@ -4491,8 +4491,8 @@ const struct real_format decimal_quad_format =
     10,
     34,
     34,
-    -6143,
-    6144,
+    -6142,
+    6145,
     127,
     127,
     false,
