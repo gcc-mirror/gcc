@@ -1751,6 +1751,33 @@ mark_loops_for_removal (void)
   ira_free (sorted_loops);
 }
 
+/* Mark all loops but root for removing.  */
+static void
+mark_all_loops_for_removal (void)
+{
+  int i;
+  loop_p loop;
+
+  for (i = 0; VEC_iterate (loop_p, ira_loops.larray, i, loop); i++)
+    if (ira_loop_nodes[i].regno_allocno_map != NULL)
+      {
+	if (ira_loop_nodes[i].parent == NULL)
+	  {
+	    /* Don't remove the root.  */
+	    ira_loop_nodes[i].to_remove_p = false;
+	    continue;
+	  }
+	ira_loop_nodes[i].to_remove_p = true;
+	if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
+	  fprintf
+	    (ira_dump_file,
+	     "  Mark loop %d (header %d, freq %d, depth %d) for removal\n",
+	     ira_loop_nodes[i].loop->num,
+	     ira_loop_nodes[i].loop->header->index,
+	     ira_loop_nodes[i].loop->header->frequency,
+	     loop_depth (ira_loop_nodes[i].loop));
+      }
+}
 
 /* Definition of vector of loop tree nodes.  */
 DEF_VEC_P(ira_loop_tree_node_t);
@@ -1856,6 +1883,43 @@ ira_rebuild_regno_allocno_list (int regno)
     fprintf (ira_dump_file, " Rebuilding regno allocno list for %d\n", regno);
 }
 
+/* Propagate info from allocno FROM_A to allocno A.  */
+static void
+propagate_some_info_from_allocno (ira_allocno_t a, ira_allocno_t from_a)
+{
+  enum reg_class cover_class;
+
+  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+		    ALLOCNO_CONFLICT_HARD_REGS (from_a));
+#ifdef STACK_REGS
+  if (ALLOCNO_NO_STACK_REG_P (from_a))
+    ALLOCNO_NO_STACK_REG_P (a) = true;
+#endif
+  ALLOCNO_NREFS (a) += ALLOCNO_NREFS (from_a);
+  ALLOCNO_FREQ (a) += ALLOCNO_FREQ (from_a);
+  ALLOCNO_CALL_FREQ (a) += ALLOCNO_CALL_FREQ (from_a);
+  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
+		    ALLOCNO_TOTAL_CONFLICT_HARD_REGS (from_a));
+  ALLOCNO_CALLS_CROSSED_NUM (a) += ALLOCNO_CALLS_CROSSED_NUM (from_a);
+  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a)
+    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (from_a);
+  if (! ALLOCNO_BAD_SPILL_P (from_a))
+    ALLOCNO_BAD_SPILL_P (a) = false;
+#ifdef STACK_REGS
+  if (ALLOCNO_TOTAL_NO_STACK_REG_P (from_a))
+    ALLOCNO_TOTAL_NO_STACK_REG_P (a) = true;
+#endif
+  cover_class = ALLOCNO_COVER_CLASS (from_a);
+  ira_assert (cover_class == ALLOCNO_COVER_CLASS (a));
+  ira_allocate_and_accumulate_costs (&ALLOCNO_HARD_REG_COSTS (a), cover_class,
+				     ALLOCNO_HARD_REG_COSTS (from_a));
+  ira_allocate_and_accumulate_costs (&ALLOCNO_CONFLICT_HARD_REG_COSTS (a),
+				     cover_class,
+				     ALLOCNO_CONFLICT_HARD_REG_COSTS (from_a));
+  ALLOCNO_COVER_CLASS_COST (a) += ALLOCNO_COVER_CLASS_COST (from_a);
+  ALLOCNO_MEMORY_COST (a) += ALLOCNO_MEMORY_COST (from_a);
+}
+
 /* Remove allocnos from loops removed from the allocation
    consideration.  */
 static void
@@ -1863,7 +1927,6 @@ remove_unnecessary_allocnos (void)
 {
   int regno;
   bool merged_p, rebuild_p;
-  enum reg_class cover_class;
   ira_allocno_t a, prev_a, next_a, parent_a;
   ira_loop_tree_node_t a_node, parent;
   allocno_live_range_t r;
@@ -1890,9 +1953,9 @@ remove_unnecessary_allocnos (void)
 		;
 	      if (parent_a == NULL)
 		{
-		/* There are no allocnos with the same regno in upper
-		   region -- just move the allocno to the upper
-		   region.  */
+		  /* There are no allocnos with the same regno in
+		     upper region -- just move the allocno to the
+		     upper region.  */
 		  prev_a = a;
 		  ALLOCNO_LOOP_TREE_NODE (a) = parent;
 		  parent->regno_allocno_map[regno] = a;
@@ -1911,43 +1974,10 @@ remove_unnecessary_allocnos (void)
 		  change_allocno_in_range_list (r, parent_a);
 		  ALLOCNO_LIVE_RANGES (parent_a)
 		    = ira_merge_allocno_live_ranges
-		    (r, ALLOCNO_LIVE_RANGES (parent_a));
+		      (r, ALLOCNO_LIVE_RANGES (parent_a));
 		  merged_p = true;
 		  ALLOCNO_LIVE_RANGES (a) = NULL;
-		  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (parent_a),
-				    ALLOCNO_CONFLICT_HARD_REGS (a));
-#ifdef STACK_REGS
-		  if (ALLOCNO_NO_STACK_REG_P (a))
-		    ALLOCNO_NO_STACK_REG_P (parent_a) = true;
-#endif
-		  ALLOCNO_NREFS (parent_a) += ALLOCNO_NREFS (a);
-		  ALLOCNO_FREQ (parent_a) += ALLOCNO_FREQ (a);
-		  ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
-		  IOR_HARD_REG_SET
-		    (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
-		     ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
-		  ALLOCNO_CALLS_CROSSED_NUM (parent_a)
-		    += ALLOCNO_CALLS_CROSSED_NUM (a);
-		  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
-		    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
-		  if (! ALLOCNO_BAD_SPILL_P (a))
-		    ALLOCNO_BAD_SPILL_P (parent_a) = false;
-#ifdef STACK_REGS
-		  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
-		    ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
-#endif
-		  cover_class = ALLOCNO_COVER_CLASS (a);
-		  ira_assert (cover_class == ALLOCNO_COVER_CLASS (parent_a));
-		  ira_allocate_and_accumulate_costs
-		    (&ALLOCNO_HARD_REG_COSTS (parent_a), cover_class,
-		     ALLOCNO_HARD_REG_COSTS (a));
-		  ira_allocate_and_accumulate_costs
-		    (&ALLOCNO_CONFLICT_HARD_REG_COSTS (parent_a),
-		     cover_class,
-		     ALLOCNO_CONFLICT_HARD_REG_COSTS (a));
-		  ALLOCNO_COVER_CLASS_COST (parent_a)
-		    += ALLOCNO_COVER_CLASS_COST (a);
-		  ALLOCNO_MEMORY_COST (parent_a) += ALLOCNO_MEMORY_COST (a);
+		  propagate_some_info_from_allocno (parent_a, a);
 		  finish_allocno (a);
 		}
 	    }
@@ -1968,15 +1998,88 @@ remove_unnecessary_allocnos (void)
     ira_free (regno_allocnos);
 }
 
-/* Remove loops from consideration.  We remove loops for which a
-   separate allocation will not improve the result.  We have to do
-   this after allocno creation and their costs and cover class
-   evaluation because only after that the register pressure can be
-   known and is calculated.  */
+/* Remove allocnos from all loops but the root.  */
 static void
-remove_unnecessary_regions (void)
+remove_low_level_allocnos (void)
 {
-  mark_loops_for_removal ();
+  int regno;
+  bool merged_p, propagate_p;
+  ira_allocno_t a, top_a;
+  ira_loop_tree_node_t a_node, parent;
+  allocno_live_range_t r;
+  ira_allocno_iterator ai;
+
+  merged_p = false;
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      a_node = ALLOCNO_LOOP_TREE_NODE (a);
+      if (a_node == ira_loop_tree_root || ALLOCNO_CAP_MEMBER (a) != NULL)
+	continue;
+      regno = ALLOCNO_REGNO (a);
+      if ((top_a = ira_loop_tree_root->regno_allocno_map[regno]) == NULL)
+	{
+	  ALLOCNO_LOOP_TREE_NODE (a) = ira_loop_tree_root;
+	  ira_loop_tree_root->regno_allocno_map[regno] = a;
+	  continue;
+	}
+      propagate_p = a_node->parent->regno_allocno_map[regno] == NULL;
+      /* Remove the allocno and update info of allocno in the upper
+	 region.  */
+      r = ALLOCNO_LIVE_RANGES (a);
+      change_allocno_in_range_list (r, top_a);
+      ALLOCNO_LIVE_RANGES (top_a)
+	= ira_merge_allocno_live_ranges (r, ALLOCNO_LIVE_RANGES (top_a));
+      merged_p = true;
+      ALLOCNO_LIVE_RANGES (a) = NULL;
+      if (propagate_p)
+	propagate_some_info_from_allocno (top_a, a);
+    }
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      a_node = ALLOCNO_LOOP_TREE_NODE (a);
+      if (a_node == ira_loop_tree_root)
+	continue;
+      parent = a_node->parent;
+      regno = ALLOCNO_REGNO (a);
+      if (ALLOCNO_CAP_MEMBER (a) != NULL)
+	ira_assert (ALLOCNO_CAP (a) != NULL);
+      else if (ALLOCNO_CAP (a) == NULL)
+ 	ira_assert (parent->regno_allocno_map[regno] != NULL);
+    }
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      regno = ALLOCNO_REGNO (a);
+      if (ira_loop_tree_root->regno_allocno_map[regno] == a)
+	{
+	  ira_regno_allocno_map[regno] = a;
+	  ALLOCNO_NEXT_REGNO_ALLOCNO (a) = NULL;
+	  ALLOCNO_CAP_MEMBER (a) = NULL;
+	  COPY_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+			     ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
+#ifdef STACK_REGS
+	  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
+	    ALLOCNO_NO_STACK_REG_P (a) = true;
+#endif
+	}
+      else
+	finish_allocno (a);
+    }
+  if (merged_p)
+    ira_rebuild_start_finish_chains ();
+}
+
+/* Remove loops from consideration.  We remove all loops except for
+   root if ALL_P or loops for which a separate allocation will not
+   improve the result.  We have to do this after allocno creation and
+   their costs and cover class evaluation because only after that the
+   register pressure can be known and is calculated.  */
+static void
+remove_unnecessary_regions (bool all_p)
+{
+  if (all_p)
+    mark_all_loops_for_removal ();
+  else
+    mark_loops_for_removal ();
   children_vec
     = VEC_alloc (ira_loop_tree_node_t, heap,
 		 last_basic_block + VEC_length (loop_p, ira_loops.larray));
@@ -1985,7 +2088,10 @@ remove_unnecessary_regions (void)
 		 last_basic_block + VEC_length (loop_p, ira_loops.larray));
   remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root) ;
   VEC_free (ira_loop_tree_node_t, heap, children_vec);
-  remove_unnecessary_allocnos ();
+  if (all_p)
+    remove_low_level_allocnos ();
+  else
+    remove_unnecessary_allocnos ();
   while (VEC_length (ira_loop_tree_node_t, removed_loop_vec) > 0)
     finish_loop_tree_node (VEC_pop (ira_loop_tree_node_t, removed_loop_vec));
   VEC_free (ira_loop_tree_node_t, heap, removed_loop_vec);
@@ -2668,7 +2774,7 @@ ira_build (bool loops_p)
   create_allocnos ();
   ira_costs ();
   ira_create_allocno_live_ranges ();
-  remove_unnecessary_regions ();
+  remove_unnecessary_regions (false);
   ira_compress_allocno_live_ranges ();
   update_bad_spill_attribute ();
   loops_p = more_one_region_p ();
@@ -2685,6 +2791,29 @@ ira_build (bool loops_p)
   sort_conflict_id_allocno_map ();
   setup_min_max_conflict_allocno_ids ();
   ira_build_conflicts ();
+  if (! ira_conflicts_p)
+    {
+      ira_allocno_t a;
+      ira_allocno_iterator ai;
+
+      /* Remove all regions but root one.  */
+      if (loops_p)
+	{
+	  remove_unnecessary_regions (true);
+	  loops_p = false;
+	}
+      /* We don't save hard registers around calls for fast allocation
+	 -- add caller clobbered registers as conflicting ones to
+	 allocno crossing calls.  */
+      FOR_EACH_ALLOCNO (a, ai)
+	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+	  {
+	    IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
+			      call_used_reg_set);
+	    IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+			      call_used_reg_set);
+	  }
+    }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)

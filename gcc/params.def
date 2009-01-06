@@ -750,6 +750,11 @@ DEFPARAM (PARAM_IRA_MAX_LOOPS_NUM,
 	  "max loops number for regional RA",
 	  100, 0, 0)
 
+DEFPARAM (PARAM_IRA_MAX_CONFLICT_TABLE_SIZE,
+	  "ira-max-conflict-table-size",
+	  "max size of conflict table in MB",
+	  2000, 0, 0)
+
 /* Switch initialization conversion will refuse to create arrays that are
    bigger than this parameter times the number of switch branches.  */
 

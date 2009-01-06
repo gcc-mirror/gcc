@@ -1827,6 +1827,10 @@ too_high_register_pressure_p (void)
 /* All natural loops.  */
 struct loops ira_loops;
 
+/* True if we have allocno conflicts.  It is false for non-optimized
+   mode or when the conflict table is too big.  */
+bool ira_conflicts_p;
+
 /* This is the main entry of IRA.  */
 static void
 ira (FILE *f)
@@ -1851,6 +1855,7 @@ ira (FILE *f)
       ira_dump_file = stderr;
     }
 
+  ira_conflicts_p = optimize > 0;
   setup_prohibited_mode_move_regs ();
 
   df_note_add_problem ();
@@ -1916,6 +1921,8 @@ ira (FILE *f)
   loops_p = ira_build (optimize
 		       && (flag_ira_region == IRA_REGION_ALL
 			   || flag_ira_region == IRA_REGION_MIXED));
+  
+  ira_assert (ira_conflicts_p || !loops_p);
 
   saved_flag_ira_share_spill_slots = flag_ira_share_spill_slots;
   if (too_high_register_pressure_p ())
@@ -1929,7 +1936,7 @@ ira (FILE *f)
       
   ira_emit (loops_p);
   
-  if (optimize)
+  if (ira_conflicts_p)
     {
       max_regno = max_reg_num ();
       
@@ -1963,7 +1970,7 @@ ira (FILE *f)
   calculate_allocation_cost ();
   
 #ifdef ENABLE_IRA_CHECKING
-  if (optimize)
+  if (ira_conflicts_p)
     check_allocation ();
 #endif
       
@@ -1992,7 +1999,7 @@ ira (FILE *f)
   allocate_initial_values (reg_equiv_memory_loc);
 
   overall_cost_before = ira_overall_cost;
-  if (optimize)
+  if (ira_conflicts_p)
     {
       fix_reg_equiv_init ();
       
@@ -2015,13 +2022,13 @@ ira (FILE *f)
   df_set_flags (DF_NO_INSN_RESCAN);
   build_insn_chain ();
 
-  reload_completed = !reload (get_insns (), optimize > 0);
+  reload_completed = !reload (get_insns (), ira_conflicts_p);
 
   timevar_pop (TV_RELOAD);
 
   timevar_push (TV_IRA);
 
-  if (optimize)
+  if (ira_conflicts_p)
     {
       ira_free (ira_spilled_reg_stack_slots);
       
