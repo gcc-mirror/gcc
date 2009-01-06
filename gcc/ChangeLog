@@ -1,5 +1,13 @@
 2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR bootstrap/38742
+	* ira-color.c (ira_reuse_stack_slot): Check ENABLE_IRA_CHECKING
+	before using pseudos_have_intersected_live_ranges_p.
+
+	* ira-int.h (ira_assert): Always define.
+
+2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	AVX Programming Reference (December, 2008)
 	* config/i386/avxintrin.h (_mm_permute2_pd): Removed.
 	(_mm256_permute2_pd): Likewise.

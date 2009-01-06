@@ -3037,11 +3037,13 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
   if (x != NULL_RTX)
     {
       ira_assert (slot->width >= total_size);
+#ifdef ENABLE_IRA_CHECKING
       EXECUTE_IF_SET_IN_BITMAP (&slot->spilled_regs,
 				FIRST_PSEUDO_REGISTER, i, bi)
 	{
 	  ira_assert (! pseudos_have_intersected_live_ranges_p (regno, i));
 	}
+#endif
       SET_REGNO_REG_SET (&slot->spilled_regs, regno);
       if (internal_flag_ira_verbose > 3 && ira_dump_file)
 	{

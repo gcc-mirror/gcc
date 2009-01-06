@@ -33,7 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef ENABLE_IRA_CHECKING
 #define ira_assert(c) gcc_assert (c)
 #else
-#define ira_assert(c)
+/* Always define and include C, so that warnings for empty body in an
+  ‘if’ statement and unused variable do not occur.  */
+#define ira_assert(c) ((void)(0 && (c)))
 #endif
 
 /* Compute register frequency from edge frequency FREQ.  It is
