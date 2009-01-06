@@ -1,6 +1,12 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
+	* i386.md (*msabi_syvabi): Add SSE regs clobbers.
+	* i386.c (ix86_expand_call): Add clobbers.
+
+2009-01-06  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
 	* i386.h (CONDITIONAL_CALL_USAGE): SSE regs are not used for w64 ABI.
 	* i386.c (struct ix86_frame): Add padding0 and nsseregs.
 	(ix86_nsaved_regs): Count only general purpose regs.
