@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -626,42 +626,6 @@ _mm256_permute_ps (__m256 __X, const int __C)
 {
   return (__m256) __builtin_ia32_vpermilps256 ((__v8sf)__X, __C);
 }
-
-extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_permute2_pd (__m128d __X, __m128d __Y, __m128i __C, const int __I)
-{
-  return (__m128d) __builtin_ia32_vpermil2pd ((__v2df)__X,
-					      (__v2df)__Y,
-					      (__v2di)__C,
-					      __I);
-}
-
-extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_permute2_pd (__m256d __X, __m256d __Y, __m256i __C, const int __I)
-{
-  return (__m256d) __builtin_ia32_vpermil2pd256 ((__v4df)__X,
-						 (__v4df)__Y,
-						 (__v4di)__C,
-						 __I);
-}
-
-extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_permute2_ps (__m128 __X, __m128 __Y, __m128i __C, const int __I)
-{
-  return (__m128) __builtin_ia32_vpermil2ps ((__v4sf)__X,
-					     (__v4sf)__Y,
-					     (__v4si)__C,
-					     __I);
-}
-
-extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_permute2_ps (__m256 __X, __m256 __Y, __m256i __C, const int __I)
-{
-  return (__m256) __builtin_ia32_vpermil2ps256 ((__v8sf)__X,
-						(__v8sf)__Y,
-						(__v8si)__C,
-						__I);
-}
 #else
 #define _mm_permute_pd(X, C)						\
   ((__m128d) __builtin_ia32_vpermilpd ((__v2df)(__m128d)(X), (int)(C)))
@@ -674,30 +638,6 @@ _mm256_permute2_ps (__m256 __X, __m256 __Y, __m256i __C, const int __I)
 
 #define _mm256_permute_ps(X, C)						\
   ((__m256) __builtin_ia32_vpermilps256 ((__v8sf)(__m256)(X), (int)(C)))
-
-#define _mm_permute2_pd(X, Y, C, I)					\
-  ((__m128d) __builtin_ia32_vpermil2pd ((__v2df)(__m128d)(X),		\
-					(__v2df)(__m128d)(Y),		\
-					(__v2di)(__m128d)(C),		\
-					(int)(I)))
-
-#define _mm256_permute2_pd(X, Y, C, I)					\
-  ((__m256d) __builtin_ia32_vpermil2pd256 ((__v4df)(__m256d)(X),	\
-					   (__v4df)(__m256d)(Y),	\
-					   (__v4di)(__m256d)(C),	\
-					   (int)(I)))
-
-#define _mm_permute2_ps(X, Y, C, I)					\
-  ((__m128) __builtin_ia32_vpermil2ps ((__v4sf)(__m128)(X),		\
-				       (__v4sf)(__m128)(Y),		\
-				       (__v4si)(__m128)(C),		\
-				       (int)(I)))
-
-#define _mm256_permute2_ps(X, Y, C, I)					\
-  ((__m256) __builtin_ia32_vpermil2ps256 ((__v8sf)(__m256)(X),		\
-					  (__v8sf)(__m256)(Y),  	\
-					  (__v8si)(__m256)(C),		\
-					  (int)(I)))
 #endif
 
 #ifdef __OPTIMIZE__

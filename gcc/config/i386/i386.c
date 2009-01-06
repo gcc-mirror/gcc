@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19774,10 +19774,6 @@ enum ix86_builtins
   IX86_BUILTIN_VPERMILPS,
   IX86_BUILTIN_VPERMILPD256,
   IX86_BUILTIN_VPERMILPS256,
-  IX86_BUILTIN_VPERMIL2PD,
-  IX86_BUILTIN_VPERMIL2PS,
-  IX86_BUILTIN_VPERMIL2PD256,
-  IX86_BUILTIN_VPERMIL2PS256,
   IX86_BUILTIN_VPERM2F128PD256,
   IX86_BUILTIN_VPERM2F128PS256,
   IX86_BUILTIN_VPERM2F128SI256,
@@ -20434,10 +20430,6 @@ enum ix86_builtin_type
   V2DI2TI_FTYPE_V2DI_V2DI_INT,
   V1DI2DI_FTYPE_V1DI_V1DI_INT,
   V2DF_FTYPE_V2DF_V2DF_INT,
-  V8SF_FTYPE_V8SF_V8SF_V8SI_INT,
-  V4DF_FTYPE_V4DF_V4DF_V4DI_INT,
-  V4SF_FTYPE_V4SF_V4SF_V4SI_INT,
-  V2DF_FTYPE_V2DF_V2DF_V2DI_INT,
   V2DI_FTYPE_V2DI_UINT_UINT,
   V2DI_FTYPE_V2DI_V2DI_UINT_UINT
 };
@@ -21065,10 +21057,6 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv4sf, "__builtin_ia32_vpermilps", IX86_BUILTIN_VPERMILPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv4df, "__builtin_ia32_vpermilpd256", IX86_BUILTIN_VPERMILPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermilv8sf, "__builtin_ia32_vpermilps256", IX86_BUILTIN_VPERMILPS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_INT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v2df3,  "__builtin_ia32_vpermil2pd", IX86_BUILTIN_VPERMIL2PD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_V2DI_INT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v4sf3,  "__builtin_ia32_vpermil2ps", IX86_BUILTIN_VPERMIL2PS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SI_INT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v4df3,  "__builtin_ia32_vpermil2pd256", IX86_BUILTIN_VPERMIL2PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_V4DI_INT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vpermil2v8sf3,  "__builtin_ia32_vpermil2ps256", IX86_BUILTIN_VPERMIL2PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_V8SI_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v4df, "__builtin_ia32_vinsertf128_pd256", IX86_BUILTIN_VINSERTF128PD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V2DF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v8sf, "__builtin_ia32_vinsertf128_ps256", IX86_BUILTIN_VINSERTF128PS256, UNKNOWN, (int) V8SF_FTYPE_V8SF_V4SF_INT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vinsertf128v8si, "__builtin_ia32_vinsertf128_si256", IX86_BUILTIN_VINSERTF128SI256, UNKNOWN, (int) V8SI_FTYPE_V8SI_V4SI_INT },
@@ -22010,26 +21998,6 @@ ix86_init_mmx_sse_builtins (void)
 				V4DF_type_node, V4DF_type_node,
 				integer_type_node,
 				NULL_TREE);
-  tree v8sf_ftype_v8sf_v8sf_v8si_int
-    = build_function_type_list (V8SF_type_node,
-				V8SF_type_node, V8SF_type_node,
-				V8SI_type_node, integer_type_node,
-				NULL_TREE);
-  tree v4df_ftype_v4df_v4df_v4di_int
-    = build_function_type_list (V4DF_type_node,
-				V4DF_type_node, V4DF_type_node,
-				V4DI_type_node, integer_type_node,
-				NULL_TREE);
-  tree v4sf_ftype_v4sf_v4sf_v4si_int
-    = build_function_type_list (V4SF_type_node,
-				V4SF_type_node, V4SF_type_node,
-				V4SI_type_node, integer_type_node,
-				NULL_TREE);
-  tree v2df_ftype_v2df_v2df_v2di_int
-    = build_function_type_list (V2DF_type_node,
-				V2DF_type_node, V2DF_type_node,
-				V2DI_type_node, integer_type_node,
-				NULL_TREE);
   tree v8sf_ftype_pcfloat
     = build_function_type_list (V8SF_type_node,
 				pcfloat_type_node,
@@ -22732,18 +22700,6 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V1DI2DI_FTYPE_V1DI_V1DI_INT:
 	  type = v1di_ftype_v1di_v1di_int;
-	  break;
-	case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
-	  type = v8sf_ftype_v8sf_v8sf_v8si_int;
-	  break;
-	case V4DF_FTYPE_V4DF_V4DF_V4DI_INT:
-	  type = v4df_ftype_v4df_v4df_v4di_int;
-	  break;
-	case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
-	  type = v4sf_ftype_v4sf_v4sf_v4si_int;
-	  break;
-	case V2DF_FTYPE_V2DF_V2DF_V2DI_INT:
-	  type = v2df_ftype_v2df_v2df_v2di_int;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -23906,13 +23862,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs = 3;
       nargs_constant = 2;
       break;
-    case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
-    case V4DF_FTYPE_V4DF_V4DF_V4DI_INT:
-    case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
-    case V2DF_FTYPE_V2DF_V2DF_V2DI_INT:
-      nargs = 4;
-      nargs_constant = 1;
-      break;
     case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
       nargs = 4;
       nargs_constant = 2;
@@ -23982,10 +23931,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 
 	      case CODE_FOR_sse4_1_blendpd:
 	      case CODE_FOR_avx_vpermilv2df:
-	      case CODE_FOR_avx_vpermil2v2df3:
-	      case CODE_FOR_avx_vpermil2v4sf3:
-	      case CODE_FOR_avx_vpermil2v4df3:
-	      case CODE_FOR_avx_vpermil2v8sf3:
 		error ("the last argument must be a 2-bit immediate");
 		return const0_rtx;
 

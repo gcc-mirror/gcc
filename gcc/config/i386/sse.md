@@ -1,5 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005, 2006, 2007, 2008
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -11593,20 +11593,6 @@
 	  UNSPEC_VPERMIL))]
   "TARGET_AVX"
   "vpermilp<avxmodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "avx_vpermil2<mode>3"
-  [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x,x")
-	(unspec:AVXMODEF2P
-	  [(match_operand:AVXMODEF2P 1 "register_operand" "x,x")
-	   (match_operand:AVXMODEF2P 2 "nonimmediate_operand" "x,xm")
-	   (match_operand:<avxpermvecmode> 3 "nonimmediate_operand" "xm,x")
-	   (match_operand:SI 4 "const_0_to_3_operand" "n,n")]
-	  UNSPEC_VPERMIL2))]
-  "TARGET_AVX"
-  "vpermil2p<avxmodesuffixf2c>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
