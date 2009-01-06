@@ -1,3 +1,11 @@
+2009-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Do a block copy from BLKmode to BLKmode-like.
+	(get_inner_reference): Use BLKmode for byte-aligned BLKmode bitfields.
+
 2008-12-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/38565
