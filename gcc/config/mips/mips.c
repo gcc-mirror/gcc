@@ -453,7 +453,6 @@ static int mips_base_target_flags;
 bool mips_base_mips16;
 
 /* The ambient values of other global variables.  */
-static int mips_base_delayed_branch; /* flag_delayed_branch */
 static int mips_base_schedule_insns; /* flag_schedule_insns */
 static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
 static int mips_base_move_loop_invariants; /* flag_move_loop_invariants */
@@ -13297,7 +13296,7 @@ mips_reorg (void)
   mips16_lay_out_constants ();
   if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE)
     r10k_insert_cache_barriers ();
-  if (mips_base_delayed_branch)
+  if (flag_delayed_branch)
     dbr_schedule (get_insns ());
   mips_reorg_process_insns ();
   if (!TARGET_MIPS16
@@ -14058,7 +14057,6 @@ mips_override_options (void)
 
   /* Save base state of options.  */
   mips_base_target_flags = target_flags;
-  mips_base_delayed_branch = flag_delayed_branch;
   mips_base_schedule_insns = flag_schedule_insns;
   mips_base_reorder_blocks_and_partition = flag_reorder_blocks_and_partition;
   mips_base_move_loop_invariants = flag_move_loop_invariants;
@@ -14071,9 +14069,6 @@ mips_override_options (void)
      Do all CPP-sensitive stuff in non-MIPS16 mode; we'll switch to
      MIPS16 mode afterwards if need be.  */
   mips_set_mips16_mode (false);
-
-  /* We call dbr_schedule from within mips_reorg.  */
-  flag_delayed_branch = 0;
 }
 
 /* Swap the register information for registers I and I + 1, which
