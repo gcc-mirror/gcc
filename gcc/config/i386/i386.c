@@ -1655,6 +1655,10 @@ struct stack_local_entry GTY(())
 					      <- HARD_FRAME_POINTER
    [saved regs]
 
+   [padding0]
+
+   [saved SSE regs]
+
    [padding1]          \
 		        )
    [va_arg registers]  (
@@ -1665,6 +1669,8 @@ struct stack_local_entry GTY(())
   */
 struct ix86_frame
 {
+  int padding0;
+  int nsseregs;
   int nregs;
   int padding1;
   int va_arg_size;
@@ -7417,7 +7423,7 @@ ix86_save_reg (unsigned int regno, int maybe_eh_return)
 	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
 
-/* Return number of registers to be saved on the stack.  */
+/* Return number of saved general prupose registers.  */
 
 static int
 ix86_nsaved_regs (void)
@@ -7425,9 +7431,25 @@ ix86_nsaved_regs (void)
   int nregs = 0;
   int regno;
 
-  for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
-    if (ix86_save_reg (regno, true))
-      nregs++;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
+      nregs ++;
+  return nregs;
+}
+
+/* Return number of saved SSE registrers.  */
+
+static int
+ix86_nsaved_sseregs (void)
+{
+  int nregs = 0;
+  int regno;
+
+  if (ix86_cfun_abi () != MS_ABI)
+    return 0;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
+      nregs ++;
   return nregs;
 }
 
@@ -7487,10 +7509,21 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   HOST_WIDE_INT size = get_frame_size ();
 
   frame->nregs = ix86_nsaved_regs ();
+  frame->nsseregs = ix86_nsaved_sseregs ();
   total_size = size;
 
   stack_alignment_needed = crtl->stack_alignment_needed / BITS_PER_UNIT;
   preferred_alignment = crtl->preferred_stack_boundary / BITS_PER_UNIT;
+
+  /* MS ABI seem to require stack alignment to be always 16 except for function
+     prologues.  */
+  if (ix86_cfun_abi () == MS_ABI && preferred_alignment < 16)
+    {
+      preferred_alignment = 16;
+      stack_alignment_needed = 16;
+      crtl->preferred_stack_boundary = 128;
+      crtl->stack_alignment_needed = 128;
+    }
 
   gcc_assert (!size || stack_alignment_needed);
   gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
@@ -7545,6 +7578,15 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   /* Register save area */
   offset += frame->nregs * UNITS_PER_WORD;
+
+  /* Align SSE reg save area.  */
+  if (frame->nsseregs)
+    frame->padding0 = ((offset + 16 - 1) & -16) - offset;
+  else
+    frame->padding0 = 0;
+  
+  /* SSE register save area.  */
+  offset += frame->padding0 + frame->nsseregs * 16;
 
   /* Va-arg area */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
@@ -7615,8 +7657,10 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   frame->stack_pointer_offset -= frame->red_zone_size;
 #if 0
   fprintf (stderr, "\n");
-  fprintf (stderr, "nregs: %ld\n", (long)frame->nregs);
   fprintf (stderr, "size: %ld\n", (long)size);
+  fprintf (stderr, "nregs: %ld\n", (long)frame->nregs);
+  fprintf (stderr, "nsseregs: %ld\n", (long)frame->nsseregs);
+  fprintf (stderr, "padding0: %ld\n", (long)frame->padding0);
   fprintf (stderr, "alignment1: %ld\n", (long)stack_alignment_needed);
   fprintf (stderr, "padding1: %ld\n", (long)frame->padding1);
   fprintf (stderr, "va_arg: %ld\n", (long)frame->va_arg_size);
@@ -7641,8 +7685,8 @@ ix86_emit_save_regs (void)
   unsigned int regno;
   rtx insn;
 
-  for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0; )
-    if (ix86_save_reg (regno, true))
+  for (regno = FIRST_PSEUDO_REGISTER - 1; regno-- > 0; )
+    if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
       {
 	insn = emit_insn (gen_push (gen_rtx_REG (Pmode, regno)));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -7658,13 +7702,33 @@ ix86_emit_save_regs_using_mov (rtx pointer, HOST_WIDE_INT offset)
   rtx insn;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (ix86_save_reg (regno, true))
+    if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
       {
 	insn = emit_move_insn (adjust_address (gen_rtx_MEM (Pmode, pointer),
 					       Pmode, offset),
 			       gen_rtx_REG (Pmode, regno));
 	RTX_FRAME_RELATED_P (insn) = 1;
 	offset += UNITS_PER_WORD;
+      }
+}
+
+/* Emit code to save registers using MOV insns.  First register
+   is restored from POINTER + OFFSET.  */
+static void
+ix86_emit_save_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset)
+{
+  unsigned int regno;
+  rtx insn;
+  rtx mem;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
+      {
+	mem = adjust_address (gen_rtx_MEM (TImode, pointer), TImode, offset);
+	set_mem_align (mem, 128);
+	insn = emit_move_insn (mem, gen_rtx_REG (TImode, regno));
+	RTX_FRAME_RELATED_P (insn) = 1;
+	offset += 16;
       }
 }
 
@@ -7972,7 +8036,7 @@ ix86_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  allocate = frame.to_allocate;
+  allocate = frame.to_allocate + frame.nsseregs * 16 + frame.padding0;
 
   if (!frame.save_regs_using_mov)
     ix86_emit_save_regs ();
@@ -8051,11 +8115,22 @@ ix86_expand_prologue (void)
 	  || !frame.to_allocate
 	  || crtl->stack_realign_needed)
         ix86_emit_save_regs_using_mov (stack_pointer_rtx,
-				       frame.to_allocate);
+				       frame.to_allocate
+				       + frame.nsseregs * 16 + frame.padding0);
       else
         ix86_emit_save_regs_using_mov (hard_frame_pointer_rtx,
 				       -frame.nregs * UNITS_PER_WORD);
     }
+  if (!frame_pointer_needed
+      || !frame.to_allocate
+      || crtl->stack_realign_needed)
+    ix86_emit_save_sse_regs_using_mov (stack_pointer_rtx,
+				       frame.to_allocate);
+  else
+    ix86_emit_save_sse_regs_using_mov (hard_frame_pointer_rtx,
+				       - frame.nregs * UNITS_PER_WORD
+				       - frame.nsseregs * 16
+				       - frame.padding0);
 
   pic_reg_used = false;
   if (pic_offset_table_rtx
@@ -8127,7 +8202,7 @@ ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
   rtx base_address = gen_rtx_MEM (Pmode, pointer);
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (ix86_save_reg (regno, maybe_eh_return))
+    if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return))
       {
 	/* Ensure that adjust_address won't be forced to produce pointer
 	   out of range allowed by x86-64 instruction set.  */
@@ -8142,8 +8217,40 @@ ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 	    offset = 0;
 	  }
 	emit_move_insn (gen_rtx_REG (Pmode, regno),
-			adjust_address (base_address, Pmode, offset));
+	                adjust_address (base_address, Pmode, offset));
 	offset += UNITS_PER_WORD;
+      }
+}
+
+/* Emit code to restore saved registers using MOV insns.  First register
+   is restored from POINTER + OFFSET.  */
+static void
+ix86_emit_restore_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
+				      int maybe_eh_return)
+{
+  int regno;
+  rtx base_address = gen_rtx_MEM (TImode, pointer);
+  rtx mem;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return))
+      {
+	/* Ensure that adjust_address won't be forced to produce pointer
+	   out of range allowed by x86-64 instruction set.  */
+	if (TARGET_64BIT && offset != trunc_int_for_mode (offset, SImode))
+	  {
+	    rtx r11;
+
+	    r11 = gen_rtx_REG (DImode, R11_REG);
+	    emit_move_insn (r11, GEN_INT (offset));
+	    emit_insn (gen_adddi3 (r11, r11, pointer));
+	    base_address = gen_rtx_MEM (TImode, r11);
+	    offset = 0;
+	  }
+	mem = adjust_address (base_address, TImode, offset);
+	set_mem_align (mem, 128);
+	emit_move_insn (gen_rtx_REG (TImode, regno), mem);
+	offset += 16;
       }
 }
 
@@ -8174,6 +8281,7 @@ ix86_expand_epilogue (int style)
   if (crtl->calls_eh_return && style != 2)
     offset -= 2;
   offset *= -UNITS_PER_WORD;
+  offset -= frame.nsseregs * 16 + frame.padding0;
 
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
@@ -8207,11 +8315,23 @@ ix86_expand_epilogue (int style)
       if (!frame_pointer_needed
 	  || (sp_valid && !frame.to_allocate) 
 	  || stack_realign_fp)
-	ix86_emit_restore_regs_using_mov (stack_pointer_rtx,
-					  frame.to_allocate, style == 2);
+	{
+	  ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
+					        frame.to_allocate, style == 2);
+	  ix86_emit_restore_regs_using_mov (stack_pointer_rtx,
+					    frame.to_allocate
+					    + frame.nsseregs * 16
+					    + frame.padding0, style == 2);
+	}
       else
-	ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx,
-					  offset, style == 2);
+        {
+	  ix86_emit_restore_sse_regs_using_mov (hard_frame_pointer_rtx,
+					        offset, style == 2);
+	  ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx,
+					    offset
+					    + frame.nsseregs * 16
+					    + frame.padding0, style == 2);
+        }
 
       /* eh_return epilogues need %ecx added to the stack pointer.  */
       if (style == 2)
@@ -8237,14 +8357,18 @@ ix86_expand_epilogue (int style)
 	    {
 	      tmp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, sa);
 	      tmp = plus_constant (tmp, (frame.to_allocate
-                                         + frame.nregs * UNITS_PER_WORD));
+                                         + frame.nregs * UNITS_PER_WORD
+					 + frame.nsseregs * 16
+					 + frame.padding0));
 	      emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx, tmp));
 	    }
 	}
       else if (!frame_pointer_needed)
 	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				   GEN_INT (frame.to_allocate
-					    + frame.nregs * UNITS_PER_WORD),
+					    + frame.nregs * UNITS_PER_WORD
+					    + frame.nsseregs * 16
+					    + frame.padding0),
 				   style);
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_function_for_size_p (cfun)
@@ -8275,13 +8399,24 @@ ix86_expand_epilogue (int style)
 	  pro_epilogue_adjust_stack (stack_pointer_rtx,
 				     hard_frame_pointer_rtx,
 				     GEN_INT (offset), style);
+          ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
+					        frame.to_allocate, style == 2);
+	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				     GEN_INT (frame.nsseregs * 16), style);
 	}
-      else if (frame.to_allocate)
-	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				   GEN_INT (frame.to_allocate), style);
+      else if (frame.to_allocate || frame.nsseregs)
+	{
+          ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
+					        frame.to_allocate,
+						style == 2);
+	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				     GEN_INT (frame.to_allocate
+				     	      + frame.nsseregs * 16
+					      + frame.padding0), style);
+	}
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (ix86_save_reg (regno, false))
+	if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, false))
 	  emit_insn ((*ix86_gen_pop1) (gen_rtx_REG (Pmode, regno)));
       if (frame_pointer_needed)
 	{
