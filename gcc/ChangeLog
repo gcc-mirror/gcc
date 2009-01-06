@@ -1,3 +1,8 @@
+2009-01-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/38426.
+	* ira.c (ira): Set current_function_is_leaf earlier.
+
 2009-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38722
