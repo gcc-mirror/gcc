@@ -25,3 +25,4 @@ program gfcbu84_main
   end subroutine tq_tvgh
 end program gfcbu84_main
 ! { dg-final { scan-tree-dump-times "atmp" 0 "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
