@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -279,7 +279,7 @@ builtin_define_decimal_float_constants (const char *name_prefix,
 
   /* Compute the minimum representable value.  */
   sprintf (name, "__%s_MIN__", name_prefix);
-  sprintf (buf, "1E%d%s", fmt->emin, suffix);
+  sprintf (buf, "1E%d%s", fmt->emin - 1, suffix);
   builtin_define_with_value (name, buf, 0); 
 
   /* Compute the maximum representable value.  */
@@ -292,8 +292,9 @@ builtin_define_decimal_float_constants (const char *name_prefix,
 	*p++ = '.';
     }
   *p = 0;
-  /* fmt->p plus 1, to account for the decimal point.  */
-  sprintf (&buf[fmt->p + 1], "E%d%s", fmt->emax, suffix); 
+  /* fmt->p plus 1, to account for the decimal point and fmt->emax
+     minus 1 because the digits are nines, not 1.0.  */
+  sprintf (&buf[fmt->p + 1], "E%d%s", fmt->emax - 1, suffix); 
   builtin_define_with_value (name, buf, 0);
 
   /* Compute epsilon (the difference between 1 and least value greater
@@ -302,8 +303,8 @@ builtin_define_decimal_float_constants (const char *name_prefix,
   sprintf (buf, "1E-%d%s", fmt->p - 1, suffix);
   builtin_define_with_value (name, buf, 0);
 
-  /* Minimum denormalized positive decimal value.  */
-  sprintf (name, "__%s_DEN__", name_prefix);
+  /* Minimum subnormal positive decimal value.  */
+  sprintf (name, "__%s_SUBNORMAL_MIN__", name_prefix);
   p = buf;
   for (digits = fmt->p; digits > 1; digits--)
     {
@@ -312,7 +313,7 @@ builtin_define_decimal_float_constants (const char *name_prefix,
 	*p++ = '.';
     }
   *p = 0;
-  sprintf (&buf[fmt->p], "1E%d%s", fmt->emin, suffix); 
+  sprintf (&buf[fmt->p], "1E%d%s", fmt->emin - 1, suffix); 
   builtin_define_with_value (name, buf, 0);
 }
 
