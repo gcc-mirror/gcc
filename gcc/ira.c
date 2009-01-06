@@ -1879,6 +1879,11 @@ ira (FILE *f)
   if (warn_clobbered)
     generate_setjmp_warnings ();
 
+  /* Determine if the current function is a leaf before running IRA
+     since this can impact optimizations done by the prologue and
+     epilogue thus changing register elimination offsets.  */
+  current_function_is_leaf = leaf_function_p ();
+
   rebuild_p = update_equiv_regs ();
 
 #ifndef IRA_NO_OBSTACK
@@ -1976,11 +1981,6 @@ ira (FILE *f)
       
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   max_regno = max_reg_num ();
-  
-  /* Determine if the current function is a leaf before running IRA
-     since this can impact optimizations done by the prologue and
-     epilogue thus changing register elimination offsets.  */
-  current_function_is_leaf = leaf_function_p ();
   
   /* And the reg_equiv_memory_loc array.  */
   VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
