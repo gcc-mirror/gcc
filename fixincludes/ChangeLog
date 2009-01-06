@@ -1,3 +1,8 @@
+2009-01-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_spu_info):  Add files line.
+	* fixincl.x: Regenerate.
+
 2008-12-10  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux_spu_info): Match PA as well as IA64.

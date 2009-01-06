@@ -1927,6 +1927,13 @@ fix = {
 fix = {
     hackname = hpux_spu_info;
     mach     = "*-hp-hpux*";
+    /*
+     *  It is tempting to omit the first "files" entry.  Do not.
+     *  The testing machinery will take the first "files" entry as the name
+     *  of a test file to play with.  It would be a nuisance to have a directory
+     *  with the name "*".
+     */
+    files    = "ia64/sys/getppdp.h";
     files    = "*/sys/getppdp.h";
     select   = "^.*extern.*spu_info.*";
 
