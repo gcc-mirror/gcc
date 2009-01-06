@@ -54,7 +54,7 @@ public:
   virtual jint hashCode();
 private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::text::Collator)))) rules;
-  JArray< ::java::lang::Object * > * ce_table;
+  JArray< ::java::text::RuleBasedCollator$CollationElement * > * ce_table;
 public: // actually package-private
   ::java::util::HashMap * prefix_tree;
 private:

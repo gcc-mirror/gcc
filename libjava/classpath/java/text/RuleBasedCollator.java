@@ -151,13 +151,13 @@ public class RuleBasedCollator extends Collator
    */
   static final class CollationElement
   {
-    String key;
-    int primary;
-    short secondary;
-    short tertiary;
-    short equality;
-    boolean ignore;
-    String expansion;
+    final String key;
+    final int primary;
+    final short secondary;
+    final short tertiary;
+    final short equality;
+    final boolean ignore;
+    final String expansion;
 
     CollationElement(String key, int primary, short secondary, short tertiary,
 		     short equality, String expansion, boolean ignore)
@@ -185,7 +185,7 @@ public class RuleBasedCollator extends Collator
    * {@link #mergeRules(int,java.lang.String,java.util.ArrayList,java.util.ArrayList)})
    * as a temporary state while merging two sets of instructions.
    */
-  static final class CollationSorter
+  private static final class CollationSorter
   {
     static final int GREATERP = 0;
     static final int GREATERS = 1;
@@ -194,29 +194,39 @@ public class RuleBasedCollator extends Collator
     static final int RESET = 4;
     static final int INVERSE_SECONDARY = 5;
     
-    int comparisonType;
-    String textElement;
-    int hashText;
-    int offset;
-    boolean ignore;
+    final int comparisonType;
+    final String textElement;
+    final int hashText;
+    final int offset;
+    final boolean ignore;
 
     String expansionOrdering;
+
+    private CollationSorter(final int comparisonType, final String textElement,
+			    final int offset, final boolean ignore)
+    {
+      this.comparisonType = comparisonType;
+      this.textElement = textElement;
+      this.offset = offset;
+      this.ignore = ignore;
+      hashText = textElement.hashCode();
+    }
   }
 
   /**
-   * This the the original rule string.
+   * This is the original rule string.
    */
   private String rules;
 
   /**
    * This is the table of collation element values
    */
-  private Object[] ce_table;
+  private CollationElement[] ce_table;
 
   /**
    * Quick-prefix finder.
    */
-  HashMap prefix_tree;
+  HashMap<String,CollationElement> prefix_tree;
 
   /**
    * This is the value of the last sequence entered into
@@ -306,7 +316,8 @@ public class RuleBasedCollator extends Collator
    * @param patch Rules to be merged into the repository.
    * @throws ParseException if it is impossible to find an anchor point for the new rules.
    */
-  private void mergeRules(int offset, String starter, ArrayList main, ArrayList patch)
+  private void mergeRules(int offset, String starter, ArrayList<CollationSorter> main,
+			  ArrayList<CollationSorter> patch)
     throws ParseException 
   {
     int insertion_point = -1;
@@ -324,8 +335,8 @@ public class RuleBasedCollator extends Collator
 	
 	while (j < main.size())
 	  {
-	    CollationSorter rule1 = (CollationSorter) patch.get(i);
-	    CollationSorter rule2 = (CollationSorter) main.get(j);
+	    CollationSorter rule1 = patch.get(i);
+	    CollationSorter rule2 = main.get(j);
 	    
 	    if (rule1.textElement.equals(rule2.textElement))
 	      main.remove(j);
@@ -337,7 +348,7 @@ public class RuleBasedCollator extends Collator
     // Find the insertion point... O(N)
     for (int i = 0; i < main.size(); i++)
       {
-	CollationSorter sorter = (CollationSorter) main.get(i);
+	CollationSorter sorter = main.get(i);
 	int length = findPrefixLength(starter, sorter.textElement);
 		
 	if (length > max_length)
@@ -363,9 +374,7 @@ public class RuleBasedCollator extends Collator
 	 * sequence. The rest of the subsequence must be appended
 	 * to the end of the sequence.
 	 */
-	CollationSorter sorter = (CollationSorter) patch.get(0);
-	CollationSorter expansionPrefix =
-	  (CollationSorter) main.get(insertion_point-1);
+	CollationSorter sorter = patch.get(0);
 	
 	sorter.expansionOrdering = starter.substring(max_length); // Skip the first good prefix element
 		
@@ -398,7 +407,7 @@ public class RuleBasedCollator extends Collator
    * @throws ParseException if something turned wrong during the parsing. To get details
    * decode the message.
    */
-  private int subParseString(boolean stop_on_reset, ArrayList v,
+  private int subParseString(boolean stop_on_reset, ArrayList<CollationSorter> v,
 			     int base_offset, String rules)
     throws ParseException
   {
@@ -508,7 +517,7 @@ main_parse_loop:
 	     * indicated by the text element.
 	     */
 	    String subrules = rules.substring(i);
-	    ArrayList sorted_rules = new ArrayList();
+	    ArrayList<CollationSorter> sorted_rules = new ArrayList<CollationSorter>();
 	    int idx;
 
 	    // Parse the subrules but do not iterate through all
@@ -533,16 +542,12 @@ main_parse_loop:
 		break main_parse_loop;
 	  }
 
-	CollationSorter sorter = new CollationSorter();
-	
+	String textElement = sb.toString();
 	if (operator == CollationSorter.GREATERP)
 	  ignoreChars = false;
-
-	sorter.comparisonType = operator;
-	sorter.textElement = sb.toString();
-	sorter.hashText = sorter.textElement.hashCode();
-	sorter.offset = base_offset+rules.length();
-	sorter.ignore = ignoreChars;
+	CollationSorter sorter = new CollationSorter(operator, textElement,
+						     base_offset + rules.length(),
+						     ignoreChars);
 	sb.setLength(0);
 
 	v.add(sorter);
@@ -551,7 +556,6 @@ main_parse_loop:
 
     if (operator >= 0)
       {
-	CollationSorter sorter = new CollationSorter();
 	int pos = rules.length() + base_offset;
 
 	if ((sb.length() != 0 && nextIsModifier)
@@ -561,11 +565,8 @@ main_parse_loop:
 	if (operator == CollationSorter.GREATERP)
 	  ignoreChars = false;
 
-	sorter.comparisonType = operator;
-	sorter.textElement = sb.toString();
- 	sorter.hashText = sorter.textElement.hashCode();
-	sorter.offset = base_offset+pos;
-	sorter.ignore = ignoreChars;
+	CollationSorter sorter = new CollationSorter(operator, sb.toString(),
+						     base_offset+pos, ignoreChars);
 	v.add(sorter);
       }
 
@@ -593,10 +594,10 @@ main_parse_loop:
    * @throws ParseException if something turned wrong during the parsing. To get details
    * decode the message.
    */
-  private ArrayList parseString(String rules) 
+  private ArrayList<CollationSorter> parseString(String rules) 
     throws ParseException
   {
-    ArrayList v = new ArrayList();
+    ArrayList<CollationSorter> v = new ArrayList<CollationSorter>();
 
     // result of the first subParseString is not absolute (may be -1 or a
     // positive integer). But we do not care.
@@ -612,7 +613,7 @@ main_parse_loop:
    * @param parsedElements Parsed instructions stored in a ArrayList.
    * @throws ParseException if the order of the instructions are not valid.
    */
-  private void buildCollationVector(ArrayList parsedElements)
+  private void buildCollationVector(ArrayList<CollationSorter> parsedElements)
     throws ParseException
   {
     int primary_seq = 0;
@@ -624,14 +625,13 @@ main_parse_loop:
     final boolean DECREASING = false;
     final boolean INCREASING = true;
     boolean secondaryType = INCREASING;
-    ArrayList v = new ArrayList();
+    ArrayList<CollationElement> v = new ArrayList<CollationElement>();
 
     // elts is completely sorted.
 element_loop:
     for (int i = 0; i < parsedElements.size(); i++)
       {
-	CollationSorter elt = (CollationSorter) parsedElements.get(i);
-	boolean ignoreChar = false;
+	CollationSorter elt = parsedElements.get(i);
 
 	switch (elt.comparisonType)
 	  {
@@ -686,7 +686,7 @@ element_loop:
 
     this.inverseAccentComparison = inverseComparisons; 
 
-    ce_table = v.toArray();
+    ce_table = v.toArray(new CollationElement[v.size()]);
 
     last_primary_value = primary_seq+1;
     last_tertiary_value = last_tertiary_seq+1;
@@ -699,11 +699,11 @@ element_loop:
    */
   private void buildPrefixAccess()
   {
-    prefix_tree = new HashMap();
+    prefix_tree = new HashMap<String,CollationElement>();
 
     for (int i = 0; i < ce_table.length; i++)
       {
-	CollationElement e = (CollationElement) ce_table[i];
+	CollationElement e = ce_table[i];
 
 	prefix_tree.put(e.key, e);
       }
@@ -941,7 +941,7 @@ element_loop:
   public CollationKey getCollationKey(String source)
   {
     CollationElementIterator cei = getCollationElementIterator(source);
-    ArrayList vect = new ArrayList();
+    ArrayList<Integer> vect = new ArrayList<Integer>();
 
     int ord = cei.next();
     cei.reset(); //set to start of string
@@ -969,16 +969,16 @@ element_loop:
                break;
           }
 
-        vect.add(new Integer(ord)); 
+        vect.add(Integer.valueOf(ord)); 
 	ord = cei.next(); //increment to next key
       }
 
-    Object[] objarr = vect.toArray();
+    Integer[] objarr = vect.toArray(new Integer[vect.size()]);
     byte[] key = new byte[objarr.length * 4];
 
     for (int i = 0; i < objarr.length; i++)
       {
-        int j = ((Integer) objarr[i]).intValue();
+        int j = objarr[i].intValue();
         key [i * 4] = (byte) ((j & 0xFF000000) >> 24);
         key [i * 4 + 1] = (byte) ((j & 0x00FF0000) >> 16);
         key [i * 4 + 2] = (byte) ((j & 0x0000FF00) >> 8);

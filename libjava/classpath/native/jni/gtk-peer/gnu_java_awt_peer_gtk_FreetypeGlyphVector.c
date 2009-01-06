@@ -176,9 +176,6 @@ Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning
 {
   FT_Face ft_face;
   FT_Vector kern;
-  jclass cls;
-  jmethodID method;
-  jvalue values[2];
   PangoFcFont *font;
 
   font = JLONG_TO_PTR(PangoFcFont, fnt);
@@ -388,8 +385,23 @@ Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative
     }
 
   FT_Get_Glyph( ft_face->glyph, &glyph );
-  FT_Outline_Decompose (&(((FT_OutlineGlyph)glyph)->outline),
-			&ftCallbacks, path);
+  if (glyph->format == FT_GLYPH_FORMAT_OUTLINE)
+    {
+      FT_Outline_Decompose (&(((FT_OutlineGlyph)glyph)->outline),
+			    &ftCallbacks, path);
+    }
+  else
+    {
+      char format[5];
+
+      format[0] = (glyph->format & 0xFF000000) >> 24;
+      format[1] = (glyph->format & 0x00FF0000) >> 16;
+      format[2] = (glyph->format & 0x0000FF00) >> 8;
+      format[3] = (glyph->format & 0x000000FF);
+      format[4] = '\0';
+      printf("WARNING: Unable to create outline for font %s %s of format %s\n",
+	     ft_face->family_name, ft_face->style_name, format);
+    }
   FT_Done_Glyph( glyph );
   
   pango_fc_font_unlock_face( font );

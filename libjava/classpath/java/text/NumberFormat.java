@@ -177,6 +177,7 @@ public abstract class NumberFormat extends Format implements Cloneable
      * This constructor is only used by the deserializer. Without it,
      * it would fail to construct a valid object.
      */
+    @SuppressWarnings("unused")
     private Field()
     {
       super("");

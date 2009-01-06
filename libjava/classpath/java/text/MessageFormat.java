@@ -38,13 +38,17 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.lang.CPStringBuilder;
+
 import gnu.java.text.FormatCharacterIterator;
 
 import java.io.InvalidObjectException;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 
 public class MessageFormat extends Format
 {
@@ -69,7 +73,7 @@ public class MessageFormat extends Format
 
     // Argument will be checked to make sure it is an instance of this
     // class.
-    Class formatClass;
+    Class<?> formatClass;
 
     // Formatter type.
     String type;
@@ -95,12 +99,7 @@ public class MessageFormat extends Format
               else if (style.equals("percent"))
                 format = NumberFormat.getPercentInstance(loc);
               else if (style.equals("integer"))
-                {
-                  NumberFormat nf = NumberFormat.getNumberInstance(loc);
-                  nf.setMaximumFractionDigits(0);
-                  nf.setGroupingUsed(false);
-                  format = nf;
-                }
+		format = NumberFormat.getIntegerInstance(loc);
               else
                 {
                   format = NumberFormat.getNumberInstance(loc);
@@ -165,6 +164,7 @@ public class MessageFormat extends Format
     public static final MessageFormat.Field ARGUMENT = new MessageFormat.Field("argument");
 
     // For deserialization
+    @SuppressWarnings("unused")
     private Field()
     {
       super("");
@@ -194,7 +194,7 @@ public class MessageFormat extends Format
   // Helper that returns the text up to the next format opener.  The
   // text is put into BUFFER.  Returns index of character after end of
   // string.  Throws IllegalArgumentException on error.
-  private static int scanString(String pat, int index, StringBuilder buffer)
+  private static int scanString(String pat, int index, CPStringBuilder buffer)
   {
     int max = pat.length();
     buffer.setLength(0);
@@ -234,7 +234,7 @@ public class MessageFormat extends Format
   // This helper retrieves a single part of a format element.  Returns
   // the index of the terminating character.
   private static int scanFormatElement(String pat, int index,
-                                       StringBuilder buffer, char term)
+                                       CPStringBuilder buffer, char term)
   {
     int max = pat.length();
     buffer.setLength(0);
@@ -281,11 +281,11 @@ public class MessageFormat extends Format
 
   // This is used to parse a format element and whatever non-format
   // text might trail it.
-  private static int scanFormat(String pat, int index, StringBuilder buffer,
-                                Vector elts, Locale locale)
+  private static int scanFormat(String pat, int index, CPStringBuilder buffer,
+                                List<MessageFormatElement> elts, Locale locale)
   {
     MessageFormatElement mfe = new MessageFormatElement ();
-    elts.addElement(mfe);
+    elts.add(mfe);
 
     int max = pat.length();
 
@@ -342,17 +342,16 @@ public class MessageFormat extends Format
   {
     pattern = newPattern;
 
-    StringBuilder tempBuffer = new StringBuilder ();
+    CPStringBuilder tempBuffer = new CPStringBuilder ();
 
     int index = scanString (newPattern, 0, tempBuffer);
     leader = tempBuffer.toString();
 
-    Vector elts = new Vector ();
+    List<MessageFormatElement> elts = new ArrayList<MessageFormatElement>();
     while (index < newPattern.length())
       index = scanFormat (newPattern, index, tempBuffer, elts, locale);
 
-    elements = new MessageFormatElement[elts.size()];
-    elts.copyInto(elements);
+    elements = elts.toArray(new MessageFormatElement[elts.size()]);
   }
 
   /**
@@ -494,7 +493,8 @@ public class MessageFormat extends Format
 
 	if (output_iterator != null)
 	  {
-	    HashMap hash_argument = new HashMap();
+	    HashMap<MessageFormat.Field, Integer> hash_argument =
+	      new HashMap<MessageFormat.Field, Integer>();
 	    int position = output_iterator.getEndIndex();
 	    
 	    hash_argument.put (MessageFormat.Field.ARGUMENT,
@@ -613,7 +613,7 @@ public class MessageFormat extends Format
       }
     index += leader.length();
 
-    Vector results = new Vector (elements.length, 1);
+    ArrayList<Object> results = new ArrayList<Object>(elements.length);
     // Now check each format.
     for (int i = 0; i < elements.length; ++i)
       {
@@ -681,15 +681,18 @@ public class MessageFormat extends Format
 	  }
 
 	if (elements[i].argNumber >= results.size())
-	  results.setSize(elements[i].argNumber + 1);
-	results.setElementAt(value, elements[i].argNumber);
+	  {
+	    // Emulate padding behaviour of Vector.setSize() with ArrayList
+	    results.ensureCapacity(elements[i].argNumber + 1);
+	    for (int a = results.size(); a <= elements[i].argNumber; ++a)
+	      results.add(a, null);
+	  }
+	results.set(elements[i].argNumber, value);
 
 	index += elements[i].trailer.length();
       }
 
-    Object[] r = new Object[results.size()];
-    results.copyInto(r);
-    return r;
+    return results.toArray(new Object[results.size()]);
   }
 
   public Object[] parse (String sourceStr) throws ParseException

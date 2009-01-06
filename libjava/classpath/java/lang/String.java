@@ -337,8 +337,58 @@ public final class String
    * @throws Error if the decoding fails
    * @since 1.1
    */
-  public String(byte[] data, int offset, int count, String encoding)
+  public String(byte[] data, int offset, int count, final String encoding)
     throws UnsupportedEncodingException
+  {
+    this(data, offset, count, stringToCharset(encoding));
+  }
+
+  /**
+   * Wrapper method to convert exceptions resulting from
+   * the selection of a {@link java.nio.charset.Charset} based on
+   * a String.
+   *
+   * @throws UnsupportedEncodingException if encoding is not found
+   */
+  private static final Charset stringToCharset(final String encoding)
+    throws UnsupportedEncodingException
+  {
+    try
+      {
+	return Charset.forName(encoding);
+      }
+    catch(IllegalCharsetNameException e)
+      {
+	throw new UnsupportedEncodingException("Encoding: "+encoding+
+					       " not found.");
+      }
+    catch(UnsupportedCharsetException e)
+      {
+	throw new UnsupportedEncodingException("Encoding: "+encoding+
+					       " not found.");
+      }    
+  }
+
+  /**
+   * Creates a new String using the portion of the byte array starting at the
+   * offset and ending at offset + count. Uses the specified encoding type
+   * to decode the byte array, so the resulting string may be longer or
+   * shorter than the byte array. For more decoding control, use
+   * {@link java.nio.charset.CharsetDecoder}, and for valid character sets,
+   * see {@link java.nio.charset.Charset}. Malformed input and unmappable
+   * character sequences are replaced with the default replacement string
+   * provided by the {@link java.nio.charset.Charset}.
+   *
+   * @param data byte array to copy
+   * @param offset the offset to start at
+   * @param count the number of bytes in the array to use
+   * @param encoding the encoding to use
+   * @throws NullPointerException if data or encoding is null
+   * @throws IndexOutOfBoundsException if offset or count is incorrect
+   *         (while unspecified, this is a StringIndexOutOfBoundsException)
+   * @since 1.6
+   */
+  public String(byte[] data, int offset, int count, Charset encoding)
   {
     if (offset < 0)
       throw new StringIndexOutOfBoundsException("offset: " + offset);
@@ -350,7 +400,7 @@ public final class String
 						+ (offset + count));
     try 
       {
-        CharsetDecoder csd = Charset.forName(encoding).newDecoder();
+        CharsetDecoder csd = encoding.newDecoder();
 	csd.onMalformedInput(CodingErrorAction.REPLACE);
 	csd.onUnmappableCharacter(CodingErrorAction.REPLACE);
 	CharBuffer cbuf = csd.decode(ByteBuffer.wrap(data, offset, count));
@@ -366,16 +416,12 @@ public final class String
 	    this.offset = 0;
 	    this.count = value.length;
 	  }
-      } catch(CharacterCodingException e){
-	  throw new UnsupportedEncodingException("Encoding: "+encoding+
-						 " not found.");	  
-      } catch(IllegalCharsetNameException e){
-	  throw new UnsupportedEncodingException("Encoding: "+encoding+
-						 " not found.");
-      } catch(UnsupportedCharsetException e){
-	  throw new UnsupportedEncodingException("Encoding: "+encoding+
-						 " not found.");
-      }    
+      } 
+    catch(CharacterCodingException e)
+      {
+	// This shouldn't ever happen.
+	throw (InternalError) new InternalError().initCause(e);
+      }	  
   }
 
   /**
@@ -397,6 +443,26 @@ public final class String
    */
   public String(byte[] data, String encoding)
     throws UnsupportedEncodingException
+  {
+    this(data, 0, data.length, encoding);
+  }
+
+  /**
+   * Creates a new String using the byte array. Uses the specified encoding
+   * type to decode the byte array, so the resulting string may be longer or
+   * shorter than the byte array. For more decoding control, use
+   * {@link java.nio.charset.CharsetDecoder}, and for valid character sets,
+   * see {@link java.nio.charset.Charset}. Malformed input and unmappable
+   * character sequences are replaced with the default replacement string
+   * provided by the {@link java.nio.charset.Charset}.
+   *
+   * @param data byte array to copy
+   * @param encoding the name of the encoding to use
+   * @throws NullPointerException if data or encoding is null
+   * @see #String(byte[], int, int, java.nio.Charset)
+   * @since 1.6
+   */
+  public String(byte[] data, Charset encoding)
   {
     this(data, 0, data.length, encoding);
   }
@@ -726,11 +792,30 @@ public final class String
    * @throws UnsupportedEncodingException if encoding is not supported
    * @since 1.1
    */
-  public byte[] getBytes(String enc) throws UnsupportedEncodingException
+  public byte[] getBytes(final String enc)
+    throws UnsupportedEncodingException
+  {
+    return getBytes(stringToCharset(enc));
+  }
+
+  /**
+   * Converts the Unicode characters in this String to a byte array. Uses the
+   * specified encoding method, so the result may be longer or shorter than
+   * the String. For more encoding control, use
+   * {@link java.nio.charset.CharsetEncoder}, and for valid character sets,
+   * see {@link java.nio.charset.Charset}. Unsupported characters get
+   * replaced by the {@link java.nio.charset.Charset}'s default replacement.
+   *
+   * @param enc encoding name
+   * @return the resulting byte array
+   * @throws NullPointerException if enc is null
+   * @since 1.6
+   */
+  public byte[] getBytes(Charset enc)
   {
     try 
       {
-	CharsetEncoder cse = Charset.forName(enc).newEncoder();
+	CharsetEncoder cse = enc.newEncoder();
 	cse.onMalformedInput(CodingErrorAction.REPLACE);
 	cse.onUnmappableCharacter(CodingErrorAction.REPLACE);
 	ByteBuffer bbuf = cse.encode(CharBuffer.wrap(value, offset, count));
@@ -741,16 +826,6 @@ public final class String
 	byte[] bytes = new byte[bbuf.remaining()];
 	bbuf.get(bytes);
 	return bytes;
-      } 
-    catch(IllegalCharsetNameException e)
-      {
-	throw new UnsupportedEncodingException("Encoding: " + enc
-					       + " not found.");
-      } 
-    catch(UnsupportedCharsetException e)
-      {
-	throw new UnsupportedEncodingException("Encoding: " + enc
-					       + " not found.");
       } 
     catch(CharacterCodingException e)
       {

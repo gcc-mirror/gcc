@@ -1,0 +1,4443 @@
+2008-12-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/MessageFormat.java:
+	(parse(String,ParsePosition)): Emulate behaviour
+	of Vector's setSize() which was being implicitly relied on.
+
+2008-12-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java:
+	Remove superfluous empty line introduced
+	in last commit.
+	
+2008-12-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/MessageFormat.java:
+	Convert variables to use generic types, use
+	CPStringBuilder in place of StringBuilder.
+	(Field()): Suppress warning due to only being used by
+	deserialization.
+	(scanFormat(String,int,CPStringBuilder,List,Locale)):
+	Use ArrayList instead of Vector as no synchronisation needed.
+	(parse(String,ParsePosition)): Likewise.
+	* java/text/NumberFormat.java:
+	(Field()): Suppress warning due to only being used by
+	deserialization.
+	* java/text/RuleBasedCollator.java:
+	Convert variables to use generic types.
+	(CollationElement): Make fields final.
+	(CollationSorter): Likewise.
+	(CollationSorter(int,String,int,boolean)): New constructor.
+	* java/text/SimpleDateFormat.java,
+	Convert variables to use generic types.
+	(applyPattern(String)): Clear list rather than creating a new instance.
+	
+2008-12-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java:
+	(standardChars): Use standard characters from CLDR.
+	(RFC822_TIMEZONE_FIELD): Fixed to match new standard
+	characters.
+	
+2008-12-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/String.java:
+	(byte[],int,int,String): Call new Charset method.
+	(stringToCharset(String)): Private method added to
+	handle exception conversion.
+	(byte[],int,int,Charset): Implemented.
+	(byte[], Charset): Likewise.
+	(getBytes(String)): Call new Charset method.
+	(getBytes(Charset)): Implemented.
+	
+2008-12-18  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c:
+	Include '\0' in the string.
+	
+2008-12-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/38473:
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c:
+	(Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative):
+	Check that the glyph is an outline before calling
+	FT_Outline_Decompose.
+
+2008-11-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/transform/Bindings.java:
+	Add generics to collections.
+
+2008-11-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/crypto/jce/key/SecretKeyGeneratorImpl.java:
+	(init(int,SecureRandom)): Improve exception message.
+	
+2008-11-06  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
+	(getKerning): Removed unused cls, method, values.
+
+2008-11-05  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/awt/peer/gtk/FreetypeGlyphVector.java (getKerning):
+	Return result in a float[], not a Point2D.
+	(performDefaultLayout): Call getKerning with a float[].
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
+	(getKerning): Return result in a float[], not a Point2D.
+
+2008-11-05  Andrew Haley  <aph@redhat.com>
+
+	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
+	.svn direcories.
+
+2008-10-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* native/fdlibm/fdlibm.h: Undef hz.
+
+2008-10-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/ac_prog_antlr.m4:
+	Remove redundant checks.
+	* tools/Makefile.am:
+	Use gjdoc_gendir when calling antlr.
+
+2008-10-17  Robert Lougher  <rob.lougher@gmail.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector):
+	Release 'fonts'.
+
+2008-10-16  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/jar/WorkSet.java (initSet): Use
+	foreach.  Change argument type.
+	(WorkSet): Change argument type.
+	* tools/gnu/classpath/tools/jar/Indexer.java (indexJarFile): Use
+	foreach.
+	* tools/gnu/classpath/tools/jar/Creator.java
+	(writeCommandLineEntries): Use foreach.
+	(getAllEntries): Likewise.
+
+2008-10-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Remove superfluous AC_PROG_JAVA call.
+
+2008-10-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/ac_prog_antlr:
+	Check for cantlr as well.
+	* tools/Makefile.am:
+	Only build GJDoc parser when both
+	CREATE_GJDOC and CREATE_GJDOC_PARSER
+	are on.
+
+2008-10-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Add regen-gjdoc-parser option,
+	and separate antlr tests.
+	* m4/ac_prog_antlr.m4:
+	Turn single test into AC_LIB_ANTLR
+	and AC_PROG_ANTLR.
+	* m4/ac_prog_java.m4:
+	Quote tests.
+	* tools/Makefile.am:
+	Support CREATE_GJDOC_PARSER option.
+
+2008-09-29  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4:
+	Check for antlr binary as well.
+	
+2008-09-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Always check for JAVA prior to ANTLR check.
+	* java/lang/ThreadLocal.java,
+	* java/lang/ThreadLocalMap.java:
+	Rename notFound back to sentinel to avoid
+	potential issues with use of the old name.
+	Cleanup formatting.
+	* java/nio/Buffer.java,
+	* java/nio/ByteBuffer.java,
+	* java/nio/ByteBufferImpl.java,
+	* java/nio/CharBuffer.java,
+	* java/nio/CharViewBufferImpl.java,
+	* java/nio/DirectByteBufferImpl.java,
+	* java/nio/DoubleBuffer.java,
+	* java/nio/DoubleBufferImpl.java,
+	* java/nio/FloatBuffer.java,
+	* java/nio/FloatBufferImpl.java,
+	* java/nio/IntBuffer.java,
+	* java/nio/LongBuffer.java,
+	* java/nio/LongBufferImpl.java,
+	* java/nio/MappedByteBuffer.java,
+	* java/nio/ShortBuffer.java,
+	* java/nio/ShortBufferImpl.java,
+	* java/nio/ShortViewBufferImpl.java:
+	Cleanup formatting.
+
+2008-09-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/System.java (getenv): Reinstate
+	use of EnvironmentMap as opposed to raw
+	HashMap.
+
+2008-09-16  Mario Torre  <neugens@aicas.com>
+
+	* java/lang/System.java (getenv): Fix env entries of the form
+	key=value=value=value not parsed correctly. 
+	
+2008-09-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	Reported by: Matthias Klose
+	* tools/Makefile.am:
+	Simplify the addition of the ANTLR
+	JAR file to the classpath.
+	
+2008-09-14  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_antlr.m4:
+	Allow use of runantlr on systems
+	which have it (Debian/Ubuntu).
+	
+2008-09-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* examples/Makefile.am:
+	Check lib directly as well as glibj.zip
+	for boot classes.
+	* m4/acinclude.m4:
+	Only require the class files to be built
+	to allow the tools and examples to be built,
+	not the installation of glibj.zip.
+	* tools/Makefile.am:
+	Check lib directly as well as glibj.zip
+	for boot classes.
+
+2008-09-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* examples/Makefile.am,
+	* lib/Makefile.am:
+	Add GCJ rules.
+	* m4/ac_prog_javac.m4:
+	Check whether JAVAC is gcj.
+	* m4/ac_prog_javac_works.m4:
+	Add GCJ rules.
+	* m4/acinclude.m4:
+	Don't bother checking for -J
+	if using GCJ.
+	* tools/Makefile.am:
+	Add GCJ rules.
+
+2007-08-23  Daniel Frampton  <zyridium@zyridium.net>
+
+	* AUTHORS: Added.
+	* java/lang/InheritableThreadLocal.java,
+	* java/lang/Thread.java,
+	* java/lang/ThreadLocal.java:
+	Modified to use java.lang.ThreadLocalMap.
+	* java/lang/ThreadLocalMap.java:
+	New cheaper ThreadLocal-specific WeakHashMap.
+
+2008-02-07  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* java/util/zip/ZipEntry.java:
+	Use byte fields instead of integer fields,
+	store the time as well as the DOS time and
+	don't retain a global Calendar instance.
+	(setDOSTime(int)): Set KNOWN_DOSTIME instead
+	of KNOWN_TIME, and unset KNOWN_TIME.
+	(getDOSTime()): Compute DOS time from UNIX time
+	only when needed.
+	(clone()): Provide cloning via the ZipEntry constructor
+	where possible.
+	(setTime(long)): Don't compute DOS time at this point.
+	(getCalendar()): Removed.
+	
+2008-09-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/getopt/Parser.java:
+	(setHeader(String)): Make synchronized.
+	(setFooter(String)): Likewise.
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java,
+	(reset()): Make synchronized.
+	(name(Class)): Likewise.
+	
+2008-09-04  Robert Schuster  <robertschuster@fsfe.org>
+
+	* gnu/java/nio/charset/ByteDecodeLoopHelper:
+	(arrayDecodeLoop): Added new break label, escape to that label.
+	* gnu/java/nio/charset/ByteEncodeLoopHelper:
+	(arrayDecodeLoop): Added new break label, escape to that label.
+
+2008-09-04  Robert Schuster  <robertschuster@fsfe.org>
+
+	* java/text/DecimalFormat.java:
+	(scanFix): Use 'i + 1' when looking at following character.
+	(scanNegativePattern): Dito.
+
+2008-09-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java:
+	(makeVtable()): Populate methodNameMap.
+	(printMethods(CniPrintStream)): Always use pre-populated
+	methodNameMap for bridge targets.
+
+2008-09-01  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/peer/x/XImage.java (XImageProducer): remove @Override
+	annotation to allow compilation on javac < 1.6 and ecj < 3.4.
+
+2008-09-01  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/peer/x/XGraphicsDevice.java (getDisplay): fix to support
+	new Escher API.
+	* gnu/java/awt/peer/x/XImage.java (getSource): method implemented.
+	* gnu/java/awt/peer/x/XImage.java (XImageProducer): implement ImageProducer
+	for getSource.
+	 
+2008-09-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/regex/BacktrackStack.java,
+	* gnu/java/util/regex/CharIndexed.java,
+	* gnu/java/util/regex/CharIndexedCharArray.java,
+	* gnu/java/util/regex/CharIndexedCharSequence.java,
+	* gnu/java/util/regex/CharIndexedInputStream.java,
+	* gnu/java/util/regex/CharIndexedString.java,
+	* gnu/java/util/regex/CharIndexedStringBuffer.java,
+	* gnu/java/util/regex/RE.java,
+	* gnu/java/util/regex/REException.java,
+	* gnu/java/util/regex/REFilterInputStream.java,
+	* gnu/java/util/regex/REMatch.java,
+	* gnu/java/util/regex/REMatchEnumeration.java,
+	* gnu/java/util/regex/RESyntax.java,
+	* gnu/java/util/regex/REToken.java,
+	* gnu/java/util/regex/RETokenAny.java,
+	* gnu/java/util/regex/RETokenBackRef.java,
+	* gnu/java/util/regex/RETokenChar.java,
+	* gnu/java/util/regex/RETokenEnd.java,
+	* gnu/java/util/regex/RETokenEndOfPreviousMatch.java,
+	* gnu/java/util/regex/RETokenEndSub.java,
+	* gnu/java/util/regex/RETokenIndependent.java,
+	* gnu/java/util/regex/RETokenLookAhead.java,
+	* gnu/java/util/regex/RETokenLookBehind.java,
+	* gnu/java/util/regex/RETokenNamedProperty.java,
+	* gnu/java/util/regex/RETokenOneOf.java,
+	* gnu/java/util/regex/RETokenPOSIX.java,
+	* gnu/java/util/regex/RETokenRange.java,
+	* gnu/java/util/regex/RETokenRepeated.java,
+	* gnu/java/util/regex/RETokenStart.java,
+	* gnu/java/util/regex/RETokenWordBoundary.java,
+	* gnu/java/util/regex/UncheckedRE.java:
+	Fix indentation.
+
+2008-09-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/regex/RETokenStart.java:
+	(getMaximumLength()): Add Override annotation.
+	(matchThis(CharIndexed, REMatch)): Likewise.
+	(returnsFixedLengthMatches()): Renamed from
+	returnsFixedLengthmatches and added Override
+	annotation.
+	(findFixedLengthMatches(CharIndexed,REMatch,int)):
+	Add Override annotation.
+	(dump(CPStringBuilder)): Likewise.
+	* gnu/javax/print/ipp/IppRequest.java:
+	(RequestWriter.writeOperationAttributes(AttributeSet)):
+	Throw exception, don't just create and drop it.
+	* javax/management/MBeanServerPermission.java:
+	(MBeanServerPermissionCollection.add(Permission)): Compare
+	against individual Strings not the entire array, and
+	store the result of replace.
+	* javax/swing/text/html/StyleSheet.java:
+	(setBaseFontSize(size)): Store result of trim().
+
+2008-09-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/tools/FileObject.java:
+	(openReader(boolean)): Document new parameter.
+	
+2008-03-27  Michael Franz  <mvfranz@gmail.com>
+
+	PR classpath/35690:
+	* javax/tools/FileObject.java:
+	(toUri()): Fix case from toURI.
+	(openReader(boolean)): Add missing boolean argument.
+	
+2008-08-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/35487:
+	* gnu/javax/management/Server.java:
+	(beans): Change to ConcurrentHashMap.
+	(defaultDomain): Make final.
+	(outer): Likewise.
+	(LazyListenersHolder): Added to wrap
+	listeners, also now a ConcurrentHashMap,
+	providing lazy initialisation safely.
+	(sequenceNumber): Documented.
+	(getBean(ObjectName)): Remove redundant cast.
+	(addNotificationListener(ObjectName,NotificationListener,
+	NotificationFilter,Object)): Remove map initialisation
+	and use holder.
+	(getObjectInstance(ObjectName)): Remove redundant cast.
+	(registerMBean(Object,ObjectName)): Add bean atomically.
+	(removeNotificationListener(ObjectName,NotificationListener)):
+	Simplified.
+	(removeNotificationListener(ObjectName,NotificationListener,
+	NotificationFilter,Object)): Likewise.
+	(notify(ObjectName,String)): Documented.
+	
+2008-08-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/management/Server.java:
+	Genericised.
+
+2008-08-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/management/Translator.java:
+	Genericised.
+
+2008-08-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/DefaultLoaderRepository.java,
+	* javax/management/JMX.java,
+	* javax/management/MBeanAttributeInfo.java,
+	* javax/management/MBeanConstructorInfo.java,
+	* javax/management/MBeanOperationInfo.java,
+	* javax/management/MBeanServerDelegate.java:
+	Fix warnings due to generics.
+
+2008-08-25  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/MBeanPermission.java,
+	* javax/management/MBeanServerDelegate.java,
+	* javax/management/MBeanServerFactory.java,
+	* javax/management/MBeanServerInvocationHandler.java,
+	* javax/management/MBeanServerPermission.java:
+	Fix warnings due to use of non-generic collections.
+
+2008-08-25  Mario Torre  <neugens@aicas.com>
+
+	* gnu/javax/rmi/CORBA/RmiUtilities.java (readValue): check if sender is
+	null to avoid NPE.
+	
+2008-08-22  Mario Torre  <neugens@aicas.com>
+ 
+	* gnu/CORBA/OrbFunctional.java (set_parameters): Fix
+	NullPointerException checking when param is null. 
+
+2008-08-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/regex/Matcher.java:
+	(reset()): Reset append position so
+	we don't try and append to the end of
+	the old input.
+	
+2008-08-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/32028:
+	* m4/acinclude.m4:
+	Also allow versions of GJDoc from 0.8* on, as
+	CVS is 0.8.0-pre.
+	
+2008-08-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/32028:
+	* m4/acinclude.m4:
+	(CLASSPATH_WITH_GJDOC): Ensure version 0.7.9 is
+	being used.
+	
+2008-08-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/Makefile.am:
+	Add taglets subdirectory to list of excluded
+	paths when GJDoc is not compiled.
+	
+2008-08-19  David P Grove  <groved@us.ibm.com>
+
+	* scripts/check_jni_methods.sh.in:
+	Fix build issue on AIX by splitting generation
+	of method list.
+	
+2008-08-18  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* native/jni/gstreamer-peer/gst_native_pipeline.c:
+	(get_free_space(int)): Use #else not #elif when
+	there is no condition.
+
+2008-08-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/31895:
+	* java/text/DecimalFormat.java:
+	(setCurrency(Currency)): Update prefixes and
+	suffixes when currency changes.
+	* java/text/DecimalFormatSymbols.java:
+	(DecimalFormatSymbols(Locale)): Set locale earlier
+	so it can be used by setCurrency(Currency).
+	(setCurrency(Currency)): Set the symbol correctly using
+	the locale of the instance.
+	* java/util/Currency.java:
+	Throw error instead of just printing a message.
+
+2008-08-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/activation/ActivationDataFlavor.java:
+	Suppress warnings from public API.
+	(mimeType): Made final.
+	(representationClass): Added generic type and
+	made final.
+	(normalizeMimeTypeParameter(String,String)):
+	Use CPStringBuilder.
+	* javax/activation/CommandInfo.java:
+	(verb): Made final.
+	(className): Made final.
+	* javax/activation/DataHandler.java:
+	(dataSource): Made final.
+	* javax/activation/FileDataSource.java:
+	(file): Made final.
+	* javax/activation/MailcapCommandMap.java:
+	Use generics on collections and CPStringBuilder
+	instead of StringBuffer.
+	* javax/activation/MimeType.java:
+	(toString()): Use CPStringBuilder.
+	(getBaseType()): Likewise.
+	* javax/activation/MimeTypeParameterList.java:
+	Use generics on collections and CPStringBuilder
+	instead of StringBuffer.
+	* javax/activation/MimeTypeParseException.java:
+	(MimeTypeParseException(String,String)): Use
+	CPStringBuilder.
+	* javax/activation/MimetypesFileTypeMap.java:
+	Use generics on collections and CPStringBuilder
+	instead of StringBuffer.	
+	* javax/activation/URLDataSource.java:
+	(url): Made final.
+
+2008-08-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/activation/viewers/ImageViewer.java,
+	* gnu/javax/activation/viewers/TextEditor.java,
+	* gnu/javax/activation/viewers/TextViewer.java,
+	* javax/activation/ActivationDataFlavor.java,
+	* javax/activation/CommandInfo.java,
+	* javax/activation/CommandMap.java,
+	* javax/activation/CommandObject.java,
+	* javax/activation/DataContentHandler.java,
+	* javax/activation/DataContentHandlerFactory.java,
+	* javax/activation/DataHandler.java,
+	* javax/activation/DataHandlerDataSource.java,
+	* javax/activation/DataSource.java,
+	* javax/activation/DataSourceDataContentHandler.java,
+	* javax/activation/FileDataSource.java,
+	* javax/activation/FileTypeMap.java,
+	* javax/activation/MailcapCommandMap.java,
+	* javax/activation/MimeType.java,
+	* javax/activation/MimeTypeParameterList.java,
+	* javax/activation/MimeTypeParseException.java,
+	* javax/activation/MimetypesFileTypeMap.java,
+	* javax/activation/ObjectDataContentHandler.java,
+	* javax/activation/URLDataSource.java,
+	* javax/activation/UnsupportedDataTypeException.java,
+	* javax/activation/package.html,
+	* resource/META-INF/mailcap.default,
+	* resource/META-INF/mimetypes.default:
+	Import GNU JAF CVS as of 17/08/2008.
+
+2006-04-25  Archit Shah  <ashah@redhat.com>
+
+	* javax/activation/MimeTypeParameterList.java:
+	Insert ';' separator before parameter list.
+
+2005-06-29  Xavier Poinsard  <xpoinsard@openpricer.com>
+
+	* javax/activation/ObjectDataContentHandler.java:
+	Fixed typo.
+
+2005-05-28  Chris Burdess  <dog@bluezoo.org>
+
+	* javax/activation/CommandMap.java, 
+	* javax/activation/MailcapCommandMap.java:
+	Updated to JAF 1.1.
+
+2004-06-09  Chris Burdess  <dog@bluezoo.org>
+
+	* javax/activation/MailcapCommandMap.java:
+	Fixed bug whereby x-java prefix was not
+	attempted.
+
+2008-08-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* AUTHORS: Added Laszlo.
+
+2008-04-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/30436:
+	* java/util/Scanner.java:
+	Fix package to be java.util and correct
+	indentation.
+
+2007-07-25  Laszlo Andras Hernadi  <e0327023@student.tuwien.ac.at>
+
+	PR classpath/30436:
+	* java/util/Scanner.java:
+	Initial implementation.
+
+2008-08-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/regex/Matcher.java:
+	(toMatchResult()): Implemented.
+	
+2008-08-13  Joshua Sumali  <jsumali@redhat.com>
+
+	* doc/Makefile.am (gjdoc.pod): Generate gjdoc pod from cp-tools.texinfo
+	instead of invoke.texi. Remove invoke.texi from EXTRA_DIST.
+	* doc/invoke.texi: Removed and merged into ...
+	* doc/cp-tools.texinfo: Here
+
+2008-08-12  Robert Schuster  <robertschuster@fsfe.org>
+
+	* native/jni/java-net/local.c
+	(local_bind): Removed fprintf call, fixed access outside
+	of array bounds.
+
+2008-07-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/acinclude.m4 (CLASSPATH_COND_IF): New macro.
+	* configure.ac: Use it.
+	* tools/Makefile.am (!CREATE_WRAPPERS): Update comment.
+
+2008-07-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_af_NA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ak.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cch.properties,
+	* resource/gnu/java/locale/LocaleInformation_cop.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_dv.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_ee.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BZ.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_GB.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IE.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_MT.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_SG.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_AR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CL.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CO.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_EC.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PE.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_US.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CA.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gaa.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_gv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_ia.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_ig.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_it_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_iu.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kaj.properties,
+	* resource/gnu/java/locale/LocaleInformation_kam.properties,
+	* resource/gnu/java/locale/LocaleInformation_kcg.properties,
+	* resource/gnu/java/locale/LocaleInformation_kfo.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_kl.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_kpe.properties,
+	* resource/gnu/java/locale/LocaleInformation_kw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms_BN.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_nr.properties,
+	* resource/gnu/java/locale/LocaleInformation_nso.properties,
+	* resource/gnu/java/locale/LocaleInformation_ny.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_or.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru_UA.properties,
+	* resource/gnu/java/locale/LocaleInformation_rw.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_si.properties,
+	* resource/gnu/java/locale/LocaleInformation_sid.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_BA_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_ME_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ss.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_syr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_trv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_tt.properties,
+	* resource/gnu/java/locale/LocaleInformation_ug.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_ve.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_wo.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	Correct use of 'v' with 'z' in locale data as Java does not
+	support this new pattern character.
+
+2008-07-12  David Daney  <ddaney@avtrex.com>
+
+	* gnu/java/net/protocol/http/LimitedLengthInputStream.java: Clean up
+	white space in entire file.
+	(handleClose): Remove redundant braces from if statement.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/DateFormatSymbols.java:
+	(getZoneStrings(ResourceBundle,Locale)):
+	Handle missing standard zone names.
+	
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/DateFormatSymbols.java:
+	(getZoneStrings(ResourceBundle,Locale)):
+	Fallback on to parent locales.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/DateFormatSymbols.java:
+	(getZoneStrings(ResourceBundle,Locale)):
+	Use metazones to convert metazone names to standard
+	Continent/City form.  Also add hack to include GMT
+	as a short name.
+	* resource/java/text/metazones.properties:
+	New properties file for mapping metazones to standard
+	zone names.
+	
+2008-07-07  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* configure.ac (AC_CHECK_HEADERS): Added sys/sockio.h, required
+	for Solaris.
+	(AC_CHECK_LIB): Check for socket.
+	* native/jni/java-net/java_net_VMNetworkInterface.c (unistd.h):
+	Added.
+	[HAVE_SYS_SOCKIO_H] (sys/sockio.h): Likewise.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* THANKYOU: Added Byeogncheol.
+
+2008-07-07  Byeogncheol Lee  <lineonking@gmail.com>
+
+	PR classpath/36677:
+	* gnu/classpath/jdwp/processor/VirtualMachineCommandSet.java:
+	(executeTopLevelThreadGroups(ByteBuffer,DataOutputStream)):
+	Add missing write.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/DateFormatSymbols.java:
+	(getZoneStrings(ResourceBundle,Locale)):
+	Pad arrays smaller than 5 with empty strings.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Calendar.java:
+	(Calendar(TimeZone,Locale)): Use weeks.properties
+	instead of LocaleInformation bundles.
+	* resource/java/util/iso4217.properties:
+	Updated with new supplementgen header.
+	* resource/java/util/weeks.properties:
+	New resource file.
+
+2008-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_af_NA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ak.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_LB.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_AT.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_LI.properties,
+	* resource/gnu/java/locale/LocaleInformation_dv.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_AU.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BW.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BZ.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_CA.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_GB.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_HK.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_NZ.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_PH.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_PK.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_SG.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_US_POSIX.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_ZA.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_ZW.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_AR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CL.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PY.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_UY.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_VE.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa_AF.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CA.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_gv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_it_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_kl.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku.properties,
+	* resource/gnu/java/locale/LocaleInformation_kw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms_BN.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_nr.properties,
+	* resource/gnu/java/locale/LocaleInformation_nso.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_or.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru_UA.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_ME_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ss.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_syr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_tt.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ve.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_HK_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_MO_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_SG_Hans.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties,
+	* resource/java/util/iso4217.properties:
+	Regenerated from CLDR 1.6.0.
+	* resource/gnu/java/locale/LocaleInformation_en_Dsrt.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_Shaw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_trv.properties,
+	* resource/gnu/java/locale/LocaleInformation_si.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur_IN.properties:
+	New files from CLDR 1.6.0.	
+
+2008-07-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_DJ.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_ER_SAAHO.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_ak.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_JO.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_LB.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_QA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SY.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_TN.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_YE.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_az_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bo.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cch.properties,
+	* resource/gnu/java/locale/LocaleInformation_cop.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_AT.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_dv.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_ee.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IE.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa_AF.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gaa.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_gv.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy_AM_REVISED.properties,
+	* resource/gnu/java/locale/LocaleInformation_ia.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_ig.properties,
+	* resource/gnu/java/locale/LocaleInformation_ii.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_iu.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kaj.properties,
+	* resource/gnu/java/locale/LocaleInformation_kam.properties,
+	* resource/gnu/java/locale/LocaleInformation_kcg.properties,
+	* resource/gnu/java/locale/LocaleInformation_kfo.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_kl.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_kpe.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku.properties,
+	* resource/gnu/java/locale/LocaleInformation_kw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_nr.properties,
+	* resource/gnu/java/locale/LocaleInformation_nso.properties,
+	* resource/gnu/java/locale/LocaleInformation_ny.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_or.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_rw.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sid.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_BA_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ss.properties,
+	* resource/gnu/java/locale/LocaleInformation_ssy.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_syr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_tt.properties,
+	* resource/gnu/java/locale/LocaleInformation_ug.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ve.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_wo.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	Regenerated with Unicode delimiters escaped.
+
+2008-07-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36653:
+	* doc/www.gnu.org/downloads/downloads.wml:
+	Add 0.97.2 to download list.
+	
+2008-07-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/ResourceBundle.java,
+	(BundleKey.toString()): Implemented.
+	(clearCache()): Implemented.
+	(clearCache(ClassLoader)): Implemented.
+	
+2008-07-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/ResourceBundle.java:
+	Fix generic warnings.
+
+2008-07-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Properties.java:
+	(load(Reader)): Implemented.
+	(load(InputStream)): Fixed to use load(Reader).
+	* java/util/PropertyResourceBundle.java:
+	(PropertyResourceBundle(Reader)): Implemented.
+
+2008-07-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* resource/gnu/java/locale/LocaleInformation.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_DJ.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_aa_ER_SAAHO.properties,
+	* resource/gnu/java/locale/LocaleInformation_af.properties,
+	* resource/gnu/java/locale/LocaleInformation_am.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_JO.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_LB.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_QA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_SY.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_TN.properties,
+	* resource/gnu/java/locale/LocaleInformation_ar_YE.properties,
+	* resource/gnu/java/locale/LocaleInformation_as.properties,
+	* resource/gnu/java/locale/LocaleInformation_az.properties,
+	* resource/gnu/java/locale/LocaleInformation_az_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_be.properties,
+	* resource/gnu/java/locale/LocaleInformation_bg.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn.properties,
+	* resource/gnu/java/locale/LocaleInformation_bn_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_bs.properties,
+	* resource/gnu/java/locale/LocaleInformation_byn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ca.properties,
+	* resource/gnu/java/locale/LocaleInformation_cs.properties,
+	* resource/gnu/java/locale/LocaleInformation_cy.properties,
+	* resource/gnu/java/locale/LocaleInformation_da.properties,
+	* resource/gnu/java/locale/LocaleInformation_de.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_AT.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_LI.properties,
+	* resource/gnu/java/locale/LocaleInformation_de_LU.properties,
+	* resource/gnu/java/locale/LocaleInformation_dv.properties,
+	* resource/gnu/java/locale/LocaleInformation_dz.properties,
+	* resource/gnu/java/locale/LocaleInformation_el.properties,
+	* resource/gnu/java/locale/LocaleInformation_en.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_AU.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BW.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_BZ.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_CA.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_GB.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_HK.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IE.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_IN.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_MT.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_NZ.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_PH.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_SG.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_TT.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_US_POSIX.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_ZA.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_ZW.properties,
+	* resource/gnu/java/locale/LocaleInformation_eo.properties,
+	* resource/gnu/java/locale/LocaleInformation_es.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_AR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CL.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_CO.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_DO.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_EC.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_ES.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_GT.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_HN.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_MX.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_NI.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PA.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PE.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PR.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_PY.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_SV.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_US.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_UY.properties,
+	* resource/gnu/java/locale/LocaleInformation_es_VE.properties,
+	* resource/gnu/java/locale/LocaleInformation_et.properties,
+	* resource/gnu/java/locale/LocaleInformation_eu.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa.properties,
+	* resource/gnu/java/locale/LocaleInformation_fa_AF.properties,
+	* resource/gnu/java/locale/LocaleInformation_fi.properties,
+	* resource/gnu/java/locale/LocaleInformation_fo.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CA.properties,
+	* resource/gnu/java/locale/LocaleInformation_fr_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_ga.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez.properties,
+	* resource/gnu/java/locale/LocaleInformation_gez_ET.properties,
+	* resource/gnu/java/locale/LocaleInformation_gl.properties,
+	* resource/gnu/java/locale/LocaleInformation_gu.properties,
+	* resource/gnu/java/locale/LocaleInformation_gv.properties,
+	* resource/gnu/java/locale/LocaleInformation_haw.properties,
+	* resource/gnu/java/locale/LocaleInformation_he.properties,
+	* resource/gnu/java/locale/LocaleInformation_hi.properties,
+	* resource/gnu/java/locale/LocaleInformation_hr.properties,
+	* resource/gnu/java/locale/LocaleInformation_hu.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy.properties,
+	* resource/gnu/java/locale/LocaleInformation_hy_AM_REVISED.properties,
+	* resource/gnu/java/locale/LocaleInformation_id.properties,
+	* resource/gnu/java/locale/LocaleInformation_is.properties,
+	* resource/gnu/java/locale/LocaleInformation_it.properties,
+	* resource/gnu/java/locale/LocaleInformation_it_CH.properties,
+	* resource/gnu/java/locale/LocaleInformation_iu.properties,
+	* resource/gnu/java/locale/LocaleInformation_ja.properties,
+	* resource/gnu/java/locale/LocaleInformation_ka.properties,
+	* resource/gnu/java/locale/LocaleInformation_kk.properties,
+	* resource/gnu/java/locale/LocaleInformation_kl.properties,
+	* resource/gnu/java/locale/LocaleInformation_km.properties,
+	* resource/gnu/java/locale/LocaleInformation_kn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ko.properties,
+	* resource/gnu/java/locale/LocaleInformation_kok.properties,
+	* resource/gnu/java/locale/LocaleInformation_kw.properties,
+	* resource/gnu/java/locale/LocaleInformation_ky.properties,
+	* resource/gnu/java/locale/LocaleInformation_lo.properties,
+	* resource/gnu/java/locale/LocaleInformation_lt.properties,
+	* resource/gnu/java/locale/LocaleInformation_lv.properties,
+	* resource/gnu/java/locale/LocaleInformation_mk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ml.properties,
+	* resource/gnu/java/locale/LocaleInformation_mn.properties,
+	* resource/gnu/java/locale/LocaleInformation_mr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms.properties,
+	* resource/gnu/java/locale/LocaleInformation_ms_BN.properties,
+	* resource/gnu/java/locale/LocaleInformation_mt.properties,
+	* resource/gnu/java/locale/LocaleInformation_nb.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl.properties,
+	* resource/gnu/java/locale/LocaleInformation_nl_BE.properties,
+	* resource/gnu/java/locale/LocaleInformation_nn.properties,
+	* resource/gnu/java/locale/LocaleInformation_om.properties,
+	* resource/gnu/java/locale/LocaleInformation_om_KE.properties,
+	* resource/gnu/java/locale/LocaleInformation_or.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa.properties,
+	* resource/gnu/java/locale/LocaleInformation_pl.properties,
+	* resource/gnu/java/locale/LocaleInformation_ps.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt.properties,
+	* resource/gnu/java/locale/LocaleInformation_pt_PT.properties,
+	* resource/gnu/java/locale/LocaleInformation_ro.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru.properties,
+	* resource/gnu/java/locale/LocaleInformation_ru_UA.properties,
+	* resource/gnu/java/locale/LocaleInformation_sa.properties,
+	* resource/gnu/java/locale/LocaleInformation_sid.properties,
+	* resource/gnu/java/locale/LocaleInformation_sk.properties,
+	* resource/gnu/java/locale/LocaleInformation_sl.properties,
+	* resource/gnu/java/locale/LocaleInformation_so.properties,
+	* resource/gnu/java/locale/LocaleInformation_so_DJ.properties,
+	* resource/gnu/java/locale/LocaleInformation_so_ET.properties,
+	* resource/gnu/java/locale/LocaleInformation_so_KE.properties,
+	* resource/gnu/java/locale/LocaleInformation_sq.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_BA_Cyrl.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv.properties,
+	* resource/gnu/java/locale/LocaleInformation_sv_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sw.properties,
+	* resource/gnu/java/locale/LocaleInformation_syr.properties,
+	* resource/gnu/java/locale/LocaleInformation_ta.properties,
+	* resource/gnu/java/locale/LocaleInformation_te.properties,
+	* resource/gnu/java/locale/LocaleInformation_th.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti.properties,
+	* resource/gnu/java/locale/LocaleInformation_ti_ER.properties,
+	* resource/gnu/java/locale/LocaleInformation_tig.properties,
+	* resource/gnu/java/locale/LocaleInformation_tr.properties,
+	* resource/gnu/java/locale/LocaleInformation_tt.properties,
+	* resource/gnu/java/locale/LocaleInformation_uk.properties,
+	* resource/gnu/java/locale/LocaleInformation_ur.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_uz_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_vi.properties,
+	* resource/gnu/java/locale/LocaleInformation_wal.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_HK_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_MO_Hant.properties,
+	* resource/gnu/java/locale/LocaleInformation_zh_SG_Hans.properties:
+	Regenerated from CLDR 1.5.1 data.
+	* resource/gnu/java/locale/LocaleInformation_af_NA.properties,
+	* resource/gnu/java/locale/LocaleInformation_ak.properties,
+	* resource/gnu/java/locale/LocaleInformation_bo.properties,
+	* resource/gnu/java/locale/LocaleInformation_cch.properties,
+	* resource/gnu/java/locale/LocaleInformation_cop.properties,
+	* resource/gnu/java/locale/LocaleInformation_ee.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_JM.properties,
+	* resource/gnu/java/locale/LocaleInformation_en_NA.properties,
+	* resource/gnu/java/locale/LocaleInformation_fil.properties,
+	* resource/gnu/java/locale/LocaleInformation_fur.properties,
+	* resource/gnu/java/locale/LocaleInformation_gaa.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha.properties,
+	* resource/gnu/java/locale/LocaleInformation_ha_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_ia.properties,
+	* resource/gnu/java/locale/LocaleInformation_ig.properties,
+	* resource/gnu/java/locale/LocaleInformation_ii.properties,
+	* resource/gnu/java/locale/LocaleInformation_kaj.properties,
+	* resource/gnu/java/locale/LocaleInformation_kam.properties
+	* resource/gnu/java/locale/LocaleInformation_kcg.properties,
+	* resource/gnu/java/locale/LocaleInformation_kfo.properties,
+	* resource/gnu/java/locale/LocaleInformation_kpe.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku.properties,
+	* resource/gnu/java/locale/LocaleInformation_ku_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_ln.properties,
+	* resource/gnu/java/locale/LocaleInformation_my.properties,
+	* resource/gnu/java/locale/LocaleInformation_ne.properties,
+	* resource/gnu/java/locale/LocaleInformation_nr.properties,
+	* resource/gnu/java/locale/LocaleInformation_nso.properties,
+	* resource/gnu/java/locale/LocaleInformation_ny.properties,
+	* resource/gnu/java/locale/LocaleInformation_pa_Arab.properties,
+	* resource/gnu/java/locale/LocaleInformation_rw.properties,
+	* resource/gnu/java/locale/LocaleInformation_se.properties,
+	* resource/gnu/java/locale/LocaleInformation_se_FI.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_ME_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_sr_RS_Latn.properties,
+	* resource/gnu/java/locale/LocaleInformation_ss.properties,
+	* resource/gnu/java/locale/LocaleInformation_ssy.properties,
+	* resource/gnu/java/locale/LocaleInformation_st.properties,
+	* resource/gnu/java/locale/LocaleInformation_tg.properties,
+	* resource/gnu/java/locale/LocaleInformation_tn.properties,
+	* resource/gnu/java/locale/LocaleInformation_to.properties
+	* resource/gnu/java/locale/LocaleInformation_ts.properties,
+	* resource/gnu/java/locale/LocaleInformation_ug.properties,
+	* resource/gnu/java/locale/LocaleInformation_ve.properties,
+	* resource/gnu/java/locale/LocaleInformation_wo.properties,
+	* resource/gnu/java/locale/LocaleInformation_xh.properties,
+	* resource/gnu/java/locale/LocaleInformation_yo.properties,
+	* resource/gnu/java/locale/LocaleInformation_zu.properties:
+	New files from CLDR 1.5.1.
+	
+2008-07-01  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* java/lang/Integer.java (signum): Implemented properly as
+	described in Hacker's Delight Section 2-7, plus Andrew Haley's
+	explanation.
+
+2008-07-01  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Long.java: Comment change only.
+
+2008-07-01  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* java/lang/Long.java (signum): Implemented properly as described
+	in Hacker's Delight Section 2-7.
+
+2008-06-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/35237:
+	* resource/java/util/iso4217.properties:
+	Regenerated from CLDR 1.5.1 data.
+
+2008-06-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36636:
+	* tools/gnu/classpath/tools/jar/Updater.java:
+	(run(Main)): Check return value of renameTo, and
+	create temporary file in same directory (as suggested
+	by Tom Tromey).
+	(copyFile(File,File)): Removed.
+
+2008-06-27  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36637:
+	* examples/Makefile.am,
+	* lib/Makefile.am:
+	Use new conditional and $(JAR).
+	* m4/acinclude.m4:
+	Replace --with-fastjar with a general
+	--with-jar check that can be turned off.
+	* tools/Makefile.am:
+	Use new conditional and $(JAR).
+
+2008-06-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36636:
+	* tools/gnu/classpath/tools/jar/Updater.java:
+	(run(Main)): Check return value of renameTo, and
+	copy file instead if necessary.
+	(copyFile(File,File)): New method to copy a file.
+	
+2008-06-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac: Remove AC_PROG_MKDIR_P.
+	* examples/Makefile.am,
+	* lib/Makefile.am,
+	* tools/Makefile.am:
+	Use mkdir_p instead of MKDIR_P.
+
+2008-06-25  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36221:
+	* gnu/xml/dom/DomAttr.java:
+	(DomAttr(DomDocument,String,String,String,String)):
+	New constructor.
+	* gnu/xml/dom/DomDocument.java:
+	(createElement(String)): Use new constructor rather than
+	setting variable directly.
+	(createAttribute(String)): Likewise.
+	* gnu/xml/dom/DomElement.java:
+	(DomElement(DomDocument,String,String,String,String)):
+	New constructor.
+	* gnu/xml/dom/DomNsNode.java:
+	(localName): Make private.
+	(DomNsNode(short,DomDocument,String,String,String,String)):
+	New constructor.
+	* gnu/xml/dom/ls/DomLSParser.java:
+	(doParse(LSInput)): Set namespace awareness using a method,
+	not directly.
+	* gnu/xml/dom/ls/SAXEventSink.java:
+	(namespaceAware): Make private.
+	(setNamespaceAware(boolean)): New method.
+	* gnu/xml/transform/XSLURIResolver.java:
+	(parse(InputSource,XMLReader)): Parse with namespace awareness on.
+
+2008-06-24  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/32198:
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java
+	(compile): Reverse isAssignableFrom test.
+
+2008-06-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36219:
+	* gnu/xml/transform/ForEachNode.java:
+	Genericised.
+	* gnu/xml/transform/SortKey.java:
+	Documented.
+	(clone(Stylesheet)): Implemented.
+	(cloneAttributeValueTemplate(TemplateNode,Stylesheet)):
+	Implemented.
+	* gnu/xml/transform/Stylesheet.java:
+	(parseSortKeys(Node)): Return empty list not null.
+	* gnu/xml/transform/TemplateNode.java:
+	Genericise documentOrderComparator.
+
+2008-06-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/xpath/CountFunction.java,
+	* gnu/xml/xpath/EqualityExpr.java,
+	* gnu/xml/xpath/Expr.java,
+	* gnu/xml/xpath/IdFunction.java,
+	* gnu/xml/xpath/LocalNameFunction.java,
+	* gnu/xml/xpath/NameFunction.java,
+	* gnu/xml/xpath/NamespaceUriFunction.java,
+	* gnu/xml/xpath/ParenthesizedExpr.java,
+	* gnu/xml/xpath/Steps.java,
+	* gnu/xml/xpath/SumFunction.java,
+	* gnu/xml/xpath/UnionExpr.java,
+	* gnu/xml/xpath/XPathParser.java,
+	* gnu/xml/xpath/XPathParser.y,
+	* java/lang/Enum.java,
+	* java/lang/reflect/Constructor.java,
+	* java/lang/reflect/Field.java,
+	* java/lang/reflect/Method.java:
+	Reduce scope of unchecked warning suppression,
+	and remove unneeded uses.
+
+2008-06-23  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* include/jni.h [__cplusplus] (_Jv_JNIEnv): Renamed member p to
+	functions to be compatible with OpenJDK.
+
+2008-06-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36220:
+	* gnu/xml/transform/CallTemplateNode.java:
+	(doApply(Stylesheet,QName,Node,int,int,Node,Node)):
+	Check for withParams being empty not null.
+	(references(QName)): Remove special-casing for null.
+	* gnu/xml/transform/Stylesheet.java:
+	(parseWithParams(Node)): Just return the list if empty,
+	don't return null instead.
+
+2008-06-23  Andrew Haley  <aph@redhat.com>
+
+	* native/jawt/Makefile.am,
+	native/fdlibm/Makefile.am,
+	native/jni/java-util/Makefile.am,
+	native/jni/gstreamer-peer/Makefile.am,
+	native/jni/native-lib/Makefile.am,
+	native/jni/gconf-peer/Makefile.am,
+	native/jni/gtk-peer/Makefile.am,
+	native/jni/xmlj/Makefile.am,
+	native/jni/midi-alsa/Makefile.am,
+	native/jni/java-nio/Makefile.am,
+	native/jni/midi-dssi/Makefile.am,
+	native/jni/classpath/Makefile.am,
+	native/jni/java-io/Makefile.am,
+	native/jni/java-lang/Makefile.am,
+	native/jni/java-net/Makefile.am (AM_CFLAGS): Add @EXTRA_CFLAGS@.
+	* configure.ac (EXTRA_CFLAGS): New macro.
+
+	* lib/Makefile.am (resources): Add .svn.
+
+2008-06-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/transform/ParameterNode.java,
+	* gnu/xml/transform/Stylesheet.java,
+	* gnu/xml/transform/UnparsedEntityUriFunction.java,
+	* gnu/xml/transform/ValueOfNode.java,
+	* gnu/xml/transform/XSLComparator.java,
+	* gnu/xml/transform/XSLURIResolver.java:
+	Genericised.
+
+2008-06-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/xpath/ContainsFunction.java,
+	* gnu/xml/xpath/CountFunction.java,
+	* gnu/xml/xpath/EqualityExpr.java,
+	* gnu/xml/xpath/Expr.java,
+	* gnu/xml/xpath/IdFunction.java,
+	* gnu/xml/xpath/LocalNameFunction.java,
+	* gnu/xml/xpath/NameFunction.java,
+	* gnu/xml/xpath/ParenthesizedExpr.java:
+	Genericised.
+
+2008-06-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/xpath/Expr.java,
+	* gnu/xml/xpath/FloorFunction.java,
+	* gnu/xml/xpath/Function.java,
+	* gnu/xml/xpath/FunctionCall.java,
+	* gnu/xml/xpath/NamespaceUriFunction.java,
+	* gnu/xml/xpath/ParenthesizedExpr.java,
+	* gnu/xml/xpath/Root.java,
+	* gnu/xml/xpath/Selector.java,
+	* gnu/xml/xpath/Steps.java:
+	Genericised.
+
+2008-06-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/xml/xpath/BooleanFunction.java,
+	* gnu/xml/xpath/CeilingFunction.java,
+	* gnu/xml/xpath/ConcatFunction.java,
+	* gnu/xml/xpath/DocumentOrderComparator.java,
+	* gnu/xml/xpath/Expr.java,
+	* gnu/xml/xpath/IdFunction.java,
+	* gnu/xml/xpath/LangFunction.java,
+	* gnu/xml/xpath/LocalNameFunction.java,
+	* gnu/xml/xpath/NameFunction.java,
+	* gnu/xml/xpath/NormalizeSpaceFunction.java,
+	* gnu/xml/xpath/NotFunction.java,
+	* gnu/xml/xpath/NumberFunction.java,
+	* gnu/xml/xpath/Path.java,
+	* gnu/xml/xpath/RoundFunction.java,
+	* gnu/xml/xpath/Selector.java,
+	* gnu/xml/xpath/StartsWithFunction.java,
+	* gnu/xml/xpath/Steps.java,
+	* gnu/xml/xpath/StringFunction.java,
+	* gnu/xml/xpath/StringLengthFunction.java,
+	* gnu/xml/xpath/SubstringAfterFunction.java,
+	* gnu/xml/xpath/SubstringBeforeFunction.java,
+	* gnu/xml/xpath/SubstringFunction.java,
+	* gnu/xml/xpath/SumFunction.java,
+	* gnu/xml/xpath/TranslateFunction.java,
+	* gnu/xml/xpath/UnionExpr.java,
+	* gnu/xml/xpath/XPathParser.java,
+	* gnu/xml/xpath/XPathParser.y,
+	* gnu/xml/xpath/XPathTokenizer.java:
+	Genericised.
+	* javax/xml/datatype/DatatypeFactory.java:
+	Use new java.util.ServiceLoader framework.
+	* javax/xml/namespace/NamespaceContext.java,
+	* javax/xml/parsers/DocumentBuilderFactory.java,
+	* javax/xml/parsers/SAXParserFactory.java,
+	* javax/xml/stream/XMLEventFactory.java,
+	* javax/xml/stream/XMLEventReader.java,
+	* javax/xml/stream/XMLInputFactory.java,
+	* javax/xml/stream/XMLOutputFactory.java:
+	Genericised.
+	* javax/xml/stream/events/DTD.java,
+	* javax/xml/stream/events/EndElement.java,
+	* javax/xml/stream/events/StartElement.java:
+	Ignore unchecked errors due to API not using generics.
+	* javax/xml/transform/TransformerFactory.java,
+	* javax/xml/validation/SchemaFactory.java,
+	* javax/xml/xpath/XPathFactory.java:
+	Genericised.
+	* javax/xml/xpath/XPathFunction.java:
+	Ignore unchecked errors due to API not using generics.
+
+2008-06-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36220:
+	* gnu/xml/transform/ParameterNode.java:
+	(clone()): Only clone select if not null.
+	(toString()): Always include value of select.
+	* gnu/xml/transform/Stylesheet.java:
+	(toString()): Implemented.
+	* gnu/xml/transform/Template.java:
+	(toString()): Add value of node.
+	* gnu/xml/transform/TemplatesImpl.java:
+	(toString()): Implemented.
+
+2008-06-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/28664:
+	* gnu/java/math/GMP.java:
+	Renamed from VMBigInteger.java and fixed to use
+	GMP instances directly.
+	* include/Makefile.am:
+	Generate GMP.h not VMBigInteger.h.
+	* java/math/BigInteger.java:
+	Send instances of GMP in calls to GMP rather than
+	the wrapping BigInteger class.
+	* native/jni/java-math/Makefile.am:
+	Fix filename of source code file.
+	* native/jni/java-math/gnu_java_math_GMP.c:
+	Renamed from java_math_VMBigInteger.c.
+	* native/jni/java-math/java_math_VMBigInteger.c,
+	* vm/reference/java/math/VMBigInteger.java:
+	Removed.
+
+2008-06-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Remove --with-vm option, instead relying
+	on AC_PROG_JAVA.  Only call this if tools
+	are enabled.
+	* tools/gappletviewer.in,
+	* tools/gjar.in,
+	* tools/gjarsigner.in,
+	* tools/gjavah.in,
+	* tools/gjdoc.in,
+	* tools/gkeytool.in,
+	* tools/gnative2ascii.in,
+	* tools/gorbd.in,
+	* tools/grmic.in,
+	* tools/grmid.in,
+	* tools/grmiregistry.in,
+	* tools/gserialver.in,
+	* tools/gtnameserv.in:
+	Regenerated with @JAVA@ and -classpath option.
+	
+2008-06-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/ac_prog_java.m4:
+	Add CACAO and JamVM.
+	* m4/ac_prog_javac.m4:
+	Use variables to store warning options.
+	
+2008-06-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/ObjectName.java,
+	* javax/management/StandardMBean.java:
+	Fix warnings due to use of generics.
+	
+2008-06-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/openmbean/ArrayType.java,
+	* javax/management/openmbean/CompositeDataSupport.java,
+	* javax/management/openmbean/CompositeType.java,
+	* javax/management/openmbean/OpenMBeanAttributeInfoSupport.java,
+	* javax/management/openmbean/OpenMBeanInfoSupport.java,
+	* javax/management/openmbean/OpenMBeanParameterInfoSupport.java,
+	* javax/management/openmbean/SimpleType.java,
+	* javax/management/openmbean/TabularDataSupport.java:
+	Fix warnings due to use of generics.
+	* javax/management/remote/rmi/RMIConnection.java:
+	Suppress warnings due to API's use of MarshalledObject.
+
+2008-06-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/openmbean/TabularDataSupport.java,
+	* javax/management/openmbean/TabularType.java:
+	Fix warnings due to use of generics.
+
+2008-06-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36522:
+	* gnu/java/security/PolicyFile.java:
+	Correct typo changing seperator to separator.
+
+2008-06-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36477:
+	* gnu/java/lang/CPStringBuilder.java,
+	(setLength(int)): Don't ensure capacity when
+	new length is 0.
+	(ensureCapacity(int)): Allocate double the minimum
+	capacity rather than double the array length when
+	allocating a new array after a write.
+	
+2008-06-15  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/java2d/RasterGraphics.java: remove unused import that cause
+	compilation to fail when xpeers are not enabled.
+
+2008-06-15  Mario Torre  <neugens@aicas.com>
+ 
+    * gnu/java/awt/java2d/AbstractGraphics2D.java (setColor): delegate to
+    setPaint.
+    (setPaint): fix to set paint context and foreground color.
+    (imageCache): new field.
+    (drawImage): new codepath for scaling images.
+    (prepareImage): new method.
+    (getPaintContext): set paintContext appropriately.
+    * gnu/java/awt/java2d/RasterGraphics.java (renderScanline): new method,
+    override from superclass to detect correct value of y while rendering
+    the scanline.
+    * gnu/java/awt/java2d/ScanlineConverter.java (renderShape): revert previous
+    patch. 
+    * gnu/java/awt/peer/x/XEventPump.java (findMouseEventTarget): new method.
+    (handleButtonPress): use of findMouseEventTarget to detect the correct
+    target.
+    (handleButtonRelease):  likewise.
+    * gnu/java/awt/peer/x/XGraphics2D.java (rawDrawImage): clip the target image
+    so that it is completely contained in the destination pixmaps, as per X11
+    specification.
+    * gnu/java/awt/peer/x/XToolkit.java (createTextField): method implemented. 
+    (createButton): likewise.
+    (prepareImage): likewise.
+    (createLabel): likewise.
+    (checkImage): likewise.
+    (createTextArea): likewise.
+    (createCheckbox): likewise.
+    (checkHeadLess): new method.
+    * gnu/javax/imageio/bmp/BMPImageWriter.java (write):
+    don't close the stream.
+    * gnu/javax/imageio/bmp/BMPImageWriterSpi.java (names): added new names to
+    the list of known names for BMP.
+    * java/awt/image/WritableRaster.java (createWritableTranslatedChild): 
+    * javax/imageio/ImageIO.java (write): call dispose on ImageWriter after
+    writing of the image.
+
+2008-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* include/jni.h (_jobjectRefType, jobjectRefType): Always
+	declare.
+
+2008-06-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Add --enable-gjdoc option and check
+	for mkdir -p.
+	* examples/Makefile.am,
+	* lib/Makefile.am,
+	* lib/copy-vmresources.sh.in:
+	Use @MKDIR_P@.
+	* tools/Makefile.am:
+	Allow building GJDoc to be disabled
+	and use @MKDIR_P@.
+
+2008-06-13  Mark Wielaard  <mark@klomp.org>
+
+	* tools/Makefile.am (USE_JAVAC_FLAGS): Use relative generated dir.
+	(TOOLS_ZIP): Generate antlr output in relative dir.
+
+2008-06-13  Mark Wielaard  <mark@klomp.org>
+
+	* tools/Makefile.am (USE_JAVAC_FLAGS): Use generated in builddir.
+	(TOOLS_JAVA_FILES): Include all .java files in all subdirs.
+	(ALL_TOOLS_FILES): Include gjdoc_resources and antlr input file.
+	(TOOLS_ZIP): Generate antlr output in builddir.
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/inherit.png:
+	New file from gjdoc.
+
+2008-06-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Check for --with-glibj too when disabling
+	the javac check.
+
+2008-06-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* include/Makefile.am: Don't delete headers
+	when not rebuilding them.
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac: Only regenerate headers by
+	default if the headers aren't in the source tree.
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac: Only run javac check
+	if examples, tools and/or class library are
+	being built.
+	* scripts/check_jni_methods.sh.in:
+	Remove duplicates in the list of JNI methods
+	for when builddir==srcdir.
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* lib/Makefile.am:
+	Replace explicit mkinstalldirs with $(mkinstalldirs).
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* scripts/check_jni_methods.sh.in:
+	Search the source directory as well for
+	when headers are in the tarball.
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* Makefile.am: Replace tools with
+	$(TOOLSDIR).
+	* m4/acinclude.m4: Include option
+	to disable building the tools.
+
+2008-06-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* Makefile.am: Use default makedistcheck
+	flags that test all optional dependencies.
+	* include/Makefile.am: Add header files to dist.
+	* lib/Makefile.am: Trick class files into being
+	built for dist, so headers can be generated.
+
+2008-06-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/www.gnu.org/announce/20080606.wml,
+	* doc/www.gnu.org/newsitems.txt:
+	Add 0.97.2 annoncement.
+	* NEWS: Add 0.97.1 and 0.97.2 updates.
+	
+2008-06-09  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (EXTRA_DIST): Add ChangeLog-2007.
+	* doc/Makefile.am (EXTRA_DIST): Add invoke.texi.
+
+2008-06-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Integer.java:
+	(parseInt(String, int, boolean)): Disallow "-+".
+	
+2008-06-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/common/ClasspathToolParser.java:
+	Fixed indentation and changed to use OptionException.
+	* tools/gnu/classpath/tools/getopt/OptionException.java:
+	(OptionException(String,Throwable)): Added.
+
+2008-06-03  Robert Schuster  <robertschuster@fsfe.org>
+
+	* tools/gnu/classpath/tools/jar/Main.java:
+	(run): Call different ClasspathToolParser.parse() variant.
+	(getParser): Changed return type to ClasspathToolParser.
+	* tools/gnu/classpath/tools/javah/GcjhMain.java:
+	(getParser): Changed return type to ClasspathToolParser.
+	* tools/gnu/classpath/tools/javah/Main.java:
+	(getParser): Changed return type to ClasspathToolParser.
+	* tools/gnu/classpath/tools/getopt/Parser.java: Make 'programName'
+	protected.
+	* tools/gnu/classpath/tools/common/ClasspathToolParser.java:
+	(parse(String[], FileArgumentCallback,boolean): New method.
+	(parse(String[], boolean): New method.
+	(parseFileList): New method.
+	(parseLine): New method.
+	(AtFileArgumentCallback): New inner class.
+
+2008-06-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/getopt/OptionException.java,
+	* tools/gnu/classpath/tools/jar/Main.java:
+	Revert previous changes to allow Schuster's patch to
+	do the same.
+	
+2008-06-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/getopt/OptionException.java:
+	(OptionException(String,Throwable)): New constructor.
+	* tools/gnu/classpath/tools/jar/Main.java:
+	(fileLists): New queue for streams containing lists of files.
+	(HandleFile.NotifyFile(String)): Check for '@' arguments
+	and add to stream queue.
+	(parsed(String)): Add stdin to queue instead of setting flag.
+	(readNames()): Work with the queue rather than just stdin.
+	(run(String[])): Always execute readNames().
+	
+2008-06-01  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java: Removed XDialogPeer
+	import.
+
+2008-05-29  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java (setColor): now set directly
+	the foreground color the application wants to use to draw. On null, behave
+	like OpenJDK, drawing black.
+	(renderScanline): fixed NPE, paintContext never initialized. Correctely
+	retrieve destination raster
+	(getColor): Return the correct type.
+	(static initializer): HashMap now typed.
+	(background): now defaults to black and not null.
+	(getPaintContext): new method. Initialize lazily the PaintContext.
+	(foreground): new field.
+	(isForegroundColorNull): likewise.
+	(getDeviceBounds): made abstract.
+	* gnu/java/awt/java2d/RasterGraphics.java (getDeviceBounds): new method.
+	* gnu/java/awt/java2d/ScanlineConverter.java (renderShape): pass correct
+	value of Y to doScanline.
+	* gnu/java/awt/peer/x/GLGraphics.java (getDeviceBounds): new method.
+	(setBackground): synch with new Escher 2.0 API.
+	* gnu/java/awt/peer/x/XGraphicsConfiguration.java (getDefaultTransform):
+	implemented.
+	(getBounds): new method.
+	* java/awt/AlphaComposite.java (derive(int) and derive(float)):
+	new methods.
+	* java/awt/image/WritableRaster.java (createWritableTranslatedChild):
+	now call createWritableChild.
+	(createWritableChild): reformatted.
+
+2008-05-27  Joshua Sumali  <jsumali@redhat.com>
+
+	* NEWS: Added building of gjdoc into tools.
+
+2008-05-27  Joshua Sumali  <jsumali@redhat.com>
+
+	* AUTHORS: Added Joshua Sumali. 
+
+2008-05-27  Joshua Sumali  <jsumali@redhat.com>
+
+	* configure.ac: Add support for Antlr. This is used for building gjdoc.
+	Also generate tools/gjdoc wrapper with gjdoc.in.
+	* doc/gjdoc.texi: New file.
+	* doc/invoke.texi: New file.
+	* doc/Makefile.am: Generate gjdoc documentation.
+	* m4/ac_prog_antlr.m4: New file.
+	* m4/ac_prog_java.m4: New file.
+	* m4/ac_prog_java_works.m4: New file.
+	* tools/Makefile.am: Build gjdoc as part of tools.
+	* tools/com/sun/tools/javadoc/Main.java,
+	* tools/gjdoc.in,
+	* tools/gnu/classpath/tools/doclets/AbstractDoclet.java,
+	* tools/gnu/classpath/tools/doclets/.cvsignore,
+	* tools/gnu/classpath/tools/doclets/debugdoclet/.cvsignore,
+	* tools/gnu/classpath/tools/doclets/debugdoclet/DebugDoclet.java,
+	* tools/gnu/classpath/tools/doclets/DocletConfigurationException.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionColonSeparated.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionFile.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionFlag.java,
+	* tools/gnu/classpath/tools/doclets/DocletOption.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionPackageWildcard.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionString.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/CssClass.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/.cvsignore,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/ExternalDocSet.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlDoclet.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlPage.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlTagletContext.java,
+	* tools/gnu/classpath/tools/doclets/InlineTagRenderer.java,
+	* tools/gnu/classpath/tools/doclets/InvalidPackageWildcardException.java,
+	* tools/gnu/classpath/tools/doclets/PackageGroup.java,
+	* tools/gnu/classpath/tools/doclets/PackageMatcher.java,
+	* tools/gnu/classpath/tools/doclets/StandardTaglet.java,
+	* tools/gnu/classpath/tools/doclets/TagletPrinter.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/.cvsignore,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/.cvsignore,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletConfigurationException.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletException.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTranslet.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletOptions.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/JarClassLoader.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/OutputFileInfo.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/package.html,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver1_4.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/HtmlRepairer.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/TargetContext.java,
+	* tools/gnu/classpath/tools/FileSystemClassLoader.java,
+	* tools/gnu/classpath/tools/gjdoc/AbstractTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ArrayCharacterIterator.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocProxy.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocReflectedImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ConstructorDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/.cvsignore,
+	* tools/gnu/classpath/tools/gjdoc/Debug.java,
+	* tools/gnu/classpath/tools/gjdoc/DirectoryTree.java,
+	* tools/gnu/classpath/tools/gjdoc/DocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ErrorReporter.java,
+	* tools/gnu/classpath/tools/gjdoc/ExecutableMemberDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/AdditionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/AndExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryBitwiseExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryComputationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryEqualityExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryLogicalExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryRelationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryShiftExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BitShiftRightExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/CircularExpressionException.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConditionalExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantBoolean.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantByte.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantChar.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantDouble.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantFloat.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantInteger.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantLong.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantNull.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantShort.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantString.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Context.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/.cvsignore,
+	* tools/gnu/classpath/tools/gjdoc/expr/DivisionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/EqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/EvaluatorEnvironment.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Evaluator.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ExclusiveOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Expression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/GreaterThanExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/GreaterThanOrEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/IdentifierExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/IllegalExpressionException.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/InclusiveOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/java-expression.g,
+	* tools/gnu/classpath/tools/gjdoc/expr/LessThanExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LessThanOrEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalAndExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalNotExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ModuloExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/MultiplicationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NegateExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NotEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NotExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ShiftLeftExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ShiftRightExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/SubtractionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/TypeCastExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Type.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/UnaryExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/UnknownIdentifierException.java,
+	* tools/gnu/classpath/tools/gjdoc/FieldDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/GjdocPackageDoc.java,
+	* tools/gnu/classpath/tools/gjdoc/GjdocRootDoc.java,
+	* tools/gnu/classpath/tools/gjdoc/InheritDocTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/JavadocWrapper.java,
+	* tools/gnu/classpath/tools/gjdoc/LinkTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/Main.java,
+	* tools/gnu/classpath/tools/gjdoc/MemberDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/MethodDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/PackageDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParameterImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParamTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParseException.java,
+	* tools/gnu/classpath/tools/gjdoc/Parser.java,
+	* tools/gnu/classpath/tools/gjdoc/ProgramElementDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/RootDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SeeTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SerialFieldTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SourcePositionImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TagContainer.java,
+	* tools/gnu/classpath/tools/gjdoc/TagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TemporaryStore.java,
+	* tools/gnu/classpath/tools/gjdoc/TextTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ThrowsTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TimerDoclet.java,
+	* tools/gnu/classpath/tools/gjdoc/Timer.java,
+	* tools/gnu/classpath/tools/gjdoc/TypeImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TypeVariableImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ValueTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/WritableType.java,
+	* tools/gnu/classpath/tools/IOToolkit.java,
+	* tools/gnu/classpath/tools/java2xhtml/.cvsignore,
+	* tools/gnu/classpath/tools/java2xhtml/Java2xhtml.java,
+	* tools/gnu/classpath/tools/MalformedInputEvent.java,
+	* tools/gnu/classpath/tools/MalformedInputListener.java,
+	* tools/gnu/classpath/tools/NotifyingInputStreamReader.java,
+	* tools/gnu/classpath/tools/StringToolkit.java,
+	* tools/gnu/classpath/tools/taglets/AuthorTaglet.java,
+	* tools/gnu/classpath/tools/taglets/CodeTaglet.java,
+	* tools/gnu/classpath/tools/taglets/CopyrightTaglet.java,
+	* tools/gnu/classpath/tools/taglets/.cvsignore,
+	* tools/gnu/classpath/tools/taglets/DeprecatedTaglet.java,
+	* tools/gnu/classpath/tools/taglets/GenericTaglet.java,
+	* tools/gnu/classpath/tools/taglets/GnuExtendedTaglet.java,
+	* tools/gnu/classpath/tools/taglets/SinceTaglet.java,
+	* tools/gnu/classpath/tools/taglets/TagletContext.java,
+	* tools/gnu/classpath/tools/taglets/ValueTaglet.java,
+	* tools/gnu/classpath/tools/taglets/VersionTaglet.java,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/gjdoc_common.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/about.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/allclasses.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/allpackages.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/alphaindex_chunked.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/alphaindex.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/classdoc-source.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/classdoc-uses.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/classdoc.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/deprecated.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/descriptor.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/doctranslet.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/fulltree.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/gjdoc.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/help.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/html_common.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/index_noframes.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/index.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/packageclasses.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/packagedoc.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/default_help_en.html,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/gjdochtml-clean.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/gjdochtml.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/gjdochtml-fixed.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/gjdochtml-sclara.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/res/gjdoc.js,
+	* tools/resource/gnu/classpath/tools/gjdoc/doctranslets/html/serialized.xsl,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/dbcentx.mod,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amsa.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amsb.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amsc.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amsn.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amso.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-amsr.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-box.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-cyr1.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-cyr2.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-dia.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-grk1.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-grk2.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-grk3.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-grk4.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-lat1.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-lat2.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-num.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-pub.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/ent/iso-tech.ent,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/gjdoc-alphaindex.dtd,
+	* tools/resource/gnu/classpath/tools/gjdoc/dtd/gjdoc.dtd,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/gjdochtml-clean-color1.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/gjdochtml-clean-layout.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/gjdochtml-vanilla.css,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/gjdoc.js,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/help.xhtml,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/HtmlDoclet.properties,
+	* tools/resource/gnu/classpath/tools/gjdoc/htmldoclet/xhtml11-target10.dtd,
+	* tools/resource/gnu/classpath/tools/gjdoc/java.lang-classes-1.2.txt,
+	* tools/resource/gnu/classpath/tools/gjdoc/java.lang-classes-1.3.txt,
+	* tools/resource/gnu/classpath/tools/gjdoc/java.lang-classes-1.4.txt,
+	* tools/resource/gnu/classpath/tools/gjdoc/java.lang-classes-1.5.txt,
+	* tools/resource/gnu/classpath/tools/gjdoc/rng/gjdoc-classdoc.rng,
+	* tools/resource/gnu/classpath/tools/gjdoc/rng/gjdoc-common.rng,
+	* tools/resource/gnu/classpath/tools/gjdoc/rng/gjdoc-index.rng,
+	* tools/resource/gnu/classpath/tools/gjdoc/version.properties,
+	* tools/resource/gnu/classpath/tools/gjdoc/version.properties.in:
+	New files, taken from gjdoc source tree.
+
+
+2008-05-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/gnu/classpath/tools/jar/Creator.java:
+	(writeCommandLineEntries(Main,OutputStream)):
+	Add default value for manifest version and
+	include Created-By property.
+	
+2008-05-19  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/peer/x/XEventPump.java (handleExpose): new method. 
+	(handleDestroyNotify): likewise.
+	(handleClientMessage): likewise.
+	(handleButtonRelease): likewise.
+	(handleMotionNotify): likewise.
+	(handleKeyEvent): likewise.
+	(handleButtonPress): likewise.
+	(handleEvent): refactored to use new methods instead of a big switch
+    block. Fixed resizing of windows.
+	* gnu/java/awt/peer/x/XWindowPeer.java (standardSelect): update list
+	of flags for X11 events handling.
+	(callback): removed now unused flag. 
+
+2008-05-16  Mario Torre  <neugens@aicas.com>
+
+	* native/jni/java-math/java_math_VMBigInteger.c
+	(Java_java_math_VMBigInteger_natModInverse): fix variable res not
+	initialized.  
+
+2008-05-15  Robert Schuster  <robertschuster@fsfe.org>
+
+	* java/net/NetworkInterface.java:
+	(isUp): New method.
+	(isPointToPoint): Dito.
+	(isLoopback): Dito.
+	(supportsMulticast): Dito.
+	* vm/reference/java/net/VMNetworkInterface.java:
+	(isUp): New method.
+	(isPointToPoint): Dito.
+	(isLoopback): Dito.
+	(supportsMulticast): Dito.
+	* native/jni/java-net/java_net_VMNetworkInterface.c:
+	(isUp): New method.
+	(isPointToPoint): Dito.
+	(isLoopback): Dito.
+	(supportsMulticast): Dito.
+
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        Reported by Nicolas Geoffray <nicolas.geoffray@menlina.com>
+	* java/lang/Integer.java:
+	(parseInt(String,int,boolean)): Parse +x
+	as x, not -x.
+	
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/regex/Matcher.java:
+	(regionStart): New variable.
+	(regionEnd): Likewise.
+	(transparentBounds): Likewise.
+	(anchoringBounds): Likewise.
+	(Matcher()): Initialise new variables.
+	(find()): Alter to use new settings.
+	(find(int)): Likewise.
+	(lookingAt()): Likewise.
+	(matches()): Likewise.
+	(reset()): Reset region.
+	(reset(CharSequence)): Documented.
+	(toString()): Include new variables.
+	(region(int,int)): Implemented.
+	(regionStart()): Likewise.
+	(regionEnd()): Likewise.
+	(hasTransparentBounds()): Likewise.
+	(useTransparentBounds(boolean)): Likewise.
+	(hasAnchoringBounds()): Likewise.
+	(useAnchoringBounds(boolean)): Likewise.
+
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/lang/CPStringBuilder.java:
+	(toString()): Fix comments to reflect copying changes.
+	* vm/reference/gnu/java/lang/VMCPStringBuilder.java:
+	(toString()): Likewise.
+
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* NEWS:
+	Mention GMP and CPStringBuilder.
+	
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/36147
+	* gnu/java/lang/CPStringBuilder.java:
+	(allocated): New flag to mark whether or
+	not the array has been allocated to a String object.
+	(ensureCapacity(int)): Removed.
+	(ensureCapacity_unsynchronized(int)): Renamed to
+	ensureCapacity, and creates an array when allocated
+	is true.
+	(allocateArray(int)): Added.
+	(trimToSize()): Use allocateArray method.
+	(toString()): Set allocated to true;
+	(substring(int,int)): Likewise.
+	
+2008-05-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/lang/CPStringBuilder.java:
+	Make default capacity configurable.
+	
+2008-05-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* vm/reference/gnu/java/lang/VMCPStringBuilder.java,
+	* vm/reference/gnu/java/lang/management/VMMemoryMXBeanImpl.java,
+	* vm/reference/java/net/VMNetworkInterface.java:
+	Remove use of 1.5 language constructs.
+
+2008-05-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/regex/RE.java:
+	Switch to use generic ArrayLists.
+	* gnu/java/util/regex/REMatchEnumeration.java:
+	Make the enumeration implementation generic.
+	* gnu/java/util/regex/RETokenLookBehind.java:
+	Remove unused variables.
+	
+2008-05-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	Add generics to these classes.
+	* gnu/java/util/regex/RETokenOneOf.java:
+	Use an ArrayList and a Deque instead of
+	a Vector and a Stack to remove unnecessary
+	synchronisation.
+	* gnu/java/util/regex/RETokenRepeated.java:
+	Replace custom FindMatchControlStack class
+	with a generic Deque.
+	* java/util/regex/Pattern.java:
+	Use a generic ArrayList instance.
+	
+2008-05-07  Mario Torre  <neugens@limasoftware.net>
+    
+	* gnu/java/awt/peer/x/XEventPump.java (handleEvent):
+	Fixed mouse dragging and movement in XEventPump. Patch from Roman Kennke.
+
+2008-05-07  Mario Torre  <neugens@aicas.com>
+
+	* gnu/java/awt/peer/x/XEventPump.java (handleEvent): xEvent.code is now
+	masked to identify and react to syntetic events.
+	Added UnmapNotify, DestroyNotify and ClientMessage to the list of event
+	handled.
+	* gnu/java/awt/peer/x/XFramePeer.java (getState): initial implementation.
+	* gnu/java/awt/peer/x/XGraphics2D.java (setPaint): fix NPE, this is a
+	workaround, the code have to be fixed in a better way.
+	* gnu/java/awt/peer/x/XWindowPeer.java (getXwindow): new method to allow
+	access to the underling xwindow.
+	(standardSelect): add more events for notification.
+	(XWindowPeer): call set_wm_delete_window to ask the WM to notify us
+	when a delete event occur.
+
+2008-05-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* tools/gnu/classpath/tools/jar/Indexer.java,
+	* tools/gnu/classpath/tools/javah/JniHelper.java,
+	* tools/gnu/classpath/tools/native2ascii/Native2ASCII.java,
+	* tools/gnu/classpath/tools/orbd/PersistentMap.java,
+	* tools/gnu/classpath/tools/rmic/ClassRmicCompiler.java,
+	* tools/gnu/classpath/tools/rmic/Generator.java,
+	* tools/gnu/classpath/tools/rmic/MethodGenerator.java,
+	* tools/gnu/classpath/tools/rmic/RmiMethodGenerator.java,
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java,
+	* tools/gnu/classpath/tools/rmic/SourceRmicCompiler.java:
+	Swap use of StringBuffer for StringBuilder.
+
+2008-05-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* javax/swing/AbstractButton.java,
+	* javax/swing/JButton.java,
+	* javax/swing/JComboBox.java,
+	* javax/swing/JComponent.java,
+	* javax/swing/JDesktopPane.java,
+	* javax/swing/JFileChooser.java,
+	* javax/swing/JFrame.java,
+	* javax/swing/JLabel.java,
+	* javax/swing/JList.java,
+	* javax/swing/JMenuBar.java,
+	* javax/swing/JPopupMenu.java,
+	* javax/swing/JProgressBar.java,
+	* javax/swing/JScrollBar.java,
+	* javax/swing/JSlider.java,
+	* javax/swing/JSplitPane.java,
+	* javax/swing/JTabbedPane.java,
+	* javax/swing/JToolBar.java,
+	* javax/swing/JToolTip.java,
+	* javax/swing/UIManager.java,
+	* javax/swing/event/EventListenerList.java,
+	* javax/swing/table/AbstractTableModel.java,
+	* javax/swing/text/AbstractDocument.java,
+	* javax/swing/text/DefaultEditorKit.java,
+	* javax/swing/text/DefaultStyledDocument.java,
+	* javax/swing/text/JTextComponent.java,
+	* javax/swing/text/MaskFormatter.java,
+	* javax/swing/text/TabSet.java,
+	* javax/swing/text/html/CSSParser.java,
+	* javax/swing/text/html/HTMLWriter.java,
+	* javax/swing/tree/DefaultTreeSelectionModel.java,
+	* javax/xml/namespace/QName.java,
+	* javax/xml/transform/TransformerException.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* javax/accessibility/AccessibleRelationSet.java,
+	* javax/accessibility/AccessibleStateSet.java,
+	* javax/imageio/plugins/jpeg/JPEGHuffmanTable.java,
+	* javax/imageio/plugins/jpeg/JPEGQTable.java,
+	* javax/imageio/stream/ImageInputStreamImpl.java,
+	* javax/management/ObjectName.java,
+	* javax/naming/BinaryRefAddr.java,
+	* javax/naming/CompositeName.java,
+	* javax/naming/CompoundName.java,
+	* javax/naming/NamingException.java,
+	* javax/naming/spi/NamingManager.java,
+	* javax/security/auth/x500/X500Principal.java,
+	* javax/security/sasl/SaslException.java,
+	* javax/sound/sampled/AudioFormat.java,
+	* javax/sound/sampled/CompoundControl.java,
+	* javax/sound/sampled/DataLine.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/util/AbstractCollection.java,
+	* java/util/BitSet.java,
+	* java/util/Collections.java,
+	* java/util/Locale.java,
+	* java/util/ResourceBundle.java,
+	* java/util/TimeZone.java,
+	* java/util/logging/FileHandler.java,
+	* java/util/logging/Logger.java,
+	* java/util/logging/SimpleFormatter.java,
+	* java/util/logging/XMLFormatter.java,
+	* java/util/prefs/AbstractPreferences.java,
+	* java/util/regex/PatternSyntaxException.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/text/AttributedString.java,
+	* java/text/ChoiceFormat.java,
+	* java/text/CollationElementIterator.java,
+	* java/text/Collator.java,
+	* java/text/DecimalFormat.java,
+	* java/text/MessageFormat.java,
+	* java/text/RuleBasedCollator.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/security/CodeSource.java,
+	* java/security/MessageDigest.java,
+	* java/security/Permission.java,
+	* java/security/PermissionCollection.java,
+	* java/security/ProtectionDomain.java,
+	* java/security/cert/CertPath.java,
+	* java/security/cert/PKIXBuilderParameters.java,
+	* java/security/cert/PKIXCertPathBuilderResult.java,
+	* java/security/cert/X509CRLSelector.java,
+	* java/security/cert/X509CertSelector.java,
+	* org/ietf/jgss/Oid.java,
+	* org/omg/CORBA/portable/Delegate.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/beans/Statement.java,
+	* java/io/File.java,
+	* java/io/StreamTokenizer.java,
+	* java/lang/Throwable.java,
+	* java/math/BigDecimal.java,
+	* java/math/BigInteger.java,
+	* java/net/Inet4Address.java,
+	* java/net/Inet6Address.java,
+	* java/net/NetworkInterface.java,
+	* java/net/SocketPermission.java,
+	* java/net/URLDecoder.java,
+	* java/net/URLStreamHandler.java,
+	* java/nio/channels/FileLock.java,
+	* java/rmi/dgc/VMID.java:
+	Swap use of StringBuffer for CPStringBuilder.
+	
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/awt/Component.java,
+	* java/awt/Container.java,
+	* java/awt/JobAttributes.java,
+	* java/awt/event/ActionEvent.java,
+	* java/awt/event/ComponentEvent.java,
+	* java/awt/event/HierarchyEvent.java,
+	* java/awt/event/InputEvent.java,
+	* java/awt/event/InputMethodEvent.java,
+	* java/awt/event/KeyEvent.java,
+	* java/awt/event/MouseEvent.java,
+	* java/awt/event/WindowEvent.java,
+	* java/awt/font/TextLayout.java,
+	* java/awt/image/BandedSampleModel.java,
+	* java/awt/image/BufferedImage.java,
+	* java/awt/image/MultiPixelPackedSampleModel.java,
+	* java/awt/image/Raster.java,
+	* java/awt/image/SinglePixelPackedSampleModel.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/35482
+	* java/lang/String.java:
+	(toLowerCase()): Fix calculation of number
+	of characters to copy.
+	(toLowerCaseTurkish()): Likewise.
+
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/xml/stream/XMLEventImpl.java,
+	* gnu/xml/stream/XMLParser.java,
+	* gnu/xml/validation/datatype/EntitiesType.java,
+	* gnu/xml/validation/datatype/NMTokensType.java:
+	Swap use of StringBuffer for CPStringBuilder,
+	
+2008-05-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/javax/swing/text/html/parser/htmlValidator.java,
+	* gnu/javax/swing/text/html/parser/models/list.java,
+	* gnu/javax/swing/text/html/parser/models/node.java,
+	* gnu/javax/swing/text/html/parser/support/Parser.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/lang/CPStringBuilder.java:
+	(substring(int)): Added.
+	* gnu/javax/naming/giop/CorbalocParser.java,
+	* gnu/javax/naming/giop/GiopNamingServiceFactory.java,
+	* gnu/javax/naming/giop/ListBindingsEnumeration.java,
+	* gnu/javax/naming/giop/ListEnumeration.java,
+	* gnu/javax/naming/ictxImpl/trans/GnuName.java,
+	* gnu/javax/net/ssl/PrivateCredentials.java,
+	* gnu/javax/net/ssl/Session.java,
+	* gnu/javax/net/ssl/provider/HelloRequest.java,
+	* gnu/javax/net/ssl/provider/Util.java,
+	* gnu/javax/print/ipp/attribute/RequestedAttributes.java,
+	* gnu/javax/rmi/CORBA/RmiUtilities.java,
+	* gnu/javax/security/auth/callback/AWTCallbackHandler.java,
+	* gnu/javax/security/auth/login/ConfigFileTokenizer.java,
+	* gnu/javax/sound/sampled/gstreamer/io/GstAudioFileReader.java:
+	Swap use of StringBuffer for CPStringBuilder,
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/javax/crypto/assembly/TransformerException.java,
+	* gnu/javax/crypto/cipher/BaseCipher.java,
+	* gnu/javax/crypto/jce/sig/DHParameters.java,
+	* gnu/javax/crypto/key/KeyAgreementException.java,
+	* gnu/javax/crypto/mode/BaseMode.java,
+	* gnu/javax/crypto/pad/BasePad.java,
+	* gnu/javax/crypto/sasl/crammd5/CramMD5Util.java,
+	* gnu/javax/crypto/sasl/crammd5/PasswordFile.java,
+	* gnu/javax/crypto/sasl/plain/PasswordFile.java,
+	* gnu/javax/crypto/sasl/plain/PlainClient.java,
+	* gnu/javax/crypto/sasl/srp/PasswordFile.java,
+	* gnu/javax/crypto/sasl/srp/SRPClient.java,
+	* gnu/javax/crypto/sasl/srp/SRPServer.java,
+	* gnu/javax/crypto/sasl/srp/ServerStore.java:
+	Swap use of StringBuffer for CPStringBuilder,
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/util/Base64.java,
+	* gnu/java/util/prefs/NodeWriter.java,
+	* gnu/java/util/regex/RE.java,
+	* gnu/java/util/regex/REException.java,
+	* gnu/java/util/regex/REMatch.java,
+	* gnu/java/util/regex/REMatchEnumeration.java,
+	* gnu/java/util/regex/REToken.java,
+	* gnu/java/util/regex/RETokenAny.java,
+	* gnu/java/util/regex/RETokenBackRef.java,
+	* gnu/java/util/regex/RETokenChar.java,
+	* gnu/java/util/regex/RETokenEnd.java,
+	* gnu/java/util/regex/RETokenEndOfPreviousMatch.java,
+	* gnu/java/util/regex/RETokenEndSub.java,
+	* gnu/java/util/regex/RETokenIndependent.java,
+	* gnu/java/util/regex/RETokenLookAhead.java,
+	* gnu/java/util/regex/RETokenLookBehind.java,
+	* gnu/java/util/regex/RETokenNamedProperty.java,
+	* gnu/java/util/regex/RETokenOneOf.java,
+	* gnu/java/util/regex/RETokenPOSIX.java,
+	* gnu/java/util/regex/RETokenRange.java,
+	* gnu/java/util/regex/RETokenRepeated.java,
+	* gnu/java/util/regex/RETokenStart.java,
+	* gnu/java/util/regex/RETokenWordBoundary.java:
+	Swap use of StringBuffer for CPStringBuilder,
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/lang/CPStringBuilder.java:
+	(CPStringBuilder(StringBuffer)): Added.
+	(CPStringBuulder(StringBuilder)): Likewise.
+	* gnu/java/text/AttributedFormatBuffer.java:
+	Swap use of StringBuffer for CPStringBuilder,
+	and make fields final.
+	* gnu/java/text/StringFormatBuffer.java:
+	Make fields final.
+	* java/text/SimpleDateFormat.java:
+	Add thread safety warning.
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/security/OID.java,
+	* gnu/java/security/PolicyFile.java,
+	* gnu/java/security/der/BitString.java,
+	* gnu/java/security/der/DERReader.java,
+	* gnu/java/security/jce/sig/DSSParameters.java,
+	* gnu/java/security/provider/X509CertificateFactory.java,
+	* gnu/java/security/util/ByteArray.java,
+	* gnu/java/security/util/Util.java,
+	* gnu/java/security/x509/PolicyNodeImpl.java,
+	* gnu/java/security/x509/Util.java,
+	* gnu/java/security/x509/X500DistinguishedName.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/net/protocol/ftp/FTPConnection.java,
+	* gnu/java/net/protocol/jar/Handler.java,
+	* gnu/java/rmi/server/RMIClassLoaderImpl.java,
+	* gnu/java/rmi/server/RMIHashes.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/classpath/jdwp/util/Signature.java,
+	* gnu/java/awt/font/opentype/GlyphNamer.java,
+	* gnu/java/awt/font/opentype/truetype/Fixed.java,
+	* gnu/java/awt/font/opentype/truetype/VirtualMachine.java,
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java,
+	* gnu/java/awt/peer/gtk/GtkClipboard.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/CORBA/BigDecimalHelper.java,
+	* gnu/CORBA/CDR/LittleEndianInputStream.java,
+	* gnu/CORBA/CDR/Vio.java,
+	* gnu/CORBA/CDR/gnuRuntime.java,
+	* gnu/CORBA/GIOP/MessageHeader.java,
+	* gnu/CORBA/GIOP/RequestHeader.java,
+	* gnu/CORBA/GIOP/v1_0/ReplyHeader.java,
+	* gnu/CORBA/GIOP/v1_0/RequestHeader.java,
+	* gnu/CORBA/IOR.java,
+	* gnu/CORBA/NamingService/NameParser.java,
+	* gnu/CORBA/NamingService/NameTransformer.java,
+	* gnu/CORBA/Poa/gnuPOA.java,
+	* gnu/CORBA/Poa/gnuServantObject.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-05-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* examples/gnu/classpath/examples/CORBA/SimpleCommunication/communication/DemoServant.java,
+	* examples/gnu/classpath/examples/CORBA/SimpleCommunication/communication/DirectTest.java,
+	* examples/gnu/classpath/examples/CORBA/swing/x5/IorReader.java,
+	* examples/gnu/classpath/examples/CORBA/swing/x5/X5Server.java,
+	* examples/gnu/classpath/examples/html/Demo.java:
+	Swap use of StringBuffer for StringBuilder.
+	
+2008-05-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/xml/libxmlj/dom/GnomeAttr.java,
+	* gnu/xml/libxmlj/dom/GnomeCharacterData.java,
+	* gnu/xml/libxmlj/dom/GnomeDocument.java,
+	* gnu/xml/libxmlj/dom/GnomeDocumentType.java,
+	* gnu/xml/libxmlj/dom/GnomeElement.java,
+	* gnu/xml/libxmlj/dom/GnomeEntity.java,
+	* gnu/xml/libxmlj/dom/GnomeNode.java,
+	* gnu/xml/libxmlj/dom/GnomeNotation.java,
+	* gnu/xml/libxmlj/dom/GnomeProcessingInstruction.java,
+	* gnu/xml/libxmlj/dom/GnomeText.java,
+	* gnu/xml/libxmlj/dom/GnomeXPathResult.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-04-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/xml/util/XMLWriter.java,
+	* gnu/xml/xpath/ArithmeticExpr.java,
+	* gnu/xml/xpath/ConcatFunction.java,
+	* gnu/xml/xpath/Expr.java,
+	* gnu/xml/xpath/FunctionCall.java,
+	* gnu/xml/xpath/NormalizeSpaceFunction.java,
+	* gnu/xml/xpath/Selector.java,
+	* gnu/xml/xpath/Steps.java,
+	* gnu/xml/xpath/TranslateFunction.java,
+	* gnu/xml/xpath/VariableReference.java,
+	* gnu/xml/xpath/XPathTokenizer.java:
+	Swap use of StringBuffer for CPStringBuilder.
+
+2008-04-26  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* java/util/ArrayList (raiseBoundsError): new method to raise bound
+	exceptions in uncommon case.
+	(checkBoundInclusive): use raiseBoundsError.
+	(checkBoundExclusive): likewise.
+	* java/util/ArrayList (raiseBoundsError): new method to raise bound
+	exceptions in uncommon case.
+	(checkBoundInclusive): use raiseBoundsError.
+	(checkBoundExclusive): likewise.
+
+2008-04-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Byte.java:
+	Use int instead of short as a loop counter
+	for efficiency.
+
+2008-04-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Byte.java:
+	(static): Use a short as the loop counter, not
+	a byte as this can't exceed MAX_VALUE.
+	
+2008-04-18  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* java/nio/Buffer.java (cap): make field private and final.
+	(address): make field final.
+	(Buffer): add address argument to package protected constructor thereby
+	allowing it to be made final.
+	* java/nio/ByteBuffer.java (backing_buffer): make field final.
+	(array_offset): make field final.
+	(ByteBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/ByteBufferImpl.java (readOnly): make field final.
+	(ByteBufferImpl): modify call to super class constructor to pass
+	backing_buffer and array_offset.
+	* java/nio/CharBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(CharBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/CharBufferImpl.java (readOnly): make field final.
+	(CharBufferImpl): modify call to super class constructor to pass
+	backing_buffer and array_offset.
+	(CharBufferImpl(CharBufferImpl)): likewise.
+	* java/nio/CharSequenceBuffer.java (charSequence): make field final.
+	(CharSequenceBuffer): modify call to super class constructor, allowing
+	fields to be made final.
+	(duplicate): use capacity call rather than cap, to allow better
+	encapsulation.
+	* java/nio/CharViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(CharViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/DirectByteBufferImpl.java: modify calls to super class
+	constructors, allowing fields to be made final.
+	* java/nio/DoubleBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(DoubleBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/DoubleBufferImpl.java (readOnly): make field final.
+	(DoubleBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/DoubleViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(DoubleViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/FloatBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(FloatBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/FloatBufferImpl.java (readOnly): make field final.
+	(FloatBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/FloatViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(FloatViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/IntBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(IntBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/IntBufferImpl.java (readOnly): make field final.
+	(IntBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/IntViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(IntViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/LongBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(LongBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/LongBufferImpl.java (readOnly): make field final.
+	(LongBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/LongViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(LongViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/MappedByteBuffer.java (MappedByteBuffer): modify arguments
+	add call to constructor, allowing fields to be final.
+	* java/nio/MappedByteBufferImpl.java (readOnly): make field final.
+	(MappedByteBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/ShortBuffer.java (array_offset): make field final.
+	(backing_buffer): make field final.
+	(ShortBuffer): add address, backing_buffer and array_offset to
+	constructor, allowing fields to be made final.
+	* java/nio/ShortBufferImpl.java (readOnly): make field final.
+	(ShortBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+	* java/nio/ShortViewBufferImpl.java (offset): make field final.
+	(bb): likewise.
+	(readOnly): likewise.
+	(endian): likewise.
+	(ShortViewBufferImpl): modify call to super class constructor, allowing
+	fields to be made final.
+
+2008-04-18  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* java/lang/Byte.java (static): initialize byteCache.
+	(valueOf(String,int)): use valueOf(byte) rather than new.
+	(valueOf(String)): likewise.
+	(valueOf(byte)): Switch from lazy initialization of cached values to
+	initialization at class initialization time. This removes the need for
+	synchronization in the common case.
+	(decode): use valueOf(byte) rather than new.
+	* java/lang/Character.java (static): initialize charCache.
+	(valueOf): Switch from lazy initialization of cached values to
+	initialization at class initialization time. This removes the need for
+	synchronization in the common case.
+	* java/lang/Double.java (ZERO): new private field.
+	(ONE): likewise.
+	(valueOf(double)): don't create new doubles for the case of 0 and 1.
+	(valueOf(String)): use valueOf(double) rather than new.
+	(equals): use raw bits for comparison to avoid division.
+	* java/lang/Float.java (ZERO): new private field.
+	(ONE): likewise.
+	(valueOf(float)): don't create new floats for the case of 0 and 1.
+	(valueOf(String)): use valueOf(float) rather than new.
+	(equals): use raw bits for comparison to avoid division.
+	* java/lang/Integer.java (static): initialize intCache.
+	(stringSize): new private method to estimate size of string for an int.
+	(toString): reuse digits for single character strings, for multiple
+	character strings estimate their length using string size method.
+	(valueOf(String,int)): use valueOf(int) rather than new.
+	(valueOf(String)): likewise.
+	(valueOf(int)): Switch from lazy initialization of cached values to
+	initialization at class initialization time. This removes the need for
+	synchronization in the common case.
+	(getInteger): use valueOf(int) rather than new.
+	(decode): use valueOf(int) rather than new.
+	(signum): use shift and subtract to compute value.
+	(toUnsignedString): calculate string size rather than using 32 chars.
+	* java/lang/Long.java (longCache): new private field.
+	(stringSize): new private method to estimate size of string for a long.
+	(toString): reuse digits for single character strings, for multiple
+	character strings estimate their length using string size method.
+	(valueOf(String,int)): use valueOf(long) rather than new.
+	(valueOf(String)): likewise.
+	(valueOf(long)): use cache of values.
+	(decode): use valueOf(long) rather than new.
+	(getLong): likewise.
+	(signum): use shift and subtract to compute value.
+	(toUnsignedString): calculate string size rather than using 64 chars.
+	* java/lang/Short.java (static): initialize shortCache.
+	(valueOf(String,int)): use valueOf(short) rather than new.
+	(valueOf(String)): likewise.
+	(valueOf(short)): Switch from lazy initialization of cached values to
+	initialization at class initialization time. This removes the need for
+	synchronization in the common case.
+	(decode): use valueOf(short) rather than new.
+
+2008-04-18  Mario Torre  <neugens@aicas.com>
+
+	PR classpath/35974
+	* java/util/logging/Logger.java: fix a deadlock and reformat code.
+	Now all the methods of the class get a lock on a static lock, this
+	avoids a lock when getLogger and log are used concurrently.
+
+2008-04-18  Tom Tromey  <tromey@redhat.com>
+
+	* lib/gen-classlist.sh.in: Skip 'sed' steps if no vm_omitlist
+	found.
+
+2008-04-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/gen-classlist.sh.in: Avoid grepping each omission, by
+	building an awk script with a hash for literal files, and
+	awk regular expressions for the rest.
+	* configure.ac: Call AC_PROG_AWK.
+
+2008-04-16  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/orbd/Main.java: Bump copyright year.
+	* tools/resource/gnu/classpath/tools/common/Messages.properties
+	(ClasspathToolParser.VersionFormat): Bump copyright year.
+
+2008-04-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/gcc_attribute.m4 (GCC_ATTRIBUTE): Fix cache variable name.
+	* tools/Makefile.am (gappletviewer, gjarsigner, gkeytool, gjar)
+	(gnative2ascii, gserialver, gjavah, grmiregistry, gtnameserv)
+	(gorbd, grmid, grmic) [!CREATE_WRAPPERS]: Add stub dependencies
+	for these scripts, to trick automake into hiding the respective
+	rules for the programs below the CREATE_WRAPPERS conditional.
+
+2008-04-09  Mario Torre  <neugens@aicas.com>
+ 
+	* java/io/File.java (canWrite): use canWriteDirectory(String). 
+	* vm/reference/java/io/VMFile.java (canWriteDirectory): new native method. 
+	* native/jni/java-io/java_io_VMFile.c: correct indentation, sync function
+	names with header file definition.
+	(Java_java_io_VMFile_canRead): use cpio_checkAccess to get access
+	permission. Removed unused variable.
+    (Java_java_io_VMFile_canWrite): likewise.
+    (Java_java_io_VMFile_canWriteDirectory): new function.
+	
+
+2008-03-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/www.gnu.org/events/events.wml:
+	Correct layout and fix GSoC link.
+
+2008-03-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/www.gnu.org/external.wml:
+	Corrected Jalopy tag name.
+	* doc/www.gnu.org/home.wml:
+	Update link to tasks.
+	* doc/www.gnu.org/announce/20080222.wml:
+	Correct IcedTea and builder links.
+	* doc/www.gnu.org/downloads/downloads.wml:
+	Add 0.97 and 0.97.1.
+	* doc/www.gnu.org/events/events.wml:
+	Fix links and add FOSDEMs/GSoC.
+
+2008-03-27  Mario Torre  <neugens@aicas.com>
+
+	* gnu/xml/stream/SAXParser.java (getProperty): throw
+	SAXNotRecognizedException instead of SAXNotSupportedException
+	after fall through all known properties.
+	* javax/xml/namespace/QName.java (valueOf): throw
+	IllegalArgumentException if string is null.
+	* java/util/concurrent/CopyOnWriteArrayList.java (lastIndexOf):
+	fixed indentation.
+	(indexOf): likewise. 
+
+2008-03-26  Mario Torre  <neugens@aicas.com>
+
+	* java/util/concurrent/CopyOnWriteArrayList.java (SubList.set): 
+	(SubList.clear): new method.
+	(SubList.checkMod): fix indentation.
+	(SubList.checkBoundsInclusive):  likewise. 
+	(SubList.checkBoundsExclusive): likewise.
+	(SubList): added synchronization. Now throw
+	IndexOutOfBoundsException instead of IllegalArgumentException
+	when index are out of range.
+	(SubList.size): added synchronization.
+	(SubList.get): likewise.
+	(SubList.listIterator): fixed indentation.
+	(SubList.set): added synchronization. Update the state of the storage
+	after modification.
+	(SubList.add): likewise.
+	(SubList.remove): likewise.
+	(SubList.addAll): likewise.
+
+2008-03-26  Mario Torre  <neugens@aicas.com>
+
+	* java/util/concurrent/CopyOnWriteArrayList.java (equals): removed
+	useless local variable. 
+	(hashCode): new method.
+
+2008-03-25  Mario Torre  <neugens@aicas.com>
+
+	* java/util/concurrent/CopyOnWriteArrayList.java (clone): clone method
+	in CopyOnWriteArrayList should just do a shallow copy. Fixed.
+	(equals): new method, override from base class.
+	(toString): likewise.
+
+2008-03-25  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/image/ColorModel.java:
+	(coerceDataWorker(WritableRaster,boolean)):
+	Make package-private, not protected.
+	* java/awt/image/ComponentColorModel.java:
+	Call coerceDataWorker directly.
+	* java/awt/image/DirectColorModel.java:
+	Likewise.
+	(coerceData(WritableRaster,boolean)): Made final.
+	
+2008-03-24  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/22883
+	* doc/www.gnu.org/home.wml:
+	Fix a typo.
+	* doc/www.gnu.org/docs/docs.wml:
+	Fix links to point to current versions of
+	vmintegration and hacking, and add links to
+	tools.
+	
+2008-03-24  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/22883
+	* doc/www.gnu.org/home.wml:
+	Update home page to reflect current state of
+	affairs.
+	
+2008-03-24  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java:
+	(standardChars): Corrected.
+	(RFC822_TIMEZONE_FIELD): Added.
+	(formatWithAttribute(Date,FormatBuffer,FieldPosition)):
+	Support RFC822 timezone field ('Z').
+	
+2008-03-20  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/getopt/Parser.java (options): Don't
+	initialize.
+	(add, addFinal): Don't update options.
+	(requireOptions): New method.
+	(printHelp): Synchronize.  Call requireOptions.
+	(parse): Call requireOptions.
+
+2008-03-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/lang/CPStringBuilder.java:
+	(indexOf(String,int)): Use regionMatches from String.
+	(lastIndexOf(String,int)): Likewise.
+	(regionMatches(int,String)): Removed broken code.
+	(substring(int,int)): Rearrange index computation so
+	it is only computed if valid.
+	
+2008-03-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/xml/transform/AbstractNumberNode.java,
+	* gnu/xml/transform/ApplyTemplatesNode.java,
+	* gnu/xml/transform/AttributeNode.java,
+	* gnu/xml/transform/Bindings.java,
+	* gnu/xml/transform/CallTemplateNode.java,
+	* gnu/xml/transform/ChooseNode.java,
+	* gnu/xml/transform/CopyNode.java,
+	* gnu/xml/transform/CopyOfNode.java,
+	* gnu/xml/transform/ElementNode.java,
+	* gnu/xml/transform/ForEachNode.java,
+	* gnu/xml/transform/IfNode.java,
+	* gnu/xml/transform/MessageNode.java,
+	* gnu/xml/transform/ParameterNode.java,
+	* gnu/xml/transform/ProcessingInstructionNode.java,
+	* gnu/xml/transform/StreamSerializer.java,
+	* gnu/xml/transform/Template.java,
+	* gnu/xml/transform/TextNode.java,
+	* gnu/xml/transform/TransformerImpl.java,
+	* gnu/xml/transform/TransformerOutputProperties.java,
+	* gnu/xml/transform/ValueOfNode.java,
+	* gnu/xml/transform/WhenNode.java:
+	Use CPStringBuilder in preference to StringBuffer.
+
+2008-03-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/lang/CPStringBuilder.java:
+	Replace reflection code with calls to
+	VMCPStringBuilder.
+	* vm/reference/gnu/java/lang/VMCPStringBuilder.java:
+	Default implementation of constructor call
+	using reflection.
+	
+2008-03-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/xml/dom/DomAttr.java,
+	* gnu/xml/dom/DomEvent.java,
+	* gnu/xml/dom/DomNode.java,
+	* gnu/xml/dom/DomText.java,
+	* gnu/xml/dom/ls/DomLSInput.java,
+	* gnu/xml/util/DoParse.java,
+	* gnu/xml/util/XCat.java:
+	Use CPStringBuilder in preference to StringBuffer.
+
+2008-03-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* java/security/AlgorithmParameterGenerator.java,
+	* java/security/AlgorithmParameters.java,
+	* java/security/KeyFactory.java,
+	* java/security/KeyPairGenerator.java,
+	* java/security/MessageDigest.java,
+	* java/security/SecureRandom.java,
+	* java/security/Signature.java,
+	* java/security/cert/CertPathBuilder.java,
+	* java/security/cert/CertPathValidator.java,
+	* java/security/cert/CertStore.java,
+	* java/text/SimpleDateFormat.java,
+	* java/util/AbstractMap.java,
+	* java/util/Arrays.java,
+	* java/util/Calendar.java,
+	* java/util/Date.java,
+	* java/util/Formatter.java,
+	* java/util/Hashtable.java,
+	* java/util/Properties.java,
+	* java/util/TreeMap.java,
+	* java/util/regex/Matcher.java:
+	Use CPStringBuilder in preference to StringBuilder.
+
+2008-03-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869
+	* gnu/java/security/Engine.java,
+	* gnu/java/security/hash/Whirlpool.java,
+	* gnu/java/security/key/dss/DSSKey.java,
+	* gnu/java/security/key/dss/DSSPrivateKey.java,
+	* gnu/java/security/key/dss/DSSPublicKey.java,
+	* gnu/java/security/key/rsa/GnuRSAKey.java,
+	* gnu/java/security/key/rsa/GnuRSAPrivateKey.java,
+	* gnu/java/security/key/rsa/GnuRSAPublicKey.java,
+	* java/awt/datatransfer/MimeType.java,
+	* java/io/BufferedReader.java,
+	* java/io/DataInputStream.java,
+	* java/lang/Double.java,
+	* java/lang/Float.java,
+	* java/lang/String.java,
+	* java/lang/reflect/Proxy.java,
+	* java/math/BigDecimal.java,
+	* java/net/URI.java,
+	* java/net/URLClassLoader.java,
+	* java/net/URLEncoder.java:
+	Use CPStringBuilder in preference to StringBuilder.
+
+2008-03-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* vm/reference/java/lang/reflect/VMField.java:
+	Consistently use 'clazz' as the name of the variable
+	containing the declaring class.
+	* vm/reference/java/lang/reflect/VMMethod.java:
+	Likewise.
+	
+2008-03-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/34840
+	* java/lang/AbstractStringBuffer.java:
+	(append(CharSequence,int,int)): Just set
+	sequence to "null" don't append it.
+	
+2008-03-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/www.gnu.org/newsitems.txt:
+	Add new announcement.
+	* doc/www.gnu.org/announce/20080311.wml:
+	Added.
+	* doc/www.gnu.org/cp-tools/.cvsignore:
+	Ignore generated HTML files.
+	
+2008-03-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/beans/beancontext/BeanContextServicesSupport.java:
+	(BCSSProxyServiceProvider(BeanContextServiceProvider)):
+	Add package-private constructor.
+	* java/lang/StringBuffer.java:
+	(ensureCapacity_unsynchronized(int)): Make package-private.
+	* java/rmi/activation/Activatable.java:
+	(export(ActivationID, Remote, int, RMIServerSocketFactory)):
+	Make private.
+	(makeId(ActivationID)): Likewise.
+	* java/security/MessageDigest.java:
+	(update(ByteBuffer)): Make final.
+	* java/security/cert/PolicyQualifierInfo.java:
+	(getPolicyQualifierId()): Likewise.
+	(getEncoded()): Likewise.
+	(getPolicyQualifier()): Likewise.
+	* java/text/DateFormat.java:
+	(ISO_YEAR_FIELD): Removed.
+	(LOCALIZED_DAY_OF_WEEK_FIELD): Likewise.
+	(EXTENDED_YEAR_FIELD): Likewise.
+	(MODIFIED_JULIAN_DAY_FIELD): Likewise.
+	(MILLISECOND_IN_DAY_FIELD): Likewise.
+	(RFC822_TIMEZONE_FIELD): Likewise.
+	(Field.ISO_YEAR_FIELD): Likewise.
+	(Field.LOCALIZED_DAY_OF_WEEK_FIELD): Likewise.
+	(Field.EXTENDED_YEAR_FIELD): Likewise.
+	(Field.MODIFIED_JULIAN_DAY_FIELD): Likewise.
+	(Field.MILLISECOND_IN_DAY_FIELD): Likewise.
+	(Field.RFC822_TIMEZONE_FIELD): Likewise.	
+	* java/text/DecimalFormat.java:
+	(format(Object,StringBuffer,FieldPosition)): Make final.
+	* java/text/Format.java:
+	(Format()): Make protected.
+	* java/text/NumberFormat.java:
+	(NumberFormat()): Likewise.
+	* java/text/SimpleDateFormat.java:
+	Remove code using RFC822_TIMEZONE_FIELD.
+	* java/util/Stack.java:
+	Use array of Objects rather than instances of T.
+	* java/util/Vector.java:
+	Likewise.
+	* java/util/concurrent/CopyOnWriteArrayList.java:
+	Don't extend AbstractList.
+	(containsAll(Collection)): Implemented.
+	(listIterator()): Likewise.
+	(subList(int,int)): Likewise.
+	* java/util/zip/Deflater.java:
+	(getTotalIn()): Remove deprecation.
+	(getTotalOut()): Likewise.
+	* java/util/zip/Inflater.java,
+	(getTotalIn()): Likewise.
+	(getTotalOut()): Likewise.
+
+2008-03-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/MouseInfo.java:
+	(MouseInfo()): Private constructor to prevent
+	instance creation.
+	* java/lang/AbstractStringBuilder.java:
+	(ensureCapacity_unsynchronized(int)): Make
+	package-private, not protected.
+	
+2008-03-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/28664
+	* native/jni/java-math/Makefile.am: Add
+	AM_LDFLAGS to the local LDFLAGS definition
+	so gmp is linked.
+	
+2008-03-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/35422
+	* doc/api/Makefile.am: Include external/jsr166.
+	
+2008-03-10  Jim Meyering  <meyering@redhat.com>
+
+	Don't leak upon failed realloc.
+	* native/jni/classpath/jcl.c (JCL_realloc): Upon failed realloc,
+	free the original buffer before throwing the exception.
+
+2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cp-hacking.texinfo: Fix some typos.
+	* doc/cp-tools.texinfo: Likewise.
+	* doc/cp-vmintegration.texinfo: Likewise.
+
+2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cp-hacking.texinfo: Fix spacing after periods.
+	* doc/cp-tools.texinfo: Likewise.
+	* doc/cp-vmintegration.texinfo: Likewise.
+
+2008-03-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/reflect/Constructor.java:
+	(cons): Make package-private.
+	(Constructor(VMConstructor)): Set cons in
+	VM interface.
+	* java/lang/reflect/Field.java:
+	(f): Make package-private.
+	(Field(VMField)): Set f in VM interface.
+	* java/lang/reflect/Method.java:
+	(m): Make package-private.
+	(Method(VMMethod)): Set m in VM interface.
+	* vm/reference/java/lang/reflect/VMConstructor.java:
+	(cons): Added reference to Constructor instance.
+	* vm/reference/java/lang/reflect/VMField.java:
+	(f): Added reference to Field instance.
+	* vm/reference/java/lang/reflect/VMMethod.java,
+	(m): Added reference to Method instance.
+
+2008-03-04  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/reflect/AccessibleObject.java:
+	(getAnnotation(Class)): Documented.
+	(getAnnotations()): Likewise.
+	(getDeclaredAnnotations()): Likewise.
+	(isAnnotationPresent(Class)): Likewise.
+	* java/lang/reflect/Constructor.java,
+	* java/lang/reflect/Field.java,
+	* java/lang/reflect/Method.java,
+	* vm/reference/java/lang/reflect/VMConstructor.java,
+	* vm/reference/java/lang/reflect/VMField.java,
+	* vm/reference/java/lang/reflect/VMMethod.java:
+	(getAnnotation(Class)): Added.
+	(getDeclaredAnnotations()): Likewise.
+
+2008-03-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/Makefile.am:
+	Distribute property files.
+	
+2008-03-04  Robert Schuster  <robertschuster@fsfe.org>
+
+	* gnu/xml/stream/AttributeImpl.java: Changed type field to String.
+	(getDTDType): Changed return type to String.
+	* gnu/xml/stream/XMLEventAllocatorImpl.java:
+	(allocate): Removed wrapping of string in QName object.
+	* gnu/xml/stream/XMLEventFactoryImpl.java:
+	(createAttribute(String, String)): Removed wrapping of string in
+	QName object.
+	(createAttribute(QName, String)): Ditto.
+	(createAttribute(String, String, String, String)): Ditto.
+	* javax/xml/stream/events/Attribute.java:
+	(getDTDType): Changed return type to String.
+
+2008-03-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/reflect/Constructor.java,
+	* java/lang/reflect/Field.java,
+	* java/lang/reflect/Method.java,
+	* vm/reference/java/lang/reflect/VMConstructor.java:
+	(equals(Object)): Added.
+	* vm/reference/java/lang/reflect/VMField.java:
+	(equals(Object)): Added.
+	* vm/reference/java/lang/reflect/VMMethod.java:
+	(equals(Object)): Added.
+	Move variables from Classpath classes to VM classes
+	and make class methods into instance methods.
+	
+2008-02-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/reflect/Constructor.java,
+	* java/lang/reflect/Field.java,
+	* java/lang/reflect/Method.java:
+	New classes within GNU Classpath that provide
+	common reflection functionality.
+	* vm/reference/java/lang/reflect/Constructor.java,
+	* vm/reference/java/lang/reflect/Field.java,
+	* vm/reference/java/lang/reflect/Method.java:
+	Removed.
+	* vm/reference/java/lang/reflect/VMConstructor.java,
+	* vm/reference/java/lang/reflect/VMField.java,
+	* vm/reference/java/lang/reflect/VMMethod.java:
+	New VM interface for reflection.
+	
+2008-03-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/28664
+	* native/jni/Makefile.am: Check CREATE_GMPBI_LIBRARY
+	and only compile GMP libraries if set.
+	
+2008-03-02  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/Makefile.am (DIST_SUBDIRS): Add java-math.
+
+2008-02-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/21869
+	* gnu/classpath/CPStringBuilder.java:
+	Make the constructor accessible.
+	
+2008-02-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/21869
+	* gnu/classpath/CPStringBuilder.java:
+	Removed.
+	* gnu/java/awt/font/OpenTypeFontPeer.java,
+	* gnu/java/awt/font/autofit/Edge.java,
+	* gnu/java/awt/font/autofit/LatinBlue.java,
+	* gnu/java/awt/font/autofit/Segment.java,
+	* gnu/java/awt/font/autofit/Width.java,
+	* gnu/java/awt/font/opentype/truetype/Point.java,
+	* gnu/java/awt/java2d/ActiveEdges.java,
+	* gnu/java/awt/peer/GnomeDesktopPeer.java,
+	* gnu/java/awt/peer/KDEDesktopPeer.java,
+	* gnu/java/awt/peer/x/XFontPeer.java:
+	Use CPStringBuilder.
+	* gnu/java/lang/CPStringBuilder.java:
+	Moved from gnu.classpath.
+	* gnu/java/lang/ClassHelper.java,
+	* gnu/java/lang/reflect/GenericSignatureParser.java,
+	* gnu/java/lang/reflect/TypeSignature.java,
+	* gnu/java/net/protocol/http/ChunkedInputStream.java,
+	* gnu/java/net/protocol/http/Cookie.java,
+	* gnu/java/net/protocol/http/HTTPConnection.java,
+	* gnu/java/net/protocol/http/Headers.java,
+	* gnu/java/net/protocol/http/Request.java:
+	Use CPStringBuilder.
+	* java/lang/reflect/Modifier.java:
+	Corrected import to point to correct package.
+	* java/util/Formatter.java:
+	Use CPStringBuilder.
+	* vm/reference/java/lang/reflect/Constructor.java,
+	* vm/reference/java/lang/reflect/Field.java,
+	* vm/reference/java/lang/reflect/Method.java:
+	Corrected import to point to correct package.
+
+2008-02-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/21869
+	* gnu/classpath/CPStringBuffer.java,
+	* gnu/classpath/CPStringBuilder.java:
+	Rename class to CPStringBuilder.
+	* java/lang/reflect/Modifier.java,
+	* vm/reference/java/lang/reflect/Constructor.java,
+	* vm/reference/java/lang/reflect/Field.java,
+	* vm/reference/java/lang/reflect/Method.java:
+	Use CPStringBuilder.
+
+2008-02-29  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/classpath/CPStringBuffer.java:
+	New non-copying string buffer.
+	* java/lang/AbstractStringBuffer.java:
+	Add note about CPStringBuffer.
+
+2008-02-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/EmptyEnumeration.java:
+	Add generic type parameter.
+	* java/lang/ClassLoader.java:
+	Use EmptyEnumeration with type parameter.
+	* java/util/zip/ZipFile.java:
+	Likewise.
+	* javax/swing/text/html/StyleSheet.java,
+	* javax/swing/text/html/ViewAttributeSet.java:
+	Add generics.
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	Use EmptyEnumeration with type parameter.
+
+2008-02-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/28664
+	* include/Makefile.am:
+	Add generation of header file java_math_VMBigInteger.h
+	* java/math/BigInteger.java: Separate NativeMPI into
+	VMBigInteger.
+	* native/jni/Makefile.am: Add java-math.
+	* native/jni/java-math/java_math_VMBigInteger.c:
+	Renamed from java_math_BigInteger.c.
+	* vm/reference/java/math/VMBigInteger.java:
+	Former NativeMPI class from java.math.BigInteger.
+
+2006-11-28  Raif S. Naffah  <classpath@naffah-raif.name>
+            Jeroen Frijters <jeroen@sumatra.nl>
+
+        PR classpath/28664
+        * configure.ac: Add support for configuring GNU MP.
+        * native/jni/Makefile.am: Include java-math directory if required.
+        * native/jni/java-math/.cvsignore: New file.
+        * native/jni/java-math/Makefile.am: Likewise.
+        * native/jni/java-math/java_math_BigInteger.c: Likewise.
+        * java/math/BigInteger.java: Added support for native methods.
+        * gnu/classpath/Configuration.java.in (WANT_NATIVE_BIG_INTEGER): New field.
+
+2008-02-27  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Check for sys/loadavg.h.
+	* native/jni/java-lang/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.c:
+	Include sys/loadavg.h if found.
+	
+2008-02-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/21869:
+	* java/lang/AbstractStringBuffer.java: New class.
+	* java/lang/StringBuffer.java,
+	* java/lang/StringBuilder.java:
+	Changed to use AbstractStringBuffer.
+
+2008-02-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/prefs/EventDispatcher.java:
+	Removed again.
+	* gnu/java/util/prefs/GConfBasedPreferences.java,
+	* gnu/java/util/prefs/gconf/GConfNativePeer.java,
+	* java/util/prefs/AbstractPreferences.java,
+	* native/jni/gconf-peer/GConfNativePeer.c:
+	Revert to pre-release versions.
+
+2008-02-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/www.gnu.org/newsitems.txt:
+	Add 20080222 announcement.
+	* doc/www.gnu.org/announce/20080222.wml:
+	Add announcement of 0.97.
+
+2008-02-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* NEWS: Add 0.98.
+	* configure.ac: Set version to 0.98-pre.
+	
+2008-02-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* NEWS: Set date for 0.97.
+	* configure.ac: Set version to 0.97
+	
+2008-02-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/33751:
+	* configure.ac:
+	Don't check for readdir_r.
+	* native/jni/native-lib/cpio.c:
+	(cpio_readDir): Remove use of readdir_r, zero errno
+	before starting and always leave a \0 at the end after
+	strncpy.
+	* vm/reference/java/io/VMFile.java:
+	(list(String)): Make synchronized.
+	
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/prefs/EventDispatcher.java:
+	Re-added.
+	* gnu/java/util/prefs/GConfBasedPreferences.java,
+	* gnu/java/util/prefs/gconf/GConfNativePeer.java,
+	* java/util/prefs/AbstractPreferences.java,
+	* native/jni/gconf-peer/GConfNativePeer.c:
+	Regress to 0.96 versions.
+
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/net/URI.java:
+	(compareTo(URI)): Change comparison sign so it
+	operates in the correct direction.
+	
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/acinclude.m4:
+	Remove check for gcjh.
+	* m4/ac_prog_javac.m4:
+	Check for ecj-3.2 and ecj-3.3, and add
+	-Xlint:unchecked for javac.
+	
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/management/Translator.java:
+	(fromJava(Object[],Method)): Don't cast to Class<?>.
+	(fromJava(Object,Type)): Use ParameterizedType
+	and don't assume that List will work for Sets.
+	
+2008-02-21  David Walluck  <david@jpackage.org>
+
+	PR classpath/27204:
+	* m4/acinclude.m4:
+	(REGEN_WITH_JAY): Handle 'yes' as a default,
+	not a directory and give more user-friendly output.
+	
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/util/regex/REException.java:
+	(REException(String,Throwable,int,int)): Added
+	constructor which also includes the cause.
+	* gnu/java/util/regex/RETokenNamedProperty.java:
+	(getHandler(String)): Add support for \p{javaX}.
+	(JavaCategoryHandler): New class.
+	
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/35274:
+	* m4/acinclude.m4:
+	Increase maximum heap size to 768mb.
+
+2008-02-21  Roman Kennke  <kennke@aicas.com>
+
+	* java/awt/image/PixelInterleavedSampleModel.java
+	(createCompatibleSampleModel): Adjust scanline stride for new
+	width and optimize band offsets.
+
+2008-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/35111:
+	* resource/com/sun/tools/javac/messages.properties,
+	* resource/gnu/classpath/tools/appletviewer/messages.properties,
+	* resource/gnu/classpath/tools/common/Messages.properties,
+	* resource/gnu/classpath/tools/getopt/Messages.properties,
+	* resource/gnu/classpath/tools/jar/messages.properties,
+	* resource/gnu/classpath/tools/jarsigner/messages.properties,
+	* resource/gnu/classpath/tools/keytool/messages.properties,
+	* resource/gnu/classpath/tools/native2ascii/messages.properties,
+	* resource/gnu/classpath/tools/orbd/messages.properties,
+	* resource/gnu/classpath/tools/rmic/messages.properties,
+	* resource/gnu/classpath/tools/rmid/messages.properties,
+	* resource/gnu/classpath/tools/rmiregistry/messages.properties,
+	* resource/gnu/classpath/tools/serialver/messages.properties,
+	* resource/gnu/classpath/tools/tnameserv/messages.properties,
+	* resource/sun/rmi/rmic/messages.properties:
+	Removed.
+	* tools/Makefile.am:
+	Copy .jav template files and use resource subdirectory
+	of tools.
+	* tools/gnu/classpath/tools/rmic/templates/ImplTie.jav,
+	* tools/gnu/classpath/tools/rmic/templates/Stub.jav,
+	* tools/gnu/classpath/tools/rmic/templates/StubMethod.jav,
+	* tools/gnu/classpath/tools/rmic/templates/StubMethodVoid.jav,
+	* tools/gnu/classpath/tools/rmic/templates/Stub_12.jav,
+	* tools/gnu/classpath/tools/rmic/templates/Stub_12Method.jav,
+	* tools/gnu/classpath/tools/rmic/templates/Stub_12MethodVoid.jav,
+	* tools/gnu/classpath/tools/rmic/templates/Tie.jav,
+	* tools/gnu/classpath/tools/rmic/templates/TieMethod.jav,
+	* tools/gnu/classpath/tools/rmic/templates/TieMethodVoid.jav:
+	Removed.
+	* tools/resource/com/sun/tools/javac/messages.properties,
+	* tools/resource/gnu/classpath/tools/appletviewer/messages.properties,
+	* tools/resource/gnu/classpath/tools/common/Messages.properties,
+	* tools/resource/gnu/classpath/tools/getopt/Messages.properties,
+	* tools/resource/gnu/classpath/tools/jar/messages.properties,
+	* tools/resource/gnu/classpath/tools/jarsigner/messages.properties,
+	* tools/resource/gnu/classpath/tools/keytool/messages.properties,
+	* tools/resource/gnu/classpath/tools/native2ascii/messages.properties,
+	* tools/resource/gnu/classpath/tools/orbd/messages.properties,
+	* tools/resource/gnu/classpath/tools/rmic/messages.properties,
+	* tools/resource/gnu/classpath/tools/rmic/templates/ImplTie.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/Stub.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/StubMethod.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/StubMethodVoid.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/Stub_12.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/Stub_12Method.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/Stub_12MethodVoid.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/Tie.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/TieMethod.jav,
+	* tools/resource/gnu/classpath/tools/rmic/templates/TieMethodVoid.jav,
+	* tools/resource/gnu/classpath/tools/rmid/messages.properties,
+	* tools/resource/gnu/classpath/tools/rmiregistry/messages.properties,
+	* tools/resource/gnu/classpath/tools/serialver/messages.properties,
+	* tools/resource/gnu/classpath/tools/tnameserv/messages.properties,
+	* tools/resource/sun/rmi/rmic/messages.properties:
+	Added.
+	
+2008-02-18  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/peer/x/XGraphics2D.java
+	(RENDER_OPAQUE): New constant with system property to
+	turn on opaque image rendering.
+	(rawDrawImage): Render images opaque when system property
+	is set. This is for demonstration and debugging purposes only.
+
+2008-02-18  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/image/AsyncImage.java: New file. Implements
+	asynchronous image loading.
+	* gnu/java/awt/image/ImageConverter.java: New file.
+	An image consumer that creates a concrete image with
+	asynchronous behaviour.
+	* gnu/java/awt/peer/x/ImageConverter.java: Removed.
+	* gnu/java/awt/peer/x/XToolkit.java:
+	(createImage(ImageProducer)): Use new ImageConverter.
+	* gnu/java/awt/peer/x/XGraphics2D.java:
+	(rawDrawImage): Unwrap AsyncImages before painting.
+	(unwrap): New helper method.
+
+2008-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cp-tools.texinfo (@direntry): Prefix info name with cp-.
+	* doc/cp-hacking.texinfo (@direntry): Likewise.
+	* doc/cp-vmintegration.texinfo (@direntry): Likewise.
+
+2008-02-18  Roman Kennke  <kennke@aicas.com>
+
+	* java/awt/image/RGBImageFilter.java
+	(setPixels): Don't mask the source pixel.
+
+2008-02-18  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/peer/x/XGraphics2D.java
+	(rawDrawImage): Update the rgb variable correctly. Don't
+	cache translucent images.
+
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* vm/reference/java/lang/reflect/Constructor.java,
+	* vm/reference/java/lang/reflect/Method.java:
+	Add missing java.lang.annotation.Annotation import.
+
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* vm/reference/java/lang/reflect/Constructor.java,
+	* vm/reference/java/lang/reflect/Method.java:
+	(getParameterAnnotations()): Added.
+	
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	Add generics.
+	* javax/swing/tree/DefaultTreeCellEditor.java:
+	(tPath): Removed.
+	(configureEditingComponent(JTree,
+	DefaultTreeCellRenderer,TreeCellEditor)): Removed.
+	* javax/swing/tree/DefaultTreeCellRenderer.java:
+	Removed unused call to getIcon().
+	* javax/swing/tree/DefaultTreeSelectionModel.java:
+	Add generics.
+
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/swing/tree/FixedHeightLayoutCache.java,
+	* javax/swing/tree/VariableHeightLayoutCache.java,
+	* javax/swing/undo/StateEdit.java:
+	Use type parameters with collections classes.
+
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/ac_prog_javac.m4:
+	Turn off ecj warnings for deprecation,
+	serialization and unused imports
+	(both cases).
+
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/ac_prog_javac.m4:
+	Turn off ecj warnings for deprecation,
+	serialization and unused imports.
+	
+2008-02-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* org/omg/CORBA/PolicyErrorHelper.java,
+	* org/omg/CORBA/UnknownUserExceptionHelper.java,
+	* org/omg/PortableInterceptor/ORBInitInfoPackage/DuplicateNameHelper.java,
+	* org/omg/PortableServer/ForwardRequestHelper.java,
+	* org/omg/PortableServer/POAPackage/InvalidPolicyHelper.java:
+	Remove unused variable.
+
+2008-02-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/classpath/ServiceFactory.java:
+	Use generics.
+	* gnu/classpath/ServiceProviderLoadingAction.java:
+	Likewise.
+	
+2008-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/34579:
+	* m4/ac_prog_javac_works.m4: Change test
+	to one that doesn't rely on the compiler's
+	class library.
+	
+2008-02-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/34578:
+	* NEWS: Mention javah and javac build changes.
+	* configure.ac: Call AC_PROG_JAVAC and
+	CLASSPATH_JAVAC_MEM_CHECK instead of CLASSPATH_FIND_JAVAC.
+	* examples/Makefile.am: Simplify compiler choice
+	to just use JAVAC.
+	* lib/Makefile.am: Likewise, but with JAVAC_MEM_OPT too.
+	* m4/ac_prog_javac.m4: New file.
+	* m4/ac_prog_javac_works.m4: Likewise.
+	* m4/acinclude.m4:
+	(CLASSPATH_FIND_JAVAC): Removed.
+	(CLASSPATH_WITH_GCJ): Removed.
+	(CLASSPATH_CHECK_GCJ): Removed.
+	(CLASSPATH_WITH_JIKES): Removed.
+	(CLASSPATH_CHECK_JIKES): Removed.
+	(CLASSPATH_WITH_KJC): Removed.
+	(CLASSPATH_CHECK_KJC): Removed.
+	(CLASSPATH_WITH_ECJ): Removed.
+	(CLASSPATH_CHECK_ECJ): Removed.
+	(CLASSPATH_WITH_JAVAC): Removed.
+	(CLASSPATH_CHECK_JAVAC): Removed.
+	(CLASSPATH_JAVAC_MEM_CHECK): Added.
+	* tools/Makefile.am: Simplify compiler choice
+	to just javac.
+
+2008-02-12  Roman Kennke  <kennke@aicas.com>
+
+	* java/awt/color/ICC_Profile.java
+	(getInstance()): Wrap call to InputStream.read(byte[],int,int) in
+	a loop, in order to read the whole thing.
+
+2008-02-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/remote/NotificationResult.java:
+	New file.
+	* javax/management/remote/TargetedNotification.java:
+	Likewise.
+	* javax/management/remote/rmi/RMIConnection.java:
+	(fetchNotifications(long,int,long)): Added.
+	
+2008-02-10  Dalibor Topic  <robilad@kaffe.org>
+
+	* lib/Makefile.am (compile_classpath), include/Makefile.am (JAVAH): 
+	Replaced USER_CLASSLIB with PATH_TO_GLIBJ_ZIP.
+
+	* m4/acinclude.m4 (CLASSPATH_WITH_CLASSLIB)[--with-classpath]:
+	Removed unused option. It's superceded by --with-glibj-zip.
+
+2008-02-10  Dalibor Topic  <robilad@kaffe.org>
+
+	* m4/acinclude.m4 (CLASSPATH_CHECK_JAVAH)[USER_JAVAH]: 
+	Check for gjavah-4.3.
+
+2008-02-10  Mark Wielaard  <mark@klomp.org>
+
+	* scripts/check_jni_methods.sh.in:
+	Use abs_src_builddir so that the absolute path
+	to the source directory is used by the script.
+	
+2008-02-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* scripts/check_jni_methods.sh.in:
+	Use abs_top_builddir so that the absolute path
+	to the build directory is used by the script.
+	
+2008-02-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/management/remote/rmi/RMIConnection.java:
+	(addNotificationListeners(ObjectName[],
+	MarshalledObject[], Subject[])): Fixed return type.
+	(close()): Added.
+	(createMBean(String,ObjectName,MarshalledObject,
+	String[], Subject)): Likewise.
+	(createMBean(String,ObjectName,ObjectName,
+	MarshalledObject, String[], Subject)): Likewise.
+	(createMBean(String,ObjectName,ObjectName,
+	Subject)): Likewise.
+	(createMBean(String,ObjectName,Subject)): Likewise.
+	(getAttribute(ObjectName,String,Subject)): Likewise.
+	(getAttributes(ObjectName,String[],Subject)): Likewise.
+	(getConnectionId()): Likewise.
+	(getDefaultDomain(Subject)): Likewise.
+	(getDomains(Subject)): Likewise.
+	(getMBeanCount(Subject)): Likewise.
+	(getMBeanInfo(ObjectName,Subject)): Likewise.
+	(getObjectInstance(ObjectName,Subject)): Likewise.
+	(invoke(ObjectName,String,MarshalledObject,String[],
+	Subject)): Likewise.
+	(isInstanceOf(ObjectName,String,Subject)): Likewise.
+	(isRegistered(ObjectName,Subject)): Likewise.
+	(queryMBeans(ObjectName,MarshalledObject,Subject)): Likewise.
+	(queryNames(ObjectName,MarshalledObject,Subject)): Likewise.
+	(removeNotificationListener(ObjectName,ObjectName,MarshalledObject,
+	MarshalledObject,Subject)): Likewise.
+	(removeNotificationListener(ObjectName,ObjectName,Subject)):
+	Likewise.
+	(removeNotificationListeners(ObjectName,Integer[],Subject)):
+	Likewise.
+	(setAttribute(ObjectName,MarshalledObject,Subject)): Likewise.
+	(setAttributes(ObjectName,MarshalledObject,Subject)): Likewise.
+	(unregisterMBean(ObjectName,Subject)): Likewise.
+
+2008-02-09  Dalibor Topic  <robilad@kaffe.org>
+
+	* native/jni/Makefile.am (all-local): Call check_jni_methods.sh
+	directly.
+
+	* scripts/Makefile.am (EXTRA_DIST): Removed check_jni_methods.sh.
+
+	* include/Makefile.am (SOUND_H_FILES, GST_PEER_H_FILES)
+	(XMLJ_H_FILES, GTKPEER_H_FILES, QTPEER_H_FILES)
+	(GCONF_PREFS_FILES, H_FILES): Don't generate header files
+	in the source directory, as it may not be writeable.
+	(DISTCLEANFILES) Added H_FILES.
+
+	* configure.ac (AC_CONFIG_FILES): Added 
+	scripts/check_jni_methods.sh.
+
+	* scripts/check_jni_methods.sh: Removed. Moved over to ..
+	* scripts/check_jni_methods.sh.in: New file. Added 
+	top_srcdir and top_builddir where necessary.
+	
+2008-02-09  Mario Torre  <neugens@limasoftware.net>
+
+	* include/java_util_VMTimeZone.h: Removed.
+	* native/jni/gconf-peer/GConfNativePeer.c: all native methods, replaced
+	GConfEngine with GConfClient and use GConfClient API instead.
+
+2008-02-08  Mark Wielaard  <mark@klomp.org>
+
+	* m4/acinclude.m4 (CLASSPATH_CHECK_JAVAC): Delete
+	Colour.class.
+
+	* include/.cvsignore: Add java_* and gnu_*.h.
+
+2008-02-08  Mario Torre  <neugens@limasoftware.net>
+
+    * configure.ac: --enable-regen-header option now enabled by default.
+    * include/gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_CairoGraphics2D.h: Removed.
+    * include/gnu_java_awt_peer_gtk_CairoSurface.h: Removed.
+    * include/gnu_java_awt_peer_gtk_ComponentGraphics.h: Removed.
+    * include/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.h: Removed.
+    * include/gnu_java_awt_peer_gtk_FreetypeGlyphVector.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GdkFontPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GdkPixbufDecoder.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GdkRobotPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkButtonPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkCanvasPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkCheckboxPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkChoicePeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkClipboard.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkComponentPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkFileDialogPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkFramePeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkGenericPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkImage.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkLabelPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkListPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkMenuBarPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkMenuItemPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkMenuPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkPanelPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkScrollbarPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkScrollPanePeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkSelection.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkTextAreaPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkToolkit.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkVolatileImage.h: Removed.
+    * include/gnu_java_awt_peer_gtk_GtkWindowPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_MainQtThread.h: Removed.
+    * include/gnu_java_awt_peer_qt_QMatrix.h: Removed.
+    * include/gnu_java_awt_peer_qt_QPainterPath.h: Removed.
+    * include/gnu_java_awt_peer_qt_QPen.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtAudioClip.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtButtonPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtCanvasPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtCheckboxPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtChoicePeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtComponentPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtDialogPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtEmbeddedWindowPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtFileDialogPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtFontMetrics.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtFontPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtFramePeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtGraphics.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtImage.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtLabelPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtListPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtMenuBarPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtMenuComponentPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtMenuItemPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtMenuPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtPanelPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtPopupMenuPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtScreenDevice.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtScrollbarPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtScrollPanePeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtTextAreaPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtTextFieldPeer.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtToolkit.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtVolatileImage.h: Removed.
+    * include/gnu_java_awt_peer_qt_QtWindowPeer.h: Removed.
+    * include/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h: Removed.
+    * include/gnu_java_net_local_LocalSocketImpl.h: Removed.
+    * include/gnu_java_net_VMPlainSocketImpl.h: Removed.
+    * include/gnu_java_nio_charset_iconv_IconvDecoder.h: Removed.
+    * include/gnu_java_nio_charset_iconv_IconvEncoder.h: Removed.
+    * include/gnu_java_nio_EpollSelectorImpl.h: Removed.
+    * include/gnu_java_nio_FileChannelImpl.h: Removed.
+    * include/gnu_java_nio_KqueueSelectorImpl.h: Removed.
+    * include/gnu_java_nio_VMChannel.h: Removed.
+    * include/gnu_java_nio_VMPipe.h: Removed.
+    * include/gnu_java_nio_VMSelector.h: Removed.
+    * include/gnu_java_util_prefs_gconf_GConfNativePeer.h: Removed.
+    * include/gnu_javax_sound_midi_alsa_AlsaMidiDeviceProvider.h: Removed.
+    * include/gnu_javax_sound_midi_alsa_AlsaMidiSequencerDevice.h: Removed.
+    * include/gnu_javax_sound_midi_alsa_AlsaPortDevice.h: Removed.
+    * include/gnu_javax_sound_midi_dssi_DSSIMidiDeviceProvider.h: Removed.
+    * include/gnu_javax_sound_midi_dssi_DSSISynthesizer.h: Removed.
+    * include/gnu_javax_sound_sampled_gstreamer_io_GstAudioFileReaderNativePeer.h: Removed.
+    * include/gnu_javax_sound_sampled_gstreamer_io_GstInputStream.h: Removed.
+    * include/gnu_javax_sound_sampled_gstreamer_lines_GstNativeDataLine.h: Removed.
+    * include/gnu_javax_sound_sampled_gstreamer_lines_GstPipeline.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeAttr.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeDocument.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeDocumentBuilder.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeDocumentType.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeElement.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeEntity.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeNamedNodeMap.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeNode.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeNodeList.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeNotation.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeProcessingInstruction.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeTypeInfo.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeXPathExpression.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeXPathNodeList.h: Removed.
+    * include/gnu_xml_libxmlj_dom_GnomeXPathResult.h: Removed.
+    * include/gnu_xml_libxmlj_sax_GnomeLocator.h: Removed.
+    * include/gnu_xml_libxmlj_sax_GnomeXMLReader.h: Removed.
+    * include/gnu_xml_libxmlj_transform_GnomeTransformer.h: Removed.
+    * include/gnu_xml_libxmlj_transform_GnomeTransformerFactory.h: Removed.
+    * include/java_io_VMFile.h: Removed.
+    * include/java_io_VMObjectInputStream.h: Removed.
+    * include/java_io_VMObjectStreamClass.h: Removed.
+    * include/java_lang_reflect_VMArray.h: Removed.
+    * include/java_lang_VMDouble.h: Removed.
+    * include/java_lang_VMFloat.h: Removed.
+    * include/java_lang_VMMath.h: Removed.
+    * include/java_lang_VMProcess.h: Removed.
+    * include/java_lang_VMSystem.h: Removed.
+    * include/java_net_VMInetAddress.h: Removed.
+    * include/java_net_VMNetworkInterface.h: Removed.
+    * include/java_net_VMURLConnection.h: Removed.
+    * include/java_nio_MappedByteBufferImpl.h: Removed.
+    * include/java_nio_VMDirectByteBuffer.h: Removed.
+
+2008-02-08  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	* gnu/java/awt/peer/gtk/GtkToolkit.java: Removed mistakenly
+	committed code.
+
+2008-02-08  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java,
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java,
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java,
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java,
+	* gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java,
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	* gnu/java/awt/peer/gtk/GtkToolkit.java: Only call
+	System.loadLibrary() when configured so.
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* NEWS: Documented removal of floatToIntBits and doubleToLongBits from
+	VM interface.
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* vm/reference/java/lang/VMFloat.java (floatToIntBits): Removed unused
+	method.
+
+	* native/jni/java-lang/java_lang_VMFloat.c (Java_java_lang_VMFloat_floatToIntBits): Removed unused function.
+
+	* include/java_lang_VMDouble.h: Regenerated.
+	
+	* doc/cp-vmintegration.texinfo (java.lang.VMFloat): Removed
+	unused method floatToIntBits. (java.lang.VMDouble): Use similar
+	text to text used for floatToRawIntBits for doubleToLongBits.
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/lang/Float.java (floatToIntBits): Simplified. 
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* m4/acinclude.m4 (CLASSPATH_CHECK_JAVAH) [USER_JAVAH]: Check for gjavah-4.2
+	and gjavah-4.1.
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* vm/reference/java/lang/VMDouble.java (doubleToLongBits): Removed unused method.
+
+	* native/jni/java-lang/java_lang_VMDouble.c (Java_java_lang_VMDouble_doubleToLongBits): 
+	Removed unused function.
+
+	* include/java_lang_VMDouble.h: Regenerated.
+	
+	* doc/cp-vmintegration.texinfo (java.lang.VMDouble): Removed
+	unused method doubleToLongBits.
+
+2008-02-08  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/lang/Double.java (doubleToLongBits): Simplified.
+
+2008-02-07  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* java/lang/String.java
+	(replace): Only copy "live" portion of String. Use array copies in preference
+        to clone.
+	(toLowerCaseTurkish): likewise
+        (toLowerCase): likewise
+	(toUpperCaseTurkish): likewise
+	(toUpperCase): likewise
+	(toCharArray): Use array copies in preference to clone.
+
+2008-02-05  Ian Rogers  <ian.rogers@manchester.ac.uk>
+
+	* gnu/java/lang/reflect/TypeSignature.java
+	* java/io/BufferedReader.java
+	* java/io/DataInputStream.java
+	* java/lang/StackTraceElement.java
+	* java/lang/Throwable.java
+	* java/lang/reflect/Proxy.java
+	* java/net/URI.java
+	* java/net/URLClassLoader.java
+	* java/net/URLEncoder.java
+	* java/text/SimpleDateFormat.java
+	* java/util/AbstractMap.java
+	* java/util/Calendar.java
+	* java/util/Date.java
+	* java/util/Hashtable.java
+	Use StringBuilder in preference to StringBuffer
+	* java/util/Calendar.java
+	* java/util/Hashtable.java
+	Make private fields that can be final, final
+	* java/net/URI.java
+	Avoid creating Integer objects for the sake of comparison
+	* java/lang/reflect/Proxy.java
+	* java/text/SimpleDateFormat.java
+	Swap use of "new Character/Integer" to use of valueOf methods
+
+2008-01-29  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #22941
+	* java/io/DataInputStream.java(readUTFLong): New method.
+	(readUTF): New private method.
+	* java/io/DataOutputStream.java(getUTFlength): Made package-private,
+	Return type changed to long.
+	(writeUTF): Use the new method writeUTFShort.
+	(writeUTFShort): New package-private method.
+	(writeUTFLong): New package-private method.
+	(writeUTFBytes): New private method.
+	* java/io/ObjectInputStream.java(parseContent): Separate the
+	handling of TC_LONGSTRING from TC_STRING.
+	* java/io/ObjectOutputStream.java(writeObject): When to write a
+	String, use writeUTFShort or writeUTFLong depending on the byte length.
+
+2008-01-27  Bernhard Fischer  <rep.dot.nop@gmail.com>
+
+	* java/util/SimpleTimeZone.java (SimpleTimeZone): Fix typo in comment.
+	* gnu/CORBA/GIOP/v1_2/RequestHeader.java (RequestHeader): Fix typo in
+	exception message.
+
+2008-01-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/README.jaxp: Fix typos.
+
+2008-01-25  Dalibor Topic  <robilad@kaffe.org>
+
+	* tools/gnu/classpath/tools/native2ascii/Native2ASCII.java 
+	(createParser): Removed unused "reversed" misspelling. Use 
+	Native2ASCII.ReverseHelp instead of Native2ASCII.ReversedHelp.
+
+	* resource/gnu/classpath/tools/native2ascii/messages.properties
+	(Native2ASCII.ReverseHelp): New, renamed from ... 
+	(Native2ASCII.ReversedHelp): Removed.
+	(Native2ASCII.ReversedHelpCompat): Removed.
+
+2008-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* resource/gnu/classpath/tools/native2ascii/messages.properties
+	(Native2ASCII.ReversedHelpCompat): New.
+	* tools/gnu/classpath/tools/native2ascii/Native2ASCII.java
+	(createParser): Add -reverse.  Update -reversed.
+
+2008-01-21  Luciano Chavez  <lnx1138@us.ibm.com>
+
+	PR libgcj/34369:
+	* java/net/URI.java (relativize): Check initial segment for
+	trailing "/".
+
+2008-01-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/acinclude.m4:
+	Remove bootclasspath option which fails with
+	OpenJDK javac.
+	
+2008-01-14  Roman Kennke  <kennke@aicas.com>
+
+	* javax/tools/FileObject.java: New interface.
+
+2008-01-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/accessibility/AccessibleAction.java:
+	(CLICK): Added.
+	(TOGGLE_POPUP): Likewise.
+	* javax/accessbiility/AccessibleRole.java:
+	(HTML_CONTAINER): Added.
+	
+2008-01-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/accessibility/AccessibleAttributeSequence.java:
+	(AccessibleAttributeSequence(int,int,AttributeSet)):
+	Implemented.
+	* javax/accessibility/AccessibleTextSequence.java:
+	(AccessibleTextSequence(int,int,String)):
+	Likewise.
+	
+2008-01-13  Leen Toelen  <toelen@gmail.com>
+
+	* native/fdlibm/ieeefp.h: Added avr32 support.
+
+2008-01-09  Stefan Huehner <stefan@huehner.org>
+       
+	* native/jni/java-io/java_io_VMObjectStreamClass.c,
+	* native/jni/java-lang/java_lang_VMDouble.c,
+	* native/jni/java-net/java_net_VMInetAddress.c:
+	Don't discard const by casting (const char *) to
+	(char *) when it's not needed.
+
+2008-01-09  Stefan Huehner <stefan@huehner.org>
+
+	* gnu/classpath/jdwp/event/ExceptionEvent.java,
+	* gnu/java/awt/peer/gtk/GtkMainThread.java:
+	Use Boolean.TRUE|FALSE instead of new Boolean(true|false)
+	* gnu/java/rmi/server/ConnectionRunnerPool.java,
+	* gnu/xml/aelfred2/XmlParser.java,
+	* gnu/xml/libxmlj/dom/GnomeXPathResult.java,
+	* gnu/xml/stream/XIncludeFilter.java:
+	Use Integer|Double|Charater.toString(var) instead of
+	new Integer|Double|Character(var).toString()
+
+2006-01-09  Roman Kennke  <kennke@aicas.com>
+
+	* javax/tools/Diagnostic.java,
+	* javax/tools/DiagnosticListener.java:
+	New interfaces.
+
+2006-01-09  Roman Kennke  <kennke@aicas.com>
+
+	* gnu/java/awt/peer/x/XWindowPeer.java
+	(getFontMetrics): Re-enable that for X fonts.
+
+2008-01-09  Stefan Huehner <stefan@huehner.org>
+
+
+	* examples/gnu/classpath/examples/java2d/J2dBenchmark.java,
+	* gnu/CORBA/OrbFocused.java,
+	* gnu/CORBA/CDR/HeadlessInput.java,
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java,
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java,
+	* gnu/java/awt/peer/qt/QtMenuPeer.java,
+	* gnu/java/nio/FileChannelImpl.java,
+	* gnu/java/nio/SocketChannelSelectionKeyImpl.java,
+	* gnu/java/security/Engine.java,
+	* gnu/javax/imageio/jpeg/JPEGComponent.java,
+	* gnu/javax/imageio/jpeg/JPEGDecoder.java,
+	* gnu/javax/imageio/jpeg/JPEGFrame.java,
+	* gnu/javax/print/PrinterDialog.java,
+	* gnu/javax/security/auth/Password.java,
+	* gnu/javax/swing/text/html/parser/support/Parser.java,
+	* gnu/javax/swing/text/html/parser/support/parameterDefaulter.java,
+	* gnu/xml/pipeline/DomConsumer.java,
+	* java/awt/AWTKeyStroke.java,
+	* java/awt/DefaultKeyboardFocusManager.java,
+	* java/awt/GridBagLayout.java,
+	* java/awt/dnd/DragGestureRecognizer.java,
+	* java/awt/geom/Arc2D.java,
+	* java/awt/geom/CubicCurve2D.java,
+	* java/awt/geom/QuadCurve2D.java,
+	* java/awt/im/InputContext.java,
+	* java/awt/image/AffineTransformOp.java,
+	* java/beans/Encoder.java,
+	* java/io/ObjectInputStream.java,
+	* java/io/ObjectStreamClass.java,
+	* java/net/ResolverCache.java,
+	* java/nio/charset/Charset.java,
+	* java/security/SecureClassLoader.java,
+	* java/text/MessageFormat.java,
+	* java/util/jar/Manifest.java,
+	* javax/accessibility/AccessibleRelationSet.java,
+	* javax/imageio/ImageReader.java,
+	* javax/imageio/metadata/IIOMetadataNode.java,
+	* javax/print/attribute/standard/MediaSize.java,
+	* javax/print/attribute/standard/PrinterStateReasons.java,
+	* javax/swing/JTree.java,
+	* javax/swing/table/DefaultTableColumnModel.java,
+	* javax/swing/text/html/MinimalHTMLWriter.java,
+	* javax/swing/text/html/parser/DTD.java,
+	* javax/swing/tree/DefaultMutableTreeNode.java,
+	* javax/swing/undo/UndoManager.java,
+	* org/omg/CosNaming/NamingContextExtPOA.java,
+	* org/omg/CosNaming/NamingContextPOA.java,
+	* org/omg/CosNaming/_NamingContextExtImplBase.java,
+	* org/omg/CosNaming/_NamingContextImplBase.java,
+	* tools/gnu/classpath/tools/appletviewer/CommonAppletStub.java:
+	Remove unneeded casts
+
+2006-01-09  Roman Kennke  <kennke@aicas.com>
+
+	* java/text/CollationElementIterator.java
+	(text): Changed type to CharacterIterator.
+	(CollationElementIterator(RuleBasedCollator,CharacterIterator)): New
+	constructor.
+	(setOffset(int)): Use CharacterIterator.getEndIndex() instead of
+	String.length().
+	(setText(String)): Wrap string into a StringCharacterIterator.
+	* java/text/RuleBasedCollator.java
+	(getCollationElementIterator(CharacterIterator)): Simply return
+	CollationElementIterator for the character iterator, instead of
+	expanding things.
+
+2008-01-08  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/34579:
+	* m4/acinclude.m4:
+	(CLASSPATH_CHECK_JAVAC): Delete Colour.java
+
+2008-01-04  Stefan Huehner <stefan@huehner.org>
+
+	* gnu/CORBA/BigDecimalHelper.java,
+	* gnu/CORBA/CDR/AbstractCdrInput.java,
+	* gnu/CORBA/CDR/AbstractCdrOutput.java,
+	* gnu/CORBA/CDR/HeadlessInput.java,
+	* gnu/CORBA/CDR/gnuRuntime.java,
+	* gnu/CORBA/Connected_objects.java,
+	* gnu/CORBA/GIOP/CancelHeader.java,
+	* gnu/CORBA/GIOP/v1_0/CancelHeader.java,
+	* gnu/CORBA/IOR.java,
+	* gnu/CORBA/Interceptor/Registrator.java,
+	* gnu/CORBA/IorDelegate.java,
+	* gnu/CORBA/NamingService/NameTransformer.java,
+	* gnu/CORBA/ObjectCreator.java,
+	* gnu/CORBA/OrbFunctional.java,
+	* gnu/CORBA/Poa/AOM.java,
+	* gnu/CORBA/Poa/gnuPOA.java,
+	* gnu/CORBA/Poa/gnuPOAManager.java,
+	* gnu/CORBA/Poa/gnuServantObject.java,
+	* gnu/CORBA/typecodes/FixedTypeCode.java,
+	* gnu/CORBA/typecodes/RecursiveTypeCode.java,
+	* gnu/java/awt/AWTUtilities.java,
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java,
+	* gnu/java/awt/peer/gtk/CairoSurface.java,
+	* gnu/java/awt/peer/swing/SwingMenuBarPeer.java,
+	* gnu/java/text/AttributedFormatBuffer.java,
+	* gnu/java/util/regex/REToken.java,
+	* gnu/javax/imageio/gif/GIFFile.java,
+	* gnu/javax/imageio/png/PNGDecoder.java,
+	* gnu/javax/management/Server.java,
+	* gnu/javax/naming/giop/ContextContinuation.java,
+	* gnu/javax/naming/jndi/url/rmi/ContextContinuation.java,
+	* gnu/javax/swing/text/html/css/Selector.java,
+	* gnu/javax/swing/text/html/parser/models/node.java,
+	* gnu/javax/swing/text/html/parser/support/Parser.java,
+	* gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.java,
+	* gnu/javax/swing/text/html/parser/support/textPreProcessor.java,
+	* gnu/xml/util/Resolver.java,
+	* java/awt/image/AreaAveragingScaleFilter.java,
+	* java/beans/Beans.java,
+	* java/beans/XMLDecoder.java,
+	* java/beans/beancontext/BeanContextServicesSupport.java,
+	* java/beans/beancontext/BeanContextSupport.java,
+	* java/io/CharArrayWriter.java,
+	* java/lang/System.java,
+	* java/net/ResolverCache.java,
+	* java/util/Calendar.java,
+	* java/util/Collections.java,
+	* java/util/Formatter.java,
+	* javax/accessibility/AccessibleEditableText.java,
+	* javax/imageio/ImageReader.java,
+	* javax/imageio/ImageTypeSpecifier.java,
+	* javax/imageio/ImageWriter.java,
+	* javax/imageio/spi/ServiceRegistry.java,
+	* javax/imageio/stream/ImageInputStream.java,
+	* javax/management/MBeanPermission.java,
+	* javax/rmi/CORBA/PortableRemoteObjectDelegate.java,
+	* javax/rmi/CORBA/Util.java,
+	* javax/rmi/CORBA/UtilDelegate.java,
+	* javax/rmi/CORBA/ValueHandler.java,
+	* javax/rmi/PortableRemoteObject.java,
+	* org/ietf/jgss/GSSContext.java,
+	* tools/gnu/classpath/tools/appletviewer/PluginAppletWindow.java,
+	* tools/gnu/classpath/tools/appletviewer/StandaloneAppletWindow.java,
+	* tools/gnu/classpath/tools/appletviewer/TagParser.java,
+	* vm/reference/gnu/java/nio/VMChannel.java:
+	Correct javadoc to match the functions' parameters
+	* gnu/java/awt/peer/swing/SwingTextFieldPeer.java:
+	Rename start_pos parameter to startPos to conform to style.
+
+2008-01-07  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/awt/image/Raster.java
+	(createInterleavedRaster): Fixed ComponentSampleModel constructor
+	argument order.
+
+2008-01-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+        PR classpath/34579:
+	* m4/acinclude.m4:
+	(CLASSPATH_CHECK_JAVAC): Don't rely on 1.5 class
+	library.
+	
+2008-01-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* ChangeLog-2007: New file.
+
+
+Local Variables:
+coding: iso-latin-1-unix	
+End:

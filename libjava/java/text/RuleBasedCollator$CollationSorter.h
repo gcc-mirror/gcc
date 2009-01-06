@@ -21,8 +21,9 @@ extern "Java"
 class java::text::RuleBasedCollator$CollationSorter : public ::java::lang::Object
 {
 
+  RuleBasedCollator$CollationSorter(jint, ::java::lang::String *, jint, jboolean);
 public: // actually package-private
-  RuleBasedCollator$CollationSorter();
+  RuleBasedCollator$CollationSorter(jint, ::java::lang::String *, jint, jboolean, ::java::text::RuleBasedCollator$CollationSorter *);
   static const jint GREATERP = 0;
   static const jint GREATERS = 1;
   static const jint GREATERT = 2;
