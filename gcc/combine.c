@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2208,6 +2208,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   /* Notes that I1, I2 or I3 is a MULT operation.  */
   int have_mult = 0;
   int swap_i2i3 = 0;
+  int changed_i3_dest = 0;
 
   int maxreg;
   rtx temp;
@@ -2895,14 +2896,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
 	  if (insn_code_number >= 0)
-	    {
-	      /* If we will be able to accept this, we have made a
-		 change to the destination of I3.  This requires us to
-		 do a few adjustments.  */
-
-	      PATTERN (i3) = newpat;
-	      adjust_for_new_dest (i3);
-	    }
+	    changed_i3_dest = 1;
 	}
     }
 
@@ -3373,6 +3367,16 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     {
       undo_all ();
       return 0;
+    }
+
+  /* If we will be able to accept this, we have made a
+     change to the destination of I3.  This requires us to
+     do a few adjustments.  */
+
+  if (changed_i3_dest)
+    {
+      PATTERN (i3) = newpat;
+      adjust_for_new_dest (i3);
     }
 
   /* We now know that we can do this combination.  Merge the insns and
