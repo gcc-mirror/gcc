@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "dbgcnt.h"
 #include "ra.h"
+#include "ira.h"
 
 /* This pass of the compiler performs global register allocation.
    It assigns hard register numbers to all the pseudo registers
@@ -1394,7 +1395,7 @@ pseudo_for_reload_consideration_p (int regno)
   /* Consider spilled pseudos too for IRA because they still have a
      chance to get hard-registers in the reload when IRA is used.  */
   return (reg_renumber[regno] >= 0
-	  || (flag_ira && optimize && flag_ira_share_spill_slots));
+	  || (flag_ira && ira_conflicts_p && flag_ira_share_spill_slots));
 }
 
 /* Walk the insns of the current function and build reload_insn_chain,
@@ -1483,7 +1484,7 @@ build_insn_chain (void)
 
 		    if ((regno < FIRST_PSEUDO_REGISTER
 			 || reg_renumber[regno] >= 0
-			 || (flag_ira && optimize))
+			 || (flag_ira && ira_conflicts_p))
 			&& (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL)))
 		      {
 			rtx reg = DF_REF_REG (def);

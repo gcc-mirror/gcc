@@ -7617,6 +7617,15 @@ given number of the most frequently executed loops will form regions
 for the regional register allocation.  The default value of the
 parameter is 100.
 
+@item ira-max-conflict-table-size
+Although IRA uses a sophisticated algorithm of compression conflict
+table, the table can be still big for huge functions.  If the conflict
+table for a function could be more than size in MB given by the
+parameter, the conflict table is not built and faster, simpler, and
+lower quality register allocation algorithm will be used.  The
+algorithm do not use pseudo-register conflicts.  The default value of
+the parameter is 2000.
+
 @end table
 @end table
 

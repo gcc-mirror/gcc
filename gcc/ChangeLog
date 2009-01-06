@@ -1,3 +1,48 @@
+2009-01-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/38583
+	* params.h (IRA_MAX_CONFLICT_TABLE_SIZE): New macro.
+
+	* params.def (ira-max-conflict-table-size): New.
+
+	* doc/invoke.texi (ira-max-conflict-table-size): Decribe.
+	
+	* ira.h (ira_conflicts_p): New external definition.
+	
+	* ira-conflicts.c (build_conflict_bit_table): Do not build too big
+	table.  Report this.  Return result of building.
+	(ira_build_conflicts): Use ira_conflicts_p.  Check result of
+	building conflict table.
+
+	* ira-color.c (fast_allocation): Use num instead of
+	ira_allocnos_num.
+	(ira_color): Use ira_conflicts_p.
+	
+	* global.c: Include ira.h.
+	(pseudo_for_reload_consideration_p, build_insn_chain): Use
+	ira_conflicts_p.
+
+	* Makefile.in (global.o): Add ira.h.
+	
+	* ira-build.c (mark_all_loops_for_removal,
+	propagate_some_info_from_allocno): New.
+	(remove_unnecessary_allocnos): Call
+	propagate_some_info_from_allocno.
+	(remove_low_level_allocnos): New.
+	(remove_unnecessary_regions): Add parameter.  Call
+	mark_all_loops_for_removal and remove_low_level_allocnos.  Pass
+	parameter to remove_unnecessary_regions.
+	(ira_build): Remove all regions but root if the conflict table was
+	not built.  Update conflict hard regs for allocnos crossing calls.
+
+	* ira.c (ira_conflicts_p): New global.
+	(ira): Define and use ira_conflicts_p.
+
+	* reload1.c (compute_use_by_pseudos, reload, count_pseudo,
+	count_spilled_pseudo, find_reg, alter_reg, finish_spills,
+	emit_input_reload_insns, delete_output_reload): Use
+	ira_conflicts_p.
+	
 2009-01-06  Ben Elliston  <bje@au.ibm.com>
 
 	* gengtype-lex.l (YY_NO_INPUT): Define.
