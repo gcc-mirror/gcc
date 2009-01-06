@@ -1,4 +1,7 @@
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++0x" }
+// { dg-do compile }
+
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +28,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-options "-std=gnu++0x" }
-
 #include <regex>
 #include <testsuite_hooks.h>
 
@@ -38,13 +39,11 @@ int test01(void)
 
   regex r = { 'a', 'b', 'c' };
   cmatch res;
-  // Enable when regex class actually implemented.
-  // VERIFY(regex_match ("abc", res, r));
+  VERIFY(regex_match ("abc", res, r));
   VERIFY(!regex_match ("ab", res, r));
 
   r = { 'd', 'e', 'f' };
-  // Enable when regex class actually implemented.
-  // VERIFY(regex_match ("def", res, r));
+  VERIFY(regex_match ("def", res, r));
   VERIFY(!regex_match ("abc", res, r));
 
   return test;

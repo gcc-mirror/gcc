@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -535,8 +535,7 @@ namespace regex_constants
        */
       template<typename _Fwd_iter>
         string_type
-        transform_primary(_Fwd_iter __first, _Fwd_iter __last) const
-        { return string_type(); }
+        transform_primary(_Fwd_iter __first, _Fwd_iter __last) const;
 
       /**
        * @brief Gets a collation element by name.
@@ -553,8 +552,7 @@ namespace regex_constants
        */
       template<typename _Fwd_iter>
         string_type
-        lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const
-        { return string_type(); }
+        lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const;
 
       /**
        * @brief Maps one or mire characters to a named character
@@ -591,8 +589,7 @@ namespace regex_constants
        */
       template<typename _Fwd_iter>
         char_class_type
-        lookup_classname(_Fwd_iter __first, _Fwd_iter __last) const
-        { return 0; }
+        lookup_classname(_Fwd_iter __first, _Fwd_iter __last) const;
 
       /**
        * @brief Determines if @p c is a member of an identified class.
@@ -1043,8 +1040,7 @@ namespace regex_constants
        * @brief Compiles a regular expression pattern into a NFA.
        * @todo Implement this function.
        */
-      void _M_compile()
-      { }
+      void _M_compile();
 
     protected:
       flag_type    _M_flags;
@@ -1995,8 +1991,7 @@ namespace regex_constants
         _Out_iter
         format(_Out_iter __out, const string_type& __fmt,
 	       regex_constants::match_flag_type __flags
-	       = regex_constants::format_default) const
-        { return __out; }
+	       = regex_constants::format_default) const;
 
       /**
        * @todo Implement this function.
@@ -2120,8 +2115,7 @@ namespace regex_constants
 		match_results<_Bi_iter, _Allocator>& __m,
 		const basic_regex<_Ch_type, _Rx_traits>& __re,
 		regex_constants::match_flag_type __flags
-		= regex_constants::match_default)
-    { return false; }
+		= regex_constants::match_default);
 
   /**
    * @brief Indicates if there is a match between the regular expression @p e
@@ -2262,8 +2256,7 @@ namespace regex_constants
 		 match_results<_Bi_iter, _Allocator>& __m,
 		 const basic_regex<_Ch_type, _Rx_traits>& __re,
 		 regex_constants::match_flag_type __flags
-		 = regex_constants::match_default)
-    { return false; }
+		 = regex_constants::match_default);
 
   /**
    * Searches for a regular expression within a range.
@@ -2396,8 +2389,7 @@ namespace regex_constants
 		  const basic_regex<_Ch_type, _Rx_traits>& __e,
 		  const basic_string<_Ch_type>& __fmt,
 		  regex_constants::match_flag_type __flags
-		  = regex_constants::match_default)
-    { return __out; }
+		  = regex_constants::match_default);
 
   /**
    * @doctodo
