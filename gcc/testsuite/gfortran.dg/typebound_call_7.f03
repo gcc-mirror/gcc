@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 
 ! PR fortran/37429
 ! Checks for assignments from type-bound functions.

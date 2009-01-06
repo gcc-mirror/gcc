@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 
 ! PR fortran/37429
 ! This used to ICE, check that is fixed.

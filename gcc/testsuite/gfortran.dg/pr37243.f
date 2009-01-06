@@ -35,7 +35,7 @@
       IF (J .GT. N) GO TO 320
       DO 240 K = 1,N
   240 V(K,I) = ZERO
-      CALL DAXPY(N,DUM,V(1,II),1,V(1,I),1)
+      CALL DAXPY(N,DUM,V(1,I),1,V(1,I),1)
   260 CONTINUE
       DUMI = ZERO
       DO 280 K = 1,N

@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! PR fortran/34763
 ! Before, gfortran did not allow for the "END" in
