@@ -14,3 +14,7 @@ union U
 };
 
 U u({1,2});			// { dg-error "too many initializers" }
+
+union V {};
+
+V v({1});			// { dg-error "too many initializers" }
