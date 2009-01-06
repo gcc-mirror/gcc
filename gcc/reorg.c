@@ -4038,6 +4038,7 @@ dbr_schedule (rtx first)
   }
 
 #endif
+  crtl->dbr_scheduled_p = true;
 }
 #endif /* DELAY_SLOTS */
 
@@ -4045,7 +4046,7 @@ static bool
 gate_handle_delay_slots (void)
 {
 #ifdef DELAY_SLOTS
-  return flag_delayed_branch;
+  return flag_delayed_branch && !crtl->dbr_scheduled_p;
 #else
   return 0;
 #endif
