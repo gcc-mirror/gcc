@@ -1,3 +1,8 @@
+2009-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38220
+	* gfortran.dg/c_loc_pure_1.f90:  New test.
+
 2009-01-06  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38669
