@@ -968,8 +968,12 @@ do {									\
         && ((cfun && cfun->machine->call_abi == MS_ABI)			\
             || (!cfun && DEFAULT_ABI == MS_ABI)))			\
       {									\
+        int i;								\
         call_used_regs[4 /*RSI*/] = 0;                                  \
         call_used_regs[5 /*RDI*/] = 0;                                  \
+	for (i = 0; i < 8; i++)						\
+	  call_used_regs[45+i] = 0;					\
+	call_used_regs[27] = call_used_regs[28] = 0;			\
       }									\
   } while (0)
 

@@ -1,6 +1,23 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
+	* i386.h (CONDITIONAL_CALL_USAGE): SSE regs are not used for w64 ABI.
+	* i386.c (struct ix86_frame): Add padding0 and nsseregs.
+	(ix86_nsaved_regs): Count only general purpose regs.
+	(ix86_nsaved_sseregs): New.
+	(ix86_compute_frame_layout): Update nsseregs; set preferred alignment
+	to 16 for w64; compute padding and size of sse reg save area.
+	(ix86_emit_save_regs, ix86_emit_save_regs_using_mov): Save only general
+	purpose regs.
+	(ix86_emit_save_sse_regs_using_mov): New.
+	(ix86_expand_prologue): Save SSE regs if needed.
+	(ix86_emit_restore_regs_using_mov): Use only general purpose regs.
+	(ix86_emit_restore_sse_regs_using_mov): New.
+	(ix86_expand_epilogue): Save SSE regs if needed.
+
+2009-01-06  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
 	* i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
 	* i386.c (init_cumulative_args): Disallow calls of MSABI functions when
 	accumulate outgoing args is off.
