@@ -1,5 +1,8 @@
 2009-01-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.dg/pr23095.f: Require ilp32 in target selection instead of
+	passing -m32.
+
 	PR rtl-optimization/38722
 	* gfortran.dg/pr38722.f90: New test.
 

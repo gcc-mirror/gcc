@@ -1,5 +1,5 @@
-      ! { dg-do compile { target i?86-*-* x86_64-*-* } }
-      ! { dg-options "-w -m32 -O2 -ffloat-store -fgcse-after-reload" }
+      ! { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+      ! { dg-options "-w -O2 -ffloat-store -fgcse-after-reload" }
       !
       ! GCSE after reload made a stack register live across an abnormal
       ! edges for one of the computed jumps.  This bombed in reg-stack.
