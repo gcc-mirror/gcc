@@ -5,6 +5,13 @@
 
 2009-01-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38698
+	* typeck2.c (process_init_constructor_union): Handle union with
+	no fields.
+
+	* mangle.c (write_expression): Remove mangling for zero-operand
+	casts.
+
 	PR c++/38701
 	* decl.c (cp_finish_decl): Clear DECL_INITIAL for invalid
 	defaulting.

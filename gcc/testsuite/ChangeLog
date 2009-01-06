@@ -53,6 +53,8 @@
 
 2009-01-05  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist12.C: Add another test.
+
 	* g++.dg/cpp0x/defaulted7.C: New test.
 
 2009-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
