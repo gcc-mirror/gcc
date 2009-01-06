@@ -1,7 +1,17 @@
 2009-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/tr1_impl/regex: Remove unimplemented function definitions.
+	* testsuite/28_regex/init-list.cc: Compile only.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_extended.cc: Same.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/*: Same.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/*: Same.
+
+2009-01-05  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/38384
 	* crossconfig.m4: Define HAVE_FABSF for hpux crosses.
+        * configure: Regenerate.
 
 2009-01-05  Ben Elliston  <bje@au.ibm.com>
 
