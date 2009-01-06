@@ -1,7 +1,29 @@
+2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	AVX Programming Reference (December, 2008)
+	* config/i386/avxintrin.h (_mm_permute2_pd): Removed.
+	(_mm256_permute2_pd): Likewise.
+	(_mm_permute2_ps): Likewise.
+	(_mm256_permute2_ps): Likewise.
+	* config/i386/i386.md (UNSPEC_VPERMIL2): Likewise.
+	* config/i386/sse.md (avx_vpermil2<mode>3): Likewise.
+
+	* config/i386/i386.c (ix86_builtins): Remove
+	IX86_BUILTIN_VPERMIL2PD, IX86_BUILTIN_VPERMIL2PS,
+	IX86_BUILTIN_VPERMIL2PD256 and IX86_BUILTIN_VPERMIL2PS256.
+	(ix86_builtin_type): Remove V8SF_FTYPE_V8SF_V8SF_V8SI_INT,
+	V4DF_FTYPE_V4DF_V4DF_V4DI_INT, V4SF_FTYPE_V4SF_V4SF_V4SI_INT
+	and V2DF_FTYPE_V2DF_V2DF_V2DI_INT.
+	(bdesc_args): Remove __builtin_ia32_vpermil2pd,
+	__builtin_ia32_vpermil2ps, __builtin_ia32_vpermil2pd256 and
+	__builtin_ia32_vpermil2ps256.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_args_builtin): Likewise.
+
 2009-01-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.c (output_call): Relocate non-jump insns in the delay slot of long
-	absolute calls when generating PA 2.0 code.
+	* pa.c (output_call): Relocate non-jump insns in the delay slot of
+	long absolute calls when generating PA 2.0 code.
 
 2009-01-05  Vladimir Makarov  <vmakarov@redhat.com>
 
