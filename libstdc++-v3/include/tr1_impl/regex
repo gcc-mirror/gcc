@@ -555,7 +555,7 @@ namespace regex_constants
         lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const;
 
       /**
-       * @brief Maps one or mire characters to a named character
+       * @brief Maps one or more characters to a named character
        *        classification.
        *
        * @param first beginning of the character sequence.
@@ -1067,7 +1067,7 @@ namespace regex_constants
     inline void
     swap(basic_regex<_Ch_type, _Rx_traits>& __lhs,
 	 basic_regex<_Ch_type, _Rx_traits>& __rhs)
-    { return __lhs.swap(__rhs); }
+    { __lhs.swap(__rhs); }
 
 
   // [7.9] Class template sub_match
@@ -1817,6 +1817,7 @@ namespace regex_constants
       {
 	match_results __tmp(__rhs);
 	this->swap(__tmp);
+	return *this;
       }
 
       /**
@@ -1880,7 +1881,7 @@ namespace regex_constants
        * @brief Gets the offset of the beginning of the indicated submatch.
        * @param sub indicates the submatch.
        *
-       * This function returns the offset from the beginnig of the target
+       * This function returns the offset from the beginning of the target
        * sequence to the beginning of the submatch, unless the value of @p sub
        * is zero (the default), in which case this function returns the offset
        * from the beginning of the target sequence to the beginning of the
@@ -2083,7 +2084,7 @@ namespace regex_constants
     inline void
     swap(match_results<_Bi_iter, _Allocator>& __lhs,
 	 match_results<_Bi_iter, _Allocator>& __rhs)
-    { return __lhs.swap(__rhs); }
+    { __lhs.swap(__rhs); }
 
   // [7.11.2] Function template regex_match
   /**
