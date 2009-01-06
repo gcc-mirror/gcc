@@ -1,3 +1,12 @@
+2009-01-06  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/implicit_12.f90: Add space around dg directive.
+	* gfortran.dg/typebound_call_8.f03: Same.
+	* gfortran.dg/elemental_bind_c.f90: Same.
+	* gfortran.dg/typebound_call_7.f03: Same.
+	* gfortran.dg/interface_proc_end.f90: Same
+	* gfortran.dg/pr37243.f: Fix typo.
+
 2009-01-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/struct-ret-3.c (CHUNK_SIZE): New define.  Use CHUNK_SIZE
