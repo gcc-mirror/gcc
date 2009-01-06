@@ -1,3 +1,8 @@
+2009-01-06  Jan Hubicka  <jh@suse.cz>
+
+	PR target/38744
+	* i386.c (ix86_expand_call): Use ARRAY_SIZE
+
 2009-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Slightly adjust the end note.
