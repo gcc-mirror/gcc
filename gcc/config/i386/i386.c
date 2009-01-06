@@ -18501,16 +18501,29 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, call, pop));
       gcc_assert (ix86_cfun_abi () != MS_ABI || function_call_abi != SYSV_ABI);
     }
-  /* We need to represent that SI and DI registers are clobbered by SYSV calls.
-     */
+  /* We need to represent that SI and DI registers are clobbered
+     by SYSV calls.  */
   if (ix86_cfun_abi () == MS_ABI && function_call_abi == SYSV_ABI)
     {
-      rtx clobber1 = gen_rtx_CLOBBER (DImode, gen_rtx_REG (DImode, SI_REG));
-      rtx clobber2 = gen_rtx_CLOBBER (DImode, gen_rtx_REG (DImode, DI_REG));
+      static int clobbered_registers[] ={27, 28, 45, 46, 47, 48, 49, 50, 51, 52, SI_REG, DI_REG};
+      static const int nclobbered_registers = sizeof (clobbered_registers) / sizeof (int);
+      int i;
+      rtx vec[nclobbered_registers + 2];
       rtx unspec = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx),
       				   UNSPEC_MS_TO_SYSV_CALL);
+
+      vec[0] = call;
+      vec[1] = unspec;
+      for (i = 0; i < nclobbered_registers; i++)
+        vec[i + 2] = gen_rtx_CLOBBER (SSE_REGNO_P (clobbered_registers[i])
+				      ? TImode : DImode,
+				      gen_rtx_REG
+				        (SSE_REGNO_P (clobbered_registers[i])
+						      ? TImode : DImode,
+					 clobbered_registers[i]));
+
       call = gen_rtx_PARALLEL (VOIDmode,
-      			       gen_rtvec (4, call, unspec, clobber1, clobber2));
+      			       gen_rtvec_v (nclobbered_registers + 2, vec));
     }
 
   call = emit_call_insn (call);
