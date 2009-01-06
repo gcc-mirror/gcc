@@ -1,3 +1,10 @@
+2009-01-06  Jan Hubicka  <jh@suse.cz>
+	    Kai Tietz <kai.tietz@onevision.com>
+
+	* i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
+	* i386.c (init_cumulative_args): Disallow calls of MSABI functions when
+	accumulate outgoing args is off.
+
 2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/38742
