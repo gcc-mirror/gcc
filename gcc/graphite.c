@@ -1579,6 +1579,17 @@ move_sd_regions (VEC (sd_region, heap) **source, VEC (sd_region, heap) **target)
   VEC_free (sd_region, heap, *source);
 }
 
+/* Return true when it is not possible to represent the upper bound of
+   LOOP in the polyhedral representation.  */
+
+static bool
+graphite_cannot_represent_loop_niter (loop_p loop)
+{
+  tree niter = number_of_latch_executions (loop);
+
+  return chrec_contains_undetermined (niter)
+    || !scev_is_linear_expression (niter);
+}
 /* Store information needed by scopdet_* functions.  */
 
 struct scopdet_info
@@ -1650,8 +1661,7 @@ scopdet_basic_block_info (basic_block bb, VEC (sd_region, heap) **scops,
 	if (result.last->loop_father != loop)
 	  result.next = NULL;
 
-        if (TREE_CODE (number_of_latch_executions (loop))
-            == SCEV_NOT_KNOWN)
+        if (graphite_cannot_represent_loop_niter (loop))
           result.difficult = true;
 
         if (sinfo.difficult)
@@ -2350,9 +2360,7 @@ graphite_loop_normal_form (loop_p loop)
   gimple_seq stmts;
   edge exit = single_dom_exit (loop);
 
-  if (!number_of_iterations_exit (loop, exit, &niter, false))
-    gcc_unreachable ();
-
+  gcc_assert (number_of_iterations_exit (loop, exit, &niter, false));
   nit = force_gimple_operand (unshare_expr (niter.niter), &stmts, true,
 			      NULL_TREE);
   if (stmts)
@@ -2732,8 +2740,7 @@ scan_tree_for_params (scop_p s, tree e, CloogMatrix *c, int r, Value k,
 	}
       break;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case NON_LVALUE_EXPR:
       scan_tree_for_params (s, TREE_OPERAND (e, 0), c, r, k, subtract);
       break;
@@ -3278,13 +3285,63 @@ add_conditions_to_domain (graphite_bb_p gb)
     }
 }
 
-/* Helper recursive function.  */
+/* Returns true when PHI defines an induction variable in the loop
+   containing the PHI node.  */
 
-static void
+static bool
+phi_node_is_iv (gimple phi)
+{
+  loop_p loop = gimple_bb (phi)->loop_father;
+  tree scev = analyze_scalar_evolution (loop, gimple_phi_result (phi));
+
+  return tree_contains_chrecs (scev, NULL);
+}
+
+/* Returns true when BB contains scalar phi nodes that are not an
+   induction variable of a loop.  */
+
+static bool
+bb_contains_non_iv_scalar_phi_nodes (basic_block bb)
+{
+  gimple phi = NULL;
+  gimple_stmt_iterator si;
+
+  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+    if (is_gimple_reg (gimple_phi_result (gsi_stmt (si))))
+      {
+	/* Store the unique scalar PHI node: at this point, loops
+	   should be in cannonical form, so we expect to see at most
+	   one scalar phi node in the loop header.  */
+	if (phi
+	    || bb != bb->loop_father->header)
+	  return true;
+
+	phi = gsi_stmt (si);
+      }
+
+  if (!phi
+      || phi_node_is_iv (phi))
+    return false;
+
+  return true;
+}
+
+/* Helper recursive function.  Record in CONDITIONS and CASES all
+   conditions from 'if's and 'switch'es occurring in BB from SCOP.
+
+   Returns false when the conditions contain scalar computations that
+   depend on the condition, i.e. when there are scalar phi nodes on
+   the junction after the condition.  Only the computations occurring
+   on memory can be handled in the polyhedral model: operations that
+   define scalar evolutions in conditions, that can potentially be
+   used to index memory, can't be handled by the polyhedral model.  */
+
+static bool
 build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 			 VEC (gimple, heap) **cases, basic_block bb,
 			 scop_p scop)
 {
+  bool res = true;
   int i, j;
   graphite_bb_p gbb;
   gimple_stmt_iterator gsi;
@@ -3293,9 +3350,11 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
   
   /* Make sure we are in the SCoP.  */
   if (!bb_in_scop_p (bb, scop))
-    return;
+    return true;
 
-  /* Record conditions in graphite_bb.  */
+  if (bb_contains_non_iv_scalar_phi_nodes (bb))
+    return false;
+
   gbb = gbb_from_bb (bb);
   if (gbb)
     {
@@ -3331,13 +3390,18 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 		/* Recursively scan the then or else part.  */
 		if (e->flags & EDGE_TRUE_VALUE)
 		  VEC_safe_push (gimple, heap, *cases, stmt);
-		else if (e->flags & EDGE_FALSE_VALUE)
-		  VEC_safe_push (gimple, heap, *cases, NULL);
-		else
-		  gcc_unreachable ();
+		else 
+		  {
+		    gcc_assert (e->flags & EDGE_FALSE_VALUE);
+		    VEC_safe_push (gimple, heap, *cases, NULL);
+		  }
 
 		VEC_safe_push (gimple, heap, *conditions, stmt);
-		build_scop_conditions_1 (conditions, cases, e->dest, scop);
+		if (!build_scop_conditions_1 (conditions, cases, e->dest, scop))
+		  {
+		    res = false;
+		    goto done;
+		  }
 		VEC_pop (gimple, *conditions);
 		VEC_pop (gimple, *cases);
 	      }
@@ -3358,43 +3422,45 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 		bb_child = label_to_block
 		  (CASE_LABEL (gimple_switch_label (stmt, i)));
 
-		/* Do not handle multiple values for the same block.  */
 		for (k = 0; k < n; k++)
 		  if (i != k
 		      && label_to_block 
 		      (CASE_LABEL (gimple_switch_label (stmt, k))) == bb_child)
 		    break;
 
-		if (k != n)
-		  continue;
-
-		/* Switch cases with more than one predecessor are not
-		   handled.  */
-		if (VEC_length (edge, bb_child->preds) != 1)
-		  continue;
+		/* Switches with multiple case values for the same
+		   block are not handled.  */
+		if (k != n
+		    /* Switch cases with more than one predecessor are
+		       not handled.  */
+		    || VEC_length (edge, bb_child->preds) != 1)
+		  {
+		    res = false;
+		    goto done;
+		  }
 
 		/* Recursively scan the corresponding 'case' block.  */
-
 		for (gsi_search_gimple_label = gsi_start_bb (bb_child);
 		     !gsi_end_p (gsi_search_gimple_label);
 		     gsi_next (&gsi_search_gimple_label))
 		  {
-		    gimple stmt_gimple_label 
-		      = gsi_stmt (gsi_search_gimple_label);
+		    gimple label = gsi_stmt (gsi_search_gimple_label);
 
-		    if (gimple_code (stmt_gimple_label) == GIMPLE_LABEL)
+		    if (gimple_code (label) == GIMPLE_LABEL)
 		      {
-			tree t = gimple_label_label (stmt_gimple_label);
+			tree t = gimple_label_label (label);
 
-			if (t == gimple_switch_label (stmt, i))
-			  VEC_replace (gimple, *cases, n_cases,
-				       stmt_gimple_label);
-			else
-			  gcc_unreachable ();
+			gcc_assert (t == gimple_switch_label (stmt, i));
+			VEC_replace (gimple, *cases, n_cases, label);
+			break;
 		      }
 		  }
 
-		build_scop_conditions_1 (conditions, cases, bb_child, scop);
+		if (!build_scop_conditions_1 (conditions, cases, bb_child, scop))
+		  {
+		    res = false;
+		    goto done;
+		  }
 
 		/* Remove the scanned block from the dominator successors.  */
 		for (j = 0; VEC_iterate (basic_block, dom, j, bb_iter); j++)
@@ -3402,13 +3468,14 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 		    {
 		      VEC_unordered_remove (basic_block, dom, j);
 		      break;
-		    }  
+		    }
 	      }
 
 	    VEC_pop (gimple, *conditions);
 	    VEC_pop (gimple, *cases);
 	    break;
 	  }
+
 	default:
 	  break;
       }
@@ -3416,23 +3483,38 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 
   /* Scan all immediate dominated successors.  */
   for (i = 0; VEC_iterate (basic_block, dom, i, bb_child); i++)
-    build_scop_conditions_1 (conditions, cases, bb_child, scop);
+    if (!build_scop_conditions_1 (conditions, cases, bb_child, scop))
+      {
+	res = false;
+	goto done;
+      }
 
+ done:
   VEC_free (basic_block, heap, dom);
+  return res;
 }
 
-/* Record all 'if' and 'switch' conditions in each gbb of SCOP.  */
+/* Record all conditions from SCOP.
 
-static void
+   Returns false when the conditions contain scalar computations that
+   depend on the condition, i.e. when there are scalar phi nodes on
+   the junction after the condition.  Only the computations occurring
+   on memory can be handled in the polyhedral model: operations that
+   define scalar evolutions in conditions, that can potentially be
+   used to index memory, can't be handled by the polyhedral model.  */
+
+static bool
 build_scop_conditions (scop_p scop)
 {
+  bool res;
   VEC (gimple, heap) *conditions = NULL;
   VEC (gimple, heap) *cases = NULL;
 
-  build_scop_conditions_1 (&conditions, &cases, SCOP_ENTRY (scop), scop);
+  res = build_scop_conditions_1 (&conditions, &cases, SCOP_ENTRY (scop), scop);
 
   VEC_free (gimple, heap, conditions);
   VEC_free (gimple, heap, cases);
+  return res;
 }
 
 /* Build the current domain matrix: the loops belonging to the current
@@ -4064,18 +4146,17 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	  expand_scalar_variables_stmt (def_stmt, bb, scop,
 					old_loop_father, map);
 	  return get_new_name_from_old_name (map, op0);
-	  
 	}
       else
 	{
 	  if (gimple_code (def_stmt) != GIMPLE_ASSIGN
 	      || !bb_in_scop_p (gimple_bb (def_stmt), scop))
 	    return get_new_name_from_old_name (map, op0);
-	  
+
 	  var0 = gimple_assign_rhs1 (def_stmt);
 	  subcode = gimple_assign_rhs_code (def_stmt);
 	  var1 = gimple_assign_rhs2 (def_stmt);
-	  
+
 	  return expand_scalar_variables_expr (type, var0, subcode, var1,
 					       bb, scop, old_loop_father, map);
 	}
@@ -4100,7 +4181,7 @@ expand_scalar_variables_stmt (gimple stmt, basic_block bb, scop_p scop,
     {
       tree use = USE_FROM_PTR (use_p);
       tree type = TREE_TYPE (use);
-      enum tree_code code  = TREE_CODE (use);
+      enum tree_code code = TREE_CODE (use);
       tree use_expr = expand_scalar_variables_expr (type, use, code, NULL, bb,
 						    scop, old_loop_father, map);
       if (use_expr != use)
@@ -5607,7 +5688,7 @@ strip_mine_profitable_p (graphite_bb_p gb, int stride,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\nStrip Mining is not profitable for loop %d:",
-		   loop_index);
+		   loop->num);
 	  fprintf (dump_file, "number of iterations is too low.\n");
 	}
     }
@@ -5616,17 +5697,16 @@ strip_mine_profitable_p (graphite_bb_p gb, int stride,
 }
  
 /* Determines when the interchange of LOOP_A and LOOP_B belonging to
-   SCOP is legal.  */
+   SCOP is legal.  DEPTH is the number of loops around.  */
 
 static bool
-is_interchange_valid (scop_p scop, int loop_a, int loop_b)
+is_interchange_valid (scop_p scop, int loop_a, int loop_b, int depth)
 {
   bool res;
   VEC (ddr_p, heap) *dependence_relations;
   VEC (data_reference_p, heap) *datarefs;
 
   struct loop *nest = VEC_index (loop_p, SCOP_LOOP_NEST (scop), loop_a);
-  int depth = perfect_loop_nest_depth (nest);
   lambda_trans_matrix trans;
 
   gcc_assert (loop_a < loop_b);
@@ -5692,7 +5772,7 @@ graphite_trans_bb_block (graphite_bb_p gb, int stride, int loops)
 
   for (i = start ; i < nb_loops; i++)
     for (j = i + 1; j < nb_loops; j++)
-      if (!is_interchange_valid (scop, i, j))
+      if (!is_interchange_valid (scop, i, j, nb_loops))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -5715,6 +5795,10 @@ graphite_trans_bb_block (graphite_bb_p gb, int stride, int loops)
   /* Interchange loops.  */
   for (i = 1; i < nb_loops - start; i++)
     graphite_trans_bb_move_loop (gb, start + 2 * i, start + i);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nLoops containing BB %d will be loop blocked.\n",
+	     GBB_BB (gb)->index);
 
   return true;
 }
@@ -5858,9 +5942,6 @@ graphite_trans_scop_block (scop_p scop)
     transform_done |= graphite_trans_loop_block (bbs, last_nb_loops - j);
   VEC_free (graphite_bb_p, heap, bbs);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nLoop blocked.\n");
-
   return transform_done;
 }
 
@@ -5978,7 +6059,8 @@ graphite_transform_loops (void)
 
       build_scop_canonical_schedules (scop);
       build_bb_loops (scop);
-      build_scop_conditions (scop);
+      if (!build_scop_conditions (scop))
+	continue;
       find_scop_parameters (scop);
       build_scop_context (scop);
 

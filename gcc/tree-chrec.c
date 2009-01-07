@@ -1430,3 +1430,64 @@ for_each_scev_op (tree *scev, bool (*cbck) (tree *, void *), void *data)
     }
 }
 
+/* Returns true when the operation can be part of a linear
+   expression.  */
+
+static inline bool
+operator_is_linear (tree scev)
+{
+  switch (TREE_CODE (scev))
+    {
+    case INTEGER_CST:
+    case POLYNOMIAL_CHREC:
+    case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
+    case MULT_EXPR:
+    case MINUS_EXPR:
+    case NEGATE_EXPR:
+    case SSA_NAME:
+    case NON_LVALUE_EXPR:
+    CASE_CONVERT:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true when SCEV is a linear expression.  Linear expressions
+   can contain additions, substractions and multiplications.
+   Multiplications are restricted to constant scaling: "cst * x".  */
+
+bool
+scev_is_linear_expression (tree scev)
+{
+  if (scev == NULL
+      || !operator_is_linear (scev))
+    return false;
+
+  if (TREE_CODE (scev) == MULT_EXPR)
+    return !(tree_contains_chrecs (TREE_OPERAND (scev, 0), NULL)
+	     && tree_contains_chrecs (TREE_OPERAND (scev, 1), NULL));
+
+  switch (TREE_CODE_LENGTH (TREE_CODE (scev)))
+    {
+    case 3:
+      return scev_is_linear_expression (TREE_OPERAND (scev, 0))
+	&& scev_is_linear_expression (TREE_OPERAND (scev, 1))
+	&& scev_is_linear_expression (TREE_OPERAND (scev, 2));
+
+    case 2:
+      return scev_is_linear_expression (TREE_OPERAND (scev, 0))
+	&& scev_is_linear_expression (TREE_OPERAND (scev, 1));
+      
+    case 1:
+      return scev_is_linear_expression (TREE_OPERAND (scev, 0));
+
+    case 0:
+      return true;
+
+    default:
+      return false;
+    }
+}

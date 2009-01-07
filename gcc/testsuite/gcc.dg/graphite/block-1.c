@@ -36,5 +36,5 @@ int main()
   return sum;
 }
 
-/* { dg-final { scan-tree-dump-times "Loop blocked" 2 "graphite"} } */ 
+/* { dg-final { scan-tree-dump-times "will be loop blocked" 2 "graphite"} } */ 
 /* { dg-final { cleanup-tree-dump "graphite" } } */

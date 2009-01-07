@@ -1,3 +1,16 @@
+2009-01-07  Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/38492
+	PR tree-optimization/38498
+	* testsuite/gcc.dg/graphite/pr38500.c: Fixed warning as committed
+	in trunk.
+	* testsuite/gcc.dg/graphite/block-0.c: Update test.
+	* testsuite/gcc.dg/graphite/block-1.c: Same.
+	* testsuite/gcc.dg/graphite/block-2.c: Remove xfail and test for blocking.
+	* testsuite/gcc.dg/graphite/block-4.c: Remove test for strip mine.
+	* testsuite/gcc.dg/graphite/block-3.c: New.
+	* testsuite/gcc.dg/graphite/pr38498.c: New.
+
 2009-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (December, 2008)
