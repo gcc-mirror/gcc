@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007, 2009
 #   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -14,6 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+# DejaGnu's dg-test defines extra flags that are used to compile a test.
+# Access them for directives that need to examine all options that are
+# used for a test, including checks for non-cached effective targets.
+# We don't know how far up the call chain it is but we know we'll hit
+# it eventually, and that we're at least 3 calls down.
+
+proc current_compiler_flags { } {
+    set frames 2
+    while { ![info exists flags1] } {
+	set frames [expr $frames + 1]
+	upvar $frames dg-extra-tool-flags flags1
+    }
+    upvar $frames tool_flags flags2
+    return "$flags1 $flags2"
+}
 
 # If this target does not support weak symbols, skip this test.
 
@@ -189,9 +205,6 @@ proc dg-add-options { args } {
 proc check-flags { args } {
     global compiler_flags
     global TOOL_OPTIONS
-    # These variables are from DejaGnu's dg-test.
-    upvar dg-extra-tool-flags extra_tool_flags
-    upvar tool_flags tool_flags
 
     # The args are within another list; pull them out.
     set args [lindex $args 0]
@@ -199,8 +212,7 @@ proc check-flags { args } {
     # Start the list with a dummy tool name so the list will match "*"
     # if there are no flags.
     set compiler_flags " toolname "
-    append compiler_flags $extra_tool_flags
-    append compiler_flags $tool_flags
+    append compiler_flags [current_compiler_flags]
     # If running a subset of the test suite, $TOOL_OPTIONS may not exist.
     catch {append compiler_flags " $TOOL_OPTIONS "}
     set dest [target_info name]
@@ -239,10 +251,6 @@ proc dg-skip-if { args } {
 
     set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
-	# These are defined in DejaGnu's dg-test, needed by check-flags.
-	upvar dg-extra-tool-flags dg-extra-tool-flags
-	upvar tool_flags tool_flags
-
 	if [check-flags $args] {
 	    upvar dg-do-what dg-do-what
             set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
@@ -280,10 +288,6 @@ proc dg-xfail-run-if { args } {
 
     set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
-	# These are defined in DejaGnu's dg-test, needed by check-flags.
-	upvar dg-extra-tool-flags dg-extra-tool-flags
-	upvar tool_flags tool_flags
-
 	if [check-flags $args] {
 	    upvar dg-do-what dg-do-what
             set dg-do-what [list [lindex ${dg-do-what} 0] "S" "F"]
@@ -308,11 +312,7 @@ proc dg-shouldfail { args } {
     if { [llength $args] > 1 } {
 	set selector [list target [lindex $args 1]]
 	if { [dg-process-target $selector] == "S" } {
-	    # The target matches, now check the flags.  These variables
-	    # are defined in DejaGnu's dg-test, needed by check-flags.
-	    upvar dg-extra-tool-flags dg-extra-tool-flags
-	    upvar tool_flags tool_flags
-
+	    # The target matches, now check the flags.
 	    if [check-flags $args] {
 		set shouldfail 1
 	    }
