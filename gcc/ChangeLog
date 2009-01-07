@@ -1,3 +1,27 @@
+2009-01-07  Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/38492
+	PR tree-optimization/38498
+	* tree-check.c (operator_is_linear, scev_is_linear_expression): New.
+	* tree-chrec.h (scev_is_linear_expression): Declared.
+	* graphite.c (graphite_cannot_represent_loop_niter): New.
+	(scopdet_basic_block_info): Call graphite_cannot_represent_loop_niter.
+	(graphite_loop_normal_form): Use gcc_assert.
+	(scan_tree_for_params): Use CASE_CONVERT.
+	(phi_node_is_iv, bb_contains_non_iv_scalar_phi_nodes): New.
+	(build_scop_conditions_1): Call bb_contains_non_iv_scalar_phi_nodes.
+	Use gcc_assert.  Discard scops that contain unhandled cases.
+	(build_scop_conditions): Return a boolean status for unhandled cases.
+	(strip_mine_profitable_p): Print the loop number, not its depth.
+	(is_interchange_valid): Pass the depth of the loop nest, don't
+	recompute it wrongly.
+	(graphite_trans_bb_block): Same.
+	(graphite_trans_bb_block): Print tentative of loop blocking.
+	(graphite_trans_scop_block): Do not print that the loop has been
+	blocked.
+	(graphite_transform_loops): Do not handle scops that contain condition
+	scalar phi nodes.
+
 2009-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (December, 2008)

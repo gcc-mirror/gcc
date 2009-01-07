@@ -84,6 +84,7 @@ extern bool evolution_function_is_affine_multivariate_p (const_tree, int);
 extern bool evolution_function_is_univariate_p (const_tree);
 extern unsigned nb_vars_in_chrec (tree);
 extern bool evolution_function_is_invariant_p (tree, int);
+extern bool scev_is_linear_expression (tree);
 
 /* Determines whether CHREC is equal to zero.  */
 
