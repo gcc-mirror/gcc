@@ -1,3 +1,9 @@
+2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_target_string): Use ARRAY_SIZE.
+	(ix86_target_string): Ditto.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+
 2009-01-07  Jan Sjodin  <jan.sjodin@amd.com>
 
 	PR tree-optimization/38492
@@ -94,7 +100,7 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/38744
-	* i386.c (ix86_expand_call): Use ARRAY_SIZE
+	* i386.c (ix86_expand_call): Use ARRAY_SIZE.
 
 2009-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -116,8 +122,8 @@
 	(ix86_nsaved_sseregs): New.
 	(ix86_compute_frame_layout): Update nsseregs; set preferred alignment
 	to 16 for w64; compute padding and size of sse reg save area.
-	(ix86_emit_save_regs, ix86_emit_save_regs_using_mov): Save only general
-	purpose regs.
+	(ix86_emit_save_regs, ix86_emit_save_regs_using_mov): Save only
+	general purpose regs.
 	(ix86_emit_save_sse_regs_using_mov): New.
 	(ix86_expand_prologue): Save SSE regs if needed.
 	(ix86_emit_restore_regs_using_mov): Use only general purpose regs.
@@ -128,8 +134,8 @@
 	    Kai Tietz <kai.tietz@onevision.com>
 
 	* i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
-	* i386.c (init_cumulative_args): Disallow calls of MSABI functions when
-	accumulate outgoing args is off.
+	* i386.c (init_cumulative_args): Disallow calls of MSABI functions
+	when accumulate outgoing args is off.
 
 2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -182,8 +188,7 @@
 	(ira_build_conflicts): Use ira_conflicts_p.  Check result of
 	building conflict table.
 
-	* ira-color.c (fast_allocation): Use num instead of
-	ira_allocnos_num.
+	* ira-color.c (fast_allocation): Use num instead of ira_allocnos_num.
 	(ira_color): Use ira_conflicts_p.
 	
 	* global.c: Include ira.h.
@@ -208,8 +213,7 @@
 
 	* reload1.c (compute_use_by_pseudos, reload, count_pseudo,
 	count_spilled_pseudo, find_reg, alter_reg, finish_spills,
-	emit_input_reload_insns, delete_output_reload): Use
-	ira_conflicts_p.
+	emit_input_reload_insns, delete_output_reload): Use ira_conflicts_p.
 	
 2009-01-06  Ben Elliston  <bje@au.ibm.com>
 
@@ -225,9 +229,9 @@
 
 	PR tree-optimization/38492
 	* graphite.c (rename_map_elt, debug_rename_elt,
-        debug_rename_map_1, debug_rename_map, new_rename_map_elt,
-        rename_map_elt_info, eq_rename_map_elts,
-        get_new_name_from_old_name, bb_in_sese_p): Moved around.
+	debug_rename_map_1, debug_rename_map, new_rename_map_elt,
+	rename_map_elt_info, eq_rename_map_elts,
+	get_new_name_from_old_name, bb_in_sese_p): Moved around.
 	(sese_find_uses_to_rename_use): Renamed sese_build_livein_liveouts_use.
 	(sese_find_uses_to_rename_bb): Renamed sese_build_livein_liveouts_bb.
 	(sese_build_livein_liveouts): New.
@@ -247,7 +251,7 @@
 	(gloog): Call scop_adjust_phis_for_liveouts.
 
 	* graphite.h (struct sese): Documented.  Added fields liveout,
-        num_ver and livein.
+	num_ver and livein.
 	(SESE_LIVEOUT, SESE_LIVEIN, SESE_LIVEIN_VER, SESE_NUM_VER): New.
 	(new_sese, free_sese, sese_build_livein_liveouts): Declared.
 	(struct scop): Added field liveout_renames.
@@ -338,7 +342,7 @@
 	* config/mips/sync.md (memory_barrier): Redefine as expander pattern.
 	Remove mem:BLK from insn operands.  Use Pmode scratch register.
 	Set volatile flag on operand 0.
-	(*memory_barrier): New insn pattern.
+	(*mb_internal): New insn pattern.
 
 	* config/alpha/sync.md (*memory_barrier): Rename from *mb_internal.
 
