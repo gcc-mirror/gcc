@@ -251,6 +251,20 @@ proc check_weak_available { } {
 }
 
 ###############################
+# proc check_weak_override_available { }
+###############################
+
+# Like check_weak_available, but return 0 if weak symbol definitions
+# cannot be overridden.
+
+proc check_weak_override_available { } {
+    if { [istarget "*-*-mingw*"] } {
+	return 0
+    }
+    return [check_weak_available]
+}
+
+###############################
 # proc check_visibility_available { what_kind }
 ###############################
 
