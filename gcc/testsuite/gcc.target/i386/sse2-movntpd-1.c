@@ -24,7 +24,7 @@ static void
 TEST (void)
 {
   union128d u;
-  double e[2] __attribute__ ((aligned(32)));
+  double e[2] __attribute__ ((aligned(16)));
    
   u.x = _mm_set_pd (2134.3343,1234.635654);
   test (e, u.x); 

@@ -1,3 +1,13 @@
+2009-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	AVX Programming Reference (December, 2008)
+	* gcc.target/i386/avx-vmovntdq-256-1.c: New.
+	* gcc.target/i386/avx-vmovntpd-256-1.c: Likewise.
+	* gcc.target/i386/avx-vmovntps-256-1.c: Likewise.
+
+	* gcc.target/i386/sse2-movntdq-1.c (TEST): Align array to 16byte.
+	* gcc.target/i386/sse2-movntpd-1.c (TEST): Likewise.
+
 2009-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38220

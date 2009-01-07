@@ -35,6 +35,9 @@
 ;; All QI vector modes handled by AVX
 (define_mode_iterator AVXMODEQI [V32QI V16QI])
 
+;; All DI vector modes handled by AVX
+(define_mode_iterator AVXMODEDI [V4DI V2DI])
+
 ;; All vector modes handled by AVX
 (define_mode_iterator AVXMODE [V16QI V8HI V4SI V2DI V4SF V2DF V32QI V16HI V8SI V4DI V8SF V4DF])
 
@@ -383,26 +386,46 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
+(define_insn "avx_movnt<mode>"
+  [(set (match_operand:AVXMODEF2P 0 "memory_operand" "=m")
+	(unspec:AVXMODEF2P
+	  [(match_operand:AVXMODEF2P 1 "register_operand" "x")]
+	  UNSPEC_MOVNT))]
+  "AVX_VEC_FLOAT_MODE_P (<MODE>mode)"
+  "vmovntp<avxmodesuffixf2c>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<sse>_movnt<mode>"
   [(set (match_operand:SSEMODEF2P 0 "memory_operand" "=m")
 	(unspec:SSEMODEF2P
 	  [(match_operand:SSEMODEF2P 1 "register_operand" "x")]
 	  UNSPEC_MOVNT))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "%vmovntp<ssemodesuffixf2c>\t{%1, %0|%0, %1}"
+  "movntp<ssemodesuffixf2c>\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
-   (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "avx_movnt<mode>"
+  [(set (match_operand:AVXMODEDI 0 "memory_operand" "=m")
+	(unspec:AVXMODEDI
+	  [(match_operand:AVXMODEDI 1 "register_operand" "x")]
+	  UNSPEC_MOVNT))]
+  "TARGET_AVX"
+  "vmovntdq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<avxvecmode>")])
 
 (define_insn "sse2_movntv2di"
   [(set (match_operand:V2DI 0 "memory_operand" "=m")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "x")]
 		     UNSPEC_MOVNT))]
   "TARGET_SSE2"
-  "%vmovntdq\t{%1, %0|%0, %1}"
+  "movntdq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix_data16" "1")
-   (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_movntsi"
