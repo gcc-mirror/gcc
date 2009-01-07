@@ -3590,7 +3590,8 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 
               if (TREE_PURPOSE (parm))
                 seen_def_arg_p = 1;
-              else if (seen_def_arg_p)
+              else if (seen_def_arg_p
+		       && !template_parameter_pack_p (TREE_VALUE (parm)))
                 {
                   error ("no default argument for %qD", TREE_VALUE (parm));
                   /* For better subsequent error-recovery, we indicate that
@@ -3601,6 +3602,9 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 	      else if (is_primary
 		       && !is_partial
 		       && !is_friend_decl
+		       /* Don't complain about an enclosing partial
+			  specialization.  */
+		       && parm_level == parms
 		       && TREE_CODE (decl) == TYPE_DECL
 		       && i < ntparms - 1
 		       && template_parameter_pack_p (TREE_VALUE (parm)))
@@ -5060,7 +5064,19 @@ convert_template_argument (tree parm,
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 
-      if (!uses_template_parms (orig_arg) && !uses_template_parms (t))
+      if (template_parameter_pack_p (parm) && ARGUMENT_PACK_P (orig_arg))
+	{
+	  if (same_type_p (t, TREE_TYPE (orig_arg)))
+	    val = orig_arg;
+	  else
+	    {
+	      /* Not sure if this is reachable, but it doesn't hurt
+		 to be robust.  */
+	      error ("type mismatch in nontype parameter pack");
+	      val = error_mark_node;
+	    }
+	}
+      else if (!uses_template_parms (orig_arg) && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
@@ -5233,10 +5249,6 @@ coerce_template_parms (tree parms,
      parameters.  */
   int variadic_p = 0;
 
-  inner_args 
-    = expand_template_argument_pack (INNERMOST_TEMPLATE_ARGS (args));
-
-  nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
   nparms = TREE_VEC_LENGTH (parms);
 
   /* Determine if there are any parameter packs.  */
@@ -5244,13 +5256,22 @@ coerce_template_parms (tree parms,
     {
       tree tparm = TREE_VALUE (TREE_VEC_ELT (parms, parm_idx));
       if (template_parameter_pack_p (tparm))
-        {
-          variadic_p = 1;
-          break;
-        }
+	++variadic_p;
     }
 
-  if ((nargs > nparms - variadic_p && !variadic_p)
+  inner_args = INNERMOST_TEMPLATE_ARGS (args);
+  /* If there are 0 or 1 parameter packs, we need to expand any argument
+     packs so that we can deduce a parameter pack from some non-packed args
+     followed by an argument pack, as in variadic85.C.  If there are more
+     than that, we need to leave argument packs intact so the arguments are
+     assigned to the right parameter packs.  This should only happen when
+     dealing with a nested class inside a partial specialization of a class
+     template, as in variadic92.C.  */
+  if (variadic_p <= 1)
+    inner_args = expand_template_argument_pack (inner_args);
+
+  nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
+  if ((nargs > nparms && !variadic_p)
       || (nargs < nparms - variadic_p
 	  && require_all_args
 	  && (!use_default_args
@@ -5297,42 +5318,48 @@ coerce_template_parms (tree parms,
       }
 
       /* Calculate the next argument.  */
-      if (template_parameter_pack_p (TREE_VALUE (parm)))
+      if (arg_idx < nargs)
+	arg = TREE_VEC_ELT (inner_args, arg_idx);
+      else
+	arg = NULL_TREE;
+
+      if (template_parameter_pack_p (TREE_VALUE (parm))
+	  && !(arg && ARGUMENT_PACK_P (arg)))
         {
-          /* All remaining arguments will be placed in the
-             template parameter pack PARM.  */
-          arg = coerce_template_parameter_pack (parms, parm_idx, args, 
-                                                inner_args, arg_idx,
-                                                new_args, &lost,
-                                                in_decl, complain);
-          
+	  /* All remaining arguments will be placed in the
+	     template parameter pack PARM.  */
+	  arg = coerce_template_parameter_pack (parms, parm_idx, args, 
+						inner_args, arg_idx,
+						new_args, &lost,
+						in_decl, complain);
+
           /* Store this argument.  */
           if (arg == error_mark_node)
             lost++;
           TREE_VEC_ELT (new_inner_args, parm_idx) = arg;
 
-          /* We are done with all of the arguments.  */
-          arg_idx = nargs;
-
+	  /* We are done with all of the arguments.  */
+	  arg_idx = nargs;
+          
           continue;
         }
-      else if (arg_idx < nargs)
-        {
-          arg = TREE_VEC_ELT (inner_args, arg_idx);
-
-          if (arg && PACK_EXPANSION_P (arg))
+      else if (arg)
+	{
+          if (PACK_EXPANSION_P (arg))
             {
 	      if (complain & tf_error)
 		{
+		  /* FIXME this restriction was removed by N2555; see
+		     bug 35722.  */
 		  /* If ARG is a pack expansion, but PARM is not a
 		     template parameter pack (if it were, we would have
 		     handled it above), we're trying to expand into a
 		     fixed-length argument list.  */
 		  if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
-		    error ("cannot expand %<%E%> into a fixed-length "
+		    sorry ("cannot expand %<%E%> into a fixed-length "
 			   "argument list", arg);
 		  else
-		    error ("cannot expand %<%T%> into a fixed-length "
+		    sorry ("cannot expand %<%T%> into a fixed-length "
 			   "argument list", arg);
 		}
 	      return error_mark_node;
@@ -5389,6 +5416,25 @@ template_args_equal (tree ot, tree nt)
     return PACK_EXPANSION_P (nt) 
       && template_args_equal (PACK_EXPANSION_PATTERN (ot),
                               PACK_EXPANSION_PATTERN (nt));
+  else if (ARGUMENT_PACK_P (ot))
+    {
+      int i, len;
+      tree opack, npack;
+
+      if (!ARGUMENT_PACK_P (nt))
+	return 0;
+
+      opack = ARGUMENT_PACK_ARGS (ot);
+      npack = ARGUMENT_PACK_ARGS (nt);
+      len = TREE_VEC_LENGTH (opack);
+      if (TREE_VEC_LENGTH (npack) != len)
+	return 0;
+      for (i = 0; i < len; ++i)
+	if (!template_args_equal (TREE_VEC_ELT (opack, i),
+				  TREE_VEC_ELT (npack, i)))
+	  return 0;
+      return 1;
+    }
   else if (TYPE_P (nt))
     return TYPE_P (ot) && same_type_p (ot, nt);
   else if (TREE_CODE (ot) == TREE_VEC || TYPE_P (ot))
@@ -5404,9 +5450,6 @@ int
 comp_template_args (tree oldargs, tree newargs)
 {
   int i;
-
-  oldargs = expand_template_argument_pack (oldargs);
-  newargs = expand_template_argument_pack (newargs);
 
   if (TREE_VEC_LENGTH (oldargs) != TREE_VEC_LENGTH (newargs))
     return 0;
@@ -11707,6 +11750,66 @@ tsubst_copy_and_build (tree t,
    Emit an error under control of COMPLAIN, and return TRUE on error.  */
 
 static bool
+check_instantiated_arg (tree tmpl, tree t, tsubst_flags_t complain)
+{
+  if (ARGUMENT_PACK_P (t))
+    {
+      tree vec = ARGUMENT_PACK_ARGS (t);
+      int len = TREE_VEC_LENGTH (vec);
+      bool result = false;
+      int i;
+
+      for (i = 0; i < len; ++i)
+	if (check_instantiated_arg (tmpl, TREE_VEC_ELT (vec, i), complain))
+	  result = true;
+      return result;
+    }
+  else if (TYPE_P (t))
+    {
+      /* [basic.link]: A name with no linkage (notably, the name
+	 of a class or enumeration declared in a local scope)
+	 shall not be used to declare an entity with linkage.
+	 This implies that names with no linkage cannot be used as
+	 template arguments.  */
+      tree nt = no_linkage_check (t, /*relaxed_p=*/false);
+
+      if (nt)
+	{
+	  /* DR 488 makes use of a type with no linkage cause
+	     type deduction to fail.  */
+	  if (complain & tf_error)
+	    {
+	      if (TYPE_ANONYMOUS_P (nt))
+		error ("%qT is/uses anonymous type", t);
+	      else
+		error ("template argument for %qD uses local type %qT",
+		       tmpl, t);
+	    }
+	  return true;
+	}
+      /* In order to avoid all sorts of complications, we do not
+	 allow variably-modified types as template arguments.  */
+      else if (variably_modified_type_p (t, NULL_TREE))
+	{
+	  if (complain & tf_error)
+	    error ("%qT is a variably modified type", t);
+	  return true;
+	}
+    }
+  /* A non-type argument of integral or enumerated type must be a
+     constant.  */
+  else if (TREE_TYPE (t)
+	   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (t))
+	   && !TREE_CONSTANT (t))
+    {
+      if (complain & tf_error)
+	error ("integral expression %qE is not constant", t);
+      return true;
+    }
+  return false;
+}
+
+static bool
 check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 {
   int ix, len = DECL_NTPARMS (tmpl);
@@ -11714,50 +11817,8 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 
   for (ix = 0; ix != len; ix++)
     {
-      tree t = TREE_VEC_ELT (args, ix);
-
-      if (TYPE_P (t))
-	{
-	  /* [basic.link]: A name with no linkage (notably, the name
-	     of a class or enumeration declared in a local scope)
-	     shall not be used to declare an entity with linkage.
-	     This implies that names with no linkage cannot be used as
-	     template arguments.  */
-	  tree nt = no_linkage_check (t, /*relaxed_p=*/false);
-
-	  if (nt)
-	    {
-	      /* DR 488 makes use of a type with no linkage cause
-		 type deduction to fail.  */
-	      if (complain & tf_error)
-		{
-		  if (TYPE_ANONYMOUS_P (nt))
-		    error ("%qT is/uses anonymous type", t);
-		  else
-		    error ("template argument for %qD uses local type %qT",
-			   tmpl, t);
-		}
-	      result = true;
-	    }
-	  /* In order to avoid all sorts of complications, we do not
-	     allow variably-modified types as template arguments.  */
-	  else if (variably_modified_type_p (t, NULL_TREE))
-	    {
-	      if (complain & tf_error)
-		error ("%qT is a variably modified type", t);
-	      result = true;
-	    }
-	}
-      /* A non-type argument of integral or enumerated type must be a
-	 constant.  */
-      else if (TREE_TYPE (t)
-	       && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (t))
-	       && !TREE_CONSTANT (t))
-	{
-	  if (complain & tf_error)
-	    error ("integral expression %qE is not constant", t);
-	  result = true;
-	}
+      if (check_instantiated_arg (tmpl, TREE_VEC_ELT (args, ix), complain))
+	result = true;
     }
   if (result && (complain & tf_error))
     error ("  trying to instantiate %qD", tmpl);
