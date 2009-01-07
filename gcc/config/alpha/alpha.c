@@ -1,6 +1,7 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -8272,6 +8273,11 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
   if (GET_CODE (insn) == CALL_INSN)
     output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
 
+#if TARGET_ABI_OSF
+  if (crtl->is_thunk)
+    free_after_compilation (cfun);
+#endif
+
 #if TARGET_ABI_OPEN_VMS
   alpha_write_linkage (file, fnname, decl);
 #endif
@@ -8310,6 +8316,8 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 {
   HOST_WIDE_INT hi, lo;
   rtx this_rtx, insn, funexp;
+
+  gcc_assert (crtl->is_thunk);
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());
@@ -8392,7 +8400,6 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
-  free_after_compilation (cfun);
 }
 #endif /* TARGET_ABI_OSF */
 

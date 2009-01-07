@@ -1,7 +1,14 @@
 2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/38706
+	* config/alpha/alpha.c (alpha_end_function): For TARGET_ABI_OSF, call
+	free_after_compilation when outputting a thunk.
+	(alpha_output_mi_thunk_osf): Assert that we are processing a thunk.
+	Do not call free_after_compilation here.
+
+2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (ix86_target_string): Use ARRAY_SIZE.
-	(ix86_target_string): Ditto.
 	(ix86_valid_target_attribute_inner_p): Ditto.
 
 2009-01-07  Jan Sjodin  <jan.sjodin@amd.com>
