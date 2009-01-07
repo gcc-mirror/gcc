@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -516,6 +516,7 @@ gomp_work_share_init_done (void)
 
 #if !defined (HAVE_ATTRIBUTE_VISIBILITY) \
     || !defined (HAVE_ATTRIBUTE_ALIAS) \
+    || !defined (HAVE_AS_SYMVER_DIRECTIVE) \
     || !defined (PIC)
 # undef LIBGOMP_GNU_SYMBOL_VERSIONING
 #endif

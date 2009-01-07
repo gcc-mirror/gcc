@@ -298,6 +298,16 @@ if test $enable_symvers = yes; then
   fi
 fi
 
+AC_CACHE_CHECK([whether the target supports .symver directive],
+	       libgomp_cv_have_as_symver_directive, [
+  AC_TRY_COMPILE([void foo (void); __asm (".symver foo, bar@SYMVER");],
+		 [], libgomp_cv_have_as_symver_directive=yes,
+		 libgomp_cv_have_as_symver_directive=no)])
+if test $libgomp_cv_have_as_symver_directive = yes; then
+  AC_DEFINE(HAVE_AS_SYMVER_DIRECTIVE, 1,
+    [Define to 1 if the target assembler supports .symver directive.])
+fi
+
 AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])

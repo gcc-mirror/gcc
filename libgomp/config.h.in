@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if the target assembler supports .symver directive. */
+#undef HAVE_AS_SYMVER_DIRECTIVE
+
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
 
