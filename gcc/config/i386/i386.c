@@ -2306,9 +2306,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mtls-direct-seg-refs",		MASK_TLS_DIRECT_SEG_REFS },
   };
 
-  const char *opts[ (sizeof (isa_opts) / sizeof (isa_opts[0])
-		     + sizeof (flag_opts) / sizeof (flag_opts[0])
-		     + 6)][2];
+  const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
 
   char isa_other[40];
   char target_other[40];
@@ -2337,7 +2335,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     }
 
   /* Pick out the options in isa options.  */
-  for (i = 0; i < sizeof (isa_opts) / sizeof (isa_opts[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (isa_opts); i++)
     {
       if ((isa & isa_opts[i].mask) != 0)
 	{
@@ -2353,7 +2351,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     }
 
   /* Add flag options.  */
-  for (i = 0; i < sizeof (flag_opts) / sizeof (flag_opts[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (flag_opts); i++)
     {
       if ((flags & flag_opts[i].mask) != 0)
 	{
@@ -2379,7 +2377,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   if (num == 0)
     return NULL;
 
-  gcc_assert (num < sizeof (opts) / sizeof (opts[0]));
+  gcc_assert (num < ARRAY_SIZE (opts));
 
   /* Size the string.  */
   len = 0;
@@ -3526,7 +3524,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
       /* Find the option.  */
       ch = *p;
       opt = N_OPTS;
-      for (i = 0; i < sizeof (attrs) / sizeof (attrs[0]); i++)
+      for (i = 0; i < ARRAY_SIZE (attrs); i++)
 	{
 	  type = attrs[i].type;
 	  opt_len = attrs[i].len;
