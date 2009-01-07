@@ -1,3 +1,10 @@
+2009-01-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_weak_override_available): New.
+	* lib/target-supports-dg.exp (dg-require-weak-override): New.
+	* gcc.dg/tree-ssa/pr27781.c, g++.dg/eh/weak1.C: Use
+	dg-require-weak-override.
+
 2009-01-07  Nathan Froyd  <froydnj@codesourcery.com>
 	    Alan Modra  <amodra@bigpond.net.au>
 

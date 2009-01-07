@@ -45,6 +45,21 @@ proc dg-require-weak { args } {
     }
 }
 
+# If this target does not support overriding weak symbols, skip this
+# test.
+
+proc dg-require-weak-override { args } {
+    set weak_override_available [ check_weak_override_available ]
+    if { $weak_override_available == -1 } {
+	upvar name name
+	unresolved "$name"
+    }
+    if { $weak_override_available != 1 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # If this target does not support the "visibility" attribute, skip this
 # test.
 

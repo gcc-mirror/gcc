@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-weak "" } */
+/* { dg-require-weak-override "" } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 void __attribute__((weak)) func(void)

@@ -1,6 +1,6 @@
 // PR target/29487
 // { dg-do run { xfail { hppa*-*-hpux* && { ! hppa*64*-*-* } } } }
-// { dg-require-weak "" }
+// { dg-require-weak-override "" }
 // { dg-additional-sources "weak1-a.cc" }
 // { dg-options "-O2" }
 
