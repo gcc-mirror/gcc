@@ -24,7 +24,7 @@ static void
 TEST (void)
 {
   union128i_d u;
-  int e[4] __attribute__ ((aligned(32)));
+  int e[4] __attribute__ ((aligned(16)));
 
   u.x = _mm_set_epi32 (21, 34, 334, 8567);
 

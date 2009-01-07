@@ -968,6 +968,24 @@ _mm256_lddqu_si256 (__m256i const *__P)
   return (__m256i) __builtin_ia32_lddqu256 ((char const *)__P);
 }
 
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_stream_si256 (__m256i *__A, __m256i __B)
+{
+  __builtin_ia32_movntdq256 ((__v4di *)__A, (__v4di)__B);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_stream_pd (double *__A, __m256d __B)
+{
+  __builtin_ia32_movntpd256 (__A, (__v4df)__B);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_stream_ps (float *__P, __m256 __A)
+{
+  __builtin_ia32_movntps256 (__P, (__v8sf)__A);
+}
+
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_rcp_ps (__m256 __A)
 {

@@ -1,3 +1,24 @@
+2009-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	AVX Programming Reference (December, 2008)
+	* config/i386/avxintrin.h (_mm256_stream_si256): New.
+	(_mm256_stream_pd): Likewise.
+	(_mm256_stream_ps): Likewise.
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_MOVNTDQ256,
+	IX86_BUILTIN_MOVNTPD256 and IX86_BUILTIN_MOVNTPS256.
+	(ix86_special_builtin_type): Add VOID_FTYPE_PV4DI_V4DI.
+	(bdesc_special_args): Add __builtin_ia32_movntdq256,
+	__builtin_ia32_movntpd256 and __builtin_ia32_movntps256.
+	(ix86_init_mmx_sse_builtins): Handle VOID_FTYPE_PV4DI_V4DI.
+	(ix86_expand_special_args_builtin): Likewise.
+
+	* config/i386/sse.md (AVXMODEDI): New.
+	(avx_movnt<mode>): Likewise.
+	(avx_movnt<mode>): Likewise.
+	(<sse>_movnt<mode>): Remove AVX support.
+	(sse2_movntv2di): Likewise.
+
 2009-01-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38751

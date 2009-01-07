@@ -19942,6 +19942,9 @@ enum ix86_builtins
   IX86_BUILTIN_STOREUPD256,
   IX86_BUILTIN_STOREUPS256,
   IX86_BUILTIN_LDDQU256,
+  IX86_BUILTIN_MOVNTDQ256,
+  IX86_BUILTIN_MOVNTPD256,
+  IX86_BUILTIN_MOVNTPS256,
   IX86_BUILTIN_LOADDQU256,
   IX86_BUILTIN_STOREDQU256,
   IX86_BUILTIN_MASKLOADPD,
@@ -20413,6 +20416,7 @@ enum ix86_special_builtin_type
   V2DF_FTYPE_PCV2DF_V2DF,
   V2DI_FTYPE_PV2DI,
   VOID_FTYPE_PV2SF_V4SF,
+  VOID_FTYPE_PV4DI_V4DI,
   VOID_FTYPE_PV2DI_V2DI,
   VOID_FTYPE_PCHAR_V32QI,
   VOID_FTYPE_PCHAR_V16QI,
@@ -20651,6 +20655,10 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_loaddqu256", IX86_BUILTIN_LOADDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_storedqu256", IX86_BUILTIN_STOREDQU256, UNKNOWN, (int) VOID_FTYPE_PCHAR_V32QI },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_lddqu256, "__builtin_ia32_lddqu256", IX86_BUILTIN_LDDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
+
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv4di, "__builtin_ia32_movntdq256", IX86_BUILTIN_MOVNTDQ256, UNKNOWN, (int) VOID_FTYPE_PV4DI_V4DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv4df, "__builtin_ia32_movntpd256", IX86_BUILTIN_MOVNTPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv8sf, "__builtin_ia32_movntps256", IX86_BUILTIN_MOVNTPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SF },
@@ -22183,6 +22191,11 @@ ix86_init_mmx_sse_builtins (void)
 				V8SI_type_node, V4SI_type_node,
 				integer_type_node,
 				NULL_TREE);
+  tree pv4di_type_node = build_pointer_type (V4DI_type_node);
+  tree void_ftype_pv4di_v4di
+    = build_function_type_list (void_type_node,
+				pv4di_type_node, V4DI_type_node,
+				NULL_TREE);
   tree v8sf_ftype_v8sf_v4sf_int
     = build_function_type_list (V8SF_type_node,
 				V8SF_type_node, V4SF_type_node,
@@ -22368,6 +22381,9 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case VOID_FTYPE_PV2SF_V4SF:
 	  type = void_ftype_pv2sf_v4sf;
+	  break;
+	case VOID_FTYPE_PV4DI_V4DI:
+	  type = void_ftype_pv4di_v4di;
 	  break;
 	case VOID_FTYPE_PV2DI_V2DI:
 	  type = void_ftype_pv2di_v2di;
@@ -24215,6 +24231,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       memory = 0;
       break;
     case VOID_FTYPE_PV2SF_V4SF:
+    case VOID_FTYPE_PV4DI_V4DI:
     case VOID_FTYPE_PV2DI_V2DI:
     case VOID_FTYPE_PCHAR_V32QI:
     case VOID_FTYPE_PCHAR_V16QI:
