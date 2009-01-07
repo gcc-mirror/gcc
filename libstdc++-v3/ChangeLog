@@ -1,5 +1,23 @@
 2009-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libstdc++/38732
+	* libsupc++/unwind-cxx.h (__cxxabiv1::__cxa_exception): Remove
+	referenceCount field again.
+	(__cxxabiv1::__cxa_refcounted_exception): New struct.
+	(__cxxabiv1::__get_refcounted_exception_header_from_obj,
+	__cxxabiv1::__get_refcounted_exception_header_from_ue): New static
+	inline functions.
+	* libsupc++/eh_alloc.cc (__cxxabiv1::__cxa_allocate_exception,
+	__cxxabiv1::__cxa_free_exception): Use __cxa_refcounted_exception
+	instead of __cxa_exception.
+	* libsupc++/eh_throw.cc (__gxx_exception_cleanup,
+	__cxxabiv1::__cxa_throw): Likewise.
+	* libsupc++/eh_ptr.cc (std::rethrow_exception,
+	std::__exception_ptr::exception_ptr::_M_addref,
+	std::__exception_ptr::exception_ptr::_M_release,
+	__gxx_dependent_exception_cleanup): Likewise.
+	* testsuite/18_support/exception/38732.cc: New test.
+
 	PR libstdc++/38092
 	* acinclude.m4 (HAVE_AS_SYMVER_DIRECTIVE): New test.
 	* src/compatibility.cc: Don't use .symver directives if
