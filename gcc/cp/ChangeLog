@@ -1,3 +1,22 @@
+2009-01-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35297
+	PR c++/35477
+	PR c++/35784
+	PR c++/36846
+	PR c++/38276
+	* pt.c (check_default_tmpl_args): Don't complain about
+	out-of-order parameter packs in the enclosing class
+	or parameter packs after default args.
+	(coerce_template_parms): If we have more than one
+	parameter pack, don't flatten argument packs.
+	(template_args_equal): Handle argument packs.
+	(comp_template_args): Don't flatten argument packs.
+	(check_instantiated_arg): Split out from...
+	(check_instantiated_args): Here.  Handle arg packs.
+	(convert_template_argument): Just check that nontype argument
+	packs have the right type.
+
 2009-01-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38472
