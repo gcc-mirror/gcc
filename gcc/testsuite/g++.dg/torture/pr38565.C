@@ -1,4 +1,6 @@
 // { dg-do compile }
+// Ignore warning on some powerpc-linux configurations.
+// { dg-prune-output "non-standard ABI extension" }
 #define vector __attribute__((vector_size(16) ))
 vector unsigned int f(int a)
 {
