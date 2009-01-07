@@ -1,3 +1,12 @@
+2009-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/38086
+	* acinclude.m4 (HAVE_AS_SYMVER_DIRECTIVE): New check.
+	* libgomp.h (LIBGOMP_GNU_SYMBOL_VERSIONING): Undefine if
+	HAVE_AS_SYMVER_DIRECTIVE is not defined.
+	* configure: Regenerated.
+	* config.h.in: Likewise.
+
 2008-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38650
