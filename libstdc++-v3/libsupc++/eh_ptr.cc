@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -84,8 +84,8 @@ std::__exception_ptr::exception_ptr::_M_addref() throw()
 {
   if (_M_exception_object)
     {
-      __cxa_exception *eh =
-        __get_exception_header_from_obj (_M_exception_object);
+      __cxa_refcounted_exception *eh =
+	__get_refcounted_exception_header_from_obj (_M_exception_object);
       __sync_add_and_fetch (&eh->referenceCount, 1);
     }
 }
@@ -96,12 +96,12 @@ std::__exception_ptr::exception_ptr::_M_release() throw()
 {
   if (_M_exception_object)
     {
-      __cxa_exception *eh =
-        __get_exception_header_from_obj (_M_exception_object);
+      __cxa_refcounted_exception *eh =
+	__get_refcounted_exception_header_from_obj (_M_exception_object);
       if (__sync_sub_and_fetch (&eh->referenceCount, 1) == 0)
         {
-          if (eh->exceptionDestructor)
-            eh->exceptionDestructor (_M_exception_object);
+	  if (eh->exc.exceptionDestructor)
+	    eh->exc.exceptionDestructor (_M_exception_object);
 
           __cxa_free_exception (_M_exception_object);
           _M_exception_object = 0;
@@ -191,22 +191,22 @@ __gxx_dependent_exception_cleanup (_Unwind_Reason_Code code,
 {
   // This cleanup is set only for dependents.
   __cxa_dependent_exception *dep = __get_dependent_exception_from_ue (exc);
-  __cxa_exception *header =
-    __get_exception_header_from_obj (dep->primaryException);
+  __cxa_refcounted_exception *header =
+    __get_refcounted_exception_header_from_obj (dep->primaryException);
 
   // We only want to be called through _Unwind_DeleteException.
   // _Unwind_DeleteException in the HP-UX IA64 libunwind library
   // returns _URC_NO_REASON and not _URC_FOREIGN_EXCEPTION_CAUGHT
   // like the GCC _Unwind_DeleteException function does.
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
-    __terminate (header->terminateHandler);
+    __terminate (header->exc.terminateHandler);
 
   __cxa_free_dependent_exception (dep);
 
   if (__sync_sub_and_fetch (&header->referenceCount, 1) == 0)
     {
-      if (header->exceptionDestructor)
-        header->exceptionDestructor (header + 1);
+      if (header->exc.exceptionDestructor)
+	header->exc.exceptionDestructor (header + 1);
 
       __cxa_free_exception (header + 1);
     }
@@ -217,7 +217,8 @@ void
 std::rethrow_exception(std::exception_ptr ep)
 {
   void *obj = ep._M_get();
-  __cxa_exception *eh = __get_exception_header_from_obj (obj);
+  __cxa_refcounted_exception *eh
+    = __get_refcounted_exception_header_from_obj (obj);
 
   __cxa_dependent_exception *dep = __cxa_allocate_dependent_exception ();
   dep->primaryException = obj;

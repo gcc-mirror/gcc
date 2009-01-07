@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling and frame unwind runtime interface routines.
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -53,9 +53,6 @@ namespace __cxxabiv1
 
 struct __cxa_exception
 {
-  // Manage this header.
-  _Atomic_word referenceCount;
-
   // Manage the exception object itself.
   std::type_info *exceptionType;
   void (*exceptionDestructor)(void *); 
@@ -90,6 +87,14 @@ struct __cxa_exception
 
   // The generic exception header.  Must be last.
   _Unwind_Exception unwindHeader;
+};
+
+struct __cxa_refcounted_exception
+{
+  // Manage this header.
+  _Atomic_word referenceCount;
+  // __cxa_exception must be last, and no padding can be after it.
+  __cxa_exception exc;
 };
 
 // A dependent C++ exception object consists of a wrapper around an unwind
@@ -225,6 +230,21 @@ static inline __cxa_exception *
 __get_exception_header_from_ue (_Unwind_Exception *exc)
 {
   return reinterpret_cast<__cxa_exception *>(exc + 1) - 1;
+}
+
+// Acquire the C++ refcounted exception header from the C++ object.
+static inline __cxa_refcounted_exception *
+__get_refcounted_exception_header_from_obj (void *ptr)
+{
+  return reinterpret_cast<__cxa_refcounted_exception *>(ptr) - 1;
+}
+
+// Acquire the C++ refcounted exception header from the generic exception
+// header.
+static inline __cxa_refcounted_exception *
+__get_refcounted_exception_header_from_ue (_Unwind_Exception *exc)
+{
+  return reinterpret_cast<__cxa_refcounted_exception *>(exc + 1) - 1;
 }
 
 static inline __cxa_dependent_exception *
