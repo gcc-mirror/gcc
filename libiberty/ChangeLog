@@ -1,3 +1,7 @@
+2009-01-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_expression): Remove mangling for zero-op casts.
+
 2009-01-06  Ben Elliston  <bje@au.ibm.com>
 
 	* cp-demangle.c (cplus_demangle_type): Return NULL if the
