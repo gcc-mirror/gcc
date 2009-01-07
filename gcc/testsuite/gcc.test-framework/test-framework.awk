@@ -53,6 +53,8 @@ BEGIN			{ skip = 1; passes = 0; fails = 0; }
 /^PASS.*dox.*\(test for excess errors\)/ { ignore(); next }
 # The sf tests pass the compile step; ignore that message.
 /^PASS.*sf.*\(test for excess errors\)/ { ignore(); next }
+# Ignore passing compile step for scan tests.
+/^PASS.*scan.*\(test for excess errors\)/ { ignore(); next }
 # Ignore lines that begin with comma.
 /^,/			{ ignore(); next }
 # For tests of dg-output, ignore successful compilation.

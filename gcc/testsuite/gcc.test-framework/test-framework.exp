@@ -42,6 +42,16 @@ proc check_effective_target_no { args } {
     return 0
 }
 
+proc check_effective_target_def_nocache { } {
+    return [check_no_compiler_messages_nocache def_nocache object {
+	#ifdef DEFINED
+	int dummy;
+	#else
+	#error DEFINED is not defined
+	#endif
+    } [current_compiler_flags]]
+}
+
 global dg-do-what-default
 set save-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default compile

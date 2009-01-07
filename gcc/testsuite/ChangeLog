@@ -1,5 +1,23 @@
 2009-01-07  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/target-supports-dg.exp (current_compiler_flags): New.
+	(check-flags): Use it; do not access dg-test local variables.
+	(dg-skip-if): Do not access dg-test local variables.
+	(dg-xfail-run-if): Ditto.
+	(dg-shouldfail): Ditto.
+	* gcc.test-framework/test-framework.exp
+	(check_effective_target_def_nocache): New.
+	* gcc.test-framework/test-framework.awk: Handle scan tests.
+	* gcc.test-framework/dg-do-run-xrif-nocache-exp-XF.c: New test.
+	* gcc.test-framework/dg-error-nocache-exp-P.c: New test.
+	* gcc.test-framework/dg-nocache-scanasm-exp-XF.c: New test.
+	* gcc.test-framework/dg-warning-nocache-exp-P.c: New test.
+	* gcc.test-framework/dg-nocache-sif-exp-P.c: New test.
+	* gcc.test-framework/dg-nocache-sif-exp-U.c: New test.
+	* gcc.test-framework/dg-nocache-xif-exp-P.c: New test.
+	* gcc.test-framework/dg-do-run-sft-nocache-exp-P.c: New test.
+	* gcc.test-framework/dg-nocache-xif-exp-XP.c: New test.
+
 	* g++.dg/torture/pr38586.C: Ignore a possible warning.
 
 	* lib/target-supports-dg.exp (check_test_flags): Delete.
