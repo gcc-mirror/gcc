@@ -6008,10 +6008,6 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
    expression would not overflow or that overflow is undefined for the type
    in the language in question.
 
-   We also canonicalize (X + 7) * 4 into X * 4 + 28 in the hope that either
-   the machine has a multiply-accumulate insn or that this is part of an
-   addressing calculation.
-
    If we return a non-null expression, it is an equivalent form of the
    original computation, but need not be in the original type.
 
@@ -7439,7 +7435,17 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else if (TREE_CODE (arg1) == INTEGER_CST)
     {
       arg10 = build_one_cst (type);
-      arg11 = arg1;
+      /* As we canonicalize A - 2 to A + -2 get rid of that sign for
+	 the purpose of this canonicalization.  */
+      if (TREE_INT_CST_HIGH (arg1) == -1
+	  && negate_expr_p (arg1)
+	  && code == PLUS_EXPR)
+	{
+	  arg11 = negate_expr (arg1);
+	  code = MINUS_EXPR;
+	}
+      else
+	arg11 = arg1;
     }
   else
     {

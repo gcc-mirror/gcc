@@ -1,3 +1,10 @@
+2009-01-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38751
+	* fold-const.c (extract_muldiv): Remove obsolete comment.
+	(fold_plusminus_mult_expr): Undo MINUS_EXPR
+	to PLUS_EXPR canonicalization for the canonicalization.
+
 2009-01-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (alpha*-dec-osf*): Remove note on 32-bit
