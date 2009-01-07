@@ -1,3 +1,9 @@
+2009-01-07  Nathan Froyd  <froydnj@codesourcery.com>
+	    Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Check for
+	non-word-aligned REG+CONST addressing.
+
 2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38706

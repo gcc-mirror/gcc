@@ -3804,7 +3804,10 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000) >= 0x10000
-      && !(SPE_VECTOR_MODE (mode)
+      && !((TARGET_POWERPC64
+	    && (mode == DImode || mode == TImode)
+	    && (INTVAL (XEXP (x, 1)) & 3) != 0)
+	   || SPE_VECTOR_MODE (mode)
 	   || ALTIVEC_VECTOR_MODE (mode)
 	   || (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
 				      || mode == DImode || mode == DDmode
