@@ -4813,8 +4813,7 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
 	      if (tsize
 		  && host_integerp (tsize, 1))
 		size = TREE_INT_CST_LOW (tsize);
-	      sft = get_first_overlapping_subvar (sv, vi->offset, size, &j);
-	      gcc_assert (sft);
+	      get_first_overlapping_subvar (sv, vi->offset, size, &j);
 	      for (; VEC_iterate (tree, sv, j, sft); ++j)
 		{
 		  if (SFT_OFFSET (sft) > vi->offset

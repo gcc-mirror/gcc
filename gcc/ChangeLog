@@ -1,3 +1,9 @@
+2009-01-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38752
+	* tree-ssa-structalias.c (set_uids_in_ptset): Do not assert we
+	find a subvariable as we might have invalid accesses.
+
 2009-01-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/36654
