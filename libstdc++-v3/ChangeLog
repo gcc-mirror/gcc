@@ -1,3 +1,12 @@
+2009-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/38092
+	* acinclude.m4 (HAVE_AS_SYMVER_DIRECTIVE): New test.
+	* src/compatibility.cc: Don't use .symver directives if
+	_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE is not defined.
+	* config.h.in: Regenerated.
+	* configure: Likewise.
+
 2009-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38466
