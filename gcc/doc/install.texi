@@ -2686,14 +2686,6 @@ the system header file @file{/usr/include/stamp.h}.  If you install a
 new version of DEC Unix, you should rebuild GCC to pick up the new version
 stamp.
 
-Note that since the Alpha is a 64-bit architecture, cross-compilers from
-32-bit machines will not generate code as efficient as that generated
-when the compiler is running on a 64-bit machine because many
-optimizations that depend on being able to represent a word on the
-target in an integral value on the host cannot be performed.  Building
-cross-compilers on the Alpha for 32-bit machines has only been tested in
-a few cases and may not work properly.
-
 @samp{make compare} may fail on old versions of DEC Unix unless you add
 @option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
 assembler input file is stored in the object file, and that makes

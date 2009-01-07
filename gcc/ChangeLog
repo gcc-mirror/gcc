@@ -1,3 +1,8 @@
+2009-01-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (alpha*-dec-osf*): Remove note on 32-bit
+	hosted cross-compilers generating less efficient code.
+
 2009-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
