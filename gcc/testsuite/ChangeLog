@@ -1,3 +1,7 @@
+2009-01-07  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports-dg.exp (check_test_flags): Delete.
+
 2009-01-07  Jan Sjodin  <jan.sjodin@amd.com>
 
 	PR tree-optimization/38492
