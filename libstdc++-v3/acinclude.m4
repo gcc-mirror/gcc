@@ -2819,6 +2819,16 @@ if test x$enable_symvers != xno ; then
 	 [Define to use symbol versioning in the shared library.])
 fi
 
+AC_CACHE_CHECK([whether the target supports .symver directive],
+	       glibcxx_cv_have_as_symver_directive, [
+  AC_TRY_COMPILE([void foo (void); __asm (".symver foo, bar@SYMVER");],
+		 [], glibcxx_cv_have_as_symver_directive=yes,
+		 glibcxx_cv_have_as_symver_directive=no)])
+if test $glibcxx_cv_have_as_symver_directive = yes; then
+  AC_DEFINE(HAVE_AS_SYMVER_DIRECTIVE, 1,
+    [Define to 1 if the target assembler supports .symver directive.])
+fi
+
 AC_SUBST(SYMVER_FILE)
 AC_SUBST(port_specific_symbol_files)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS, test $enable_symvers != no)

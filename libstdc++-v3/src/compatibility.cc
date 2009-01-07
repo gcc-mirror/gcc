@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions -*- C++ -*-
 
-// Copyright (C) 2005, 2006
+// Copyright (C) 2005, 2006, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -30,7 +30,8 @@
 
 #include <bits/c++config.h>
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC)
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
 #define istreambuf_iterator istreambuf_iteratorXX
 #define basic_fstream basic_fstreamXX
 #define basic_ifstream basic_ifstreamXX
@@ -204,7 +205,8 @@ _GLIBCXX_END_NAMESPACE
 
 // NB: These symbols renames should go into the shared library only,
 // and only those shared libraries that support versioning.
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC)
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
 
 /* gcc-3.4.4
 _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv
