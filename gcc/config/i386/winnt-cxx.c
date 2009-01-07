@@ -65,7 +65,7 @@ i386_pe_type_dllimport_p (tree decl)
       ignore the class attribute.  */
   else if (TREE_CODE (decl) == VAR_DECL
 	   && TREE_STATIC (decl) && TREE_PUBLIC (decl)
-	   && !DECL_EXTERNAL (decl))
+	   && DECL_NOT_REALLY_EXTERN (decl))
     {
       if (!DECL_VIRTUAL_P (decl))
 	  error ("definition of static data member %q+D of "

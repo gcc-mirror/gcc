@@ -1,3 +1,9 @@
+2009-01-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/36654
+	* config/i386/winnt-cxx.c (i386_pe_type_dllimport_p): Check
+	DECL_NOT_REALLY_EXTERN rather than !DECL_EXTERNAL
+
 2009-01-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (alpha*-dec-osf*): Remove note on 32-bit
