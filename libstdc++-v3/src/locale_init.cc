@@ -1,4 +1,5 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 
+// 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -242,9 +243,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   const locale&
   locale::classic()
-  {
+  { 
     _S_initialize();
-    return reinterpret_cast<const locale&>(c_locale);
+    return *(new (&c_locale) locale(_S_classic));
   }
 
   void
@@ -254,7 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // One reference for _S_classic, one for _S_global
     _S_classic = new (&c_locale_impl) _Impl(2);
     _S_global = _S_classic; 	    
-    new (&c_locale) locale(_S_classic);
   }
 
   void  
