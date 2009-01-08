@@ -1,6 +1,6 @@
 // Allocator details.
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,12 @@
 
 namespace
 {
-  __gnu_cxx::__mutex palloc_init_mutex;
+  __gnu_cxx::__mutex&
+  get_palloc_mutex()
+  {
+    static __gnu_cxx::__mutex palloc_mutex;
+    return palloc_mutex;
+  }
 } // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -52,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   __mutex&
   __pool_alloc_base::_M_get_mutex()
-  { return palloc_init_mutex; }
+  { return get_palloc_mutex(); }
 
   // Allocate memory in large chunks in order to avoid fragmenting the
   // heap too much.  Assume that __n is properly aligned.  We hold the

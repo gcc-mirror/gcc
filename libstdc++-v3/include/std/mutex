@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -709,13 +709,16 @@ namespace std
   extern __thread void (*__once_call)();
 
   template<typename _Callable>
-    void __once_call_impl()
+    inline void 
+    __once_call_impl()
     {
       (*(_Callable*)__once_callable)();
     }
 #else
   extern function<void()> __once_functor;
-  extern unique_lock<mutex> __once_functor_lock;
+
+  extern unique_lock<mutex>&
+  __get_once_functor_lock();
 #endif
 
   extern "C" void __once_proxy();
@@ -729,15 +732,16 @@ namespace std
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
-      __once_functor_lock.lock();
+      unique_lock<mutex>& __functor_lock = __get_once_functor_lock();
+      __functor_lock.lock();
       __once_functor = bind(__f, __args...);
 #endif
      
       int __e = __gthread_once(&(__once._M_once), &__once_proxy);
 
 #ifndef _GLIBCXX_HAVE_TLS      
-      if (__once_functor_lock)
-	__once_functor_lock.unlock();
+      if (__functor_lock)
+	__functor_lock.unlock();
 #endif
 
       if (__e)

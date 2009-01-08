@@ -1,3 +1,22 @@
+2009-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jonathan Larmour  <jifl@eCosCentric.com>
+
+	PR libstdc++/36801
+	* config/cpu/generic/atomicity_mutex/atomicity.h (get_atomic_mutex):
+	New.
+	(__gnu_cxx::__exchange_and_add): Use it.
+	* src/atomic.cc (get_atomic_mutex): New.
+	* src/debug.cc (get_safe_base_mutex): New.
+	* src/locale.cc (get_locale_cache_mutex): New.
+	* src/mt_allocator.cc (get_freelist): New.
+	(get_freelist_mutex): New.
+	* src/pool_allocator.cc (get_palloc_mutex): New.
+	* include/std/mutex (__once_functor_lock): To
+	(__get_once_functor_lock): ...this.
+	* src/mutex.cc (__once_mutex): Don't export, use
+	(get_once_mutex): ...this.
+	* config/abi/pre/gnu.ver: Adjust exports.
+
 2009-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/38732
@@ -53,12 +72,12 @@
 
 	PR libstdc++/38384
 	* crossconfig.m4: Define HAVE_FABSF for hpux crosses.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2009-01-05  Ben Elliston  <bje@au.ibm.com>
 
-        * configure.ac (GLIBCXX_CHECK_STANDARD_LAYOUT): Remove invocation.
-        * configure: Regenerate.
+	* configure.ac (GLIBCXX_CHECK_STANDARD_LAYOUT): Remove invocation.
+	* configure: Regenerate.
 
 2009-01-05  Ben Elliston  <bje@au.ibm.com>
 
@@ -141,12 +160,12 @@
 
 2008-12-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-        * testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
 	Don't xfail test on darwin8 or later.
 
 2008-12-16  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-        * testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
 	Don't xfail excessive errors on darwin8 or later.
 
 2008-12-15  Benjamin Kosnik  <bkoz@redhat.com>
