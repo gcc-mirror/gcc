@@ -1,5 +1,6 @@
 /* Linear Loop transforms
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>.
 
 This file is part of GCC.
@@ -334,12 +335,13 @@ linear_transform_loops (void)
       lambda_trans_matrix trans;
       struct obstack lambda_obstack;
       struct loop *loop;
-      VEC(loop_p,heap) *nest = VEC_alloc (loop_p, heap, 3);
+      VEC(loop_p,heap) *nest;
 
       depth = perfect_loop_nest_depth (loop_nest);
       if (depth == 0)
 	continue;
 
+      nest = VEC_alloc (loop_p, heap, 3);
       for (loop = loop_nest; loop; loop = loop->inner)
 	VEC_safe_push (loop_p, heap, nest, loop);
 

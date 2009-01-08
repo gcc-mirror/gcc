@@ -1,3 +1,19 @@
+2009-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/37031
+	* lambda-code.c (lambda_collect_parameters): Call pointer_set_destroy
+	on parameter_set.
+	(build_access_matrix): Reserve correct size for AM_MATRIX vector,
+	allocate it using gc instead of heap, use VEC_quick_push instead of
+	VEC_safe_push.
+	* graphite.c (build_access_matrix): Allocate AM_MATRIX vector using gc
+	instead of heap, use VEC_quick_push instead of VEC_safe_push.
+	* tree-data-ref.h (struct access_matrix): Change matrix to gc
+	allocated vector from heap allocated.
+	* lambda.h: Add DEF_VEC_ALLOC_P for gc allocated lambda_vector.
+	* tree-loop-linear.c (linear_transform_loops): Allocate nest
+	vector only after perfect_loop_nest_depth call.
+
 2009-01-08  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
 

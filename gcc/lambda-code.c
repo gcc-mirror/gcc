@@ -1,5 +1,6 @@
 /*  Loop transformation code generation
-    Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+    Free Software Foundation, Inc.
     Contributed by Daniel Berlin <dberlin@dberlin.org>
 
     This file is part of GCC.
@@ -2682,6 +2683,7 @@ lambda_collect_parameters (VEC (data_reference_p, heap) *datarefs,
     for (j = 0; j < DR_NUM_DIMENSIONS (data_reference); j++)
       lambda_collect_parameters_from_af (DR_ACCESS_FN (data_reference, j),
 					 parameter_set, parameters);
+  pointer_set_destroy (parameter_set);
 }
 
 /* Translates BASE_EXPR to vector CY.  AM is needed for inferring
@@ -2792,15 +2794,13 @@ build_access_matrix (data_reference_p data_reference,
   unsigned i, ndim = DR_NUM_DIMENSIONS (data_reference);
   unsigned nivs = VEC_length (loop_p, nest);
   unsigned lambda_nb_columns;
-  lambda_vector_vec_p matrix;
 
   AM_LOOP_NEST (am) = nest;
   AM_NB_INDUCTION_VARS (am) = nivs;
   AM_PARAMETERS (am) = parameters;
 
   lambda_nb_columns = AM_NB_COLUMNS (am);
-  matrix = VEC_alloc (lambda_vector, heap, lambda_nb_columns);
-  AM_MATRIX (am) = matrix;
+  AM_MATRIX (am) = VEC_alloc (lambda_vector, gc, ndim);
 
   for (i = 0; i < ndim; i++)
     {
@@ -2810,7 +2810,7 @@ build_access_matrix (data_reference_p data_reference,
       if (!av_for_af (access_function, access_vector, am))
 	return false;
 
-      VEC_safe_push (lambda_vector, heap, matrix, access_vector);
+      VEC_quick_push (lambda_vector, AM_MATRIX (am), access_vector);
     }
 
   DR_ACCESS_MATRIX (data_reference) = am;
