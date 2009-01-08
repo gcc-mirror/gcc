@@ -1,3 +1,10 @@
+2009-01-08  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37194
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters):
+	Don't add the cost of cost model guard in prologue to scalar 
+	outside cost in case of known number of iterations.
+
 2009-01-07  Nathan Froyd  <froydnj@codesourcery.com>
 	    Alan Modra  <amodra@bigpond.net.au>
 
