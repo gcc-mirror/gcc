@@ -1,6 +1,6 @@
 // Support for atomic operations -*- C++ -*-
 
-// Copyright (C) 2008
+// Copyright (C) 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -37,7 +37,12 @@
 namespace
 {
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-  std::mutex atomic_mutex;
+  std::mutex&
+  get_atomic_mutex()
+  {
+    static std::mutex atomic_mutex;
+    return atomic_mutex;
+  }
 #endif
 
   std::__atomic_flag_base volatile flag_table[ 1 << LOGSIZE ] =
@@ -57,7 +62,7 @@ namespace std
     atomic_flag::test_and_set(memory_order) volatile
     {
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-      lock_guard<mutex> __lock(atomic_mutex);
+      lock_guard<mutex> __lock(get_atomic_mutex());
 #endif
       bool result = _M_i;
       _M_i = true;
@@ -68,7 +73,7 @@ namespace std
     atomic_flag::clear(memory_order) volatile
     {
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-      lock_guard<mutex> __lock(atomic_mutex);
+      lock_guard<mutex> __lock(get_atomic_mutex());
 #endif
       _M_i = false;
     }
