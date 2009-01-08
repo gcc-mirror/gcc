@@ -1,3 +1,8 @@
+2009-01-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/sibcall-3.c: XFAIL for Thumb.
+	* gcc.dg/sibcall-4.c: Likewise.
+
 2009-01-08  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
 
