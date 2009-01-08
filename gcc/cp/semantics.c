@@ -547,7 +547,12 @@ finish_goto_stmt (tree destination)
     {
       /* The DESTINATION is being used as an rvalue.  */
       if (!processing_template_decl)
-	destination = decay_conversion (destination);
+	{
+	  destination = decay_conversion (destination);
+	  destination = cp_convert (ptr_type_node, destination);
+	  if (error_operand_p (destination))
+	    return NULL_TREE;
+	}
       /* We don't inline calls to functions with computed gotos.
 	 Those functions are typically up to some funny business,
 	 and may be depending on the labels being at particular
