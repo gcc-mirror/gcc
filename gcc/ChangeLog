@@ -1,3 +1,8 @@
+2009-01-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_call): Relocate non-jump insns in the delay slot of long
+	absolute calls when generating PA 2.0 code.
+
 2009-01-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38752
