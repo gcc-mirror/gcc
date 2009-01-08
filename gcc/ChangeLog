@@ -1,3 +1,8 @@
+2009-01-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* params.def (ira-max-conflict-table-size): Decrease default value
+	to 1000.
+
 2009-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/37031
