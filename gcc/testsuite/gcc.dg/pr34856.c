@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse2" { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -w" { target { powerpc*-*-linux* } } } */
 /* { dg-options "-O2 -maltivec" { target { powerpc*-*-linux* && powerpc_altivec_ok } } } */
 
 typedef unsigned __attribute__ ((__mode__ (__pointer__))) uintptr_t;
@@ -28,3 +27,6 @@ void f1 (unsigned ctr)
     }
   while (ctr);
 }
+
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output ".*GCC vector passed by reference.*" } */

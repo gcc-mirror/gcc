@@ -1,3 +1,7 @@
+2009-01-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/pr34856.c: Ignore irrelevant warning.
+
 2009-01-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/sibcall-3.c: XFAIL for Thumb.
