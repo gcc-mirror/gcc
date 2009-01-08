@@ -1,3 +1,15 @@
+2009-01-08  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/38559
+	* graphite.c (debug_value, copy_constraint,
+	swap_constraint_variables, scale_constraint_variable, ): New.
+	(get_lower_bound, get_upper_bound): Removed.
+	(graphite_trans_bb_strip_mine): Clean up this code that works
+	only for constant number of iterations.  Fully copy upper and
+	lower bound constraints, not only the constant part of them.
+	* graphite.h (debug_value): Declared.
+
 2009-01-08  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37194

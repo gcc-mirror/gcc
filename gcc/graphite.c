@@ -61,6 +61,14 @@ along with GCC; see the file COPYING3.  If not see
 
 static VEC (scop_p, heap) *current_scops;
 
+/* Print GMP value V on stderr.  */
+
+void
+debug_value (Value v)
+{
+  value_print (stderr, "%4s\n", v);
+}
+
 /* Converts a GMP constant V to a tree and returns it.  */
 
 static tree
@@ -5459,24 +5467,43 @@ get_upper_bound_row (CloogMatrix *domain, int column)
   return get_first_matching_sign_row_index (domain, column, false);
 }
 
-/* Get the lower bound of LOOP.  */
+/* Copies the OLD_ROW constraint from OLD_DOMAIN to the NEW_DOMAIN at
+   row NEW_ROW.  */
 
 static void
-get_lower_bound (CloogMatrix *domain, int loop, Value lower_bound_result)
+copy_constraint (CloogMatrix *old_domain, CloogMatrix *new_domain,
+		 int old_row, int new_row)
 {
-  int lower_bound_row = get_lower_bound_row (domain, loop);
-  value_assign (lower_bound_result,
-		domain->p[lower_bound_row][const_column_index(domain)]);
+  int i;
+
+  gcc_assert (old_domain->NbColumns == new_domain->NbColumns
+	      && old_row < old_domain->NbRows
+	      && new_row < new_domain->NbRows);
+
+  for (i = 0; i < old_domain->NbColumns; i++)
+    value_assign (new_domain->p[new_row][i], old_domain->p[old_row][i]);
 }
 
-/* Get the upper bound of LOOP.  */
+/* Swap coefficients of variables X and Y on row R.   */
 
 static void
-get_upper_bound (CloogMatrix *domain, int loop, Value upper_bound_result)
+swap_constraint_variables (CloogMatrix *domain,
+			   int r, int x, int y)
 {
-  int upper_bound_row = get_upper_bound_row (domain, loop);
-  value_assign (upper_bound_result,
-		domain->p[upper_bound_row][const_column_index(domain)]);
+  value_swap (domain->p[r][x], domain->p[r][y]);
+}
+
+/* Scale by X the coefficient C of constraint at row R in DOMAIN.  */
+
+static void
+scale_constraint_variable (CloogMatrix *domain,
+			   int r, int c, int x)
+{
+  Value strip_size_value;
+  value_init (strip_size_value);
+  value_set_si (strip_size_value, x);
+  value_multiply (domain->p[r][c], domain->p[r][c], strip_size_value);
+  value_clear (strip_size_value);
 }
 
 /* Strip mines the loop of BB at the position LOOP_DEPTH with STRIDE.
@@ -5494,25 +5521,12 @@ graphite_trans_bb_strip_mine (graphite_bb_p gb, int loop_depth, int stride)
   int col_loop_old = loop_depth + 2; 
   int col_loop_strip = col_loop_old - 1;
 
-  Value old_lower_bound;
-  Value old_upper_bound;
-
   gcc_assert (loop_depth <= gbb_nb_loops (gb) - 1);
 
   VEC_safe_insert (loop_p, heap, GBB_LOOPS (gb), loop_depth, NULL);
 
   GBB_DOMAIN (gb) = new_domain;
 
-  /*
-   nrows = 4, ncols = 4
-  eq    i    j    c
-   1    1    0    0 
-   1   -1    0   99 
-   1    0    1    0 
-   1    0   -1   99 
-  */
- 
-  /* Move domain.  */
   for (row = 0; row < domain->NbRows; row++)
     for (col = 0; col < domain->NbColumns; col++)
       if (col <= loop_depth)
@@ -5520,125 +5534,36 @@ graphite_trans_bb_strip_mine (graphite_bb_p gb, int loop_depth, int stride)
       else
 	value_assign (new_domain->p[row][col + 1], domain->p[row][col]);
 
-
-  /*
-    nrows = 6, ncols = 5
-           outer inner
-   eq   i   jj    j    c
-   1    1    0    0    0 
-   1   -1    0    0   99 
-   1    0    0    1    0 
-   1    0    0   -1   99 
-   0    0    0    0    0 
-   0    0    0    0    0 
-   0    0    0    0    0 
-   */
-
   row = domain->NbRows;
 
-  /* Add outer loop.  */
-  value_init (old_lower_bound);
-  value_init (old_upper_bound);
-  get_lower_bound (new_domain, col_loop_old, old_lower_bound);
-  get_upper_bound (new_domain, col_loop_old, old_upper_bound);
-
-  /* Set Lower Bound */
-  value_set_si (new_domain->p[row][0], 1);
-  value_set_si (new_domain->p[row][col_loop_strip], 1);
-  value_assign (new_domain->p[row][const_column_index (new_domain)],
-		old_lower_bound);
-  value_clear (old_lower_bound);
+  /* Lower bound of the outer stripped loop.  */
+  copy_constraint (new_domain, new_domain,
+		   get_lower_bound_row (new_domain, col_loop_old), row);
+  swap_constraint_variables (new_domain, row, col_loop_old, col_loop_strip);
   row++;
 
+  /* Upper bound of the outer stripped loop.  */
+  copy_constraint (new_domain, new_domain,
+		   get_upper_bound_row (new_domain, col_loop_old), row);
+  swap_constraint_variables (new_domain, row, col_loop_old, col_loop_strip);
+  scale_constraint_variable (new_domain, row, col_loop_strip, stride);
+  row++;
 
-  /*
-    6 5
-   eq   i   jj    j    c
-   1    1    0    0    0 
-   1   -1    0    0   99 
-   1    0    0    1    0  - 
-   1    0    0   -1   99   | copy old lower bound
-   1    0    1    0    0 <-
-   0    0    0    0    0
-   0    0    0    0    0
-   */
+  /* Lower bound of a tile starts at "stride * outer_iv".  */
+  row = get_lower_bound_row (new_domain, col_loop_old);
+  value_set_si (new_domain->p[row][0], 1);
+  value_set_si (new_domain->p[row][const_column_index (new_domain)], 0);
+  value_set_si (new_domain->p[row][col_loop_old], 1);
+  value_set_si (new_domain->p[row][col_loop_strip], -1 * stride);
 
-  {
-    Value new_upper_bound;
-    Value strip_size_value;
-
-    value_init (new_upper_bound);
-    value_init (strip_size_value);
-    value_set_si (strip_size_value, (int) stride);
-
-    value_pdivision (new_upper_bound, old_upper_bound, strip_size_value);
-    value_add_int (new_upper_bound, new_upper_bound, 1);
-
-    /* Set Upper Bound */
-    value_set_si (new_domain->p[row][0], 1);
-    value_set_si (new_domain->p[row][col_loop_strip], -1);
-    value_assign (new_domain->p[row][const_column_index (new_domain)],
-		  new_upper_bound);
-
-    value_clear (strip_size_value);
-    value_clear (old_upper_bound);
-    value_clear (new_upper_bound);
-    row++;
-  }
-  /*
-    6 5
-   eq   i   jj    j    c
-   1    1    0    0    0 
-   1   -1    0    0   99 
-   1    0    0    1    0  
-   1    0    0   -1   99  
-   1    0    1    0    0 
-   1    0   -1    0   25  (divide old upper bound with stride) 
-   0    0    0    0    0
-  */
-
-  {
-    row = get_lower_bound_row (new_domain, col_loop_old);
-    /* Add local variable to keep linear representation.  */
-    value_set_si (new_domain->p[row][0], 1);
-    value_set_si (new_domain->p[row][const_column_index (new_domain)],0);
-    value_set_si (new_domain->p[row][col_loop_old], 1);
-    value_set_si (new_domain->p[row][col_loop_strip], -1*((int)stride));
-  }
-
-  /*
-    6 5
-   eq   i   jj    j    c
-   1    1    0    0    0 
-   1   -1    0    0   99 
-   1    0    -1   1    0  
-   1    0    0   -1   99  
-   1    0    1    0    0 
-   1    0   -1    0   25  (divide old upper bound with stride) 
-   0    0    0    0    0
-  */
-
-  {
-    row = new_domain->NbRows-1;
-    
-    value_set_si (new_domain->p[row][0], 1);
-    value_set_si (new_domain->p[row][col_loop_old], -1);
-    value_set_si (new_domain->p[row][col_loop_strip], stride);
-    value_set_si (new_domain->p[row][const_column_index (new_domain)],
-		  stride-1);
-  }
-
-  /*
-    6 5
-   eq   i   jj    j    c
-   1    1    0    0    0     i >= 0
-   1   -1    0    0   99    99 >= i
-   1    0    -4   1    0     j >= 4*jj
-   1    0    0   -1   99    99 >= j
-   1    0    1    0    0    jj >= 0
-   1    0   -1    0   25    25 >= jj
-   0    0    4    -1   3  jj+3 >= j
-  */
+  /* Upper bound of a tile stops at "stride * outer_iv + stride - 1",
+     or at the old upper bound that is not modified.  */
+  row = new_domain->NbRows - 1;
+  value_set_si (new_domain->p[row][0], 1);
+  value_set_si (new_domain->p[row][col_loop_old], -1);
+  value_set_si (new_domain->p[row][col_loop_strip], stride);
+  value_set_si (new_domain->p[row][const_column_index (new_domain)],
+		stride - 1);
 
   cloog_matrix_free (domain);
 

@@ -1,3 +1,9 @@
+2009-01-08  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/38559
+	* testsuite/gcc.dg/graphite/pr38559.c: New.
+
 2009-01-08  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37194
