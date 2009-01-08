@@ -1,5 +1,6 @@
 /* Data references and dependences detectors. 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -131,7 +132,7 @@ struct access_matrix
   VEC (loop_p, heap) *loop_nest;
   int nb_induction_vars;
   VEC (tree, heap) *parameters;
-  VEC (lambda_vector, heap) *matrix;
+  VEC (lambda_vector, gc) *matrix;
 };
 
 #define AM_LOOP_NEST(M) (M)->loop_nest

@@ -1,5 +1,6 @@
 /* Lambda matrix and vector interface.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
 This file is part of GCC.
@@ -30,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef int *lambda_vector;
 DEF_VEC_P(lambda_vector);
 DEF_VEC_ALLOC_P(lambda_vector,heap);
+DEF_VEC_ALLOC_P(lambda_vector,gc);
 
 typedef VEC(lambda_vector, heap) *lambda_vector_vec_p;
 DEF_VEC_P (lambda_vector_vec_p);

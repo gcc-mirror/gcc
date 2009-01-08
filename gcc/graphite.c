@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -3630,7 +3630,7 @@ build_access_matrix (data_reference_p ref, graphite_bb_p gb)
   int i, ndim = DR_NUM_DIMENSIONS (ref);
   struct access_matrix *am = GGC_NEW (struct access_matrix);
 
-  AM_MATRIX (am) = VEC_alloc (lambda_vector, heap, ndim);
+  AM_MATRIX (am) = VEC_alloc (lambda_vector, gc, ndim);
   DR_SCOP (ref) = GBB_SCOP (gb);
 
   for (i = 0; i < ndim; i++)
@@ -3642,7 +3642,7 @@ build_access_matrix (data_reference_p ref, graphite_bb_p gb)
       if (!build_access_matrix_with_af (af, v, scop, ref_nb_loops (ref)))
 	return false;
 
-      VEC_safe_push (lambda_vector, heap, AM_MATRIX (am), v);
+      VEC_quick_push (lambda_vector, AM_MATRIX (am), v);
     }
 
   DR_ACCESS_MATRIX (ref) = am;
