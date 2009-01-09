@@ -1,3 +1,9 @@
+2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_movmem, ix86_expand_setmem): Add
+	zero guard even if align_bytes != 0 and count is smaller than
+	size_needed.
+
 2008-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/38495
