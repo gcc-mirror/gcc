@@ -1,3 +1,10 @@
+2009-01-09  Diego Novillo  <dnovillo@google.com>
+
+	* gimple.h (struct gimple_statement_base)<uid>: Document
+	the restrictions on its use.
+	(gimple_uid): Tidy.
+	(gimple_set_uid): Tidy.
+
 2009-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_movmem, ix86_expand_setmem): Add
