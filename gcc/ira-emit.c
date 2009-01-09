@@ -129,6 +129,26 @@ eq_move_lists_p (move_t list1, move_t list2)
   return list1 == list2;
 }
 
+/* Print move list LIST into file F.  */
+static void
+print_move_list (FILE *f, move_t list)
+{
+  for (; list != NULL; list = list->next)
+    fprintf (f, " a%dr%d->a%dr%d",
+	     ALLOCNO_NUM (list->from), ALLOCNO_REGNO (list->from),
+	     ALLOCNO_NUM (list->to), ALLOCNO_REGNO (list->to));
+  fprintf (f, "\n");
+}
+
+extern void ira_debug_move_list (move_t list);
+
+/* Print move list LIST into stderr.  */
+void
+ira_debug_move_list (move_t list)
+{
+  print_move_list (stderr, list);
+}
+
 /* This recursive function changes pseudo-registers in *LOC if it is
    necessary.  The function returns TRUE if a change was done.  */
 static bool
@@ -945,7 +965,14 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		     REGNO (ALLOCNO_REG (from)));
 	}
       else
-	r->finish = ira_max_point;
+	{
+	  r->finish = ira_max_point;
+	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+	    fprintf (ira_dump_file,
+		     "    Adding range [%d..%d] to allocno a%dr%d\n",
+		     r->start, ira_max_point, ALLOCNO_NUM (from),
+		     REGNO (ALLOCNO_REG (from)));
+	}
       ira_max_point++;
       ALLOCNO_LIVE_RANGES (to)
 	= ira_create_allocno_live_range (to, ira_max_point, -1,
@@ -968,18 +995,18 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   EXECUTE_IF_SET_IN_BITMAP (live_through, FIRST_PSEUDO_REGISTER, regno, bi)
     {
       a = node->regno_allocno_map[regno];
-      if (ALLOCNO_MEM_OPTIMIZED_DEST (a) == NULL)
-	{
-	  ALLOCNO_LIVE_RANGES (a)
-	    = ira_create_allocno_live_range (a, start, ira_max_point - 1,
-					     ALLOCNO_LIVE_RANGES (a));
-	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
-	    fprintf
-	      (ira_dump_file,
-	       "    Adding range [%d..%d] to live through allocno a%dr%d\n",
-	       start, ira_max_point - 1, ALLOCNO_NUM (a),
-	       REGNO (ALLOCNO_REG (a)));
-	}
+      if ((to = ALLOCNO_MEM_OPTIMIZED_DEST (a)) != NULL)
+	a = to;
+      ALLOCNO_LIVE_RANGES (a)
+	= ira_create_allocno_live_range (a, start, ira_max_point - 1,
+					 ALLOCNO_LIVE_RANGES (a));
+      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+	fprintf
+	  (ira_dump_file,
+	   "    Adding range [%d..%d] to live through %s allocno a%dr%d\n",
+	   start, ira_max_point - 1,
+	   to != NULL ? "upper level" : "",
+	   ALLOCNO_NUM (a), REGNO (ALLOCNO_REG (a)));
     }
 }
 

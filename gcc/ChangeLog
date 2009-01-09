@@ -1,3 +1,11 @@
+2008-01-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/38495
+	* ira-emit.c (print_move_list, ira_debug_move_list): New
+	functions.
+	(add_range_and_copies_from_move_list): Print all added ranges.
+	Add ranges to memory optimized destination.
+
 2009-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38686
