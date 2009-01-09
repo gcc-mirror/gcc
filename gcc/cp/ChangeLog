@@ -1,3 +1,8 @@
+2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35335
+	* error.c (dump_expr): Handle EXPR_STMT like BIND_EXPR.
+
 2009-01-09  John F. Carr  <jfc@mit.edu>
 
 	PR c++/37877
