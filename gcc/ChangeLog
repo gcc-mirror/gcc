@@ -1,3 +1,9 @@
+2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38771
+	* fold-const.c (fold_unary): For COMPOUND_EXPR and COND_EXPR,
+	fold_convert arg0 operands to TREE_TYPE (op0) first.
+
 2009-01-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* params.def (ira-max-conflict-table-size): Decrease default value
