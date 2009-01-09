@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -2104,6 +2104,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       break;
 
     case BIND_EXPR:
+    case GOTO_EXPR:
       /* We don't yet have a way of dumping statements in a
          human-readable format.  */
       pp_string (pp, "({...})");

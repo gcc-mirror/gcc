@@ -1,3 +1,9 @@
+2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35742
+	* c-pretty-print.c (pp_c_expression): Handle GOTO_EXPR like
+	BIND_EXPR.
+
 2009-01-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (last_address): Change to unsigned.
