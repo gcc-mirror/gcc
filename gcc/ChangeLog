@@ -1,3 +1,9 @@
+2009-01-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regrename.c (regrename_optimize): Fix dumping.
+	(find_oldest_value_reg): Preserve REG_POINTER.
+	(copy_hardreg_forward_1): Likewise.
+
 2009-01-09  Diego Novillo  <dnovillo@google.com>
 
 	* gimple.h (struct gimple_statement_base)<uid>: Document
