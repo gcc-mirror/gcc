@@ -17720,7 +17720,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	  count -= align_bytes;
 	}
       if (need_zero_guard
-	  && (!count
+	  && (count < (unsigned HOST_WIDE_INT) size_needed
 	      || (align_bytes == 0
 		  && count < ((unsigned HOST_WIDE_INT) size_needed
 			      + desired_align - align))))
@@ -18112,7 +18112,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	  count -= align_bytes;
 	}
       if (need_zero_guard
-	  && (!count
+	  && (count < (unsigned HOST_WIDE_INT) size_needed
 	      || (align_bytes == 0
 		  && count < ((unsigned HOST_WIDE_INT) size_needed
 			      + desired_align - align))))
