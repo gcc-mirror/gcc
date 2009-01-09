@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -675,10 +675,10 @@ do_jump_by_parts_zero_rtx (enum machine_mode mode, rtx op0,
      be slower, but that's highly unlikely.  */
 
   part = gen_reg_rtx (word_mode);
-  emit_move_insn (part, operand_subword_force (op0, 0, GET_MODE (op0)));
+  emit_move_insn (part, operand_subword_force (op0, 0, mode));
   for (i = 1; i < nwords && part != 0; i++)
     part = expand_binop (word_mode, ior_optab, part,
-                         operand_subword_force (op0, i, GET_MODE (op0)),
+                         operand_subword_force (op0, i, mode),
                          part, 1, OPTAB_WIDEN);
 
   if (part != 0)
@@ -694,7 +694,7 @@ do_jump_by_parts_zero_rtx (enum machine_mode mode, rtx op0,
     drop_through_label = if_false_label = gen_label_rtx ();
 
   for (i = 0; i < nwords; i++)
-    do_compare_rtx_and_jump (operand_subword_force (op0, i, GET_MODE (op0)),
+    do_compare_rtx_and_jump (operand_subword_force (op0, i, mode),
                              const0_rtx, EQ, 1, word_mode, NULL_RTX,
                              if_false_label, NULL_RTX);
 
