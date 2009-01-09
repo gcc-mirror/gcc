@@ -1,3 +1,10 @@
+2009-01-09  John F. Carr  <jfc@mit.edu>
+
+	PR c++/37877
+	* parser.c (cp_parser_class_specifier): Clear
+	parser->in_unbraced_linkage_specification_p while parsing class
+	specifiers.
+
 2009-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38725
