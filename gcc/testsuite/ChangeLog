@@ -1,3 +1,39 @@
+2009-01-09  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* lib/target-supports.exp: Add method to determine if the effective
+	target is really a ppc405 after applying all compile options.
+	* gcc.target/powerpc/405-mulhhwu-2.c: Add dg-skip-if not ppc405.
+	* gcc.target/powerpc/405-nmachhw-1.c: Likewise.
+	* gcc.target/powerpc/405-nmaclhw-1.c: Likewise.
+	* gcc.target/powerpc/405-machhwu-1.c: Likewise.
+	* gcc.target/powerpc/405-mullhwu-1.c: Likewise.
+	* gcc.target/powerpc/405-nmacchw-1.c: Likewise.
+	* gcc.target/powerpc/405-mulchwu-1.c: Likewise.
+	* gcc.target/powerpc/405-nmachhw-2.c: Likewise.
+	* gcc.target/powerpc/405-nmaclhw-2.c: Likewise.
+	* gcc.target/powerpc/405-machhwu-2.c: Likewise.
+	* gcc.target/powerpc/405-mulhhw-1.c: Likewise.
+	* gcc.target/powerpc/405-machhw-1.c: Likewise.
+	* gcc.target/powerpc/405-mullhw-1.c: Likewise.
+	* gcc.target/powerpc/405-maclhw-1.c: Likewise.
+	* gcc.target/powerpc/405-dlmzb-strlen-1.c: Likewise.
+	* gcc.target/powerpc/405-mullhwu-2.c: Likewise.
+	* gcc.target/powerpc/405-nmacchw-2.c: Likewise.
+	* gcc.target/powerpc/405-mulchwu-2.c: Likewise.
+	* gcc.target/powerpc/405-mulchw-1.c: Likewise.
+	* gcc.target/powerpc/405-maclhwu-1.c: Likewise.
+	* gcc.target/powerpc/405-macchw-1.c: Likewise.
+	* gcc.target/powerpc/405-mulhhw-2.c: Likewise.
+	* gcc.target/powerpc/405-machhw-2.c: Likewise.
+	* gcc.target/powerpc/405-mullhw-2.c: Likewise.
+	* gcc.target/powerpc/405-maclhw-2.c: Likewise.
+	* gcc.target/powerpc/405-macchwu-1.c: Likewise.
+	* gcc.target/powerpc/405-mulhhwu-1.c: Likewise.
+	* gcc.target/powerpc/405-mulchw-2.c: Likewise.
+	* gcc.target/powerpc/405-maclhwu-2.c: Likewise.
+	* gcc.target/powerpc/405-macchw-2.c: Likewise.
+	* gcc.target/powerpc/405-macchwu-2.c: Likewise.
+
 2009-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35335
