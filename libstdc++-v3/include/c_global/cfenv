@@ -1,6 +1,6 @@
 // <cfenv> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#pragma GCC system_header
-
 #ifndef _GLIBCXX_CFENV
 #define _GLIBCXX_CFENV 1
+
+#pragma GCC system_header
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
@@ -45,6 +45,9 @@
 #endif
 
 #include <bits/c++config.h>
+#if _GLIBCXX_HAVE_FENV_H
+# include <fenv.h>
+#endif
 
 #if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #  include <tr1_impl/cfenv>
@@ -60,4 +63,4 @@
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
 
-#endif
+#endif // _GLIBCXX_CFENV

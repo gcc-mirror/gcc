@@ -1,6 +1,6 @@
 // TR1 cstdint -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,11 +35,6 @@
 #pragma GCC system_header
 
 #if _GLIBCXX_USE_C99_STDINT_TR1
-
-// For 8.22.1/1 (see C99, Notes 219, 220, 222) 
-#define __STDC_LIMIT_MACROS
-#define __STDC_CONSTANT_MACROS
-#include_next <stdint.h>
 
 namespace std
 {

@@ -48,7 +48,7 @@
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
-#include_next <math.h>
+#include <math.h>
 
 #ifndef _GLIBCXX_CMATH
 #define _GLIBCXX_CMATH 1

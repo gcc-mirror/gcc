@@ -39,7 +39,7 @@
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HAVE_STDBOOL_H
-#include_next <stdbool.h>
+#include <stdbool.h>
 #endif
 
 #endif // _GLIBCXX_TR1_CSTDBOOL

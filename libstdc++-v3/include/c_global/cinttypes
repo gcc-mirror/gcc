@@ -1,6 +1,6 @@
 // <cinttypes> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#pragma GCC system_header
-
 #ifndef _GLIBCXX_CINTTYPES
 #define _GLIBCXX_CINTTYPES 1
+
+#pragma GCC system_header
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
@@ -45,6 +45,19 @@
 #endif
 
 #include <cstdint>
+
+// For 8.11.1/1 (see C99, Note 184)
+#if _GLIBCXX_HAVE_INTTYPES_H
+# ifndef __STDC_FORMAT_MACROS
+#  define _UNDEF__STDC_FORMAT_MACROS
+#  define __STDC_FORMAT_MACROS
+# endif
+# include <inttypes.h>
+# ifdef _UNDEF__STDC_FORMAT_MACROS
+#  undef __STDC_FORMAT_MACROS
+#  undef _UNDEF__STDC_FORMAT_MACROS
+# endif
+#endif
 
 #if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #  include <tr1_impl/cinttypes>
@@ -60,4 +73,4 @@
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
 
-#endif
+#endif // _GLIBCXX_CINTTYPES
