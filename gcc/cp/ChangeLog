@@ -1,3 +1,7 @@
+2009-01-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* typeck.c (cp_build_unary_op): Check for ERROR_MARK.
+
 2009-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35335
