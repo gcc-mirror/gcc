@@ -2690,7 +2690,9 @@ override_options (bool main_args_p)
 	stringop_alg = libcall;
       else if (!strcmp (ix86_stringop_string, "rep_4byte"))
 	stringop_alg = rep_prefix_4_byte;
-      else if (!strcmp (ix86_stringop_string, "rep_8byte"))
+      else if (!strcmp (ix86_stringop_string, "rep_8byte")
+	       && TARGET_64BIT)
+	/* rep; movq isn't available in 32-bit code.  */
 	stringop_alg = rep_prefix_8_byte;
       else if (!strcmp (ix86_stringop_string, "byte_loop"))
 	stringop_alg = loop_1_byte;
@@ -17642,10 +17644,17 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
 
-      if (CONST_INT_P (count_exp))
+      if (count)
 	{
-	  if (UINTVAL (count_exp) < (unsigned HOST_WIDE_INT)epilogue_size_needed)
-	    goto epilogue;
+	  if (count < (unsigned HOST_WIDE_INT)epilogue_size_needed)
+	    {
+	      /* If main algorithm works on QImode, no epilogue is needed.
+		 For small sizes just don't align anything.  */
+	      if (size_needed == 1)
+		desired_align = align;
+	      else
+		goto epilogue;
+	    }
 	}
       else
 	{
@@ -17710,10 +17719,17 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	  count_exp = plus_constant (count_exp, -align_bytes);
 	  count -= align_bytes;
 	}
-      if (need_zero_guard && !count)
+      if (need_zero_guard
+	  && (!count
+	      || (align_bytes == 0
+		  && count < ((unsigned HOST_WIDE_INT) size_needed
+			      + desired_align - align))))
 	{
 	  /* It is possible that we copied enough so the main loop will not
 	     execute.  */
+	  gcc_assert (size_needed > 1);
+	  if (label == NULL_RTX)
+	    label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (size_needed),
 				   LTU, 0, counter_mode (count_exp), 1, label);
@@ -17729,7 +17745,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       emit_label (label);
       LABEL_NUSES (label) = 1;
       label = NULL;
+      epilogue_size_needed = 1;
     }
+  else if (label == NULL_RTX)
+    epilogue_size_needed = size_needed;
 
   /* Step 3: Main loop.  */
 
@@ -18027,16 +18046,29 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	 loop variant.  */
       if (epilogue_size_needed > 2 && !promoted_val)
         force_loopy_epilogue = true;
-      label = gen_label_rtx ();
-      emit_cmp_and_jump_insns (count_exp,
-			       GEN_INT (epilogue_size_needed),
-			       LTU, 0, counter_mode (count_exp), 1, label);
-      if (GET_CODE (count_exp) == CONST_INT)
-	;
-      else if (expected_size == -1 || expected_size <= epilogue_size_needed)
-	predict_jump (REG_BR_PROB_BASE * 60 / 100);
+      if (count)
+	{
+	  if (count < (unsigned HOST_WIDE_INT)epilogue_size_needed)
+	    {
+	      /* If main algorithm works on QImode, no epilogue is needed.
+		 For small sizes just don't align anything.  */
+	      if (size_needed == 1)
+		desired_align = align;
+	      else
+		goto epilogue;
+	    }
+	}
       else
-	predict_jump (REG_BR_PROB_BASE * 20 / 100);
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (count_exp,
+				   GEN_INT (epilogue_size_needed),
+				   LTU, 0, counter_mode (count_exp), 1, label);
+	  if (expected_size == -1 || expected_size <= epilogue_size_needed)
+	    predict_jump (REG_BR_PROB_BASE * 60 / 100);
+	  else
+	    predict_jump (REG_BR_PROB_BASE * 20 / 100);
+	}
     }
   if (dynamic_check != -1)
     {
@@ -18079,10 +18111,17 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	  count_exp = plus_constant (count_exp, -align_bytes);
 	  count -= align_bytes;
 	}
-      if (need_zero_guard && !count)
+      if (need_zero_guard
+	  && (!count
+	      || (align_bytes == 0
+		  && count < ((unsigned HOST_WIDE_INT) size_needed
+			      + desired_align - align))))
 	{
 	  /* It is possible that we copied enough so the main loop will not
 	     execute.  */
+	  gcc_assert (size_needed > 1);
+	  if (label == NULL_RTX)
+	    label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (size_needed),
 				   LTU, 0, counter_mode (count_exp), 1, label);
@@ -18098,7 +18137,11 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       emit_label (label);
       LABEL_NUSES (label) = 1;
       label = NULL;
+      promoted_val = val_exp;
+      epilogue_size_needed = 1;
     }
+  else if (label == NULL_RTX)
+    epilogue_size_needed = size_needed;
 
   /* Step 3: Main loop.  */
 
@@ -18148,27 +18191,27 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	 Epilogue code will actually copy COUNT_EXP & EPILOGUE_SIZE_NEEDED
 	 bytes. Compensate if needed.  */
 
-      if (size_needed < desired_align - align)
+      if (size_needed < epilogue_size_needed)
 	{
 	  tmp =
 	    expand_simple_binop (counter_mode (count_exp), AND, count_exp,
 				 GEN_INT (size_needed - 1), count_exp, 1,
 				 OPTAB_DIRECT);
-	  size_needed = desired_align - align + 1;
 	  if (tmp != count_exp)
 	    emit_move_insn (count_exp, tmp);
 	}
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
+ epilogue:
   if (count_exp != const0_rtx && epilogue_size_needed > 1)
     {
       if (force_loopy_epilogue)
 	expand_setmem_epilogue_via_loop (dst, destreg, val_exp, count_exp,
-					 size_needed);
+					 epilogue_size_needed);
       else
 	expand_setmem_epilogue (dst, destreg, promoted_val, count_exp,
-				size_needed);
+				epilogue_size_needed);
     }
   if (jump_around_label)
     emit_label (jump_around_label);

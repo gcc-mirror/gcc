@@ -1,5 +1,23 @@
 2009-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/38686
+	PR target/38708
+	* config/i386/i386.c (override_options): Reject
+	-mstringop-strategy=rep_8byte with -m32.
+	(ix86_expand_movmem): For size_needed == 1 set epilogue_size_needed
+	to 1.  Do count comparison against epilogue_size_needed at compile
+	time even when count_exp was constant forced into register.  For
+	size_needed don't jump to epilogue, instead just avoid aligning
+	and invoke the body algorithm.  If need_zero_guard, add zero guard
+	even if count is non-zero, but smaller than size_needed + number of
+	bytes that could be stored for alignment.
+	(ix86_expand_setmem): For size_needed == 1 set epilogue_size_needed
+	to 1.  If need_zero_guard, add zero guard even if count is non-zero,
+	but smaller than size_needed + number of bytes that could be stored
+	for alignment.  Compare size_needed with epilogue_size_needed instead
+	of desired_align - align, don't adjust size_needed, pass
+	epilogue_size_needed to the epilogue expanders.
+
 	PR c/35742
 	* c-pretty-print.c (pp_c_expression): Handle GOTO_EXPR like
 	BIND_EXPR.
