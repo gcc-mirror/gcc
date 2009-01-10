@@ -1445,6 +1445,12 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   else
     type = exp;
 
+  if (TREE_CODE (type) == REFERENCE_TYPE && !parms)
+    {
+      error ("invalid value-initialization of reference types");
+      return error_mark_node;
+    }
+
   if (processing_template_decl)
     {
       tree t = build_min (CAST_EXPR, type, parms);
