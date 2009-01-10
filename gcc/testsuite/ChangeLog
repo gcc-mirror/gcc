@@ -1,5 +1,9 @@
 2009-01-10  Andrew Pinski  <pinskia@gmail.com>
 
+	PR c++/38648
+	* g++.dg/expr/string-1.C: New test.
+	* g++.dg/expr/string-2.C: New test.
+
 	PR c++/36695
 	* g++.dg/ext/complex4.C: New test.
 	* g++.dg/ext/complex5.C: New test.
