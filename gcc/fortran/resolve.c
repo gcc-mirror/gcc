@@ -4200,7 +4200,12 @@ check_host_association (gfc_expr *e)
   int n;
   bool retval = e->expr_type == EXPR_FUNCTION;
 
-  if (e->symtree == NULL || e->symtree->n.sym == NULL)
+  /*  If the expression is the result of substitution in
+      interface.c(gfc_extend_expr) because there is no way in
+      which the host association can be wrong.  */
+  if (e->symtree == NULL
+	|| e->symtree->n.sym == NULL
+	|| e->user_operator)
     return retval;
 
   old_sym = e->symtree->n.sym;
@@ -4236,6 +4241,11 @@ check_host_association (gfc_expr *e)
 	      gfc_free (e->shape);
 	    }
 
+/* TODO - Replace this gfc_match_rvalue with a straight replacement of
+   actual arglists for function to function substitutions and with a
+   conversion of the reference list to an actual arglist in the case of
+   a variable to function replacement.  This should be quite easy since
+   only integers and vectors can be involved.  */	    
 	  gfc_match_rvalue (&expr);
 	  gfc_clear_error ();
 	  gfc_buffer_error (0);

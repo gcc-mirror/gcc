@@ -1,3 +1,11 @@
+2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38665
+	* gfortran.h : Add bit to gfc_expr 'user_operator'
+	* interface.c (gfc_extend_expr): Set the above if the operator
+	is substituted by a function. 
+	* resolve.c (check_host_association): Return if above is set.
+
 2009-01-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/38675

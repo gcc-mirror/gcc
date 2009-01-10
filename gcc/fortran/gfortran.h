@@ -1435,6 +1435,10 @@ typedef struct gfc_expr
   /* Sometimes, when an error has been emitted, it is necessary to prevent
       it from recurring.  */
   unsigned int error : 1;
+  
+  /* Mark and expression where a user operator has been substituted by
+     a function call in interface.c(gfc_extend_expr).  */
+  unsigned int user_operator : 1;
 
   /* Used to quickly find a given constructor by its offset.  */
   splay_tree con_by_offset;

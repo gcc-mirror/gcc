@@ -1,3 +1,8 @@
+2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38665
+	* gfortran.dg/host_assoc_function_5.f90: New test.
+
 2009-01-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38752
