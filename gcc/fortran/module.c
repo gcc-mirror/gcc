@@ -3996,6 +3996,7 @@ write_common_0 (gfc_symtree *st)
 {
   gfc_common_head *p;
   const char * name;
+  const char * lname;
   int flags;
   const char *label;
   struct written_common *w;
@@ -4008,6 +4009,9 @@ write_common_0 (gfc_symtree *st)
 
   /* We will write out the binding label, or the name if no label given.  */
   name = st->n.common->name;
+
+  /* Use the symtree(local)name to check if the common has been written.  */ 
+  lname = st->name;
   p = st->n.common;
   label = p->is_bind_c ? p->binding_label : p->name;
 
@@ -4015,7 +4019,7 @@ write_common_0 (gfc_symtree *st)
   w = written_commons;
   while (w)
     {
-      int c = strcmp (name, w->name);
+      int c = strcmp (lname, w->name);
       c = (c != 0 ? c : strcmp (label, w->label));
       if (c == 0)
 	write_me = false;
@@ -4043,7 +4047,7 @@ write_common_0 (gfc_symtree *st)
 
       /* Record that we have written this common.  */
       w = gfc_getmem (sizeof (struct written_common));
-      w->name = p->name;
+      w->name = lname;
       w->label = label;
       gfc_insert_bbt (&written_commons, w, compare_written_commons);
     }

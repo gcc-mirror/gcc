@@ -1,5 +1,12 @@
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/38657
+	* module.c (write_common_0): Use the name of the symtree rather
+	than the common block, to determine if the common has been
+	written.
+
+2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38665
 	* gfortran.h : Add bit to gfc_expr 'user_operator'
 	* interface.c (gfc_extend_expr): Set the above if the operator
