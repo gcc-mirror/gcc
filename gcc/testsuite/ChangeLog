@@ -1,5 +1,10 @@
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/38763
+	* gfortran.dg/transfer_null_1.f90: New test.
+
+2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38765
 	* gfortran.dg/host_assoc_function_6.f90: New test.
 
