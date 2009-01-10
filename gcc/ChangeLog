@@ -1,3 +1,9 @@
+2009-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38695
+	* config/arm/arm.c (arm_is_long_call_p): Don't call
+	arm_function_in_section_p if decl isn't a FUNCTION_DECL.
+
 2009-01-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* regrename.c (regrename_optimize): Fix dumping.
