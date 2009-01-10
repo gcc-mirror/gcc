@@ -1,3 +1,9 @@
+2009-01-10  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c++/36695
+	* typeck2.c (build_functional_cast): Check for reference type and NULL
+	PARMS.
+
 2009-01-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* typeck.c (cp_build_unary_op): Check for ERROR_MARK.
