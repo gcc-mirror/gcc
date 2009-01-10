@@ -1,5 +1,10 @@
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/38763
+	* target-memory.c (encode_derived): Encode NULL.
+
+2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38765
 	* resolve.c (check_host_association): Use the symtree name to
 	search for a potential contained procedure, since this is the
