@@ -1,6 +1,7 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -3360,6 +3361,7 @@ arm_is_long_call_p (tree decl)
   /* For "f", be conservative, and only cater for cases in which the
      whole of the current function is placed in the same section.  */
   if (!flag_reorder_blocks_and_partition
+      && TREE_CODE (decl) == FUNCTION_DECL
       && arm_function_in_section_p (decl, current_function_section ()))
     return false;
 
