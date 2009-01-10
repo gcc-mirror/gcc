@@ -1,5 +1,3 @@
---- trunk/gcc/fortran/gfortran.h	2009/01/04 23:11:48	143063
-+++ trunk/gcc/fortran/gfortran.h	2009/01/04 23:17:37	143064
 ! { dg-do compile }
 !
 ! PR fortran/38665, in which checking for host association
