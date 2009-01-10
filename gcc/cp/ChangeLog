@@ -1,5 +1,8 @@
 2009-01-10  Andrew Pinski  <pinskia@gmail.com>
 
+	PR c++/38648
+	* typeck.c (cp_build_modify_expr): Check for NULL current_function_decl.
+
 	PR c++/36695
 	* typeck2.c (build_functional_cast): Check for reference type and NULL
 	PARMS.
