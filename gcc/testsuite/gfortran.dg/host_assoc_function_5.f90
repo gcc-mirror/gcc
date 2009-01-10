@@ -25,6 +25,7 @@ contains
  elemental function mult(m1,m2) result(m)
   type(t_symmon), intent(in) :: m1, m2
   type(t_symmon) :: m
+  m%ierr = m1%ierr*m2%ierr
  end function mult
 end module mod_symmon
 
@@ -40,8 +41,7 @@ contains
  elemental function mult(p1,p2) result(p)
   type(t_sympol), intent(in) :: p1,p2
   type(t_sympol) :: p
-  type(t_symmon), allocatable :: mons(:)
-  mons(1) = p1%mons(1)*p2%mons(2)
+  p%mons= p1%mons*p2%mons
  end function
 end module
 ! { dg-final { cleanup-modules "mod_symmon mod_sympoly" } }
