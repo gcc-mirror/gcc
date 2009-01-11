@@ -1,3 +1,9 @@
+2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
+
+	PR debug/7055
+	* gcc/mips-tfile.c (parse_def): Fix parsing of def strings
+	starting with digits.
+
 2009-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38695
