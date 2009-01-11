@@ -25,6 +25,7 @@
 #include <string>
 #include <tr1/regex>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // Tests C++ string constructor of the basic_regex class.  
 void test01()
@@ -35,9 +36,19 @@ void test01()
   test_type re(s);
 }
 
+void test02()
+{
+  typedef std::tr1::basic_regex<char> test_type;
+  typedef __gnu_test::tracker_allocator<char> alloc_type;
+
+  std::basic_string<char, std::char_traits<char>, alloc_type> s("a*b");
+  test_type re(s);
+}
+
 int
 main()
 { 
   test01();
+  test02();
   return 0;
 };
