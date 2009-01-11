@@ -1,3 +1,7 @@
+2009-01-11  Laurent GUERBY <laurent@guerby.net>
+
+	* doc/sourcebuild.texi (Source Tree): Move up intl and fixinc.
+	
 2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
 
 	PR debug/7055
