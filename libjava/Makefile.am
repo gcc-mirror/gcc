@@ -888,7 +888,7 @@ else !ENABLE_SHARED
 ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR) -fbootclasspath=$(BOOTCLASSPATH)
 endif !ENABLE_SHARED
 
-ecjx_LDADD = -L$(here)/.libs
+ecjx_LDADD = -L$(here)/.libs $(extra_ldflags)
 ecjx_DEPENDENCIES = libgcj.la libgcj.spec
 if USE_LIBGCJ_BC
 ecjx_DEPENDENCIES += libgcj_bc.la
