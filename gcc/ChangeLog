@@ -1,3 +1,16 @@
+2009-01-11  Matthias Klose  <doko@ubuntu.com>
+
+	PR middle-end/38616, backport from mainline:
+	2008-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*strmovsi_1): Simplify asm alternatives.
+	(*strmovsi_rex_1): Ditto.
+	(*strsetsi_1): Ditto.
+	(*strsetsi_rex_1): Ditto.
+
+	(add<mode>cc): Macroize expander from addqicc, addhicc, addsicc and
+	adddicc expanders using SWI mode iterator.
+
 2009-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

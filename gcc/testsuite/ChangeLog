@@ -1,3 +1,8 @@
+2009-01-11  Matthias Klose  <doko@ubuntu.com>
+
+        PR middle-end/38616
+	* gcc.dg/pr38616.c: New test.
+
 2009-01-11 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38763
