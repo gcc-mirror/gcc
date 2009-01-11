@@ -1,3 +1,7 @@
+2009-01-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/block-3.c: Fix compile error on 32bit.
+
 2009-01-10  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c++/38648
