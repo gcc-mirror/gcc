@@ -8355,7 +8355,8 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @ENABLE_SHARED_TRUE@@NATIVE_TRUE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) -Djava.class.path=$(ECJ_JAR)
 @NATIVE_FALSE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
 @NATIVE_FALSE@ecjx_LDADD = 
-@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(am__append_21)
+@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) \
+@NATIVE_TRUE@	$(am__append_21)
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
 @NATIVE_TRUE@	$(am__append_20)
