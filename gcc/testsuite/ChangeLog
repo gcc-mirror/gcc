@@ -1,6 +1,14 @@
 2009-01-11  Ira Rosen  <irar@il.ibm.com>
 
 	Backport from mainline:
+	2009-01-08  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/37194
+	* gcc.dg/vect/costmodel/ppc/costmodel-pr37194.c: New test.
+
+2009-01-11  Ira Rosen  <irar@il.ibm.com>
+
+	Backport from mainline:
 	2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
 	            Ira Rosen  <irar@il.ibm.com>
 

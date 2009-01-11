@@ -120,7 +120,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   int vec_outside_cost = 0;
   int scalar_single_iter_cost = 0;
   int scalar_outside_cost = 0;
-  bool runtime_test = false;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -139,15 +138,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       return 0;
     }
 
-  /* If the number of iterations is unknown, or the
-     peeling-for-misalignment amount is unknown, we will have to generate
-     a runtime test to test the loop count against the threshold.    */
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || (byte_misalign < 0))
-    runtime_test = true;
-
   /* Requires loop versioning tests to handle misalignment.  */
-
   if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
@@ -335,7 +326,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      conditions/branch directions.  Change the stimates below to
      something more reasonable.  */
 
-  if (runtime_test)
+  /* If the number of iterations is known and we do not do versioning, we can
+     decide whether to vectorize at compile time. Hence the scalar version
+     do not carry cost model guard costs.  */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
     {
       /* Cost model check occurs at versioning.  */
       if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
@@ -343,8 +339,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	scalar_outside_cost += TARG_COND_NOT_TAKEN_BRANCH_COST;
       else
 	{
-	  /* Cost model occurs at prologue generation.  */
-	  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+	  /* Cost model check occurs at prologue generation.  */
+	  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
 	    scalar_outside_cost += 2 * TARG_COND_TAKEN_BRANCH_COST
 	      + TARG_COND_NOT_TAKEN_BRANCH_COST;
 	  /* Cost model check occurs at epilogue generation.  */
