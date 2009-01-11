@@ -1,3 +1,15 @@
+2009-01-11 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38763
+	Backport from mainline:
+	* target-memory.c (encode_derived): Encode NULL.
+
+	PR fortran/38765
+	Backport from mainline:
+	* resolve.c (check_host_association): Use the symtree name to
+	search for a potential contained procedure, since this is the
+	name by which it would be referenced.
+
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38657

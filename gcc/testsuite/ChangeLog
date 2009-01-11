@@ -1,3 +1,13 @@
+2009-01-11 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38763
+	Backport from mainline:
+	* gfortran.dg/transfer_null_1.f90: New test.
+
+	PR fortran/38765
+	Backport from mainline:
+	* gfortran.dg/host_assoc_function_6.f90: New test.
+
 2009-01-11  Ira Rosen  <irar@il.ibm.com>
 
 	Backport from mainline:
