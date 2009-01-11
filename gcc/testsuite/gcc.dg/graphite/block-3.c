@@ -1,9 +1,9 @@
 /* { dg-options "-O2 -floop-block -fdump-tree-graphite-all" } */
 
 #define N 24
-#define M 1000
+#define M 100
 
-float A[1000][1000][1000], B[1000][1000], C[1000][1000];
+float A[M][M][M], B[M][M], C[M][M];
 
 void test (void)
 {
@@ -16,9 +16,9 @@ void test (void)
         A[i][j][k] = B[i][k] * C[k][j];
 
   /* These loops should still be strip mined.  */
-  for (i = 0; i < 1000; i++)
-    for (j = 0; j < 1000; j++)
-      for (k = 0; k < 1000; k++)
+  for (i = 0; i < M; i++)
+    for (j = 0; j < M; j++)
+      for (k = 0; k < M; k++)
         A[i][j][k] = B[i][k] * C[k][j];
 }
 
