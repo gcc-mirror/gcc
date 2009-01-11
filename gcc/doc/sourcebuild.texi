@@ -1,5 +1,5 @@
-@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
-@c Inc.
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -42,6 +42,13 @@ pages from Texinfo manuals as part of the GCC build process.
 An implementation of the @command{jar} command, used with the Java
 front end.
 
+@item fixincludes
+The support for fixing system headers to work with GCC@.  See
+@file{fixincludes/README} for more information.  The headers fixed by
+this mechanism are installed in @file{@var{libsubdir}/include-fixed}.
+Along with those headers, @file{README-fixinc} is also installed, as
+@file{@var{libsubdir}/include-fixed/README}.
+
 @item gcc
 The main sources of GCC itself (except for runtime libraries),
 including optimizers, support for different target architectures,
@@ -50,6 +57,10 @@ language front ends, and testsuites.  @xref{gcc Directory, , The
 
 @item include
 Headers for the @code{libiberty} library.
+
+@item intl
+GNU @code{libintl}, from GNU @code{gettext}, for systems which do not
+include it in libc.
 
 @item libada
 The Ada runtime library.
@@ -142,23 +153,11 @@ Texinfo documentation for GCC, together with automatically generated
 man pages and support for converting the installation manual to
 HTML@.  @xref{Documentation}.
 
-@item fixinc
-The support for fixing system headers to work with GCC@.  See
-@file{fixinc/README} for more information.  The headers fixed by this
-mechanism are installed in @file{@var{libsubdir}/include}.  Along with
-those headers, @file{README-fixinc} is also installed, as
-@file{@var{libsubdir}/include/README}.
-
 @item ginclude
 System headers installed by GCC, mainly those required by the C
 standard of freestanding implementations.  @xref{Headers, , Headers
 Installed by GCC}, for details of when these and other headers are
 installed.
-
-@item intl
-GNU @code{libintl}, from GNU @code{gettext}, for systems which do not
-include it in libc.  Properly, this directory should be at top level,
-parallel to the @file{gcc} directory.
 
 @item po
 Message catalogs with translations of messages produced by GCC into
