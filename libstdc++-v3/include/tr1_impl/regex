@@ -796,18 +796,18 @@ namespace regex_constants
 
       /**
        * @brief Constructs a basic regular expression from the string
-       * @p interpreted according to the flags in @p f.
+       * @p s interpreted according to the flags in @p f.
        *
-       * @param p A string containing a regular expression.
+       * @param s A string containing a regular expression.
        * @param f Flags indicating the syntax rules and options.
        *
-       * @throws regex_error if @p p is not a valid regular expression.
+       * @throws regex_error if @p s is not a valid regular expression.
        */
       template<typename _Ch_traits, typename _Ch_alloc>
         explicit
         basic_regex(const basic_string<_Ch_type, _Ch_traits, _Ch_alloc>& __s,
 		    flag_type __f = regex_constants::ECMAScript)
-	: _M_flags(__f), _M_pattern(__s), _M_mark_count(0)
+	: _M_flags(__f), _M_pattern(__s.begin(), __s.end()), _M_mark_count(0)
         { _M_compile(); }
 
       /**
