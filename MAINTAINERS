@@ -247,6 +247,7 @@ Fortran			Janne Blomqvist		jb@gcc.gnu.org
 Fortran			Tobias Burnus		burnus@net-b.de
 Fortran			Jerry DeLisle		jvdelisle@gcc.gnu.org
 Fortran			Erik Edelmann		erik.edelmann@iki.fi
+Fortran			Daniel Franke		franke.daniel@gmail.com
 Fortran			Thomas König		tkoenig@gcc.gnu.org
 Fortran			Daniel Kraft		d@domob.eu
 Fortran			Toon Moene		toon@moene.org
@@ -318,7 +319,6 @@ Doug Evans					dje@google.com
 Chris Fairles					cfairles@gcc.gnu.org
 Thomas Fitzsimmons				fitzsim@redhat.com
 Brian Ford					ford@vss.fsi.com
-Daniel Franke					franke.daniel@gmail.com
 Nathan Froyd					froydnj@codesourcery.com
 Chao-ying Fu					fu@mips.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
