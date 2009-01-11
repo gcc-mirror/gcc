@@ -1,3 +1,9 @@
+2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
+
+	PR debug/7055
+	* gcc/mips-tfile.c (parse_def): Fix parsing of def strings
+	starting with digits.
+
 2009-01-11  Ira Rosen  <irar@il.ibm.com>
 
 	Backport from mainline:
@@ -12,7 +18,7 @@
 
 	Backport from mainline:
 	2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
-	            Ira Rosen  <irar@il.ibm.com>
+		    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38529
 	* tree-vect-transform (vect_transform_stmt): Handle inner-loop stmts
@@ -41,7 +47,7 @@
 	* doc/install.texi (alpha*-dec-osf*): Remove note on 32-bit
 	hosted cross-compilers generating less efficient code.
 
-2009-01-04  Uros Bizjak  <ubizjak@gmail.com>
+2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
@@ -112,7 +118,7 @@
 
 	Backport from mainline:
 	2008-10-18  Jakub Jelinek  <jakub@redhat.com>
-	            Janis Johnson  <janis187@us.ibm.com>
+		    Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (lang_checks_parallelized, check_gcc_parallelize,
 	check_p_tool, check_p_vars, check_p_subno, check_p_comma,
@@ -126,7 +132,7 @@
 	afterwards run dg-extract-results.sh to merge the sum and log files.
 
 2008-12-04  Eric Botcazou  <ebotcazou@adacore.com>
-            Gary Funck  <gary@intrepid.com>
+	    Gary Funck  <gary@intrepid.com>
 
 	* cse.c (lookup_as_function): Delete mode frobbing code.
 	(equiv_constant): Re-implement it there for SUBREGs.
@@ -140,7 +146,7 @@
 	Backport from mainline:
 	2008-12-02  Danny Smith   <dannysmith@users.sourceforge.net>
 
-        PR target/38054
+	PR target/38054
 	* config/i386/winnt.c (i386_pe_encode_section_info): Condition stdcall
 	decoration of function RTL names here on Ada language.
 
@@ -188,7 +194,7 @@
 	before the first insn.
 
 2008-11-24  Jakub Jelinek  <jakub@redhat.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* df-scan.c (df_get_call_refs): For unconditional noreturn calls
 	add EH_USES regs as artificial uses.
@@ -221,26 +227,26 @@
 	Backport from mainline:
 	2008-07-07  Richard Guenther  <rguenther@suse.de>
 
-        * tree-ssa-structalias.c (struct variable_info): Add is_full_var flag.
-        (new_var_info): Set it to false.
-        (solution_set_add): Correctly handle pointers outside a var and
-        inside a field.
-        (type_safe): Treat variables with is_full_var properly.
-        (do_sd_constraint): Likewise.
-        (do_ds_constraint): Likewise.
-        (process_constraint): Remove zeroing offset for !use_field_sensitive.
-        (get_constraint_for_ptr_offset): New function.
-        (get_constraint_for_component_ref): Handle is_full_vars properly.
-        (get_constraint_for): Handle POINTER_PLUS_EXPR.
-        (handle_ptr_arith): Remove.
-        (find_func_aliases): Handle POINTER_PLUS_EXPR through generic
+	* tree-ssa-structalias.c (struct variable_info): Add is_full_var flag.
+	(new_var_info): Set it to false.
+	(solution_set_add): Correctly handle pointers outside a var and
+	inside a field.
+	(type_safe): Treat variables with is_full_var properly.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(process_constraint): Remove zeroing offset for !use_field_sensitive.
+	(get_constraint_for_ptr_offset): New function.
+	(get_constraint_for_component_ref): Handle is_full_vars properly.
+	(get_constraint_for): Handle POINTER_PLUS_EXPR.
+	(handle_ptr_arith): Remove.
+	(find_func_aliases): Handle POINTER_PLUS_EXPR through generic
 	get_constraint_for code.
-        (create_function_info_for): For parameter and result varinfos set
-        is_full_var flag.
-        (create_variable_info_for): Set is_full_var flag whenever we
-        just created a single varinfo for a decl.
-        (init_alias_vars): Initialize use_field_sensitive from
-        max-fields-for-field-sensitive parameter.
+	(create_function_info_for): For parameter and result varinfos set
+	is_full_var flag.
+	(create_variable_info_for): Set is_full_var flag whenever we
+	just created a single varinfo for a decl.
+	(init_alias_vars): Initialize use_field_sensitive from
+	max-fields-for-field-sensitive parameter.
 
 2008-11-18  Ben Elliston  <bje@au.ibm.com>
 
@@ -306,17 +312,17 @@
 
 	Backport from mainline:
 
-        PR bootstrap/33304
-        * vec.h (VEC_TA): New.
-        (DEF_VEC_I, DEF_VEC_P, DEF_VEC_ALLOC_I, DEF_VEC_ALLOC_P,
-        DEF_VEC_O, DEF_VEC_ALLOC_O: Use VEC_TA.
-        * c-common.c (C_COMMON_FIXED_TYPES_SAT): New macro.
-        (C_COMMON_FIXED_MODE_TYPES_SAT): New macro.
-        (C_COMMON_FIXED_TYPES): Remove first arg.
-        (C_COMMON_FIXED_MODE_TYPES): Likewise.
-        * tree.c (MAKE_FIXED_TYPE_NODE): Break into two macros,
-        MAKE_FIXED_TYPE_NODE and MAKE_FIXED_TYPE_NODE_WIDTH in order
-        not to use empty macro arguments.
+	PR bootstrap/33304
+	* vec.h (VEC_TA): New.
+	(DEF_VEC_I, DEF_VEC_P, DEF_VEC_ALLOC_I, DEF_VEC_ALLOC_P,
+	DEF_VEC_O, DEF_VEC_ALLOC_O: Use VEC_TA.
+	* c-common.c (C_COMMON_FIXED_TYPES_SAT): New macro.
+	(C_COMMON_FIXED_MODE_TYPES_SAT): New macro.
+	(C_COMMON_FIXED_TYPES): Remove first arg.
+	(C_COMMON_FIXED_MODE_TYPES): Likewise.
+	* tree.c (MAKE_FIXED_TYPE_NODE): Break into two macros,
+	MAKE_FIXED_TYPE_NODE and MAKE_FIXED_TYPE_NODE_WIDTH in order
+	not to use empty macro arguments.
 
 2008-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
