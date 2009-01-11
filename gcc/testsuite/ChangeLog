@@ -1,3 +1,8 @@
+2009-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36254
+	* g++.dg/warn/Wreturn-type-5.C: New test.
+
 2009-01-11  Matthias Klose  <doko@ubuntu.com>
 
 	PR middle-end/38616

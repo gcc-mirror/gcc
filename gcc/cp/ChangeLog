@@ -1,3 +1,11 @@
+2009-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36254
+	* cp-gimplify.c (genericize_if_stmt): Renamed from ...
+	(gimplify_if_stmt): ... this.
+	(cp_gimplify_expr): Don't handle IF_STMT here.
+	(cp_genericize_r): Call genericize_if_stmt for IF_STMT.
+
 2009-01-10  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c++/38648
