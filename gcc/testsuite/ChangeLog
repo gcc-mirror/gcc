@@ -1,3 +1,12 @@
+2009-01-11  Ira Rosen  <irar@il.ibm.com>
+
+	Backport from mainline:
+	2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
+	            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/38529
+	* gcc.dg/vect/pr38529.c: New test.
+
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38657

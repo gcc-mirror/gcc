@@ -6232,6 +6232,8 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree orig_stmt_in_pattern;
   bool done;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   switch (STMT_VINFO_TYPE (stmt_info))
     {
@@ -6316,6 +6318,43 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store,
 	}
     }
 
+  /* Handle inner-loop stmts whose DEF is used in the loop-nest that
+     is being vectorized, but outside the immediately enclosing loop.  */
+  if (vec_stmt
+      && nested_in_vect_loop_p (loop, stmt)
+      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
+      && (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_outer 
+          || STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_outer_by_reduction))
+    {
+      struct loop *innerloop = loop->inner;
+      imm_use_iterator imm_iter;
+      use_operand_p use_p;
+      tree scalar_dest;
+      tree exit_phi;
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "Record the vdef for outer-loop vectorization.");
+
+      /* Find the relevant loop-exit phi-node, and reord the vec_stmt there
+        (to be used when vectorizing outer-loop stmts that use the DEF of
+        STMT).  */
+      if (TREE_CODE (stmt) == PHI_NODE)
+	scalar_dest = PHI_RESULT (stmt);
+      else
+	scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
+
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
+	{
+	  if (!flow_bb_inside_loop_p (innerloop, bb_for_stmt (USE_STMT (use_p))))
+	    {
+              exit_phi = USE_STMT (use_p);
+              STMT_VINFO_VEC_STMT (vinfo_for_stmt (exit_phi)) = vec_stmt;
+            }
+	}
+    }
+
+  /* Handle stmts whose DEF is used outside the loop-nest that is 
+     being vectorized.  */
   if (STMT_VINFO_LIVE_P (stmt_info)
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
     {

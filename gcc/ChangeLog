@@ -1,3 +1,14 @@
+2009-01-11  Ira Rosen  <irar@il.ibm.com>
+
+	Backport from mainline:
+	2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
+	            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/38529
+	* tree-vect-transform (vect_transform_stmt): Handle inner-loop stmts
+	whose DEF is used in the loop-nest that is being vectorized, but
+	outside the immediately enclosing loop.
+
 2009-01-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_call): Relocate non-jump insns in the delay slot of long
