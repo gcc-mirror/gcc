@@ -1,3 +1,17 @@
+2009-01-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-12-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34571
+	* config/alpha/predicates.md (symbolic_operand): Return 1 for a
+	label_ref with an offset.
+
+	2008-03-31  James E. Wilson  <wilson@tuliptree.org>
+
+	* varasm.c (output_constant_pool_1): In LABEL_REF check,
+	use tmp consistently.
+
 2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
 
 	PR debug/7055

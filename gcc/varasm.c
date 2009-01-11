@@ -3710,7 +3710,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
       /* FALLTHRU  */
 
     case LABEL_REF:
-      tmp = XEXP (x, 0);
+      tmp = XEXP (tmp, 0);
       gcc_assert (!INSN_DELETED_P (tmp));
       gcc_assert (!NOTE_P (tmp)
 		  || NOTE_KIND (tmp) != NOTE_INSN_DELETED);
