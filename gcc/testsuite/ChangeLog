@@ -1,5 +1,8 @@
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/38794
+	* g++.dg/parse/typedef9.C: New test.
+
 	PR tree-optimization/38807
 	* gcc.c-torture/compile/pr38807.c: New test.
 
