@@ -749,6 +749,16 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       if (pat)
 	{
 	  emit_insn (pat);
+
+	  /* If the mode of the insertion is wider than the mode of the
+	     target register we created a paradoxical subreg for the
+	     target.  Truncate the paradoxical subreg of the target to
+	     itself properly.  */
+	  if (!TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (op0)),
+				      GET_MODE_BITSIZE (op_mode))
+	      && (REG_P (xop0)
+		  || GET_CODE (xop0) == SUBREG))
+	      convert_move (op0, xop0, true);
 	  return true;
 	}
       delete_insns_since (last);

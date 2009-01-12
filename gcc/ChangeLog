@@ -1,3 +1,8 @@
+2009-01-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* expmed.c (store_bit_field_1): Properly truncate the paradoxical
+	subreg of op0 to the original op0.
+
 2009-01-11  Laurent GUERBY <laurent@guerby.net>
 
 	* doc/sourcebuild.texi (Source Tree): Move up intl and fixinc.
