@@ -1,6 +1,6 @@
 // natUnsafe.cc - Implementation of sun.misc.Unsafe native methods.
 
-/* Copyright (C) 2006
+/* Copyright (C) 2006, 2007
    Free Software Foundation
 
    This file is part of libgcj.
@@ -32,7 +32,7 @@ public:
 spinlock ()
   {
     while (! compare_and_swap (&lock, 0, 1))
-      ;
+      _Jv_ThreadYield ();
   }
   ~spinlock ()
   {
