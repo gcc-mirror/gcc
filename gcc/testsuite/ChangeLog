@@ -1,3 +1,12 @@
+2009-01-12  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36019
+	* g++.dg/lookup/hidden-class12.C: New test.
+	* g++.dg/lookup/hidden-class13.C: New test.
+	* g++.dg/lookup/hidden-class14.C: New test.
+	* g++.dg/lookup/hidden-class15.C: New test.
+	* g++.dg/lookup/hidden-class16.C: New test.
+
 2009-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/struct/wo_prof_single_str_global.c: Mask return value.
