@@ -1,3 +1,9 @@
+2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38807
+	* tree-ssa-reassoc.c (remove_visited_stmt_chain): Don't look at
+	gimple_visited_p unless stmt is GIMPLE_ASSIGN.
+
 2009-01-11  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* expmed.c (store_bit_field_1): Properly truncate the paradoxical
