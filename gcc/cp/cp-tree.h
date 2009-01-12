@@ -4163,6 +4163,8 @@ extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
 extern bool explicit_class_specialization_p     (tree);
 extern tree outermost_tinst_level		(void);
+extern tree get_template_info			(tree t);
+extern bool parameter_of_template_p		(tree, tree);
 
 /* in repo.c */
 extern void init_repo				(void);

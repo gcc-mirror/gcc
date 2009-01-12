@@ -1,3 +1,14 @@
+2009-01-12  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36019
+	* pt.c (parameter_of_template_p): New function.
+	* pt.c (get_template_info): Ditto.
+	* cp-tree.h: Declare those.
+	* name-lookup.c (binding_to_template_parms_of_scope_p): New
+	function.
+	(outer_binding): Take template parameters in account when looking for
+	a name binding.
+
 2008-11-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37142
