@@ -1,3 +1,21 @@
+2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jonathan Larmour  <jifl@eCosCentric.com>
+
+	PR libstdc++/36801
+	* config/cpu/generic/atomicity_mutex/atomicity.h (get_atomic_mutex):
+	New.
+	(__gnu_cxx::__exchange_and_add): Use it.
+	* src/debug.cc (get_safe_base_mutex): New.
+	* src/locale.cc (get_locale_cache_mutex): New.
+	* src/mt_allocator.cc (get_freelist): New.
+	(get_freelist_mutex): New.
+	* src/pool_allocator.cc (get_palloc_mutex): New.
+
+2009-01-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/ext/concurrence.h: Fix __gthread_cond_t initialisation
+	function macro name.
+
 2009-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Backport from mainline:
@@ -59,7 +77,7 @@
 
 	Backport from mainline:
 	2008-10-18  Jakub Jelinek  <jakub@redhat.com>
-	            Janis Johnson  <janis187@us.ibm.com>
+		    Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
 	(RUNTESTDEFAULTFLAGS, EXPECT, check_DEJAGNU_normal_targets): New
@@ -113,9 +131,9 @@
 
 2008-08-12  Johannes Singler  <singler@ira.uka.de>
 
-        * include/paralle/losertree.h
-        (LoserTreePointerBase<>::~LoserTreePointerBase):
-        Replace delete by appropriate delete[].
+	* include/paralle/losertree.h
+	(LoserTreePointerBase<>::~LoserTreePointerBase):
+	Replace delete by appropriate delete[].
 
 2008-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -126,8 +144,8 @@
 
 2008-07-10  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/balanced_quicksort.h:
-        (qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
+	* include/parallel/balanced_quicksort.h:
+	(qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
 
 2008-07-09  Andreas Beckmann  <gcc@abeckmann.de>
 
@@ -138,10 +156,10 @@
 2008-07-09  Johannes Singler  <singler@ira.uka.de>
 
 	PR libstdc++/36729
-        * include/parallel/random_shuffle.h:
-        (sequential_random_shuffle) Copy data back.
-        * testsuite/25_algorithms/random_shuffle/1.cc:
-        New. Generic random_shuffle functionality test.
+	* include/parallel/random_shuffle.h:
+	(sequential_random_shuffle) Copy data back.
+	* testsuite/25_algorithms/random_shuffle/1.cc:
+	New. Generic random_shuffle functionality test.
 
 2008-07-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -195,17 +213,17 @@
 
 2008-06-05  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/random_shuffle.h:
-        (parallel_random_shuffle_drs) Get the actual number of
-        threads after entering the parallel region. Indentation.
-        * include/parallel/algo.h: (random_shuffle(begin, end))
-        Add namespace qualification to avoid ambiguity.
+	* include/parallel/random_shuffle.h:
+	(parallel_random_shuffle_drs) Get the actual number of
+	threads after entering the parallel region. Indentation.
+	* include/parallel/algo.h: (random_shuffle(begin, end))
+	Add namespace qualification to avoid ambiguity.
 
 2008-05-15  Johannes Singler  <singler@ira.uka.de>
 
-        * doc/xml/manual/parallel_mode.xml:
-        General revision, correct wrong doc and make it more 
-        readable. 
+	* doc/xml/manual/parallel_mode.xml:
+	General revision, correct wrong doc and make it more
+	readable.
 
 2008-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -228,23 +246,23 @@
 
 	* include/parallel/quicksort.h (parallel_sort_qs_conquer):
 	Explicitly request number of threads in the parallel clause.
-	(parallel_sort_qs): Remove setting the number of threads globally. 
+	(parallel_sort_qs): Remove setting the number of threads globally.
 
 2008-05-06  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/multiway_merge.h (multiway_merge_*_unguarded):
-        Pass sentinel directly, to allow correct determination.
-        (multiway_merge_loser_tree_unguarded): Remove over-cautious assertion.
-        (calls to multiway_merge_*_splitting): Parametrize with type that
+	* include/parallel/multiway_merge.h (multiway_merge_*_unguarded):
+	Pass sentinel directly, to allow correct determination.
+	(multiway_merge_loser_tree_unguarded): Remove over-cautious assertion.
+	(calls to multiway_merge_*_splitting): Parametrize with type that
 	is correct in all cases.
-        * include/parallel/losertree.h (delete_min_insert (in many classes)):
-        Correct and standardize assertions.
+	* include/parallel/losertree.h (delete_min_insert (in many classes)):
+	Correct and standardize assertions.
 
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
 	* 20_util/make_unsigned/requirements/typedefs-1.cc: Same.
-	
+
 2008-04-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/35922
@@ -274,22 +292,22 @@
 
 2008-05-25  Benjamin Kosnik  <bkoz@redhat.com>
 
-        Revert PR libstdc++/35887 
-        * configure.ac: Revert.
-        * acinclude.m4: Same.
-        * configure: Regenerate.
-        * include/Makefile.am: Revert.
-        * include/Makefile.in: Regenerate.
-	
+	Revert PR libstdc++/35887
+	* configure.ac: Revert.
+	* acinclude.m4: Same.
+	* configure: Regenerate.
+	* include/Makefile.am: Revert.
+	* include/Makefile.in: Regenerate.
+
 2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
 
-        PR libstdc++/35887 
-        * configure.ac: Add default argument to GLIBCXX_ENABLE_PARALLEL.
-        * acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Check for --disable-libgomp.
-        * configure: Regenerate.
-        * include/Makefile.am (parallel_headers): Make conditional on
-        ENABLE_PARALLEL.
-        * include/Makefile.in: Regenerate.
+	PR libstdc++/35887
+	* configure.ac: Add default argument to GLIBCXX_ENABLE_PARALLEL.
+	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Check for --disable-libgomp.
+	* configure: Regenerate.
+	* include/Makefile.am (parallel_headers): Make conditional on
+	ENABLE_PARALLEL.
+	* include/Makefile.in: Regenerate.
 
 2008-04-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -300,20 +318,20 @@
 
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/multiway_merge.h
-        (multiway_merge_loser_tree):
-        Leave checks to callers, add precondition instead.
-        (multiway_merge_loser_tree_unguarded): Likewise.
-        (multiway_merge_loser_tree_sentinel): Likewise.
-        (sequential_multiway_merge): Added checks for total length 0.
-        (parallel_multiway_merge): Skip empty sequences.
-        (multiway_merge, all variants):
-        Remove temporary variable, return directly.
-        (stable_multiway_merge, all variants): Likewise.
-        (multiway_merge_sentinels, all variants):  Likewise.
-        (stable_multiway_merge_sentinels, all variants): Likewise.
-        * include/parallel/multiseq_selection.h
-        (multiseq_partition): More detailed assertions.
+	* include/parallel/multiway_merge.h
+	(multiway_merge_loser_tree):
+	Leave checks to callers, add precondition instead.
+	(multiway_merge_loser_tree_unguarded): Likewise.
+	(multiway_merge_loser_tree_sentinel): Likewise.
+	(sequential_multiway_merge): Added checks for total length 0.
+	(parallel_multiway_merge): Skip empty sequences.
+	(multiway_merge, all variants):
+	Remove temporary variable, return directly.
+	(stable_multiway_merge, all variants): Likewise.
+	(multiway_merge_sentinels, all variants):  Likewise.
+	(stable_multiway_merge_sentinels, all variants): Likewise.
+	* include/parallel/multiseq_selection.h
+	(multiseq_partition): More detailed assertions.
 
 2008-04-14  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -325,7 +343,7 @@
 2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html/*: Regenerate.
-	
+
 2008-04-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/xml/manual/bitmap_allocator.xml: Improve wording a bit.
@@ -357,7 +375,7 @@
 
 	* doc/xml/manual/parallel_mode.xml: Remove map/set bulk
 	insertors. Correct omp_set_num_threads example.
-	
+
 2008-04-07  Johannes Singler  <singler@ira.uka.de>
 
 	* include/parallel/multiway_merge.h: Moved decisions to
@@ -410,13 +428,13 @@
 	* doc/doxygen/Intro.3: Correct typo.
 
 	* doc/xml/api.xml: Add gcc-4.3 links.
-	* doc/html/api.html: Regenerate.	
-	
+	* doc/html/api.html: Regenerate.
+
 	* include/debug/debug.h: Document namepaces here.
 	* include/parallel/base.h: Same.
 	* include/ext/typelist.h: Same.
 	* include/ext/pb_ds/tag_and_trait.hpp: Same.
-	
+
 	* include/tr1_impl/random: Adjust line break.
 	* include/tr1_impl/unordered_map: Correct and or add markup.
 	* include/tr1_impl/boost_shared_ptr.h: Correct and or add markup.
@@ -465,7 +483,7 @@
 	* config/abi/compatibility.h: Adjust file name.
 
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
-	line numbers.	
+	line numbers.
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
 
@@ -541,16 +559,16 @@
 	(_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL): Define.
 	(_ZNKSt4hashIeEclEe): New alias.
 	* testsuite/util/testsuite_abi.cc (check_version): Support
-	GLIBCXX_LDBL_3.4.10. 
+	GLIBCXX_LDBL_3.4.10.
 
 2008-02-29  Jakub Jelinek  <jakub@redhat.com>
-            Benjamin Kosnik  <bkoz@redhat.com>
-            
-        * src/hash_c++0x.cc: Add just C++0x version of TR1 hash.
-        * include/bits/functional_hash.h: Remove error_code bits.
-        * src/Makefile.am: Add hash_c++0x.cc.
-        * src/Makefile.in: Regenerate.  
-        * config/abi/pre/gnu.ver: Remove hash<error_code> export.
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/hash_c++0x.cc: Add just C++0x version of TR1 hash.
+	* include/bits/functional_hash.h: Remove error_code bits.
+	* src/Makefile.am: Add hash_c++0x.cc.
+	* src/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Remove hash<error_code> export.
 
 2008-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -567,7 +585,7 @@
 	* include/std/ostream: Remove <system_error> support.
 	* include/precompiled/stdc++.h: Same.
 	* src/system_error.cc: Remove.
-	* src/hash_c++0x.cc: Remove.	
+	* src/hash_c++0x.cc: Remove.
 	* config/os/mingw32/error_constants.h: Same.
 	* config/os/generic/error_constants.h: Same.
 	* config/abi/pre/gnu.ver: Adjust exports.
@@ -608,7 +626,7 @@
 	* testsuite/17_intro/headers/c++200x/all.cc: Same.
 	* testsuite/20_util/hash/requirements/explicit_instantiation.cc: Same.
 	* testsuite/20_util/hash/operators/size_t.cc: Same.
-	
+
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
 	* acinclude.m4: Also check for EIDRM and ETXTBSY.
@@ -633,16 +651,16 @@
 	* include/tr1/exp_integral.tcc: Same.
 	* include/tr1/gamma.tcc: Same.
 	* include/tr1/hypergeometric.tcc: Same.
-	
+
 2008-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/34797
 	* include/parallel/settings.h (_Settings): Reconstruct Settings class
 	here, uglify, remove anonymous namespace and static
-	members. Convert to datum.	
+	members. Convert to datum.
 	* include/parallel/types.h: Move Settings:: enumerations here, uglify.
 	* src/parallel_settings.cc: New, definition for _Settings member
-	functions.	
+	functions.
 	* include/parallel/multiway_merge.h: Same.
 	* include/parallel/for_each.h: Same.
 	* include/parallel/workstealing.h: Same.
@@ -667,7 +685,7 @@
 
 	* src/Makefile.am (parallel_sources): Add parallel_settings.cc.
 	* src/Makefile.in: Regenerate.
-	
+
 	* config/abi/pre/gnu.ver: Export _Settings::get and _Settings::set.
 
 2008-02-17  Paolo Carlini  <pcarlini@suse.de>
@@ -686,22 +704,22 @@
 	* config/abi/pre/gnu.ver: Export stdio_sync_filebuf symbols.
 	* testsuite/ext/stdio_sync_filebuf/char/35209.cc: New.
 	* testsuite/ext/stdio_sync_filebuf/wchar_t/35209.cc: Likewise.
-	
+
 2008-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/random_number.h: Use TR1's mersenne_twister.
 	(random_number::genrand_bits()): Remove.
 	(random_number::set_seed): Remove.
-	
+
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/parallel/types.h: Remove enum parallelism.
-	
+
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/types.h: Move enum parallelism here.  Use
 	tr1/cstdint's int16_t, uint16_t, int32_t, uint32_t, int64_t,
-	uint64_t. 
+	uint64_t.
 	* include/parallel/multiseq_selection.h: Adjust for cstdint.
 	* include/parallel/compatibility.h: Same.
 	* include/parallel/tags.h: Just compile-time tags.
@@ -940,7 +958,7 @@
 	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
 	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
 	Likewise.
-	* testsuite/tr1/6_containers/array/requirements/contiguous.cc: 
+	* testsuite/tr1/6_containers/array/requirements/contiguous.cc:
 	Likewise.
 	* testsuite/tr1/6_containers/array/requirements/member_swap.cc:
 	Likewise.
@@ -1141,7 +1159,7 @@
 	__glibcxx_requires_sorted_set_pred): Add.
 	* include/bits/stl_algo.h (merge, includes, set_union,
 	set_intersection, set_difference, set_symmetric_difference):
-	Adjust, use __glibcxx_requires_sorted_set* instead. 
+	Adjust, use __glibcxx_requires_sorted_set* instead.
 	* testsuite/25_algorithms/set_intersection/34730.cc: New.
 
 2008-01-09  Paolo Carlini  <pcarlini@suse.de>
@@ -1199,7 +1217,7 @@
 	* include/parallel/algobase.h: Likewise.
 	* include/parallel/find.h: Likewise.
 	* include/parallel/algo.h: Likewise.
-	* include/parallel/checkers.h: Likewise.	
+	* include/parallel/checkers.h: Likewise.
 
 2008-01-09  Francesco Biscani  <bluescarni@gmail.com>
 
@@ -1263,7 +1281,7 @@
 	* include/parallel/multiway_mergesort.h (parallel_sort_mwms_pu,
 	parallel_sort_mwms): Likewise.
 	* include/parallel/partial_sum.h (parallel_partial_sum_linear):
-	Likewise. 
+	Likewise.
 	* testsuite/25_algorithms/sort/34095.cc: New.
 
 2008-01-01  Paolo Carlini  <pcarlini@suse.de>

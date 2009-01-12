@@ -1,6 +1,6 @@
 // Allocator details.
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,21 +57,34 @@ namespace
     }
   };
 
-  // Ensure freelist is constructed first.
-  static __freelist freelist;
-  __gnu_cxx::__mutex freelist_mutex;
+  __freelist&
+  get_freelist()
+  {
+    static __freelist freelist;
+    return freelist;
+  }
+
+  __gnu_cxx::__mutex&
+  get_freelist_mutex()
+  {
+    static __gnu_cxx::__mutex freelist_mutex;
+    return freelist_mutex;
+  }
 
   static void 
   _M_destroy_thread_key(void* __id)
   {
     // Return this thread id record to the front of thread_freelist.
-    __gnu_cxx::__scoped_lock sentry(freelist_mutex);
-    size_t _M_id = reinterpret_cast<size_t>(__id);
-
-    typedef __gnu_cxx::__pool<true>::_Thread_record _Thread_record;
-    _Thread_record* __tr = &freelist._M_thread_freelist_array[_M_id - 1];
-    __tr->_M_next = freelist._M_thread_freelist;
-    freelist._M_thread_freelist = __tr;
+    __freelist& freelist = get_freelist();
+    {
+      __gnu_cxx::__scoped_lock sentry(get_freelist_mutex());
+      size_t _M_id = reinterpret_cast<size_t>(__id);
+      
+      typedef __gnu_cxx::__pool<true>::_Thread_record _Thread_record;
+      _Thread_record* __tr = &freelist._M_thread_freelist_array[_M_id - 1];
+      __tr->_M_next = freelist._M_thread_freelist;
+      freelist._M_thread_freelist = __tr;
+    }
   }
 #endif
 } // anonymous namespace
@@ -496,8 +509,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     // directly and have no need for this.
     if (__gthread_active_p())
       {
+	__freelist& freelist = get_freelist();
 	{
-	  __gnu_cxx::__scoped_lock sentry(freelist_mutex);
+	  __gnu_cxx::__scoped_lock sentry(get_freelist_mutex());
 
 	  if (!freelist._M_thread_freelist_array
 	      || freelist._M_max_threads < _M_options._M_max_threads)
@@ -613,12 +627,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     // returns it's id.
     if (__gthread_active_p())
       {
+	__freelist& freelist = get_freelist();
 	void* v = __gthread_getspecific(freelist._M_key);
 	size_t _M_id = (size_t)v;
 	if (_M_id == 0)
 	  {
 	    {
-	      __gnu_cxx::__scoped_lock sentry(freelist_mutex);
+	      __gnu_cxx::__scoped_lock sentry(get_freelist_mutex());
 	      if (freelist._M_thread_freelist)
 		{
 		  _M_id = freelist._M_thread_freelist->_M_id;
@@ -689,8 +704,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     // directly and have no need for this.
     if (__gthread_active_p())
       {
+	__freelist& freelist = get_freelist();
 	{
-	  __gnu_cxx::__scoped_lock sentry(freelist_mutex);
+	  __gnu_cxx::__scoped_lock sentry(get_freelist_mutex());
 
 	  if (!freelist._M_thread_freelist_array
 	      || freelist._M_max_threads < _M_options._M_max_threads)

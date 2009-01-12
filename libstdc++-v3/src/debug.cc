@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,7 +42,12 @@ using namespace std;
 
 namespace
 {
-  __gnu_cxx::__mutex safe_base_mutex;
+  __gnu_cxx::__mutex&
+  get_safe_base_mutex()
+  {
+    static __gnu_cxx::__mutex safe_base_mutex;
+    return safe_base_mutex;
+  }
 } // anonymous namespace
 
 namespace __gnu_debug
@@ -112,7 +117,7 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_detach_all()
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
       {
 	_Safe_iterator_base* __old = __iter;
@@ -132,7 +137,7 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_detach_singular()
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
       {
 	_Safe_iterator_base* __old = __iter;
@@ -154,7 +159,7 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_revalidate_singular()
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     for (_Safe_iterator_base* __iter = _M_iterators; __iter;
 	 __iter = __iter->_M_next)
       __iter->_M_version = _M_version;
@@ -168,7 +173,7 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_swap(_Safe_sequence_base& __x)
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     swap(_M_iterators, __x._M_iterators);
     swap(_M_const_iterators, __x._M_const_iterators);
     swap(_M_version, __x._M_version);
@@ -186,13 +191,13 @@ namespace __gnu_debug
   __gnu_cxx::__mutex&
   _Safe_sequence_base::
   _M_get_mutex()
-  { return safe_base_mutex; }
+  { return get_safe_base_mutex(); }
 
   void
   _Safe_iterator_base::
   _M_attach(_Safe_sequence_base* __seq, bool __constant)
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     _M_attach_single(__seq, __constant);
   }
   
@@ -229,7 +234,7 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_detach()
   {
-    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     _M_detach_single();
   }
 
@@ -273,7 +278,7 @@ namespace __gnu_debug
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
   _M_get_mutex()
-  { return safe_base_mutex; }
+  { return get_safe_base_mutex(); }
 
   void
   _Error_formatter::_Parameter::
