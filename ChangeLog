@@ -1,3 +1,7 @@
+2009-01-12  Steven G. Kargl  <sgk@troutmask.apl.washington.edu>
+
+	* MAINTAINERS: Add myself to reviewers (Fortran).
+
 2009-01-12  Sebastian Pop <sebastian.pop@amd.com>
 
 	PR tree-optimization/38515
