@@ -1,3 +1,11 @@
+2009-01-03  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/29141
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _tablejump_elpm.
+	* config/avr/libgcc.S (__do_global_ctors, __do_global_dtors): Add
+	variant for devices with 3-byte PC.
+	(__tablejump_elpm__) : New.
+
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/32041

@@ -14,6 +14,7 @@ LIB1ASMFUNCS = \
 	_exit \
 	_cleanup \
 	_tablejump \
+	_tablejump_elpm \
 	_copy_data \
 	_clear_bss \
 	_ctors \
