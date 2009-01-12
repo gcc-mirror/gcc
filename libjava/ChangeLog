@@ -1,3 +1,12 @@
+2009-01-12  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/38396:
+	* libgcj_bc.c: Sort lines.
+	*(_Jv_LookupInterfaceMethod, _Jv_MonitorExit,
+	_Jv_RegisterResource, _Jv_JNI_PopSystemFrame): Add.
+
+	* sun/misc/natUnsafe.cc (spinlock contructor): Call sched_yield().
+
 2008-08-27  Release Manager
 
 	* GCC 4.3.2 released.
