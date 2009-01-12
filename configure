@@ -979,7 +979,6 @@ Optional Packages:
                           plus --with-cloog-lib=PATH/lib
   --with-cloog-include=PATH Specify directory for installed CLooG include files
   --with-cloog-lib=PATH   Specify the directory for the installed CLooG library
-  --with-cloog-polylib=PATH Specify prefix directory for the installed CLooG-PolyLib package
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -4831,11 +4830,16 @@ if test "${with_ppl_lib+set}" = set; then
 
 fi;
 
-if test "x$with_ppl" != x; then
-  ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
-  pplinc="-I$with_ppl/include $pplinc"
-  LIBS="$ppllibs $LIBS"
-fi
+case $with_ppl in
+  no)
+    ppllibs=
+    ;;
+  *)
+    ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
+    pplinc="-I$with_ppl/include $pplinc"
+    LIBS="$ppllibs $LIBS"
+    ;;
+esac
 if test "x$with_ppl_include" != x; then
   pplinc="-I$with_ppl_include $pplinc"
 fi
@@ -4944,22 +4948,17 @@ if test "${with_cloog_lib+set}" = set; then
 
 fi;
 
-# Check whether --with-cloog-polylib or --without-cloog-polylib was given.
-if test "${with_cloog_polylib+set}" = set; then
-  withval="$with_cloog_polylib"
-
-fi;
-
-if test "x$with_cloog" != x; then
-  clooglibs="-L$with_cloog/lib -lcloog"
-  clooginc="-I$with_cloog/include -DCLOOG_PPL_BACKEND "
-  LIBS="$clooglibs $LIBS"
-fi
-if test "x$with_cloog_polylib" != x; then
-  clooglibs="-L$with_cloog/lib -lcloog"
-  clooginc="-I$with_cloog/include "
-  LIBS="$clooglibs $LIBS"
-fi
+case $with_cloog in
+  no)
+    clooglibs=
+    clooginc=
+    ;;
+  *)
+    clooglibs="-L$with_cloog/lib -lcloog"
+    clooginc="-I$with_cloog/include -DCLOOG_PPL_BACKEND "
+    LIBS="$clooglibs $LIBS"
+    ;;
+esac
 if test "x$with_cloog_include" != x; then
   clooginc="-I$with_cloog_include -DCLOOG_PPL_BACKEND "
 fi
