@@ -1,3 +1,8 @@
+2009-01-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/38809
+	* gcc.dg/pr38616.c: Only run for targets with -fstack-protector.
+
 2009-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36254
