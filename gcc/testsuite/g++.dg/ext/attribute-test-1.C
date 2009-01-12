@@ -7,7 +7,7 @@ extern "C" void abort();
 #define vector __attribute__((vector_size(16)))
 
 struct Constants {
-   inline vector unsigned int deadbeef(void) const { // { dg-warning "vector returned by ref" "" { target { powerpc*-*-linux* && ilp32 } } }
+   inline vector unsigned int deadbeef(void) const {
        return (vector unsigned int){0xdeadbeef, 0xabababab, 0x55555555, 0x12345678};
    };
 };
@@ -34,4 +34,5 @@ int main()
   return 0;
 }
 
-
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output ".*GCC vector returned by reference.*" } */
