@@ -1,6 +1,6 @@
 /* C++ Parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008  Free Software Foundation, Inc.
+   2005, 2007, 2008, 2009  Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -6627,7 +6627,8 @@ cp_parser_constant_expression (cp_parser* parser,
    offsetof-member-designator:
      id-expression
      | offsetof-member-designator "." id-expression
-     | offsetof-member-designator "[" expression "]"  */
+     | offsetof-member-designator "[" expression "]"
+     | offsetof-member-designator "->" id-expression  */
 
 static tree
 cp_parser_builtin_offsetof (cp_parser *parser)
@@ -6670,11 +6671,16 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 	  expr = cp_parser_postfix_open_square_expression (parser, expr, true);
 	  break;
 
+	case CPP_DEREF:
+	  /* offsetof-member-designator "->" identifier */
+	  expr = grok_array_decl (expr, integer_zero_node);
+	  /* FALLTHRU */
+
 	case CPP_DOT:
 	  /* offsetof-member-designator "." identifier */
 	  cp_lexer_consume_token (parser->lexer);
-	  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DOT, expr,
-							 true, &dummy,
+	  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DOT,
+							 expr, true, &dummy,
 							 token->location);
 	  break;
 
