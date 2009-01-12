@@ -1,3 +1,8 @@
+2009-01-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* combine.c (combine_instructions):  Recompute
+	optimize_this_for_speed_p  for each BB in the main combine loop.
+
 2009-01-12  Tomas Bily  <tbily@suse.cz>
 
 	PR middlend/38385
