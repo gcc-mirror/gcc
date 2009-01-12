@@ -1,3 +1,9 @@
+2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/32041
+	* c-parser.c (c_parser_postfix_expression): Allow `->' in
+	offsetof member-designator, handle it as `[0].'.
+
 2009-01-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_asm_output_mi_thunk): Use pc-relative branch to thunk

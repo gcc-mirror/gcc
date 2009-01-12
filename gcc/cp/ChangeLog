@@ -1,5 +1,9 @@
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/32041
+	* parser.c (cp_parser_builtin_offsetof): Allow `->' in
+	offsetof member-designator, handle it as `[0].'.
+
 	PR c++/38794
 	* decl.c (start_function): If grokdeclarator hasn't returned
 	FUNCTION_DECL nor error_mark_node, issue diagnostics.
