@@ -1,3 +1,9 @@
+2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38794
+	* decl.c (start_function): If grokdeclarator hasn't returned
+	FUNCTION_DECL nor error_mark_node, issue diagnostics.
+
 2009-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36254
