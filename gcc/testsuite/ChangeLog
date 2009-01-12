@@ -1,3 +1,24 @@
+2009-01-12  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.target/powerpc/ppc-spe.c: Compile for all EABI targets.
+	Explicitly enable SPE.
+	* gcc.target/powerpc/20030505.c: Likewise.  Add dg-message
+	directive.
+
+	* gcc.target/powerpc/20030218-1.c: Pass -mfloat-gprs=single.
+	Expect -flax-vector-conversions message.  Adjust incompatible
+	types errors.
+	* gcc.target/powerpc/spe1.c: Pass -mspe and -mfloat-gprs=single.
+	Make Foo extern.
+
+	* gcc.dg/cpp/assert4.c: Recognize __PPC__.
+
+	* g++.dg/other/opaque-1.C: Run on targets with SPE.
+
+	* g++.dg/ext/spe-1.C: Pass -mspe and -mfloat-gprs=single.
+	* g++.dg/other/opaque-2.C: Likewise.
+	* g++.dg/other/opaque-3.C: Likewise.
+
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/32041

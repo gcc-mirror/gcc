@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc-*-eabispe* powerpc*-*-linux*spe* } } */
+/* { dg-do run { target { powerpc*-*-* && powerpc_spe } } } */
 
 #define __vector __attribute__((vector_size(8)))
 typedef float __vector __ev64_fs__;

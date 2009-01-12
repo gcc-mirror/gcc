@@ -313,7 +313,7 @@
 # error
 #endif
 
-#if defined __powerpc__
+#if defined __powerpc__ || defined __PPC__
 # if defined __powerpc64__
 #  if (#cpu(powerpc) || #machine(powerpc) \
        || !#cpu(powerpc64) || !#machine(powerpc64))

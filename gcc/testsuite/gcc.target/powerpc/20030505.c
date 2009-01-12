@@ -1,5 +1,5 @@
-/* { dg-do compile { target powerpc-*-eabispe* } } */
-/* { dg-options "-W" } */
+/* { dg-do compile { target powerpc-*-eabi* } } */
+/* { dg-options "-W -mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
 
 #define __vector __attribute__((vector_size(8)))
 
@@ -9,7 +9,7 @@ __ev64_opaque__ *p1;
 __ev64_fs__ *p2;
 int *x;
 
-extern void f (__ev64_opaque__ *);
+extern void f (__ev64_opaque__ *); /* { dg-message "expected.*but argument is of type" } */
 
 int main ()
 {

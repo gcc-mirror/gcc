@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc-*-eabi* powerpc*-*-linux*spe* } } */
-/* { dg-options "-mcpu=8540 -mabi=spe" } */
+/* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
 
 #define __vector __attribute__((vector_size(8)))
 typedef float __vector __ev64_fs__;

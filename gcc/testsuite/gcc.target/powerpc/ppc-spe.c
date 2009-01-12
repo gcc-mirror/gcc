@@ -1,5 +1,5 @@
-/* { dg-do compile { target powerpc-*-eabispe } } */
-/* { dg-options "-mcpu=8540 -mabi=spe -O0" } */
+/* { dg-do compile { target powerpc-*-eabi* } } */
+/* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single -O0" } */
 
 /* (Test with -O0 so we don't optimize any of them away).  */
 
