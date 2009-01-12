@@ -1,3 +1,9 @@
+2009-01-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_asm_output_mi_thunk): Use pc-relative branch to thunk
+	function when not using named sections on targets with named sections
+	if branch distance is less than 262132.
+
 2009-01-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* combine.c (combine_instructions):  Recompute
