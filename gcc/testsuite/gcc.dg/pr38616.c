@@ -1,6 +1,7 @@
 /* PR middle-end/38616 */
 /* { dg-do run } */
 /* { dg-options "-O2 -fstack-protector" } */
+/* { dg-require-effective-target fstack_protector } */
 
 #include <stdio.h> 
 
