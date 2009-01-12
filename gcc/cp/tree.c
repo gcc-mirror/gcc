@@ -2127,8 +2127,10 @@ pod_type_p (const_tree t)
   if (TREE_CODE (t) == VECTOR_TYPE)
     return 1; /* vectors are (small) arrays of scalars */
 
-  if (! CLASS_TYPE_P (t))
+  if (! RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
     return 0; /* other non-class type (reference or function) */
+  if (! CLASS_TYPE_P (t))
+    return 1; /* struct created by the back end */
   if (CLASSTYPE_NON_POD_P (t))
     return 0;
   return 1;

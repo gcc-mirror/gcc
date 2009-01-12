@@ -1,3 +1,7 @@
+2009-01-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/vararg-3.C: New test.
+
 2009-01-12  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.target/powerpc/ppc-spe.c: Compile for all EABI targets.
