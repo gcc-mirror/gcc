@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -1279,7 +1279,8 @@ remove_visited_stmt_chain (tree var)
       if (TREE_CODE (var) != SSA_NAME || !has_zero_uses (var))
 	return;
       stmt = SSA_NAME_DEF_STMT (var);
-      if (!gimple_visited_p (stmt))
+      if (!is_gimple_assign (stmt)
+	  || !gimple_visited_p (stmt))
 	return;
       var = gimple_assign_rhs1 (stmt);
       gsi = gsi_for_stmt (stmt);
