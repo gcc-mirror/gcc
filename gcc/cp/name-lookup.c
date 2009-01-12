@@ -3870,6 +3870,30 @@ qualified_lookup_using_namespace (tree name, tree scope,
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result->value != error_mark_node);
 }
 
+/* Subroutine of outer_binding.
+   Returns TRUE if BINDING is a binding to a template parameter of SCOPE,
+   FALSE otherwise.  */
+static bool
+is_binding_to_template_parms_of_scope_p (cxx_binding *binding,
+					 cxx_scope *scope)
+{
+
+#define IS_TEMPLATE_PARAMETER_OF_SCOPE_P(PARM, SCOPE) \
+(SCOPE \
+ && SCOPE->this_entity \
+ && get_template_info (SCOPE->this_entity) \
+ && is_parameter_of_template_p (PARM, TI_TEMPLATE (get_template_info \
+						    (SCOPE->this_entity))))
+
+  if (!binding || !scope)
+    return false;
+
+  return (IS_TEMPLATE_PARAMETER_OF_SCOPE_P (binding->value ?
+					      binding->value :
+					      binding->type,
+					    scope));
+}
+
 /* Return the innermost non-namespace binding for NAME from a scope
    containing BINDING, or, if BINDING is NULL, the current scope.  If
    CLASS_P is false, then class bindings are ignored.  */
@@ -3920,6 +3944,10 @@ outer_binding (tree name,
 		return class_binding;
 	      }
 	  }
+	if (outer_scope && outer_scope->kind == sk_template_parms
+	    && is_binding_to_template_parms_of_scope_p (outer, scope))
+	  return outer;
+
 	scope = scope->level_chain;
       }
 

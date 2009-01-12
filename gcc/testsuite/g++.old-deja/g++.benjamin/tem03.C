@@ -83,7 +83,7 @@ public:
 template <class T10, int i> struct Xfour {// { dg-error "" } .*
   int T10; // { dg-error "" } .*
   void f(){
-    char T10;
+    char T10; // { dg-error "declaration of 'char T10'" }
   }
 };
 
@@ -126,8 +126,8 @@ public:
   template <class T161>
   friend bool foo(T161 u)
     {
-      Xseven<T161, 5, int> obj; // { dg-error "" } .*
-      return (obj.inst == u.inst); // { dg-error "" } .*
+      Xseven<T161, 5, int> obj;
+      return (obj.inst == u.inst);
     }
 
 };

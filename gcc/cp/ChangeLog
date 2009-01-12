@@ -1,3 +1,13 @@
+2009-01-12  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36019
+	* pt.c (parameter_of_template_p): New function.
+	* cp-tree.h: Declare it.
+	* name-lookup.c (binding_to_template_parms_of_scope_p): New
+	function.
+	(outer_binding): Take template parameters in account when looking for
+	a name binding.
+
 2008-12-04  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
