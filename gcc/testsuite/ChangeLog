@@ -1,3 +1,12 @@
+2009-01-12  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	* g++.dg/conversion/simd1.C: Ignore irrelevant warning.
+	* g++.dg/ext/attribute-test-1.C: Likewise.
+	* g++.dg/ext/attribute-test-2.C: Likewise.
+	* g++.dg/ext/attribute-test-3.C: Likewise.
+	* g++.dg/ext/attribute-test-4.C: Likewise.
+
 2009-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_convert3.adb: New test.

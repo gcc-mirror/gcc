@@ -23,7 +23,7 @@ class Star
 	friend vector float fTest(const Star &);
 };
 
-vector float Star::foo() const  // { dg-warning "vector returned by ref" "" { target { powerpc*-*-linux* && ilp32 } } }
+vector float Star::foo() const
 {
     return data.v;
 }
@@ -50,6 +50,5 @@ int main() {
   return 0;
 }
 
-
-  
-
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output ".*GCC vector returned by reference.*" } */
