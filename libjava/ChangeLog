@@ -1,0 +1,29 @@
+2009-01-11  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am (ecjx_LDADD): Add $(extra_ldflags).
+	* Makefile.in: Regenerate.
+
+2009-01-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	Import GNU Classpath (libgcj-snapshot-20090102).
+
+	* libjava/classpath/lib/java/text/RuleBasedCollator$CollationSorter.class,
+	* libjava/classpath/lib/java/text/MessageFormat$MessageFormatElement.class,
+	* libjava/classpath/lib/java/text/MessageFormat.class,
+	* libjava/classpath/lib/java/text/SimpleDateFormat.class,
+	* libjava/classpath/lib/java/text/NumberFormat.class,
+	* libjava/classpath/lib/java/text/RuleBasedCollator$CollationElement.class,
+	* libjava/classpath/lib/java/text/MessageFormat$Field.class,
+	* libjava/classpath/lib/java/text/RuleBasedCollator.class,
+	* libjava/classpath/lib/java/text/NumberFormat$Field.class,
+	* libjava/classpath/lib/gnu/xml/transform/Bindings.class,
+	* libjava/classpath/lib/gnu/java/locale/LocaleData.class,
+	* libjava/classpath/lib/gnu/java/awt/peer/gtk/FreetypeGlyphVector.class,
+	* libjava/classpath/lib/gnu/javax/crypto/jce/key/SecretKeyGeneratorImpl.class,
+	* libjava/gnu/java/awt/peer/gtk/FreetypeGlyphVector.h,
+	* libjava/java/text/MessageFormat.h,
+	* libjava/java/text/RuleBasedCollator$CollationSorter.h,
+	* libjava/java/text/RuleBasedCollator.h,
+	* libjava/java/text/SimpleDateFormat.h:
+	Regenerated.
+
