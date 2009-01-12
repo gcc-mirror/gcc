@@ -1,3 +1,10 @@
+2009-01-12  Tomas Bily  <tbily@suse.cz>
+
+	PR middlend/38385
+        * tree-loop-distribution.c (prop_phis): New function.
+        (generate_builtin): Call prop_phis.
+        * testsuite/gcc.dg/tree-ssa/pr38385.c: New file.
+
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38807
