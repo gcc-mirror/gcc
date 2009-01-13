@@ -1,5 +1,10 @@
 2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (output_move_double): Don't synthesize thumb-2 ldrd/strd with
+	two 32-bit instructions.
+
+2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (struct processors): Pass for speed down into cost helper
 	functions.
 	(const_ok_for_op): Handle COMPARE and inequality nodes.
