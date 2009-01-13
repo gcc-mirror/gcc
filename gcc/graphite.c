@@ -61,14 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static VEC (scop_p, heap) *current_scops;
 
-/* Print GMP value V on stderr.  */
-
-void
-debug_value (Value v)
-{
-  value_print (stderr, "%4s\n", v);
-}
-
 /* Converts a GMP constant V to a tree and returns it.  */
 
 static tree
