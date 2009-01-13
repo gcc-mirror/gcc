@@ -1,5 +1,16 @@
 2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc:
+	Add dg-timeout-factor 2.0.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Ditto.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Ditto.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Ditto.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Ditto.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Ditto.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Ditto.
+
+2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* scripts/extract_symvers: Add sed script to remove ' [<other>: xx] '
 	field from readelf output.
 
@@ -11,7 +22,8 @@
 
 2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* crossconfig.m4 (linux): Add GCC_CHECK_TLS to define _GLIBCXX_HAVE_TLS.
+	* crossconfig.m4 (linux): Add GCC_CHECK_TLS to define
+	_GLIBCXX_HAVE_TLS.
 	Use GLIBCXX_CHECK_COMPILER_FEATURES to compute SECTION_FLAGS.
 
 2009-01-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
