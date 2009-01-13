@@ -1,3 +1,14 @@
+2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/38384
+	* crossconfig.m4 (hpux): Update for 10.20, 11, 11.20.
+	* configure: Regenerate.
+
+2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* crossconfig.m4 (linux): Add GCC_CHECK_TLS to define _GLIBCXX_HAVE_TLS.
+	Use GLIBCXX_CHECK_COMPILER_FEATURES to compute SECTION_FLAGS.
+
 2009-01-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/tr1_impl/regex (basic_regex::basic_regex): Use range

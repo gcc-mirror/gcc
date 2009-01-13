@@ -80880,6 +80880,101 @@ echo "${ECHO_T}$ac_ld_relro" >&6
 
 
 
+    # GLIBCXX_CHECK_MATH_SUPPORT
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ISNAN 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COPYSIGN 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COPYSIGNF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_HYPOT 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ACOSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ASINF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATANF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSHF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINHF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANHF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_EXPF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATAN2F 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_FABSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_FMODF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_FREXPF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOGF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOG10F 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_MODF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_POWF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SQRTF 1
+_ACEOF
+
+
+
 
 echo "$as_me:$LINENO: checking for main in -lm" >&5
 echo $ECHO_N "checking for main in -lm... $ECHO_C" >&6
@@ -81401,36 +81496,318 @@ done
   fi
 
 
+
+    # GLIBCXX_CHECK_STDLIB_SUPPORT
     cat >>confdefs.h <<\_ACEOF
-#define HAVE_COPYSIGN 1
+#define HAVE_STRTOLD 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_COPYSIGNF 1
+
+
+   # Check whether --enable-tls or --disable-tls was given.
+if test "${enable_tls+set}" = set; then
+  enableval="$enable_tls"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable tls must be yes or no" >&5
+echo "$as_me: error: Argument to enable/disable tls must be yes or no" >&2;}
+   { (exit 1); exit 1; }; } ;;
+      esac
+
+else
+  enable_tls=yes
+fi;
+
+  echo "$as_me:$LINENO: checking whether the target supports thread-local storage" >&5
+echo $ECHO_N "checking whether the target supports thread-local storage... $ECHO_C" >&6
+if test "${gcc_cv_have_tls+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    if test "$cross_compiling" = yes; then
+                if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+gcc_cv_have_tls=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+
+
+else
+  cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+                      chktls_save_LDFLAGS="$LDFLAGS"
+      LDFLAGS="-static $LDFLAGS"
+      if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+int main() { return 0; }
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
+echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&5
+echo "$as_me: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+gcc_cv_have_tls=yes
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+      LDFLAGS="$chktls_save_LDFLAGS"
+      if test $gcc_cv_have_tls = yes; then
+						chktls_save_CFLAGS="$CFLAGS"
+	thread_CFLAGS=failed
+	for flag in '' '-pthread' '-lpthread'; do
+	  CFLAGS="$flag $chktls_save_CFLAGS"
+	  if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <pthread.h>
+		void *g(void *d) { return NULL; }
+int
+main ()
+{
+pthread_t t; pthread_create(&t,NULL,g,NULL);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  thread_CFLAGS="$flag"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+	  if test "X$thread_CFLAGS" != Xfailed; then
+	    break
+	  fi
+	done
+	CFLAGS="$chktls_save_CFLAGS"
+	if test "X$thread_CFLAGS" != Xfailed; then
+	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
+	  if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
+echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&5
+echo "$as_me: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <pthread.h>
+		__thread int a;
+		static int *a_in_other_thread;
+		static void *
+		thread_func (void *arg)
+		{
+		  a_in_other_thread = &a;
+		  return (void *)0;
+		}
+int
+main ()
+{
+pthread_t thread;
+		void *thread_retval;
+		int *a_in_main_thread;
+		if (pthread_create (&thread, (pthread_attr_t *)0,
+				    thread_func, (void *)0))
+		  return 0;
+		a_in_main_thread = &a;
+		if (pthread_join (thread, &thread_retval))
+		  return 0;
+		return (a_in_other_thread == a_in_main_thread);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+	  CFLAGS="$chktls_save_CFLAGS"
+	fi
+      fi
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_have_tls" >&5
+echo "${ECHO_T}$gcc_cv_have_tls" >&6
+  if test "$enable_tls $gcc_cv_have_tls" = "yes yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_TLS 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_FABSF 1
-_ACEOF
-
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_FREXPF 1
-_ACEOF
-
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_HYPOT 1
-_ACEOF
-
+  fi
     case "$target" in
       *-hpux10*)
-	cat >>confdefs.h <<\_ACEOF
-#define HAVE_FINITE 1
-_ACEOF
-
-	cat >>confdefs.h <<\_ACEOF
-#define HAVE_FINITEF 1
-_ACEOF
-
 	cat >>confdefs.h <<\_ACEOF
 #define HAVE_ISINF 1
 _ACEOF
@@ -81440,19 +81817,21 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<\_ACEOF
-#define HAVE_ISNAN 1
+#define HAVE_ISNANF 1
 _ACEOF
 
 	cat >>confdefs.h <<\_ACEOF
-#define HAVE_ISNANF 1
+#define HAVE_FINITE 1
+_ACEOF
+
+	cat >>confdefs.h <<\_ACEOF
+#define HAVE_FINITEF 1
 _ACEOF
 
 	;;
     esac
     ;;
   *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
-    SECTION_FLAGS='-ffunction-sections -fdata-sections'
-
 
   # All these tests are for C++; save the language and the compiler flags.
   # The CXXFLAGS thing is suspicious, but based on similar bits previously
@@ -100001,13 +100380,313 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
-
     cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_RANDOM_TR1 1
 _ACEOF
 
 
-    # For iconv support.
+   # Check whether --enable-tls or --disable-tls was given.
+if test "${enable_tls+set}" = set; then
+  enableval="$enable_tls"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable tls must be yes or no" >&5
+echo "$as_me: error: Argument to enable/disable tls must be yes or no" >&2;}
+   { (exit 1); exit 1; }; } ;;
+      esac
+
+else
+  enable_tls=yes
+fi;
+
+  echo "$as_me:$LINENO: checking whether the target supports thread-local storage" >&5
+echo $ECHO_N "checking whether the target supports thread-local storage... $ECHO_C" >&6
+if test "${gcc_cv_have_tls+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    if test "$cross_compiling" = yes; then
+                if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+gcc_cv_have_tls=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+
+
+else
+  cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+                      chktls_save_LDFLAGS="$LDFLAGS"
+      LDFLAGS="-static $LDFLAGS"
+      if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+int main() { return 0; }
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
+echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&5
+echo "$as_me: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+__thread int a; int b; int main() { return a = b; }
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+gcc_cv_have_tls=yes
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+      LDFLAGS="$chktls_save_LDFLAGS"
+      if test $gcc_cv_have_tls = yes; then
+						chktls_save_CFLAGS="$CFLAGS"
+	thread_CFLAGS=failed
+	for flag in '' '-pthread' '-lpthread'; do
+	  CFLAGS="$flag $chktls_save_CFLAGS"
+	  if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <pthread.h>
+		void *g(void *d) { return NULL; }
+int
+main ()
+{
+pthread_t t; pthread_create(&t,NULL,g,NULL);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  thread_CFLAGS="$flag"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+	  if test "X$thread_CFLAGS" != Xfailed; then
+	    break
+	  fi
+	done
+	CFLAGS="$chktls_save_CFLAGS"
+	if test "X$thread_CFLAGS" != Xfailed; then
+	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
+	  if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
+echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&5
+echo "$as_me: error: cannot run test program while cross compiling
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <pthread.h>
+		__thread int a;
+		static int *a_in_other_thread;
+		static void *
+		thread_func (void *arg)
+		{
+		  a_in_other_thread = &a;
+		  return (void *)0;
+		}
+int
+main ()
+{
+pthread_t thread;
+		void *thread_retval;
+		int *a_in_main_thread;
+		if (pthread_create (&thread, (pthread_attr_t *)0,
+				    thread_func, (void *)0))
+		  return 0;
+		a_in_main_thread = &a;
+		if (pthread_join (thread, &thread_retval))
+		  return 0;
+		return (a_in_other_thread == a_in_main_thread);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_have_tls=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+	  CFLAGS="$chktls_save_CFLAGS"
+	fi
+      fi
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+gcc_cv_have_tls=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_have_tls" >&5
+echo "${ECHO_T}$gcc_cv_have_tls" >&6
+  if test "$enable_tls $gcc_cv_have_tls" = "yes yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_TLS 1
+_ACEOF
+
+  fi
 
 
 
