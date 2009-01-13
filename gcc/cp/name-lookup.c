@@ -4043,8 +4043,12 @@ outer_binding (tree name,
 		return class_binding;
 	      }
 	  }
-	/* If SCOPE is a template and if NAME binds to one of its template parameters
-	   return the binding, otherwise we might miss it.  */
+	/* If we are in a member template, the template parms of the member
+	   template are considered to be inside the scope of the containing
+	   class, but within G++ the class bindings are all pushed between the
+	   template parms and the function body.  So if the outer binding is
+	   a template parm for the current scope, return it now rather than
+	   look for a class binding.  */
 	if (outer_scope && outer_scope->kind == sk_template_parms
 	    && binding_to_template_parms_of_scope_p (outer, scope))
 	  return outer;
