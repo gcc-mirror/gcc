@@ -1,3 +1,8 @@
+2009-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (ARM Options): Update lists of -mcpu and -march
+	values.  Remove duplicate arm8 entry.
+
 2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/38786
