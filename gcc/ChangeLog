@@ -1,5 +1,19 @@
 2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/38786
+	* graphite.c (expand_scalar_variables_ssa_name): New, outlined from
+	the SSA_NAME case of expand_scalar_variables_expr.
+	Set the type of an expression to the type of its assign	statement.
+	(expand_scalar_variables_expr): Also gather the scalar computation
+	used to index the memory access.  Do not pass loop_p.
+	Fix comment.  Stop recursion on tcc_constant or tcc_declaration.
+	(expand_scalar_variables_stmt): Pass to expand_scalar_variables_expr
+	the gimple_stmt_iterator where it inserts new code.  Do not pass loop_p.
+	(copy_bb_and_scalar_dependences): Do not pass loop_p.
+	(translate_clast): Update call to copy_bb_and_scalar_dependences.
+
+2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite.h (debug_value): Removed.
 	* graphite.c (debug_value): Removed.
 
