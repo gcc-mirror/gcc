@@ -1,3 +1,35 @@
+2009-01-13  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/powerpc/altivec-consts.c: Run if vmx_hw, compile
+	otherwise.  Do not check for AltiVec at runtime.
+	* gcc.target/powerpc/altivec-varargs-1.c: Likewise.
+	* gcc.target/powerpc/altivec-vec-merge.c: Likewise.
+	* gcc.target/powerpc/altivec-1.c: Likewise.
+	* gcc.target/powerpc/altivec-3.c: Likewise.
+	* gcc.target/powerpc/altivec-10.c: Likewise.
+	* gcc.target/powerpc/altivec-12.c: Likewise.
+	* gcc.target/powerpc/altivec-24.c: Likewise.
+	* gcc.target/powerpc/altivec-cell-2.c: Likewise.
+	* gcc.target/powerpc/altivec-cell-3.c: Likewise.
+	* gcc.target/powerpc/altivec-cell-4.c: Likewise.
+	* gcc.target/powerpc/pr35907.c: Likewise.
+	* gcc.target/powerpc/altivec-cell-8.c: Run if cell_hw, compile
+	otherwise.  Do not check for Cell at runtime.
+	* gcc.target/powerpc/altivec_check.h: Delete.
+
+	* g++.dg/ext/altivec-2.C: Do not check for AltiVec at runtime.
+	* g++.dg/ext/altivec-3.C: Run if vmx_hw, compile otherwise.  Do
+	not check for AltiVec at runtime.
+	* g++.dg/ext/altivec-cell-2.C: Likewise.
+	* g++.dg/ext/altivec-cell-3.C: Likewise.
+	* g++.dg/ext/altivec-cell-4.C: Likewise.
+	* g++.dg/eh/simd-2.C: Only use -maltivec if vmx_hw.
+	* g++.dg/eh/check-vect.h (sig_ill_handler): Remove AltiVec runtime
+	check.
+	* g++.dg/ext/altivec_check.h: Delete.
+	
 2009-01-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.target/powerpc/altivec-macros.c: Require a powerpc_altivec_ok

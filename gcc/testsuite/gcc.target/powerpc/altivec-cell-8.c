@@ -1,9 +1,11 @@
-/* { dg-do run } */
+/* { dg-do run { target { powerpc*-*-* && cell_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! cell_hw } } } } */
 /* { dg-require-effective-target powerpc_ppu_ok } */
 /* { dg-options "-O2 -maltivec -mabi=altivec -mcpu=cell" } */
 #include <altivec.h>
 #include <string.h>
-#include "altivec_check.h"
+
+extern void abort (void);
 
 typedef short int sint16;
 typedef signed char int8;
@@ -51,6 +53,5 @@ return 0;
 
 int main(void)
 {
-  altivec_cell_check ();
   return main1();
 }

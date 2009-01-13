@@ -1,11 +1,12 @@
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <altivec.h>
-#include <signal.h>
 
-#include "altivec_check.h"
+extern void exit (int);
+extern void abort (void);
 
 typedef union
 {
@@ -72,8 +73,6 @@ check_cmple()
 int 
 main()
 {
-  altivec_check ();
-
   check_cmple ();
   check_vec_all_num ();
   exit (0);

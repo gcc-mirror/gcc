@@ -1,4 +1,5 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 
@@ -10,7 +11,6 @@
 #include <stdlib.h>
 
 #include <altivec.h>
-#include "altivec_check.h"
 
 #define CHECK_INVARIANT(expr) \
   if (!(expr)) { \
@@ -132,7 +132,6 @@ void main1(void)
 
 int main(void)
 {
-    altivec_check();
     main1();
     return 0;
 }

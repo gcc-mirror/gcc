@@ -1,9 +1,8 @@
 /* PR target/35907 */
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -maltivec" } */
-
-#include "altivec_check.h"
 
 #define vector __attribute__((vector_size (16)))
 union
@@ -53,7 +52,6 @@ test (void)
 int
 main ()
 {
-  altivec_check ();
   test ();
   return 0;
 }
