@@ -1,3 +1,8 @@
+2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* scripts/extract_symvers: Add sed script to remove ' [<other>: xx] '
+	field from readelf output.
+
 2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/38384
@@ -3531,10 +3536,10 @@
 
 2008-05-07  Johannes Singler  <singler@ira.uka.de>
 
-       * include/parallel/quicksort.h:
-       (parallel_sort_qs_conquer) Explicitly request number of threads
-       in the parallel clause.
-       (parallel_sort_qs) Remove setting the number of threads globally.
+	* include/parallel/quicksort.h:
+	(parallel_sort_qs_conquer) Explicitly request number of threads
+	in the parallel clause.
+	(parallel_sort_qs) Remove setting the number of threads globally.
 
 2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -4170,14 +4175,14 @@
 
 2008-03-16  Pedro Lamarão  <pedro.lamarao@gmail.com>
 
-      * testsuite/31_date_time/headers/date_time/types_std.cc: New.
-      * testsuite/31_date_time/headers/date_time/std_c++0x_neg.cc: Likewise.
-      * testsuite/31_date_time/headers/date_time/functions_std.cc: Likewise.
-      * testsuite/31_date_time/headers/date_time/synopsis.cc: Likewise.
-      * testsuite/31_date_time/nanoseconds/requirements/traits.cc: Likewise.
-      * testsuite/31_date_time/nanoseconds/requirements/duration.cc: Likewise.
-      * testsuite/31_date_time/system_time/requirements: Likewise.
-      * testsuite/31_date_time/system_time/requirements/traits.cc: Likewise.
+	* testsuite/31_date_time/headers/date_time/types_std.cc: New.
+	* testsuite/31_date_time/headers/date_time/std_c++0x_neg.cc: Likewise.
+	* testsuite/31_date_time/headers/date_time/functions_std.cc: Likewise.
+	* testsuite/31_date_time/headers/date_time/synopsis.cc: Likewise.
+	* testsuite/31_date_time/nanoseconds/requirements/traits.cc: Likewise.
+	* testsuite/31_date_time/nanoseconds/requirements/duration.cc: Likewise.
+	* testsuite/31_date_time/system_time/requirements: Likewise.
+	* testsuite/31_date_time/system_time/requirements/traits.cc: Likewise.
 
 2008-03-16  Paolo Carlini  <pcarlini@suse.de>
 
