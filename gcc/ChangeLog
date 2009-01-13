@@ -1,3 +1,8 @@
+2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite.h (debug_value): Removed.
+	* graphite.c (debug_value): Removed.
+
 2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (output_move_double): Don't synthesize thumb-2 ldrd/strd with

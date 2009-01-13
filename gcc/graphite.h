@@ -381,7 +381,6 @@ extern void debug_rename_map (htab_t);
 extern void debug_ivtype_map (htab_t);
 extern void debug_loop_vec (graphite_bb_p);
 extern void debug_oldivs (scop_p);
-extern void debug_value (Value);
 
 /* Describes the type of an iv stack entry.  */
 typedef enum {
