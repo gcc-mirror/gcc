@@ -1,3 +1,7 @@
+2009-01-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/powerpc/ppc-spe64-1.c: Add dg-error handler.
+
 2009-01-12  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc64): New.
