@@ -1,3 +1,15 @@
+2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (struct processors): Pass for speed down into cost helper
+	functions.
+	(const_ok_for_op): Handle COMPARE and inequality nodes.
+	(arm_rtx_costs_1): Rewrite.
+	(arm_size_rtx_costs): Update prototype.
+	(arm_rtx_costs): Pass speed down to helper functions.
+	(arm_slowmul_rtx_costs): Rework cost calculations.
+	(arm_fastmul_rtx_costs, arm_xscale_rtx_costs): Likewise.
+	(arm_9e_rtx_costs): Likewise.
+
 2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_legitimate_address_p): Explicit
