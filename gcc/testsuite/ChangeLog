@@ -1,3 +1,8 @@
+2009-01-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/powerpc/altivec-macros.c: Require a powerpc_altivec_ok
+	effective target.  Adjust line numbers accordingly.
+
 2009-01-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.target/i386/sse-10.c: Pass -mno-omit-leaf-frame-pointer.
