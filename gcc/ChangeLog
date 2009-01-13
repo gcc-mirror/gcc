@@ -1,3 +1,10 @@
+2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimate_address_p): Explicit
+	relocations of local symbols  wider than UNITS_PER_WORD are not valid.
+	(alpha_legitimize_address): Do not split local symbols wider than
+	UNITS_PER_WORD into HIGH/LO_SUM parts.
+
 2009-01-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR bootstrap/38580
@@ -32,9 +39,9 @@
 2009-01-12  Tomas Bily  <tbily@suse.cz>
 
 	PR middlend/38385
-        * tree-loop-distribution.c (prop_phis): New function.
-        (generate_builtin): Call prop_phis.
-        * testsuite/gcc.dg/tree-ssa/pr38385.c: New file.
+	* tree-loop-distribution.c (prop_phis): New function.
+	(generate_builtin): Call prop_phis.
+	* testsuite/gcc.dg/tree-ssa/pr38385.c: New file.
 
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -85,8 +92,7 @@
 2008-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/38495
-	* ira-emit.c (print_move_list, ira_debug_move_list): New
-	functions.
+	* ira-emit.c (print_move_list, ira_debug_move_list): New functions.
 	(add_range_and_copies_from_move_list): Print all added ranges.
 	Add ranges to memory optimized destination.
 
@@ -111,8 +117,7 @@
 	epilogue_size_needed to the epilogue expanders.
 
 	PR c/35742
-	* c-pretty-print.c (pp_c_expression): Handle GOTO_EXPR like
-	BIND_EXPR.
+	* c-pretty-print.c (pp_c_expression): Handle GOTO_EXPR like BIND_EXPR.
 
 2009-01-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 

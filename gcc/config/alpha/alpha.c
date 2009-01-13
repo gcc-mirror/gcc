@@ -864,9 +864,11 @@ alpha_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 	}
     }
 
-  /* If we're managing explicit relocations, LO_SUM is valid, as
-     are small data symbols.  */
-  else if (TARGET_EXPLICIT_RELOCS)
+  /* If we're managing explicit relocations, LO_SUM is valid, as are small
+     data symbols.  Avoid explicit relocations of modes larger than word
+     mode since i.e. $LC0+8($1) can fold around +/- 32k offset.  */
+  else if (TARGET_EXPLICIT_RELOCS
+	   && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
     {
       if (small_symbolic_operand (x, Pmode))
 	return true;
@@ -916,8 +918,7 @@ get_tls_get_addr (void)
    to be legitimate.  If we find one, return the new, valid address.  */
 
 rtx
-alpha_legitimize_address (rtx x, rtx scratch,
-			  enum machine_mode mode ATTRIBUTE_UNUSED)
+alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
 {
   HOST_WIDE_INT addend;
 
@@ -965,8 +966,12 @@ alpha_legitimize_address (rtx x, rtx scratch,
       goto split_addend;
     }
 
-  /* If this is a local symbol, split the address into HIGH/LO_SUM parts.  */
-  if (TARGET_EXPLICIT_RELOCS && symbolic_operand (x, Pmode))
+  /* If this is a local symbol, split the address into HIGH/LO_SUM parts.
+     Avoid modes larger than word mode since i.e. $LC0+8($1) can fold
+     around +/- 32k offset.  */
+  if (TARGET_EXPLICIT_RELOCS
+      && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+      && symbolic_operand (x, Pmode))
     {
       rtx r0, r16, eqv, tga, tp, insn, dest, seq;
 
