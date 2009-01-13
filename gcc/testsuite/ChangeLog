@@ -1,3 +1,7 @@
+2009-01-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.target/i386/sse-10.c: Pass -mno-omit-leaf-frame-pointer.
+
 2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/38786
