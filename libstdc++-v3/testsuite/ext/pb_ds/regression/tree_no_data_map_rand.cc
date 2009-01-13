@@ -52,6 +52,7 @@
 
 // This can take long on simulators, timing out the test.
 // { dg-options "-DPB_DS_REGRESSION -DITERATIONS=5" { target simulator } }
+// { dg-timeout-factor 2.0 }
 #ifndef ITERATIONS
 #define ITERATIONS 5000
 #endif
