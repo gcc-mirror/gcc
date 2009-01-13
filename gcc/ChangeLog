@@ -1,3 +1,9 @@
+2009-01-13  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR bootstrap/38580
+	* gcc.c (process_command): Replace call to execvp with calls
+	to pex_one and exit.
+
 2009-01-03  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/29141
