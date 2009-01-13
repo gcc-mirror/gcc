@@ -1,3 +1,10 @@
+2009-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/38774
+	* combine.c (simplify_set): When undoing cc_use change, don't do
+	PUT_CODE on the newly created comparison, but instead put back the
+	old comparison.
+
 2009-01-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (ARM Options): Update lists of -mcpu and -march
