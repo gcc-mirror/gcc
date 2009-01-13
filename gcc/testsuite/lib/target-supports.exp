@@ -905,6 +905,65 @@ proc check_vmx_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing 64-bit instructions, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_powerpc64 { } {
+    global powerpc64_available_saved
+    global tool
+
+    if [info exists powerpc64_available_saved] {
+	verbose "check_effective_target_powerpc64 returning saved $powerpc64_available_saved" 2
+    } else {
+	set powerpc64_available_saved 0
+
+	# Some simulators are known to not support powerpc64 instructions.
+	if { [istarget powerpc-*-eabi*] || [istarget powerpc-ibm-aix*] } {
+	    verbose "check_effective_target_powerpc64 returning 0" 2
+	    return $powerpc64_available_saved
+	}
+
+	# Set up, compile, and execute a test program containing a 64-bit
+	# instruction.  Include the current process ID in the file
+	# names to prevent conflicts with invocations for multiple
+	# testsuites.
+	set src ppc[pid].c
+	set exe ppc[pid].x
+
+	set f [open $src "w"]
+	puts $f "int main() {"
+	puts $f "#ifdef __MACH__"
+	puts $f "  asm volatile (\"extsw r0,r0\");"
+	puts $f "#else"
+	puts $f "  asm volatile (\"extsw 0,0\");"
+	puts $f "#endif"
+	puts $f "  return 0; }"
+	close $f
+
+	set opts "additional_flags=-mcpu=G5"
+
+	verbose "check_effective_target_powerpc64 compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable "$opts"]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+	    verbose "check_effective_target_powerpc64 testfile status is <$status>" 2
+
+	    if { $status == "pass" } then {
+		set powerpc64_available_saved 1
+	    }
+	} else {
+	    verbose "check_effective_target_powerpc64 testfile compilation failed" 2
+	}
+    }
+
+    return $powerpc64_available_saved
+}
+
 # GCC 3.4.0 for powerpc64-*-linux* included an ABI fix for passing
 # complex float arguments.  This affects gfortran tests that call cabsf
 # in libm built by an earlier compiler.  Return 1 if libm uses the same
