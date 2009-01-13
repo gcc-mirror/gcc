@@ -6303,7 +6303,7 @@ outermost_tinst_level (void)
 /* Returns TRUE if PARM is a parameter of the template TEMPL.  */
 
 bool
-is_parameter_of_template_p (tree parm, tree templ)
+parameter_of_template_p (tree parm, tree templ)
 {
   tree parms;
   int i;

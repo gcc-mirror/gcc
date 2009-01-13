@@ -3874,29 +3874,29 @@ qualified_lookup_using_namespace (tree name, tree scope,
    Returns TRUE if BINDING is a binding to a template parameter of SCOPE,
    FALSE otherwise.  */
 static bool
-is_binding_to_template_parms_of_scope_p (cxx_binding *binding,
+binding_to_template_parms_of_scope_p (cxx_binding *binding,
 					 cxx_scope *scope)
 {
-
-#define IS_TEMPLATE_PARAMETER_OF_SCOPE_P(PARM, SCOPE) \
-(SCOPE \
- && SCOPE->this_entity \
- && get_template_info (SCOPE->this_entity) \
- && is_parameter_of_template_p (PARM, TI_TEMPLATE (get_template_info \
-						    (SCOPE->this_entity))))
+  tree binding_value;
 
   if (!binding || !scope)
     return false;
 
-  return (IS_TEMPLATE_PARAMETER_OF_SCOPE_P (binding->value ?
-					      binding->value :
-					      binding->type,
-					    scope));
+  binding_value = binding->value ?  binding->value : binding->type;
+
+  return (scope
+	  && scope->this_entity
+	  && get_template_info (scope->this_entity)
+	  && parameter_of_template_p (binding_value,
+				      TI_TEMPLATE (get_template_info \
+						    (scope->this_entity))));
 }
 
 /* Return the innermost non-namespace binding for NAME from a scope
-   containing BINDING, or, if BINDING is NULL, the current scope.  If
-   CLASS_P is false, then class bindings are ignored.  */
+   containing BINDING, or, if BINDING is NULL, the current scope.
+   Please note that for a given template, the template parameters are
+   considered to be in the scope containing the current scope.
+   If CLASS_P is false, then class bindings are ignored.  */
 
 cxx_binding *
 outer_binding (tree name,
@@ -3944,8 +3944,10 @@ outer_binding (tree name,
 		return class_binding;
 	      }
 	  }
+	/* If SCOPE is a template and if NAME binds to one of its template parameters
+	   return the binding, otherwise we might miss it.  */
 	if (outer_scope && outer_scope->kind == sk_template_parms
-	    && is_binding_to_template_parms_of_scope_p (outer, scope))
+	    && binding_to_template_parms_of_scope_p (outer, scope))
 	  return outer;
 
 	scope = scope->level_chain;
