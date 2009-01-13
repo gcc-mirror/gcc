@@ -1,3 +1,9 @@
+2009-01-12  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc64): New.
+	* gcc.target/powerpc/darwin-longlong.c: Explicitly require 64-bit
+	instruction support.  Do not check for it at runtime.
+
 2009-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35109
