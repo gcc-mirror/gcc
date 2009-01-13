@@ -972,14 +972,14 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       while (w > 0)
         {
           if (*p != ' ')
-  	  goto bad_float;
+	    goto bad_float;
           p++;
           w--;
         }
     }    
   else  /* BZ or BN status is enabled */
     {
-      while (w > 0 && (isdigit (*p) || *p == ' '))
+      while (w > 0)
         {
           if (*p == ' ')
             {
