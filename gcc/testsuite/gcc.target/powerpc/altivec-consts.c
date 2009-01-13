@@ -1,10 +1,9 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -O2" } */
 
 /* Check that "easy" AltiVec constants are correctly synthesized.  */
-
-#include "altivec_check.h"
 
 extern void abort (void);
 
@@ -283,8 +282,6 @@ void v4si_vspltisw_neg_addself ()
 
 int main ()
 {
-  altivec_check ();   /* Exit if hardware doesn't support AltiVec.  */
-
   v16qi_vspltisb ();
   v16qi_vspltisb_neg ();
   v16qi_vspltisb_addself ();

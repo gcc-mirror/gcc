@@ -1,9 +1,9 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>
-#include "altivec_check.h"
 
 extern void abort (void);
 
@@ -28,7 +28,6 @@ int verify (void)
 
 int main (void)
 {
-  altivec_check ();   /* Exit if hardware doesn't support AltiVec.  */
   initialize (MAGIC_NUMBER);
   verify ();
   return 0;

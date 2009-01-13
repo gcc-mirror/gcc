@@ -1,9 +1,9 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -O2" } */
 
 #include <altivec.h>
-#include "altivec_check.h"
 
 int printf(const char * , ...);
 extern void abort();
@@ -600,7 +600,6 @@ int main(int argc, char **argv)
 {
     char toto[32] __attribute__((aligned(16)));
 
-    altivec_check ();	/* Exit if hardware doesn't support AltiVec.  */
     foo(toto, toto, 0, 0);
     return 0;
 }

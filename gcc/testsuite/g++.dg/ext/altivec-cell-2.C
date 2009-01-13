@@ -1,9 +1,9 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 /* Test the vec_extract VMX intrinsics.  */
 #include <altivec.h>
-#include "altivec_check.h"
 
 extern "C" void abort (void);
 
@@ -137,6 +137,5 @@ int main1(void)
 
 int main(void)
 { 
-  altivec_check();  /* Exits if AltiVec not supported */
   return main1 ();
 }

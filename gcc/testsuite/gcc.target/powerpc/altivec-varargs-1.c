@@ -1,11 +1,12 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <stdarg.h>
-#include <signal.h>
 
-#include "altivec_check.h"
+extern void exit (int);
+extern void abort (void);
 
 #define vector __attribute__((vector_size (16)))
 
@@ -77,8 +78,5 @@ int main1(void)
 
 int main (void)
 {
-  /* Exit on systems without AltiVec.  */
-  altivec_check ();
-
   return main1 ();
 }

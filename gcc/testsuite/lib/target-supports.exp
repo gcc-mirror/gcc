@@ -905,6 +905,40 @@ proc check_vmx_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing AltiVec and Cell PPU
+# instructions, 0 otherwise.  Cache the result.
+
+proc check_effective_target_cell_hw { } {
+    return [check_cached_effective_target cell_hw_available {
+	# Some simulators are known to not support VMX and PPU instructions.
+	if { [istarget powerpc-*-eabi*] } {
+	    expr 0
+	} else {
+	    # Most targets don't require special flags for this test
+	    # case, but Darwin and AIX do.
+	    if { [istarget *-*-darwin*]
+		 || [istarget *-*-aix*] } {
+		set options "-maltivec -mcpu=cell"
+	    } else {
+		set options "-mcpu=cell"
+	    }
+	    check_runtime_nocache cell_hw_available {
+		int main()
+		{
+		#ifdef __MACH__
+		  asm volatile ("vor v0,v0,v0");
+                  asm volatile ("lvlx v0,r0,r0");
+		#else
+		  asm volatile ("vor 0,0,0");
+                  asm volatile ("lvlx 0,0,0");
+	        #endif
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing 64-bit instructions, 0
 # otherwise.  Cache the result.
 

@@ -1,8 +1,10 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
+/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
 
-#include "altivec_check.h"
+extern void exit (int);
+extern void abort (void);
 
 typedef int int4 __attribute__ ((vector_size (16)));
 typedef float float4 __attribute__ ((vector_size (16)));
@@ -73,7 +75,6 @@ main1 ()
 int
 main ()
 {
-  altivec_check ();
   main1 ();
   exit (0);
 }
