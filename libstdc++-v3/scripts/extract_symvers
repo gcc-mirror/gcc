@@ -53,7 +53,7 @@ export LANG
 tmp=extract.$$
 
 ${readelf} ${lib} |\
-sed -e 's/ [<other>: [A-Fa-f0-9]*] //' -e '/\.dynsym/,/^$/p;d' |\
+sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
 egrep -v ' (LOCAL|UND) ' |\
 awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
          printf "%s:%s\n", $4, $8;
