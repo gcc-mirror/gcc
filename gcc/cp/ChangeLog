@@ -1,3 +1,10 @@
+2009-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38795
+	* tree.c (cp_walk_subtrees): Handle REINTERPRET_CAST_EXPR,
+	STATIC_CAST_EXPR, CONST_CAST_EXPR and DYNAMIC_CAST_EXPR the same
+	as CAST_EXPR.
+
 2009-01-12  Jason Merrill  <jason@redhat.com>
 	    Steve Ellcey  <sje@cup.hp.com>
 

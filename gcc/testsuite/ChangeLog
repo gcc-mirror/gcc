@@ -1,3 +1,8 @@
+2009-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/38795
+	* g++.dg/cpp0x/pr38795.C: New test.
+
 2009-01-13  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
