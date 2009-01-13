@@ -1,0 +1,14 @@
+# Disable missing prototype and type limit warnings.  The prototypes
+# for the functions in the soft-fp files have not been brought across
+# from glibc.
+
+# cfr. srcdirify in gcc/Makefile.in
+soft-fp-files = $(filter $(gcc_srcdir)/config/soft-fp/%, $(LIB2ADD)) \
+	$(filter $(gcc_objdir)/config/soft-fp/%, $(LIB2ADD))
+
+soft-fp-objects-base = $(basename $(notdir $(soft-fp-files)))
+
+soft-fp-objects = $(addsuffix $(objext), $(soft-fp-objects-base)) \
+  $(addsuffix _s$(objext), $(soft-fp-objects-base))
+
+$(soft-fp-objects) : INTERNAL_CFLAGS += -Wno-missing-prototypes -Wno-type-limits

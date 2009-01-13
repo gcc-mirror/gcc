@@ -1,3 +1,9 @@
+2009-01-13  Ben Elliston  <bje@au.ibm.com>
+
+	* config/t-softfp: New file.
+	* config.host (powerpc64-*-linux*, powerpc64-*-gnu*): Add t-softfp.
+	(powerpc-*-linux*spe*, powerpc-*-linux*): Likewise.
+
 2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config.host: Add m32r*-*-rtems*.
