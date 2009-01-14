@@ -1,3 +1,8 @@
+2009-01-14  Nick Clifton  <nickc@redhat.com>
+
+	PR c++/37862
+	* g++.cp/parse/pr37862.C: New test.
+
 2009-01-14  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.target/arm/eabi1.c (__eabi_uread4, __eabi_uwrite4)
