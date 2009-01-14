@@ -1,3 +1,10 @@
+2009-01-14  Nick Clifton  <nickc@redhat.com>
+
+	PR c++/37862
+	* parser.c: Pass cp_id_kind computed in
+	cp_parser_postfix_dot_deref_expression to
+	cp_parser_primary_expression.
+
 2009-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/38795
