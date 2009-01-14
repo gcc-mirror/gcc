@@ -465,23 +465,25 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
       if (gfc_ref_needs_temporary_p (expr->ref)
 	  || gfc_check_dependency (var, expr, !elemental))
 	{
-	  if (elemental == ELEM_DONT_CHECK_VARIABLE
-	      && !gfc_is_data_pointer (var)
-	      && !gfc_is_data_pointer (expr))
+	  if (elemental == ELEM_DONT_CHECK_VARIABLE)
 	    {
-	      /* Elemental procedures forbid unspecified intents, 
-		 and we don't check dependencies for INTENT_IN args.  */
-	      gcc_assert (intent == INTENT_OUT || intent == INTENT_INOUT);
+	      /* Too many false positive with pointers.  */
+	      if (!gfc_is_data_pointer (var) && !gfc_is_data_pointer (expr))
+		{
+		  /* Elemental procedures forbid unspecified intents, 
+		     and we don't check dependencies for INTENT_IN args.  */
+		  gcc_assert (intent == INTENT_OUT || intent == INTENT_INOUT);
 
-	      /* We are told not to check dependencies. 
-		 We do it, however, and issue a warning in case we find one. 
-		 If a dependency is found in the case 
-		 elemental == ELEM_CHECK_VARIABLE, we will generate
-		 a temporary, so we don't need to bother the user.  */
-	      gfc_warning ("INTENT(%s) actual argument at %L might interfere "
-			   "with actual argument at %L.", 
-			   intent == INTENT_OUT ? "OUT" : "INOUT", 
-			   &var->where, &expr->where);
+		  /* We are told not to check dependencies. 
+		     We do it, however, and issue a warning in case we find one.
+		     If a dependency is found in the case 
+		     elemental == ELEM_CHECK_VARIABLE, we will generate
+		     a temporary, so we don't need to bother the user.  */
+		  gfc_warning ("INTENT(%s) actual argument at %L might "
+			       "interfere with actual argument at %L.", 
+		   	       intent == INTENT_OUT ? "OUT" : "INOUT", 
+		   	       &var->where, &expr->where);
+		}
 	      return 0;
 	    }
 	  else

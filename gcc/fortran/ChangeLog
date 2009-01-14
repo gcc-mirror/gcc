@@ -1,3 +1,17 @@
+2009-01-14  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/35681
+	* ChangeLog: Fix function name.
+
+	PR fortran/38487
+	* dependency.c (gfc_check_argument_var_dependency):
+	Move the check for pointerness inside the if block
+	so that it doesn't affect the return value.
+
+	PR fortran/38669
+	* trans-stmt.c (gfc_trans_call):
+	Add the dependency code after the loop bounds calculation one.
+
 2009-01-11 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38763
@@ -160,9 +174,9 @@
 	(gfc_check_fncall_dependency): Add elemental check flag.
 	Update call to gfc_check_argument_dependency.
 	* trans-stmt.c (gfc_trans_call): Make call to
-	gfc_conv_elemental_dependency unconditional, but with a flag
+	gfc_conv_elemental_dependencies unconditional, but with a flag
 	whether we should check dependencies between variables.
-	(gfc_conv_elemental_dependency): Add elemental check flag.
+	(gfc_conv_elemental_dependencies): Add elemental check flag.
 	Update call to gfc_check_fncall_dependency.
 	* trans-expr.c (gfc_trans_arrayfunc_assign): Update call to
 	gfc_check_fncall_dependency.

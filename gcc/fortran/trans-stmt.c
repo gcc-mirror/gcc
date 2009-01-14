@@ -365,6 +365,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
       stmtblock_t body;
       stmtblock_t block;
       gfc_se loopse;
+      gfc_se depse;
 
       /* gfc_walk_elemental_function_args renders the ss chain in the
          reverse order to the actual argument order.  */
@@ -392,8 +393,13 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
 	check_variable = ELEM_CHECK_VARIABLE;
       else
 	check_variable = ELEM_DONT_CHECK_VARIABLE;
-      gfc_conv_elemental_dependencies (&se, &loopse, code->resolved_sym,
+
+      gfc_init_se (&depse, NULL);
+      gfc_conv_elemental_dependencies (&depse, &loopse, code->resolved_sym,
 				       code->ext.actual, check_variable);
+
+      gfc_add_block_to_block (&loop.pre,  &depse.pre);
+      gfc_add_block_to_block (&loop.post, &depse.post);
 
       /* Generate the loop body.  */
       gfc_start_scalarized_body (&loop, &body);
