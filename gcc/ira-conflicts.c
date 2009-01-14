@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "sparseset.h"
 #include "ira-int.h"
+#include "addresses.h"
 
 /* This file contains code responsible for allocno conflict creation,
    allocno copy creation and allocno info accumulation on upper level
@@ -788,12 +789,12 @@ ira_build_conflicts (void)
 	  ira_free (conflicts);
 	}
     }
-  if (! CLASS_LIKELY_SPILLED_P (BASE_REG_CLASS))
+  if (! CLASS_LIKELY_SPILLED_P (base_reg_class (VOIDmode, ADDRESS, SCRATCH)))
     CLEAR_HARD_REG_SET (temp_hard_reg_set);
   else
     {
       COPY_HARD_REG_SET (temp_hard_reg_set,
-			 reg_class_contents[BASE_REG_CLASS]);
+			 reg_class_contents[base_reg_class (VOIDmode, ADDRESS, SCRATCH)]);
       AND_COMPL_HARD_REG_SET (temp_hard_reg_set, ira_no_alloc_regs);
       AND_HARD_REG_SET (temp_hard_reg_set, call_used_reg_set);
     }
