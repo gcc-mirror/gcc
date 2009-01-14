@@ -75,10 +75,10 @@ extern int __aeabi_lcmp (long long, long long);
 extern int __aeabi_ulcmp (unsigned long long, unsigned long long);
 extern int __aeabi_idiv (int, int);
 extern unsigned int __aeabi_uidiv (unsigned int, unsigned int);
-extern int __eabi_uread4 (void *);
-extern int __eabi_uwrite4 (int, void *);
-extern long long __eabi_uread8 (void *);
-extern long long __eabi_uwrite8 (long long, void *);
+extern int __aeabi_uread4 (void *);
+extern int __aeabi_uwrite4 (int, void *);
+extern long long __aeabi_uread8 (void *);
+extern long long __aeabi_uwrite8 (long long, void *);
 
 #define eq(a, b, type, abs, epsilon, format)			\
   {								\

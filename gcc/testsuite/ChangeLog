@@ -1,3 +1,11 @@
+2009-01-14  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/eabi1.c (__eabi_uread4, __eabi_uwrite4)
+	(__eabi_uread8, __eabi_uwrite8): Change spellings of declarations
+	to...
+	(__aeabi_uread4, __aeabi_uwrite4, __aeabi_uread8, __aeabi_uwrite8):
+	These.
+
 2009-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38774
