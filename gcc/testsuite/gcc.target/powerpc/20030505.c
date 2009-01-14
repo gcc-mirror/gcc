@@ -1,5 +1,6 @@
-/* { dg-do compile { target powerpc-*-eabi* } } */
+/* { dg-do compile } */
 /* { dg-options "-W -mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
 
 #define __vector __attribute__((vector_size(8)))
 
