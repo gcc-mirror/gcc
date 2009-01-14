@@ -5172,6 +5172,82 @@ scop_insert_phis_for_liveouts (sese region, basic_block bb,
   update_ssa (TODO_update_ssa);
 }
 
+/* Get the definition of NAME before the SCOP.  Keep track of the
+   basic blocks that have been VISITED in a bitmap.  */
+
+static tree
+get_vdef_before_scop (scop_p scop, tree name, sbitmap visited)
+{
+  unsigned i;
+  gimple def_stmt = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (def_stmt);
+
+  if (!bb_in_scop_p (def_bb, scop))
+    return name;
+
+  if (TEST_BIT (visited, def_bb->index))
+    return NULL_TREE;
+
+  SET_BIT (visited, def_bb->index);
+
+  switch (gimple_code (def_stmt))
+    {
+    case GIMPLE_PHI:
+      for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
+	{
+	  tree arg = gimple_phi_arg_def (def_stmt, i);
+	  tree res = get_vdef_before_scop (scop, arg, visited);
+	  if (res)
+	    return res;
+	}
+      return NULL_TREE;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Adjust a virtual phi node PHI that is placed at the end of the
+   generated code for SCOP:
+
+   | if (1)
+   |   generated code from REGION;
+   | else
+   |   REGION;
+
+   The FALSE_E edge comes from the original code, TRUE_E edge comes
+   from the code generated for the SCOP.  */
+
+static void
+scop_adjust_vphi (scop_p scop, gimple phi, edge true_e)
+{
+  unsigned i;
+
+  gcc_assert (gimple_phi_num_args (phi) == 2);
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    if (gimple_phi_arg_edge (phi, i) == true_e)
+      {
+	tree true_arg, false_arg, before_scop_arg;
+	sbitmap visited;
+
+	true_arg = gimple_phi_arg_def (phi, i);
+	if (!SSA_NAME_IS_DEFAULT_DEF (true_arg))
+	  return;
+
+	false_arg = gimple_phi_arg_def (phi, i == 0 ? 1 : 0);
+	if (SSA_NAME_IS_DEFAULT_DEF (false_arg))
+	  return;
+
+	visited = sbitmap_alloc (last_basic_block);
+	sbitmap_zero (visited);
+	before_scop_arg = get_vdef_before_scop (scop, false_arg, visited);
+	gcc_assert (before_scop_arg != NULL_TREE);
+	SET_PHI_ARG_DEF (phi, i, before_scop_arg);
+	sbitmap_free (visited);
+      }
+}
+
 /* Adjusts the phi nodes in the block BB for variables defined in
    SCOP_REGION and used outside the SCOP_REGION.  The code generation
    moves SCOP_REGION in the else clause of an "if (1)" and generates
@@ -5198,7 +5274,10 @@ scop_adjust_phis_for_liveouts (scop_p scop, basic_block bb, edge false_e,
       gimple phi = gsi_stmt (si);
 
       if (!is_gimple_reg (PHI_RESULT (phi)))
-	continue;
+	{
+	  scop_adjust_vphi (scop, phi, true_e);
+	  continue;
+	}
 
       for (i = 0; i < gimple_phi_num_args (phi); i++)
 	if (gimple_phi_arg_edge (phi, i) == false_e)
@@ -5378,9 +5457,6 @@ gloog (scop_p scop, struct clast_stmt *stmt)
 				 if_region->false_region->exit,
 				 if_region->true_region->exit);
 
-  recompute_all_dominators ();
-  graphite_verify ();
-  cleanup_tree_cfg ();
   recompute_all_dominators ();
   graphite_verify ();
 }
@@ -6076,6 +6152,7 @@ graphite_transform_loops (void)
     }
 
   /* Cleanup.  */
+  cleanup_tree_cfg ();
   free_scops (current_scops);
   cloog_finalize ();
   free_original_copy_tables ();
