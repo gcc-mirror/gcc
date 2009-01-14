@@ -1,3 +1,7 @@
+2009-01-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* ChangeLog-2007: Clean out svn merge droppings.
+
 2009-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38763

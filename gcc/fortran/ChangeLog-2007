@@ -87,7 +87,6 @@
 	* module.c (read_module): Check sym->module is there before
 	using it in a string comparison.
 
->>>>>>> .r131138
 2007-12-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34482
