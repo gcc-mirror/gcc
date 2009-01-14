@@ -3280,7 +3280,6 @@
 	PR tree-optimization/37508
 	* gcc.dg/tree-ssa/pr37508.c: New testcase.
 
->>>>>>> .r140590
 2008-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* g++.old-deja/g++.brendan/crash16.C: Function name is the correct 
