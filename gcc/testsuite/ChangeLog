@@ -1,3 +1,14 @@
+2009-01-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.target/arm/long-calls-1.c: Tolerate the lack of sibling
+	calls and/or PLT markers.
+	* gcc.target/arm/long-calls-2.c: Tolerate the lack of sibling
+	calls and/or PLT markers.
+	* gcc.target/arm/long-calls-3.c: Tolerate the lack of sibling
+	calls and/or PLT markers.
+	* gcc.target/arm/long-calls-4.c: Tolerate the lack of sibling
+	calls and/or PLT markers.
+
 2009-01-14  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
