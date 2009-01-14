@@ -1,3 +1,14 @@
+2009-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38826
+	PR middle-end/38477
+	* tree-ssa-structalias.c (emit_alias_warning): Emit the pointer
+	initialization notes only if we actually emitted a warning.
+	(intra_create_variable_infos): Add constraints for a result decl
+	that is passed by hidden reference.
+	(build_pred_graph): Mark all related variables non-direct on
+	address-taking.
+
 2009-01-14  Nick Clifton  <nickc@redhat.com>
 
 	* ira-conflicts.c: Include addresses.h for the definition of
