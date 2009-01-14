@@ -1,3 +1,7 @@
+2009-01-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* testsuite/g++.dg/torture/pr38811.C: New file.
+
 2009-01-14  Basile Starynkevitch  <basile@starynkevitch.net>
 	* doc/gty.texi (Invoking the garbage collector): Added new node
 	and section documenting ggc_collect.
