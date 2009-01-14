@@ -1,3 +1,11 @@
+2009-01-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/38811
+	* Makefile.in (ira-lives.o): Add except.h.
+
+	* ira-lives.c: Include except.h.
+	(process_bb_node_lives): Process can_throw_internal.
+
 2009-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38774
