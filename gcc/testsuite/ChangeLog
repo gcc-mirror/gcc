@@ -1,3 +1,7 @@
+2009-01-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/pr38786.c: Fix commit problem.
+
 2009-01-14  Nick Clifton  <nickc@redhat.com>
 
 	PR c++/37862
