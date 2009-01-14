@@ -1,3 +1,7 @@
+2009-01-14  Basile Starynkevitch  <basile@starynkevitch.net>
+	* doc/gty.texi (Invoking the garbage collector): Added new node
+	and section documenting ggc_collect.
+
 2009-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38826
