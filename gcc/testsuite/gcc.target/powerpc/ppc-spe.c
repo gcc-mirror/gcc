@@ -1,5 +1,6 @@
-/* { dg-do compile { target powerpc-*-eabi* } } */
+/* { dg-do compile } */
 /* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single -O0" } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
 
 /* (Test with -O0 so we don't optimize any of them away).  */
 

@@ -1,3 +1,20 @@
+2009-01-14  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_spe_nocache):
+	New function.
+	* gcc.target/powerpc/20030218-1.c: Skip if not powerpc_spe_nocache
+	and use consistent CFLAGS.
+	* gcc.target/powerpc/20030505.c: Likewise.
+	* gcc.target/powerpc/20081204-1.c: Likewise.
+	* gcc.target/powerpc/ppc-spe.c: Likewise.
+	* gcc.target/powerpc/spe1.c: Likewise.
+	* g++.dg/ext/spe1.C: Likewise.
+	* g++.dg/other/opaque-1.C: Likewise.
+	* g++.dg/other/opaque-2.C: Likewise.
+	* g++.dg/other/opaque-3.C: Likewise.
+
 2009-01-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/vect/vect-105.c: Prevent compiler from hoisting abort

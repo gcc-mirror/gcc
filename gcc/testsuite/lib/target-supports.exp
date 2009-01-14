@@ -1535,6 +1535,23 @@ proc check_effective_target_powerpc_spu { } {
     }
 }
 
+# Return 1 if this is a PowerPC SPE target.  The check includes options
+# specified by dg-options for this test, so don't cache the result.
+
+proc check_effective_target_powerpc_spe_nocache { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages_nocache powerpc_spe object {
+	    #ifndef __SPE__
+	    #error not SPE
+	    #else
+	    int dummy;
+	    #endif
+	} [current_compiler_flags]]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a PowerPC target with SPE enabled.
 
 proc check_effective_target_powerpc_spe { } {

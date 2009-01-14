@@ -1,6 +1,6 @@
-/* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_spe } */
-/* { dg-options "-O -mspe=yes" } */
+/* { dg-do compile } */
+/* { dg-options "-O -mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
 /* { dg-final { scan-assembler "evstdd" } } */
 
 void foo(void)
