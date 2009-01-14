@@ -39,72 +39,81 @@ DO_TESTS_CALL_ATTR (static_, STATIC_CALL,)
 
 
 /* Calls to remote_*, strong_* and weak_* should honor the call type
-   sttribute, with "long" being the default.  */
+   attribute, with "long" being the default.  
 
-/* { dg-final { scan-assembler-not "\tbl\tremote_n1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl\tremote_n2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl\tremote_n3\\(PLT\\)\n" } } */
+   In the regular expressions below:
+   
+   * The PLT marker is optional, even though we are using -fpic,
+     because it is not used (or required) on some targets.
 
-/* { dg-final { scan-assembler-not "\tbl\tremote_l1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl\tremote_l2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl\tremote_l3\\(PLT\\)\n" } } */
+   * We allow both "b" and "bl" in some cases to allow for the
+     possibility of sibling calls.  As of this writing, GCC does not
+     use sibling calls in Thumb-2 mode.  */
 
-/* { dg-final { scan-assembler "\tbl\tremote_s1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tremote_s2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tremote_s3\\(PLT\\)\n" } } */
+/* { dg-final { scan-assembler-not "\tbl\tremote_n1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl\tremote_n2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl\tremote_n3(\\(PLT\\))?\n" } } */
 
+/* { dg-final { scan-assembler-not "\tbl\tremote_l1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl\tremote_l2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl\tremote_l3(\\(PLT\\))?\n" } } */
 
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_n1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_n2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_n3\\(PLT\\)\n" } } */
-
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_l1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_l2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstrong_l3\\(PLT\\)\n" } } */
-
-/* { dg-final { scan-assembler "\tbl\tstrong_s1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tstrong_s1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstrong_s2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tstrong_s2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstrong_s3\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tstrong_s3\\(PLT\\)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tremote_s1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tremote_s2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tremote_s3(\\(PLT\\))?\n" } } */
 
 
-/* { dg-final { scan-assembler-not "\tbl?\tweak_n1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tweak_n2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tweak_n3\\(PLT\\)\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_n1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_n2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_n3(\\(PLT\\))?\n" } } */
 
-/* { dg-final { scan-assembler-not "\tbl?\tweak_l1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tweak_l2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tweak_l3\\(PLT\\)\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_l1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_l2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstrong_l3(\\(PLT\\))?\n" } } */
 
-/* { dg-final { scan-assembler "\tbl\tweak_s1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tweak_s1\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tweak_s2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tweak_s2\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tbl\tweak_s3\\(PLT\\)\n" } } */
-/* { dg-final { scan-assembler "\tb\tweak_s3\\(PLT\\)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstrong_s1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstrong_s1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstrong_s2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstrong_s2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstrong_s3(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstrong_s3(\\(PLT\\))?\n" } } */
+
+
+/* { dg-final { scan-assembler-not "\tbl?\tweak_n1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tweak_n2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tweak_n3(\\(PLT\\))?\n" } } */
+
+/* { dg-final { scan-assembler-not "\tbl?\tweak_l1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tweak_l2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tweak_l3(\\(PLT\\))?\n" } } */
+
+/* { dg-final { scan-assembler "\tbl\tweak_s1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tweak_s1(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tweak_s2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tweak_s2(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl\tweak_s3(\\(PLT\\))?\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tweak_s3(\\(PLT\\))?\n" } } */
 
 
 /* Calls to static_*2 calls should honor the call type attribute,
    with "long" being the default.  Calls to other static_* functions
    should be short.  */
 
-/* { dg-final { scan-assembler "\tbl\tstatic_n1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_n1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstatic_n2(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstatic_n3(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_n3(\\(PLT\\))\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_n1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_n1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstatic_n2((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_n3((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_n3((\\(PLT\\))?)\n" } } */
 
-/* { dg-final { scan-assembler "\tbl\tstatic_l1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_l1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler-not "\tbl?\tstatic_l2(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstatic_l3(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_l3(\\(PLT\\))\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_l1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_l1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler-not "\tbl?\tstatic_l2((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_l3((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_l3((\\(PLT\\))?)\n" } } */
 
-/* { dg-final { scan-assembler "\tbl\tstatic_s1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_s1(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstatic_s2(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_s2(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tbl\tstatic_s3(\\(PLT\\))\n" } } */
-/* { dg-final { scan-assembler "\tb\tstatic_s3(\\(PLT\\))\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_s1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_s1((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_s2((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_s2((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl\tstatic_s3((\\(PLT\\))?)\n" } } */
+/* { dg-final { scan-assembler "\tbl?\tstatic_s3((\\(PLT\\))?)\n" } } */
