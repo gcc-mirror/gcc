@@ -1,3 +1,10 @@
+2009-01-14  Michael Meissner  <gnu@the-meissners.org>
+
+	PR target/22599
+	* i386.c (print_operand): Add tests for 'D', 'C', 'F', 'f' to make
+	sure the insn is a conditional test (bug 22599).  Reformat a few long
+	lines.
+
 2009-01-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/38431

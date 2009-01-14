@@ -10834,7 +10834,8 @@ print_operand (FILE *file, rtx x, int code)
 		  fputs ("ord", file);
 		  break;
 		default:
-		  gcc_unreachable ();
+		  output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+		  return;
 		}
 	    }
 	  else
@@ -10872,7 +10873,8 @@ print_operand (FILE *file, rtx x, int code)
 		  fputs ("ord", file);
 		  break;
 		default:
-		  gcc_unreachable ();
+		  output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+		  return;
 		}
 	    }
 	  return;
@@ -10894,9 +10896,23 @@ print_operand (FILE *file, rtx x, int code)
 #endif
 	  return;
 	case 'C':
+	  if (!COMPARISON_P (x))
+	    {
+	      output_operand_lossage ("operand is neither a constant nor a "
+				      "condition code, invalid operand code "
+				      "'C'");
+	      return;
+	    }
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 0, 0, file);
 	  return;
 	case 'F':
+	  if (!COMPARISON_P (x))
+	    {
+	      output_operand_lossage ("operand is neither a constant nor a "
+				      "condition code, invalid operand code "
+				      "'F'");
+	      return;
+	    }
 #ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('.', file);
@@ -10909,13 +10925,22 @@ print_operand (FILE *file, rtx x, int code)
 	  /* Check to see if argument to %c is really a constant
 	     and not a condition code which needs to be reversed.  */
 	  if (!COMPARISON_P (x))
-	  {
-	    output_operand_lossage ("operand is neither a constant nor a condition code, invalid operand code 'c'");
-	     return;
-	  }
+	    {
+	      output_operand_lossage ("operand is neither a constant nor a "
+				      "condition code, invalid operand "
+				      "code 'c'");
+	      return;
+	    }
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 0, file);
 	  return;
 	case 'f':
+	  if (!COMPARISON_P (x))
+	    {
+	      output_operand_lossage ("operand is neither a constant nor a "
+				      "condition code, invalid operand "
+				      "code 'f'");
+	      return;
+	    }
 #ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('.', file);
@@ -11022,7 +11047,8 @@ print_operand (FILE *file, rtx x, int code)
 	      fputs ("une", file);
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+	      return;
 	    }
 	  return;
 
