@@ -1,3 +1,8 @@
+2009-01-14  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp (mips_option_tests(-mips16)): Make the
+	sequence PC-relative.
+
 2009-01-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.target/arm/long-calls-1.c: Tolerate the lack of sibling

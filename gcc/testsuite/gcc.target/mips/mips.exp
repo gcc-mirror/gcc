@@ -269,15 +269,14 @@ set mips_abi_groups {
 # on a target that supports OPTION.
 set mips_option_tests(-mips16) {
     move $2,$31
-    jal 1f
-    b 2f
-    .align 2
+    bal 1f
     .set mips16
-1:
     jr $31
     .set nomips16
     .align 2
-2:
+1:
+    ori $3,$31,1
+    jalr $3
     move $31,$2
 }
 set mips_option_tests(-mpaired-single) {
