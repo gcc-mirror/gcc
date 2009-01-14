@@ -2926,7 +2926,7 @@ ira-costs.o: ira-costs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 ira-conflicts.o: ira-conflicts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
    insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
-   $(DF_H) sparseset.h $(IRA_INT_H)
+   $(DF_H) sparseset.h addresses.h $(IRA_INT_H)
 ira-color.o: ira-color.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
