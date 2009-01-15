@@ -5109,6 +5109,9 @@ pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
+	  if (!TYPE_BEING_DEFINED (current_class_type))
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+
 	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    /* Put this TYPE_DECL on the TYPE_FIELDS list for the
 	       class.  But if it's a member template class, we want

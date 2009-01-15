@@ -1,3 +1,9 @@
+2009-01-15  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/38636
+	* name-lookup.c (pushtag): Don't create members to types that are not
+	being created.
+
 2009-01-14  Nick Clifton  <nickc@redhat.com>
 
 	PR c++/37862
