@@ -288,12 +288,7 @@ Currently these are:
   config/locale
   config/os
 
-In addition, two subdirectories are convenience libraries:
-
-  libmath
-    Support routines needed for C++ math. Only needed if the
-    underlying "C" implementation is non-existent, in particular
-    required or optimal long double, long long, and C99 functionality.
+In addition, a subdirectory holds the convenience library libsupc++.
 
   libsupc++
     Contains the runtime library for C++, including exception

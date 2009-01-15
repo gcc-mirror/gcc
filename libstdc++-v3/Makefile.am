@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -25,7 +25,7 @@
 include $(top_srcdir)/fragment.am
 
 if GLIBCXX_HOSTED
-  hosted_source = libmath doc src po testsuite
+  hosted_source = doc src po testsuite
 endif
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 SUBDIRS = include libsupc++ $(hosted_source)

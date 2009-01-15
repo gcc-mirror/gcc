@@ -216,7 +216,6 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
-LIBMATHOBJS = @LIBMATHOBJS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
@@ -444,12 +443,10 @@ sources = \
 libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \
-	$(top_builddir)/libmath/libmath.la \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_DEPENDENCIES = \
 	${version_dep} \
-	$(top_builddir)/libmath/libmath.la \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = \

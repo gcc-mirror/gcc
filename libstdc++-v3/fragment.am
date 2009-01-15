@@ -1,5 +1,5 @@
 
-## This is used in all Makefile.am's except for libmath's.  Set defaults here.
+## This is used in all Makefile.am's.  Set defaults here.
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
