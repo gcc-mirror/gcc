@@ -358,7 +358,7 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
       }
 
   /* Walk backwards, looking for argument stores.  The search stops
-     when seeting another call, sp adjustment or memory store other than
+     when seeing another call, sp adjustment or memory store other than
      argument store.  */
   ret = false;
   for (insn = PREV_INSN (call_insn); insn; insn = prev_insn)
@@ -522,9 +522,13 @@ delete_unmarked_insns (void)
 	  else if (marked_insn_p (insn))
 	    continue;
 
-	  /* Beware that reaching a dbg counter limit here can easily result
-	     in miscompiled file, whenever some insn is eliminated, but
-	     insn that depends on it is not.  */
+	  /* Beware that reaching a dbg counter limit here can rarely
+	     result in miscompiled file.  This occurs when a group of
+	     insns must be deleted together.  Currently this only
+	     can happen on non-looping pure and constant calls
+	     on machines where ACCUMULATE_OUTGOING_ARGS is true.  By
+	     using the dbg_cnt, it is possible to remove the call, but
+	     leave the argument pushes to the stack.  */
 	  if (!dbg_cnt (dce))
 	    continue;
 
