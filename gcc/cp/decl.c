@@ -9285,6 +9285,13 @@ grokdeclarator (const cp_declarator *declarator,
 		       "declared out of global scope", name);
 	  }
 
+	if (ctype != NULL_TREE
+	    && TREE_CODE (ctype) != NAMESPACE_DECL && !MAYBE_CLASS_TYPE_P (ctype))
+	  {
+	    error ("%q#T is not a class or a namespace", ctype);
+	    ctype = NULL_TREE;
+	  }
+
 	if (ctype == NULL_TREE)
 	  {
 	    if (virtualp)
