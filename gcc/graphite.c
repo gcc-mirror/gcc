@@ -2698,13 +2698,11 @@ scan_tree_for_params (scop_p s, tree e, CloogMatrix *c, int r, Value k,
 
     case MINUS_EXPR:
       scan_tree_for_params (s, TREE_OPERAND (e, 0), c, r, k, subtract);
-      value_oppose (k, k);
-      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, r, k, subtract);
+      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, r, k, !subtract);
       break;
 
     case NEGATE_EXPR:
-      value_oppose (k, k);
-      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, r, k, subtract);
+      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, r, k, !subtract);
       break;
 
     case SSA_NAME:
@@ -3717,8 +3715,35 @@ max_precision_type (tree e1, tree e2)
   return TYPE_PRECISION (type1) > TYPE_PRECISION (type2) ? type1 : type2;
 }
 
-/* Converts a Cloog AST expression E back to a GCC expression tree
-   of type TYPE.  */
+static tree
+clast_to_gcc_expression (tree, struct clast_expr *, VEC (name_tree, heap) *,
+			 loop_iv_stack);
+
+/* Converts a Cloog reduction expression R with reduction operation OP
+   to a GCC expression tree of type TYPE.  PARAMS is a vector of
+   parameters of the scop, and IVSTACK contains the stack of induction
+   variables.  */
+
+static tree
+clast_to_gcc_expression_red (tree type, enum tree_code op,
+			     struct clast_reduction *r,
+			     VEC (name_tree, heap) *params,
+			     loop_iv_stack ivstack)
+{
+  int i;
+  tree res = clast_to_gcc_expression (type, r->elts[0], params, ivstack);
+
+  for (i = 1; i < r->n; i++)
+    {
+      tree t = clast_to_gcc_expression (type, r->elts[i], params, ivstack);
+      res = fold_build2 (op, type, res, t);
+    }
+  return res;
+}
+
+/* Converts a Cloog AST expression E back to a GCC expression tree of
+   type TYPE.  PARAMS is a vector of parameters of the scop, and
+   IVSTACK contains the stack of induction variables.  */
 
 static tree
 clast_to_gcc_expression (tree type, struct clast_expr *e,
@@ -3764,54 +3789,13 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
         switch (r->type)
           {
 	  case clast_red_sum:
-	    if (r->n == 1)
-	      return clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-
-	    else 
-	      {
-		tree tl = clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-		tree tr = clast_to_gcc_expression (type, r->elts[1], params, ivstack);
-
-		gcc_assert (r->n >= 1
-			    && r->elts[0]->type == expr_term
-			    && r->elts[1]->type == expr_term);
-
-		return fold_build2 (PLUS_EXPR, type, tl, tr);
-	      }
-
-	    break;
+	    return clast_to_gcc_expression_red (type, PLUS_EXPR, r, params, ivstack);
 
 	  case clast_red_min:
-	    if (r->n == 1)
-	      return clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-
-	    else if (r->n == 2)
-	      {
-		tree tl = clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-		tree tr = clast_to_gcc_expression (type, r->elts[1], params, ivstack);
-		return fold_build2 (MIN_EXPR, type, tl, tr);
-	      }
-
-	    else
-	      gcc_unreachable();
-
-	    break;
+	    return clast_to_gcc_expression_red (type, MIN_EXPR, r, params, ivstack);
 
 	  case clast_red_max:
-	    if (r->n == 1)
-	      return clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-
-	    else if (r->n == 2)
-	      {
-		tree tl = clast_to_gcc_expression (type, r->elts[0], params, ivstack);
-		tree tr = clast_to_gcc_expression (type, r->elts[1], params, ivstack);
-		return fold_build2 (MAX_EXPR, type, tl, tr);
-	      }
-
-	    else
-	      gcc_unreachable();
-
-	    break;
+	    return clast_to_gcc_expression_red (type, MAX_EXPR, r, params, ivstack);
 
 	  default:
 	    gcc_unreachable ();
@@ -5182,7 +5166,8 @@ get_vdef_before_scop (scop_p scop, tree name, sbitmap visited)
   gimple def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block def_bb = gimple_bb (def_stmt);
 
-  if (!bb_in_scop_p (def_bb, scop))
+  if (!def_bb
+      || !bb_in_scop_p (def_bb, scop))
     return name;
 
   if (TEST_BIT (visited, def_bb->index))

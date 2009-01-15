@@ -1,3 +1,14 @@
+2009-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <tobi.grosser@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+
+	* graphite.c (scan_tree_for_params): On substractions negate
+	all the coefficients of the term.
+	(clast_to_gcc_expression_red): New.  Handle reduction expressions
+	of more than two operands.
+	(clast_to_gcc_expression): Call clast_to_gcc_expression_red.
+	(get_vdef_before_scop): Handle also the case of default definitions.
+
 2009-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* caller-save.c (add_used_regs_1, add_used_regs): New functions.
