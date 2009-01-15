@@ -1,3 +1,8 @@
+2009-01-15  Douglas B Rupp  <rupp@gnat.com>
+
+	* configure.ac (ia64*-*-*vms*): Add case with no gdb or ld support.
+	* configure: Regenerate.
+
 2009-01-12  Ramana Radhakrishnan  <ramana.r@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
