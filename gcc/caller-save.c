@@ -1179,6 +1179,39 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   return numregs - 1;
 }
 
+/* A for_each_rtx callback used by add_used_regs.  Add the hard-register
+   equivalent of each REG to regset DATA.  */
+
+static int
+add_used_regs_1 (rtx *loc, void *data)
+{
+  int regno, i;
+  regset live;
+  rtx x;
+
+  x = *loc;
+  live = (regset) data;
+  if (REG_P (x))
+    {
+      regno = REGNO (x);
+      if (!HARD_REGISTER_NUM_P (regno))
+	regno = reg_renumber[regno];
+      if (regno >= 0)
+	for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
+	  SET_REGNO_REG_SET (live, regno + i);
+    }
+  return 0;
+}
+
+/* A note_uses callback used by insert_one_insn.  Add the hard-register
+   equivalent of each REG to regset DATA.  */
+
+static void
+add_used_regs (rtx *loc, void *data)
+{
+  for_each_rtx (loc, add_used_regs_1, data);
+}
+
 /* Emit a new caller-save insn and set the code.  */
 static struct insn_chain *
 insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
@@ -1216,58 +1249,16 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
       /* ??? It would be nice if we could exclude the already / still saved
 	 registers from the live sets.  */
       COPY_REG_SET (&new_chain->live_throughout, &chain->live_throughout);
-      /* Registers that die in CHAIN->INSN still live in the new insn.
-	 Likewise for those which are autoincremented or autodecremented.  */
-      for (link = REG_NOTES (chain->insn); link; link = XEXP (link, 1))
-	{
-	  enum reg_note kind = REG_NOTE_KIND (link);
-	  if (kind == REG_DEAD || kind == REG_INC)
-	    {
-	      rtx reg = XEXP (link, 0);
-	      int regno, i;
-
-	      gcc_assert (REG_P (reg));
-	      regno = REGNO (reg);
-	      if (regno >= FIRST_PSEUDO_REGISTER)
-		regno = reg_renumber[regno];
-	      if (regno < 0)
-		continue;
-	      for (i = hard_regno_nregs[regno][GET_MODE (reg)] - 1;
-		   i >= 0; i--)
-		SET_REGNO_REG_SET (&new_chain->live_throughout, regno + i);
-	    }
-	}
-
+      note_uses (&PATTERN (chain->insn), add_used_regs,
+		 &new_chain->live_throughout);
       /* If CHAIN->INSN is a call, then the registers which contain
 	 the arguments to the function are live in the new insn.  */
       if (CALL_P (chain->insn))
-	{
-	  for (link = CALL_INSN_FUNCTION_USAGE (chain->insn);
-	       link != NULL_RTX;
-	       link = XEXP (link, 1))
-	    {
-	      rtx arg = XEXP (link, 0);
-
-	      if (GET_CODE (arg) == USE)
-		{
-		  rtx reg = XEXP (arg, 0);
-
-		  if (REG_P (reg))
-		    {
-		      int i, regno = REGNO (reg);
-
-		      /* Registers in CALL_INSN_FUNCTION_USAGE are always
-			 hard registers.  */
-		      gcc_assert (regno < FIRST_PSEUDO_REGISTER);
-
-		      for (i = hard_regno_nregs[regno][GET_MODE (reg)] - 1;
-			   i >= 0; i--)
-			SET_REGNO_REG_SET (&new_chain->live_throughout, regno + i);
-		    }
-		}
-	    }
-	  
-	}
+	for (link = CALL_INSN_FUNCTION_USAGE (chain->insn);
+	     link != NULL_RTX;
+	     link = XEXP (link, 1))
+	  note_uses (&XEXP (link, 0), add_used_regs,
+		     &new_chain->live_throughout);
 
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_HEAD (BASIC_BLOCK (chain->block)))
