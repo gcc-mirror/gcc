@@ -1,6 +1,6 @@
 // <thread> -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -96,7 +96,7 @@ namespace std
     typedef __gthread_t native_handle_type;
 
     // cons
-    thread();
+    thread() = default;
     
     template<typename _Callable>
       explicit thread(_Callable __f)
@@ -108,7 +108,8 @@ namespace std
       : _M_thread_data(__make_thread_data(std::bind(__f, __args...)))
       { __start_thread(); }
 
-    ~thread();
+    ~thread()
+    { detach(); }
 
     thread(const thread&) = delete;
     thread(thread&&);
@@ -117,7 +118,8 @@ namespace std
 
     // members
     void 
-    swap(thread&& __t);
+    swap(thread&& __t)
+    { std::swap(_M_thread_data, __t._M_thread_data); }
 
     bool 
     joinable() const;
@@ -128,7 +130,7 @@ namespace std
     void 
     detach();
 
-    id
+    thread::id
     get_id() const;
 
     native_handle_type 
@@ -181,18 +183,20 @@ namespace std
     thread::id
     get_id();
 
-    void
-    yield();
+#ifdef _GLIBCXX_USE_SCHED_YIELD
+    inline void
+    yield()
+    { __gthread_yield(); }
+#endif
 
+#ifdef _GLIBCXX_USE_NANOSLEEP
     template<typename _Clock, typename _Duration>
-      void
+      inline void
       sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
-      {
-	sleep_for(__atime - _Clock::now());
-      }
+      { sleep_for(__atime - _Clock::now()); }
 
     template<typename _Rep, typename _Period>
-      void
+      inline void
       sleep_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
 	chrono::seconds __s =
@@ -207,10 +211,9 @@ namespace std
 	    static_cast<long>(__ns.count())
 	  };
 
-#ifdef _GLIBCXX_USE_NANOSLEEP
 	::nanosleep(&__ts, 0);
-#endif
       }
+#endif
   }
 
   /// thread::id
@@ -226,10 +229,8 @@ namespace std
 
     friend bool 
     operator==(thread::id __x, thread::id __y)
-    { 
-      return 
-	static_cast<bool>(__gthread_equal(__x._M_thread_id, __y._M_thread_id));
-    }
+    { return static_cast<bool>(__gthread_equal(__x._M_thread_id,
+					       __y._M_thread_id)); }
 
     friend bool
     operator<(thread::id __x, thread::id __y)
@@ -271,6 +272,26 @@ namespace std
       else
 	return __out << __id._M_thread_id;
     }  
+
+  inline bool
+  thread::joinable() const
+  { return get_id() != thread::id(); }
+
+  inline thread::id
+  thread::get_id() const
+  {
+    if(_M_thread_data)
+      return thread::id(_M_thread_data->_M_thread_handle);
+    else
+      return thread::id();
+  }
+
+  namespace this_thread
+  {
+    inline thread::id
+    get_id()
+    { return thread::id(__gthread_self()); }
+  }
 }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

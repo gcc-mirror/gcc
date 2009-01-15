@@ -1,3 +1,23 @@
+2009-01-15  Chris Fairles  <cfairles@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* acinclude.m4 ([GLIBCXX_ENABLE_CLOCK_GETTIME],
+	[GLIBCXX_CHECK_NANOSLEEP]): Remove.
+	([GLIBCXX_ENABLE_LIBSTDCXX_TIME]): Add.
+	* configure.ac: Adjust.
+	* doc/xml/manual/configure.xml: Update.
+	* testsuite/lib/libstdc++.exp (check_v3_target_sched_yield): Add.
+	* testsuite/lib/dg-options.exp (dg-require-sched-yield): Add.
+	* testsuite/30_threads/thread/this_thread/2.cc: Use the latter.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
+	* src/thread.cc (thread::thread(), thread::~thread, thread::get_id,
+	thread::joinable, thread::swap, this_thread::get_id,
+	this_thread::yield): Define inline...
+	* include/std/thread: ... here.
+	* config/abi/pre/gnu.ver: Adjust.
+
 2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc:

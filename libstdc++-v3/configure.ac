@@ -145,15 +145,12 @@ GLIBCXX_CHECK_STDIO_MACROS
 # For gettimeofday support.
 GLIBCXX_CHECK_GETTIMEOFDAY
 
-# For clock_gettime support.
+# For clock_gettime, nanosleep and sched_yield support.
 # NB: The default is [no], because otherwise it requires linking.
-GLIBCXX_ENABLE_CLOCK_GETTIME([no])
+GLIBCXX_ENABLE_LIBSTDCXX_TIME([no])
 
 # For gthread support
 GLIBCXX_CHECK_GTHREADS
-
-# For nanosleep support
-GLIBCXX_CHECK_NANOSLEEP
 
 AC_LC_MESSAGES
 

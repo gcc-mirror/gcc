@@ -327,17 +327,19 @@
      </para>
  </listitem></varlistentry>
 
- <varlistentry><term><code>--enable-clock-gettime=OPTION</code></term>
+ <varlistentry><term><code>--enable-libstdcxx-time=OPTION</code></term>
  <listitem><para>Enables link-type checks for the availability of the
-        clock_gettime clocks, used in [time.clock] of the current C++0x draft.
-        The choice OPTION=yes checks for the availability of the monotonic and
-        realtime clocks in libc and libposix4.  In case of need the latter is 
-        also linked to libstdc++ as part of the build process.  OPTION=rt
-        also searches (and, in case, links) librt.   Note that the latter
-        is not always desirable because, in glibc, for example, in turn it
-        triggers the linking of libpthread too, which activates locking,
-        a large overhead for single-thread programs.  OPTION=no skips the
-        tests completely.  The default is OPTION=no.
+        clock_gettime clocks, used in the implementation of [time.clock],
+        and of the nanosleep and sched_yield functions, used in the
+        implementation of [thread.thread.this] of the current C++0x draft.
+        The choice OPTION=yes checks for the availability of the facilities
+        in libc and libposix4.  In case of need the latter is also linked
+        to libstdc++ as part of the build process.  OPTION=rt also searches
+        (and, in case, links) librt.   Note that the latter is not always
+        desirable because, in glibc, for example, in turn it triggers the
+        linking of libpthread too, which activates locking, a large overhead
+        for single-thread programs.  OPTION=no skips the tests completely.
+        The default is OPTION=no.
     </para>
  </listitem></varlistentry>
 
