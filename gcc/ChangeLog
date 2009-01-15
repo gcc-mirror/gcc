@@ -1,3 +1,12 @@
+2009-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+	    Joey Ye  <joey.ye@intel.com>
+
+	PR middle-end/37843
+	* cfgexpand.c (expand_stack_alignment): Don't update stack
+	boundary nor check incoming stack boundary here.
+	(gimple_expand_cfg): Update stack boundary and check incoming
+	stack boundary here.
+
 2009-01-15  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* dce.c (find_call_stack_args, delete_unmarked_insns): Fixed

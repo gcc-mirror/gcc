@@ -1,3 +1,8 @@
+2009-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/37843
+	* gcc.target/i386/pr37843-3.c: Replace _Decimal128 with __m128.
+
 2009-01-15  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38636
