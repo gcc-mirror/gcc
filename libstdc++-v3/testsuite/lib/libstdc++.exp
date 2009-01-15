@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 # Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1259,6 +1259,64 @@ proc check_v3_target_nanosleep { } {
     }
     verbose "check_v3_target_nanosleep: $et_nanosleep" 2
     return $et_nanosleep
+}
+
+proc check_v3_target_sched_yield { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_sched_yield
+
+    global tool
+
+    if { ![info exists et_sched_yield_target_name] } {
+        set et_sched_yield_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_sched_yield_target_name } {
+        verbose "check_v3_target_sched_yield: `$et_sched_yield_target_name'" 2
+        set et_sched_yield_target_name $current_target
+        if [info exists et_sched_yield] {
+            verbose "check_v3_target_sched_yield: removing cached result" 2
+            unset et_sched_yield
+        }
+    }
+
+    if [info exists et_sched_yield] {
+        verbose "check_v3_target_sched_yield: using cached result" 2
+    } else {
+        set et_sched_yield 0
+
+        # Set up and compile a C++0x test program that depends
+        # on the sched_yield facility to be available.
+        set src sched_yield[pid].cc
+        set exe sched_yield[pid].exe
+
+        set f [open $src "w"]
+        puts $f "#include <bits/c++config.h>"
+        puts $f "int main()"
+        puts $f "#ifdef _GLIBCXX_USE_SCHED_YIELD"
+        puts $f "{ return 0; }"
+        puts $f "#endif"
+        close $f
+
+        set cxxflags_saved $cxxflags
+        set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+        set lines [v3_target_compile $src $exe executable ""]
+        set cxxflags $cxxflags_saved
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, compilation succeeded.
+            set et_sched_yield 1
+        } else {
+            verbose "check_v3_target_sched_yield: compilation failed" 2
+        }
+    }
+    verbose "check_v3_target_sched_yield: $et_sched_yield" 2
+    return $et_sched_yield
 }
 
 proc check_v3_target_string_conversions { } {
