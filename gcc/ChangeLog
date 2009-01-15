@@ -1,3 +1,24 @@
+2009-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/38245
+	* calls.c (expand_call): Add stack arguments to
+	CALL_INSN_FUNCTION_USAGE even for pure calls (when
+	ACCUMULATE_OUTGOING_ARGS) and even for args partially passed
+	in regs and partially in memory or BLKmode arguments.
+	(emit_library_call_value_1): Add stack arguments to
+	CALL_INSN_FUNCTION_USAGE even for pure calls (when
+	ACCUMULATE_OUTGOING_ARGS).
+	* dce.c: Include tm_p.h.
+	(find_call_stack_args): New function.
+	(deletable_insn_p): Call it for CALL_P insns.  Add ARG_STORES
+	argument.
+	(mark_insn): Call find_call_stack_args for CALL_Ps.
+	(prescan_insns_for_dce): Walk insns backwards in bb rather than
+	forwards.  Allocate and free arg_stores bitmap if needed, pass it
+	down to deletable_insn_p, don't mark stores set in arg_stores
+	bitmap, clear the bitmap at the beginning of each bb.
+	* Makefile.in (dce.o): Depend on $(TM_P_H).
+
 2009-01-14  Michael Meissner  <gnu@the-meissners.org>
 
 	PR target/22599
