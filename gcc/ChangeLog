@@ -1,3 +1,9 @@
+2009-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* caller-save.c (add_used_regs_1, add_used_regs): New functions.
+	(insert_one_insn): Use them instead of REG_DEAD and REG_INC notes.
+	Also use them when walking CALL_INSN_FUNCTION_USAGE.
+
 2009-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 	    Joey Ye  <joey.ye@intel.com>
 
