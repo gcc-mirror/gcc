@@ -7339,7 +7339,7 @@ non_reference (tree t)
    how the lvalue is being used and so selects the error message.  */
 
 int
-lvalue_or_else (const_tree ref, enum lvalue_use use, tsubst_flags_t complain)
+lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
 {
   int win = lvalue_p (ref);
 
