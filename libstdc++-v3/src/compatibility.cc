@@ -413,7 +413,10 @@ GLIBCXX_3.4)
 #undef _List_node_base
 
 // gcc-4.1.0
-#ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+// Long double versions of "C" math functions. 
+#if defined (_GLIBCXX_LONG_DOUBLE_COMPAT) \
+    || (defined (__hppa__) && defined (__linux__))
+
 #define _GLIBCXX_MATHL_WRAPPER(name, argdecl, args, ver) \
 extern "C" double						\
 __ ## name ## l_wrapper argdecl					\

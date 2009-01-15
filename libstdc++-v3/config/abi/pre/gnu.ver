@@ -637,9 +637,6 @@ GLIBCXX_3.4 {
     sqrtf;
     sqrtl;
     copysignf;
-    __signbit;
-    __signbitf;
-    __signbitl;
 
    # GLIBCXX_ABI compatibility only.
     # std::string

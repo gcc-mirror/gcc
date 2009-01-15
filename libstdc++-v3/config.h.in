@@ -39,15 +39,6 @@
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
-/* Define to 1 if you have the `copysign' function. */
-#undef HAVE_COPYSIGN
-
-/* Define to 1 if you have the `copysignf' function. */
-#undef HAVE_COPYSIGNF
-
-/* Define to 1 if you have the `copysignl' function. */
-#undef HAVE_COPYSIGNL
-
 /* Define to 1 if you have the `cosf' function. */
 #undef HAVE_COSF
 
@@ -225,9 +216,6 @@
 
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
-
-/* Define to 1 if you have the `m' library (-lm). */
-#undef HAVE_LIBM
 
 /* Only used in build directory testsuite_hooks.h. */
 #undef HAVE_LIMIT_AS
@@ -472,12 +460,6 @@
 /* Define to 1 if you have the `_ceill' function. */
 #undef HAVE__CEILL
 
-/* Define to 1 if you have the `_copysign' function. */
-#undef HAVE__COPYSIGN
-
-/* Define to 1 if you have the `_copysignl' function. */
-#undef HAVE__COPYSIGNL
-
 /* Define to 1 if you have the `_cosf' function. */
 #undef HAVE__COSF
 
@@ -633,15 +615,6 @@
 
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
-
-/* Define to 1 if you have the `__signbit' function. */
-#undef HAVE___SIGNBIT
-
-/* Define to 1 if you have the `__signbitf' function. */
-#undef HAVE___SIGNBITF
-
-/* Define to 1 if you have the `__signbitl' function. */
-#undef HAVE___SIGNBITL
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
@@ -866,16 +839,6 @@
 #if defined (HAVE__CEILL) && ! defined (HAVE_CEILL)
 # define HAVE_CEILL 1
 # define ceill _ceill
-#endif
-
-#if defined (HAVE__COPYSIGN) && ! defined (HAVE_COPYSIGN)
-# define HAVE_COPYSIGN 1
-# define copysign _copysign
-#endif
-
-#if defined (HAVE__COPYSIGNL) && ! defined (HAVE_COPYSIGNL)
-# define HAVE_COPYSIGNL 1
-# define copysignl _copysignl
 #endif
 
 #if defined (HAVE__COSF) && ! defined (HAVE_COSF)

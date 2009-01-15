@@ -336,7 +336,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinf)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnan)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(finite)
-  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(copysign)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3(sincos)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(fpclass)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(qfpclass)
@@ -380,7 +379,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
                                           ceill floorl)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnanl)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinfl)
-  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(copysignl)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(atan2l)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(expl)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(fabsl)
@@ -399,53 +397,3 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])
-
-
-dnl
-dnl Check to see if there is native support for complex
-dnl
-dnl Don't compile bits in math/* if native support exits.
-dnl
-dnl Define USE_COMPLEX_LONG_DOUBLE etc if "copysignl" is found.
-dnl
-dnl GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
-AC_DEFUN([GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT], [
-  dnl Check for complex versions of math functions of platform.  This will
-  dnl always pass if libm is available, and fail if it isn't.  If it is
-  dnl available, we assume we'll need it later, so add it to LIBS.
-  AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(copysignf)
-
-  dnl For __signbit to signbit conversions.
-  dnl Not sure why this is done, as these will be macros mostly. 
-  dnl Should probably coordinate this with std_cmath.h.
-  AC_CHECK_FUNCS([__signbit], , [LIBMATHOBJS="$LIBMATHOBJS signbit.lo"])
-
-  AC_CHECK_FUNCS([__signbitf], , [LIBMATHOBJS="$LIBMATHOBJS signbitf.lo"])
-
-  dnl Compile the long double complex functions only if the function
-  dnl provides the non-complex long double functions that are needed.
-  dnl Currently this includes copysignl, which should be
-  dnl cached from the GLIBCXX_CHECK_MATH_SUPPORT macro, above.
-  if test x$ac_cv_func_copysignl = x"yes"; then
-    AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
-  fi
-
-  # Used in libmath/Makefile.am.
-  if test -n "$LIBMATHOBJS"; then
-    need_libmath=yes
-  fi
-  AC_SUBST(LIBMATHOBJS)
-])
-
-
-# Check for functions in math library.
-# Ulrich Drepper <drepper@cygnus.com>, 1998.
-#
-# This file can be copied and used freely without restrictions.  It can
-# be used in projects which are not available under the GNU Public License
-# but which still want to provide support for the GNU gettext functionality.
-# Please note that the actual code is *not* freely available.
-dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
-AC_DEFUN([AC_REPLACE_MATHFUNCS],
-[AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])])

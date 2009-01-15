@@ -1,3 +1,47 @@
+2009-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/32666
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2009-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/32666
+	* Makefile.am (hosted_source): Remove libmath directory.
+	* Makefile.in: Regenerate.
+	* linkage.m4 (GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT): Remove.
+	(AC_REPLACE_MATHFUNCS): Remove.
+	(GLIBCXX_CHECK_MATH_SUPPORT): Remove copysign, copysignl checks as done
+	in GLIBCXX_CHECK_C99_TR1.
+	* acinclude.m4: Remove libmath, need_math.
+	* crossconfig.m4: Remove use of HAVE_COPYSIGN, HAVE_COPYSIGNL,
+	HAVE_COPYSIGNF, GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, need_libmath.
+	* configure.ac: Same.
+	* configure: Regenerate.
+	* fragment.am: Fix comment.
+	* config.h.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/Makefile.am: Remove libmath references.
+	* doc/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+	* src/compatibility.cc: Also export long double versions of "C" math
+	library if hppa-linux.
+	* config/abi/pre/gnu.ver: Remove unused __signbit exports.
+	* doc/xml/manual/appendix_contributing.xml: Remove libmath reference.
+
+	* libmath: Remove.
+	* libmath/signbit.c: Same.
+	* libmath/stubs.c: Same.
+	* libmath/Makefile.in: Same.
+	* libmath/copysignf.c: Same.
+	* libmath/mathconf.h: Same.
+	* libmath/signbitf.c: Same.
+	* libmath/Makefile.am: Same.
+	* libmath/signbitl.c: Same.
+
 2009-01-15  Chris Fairles  <cfairles@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
