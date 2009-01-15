@@ -1,3 +1,13 @@
+2009-01-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/vararg-3.C: New test.
+
+	PR c++/36334
+	* g++.dg/conversion/memfn1.C: New test.
+
+	PR c++/37646
+	* g++.dg/conversion/memfn2.C: New test.
+
 2009-01-14  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38669
