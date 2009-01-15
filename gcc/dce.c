@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "tm_p.h"
 
 DEF_VEC_I(int);
 DEF_VEC_ALLOC_I(int,heap);
@@ -57,6 +58,7 @@ static sbitmap marked;
 static bitmap_obstack dce_blocks_bitmap_obstack;
 static bitmap_obstack dce_tmp_bitmap_obstack;
 
+static bool find_call_stack_args (rtx, bool, bool, bitmap);
 
 /* A subroutine for which BODY is part of the instruction being tested;
    either the top-level pattern, or an element of a PARALLEL.  The
@@ -94,7 +96,7 @@ deletable_insn_p_1 (rtx body)
    the DCE pass.  */
 
 static bool
-deletable_insn_p (rtx insn, bool fast)
+deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
 {
   rtx body, x;
   int i;
@@ -111,7 +113,7 @@ deletable_insn_p (rtx insn, bool fast)
          infinite loop.  */
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
-    return true;
+    return find_call_stack_args (insn, false, fast, arg_stores);
 
   if (!NONJUMP_INSN_P (insn))
     return false;
@@ -174,6 +176,12 @@ mark_insn (rtx insn, bool fast)
       SET_BIT (marked, INSN_UID (insn));
       if (dump_file)
 	fprintf (dump_file, "  Adding insn %d to worklist\n", INSN_UID (insn));
+      if (CALL_P (insn)
+	  && !df_in_progress
+	  && !SIBLING_CALL_P (insn)
+	  && (RTL_CONST_OR_PURE_CALL_P (insn)
+	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
+	find_call_stack_args (insn, true, fast, NULL);
     }
 }
 
@@ -209,6 +217,254 @@ mark_nonreg_stores (rtx body, rtx insn, bool fast)
     note_stores (body, mark_nonreg_stores_1, insn);
   else
     note_stores (body, mark_nonreg_stores_2, insn);
+}
+
+
+/* Try to find all stack stores of CALL_INSN arguments if
+   ACCUMULATE_OUTGOING_ARGS.  If all stack stores have been found
+   and it is therefore safe to eliminate the call, return true,
+   otherwise return false.  This function should be first called
+   with DO_MARK false, and only when the CALL_INSN is actually
+   going to be marked called again with DO_MARK true.  */
+
+static bool
+find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
+		      bitmap arg_stores)
+{
+  rtx p, insn, prev_insn;
+  bool ret;
+  HOST_WIDE_INT min_sp_off, max_sp_off;
+  bitmap sp_bytes;
+
+  gcc_assert (CALL_P (call_insn));
+  if (!ACCUMULATE_OUTGOING_ARGS)
+    return true;
+
+  if (!do_mark)
+    {
+      gcc_assert (arg_stores);
+      bitmap_clear (arg_stores);
+    }
+
+  min_sp_off = INTTYPE_MAXIMUM (HOST_WIDE_INT);
+  max_sp_off = 0;
+
+  /* First determine the minimum and maximum offset from sp for
+     stored arguments.  */
+  for (p = CALL_INSN_FUNCTION_USAGE (call_insn); p; p = XEXP (p, 1))
+    if (GET_CODE (XEXP (p, 0)) == USE
+	&& MEM_P (XEXP (XEXP (p, 0), 0)))
+      {
+	rtx mem = XEXP (XEXP (p, 0), 0), addr, size;
+	HOST_WIDE_INT off = 0;
+	size = MEM_SIZE (mem);
+	if (size == NULL_RTX)
+	  return false;
+	addr = XEXP (mem, 0);
+	if (GET_CODE (addr) == PLUS
+	    && REG_P (XEXP (addr, 0))
+	    && CONST_INT_P (XEXP (addr, 1)))
+	  {
+	    off = INTVAL (XEXP (addr, 1));
+	    addr = XEXP (addr, 0);
+	  }
+	if (addr != stack_pointer_rtx)
+	  {
+	    if (!REG_P (addr))
+	      return false;
+	    /* If not fast, use chains to see if addr wasn't set to
+	       sp + offset.  */
+	    if (!fast)
+	      {
+		df_ref *use_rec;
+		struct df_link *defs;
+		rtx set;
+
+		for (use_rec = DF_INSN_USES (call_insn); *use_rec; use_rec++)
+		  if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+		    break;
+
+		if (*use_rec == NULL)
+		  return false;
+
+		for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+		  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+		    break;
+
+		if (defs == NULL)
+		  return false;
+
+		set = single_set (DF_REF_INSN (defs->ref));
+		if (!set)
+		  return false;
+
+		if (GET_CODE (SET_SRC (set)) != PLUS
+		    || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
+		    || !CONST_INT_P (XEXP (SET_SRC (set), 1)))
+		  return false;
+
+		off += INTVAL (XEXP (SET_SRC (set), 1));
+	      }
+	    else
+	      return false;
+	  }
+	min_sp_off = MIN (min_sp_off, off);
+	max_sp_off = MAX (max_sp_off, off + INTVAL (size));
+      }
+
+  if (min_sp_off >= max_sp_off)
+    return true;
+  sp_bytes = BITMAP_ALLOC (NULL);
+
+  /* Set bits in SP_BYTES bitmap for bytes relative to sp + min_sp_off
+     which contain arguments.  Checking has been done in the previous
+     loop.  */
+  for (p = CALL_INSN_FUNCTION_USAGE (call_insn); p; p = XEXP (p, 1))
+    if (GET_CODE (XEXP (p, 0)) == USE
+	&& MEM_P (XEXP (XEXP (p, 0), 0)))
+      {
+	rtx mem = XEXP (XEXP (p, 0), 0), addr;
+	HOST_WIDE_INT off = 0, byte;
+	addr = XEXP (mem, 0);
+	if (GET_CODE (addr) == PLUS
+	    && REG_P (XEXP (addr, 0))
+	    && CONST_INT_P (XEXP (addr, 1)))
+	  {
+	    off = INTVAL (XEXP (addr, 1));
+	    addr = XEXP (addr, 0);
+	  }
+	if (addr != stack_pointer_rtx)
+	  {
+	    df_ref *use_rec;
+	    struct df_link *defs;
+	    rtx set;
+
+	    for (use_rec = DF_INSN_USES (call_insn); *use_rec; use_rec++)
+	      if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+		break;
+
+	    for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+	      if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+		break;
+
+	    set = single_set (DF_REF_INSN (defs->ref));
+	    off += INTVAL (XEXP (SET_SRC (set), 1));
+	  }
+	for (byte = off; byte < off + INTVAL (MEM_SIZE (mem)); byte++)
+	  {
+	    gcc_assert (!bitmap_bit_p (sp_bytes, byte - min_sp_off));
+	    bitmap_set_bit (sp_bytes, byte - min_sp_off);
+	  }
+      }
+
+  /* Walk backwards, looking for argument stores.  The search stops
+     when seeting another call, sp adjustment or memory store other than
+     argument store.  */
+  ret = false;
+  for (insn = PREV_INSN (call_insn); insn; insn = prev_insn)
+    {
+      rtx set, mem, addr;
+      HOST_WIDE_INT off, byte;
+
+      if (insn == BB_HEAD (BLOCK_FOR_INSN (call_insn)))
+	prev_insn = NULL_RTX;
+      else
+	prev_insn = PREV_INSN (insn);
+
+      if (CALL_P (insn))
+	break;
+
+      if (!INSN_P (insn))
+	continue;
+
+      set = single_set (insn);
+      if (!set || SET_DEST (set) == stack_pointer_rtx)
+	break;
+
+      if (!MEM_P (SET_DEST (set)))
+	continue;
+
+      mem = SET_DEST (set);
+      addr = XEXP (mem, 0);
+      off = 0;
+      if (GET_CODE (addr) == PLUS
+	  && REG_P (XEXP (addr, 0))
+	  && CONST_INT_P (XEXP (addr, 1)))
+	{
+	  off = INTVAL (XEXP (addr, 1));
+	  addr = XEXP (addr, 0);
+	}
+      if (addr != stack_pointer_rtx)
+	{
+	  if (!REG_P (addr))
+	    break;
+	  if (!fast)
+	    {
+	      df_ref *use_rec;
+	      struct df_link *defs;
+	      rtx set;
+
+	      for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+		if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+		  break;
+
+	      if (*use_rec == NULL)
+		break;
+
+	      for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+		if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+		  break;
+
+	      if (defs == NULL)
+		break;
+
+	      set = single_set (DF_REF_INSN (defs->ref));
+	      if (!set)
+		break;
+
+	      if (GET_CODE (SET_SRC (set)) != PLUS
+		  || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
+		  || !CONST_INT_P (XEXP (SET_SRC (set), 1)))
+		break;
+
+	      off += INTVAL (XEXP (SET_SRC (set), 1));
+	    }
+	  else
+	    break;
+	}
+
+      if (GET_MODE_SIZE (GET_MODE (mem)) == 0)
+	break;
+
+      for (byte = off; byte < off + GET_MODE_SIZE (GET_MODE (mem)); byte++)
+	{
+	  if (byte < min_sp_off
+	      || byte >= max_sp_off
+	      || !bitmap_bit_p (sp_bytes, byte - min_sp_off))
+	    break;
+	  bitmap_clear_bit (sp_bytes, byte - min_sp_off);
+	}
+
+      if (!deletable_insn_p (insn, fast, NULL))
+	break;
+
+      if (do_mark)
+	mark_insn (insn, fast);
+      else
+	bitmap_set_bit (arg_stores, INSN_UID (insn));
+
+      if (bitmap_empty_p (sp_bytes))
+	{
+	  ret = true;
+	  break;
+	}
+    }
+
+  BITMAP_FREE (sp_bytes);
+  if (!ret && arg_stores)
+    bitmap_clear (arg_stores);
+
+  return ret;
 }
 
 
@@ -266,6 +522,9 @@ delete_unmarked_insns (void)
 	  else if (marked_insn_p (insn))
 	    continue;
 
+	  /* Beware that reaching a dbg counter limit here can easily result
+	     in miscompiled file, whenever some insn is eliminated, but
+	     insn that depends on it is not.  */
 	  if (!dbg_cnt (dce))
 	    continue;
 
@@ -300,20 +559,37 @@ static void
 prescan_insns_for_dce (bool fast)
 {
   basic_block bb;
-  rtx insn, next;
-  
+  rtx insn, prev;
+  bitmap arg_stores = NULL;
+
   if (dump_file)
     fprintf (dump_file, "Finding needed instructions:\n");
-  
+
+  if (!df_in_progress && ACCUMULATE_OUTGOING_ARGS)
+    arg_stores = BITMAP_ALLOC (NULL);
+
   FOR_EACH_BB (bb)
-    FOR_BB_INSNS_SAFE (bb, insn, next)
-      if (INSN_P (insn))
-	{
-	  if (deletable_insn_p (insn, fast))
-	    mark_nonreg_stores (PATTERN (insn), insn, fast);
-	  else
-	    mark_insn (insn, fast);
-	}
+    {
+      FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
+	if (INSN_P (insn))
+	  {
+	    /* Don't mark argument stores now.  They will be marked
+	       if needed when the associated CALL is marked.  */
+	    if (arg_stores && bitmap_bit_p (arg_stores, INSN_UID (insn)))
+	      continue;
+	    if (deletable_insn_p (insn, fast, arg_stores))
+	      mark_nonreg_stores (PATTERN (insn), insn, fast);
+	    else
+	      mark_insn (insn, fast);
+	  }
+      /* find_call_stack_args only looks at argument stores in the
+	 same bb.  */
+      if (arg_stores)
+	bitmap_clear (arg_stores);
+    }
+
+  if (arg_stores)
+    BITMAP_FREE (arg_stores);
 
   if (dump_file)
     fprintf (dump_file, "Finished finding needed instructions:\n");
