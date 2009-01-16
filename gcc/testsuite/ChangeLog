@@ -1,5 +1,9 @@
 2009-01-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38850
+	* g++.dg/template/koenig6.C: New test.
+
+	PR c++/31488
 	* g++.dg/other/vararg-3.C: New test.
 
 	PR c++/36334

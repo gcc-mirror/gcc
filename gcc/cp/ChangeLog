@@ -1,5 +1,9 @@
 2009-01-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38850
+	* pt.c (tsubst_copy_and_build): Tell finish_call_expr to
+	accept hidden friends.
+
 	PR c++/36334
 	PR c++/37646
 	* tree.c (lvalue_p_1): Handle BASELINK.  A COMPONENT_REF to
