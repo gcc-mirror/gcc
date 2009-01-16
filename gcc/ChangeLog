@@ -1,6 +1,14 @@
 2009-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 	    Tobias Grosser  <tobi.grosser@amd.com>
 
+	* graphite.c (compare_prefix_loops): New.
+	(build_scop_canonical_schedules): Rewritten.
+	(graphite_transform_loops): Move build_scop_canonical_schedules
+	after build_scop_iteration_domain.
+
+2009-01-16  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <tobi.grosser@amd.com>
+
 	* graphite.c (add_conditions_to_domain): Add the loops to 
 	the dimension of the iteration domain.  Do copy the domain
 	only when it exists.
