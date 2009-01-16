@@ -1,3 +1,9 @@
+2009-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/29470
+	* g++.dg/template/access20.C: New test.
+	* g++.dg/torture/pr34641.C: Fix access.
+
 2009-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38835

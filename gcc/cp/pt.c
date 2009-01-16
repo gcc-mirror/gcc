@@ -8485,6 +8485,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	     tsubst_copy (DECL_NAME (t), args, complain, in_decl));
 	  if (!r)
 	    r = error_mark_node;
+	  else
+	    {
+	      TREE_PROTECTED (r) = TREE_PROTECTED (t);
+	      TREE_PRIVATE (r) = TREE_PRIVATE (t);
+	    }
 	}
       else
 	{
