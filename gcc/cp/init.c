@@ -2334,11 +2334,10 @@ build_new (tree placement, tree type, tree nelts, tree init,
   orig_nelts = nelts;
   orig_init = init;
 
-  if (nelts == NULL_TREE && init != void_zero_node && list_length (init) == 1
-      && describable_type (TREE_VALUE (init)))
+  if (nelts == NULL_TREE && init != void_zero_node && list_length (init) == 1)
     {
       tree auto_node = type_uses_auto (type);
-      if (auto_node)
+      if (auto_node && describable_type (TREE_VALUE (init)))
 	type = do_auto_deduction (type, TREE_VALUE (init), auto_node);
     }
 

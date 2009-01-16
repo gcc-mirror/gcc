@@ -114,9 +114,11 @@ lvalue_p_1 (tree ref,
 	;
       else if (is_overloaded_fn (TREE_OPERAND (ref, 1)))
 	/* The "field" can be a FUNCTION_DECL or an OVERLOAD in some
-	   situations.  */
-	op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
-				      treat_class_rvalues_as_lvalues);
+	   situations.  If we're seeing a COMPONENT_REF, it's a non-static
+	   member, so it isn't an lvalue. */
+	op1_lvalue_kind = clk_none;
+      else if (TREE_CODE (TREE_OPERAND (ref, 1)) != FIELD_DECL)
+	/* This can be IDENTIFIER_NODE in a template.  */;
       else if (DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
 	{
 	  /* Clear the ordinary bit.  If this object was a class
