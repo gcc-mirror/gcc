@@ -117,6 +117,8 @@ lvalue_p_1 (tree ref,
 	   situations.  */
 	op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
 				      treat_class_rvalues_as_lvalues);
+      else if (TREE_CODE (TREE_OPERAND (ref, 1)) != FIELD_DECL)
+	/* This can be IDENTIFIER_NODE in a template.  */;
       else if (DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
 	{
 	  /* Clear the ordinary bit.  If this object was a class
