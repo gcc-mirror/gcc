@@ -1,3 +1,8 @@
+2009-01-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* dce.c (delete_unmarked_insns): Reversed the order that insns are
+	examined before deleting them.
+	
 2009-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* function.c (aggregate_value_p): Correctly extract the function
