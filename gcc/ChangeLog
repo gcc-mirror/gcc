@@ -1,3 +1,11 @@
+2009-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38835
+	PR middle-end/36227
+	* fold-const.c (fold_binary): Remove PTR + INT -> (INT)(PTR p+ INT)
+	and INT + PTR -> (INT)(PTR p+ INT) folding.
+	* tree-ssa-address.c (create_mem_ref): Properly use POINTER_PLUS_EXPR.
+
 2009-01-16  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR target/38554
