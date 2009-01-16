@@ -1,3 +1,8 @@
+2009-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38850
+	* g++.dg/template/koenig6.C: New test.
+
 2009-01-12  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36019

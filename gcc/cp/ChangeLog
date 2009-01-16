@@ -1,3 +1,9 @@
+2009-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38850
+	* pt.c (tsubst_copy_and_build): Tell finish_call_expr to
+	accept hidden friends.
+
 2009-01-12  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36019
