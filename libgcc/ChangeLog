@@ -1,3 +1,8 @@
+2009-01-16  Ben Elliston  <bje@au.ibm.com>
+
+	* config.host (i[34567]86-*-linux*, x86_64-*-linux*): Add t-softfp
+	to tmake_file.
+
 2009-01-13  Ben Elliston  <bje@au.ibm.com>
 
 	* config/t-softfp: New file.
