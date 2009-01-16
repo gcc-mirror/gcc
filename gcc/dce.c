@@ -510,8 +510,8 @@ delete_unmarked_insns (void)
   rtx insn, next;
   bool must_clean = false;
 
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS_SAFE (bb, insn, next)
+  FOR_EACH_BB_REVERSE (bb)
+    FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (INSN_P (insn))
 	{
 	  /* Always delete no-op moves.  */
@@ -522,13 +522,24 @@ delete_unmarked_insns (void)
 	  else if (marked_insn_p (insn))
 	    continue;
 
-	  /* Beware that reaching a dbg counter limit here can rarely
-	     result in miscompiled file.  This occurs when a group of
-	     insns must be deleted together.  Currently this only
-	     can happen on non-looping pure and constant calls
-	     on machines where ACCUMULATE_OUTGOING_ARGS is true.  By
-	     using the dbg_cnt, it is possible to remove the call, but
-	     leave the argument pushes to the stack.  */
+	  /* Beware that reaching a dbg counter limit here can result
+	     in miscompiled file.  This occurs when a group of insns
+	     must be deleted together, typically because the kept insn
+	     depends on the output from the deleted insn.  Deleting
+	     this insns in reverse order (both at the bb level and
+	     when looking at the blocks) minimizes this, but does not
+	     eliminate it, since it is possible for the using insn to
+	     be top of a block and the producer to be at the bottom of
+	     the block.  However, in most cases this will only result
+	     in an uninitialized use of an insn that is dead anyway.
+
+	     However, there is one rare case that will cause a
+	     miscompile: deletion of non-looping pure and constant
+	     calls on a machine where ACCUMULATE_OUTGOING_ARGS is true.
+	     In this case it is possible to remove the call, but leave
+	     the argument pushes to the stack.  Because of the changes
+	     to the stack pointer, this will almost always lead to a
+	     miscompile.  */
 	  if (!dbg_cnt (dce))
 	    continue;
 
