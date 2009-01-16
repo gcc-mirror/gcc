@@ -1,3 +1,8 @@
+2009-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38850
+	* g++.dg/template/koenig6.C: New test.
+
 2009-01-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
         PR C++/29388
