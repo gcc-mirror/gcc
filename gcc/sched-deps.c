@@ -1824,9 +1824,12 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
       flush_pending_lists (deps, insn, true, false);
       break;
 
+    case UNSPEC_VOLATILE:
+      flush_pending_lists (deps, insn, true, true);
+      /* FALLTHRU */
+
     case ASM_OPERANDS:
     case ASM_INPUT:
-    case UNSPEC_VOLATILE:
       {
 	/* Traditional and volatile asm instructions must be considered to use
 	   and clobber all hard registers, all pseudo-registers and all of
