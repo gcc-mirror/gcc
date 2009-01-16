@@ -1,3 +1,8 @@
+2009-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38579
+	* search.c (protected_accessible_p): N doesn't vary.
+
 2009-01-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38850
