@@ -3112,7 +3112,7 @@ add_conditions_to_domain (graphite_bb_p gb)
   else  
     {
       nb_rows = 0;
-      nb_cols = scop_nb_params (scop) + 2;
+      nb_cols = nb_loops_around_gb (gb) + scop_nb_params (scop) + 2;
     }
 
   /* Count number of necessary new rows to add the conditions to the
@@ -3161,14 +3161,18 @@ add_conditions_to_domain (graphite_bb_p gb)
     CloogMatrix *new_domain;
     new_domain = cloog_matrix_alloc (nb_rows + nb_new_rows, nb_cols);
 
-    for (i = 0; i < nb_rows; i++)
-      for (j = 0; j < nb_cols; j++)
-          value_assign (new_domain->p[i][j], domain->p[i][j]);
+    if (domain)
+      {
+	for (i = 0; i < nb_rows; i++)
+	  for (j = 0; j < nb_cols; j++)
+	    value_assign (new_domain->p[i][j], domain->p[i][j]);
 
-    cloog_matrix_free (domain);
+	cloog_matrix_free (domain);
+      }
+
     domain = new_domain;
     GBB_DOMAIN (gb) = new_domain;
-  }     
+  }
 
   /* Add the conditions to the new enlarged domain matrix.  */
   row = nb_rows;
@@ -3358,7 +3362,6 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
     {
       GBB_CONDITIONS (gbb) = VEC_copy (gimple, heap, *conditions);
       GBB_CONDITION_CASES (gbb) = VEC_copy (gimple, heap, *cases);
-      add_conditions_to_domain (gbb);
     }
 
   dom = get_dominated_by (CDI_DOMINATORS, bb);
@@ -3513,6 +3516,19 @@ build_scop_conditions (scop_p scop)
   VEC_free (gimple, heap, conditions);
   VEC_free (gimple, heap, cases);
   return res;
+}
+
+/* Traverses all the GBBs of the SCOP and add their constraints to the
+   iteration domains.  */
+
+static void
+add_conditions_to_constraints (scop_p scop)
+{
+  int i;
+  graphite_bb_p gbb;
+
+  for (i = 0; VEC_iterate (graphite_bb_p, SCOP_BBS (scop), i, gbb); i++)
+    add_conditions_to_domain (gbb);
 }
 
 /* Build the current domain matrix: the loops belonging to the current
@@ -4895,64 +4911,6 @@ find_transform (scop_p scop)
   return stmt;
 }
 
-/* Returns true when it is possible to generate code for this STMT.
-   For the moment we cannot generate code when Cloog decides to
-   duplicate a statement, as we do not do a copy, but a move.
-   USED_BASIC_BLOCKS records the blocks that have already been seen.
-   We return false if we have to generate code twice for the same
-   block.  */
-
-static bool 
-can_generate_code_stmt (struct clast_stmt *stmt,
-			struct pointer_set_t *used_basic_blocks)
-{
-  if (!stmt)
-    return true;
-
-  if (CLAST_STMT_IS_A (stmt, stmt_root))
-    return can_generate_code_stmt (stmt->next, used_basic_blocks);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_user))
-    {
-      CloogStatement *cs = ((struct clast_user_stmt *) stmt)->statement;
-      graphite_bb_p gbb = (graphite_bb_p) cloog_statement_usr (cs);
-
-      if (pointer_set_contains (used_basic_blocks, gbb))
-	return false;
-      pointer_set_insert (used_basic_blocks, gbb);
-      return can_generate_code_stmt (stmt->next, used_basic_blocks);
-    }
-
-  if (CLAST_STMT_IS_A (stmt, stmt_for))
-    return can_generate_code_stmt (((struct clast_for *) stmt)->body,
-				   used_basic_blocks)
-      && can_generate_code_stmt (stmt->next, used_basic_blocks);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    return can_generate_code_stmt (((struct clast_guard *) stmt)->then,
-				   used_basic_blocks);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_block))
-    return can_generate_code_stmt (((struct clast_block *) stmt)->body,
-				   used_basic_blocks)
-      && can_generate_code_stmt (stmt->next, used_basic_blocks);
-
-  return false;
-}
-
-/* Returns true when it is possible to generate code for this STMT.  */
-
-static bool 
-can_generate_code (struct clast_stmt *stmt)
-{
-  bool result;
-  struct pointer_set_t *used_basic_blocks = pointer_set_create ();
-
-  result = can_generate_code_stmt (stmt, used_basic_blocks);
-  pointer_set_destroy (used_basic_blocks);
-  return result;
-}
-
 /* Remove from the CFG the REGION.  */
 
 static inline void
@@ -5412,12 +5370,6 @@ gloog (scop_p scop, struct clast_stmt *stmt)
 						     10);
   loop_p context_loop;
   ifsese if_region = NULL;
-
-  if (!can_generate_code (stmt))
-    {
-      cloog_clast_free (stmt);
-      return;
-    }
 
   if_region = move_sese_in_condition (SCOP_REGION (scop));
   sese_build_livein_liveouts (SCOP_REGION (scop));
@@ -6099,8 +6051,10 @@ graphite_transform_loops (void)
 
       build_scop_canonical_schedules (scop);
       build_bb_loops (scop);
+
       if (!build_scop_conditions (scop))
 	continue;
+
       find_scop_parameters (scop);
       build_scop_context (scop);
 
@@ -6115,6 +6069,8 @@ graphite_transform_loops (void)
 
       if (!build_scop_iteration_domain (scop))
 	continue;
+
+      add_conditions_to_constraints (scop);
 
       build_scop_data_accesses (scop);
       build_scop_dynamic_schedules (scop);

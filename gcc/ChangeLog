@@ -1,3 +1,16 @@
+2009-01-16  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <tobi.grosser@amd.com>
+
+	* graphite.c (add_conditions_to_domain): Add the loops to 
+	the dimension of the iteration domain.  Do copy the domain
+	only when it exists.
+	(build_scop_conditions_1): Do not call add_conditions_to_domain.
+	(add_conditions_to_constraints): New.
+	(can_generate_code_stmt, can_generate_code): Removed.
+	(gloog): Do not call can_generate_code.
+	(graphite_transform_loops): Call add_conditions_to_constraints
+	after building the iteration domain.
+
 2009-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38789
