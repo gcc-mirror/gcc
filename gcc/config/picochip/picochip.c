@@ -324,9 +324,6 @@ picochip_override_options (void)
      This isnt the default at O2 as yet. */
   flag_section_anchors = 1;
 
-  /* CFI asm labels are not supported by the picochip assembler yet */
-  flag_dwarf2_cfi_asm = 0;
-
   /* Turn off the second scheduling pass, and move it to
      picochip_reorg, to avoid having the second jump optimisation
      trash the instruction modes (e.g., instructions are changed to
