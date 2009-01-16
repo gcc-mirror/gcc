@@ -1,5 +1,10 @@
 2009-01-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38877
+	* tree.c (lvalue_p_1): Allow non-fields in COMPONENT_REF.
+	* init.c (build_new): Don't call describable_type unless we
+	have an auto.
+
 	PR c++/29470
 	* pt.c (tsubst_decl) [USING_DECL]: Propagate access flags.
 
