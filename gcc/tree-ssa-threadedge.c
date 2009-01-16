@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -320,12 +320,22 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 
 	 The result of __builtin_object_size is defined to be the maximum of
 	 remaining bytes. If we use only one edge on the phi, the result will
-	 change to be the remaining bytes for the corresponding phi argument. */
+	 change to be the remaining bytes for the corresponding phi argument.
+
+	 Similarly for __builtin_constant_p:
+
+	 r = PHI <1(2), 2(3)>
+	 __builtin_constant_p (r)
+
+	 Both PHI arguments are constant, but x ? 1 : 2 is still not
+	 constant.  */
 
       if (is_gimple_call (stmt))
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
-	  if (fndecl && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE)
+	  if (fndecl
+	      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P))
 	    continue;
 	}
 

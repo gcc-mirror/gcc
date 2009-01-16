@@ -1,3 +1,10 @@
+2009-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38789
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Ignore calls to
+	__builtin_constant_p.
+
 2009-01-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* dce.c (delete_unmarked_insns): Reversed the order that insns are
