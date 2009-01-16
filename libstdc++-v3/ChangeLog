@@ -1,5 +1,11 @@
 2009-01-15  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* src/Makefile.am (sources): Add math_stubs_long_double.cc.
+	* src/Makefile.in: Regenerate.
+	* src/math_stubs_long_double.cc: New, from libmath/stubs.c.
+
+2009-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/32666
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
 
