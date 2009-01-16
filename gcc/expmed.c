@@ -2136,7 +2136,8 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
 		       % GET_MODE_BITSIZE (mode));
       else if (GET_CODE (op1) == SUBREG
-	       && subreg_lowpart_p (op1))
+	       && subreg_lowpart_p (op1)
+	       && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (op1))))
 	op1 = SUBREG_REG (op1);
     }
 

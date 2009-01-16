@@ -1,3 +1,9 @@
+2009-01-16  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR target/38554
+	* expmed.c (expand_shift): With SHIFT_COUNT_TRUNCATED, don't lift
+	the subreg from a lowpart subreg if it is also casting the value.
+
 2009-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 	    Tobias Grosser  <tobi.grosser@amd.com>
 
