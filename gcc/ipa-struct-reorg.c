@@ -1865,8 +1865,9 @@ gen_struct_type (tree decl, tree new_str_type)
 	  wr.wrap = 0;
 	  wr.domain = NULL_TREE;
 	}
-      else if (TREE_CODE (type_orig) == ARRAY_TYPE)
+      else
 	{
+	  gcc_assert (TREE_CODE (type_orig) == ARRAY_TYPE);
 	  wr.wrap = 1;
 	  wr.domain = TYPE_DOMAIN (type_orig);
 	}

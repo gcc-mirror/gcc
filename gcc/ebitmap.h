@@ -1,5 +1,5 @@
 /* Sparse array based bitmaps.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -95,7 +95,13 @@ ebitmap_iter_init (ebitmap_iterator *i, ebitmap bmp, unsigned int min)
 		     min / EBITMAP_ELT_BITS);
   i->size = bmp->numwords;
   if (i->size == 0)
-    return;
+    {
+      i->ptr = NULL;
+      i->eltnum = 0;
+      i->bit_num = 0;
+      i->word = 0;
+      return;
+    }
   i->ptr = bmp->elts;
   i->bit_num = min;
   i->eltnum = 0;

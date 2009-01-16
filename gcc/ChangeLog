@@ -1,3 +1,9 @@
+2009-01-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ebitmap.h (ebitmap_iter_init): Initialize all fields.
+	* ipa-struct-reorg.c (gen_struct_type): Replace known-true
+	test with assertion.
+
 2009-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38835
