@@ -70,6 +70,7 @@ template < typename T, size_t inlineCapacity > class VectorBuffer;
 template < typename T > class VectorBuffer < T, 0 >:private VectorBufferBase <
   T >
 {
+public:
   typedef VectorBufferBase < T > Base;
   using Base::allocateBuffer;
 };
