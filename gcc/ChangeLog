@@ -1,3 +1,8 @@
+2009-01-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (picochip_override_options): Revert
+	CFI asm flag disable commited previously.
+
 2009-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 	    Tobias Grosser  <tobi.grosser@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
