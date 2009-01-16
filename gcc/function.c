@@ -1848,7 +1848,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
 	fndecl = get_callee_fndecl (fntype);
 	fntype = (fndecl
 		  ? TREE_TYPE (fndecl)
-		  : TREE_TYPE (CALL_EXPR_FN (fntype)));
+		  : TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (fntype))));
 	break;
       case FUNCTION_DECL:
 	fndecl = fntype;
