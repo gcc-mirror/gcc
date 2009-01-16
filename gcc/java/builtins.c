@@ -265,9 +265,10 @@ static tree
 build_addr_sum (tree type, tree addr, tree offset)
 {
   tree ptr_type = build_pointer_type (type);
-  return  fold_build2 (PLUS_EXPR, 
-		       ptr_type, 
-		       fold_convert (ptr_type, addr), offset);
+  return fold_build2 (POINTER_PLUS_EXPR,
+		      ptr_type,
+		      fold_convert (ptr_type, addr),
+		      fold_convert (sizetype, offset));
 }
 
 /* Make sure that this-arg is non-NULL.  This is a security check.  */

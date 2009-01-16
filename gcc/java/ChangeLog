@@ -1,3 +1,9 @@
+2009-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38835
+	PR middle-end/36227
+	* builtins.c (build_addr_sum): Use POINTER_PLUS_EXPR.
+
 2008-12-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/38262

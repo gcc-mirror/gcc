@@ -1,3 +1,11 @@
+2009-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38835
+	PR middle-end/36227
+	* gcc.c-torture/execute/pr36227.c: New testcase.
+	* gcc.dg/tree-ssa/foldaddr-1.c: XFAIL.
+	* g++.dg/init/const7.C: Likewise.
+
 2009-01-16  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR target/38554
