@@ -1,3 +1,8 @@
+2009-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38579
+	* g++.dg/conversion/access1.C: New test.
+
 2009-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38789
