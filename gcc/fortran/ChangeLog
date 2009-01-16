@@ -1,3 +1,11 @@
+2009-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/38152
+	* expr.c (gfc_check_pointer_assign): Allow use-associated procedure
+	pointers as lvalue.
+	* trans-decl.c (get_proc_pointer_decl,gfc_create_module_variable):
+	Enable procedure pointers as module variables.
+
 2009-01-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* ChangeLog-2007: Clean out svn merge droppings.
