@@ -55311,6 +55311,26 @@ all-stageb3g2-bfd: maybe-all-stageb3g2-intl
 all-stage4-bfd: maybe-all-stage4-intl
 all-stageprofile-bfd: maybe-all-stageprofile-intl
 all-stagefeedback-bfd: maybe-all-stagefeedback-intl
+configure-opcodes: configure-libiberty
+
+configure-stage1-opcodes: configure-stage1-libiberty
+configure-stage2-opcodes: configure-stage2-libiberty
+configure-stageb2g0-opcodes: configure-stageb2g0-libiberty
+configure-stage3-opcodes: configure-stage3-libiberty
+configure-stageb3g2-opcodes: configure-stageb3g2-libiberty
+configure-stage4-opcodes: configure-stage4-libiberty
+configure-stageprofile-opcodes: configure-stageprofile-libiberty
+configure-stagefeedback-opcodes: configure-stagefeedback-libiberty
+all-opcodes: maybe-all-libiberty
+
+all-stage1-opcodes: maybe-all-stage1-libiberty
+all-stage2-opcodes: maybe-all-stage2-libiberty
+all-stageb2g0-opcodes: maybe-all-stageb2g0-libiberty
+all-stage3-opcodes: maybe-all-stage3-libiberty
+all-stageb3g2-opcodes: maybe-all-stageb3g2-libiberty
+all-stage4-opcodes: maybe-all-stage4-libiberty
+all-stageprofile-opcodes: maybe-all-stageprofile-libiberty
+all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
 configure-binutils: maybe-configure-intl
 
 configure-stage1-binutils: maybe-configure-stage1-intl
