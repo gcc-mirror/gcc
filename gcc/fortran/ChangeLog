@@ -1,3 +1,8 @@
+2009-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38657
+	* module.c (write_common_0): Revert patch of 2009-01-10.
+
 2009-01-14  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/35681

@@ -1,3 +1,8 @@
+2009-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38657
+	* gfortran.dg/module_commons_3.f90: Remove
+
 2009-01-16  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/38357
