@@ -1,3 +1,7 @@
+2009-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/tree-ssa/foldaddr-1.c: Add the missing '}'.
+
 2009-01-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38877
