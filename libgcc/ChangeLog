@@ -1,3 +1,7 @@
+2009-01-18  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/32/tf-signs.c (__copysigntf3, __fabstf2): Prototype.
+
 2009-01-16  Ben Elliston  <bje@au.ibm.com>
 
 	* config.host (i[34567]86-*-linux*, x86_64-*-linux*): Add t-softfp
