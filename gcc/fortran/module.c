@@ -4333,7 +4333,7 @@ free_written_common (struct written_common *w)
 /* Write a common block to the module -- recursive helper function.  */
 
 static void
-write_common_0 (gfc_symtree *st)
+write_common_0 (gfc_symtree *st, bool this_module)
 {
   gfc_common_head *p;
   const char * name;
@@ -4345,7 +4345,7 @@ write_common_0 (gfc_symtree *st)
   if (st == NULL)
     return;
 
-  write_common_0 (st->left);
+  write_common_0 (st->left, this_module);
 
   /* We will write out the binding label, or the name if no label given.  */
   name = st->n.common->name;
@@ -4363,6 +4363,9 @@ write_common_0 (gfc_symtree *st)
 
       w = (c < 0) ? w->left : w->right;
     }
+
+  if (this_module && p->use_assoc)
+    write_me = false;
 
   if (write_me)
     {
@@ -4389,7 +4392,7 @@ write_common_0 (gfc_symtree *st)
       gfc_insert_bbt (&written_commons, w, compare_written_commons);
     }
 
-  write_common_0 (st->right);
+  write_common_0 (st->right, this_module);
 }
 
 
@@ -4400,7 +4403,8 @@ static void
 write_common (gfc_symtree *st)
 {
   written_commons = NULL;
-  write_common_0 (st);
+  write_common_0 (st, true);
+  write_common_0 (st, false);
   free_written_common (written_commons);
   written_commons = NULL;
 }
