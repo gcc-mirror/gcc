@@ -162,6 +162,7 @@ sources = \
 	locale_init.cc \
 	locale_facets.cc \
 	localename.cc \
+	math_stubs_float.cc \
 	math_stubs_long_double.cc \
 	stdexcept.cc \
 	strstream.cc \
