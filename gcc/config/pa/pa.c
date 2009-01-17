@@ -7971,6 +7971,10 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 		   || ((DECL_SECTION_NAME (thunk_fndecl)
 			== DECL_SECTION_NAME (function))
 		       && last_address < 262132)))
+	      || (targetm.have_named_sections
+		  && DECL_SECTION_NAME (thunk_fndecl) == NULL
+		  && DECL_SECTION_NAME (function) == NULL
+		  && last_address < 262132)
 	      || (!targetm.have_named_sections && last_address < 262132))))
     {
       if (!val_14)

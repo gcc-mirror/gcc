@@ -1,5 +1,9 @@
 2009-01-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (pa_asm_output_mi_thunk): Use pc-relative branch to thunk
+	function when not using named sections on targets with named sections
+	if branch distance is less than 262132.
+
 	* pa.c (last_address): Change to unsigned.
 	(update_total_code_bytes): Change argument to unsigned.  Don't
 	check if insn addresses are set.
