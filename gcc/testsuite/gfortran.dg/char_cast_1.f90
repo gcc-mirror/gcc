@@ -25,7 +25,7 @@
     return
   end function Upper
 end
-! The sign that all is well is that [S.5][1] appears twice.
-! Platform dependent variations are [S$5][1], [__S_5][1], [S___5][1]
-! { dg-final { scan-tree-dump-times "5\\\]\\\[1\\\]" 2 "original" } }
+! The sign that all is well is that [S.6][1] appears twice.
+! Platform dependent variations are [S$6][1], [__S_6][1], [S___6][1]
+! { dg-final { scan-tree-dump-times "6\\\]\\\[1\\\]" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
