@@ -1,3 +1,7 @@
+2009-01-17  Richard Guenther  <rguenther@suse.de>
+
+	* gcc_release (JAVA_DIRS): Remove fastjar.
+
 2008-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release: Fix a couple of comments.
