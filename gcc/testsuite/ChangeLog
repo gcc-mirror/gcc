@@ -1,3 +1,8 @@
+2009-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38657
+	* gfortran.dg/module_commons_3.f90: Remove
+
 2009-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/tree-ssa/foldaddr-1.c: Add the missing '}'.
