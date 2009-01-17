@@ -1,3 +1,9 @@
+2009-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+	    Tobias Grosser  <tobi.grosser@amd.com>
+
+	* graphite.c (graphite_trans_scop_block): Do not block single
+	nested loops.
+
 2009-01-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ebitmap.h (ebitmap_iter_init): Initialize all fields.
