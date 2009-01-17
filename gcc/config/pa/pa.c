@@ -103,7 +103,7 @@ static void store_reg_modify (int, int, HOST_WIDE_INT);
 static void load_reg (int, HOST_WIDE_INT, int);
 static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void update_total_code_bytes (int);
+static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static int pa_adjust_cost (rtx, rtx, rtx, int);
 static int pa_adjust_priority (rtx, int);
@@ -191,7 +191,7 @@ unsigned long total_code_bytes;
 /* The last address of the previous function plus the number of bytes in
    associated thunks that have been output.  This is used to determine if
    a thunk can use an IA-relative branch to reach its target function.  */
-static int last_address;
+static unsigned int last_address;
 
 /* Variables to handle plabels that we discover are necessary at assembly
    output time.  They are output after the current function.  */
@@ -3987,23 +3987,18 @@ load_reg (int reg, HOST_WIDE_INT disp, int base)
 /* Update the total code bytes output to the text section.  */
 
 static void
-update_total_code_bytes (int nbytes)
+update_total_code_bytes (unsigned int nbytes)
 {
   if ((TARGET_PORTABLE_RUNTIME || !TARGET_GAS || !TARGET_SOM)
       && !IN_NAMED_SECTION_P (cfun->decl))
     {
-      if (INSN_ADDRESSES_SET_P ())
-	{
-	  unsigned long old_total = total_code_bytes;
+      unsigned int old_total = total_code_bytes;
 
-	  total_code_bytes += nbytes;
+      total_code_bytes += nbytes;
 
-	  /* Be prepared to handle overflows.  */
-	  if (old_total > total_code_bytes)
-	    total_code_bytes = -1;
-	}
-      else
-	total_code_bytes = -1;
+      /* Be prepared to handle overflows.  */
+      if (old_total > total_code_bytes)
+        total_code_bytes = UINT_MAX;
     }
 }
 
@@ -4067,6 +4062,8 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       last_address = ((last_address + FUNCTION_BOUNDARY / BITS_PER_UNIT - 1)
 		      & ~(FUNCTION_BOUNDARY / BITS_PER_UNIT - 1));
     }
+  else
+    last_address = UINT_MAX;
 
   /* Finally, update the total number of code bytes output so far.  */
   update_total_code_bytes (last_address);
@@ -7935,7 +7932,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 {
   static unsigned int current_thunk_number;
   int val_14 = VAL_14_BITS_P (delta);
-  int nbytes = 0;
+  unsigned int old_last_address = last_address, nbytes = 0;
   char label[16];
   rtx xoperands[4];
 
@@ -8168,6 +8165,8 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
   nbytes = ((nbytes + FUNCTION_BOUNDARY / BITS_PER_UNIT - 1)
 	    & ~(FUNCTION_BOUNDARY / BITS_PER_UNIT - 1));
   last_address += nbytes;
+  if (old_last_address > last_address)
+    last_address = UINT_MAX;
   update_total_code_bytes (nbytes);
 }
 

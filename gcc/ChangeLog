@@ -1,3 +1,12 @@
+2009-01-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (last_address): Change to unsigned.
+	(update_total_code_bytes): Change argument to unsigned.  Don't
+	check if insn addresses are set.
+	(pa_output_function_epilogue): Set last_address to UINT_MAX if insn
+	addresses are not set.
+	(pa_asm_output_mi_thunk): Handle wrap when updating last_address.
+
 2009-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sched-deps.c (sched_analyze_2)[UNSPEC_VOLATILE]: Flush pending
