@@ -3004,6 +3004,15 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	}
     }
 
+  /* Make sure we are not inserting trapping expressions.  */
+  FOR_EACH_EDGE (pred, ei, block->preds)
+    {
+      bprime = pred->src;
+      eprime = avail[bprime->index];
+      if (eprime->kind == NARY
+	  && vn_nary_may_trap (PRE_EXPR_NARY (eprime)))
+	return false;
+    }
 
   /* Make the necessary insertions.  */
   FOR_EACH_EDGE (pred, ei, block->preds)

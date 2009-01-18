@@ -1,3 +1,14 @@
+2009-01-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38819
+	* tree-flow.h (operation_could_trap_helper_p): Declare.
+	* tree-eh.c (operation_could_trap_helper_p): Export.
+	* tree-ssa-sccvn.h (vn_nary_may_trap): Declare.
+	* tree-ssa-sccvn.c (vn_nary_may_trap): New function.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Check if we
+	are about to insert a possibly trapping instruction and fail
+	in this case.
+
 2009-01-18  Andreas Schwab  <schwab@suse.de>
 
 	* doc/install.texi (Configuration): Remove obsolete paragraph
