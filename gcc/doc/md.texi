@@ -3149,7 +3149,7 @@ A definition of another insn attribute used to describe for what
 reason an insn alternative might be available or
 not.  E.g. @code{cpu_facility} as in the example below.
 @item
-An assignement for the second attribute to each insn definition
+An assignment for the second attribute to each insn definition
 combining instructions which are not all available under the same
 circumstances.  (Note: It obviously only makes sense for definitions
 with more than one alternative.  Otherwise the insn pattern should be

@@ -1387,14 +1387,14 @@ is currently only supported when compiling C or C++.
 
 The compiler can accept several base standards, such as @samp{c89} or
 @samp{c++98}, and GNU dialects of those standards, such as
-@samp{gnu89} or @samp{gnu++98}.  By specifing a base standard, the
+@samp{gnu89} or @samp{gnu++98}.  By specifying a base standard, the
 compiler will accept all programs following that standard and those
 using GNU extensions that do not contradict it.  For example,
 @samp{-std=c89} turns off certain features of GCC that are
 incompatible with ISO C90, such as the @code{asm} and @code{typeof}
 keywords, but not other GNU extensions that do not have a meaning in
 ISO C90, such as omitting the middle term of a @code{?:}
-expression. On the other hand, by specifing a GNU dialect of a
+expression. On the other hand, by specifying a GNU dialect of a
 standard, all features the compiler support are enabled, even when
 those features change the meaning of the base standard and some
 strict-conforming programs may be rejected.  The particular standard
@@ -6605,7 +6605,7 @@ compiling and when linking your program.
 The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}.
 
 If @var{path} is specified, GCC will look at the @var{path} to find
-the profile feeedback data files. See @option{-fprofile-dir}.
+the profile feedback data files. See @option{-fprofile-dir}.
 
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}
@@ -7601,8 +7601,8 @@ optimizing at @option{-O3} and above.  For some sorts of source code
 the enhanced partial redundancy elimination optimization can run away,
 consuming all of the memory available on the host machine.  This
 parameter sets a limit on the length of the sets that are computed,
-which prevents the runaway behaviour.  Setting a value of 0 for
-this paramter will allow an unlimited set length.
+which prevents the runaway behavior.  Setting a value of 0 for
+this parameter will allow an unlimited set length.
 
 @item sccvn-max-scc-size
 Maximum size of a strongly connected component (SCC) during SCCVN
@@ -9077,7 +9077,7 @@ best available method for the selected processor.  The default setting is
 Only generate absolute relocations on word sized values (i.e. R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
-is speficied.
+is specified.
 
 @end table
 
@@ -13317,7 +13317,7 @@ Disables warnings about the generation of inefficient code.  These
 warnings can be generated, for example, when compiling code which
 performs byte-level memory operations on the MAC AE type.  The MAC AE has
 no hardware support for byte-level memory operations, so all byte
-load/stores must be synthesised from word load/store operations.  This is
+load/stores must be synthesized from word load/store operations.  This is
 inefficient and a warning will be generated indicating to the programmer
 that they should rewrite the code to avoid byte operations, or to target
 an AE type which has the necessary hardware support.  This option enables

@@ -109,7 +109,7 @@ structure takes 4 words (32 bytes) on 64 bit hosts:
 @item @code{visited}			@tab 1
 @item @code{nontemporal_move}		@tab 1
 @item @code{plf}			@tab 2
-@item @code{modifed}			@tab 1
+@item @code{modified}			@tab 1
 @item @code{has_volatile_ops}		@tab 1
 @item @code{references_memory_p}	@tab 1
 @item @code{uid}			@tab 32
