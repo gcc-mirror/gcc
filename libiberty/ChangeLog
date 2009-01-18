@@ -1,3 +1,9 @@
+2009-01-18  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac (funcs, vars, checkfuncs):  Don't munge on Cygwin,
+	as it no longer shares libiberty object files.
+	* configure:  Regenerated.
+
 2009-01-07  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_expression): Remove mangling for zero-op casts.
