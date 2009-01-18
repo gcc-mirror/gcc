@@ -1,3 +1,8 @@
+2009-01-18  Andreas Schwab  <schwab@suse.de>
+
+	* doc/install.texi (Configuration): Remove obsolete paragraph
+	about use of --with-gnu-ld with --with-gnu-as.
+
 2009-01-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/extend.texi, doc/gimple.texi, doc/invoke.texi,
