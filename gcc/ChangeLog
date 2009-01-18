@@ -43,7 +43,7 @@
 	C++ warning about implicit conversion from void * to struct
 	bitmap_head_def *.
 	(bitmap_obstack_free): Likewise for bitmap_element *.
-	* Makefile.in (bitmap.o-warn): Remove goal.
+	* Makefile.in (bitmap.o-warn): Remove.
 
 2009-01-17  Dave Korn  <dave.korn.cygwin@gmail.com>
 
