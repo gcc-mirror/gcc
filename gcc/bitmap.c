@@ -356,7 +356,7 @@ bitmap_obstack_alloc_stat (bitmap_obstack *bit_obstack MEM_STAT_DECL)
     bit_obstack = &bitmap_default_obstack;
   map = bit_obstack->heads;
   if (map)
-    bit_obstack->heads = (void *)map->first;
+    bit_obstack->heads = (struct bitmap_head_def *) map->first;
   else
     map = XOBNEW (&bit_obstack->obstack, bitmap_head);
   bitmap_initialize_stat (map, bit_obstack PASS_MEM_STAT);
@@ -391,7 +391,7 @@ bitmap_obstack_free (bitmap map)
   if (map)
     {
       bitmap_clear (map);
-      map->first = (void *)map->obstack->heads;
+      map->first = (bitmap_element *) map->obstack->heads;
 #ifdef GATHER_STATISTICS
       register_overhead (map, -((int)sizeof (bitmap_head)));
 #endif
