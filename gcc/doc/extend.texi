@@ -2782,7 +2782,7 @@ with modern codes that keep a 16-byte stack for SSE compatibility.
 @cindex @code{resbank} attribute
 On the SH2A target, this attribute enables the high-speed register
 saving and restoration using a register bank for @code{interrupt_handler}
-routines.  Saving to the bank is performed automatcially after the CPU
+routines.  Saving to the bank is performed automatically after the CPU
 accepts an interrupt that uses a register bank.
 
 The nineteen 32-bit registers comprising general register R0 to R14,

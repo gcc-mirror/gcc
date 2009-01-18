@@ -1,3 +1,9 @@
+2009-01-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/extend.texi, doc/gimple.texi, doc/invoke.texi,
+	doc/md.texi, doc/sourcebuild.texi, doc/tm.texi: Fix typos.
+	Follow spelling conventions.
+
 2009-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* bitmap.c (bitmap_obstack_alloc_stat): Adjust cast to eliminate
