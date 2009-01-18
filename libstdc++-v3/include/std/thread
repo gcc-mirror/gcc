@@ -65,7 +65,7 @@ namespace std
     __thread_data_base() = default;
     virtual ~__thread_data_base() = default;
     
-    virtual void __run() const = 0;
+    virtual void __run() = 0;
     
     __gthread_t 	_M_thread_handle;
     __thread_data_ptr 	_M_this_ptr;
@@ -80,7 +80,7 @@ namespace std
       : _M_func(std::forward<_Callable>(__f))
       { }
 
-      void __run() const
+      void __run()
       { _M_func(); }
 
     private:
