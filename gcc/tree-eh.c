@@ -2067,7 +2067,7 @@ verify_eh_edges (gimple stmt)
 
 /* Helper function for operation_could_trap_p and stmt_could_throw_p.  */
 
-static bool
+bool
 operation_could_trap_helper_p (enum tree_code op,
 			       bool fp_operation,
 			       bool honor_trapv,
