@@ -1,3 +1,20 @@
+2009-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38736
+	* c-common.c (handle_aligned_attribute): Use
+	ATTRIBUTE_ALIGNED_VALUE instead of BIGGEST_ALIGNMENT for
+	default alignment value.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __BIGGEST_ALIGNMENT__.
+
+	* defaults.h (ATTRIBUTE_ALIGNED_VALUE): New.
+	* config/i386/i386.h (ATTRIBUTE_ALIGNED_VALUE): Likewise.
+
+	* doc/extend.texi: Update __attribute__ ((aligned)).  Document
+	__BIGGEST_ALIGNMENT__.
+
+	* doc/tm.texi: Document ATTRIBUTE_ALIGNED_VALUE.
+
 2009-01-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38819

@@ -710,6 +710,10 @@ enum target_cpu_default
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
 
+/* Alignment value for attribute ((aligned)).  It is a constant since
+   it is the part of the ABI.  We shouldn't change it with -mavx.  */
+#define ATTRIBUTE_ALIGNED_VALUE 128
+
 /* Decide whether a variable of mode MODE should be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
  ((MODE) == XFmode || SSE_REG_MODE_P (MODE))
