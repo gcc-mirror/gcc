@@ -762,6 +762,9 @@ c_cpp_builtins (cpp_reader *pfile)
      format.  */
   if (ENABLE_DECIMAL_FLOAT && ENABLE_DECIMAL_BID_FORMAT)
     cpp_define (pfile, "__DECIMAL_BID_FORMAT__");
+
+  builtin_define_with_int_value ("__BIGGEST_ALIGNMENT__",
+				 BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 }
 
 /* Pass an object-like macro.  If it doesn't lie in the user's

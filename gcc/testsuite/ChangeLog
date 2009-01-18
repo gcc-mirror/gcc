@@ -1,3 +1,15 @@
+2009-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38736
+	* g++.dg/compat/abi/pr38736_main.C: New.
+	* g++.dg/compat/abi/pr38736_x.C: Likewise.
+	* g++.dg/compat/abi/pr38736_y.C: Likewise.
+	* g++.dg/other/macro-1.C: Likewise.
+	* gcc.dg/macro-1.c: Likewise.
+	* gcc.dg/compat/pr38736_main.c: Likewise.
+	* gcc.dg/compat/pr38736_x.c: Likewise.
+	* gcc.dg/compat/pr38736_y.c: Likewise.
+
 2009-01-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38819

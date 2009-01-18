@@ -3697,21 +3697,27 @@ that forces the union to be double-word aligned.
 As in the preceding examples, you can explicitly specify the alignment
 (in bytes) that you wish the compiler to use for a given variable or
 structure field.  Alternatively, you can leave out the alignment factor
-and just ask the compiler to align a variable or field to the maximum
-useful alignment for the target machine you are compiling for.  For
-example, you could write:
+and just ask the compiler to align a variable or field to the
+default alignment for the target architecture you are compiling for.
+The default alignment is sufficient for all scalar types, but may not be
+enough for all vector types on a target which supports vector operations.
+The default alignment is fixed for a particular target ABI.
+
+Gcc also provides a target specific macro @code{__BIGGEST_ALIGNMENT__},
+which is the largest alignment ever used for any data type on the
+target machine you are compiling for.  For example, you could write:
 
 @smallexample
-short array[3] __attribute__ ((aligned));
+short array[3] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
 @end smallexample
 
-Whenever you leave out the alignment factor in an @code{aligned} attribute
-specification, the compiler automatically sets the alignment for the declared
-variable or field to the largest alignment which is ever used for any data
-type on the target machine you are compiling for.  Doing this can often make
-copy operations more efficient, because the compiler can use whatever
-instructions copy the biggest chunks of memory when performing copies to
-or from the variables or fields that you have aligned this way.
+The compiler automatically sets the alignment for the declared
+variable or field to @code{__BIGGEST_ALIGNMENT__}.  Doing this can
+often make copy operations more efficient, because the compiler can
+use whatever instructions copy the biggest chunks of memory when
+performing copies to or from the variables or fields that you have
+aligned this way.  Note that the value of @code{__BIGGEST_ALIGNMENT__}
+may change depending on command line options.
 
 When used on a struct, or struct member, the @code{aligned} attribute can
 only increase the alignment; in order to decrease it, the @code{packed}
