@@ -1,3 +1,8 @@
+2009-01-19  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38859
+	* gfortran.dg/bound_5.f90: New test.
+
 2009-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38736
