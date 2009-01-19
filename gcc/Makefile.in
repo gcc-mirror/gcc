@@ -2848,7 +2848,7 @@ regclass.o : regclass.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(FLAGS_H) $(BASIC_BLOCK_H) addresses.h $(REGS_H) insn-config.h \
    $(RECOG_H) reload.h $(REAL_H) $(TOPLEV_H) $(FUNCTION_H) output.h $(GGC_H) \
    $(TM_P_H) $(EXPR_H) $(TIMEVAR_H) gt-regclass.h $(HASHTAB_H) \
-   $(TARGET_H) tree-pass.h $(DF_H)
+   $(TARGET_H) tree-pass.h $(DF_H) ira.h
 local-alloc.o : local-alloc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(FLAGS_H) $(REGS_H) hard-reg-set.h insn-config.h $(RECOG_H) \
    output.h $(FUNCTION_H) $(INSN_ATTR_H) $(TOPLEV_H)  except.h reload.h $(TM_P_H) \
