@@ -1,3 +1,7 @@
+2009-01-19  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc.dg/pr38616.c: Remove.
+
 2009-01-19  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
