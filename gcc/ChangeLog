@@ -1,3 +1,12 @@
+2009-01-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR c/38869
+	* rtl.h (reinit_regs): New prototype.
+	* regclass.c: Include ira.h.
+	(reinit_regs): New.
+	* Makefile.in (regclass.o): Add ira.h.
+	* config/i386/i386.c (ix86_maybe_switch_abi): Use reinit_regs.
+
 2009-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38736

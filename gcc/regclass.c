@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "ira.h"
 
 /* Maximum register number used in this function, plus one.  */
 
@@ -738,6 +739,17 @@ init_regs (void)
   init_reg_sets_1 ();
 
   init_reg_autoinc ();
+}
+
+/* The same as previous function plus initializing IRA if it is
+   necessary.  */
+void
+reinit_regs (void)
+{
+  init_regs ();
+
+  if (flag_ira)
+    ira_init ();
 }
 
 /* Initialize some fake stack-frame MEM references for use in

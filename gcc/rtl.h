@@ -2230,6 +2230,7 @@ extern int reg_class_subset_p (enum reg_class, enum reg_class);
 extern void globalize_reg (int);
 extern void init_reg_modes_target (void);
 extern void init_regs (void);
+extern void reinit_regs (void);
 extern void init_fake_stack_mems (void);
 extern void save_register_info (void);
 extern void init_reg_sets (void);

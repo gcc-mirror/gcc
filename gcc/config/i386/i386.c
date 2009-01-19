@@ -4624,7 +4624,7 @@ ix86_maybe_switch_abi (void)
 {
   if (TARGET_64BIT &&
       call_used_regs[4 /*RSI*/] ==  (cfun->machine->call_abi == MS_ABI))
-    init_regs ();
+    reinit_regs ();
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
