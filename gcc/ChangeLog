@@ -1,3 +1,12 @@
+2009-01-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2008-07-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36765
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Add
+	aliases from HEAP vars to SMTs.
+
 2009-01-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (LIB_SPEC): Link against librt when building static
