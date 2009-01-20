@@ -1,3 +1,9 @@
+2009-01-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/38758
+	* longlong.h: Update copyright years.  Use soft-fp license
+	notice.
+
 2009-01-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_call): Relocate non-jump insns in the delay slot of long
