@@ -1,6 +1,6 @@
 /* Emit RTL for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2034,6 +2034,11 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
     }
 
   new_rtx = change_address_1 (memref, mode, addr, validate);
+
+  /* If the address is a REG, change_address_1 rightfully returns memref,
+     but this would destroy memref's MEM_ATTRS.  */
+  if (new_rtx == memref && offset != 0)
+    new_rtx = copy_rtx (new_rtx);
 
   /* Compute the new values of the memory attributes due to this adjustment.
      We add the offsets and update the alignment.  */

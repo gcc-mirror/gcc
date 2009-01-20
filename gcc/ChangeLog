@@ -1,3 +1,9 @@
+2008-01-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/38868
+	* emit-rtl.c (adjust_address_1): Make sure memref is never
+	overwritten.
+
 2009-01-20  Ben Elliston  <bje@au.ibm.com>
 
 	* libgcov.c (__gcov_execl, __gcov_execlp, __gcov_execle): Remove
