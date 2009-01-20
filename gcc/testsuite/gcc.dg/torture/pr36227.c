@@ -1,3 +1,5 @@
+/* { dg-do run { target { stdint_types } } } */
+
 #include <stdint.h>
 extern void abort (void);
 int main()
