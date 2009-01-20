@@ -1,3 +1,8 @@
+2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite.c (stmt_simple_for_scop_p): Also handle cases when
+	gimple_call_lhs is NULL.
+
 2008-01-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/38868

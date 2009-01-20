@@ -1040,14 +1040,12 @@ stmt_simple_for_scop_p (basic_block scop_entry, gimple stmt)
 	size_t n = gimple_call_num_args (stmt);
 	tree lhs = gimple_call_lhs (stmt);
 
-	for (i = 0; i < n; i++)
-	  {
-	    tree arg = gimple_call_arg (stmt, i);
+	if (lhs && !is_simple_operand (loop, stmt, lhs))
+	  return false;
 
-	    if (!(is_simple_operand (loop, stmt, lhs)
-		  && is_simple_operand (loop, stmt, arg)))
-	      return false;
-	  }
+	for (i = 0; i < n; i++)
+	  if (!is_simple_operand (loop, stmt, gimple_call_arg (stmt, i)))
+	    return false;
 
 	return true;
       }
