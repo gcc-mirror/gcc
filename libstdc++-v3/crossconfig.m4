@@ -141,9 +141,9 @@ case "${host}" in
     AM_ICONV
     ;;
   *-mingw32*)
-    AC_DEFINE(HAVE_STRTOF)
-    AC_DEFINE(HAVE_STRTOLD)
     GLIBCXX_CHECK_LINKER_FEATURES
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
