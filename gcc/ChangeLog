@@ -1,3 +1,11 @@
+2009-01-20  Ben Elliston  <bje@au.ibm.com>
+
+	* libgcov.c (__gcov_execl, __gcov_execlp, __gcov_execle): Remove
+	const qualifier from arg parameter. Remove unnecessary cast to
+	char *.
+	* gcov-io.h (__gcov_execl, __gcov_execlp, __gcov_execle): Remove
+	const qualifier from arg 2.
+
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
         * config/darwin.h: Add static-libgfortran to LINK_SPEC.
