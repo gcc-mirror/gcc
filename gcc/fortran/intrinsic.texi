@@ -214,7 +214,7 @@ Some basic guidelines for editing this document:
 * @code{RANDOM_NUMBER}: RANDOM_NUMBER, Pseudo-random number
 * @code{RANDOM_SEED}:   RANDOM_SEED, Initialize a pseudo-random number sequence
 * @code{RAND}:          RAND,      Real pseudo-random number
-* @code{RANGE}:         RANGE,     Decimal exponent range of a real kind
+* @code{RANGE}:         RANGE,     Decimal exponent range
 * @code{RAN}:           RAN,       Real pseudo-random number
 * @code{REAL}:          REAL,      Convert to real type 
 * @code{RENAME}:        RENAME,    Rename a file
@@ -8884,7 +8884,7 @@ END SUBROUTINE
 
 
 @node RANGE
-@section @code{RANGE} --- Decimal exponent range of a real kind
+@section @code{RANGE} --- Decimal exponent range
 @fnindex RANGE
 @cindex model representation, range
 
@@ -8904,7 +8904,8 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab Shall be of type @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab Shall be of type @code{INTEGER}, @code{REAL}
+or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
