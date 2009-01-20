@@ -1,3 +1,7 @@
+2009-01-20  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi (RANGE): RANGE also takes INTEGER arguments.
+
 2009-01-19  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38859
