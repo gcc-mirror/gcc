@@ -1,3 +1,8 @@
+2009-01-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/pr36227.c: Move ...
+	* gcc.dg/torture/pr36227.c: ... here.  Require stdint_types.
+
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
         * lib/gfortran.exp: Add -B options for targets that use
