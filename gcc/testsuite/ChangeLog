@@ -1,3 +1,9 @@
+2009-01-20  Kees Cook  <kees@ubuntu.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38902
+	* gcc.dg/pr38902.c: New.
+
 2008-01-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/38868
@@ -10,7 +16,7 @@
 
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
-        * lib/gfortran.exp: Add -B options for targets that use
+	* lib/gfortran.exp: Add -B options for targets that use
 	libgfortran.a%s in their specs.
 
 2009-01-19  Jason Merrill  <jason@redhat.com>
@@ -104,7 +110,7 @@
 
 2009-01-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-        PR C++/29388
+	PR C++/29388
 	* g++.dg/template/error37.C: New testcase.
 
 2009-01-15  Jason Merrill  <jason@redhat.com>
