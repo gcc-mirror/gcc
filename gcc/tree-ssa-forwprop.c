@@ -777,7 +777,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && operand_equal_p (TYPE_SIZE (TREE_TYPE (rhs)),
 			  TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0))), 0)) 
    {
-     tree new_rhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
+     tree def_rhs_base, new_rhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
      new_rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), new_rhs);
      if (TREE_CODE (new_rhs) != VIEW_CONVERT_EXPR)
        {
@@ -788,16 +788,23 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	 new_rhs = force_gimple_operand_gsi (use_stmt_gsi, new_rhs, true, NULL,
 					     true, GSI_NEW_STMT);
 	 gimple_assign_set_rhs1 (use_stmt, new_rhs);
+	 tidy_after_forward_propagate_addr (use_stmt);
+	 return true;
        }
-     else
+     /* If the defining rhs comes from an indirect reference, then do not
+        convert into a VIEW_CONVERT_EXPR.  */
+     def_rhs_base = TREE_OPERAND (def_rhs, 0);
+     while (handled_component_p (def_rhs_base))
+       def_rhs_base = TREE_OPERAND (def_rhs_base, 0);
+     if (!INDIRECT_REF_P (def_rhs_base))
        {
 	 /* We may have arbitrary VIEW_CONVERT_EXPRs in a nested component
 	    reference.  Place it there and fold the thing.  */
 	 *rhsp = new_rhs;
 	 fold_stmt_inplace (use_stmt);
+	 tidy_after_forward_propagate_addr (use_stmt);
+	 return true;
        }
-     tidy_after_forward_propagate_addr (use_stmt);
-     return true;
    }
 
   /* If the use of the ADDR_EXPR is not a POINTER_PLUS_EXPR, there
