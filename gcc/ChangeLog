@@ -1,3 +1,12 @@
+2009-01-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38747
+	PR tree-optimization/38748
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Disable the VCE
+	conversion if the base address is an indirect reference and the
+	aliasing sets could cause issues.
+
 2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* common.opt (fgraphite, fgraphite-identity): Add comment for 
