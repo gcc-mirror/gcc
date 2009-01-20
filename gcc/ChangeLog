@@ -1,5 +1,10 @@
 2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* common.opt (fgraphite, fgraphite-identity): Add comment for 
+	explaining why these options are not documented.
+
+2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite.c (stmt_simple_for_scop_p): Also handle cases when
 	gimple_call_lhs is NULL.
 

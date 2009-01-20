@@ -551,6 +551,7 @@ Common Report Var(flag_gcse_after_reload) Optimization
 Perform global common subexpression elimination after register allocation
 has finished
 
+; This option is not documented yet as its semantics will change.
 fgraphite
 Common Report Var(flag_graphite)
 Enable in and out of Graphite representation
@@ -567,6 +568,7 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+; This option is not documented as it does not perform any useful optimization.
 fgraphite-identity
 Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
