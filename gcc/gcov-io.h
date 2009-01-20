@@ -481,9 +481,9 @@ extern void __gcov_ior_profiler (gcov_type *, gcov_type);
 #ifndef inhibit_libc
 /* The wrappers around some library functions..  */
 extern pid_t __gcov_fork (void) ATTRIBUTE_HIDDEN;
-extern int __gcov_execl (const char *, const char *, ...) ATTRIBUTE_HIDDEN;
-extern int __gcov_execlp (const char *, const char *, ...) ATTRIBUTE_HIDDEN;
-extern int __gcov_execle (const char *,  const char *, ...) ATTRIBUTE_HIDDEN;
+extern int __gcov_execl (const char *, char *, ...) ATTRIBUTE_HIDDEN;
+extern int __gcov_execlp (const char *, char *, ...) ATTRIBUTE_HIDDEN;
+extern int __gcov_execle (const char *, char *, ...) ATTRIBUTE_HIDDEN;
 extern int __gcov_execv (const char *, char *const []) ATTRIBUTE_HIDDEN;
 extern int __gcov_execvp (const char *, char *const []) ATTRIBUTE_HIDDEN;
 extern int __gcov_execve (const char *, char  *const [], char *const [])
