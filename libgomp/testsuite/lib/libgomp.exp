@@ -171,6 +171,9 @@ proc libgomp_target_compile { source dest type options } {
 
     if { [info exists lang_test_file] } {
         if { $blddir != "" } {
+            # Some targets use libgfortran.a%s in their specs, so they need
+            # a -B option for uninstalled testing.
+            lappend options "additional_flags=-B${blddir}/${lang_library_path}"
             lappend options "ldflags=-L${blddir}/${lang_library_path}"
         }
         lappend options "ldflags=${lang_link_flags}"
