@@ -1,3 +1,7 @@
+2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+        * config/darwin.h: Add static-libgfortran to LINK_SPEC.
+
 2009-01-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR c/38869

@@ -88,6 +88,9 @@ proc gfortran_link_flags { paths } {
 
     if { $gccpath != "" } {
       if [file exists "${gccpath}/libgfortran/.libs/libgfortran.a"] {
+          # Some targets use libgfortran.a%s in their specs, so they need a -B option
+          # for uninstalled testing.
+          append flags "-B${gccpath}/libgfortran/.libs "
           append flags "-L${gccpath}/libgfortran/.libs "
           append ld_library_path ":${gccpath}/libgfortran/.libs"
       }

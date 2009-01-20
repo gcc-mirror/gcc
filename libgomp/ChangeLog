@@ -1,3 +1,8 @@
+2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+        * testsuite/lib/libgomp.exp: Add -B option for targets that
+	use libgfortran.a%s in their specs.
+
 2009-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/38086

@@ -1,3 +1,8 @@
+2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+        * lib/gfortran.exp: Add -B options for targets that use
+	libgfortran.a%s in their specs.
+
 2009-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/23287
