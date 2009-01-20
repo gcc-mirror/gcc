@@ -2885,6 +2885,14 @@ On the Intel 386, the @code{stdcall} attribute causes the compiler to
 assume that the called function will pop off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
+@item syscall_linkage
+@cindex @code{syscall_linkage} attribute
+This attribute is used to modify the IA64 calling convention by marking
+all input registers as live at all function exits.  This makes it possible
+to restart a system call after an interrupt without having to save/restore
+the input registers.  This also prevents kernel data from leaking into
+application code.
+
 @item target
 @cindex @code{target} function attribute
 The @code{target} attribute is used to specify that a function is to
@@ -3085,8 +3093,8 @@ This is useful, for example, when the function is referenced only in
 inline assembly.
 
 @item version_id
-@cindex @code{version_id} attribute on IA64 HP-UX
-This attribute, attached to a global variable or function, renames a
+@cindex @code{version_id} attribute
+This IA64 HP-UX attribute, attached to a global variable or function, renames a
 symbol to contain a version string, thus allowing for function level
 versioning.  HP-UX system header files may use version level functioning
 for some system calls.
