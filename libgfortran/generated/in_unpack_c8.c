@@ -60,12 +60,12 @@ internal_unpack_c8 (gfc_array_c8 * d, const GFC_COMPLEX_8 * src)
       stride[n] = d->dim[n].stride;
       extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
       if (extent[n] <= 0)
-        abort ();
+	return;
 
       if (dsize == stride[n])
-        dsize *= extent[n];
+	dsize *= extent[n];
       else
-        dsize = 0;
+	dsize = 0;
     }
 
   if (dsize != 0)

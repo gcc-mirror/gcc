@@ -1,3 +1,23 @@
+2009-01-21  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38887
+	* runtime/in_unpack_generic.c (internal_unpack):  Return instead of
+	abort when called with empty array.
+	* m4/in_unpack.m4:  Ditto.
+	* generated/in_unpack_i1.c:  Regenerated.
+	* generated/in_unpack_i2.c:  Regenerated.
+	* generated/in_unpack_i4.c:  Regenerated.
+	* generated/in_unpack_i8.c:  Regenerated.
+	* generated/in_unpack_i16.c: Regenerated.
+	* generated/in_unpack_r4.c:  Regenerated.
+	* generated/in_unpack_r8.c:  Regenerated.
+	* generated/in_unpack_r10.c: Regenerated.
+	* generated/in_unpack_r16.c: Regenerated.
+	* generated/in_unpack_c4.c:  Regenerated.
+	* generated/in_unpack_c8.c:  Regenerated.
+	* generated/in_unpack_c10.c: Regenerated.
+	* generated/in_unpack_c16.c: Regenerated.
+
 2009-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/38772
