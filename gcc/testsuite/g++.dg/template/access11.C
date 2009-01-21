@@ -17,8 +17,8 @@ template <> struct X::Y<int> {
   A::X x;			// { dg-error "this context" }
 };
 
-template <typename T> struct X::Y {
+template <typename T> struct X::Y { // { dg-error "this context" }
   typename T::X x;		// { dg-error "this context" }
 };
 
-template struct X::Y<A>;	// { dg-message "instantiated" }
+template struct X::Y<A>;	// { dg-message "instantiated from here" }
