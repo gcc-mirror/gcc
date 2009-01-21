@@ -1,3 +1,9 @@
+2009-01-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Skip for mips*-*-linux*
+	and mips*-*-irix*.
+	* gcc.dg/tree-ssa/vrp47.c: Skip for all MIPS targets.
+
 2009-01-21  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693

@@ -1,4 +1,6 @@
-/* { dg-do compile } */
+/* Skip on MIPS, where LOGICAL_OP_NON_SHORT_CIRCUIT inhibits the setcc
+   optimizations that expose the VRP opportunity.  */
+/* { dg-do compile { target { ! mips*-*-* } } } */
 /* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom" } */
 
 int h(int x, int y)
