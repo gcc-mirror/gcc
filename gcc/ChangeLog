@@ -1,3 +1,10 @@
+2009-01-21  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR bootstrap/37660
+	* config/i386/cygwin.h (SHARED_LIBGCC_SPEC):  New helper macro.
+	(LIBGCC_SPEC):  Don't define.
+	(REAL_LIBGCC_SPEC):  Define instead, using SHARED_LIBGCC_SPEC.
+
 2009-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/38879

@@ -49,9 +49,26 @@ along with GCC; see the file COPYING3.  If not see
    GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
    by calling the init function from main.  */
 
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC \
-  "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc	\
+#ifdef ENABLE_SHARED_LIBGCC
+#define SHARED_LIBGCC_SPEC " \
+ %{static|static-libgcc:-lgcc -lgcc_eh} \
+ %{!static: \
+   %{!static-libgcc: \
+     %{!shared: \
+       %{!shared-libgcc:-lgcc -lgcc_eh} \
+       %{shared-libgcc:-lgcc_s -lgcc} \
+      } \
+     %{shared:-lgcc_s -lgcc} \
+    } \
+  } "
+#else
+#define SHARED_LIBGCC_SPEC " -lgcc "
+#endif
+
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC \
+  "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} \
+   " SHARED_LIBGCC_SPEC " \
    %{mno-cygwin:-lmoldname -lmingwex -lmsvcrt}"
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
