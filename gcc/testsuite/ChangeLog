@@ -219,6 +219,11 @@
 	* gcc.dg/vect/vect-105.c: Prevent compiler from hoisting abort
 	out of loop.
 
+2009-01-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/38811
+	* g++.dg/torture/pr38811.C: New file.
+
 2009-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38826
