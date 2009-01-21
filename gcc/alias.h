@@ -41,6 +41,7 @@ extern int alias_sets_conflict_p (alias_set_type, alias_set_type);
 extern int alias_sets_must_conflict_p (alias_set_type, alias_set_type);
 extern int objects_must_conflict_p (tree, tree);
 extern int nonoverlapping_memrefs_p (const_rtx, const_rtx);
+extern bool insn_alias_sets_conflict_p (rtx, rtx);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference

@@ -1,3 +1,14 @@
+2009-01-21  Bingfeng Mei  <bmei@broadcom.com>
+
+	* alias.c (walk_mems_1, walk_mems_2, insn_alias_sets_conflict_p):
+	Check whether two instructions have memory references that
+	belong to conflicting alias sets.  walk_mems_1 and walk_mems_2
+	are helper functions for traversing.
+	* alias.h (insn_alias_sets_confilict_p): New prototypes.
+	* ddg.c (add_inter_loop_mem_dep): Call insn_alias_sets_conflict_p
+	not to draw dependency edge for instructions with non-conflicting
+	alias sets.
+
 2009-01-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/38758

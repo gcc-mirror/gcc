@@ -1,3 +1,8 @@
+2009-01-21  Bingfeng Mei  <bmei@broadcom.com>
+
+	* gcc.dg/sms-6.c: New test.
+	* gcc.dg/sms-7.c: Likewise.
+
 2009-01-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38907
