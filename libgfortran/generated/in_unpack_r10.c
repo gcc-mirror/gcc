@@ -60,12 +60,12 @@ internal_unpack_r10 (gfc_array_r10 * d, const GFC_REAL_10 * src)
       stride[n] = d->dim[n].stride;
       extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
       if (extent[n] <= 0)
-        abort ();
+	return;
 
       if (dsize == stride[n])
-        dsize *= extent[n];
+	dsize *= extent[n];
       else
-        dsize = 0;
+	dsize = 0;
     }
 
   if (dsize != 0)

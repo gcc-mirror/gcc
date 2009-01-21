@@ -1,3 +1,7 @@
+2009-01-21  Daniel Kraft  <d@domob.eu>
+
+	* trans-stmt.c (gfc_conv_elemental_dependencies):  Cleaned up comment.
+
 2009-01-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38907

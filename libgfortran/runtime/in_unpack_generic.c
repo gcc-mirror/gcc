@@ -178,12 +178,12 @@ internal_unpack (gfc_array_char * d, const void * s)
       stride[n] = d->dim[n].stride;
       extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
       if (extent[n] <= 0)
-        abort ();
+	return;
 
       if (dsize == stride[n])
-        dsize *= extent[n];
+	dsize *= extent[n];
       else
-        dsize = 0;
+	dsize = 0;
     }
 
   src = s;
