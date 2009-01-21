@@ -1,9 +1,16 @@
+2009-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/38879
+	* alias.c (base_alias_check): Unaligned access via AND address can
+	alias all surrounding object types except those with sizes equal
+	or wider than the size of unaligned access.
+
 2009-01-21  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693
-	* c-decl.c: (clone_underlying_type): Move this  ...
+	* c-decl.c: (clone_underlying_type): Move this ...
 	* c-common.c (set_underlying_type): ... here.
-	Also, make sure the function  properly sets TYPE_STUB_DECL() on
+	Also, make sure the function properly sets TYPE_STUB_DECL() on
 	the newly created typedef variant type.
 	(is_typedef_decl ): New entry point.
 	* tree.h: Added a new member member_types_needing_access_check to
@@ -35,7 +42,7 @@
 	(version_id): Modify.
 
 2009-01-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38747
 	PR tree-optimization/38748
@@ -62,14 +69,13 @@
 2009-01-20  Ben Elliston  <bje@au.ibm.com>
 
 	* libgcov.c (__gcov_execl, __gcov_execlp, __gcov_execle): Remove
-	const qualifier from arg parameter. Remove unnecessary cast to
-	char *.
+	const qualifier from arg parameter. Remove unnecessary cast to char *.
 	* gcov-io.h (__gcov_execl, __gcov_execlp, __gcov_execle): Remove
 	const qualifier from arg 2.
 
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
-        * config/darwin.h: Add static-libgfortran to LINK_SPEC.
+	* config/darwin.h: Add static-libgfortran to LINK_SPEC.
 
 2009-01-19  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -228,8 +234,7 @@
 
 2009-01-15  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* dce.c (find_call_stack_args, delete_unmarked_insns): Fixed
-	comments.
+	* dce.c (find_call_stack_args, delete_unmarked_insns): Fixed comments.
 	
 2009-01-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -255,9 +260,9 @@
 2009-01-14  Michael Meissner  <gnu@the-meissners.org>
 
 	PR target/22599
-	* i386.c (print_operand): Add tests for 'D', 'C', 'F', 'f' to make
-	sure the insn is a conditional test (bug 22599).  Reformat a few long
-	lines.
+	* config/i386/i386.c (print_operand): Add tests for 'D', 'C', 'F', 'f'
+	to make sure the insn is a conditional test (bug 22599).  Reformat a
+	few long lines.
 
 2009-01-14  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -267,10 +272,6 @@
 	(gloog): Do not call cleanup_tree_cfg.
 	(graphite_transform_loops): Call cleanup_tree_cfg after all 
 	scops have been code generated.
-
-2009-01-14  Vladimir Makarov  <vmakarov@redhat.com>
-
-	* testsuite/g++.dg/torture/pr38811.C: New file.
 
 2009-01-14  Basile Starynkevitch  <basile@starynkevitch.net>
 	* doc/gty.texi (Invoking the garbage collector): Added new node
@@ -291,10 +292,8 @@
 
 	* ira-conflicts.c: Include addresses.h for the definition of
 	base_reg_class.
-	(ira_build_conflicts): Use base_reg_class instead of
-	BASE_REG_CLASS.
-	* Makefile.in: Add a dependency of ira-conflicts.o on
-	addresses.h.
+	(ira_build_conflicts): Use base_reg_class instead of BASE_REG_CLASS.
+	* Makefile.in: Add a dependency of ira-conflicts.o on addresses.h.
 
 2009-01-13  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -337,13 +336,13 @@
 
 2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c (output_move_double): Don't synthesize thumb-2 ldrd/strd with
-	two 32-bit instructions.
+	* config/arm/arm.c (output_move_double): Don't synthesize thumb-2
+	ldrd/strd with two 32-bit instructions.
 
 2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c (struct processors): Pass for speed down into cost helper
-	functions.
+	* config/arm/arm.c (struct processors): Pass for speed down into
+	cost helper functions.
 	(const_ok_for_op): Handle COMPARE and inequality nodes.
 	(arm_rtx_costs_1): Rewrite.
 	(arm_size_rtx_costs): Update prototype.
@@ -355,7 +354,7 @@
 2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_legitimate_address_p): Explicit
-	relocations of local symbols  wider than UNITS_PER_WORD are not valid.
+	relocations of local symbols wider than UNITS_PER_WORD are not valid.
 	(alpha_legitimize_address): Do not split local symbols wider than
 	UNITS_PER_WORD into HIGH/LO_SUM parts.
 
@@ -652,7 +651,7 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/38744
-	* i386.c (ix86_expand_call): Use ARRAY_SIZE.
+	* config/i386/i386.c (ix86_expand_call): Use ARRAY_SIZE.
 
 2009-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -662,14 +661,15 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
-	* i386.md (*msabi_syvabi): Add SSE regs clobbers.
-	* i386.c (ix86_expand_call): Add clobbers.
+	* config/i386/i386.md (*msabi_syvabi): Add SSE regs clobbers.
+	* config/i386/i386.c (ix86_expand_call): Add clobbers.
 
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
-	* i386.h (CONDITIONAL_CALL_USAGE): SSE regs are not used for w64 ABI.
-	* i386.c (struct ix86_frame): Add padding0 and nsseregs.
+	* config/i386/i386.h (CONDITIONAL_CALL_USAGE): SSE regs are not used
+	for w64 ABI.
+	* config/i386/i386.c (struct ix86_frame): Add padding0 and nsseregs.
 	(ix86_nsaved_regs): Count only general purpose regs.
 	(ix86_nsaved_sseregs): New.
 	(ix86_compute_frame_layout): Update nsseregs; set preferred alignment
@@ -685,9 +685,9 @@
 2009-01-06  Jan Hubicka  <jh@suse.cz>
 	    Kai Tietz <kai.tietz@onevision.com>
 
-	* i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
-	* i386.c (init_cumulative_args): Disallow calls of MSABI functions
-	when accumulate outgoing args is off.
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
+	* config/i386/i386.c (init_cumulative_args): Disallow calls of MSABI
+	functions when accumulate outgoing args is off.
 
 2009-01-06  H.J. Lu  <hongjiu.lu@intel.com>
 
