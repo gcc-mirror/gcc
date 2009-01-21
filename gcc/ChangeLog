@@ -1,3 +1,16 @@
+2009-01-21  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/26693
+	* c-decl.c: (clone_underlying_type): Move this  ...
+	* c-common.c (set_underlying_type): ... here.
+	Also, make sure the function  properly sets TYPE_STUB_DECL() on
+	the newly created typedef variant type.
+	(is_typedef_decl ): New entry point.
+	* tree.h: Added a new member member_types_needing_access_check to
+	struct tree_decl_non_common.
+	(set_underlying_type): New entry point.
+	(is_typedef_type): Likewise.
+
 2009-01-21  Bingfeng Mei  <bmei@broadcom.com>
 
 	* alias.c (walk_mems_1, walk_mems_2, insn_alias_sets_conflict_p):

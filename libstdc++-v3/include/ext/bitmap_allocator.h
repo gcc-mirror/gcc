@@ -549,11 +549,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    */
   class free_list
   {
+  public:
     typedef size_t* 				value_type;
     typedef __detail::__mini_vector<value_type> vector_type;
     typedef vector_type::iterator 		iterator;
     typedef __mutex				__mutex_type;
 
+  private:
     struct _LT_pointer_compare
     {
       bool

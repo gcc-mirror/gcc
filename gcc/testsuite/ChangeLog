@@ -1,3 +1,16 @@
+2009-01-21  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/26693
+	* g++.dg/template/typedef11.C: New test.
+	* g++.dg/template/typedef12.C: Likewise.
+	* g++.dg/template/typedef13.C: Likewise.
+	* g++.dg/template/typedef14.C: Likewise.
+	* g++.dg/template/sfinae3.C: Compile this pedantically.
+	The only errors expected should be the one saying the typedef is ill
+	formed.
+	* g++.old-deja/g++.pt/typename8.C: Likewise.
+	* g++.dg/template/access11.C: Update this.
+
 2009-01-21  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38887

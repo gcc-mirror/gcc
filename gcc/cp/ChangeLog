@@ -1,3 +1,27 @@
+2009-01-21  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/26693
+	* decl2.c (grokfield): when a typedef appears in a
+	class, create the typedef variant type node for it.
+	(save_template_attributes): Creating typedef variant type node
+	 here is now useless.
+	* decl.c (grokdeclarator): If the typedef'ed struct/class was
+	anonymous, set the proper type name to all its type variants.
+	* name-lookup.c (pushdecl_maybe_friend): Reuse the
+	set_underlying_type function to install typedef variant types.
+	* cp-tree.h (MEMBER_TYPES_NEEDING_ACCESS_CHECK): New template accessor
+	macro.
+	(append_type_to_template_for_access_check): New entry points.
+	* semantics.c (check_accessibility_of_qualified_id):
+	When a typedef that is a member of a class appears in a template,
+	add it to the template. It will be ...
+	* pt.c (instantiate_class_template, instantiate_template ): ... access
+	checked at template instantiation time.
+	(tsubst): Handle the case of being called with NULL args.
+	(resolve_type_name_type): The type name should be the name of the
+	main type variant.
+	(append_type_to_template_for_access_check): New entry point.
+
 2009-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/23287

@@ -7387,6 +7387,31 @@ instantiate_class_template (tree type)
 	  && DECL_TEMPLATE_INFO (t))
 	tsubst_default_arguments (t);
 
+  /* Some types referenced from within the template code need to be access
+     checked at template instantiation time, i.e now. These types were
+     added to the template at parsing time. Let's get those and perfom
+     the acces checks then.  */
+  for (t = MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ); t; t = TREE_CHAIN (t))
+    {
+      tree type_decl = TREE_PURPOSE (t);
+      tree type_scope = TREE_VALUE (t);
+
+      if (!type_decl || !type_scope || !CLASS_TYPE_P (type_scope))
+	continue;
+
+      if (uses_template_parms (type_decl))
+	type_decl = tsubst (type_decl, args, tf_error, NULL_TREE);
+
+      if (uses_template_parms (type_scope))
+	type_scope = tsubst (type_scope, args, tf_error, NULL_TREE);
+
+      gcc_assert (type_decl && type_decl != error_mark_node
+		  && type_scope && type_scope != error_mark_node);
+
+      perform_or_defer_access_check (TYPE_BINFO (type_scope), type_decl, type_decl);
+    }
+
+  perform_deferred_access_checks ();
   pop_nested_class ();
   pop_from_top_level ();
   pop_deferring_access_checks ();
@@ -11869,6 +11894,7 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
   tree fndecl;
   tree gen_tmpl;
   tree spec;
+  tree t;
   HOST_WIDE_INT saved_processing_template_decl;
 
   if (tmpl == error_mark_node)
@@ -11947,6 +11973,24 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
   /* Now we know the specialization, compute access previously
      deferred.  */
   push_access_scope (fndecl);
+
+  /* Some types referenced from within the template code need to be access
+     checked at template instantiation time, i.e now. These types were
+     added to the template at parsing time. Let's get those and perfom
+     the acces checks then.  */
+  for (t = MEMBER_TYPES_NEEDING_ACCESS_CHECK (tmpl); t; t = TREE_CHAIN (t))
+    {
+      tree type_decl = TREE_PURPOSE (t);
+      tree type_scope = TREE_VALUE (t);
+
+      if (!type_decl || !type_scope || !CLASS_TYPE_P (type_scope))
+	continue;
+
+      if (uses_template_parms (type_decl))
+	type_decl = tsubst (type_decl, targ_ptr, tf_error, NULL_TREE);
+
+      perform_or_defer_access_check (TYPE_BINFO (type_scope), type_decl, type_decl);
+    }
   perform_deferred_access_checks ();
   pop_access_scope (fndecl);
   pop_deferring_access_checks ();
@@ -16633,7 +16677,15 @@ resolve_typename_type (tree type, bool only_current_p)
   gcc_assert (TREE_CODE (type) == TYPENAME_TYPE);
 
   scope = TYPE_CONTEXT (type);
-  name = TYPE_IDENTIFIER (type);
+  /* Usually the non-qualified identifier of a TYPENAME_TYPE is
+     TYPE_IDENTIFIER (type). But when 'type' is a typedef variant of
+     a TYPENAME_TYPE node, then TYPE_NAME (type) is set to the TYPE_DECL representing
+     the typedef. In that case TYPE_IDENTIFIER (type) is not the non-qualified
+     identifier  of the TYPENAME_TYPE anymore.
+     So by getting the TYPE_IDENTIFIER of the _main declaration_ of the
+     TYPENAME_TYPE instead, we avoid messing up with a possible
+     typedef variant case.  */
+  name = TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
 
   /* If the SCOPE is itself a TYPENAME_TYPE, then we need to resolve
      it first before we can figure out what NAME refers to.  */
@@ -16956,6 +17008,47 @@ type_uses_auto (tree type)
 				   (TYPE_PTRMEMFUNC_FN_TYPE (type))));
 
   return NULL_TREE;
+}
+
+/* Append TYPE_DECL to the template TMPL.
+   TMPL is eiter a class type or a FUNCTION_DECL associated
+   to a TEMPLATE_DECL.
+   At TMPL instanciation time, TYPE_DECL will be checked to see
+   if it can be accessed through SCOPE.  */
+void
+append_type_to_template_for_access_check (tree templ,
+                                          tree type_decl,
+					  tree scope)
+{
+  tree node, templ_decl;
+
+  gcc_assert (templ
+	      && get_template_info (templ)
+	      && TI_TEMPLATE (get_template_info (templ))
+	      && type_decl
+	      && (TREE_CODE (type_decl) == TYPE_DECL));
+
+  templ_decl = TI_TEMPLATE (get_template_info (templ));
+  gcc_assert (templ_decl);
+
+  /* Make sure we don't append the type to the template twice.
+     If this appears to be too slow, the
+     MEMBER_TYPE_NEEDING_ACCESS_CHECK property
+     of templ should be a hash table instead.  */
+  for (node = MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl);
+       node;
+       node = TREE_CHAIN (node))
+    {
+      tree decl = TREE_PURPOSE (node);
+      tree type_scope = TREE_VALUE (node);
+
+      if (decl == type_decl && type_scope == scope)
+	return;
+    }
+
+  MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl) =
+    tree_cons (type_decl, scope,
+	       MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl));
 }
 
 #include "gt-cp-pt.h"
