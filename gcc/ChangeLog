@@ -1,3 +1,9 @@
+2009-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/38587
+	* ira-color.c (coalesce_spill_slots): Don't coalesce allocnos
+	crossing setjmps.
+
 2009-01-21  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR bootstrap/37660

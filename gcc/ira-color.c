@@ -2537,6 +2537,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
   int i, j, n, last_coalesced_allocno_num;
   ira_allocno_t allocno, a;
   bool merged_p = false;
+  bitmap set_jump_crosses = regstat_get_setjmp_crosses ();
 
   slot_coalesced_allocnos_live_ranges
     = (allocno_live_range_t *) ira_allocate (sizeof (allocno_live_range_t)
@@ -2550,6 +2551,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
     {
       allocno = spilled_coalesced_allocnos[i];
       if (ALLOCNO_FIRST_COALESCED_ALLOCNO (allocno) != allocno
+	  || bitmap_bit_p (set_jump_crosses, ALLOCNO_REGNO (allocno))
 	  || (ALLOCNO_REGNO (allocno) < ira_reg_equiv_len
 	      && (ira_reg_equiv_const[ALLOCNO_REGNO (allocno)] != NULL_RTX
 		  || ira_reg_equiv_invariant_p[ALLOCNO_REGNO (allocno)])))
@@ -2559,6 +2561,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
 	  a = spilled_coalesced_allocnos[j];
 	  n = ALLOCNO_TEMP (a);
 	  if (ALLOCNO_FIRST_COALESCED_ALLOCNO (a) == a
+	      && ! bitmap_bit_p (set_jump_crosses, ALLOCNO_REGNO (a))
 	      && (ALLOCNO_REGNO (a) >= ira_reg_equiv_len
 		  || (! ira_reg_equiv_invariant_p[ALLOCNO_REGNO (a)]
 		      && ira_reg_equiv_const[ALLOCNO_REGNO (a)] == NULL_RTX))
