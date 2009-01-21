@@ -1,7 +1,7 @@
 # Appended to version file.
 
 GLIBCXX_LDBL_3.4 {
-  _ZNSt14numeric_limitsIg*;
+  _ZNSt14numeric_limitsIgE*;
   _ZNSirsERg;
   _ZNSolsEg;
   _ZNSt13basic_istreamIwSt11char_traitsIwEErsERg;

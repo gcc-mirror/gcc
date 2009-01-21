@@ -1,4 +1,11 @@
 2009-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libstdc++/38834
+	* config/abi/pre/gnu.ver: Correct char16_t and char32_t exports.
+	* config/os/gnu-linux/ldbl-extra.ver: Tweak.
+
+2009-01-20  Benjamin Kosnik  <bkoz@redhat.com>
             Rainer Emrich  <r.emrich@de.tecosim.com>
 
 	PR libstdc++/38919
