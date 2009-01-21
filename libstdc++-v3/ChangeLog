@@ -1,3 +1,8 @@
+2009-01-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/29_atomics/headers/stdatomic.h/functions.c: Remove
+	atomic_flag_fence.
+
 2009-01-21  Dodji Seketeli  <dodji@redhat.com>
 
 	* include/ext/bitmap_allocator.h: the typedefs should be made public

@@ -1,7 +1,7 @@
 // { dg-options "-x c" }
 // { dg-do compile }
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,6 @@ int main()
   atomic_flag_test_and_set_explicit(p, m);
   atomic_flag_clear(p);
   atomic_flag_clear_explicit(p, m);
-  atomic_flag_fence(p, m);
 
   return 0;
 }
