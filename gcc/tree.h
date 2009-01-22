@@ -3412,9 +3412,6 @@ struct tree_target_option GTY(())
 /* Return a tree node that encapsulates the current target options.  */
 extern tree build_target_option_node (void);
 
-extern void set_underlying_type (tree x);
-
-extern bool is_typedef_decl (tree x);
 
 /* Define the overall contents of a tree node.
    It may be any of the structures declared above
