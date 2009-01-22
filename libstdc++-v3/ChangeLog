@@ -1,3 +1,10 @@
+2009-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/38384
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Disable symbol versioning
+	on HPUX.
+	* configure: Regenerate.
+
 2009-01-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* include/ext/bitmap_allocator.h: Reverting changes related to PR
