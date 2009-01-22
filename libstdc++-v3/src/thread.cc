@@ -46,7 +46,7 @@ namespace std
 
 	try
 	  {
-	    __local_thread_data->__run();
+	    __local_thread_data->_M_run();
 	  }
 	catch(...)
 	  {
@@ -88,7 +88,7 @@ namespace std
   }
 
   void 
-  thread::__start_thread()
+  thread::_M_start_thread()
   {
     _M_thread_data->_M_this_ptr = _M_thread_data;
     int __e = __gthread_create(&_M_thread_data->_M_thread_handle, 

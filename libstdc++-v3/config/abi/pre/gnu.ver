@@ -900,7 +900,7 @@ GLIBCXX_3.4.11 {
     _ZNSt10shared_ptrISt18__thread_data_baseED1Ev;
     _ZNSt12bad_weak_ptrD0Ev;
     _ZNSt12bad_weak_ptrD1Ev;
-    _ZNSt6thread14__start_threadEv;
+    _ZNSt6thread15_M_start_threadEv;
     _ZNSt6thread4joinEv;
     _ZNSt6thread6detachEv;
 

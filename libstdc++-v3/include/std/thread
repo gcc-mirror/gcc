@@ -65,7 +65,7 @@ namespace std
     __thread_data_base() = default;
     virtual ~__thread_data_base() = default;
     
-    virtual void __run() = 0;
+    virtual void _M_run() = 0;
     
     __gthread_t 	_M_thread_handle;
     __thread_data_ptr 	_M_this_ptr;
@@ -80,7 +80,7 @@ namespace std
       : _M_func(std::forward<_Callable>(__f))
       { }
 
-      void __run()
+      void _M_run()
       { _M_func(); }
 
     private:
@@ -100,21 +100,29 @@ namespace std
     
     template<typename _Callable>
       explicit thread(_Callable __f)
-      : _M_thread_data(__make_thread_data(__f))
-      { __start_thread(); }
+      : _M_thread_data(_M_make_thread_data(__f))
+      { _M_start_thread(); }
 
     template<typename _Callable, typename... _Args>
       thread(_Callable&& __f, _Args&&... __args)
-      : _M_thread_data(__make_thread_data(std::bind(__f, __args...)))
-      { __start_thread(); }
+      : _M_thread_data(_M_make_thread_data(std::bind(__f, __args...)))
+      { _M_start_thread(); }
 
     ~thread()
     { detach(); }
 
     thread(const thread&) = delete;
-    thread(thread&&);
+    thread(thread&& __t)
+    { swap(__t); }
+
     thread& operator=(const thread&) = delete;
-    thread& operator=(thread&&);
+    thread& operator=(thread&& __t)
+    {
+      if (joinable())
+        detach();
+      swap(__t);
+      return *this;
+    }
 
     // members
     void 
@@ -150,17 +158,17 @@ namespace std
   private:
     template<typename _Callable>
       __thread_data_ptr 
-      __make_thread_data(_Callable&& __f)
+      _M_make_thread_data(_Callable&& __f)
       { 
 	return __thread_data_ptr(
 	  new __thread_data<_Callable>(std::forward<_Callable>(__f)));
       }
     
     __thread_data_ptr
-    __make_thread_data(void(*__f)())
+    _M_make_thread_data(void(*__f)())
     { return __thread_data_ptr(new __thread_data<void(*)()>(__f)); }
     
-    void __start_thread();
+    void _M_start_thread();
 
     __thread_data_ptr 	_M_thread_data;
     mutable mutex 	_M_thread_data_mutex;
