@@ -1,5 +1,9 @@
 2009-01-22  Steve Ellcey  <sje@cup.hp.com>
 
+	* gcc.dg/pr35729.c: Make test x86 specific.
+
+2009-01-22  Steve Ellcey  <sje@cup.hp.com>
+
 	PR middle-end/38615
 	* gcc.dg/pr38615.c: New test.
 
