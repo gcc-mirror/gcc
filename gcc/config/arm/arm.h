@@ -564,6 +564,19 @@ extern int arm_arch_hwdiv;
      && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
     ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
+/* Align definitions of arrays, unions and structures so that
+   initializations and copies can be made more efficient.  This is not
+   ABI-changing, so it only affects places where we can see the
+   definition.  */
+#define DATA_ALIGNMENT(EXP, ALIGN)					\
+  ((((ALIGN) < BITS_PER_WORD)                                           \
+    && (TREE_CODE (EXP) == ARRAY_TYPE					\
+	|| TREE_CODE (EXP) == UNION_TYPE				\
+	|| TREE_CODE (EXP) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
+
+/* Similarly, make sure that objects on the stack are sensibly aligned.  */
+#define LOCAL_ALIGNMENT(EXP, ALIGN) DATA_ALIGNMENT(EXP, ALIGN)
+
 /* Setting STRUCTURE_SIZE_BOUNDARY to 32 produces more efficient code, but the
    value set in previous versions of this toolchain was 8, which produces more
    compact structures.  The command line option -mstructure_size_boundary=<n>
