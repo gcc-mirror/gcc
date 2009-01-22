@@ -1,3 +1,9 @@
+2009-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38931
+	* config/i386/i386.md (*movsi_1): Use type "mmx" for alternative 2.
+	(*movdi_1_rex64): Use type "mmx" for alternative 5.
+
 2009-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (DATA_ALIGNMENT): Align structures, unions and arrays to
@@ -5,7 +11,7 @@
 	(LOCAL_ALIGNMENT): Similarly.
 
 2009-01-22  Mark Shinwell  <shinwell@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (all_architectures): Add iWMMXt2 entry.
 	* config/arm/arm-cores.def: New ARM_CORE entry for iWMMXt2.
