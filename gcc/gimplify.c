@@ -3526,7 +3526,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	if (valid_const_initializer
 	    && num_nonzero_elements > 1
 	    && TREE_READONLY (object)
-	    && TREE_CODE (object) == VAR_DECL)
+	    && TREE_CODE (object) == VAR_DECL
+	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object)))
 	  {
 	    if (notify_temp_creation)
 	      return GS_ERROR;
