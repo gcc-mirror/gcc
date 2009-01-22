@@ -1,4 +1,13 @@
 2009-01-22  Mark Shinwell  <shinwell@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (all_architectures): Add iWMMXt2 entry.
+	* config/arm/arm-cores.def: New ARM_CORE entry for iWMMXt2.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi (ARM Options): Document -mcpu=iwmmxt2 and
+	-march=iwmmxt2.
+
+2009-01-22  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Bump EABI
 	version number to five.

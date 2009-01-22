@@ -8888,7 +8888,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-a8}, @samp{cortex-a9},
 @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-m3},
 @samp{cortex-m1},
-@samp{xscale}, @samp{iwmmxt}, @samp{ep9312}.
+@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -8912,7 +8912,7 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
-@samp{iwmmxt}, @samp{ep9312}.
+@samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
 
 @item -mfpu=@var{name}
 @itemx -mfpe=@var{number}

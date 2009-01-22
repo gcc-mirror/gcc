@@ -102,6 +102,7 @@ ARM_CORE("arm1020e",      arm1020e,	5TE,				 FL_LDSCHED, fastmul)
 ARM_CORE("arm1022e",      arm1022e,	5TE,				 FL_LDSCHED, fastmul)
 ARM_CORE("xscale",        xscale,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE, xscale)
 ARM_CORE("iwmmxt",        iwmmxt,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
+ARM_CORE("iwmmxt2",       iwmmxt2,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
 
 /* V5TEJ Architecture Processors */
 ARM_CORE("arm926ej-s",    arm926ejs,	5TEJ,	                         FL_LDSCHED, 9e)
