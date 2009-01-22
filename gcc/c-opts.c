@@ -1054,7 +1054,7 @@ c_common_post_options (const char **pfilename)
   if (warn_ignored_qualifiers == -1)
     warn_ignored_qualifiers = extra_warnings;
 
-  /* -Wpointer_sign is disabled by default, but it is enabled if any
+  /* -Wpointer-sign is disabled by default, but it is enabled if any
      of -Wall or -pedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
