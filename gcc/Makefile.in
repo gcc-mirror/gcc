@@ -179,8 +179,6 @@ build/gengtype-lex.o-warn = -Wno-error
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # dfp.c contains alias violations
 dfp.o-warn = -Wno-error
-# dominance.c contains a -Wc++compat warning.
-dominance.o-warn = -Wno-error
 # mips-tfile.c contains -Wcast-qual warnings.
 mips-tfile.o-warn = -Wno-error
 
