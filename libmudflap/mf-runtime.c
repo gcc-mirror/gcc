@@ -178,7 +178,7 @@ struct __mf_options __mf_opts;
 int __mf_starting_p = 1;
 
 #ifdef LIBMUDFLAPTH
-#ifdef HAVE_TLS
+#if defined(HAVE_TLS) && !defined(USE_EMUTLS)
 __thread enum __mf_state_enum __mf_state_1 = reentrant;
 #endif
 #else

@@ -13028,6 +13028,37 @@ _ACEOF
 
   fi
 
+  echo "$as_me:$LINENO: checking whether the thread-local storage support is from emutls" >&5
+echo $ECHO_N "checking whether the thread-local storage support is from emutls... $ECHO_C" >&6
+if test "${gcc_cv_use_emutls+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    gcc_cv_use_emutls=no
+    echo '__thread int a; int b; int main() { return a = b; }' > conftest.c
+    if { ac_try='${CC-cc} -Werror -S -o conftest.s conftest.c 1>&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+      if grep __emutls_get_address conftest.s > /dev/null; then
+	gcc_cv_use_emutls=yes
+      fi
+    fi
+    rm -f conftest.*
+
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_use_emutls" >&5
+echo "${ECHO_T}$gcc_cv_use_emutls" >&6
+  if test "$gcc_cv_use_emutls" = "yes" ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define USE_EMUTLS 1
+_ACEOF
+
+  fi
+
                               ac_config_files="$ac_config_files Makefile testsuite/Makefile testsuite/mfconfig.exp"
 
 cat >confcache <<\_ACEOF

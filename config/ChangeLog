@@ -1,3 +1,7 @@
+2009-01-23  Jie Zhang  <jie.zhang@analog.com>
+
+	* tls.m4 (GCC_CHECK_EMUTLS): Define.
+
 2008-12-21  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/38300

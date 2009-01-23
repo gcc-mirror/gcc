@@ -244,7 +244,7 @@ extern pthread_mutex_t __mf_biglock;
 #define UNLOCKTH() do {} while (0)
 #endif
 
-#if defined(LIBMUDFLAPTH) && !defined(HAVE_TLS)
+#if defined(LIBMUDFLAPTH) && (!defined(HAVE_TLS) || defined(USE_EMUTLS))
 extern enum __mf_state_enum __mf_get_state (void);
 extern void __mf_set_state (enum __mf_state_enum);
 #else
