@@ -277,5 +277,8 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* Define to 1 if the target use emutls for thread-local storage. */
+#undef USE_EMUTLS
+
 /* Version number of package */
 #undef VERSION

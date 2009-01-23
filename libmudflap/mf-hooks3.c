@@ -78,7 +78,7 @@ DECLARE(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 /* Multithreading support hooks.  */
 
 
-#ifndef HAVE_TLS
+#if !defined(HAVE_TLS) || defined(USE_EMUTLS)
 /* We don't have TLS.  Ordinarily we could use pthread keys, but since we're
    commandeering malloc/free that presents a few problems.  The first is that
    we'll recurse from __mf_get_state to pthread_setspecific to malloc back to
@@ -217,7 +217,7 @@ __mf_pthread_cleanup (void *arg)
   if (__mf_opts.heur_std_data)
     __mf_unregister (&errno, sizeof (errno), __MF_TYPE_GUESS);
 
-#ifndef HAVE_TLS
+#if !defined(HAVE_TLS) || defined(USE_EMUTLS)
   struct mf_thread_data *data = __mf_find_threadinfo (0);
   if (data)
     data->used_p = 0;

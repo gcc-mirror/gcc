@@ -1,3 +1,13 @@
+2009-01-23  Jie Zhang  <jie.zhang@analog.com>
+
+	* mf-impl.h (__mf_get_state, __mf_set_state): Don't use
+	__thread when TLS support is emulated.
+	* mf-hooks3.c (__mf_get_state, __mf_set_state): Likewise.
+	* mf-runtime.c (__mf_state_1): Likewise.
+	* configure.ac: Use GCC_CHECK_EMUTLS.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

@@ -86,3 +86,21 @@ AC_DEFUN([GCC_CHECK_CC_TLS], [
     AC_DEFINE(HAVE_CC_TLS, 1,
 	      [Define to 1 if the target assembler supports thread-local storage.])
   fi])
+
+dnl Check whether TLS is emulated.
+AC_DEFUN([GCC_CHECK_EMUTLS], [
+  AC_CACHE_CHECK([whether the thread-local storage support is from emutls],
+  		 gcc_cv_use_emutls, [
+    gcc_cv_use_emutls=no
+    echo '__thread int a; int b; int main() { return a = b; }' > conftest.c
+    if AC_TRY_COMMAND(${CC-cc} -Werror -S -o conftest.s conftest.c 1>&AS_MESSAGE_LOG_FD); then
+      if grep __emutls_get_address conftest.s > /dev/null; then
+	gcc_cv_use_emutls=yes
+      fi
+    fi
+    rm -f conftest.*
+    ])
+  if test "$gcc_cv_use_emutls" = "yes" ; then
+    AC_DEFINE(USE_EMUTLS, 1,
+      	      [Define to 1 if the target use emutls for thread-local storage.])
+  fi])
