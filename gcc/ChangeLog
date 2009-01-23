@@ -1,3 +1,16 @@
+2009-01-22  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* c-decl.c (finish_struct): Move code to set DECL_PACKED after
+	DECL_BIT_FIELD is alreay known.  Also inherit packed for bitfields
+	regardless of their type.
+	* c-common.c (handle_packed_attribute): Don't ignore packed on
+	bitfields.
+	* c.opt (Wpacked-bitfield-compat): New warning option.
+	* stor-layout.c (place_field): Warn if offset of a field changed.
+	* doc/extend.texi (packed): Mention the ABI change.
+	* doc/invoke.texi (-Wpacked-bitfield-compat): Document.
+	(Warning Options): Add it to the list.
+
 2009-01-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* c-opts.c (c_common_post_options): Fix a typo in comments.

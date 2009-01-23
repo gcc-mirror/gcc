@@ -937,7 +937,9 @@ place_field (record_layout_info rli, tree field)
       && TREE_CODE (field) == FIELD_DECL
       && type != error_mark_node
       && DECL_BIT_FIELD (field)
-      && ! DECL_PACKED (field)
+      && (! DECL_PACKED (field)
+	  /* Enter for these packed fields only to issue a warning.  */
+	  || TYPE_ALIGN (type) <= BITS_PER_UNIT)
       && maximum_field_alignment == 0
       && ! integer_zerop (DECL_SIZE (field))
       && host_integerp (DECL_SIZE (field), 1)
@@ -958,9 +960,21 @@ place_field (record_layout_info rli, tree field)
       /* A bit field may not span more units of alignment of its type
 	 than its type itself.  Advance to next boundary if necessary.  */
       if (excess_unit_span (offset, bit_offset, field_size, type_align, type))
-	rli->bitpos = round_up (rli->bitpos, type_align);
+	{
+	  if (DECL_PACKED (field))
+	    {
+	      if (warn_packed_bitfield_compat)
+		inform
+		  (input_location,
+		   "Offset of packed bit-field %qD has changed in GCC 4.4",
+		   field);
+	    }
+	  else
+	    rli->bitpos = round_up (rli->bitpos, type_align);
+	}
 
-      TYPE_USER_ALIGN (rli->t) |= TYPE_USER_ALIGN (type);
+      if (! DECL_PACKED (field))
+	TYPE_USER_ALIGN (rli->t) |= TYPE_USER_ALIGN (type);
     }
 #endif
 
