@@ -1761,7 +1761,8 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 	  tree tem = valueize_expr (vn_get_expr_for (TREE_OPERAND (val, 0)));
 	  if ((CONVERT_EXPR_P (tem)
 	       || TREE_CODE (tem) == VIEW_CONVERT_EXPR)
-	      && (tem = fold_unary (TREE_CODE (val), TREE_TYPE (val), tem)))
+	      && (tem = fold_unary_ignore_overflow (TREE_CODE (val),
+						    TREE_TYPE (val), tem)))
 	    val = tem;
 	}
       result = val;
@@ -2123,7 +2124,7 @@ simplify_binary_expression (gimple stmt)
   fold_defer_overflow_warnings ();
 
   result = fold_binary (gimple_assign_rhs_code (stmt),
-			TREE_TYPE (gimple_get_lhs (stmt)), op0, op1);
+		        TREE_TYPE (gimple_get_lhs (stmt)), op0, op1);
   if (result)
     STRIP_USELESS_TYPE_CONVERSION (result);
 
@@ -2182,8 +2183,8 @@ simplify_unary_expression (gimple stmt)
   if (op0 == orig_op0)
     return NULL_TREE;
 
-  result = fold_unary (gimple_assign_rhs_code (stmt),
-		       gimple_expr_type (stmt), op0);
+  result = fold_unary_ignore_overflow (gimple_assign_rhs_code (stmt),
+				       gimple_expr_type (stmt), op0);
   if (result)
     {
       STRIP_USELESS_TYPE_CONVERSION (result);
