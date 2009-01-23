@@ -3,7 +3,7 @@
 
 extern void abort (void);
 
-void foo (int *a, short * __restrict__ b, short * __restrict__ c) 
+void foo (int * __restrict__ a, int * __restrict__ b, short * c) 
 {
    int i;
    for(i = 0; i < 100; i+=4)
@@ -15,8 +15,8 @@ void foo (int *a, short * __restrict__ b, short * __restrict__ c)
      }
 }   
 
-int a[100];
-short b[100], c[100];
+int a[100], b[100];
+short c[100];
 
 int main()
 {
