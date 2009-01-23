@@ -5564,9 +5564,6 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
       DECL_CONTEXT (x) = t;
 
-      if (TYPE_PACKED (t) && TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
-	DECL_PACKED (x) = 1;
-
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
 	C_TYPE_FIELDS_READONLY (t) = 1;
@@ -5597,6 +5594,11 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  DECL_BIT_FIELD (x) = 1;
 	  SET_DECL_C_BIT_FIELD (x);
 	}
+
+      if (TYPE_PACKED (t)
+	  && (DECL_BIT_FIELD (x)
+	      || TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT))
+	DECL_PACKED (x) = 1;
 
       /* Detect flexible array member in an invalid context.  */
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE

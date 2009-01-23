@@ -3824,6 +3824,12 @@ struct foo
 @};
 @end smallexample
 
+@emph{Note:} The 4.1, 4.2 and 4.3 series of GCC ignore the
+@code{packed} attribute on bit-fields of type @code{char}.  This has
+been fixed in GCC 4.4 but the change can lead to differences in the
+structure layout.  See the documention of
+@option{-Wpacked-bitfield-compat} for more information.
+
 @item section ("@var{section-name}")
 @cindex @code{section} variable attribute
 Normally, the compiler places the objects it generates in sections like

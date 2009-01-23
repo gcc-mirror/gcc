@@ -5113,7 +5113,9 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     {
-      if (TYPE_ALIGN (TREE_TYPE (*node)) <= BITS_PER_UNIT)
+      if (TYPE_ALIGN (TREE_TYPE (*node)) <= BITS_PER_UNIT
+	  /* Still pack bitfields.  */
+	  && ! DECL_INITIAL (*node))
 	warning (OPT_Wattributes,
 		 "%qE attribute ignored for field of type %qT",
 		 name, TREE_TYPE (*node));

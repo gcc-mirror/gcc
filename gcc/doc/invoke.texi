@@ -249,7 +249,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn  -Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
--Woverlength-strings  -Wpacked  -Wpadded @gol
+-Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
@@ -3973,6 +3973,27 @@ struct bar @{
 @};
 @end group
 @end smallexample
+
+@item -Wpacked-bitfield-compat
+@opindex Wpacked-bitfield-compat
+@opindex Wno-packed-bitfield-compat
+The 4.1, 4.2 and 4.3 series of GCC ignore the @code{packed} attribute
+on bit-fields of type @code{char}.  This has been fixed in GCC 4.4 but
+the change can lead to differences in the structure layout.  GCC
+informs you when the offset of such a field has changed in GCC 4.4.
+For example there is no longer a 4-bit padding between field @code{a}
+and @code{b} in this structure:
+
+@smallexample
+struct foo
+@{
+  char a:4;
+  char b:8;
+@} __attribute__ ((packed));
+@end smallexample
+
+This warning is enabled by default.  Use
+@option{-Wno-packed-bitfield-compat} to disable this warning.
 
 @item -Wpadded
 @opindex Wpadded
