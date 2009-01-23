@@ -1,3 +1,9 @@
+2009-01-24  Ben Elliston  <bje@au.ibm.com>
+
+	* bitmap.h (BITMAP_FREE): Eliminate `implicit conversion from
+	void *' warning from -Wc++-compat.
+	* Makefile.in (dominance.o-warn): Remove.
+
 2008-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38932
