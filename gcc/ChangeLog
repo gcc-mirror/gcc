@@ -1,3 +1,9 @@
+2009-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/38938
+	* c-opts.c (c_common_handle_option): Upate warn_pointer_sign
+	properly.
+
 2009-01-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/38953
