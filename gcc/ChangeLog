@@ -1,3 +1,9 @@
+2009-01-24  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/t-linux-eabi (LIB2FUNCS_STATIC_EXTRA): Add
+	config/arm/linux-atomic.c.
+	* config/arm/linux-atomic.c: New.
+
 2009-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/linux.h (DBX_REGISTER_NUMBER): Delete.
