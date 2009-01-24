@@ -1,3 +1,12 @@
+2009-01-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/38953
+	* graphite.c (graphite_verify): Add a call to verify_loop_closed_ssa.
+	(scop_adjust_phis_for_liveouts): Initialize false_i to zero.
+	(gloog): Split the exit of the scop when the scop exit is a loop exit.
+	(graphite_transform_loops): Only call cleanup_tree_cfg if gloog
+	changed the CFG.
+
 2009-01-24  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/neon.md (neon_type): Move to arm.md.

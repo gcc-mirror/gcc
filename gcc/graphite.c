@@ -2178,6 +2178,7 @@ graphite_verify (void)
   verify_dominators (CDI_DOMINATORS);
   verify_dominators (CDI_POST_DOMINATORS);
   verify_ssa (false);
+  verify_loop_closed_ssa ();
 #endif
 }
 
@@ -5229,7 +5230,8 @@ scop_adjust_phis_for_liveouts (scop_p scop, basic_block bb, edge false_e,
 
   for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
     {
-      unsigned i, false_i;
+      unsigned i;
+      unsigned false_i = 0;
       gimple phi = gsi_stmt (si);
 
       if (!is_gimple_reg (PHI_RESULT (phi)))
@@ -5376,9 +5378,9 @@ compute_cloog_iv_types (struct clast_stmt *stmt)
 }
 
 /* GIMPLE Loop Generator: generates loops from STMT in GIMPLE form for
-   the given SCOP.  */
+   the given SCOP.  Return true if code generation succeeded.  */
 
-static void
+static bool
 gloog (scop_p scop, struct clast_stmt *stmt)
 {
   edge new_scop_exit_edge = NULL;
@@ -5387,6 +5389,19 @@ gloog (scop_p scop, struct clast_stmt *stmt)
   loop_p context_loop;
   ifsese if_region = NULL;
 
+  /* To maintain the loop closed SSA form, we have to keep the phi
+     nodes after the last loop in the scop.  */
+  if (loop_depth (SESE_EXIT (SCOP_REGION (scop))->dest->loop_father)
+      != loop_depth (SESE_EXIT (SCOP_REGION (scop))->src->loop_father))
+    {
+      basic_block bb = SESE_EXIT (SCOP_REGION (scop))->dest;
+      SESE_EXIT (SCOP_REGION (scop)) = split_block_after_labels (bb);
+      bitmap_set_bit (SCOP_BBS_B (scop), bb->index);
+      pointer_set_insert (SESE_REGION_BBS (SCOP_REGION (scop)), bb);
+    }
+
+  recompute_all_dominators ();
+  graphite_verify ();
   if_region = move_sese_in_condition (SCOP_REGION (scop));
   sese_build_livein_liveouts (SCOP_REGION (scop));
   scop_insert_phis_for_liveouts (SCOP_REGION (scop),
@@ -5412,6 +5427,7 @@ gloog (scop_p scop, struct clast_stmt *stmt)
 
   recompute_all_dominators ();
   graphite_verify ();
+  return true;
 }
 
 /* Returns the number of data references in SCOP.  */
@@ -6040,6 +6056,7 @@ graphite_transform_loops (void)
 {
   int i;
   scop_p scop;
+  bool transform_done = false;
 
   if (number_of_loops () <= 1)
     return;
@@ -6098,7 +6115,7 @@ graphite_transform_loops (void)
 	}
 
       if (graphite_apply_transformations (scop))
-        gloog (scop, find_transform (scop));
+        transform_done = gloog (scop, find_transform (scop));
 #ifdef ENABLE_CHECKING
       else
 	{
@@ -6109,7 +6126,9 @@ graphite_transform_loops (void)
     }
 
   /* Cleanup.  */
-  cleanup_tree_cfg ();
+  if (transform_done)
+    cleanup_tree_cfg ();
+
   free_scops (current_scops);
   cloog_finalize ();
   free_original_copy_tables ();
