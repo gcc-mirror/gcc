@@ -1,3 +1,8 @@
+2009-01-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/38953
+	* gfortran.dg/graphite/pr38953.f90: New.
+
 2009-01-24  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.target/arm/neon-cond-1.c: New test.
