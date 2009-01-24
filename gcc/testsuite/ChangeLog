@@ -1,6 +1,15 @@
 2009-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
+	2009-01-20  Kees Cook  <kees@ubuntu.com>
+		    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38902
+	* gcc.dg/pr38902.c: New.
+
+2009-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
 	2008-01-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/38868

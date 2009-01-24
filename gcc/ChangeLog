@@ -1,3 +1,16 @@
+2009-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38902
+	Backport from mainline:
+	2008-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (expand_movmem_via_rep_mov): Set MEM_SIZE
+	correctly.
+	(expand_setmem_via_rep_stos): Add ORIG_VALUE argument.  If
+	ORIG_VALUE is const0_rtx and COUNT is constant, set MEM_SIZE
+	on DESTMEM.
+	(ix86_expand_setmem): Adjust callers.
+
 2008-01-24  Richard Guenther  <rguenther@suse.de>
 
 	* BASE-VER: Set to 4.3.4.
