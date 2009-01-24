@@ -12,3 +12,5 @@ LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx
 # Multilib the standard Linux files.  Don't include crti.o or crtn.o,
 # which are provided by glibc.
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+
+LIB2FUNCS_STATIC_EXTRA += $(srcdir)/config/arm/linux-atomic.c
