@@ -1,3 +1,7 @@
+2009-01-24  Release Manager
+
+	* GCC 4.3.3 released.
+
 2009-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Put the _Tag field
