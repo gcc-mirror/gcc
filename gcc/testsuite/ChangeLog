@@ -1,3 +1,9 @@
+2009-01-24 David Billinghurst (billingd@gcc.gnu.org)
+
+	PR fortran/38955
+	* gfortran.dg/array_constructor_24.f: Allow tolerance when
+	comparing floats
+
 2009-01-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/38953

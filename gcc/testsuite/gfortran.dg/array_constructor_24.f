@@ -19,7 +19,7 @@
       DDA1 = ATAN2 ((/(REAL(J1,KV),J1=1,10)/),
      $                 REAL((/(J1,J1=nf10,nf1,mf1)/), KV))   !fails
       DDA2 = ATAN2 (DDA, DDA(10:1:-1))
-      if (any (DDA1 .ne. DDA2)) call abort ()
+      if (any (abs(DDA1-DDA2) .gt. 1.0e-6)) call abort ()
       END
 
       subroutine FA6077 (nf10,nf1,mf1, ida)
