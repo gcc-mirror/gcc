@@ -1,8 +1,13 @@
-2009-01-24 David Billinghurst (billingd@gcc.gnu.org)
+2009-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38957
+	* gcc.dg/pr38957.c: New test.
+
+2009-01-24  David Billinghurst  <billingd@gcc.gnu.org>
 
 	PR fortran/38955
 	* gfortran.dg/array_constructor_24.f: Allow tolerance when
-	comparing floats
+	comparing floats.
 
 2009-01-24  Sebastian Pop  <sebastian.pop@amd.com>
 
