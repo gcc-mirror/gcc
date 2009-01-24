@@ -1,3 +1,8 @@
+2008-01-24  Richard Guenther  <rguenther@suse.de>
+
+	* BASE-VER: Set to 4.3.4.
+	* DEV-PHASE: Set to prerelease.
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.
