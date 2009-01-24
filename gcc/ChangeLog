@@ -1,3 +1,10 @@
+2009-01-24  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/neon.md (neon_type): Move to arm.md.
+	(neon_mov<VSTRUCT>): Add neon_type attribute.
+	* config/arm/arm.md (neon_type): Move to here.
+	(conds): Add "unconditioal" and use as default for NEON insns.
+
 2009-01-24  Ben Elliston  <bje@au.ibm.com>
 
 	* bitmap.h (BITMAP_FREE): Eliminate `implicit conversion from

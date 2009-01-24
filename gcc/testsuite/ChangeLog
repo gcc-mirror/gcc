@@ -1,3 +1,7 @@
+2009-01-24  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.target/arm/neon-cond-1.c: New test.
+
 2008-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38932
