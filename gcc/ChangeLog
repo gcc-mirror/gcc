@@ -1,3 +1,9 @@
+2009-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38957
+	* c-typeck.c (c_finish_return): Handle POINTER_PLUS_EXPR the same way
+	as PLUS_EXPR.
+
 2009-01-24  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/t-linux-eabi (LIB2FUNCS_STATIC_EXTRA): Add

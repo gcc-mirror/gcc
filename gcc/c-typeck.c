@@ -7226,8 +7226,10 @@ c_finish_return (tree retval)
 	{
 	  switch (TREE_CODE (inner))
 	    {
-	    CASE_CONVERT:   case NON_LVALUE_EXPR:
+	    CASE_CONVERT:
+	    case NON_LVALUE_EXPR:
 	    case PLUS_EXPR:
+	    case POINTER_PLUS_EXPR:
 	      inner = TREE_OPERAND (inner, 0);
 	      continue;
 
