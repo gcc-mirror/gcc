@@ -8116,6 +8116,7 @@ resolve_symbol (gfc_symbol *sym)
      module function and is not PRIVATE.  */
   if (sym->ts.type == BT_DERIVED
 	&& sym->ts.derived->attr.use_assoc
+	&& sym->ns->proc_name
 	&& sym->ns->proc_name->attr.flavor == FL_MODULE)
     {
       gfc_symbol *ds;

@@ -1,3 +1,11 @@
+2009-01-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38672
+	Backport from trunk.
+	* resolve.c (resolve_symbol):  Check for the
+	presence of derived->ns->proc_name before
+	accessing derived->ns->proc_name->attr.flavor .
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.
