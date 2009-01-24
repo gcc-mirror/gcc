@@ -1,3 +1,9 @@
+2009-01-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/linux.h (DBX_REGISTER_NUMBER): Delete.
+	* config/sparc/linux64.h (DBX_REGISTER_NUMBER): Likewise.
+	* config/sparc/sysv4.h (DBX_REGISTER_NUMBER): Likewise.
+
 2009-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38902
