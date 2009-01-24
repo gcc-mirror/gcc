@@ -11673,7 +11673,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
     case RSHIFT_EXPR:
       /* Optimize -1 >> x for arithmetic right shifts.  */
-      if (integer_all_onesp (arg0) && !TYPE_UNSIGNED (type))
+      if (integer_all_onesp (arg0) && !TYPE_UNSIGNED (type)
+	  && tree_expr_nonnegative_p (arg1))
 	return omit_one_operand (type, arg0, arg1);
       /* ... fall through ...  */
 

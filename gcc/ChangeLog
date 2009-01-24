@@ -1,3 +1,12 @@
+2009-01-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38359
+	* fold-const.c (fold_binary): Fold -1 >> x to -1 only for
+	non-negative x.
+
 2009-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/linux.h (DBX_REGISTER_NUMBER): Delete.

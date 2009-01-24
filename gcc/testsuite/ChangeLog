@@ -1,3 +1,12 @@
+2009-01-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38359
+	* gcc.c-torture/compile/pr38359.c: New testcase.
+	* gcc.c-torture/execute/shiftopt-1.c: Adjust.
+
 2009-01-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38672
