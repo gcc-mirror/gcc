@@ -3,7 +3,7 @@
 /* { dg-options "" } */
 
 struct t
-{ /* { dg-message "note: Offset of packed bit-field 't::b' has changed in GCC 4.4" "" { target pcc_bitfield_type_matters } } */
+{ /* { dg-message "note: Offset of packed bit-field 't::b' has changed in GCC 4.4" "" { target pcc_bitfield_type_matters } } */
   char a:4;
   char b:8;
   char c:4;
