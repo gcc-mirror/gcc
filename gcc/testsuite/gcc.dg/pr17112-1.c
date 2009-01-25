@@ -6,7 +6,7 @@
 extern void abort(void);
 
 typedef struct {
-  int int24:24  __attribute__ ((packed)); /* { dg-warning "attribute ignored" "" { target { default_packed && { ! pcc_bitfield_type_matters } } } } */
+  int int24:24  __attribute__ ((packed));
 } myint24;
 
 myint24 x[3] = {
