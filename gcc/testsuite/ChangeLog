@@ -1,3 +1,11 @@
+2009-01-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38931
+	* gcc.target/i386/pr38931.c: New test.
+
 2009-01-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
@@ -122,7 +130,7 @@
 
 	Backport from mainline:
 	2008-12-29  Dorit Nuzman  <dorit@il.ibm.com>
-	            Ira Rosen  <irar@il.ibm.com>
+		    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/38529
 	* gcc.dg/vect/pr38529.c: New test.
@@ -459,8 +467,8 @@
 
 2008-11-14  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/37836
-        * gfortran.dg/minmaxval_1.f90: New test.
+	PR fortran/37836
+	* gfortran.dg/minmaxval_1.f90: New test.
 
 2008-11-13  Jason Merrill  <jason@redhat.com>
 

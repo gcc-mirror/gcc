@@ -1,3 +1,19 @@
+2009-01-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38931
+	* config/i386/i386.md (*movsi_1): Use type "mmx" for alternative 2.
+	(*movdi_1_rex64): Use type "mmx" for alternative 5.
+
+	2009-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/38879
+	* alias.c (base_alias_check): Unaligned access via AND address can
+	alias all surrounding object types except those with sizes equal
+	or wider than the size of unaligned access.
+
 2009-01-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
@@ -38,8 +54,7 @@
 2009-01-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/38758
-	* longlong.h: Update copyright years.  Use soft-fp license
-	notice.
+	* longlong.h: Update copyright years.  Use soft-fp license notice.
 
 2009-01-19  Richard Guenther  <rguenther@suse.de>
 
