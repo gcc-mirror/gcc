@@ -1,3 +1,8 @@
+2009-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38851
+	* g++.dg/warn/Wuninitialized-1.C: New testcase.
+
 2009-01-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/bitfld-15.c: Gate warning on target
