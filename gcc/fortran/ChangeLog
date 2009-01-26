@@ -1,3 +1,12 @@
+2009-01-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38657
+	Backport from trunk.
+	* module.c (write_common_0): Add argument 'this_module' and
+	check that non-use associated common blocks are written first.
+	(write_common): Call write_common_0 twice, once with true and
+	then with false.
+
 2009-01-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38672

@@ -1,3 +1,9 @@
+2009-01-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38657
+	Backport from trunk.
+	* gfortran.dg/module_commons_3.f90: Reapply.
+
 2009-01-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
