@@ -1,5 +1,15 @@
 2009-01-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38745
+	* tree-ssa.c (execute_update_addresses_taken): Do not include
+	variables that cannot possibly be a register in not_reg_needs.
+	Do not clear TREE_ADDRESSABLE on vars that may not become
+	registers.
+	* tree-ssa.c (update_alias_info_1): Include those in the set
+	of addressable vars.
+
+2009-01-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/38851
 	* Makefile.in (tree-ssa-dse.o): Add langhooks.h.
 	* tree-ssa-dse.c: Include langhooks.h
