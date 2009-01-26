@@ -1,5 +1,10 @@
 #include "check.h"
 
+
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) STRING (prefix) cname
+#define STRING(x)    #x
+
 #ifdef  __cplusplus
 extern "C" void abort (void);
 #else
@@ -69,8 +74,8 @@ main()
 	: "i" (INIT_EBX)
 	);
 	__asm__ __volatile__ (
-	"movl %ebp, g_ebp_save\n\t"
-	"movl %esp, g_esp_save\n\t"
+	"movl %ebp," ASMNAME("g_ebp_save")"\n\t"
+	"movl %esp," ASMNAME("g_esp_save")"\n\t"
 	);
 	try {
 		foo();
@@ -81,11 +86,11 @@ main()
 
 	// Get DI/SI/BX register value after exception caught
 	__asm__ __volatile__ (
-	"movl %edi, g_edi\n\t"
-	"movl %esi, g_esi\n\t"
-	"movl %ebx, g_ebx\n\t"
-	"movl %ebp, g_ebp\n\t"
-	"movl %esp, g_esp\n\t"
+	"movl %edi," ASMNAME("g_edi")"\n\t"
+	"movl %esi," ASMNAME("g_esi")"\n\t"
+	"movl %ebx," ASMNAME("g_ebx")"\n\t"
+	"movl %ebp," ASMNAME("g_ebp")"\n\t"
+	"movl %esp," ASMNAME("g_esp")"\n\t"
 	);
 
 	// Check if DI/SI/BX register value are the same as before calling
