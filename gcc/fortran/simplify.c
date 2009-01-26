@@ -2104,7 +2104,10 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	    case AR_FULL:
 	      /* We're done because 'as' has already been set in the
 		 previous iteration.  */
-	      goto done;
+	      if (!ref->next)
+	        goto done;
+
+	    /* Fall through.  */
 
 	    case AR_SECTION:
 	    case AR_UNKNOWN:

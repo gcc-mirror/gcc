@@ -1,3 +1,10 @@
+2009-01-26  Mikael Morin  <mikael.morin@tele2.fr>
+
+        PR fortran/38859
+	Backport from trunk
+        * simplify.c (simplify_bound): Don't use array specification
+        if variable or component has subsequent references.
+
 2009-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38657
