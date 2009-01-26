@@ -1,6 +1,12 @@
 2009-01-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38745
+	* tree-ssa-alias.c (update_alias_info_1): Exclude RESULT_DECL
+	from special handling.
+
+2009-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38745
 	* tree-ssa.c (execute_update_addresses_taken): Do not include
 	variables that cannot possibly be a register in not_reg_needs.
 	Do not clear TREE_ADDRESSABLE on vars that may not become
