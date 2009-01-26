@@ -1,6 +1,7 @@
 2009-01-26  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/t-vxworks (LIBGCC2_INCLUDES): Fix typo.
+	(INSTALL_LIBGCC): Revert typo commit.
 
 2009-01-26  Richard Guenther  <rguenther@suse.de>
 
