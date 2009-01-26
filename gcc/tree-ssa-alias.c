@@ -2494,6 +2494,8 @@ update_alias_info_1 (gimple stmt, struct alias_info *ai)
 	{
 	  tree var = get_base_address (lhs);
 	  if (DECL_P (var)
+	      /* We are not going to mess with RESULT_DECL anyway.  */
+	      && TREE_CODE (var) != RESULT_DECL
 	      && is_gimple_reg_type (TREE_TYPE (var)))
 	    bitmap_set_bit (gimple_addressable_vars (cfun), DECL_UID (var));
 	}
