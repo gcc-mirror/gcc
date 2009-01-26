@@ -1,3 +1,12 @@
+2009-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-07-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/36443
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Temporarily unset
+	GCC_EXEC_PREFIX from environment when running $HOSTCC.
+
 2008-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38932
@@ -11,9 +20,9 @@
 
 2009-01-26  Mikael Morin  <mikael.morin@tele2.fr>
 
-        PR fortran/38859
+	PR fortran/38859
 	Backport from trunk
-        * gfortran.dg/bound_5.f90: New test.
+	* gfortran.dg/bound_5.f90: New test.
 
 2009-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
