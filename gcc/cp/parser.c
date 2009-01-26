@@ -3791,6 +3791,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    parser->scope = NULL_TREE;
 	    parser->object_scope = NULL_TREE;
 	    parser->qualifying_scope = NULL_TREE;
+	    if (processing_template_decl)
+	      cp_parser_parse_tentatively (parser);
 	    type_decl
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
@@ -3799,6 +3801,14 @@ cp_parser_unqualified_id (cp_parser* parser,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
+	    if (processing_template_decl
+		&& ! cp_parser_parse_definitely (parser))
+	      {
+		/* We couldn't find a type with this name, so just accept
+		   it and check for a match at instantiation time.  */
+		type_decl = cp_parser_identifier (parser);
+		return build_nt (BIT_NOT_EXPR, type_decl);
+	      }
 	  }
 	/* If an error occurred, assume that the name of the
 	   destructor is the same as the name of the qualifying
