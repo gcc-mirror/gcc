@@ -1,3 +1,11 @@
+2009-01-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38907
+	Backport from trunk
+	* resolve.c (check_host_association): Remove the matching to
+	correct an incorrect host association and use manipulation of
+	the expression instead.
+
 2009-01-26  Mikael Morin  <mikael.morin@tele2.fr>
 
         PR fortran/38859

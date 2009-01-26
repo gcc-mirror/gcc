@@ -4189,15 +4189,17 @@ resolve_variable (gfc_expr *e)
 /* Checks to see that the correct symbol has been host associated.
    The only situation where this arises is that in which a twice
    contained function is parsed after the host association is made.
-   Therefore, on detecting this, the line is rematched, having got
-   rid of the existing references and actual_arg_list.  */
+   Therefore, on detecting this, change the symbol in the expression
+   and convert the array reference into an actual arglist if the old
+   symbol is a variable.  */
 static bool
 check_host_association (gfc_expr *e)
 {
   gfc_symbol *sym, *old_sym;
-  locus temp_locus;
-  gfc_expr *expr;
+  gfc_symtree *st;
   int n;
+  gfc_ref *ref;
+  gfc_actual_arglist *arg, *tail;
   bool retval = e->expr_type == EXPR_FUNCTION;
 
   /*  If the expression is the result of substitution in
@@ -4213,26 +4215,16 @@ check_host_association (gfc_expr *e)
   if (gfc_current_ns->parent
 	&& old_sym->ns != gfc_current_ns)
     {
+      /* Use the 'USE' name so that renamed module symbols are
+	 correctly handled.  */
       gfc_find_symbol (e->symtree->name, gfc_current_ns, 1, &sym);
+
       if (sym && old_sym != sym
 	      && sym->ts.type == old_sym->ts.type
 	      && sym->attr.flavor == FL_PROCEDURE
 	      && sym->attr.contained)
 	{
-	  temp_locus = gfc_current_locus;
-	  gfc_current_locus = e->where;
-
-	  gfc_buffer_error (1);
-
-	  gfc_free_ref_list (e->ref);
-	  e->ref = NULL;
-
-	  if (retval)
-	    {
-	      gfc_free_actual_arglist (e->value.function.actual);
-	      e->value.function.actual = NULL;
-	    }
-
+	  /* Clear the shape, since it might not be valid.  */
 	  if (e->shape != NULL)
 	    {
 	      for (n = 0; n < e->rank; n++)
@@ -4241,22 +4233,58 @@ check_host_association (gfc_expr *e)
 	      gfc_free (e->shape);
 	    }
 
-/* TODO - Replace this gfc_match_rvalue with a straight replacement of
-   actual arglists for function to function substitutions and with a
-   conversion of the reference list to an actual arglist in the case of
-   a variable to function replacement.  This should be quite easy since
-   only integers and vectors can be involved.  */	    
-	  gfc_match_rvalue (&expr);
-	  gfc_clear_error ();
-	  gfc_buffer_error (0);
+	  /* Give the symbol a symtree in the right place!  */
+	  gfc_get_sym_tree (sym->name, gfc_current_ns, &st);
+	  st->n.sym = sym;
 
-	  gcc_assert (expr && sym == expr->symtree->n.sym);
+	  if (old_sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      /* Original was function so point to the new symbol, since
+		 the actual argument list is already attached to the
+		 expression. */
+	      e->value.function.esym = NULL;
+	      e->symtree = st;
+	    }
+	  else
+	    {
+	      /* Original was variable so convert array references into
+		 an actual arglist. This does not need any checking now
+		 since gfc_resolve_function will take care of it.  */
+	      e->value.function.actual = NULL;
+	      e->expr_type = EXPR_FUNCTION;
+	      e->symtree = st;
 
-	  *e = *expr;
-	  gfc_free (expr);
+	      /* Ambiguity will not arise if the array reference is not
+		 the last reference.  */
+	      for (ref = e->ref; ref; ref = ref->next)
+		if (ref->type == REF_ARRAY && ref->next == NULL)
+		  break;
+
+	      gcc_assert (ref->type == REF_ARRAY);
+
+	      /* Grab the start expressions from the array ref and
+		 copy them into actual arguments.  */
+	      for (n = 0; n < ref->u.ar.dimen; n++)
+		{
+		  arg = gfc_get_actual_arglist ();
+		  arg->expr = gfc_copy_expr (ref->u.ar.start[n]);
+		  if (e->value.function.actual == NULL)
+		    tail = e->value.function.actual = arg;
+	          else
+		    {
+		      tail->next = arg;
+		      tail = arg;
+		    }
+		}
+
+	      /* Dump the reference list and set the rank.  */
+	      gfc_free_ref_list (e->ref);
+	      e->ref = NULL;
+	      e->rank = sym->as ? sym->as->rank : 0;
+	    }
+
+	  gfc_resolve_expr (e);
 	  sym->refs++;
-
-	  gfc_current_locus = temp_locus;
 	}
     }
   /* This might have changed!  */
