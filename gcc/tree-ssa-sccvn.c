@@ -1507,7 +1507,7 @@ simplify_unary_expression (tree rhs)
   if (op0 == TREE_OPERAND (rhs, 0))
     return rhs;
 
-  result = fold_unary (TREE_CODE (rhs), TREE_TYPE (rhs), op0);
+  result = fold_unary_ignore_overflow (TREE_CODE (rhs), TREE_TYPE (rhs), op0);
   if (result)
     {
       STRIP_USELESS_TYPE_CONVERSION (result);

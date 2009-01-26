@@ -938,7 +938,7 @@ ccp_fold (tree stmt)
       if ((code == NOP_EXPR || code == CONVERT_EXPR)
 	  && useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (op0)))
 	return op0;
-      return fold_unary (code, TREE_TYPE (rhs), op0);
+      return fold_unary_ignore_overflow (code, TREE_TYPE (rhs), op0);
     }
 
   /* Binary and comparison operators.  We know one or both of the

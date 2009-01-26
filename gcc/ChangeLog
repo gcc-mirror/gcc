@@ -1,3 +1,11 @@
+2008-01-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/38932
+	* fold-const.c (fold_unary_ignore_overflow): New.
+	* tree.h (fold_unary_ignore_overflow): Declare.
+	* tree-ssa-ccp.c (ccp_fold): Use fold_unary_ignore_overflow.
+	* tree-ssa-sccvn.c (simplify_unary_expression): Likewise.
+
 2009-01-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
