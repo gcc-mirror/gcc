@@ -1,3 +1,7 @@
+2009-01-26  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Fix typo.
+
 2009-01-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38745

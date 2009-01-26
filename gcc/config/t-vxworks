@@ -22,7 +22,7 @@ EXTRA_HEADERS += $(srcdir)/gthr-vxworks.h gthr-default.h
 # VxWorks system headers have names that collide with GCC's
 # internal (host) headers, e.g. regs.h.
 LIBGCC2_INCLUDES = -nostdinc -I \
-  `case "/$$(MULTIDIR)" in \
+  `case "/$$(MULTIDIRS)" in \
      */mrtp*) echo $(WIND_USR)/h ;; \
      *) echo $(WIND_BASE)/target/h ;; \
    esac`
