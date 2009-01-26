@@ -1,3 +1,10 @@
+2009-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38851
+	* Makefile.in (tree-ssa-dse.o): Add langhooks.h.
+	* tree-ssa-dse.c: Include langhooks.h
+	(execute_simple_dse): Remove stores with zero size.
+
 2009-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/38957

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "domwalk.h"
 #include "flags.h"
+#include "langhooks.h"
 
 /* This file implements dead store elimination.
 
@@ -660,19 +661,34 @@ execute_simple_dse (void)
         tree op;
 	bool removed = false;
         ssa_op_iter iter;
+	tree size;
 
-	if (gimple_stored_syms (stmt)
-	    && !bitmap_empty_p (gimple_stored_syms (stmt))
-            && (is_gimple_assign (stmt)
-	        || (is_gimple_call (stmt)
-                    && gimple_call_lhs (stmt)))
-	    && !bitmap_intersect_p (gimple_stored_syms (stmt), variables_loaded))
+	if (is_gimple_assign (stmt)
+	    && AGGREGATE_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
+	    && (size = lang_hooks.expr_size (gimple_assign_lhs (stmt)))
+	    && integer_zerop (size))
+	  {
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "  Deleted zero-sized store '");
+		print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+		fprintf (dump_file, "'\n");
+	      }
+	    removed = true;
+	    gsi_remove (&gsi, true);
+	    todo |= TODO_cleanup_cfg;
+	  }
+	else if (gimple_stored_syms (stmt)
+		 && !bitmap_empty_p (gimple_stored_syms (stmt))
+		 && (is_gimple_assign (stmt)
+		     || (is_gimple_call (stmt)
+			 && gimple_call_lhs (stmt)))
+		 && !bitmap_intersect_p (gimple_stored_syms (stmt),
+					 variables_loaded))
 	  {
 	    unsigned int i;
 	    bitmap_iterator bi;
 	    bool dead = true;
-
-
 
 	    /* See if STMT only stores to write-only variables and
 	       verify that there are no volatile operands.  tree-ssa-operands
