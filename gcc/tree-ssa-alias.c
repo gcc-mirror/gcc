@@ -2483,6 +2483,22 @@ update_alias_info_1 (gimple stmt, struct alias_info *ai)
   if (addr_taken)
     bitmap_ior_into (gimple_addressable_vars (cfun), addr_taken);
 
+  /* If we have a call or an assignment, see if the lhs contains
+     a local decl that requires not to be a gimple register.  */
+  if (gimple_code (stmt) == GIMPLE_ASSIGN
+      || gimple_code (stmt) == GIMPLE_CALL)
+    {
+      tree lhs = gimple_get_lhs (stmt);
+      /* A plain decl does not need it set.  */
+      if (lhs && handled_component_p (lhs))
+	{
+	  tree var = get_base_address (lhs);
+	  if (DECL_P (var)
+	      && is_gimple_reg_type (TREE_TYPE (var)))
+	    bitmap_set_bit (gimple_addressable_vars (cfun), DECL_UID (var));
+	}
+    }
+
   /* Process each operand use.  For pointers, determine whether they
      are dereferenced by the statement, or whether their value
      escapes, etc.  */
