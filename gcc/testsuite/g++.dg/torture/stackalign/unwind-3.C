@@ -2,7 +2,7 @@
 
 #include "test-unwind.h"
 
-#ifndef __PIC__
+#if !defined __PIC__ && !defined __USING_SJLJ_EXCEPTIONS__
 /* Test situation 3: Stack realign really happen with DRAP reg DI */
 void __attribute__ ((noinline)) __attribute__ ((regparm(3))) 
 bar (int arg1, int arg2, int arg3)

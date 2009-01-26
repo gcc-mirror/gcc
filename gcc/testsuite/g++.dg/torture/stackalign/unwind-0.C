@@ -2,7 +2,7 @@
 
 #include "test-unwind.h"
 
-#ifndef __PIC__
+#if !defined __PIC__ && !defined __USING_SJLJ_EXCEPTIONS__
 void __attribute__ ((noinline)) foo()
 {
         ALTER_REGS();

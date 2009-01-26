@@ -1,3 +1,18 @@
+2009-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38952
+	* g++.dg/torture/stackalign/test-unwind.h (main): Also return 0
+	if __USING_SJLJ_EXCEPTIONS__ is defined.
+
+	* g++.dg/torture/stackalign/unwind-0.C (foo): Don't define if
+	__USING_SJLJ_EXCEPTIONS__ is defined.
+	* g++.dg/torture/stackalign/unwind-1.C (foo): Likewise.
+	* g++.dg/torture/stackalign/unwind-2.C (foo): Likewise.
+	* g++.dg/torture/stackalign/unwind-3.C (foo): Likewise.
+	* g++.dg/torture/stackalign/unwind-4.C (foo): Likewise.
+	* g++.dg/torture/stackalign/unwind-5.C (foo): Likewise.
+	* g++.dg/torture/stackalign/unwind-6.C (foo): Likewise.
+
 2009-01-26  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR testsuite/38949
