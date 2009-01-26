@@ -34,7 +34,7 @@ extern void foo(void);
         );\
   }
 
-#ifdef __PIC__
+#if defined __PIC__ || defined __USING_SJLJ_EXCEPTIONS__
 int
 main ()
 {

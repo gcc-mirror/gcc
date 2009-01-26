@@ -2,7 +2,7 @@
 
 #include "test-unwind.h"
 
-#ifndef __PIC__
+#if !defined __PIC__ && !defined __USING_SJLJ_EXCEPTIONS__
 volatile int __attribute__ ((aligned(32))) g_a=1;
 /* Test situation 4: no Drap and stack realign doesn't really happen */
 void __attribute__ ((noinline))
