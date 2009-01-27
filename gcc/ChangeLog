@@ -1,3 +1,9 @@
+2009-01-27 Uros Bizjak <ubizjak@gmail.com>
+
+	PR middle-end/38969
+	* calls.c (initialize_argument_information): Do not wrap complex
+	arguments in SAVE_EXPR.
+
 2009-01-26  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/t-vxworks (LIBGCC2_INCLUDES): Fix typo.
