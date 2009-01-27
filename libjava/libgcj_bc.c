@@ -1,6 +1,6 @@
 /* libgcj_bc.c  */
 
-/* Copyright (C) 2006 Free Software Foundation
+/* Copyright (C) 2006, 2009 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -89,7 +89,6 @@ void _Jv_AttachCurrentThreadAsDaemon () {}
 void _Jv_CreateJavaVM () {}
 void _Jv_DetachCurrentThread () {}
 void _Jv_Free () {}
-void _Jv_GetStringChars () {}
 void _Jv_GetStringUTFLength () {}
 void _Jv_GetStringUTFRegion () {}
 void _Jv_Malloc () {}
