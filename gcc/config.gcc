@@ -760,7 +760,7 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-eabi*)
-	  tm_file="$tm_file arm/eabi.h arm/nocrt0.h"
+	  tm_file="$tm_file arm/eabi.h"
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  extra_options="${extra_options} arm/eabi.opt"
 	  ;;
