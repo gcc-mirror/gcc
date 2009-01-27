@@ -4703,7 +4703,8 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 	     type-based pruning disabled.  */
 	  if (vi->is_artificial_var
 	      || !is_derefed
-	      || no_tbaa_pruning)
+	      || no_tbaa_pruning
+	      || vi->no_tbaa_pruning)
 	    bitmap_set_bit (into, DECL_UID (vi->decl));
 	  else
 	    {
@@ -5496,19 +5497,8 @@ compute_points_to_sets (void)
 	    find_func_aliases (phi);
 	}
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-	{
-	  gimple stmt = gsi_stmt (gsi);
-
-	  find_func_aliases (stmt);
-
-	  /* The information in GIMPLE_CHANGE_DYNAMIC_TYPE statements
-	     has now been captured, and we can remove them.  */
-	  if (gimple_code (stmt) == GIMPLE_CHANGE_DYNAMIC_TYPE)
-	    gsi_remove (&gsi, true);
-	  else
-	    gsi_next (&gsi);
-	}
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	find_func_aliases (gsi_stmt (gsi));
     }
 
 
