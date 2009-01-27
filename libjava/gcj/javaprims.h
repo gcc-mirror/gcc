@@ -1,8 +1,8 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+   2008, 2009 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -919,7 +919,7 @@ struct _Jv_VMInitArgs
   jboolean ignoreUnrecognized;
 };
 
-extern jint _Jv_CreateJavaVM (struct _Jv_VMInitArgs*);
+extern "C" jint _Jv_CreateJavaVM (struct _Jv_VMInitArgs*);
 
 void
 _Jv_ThreadRun (java::lang::Thread* thread);
