@@ -1,3 +1,9 @@
+2009-01-27  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38883
+	* trans-stmt.c (gfc_conv_elemental_dependencies):  Create temporary
+	for the real type needed to make it work for subcomponent-references.
+
 2009-01-21  Daniel Kraft  <d@domob.eu>
 
 	* trans-stmt.c (gfc_conv_elemental_dependencies):  Cleaned up comment.
