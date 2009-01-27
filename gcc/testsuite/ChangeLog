@@ -1,3 +1,12 @@
+2009-01-26  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR testsuite/38864
+	* gcc.target/mips/fixed-vector-type.c: Add target { fixed_point}
+	to dg-do compile.
+	* gcc.target/mips/fixed-scalar-type.c: Likewise.
+	* gcc.target/mips/dpaq_sa_l_w.c: Likewise.
+	* gcc.target/mips/dpsq_sa_l_w.c: Likewise.
+
 2009-01-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38952
