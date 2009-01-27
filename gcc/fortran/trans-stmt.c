@@ -213,7 +213,6 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
   gfc_ss_info *info;
   gfc_symbol *fsym;
   int n;
-  stmtblock_t block;
   tree data;
   tree offset;
   tree size;
@@ -252,7 +251,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	    && gfc_check_fncall_dependency (e, fsym->attr.intent,
 					    sym, arg0, check_variable))
 	{
-	  tree initial;
+	  tree initial, temptype;
 	  stmtblock_t temp_post;
 
 	  /* Make a local loopinfo for the temporary creation, so that
@@ -278,24 +277,31 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  else
 	    initial = NULL_TREE;
 
-	  /* Generate the temporary.  Merge the block so that the
-	     declarations are put at the right binding level.  Cleaning up the
-	     temporary should be the very last thing done, so we add the code to
-	     a new block and add it to se->post as last instructions.  */
+	  /* Find the type of the temporary to create; we don't use the type
+	     of e itself as this breaks for subcomponent-references in e (where
+	     the type of e is that of the final reference, but parmse.expr's
+	     type corresponds to the full derived-type).  */
+	  /* TODO: Fix this somehow so we don't need a temporary of the whole
+	     array but instead only the components referenced.  */
+	  temptype = TREE_TYPE (parmse.expr); /* Pointer to descriptor.  */
+	  gcc_assert (TREE_CODE (temptype) == POINTER_TYPE);
+	  temptype = TREE_TYPE (temptype);
+	  temptype = gfc_get_element_type (temptype);
+
+	  /* Generate the temporary.  Cleaning up the temporary should be the
+	     very last thing done, so we add the code to a new block and add it
+	     to se->post as last instructions.  */
 	  size = gfc_create_var (gfc_array_index_type, NULL);
 	  data = gfc_create_var (pvoid_type_node, NULL);
-	  gfc_start_block (&block);
 	  gfc_init_block (&temp_post);
-	  tmp = gfc_typenode_for_spec (&e->ts);
 	  tmp = gfc_trans_create_temp_array (&se->pre, &temp_post,
-					     &tmp_loop, info, tmp,
+					     &tmp_loop, info, temptype,
 					     initial,
 					     false, true, false,
 					     &arg->expr->where);
 	  gfc_add_modify (&se->pre, size, tmp);
 	  tmp = fold_convert (pvoid_type_node, info->data);
 	  gfc_add_modify (&se->pre, data, tmp);
-	  gfc_merge_block_scope (&block);
 
 	  /* Calculate the offset for the temporary.  */
 	  offset = gfc_index_zero_node;
@@ -315,7 +321,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  tmp = build_call_expr (gfor_fndecl_in_unpack, 2, parmse.expr, data);
 	  gfc_add_expr_to_block (&se->post, tmp);
 
-	  gfc_add_block_to_block (&se->pre, &parmse.pre);
+	  /* parmse.pre is already added above.  */
 	  gfc_add_block_to_block (&se->post, &parmse.post);
 	  gfc_add_block_to_block (&se->post, &temp_post);
 	}
