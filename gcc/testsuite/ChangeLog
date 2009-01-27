@@ -1,3 +1,9 @@
+2009-01-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37554
+	* g++.dg/parse/crash51.C: New.
+	* g++.old-deja/g++.pt/crash9.C: Adjust.
+
 2009-01-27  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38883
