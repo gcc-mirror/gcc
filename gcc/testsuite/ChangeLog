@@ -1,3 +1,8 @@
+2009-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38503
+	* g++.dg/warn/Wstrict-aliasing-bogus-placement-new.C: New testcase.
+
 2009-01-27 Uros Bizjak <ubizjak@gmail.com>
 
 	PR middle-end/38969

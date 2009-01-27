@@ -1,3 +1,13 @@
+2009-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38503
+	* cfgexpand.c (expand_gimple_basic_block): Ignore
+	GIMPLE_CHANGE_DYNAMIC_TYPE during expansion.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Do not prune
+	variables that cannot have TBAA applied.
+	(compute_points_to_sets): Do not remove GIMPLE_CHANGE_DYNAMIC_TYPE
+	statements.
+
 2009-01-27 Uros Bizjak <ubizjak@gmail.com>
 
 	PR middle-end/38969

@@ -1970,7 +1970,7 @@ expand_gimple_basic_block (basic_block bb)
 		    return new_bb;
 		}
 	    }
-	  else
+	  else if (gimple_code (stmt) != GIMPLE_CHANGE_DYNAMIC_TYPE)
 	    {
 	      tree stmt_tree = gimple_to_tree (stmt);
 	      last = get_last_insn ();
