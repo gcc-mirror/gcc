@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { fixed_point } } } */
 /* { dg-options "-O2 -mgp32 -mdsp" } */
 /* { dg-final { scan-assembler-times "\tdpaq_sa.l.w\t\\\$ac" 3 } } */
 

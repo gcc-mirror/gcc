@@ -1,5 +1,5 @@
 /* Test scalar fixed-point instructions */
-/* { dg-do compile } */
+/* { dg-do compile { target { fixed_point } } } */
 /* { dg-options "-mdspr2 -O2" } */
 /* { dg-final { scan-assembler-times "\taddu\t" 10 } } */
 /* { dg-final { scan-assembler-times "\tsubu\t" 10 } } */
