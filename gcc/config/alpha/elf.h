@@ -423,3 +423,13 @@ extern int alpha_this_gpdisp_sequence_number;
 #if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
+
+/* A C statement (sans semicolon) to output to the stdio stream STREAM
+   any text necessary for declaring the name of an external symbol
+   named NAME which is referenced in this compilation but not defined.
+   It is needed to properly support non-default visibility.  */
+
+#ifndef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  default_elf_asm_output_external (FILE, DECL, NAME)
+#endif

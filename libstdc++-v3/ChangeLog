@@ -1,3 +1,11 @@
+2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* scripts/extract_symvers: Add sed script to remove ' [<other>: xx] '
+	field from readelf output.
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.

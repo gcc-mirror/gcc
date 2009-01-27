@@ -1,3 +1,43 @@
+2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimate_address_p): Explicit
+	relocations of local symbols wider than UNITS_PER_WORD are not valid.
+	(alpha_legitimize_address): Do not split local symbols wider than
+	UNITS_PER_WORD into HIGH/LO_SUM parts.
+
+	2009-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38706
+	* config/alpha/alpha.c (alpha_end_function): For TARGET_ABI_OSF, call
+	free_after_compilation when outputting a thunk.
+	(alpha_output_mi_thunk_osf): Assert that we are processing a thunk.
+	Do not call free_after_compilation here.
+
+	2008-12-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h (ASM_OUTPUT_EXTERNAL): New macro.
+
+	2008-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pad_noreturn): New static function.
+	(alpha_reorg): Call alpha_pad_noreturn.
+
+	2008-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_set_memflags): Process memory
+	references in full insn sequence.
+
+	2008-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_fold_vector_minmax): Create
+	VIEW_CONVERT_EXPR to convert output to long_integer_type_node.
+
+	(alpha_emit_conditional_branch): Do not generate direct branch
+	for UNORDERED comparisons.
+
 2008-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38932
@@ -97,7 +137,8 @@
 	
 2009-01-11  Matthias Klose  <doko@ubuntu.com>
 
-	PR middle-end/38616, backport from mainline:
+	PR middle-end/38616
+	Backport from mainline:
 	2008-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*strmovsi_1): Simplify asm alternatives.
@@ -565,8 +606,8 @@
 	PR tree-optimization/37102
 	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args  
 	from a node. Check to see if another PHI is dead.
-	(eliminate_useless_phis): Rename from eliminate_virtual_phis and remove
-	real PHIs which have no uses.
+	(eliminate_useless_phis): Rename from eliminate_virtual_phis and
+	remove real PHIs which have no uses.
 	(rewrite_out_of_ssa): Call eliminate_useless_phis.
 
 2008-10-08  Simon Martin  <simartin@users.sourceforge.net>
@@ -1042,8 +1083,10 @@
 
 	(MFC_MIN_DMA_LIST_ELEMENTS): New define.
 	(MFC_MAX_DMA_LIST_ELEMENTS): Likewise.
-	(MFC_MIN_DMA_LIST_SIZE): Redefine in terms of MFC_MIN_DMA_LIST_ELEMENTS.
-	(MFC_MAX_DMA_LIST_SIZE): Redefine in terms of MFC_MAX_DMA_LIST_ELEMENTS.
+	(MFC_MIN_DMA_LIST_SIZE): Redefine in terms of
+	MFC_MIN_DMA_LIST_ELEMENTS.
+	(MFC_MAX_DMA_LIST_SIZE): Redefine in terms of
+	MFC_MAX_DMA_LIST_ELEMENTS.
 
 	(MFC_START_ENABLE): Remove PPU-only define.
 	(MFC_PUTS_CMD, MFC_PUTFS_CMD, MFC_PUTBS_CMD): Likewise.
