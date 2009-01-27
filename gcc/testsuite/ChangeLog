@@ -1,3 +1,8 @@
+2009-01-27  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/38615
+	* gcc.dg/pr38615.c: New test.
+
 2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

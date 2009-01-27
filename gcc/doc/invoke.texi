@@ -5406,8 +5406,9 @@ Attempt to merge identical constants and identical variables.
 This option implies @option{-fmerge-constants}.  In addition to
 @option{-fmerge-constants} this considers e.g.@: even constant initialized
 arrays or initialized constant variables with integral or floating point
-types.  Languages like C or C++ require each non-automatic variable to
-have distinct location, so using this option will result in non-conforming
+types.  Languages like C or C++ require each variable, including multiple
+instances of the same variable in recursive calls, to have distinct locations,
+so using this option will result in non-conforming
 behavior.
 
 @item -fmodulo-sched

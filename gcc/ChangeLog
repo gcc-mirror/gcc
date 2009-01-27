@@ -1,3 +1,10 @@
+2009-01-27  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/38615
+	* gimplify.c (gimplify_init_constructor): Fix promotion of const
+	variables to static.
+	* doc/invoke.texi (-fmerge-all-constants): Update description.
+
 2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
