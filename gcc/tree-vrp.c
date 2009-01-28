@@ -1620,7 +1620,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == LT_EXPR
 	   && compare_values (max, min) == 0)
-	  || is_overflow_infinity (max))
+	  || (CONSTANT_CLASS_P (max) && TREE_OVERFLOW (max)))
 	set_value_range_to_varying (vr_p);
       else
 	{
@@ -1655,7 +1655,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 all should be optimized away above us.  */
       if ((cond_code == GT_EXPR
 	   && compare_values (min, max) == 0)
-	  || is_overflow_infinity (min))
+	  || (CONSTANT_CLASS_P (min) && TREE_OVERFLOW (min)))
 	set_value_range_to_varying (vr_p);
       else
 	{

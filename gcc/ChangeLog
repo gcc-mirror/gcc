@@ -1,3 +1,10 @@
+2009-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38934
+	* tree-vrp.c (extract_range_from_assert): For LE_EXPR and LT_EXPR
+	set to varying whenever max has TREE_OVERFLOW set, similarly
+	for GE_EXPR and GT_EXPR and TREE_OVERFLOW min.
+
 2009-01-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38908
