@@ -256,10 +256,15 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   /* Test for a positive stride, iterating over every element.  */
   if (integer_zerop (fold_build2 (MINUS_EXPR, integer_type_node, DR_STEP (dr),
 				  TYPE_SIZE_UNIT (TREE_TYPE (op0)))))
-    addr_base = fold_build2 (PLUS_EXPR, TREE_TYPE (DR_BASE_ADDRESS (dr)),
-			     DR_BASE_ADDRESS (dr), 
-			     size_binop (PLUS_EXPR,
-					 DR_OFFSET (dr), DR_INIT (dr)));
+    {
+      tree offset = fold_convert (sizetype,
+				  size_binop (PLUS_EXPR,
+					      DR_OFFSET (dr),
+					      DR_INIT (dr)));
+      addr_base = fold_build2 (POINTER_PLUS_EXPR,
+			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
+			       DR_BASE_ADDRESS (dr), offset);
+    }
 
   /* Test for a negative stride, iterating over every element.  */
   else if (integer_zerop (fold_build2 (PLUS_EXPR, integer_type_node,
