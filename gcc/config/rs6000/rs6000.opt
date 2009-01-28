@@ -119,6 +119,10 @@ mupdate
 Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
 Generate load/store with update instructions
 
+mavoid-indexed-addresses
+Target Report Var(TARGET_AVOID_XFORM) Init(-1)
+Avoid generation of indexed load/store instructions when possible
+
 mno-fused-madd
 Target Report RejectNegative Mask(NO_FUSED_MADD)
 Do not generate fused multiply/add instructions

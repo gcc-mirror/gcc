@@ -1,3 +1,7 @@
+2009-01-28  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/avoid-indexed-addresses.c: New test.
+
 2009-01-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/38997
