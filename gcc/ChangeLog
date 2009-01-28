@@ -1,3 +1,12 @@
+2009-01-27  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* c.opt (Wpacked-bitfield-compat): Change init value to -1.
+	* c-opts.c (c_common_post_options): If -W*packed-bitfield-compat
+	was not supplied then set warn_packed_bitfield_compat to the
+	default value of 1.
+	* stor-layout.c (place_field): Check warn_packed_bitfield_compat
+	against 1.
+
 2009-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38503

@@ -963,7 +963,7 @@ place_field (record_layout_info rli, tree field)
 	{
 	  if (DECL_PACKED (field))
 	    {
-	      if (warn_packed_bitfield_compat)
+	      if (warn_packed_bitfield_compat == 1)
 		inform
 		  (input_location,
 		   "Offset of packed bit-field %qD has changed in GCC 4.4",

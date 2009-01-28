@@ -365,7 +365,7 @@ C ObjC Var(warn_override_init) Init(-1) Warning
 Warn about overriding initializers without side effects
 
 Wpacked-bitfield-compat
-C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(1) Warning
+C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4
 
 Wparentheses
