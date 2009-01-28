@@ -1,5 +1,9 @@
 2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
+	* config/s390/s390.md: Fix a few comments.
+
+2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
 	* config/s390/s390.md (*tmsi_reg): Fixed z10prop attribute.
 	(*tm<mode>_full): Fixed z10prop attribute.
 	(*tst<mode>_extimm): Fixed z10prop attribute.
