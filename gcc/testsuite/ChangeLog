@@ -1,3 +1,8 @@
+2009-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38926
+	* gcc.c-torture/compile/pr38926.c: New testcase.
+
 2009-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/38934
