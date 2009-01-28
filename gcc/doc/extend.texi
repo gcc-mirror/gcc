@@ -4852,6 +4852,8 @@ asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 In the above example, beware that a register that is call-clobbered by
 the target ABI will be overwritten by any function call in the
 assignment, including library calls for arithmetic operators.
+Also a register may be clobbered when generating some operations,
+like variable shift, memory copy or memory move on x86.
 Assuming it is a call-clobbered register, this may happen to @code{r0}
 above by the assignment to @code{p2}.  If you have to use such a
 register, use temporary variables for expressions between the register

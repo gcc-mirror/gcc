@@ -1,3 +1,8 @@
+2009-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38941
+	* doc/extend.texi: Improve local variable with asm reg.
+
 2009-01-27  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* c.opt (Wpacked-bitfield-compat): Change init value to -1.
