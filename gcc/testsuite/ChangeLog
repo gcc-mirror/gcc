@@ -1,3 +1,8 @@
+2009-01-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/38997
+	* gcc.dg/tree-ssa/pr38997.c: New.
+
 2009-01-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38926
