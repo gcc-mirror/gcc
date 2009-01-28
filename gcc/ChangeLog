@@ -1,3 +1,9 @@
+2009-01-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/38984
+	* tree-ssa-structalias.c (get_constraints_for_1): Do not use
+	the nothing_id variable if -fno-delete-null-pointer-checks.
+
 2009-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38988

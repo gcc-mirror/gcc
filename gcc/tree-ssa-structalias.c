@@ -3044,8 +3044,14 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
      happens below, since it will fall into the default case. The only
      case we know something about an integer treated like a pointer is
      when it is the NULL pointer, and then we just say it points to
-     NULL.  */
-  if (TREE_CODE (t) == INTEGER_CST
+     NULL.
+
+     Do not do that if -fno-delete-null-pointer-checks though, because
+     in that case *NULL does not fail, so it _should_ alias *anything.
+     It is not worth adding a new option or renaming the existing one,
+     since this case is relatively obscure.  */
+  if (flag_delete_null_pointer_checks
+      && TREE_CODE (t) == INTEGER_CST
       && integer_zerop (t))
     {
       temp.var = nothing_id;
