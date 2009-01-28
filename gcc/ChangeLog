@@ -1,3 +1,9 @@
+2009-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38988
+	* config/i386/i386.md (set_rip_rex64): Wrap operand 1 in label_ref.
+	(set_got_offset_rex64): Ditto.
+
 2009-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38941
@@ -511,7 +517,8 @@
 	used to index the memory access.  Do not pass loop_p.
 	Fix comment.  Stop recursion on tcc_constant or tcc_declaration.
 	(expand_scalar_variables_stmt): Pass to expand_scalar_variables_expr
-	the gimple_stmt_iterator where it inserts new code.  Do not pass loop_p.
+	the gimple_stmt_iterator where it inserts new code.
+	Do not pass loop_p.
 	(copy_bb_and_scalar_dependences): Do not pass loop_p.
 	(translate_clast): Update call to copy_bb_and_scalar_dependences.
 
