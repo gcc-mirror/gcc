@@ -1,3 +1,15 @@
+2009-01-28  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* doc/invoke.texi (avoid-indexed-addresses): Document new option.
+	* config/rs6000/rs6000-protos.h (avoiding_indexed_address_p): Declare.
+	* config/rs6000/rs6000.opt (avoid-indexed-addresses): New option.
+	* config/rs6000/rs6000.c (rs6000_override_options): Default
+	avoid-indexed-addresses on for Power6, off for everything else.
+	(avoiding_indexed_address_p): New function.
+	(rs6000_legitimize_address): Use it.
+	(rs6000_legitimate_address): Likewise.
+	* config/rs6000/rs6000.md (movXX_updateX): Likewise
+
 2009-01-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/38997
