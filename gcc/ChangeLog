@@ -1,3 +1,37 @@
+2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.md (*tmsi_reg): Fixed z10prop attribute.
+	(*tm<mode>_full): Fixed z10prop attribute.
+	(*tst<mode>_extimm): Fixed z10prop attribute.
+	(*tst<mode>_cconly_extimm): Fixed z10prop attribute.
+	(*tstqiCCT_cconly): Fixed z10prop attribute.
+	(*cmpsi_ccu_zerohi_rlsi): Fixed z10prop attribute.
+	(*movsi_larl): Fixed z10prop attribute.
+	(*movsi_zarch): Fixed z10prop attribute.
+	(*movsi_eas): Fixed z10prop attribute.
+	(*movhi): Fixed z10prop attribute.
+	(*movqi): Fixed z10prop attribute.
+	(*movstrictqi): Fixed z10prop attribute.
+	(*mov<mode>): Fixed z10prop attribute.
+	(*movcc): Fixed z10prop attribute.
+	(*sethighpartdi_64): Fixed z10prop attribute.
+	(*zero_extendhi<mode>2_z10): Fixed z10prop attribute.
+	(*negdi2_sign_cc): Fixed z10prop attribute.
+	(*negdi2_sign): Fixed z10prop attribute.
+	(*absdi2_sign_cc): Fixed z10prop attribute.
+	(*absdi2_sign): Fixed z10prop attribute.
+	(*negabsdi2_sign_cc): Fixed z10prop attribute.
+	(*negabsdi2_sign): Fixed z10prop attribute.
+	(*cmp_and_trap_signed_int<mode>): Fixed z10prop attribute.
+	(*cmp_and_trap_unsigned_int<mode>): Fixed z10prop attribute.
+	(doloop_si64): Fixed z10prop attribute.
+	(doloop_si31): Fixed z10prop attribute.
+	(doloop_long): Fixed z10prop attribute.
+	(indirect_jump): Fixed z10prop attribute.
+	(nop): Fixed z10prop attribute.
+	(main_base_64): Fixed z10prop attribute.
+	(reload_base_64): Fixed z10prop attribute.
+
 2009-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38740
