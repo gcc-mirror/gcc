@@ -1,5 +1,9 @@
 2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
+	* config/s390/s390.md (*tls_load_31): Added type attribute.
+
+2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
 	* config/s390/s390.md: Fix a few comments.
 
 2009-01-28  Wolfgang Gellerich  <gellerich@de.ibm.com>
