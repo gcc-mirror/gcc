@@ -1,3 +1,10 @@
+2009-01-29  Robert Millan  <rmh@aybabtu.com>
+
+	* gcc/config.gcc: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).
+	* gcc/config/i386/kopensolaris-gnu.h: New file.  Undefine
+	`MD_UNWIND_SUPPORT'.
+	* gcc/config/kopensolaris-gnu.h: New file (based on kfreebsd-gnu.h).
+
 2009-01-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/39007
