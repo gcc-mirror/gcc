@@ -2772,8 +2772,7 @@ ira_mark_memory_move_deletion (int dst_regno, int src_regno)
 }
 
 /* Try to assign a hard register (except for FORBIDDEN_REGS) to
-   allocno A and return TRUE in the case of success.  That is an
-   analog of retry_global_alloc for IRA.  */
+   allocno A and return TRUE in the case of success.  */
 static bool
 allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
 {
