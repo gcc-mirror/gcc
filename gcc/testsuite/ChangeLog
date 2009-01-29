@@ -1,5 +1,24 @@
 2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
+	2009-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38908
+	* g++.dg/warn/Wuninitialized-2.C: New testcase.
+
+	2009-01-27  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38883
+	* gfortran.dg/mvbits_6.f90:  New test.
+	* gfortran.dg/mvbits_7.f90:  New test.
+	* gfortran.dg/mvbits_8.f90:  New test.
+
+	2009-01-21  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38887
+	* gfortran.dg/mvbits_5.f90:  New test.
+
+2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline:
 	2009-01-29  Steve Ellcey  <sje@cup.hp.com>
 
