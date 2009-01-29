@@ -80,10 +80,10 @@
 	Revert
 	2008-08-21  Richard Guenther  <rguenther@suse.de>
   
-        * tree-ssa-pre.c (insert_into_preds_of_block): Before inserting
-        a PHI ask VN if it is already available.
-        * tree-ssa-sccvn.h (vn_phi_lookup): Declare.
-        * tree-ssa-sccvn.c (vn_phi_lookup): Export.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Before inserting
+	a PHI ask VN if it is already available.
+	* tree-ssa-sccvn.h (vn_phi_lookup): Declare.
+	* tree-ssa-sccvn.c (vn_phi_lookup): Export.
 
 2009-01-28  Jakub Jelinek  <jakub@redhat.com>
 
@@ -134,7 +134,7 @@
 	(compute_points_to_sets): Do not remove GIMPLE_CHANGE_DYNAMIC_TYPE
 	statements.
 
-2009-01-27 Uros Bizjak <ubizjak@gmail.com>
+2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/38969
 	* calls.c (initialize_argument_information): Do not wrap complex
