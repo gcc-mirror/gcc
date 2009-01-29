@@ -1,3 +1,16 @@
+2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-01-29  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/38857
+	* gcc.c-torture/compile/pr38857.c: New test.
+
+	2009-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38926
+	* gcc.c-torture/compile/pr38926.c: New testcase.
+
 2009-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
