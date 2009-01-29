@@ -316,6 +316,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "output.h"
+#include "except.h"
 #include "reload.h"
 #include "errors.h"
 #include "integrate.h"
@@ -348,6 +349,10 @@ int ira_overall_cost;
 int ira_reg_cost, ira_mem_cost;
 int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 int ira_move_loops_num, ira_additional_jumps_num;
+
+/* All registers that can be eliminated.  */
+
+HARD_REG_SET eliminable_regset;
 
 /* Map: hard regs X modes -> set of hard registers for storing value
    of given mode starting with given hard register.  */
@@ -1527,6 +1532,14 @@ find_reg_equiv_invariant_const (void)
 
 
 
+/* Vector of substitutions of register numbers,
+   used to map pseudo regs into hardware regs.
+   This is set up as a result of register allocation.
+   Element N is the hard reg assigned to pseudo reg N,
+   or is -1 if no hard reg was assigned.
+   If N is a hard reg number, element N is N.  */
+short *reg_renumber;
+
 /* Set up REG_RENUMBER and CALLER_SAVE_NEEDED (used by reload) from
    the allocation found by IRA.  */
 static void
@@ -1824,6 +1837,1207 @@ too_high_register_pressure_p (void)
 
 
 
+/* Indicate that hard register number FROM was eliminated and replaced with
+   an offset from hard register number TO.  The status of hard registers live
+   at the start of a basic block is updated by replacing a use of FROM with
+   a use of TO.  */
+
+void
+mark_elimination (int from, int to)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      /* We don't use LIVE info in IRA.  */
+      regset r = DF_LR_IN (bb);
+
+      if (REGNO_REG_SET_P (r, from))
+	{
+	  CLEAR_REGNO_REG_SET (r, from);
+	  SET_REGNO_REG_SET (r, to);
+	}
+    }
+}
+
+
+
+struct equivalence
+{
+  /* Set when an attempt should be made to replace a register
+     with the associated src_p entry.  */
+  char replace;
+  /* Set when a REG_EQUIV note is found or created.  Use to
+     keep track of what memory accesses might be created later,
+     e.g. by reload.  */
+  rtx replacement;
+  rtx *src_p;
+  /* Loop depth is used to recognize equivalences which appear
+     to be present within the same loop (or in an inner loop).  */
+  int loop_depth;
+  /* The list of each instruction which initializes this register.  */
+  rtx init_insns;
+  /* Nonzero if this had a preexisting REG_EQUIV note.  */
+  int is_arg_equivalence;
+};
+
+/* reg_equiv[N] (where N is a pseudo reg number) is the equivalence
+   structure for that register.  */
+static struct equivalence *reg_equiv;
+
+/* Used for communication between the following two functions: contains
+   a MEM that we wish to ensure remains unchanged.  */
+static rtx equiv_mem;
+
+/* Set nonzero if EQUIV_MEM is modified.  */
+static int equiv_mem_modified;
+
+/* If EQUIV_MEM is modified by modifying DEST, indicate that it is modified.
+   Called via note_stores.  */
+static void
+validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
+			       void *data ATTRIBUTE_UNUSED)
+{
+  if ((REG_P (dest)
+       && reg_overlap_mentioned_p (dest, equiv_mem))
+      || (MEM_P (dest)
+	  && true_dependence (dest, VOIDmode, equiv_mem, rtx_varies_p)))
+    equiv_mem_modified = 1;
+}
+
+/* Verify that no store between START and the death of REG invalidates
+   MEMREF.  MEMREF is invalidated by modifying a register used in MEMREF,
+   by storing into an overlapping memory location, or with a non-const
+   CALL_INSN.
+
+   Return 1 if MEMREF remains valid.  */
+static int
+validate_equiv_mem (rtx start, rtx reg, rtx memref)
+{
+  rtx insn;
+  rtx note;
+
+  equiv_mem = memref;
+  equiv_mem_modified = 0;
+
+  /* If the memory reference has side effects or is volatile, it isn't a
+     valid equivalence.  */
+  if (side_effects_p (memref))
+    return 0;
+
+  for (insn = start; insn && ! equiv_mem_modified; insn = NEXT_INSN (insn))
+    {
+      if (! INSN_P (insn))
+	continue;
+
+      if (find_reg_note (insn, REG_DEAD, reg))
+	return 1;
+
+      if (CALL_P (insn) && ! MEM_READONLY_P (memref)
+	  && ! RTL_CONST_OR_PURE_CALL_P (insn))
+	return 0;
+
+      note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
+
+      /* If a register mentioned in MEMREF is modified via an
+	 auto-increment, we lose the equivalence.  Do the same if one
+	 dies; although we could extend the life, it doesn't seem worth
+	 the trouble.  */
+
+      for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	if ((REG_NOTE_KIND (note) == REG_INC
+	     || REG_NOTE_KIND (note) == REG_DEAD)
+	    && REG_P (XEXP (note, 0))
+	    && reg_overlap_mentioned_p (XEXP (note, 0), memref))
+	  return 0;
+    }
+
+  return 0;
+}
+
+/* Returns zero if X is known to be invariant.  */
+static int
+equiv_init_varies_p (rtx x)
+{
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
+
+  switch (code)
+    {
+    case MEM:
+      return !MEM_READONLY_P (x) || equiv_init_varies_p (XEXP (x, 0));
+
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 0;
+
+    case REG:
+      return reg_equiv[REGNO (x)].replace == 0 && rtx_varies_p (x, 0);
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+      /* Fall through.  */
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      {
+	if (equiv_init_varies_p (XEXP (x, i)))
+	  return 1;
+      }
+    else if (fmt[i] == 'E')
+      {
+	int j;
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (equiv_init_varies_p (XVECEXP (x, i, j)))
+	    return 1;
+      }
+
+  return 0;
+}
+
+/* Returns nonzero if X (used to initialize register REGNO) is movable.
+   X is only movable if the registers it uses have equivalent initializations
+   which appear to be within the same loop (or in an inner loop) and movable
+   or if they are not candidates for local_alloc and don't vary.  */
+static int
+equiv_init_movable_p (rtx x, int regno)
+{
+  int i, j;
+  const char *fmt;
+  enum rtx_code code = GET_CODE (x);
+
+  switch (code)
+    {
+    case SET:
+      return equiv_init_movable_p (SET_SRC (x), regno);
+
+    case CC0:
+    case CLOBBER:
+      return 0;
+
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      return 0;
+
+    case REG:
+      return (reg_equiv[REGNO (x)].loop_depth >= reg_equiv[regno].loop_depth
+	      && reg_equiv[REGNO (x)].replace)
+	     || (REG_BASIC_BLOCK (REGNO (x)) < NUM_FIXED_BLOCKS && ! rtx_varies_p (x, 0));
+
+    case UNSPEC_VOLATILE:
+      return 0;
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 0;
+
+      /* Fall through.  */
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    switch (fmt[i])
+      {
+      case 'e':
+	if (! equiv_init_movable_p (XEXP (x, i), regno))
+	  return 0;
+	break;
+      case 'E':
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (! equiv_init_movable_p (XVECEXP (x, i, j), regno))
+	    return 0;
+	break;
+      }
+
+  return 1;
+}
+
+/* TRUE if X uses any registers for which reg_equiv[REGNO].replace is true.  */
+static int
+contains_replace_regs (rtx x)
+{
+  int i, j;
+  const char *fmt;
+  enum rtx_code code = GET_CODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case PC:
+    case CC0:
+    case HIGH:
+      return 0;
+
+    case REG:
+      return reg_equiv[REGNO (x)].replace;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    switch (fmt[i])
+      {
+      case 'e':
+	if (contains_replace_regs (XEXP (x, i)))
+	  return 1;
+	break;
+      case 'E':
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (contains_replace_regs (XVECEXP (x, i, j)))
+	    return 1;
+	break;
+      }
+
+  return 0;
+}
+
+/* TRUE if X references a memory location that would be affected by a store
+   to MEMREF.  */
+static int
+memref_referenced_p (rtx memref, rtx x)
+{
+  int i, j;
+  const char *fmt;
+  enum rtx_code code = GET_CODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case PC:
+    case CC0:
+    case HIGH:
+    case LO_SUM:
+      return 0;
+
+    case REG:
+      return (reg_equiv[REGNO (x)].replacement
+	      && memref_referenced_p (memref,
+				      reg_equiv[REGNO (x)].replacement));
+
+    case MEM:
+      if (true_dependence (memref, VOIDmode, x, rtx_varies_p))
+	return 1;
+      break;
+
+    case SET:
+      /* If we are setting a MEM, it doesn't count (its address does), but any
+	 other SET_DEST that has a MEM in it is referencing the MEM.  */
+      if (MEM_P (SET_DEST (x)))
+	{
+	  if (memref_referenced_p (memref, XEXP (SET_DEST (x), 0)))
+	    return 1;
+	}
+      else if (memref_referenced_p (memref, SET_DEST (x)))
+	return 1;
+
+      return memref_referenced_p (memref, SET_SRC (x));
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    switch (fmt[i])
+      {
+      case 'e':
+	if (memref_referenced_p (memref, XEXP (x, i)))
+	  return 1;
+	break;
+      case 'E':
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (memref_referenced_p (memref, XVECEXP (x, i, j)))
+	    return 1;
+	break;
+      }
+
+  return 0;
+}
+
+/* TRUE if some insn in the range (START, END] references a memory location
+   that would be affected by a store to MEMREF.  */
+static int
+memref_used_between_p (rtx memref, rtx start, rtx end)
+{
+  rtx insn;
+
+  for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
+       insn = NEXT_INSN (insn))
+    {
+      if (!INSN_P (insn))
+	continue;
+      
+      if (memref_referenced_p (memref, PATTERN (insn)))
+	return 1;
+
+      /* Nonconst functions may access memory.  */
+      if (CALL_P (insn) && (! RTL_CONST_CALL_P (insn)))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Mark REG as having no known equivalence.
+   Some instructions might have been processed before and furnished
+   with REG_EQUIV notes for this register; these notes will have to be
+   removed.
+   STORE is the piece of RTL that does the non-constant / conflicting
+   assignment - a SET, CLOBBER or REG_INC note.  It is currently not used,
+   but needs to be there because this function is called from note_stores.  */
+static void
+no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
+{
+  int regno;
+  rtx list;
+
+  if (!REG_P (reg))
+    return;
+  regno = REGNO (reg);
+  list = reg_equiv[regno].init_insns;
+  if (list == const0_rtx)
+    return;
+  reg_equiv[regno].init_insns = const0_rtx;
+  reg_equiv[regno].replacement = NULL_RTX;
+  /* This doesn't matter for equivalences made for argument registers, we
+     should keep their initialization insns.  */
+  if (reg_equiv[regno].is_arg_equivalence)
+    return;
+  reg_equiv_init[regno] = NULL_RTX;
+  for (; list; list =  XEXP (list, 1))
+    {
+      rtx insn = XEXP (list, 0);
+      remove_note (insn, find_reg_note (insn, REG_EQUIV, NULL_RTX));
+    }
+}
+
+/* Nonzero if we recorded an equivalence for a LABEL_REF.  */
+static int recorded_label_ref;
+
+/* Find registers that are equivalent to a single value throughout the
+   compilation (either because they can be referenced in memory or are set once
+   from a single constant).  Lower their priority for a register.
+
+   If such a register is only referenced once, try substituting its value
+   into the using insn.  If it succeeds, we can eliminate the register
+   completely.
+
+   Initialize the REG_EQUIV_INIT array of initializing insns.
+
+   Return non-zero if jump label rebuilding should be done.  */
+static int
+update_equiv_regs (void)
+{
+  rtx insn;
+  basic_block bb;
+  int loop_depth;
+  bitmap cleared_regs;
+  
+  /* We need to keep track of whether or not we recorded a LABEL_REF so
+     that we know if the jump optimizer needs to be rerun.  */
+  recorded_label_ref = 0;
+
+  reg_equiv = XCNEWVEC (struct equivalence, max_regno);
+  reg_equiv_init = GGC_CNEWVEC (rtx, max_regno);
+  reg_equiv_init_size = max_regno;
+
+  init_alias_analysis ();
+
+  /* Scan the insns and find which registers have equivalences.  Do this
+     in a separate scan of the insns because (due to -fcse-follow-jumps)
+     a register can be set below its use.  */
+  FOR_EACH_BB (bb)
+    {
+      loop_depth = bb->loop_depth;
+
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  rtx note;
+	  rtx set;
+	  rtx dest, src;
+	  int regno;
+
+	  if (! INSN_P (insn))
+	    continue;
+
+	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	    if (REG_NOTE_KIND (note) == REG_INC)
+	      no_equiv (XEXP (note, 0), note, NULL);
+
+	  set = single_set (insn);
+
+	  /* If this insn contains more (or less) than a single SET,
+	     only mark all destinations as having no known equivalence.  */
+	  if (set == 0)
+	    {
+	      note_stores (PATTERN (insn), no_equiv, NULL);
+	      continue;
+	    }
+	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+	    {
+	      int i;
+
+	      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+		{
+		  rtx part = XVECEXP (PATTERN (insn), 0, i);
+		  if (part != set)
+		    note_stores (part, no_equiv, NULL);
+		}
+	    }
+
+	  dest = SET_DEST (set);
+	  src = SET_SRC (set);
+
+	  /* See if this is setting up the equivalence between an argument
+	     register and its stack slot.  */
+	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
+	  if (note)
+	    {
+	      gcc_assert (REG_P (dest));
+	      regno = REGNO (dest);
+
+	      /* Note that we don't want to clear reg_equiv_init even if there
+		 are multiple sets of this register.  */
+	      reg_equiv[regno].is_arg_equivalence = 1;
+
+	      /* Record for reload that this is an equivalencing insn.  */
+	      if (rtx_equal_p (src, XEXP (note, 0)))
+		reg_equiv_init[regno]
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
+
+	      /* Continue normally in case this is a candidate for
+		 replacements.  */
+	    }
+
+	  if (!optimize)
+	    continue;
+
+	  /* We only handle the case of a pseudo register being set
+	     once, or always to the same value.  */
+	  /* ??? The mn10200 port breaks if we add equivalences for
+	     values that need an ADDRESS_REGS register and set them equivalent
+	     to a MEM of a pseudo.  The actual problem is in the over-conservative
+	     handling of INPADDR_ADDRESS / INPUT_ADDRESS / INPUT triples in
+	     calculate_needs, but we traditionally work around this problem
+	     here by rejecting equivalences when the destination is in a register
+	     that's likely spilled.  This is fragile, of course, since the
+	     preferred class of a pseudo depends on all instructions that set
+	     or use it.  */
+
+	  if (!REG_P (dest)
+	      || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
+	      || reg_equiv[regno].init_insns == const0_rtx
+	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
+		  && MEM_P (src) && ! reg_equiv[regno].is_arg_equivalence))
+	    {
+	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
+		 also set somewhere else to a constant.  */
+	      note_stores (set, no_equiv, NULL);
+	      continue;
+	    }
+
+	  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+
+	  /* cse sometimes generates function invariants, but doesn't put a
+	     REG_EQUAL note on the insn.  Since this note would be redundant,
+	     there's no point creating it earlier than here.  */
+	  if (! note && ! rtx_varies_p (src, 0))
+	    note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
+
+	  /* Don't bother considering a REG_EQUAL note containing an EXPR_LIST
+	     since it represents a function call */
+	  if (note && GET_CODE (XEXP (note, 0)) == EXPR_LIST)
+	    note = NULL_RTX;
+
+	  if (DF_REG_DEF_COUNT (regno) != 1
+	      && (! note
+		  || rtx_varies_p (XEXP (note, 0), 0)
+		  || (reg_equiv[regno].replacement
+		      && ! rtx_equal_p (XEXP (note, 0),
+					reg_equiv[regno].replacement))))
+	    {
+	      no_equiv (dest, set, NULL);
+	      continue;
+	    }
+	  /* Record this insn as initializing this register.  */
+	  reg_equiv[regno].init_insns
+	    = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv[regno].init_insns);
+
+	  /* If this register is known to be equal to a constant, record that
+	     it is always equivalent to the constant.  */
+	  if (DF_REG_DEF_COUNT (regno) == 1
+	      && note && ! rtx_varies_p (XEXP (note, 0), 0))
+	    {
+	      rtx note_value = XEXP (note, 0);
+	      remove_note (insn, note);
+	      set_unique_reg_note (insn, REG_EQUIV, note_value);
+	    }
+
+	  /* If this insn introduces a "constant" register, decrease the priority
+	     of that register.  Record this insn if the register is only used once
+	     more and the equivalence value is the same as our source.
+
+	     The latter condition is checked for two reasons:  First, it is an
+	     indication that it may be more efficient to actually emit the insn
+	     as written (if no registers are available, reload will substitute
+	     the equivalence).  Secondly, it avoids problems with any registers
+	     dying in this insn whose death notes would be missed.
+
+	     If we don't have a REG_EQUIV note, see if this insn is loading
+	     a register used only in one basic block from a MEM.  If so, and the
+	     MEM remains unchanged for the life of the register, add a REG_EQUIV
+	     note.  */
+
+	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
+
+	  if (note == 0 && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
+	      && MEM_P (SET_SRC (set))
+	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
+	    note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (SET_SRC (set)));
+
+	  if (note)
+	    {
+	      int regno = REGNO (dest);
+	      rtx x = XEXP (note, 0);
+
+	      /* If we haven't done so, record for reload that this is an
+		 equivalencing insn.  */
+	      if (!reg_equiv[regno].is_arg_equivalence)
+		reg_equiv_init[regno]
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
+
+	      /* Record whether or not we created a REG_EQUIV note for a LABEL_REF.
+		 We might end up substituting the LABEL_REF for uses of the
+		 pseudo here or later.  That kind of transformation may turn an
+		 indirect jump into a direct jump, in which case we must rerun the
+		 jump optimizer to ensure that the JUMP_LABEL fields are valid.  */
+	      if (GET_CODE (x) == LABEL_REF
+		  || (GET_CODE (x) == CONST
+		      && GET_CODE (XEXP (x, 0)) == PLUS
+		      && (GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)))
+		recorded_label_ref = 1;
+
+	      reg_equiv[regno].replacement = x;
+	      reg_equiv[regno].src_p = &SET_SRC (set);
+	      reg_equiv[regno].loop_depth = loop_depth;
+
+	      /* Don't mess with things live during setjmp.  */
+	      if (REG_LIVE_LENGTH (regno) >= 0 && optimize)
+		{
+		  /* Note that the statement below does not affect the priority
+		     in local-alloc!  */
+		  REG_LIVE_LENGTH (regno) *= 2;
+
+		  /* If the register is referenced exactly twice, meaning it is
+		     set once and used once, indicate that the reference may be
+		     replaced by the equivalence we computed above.  Do this
+		     even if the register is only used in one block so that
+		     dependencies can be handled where the last register is
+		     used in a different block (i.e. HIGH / LO_SUM sequences)
+		     and to reduce the number of registers alive across
+		     calls.  */
+
+		  if (REG_N_REFS (regno) == 2
+		      && (rtx_equal_p (x, src)
+			  || ! equiv_init_varies_p (src))
+		      && NONJUMP_INSN_P (insn)
+		      && equiv_init_movable_p (PATTERN (insn), regno))
+		    reg_equiv[regno].replace = 1;
+		}
+	    }
+	}
+    }
+
+  if (!optimize)
+    goto out;
+
+  /* A second pass, to gather additional equivalences with memory.  This needs
+     to be done after we know which registers we are going to replace.  */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx set, src, dest;
+      unsigned regno;
+
+      if (! INSN_P (insn))
+	continue;
+
+      set = single_set (insn);
+      if (! set)
+	continue;
+
+      dest = SET_DEST (set);
+      src = SET_SRC (set);
+
+      /* If this sets a MEM to the contents of a REG that is only used
+	 in a single basic block, see if the register is always equivalent
+	 to that memory location and if moving the store from INSN to the
+	 insn that set REG is safe.  If so, put a REG_EQUIV note on the
+	 initializing insn.
+
+	 Don't add a REG_EQUIV note if the insn already has one.  The existing
+	 REG_EQUIV is likely more useful than the one we are adding.
+
+	 If one of the regs in the address has reg_equiv[REGNO].replace set,
+	 then we can't add this REG_EQUIV note.  The reg_equiv[REGNO].replace
+	 optimization may move the set of this register immediately before
+	 insn, which puts it after reg_equiv[REGNO].init_insns, and hence
+	 the mention in the REG_EQUIV note would be to an uninitialized
+	 pseudo.  */
+
+      if (MEM_P (dest) && REG_P (src)
+	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
+	  && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
+	  && DF_REG_DEF_COUNT (regno) == 1
+	  && reg_equiv[regno].init_insns != 0
+	  && reg_equiv[regno].init_insns != const0_rtx
+	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
+			      REG_EQUIV, NULL_RTX)
+	  && ! contains_replace_regs (XEXP (dest, 0)))
+	{
+	  rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
+	  if (validate_equiv_mem (init_insn, src, dest)
+	      && ! memref_used_between_p (dest, init_insn, insn)
+	      /* Attaching a REG_EQUIV note will fail if INIT_INSN has
+		 multiple sets.  */
+	      && set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest)))
+	    {
+	      /* This insn makes the equivalence, not the one initializing
+		 the register.  */
+	      reg_equiv_init[regno]
+		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
+	      df_notes_rescan (init_insn);
+	    }
+	}
+    }
+
+  cleared_regs = BITMAP_ALLOC (NULL);
+  /* Now scan all regs killed in an insn to see if any of them are
+     registers only used that once.  If so, see if we can replace the
+     reference with the equivalent form.  If we can, delete the
+     initializing reference and this register will go away.  If we
+     can't replace the reference, and the initializing reference is
+     within the same loop (or in an inner loop), then move the register
+     initialization just before the use, so that they are in the same
+     basic block.  */
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      loop_depth = bb->loop_depth;
+      for (insn = BB_END (bb);
+	   insn != PREV_INSN (BB_HEAD (bb));
+	   insn = PREV_INSN (insn))
+	{
+	  rtx link;
+
+	  if (! INSN_P (insn))
+	    continue;
+
+	  /* Don't substitute into a non-local goto, this confuses CFG.  */
+	  if (JUMP_P (insn)
+	      && find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	    continue;
+
+	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	    {
+	      if (REG_NOTE_KIND (link) == REG_DEAD
+		  /* Make sure this insn still refers to the register.  */
+		  && reg_mentioned_p (XEXP (link, 0), PATTERN (insn)))
+		{
+		  int regno = REGNO (XEXP (link, 0));
+		  rtx equiv_insn;
+
+		  if (! reg_equiv[regno].replace
+		      || reg_equiv[regno].loop_depth < loop_depth)
+		    continue;
+
+		  /* reg_equiv[REGNO].replace gets set only when
+		     REG_N_REFS[REGNO] is 2, i.e. the register is set
+		     once and used once.  (If it were only set, but not used,
+		     flow would have deleted the setting insns.)  Hence
+		     there can only be one insn in reg_equiv[REGNO].init_insns.  */
+		  gcc_assert (reg_equiv[regno].init_insns
+			      && !XEXP (reg_equiv[regno].init_insns, 1));
+		  equiv_insn = XEXP (reg_equiv[regno].init_insns, 0);
+
+		  /* We may not move instructions that can throw, since
+		     that changes basic block boundaries and we are not
+		     prepared to adjust the CFG to match.  */
+		  if (can_throw_internal (equiv_insn))
+		    continue;
+
+		  if (asm_noperands (PATTERN (equiv_insn)) < 0
+		      && validate_replace_rtx (regno_reg_rtx[regno],
+					       *(reg_equiv[regno].src_p), insn))
+		    {
+		      rtx equiv_link;
+		      rtx last_link;
+		      rtx note;
+
+		      /* Find the last note.  */
+		      for (last_link = link; XEXP (last_link, 1);
+			   last_link = XEXP (last_link, 1))
+			;
+
+		      /* Append the REG_DEAD notes from equiv_insn.  */
+		      equiv_link = REG_NOTES (equiv_insn);
+		      while (equiv_link)
+			{
+			  note = equiv_link;
+			  equiv_link = XEXP (equiv_link, 1);
+			  if (REG_NOTE_KIND (note) == REG_DEAD)
+			    {
+			      remove_note (equiv_insn, note);
+			      XEXP (last_link, 1) = note;
+			      XEXP (note, 1) = NULL_RTX;
+			      last_link = note;
+			    }
+			}
+
+		      remove_death (regno, insn);
+		      SET_REG_N_REFS (regno, 0);
+		      REG_FREQ (regno) = 0;
+		      delete_insn (equiv_insn);
+
+		      reg_equiv[regno].init_insns
+			= XEXP (reg_equiv[regno].init_insns, 1);
+
+		      reg_equiv_init[regno] = NULL_RTX;
+		      bitmap_set_bit (cleared_regs, regno);
+		    }
+		  /* Move the initialization of the register to just before
+		     INSN.  Update the flow information.  */
+		  else if (PREV_INSN (insn) != equiv_insn)
+		    {
+		      rtx new_insn;
+
+		      new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
+		      REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
+		      REG_NOTES (equiv_insn) = 0;
+		      /* Rescan it to process the notes.  */
+		      df_insn_rescan (new_insn);
+
+		      /* Make sure this insn is recognized before
+			 reload begins, otherwise
+			 eliminate_regs_in_insn will die.  */
+		      INSN_CODE (new_insn) = INSN_CODE (equiv_insn);
+
+		      delete_insn (equiv_insn);
+
+		      XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
+
+		      REG_BASIC_BLOCK (regno) = bb->index;
+		      REG_N_CALLS_CROSSED (regno) = 0;
+		      REG_FREQ_CALLS_CROSSED (regno) = 0;
+		      REG_N_THROWING_CALLS_CROSSED (regno) = 0;
+		      REG_LIVE_LENGTH (regno) = 2;
+
+		      if (insn == BB_HEAD (bb))
+			BB_HEAD (bb) = PREV_INSN (insn);
+
+		      reg_equiv_init[regno]
+			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
+		      bitmap_set_bit (cleared_regs, regno);
+		    }
+		}
+	    }
+	}
+    }
+
+  if (!bitmap_empty_p (cleared_regs))
+    FOR_EACH_BB (bb)
+      {
+	bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
+      }
+
+  BITMAP_FREE (cleared_regs);
+
+  out:
+  /* Clean up.  */
+
+  end_alias_analysis ();
+  free (reg_equiv);
+  return recorded_label_ref;
+}
+
+
+
+/* Print chain C to FILE.  */
+static void
+print_insn_chain (FILE *file, struct insn_chain *c)
+{
+  fprintf (file, "insn=%d, ", INSN_UID(c->insn));
+  bitmap_print (file, &c->live_throughout, "live_throughout: ", ", ");
+  bitmap_print (file, &c->dead_or_set, "dead_or_set: ", "\n");
+}
+
+
+/* Print all reload_insn_chains to FILE.  */
+static void
+print_insn_chains (FILE *file)
+{
+  struct insn_chain *c;
+  for (c = reload_insn_chain; c ; c = c->next)
+    print_insn_chain (file, c);
+}
+
+/* Return true if pseudo REGNO should be added to set live_throughout
+   or dead_or_set of the insn chains for reload consideration.  */
+static bool
+pseudo_for_reload_consideration_p (int regno)
+{
+  /* Consider spilled pseudos too for IRA because they still have a
+     chance to get hard-registers in the reload when IRA is used.  */
+  return (reg_renumber[regno] >= 0
+	  || (ira_conflicts_p && flag_ira_share_spill_slots));
+}
+
+/* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] using
+   REG to the number of nregs, and INIT_VALUE to get the
+   initialization.  ALLOCNUM need not be the regno of REG.  */
+static void
+init_live_subregs (bool init_value, sbitmap *live_subregs,
+		   int *live_subregs_used, int allocnum, rtx reg)
+{
+  unsigned int regno = REGNO (SUBREG_REG (reg));
+  int size = GET_MODE_SIZE (GET_MODE (regno_reg_rtx[regno]));
+
+  gcc_assert (size > 0);
+
+  /* Been there, done that.  */
+  if (live_subregs_used[allocnum])
+    return;
+
+  /* Create a new one with zeros.  */
+  if (live_subregs[allocnum] == NULL)
+    live_subregs[allocnum] = sbitmap_alloc (size);
+
+  /* If the entire reg was live before blasting into subregs, we need
+     to init all of the subregs to ones else init to 0.  */
+  if (init_value)
+    sbitmap_ones (live_subregs[allocnum]);
+  else 
+    sbitmap_zero (live_subregs[allocnum]);
+
+  /* Set the number of bits that we really want.  */
+  live_subregs_used[allocnum] = size;
+}
+
+/* Walk the insns of the current function and build reload_insn_chain,
+   and record register life information.  */
+static void
+build_insn_chain (void)
+{
+  unsigned int i;
+  struct insn_chain **p = &reload_insn_chain;
+  basic_block bb;
+  struct insn_chain *c = NULL;
+  struct insn_chain *next = NULL;
+  bitmap live_relevant_regs = BITMAP_ALLOC (NULL);
+  bitmap elim_regset = BITMAP_ALLOC (NULL);
+  /* live_subregs is a vector used to keep accurate information about
+     which hardregs are live in multiword pseudos.  live_subregs and
+     live_subregs_used are indexed by pseudo number.  The live_subreg
+     entry for a particular pseudo is only used if the corresponding
+     element is non zero in live_subregs_used.  The value in
+     live_subregs_used is number of bytes that the pseudo can
+     occupy.  */
+  sbitmap *live_subregs = XCNEWVEC (sbitmap, max_regno);
+  int *live_subregs_used = XNEWVEC (int, max_regno);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (eliminable_regset, i))
+      bitmap_set_bit (elim_regset, i);
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      bitmap_iterator bi;
+      rtx insn;
+      
+      CLEAR_REG_SET (live_relevant_regs);
+      memset (live_subregs_used, 0, max_regno * sizeof (int));
+      
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb), 0, i, bi)
+	{
+	  if (i >= FIRST_PSEUDO_REGISTER)
+	    break;
+	  bitmap_set_bit (live_relevant_regs, i);
+	}
+
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb),
+				FIRST_PSEUDO_REGISTER, i, bi)
+	{
+	  if (pseudo_for_reload_consideration_p (i))
+	    bitmap_set_bit (live_relevant_regs, i);
+	}
+
+      FOR_BB_INSNS_REVERSE (bb, insn)
+	{
+	  if (!NOTE_P (insn) && !BARRIER_P (insn))
+	    {
+	      unsigned int uid = INSN_UID (insn);
+	      df_ref *def_rec;
+	      df_ref *use_rec;
+
+	      c = new_insn_chain ();
+	      c->next = next;
+	      next = c;
+	      *p = c;
+	      p = &c->prev;
+	      
+	      c->insn = insn;
+	      c->block = bb->index;
+
+	      if (INSN_P (insn))
+		for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+		  {
+		    df_ref def = *def_rec;
+		    unsigned int regno = DF_REF_REGNO (def);
+		    
+		    /* Ignore may clobbers because these are generated
+		       from calls. However, every other kind of def is
+		       added to dead_or_set.  */
+		    if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
+		      {
+			if (regno < FIRST_PSEUDO_REGISTER)
+			  {
+			    if (!fixed_regs[regno])
+			      bitmap_set_bit (&c->dead_or_set, regno);
+			  }
+			else if (pseudo_for_reload_consideration_p (regno))
+			  bitmap_set_bit (&c->dead_or_set, regno);
+		      }
+
+		    if ((regno < FIRST_PSEUDO_REGISTER
+			 || reg_renumber[regno] >= 0
+			 || ira_conflicts_p)
+			&& (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL)))
+		      {
+			rtx reg = DF_REF_REG (def);
+
+			/* We can model subregs, but not if they are
+			   wrapped in ZERO_EXTRACTS.  */
+			if (GET_CODE (reg) == SUBREG
+			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
+			  {
+			    unsigned int start = SUBREG_BYTE (reg);
+			    unsigned int last = start 
+			      + GET_MODE_SIZE (GET_MODE (reg));
+
+			    init_live_subregs
+			      (bitmap_bit_p (live_relevant_regs, regno), 
+			       live_subregs, live_subregs_used, regno, reg);
+
+			    if (!DF_REF_FLAGS_IS_SET
+				(def, DF_REF_STRICT_LOW_PART))
+			      {
+				/* Expand the range to cover entire words.
+				   Bytes added here are "don't care".  */
+				start
+				  = start / UNITS_PER_WORD * UNITS_PER_WORD;
+				last = ((last + UNITS_PER_WORD - 1)
+					/ UNITS_PER_WORD * UNITS_PER_WORD);
+			      }
+
+			    /* Ignore the paradoxical bits.  */
+			    if ((int)last > live_subregs_used[regno])
+			      last = live_subregs_used[regno];
+
+			    while (start < last)
+			      {
+				RESET_BIT (live_subregs[regno], start);
+				start++;
+			      }
+			    
+			    if (sbitmap_empty_p (live_subregs[regno]))
+			      {
+				live_subregs_used[regno] = 0;
+				bitmap_clear_bit (live_relevant_regs, regno);
+			      }
+			    else
+			      /* Set live_relevant_regs here because
+				 that bit has to be true to get us to
+				 look at the live_subregs fields.  */
+			      bitmap_set_bit (live_relevant_regs, regno);
+			  }
+			else
+			  {
+			    /* DF_REF_PARTIAL is generated for
+			       subregs, STRICT_LOW_PART, and
+			       ZERO_EXTRACT.  We handle the subreg
+			       case above so here we have to keep from
+			       modeling the def as a killing def.  */
+			    if (!DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL))
+			      {
+				bitmap_clear_bit (live_relevant_regs, regno);
+				live_subregs_used[regno] = 0;
+			      }
+			  }
+		      }
+		  }
+	  
+	      bitmap_and_compl_into (live_relevant_regs, elim_regset);
+	      bitmap_copy (&c->live_throughout, live_relevant_regs);
+
+	      if (INSN_P (insn))
+		for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+		  {
+		    df_ref use = *use_rec;
+		    unsigned int regno = DF_REF_REGNO (use);
+		    rtx reg = DF_REF_REG (use);
+		    
+		    /* DF_REF_READ_WRITE on a use means that this use
+		       is fabricated from a def that is a partial set
+		       to a multiword reg.  Here, we only model the
+		       subreg case that is not wrapped in ZERO_EXTRACT
+		       precisely so we do not need to look at the
+		       fabricated use. */
+		    if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE) 
+			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT) 
+			&& DF_REF_FLAGS_IS_SET (use, DF_REF_SUBREG))
+		      continue;
+		    
+		    /* Add the last use of each var to dead_or_set.  */
+		    if (!bitmap_bit_p (live_relevant_regs, regno))
+		      {
+			if (regno < FIRST_PSEUDO_REGISTER)
+			  {
+			    if (!fixed_regs[regno])
+			      bitmap_set_bit (&c->dead_or_set, regno);
+			  }
+			else if (pseudo_for_reload_consideration_p (regno))
+			  bitmap_set_bit (&c->dead_or_set, regno);
+		      }
+		    
+		    if (regno < FIRST_PSEUDO_REGISTER
+			|| pseudo_for_reload_consideration_p (regno))
+		      {
+			if (GET_CODE (reg) == SUBREG
+			    && !DF_REF_FLAGS_IS_SET (use,
+						     DF_REF_SIGN_EXTRACT
+						     | DF_REF_ZERO_EXTRACT)) 
+			  {
+			    unsigned int start = SUBREG_BYTE (reg);
+			    unsigned int last = start 
+			      + GET_MODE_SIZE (GET_MODE (reg));
+			    
+			    init_live_subregs
+			      (bitmap_bit_p (live_relevant_regs, regno), 
+			       live_subregs, live_subregs_used, regno, reg);
+			    
+			    /* Ignore the paradoxical bits.  */
+			    if ((int)last > live_subregs_used[regno])
+			      last = live_subregs_used[regno];
+
+			    while (start < last)
+			      {
+				SET_BIT (live_subregs[regno], start);
+				start++;
+			      }
+			  }
+			else
+			  /* Resetting the live_subregs_used is
+			     effectively saying do not use the subregs
+			     because we are reading the whole
+			     pseudo.  */
+			  live_subregs_used[regno] = 0;
+			bitmap_set_bit (live_relevant_regs, regno);
+		      }
+		  }
+	    }
+	}
+
+      /* FIXME!! The following code is a disaster.  Reload needs to see the
+	 labels and jump tables that are just hanging out in between
+	 the basic blocks.  See pr33676.  */
+      insn = BB_HEAD (bb);
+      
+      /* Skip over the barriers and cruft.  */
+      while (insn && (BARRIER_P (insn) || NOTE_P (insn) 
+		      || BLOCK_FOR_INSN (insn) == bb))
+	insn = PREV_INSN (insn);
+      
+      /* While we add anything except barriers and notes, the focus is
+	 to get the labels and jump tables into the
+	 reload_insn_chain.  */
+      while (insn)
+	{
+	  if (!NOTE_P (insn) && !BARRIER_P (insn))
+	    {
+	      if (BLOCK_FOR_INSN (insn))
+		break;
+	      
+	      c = new_insn_chain ();
+	      c->next = next;
+	      next = c;
+	      *p = c;
+	      p = &c->prev;
+	      
+	      /* The block makes no sense here, but it is what the old
+		 code did.  */
+	      c->block = bb->index;
+	      c->insn = insn;
+	      bitmap_copy (&c->live_throughout, live_relevant_regs);
+	    }	  
+	  insn = PREV_INSN (insn);
+	}
+    }
+
+  for (i = 0; i < (unsigned int) max_regno; i++)
+    if (live_subregs[i])
+      free (live_subregs[i]);
+
+  reload_insn_chain = c;
+  *p = NULL;
+
+  free (live_subregs);
+  free (live_subregs_used);
+  BITMAP_FREE (live_relevant_regs);
+  BITMAP_FREE (elim_regset);
+
+  if (dump_file)
+    print_insn_chains (dump_file);
+}
+
+
+
 /* All natural loops.  */
 struct loops ira_loops;
 
@@ -2085,7 +3299,7 @@ ira (FILE *f)
 static bool
 gate_ira (void)
 {
-  return flag_ira != 0;
+  return true;
 }
 
 /* Run the integrated register allocator.  */

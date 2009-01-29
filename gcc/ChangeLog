@@ -1,3 +1,99 @@
+2008-01-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Modify description.
+	* doc/passes.texi: Remove entries about regclass, local-alloc, and
+	global.  Modify entries about regmove and IRA.
+
+	* ra-conflict.c: Remove the file.
+
+	* reload.c (push_reload, find_dummy_reload): Remove flag_ira.
+
+	* tree-pass.h (pass_local_alloc, pass_global_alloc): Remove.
+	(pass_regclass_init): Rename to pass_reginfo_init.
+
+	* cfgloopanal.c (estimate_reg_pressure_cost): Remove flag_ira.
+
+	* toplev.h (flag_ira): Remove.
+
+	* caller-save.c (setup_save_areas): Remove flag_ira.
+
+	* ira-color.c (ira_reuse_stack_slot, ira_mark_new_stack_slot):
+	Ditto.
+
+	* global.c: Remove the file.
+
+	* opts.c: (decode_options): Remove flag_ira.
+
+	* hard-reg-set.h (losing_caller_save_reg_set): Remove.
+
+	* regmove.c: Modify file description.
+	(find_use_as_address, try_auto_increment): Define them only if
+	AUTO_INC_DEC is defined.
+	(replacement_quality, replace_in_call_usage, fixup_match_1,
+	stable_and_no_regs_but_for_p): Remove.
+	(reg_set_in_bb): Make it static.
+	(regmove_optimize): Remove flag_ira and code which worked for
+	!flag_ira.
+
+	* local-alloc.c: Remove the file.
+
+	* common.opt (fira): Remove.
+
+	* ira.c: Include except.h.
+	(eliminable_regset): Move from global.c.
+	(mark_elimination): Ditto.  Remove flag_ira.
+	(reg_renumber, struct equivalence, reg_equiv, equiv_mem,
+	equiv_mem_modified, validate_equiv_mem_from_store,
+	validate_equiv_mem, equiv_init_varies_p, equiv_init_movable_p,
+	contains_replace_regs, memref_referenced_p, memref_used_between_p,
+	no_equiv, recorded_label_ref): Move from local-alloc.c.
+	(update_equiv_regs): Ditto.  Make it static.
+	(print_insn_chain, print_insn_chains): Move it from global.c.
+	pseudo_for_reload_consideration_p): Ditto.  Remove flag_ira.
+	(build_insn_chain): Ditto.  Make it static.
+	(ra_init_live_subregs): Move from ra-conflict.c.  Make it static.
+	Rename to init_live_subregs.
+	(gate_ira): Remove flag_ira.
+
+	* regclass.c: Rename reginfo.c.  Change file description.
+	(FORBIDDEN_INC_DEC_CLASSES): Remove.
+	(reg_class_superclasses, forbidden_inc_dec_class, in_inc_dec):
+	Remove.
+	(init_reg_sets_1): Remove code for evaluation of
+	reg_class_superclasses and losing_caller_save_reg_set.
+	(init_regs): Remove init_reg_autoinc.
+	(struct costs, costs, init_cost, ok_for_index_p_nonstrict,
+	ok_for_base_p_nonstrict): Remove.
+	(regclass_init): Rename to reginfo_init.  Don't initialize
+	init_cost.
+	(pass_regclass_init): Rename to pass_reginfo_init.  Modify
+	corresponding entries.
+	(dump_regclass, record_operand_costs, scan_one_insn,
+	init_reg_autoinc, regclass, record_reg_classes, copy_cost,
+	record_address_regs, auto_inc_dec_reg_p): Remove.
+	(gt-regclass.h): Rename to gt-reginfo.h.
+
+	* rtl.h (dump_global_regs, retry_global_alloc,
+	build_insn_chain, dump_local_alloc, update_equiv_regs):
+	Remove.
+
+	* Makefile.in (RA_H): Remove.
+	(OBJS-common): Remove global.o, local-alloc.o, and ra-conflict.o.
+	Rename regclass.o to reginfo.o.
+	(regclass.o): Rename to reginfo.o.  Rename gt-regclass.h to
+	gt-reginfo.h.
+	(global.o, local-alloc.o, ra-conflict.o): Remove entries.
+	(GTFILES): Rename regclass.c to	reginfo.c.
+
+	* passes.c (init_optimization_passes): Remove pass_local_alloc and
+	pass_global_alloc.  Rename pass_regclass_init to
+	pass_reginfo_init.
+
+	* reload1.c (compute_use_by_pseudos, reload, count_pseudo,
+	count_spilled_pseudo, find_reg, alter_reg, delete_output_reload):
+	Remove flag_ira.
+	(finish_spills): Ditto.  Remove code for !flga_ira.
+	
 2009-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/35854
