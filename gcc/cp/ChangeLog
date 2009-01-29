@@ -1,3 +1,8 @@
+2009-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (invalid_nonstatic_memfn_p): Use
+	DECL_NONSTATIC_MEMBER_FUNCTION_P.
+
 2009-01-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/37554
