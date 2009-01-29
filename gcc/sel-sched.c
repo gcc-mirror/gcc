@@ -562,9 +562,9 @@ static rtx get_dest_from_orig_ops (av_set_t);
 static basic_block generate_bookkeeping_insn (expr_t, edge, edge);
 static bool find_used_regs (insn_t, av_set_t, regset, struct reg_rename *, 
                             def_list_t *);
-static bool move_op (insn_t, av_set_t, expr_t, rtx, expr_t);
-static bool code_motion_path_driver (insn_t, av_set_t, ilist_t,
-                                     cmpd_local_params_p, void *);
+static bool move_op (insn_t, av_set_t, expr_t, rtx, expr_t, bool*);
+static int code_motion_path_driver (insn_t, av_set_t, ilist_t,
+                                    cmpd_local_params_p, void *);
 static void sel_sched_region_1 (void);
 static void sel_sched_region_2 (int);
 static av_set_t compute_av_set_inside_bb (insn_t, ilist_t, int, bool);
@@ -819,6 +819,7 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
     {
       /* Bail out if we occupy more than one register.  */
       if (REG_P (*cur_rtx)
+          && HARD_REGISTER_P (*cur_rtx)
           && hard_regno_nregs[REGNO(*cur_rtx)][GET_MODE (*cur_rtx)] > 1)
         {
           p->n = 0;
@@ -4947,11 +4948,11 @@ prepare_place_to_insert (bnd_t bnd)
 
 /* Find original instructions for EXPR_SEQ and move it to BND boundary.  
    Return the expression to emit in C_EXPR.  */
-static void
+static bool
 move_exprs_to_boundary (bnd_t bnd, expr_t expr_vliw, 
                         av_set_t expr_seq, expr_t c_expr)
 {
-  bool b;
+  bool b, should_move;
   unsigned book_uid;
   bitmap_iterator bi;
   int n_bookkeeping_copies_before_moveop;
@@ -4966,11 +4967,11 @@ move_exprs_to_boundary (bnd_t bnd, expr_t expr_vliw,
   bitmap_clear (current_originators);
 
   b = move_op (BND_TO (bnd), expr_seq, expr_vliw, 
-               get_dest_from_orig_ops (expr_seq), c_expr);
+               get_dest_from_orig_ops (expr_seq), c_expr, &should_move);
 
   /* We should be able to find the expression we've chosen for 
      scheduling.  */
-  gcc_assert (b == 1);
+  gcc_assert (b);
   
   if (stat_bookkeeping_copies > n_bookkeeping_copies_before_moveop)
     stat_insns_needed_bookkeeping++;
@@ -4984,6 +4985,8 @@ move_exprs_to_boundary (bnd_t bnd, expr_t expr_vliw,
       bitmap_copy (INSN_ORIGINATORS_BY_UID (book_uid), 
                    current_originators);
     }
+
+  return should_move;
 }
 
 
@@ -5130,7 +5133,7 @@ schedule_expr_on_boundary (bnd_t bnd, expr_t expr_vliw, int seqno)
   expr_t c_expr = XALLOCA (expr_def);
   insn_t place_to_insert;
   insn_t insn;
-  bool cant_move;
+  bool should_move;
 
   expr_seq = find_sequential_best_exprs (bnd, expr_vliw, true);
 
@@ -5147,13 +5150,9 @@ schedule_expr_on_boundary (bnd_t bnd, expr_t expr_vliw, int seqno)
         move_cond_jump (insn, bnd);
     }
 
-  /* Calculate cant_move now as EXPR_WAS_RENAMED can change after move_op 
-     meaning that there was *any* renaming somewhere.  */
-  cant_move = EXPR_WAS_CHANGED (expr_vliw) || EXPR_WAS_RENAMED (expr_vliw);
-
   /* Find a place for C_EXPR to schedule.  */
   place_to_insert = prepare_place_to_insert (bnd);
-  move_exprs_to_boundary (bnd, expr_vliw, expr_seq, c_expr);
+  should_move = move_exprs_to_boundary (bnd, expr_vliw, expr_seq, c_expr);
   clear_expr (c_expr);
             
   /* Add the instruction.  The corner case to care about is when 
@@ -5166,13 +5165,13 @@ schedule_expr_on_boundary (bnd_t bnd, expr_t expr_vliw, int seqno)
       
       vinsn_new = vinsn_copy (EXPR_VINSN (expr_vliw), false);
       change_vinsn_in_expr (expr_vliw, vinsn_new);
-      cant_move = 1;
+      should_move = false;
     }
-  if (cant_move)
+  if (should_move)
+    insn = sel_move_insn (expr_vliw, seqno, place_to_insert);
+  else
     insn = emit_insn_from_expr_after (expr_vliw, NULL, seqno, 
                                       place_to_insert);
-  else
-    insn = sel_move_insn (expr_vliw, seqno, place_to_insert);
 
   /* Return the nops generated for preserving of data sets back
      into pool.  */
@@ -5671,6 +5670,10 @@ move_op_orig_expr_found (insn_t insn, expr_t expr,
   insn_emitted = handle_emitting_transformations (insn, expr, params);
   only_disconnect = (params->uid == INSN_UID (insn)
                      && ! insn_emitted  && ! EXPR_WAS_CHANGED (expr));
+
+  /* Mark that we've disconnected an insn.  */
+  if (only_disconnect)
+    params->uid = -1;
   remove_insn_from_stream (insn, only_disconnect);
 }
 
@@ -6053,7 +6056,7 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
 #endif
   
   /* Merge data, clean up, etc.  */
-  if (code_motion_path_driver_info->after_merge_succs)
+  if (res != -1 && code_motion_path_driver_info->after_merge_succs)
     code_motion_path_driver_info->after_merge_succs (&lparams, static_params);
 
   return res;
@@ -6081,7 +6084,7 @@ code_motion_path_driver_cleanup (av_set_t *orig_ops_p, ilist_t *path_p)
 
    Returns whether original instructions were found.  Note that top-level
    code_motion_path_driver always returns true.  */
-static bool
+static int
 code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path, 
 			 cmpd_local_params_p local_params_in, 
 			 void *static_params)
@@ -6315,12 +6318,14 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
    DEST is the register chosen for scheduling the current expr.  Insert
    bookkeeping code in the join points.  EXPR_VLIW is the chosen expression,
    C_EXPR is how it looks like at the given cfg point.  
+   Set *SHOULD_MOVE to indicate whether we have only disconnected
+   one of the insns found.
 
    Returns whether original instructions were found, which is asserted 
    to be true in the caller.  */
 static bool
 move_op (insn_t insn, av_set_t orig_ops, expr_t expr_vliw,
-         rtx dest, expr_t c_expr)
+         rtx dest, expr_t c_expr, bool *should_move)
 {
   struct moveop_static_params sparams;
   struct cmpd_local_params lparams;
@@ -6345,6 +6350,8 @@ move_op (insn_t insn, av_set_t orig_ops, expr_t expr_vliw,
 
   if (sparams.was_renamed)
     EXPR_WAS_RENAMED (expr_vliw) = true;
+
+  *should_move = (sparams.uid == -1);
 
   return res;
 }

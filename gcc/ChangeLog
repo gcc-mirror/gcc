@@ -1,3 +1,23 @@
+2009-01-29  Andrey Belevantsev  <abel@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/38857
+	* sel-sched.c (count_occurrences_1): Check that *cur_rtx is a hard
+	register.
+	(move_exprs_to_boundary): Change return type and pass through
+	should_move from move_op.  Relax assert.  Update usage ...
+	(schedule_expr_on_boundary): ... here.  Use should_move instead of
+	cant_move.
+	(move_op_orig_expr_found): Indicate that insn was disconnected from
+	stream.
+	(code_motion_process_successors): Do not call after_merge_succs
+	callback if original expression was not found when traversing any of
+	the branches.
+	(code_motion_path_driver): Change return type.  Update prototype.
+	(move_op): Update comment.  Add a new parameter (should_move).  Update
+	prototype.  Set *should_move based on indication provided by
+	move_op_orig_expr_found.
+
 2009-01-28  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* doc/invoke.texi (avoid-indexed-addresses): Document new option.
