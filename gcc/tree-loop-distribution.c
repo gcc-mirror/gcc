@@ -439,11 +439,13 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
       basic_block dest = single_exit (loop)->dest;
       prop_phis (dest);
       make_edge (src, dest, EDGE_FALLTHRU);
-      set_immediate_dominator (CDI_DOMINATORS, dest, src);
       cancel_loop_tree (loop);
 
       for (i = 0; i < nbbs; i++)
 	delete_basic_block (bbs[i]);
+
+      set_immediate_dominator (CDI_DOMINATORS, dest,
+			       recompute_dominator (CDI_DOMINATORS, dest));
     }
 
  end:
