@@ -1,3 +1,17 @@
+2009-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/35854
+	* doc/invoke.texi (rtl debug options): Complete rewrite.
+	* auto-inc-dec.c (pass_inc_dec): Rename pass from "auto-inc-dec"
+	to auto_inc_dec".
+	* mode-switching.c (pass_mode_switching): Rename pass from
+	"mode-sw" to "mode_sw".
+	* except.c (pass_convert_to_eh_ranges): Rename pass from
+	"eh-ranges" to "eh_ranges".
+	* lower-subreg.c (pass_lower_subreg): Renamed pass from "subreg"
+	to "subreg1".
+		
+	
 2009-01-29  Andrey Belevantsev  <abel@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 

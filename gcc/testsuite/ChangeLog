@@ -1,3 +1,8 @@
+2009-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/35854
+	* gcc.dg/lower-subreg-1.c: Renamed dump pass from "subreg" to "subreg1"		
+	
 2009-01-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/38857

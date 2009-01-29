@@ -760,7 +760,7 @@ struct rtl_opt_pass pass_mode_switching =
 {
  {
   RTL_PASS,
-  "mode-sw",                            /* name */
+  "mode_sw",                            /* name */
   gate_mode_switching,                  /* gate */
   rest_of_handle_mode_switching,        /* execute */
   NULL,                                 /* sub */
