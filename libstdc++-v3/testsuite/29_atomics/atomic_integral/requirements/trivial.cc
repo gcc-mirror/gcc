@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@
 
 void test01()
 {
-  __gnu_test::standard_layout test;
-  test.operator()<std::atomic_flag>();
+  __gnu_test::has_trivial_cons_dtor test;
+  __gnu_cxx::typelist::apply_generator(test, 
+				       __gnu_test::atomic_integrals::type());
 }

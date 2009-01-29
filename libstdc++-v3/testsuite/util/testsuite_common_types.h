@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // typelist for the C++ library testsuite. 
 //
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -446,6 +446,29 @@ namespace __gnu_test
 
   // Generator to test standard layout
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct has_trivial_cons_dtor
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    typedef std::has_trivial_default_constructor<_Tp> ctor_p;
+	    static_assert(ctor_p::value, "default constructor not trivial");
+
+	    typedef std::has_trivial_destructor<_Tp> dtor_p;
+	    static_assert(dtor_p::value, "destructor not trivial");
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
   struct standard_layout
   {
     template<typename _Tp>
@@ -459,12 +482,9 @@ namespace __gnu_test
 	    // libstdc++/37907
 	    // typedef std::is_standard_layout<_Tp> standard_layout_p;
 	    // static_assert(standard_layout_p::value, "not standard_layout");
-	    
-	    typedef std::has_trivial_default_constructor<_Tp> ctor_p;
-	    static_assert(ctor_p::value, "default ctor not trivial");
 
-	    typedef std::has_trivial_destructor<_Tp> dtor_p;
-	    static_assert(dtor_p::value, "dtor not trivial");
+	    typedef std::has_virtual_destructor<_Tp> ctor_p;
+	    static_assert(!ctor_p::value, "has virtual destructor");
 	  }
 	};
 
