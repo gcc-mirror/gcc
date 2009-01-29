@@ -978,7 +978,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	    && targetm.calls.split_complex_arg (argtype))
 	  {
 	    tree subtype = TREE_TYPE (argtype);
-	    arg = save_expr (arg);
 	    args[j].tree_value = build1 (REALPART_EXPR, subtype, arg);
 	    j += inc;
 	    args[j].tree_value = build1 (IMAGPART_EXPR, subtype, arg);
