@@ -20,10 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* This module looks for cases where matching constraints would force
-   an instruction to need a reload, and this reload would be a register
-   to register move.  It then attempts to change the registers used by the
-   instruction to avoid the move instruction.  */
+/* This module makes some simple RTL code transformations which
+   improve the subsequent register allocation.  */
 
 #include "config.h"
 #include "system.h"
@@ -64,13 +62,8 @@ static rtx discover_flags_reg (void);
 static void mark_flags_life_zones (rtx);
 static void flags_set_1 (rtx, const_rtx, void *);
 
-static int try_auto_increment (rtx, rtx, rtx, rtx, HOST_WIDE_INT, int);
 static int find_matches (rtx, struct match *);
-static void replace_in_call_usage (rtx *, unsigned int, rtx, rtx);
-static int fixup_match_1 (rtx, rtx, rtx, rtx, rtx, int, int, int);
-static int stable_and_no_regs_but_for_p (rtx, rtx, rtx);
 static int regclass_compatible_p (int, int);
-static int replacement_quality (rtx);
 static int fixup_match_2 (rtx, rtx, rtx, rtx);
 
 /* Return nonzero if registers with CLASS1 and CLASS2 can be merged without
@@ -85,132 +78,6 @@ regclass_compatible_p (int class0, int class1)
 	      && ! CLASS_LIKELY_SPILLED_P (class1)));
 }
 
-/* Find the place in the rtx X where REG is used as a memory address.
-   Return the MEM rtx that so uses it.
-   If PLUSCONST is nonzero, search instead for a memory address equivalent to
-   (plus REG (const_int PLUSCONST)).
-
-   If such an address does not appear, return 0.
-   If REG appears more than once, or is used other than in such an address,
-   return (rtx) 1.  */
-
-static rtx
-find_use_as_address (rtx x, rtx reg, HOST_WIDE_INT plusconst)
-{
-  enum rtx_code code = GET_CODE (x);
-  const char * const fmt = GET_RTX_FORMAT (code);
-  int i;
-  rtx value = 0;
-  rtx tem;
-
-  if (code == MEM && XEXP (x, 0) == reg && plusconst == 0)
-    return x;
-
-  if (code == MEM && GET_CODE (XEXP (x, 0)) == PLUS
-      && XEXP (XEXP (x, 0), 0) == reg
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && INTVAL (XEXP (XEXP (x, 0), 1)) == plusconst)
-    return x;
-
-  if (code == SIGN_EXTRACT || code == ZERO_EXTRACT)
-    {
-      /* If REG occurs inside a MEM used in a bit-field reference,
-	 that is unacceptable.  */
-      if (find_use_as_address (XEXP (x, 0), reg, 0) != 0)
-	return (rtx) (size_t) 1;
-    }
-
-  if (x == reg)
-    return (rtx) (size_t) 1;
-
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  tem = find_use_as_address (XEXP (x, i), reg, plusconst);
-	  if (value == 0)
-	    value = tem;
-	  else if (tem != 0)
-	    return (rtx) (size_t) 1;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    {
-	      tem = find_use_as_address (XVECEXP (x, i, j), reg, plusconst);
-	      if (value == 0)
-		value = tem;
-	      else if (tem != 0)
-		return (rtx) (size_t) 1;
-	    }
-	}
-    }
-
-  return value;
-}
-
-
-/* INC_INSN is an instruction that adds INCREMENT to REG.
-   Try to fold INC_INSN as a post/pre in/decrement into INSN.
-   Iff INC_INSN_SET is nonzero, inc_insn has a destination different from src.
-   Return nonzero for success.  */
-static int
-try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
-		    HOST_WIDE_INT increment, int pre)
-{
-  enum rtx_code inc_code;
-
-  rtx pset = single_set (insn);
-  if (pset)
-    {
-      /* Can't use the size of SET_SRC, we might have something like
-	 (sign_extend:SI (mem:QI ...  */
-      rtx use = find_use_as_address (pset, reg, 0);
-      if (use != 0 && use != (rtx) (size_t) 1)
-	{
-	  int size = GET_MODE_SIZE (GET_MODE (use));
-	  if (0
-	      || (HAVE_POST_INCREMENT
-		  && pre == 0 && (inc_code = POST_INC, increment == size))
-	      || (HAVE_PRE_INCREMENT
-		  && pre == 1 && (inc_code = PRE_INC, increment == size))
-	      || (HAVE_POST_DECREMENT
-		  && pre == 0 && (inc_code = POST_DEC, increment == -size))
-	      || (HAVE_PRE_DECREMENT
-		  && pre == 1 && (inc_code = PRE_DEC, increment == -size))
-	  )
-	    {
-	      if (inc_insn_set)
-		validate_change
-		  (inc_insn,
-		   &SET_SRC (inc_insn_set),
-		   XEXP (SET_SRC (inc_insn_set), 0), 1);
-	      validate_change (insn, &XEXP (use, 0),
-			       gen_rtx_fmt_e (inc_code, Pmode, reg), 1);
-	      if (apply_change_group ())
-		{
-		  /* If there is a REG_DEAD note on this insn, we must
-		     change this not to REG_UNUSED meaning that the register
-		     is set, but the value is dead.  Failure to do so will
-		     result in sched1 dying -- when it recomputes lifetime
-		     information, the number of REG_DEAD notes will have
-		     changed.  */
-		  rtx note = find_reg_note (insn, REG_DEAD, reg);
-		  if (note)
-		    PUT_MODE (note, REG_UNUSED);
-
-		  add_reg_note (insn, REG_INC, reg);
-
-		  if (! inc_insn_set)
-		    delete_insn (inc_insn);
-		  return 1;
-		}
-	    }
-	}
-    }
-  return 0;
-}
 
 /* Determine if the pattern generated by add_optab has a clobber,
    such as might be issued for a flags hard register.  To make the
@@ -376,43 +243,140 @@ flags_set_1 (rtx x, const_rtx pat, void *data ATTRIBUTE_UNUSED)
       && reg_overlap_mentioned_p (x, flags_set_1_rtx))
     flags_set_1_set = 1;
 }
+
+#ifdef AUTO_INC_DEC
+
+/* Find the place in the rtx X where REG is used as a memory address.
+   Return the MEM rtx that so uses it.
+   If PLUSCONST is nonzero, search instead for a memory address equivalent to
+   (plus REG (const_int PLUSCONST)).
+
+   If such an address does not appear, return 0.
+   If REG appears more than once, or is used other than in such an address,
+   return (rtx) 1.  */
+
+static rtx
+find_use_as_address (rtx x, rtx reg, HOST_WIDE_INT plusconst)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char * const fmt = GET_RTX_FORMAT (code);
+  int i;
+  rtx value = 0;
+  rtx tem;
+
+  if (code == MEM && XEXP (x, 0) == reg && plusconst == 0)
+    return x;
+
+  if (code == MEM && GET_CODE (XEXP (x, 0)) == PLUS
+      && XEXP (XEXP (x, 0), 0) == reg
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && INTVAL (XEXP (XEXP (x, 0), 1)) == plusconst)
+    return x;
+
+  if (code == SIGN_EXTRACT || code == ZERO_EXTRACT)
+    {
+      /* If REG occurs inside a MEM used in a bit-field reference,
+	 that is unacceptable.  */
+      if (find_use_as_address (XEXP (x, 0), reg, 0) != 0)
+	return (rtx) (size_t) 1;
+    }
+
+  if (x == reg)
+    return (rtx) (size_t) 1;
+
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  tem = find_use_as_address (XEXP (x, i), reg, plusconst);
+	  if (value == 0)
+	    value = tem;
+	  else if (tem != 0)
+	    return (rtx) (size_t) 1;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    {
+	      tem = find_use_as_address (XVECEXP (x, i, j), reg, plusconst);
+	      if (value == 0)
+		value = tem;
+	      else if (tem != 0)
+		return (rtx) (size_t) 1;
+	    }
+	}
+    }
+
+  return value;
+}
+
+
+/* INC_INSN is an instruction that adds INCREMENT to REG.
+   Try to fold INC_INSN as a post/pre in/decrement into INSN.
+   Iff INC_INSN_SET is nonzero, inc_insn has a destination different from src.
+   Return nonzero for success.  */
+static int
+try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
+		    HOST_WIDE_INT increment, int pre)
+{
+  enum rtx_code inc_code;
+
+  rtx pset = single_set (insn);
+  if (pset)
+    {
+      /* Can't use the size of SET_SRC, we might have something like
+	 (sign_extend:SI (mem:QI ...  */
+      rtx use = find_use_as_address (pset, reg, 0);
+      if (use != 0 && use != (rtx) (size_t) 1)
+	{
+	  int size = GET_MODE_SIZE (GET_MODE (use));
+	  if (0
+	      || (HAVE_POST_INCREMENT
+		  && pre == 0 && (inc_code = POST_INC, increment == size))
+	      || (HAVE_PRE_INCREMENT
+		  && pre == 1 && (inc_code = PRE_INC, increment == size))
+	      || (HAVE_POST_DECREMENT
+		  && pre == 0 && (inc_code = POST_DEC, increment == -size))
+	      || (HAVE_PRE_DECREMENT
+		  && pre == 1 && (inc_code = PRE_DEC, increment == -size))
+	  )
+	    {
+	      if (inc_insn_set)
+		validate_change
+		  (inc_insn,
+		   &SET_SRC (inc_insn_set),
+		   XEXP (SET_SRC (inc_insn_set), 0), 1);
+	      validate_change (insn, &XEXP (use, 0),
+			       gen_rtx_fmt_e (inc_code, Pmode, reg), 1);
+	      if (apply_change_group ())
+		{
+		  /* If there is a REG_DEAD note on this insn, we must
+		     change this not to REG_UNUSED meaning that the register
+		     is set, but the value is dead.  Failure to do so will
+		     result in sched1 dying -- when it recomputes lifetime
+		     information, the number of REG_DEAD notes will have
+		     changed.  */
+		  rtx note = find_reg_note (insn, REG_DEAD, reg);
+		  if (note)
+		    PUT_MODE (note, REG_UNUSED);
+
+		  add_reg_note (insn, REG_INC, reg);
+
+		  if (! inc_insn_set)
+		    delete_insn (inc_insn);
+		  return 1;
+		}
+	    }
+	}
+    }
+  return 0;
+}
+#endif
+
 
 static int *regno_src_regno;
 
-/* Indicate how good a choice REG (which appears as a source) is to replace
-   a destination register with.  The higher the returned value, the better
-   the choice.  The main objective is to avoid using a register that is
-   a candidate for tying to a hard register, since the output might in
-   turn be a candidate to be tied to a different hard register.  */
-static int
-replacement_quality (rtx reg)
-{
-  int src_regno;
-
-  /* Bad if this isn't a register at all.  */
-  if (!REG_P (reg))
-    return 0;
-
-  /* If this register is not meant to get a hard register,
-     it is a poor choice.  */
-  if (REG_LIVE_LENGTH (REGNO (reg)) < 0)
-    return 0;
-
-  src_regno = regno_src_regno[REGNO (reg)];
-
-  /* If it was not copied from another register, it is fine.  */
-  if (src_regno < 0)
-    return 3;
-
-  /* Copied from a hard register?  */
-  if (src_regno < FIRST_PSEUDO_REGISTER)
-    return 1;
-
-  /* Copied from a pseudo register - not as bad as from a hard register,
-     yet still cumbersome, since the register live length will be lengthened
-     when the registers get tied.  */
-  return 2;
-}
 
 /* Return 1 if INSN might end a basic block.  */
 
@@ -898,7 +862,7 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest)
 /* reg_set_in_bb[REGNO] points to basic block iff the register is set
    only once in the given block and has REG_EQUAL note.  */
 
-basic_block *reg_set_in_bb;
+static basic_block *reg_set_in_bb;
 
 /* Size of reg_set_in_bb array.  */
 static unsigned int max_reg_computed;
@@ -1126,7 +1090,7 @@ regmove_optimize (rtx f, int nregs)
   for (pass = 0; pass <= 2; pass++)
     {
       /* We need fewer optimizations for IRA.  */
-      if ((! flag_regmove || flag_ira) && pass >= flag_expensive_optimizations)
+      if (! flag_regmove && pass >= flag_expensive_optimizations)
 	goto done;
 
       if (dump_file)
@@ -1137,7 +1101,6 @@ regmove_optimize (rtx f, int nregs)
 	   insn = pass ? PREV_INSN (insn) : NEXT_INSN (insn))
 	{
 	  rtx set;
-	  int op_no, match_no;
 
 	  set = single_set (insn);
 	  if (! set)
@@ -1173,103 +1136,6 @@ regmove_optimize (rtx f, int nregs)
 		      regno_src_regno[REGNO (SET_DEST (set))] = srcregno;
 		    }
 		}
-	    }
-
-	  /* All optimizations important for IRA have been done.  */
-	  if (! flag_regmove || flag_ira)
-	    continue;
-
-	  if (! find_matches (insn, &match))
-	    continue;
-
-	  /* Now scan through the operands looking for a source operand
-	     which is supposed to match the destination operand.
-	     Then scan forward for an instruction which uses the dest
-	     operand.
-	     If it dies there, then replace the dest in both operands with
-	     the source operand.  */
-
-	  for (op_no = 0; op_no < recog_data.n_operands; op_no++)
-	    {
-	      rtx src, dst, src_subreg;
-	      enum reg_class src_class, dst_class;
-
-	      match_no = match.with[op_no];
-
-	      /* Nothing to do if the two operands aren't supposed to match.  */
-	      if (match_no < 0)
-		continue;
-
-	      src = recog_data.operand[op_no];
-	      dst = recog_data.operand[match_no];
-
-	      if (!REG_P (src))
-		continue;
-
-	      src_subreg = src;
-	      if (GET_CODE (dst) == SUBREG
-		  && GET_MODE_SIZE (GET_MODE (dst))
-		     >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dst))))
-		{
-		  dst = SUBREG_REG (dst);
-		  src_subreg = lowpart_subreg (GET_MODE (dst),
-					       src, GET_MODE (src));
-		  if (!src_subreg)
-		    continue;
-		}
-	      if (!REG_P (dst)
-		  || REGNO (dst) < FIRST_PSEUDO_REGISTER)
-		continue;
-
-	      if (REGNO (src) < FIRST_PSEUDO_REGISTER)
-		{
-		  if (match.commutative[op_no] < op_no)
-		    regno_src_regno[REGNO (dst)] = REGNO (src);
-		  continue;
-		}
-
-	      if (REG_LIVE_LENGTH (REGNO (src)) < 0)
-		continue;
-
-	      /* op_no/src must be a read-only operand, and
-		 match_operand/dst must be a write-only operand.  */
-	      if (match.use[op_no] != READ
-		  || match.use[match_no] != WRITE)
-		continue;
-
-	      if (match.early_clobber[match_no]
-		  && count_occurrences (PATTERN (insn), src, 0) > 1)
-		continue;
-
-	      /* Make sure match_operand is the destination.  */
-	      if (recog_data.operand[match_no] != SET_DEST (set))
-		continue;
-
-	      /* If the operands already match, then there is nothing to do.  */
-	      if (operands_match_p (src, dst))
-		continue;
-
-	      /* But in the commutative case, we might find a better match.  */
-	      if (match.commutative[op_no] >= 0)
-		{
-		  rtx comm = recog_data.operand[match.commutative[op_no]];
-		  if (operands_match_p (comm, dst)
-		      && (replacement_quality (comm)
-			  >= replacement_quality (src)))
-		    continue;
-		}
-
-	      src_class = reg_preferred_class (REGNO (src));
-	      dst_class = reg_preferred_class (REGNO (dst));
-	      if (! regclass_compatible_p (src_class, dst_class))
-		continue;
-
-	      if (GET_MODE (src) != GET_MODE (dst))
-		continue;
-
-	      if (fixup_match_1 (insn, set, src, src_subreg, dst, pass,
-				 op_no, match_no))
-		break;
 	    }
 	}
     }
@@ -1656,478 +1522,6 @@ find_matches (rtx insn, struct match *matchp)
   return any_matches;
 }
 
-/* Try to replace all occurrences of DST_REG with SRC in LOC, that is
-   assumed to be in INSN.  */
-
-static void
-replace_in_call_usage (rtx *loc, unsigned int dst_reg, rtx src, rtx insn)
-{
-  rtx x = *loc;
-  enum rtx_code code;
-  const char *fmt;
-  int i, j;
-
-  if (! x)
-    return;
-
-  code = GET_CODE (x);
-  if (code == REG)
-    {
-      if (REGNO (x) != dst_reg)
-	return;
-
-      validate_change (insn, loc, src, 1);
-
-      return;
-    }
-
-  /* Process each of our operands recursively.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
-    if (*fmt == 'e')
-      replace_in_call_usage (&XEXP (x, i), dst_reg, src, insn);
-    else if (*fmt == 'E')
-      for (j = 0; j < XVECLEN (x, i); j++)
-	replace_in_call_usage (& XVECEXP (x, i, j), dst_reg, src, insn);
-}
-
-/* Try to replace output operand DST in SET, with input operand SRC.  SET is
-   the only set in INSN.  INSN has just been recognized and constrained.
-   SRC is operand number OPERAND_NUMBER in INSN.
-   DST is operand number MATCH_NUMBER in INSN.
-   If BACKWARD is nonzero, we have been called in a backward pass.
-   Return nonzero for success.  */
-
-static int
-fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
-	       int backward, int operand_number, int match_number)
-{
-  rtx p;
-  rtx post_inc = 0, post_inc_set = 0, search_end = 0;
-  int success = 0;
-  int num_calls = 0, freq_calls = 0, s_num_calls = 0, s_freq_calls = 0;
-  enum rtx_code code = NOTE;
-  HOST_WIDE_INT insn_const = 0, newconst = 0;
-  rtx overlap = 0; /* need to move insn ? */
-  rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note = NULL_RTX;
-  int length, s_length;
-
-  if (! src_note)
-    {
-      /* Look for (set (regX) (op regA constX))
-		  (set (regY) (op regA constY))
-	 and change that to
-		  (set (regA) (op regA constX)).
-		  (set (regY) (op regA constY-constX)).
-	 This works for add and shift operations, if
-	 regA is dead after or set by the second insn.  */
-
-      code = GET_CODE (SET_SRC (set));
-      if ((code == PLUS || code == LSHIFTRT
-	   || code == ASHIFT || code == ASHIFTRT)
-	  && XEXP (SET_SRC (set), 0) == src
-	  && GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
-	insn_const = INTVAL (XEXP (SET_SRC (set), 1));
-      else if (! stable_and_no_regs_but_for_p (SET_SRC (set), src, dst))
-	return 0;
-      else
-	/* We might find a src_note while scanning.  */
-	code = NOTE;
-    }
-
-  if (dump_file)
-    fprintf (dump_file,
-	     "Could fix operand %d of insn %d matching operand %d.\n",
-	     operand_number, INSN_UID (insn), match_number);
-
-  /* If SRC is equivalent to a constant set in a different basic block,
-     then do not use it for this optimization.  We want the equivalence
-     so that if we have to reload this register, we can reload the
-     constant, rather than extending the lifespan of the register.  */
-  if (reg_is_remote_constant_p (src, insn))
-    return 0;
-
-  /* Scan forward to find the next instruction that
-     uses the output operand.  If the operand dies here,
-     then replace it in both instructions with
-     operand_number.  */
-
-  for (length = s_length = 0, p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
-    {
-      if (CALL_P (p))
-	replace_in_call_usage (& CALL_INSN_FUNCTION_USAGE (p),
-			       REGNO (dst), src, p);
-
-      /* ??? We can't scan past the end of a basic block without updating
-	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
-      if (perhaps_ends_bb_p (p))
-	break;
-      else if (! INSN_P (p))
-	continue;
-
-      length++;
-      if (src_note)
-	s_length++;
-
-      if (reg_set_p (src, p) || reg_set_p (dst, p)
-	  || (GET_CODE (PATTERN (p)) == USE
-	      && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))
-	break;
-
-      /* See if all of DST dies in P.  This test is
-	 slightly more conservative than it needs to be.  */
-      if ((dst_note = find_regno_note (p, REG_DEAD, REGNO (dst)))
-	  && (GET_MODE (XEXP (dst_note, 0)) == GET_MODE (dst)))
-	{
-	  /* If we would be moving INSN, check that we won't move it
-	     into the shadow of a live a live flags register.  */
-	  /* ??? We only try to move it in front of P, although
-		 we could move it anywhere between OVERLAP and P.  */
-	  if (overlap && GET_MODE (PREV_INSN (p)) != VOIDmode)
-	    break;
-
-	  if (! src_note)
-	    {
-	      rtx q;
-	      rtx set2 = NULL_RTX;
-
-	      /* If an optimization is done, the value of SRC while P
-		 is executed will be changed.  Check that this is OK.  */
-	      if (reg_overlap_mentioned_p (src, PATTERN (p)))
-		break;
-	      for (q = p; q; q = NEXT_INSN (q))
-		{
-		  /* ??? We can't scan past the end of a basic block without
-		     updating the register lifetime info
-		     (REG_DEAD/basic_block_live_at_start).  */
-		  if (perhaps_ends_bb_p (q))
-		    {
-		      q = 0;
-		      break;
-		    }
-		  else if (! INSN_P (q))
-		    continue;
-		  else if (reg_overlap_mentioned_p (src, PATTERN (q))
-			   || reg_set_p (src, q))
-		    break;
-		}
-	      if (q)
-		set2 = single_set (q);
-	      if (! q || ! set2 || GET_CODE (SET_SRC (set2)) != code
-		  || XEXP (SET_SRC (set2), 0) != src
-		  || GET_CODE (XEXP (SET_SRC (set2), 1)) != CONST_INT
-		  || (SET_DEST (set2) != src
-		      && ! find_reg_note (q, REG_DEAD, src)))
-		{
-		  /* If this is a PLUS, we can still save a register by doing
-		     src += insn_const;
-		     P;
-		     src -= insn_const; .
-		     This also gives opportunities for subsequent
-		     optimizations in the backward pass, so do it there.  */
-		  if (code == PLUS && backward
-		      /* Don't do this if we can likely tie DST to SET_DEST
-			 of P later; we can't do this tying here if we got a
-			 hard register.  */
-		      && ! (dst_note && ! REG_N_CALLS_CROSSED (REGNO (dst))
-			    && single_set (p)
-			    && REG_P (SET_DEST (single_set (p)))
-			    && (REGNO (SET_DEST (single_set (p)))
-				< FIRST_PSEUDO_REGISTER))
-		      /* We may only emit an insn directly after P if we
-			 are not in the shadow of a live flags register.  */
-		      && GET_MODE (p) == VOIDmode)
-		    {
-		      search_end = q;
-		      q = insn;
-		      set2 = set;
-		      newconst = -insn_const;
-		      code = MINUS;
-		    }
-		  else
-		    break;
-		}
-	      else
-		{
-		  newconst = INTVAL (XEXP (SET_SRC (set2), 1)) - insn_const;
-		  /* Reject out of range shifts.  */
-		  if (code != PLUS
-		      && (newconst < 0
-			  || ((unsigned HOST_WIDE_INT) newconst
-			      >= (GET_MODE_BITSIZE (GET_MODE
-						    (SET_SRC (set2)))))))
-		    break;
-		  if (code == PLUS)
-		    {
-		      post_inc = q;
-		      if (SET_DEST (set2) != src)
-			post_inc_set = set2;
-		    }
-		}
-	      /* We use 1 as last argument to validate_change so that all
-		 changes are accepted or rejected together by apply_change_group
-		 when it is called by validate_replace_rtx .  */
-	      validate_change (q, &XEXP (SET_SRC (set2), 1),
-			       GEN_INT (newconst), 1);
-	    }
-	  validate_change (insn, recog_data.operand_loc[match_number], src, 1);
-	  if (validate_replace_rtx (dst, src_subreg, p))
-	    success = 1;
-	  break;
-	}
-
-      if (reg_overlap_mentioned_p (dst, PATTERN (p)))
-	break;
-      if (! src_note && reg_overlap_mentioned_p (src, PATTERN (p)))
-	{
-	  /* INSN was already checked to be movable wrt. the registers that it
-	     sets / uses when we found no REG_DEAD note for src on it, but it
-	     still might clobber the flags register.  We'll have to check that
-	     we won't insert it into the shadow of a live flags register when
-	     we finally know where we are to move it.  */
-	  overlap = p;
-	  src_note = find_reg_note (p, REG_DEAD, src);
-	}
-
-      /* If we have passed a call instruction, and the pseudo-reg SRC is not
-	 already live across a call, then don't perform the optimization.  */
-      if (CALL_P (p))
-	{
-	  if (REG_N_CALLS_CROSSED (REGNO (src)) == 0)
-	    break;
-
-	  num_calls++;
-	  freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
-
-	  if (src_note)
-	    {
-	      s_num_calls++;
-	      s_freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
-	    }
-	}
-    }
-
-  if (! success)
-    return 0;
-
-  /* Remove the death note for DST from P.  */
-  remove_note (p, dst_note);
-  if (code == MINUS)
-    {
-      post_inc = emit_insn_after (copy_rtx (PATTERN (insn)), p);
-      if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
-	  && search_end
-	  && try_auto_increment (search_end, post_inc, 0, src, newconst, 1))
-	post_inc = 0;
-      validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (insn_const), 0);
-      INC_REG_N_SETS (REGNO (src), 1);
-      REG_LIVE_LENGTH (REGNO (src))++;
-    }
-  if (overlap)
-    {
-      /* The lifetime of src and dest overlap,
-	 but we can change this by moving insn.  */
-      rtx pat = PATTERN (insn);
-      if (src_note)
-	remove_note (overlap, src_note);
-      if ((HAVE_POST_INCREMENT || HAVE_POST_DECREMENT)
-	  && code == PLUS
-	  && try_auto_increment (overlap, insn, 0, src, insn_const, 0))
-	insn = overlap;
-      else
-	{
-	  rtx notes = REG_NOTES (insn);
-
-	  p = emit_insn_after_setloc (pat, PREV_INSN (p), INSN_LOCATOR (insn));
-	  delete_insn (insn);
-	  REG_NOTES (p) = notes;
-	  df_notes_rescan (p);
-	}
-    }
-  /* Sometimes we'd generate src = const; src += n;
-     if so, replace the instruction that set src
-     in the first place.  */
-
-  if (! overlap && (code == PLUS || code == MINUS))
-    {
-      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-      rtx q, set2 = NULL_RTX;
-      int num_calls2 = 0, s_length2 = 0, freq_calls2 = 0;
-
-      if (note && CONSTANT_P (XEXP (note, 0)))
-	{
-	  for (q = PREV_INSN (insn); q; q = PREV_INSN (q))
-	    {
-	      /* ??? We can't scan past the end of a basic block without
-		 updating the register lifetime info
-		 (REG_DEAD/basic_block_live_at_start).  */
-	      if (perhaps_ends_bb_p (q))
-		{
-		  q = 0;
-		  break;
-		}
-	      else if (! INSN_P (q))
-		continue;
-
-	      s_length2++;
-	      if (reg_set_p (src, q))
-		{
-		  set2 = single_set (q);
-		  break;
-		}
-	      if (reg_overlap_mentioned_p (src, PATTERN (q)))
-		{
-		  q = 0;
-		  break;
-		}
-	      if (CALL_P (p))
-		{
-		  num_calls2++;
-		  freq_calls2 += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
-		}
-	    }
-	  if (q && set2 && SET_DEST (set2) == src && CONSTANT_P (SET_SRC (set2))
-	      && validate_change (insn, &SET_SRC (set), XEXP (note, 0), 0))
-	    {
-	      delete_insn (q);
-	      INC_REG_N_SETS (REGNO (src), -1);
-	      REG_N_CALLS_CROSSED (REGNO (src)) -= num_calls2;
-	      REG_FREQ_CALLS_CROSSED (REGNO (src)) -= freq_calls2;
-	      REG_LIVE_LENGTH (REGNO (src)) -= s_length2;
-	      insn_const = 0;
-	    }
-	}
-    }
-
-  if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
-	   && (code == PLUS || code == MINUS) && insn_const
-	   && try_auto_increment (p, insn, 0, src, insn_const, 1))
-    insn = p;
-  else if ((HAVE_POST_INCREMENT || HAVE_POST_DECREMENT)
-	   && post_inc
-	   && try_auto_increment (p, post_inc, post_inc_set, src, newconst, 0))
-    post_inc = 0;
-  /* If post_inc still prevails, try to find an
-     insn where it can be used as a pre-in/decrement.
-     If code is MINUS, this was already tried.  */
-  if (post_inc && code == PLUS
-  /* Check that newconst is likely to be usable
-     in a pre-in/decrement before starting the search.  */
-      && ((HAVE_PRE_INCREMENT && newconst > 0 && newconst <= MOVE_MAX)
-	  || (HAVE_PRE_DECREMENT && newconst < 0 && newconst >= -MOVE_MAX))
-      && exact_log2 (newconst))
-    {
-      rtx q, inc_dest;
-
-      inc_dest = post_inc_set ? SET_DEST (post_inc_set) : src;
-      for (q = post_inc; (q = NEXT_INSN (q)); )
-	{
-	  /* ??? We can't scan past the end of a basic block without updating
-	     the register lifetime info
-	     (REG_DEAD/basic_block_live_at_start).  */
-	  if (perhaps_ends_bb_p (q))
-	    break;
-	  else if (! INSN_P (q))
-	    continue;
-	  else if (src != inc_dest
-		   && (reg_overlap_mentioned_p (src, PATTERN (q))
-		       || reg_set_p (src, q)))
-	    break;
-	  else if (reg_set_p (inc_dest, q))
-	    break;
-	  else if (reg_overlap_mentioned_p (inc_dest, PATTERN (q)))
-	    {
-	      try_auto_increment (q, post_inc,
-				  post_inc_set, inc_dest, newconst, 1);
-	      break;
-	    }
-	}
-    }
-
-  /* Move the death note for DST to INSN if it is used
-     there.  */
-  if (reg_overlap_mentioned_p (dst, PATTERN (insn)))
-    {
-      XEXP (dst_note, 1) = REG_NOTES (insn);
-      REG_NOTES (insn) = dst_note;
-    }
-
-  if (src_note)
-    {
-      /* Move the death note for SRC from INSN to P.  */
-      if (! overlap)
-	remove_note (insn, src_note);
-      XEXP (src_note, 1) = REG_NOTES (p);
-      REG_NOTES (p) = src_note;
-
-      REG_N_CALLS_CROSSED (REGNO (src)) += s_num_calls;
-      REG_FREQ_CALLS_CROSSED (REGNO (src)) += s_freq_calls;
-    }
-
-  INC_REG_N_SETS (REGNO (src), 1);
-  INC_REG_N_SETS (REGNO (dst), -1);
-
-  REG_N_CALLS_CROSSED (REGNO (dst)) -= num_calls;
-  REG_FREQ_CALLS_CROSSED (REGNO (dst)) -= freq_calls;
-
-  REG_LIVE_LENGTH (REGNO (src)) += s_length;
-  if (REG_LIVE_LENGTH (REGNO (dst)) >= 0)
-    {
-      REG_LIVE_LENGTH (REGNO (dst)) -= length;
-      /* REG_LIVE_LENGTH is only an approximation after
-	 combine if sched is not run, so make sure that we
-	 still have a reasonable value.  */
-      if (REG_LIVE_LENGTH (REGNO (dst)) < 2)
-	REG_LIVE_LENGTH (REGNO (dst)) = 2;
-    }
-  if (dump_file)
-    fprintf (dump_file,
-	     "Fixed operand %d of insn %d matching operand %d.\n",
-	     operand_number, INSN_UID (insn), match_number);
-  return 1;
-}
-
-
-/* Return nonzero if X is stable and mentions no registers but for
-   mentioning SRC or mentioning / changing DST .  If in doubt, presume
-   it is unstable.
-   The rationale is that we want to check if we can move an insn easily
-   while just paying attention to SRC and DST.  */
-static int
-stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
-{
-  RTX_CODE code = GET_CODE (x);
-  switch (GET_RTX_CLASS (code))
-    {
-    case RTX_UNARY:
-    case RTX_BIN_ARITH:
-    case RTX_COMM_ARITH:
-    case RTX_COMPARE:
-    case RTX_COMM_COMPARE:
-    case RTX_TERNARY:
-    case RTX_BITFIELD_OPS:
-      {
-	int i;
-	const char *fmt = GET_RTX_FORMAT (code);
-	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	  if (fmt[i] == 'e'
-	      && ! stable_and_no_regs_but_for_p (XEXP (x, i), src, dst))
-	      return 0;
-	return 1;
-      }
-    case RTX_OBJ:
-      if (code == REG)
-	return x == src || x == dst;
-      /* If this is a MEM, look inside - there might be a register hidden in
-	 the address of an unchanging MEM.  */
-      if (code == MEM
-	  && ! stable_and_no_regs_but_for_p (XEXP (x, 0), src, dst))
-	return 0;
-      /* Fall through.  */
-    default:
-      return ! rtx_unstable_p (x);
-    }
-}
 
 
 static bool

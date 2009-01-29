@@ -2212,17 +2212,11 @@ extern void expand_dec (rtx, rtx);
 extern bool can_copy_p (enum machine_mode);
 extern rtx fis_get_condition (rtx);
 
-/* In global.c */
+/* In ira.c */
 #ifdef HARD_CONST
 extern HARD_REG_SET eliminable_regset;
 #endif
 extern void mark_elimination (int, int);
-extern void dump_global_regs (FILE *);
-#ifdef HARD_CONST
-/* Yes, this ifdef is silly, but HARD_REG_SET is not always defined.  */
-extern void retry_global_alloc (int, HARD_REG_SET);
-#endif
-extern void build_insn_chain (void);
 
 /* In regclass.c */
 extern int reg_classes_intersect_p (enum reg_class, enum reg_class);
@@ -2246,10 +2240,6 @@ extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 
 /* In reorg.c */
 extern void dbr_schedule (rtx);
-
-/* In local-alloc.c */
-extern void dump_local_alloc (FILE *);
-extern int update_equiv_regs (void);
 
 /* In reload1.c */
 extern int function_invariant_p (const_rtx);

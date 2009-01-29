@@ -448,7 +448,7 @@ setup_save_areas (void)
 	    SET_HARD_REG_BIT (hard_regs_used, r);
       }
 
-  if (flag_ira && optimize && flag_ira_share_save_slots)
+  if (optimize && flag_ira_share_save_slots)
     {
       rtx insn, slot;
       struct insn_chain *chain, *next;

@@ -826,24 +826,12 @@ them on the stack.  This is done in several subpasses:
 
 @itemize @bullet
 @item
-Register class preferencing.  The RTL code is scanned to find out
-which register class is best for each pseudo register.  The source
-file is @file{regclass.c}.
+Register move optimizations.  This pass makes some simple RTL code
+transformations which improve the subsequent register allocation.  The
+source file is @file{regmove.c}.
 
 @item
-Local register allocation.  This pass allocates hard registers to
-pseudo registers that are used only within one basic block.  Because
-the basic block is linear, it can use fast and powerful techniques to
-do a decent job.  The source is located in @file{local-alloc.c}.
-
-@item
-Global register allocation.  This pass allocates hard registers for
-the remaining pseudo registers (those whose life spans are not
-contained in one basic block).  The pass is located in @file{global.c}.
-
-@item
-The optional integrated register allocator (@acronym{IRA}).  It can be
-used instead of the local and global allocator.  It is called
+The integrated register allocator (@acronym{IRA}).  It is called
 integrated because coalescing, register live range splitting, and hard
 register preferencing are done on-the-fly during coloring.  It also
 has better integration with the reload pass.  Pseudo-registers spilled

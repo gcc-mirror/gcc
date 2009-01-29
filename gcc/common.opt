@@ -679,10 +679,6 @@ Common Report Var(flag_ipa_struct_reorg)
 Perform structure layout optimizations based
 on profiling information.
 
-fira
-Common Report Var(flag_ira) Init(0)
-Use integrated register allocator.
-
 fira-algorithm=
 Common Joined RejectNegative
 -fira-algorithm=[CB|priority] Set the used IRA algorithm
