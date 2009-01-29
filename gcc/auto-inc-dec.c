@@ -1544,7 +1544,7 @@ struct rtl_opt_pass pass_inc_dec =
 {
  {
   RTL_PASS,
-  "auto-inc-dec",                       /* name */
+  "auto_inc_dec",                       /* name */
   gate_auto_inc_dec,                    /* gate */
   rest_of_handle_auto_inc_dec,          /* execute */
   NULL,                                 /* sub */

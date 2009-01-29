@@ -3332,7 +3332,7 @@ struct rtl_opt_pass pass_convert_to_eh_region_ranges =
 {
  {
   RTL_PASS,
-  "eh-ranges",                          /* name */
+  "eh_ranges",                          /* name */
   NULL,                                 /* gate */
   convert_to_eh_region_ranges,          /* execute */
   NULL,                                 /* sub */
