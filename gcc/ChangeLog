@@ -1,3 +1,8 @@
+2008-01-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2-10.h [!HAVE_AS_IX86_DIFF_SECT_DELTA]
+	(ASM_OUTPUT_DWARF_PCREL): Define.
+
 2008-01-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Modify description.

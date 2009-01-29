@@ -1,5 +1,5 @@
 /* Solaris 10 configuration.
-   Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -39,6 +39,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_AS_IX86_DIFF_SECT_DELTA
 #undef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 1
+
+/* The native Solaris assembler cannot handle the SYMBOL-. syntax, but
+   requires SYMBOL@rel/@rel64 instead.  */
+#define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
+  do {							\
+    fputs (integer_asm_op (SIZE, FALSE), FILE);		\
+    assemble_name (FILE, LABEL);			\
+    fputs (SIZE == 8 ? "@rel64" : "@rel", FILE);	\
+  } while (0)
 #endif
 
 #undef NO_PROFILE_COUNTERS
