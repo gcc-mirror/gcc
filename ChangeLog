@@ -1,3 +1,8 @@
+2009-01-29  Robert Millan  <rmh@aybabtu.com>
+
+	* configure.ac: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).
+	* configure: Regenerate.
+
 2009-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* MAINTAINERS: Make whitespace consistent.

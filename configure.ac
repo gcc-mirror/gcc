@@ -408,7 +408,7 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux*)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
     *-*-freebsd*)
@@ -425,7 +425,7 @@ fi
 if test x$enable_libgomp = x ; then
     # Enable libgomp by default on hosted POSIX systems.
     case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
 	;;
     *-*-netbsd* | *-*-freebsd* | *-*-openbsd*)
 	;;
@@ -923,7 +923,7 @@ case "${target}" in
   ip2k-*-*)
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-lynxos*)
@@ -2029,7 +2029,7 @@ case "${target}" in
   *-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
     target_makefile_frag="config/mt-gnu"
     ;;
   *-*-aix4.[[3456789]]* | *-*-aix[[56789]].*)
