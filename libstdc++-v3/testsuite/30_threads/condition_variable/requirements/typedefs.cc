@@ -1,7 +1,10 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
+// 2009-01-28 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,11 +31,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cstdatomic>
-#include <testsuite_common_types.h>
+#include <condition_variable>
 
 void test01()
 {
-  __gnu_test::standard_layout test;
-  test.operator()<std::atomic_flag>();
+  // Check for required typedefs
+  typedef std::condition_variable test_type;
+  typedef test_type::native_handle_type type;
 }

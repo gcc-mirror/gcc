@@ -38,7 +38,7 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 510 }
+// { dg-error "used here" "" { target *-*-* } 530 }
 // { dg-error "deleted function" "" { target *-*-* } 239 }
 // { dg-error "deleted function" "" { target *-*-* } 257 }
 // { dg-error "deleted function" "" { target *-*-* } 275 } 

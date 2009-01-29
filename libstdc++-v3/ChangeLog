@@ -1,3 +1,29 @@
+2009-01-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_common_types.h (has_trivial_cons_dtor): New.
+	(standard_layout): Just use !has_virtual_destructor for now.
+	* testsuite/30_threads/mutex/requirements/standard_layout.cc: New.
+	* testsuite/30_threads/timed_mutex/requirements/standard_layout.cc: New.
+	* testsuite/30_threads/recursive_mutex/requirements/
+	standard_layout.cc: New.
+	* testsuite/30_threads/condition_variable/requirements/
+	standard_layout.cc: New.
+	* testsuite/29_atomics/atomic_address/requirements/
+	standard_layout.cc: Adjust.
+	* testsuite/29_atomics/atomic_flag/requirements/
+	standard_layout.cc: Same.
+	* testsuite/29_atomics/atomic_address/requirements/trivial.cc: New.
+	* testsuite/29_atomics/atomic_integral/requirements/trivial.cc: Same.
+	* testsuite/29_atomics/atomic_flag/requirements/trivial.cc: Same.
+	* testsuite/30_threads/condition_variable/requirements/typedefs.cc: New.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Adjust
+	line numbers.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/requirements/standard_layout.cc:
+	Remove, not required.
+
 2009-01-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/thread (__thread_data_base, thread): Rename member
