@@ -1,3 +1,10 @@
+2009-01-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/39007
+	* tree-loop-distribution.c (generate_builtin): Use
+	recompute_dominator to compute the immediate dominator of the
+	basic block just after the loop.
+
 2008-01-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/sol2-10.h [!HAVE_AS_IX86_DIFF_SECT_DELTA]
