@@ -1,3 +1,19 @@
+2009-01-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/thread: Remove unused headers.
+	(__thread_data_base): Remove unused mutex and base.
+	(thread::~thread): Only detach if joinable.
+	(thread::joinable): Test if thread data ptr is empty.
+	(thread::_M_thread_data_mutex): Remove.
+	(thread::_M_get_thread_data): Remove.
+	(thread::_M_make_thread_data): Remove overload, use make_shared.
+	(thread::id::id): Make constructor explicit.
+	* src/thread.cc (thread::join,thread::detach): Throw if not joinable.
+	(thread::_M_start_thread): Break shared_ptr cycle on error.
+	(__thread_proxy): Use shared_ptr swap instead of copy and reset.
+	* testsuite/30_threads/thread/member/4.cc: New.
+	* testsuite/30_threads/thread/member/5.cc: New.
+
 2009-01-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_common_types.h (has_trivial_cons_dtor): New.
