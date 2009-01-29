@@ -1,3 +1,10 @@
+2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ira-color.c (allocno_reload_assign): Update comments.
+	* regmove.c (regmove_optimize): Likewise.
+
+	* ra.h: Removed.
+
 2009-01-29  Robert Millan  <rmh@aybabtu.com>
 
 	* gcc/config.gcc: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).

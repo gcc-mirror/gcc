@@ -1089,7 +1089,6 @@ regmove_optimize (rtx f, int nregs)
 
   for (pass = 0; pass <= 2; pass++)
     {
-      /* We need fewer optimizations for IRA.  */
       if (! flag_regmove && pass >= flag_expensive_optimizations)
 	goto done;
 
