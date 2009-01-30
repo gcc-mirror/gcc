@@ -1,5 +1,14 @@
 2009-01-30  H.J. Lu  <hongjiu.lu@intel.com>
 
+	Backport from mainline:
+	2009-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38789
+	* gcc.c-torture/compile/pr38789.c: New test.
+
+2009-01-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
 	2009-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38503
@@ -25,6 +34,7 @@
 
 2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
+	Backport from mainline:
 	2009-01-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38908
