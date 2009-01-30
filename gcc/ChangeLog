@@ -1,3 +1,10 @@
+2009-01-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/39002
+	* config/i386/i386.c (ix86_can_use_return_insn_p): Check for nsseregs.
+	(ix86_expand_epilogue): Take nsseregs in account to use proper restore
+	method.
+
 2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ira-color.c (allocno_reload_assign): Update comments.
