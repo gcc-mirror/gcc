@@ -1,3 +1,8 @@
+2009-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39002
+	* g++.dg/torture/pr39002.C: New test.
+
 2009-01-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/39007
