@@ -7138,7 +7138,7 @@ ix86_can_use_return_insn_p (void)
     return 0;
 
   ix86_compute_frame_layout (&frame);
-  return frame.to_allocate == 0 && frame.nregs == 0;
+  return frame.to_allocate == 0 && (frame.nregs + frame.nsseregs) == 0;
 }
 
 /* Value should be nonzero if functions must have frame pointers.
@@ -8293,14 +8293,14 @@ ix86_expand_epilogue (int style)
      are no registers to restore.  We also use this code when TARGET_USE_LEAVE
      and there is exactly one register to pop. This heuristic may need some
      tuning in future.  */
-  if ((!sp_valid && frame.nregs <= 1)
+  if ((!sp_valid && (frame.nregs + frame.nsseregs) <= 1)
       || (TARGET_EPILOGUE_USING_MOVE
 	  && cfun->machine->use_fast_prologue_epilogue
-	  && (frame.nregs > 1 || frame.to_allocate))
-      || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
+	  && ((frame.nregs + frame.nsseregs) > 1 || frame.to_allocate))
+      || (frame_pointer_needed && !(frame.nregs + frame.nsseregs) && frame.to_allocate)
       || (frame_pointer_needed && TARGET_USE_LEAVE
 	  && cfun->machine->use_fast_prologue_epilogue
-	  && frame.nregs == 1)
+	  && (frame.nregs + frame.nsseregs) == 1)
       || crtl->calls_eh_return)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
