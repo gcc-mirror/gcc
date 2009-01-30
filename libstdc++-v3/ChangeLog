@@ -1,3 +1,25 @@
+2009-01-30  Ulrich Drepper  <drepper@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* include/c_std/cstring (memchr, strchr, strpbrk, strrchr, strstr):
+	Provide inlines only if __CORRECT_ISO_CPP_STRING_H_PROTO is not
+	defined.
+	* include/c_std/cwchar (wcschr, wcspbrk, wcsrchr, wcsstr, wmemchr):
+	Provide inlines only if __CORRECT_ISO_CPP_WCHAR_H_PROTO is not
+	defined.
+	* include/c_global/cstring (memchr, strchr, strpbrk, strrchr, strstr):
+	Provide inlines only if __CORRECT_ISO_CPP_STRING_H_PROTO is not
+	defined.
+	* include/c_global/cwchar (wcschr, wcspbrk, wcsrchr, wcsstr, wmemchr):
+	Provide inlines only if __CORRECT_ISO_CPP_WCHAR_H_PROTO is not
+	defined.
+	* testsuite/21_strings/c_strings/char_t/2.cc (test02): If first
+	argument is const char *, assign result to const char * var, not
+	char *.
+	* testsuite/21_strings/c_strings/wchar_t/2.cc (test02): If first
+	argument is const wchar_t *, assign result to const wchar_t * var, not
+	wchar_t *.
+
 2009-01-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/thread: Remove unused headers.

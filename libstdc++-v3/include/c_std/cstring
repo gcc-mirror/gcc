@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -94,36 +94,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::memset;
   using ::strerror;
   using ::strlen;
-
   using ::memchr;
+  using ::strchr;
+  using ::strpbrk;
+  using ::strrchr;
+  using ::strstr;
 
+#ifndef __CORRECT_ISO_CPP_STRING_H_PROTO
   inline void*
   memchr(void* __p, int __c, size_t __n)
   { return memchr(const_cast<const void*>(__p), __c, __n); }
-
-  using ::strchr;
 
   inline char*
   strchr(char* __s1, int __n)
   { return __builtin_strchr(const_cast<const char*>(__s1), __n); }
 
-  using ::strpbrk;
-
   inline char*
   strpbrk(char* __s1, const char* __s2)
   { return __builtin_strpbrk(const_cast<const char*>(__s1), __s2); }
-
-  using ::strrchr;
 
   inline char*
   strrchr(char* __s1, int __n)
   { return __builtin_strrchr(const_cast<const char*>(__s1), __n); }
 
-  using ::strstr;
-
   inline char*
   strstr(char* __s1, const char* __s2)
   { return __builtin_strstr(const_cast<const char*>(__s1), __s2); }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

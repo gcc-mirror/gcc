@@ -1,6 +1,6 @@
 // 2001-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,12 +32,13 @@ void test02()
   const wchar_t* ccarray2 = L"san francisco sunny-day park inspectors";
   wchar_t carray[50];
   wcscpy(carray, ccarray1);
+  const wchar_t* cw;
   wchar_t* w;
 
-  w = wmemchr(ccarray1, L'/', 3);
-  w = wcschr(ccarray1, L'/');
-  w = wcspbrk(ccarray1, ccarray2);
-  w = wcsrchr(ccarray1, L'c');
+  cw = wmemchr(ccarray1, L'/', 3);
+  cw = wcschr(ccarray1, L'/');
+  cw = wcspbrk(ccarray1, ccarray2);
+  cw = wcsrchr(ccarray1, L'c');
   w = wcsstr(carray, carray);
 }
 
