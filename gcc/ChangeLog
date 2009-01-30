@@ -1,10 +1,16 @@
-Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-01-30  Wolfgang Gellerich  <gellerich@de,ibm.com>
+
+	* config/s390/s390.md (*insv<mode>_reg_extimm): Removed.
+	(*insv_h_di_reg_extimm): New insn.
+	(*insv_l<mode>_reg_extimm): New insn.
+
+2009-01-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (flag_conserve_stack): set
 	PARAM_LARGE_STACK_FRAME and PARAM_STACK_FRAME_GROWTH to zero under
 	fconserve-stack. Reduce call-overhead used by inliner.
 
-Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-01-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	PR/38157
 	* common.opt (flag_conserve_stack): Initialised to zero.
