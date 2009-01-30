@@ -1,5 +1,9 @@
 2009-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/39013
+	* gcc.target/i386/pr39013-1.c: New test.
+	* gcc.target/i386/pr39013-2.c: New test.
+
 	PR c++/39028
 	* g++.dg/ext/label12.C: New test.
 

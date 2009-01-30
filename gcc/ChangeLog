@@ -1,3 +1,9 @@
+2009-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39013
+	* c-decl.c (pop_scope): Set DECL_EXTERNAL for functions declared
+	inline but never defined.
+
 2009-01-30  Wolfgang Gellerich  <gellerich@de,ibm.com>
 
 	* config/s390/s390.md (*insv<mode>_reg_extimm): Removed.
