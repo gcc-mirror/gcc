@@ -127,7 +127,7 @@
 	Remove flag_ira.
 	(finish_spills): Ditto.  Remove code for !flga_ira.
 	
-2009-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+2009-01-29  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/35854
 	* doc/invoke.texi (rtl debug options): Complete rewrite.
@@ -652,7 +652,7 @@
 	(record_temporary_equivalences_from_stmts_at_dest): Ignore calls to
 	__builtin_constant_p.
 
-2009-01-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2009-01-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* dce.c (delete_unmarked_insns): Reversed the order that insns are
 	examined before deleting them.
@@ -662,7 +662,7 @@
 	* function.c (aggregate_value_p): Correctly extract the function
 	type from CALL_EXPR_FN lookup.
 
-2009-01-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-01-16  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_override_options): Revert
 	CFI asm flag disable commited previously.
@@ -693,7 +693,7 @@
 	(gimple_expand_cfg): Update stack boundary and check incoming
 	stack boundary here.
 
-2009-01-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+2009-01-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* dce.c (find_call_stack_args, delete_unmarked_insns): Fixed comments.
 	
@@ -869,7 +869,7 @@
 	* expmed.c (store_bit_field_1): Properly truncate the paradoxical
 	subreg of op0 to the original op0.
 
-2009-01-11  Laurent GUERBY <laurent@guerby.net>
+2009-01-11  Laurent GUERBY  <laurent@guerby.net>
 
 	* doc/sourcebuild.texi (Source Tree): Move up intl and fixinc.
 	
@@ -1121,13 +1121,13 @@
 	Add Robert Clark to the list of testers.
 
 2009-01-06  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.md (*msabi_syvabi): Add SSE regs clobbers.
 	* config/i386/i386.c (ix86_expand_call): Add clobbers.
 
 2009-01-06  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.h (CONDITIONAL_CALL_USAGE): SSE regs are not used
 	for w64 ABI.
@@ -1145,7 +1145,7 @@
 	(ix86_expand_epilogue): Save SSE regs if needed.
 
 2009-01-06  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Enable for MSABI
 	* config/i386/i386.c (init_cumulative_args): Disallow calls of MSABI
@@ -1280,13 +1280,13 @@
 	(gloog): Call recompute_all_dominators before graphite_verify.
 
 2009-01-05  Harsha Jagasia  <harsha.jagasia@amd.com>
-	    Jan Sjodin <jan.sjodin@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
 
 	PR tree-optimization/38500
 	* graphite.c (create_sese_edges): Call fix_loop_structure after
 	splitting blocks.
 
-2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+2009-01-05  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.gcc: Add m32r*-*-rtems*.
 	* config/m32r/rtems.h: New file.
@@ -1412,7 +1412,7 @@
 	* builtins.c (fold_builtin_expect): Only check DECL_WEAK for VAR_DECLs
 	and FUNCTION_DECLs.
 
-2009-01-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+2009-01-02  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/35805
 	* df-problems.c (df_lr_finalize): Add recursive call to resolve lr
@@ -1444,7 +1444,7 @@
 
 	* doc/extend.texi: Fix '#pragma GCC option' typo.
 
-2009-01-02 Richard Guenther <rguenther@suse.de>
+2009-01-02  Richard Guenther  <rguenther@suse.de>
 
 	* doc/install.texi (--enable-checking): Mention different
 	default for stage1.

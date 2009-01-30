@@ -230,7 +230,7 @@
 	the value from the argument expression.
 
 2008-12-21  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* i386.md (UNSPEC_MS_TO_SYSV_CALL): New constant.
 	(call_1_rex64_ms_sysv, call_value_0_rex64_ms_sysv,
@@ -310,7 +310,7 @@
 	* configure: Regenerate.
 
 2008-12-18  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* df-scan.c (persistent_obstack, df_invalidated_by_call): Remove.
 	(df_scan_start_dump, df_get_call_refs, df_hard_reg_init): Rename
@@ -326,12 +326,12 @@
 	* basic-block.h (regs_invalidated_by_call_regset): Declare.
 
 2008-12-18  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* ira-cost.c (copy_cost): Lazilly initialize move_cost if needed.
 
 2008-12-18  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* i386.h (CONDITIONAL_REGISTER_USAGE): Initialize for current
 	function ABI.
@@ -340,7 +340,7 @@
 	(ix86_maybe_switch_abi): New function.
 	(TARGET_EXPAND_TO_RTL_HOOK): New macro.
 
-2008-12-18  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-12-18  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37922
 	* dse.c (bb_info): Added regs_live field.
@@ -404,7 +404,7 @@
 	only if REG_PARM_STACK_SPACE is defined.
 
 2008-12-17  Jan Hubicka  <jh@suse.cz>
-	    Kai Tietz <kai.tietz@onevision.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* calls.c (expand_call): Do not sibcall if
 	outgoing_reg_parm_stack_space does not match.
@@ -417,7 +417,7 @@
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
 	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
 
-2008-12-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+2008-12-16  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	PR target/38842
 	* config/picochip/picochip.opt (mae): Squeezed the comments onto one
@@ -461,7 +461,7 @@
 	* config/mips/mips.md (move_doubleword_fpr<mode>): Use
 	TARGET_FLOAT64 && !TARGET_64BIT to detect the mxhc1 case.
 
-2008-12-15  Hariharan Sandanagobalane <hariharan@picochip.com>
+2008-12-15  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_override_options): Disable CFI
 	asm and change the signature of brev and byteSwap functions to use
@@ -483,7 +483,7 @@
 	for the milli.a library.
 
 2008-12-12  Andrew Pinski  <andrew_pinskia@playstation.sony.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/24779
 	* config/rs6000/rs6000.md (call_indirect_aix32): Move the load of the
@@ -778,7 +778,7 @@
 	* tree-sra.c (sra_build_bf_assignment): Avoid warnings for
 	variables initialized from SRAed bit fields.
 
-2008-12-10  Martin Guy <martinwguy@yahoo.it>
+2008-12-10  Martin Guy  <martinwguy@yahoo.it>
 
 	PR target/37668
 	* arm.c (arm_size_rtx_costs, case NEG): Don't fall through if the
@@ -791,7 +791,7 @@
 	* final.c (output_addr_const) <SYMBOL_REF>: Call assemble_external
 	on the associated SYMBOL_REF_DECL node, if any.
 
-2008-12-09 David Daney <ddaney@caviumnetworks.com>
+2008-12-09  David Daney  <ddaney@caviumnetworks.com>
 
 	* config/mips/sync.md (sync_<optab>_12): Replace
 	MIPS_SYNC_OP_12_NOT_NOP with MIPS_SYNC_OP_12_AND.
@@ -1006,7 +1006,7 @@
 	copy of the CONSTRUCTOR for TREE_ADDRESSABLE types or small sparse
 	initializers.
 
-2008-12-09 Tobias Grosser  <grosser@fim.uni-passau.de>
+2008-12-09  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	PR middle-end/38084
 	Fix testsuite/gfortran.dg/graphite/id-3.f90.
@@ -1064,7 +1064,7 @@
 	find_base_value does.
 
 2008-12-08  Andrew Haley  <aph@redhat.com>
-	    Kamaraju Kusumanchi <raju.mailinglists@gmail.com>
+	    Kamaraju Kusumanchi  <raju.mailinglists@gmail.com>
 
 	* gimple.h (gimple_build_try): Fix declaration.
 
@@ -1121,7 +1121,7 @@
 	operands to mult_type if it isn't narrower than op0's type.
 
 2008-12-06  Jan Hubicka  <jh@suse.cz>
-	    Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/38074
 	* cgraphbuild.c (compute_call_stmt_bb_frequency): Fix handling of 0
@@ -1336,7 +1336,7 @@
 	(__cmpdf, __cmpsf): Use PIC call sequence.
 
 2008-12-02  Andreas Tobler  <a.tobler@schweiz.org>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* config/i386/t-darwin64: Add m32 multilib support.
 
@@ -1990,7 +1990,7 @@
 	(separate_decls_in_region): Create shared struct even when there
 	are only reductions.
 
-2008-11-19  Hariharan Sandanagobalane <hariharan@picochip.com>
+2008-11-19  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (headers): Remove an unnecessary
 	header file.
@@ -2684,7 +2684,7 @@
 	DSP control register.
 	* doc/extend.texi: Document the DSP control register.
 
-2008-11-03  Steve Ellcey <sje@cup.hp.com>
+2008-11-03  Steve Ellcey  <sje@cup.hp.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (expand_omp_for_generic): If iter_type has different
@@ -3214,7 +3214,7 @@
 	* config/frv/frv.h (HARD_REGNO_RENAME_OK): Define.  Do not allow
 	the fdpic register to be a target when running in fdpic mode.
 
-2008-10-22 Rafael Espindola  <espindola@google.com>
+2008-10-22  Rafael Espindola  <espindola@google.com>
 
 	* ipa-struct-reorg.c (create_new_alloc_sites): Properly insert the
 	newly created statements.
@@ -3685,7 +3685,7 @@
 	for hppa64-linux-gnu targets.
 
 2008-10-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-	    Kaushal Kantawala <Kaushal_Kantawala@playstation.sony.com>
+	    Kaushal Kantawala  <Kaushal_Kantawala@playstation.sony.com>
 	    Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
 	    Grace Cao  <grace_cao@playstation.sony.com>
 
@@ -3808,7 +3808,7 @@
 	* builtins.c: Remove MPFR_VERSION_NUM(2,3,0) conditionals.
 	* doc/install.texi: Bump recommended MPFR to 2.3.2.
 
-2008-10-12  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-10-12  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/37808
 	* df-scan.c (df_ref_change_reg_with_loc_1): Added test to make
@@ -3831,7 +3831,7 @@
 	and check register for non-zero value before the call
 	to decode_caches_intel.
 
-2008-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-10-11  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37448
 	* df.h (df_ref_class): New enum.
@@ -4199,7 +4199,7 @@
 
 	* config/i386/i386.md: Remove trailing white spaces.
 
-2008-10-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-10-07  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/37448
 	* alloc-pool.c (struct alloc_pool_descriptor) [elt_size]: New field.
@@ -4705,7 +4705,7 @@
 	non-constant memory if it cannot be forced to constant memory.
 	Overhaul surrounding code and factor out common condition.
 
-2008-09-29  Jeff Law <law@redhat.com>
+2008-09-29  Jeff Law  <law@redhat.com>
 
 	* reload1.c (alter_reg): Add missing curly braces.
 
@@ -4946,7 +4946,7 @@
 
 	* dbxout.c (dbxout_parms): Fetch the inner REG inside a PARALLEL.
 
-2008-09-25 Sergei Dyshel <sergeid@il.ibm.com>
+2008-09-25  Sergei Dyshel  <sergeid@il.ibm.com>
 
 	* matrix-reorg.c (transform_allocation_sites): Initializers
 	added to avoid the warning.
@@ -5924,7 +5924,7 @@
 
 	* tree-ssa-phiprop.c (propagate_with_phi): Fix tuplification.
 
-2008-09-11  Jeff Law <law@redhat.com>
+2008-09-11  Jeff Law  <law@redhat.com>
 
 	* reload1.c (alter_reg): Undo the BYTE_BIG_ENDIAN correction performed
 	by assign_stack_local on the IRA path for stack slot sharing
@@ -6438,7 +6438,7 @@
 	* ira-color.c (ira_reuse_stack_slot): Set slot_num on success at the
 	end of the search.
 
-2008-09-08  M R Swami Reddy <MR.Swami.Reddy@nsc.com>
+2008-09-08  M R Swami Reddy  <MR.Swami.Reddy@nsc.com>
 
 	* crx/crx.h (IRA_COVER_CLASSES): Define.
 
@@ -6492,7 +6492,7 @@
 	PR tree-optimization/35642
 	* config/rs6000/altivec.md (mulv8hi3): Implement.
 
-2008-09-06  Jeff Law <law@redhat.com>
+2008-09-06  Jeff Law  <law@redhat.com>
 
 	* h8300/h8300.h (IRA_COVER_CLASSES): Define.
 
@@ -6561,7 +6561,7 @@
 
 	* ira-color.c (ira_fast_allocation): Permit global allocno allocation.
 
-2008-09-05  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+2008-09-05  Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
 
 	Improved branch hints, safe hints, and scheduling.
 
@@ -6987,7 +6987,7 @@
 	From Michael Frysinger  <michael.frysinger@analog.com>
 	* config/bfin/bfin.c (bfin_handle_option): Remove BF561 warning.
 
-2008-09-03 Danny Smith  <dannysmith@usrs.sourceforge.net>
+2008-09-03  Danny Smith  <dannysmith@usrs.sourceforge.net>
 
 	* gthr-win32.h (CONST_CAST2): Really make sure CONST_CAST2 is defined.
 	(__gthread_setspecific): Revert 2008-08-31 change to
@@ -9745,33 +9745,33 @@
 	* ira.c (setup_eliminable_regset): Check stack_realign_needed.
 	* config/mn10300/mn10300.h (IRA_COVER_CLASSES): New macro.
 
-	2008-06-03 Steve Chamberlain <steve.chamberlain@gmail.com>
+	2008-06-03  Steve Chamberlain  <steve.chamberlain@gmail.com>
 	* ira-build.c (allocno_range_compare_func): Stabilize sort.
 
-	2008-05-29 Andy Hutchinson <hutchinsonandy@aim.com>
+	2008-05-29  Andy Hutchinson  <hutchinsonandy@aim.com>
 	* config/avr/avr.h (IRA_COVER_CLASSES): New macro.
 	* reload1.c (find_reg): Process registers in register allocation order.
 
-	2008-05-10 Richard Sandiford <rsandifo@nildram.co.uk>
+	2008-05-10  Richard Sandiford  <rsandifo@nildram.co.uk>
 	* toplev.c (backend_init_target): Move ira_init call from
 	here...
 	(lang_dependent_init_target): ...to here.
 
-	2008-05-10 Richard Sandiford <rsandifo@nildram.co.uk>
+	2008-05-10  Richard Sandiford  <rsandifo@nildram.co.uk>
 	* ira.c (setup_class_subset_and_memory_move_costs): Don't
 	calculate memory move costs for NO_REGS.
 
-	2008-05-05 Kaz Kojima <kkojima@gcc.gnu.org>
+	2008-05-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 	* ira-color.c (ira_fast_allocation): Use no_stack_reg_p only if
 	STACK_REGS is defined.
 
-	2008-04-08 Andrew Pinski <andrew_pinski@playstation.sony.com>
+	2008-04-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 	* config/spu/spu.h (IRA_COVER_CLASSES): New macro.
 
-	2008-04-04 Bernd Schmidt <bernd.schmidt@analog.com>
+	2008-04-04  Bernd Schmidt  <bernd.schmidt@analog.com>
 	* config/bfin/bfin.h (IRA_COVER_CLASSES): New macro.
 
-	2008-04-04 Kaz Kojima <kkojima@gcc.gnu.org>
+	2008-04-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 	* config/sh/sh.h (IRA_COVER_CLASSES): Define.
 	* config/sh/sh.md (movsicc_true+3): Check if emit returns a
 	barrier.
@@ -10101,7 +10101,7 @@
 2008-08-21  Jan Hubicka  <jh@suse.cz>
 	Backport from LTO branch:
 
-	2008-05-05  Kenneth Zadeck <zadeck@naturalbridge.com>
+	2008-05-05  Kenneth Zadeck  <zadeck@naturalbridge.com>
 		    Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c
@@ -10114,7 +10114,7 @@
 	(pass_ipa_pure_const): Changed from SIMPLE_IPA_PASS to IPA_PASS.
 	* tree-pass.h (pass_ipa_pure_const): Turn into IPA_PASS.
 
-	2008-07-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+	2008-07-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* tree-pass.h (pass_ipa_reference): Make into ipa_opt_pass.
 	* ipa-reference.c (init_function_info, generate_summary,
@@ -13616,7 +13616,7 @@
 	(ipa_print_all_params_modified): Likewise.
 	* ipa-prop.h (ipa_edge_args_info_available_for_edge_p): New function.
 
-2008-07-17  Roman Zippel <zippel@linux-m68k.org>
+2008-07-17  Roman Zippel  <zippel@linux-m68k.org>
 
 	PR target/25343
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __mc68000__.
@@ -14177,7 +14177,7 @@
 	* config/sh/sh.c (sh_canonical_va_list_type): New.
 	(TARGET_CANONICAL_VA_LIST_TYPE): Define.
 
-2008-07-09  Raksit Ashok <raksit@google.com>
+2008-07-09  Raksit Ashok  <raksit@google.com>
 
 	* doc/invoke.texi (Option Summary): Mention new option
 	-Wdisallowed-function-list=...
@@ -14387,7 +14387,7 @@
 
 	* config/arm/aout.h (DOLLARS_IN_IDENTIFIERS): Remove.
 
-2008-07-07  Fernando Pereira <fernando@cs.ucla.edu>
+2008-07-07  Fernando Pereira  <fernando@cs.ucla.edu>
 
 	* tree-ssa-structalias.c (compute_points_to_sets): Add call to
 	dump_constraint_graph.
@@ -15031,11 +15031,11 @@
 	* config/i386/i386.md (*movti_rex64): Add "!" to "r" constraint
 	of operand 0.
 
-2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-06-30  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* ifcvt.c (cond_move_process_if_block): Free vectors on false return.
 
-2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-06-30  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/34744
 	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New macros.
@@ -16162,7 +16162,7 @@
 	demangled_hash_lookup, symbol_push, file_push, frob_extension):
 	Likewise.
 
-2008-06-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-06-19  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi: Updated subreg section.
 
@@ -17140,7 +17140,7 @@
 	* config/vax/vaxv.h: Remove.
 	* config/windiss.h: Remove.
 
-2008-06-06  Uros Bizjak <ubizjak@gmail.com>
+2008-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/36438
 	* cse.c (fold_rtx) [ASHIFT, LSHIFTRT, ASHIFTRT]: Break out early
@@ -17627,7 +17627,7 @@
 	* config/i386/i386.c (setup_incoming_varargs_64): Fix a typo
 	in comments.
 
-2008-06-04  Junjie Gu <jgu@tensilica.com>
+2008-06-04  Junjie Gu  <jgu@tensilica.com>
 
 	* config/xtensa/lib2funcs.S (__xtensa_nonlocal_goto): Use unsigned
 	comparison for frame pointers.
@@ -18103,7 +18103,7 @@
 
 	* config/pa/pa.md: Remove extern frame_pointer_needed declaration.
 
-2008-05-28  Seongbae Park <seongbae.park@gmail.com>
+2008-05-28  Seongbae Park  <seongbae.park@gmail.com>
 
 	* value-prof.c (tree_ic_transform): Print counts.
 	* tree-profile.c (tree_gen_ic_func_profiler):
@@ -18624,7 +18624,7 @@
 	* config/i386/sol2-10.h (SUBTARGET_RETURN_IN_MEMORY): Undefine
 	it before the redeclaration.
 
-2008-05-22  Anatoly Sokolov <aesok@post.ru>
+2008-05-22  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (get_sequence_length): Add new function.
 	(expand_prologue, expand_epilogue): Remove duplicate code.
@@ -18837,7 +18837,7 @@
 	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Add
 	the missing break.
 
-2008-05-20  Anatoly Sokolov <aesok@post.ru>
+2008-05-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (machine_function): Add 'is_OS_main' field.
 	* config/avr/avr.c (avr_OS_main_function_p): Add new function.
@@ -19027,7 +19027,7 @@
 	* tree-cfg.c (verify_gimple_expr): Allow conversions from
 	pointers to sizetype and vice versa.
 
-2008-05-18 Xinliang David Li   <davidxl@google.com>
+2008-05-18  Xinliang David Li   <davidxl@google.com>
 
 	* gcc/tree-ssa-dce.c: Coding style fix.
 	(check_pow): Documentation comment.
@@ -19045,7 +19045,7 @@
 
 	* config/sh/sh.c (sh_output_mi_thunk): Update the use of init_flow.
 
-2008-05-17  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-17  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi (RTL_CONST_CALL_P, RTL_PURE_CALL_P): Fixed typos.
 	* df-problems.c (simulation routines): Fixed block comment to
@@ -19060,7 +19060,7 @@
 	* fold-const.c (fold_unary) <CASE_CONVERT>: Fold the cast into
 	a BIT_AND_EXPR only for an INTEGER_TYPE.
 
-2008-05-17 Xinliang David Li   <davidxl@google.com>
+2008-05-17  Xinliang David Li   <davidxl@google.com>
 
 	* gcc/tree-ssa-dce.c (cond_dead_built_in_calls): New static variable.
 	(check_pow, check_log, is_unnecessary_except_errno_call): New
@@ -19089,7 +19089,7 @@
 	PR target/36246
 	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED_MODE): New define.
 
-2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* ifcvt.c (dead_or_predicable): Rename
 	df_simulate_one_insn_backwards to df_simulate_one_insn.
@@ -19114,7 +19114,7 @@
 	* doc/gty.texi (Source Files Containing Type Information): Note
 	that headers should appear first in the gtfiles list.
 
-2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* tree.def (COND_EXEC): Properly documented this code.
 
@@ -19124,7 +19124,7 @@
 	* tree-nested.c (get_trampoline_type): Set DECL_CONTEXT for
 	the new field.
 
-2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* tree-ssa-dse (max_stmt_uid): Removed.
 	(get_stmt_uid, dse_possible_dead_store_p, dse_optimize_stmt,
@@ -19146,12 +19146,12 @@
 	* tree-cfg.c (init_empty_tree_cfg_for_function): Define.
 	(init_empty_tree_cfg): Call it.
 
-2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* cfg.c (init_flow): Add argument THE_FUN.  Use it instead of cfun.
 	Update all users.
 
-2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-16  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/invoke.text (-fdump-tree-*-verbose): New option.
 	* tree-dump.c (dump_options): New verbose option.
@@ -19197,7 +19197,7 @@
 	* config/i386/i386.c (ix86_expand_vector_init_general): Optimize
 	V8HImode for SSE2 and V16QImode for SSE4.1.
 
-2008-05-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* cgraph.h (compute_inline_parameters): Made public.
 	* tree-pass.h (ipa_opt_pass): Removed function_generate_summary,
@@ -19217,7 +19217,7 @@
 	* passes.c (execute_ipa_summary_passes): Now is called once per
 	pass rather than once per node*pass.
 
-2008-05-15  Anatoly Sokolov <aesok@post.ru>
+2008-05-15  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_base_arch_macro, avr_have_movw_lpmx_p,
 	avr_have_mul_p, avr_asm_only_p): Remove variables.
@@ -19524,7 +19524,7 @@
 	multiply gives the wrong value when doing widening multiplies.
 	(vec_widen_smult_lo_v4si): Ditto.
 
-2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-14  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* optabs.c (prepare_cmp_insn): Changed LCT_PURE_MAKE_BLOCK to
 	LCT_PURE and LCT_CONST_MAKE_BLOCK to LCT_CONST in calls to
@@ -19567,7 +19567,7 @@
 	value for the first load in the group in case of a gap.
 	(vect_build_slp_tree): Check that there are no gaps in loads.
 
-2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-14  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi: Removed reference to REG_NO_CONFLICT notes.
 	* optabs.c (expand_binop, expand_absneg_bit, expand_unop,
@@ -19680,7 +19680,7 @@
 
 	* config/avr/avr.h (MAX_OFILE_ALIGNMENT): Define.
 
-2008-05-12  Anatoly Sokolov <aesok@post.ru>
+2008-05-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (machine_function): Add 'is_leaf' field.
 	* config/avr/avr.c (avr_regs_to_save): Compute 'machine->is_leaf'.
@@ -20565,7 +20565,7 @@
 	by using 'q' specifier for instruction.
 	(ix86_file_end): Replaced case TARGET_64BIT_MS_ABI by TARGET_64BIT.
 
-2008-05-06  Anatoly Sokolov <aesok@post.ru>
+2008-05-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.md (*sbrx_branch, *sbix_branch, *sbix_branch_tmp):
 	Change mode of zero_extract from QImode to HImode.
@@ -20766,7 +20766,7 @@
 
 	* config.gcc (need_64bit_hwint): Document libcpp dependency.
 
-2008-05-02  Simon Baldwin <simonb@google.com>
+2008-05-02  Simon Baldwin  <simonb@google.com>
 
 	PR bootstrap/36108
 	* c-common.h (warn_array_subscript_range): Removed.
@@ -20823,7 +20823,7 @@
 	(DECL_NONADDRESSABLE_P): Likewise.
 	* alias.c (record_component_aliases): Fix comment.
 
-2008-05-01  Simon Baldwin <simonb@google.com>
+2008-05-01  Simon Baldwin  <simonb@google.com>
 
 	* c-common.h (warn_array_subscript_range): New function.
 	* c-common.c (warn_array_subscript_range): Ditto.
@@ -21350,7 +21350,7 @@
 	(vxworks_override_options): Set TLS scheme.
 	* doc/tm.texi (Emulated TLS): New node.
 
-2008-04-26  Simon Baldwin <simonb@google.com>
+2008-04-26  Simon Baldwin  <simonb@google.com>
 
 	PR c/35652
 	* builtins.c (c_strlen): Suppressed multiple warnings that can occur
@@ -21655,7 +21655,7 @@
 	(*movv4sf_internal): Likewise.
 	(*movv2df_internal): Likewise.
 
-2008-04-25  Pompapathi V Gadad <Pompapathi.V.Gadad@nsc.com>
+2008-04-25  Pompapathi V Gadad  <Pompapathi.V.Gadad@nsc.com>
 
 	* config.gcc (crx-*-elf): Remove deprecation.
 
@@ -22079,7 +22079,7 @@
 	(fold_comparison): Add another test for pointer overflow.  Use
 	pointer_may_wrap_p to disable some false positives.
 
-2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
+2008-04-18  Kris Van Hees  <kris.van.hees@oracle.com>
 
 	* c-common.c (CHAR16_TYPE, CHAR32_TYPE): New macros.
 	(fname_as_string): Match updated cpp_interpret_string prototype.
@@ -22185,7 +22185,7 @@
 	ix86_compute_frame_layout): Update.
 	* config/arc/arc.c (arc_output_function_epilogue): Update.
 
-2008-04-18  Marius Strobl <marius@FreeBSD.org>
+2008-04-18  Marius Strobl  <marius@FreeBSD.org>
 
 	* gthr-posix.h (__gthread_active_p): Use the Solaris implementation
 	for FreeBSD as well.
@@ -22783,7 +22783,7 @@
 	* config/bfin/bfin.c (bfin_initial_elimination_offset): Update.
 	(emit_link_insn): Update.
 
-2008-04-08  Anatoly Sokolov <aesok@post.ru>
+2008-04-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Define
 	__AVR_HAVE_EIJMP_EICALL__ macro if device have EIJMP and EICALL
@@ -22890,7 +22890,7 @@
 	* tree-vrp.c (vrp_evaluate_conditional): Only query value-range
 	information from SSA_NAMEs.
 
-2008-04-06  Anatoly Sokolov <aesok@post.ru>
+2008-04-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (avr_mega_p): Remove declaration.
 	(AVR_MEGA): Remove macro.
@@ -22959,7 +22959,7 @@
 	builtins that return exactly once and do not throw. Cache call to
 	call_expr_flags.
 
-2008-04-04 Andy Hutchinson <hutchinsonandy@aim.com>
+2008-04-04  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR rtl-optimization/34916
 	PR middle-end/35519
@@ -23085,7 +23085,7 @@
 	* fold-const.c (optimize_minmax_comparison): Use the correct
 	type for the constant in the simplified comparison.
 
-2008-04-04  Zuxy Meng <zuxy.meng@gmail.com>
+2008-04-04  Zuxy Meng  <zuxy.meng@gmail.com>
 
 	* config/i386/driver-i386.c (describe_cache): Add l2_sizekb argument.
 	Pass L2 size as "--param l2-cache-size" to the compiler.
@@ -23244,7 +23244,7 @@
 	make sure to fill gaps with a fallback label if default_label
 	is not present.
 
-2008-04-03  Dominique d'Humières <dominiq@lps.ens.fr>
+2008-04-03  Dominique d'Humières  <dominiq@lps.ens.fr>
 
 	PR target/35801
 	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Free cfun.
@@ -23266,7 +23266,7 @@
 	(cb_line_change): Call dump_queued_macros.
 	* toplev.c (decode_d_option): Accept -dU as preprocessor option.
 
-2008-04-02  Anatoly Sokolov <aesok@post.ru>
+2008-04-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/predicates.md (io_address_operand): New predicate.
 	* config/avr/avr-protos.h (avr_io_address_p): Remove declaration.
@@ -23392,7 +23392,7 @@
 	* cfgexpand.c (expand_one_static_var, expand_one_var): Don't call
 	langhook.
 
-2008-04-02  Andy Hutchinson <hutchinsonamdy@aim.com>
+2008-04-02  Andy Hutchinson  <hutchinsonamdy@aim.com>
 
 	PR rtl-optimization/35542
 	* fwprop.c (forward_propagate_and_simplify): Replace
@@ -23616,7 +23616,7 @@
 
 2008-04-01  Jan Hubicka  <jh@suse.cz>
 	    Jim Wilson  <wilson@tuliptree.org>
-	    Andreas Tobler <andreast@gcc.gnu.org>
+	    Andreas Tobler  <andreast@gcc.gnu.org>
 
 	PR middle-end/35781
 	* m32c/m32.c (m32c_leaf_function_p, m32c_function_needs_enter): Use
@@ -23628,7 +23628,7 @@
 
 	* doc/c-tree.texi (Function Basics): Fix grammatical error.
 
-2008-03-31  Seongbae Park <seongbae.park@gmail.com>
+2008-03-31  Seongbae Park  <seongbae.park@gmail.com>
 
 	* common.opt (fprofile-dir=, fprofile-use=, fprofile-generate=):
 	New options
@@ -24319,7 +24319,7 @@
 
 	* config/i386/i386.h (STATIC_CHAIN_REGNUM): Use R10_REG and CX_REG.
 
-2008-03-23  Zuxy Meng <zuxy.meng@gmail.com>
+2008-03-23  Zuxy Meng  <zuxy.meng@gmail.com>
 
 	* doc/extend.texi (Function Attributes): Add missing comma in the
 	example of the "alloc_size" attribute.
@@ -24796,7 +24796,7 @@
 	(maybe_fold_stmt_addition): Likewise.
 
 2008-03-15  Bjoern Haase  <bjoern.m.haase@web.de>
-	    Anatoly Sokolov <aesok@post.ru>
+	    Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_arch_types): Add avr6 entry.
 	(avr_arch): Add ARCH_AVR6.
@@ -25538,7 +25538,7 @@
 	whose single use_stmt has a overlapping set of loaded and
 	stored symbols as that use_stmt might be a noop assignment then.
 
-2008-03-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+2008-03-05  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* gthr-rtems.h: Implement __gthread_mutex_destroy.
 
@@ -26287,7 +26287,7 @@
 	* stor-layout.c (layout_decl): Use -Wlarger-than= for warning.
 	* tree-optimize.c (tree_rest_of_compilation): Likewise.
 
-2008-02-26  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c-common.c (match_case_to_enum_1): Add appropriate
 	OPT_W* parameter to warning.
@@ -26611,7 +26611,7 @@
 
 	* regclass.c (current_pass): Remove declaration.
 
-2008-02-22  Anatoly Sokolov <aesok@post.ru>
+2008-02-22  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/libgcc.S (__RAMPZ__): Define.
 	(__do_copy_data): Add for devices with 128KB code memory.
@@ -26719,7 +26719,7 @@
 	* config/h8300/h8300.c (h8300_expand_epilogue): Emit return insn
 	as a jump, not as a plain insn.
 
-2008-02-20  Seongbae Park <seongbae.park@gmail.com>
+2008-02-20  Seongbae Park  <seongbae.park@gmail.com>
 
 	* doc/invoke.texi (Warning Options): Add new option
 	-Wframe-larger-than=.
@@ -26996,7 +26996,7 @@
 
 	* BASE-VER: Set to 4.4.0.
 
-2008-02-17 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+2008-02-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/c-tree.texi: Use @dots{} and @enddots{} where appropriate.
 	* doc/cfg.texi: Likewise.
@@ -27133,7 +27133,7 @@
 	* config/s390/s390.c (s390_mainpool_start): Emit the pool
 	before the first section switch note.
 
-2008-02-14 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+2008-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/bugreport.texi: Update copyright years.
 	* doc/c-tree.texi: Likewise.
@@ -27235,7 +27235,7 @@
 	* function.c (match_asm_constraints_1): Don't replace the same input
 	multiple times.
 
-2008-02-12  Anatoly Sokolov <aesok@post.ru>
+2008-02-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (AVR_HAVE_RAMPZ): Define.
 	* config/avr/avr.c (expand_prologue): Save RAMPZ register.
@@ -27481,7 +27481,7 @@
 	PR c/29326
 	* doc/extend.texi (Other Builtins): Document.
 
-2008-01-31  Tom Browder <tom.browder@gmail.com>
+2008-01-31  Tom Browder  <tom.browder@gmail.com>
 
 	* doc/c-tree.texi (Types): Fix grammar.
 	(Expression trees): Ditto.
@@ -28021,7 +28021,7 @@
 	* ipa-struct-reorg.c (create_new_malloc): Use pointer type as
 	malloc result type.
 
-2008-01-23 Anatoly Sokolov <aesok@post.ru>
+2008-01-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_current_arch): New variable.
 	(avr_arch_types): Add 'avr31' and 'avr51' entries.
@@ -28272,7 +28272,7 @@
 	from cfun to child_cfun.
 	* function.h (struct function): Add after_tree_profile bit.
 
-2008-01-19 Anatoly Sokolov <aesok@post.ru>
+2008-01-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.S (_exit): Disable interrupt.
 
@@ -28343,7 +28343,7 @@
 	PR tree-optimization/34648
 	* tree-ssa-sccvn.c (visit_use): Expressions which can throw are varying.
 
-2008-01-17  Anatoly Sokolov <aesok@post.ru>
+2008-01-17  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (LINK_SPEC): Support -mrelax and -mpmem-wrap-around.
 	* config/avr/avr.opt (mrelax, mpmem-wrap-around): Add.
@@ -28580,7 +28580,7 @@
 	PR target/26015
 	* config/vax/elf.h (FRAME_POINTER_CFA_OFFSET): Define.
 
-2008-01-11  Anatoly Sokolov <aesok@post.ru>
+2008-01-11  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (expand_prologue, expand_epilogue): Don't
 	save/restore frame pointer register and don't use 'call-prologues'
@@ -28937,7 +28937,7 @@
 	* tree-ssa-operands.c (ssa_operand_alloc): Also allocate a buffer
 	for very large number of operands instead of ICEing.
 
-2008-01-02  Arthur Norman <acn1@cam.ac.uk>
+2008-01-02  Arthur Norman  <acn1@cam.ac.uk>
 
 	PR target/34013
 	* config/i386/i386.c (ix86_expand_prologue): Save red-zone
