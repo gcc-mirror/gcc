@@ -1,3 +1,13 @@
+2009-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33465
+	* error.c (dump_expr): Handle FIX_TRUNC_EXPR and FLOAT_EXPR.
+
+2009-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38655
+	* error.c (dump_type_prefix, dump_type_suffix): Handle FIXED_POINT_TYPE.
+
 2009-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (invalid_nonstatic_memfn_p): Use
