@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not, see
 #include "target-def.h"
 #include "langhooks.h"
 #include "reload.h"
+#include "params.h"
 
 #include "picochip-protos.h"
 
@@ -303,6 +304,16 @@ picochip_return_in_memory(const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 void
 picochip_override_options (void)
 {
+  /* If we are optimizing for stack, dont let inliner to inline functions
+     that could potentially increase stack size.*/
+   if (flag_conserve_stack)
+   {
+     PARAM_VALUE (PARAM_LARGE_STACK_FRAME) = 0;
+     PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) = 0;
+   }
+   /* The function call overhead on picochip is not very high. Let the
+      inliner know so its heuristics become more reasonable. */
+   PARAM_VALUE (PARAM_INLINE_CALL_COST) = 2;
 
   /* Turn off the elimination of unused types. The elaborator
      generates various interesting types to represent constants,
