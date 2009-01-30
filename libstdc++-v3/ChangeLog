@@ -1,6 +1,7 @@
 2009-01-30  Ulrich Drepper  <drepper@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
+	PR libstdc++/30928 (partial, works together with recent glibcs)
 	* include/c_std/cstring (memchr, strchr, strpbrk, strrchr, strstr):
 	Provide inlines only if __CORRECT_ISO_CPP_STRING_H_PROTO is not
 	defined.
