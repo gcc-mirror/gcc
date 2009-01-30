@@ -1,3 +1,9 @@
+2009-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39041
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
+	Propagate variable indices only if the types match for this stmt.
+
 2009-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
