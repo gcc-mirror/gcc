@@ -1,3 +1,28 @@
+2009-01-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	2009-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38503
+	* g++.dg/warn/Wstrict-aliasing-bogus-placement-new.C: New testcase.
+
+	2009-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38745
+	* g++.dg/torture/pr38745.C: New testcase.
+
+	2009-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38851
+	* g++.dg/warn/Wuninitialized-1.C: New testcase.
+
+	2009-01-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+		    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38747
+	PR tree-optimization/38748
+	* gcc.dg/tree-ssa/struct-aliasing-1.c: New test.
+	* gcc.c-torture/execute/struct-aliasing-1.c: Likewise.
+
 2009-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	2009-01-28  Richard Guenther  <rguenther@suse.de>
