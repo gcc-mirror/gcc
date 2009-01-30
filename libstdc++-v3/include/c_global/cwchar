@@ -1,7 +1,7 @@
 // -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -204,36 +204,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::wmemset;
   using ::wprintf;
   using ::wscanf;
-
   using ::wcschr;
+  using ::wcspbrk;
+  using ::wcsrchr;
+  using ::wcsstr;
+  using ::wmemchr;
 
+#ifndef __CORRECT_ISO_CPP_WCHAR_H_PROTO
   inline wchar_t*
   wcschr(wchar_t* __p, wchar_t __c)
   { return wcschr(const_cast<const wchar_t*>(__p), __c); }
-
-  using ::wcspbrk;
 
   inline wchar_t*
   wcspbrk(wchar_t* __s1, const wchar_t* __s2)
   { return wcspbrk(const_cast<const wchar_t*>(__s1), __s2); }
 
-  using ::wcsrchr;
-
   inline wchar_t*
   wcsrchr(wchar_t* __p, wchar_t __c)
   { return wcsrchr(const_cast<const wchar_t*>(__p), __c); }
-
-  using ::wcsstr;
 
   inline wchar_t*
   wcsstr(wchar_t* __s1, const wchar_t* __s2)
   { return wcsstr(const_cast<const wchar_t*>(__s1), __s2); }
 
-  using ::wmemchr;
-
   inline wchar_t*
   wmemchr(wchar_t* __p, wchar_t __c, size_t __n)
   { return wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
