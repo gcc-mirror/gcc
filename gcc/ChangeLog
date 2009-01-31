@@ -1,3 +1,10 @@
+2009-01-31  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/38952
+	* config/i386/i386.c (ix86_builtin_setjmp_frame_value): New.
+	(TARGET_BUILTIN_SETJMP_FRAME_VALUE): Override default to point
+	at it.
+
 2009-01-31  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38937
