@@ -1,3 +1,10 @@
+2009-01-30  Ian Lance Taylor  <iant@google.com>
+
+	* acinclude.m4 (LIBCOMP_CHECK_LINKER_FEATURES): Set
+	libgomp_ld_is_gold.  Get gold version number.
+	(LIBGOMP_ENABLE_SYMVERS): Gold always support symbol versioning.
+	* configure: Rebuild.
+
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
         * testsuite/lib/libgomp.exp: Add -B option for targets that
