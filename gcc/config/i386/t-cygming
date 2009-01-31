@@ -43,13 +43,13 @@ STMP_FIXINC=stmp-fixinc
 # mkmap-flat.awk is used with the pe_dll option to produce a DEF instead
 # of an ELF map file.
 #
-# Warning: If SHLIB_SOVERSION or SHLIB_SONAME is updated, LIBGCC_SONAME
-# in mingw32.h must be updated also.
+# Warning: If SHLIB_SOVERSION or SHLIB_SONAME are updated, LIBGCC_SONAME
+# in mingw32.h and SHLIB_MKMAP_OPTS below must be updated also.
 
 SHLIB_EXT = .dll
 SHLIB_IMPLIB = @shlib_base_name@.a
 SHLIB_SOVERSION = 1
-SHLIB_SONAME = @shlib_base_name@_$(SHLIB_SOVERSION)$(SHLIB_EXT)
+SHLIB_SONAME = @shlib_base_name@_$(EH_MODEL)-$(SHLIB_SOVERSION)$(SHLIB_EXT)
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
 SHLIB_DIR = @multilib_dir@/shlib
@@ -57,7 +57,7 @@ SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
 
 SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 	if [ ! -d $(SHLIB_DIR) ]; then \
-		mkdir $(SHLIB_DIR) \
+		mkdir $(SHLIB_DIR); \
 	else true; fi && \
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	$(SHLIB_MAP).def \
@@ -79,5 +79,7 @@ SHLIB_INSTALL = \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_IMPLIB) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_IMPLIB)
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
-SHLIB_MKMAP_OPTS = -v pe_dll=1
+# We'd like to use SHLIB_SONAME here too, but shlib_base_name
+# does not get substituted before mkmap-flat.awk is run.
+SHLIB_MKMAP_OPTS = -v pe_dll=libgcc_s_$(EH_MODEL)-$(SHLIB_SOVERSION)$(SHLIB_EXT)
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver

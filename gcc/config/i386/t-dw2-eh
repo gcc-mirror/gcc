@@ -1,0 +1,3 @@
+
+# We are using Dwarf-2 EH.
+EH_MODEL = dw2
