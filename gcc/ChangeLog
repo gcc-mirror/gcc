@@ -1,3 +1,9 @@
+2009-01-31  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38937
+	* tree-ssa-structalias.c (do_sd_constraint): Do not shortcut
+	computing the transitive closure.
+
 2009-01-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39041
