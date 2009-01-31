@@ -7497,6 +7497,17 @@ ix86_initial_elimination_offset (int from, int to)
     }
 }
 
+/* In a dynamically-aligned function, we can't know the offset from
+   stack pointer to frame pointer, so we must ensure that setjmp
+   eliminates fp against the hard fp (%ebp) rather than trying to
+   index from %esp up to the top of the frame across a gap that is
+   of unknown (at compile-time) size.  */
+static rtx
+ix86_builtin_setjmp_frame_value (void)
+{
+  return stack_realign_fp ? hard_frame_pointer_rtx : virtual_stack_vars_rtx;
+}
+
 /* Fill structure ix86_frame about frame of currently computed function.  */
 
 static void
@@ -29541,6 +29552,9 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG ix86_reorg
+
+#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
+#define TARGET_BUILTIN_SETJMP_FRAME_VALUE ix86_builtin_setjmp_frame_value
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
