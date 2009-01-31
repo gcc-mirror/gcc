@@ -1,5 +1,8 @@
 2009-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* doc/install.texi (hppa*-hp-hpux*): Update binutils and linker
+	information.  Remove some obsolete information.  Reorganize.
+
 	* config/pa/fptr.c: Revert license to GPL 2.
 	* config/pa/milli64.S: Likewise.
 
