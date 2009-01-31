@@ -1,3 +1,7 @@
+2009-01-30  Ian Lance Taylor  <iant@google.com>
+
+	* MAINTAINERS: Move myself to the Global Reviewers list.
+
 2009-01-29  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).
