@@ -283,6 +283,8 @@ do {						\
 /* If configured with --disable-sjlj-exceptions, use DWARF2, else
    default to SJLJ.  */
 #if  (defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS)
+/* The logic of this #if must be kept synchronised with the logic
+   for selecting the tmake_eh_file fragment in config.gcc.  */
 #define DWARF2_UNWIND_INFO 1
 #else
 #define DWARF2_UNWIND_INFO 0

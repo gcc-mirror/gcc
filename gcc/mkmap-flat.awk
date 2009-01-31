@@ -93,8 +93,7 @@ $1 == "}" {
 END {
 
   if (pe_dll) {
-    # This matches SHLIB_SONAME in config/i386/t-cygming.
-    print "LIBRARY libgcc_s_1.dll";
+    print "LIBRARY " pe_dll;
     print "EXPORTS";
   }
 

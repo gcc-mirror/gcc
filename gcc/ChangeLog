@@ -1,5 +1,32 @@
 2009-01-31  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR target/38904
+	* mkmap-flat.awk (END):  Use pe_dll command-line arg to pass
+	LIBRARY name in, instead of hard-coding it.
+	* config.gcc (i[34567]86-*-pe | i[34567]86-*-cygwin*):  Add an
+	extra target make frag to tmake_files according to EH model.
+	(i[34567]86-*-mingw* | x86_64-*-mingw*):  Likewise.
+	* config/i386/t-dw2-eh, config/i386/t-sjlj-eh:  Add new target
+	frags that define makefile variable EH_MODEL appropriately.
+	* config/i386/cygming.h (DWARF2_UNWIND_INFO):  Add comment.
+	* config/i386/cygwin.h (LIBGCC_EH_EXTN):  Define to nothing or
+	to "-sjlj" according to type of EH configured.
+	(LIBGCC_SONAME):  Concatenate it to shared library base name.
+	* config/i386/mingw32.h (LIBGCC_EH_EXTN):  Define to "_dw2" or
+	to "_sjlj" according to type of EH configured.
+	(LIBGCC_SONAME):  Concatenate it to shared library base name.
+	* config/i386/t-cygming (SHLIB_SONAME):  Use EH_MODEL.
+	(SHLIB_LINK):  Add missing semicolon to if-else construct.
+	(SHLIB_MKMAP_OPTS):  Pass library name to mkmap-flat.awk as
+	string value of "pe_dll" command-line option.
+	* config/i386/t-cygwin (SHLIB_EH_EXTENSION):  New helper.
+	(SHLIB_SONAME):  Use it when overriding t-cygming default.
+	(SHLIB_IMPLIB):  Override t-cygming default.
+	(SHLIB_MKMAP_OPTS):  Pass library name to mkmap-flat.awk as
+	string value of "pe_dll" command-line option.
+
+2009-01-31  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	PR target/38952
 	* config/i386/i386.c (ix86_builtin_setjmp_frame_value): New.
 	(TARGET_BUILTIN_SETJMP_FRAME_VALUE): Override default to point

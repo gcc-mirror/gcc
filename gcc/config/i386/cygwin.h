@@ -259,3 +259,11 @@ while (0)
    and the -pthread flag is not recognized.  */
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
+
+/* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygwin. */
+#if DWARF2_UNWIND_INFO
+#define LIBGCC_EH_EXTN ""
+#else
+#define LIBGCC_EH_EXTN "-sjlj"
+#endif
+#define LIBGCC_SONAME "cyggcc_s" LIBGCC_EH_EXTN "-1.dll"
