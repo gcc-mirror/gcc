@@ -1,3 +1,9 @@
+2009-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/39053
+        * parser.c (cp_parser_pure_specifier): If there are no tokens left
+        do not call cp_lexer_consume_token.
+
 2009-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39028
