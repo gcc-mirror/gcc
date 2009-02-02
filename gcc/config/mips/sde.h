@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "\
 %{!mips1:--trap} \
-%{fPIC|fpic|fPIE|fpie:%{!mips16*:-KPIC}} \
 %{mips16:-no-mips16}"
 
 #undef LINK_SPEC

@@ -1,3 +1,8 @@
+2009-02-02  Catherine Moore  <clm@codesourcery.com>
+
+	* sde.h (SUBTARGET_ARM_SPEC): Don't assemble -fpic code as
+	-mabicalls.
+
 2009-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/fptr.c: Revert license to GPL 2.
