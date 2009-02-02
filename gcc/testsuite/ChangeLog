@@ -1,3 +1,8 @@
+2009-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/39053
+        * g++.dg/parse/crash52.C: New.
+
 2009-01-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39041
