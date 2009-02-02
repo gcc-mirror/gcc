@@ -1,3 +1,8 @@
+2009-02-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38937
+	* g++.dg/warn/Wstrict-aliasing-bogus-escape.C: New testcase.
+
 2009-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/39053
