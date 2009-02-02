@@ -1,3 +1,8 @@
+2009-02-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/38263
+	* gcc.dg/ipa/ipacost-2.c: Add -fpie when pic.
+
 2009-02-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39054
