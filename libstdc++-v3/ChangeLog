@@ -1,3 +1,8 @@
+2009-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/21_strings/c_strings/char/3.cc: New test.
+	* testsuite/21_strings/c_strings/wchar_t/3.cc: New test.
+
 2009-01-30  Ulrich Drepper  <drepper@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
