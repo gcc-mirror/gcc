@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,10 +42,5 @@
 #define __NO_CTYPE 1
 
 #include <features.h>
-
-// We must not see the optimized string functions GNU libc defines.
-#if defined __GLIBC__ && __GLIBC__ >= 2
-#define __NO_STRING_INLINES
-#endif
 
 #endif
