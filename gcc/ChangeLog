@@ -1,3 +1,8 @@
+2009-02-02  Catherine Moore  <clm@codesourcery.com>
+
+	* sde.h (SUBTARGET_ARM_SPEC): Don;t assemble -fpic code as
+	-mabicalls.
+
 2009-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (FILE_HAS_64BIT_SYMBOLS): New macro.
