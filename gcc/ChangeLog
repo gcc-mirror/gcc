@@ -1,3 +1,7 @@
+2009-02-02  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (arm_addsi3): Add r/r/k alternative.
+
 2009-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39058
