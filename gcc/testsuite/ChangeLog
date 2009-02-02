@@ -4,6 +4,9 @@
 	(check_effective_target_correct_iso_cpp_string_wchar_protos): New.
 	* g++.dg/ext/builtin10.C: New test.
 
+	PR inline-asm/39058
+	* gcc.target/i386/pr39058.c: New test.
+
 2009-02-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38937
