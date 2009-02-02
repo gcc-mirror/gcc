@@ -50,7 +50,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # include <paths.h>
 #endif
 #ifndef _PATH_TTY
+/* Native win32 apps don't know about /dev/tty but can print directly
+   to the console using  "CONOUT$"   */
+#if defined (_WIN32) && !defined (__CYGWIN__)
+# define _PATH_TTY "CONOUT$"
+#else
 # define _PATH_TTY "/dev/tty"
+#endif
 #endif
 #ifdef HAVE_SYSLOG_H
 # include <syslog.h>
