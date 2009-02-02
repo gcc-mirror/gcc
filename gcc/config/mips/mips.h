@@ -767,9 +767,15 @@ enum mips_code_readable_setting {
 /* Likewise for 32-bit regs.  */
 #define ABI_NEEDS_32BIT_REGS	(mips_abi == ABI_32)
 
-/* True if symbols are 64 bits wide.  At present, n64 is the only
-   ABI for which this is true.  */
-#define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64 && !TARGET_SYM32)
+/* True if the file format uses 64-bit symbols.  At present, this is
+   only true for n64, which uses 64-bit ELF.  */
+#define FILE_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64)
+
+/* True if symbols are 64 bits wide.  This is usually determined by
+   the ABI's file format, but it can be overridden by -msym32.  Note that
+   overriding the size with -msym32 changes the ABI of relocatable objects,
+   although it doesn't change the ABI of a fully-linked object.  */
+#define ABI_HAS_64BIT_SYMBOLS	(FILE_HAS_64BIT_SYMBOLS && !TARGET_SYM32)
 
 /* ISA has instructions for managing 64-bit fp and gp regs (e.g. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
@@ -1218,7 +1224,14 @@ enum mips_code_readable_setting {
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #endif
 
-#define DWARF2_ADDR_SIZE (ABI_HAS_64BIT_SYMBOLS ? 8 : 4)
+/* The size of DWARF addresses should be the same as the size of symbols
+   in the target file format.  They shouldn't depend on things like -msym32,
+   because many DWARF consumers do not allow the mixture of address sizes
+   that one would then get from linking -msym32 code with -msym64 code.
+
+   Note that the default POINTER_SIZE test is not appropriate for MIPS.
+   EABI64 has 64-bit pointers but uses 32-bit ELF.  */
+#define DWARF2_ADDR_SIZE (FILE_HAS_64BIT_SYMBOLS ? 8 : 4)
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1

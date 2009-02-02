@@ -1,3 +1,9 @@
+2009-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (FILE_HAS_64BIT_SYMBOLS): New macro.
+	(ABI_HAS_64BIT_SYMBOLS): Use it.
+	(DWARF2_ADDR_SIZE): Use it instead of ABI_HAS_64BIT_SYMBOLS.
+
 2009-02-02  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (arm_addsi3): Add r/r/k alternative.
