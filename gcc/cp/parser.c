@@ -3807,7 +3807,9 @@ cp_parser_unqualified_id (cp_parser* parser,
 		/* We couldn't find a type with this name, so just accept
 		   it and check for a match at instantiation time.  */
 		type_decl = cp_parser_identifier (parser);
-		return build_nt (BIT_NOT_EXPR, type_decl);
+		if (type_decl != error_mark_node)
+		  type_decl = build_nt (BIT_NOT_EXPR, type_decl);
+		return type_decl;
 	      }
 	  }
 	/* If an error occurred, assume that the name of the
