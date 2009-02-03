@@ -3,6 +3,6 @@
 
 template<int> struct A {};
 
-template<typename> struct B : A<sizeof(0=0r)> {};
+template<typename> struct B : A<sizeof(0=0r)> {};	// { dg-error "not supported" }
 
-template<typename> struct C : A<sizeof(0=0r)> {};
+template<typename> struct C : A<sizeof(0=0r)> {};	// { dg-error "not supported" }

@@ -1,5 +1,8 @@
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/39059
+	* parser.c (cp_parser_primary_expression): Reject FIXED_CSTs.
+
 	PR c++/39056
 	* typeck2.c (digest_init_r): Don't call process_init_constructor
 	for COMPLEX_TYPE.

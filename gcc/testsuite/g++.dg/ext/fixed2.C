@@ -3,5 +3,5 @@
 
 void foo()
 {
-  throw 0r;
+  throw 0r;	// { dg-error "not supported" }
 }
