@@ -5477,6 +5477,9 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
       char *end;
       int match, j;
 
+      if (*constraint == '%')
+	constraint++;
+
       match = strtoul (constraint, &end, 10);
       if (end == constraint)
 	continue;
