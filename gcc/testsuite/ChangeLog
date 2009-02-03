@@ -1,3 +1,8 @@
+2009-02-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35433
+	* gcc.dg/init-bad-6.c: New test.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35318
