@@ -789,7 +789,8 @@ digest_init_r (tree type, tree init, bool nested)
     }
 
   /* Handle scalar types (including conversions) and references.  */
-  if (TREE_CODE (type) != COMPLEX_TYPE
+  if ((TREE_CODE (type) != COMPLEX_TYPE
+       || BRACE_ENCLOSED_INITIALIZER_P (init))
       && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     {
       tree *exp;
