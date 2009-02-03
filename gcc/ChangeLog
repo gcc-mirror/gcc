@@ -1,3 +1,9 @@
+2009-02-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35433
+	* c-typeck.c (composite_type): Set TYPE_SIZE and TYPE_SIZE_UNIT
+	for composite type involving a zero-length array type.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35318
