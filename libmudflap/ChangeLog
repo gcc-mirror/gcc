@@ -1,3 +1,7 @@
+2009-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* mf-runtime.c (__mf_usage): Update copyright notice dates.
+
 2009-01-23  Jie Zhang  <jie.zhang@analog.com>
 
 	* mf-impl.h (__mf_get_state, __mf_set_state): Don't use
