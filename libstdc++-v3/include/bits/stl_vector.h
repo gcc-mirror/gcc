@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -968,13 +968,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 			     _ForwardIterator __first, _ForwardIterator __last)
         {
 	  pointer __result = this->_M_allocate(__n);
-	  try
+	  __try
 	    {
 	      std::__uninitialized_copy_a(__first, __last, __result,
 					  _M_get_Tp_allocator());
 	      return __result;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_deallocate(__result, __n);
 	      __throw_exception_again;

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -205,16 +205,16 @@ resize(size_type new_size)
     --actual_size;
 
   const size_type old_size = m_size;
-  try
+  __try
     {
       do_resize(actual_size - 1);
     }
-  catch(insert_error& )
+  __catch(insert_error& )
     {
       m_size = old_size;
       __throw_resize_error();
     }
-  catch(...)
+  __catch(...)
     {
       m_size = old_size;
       __throw_exception_again;

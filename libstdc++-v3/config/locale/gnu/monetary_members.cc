@@ -1,6 +1,6 @@
 // std::moneypunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -479,7 +479,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  wchar_t* __wcs_ps = 0;
 	  wchar_t* __wcs_ns = 0;
 	  const char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
-	  try
+	  __try
 	    {
 	      mbstate_t __state;
 	      size_t __len = strlen(__cpossign);
@@ -524,7 +524,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_data->_M_curr_symbol = L"";
 	      _M_data->_M_curr_symbol_size = wcslen(_M_data->_M_curr_symbol);
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      delete _M_data;
 	      _M_data = 0;
@@ -647,7 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  wchar_t* __wcs_ps = 0;
 	  wchar_t* __wcs_ns = 0;
 	  const char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
-	  try
+	  __try
             {
               mbstate_t __state;
               size_t __len;
@@ -693,7 +693,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_data->_M_curr_symbol = L"";
               _M_data->_M_curr_symbol_size = wcslen(_M_data->_M_curr_symbol);
 	    }
-          catch(...)
+          __catch(...)
 	    {
 	      delete _M_data;
               _M_data = 0;

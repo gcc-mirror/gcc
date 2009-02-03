@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,12 +50,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	if (!__caches[__i])
 	  {
 	    __moneypunct_cache<_CharT, _Intl>* __tmp = NULL;
-	    try
+	    __try
 	      {
 		__tmp = new __moneypunct_cache<_CharT, _Intl>;
 		__tmp->_M_cache(__loc);
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		delete __tmp;
 		__throw_exception_again;

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -52,7 +52,7 @@ clear()
   for (size_type i = 0; i < m_size; ++i)
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
 
-  try
+  __try
     {
       const size_type actual_size = resize_policy::get_new_size_for_arbitrary(0);
 
@@ -66,7 +66,7 @@ clear()
 
       m_a_entries = a_entries;
     }
-  catch(...)
+  __catch(...)
     { }
 
   m_size = 0;
@@ -135,7 +135,7 @@ erase_if(Pred pred)
   for (size_type i = left; i < m_size; ++i)
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
 
-  try
+  __try
     {
       const size_type actual_size =
 	resize_policy::get_new_size_for_arbitrary(left);
@@ -150,7 +150,7 @@ erase_if(Pred pred)
 
       resize_policy::notify_arbitrary(m_actual_size);
     }
-  catch(...)
+  __catch(...)
     { };
 
   m_size = left;
@@ -197,7 +197,7 @@ resize_for_erase_if_needed()
   if (!resize_policy::resize_needed_for_shrink(m_size))
     return;
 
-  try
+  __try
     {
       const size_type new_actual_size =
 	resize_policy::get_new_size_for_shrink();
@@ -215,7 +215,7 @@ resize_for_erase_if_needed()
 
       m_a_entries = a_new_entries;
     }
-  catch(...)
+  __catch(...)
     { }
 }
 

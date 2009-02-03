@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -187,7 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : _M_original_len(std::distance(__first, __last)),
       _M_len(0), _M_buffer(0)
     {
-      try
+      __try
 	{
 	  std::pair<pointer, size_type> __p(std::get_temporary_buffer<
 					    value_type>(_M_original_len));
@@ -196,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  if (!__is_pod(_Tp) && _M_len > 0)
 	    std::uninitialized_fill_n(_M_buffer, _M_len, *__first);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::return_temporary_buffer(_M_buffer);
 	  _M_buffer = 0;

@@ -1,5 +1,5 @@
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -166,9 +166,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __cat = _S_normalize_category(__cat);  
     _M_impl = new _Impl(*__base._M_impl, 1);  
 
-    try 
+    __try 
       { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
-    catch (...) 
+    __catch (...) 
       { 
 	_M_impl->_M_remove_reference(); 
 	__throw_exception_again;
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __c_locale __cloc;
     locale::facet::_S_create_c_locale(__cloc, __s);
 
-    try
+    __try
       {
 	_M_facets = new const facet*[_M_facets_size];
 	for (size_t __i = 0; __i < _M_facets_size; ++__i)
@@ -254,7 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif	  
 	locale::facet::_S_destroy_c_locale(__cloc);
       }
-    catch(...)
+    __catch(...)
       {
 	locale::facet::_S_destroy_c_locale(__cloc);
 	this->~_Impl();

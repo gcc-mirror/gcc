@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation
+// Copyright (C) 2008, 2009 Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -39,6 +39,7 @@
 #pragma GCC visibility push(default)
 
 #include <bits/c++config.h>
+#include <exception_defines.h>
 
 #if !defined(_GLIBCXX_ATOMIC_BUILTINS_4)
 #  error This platform does not support exception propagation.
@@ -152,11 +153,11 @@ namespace std
   template <class _Ex>
   exception_ptr copy_exception(_Ex __ex) throw()
   {
-    try
+    __try
       {
         throw __ex;
       }
-    catch(...)
+    __catch(...)
       {
         return current_exception ();
       }

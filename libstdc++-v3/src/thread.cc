@@ -44,11 +44,11 @@ namespace std
 	__thread_data_ptr __local_thread_data;
 	__local_thread_data.swap(__t->_M_this_ptr);
 
-	try
+	__try
 	  {
 	    __local_thread_data->_M_run();
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    std::terminate();
 	  }

@@ -1,5 +1,6 @@
 // -*- C++ -*- The GNU C++ exception personality routine.
-// Copyright (C) 2001, 2002, 2003, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -664,9 +665,9 @@ PERSONALITY_FUNCTION (int version,
 	std::terminate ();
       else if (handler_switch_value < 0)
 	{
-	  try 
+	  __try 
 	    { std::unexpected (); } 
-	  catch(...) 
+	  __catch(...) 
 	    { std::terminate (); }
 	}
     }
@@ -753,9 +754,9 @@ __cxa_call_unexpected (void *exc_obj_in)
   xh_terminate_handler = xh->terminateHandler;
   info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
 
-  try 
+  __try 
     { __unexpected (xh->unexpectedHandler); } 
-  catch(...) 
+  __catch(...) 
     {
       // Get the exception thrown from unexpected.
 

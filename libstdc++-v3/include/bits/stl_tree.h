@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -372,9 +372,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_create_node(const value_type& __x)
       {
 	_Link_type __tmp = _M_get_node();
-	try
+	__try
 	  { get_allocator().construct(&__tmp->_M_value_field, __x); }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_put_node(__tmp);
 	    __throw_exception_again;
@@ -394,12 +394,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         _M_create_node(_Args&&... __args)
 	{
 	  _Link_type __tmp = _M_get_node();
-	  try
+	  __try
 	    {
 	      _M_get_Node_allocator().construct(__tmp,
 					     std::forward<_Args>(__args)...);
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_put_node(__tmp);
 	      __throw_exception_again;
@@ -937,7 +937,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Link_type __top = _M_clone_node(__x);
       __top->_M_parent = __p;
 
-      try
+      __try
 	{
 	  if (__x->_M_right)
 	    __top->_M_right = _M_copy(_S_right(__x), __top);
@@ -955,7 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __x = _S_left(__x);
 	    }
 	}
-      catch(...)
+      __catch(...)
 	{
 	  _M_erase(__top);
 	  __throw_exception_again;

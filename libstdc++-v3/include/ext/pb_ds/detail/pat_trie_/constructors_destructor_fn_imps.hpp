@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -96,11 +96,11 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
         _GLIBCXX_DEBUG_ONLY(assert_valid();)
         return;
       }
-  try
+  __try
     {
       m_p_head->m_p_parent = recursive_copy_node(other.m_p_head->m_p_parent);
     }
-  catch(...)
+  __catch(...)
     {
       s_head_allocator.deallocate(m_p_head, 1);
       __throw_exception_again;
@@ -193,13 +193,13 @@ recursive_copy_node(const_node_pointer p_other_nd)
     p_other_internal_nd->begin();
 
   internal_node_pointer p_ret;
-  try
+  __try
     {
       while (child_it != p_other_internal_nd->end())
 	a_p_children[child_i++] = recursive_copy_node(*(child_it++));
       p_ret = s_internal_node_allocator.allocate(1);
     }
-  catch(...)
+  __catch(...)
     {
       while (child_i-- > 0)
 	clear_imp(a_p_children[child_i]);

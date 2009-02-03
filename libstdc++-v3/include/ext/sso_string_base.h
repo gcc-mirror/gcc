@@ -1,6 +1,6 @@
 // Short-string-optimized versatile string base -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -398,7 +398,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    ++__beg;
 	  }
 	
-	try
+	__try
 	  {
 	    while (__beg != __end)
 	      {
@@ -416,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		++__beg;
 	      }
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_dispose();
 	    __throw_exception_again;
@@ -446,9 +446,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  }
 
 	// Check for out_of_range and length_error exceptions.
-	try
+	__try
 	  { _S_copy_chars(_M_data(), __beg, __end); }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_dispose();
 	    __throw_exception_again;

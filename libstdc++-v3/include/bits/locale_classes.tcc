@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,9 +49,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
 
-      try
+      __try
 	{ _M_impl->_M_install_facet(&_Facet::id, __f); }
-      catch(...)
+      __catch(...)
 	{
 	  _M_impl->_M_remove_reference();
 	  __throw_exception_again;
@@ -66,11 +66,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     combine(const locale& __other) const
     {
       _Impl* __tmp = new _Impl(*_M_impl, 1);
-      try
+      __try
 	{
 	  __tmp->_M_replace_facet(__other._M_impl, &_Facet::id);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  __tmp->_M_remove_reference();
 	  __throw_exception_again;
@@ -189,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _CharT* __c = new _CharT[__len];
 
-      try
+      __try
 	{
 	  // strxfrm stops when it sees a nul character so we break
 	  // the string into zero-terminated substrings and pass those
@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __ret.push_back(_CharT());
 	    }
 	}
-      catch(...)
+      __catch(...)
 	{
 	  delete [] __c;
 	  __throw_exception_again;

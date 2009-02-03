@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -465,11 +465,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_create_node(const value_type& __x)
       {
 	_Node* __p = this->_M_get_node();
-	try
+	__try
 	  {
 	    _M_get_Tp_allocator().construct(&__p->_M_data, __x);
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_put_node(__p);
 	    __throw_exception_again;
@@ -482,12 +482,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
         _M_create_node(_Args&&... __args)
 	{
 	  _Node* __p = this->_M_get_node();
-	  try
+	  __try
 	    {
 	      _M_get_Node_allocator().construct(__p,
 						std::forward<_Args>(__args)...);
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_put_node(__p);
 	      __throw_exception_again;
