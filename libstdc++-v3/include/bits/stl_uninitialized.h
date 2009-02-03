@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -73,14 +73,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   _ForwardIterator __result)
         {
 	  _ForwardIterator __cur = __result;
-	  try
+	  __try
 	    {
 	      for (; __first != __last; ++__first, ++__cur)
 		::new(static_cast<void*>(&*__cur)) typename
 		    iterator_traits<_ForwardIterator>::value_type(*__first);
 	      return __cur;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      std::_Destroy(__result, __cur);
 	      __throw_exception_again;
@@ -132,12 +132,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   _ForwardIterator __last, const _Tp& __x)
         {
 	  _ForwardIterator __cur = __first;
-	  try
+	  __try
 	    {
 	      for (; __cur != __last; ++__cur)
 		std::_Construct(&*__cur, __x);
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      std::_Destroy(__first, __cur);
 	      __throw_exception_again;
@@ -186,12 +186,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			     const _Tp& __x)
         {
 	  _ForwardIterator __cur = __first;
-	  try
+	  __try
 	    {
 	      for (; __n > 0; --__n, ++__cur)
 		std::_Construct(&*__cur, __x);
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      std::_Destroy(__first, __cur);
 	      __throw_exception_again;
@@ -242,13 +242,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   _ForwardIterator __result, _Allocator& __alloc)
     {
       _ForwardIterator __cur = __result;
-      try
+      __try
 	{
 	  for (; __first != __last; ++__first, ++__cur)
 	    __alloc.construct(&*__cur, *__first);
 	  return __cur;
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __cur, __alloc);
 	  __throw_exception_again;
@@ -278,12 +278,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   const _Tp& __x, _Allocator& __alloc)
     {
       _ForwardIterator __cur = __first;
-      try
+      __try
 	{
 	  for (; __cur != __last; ++__cur)
 	    __alloc.construct(&*__cur, __x);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__first, __cur, __alloc);
 	  __throw_exception_again;
@@ -303,12 +303,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			     const _Tp& __x, _Allocator& __alloc)
     {
       _ForwardIterator __cur = __first;
-      try
+      __try
 	{
 	  for (; __n > 0; --__n, ++__cur)
 	    __alloc.construct(&*__cur, __x);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__first, __cur, __alloc);
 	  __throw_exception_again;
@@ -345,11 +345,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __mid = std::__uninitialized_copy_a(__first1, __last1,
 							   __result,
 							   __alloc);
-      try
+      __try
 	{
 	  return std::__uninitialized_move_a(__first2, __last2, __mid, __alloc);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __mid, __alloc);
 	  __throw_exception_again;
@@ -373,11 +373,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __mid = std::__uninitialized_move_a(__first1, __last1,
 							   __result,
 							   __alloc);
-      try
+      __try
 	{
 	  return std::__uninitialized_copy_a(__first2, __last2, __mid, __alloc);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __mid, __alloc);
 	  __throw_exception_again;
@@ -395,11 +395,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			      _InputIterator __last, _Allocator& __alloc)
     {
       std::__uninitialized_fill_a(__result, __mid, __x, __alloc);
-      try
+      __try
 	{
 	  return std::__uninitialized_move_a(__first, __last, __mid, __alloc);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __mid, __alloc);
 	  __throw_exception_again;
@@ -420,11 +420,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __mid2 = std::__uninitialized_move_a(__first1, __last1,
 							    __first2,
 							    __alloc);
-      try
+      __try
 	{
 	  std::__uninitialized_fill_a(__mid2, __last2, __x, __alloc);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__first2, __mid2, __alloc);
 	  __throw_exception_again;
@@ -439,14 +439,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   _ForwardIterator __result, input_iterator_tag)
     {
       _ForwardIterator __cur = __result;
-      try
+      __try
 	{
 	  for (; __n > 0; --__n, ++__first, ++__cur)
 	    ::new(static_cast<void*>(&*__cur)) typename
 		iterator_traits<_ForwardIterator>::value_type(*__first);
 	  return __cur;
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __cur);
 	  __throw_exception_again;

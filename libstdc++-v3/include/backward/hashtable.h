@@ -1,6 +1,6 @@
 // Hashtable implementation used by containers -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -603,12 +603,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       {
 	_Node* __n = _M_get_node();
 	__n->_M_next = 0;
-	try
+	__try
 	  {
 	    this->get_allocator().construct(&__n->_M_val, __obj);
 	    return __n;
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_put_node(__n);
 	    __throw_exception_again;
@@ -995,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  if (__n > __old_n)
 	    {
 	      _Vector_type __tmp(__n, (_Node*)(0), _M_buckets.get_allocator());
-	      try
+	      __try
 		{
 		  for (size_type __bucket = 0; __bucket < __old_n; ++__bucket)
 		    {
@@ -1012,7 +1012,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		    }
 		  _M_buckets.swap(__tmp);
 		}
-	      catch(...)
+	      __catch(...)
 		{
 		  for (size_type __bucket = 0; __bucket < __tmp.size();
 		       ++__bucket)
@@ -1098,7 +1098,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_buckets.clear();
       _M_buckets.reserve(__ht._M_buckets.size());
       _M_buckets.insert(_M_buckets.end(), __ht._M_buckets.size(), (_Node*) 0);
-      try
+      __try
 	{
 	  for (size_type __i = 0; __i < __ht._M_buckets.size(); ++__i) {
 	    const _Node* __cur = __ht._M_buckets[__i];
@@ -1118,7 +1118,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  }
 	  _M_num_elements = __ht._M_num_elements;
 	}
-      catch(...)
+      __catch(...)
 	{
 	  clear();
 	  __throw_exception_again;

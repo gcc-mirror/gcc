@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-// 2007
+// 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -154,17 +154,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
 	} __cs (this);
 
-	try
+	__try
 	  {
 	    if (!_M_terminate_output())
 	      __testfail = true;
 	  }
-	catch(__cxxabiv1::__forced_unwind&)
+	__catch(__cxxabiv1::__forced_unwind&)
 	  {
 	    _M_file.close();
 	    __throw_exception_again;
 	  }
-	catch(...)
+	__catch(...)
 	  { __testfail = true; }
       }
 

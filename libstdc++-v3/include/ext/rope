@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1689,9 +1689,9 @@ protected:
 	
 	__uninitialized_copy_n_a(__s, __size, __buf, __a);
 	_S_cond_store_eos(__buf[__size]);
-	try
+	__try
 	  { return _S_new_RopeLeaf(__buf, __size, __a); }
-	catch(...)
+	__catch(...)
 	  {
 	    _RopeRep::__STL_FREE_STRING(__buf, __size, __a);
 	    __throw_exception_again;
@@ -1845,12 +1845,12 @@ protected:
 	_CharT* __buf = this->_Data_allocate(_S_rounded_up_size(1));
 	
 	_M_get_allocator().construct(__buf, __c);
-	try
+	__try
 	  {
 	    this->_M_tree_ptr = _S_new_RopeLeaf(__buf, 1,
 						_M_get_allocator());
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _RopeRep::__STL_FREE_STRING(__buf, 1, _M_get_allocator());
 	    __throw_exception_again;
@@ -1924,13 +1924,13 @@ protected:
 	_RopeRep* __old = this->_M_tree_ptr;
 	_RopeRep* __left =
 	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(&__x, 1, _M_get_allocator());
-	try
+	__try
 	  {
 	    this->_M_tree_ptr = _S_concat(__left, this->_M_tree_ptr);
 	    _S_unref(__old);
 	    _S_unref(__left);
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _S_unref(__left);
 	    __throw_exception_again;

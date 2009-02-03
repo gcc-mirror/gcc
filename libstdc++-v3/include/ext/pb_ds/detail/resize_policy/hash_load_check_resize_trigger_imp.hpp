@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -259,13 +259,13 @@ set_loads(std::pair<float, float> load_pair)
   const size_type old_next_grow_size = m_next_grow_size;
   const bool old_resize_needed = m_resize_needed;
 
-  try
+  __try
     {
       m_load_min = load_pair.first;
       m_load_max = load_pair.second;
       do_resize(static_cast<size_type>(size_base::get_size() / ((m_load_min + m_load_max) / 2)));
     }
-  catch(...)
+  __catch(...)
     {
       m_load_min = old_load_min;
       m_load_max = old_load_max;

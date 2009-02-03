@@ -1,6 +1,6 @@
 // <bits/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -222,11 +222,11 @@ namespace std
       template<typename _Ptr>
         __shared_count(_Ptr __p) : _M_pi(0)
         {
-          try
+          __try
             {
               _M_pi = new _Sp_counted_ptr<_Ptr, _Lp>(__p);
             }
-          catch(...)
+          __catch(...)
             {
               delete __p;
               __throw_exception_again;
@@ -241,12 +241,12 @@ namespace std
           typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
           typedef std::allocator<_Sp_cd_type> _Alloc2;
           _Alloc2 __a2;
-          try
+          __try
             {
               _M_pi = __a2.allocate(1);
               ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d);
             }
-          catch(...)
+          __catch(...)
             {
               __d(__p); // Call _Deleter on __p.
               if (_M_pi)
@@ -261,12 +261,12 @@ namespace std
           typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
           typedef typename _Alloc::template rebind<_Sp_cd_type>::other _Alloc2;
           _Alloc2 __a2(__a);
-          try
+          __try
             {
               _M_pi = __a2.allocate(1);
               ::new(static_cast<void*>(_M_pi)) _Sp_cd_type(__p, __d, __a);
             }
-          catch(...)
+          __catch(...)
             {
               __d(__p); // Call _Deleter on __p.
               if (_M_pi)
@@ -282,13 +282,13 @@ namespace std
           typedef _Sp_counted_ptr_inplace<_Tp, _Alloc, _Lp> _Sp_cp_type;
           typedef typename _Alloc::template rebind<_Sp_cp_type>::other _Alloc2;
           _Alloc2 __a2(__a);
-          try
+          __try
             {
               _M_pi = __a2.allocate(1);
               ::new(static_cast<void*>(_M_pi)) _Sp_cp_type(__a,
                     std::forward<_Args>(__args)...);
             }
-          catch(...)
+          __catch(...)
             {
               if (_M_pi)
         	__a2.deallocate(static_cast<_Sp_cp_type*>(_M_pi), 1);
@@ -1074,11 +1074,11 @@ namespace std
 	if (expired())
 	  return __shared_ptr<element_type, _Lp>();
 
-	try
+	__try
 	  {
 	    return __shared_ptr<element_type, _Lp>(*this);
 	  }
-	catch(const bad_weak_ptr&)
+	__catch(const bad_weak_ptr&)
 	  {
 	    // Q: How can we get here?
 	    // A: Another thread may have invalidated r after the
@@ -1447,11 +1447,11 @@ namespace std
 	if (this->expired())
 	  return shared_ptr<_Tp>();
 
-	try
+	__try
 	  {
 	    return shared_ptr<_Tp>(*this);
 	  }
-	catch(const bad_weak_ptr&)
+	__catch(const bad_weak_ptr&)
 	  {
 	    return shared_ptr<_Tp>();
 	  }

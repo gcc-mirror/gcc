@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -77,13 +77,13 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
   entry_pointer a_entries = NULL;
   entry_pointer a_other_entries = NULL;
 
-  try
+  __try
     {
       a_entries = s_entry_allocator.allocate(actual_size);
 
       a_other_entries = s_entry_allocator.allocate(other_actual_size);
     }
-  catch(...)
+  __catch(...)
     {
       if (a_entries != NULL)
 	s_entry_allocator.deallocate(a_entries, actual_size);
@@ -137,12 +137,12 @@ join(PB_DS_CLASS_C_DEC& other)
   entry_pointer a_entries = NULL;
   entry_pointer a_other_entries = NULL;
 
-  try
+  __try
     {
       a_entries = s_entry_allocator.allocate(actual_size);
       a_other_entries = s_entry_allocator.allocate(resize_policy::min_size);
     }
-  catch(...)
+  __catch(...)
     {
       if (a_entries != NULL)
 	s_entry_allocator.deallocate(a_entries, actual_size);

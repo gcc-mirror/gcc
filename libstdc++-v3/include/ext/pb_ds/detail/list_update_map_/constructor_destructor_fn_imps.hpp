@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -93,7 +93,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #endif
 m_p_l(NULL)
 {
-  try
+  __try
     {
       for (const_iterator it = other.begin(); it != other.end(); ++it)
         {
@@ -104,7 +104,7 @@ m_p_l(NULL)
 	  m_p_l = p_l;
         }
     }
-  catch(...)
+  __catch(...)
     {
       deallocate_all();
       __throw_exception_again;

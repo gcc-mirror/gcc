@@ -1,3 +1,85 @@
+2009-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/25191	
+	* libsupc++/exception_defines.h: Depending on __EXCEPTIONS,
+	deal consistently with __try and __catch too.
+	* src/localename.cc: Replace try -> __try, catch -> __catch.
+	* src/ios.cc: Likewise.
+	* src/locale.cc: Likewise.
+	* src/istream.cc: Likewise.
+	* src/thread.cc: Likewise.
+	* src/compatibility.cc: Likewise.
+	* src/bitmap_allocator.cc: Likewise.
+	* src/ios_init.cc: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* include/tr1_impl/hashtable: Likewise.
+	* include/std/bitset: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_standard_resize_policy_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	split_join_branch_bag.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/slist: Likewise.
+	* include/ext/memory: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/vstring.tcc: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/locale_classes.tcc: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_classes.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/istream.tcc: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/bits/stl_tempbuf.h: Likewise.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/ostream_insert.h: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/backward/hashtable.h: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/eh_personality.cc: Likewise.
+	* libsupc++/eh_call.cc: Likewise.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/time_members.h: Likewise.
+	* config/locale/generic/time_members.h: Likewise.
+
 2009-02-03  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/algorithmfwd.h:

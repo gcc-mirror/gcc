@@ -1,6 +1,7 @@
 // Memory extensions -*- C++ -*-
 
-// Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,13 +80,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			   _ForwardIter __result, std::input_iterator_tag)
     {
       _ForwardIter __cur = __result;
-      try
+      __try
 	{
 	  for (; __count > 0 ; --__count, ++__first, ++__cur)
 	    std::_Construct(&*__cur, *__first);
 	  return pair<_InputIter, _ForwardIter>(__first, __cur);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __cur);
 	  __throw_exception_again;
@@ -138,13 +139,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			     _Allocator __alloc)
     {
       _ForwardIter __cur = __result;
-      try
+      __try
 	{
 	  for (; __count > 0 ; --__count, ++__first, ++__cur)
 	    __alloc.construct(&*__cur, *__first);
 	  return pair<_InputIter, _ForwardIter>(__first, __cur);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::_Destroy(__result, __cur, __alloc);
 	  __throw_exception_again;

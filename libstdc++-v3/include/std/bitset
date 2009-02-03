@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1326,7 +1326,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typename __istream_type::sentry __sentry(__is);
       if (__sentry)
 	{
-	  try
+	  __try
 	    {
 	      for (size_t __i = _Nb; __i > 0; --__i)
 		{
@@ -1355,12 +1355,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		    }
 		}
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __is._M_setstate(__ios_base::badbit);		
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    { __is._M_setstate(__ios_base::badbit); }
 	}
 

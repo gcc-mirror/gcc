@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -326,7 +326,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  const size_type __elems_before = __position - begin();
 	  pointer __new_start(this->_M_allocate(__len));
 	  pointer __new_finish(__new_start);
-	  try
+	  __try
 	    {
 	      // The order of the three operations is dictated by the C++0x
 	      // case, where the moves could alter a new element belonging
@@ -352,7 +352,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 					    __new_finish,
 					    _M_get_Tp_allocator());
 	    }
-	  catch(...)
+          __catch(...)
 	    {
 	      if (!__new_finish)
 		this->_M_impl.destroy(__new_start + __elems_before);
@@ -418,7 +418,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	      const size_type __elems_before = __position - begin();
 	      pointer __new_start(this->_M_allocate(__len));
 	      pointer __new_finish(__new_start);
-	      try
+	      __try
 		{
 		  // See _M_insert_aux above.
 		  std::__uninitialized_fill_n_a(__new_start + __elems_before,
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 						__new_finish,
 						_M_get_Tp_allocator());
 		}
-	      catch(...)
+	      __catch(...)
 		{
 		  if (!__new_finish)
 		    std::_Destroy(__new_start + __elems_before,
@@ -525,7 +525,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		  _M_check_len(__n, "vector::_M_range_insert");
 		pointer __new_start(this->_M_allocate(__len));
 		pointer __new_finish(__new_start);
-		try
+		__try
 		  {
 		    __new_finish =
 		      std::__uninitialized_move_a(this->_M_impl._M_start,
@@ -542,7 +542,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 						  __new_finish,
 						  _M_get_Tp_allocator());
 		  }
-		catch(...)
+		__catch(...)
 		  {
 		    std::_Destroy(__new_start, __new_finish,
 				  _M_get_Tp_allocator());

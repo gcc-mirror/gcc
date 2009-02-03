@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -109,7 +109,7 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
   const_iterator first_it = other.begin();
   const_iterator last_it = other.end();
 
-  try
+  __try
     {
       while (first_it != last_it)
         {
@@ -117,7 +117,7 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
 	  ++first_it;
         }
     }
-  catch(...)
+  __catch(...)
     {
       for (size_type i = 0; i < m_size; ++i)
 	erase_at(m_a_entries, i, s_no_throw_copies_ind);

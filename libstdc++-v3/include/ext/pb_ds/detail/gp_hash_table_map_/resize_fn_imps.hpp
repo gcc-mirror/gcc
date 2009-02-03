@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -69,11 +69,11 @@ do_resize_if_needed_no_throw()
   if (!resize_base::is_resize_needed())
     return;
 
-  try
+  __try
     {
       resize_imp(resize_base::get_new_size(m_num_e, m_num_used_e));
     }
-  catch(...)
+  __catch(...)
     { }
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -104,11 +104,11 @@ resize_imp(size_type new_size)
   for (size_type i = 0; i < m_num_e; ++i)
     a_entries_resized[i].m_stat = empty_entry_status;
 
-  try
+  __try
     {
       resize_imp(a_entries_resized, old_size);
     }
-  catch(...)
+  __catch(...)
     {
       erase_all_valid_entries(a_entries_resized, new_size);
       m_num_e = old_size;

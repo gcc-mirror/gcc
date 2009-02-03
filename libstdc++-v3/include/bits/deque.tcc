@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -242,13 +242,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       if (__pos._M_cur == this->_M_impl._M_start._M_cur)
 	{
 	  iterator __new_start = _M_reserve_elements_at_front(__n);
-	  try
+	  __try
 	    {
 	      std::__uninitialized_fill_a(__new_start, this->_M_impl._M_start,
 					  __x, _M_get_Tp_allocator());
 	      this->_M_impl._M_start = __new_start;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_destroy_nodes(__new_start._M_node,
 			       this->_M_impl._M_start._M_node);
@@ -258,14 +258,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       else if (__pos._M_cur == this->_M_impl._M_finish._M_cur)
 	{
 	  iterator __new_finish = _M_reserve_elements_at_back(__n);
-	  try
+	  __try
 	    {
 	      std::__uninitialized_fill_a(this->_M_impl._M_finish,
 					  __new_finish, __x,
 					  _M_get_Tp_allocator());
 	      this->_M_impl._M_finish = __new_finish;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
 			       __new_finish._M_node + 1);
@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     _M_fill_initialize(const value_type& __value)
     {
       _Map_pointer __cur;
-      try
+      __try
         {
           for (__cur = this->_M_impl._M_start._M_node;
 	       __cur < this->_M_impl._M_finish._M_node;
@@ -293,7 +293,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 				      this->_M_impl._M_finish._M_cur,
 				      __value, _M_get_Tp_allocator());
         }
-      catch(...)
+      __catch(...)
         {
           std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
 			_M_get_Tp_allocator());
@@ -309,12 +309,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
                           std::input_iterator_tag)
       {
         this->_M_initialize_map(0);
-        try
+        __try
           {
             for (; __first != __last; ++__first)
               push_back(*__first);
           }
-        catch(...)
+        __catch(...)
           {
             clear();
             __throw_exception_again;
@@ -332,7 +332,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
         this->_M_initialize_map(__n);
 
         _Map_pointer __cur_node;
-        try
+        __try
           {
             for (__cur_node = this->_M_impl._M_start._M_node;
                  __cur_node < this->_M_impl._M_finish._M_node;
@@ -348,7 +348,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 					this->_M_impl._M_finish._M_first,
 					_M_get_Tp_allocator());
           }
-        catch(...)
+        __catch(...)
           {
             std::_Destroy(this->_M_impl._M_start,
 			  iterator(*__cur_node, __cur_node),
@@ -372,7 +372,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       {
 	_M_reserve_map_at_back();
 	*(this->_M_impl._M_finish._M_node + 1) = this->_M_allocate_node();
-	try
+	__try
 	  {
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
@@ -384,7 +384,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 						+ 1);
 	    this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_first;
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    _M_deallocate_node(*(this->_M_impl._M_finish._M_node + 1));
 	    __throw_exception_again;
@@ -406,7 +406,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       {
 	_M_reserve_map_at_front();
 	*(this->_M_impl._M_start._M_node - 1) = this->_M_allocate_node();
-	try
+	__try
 	  {
 	    this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node
 					       - 1);
@@ -418,7 +418,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    this->_M_impl.construct(this->_M_impl._M_start._M_cur, __t);
 #endif
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    ++this->_M_impl._M_start;
 	    _M_deallocate_node(*(this->_M_impl._M_start._M_node - 1));
@@ -473,13 +473,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
         if (__pos._M_cur == this->_M_impl._M_start._M_cur)
 	  {
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
-	    try
+	    __try
 	      {
 		std::__uninitialized_copy_a(__first, __last, __new_start,
 					    _M_get_Tp_allocator());
 		this->_M_impl._M_start = __new_start;
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		_M_destroy_nodes(__new_start._M_node,
 				 this->_M_impl._M_start._M_node);
@@ -489,14 +489,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
         else if (__pos._M_cur == this->_M_impl._M_finish._M_cur)
 	  {
 	    iterator __new_finish = _M_reserve_elements_at_back(__n);
-	    try
+	    __try
 	      {
 		std::__uninitialized_copy_a(__first, __last,
 					    this->_M_impl._M_finish,
 					    _M_get_Tp_allocator());
 		this->_M_impl._M_finish = __new_finish;
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		_M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
 				 __new_finish._M_node + 1);
@@ -562,7 +562,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  iterator __new_start = _M_reserve_elements_at_front(__n);
 	  iterator __old_start = this->_M_impl._M_start;
 	  __pos = this->_M_impl._M_start + __elems_before;
-	  try
+	  __try
 	    {
 	      if (__elems_before >= difference_type(__n))
 		{
@@ -586,7 +586,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		  std::fill(__old_start, __pos, __x_copy);
 		}
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_destroy_nodes(__new_start._M_node,
 			       this->_M_impl._M_start._M_node);
@@ -600,7 +600,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  const difference_type __elems_after =
 	    difference_type(__length) - __elems_before;
 	  __pos = this->_M_impl._M_finish - __elems_after;
-	  try
+	  __try
 	    {
 	      if (__elems_after > difference_type(__n))
 		{
@@ -625,7 +625,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		  std::fill(__pos, __old_finish, __x_copy);
 		}
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
 			       __new_finish._M_node + 1);
@@ -649,7 +649,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
 	    iterator __old_start = this->_M_impl._M_start;
 	    __pos = this->_M_impl._M_start + __elemsbefore;
-	    try
+	    __try
 	      {
 		if (__elemsbefore >= difference_type(__n))
 		  {
@@ -674,7 +674,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		    std::copy(__mid, __last, __old_start);
 		  }
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		_M_destroy_nodes(__new_start._M_node,
 				 this->_M_impl._M_start._M_node);
@@ -688,7 +688,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
           const difference_type __elemsafter =
             difference_type(__length) - __elemsbefore;
           __pos = this->_M_impl._M_finish - __elemsafter;
-          try
+          __try
             {
               if (__elemsafter > difference_type(__n))
 		{
@@ -714,7 +714,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		  std::copy(__first, __mid, __pos);
 		}
             }
-          catch(...)
+          __catch(...)
             {
               _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
 			       __new_finish._M_node + 1);
@@ -757,12 +757,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 				     / _S_buffer_size());
       _M_reserve_map_at_front(__new_nodes);
       size_type __i;
-      try
+      __try
         {
           for (__i = 1; __i <= __new_nodes; ++__i)
             *(this->_M_impl._M_start._M_node - __i) = this->_M_allocate_node();
         }
-      catch(...)
+      __catch(...)
         {
           for (size_type __j = 1; __j < __i; ++__j)
             _M_deallocate_node(*(this->_M_impl._M_start._M_node - __j));
@@ -782,12 +782,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 				     / _S_buffer_size());
       _M_reserve_map_at_back(__new_nodes);
       size_type __i;
-      try
+      __try
         {
           for (__i = 1; __i <= __new_nodes; ++__i)
             *(this->_M_impl._M_finish._M_node + __i) = this->_M_allocate_node();
         }
-      catch(...)
+      __catch(...)
         {
           for (size_type __j = 1; __j < __i; ++__j)
             _M_deallocate_node(*(this->_M_impl._M_finish._M_node + __j));

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -168,11 +168,11 @@ namespace __gnu_pbds
 	  std::abort();
 	}
 
-      try
+      __try
 	{
 	  m_key_set.push_back(r_key);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  std::cerr << "insert_new" << r_key << std::endl;
 	  std::abort();

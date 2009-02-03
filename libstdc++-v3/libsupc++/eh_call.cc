@@ -1,5 +1,6 @@
 // -*- C++ -*- Helpers for calling unextected and terminate
-// Copyright (C) 2001, 2002, 2003, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -108,14 +109,14 @@ __cxa_call_unexpected(void* exc_obj_in)
   } end_catch_protect_obj;
 
 
-  try 
+  __try 
     { 
       if (foreign_exception)
 	std::unexpected();
       else
 	__unexpected(unexpectedHandler);
     }
-  catch(...) 
+  __catch(...) 
     {
       /* See if the new exception matches the rtti list.  */
       if (foreign_exception)

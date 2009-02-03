@@ -1,6 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -125,9 +126,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	if (__ix < numeric_limits<int>::max())
 	  {
 	    __newsize = __ix + 1;
-	    try
+	    __try
 	      { __words = new _Words[__newsize]; }
-	    catch(...)
+	    __catch(...)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
@@ -170,9 +171,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _Callback_list* __p = _M_callbacks;
     while (__p)
       {
-	try 
+	__try 
 	  { (*__p->_M_fn) (__e, *this, __p->_M_index); } 
-	catch(...) 
+	__catch(...) 
 	  { }
 	__p = __p->_M_next;
       }

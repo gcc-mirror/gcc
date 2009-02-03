@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -60,11 +60,11 @@ public:
   add_branch()
   {
     internal_node_pointer p_nd = s_internal_node_allocator.allocate(1);
-    try
+    __try
       {
 	m_bag.push_back(p_nd);
       }
-    catch(...)
+    __catch(...)
       {
 	s_internal_node_allocator.deallocate(p_nd, 1);
 	__throw_exception_again;

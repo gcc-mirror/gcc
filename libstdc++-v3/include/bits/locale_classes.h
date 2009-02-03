@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -404,9 +404,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
-	  try
+	  __try
 	    { delete this; }
-	  catch(...)
+	  __catch(...)
 	    { }
 	}
     }
@@ -509,9 +509,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
-	  try
+	  __try
 	    { delete this; }
-	  catch(...)
+	  __catch(...)
 	    { }
 	}
     }

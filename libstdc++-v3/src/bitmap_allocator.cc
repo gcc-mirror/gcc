@@ -1,6 +1,7 @@
 // Bitmap Allocator. Out of line function definitions. -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,12 +76,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  {
 	    size_t* __ret = 0;
 	    --__ctr;
-	    try
+	    __try
 	      {
 		__ret = reinterpret_cast<size_t*>
 		  (::operator new(__sz + sizeof(size_t)));
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		this->_M_clear();
 	      }

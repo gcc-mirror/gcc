@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -567,7 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
-	  try
+	  __try
 	    {
 	      // Avoid reallocation for common case.
 	      __str.erase();
@@ -600,12 +600,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__err |= __ios_base::eofbit;
 	      __in.width(0);
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __in._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>
@@ -641,7 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb)
 	{
-	  try
+	  __try
 	    {
 	      // Avoid reallocation for common case.
 	      __str.erase();
@@ -676,12 +676,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      else
 		__err |= __ios_base::failbit;
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __in._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>

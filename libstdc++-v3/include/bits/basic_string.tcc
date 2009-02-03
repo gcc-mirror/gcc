@@ -1,7 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
 	_Rep* __r = _Rep::_S_create(__len, size_type(0), __a);
 	_M_copy(__r->_M_refdata(), __buf, __len);
-	try
+	__try
 	  {
 	    while (__beg != __end)
 	      {
@@ -113,7 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		++__beg;
 	      }
 	  }
-	catch(...)
+	__catch(...)
 	  {
 	    __r->_M_destroy(__a);
 	    __throw_exception_again;
@@ -142,9 +142,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 								      __end));
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
-	try
+	__try
 	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
-	catch(...)
+	__catch(...)
 	  {
 	    __r->_M_destroy(__a);
 	    __throw_exception_again;
@@ -992,7 +992,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
-	  try
+	  __try
 	    {
 	      // Avoid reallocation for common case.
 	      __str.erase();
@@ -1025,12 +1025,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__err |= __ios_base::eofbit;
 	      __in.width(0);
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __in._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>
@@ -1063,7 +1063,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb)
 	{
-	  try
+	  __try
 	    {
 	      __str.erase();
 	      const __int_type __idelim = _Traits::to_int_type(__delim);
@@ -1089,12 +1089,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      else
 		__err |= __ios_base::failbit;
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __in._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>

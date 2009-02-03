@@ -1,6 +1,6 @@
 // Helpers for ostream inserters -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
-	  try
+	  __try
 	    {
 	      const streamsize __w = __out.width();
 	      if (__w > __n)
@@ -104,12 +104,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__ostream_write(__out, __s, __n);
 	      __out.width(0);
 	    }
-	  catch(__cxxabiv1::__forced_unwind&)
+	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      __out._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
-	  catch(...)
+	  __catch(...)
 	    { __out._M_setstate(__ios_base::badbit); }
 	}
       return __out;

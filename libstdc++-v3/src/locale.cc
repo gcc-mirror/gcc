@@ -1,5 +1,5 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-// 2009
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -256,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   : _M_refcount(__refs), _M_facets(0), _M_facets_size(__imp._M_facets_size),
   _M_caches(0), _M_names(0)
   {
-    try
+    __try
       {
 	_M_facets = new const facet*[_M_facets_size];
 	for (size_t __i = 0; __i < _M_facets_size; ++__i)
@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    std::memcpy(_M_names[__l], __imp._M_names[__l], __len);
 	  }
       }
-    catch(...)
+    __catch(...)
       {
 	this->~_Impl();
 	__throw_exception_again;
@@ -337,11 +337,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    // New cache array.
 	    const facet** __oldc = _M_caches;
 	    const facet** __newc;
-	    try
+	    __try
 	      {
 		__newc = new const facet*[__new_size];
 	      }
-	    catch(...)
+	    __catch(...)
 	      {
 		delete [] __newf;
 		__throw_exception_again;
