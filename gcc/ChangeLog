@@ -1,3 +1,13 @@
+2009-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/39059
+	* c-parser.c (c_parser_postfix_expression): If fixed point is not
+	supported, don't accept FIXED_CSTs.
+	* c-decl.c (finish_declspecs): Error if fixed point is not supported
+	and _Sat is used without _Fract/_Accum.  Set specs->type to
+	integer_type_node for cts_fract/cts_accum if fixed point is not
+	supported.
+
 2009-02-02  Catherine Moore  <clm@codesourcery.com>
 
 	* sde.h (SUBTARGET_ARM_SPEC): Don;t assemble -fpic code as

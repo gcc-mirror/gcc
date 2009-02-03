@@ -5,5 +5,5 @@ void foo(int);
 
 void bar()
 {
-  foo(1r); // { dg-error "unnamed-fixed" }
+  foo(1r); // { dg-error "not supported" }
 }
