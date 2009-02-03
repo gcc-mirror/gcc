@@ -83,7 +83,8 @@ namespace __parallel
     _Tp
     accumulate_switch(_RAIter, _RAIter, _Tp, _BinaryOper,
 		      random_access_iterator_tag,
-		      __gnu_parallel::_Parallelism);
+		      __gnu_parallel::_Parallelism parallelism
+		      = __gnu_parallel::parallel_unbalanced);
 
   template<typename _IIter, typename _OIter>
     _OIter
@@ -124,7 +125,8 @@ namespace __parallel
     adjacent_difference_switch(_IIter, _IIter, _OIter, _BinaryOper, 
 			       random_access_iterator_tag, 
 			       random_access_iterator_tag, 
-			       __gnu_parallel::_Parallelism);
+			       __gnu_parallel::_Parallelism parallelism
+			       = __gnu_parallel::parallel_unbalanced);
 
   template<typename _IIter1, typename _IIter2, typename _Tp>
     _Tp
@@ -164,7 +166,8 @@ namespace __parallel
     inner_product_switch(_RAIter1, _RAIter1, _RAIter2, _Tp, BinaryFunction1, 
 			 BinaryFunction2, random_access_iterator_tag, 
 			 random_access_iterator_tag, 
-			 __gnu_parallel::_Parallelism);
+			 __gnu_parallel::_Parallelism
+			 = __gnu_parallel::parallel_unbalanced);
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
 	   typename _BinaryFunction1, typename _BinaryFunction2,

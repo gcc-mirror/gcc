@@ -42,6 +42,7 @@
 #include <omp.h>
 #include <parallel/settings.h>
 #include <parallel/base.h>
+#include <parallel/equally_split.h>
 
 namespace __gnu_parallel
 {
@@ -80,9 +81,9 @@ template<typename RandomAccessIterator,
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::difference_type difference_type;
-
     const difference_type length = end - begin;
     Result *thread_results;
+    bool* constructed;
 
     thread_index_t num_threads =
       __gnu_parallel::min<difference_type>(get_max_threads(), length);
@@ -92,13 +93,15 @@ template<typename RandomAccessIterator,
 #       pragma omp single
           {
             num_threads = omp_get_num_threads();
-            thread_results = new Result[num_threads];
+            thread_results = static_cast<Result*>(
+                                ::operator new(num_threads * sizeof(Result)));
+            constructed = new bool[num_threads];
           }
 
         thread_index_t iam = omp_get_thread_num();
 
         // Neutral element.
-        Result reduct = Result();
+        Result* reduct = static_cast<Result*>(::operator new(sizeof(Result)));
 
         difference_type
             start = equally_split_point(length, num_threads, iam),
@@ -106,22 +109,29 @@ template<typename RandomAccessIterator,
 
         if (start < stop)
           {
-            reduct = f(o, begin + start);
+            new(reduct) Result(f(o, begin + start));
             ++start;
+            constructed[iam] = true;
           }
+        else
+          constructed[iam] = false;
 
         for (; start < stop; ++start)
-          reduct = r(reduct, f(o, begin + start));
+          *reduct = r(*reduct, f(o, begin + start));
 
-        thread_results[iam] = reduct;
+        thread_results[iam] = *reduct;
       } //parallel
 
     for (thread_index_t i = 0; i < num_threads; ++i)
-      output = r(output, thread_results[i]);
+        if (constructed[i])
+            output = r(output, thread_results[i]);
 
     // Points to last element processed (needed as return value for
     // some algorithms like transform).
     f.finish_iterator = begin + length;
+
+    delete[] thread_results;
+    delete[] constructed;
 
     return o;
   }
