@@ -1,3 +1,12 @@
+2009-02-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/36897
+	* g++.dg/template/func2.C: New test.
+
+	PR c++/37314
+	* g++.dg/template/typename15.C: New.
+	* g++.dg/template/typename16.C: New.
+
 2009-02-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39054
