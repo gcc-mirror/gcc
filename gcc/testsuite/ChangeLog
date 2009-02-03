@@ -1,3 +1,8 @@
+2009-02-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/main-4.C: New test.
+	* g++.old-deja/g++.bugs/900227_01.C: Remove &main warnings.
+
 2009-02-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/36607

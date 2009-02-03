@@ -1,3 +1,8 @@
+2009-02-03  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (cp_build_unary_op): Only complain about taking address
+	of main if pedantic.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39059

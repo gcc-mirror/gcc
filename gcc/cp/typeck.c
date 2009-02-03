@@ -4473,12 +4473,15 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  arg = build1 (CONVERT_EXPR, type, arg);
 	  return arg;
 	}
-      else if (DECL_MAIN_P (arg))
+      else if (pedantic && DECL_MAIN_P (arg))
         {
           /* ARM $3.4 */
-          if (complain & tf_error)
-            permerror (input_location, "ISO C++ forbids taking address of function %<::main%>");
-          else
+	  /* Apparently a lot of autoconf scripts for C++ packages do this,
+	     so only complain if -pedantic.  */
+          if (complain & (flag_pedantic_errors ? tf_error : tf_warning))
+            pedwarn (input_location, OPT_pedantic,
+		     "ISO C++ forbids taking address of function %<::main%>");
+          else if (flag_pedantic_errors)
             return error_mark_node;
         }
 
