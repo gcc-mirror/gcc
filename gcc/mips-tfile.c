@@ -3,7 +3,8 @@
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
    Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GCC.
@@ -4780,7 +4781,7 @@ main (int argc, char **argv)
   if (version)
     {
       printf (_("mips-tfile %s%s\n"), pkgversion_string, version_string);
-      fputs ("Copyright (C) 2008 Free Software Foundation, Inc.\n", stdout);
+      fputs ("Copyright (C) 2009 Free Software Foundation, Inc.\n", stdout);
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
 	     stdout);

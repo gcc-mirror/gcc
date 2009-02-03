@@ -1,3 +1,8 @@
+2009-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.c (lang_specific_driver): Update copyright notice
+	dates.
+
 2009-01-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38852
