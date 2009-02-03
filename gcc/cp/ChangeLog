@@ -1,3 +1,13 @@
+2009-02-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/36897
+	* pt.c (convert_nontype_argument_function): Expect expr to be an
+	ADDR_EXPR.
+
+	PR c++/37314
+	* typeck.c (merge_types): Call resolve_typename_type if only
+	one type is a typename.
+
 2009-02-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39054
