@@ -1,3 +1,8 @@
+2009-02-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/36607
+	* g++.dg/expr/cast10.C: New test.
+
 2009-02-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35433
