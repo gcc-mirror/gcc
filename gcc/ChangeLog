@@ -1,3 +1,10 @@
+2009-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/38977
+	PR gcov-profile/38292
+	* calls.c (special_function_p): Disregard __builtin_
+	prefix.
+
 2009-02-04  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (GO_IF_LEGITIMATE_ADDRESS): Disallow
