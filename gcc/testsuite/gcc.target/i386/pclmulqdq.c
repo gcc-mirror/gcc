@@ -2,10 +2,18 @@
 /* { dg-require-effective-target pclmul } */
 /* { dg-options "-O2 -mpclmul" } */
 
+#ifndef CHECK_H
+#define CHECK_H "pclmul-check.h"
+#endif
+
+#ifndef TEST
+#define TEST pclmul_test
+#endif
+
+#include CHECK_H
+
 #include <wmmintrin.h>
 #include <string.h>
-
-#include "pclmul-check.h"
 
 extern void abort (void);
 
@@ -54,7 +62,7 @@ init_data (__m128i *ls1,   __m128i *ls2, __m128i *le_00, __m128i *le_01,
 }
 
 static void
-pclmul_test (void)
+TEST (void)
 {
   int i;
 
