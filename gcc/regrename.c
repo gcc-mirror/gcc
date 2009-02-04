@@ -820,7 +820,7 @@ build_def_use (basic_block bb)
 		    OP_IN, 0);
 
 	  for (i = 0; i < recog_data.n_dups; i++)
-	    *recog_data.dup_loc[i] = copy_rtx (old_dups[i]);
+	    *recog_data.dup_loc[i] = old_dups[i];
 	  for (i = 0; i < n_ops; i++)
 	    *recog_data.operand_loc[i] = old_operands[i];
 	  if (recog_data.n_dups)

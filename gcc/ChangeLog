@@ -1,3 +1,11 @@
+2009-02-04  Ramana Radhakrishnan  <ramana.r@gmail.com>
+
+	PR rtl-optimization/39076
+	Backport from mainline:
+	2008-06-28  Andrew Jenner  <andrew@codesourcery.com>
+	
+	* regrename.c (build_def_use): Don't copy RTX.
+
 2009-02-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35433
