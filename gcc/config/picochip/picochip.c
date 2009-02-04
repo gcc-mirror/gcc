@@ -1200,8 +1200,7 @@ picochip_legitimate_address_register (rtx x, unsigned strict)
 /* Determine whether the given constant is in the range required for
    the given base register. */
 static int
-picochip_const_ok_for_base (enum machine_mode mode, int regno, int offset,
-                            int strict)
+picochip_const_ok_for_base (enum machine_mode mode, int regno, int offset)
 {
   HOST_WIDE_INT corrected_offset;
 
@@ -1209,17 +1208,16 @@ picochip_const_ok_for_base (enum machine_mode mode, int regno, int offset,
     {
       if (GET_MODE_SIZE(mode) <= 4)
       {
-         /* We can allow incorrect offsets if strict is 0. If strict is 1,
-            we are in reload and these memory accesses need to be changed. */
-         if (offset % GET_MODE_SIZE (mode) != 0 && strict == 1)
+         /* We used to allow incorrect offsets if strict is 0. But, this would
+            then rely on reload doing the right thing. We have had problems
+            there before, and on > 4.3 compiler, there are no benefits. */
+         if (offset % GET_MODE_SIZE (mode) != 0)
            return 0;
          corrected_offset = offset / GET_MODE_SIZE (mode);
       }
       else
       {
-         /* We can allow incorrect offsets if strict is 0. If strict is 1,
-            we are in reload and these memory accesses need to be changed. */
-         if (offset % 4 != 0 && strict == 1)
+         if (offset % 4 != 0)
            return 0;
          corrected_offset = offset / 4;
       }
@@ -1272,7 +1270,7 @@ picochip_legitimate_address_p (int mode, rtx x, unsigned strict)
 		 picochip_legitimate_address_register (base, strict) &&
 		 CONST_INT == GET_CODE (offset) &&
 		 picochip_const_ok_for_base (mode, REGNO (base),
-					     INTVAL (offset),strict));
+					     INTVAL (offset)));
 	break;
       }
 
