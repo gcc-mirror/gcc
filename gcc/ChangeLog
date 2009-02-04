@@ -1,3 +1,20 @@
+2009-02-04  Paolo Bonzini  <bonzini@gnu.org>
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/37889
+	* rtlanal.c (rtx_addr_can_trap_p_1): Add offset and size arguments.
+	Move offset handling from PLUS to before the switch.  Use new
+	arguments when considering SYMBOL_REFs too.
+	(rtx_addr_can_trap_p): Pass dummy offset and size.
+	(enum may_trap_p_flags): Remove.
+	(may_trap_p_1): Pass size from MEM_SIZE.
+
+	PR rtl-optimization/38921
+	* loop-invariant.c (find_invariant_insn): Use may_trap_or_fault_p.
+	* rtl.h (may_trap_after_code_motion_p): Delete prototype.
+	* rtlanal.c (may_trap_after_code_motion_p): Delete.
+	(may_trap_p, may_trap_or_fault_p): Pass 0/1 as flags.
+
 2009-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (January, 2009)
