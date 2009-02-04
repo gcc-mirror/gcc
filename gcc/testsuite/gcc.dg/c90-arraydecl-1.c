@@ -10,7 +10,7 @@
 
 void foo0 (int a, int b[*]); /* { dg-error "ISO C90" "\[*\] not in C90" } */
 void foo1 (int, int [*]); /* { dg-error "ISO C90" "\[*\] not in C90" } */
-/* { dg-error "allowed" "\'\[*\]\' not allowed in other than a declaration" { target *-*-* } 12 } */
+
 
 /* Use of static and type qualifiers (not allowed with abstract declarators)
    is a C99 feature.  */
