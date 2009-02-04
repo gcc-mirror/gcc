@@ -2298,20 +2298,6 @@ write_expression (tree expr)
 	    write_template_args (template_args);
 	}
     }
-  else if (code == COMPONENT_REF)
-    {
-      tree ob = TREE_OPERAND (expr, 0);
-
-      if (TREE_CODE (ob) == ARROW_EXPR)
-	{
-	  code = ARROW_EXPR;
-	  ob = TREE_OPERAND (ob, 0);
-	}
-
-      write_string (operator_name_info[(int)code].mangled_name);
-      write_expression (ob);
-      write_member_name (TREE_OPERAND (expr, 1));
-    }
   else
     {
       int i;
@@ -2332,6 +2318,23 @@ write_expression (tree expr)
 	    }
 
 	  code = TREE_CODE (expr);
+	}
+
+      if (code == COMPONENT_REF)
+	{
+	  tree ob = TREE_OPERAND (expr, 0);
+
+	  if (TREE_CODE (ob) == ARROW_EXPR)
+	    {
+	      write_string (operator_name_info[(int)code].mangled_name);
+	      ob = TREE_OPERAND (ob, 0);
+	    }
+	  else
+	    write_string ("dt");
+
+	  write_expression (ob);
+	  write_member_name (TREE_OPERAND (expr, 1));
+	  return;
 	}
 
       /* If it wasn't any of those, recursively expand the expression.  */

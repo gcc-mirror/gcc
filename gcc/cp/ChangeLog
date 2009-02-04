@@ -1,3 +1,12 @@
+2009-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39095
+	* operators.def: Use COMPONENT_REF code for ->/pt operator again,
+	remove ./dt operator.
+	* mangle.c (write_expression): Handle COMPONENT_REF after handling
+	ADDR_EXPR, for COMPONENT_REF without ARROW_EXPR inside of it
+	write_string ("dt") instead of using operators.def.
+
 2009-02-03  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (cp_build_unary_op): Only complain about taking address
