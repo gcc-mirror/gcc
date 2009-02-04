@@ -7,9 +7,12 @@ int foo3(int i)[*];		/* { dg-error "not allowed in other than function prototype
 void foo4(int o[*][4]) { }	/* { dg-error "not allowed in other than function prototype scope" } */
 void foo5(int o[4][*]) { }	/* { dg-error "not allowed in other than function prototype scope" } */
 
-/* [*] can't be used in a type that's not a declaration */
-void foo11(int x[sizeof(int (*)[*])]);	/* { dg-error "not allowed in other than a declaration" } */
-void foo12(int [*]);		/* { dg-error "not allowed in other than a declaration" } */
+/* [*] can't be used in a type that's not a declaration (maybe, the
+   final wording for DR#341 would allow it although the first
+   discussed intent would not).  */
+void foo11(int x[sizeof(int (*)[*])]);	/* { dg-warning "not in a declaration" } */
+/* This case is allowed per DR#341.  */
+void foo12(int [*]);
 
 extern int n;
 int B[100];

@@ -1,3 +1,13 @@
+2009-02-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/29129
+	* c-decl.c (grokdeclarator): Mark [*] arrays in field declarators
+	as having variable size.  Do not give an error for unnamed
+	parameters with [*] declarators.  Give a warning for type names
+	with [*] declarators and mark them as variable size.
+	* c-parser.c (c_parser_sizeof_expression): Do not give an error
+	for sizeof applied to [*] type names.
+
 2009-02-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/36607
