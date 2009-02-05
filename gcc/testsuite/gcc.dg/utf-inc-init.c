@@ -1,6 +1,6 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test incremental initializers for char16_t/char32_t arrays. */
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 /* { dg-options "-std=gnu99" } */
 
 typedef __SIZE_TYPE__ size_t;

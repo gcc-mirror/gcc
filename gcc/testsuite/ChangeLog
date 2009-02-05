@@ -1,3 +1,28 @@
+2009-02-05  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/compile/20080625-1.c: Skip for M32C.
+	* gcc.c-torture/compile/limits-stringlit.c: Likewise.
+	* gcc.dg/cdce1.c: Likewise.
+	* gcc.dg/cpp/_Pragma6.c: Likewise.
+	* g++.dg/cpp/_Pragma1.C: Likewise.
+	* gcc.dg/utf32-2.c: Xfail for M32C.
+	* gcc.dg/utf32-1.c: Likewise.
+	* gcc.dg/utf32-3.c: Likewise.
+	* gcc.dg/Wtype-limits.c: Add expected warning messages for 16-bit
+	targets.
+	* gcc.dg/Wtype-limits-Wextra.c: Likewise.
+	* gcc.dg/utf32-4.c: Only run for 32-bit+ targets.
+	* gcc.dg/Wconversion-5.c: Likewise.
+	* gcc.dg/tree-ssa/data-dep-1.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-3.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-5.c: Likewise.
+	* gcc.dg/utf-inc-init.c: Likewise.
+	* gcc.dg/pr11492.c: Xfail for 16-bit targets.
+	* gcc.dg/utf-array.c: Add expected warning messages for M32C.
+	* gcc.dg/utf-array-short-wchar.c: Likewise.
+	* gcc.dg/tree-ssa/pr33920.c: Expect a warning from all 16-bit targets.
+	* gcc.dg/mallign.c: Use size_t instead of long.
+
 2009-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/torture/pr31863.C: Generalize dg-timeout-factor.

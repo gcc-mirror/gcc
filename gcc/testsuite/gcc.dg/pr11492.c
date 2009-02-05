@@ -5,7 +5,7 @@ int main( void )
 {
   unsigned int a;
   unsigned char b;
-  for ( a = 0, b = 2; a > b * 1000; a++ ) /* { dg-bogus "comparison between signed and unsigned integer" } */
+  for ( a = 0, b = 2; a > b * 1000; a++ ) /* { dg-bogus "comparison between signed and unsigned integer" "" { xfail { ! int32plus } } } */
     { ; }
 
   return 0;
