@@ -1,3 +1,13 @@
+2009-02-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-02-05  Daniel Berlin  <dberlin@dberlin.org>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39100
+	* tree-ssa-structalias.c (do_ds_constraint): Actually do what the
+	comment says and add edges.
+
 2009-02-04  Ramana Radhakrishnan  <ramana.r@gmail.com>
 
 	PR rtl-optimization/39076

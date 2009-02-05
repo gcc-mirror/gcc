@@ -1509,24 +1509,23 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	  varinfo_t v;
 	  unsigned int t;
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (j)->offset + loff;
-	  bitmap tmp;
 
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);
 	  /* If the access is outside of the variable we can ignore it.  */
 	  if (!v)
 	    continue;
 	  t = find (v->id);
-	  tmp = get_varinfo (t)->solution;
-
-	  if (set_union_with_increment (tmp, sol, 0))
+	  if (add_graph_edge (graph, t, rhs))
 	    {
-	      get_varinfo (t)->solution = tmp;
-	      if (t == rhs)
-		sol = get_varinfo (rhs)->solution;
-	      if (!TEST_BIT (changed, t))
+	      if (bitmap_ior_into (get_varinfo (t)->solution, sol))
 		{
-		  SET_BIT (changed, t);
-		  changed_count++;
+		  if (t == rhs)
+		    sol = get_varinfo (rhs)->solution;
+		  if (!TEST_BIT (changed, t))
+		    {
+		      SET_BIT (changed, t);
+		      changed_count++;
+		    }
 		}
 	    }
 	}

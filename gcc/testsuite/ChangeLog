@@ -1,3 +1,10 @@
+2009-02-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-02-05  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.c-torture/execute/pr39100.c: New.
+
 2009-02-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35433
