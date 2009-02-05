@@ -1,3 +1,12 @@
+2009-02-05  Chris Fairles  <cfairles@gcc.gnu.org>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/std/thread (__thread_data_base): Nest class in std::thread.
+	(__thread_data): Likewise.
+	(__thread_data_ptr): Nest typedef in std::thread.
+	* src/thread.cc (__thread_proxy): Qualify the above names.
+	* config/abi/pre/gnu.ver: Remove unused exports.
+	
 2009-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/unique_ptr.h: Remove private __this_type typedef.

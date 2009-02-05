@@ -40,8 +40,9 @@ namespace std
     {
       void* __thread_proxy(void* __p)
       {
-	__thread_data_base* __t = static_cast<__thread_data_base*>(__p);
-	__thread_data_ptr __local_thread_data;
+	thread::__thread_data_base* __t = 
+	  static_cast<thread::__thread_data_base*>(__p);
+	thread::__thread_data_ptr __local_thread_data;
 	__local_thread_data.swap(__t->_M_this_ptr);
 
 	__try

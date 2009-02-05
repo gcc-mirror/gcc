@@ -53,41 +53,25 @@
 
 namespace std
 {
-  class __thread_data_base;
-
-  typedef shared_ptr<__thread_data_base> __thread_data_ptr;
-
-  class __thread_data_base
-  {
-  public:
-    __thread_data_base() = default;
-    virtual ~__thread_data_base() = default;
-    
-    virtual void _M_run() = 0;
-    
-    __gthread_t 	_M_thread_handle;
-    __thread_data_ptr 	_M_this_ptr;
-  };
-  
-  template<typename _Callable>
-    class __thread_data : public __thread_data_base
-    {
-    public:
-      __thread_data(_Callable&& __f)
-      : _M_func(std::forward<_Callable>(__f))
-      { }
-
-      void _M_run()
-      { _M_func(); }
-
-    private:
-      _Callable _M_func;
-    };
-
-  /// thread
   class thread
   {
   public:
+    class __thread_data_base;
+    
+    typedef shared_ptr<__thread_data_base> __thread_data_ptr;
+    
+    class __thread_data_base
+    {
+    public:
+      __thread_data_base() = default;
+      virtual ~__thread_data_base() = default;
+      
+      virtual void _M_run() = 0;
+      
+      __gthread_t 	_M_thread_handle;
+      __thread_data_ptr 	_M_this_ptr;
+    };
+    
     // types
     class id;
     typedef __gthread_t native_handle_type;
@@ -152,6 +136,21 @@ namespace std
     static unsigned hardware_concurrency();
 
   private:
+    template<typename _Callable>
+      class __thread_data : public __thread_data_base
+      {
+      public:
+	__thread_data(_Callable&& __f)
+	  : _M_func(std::forward<_Callable>(__f))
+	{ }
+	
+	void _M_run()
+	{ _M_func(); }
+	
+      private:
+	_Callable _M_func;
+      };
+
     template<typename _Callable>
       __thread_data_ptr 
       _M_make_thread_data(_Callable&& __f)
