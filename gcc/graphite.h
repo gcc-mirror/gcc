@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-data-ref.h"
 
+int ref_nb_loops (data_reference_p);
+
 typedef struct graphite_bb *graphite_bb_p;
 DEF_VEC_P(graphite_bb_p);
 DEF_VEC_ALLOC_P (graphite_bb_p, heap);
@@ -216,6 +218,8 @@ gbb_loop (struct graphite_bb *gbb)
   return GBB_BB (gbb)->loop_father;
 }
 
+int nb_loops_around_gb (graphite_bb_p);
+
 /* Calculate the number of loops around GB in the current SCOP.  Only
    works if GBB_DOMAIN is built.  */
 
@@ -313,12 +317,10 @@ struct scop
   /* A SCOP is defined as a SESE region.  */
   sese region;
 
-  /* All the basic blocks in this scop.  They have extra information
-     attached to them, in the graphite_bb structure.  */
+  /* All the basic blocks in this scop that contain memory references
+     and that will be represented as statements in the polyhedral
+     representation.  */
   VEC (graphite_bb_p, heap) *bbs;
-
-  /* Set for a basic block index when it belongs to this SCOP.  */
-  bitmap bbs_b;
 
   lambda_vector static_schedule;
 
@@ -349,7 +351,6 @@ struct scop
 };
 
 #define SCOP_BBS(S) S->bbs
-#define SCOP_BBS_B(S) S->bbs_b
 #define SCOP_REGION(S) S->region
 /* SCOP_ENTRY bb dominates all the bbs of the scop.  SCOP_EXIT bb
    post-dominates all the bbs of the scop.  SCOP_EXIT potentially
@@ -570,61 +571,6 @@ scop_gimple_loop_depth (scop_p scop, loop_p loop)
     }
 
   return depth;
-}
-
-/* Static inline function prototypes.  */
-
-static inline unsigned scop_nb_params (scop_p scop);
-
-/* Returns true when BB is in SCOP.  */
-
-static inline bool
-bb_in_scop_p (basic_block bb, scop_p scop)
-{
-  return bitmap_bit_p (SCOP_BBS_B (scop), bb->index);
-}
-
-/* Returns true when LOOP is in SCOP.  */
-
-static inline bool 
-loop_in_scop_p (struct loop *loop, scop_p scop)
-{
-  return (bb_in_scop_p (loop->header, scop)
-	  && bb_in_scop_p (loop->latch, scop));
-}
-
-/* Calculate the number of loops around LOOP in the SCOP.  */
-
-static inline int
-nb_loops_around_loop_in_scop (struct loop *l, scop_p scop)
-{
-  int d = 0;
-
-  for (; loop_in_scop_p (l, scop); d++, l = loop_outer (l));
-
-  return d;
-}
-
-/* Calculate the number of loops around GB in the current SCOP.  */
-
-static inline int
-nb_loops_around_gb (graphite_bb_p gb)
-{
-  return nb_loops_around_loop_in_scop (gbb_loop (gb), GBB_SCOP (gb));
-}
-
-/* Returns the dimensionality of an enclosing loop iteration domain
-   with respect to enclosing SCoP for a given data reference REF.  The
-   returned dimensionality is homogeneous (depth of loop nest + number
-   of SCoP parameters + const).  */
-
-static inline int
-ref_nb_loops (data_reference_p ref)
-{
-  loop_p loop = loop_containing_stmt (DR_STMT (ref));
-  scop_p scop = DR_SCOP (ref);
-
-  return nb_loops_around_loop_in_scop (loop, scop) + scop_nb_params (scop) + 2;
 }
 
 #endif  /* GCC_GRAPHITE_H  */

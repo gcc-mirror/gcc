@@ -1,3 +1,26 @@
+2009-02-04  Tobias Grosser  <grosser@fim.uni-passau.de>	
+
+	* graphite.c (bb_in_sese_p, sese_build_livein_liveouts_use,
+	sese_build_livein_liveouts_bb, sese_build_livein_liveouts,
+	register_bb_in_sese, new_sese, free_sese): Moved.
+	(dot_scop_1, build_scop_loop_nests, build_loop_iteration_domains,
+	outermost_loop_in_scop, build_scop_iteration_domain,
+	expand_scalar_variables_ssa_name, get_vdef_before_scop,
+	limit_scops): Use bb_in_sese_p instead of bb_in_scop_p.
+	Use loop_in_sese_p instead of loop_in_scop_p.
+	(new_graphite_bb, gloog): Do not initialize SCOP_BBS_B.
+	(new_scop, free_scop): Remove SCOP_LOOP2CLOOG_LOOP and SCOP_BBS_B.
+	(scopdet_basic_block_info): Fix bug in scop detection.
+	(new_loop_to_cloog_loop_str, hash_loop_to_cloog_loop,
+	eq_loop_to_cloog_loop): Remove.
+	(nb_loops_around_loop_in_scop, nb_loop
+	ref_nb_loops): Moved here...
+	* graphite.h (ref_nb_loops): ... from here.
+	(struct scop): Remove bbs_b bitmap and loop2cloog_loop.
+	(loop_domain_dim, loop_iteration_vector_dim): Remove.
+	(SCOP_BBS_B, bb_in_scop_p, loop_in_scop_p): Removed.
+	* testsuite/gcc.dg/graphite/scop-19.c: New
+
 2009-02-04  Paolo Bonzini  <bonzini@gnu.org>
 	    Hans-Peter Nilsson  <hp@axis.com>
 
