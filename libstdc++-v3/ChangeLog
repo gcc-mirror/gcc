@@ -1,6 +1,20 @@
+2009-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/unique_ptr.h: Remove private __this_type typedef.
+	* include/bits/stl_vector.h: Remove private vector_type typedef.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Fix line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Same.
+	* testsuite/20_util/unique_ptr/assign/assign.cc: Same.
+
 2009-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR libstdc++/25191	
+	PR libstdc++/25191
 	* libsupc++/exception_defines.h: Depending on __EXCEPTIONS,
 	deal consistently with __try and __catch too.
 	* src/localename.cc: Replace try -> __try, catch -> __catch.

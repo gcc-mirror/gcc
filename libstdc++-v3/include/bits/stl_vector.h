@@ -181,7 +181,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
       
       typedef _Vector_base<_Tp, _Alloc>			 _Base;
-      typedef vector<_Tp, _Alloc>			 vector_type;
       typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
 
     public:
@@ -190,8 +189,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef typename _Tp_alloc_type::const_pointer     const_pointer;
       typedef typename _Tp_alloc_type::reference         reference;
       typedef typename _Tp_alloc_type::const_reference   const_reference;
-      typedef __gnu_cxx::__normal_iterator<pointer, vector_type> iterator;
-      typedef __gnu_cxx::__normal_iterator<const_pointer, vector_type>
+      typedef __gnu_cxx::__normal_iterator<pointer, vector> iterator;
+      typedef __gnu_cxx::__normal_iterator<const_pointer, vector>
       const_iterator;
       typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		 reverse_iterator;
