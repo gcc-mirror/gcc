@@ -1,3 +1,9 @@
+2009-02-05  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl (stage_last): Define $r and $s before using
+	$(RECURSE_FLAGS_TO_PASS).
+	* Makefile.in: Regenerate
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.
@@ -241,7 +247,7 @@
 	* Makefile.def: Add libgomp config as a maybe dependency for libstdc++.
 	* configure: Regenerate.
 	* Makefile.in: Regenerate.
-	
+
 2007-09-17  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac: Raise minimum makeinfo version to 4.6.
@@ -433,13 +439,13 @@
 	* configure.ac: Likewise.
 	* Makefile.in: Regenerate.
 	* configure: Regenerate.
-						
+
 2007-06-28  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac (arm*-*-linux-gnueabi): Don't build libgloss if we're
 	not building newlib.
 	* configure: Regenerated.
-	
+
 2007-06-28  Jan Sjodin  <jan.sjodin@amd.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -618,7 +624,7 @@
 2007-04-04  Christian Bruel  <christian.bruel@st.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2007-04-02  Dave Korn  <dave.korn@artimi.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -630,7 +636,7 @@
 2007-03-28  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2007-03-24  Ayal Zaks  <zaks@il.ibm.com>
 
 	* MAINTAINERS (Modulo Scheduler): Add myself.

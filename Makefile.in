@@ -51167,6 +51167,8 @@ do-distclean: distclean-stage1
 # Provide a GCC build when we're building target libraries.  This does
 # not work as a dependency, just as the minimum necessary to avoid errors.
 stage_last:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage1-bubble
 
 # Same as unstage, but not phony and defaulting to stage1-start.  We place
