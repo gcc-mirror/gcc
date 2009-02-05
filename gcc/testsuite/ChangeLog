@@ -1,3 +1,8 @@
+2009-02-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35435
+	* gcc.dg/tls/diag-6.c: New test.
+
 2009-02-05  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
