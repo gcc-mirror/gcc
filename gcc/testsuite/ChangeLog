@@ -1,3 +1,8 @@
+2009-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39106
+	* g++.dg/opt/thunk3.C: New test.
+
 2009-02-05  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/compile/20080625-1.c: Skip for M32C.
