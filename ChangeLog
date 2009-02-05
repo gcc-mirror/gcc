@@ -1,3 +1,9 @@
+2009-02-05  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl (stage_last): Define $r and $s before using
+	$(RECURSE_FLAGS_TO_PASS).
+	* Makefile.in: Regenerate
+
 2009-01-30  Ian Lance Taylor  <iant@google.com>
 
 	* MAINTAINERS: Move myself to the Global Reviewers list.
@@ -82,8 +88,8 @@
 
 2008-12-04  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-        * configure.ac: Add double brackets on darwin[912].
-        * configure: Regenerate.
+	* configure.ac: Add double brackets on darwin[912].
+	* configure: Regenerate.
 
 2008-12-03  Daniel Kraft  <d@domob.eu>
 
