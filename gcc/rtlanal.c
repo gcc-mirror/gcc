@@ -282,7 +282,8 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	actual_offset -= STACK_POINTER_OFFSET;
 #endif
 
-      return actual_offset % GET_MODE_SIZE (mode) != 0;
+      if (actual_offset % GET_MODE_SIZE (mode) != 0)
+	return 1;
     }
 
   switch (code)
