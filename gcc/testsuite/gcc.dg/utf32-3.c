@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test concatenation of char32_t* string literals. */
 /* { dg-do run } */
-/* { dg-xfail-run-if "PR36470" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-xfail-run-if "PR36470" { "avr-*-*" "m32c-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=gnu99 -Wall -Werror" } */
 
 typedef __CHAR32_TYPE__ char32_t;
