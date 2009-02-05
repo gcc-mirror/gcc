@@ -1,3 +1,7 @@
+2009-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/torture/pr31863.C: Generalize dg-timeout-factor.
+
 2009-02-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc.c-torture/execute/pr39100.c: New.
@@ -107,8 +111,8 @@
 
 2009-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        PR c++/39053
-        * g++.dg/parse/crash52.C: New.
+	PR c++/39053
+	* g++.dg/parse/crash52.C: New.
 
 2009-01-30  Richard Guenther  <rguenther@suse.de>
 
@@ -148,7 +152,8 @@
 2009-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/35854
-	* gcc.dg/lower-subreg-1.c: Renamed dump pass from "subreg" to "subreg1"		
+	* gcc.dg/lower-subreg-1.c: Renamed dump pass from "subreg"
+	to "subreg1".
 	
 2009-01-29  Steve Ellcey  <sje@cup.hp.com>
 
@@ -916,7 +921,8 @@
 	in trunk.
 	* testsuite/gcc.dg/graphite/block-0.c: Update test.
 	* testsuite/gcc.dg/graphite/block-1.c: Same.
-	* testsuite/gcc.dg/graphite/block-2.c: Remove xfail and test for blocking.
+	* testsuite/gcc.dg/graphite/block-2.c: Remove xfail and test
+	for blocking.
 	* testsuite/gcc.dg/graphite/block-4.c: Remove test for strip mine.
 	* testsuite/gcc.dg/graphite/block-3.c: New.
 	* testsuite/gcc.dg/graphite/pr38498.c: New.
@@ -1012,7 +1018,7 @@
 
 2009-01-05  Laurent GUERBY  <laurent@guerby.net>
 
-	* gcc.c-torture/compile/20001226-1.c: Generalize 
+	* gcc.c-torture/compile/20001226-1.c: Generalize
 	dg-timeout-factor.
 	* gcc.c-torture/compile/limits-fnargs.c: Add
 	dg-timeout-factor.
