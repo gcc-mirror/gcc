@@ -1657,15 +1657,17 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	  t = find (v->id);
 	  tmp = get_varinfo (t)->solution;
 
-	  if (set_union_with_increment (tmp, sol, 0))
+            if (add_graph_edge (graph, t, rhs))
 	    {
-	      get_varinfo (t)->solution = tmp;
-	      if (t == rhs)
-		sol = get_varinfo (rhs)->solution;
-	      if (!TEST_BIT (changed, t))
+                if (bitmap_ior_into (get_varinfo (t)->solution, sol))
 		{
-		  SET_BIT (changed, t);
-		  changed_count++;
+                    if (t == rhs)
+                      sol = get_varinfo (rhs)->solution;
+                    if (!TEST_BIT (changed, t))
+                      {
+                        SET_BIT (changed, t);
+                        changed_count++;
+                      }
 		}
 	    }
 	}
