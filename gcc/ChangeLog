@@ -1,3 +1,9 @@
+2009-02-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38977
+	* tree-cfg.c (need_fake_edge_p): Force a fake edge for
+	fork because we may expand it as __gcov_fork.
+
 2009-02-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32c/m32c.h (PCC_BITFIELD_TYPE_MATTERS): Define to
