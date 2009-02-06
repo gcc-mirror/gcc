@@ -4389,6 +4389,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    else if (decl_context == FIELD)
 	      {
+		bool flexible_array_member = false;
 		if (array_parm_vla_unspec_p)
 		  /* Field names can in fact have function prototype
 		     scope so [*] is disallowed here through making
@@ -4396,13 +4397,23 @@ grokdeclarator (const struct c_declarator *declarator,
 		     something other than a declaration with function
 		     prototype scope.  */
 		  size_varies = 1;
-		else if (pedantic && !flag_isoc99 && !in_system_header)
+		else
+		  {
+		    const struct c_declarator *t = declarator;
+		    while (t->kind == cdk_attrs)
+		      t = t->declarator;
+		    flexible_array_member = (t->kind == cdk_id);
+		  }
+		if (flexible_array_member
+		    && pedantic && !flag_isoc99 && !in_system_header)
 		  pedwarn (input_location, OPT_pedantic,
 			   "ISO C90 does not support flexible array members");
 
 		/* ISO C99 Flexible array members are effectively
 		   identical to GCC's zero-length array extension.  */
-		itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
+		if (flexible_array_member || array_parm_vla_unspec_p)
+		  itype = build_range_type (sizetype, size_zero_node,
+					    NULL_TREE);
 	      }
 	    else if (decl_context == PARM)
 	      {
