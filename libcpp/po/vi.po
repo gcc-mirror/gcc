@@ -1,20 +1,20 @@
 # Vietnamese translation for CPPlib.
-# Copyright © 2008 Free Software Foundation, Inc.
-# This file is distributed under the same license as the cpplib-4.3.0 package.
-# Clytie Siddall <clytie@riverland.net.au>, 2005-2008.
+# Copyright © 2009 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
+# Clytie Siddall <clytie@riverland.net.au>, 2005-2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3.0\n"
+"Project-Id-Version: cpplib 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2008-03-20 19:43+1030\n"
+"PO-Revision-Date: 2009-02-06 15:51+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0\n"
-"X-Generator: LocFactoryEditor 1.7b3\n"
+"X-Generator: LocFactoryEditor 1.8\n"
 
 #: charset.c:674
 #, c-format
@@ -161,9 +161,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s là phần mở rộng kiểu GCC"
 
 #: directives.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s là phần mở rộng kiểu GCC"
+msgstr "#%s là một phần mở rộng GCC bị phản đối"
 
 #: directives.c:366
 msgid "suggest not using #elif in traditional C"
@@ -268,7 +268,7 @@ msgstr "« %s » nằm sau « # » không phải là số nguyên dương"
 #: directives.c:1042
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: directives.c:1066
 #, c-format
@@ -523,14 +523,12 @@ msgid "\"%s\" is not defined"
 msgstr "chưa xác định « %s »"
 
 #: expr.c:756
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "hằng nhị phân là phần mở rộng GCC"
+msgstr "khẳng định là một phần mở rộng GCC"
 
 #: expr.c:759
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "hằng nhị phân là phần mở rộng GCC"
+msgstr "khẳng định là một phần mở rộng GCC bị phản đối"
 
 #: expr.c:892 expr.c:921
 #, c-format
@@ -547,9 +545,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "thiếu biểu thức nằm giữa « ( » và « ) »"
 
 #: expr.c:932
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if (nếu) không có biểu thức"
+msgstr "%s không có biểu thức"
 
 #: expr.c:935
 #, c-format
@@ -566,9 +564,9 @@ msgid " ':' without preceding '?'"
 msgstr " Dấu hai chấm « : » không có dấu hỏi « ? » đi trước"
 
 #: expr.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "có đống không cân bằng trong #if (nếu)"
+msgstr "có đống không cân bằng trong %s"
 
 #: expr.c:1014
 #, c-format
@@ -831,7 +829,7 @@ msgstr "vĩ lệnh giống hàm số « %s » phải được dùng với đối
 #: macro.c:1016
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh còn rộng chưa được xác định tùy theo tiêu chuẩn ISO C90 và ISO C++98 "
 
 #: macro.c:1453
 #, c-format
