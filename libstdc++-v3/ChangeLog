@@ -1,4 +1,11 @@
 2009-02-05  Chris Fairles  <cfairles@gcc.gnu.org>
+
+	* include/std/tuple (_Head_base<>::_Head_base(_UHead&&)): Formatting.
+	(_Head_base<>::__swap_impl): Rename to _M_swap_impl.
+	(_Tuple_impl<>::__swap_impl): Likewise and make protected to avoid
+	exposing it in public std::tuple interface.
+
+2009-02-05  Chris Fairles  <cfairles@gcc.gnu.org>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/std/thread (__thread_data_base): Nest class in std::thread.
