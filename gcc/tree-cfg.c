@@ -6444,9 +6444,14 @@ need_fake_edge_p (gimple t)
       && fndecl
       && DECL_BUILT_IN (fndecl)
       && (call_flags & ECF_NOTHROW)
-      && !(call_flags & ECF_NORETURN)
-      && !(call_flags & ECF_RETURNS_TWICE))
-   return false;
+      && !(call_flags & ECF_RETURNS_TWICE)
+      /* fork() doesn't really return twice, but the effect of
+         wrapping it in __gcov_fork() which calls __gcov_flush()
+	 and clears the counters before forking has the same
+	 effect as returning twice.  Force a fake edge.  */
+      && !(DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FORK))
+    return false;
 
   if (is_gimple_call (t)
       && !(call_flags & ECF_NORETURN))
