@@ -1,3 +1,9 @@
+2009-02-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/38991
+	* config/sh/predicates.md (general_movsrc_operand): Don't check
+	the subreg of system registers here.
+
 2009-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39106
