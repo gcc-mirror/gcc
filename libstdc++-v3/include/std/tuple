@@ -76,13 +76,13 @@ namespace std
       : _Head(__h) { }
 
       template<typename _UHead>
-      _Head_base(_UHead&& __h)
-      : _Head(std::forward<_UHead>(__h)) { }
+        _Head_base(_UHead&& __h)
+	: _Head(std::forward<_UHead>(__h)) { }
 
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
-
-      void __swap_impl(_Head&&) { /* no-op */ }
+    
+      void _M_swap_impl(_Head&&) { /* no-op */ }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -95,14 +95,14 @@ namespace std
       : _M_head_impl(__h) { }
 
       template<typename _UHead>
-      _Head_base(_UHead&& __h)
-      : _M_head_impl(std::forward<_UHead>(__h)) { }
+        _Head_base(_UHead&& __h)
+	: _M_head_impl(std::forward<_UHead>(__h)) { }
 
       _Head&       _M_head()       { return _M_head_impl; }
       const _Head& _M_head() const { return _M_head_impl; }        
 
       void
-      __swap_impl(_Head&& __h)
+      _M_swap_impl(_Head&& __h)
       { 
 	using std::swap;
 	swap(__h, _M_head_impl);
@@ -129,7 +129,8 @@ namespace std
   template<std::size_t _Idx>
     struct _Tuple_impl<_Idx>
     { 
-      void __swap_impl(_Tuple_impl&&) { /* no-op */ }
+    protected:
+      void _M_swap_impl(_Tuple_impl&&) { /* no-op */ }
     };
 
   /**
@@ -216,11 +217,12 @@ namespace std
 	  return *this;
 	}
 
+    protected:
       void
-      __swap_impl(_Tuple_impl&& __in)
+      _M_swap_impl(_Tuple_impl&& __in)
       {
-	_Base::__swap_impl(__in._M_head());
-	_Inherited::__swap_impl(__in._M_tail());
+	_Base::_M_swap_impl(__in._M_head());
+	_Inherited::_M_swap_impl(__in._M_tail());
       }
     };
 
@@ -296,7 +298,7 @@ namespace std
 
       void
       swap(tuple&& __in)
-      { _Inherited::__swap_impl(__in); }
+      { _Inherited::_M_swap_impl(__in); }
     };
 
 
