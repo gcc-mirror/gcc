@@ -1303,16 +1303,18 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
 	       cgraph_node_name (e->caller));
     }
   if (e->inline_failed)
-    cgraph_mark_inline (e);
+    {
+      cgraph_mark_inline (e);
 
-  /* In order to fully inline always_inline functions, we need to
-     recurse here, since the inlined functions might not be processed by
-     incremental inlining at all yet.  
+      /* In order to fully inline always_inline functions, we need to
+	 recurse here, since the inlined functions might not be processed by
+	 incremental inlining at all yet.  
 
-     Also flattening needs to be done recursively.  */
+	 Also flattening needs to be done recursively.  */
 
-  if (mode == INLINE_ALL || always_inline)
-    cgraph_decide_inlining_incrementally (e->callee, mode, depth + 1);
+      if (mode == INLINE_ALL || always_inline)
+	cgraph_decide_inlining_incrementally (e->callee, mode, depth + 1);
+    }
   callee->aux = (void *)(size_t) callee_mode;
   return true;
 }
