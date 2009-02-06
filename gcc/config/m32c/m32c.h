@@ -143,6 +143,17 @@ machine_function;
 #define UNITS_PER_WORD 2
 #define POINTER_SIZE (TARGET_A16 ? 16 : 32)
 #define POINTERS_EXTEND_UNSIGNED 1
+/* We have a problem with libgcc2.  It only defines two versions of
+   each function, one for "int" and one for "long long".  Ie it assumes
+   that "sizeof (int) == sizeof (long)".  For the M32C this is not true
+   and we need a third set of functions.  We explicitly define
+   LIBGCC2_UNITS_PER_WORD here so that it is clear that we are expecting
+   to get the SI and DI versions from the libgcc2.c sources, and we
+   provide our own set of HI functions in m32c-lib2.c, which is why this
+   definition is surrounded by #ifndef..#endif.  */
+#ifndef LIBGCC2_UNITS_PER_WORD
+#define LIBGCC2_UNITS_PER_WORD 4
+#endif
 
 /* These match the alignment enforced by the two types of stack operations.  */
 #define PARM_BOUNDARY (TARGET_A16 ? 8 : 16)
@@ -153,6 +164,11 @@ machine_function;
    desired.  */
 #define FUNCTION_BOUNDARY 8
 #define BIGGEST_ALIGNMENT 8
+
+/* Since we have a maximum structure alignment of 8 there
+   is no need to enforce any alignment of bitfield types.  */
+#undef  PCC_BITFIELD_TYPE_MATTERS
+#define PCC_BITFIELD_TYPE_MATTERS 0
 
 #define STRICT_ALIGNMENT 0
 #define SLOW_BYTE_ACCESS 1
