@@ -216,11 +216,11 @@ pre_expr_hash (const void *p1)
     case CONSTANT:
       return vn_hash_constant_with_type (PRE_EXPR_CONSTANT (e));
     case NAME:
-      return iterative_hash_expr (PRE_EXPR_NAME (e), 0);
+      return iterative_hash_hashval_t (SSA_NAME_VERSION (PRE_EXPR_NAME (e)), 0);
     case NARY:
-      return vn_nary_op_compute_hash (PRE_EXPR_NARY (e));
+      return PRE_EXPR_NARY (e)->hashcode;
     case REFERENCE:
-      return vn_reference_compute_hash (PRE_EXPR_REFERENCE (e));
+      return PRE_EXPR_REFERENCE (e)->hashcode;
     default:
       abort ();
     }
@@ -336,6 +336,9 @@ typedef struct bitmap_set
 
 #define FOR_EACH_EXPR_ID_IN_SET(set, id, bi)		\
   EXECUTE_IF_SET_IN_BITMAP((set)->expressions, 0, (id), (bi))
+
+#define FOR_EACH_VALUE_ID_IN_SET(set, id, bi)		\
+  EXECUTE_IF_SET_IN_BITMAP((set)->values, 0, (id), (bi))
 
 /* Mapping from value id to expressions with that value_id.  */
 DEF_VEC_P (bitmap_set_t);
@@ -672,33 +675,34 @@ bitmap_set_free (bitmap_set_t set)
 }
 
 
-/* A comparison function for use in qsort to top sort a bitmap set.  Simply
-   subtracts value ids, since they are created with leaves before
-   their parent users (IE topological order).  */
-
-static int
-value_id_compare (const void *pa, const void *pb)
-{
-  const unsigned int vha = get_expr_value_id (*((const pre_expr *)pa));
-  const unsigned int vhb = get_expr_value_id (*((const pre_expr *)pb));
-
-  return vha - vhb;
-}
-
 /* Generate an topological-ordered array of bitmap set SET.  */
 
 static VEC(pre_expr, heap) *
 sorted_array_from_bitmap_set (bitmap_set_t set)
 {
-  unsigned int i;
-  bitmap_iterator bi;
+  unsigned int i, j;
+  bitmap_iterator bi, bj;
   VEC(pre_expr, heap) *result = NULL;
 
-  FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
-    VEC_safe_push (pre_expr, heap, result, expression_for_id (i));
+  FOR_EACH_VALUE_ID_IN_SET (set, i, bi)
+    {
+      /* The number of expressions having a given value is usually
+	 relatively small.  Thus, rather than making a vector of all
+	 the expressions and sorting it by value-id, we walk the values
+	 and check in the reverse mapping that tells us what expressions
+	 have a given value, to filter those in our set.  As a result,
+	 the expressions are inserted in value-id order, which means
+	 topological order.
 
-  qsort (VEC_address (pre_expr, result), VEC_length (pre_expr, result),
-	 sizeof (pre_expr), value_id_compare);
+	 If this is somehow a significant lose for some cases, we can
+	 choose which set to walk based on the set size.  */
+      bitmap_set_t exprset = VEC_index (bitmap_set_t, value_expressions, i);
+      FOR_EACH_EXPR_ID_IN_SET (exprset, j, bj)
+	{
+	  if (bitmap_bit_p (set->expressions, j))
+	    VEC_safe_push (pre_expr, heap, result, expression_for_id (j));
+        }
+    }
 
   return result;
 }

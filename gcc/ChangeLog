@@ -1,3 +1,17 @@
+2009-02-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/35659
+	* tree-ssa-sccvn.c (vn_constant_eq, vn_reference_eq, vn_nary_op_eq
+	vn_phi_eq): Shortcut if hashcode does not match.
+	(vn_reference_op_compute_hash): Do not call iterative_hash_expr for
+	NULL operands.
+	* tree-ssa-pre.c (pre_expr_hash): Look at hashcode if available,
+	and avoid iterative_hash_expr.
+	(FOR_EACH_VALUE_ID_IN_SET): New.
+	(value_id_compare): Remove.
+	(sorted_array_from_bitmap_set): Use FOR_EACH_VALUE_ID_IN_SET to
+	sort expressions by value id.
+
 2009-02-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/38991
