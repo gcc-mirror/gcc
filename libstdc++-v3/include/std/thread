@@ -53,115 +53,149 @@
 
 namespace std
 {
+  /// thread
   class thread
   {
   public:
-    class __thread_data_base;
-    
-    typedef shared_ptr<__thread_data_base> __thread_data_ptr;
-    
-    class __thread_data_base
-    {
-    public:
-      __thread_data_base() = default;
-      virtual ~__thread_data_base() = default;
-      
-      virtual void _M_run() = 0;
-      
-      __gthread_t 	_M_thread_handle;
-      __thread_data_ptr 	_M_this_ptr;
-    };
-    
-    // types
-    class id;
-    typedef __gthread_t native_handle_type;
+    typedef __gthread_t 	 	native_handle_type;
 
-    // cons
+    /// thread::id
+    class id
+    {
+      native_handle_type 	_M_thread;
+
+    public:
+      id() : _M_thread() { }
+
+      explicit
+      id(native_handle_type __id) : _M_thread(__id) { }
+
+    private:
+      friend class thread;
+
+      friend bool
+      operator==(thread::id __x, thread::id __y)
+      { return __gthread_equal(__x._M_thread, __y._M_thread); }
+
+      friend bool
+      operator<(thread::id __x, thread::id __y)
+      { return __x._M_thread < __y._M_thread; }
+
+      template<class _CharT, class _Traits>
+	friend basic_ostream<_CharT, _Traits>&
+	operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id);
+    };
+
+    struct _Impl_base;
+    typedef shared_ptr<_Impl_base>	__shared_base_type;
+
+    struct _Impl_base
+    {
+      id			_M_id;
+	__shared_base_type	_M_this_ptr;
+
+      _Impl_base() = default;
+
+      virtual ~_Impl_base() = default;
+
+      virtual void 
+      _M_run() = 0;
+    };
+
+    template<typename _Callable>
+      class _Impl : public _Impl_base
+      {
+	_Callable 		_M_func;
+
+      public:
+	_Impl(_Callable&& __f) : _M_func(std::forward<_Callable>(__f))
+	{ }
+
+	void 
+	_M_run() { _M_func(); }
+      };
+
+  private:
+    // NB: Store the base type here.
+    __shared_base_type 		_M_data;
+
+  public:
     thread() = default;
-    
+    thread(const thread&) = delete;
+
+    thread(thread&& __t)
+    { swap(__t); }
+
     template<typename _Callable>
       explicit thread(_Callable __f)
-      : _M_thread_data(_M_make_thread_data(__f))
+      : _M_data(_M_make_shared_data(__f))
       { _M_start_thread(); }
 
     template<typename _Callable, typename... _Args>
       thread(_Callable&& __f, _Args&&... __args)
-      : _M_thread_data(_M_make_thread_data(std::bind(__f, __args...)))
+      : _M_data(_M_make_shared_data(std::bind(__f, __args...)))
       { _M_start_thread(); }
 
     ~thread()
     {
       if (joinable())
-        detach();
+	detach();
     }
 
-    thread(const thread&) = delete;
-    thread(thread&& __t)
-    { swap(__t); }
-
     thread& operator=(const thread&) = delete;
+
     thread& operator=(thread&& __t)
     {
       if (joinable())
-        detach();
+	detach();
       swap(__t);
       return *this;
     }
 
-    // members
-    void 
+    void
     swap(thread&& __t)
-    { std::swap(_M_thread_data, __t._M_thread_data); }
+    { std::swap(_M_data, __t._M_data); }
 
-    bool 
+    bool
     joinable() const
-    { return _M_thread_data; }
+    { return _M_data; }
 
-    void 
+    void
     join();
 
-    void 
+    void
     detach();
 
     thread::id
-    get_id() const;
+    get_id() const
+    {
+      if (_M_data)
+	return thread::id(_M_data->_M_id._M_thread);
+      else
+	return thread::id();
+    }
 
     /** @pre thread is joinable
      */
-    native_handle_type 
+    native_handle_type
     native_handle()
-    { return _M_thread_data->_M_thread_handle; }
+    { return _M_data->_M_id._M_thread; }
 
-    // static members
-    static unsigned hardware_concurrency();
+    // Returns a value that hints at the number of hardware thread contexts.
+    static unsigned int
+    hardware_concurrency()
+    { return 0; }
 
   private:
     template<typename _Callable>
-      class __thread_data : public __thread_data_base
+      shared_ptr<_Impl<_Callable>>
+      _M_make_shared_data(_Callable&& __f)
       {
-      public:
-	__thread_data(_Callable&& __f)
-	  : _M_func(std::forward<_Callable>(__f))
-	{ }
-	
-	void _M_run()
-	{ _M_func(); }
-	
-      private:
-	_Callable _M_func;
-      };
-
-    template<typename _Callable>
-      __thread_data_ptr 
-      _M_make_thread_data(_Callable&& __f)
-      { 
-	return make_shared<__thread_data<_Callable>>(
-            std::forward<_Callable>(__f));
+	// Create and allocate full data structure, not base.
+	return make_shared<_Impl<_Callable>>(std::forward<_Callable>(__f));
       }
-    
-    void _M_start_thread();
 
-    __thread_data_ptr 	_M_thread_data;
+    void _M_start_thread();
   };
 
   inline void
@@ -171,15 +205,42 @@ namespace std
   inline void
   swap(thread&& __x, thread& __y)
   { __x.swap(__y); }
-  
+
   inline void
   swap(thread& __x, thread&& __y)
   { __x.swap(__y); }
 
+  inline bool
+  operator!=(thread::id __x, thread::id __y)
+  { return !(__x == __y); }
+
+  inline bool
+  operator<=(thread::id __x, thread::id __y)
+  { return !(__y < __x); }
+
+  inline bool
+  operator>(thread::id __x, thread::id __y)
+  { return __y < __x; }
+
+  inline bool
+  operator>=(thread::id __x, thread::id __y)
+  { return !(__x < __y); }
+
+  template<class _CharT, class _Traits>
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id)
+    {
+      if (__id == thread::id())
+	return __out << "thread::id of a non-executing thread";
+      else
+	return __out << __id._M_thread;
+    }
+
+  // 30.2.2 Namespace this_thread.
   namespace this_thread
   {
     thread::id
-    get_id();
+    get_id() { return thread::id(__gthread_self()); }
 
 #ifdef _GLIBCXX_USE_SCHED_YIELD
     inline void
@@ -203,7 +264,7 @@ namespace std
 	chrono::nanoseconds __ns =
 	  chrono::duration_cast<chrono::nanoseconds>(__rtime - __s);
 
-	__gthread_time_t __ts = 
+	__gthread_time_t __ts =
 	  {
 	    static_cast<std::time_t>(__s.count()),
 	    static_cast<long>(__ns.count())
@@ -212,79 +273,6 @@ namespace std
 	::nanosleep(&__ts, 0);
       }
 #endif
-  }
-
-  /// thread::id
-  class thread::id
-  {
-  public:
-    id() : _M_thread_id() { }
-
-  private:
-    friend class thread;
-
-    friend thread::id this_thread::get_id();
-
-    friend bool 
-    operator==(thread::id __x, thread::id __y)
-    { return __gthread_equal(__x._M_thread_id, __y._M_thread_id); }
-
-    friend bool
-    operator<(thread::id __x, thread::id __y)
-    { return __x._M_thread_id < __y._M_thread_id; }
-
-    template<class _CharT, class _Traits>
-      friend basic_ostream<_CharT, _Traits>&
-      operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id); 
-
-    explicit 
-    id(__gthread_t __id)
-    : _M_thread_id(__id)
-    { }
-      
-    __gthread_t _M_thread_id;
-  };
-
-  inline bool
-  operator!=(thread::id __x, thread::id __y)
-  { return !(__x == __y); }
-  
-  inline bool
-  operator<=(thread::id __x, thread::id __y)
-  { return !(__y < __x); }
-  
-  inline bool
-  operator>(thread::id __x, thread::id __y)
-  { return __y < __x; }
-  
-  inline bool
-  operator>=(thread::id __x, thread::id __y)
-  { return !(__x < __y); }
-  
-  template<class _CharT, class _Traits>
-    inline basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id)
-    {
-      if(__id == thread::id())
-	return __out << "non-executing thread";
-      else
-	return __out << __id._M_thread_id;
-    }  
-
-  inline thread::id
-  thread::get_id() const
-  {
-    if(_M_thread_data)
-      return thread::id(_M_thread_data->_M_thread_handle);
-    else
-      return thread::id();
-  }
-
-  namespace this_thread
-  {
-    inline thread::id
-    get_id()
-    { return thread::id(__gthread_self()); }
   }
 }
 
