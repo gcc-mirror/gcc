@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
-   2008 Free Software Foundation, Inc.
+   2008, 2009 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
 This file is part of GCC.
@@ -826,6 +826,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90s8*|\
   mmcu=at90c8*|\
   mmcu=at86rf401|\
+  mmcu=ata6289|\
   mmcu=attiny13*|\
   mmcu=attiny2313|\
   mmcu=attiny24|\
@@ -900,6 +901,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega16u4|\
   mmcu=atmega32u*|\
   mmcu=at90scr100|\
+  mmcu=ata6289|\
   mmcu=at90usb*: -Tdata 0x800100}\
 %{mmcu=atmega640|\
   mmcu=atmega1280|\
@@ -957,6 +959,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=attiny87:crttn87.o%s} \
 %{mmcu=attiny48:crttn48.o%s} \
 %{mmcu=attiny88:crttn88.o%s} \
+%{mmcu=ata6289:crta6289.o%s} \
 %{mmcu=at43usb355|mmcu=avr3:crt43355.o%s} \
 %{mmcu=at76c711:crt76711.o%s} \
 %{mmcu=atmega103|mmcu=avr31:crtm103.o%s} \

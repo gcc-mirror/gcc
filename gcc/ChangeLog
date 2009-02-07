@@ -1,3 +1,9 @@
+2009-02-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_t): Add ata6289 device.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2009-02-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35434

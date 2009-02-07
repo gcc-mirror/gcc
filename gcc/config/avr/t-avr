@@ -43,6 +43,7 @@ MULTILIB_DIRNAMES = avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6
 
 # The many avr2 matches are not listed here - this is the default.
 MULTILIB_MATCHES = \
+	mmcu?avr25=mmcu?ata6289 \
 	mmcu?avr25=mmcu?attiny13 \
 	mmcu?avr25=mmcu?attiny13a \
 	mmcu?avr25=mmcu?attiny2313 \
