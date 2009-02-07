@@ -1,3 +1,11 @@
+2009-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/35147
+	PR c++/37737
+	* g++.dg/cpp0x/vt-35147.C: New.
+	* g++.dg/cpp0x/vt-37737-1.C: Likewise.
+	* g++.dg/cpp0x/vt-37737-2.C: Likewise.
+
 2009-02-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35434

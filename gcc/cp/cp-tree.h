@@ -2270,8 +2270,8 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* Nonzero if the template arguments is actually a vector of vectors,
    rather than just a vector.  */
-#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE)		\
-  (NODE && TREE_VEC_ELT (NODE, 0)                       \
+#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE)		     \
+  (NODE && TREE_VEC_LENGTH (NODE) && TREE_VEC_ELT (NODE, 0)  \
    && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
 
 /* The depth of a template argument vector.  When called directly by
