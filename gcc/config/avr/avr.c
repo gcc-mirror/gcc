@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
+   2009 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GCC.
@@ -175,6 +175,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at90s8535",    ARCH_AVR2, "__AVR_AT90S8535__" },
     /* Classic + MOVW, <= 8K.  */
   { "avr25",        ARCH_AVR25, NULL },
+  { "ata6289",      ARCH_AVR25, "__AVR_ATA6289__" },
   { "attiny13",     ARCH_AVR25, "__AVR_ATtiny13__" },
   { "attiny13a",    ARCH_AVR25, "__AVR_ATtiny13A__" },
   { "attiny2313",   ARCH_AVR25, "__AVR_ATtiny2313__" },
