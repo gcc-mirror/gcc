@@ -1,3 +1,9 @@
+2009-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/35147
+	PR c++/37737
+	* cp-tree.h (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): Check TREE_VEC_LENGTH.
+
 2009-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39095
