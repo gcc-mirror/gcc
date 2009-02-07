@@ -34,28 +34,25 @@
 
 namespace std
 {
-  namespace 
+  namespace
   {
-    extern "C"
+    extern "C" void*
+    execute_native_thread_routine(void* __p)
     {
-      void* __thread_proxy(void* __p)
-      {
-	thread::__thread_data_base* __t = 
-	  static_cast<thread::__thread_data_base*>(__p);
-	thread::__thread_data_ptr __local_thread_data;
-	__local_thread_data.swap(__t->_M_this_ptr);
+      thread::_Impl_base* __t = static_cast<thread::_Impl_base*>(__p);
+      thread::__shared_base_type __local;
+      __local.swap(__t->_M_this_ptr);
 
-	__try
-	  {
-	    __local_thread_data->_M_run();
-	  }
-	__catch(...)
-	  {
-	    std::terminate();
-	  }
+      __try
+	{
+	  __local->_M_run();
+	}
+      __catch(...)
+	{
+	  std::terminate();
+	}
 
-	return 0;
-      }
+      return 0;
     }
   }
 
@@ -64,41 +61,42 @@ namespace std
   {
     int __e = EINVAL;
 
-    if (_M_thread_data)
+    if (_M_data)
     {
       void* __r = 0;
-      __e = __gthread_join(_M_thread_data->_M_thread_handle, &__r);
+      __e = __gthread_join(_M_data->_M_id._M_thread, &__r);
     }
 
     if (__e)
       __throw_system_error(__e);
 
-    _M_thread_data.reset();
+    _M_data.reset();
   }
 
   void
   thread::detach()
-  {    
+  {
     int __e = EINVAL;
 
-    if (_M_thread_data)
-      __e = __gthread_detach(_M_thread_data->_M_thread_handle);
+    if (_M_data)
+      __e = __gthread_detach(_M_data->_M_id._M_thread);
 
     if (__e)
       __throw_system_error(__e);
 
-    _M_thread_data.reset();
+    _M_data.reset();
   }
 
-  void 
+  void
   thread::_M_start_thread()
   {
-    _M_thread_data->_M_this_ptr = _M_thread_data;
-    int __e = __gthread_create(&_M_thread_data->_M_thread_handle, 
-			       &__thread_proxy, _M_thread_data.get());
+    // _M_data->_M_this_ptr = _M_data;
+    _M_data->_M_this_ptr = _M_data;
+    int __e = __gthread_create(&_M_data->_M_id._M_thread,
+			       &execute_native_thread_routine, _M_data.get());
     if (__e)
     {
-      _M_thread_data->_M_this_ptr.reset();
+      _M_data->_M_this_ptr.reset();
       __throw_system_error(__e);
     }
   }

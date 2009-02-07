@@ -1,3 +1,29 @@
+2009-02-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/thread (thread::id): Move definition inside thread.
+	Use native_handle_type. Remove this_thread::get_id friend.
+	Change __thread_data_ptr to __shared_base_ptr.
+	(thread::id::id(native_handle_type): Make public. Still explicit.
+	Use native_handle_type. Change _M_thread_id to _M_thread.
+	(thread::__thread_data_base): Rename to _Impl_base. Use id, change
+	_M_thread_handle to _M_id.
+	(thread::__thread_data): Rename to _Impl.
+	Fixup for renames.
+	(thread::_M_make_thread_data): Return derived type.
+	(thread::hardware_concurrency): Add definition for default case.
+	(thread::get_id): Now can define inline.
+	(thread): Change _M_thread_data to _M_data.
+	(this_thread::get_id): Now can define inline.
+	* src/thread.cc (__thread_proxy): Rename to
+	execute_native_thread_routine.
+	Fixup for other renames.
+	* testsuite/30_threads/thread/cons/assign_neg.cc: New.
+	* testsuite/30_threads/thread/cons/copy_neg.cc: New.
+	* testsuite/30_threads/thread/algorithm: Move to..
+	* testsuite/30_threads/thread/swap: ...this.
+	* testsuite/30_threads/thread/member/hardware_concurrency.cc: Add.
+	* testsuite/30_threads/thread/id/operators.cc: New.
+
 2009-02-05  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/tuple (_Head_base<>::_Head_base(_UHead&&)): Formatting.
@@ -7,13 +33,13 @@
 
 2009-02-05  Chris Fairles  <cfairles@gcc.gnu.org>
 	    Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/std/thread (__thread_data_base): Nest class in std::thread.
 	(__thread_data): Likewise.
 	(__thread_data_ptr): Nest typedef in std::thread.
 	* src/thread.cc (__thread_proxy): Qualify the above names.
 	* config/abi/pre/gnu.ver: Remove unused exports.
-	
+
 2009-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/unique_ptr.h: Remove private __this_type typedef.
