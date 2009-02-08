@@ -1,3 +1,12 @@
+2009-02-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	2009-02-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/38991
+	* config/sh/predicates.md (general_movsrc_operand): Don't check
+	the subreg of system registers here.
+
 2009-02-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35435
