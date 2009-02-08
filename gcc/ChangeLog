@@ -1,5 +1,11 @@
 2009-02-08  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/35434
+	* c-common.c (handle_alias_attribute): Disallow attribute for
+	anything not a FUNCTION_DECL or VAR_DECL.
+
+2009-02-08  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/36432
 	* c-decl.c (grokdeclarator): Don't treat [] declarators in fields
 	as indicating flexible array members unless the field itself is
