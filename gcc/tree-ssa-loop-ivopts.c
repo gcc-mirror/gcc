@@ -1562,15 +1562,14 @@ may_be_nonaddressable_p (tree expr)
 	 and make them look addressable.  After some processing the
 	 non-addressability may be uncovered again, causing ADDR_EXPRs
 	 of inappropriate objects to be built.  */
-      if (is_gimple_reg (TREE_OPERAND (expr, 0))
-	  || !is_gimple_addressable (TREE_OPERAND (expr, 0)))
-	return true;
-
-      /* ... fall through ... */
+      return is_gimple_reg (TREE_OPERAND (expr, 0))
+	     || !is_gimple_addressable (TREE_OPERAND (expr, 0))
+	     || may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+      return TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (expr, 0)))
+	     || may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     CASE_CONVERT:
       return true;

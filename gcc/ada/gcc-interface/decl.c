@@ -2615,6 +2615,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type
 	  = build_array_type (gnat_to_gnu_type (Component_Type (gnat_entity)),
 			      gnu_index_type);
+	TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
 	copy_alias_set (gnu_type,  gnu_string_type);
       }
       break;
