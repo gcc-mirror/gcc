@@ -1,3 +1,10 @@
+2009-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/30_threads/thread/member: To..
+	* testsuite/30_threads/thread/members: ...this.
+	* testsuite/30_threads/condition_variable/member: To...
+	* testsuite/30_threads/condition_variable/members: ...this.
+
 2009-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/thread (thread::id): Move definition inside thread.
