@@ -4386,12 +4386,20 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    else if (decl_context == FIELD)
 	      {
-		if (pedantic && !flag_isoc99 && !in_system_header)
+		bool flexible_array_member = false;
+		const struct c_declarator *t = declarator;
+		while (t->kind == cdk_attrs)
+		  t = t->declarator;
+		flexible_array_member = (t->kind == cdk_id);
+		if (flexible_array_member
+		    && pedantic && !flag_isoc99 && !in_system_header)
 		  pedwarn ("ISO C90 does not support flexible array members");
 
 		/* ISO C99 Flexible array members are effectively
 		   identical to GCC's zero-length array extension.  */
-		itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
+		if (flexible_array_member || array_parm_vla_unspec_p)
+		  itype = build_range_type (sizetype, size_zero_node,
+					    NULL_TREE);
 	      }
 	    else if (decl_context == PARM)
 	      {
