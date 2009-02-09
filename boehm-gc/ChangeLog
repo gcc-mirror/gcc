@@ -1,3 +1,9 @@
+2009-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.am (LTLDFLAGS): New variable.
+	(LINK): Use it.
+	* Makefile.in: Regenerated.
+
 2008-12-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
