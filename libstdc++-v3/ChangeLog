@@ -1,3 +1,11 @@
+2009-02-08  Chris Fairles  <cfairles@gcc.gnu.org>
+
+	* include/std/thread (thread<>::thread(_Callable)): Explicitly use
+	_Callable as template argument for _M_make_shared_data.
+	* testsuite/30_threads/thread/cons/6.cc: New.
+	* testsuite/30_threads/thread/cons/7.cc: New.
+	* testsuite/30_threads/thread/cons/8.cc: New.
+
 2009-02-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/30_threads/thread/member: To..

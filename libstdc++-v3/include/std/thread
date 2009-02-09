@@ -128,7 +128,7 @@ namespace std
 
     template<typename _Callable>
       explicit thread(_Callable __f)
-      : _M_data(_M_make_shared_data(__f))
+      : _M_data(_M_make_shared_data<_Callable>(__f))
       { _M_start_thread(); }
 
     template<typename _Callable, typename... _Args>
