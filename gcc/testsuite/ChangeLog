@@ -1,3 +1,8 @@
+2009-02-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/x86_64/abi/abi-x86_64.exp: Use glob instead of
+	find.
+
 2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20090209-1.c: New test.

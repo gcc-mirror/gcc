@@ -31,7 +31,7 @@ torture-init
 set-torture-options $C_TORTURE_OPTIONS
 set additional_flags "-W -Wall"
 
-foreach src [lsort [find $srcdir/$subdir test_*.c]] {
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     if {[runtest_file_p $runtests $src]} {
 	if { ([istarget *-*-darwin*]) } then {
 	    c-torture-execute [list $src \
