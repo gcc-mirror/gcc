@@ -1,3 +1,8 @@
+2009-02-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (array_to_constant): Fix (latent) wrong-code
+	generation due to implicit sign extension.
+
 2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/38981
