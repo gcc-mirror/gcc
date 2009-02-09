@@ -31,6 +31,11 @@
 // NULL even if an allocation fails (filed as Radar 3884894).
 // { dg-do run { xfail *-*-darwin8.[0-4].* } }
 
+// Skip test at -m64 on Darwin because RLIMITS are not being honored.
+// Radar 6467883: 10.4/10.5 setrlimits are not honored by memory allocators
+// Radar 6467884: 10.X systems are not robust when paging space is exceeded
+// { dg-skip-if "" { *-*-darwin* && lp64 } { "*" } { "" } } 
+
 #include <sstream>
 #include <iostream>
 #include <limits>
