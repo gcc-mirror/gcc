@@ -103,13 +103,13 @@ namespace __parallel
 	  __gnu_parallel::accumulate_selector<_RandomAccessIterator>
 	    my_selector;
 	  __gnu_parallel::
-	    for_each_template_random_access(begin, end,
+	    for_each_template_random_access_ed(begin, end,
 					    __gnu_parallel::nothing(),
 					    my_selector,
 					    __gnu_parallel::
 					    accumulate_binop_reduct
 					    <BinaryOperation>(binary_op),
-					    res, res, -1, parallelism_tag);
+					    res, res, -1);
 	  return res;
 	}
       else
@@ -211,9 +211,9 @@ namespace __parallel
 	    inner_product_selector<RandomAccessIterator1,
 	    RandomAccessIterator2, T> my_selector(first1, first2);
 	  __gnu_parallel::
-	    for_each_template_random_access(first1, last1, binary_op2,
+	    for_each_template_random_access_ed(first1, last1, binary_op2,
 					    my_selector, binary_op1,
-					    res, res, -1, parallelism_tag);
+					    res, res, -1);
 	  return res;
 	}
       else
@@ -432,10 +432,10 @@ namespace __parallel
 	    end_pair(end, result + (end - begin));
 	  __gnu_parallel::adjacent_difference_selector<ip> functionality;
 	  __gnu_parallel::
-	    for_each_template_random_access(begin_pair, end_pair, bin_op,
+	    for_each_template_random_access_ed(begin_pair, end_pair, bin_op,
 					    functionality,
 					    __gnu_parallel::dummy_reduct(),
-					    dummy, dummy, -1, parallelism_tag);
+					    dummy, dummy, -1);
 	  return functionality.finish_iterator;
 	}
       else

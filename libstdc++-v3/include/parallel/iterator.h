@@ -131,7 +131,8 @@ namespace __gnu_parallel
     public:
       typedef IteratorCategory iterator_category;
       typedef void value_type;
-      typedef typename Iterator1::difference_type difference_type;
+      typedef typename std::iterator_traits<Iterator1>::difference_type
+                                                            difference_type;
       typedef type* pointer;
       typedef type& reference;
 

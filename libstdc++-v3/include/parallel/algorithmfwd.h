@@ -99,7 +99,8 @@ namespace __parallel
   template<typename _RAIter, typename _Tp>
     typename iterator_traits<_RAIter>::difference_type
     count_switch(_RAIter, _RAIter, const _Tp&, random_access_iterator_tag,
-		 __gnu_parallel::_Parallelism);
+		 __gnu_parallel::_Parallelism parallelism
+		 = __gnu_parallel::parallel_unbalanced);
 
 
   template<typename _IIter, typename _Predicate>
@@ -121,7 +122,8 @@ namespace __parallel
   template<typename _RAIter, typename _Predicate>
     typename iterator_traits<_RAIter>::difference_type
     count_if_switch(_RAIter, _RAIter, _Predicate, random_access_iterator_tag,
-		    __gnu_parallel::_Parallelism);
+		    __gnu_parallel::_Parallelism parallelism
+		    = __gnu_parallel::parallel_unbalanced);
 
   // algobase.h
   template<typename _IIter1, typename _IIter2>
@@ -228,7 +230,8 @@ namespace __parallel
   template<typename _RAIter, typename _Function>
     _Function
     for_each_switch(_RAIter, _RAIter, _Function, random_access_iterator_tag, 
-		    __gnu_parallel::_Parallelism);
+		    __gnu_parallel::_Parallelism  parallelism
+		    = __gnu_parallel::parallel_balanced);
 
 
   template<typename _FIter, typename _Generator>
@@ -250,7 +253,8 @@ namespace __parallel
   template<typename _RAIter, typename _Generator>
     void
     generate_switch(_RAIter, _RAIter, _Generator, random_access_iterator_tag, 
-		    __gnu_parallel::_Parallelism);
+		    __gnu_parallel::_Parallelism parallelism
+		    = __gnu_parallel::parallel_balanced);
 
   template<typename _OIter, typename _Size, typename _Generator>
     _OIter
@@ -272,7 +276,8 @@ namespace __parallel
   template<typename _RAIter, typename _Size, typename _Generator>
     _RAIter
     generate_n_switch(_RAIter, _Size, _Generator, random_access_iterator_tag, 
-		      __gnu_parallel::_Parallelism);
+		      __gnu_parallel::_Parallelism parallelism
+		      = __gnu_parallel::parallel_balanced);
 
   template<typename _IIter1, typename _IIter2>
     bool
@@ -429,7 +434,8 @@ namespace __parallel
     _RAOIter
     transform1_switch(_RAIIter, _RAIIter, _RAOIter, UnaryOperation, 
 		      random_access_iterator_tag, random_access_iterator_tag, 
-		      __gnu_parallel::_Parallelism);
+		      __gnu_parallel::_Parallelism parallelism
+		      = __gnu_parallel::parallel_balanced);
 
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
@@ -455,7 +461,8 @@ namespace __parallel
     transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, _BiOperation, 
 		      random_access_iterator_tag, random_access_iterator_tag, 
 		      random_access_iterator_tag,
-		      __gnu_parallel::_Parallelism);
+		      __gnu_parallel::_Parallelism parallelism
+		      = __gnu_parallel::parallel_balanced);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _BiOperation, typename _Tag1,
@@ -546,7 +553,8 @@ namespace __parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     max_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
-		       __gnu_parallel::_Parallelism);
+		       __gnu_parallel::_Parallelism parallelism
+		       = __gnu_parallel::parallel_balanced);
 
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
@@ -615,7 +623,8 @@ namespace __parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     min_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
-		       __gnu_parallel::_Parallelism);
+		       __gnu_parallel::_Parallelism parallelism
+		       = __gnu_parallel::parallel_balanced);
 
   template<typename _RAIter>
     void

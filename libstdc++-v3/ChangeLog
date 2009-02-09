@@ -1,3 +1,20 @@
+2009-02-09  Johannes Singler  <singler@ira.uka.de>
+
+        Backport from mainline:
+        2009-02-03  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/algorithmfwd.h:
+        Add parallelism default for many declarations.
+        * include/parallel/numericfwd.h: Likewise.
+        * include/parallel/iterator.h: Use iterator_traits as usual.
+        * include/parallel/par_loop.h:
+        Include equally_split.h.
+        (for_each_template_random_access_ed):
+        Avoid calling the Result default constructor.
+        * include/parallel/numeric: Replace
+        for_each_template_random_access by
+        for_each_template_random_access_ed in numeric functions.
+
 2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
