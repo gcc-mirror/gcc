@@ -239,7 +239,7 @@ namespace std
   // 30.2.2 Namespace this_thread.
   namespace this_thread
   {
-    thread::id
+    inline thread::id
     get_id() { return thread::id(__gthread_self()); }
 
 #ifdef _GLIBCXX_USE_SCHED_YIELD
