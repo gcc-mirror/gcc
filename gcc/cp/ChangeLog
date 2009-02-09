@@ -1,3 +1,13 @@
+2009-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39109
+	* semantics.c (simplify_aggr_init_expr): Do zero-initialization here.
+	* init.c (build_value_init): Not here. Don't build a TARGET_EXPR.
+	* tree.c (get_target_expr): Handle AGGR_INIT_EXPR.
+	* cp-gimplify.c (cp_gimplify_init_expr): Remove special handling
+	for build_value_init TARGET_EXPR.
+	* cp-tree.h (AGGR_INIT_ZERO_FIRST): New macro.
+
 2009-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/35147

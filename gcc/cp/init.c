@@ -309,21 +309,13 @@ build_value_init (tree type)
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
 	     the object and then call the implicitly defined ctor.
-	     Implement this by sticking the zero-initialization inside
-	     the TARGET_EXPR for the constructor call;
-	     cp_gimplify_init_expr will know how to handle it.  */
-	  tree init = build_zero_init (type, NULL_TREE,
-				       /*static_storage_p=*/false);
+	     This will be handled in simplify_aggr_init_expr.  */
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
 	     NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error);
 
-	  ctor = build_cplus_new (type, ctor);
-	  init = build2 (INIT_EXPR, void_type_node,
-			 TARGET_EXPR_SLOT (ctor), init);
-	  init = build2 (COMPOUND_EXPR, void_type_node, init,
-			 TARGET_EXPR_INITIAL (ctor));
-	  TARGET_EXPR_INITIAL (ctor) = init;
+	  ctor = build_aggr_init_expr (type, ctor);
+	  AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
 	}
       else if (TREE_CODE (type) != UNION_TYPE)
