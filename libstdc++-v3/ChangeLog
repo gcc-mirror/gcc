@@ -1,5 +1,9 @@
 2009-02-08  Chris Fairles  <cfairles@gcc.gnu.org>
 
+	* include/std/thread (this_thread::get_id): Inline.
+
+2009-02-08  Chris Fairles  <cfairles@gcc.gnu.org>
+
 	* include/std/thread (thread<>::thread(_Callable)): Explicitly use
 	_Callable as template argument for _M_make_shared_data.
 	* testsuite/30_threads/thread/cons/6.cc: New.
