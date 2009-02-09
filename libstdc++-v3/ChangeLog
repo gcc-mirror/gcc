@@ -1,3 +1,9 @@
+2009-02-09  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/33300
+	* libstdc++-v3/testsuite/27_io/ios_base/storage/2.cc: Skip
+	on darwin for lp64.
+
 2009-02-09  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* configure.host: Set abi_baseline_pair for mips64*-linux.
