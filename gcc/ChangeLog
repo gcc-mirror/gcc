@@ -1,3 +1,10 @@
+2009-02-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/38953
+	* graphite.c (if_region_set_false_region): After moving a region 
+	in the false branch of a condition, remove the empty dummy basic block.
+	(gloog): Remove wrong fix for PR38953.
+
 2009-02-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (array_to_constant): Fix (latent) wrong-code

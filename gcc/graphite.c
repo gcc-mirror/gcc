@@ -5024,6 +5024,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 {
   basic_block condition = if_region_get_condition_block (if_region);
   edge false_edge = get_false_edge_from_guard_bb (condition);
+  basic_block dummy = false_edge->dest;
   edge entry_region = SESE_ENTRY (region);
   edge exit_region = SESE_EXIT (region);
   basic_block before_region = entry_region->src;
@@ -5038,11 +5039,13 @@ if_region_set_false_region (ifsese if_region, sese region)
   redirect_edge_pred (entry_region, condition);
   redirect_edge_pred (exit_region, before_region);
   redirect_edge_pred (false_edge, last_in_region);
+  redirect_edge_succ (false_edge, single_succ (dummy));
+  delete_basic_block (dummy);
 
   exit_region->flags = EDGE_FALLTHRU;
   recompute_all_dominators ();
 
-  SESE_EXIT (region) = single_succ_edge (false_edge->dest);
+  SESE_EXIT (region) = false_edge;
   if_region->false_region = region;
 
   if (slot)
@@ -5435,16 +5438,6 @@ gloog (scop_p scop, struct clast_stmt *stmt)
 						     10);
   loop_p context_loop;
   ifsese if_region = NULL;
-
-  /* To maintain the loop closed SSA form, we have to keep the phi
-     nodes after the last loop in the scop.  */
-  if (loop_depth (SESE_EXIT (SCOP_REGION (scop))->dest->loop_father)
-      != loop_depth (SESE_EXIT (SCOP_REGION (scop))->src->loop_father))
-    {
-      basic_block bb = SESE_EXIT (SCOP_REGION (scop))->dest;
-      SESE_EXIT (SCOP_REGION (scop)) = split_block_after_labels (bb);
-      pointer_set_insert (SESE_REGION_BBS (SCOP_REGION (scop)), bb);
-    }
 
   recompute_all_dominators ();
   graphite_verify ();
