@@ -1,9 +1,3 @@
-2009-02-08  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p) <VIEW_CONVERT_EXPR>:
-	Make case self-contained.
-	<ARRAY_REF>: Test TYPE_NONALIASED_COMPONENT flag.
-
 2009-02-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_t): Add ata6289 device.
