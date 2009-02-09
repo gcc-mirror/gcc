@@ -66,7 +66,8 @@ TESTS = gctest
 ## CFLAGS, not those passed in from the top level make.
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
-LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
+LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LTLDFLAGS) -o $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
