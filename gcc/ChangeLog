@@ -1,3 +1,9 @@
+2009-02-09  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/39035
+	* real.c (do_compare): Special-case compare of zero against
+	decimal float value.
+
 2009-02-08  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35434
