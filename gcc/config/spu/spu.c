@@ -4722,9 +4722,8 @@ array_to_constant (enum machine_mode mode, unsigned char arr[16])
     }
   if (mode == DFmode)
     {
-      val = (arr[0] << 24) | (arr[1] << 16) | (arr[2] << 8) | arr[3];
-      val <<= 32;
-      val |= (arr[4] << 24) | (arr[5] << 16) | (arr[6] << 8) | arr[7];
+      for (i = 0, val = 0; i < 8; i++)
+	val = (val << 8) | arr[i];
       return hwint_to_const_double (DFmode, val);
     }
 
