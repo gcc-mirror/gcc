@@ -460,14 +460,6 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  if (from != sub)
 	    TREE_TYPE (from) = void_type_node;
 	}
-      else if (TREE_CODE (sub) == INIT_EXPR
-	       && TREE_OPERAND (sub, 0) == slot)
-	{
-	  /* An INIT_EXPR under TARGET_EXPR created by build_value_init,
-	     will be followed by an AGGR_INIT_EXPR.  */
-	  gimplify_expr (&to, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
-	  TREE_OPERAND (sub, 0) = to;
-	}
 
       if (t == sub)
 	break;

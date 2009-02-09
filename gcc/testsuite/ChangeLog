@@ -1,3 +1,8 @@
+2009-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39109
+	* g++.dg/init/value6.C: New test.
+
 2009-02-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/x86_64/abi/abi-x86_64.exp: Use glob instead of
