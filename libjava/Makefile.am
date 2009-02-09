@@ -98,7 +98,7 @@ endif
 dbexec_DATA = $(db_name)
 endif 
 
-bin_SCRIPTS = addr2name.awk contrib/rebuild-gcj-db contrib/aot-compile
+bin_SCRIPTS = contrib/rebuild-gcj-db contrib/aot-compile
 
 if INSTALL_AOT_RPM
 bin_SCRIPTS += contrib/aot-compile-rpm
@@ -128,12 +128,15 @@ if ANONVERSCRIPT
 extra_ldflags_libjava += -Wl,--version-script=$(srcdir)/libgcj.ver
 endif
 
+LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
-          $(LDFLAGS) -o $@
+          $(LTLDFLAGS) -o $@
 GCJ_FOR_ECJX = @GCJ_FOR_ECJX@
 GCJ_FOR_ECJX_LINK = $(GCJ_FOR_ECJX) -o $@
 LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) \
-          $(LDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
+          $(LTLDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
+CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 

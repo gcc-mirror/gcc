@@ -532,8 +532,6 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 GCJCOMPILE = $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 LTGCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ) \
 	$(AM_GCJFLAGS) $(GCJFLAGS)
@@ -929,15 +927,19 @@ db_pathtail = $(gcjsubdir)/$(db_name)
 @NATIVE_TRUE@	gcjh gjavah gnative2ascii gorbd grmid gserialver \
 @NATIVE_TRUE@	gtnameserv gc-analyze $(am__append_5)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
-bin_SCRIPTS = addr2name.awk contrib/rebuild-gcj-db contrib/aot-compile \
+bin_SCRIPTS = contrib/rebuild-gcj-db contrib/aot-compile \
 	$(am__append_7)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
+LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
-          $(LDFLAGS) -o $@
+          $(LTLDFLAGS) -o $@
 
 GCJ_FOR_ECJX_LINK = $(GCJ_FOR_ECJX) -o $@
 LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) \
-          $(LDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
+          $(LTLDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
+
+CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
 WARNINGS = -Wextra -Wall
 AM_CXXFLAGS = \
