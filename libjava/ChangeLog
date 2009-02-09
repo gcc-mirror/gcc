@@ -1,3 +1,18 @@
+2009-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* addr2name.awk: Remove.
+	* Makefile.am (bin_SCRIPTS): Remove addr2name.awk.
+	* Makefile.in: Regenerated.
+
+	* configure.ac: Define enable_sjlj_exceptions
+	appropriately under the ARM EH ABI.
+	* configure: Regenerated.
+
+	* Makefile.am (LTLDFLAGS): Define.
+	(GCJLINK): Use it.
+	(LIBLINK): Likewise.
+	* Makefile.in: Regenerated.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice
