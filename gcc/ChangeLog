@@ -1,3 +1,9 @@
+2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/38981
+	* tree-ssa-coalesce.c (add_coalesce): Cap the costs of coalesce pairs
+	at MUST_COALESCE_COST-1 instead of MUST_COALESCE_COST.
+
 2009-02-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35202

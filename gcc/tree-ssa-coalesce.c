@@ -284,8 +284,7 @@ add_cost_one_coalesce (coalesce_list_p cl, int p1, int p2)
 /* Add a coalesce between P1 and P2 in list CL with a cost of VALUE.  */
 
 static inline void 
-add_coalesce (coalesce_list_p cl, int p1, int p2,
-	      int value)
+add_coalesce (coalesce_list_p cl, int p1, int p2, int value)
 {
   coalesce_pair_p node;
 
@@ -295,13 +294,13 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 
   node = find_coalesce_pair (cl, p1, p2, true);
 
-  /* Once the value is MUST_COALESCE_COST, leave it that way.  */
-  if (node->cost != MUST_COALESCE_COST)
+  /* Once the value is at least MUST_COALESCE_COST - 1, leave it that way.  */
+  if (node->cost < MUST_COALESCE_COST - 1)
     {
-      if (value == MUST_COALESCE_COST)
-	node->cost = value;
-      else
+      if (value < MUST_COALESCE_COST - 1)
 	node->cost += value;
+      else
+	node->cost = value;
     }
 }
 
