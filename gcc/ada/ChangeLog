@@ -1,3 +1,10 @@
+2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_String_Literal_Subtype>:
+	Set TYPE_NONALIASED_COMPONENT on the array type only if appropriate.
+	(copy_alias_set): Assert that arrays have the same aliasing settings.
+	(substitute_in_type) <ARRAY_TYPE>: Copy TYPE_NONALIASED_COMPONENT.
+
 2009-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_String_Literal_Subtype>:

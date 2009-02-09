@@ -2615,8 +2615,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type
 	  = build_array_type (gnat_to_gnu_type (Component_Type (gnat_entity)),
 			      gnu_index_type);
-	TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
-	copy_alias_set (gnu_type,  gnu_string_type);
+	if (array_type_has_nonaliased_component (gnat_entity, gnu_type))
+	  TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
+	copy_alias_set (gnu_type, gnu_string_type);
       }
       break;
 
@@ -5184,6 +5185,17 @@ copy_alias_set (tree gnu_new_type, tree gnu_old_type)
       && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_new_type)))
     copy_alias_set (TREE_TYPE (gnu_new_type), TREE_TYPE (gnu_old_type));
 
+  /* The alias set shouldn't be copied between array types with different
+     aliasing settings because this can break the aliasing relationship
+     between the array type and its element type.  */
+#ifndef ENABLE_CHECKING
+  if (flag_strict_aliasing)
+#endif
+    gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
+		  && TREE_CODE (gnu_old_type) == ARRAY_TYPE
+		  && TYPE_NONALIASED_COMPONENT (gnu_new_type)
+		     != TYPE_NONALIASED_COMPONENT (gnu_old_type)));
+
   TYPE_ALIAS_SET (gnu_new_type) = get_alias_set (gnu_old_type);
   record_component_aliases (gnu_new_type);
 }
@@ -7510,6 +7522,7 @@ substitute_in_type (tree t, tree f, tree r)
 
 	new = build_array_type (component, domain);
 	TYPE_SIZE (new) = 0;
+	TYPE_NONALIASED_COMPONENT (new) = TYPE_NONALIASED_COMPONENT (t);
 	TYPE_MULTI_ARRAY_P (new) = TYPE_MULTI_ARRAY_P (t);
 	TYPE_CONVENTION_FORTRAN_P (new) = TYPE_CONVENTION_FORTRAN_P (t);
 	layout_type (new);
