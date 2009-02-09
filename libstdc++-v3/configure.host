@@ -291,6 +291,9 @@ case "${host}" in
       i[567]86)
         abi_baseline_pair=i486-linux-gnu
         ;;
+      mips64*)
+	abi_baseline_pair=mips64-linux-gnu
+	;;
       powerpc64)
         abi_baseline_pair=powerpc64-linux-gnu
         ;;

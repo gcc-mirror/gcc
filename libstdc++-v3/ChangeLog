@@ -1,3 +1,8 @@
+2009-02-09  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* configure.host: Set abi_baseline_pair for mips64*-linux.
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt: New file.
+
 2009-02-08  Chris Fairles  <cfairles@gcc.gnu.org>
 
 	* include/std/thread (this_thread::get_id): Inline.
