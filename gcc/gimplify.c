@@ -7459,9 +7459,9 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 	}
 
       lhs = gimple_get_lhs (stmt);
-      /* If regimplification of the LHS changed it in a way that requires
-	 a simple RHS, create temporary.  */
-      if (orig_lhs != lhs && !is_gimple_formal_tmp_var (lhs))
+      /* If the LHS changed it in a way that requires a simple RHS,
+	 create temporary.  */
+      if (lhs && !is_gimple_formal_tmp_var (lhs))
 	{
 	  bool need_temp = false;
 
