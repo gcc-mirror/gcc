@@ -1,6 +1,6 @@
 // condition_variable -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@ namespace std
   condition_variable::condition_variable()
   {
 #ifdef __GTHREAD_COND_INIT
-    __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
+    __native_type __tmp = __GTHREAD_COND_INIT;
     _M_cond = __tmp;
 #else
     int __e = __gthread_cond_init(&_M_cond, NULL);
@@ -65,7 +65,6 @@ namespace std
   void 
   condition_variable::notify_one()
   { 
-    lock_guard<mutex> __lock(_M_internal_mutex);
     int __e = __gthread_cond_signal(&_M_cond);
 
     // XXX not in spec
@@ -77,7 +76,6 @@ namespace std
   void 
   condition_variable::notify_all()
   { 
-    lock_guard<mutex> __lock(_M_internal_mutex);
     int __e = __gthread_cond_broadcast(&_M_cond);
 
     // XXX not in spec
@@ -89,7 +87,7 @@ namespace std
   condition_variable_any::condition_variable_any()
   {
 #ifdef __GTHREAD_COND_INIT
-    __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
+    __native_type __tmp = __GTHREAD_COND_INIT;
     _M_cond = __tmp;
 #else
     int __e = __gthread_cond_init(&_M_cond, NULL);

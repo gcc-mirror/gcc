@@ -1,26 +1,24 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
-// { dg-require-cstdint "" }
-// { dg-require-gthreads "" }
-
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// -*- C++ -*-
+// Utilities for testing threads for the C++ library testsuite.
+//
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 2, or (at your option)
 // any later version.
-
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING.  If not, write to the Free
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
-
+//
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
 // templates or use macros or inline functions from this file, or you compile
@@ -30,16 +28,39 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <mutex>
+#ifndef _GLIBCXX_TESTSUITE_THREAD_H
+#define _GLIBCXX_TESTSUITE_THREAD_H
 
-void test01()
-{
-  // assign
-  typedef std::timed_mutex mutex_type;
-  mutex_type m1;
-  mutex_type m2;
-  m1 = m2;
-}
+#include <sstream>
+#include <stdexcept>
+#include <type_traits>
 
-// { dg-error "used here" "" { target *-*-* } 41 } 
-// { dg-error "deleted function" "" { target *-*-* } 190 }
+// C++0x only.
+namespace __gnu_test
+{  
+  // Assume _Tp::native_handle_type.
+  template<typename _Tp>
+    void
+    compare_type_to_native_type_sizes()
+    {
+      typedef _Tp test_type;
+      typedef typename test_type::native_handle_type native_handle_type;
+
+      int st = sizeof(test_type);
+
+      // Remove possible pointer type.
+      int snt = sizeof(typename std::remove_pointer<native_handle_type>::type);
+      
+      if (st != snt)
+	{
+	  std::ostringstream s;
+	  s << std::endl;
+	  s << "size of _Tp: " << st << std::endl;
+	  s << "size of *(_Tp::native_handle_type): " << snt << std::endl;
+	  throw std::runtime_error(s.str());
+	}
+    }
+} // namespace __gnu_test
+
+#endif // _GLIBCXX_TESTSUITE_THREAD_H
+
