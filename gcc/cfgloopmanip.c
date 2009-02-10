@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009 Free Software
    Foundation, Inc.
 
 This file is part of GCC.
@@ -349,12 +349,12 @@ remove_path (edge e)
     if (rem_bbs[i]->loop_father->header == rem_bbs[i])
       deleted_loop[nreml++] = rem_bbs[i]->loop_father;
 
-  remove_bbs (rem_bbs, nrem);
-  free (rem_bbs);
-
   for (i = 0; i < nreml; i++)
     cancel_loop_tree (deleted_loop[i]);
   free (deleted_loop);
+
+  remove_bbs (rem_bbs, nrem);
+  free (rem_bbs);
 
   /* Find blocks whose dominators may be affected.  */
   sbitmap_zero (seen);
