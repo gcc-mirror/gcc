@@ -1,3 +1,17 @@
+2009-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39119
+	* config/i386/i386.c (x86_64_reg_class): Remove X86_64_AVX_CLASS.
+	(x86_64_reg_class_name): Removed.
+	(classify_argument): Return 0 if bytes > 32.  Return 0 if the
+	first one isn't X86_64_SSE_CLASS or any other ones aren't
+	X86_64_SSEUP_CLASS when size > 16bytes.  Don't turn
+	X86_64_SSEUP_CLASS into X86_64_SSE_CLASS if the preceded one
+	is X86_64_SSEUP_CLASS.  Set AVX modes to 1 X86_64_SSE_CLASS
+	and 3 X86_64_SSEUP_CLASS.
+	(construct_container): Remove X86_64_AVX_CLASS.  Handle 4
+	registers with 1 X86_64_SSE_CLASS and 3 X86_64_SSEUP_CLASS.
+
 2009-02-10  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.md (allocate_stack): Always use an update
