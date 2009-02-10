@@ -1,3 +1,7 @@
+2009-02-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (clean): Don't remove makedepend$(EXEEXT).
+
 2008-10-27  Janis Johnson  <janis187@us.ibm.com>
 
 	PR other/37897
