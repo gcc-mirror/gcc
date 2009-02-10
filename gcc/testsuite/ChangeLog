@@ -1,3 +1,8 @@
+2009-02-10  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c/39084
+	gcc.dg/pr39084.c: New test.
+
 2009-02-09  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39035
