@@ -5370,6 +5370,8 @@ start_struct (enum tree_code code, tree name)
 	    error ("redefinition of %<union %E%>", name);
 	  else
 	    error ("redefinition of %<struct %E%>", name);
+	  /* Don't create structures using a name already in use.  */
+	  ref = NULL_TREE;
 	}
       else if (C_TYPE_BEING_DEFINED (ref))
 	{
