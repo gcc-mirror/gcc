@@ -8605,6 +8605,7 @@ AM_MAKEFLAGS = \
 	"SHELL=$(SHELL)" \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"exec_prefix=$(exec_prefix)" \
+	"datadir=$(datadir)" \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \
 	"mandir=$(mandir)" \
