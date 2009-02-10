@@ -57,7 +57,9 @@ namespace std
   class thread
   {
   public:
-    typedef __gthread_t 	 	native_handle_type;
+    typedef __gthread_t	 		native_handle_type;
+    struct _Impl_base;
+    typedef shared_ptr<_Impl_base>	__shared_base_type;
 
     /// thread::id
     class id
@@ -85,9 +87,6 @@ namespace std
 	friend basic_ostream<_CharT, _Traits>&
 	operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id);
     };
-
-    struct _Impl_base;
-    typedef shared_ptr<_Impl_base>	__shared_base_type;
 
     struct _Impl_base
     {
@@ -239,21 +238,25 @@ namespace std
   // 30.2.2 Namespace this_thread.
   namespace this_thread
   {
+    /// get_id
     inline thread::id
     get_id() { return thread::id(__gthread_self()); }
 
 #ifdef _GLIBCXX_USE_SCHED_YIELD
+    /// yield
     inline void
     yield()
     { __gthread_yield(); }
 #endif
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
+    /// sleep_until
     template<typename _Clock, typename _Duration>
       inline void
       sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
       { sleep_for(__atime - _Clock::now()); }
 
+    /// sleep_for
     template<typename _Rep, typename _Period>
       inline void
       sleep_for(const chrono::duration<_Rep, _Period>& __rtime)

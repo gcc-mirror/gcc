@@ -1,5 +1,7 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
+// { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -21,16 +23,12 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <thread>
+#include <thread/all.h>
+#include <condition_variable>
 
-void test01()
+int main()
 {
-  // copy
-  typedef std::thread test_type;
-  test_type t1;
-  test_type t2(t1); // XXX this is failing for the wrong reason
+  typedef std::condition_variable_any test_type;
+  __gnu_test::compare_type_to_native_type_sizes<test_type>();
+  return 0;
 }
-
-// { dg-error "here" "" { target *-*-* } 31 }
-// { dg-error "deleted function" "" { target *-*-* } 123 }
-// { dg-excess-errors "In file included from" }

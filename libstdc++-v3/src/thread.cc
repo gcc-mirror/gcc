@@ -45,7 +45,7 @@ namespace std
 
       __try
 	{
-	  __local->_M_run();
+	  __t->_M_run();
 	}
       __catch(...)
 	{
@@ -90,7 +90,6 @@ namespace std
   void
   thread::_M_start_thread()
   {
-    // _M_data->_M_this_ptr = _M_data;
     _M_data->_M_this_ptr = _M_data;
     int __e = __gthread_create(&_M_data->_M_id._M_thread,
 			       &execute_native_thread_routine, _M_data.get());
