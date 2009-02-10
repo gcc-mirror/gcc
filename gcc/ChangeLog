@@ -1,3 +1,9 @@
+2009-02-10  Nick Clifton  <nickc@redhat.com>
+
+	* tree-parloops.c: Change license to GPLv3.
+	* ipa-struct-reorg.c: Change license to GPLv3.
+	* ipa-struct-reorg.h: Change license to GPLv3.
+
 2009-02-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c/39084
