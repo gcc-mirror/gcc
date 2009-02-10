@@ -1,5 +1,6 @@
 /* Code sinking for trees
-   Copyright (C) 2001, 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2007, 2009
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -301,7 +302,12 @@ statement_sink_location (gimple stmt, basic_block frombb,
      We can't sink statements that have volatile operands.  
 
      We don't want to sink dead code, so anything with 0 immediate uses is not
-     sunk.  
+     sunk.
+
+     Don't sink BLKmode assignments if current function has any local explicit
+     register variables, as BLKmode assignments may involve memcpy or memset
+     calls or, on some targets, inline expansion thereof that sometimes need
+     to use specific hard registers.
 
   */
   code = gimple_assign_rhs_code (stmt);
@@ -311,7 +317,9 @@ statement_sink_location (gimple stmt, basic_block frombb,
       || code == FILTER_EXPR
       || is_hidden_global_store (stmt)
       || gimple_has_volatile_ops (stmt)
-      || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
+      || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE)
+      || (cfun->has_local_explicit_reg_vars
+	  && TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt))) == BLKmode))
     return false;
   
   FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
