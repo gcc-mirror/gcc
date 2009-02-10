@@ -77,6 +77,9 @@ static bitmap remaining_stmts;
    predecessor a node that writes to memory.  */
 static bitmap upstream_mem_writes;
 
+/* TODOs we need to run after the pass.  */
+static unsigned int todo;
+
 /* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
    ORIG_LOOP.  */
 
@@ -330,6 +333,8 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "generated memset zero\n");
+
+  todo |= TODO_rebuild_alias;
 
  end:
   free_data_ref (dr);
@@ -1206,6 +1211,8 @@ tree_loop_distribution (void)
   loop_iterator li;
   int nb_generated_loops = 0;
 
+  todo = 0;
+
   FOR_EACH_LOOP (li, loop, 0)
     {
       VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
@@ -1237,7 +1244,7 @@ tree_loop_distribution (void)
       VEC_free (gimple, heap, work_list);
     }
 
-  return 0;
+  return todo;
 }
 
 static bool
