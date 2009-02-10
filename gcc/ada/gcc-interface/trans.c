@@ -4940,8 +4940,9 @@ gnat_to_gnu (Node_Id gnat_node)
 			!= TYPE_DUMMY_P (gnu_target_desig_type))
 		    || (TYPE_DUMMY_P (gnu_source_desig_type)
 			&& gnu_source_desig_type != gnu_target_desig_type)
-		    || (get_alias_set (gnu_source_desig_type)
-			!= get_alias_set (gnu_target_desig_type))))
+		    || !alias_sets_conflict_p
+			(get_alias_set (gnu_source_desig_type),
+			 get_alias_set (gnu_target_desig_type))))
 	      {
 		post_error_ne
 		  ("?possible aliasing problem for type&",
@@ -4973,8 +4974,9 @@ gnat_to_gnu (Node_Id gnat_node)
 			!= TYPE_DUMMY_P (gnu_target_array_type))
 		    || (TYPE_DUMMY_P (gnu_source_array_type)
 			&& gnu_source_array_type != gnu_target_array_type)
-		    || (get_alias_set (gnu_source_array_type)
-			!= get_alias_set (gnu_target_array_type))))
+		    || !alias_sets_conflict_p
+			(get_alias_set (gnu_source_array_type),
+			 get_alias_set (gnu_target_array_type))))
 	      {
 		post_error_ne
 		  ("?possible aliasing problem for type&",
