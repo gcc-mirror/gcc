@@ -1,3 +1,8 @@
+2009-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39132
+	* gcc.dg/torture/pr39132.c: New testcase.
+
 2009-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39119

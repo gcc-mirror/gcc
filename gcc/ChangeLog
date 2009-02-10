@@ -1,3 +1,10 @@
+2009-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39132
+	* tree-loop-distribution.c (todo): New global var.
+	(generate_memset_zero): Trigger TODO_rebuild_alias.
+	(tree_loop_distribution): Return todo.
+
 2009-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39119
