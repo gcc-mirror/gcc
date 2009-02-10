@@ -1,5 +1,9 @@
 2009-02-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/39124
+	* cfgloopmanip.c (remove_path): Call remove_bbs after
+	cancel_loop_tree, not before it.
+
 	PR target/39139
 	* function.h (struct function): Add has_local_explicit_reg_vars
 	bit.
