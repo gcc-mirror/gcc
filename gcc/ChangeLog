@@ -1,3 +1,14 @@
+2009-02-10  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.md (allocate_stack): Always use an update
+	form instruction to update the stack back chain word, even if the
+	user has disabled the generation of update instructions.
+	(movdi_<mode>_update_stack): New.
+	(movsi_update_stack): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Likewise,
+	always use an update form instruction to update the stack back
+	chain word.
+
 2009-02-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/38953
