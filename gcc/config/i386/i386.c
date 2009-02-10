@@ -7997,6 +7997,7 @@ ix86_expand_prologue (void)
 {
   rtx insn;
   bool pic_reg_used;
+  bool emit_blockage = false;
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
 
@@ -8214,7 +8215,7 @@ ix86_expand_prologue (void)
     {
       if (pic_reg_used)
 	emit_insn (gen_prologue_use (pic_offset_table_rtx));
-      emit_insn (gen_blockage ());
+      emit_blockage = true;
     }
 
   if (crtl->drap_reg && !crtl->stack_realign_needed)
@@ -8226,6 +8227,18 @@ ix86_expand_prologue (void)
       rtx x = plus_constant (hard_frame_pointer_rtx, drap_bp_offset);
       insn = emit_insn (gen_rtx_SET (VOIDmode, crtl->drap_reg, x));
     }
+
+  /* Prevent instructions from being scheduled into register save push
+     sequence when access to the redzone area is done through frame pointer.
+     The offset betweeh the frame pointer and the stack pointer is calculated
+     relative to the value of the stack pointer at the end of the function
+     prologue, and moving instructions that access redzone area via frame
+     pointer inside push sequence violates this assumption.  */
+  if (frame_pointer_needed && frame.red_zone_size)
+    emit_blockage = true;
+
+  if (emit_blockage)
+    emit_insn (gen_blockage ()); 
 
   /* Emit cld instruction if stringops are used in the function.  */
   if (TARGET_CLD && ix86_current_function_needs_cld)

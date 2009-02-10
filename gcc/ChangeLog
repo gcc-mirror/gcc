@@ -1,3 +1,10 @@
+2009-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39118
+	* config/i386/i386.c (expand_prologue): Emit blockage at the end
+	of function prologue when frame pointer is used to access
+	red zone area.
+
 2009-02-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39127
@@ -100,8 +107,7 @@
 
 2009-02-06  Nick Clifton  <nickc@redhat.com>
 
-	* config/m32c/m32c.h (PCC_BITFIELD_TYPE_MATTERS): Define to
-	zero.
+	* config/m32c/m32c.h (PCC_BITFIELD_TYPE_MATTERS): Define to zero.
 
 2009-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -249,7 +255,7 @@
 
 2009-02-02  Catherine Moore  <clm@codesourcery.com>
 
-	* sde.h (SUBTARGET_ARM_SPEC): Don;t assemble -fpic code as -mabicalls.
+	* sde.h (SUBTARGET_ARM_SPEC): Don't assemble -fpic code as -mabicalls.
 
 2009-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -444,8 +450,7 @@
 
 	* regclass.c: Rename reginfo.c.  Change file description.
 	(FORBIDDEN_INC_DEC_CLASSES): Remove.
-	(reg_class_superclasses, forbidden_inc_dec_class, in_inc_dec):
-	Remove.
+	(reg_class_superclasses, forbidden_inc_dec_class, in_inc_dec): Remove.
 	(init_reg_sets_1): Remove code for evaluation of
 	reg_class_superclasses and losing_caller_save_reg_set.
 	(init_regs): Remove init_reg_autoinc.
@@ -579,8 +584,7 @@
 2009-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38740
-	* reorg.c (gate_handle_delay_slots): Avoid dbr scheduling
-	if !optimize.
+	* reorg.c (gate_handle_delay_slots): Avoid dbr scheduling if !optimize.
 	* config/mips/mips.c (mips_reorg): Likewise.
 
 2009-01-28  Richard Guenther  <rguenther@suse.de>
