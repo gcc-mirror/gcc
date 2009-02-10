@@ -1,5 +1,5 @@
 /* Liveness for SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation,
    Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
@@ -642,6 +642,8 @@ remove_unused_locals (void)
 	  TREE_USED (e->goto_block) = true;
     }
 
+  cfun->has_local_explicit_reg_vars = false;
+
   /* Remove unmarked local vars from local_decls.  */
   for (cell = &cfun->local_decls; *cell; )
     {
@@ -663,6 +665,10 @@ remove_unused_locals (void)
 	      continue;
 	    }
 	}
+      else if (TREE_CODE (var) == VAR_DECL
+	       && DECL_HARD_REGISTER (var)
+	       && !is_global_var (var))
+	cfun->has_local_explicit_reg_vars = true;
       cell = &TREE_CHAIN (*cell);
     }
 

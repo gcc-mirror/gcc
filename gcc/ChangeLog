@@ -1,3 +1,15 @@
+2009-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39139
+	* function.h (struct function): Add has_local_explicit_reg_vars
+	bit.
+	* gimplify.c (gimplify_bind_expr): Set it if local DECL_HARD_REGISTER
+	VAR_DECLs were seen.
+	* tree-ssa-live.c (remove_unused_locals): Recompute
+	cfun->has_local_explicit_reg_vars.
+	* tree-ssa-sink.c (statement_sink_location): Don't sink BLKmode
+	copies or clearings if cfun->has_local_explicit_reg_vars.
+
 2009-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39118
