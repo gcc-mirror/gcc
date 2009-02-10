@@ -1,7 +1,13 @@
+2009-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34397
+	* g++.dg/template/crash88.C: New.
+	* g++.dg/template/crash89.C: Likewise.
+
 2009-02-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c/39084
-	gcc.dg/pr39084.c: New test.
+	* gcc.dg/pr39084.c: New test.
 
 2009-02-10  Jakub Jelinek  <jakub@redhat.com>
 
