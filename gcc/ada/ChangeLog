@@ -1,3 +1,22 @@
+2009-02-10  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (enum alias_set_op): New enumeration.
+	(copy_alias_set): Rename into...
+	(relate_alias_sets): ...this.  Add third parameter OP.  Retrieve the
+	underlying array of unconstrained arrays for the new type as well.
+	If the old and new alias sets don't conflict, make one a subset of
+	the other as per the OP parameter.
+	(gnat_to_gnu_entity): Adjust calls to copy_alias_set.
+	<E_Record_Type>: Do not copy the alias set for derived types.
+	For all types, make the alias set of derived types a superset of
+	that of their parent type.
+	(make_aligning_type): Adjust calls to copy_alias_set.
+	(make_packable_type): Likewise.
+	* gcc-interface/trans.c (gnat_to_gnu)<N_Validate_Unchecked_Conversion>:
+	Check for alias set conflict instead of strict equality to issue the
+	warning.
+
 2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_String_Literal_Subtype>:

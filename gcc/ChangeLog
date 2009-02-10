@@ -1,3 +1,8 @@
+2009-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* alias.h (record_alias_subset): Declare.
+	* alias.c (record_alias_subset): Make global.
+
 2009-02-10  Nick Clifton  <nickc@redhat.com>
 
 	* tree-parloops.c: Change license to GPLv3.
