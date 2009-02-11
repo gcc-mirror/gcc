@@ -1,3 +1,10 @@
+2009-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39154
+	* gimplify.c (omp_notice_variable): If adding GOVD_SEEN
+	bit to variable length decl's flags, add it also to its
+	pointer replacement variable.
+
 2009-02-11  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
