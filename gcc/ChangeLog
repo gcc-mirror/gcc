@@ -1,3 +1,8 @@
+2009-02-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (Fixed-Point Types): Break long paragraphs into
+	bulleted lists.
+
 2009-02-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* alias.h (record_alias_subset): Declare.
