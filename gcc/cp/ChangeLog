@@ -1,5 +1,8 @@
 2009-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38649
+	* class.c (defaultable_fn_p): Handle ... properly.
+
 	PR c++/36744
 	* tree.c (lvalue_p_1): Condition rvalue ref handling on
 	treat_class_rvalues_as_lvalues, too.

@@ -1,5 +1,8 @@
 2009-02-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38649
+	* g++.dg/cpp0x/defaulted8.C: New test.
+
 	PR c++/36744
 	* g++.dg/cpp0x/rv9p.C: New test.
 
