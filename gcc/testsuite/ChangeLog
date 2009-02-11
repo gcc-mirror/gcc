@@ -1,3 +1,7 @@
+2009-02-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.target/i386/pr38824.c: New testcase.
+
 2009-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38649

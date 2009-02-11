@@ -1050,6 +1050,10 @@
   (match_code "plus,mult,and,ior,xor,smin,smax,umin,umax,compare,minus,div,
 	       mod,udiv,umod,ashift,rotate,ashiftrt,lshiftrt,rotatert"))
 
+;; Return true for COMMUTATIVE_P.
+(define_predicate "commutative_operator"
+  (match_code "plus,mult,and,ior,xor,smin,smax,umin,umax"))
+
 ;; Return 1 if OP is a binary operator that can be promoted to wider mode.
 (define_predicate "promotable_binary_operator"
   (ior (match_code "plus,and,ior,xor,ashift")
