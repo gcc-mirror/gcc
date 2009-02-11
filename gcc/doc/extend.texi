@@ -1069,45 +1069,64 @@ The fixed-point types are
 @code{_Sat unsigned _Accum},
 @code{_Sat unsigned long _Accum},
 @code{_Sat unsigned long long _Accum}.
+
 Fixed-point data values contain fractional and optional integral parts.
 The format of fixed-point data varies and depends on the target machine.
 
-Support for fixed-point types includes prefix and postfix increment
-and decrement operators (@code{++}, @code{--}); unary arithmetic operators
-(@code{+}, @code{-}, @code{!}); binary arithmetic operators (@code{+},
-@code{-}, @code{*}, @code{/}); binary shift operators (@code{<<}, @code{>>});
-relational operators (@code{<}, @code{<=}, @code{>=}, @code{>});
-equality operators (@code{==}, @code{!=}); assignment operators
-(@code{+=}, @code{-=}, @code{*=}, @code{/=}, @code{<<=}, @code{>>=});
-and conversions to and from integer, floating-point, or fixed-point types.
+Support for fixed-point types includes:
+@itemize @bullet
+@item
+prefix and postfix increment and decrement operators (@code{++}, @code{--})
+@item
+unary arithmetic operators (@code{+}, @code{-}, @code{!})
+@item
+binary arithmetic operators (@code{+}, @code{-}, @code{*}, @code{/})
+@item
+binary shift operators (@code{<<}, @code{>>})
+@item
+relational operators (@code{<}, @code{<=}, @code{>=}, @code{>})
+@item
+equality operators (@code{==}, @code{!=})
+@item
+assignment operators (@code{+=}, @code{-=}, @code{*=}, @code{/=},
+@code{<<=}, @code{>>=})
+@item
+conversions to and from integer, floating-point, or fixed-point types
+@end itemize
 
-Use a suffix @samp{hr} or @samp{HR} in a literal constant of type
-@code{short _Fract} and @code{_Sat short _Fract},
-@samp{r} or @samp{R} for @code{_Fract} and @code{_Sat _Fract},
-@samp{lr} or @samp{LR} for @code{long _Fract} and @code{_Sat long _Fract},
-@samp{llr} or @samp{LLR} for @code{long long _Fract} and
-@code{_Sat long long _Fract},
-@samp{uhr} or @samp{UHR} for @code{unsigned short _Fract} and
-@code{_Sat unsigned short _Fract},
-@samp{ur} or @samp{UR} for @code{unsigned _Fract} and
-@code{_Sat unsigned _Fract},
-@samp{ulr} or @samp{ULR} for @code{unsigned long _Fract} and
-@code{_Sat unsigned long _Fract},
-@samp{ullr} or @samp{ULLR} for @code{unsigned long long _Fract}
-and @code{_Sat unsigned long long _Fract},
-@samp{hk} or @samp{HK} for @code{short _Accum} and @code{_Sat short _Accum},
-@samp{k} or @samp{K} for @code{_Accum} and @code{_Sat _Accum},
-@samp{lk} or @samp{LK} for @code{long _Accum} and @code{_Sat long _Accum},
-@samp{llk} or @samp{LLK} for @code{long long _Accum} and
-@code{_Sat long long _Accum},
-@samp{uhk} or @samp{UHK} for @code{unsigned short _Accum} and
-@code{_Sat unsigned short _Accum},
-@samp{uk} or @samp{UK} for @code{unsigned _Accum} and
-@code{_Sat unsigned _Accum},
-@samp{ulk} or @samp{ULK} for @code{unsigned long _Accum} and
-@code{_Sat unsigned long _Accum},
-and @samp{ullk} or @samp{ULLK} for @code{unsigned long long _Accum}
-and @code{_Sat unsigned long long _Accum}.
+Use a suffix in a fixed-point literal constant:
+@itemize
+@item @samp{hr} or @samp{HR} for @code{short _Fract} and
+@code{_Sat short _Fract}
+@item @samp{r} or @samp{R} for @code{_Fract} and @code{_Sat _Fract}
+@item @samp{lr} or @samp{LR} for @code{long _Fract} and
+@code{_Sat long _Fract}
+@item @samp{llr} or @samp{LLR} for @code{long long _Fract} and
+@code{_Sat long long _Fract}
+@item @samp{uhr} or @samp{UHR} for @code{unsigned short _Fract} and
+@code{_Sat unsigned short _Fract}
+@item @samp{ur} or @samp{UR} for @code{unsigned _Fract} and
+@code{_Sat unsigned _Fract}
+@item @samp{ulr} or @samp{ULR} for @code{unsigned long _Fract} and
+@code{_Sat unsigned long _Fract}
+@item @samp{ullr} or @samp{ULLR} for @code{unsigned long long _Fract}
+and @code{_Sat unsigned long long _Fract}
+@item @samp{hk} or @samp{HK} for @code{short _Accum} and
+@code{_Sat short _Accum}
+@item @samp{k} or @samp{K} for @code{_Accum} and @code{_Sat _Accum}
+@item @samp{lk} or @samp{LK} for @code{long _Accum} and
+@code{_Sat long _Accum}
+@item @samp{llk} or @samp{LLK} for @code{long long _Accum} and
+@code{_Sat long long _Accum}
+@item @samp{uhk} or @samp{UHK} for @code{unsigned short _Accum} and
+@code{_Sat unsigned short _Accum}
+@item @samp{uk} or @samp{UK} for @code{unsigned _Accum} and
+@code{_Sat unsigned _Accum}
+@item @samp{ulk} or @samp{ULK} for @code{unsigned long _Accum} and
+@code{_Sat unsigned long _Accum}
+@item @samp{ullk} or @samp{ULLK} for @code{unsigned long long _Accum}
+and @code{_Sat unsigned long long _Accum}
+@end itemize
 
 GCC support of fixed-point types as specified by the draft technical report
 is incomplete:
