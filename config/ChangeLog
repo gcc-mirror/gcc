@@ -1,3 +1,8 @@
+2009-02-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* mh-cygwin (LDFLAGS): Add linker option to increase stack limit
+	up to 8MB.
+
 2009-01-23  Jie Zhang  <jie.zhang@analog.com>
 
 	* tls.m4 (GCC_CHECK_EMUTLS): Define.
