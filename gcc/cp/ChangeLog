@@ -1,3 +1,13 @@
+2009-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30111
+	* init.c (build_value_init_noctor): Split out from...
+	(build_value_init): ...here.
+	(expand_aggr_init_1): Handle value-initialization.
+	* cp-tree.h: Add declaration.
+	* class.c (type_has_user_provided_constructor): 
+	Handle non-class arguments.
+
 2009-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38649
