@@ -1,3 +1,17 @@
+2009-02-11  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39118
+	* config/i386/i386.md (UNSPEC_MEMORY_BLOCKAGE): New constant.
+	(memory_blockage): New expander.
+	(*memory_blockage): New insn pattern.
+	* config/i386/i386.c (ix86_expand_prologue): Use memory_blockage
+	instead of general blockage at the end of function prologue when
+	frame pointer is used to access red zone area.  Do not emit blockage
+	when profiling, it is emitted in generic code.
+	(ix86_expand_epilogue): Emit memory_blockage at the beginning of
+	function epilogue when frame pointer is used to access red zone area.
+
 2009-02-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c/39084
