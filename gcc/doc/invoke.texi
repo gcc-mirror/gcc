@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+@c 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -11,7 +11,7 @@
 
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -337,7 +337,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg -fipa-pta @gol 
 -fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
--fipa-type-escape -fira -fira-algorithm=@var{algorithm} @gol
+-fipa-type-escape -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region} -fira-coalesce -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
@@ -5845,12 +5845,6 @@ Note @option{-fregmove} and @option{-foptimize-register-move} are the same
 optimization.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
-
-@item -fira
-@opindex fira
-Use the integrated register allocator (@acronym{IRA}) for register
-allocation.  It is a default if @acronym{IRA} has been ported for the
-target.
 
 @item -fira-algorithm=@var{algorithm}
 Use specified coloring algorithm for the integrated register
