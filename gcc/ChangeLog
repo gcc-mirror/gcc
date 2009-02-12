@@ -18,14 +18,13 @@
 
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config.gcc: Add ia64/t-fprules-softfp soft-fp/t-softfp to
-	tmake_file for ia64*-*-linux*.
+	* config.gcc (ia64*-*-linux*): Add ia64/t-fprules-softfp and
+	soft-fp/t-softfp to tmake_file.
 
 	* config/ia64/ia64.c (ia64_soft_fp_init_libfuncs): New.
-	(ia64_expand_compare): Use HPUX library for TFmode only for
-	HPUX.
-	(ia64_builtins): Add IA64_BUILTIN_COPYSIGNQ, IA64_BUILTIN_FABSQ
-	and IA64_BUILTIN_INFQ.
+	(ia64_expand_compare): Use HPUX library for TFmode only for HPUX.
+	(ia64_builtins) [IA64_BUILTIN_COPYSIGNQ, IA64_BUILTIN_FABSQ,
+	IA64_BUILTIN_INFQ]: New.
 	(ia64_init_builtins): Initialize __builtin_infq,
 	__builtin_fabsq and __builtin_copysignq if not HPUX.
 	(ia64_expand_builtin): Handle IA64_BUILTIN_COPYSIGNQ,
@@ -46,8 +45,8 @@
 	(TF_SIZE): Likewise.
 	(TARGET_INIT_LIBFUNCS): Likewise.
 
-	* config/ia64/t-glibc: Add $(srcdir)/config/ia64/libgcc-glibc.ver
-	to SHLIB_MAPFILES.
+	* config/ia64/t-glibc (SHLINB_MAPFILES):
+	Add $(srcdir)/config/ia64/libgcc-glibc.ver,
 
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
