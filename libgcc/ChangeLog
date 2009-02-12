@@ -1,7 +1,12 @@
+2009-02-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.host (ia64*-*-linux*): Add t-softfp to tmake_file.
+	* config/ia64/tf-signs.c (__copysigntf3, __fabstf2): Prototype.
+
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config.host: Add ia64/t-fprules-softfp ia64/t-softfp-compat
-	to tmake_file for ia64*-*-linux*.
+	* config.host (ia64*-*-linux*): Add ia64/t-fprules-softfp and
+	ia64/t-softfp-compat to tmake_file.
 
 	* Makefile.in (gen-hide-list): Ignore .*_compat and .*@.*.
 

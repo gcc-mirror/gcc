@@ -38,6 +38,9 @@ union _FP_UNION_Q
    } bits __attribute__((packed));
 };
 
+__float128 __copysigntf3 (__float128, __float128);
+__float128 __fabstf2 (__float128);
+
 __float128
 __copysigntf3 (__float128 a, __float128 b)
 {
