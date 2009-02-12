@@ -1,3 +1,8 @@
+2009-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38950
+	* pt.c (unify)[TEMPLATE_PARM_INDEX]: Convert to the tsubsted type.
+
 2009-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39153

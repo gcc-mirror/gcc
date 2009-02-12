@@ -1,3 +1,8 @@
+2009-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38950
+	* g++.dg/template/array20.C: New test.
+
 2009-02-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/torture/fp-int-convert-float128-timode.c: Do not check
