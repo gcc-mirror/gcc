@@ -57,6 +57,7 @@
 
 2009-02-11  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR target/38824
 	* config/i386/i386.md: Add two new peephole2 to avoid mov followed
 	by arithmetic with memory operands.
 	* config/i386/predicates.md (commutative_operator): New.
