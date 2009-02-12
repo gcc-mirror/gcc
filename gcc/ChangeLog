@@ -1,3 +1,7 @@
+2009-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-fira): Remove.
+
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* caller-save.c: Replace regclass.c with reginfo.c in comments.
