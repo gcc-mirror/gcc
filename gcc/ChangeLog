@@ -1,3 +1,44 @@
+2009-02-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* longlong.h (sub_ddmmss): New for ia64. Ported from GMP 4.2.
+	(umul_ppmm): Likewise.
+	(count_leading_zeros): Likewise.
+	(count_trailing_zeros): Likewise.
+	(UMUL_TIME): Likewise.
+
+2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Add ia64/t-fprules-softfp soft-fp/t-softfp to
+	tmake_file for ia64*-*-linux*.
+
+	* config/ia64/ia64.c (ia64_soft_fp_init_libfuncs): New.
+	(ia64_expand_compare): Use HPUX library for TFmode only for
+	HPUX.
+	(ia64_builtins): Add IA64_BUILTIN_COPYSIGNQ, IA64_BUILTIN_FABSQ
+	and IA64_BUILTIN_INFQ.
+	(ia64_init_builtins): Initialize __builtin_infq,
+	__builtin_fabsq and __builtin_copysignq if not HPUX.
+	(ia64_expand_builtin): Handle IA64_BUILTIN_COPYSIGNQ,
+	IA64_BUILTIN_FABSQ and IA64_BUILTIN_INFQ.
+
+	* config/ia64/lib1funcs.asm (__divtf3): Define only if
+	SHARED is defined.
+	(__fixtfti): Likewise.
+	(__fixunstfti): Likewise.
+	(__floattitf): Likewise.
+
+	* config/ia64/libgcc-glibc.ver: New.
+	* config/ia64/t-fprules-softfp: Likewise.
+	* config/ia64/sfp-machine.h: Likewise.
+
+	* config/ia64/linux.h (LIBGCC2_HAS_TF_MODE): New.
+	(LIBGCC2_TF_CEXT): Likewise.
+	(TF_SIZE): Likewise.
+	(TARGET_INIT_LIBFUNCS): Likewise.
+
+	* config/ia64/t-glibc: Add $(srcdir)/config/ia64/libgcc-glibc.ver
+	to SHLIB_MAPFILES.
+
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (construct_container): Rewrite processing

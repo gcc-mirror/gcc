@@ -265,7 +265,9 @@ ASM_HIDDEN_OP = @asm_hidden_op@
 
 define gen-hide-list
 $(NM) -pg $< | \
-  $(AWK) 'NF == 3 && $$2 !~ /^[UN]$$/ { print "\t$(ASM_HIDDEN_OP)", $$3 }' > $@T
+  $(AWK) 'NF == 3 && $$2 !~ /^[UN]$$/ && $$3 !~ /.*_compat/ \
+         && $$3 !~ /.*@.*/ \
+	 { print "\t$(ASM_HIDDEN_OP)", $$3 }' > $@T
 mv -f $@T $@
 endef
 else

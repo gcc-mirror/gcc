@@ -350,7 +350,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64"
+	tmake_file="ia64/t-ia64 ia64/t-fprules-softfp ia64/t-softfp-compat"
 	;;
 ia64*-*-hpux*)
 	;;

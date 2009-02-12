@@ -59,3 +59,13 @@ do {						\
 #define LINK_EH_SPEC ""
 
 #define MD_UNWIND_SUPPORT "config/ia64/linux-unwind.h"
+
+/* Put all *tf routines in libgcc.  */
+#undef LIBGCC2_HAS_TF_MODE
+#define LIBGCC2_HAS_TF_MODE 1
+#undef LIBGCC2_TF_CEXT
+#define LIBGCC2_TF_CEXT q
+#define TF_SIZE 113
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS ia64_soft_fp_init_libfuncs

@@ -279,6 +279,8 @@ static void ia64_sysv4_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 static void ia64_vms_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
+static void ia64_soft_fp_init_libfuncs (void)
+     ATTRIBUTE_UNUSED;
 
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static tree ia64_handle_version_id_attribute (tree *, tree, tree, int, bool *);
@@ -1513,7 +1515,7 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
   /* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
      magic number as its third argument, that indicates what to do.
      The return value is an integer to be compared against zero.  */
-  else if (GET_MODE (op0) == TFmode)
+  else if (TARGET_HPUX && GET_MODE (op0) == TFmode)
     {
       enum qfcmp_magic {
 	QCMP_INV = 1,	/* Raise FP_INVALID on SNaN as a side effect.  */
@@ -9751,7 +9753,10 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 enum ia64_builtins
 {
   IA64_BUILTIN_BSP,
-  IA64_BUILTIN_FLUSHRS
+  IA64_BUILTIN_COPYSIGNQ,
+  IA64_BUILTIN_FABSQ,
+  IA64_BUILTIN_FLUSHRS,
+  IA64_BUILTIN_INFQ
 };
 
 void
@@ -9775,10 +9780,35 @@ ia64_init_builtins (void)
   /* The __float128 type.  */
   if (!TARGET_HPUX)
     {
+      tree ftype, decl;
       tree float128_type = make_node (REAL_TYPE);
+
       TYPE_PRECISION (float128_type) = 128;
       layout_type (float128_type);
       (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+
+      /* TFmode support builtins.  */
+      ftype = build_function_type (float128_type, void_list_node);
+      add_builtin_function ("__builtin_infq", ftype,
+			    IA64_BUILTIN_INFQ, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+
+      ftype = build_function_type_list (float128_type,
+					float128_type,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_fabsq", ftype,
+				   IA64_BUILTIN_FABSQ, BUILT_IN_MD,
+				   "__fabstf2", NULL_TREE);
+      TREE_READONLY (decl) = 1;
+
+      ftype = build_function_type_list (float128_type,
+					float128_type,
+					float128_type,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_copysignq", ftype,
+				   IA64_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
+				   "__copysigntf3", NULL_TREE);
+      TREE_READONLY (decl) = 1;
     }
   else
     /* Under HPUX, this is a synonym for "long double".  */
@@ -9836,8 +9866,29 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (gen_flushrs ());
       return const0_rtx;
 
+    case IA64_BUILTIN_INFQ:
+      {
+	REAL_VALUE_TYPE inf;
+	rtx tmp;
+
+	real_inf (&inf);
+	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, mode);
+
+	tmp = validize_mem (force_const_mem (mode, tmp));
+
+	if (target == 0)
+	  target = gen_reg_rtx (mode);
+
+	emit_move_insn (target, tmp);
+	return target;
+      }
+
+    case IA64_BUILTIN_FABSQ:
+    case IA64_BUILTIN_COPYSIGNQ:
+      return expand_call (exp, target, ignore);
+
     default:
-      break;
+      gcc_unreachable ();
     }
 
   return NULL_RTX;
@@ -9999,6 +10050,13 @@ ia64_sysv4_init_libfuncs (void)
 
   /* We leave out _U_Qfmin, _U_Qfmax and _U_Qfabs since soft-fp in
      glibc doesn't have them.  */
+}
+
+/* Use soft-fp.  */
+
+static void
+ia64_soft_fp_init_libfuncs (void)
+{
 }
 
 /* For HPUX, it is illegal to have relocations in shared segments.  */
@@ -10250,7 +10308,7 @@ ia64_scalar_mode_supported_p (enum machine_mode mode)
       return true;
 
     case TFmode:
-      return TARGET_HPUX;
+      return true;
 
     default:
       return false;
