@@ -5352,8 +5352,7 @@ where doing so does not interfere with debugging.
 @item -O2
 @opindex O2
 Optimize even more.  GCC performs nearly all supported optimizations
-that do not involve a space-speed tradeoff.  The compiler does not
-perform loop unrolling or function inlining when you specify @option{-O2}.
+that do not involve a space-speed tradeoff.
 As compared to @option{-O}, this option increases both compilation time
 and the performance of the generated code.
 
