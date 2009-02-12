@@ -1,3 +1,8 @@
+2009-02-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (Decimal Floating Types): Update identifier of
+	draft TR and list of missing support.
+
 2009-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/39154
