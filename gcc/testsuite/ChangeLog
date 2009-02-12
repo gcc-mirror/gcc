@@ -1,5 +1,9 @@
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* g++.dg/cpp0x/defaulted9.C: Compile with "-std=c++0x -fno-inline".
+
+2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39152
 	* gfortran.dg/pr39152.f: New.
 
