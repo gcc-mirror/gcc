@@ -1,3 +1,8 @@
+2009-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (Optimize Options): Stop claiming inlining and
+	loop unrolling do not happen at -O2.
+
 2009-02-12  Michael Matz  <matz@suse.de>
 
 	* gcc.c (ASM_DEBUG_SPEC): Check for -g0.
