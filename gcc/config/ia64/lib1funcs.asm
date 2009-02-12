@@ -38,10 +38,12 @@
 	.text
 	.align 16
 	.global __divxf3
-	.global __divtf3
 	.proc __divxf3
 __divxf3:
+#ifdef SHARED
+	.global __divtf3
 __divtf3:
+#endif
 	cmp.eq p7, p0 = r0, r0
 	frcpa.s0 f10, p6 = farg0, farg1
 	;;
@@ -757,6 +759,7 @@ __ia64_trampoline:
 	.endp __ia64_trampoline
 #endif
 
+#ifdef SHARED
 // Thunks for backward compatibility.
 #ifdef L_fixtfdi
 	.text
@@ -781,7 +784,7 @@ __fixunstfti:
 	}
 	.endp __fixunstfti
 #endif
-#if L_floatditf
+#ifdef L_floatditf
 	.align 16
 	.global __floattitf
 	.proc __floattitf
@@ -791,4 +794,5 @@ __floattitf:
 	  ;;
 	}
 	.endp __floattitf
+#endif
 #endif

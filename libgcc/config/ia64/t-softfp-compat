@@ -1,0 +1,7 @@
+# Filter out the following TImode functions and provide backward binary
+# compatibility.
+# Replace __dvxf3 _fixtfdi _fixunstfdi _floatditf
+libgcc1-tf-functions = __divxf3  _fixtfdi _fixunstfdi _floatditf
+LIB1ASMFUNCS := $(filter-out $(libgcc1-tf-functions), $(LIB1ASMFUNCS))
+libgcc1-tf-compats = $(addsuffix .asm, $(libgcc1-tf-functions))
+LIB2ADD += $(addprefix $(srcdir)/config/ia64/, $(libgcc1-tf-compats))
