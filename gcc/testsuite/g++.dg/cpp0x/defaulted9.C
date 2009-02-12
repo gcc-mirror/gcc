@@ -1,4 +1,5 @@
 // PR c++/39153
+// { dg-options "-std=c++0x -fno-inline" }
 
 struct _Impl_base
 {
