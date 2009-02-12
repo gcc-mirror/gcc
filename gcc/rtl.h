@@ -1696,7 +1696,7 @@ extern rtx simplify_rtx (const_rtx);
 extern rtx avoid_constant_pool_reference (rtx);
 extern bool mode_signbit_p (enum machine_mode, const_rtx);
 
-/* In regclass.c  */
+/* In reginfo.c  */
 extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
 
@@ -1820,7 +1820,7 @@ extern rtx remove_free_INSN_LIST_node (rtx *);
 extern rtx remove_free_EXPR_LIST_node (rtx *);
 
 
-/* regclass.c */
+/* reginfo.c */
 
 /* Initialize may_move_cost and friends for mode M.  */
 extern void init_move_cost (enum machine_mode);
@@ -2217,7 +2217,7 @@ extern HARD_REG_SET eliminable_regset;
 #endif
 extern void mark_elimination (int, int);
 
-/* In regclass.c */
+/* In reginfo.c */
 extern int reg_classes_intersect_p (enum reg_class, enum reg_class);
 extern int reg_class_subset_p (enum reg_class, enum reg_class);
 extern void globalize_reg (int);

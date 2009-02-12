@@ -188,7 +188,7 @@ reg_restore_code (int reg, enum machine_mode mode)
 /* Initialize for caller-save.
 
    Look at all the hard registers that are used by a call and for which
-   regclass.c has not already excluded from being used across a call.
+   reginfo.c has not already excluded from being used across a call.
 
    Ensure that we can find a mode to save the register and that there is a
    simple insn to save and restore the register.  This latter check avoids
