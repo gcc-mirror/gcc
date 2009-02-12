@@ -1,3 +1,9 @@
+2009-02-12  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.md (allocate_stack): Use _stack form of
+	patterns when updating the back chain.  Missed in the 2009-02-10
+	change.
+
 2009-02-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (Decimal Floating Types): Update identifier of
