@@ -1,5 +1,9 @@
 2009-02-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39153
+	* decl2.c (cp_write_global_declarations): 
+	Check DECL_DEFAULTED_FN, not DECL_ARTIFICIAL.
+
 	PR c++/30111
 	* init.c (build_value_init_noctor): Split out from...
 	(build_value_init): ...here.
