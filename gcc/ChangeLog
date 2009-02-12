@@ -1,3 +1,7 @@
+2009-02-12  Michael Matz  <matz@suse.de>
+
+	* gcc.c (ASM_DEBUG_SPEC): Check for -g0.
+
 2009-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Force output of comp_unit_die
