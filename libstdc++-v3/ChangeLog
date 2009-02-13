@@ -1,3 +1,17 @@
+2009-02-13  Chris Fairles  <cfairles@gcc.gnu.org>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/thread (_Impl_base): Move _M_id out and into ...
+	(thread): ...here. Call _M_make_routine in body of constructors.
+	Adjust data member usage to reflect changes.
+	(_M_make_routine): From _M_make_shared_data.
+	(_M_start_thread): Add __shared_base_type argument.
+	* src/thread.cc: Fixups for above.
+	* config/abi/pre/gnu.ver: Adjust exports.
+	* testsuite/30_threads/thread/native_handle/typesizes.cc: Enable.
+	* testsuite/30_threads/thread/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/30_threads/thread/cons/copy_neg.cc: Same.
+
 2009-02-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/thread/all.h (compare_type_to_native_type_sizes): To...

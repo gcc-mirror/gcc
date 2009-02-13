@@ -897,9 +897,9 @@ GLIBCXX_3.4.11 {
     _ZNSt22condition_variable_anyD2Ev;
 
     # thread
-    _ZNSt6thread15_M_start_threadEv;
     _ZNSt6thread4joinEv;
     _ZNSt6thread6detachEv;
+    _ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEE;
 
     # system_error
     _ZSt15system_category;

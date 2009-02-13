@@ -61,16 +61,16 @@ namespace std
   {
     int __e = EINVAL;
 
-    if (_M_data)
+    if (_M_id != id())
     {
       void* __r = 0;
-      __e = __gthread_join(_M_data->_M_id._M_thread, &__r);
+      __e = __gthread_join(_M_id._M_thread, &__r);
     }
 
     if (__e)
       __throw_system_error(__e);
 
-    _M_data.reset();
+    _M_id = id();
   }
 
   void
@@ -78,24 +78,24 @@ namespace std
   {
     int __e = EINVAL;
 
-    if (_M_data)
-      __e = __gthread_detach(_M_data->_M_id._M_thread);
+    if (_M_id != id())
+      __e = __gthread_detach(_M_id._M_thread);
 
     if (__e)
       __throw_system_error(__e);
 
-    _M_data.reset();
+    _M_id = id();
   }
 
   void
-  thread::_M_start_thread()
+  thread::_M_start_thread(__shared_base_type __b)
   {
-    _M_data->_M_this_ptr = _M_data;
-    int __e = __gthread_create(&_M_data->_M_id._M_thread,
-			       &execute_native_thread_routine, _M_data.get());
+    __b->_M_this_ptr = __b;
+    int __e = __gthread_create(&_M_id._M_thread,
+			       &execute_native_thread_routine, __b.get());
     if (__e)
     {
-      _M_data->_M_this_ptr.reset();
+      __b->_M_this_ptr.reset();
       __throw_system_error(__e);
     }
   }
