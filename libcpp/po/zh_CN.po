@@ -1,14 +1,14 @@
 # Simplified Chinese translation for cpplib.
 # Copyright (C) 2005 Free Software Foundation, Inc.
-# This file is distributed under the same license as the cpplib package.
-# Meng Jie <zuxy.meng@gmail.com>, 2005-2008.
+# This file is distributed under the same license as the gcc package.
+# Meng Jie <zuxy.meng@gmail.com>, 2005-2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3.0\n"
+"Project-Id-Version: cpplib 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2008-03-16 01:29+0800\n"
+"PO-Revision-Date: 2009-02-13 16:18+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -160,9 +160,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s 是一个 GCC 扩展"
 
 #: directives.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s 是一个 GCC 扩展"
+msgstr "#%s 是一个已过时的 GCC 扩展"
 
 #: directives.c:366
 msgid "suggest not using #elif in traditional C"
@@ -267,7 +267,7 @@ msgstr "# 后的“%s”不是一个正整数"
 #: directives.c:1042
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: directives.c:1066
 #, c-format
@@ -522,14 +522,12 @@ msgid "\"%s\" is not defined"
 msgstr "“%s”未定义"
 
 #: expr.c:756
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "二进制常量是一个 GCC 扩展"
+msgstr "断言是一个 GCC 扩展"
 
 #: expr.c:759
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "二进制常量是一个 GCC 扩展"
+msgstr "断言是一个已过时的 GCC 扩展"
 
 #: expr.c:892 expr.c:921
 #, c-format
@@ -546,9 +544,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "‘(’与‘)’之间缺少表达式"
 
 #: expr.c:932
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if 后没有表达式"
+msgstr "%s 后没有表达式"
 
 #: expr.c:935
 #, c-format
@@ -565,9 +563,9 @@ msgid " ':' without preceding '?'"
 msgstr "‘:’前没有‘?’"
 
 #: expr.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "#if 中不平衡的堆栈"
+msgstr "%s 中堆栈不平衡"
 
 #: expr.c:1014
 #, c-format
@@ -830,7 +828,7 @@ msgstr "类似函数的宏“%s”在传统 C 中必须与参数一起使用"
 #: macro.c:1016
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "调用宏 %s 的参数 %d：空的宏参数未被 ISO C90 和 ISO C++98 定义"
 
 #: macro.c:1453
 #, c-format
