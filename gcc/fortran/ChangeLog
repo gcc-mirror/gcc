@@ -1,3 +1,9 @@
+2009-02-13  Mikael Morin  <mikael.morin@tele2.fr>
+
+	PR fortran/38259
+	* module.c (gfc_dump_module,gfc_use_module): Add module
+	version number.
+
 2009-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36703
