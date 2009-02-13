@@ -1,3 +1,18 @@
+2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39162
+	* config/i386/i386.c (type_natural_mode): Add a new argument.
+	Return the original mode and warn ABI change if vector size
+	is 32byte.
+	(function_arg_advance): Updated.
+	(function_arg): Likewise.
+	(ix86_function_value): Likewise.
+	(ix86_return_in_memory): Likewise.
+	(ix86_sol10_return_in_memory): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(function_arg_32): Don't warn ABX ABI change here.
+	(function_arg_64): Likewise.
+
 2008-02-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* loop-iv.c (implies_p): In the final case, test that operands 0
