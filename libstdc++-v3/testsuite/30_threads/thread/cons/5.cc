@@ -32,8 +32,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <functional> // std::unary_function
-#include <utility> // std::ref
+#include <functional> // std::unary_function, std::ref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>

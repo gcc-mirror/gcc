@@ -39,24 +39,29 @@
 namespace __gnu_test
 {  
   // Assume _Tp::native_handle_type.
+  // Check C++ to native_handle_type characteristics: size and alignment.
   template<typename _Tp>
     void
-    compare_type_to_native_type_sizes()
+    compare_type_to_native_type()
     {
       typedef _Tp test_type;
-      typedef typename test_type::native_handle_type native_handle_type;
-
-      int st = sizeof(test_type);
 
       // Remove possible pointer type.
-      int snt = sizeof(typename std::remove_pointer<native_handle_type>::type);
-      
-      if (st != snt)
+      typedef typename test_type::native_handle_type native_handle;
+      typedef typename std::remove_pointer<native_handle>::type native_type;
+
+      int st = sizeof(test_type);
+      int snt = sizeof(native_type);      
+      int at = __alignof__(test_type);
+      int ant = __alignof__(native_type);
+      if (st != snt || at != ant)
 	{
 	  std::ostringstream s;
 	  s << std::endl;
 	  s << "size of _Tp: " << st << std::endl;
+	  s << "alignment of _Tp: " << st << std::endl;
 	  s << "size of *(_Tp::native_handle_type): " << snt << std::endl;
+	  s << "alignment of *(_Tp::native_handle_type): " << snt << std::endl;
 	  throw std::runtime_error(s.str());
 	}
     }

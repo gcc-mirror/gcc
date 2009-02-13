@@ -45,7 +45,7 @@
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
-namespace std 
+namespace std
 {
   /// condition_variable
   class condition_variable
@@ -63,25 +63,25 @@ namespace std
     condition_variable(const condition_variable&) = delete;
     condition_variable& operator=(const condition_variable&) = delete;
 
-    void 
+    void
     notify_one();
 
-    void 
+    void
     notify_all();
 
-    void 
+    void
     wait(unique_lock<mutex>& __lock);
 
     template<typename _Predicate>
-      void 
+      void
       wait(unique_lock<mutex>& __lock, _Predicate __p)
       {
 	while (!__p())
 	  wait(__lock);
       }
-  
+
     template<typename _Duration>
-      bool 
+      bool
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<__clock_t, _Duration>& __atime)
       { return __wait_until_impl(__lock, __atime); }
@@ -94,7 +94,7 @@ namespace std
 	// DR 887 - Sync unknown clock to known clock.
 	typename _Clock::time_point __c_entry = _Clock::now();
 	__clock_t::time_point __s_entry = __clock_t::now();
-	chrono::nanoseconds __delta = __atime - __c_entry;	
+	chrono::nanoseconds __delta = __atime - __c_entry;
 	__clock_t::time_point __s_atime = __s_entry + __delta;
 
 	return __wait_until_impl(__lock, __s_atime);
@@ -109,7 +109,7 @@ namespace std
 	while (!__p())
 	  if (!wait_until(__lock, __atime))
 	    return __p();
-	
+
 	return true;
       }
 
@@ -126,8 +126,8 @@ namespace std
 	       _Predicate __p)
       { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
 
-    native_handle_type 
-    native_handle() 
+    native_handle_type
+    native_handle()
     { return &_M_cond; }
 
   private:
@@ -137,21 +137,21 @@ namespace std
 			const chrono::time_point<_Clock, _Duration>& __atime)
       {
 	chrono::time_point<__clock_t, chrono::seconds> __s =
-          chrono::time_point_cast<chrono::seconds>(__atime);
-	
+	  chrono::time_point_cast<chrono::seconds>(__atime);
+
 	chrono::nanoseconds __ns =
-          chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-	
-        __gthread_time_t __ts =
-          {
-            static_cast<std::time_t>(__s.time_since_epoch().count()),
-            static_cast<long>(__ns.count())
-          };
-	
-        __gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
-                                 &__ts);
-	
-        return _Clock::now() < __atime;
+	  chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
+	  {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
+				 &__ts);
+
+	return _Clock::now() < __atime;
       }
   };
 
@@ -167,36 +167,36 @@ namespace std
 
     condition_variable_any();
     ~condition_variable_any();
-    
+
     condition_variable_any(const condition_variable_any&) = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;
 
-    void 
+    void
     notify_one();
 
-    void 
+    void
     notify_all();
 
     template<typename _Lock>
-      void 
+      void
       wait(_Lock& __lock);
 
     template<typename _Lock, typename _Predicate>
-      void 
+      void
       wait(_Lock& __lock, _Predicate __p);
 
     template<typename _Lock, typename _Clock, typename _Duration>
-      bool 
+      bool
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime);
 
-    template<typename _Lock, typename _Clock, 
+    template<typename _Lock, typename _Clock,
 	     typename _Duration, typename _Predicate>
-      bool 
+      bool
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime,
 		 _Predicate __p);
-    
+
     template<typename _Lock, typename _Rep, typename _Period>
       bool
       wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime);
@@ -204,10 +204,10 @@ namespace std
     template<typename _Lock, typename _Rep,
 	     typename _Period, typename _Predicate>
       bool
-      wait_for(_Lock& __lock, 
+      wait_for(_Lock& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p);
 
-    native_handle_type 
+    native_handle_type
     native_handle()
     { return &_M_cond; }
   };

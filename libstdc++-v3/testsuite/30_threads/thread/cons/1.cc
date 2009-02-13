@@ -36,6 +36,9 @@
 #include <system_error>
 #include <testsuite_hooks.h>
 
+// thread default cons works
+// thread default cons no throw
+// thread default cons not joinable
 int main()
 {
   bool test __attribute__((unused)) = true;

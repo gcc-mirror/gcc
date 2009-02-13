@@ -29,6 +29,6 @@
 int main()
 {
   typedef std::condition_variable_any test_type;
-  __gnu_test::compare_type_to_native_type_sizes<test_type>();
+  __gnu_test::compare_type_to_native_type<test_type>();
   return 0;
 }

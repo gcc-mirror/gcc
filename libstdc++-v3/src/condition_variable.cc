@@ -59,12 +59,12 @@ namespace std
     int __e = __gthread_cond_wait(&_M_cond, __lock.mutex()->native_handle());
 
     if (__e)
-      __throw_system_error(__e);    
+      __throw_system_error(__e);
   }
-  
-  void 
+
+  void
   condition_variable::notify_one()
-  { 
+  {
     int __e = __gthread_cond_signal(&_M_cond);
 
     // XXX not in spec
@@ -73,9 +73,9 @@ namespace std
       __throw_system_error(__e);
   }
 
-  void 
+  void
   condition_variable::notify_all()
-  { 
+  {
     int __e = __gthread_cond_broadcast(&_M_cond);
 
     // XXX not in spec
@@ -96,11 +96,11 @@ namespace std
       __throw_system_error(__e);
 #endif
   }
-  
+
   condition_variable_any::~condition_variable_any()
   {
     __gthread_cond_destroy(&_M_cond);
-  } 
+  }
 }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

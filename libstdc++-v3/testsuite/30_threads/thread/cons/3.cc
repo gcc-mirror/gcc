@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <functional> // std::unary_function
-#include <utility> // std::ref
+#include <functional> // std::unary_function, std::ref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
@@ -55,6 +54,10 @@ struct copyable : public std::unary_function<std::thread::id&, void>
 
 int copyable::copy_count = 0;
 
+// same as 2, but function is copyable function object
+// thread variadic cons not copied when std::ref
+// thread variadic cons copied when not std::ref
+// no errors
 void test03()
 {
   bool test __attribute__((unused)) = true;

@@ -51,6 +51,7 @@ struct copyable
   }
 };
 
+// same as 6, but function is copyable function object passed by reference
 void test07()
 {
   bool test __attribute__((unused)) = true;
@@ -59,8 +60,8 @@ void test07()
     {
       copyable c;
       copyable& rc = c;
-      std::thread t1(rc);
-      t1.join();
+      std::thread t(rc);
+      t.join();
       VERIFY( functor_was_called );
     }
   catch (const std::system_error&)
