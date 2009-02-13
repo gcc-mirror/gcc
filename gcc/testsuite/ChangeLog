@@ -1,3 +1,9 @@
+2009-02-13  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/38056
+	* gcc.target/ia64/sibcall-opt-1.c: New test.
+	* gcc.target/ia64/sibcall-opt-2.c: New test.
+
 2009-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36528
