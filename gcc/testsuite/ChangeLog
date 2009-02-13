@@ -1,3 +1,9 @@
+2009-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35444
+	* gcc.dg/noncompile/pr35444-1.c, gcc.dg/noncompile/pr35444-2.c:
+	New tests.
+
 2009-02-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c/39084

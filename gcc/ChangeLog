@@ -1,3 +1,9 @@
+2009-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35444
+	* c-parser.c (c_parser_parms_list_declarator): Discard pending
+	sizes on syntax error after some arguments have been parsed.
+
 2009-02-11  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
