@@ -1506,6 +1506,18 @@
 #endif
 
 
+/* Number of bits in a file offset, on hosts where this is settable. */
+#ifndef USED_FOR_TARGET
+#undef _FILE_OFFSET_BITS
+#endif
+
+
+/* Define for large files, on AIX-style hosts. */
+#ifndef USED_FOR_TARGET
+#undef _LARGE_FILES
+#endif
+
+
 /* Define to 1 if on MINIX. */
 #ifndef USED_FOR_TARGET
 #undef _MINIX

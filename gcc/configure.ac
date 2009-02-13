@@ -311,6 +311,8 @@ AC_CHECK_SIZEOF(long)
 AC_CHECK_TYPES([long long], [AC_CHECK_SIZEOF(long long)])
 AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 
+AC_SYS_LARGEFILE
+
 # ---------------------
 # Warnings and checking
 # ---------------------

@@ -1,3 +1,9 @@
+2009-02-13  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Enable LFS.
+	* configure: Re-generate.
+	* config.in: Likewise.
+
 2009-02-13  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35444
