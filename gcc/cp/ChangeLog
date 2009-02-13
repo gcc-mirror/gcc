@@ -1,3 +1,11 @@
+2009-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39070
+	* semantics.c (finish_call_expr): Change koenig_p parm to int.
+	If -1, don't set KOENIG_LOOKUP_P but do keep hidden candidates.
+	* cp-tree.h: Adjust prototype.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Pass -1.
+
 2009-02-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/36897

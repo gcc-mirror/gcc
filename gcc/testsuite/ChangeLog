@@ -1,3 +1,8 @@
+2009-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39070
+	* g++.dg/cpp0x/decltype16.C: New.
+
 2009-02-13  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35444
@@ -7,7 +12,7 @@
 2009-02-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c/39084
-	gcc.dg/pr39084.c: New test.
+	* gcc.dg/pr39084.c: New test.
 
 2009-02-09  Janis Johnson  <janis187@us.ibm.com>
 

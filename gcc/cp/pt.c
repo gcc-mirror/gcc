@@ -11061,12 +11061,12 @@ tsubst_copy_and_build (tree t,
 		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
 		       /*fn_p=*/NULL));
 	  }
-	/* Pass true for koenig_p so that build_new_function_call will
+	/* Pass -1 for koenig_p so that build_new_function_call will
 	   allow hidden friends found by arg-dependent lookup at template
 	   parsing time.  */
 	return finish_call_expr (function, call_args,
 				 /*disallow_virtual=*/qualified_p,
-				 /*koenig_p*/true);
+				 /*koenig_p*/-1);
       }
 
     case COND_EXPR:
