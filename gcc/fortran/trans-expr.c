@@ -1505,9 +1505,17 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 	sym->backend_decl = gfc_get_extern_function_decl (sym);
 
       tmp = sym->backend_decl;
+
       if (sym->attr.cray_pointee)
-	tmp = convert (build_pointer_type (TREE_TYPE (tmp)),
-		       gfc_get_symbol_decl (sym->cp_pointer));
+	{
+	  /* TODO - make the cray pointee a pointer to a procedure,
+	     assign the pointer to it and use it for the call.  This
+	     will do for now!  */
+	  tmp = convert (build_pointer_type (TREE_TYPE (tmp)),
+			 gfc_get_symbol_decl (sym->cp_pointer));
+	  tmp = gfc_evaluate_now (tmp, &se->pre);
+	}
+
       if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
 	{
 	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
@@ -2623,7 +2631,18 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
 	  if (argss == gfc_ss_terminator)
             {
-	      if (fsym && fsym->attr.value)
+	      if (e->expr_type == EXPR_VARIABLE
+		    && e->symtree->n.sym->attr.cray_pointee
+		    && fsym && fsym->attr.flavor == FL_PROCEDURE)
+		{
+		    /* The Cray pointer needs to be converted to a pointer to
+		       a type given by the expression.  */
+		    gfc_conv_expr (&parmse, e);
+		    type = build_pointer_type (TREE_TYPE (parmse.expr));
+		    tmp = gfc_get_symbol_decl (e->symtree->n.sym->cp_pointer);
+		    parmse.expr = convert (type, tmp);
+		}
+ 	      else if (fsym && fsym->attr.value)
 		{
 		  if (fsym->ts.type == BT_CHARACTER
 		      && fsym->ts.is_c_interop
