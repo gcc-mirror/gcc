@@ -1,3 +1,8 @@
+2008-02-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* loop-iv.c (implies_p): In the final case, test that operands 0
+	of the two comparisons match.
+
 2009-02-13  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Enable LFS.
