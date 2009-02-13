@@ -1,5 +1,10 @@
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39152
+	* gfortran.dg/gomp/pr39152.f90: New.
+
+2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39162
 	* gcc.target/i386/pr39162.c: New.
 

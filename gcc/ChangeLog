@@ -1,5 +1,11 @@
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39152
+	* config/i386/i386.md: Restrict the new peephole2 to move
+	between the general purpose registers.
+
+2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39162
 	* config/i386/i386.c (type_natural_mode): Add a new argument.
 	Return the original mode and warn ABI change if vector size
