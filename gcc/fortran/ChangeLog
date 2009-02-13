@@ -1,3 +1,11 @@
+2009-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36703
+	PR fortran/36528
+	* trans-expr.c (gfc_conv_function_val): Stabilize Cray-pointer
+	function references to ensure that a valid expression is used.
+	(gfc_conv_function_call): Pass Cray pointers to procedures.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortranspec.c (lang_specific_driver): Update copyright notice
