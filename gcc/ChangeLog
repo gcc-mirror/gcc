@@ -1,5 +1,12 @@
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39149
+	* config/i386/i386.c (override_options): Correct warning
+	messages for -malign-loops,  -malign-jumps and
+	-malign-functions.
+
+2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39152
 	* config/i386/i386.md: Restrict the new peephole2 to move
 	between the general purpose registers.
