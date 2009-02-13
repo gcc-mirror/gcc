@@ -3554,7 +3554,36 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
   return cost;
 }
+
+/* This function acts like NEXT_INSN, but is aware of three-insn bundles and
+   skips all subsequent parallel instructions if INSN is the start of such
+   a group.  */
+static rtx
+find_next_insn_start (rtx insn)
+{
+  if (GET_MODE (insn) == SImode)
+    {
+      while (GET_MODE (insn) != QImode)
+	insn = NEXT_INSN (insn);
+    }
+  return NEXT_INSN (insn);
+}
 
+/* This function acts like PREV_INSN, but is aware of three-insn bundles and
+   skips all subsequent parallel instructions if INSN is the start of such
+   a group.  */
+static rtx
+find_prev_insn_start (rtx insn)
+{
+  insn = PREV_INSN (insn);
+  gcc_assert (GET_MODE (insn) != SImode);
+  if (GET_MODE (insn) == QImode)
+    {
+      while (GET_MODE (PREV_INSN (insn)) == SImode)
+	insn = PREV_INSN (insn);
+    }
+  return insn;
+}
 
 /* Increment the counter for the number of loop instructions in the
    current function.  */
@@ -3932,16 +3961,16 @@ bfin_optimize_loop (loop_info loop)
      - Returns (RTS, RTN, etc.)  */
 
   bb = loop->tail;
-  last_insn = PREV_INSN (loop->loop_end);
+  last_insn = find_prev_insn_start (loop->loop_end);
 
   while (1)
     {
-      for (; last_insn != PREV_INSN (BB_HEAD (bb));
-	   last_insn = PREV_INSN (last_insn))
+      for (; last_insn != BB_HEAD (bb);
+	   last_insn = find_prev_insn_start (last_insn))
 	if (INSN_P (last_insn))
 	  break;
 
-      if (last_insn != PREV_INSN (BB_HEAD (bb)))
+      if (last_insn != BB_HEAD (bb))
 	break;
 
       if (single_pred_p (bb)
@@ -4886,20 +4915,6 @@ trapping_loads_p (rtx insn)
     }
   else
     return may_trap_p (SET_SRC (single_set (insn)));
-}
-
-/* This function acts like NEXT_INSN, but is aware of three-insn bundles and
-   skips all subsequent parallel instructions if INSN is the start of such
-   a group.  */
-static rtx
-find_next_insn_start (rtx insn)
-{
-  if (GET_MODE (insn) == SImode)
-    {
-      while (GET_MODE (insn) != QImode)
-	insn = NEXT_INSN (insn);
-    }
-  return NEXT_INSN (insn);
 }
 
 /* Return INSN if it is of TYPE_MCLD.  Alternatively, if INSN is the start of

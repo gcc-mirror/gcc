@@ -3,6 +3,10 @@
 	* loop-iv.c (implies_p): In the final case, test that operands 0
 	of the two comparisons match.
 
+	* config/bfin/bfin.c (find_prev_insn_start): New function.
+	(bfin_optimize_loop): Use it in some cases instead of PREV_INSN.
+	(find_next_insn_start): Move.
+
 2009-02-13  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Enable LFS.
