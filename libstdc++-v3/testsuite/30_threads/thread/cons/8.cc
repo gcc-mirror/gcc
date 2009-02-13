@@ -52,6 +52,7 @@ struct moveable
   }
 };
 
+// same as 6, but function object is movable
 void test08()
 {
   bool test __attribute__((unused)) = true;
@@ -59,8 +60,8 @@ void test08()
   try
     {
       moveable m;
-      std::thread t1(std::move(m));
-      t1.join();
+      std::thread t(std::move(m));
+      t.join();
       VERIFY( functor_was_called );
     }
   catch (const std::system_error&)

@@ -43,6 +43,10 @@ void f()
   f_was_called = true;
 }
 
+// thread non-variadic cons, c++ function
+// thread join
+// thread join postcondition function called correctly
+// no errors
 void test06()
 {
   bool test __attribute__((unused)) = true;

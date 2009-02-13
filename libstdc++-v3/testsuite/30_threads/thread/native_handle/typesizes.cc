@@ -29,7 +29,7 @@
 int main()
 {
   typedef std::thread test_type;
-  // XXX disable at the moment
-  //__gnu_test::compare_type_to_native_type_sizes<test_type>();
+  // XX disable for now
+  //__gnu_test::compare_type_to_native_type<test_type>();
   return 0;
 }

@@ -32,7 +32,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <utility> // std::ref
+#include <functional> // std::ref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
@@ -43,19 +43,27 @@ free_function(std::thread::id& id)
   id = std::this_thread::get_id();
 }
 
+// thread::id default cons
+// thread::id copy ctor
+// thread variadic cons, c++ function
+// thread variadic cons joinable
+// thread join
+// thread join postcondition not joinable
+// thread join postcondition function called correctly
+// this_thread::get_id
 void test02()
 {
   bool test __attribute__((unused)) = true;
 
   try
     {
-      std::thread::id t1_id1;
-      std::thread t1(free_function, std::ref(t1_id1));
-      std::thread::id t1_id2 = t1.get_id();
-      VERIFY( t1.joinable() );
-      t1.join();      
-      VERIFY( !t1.joinable() );
-      VERIFY( t1_id1 == t1_id2 );
+      std::thread::id id1;
+      std::thread t(free_function, std::ref(id1));
+      std::thread::id id2 = t.get_id();
+      VERIFY( t.joinable() );
+      t.join();      
+      VERIFY( !t.joinable() );
+      VERIFY( id1 == id2 );
     }
   catch (const std::system_error&)
     {
