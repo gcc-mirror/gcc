@@ -1,3 +1,8 @@
+2009-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39070
+	* g++.dg/cpp0x/decltype16.C: New.
+
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39152

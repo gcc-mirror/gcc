@@ -11404,12 +11404,12 @@ tsubst_copy_and_build (tree t,
 		       /*fn_p=*/NULL,
 		       complain));
 	  }
-	/* Pass true for koenig_p so that build_new_function_call will
+	/* Pass -1 for koenig_p so that build_new_function_call will
 	   allow hidden friends found by arg-dependent lookup at template
 	   parsing time.  */
 	return finish_call_expr (function, call_args,
 				 /*disallow_virtual=*/qualified_p,
-				 /*koenig_p*/true,
+				 /*koenig_p*/-1,
 				 complain);
       }
 
