@@ -1,3 +1,15 @@
+2009-02-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu_internals.h (spu_sr, spu_sra, spu_srqw,
+	spu_srqwbyte, spu_srqwbytebc): Define.
+	* config/spu/spu-builtins.def (spu_sr, spu_sra, spu_srqw,
+	spu_srqwbyte, spu_srqwbytebc): New overloaded builtins.
+	* config/spu/spu.md ("shrqbybi_<mode>", "shrqbi_<mode>",
+	"shrqby_<mode>"): New insn-and-split patterns.
+	* config/spu/spu.c (expand_builtin_args): Determine and return
+	number of operands using spu_builtin_description data.
+	(spu_expand_builtin_1): Use it.
+
 2009-02-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/38056
