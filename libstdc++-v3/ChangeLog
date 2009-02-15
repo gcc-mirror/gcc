@@ -1,3 +1,20 @@
+2009-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39168
+	* src/locale_facets.cc (__verify_grouping(const char*, size_t,
+	const string&)): Also check that the value != CHAR_MAX.
+	* include/bits/locale_facets.tcc (__numpunct_cache<>::
+	_M_cache(const locale&), __add_grouping(_CharT*, _CharT,
+	const char*, size_t, const _CharT*, const _CharT*)): Likewise.
+	* include/bits/locale_facets_nonio.tcc (__moneypunct_cache<>::
+	_M_cache(const locale&)): Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/39168.cc: New.
+	* testsuite/22_locale/money_put/put/char/39168.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/39168.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/39168.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/39168.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/39168.cc: Likewise.
+
 2009-02-13  Chris Fairles  <cfairles@gcc.gnu.org>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
