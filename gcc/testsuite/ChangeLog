@@ -1,3 +1,14 @@
+2009-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/struct/w_prof_single_str_global.c: Mask return value.
+
+	Backport from mainline:
+	2009-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/struct/wo_prof_single_str_global.c: Mask return value.
+	* gcc.dg/struct/wo_prof_single_str_local.c: Mask return value.
+	* gcc.dg/struct/wo_prof_single_str_pointer.c: Mask return value.
+
 2009-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39070

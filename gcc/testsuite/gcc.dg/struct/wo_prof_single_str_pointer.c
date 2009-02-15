@@ -29,7 +29,9 @@ main ()
   if (p->a != res)
     abort ();
   
-  return p->a;
+  /* POSIX ignores all but the 8 low-order bits, but other
+     environments may not.  */
+  return (p->a & 255);
 }
 
 /*--------------------------------------------------------------------------*/
