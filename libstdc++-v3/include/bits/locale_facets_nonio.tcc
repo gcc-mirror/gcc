@@ -81,8 +81,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __mp.grouping().copy(__grouping, _M_grouping_size);
       _M_grouping = __grouping;
       _M_use_grouping = (_M_grouping_size
-			 && static_cast<signed char>(__mp.grouping()[0]) > 0);
-      
+			 && static_cast<signed char>(_M_grouping[0]) > 0
+			 && (_M_grouping[0]
+			     != __gnu_cxx::__numeric_traits<char>::__max));
+
       _M_decimal_point = __mp.decimal_point();
       _M_thousands_sep = __mp.thousands_sep();
       _M_frac_digits = __mp.frac_digits();
