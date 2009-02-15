@@ -1,3 +1,9 @@
+2009-02-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39196
+	* config/i386/i386.md: Restrict the new peephole2 to move
+	between MMX/SSE registers.
+
 2009-02-15  Richard Guenther  <rguenther@suse.de>
 
 	Revert
