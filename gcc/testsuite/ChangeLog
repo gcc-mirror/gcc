@@ -1,3 +1,7 @@
+2009-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/struct/w_prof_single_str_global.c: Mask return value.
+	
 2009-02-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.target/spu/intrinsics-sr.c: New test.

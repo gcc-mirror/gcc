@@ -24,7 +24,7 @@ main ()
   
   if (str.a != res)
     abort ();
-  
+
   /* POSIX ignores all but the 8 low-order bits, but other
      environments may not.  */
   return (str.a & 255);
