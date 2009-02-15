@@ -1,3 +1,7 @@
+2009-02-15  Richard Guenther  <rguenther@suse.de>
+
+	Revert last change.
+
 2009-02-13  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Enable LFS.

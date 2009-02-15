@@ -1,3 +1,12 @@
+2009-02-15  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2009-02-13  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Enable LFS.
+	* configure: Re-generate.
+	* config.in: Likewise.
+
 2009-02-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu_internals.h (spu_sr, spu_sra, spu_srqw,
