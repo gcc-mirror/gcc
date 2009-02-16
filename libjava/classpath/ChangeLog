@@ -1,3 +1,10 @@
+2009-02-05  Andrew Haley  <aph@redhat.com>
+
+	* native/plugin/gcjwebplugin.cc: Cope with the changed header file
+	format.  https://bugzilla.mozilla.org/show_bug.cgi?id=455458
+	(GCJ_GetJavaClass): Likewise.
+	(NP_Initialize): Likewise.
+
 2009-01-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* ChangeLog-2008: New file.
