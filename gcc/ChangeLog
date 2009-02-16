@@ -1,3 +1,10 @@
+2009-02-16  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+	* config/picochip/picochip.md (lea_add): Allow any nonimmediate
+	in the lea_add. Reload eventually constraints it properly.
+	* config/picochip/constraints.md : Remove the target constraint
+	"b", since it is not needed anymore.
+
 2009-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gthr-dce.h: Uglify function parameter and local variable names.

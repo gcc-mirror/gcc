@@ -1154,7 +1154,7 @@
 ;; ALU 1 where it cannot modify CC.
 
 (define_insn "*lea_add"
- [(set (match_operand:HI 0 "register_operand" "=r")
+ [(set (match_operand:HI 0 "nonimmediate_operand" "=r")
        (plus:HI (match_operand:HI 1 "register_operand" "r")
 		(match_operand:HI 2 "immediate_operand" "i")))]
  ""
@@ -1164,8 +1164,8 @@
 ;; "p" constraint cannot be specified for operands other than 
 ;; address_operand, hence the extra pattern below.
 (define_insn "*lea_move"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r")
-        (match_operand:HI 1 "address_operand" "p,b"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r")
+        (match_operand:HI 1 "address_operand" "p"))]
   ""
   {
     if (REG == GET_CODE(operands[1]))
