@@ -55,10 +55,6 @@
   (and (match_code "mem")
        (match_test "picochip_absolute_memory_operand(op,mode) == 1")))
 
-(define_constraint "b"
- "See if this is an address in memory, non-strict version"
-  (match_test "picochip_legitimate_address_p(mode,op,0) == 1"))
-
 (define_register_constraint "k" "FRAME_REGS"
   "Frame regs")
 (define_register_constraint "f" "PTR_REGS"
