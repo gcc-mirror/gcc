@@ -1,3 +1,7 @@
+2009-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/deftarg.c: Remove.
+
 2009-02-10  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
