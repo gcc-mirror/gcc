@@ -12594,6 +12594,12 @@ ix86_expand_push (enum machine_mode mode, rtx x)
     emit_move_insn (stack_pointer_rtx, tmp);
 
   tmp = gen_rtx_MEM (mode, stack_pointer_rtx);
+
+  /* When we push an operand onto stack, it has to be aligned at least
+     at the function argument boundary.  */
+  set_mem_align (tmp,
+		 ix86_function_arg_boundary (mode, NULL_TREE));
+
   emit_move_insn (tmp, x);
 }
 
