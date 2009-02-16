@@ -1,3 +1,9 @@
+2009-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37049
+	* config/i386/i386.c (ix86_expand_push): Set memory alignment
+	to function argument boundary.
+
 2009-02-16  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (lea_add): Allow any nonimmediate

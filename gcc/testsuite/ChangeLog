@@ -1,3 +1,8 @@
+2009-02-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/37049
+	* gcc.target/i386/push-1.c: New.
+
 2009-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/struct/w_prof_single_str_global.c: Mask return value.
