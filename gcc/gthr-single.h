@@ -1,6 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2004, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2004, 2008, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -216,75 +217,75 @@ __gthread_active_p (void)
 }
 
 static inline int 
-__gthread_once (__gthread_once_t *once UNUSED, void (*func) (void) UNUSED)
+__gthread_once (__gthread_once_t *__once UNUSED, void (*__func) (void) UNUSED)
 {
   return 0;
 }
   
 static inline int UNUSED
-__gthread_key_create (__gthread_key_t *key UNUSED, void (*func) (void *) UNUSED)
+__gthread_key_create (__gthread_key_t *__key UNUSED, void (*__func) (void *) UNUSED)
 {
   return 0;
 }
 
 static int UNUSED
-__gthread_key_delete (__gthread_key_t key UNUSED)
+__gthread_key_delete (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
   
 static inline void *
-__gthread_getspecific (__gthread_key_t key UNUSED)
+__gthread_getspecific (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
 
 static inline int 
-__gthread_setspecific (__gthread_key_t key UNUSED, const void *v UNUSED)
+__gthread_setspecific (__gthread_key_t __key UNUSED, const void *__v UNUSED)
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t *mutex UNUSED)
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex UNUSED)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex UNUSED)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex UNUSED)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_lock (mutex);
+  return __gthread_mutex_lock (__mutex);
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_trylock (mutex);
+  return __gthread_mutex_trylock (__mutex);
 }
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_unlock (mutex);
+  return __gthread_mutex_unlock (__mutex);
 }
 
 #endif /* _LIBOBJC */

@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc for VxWorks.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@wrs.com>.
 
 This file is part of GCC.
@@ -131,7 +131,7 @@ __gthread_once_t;
 # define __GTHREAD_ONCE_INIT { 0 }
 #endif
 
-extern int __gthread_once (__gthread_once_t *once, void (*func)(void));
+extern int __gthread_once (__gthread_once_t *__once, void (*__func)(void));
 
 /* Thread-specific data requires a great deal of effort, since VxWorks
    is not really set up for it.  See config/vxlib.c for the gory
@@ -140,11 +140,11 @@ extern int __gthread_once (__gthread_once_t *once, void (*func)(void));
 
 typedef unsigned int __gthread_key_t;
 
-extern int __gthread_key_create (__gthread_key_t *keyp, void (*dtor)(void *));
-extern int __gthread_key_delete (__gthread_key_t key);
+extern int __gthread_key_create (__gthread_key_t *__keyp, void (*__dtor)(void *));
+extern int __gthread_key_delete (__gthread_key_t __key);
 
-extern void *__gthread_getspecific (__gthread_key_t key);
-extern int __gthread_setspecific (__gthread_key_t key, void *ptr);
+extern void *__gthread_getspecific (__gthread_key_t __key);
+extern int __gthread_setspecific (__gthread_key_t __key, void *__ptr);
 
 #undef UNUSED
 

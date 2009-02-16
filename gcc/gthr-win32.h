@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 
-/* Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005
+/* Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
@@ -381,14 +381,14 @@ extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
    gthread_mutex_try_lock is not referenced by libgcc or libstdc++.  */
 #ifdef __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
 static inline long
-__gthr_i486_lock_cmp_xchg(long *dest, long xchg, long comperand)
+__gthr_i486_lock_cmp_xchg(long *__dest, long __xchg, long __comperand)
 {
   long result;
   __asm__ __volatile__ ("\n\
 	lock\n\
 	cmpxchg{l} {%4, %1|%1, %4}\n"
-	: "=a" (result), "=m" (*dest)
-	: "0" (comperand), "m" (*dest), "r" (xchg)
+	: "=a" (result), "=m" (*__dest)
+	: "0" (__comperand), "m" (*__dest), "r" (__xchg)
 	: "cc");
   return result;
 }
@@ -431,106 +431,106 @@ extern int __gthr_win32_recursive_mutex_unlock (__gthread_recursive_mutex_t *);
 extern void __gthr_win32_mutex_destroy (__gthread_mutex_t *);
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) (void))
+__gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
   if (__gthread_active_p ())
-    return __gthr_win32_once (once, func);
+    return __gthr_win32_once (__once, __func);
   else
     return -1;
 }
 
 static inline int
-__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+__gthread_key_create (__gthread_key_t *__key, void (*__dtor) (void *))
 {
-  return __gthr_win32_key_create (key, dtor);
+  return __gthr_win32_key_create (__key, __dtor);
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (__gthread_key_t __key)
 {
-  return __gthr_win32_key_delete (key);
+  return __gthr_win32_key_delete (__key);
 }
 
 static inline void *
-__gthread_getspecific (__gthread_key_t key)
+__gthread_getspecific (__gthread_key_t __key)
 {
-  return __gthr_win32_getspecific (key);
+  return __gthr_win32_getspecific (__key);
 }
 
 static inline int
-__gthread_setspecific (__gthread_key_t key, const void *ptr)
+__gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  return __gthr_win32_setspecific (key, ptr);
+  return __gthr_win32_setspecific (__key, __ptr);
 }
 
 static inline void
-__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
-  __gthr_win32_mutex_init_function (mutex);
+  __gthr_win32_mutex_init_function (__mutex);
 }
 
 static inline void
-__gthread_mutex_destroy (__gthread_mutex_t *mutex)
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
-  __gthr_win32_mutex_destroy (mutex);
+  __gthr_win32_mutex_destroy (__mutex);
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_mutex_lock (mutex);
+    return __gthr_win32_mutex_lock (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_mutex_trylock (mutex);
+    return __gthr_win32_mutex_trylock (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_mutex_unlock (mutex);
+    return __gthr_win32_mutex_unlock (__mutex);
   else
     return 0;
 }
 
 static inline void
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
-   __gthr_win32_recursive_mutex_init_function (mutex);
+   __gthr_win32_recursive_mutex_init_function (__mutex);
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_recursive_mutex_lock (mutex);
+    return __gthr_win32_recursive_mutex_lock (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_recursive_mutex_trylock (mutex);
+    return __gthr_win32_recursive_mutex_trylock (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthr_win32_recursive_mutex_unlock (mutex);
+    return __gthr_win32_recursive_mutex_unlock (__mutex);
   else
     return 0;
 }
@@ -541,19 +541,19 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 #include <errno.h>
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) (void))
+__gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
   if (! __gthread_active_p ())
     return -1;
-  else if (once == NULL || func == NULL)
+  else if (__once == NULL || __func == NULL)
     return EINVAL;
 
-  if (! once->done)
+  if (! __once->done)
     {
-      if (InterlockedIncrement (&(once->started)) == 0)
+      if (InterlockedIncrement (&(__once->started)) == 0)
 	{
-	  (*func) ();
-	  once->done = TRUE;
+	  (*__func) ();
+	  __once->done = TRUE;
 	}
       else
 	{
@@ -562,7 +562,7 @@ __gthread_once (__gthread_once_t *once, void (*func) (void))
 	     does become an issue, the solution is to use an Event that
 	     we wait on here (and set above), but that implies a place to
 	     create the event before this routine is called.  */
-	  while (! once->done)
+	  while (! __once->done)
 	    Sleep (0);
 	}
     }
@@ -574,150 +574,150 @@ __gthread_once (__gthread_once_t *once, void (*func) (void))
    leaks, especially in threaded applications making extensive use of
    C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
 static inline int
-__gthread_key_create (__gthread_key_t *key,
-		      void (*dtor) (void *) __attribute__((unused)))
+__gthread_key_create (__gthread_key_t *__key,
+		      void (*__dtor) (void *) __attribute__((unused)))
 {
-  int status = 0;
-  DWORD tls_index = TlsAlloc ();
-  if (tls_index != 0xFFFFFFFF)
+  int __status = 0;
+  DWORD __tls_index = TlsAlloc ();
+  if (__tls_index != 0xFFFFFFFF)
     {
-      *key = tls_index;
+      *__key = __tls_index;
 #ifdef MINGW32_SUPPORTS_MT_EH
       /* Mingw runtime will run the dtors in reverse order for each thread
          when the thread exits.  */
-      status = __mingwthr_key_dtor (*key, dtor);
+      __status = __mingwthr_key_dtor (*__key, __dtor);
 #endif
     }
   else
-    status = (int) GetLastError ();
-  return status;
+    __status = (int) GetLastError ();
+  return __status;
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (__gthread_key_t __key)
 {
-  return (TlsFree (key) != 0) ? 0 : (int) GetLastError ();
+  return (TlsFree (__key) != 0) ? 0 : (int) GetLastError ();
 }
 
 static inline void *
-__gthread_getspecific (__gthread_key_t key)
+__gthread_getspecific (__gthread_key_t __key)
 {
-  DWORD lasterror;
-  void *ptr;
+  DWORD __lasterror;
+  void *__ptr;
 
-  lasterror = GetLastError ();
+  __lasterror = GetLastError ();
 
-  ptr = TlsGetValue (key);
+  __ptr = TlsGetValue (__key);
 
-  SetLastError (lasterror);
+  SetLastError (__lasterror);
 
-  return ptr;
+  return __ptr;
 }
 
 static inline int
-__gthread_setspecific (__gthread_key_t key, const void *ptr)
+__gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
+  if (TlsSetValue (__key, CONST_CAST2(void *, const void *, __ptr)) != 0)
     return 0;
   else
     return GetLastError ();
 }
 
 static inline void
-__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
-  mutex->counter = -1;
-  mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  __mutex->counter = -1;
+  __mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
 static inline void
-__gthread_mutex_destroy (__gthread_mutex_t *mutex)
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
-  CloseHandle ((HANDLE) mutex->sema);
+  CloseHandle ((HANDLE) __mutex->sema);
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
-  int status = 0;
+  int __status = 0;
 
   if (__gthread_active_p ())
     {
-      if (InterlockedIncrement (&mutex->counter) == 0 ||
-	  WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
-	status = 0;
+      if (InterlockedIncrement (&__mutex->counter) == 0 ||
+	  WaitForSingleObject (__mutex->sema, INFINITE) == WAIT_OBJECT_0)
+	__status = 0;
       else
 	{
 	  /* WaitForSingleObject returns WAIT_FAILED, and we can only do
 	     some best-effort cleanup here.  */
-	  InterlockedDecrement (&mutex->counter);
-	  status = 1;
+	  InterlockedDecrement (&__mutex->counter);
+	  __status = 1;
 	}
     }
-  return status;
+  return __status;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
-  int status = 0;
+  int __status = 0;
 
   if (__gthread_active_p ())
     {
-      if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
-	status = 0;
+      if (__GTHR_W32_InterlockedCompareExchange (&__mutex->counter, 0, -1) < 0)
+	__status = 0;
       else
-	status = 1;
+	__status = 1;
     }
-  return status;
+  return __status;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      if (InterlockedDecrement (&mutex->counter) >= 0)
-	return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
+      if (InterlockedDecrement (&__mutex->counter) >= 0)
+	return ReleaseSemaphore (__mutex->sema, 1, NULL) ? 0 : 1;
     }
   return 0;
 }
 
 static inline void
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
-  mutex->counter = -1;
-  mutex->depth = 0;
-  mutex->owner = 0;
-  mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  __mutex->counter = -1;
+  __mutex->depth = 0;
+  __mutex->owner = 0;
+  __mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      DWORD me = GetCurrentThreadId();
-      if (InterlockedIncrement (&mutex->counter) == 0)
+      DWORD __me = GetCurrentThreadId();
+      if (InterlockedIncrement (&__mutex->counter) == 0)
 	{
-	  mutex->depth = 1;
-	  mutex->owner = me;
+	  __mutex->depth = 1;
+	  __mutex->owner = __me;
 	}
-      else if (mutex->owner == me)
+      else if (__mutex->owner == __me)
 	{
-	  InterlockedDecrement (&mutex->counter);
-	  ++(mutex->depth);
+	  InterlockedDecrement (&__mutex->counter);
+	  ++(__mutex->depth);
 	}
-      else if (WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
+      else if (WaitForSingleObject (__mutex->sema, INFINITE) == WAIT_OBJECT_0)
 	{
-	  mutex->depth = 1;
-	  mutex->owner = me;
+	  __mutex->depth = 1;
+	  __mutex->owner = __me;
 	}
       else
 	{
 	  /* WaitForSingleObject returns WAIT_FAILED, and we can only do
 	     some best-effort cleanup here.  */
-	  InterlockedDecrement (&mutex->counter);
+	  InterlockedDecrement (&__mutex->counter);
 	  return 1;
 	}
     }
@@ -725,18 +725,18 @@ __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      DWORD me = GetCurrentThreadId();
-      if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
+      DWORD __me = GetCurrentThreadId();
+      if (__GTHR_W32_InterlockedCompareExchange (&__mutex->counter, 0, -1) < 0)
 	{
-	  mutex->depth = 1;
-	  mutex->owner = me;
+	  __mutex->depth = 1;
+	  __mutex->owner = __me;
 	}
-      else if (mutex->owner == me)
-	++(mutex->depth);
+      else if (__mutex->owner == __me)
+	++(__mutex->depth);
       else
 	return 1;
     }
@@ -744,17 +744,17 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
 }
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      --(mutex->depth);
-      if (mutex->depth == 0)
+      --(__mutex->depth);
+      if (__mutex->depth == 0)
 	{
-	  mutex->owner = 0;
+	  __mutex->owner = 0;
 
-	  if (InterlockedDecrement (&mutex->counter) >= 0)
-	    return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
+	  if (InterlockedDecrement (&__mutex->counter) >= 0)
+	    return ReleaseSemaphore (__mutex->sema, 1, NULL) ? 0 : 1;
 	}
     }
   return 0;
