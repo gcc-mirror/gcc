@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-   Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+   2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -267,7 +267,7 @@ __gthread_active_p (void)
 static volatile int __gthread_active = -1;
 
 static void *
-__gthread_start (void *arg __attribute__((unused)))
+__gthread_start (void *__arg __attribute__((unused)))
 {
   return NULL;
 }
@@ -277,21 +277,21 @@ static void
 __gthread_active_init (void)
 {
   static pthread_mutex_t __gthread_active_mutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_t t;
-  pthread_attr_t a;
-  int result;
+  pthread_t __t;
+  pthread_attr_t __a;
+  int __result;
 
   __gthrw_(pthread_mutex_lock) (&__gthread_active_mutex);
   if (__gthread_active < 0)
     {
-      __gthrw_(pthread_attr_init) (&a);
-      __gthrw_(pthread_attr_setdetachstate) (&a, PTHREAD_CREATE_DETACHED);
-      result = __gthrw_(pthread_create) (&t, &a, __gthread_start, NULL);
-      if (result != ENOSYS)
+      __gthrw_(pthread_attr_init) (&__a);
+      __gthrw_(pthread_attr_setdetachstate) (&__a, PTHREAD_CREATE_DETACHED);
+      __result = __gthrw_(pthread_create) (&__t, &__a, __gthread_start, NULL);
+      if (__result != ENOSYS)
 	__gthread_active = 1;
       else
 	__gthread_active = 0;
-      __gthrw_(pthread_attr_destroy) (&a);
+      __gthrw_(pthread_attr_destroy) (&__a);
     }
   __gthrw_(pthread_mutex_unlock) (&__gthread_active_mutex);
 }
@@ -676,27 +676,28 @@ __gthread_objc_condition_signal (objc_condition_t condition)
 #else /* _LIBOBJC */
 
 static inline int
-__gthread_create (__gthread_t *thread, void *(*func) (void*), void *args)
+__gthread_create (__gthread_t *__threadid, void *(*__func) (void*),
+		  void *__args)
 {
-  return __gthrw_(pthread_create) (thread, NULL, func, args);
+  return __gthrw_(pthread_create) (__threadid, NULL, __func, __args);
 }
 
 static inline int
-__gthread_join (__gthread_t thread, void **value_ptr)
+__gthread_join (__gthread_t __threadid, void **__value_ptr)
 {
-  return __gthrw_(pthread_join) (thread, value_ptr);
+  return __gthrw_(pthread_join) (__threadid, __value_ptr);
 }
 
 static inline int
-__gthread_detach (__gthread_t thread)
+__gthread_detach (__gthread_t __threadid)
 {
-  return __gthrw_(pthread_detach) (thread);
+  return __gthrw_(pthread_detach) (__threadid);
 }
 
 static inline int
-__gthread_equal (__gthread_t t1, __gthread_t t2)
+__gthread_equal (__gthread_t __t1, __gthread_t __t2)
 {
-  return __gthrw_(pthread_equal) (t1, t2);
+  return __gthrw_(pthread_equal) (__t1, __t2);
 }
 
 static inline __gthread_t
@@ -712,61 +713,61 @@ __gthread_yield (void)
 }
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) (void))
+__gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_once) (once, func);
+    return __gthrw_(pthread_once) (__once, __func);
   else
     return -1;
 }
 
 static inline int
-__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+__gthread_key_create (__gthread_key_t *__key, void (*__dtor) (void *))
 {
-  return __gthrw_(pthread_key_create) (key, dtor);
+  return __gthrw_(pthread_key_create) (__key, __dtor);
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (__gthread_key_t __key)
 {
-  return __gthrw_(pthread_key_delete) (key);
+  return __gthrw_(pthread_key_delete) (__key);
 }
 
 static inline void *
-__gthread_getspecific (__gthread_key_t key)
+__gthread_getspecific (__gthread_key_t __key)
 {
-  return __gthrw_(pthread_getspecific) (key);
+  return __gthrw_(pthread_getspecific) (__key);
 }
 
 static inline int
-__gthread_setspecific (__gthread_key_t key, const void *ptr)
+__gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  return __gthrw_(pthread_setspecific) (key, ptr);
+  return __gthrw_(pthread_setspecific) (__key, __ptr);
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t *mutex)
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_destroy) (mutex);
+    return __gthrw_(pthread_mutex_destroy) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_lock) (mutex);
+    return __gthrw_(pthread_mutex_lock) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_trylock) (mutex);
+    return __gthrw_(pthread_mutex_trylock) (__mutex);
   else
     return 0;
 }
@@ -774,11 +775,11 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 #ifdef _POSIX_TIMEOUTS
 #if _POSIX_TIMEOUTS >= 0
 static inline int
-__gthread_mutex_timedlock (__gthread_mutex_t *mutex,
-			   const __gthread_time_t *abs_timeout)
+__gthread_mutex_timedlock (__gthread_mutex_t *__mutex,
+			   const __gthread_time_t *__abs_timeout)
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_timedlock) (mutex, abs_timeout);
+    return __gthrw_(pthread_mutex_timedlock) (__mutex, __abs_timeout);
   else
     return 0;
 }
@@ -786,109 +787,110 @@ __gthread_mutex_timedlock (__gthread_mutex_t *mutex,
 #endif
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(pthread_mutex_unlock) (mutex);
+    return __gthrw_(pthread_mutex_unlock) (__mutex);
   else
     return 0;
 }
 
 #ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 static inline int
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      pthread_mutexattr_t attr;
-      int r;
+      pthread_mutexattr_t __attr;
+      int __r;
 
-      r = __gthrw_(pthread_mutexattr_init) (&attr);
-      if (!r)
-	r = __gthrw_(pthread_mutexattr_settype) (&attr, PTHREAD_MUTEX_RECURSIVE);
-      if (!r)
-	r = __gthrw_(pthread_mutex_init) (mutex, &attr);
-      if (!r)
-	r = __gthrw_(pthread_mutexattr_destroy) (&attr);
-      return r;
+      __r = __gthrw_(pthread_mutexattr_init) (&__attr);
+      if (!__r)
+	__r = __gthrw_(pthread_mutexattr_settype) (&__attr,
+						   PTHREAD_MUTEX_RECURSIVE);
+      if (!__r)
+	__r = __gthrw_(pthread_mutex_init) (__mutex, &__attr);
+      if (!__r)
+	__r = __gthrw_(pthread_mutexattr_destroy) (&__attr);
+      return __r;
     }
   return 0;
 }
 #endif
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_lock (mutex);
+  return __gthread_mutex_lock (__mutex);
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_trylock (mutex);
+  return __gthread_mutex_trylock (__mutex);
 }
 
 #ifdef _POSIX_TIMEOUTS
 #if _POSIX_TIMEOUTS >= 0
 static inline int
-__gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *mutex,
-				     const __gthread_time_t *abs_timeout)
+__gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *__mutex,
+				     const __gthread_time_t *__abs_timeout)
 {
-  return __gthread_mutex_timedlock (mutex, abs_timeout);
+  return __gthread_mutex_timedlock (__mutex, __abs_timeout);
 }
 #endif
 #endif
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_mutex_unlock (mutex);
+  return __gthread_mutex_unlock (__mutex);
 }
 
 static inline int
-__gthread_cond_broadcast (__gthread_cond_t *cond)
+__gthread_cond_broadcast (__gthread_cond_t *__cond)
 {
-  return __gthrw_(pthread_cond_broadcast) (cond);
+  return __gthrw_(pthread_cond_broadcast) (__cond);
 }
 
 static inline int
-__gthread_cond_signal (__gthread_cond_t *cond)
+__gthread_cond_signal (__gthread_cond_t *__cond)
 {
-  return __gthrw_(pthread_cond_signal) (cond);
+  return __gthrw_(pthread_cond_signal) (__cond);
 }
 
 static inline int
-__gthread_cond_wait (__gthread_cond_t *cond, __gthread_mutex_t *mutex)
+__gthread_cond_wait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex)
 {
-  return __gthrw_(pthread_cond_wait) (cond, mutex);
+  return __gthrw_(pthread_cond_wait) (__cond, __mutex);
 }
 
 static inline int
-__gthread_cond_timedwait (__gthread_cond_t *cond, __gthread_mutex_t *mutex,
-			  const __gthread_time_t *abs_timeout)
+__gthread_cond_timedwait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex,
+			  const __gthread_time_t *__abs_timeout)
 {
-  return __gthrw_(pthread_cond_timedwait) (cond, mutex, abs_timeout);
+  return __gthrw_(pthread_cond_timedwait) (__cond, __mutex, __abs_timeout);
 }
 
 static inline int
-__gthread_cond_wait_recursive (__gthread_cond_t *cond,
-			       __gthread_recursive_mutex_t *mutex)
+__gthread_cond_wait_recursive (__gthread_cond_t *__cond,
+			       __gthread_recursive_mutex_t *__mutex)
 {
-  return __gthread_cond_wait (cond, mutex);
+  return __gthread_cond_wait (__cond, __mutex);
 }
 
 static inline int
-__gthread_cond_timedwait_recursive (__gthread_cond_t *cond,
-				    __gthread_recursive_mutex_t *mutex,
-				    const __gthread_time_t *abs_timeout)
+__gthread_cond_timedwait_recursive (__gthread_cond_t *__cond,
+				    __gthread_recursive_mutex_t *__mutex,
+				    const __gthread_time_t *__abs_timeout)
 {
-  return __gthread_cond_timedwait (cond, mutex, abs_timeout);
+  return __gthread_cond_timedwait (__cond, __mutex, __abs_timeout);
 }
 
 static inline int
-__gthread_cond_destroy (__gthread_cond_t* cond)
+__gthread_cond_destroy (__gthread_cond_t* __cond)
 {
-  return __gthrw_(pthread_cond_destroy) (cond);
+  return __gthrw_(pthread_cond_destroy) (__cond);
 }
 
 #endif /* _LIBOBJC */

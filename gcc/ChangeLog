@@ -1,3 +1,18 @@
+2009-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gthr-dce.h: Uglify function parameter and local variable names.
+	* gthr-gnat.h: Likewise.
+	* gthr-mipssde.h: Likewise.
+	* gthr-nks.h: Likewise.
+	* gthr-posix95.h: Likewise.
+	* gthr-posix.h: Likewise.
+	* gthr-rtems.h: Likewise.
+	* gthr-single.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-tpf.h: Likewise.
+	* gthr-vxworks.h: Likewise.
+	* gthr-win32.h: Likewise.
+
 2009-02-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39196

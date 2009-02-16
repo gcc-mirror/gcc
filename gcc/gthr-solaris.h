@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2004, 2005, 2006
+/* Copyright (C) 1997, 1999, 2000, 2004, 2005, 2006, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -403,154 +403,155 @@ __gthread_objc_condition_signal (objc_condition_t condition)
 #else /* _LIBOBJC */
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) (void))
+__gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
   if (! __gthread_active_p ())
     return -1;
 
-  if (once == 0 || func == 0)
+  if (__once == 0 || __func == 0)
     return EINVAL;
 
-  if (once->once == 0)
+  if (__once->once == 0)
     {
-      int status = __gthrw_(mutex_lock) (&once->mutex);
-      if (status != 0)
-	return status;
-      if (once->once == 0)
+      int __status = __gthrw_(mutex_lock) (&__once->mutex);
+      if (__status != 0)
+	return __status;
+      if (__once->once == 0)
 	{
-	  (*func) ();
-	  once->once++;
+	  (*__func) ();
+	  __once->once++;
 	}
-      __gthrw_(mutex_unlock) (&once->mutex);
+      __gthrw_(mutex_unlock) (&__once->mutex);
     }
   return 0;
 }
 
 static inline int
-__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+__gthread_key_create (__gthread_key_t *__key, void (*__dtor) (void *))
 {
   /* Solaris 2.5 contains thr_* routines no-op in libc, so test if we actually
      got a reasonable key value, and if not, fail.  */
-  *key = (__gthread_key_t)-1;
-  if (__gthrw_(thr_keycreate) (key, dtor) != 0 || *key == (__gthread_key_t)-1)
+  *__key = (__gthread_key_t)-1;
+  if (__gthrw_(thr_keycreate) (__key, __dtor) != 0
+      || *__key == (__gthread_key_t)-1)
     return -1;
   else
     return 0;
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t UNUSED (key))
+__gthread_key_delete (__gthread_key_t UNUSED (__key))
 {
   /* Not possible.  */
   return -1;
 }
 
 static inline void *
-__gthread_getspecific (__gthread_key_t key)
+__gthread_getspecific (__gthread_key_t __key)
 {
-  void *ptr;
-  if (__gthrw_(thr_getspecific) (key, &ptr) == 0)
-    return ptr;
+  void *__ptr;
+  if (__gthrw_(thr_getspecific) (__key, &__ptr) == 0)
+    return __ptr;
   else
     return 0;
 }
 
 static inline int
-__gthread_setspecific (__gthread_key_t key, const void *ptr)
+__gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  return __gthrw_(thr_setspecific) (key, (void *) ptr);
+  return __gthrw_(thr_setspecific) (__key, (void *) __ptr);
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(__mutex))
 {
   if (__gthread_active_p ())
-    return __gthrw_(mutex_destroy) (mutex);
+    return __gthrw_(mutex_destroy) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(mutex_lock) (mutex);
+    return __gthrw_(mutex_lock) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(mutex_trylock) (mutex);
+    return __gthrw_(mutex_trylock) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
-    return __gthrw_(mutex_unlock) (mutex);
+    return __gthrw_(mutex_unlock) (__mutex);
   else
     return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
-  mutex->depth = 0;
-  mutex->owner = (thread_t) 0;
-  return __gthrw_(mutex_init) (&mutex->actual, USYNC_THREAD, 0);
+  __mutex->depth = 0;
+  __mutex->owner = (thread_t) 0;
+  return __gthrw_(mutex_init) (&__mutex->actual, USYNC_THREAD, 0);
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      thread_t me = __gthrw_(thr_self) ();
+      thread_t __me = __gthrw_(thr_self) ();
 
-      if (mutex->owner != me)
+      if (__mutex->owner != __me)
 	{
-	  __gthrw_(mutex_lock) (&mutex->actual);
-	  mutex->owner = me;
+	  __gthrw_(mutex_lock) (&__mutex->actual);
+	  __mutex->owner = __me;
 	}
 
-      mutex->depth++;
+      __mutex->depth++;
     }
   return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      thread_t me = __gthrw_(thr_self) ();
+      thread_t __me = __gthrw_(thr_self) ();
 
-      if (mutex->owner != me)
+      if (__mutex->owner != __me)
 	{
-	  if (__gthrw_(mutex_trylock) (&mutex->actual))
+	  if (__gthrw_(mutex_trylock) (&__mutex->actual))
 	    return 1;
-	  mutex->owner = me;
+	  __mutex->owner = __me;
 	}
 
-      mutex->depth++;
+      __mutex->depth++;
     }
   return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     {
-      if (--mutex->depth == 0)
+      if (--__mutex->depth == 0)
 	{
-	   mutex->owner = (thread_t) 0;
-	   __gthrw_(mutex_unlock) (&mutex->actual);
+	   __mutex->owner = (thread_t) 0;
+	   __gthrw_(mutex_unlock) (&__mutex->actual);
 	}
     }
   return 0;

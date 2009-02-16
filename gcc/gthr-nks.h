@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -281,118 +281,118 @@ typedef volatile long __gthread_once_t;
 #define __GTHREAD_ONCE_INIT 0
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) (void))
+__gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
-  if (__compare_and_swap (once, 0, 1))
+  if (__compare_and_swap (__once, 0, 1))
   {
-    func();
-    *once |= 2;
+    __func ();
+    *__once |= 2;
   }
   else
   {
-    while (!(*once & 2))
+    while (!(*__once & 2))
       NXThreadYield ();
   }
   return 0;
 }
 
 static inline int
-__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+__gthread_key_create (__gthread_key_t *__key, void (*__dtor) (void *))
 {
-  return NXKeyCreate (dtor, NULL, key);
+  return NXKeyCreate (__dtor, NULL, __key);
 }
 
 static inline int
-__gthread_key_dtor (__gthread_key_t key, void *ptr)
+__gthread_key_dtor (__gthread_key_t __key, void *__ptr)
 {
   /* Just reset the key value to zero. */
-  if (ptr)
-    return NXKeySetValue (key, NULL);
+  if (__ptr)
+    return NXKeySetValue (__key, NULL);
   return 0;
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (__gthread_key_t __key)
 {
-  return NXKeyDelete (key);
+  return NXKeyDelete (__key);
 }
 
 static inline void *
-__gthread_getspecific (__gthread_key_t key)
+__gthread_getspecific (__gthread_key_t __key)
 {
-  void *value;
+  void *__value;
 
-  if (NXKeyGetValue (key, &value) == 0)
-    return value;
+  if (NXKeyGetValue (__key, &__value) == 0)
+    return __value;
   return NULL;
 }
 
 static inline int
-__gthread_setspecific (__gthread_key_t key, const void *ptr)
+__gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  return NXKeySetValue (key, (void *)ptr);
+  return NXKeySetValue (__key, (void *)__ptr);
 }
 
 static inline void
-__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+__gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
-  static const NX_LOCK_INFO_ALLOC (info, "GTHREADS", 0);
+  static const NX_LOCK_INFO_ALLOC (__info, "GTHREADS", 0);
 
-  *mutex = NXMutexAlloc (0, 0, &info);
+  *__mutex = NXMutexAlloc (0, 0, &__info);
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(__mutex))
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
-  return NXLock (*mutex);
+  return NXLock (*__mutex);
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
-  if (NXTryLock (*mutex))
+  if (NXTryLock (*__mutex))
     return 0;
   return -1;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
-  return NXUnlock (*mutex);
+  return NXUnlock (*__mutex);
 }
 
 static inline void
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
-  static const NX_LOCK_INFO_ALLOC (info, "GTHREADS", 0);
+  static const NX_LOCK_INFO_ALLOC (__info, "GTHREADS", 0);
 
-  *mutex = NXMutexAlloc (NX_MUTEX_RECURSIVE, 0, &info);
+  *__mutex = NXMutexAlloc (NX_MUTEX_RECURSIVE, 0, &__info);
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
-  return NXLock (*mutex);
+  return NXLock (*__mutex);
 }
 
 static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
-  if (NXTryLock (*mutex))
+  if (NXTryLock (*__mutex))
     return 0;
   return -1;
 }
 
 static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
-  return NXUnlock (*mutex);
+  return NXUnlock (*__mutex);
 }
 
 #endif /* _LIBOBJC */
