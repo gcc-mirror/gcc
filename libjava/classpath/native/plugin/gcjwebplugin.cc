@@ -45,7 +45,11 @@ exception statement from your version. */
 
 // Netscape plugin API includes.
 #include <npapi.h>
+#if (((NP_VERSION_MAJOR << 8) + NP_VERSION_MINOR) < 20)
 #include <npupp.h>
+#else
+#include <npfunctions.h>
+#endif
 
 // GLib includes.
 #include <glib.h>
@@ -827,7 +831,11 @@ GCJ_URLNotify (NPP instance, const char* url, NPReason reason,
   PLUGIN_DEBUG ("GCJ_URLNotify return");
 }
 
+#if (((NP_VERSION_MAJOR << 8) + NP_VERSION_MINOR) < 20)
 jref
+#else
+void*
+#endif
 GCJ_GetJavaClass (void)
 {
   PLUGIN_DEBUG ("GCJ_GetJavaClass");
@@ -1669,6 +1677,7 @@ NP_Initialize (NPNetscapeFuncs* browserTable, NPPluginFuncs* pluginTable)
   // Return to the browser the plugin functions that we implement.
   pluginTable->version = (NP_VERSION_MAJOR << 8) + NP_VERSION_MINOR;
   pluginTable->size = sizeof (NPPluginFuncs);
+#if (((NP_VERSION_MAJOR << 8) + NP_VERSION_MINOR) < 20)
   pluginTable->newp = NewNPP_NewProc (GCJ_New);
   pluginTable->destroy = NewNPP_DestroyProc (GCJ_Destroy);
   pluginTable->setwindow = NewNPP_SetWindowProc (GCJ_SetWindow);
@@ -1680,6 +1689,19 @@ NP_Initialize (NPNetscapeFuncs* browserTable, NPPluginFuncs* pluginTable)
   pluginTable->print = NewNPP_PrintProc (GCJ_Print);
   pluginTable->urlnotify = NewNPP_URLNotifyProc (GCJ_URLNotify);
   pluginTable->getvalue = NewNPP_GetValueProc (GCJ_GetValue);
+#else
+  pluginTable->newp = (NPP_NewProcPtr) (GCJ_New);
+  pluginTable->destroy = (NPP_DestroyProcPtr) (GCJ_Destroy);
+  pluginTable->setwindow = (NPP_SetWindowProcPtr) (GCJ_SetWindow);
+  pluginTable->newstream = (NPP_NewStreamProcPtr) (GCJ_NewStream);
+  pluginTable->destroystream = (NPP_DestroyStreamProcPtr) (GCJ_DestroyStream);
+  pluginTable->asfile = (NPP_StreamAsFileProcPtr) (GCJ_StreamAsFile);
+  pluginTable->writeready = (NPP_WriteReadyProcPtr) (GCJ_WriteReady);
+  pluginTable->write = (NPP_WriteProcPtr) (GCJ_Write);
+  pluginTable->print = (NPP_PrintProcPtr) (GCJ_Print);
+  pluginTable->urlnotify = (NPP_URLNotifyProcPtr) (GCJ_URLNotify);
+  pluginTable->getvalue = (NPP_GetValueProcPtr) (GCJ_GetValue);
+#endif
   
   initialized = true;
 
