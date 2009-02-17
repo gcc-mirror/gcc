@@ -1,5 +1,11 @@
 2009-02-17  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39202
+	* tree-ssa-structalias.c (do_structure_copy): Before collapsing
+	a var make sure to follow existing collapses.
+
+2009-02-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/39214
 	* langhooks.c (lhd_print_error_function): Check for NULL block.
 
