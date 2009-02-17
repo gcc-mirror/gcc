@@ -1,3 +1,15 @@
+2009-02-17  Janis Johnson  <janis187@us.ibm.com>
+
+	* date_based: New directory.
+	* README: Move from here ...
+	* date_based/README: to here.
+	* reg_search: Move from here ...
+	* date_based/reg_search: to here.
+	* reg_periodic: Move from here ...
+	* date_based/reg_periodic: to here.
+	* reg_test_template: Move from here ...
+	* date_based_reg_test_template: to here.
+
 2005-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* reg_test_template: Typo fix.
