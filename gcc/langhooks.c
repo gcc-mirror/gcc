@@ -437,7 +437,7 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 		  while (block && TREE_CODE (block) == BLOCK)
 		    block = BLOCK_SUPERCONTEXT (block);
 
-		  if (TREE_CODE (block) == FUNCTION_DECL)
+		  if (block && TREE_CODE (block) == FUNCTION_DECL)
 		    fndecl = block;
 		  abstract_origin = NULL;
 		}

@@ -1,5 +1,10 @@
 2009-02-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/39214
+	* langhooks.c (lhd_print_error_function): Check for NULL block.
+
+2009-02-17  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39204
 	* tree-ssa-pre.c (phi_translate_1): Lookup the value-number
 	of the PHI arg.
