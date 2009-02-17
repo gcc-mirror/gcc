@@ -998,4 +998,8 @@ extern void darwin_default_min_version (int * argc, char *** argv);
   darwin_default_min_version (&argc, &argv)
 #endif /* CROSS_DIRECTORY_STRUCTURE */
 
+/* The Apple assembler and linker do not support constructor priorities.  */
+#undef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY 0
+
 #endif /* CONFIG_DARWIN_H */

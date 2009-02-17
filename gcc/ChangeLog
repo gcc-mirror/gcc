@@ -1,3 +1,8 @@
+2009-02-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/34587
+	* config/darwin.h (SUPPORTS_INIT_PRIORITY): Define.
+
 2009-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36922
