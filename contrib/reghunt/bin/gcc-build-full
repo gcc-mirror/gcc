@@ -1,0 +1,52 @@
+#! /bin/sh
+
+# Perform a simple build of GCC for a particular language, using several
+# environment variables defined by reghunt scripts and config files.
+#
+# Copyright (C) 2007 Free Software Foundation.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+
+abort() {
+  echo "`date`  $1"
+  exit 1
+}
+
+ID=$1
+LOGDIR=${REG_BUILDDIR}/logs/${BUGID}/${ID}
+mkdir -p $LOGDIR
+
+echo "`date`  building GCC ($REG_LANGS) for id ${ID}"
+
+cd $REG_BUILDDIR
+rm -rf obj
+mkdir obj
+cd obj
+
+echo "REG_CONFOPTS = $REG_CONFOPTS" > ${LOGDIR}/configure.log
+echo "REG_PREFIX   = $REG_PREFIX"  >> ${LOGDIR}/configure.log
+echo "REG_LANGS    = $REG_LANGS"   >> ${LOGDIR}/configure.log
+echo >> ${LOGDIR}/configure.log
+
+${REG_GCCSRC}/configure \
+  --prefix=$REG_PREFIX \
+  $REG_CONFOPTS \
+  --enable-languages=$REG_LANGS \
+  >> ${LOGDIR}/configure.log 2>&1 || abort "  configure failed"
+    
+make $REG_MAKE_J > ${LOGDIR}/make.log 2>&1 || abort "  make failed"
+make install > ${LOGDIR}/make.install.log 2>&1 || abort "  make install failed"
+
+exit 0

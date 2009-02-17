@@ -1,0 +1,20 @@
+#! /bin/sh
+
+# Clean up between regression hunts.
+
+if [ "x${REG_SRCDIR}" = "x" ]; then
+   if [ -f gcc-svn-env ]; then
+    . ./gcc-svn-env
+  elif [ -f ../gcc-svn-env ]; then
+    . ../gcc-svn-env
+  elif [ -f ${HOME}/etc/gcc-svn-env ]; then
+    . ${HOME}/etc/gcc-svn-env
+  else
+    echo "$0: could not find gcc-svn-env file"
+    exit 1
+  fi
+fi
+
+rm -rf ${REG_SRCDIR}/gcc
+rm -rf ${REG_BUILDDIR}/obj
+rm -rf ${REG_PREFIX}

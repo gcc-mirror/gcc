@@ -1,0 +1,85 @@
+#! /bin/bash
+
+# Make a list of revisions for commits to the branch of interest (trunk
+# by default) between the specified dates.  This skips commits that do
+# not modify any existing files and changes by gccadmin.
+#
+# Copyright (C) 2007 Free Software Foundation.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+
+#set -ex
+
+abort() {
+    echo "$@"
+    exit 1
+}
+
+test $# -lt 2 && abort "usage: $0 low_date high_date [branch]"
+
+export TZ=UTC
+LOW_DATE="$1"
+HIGH_DATE="$2"
+
+if [ $# -eq 3 ]; then
+    BRANCH="$3"
+else
+    BRANCH=""
+fi
+
+# Verify branch name, convert a short name to the real one.
+
+case $BRANCH in
+"")             BRANCH="trunk";;
+mline)          BRANCH="trunk";;
+mainline)       BRANCH="trunk";;
+4.1)            BRANCH="gcc-4_1-branch";;
+gcc-4_1-branch) ;;
+4.0)            BRANCH="gcc-4_0-branch";;
+gcc-4_0-branch) ;;
+3.4)            BRANCH="gcc-3_4-branch";;
+gcc-3_4-branch) ;;
+*)              ;; # abort "$0: unrecognized branch $BRANCH"
+esac
+
+if [ "${BRANCH}" = "trunk" ]; then
+  BRANCHPATH=trunk
+else
+  BRANCHPATH=branches/${BRANCH}
+fi
+
+# Get the revision at the time of LOW_DATE.
+
+LOW_REV=`svn info --revision {"${LOW_DATE}"} \
+        ${REG_SVN_REPO}/${BRANCHPATH} \
+  | awk '/Revision:/ { print $2 }'`
+
+# Create the list of information for LOW_REV through HIGH_DATE in a
+# form expected by gcc-svn-ids.
+
+svn log --quiet --non-interactive \
+        --revision ${LOW_REV}:{"${HIGH_DATE}"} \
+        ${REG_SVN_REPO}/${BRANCHPATH} \
+  | awk -v branch=$BRANCH \
+      'BEGIN { id=0 }
+       /---/ { next }
+       /(no author)/ { next }
+       /gccadmin/ { next }
+             { sub(" \\+0000 (.*)","")
+               sub("r","",$1)
+               gsub(" \\| ","|")
+               id++
+               print id "|" $0 "|" branch
+             }'

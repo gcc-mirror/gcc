@@ -1,0 +1,86 @@
+#! /bin/sh
+
+# The build failed for and identifier in the range bwetween LOW and HIGH.
+# Find a new patch id to try within that range.
+#
+# It's meant to be easy to modify the heuristics used to select the
+# next patch to try by adding to or rearranging the patches listed in
+# MIDLIST.  Known failures are recorded in ${REG_FAILLIST}.
+#
+# A nifty improvement would be to record known ranges of failure as
+# ranges, and then pick revisions just before and just after the range.
+#
+# Copyright (C) 2006 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+
+LOW=$1
+HIGH=$2
+
+MIDLIST=""
+
+let MID01=LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+HIGH
+let MID01=MID01/12
+let MID02=LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+HIGH+HIGH
+let MID02=MID02/12
+let MID03=LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH
+let MID03=MID03/12
+let MID04=LOW+LOW+LOW+LOW+LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH
+let MID04=MID04/12
+let MID05=LOW+LOW+LOW+LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID05=MID05/12
+let MID06=LOW+LOW+LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID06=MID06/12
+let MID07=LOW+LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID07=MID07/12
+let MID08=LOW+LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID08=MID08/12
+let MID09=LOW+LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID09=MID09/12
+let MID10=LOW+LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID10=MID10/12
+let MID11=LOW+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH+HIGH
+let MID11=MID11/12
+
+# Look in this order; MID has already been done:
+#
+#  LOW--10---7---6---3---2---MID---1---4---5---8---9---HIGH
+
+MIDLIST="${MIDLIST} ${MID07}"
+MIDLIST="${MIDLIST} ${MID05}"
+MIDLIST="${MIDLIST} ${MID04}"
+MIDLIST="${MIDLIST} ${MID08}"
+MIDLIST="${MIDLIST} ${MID09}"
+MIDLIST="${MIDLIST} ${MID03}"
+MIDLIST="${MIDLIST} ${MID02}"
+MIDLIST="${MIDLIST} ${MID10}"
+MIDLIST="${MIDLIST} ${MID11}"
+MIDLIST="${MIDLIST} ${MID01}"
+
+for MID in ${MIDLIST}
+do
+  # Skip this if it's the low endpoint.
+  if [ ${MID} != ${LOW} ]; then
+    # Is this patch already known to fail?
+    ${REG_CHECKFAIL} ${MID}
+    if [ $? -ne 0 ]; then
+      echo ${MID}
+      exit 0
+    fi
+  fi
+done
+
+echo 0
+exit 1

@@ -1,5 +1,30 @@
 2009-02-17  Janis Johnson  <janis187@us.ibm.com>
 
+	* bin: New directory.
+	* bin/reg-hunt: New.
+	* bin/reg_periodic: New.
+	* bin/gcc-svn-update: New.
+	* bin/gcc-svn-update-fix: New.
+	* bin/gcc-build-simple: New.
+	* bin/gcc-build-full: New.
+	* bin/gcc-cleanup: New.
+	* bin/reg-test: New.
+	* bin/reg-newmid: New.
+	* bin/gcc-test-ice-on-valid-code: New.
+	* bin/gcc-test-ice-on-invalid-code: New.
+	* bin/gcc-test-compiler-hangs: New.
+	* bin/gcc-test-missing-warning: New.
+	* bin/gcc-test-bogus-warning: New.
+	* bin/gcc-test-segfault-on-valid-code: New.
+	* bin/gcc-test-rejects-valid: New.
+	* bin/gcc-test-accepts-invalid: New.
+	* bin/gcc-test-wrong-code: New.
+	* bin/gcc-svn-patchlist: New.
+	* bin/gcc-svn-checkfail: New.
+	* bin/gcc-svn-recordfail: New.
+	* bin/gcc-svn-report: New.
+	* bin/gcc-svn-ids: New.
+
 	* date_based: New directory.
 	* README: Move from here ...
 	* date_based/README: to here.

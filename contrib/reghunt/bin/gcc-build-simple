@@ -1,0 +1,79 @@
+#! /bin/sh
+
+# Build a GCC compiler, using environment variables defined by several
+# reghunt scripts and config files.
+#
+# This doesn't work for sources earlier than about 2003-02-25.
+#
+# Copyright (C) 2007 Free Software Foundation.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+
+ID="${1}"
+LOGDIR=${REG_BUILDDIR}/logs/${BUGID}/${ID}
+mkdir -p $LOGDIR
+
+msg() {
+    echo "`date`  ${1}"
+}
+
+abort() {
+    msg "${1}"
+    exit 1
+}
+
+msg "building $REG_COMPILER for id $ID"
+
+rm -rf $REG_OBJDIR
+mkdir $REG_OBJDIR
+cd $REG_OBJDIR
+
+#msg "configure"
+${REG_GCCSRC}/configure \
+    --prefix=$REG_PREFIX \
+    --enable-languages=$REG_LANGS \
+    $REG_CONFOPTS \
+  > configure.log 2>&1 || abort "  configure failed"
+
+#msg "make libraries"
+make all-build-libiberty > ${LOGDIR}/make.all-build-libiberty.log 2>&1 || true
+make all-libcpp > ${LOGDIR}/make.all-libcpp.log 2>&1 || true
+make all-libdecnumber > ${LOGDIR}/make.all-libdecnumber.log 2>&1 || true
+make all-intl > ${LOGDIR}/make.all-intl.log 2>&1 || true
+make all-libbanshee > ${LOGDIR}/make.all-libbanshee.log 2>&1 || true
+make configure-gcc > ${LOGDIR}/make.configure-gcc.log  2>&1 || true
+
+# hack for 3.3 branch
+if [ ! -f libiberty/libiberty.a ]; then
+  if [ -d libiberty ]; then
+    # another hack for 3.2!
+    cd libiberty
+    make > ${LOGDIR}/make.libiberty.log 2>&1 || true
+    cd ..
+  else
+    mkdir -p libiberty
+    cd libiberty
+    ln -s ../build-${REG_BLD}/libiberty/libiberty.a .
+    cd ..
+  fi
+fi
+
+cd gcc
+# REG_COMPILER is cc1, cc1plus, or f951
+#msg "make $REG_COMPILER"
+make $REG_MAKE_J $REG_COMPILER > ${LOGDIR}/make.${REG_COMPILER}.log 2>&1 \
+  || abort "  make failed"
+msg "build completed"
+exit 0

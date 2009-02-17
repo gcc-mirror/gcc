@@ -1,0 +1,8 @@
+#! /bin/sh
+
+# Given an identifier that is an index into the current patch list,
+# record the corresponding SVN number to the list of known failures.
+
+ID=$1
+REV=`${REG_IDS} -f index -t rev ${ID}`
+echo $REV >> ${REG_FAILLIST}
