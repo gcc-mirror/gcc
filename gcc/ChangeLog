@@ -1,3 +1,10 @@
+2009-02-17  Ruan Beihong  <ruanbeihong@gmail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (CODE_FOR_loongson_biadd): Delete.
+	* config/mips/loongson.md (reduc_uplus_<mode>): Rename to...
+	(loongson_biadd): ...this.
+
 2009-02-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39202

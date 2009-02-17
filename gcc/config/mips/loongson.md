@@ -358,7 +358,7 @@
   [(set_attr "type" "fadd")])
 
 ;; Sum of unsigned byte integers.
-(define_insn "reduc_uplus_<mode>"
+(define_insn "loongson_biadd"
   [(set (match_operand:<V_stretch_half> 0 "register_operand" "=f")
         (unspec:<V_stretch_half> [(match_operand:VB 1 "register_operand" "f")]
 				 UNSPEC_LOONGSON_BIADD))]
