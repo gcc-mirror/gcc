@@ -1,3 +1,8 @@
+2009-02-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39204
+	* gcc.dg/torture/pr39204.c: New testcase.
+
 2009-02-17  Bingfeng Mei <bmei@broadcom.com>
 
 	* gcc.dg/vect/vect-outer-5.c: Require vect_float support.
