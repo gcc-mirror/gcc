@@ -1,0 +1,73 @@
+#! /bin/sh
+
+# Run one or more regression hunts
+#
+# The file specified as the single argument is a queue of regression
+# hunts and/or lists of patches to test.  Each entry in the file is
+# "hunt" or "test" followed by a bugid for which there is a config
+# file and other required files (patch list and test source file).
+# Each line of the file is removed as it is processed, and new ones
+# can be added while the script is still running.
+
+#set -ex
+
+if [ $# != 1 ]; then
+  echo "usage: $0 testfile"
+  exit 1
+fi
+
+REGFILE=$1
+TMPFILE=testall.tmp
+
+if [ ! -f $REGFILE ]; then
+  echo "$0: file $REGFILE does not exist"
+  exit 1
+fi
+
+RETURN_FOR_TEST=return
+RETURN_FOR_TEST=true
+
+. ../gcc-svn-env
+
+hunt() {
+  id=$1
+
+  echo regression hunt for $id
+  $RETURN_FOR_TEST
+  $REG_CLEANUP
+  reg-hunt $id.config >> $id.log 2>&1
+  tail -n 1 $id.log
+  #tail -n 1 $id.log | mutt -s "reghunt for $id finished" janis187
+}
+
+testit() {
+  id=$1
+
+  echo testing specific dates for $id
+  $RETURN_FOR_TEST
+  $REG_CLEANUP
+  reg-test $id.config >> $id.log 2>&1
+  #mutt -s "reg-test for $id finished" janis187 < /dev/null
+}
+
+rm -f $REG_STOP
+
+while
+  read WHICH ID < $REGFILE
+do
+  if [ -f $REG_STOP ]; then
+    echo "$REG_STOP detected"
+    rm -f $REG_STOP
+    exit 1
+  fi
+
+  sed 1d < $REGFILE > $TMPFILE
+  mv $TMPFILE $REGFILE
+
+  case $WHICH in
+    hunt)  hunt $ID;;
+    test)  testit $ID;;
+    *)     echo "unknown action $WHICH, skipping $ID";;
+  esac
+  echo
+done

@@ -1,0 +1,81 @@
+Mon Feb 16 19:21:02 PST 2009  NOTE: skipping high patch, already verified
+Mon Feb 16 19:21:02 PST 2009  LATER_THAN   = 1
+Mon Feb 16 19:21:02 PST 2009  EARLIER_THAN = 556
+Mon Feb 16 19:21:02 PST 2009  svn checkout begun for id 1, rev 112078
+Mon Feb 16 19:25:04 PST 2009  svn checkout done
+Mon Feb 16 19:25:04 PST 2009  building GCC (c,c++) for id 1
+Mon Feb 16 19:37:17 PST 2009  compilation failed for bug 29906b, id 1
+Mon Feb 16 19:37:17 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 19:37:17 PST 2009  svn update begun for id 278, rev 112702
+Mon Feb 16 19:37:37 PST 2009  svn update done
+Mon Feb 16 19:37:38 PST 2009  building GCC (c,c++) for id 278
+Mon Feb 16 19:49:42 PST 2009  test compiled successfully for bug 29906b, id 278
+Mon Feb 16 19:49:42 PST 2009  search patches earlier than 278
+Mon Feb 16 19:49:42 PST 2009  svn update begun for id 139, rev 112398
+Mon Feb 16 19:49:57 PST 2009  svn update done
+Mon Feb 16 19:49:58 PST 2009  building GCC (c,c++) for id 139
+Mon Feb 16 20:01:55 PST 2009  test compiled successfully for bug 29906b, id 139
+Mon Feb 16 20:01:55 PST 2009  search patches earlier than 139
+Mon Feb 16 20:01:55 PST 2009  svn update begun for id 70, rev 112248
+Mon Feb 16 20:02:06 PST 2009  svn update done
+Mon Feb 16 20:02:07 PST 2009  building GCC (c,c++) for id 70
+Mon Feb 16 20:14:01 PST 2009  compilation failed for bug 29906b, id 70
+Mon Feb 16 20:14:01 PST 2009  search patches later than 70
+Mon Feb 16 20:14:01 PST 2009  svn update begun for id 104, rev 112319
+Mon Feb 16 20:14:12 PST 2009  svn update done
+Mon Feb 16 20:14:12 PST 2009  building GCC (c,c++) for id 104
+Mon Feb 16 20:26:15 PST 2009  compilation failed for bug 29906b, id 104
+Mon Feb 16 20:26:15 PST 2009  search patches later than 104
+Mon Feb 16 20:26:15 PST 2009  svn update begun for id 121, rev 112360
+Mon Feb 16 20:26:25 PST 2009  svn update done
+Mon Feb 16 20:26:26 PST 2009  building GCC (c,c++) for id 121
+Mon Feb 16 20:38:27 PST 2009  test compiled successfully for bug 29906b, id 121
+Mon Feb 16 20:38:27 PST 2009  search patches earlier than 121
+Mon Feb 16 20:38:27 PST 2009  svn update begun for id 112, rev 112346
+Mon Feb 16 20:38:38 PST 2009  svn update done
+Mon Feb 16 20:38:39 PST 2009  building GCC (c,c++) for id 112
+Mon Feb 16 20:50:36 PST 2009  compilation failed for bug 29906b, id 112
+Mon Feb 16 20:50:36 PST 2009  search patches later than 112
+Mon Feb 16 20:50:37 PST 2009  svn update begun for id 116, rev 112351
+Mon Feb 16 20:50:42 PST 2009  svn update done
+Mon Feb 16 20:50:42 PST 2009  building GCC (c,c++) for id 116
+Mon Feb 16 21:02:45 PST 2009  compilation failed for bug 29906b, id 116
+Mon Feb 16 21:02:45 PST 2009  search patches later than 116
+Mon Feb 16 21:02:45 PST 2009  svn update begun for id 118, rev 112355
+Mon Feb 16 21:02:50 PST 2009  svn update done
+Mon Feb 16 21:02:51 PST 2009  building GCC (c,c++) for id 118
+Mon Feb 16 21:14:53 PST 2009  compilation failed for bug 29906b, id 118
+Mon Feb 16 21:14:53 PST 2009  search patches later than 118
+Mon Feb 16 21:14:53 PST 2009  svn update begun for id 119, rev 112357
+Mon Feb 16 21:15:01 PST 2009  svn update done
+Mon Feb 16 21:15:01 PST 2009  building GCC (c,c++) for id 119
+Mon Feb 16 21:26:59 PST 2009  compilation failed for bug 29906b, id 119
+Mon Feb 16 21:26:59 PST 2009  search patches later than 119
+Mon Feb 16 21:26:59 PST 2009  svn update begun for id 120, rev 112359
+Mon Feb 16 21:27:04 PST 2009  svn update done
+Mon Feb 16 21:27:04 PST 2009  building GCC (c,c++) for id 120
+Mon Feb 16 21:39:01 PST 2009  compilation failed for bug 29906b, id 120
+Mon Feb 16 21:39:01 PST 2009  search patches later than 120
+Test result changes with id 121
+------------------------------------------------------------------------
+r112360 | carlos | 2006-03-24 21:17:41 +0000 (Fri, 24 Mar 2006) | 15 lines
+
+gcc/
+
+2006-03-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/invoke.texi: Document -femit-class-debug-always
+	* common.opt: Add -femit-class-debug-always.
+
+gcc/cp/
+
+2006-03-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* search.c (maybe_suppress_debug_info): If
+	flag_emit_class_debug_always then don't suppress.
+
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=112360
+    r112360 | carlos | 2006-03-24 21:17:41 +0000 (Fri, 24 Mar 2006)

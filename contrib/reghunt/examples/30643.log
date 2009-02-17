@@ -1,0 +1,64 @@
+Mon Feb 16 21:39:11 PST 2009  NOTE: skipping high patch, already verified
+Mon Feb 16 21:39:11 PST 2009  LATER_THAN   = 1
+Mon Feb 16 21:39:11 PST 2009  EARLIER_THAN = 83
+Mon Feb 16 21:39:11 PST 2009  svn checkout begun for id 1, rev 115570
+Mon Feb 16 21:43:34 PST 2009  svn checkout done
+Mon Feb 16 21:43:34 PST 2009  building cc1 for id 1
+Mon Feb 16 21:47:05 PST 2009  build completed
+Mon Feb 16 21:47:05 PST 2009  no call to abort for bug 30643, id 1
+Mon Feb 16 21:47:05 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 21:47:05 PST 2009  svn update begun for id 42, rev 115671
+Mon Feb 16 21:47:11 PST 2009  svn update done
+Mon Feb 16 21:47:11 PST 2009  building cc1 for id 42
+Mon Feb 16 21:50:37 PST 2009  build completed
+Mon Feb 16 21:50:37 PST 2009  abort call exists for bug 30643, id 42
+Mon Feb 16 21:50:37 PST 2009  search patches earlier than 42
+Mon Feb 16 21:50:37 PST 2009  svn update begun for id 21, rev 115625
+Mon Feb 16 21:50:44 PST 2009  svn update done
+Mon Feb 16 21:50:44 PST 2009  building cc1 for id 21
+Mon Feb 16 21:54:09 PST 2009  build completed
+Mon Feb 16 21:54:09 PST 2009  abort call exists for bug 30643, id 21
+Mon Feb 16 21:54:09 PST 2009  search patches earlier than 21
+Mon Feb 16 21:54:10 PST 2009  svn update begun for id 11, rev 115598
+Mon Feb 16 21:54:15 PST 2009  svn update done
+Mon Feb 16 21:54:15 PST 2009  building cc1 for id 11
+Mon Feb 16 21:57:39 PST 2009  build completed
+Mon Feb 16 21:57:39 PST 2009  no call to abort for bug 30643, id 11
+Mon Feb 16 21:57:39 PST 2009  search patches later than 11
+Mon Feb 16 21:57:39 PST 2009  svn update begun for id 16, rev 115610
+Mon Feb 16 21:57:43 PST 2009  svn update done
+Mon Feb 16 21:57:43 PST 2009  building cc1 for id 16
+Mon Feb 16 22:01:08 PST 2009  build completed
+Mon Feb 16 22:01:09 PST 2009  no call to abort for bug 30643, id 16
+Mon Feb 16 22:01:09 PST 2009  search patches later than 16
+Mon Feb 16 22:01:09 PST 2009  svn update begun for id 18, rev 115619
+Mon Feb 16 22:01:13 PST 2009  svn update done
+Mon Feb 16 22:01:13 PST 2009  building cc1 for id 18
+Mon Feb 16 22:04:38 PST 2009  build completed
+Mon Feb 16 22:04:38 PST 2009  abort call exists for bug 30643, id 18
+Mon Feb 16 22:04:38 PST 2009  search patches earlier than 18
+Mon Feb 16 22:04:38 PST 2009  svn update begun for id 17, rev 115614
+Mon Feb 16 22:04:42 PST 2009  svn update done
+Mon Feb 16 22:04:42 PST 2009  building cc1 for id 17
+Mon Feb 16 22:08:07 PST 2009  build completed
+Mon Feb 16 22:08:07 PST 2009  abort call exists for bug 30643, id 17
+Mon Feb 16 22:08:07 PST 2009  search patches earlier than 17
+Test result changes with id 17
+------------------------------------------------------------------------
+r115614 | pbrook | 2006-07-20 13:57:31 +0000 (Thu, 20 Jul 2006) | 11 lines
+
+2006-07-20  Paul Brook  <paul@codesourcery.com>
+
+	PR 27363
+	gcc/
+	* cse.c (cse_insn): Add destination addresses to hash table. Check if
+	they are invalidated by this instruction.
+
+	gcc/testsuite/
+	* gcc.dg/pr27363.c: New test.
+
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=115614
+    r115614 | pbrook | 2006-07-20 13:57:31 +0000 (Thu, 20 Jul 2006)

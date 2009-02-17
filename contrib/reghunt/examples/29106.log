@@ -1,0 +1,111 @@
+Mon Feb 16 15:16:01 PST 2009  LATER_THAN   = 1
+Mon Feb 16 15:16:01 PST 2009  EARLIER_THAN = 568
+Mon Feb 16 15:16:01 PST 2009  svn checkout begun for id 568, rev 111527
+Mon Feb 16 15:19:11 PST 2009  svn checkout done
+Mon Feb 16 15:19:11 PST 2009  building GCC (c,c++) for id 568
+Mon Feb 16 15:29:17 PST 2009  no output for bug 29106, id 568
+Mon Feb 16 15:29:17 PST 2009  result for high patch 568 is as expected
+Mon Feb 16 15:29:17 PST 2009  svn update begun for id 1, rev 107221
+Mon Feb 16 15:29:48 PST 2009  svn update done
+Mon Feb 16 15:29:49 PST 2009  building GCC (c,c++) for id 1
+Mon Feb 16 15:40:07 PST 2009  test ran successfully for bug 29106, id 1
+Mon Feb 16 15:40:07 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 15:40:07 PST 2009  svn update begun for id 284, rev 109215
+Mon Feb 16 15:40:24 PST 2009  svn update done
+Mon Feb 16 15:40:24 PST 2009  building GCC (c,c++) for id 284
+Mon Feb 16 15:50:30 PST 2009  test ran successfully for bug 29106, id 284
+Mon Feb 16 15:50:30 PST 2009  search patches later than 284
+Mon Feb 16 15:50:30 PST 2009  svn update begun for id 426, rev 110331
+Mon Feb 16 15:50:59 PST 2009  svn update done
+Mon Feb 16 15:51:00 PST 2009  building GCC (c,c++) for id 426
+Mon Feb 16 16:01:06 PST 2009  test ran successfully for bug 29106, id 426
+Mon Feb 16 16:01:06 PST 2009  search patches later than 426
+Mon Feb 16 16:01:06 PST 2009  svn update begun for id 497, rev 110808
+Mon Feb 16 16:01:21 PST 2009  svn update done
+Mon Feb 16 16:01:22 PST 2009  building GCC (c,c++) for id 497
+Mon Feb 16 16:11:29 PST 2009  test ran successfully for bug 29106, id 497
+Mon Feb 16 16:11:29 PST 2009  search patches later than 497
+Mon Feb 16 16:11:29 PST 2009  svn update begun for id 532, rev 111111
+Mon Feb 16 16:11:38 PST 2009  svn update done
+Mon Feb 16 16:11:39 PST 2009  building GCC (c,c++) for id 532
+Mon Feb 16 16:21:47 PST 2009  test ran successfully for bug 29106, id 532
+Mon Feb 16 16:21:47 PST 2009  search patches later than 532
+Mon Feb 16 16:21:48 PST 2009  svn update begun for id 550, rev 111297
+Mon Feb 16 16:21:55 PST 2009  svn update done
+Mon Feb 16 16:21:56 PST 2009  building GCC (c,c++) for id 550
+Mon Feb 16 16:32:07 PST 2009  no output for bug 29106, id 550
+Mon Feb 16 16:32:07 PST 2009  search patches earlier than 550
+Mon Feb 16 16:32:07 PST 2009  svn update begun for id 541, rev 111233
+Mon Feb 16 16:32:11 PST 2009  svn update done
+Mon Feb 16 16:32:12 PST 2009  building GCC (c,c++) for id 541
+Mon Feb 16 16:42:19 PST 2009  no output for bug 29106, id 541
+Mon Feb 16 16:42:19 PST 2009  search patches earlier than 541
+Mon Feb 16 16:42:19 PST 2009  svn update begun for id 536, rev 111179
+Mon Feb 16 16:42:26 PST 2009  svn update done
+Mon Feb 16 16:42:26 PST 2009  building GCC (c,c++) for id 536
+Mon Feb 16 16:52:30 PST 2009  test ran successfully for bug 29106, id 536
+Mon Feb 16 16:52:30 PST 2009  search patches later than 536
+Mon Feb 16 16:52:30 PST 2009  svn update begun for id 538, rev 111227
+Mon Feb 16 16:52:35 PST 2009  svn update done
+Mon Feb 16 16:52:35 PST 2009  building GCC (c,c++) for id 538
+Mon Feb 16 17:02:35 PST 2009  test ran successfully for bug 29106, id 538
+Mon Feb 16 17:02:35 PST 2009  search patches later than 538
+Mon Feb 16 17:02:35 PST 2009  svn update begun for id 539, rev 111228
+Mon Feb 16 17:02:39 PST 2009  svn update done
+Mon Feb 16 17:02:39 PST 2009  building GCC (c,c++) for id 539
+Mon Feb 16 17:12:42 PST 2009  test ran successfully for bug 29106, id 539
+Mon Feb 16 17:12:42 PST 2009  search patches later than 539
+Mon Feb 16 17:12:42 PST 2009  svn update begun for id 540, rev 111231
+Mon Feb 16 17:12:47 PST 2009  svn update done
+Mon Feb 16 17:12:47 PST 2009  building GCC (c,c++) for id 540
+Mon Feb 16 17:22:53 PST 2009  no output for bug 29106, id 540
+Mon Feb 16 17:22:53 PST 2009  search patches earlier than 540
+Test result changes with id 540
+------------------------------------------------------------------------
+r111231 | mmitchel | 2006-02-18 08:37:34 +0000 (Sat, 18 Feb 2006) | 41 lines
+
+	PR c++/26266
+	* cp-tree.h (cp_finish_decl): Adjust declaration.
+	(grokbitfield): Likewise.
+	(finish_static_data_member_decl): Likewise.
+	* init.c (constant_value_1): Ensure processing_template_decl when
+	folding non-dependent initializers for static data members of
+	dependent types.  Return error_mark_node for erroneous
+	initailizers.
+	* class.c (get_vtable_decl): Use finish_decl, not cp_finish_decl.
+	* decl.c (cp_make_fname_decl): Adjust call to cp_finish_decl.
+	(cp_finish_decl): Add init_const_expr_p parameter.  Set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P here.
+	(finish_decl): Adjust call to cp_finish_decl.
+	(compute_array_index_type): Robustify.
+	(start_method): Use finish_decl, not cp_finish_decl.
+	* rtti.c (emit_tinfo_decl): Likewise.
+	* except.c (initialize_handler_parm): Adjust call to
+	cp_finish_decl.
+	(expand_start_catch_block): Likewise.
+	* cvt.c (build_up_reference): Adjust call to cp_finish_decl.
+	* pt.c (instantiate_class_template): Adjust call to
+	finish_static_data_member_decl.
+	(tsubst_expr): Use finish_decl, not cp_finish_decl.
+	(instantiate_decl): Adjust call to cp_finish_decl.
+	* name-lookup.c (pushdecl_top_level_1): Use finish_decl, not
+	cp_finish_decl.
+	* decl2.c (finish_static_data_member_decl): Add init_const_expr_p
+	parameter.
+	(grokfield): Likewise.
+	* parser.c (cp_parser_condition): Check for constant initializers.
+	(cp_parser_init_declarator): Adjust calls to grokfield and
+	cp_finish_decl.  Don't set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P here.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_objc_class_ivars): Likewise.
+	PR c++/26266
+	* g++.dg/template/static22.C: New test.
+	* g++.dg/template/static23.C: New test.
+	* g++.dg/template/static24.C: New test.
+	* g++.dg/template/non-dependent13.C: New test.
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=111231
+    r111231 | mmitchel | 2006-02-18 08:37:34 +0000 (Sat, 18 Feb 2006)

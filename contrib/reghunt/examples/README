@@ -1,0 +1,53 @@
+This directory contains files from examples of regression hunts, cut
+down to smaller ranges to save space and time.  Try these out before
+using the tools on your own tests.  First, update gcc-svn-env and
+common.config for your own environment.
+
+Each of the examples has multiple files:
+
+  *.list files were created using gcc-svn-patchlist
+
+  *.config files were written by hand based on earlier config files;
+  the commented-out pieces are left as templates in case they're needed
+
+  *.c, *.c++ are source files for the test, usually taken directly from
+  the PR
+
+  *.test files are tests specific to a bug when an existing gcc-test-*
+  script can't be used
+
+  *.log files are output from various scripts
+
+Examples, where the identifier is the PR number:
+
+  28970   wrong-code
+  29106   special test, 4.1 branch
+  29578   bogus-warning
+  29906a  ice-on-valid-code, break
+  29906b  ice-on-valid-code, fix
+  30643   special test, cross compiler
+
+Cut down the range even further by setting LOW_PATCH and HIGH_PATCH
+within the config file to ids where the log file shows the test
+passed or failed.
+
+To run one, do
+
+  reg-hunt 28970.config > 28970.log 2>&1
+
+Check on its progress using
+
+  ./reg-watch 28970.log
+
+To run them all, do
+
+  echo "hunt 28970" > queue
+  echo "hunt 29106" >> queue
+  echo "hunt 29578" >> queue
+  echo "hunt 29906a" >> queue
+  echo "hunt 29906b" >> queue
+  echo "hunt 30643" >> queue
+  ./testall queue
+
+This allows you to add more to the queue if you're setting up lots of
+hunts.

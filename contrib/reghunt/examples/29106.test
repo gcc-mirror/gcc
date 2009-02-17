@@ -1,0 +1,29 @@
+#! /bin/sh
+
+ID=$1
+
+LOGID=`printf "%04d" ${ID}`
+LOG=${BUGID}.${LOGID}.out
+MSGID="bug ${BUGID}, id ${ID}"
+
+$REG_TEST_COMPILER $REG_OPTS $REG_TESTCASE > ${LOG} 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "`date`  unexpected failure: test compilation failed for ${MSGID}"
+    exit $REG_ERROR
+fi
+
+./a.out >> ${LOG} 2>&1
+if [ $? -ne 0 ]; then
+    echo "`date`  unexpected failure: test run aborted for ${MSGID}"
+    exit $REG_ERROR
+fi
+
+grep -q 'size of thingy is 4' $LOG
+if [ $? -ne 0 ]; then
+    echo "`date`  no output for ${MSGID}"
+    exit $REG_FAIL
+fi
+
+echo "`date`  test ran successfully for ${MSGID}"
+exit $REG_PASS
