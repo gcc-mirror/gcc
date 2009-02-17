@@ -1,5 +1,10 @@
 2009-02-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_override_options): Set flag_dwarf2_cfi_asm
+	to 0 for EABI64.
+
+2009-02-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.md (type): Reclassify lui_movf as "unknown".
 
 2009-02-17  Richard Sandiford  <rdsandiford@googlemail.com>
