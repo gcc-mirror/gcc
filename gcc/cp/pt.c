@@ -13058,7 +13058,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	/* Convert the ARG to the type of PARM; the deduced non-type
 	   template argument must exactly match the types of the
 	   corresponding parameter.  */
-	arg = fold (build_nop (TREE_TYPE (parm), arg));
+	arg = fold (build_nop (tparm, arg));
       else if (uses_template_parms (tparm))
 	/* We haven't deduced the type of this parameter yet.  Try again
 	   later.  */

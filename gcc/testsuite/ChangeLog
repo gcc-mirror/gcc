@@ -1,3 +1,8 @@
+2009-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38950
+	* g++.dg/template/array20.C: New test.
+
 2009-02-17  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35446
