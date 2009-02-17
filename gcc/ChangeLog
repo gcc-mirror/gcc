@@ -1,3 +1,10 @@
+2009-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36922
+	* tree-data-ref.c (initialize_matrix_A): Handle BIT_NOT_EXPR.
+	* tree-scalar-evolution.c (interpret_rhs_expr, instantiate_scev_1):
+	Likewise.
+
 2009-02-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_override_options): Set flag_dwarf2_cfi_asm
