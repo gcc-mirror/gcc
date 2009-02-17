@@ -1,3 +1,7 @@
+2009-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/soft-fp/double.h: Update from glibc CVS.
+
 2009-02-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39207

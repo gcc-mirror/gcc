@@ -1,6 +1,7 @@
 /* Software floating-point emulation.
    Definitions for IEEE Double Precision
-   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -203,13 +204,13 @@ union _FP_UNION_D
 
 #define FP_UNPACK_SEMIRAW_D(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_2(1,X,val);		\
+    _FP_UNPACK_RAW_1(D,X,val);		\
     _FP_UNPACK_SEMIRAW(D,1,X);		\
   } while (0)
 
 #define FP_UNPACK_SEMIRAW_DP(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_2_P(1,X,val);	\
+    _FP_UNPACK_RAW_1_P(D,X,val);	\
     _FP_UNPACK_SEMIRAW(D,1,X);		\
   } while (0)
 
