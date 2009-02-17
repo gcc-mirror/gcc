@@ -1,0 +1,152 @@
+#! /bin/bash
+
+#set -x
+
+########################################################################
+#
+# File:    reg-test
+# Author:  Janis Johnson
+# Date:    2005/09/08
+#
+# For each of a list of patches, invoke separate tools to update
+# sources, do a build, and run one or more tests. 
+#
+# Define these in a file whose name is the argument to this script:
+#   REG_IDLIST: List of patch identifiers.
+#   REG_UPDATE: Pathname of script to update the source tree.
+#   REG_BUILD:  Pathname of script to build enough of the product to run
+#               the test.
+#   REG_TEST:   Pathname of script to run one or more tests.
+# Optional:
+#   VERBOSITY:  Default is 0, to print only errors and final message.
+#   DATE_IN_MSG If set to anything but 0, include the time and date in
+#               messages
+#   REG_STOP    Pathname of a file whose existence says to quit; default
+#               is STOP in the current directory.
+#
+#
+# Copyright (c) 2002, 2003, 2005 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+#
+########################################################################
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue a message if its verbosity level is high enough.
+
+msg() {
+  test ${1} -gt ${VERBOSITY}  && return
+
+  if [ "x${DATE_IN_MSG}" = "x" ]; then
+    echo "${2}"
+  else
+    echo "`${DATE}`  ${2}"
+  fi
+}
+
+# Issue an error message and exit with a nonzero status.
+
+error() {
+  msg 0 "error: ${1}"
+  exit 1
+}
+
+# Build the components to test using sources as of a particular patch
+# and run a test case.  Pass each of the scripts the patch identifier
+# that we're testing; the first one needs it, the others can ignore it
+# if they want.
+
+process_patch () {
+  TEST_ID=${1}
+
+  ${REG_UPDATE} ${TEST_ID}
+  if [ $? -ne 0 ]; then
+    msg 0 "source update failed for id ${TEST_ID}"
+    return
+  fi
+  ${REG_BUILD} ${TEST_ID}
+  if [ $? -ne 0 ]; then
+    msg 0 "build failed for id ${TEST_ID}"
+    return
+  fi
+  ${REG_TEST} "${TEST_ID}"
+}
+ 
+########################################################################
+# Main program (so to speak)
+########################################################################
+
+# If DATE isn't defined, use the default date command; the configuration
+# file can override this.
+
+if [ "x${DATE}" = "x" ]; then
+  DATE=date
+fi
+
+# Process the configuration file.
+
+if [ $# -ne 1 ]; then
+  echo Usage: $0 config_file
+  exit 1
+fi
+
+CONFIG=${1}
+if [ ! -f ${CONFIG} ]; then
+  error "configuration file ${CONFIG} does not exist"
+fi
+
+# OK, the config file exists.  Source it, make sure required parameters
+# are defined and their files exist, and give default values to optional
+# parameters.
+
+. ${CONFIG}
+
+test "x${REG_IDLIST}" = "x" && error "REG_IDLIST is not defined"
+test "x${REG_UPDATE}" = "x" && error "REG_UPDATE is not defined"
+test "x${REG_BUILD}" = "x" && error "REG_BUILD is not defined"
+test "x${REG_TEST}" = "x" && error "REG_TEST is not defined"
+test -x ${REG_TEST} || error "REG_TEST is not an executable file"
+test "x${VERBOSITY}" = "x" && VERBOSITY=0
+test "x${REG_STOP}" = "x" && REG_STOP="STOP"
+ 
+msg 2 "REG_IDLIST = ${REG_IDLIST}"
+msg 2 "REG_UPDATE = ${REG_UPDATE}"
+msg 2 "REG_BUILD  = ${REG_BUILD}"
+msg 2 "REG_TEST   = ${REG_TEST}"
+msg 2 "VERBOSITY  = ${VERBOSITY}"
+
+# Process each patch identifier in the list.
+
+for TEST_ID in $REG_IDLIST; do
+
+  # If a file called STOP appears, stop; this allows a clean way to
+  # interrupt a search.
+
+  if [ -f ${REG_STOP} ]; then
+    msg 0 "STOP file detected"
+    rm -f ${REG_STOP}
+    exit 1
+  fi
+
+  # Process the new patch.
+
+  msg 2 "process id ${TEST_ID}"
+  process_patch ${TEST_ID}
+done
+
+msg 1 "done"

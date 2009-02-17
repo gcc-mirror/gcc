@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Report a more informative version of the patch identifier.
+
+ID=$1
+
+test "x${REG_IDS}" != "x" || exit 1
+test "x${REG_CHANGESET_LIST}" != "x" || exit 1
+
+BRANCH=`${REG_IDS} -f index -t branch ${ID}`
+cd ${REG_SRCDIR}/gcc
+unset LANG
+unset LC_ALL
+REV=`${REG_IDS} -f index -t rev ${ID}`
+
+# long set of information
+TZ=UTC \
+svn log --revision $REV
+
+# URL of diffs
+echo
+echo '    http://gcc.gnu.org/viewcvs?view=rev&rev='$REV
+
+# short set of information, without final line of hyphens
+TZ=UTC \
+svn log --quiet --revision $REV | sed -e '/---/d' -e 's/^/    /'

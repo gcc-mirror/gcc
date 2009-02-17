@@ -1,0 +1,113 @@
+#! /bin/bash
+
+#set -ex
+
+# Update an SVN tree for a particular date.
+
+if [ $# != 1 ]; then
+  echo Usage: $0 id
+  exit 1
+fi
+
+if [ "x${REG_DO_CLEANUPS}" != "x" ]; then
+  reg_cleanup
+fi
+
+ID=$1
+BRANCH=""
+
+########################################################################
+# Get sources.
+########################################################################
+
+svn_get() {
+  # In case there are problems with updates (there were with CVS),
+  # creating a file called REMOVE in the REG_SRCDIR directory causes us
+  # to start with a clean tree each time.
+
+  unset LC_ALL
+  unset LANG
+
+  cd ${REG_SRCDIR}
+  if [ -d gcc ]; then
+    # There's already a tree; do an update with the new revision.
+    cd gcc
+    echo "`date`  svn update begun for id ${ID}, rev ${REV} (fix)"
+    echo svn update --non-interactive --revision ${REV} >> $LOG
+    svn update --non-interactive --revision ${REV} >> $LOG
+    if [ $? -eq 0 ]; then
+      echo "`date`  svn update done"
+    else
+      echo "`date`  svn update failed"
+      exit 1
+    fi
+  else
+    echo "`date`  svn checkout begun for id ${ID}, rev ${REV}"
+    echo svn checkout --non-interactive --revision ${REV} \
+      ${REG_SVN_REPO}/${BRANCHPATH} gcc >> $LOG
+    svn checkout --non-interactive --revision ${REV} \
+      ${REG_SVN_REPO}/${BRANCHPATH} gcc >> $LOG
+    if [ $? -eq 0 ]; then
+      echo "`date`  svn checkout done"
+    else
+      echo "`date`  svn checkout failed"
+      exit 1
+    fi
+    cd gcc
+  fi
+
+  # Touch generated files.
+  contrib/gcc_update --touch >> $LOG
+}
+
+########################################################################
+# Main program
+########################################################################
+
+cd ${REG_SRCDIR}
+
+# This is a simple way to stop a long regression search fairly cleanly;
+# just touch a file called STOP.
+
+if [ -f STOP ]; then
+  echo "`date`  $0 detected STOP file"
+  rm -f STOP
+  exit 1
+fi
+
+# Set up the log file.
+REV=`${REG_IDS} -f index -t rev ${ID}`
+LOG=${REG_SRCDIR}/logs/${BUGID}/${REV}.log
+mkdir -p ${REG_SRCDIR}/logs/${BUGID}
+rm -f $LOG
+touch $LOG
+
+# Get the branch for this patch.
+BRANCH=`${REG_IDS} -f index -t branch ${ID}`
+if [ "${BRANCH}" = "error" ]; then
+  echo "`date`  $0: cannot determine the SVN branch for id ${ID}"
+  exit 1
+fi
+
+if [ "${BRANCH}" = "trunk" ]; then
+  BRANCHPATH=trunk
+else
+  BRANCHPATH=branches/${BRANCH}
+fi
+
+svn_get
+
+# Look for a patch that's needed for this revision to build.
+FIX=${REG_PATCHES}/${REV}.fix
+echo "`date`  looking for $FIX"
+if [ -f $FIX ]; then
+  echo "`date`  fix needed; checking whether it is already applied"
+  cd ${REG_SRCDIR}/gcc
+  patch --dry-run -s -p0 -i $FIX < /dev/null > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo "`date`  applying fix"
+    patch -s -p0 -i $FIX
+  fi
+fi
+
+exit 0

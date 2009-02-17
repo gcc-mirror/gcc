@@ -1,0 +1,48 @@
+#! /bin/sh
+
+# Test a "rejects-valid" GCC bug, using environment variables set in
+# several reghunt scripts and configuration files.
+#
+# Copyright (C) 2007 Free Software Foundation.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+
+ID=$1
+
+LOGID=`printf "%04d" ${ID}`
+LOG=${BUGID}.${LOGID}.out
+MSGID="bug ${BUGID}, id ${ID}"
+
+$REG_TEST_COMPILER $REG_OPTS $REG_TESTCASE > ${LOG} 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "`date`  test compiled successfully for ${MSGID}"
+    exit $REG_PASS
+fi
+
+grep -q 'No such file or directory' ${LOG}
+if [ $? -eq 0 ]; then
+    echo "`date`    unexpected failure: missing file for ${MSGID}"
+    exit $REG_ERROR
+fi
+
+grep -q 'error' ${LOG}
+if [ $? -ne 0 ]; then
+    echo "`date`    unexpected failure: no error message for ${MSGID}"
+    exit $REG_ERROR
+fi
+
+echo "`date`  compilation failed for ${MSGID}"
+exit $REG_FAIL

@@ -1,0 +1,363 @@
+#! /bin/bash
+
+#set -x
+
+########################################################################
+#
+# File:    reg-hunt
+# Author:  Janis Johnson <janis187@us.ibm.com>
+# Date:    2003/08/19
+#
+# Search for the patch identifier for which results for a test changed,
+# using a binary search.  The functionality for getting sources,
+# building the component to test, and running the test are in other
+# scripts that are run from here.  Before the search begins, we verify
+# that we get the expected behavior for the first and last patch
+# identifiers.
+#
+# Define these in a file whose name is the argument to this script:
+#   LOW_PATCH:  Patch identifier.
+#   HIGH_PATCH: Patch identifier.
+#   REG_UPDATE: Pathname of script to update your source tree; returns
+#               zero for success, nonzero for failure.
+#   REG_BUILD:  Pathname of script to build enough of the product to run
+#               the test; returns zero for success, nonzero for failure.
+#   REG_TEST:   Pathname of script to run the test; returns 1 if we
+#               should search later patches, 0 if we should search
+#               earlier patches, and something else if there was an
+#               unexpected failure.
+# Optional:
+#   REG_REPORT  Pathname of script to call at the end with the id of the
+#               patch that caused the change in behavior.
+#   REG_FINISH  Pathname of script to call at the end with the two final
+#               patch identifiers as arguments.
+#   REG_NEWMID  Pathname of script to call when a build has failed, with
+#               arguments of the failed id and the current low and high
+#   SKIP_LOW    If 1, skip verifying the low patch identifier of the
+#               range; define this only if you're restarting and have
+#               already tested the low patch.
+#   SKIP_HIGH   If 1, skip verifying the high patch identifier of the
+#               range; define this only if you're restarting and have
+#               already tested the high patch.
+#   FIRST_MID   Use this as the first midpoint, to avoid a midpoint that
+#               is known not to build.
+#   VERBOSITY   Default is 0, to print only errors and final message.
+#   DATE_IN_MSG If set to anything but 0, include the time and date in
+#               messages.
+#
+#
+#
+# Copyright (c) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02111-1301, USA.
+# 
+########################################################################
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue a message if its verbosity level is high enough.
+
+msg() {
+  test ${1} -gt ${VERBOSITY}  && return
+
+  if [ "x${DATE_IN_MSG}" = "x" ]; then
+    echo "${2}"
+  else
+    echo "`date`  ${2}"
+  fi
+}
+
+# Issue an error message and exit with a non-zero status.  If there
+# is a valid current range whose end points have been tested, report
+# it so the user can start again from there.
+
+error() {
+  msg 0 "error: ${1}"
+  test ${VALID_RANGE} -eq 1 && \
+    echo "current range:"
+    echo "LOW_PATCH=${LATER_THAN}"
+    echo "HIGH_PATCH=${EARLIER_THAN}"
+  exit 1
+}
+
+# Build the components to test using sources as of a particular patch
+# and run a test case.  Pass each of the scripts the patch identifier
+# that we're testing; the first one needs it, the others can ignore it
+# if they want.
+
+process_patch () {
+  TEST_ID=${1}
+
+  # If we're keeping track of known failures, see if TEST_ID is one and
+  # if so, don't bother updating sources and trying to build.
+
+  FAILS=0
+  SKIP=0
+  if [ ${SKIP_FAILURES} -eq 1 ]; then
+    ${REG_CHECKFAIL} ${TEST_ID}
+    if [ $? -eq 0 ]; then
+      msg 1 "skipping ${TEST_ID}; it is a known build failure"
+      FAILS=1
+      SKIP=1
+    fi
+  fi
+
+  if [ ${FAILS} -eq 0 ]; then
+    ${REG_UPDATE} ${TEST_ID} || error "source update failed for ${TEST_ID}"
+    ${REG_BUILD} ${TEST_ID}
+    if [ $? -ne 0 ]; then
+      FAILS=1
+      msg 1 "build failed for ${TEST_ID}"
+      if [ ${SKIP_FAILURES} -eq 1 ]; then
+        ${REG_RECORDFAIL} ${TEST_ID}
+      fi
+    fi
+  fi
+
+  if [ ${FAILS} -eq 0 ]; then
+    ${REG_TEST} ${TEST_ID}
+    LATER=$?
+    if [ $LATER -ne 0 -a $LATER -ne 1 ]; then
+      msg 0 "unexpected test failure for ${TEST_ID}"
+      exit 1
+    fi
+  else
+
+    # The build failed, or this patch is already known to fail to build.
+    # If it's an endpoint, or if we don't have a way to recover from
+    # build failures, quit now.
+
+    if [ ${SKIP} -eq 0 ]; then
+      if [ "x${REG_NEWMID}" == "x" \
+           -o ${TEST_ID} -eq ${LATER_THAN} \
+           -o ${TEST_ID} -eq ${EARLIER_THAN} ]; then
+        error "build failed for ${TEST_ID}"
+      fi
+    fi
+
+    # Try to find a new patch to try within the current range.
+
+    FIRST_MID=`${REG_NEWMID} ${LATER_THAN} ${EARLIER_THAN}`
+    if [ ${FIRST_MID} -eq 0 ]; then
+
+      # The heuristics in the tool ran out of patches to try next;
+      # let the user handle it from here.+
+      error "build failed for ${TEST_ID}, could not find new candidate"
+    fi
+    msg 1 "using ${FIRST_MID}, between ${LATER_THAN} and ${EARLIER_THAN}"
+  fi
+
+  # Return with a valid LATER value or a new ID to try in FIRST_MID.
+}
+
+# Get the number of a patch within the range.  It's not actually the
+# middle one, but the one that might minimize the number of checks.
+
+get_mid_special() {
+  LOW=$1
+  HIGH=$2
+
+  let DIFF=HIGH-LOW
+  M=1
+  POWER2=1
+  while
+      [ $POWER2 -lt $DIFF ]
+  do
+      let M=POWER2
+      let POWER2=POWER2*2
+  done
+  let MID=LOW+M
+}
+
+# Get the number of the patch in the middle of the range.
+
+get_mid () {
+  LOW=$1
+  HIGH=$2
+
+  let DIFF=HIGH-LOW
+  let M=DIFF/2
+  let MID=LOW+M
+}
+
+# Perform a binary search on patch identifiers within the range
+# specified by the arguments.
+
+search_patches () {
+  LOW=$1
+  HIGH=$2
+
+  # Get an identifier within the range.  The user can override the
+  # initial mid patch if it is known to have problems, e.g., if a
+  # build fails for that patch.
+
+  if [ ${FIRST_MID} -ne 0 ]; then
+    MID=${FIRST_MID}
+    FIRST_MID=0
+    let DIFF=HIGH-LOW
+  else
+    get_mid $LOW $HIGH
+  fi
+
+  while [ ${DIFF} -gt 1 ]; do
+    TEST_ID="${MID}"
+
+    # Test it.
+
+    process_patch ${TEST_ID}
+
+    # FIRST_MID being set is a signal that the build failed and we
+    # should start over again.
+    
+    test ${FIRST_MID} -ne 0 && return
+
+    # Narrow the search based on the outcome of testing TEST_ID.
+
+    if [ ${LATER} -eq 1 ]; then
+      msg 1 "search patches later than ${TEST_ID}"
+      LATER_THAN=${TEST_ID}
+      let LOW=MID
+    else
+      msg 1 "search patches earlier than ${TEST_ID}"
+      EARLIER_THAN=${TEST_ID}
+      let HIGH=MID
+    fi
+
+    get_mid $LOW $HIGH
+  done
+}
+
+########################################################################
+# Main program (so to speak)
+########################################################################
+
+# The error function uses this.
+
+VALID_RANGE=0
+
+# Process the configuration file.
+
+if [ $# != 1 ]; then
+  echo Usage: $0 config_file
+  exit 1
+fi
+
+CONFIG=${1}
+if [ ! -f ${CONFIG} ]; then
+  error "configuration file ${CONFIG} does not exist"
+fi
+
+# OK, the config file exists.  Source it, make sure required parameters
+# are defined and their files exist, and give default values to optional
+# parameters.
+
+. ${CONFIG}
+
+test "x${REG_UPDATE}" = "x" && error "REG_UPDATE is not defined"
+test "x${REG_BUILD}" = "x" && error "REG_BUILD is not defined"
+test "x${REG_TEST}" = "x" && error "REG_TEST is not defined"
+test -x ${REG_TEST} || error "REG_TEST is not an executable file"
+test "x${SKIP_LOW}" = "x" && SKIP_LOW=0
+test "x${SKIP_HIGH}" = "x" && SKIP_HIGH=0
+test "x${VERBOSITY}" = "x" && VERBOSITY=0
+test "x${REG_FINISH}" = "x" && REG_FINISH=true
+test "x${REG_REPORT}" = "x" && REG_REPORT=true
+
+msg 2 "LOW_PATCH  = ${LOW_PATCH}"
+msg 2 "HIGH_PATCH = ${HIGH_PATCH}"
+msg 2 "REG_UPDATE = ${REG_UPDATE}"
+msg 2 "REG_BUILD  = ${REG_BUILD}"
+msg 2 "REG_TEST   = ${REG_TEST}"
+msg 2 "REG_NEWMID = ${REG_NEWMID}"
+msg 2 "SKIP_LOW   = ${SKIP_LOW}"
+msg 2 "SKIP_HIGH  = ${SKIP_HIGH}"
+msg 2 "FIRST_MID  = ${FIRST_MID}"
+msg 2 "VERBOSITY  = ${VERBOSITY}"
+
+# If REG_NEWMID was defined, assume that we're skipping known failures
+# and adding to the list for new failures.  If the list of failures
+# doesn't exist, create it.  We use a different flag, SKIP_FAILURES,
+# to make it easier to separate the flag from REG_NEWMID if we want
+# to change the usage later.
+
+if [ "x${REG_NEWMID}" != "x" ]; then
+  touch ${REG_FAILLIST}
+  SKIP_FAILURES=1
+else
+  SKIP_FAILURES=0
+fi
+
+# If FIRST_MID was defined, make sure it's in the range.
+
+if [ "x${FIRST_MID}" != "x" ]; then
+  test ${FIRST_MID} -le ${LOW_PATCH}  && \
+    error "FIRST_MID id is lower than LOW_PATCH"
+  test ${FIRST_MID} -ge ${HIGH_PATCH} && \
+    error "FIRST_MID is higher than HIGH_PATCH"
+else
+  FIRST_MID=0
+fi 
+
+# Keep track of the bounds of the range where the test behavior changes.
+
+LATER_THAN=${LOW_PATCH}
+EARLIER_THAN=${HIGH_PATCH}
+LATER=1
+
+msg 1 "LATER_THAN   = ${LATER_THAN}"
+msg 1 "EARLIER_THAN = ${EARLIER_THAN}"
+
+# Verify that the range isn't backwards.
+
+test ${LOW_PATCH} -lt ${HIGH_PATCH} || \
+  error "patch identifier range is backwards"
+
+# Verify that the first and last patches in the range get the results we
+# expect.  If not, quit, because any of several things could be wrong.
+
+if [ ${SKIP_HIGH} -eq 0 ]; then
+  process_patch ${EARLIER_THAN}
+  test ${LATER} -ne 0 && \
+    error "unexpected result for high patch ${EARLIER_THAN}"
+  msg 1 "result for high patch ${EARLIER_THAN} is as expected"
+fi
+
+if [ ${SKIP_LOW} -eq 0 ]; then
+  process_patch ${LATER_THAN}
+  test ${LATER} -ne 1 && \
+    error "unexpected result for low patch ${LATER_THAN}"
+  msg 1 "result for low patch ${LATER_THAN} is as expected"
+fi
+
+# Search within the range, now that we know that the end points are valid.
+# If the build failed then FIRST_MID is set to a new patch to try.
+
+VALID_RANGE=1
+while true; do
+  search_patches ${LATER_THAN} ${EARLIER_THAN}
+  test ${FIRST_MID} -eq 0 && break
+done
+
+# Report where the test behavior changes.
+
+echo "Test result changes with id ${EARLIER_THAN}"
+${REG_REPORT} ${EARLIER_THAN}
+
+# Invoke the optional script to verify the result and report additional
+# information about changes between the two patches.
+
+${REG_FINISH} ${LATER_THAN} ${EARLIER_THAN}

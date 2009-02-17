@@ -1,0 +1,88 @@
+#! /bin/sh
+
+# Convert one kind of changeset identifier to another.
+#
+# Usage: gcc-svn-ids -f from_kind -t to_kind id
+#
+# Where from_kind is one of:
+#   index   index into the changeset list used by the reghunt tools
+#   rev     is the Subversion revision name
+# and to_kind is one of:
+#   index   index into the changeset list used by the reghunt tools
+#   rev     is the Subversion revision name
+#   date    expanded UTC date string
+#   branch  the branch, or "trunk" for mainline
+#   author  the person who checked in the patch
+
+errmsg () {
+  echo $1 1>&2
+}
+
+usage () {
+  echo 'cvs_ids -f kind -t kind id' 1>&2
+  echo '   where from_kind is index or rev' 1>&2
+  echo '   and to_kind is index, rev, date, author, or branch' 1>&2
+  echo "error"
+  exit 1
+}
+
+if [ "x${REG_CHANGESET_LIST}" = "x" ]; then
+  errmsg "REG_CHANGESET_LIST is not defined"
+  echo "error"
+  exit 1
+fi
+
+if [ ! -f ${REG_CHANGESET_LIST} ]; then
+  errmsg "changeset list ${REG_CHANGESET_LIST} does not exist"
+  echo "error"
+  exit 1
+fi
+
+# Use a shorter name here.
+LIST=${REG_CHANGESET_LIST}
+
+while getopts "f:t:" ARG; do
+  case ${ARG} in
+  f) FROM_KIND="${OPTARG}";;
+  t) TO_KIND="${OPTARG}";;
+  h) usage;;
+  *) errmsg "unrecognized option: ${ARG}";
+     usage;;
+  esac
+done
+shift `expr ${OPTIND} - 1`
+
+if [ $# -eq 0 ]; then
+  errmsg "too few arguments, ID is missing"
+  usage
+fi
+if [ $# -gt 1 ]; then
+  errmsg "unexpected arguments: $*"
+  usage
+fi
+ID="$1"
+
+case ${FROM_KIND} in
+index)  LINE="`awk -F '|' -v id="${ID}" '{if ($1 == id) print }' < ${LIST}`";;
+rev)    LINE="`awk -F '|' -v id="${ID}" '{if ($2 == id) print }' < ${LIST}`";;
+*)      errmsg "unrecognized FROM kind: ${FROM_KIND}";
+        usage;;
+esac
+
+if [ "x${LINE}" = "x" ]; then
+  errmsg "no entry found for ${FROM_KIND} = ${ID}"
+  echo "error"
+  exit 1
+fi
+
+case ${TO_KIND} in
+index)  TO_ID="`echo ${LINE} | awk -F '|' '{ print $1 }'`";;
+rev)    TO_ID="`echo ${LINE} | awk -F '|' '{ print $2 }'`";;
+author) TO_ID="`echo ${LINE} | awk -F '|' '{ print $3 }'`";;
+date)   TO_ID="`echo ${LINE} | awk -F '|' '{ print $4 }'`";;
+branch) TO_ID="`echo ${LINE} | awk -F '|' '{ print $5 }'`";;
+*)      errmsg "unrecognized TO kind: ${TO_KIND}";
+        usage;;
+esac
+
+echo ${TO_ID}

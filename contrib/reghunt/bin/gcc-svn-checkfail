@@ -1,0 +1,9 @@
+#! /bin/sh
+
+# Given an identifier that is an index into the current patch list,
+# return 1 if the corresponding SVN revision number is in the list of
+# known failures, 0 otherwise.
+
+ID=$1
+REV=`${REG_IDS} -f index -t rev ${ID}`
+grep -q "^${REV}$" ${REG_FAILLIST}
