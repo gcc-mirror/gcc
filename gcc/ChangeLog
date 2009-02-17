@@ -1,3 +1,9 @@
+2009-02-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39207
+	* tree-ssa-structalias.c (find_what_p_points_to): Do not emit
+	strict-aliasing warnings for pointers pointing to NULL.
+
 2009-02-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35446
