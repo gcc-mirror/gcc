@@ -1896,6 +1896,14 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
 	return chrec_convert (chrec_type (chrec), op, NULL);
       }
 
+    case BIT_NOT_EXPR:
+      {
+	/* Handle ~X as -1 - X.  */
+	tree op = initialize_matrix_A (A, TREE_OPERAND (chrec, 0), index, mult);
+	return chrec_fold_op (MINUS_EXPR, chrec_type (chrec),
+			      build_int_cst (TREE_TYPE (chrec), -1), op);
+      }
+
     case INTEGER_CST:
       return chrec;
 

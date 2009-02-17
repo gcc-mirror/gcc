@@ -1712,6 +1712,15 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 				 fold_convert (type, integer_minus_one_node));
       break;
 
+    case BIT_NOT_EXPR:
+      /* Handle ~X as -1 - X.  */
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      res = chrec_fold_minus (type,
+			      fold_convert (type, integer_minus_one_node),
+			      chrec1);
+      break;
+
     case MULT_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
@@ -2214,6 +2223,24 @@ instantiate_scev_1 (basic_block instantiate_below,
 	return fold_convert (TREE_TYPE (chrec), op0);
 
       return chrec_convert (TREE_TYPE (chrec), op0, NULL);
+
+    case BIT_NOT_EXPR:
+      /* Handle ~X as -1 - X.  */
+      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				fold_conversions, cache, size_expr);
+      if (op0 == chrec_dont_know)
+	return chrec_dont_know;
+
+      if (TREE_OPERAND (chrec, 0) != op0)
+	{
+	  op0 = chrec_convert (type, op0, NULL);
+	  chrec = chrec_fold_minus (type,
+				    fold_convert (type,
+						  integer_minus_one_node),
+				    op0);
+	}
+      return chrec;
 
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
