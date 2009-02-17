@@ -1,3 +1,9 @@
+2009-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35446
+	* gcc.dg/noncompile/init-5.c: New test.
+	* gcc.dg/init-bad-4.c: Adjust expected errors.
+
 2009-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/struct/w_prof_single_str_global.c: Mask return value.
