@@ -4935,6 +4935,7 @@ find_what_p_points_to (tree p)
 	    {
 	      pi->pt_vars = NULL;
 	      if (pruned > 0
+		  && !pi->pt_null
 		  && pi->is_dereferenced
 		  && warn_strict_aliasing > 0
 		  && !SSA_NAME_IS_DEFAULT_DEF (p))
