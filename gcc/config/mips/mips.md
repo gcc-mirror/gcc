@@ -404,7 +404,7 @@
 	 (eq_attr "move_type" "andi") (const_string "logical")
 
 	 ;; These types of move are always split.
-	 (eq_attr "move_type" "constN,lui_movf,shift_shift")
+	 (eq_attr "move_type" "constN,shift_shift")
 	   (const_string "multi")
 
 	 ;; These types of move are split for doubleword modes only.
@@ -413,6 +413,8 @@
 	   (const_string "multi")
 	 (eq_attr "move_type" "move") (const_string "move")
 	 (eq_attr "move_type" "const") (const_string "const")]
+	;; We classify "lui_movf" as "unknown" rather than "multi"
+	;; because we don't split it.  FIXME: we should split instead.
 	(const_string "unknown")))
 
 ;; Mode for conversion types (fcvt)
