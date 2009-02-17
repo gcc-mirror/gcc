@@ -1,0 +1,26 @@
+#! /bin/sh
+
+ID=$1
+
+LOGID=`printf "%04d" ${ID}`
+LOG=${BUGID}.${LOGID}.out
+MSGID="bug ${BUGID}, id ${ID}"
+ASM=${BUGID}.${LOGID}.s
+
+$REG_TEST_COMPILER $REG_OPTS $REG_TESTCASE > ${LOG} 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "`date`  compilation failed unexpectedly for ${MSGID}"
+    exit REG_ERROR
+fi
+
+cp ${BUGID}.s $ASM
+
+grep -q abort $ASM
+if [ $? -eq 0 ]; then
+    echo "`date`  abort call exists for ${MSGID}"
+    exit $REG_FAIL
+fi
+
+echo "`date`  no call to abort for ${MSGID}"
+exit $REG_PASS

@@ -1,0 +1,78 @@
+Mon Feb 16 17:23:03 PST 2009  LATER_THAN   = 1
+Mon Feb 16 17:23:03 PST 2009  EARLIER_THAN = 340
+Mon Feb 16 17:23:03 PST 2009  svn checkout begun for id 340, rev 116730
+Mon Feb 16 17:26:27 PST 2009  svn checkout done
+Mon Feb 16 17:26:28 PST 2009  building cc1 for id 340
+Mon Feb 16 17:30:29 PST 2009  build completed
+Mon Feb 16 17:30:29 PST 2009  bogus warning detected for bug 29478, id 340
+Mon Feb 16 17:30:29 PST 2009  result for high patch 340 is as expected
+Mon Feb 16 17:30:29 PST 2009  svn update begun for id 1, rev 115866
+Mon Feb 16 17:30:55 PST 2009  svn update done
+Mon Feb 16 17:30:56 PST 2009  building cc1 for id 1
+Mon Feb 16 17:34:41 PST 2009  build completed
+Mon Feb 16 17:34:41 PST 2009  no bogus warning for bug 29478, id 1
+Mon Feb 16 17:34:41 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 17:34:41 PST 2009  svn update begun for id 170, rev 116321
+Mon Feb 16 17:34:55 PST 2009  svn update done
+Mon Feb 16 17:34:56 PST 2009  building cc1 for id 170
+Mon Feb 16 17:38:40 PST 2009  build completed
+Mon Feb 16 17:38:40 PST 2009  no bogus warning for bug 29478, id 170
+Mon Feb 16 17:38:40 PST 2009  search patches later than 170
+Mon Feb 16 17:38:41 PST 2009  svn update begun for id 255, rev 116554
+Mon Feb 16 17:38:52 PST 2009  svn update done
+Mon Feb 16 17:38:53 PST 2009  building cc1 for id 255
+Mon Feb 16 17:42:38 PST 2009  build completed
+Mon Feb 16 17:42:38 PST 2009  bogus warning detected for bug 29478, id 255
+Mon Feb 16 17:42:38 PST 2009  search patches earlier than 255
+Mon Feb 16 17:42:38 PST 2009  svn update begun for id 212, rev 116411
+Mon Feb 16 17:42:45 PST 2009  svn update done
+Mon Feb 16 17:42:46 PST 2009  building cc1 for id 212
+Mon Feb 16 17:46:30 PST 2009  build completed
+Mon Feb 16 17:46:30 PST 2009  no bogus warning for bug 29478, id 212
+Mon Feb 16 17:46:30 PST 2009  search patches later than 212
+Mon Feb 16 17:46:30 PST 2009  svn update begun for id 233, rev 116479
+Mon Feb 16 17:46:40 PST 2009  svn update done
+Mon Feb 16 17:46:41 PST 2009  building cc1 for id 233
+Mon Feb 16 17:50:26 PST 2009  build completed
+Mon Feb 16 17:50:26 PST 2009  bogus warning detected for bug 29478, id 233
+Mon Feb 16 17:50:26 PST 2009  search patches earlier than 233
+Mon Feb 16 17:50:26 PST 2009  svn update begun for id 222, rev 116463
+Mon Feb 16 17:50:31 PST 2009  svn update done
+Mon Feb 16 17:50:32 PST 2009  building cc1 for id 222
+Mon Feb 16 17:54:17 PST 2009  build completed
+Mon Feb 16 17:54:17 PST 2009  bogus warning detected for bug 29478, id 222
+Mon Feb 16 17:54:17 PST 2009  search patches earlier than 222
+Mon Feb 16 17:54:17 PST 2009  svn update begun for id 217, rev 116435
+Mon Feb 16 17:54:23 PST 2009  svn update done
+Mon Feb 16 17:54:23 PST 2009  building cc1 for id 217
+Mon Feb 16 17:58:07 PST 2009  build completed
+Mon Feb 16 17:58:07 PST 2009  bogus warning detected for bug 29478, id 217
+Mon Feb 16 17:58:07 PST 2009  search patches earlier than 217
+Mon Feb 16 17:58:08 PST 2009  svn update begun for id 214, rev 116424
+Mon Feb 16 17:58:13 PST 2009  svn update done
+Mon Feb 16 17:58:13 PST 2009  building cc1 for id 214
+Mon Feb 16 18:01:59 PST 2009  build completed
+Mon Feb 16 18:01:59 PST 2009  bogus warning detected for bug 29478, id 214
+Mon Feb 16 18:01:59 PST 2009  search patches earlier than 214
+Mon Feb 16 18:01:59 PST 2009  svn update begun for id 213, rev 116415
+Mon Feb 16 18:02:05 PST 2009  svn update done
+Mon Feb 16 18:02:05 PST 2009  building cc1 for id 213
+Mon Feb 16 18:05:51 PST 2009  build completed
+Mon Feb 16 18:05:51 PST 2009  no bogus warning for bug 29478, id 213
+Mon Feb 16 18:05:51 PST 2009  search patches later than 213
+Test result changes with id 214
+------------------------------------------------------------------------
+r116424 | amylaar | 2006-08-25 18:51:57 +0000 (Fri, 25 Aug 2006) | 8 lines
+
+gcc:
+	PR tree-optimization/16876
+	* c-typeck.c (c_convert_parm_for_inlining): Don't take early
+	exit if PARM doesn't match VALUE.
+
+testsuite:
+	gcc.dg/noncompile/pr16876.c: New test.
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=116424
+    r116424 | amylaar | 2006-08-25 18:51:57 +0000 (Fri, 25 Aug 2006)

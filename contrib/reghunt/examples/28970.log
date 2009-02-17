@@ -1,0 +1,80 @@
+Mon Feb 16 14:31:45 PST 2009  LATER_THAN   = 1
+Mon Feb 16 14:31:45 PST 2009  EARLIER_THAN = 324
+Mon Feb 16 14:31:45 PST 2009  svn checkout begun for id 324, rev 100249
+Mon Feb 16 14:35:14 PST 2009  svn checkout done
+Mon Feb 16 14:35:15 PST 2009  building GCC (c) for id 324
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35: 29069 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 14:38:53 PST 2009  test run aborted for bug 28970, id 324
+Mon Feb 16 14:38:53 PST 2009  result for high patch 324 is as expected
+Mon Feb 16 14:38:53 PST 2009  svn update begun for id 1, rev 99687
+Mon Feb 16 14:39:14 PST 2009  svn update done
+Mon Feb 16 14:39:15 PST 2009  building GCC (c) for id 1
+Mon Feb 16 14:42:48 PST 2009  test ran successfully for bug 28970, id 1
+Mon Feb 16 14:42:48 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 14:42:48 PST 2009  svn update begun for id 162, rev 99950
+Mon Feb 16 14:42:58 PST 2009  svn update done
+Mon Feb 16 14:42:59 PST 2009  building GCC (c) for id 162
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35: 30641 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 14:46:36 PST 2009  test run aborted for bug 28970, id 162
+Mon Feb 16 14:46:36 PST 2009  search patches earlier than 162
+Mon Feb 16 14:46:36 PST 2009  svn update begun for id 81, rev 99823
+Mon Feb 16 14:46:49 PST 2009  svn update done
+Mon Feb 16 14:46:50 PST 2009  building GCC (c) for id 81
+Mon Feb 16 14:50:23 PST 2009  test ran successfully for bug 28970, id 81
+Mon Feb 16 14:50:23 PST 2009  search patches later than 81
+Mon Feb 16 14:50:23 PST 2009  svn update begun for id 121, rev 99880
+Mon Feb 16 14:50:29 PST 2009  svn update done
+Mon Feb 16 14:50:30 PST 2009  building GCC (c) for id 121
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35: 32209 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 14:54:03 PST 2009  test run aborted for bug 28970, id 121
+Mon Feb 16 14:54:03 PST 2009  search patches earlier than 121
+Mon Feb 16 14:54:03 PST 2009  svn update begun for id 101, rev 99846
+Mon Feb 16 14:54:10 PST 2009  svn update done
+Mon Feb 16 14:54:10 PST 2009  building GCC (c) for id 101
+Mon Feb 16 14:57:41 PST 2009  test ran successfully for bug 28970, id 101
+Mon Feb 16 14:57:41 PST 2009  search patches later than 101
+Mon Feb 16 14:57:42 PST 2009  svn update begun for id 111, rev 99856
+Mon Feb 16 14:57:49 PST 2009  svn update done
+Mon Feb 16 14:57:49 PST 2009  building GCC (c) for id 111
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35:  1320 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 15:01:27 PST 2009  test run aborted for bug 28970, id 111
+Mon Feb 16 15:01:27 PST 2009  search patches earlier than 111
+Mon Feb 16 15:01:27 PST 2009  svn update begun for id 106, rev 99851
+Mon Feb 16 15:01:33 PST 2009  svn update done
+Mon Feb 16 15:01:33 PST 2009  building GCC (c) for id 106
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35:  2076 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 15:05:04 PST 2009  test run aborted for bug 28970, id 106
+Mon Feb 16 15:05:04 PST 2009  search patches earlier than 106
+Mon Feb 16 15:05:05 PST 2009  svn update begun for id 103, rev 99848
+Mon Feb 16 15:05:08 PST 2009  svn update done
+Mon Feb 16 15:05:08 PST 2009  building GCC (c) for id 103
+Mon Feb 16 15:08:40 PST 2009  test ran successfully for bug 28970, id 103
+Mon Feb 16 15:08:40 PST 2009  search patches later than 103
+Mon Feb 16 15:08:40 PST 2009  svn update begun for id 104, rev 99849
+Mon Feb 16 15:08:44 PST 2009  svn update done
+Mon Feb 16 15:08:44 PST 2009  building GCC (c) for id 104
+Mon Feb 16 15:12:17 PST 2009  test ran successfully for bug 28970, id 104
+Mon Feb 16 15:12:17 PST 2009  search patches later than 104
+Mon Feb 16 15:12:17 PST 2009  svn update begun for id 105, rev 99850
+Mon Feb 16 15:12:21 PST 2009  svn update done
+Mon Feb 16 15:12:21 PST 2009  building GCC (c) for id 105
+/home/janis/reghunt/bin/gcc-test-wrong-code: line 35:  4458 Aborted                 ./a.out >> ${LOG} 2>&1
+Mon Feb 16 15:15:54 PST 2009  test run aborted for bug 28970, id 105
+Mon Feb 16 15:15:54 PST 2009  search patches earlier than 105
+Test result changes with id 105
+------------------------------------------------------------------------
+r99850 | rakdver | 2005-05-17 19:55:53 +0000 (Tue, 17 May 2005) | 9 lines
+
+	* tree-cfg.c (tree_can_merge_blocks_p): Allow phi nodes in the
+	merged block.
+	(replace_uses_by): New function.
+	(tree_merge_blocks): Eliminate the phi nodes in the merged block.
+	* tree-flow.h (fold_stmt_inplace): Declare.
+	* tree-ssa-ccp.c (fold_stmt_inplace): New function.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Update dominance
+	info after cfg cleanup.
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=99850
+    r99850 | rakdver | 2005-05-17 19:55:53 +0000 (Tue, 17 May 2005)

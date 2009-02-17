@@ -1,0 +1,75 @@
+# Define environment variables used by regression-hunting scripts.
+
+# Change this if using a local copy of the repository.
+export REG_SVN_REPO=svn://gcc.gnu.org/svn/gcc
+REG_TOP=${HOME}/reghunt
+export REG_BIN=${REG_TOP}/bin
+export PATH=${REG_BIN}:${PATH}
+
+# The build scripts look for these variables if they are defined.
+#export BINUTILS=/opt/gcc-nightly/binutils-2.19/bin
+#export GMP=/opt/gcc-nightly/gmp-mpfr
+export REG_DEFAULT_BUILD=${REG_DEFAULT_BUILD-powerpc-linux}
+
+export REG_SRCDIR=${REG_TOP}/src
+export REG_BUILDDIR=${REG_TOP}/build
+export REG_OBJDIR=${REG_BUILDDIR}/obj
+export REG_PREFIX=${REG_TOP}/install
+export REG_IDS=${REG_BIN}/gcc-svn-ids
+export REG_REPORT=${REG_BIN}/gcc-svn-report
+export REG_CLEANUP=${REG_CLEANUP-$REG_BIN/gcc-cleanup}
+export REG_STOP=${REG_SRCDIR}/STOP
+
+# Used for parallelism in make commands; very system-dependent, this is POSIX.
+export REG_MAKE_J="-j `getconf _NPROCESSORS_ONLN`"
+
+export BRANCHPOINT_4_3="2008-02-18"
+export BRANCHPOINT_4_2="2006-10-20"
+export BRANCHPOINT_4_1="2005-11-18"
+export BRANCHPOINT_4_0="2005-02-25"
+export BRANCHPOINT_3_4="2004-01-16"
+export BRANCHPOINT_3_3="2002-12-13"
+export BRANCHPOINT_3_1="2002-02-25"
+export BRANCHPOINT_3_0="2001-02-12"
+export BRANCHPOINT_2_95="1999-05-18"
+
+export RELEASE_4_3_3="2009-01-24"
+export RELEASE_4_3_2="2008-08-27"
+export RELEASE_4_3_1="2008-06-06"
+export RELEASE_4_3_0="2008-03-05"
+
+export RELEASE_4_2_4="2008-05-19"
+export RELEASE_4_2_3="2008-02-01"
+export RELEASE_4_2_2="2007-10-07"
+export RELEASE_4_2_1="2007-07-19"
+export RELEASE_4_2_0="2007-05-13"
+
+export RELEASE_4_1_2="2007-02-13"
+export RELEASE_4_1_1="2006-05-24"
+export RELEASE_4_1_0="2006-02-28"
+
+export RELEASE_4_0_4="2007-01-31"
+export RELEASE_4_0_3="2006-03-10"
+export RELEASE_4_0_2="2005-09-28"
+export RELEASE_4_0_1="2005-07-07"
+export RELEASE_4_0_0="2005-04-20"
+
+export RELEASE=3_4_6="2006-03-06"
+export RELEASE=3_4_5="2005-11-30"
+export RELEASE_3_4_4="2005-05-18"
+export RELEASE_3_4_3="2004-11-04"
+export RELEASE_3_4_2="2004-09-06"
+export RELEASE_3_4_1="2004-07-01"
+export RELEASE_3_4_0="2004-04-18"
+
+export RELEASE_3_3_6="2005-05-03"
+export RELEASE_3_3_5="2004-09-30"
+export RELEASE_3_3_4="2004-05-31"
+export RELEASE_3_3_3="2004-02-14"
+export RELEASE_3_3_2="2003-10-17"
+export RELEASE_3_3_1="2003-08-08"
+export RELEASE_3_3_0="2003-05-13"
+export RELEASE_3_3="${RELEASE_3_3_0}"
+
+# Merge of the new C++ parser into mainline was revision 60560 on 2002-12-28
+# Merge of the ssa-branch into mainline was revision 81764 on 2004-05-13

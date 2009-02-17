@@ -1,0 +1,129 @@
+Mon Feb 16 18:06:01 PST 2009  LATER_THAN   = 1
+Mon Feb 16 18:06:01 PST 2009  EARLIER_THAN = 623
+Mon Feb 16 18:06:01 PST 2009  svn checkout begun for id 623, rev 77257
+Mon Feb 16 18:08:50 PST 2009  svn checkout done
+Mon Feb 16 18:08:51 PST 2009  building cc1plus for id 623
+Mon Feb 16 18:14:43 PST 2009  build completed
+Mon Feb 16 18:14:43 PST 2009  compilation failed for bug 29906a, id 623
+Mon Feb 16 18:14:43 PST 2009  result for high patch 623 is as expected
+Mon Feb 16 18:14:43 PST 2009  svn update begun for id 1, rev 75951
+Mon Feb 16 18:15:05 PST 2009  svn update done
+Mon Feb 16 18:15:06 PST 2009  building cc1plus for id 1
+Mon Feb 16 18:20:58 PST 2009  build completed
+Mon Feb 16 18:20:58 PST 2009  test compiled successfully for bug 29906a, id 1
+Mon Feb 16 18:20:58 PST 2009  result for low patch 1 is as expected
+Mon Feb 16 18:20:58 PST 2009  svn update begun for id 312, rev 76600
+Mon Feb 16 18:21:09 PST 2009  svn update done
+Mon Feb 16 18:21:10 PST 2009  building cc1plus for id 312
+Mon Feb 16 18:27:03 PST 2009  build completed
+Mon Feb 16 18:27:03 PST 2009  test compiled successfully for bug 29906a, id 312
+Mon Feb 16 18:27:03 PST 2009  search patches later than 312
+Mon Feb 16 18:27:03 PST 2009  svn update begun for id 467, rev 76934
+Mon Feb 16 18:27:12 PST 2009  svn update done
+Mon Feb 16 18:27:13 PST 2009  building cc1plus for id 467
+Mon Feb 16 18:33:05 PST 2009  build completed
+Mon Feb 16 18:33:05 PST 2009  compilation failed for bug 29906a, id 467
+Mon Feb 16 18:33:05 PST 2009  search patches earlier than 467
+Mon Feb 16 18:33:06 PST 2009  svn update begun for id 389, rev 76747
+Mon Feb 16 18:33:14 PST 2009  svn update done
+Mon Feb 16 18:33:15 PST 2009  building cc1plus for id 389
+Mon Feb 16 18:39:07 PST 2009  build completed
+Mon Feb 16 18:39:07 PST 2009  compilation failed for bug 29906a, id 389
+Mon Feb 16 18:39:07 PST 2009  search patches earlier than 389
+Mon Feb 16 18:39:07 PST 2009  svn update begun for id 350, rev 76666
+Mon Feb 16 18:39:14 PST 2009  svn update done
+Mon Feb 16 18:39:14 PST 2009  building cc1plus for id 350
+Mon Feb 16 18:45:07 PST 2009  build completed
+Mon Feb 16 18:45:08 PST 2009  test compiled successfully for bug 29906a, id 350
+Mon Feb 16 18:45:08 PST 2009  search patches later than 350
+Mon Feb 16 18:45:08 PST 2009  svn update begun for id 369, rev 76707
+Mon Feb 16 18:45:12 PST 2009  svn update done
+Mon Feb 16 18:45:12 PST 2009  building cc1plus for id 369
+Mon Feb 16 18:51:05 PST 2009  build completed
+Mon Feb 16 18:51:05 PST 2009  test compiled successfully for bug 29906a, id 369
+Mon Feb 16 18:51:05 PST 2009  search patches later than 369
+Mon Feb 16 18:51:05 PST 2009  svn update begun for id 379, rev 76734
+Mon Feb 16 18:51:10 PST 2009  svn update done
+Mon Feb 16 18:51:10 PST 2009  building cc1plus for id 379
+Mon Feb 16 18:57:02 PST 2009  build completed
+Mon Feb 16 18:57:03 PST 2009  test compiled successfully for bug 29906a, id 379
+Mon Feb 16 18:57:03 PST 2009  search patches later than 379
+Mon Feb 16 18:57:03 PST 2009  svn update begun for id 384, rev 76739
+Mon Feb 16 18:57:07 PST 2009  svn update done
+Mon Feb 16 18:57:07 PST 2009  building cc1plus for id 384
+Mon Feb 16 19:03:02 PST 2009  build completed
+Mon Feb 16 19:03:02 PST 2009  test compiled successfully for bug 29906a, id 384
+Mon Feb 16 19:03:02 PST 2009  search patches later than 384
+Mon Feb 16 19:03:02 PST 2009  svn update begun for id 386, rev 76741
+Mon Feb 16 19:03:08 PST 2009  svn update done
+Mon Feb 16 19:03:08 PST 2009  building cc1plus for id 386
+Mon Feb 16 19:09:00 PST 2009  build completed
+Mon Feb 16 19:09:00 PST 2009  test compiled successfully for bug 29906a, id 386
+Mon Feb 16 19:09:00 PST 2009  search patches later than 386
+Mon Feb 16 19:09:00 PST 2009  svn update begun for id 387, rev 76742
+Mon Feb 16 19:09:04 PST 2009  svn update done
+Mon Feb 16 19:09:04 PST 2009  building cc1plus for id 387
+Mon Feb 16 19:14:57 PST 2009  build completed
+Mon Feb 16 19:14:58 PST 2009  test compiled successfully for bug 29906a, id 387
+Mon Feb 16 19:14:58 PST 2009  search patches later than 387
+Mon Feb 16 19:14:58 PST 2009  svn update begun for id 388, rev 76746
+Mon Feb 16 19:15:02 PST 2009  svn update done
+Mon Feb 16 19:15:02 PST 2009  building cc1plus for id 388
+Mon Feb 16 19:20:55 PST 2009  build completed
+Mon Feb 16 19:20:56 PST 2009  compilation failed for bug 29906a, id 388
+Mon Feb 16 19:20:56 PST 2009  search patches earlier than 388
+Test result changes with id 388
+------------------------------------------------------------------------
+r76746 | dpatel | 2004-01-27 20:36:02 +0000 (Tue, 27 Jan 2004) | 47 lines
+
+
+2004-01-27  Devang Patel  <dpatel@apple.com>
+
+        * Makefile.in (dwarf2out.o): Depend on input.h
+        * dbxout.c (dbx_debug_hooks): Add new empty hook for
+        imported_module_or_decl.
+        (xcoff_debug_hooks): Same.
+        * sdbout.c (sdb_debug_hooks): Same.
+        * vmsdbgout.c (vmsdbg_debug_hooks): Same.
+        * debug.c (do_nothing_debug_hooks): Same.
+        (debug_nothing_tree_tree): New function.
+        * debug.h (gcc_debug_hooks): New hook, imported_module_or_decl.
+        * dwarf2out.c: Include input.h.
+        (dwarf2_debug_hooks): Add new hook for imported_module_or_decl.
+        (remove_child_TAG): New function.
+        (dwarf_tag_name): Handle DW_TAG_imported_module.
+        (gen_subprogram_die): Equate decl number to declaration die. Do not
+        remove all children dies while reusing declaration die for definition.
+        Instead, selectively remove only formal parameters.
+        (gen_variable_die): Equate variable decl to declaration die.
+        (gen_field_die): Equate field decl to line number.
+        (force_namespace_die): Replace it with ...
+        (force_decl_die): ... this.
+        (force_type_die): New function.
+        (setup_namespace_context): Replace use of force_namespace_die() with
+        force_decl_die().
+        (gen_namespace_die): Same.
+        (dwarf2out_imported_module_or_decl): New function.
+
+        testsuite:
+
+        * g++.dg/debug/namespace1.C: New test.
+
+        cp:
+
+        * name-lookup.c: Include "debug.h"
+        (do_namespace_alias): Invoke debug_hooks to emit debug info
+        for namespace alias.
+        (do_local_using_decl): Invoke debug_hooks to emit debug info
+        for using decl.
+        (do_class_using_decl): Same.
+        (do_toplevel_using_decl): Same.
+        (do_using_directive): Same.
+        (cp_emit_debug_info_for_using): New function.
+        * Make-lang.in (cp/parser.o): Depend on debug.h
+        (cp/name-lookup.o): Same.
+
+------------------------------------------------------------------------
+
+    http://gcc.gnu.org/viewcvs?view=rev&rev=76746
+    r76746 | dpatel | 2004-01-27 20:36:02 +0000 (Tue, 27 Jan 2004)

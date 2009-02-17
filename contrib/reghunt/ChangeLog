@@ -1,5 +1,38 @@
 2009-02-17  Janis Johnson  <janis187@us.ibm.com>
 
+	* examples: New directory.
+	* examples/gcc-svn-env: New.
+	* examples/reg-watch: New.
+	* examples/reg-watch.awk: New.
+	* examples/common.config: New.
+	* examples/testall: New.
+	* examples/28970.config: New.
+	* examples/28970.list: New.
+	* examples/28970.c: New.
+	* examples/28970.log: New.
+	* examples/29106.config: New.
+	* examples/29106.list: New.
+	* examples/29106.test: New.
+	* examples/29106.cc: New.
+	* examples/29106.log: New.
+	* examples/29478.config: New.
+	* examples/29478.list: New.
+	* examples/29478.c: New.
+	* examples/29478.log: New.
+	* examples/29906a.config: New.
+	* examples/29906a.list: New.
+	* examples/29906a.cc: New.
+	* examples/29906a.log: New.
+	* examples/29906b.config: New.
+	* examples/29906b.list: New.
+	* examples/29906b.cc: New.
+	* examples/29906b.log: New.
+	* examples/30643.config: New.
+	* examples/30643.list: New.
+	* examples/30643.c: New.
+	* examples/30643.test: New.
+	* examples/30643.log: New.
+
 	* bin: New directory.
 	* bin/reg-hunt: New.
 	* bin/reg_periodic: New.
