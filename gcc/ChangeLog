@@ -1,3 +1,9 @@
+2009-02-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39204
+	* tree-ssa-pre.c (phi_translate_1): Lookup the value-number
+	of the PHI arg.
+
 2009-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/soft-fp/double.h: Update from glibc CVS.
