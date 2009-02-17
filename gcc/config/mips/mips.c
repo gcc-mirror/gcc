@@ -13984,6 +13984,27 @@ mips_override_options (void)
   if (TARGET_DSPR2)
     target_flags |= MASK_DSP;
 
+  /* .eh_frame addresses should be the same width as a C pointer.
+     Most MIPS ABIs support only one pointer size, so the assembler
+     will usually know exactly how big an .eh_frame address is.
+
+     Unfortunately, this is not true of the 64-bit EABI.  The ABI was
+     originally defined to use 64-bit pointers (i.e. it is LP64), and
+     this is still the default mode.  However, we also support an n32-like
+     ILP32 mode, which is selected by -mlong32.  The problem is that the
+     assembler has traditionally not had an -mlong option, so it has
+     traditionally not known whether we're using the ILP32 or LP64 form.
+
+     As it happens, gas versions up to and including 2.19 use _32-bit_
+     addresses for EABI64 .cfi_* directives.  This is wrong for the
+     default LP64 mode, so we can't use the directives by default.
+     Moreover, since gas's current behavior is at odds with gcc's
+     default behavior, it seems unwise to rely on future versions
+     of gas behaving the same way.  We therefore avoid using .cfi
+     directives for -mlong32 as well.  */
+  if (mips_abi == ABI_EABI && TARGET_64BIT)
+    flag_dwarf2_cfi_asm = 0;
+
   mips_init_print_operand_punct ();
 
   /* Set up array to map GCC register number to debug register number.
