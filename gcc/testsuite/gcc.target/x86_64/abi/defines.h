@@ -1,6 +1,9 @@
 #ifndef DEFINED_DEFINES_H
 #define DEFINED_DEFINES_H
 
+/* Get __m64 and __m128. */
+#include <xmmintrin.h>
+
 typedef unsigned long ulong;
 typedef long double ldouble;
 
@@ -18,7 +21,7 @@ typedef long double ldouble;
 /* #define CHECK_FLOAT128 */
 
 /* Scalar types __m64 and __m128.  */
-/* #define CHECK_M64_M128 */
+#define CHECK_M64_M128
 
 /* Returning of complex type.  */
 #define CHECK_COMPLEX

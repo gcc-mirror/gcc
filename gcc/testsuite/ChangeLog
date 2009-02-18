@@ -1,3 +1,43 @@
+2009-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39082
+	* g++.dg/compat/struct-layout-1_generate.c (dg_options): Add
+	-Wno-abi for x86.
+	* gcc.dg/compat/struct-layout-1_generate.c (dg_options): Likewise.
+
+	* gcc.target/i386/pr39082-1.c: New.
+
+	* gcc.target/x86_64/abi/abi-x86_64.exp (additional_flags): Add
+	-Wno-abi.
+
+	* gcc.target/x86_64/abi/args.h (XMM_T): Add _m64 and _m128 if
+	CHECK_M64_M128 is defined.
+	(check_f_arguments): Add "do".
+	(check_vector_arguments): New.
+	(check_m64_arguments): Likewise.
+	(check_m128_arguments): Likewise.
+
+	* gcc.target/x86_64/abi/defines.h: Include <xmmintrin.h>.
+	(CHECK_M64_M128): Define.
+
+	* gcc.target/x86_64/abi/test_m64m128_returning.c: New.  Based
+	on abitest.
+	* gcc.target/x86_64/abi/test_passing_m64m128.c: Likewise.
+
+	* gcc.target/x86_64/abi/test_passing_structs.c: Define __m128
+	tests only if CHECK_M64_M128 is defined.
+
+	* gcc.target/x86_64/abi/test_passing_structs.c (m128_struct): New.
+	(m128_2_struct): Likewise.
+	(check_struct_passing5): Likewise.
+	(check_struct_passing6): Likewise.
+	(main): Test struct with __m128 if CHECK_M64_M128 is defined.
+
+	* gcc.target/x86_64/abi/test_passing_unions.c (un4): New.
+	(un5): Likewise.
+	(check_union_passing4): Likewise.
+	(main): Test union with __m128 if CHECK_M64_M128 is defined.
+
 2009-02-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35447

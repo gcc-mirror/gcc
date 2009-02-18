@@ -25,6 +25,10 @@ typedef union {
   long _long[2];
   int _int[4];
   unsigned long _ulong[2];
+#ifdef CHECK_M64_M128
+  __m64 _m64[2];
+  __m128 _m128[1];
+#endif
 } XMM_T;
 
 typedef union {
@@ -111,7 +115,7 @@ extern unsigned int num_iregs, num_fregs;
   clear_int_hardware_registers
 
 /* TODO: Do the checking.  */
-#define check_f_arguments(T) { \
+#define check_f_arguments(T) do { \
   assert (num_fregs <= 0 || fregs.xmm0._ ## T [0] == xmm_regs[0]._ ## T [0]); \
   assert (num_fregs <= 1 || fregs.xmm1._ ## T [0] == xmm_regs[1]._ ## T [0]); \
   assert (num_fregs <= 2 || fregs.xmm2._ ## T [0] == xmm_regs[2]._ ## T [0]); \
@@ -124,6 +128,44 @@ extern unsigned int num_iregs, num_fregs;
 
 #define check_float_arguments check_f_arguments(float)
 #define check_double_arguments check_f_arguments(double)
+
+#define check_vector_arguments(T,O) do { \
+  assert (num_fregs <= 0 \
+	  || memcmp (((char *) &fregs.xmm0) + (O), \
+		     &xmm_regs[0], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 1 \
+	  || memcmp (((char *) &fregs.xmm1) + (O), \
+		     &xmm_regs[1], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 2 \
+	  || memcmp (((char *) &fregs.xmm2) + (O), \
+		     &xmm_regs[2], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 3 \
+	  || memcmp (((char *) &fregs.xmm3) + (O), \
+		     &xmm_regs[3], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 4 \
+	  || memcmp (((char *) &fregs.xmm4) + (O), \
+		     &xmm_regs[4], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 5 \
+	  || memcmp (((char *) &fregs.xmm5) + (O), \
+		     &xmm_regs[5], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 6 \
+	  || memcmp (((char *) &fregs.xmm6) + (O), \
+		     &xmm_regs[6], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  assert (num_fregs <= 7 \
+	  || memcmp (((char *) &fregs.xmm7) + (O), \
+		     &xmm_regs[7], \
+		     sizeof (__ ## T) - (O)) == 0); \
+  } while (0)
+
+#define check_m64_arguments check_vector_arguments(m64, 0)
+#define check_m128_arguments check_vector_arguments(m128, 0)
 
 /* ldoubles are not passed in registers */
 #define check_ldouble_arguments

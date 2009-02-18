@@ -29,7 +29,7 @@ if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
 
 torture-init
 set-torture-options $C_TORTURE_OPTIONS
-set additional_flags "-W -Wall"
+set additional_flags "-W -Wall -Wno-abi"
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     if {[runtest_file_p $runtests $src]} {
