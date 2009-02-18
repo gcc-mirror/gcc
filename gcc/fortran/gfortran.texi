@@ -181,6 +181,7 @@ Part I: Invoking GNU Fortran
 
 Part II: Language Reference
 * Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
+* Compiler Characteristics::      KIND type parameters supported.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
@@ -904,6 +905,65 @@ support is based on the latest draft, available from
 @url{http://www.nag.co.uk/sc22wg5/}. However, as the final standard may
 differ from the drafts, no guarantee of backward compatibility can be
 made and you should only use it for experimental purposes.
+
+
+@c ---------------------------------------------------------------------
+@c Compiler Characteristics
+@c ---------------------------------------------------------------------
+
+@node Compiler Characteristics
+@chapter Compiler Characteristics
+
+@c TODO: Formulate this introduction a little more generally once
+@c there is more here than KIND type parameters.
+
+This chapter describes certain characteristics of the GNU Fortran compiler,
+namely the KIND type parameter values supported.
+
+@menu
+* KIND Type Parameters::
+@end menu
+
+
+@node KIND Type Parameters
+@section KIND Type Parameters
+@cindex kind
+
+The @code{KIND} type parameters supported by GNU Fortran for the primitive
+data types are:
+
+@table @code
+
+@item INTEGER
+1, 2, 4, 8*, 16*, default: 4 (1)
+
+@item LOGICAL
+1, 2, 4, 8*, 16*, default: 4 (1)
+
+@item REAL
+4, 8, 10**, 16**, default: 4 (2)
+
+@item COMPLEX
+4, 8, 10**, 16**, default: 4 (2)
+
+@item CHARACTER
+1, 4, default: 1
+
+@end table
+
+@noindent
+* = not available on all systems @*
+** = not available on all systems; additionally 10 and 16 are never
+available at the same time @*
+(1) Unless -fdefault-integer-8 is used @*
+(2) Unless -fdefault-real-8 is used
+
+@noindent
+The @code{KIND} value matches the storage size in bytes, except for
+@code{COMPLEX} where the storage size is twice as much (or both real and
+imaginary part are a real value of the given size).  It is recommended to use
+the @code{SELECT_*_KIND} intrinsics instead of the concrete values.
+
 
 @c ---------------------------------------------------------------------
 @c Extensions
