@@ -1298,7 +1298,7 @@ tree structure; back ends must look at the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL}.  If the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL} is not the same as the function currently
 being processed, and neither @code{DECL_EXTERNAL} nor
-@code{DECL_STATIC} hold, then the reference is to a local variable in
+@code{TREE_STATIC} hold, then the reference is to a local variable in
 a containing function, and the back end must take appropriate action.
 
 @menu
