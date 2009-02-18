@@ -2585,20 +2585,18 @@ print_call_name (pretty_printer *buffer, const_tree node)
   if (TREE_CODE (op0) == NON_LVALUE_EXPR)
     op0 = TREE_OPERAND (op0, 0);
 
- again:
   switch (TREE_CODE (op0))
     {
     case VAR_DECL:
     case PARM_DECL:
-    case FUNCTION_DECL:
       dump_function_name (buffer, op0);
       break;
 
     case ADDR_EXPR:
     case INDIRECT_REF:
     case NOP_EXPR:
-      op0 = TREE_OPERAND (op0, 0);
-      goto again;
+      dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, 0, false);
+      break;
 
     case COND_EXPR:
       pp_string (buffer, "(");
