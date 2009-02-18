@@ -7333,15 +7333,12 @@ C pointers (@code{sizeof(void *)}).
 
 @item @emph{Example}:
 The following example demonstrates the use of @code{MALLOC} and
-@code{FREE} with Cray pointers. This example is intended to run on
-32-bit systems, where the default integer kind is suitable to store
-pointers; on 64-bit systems, ptr_x would need to be declared as
-@code{integer(kind=8)}.
+@code{FREE} with Cray pointers.
 
 @smallexample
 program test_malloc
+  implicit none
   integer i
-  integer ptr_x
   real*8 x(*), z
   pointer(ptr_x,x)
 
