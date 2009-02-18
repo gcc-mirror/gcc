@@ -1008,6 +1008,7 @@ sra_walk_gimple_assign (gimple stmt, gimple_stmt_iterator *gsi,
 	 we'd been passed the constructor directly.  Invoke INIT.  */
       else if (TREE_CODE (rhs) == VAR_DECL
 	       && TREE_STATIC (rhs)
+	       && !DECL_EXTERNAL (rhs)
 	       && TREE_READONLY (rhs)
 	       && targetm.binds_local_p (rhs))
 	fns->init (lhs_elt, DECL_INITIAL (rhs), gsi);

@@ -1195,9 +1195,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
  (CONSTANT_CLASS_P (EXPR) && TREE_OVERFLOW (EXPR))
 
 /* In a VAR_DECL, FUNCTION_DECL, NAMESPACE_DECL or TYPE_DECL,
-   nonzero means name is to be accessible from outside this module.
+   nonzero means name is to be accessible from outside this translation unit.
    In an IDENTIFIER_NODE, nonzero means an external declaration
-   accessible from outside this module was previously seen
+   accessible from outside this translation unit was previously seen
    for this name in an inner scope.  */
 #define TREE_PUBLIC(NODE) ((NODE)->base.public_flag)
 
