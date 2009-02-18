@@ -6211,10 +6211,13 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 #else
   const enum machine_mode mode = type_natural_mode (type, NULL);
  
-  if (TARGET_64BIT_MS_ABI)
-    return return_in_memory_ms_64 (type, mode);
-  else if (TARGET_64BIT)
-    return return_in_memory_64 (type, mode);
+  if (TARGET_64BIT)
+    {
+      if (ix86_function_type_abi (fntype) == MS_ABI)
+	return return_in_memory_ms_64 (type, mode);
+      else
+	return return_in_memory_64 (type, mode);
+    }
   else
     return return_in_memory_32 (type, mode);
 #endif
