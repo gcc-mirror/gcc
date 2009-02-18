@@ -1966,7 +1966,7 @@ Do not assume @samp{inline} for functions defined inside a class scope.
 functions will have linkage like inline functions; they just won't be
 inlined by default.
 
-@item -Wabi @r{(C++ and Objective-C++ only)}
+@item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
 @opindex Wabi
 @opindex Wno-abi
 Warn when G++ generates code that is probably not compatible with the
@@ -2063,6 +2063,27 @@ void f(typename Q<int>::X) @{@}
 
 @noindent
 Instantiations of these templates may be mangled incorrectly.
+
+@end itemize
+
+It also warns psABI related changes.  The known psABI changes at this
+point include:
+
+@itemize @bullet
+
+@item
+For SYSV/x86-64, when passing union with long double, it is changed to
+pass in memory as specified in psABI.  For example:
+
+@smallexample
+union U @{
+  long double ld;
+  int i;
+@};
+@end smallexample
+
+@noindent
+@code{union U} will always be passed in memory.
 
 @end itemize
 

@@ -1,3 +1,16 @@
+2009-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39082
+	* c.opt (Wabi): Support C and ObjC.
+	(Wpsabi): New.
+
+	* c-opts.c (c_common_handle_option): Handle OPT_Wabi.
+
+	* config/i386/i386.c (classify_argument): Warn once about the ABI
+	change when passing union with long double.
+
+	* doc/invoke.texi: Update -Wabi for warning psABI changes.
+
 2009-02-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/35447
