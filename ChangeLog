@@ -1,3 +1,7 @@
+2009-02-18  Bingfeng Mei  <bmei@broadcom.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2009-02-05  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.tpl (stage_last): Define $r and $s before using
