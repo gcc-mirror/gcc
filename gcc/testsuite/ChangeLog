@@ -1,3 +1,38 @@
+2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/callabi/callabi.exp: Moved to ...
+	* gcc.target/x86_64/abi/callabi/callabi.exp: Here.  Only run
+	in 64bit mode.
+
+	* gcc.target/x86_64/abi/callabi/func-1.c: Don't check target.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/pr38891.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c: Likewise.
+
+	* gcc.dg/callabi/callabi.h: Moved to ...
+	* gcc.target/x86_64/abi/callabi/callabi.h: Here.
+
+	* gcc.dg/callabi/func-1.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/func-1.c: Here.
+
+	* gcc.dg/callabi/func-indirect.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/func-indirect.c: Here.
+
+	* gcc.dg/callabi/pr38891.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/pr38891.c: Here.
+
+	* gcc.dg/callabi/vaarg-1.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c: Here.
+
+	* gcc.dg/callabi/vaarg-2.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c: Here.
+
+	* gcc.dg/callabi/vaarg-3.c: Moved to ...
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c: Here.
+
 2009-02-17  Xuepeng Guo  <xuepeng.guo@intel.com>
 
 	PR target/38891
