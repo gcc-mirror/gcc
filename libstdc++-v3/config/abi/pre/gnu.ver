@@ -902,8 +902,8 @@ GLIBCXX_3.4.11 {
     _ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEE;
 
     # system_error
-    _ZSt15system_category;
-    _ZSt16generic_category;
+    _ZSt15system_categoryv;
+    _ZSt16generic_categoryv;
 
     _ZNKSt10error_code23default_error_conditionEv;
     _ZNKSt14error_category23default_error_conditionEi;
@@ -923,7 +923,6 @@ GLIBCXX_3.4.11 {
 
     _ZNKSt4hashISt10error_codeEclES0_;
 
-    _ZSt20__throw_system_errorPKc;
     _ZSt20__throw_system_errori;
 
     # char16_t and char32_t

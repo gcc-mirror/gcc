@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@ void test01()
   // 1
   std::error_condition e1;
   VERIFY( e1.value() == 0 );
-  VERIFY( e1.category() == std::generic_category );
+  VERIFY( e1.category() == std::generic_category() );
 
   // 2
   const __gnu_test::test_category cat;
@@ -39,7 +39,7 @@ void test01()
   // 3
   std::error_condition e3(std::errc::operation_not_supported);
   VERIFY( e3.value() == int(std::errc::operation_not_supported) );
-  VERIFY( e3.category() == std::generic_category );
+  VERIFY( e3.category() == std::generic_category() );
 }
 
 int main()

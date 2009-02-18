@@ -89,7 +89,7 @@ namespace std
     };
 
     // Simple base type that the templatized, derived class containing
-    // an abitrary functor can be converted to and called.
+    // an arbitrary functor can be converted to and called.
     struct _Impl_base
     {
       __shared_base_type	_M_this_ptr;
