@@ -1,3 +1,9 @@
+2009-02-18  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR testsuite/38166
+	* g++.dg/ext/visibility/class1.C: Revert revision 122348
+	and skip on Darwin.
+
 2009-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR target/39179
