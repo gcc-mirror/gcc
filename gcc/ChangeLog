@@ -1,3 +1,9 @@
+2009-02-17  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	PR target/38891
+	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Move the hunk of
+	initialization for MS_ABI prior to the hunk of !TARGET_MMX.
+
 2009-02-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39082

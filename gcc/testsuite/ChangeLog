@@ -1,3 +1,12 @@
+2009-02-17  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	PR target/38891
+	* gcc.dg/callabi/pr38891.c: New.
+
+2009-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/callabi/callabi.exp: New.
+
 2009-02-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39082

@@ -937,6 +937,17 @@ do {									\
 	fixed_regs[j] = 1;						\
 	call_used_regs[j] = 1;						\
       }									\
+    if (TARGET_64BIT							\
+        && ((cfun && cfun->machine->call_abi == MS_ABI)			\
+            || (!cfun && DEFAULT_ABI == MS_ABI)))			\
+      {									\
+        int i;								\
+        call_used_regs[4 /*RSI*/] = 0;                                  \
+        call_used_regs[5 /*RDI*/] = 0;                                  \
+	for (i = 0; i < 8; i++)						\
+	  call_used_regs[45+i] = 0;					\
+	call_used_regs[27] = call_used_regs[28] = 0;			\
+      }									\
     if (! TARGET_MMX)							\
       {									\
 	int i;								\
@@ -967,17 +978,6 @@ do {									\
 	  reg_names[i] = "";						\
 	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
 	  reg_names[i] = "";						\
-      }									\
-    if (TARGET_64BIT							\
-        && ((cfun && cfun->machine->call_abi == MS_ABI)			\
-            || (!cfun && DEFAULT_ABI == MS_ABI)))			\
-      {									\
-        int i;								\
-        call_used_regs[4 /*RSI*/] = 0;                                  \
-        call_used_regs[5 /*RDI*/] = 0;                                  \
-	for (i = 0; i < 8; i++)						\
-	  call_used_regs[45+i] = 0;					\
-	call_used_regs[27] = call_used_regs[28] = 0;			\
       }									\
   } while (0)
 
