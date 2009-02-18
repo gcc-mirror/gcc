@@ -626,7 +626,7 @@ struct gcc_target
   bool (* in_small_data_p) (const_tree);
 
   /* True if EXP names an object for which name resolution must resolve
-     to the current module.  */
+     to the current executable or shared library.  */
   bool (* binds_local_p) (const_tree);
 
   /* Modify and return the identifier of a DECL's external name,

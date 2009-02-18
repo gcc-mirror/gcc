@@ -9,5 +9,5 @@ short offsets[1] = {
 // This ensures that we get a dump whether or not the bug is present.
 void fn() { }
 
-// { dg-final { scan-tree-dump-not "initialization"  "gimple" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump-not "initialization"  "gimple" } }
 // { dg-final { cleanup-tree-dump "gimple" } }

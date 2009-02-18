@@ -44,7 +44,23 @@ cxx_print_decl (FILE *file, tree node, int indent)
   if (!CODE_CONTAINS_STRUCT (TREE_CODE (node), TS_DECL_COMMON)
       || !DECL_LANG_SPECIFIC (node))
     return;
+  if (TREE_CODE (node) == FUNCTION_DECL)
+    {
+      int flags = TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
+	|TFF_FUNCTION_DEFAULT_ARGUMENTS|TFF_EXCEPTION_SPECIFICATION ;
+      indent_to (file, indent + 3);
+      fprintf (file, " full-name \"%s\"", decl_as_string (node, flags));
+    }
+  else if (TREE_CODE (node) == TEMPLATE_DECL)
+    {
+      indent_to (file, indent + 3);
+      fprintf (file, " full-name \"%s\"",
+	       decl_as_string (node, TFF_TEMPLATE_HEADER));
+    }
+
   indent_to (file, indent + 3);
+  if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
+    fprintf (file, " not-really-extern");
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
     fprintf (file, " pending-inline-info %p",
@@ -81,6 +97,9 @@ cxx_print_type (FILE *file, tree node, int indent)
 
     case RECORD_TYPE:
     case UNION_TYPE:
+      indent_to (file, indent + 4);
+      fprintf (file, "full-name \"%s\"",
+	       type_as_string (node, TFF_CLASS_KEY_OR_ENUM));
       break;
 
     default:
@@ -97,7 +116,7 @@ cxx_print_type (FILE *file, tree node, int indent)
   indent_to (file, indent + 3);
 
   if (TYPE_NEEDS_CONSTRUCTING (node))
-    fputs ( "needs-constructor", file);
+    fputs ( " needs-constructor", file);
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (node))
     fputs (" needs-destructor", file);
   if (TYPE_HAS_DEFAULT_CONSTRUCTOR (node))

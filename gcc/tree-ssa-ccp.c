@@ -287,10 +287,11 @@ get_symbol_constant_value (tree sym)
 	 have zero as the initializer if they may not be
 	 overridden at link or run time.  */
       if (!val
+	  && !DECL_EXTERNAL (sym)
 	  && targetm.binds_local_p (sym)
           && (INTEGRAL_TYPE_P (TREE_TYPE (sym))
 	       || SCALAR_FLOAT_TYPE_P (TREE_TYPE (sym))))
-        return fold_convert (TREE_TYPE (sym), integer_zero_node);
+	return fold_convert (TREE_TYPE (sym), integer_zero_node);
     }
 
   return NULL_TREE;

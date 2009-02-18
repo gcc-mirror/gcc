@@ -4316,12 +4316,10 @@ initializer_constant_valid_p (tree value, tree endtype)
 	}
 
       /* Support narrowing pointer differences.  */
-      if (TREE_CODE (value) == POINTER_PLUS_EXPR)
-	{
-	  ret = narrowing_initializer_constant_valid_p (value, endtype);
-	  if (ret != NULL_TREE)
-	    return ret;
-	}
+      ret = narrowing_initializer_constant_valid_p (value, endtype);
+      if (ret != NULL_TREE)
+	return ret;
+
       break;
 
     case MINUS_EXPR:

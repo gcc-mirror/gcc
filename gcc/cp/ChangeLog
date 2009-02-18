@@ -1,3 +1,7 @@
+2009-02-18  Jason Merrill  <jason@redhat.com>
+
+	* cfns.h: Tweak pathname for cfns.gperf.
+
 2009-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39070
