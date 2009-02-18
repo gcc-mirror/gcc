@@ -1,5 +1,8 @@
 2009-02-18  Jack Howarth <howarth@bromo.med.uc.edu>
 
+	PR testsuite/38165
+	* g++.dg/pubtypes.C: Adopt Radar 4535968 fix to testcase.
+
 	PR testsuite/38166
 	* g++.dg/ext/visibility/class1.C: Revert revision 122348
 	and skip on Darwin.
