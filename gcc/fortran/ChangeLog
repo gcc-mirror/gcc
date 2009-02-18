@@ -1,3 +1,7 @@
+2009-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi (MALLOC): Make example more portable.
+
 2009-02-13  Mikael Morin  <mikael.morin@tele2.fr>
 
 	PR fortran/38259
