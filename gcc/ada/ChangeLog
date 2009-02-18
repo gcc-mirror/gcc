@@ -1,9 +1,13 @@
+2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc-interface/misc.c (gnat_post_options): Turn off warn_psabi.
+
 2009-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/deftarg.c: Remove.
 
 2009-02-10  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (enum alias_set_op): New enumeration.
 	(copy_alias_set): Rename into...
@@ -138,7 +142,7 @@
 	* gcc-interface/Makefile.in (*86-solaris2*): Support x86_64 multilib.
 
 2008-11-07  Bechir Zalila  <bechir.zalila@gmail.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/34289
 	* lib.ads: (Enable_Switch_Storing): Declare.
