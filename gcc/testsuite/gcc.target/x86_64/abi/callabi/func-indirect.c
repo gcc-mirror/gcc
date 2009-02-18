@@ -1,7 +1,7 @@
 /* Test for cross x86_64<->w64 abi standard calls via variable.
 */
 /* Origin: Kai Tietz <kai.tietz@onevision.com> */
-/* { dg-do run { target { x86_64-*-* } } } */
+/* { dg-do run } */
 /* { dg-options "-std=gnu99 -ffast-math" } */
 #include "callabi.h"
 

@@ -19,6 +19,11 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
+if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
+     || [is-effective-target ilp32] } then {
+  return
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

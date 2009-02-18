@@ -1,7 +1,7 @@
 /* Test for cross x86_64<->w64 abi va_list calls.
 */
 /* Origin: Kai Tietz <kai.tietz@onevision.com> */
-/* { dg-do run { target { x86_64-*-* } } } */
+/* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
 #include "callabi.h"
 
