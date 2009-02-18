@@ -1,3 +1,9 @@
+2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39224
+	* config/i386/i386.c (ix86_return_in_memory): Properly check
+	ABI.
+
 2009-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR target/39179
