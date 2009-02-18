@@ -1,6 +1,6 @@
 // <system_error> -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -110,15 +110,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   };
 
   // DR 890.
-  extern const error_category& system_category;
-  extern const error_category& generic_category;
+  const error_category& system_category();
+  const error_category& generic_category();
 
   /// error_code
   // Implementation-specific error identification
   struct error_code
   {
     error_code()
-    : _M_value(0), _M_cat(&system_category) { }
+      : _M_value(0), _M_cat(&system_category()) { }
 
     error_code(int __v, const error_category& __cat)
     : _M_value(__v), _M_cat(&__cat) { }
@@ -126,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _ErrorCodeEnum>
       error_code(_ErrorCodeEnum __e,
       typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type* = 0)
-      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category)
+      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category())
       { }
 
     void 
@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     void 
     clear()
-    { assign(0, system_category); }
+    { assign(0, system_category()); }
 
     // DR 804.
     template<typename _ErrorCodeEnum>
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			 error_code&>::type
       operator=(_ErrorCodeEnum __e)
       {
-	assign(static_cast<int>(__e), generic_category);
+	assign(static_cast<int>(__e), generic_category());
 	return *this;
       }
 
@@ -182,7 +182,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 19.4.2.6 non-member functions
   inline error_code
   make_error_code(errc __e)
-  { return error_code(static_cast<int>(__e), generic_category); }
+  { return error_code(static_cast<int>(__e), generic_category()); }
 
   inline bool
   operator<(const error_code& __lhs, const error_code& __rhs)
@@ -202,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Portable error identification
   struct error_condition 
   {
-    error_condition() : _M_value(0), _M_cat(&generic_category) { }
+    error_condition() : _M_value(0), _M_cat(&generic_category()) { }
 
     error_condition(int __v, const error_category& __cat)     
     : _M_value(__v), _M_cat(&__cat) { }
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       error_condition(_ErrorConditionEnum __e,
 		      typename enable_if<is_error_condition_enum
 		                      <_ErrorConditionEnum>::value>::type* = 0)
-      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category) { }
+	: _M_value(static_cast<int>(__e)), _M_cat(&generic_category()) { }
 
     void
     assign(int __v, const error_category& __cat)
@@ -226,13 +226,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			 <_ErrorConditionEnum>::value, error_condition&>::type
       operator=(_ErrorConditionEnum __e)
       {
-	assign(static_cast<int>(__e), generic_category);
+	assign(static_cast<int>(__e), generic_category());
 	return *this;
       }
 
     void 
     clear()
-    { assign(0, generic_category); }
+    { assign(0, generic_category()); }
 
     // 19.4.3.4 observers
     int 
@@ -264,7 +264,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 19.4.3.6 non-member functions
   inline error_condition
   make_error_condition(errc __e)
-  { return error_condition(static_cast<int>(__e), generic_category); }
+  { return error_condition(static_cast<int>(__e), generic_category()); }
 
   inline bool 
   operator<(const error_condition& __lhs, const error_condition& __rhs)

@@ -493,9 +493,9 @@ namespace std
       lock()
       {
 	if (!_M_device)
-	  __throw_system_error((int)errc::operation_not_permitted);
+	  __throw_system_error(int(errc::operation_not_permitted));
 	else if (_M_owns)
-	  __throw_system_error((int)errc::resource_deadlock_would_occur);
+	  __throw_system_error(int(errc::resource_deadlock_would_occur));
 	else
 	  {
 	    _M_device->lock();
@@ -507,9 +507,9 @@ namespace std
       try_lock()
       {
 	if (!_M_device)
-	  __throw_system_error((int)errc::operation_not_permitted);
+	  __throw_system_error(int(errc::operation_not_permitted));
 	else if (_M_owns)
-	  __throw_system_error((int)errc::resource_deadlock_would_occur);
+	  __throw_system_error(int(errc::resource_deadlock_would_occur));
 	else
 	  {
 	    _M_owns = _M_device->try_lock();
@@ -522,9 +522,9 @@ namespace std
 	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
 	{
 	  if (!_M_device)
-	    __throw_system_error((int)errc::operation_not_permitted);
+	    __throw_system_error(int(errc::operation_not_permitted));
 	  else if (_M_owns)
-	    __throw_system_error((int)errc::resource_deadlock_would_occur);
+	    __throw_system_error(int(errc::resource_deadlock_would_occur));
 	  else
 	    {
 	      _M_owns = _M_device->try_lock_until(__atime);
@@ -537,9 +537,9 @@ namespace std
 	try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
 	{
 	  if (!_M_device)
-	    __throw_system_error((int)errc::operation_not_permitted);
+	    __throw_system_error(int(errc::operation_not_permitted));
 	  else if (_M_owns)
-	    __throw_system_error((int)errc::resource_deadlock_would_occur);
+	    __throw_system_error(int(errc::resource_deadlock_would_occur));
 	  else
 	    {
 	      _M_owns = _M_device->try_lock_for(__rtime);
@@ -551,7 +551,7 @@ namespace std
       unlock()
       {
 	if (!_M_owns)
-	  __throw_system_error((int)errc::operation_not_permitted);
+	  __throw_system_error(int(errc::operation_not_permitted));
 	else if (_M_device)
 	  {
 	    _M_device->unlock();

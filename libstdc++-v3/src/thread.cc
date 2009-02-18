@@ -62,10 +62,7 @@ namespace std
     int __e = EINVAL;
 
     if (_M_id != id())
-    {
-      void* __r = 0;
-      __e = __gthread_join(_M_id._M_thread, &__r);
-    }
+      __e = __gthread_join(_M_id._M_thread, NULL);
 
     if (__e)
       __throw_system_error(__e);

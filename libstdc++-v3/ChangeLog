@@ -1,3 +1,21 @@
+2009-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/system_error (system_category): To system_category().
+	(generic_category): To generic_category. DR 890.
+	* src/system_error.cc: Define.
+	* include/bits/functexcept.h: Only one __throw_system_error.
+	* src/functexcept.cc: Same.
+	* include/std/mutex: Fixup for changes above.
+	* testsuite/19_diagnostics/error_condition/cons/1.cc: Same.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Same.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Same.
+	* config/abi/pre/gnu.ver: Clean up exports.
+
+2009-02-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/thread: Fix typo.
+	* src/thread.cc (thread::join): Use NULL.
+
 2009-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/39168
