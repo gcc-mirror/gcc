@@ -2161,7 +2161,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   /* First make the assembler name(s) global if appropriate.  */
   sect = get_variable_section (decl, false);
   if (TREE_PUBLIC (decl)
-      && DECL_NAME (decl)
       && (sect->common.flags & SECTION_COMMON) == 0)
     globalize_decl (decl);
 

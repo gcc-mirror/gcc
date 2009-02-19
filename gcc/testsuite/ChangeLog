@@ -1,3 +1,16 @@
+2009-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39188
+	* g++.dg/abi/pr39188-1a.C: New.
+	* g++.dg/abi/pr39188-1b.C: Likewise.
+	* g++.dg/abi/pr39188-1.h: Likewise.
+	* g++.dg/abi/pr39188-2a.C: Likewise.
+	* g++.dg/abi/pr39188-2b.C: Likewise.
+	* g++.dg/abi/pr39188-2.h: Likewise.
+	* g++.dg/abi/pr39188-3a.C: Likewise.
+	* g++.dg/abi/pr39188-3b.C: Likewise.
+	* g++.dg/abi/pr39188-3.h: Likewise.
+
 2009-02-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/38483
