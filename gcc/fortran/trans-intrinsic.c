@@ -917,11 +917,16 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
       cond4 = fold_build2 (LT_EXPR, boolean_type_node, stride,
 			   gfc_index_zero_node);
-      cond4 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond4, cond2);
 
       if (upper)
 	{
+	  tree cond5;
 	  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond3, cond4);
+
+	  cond5 = fold_build2 (EQ_EXPR, boolean_type_node, gfc_index_one_node, lbound);
+	  cond5 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond4, cond5);
+
+	  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond, cond5);
 
 	  se->expr = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
 				  ubound, gfc_index_zero_node);
