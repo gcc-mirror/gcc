@@ -1469,6 +1469,9 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	  for (;;)
 	    {
 	      c = getc (input);
+	      if (c == '\r')
+	        continue;
+
 	      if (c == '\n' || c == EOF)
 		break;
 
