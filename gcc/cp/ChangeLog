@@ -1,3 +1,8 @@
+2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39219
+	* parser.c (cp_parser_enum_specifier): Apply all attributes.
+
 2009-02-18  Jason Merrill  <jason@redhat.com>
 
 	* cfns.h: Tweak pathname for cfns.gperf.
