@@ -135,10 +135,18 @@
 #	the value of the __mips_isa_rev macro, or 0 if it isn't defined.
 #
 # For example, "isa_rev>=1" selects a MIPS32 or MIPS64 processor,
-# "isa=4" selects a MIPS IV processor, and so on.  There are also
-# the following special pseudo-options:
+# "isa=4" selects a MIPS IV processor, and so on.
 #
-#   isa=loongson:
+# If certain processor-specific extensions are not applicable to the
+# test you can list them as !CPU in the isa or isa_rev options.  For
+# example, isa=64!octeon enforces MIPS64 while avoiding octeon.  You
+# can also use ! without an ISA value.  For example
+# isa=!octeon!loongson2e disables octeon and loongson2e if otherwise
+# you would compile for one of them.
+#
+# There are also the following special pseudo-options:
+#
+#   isa=loongson
 #	select a Loongson processor
 #
 #   addressing=absolute
@@ -173,6 +181,9 @@
 #	options.  For example, if the feature is present on revision 2
 #	processors and above, try to use "isa_rev>=2" instead of
 #	"-mips32r2" or "-mips64r2".
+#
+#   (6) If you need to disable processor-specific extensions use
+#	isa=!CPU instead of forcing a generic ISA.
 
 # Exit immediately if this isn't a MIPS target.
 if ![istarget mips*-*-*] {
@@ -825,29 +836,49 @@ proc mips-dg-options { args } {
 		set arch "-march=loongson2f"
 	    }
 	} else {
-	    if { ![regexp {^(isa(?:|_rev))(=|<=|>=)([0-9]+)$} $spec \
-		       dummy prop relation value] } {
-		error "Unrecognized isa specification: $isa_spec"
+	    # With ! and = the ISA value is optional.
+	    if { ![regexp {^(isa(?:|_rev))(=|<=|>=)([0-9]*)((?:![^!]+)*)$} \
+		       $spec dummy prop relation value nocpus]
+		 || ($value eq ""
+		     && ($relation ne "="
+			 || $nocpus eq ""))} {
+		error "Unrecognized isa specification: $spec"
 	    }
-	    set current [mips_arch_info $arch $prop]
-	    if { ($current < $value && ![string equal $relation "<="])
-		 || ($current > $value && ![string equal $relation ">="])
-		 || ([mips_have_test_option_p options "-mgp64"]
-		     && [mips_32bit_arch_p $arch]) } {
-		# The current setting is out of range; it cannot
-		# possibly be used.  Find a replacement that can.
-		if { [string equal $prop "isa"] } {
-		    set arch "-mips$value"
-		} elseif { $value == 0 } {
-		    set arch "-mips4"
-		} else {
-		    if { [mips_have_option_p options "-mgp32"] } {
-			set arch "-mips32"
+	    if { $value ne "" } {
+		set current [mips_arch_info $arch $prop]
+		if { ($current < $value && ![string equal $relation "<="])
+		     || ($current > $value && ![string equal $relation ">="])
+		     || ([mips_have_test_option_p options "-mgp64"]
+			 && [mips_32bit_arch_p $arch]) } {
+		    # The current setting is out of range; it cannot
+		    # possibly be used.  Find a replacement that can.
+		    if { [string equal $prop "isa"] } {
+			set arch "-mips$value"
+		    } elseif { $value == 0 } {
+			set arch "-mips4"
 		    } else {
-			set arch "-mips64"
+			if { [mips_have_option_p options "-mgp32"] } {
+			    set arch "-mips32"
+			} else {
+			    set arch "-mips64"
+			}
+			if { $value > 1 } {
+			    append arch "r$value"
+			}
 		    }
-		    if { $value > 1 } {
-			append arch "r$value"
+		}
+	    }
+	    # If we haven't switched to a generic ISA based on the
+	    # isa* value, do it here if the processor-specific
+	    # extension is not allowed.
+	    if { $nocpus ne ""
+		 && $arch eq [mips_option mips_base_options arch] } {
+		set cpu [regsub -- {-march=} $arch ""]
+		if { [regexp "!$cpu!" "$nocpus!"] } {
+		    set isa_rev [mips_arch_info $arch isa_rev]
+		    set arch "-mips[mips_arch_info $arch isa]"		
+		    if { $isa_rev > 1 } {
+			append arch "r$isa_rev"
 		    }
 		}
 	    }
