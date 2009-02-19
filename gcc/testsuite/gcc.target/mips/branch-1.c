@@ -1,6 +1,8 @@
-/* We should implement these "if" statements using an "andi" instruction
-   followed by a branch on zero.  */
-/* { dg-options "-O2" } */
+/* Octeon targets should use "bbit" instructions for these "if" statements,
+   but we test for "bbit" elsewhere.  On other targets, we should implement
+   the "if" statements using an "andi" instruction followed by a branch
+   on zero.  */
+/* { dg-options "-O2 isa=!octeon" } */
 
 void bar (void);
 NOMIPS16 void f1 (int x) { if (x & 4) bar (); }

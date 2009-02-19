@@ -1,3 +1,15 @@
+2009-02-19  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp: Comment !CPU in the isa* pseudo-options.
+	(mips-dg-options): When matching isa* pseudo-options make
+	'value' optional and accept ! entries.  Use $spec instead of
+	$isa_spec in the isa pseudo-option error message.  Only
+	perform the ISA-range check when 'value' is set.  If arch is
+	matching any CPU in the ! entries switch to its generic ISA.
+	* gcc.target/mips/branch-1.c: Pass isa=!octeon.
+	* gcc.target/mips/dmult-1.c: Pass isa=64!octeon rather than
+	-mips64.
+
 2009-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39175
