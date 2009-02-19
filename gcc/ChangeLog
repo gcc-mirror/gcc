@@ -1,3 +1,10 @@
+2009-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39175
+	* c-common.c (c_determine_visibility): If visibility changed and
+	DECL_RTL has been already set, call make_decl_rtl to update symbol
+	flags.
+
 2009-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39188
