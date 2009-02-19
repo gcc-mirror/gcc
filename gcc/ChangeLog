@@ -1,3 +1,12 @@
+2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39228
+	* config/i386/i386.md (isinfxf2): Split from isinf<mode>2.
+	(UNSPEC_FXAM_MEM): New unspec.
+	(fxam<mode>2_i387_with_temp): New insn and split pattern.
+	(isinf<mode>2): Use MODEF mode iterator.  Force operand[1] through
+	memory using fxam<mode>2_i387_with_temp to remove excess precision.
+
 2009-02-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39207
@@ -5,8 +14,7 @@
 	* tree-ssa-structalias.c (storedanything_id, var_storedanything,
 	storedanything_tree): New.
 	(do_ds_constraint): Simplify ANYTHING shortcutting.  Update
-	the STOREDANYTHING solution if the lhs solution contains
-	ANYTHING.
+	the STOREDANYTHING solution if the lhs solution contains ANYTHING.
 	(build_succ_graph): Add edges from STOREDANYTHING to all
 	non-direct nodes.
 	(init_base_vars): Initialize STOREDANYTHING.
@@ -29,8 +37,7 @@
 2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39224
-	* config/i386/i386.c (ix86_return_in_memory): Properly check
-	ABI.
+	* config/i386/i386.c (ix86_return_in_memory): Properly check ABI.
 
 2009-02-18  Jason Merrill  <jason@redhat.com>
 
@@ -197,8 +204,7 @@
 
 	PR target/39149
 	* config/i386/i386.c (override_options): Correct warning
-	messages for -malign-loops,  -malign-jumps and
-	-malign-functions.
+	messages for -malign-loops,  -malign-jumps and -malign-functions.
 
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -210,8 +216,7 @@
 
 	PR target/39162
 	* config/i386/i386.c (type_natural_mode): Add a new argument.
-	Return the original mode and warn ABI change if vector size
-	is 32byte.
+	Return the original mode and warn ABI change if vector size is 32byte.
 	(function_arg_advance): Updated.
 	(function_arg): Likewise.
 	(ix86_function_value): Likewise.
@@ -290,7 +295,7 @@
 	(TARGET_INIT_LIBFUNCS): Likewise.
 
 	* config/ia64/t-glibc (SHLINB_MAPFILES):
-	Add $(srcdir)/config/ia64/libgcc-glibc.ver,
+	Add $(srcdir)/config/ia64/libgcc-glibc.ver.
 
 2009-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -736,7 +741,7 @@
 	* c-decl.c (pop_scope): Set DECL_EXTERNAL for functions declared
 	inline but never defined.
 
-2009-01-30  Wolfgang Gellerich  <gellerich@de,ibm.com>
+2009-01-30  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.md (*insv<mode>_reg_extimm): Removed.
 	(*insv_h_di_reg_extimm): New insn.
@@ -875,7 +880,7 @@
 	* reload1.c (compute_use_by_pseudos, reload, count_pseudo,
 	count_spilled_pseudo, find_reg, alter_reg, delete_output_reload):
 	Remove flag_ira.
-	(finish_spills): Ditto.  Remove code for !flga_ira.
+	(finish_spills): Ditto.  Remove code for !flag_ira.
 	
 2009-01-29  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
@@ -978,7 +983,8 @@
 2009-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38740
-	* reorg.c (gate_handle_delay_slots): Avoid dbr scheduling if !optimize.
+	* reorg.c (gate_handle_delay_slots): Avoid dbr scheduling
+	if !optimize.
 	* config/mips/mips.c (mips_reorg): Likewise.
 
 2009-01-28  Richard Guenther  <rguenther@suse.de>
@@ -1242,8 +1248,8 @@
 2009-01-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/38758
-	* longlong.h: Update copyright years.  Use soft-fp license
-	notice.  Sync __clz_tab declaration with glibc.
+	* longlong.h: Update copyright years.  Use soft-fp license notice.
+	Sync __clz_tab declaration with glibc.
 
 2009-01-20  Steve Ellcey  <sje@cup.hp.com>
 
