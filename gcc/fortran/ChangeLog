@@ -1,3 +1,8 @@
+2009-02-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	* scanner.c (load_line): At end of line, skip '\r' without setting
+	the truncation flag.
+
 2009-02-18  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.texi: New chapter about compiler characteristics.
