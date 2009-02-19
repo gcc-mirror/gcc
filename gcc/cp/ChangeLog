@@ -1,3 +1,12 @@
+2009-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39188
+	* cp-tree.h (maybe_commonize_var): New.
+
+	* decl.c (maybe_commonize_var): Make it extern.
+
+	* decl2.c (finish_anon_union): Call maybe_commonize_var.
+
 2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39219
