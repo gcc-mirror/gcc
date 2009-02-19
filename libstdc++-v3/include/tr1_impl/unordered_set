@@ -1,6 +1,6 @@
 // TR1 unordered_set -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -164,7 +164,22 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { __x.swap(__y); }
 
 
-  /// class unordered_set
+  /**
+   *  @brief A standard container composed of unique keys (containing
+   *  at most one of each key value) in which the elements' keys are
+   *  the elements themselves.
+   *
+   *  @ingroup containers
+   *  @ingroup unordered_associative_containers
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
+   *  <a href="tables.html#xx">unordered associative container</a>
+   *
+   *  @param  Value  Type of key objects.
+   *  @param  Hash  Hashing function object type, defaults to hash<Value>.
+   *  @param  Pred  Predicate function object type, defaults to equal_to<Value>.
+   *  @param  Alloc  Allocator type, defaults to allocator<Key>.
+   */
   template<class _Value,
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
@@ -229,7 +244,22 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #endif
     };
 
-  /// class unordered_multiset
+  /**
+   *  @brief A standard container composed of equivalent keys
+   *  (possibly containing multiple of each key value) in which the
+   *  elements' keys are the elements themselves.
+   *
+   *  @ingroup containers
+   *  @ingroup unordered_associative_containers
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, and
+   *  <a href="tables.html#xx">unordered associative container</a>
+   *
+   *  @param  Value  Type of key objects.
+   *  @param  Hash  Hashing function object type, defaults to hash<Value>.
+   *  @param  Pred  Predicate function object type, defaults to equal_to<Value>.
+   *  @param  Alloc  Allocator type, defaults to allocator<Key>.
+   */
   template<class _Value,
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,

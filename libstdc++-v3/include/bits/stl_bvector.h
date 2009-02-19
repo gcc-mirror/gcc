@@ -467,8 +467,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  really references and pointers to bool.  See DR96 for details.  @see
    *  vector for function documentation.
    *
-   *  @ingroup Containers
-   *  @ingroup Sequences
+   *  @ingroup containers
+   *  @ingroup sequences
    *
    *  In some terminology a %vector can be described as a dynamic
    *  C-style array, it offers fast and efficient access to individual

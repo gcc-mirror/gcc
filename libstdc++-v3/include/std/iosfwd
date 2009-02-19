@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   class ios_base; 
 
   /** 
-   *  @defgroup s27_2_iosfwd I/O Forward Declarations
+   *  @defgroup io I/O
    *
    *  Nearly all of the I/O classes are parameterized on the type of
    *  characters they read and write.  (The major exception is ios_base at

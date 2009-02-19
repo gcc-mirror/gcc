@@ -587,7 +587,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   /**
    *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
    *
-   *  @ingroup Containers
+   *  @ingroup containers
    *
    *  (Note that %bitset does @e not meet the formal requirements of a
    *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)

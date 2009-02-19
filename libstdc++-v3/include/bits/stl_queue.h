@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -70,8 +70,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  A standard container giving FIFO behavior.
    *
-   *  @ingroup Containers
-   *  @ingroup Sequences
+   *  @ingroup containers
+   *  @ingroup sequences
    *
    *  Meets many of the requirements of a
    *  <a href="tables.html#65">container</a>,
@@ -338,8 +338,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  A standard container automatically sorting its contents.
    *
-   *  @ingroup Containers
-   *  @ingroup Sequences
+   *  @ingroup containers
+   *  @ingroup sequences
    *
    *  This is not a true container, but an @e adaptor.  It holds
    *  another container, and provides a wrapper interface to that
@@ -432,7 +432,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  the copy according to @a x.
        *
        *  For more information on function objects, see the
-       *  documentation on @link s20_3_1_base functor base
+       *  documentation on @link functors functor base
        *  classes@endlink.
        */
 #ifndef __GXX_EXPERIMENTAL_CXX0X__

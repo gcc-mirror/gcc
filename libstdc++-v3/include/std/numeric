@@ -1,6 +1,6 @@
 // <numeric> -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,5 +70,14 @@
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/numeric>
 #endif
+
+/**
+ * @defgroup numerics Numerics
+ *
+ * Components for performing numeric operations. Includes support for
+ * for complex number types, random number generation, numeric
+ * (n-at-a-time) arrays, generalized numeric algorithms, and special
+ * math functions.
+ */
 
 #endif /* _GLIBCXX_NUMERIC */
