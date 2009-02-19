@@ -1,3 +1,12 @@
+2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39228
+	* config/i386/i386.md (isinfxf2): Split from isinf<mode>2.
+	(UNSPEC_FXAM_MEM): New unspec.
+	(fxam<mode>2_i387_with_temp): New insn and split pattern.
+	(isinf<mode>2): Use MODEF mode iterator.  Force operand[1] through
+	memory using fxam<mode>2_i387_with_temp to remove excess precision.
+
 2009-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/soft-fp/double.h: Update from glibc CVS.

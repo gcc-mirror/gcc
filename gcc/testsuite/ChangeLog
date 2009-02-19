@@ -1,3 +1,8 @@
+2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39228
+	* gcc.c-torture/execute/pr39228.c: New test.
+
 2009-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38852
