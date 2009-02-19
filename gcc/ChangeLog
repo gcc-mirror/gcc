@@ -1,3 +1,31 @@
+2009-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39207
+	PR tree-optimization/39074
+	* tree-ssa-structalias.c (storedanything_id, var_storedanything,
+	storedanything_tree): New.
+	(do_ds_constraint): Simplify ANYTHING shortcutting.  Update
+	the STOREDANYTHING solution if the lhs solution contains
+	ANYTHING.
+	(build_succ_graph): Add edges from STOREDANYTHING to all
+	non-direct nodes.
+	(init_base_vars): Initialize STOREDANYTHING.
+	(compute_points_to_sets): Free substitution info after
+	building the succ graph.
+	(ipa_pta_execute): Likewise.
+
+	* tree-ssa-structalias.c (struct variable_info): Add may_have_pointers
+	field.
+	(do_ds_constraint): Do not add to special var or non-pointer
+	field solutions.
+	(type_could_have_pointers): Split out from ...
+	(could_have_pointers): ... here.  For arrays use the element type.
+	(create_variable_info_for): Initialize may_have_pointers.
+	(new_var_info): Likewise.
+	(handle_lhs_call): Make the HEAP variable unknown-sized.
+	(intra_create_variable_infos): Use a type with pointers for
+	PARM_NOALIAS, make it unknown-sized.
+
 2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39224
