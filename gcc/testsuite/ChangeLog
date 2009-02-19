@@ -1,3 +1,7 @@
+2009-02-19  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/execute/20090219-1.c: New.
+
 2009-02-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/mips.exp: Comment !CPU in the isa* pseudo-options.
