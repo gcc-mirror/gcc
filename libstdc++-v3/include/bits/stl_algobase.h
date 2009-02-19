@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -77,6 +77,11 @@
 #include <bits/move.h> // For std::swap and _GLIBCXX_MOVE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @addtogroup algorithms Algorithms
+   * @{
+   */
 
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
   // nutshell, we are partially implementing the resolution of DR 187,
@@ -221,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @brief This does what you think it does.
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
-   *  @param  comp  A @link s20_3_3_comparisons comparison functor@endlink.
+   *  @param  comp  A @link comparison_functors comparison functor@endlink.
    *  @return   The lesser of the parameters.
    *
    *  This will work on temporary expressions, since they are only evaluated
@@ -241,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @brief This does what you think it does.
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
-   *  @param  comp  A @link s20_3_3_comparisons comparison functor@endlink.
+   *  @param  comp  A @link comparison_functors comparison functor@endlink.
    *  @return   The greater of the parameters.
    *
    *  This will work on temporary expressions, since they are only evaluated
@@ -924,9 +929,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							    __first2, __last2);
     }
 
+  /* @} */ // group algorithms
+
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
+
+  /**
+   * @addtogroup algorithms Algorithms
+   * @{
+   */
 
   /**
    *  @brief Tests a range for element-wise equality.
@@ -961,7 +973,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
-   *  @param binary_pred A binary predicate @link s20_3_1_base
+   *  @param binary_pred A binary predicate @link functors
    *                  functor@endlink.
    *  @return         A boolean true or false.
    *
@@ -1028,7 +1040,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
    *  @param  last2   An input iterator.
-   *  @param  comp  A @link s20_3_3_comparisons comparison functor@endlink.
+   *  @param  comp  A @link comparison_functors comparison functor@endlink.
    *  @return   A boolean true or false.
    *
    *  The same as the four-parameter @c lexicographical_compare, but uses the
@@ -1099,7 +1111,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
-   *  @param binary_pred A binary predicate @link s20_3_1_base
+   *  @param binary_pred A binary predicate @link functors
    *         functor@endlink.
    *  @return   A pair of iterators pointing to the first mismatch.
    *
@@ -1127,6 +1139,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
         }
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
+
+  /* @} */ // group algorithms
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

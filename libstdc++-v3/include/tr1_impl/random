@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   // [5.1] Random number generation
 
   /**
-   * @addtogroup tr1_random Random Number Generation
+   * @defgroup tr1_random Random Number Generation
+   * @ingroup numerics
    * A facility for generating random numbers on selected distributions.
    * @{
    */
@@ -312,7 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
 
   /**
-   * @addtogroup tr1_random_generators Random Number Generators
+   * @defgroup tr1_random_generators Random Number Generators
    * @ingroup tr1_random
    *
    * These classes define objects which provide random or pseudorandom
@@ -1544,13 +1545,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /* @} */ // group tr1_random_generators
 
   /**
-   * @addtogroup tr1_random_distributions Random Number Distributions
+   * @defgroup tr1_random_distributions Random Number Distributions
    * @ingroup tr1_random
    * @{
    */
 
   /**
-   * @addtogroup tr1_random_distributions_discrete Discrete Distributions
+   * @defgroup tr1_random_distributions_discrete Discrete Distributions
    * @ingroup tr1_random_distributions
    * @{
    */
@@ -2047,7 +2048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /* @} */ // group tr1_random_distributions_discrete
 
   /**
-   * @addtogroup tr1_random_distributions_continuous Continuous Distributions
+   * @defgroup tr1_random_distributions_continuous Continuous Distributions
    * @ingroup tr1_random_distributions
    * @{
    */

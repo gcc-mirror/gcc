@@ -562,8 +562,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  @brief  A standard container using fixed-size memory allocation and
    *  constant-time manipulation of elements at either end.
    *
-   *  @ingroup Containers
-   *  @ingroup Sequences
+   *  @ingroup containers
+   *  @ingroup sequences
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
    *  <a href="tables.html#66">reversible container</a>, and a

@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -72,6 +72,11 @@
 // See concept_check.h for the __glibcxx_*_requires macros.
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @addtogroup algorithms Algorithms
+   * @{
+   */
 
   /**
    *  @brief Find the median of three values.
@@ -2394,7 +2399,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return         An iterator pointing to the first element "not less
    *                  than" @a val, or end() if every element is less than 
    *                  @a val.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
     _ForwardIterator
@@ -2441,7 +2446,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  comp    A functor to use for comparisons.
    *  @return  An iterator pointing to the first element "not less than" @a val,
    *           or end() if every element is less than @a val.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  The comparison function should have the same effects on ordering as
    *  the function used for the initial sort.
@@ -2492,7 +2497,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  val     The search term.
    *  @return  An iterator pointing to the first element greater than @a val,
    *           or end() if no elements are greater than @a val.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
     _ForwardIterator
@@ -2539,7 +2544,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  comp    A functor to use for comparisons.
    *  @return  An iterator pointing to the first element greater than @a val,
    *           or end() if no elements are greater than @a val.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  The comparison function should have the same effects on ordering as
    *  the function used for the initial sort.
@@ -2589,7 +2594,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  last    Another iterator.
    *  @param  val     The search term.
    *  @return  An pair of iterators defining the subrange.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  This is equivalent to
    *  @code
@@ -2651,7 +2656,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  val     The search term.
    *  @param  comp    A functor to use for comparisons.
    *  @return  An pair of iterators defining the subrange.
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  This is equivalent to
    *  @code
@@ -2716,7 +2721,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  last    Another iterator.
    *  @param  val     The search term.
    *  @return  True if @a val (or its equivalent) is in [@a first,@a last ].
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  Note that this does not actually return an iterator to @a val.  For
    *  that, use std::find or a container's specialized find member functions.
@@ -2746,7 +2751,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  val     The search term.
    *  @param  comp    A functor to use for comparisons.
    *  @return  True if @a val (or its equivalent) is in [@a first,@a last ].
-   *  @ingroup binarysearch
+   *  @ingroup binary_search_algorithms
    *
    *  Note that this does not actually return an iterator to @a val.  For
    *  that, use std::find or a container's specialized find member functions.
@@ -3432,7 +3437,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  last2   End of sequence.
    *  @return  True if each element in [first2,last2) is contained in order
    *  within [first1,last1).  False otherwise.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation expects both [first1,last1) and [first2,last2) to be
    *  sorted.  Searches for the presence of each element in [first2,last2)
@@ -3479,7 +3484,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  comp    Comparison function to use.
    *  @return  True if each element in [first2,last2) is contained in order
    *  within [first1,last1) according to comp.  False otherwise.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation expects both [first1,last1) and [first2,last2) to be
    *  sorted.  Searches for the presence of each element in [first2,last2)
@@ -3932,7 +3937,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @brief  Determines min and max at once as an ordered pair.
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
-   *  @param  comp  A @link s20_3_3_comparisons comparison functor@endlink.
+   *  @param  comp  A @link comparison_functor comparison functor@endlink.
    *  @return  A pair(b, a) if b is smaller than a, pair(a, b) otherwise.
   */
   template<typename _Tp, typename _Compare>
@@ -4134,9 +4139,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
+  /* @} */ // group algorithms
+
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
+
+  /**
+   * @addtogroup algorithms Algorithms
+   * @{
+   */
 
   /**
    *  @brief Apply a function to every element of a sequence.
@@ -5406,7 +5418,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first2  Start of second range.
    *  @param  last2   End of second range.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  each range in order to the output range.  Iterators increment for each
@@ -5472,7 +5484,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last2   End of second range.
    *  @param  comp    The comparison functor.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  each range in order to the output range.  Iterators increment for each
@@ -5539,7 +5551,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first2  Start of second range.
    *  @param  last2   End of second range.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  both ranges in order to the output range.  Iterators increment for each
@@ -5594,7 +5606,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last2   End of second range.
    *  @param  comp    The comparison functor.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  both ranges in order to the output range.  Iterators increment for each
@@ -5650,7 +5662,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first2  Start of second range.
    *  @param  last2   End of second range.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  the first range but not the second in order to the output range.
@@ -5709,7 +5721,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last2   End of second range.
    *  @param  comp    The comparison functor.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  the first range but not the second in order to the output range.
@@ -5769,7 +5781,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first2  Start of second range.
    *  @param  last2   End of second range.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  one range but not the other in order to the output range.  Iterators
@@ -5833,7 +5845,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last2   End of second range.
    *  @param  comp    The comparison functor.
    *  @return  End of the output range.
-   *  @ingroup setoperations
+   *  @ingroup set_algorithms
    *
    *  This operation iterates over both ranges, copying elements present in
    *  one range but not the other in order to the output range.  Iterators
@@ -5999,6 +6011,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 	  __result = __first;
       return __result;
     }
+
+  /* @} */ // group algorithms
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

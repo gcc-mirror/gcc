@@ -70,8 +70,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  A standard container giving FILO behavior.
    *
-   *  @ingroup Containers
-   *  @ingroup Sequences
+   *  @ingroup containers
+   *  @ingroup sequences
    *
    *  Meets many of the requirements of a
    *  <a href="tables.html#65">container</a>,

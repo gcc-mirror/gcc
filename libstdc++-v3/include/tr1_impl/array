@@ -1,6 +1,6 @@
 // class template array -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,21 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_TR1
 
-  /// array.
-  /// NB: Requires complete type _Tp.
+  /**
+   *  @brief A standard container for storing a fixed size sequence of elements.
+   *
+   *  @ingroup containers
+   *  @ingroup sequences
+   *
+   *  Meets the requirements of a <a href="tables.html#65">container</a>, a
+   *  <a href="tables.html#66">reversible container</a>, and a
+   *  <a href="tables.html#67">sequence</a>.
+   *
+   *  Sets support random access iterators.
+   *
+   *  @param  Tp  Type of element. Required to be a complete type.
+   *  @param  N  Number of elements.
+  */
   template<typename _Tp, std::size_t _Nm>
     struct array
     {

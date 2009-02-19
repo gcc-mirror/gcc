@@ -1,3 +1,37 @@
+2009-02-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/doxygroups.cc: Move algorithm groups into algorithmfwd.h.
+	* doc/doxygen/user.cfg.in: Update.
+	* scripts/run_doxygen: Adjust for new group names.
+
+	* include/tr1_impl/random: Update doxygen group markup.
+	* include/tr1_impl/unordered_map: Same.
+	* include/tr1_impl/unordered_set: Same.
+	* include/tr1_impl/array: Same.
+	* include/std/numeric: Same.
+	* include/std/utility: Same.
+	* include/std/bitset: Same.
+	* include/std/iosfwd: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_iterator_base_types.h: Same.
+	* include/bits/forward_list.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/algorithmfwd.h: Same.
+	* include/bits/stl_function.h: Same.
+	* include/tr1/cmath: Same.
+	* include/backward/binders.h: Same.
+
 2009-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/system_error (system_category): To system_category().

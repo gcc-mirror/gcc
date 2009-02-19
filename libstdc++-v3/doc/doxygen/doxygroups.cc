@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, 2002, 2005, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005, 2008, 2009 Free Software Foundation, Inc.
    See license.html for license.
 
    This just provides documentation for stuff that doesn't need to be in the
@@ -51,88 +51,6 @@
  *  @brief GNU implemenation details, not for public use or
  *  export. Used only when anonymous namespaces cannot be substituted.
 */
-// // // // // // // // // // // // // // // // // // // // // // // //
-/** @addtogroup SGIextensions STL extensions from SGI
-Because libstdc++ based its implementation of the STL subsections of
-the library on the SGI 3.3 implementation, we inherited their extensions
-as well.
-
-They are additionally documented in the
-<a href="http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html">
-online documentation</a>, a copy of which is also shipped with the
-library source code (in .../docs/html/documentation.html).  You can also
-read the documentation <a href="http://www.sgi.com/tech/stl/">on SGI's
-site</a>, which is still running even though the code is not maintained.
-
-<strong>NB</strong> that the following notes are pulled from various
-comments all over the place, so they may seem stilted.
-<hr>
-*/
-
-// // // // // // // // // // // // // // // // // // // // // // // //
-// This is standalone because, unlike the functor introduction, there is no
-// single header file which serves as a base "all containers must include
-// this header".  We do some quoting of 14882 here.
-/** @addtogroup Containers Containers
-Containers are collections of objects.
-
-A container may hold any type which meets certain requirements, but the type
-of contained object is chosen at compile time, and all objects in a given
-container must be of the same type.  (Polymorphism is possible by declaring a
-container of pointers to a base class and then populating it with pointers to
-instances of derived classes.  Variant value types such as the @c any class
-from <a href="http://www.boost.org/">Boost</a> can also be used.
-
-All contained types must be @c Assignable and @c CopyConstructible.
-Specific containers may place additional requirements on the types of
-their contained objects.
-
-Containers manage memory allocation and deallocation themselves when
-storing your objects.  The objects are destroyed when the container is
-itself destroyed.  Note that if you are storing pointers in a container,
-@c delete is @e not automatically called on the pointers before destroying them.
-
-All containers must meet certain requirements, summarized in
-<a href="tables.html">tables</a>.
-
-The standard containers are further refined into
-@link Sequences Sequences@endlink and
-@link Assoc_containers Associative Containers@endlink.
-*/
-
-/** @addtogroup Sequences Sequences
-Sequences arrange a collection of objects into a strictly linear order.
-
-The differences between sequences are usually due to one or both of the
-following:
-  - memory management
-  - algorithmic complexity
-
-As an example of the first case, @c vector is required to use a contiguous
-memory layout, while other sequences such as @c deque are not.
-
-The prime reason for choosing one sequence over another should be based on
-the second category of differences, algorithmic complexity.  For example, if
-you need to perform many inserts and removals from the middle of a sequence,
-@c list would be ideal.  But if you need to perform constant-time access to
-random elements of the sequence, then @c list should not be used.
-
-All sequences must meet certain requirements, summarized in
-<a href="tables.html">tables</a>.
-*/
-
-/** @addtogroup Assoc_containers Associative Containers
-Associative containers allow fast retrieval of data based on keys.
-
-Each container type is parameterized on a @c Key type, and an ordering
-relation used to sort the elements of the container.
-
-There should be more text here.
-
-All associative containers must meet certain requirements, summarized in
-<a href="tables.html">tables</a>.
-*/
-
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @namespace abi
  *  @brief The cross-vendor C++ Application Binary Interface. A
@@ -199,44 +117,110 @@ char* __cxa_demangle (const char* mangled_name, char* output_buffer,
 } // namespace abi
 
 // // // // // // // // // // // // // // // // // // // // // // // //
-/** @addtogroup binarysearch Binary search algorithms
-These algorithms are variations of a classic binary search.  They all assume
-that the sequence being searched is already sorted.
 
-The number of comparisons will be logarithmic (and as few as possible).
-The number of steps through the sequence will be logarithmic for
-random-access iterators (e.g., pointers), and linear otherwise.
+/**
+ * @defgroup extensions Extensions
+ *
+ * Components generally useful that are not part of any standard.
+ */
 
-The LWG has passed Defect Report 270, which notes:  <em>The proposed
-resolution reinterprets binary search. Instead of thinking about searching
-for a value in a sorted range, we view that as an important special
-case of a more general algorithm: searching for the partition point in a
-partitioned range.  We also add a guarantee that the old wording did not:
-we ensure that the upper bound is no earlier than the lower bound, that
-the pair returned by equal_range is a valid range, and that the first part
-of that pair is the lower bound.</em>
+/** @defgroup SGIextensions SGI STL extensions
+ * @ingroup extensions
+Because libstdc++ based its implementation of the STL subsections of
+the library on the SGI 3.3 implementation, we inherited their extensions
+as well.
 
-The actual effect of the first sentence is that a comparison functor
-passed by the user doesn't necessarily need to induce a strict weak ordering
-relation.  Rather, it partitions the range.
+They are additionally documented in the
+<a href="http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html">
+online documentation</a>, a copy of which is also shipped with the
+library source code (in .../docs/html/documentation.html).  You can also
+read the documentation <a href="http://www.sgi.com/tech/stl/">on SGI's
+site</a>, which is still running even though the code is not maintained.
+
+<strong>NB</strong> that the following notes are pulled from various
+comments all over the place, so they may seem stilted.
+<hr>
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
-/** @addtogroup setoperations Set operation algorithms
-These algorithms are common set operations performed on sequences that are
-already sorted.
+// This is standalone because, unlike the functor introduction, there is no
+// single header file which serves as a base "all containers must include
+// this header".  We do some quoting of 14882 here.
+/** @defgroup containers Containers
+Containers are collections of objects.
 
-The number of comparisons will be linear.
+A container may hold any type which meets certain requirements, but the type
+of contained object is chosen at compile time, and all objects in a given
+container must be of the same type.  (Polymorphism is possible by declaring a
+container of pointers to a base class and then populating it with pointers to
+instances of derived classes.  Variant value types such as the @c any class
+from <a href="http://www.boost.org/">Boost</a> can also be used.
+
+All contained types must be @c Assignable and @c CopyConstructible.
+Specific containers may place additional requirements on the types of
+their contained objects.
+
+Containers manage memory allocation and deallocation themselves when
+storing your objects.  The objects are destroyed when the container is
+itself destroyed.  Note that if you are storing pointers in a container,
+@c delete is @e not automatically called on the pointers before destroying them.
+
+All containers must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
+
+The standard containers are further refined into
+@link Sequences Sequences@endlink and
+@link Assoc_containers Associative Containers@endlink.
+@link Unordered_assoc_containers Unordered Associative Containers@endlink.
 */
 
-// // // // // // // // // // // // // // // // // // // // // // // //
+/** @defgroup sequences Sequences
+ * @ingroup containers
+Sequences arrange a collection of objects into a strictly linear order.
+
+The differences between sequences are usually due to one or both of the
+following:
+  - memory management
+  - algorithmic complexity
+
+As an example of the first case, @c vector is required to use a contiguous
+memory layout, while other sequences such as @c deque are not.
+
+The prime reason for choosing one sequence over another should be based on
+the second category of differences, algorithmic complexity.  For example, if
+you need to perform many inserts and removals from the middle of a sequence,
+@c list would be ideal.  But if you need to perform constant-time access to
+random elements of the sequence, then @c list should not be used.
+
+All sequences must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
+*/
+
+/** @defgroup associative_containers Associative Containers
+ * @ingroup containers
+Associative containers allow fast retrieval of data based on keys.
+
+Each container type is parameterized on a @c Key type, and an ordering
+relation used to sort the elements of the container.
+
+All associative containers must meet certain requirements, summarized in
+<a href="tables.html">tables</a>.
+*/
+
+/** @defgroup unordered_associative_containers Unordered Associative Containers
+ * @ingroup containers
+Unordered associative containers allow fast retrieval of data based on keys.
+
+Each container type is parameterized on a @c Key type, a @c Hash type
+providing a hashing functor, and an ordering relation used to sort the
+elements of the container.
+
+All unordered associative containers must meet certain requirements,
+summarized in <a href="tables.html">tables</a>.  */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
-/* * @addtogroup groupname description of group
+/* * @defgroup groupname description of group
 placeholder text
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
-
-// vim:et:noai:
-
