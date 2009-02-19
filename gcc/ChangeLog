@@ -1,3 +1,12 @@
+2009-02-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/38483
+	* builtins.c (gimplify_va_arg_expr): Evaluate the va_list
+	expression before any __builtin_trap call.
+	* c-typeck.c (build_function_call): Convert and check function
+	arguments before generating a call to a trap.  Evaluate the
+	function arguments before the trap.
+
 2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39228

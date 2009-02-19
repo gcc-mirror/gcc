@@ -2417,6 +2417,16 @@ build_function_call (tree function, tree params)
   /* fntype now gets the type of function pointed to.  */
   fntype = TREE_TYPE (fntype);
 
+  /* Convert the parameters to the types declared in the
+     function prototype, or apply default promotions.  */
+
+  nargs = list_length (params);
+  argarray = (tree *) alloca (nargs * sizeof (tree));
+  nargs = convert_arguments (nargs, argarray, TYPE_ARG_TYPES (fntype), 
+			     params, function, fundecl);
+  if (nargs < 0)
+    return error_mark_node;
+
   /* Check that the function is called through a compatible prototype.
      If it is not, replace the call by a trap, wrapped up in a compound
      expression if necessary.  This has the nice side-effect to prevent
@@ -2430,6 +2440,7 @@ build_function_call (tree function, tree params)
       tree return_type = TREE_TYPE (fntype);
       tree trap = build_function_call (built_in_decls[BUILT_IN_TRAP],
 				       NULL_TREE);
+      int i;
 
       /* This situation leads to run-time undefined behavior.  We can't,
 	 therefore, simply error unless we can prove that all possible
@@ -2438,6 +2449,10 @@ build_function_call (tree function, tree params)
 	/* We can, however, treat "undefined" any way we please.
 	   Call abort to encourage the user to fix the program.  */
 	inform (input_location, "if this code is reached, the program will abort");
+      /* Before the abort, allow the function arguments to exit or
+	 call longjmp.  */
+      for (i = 0; i < nargs; i++)
+	trap = build2 (COMPOUND_EXPR, void_type_node, argarray[i], trap);
 
       if (VOID_TYPE_P (return_type))
 	return trap;
@@ -2454,16 +2469,6 @@ build_function_call (tree function, tree params)
 	  return build2 (COMPOUND_EXPR, return_type, trap, rhs);
 	}
     }
-
-  /* Convert the parameters to the types declared in the
-     function prototype, or apply default promotions.  */
-
-  nargs = list_length (params);
-  argarray = (tree *) alloca (nargs * sizeof (tree));
-  nargs = convert_arguments (nargs, argarray, TYPE_ARG_TYPES (fntype), 
-			     params, function, fundecl);
-  if (nargs < 0)
-    return error_mark_node;
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fundecl

@@ -4999,6 +4999,9 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 Call abort to encourage the user to fix the program.  */
       if (warned)
 	inform (input_location, "if this code is reached, the program will abort");
+      /* Before the abort, allow the evaluation of the va_list
+	 expression to exit or longjmp.  */
+      gimplify_and_add (valist, pre_p);
       t = build_call_expr (implicit_built_in_decls[BUILT_IN_TRAP], 0);
       gimplify_and_add (t, pre_p);
 

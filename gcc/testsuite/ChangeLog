@@ -1,3 +1,10 @@
+2009-02-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/38483
+	* gcc.c-torture/execute/call-trap-1.c,
+	gcc.c-torture/execute/va-arg-trap-1.c, gcc.dg/call-diag-1.c: New
+	tests.
+
 2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39228
