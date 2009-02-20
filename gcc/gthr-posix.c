@@ -1,6 +1,6 @@
 /* POSIX threads dummy routines for systems without weak definitions.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

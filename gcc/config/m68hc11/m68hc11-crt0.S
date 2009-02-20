@@ -1,5 +1,5 @@
 /* Startup code for M68HC11.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2008 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the

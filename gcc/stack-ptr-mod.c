@@ -1,5 +1,5 @@
 /* Discover if the stack pointer is modified in a function. 
-   Copyright (C) 2007
+   Copyright (C) 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.

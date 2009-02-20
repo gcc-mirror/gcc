@@ -1,5 +1,5 @@
 ;;- Machine description for Blackfin for GNU compiler
-;;  Copyright 2005, 2006, 2007 Free Software Foundation, Inc.
+;;  Copyright 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 ;;  Contributed by Analog Devices.
 
 ;; This file is part of GCC.

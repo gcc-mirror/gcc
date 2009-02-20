@@ -1,6 +1,6 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
    Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001, 2003,
-   2007  Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
 
 This file is part of GCC.
 

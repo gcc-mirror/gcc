@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.

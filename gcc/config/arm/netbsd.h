@@ -1,5 +1,5 @@
 /* NetBSD/arm a.out version.
-   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005, 2007
+   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 

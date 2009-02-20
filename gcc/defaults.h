@@ -1,6 +1,6 @@
 /* Definitions of various defaults for tm.h macros.
    Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008
+   2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 

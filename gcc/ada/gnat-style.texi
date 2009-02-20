@@ -14,7 +14,7 @@
 @setfilename gnat-style.info
 
 @copying
-Copyright @copyright{} 1992-2007, Free Software Foundation, Inc.
+Copyright @copyright{} 1992-2008, Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
