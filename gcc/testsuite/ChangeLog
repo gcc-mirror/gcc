@@ -1,3 +1,8 @@
+2009-02-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39225
+	* g++.dg/parse/dtor15.C: New test.
+
 2009-02-19  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/20090219-1.c: New.
@@ -67,6 +72,9 @@
 	and skip on Darwin.
 
 2009-02-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38880
+	* g++.dg/init/const7.C: Remove XFAIL.
 
 	PR target/39179
 	* g++.dg/opt/const6.C: New test.
