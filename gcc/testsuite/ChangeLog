@@ -1,3 +1,8 @@
+2009-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39240
+	* gcc.c-torture/execute/pr39240.c: New test.
+
 2009-02-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39225

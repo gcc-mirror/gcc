@@ -1,3 +1,9 @@
+2009-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39240
+	* calls.c (expand_call): Clear try_tail_call if caller and callee
+	disagree in promotion of function return value.
+
 2009-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39175
