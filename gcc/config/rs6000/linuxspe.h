@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC e500 machines running GNU/Linux.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldy@quesejoda.com).
 
    This file is part of GCC.

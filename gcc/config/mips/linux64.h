@@ -1,6 +1,7 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format
    using n32/64 abi.
-   Copyright 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 

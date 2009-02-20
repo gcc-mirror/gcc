@@ -3,7 +3,7 @@
 //
 //   Support for parity checks.
 //
-//   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+//   Copyright (C) 2003, 2004, 2005, 2008  Free Software Foundation, Inc.
 //   Contributed by picoChip Designs Ltd.
 //   Maintained by Daniel Towner (daniel.towner@picochip.com)
 //

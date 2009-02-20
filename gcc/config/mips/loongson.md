@@ -1,5 +1,5 @@
 ;; Machine description for ST Microelectronics Loongson-2E/2F.
-;; Copyright (C) 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; This file is part of GCC.

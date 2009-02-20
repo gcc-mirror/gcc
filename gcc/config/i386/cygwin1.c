@@ -1,6 +1,6 @@
 /* Helper routines for cygwin-specific command-line parsing.
    Contributed by Christopher Faylor (cgf@redhat.com)
-   Copyright 2003, 2005, 2007 Free Software Foundation, Inc.
+   Copyright 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

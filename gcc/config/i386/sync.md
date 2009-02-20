@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005, 2006, 2007
+;; Copyright (C) 2005, 2006, 2007, 2008
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.

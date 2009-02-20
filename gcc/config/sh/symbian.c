@@ -1,5 +1,5 @@
 /* Routines for GCC for a Symbian OS targeted SH backend.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
    Contributed by RedHat.
    Most of this code is stolen from i386/winnt.c.
 

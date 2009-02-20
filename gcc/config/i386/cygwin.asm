@@ -1,6 +1,6 @@
 /* stuff needed for libgcc on win32.
  *
- *   Copyright (C) 1996, 1998, 2001, 2003 Free Software Foundation, Inc.
+ *   Copyright (C) 1996, 1998, 2001, 2003, 2008 Free Software Foundation, Inc.
  *   Written By Steve Chamberlain
  * 
  * This file is free software; you can redistribute it and/or modify it

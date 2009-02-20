@@ -1,5 +1,5 @@
 /* Configuration file for Symbian OS on ARM processors.
-   Copyright (C) 2004, 2005, 2007
+   Copyright (C) 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 

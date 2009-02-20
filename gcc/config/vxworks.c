@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007
+   Copyright (C) 2007, 2008
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
