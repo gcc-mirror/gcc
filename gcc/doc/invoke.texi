@@ -7766,6 +7766,13 @@ lower quality register allocation algorithm will be used.  The
 algorithm do not use pseudo-register conflicts.  The default value of
 the parameter is 2000.
 
+@item loop-invariant-max-bbs-in-loop
+Loop invariant motion can be very expensive, both in compile time and
+in amount of needed compile time memory, with very large loops.  Loops
+with more basic blocks than this parameter won't have loop invariant
+motion optimization performed on them.  The default value of the
+parameter is 1000 for -O1 and 10000 for -O2 and above.
+
 @end table
 @end table
 
