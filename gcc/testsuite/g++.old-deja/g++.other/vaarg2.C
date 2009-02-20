@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-options "-Wno-abi" { target arm_eabi } }
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Oct 1999 <nathan@acm.org>
 

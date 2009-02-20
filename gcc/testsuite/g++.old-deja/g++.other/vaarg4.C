@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-Wno-abi" { target arm_eabi } }
 
 // Bug 845. We were treating __builtin_va_arg as a unary expr, not a primary,
 // and hence getting parse errors.

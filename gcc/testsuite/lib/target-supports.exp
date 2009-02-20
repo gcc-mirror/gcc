@@ -1451,6 +1451,19 @@ proc check_effective_target_mips_loongson { } {
     }]
 }
 
+# Return 1 if this is an ARM target that adheres to the ABI for the ARM
+# Architecture.
+
+proc check_effective_target_arm_eabi { } {
+    return [check_no_compiler_messages arm_eabi object {
+	#ifndef __ARM_EABI__
+	#error not EABI
+	#else
+	int dummy;
+	#endif
+    }]
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {

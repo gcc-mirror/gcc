@@ -2,6 +2,7 @@
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
 /* { dg-options "-Wmissing-format-attribute" } */
+/* { dg-options "-Wmissing-format-attribute -Wno-abi" { target arm_eabi } } */
 /* VxWorks does not provide vscanf, either in kernel or RTP mode.  */
 /* { dg-error "not declared" "" { target *-*-solaris2.[7-8] *-*-vxworks* } 25 } */
 
