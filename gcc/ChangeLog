@@ -1,3 +1,9 @@
+2009-02-20  Jaka Mocnik  <jaka@xlab.si>
+
+	* calls.c (emit_library_call_value_1): Use slot_offset instead of
+	offset when calculating bounds for indexing stack_usage_map.  Fixes
+	a buffer overflow with certain target setups.
+
 2009-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39240
