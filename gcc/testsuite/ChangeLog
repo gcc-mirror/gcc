@@ -1,3 +1,9 @@
+2009-02-20  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/38164
+	* gcc.target/i386/amd64-abi-3.c: Add -fomit-frame-pointer
+	to dg-options.
+
 2009-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39240
@@ -21,8 +27,7 @@
 	perform the ISA-range check when 'value' is set.  If arch is
 	matching any CPU in the ! entries switch to its generic ISA.
 	* gcc.target/mips/branch-1.c: Pass isa=!octeon.
-	* gcc.target/mips/dmult-1.c: Pass isa=64!octeon rather than
-	-mips64.
+	* gcc.target/mips/dmult-1.c: Pass isa=64!octeon rather than -mips64.
 
 2009-02-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -333,8 +338,7 @@
 
 2009-02-09  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* gcc.target/x86_64/abi/abi-x86_64.exp: Use glob instead of
-	find.
+	* gcc.target/x86_64/abi/abi-x86_64.exp: Use glob instead of find.
 
 2009-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -415,8 +419,7 @@
 	* gcc.target/i386/i386.exp (check_effective_target_vpclmul): New.
 
 	* gcc.target/i386/pclmulqdq.c (CHECK_H): New.
-	(TEST): Likewise.
-	Include CHECK_H instead of "pclmul-check.h".
+	(TEST): Likewise.  Include CHECK_H instead of "pclmul-check.h".
 	(pclmul_test): Renamed to ...
 	(TEST): This.
 

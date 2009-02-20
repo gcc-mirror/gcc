@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -mno-sse" } */
+/* { dg-options "-O2 -fomit-frame-pointer -mno-sse" } */
 /* { dg-final { scan-assembler "subq\[\\t \]*\\\$88,\[\\t \]*%rsp" } } */
 /* { dg-final { scan-assembler-not "subq\[\\t \]*\\\$216,\[\\t \]*%rsp" } } */
 
