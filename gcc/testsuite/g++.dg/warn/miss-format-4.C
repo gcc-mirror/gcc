@@ -2,6 +2,7 @@
 /* Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> */
 /* { dg-do compile } */
 /* { dg-options "-Wmissing-format-attribute" } */
+/* { dg-options "-Wmissing-format-attribute -Wno-abi" { target arm_eabi } } */
 
 #include <stdarg.h>
 

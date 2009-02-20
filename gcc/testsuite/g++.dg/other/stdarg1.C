@@ -1,5 +1,6 @@
 // Test stdarg function with anonymous argument
 // { dg-do run }
+// { dg-options "-Wno-abi" { target arm_eabi } }
 
 #include <stdarg.h>
 

@@ -1,3 +1,17 @@
+2009-02-20  Mark Mitchell  <mark@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/arm/va_list.c: New test.
+	* g++.dg/abi/arm_va_list.C: Likewise.
+	* lib/target-supports.exp (check_effective_target_arm_eabi): New
+	function.
+	* g++.dg/cpp0x/temp-va-arg-bug.C, g++.dg/other/stdarg1.C,
+	g++.dg/warn/miss-format-1.C, g++.dg/warn/miss-format-3.C,
+	g++.dg/warn/miss-format-4.C, g++.dg/warn/miss-format-5.C,
+	g++.dg/warn/miss-format-6.C, g++.old-deja/g++.other/vaarg2.C,
+	g++.old-deja/g++.other/vaarg3.C, g++.old-deja/g++.other/vaarg4.C,
+	g++.old-deja/g++.pt/builtin.C: Use -Wno-abi on ARM EABI targets.
+
 2009-02-20  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR testsuite/38164

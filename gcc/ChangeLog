@@ -1,3 +1,15 @@
+2009-02-20  Mark Mitchell  <mark@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_builtin_va_list): New function.
+	(arm_expand_builtin_va_start): Likewise.
+	(arm_gimplify_va_arg_expr): Likewise.
+	(TARGET_BUILD_BUILTIN_VA_LIST): Define.
+	(TARGET_BUILD_BUILTIN_VA_START): Likewise.
+	(TARGET_BUILD_BUILTIN_VA_ARG_EXPR): Likewise.
+	(va_list_type): New variable.
+	(arm_mangle_type): Mangle va_list_type appropriately.
+
 2009-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/39157
