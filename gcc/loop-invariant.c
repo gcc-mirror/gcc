@@ -1,5 +1,6 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "hashtab.h"
 #include "except.h"
+#include "params.h"
 
 /* The data stored for the loop.  */
 
@@ -1345,7 +1347,10 @@ move_loop_invariants (void)
   /* Process the loops, innermost first.  */
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      move_single_loop_invariants (loop);
+      /* move_single_loop_invariants for very large loops
+	 is time consuming and might need a lot of memory.  */
+      if (loop->num_nodes <= (unsigned) LOOP_INVARIANT_MAX_BBS_IN_LOOP)
+	move_single_loop_invariants (loop);
     }
 
   FOR_EACH_LOOP (li, loop, 0)

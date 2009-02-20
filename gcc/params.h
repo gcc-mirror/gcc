@@ -1,5 +1,6 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -173,4 +174,6 @@ typedef enum compiler_param
   PARAM_VALUE (PARAM_IRA_MAX_CONFLICT_TABLE_SIZE)
 #define SWITCH_CONVERSION_BRANCH_RATIO \
   PARAM_VALUE (PARAM_SWITCH_CONVERSION_BRANCH_RATIO)
+#define LOOP_INVARIANT_MAX_BBS_IN_LOOP \
+  PARAM_VALUE (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP)
 #endif /* ! GCC_PARAMS_H */

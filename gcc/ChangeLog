@@ -1,3 +1,17 @@
+2009-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39157
+	* Makefile.in (loop-invariant.o): Depend on $(PARAMS_H).
+	* params.h (LOOP_INVARIANT_MAX_BBS_IN_LOOP): Define.
+	* params.def (loop-invariant-max-bbs-in-loop): New parameter.
+	* opts.c (decode_options): Set loop-invariant-max-bbs-in-loop
+	parameter to 1000 for -O1 by default.
+	* doc/invoke.texi (loop-invariant-max-bbs-in-loop): Document new
+	parameter.
+	* loop-invariant.c: Include params.h.
+	(move_loop_invariants): Don't call move_single_loop_invariants on
+	very large loops.
+
 2009-02-20  Jaka Mocnik  <jaka@xlab.si>
 
 	* calls.c (emit_library_call_value_1): Use slot_offset instead of
