@@ -4328,8 +4328,9 @@ ia64_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
     return false;
 
   /* We must always return with our current GP.  This means we can
-     only sibcall to functions defined in the current module.  */
-  return decl && (*targetm.binds_local_p) (decl);
+     only sibcall to functions defined in the current module unless
+     TARGET_CONST_GP is set to true.  */
+  return (decl && (*targetm.binds_local_p) (decl)) || TARGET_CONST_GP;
 }
 
 

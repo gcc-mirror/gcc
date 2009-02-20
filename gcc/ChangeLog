@@ -1,3 +1,9 @@
+2009-02-20  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/38056
+	* config/ia64/ia64.c (ia64_function_ok_for_sibcall): Check
+	TARGET_CONST_GP.
+
 2009-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39228
