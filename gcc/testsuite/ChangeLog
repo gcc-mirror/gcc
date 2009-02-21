@@ -1,5 +1,10 @@
+2009-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/abi-1.c: Use scan-assembler-times "..." 1 instead of
+	scan-assembler to check for xmm0 register.
+
 2009-02-20  Mark Mitchell  <mark@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/arm/va_list.c: New test.
 	* g++.dg/abi/arm_va_list.C: Likewise.

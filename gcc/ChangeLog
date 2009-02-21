@@ -7,6 +7,7 @@
 	* emit-rtl.c: ...here.
 
 2009-02-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
 	* config/i386/winnt.c (i386_pe_asm_output_aligned_decl_common): Revert
 	accidental and undocumented change at revision 140860.
 
@@ -18,7 +19,7 @@
 	types_compatible_p langhook.
 
 2009-02-20  Mark Mitchell  <mark@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (arm_builtin_va_list): New function.
 	(arm_expand_builtin_va_start): Likewise.

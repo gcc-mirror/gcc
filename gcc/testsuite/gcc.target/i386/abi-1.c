@@ -5,4 +5,4 @@
 typedef double v2df __attribute__((vector_size (16)));
 v2df foo (void) { return (v2df){ 1.0, 2.0 }; }
 
-/* { dg-final { scan-assembler "xmm0" } } */
+/* { dg-final { scan-assembler-times "xmm0" 1 } } */
