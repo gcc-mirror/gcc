@@ -1232,17 +1232,6 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
   /* Otherwise, we can't do this.  */
   return 0;
 }
-
-/* Generates a subreg to get the least significant part of EXPR (in mode
-   INNER_MODE) to OUTER_MODE.  */
-
-rtx
-lowpart_subreg (enum machine_mode outer_mode, rtx expr,
-		enum machine_mode inner_mode)
-{
-  return simplify_gen_subreg (outer_mode, expr, inner_mode,
-			      subreg_lowpart_offset (outer_mode, inner_mode));
-}
 
 rtx
 gen_highpart (enum machine_mode mode, rtx x)
