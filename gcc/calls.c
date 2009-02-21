@@ -3677,10 +3677,10 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 #ifdef ARGS_GROW_DOWNWARD
 	      /* stack_slot is negative, but we want to index stack_usage_map
 		 with positive values.  */
-	      upper_bound = -argvec[argnum].locate.offset.constant + 1;
+	      upper_bound = -argvec[argnum].locate.slot_offset.constant + 1;
 	      lower_bound = upper_bound - argvec[argnum].locate.size.constant;
 #else
-	      lower_bound = argvec[argnum].locate.offset.constant;
+	      lower_bound = argvec[argnum].locate.slot_offset.constant;
 	      upper_bound = lower_bound + argvec[argnum].locate.size.constant;
 #endif
 
