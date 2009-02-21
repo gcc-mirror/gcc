@@ -1,3 +1,10 @@
+2009-02-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_gimplify_va_arg_expr): Update prototype to
+	take gimple_seq * arguments.
+	(arm_mangle_type): Use CONST_CAST_TREE on type argument passed to
+	types_compatible_p langhook.
+
 2009-02-20  Mark Mitchell  <mark@codesourcery.com>
             Joseph Myers  <joseph@codesourcery.com>
 
