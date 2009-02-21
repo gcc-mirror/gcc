@@ -2178,7 +2178,7 @@ gfc_simplify_kind (gfc_expr *e)
 
 static gfc_expr *
 simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
-		    gfc_array_spec *as)
+		    gfc_array_spec *as, gfc_ref *ref)
 {
   gfc_expr *l, *u, *result;
   int k;
@@ -2192,13 +2192,6 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 	return NULL;
     }
 
-  /* Then, we need to know the extent of the given dimension.  */
-  l = as->lower[d-1];
-  u = as->upper[d-1];
-
-  if (l->expr_type != EXPR_CONSTANT || u->expr_type != EXPR_CONSTANT)
-    return NULL;
-
   k = get_kind (BT_INTEGER, kind, upper ? "UBOUND" : "LBOUND",
 		gfc_default_integer_kind); 
   if (k == -1)
@@ -2206,21 +2199,43 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 
   result = gfc_constant_result (BT_INTEGER, k, &array->where);
 
-  if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+
+  /* Then, we need to know the extent of the given dimension.  */
+  if (ref->u.ar.type == AR_FULL)
     {
-      /* Zero extent.  */
-      if (upper)
-	mpz_set_si (result->value.integer, 0);
+      l = as->lower[d-1];
+      u = as->upper[d-1];
+
+      if (l->expr_type != EXPR_CONSTANT || u->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+	{
+	  /* Zero extent.  */
+	  if (upper)
+	    mpz_set_si (result->value.integer, 0);
+	  else
+	    mpz_set_si (result->value.integer, 1);
+	}
       else
-	mpz_set_si (result->value.integer, 1);
+	{
+	  /* Nonzero extent.  */
+	  if (upper)
+	    mpz_set (result->value.integer, u->value.integer);
+	  else
+	    mpz_set (result->value.integer, l->value.integer);
+	}
     }
   else
     {
-      /* Nonzero extent.  */
       if (upper)
-	mpz_set (result->value.integer, u->value.integer);
+	{
+	  if (gfc_ref_dimen_size (&ref->u.ar, d-1, &result->value.integer)
+	      != SUCCESS)
+	    return NULL;
+	}
       else
-	mpz_set (result->value.integer, l->value.integer);
+	mpz_set_si (result->value.integer, (long int) 1);
     }
 
   return range_check (result, upper ? "UBOUND" : "LBOUND");
@@ -2258,9 +2273,12 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
 	    /* Fall through.  */
 
-	    case AR_SECTION:
 	    case AR_UNKNOWN:
 	      return NULL;
+
+	    case AR_SECTION:
+	      as = ref->u.ar.as;
+	      goto done;
 	    }
 
 	  gcc_unreachable ();
@@ -2300,7 +2318,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       /* Simplify the bounds for each dimension.  */
       for (d = 0; d < array->rank; d++)
 	{
-	  bounds[d] = simplify_bound_dim (array, kind, d + 1, upper, as);
+	  bounds[d] = simplify_bound_dim (array, kind, d + 1, upper, as, ref);
 	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
 	    {
 	      int j;
@@ -2366,7 +2384,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  return &gfc_bad_expr;
 	}
 
-      return simplify_bound_dim (array, kind, d, upper, as);
+      return simplify_bound_dim (array, kind, d, upper, as, ref);
     }
 }
 
