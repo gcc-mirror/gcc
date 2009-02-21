@@ -1,3 +1,9 @@
+2009-02-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.c (lex_string): Return a CPP_LESS token for missing '>' in a
+	header name.
+	(_cpp_lex_direct): Handle this.
+
 2009-02-15  Richard Guenther  <rguenther@suse.de>
 
 	Revert last change.
