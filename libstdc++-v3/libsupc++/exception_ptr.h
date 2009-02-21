@@ -49,6 +49,11 @@ extern "C++" {
 
 namespace std 
 {
+  /**
+   * @addtogroup exceptions
+   * @{
+   */
+
   // Hide the free operators from other types
   namespace __exception_ptr
   {
@@ -70,16 +75,17 @@ namespace std
   void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
 
   /// Obtain an %exception_ptr pointing to a copy of the supplied object.
-  template <class _Ex>
-  exception_ptr copy_exception(_Ex __ex) throw();
-
+  template<typename _Ex>
+    exception_ptr 
+    copy_exception(_Ex __ex) throw();
 
   namespace __exception_ptr
   {
-    bool operator==(const exception_ptr&,
-                    const exception_ptr&) throw();
-    bool operator!=(const exception_ptr&,
-                    const exception_ptr&) throw();
+    bool 
+    operator==(const exception_ptr&, const exception_ptr&) throw();
+
+    bool 
+    operator!=(const exception_ptr&, const exception_ptr&) throw();
 
     class exception_ptr
     {
@@ -109,16 +115,16 @@ namespace std
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       exception_ptr(exception_ptr&& __o) throw()
-        : _M_exception_object(__o._M_exception_object)
-      {
-        __o._M_exception_object = 0;
-      }
+      : _M_exception_object(__o._M_exception_object)
+      { __o._M_exception_object = 0; }
 #endif
 
-      exception_ptr& operator=(const exception_ptr&) throw();
+      exception_ptr& 
+      operator=(const exception_ptr&) throw();
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      exception_ptr& operator=(exception_ptr&& __o) throw()
+      exception_ptr& 
+      operator=(exception_ptr&& __o) throw()
       {
         exception_ptr(__o).swap(*this);
         return *this;
@@ -127,10 +133,12 @@ namespace std
 
       ~exception_ptr() throw();
 
-      void swap(exception_ptr&) throw();
+      void 
+      swap(exception_ptr&) throw();
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      void swap(exception_ptr &&__o) throw()
+      void 
+      swap(exception_ptr &&__o) throw()
       {
         void *__tmp = _M_exception_object;
         _M_exception_object = __o._M_exception_object;
@@ -141,28 +149,31 @@ namespace std
       bool operator!() const throw();
       operator __safe_bool() const throw();
 
-      friend bool operator==(const exception_ptr&,
-                             const exception_ptr&) throw();
+      friend bool 
+      operator==(const exception_ptr&, const exception_ptr&) throw();
 
-      const type_info *__cxa_exception_type() const throw();
+      const type_info*
+      __cxa_exception_type() const throw();
     };
 
   } // namespace __exception_ptr
 
 
-  template <class _Ex>
-  exception_ptr copy_exception(_Ex __ex) throw()
-  {
-    __try
-      {
-        throw __ex;
-      }
-    __catch(...)
-      {
-        return current_exception ();
-      }
-  }
+  template<typename _Ex>
+    exception_ptr 
+    copy_exception(_Ex __ex) throw()
+    {
+      __try
+	{
+	  throw __ex;
+	}
+      __catch(...)
+	{
+	  return current_exception ();
+	}
+    }
 
+  // @} group exceptions
 } // namespace std
 
 } // extern "C++"

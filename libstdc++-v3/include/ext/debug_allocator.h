@@ -56,6 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  A meta-allocator with debugging bits, as per [20.4].
+   *  @ingroup allocators
    *
    *  This is precisely the allocator defined in the C++ Standard. 
    *    - all allocation calls operator new

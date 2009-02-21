@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,14 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_TR1
 
+  /**
+   * @defgroup metaprogramming Type Traits
+   * @ingroup utilities
+   *
+   * Compile time type transformation and information.
+   * @{
+   */
+
   // For use in __is_convertible_simple.
   struct __sfinae_types
   {
@@ -57,7 +65,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct _Trait<_Type>                               \
     : public integral_constant<bool, _Value> { };
 
-  /// helper classes [4.3].
+  // helper classes [4.3].
+
+  /// integral_constant
   template<typename _Tp, _Tp __v>
     struct integral_constant
     {
@@ -75,6 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp, _Tp __v>
     const _Tp integral_constant<_Tp, __v>::value;
 
+  /// remove_cv
   template<typename>
     struct remove_cv;
 
@@ -83,7 +94,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public false_type { };
   _DEFINE_SPEC(0, __is_void_helper, void, true)
 
-  /// primary type categories [4.5.1].
+  // primary type categories [4.5.1].
+
+  /// is_void
   template<typename _Tp>
     struct is_void
     : public integral_constant<bool, (__is_void_helper<typename
@@ -230,7 +243,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				      remove_cv<_Tp>::type>::value)>
     { };
 
-  /// composite type traits [4.5.2].
+  // composite type traits [4.5.2].
+  
+  /// is_arithmetic
   template<typename _Tp>
     struct is_arithmetic
     : public integral_constant<bool, (is_integral<_Tp>::value
@@ -278,12 +293,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				|| is_member_function_pointer<_Tp>::value)>
     { };
 
-  /// type properties [4.5.3].
+  // type properties [4.5.3].
+  /// is_const
   template<typename>
     struct is_const
     : public false_type { };
 
-  /// is_const
   template<typename _Tp>
     struct is_const<_Tp const>
     : public true_type { };
@@ -358,7 +373,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 						       _Uint - 1>::value>
     { };
 
-  /// relationships between types [4.6].
+  // relationships between types [4.6].
+
+  /// is_same
   template<typename, typename>
     struct is_same
     : public false_type { };
@@ -367,7 +384,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct is_same<_Tp, _Tp>
     : public true_type { };
 
-  /// const-volatile modifications [4.7.1].
+  // const-volatile modifications [4.7.1].
+
+  /// remove_const
   template<typename _Tp>
     struct remove_const
     { typedef _Tp     type; };
@@ -411,7 +430,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       add_const<typename add_volatile<_Tp>::type>::type     type;
     };
 
-  /// array modifications [4.7.3].
+  // array modifications [4.7.3].
+
+  /// remove_extent
   template<typename _Tp>
     struct remove_extent
     { typedef _Tp     type; };
@@ -437,7 +458,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_all_extents<_Tp[]>
     { typedef typename remove_all_extents<_Tp>::type     type; };
 
-  /// pointer modifications [4.7.4].
+  // pointer modifications [4.7.4].
+
   template<typename _Tp, typename>
     struct __remove_pointer_helper
     { typedef _Tp     type; };
@@ -465,5 +487,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #undef _DEFINE_SPEC_2_HELPER
 #undef _DEFINE_SPEC
 
+  // @} group metaprogramming
 _GLIBCXX_END_NAMESPACE_TR1
 }

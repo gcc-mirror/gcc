@@ -1,6 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -620,6 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  size per thread plus a "global" one. Steps are taken to limit
    *  the per thread freelist sizes (by returning excess back to
    *  the "global" list).
+   *  @ingroup allocators
    *
    *  Further details:
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch32.html

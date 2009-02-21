@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -93,6 +93,14 @@ _GLIBCXX_END_NAMESPACE
 #include <bits/valarray_before.h>
   
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @defgroup numeric_arrays Numeric Arrays
+   * @ingroup numerics
+   *
+   * Classes and functions for representing and manipulating arrays of elements.
+   * @{
+   */
 
   /**
    *  @brief  Smart array designed to support numeric processing.
@@ -552,6 +560,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return _M_data[__i];
     }
 
+  // @} group numeric_arrays
+
 _GLIBCXX_END_NAMESPACE
 
 #include <bits/valarray_after.h>
@@ -562,6 +572,11 @@ _GLIBCXX_END_NAMESPACE
 #include <bits/indirect_array.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @addtogroup numeric_arrays
+   * @{
+   */
 
   template<typename _Tp>
     inline
@@ -1068,6 +1083,8 @@ _DEFINE_BINARY_OPERATOR(<=, __less_equal)
 _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 
 #undef _DEFINE_BINARY_OPERATOR
+
+  // @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE
 

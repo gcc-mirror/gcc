@@ -53,7 +53,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @class basic_string basic_string.h <string>
    *  @brief  Managing sequences of characters and character-like objects.
    *
-   *  @ingroup containers
    *  @ingroup sequences
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a

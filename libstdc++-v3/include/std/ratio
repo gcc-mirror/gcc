@@ -1,6 +1,6 @@
-// <ratio> -*- C++ -*-
+// ratio -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the 
@@ -47,6 +47,14 @@
 
 namespace std
 {
+  /**
+   * @defgroup ratio Rational Arithmetic
+   * @ingroup utilities
+   *
+   * Compile time representation of fininte rational numbers.
+   * @{
+   */
+
   template<intmax_t _Pn>
     struct __static_sign
     : integral_constant<intmax_t, (_Pn < 0) ? -1 : 1>
@@ -132,7 +140,7 @@ namespace std
 
   /**
    *  @brief Provides compile-time rational arithmetic.
-   * 
+   *
    *  This class template represents any finite rational number with a
    *  numerator and denominator representable by compile-time constants of
    *  type intmax_t. The ratio is simplified when instantiated.
@@ -289,6 +297,8 @@ namespace std
   typedef ratio<            1000000000000, 1> tera;
   typedef ratio<         1000000000000000, 1> peta;
   typedef ratio<      1000000000000000000, 1> exa;
+
+  // @} group ratio
 }
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1

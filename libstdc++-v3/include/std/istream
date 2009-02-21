@@ -1,7 +1,7 @@
 // Input streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -50,6 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [27.6.1.1] Template class basic_istream
   /**
    *  @brief  Controlling input.
+   *  @ingroup io
    *
    *  This is the base class for all input streams.  It provides text
    *  formatting of all builtin types, and communicates with any class
@@ -758,6 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 27.6.1.5 Template class basic_iostream
   /**
    *  @brief  Merging istream and ostream capabilities.
+   *  @ingroup io
    *
    *  This class multiply inherits from the input and output stream classes
    *  simply to provide a single interface.

@@ -39,7 +39,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /**
    *  @brief A standard container for storing a fixed size sequence of elements.
    *
-   *  @ingroup containers
    *  @ingroup sequences
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a

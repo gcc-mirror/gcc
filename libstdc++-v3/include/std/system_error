@@ -318,7 +318,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return !(__lhs == __rhs); }
 
 
-  /// Thrown to indicate error code of underlying system.
+  /** 
+   *  @brief Thrown to indicate error code of underlying system.
+   *
+   *  @ingroup exceptions
+   */
   class system_error : public std::runtime_error
   {
   private:

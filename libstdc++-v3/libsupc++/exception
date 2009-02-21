@@ -1,7 +1,7 @@
 // Exception Handling support header for -*- C++ -*-
 
 // Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-// 2004, 2005, 2006, 2007, 2008
+// 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -45,6 +45,14 @@ extern "C++" {
 
 namespace std 
 {
+  /**
+   * @defgroup exceptions Exceptions
+   * @ingroup diagnostics
+   *
+   * Classes and functions for reporting errors via exception classes.
+   * @{
+   */
+
   /**
    *  @brief Base class for all library exceptions.
    *
@@ -111,21 +119,28 @@ namespace std
    */
   bool uncaught_exception() throw();
 
+  // @} group exceptions
 } // namespace std
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  /** A replacement for the standard terminate_handler which prints more
-      information about the terminating exception (if any) on stderr.  Call
-      @code
-        std::set_terminate (__gnu_cxx::__verbose_terminate_handler)
-      @endcode
-      to use.  For more info, see
-      http://gcc.gnu.org/onlinedocs/libstdc++/19_diagnostics/howto.html#4
-
-      In 3.4 and later, this is on by default.
-  */
-  void __verbose_terminate_handler ();
+  /** 
+   *  @brief A replacement for the standard terminate_handler which
+   *  prints more information about the terminating exception (if any)
+   *  on stderr.  
+   *
+   *  @ingroup exceptions
+   *
+   *  Call
+   *   @code
+   *     std::set_terminate(__gnu_cxx::__verbose_terminate_handler)
+   *   @endcode
+   *  to use.  For more info, see
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt02ch06s02.html
+   *
+   *  In 3.4 and later, this is on by default.
+   */
+  void __verbose_terminate_handler();
 
 _GLIBCXX_END_NAMESPACE
   

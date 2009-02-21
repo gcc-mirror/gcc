@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,6 +52,14 @@
 #include <sstream>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @defgroup complex_numbers Complex Numbers
+   * @ingroup numerics
+   *
+   * Classes and functions for complex numbers.
+   * @{
+   */
 
   // Forward declarations.
   template<typename _Tp> class complex;
@@ -104,7 +112,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp> complex<_Tp> tan(const complex<_Tp>&);
   /// Return complex hyperbolic tangent of @a z.
   template<typename _Tp> complex<_Tp> tanh(const complex<_Tp>&);
-  //@}
     
     
   // 26.2.2  Primary template class complex
@@ -1448,8 +1455,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // These bits have to be at the end of this file, so that the
   // specializations have all been defined.
-  // ??? No, they have to be there because of compiler limitation at
-  // inlining.  It suffices that class specializations be defined.
   inline
   complex<float>::complex(const complex<double>& __z)
   : _M_value(__z.__rep()) { }
@@ -1482,6 +1487,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template wostream& operator<<(wostream&, const complex<long double>&);
 #endif
 #endif
+
+  // @} group complex_numbers
 
 _GLIBCXX_END_NAMESPACE
 

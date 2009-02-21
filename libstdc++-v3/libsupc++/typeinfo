@@ -160,6 +160,7 @@ namespace std
 
   /**
    *  @brief  Thrown during incorrect typecasting.
+   *  @ingroup exceptions
    *
    *  If you attempt an invalid @c dynamic_cast expression, an instance of
    *  this class (or something derived from this class) is thrown.  */
@@ -176,7 +177,10 @@ namespace std
     virtual const char* what() const throw();
   };
   
-  /** If you use a NULL pointer in a @c typeid expression, this is thrown.  */
+  /** 
+   *  @brief Thrown when a NULL pointer in a @c typeid expression is used.
+   *  @ingroup exceptions
+   */
   class bad_typeid : public exception 
   {
   public:

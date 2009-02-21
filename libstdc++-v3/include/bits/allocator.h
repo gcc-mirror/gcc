@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -54,6 +54,13 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /**
+   * @defgroup allocators Allocators
+   * @ingroup memory
+   *
+   * Classes encapsulating memory operations.
+   */
+
   template<typename _Tp>
     class allocator;
 
@@ -75,6 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    * @brief  The "standard" allocator, as per [20.4].
+   * @ingroup allocators
    *
    *  Further details:
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt04ch11.html

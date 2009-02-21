@@ -56,6 +56,14 @@
 
 namespace std
 {
+  /**
+   * @defgroup mutexes Mutexes
+   * @ingroup concurrency
+   *
+   * Classes for mutex support.
+   * @{
+   */
+
   /// mutex
   class mutex
   {
@@ -383,7 +391,11 @@ namespace std
   extern const try_to_lock_t	try_to_lock;
   extern const adopt_lock_t	adopt_lock;
 
-  /// Thrown to indicate errors with lock operations.
+  /** 
+   *  @brief Thrown to indicate errors with lock operations.
+   *
+   *  @ingroup exceptions
+   */
   class lock_error : public exception
   {
   public:
@@ -682,6 +694,7 @@ namespace std
       return __try_lock_impl<0>::__do_try_lock(__locks);
     }
 
+  /// lock
   template<typename _L1, typename _L2, typename ..._L3>
     void
     lock(_L1&, _L2&, _L3&...);
@@ -727,6 +740,7 @@ namespace std
 
   extern "C" void __once_proxy();
 
+  /// call_once
   template<typename _Callable, typename... _Args>
     void
     call_once(once_flag& __once, _Callable __f, _Args&&... __args)
@@ -751,6 +765,8 @@ namespace std
       if (__e)
 	__throw_system_error(__e);
     }
+
+  // @} group mutexes
 }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

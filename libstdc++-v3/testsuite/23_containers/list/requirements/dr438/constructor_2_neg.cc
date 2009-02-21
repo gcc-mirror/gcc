@@ -1,6 +1,6 @@
 // 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007, 2008 Free Software Foundation
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,7 @@
 // USA.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1358 }
+// { dg-error "no matching" "" { target *-*-* } 1357 }
 // { dg-excess-errors "" }
 
 #include <list>

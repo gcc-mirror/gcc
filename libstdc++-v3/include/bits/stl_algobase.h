@@ -78,11 +78,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  /**
-   * @addtogroup algorithms Algorithms
-   * @{
-   */
-
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
   // nutshell, we are partially implementing the resolution of DR 187,
   // when it's safe, i.e., the value_types are equal.
@@ -114,6 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Swaps the contents of two iterators.
+   *  @ingroup mutating_algorithms
    *  @param  a  An iterator.
    *  @param  b  Another iterator.
    *  @return   Nothing.
@@ -152,6 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Swap the elements of two sequences.
+   *  @ingroup mutating_algorithms
    *  @param  first1  A forward iterator.
    *  @param  last1   A forward iterator.
    *  @param  first2  A forward iterator.
@@ -180,6 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief This does what you think it does.
+   *  @ingroup sorting_algorithms
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
    *  @return   The lesser of the parameters.
@@ -202,6 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief This does what you think it does.
+   *  @ingroup sorting_algorithms
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
    *  @return   The greater of the parameters.
@@ -224,6 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief This does what you think it does.
+   *  @ingroup sorting_algorithms
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
    *  @param  comp  A @link comparison_functors comparison functor@endlink.
@@ -244,6 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief This does what you think it does.
+   *  @ingroup sorting_algorithms
    *  @param  a  A thing of arbitrary type.
    *  @param  b  Another thing of arbitrary type.
    *  @param  comp  A @link comparison_functors comparison functor@endlink.
@@ -442,6 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Copies the range [first,last) into result.
+   *  @ingroup mutating_algorithms
    *  @param  first  An input iterator.
    *  @param  last   An input iterator.
    *  @param  result An output iterator.
@@ -474,6 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /**
    *  @brief Moves the range [first,last) into result.
+   *  @ingroup mutating_algorithms
    *  @param  first  An input iterator.
    *  @param  last   An input iterator.
    *  @param  result An output iterator.
@@ -609,6 +612,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Copies the range [first,last) into result.
+   *  @ingroup mutating_algorithms
    *  @param  first  A bidirectional iterator.
    *  @param  last   A bidirectional iterator.
    *  @param  result A bidirectional iterator.
@@ -644,6 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /**
    *  @brief Moves the range [first,last) into result.
+   *  @ingroup mutating_algorithms
    *  @param  first  A bidirectional iterator.
    *  @param  last   A bidirectional iterator.
    *  @param  result A bidirectional iterator.
@@ -715,6 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Fills the range [first,last) with copies of value.
+   *  @ingroup mutating_algorithms
    *  @param  first  A forward iterator.
    *  @param  last   A forward iterator.
    *  @param  value  A reference-to-const of arbitrary type.
@@ -769,6 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Fills the range [first,first+n) with copies of value.
+   *  @ingroup mutating_algorithms
    *  @param  first  An output iterator.
    *  @param  n      The count of copies to perform.
    *  @param  value  A reference-to-const of arbitrary type.
@@ -929,19 +936,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							    __first2, __last2);
     }
 
-  /* @} */ // group algorithms
-
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
-   * @addtogroup algorithms Algorithms
-   * @{
-   */
-
-  /**
    *  @brief Tests a range for element-wise equality.
+   *  @ingroup non_mutating_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -970,6 +971,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief Tests a range for element-wise equality.
+   *  @ingroup non_mutating_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -1000,6 +1002,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief Performs "dictionary" comparison on ranges.
+   *  @ingroup sorting_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -1036,6 +1039,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief Performs "dictionary" comparison on ranges.
+   *  @ingroup sorting_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -1075,6 +1079,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief Finds the places in ranges which don't match.
+   *  @ingroup non_mutating_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -1108,6 +1113,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief Finds the places in ranges which don't match.
+   *  @ingroup non_mutating_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
@@ -1139,8 +1145,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
         }
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
-
-  /* @} */ // group algorithms
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

@@ -1,6 +1,7 @@
 // new abi support -*- C++ -*-
   
-// Copyright (C) 2000, 2002, 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003, 2004, 2006, 2007, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -148,7 +149,47 @@ namespace __cxxabiv1
   int
   __cxa_finalize(void*);
 
-  // Demangling routines. 
+
+  /**
+   *  @brief Demangling routine. 
+   *  ABI-mandated entry point in the C++ runtime library for demangling.
+   *
+   *  @param __mangled_name A NUL-terminated character string
+   *  containing the name to be demangled.
+   *
+   *  @param __output_buffer A region of memory, allocated with
+   *  malloc, of @a *__length bytes, into which the demangled name is
+   *  stored.  If @a __output_buffer is not long enough, it is
+   *  expanded using realloc.  @a __output_buffer may instead be NULL;
+   *  in that case, the demangled name is placed in a region of memory
+   *  allocated with malloc.
+   *
+   *  @param __length If @a __length is non-NULL, the length of the
+   *  buffer containing the demangled name is placed in @a *__length.
+   *
+   *  @param __status @a *__status is set to one of the following values:
+   *   0: The demangling operation succeeded.
+   *  -1: A memory allocation failiure occurred.
+   *  -2: @a mangled_name is not a valid name under the C++ ABI mangling rules.
+   *  -3: One of the arguments is invalid.
+   *
+   *  @return A pointer to the start of the NUL-terminated demangled
+   *  name, or NULL if the demangling fails.  The caller is
+   *  responsible for deallocating this memory using @c free.
+   *
+   *  The demangling is performed using the C++ ABI mangling rules,
+   *  with GNU extensions. For example, this function is used in
+   *  __gnu_cxx::__verbose_terminate_handler.
+   * 
+   *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch39.html
+   *  for other examples of use.
+   *
+   *  @note The same demangling functionality is available via
+   *  libiberty (@c <libiberty/demangle.h> and @c libiberty.a) in GCC
+   *  3.1 and later, but that requires explicit installation (@c
+   *  --enable-install-libiberty) and uses a different API, although
+   *  the ABI is unchanged.
+   */
   char*
   __cxa_demangle(const char* __mangled_name, char* __output_buffer,
 		 size_t* __length, int* __status);
@@ -543,7 +584,26 @@ namespace __cxxabiv1
 
 } // namespace __cxxabiv1
 
-// User programs should use the alias `abi'. 
+/** @namespace abi
+ *  @brief The cross-vendor C++ Application Binary Interface. A
+ *  namespace alias to __cxxabiv1, but user programs should use the
+ *  alias `abi'.
+ *
+ *  A brief overview of an ABI is given in the libstdc++ FAQ, question
+ *  5.8 (you may have a copy of the FAQ locally, or you can view the online
+ *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_8).
+ *
+ *  GCC subscribes to a cross-vendor ABI for C++, sometimes
+ *  called the IA64 ABI because it happens to be the native ABI for that
+ *  platform.  It is summarized at http://www.codesourcery.com/cxx-abi/
+ *  along with the current specification.
+ *
+ *  For users of GCC greater than or equal to 3.x, entry points are
+ *  available in <cxxabi.h>, which notes, <em>"It is not normally
+ *  necessary for user programs to include this header, or use the
+ *  entry points directly.  However, this header is available should
+ *  that be needed."</em>
+*/
 namespace abi = __cxxabiv1;
 
 #endif // __cplusplus

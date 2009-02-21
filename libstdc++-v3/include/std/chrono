@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,6 +53,17 @@
 
 namespace std 
 {
+  /**
+   * @defgroup chrono Time
+   * @ingroup utilities
+   *
+   * Classes and functions for time.
+   * @{
+   */
+
+  /** @namespace std::chrono
+   *  @brief ISO C++ 0x entities sub namespace for time and date.
+   */
   namespace chrono
   {
     template<typename _Rep, typename _Period = ratio<1>>
@@ -84,7 +95,7 @@ namespace std
 
   namespace chrono 
   {
-    // primary template for duration_cast impl.
+    // Primary template for duration_cast impl.
     template<typename _ToDuration, typename _CF, typename _CR,
              bool _NumIsOne = false, bool _DenIsOne = false>
       struct __duration_cast_impl
@@ -132,6 +143,7 @@ namespace std
           }
       };
 
+    /// duration_cast
     template<typename _ToDuration, typename _Rep, typename _Period>
       inline _ToDuration
       duration_cast(const duration<_Rep, _Period>& __d)
@@ -145,11 +157,13 @@ namespace std
           __cf::num == 1, __cf::den == 1>::__cast(__d);
       }
 
+    /// treat_as_floating_point
     template<typename _Rep>
       struct treat_as_floating_point 
       : is_floating_point<_Rep>
       { };
 
+    /// duration_values
     template<typename _Rep>
       struct duration_values
       {
@@ -433,11 +447,22 @@ namespace std
                  const duration<_Rep2, _Period2>& __rhs)
       { return !(__lhs < __rhs); }
 
+    /// nanoseconds
     typedef duration<int64_t,        nano> nanoseconds;
+
+    /// microseconds
     typedef duration<int64_t,       micro> microseconds;
+
+    /// milliseconds
     typedef duration<int64_t,       milli> milliseconds;
+    
+    /// seconds
     typedef duration<int64_t             > seconds;
+
+    /// minutes
     typedef duration<int,     ratio<  60>> minutes;
+
+    /// hours
     typedef duration<int,     ratio<3600>> hours;
 
     /// time_point
@@ -496,6 +521,7 @@ namespace std
 	duration __d;
       };
   
+    /// time_point_cast
     template<typename _ToDuration, typename _Clock, typename _Duration>
       inline time_point<_Clock, _ToDuration> 
       time_point_cast(const time_point<_Clock, _Duration>& __t)
@@ -621,6 +647,7 @@ namespace std
     };
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
+    /// monotonic_clock
     struct monotonic_clock
     {
       typedef chrono::nanoseconds duration;
@@ -638,8 +665,10 @@ namespace std
 #endif
 
     typedef system_clock high_resolution_clock;
-  }
-}
+  } // namespace chrono
+
+  // @} group chrono
+} // namespace std
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
 

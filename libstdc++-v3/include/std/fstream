@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -53,6 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [27.8.1.1] template class basic_filebuf
   /**
    *  @brief  The actual work of input and output (for files).
+   *  @ingroup io
    *
    *  This class associates both its input and output sequence with an
    *  external disk file, and maintains a joint file position for both
@@ -392,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [27.8.1.5] Template class basic_ifstream
   /**
    *  @brief  Controlling input for files.
+   *  @ingroup io
    *
    *  This class supports reading from named files, using the inherited
    *  functions from std::basic_istream.  To control the associated
@@ -520,6 +522,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [27.8.1.8] Template class basic_ofstream
   /**
    *  @brief  Controlling output for files.
+   *  @ingroup io
    *
    *  This class supports reading from named files, using the inherited
    *  functions from std::basic_ostream.  To control the associated
@@ -651,6 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [27.8.1.11] Template class basic_fstream
   /**
    *  @brief  Controlling input and output for files.
+   *  @ingroup io
    *
    *  This class supports reading from and writing to named files, using
    *  the inherited functions from std::basic_iostream.  To control the

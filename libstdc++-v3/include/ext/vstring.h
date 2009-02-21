@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // NB: per LWG issue 42, semantics different from IS:
       /**
        *  @brief  Construct string with copy of value of @a str.
-       *  @param  str  Source string.
+       *  @param  __str  Source string.
        */
       __versa_string(const __versa_string& __str)
       : __vstring_base(__str) { }
@@ -150,18 +150,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  String move constructor.
-       *  @param  str  Source string.
+       *  @param  __str  Source string.
        *
-       *  The newly-constructed %string contains the exact contents of @a str.
-       *  The contents of @a str are a valid, but unspecified string.
+       *  The newly-constructed %string contains the exact contents of
+       *  @a str.  The contents of @a str are a valid, but unspecified
+       *  string.
        */
       __versa_string(__versa_string&& __str)
       : __vstring_base(std::forward<__vstring_base>(__str)) { }
 
       /**
        *  @brief  Construct string from an initializer list.
-       *  @param  l  std::initializer_list of characters.
-       *  @param  a  Allocator to use (default is default allocator).
+       *  @param  __l  std::initializer_list of characters.
+       *  @param  __a  Allocator to use (default is default allocator).
        */
       __versa_string(std::initializer_list<_CharT> __l,
 		     const _Alloc& __a = _Alloc())
@@ -170,9 +171,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Construct string as copy of a substring.
-       *  @param  str  Source string.
-       *  @param  pos  Index of first character to copy from.
-       *  @param  n  Number of characters to copy (default remainder).
+       *  @param  __str  Source string.
+       *  @param  __pos  Index of first character to copy from.
+       *  @param  __n  Number of characters to copy (default remainder).
        */
       __versa_string(const __versa_string& __str, size_type __pos,
 		     size_type __n = npos)
@@ -184,10 +185,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Construct string as copy of a substring.
-       *  @param  str  Source string.
-       *  @param  pos  Index of first character to copy from.
-       *  @param  n  Number of characters to copy.
-       *  @param  a  Allocator to use.
+       *  @param  __str  Source string.
+       *  @param  __pos  Index of first character to copy from.
+       *  @param  __n  Number of characters to copy.
+       *  @param  __a  Allocator to use.
        */
       __versa_string(const __versa_string& __str, size_type __pos,
 		     size_type __n, const _Alloc& __a)
@@ -199,11 +200,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Construct string initialized by a character array.
-       *  @param  s  Source character array.
-       *  @param  n  Number of characters to copy.
-       *  @param  a  Allocator to use (default is default allocator).
+       *  @param  __s  Source character array.
+       *  @param  __n  Number of characters to copy.
+       *  @param  __a  Allocator to use (default is default allocator).
        *
-       *  NB: @a s must have at least @a n characters, '\0' has no special
+       *  NB: @a __s must have at least @a __n characters, '\0' has no special
        *  meaning.
        */
       __versa_string(const _CharT* __s, size_type __n,
@@ -212,8 +213,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Construct string as copy of a C string.
-       *  @param  s  Source C string.
-       *  @param  a  Allocator to use (default is default allocator).
+       *  @param  __s  Source C string.
+       *  @param  __a  Allocator to use (default is default allocator).
        */
       __versa_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : __vstring_base(__s, __s ? __s + traits_type::length(__s) :
@@ -221,18 +222,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Construct string as multiple characters.
-       *  @param  n  Number of characters.
-       *  @param  c  Character to use.
-       *  @param  a  Allocator to use (default is default allocator).
+       *  @param  __n  Number of characters.
+       *  @param  __c  Character to use.
+       *  @param  __a  Allocator to use (default is default allocator).
        */
       __versa_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc())
       : __vstring_base(__n, __c, __a) { }
 
       /**
        *  @brief  Construct string as copy of a range.
-       *  @param  beg  Start of range.
-       *  @param  end  End of range.
-       *  @param  a  Allocator to use (default is default allocator).
+       *  @param  __beg  Start of range.
+       *  @param  __end  End of range.
+       *  @param  __a  Allocator to use (default is default allocator).
        */
       template<class _InputIterator>
         __versa_string(_InputIterator __beg, _InputIterator __end,
@@ -246,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Assign the value of @a str to this string.
-       *  @param  str  Source string.
+       *  @param  __str  Source string.
        */
       __versa_string&
       operator=(const __versa_string& __str) 
@@ -255,10 +256,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  String move assignment operator.
-       *  @param  str  Source string.
+       *  @param  __str  Source string.
        *
-       *  The contents of @a str are moved into this string (without copying).
-       *  @a str is a valid, but unspecified string.
+       *  The contents of @a __str are moved into this string (without
+       *  copying).  @a __str is a valid, but unspecified string.
        */
       __versa_string&
       operator=(__versa_string&& __str)
@@ -270,7 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to string constructed from initializer list.
-       *  @param  l  std::initializer_list.
+       *  @param  __l  std::initializer_list.
        */
       __versa_string&
       operator=(std::initializer_list<_CharT> __l)
@@ -281,8 +282,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
 
       /**
-       *  @brief  Copy contents of @a s into this string.
-       *  @param  s  Source null-terminated string.
+       *  @brief  Copy contents of @a __s into this string.
+       *  @param  __s  Source null-terminated string.
        */
       __versa_string&
       operator=(const _CharT* __s) 
@@ -290,10 +291,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to string of length 1.
-       *  @param  c  Source character.
+       *  @param  __c  Source character.
        *
        *  Assigning to a character makes this string length 1 and
-       *  (*this)[0] == @a c.
+       *  (*this)[0] == @a __c.
        */
       __versa_string&
       operator=(_CharT __c) 
@@ -434,34 +435,34 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Resizes the %string to the specified number of characters.
-       *  @param  n  Number of characters the %string should contain.
-       *  @param  c  Character to fill any new elements.
+       *  @param  __n  Number of characters the %string should contain.
+       *  @param  __c  Character to fill any new elements.
        *
        *  This function will %resize the %string to the specified
        *  number of characters.  If the number is smaller than the
        *  %string's current size the %string is truncated, otherwise
-       *  the %string is extended and new elements are set to @a c.
+       *  the %string is extended and new elements are set to @a __c.
        */
       void
       resize(size_type __n, _CharT __c);
 
       /**
        *  @brief  Resizes the %string to the specified number of characters.
-       *  @param  n  Number of characters the %string should contain.
+       *  @param  __n  Number of characters the %string should contain.
        *
-       *  This function will resize the %string to the specified length.  If
-       *  the new size is smaller than the %string's current size the %string
-       *  is truncated, otherwise the %string is extended and new characters
-       *  are default-constructed.  For basic types such as char, this means
-       *  setting them to 0.
+       *  This function will resize the %string to the specified
+       *  length.  If the new size is smaller than the %string's
+       *  current size the %string is truncated, otherwise the %string
+       *  is extended and new characters are default-constructed.  For
+       *  basic types such as char, this means setting them to 0.
        */
       void
       resize(size_type __n)
       { this->resize(__n, _CharT()); }
 
       /**
-       *  Returns the total number of characters that the %string can hold
-       *  before needing to allocate more memory.
+       *  Returns the total number of characters that the %string can
+       *  hold before needing to allocate more memory.
        */
       size_type
       capacity() const
@@ -470,8 +471,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Attempt to preallocate enough memory for specified number of
        *          characters.
-       *  @param  res_arg  Number of characters required.
-       *  @throw  std::length_error  If @a res_arg exceeds @c max_size().
+       *  @param  __res_arg  Number of characters required.
+       *  @throw  std::length_error  If @a __res_arg exceeds @c max_size().
        *
        *  This function attempts to reserve enough memory for the
        *  %string to hold the specified number of characters.  If the
@@ -479,10 +480,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  thrown.
        *
        *  The advantage of this function is that if optimal code is a
-       *  necessity and the user can determine the string length that will be
-       *  required, the user can reserve the memory in %advance, and thus
-       *  prevent a possible reallocation of memory and copying of %string
-       *  data.
+       *  necessity and the user can determine the string length that
+       *  will be required, the user can reserve the memory in
+       *  %advance, and thus prevent a possible reallocation of memory
+       *  and copying of %string data.
        */
       void
       reserve(size_type __res_arg = 0)
@@ -505,7 +506,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // Element access:
       /**
        *  @brief  Subscript access to the data contained in the %string.
-       *  @param  pos  The index of the character to access.
+       *  @param  __pos  The index of the character to access.
        *  @return  Read-only (constant) reference to the character.
        *
        *  This operator allows for easy, array-style, data access.
@@ -522,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Subscript access to the data contained in the %string.
-       *  @param  pos  The index of the character to access.
+       *  @param  __pos  The index of the character to access.
        *  @return  Read/write reference to the character.
        *
        *  This operator allows for easy, array-style, data access.
@@ -543,13 +544,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Provides access to the data contained in the %string.
-       *  @param n The index of the character to access.
+       *  @param __n The index of the character to access.
        *  @return  Read-only (const) reference to the character.
-       *  @throw  std::out_of_range  If @a n is an invalid index.
+       *  @throw  std::out_of_range  If @a __n is an invalid index.
        *
-       *  This function provides for safer data access.  The parameter is
-       *  first checked that it is in the range of the string.  The function
-       *  throws out_of_range if the check fails.
+       *  This function provides for safer data access.  The parameter
+       *  is first checked that it is in the range of the string.  The
+       *  function throws out_of_range if the check fails.
        */
       const_reference
       at(size_type __n) const
@@ -561,14 +562,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Provides access to the data contained in the %string.
-       *  @param n The index of the character to access.
+       *  @param __n The index of the character to access.
        *  @return  Read/write reference to the character.
-       *  @throw  std::out_of_range  If @a n is an invalid index.
+       *  @throw  std::out_of_range  If @a __n is an invalid index.
        *
-       *  This function provides for safer data access.  The parameter is
-       *  first checked that it is in the range of the string.  The function
-       *  throws out_of_range if the check fails.  Success results in
-       *  unsharing the string.
+       *  This function provides for safer data access.  The parameter
+       *  is first checked that it is in the range of the string.  The
+       *  function throws out_of_range if the check fails.  Success
+       *  results in unsharing the string.
        */
       reference
       at(size_type __n)
@@ -616,7 +617,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // Modifiers:
       /**
        *  @brief  Append a string to this string.
-       *  @param str  The string to append.
+       *  @param __str  The string to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -625,7 +626,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a C string.
-       *  @param s  The C string to append.
+       *  @param __s  The C string to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -634,7 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a character.
-       *  @param c  The character to append.
+       *  @param __c  The character to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -647,7 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Append an initializer_list of characters.
-       *  @param l  The initializer_list of characters to be appended.
+       *  @param __l  The initializer_list of characters to be appended.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -657,7 +658,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a string to this string.
-       *  @param str  The string to append.
+       *  @param __str  The string to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -666,15 +667,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a substring.
-       *  @param str  The string to append.
-       *  @param pos  Index of the first character of str to append.
-       *  @param n  The number of characters to append.
+       *  @param __str  The string to append.
+       *  @param __pos  Index of the first character of str to append.
+       *  @param __n  The number of characters to append.
        *  @return  Reference to this string.
        *  @throw  std::out_of_range if @a pos is not a valid index.
        *
-       *  This function appends @a n characters from @a str starting at @a pos
-       *  to this string.  If @a n is is larger than the number of available
-       *  characters in @a str, the remainder of @a str is appended.
+       *  This function appends @a __n characters from @a __str
+       *  starting at @a __pos to this string.  If @a __n is is larger
+       *  than the number of available characters in @a __str, the
+       *  remainder of @a __str is appended.
        */
       __versa_string&
       append(const __versa_string& __str, size_type __pos, size_type __n)
@@ -684,8 +686,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a C substring.
-       *  @param s  The C string to append.
-       *  @param n  The number of characters to append.
+       *  @param __s  The C string to append.
+       *  @param __n  The number of characters to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -698,7 +700,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a C string.
-       *  @param s  The C string to append.
+       *  @param __s  The C string to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -712,8 +714,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append multiple characters.
-       *  @param n  The number of characters to append.
-       *  @param c  The character to use.
+       *  @param __n  The number of characters to append.
+       *  @param __c  The character to use.
        *  @return  Reference to this string.
        *
        *  Appends n copies of c to this string.
@@ -725,7 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Append an initializer_list of characters.
-       *  @param l  The initializer_list of characters to append.
+       *  @param __l  The initializer_list of characters to append.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -735,8 +737,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a range of characters.
-       *  @param first  Iterator referencing the first character to append.
-       *  @param last  Iterator marking the end of the range.
+       *  @param __first  Iterator referencing the first character to append.
+       *  @param __last  Iterator marking the end of the range.
        *  @return  Reference to this string.
        *
        *  Appends characters in the range [first,last) to this string.
@@ -748,7 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Append a single character.
-       *  @param c  Character to append.
+       *  @param __c  Character to append.
        */
       void
       push_back(_CharT __c)
@@ -762,7 +764,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to contents of another string.
-       *  @param  str  Source string to use.
+       *  @param  __str  Source string to use.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -774,15 +776,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to a substring of a string.
-       *  @param str  The string to use.
-       *  @param pos  Index of the first character of str.
-       *  @param n  Number of characters to use.
+       *  @param __str  The string to use.
+       *  @param __pos  Index of the first character of str.
+       *  @param __n  Number of characters to use.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range if @a pos is not a valid index.
+       *  @throw  std::out_of_range if @a __pos is not a valid index.
        *
-       *  This function sets this string to the substring of @a str consisting
-       *  of @a n characters at @a pos.  If @a n is is larger than the number
-       *  of available characters in @a str, the remainder of @a str is used.
+       *  This function sets this string to the substring of @a __str
+       *  consisting of @a __n characters at @a __pos.  If @a __n is
+       *  is larger than the number of available characters in @a
+       *  __str, the remainder of @a __str is used.
        */
       __versa_string&
       assign(const __versa_string& __str, size_type __pos, size_type __n)
@@ -792,13 +795,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to a C substring.
-       *  @param s  The C string to use.
-       *  @param n  Number of characters to use.
+       *  @param __s  The C string to use.
+       *  @param __n  Number of characters to use.
        *  @return  Reference to this string.
        *
-       *  This function sets the value of this string to the first @a n
-       *  characters of @a s.  If @a n is is larger than the number of
-       *  available characters in @a s, the remainder of @a s is used.
+       *  This function sets the value of this string to the first @a
+       *  __n characters of @a __s.  If @a __n is is larger than the
+       *  number of available characters in @a __s, the remainder of
+       *  @a __s is used.
        */
       __versa_string&
       assign(const _CharT* __s, size_type __n)
@@ -809,12 +813,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to contents of a C string.
-       *  @param s  The C string to use.
+       *  @param __s  The C string to use.
        *  @return  Reference to this string.
        *
-       *  This function sets the value of this string to the value of @a s.
-       *  The data is copied, so there is no dependence on @a s once the
-       *  function returns.
+       *  This function sets the value of this string to the value of
+       *  @a __s.  The data is copied, so there is no dependence on @a
+       *  __s once the function returns.
        */
       __versa_string&
       assign(const _CharT* __s)
@@ -826,12 +830,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to multiple characters.
-       *  @param n  Length of the resulting string.
-       *  @param c  The character to use.
+       *  @param __n  Length of the resulting string.
+       *  @param __c  The character to use.
        *  @return  Reference to this string.
        *
-       *  This function sets the value of this string to @a n copies of
-       *  character @a c.
+       *  This function sets the value of this string to @a __n copies of
+       *  character @a __c.
        */
       __versa_string&
       assign(size_type __n, _CharT __c)
@@ -839,11 +843,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Set value to a range of characters.
-       *  @param first  Iterator referencing the first character to append.
-       *  @param last  Iterator marking the end of the range.
+       *  @param __first  Iterator referencing the first character to append.
+       *  @param __last  Iterator marking the end of the range.
        *  @return  Reference to this string.
        *
-       *  Sets value of string to characters in the range [first,last).
+       *  Sets value of string to characters in the range
+       *  [first,last).
       */
       template<class _InputIterator>
         __versa_string&
@@ -853,7 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Set value to an initializer_list of characters.
-       *  @param l  The initializer_list of characters to assign.
+       *  @param __l  The initializer_list of characters to assign.
        *  @return  Reference to this string.
        */
       __versa_string&
@@ -863,15 +868,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert multiple characters.
-       *  @param p  Iterator referencing location in string to insert at.
-       *  @param n  Number of characters to insert
-       *  @param c  The character to insert.
+       *  @param __p  Iterator referencing location in string to insert at.
+       *  @param __n  Number of characters to insert
+       *  @param __c  The character to insert.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Inserts @a n copies of character @a c starting at the position
-       *  referenced by iterator @a p.  If adding characters causes the length
-       *  to exceed max_size(), length_error is thrown.  The value of the
-       *  string doesn't change if an error is thrown.
+       *  Inserts @a __n copies of character @a __c starting at the
+       *  position referenced by iterator @a __p.  If adding
+       *  characters causes the length to exceed max_size(),
+       *  length_error is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       void
       insert(iterator __p, size_type __n, _CharT __c)
@@ -879,14 +885,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert a range of characters.
-       *  @param p  Iterator referencing location in string to insert at.
-       *  @param beg  Start of range.
-       *  @param end  End of range.
+       *  @param __p  Iterator referencing location in string to insert at.
+       *  @param __beg  Start of range.
+       *  @param __end  End of range.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Inserts characters in range [beg,end).  If adding characters causes
-       *  the length to exceed max_size(), length_error is thrown.  The value
-       *  of the string doesn't change if an error is thrown.
+       *  Inserts characters in range [beg,end).  If adding characters
+       *  causes the length to exceed max_size(), length_error is
+       *  thrown.  The value of the string doesn't change if an error
+       *  is thrown.
       */
       template<class _InputIterator>
         void
@@ -896,8 +903,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Insert an initializer_list of characters.
-       *  @param p  Iterator referencing location in string to insert at.
-       *  @param l  The initializer_list of characters to insert.
+       *  @param __p  Iterator referencing location in string to insert at.
+       *  @param __l  The initializer_list of characters to insert.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        */
       void
@@ -907,14 +914,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert value of a string.
-       *  @param pos1  Iterator referencing location in string to insert at.
-       *  @param str  The string to insert.
+       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Inserts value of @a str starting at @a pos1.  If adding characters
-       *  causes the length to exceed max_size(), length_error is thrown.  The
-       *  value of the string doesn't change if an error is thrown.
+       *  Inserts value of @a __str starting at @a __pos1.  If adding
+       *  characters causes the length to exceed max_size(),
+       *  length_error is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       __versa_string&
       insert(size_type __pos1, const __versa_string& __str)
@@ -923,21 +931,21 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert a substring.
-       *  @param pos1  Iterator referencing location in string to insert at.
-       *  @param str  The string to insert.
-       *  @param pos2  Start of characters in str to insert.
-       *  @param n  Number of characters to insert.
+       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __str  The string to insert.
+       *  @param __pos2  Start of characters in str to insert.
+       *  @param __n  Number of characters to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a pos1 > size() or
-       *  @a pos2 > @a str.size().
+       *  @throw  std::out_of_range  If @a __pos1 > size() or
+       *  @a __pos2 > @a __str.size().
        *
-       *  Starting at @a pos1, insert @a n character of @a str beginning with
-       *  @a pos2.  If adding characters causes the length to exceed
-       *  max_size(), length_error is thrown.  If @a pos1 is beyond the end of
-       *  this string or @a pos2 is beyond the end of @a str, out_of_range is
-       *  thrown.  The value of the string doesn't change if an error is
-       *  thrown.
+       *  Starting at @a __pos1, insert @a __n character of @a __str
+       *  beginning with @a __pos2.  If adding characters causes the
+       *  length to exceed max_size(), length_error is thrown.  If @a
+       *  __pos1 is beyond the end of this string or @a __pos2 is
+       *  beyond the end of @a __str, out_of_range is thrown.  The
+       *  value of the string doesn't change if an error is thrown.
       */
       __versa_string&
       insert(size_type __pos1, const __versa_string& __str,
@@ -948,19 +956,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert a C substring.
-       *  @param pos  Iterator referencing location in string to insert at.
-       *  @param s  The C string to insert.
-       *  @param n  The number of characters to insert.
+       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __s  The C string to insert.
+       *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a pos is beyond the end of this
+       *  @throw  std::out_of_range  If @a __pos is beyond the end of this
        *  string.
        *
-       *  Inserts the first @a n characters of @a s starting at @a pos.  If
-       *  adding characters causes the length to exceed max_size(),
-       *  length_error is thrown.  If @a pos is beyond end(), out_of_range is
-       *  thrown.  The value of the string doesn't change if an error is
-       *  thrown.
+       *  Inserts the first @a __n characters of @a __s starting at @a
+       *  __pos.  If adding characters causes the length to exceed
+       *  max_size(), length_error is thrown.  If @a __pos is beyond
+       *  end(), out_of_range is thrown.  The value of the string
+       *  doesn't change if an error is thrown.
       */
       __versa_string&
       insert(size_type __pos, const _CharT* __s, size_type __n)
@@ -968,18 +976,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert a C string.
-       *  @param pos  Iterator referencing location in string to insert at.
-       *  @param s  The C string to insert.
+       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a pos is beyond the end of this
+       *  @throw  std::out_of_range  If @a __pos is beyond the end of this
        *  string.
        *
-       *  Inserts the first @a n characters of @a s starting at @a pos.  If
-       *  adding characters causes the length to exceed max_size(),
-       *  length_error is thrown.  If @a pos is beyond end(), out_of_range is
-       *  thrown.  The value of the string doesn't change if an error is
-       *  thrown.
+       *  Inserts the first @a __n characters of @a __s starting at @a
+       *  __pos.  If adding characters causes the length to exceed
+       *  max_size(), length_error is thrown.  If @a __pos is beyond
+       *  end(), out_of_range is thrown.  The value of the string
+       *  doesn't change if an error is thrown.
       */
       __versa_string&
       insert(size_type __pos, const _CharT* __s)
@@ -991,19 +999,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert multiple characters.
-       *  @param pos  Index in string to insert at.
-       *  @param n  Number of characters to insert
-       *  @param c  The character to insert.
+       *  @param __pos  Index in string to insert at.
+       *  @param __n  Number of characters to insert
+       *  @param __c  The character to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a pos is beyond the end of this
+       *  @throw  std::out_of_range  If @a __pos is beyond the end of this
        *  string.
        *
-       *  Inserts @a n copies of character @a c starting at index @a pos.  If
-       *  adding characters causes the length to exceed max_size(),
-       *  length_error is thrown.  If @a pos > length(), out_of_range is
-       *  thrown.  The value of the string doesn't change if an error is
-       *  thrown.
+       *  Inserts @a __n copies of character @a __c starting at index
+       *  @a __pos.  If adding characters causes the length to exceed
+       *  max_size(), length_error is thrown.  If @a __pos > length(),
+       *  out_of_range is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       __versa_string&
       insert(size_type __pos, size_type __n, _CharT __c)
@@ -1012,15 +1020,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Insert one character.
-       *  @param p  Iterator referencing position in string to insert at.
-       *  @param c  The character to insert.
+       *  @param __p  Iterator referencing position in string to insert at.
+       *  @param __c  The character to insert.
        *  @return  Iterator referencing newly inserted char.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Inserts character @a c at position referenced by @a p.  If adding
-       *  character causes the length to exceed max_size(), length_error is
-       *  thrown.  If @a p is beyond end of string, out_of_range is thrown.
-       *  The value of the string doesn't change if an error is thrown.
+       *  Inserts character @a __c at position referenced by @a __p.
+       *  If adding character causes the length to exceed max_size(),
+       *  length_error is thrown.  If @a __p is beyond end of string,
+       *  out_of_range is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       iterator
       insert(iterator __p, _CharT __c)
@@ -1034,17 +1043,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Remove characters.
-       *  @param pos  Index of first character to remove (default 0).
-       *  @param n  Number of characters to remove (default remainder).
+       *  @param __pos  Index of first character to remove (default 0).
+       *  @param __n  Number of characters to remove (default remainder).
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos is beyond the end of this
+       *  @throw  std::out_of_range  If @a __pos is beyond the end of this
        *  string.
        *
-       *  Removes @a n characters from this string starting at @a pos.  The
-       *  length of the string is reduced by @a n.  If there are < @a n
-       *  characters to remove, the remainder of the string is truncated.  If
-       *  @a p is beyond end of string, out_of_range is thrown.  The value of
-       *  the string doesn't change if an error is thrown.
+       *  Removes @a __n characters from this string starting at @a
+       *  __pos.  The length of the string is reduced by @a __n.  If
+       *  there are < @a __n characters to remove, the remainder of
+       *  the string is truncated.  If @a __p is beyond end of string,
+       *  out_of_range is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       __versa_string&
       erase(size_type __pos = 0, size_type __n = npos)
@@ -1056,11 +1066,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Remove one character.
-       *  @param position  Iterator referencing the character to remove.
+       *  @param __position  Iterator referencing the character to remove.
        *  @return  iterator referencing same location after removal.
        *
-       *  Removes the character at @a position from this string. The value
-       *  of the string doesn't change if an error is thrown.
+       *  Removes the character at @a __position from this string. The
+       *  value of the string doesn't change if an error is thrown.
       */
       iterator
       erase(iterator __position)
@@ -1075,12 +1085,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Remove a range of characters.
-       *  @param first  Iterator referencing the first character to remove.
-       *  @param last  Iterator referencing the end of the range.
+       *  @param __first  Iterator referencing the first character to remove.
+       *  @param __last  Iterator referencing the end of the range.
        *  @return  Iterator referencing location of first after removal.
        *
-       *  Removes the characters in the range [first,last) from this string.
-       *  The value of the string doesn't change if an error is thrown.
+       *  Removes the characters in the range [first,last) from this
+       *  string.  The value of the string doesn't change if an error
+       *  is thrown.
       */
       iterator
       erase(iterator __first, iterator __last)
@@ -1095,19 +1106,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace characters with value from another string.
-       *  @param pos  Index of first character to replace.
-       *  @param n  Number of characters to be replaced.
-       *  @param str  String to insert.
+       *  @param __pos  Index of first character to replace.
+       *  @param __n  Number of characters to be replaced.
+       *  @param __str  String to insert.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos is beyond the end of this
+       *  @throw  std::out_of_range  If @a __pos is beyond the end of this
        *  string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [pos,pos+n) from this string.
-       *  In place, the value of @a str is inserted.  If @a pos is beyond end
-       *  of string, out_of_range is thrown.  If the length of the result
-       *  exceeds max_size(), length_error is thrown.  The value of the string
-       *  doesn't change if an error is thrown.
+       *  Removes the characters in the range [pos,pos+n) from this
+       *  string.  In place, the value of @a __str is inserted.  If @a
+       *  __pos is beyond end of string, out_of_range is thrown.  If
+       *  the length of the result exceeds max_size(), length_error is
+       *  thrown.  The value of the string doesn't change if an error
+       *  is thrown.
       */
       __versa_string&
       replace(size_type __pos, size_type __n, const __versa_string& __str)
@@ -1115,21 +1127,22 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace characters with value from another string.
-       *  @param pos1  Index of first character to replace.
-       *  @param n1  Number of characters to be replaced.
-       *  @param str  String to insert.
-       *  @param pos2  Index of first character of str to use.
-       *  @param n2  Number of characters from str to use.
+       *  @param __pos1  Index of first character to replace.
+       *  @param __n1  Number of characters to be replaced.
+       *  @param __str  String to insert.
+       *  @param __pos2  Index of first character of str to use.
+       *  @param __n2  Number of characters from str to use.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos1 > size() or @a pos2 >
+       *  @throw  std::out_of_range  If @a __pos1 > size() or @a __pos2 >
        *  str.size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [pos1,pos1 + n) from this
-       *  string.  In place, the value of @a str is inserted.  If @a pos is
-       *  beyond end of string, out_of_range is thrown.  If the length of the
-       *  result exceeds max_size(), length_error is thrown.  The value of the
-       *  string doesn't change if an error is thrown.
+       *  Removes the characters in the range [pos1,pos1 + n) from
+       *  this string.  In place, the value of @a __str is inserted.
+       *  If @a __pos is beyond end of string, out_of_range is thrown.
+       *  If the length of the result exceeds max_size(), length_error
+       *  is thrown.  The value of the string doesn't change if an
+       *  error is thrown.
       */
       __versa_string&
       replace(size_type __pos1, size_type __n1, const __versa_string& __str,
@@ -1143,20 +1156,21 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace characters with value of a C substring.
-       *  @param pos  Index of first character to replace.
-       *  @param n1  Number of characters to be replaced.
-       *  @param s  C string to insert.
-       *  @param n2  Number of characters from @a s to use.
+       *  @param __pos  Index of first character to replace.
+       *  @param __n1  Number of characters to be replaced.
+       *  @param __s  C string to insert.
+       *  @param __n2  Number of characters from @a __s to use.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos1 > size().
+       *  @throw  std::out_of_range  If @a __pos1 > size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, the first @a n2 characters of @a s are inserted, or all
-       *  of @a s if @a n2 is too large.  If @a pos is beyond end of string,
-       *  out_of_range is thrown.  If the length of result exceeds max_size(),
-       *  length_error is thrown.  The value of the string doesn't change if
-       *  an error is thrown.
+       *  Removes the characters in the range [pos,pos + n1) from this
+       *  string.  In place, the first @a __n2 characters of @a __s
+       *  are inserted, or all of @a __s if @a __n2 is too large.  If
+       *  @a __pos is beyond end of string, out_of_range is thrown.
+       *  If the length of result exceeds max_size(), length_error is
+       *  thrown.  The value of the string doesn't change if an error
+       *  is thrown.
       */
       __versa_string&
       replace(size_type __pos, size_type __n1, const _CharT* __s,
@@ -1169,18 +1183,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace characters with value of a C string.
-       *  @param pos  Index of first character to replace.
-       *  @param n1  Number of characters to be replaced.
-       *  @param s  C string to insert.
+       *  @param __pos  Index of first character to replace.
+       *  @param __n1  Number of characters to be replaced.
+       *  @param __s  C string to insert.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos > size().
+       *  @throw  std::out_of_range  If @a __pos > size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, the first @a n characters of @a s are inserted.  If @a
-       *  pos is beyond end of string, out_of_range is thrown.  If the length
-       *  of result exceeds max_size(), length_error is thrown.  The value of
-       *  the string doesn't change if an error is thrown.
+       *  Removes the characters in the range [pos,pos + n1) from this
+       *  string.  In place, the first @a __n characters of @a __s are
+       *  inserted.  If @a pos is beyond end of string, out_of_range
+       *  is thrown.  If the length of result exceeds max_size(),
+       *  length_error is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
       */
       __versa_string&
       replace(size_type __pos, size_type __n1, const _CharT* __s)
@@ -1191,19 +1206,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace characters with multiple characters.
-       *  @param pos  Index of first character to replace.
-       *  @param n1  Number of characters to be replaced.
-       *  @param n2  Number of characters to insert.
-       *  @param c  Character to insert.
+       *  @param __pos  Index of first character to replace.
+       *  @param __n1  Number of characters to be replaced.
+       *  @param __n2  Number of characters to insert.
+       *  @param __c  Character to insert.
        *  @return  Reference to this string.
-       *  @throw  std::out_of_range  If @a pos > size().
+       *  @throw  std::out_of_range  If @a __pos > size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, @a n2 copies of @a c are inserted.  If @a pos is beyond
-       *  end of string, out_of_range is thrown.  If the length of result
-       *  exceeds max_size(), length_error is thrown.  The value of the string
-       *  doesn't change if an error is thrown.
+       *  Removes the characters in the range [pos,pos + n1) from this
+       *  string.  In place, @a __n2 copies of @a __c are inserted.
+       *  If @a __pos is beyond end of string, out_of_range is thrown.
+       *  If the length of result exceeds max_size(), length_error is
+       *  thrown.  The value of the string doesn't change if an error
+       *  is thrown.
       */
       __versa_string&
       replace(size_type __pos, size_type __n1, size_type __n2, _CharT __c)
@@ -1212,16 +1228,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace range of characters with string.
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param str  String value to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __str  String value to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [i1,i2).  In place, the value of
-       *  @a str is inserted.  If the length of result exceeds max_size(),
-       *  length_error is thrown.  The value of the string doesn't change if
-       *  an error is thrown.
+       *  Removes the characters in the range [i1,i2).  In place, the
+       *  value of @a __str is inserted.  If the length of result
+       *  exceeds max_size(), length_error is thrown.  The value of
+       *  the string doesn't change if an error is thrown.
       */
       __versa_string&
       replace(iterator __i1, iterator __i2, const __versa_string& __str)
@@ -1229,17 +1245,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace range of characters with C substring.
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param s  C string value to insert.
-       *  @param n  Number of characters from s to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __s  C string value to insert.
+       *  @param __n  Number of characters from s to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [i1,i2).  In place, the first @a
-       *  n characters of @a s are inserted.  If the length of result exceeds
-       *  max_size(), length_error is thrown.  The value of the string doesn't
-       *  change if an error is thrown.
+       *  Removes the characters in the range [i1,i2).  In place, the
+       *  first @a n characters of @a __s are inserted.  If the length
+       *  of result exceeds max_size(), length_error is thrown.  The
+       *  value of the string doesn't change if an error is thrown.
       */
       __versa_string&
       replace(iterator __i1, iterator __i2, const _CharT* __s, size_type __n)
@@ -1251,16 +1267,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace range of characters with C string.
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param s  C string value to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __s  C string value to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
        *  Removes the characters in the range [i1,i2).  In place, the
-       *  characters of @a s are inserted.  If the length of result exceeds
-       *  max_size(), length_error is thrown.  The value of the string doesn't
-       *  change if an error is thrown.
+       *  characters of @a __s are inserted.  If the length of result
+       *  exceeds max_size(), length_error is thrown.  The value of
+       *  the string doesn't change if an error is thrown.
       */
       __versa_string&
       replace(iterator __i1, iterator __i2, const _CharT* __s)
@@ -1271,17 +1287,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace range of characters with multiple characters
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param n  Number of characters to insert.
-       *  @param c  Character to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __n  Number of characters to insert.
+       *  @param __c  Character to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [i1,i2).  In place, @a n copies
-       *  of @a c are inserted.  If the length of result exceeds max_size(),
-       *  length_error is thrown.  The value of the string doesn't change if
-       *  an error is thrown.
+       *  Removes the characters in the range [i1,i2).  In place, @a
+       *  __n copies of @a __c are inserted.  If the length of result
+       *  exceeds max_size(), length_error is thrown.  The value of
+       *  the string doesn't change if an error is thrown.
       */
       __versa_string&
       replace(iterator __i1, iterator __i2, size_type __n, _CharT __c)
@@ -1293,17 +1309,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Replace range of characters with range.
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param k1  Iterator referencing start of range to insert.
-       *  @param k2  Iterator referencing end of range to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __k1  Iterator referencing start of range to insert.
+       *  @param __k2  Iterator referencing end of range to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [i1,i2).  In place, characters
-       *  in the range [k1,k2) are inserted.  If the length of result exceeds
-       *  max_size(), length_error is thrown.  The value of the string doesn't
-       *  change if an error is thrown.
+       *  Removes the characters in the range [i1,i2).  In place,
+       *  characters in the range [k1,k2) are inserted.  If the length
+       *  of result exceeds max_size(), length_error is thrown.  The
+       *  value of the string doesn't change if an error is thrown.
       */
       template<class _InputIterator>
         __versa_string&
@@ -1364,16 +1380,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Replace range of characters with initializer_list.
-       *  @param i1  Iterator referencing start of range to replace.
-       *  @param i2  Iterator referencing end of range to replace.
-       *  @param l  The initializer_list of characters to insert.
+       *  @param __i1  Iterator referencing start of range to replace.
+       *  @param __i2  Iterator referencing end of range to replace.
+       *  @param __l  The initializer_list of characters to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
-       *  Removes the characters in the range [i1,i2).  In place, characters
-       *  in the range [k1,k2) are inserted.  If the length of result exceeds
-       *  max_size(), length_error is thrown.  The value of the string doesn't
-       *  change if an error is thrown.
+       *  Removes the characters in the range [i1,i2).  In place,
+       *  characters in the range [k1,k2) are inserted.  If the length
+       *  of result exceeds max_size(), length_error is thrown.  The
+       *  value of the string doesn't change if an error is thrown.
       */
       __versa_string& replace(iterator __i1, iterator __i2,
 			      std::initializer_list<_CharT> __l)
@@ -1407,24 +1423,25 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Copy substring into C string.
-       *  @param s  C string to copy value into.
-       *  @param n  Number of characters to copy.
-       *  @param pos  Index of first character to copy.
+       *  @param __s  C string to copy value into.
+       *  @param __n  Number of characters to copy.
+       *  @param __pos  Index of first character to copy.
        *  @return  Number of characters actually copied
        *  @throw  std::out_of_range  If pos > size().
        *
-       *  Copies up to @a n characters starting at @a pos into the C string @a
-       *  s.  If @a pos is greater than size(), out_of_range is thrown.
+       *  Copies up to @a __n characters starting at @a __pos into the
+       *  C string @a s.  If @a __pos is greater than size(),
+       *  out_of_range is thrown.
       */
       size_type
       copy(_CharT* __s, size_type __n, size_type __pos = 0) const;
 
       /**
        *  @brief  Swap contents with another string.
-       *  @param s  String to swap with.
+       *  @param __s  String to swap with.
        *
-       *  Exchanges the contents of this string with that of @a s in constant
-       *  time.
+       *  Exchanges the contents of this string with that of @a __s in
+       *  constant time.
       */
       void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -1464,27 +1481,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a C substring.
-       *  @param s  C string to locate.
-       *  @param pos  Index of character to search from.
-       *  @param n  Number of characters from @a s to search for.
+       *  @param __s  C string to locate.
+       *  @param __pos  Index of character to search from.
+       *  @param __n  Number of characters from @a __s to search for.
        *  @return  Index of start of first occurrence.
        *
-       *  Starting from @a pos, searches forward for the first @a n characters
-       *  in @a s within this string.  If found, returns the index where it
-       *  begins.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for the first @a
+       *  __n characters in @a __s within this string.  If found,
+       *  returns the index where it begins.  If not found, returns
+       *  npos.
       */
       size_type
       find(const _CharT* __s, size_type __pos, size_type __n) const;
 
       /**
        *  @brief  Find position of a string.
-       *  @param str  String to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __str  String to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
        *
-       *  Starting from @a pos, searches forward for value of @a str within
-       *  this string.  If found, returns the index where it begins.  If not
-       *  found, returns npos.
+       *  Starting from @a __pos, searches forward for value of @a
+       *  __str within this string.  If found, returns the index where
+       *  it begins.  If not found, returns npos.
       */
       size_type
       find(const __versa_string& __str, size_type __pos = 0) const
@@ -1492,13 +1510,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a C string.
-       *  @param s  C string to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __s  C string to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
        *
-       *  Starting from @a pos, searches forward for the value of @a s within
-       *  this string.  If found, returns the index where it begins.  If not
-       *  found, returns npos.
+       *  Starting from @a __pos, searches forward for the value of @a
+       *  __s within this string.  If found, returns the index where
+       *  it begins.  If not found, returns npos.
       */
       size_type
       find(const _CharT* __s, size_type __pos = 0) const
@@ -1509,26 +1527,26 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character.
-       *  @param c  Character to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __c  Character to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for @a c within this string.
-       *  If found, returns the index where it was found.  If not found,
-       *  returns npos.
+       *  Starting from @a __pos, searches forward for @a __c within
+       *  this string.  If found, returns the index where it was
+       *  found.  If not found, returns npos.
       */
       size_type
       find(_CharT __c, size_type __pos = 0) const;
 
       /**
        *  @brief  Find last position of a string.
-       *  @param str  String to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __str  String to locate.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of start of last occurrence.
        *
-       *  Starting from @a pos, searches backward for value of @a str within
-       *  this string.  If found, returns the index where it begins.  If not
-       *  found, returns npos.
+       *  Starting from @a __pos, searches backward for value of @a
+       *  __str within this string.  If found, returns the index where
+       *  it begins.  If not found, returns npos.
       */
       size_type
       rfind(const __versa_string& __str, size_type __pos = npos) const
@@ -1536,27 +1554,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a C substring.
-       *  @param s  C string to locate.
-       *  @param pos  Index of character to search back from.
-       *  @param n  Number of characters from s to search for.
+       *  @param __s  C string to locate.
+       *  @param __pos  Index of character to search back from.
+       *  @param __n  Number of characters from s to search for.
        *  @return  Index of start of last occurrence.
        *
-       *  Starting from @a pos, searches backward for the first @a n
-       *  characters in @a s within this string.  If found, returns the index
-       *  where it begins.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for the first @a
+       *  __n characters in @a __s within this string.  If found,
+       *  returns the index where it begins.  If not found, returns
+       *  npos.
       */
       size_type
       rfind(const _CharT* __s, size_type __pos, size_type __n) const;
 
       /**
        *  @brief  Find last position of a C string.
-       *  @param s  C string to locate.
-       *  @param pos  Index of character to start search at (default end).
+       *  @param __s  C string to locate.
+       *  @param __pos  Index of character to start search at (default end).
        *  @return  Index of start of  last occurrence.
        *
-       *  Starting from @a pos, searches backward for the value of @a s within
-       *  this string.  If found, returns the index where it begins.  If not
-       *  found, returns npos.
+       *  Starting from @a __pos, searches backward for the value of
+       *  @a __s within this string.  If found, returns the index
+       *  where it begins.  If not found, returns npos.
       */
       size_type
       rfind(const _CharT* __s, size_type __pos = npos) const
@@ -1567,25 +1586,25 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a character.
-       *  @param c  Character to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __c  Character to locate.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for @a c within this string.
-       *  If found, returns the index where it was found.  If not found,
-       *  returns npos.
+       *  Starting from @a __pos, searches backward for @a __c within
+       *  this string.  If found, returns the index where it was
+       *  found.  If not found, returns npos.
       */
       size_type
       rfind(_CharT __c, size_type __pos = npos) const;
 
       /**
        *  @brief  Find position of a character of string.
-       *  @param str  String containing characters to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __str  String containing characters to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for one of the characters of
-       *  @a str within this string.  If found, returns the index where it was
+       *  Starting from @a __pos, searches forward for one of the characters of
+       *  @a __str within this string.  If found, returns the index where it was
        *  found.  If not found, returns npos.
       */
       size_type
@@ -1594,27 +1613,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character of C substring.
-       *  @param s  String containing characters to locate.
-       *  @param pos  Index of character to search from.
-       *  @param n  Number of characters from s to search for.
+       *  @param __s  String containing characters to locate.
+       *  @param __pos  Index of character to search from.
+       *  @param __n  Number of characters from s to search for.
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for one of the first @a n
-       *  characters of @a s within this string.  If found, returns the index
-       *  where it was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for one of the
+       *  first @a __n characters of @a __s within this string.  If
+       *  found, returns the index where it was found.  If not found,
+       *  returns npos.
       */
       size_type
       find_first_of(const _CharT* __s, size_type __pos, size_type __n) const;
 
       /**
        *  @brief  Find position of a character of C string.
-       *  @param s  String containing characters to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __s  String containing characters to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for one of the characters of
-       *  @a s within this string.  If found, returns the index where it was
-       *  found.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for one of the
+       *  characters of @a __s within this string.  If found, returns
+       *  the index where it was found.  If not found, returns npos.
       */
       size_type
       find_first_of(const _CharT* __s, size_type __pos = 0) const
@@ -1625,13 +1645,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character.
-       *  @param c  Character to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __c  Character to locate.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for the character @a c within
-       *  this string.  If found, returns the index where it was found.  If
-       *  not found, returns npos.
+       *  Starting from @a __pos, searches forward for the character
+       *  @a __c within this string.  If found, returns the index
+       *  where it was found.  If not found, returns npos.
        *
        *  Note: equivalent to find(c, pos).
       */
@@ -1641,13 +1661,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a character of string.
-       *  @param str  String containing characters to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __str  String containing characters to locate.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for one of the characters of
-       *  @a str within this string.  If found, returns the index where it was
-       *  found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for one of the
+       *  characters of @a __str within this string.  If found,
+       *  returns the index where it was found.  If not found, returns
+       *  npos.
       */
       size_type
       find_last_of(const __versa_string& __str, size_type __pos = npos) const
@@ -1655,27 +1676,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a character of C substring.
-       *  @param s  C string containing characters to locate.
-       *  @param pos  Index of character to search back from.
-       *  @param n  Number of characters from s to search for.
+       *  @param __s  C string containing characters to locate.
+       *  @param __pos  Index of character to search back from.
+       *  @param __n  Number of characters from s to search for.
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for one of the first @a n
-       *  characters of @a s within this string.  If found, returns the index
-       *  where it was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for one of the
+       *  first @a __n characters of @a __s within this string.  If
+       *  found, returns the index where it was found.  If not found,
+       *  returns npos.
       */
       size_type
       find_last_of(const _CharT* __s, size_type __pos, size_type __n) const;
 
       /**
        *  @brief  Find last position of a character of C string.
-       *  @param s  C string containing characters to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __s  C string containing characters to locate.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for one of the characters of
-       *  @a s within this string.  If found, returns the index where it was
-       *  found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for one of the
+       *  characters of @a __s within this string.  If found, returns
+       *  the index where it was found.  If not found, returns npos.
       */
       size_type
       find_last_of(const _CharT* __s, size_type __pos = npos) const
@@ -1686,13 +1708,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a character.
-       *  @param c  Character to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __c  Character to locate.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for @a c within this string.
-       *  If found, returns the index where it was found.  If not found,
-       *  returns npos.
+       *  Starting from @a __pos, searches backward for @a __c within
+       *  this string.  If found, returns the index where it was
+       *  found.  If not found, returns npos.
        *
        *  Note: equivalent to rfind(c, pos).
       */
@@ -1702,13 +1724,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character not in string.
-       *  @param str  String containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __str  String containing characters to avoid.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for a character not contained
-       *  in @a str within this string.  If found, returns the index where it
-       *  was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for a character not
+       *  contained in @a __str within this string.  If found, returns
+       *  the index where it was found.  If not found, returns npos.
       */
       size_type
       find_first_not_of(const __versa_string& __str, size_type __pos = 0) const
@@ -1716,14 +1738,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character not in C substring.
-       *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search from.
-       *  @param n  Number of characters from s to consider.
+       *  @param __s  C string containing characters to avoid.
+       *  @param __pos  Index of character to search from.
+       *  @param __n  Number of characters from s to consider.
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for a character not contained
-       *  in the first @a n characters of @a s within this string.  If found,
-       *  returns the index where it was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for a character not
+       *  contained in the first @a __n characters of @a __s within
+       *  this string.  If found, returns the index where it was
+       *  found.  If not found, returns npos.
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos,
@@ -1731,13 +1754,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a character not in C string.
-       *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __s  C string containing characters to avoid.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for a character not contained
-       *  in @a s within this string.  If found, returns the index where it
-       *  was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for a character not
+       *  contained in @a __s within this string.  If found, returns
+       *  the index where it was found.  If not found, returns npos.
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos = 0) const
@@ -1748,26 +1771,27 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find position of a different character.
-       *  @param c  Character to avoid.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param __c  Character to avoid.
+       *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        *
-       *  Starting from @a pos, searches forward for a character other than @a c
-       *  within this string.  If found, returns the index where it was found.
-       *  If not found, returns npos.
+       *  Starting from @a __pos, searches forward for a character
+       *  other than @a __c within this string.  If found, returns the
+       *  index where it was found.  If not found, returns npos.
       */
       size_type
       find_first_not_of(_CharT __c, size_type __pos = 0) const;
 
       /**
        *  @brief  Find last position of a character not in string.
-       *  @param str  String containing characters to avoid.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __str  String containing characters to avoid.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for a character not
-       *  contained in @a str within this string.  If found, returns the index
-       *  where it was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for a character
+       *  not contained in @a __str within this string.  If found,
+       *  returns the index where it was found.  If not found, returns
+       *  npos.
       */
       size_type
       find_last_not_of(const __versa_string& __str,
@@ -1776,28 +1800,29 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a character not in C substring.
-       *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search back from.
-       *  @param n  Number of characters from s to consider.
+       *  @param __s  C string containing characters to avoid.
+       *  @param __pos  Index of character to search back from.
+       *  @param __n  Number of characters from s to consider.
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for a character not
-       *  contained in the first @a n characters of @a s within this string.
-       *  If found, returns the index where it was found.  If not found,
-       *  returns npos.
+       *  Starting from @a __pos, searches backward for a character
+       *  not contained in the first @a __n characters of @a __s
+       *  within this string.  If found, returns the index where it
+       *  was found.  If not found, returns npos.
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos,
 		       size_type __n) const;
       /**
        *  @brief  Find last position of a character not in C string.
-       *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __s  C string containing characters to avoid.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for a character not
-       *  contained in @a s within this string.  If found, returns the index
-       *  where it was found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for a character
+       *  not contained in @a __s within this string.  If found,
+       *  returns the index where it was found.  If not found, returns
+       *  npos.
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos = npos) const
@@ -1808,28 +1833,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Find last position of a different character.
-       *  @param c  Character to avoid.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param __c  Character to avoid.
+       *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
-       *  Starting from @a pos, searches backward for a character other than
-       *  @a c within this string.  If found, returns the index where it was
-       *  found.  If not found, returns npos.
+       *  Starting from @a __pos, searches backward for a character
+       *  other than @a __c within this string.  If found, returns the
+       *  index where it was found.  If not found, returns npos.
       */
       size_type
       find_last_not_of(_CharT __c, size_type __pos = npos) const;
 
       /**
        *  @brief  Get a substring.
-       *  @param pos  Index of first character (default 0).
-       *  @param n  Number of characters in substring (default remainder).
+       *  @param __pos  Index of first character (default 0).
+       *  @param __n  Number of characters in substring (default remainder).
        *  @return  The new string.
        *  @throw  std::out_of_range  If pos > size().
        *
-       *  Construct and return a new string using the @a n characters starting
-       *  at @a pos.  If the string is too short, use the remainder of the
-       *  characters.  If @a pos is beyond the end of the string, out_of_range
-       *  is thrown.
+       *  Construct and return a new string using the @a __n
+       *  characters starting at @a __pos.  If the string is too
+       *  short, use the remainder of the characters.  If @a __pos is
+       *  beyond the end of the string, out_of_range is thrown.
       */
       __versa_string
       substr(size_type __pos = 0, size_type __n = npos) const
@@ -1840,16 +1865,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Compare to a string.
-       *  @param str  String to compare against.
+       *  @param __str  String to compare against.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Returns an integer < 0 if this string is ordered before @a str, 0 if
-       *  their values are equivalent, or > 0 if this string is ordered after
-       *  @a str.  Determines the effective length rlen of the strings to
-       *  compare as the smallest of size() and str.size().  The function
-       *  then compares the two strings by calling traits::compare(data(),
-       *  str.data(),rlen).  If the result of the comparison is nonzero returns
-       *  it, otherwise the shorter one is ordered first.
+       *  Returns an integer < 0 if this string is ordered before @a
+       *  __str, 0 if their values are equivalent, or > 0 if this
+       *  string is ordered after @a __str.  Determines the effective
+       *  length rlen of the strings to compare as the smallest of
+       *  size() and str.size().  The function then compares the two
+       *  strings by calling traits::compare(data(), str.data(),rlen).
+       *  If the result of the comparison is nonzero returns it,
+       *  otherwise the shorter one is ordered first.
       */
       int
       compare(const __versa_string& __str) const
@@ -1869,20 +1895,22 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Compare substring to a string.
-       *  @param pos  Index of first character of substring.
-       *  @param n  Number of characters in substring.
-       *  @param str  String to compare against.
+       *  @param __pos  Index of first character of substring.
+       *  @param __n  Number of characters in substring.
+       *  @param __str  String to compare against.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Form the substring of this string from the @a n characters starting
-       *  at @a pos.  Returns an integer < 0 if the substring is ordered
-       *  before @a str, 0 if their values are equivalent, or > 0 if the
-       *  substring is ordered after @a str.  Determines the effective length
-       *  rlen of the strings to compare as the smallest of the length of the
-       *  substring and @a str.size().  The function then compares the two
-       *  strings by calling traits::compare(substring.data(),str.data(),rlen).
-       *  If the result of the comparison is nonzero returns it, otherwise the
-       *  shorter one is ordered first.
+       *  Form the substring of this string from the @a __n characters
+       *  starting at @a __pos.  Returns an integer < 0 if the
+       *  substring is ordered before @a __str, 0 if their values are
+       *  equivalent, or > 0 if the substring is ordered after @a
+       *  __str.  Determines the effective length rlen of the strings
+       *  to compare as the smallest of the length of the substring
+       *  and @a __str.size().  The function then compares the two
+       *  strings by calling
+       *  traits::compare(substring.data(),str.data(),rlen).  If the
+       *  result of the comparison is nonzero returns it, otherwise
+       *  the shorter one is ordered first.
       */
       int
       compare(size_type __pos, size_type __n,
@@ -1890,24 +1918,26 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Compare substring to a substring.
-       *  @param pos1  Index of first character of substring.
-       *  @param n1  Number of characters in substring.
-       *  @param str  String to compare against.
-       *  @param pos2  Index of first character of substring of str.
-       *  @param n2  Number of characters in substring of str.
+       *  @param __pos1  Index of first character of substring.
+       *  @param __n1  Number of characters in substring.
+       *  @param __str  String to compare against.
+       *  @param __pos2  Index of first character of substring of str.
+       *  @param __n2  Number of characters in substring of str.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Form the substring of this string from the @a n1 characters starting
-       *  at @a pos1.  Form the substring of @a str from the @a n2 characters
-       *  starting at @a pos2.  Returns an integer < 0 if this substring is
-       *  ordered before the substring of @a str, 0 if their values are
-       *  equivalent, or > 0 if this substring is ordered after the substring
-       *  of @a str.  Determines the effective length rlen of the strings
-       *  to compare as the smallest of the lengths of the substrings.  The
-       *  function then compares the two strings by calling
+       *  Form the substring of this string from the @a __n1
+       *  characters starting at @a __pos1.  Form the substring of @a
+       *  __str from the @a __n2 characters starting at @a __pos2.
+       *  Returns an integer < 0 if this substring is ordered before
+       *  the substring of @a __str, 0 if their values are equivalent,
+       *  or > 0 if this substring is ordered after the substring of
+       *  @a __str.  Determines the effective length rlen of the
+       *  strings to compare as the smallest of the lengths of the
+       *  substrings.  The function then compares the two strings by
+       *  calling
        *  traits::compare(substring.data(),str.substr(pos2,n2).data(),rlen).
-       *  If the result of the comparison is nonzero returns it, otherwise the
-       *  shorter one is ordered first.
+       *  If the result of the comparison is nonzero returns it,
+       *  otherwise the shorter one is ordered first.
       */
       int
       compare(size_type __pos1, size_type __n1, const __versa_string& __str,
@@ -1915,17 +1945,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       /**
        *  @brief  Compare to a C string.
-       *  @param s  C string to compare against.
+       *  @param __s  C string to compare against.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Returns an integer < 0 if this string is ordered before @a s, 0 if
-       *  their values are equivalent, or > 0 if this string is ordered after
-       *  @a s.  Determines the effective length rlen of the strings to
-       *  compare as the smallest of size() and the length of a string
-       *  constructed from @a s.  The function then compares the two strings
-       *  by calling traits::compare(data(),s,rlen).  If the result of the
-       *  comparison is nonzero returns it, otherwise the shorter one is
-       *  ordered first.
+       *  Returns an integer < 0 if this string is ordered before @a
+       *  __s, 0 if their values are equivalent, or > 0 if this string
+       *  is ordered after @a __s.  Determines the effective length
+       *  rlen of the strings to compare as the smallest of size() and
+       *  the length of a string constructed from @a __s.  The
+       *  function then compares the two strings by calling
+       *  traits::compare(data(),s,rlen).  If the result of the
+       *  comparison is nonzero returns it, otherwise the shorter one
+       *  is ordered first.
       */
       int
       compare(const _CharT* __s) const;
@@ -1934,42 +1965,45 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // 5 String::compare specification questionable
       /**
        *  @brief  Compare substring to a C string.
-       *  @param pos  Index of first character of substring.
-       *  @param n1  Number of characters in substring.
-       *  @param s  C string to compare against.
+       *  @param __pos  Index of first character of substring.
+       *  @param __n1  Number of characters in substring.
+       *  @param __s  C string to compare against.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Form the substring of this string from the @a n1 characters starting
-       *  at @a pos.  Returns an integer < 0 if the substring is ordered
-       *  before @a s, 0 if their values are equivalent, or > 0 if the
-       *  substring is ordered after @a s.  Determines the effective length
-       *  rlen of the strings to compare as the smallest of the length of the 
-       *  substring and the length of a string constructed from @a s.  The
+       *  Form the substring of this string from the @a __n1
+       *  characters starting at @a __pos.  Returns an integer < 0 if
+       *  the substring is ordered before @a __s, 0 if their values
+       *  are equivalent, or > 0 if the substring is ordered after @a
+       *  __s.  Determines the effective length rlen of the strings to
+       *  compare as the smallest of the length of the substring and
+       *  the length of a string constructed from @a __s.  The
        *  function then compares the two string by calling
-       *  traits::compare(substring.data(),s,rlen).  If the result of the
-       *  comparison is nonzero returns it, otherwise the shorter one is
-       *  ordered first.
+       *  traits::compare(substring.data(),s,rlen).  If the result of
+       *  the comparison is nonzero returns it, otherwise the shorter
+       *  one is ordered first.
       */
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       /**
        *  @brief  Compare substring against a character array.
-       *  @param pos1  Index of first character of substring.
-       *  @param n1  Number of characters in substring.
-       *  @param s  character array to compare against.
-       *  @param n2  Number of characters of s.
+       *  @param __pos1  Index of first character of substring.
+       *  @param __n1  Number of characters in substring.
+       *  @param __s  character array to compare against.
+       *  @param __n2  Number of characters of s.
        *  @return  Integer < 0, 0, or > 0.
        *
-       *  Form the substring of this string from the @a n1 characters starting
-       *  at @a pos1.  Form a string from the first @a n2 characters of @a s.
-       *  Returns an integer < 0 if this substring is ordered before the string
-       *  from @a s, 0 if their values are equivalent, or > 0 if this substring
-       *  is ordered after the string from @a s.   Determines the effective
-       *  length rlen of the strings to compare as the smallest of the length
-       *  of the substring and @a n2.  The function then compares the two
-       *  strings by calling traits::compare(substring.data(),s,rlen).  If the
-       *  result of the comparison is nonzero returns it, otherwise the shorter
+       *  Form the substring of this string from the @a __n1
+       *  characters starting at @a __pos1.  Form a string from the
+       *  first @a __n2 characters of @a __s.  Returns an integer < 0
+       *  if this substring is ordered before the string from @a __s,
+       *  0 if their values are equivalent, or > 0 if this substring
+       *  is ordered after the string from @a __s.  Determines the
+       *  effective length rlen of the strings to compare as the
+       *  smallest of the length of the substring and @a __n2.  The
+       *  function then compares the two strings by calling
+       *  traits::compare(substring.data(),s,rlen).  If the result of
+       *  the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
        *
        *  NB: s must have at least n2 characters, '\0' has no special
@@ -1983,9 +2017,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator+
   /**
    *  @brief  Concatenate two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with value of @a lhs followed by @a rhs.
+   *  @param __lhs  First string.
+   *  @param __rhs  Last string.
+   *  @return  New string with value of @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -1995,9 +2029,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Concatenate C string and string.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with value of @a lhs followed by @a rhs.
+   *  @param __lhs  First string.
+   *  @param __rhs  Last string.
+   *  @return  New string with value of @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2007,9 +2041,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Concatenate character and string.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with @a lhs followed by @a rhs.
+   *  @param __lhs  First string.
+   *  @param __rhs  Last string.
+   *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2019,9 +2053,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Concatenate string and C string.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with @a lhs followed by @a rhs.
+   *  @param __lhs  First string.
+   *  @param __rhs  Last string.
+   *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2031,9 +2065,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Concatenate string and character.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with @a lhs followed by @a rhs.
+   *  @param __lhs  First string.
+   *  @param __rhs  Last string.
+   *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2044,9 +2078,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator ==
   /**
    *  @brief  Test equivalence of two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs.compare(@a rhs) == 0.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs.compare(@a __rhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2068,9 +2102,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test equivalence of C string and string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a rhs.compare(@a lhs) == 0.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2081,9 +2115,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test equivalence of string and C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs.compare(@a rhs) == 0.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs.compare(@a __rhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2095,9 +2129,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator !=
   /**
    *  @brief  Test difference of two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs.compare(@a rhs) != 0.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs.compare(@a __rhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2108,9 +2142,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test difference of C string and string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a rhs.compare(@a lhs) != 0.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __rhs.compare(@a __lhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2121,9 +2155,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test difference of string and C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs.compare(@a rhs) != 0.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs.compare(@a __rhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2135,9 +2169,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator <
   /**
    *  @brief  Test if string precedes string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs precedes @a rhs.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2148,9 +2182,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if string precedes C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs precedes @a rhs.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2161,9 +2195,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if C string precedes string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a lhs precedes @a rhs.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2175,9 +2209,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator >
   /**
    *  @brief  Test if string follows string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs follows @a rhs.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2188,9 +2222,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if string follows C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs follows @a rhs.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2201,9 +2235,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if C string follows string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a lhs follows @a rhs.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2215,9 +2249,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator <=
   /**
    *  @brief  Test if string doesn't follow string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs doesn't follow @a rhs.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2228,9 +2262,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if string doesn't follow C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs doesn't follow @a rhs.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2241,9 +2275,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if C string doesn't follow string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a lhs doesn't follow @a rhs.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2255,9 +2289,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // operator >=
   /**
    *  @brief  Test if string doesn't precede string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs doesn't precede @a rhs.  False otherwise.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
+   *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2268,9 +2302,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if string doesn't precede C string.
-   *  @param lhs  String.
-   *  @param rhs  C string.
-   *  @return  True if @a lhs doesn't precede @a rhs.  False otherwise.
+   *  @param __lhs  String.
+   *  @param __rhs  C string.
+   *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2281,9 +2315,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Test if C string doesn't precede string.
-   *  @param lhs  C string.
-   *  @param rhs  String.
-   *  @return  True if @a lhs doesn't precede @a rhs.  False otherwise.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2294,10 +2328,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  Swap contents of two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
+   *  @param __lhs  First string.
+   *  @param __rhs  Second string.
    *
-   *  Exchanges the contents of @a lhs and @a rhs in constant time.
+   *  Exchanges the contents of @a __lhs and @a __rhs in constant time.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
@@ -2328,14 +2362,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Read stream into a string.
-   *  @param is  Input stream.
-   *  @param str  Buffer to store into.
+   *  @param __is  Input stream.
+   *  @param __str  Buffer to store into.
    *  @return  Reference to the input stream.
    *
-   *  Stores characters from @a is into @a str until whitespace is found, the
-   *  end of the stream is encountered, or str.max_size() is reached.  If
-   *  is.width() is non-zero, that is the limit on the number of characters
-   *  stored into @a str.  Any previous contents of @a str are erased.
+   *  Stores characters from @a __is into @a __str until whitespace is
+   *  found, the end of the stream is encountered, or str.max_size()
+   *  is reached.  If is.width() is non-zero, that is the limit on the
+   *  number of characters stored into @a __str.  Any previous
+   *  contents of @a __str are erased.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>
@@ -2346,11 +2381,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Write string to a stream.
-   *  @param os  Output stream.
-   *  @param str  String to write out.
+   *  @param __os  Output stream.
+   *  @param __str  String to write out.
    *  @return  Reference to the output stream.
    *
-   *  Output characters of @a str into os following the same rules as for
+   *  Output characters of @a __str into os following the same rules as for
    *  writing a C string.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
@@ -2367,16 +2402,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Read a line from stream into a string.
-   *  @param is  Input stream.
-   *  @param str  Buffer to store into.
-   *  @param delim  Character marking end of line.
+   *  @param __is  Input stream.
+   *  @param __str  Buffer to store into.
+   *  @param __delim  Character marking end of line.
    *  @return  Reference to the input stream.
    *
-   *  Stores characters from @a is into @a str until @a delim is found, the
-   *  end of the stream is encountered, or str.max_size() is reached.  If
-   *  is.width() is non-zero, that is the limit on the number of characters
-   *  stored into @a str.  Any previous contents of @a str are erased.  If @a
-   *  delim was encountered, it is extracted but not stored into @a str.
+   *  Stores characters from @a __is into @a __str until @a __delim is
+   *  found, the end of the stream is encountered, or str.max_size()
+   *  is reached.  If is.width() is non-zero, that is the limit on the
+   *  number of characters stored into @a __str.  Any previous
+   *  contents of @a __str are erased.  If @a delim was encountered,
+   *  it is extracted but not stored into @a __str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>
@@ -2387,15 +2423,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Read a line from stream into a string.
-   *  @param is  Input stream.
-   *  @param str  Buffer to store into.
+   *  @param __is  Input stream.
+   *  @param __str  Buffer to store into.
    *  @return  Reference to the input stream.
    *
-   *  Stores characters from is into @a str until '\n' is found, the end of
-   *  the stream is encountered, or str.max_size() is reached.  If is.width()
-   *  is non-zero, that is the limit on the number of characters stored into
-   *  @a str.  Any previous contents of @a str are erased.  If end of line was
-   *  encountered, it is extracted but not stored into @a str.
+   *  Stores characters from is into @a __str until '\n' is found, the
+   *  end of the stream is encountered, or str.max_size() is reached.
+   *  If is.width() is non-zero, that is the limit on the number of
+   *  characters stored into @a __str.  Any previous contents of @a
+   *  __str are erased.  If end of line was encountered, it is
+   *  extracted but not stored into @a __str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>

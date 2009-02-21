@@ -1,3 +1,145 @@
+2009-02-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Tweaks.
+	* doc/doxygen/doxygroups.cc: Prefer markup that can be elsewhere,
+	be elsewhere.
+
+	* include/tr1_impl/unordered_map: Just use most specialized
+	container module.
+	* include/tr1_impl/unordered_set: Same.
+	* include/tr1_impl/array: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/forward_list.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_bvector.h: Same.
+
+	* include/backward/binders.h: Change binder module to binders.
+
+	* include/std/complex: Add complex_numers module.
+	* include/tr1_impl/complex: Same.
+
+	* include/std/valarray: Add numeric_arrays module.
+	* include/bits/gslice_array.h: Same.
+	* include/bits/gslice.h: Same.
+	* include/bits/mask_array.h: Same.
+	* include/bits/slice_array.h: Same.
+	* include/bits/indirect_array.h: Same.
+
+	* include/bits/allocator.h: Add allocators module.
+	* include/ext/throw_allocator.h
+	* include/ext/pool_allocator.h
+	* include/ext/bitmap_allocator.h
+	* include/ext/new_allocator.h
+	* include/ext/malloc_allocator.h
+	* include/ext/array_allocator.h
+	* include/ext/mt_allocator.h
+	* include/ext/debug_allocator.h
+	* include/ext/extptr_allocator.h
+
+	* include/tr1_impl/functional: Move namespace markup here.
+	* include/tr1_impl/regex: Same.
+
+	* include/tr1_impl/type_traits: Add metaprogramming module.
+	* include/std/type_traits: Same.
+
+	* include/std/memory: Add memory module.
+
+	* include/std/ratio: Add ratio module.
+
+	* include/std/chrono: Move namespace markup here, add time module.
+
+	* include/std/thread: Move namespace markup here, add concurrency
+	module.
+	* include/std/mutex: Use concurrency module.
+	* include/std/condition_variable: Same.
+
+
+	* include/bits/ios_base.h: Refine io module.
+	* include/bits/basic_ios.h: Same.
+	* include/std/fstream: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/std/sstream: Same.
+
+	* include/ext/vstring.h: Correct parameter markup.
+
+	* include/bits/shared_ptr.h: Add pointer_abstractions module.
+	* include/bits/unique_ptr.h: Same.
+
+	* include/bits/algorithmfwd.h: Add mutating_algorithms,
+        non_mutating_algorithms, sorting_algorithms. Adjust nesting.
+	* include/bits/stl_heap.h: Add markup for new groupings.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_algo.h: Same.
+
+	* include/c_compatibility/stdatomic.h: Add atomics module.
+	* include/c_global/cstdatomic: Same.
+
+	* libsupc++/exception: Add exceptions module.
+	* libsupc++/typeinfo: Same.
+	* libsupc++/new: Same.
+	* libsupc++/exception_ptr.h: Same.
+	* include/std/system_error: Same.
+	* include/std/stdexcept: Same.
+
+	* libsupc++/cxxabi.h: Move doxygroups.cc markup here.
+	* libsupc++/cxxabi-forced.h: Same.
+
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Fix up line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/thread/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/thread/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/condition_variable/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/condition_variable/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/20_util/duration/cons/1_neg.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Same.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Same.
+	* testsuite/20_util/unique_ptr/assign/assign.cc: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/ratio/cons/cons_overflow.cc: Same.
+	* testsuite/20_util/ratio/operations/ops_overflow.cc: Same.
+
 2009-02-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/doxygroups.cc: Move algorithm groups into algorithmfwd.h.
@@ -324,17 +466,17 @@
 
 2009-02-03  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/algorithmfwd.h:
-        Add parallelism default for many declarations.
-        * include/parallel/numericfwd.h: Likewise.
-        * include/parallel/iterator.h: Use iterator_traits as usual.
-        * include/parallel/par_loop.h:
-        Include equally_split.h.
-        (for_each_template_random_access_ed):
-        Avoid calling the Result default constructor.
-        * include/parallel/numeric: Replace
-        for_each_template_random_access by
-        for_each_template_random_access_ed in numeric functions.
+	* include/parallel/algorithmfwd.h:
+	Add parallelism default for many declarations.
+	* include/parallel/numericfwd.h: Likewise.
+	* include/parallel/iterator.h: Use iterator_traits as usual.
+	* include/parallel/par_loop.h:
+	Include equally_split.h.
+	(for_each_template_random_access_ed):
+	Avoid calling the Result default constructor.
+	* include/parallel/numeric: Replace
+	for_each_template_random_access by
+	for_each_template_random_access_ed in numeric functions.
 
 2009-02-02  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -450,7 +592,7 @@
 	* config/os/gnu-linux/ldbl-extra.ver: Tweak.
 
 2009-01-20  Benjamin Kosnik  <bkoz@redhat.com>
-            Rainer Emrich  <r.emrich@de.tecosim.com>
+	    Rainer Emrich  <r.emrich@de.tecosim.com>
 
 	PR libstdc++/38919
 	* crossconfig.m4: Use GLIBCXX_CHECK_MATH_SUPPORT and

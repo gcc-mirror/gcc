@@ -1,4 +1,4 @@
-// <bits/shared_ptr.h> -*- C++ -*-
+// shared_ptr and weak_ptr implementation -*- C++ -*-
 
 // Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
@@ -59,8 +59,13 @@
 #  error C++0x header cannot be included from TR1 header
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @addtogroup pointer_abstractions
+   * @{
+   */
+
   // counted ptr with no deleter or allocator support
   template<typename _Ptr, _Lock_policy _Lp>
     class _Sp_counted_ptr
@@ -541,13 +546,6 @@ namespace std
     { }
 
 
-  /**
-   *  @class __shared_ptr 
-   *
-   *  A smart pointer with reference-counted copy semantics.
-   *  The object pointed to is deleted when the last shared_ptr pointing to
-   *  it is destroyed or reset.
-   */
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr
     {
@@ -1228,10 +1226,12 @@ namespace std
       mutable __weak_ptr<_Tp, _Lp>  _M_weak_this;
     };
 
-
-  /// shared_ptr
-  // The actual shared_ptr, with forwarding constructors and
-  // assignment operators.
+  /**
+   *  @brief A smart pointer with reference-counted copy semantics. 
+   *  
+   *  The object pointed to is deleted when the last shared_ptr pointing to
+   *  it is destroyed or reset.
+   */
   template<typename _Tp>
     class shared_ptr
     : public __shared_ptr<_Tp>
@@ -1405,9 +1405,11 @@ namespace std
     }
 
 
-  /// weak_ptr
-  // The actual weak_ptr, with forwarding constructors and
-  // assignment operators.
+  /** 
+   *  @brief A smart pointer with weak semantics.
+   *  
+   *  With forwarding constructors and assignment operators.
+   */
   template<typename _Tp>
     class weak_ptr
     : public __weak_ptr<_Tp>
@@ -1489,7 +1491,9 @@ namespace std
     : public _Sp_owner_less<weak_ptr<_Tp>, shared_ptr<_Tp>>
     { };
 
-  /// enable_shared_from_this
+  /** 
+   *  @brief Base class allowing use of member function shared_from_this.
+   */
   template<typename _Tp>
     class enable_shared_from_this
     {
@@ -1549,7 +1553,7 @@ namespace std
               std::forward<_Args>(__args)...);
     }
 
-  /** @brief  Create an object that is owned by a shared_ptr. 
+  /** @brief  Create an object that is owned by a shared_ptr.
    *  @param  __a     An allocator.
    *  @param  __args  Arguments for the @a _Tp object's constructor.
    *  @return A shared_ptr that owns the newly created object.
@@ -1582,4 +1586,6 @@ namespace std
               std::forward<_Args>(__args)...);
     }
 
-}
+  // @} group pointer_abstractions
+
+_GLIBCXX_END_NAMESPACE

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -79,7 +79,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     get_prob();
   };
 
-  /// Thown by throw_allocator.
+  /** 
+   *  @brief Thown by throw_allocator.
+   *  @ingroup exceptions
+   */
   struct forced_exception_error : public std::exception
   { };
 
@@ -184,7 +187,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     static size_t 		_S_label;
   };
 
-  /// Allocator class with logging and exception control.
+  /** 
+   *  @brief Allocator class with logging and exception control.
+   *  @ingroup allocators
+   */
   template<typename T>
     class throw_allocator : public throw_allocator_base
     {

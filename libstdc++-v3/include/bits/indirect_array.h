@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- indirect_array class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2009
 //  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,6 +41,11 @@
 #pragma GCC system_header
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   * @addtogroup numeric_arrays
+   * @{
+   */
 
   /**
    *  @brief  Reference to arbitrary subset of an array.
@@ -202,6 +207,8 @@ _DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
 _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
+
+  // @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE
 
