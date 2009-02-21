@@ -613,7 +613,9 @@ create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
 /* Lexes a string, character constant, or angle-bracketed header file
    name.  The stored string contains the spelling, including opening
    quote and leading any leading 'L', 'u' or 'U'.  It returns the type
-   of the literal, or CPP_OTHER if it was not properly terminated.
+   of the literal, or CPP_OTHER if it was not properly terminated, or
+   CPP_LESS for an unterminated header name which must be relexed as
+   normal tokens.
 
    The spelling is NUL-terminated, but it is not guaranteed that this
    is the first NUL since embedded NULs are preserved.  */
@@ -652,6 +654,14 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
       else if (c == '\n')
 	{
 	  cur--;
+	  /* Unmatched quotes always yield undefined behavior, but
+	     greedy lexing means that what appears to be an unterminated
+	     header name may actually be a legitimate sequence of tokens.  */
+	  if (terminator == '>')
+	    {
+	      token->type = CPP_LESS;
+	      return;
+	    }
 	  type = CPP_OTHER;
 	  break;
 	}
@@ -1181,7 +1191,8 @@ _cpp_lex_direct (cpp_reader *pfile)
       if (pfile->state.angled_headers)
 	{
 	  lex_string (pfile, result, buffer->cur - 1);
-	  break;
+	  if (result->type != CPP_LESS)
+	    break;
 	}
 
       result->type = CPP_LESS;
