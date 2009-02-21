@@ -1,3 +1,7 @@
+2009-02-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr39228.x: New.
+
 2009-02-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/38056
