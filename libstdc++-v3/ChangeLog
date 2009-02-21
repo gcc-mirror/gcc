@@ -1,5 +1,16 @@
 2009-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/30_threads/thread/this_thread: Move...
+	* testsuite/30_threads/this_thread: ...here.
+	* testsuite/20_util/unique_ptr/assign/assign.cc: Move...
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: ...here.
+	* testsuite/20_util/ratio/cons/cons_overflow.cc: Move...
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: ...here.
+	* testsuite/20_util/ratio/operations/ops_overflow.cc: Move...
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: ...here.
+
+2009-02-20  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/doxygen/user.cfg.in: Tweaks.
 	* doc/doxygen/doxygroups.cc: Prefer markup that can be elsewhere,
 	be elsewhere.
