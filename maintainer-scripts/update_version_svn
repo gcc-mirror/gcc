@@ -3,11 +3,11 @@
 # Update the current version date in all files in the tree containing
 # it.  Consider all release branches except those matching the regular
 # expression in $IGNORE_BRANCHES, and also consider those branches listed
-# in $ADD_BRANCHES.
+# in the space separated list in $ADD_BRANCHES.
 
 SVNROOT=${SVNROOT:-"file:///svn/gcc"}
 IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3|3_4|4_0|4_1)-branch'
-ADD_BRANCHES='HEAD autovect-branch'
+ADD_BRANCHES='HEAD'
 
 # Run this from /tmp.
 export SVNROOT
