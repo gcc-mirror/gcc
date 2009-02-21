@@ -1,3 +1,17 @@
+2008-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38914
+	* array.c (ref_dimen_size):  Rename to gfc_ref_dimen_size,
+	make global.  Change function name in error messages.
+	(ref_size):  Change ref_dimen_size to gfc_ref_dimen_size.
+	(gfc_array_ref_shape):  Likewise.
+	* gfortran.h:  Add prototype for gfc_ref_dimen_size.
+	* simplify.c (simplify_bound_dim):  Add ref argument.
+	If the reference isn't a full array, return one for
+	the lower bound and the extent for the upper bound.
+	(simplify_bound):  For array sections, take as from the
+	argument.  Add reference to all to simplify_bound_dim.
+
 2009-02-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	* scanner.c (load_line): At end of line, skip '\r' without setting
