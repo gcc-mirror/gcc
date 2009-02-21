@@ -1,3 +1,7 @@
+2009-02-21  Danny Smith  <dannysmith@users.sourceforge.net>
+	* config/i386/winnt.c (i386_pe_asm_output_aligned_decl_common): Revert
+	accidental and undocumented change at revision 140860.
+
 2009-02-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (arm_gimplify_va_arg_expr): Update prototype to
