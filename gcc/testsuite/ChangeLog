@@ -1,3 +1,8 @@
+2008-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39256
+	* gcc.target/i386/abi-2.c: New.
+
 2009-02-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/pr39228.x: New.

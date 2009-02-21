@@ -4759,7 +4759,7 @@ type_natural_mode (const_tree type, CUMULATIVE_ARGS *cum)
 		      {
 			warnedavx = true;
 			warning (0, "AVX vector argument without AVX "
-				 " enabled changes the ABI");
+				 "enabled changes the ABI");
 		      }
 		    return TYPE_MODE (type);
 		  }
@@ -6019,6 +6019,11 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
 	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
     regno = TARGET_SSE ? FIRST_SSE_REG : 0;
 
+  /* 32-byte vector modes in %ymm0.   */
+  else if (mode == OImode
+	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 32))
+    regno = TARGET_AVX ? FIRST_SSE_REG : 0;
+
   /* Floating point return values in %st(0) (unless -mno-fp-ret-in-387).  */
   else if (X87_FLOAT_MODE_P (mode) && TARGET_FLOAT_RETURNS_IN_80387)
     regno = FIRST_FLOAT_REG;
@@ -6158,7 +6163,7 @@ return_in_memory_32 (const_tree type, enum machine_mode mode)
   if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
     return 0;
 
-  if (VECTOR_MODE_P (mode) || mode == TImode)
+  if (VECTOR_MODE_P (mode) || mode == TImode || mode == OImode)
     {
       /* User-created vectors small enough to fit in EAX.  */
       if (size < 8)
@@ -6172,6 +6177,10 @@ return_in_memory_32 (const_tree type, enum machine_mode mode)
       /* SSE values are returned in XMM0, except when it doesn't exist.  */
       if (size == 16)
 	return (TARGET_SSE ? 0 : 1);
+
+      /* AVX values are returned in YMM0, except when it doesn't exist.  */
+      if (size == 32)
+	return TARGET_AVX ? 0 : 1;
     }
 
   if (mode == XFmode)

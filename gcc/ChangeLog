@@ -1,3 +1,11 @@
+2008-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39256
+	* config/i386/i386.c (type_natural_mode): Remove an extra
+	space in the warning message.
+	(function_value_32): Handle 32-byte vector modes.
+	(return_in_memory_32): Likewise.
+
 2009-02-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* loop-iv.c (truncate_value): New function.
