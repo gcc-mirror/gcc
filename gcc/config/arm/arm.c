@@ -188,7 +188,7 @@ static bool arm_cxx_use_aeabi_atexit (void);
 static void arm_init_libfuncs (void);
 static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
-static tree arm_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool arm_handle_option (size_t, const char *, int);
 static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
@@ -1004,8 +1004,8 @@ arm_expand_builtin_va_start (tree valist, rtx nextarg)
 
 /* Implement TARGET_GIMPLIFY_VA_ARG_EXPR.  */
 static tree
-arm_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, 
-			  tree *post_p)
+arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p, 
+			  gimple_seq *post_p)
 {
   valist = arm_extract_valist_ptr (valist);
   return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
@@ -19606,7 +19606,7 @@ arm_mangle_type (const_tree type)
   /* The ARM ABI documents (10th October 2008) say that "__va_list"
      has to be managled as if it is in the "std" namespace.  */
   if (TARGET_AAPCS_BASED 
-      && lang_hooks.types_compatible_p (type, va_list_type))
+      && lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     {
       static bool warned;
       if (!warned && warn_psabi)
