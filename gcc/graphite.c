@@ -5877,7 +5877,7 @@ graphite_trans_loop_block (VEC (graphite_bb_p, heap) *bbs, int loops)
   bool transform_done = false;
 
   /* TODO: - Calculate the stride size automatically.  */
-  int stride_size = 64;
+  int stride_size = 51;
 
   for (i = 0; VEC_iterate (graphite_bb_p, bbs, i, gb); i++)
     transform_done |= graphite_trans_bb_block (gb, stride_size, loops);
