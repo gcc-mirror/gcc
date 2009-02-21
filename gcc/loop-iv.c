@@ -157,15 +157,12 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
     fprintf (file, " (first special)");
 }
 
-/* Generates a subreg to get the least significant part of EXPR (in mode
-   INNER_MODE) to OUTER_MODE.  */
+/* Truncate EXPR (which has mode EXPR_MODE) to MODE.  */
 
-rtx
-lowpart_subreg (enum machine_mode outer_mode, rtx expr,
-		enum machine_mode inner_mode)
+static rtx
+truncate_value (enum machine_mode mode, rtx expr, enum machine_mode expr_mode)
 {
-  return simplify_gen_subreg (outer_mode, expr, inner_mode,
-			      subreg_lowpart_offset (outer_mode, inner_mode));
+  return simplify_gen_unary (TRUNCATE, mode, expr, expr_mode);
 }
 
 static void 
@@ -408,7 +405,7 @@ iv_subreg (struct rtx_iv *iv, enum machine_mode mode)
       && !iv->first_special)
     {
       rtx val = get_iv_value (iv, const0_rtx);
-      val = lowpart_subreg (mode, val, iv->extend_mode);
+      val = truncate_value (mode, val, iv->extend_mode);
 
       iv->base = val;
       iv->extend = UNKNOWN;
@@ -1247,7 +1244,7 @@ get_iv_value (struct rtx_iv *iv, rtx iteration)
   if (iv->extend_mode == iv->mode)
     return val;
 
-  val = lowpart_subreg (iv->mode, val, iv->extend_mode);
+  val = truncate_value (iv->mode, val, iv->extend_mode);
 
   if (iv->extend == UNKNOWN)
     return val;
@@ -2200,8 +2197,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   mode = iv0.mode;
   size = GET_MODE_BITSIZE (mode);
   get_mode_bounds (mode, (cond == LE || cond == LT), comp_mode, &mmin, &mmax);
-  mode_mmin = lowpart_subreg (mode, mmin, comp_mode);
-  mode_mmax = lowpart_subreg (mode, mmax, comp_mode);
+  mode_mmin = truncate_value (mode, mmin, comp_mode);
+  mode_mmax = truncate_value (mode, mmax, comp_mode);
 
   if (GET_CODE (iv0.step) != CONST_INT || GET_CODE (iv1.step) != CONST_INT)
     goto fail;
@@ -2258,7 +2255,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	   difficult due to possibly infinite loops.  */
 	if (iv0.step == const0_rtx)
 	  {
-	    tmp = lowpart_subreg (mode, iv0.base, comp_mode);
+	    tmp = truncate_value (mode, iv0.base, comp_mode);
 	    assumption = simplify_gen_relational (EQ, SImode, mode, tmp,
 						  mode_mmax);
 	    if (assumption == const_true_rtx)
@@ -2268,7 +2265,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  }
 	else
 	  {
-	    tmp = lowpart_subreg (mode, iv1.base, comp_mode);
+	    tmp = truncate_value (mode, iv1.base, comp_mode);
 	    assumption = simplify_gen_relational (EQ, SImode, mode, tmp,
 						  mode_mmin);
 	    if (assumption == const_true_rtx)
@@ -2294,7 +2291,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
     {
       if (iv0.step == const0_rtx)
 	{
-	  tmp = lowpart_subreg (mode, iv0.base, comp_mode);
+	  tmp = truncate_value (mode, iv0.base, comp_mode);
 	  if (rtx_equal_p (tmp, mode_mmin))
 	    {
 	      desc->infinite =
@@ -2305,7 +2302,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	}
       else
 	{
-	  tmp = lowpart_subreg (mode, iv1.base, comp_mode);
+	  tmp = truncate_value (mode, iv1.base, comp_mode);
 	  if (rtx_equal_p (tmp, mode_mmax))
 	    {
 	      desc->infinite =
@@ -2329,7 +2326,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       else
 	step = iv0.step;
       delta = simplify_gen_binary (MINUS, comp_mode, iv1.base, iv0.base);
-      delta = lowpart_subreg (mode, delta, comp_mode);
+      delta = truncate_value (mode, delta, comp_mode);
       delta = simplify_gen_binary (UMOD, mode, delta, step);
       may_xform = const0_rtx;
       may_not_xform = const_true_rtx;
@@ -2353,8 +2350,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      bound = simplify_gen_binary (PLUS, comp_mode, mmin, step);
 	      bound = simplify_gen_binary (MINUS, comp_mode, bound, delta);
-	      bound = lowpart_subreg (mode, bound, comp_mode);
-	      tmp = lowpart_subreg (mode, iv0.base, comp_mode);
+	      bound = truncate_value (mode, bound, comp_mode);
+	      tmp = truncate_value (mode, iv0.base, comp_mode);
 	      may_xform = simplify_gen_relational (cond, SImode, mode,
 						   bound, tmp);
 	      may_not_xform = simplify_gen_relational (reverse_condition (cond),
@@ -2365,8 +2362,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      bound = simplify_gen_binary (MINUS, comp_mode, mmax, step);
 	      bound = simplify_gen_binary (PLUS, comp_mode, bound, delta);
-	      bound = lowpart_subreg (mode, bound, comp_mode);
-	      tmp = lowpart_subreg (mode, iv1.base, comp_mode);
+	      bound = truncate_value (mode, bound, comp_mode);
+	      tmp = truncate_value (mode, iv1.base, comp_mode);
 	      may_xform = simplify_gen_relational (cond, SImode, mode,
 						   tmp, bound);
 	      may_not_xform = simplify_gen_relational (reverse_condition (cond),
@@ -2417,8 +2414,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	      iv1.base = simplify_gen_binary (PLUS, comp_mode, iv1.base, step);
 	    }
 
-	  tmp0 = lowpart_subreg (mode, iv0.base, comp_mode);
-	  tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
+	  tmp0 = truncate_value (mode, iv0.base, comp_mode);
+	  tmp1 = truncate_value (mode, iv1.base, comp_mode);
 	  assumption = simplify_gen_relational (reverse_condition (cond),
 						SImode, mode, tmp0, tmp1);
 	  if (assumption == const_true_rtx)
@@ -2446,7 +2443,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  iv0.step = simplify_gen_unary (NEG, comp_mode, iv0.step, mode);
 	  iv1.base = simplify_gen_unary (NEG, comp_mode, iv1.base, mode);
 	}
-      iv0.step = lowpart_subreg (mode, iv0.step, comp_mode);
+      iv0.step = truncate_value (mode, iv0.step, comp_mode);
 
       /* Let nsd (s, size of mode) = d.  If d does not divide c, the loop
 	 is infinite.  Otherwise, the number of iterations is
@@ -2460,7 +2457,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	}
       bound = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1);
 
-      tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
+      tmp1 = truncate_value (mode, iv1.base, comp_mode);
       tmp = simplify_gen_binary (UMOD, mode, tmp1, GEN_INT (d));
       assumption = simplify_gen_relational (NE, SImode, mode, tmp, const0_rtx);
       desc->infinite = alloc_EXPR_LIST (0, assumption, desc->infinite);
@@ -2481,12 +2478,11 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	   but it was already taken into account during LE -> NE transform).  */
 	{
 	  step = iv0.step;
-	  tmp0 = lowpart_subreg (mode, iv0.base, comp_mode);
-	  tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
+	  tmp0 = truncate_value (mode, iv0.base, comp_mode);
+	  tmp1 = truncate_value (mode, iv1.base, comp_mode);
 
 	  bound = simplify_gen_binary (MINUS, mode, mode_mmax,
-				       lowpart_subreg (mode, step,
-						       comp_mode));
+				       truncate_value (mode, step, comp_mode));
 	  if (step_is_pow2)
 	    {
 	      rtx t0, t1;
@@ -2513,7 +2509,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    }
 
 	  tmp = simplify_gen_binary (PLUS, comp_mode, iv1.base, iv0.step);
-	  tmp = lowpart_subreg (mode, tmp, comp_mode);
+	  tmp = truncate_value (mode, tmp, comp_mode);
 	  assumption = simplify_gen_relational (reverse_condition (cond),
 						SImode, mode, tmp0, tmp);
 
@@ -2526,11 +2522,11 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	     We must know that a - s does not overflow and a - s <= b and then
 	     we can again compute number of iterations as (b - (a - s)) / s.  */
 	  step = simplify_gen_unary (NEG, mode, iv1.step, mode);
-	  tmp0 = lowpart_subreg (mode, iv0.base, comp_mode);
-	  tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
+	  tmp0 = truncate_value (mode, iv0.base, comp_mode);
+	  tmp1 = truncate_value (mode, iv1.base, comp_mode);
 
 	  bound = simplify_gen_binary (PLUS, mode, mode_mmin,
-				       lowpart_subreg (mode, step, comp_mode));
+				       truncate_value (mode, step, comp_mode));
 	  if (step_is_pow2)
 	    {
 	      rtx t0, t1;
@@ -2557,7 +2553,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    }
 
 	  tmp = simplify_gen_binary (PLUS, comp_mode, iv0.base, iv1.step);
-	  tmp = lowpart_subreg (mode, tmp, comp_mode);
+	  tmp = truncate_value (mode, tmp, comp_mode);
 	  assumption = simplify_gen_relational (reverse_condition (cond),
 						SImode, mode,
 						tmp, tmp1);
