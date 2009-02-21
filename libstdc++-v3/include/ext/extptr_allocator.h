@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    * @brief An example allocator which uses a non-standard pointer type.
+   * @ingroup allocators
    *
    * This allocator specifies that containers use a 'relative pointer' as it's
    * pointer type.  (See ext/pointer.h)  Memory allocation in this example

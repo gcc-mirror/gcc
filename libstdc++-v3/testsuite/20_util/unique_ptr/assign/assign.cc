@@ -53,7 +53,7 @@ test03()
 // { dg-error "used here" "" { target *-*-* } 43 }
 // { dg-error "no matching" "" { target *-*-* } 49 }
 // { dg-error "used here" "" { target *-*-* } 50 }
-// { dg-error "candidates are" "" { target *-*-* } 214 }
-// { dg-error "deleted function" "" { target *-*-* } 214 }
-// { dg-error "deleted function" "" { target *-*-* } 360 }
+// { dg-error "candidates are" "" { target *-*-* } 219 }
+// { dg-error "deleted function" "" { target *-*-* } 219 }
+// { dg-error "deleted function" "" { target *-*-* } 365 }
 // { dg-excess-errors "note" }

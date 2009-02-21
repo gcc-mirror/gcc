@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,19 +39,19 @@ int main()
 }
 
 // { dg-error "used here" "" { target *-*-* } 569 } 
-// { dg-error "deleted function" "" { target *-*-* } 238 }
-// { dg-error "deleted function" "" { target *-*-* } 256 }
-// { dg-error "deleted function" "" { target *-*-* } 274 }
-// { dg-error "deleted function" "" { target *-*-* } 292 }
-// { dg-error "deleted function" "" { target *-*-* } 310 }
-// { dg-error "deleted function" "" { target *-*-* } 328 }
-// { dg-error "deleted function" "" { target *-*-* } 346 }
-// { dg-error "deleted function" "" { target *-*-* } 364 }
-// { dg-error "deleted function" "" { target *-*-* } 382 }
-// { dg-error "deleted function" "" { target *-*-* } 400 }
-// { dg-error "deleted function" "" { target *-*-* } 418 }
-// { dg-error "deleted function" "" { target *-*-* } 436 }
-// { dg-error "deleted function" "" { target *-*-* } 454 }
-// { dg-error "deleted function" "" { target *-*-* } 472 }
-// { dg-error "deleted function" "" { target *-*-* } 490 }
+// { dg-error "deleted function" "" { target *-*-* } 243 }
+// { dg-error "deleted function" "" { target *-*-* } 261 }
+// { dg-error "deleted function" "" { target *-*-* } 279 }
+// { dg-error "deleted function" "" { target *-*-* } 297 }
+// { dg-error "deleted function" "" { target *-*-* } 315 }
+// { dg-error "deleted function" "" { target *-*-* } 333 }
+// { dg-error "deleted function" "" { target *-*-* } 351 }
+// { dg-error "deleted function" "" { target *-*-* } 369 }
+// { dg-error "deleted function" "" { target *-*-* } 387 }
+// { dg-error "deleted function" "" { target *-*-* } 405 }
+// { dg-error "deleted function" "" { target *-*-* } 423 }
+// { dg-error "deleted function" "" { target *-*-* } 441 }
+// { dg-error "deleted function" "" { target *-*-* } 459 }
+// { dg-error "deleted function" "" { target *-*-* } 477 }
+// { dg-error "deleted function" "" { target *-*-* } 495 }
 // { dg-excess-errors "In member function" }

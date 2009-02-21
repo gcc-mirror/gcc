@@ -3,7 +3,7 @@
 // { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +41,6 @@ void test01()
   test_type d;
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 194 }
+// { dg-error "must be a specialization of ratio" "" { target *-*-* } 208 }
 // { dg-error "instantiated from here" "" { target *-*-* } 41 }
 // { dg-excess-errors "In instantiation of" }

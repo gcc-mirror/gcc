@@ -47,6 +47,11 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /**
+   * @addtogroup pointer_abstractions
+   * @{
+   */
+
   /// Primary template, default_delete.
   template<typename _Tp> 
     struct default_delete
@@ -442,6 +447,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator>=(const unique_ptr<_Tp, _Tp_Deleter>& __x,
 	       const unique_ptr<_Up, _Up_Deleter>& __y)
     { return !(__x.get() < __y.get()); }
+
+  // @} group pointer_abstractions
 
 _GLIBCXX_END_NAMESPACE
 

@@ -129,8 +129,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    */
 
   /**
-   * @defgroup set_algorithms Set Operation Algorithms
+   * @defgroup mutating_algorithms Mutating Algorithms
    * @ingroup algorithms
+   */
+
+  /**
+   * @defgroup non_mutating_algorithms Non-Mutating Algorithms
+   * @ingroup algorithms
+   */
+
+  /**
+   * @defgroup sorting_algorithms Sorting Algorithms
+   * @ingroup algorithms
+   */
+
+  /**
+   * @defgroup set_algorithms Set Operation Algorithms
+   * @ingroup sorting_algorithms
    *
    * These algorithms are common set operations performed on sequences
    * that are already sorted. The number of comparisons will be
@@ -139,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    * @defgroup binary_search_algorithms Binary Search Algorithms
-   * @ingroup algorithms
+   * @ingroup sorting_algorithms
    *
    * These algorithms are variations of a classic binary search, and
    * all assume that the sequence being searched is already sorted.

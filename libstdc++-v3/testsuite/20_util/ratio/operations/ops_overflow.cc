@@ -4,7 +4,7 @@
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008 Free Software Foundation
+// Copyright (C) 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,9 +40,9 @@ test02()
 // { dg-error "instantiated from here" "" { target *-*-* } 30 }
 // { dg-error "instantiated from here" "" { target *-*-* } 36 }
 // { dg-error "instantiated from here" "" { target *-*-* } 37 }
-// { dg-error "overflow in addition" "" { target *-*-* } 127 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 95 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 97 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 99 }
+// { dg-error "overflow in addition" "" { target *-*-* } 135 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 103 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 105 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 107 }
 // { dg-excess-errors "In instantiation of" }
 // { dg-excess-errors "out of range" }

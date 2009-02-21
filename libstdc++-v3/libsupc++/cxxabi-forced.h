@@ -1,6 +1,6 @@
 // cxxabi.h subset for inclusion by other library headers -*- C++ -*-
   
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -36,8 +36,13 @@
 #ifdef __cplusplus
 namespace __cxxabiv1
 {  
-  // A magic placeholder class that can be caught by reference
-  // to recognize forced unwinding.
+  /** 
+   *  @brief Thrown as part of forced unwinding.
+   *  @ingroup exceptions
+   *
+   *  A magic placeholder class that can be caught by reference to
+   *  recognize forced unwinding.
+   */
   class __forced_unwind
   {
     virtual ~__forced_unwind() throw();

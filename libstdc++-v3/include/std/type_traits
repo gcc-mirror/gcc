@@ -1,6 +1,6 @@
-// <type_traits> -*- C++ -*-
+// C++0x type_traits -*- C++ -*-
 
-// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,6 +62,10 @@
 
 namespace std
 {
+  /** @addtogroup metaprogramming
+   * @{
+   */
+
   // Primary classification traits.
 
   /// is_lvalue_reference
@@ -314,25 +318,26 @@ namespace std
 
 
   // Define a nested type if some predicate holds.
-  /// Primary template.
+  // Primary template.
+  /// enable_if
   template<bool, typename _Tp = void>
     struct enable_if 
     { };
 
-  /// Partial specialization for true.
+  // Partial specialization for true.
   template<typename _Tp>
     struct enable_if<true, _Tp>
     { typedef _Tp type; };
 
 
-  // A conditional expression, but for types. 
-  // If true, first, if false, second.
-  /// Primary template.
+  // A conditional expression, but for types. If true, first, if false, second.
+  // Primary template.
+  /// conditional
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct conditional
     { typedef _Iftrue type; };
 
-  /// Partial specialization for false.
+  // Partial specialization for false.
   template<typename _Iftrue, typename _Iffalse>
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
@@ -471,7 +476,8 @@ namespace std
 
   // Given an integral/enum type, return the corresponding unsigned
   // integer type.
-  /// Primary template.
+  // Primary template.
+  /// make_unsigned
   template<typename _Tp>
     struct make_unsigned 
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
@@ -549,7 +555,8 @@ namespace std
 
   // Given an integral/enum type, return the corresponding signed
   // integer type.
-  /// Primary template.
+  // Primary template.
+  /// make_signed
   template<typename _Tp>
     struct make_signed 
     { typedef typename __make_signed_selector<_Tp>::__type type; };
@@ -558,6 +565,7 @@ namespace std
   template<>
     struct make_signed<bool>;
 
+  /// common_type
   template<typename... _Tp>
     struct common_type;
 
@@ -592,6 +600,8 @@ namespace std
       typedef typename
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
+
+  // @} group metaprogramming
 }
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__

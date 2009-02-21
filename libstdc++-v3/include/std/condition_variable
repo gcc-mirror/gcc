@@ -47,6 +47,14 @@
 
 namespace std
 {
+  /**
+   * @defgroup condition_variables Condition Variables
+   * @ingroup concurrency
+   *
+   * Classes for condition_variable support.
+   * @{
+   */
+
   /// condition_variable
   class condition_variable
   {
@@ -211,6 +219,8 @@ namespace std
     native_handle()
     { return &_M_cond; }
   };
+
+  // @} group condition_variables
 }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

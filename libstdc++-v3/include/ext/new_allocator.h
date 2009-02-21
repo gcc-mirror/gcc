@@ -1,6 +1,7 @@
 // Allocator that wraps operator new -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,6 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @brief  An allocator that uses global new, as per [20.4].
+   *  @ingroup allocators
    *
    *  This is precisely the allocator defined in the C++ Standard. 
    *    - all allocation calls operator new

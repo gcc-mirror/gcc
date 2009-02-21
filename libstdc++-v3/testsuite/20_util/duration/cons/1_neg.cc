@@ -2,7 +2,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008 Free Software Foundation
+// Copyright (C) 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +41,6 @@ test02()
 
 // { dg-error "instantiated from here" "" { target *-*-* } 30 }
 // { dg-error "instantiated from here" "" { target *-*-* } 39 }
-// { dg-error "not exactly representable" "" { target *-*-* } 218 }
-// { dg-error "integral duration with floating point" "" { target *-*-* } 208 }
+// { dg-error "not exactly representable" "" { target *-*-* } 232 }
+// { dg-error "integral duration with floating point" "" { target *-*-* } 222 }
 // { dg-excess-errors "In instantiation of" }

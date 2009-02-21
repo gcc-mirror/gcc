@@ -28,18 +28,6 @@
 /** @namespace std::tr1::__detail
  *  @brief Implementation details not part of the namespace std::tr1 interface.
 */
-/** @namespace std::chrono
- *  @brief ISO C++ 0x entities sub namespace for time and date.
-*/
-/** @namespace std::placeholders
- *  @brief ISO C++ 0x entities sub namespace for functional.
-*/
-/** @namespace std::regex_constants
- *  @brief ISO C++ 0x entities sub namespace for regex.
-*/
-/** @namespace std::this_thread
- *  @brief ISO C++ 0x entities sub namespace for thread.
-*/
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
 */
@@ -51,71 +39,6 @@
  *  @brief GNU implemenation details, not for public use or
  *  export. Used only when anonymous namespaces cannot be substituted.
 */
-// // // // // // // // // // // // // // // // // // // // // // // //
-/** @namespace abi
- *  @brief The cross-vendor C++ Application Binary Interface. A
- *  namespace alias to __cxxabiv1.
- *
- *  A brief overview of an ABI is given in the libstdc++ FAQ, question
- *  5.8 (you may have a copy of the FAQ locally, or you can view the online
- *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_8).
- *
- *  GCC subscribes to a relatively-new cross-vendor ABI for C++, sometimes
- *  called the IA64 ABI because it happens to be the native ABI for that
- *  platform.  It is summarized at http://www.codesourcery.com/cxx-abi/
- *  along with the current specification.
- *
- *  For users of GCC greater than or equal to 3.x, entry points are
- *  available in <cxxabi.h>, which notes, <em>"It is not normally
- *  necessary for user programs to include this header, or use the
- *  entry points directly.  However, this header is available should
- *  that be needed."</em>
-*/
-
-namespace abi {
-/**
-@brief New ABI-mandated entry point in the C++ runtime library for demangling.
-
-@param mangled_name A NUL-terminated character string containing the name
-                    to be demangled.
-
-@param output_buffer A region of memory, allocated with malloc, of
-                     @a *length bytes, into which the demangled name
-                     is stored.  If @a output_buffer is not long enough,
-                     it is expanded using realloc.  @a output_buffer may
-                     instead be NULL; in that case, the demangled name is
-                     placed in a region of memory allocated with malloc.
-
-@param length If @a length is non-NULL, the length of the buffer containing
-              the demangled name is placed in @a *length.
-
-@param status @a *status is set to one of the following values:
-              -   0: The demangling operation succeeded.
-              -  -1: A memory allocation failiure occurred.
-              -  -2: @a mangled_name is not a valid name under the C++ ABI
-                     mangling rules.
-              -  -3: One of the arguments is invalid.
-
-@return A pointer to the start of the NUL-terminated demangled name, or NULL
-        if the demangling fails.  The caller is responsible for deallocating
-        this memory using @c free.
-
-
-The demangling is performed using the C++ ABI mangling rules, with
-GNU extensions.  For example, this function is used
-in __gnu_cxx::__verbose_terminate_handler.  See
-http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#5 for other
-examples of use.
-
-@note The same demangling functionality is available via libiberty 
-(@c <libiberty/demangle.h> and @c libiberty.a) in GCC 3.1 and later, but that
-requires explicit installation (@c --enable-install-libiberty) and uses a
-different API, although the ABI is unchanged.
-*/
-char* __cxa_demangle (const char* mangled_name, char* output_buffer,
-                      size_t* length, int* status);
-} // namespace abi
-
 // // // // // // // // // // // // // // // // // // // // // // // //
 
 /**
@@ -142,10 +65,6 @@ comments all over the place, so they may seem stilted.
 <hr>
 */
 
-// // // // // // // // // // // // // // // // // // // // // // // //
-// This is standalone because, unlike the functor introduction, there is no
-// single header file which serves as a base "all containers must include
-// this header".  We do some quoting of 14882 here.
 /** @defgroup containers Containers
 Containers are collections of objects.
 
@@ -169,9 +88,9 @@ All containers must meet certain requirements, summarized in
 <a href="tables.html">tables</a>.
 
 The standard containers are further refined into
-@link Sequences Sequences@endlink and
-@link Assoc_containers Associative Containers@endlink.
-@link Unordered_assoc_containers Unordered Associative Containers@endlink.
+@link sequences Sequences@endlink and
+@link associative_containers Associative Containers@endlink.
+@link unordered_associative_containers Unordered Associative Containers@endlink.
 */
 
 /** @defgroup sequences Sequences
@@ -218,9 +137,22 @@ elements of the container.
 All unordered associative containers must meet certain requirements,
 summarized in <a href="tables.html">tables</a>.  */
 
-// // // // // // // // // // // // // // // // // // // // // // // //
-/* * @defgroup groupname description of group
-placeholder text
-*/
+/**
+ * @defgroup diagnostics Diagnostics
+ *
+ * Components for error handling, reporting, and diagnostic operations.
+ */
 
-// // // // // // // // // // // // // // // // // // // // // // // //
+/**
+ * @defgroup concurrency Concurrency
+ *
+ * Components for concurrent operations, including threads, mutexes,
+ * and condition variables.
+ */
+
+/**
+ * @defgroup pointer_abstractions Pointer Abstractions
+ * @ingroup memory
+ *
+ * Components for memory allocation, deallocation, and management.
+ */

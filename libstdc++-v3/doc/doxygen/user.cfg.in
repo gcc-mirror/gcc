@@ -416,7 +416,7 @@ SORT_BRIEF_DOCS        = YES
 # hierarchy of group names into alphabetical order. If set to NO (the default) 
 # the group names will appear in their defined order.
 
-SORT_GROUP_NAMES       = NO
+SORT_GROUP_NAMES       = YES
 
 # If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be 
 # sorted by fully-qualified names, including namespaces. If set to 
@@ -539,7 +539,7 @@ WARN_IF_UNDOCUMENTED   = NO
 # parameters in a documented function, or documenting parameters that 
 # don't exist or using markup commands wrongly.
 
-WARN_IF_DOC_ERROR      = NO
+WARN_IF_DOC_ERROR      = YES
 
 # This WARN_NO_PARAMDOC option can be abled to get warnings for 
 # functions that are documented, but have no documentation for their parameters 
@@ -573,9 +573,11 @@ WARN_LOGFILE           =
 # "myfile.cpp" or directories like "/usr/src/myproject". Separate the
 # files or directories with spaces.
 
-INPUT                  = @srcdir@/libsupc++/cxxabi.h \
+INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
+		       	 @srcdir@/libsupc++/cxxabi.h \
                          @srcdir@/libsupc++/cxxabi-forced.h \
                          @srcdir@/libsupc++/exception \
+			 @srcdir@/libsupc++/exception_ptr.h \
                          @srcdir@/libsupc++/initializer_list \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
@@ -713,18 +715,18 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/tr1_impl/unordered_map \
                          include/tr1_impl/unordered_set \
                          include/tr1_impl/utility \
+                         include/tr1_impl \
+                         include/tr1 \
                          include/ \
                          include/@host_alias@/bits \
                          include/backward \
                          include/bits \
+                         include/bits/shared_ptr.h \
                          include/debug \
                          include/parallel \
-                         include/tr1 \
-                         include/tr1_impl \
                          include/ext \
                          include/ext/pb_ds \
-                         include/ext/pb_ds/detail \
-                         @srcdir@/doc/doxygen/doxygroups.cc
+                         include/ext/pb_ds/detail 
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -1419,6 +1421,7 @@ PREDEFINED             = __cplusplus \
                          __GTHREADS \
                          _GLIBCXX_HAS_GTHREADS \
                          __GXX_EXPERIMENTAL_CXX0X__ \
+                         _GLIBCXX_INCLUDE_AS_CXX0X \
                          "_GLIBCXX_STD_P= " \
                          "_GLIBCXX_STD_D= " \
                          _GLIBCXX_STD=std \
@@ -1430,11 +1433,12 @@ PREDEFINED             = __cplusplus \
                          _GLIBCXX_END_NAMESPACE=} \
                          _GLIBCXX_END_NESTED_NAMESPACE=} \
                          "_GLIBCXX_TEMPLATE_ARGS=...  " \
-                         _GLIBCXX_INCLUDE_AS_CXX0X \
                          _GLIBCXX_DEPRECATED \
                          _GLIBCXX_USE_WCHAR_T \
                          _GLIBCXX_USE_LONG_LONG \
                          _GLIBCXX_USE_C99_STDINT_TR1 \
+			 _GLIBCXX_USE_SCHED_YIELD \
+			 _GLIBCXX_USE_NANOSLEEP \
                          __glibcxx_function_requires=// \
                          __glibcxx_class_requires=// \
                          __glibcxx_class_requires2=// \

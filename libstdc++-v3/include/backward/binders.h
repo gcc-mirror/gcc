@@ -65,7 +65,7 @@
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 20.3.6 binders
-  /** @defgroup binder Binder Classes
+  /** @defgroup binders Binder Classes
    * @ingroup functors
    *
    *  Binders turn functions/functors with two arguments into functors with
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  @{
    */
-  /// One of the @link binder binder functors@endlink.
+  /// One of the @link binders binder functors@endlink.
   template<typename _Operation>
     class binder1st
     : public unary_function<typename _Operation::second_argument_type,
@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return op(value, __x); }
     } _GLIBCXX_DEPRECATED_ATTR;
 
-  /// One of the @link binder binder functors@endlink.
+  /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
     inline binder1st<_Operation>
     bind1st(const _Operation& __fn, const _Tp& __x)
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return binder1st<_Operation>(__fn, _Arg1_type(__x));
     }
 
-  /// One of the @link binder binder functors@endlink.
+  /// One of the @link binders binder functors@endlink.
   template<typename _Operation>
     class binder2nd
     : public unary_function<typename _Operation::first_argument_type,
@@ -158,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return op(__x, value); }
     } _GLIBCXX_DEPRECATED_ATTR;
 
-  /// One of the @link binder binder functors@endlink.
+  /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
     inline binder2nd<_Operation>
     bind2nd(const _Operation& __fn, const _Tp& __x)

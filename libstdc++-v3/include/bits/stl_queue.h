@@ -70,7 +70,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  A standard container giving FIFO behavior.
    *
-   *  @ingroup containers
    *  @ingroup sequences
    *
    *  Meets many of the requirements of a
@@ -338,7 +337,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  A standard container automatically sorting its contents.
    *
-   *  @ingroup containers
    *  @ingroup sequences
    *
    *  This is not a true container, but an @e adaptor.  It holds
