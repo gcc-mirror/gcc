@@ -1,3 +1,8 @@
+2009-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* make-temp-file.c (<windows.h>): Include on Windows.
+	(choose_tmpdir): On Windows, use GetTempPath.
+
 2009-01-18  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.ac (funcs, vars, checkfuncs):  Don't munge on Cygwin,
