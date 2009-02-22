@@ -5115,9 +5115,11 @@ classify_argument (enum machine_mode mode, const_tree type,
     case TImode:
       classes[0] = classes[1] = X86_64_INTEGER_CLASS;
       return 2;
-    case CTImode:
     case COImode:
     case OImode:
+      /* OImode shouldn't be used directly.  */
+      gcc_unreachable ();
+    case CTImode:
       return 0;
     case SFmode:
       if (!(bit_offset % 64))
@@ -5468,6 +5470,10 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	}
       break;
 
+    case OImode:
+      /* OImode shouldn't be used directly.  */
+      gcc_unreachable ();
+
     case DFmode:
       if (cum->float_in_sse < 2)
 	break;
@@ -5476,7 +5482,6 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	break;
       /* FALLTHRU */
 
-    case OImode:
     case V8SFmode:
     case V8SImode:
     case V32QImode:
@@ -5673,7 +5678,9 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       break;
 
     case OImode:
-      /* In 32bit, we pass OImode in ymm registers.  */
+      /* OImode shouldn't be used directly.  */
+      gcc_unreachable ();
+
     case V8SFmode:
     case V8SImode:
     case V32QImode:
@@ -5738,9 +5745,6 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     case V16HImode:
     case V4DFmode:
     case V4DImode:
-      /* In 64bit, we pass TImode in interger registers and OImode on
-	 stack.  */
-
       /* Unnamed 256bit vector mode parameters are passed on stack.  */
       if (!named)
 	return NULL;
@@ -6020,8 +6024,7 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
     regno = TARGET_SSE ? FIRST_SSE_REG : 0;
 
   /* 32-byte vector modes in %ymm0.   */
-  else if (mode == OImode
-	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 32))
+  else if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 32)
     regno = TARGET_AVX ? FIRST_SSE_REG : 0;
 
   /* Floating point return values in %st(0) (unless -mno-fp-ret-in-387).  */
@@ -6040,6 +6043,9 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
 	  || (sse_level == 2 && mode == DFmode))
 	regno = FIRST_SSE_REG;
     }
+
+  /* OImode shouldn't be used directly.  */
+  gcc_assert (mode != OImode);
 
   return gen_rtx_REG (orig_mode, regno);
 }
@@ -6163,7 +6169,7 @@ return_in_memory_32 (const_tree type, enum machine_mode mode)
   if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
     return 0;
 
-  if (VECTOR_MODE_P (mode) || mode == TImode || mode == OImode)
+  if (VECTOR_MODE_P (mode) || mode == TImode)
     {
       /* User-created vectors small enough to fit in EAX.  */
       if (size < 8)
@@ -6188,6 +6194,10 @@ return_in_memory_32 (const_tree type, enum machine_mode mode)
 
   if (size > 12)
     return 1;
+
+  /* OImode shouldn't be used directly.  */
+  gcc_assert (mode != OImode);
+
   return 0;
 }
 

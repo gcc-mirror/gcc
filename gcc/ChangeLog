@@ -1,5 +1,15 @@
 2008-02-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (classify_argument): Don't allow COImode
+	and OImode.
+	(function_arg_advance_32): Don't allow OImode.
+	(function_arg_32): Likewise.
+	(function_value_32): Likewise.
+	(return_in_memory_32): Likewise.
+	(function_arg_64): Remove OImode comment.
+
+2008-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39261
 	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Use
 	ix86_expand_vector_set for V4DImode in 64bit mode only.
