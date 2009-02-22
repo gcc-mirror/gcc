@@ -27129,9 +27129,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
     case V16HImode:
     case V8SImode:
     case V8SFmode:
-    case V4DImode:
     case V4DFmode:
       use_vector_set = TARGET_AVX;
+      break;
+    case V4DImode:
+      /* Use ix86_expand_vector_set in 64bit mode only.  */
+      use_vector_set = TARGET_AVX && TARGET_64BIT;
       break;
     default:
       break;
@@ -27271,8 +27274,11 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
 	 the general case.  */
       return false;
 
-    case V4DFmode:
     case V4DImode:
+      /* Use ix86_expand_vector_set in 64bit mode only.  */
+      if (!TARGET_64BIT)
+	return false;
+    case V4DFmode:
     case V8SFmode:
     case V8SImode:
     case V16HImode:

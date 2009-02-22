@@ -1,3 +1,10 @@
+2008-02-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39261
+	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Use
+	ix86_expand_vector_set for V4DImode in 64bit mode only.
+	(ix86_expand_vector_init_one_var): Likewise.
+
 2009-02-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite.c (graphite_trans_loop_block): Adjust tile size to 51.
