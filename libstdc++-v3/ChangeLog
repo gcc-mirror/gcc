@@ -1,3 +1,14 @@
+2009-02-23  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* testsuite/libstdc++-abi/abi.exp: Add multilib support.
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Remove MULTISUBDIR
+	from baseline_dir.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (baseline_file): Remove variable.
+	(site.exp): Set baseline_dir rather than baseline_file.
+	(check-abi): Pass AM_RUNTESTFLAGS and RUNTESTFLAGS to runtest.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/30_threads/thread/this_thread: Move...
