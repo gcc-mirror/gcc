@@ -1,3 +1,16 @@
+2009-02-23  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/37709                                              
+	* tree.c (block_ultimate_origin): Move here from dwarf2out.             
+	* tree.h (block_ultimate_origin): Declare.                              
+	* dwarf2out.c (block_ultimate_origin): Move to tree.c                   
+	* tree-ssa-live.c (remove_unused_scope_block_p):
+	Eliminate blocks containig no instructions nor live variables nor
+	nested blocks.
+	(dump_scope_block): New function.
+	(remove_unused_locals): Enable removal of dead blocks by default;
+	enable dumping at TDF_DETAILS.                                          
+
 2008-02-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (classify_argument): Don't allow COImode
