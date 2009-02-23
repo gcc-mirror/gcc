@@ -1,5 +1,10 @@
 2009-02-23  Jan Hubicka  <jh@suse.cz>
 
+	PR c/12245
+	* ggc.h (htab_create_ggc): Use ggc_free to free hashtable when resizing.
+
+2009-02-23  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/37709                                              
 	* tree.c (block_ultimate_origin): Move here from dwarf2out.             
 	* tree.h (block_ultimate_origin): Declare.                              
