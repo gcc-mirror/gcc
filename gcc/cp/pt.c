@@ -13204,9 +13204,18 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
 	{
+	  int elt_strict = strict;
 	  if (!BRACE_ENCLOSED_INITIALIZER_P (elt))
-	    elt = TREE_TYPE (elt);
-	  if (unify (tparms, targs, elttype, elt, UNIFY_ALLOW_NONE))
+	    {
+	      tree type = TREE_TYPE (elt);
+	      /* It should only be possible to get here for a call.  */
+	      gcc_assert (elt_strict & UNIFY_ALLOW_OUTER_LEVEL);
+	      elt_strict |= maybe_adjust_types_for_deduction
+		(DEDUCE_CALL, &elttype, &type, elt);
+	      elt = type;
+	    }
+
+	  if (unify (tparms, targs, elttype, elt, elt_strict))
 	    return 1;
 	}
       return 0;
