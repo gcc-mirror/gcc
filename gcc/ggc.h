@@ -249,7 +249,7 @@ extern void dump_ggc_loc_statistics (bool);
 #define ggc_alloc_tree(LENGTH) ((tree) ggc_alloc_zone (LENGTH, &tree_zone))
 
 #define htab_create_ggc(SIZE, HASH, EQ, DEL) \
-  htab_create_alloc (SIZE, HASH, EQ, DEL, ggc_calloc, NULL)
+  htab_create_alloc (SIZE, HASH, EQ, DEL, ggc_calloc, ggc_free)
 
 #define splay_tree_new_ggc(COMPARE)					 \
   splay_tree_new_with_allocator (COMPARE, NULL, NULL,			 \
