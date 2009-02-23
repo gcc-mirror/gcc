@@ -485,10 +485,13 @@ remove_unused_scope_block_p (tree scope)
       next = &TREE_CHAIN (*t);
 
       /* Debug info of nested function refers to the block of the
-	 function.  */
+	 function.  We might stil call it even if all statements
+	 of function it was nested into was elliminated.
+	 
+	 TODO: We can actually look into cgraph to see if function
+	 will be output to file.  */
       if (TREE_CODE (*t) == FUNCTION_DECL)
 	unused = false;
-
       /* Remove everything we don't generate debug info for.  */
       else if (DECL_IGNORED_P (*t))
 	{
@@ -506,15 +509,24 @@ remove_unused_scope_block_p (tree scope)
 
       /* When we are not doing full debug info, we however can keep around
 	 only the used variables for cfgexpand's memory packing saving quite
-	 a lot of memory.  */
+	 a lot of memory.  
+
+	 For sake of -g3, we keep around those vars but we don't count this as
+	 use of block, so innermost block with no used vars and no instructions
+	 can be considered dead.  We only want to keep around blocks user can
+	 breakpoint into and ask about value of optimized out variables. 
+
+	 Similarly we need to keep around types at least until all variables of
+	 all nested blocks are gone.  We track no information on whether given
+	 type is used or not.  */
+
       else if (debug_info_level == DINFO_LEVEL_NORMAL
 	       || debug_info_level == DINFO_LEVEL_VERBOSE
 	       /* Removing declarations before inlining is going to affect
 		  DECL_UID that in turn is going to affect hashtables and
 		  code generation.  */
 	       || !cfun->after_inlining)
-	unused = false;
-
+	;
       else
 	{
 	  *t = TREE_CHAIN (*t);
@@ -537,10 +549,7 @@ remove_unused_scope_block_p (tree scope)
 	    nsubblocks ++;
 	  }
 	else
-	  {
-	    gcc_assert (!BLOCK_VARS (*t));
-	    *t = BLOCK_CHAIN (*t);
-	  }
+	  *t = BLOCK_CHAIN (*t);
       }
     else
       {
@@ -576,6 +585,38 @@ mark_all_vars_used (tree *expr_p, void *data)
   walk_tree (expr_p, mark_all_vars_used_1, data, NULL);
 }
 
+/* Dump scope blocks.  */
+
+static void
+dump_scope_block (FILE *file, int indent, tree scope, int flags)
+{
+  tree var, t;
+
+  fprintf (file, "\n%*sScope block #%i %s\n",indent, "" , BLOCK_NUMBER (scope),
+  	   TREE_USED (scope) ? "" : "(unused)");
+  if (BLOCK_ABSTRACT_ORIGIN (scope) && DECL_P (block_ultimate_origin (scope)))
+    {
+      fprintf (file, "\n%*sOriginating from ",indent + 1, "");
+      print_generic_decl (file, block_ultimate_origin (scope), flags);
+      fprintf (file, "\n");
+    }
+  for (var = BLOCK_VARS (scope); var; var = TREE_CHAIN (var))
+    {
+      bool used = false;
+      var_ann_t ann;
+
+      if ((ann = var_ann (var))
+	  && ann->used)
+	used = true;
+
+      fprintf (file, "%*s",indent, "");
+      print_generic_decl (file, var, flags);
+      fprintf (file, "%s\n", used ? "" : " (unused)");
+    }
+  for (t = BLOCK_SUBBLOCKS (scope); t ; t = BLOCK_CHAIN (t))
+    dump_scope_block (file, indent + 2, t, flags);
+}
+
 
 /* Remove local variables that are not referenced in the IL.  */
 
@@ -588,8 +629,7 @@ remove_unused_locals (void)
   var_ann_t ann;
   bitmap global_unused_vars = NULL;
 
-  if (optimize)
-    mark_scope_block_unused (DECL_INITIAL (current_function_decl));
+  mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   /* Assume all locals are unused.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
@@ -716,8 +756,12 @@ remove_unused_locals (void)
 	&& !TREE_ADDRESSABLE (t)
 	&& (optimize || DECL_ARTIFICIAL (t)))
       remove_referenced_var (t);
-  if (optimize)
-    remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Scope blocks after cleanups:\n");
+      dump_scope_block (dump_file, 0, DECL_INITIAL (current_function_decl), false);
+    }
 }
 
 

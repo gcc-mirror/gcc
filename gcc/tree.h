@@ -5022,6 +5022,7 @@ extern bool gimple_alloca_call_p (const_gimple);
 extern bool alloca_call_p (const_tree);
 extern bool must_pass_in_stack_var_size (enum machine_mode, const_tree);
 extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
+extern tree block_ultimate_origin (const_tree);
 
 /* In attribs.c.  */
 
