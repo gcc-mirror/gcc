@@ -1,3 +1,9 @@
+2009-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/36411
+	* pt.c (coerce_template_template_parms): Return 0 if parameter
+	is error_mark_node.
+
 2009-02-23  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (unify): Call maybe_adjust_types_for_deduction when
