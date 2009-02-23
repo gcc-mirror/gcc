@@ -4070,8 +4070,8 @@ constructor_static_from_elts_p (const_tree ctor)
 	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (ctor)));
 }
 
-/* A subroutine of initializer_constant_valid_p.  VALUE is either a
-   MINUS_EXPR or a POINTER_PLUS_EXPR.  This looks for cases of VALUE
+/* A subroutine of initializer_constant_valid_p.  VALUE is a MINUS_EXPR,
+   PLUS_EXPR or POINTER_PLUS_EXPR.  This looks for cases of VALUE
    which are valid when ENDTYPE is an integer of any size; in
    particular, this does not accept a pointer minus a constant.  This
    returns null_pointer_node if the VALUE is an absolute constant
@@ -4124,7 +4124,9 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype)
   /* Both initializers must be known.  */
   if (op0 && op1)
     {
-      if (op0 == op1)
+      if (op0 == op1
+	  && (op0 == null_pointer_node
+	      || TREE_CODE (value) == MINUS_EXPR))
 	return null_pointer_node;
 
       /* Support differences between labels.  */
@@ -4315,12 +4317,10 @@ initializer_constant_valid_p (tree value, tree endtype)
 	}
 
       /* Support narrowing pointer differences.  */
-      if (TREE_CODE (value) == POINTER_PLUS_EXPR)
-	{
-	  ret = narrowing_initializer_constant_valid_p (value, endtype);
-	  if (ret != NULL_TREE)
-	    return ret;
-	}
+      ret = narrowing_initializer_constant_valid_p (value, endtype);
+      if (ret != NULL_TREE)
+	return ret;
+
       break;
 
     case MINUS_EXPR:

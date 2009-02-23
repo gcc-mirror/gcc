@@ -1,5 +1,9 @@
 2009-02-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38880
+	* g++.dg/init/const7.C: Remove XFAIL.
+	* g++.dg/init/static-init1.C: New test.
+
 	* g++.dg/cpp0x/initlist14.C: New test.
 
 2008-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
