@@ -4756,6 +4756,9 @@ coerce_template_template_parms (tree parm_parms,
     {
       parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, nparms - 1));
       
+      if (parm == error_mark_node)
+	return 0;
+
       switch (TREE_CODE (parm))
         {
         case TEMPLATE_DECL:
