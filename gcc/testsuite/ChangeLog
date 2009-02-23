@@ -1,3 +1,7 @@
+2009-02-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist14.C: New test.
+
 2008-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38914

@@ -1,3 +1,8 @@
+2009-02-23  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (unify): Call maybe_adjust_types_for_deduction when
+	deducing from an initializer list.
+
 2009-02-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39225
