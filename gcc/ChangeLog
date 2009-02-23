@@ -1,3 +1,11 @@
+2009-02-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38880
+	* varasm.c (initializer_constant_valid_p) [PLUS_EXPR]: Check
+	narrowing_initializer_constant_valid_p.
+	(narrowing_initializer_constant_valid_p): Don't return 
+	null_pointer_node for adding a pointer to itself.
+
 2009-02-23  Jan Hubicka  <jh@suse.cz>
 
 	PR c/12245
