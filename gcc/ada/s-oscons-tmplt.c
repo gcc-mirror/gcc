@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -834,6 +834,15 @@ CND(AF_INET, "IPv4 address family")
  ** Its TCP/IP stack is in transition.  It has newer .h files but no IPV6 yet.
  **/
 #if defined(__rtems__)
+# undef AF_INET6
+#endif
+
+/**
+ ** Tru64 UNIX V4.0F defines AF_INET6 without IPv6 support, specificially
+ ** without struct sockaddr_in6.  We use _SS_MAXSIZE (used for the definition
+ ** of struct sockaddr_storage on Tru64 UNIX V5.1) to detect this.
+ **/
+#if defined(__osf__) && !defined(_SS_MAXSIZE)
 # undef AF_INET6
 #endif
 
