@@ -1,3 +1,7 @@
+2009-02-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* s-oscons-tmplt.c [__osf__ && !_SS_MAXSIZE]: Undef AF_UNIX6.
+
 2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc-interface/misc.c (gnat_post_options): Turn off warn_psabi.
