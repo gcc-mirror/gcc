@@ -1,3 +1,8 @@
+2009-02-24  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/33785
+	* doc/tm.texi (TARGET_C99_FUNCTIONS): Fix description.
+
 2009-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/39285
