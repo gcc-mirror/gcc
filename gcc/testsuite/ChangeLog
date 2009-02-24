@@ -1,3 +1,9 @@
+2009-02-24  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/39233
+	* gcc.c-torture/execute/pr39233.c: New testcase.
+
 2009-02-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/39260
