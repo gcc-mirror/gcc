@@ -1,3 +1,10 @@
+2009-02-24  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/39233
+	* tree-ssa-loop-ivopts.c (add_candidate_1): Do not except pointers
+	from converting them to a generic type.
+
 2009-02-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/39260
