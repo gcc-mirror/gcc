@@ -1,3 +1,10 @@
+2009-02-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/39260
+	* graphite.c (harmful_stmt_in_bb): Stop a SCoP when the basic block
+	contains a condition with a real type.
+	(build_scop_conditions_1): Conditions are always last_stmt of a bb.
+
 2009-02-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38880
