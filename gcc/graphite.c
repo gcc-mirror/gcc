@@ -1209,10 +1209,22 @@ static gimple
 harmful_stmt_in_bb (basic_block scop_entry, basic_block bb)
 {
   gimple_stmt_iterator gsi;
+  gimple stmt;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     if (!stmt_simple_for_scop_p (scop_entry, gsi_stmt (gsi)))
       return gsi_stmt (gsi);
+
+  stmt = last_stmt (bb);
+  if (stmt && gimple_code (stmt) == GIMPLE_COND)
+    {
+      tree lhs = gimple_cond_lhs (stmt);
+      tree rhs = gimple_cond_rhs (stmt);
+
+      if (TREE_CODE (TREE_TYPE (lhs)) == REAL_TYPE
+	  || TREE_CODE (TREE_TYPE (rhs)) == REAL_TYPE)
+	return stmt;
+    }
 
   return NULL;
 }
@@ -3410,9 +3422,9 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
   bool res = true;
   int i, j;
   graphite_bb_p gbb;
-  gimple_stmt_iterator gsi;
   basic_block bb_child, bb_iter;
   VEC (basic_block, heap) *dom;
+  gimple stmt;
   
   /* Make sure we are in the SCoP.  */
   if (!bb_in_sese_p (bb, SCOP_REGION (scop)))
@@ -3430,9 +3442,9 @@ build_scop_conditions_1 (VEC (gimple, heap) **conditions,
 
   dom = get_dominated_by (CDI_DOMINATORS, bb);
 
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  stmt = last_stmt (bb);
+  if (stmt)
     {
-      gimple stmt = gsi_stmt (gsi);
       VEC (edge, gc) *edges;
       edge e;
 
