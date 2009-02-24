@@ -15295,9 +15295,14 @@ instantiate_decl (tree d, int defer_ok,
   /* In general, we do not instantiate such templates...  */
   if (external_p
       /* ... but we instantiate inline functions so that we can inline
-	 them and ... */
+	 them.  An explicit instantiation declaration prohibits implicit
+	 instantiation of non-inline functions.  With high levels of
+	 optimization, we would normally inline non-inline functions
+	 -- but we're not allowed to do that for "extern template" functions.
+	 Therefore, we check DECL_DECLARED_INLINE_P, rather than
+	 possibly_inlined_p.  And ...  */
       && ! (TREE_CODE (d) == FUNCTION_DECL
-	    && possibly_inlined_p (d))
+	    && DECL_DECLARED_INLINE_P (d))
       /* ... we instantiate static data members whose values are
 	 needed in integral constant expressions.  */
       && ! (TREE_CODE (d) == VAR_DECL

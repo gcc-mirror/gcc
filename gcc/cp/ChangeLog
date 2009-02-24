@@ -1,3 +1,9 @@
+2009-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/39242
+	* pt.c (instantiate_decl): Do not instantiate extern, non-inline
+	declared functions.
+
 2009-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/36411
