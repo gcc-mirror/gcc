@@ -1,4 +1,9 @@
 2009-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/39242
+	* g++.dg/template/instantiate10.C: New testcase.
+
+2009-02-24  Richard Guenther  <rguenther@suse.de>
 	Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/39233
