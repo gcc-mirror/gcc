@@ -1,5 +1,9 @@
 2009-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* g++.dg/init/static-init1.C: Replace int with __PTRDIFF_TYPE__.
+
+2009-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR c++/36411
 	* g++.dg/template/void14.C: New.
 
