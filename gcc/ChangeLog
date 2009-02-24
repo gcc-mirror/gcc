@@ -1,4 +1,9 @@
 2009-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR debug/39285
+	* dwarf2out.c (gen_enumeration_type_die): Handle CONST_DECLs.
+
+2009-02-24  Richard Guenther  <rguenther@suse.de>
 	Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/39233
