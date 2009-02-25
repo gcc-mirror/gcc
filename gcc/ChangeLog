@@ -1,3 +1,9 @@
+2009-02-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Link Options): Document an easier way to pass
+	options that take arguments to the GNU linker using -Xlinker and
+	-Wl.
+
 2009-02-24  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/33785

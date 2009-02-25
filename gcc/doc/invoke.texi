@@ -8042,17 +8042,28 @@ Pass @var{option} as an option to the linker.  You can use this to
 supply system-specific linker options which GCC does not know how to
 recognize.
 
-If you want to pass an option that takes an argument, you must use
+If you want to pass an option that takes a separate argument, you must use
 @option{-Xlinker} twice, once for the option and once for the argument.
 For example, to pass @option{-assert definitions}, you must write
 @samp{-Xlinker -assert -Xlinker definitions}.  It does not work to write
 @option{-Xlinker "-assert definitions"}, because this passes the entire
 string as a single argument, which is not what the linker expects.
 
+When using the GNU linker, it is usually more convenient to pass 
+arguments to linker options using the @option{@var{option}=@var{value}}
+syntax than as separate arguments.  For example, you can specify
+@samp{-Xlinker -Map=output.map} rather than
+@samp{-Xlinker -Map -Xlinker output.map}.  Other linkers may not support
+this syntax for command-line options.
+
 @item -Wl,@var{option}
 @opindex Wl
 Pass @var{option} as an option to the linker.  If @var{option} contains
-commas, it is split into multiple options at the commas.
+commas, it is split into multiple options at the commas.  You can use this
+syntax to pass an argument to the option.  
+For example, @samp{-Wl,-Map,output.map} passes @samp{-Map output.map} to the
+linker.  When using the GNU linker, you can also get the same effect with
+@samp{-Wl,-Map=output.map}.
 
 @item -u @var{symbol}
 @opindex u
