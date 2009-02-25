@@ -1,4 +1,10 @@
+2008-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/39241
+	* gcc.dg/torture/pr39241.c: New.
+
 2009-02-25  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimizations/39259
 	* g++.dg/torture/pr39259.C: New testcase.
 
@@ -8,7 +14,7 @@
 	* g++.dg/template/instantiate10.C: New testcase.
 
 2009-02-24  Richard Guenther  <rguenther@suse.de>
-	Zdenek Dvorak  <ook@ucw.cz>
+	    Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/39233
 	* gcc.c-torture/execute/pr39233.c: New testcase.
