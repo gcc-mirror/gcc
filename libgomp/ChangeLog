@@ -107,7 +107,7 @@
 
 2008-08-21  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* testsuite/libgomp.exp (libgomp_init): Only set things that
+	* testsuite/lib/libgomp.exp (libgomp_init): Only set things that
 	depend on blddir if blddir exists.
 	(libgomp_target_compile): Likewise.
 	* testsuite/libgomp.c++/c++.exp: Likewise.
