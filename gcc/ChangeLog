@@ -1,3 +1,9 @@
+2008-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/39241
+	* jump.c (rtx_renumbered_equal_p): Remove 2 superfluous calls
+	to subreg_offset_representable_p.
+
 2009-02-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* regmove.c (regmove_optimize): Conform to struct rtl_opt_pass
@@ -44,7 +50,7 @@
 	* dwarf2out.c (gen_enumeration_type_die): Handle CONST_DECLs.
 
 2009-02-24  Richard Guenther  <rguenther@suse.de>
-	Zdenek Dvorak  <ook@ucw.cz>
+	    Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/39233
 	* tree-ssa-loop-ivopts.c (add_candidate_1): Do not except pointers
