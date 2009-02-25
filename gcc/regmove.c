@@ -882,25 +882,21 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
   return 0;
 }
 
-/* Main entry for the register move optimization.
-   F is the first instruction.
-   NREGS is one plus the highest pseudo-reg number used in the instruction.
-   REGMOVE_DUMP_FILE is a stream for output of a trace of actions taken
-   (or 0 if none should be output).  */
+/* Main entry for the register move optimization.  */
 
-static void
-regmove_optimize (rtx f, int nregs)
+static unsigned int
+regmove_optimize (void)
 {
   rtx insn;
   struct match match;
-  int pass;
   int i;
   rtx copy_src, copy_dst;
+  int nregs = max_reg_num ();
 
   /* ??? Hack.  Regmove doesn't examine the CFG, and gets mightily
      confused by non-call exceptions ending blocks.  */
   if (flag_non_call_exceptions)
-    return;
+    return 0;
 
   df_note_add_problem ();
   df_analyze ();
@@ -912,35 +908,26 @@ regmove_optimize (rtx f, int nregs)
   for (i = nregs; --i >= 0; )
     regno_src_regno[i] = -1;
 
-  /* A forward/backward pass.  Replace output operands with input operands.  */
+  /* A forward pass.  Replace output operands with input operands.  */
 
-  for (pass = 0; pass <= 2; pass++)
+  if (flag_expensive_optimizations)
     {
-      if (! flag_regmove && pass >= flag_expensive_optimizations)
-	goto done;
-
       if (dump_file)
-	fprintf (dump_file, "Starting %s pass...\n",
-		 pass ? "backward" : "forward");
+	fprintf (dump_file, "Starting forward pass...\n");
 
-      for (insn = pass ? get_last_insn () : f; insn;
-	   insn = pass ? PREV_INSN (insn) : NEXT_INSN (insn))
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  rtx set;
-
-	  set = single_set (insn);
+	  rtx set = single_set (insn);
 	  if (! set)
 	    continue;
 
-	  if (flag_expensive_optimizations && ! pass
-	      && (GET_CODE (SET_SRC (set)) == SIGN_EXTEND
-		  || GET_CODE (SET_SRC (set)) == ZERO_EXTEND)
+	  if ((GET_CODE (SET_SRC (set)) == SIGN_EXTEND
+	       || GET_CODE (SET_SRC (set)) == ZERO_EXTEND)
 	      && REG_P (XEXP (SET_SRC (set), 0))
 	      && REG_P (SET_DEST (set)))
 	    optimize_reg_copy_3 (insn, SET_DEST (set), SET_SRC (set));
 
-	  if (flag_expensive_optimizations && ! pass
-	      && REG_P (SET_SRC (set))
+	  if (REG_P (SET_SRC (set))
 	      && REG_P (SET_DEST (set)))
 	    {
 	      /* If this is a register-register copy where SRC is not dead,
@@ -1245,7 +1232,6 @@ regmove_optimize (rtx f, int nregs)
 	}
     }
 
- done:
   /* Clean up.  */
   free (regno_src_regno);
   if (reg_set_in_bb)
@@ -1255,6 +1241,7 @@ regmove_optimize (rtx f, int nregs)
     }
   regstat_free_n_sets_and_refs ();
   regstat_free_ri ();
+  return 0;
 }
 
 /* Returns nonzero if INSN's pattern has matching constraints for any operand.
@@ -1356,14 +1343,6 @@ gate_handle_regmove (void)
   return (optimize > 0 && flag_regmove);
 }
 
-/* Register allocation pre-pass, to reduce number of moves necessary
-   for two-address machines.  */
-static unsigned int
-rest_of_handle_regmove (void)
-{
-  regmove_optimize (get_insns (), max_reg_num ());
-  return 0;
-}
 
 struct rtl_opt_pass pass_regmove =
 {
@@ -1371,7 +1350,7 @@ struct rtl_opt_pass pass_regmove =
   RTL_PASS,
   "regmove",                            /* name */
   gate_handle_regmove,                  /* gate */
-  rest_of_handle_regmove,               /* execute */
+  regmove_optimize,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
