@@ -1,3 +1,12 @@
+2009-02-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* regmove.c (regmove_optimize): Conform to struct rtl_opt_pass
+	execute function prototype.  Get f and nregs from max_reg_num
+	and get_insns.  Remove the first backward pass as it's dead,
+	guard the forward pass by flag_expensive_optimizations.
+	(rest_of_handle_regmove): Delete.
+	(pass_regmove): Replace it with regmove_optimize.
+
 2009-02-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/39259
