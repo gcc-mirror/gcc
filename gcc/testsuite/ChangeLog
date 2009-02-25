@@ -1,3 +1,7 @@
+2009-02-25  Martin Jambor  <mjambor@suse.cz>
+	PR tree-optimizations/39259
+	* g++.dg/torture/pr39259.C: New testcase.
+
 2009-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/39242

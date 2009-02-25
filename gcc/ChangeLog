@@ -1,3 +1,11 @@
+2009-02-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/39259
+	* tree-inline.c (initialize_cfun): Remove asserts for calls_setjmp and
+	alls_alloca function flags.
+	(copy_bb): Set calls_setjmp and alls_alloca function flags if such
+	calls are detected.
+
 2009-02-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* regmove.c (discover_flags_reg, flags_set_1, mark_flags_life_zones,

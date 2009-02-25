@@ -1398,6 +1398,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	    {
 	      struct cgraph_node *node;
 	      struct cgraph_edge *edge;
+	      int flags;
 
 	      switch (id->transform_call_graph_edges)
 		{
@@ -1429,6 +1430,13 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      default:
 		gcc_unreachable ();
 		}
+
+	      flags = gimple_call_flags (stmt);
+
+	      if (flags & ECF_MAY_BE_ALLOCA)
+		cfun->calls_alloca = true;
+	      if (flags & ECF_RETURNS_TWICE)
+		cfun->calls_setjmp = true;
 	    }
 
 	  /* If you think we can abort here, you are wrong.
@@ -1744,10 +1752,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
   gcc_assert (cfun->local_decls == NULL);
   gcc_assert (cfun->cfg == NULL);
   gcc_assert (cfun->decl == new_fndecl);
-
-  /* No need to copy; this is initialized later in compilation.  */
-  gcc_assert (!src_cfun->calls_setjmp);
-  gcc_assert (!src_cfun->calls_alloca);
 
   /* Copy items we preserve during clonning.  */
   cfun->static_chain_decl = src_cfun->static_chain_decl;
