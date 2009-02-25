@@ -1,3 +1,13 @@
+2009-02-25  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/36578
+	* gcc.dg/dfp/convert-bfp-13.c, gcc.dg/dfp/convert-bfp-14.c,
+	gcc.dg/dfp/convert-dfp-fold-2.c, gcc.target/i386/pr36578-1.c,
+	gcc.target/i386/pr36578-2.c: New tests.
+
 2009-02-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

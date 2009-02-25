@@ -1,3 +1,18 @@
+2009-02-25  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2008-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/36578
+	* convert.c (convert_to_real): Do not optimize conversions of
+	binary arithmetic operations between binary and decimal
+	floating-point types.  Consider mode of target type in determining
+	decimal type for arithmetic.  Unless
+	flag_unsafe_math_optimizations, do not optimize binary conversions
+	where this may change rounding behavior.
+	* real.c (real_can_shorten_arithmetic): New.
+	* real.h (real_can_shorten_arithmetic): Declare.
+
 2009-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

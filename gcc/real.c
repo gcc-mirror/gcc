@@ -1274,6 +1274,31 @@ exact_real_inverse (enum machine_mode mode, REAL_VALUE_TYPE *r)
   *r = u;
   return true;
 }
+
+/* Return true if arithmetic on values in IMODE that were promoted
+   from values in TMODE is equivalent to direct arithmetic on values
+   in TMODE.  */
+
+bool
+real_can_shorten_arithmetic (enum machine_mode imode, enum machine_mode tmode)
+{
+  const struct real_format *tfmt, *ifmt;
+  tfmt = REAL_MODE_FORMAT (tmode);
+  ifmt = REAL_MODE_FORMAT (imode);
+  /* These conditions are conservative rather than trying to catch the
+     exact boundary conditions; the main case to allow is IEEE float
+     and double.  */
+  return (ifmt->b == tfmt->b
+	  && ifmt->p > 2 * tfmt->p
+	  && ifmt->emin < 2 * tfmt->emin - tfmt->p - 2
+	  && ifmt->emin < tfmt->emin - tfmt->emax - tfmt->p - 2
+	  && ifmt->emax > 2 * tfmt->emax + 2
+	  && ifmt->emax > tfmt->emax - tfmt->emin + tfmt->p + 2
+	  && ifmt->round_towards_zero == tfmt->round_towards_zero
+	  && ifmt->has_nans >= tfmt->has_nans
+	  && ifmt->has_inf >= tfmt->has_inf
+	  && ifmt->has_signed_zero >= tfmt->has_signed_zero);
+}
 
 /* Render R as an integer.  */
 
