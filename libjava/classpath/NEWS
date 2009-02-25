@@ -1,4 +1,4 @@
-New in release 0.98
+New in release 0.98 (Feb 05, 2009)
 
 * Native support for BigInteger is now provided using the GMP
 library.  A new option, --enable/disable-gmp is provided, and
@@ -11,8 +11,41 @@ always retain their own array, which is only altered during resizing,
 CPStringBuilder gives away its array when the result is generated
 by toString()/substring() and starts afresh.  The default capacity of
 CPStringBuilder can also be configured using the
-gnu.classpath.cpstringbuilder.capacity property.
+gnu.classpath.cpstringbuilder.capacity property. (PR21869)
 * gjdoc is now built as part of tools.zip.
+* Import of the Java Activation Framework from ClasspathX to provide
+javax.activation (part of 1.6).
+* Preliminary version of java.util.Scanner (PR30436)
+* Reduce cost of ThreadLocal(s) to improve Jython performance (PR33690)
+* Updated to use CLDR 1.5.1 (PR35237)
+* Many bug fixes including:
+  - PR22851: zoneStrings in gnu/java/locale/LocaleInformation*
+  - PR31895: setCurrency(Currency) does not actually change the currency.
+  - PR32028: Make fails at gjdoc
+  - PR34840: Mismatch between Sun and Classpath's java.lang.Appendable
+  - PR35487: gcj causes ConcurrentModificationException during tomcat5
+  - PR35690: javax.tools.FileObject.toUri is in wrong case
+  - PR36085: java.util.regex escape-sequence handling 
+  - PR36147: Apache Tomcat fails to read descriptors using GNU XML
+  - PR36219: gnu.xml.transform.SortKey isn't subclass
+  - PR36220: NPEs in gnu.xml.transform.* clone methods 
+  - PR36221: DomDOMException running SPEC jvm 2008 xml.transform
+  - PR36477: OOME in CPStringBuilder when running Eclipse
+  - PR36522: Policy file is not read at all
+  - PR36636: gjar -u doesn't work
+  - PR36637: --without-fastjar doesn't wor
+  - PR36677: Omission bug in JDWP VirtualMachineCommandSet 
+  - PR38417: gnu.java.security.util.PRNG produces easily predictable values
+  - PR38473: Segmentation fault in retrieving font outline decomposition 
+  - PR38861: Support XULRunner 1.9.1.
+  - PR38912: XMLParser not interning element names 
+
+Runtime interface changes:
+
+  * VMSecureRandom has moved to gnu.java.security.jce.prng.VMSecureRandom
+  as part of the fix for PR38417.
+  * gnu.java.lang.VMCPStringBuilder has been added and should be added to
+  avoid the inefficency of reflection when creating non-copied String objects.
 
 Bug fixes in release 0.97.2 (Jun 06, 2007)
 

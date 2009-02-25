@@ -725,7 +725,10 @@ public class XMLParser
       case XMLStreamConstants.END_ELEMENT:
         String qName = buf.toString();
         int ci = qName.indexOf(':');
-        return (ci == -1) ? qName : qName.substring(ci + 1);
+        String localName = (ci == -1) ? qName : qName.substring(ci + 1);
+        if (stringInterning)
+          localName = localName.intern();
+        return localName;
       default:
         return null;
       }
@@ -745,9 +748,13 @@ public class XMLParser
         String qName = buf.toString();
         int ci = qName.indexOf(':');
         String localName = (ci == -1) ? qName : qName.substring(ci + 1);
+        if (stringInterning)
+          localName = localName.intern();
         String prefix = (ci == -1) ?
           (namespaceAware ? XMLConstants.DEFAULT_NS_PREFIX : null) :
           qName.substring(0, ci);
+        if (stringInterning && prefix != null)
+          prefix = prefix.intern();
         String namespaceURI = getNamespaceURI(prefix);
         return new QName(namespaceURI, localName, prefix);
       default:
@@ -831,9 +838,12 @@ public class XMLParser
       case XMLStreamConstants.END_ELEMENT:
         String qName = buf.toString();
         int ci = qName.indexOf(':');
-        return (ci == -1) ?
+        String prefix = (ci == -1) ?
           (namespaceAware ? XMLConstants.DEFAULT_NS_PREFIX : null) :
           qName.substring(0, ci);
+        if (stringInterning && prefix != null)
+          prefix = prefix.intern();
+        return prefix;
       default:
         return null;
       }

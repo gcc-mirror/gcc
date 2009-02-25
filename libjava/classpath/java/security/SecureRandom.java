@@ -42,6 +42,7 @@ import gnu.classpath.SystemProperties;
 import gnu.java.lang.CPStringBuilder;
 import gnu.java.security.Engine;
 import gnu.java.security.action.GetSecurityPropertyAction;
+import gnu.java.security.jce.prng.SecureRandomAdapter;
 import gnu.java.security.jce.prng.Sha160RandomSpi;
 
 import java.io.IOException;
@@ -401,9 +402,7 @@ public class SecureRandom extends Random
    */
   public static byte[] getSeed(int numBytes)
   {
-    byte[] tmp = new byte[numBytes];
-    generateSeed(tmp);
-    return tmp;
+    return SecureRandomAdapter.getSeed(numBytes);
   }
 
   /**
@@ -418,64 +417,4 @@ public class SecureRandom extends Random
     return secureRandomSpi.engineGenerateSeed(numBytes);
   }
 
-  // Seed methods.
-
-  private static final String SECURERANDOM_SOURCE = "securerandom.source";
-  private static final String JAVA_SECURITY_EGD = "java.security.egd";
-  private static final Logger logger = Logger.getLogger(SecureRandom.class.getName());
-
-  private static int generateSeed(byte[] buffer)
-  {
-    return generateSeed(buffer, 0, buffer.length);
-  }
-
-  private static int generateSeed(byte[] buffer, int offset, int length)
-  {
-    URL sourceUrl = null;
-    String urlStr = null;
-
-    GetSecurityPropertyAction action = new GetSecurityPropertyAction(SECURERANDOM_SOURCE);
-    try
-      {
-        urlStr = (String) AccessController.doPrivileged(action);
-        if (urlStr != null)
-          sourceUrl = new URL(urlStr);
-      }
-    catch (MalformedURLException ignored)
-      {
-        logger.log(Level.WARNING, SECURERANDOM_SOURCE + " property is malformed: {0}", 
-                   urlStr);
-      }
-
-    if (sourceUrl == null)
-      {
-        try
-          {
-            urlStr = SystemProperties.getProperty(JAVA_SECURITY_EGD);
-            if (urlStr != null)
-              sourceUrl = new URL(urlStr);
-          }
-        catch (MalformedURLException mue)
-          {
-            logger.log(Level.WARNING, JAVA_SECURITY_EGD + " property is malformed: {0}",
-                       urlStr);
-          }
-      }
-
-    if (sourceUrl != null)
-      {
-        try
-          {
-            InputStream in = sourceUrl.openStream();
-            return in.read(buffer, offset, length);
-          }
-        catch (IOException ioe)
-          {
-            logger.log(Level.FINE, "error reading random bytes", ioe);
-          }
-      }
-
-    // If we get here, we did not get any seed from a property URL.
-    return VMSecureRandom.generateSeed(buffer, offset, length);
-  }
 }

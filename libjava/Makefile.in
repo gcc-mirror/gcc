@@ -117,7 +117,8 @@ CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
-	gnu/java/nio/channels/natFileChannelImpl.cc sysdep/locks.h \
+	gnu/java/nio/channels/natFileChannelImpl.cc \
+	gnu/java/security/jce/prng/natVMSecureRandom.cc sysdep/locks.h \
 	sysdep/backtrace.h sysdep/descriptor.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -342,8 +343,9 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
 	gnu/java/nio/natNIOServerSocket.cc \
 	gnu/java/nio/natVMChannel.cc \
-	gnu/java/nio/channels/natFileChannelImpl.cc java/io/natFile.cc \
-	java/io/natVMObjectInputStream.cc \
+	gnu/java/nio/channels/natFileChannelImpl.cc \
+	gnu/java/security/jce/prng/natVMSecureRandom.cc \
+	java/io/natFile.cc java/io/natVMObjectInputStream.cc \
 	java/io/natVMObjectStreamClass.cc java/lang/natCharacter.cc \
 	java/lang/natClass.cc java/lang/natClassLoader.cc \
 	java/lang/natConcreteProcess.cc java/lang/natVMDouble.cc \
@@ -406,8 +408,9 @@ am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
 	gnu/java/nio/natVMPipe.lo gnu/java/nio/natVMSelector.lo \
 	gnu/java/nio/natNIOServerSocket.lo \
 	gnu/java/nio/natVMChannel.lo \
-	gnu/java/nio/channels/natFileChannelImpl.lo java/io/natFile.lo \
-	java/io/natVMObjectInputStream.lo \
+	gnu/java/nio/channels/natFileChannelImpl.lo \
+	gnu/java/security/jce/prng/natVMSecureRandom.lo \
+	java/io/natFile.lo java/io/natVMObjectInputStream.lo \
 	java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
 	java/lang/natClass.lo java/lang/natClassLoader.lo \
 	java/lang/natConcreteProcess.lo java/lang/natVMDouble.lo \
@@ -2267,6 +2270,7 @@ classpath/gnu/java/security/jce/prng/Sha256RandomSpi.java \
 classpath/gnu/java/security/jce/prng/Sha384RandomSpi.java \
 classpath/gnu/java/security/jce/prng/Sha512RandomSpi.java \
 classpath/gnu/java/security/jce/prng/TigerRandomSpi.java \
+gnu/java/security/jce/prng/VMSecureRandom.java \
 classpath/gnu/java/security/jce/prng/WhirlpoolRandomSpi.java
 
 gnu_java_security_jce_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_jce_prng_source_files)))
@@ -4748,8 +4752,7 @@ classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
 java/security/VMAccessControlState.java \
-java/security/VMAccessController.java \
-java/security/VMSecureRandom.java
+java/security/VMAccessController.java
 
 java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))
 java_security_acl_source_files = \
@@ -8513,6 +8516,7 @@ gnu/java/nio/natVMSelector.cc \
 gnu/java/nio/natNIOServerSocket.cc \
 gnu/java/nio/natVMChannel.cc \
 gnu/java/nio/channels/natFileChannelImpl.cc \
+gnu/java/security/jce/prng/natVMSecureRandom.cc \
 java/io/natFile.cc \
 java/io/natVMObjectInputStream.cc \
 java/io/natVMObjectStreamClass.cc \
@@ -9006,6 +9010,15 @@ gnu/java/nio/channels/$(DEPDIR)/$(am__dirstamp):
 gnu/java/nio/channels/natFileChannelImpl.lo:  \
 	gnu/java/nio/channels/$(am__dirstamp) \
 	gnu/java/nio/channels/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/jce/prng/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/jce/prng
+	@: > gnu/java/security/jce/prng/$(am__dirstamp)
+gnu/java/security/jce/prng/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/jce/prng/$(DEPDIR)
+	@: > gnu/java/security/jce/prng/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/jce/prng/natVMSecureRandom.lo:  \
+	gnu/java/security/jce/prng/$(am__dirstamp) \
+	gnu/java/security/jce/prng/$(DEPDIR)/$(am__dirstamp)
 java/io/$(am__dirstamp):
 	@$(mkdir_p) java/io
 	@: > java/io/$(am__dirstamp)
@@ -9471,6 +9484,8 @@ mostlyclean-compile:
 	-rm -f gnu/java/nio/natVMPipe.lo
 	-rm -f gnu/java/nio/natVMSelector.$(OBJEXT)
 	-rm -f gnu/java/nio/natVMSelector.lo
+	-rm -f gnu/java/security/jce/prng/natVMSecureRandom.$(OBJEXT)
+	-rm -f gnu/java/security/jce/prng/natVMSecureRandom.lo
 	-rm -f java/io/natFile.$(OBJEXT)
 	-rm -f java/io/natFile.lo
 	-rm -f java/io/natVMObjectInputStream.$(OBJEXT)
@@ -9645,6 +9660,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natVMPipe.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natVMSelector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/channels/$(DEPDIR)/natFileChannelImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/jce/prng/$(DEPDIR)/natVMSecureRandom.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natFile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectStreamClass.Plo@am__quote@
@@ -9951,6 +9967,7 @@ clean-libtool:
 	-rm -rf gnu/java/net/protocol/core/.libs gnu/java/net/protocol/core/_libs
 	-rm -rf gnu/java/nio/.libs gnu/java/nio/_libs
 	-rm -rf gnu/java/nio/channels/.libs gnu/java/nio/channels/_libs
+	-rm -rf gnu/java/security/jce/prng/.libs gnu/java/security/jce/prng/_libs
 	-rm -rf java/io/.libs java/io/_libs
 	-rm -rf java/lang/.libs java/lang/_libs
 	-rm -rf java/lang/ref/.libs java/lang/ref/_libs
@@ -10359,6 +10376,8 @@ distclean-generic:
 	-rm -f gnu/java/nio/$(am__dirstamp)
 	-rm -f gnu/java/nio/channels/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/nio/channels/$(am__dirstamp)
+	-rm -f gnu/java/security/jce/prng/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/security/jce/prng/$(am__dirstamp)
 	-rm -f java/io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f java/io/$(am__dirstamp)
 	-rm -f java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -10400,7 +10419,7 @@ clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/management/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/concurrent/atomic/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sun/misc/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/management/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/security/jce/prng/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/concurrent/atomic/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sun/misc/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -10433,7 +10452,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/management/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/concurrent/atomic/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sun/misc/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/management/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/security/jce/prng/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/concurrent/atomic/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sun/misc/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

@@ -40,6 +40,7 @@ package gnu.javax.crypto.jce.prng;
 
 import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
+import gnu.java.security.jce.prng.SecureRandomAdapter;
 import gnu.java.security.prng.LimitReachedException;
 import gnu.javax.crypto.cipher.IBlockCipher;
 import gnu.javax.crypto.prng.ICMGenerator;
@@ -107,19 +108,7 @@ public class ICMRandomSpi
 
   public byte[] engineGenerateSeed(int numBytes)
   {
-    if (Configuration.DEBUG)
-      log.entering(this.getClass().getName(), "engineGenerateSeed");
-    if (numBytes < 1)
-      {
-        if (Configuration.DEBUG)
-          log.exiting(this.getClass().getName(), "engineGenerateSeed");
-        return new byte[0];
-      }
-    byte[] result = new byte[numBytes];
-    this.engineNextBytes(result);
-    if (Configuration.DEBUG)
-      log.exiting(this.getClass().getName(), "engineGenerateSeed");
-    return result;
+    return SecureRandomAdapter.getSeed(numBytes);
   }
 
   public void engineNextBytes(byte[] bytes)
@@ -127,7 +116,7 @@ public class ICMRandomSpi
     if (Configuration.DEBUG)
       log.entering(this.getClass().getName(), "engineNextBytes");
     if (! adaptee.isInitialised())
-      this.engineSetSeed(new byte[0]);
+      this.engineSetSeed(engineGenerateSeed(32));
     while (true)
       {
         try
@@ -207,8 +196,8 @@ public class ICMRandomSpi
     System.arraycopy(material, 16, offset, 0, 16);
     attributes.put(ICMGenerator.OFFSET, offset);
     // specify the index
-    byte[] index = new byte[8];
-    System.arraycopy(material, 32, index, 0, 8);
+    byte[] index = new byte[4];
+    System.arraycopy(material, 32, index, 0, 4);
     attributes.put(ICMGenerator.SEGMENT_INDEX, new BigInteger(1, index));
     adaptee.init(attributes);
     if (Configuration.DEBUG)

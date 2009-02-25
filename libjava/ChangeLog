@@ -1,3 +1,45 @@
+2009-02-13  Andrew John Hughes  <ahughes@redhat.com>
+
+	Import GNU Classpath (classpath-0_98-release).
+
+	* Makefile.am: Add natVMSecureRandom.cc.
+	* Makefile.in: Regenerated.
+	* classpath/ChangeLog,
+	* classpath/Makefile.am: Merged.
+	* classpath/Makefile.in: Regenerated.
+	* classpath/NEWS: Merged.
+	* classpath/config.guess,
+	* classpath/config.sub,
+	* classpath/configure: Regenerated.
+	* classpath/configure.ac: Merged.
+	* classpath/gnu/java/awt/peer/gtk/CairoGraphics2D.java,
+	* classpath/gnu/java/security/jce/prng/SecureRandomAdapter.java,
+	* classpath/gnu/javax/crypto/jce/prng/ARCFourRandomSpi.java,
+	* classpath/gnu/javax/crypto/jce/prng/CSPRNGSpi.java,
+	* classpath/gnu/javax/crypto/jce/prng/FortunaImpl.java,
+	* classpath/gnu/javax/crypto/jce/prng/ICMRandomSpi.java,
+	* classpath/gnu/javax/crypto/jce/prng/UMacRandomSpi.java,
+	* classpath/gnu/javax/crypto/prng/ICMGenerator.java,
+	* classpath/gnu/xml/stream/XMLParser.java,
+	* classpath/java/security/SecureRandom.java,
+	* classpath/native/jni/native-lib/cpproc.c,
+	* classpath/native/plugin/gcjwebplugin.cc,
+	* classpath/tools/gnu/classpath/tools/gjdoc/Main.java: Merged.
+	* configure: Regenerated.
+	* configure.ac: Add symlink for natVMSecureRandomPosix.cc to natVMSecureRandom.cc
+	* gnu/classpath/Configuration.java: Change version to 0.98.
+	* gnu/java/security/jce/prng/SecureRandomAdapter.h: Regenerated.
+	* gnu/java/security/jce/prng/VMSecureRandom.h: Generated.
+	* gnu/java/security/jce/prng/VMSecureRandom.java: Added native implementation.
+	* gnu/java/security/jce/prng/natVMSecureRandomPosix.cc: Wrapper around /dev/random.
+	* gnu/javax/crypto/jce/prng/CSPRNGSpi.h,
+	* gnu/javax/crypto/jce/prng/FortunaImpl.h,
+	* java/security/SecureRandom.h: Regenerated.
+	* java/security/VMSecureRandom$Spinner.h,
+	* java/security/VMSecureRandom.h,
+	* java/security/VMSecureRandom.java: Removed.
+	* sources.am: Move VMSecureRandom to gnu.java.security.jce.prng.
+
 2009-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.am (AM_MAKEFLAGS): Pass down datadir.

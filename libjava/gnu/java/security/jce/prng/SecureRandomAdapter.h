@@ -39,12 +39,17 @@ class gnu::java::security::jce::prng::SecureRandomAdapter : public ::java::secur
 public: // actually protected
   SecureRandomAdapter(::java::lang::String *);
 public:
+  static JArray< jbyte > * getSeed(jint);
   virtual JArray< jbyte > * engineGenerateSeed(jint);
   virtual void engineNextBytes(JArray< jbyte > *);
   virtual void engineSetSeed(JArray< jbyte > *);
 private:
-  ::gnu::java::security::prng::MDGenerator * __attribute__((aligned(__alignof__( ::java::security::SecureRandomSpi)))) adaptee;
+  jboolean __attribute__((aligned(__alignof__( ::java::security::SecureRandomSpi)))) isSeeded;
+  ::gnu::java::security::prng::MDGenerator * adaptee;
   ::java::lang::String * mdName;
+  static ::java::util::logging::Logger * logger;
+  static ::java::lang::String * SECURERANDOM_SOURCE;
+  static ::java::lang::String * JAVA_SECURITY_EGD;
 public:
   static ::java::lang::Class class$;
 };
