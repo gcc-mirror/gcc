@@ -3563,7 +3563,8 @@ require_pic_register (void)
       gcc_assert (can_create_pseudo_p ());
       if (arm_pic_register != INVALID_REGNUM)
 	{
-	  cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
+	  if (!cfun->machine->pic_reg)
+	    cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
 
 	  /* Play games to avoid marking the function as needing pic
 	     if we are being called as part of the cost-estimation
@@ -3575,7 +3576,8 @@ require_pic_register (void)
 	{
 	  rtx seq;
 
-	  cfun->machine->pic_reg = gen_reg_rtx (Pmode);
+	  if (!cfun->machine->pic_reg)
+	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
 
 	  /* Play games to avoid marking the function as needing pic
 	     if we are being called as part of the cost-estimation
