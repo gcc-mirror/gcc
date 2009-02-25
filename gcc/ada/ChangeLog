@@ -1,3 +1,8 @@
+2009-02-25  Laurent GUERBY <laurent@guerby.net>
+
+        * gcc-interface/Makefile.in: Fix multilib handling for
+        sparc64-linux.
+	
 2009-02-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* s-oscons-tmplt.c [__osf__ && !_SS_MAXSIZE]: Undef AF_UNIX6.

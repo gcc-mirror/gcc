@@ -1540,7 +1540,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS_64 = \
   system.ads<system-linux-sparcv9.ads
 
-  ifeq ($(strip $(MULTISUBDIR)),/64)
+  ifeq ($(strip $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory)),../lib64)
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
   else
