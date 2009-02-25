@@ -1,3 +1,9 @@
+2009-02-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* regmove.c (discover_flags_reg, flags_set_1, mark_flags_life_zones,
+	flags_set_1_rtx, flags_set_1_set): Delete.
+	(regmove_optimize): Do not call mark_flags_life_zones.
+
 2009-02-24  Julian Brown  <julian@codesourcery.com>
 
 	PR target/35965
