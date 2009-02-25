@@ -1,10 +1,96 @@
+2009-02-05  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS: Add VM updates.
+	
+2009-02-05  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS: Updated.
+	* configure.ac:
+	Bump to 0.98 proper.
+
 2009-02-05  Andrew Haley  <aph@redhat.com>
 
+	PR libgcj/38861
 	* native/plugin/gcjwebplugin.cc: Cope with the changed header file
 	format.  https://bugzilla.mozilla.org/show_bug.cgi?id=455458
 	(GCJ_GetJavaClass): Likewise.
 	(NP_Initialize): Likewise.
 
+2009-02-05  Mark Wielaard  <mark@klomp.org>
+
+	PR classpath/38912:
+	* gnu/xml/stream/XMLParser.java:
+	(getLocalName()): Respect stringInterning.
+	(getName()): Likewise.
+	(getPrefix()): Likewise.
+
+2009-02-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* native/jni/native-lib/cpproc.c:
+	(cpproc_forkAndExec): Don't return on a -1
+	result from chdir as this may be valid in
+	some cases.  A better fix is needed.
+	
+2009-02-03  Andrew John Hughes  <ahughes@redhat.com>
+
+	* native/jni/native-lib/cpproc.c:
+	(cpproc_forkAndExec): Handle return of
+	chdir.
+	
+2009-02-03  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/38417:
+	* gnu/java/security/jce/prng/SecureRandomAdapter.java:
+	Remove unneeded import.
+	* gnu/javax/crypto/jce/prng/FortunaImpl.java:
+	Fix typo.
+	* java/security/SecureRandom.java:
+	Remove duplicate use of VMSecureRandom,
+	call SecureRandomAdapter instead.
+	* vm/reference/gnu/java/security/jce/prng/VMSecureRandom.java:
+	Moved from java/security so SecureRandomAdapter can
+	access it.
+
+2009-01-22  Mario Torre  <neugens@aicas.com>
+
+	PR classpath/38417:
+	* gnu/java/security/jce/prng/SecureRandomAdapter.java:
+	(getSeed(int)): New; retrieve seed from source specified
+	by securerandom.source property or failing that, use
+	VMSecureRandom.
+	* gnu/javax/crypto/jce/prng/ARCFourRandomSpi.java:
+	(engineGenerateSeed(int)): Use SecureRandomAdapter.
+	(engineNextBytes(byte[])): Initialise using new seed.
+	* gnu/javax/crypto/jce/prng/CSPRNGSpi.java:
+	(engineGenerateSeed(int)): Use SecureRandomAdapter.
+	(engineNextBytes(byte[])): Initialise using new seed.
+	* gnu/javax/crypto/jce/prng/FortunaImpl.java:
+	(engineSetSeed(byte[])): Initialise with new seed if unused.
+	(engineGenerateSeed(int)): Use SecureRandomAdapter.	
+	* gnu/javax/crypto/jce/prng/ICMRandomSpi.java:
+	(engineGenerateSeed(int)): Use SecureRandomAdapter.	
+	(engineNextBytes(byte[])): Initialise using new seed.
+	* gnu/javax/crypto/jce/prng/UMacRandomSpi.java:
+	(engineGenerateSeed(int)): Use SecureRandomAdapter.	
+	(engineNextBytes(byte[])): Initialise using new seed.
+	* gnu/javax/crypto/prng/ICMGenerator.java:
+	(setup(Map)): Call fillBlock().
+
+2009-01-22  Mark Wielaard  <mark@klomp.org>
+
+	* tools/gnu/classpath/tools/gjdoc/Main.java (getGjdocVersion):
+	Read version.properties from package.
+
+2009-01-05  Robert Schuster  <robertschuster@fsfe.org>
+
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java:
+	(drawPolyline): Rewritten.
+
+2009-01-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* Makefile.am:
+	Add ChangeLog-2008 to EXTRA_DIST.
+	
 2009-01-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* ChangeLog-2008: New file.

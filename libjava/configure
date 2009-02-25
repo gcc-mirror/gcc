@@ -19140,6 +19140,11 @@ test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
           ac_config_links="$ac_config_links gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc"
 
 
+# Likewise for natVMSecureRandom.cc
+test -d gnu/java/security/jce/prng || mkdir gnu/java/security/jce/prng
+          ac_config_links="$ac_config_links gnu/java/security/jce/prng/natVMSecureRandom.cc:gnu/java/security/jce/prng/natVMSecureRandom${FILE-${PLATFORM}}.cc"
+
+
 case "${host}" in
     *mingw*)
       SYSTEMSPEC="-lgdi32 -lws2_32"
@@ -29568,6 +29573,7 @@ do
   "gnu/java/nio/natVMPipe.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natVMPipe.cc:gnu/java/nio/natVMPipe${PLATFORM}.cc" ;;
   "gnu/java/nio/natVMSelector.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natVMSelector.cc:gnu/java/nio/natVMSelector${PLATFORM}.cc" ;;
   "gnu/java/nio/channels/natFileChannelImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc" ;;
+  "gnu/java/security/jce/prng/natVMSecureRandom.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/security/jce/prng/natVMSecureRandom.cc:gnu/java/security/jce/prng/natVMSecureRandom${FILE-${PLATFORM}}.cc" ;;
   "include/java-gc.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-gc.h:include/$GCHDR" ;;
   "include/java-threads.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-threads.h:include/$THREADH" ;;
   "sysdep/locks.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:sysdep/$sysdeps_dir/locks.h" ;;

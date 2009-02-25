@@ -47,8 +47,6 @@ public:
   static JArray< jbyte > * getSeed(jint);
   virtual JArray< jbyte > * generateSeed(jint);
 private:
-  static jint generateSeed(JArray< jbyte > *);
-  static jint generateSeed(JArray< jbyte > *, jint, jint);
   static ::java::lang::String * SECURE_RANDOM;
   static const jlong serialVersionUID = 4940670005562187LL;
 public: // actually package-private
@@ -61,9 +59,6 @@ public: // actually package-private
 private:
   ::java::lang::String * algorithm;
   jboolean isSeeded;
-  static ::java::lang::String * SECURERANDOM_SOURCE;
-  static ::java::lang::String * JAVA_SECURITY_EGD;
-  static ::java::util::logging::Logger * logger;
 public:
   static ::java::lang::Class class$;
 };

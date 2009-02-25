@@ -43,7 +43,8 @@ public: // actually protected
   void engineNextBytes(JArray< jbyte > *);
   JArray< jbyte > * engineGenerateSeed(jint);
 private:
-  ::gnu::javax::crypto::prng::Fortuna * __attribute__((aligned(__alignof__( ::java::security::SecureRandomSpi)))) adaptee;
+  jboolean __attribute__((aligned(__alignof__( ::java::security::SecureRandomSpi)))) virgin;
+  ::gnu::javax::crypto::prng::Fortuna * adaptee;
 public:
   static ::java::lang::Class class$;
 };

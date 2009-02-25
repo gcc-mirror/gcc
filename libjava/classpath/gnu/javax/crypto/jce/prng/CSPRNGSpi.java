@@ -40,6 +40,7 @@ package gnu.javax.crypto.jce.prng;
 
 import gnu.java.security.prng.IRandom;
 import gnu.java.security.prng.LimitReachedException;
+import gnu.java.security.jce.prng.SecureRandomAdapter;
 import gnu.javax.crypto.prng.CSPRNG;
 
 import java.net.MalformedURLException;
@@ -53,6 +54,7 @@ public class CSPRNGSpi
     extends SecureRandomSpi
 {
   private final IRandom adaptee;
+  private boolean virgin = true;
 
   public CSPRNGSpi() throws ClassNotFoundException, MalformedURLException,
       NumberFormatException
@@ -62,21 +64,19 @@ public class CSPRNGSpi
     adaptee = CSPRNG.getSystemInstance();
   }
 
-  protected byte[] engineGenerateSeed(final int count)
+  protected byte[] engineGenerateSeed(final int numBytes)
   {
-    if (count < 0)
-      throw new IllegalArgumentException("count must be nonnegative");
-    byte[] buf = new byte[count];
-    if (count == 0)
-      return buf;
-    engineNextBytes(buf);
-    return buf;
+    return SecureRandomAdapter.getSeed(numBytes);
   }
 
   protected void engineNextBytes(final byte[] buffer)
   {
     if (buffer == null)
       throw new NullPointerException();
+    if (virgin)
+      {
+        engineSetSeed(engineGenerateSeed(32));
+      }
     try
       {
         adaptee.nextBytes(buffer, 0, buffer.length);
@@ -92,5 +92,6 @@ public class CSPRNGSpi
     if (seed == null)
       throw new NullPointerException();
     adaptee.addRandomBytes(seed, 0, seed.length);
+    virgin = false;
   }
 }

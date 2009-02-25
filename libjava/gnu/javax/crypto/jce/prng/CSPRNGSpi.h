@@ -50,6 +50,7 @@ public: // actually protected
   virtual void engineSetSeed(JArray< jbyte > *);
 private:
   ::gnu::java::security::prng::IRandom * __attribute__((aligned(__alignof__( ::java::security::SecureRandomSpi)))) adaptee;
+  jboolean virgin;
 public:
   static ::java::lang::Class class$;
 };

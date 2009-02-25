@@ -1,5 +1,5 @@
-/* ARCFourRandomSpi.java -- 
-   Copyright (C) 2002, 2003, 2006  Free Software Foundation, Inc.
+/* VMSecureRandom.java -- random seed generator.
+   Copyright (C) 2006, 2009  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -36,67 +36,43 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
 
-package gnu.javax.crypto.jce.prng;
-
-import gnu.java.security.Registry;
-
-import gnu.java.security.jce.prng.SecureRandomAdapter;
-
-import gnu.java.security.prng.IRandom;
-import gnu.java.security.prng.LimitReachedException;
-
-import gnu.javax.crypto.prng.ARCFour;
-import gnu.javax.crypto.prng.PRNGFactory;
-
-import java.security.SecureRandomSpi;
-
-import java.util.HashMap;
+package gnu.java.security.jce.prng;
 
 /**
- * Implementation of the <i>Service Provider Interface</i> (<b>SPI</b>) for
- * the ARCFOUR keystream generator.
+ * VM-specific methods for generating real (or almost real) random
+ * seeds. VM implementors should write a version of this class that
+ * reads random bytes from some system source.
  */
-public class ARCFourRandomSpi
-    extends SecureRandomSpi
+final class VMSecureRandom
 {
-  /** Our underlying prng instance. */
-  private IRandom adaptee;
-  /** Have we been initialized? */
-  private boolean virgin;
 
   /**
-   * Default 0-arguments constructor.
+   * <p>
+   * Generate a random seed. Implementations are free to generate
+   * fewer random bytes than are requested, and leave the remaining
+   * bytes of the destination buffer as zeros. Implementations SHOULD,
+   * however, make a best-effort attempt to satisfy the request.
+   * </p>
+   * <p>
+   * The GCJ implementation uses a native method to read bytes from
+   * a system random source (e.g. /dev/random).
+   * </p>
+   *
+   * @param buffer The destination buffer.
+   * @param offset The offset in the buffer to start putting bytes.
+   * @param length The number of random bytes to generate.
+   * @return the number of bytes generated.
    */
-  public ARCFourRandomSpi()
+  static int generateSeed(byte[] buffer, int offset, int length)
   {
-    super();
-    adaptee = PRNGFactory.getInstance(Registry.ARCFOUR_PRNG);
-    virgin = true;
+    if (length < 0)
+      throw new IllegalArgumentException("length must be nonnegative");
+    if (offset < 0 || offset + length > buffer.length)
+      throw new IndexOutOfBoundsException();
+
+    return natGenerateSeed(buffer, offset, length);
   }
 
-  public byte[] engineGenerateSeed(int numBytes)
-  {
-    return SecureRandomAdapter.getSeed(numBytes);
-  }
-
-  public void engineNextBytes(byte[] bytes)
-  {
-    if (virgin)
-      this.engineSetSeed(engineGenerateSeed(32));
-    try
-      {
-        adaptee.nextBytes(bytes, 0, bytes.length);
-      }
-    catch (LimitReachedException ignored)
-      {
-      }
-  }
-
-  public void engineSetSeed(byte[] seed)
-  {
-    HashMap attributes = new HashMap();
-    attributes.put(ARCFour.ARCFOUR_KEY_MATERIAL, seed);
-    adaptee.init(attributes);
-    virgin = false;
-  }
+  static native int natGenerateSeed(byte[] buffer, int offset, int length);
+ 
 }

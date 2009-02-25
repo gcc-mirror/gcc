@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 #   Free Software Foundation, Inc.
 
-timestamp='2008-04-14'
+timestamp='2008-12-18'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -331,7 +331,20 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit ;;
     i86pc:SunOS:5.*:* | i86xen:SunOS:5.*:*)
-	echo i386-pc-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+	eval $set_cc_for_build
+	SUN_ARCH="i386"
+	# If there is a compiler, see if it is configured for 64-bit objects.
+	# Note that the Sun cc does not turn __LP64__ into 1 like gcc does.
+	# This test works for both compilers.
+	if [ "$CC_FOR_BUILD" != 'no_compiler_found' ]; then
+	    if (echo '#ifdef __amd64'; echo IS_64BIT_ARCH; echo '#endif') | \
+		(CCOPTS= $CC_FOR_BUILD -E - 2>/dev/null) | \
+		grep IS_64BIT_ARCH >/dev/null
+	    then
+		SUN_ARCH="x86_64"
+	    fi
+	fi
+	echo ${SUN_ARCH}-pc-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit ;;
     sun4*:SunOS:6*:*)
 	# According to config.sub, this is the proper way to canonicalize
@@ -796,7 +809,7 @@ EOF
 	    x86)
 		echo i586-pc-interix${UNAME_RELEASE}
 		exit ;;
-	    EM64T | authenticamd)
+	    EM64T | authenticamd | genuineintel)
 		echo x86_64-unknown-interix${UNAME_RELEASE}
 		exit ;;
 	    IA64)
@@ -934,6 +947,9 @@ EOF
 	objdump --private-headers /bin/sh | grep ld.so.1 >/dev/null
 	if test "$?" = 0 ; then LIBC="libc1" ; else LIBC="" ; fi
 	echo ${UNAME_MACHINE}-unknown-linux-gnu${LIBC}
+	exit ;;
+    padre:Linux:*:*)
+	echo sparc-unknown-linux-gnu
 	exit ;;
     parisc:Linux:*:* | hppa:Linux:*:*)
 	# Look for CPU level

@@ -1246,7 +1246,9 @@ public abstract class CairoGraphics2D extends Graphics2D
 
   public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints)
   {
-    draw(new Polygon(xPoints, yPoints, nPoints));
+    for (int i = 1; i < nPoints; i++)
+      draw(new Line2D.Double(xPoints[i - 1], yPoints[i - 1],
+                             xPoints[i], yPoints[i]));
   }
 
   public void drawOval(int x, int y, int width, int height)

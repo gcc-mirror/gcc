@@ -1748,6 +1748,7 @@ classpath/gnu/java/security/jce/prng/Sha256RandomSpi.java \
 classpath/gnu/java/security/jce/prng/Sha384RandomSpi.java \
 classpath/gnu/java/security/jce/prng/Sha512RandomSpi.java \
 classpath/gnu/java/security/jce/prng/TigerRandomSpi.java \
+gnu/java/security/jce/prng/VMSecureRandom.java \
 classpath/gnu/java/security/jce/prng/WhirlpoolRandomSpi.java
 
 gnu_java_security_jce_prng_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_jce_prng_source_files)))
@@ -5246,8 +5247,7 @@ classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
 java/security/VMAccessControlState.java \
-java/security/VMAccessController.java \
-java/security/VMSecureRandom.java
+java/security/VMAccessController.java
 
 java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))
 
