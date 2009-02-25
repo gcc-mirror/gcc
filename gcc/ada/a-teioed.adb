@@ -84,6 +84,10 @@ package body Ada.Text_IO.Editing is
                --  character has already been made, so a count of one is a
                --  no-op, and a count of zero erases a character.
 
+               if Result_Index + Count - 2 > Result'Last then
+                  raise Picture_Error;
+               end if;
+
                for J in 2 .. Count loop
                   Result (Result_Index + J - 2) := Picture (Picture_Index - 1);
                end loop;
@@ -98,6 +102,10 @@ package body Ada.Text_IO.Editing is
                raise Picture_Error;
 
             when others =>
+               if Result_Index > Result'Last then
+                  raise Picture_Error;
+               end if;
+
                Result (Result_Index) := Picture (Picture_Index);
                Picture_Index := Picture_Index + 1;
                Result_Index := Result_Index + 1;
