@@ -1,3 +1,9 @@
+2009-02-24  Julian Brown  <julian@codesourcery.com>
+
+	PR target/35965
+	* config/arm/arm.c (require_pic_register): Only set
+	cfun->machine->pic_reg once per function.
+
 2009-02-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Link Options): Document an easier way to pass
