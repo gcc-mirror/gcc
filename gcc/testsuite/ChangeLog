@@ -1,3 +1,11 @@
+2009-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/39241
+	* gcc.dg/torture/pr39241.c: New.
+
 2009-02-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/pr39228.x: New.
