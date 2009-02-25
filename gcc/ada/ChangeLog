@@ -1,3 +1,7 @@
+2009-02-25  Laurent GUERBY  <laurent@guerby.net>
+
+        * a-teioed.adb (Expand): Fix Result overflow.
+        
 2009-02-25  Laurent GUERBY <laurent@guerby.net>
 
         * gcc-interface/Makefile.in: Fix multilib handling for
