@@ -1,6 +1,6 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -147,10 +147,7 @@ check_asm_operands (rtx x)
       const char *c = constraints[i];
       if (c[0] == '%')
 	c++;
-      if (ISDIGIT ((unsigned char) c[0]) && c[1] == '\0')
-	c = constraints[c[0] - '0'];
-
-      if (! asm_operand_ok (operands[i], c))
+      if (! asm_operand_ok (operands[i], c, constraints))
 	return 0;
     }
 
@@ -1506,7 +1503,7 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
    Return > 0 if ok, = 0 if bad, < 0 if inconclusive.  */
 
 int
-asm_operand_ok (rtx op, const char *constraint)
+asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 {
   int result = 0;
 
@@ -1534,15 +1531,29 @@ asm_operand_ok (rtx op, const char *constraint)
 
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
-	  /* For best results, our caller should have given us the
-	     proper matching constraint, but we can't actually fail
-	     the check if they didn't.  Indicate that results are
-	     inconclusive.  */
-	  do
-	    constraint++;
-	  while (ISDIGIT (*constraint));
-	  if (! result)
-	    result = -1;
+	  /* If caller provided constraints pointer, look up
+	     the maching constraint.  Otherwise, our caller should have
+	     given us the proper matching constraint, but we can't
+	     actually fail the check if they didn't.  Indicate that
+	     results are inconclusive.  */
+	  if (constraints)
+	    {
+	      char *end;
+	      unsigned long match;
+
+	      match = strtoul (constraint, &end, 10);
+	      if (!result)
+		result = asm_operand_ok (op, constraints[match], NULL);
+	      constraint = (const char *) end;
+	    }
+	  else
+	    {
+	      do
+		constraint++;
+	      while (ISDIGIT (*constraint));
+	      if (! result)
+		result = -1;
+	    }
 	  continue;
 
 	case 'p':

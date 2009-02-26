@@ -1,3 +1,11 @@
+2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/39058
+	* gcc.target/i386/pr39058.c: New test.
+
 2009-02-25  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:

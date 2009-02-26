@@ -1,3 +1,17 @@
+2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/39058
+	* recog.h (asm_operand_ok): Add constraints argument.
+	* recog.c (asm_operand_ok): Likewise.  If it is set, for digits
+	recurse on matching constraint.
+	(check_asm_operands): Pass constraints as 3rd argument to
+	asm_operand_ok.  Don't look up matching constraint here.
+	* stmt.c (expand_asm_operands): Pass NULL as 3rd argument
+	to asm_operand_ok.
+
 2009-02-25  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline:
