@@ -9200,7 +9200,11 @@ cp_parser_mem_initializer (cp_parser* parser)
       mem_initializer_id = NULL_TREE;
     }
   else
-    mem_initializer_id = cp_parser_mem_initializer_id (parser);
+    {
+      mem_initializer_id = cp_parser_mem_initializer_id (parser);
+      if (mem_initializer_id == error_mark_node)
+	return mem_initializer_id;
+    }
   member = expand_member_init (mem_initializer_id);
   if (member && !DECL_P (member))
     in_base_initializer = 1;

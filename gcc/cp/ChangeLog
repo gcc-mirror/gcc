@@ -1,3 +1,9 @@
+2009-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/37789
+	* parser.c (cp_parser_mem_initializer): Return error_mark_node
+	if cp_parser_mem_initializer_id returns error_mark_node.
+
 2009-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/39242
