@@ -3,7 +3,7 @@
 	PR fortran/39292
 	* gfortran.dg/initialization_22.f90: New test.
 
-2008-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+2009-02-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/39241
 	* gcc.dg/torture/pr39241.c: New.
@@ -46,7 +46,7 @@
 
 	* g++.dg/cpp0x/initlist14.C: New test.
 
-2008-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2009-02-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38914
 	* bound_simplification_2.f90:  New test case.
@@ -56,7 +56,7 @@
 
 	* gcc.dg/cpp/include4.c: New test.
 
-2008-02-21  Uros Bizjak  <ubizjak@gmail.com>
+2009-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39256
 	* gcc.target/i386/abi-2.c: New.
@@ -777,7 +777,7 @@
 
 	* gcc.target/arm/neon-cond-1.c: New test.
 
-2008-01-23  Paolo Bonzini  <bonzini@gnu.org>
+2009-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/38932
 	* gcc.dg/pr38932.c: New.
@@ -867,7 +867,7 @@
 	PR target/38902
 	* gcc.dg/pr38902.c: New.
 
-2008-01-20  Paolo Bonzini  <bonzini@gnu.org>
+2009-01-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/38868
 	* gfortran.dg/pr38868.f: New testcase.
@@ -984,7 +984,7 @@
 	PR c++/37646
 	* g++.dg/conversion/memfn2.C: New test.
 
-2008-01-15  Steve Ellcey  <sje@cup.hp.com>
+2009-01-15  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/38357
 	* g++.dg/template/crash87.C: New test.
