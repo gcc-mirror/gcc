@@ -1,3 +1,8 @@
+2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (alpha_expand_mov): Return false if
+	force_const_mem returns NULL_RTX.
+
 2009-02-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/39241
@@ -36,8 +41,7 @@
 2009-02-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Link Options): Document an easier way to pass
-	options that take arguments to the GNU linker using -Xlinker and
-	-Wl.
+	options that take arguments to the GNU linker using -Xlinker and -Wl.
 
 2009-02-24  Steve Ellcey  <sje@cup.hp.com>
 
@@ -74,20 +78,21 @@
 2009-02-23  Jan Hubicka  <jh@suse.cz>
 
 	PR c/12245
-	* ggc.h (htab_create_ggc): Use ggc_free to free hashtable when resizing.
+	* ggc.h (htab_create_ggc): Use ggc_free to free hashtable when
+	resizing.
 
 2009-02-23  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/37709                                              
-	* tree.c (block_ultimate_origin): Move here from dwarf2out.             
-	* tree.h (block_ultimate_origin): Declare.                              
-	* dwarf2out.c (block_ultimate_origin): Move to tree.c                   
+	PR tree-optimization/37709
+	* tree.c (block_ultimate_origin): Move here from dwarf2out.
+	* tree.h (block_ultimate_origin): Declare.
+	* dwarf2out.c (block_ultimate_origin): Move to tree.c
 	* tree-ssa-live.c (remove_unused_scope_block_p):
 	Eliminate blocks containig no instructions nor live variables nor
 	nested blocks.
 	(dump_scope_block): New function.
 	(remove_unused_locals): Enable removal of dead blocks by default;
-	enable dumping at TDF_DETAILS.                                          
+	enable dumping at TDF_DETAILS.
 
 2009-02-21  H.J. Lu  <hongjiu.lu@intel.com>
 
