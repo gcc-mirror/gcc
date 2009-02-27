@@ -2382,8 +2382,10 @@ graphite_loop_normal_form (loop_p loop)
   tree nit;
   gimple_seq stmts;
   edge exit = single_dom_exit (loop);
+  bool known_niter = number_of_iterations_exit (loop, exit, &niter, false);
 
-  gcc_assert (number_of_iterations_exit (loop, exit, &niter, false));
+  gcc_assert (known_niter);
+
   nit = force_gimple_operand (unshare_expr (niter.niter), &stmts, true,
 			      NULL_TREE);
   if (stmts)
