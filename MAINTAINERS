@@ -66,7 +66,7 @@ m32c port		DJ Delorie		dj@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
 m68k port (?)		Jeff Law		law@redhat.com
-m68k port		Andreas Schwab		schwab@suse.de
+m68k port		Andreas Schwab		schwab@linux-m68k.org
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
 mips port		Eric Christopher	echristo@apple.com
