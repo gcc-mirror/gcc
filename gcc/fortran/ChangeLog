@@ -1,6 +1,11 @@
 2009-02-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39309
+	* module.c (read_md5_from_module_file): Add missing quote.
+
+2009-02-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39309
 	* module.c (read_md5_from_module_file): Include mod version
 	in had-changed test.
 
