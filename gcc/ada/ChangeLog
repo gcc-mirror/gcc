@@ -1,7 +1,7 @@
 2009-02-26  Andreas Schwab  <schwab@suse.de>
 
+	PR ada/39172
 	* Makefile.in (srcdir): Set to @top_srcdir@ instead of @srcdir@.
-
 	* gcc-interface/Makefile.in: Change all uses of $(srcdir),
 	$(fsrcdir) and $(fsrcpfx) to add ada subdir.
 	(AWK): Substitute.

@@ -1,5 +1,6 @@
 2009-02-26  Andreas Schwab  <schwab@suse.de>
 
+	PR ada/39172
 	* Makefile.in (fsrcdir): Point to gcc directory, not gcc/ada.
 	(INCLUDES_FOR_SUBDIR): Adjust.
 	(ADA_INCLUDES_FOR_SUBDIR): Adjust.
