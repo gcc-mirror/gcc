@@ -1324,8 +1324,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Used in classes in C++.  */
 #define TREE_PRIVATE(NODE) ((NODE)->base.private_flag)
-/* Used in classes in C++.
-   In a BLOCK node, this is BLOCK_HANDLER_BLOCK.  */
+/* Used in classes in C++. */
 #define TREE_PROTECTED(NODE) ((NODE)->base.protected_flag)
 
 /* Nonzero in a _DECL if the use of the name is defined as a
@@ -1977,11 +1976,6 @@ struct varray_head_tag;
 #define BLOCK_ABSTRACT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
 
-/* Nonzero means that this block is prepared to handle exceptions
-   listed in the BLOCK_VARS slot.  */
-#define BLOCK_HANDLER_BLOCK(NODE) \
-  (BLOCK_CHECK (NODE)->block.handler_block_flag)
-
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
    the debugging output format in use.  */
@@ -2022,9 +2016,8 @@ struct tree_block GTY(())
 {
   struct tree_common common;
 
-  unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
-  unsigned block_num : 30;
+  unsigned block_num : 31;
 
   location_t locus;
 
@@ -4657,6 +4650,14 @@ function_args_iter_next (function_args_iterator *i)
   i->next = TREE_CHAIN (i->next);
 }
 
+/* We set BLOCK_SOURCE_LOCATION only to inlined function entry points.  */
+
+static inline bool
+inlined_function_outer_scope_p (const_tree block)
+{
+ return BLOCK_SOURCE_LOCATION (block) != UNKNOWN_LOCATION;
+}
+
 /* Loop over all function arguments of FNTYPE.  In each iteration, PTR is set
    to point to the next tree element.  ITER is an instance of
    function_args_iterator used to iterate the arguments.  */
@@ -4710,7 +4711,6 @@ extern void expand_goto (tree);
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
-extern int is_body_block (const_tree);
 
 /* In tree-eh.c */
 extern void using_eh_for_cleanups (void);

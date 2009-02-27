@@ -97,7 +97,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_STATICP		lhd_staticp
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
-#define LANG_HOOKS_NO_BODY_BLOCKS	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_DECL		lhd_print_tree_nothing
@@ -246,7 +245,6 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_STATICP, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
-  LANG_HOOKS_NO_BODY_BLOCKS, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
   LANG_HOOKS_PRINT_DECL, \

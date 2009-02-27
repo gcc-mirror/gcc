@@ -541,8 +541,13 @@ remove_unused_scope_block_p (tree scope)
 	  {
 	    tree next = BLOCK_CHAIN (*t);
 	    tree supercontext = BLOCK_SUPERCONTEXT (*t);
+
 	    *t = BLOCK_SUBBLOCKS (*t);
-	    gcc_assert (!BLOCK_CHAIN (*t));
+	    while (BLOCK_CHAIN (*t))
+	      {
+	        BLOCK_SUPERCONTEXT (*t) = supercontext;
+	        t = &BLOCK_CHAIN (*t);
+	      }
 	    BLOCK_CHAIN (*t) = next;
 	    BLOCK_SUPERCONTEXT (*t) = supercontext;
 	    t = &BLOCK_CHAIN (*t);
@@ -556,23 +561,40 @@ remove_unused_scope_block_p (tree scope)
         t = &BLOCK_CHAIN (*t);
 	nsubblocks ++;
       }
+
+
+   if (!unused)
+     ;
    /* Outer scope is always used.  */
-   if (!BLOCK_SUPERCONTEXT (scope)
-       || TREE_CODE (BLOCK_SUPERCONTEXT (scope)) == FUNCTION_DECL)
+   else if (!BLOCK_SUPERCONTEXT (scope)
+            || TREE_CODE (BLOCK_SUPERCONTEXT (scope)) == FUNCTION_DECL)
      unused = false;
-   /* If there are more than one live subblocks, it is used.  */
-   else if (nsubblocks > 1)
+   /* Innermost blocks with no live variables nor statements can be always
+      eliminated.  */
+   else if (!nsubblocks)
+     ;
+   /* If there are live subblocks and we still have some unused variables
+      or types declared, we must keep them.
+      Before inliing we must not depend on debug info verbosity to keep
+      DECL_UIDs stable.  */
+   else if (!cfun->after_inlining && BLOCK_VARS (scope))
      unused = false;
-   /* When there is only one subblock, see if it is just wrapper we can
-      ignore.  Wrappers are not declaring any variables and not changing
-      abstract origin.  */
-   else if (nsubblocks == 1
-	    && (BLOCK_VARS (scope)
-		|| ((debug_info_level == DINFO_LEVEL_NORMAL
-		     || debug_info_level == DINFO_LEVEL_VERBOSE)
-		    && ((BLOCK_ABSTRACT_ORIGIN (scope)
-			!= BLOCK_ABSTRACT_ORIGIN (BLOCK_SUPERCONTEXT (scope)))))))
+   /* For terse debug info we can eliminate info on unused variables.  */
+   else if (debug_info_level == DINFO_LEVEL_NONE
+	    || debug_info_level == DINFO_LEVEL_TERSE)
+     ;
+   else if (BLOCK_VARS (scope))
      unused = false;
+   /* See if this block is important for representation of inlined function.
+      Inlined functions are always represented by block with
+      block_ultimate_origin being set to FUNCTION_DECL and DECL_SOURCE_LOCATION
+      set...  */
+   else if (inlined_function_outer_scope_p (scope))
+     unused = false;
+   else
+   /* Verfify that only blocks with source location set
+      are entry points to the inlined functions.  */
+     gcc_assert (BLOCK_SOURCE_LOCATION (scope) == UNKNOWN_LOCATION);
    return unused;
 }
 
@@ -592,14 +614,27 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
 {
   tree var, t;
 
-  fprintf (file, "\n%*sScope block #%i %s\n",indent, "" , BLOCK_NUMBER (scope),
-  	   TREE_USED (scope) ? "" : "(unused)");
-  if (BLOCK_ABSTRACT_ORIGIN (scope) && DECL_P (block_ultimate_origin (scope)))
+  fprintf (file, "\n%*s{ Scope block #%i%s%s",indent, "" , BLOCK_NUMBER (scope),
+  	   TREE_USED (scope) ? "" : " (unused)",
+	   BLOCK_ABSTRACT (scope) ? " (abstract)": "");
+  if (BLOCK_SOURCE_LOCATION (scope) != UNKNOWN_LOCATION)
     {
-      fprintf (file, "\n%*sOriginating from ",indent + 1, "");
-      print_generic_decl (file, block_ultimate_origin (scope), flags);
-      fprintf (file, "\n");
+      expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));
+      fprintf (file, " %s:%i", s.file, s.line);
     }
+  if (BLOCK_ABSTRACT_ORIGIN (scope))
+    {
+      tree origin = block_ultimate_origin (scope);
+      if (origin)
+	{
+	  fprintf (file, " Originating from :");
+	  if (DECL_P (origin))
+	    print_generic_decl (file, origin, flags);
+	  else
+	    fprintf (file, "#%i", BLOCK_NUMBER (origin));
+	}
+    }
+  fprintf (file, " \n");
   for (var = BLOCK_VARS (scope); var; var = TREE_CHAIN (var))
     {
       bool used = false;
@@ -615,8 +650,14 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
     }
   for (t = BLOCK_SUBBLOCKS (scope); t ; t = BLOCK_CHAIN (t))
     dump_scope_block (file, indent + 2, t, flags);
+  fprintf (file, "\n%*s}\n",indent, "");
 }
 
+void
+dump_scope_blocks (FILE *file, int flags)
+{
+  dump_scope_block (file, 0, DECL_INITIAL (current_function_decl), flags);
+}
 
 /* Remove local variables that are not referenced in the IL.  */
 
@@ -760,7 +801,7 @@ remove_unused_locals (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Scope blocks after cleanups:\n");
-      dump_scope_block (dump_file, 0, DECL_INITIAL (current_function_decl), false);
+      dump_scope_blocks (dump_file, dump_flags);
     }
 }
 

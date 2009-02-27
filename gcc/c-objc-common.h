@@ -53,8 +53,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL c_finish_incomplete_decl
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
-#undef LANG_HOOKS_NO_BODY_BLOCKS
-#define LANG_HOOKS_NO_BODY_BLOCKS true
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL c_warn_unused_global_decl
 #undef LANG_HOOKS_PRINT_IDENTIFIER

@@ -7740,6 +7740,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	      tree curindex;
 	      unsigned HOST_WIDE_INT cnt;
 	      constructor_elt *ce;
+	      bool fold_p = false;
 
 	      if (VEC_index (constructor_elt, v, 0)->index)
 		maxindex = fold_convert (sizetype,
@@ -7751,14 +7752,20 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 		   VEC_iterate (constructor_elt, v, cnt, ce);
 		   cnt++)
 		{
+		  bool curfold_p = false;
 		  if (ce->index)
-		    curindex = fold_convert (sizetype, ce->index);
+		    curindex = ce->index, curfold_p = true;
 		  else
-		    curindex = size_binop (PLUS_EXPR, curindex, size_one_node);
-
+		    {
+		      if (fold_p)
+		        curindex = fold_convert (sizetype, curindex);
+		      curindex = size_binop (PLUS_EXPR, curindex, size_one_node);
+		    }
 		  if (tree_int_cst_lt (maxindex, curindex))
-		    maxindex = curindex;
+		    maxindex = curindex, fold_p = curfold_p;
 		}
+	       if (fold_p)
+	         maxindex = fold_convert (sizetype, maxindex);
 	    }
 	}
       else

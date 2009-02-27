@@ -3625,20 +3625,6 @@ dbxout_block (tree block, int depth, tree args)
 		  scope_start = buf;
 		}
 
-	      if (BLOCK_HANDLER_BLOCK (block))
-		{
-		  /* A catch block.  Must precede N_LBRAC.  */
-		  tree decl = BLOCK_VARS (block);
-		  while (decl)
-		    {
-		      dbxout_begin_complex_stabs ();
-		      stabstr_I (DECL_NAME (decl));
-		      stabstr_S (":C1");
-		      dbxout_finish_complex_stabs (0, N_CATCH, 0,
-						   scope_start, 0);
-		      decl = TREE_CHAIN (decl);
-		    }
-		}
 	      dbx_output_lbrac (scope_start, begin_label);
 	    }
 

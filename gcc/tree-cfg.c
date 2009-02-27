@@ -221,6 +221,11 @@ execute_build_cfg (void)
 
   build_gimple_cfg (body);
   gimple_set_body (current_function_decl, NULL);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Scope blocks:\n");
+      dump_scope_blocks (dump_file, dump_flags);
+    }
   return 0;
 }
 
