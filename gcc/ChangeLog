@@ -1,3 +1,11 @@
+2009-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc/config/s390/s390.c: (s390_swap_cmp): Look for conditional
+	jumps if COND is NULL.
+	(find_cond_jump): New function.
+	(s390_z10_optimize_cmp): Handling for reg-reg compares added.
+	* gcc/config/s390/s390.md: Remove z10_cobra attribute value.
+
 2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.h (alpha_expand_mov): Return false if
