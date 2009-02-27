@@ -4739,8 +4739,18 @@ read_md5_from_module_file (const char * filename, unsigned char md5[16])
     return -1;
 
   /* Read two lines.  */
-  if (fgets (buf, sizeof (buf) - 1, file) == NULL
-      || fgets (buf, sizeof (buf) - 1, file) == NULL)
+  if (fgets (buf, sizeof (buf) - 1, file) == NULL)
+    {
+      fclose (file);
+      return -1;
+    }
+
+  /* The file also needs to be overwritten if the version number changed.  */
+  n = strlen ("GFORTRAN module version " MOD_VERSION " created");
+  if (strncmp (buf, "GFORTRAN module version " MOD_VERSION " created", n) != 0)
+    return -1;
+ 
+  if (fgets (buf, sizeof (buf) - 1, file) == NULL)
     {
       fclose (file);
       return -1;
