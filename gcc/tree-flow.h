@@ -1153,6 +1153,7 @@ void compute_call_used_vars (void);
 
 /* In tree-ssa-live.c */
 extern void remove_unused_locals (void);
+extern void dump_scope_blocks (FILE *, int);
 
 /* In tree-ssa-address.c  */
 

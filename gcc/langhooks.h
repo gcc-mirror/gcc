@@ -317,11 +317,6 @@ struct lang_hooks
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) (tree);
 
-  /* Nonzero if this front end does not generate a dummy BLOCK between
-     the outermost scope of the function and the FUNCTION_DECL.  See
-     is_body_block in stmt.c, and its callers.  */
-  bool no_body_blocks;
-
   /* The front end can add its own statistics to -fmem-report with
      this hook.  It should output to stderr.  */
   void (*print_statistics) (void);

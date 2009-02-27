@@ -1,3 +1,28 @@
+2009-02-27  Jan Hubicka  <jh@suse.cz>
+
+	PR debug/39267
+	* tree.h (TREE_PROTECTED): Fix comment.
+	(BLOCK_HANDLER_BLOCK): Remove.
+	(struct tree_block): Remove handler_block add body_block.
+	(inlined_function_outer_scope_p): New.
+	(is_body_block): Remove.
+	* dbxout.c (dbxout_block): Remove BLOCK_HANDLER_BLOCK.
+	* dwarf2out.c (is_inlined_entry_point): Remove.
+	(add_high_low_attributes): Use inlined_function_outer_scope_p.
+	(gen_block_die): Use is_inlined_entry_point check; remove body block code.
+	* langhooks.h (struct lang_hooks): Remove no_bodu_blocks.
+	* gimplify.c (gimplify_expr): Gimplify body blocks.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Allow removing wrapper block
+	with multiple subblocks.
+	(dump_scope_block): Prettier output; dump more flags and info.
+	(dump_scope_blocks): New.
+	(remove_unused_locals): Use dump_scope_blocks.
+	* tree-flow.h (dump_scope_blocks): Declare.
+	* tree-cfg.c (execute_build_cfg): Dump scope blocks.
+	* stmt.c (is_body_block): Remove.
+	* tree-inline.c (remap_block): Copy BODY_BLOCK info.
+	* langhooks-def.h (LANG_HOOKS_NO_BODY_BLOCKS): Remove.
+
 2009-02-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39308

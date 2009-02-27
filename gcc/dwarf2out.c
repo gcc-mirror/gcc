@@ -14135,35 +14135,6 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
 }
 
 
-/* If STMT's abstract origin is a function declaration and STMT's
-   first subblock's abstract origin is the function's outermost block,
-   then we're looking at the main entry point.  */
-static bool
-is_inlined_entry_point (const_tree stmt)
-{
-  tree decl, block;
-
-  if (!stmt || TREE_CODE (stmt) != BLOCK)
-    return false;
-
-  decl = block_ultimate_origin (stmt);
-
-  if (!decl || TREE_CODE (decl) != FUNCTION_DECL)
-    return false;
-
-  block = BLOCK_SUBBLOCKS (stmt);
-
-  if (block)
-    {
-      if (TREE_CODE (block) != BLOCK)
-	return false;
-
-      block = block_ultimate_origin (block);
-    }
-
-  return block == DECL_INITIAL (decl);
-}
-
 /* A helper function for gen_lexical_block_die and gen_inlined_subroutine_die.
    Add low_pc and high_pc attributes to the DIE for a block STMT.  */
 
@@ -14176,7 +14147,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
     {
       tree chain;
 
-      if (is_inlined_entry_point (stmt))
+      if (inlined_function_outer_scope_p (stmt))
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
 				       BLOCK_NUMBER (stmt));
@@ -14861,13 +14832,14 @@ static void
 gen_block_die (tree stmt, dw_die_ref context_die, int depth)
 {
   int must_output_die = 0;
-  tree origin;
   tree decl;
-  enum tree_code origin_code;
+  bool inlined_func;
 
   /* Ignore blocks that are NULL.  */
   if (stmt == NULL_TREE)
     return;
+
+  inlined_func = inlined_function_outer_scope_p (stmt);
 
   /* If the block is one fragment of a non-contiguous block, do not
      process the variables, since they will have been done by the
@@ -14882,52 +14854,34 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
       return;
     }
 
-  /* Determine the "ultimate origin" of this block.  This block may be an
-     inlined instance of an inlined instance of inline function, so we have
-     to trace all of the way back through the origin chain to find out what
-     sort of node actually served as the original seed for the creation of
-     the current block.  */
-  origin = block_ultimate_origin (stmt);
-  origin_code = (origin != NULL) ? TREE_CODE (origin) : ERROR_MARK;
-
   /* Determine if we need to output any Dwarf DIEs at all to represent this
      block.  */
-  if (origin_code == FUNCTION_DECL)
+  if (inlined_func)
     /* The outer scopes for inlinings *must* always be represented.  We
        generate DW_TAG_inlined_subroutine DIEs for them.  (See below.) */
     must_output_die = 1;
   else
     {
-      /* In the case where the current block represents an inlining of the
-	 "body block" of an inline function, we must *NOT* output any DIE for
-	 this block because we have already output a DIE to represent the whole
-	 inlined function scope and the "body block" of any function doesn't
-	 really represent a different scope according to ANSI C rules.  So we
-	 check here to make sure that this block does not represent a "body
-	 block inlining" before trying to set the MUST_OUTPUT_DIE flag.  */
-      if (! is_body_block (origin ? origin : stmt))
-	{
-	  /* Determine if this block directly contains any "significant"
-	     local declarations which we will need to output DIEs for.  */
-	  if (debug_info_level > DINFO_LEVEL_TERSE)
-	    /* We are not in terse mode so *any* local declaration counts
-	       as being a "significant" one.  */
-	    must_output_die = (BLOCK_VARS (stmt) != NULL
-			       && (TREE_USED (stmt)
-				   || TREE_ASM_WRITTEN (stmt)
-				   || BLOCK_ABSTRACT (stmt)));
-	  else
-	    /* We are in terse mode, so only local (nested) function
-	       definitions count as "significant" local declarations.  */
-	    for (decl = BLOCK_VARS (stmt);
-		 decl != NULL; decl = TREE_CHAIN (decl))
-	      if (TREE_CODE (decl) == FUNCTION_DECL
-		  && DECL_INITIAL (decl))
-		{
-		  must_output_die = 1;
-		  break;
-		}
-	}
+      /* Determine if this block directly contains any "significant"
+	 local declarations which we will need to output DIEs for.  */
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	/* We are not in terse mode so *any* local declaration counts
+	   as being a "significant" one.  */
+	must_output_die = (BLOCK_VARS (stmt) != NULL
+			   && (TREE_USED (stmt)
+			       || TREE_ASM_WRITTEN (stmt)
+			       || BLOCK_ABSTRACT (stmt)));
+      else
+	/* We are in terse mode, so only local (nested) function
+	   definitions count as "significant" local declarations.  */
+	for (decl = BLOCK_VARS (stmt);
+	     decl != NULL; decl = TREE_CHAIN (decl))
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_INITIAL (decl))
+	    {
+	      must_output_die = 1;
+	      break;
+	    }
     }
 
   /* It would be a waste of space to generate a Dwarf DW_TAG_lexical_block
@@ -14939,7 +14893,7 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
      instances and local (nested) function definitions.  */
   if (must_output_die)
     {
-      if (origin_code == FUNCTION_DECL)
+      if (inlined_func)
 	gen_inlined_subroutine_die (stmt, context_die, depth);
       else
 	gen_lexical_block_die (stmt, context_die, depth);
