@@ -1,3 +1,9 @@
+2009-02-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/39308
+	* graphite.c (graphite_loop_normal_form): Do not call 
+	number_of_iterations_exit from a gcc_assert.
+
 2009-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc/config/s390/s390.c: (s390_swap_cmp): Look for conditional
