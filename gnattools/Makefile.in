@@ -56,13 +56,13 @@ ADAFLAGS= -gnatpg -gnata
 # For finding the GCC build dir, which is used far too much
 GCC_DIR=../gcc
 
-# Absolute srcdir for gcc/ada (why do we want absolute?  I dunno)
-fsrcdir := $(shell cd $(srcdir)/../gcc/ada/; ${PWD_COMMAND})
+# Absolute srcdir for gcc (why do we want absolute?  I dunno)
+fsrcdir := $(shell cd $(srcdir)/../gcc/; ${PWD_COMMAND})
 
 # Useful "subroutines" for the excess includes
-INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir) -I$(fsrcdir)/../config \
-	-I$(fsrcdir)/../../include -I$(fsrcdir)/..
-ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)
+INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir)/ada -I$(fsrcdir)/config \
+	-I$(fsrcdir)/../include -I$(fsrcdir)
+ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
 # Variables for gnattools1, native
 TOOLS_FLAGS_TO_PASS_1= \

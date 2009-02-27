@@ -1,12 +1,21 @@
+2009-02-26  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (srcdir): Set to @top_srcdir@ instead of @srcdir@.
+
+	* gcc-interface/Makefile.in: Change all uses of $(srcdir),
+	$(fsrcdir) and $(fsrcpfx) to add ada subdir.
+	(AWK): Substitute.
+	(target_cpu_default): Substitute.
+
 2009-02-25  Laurent GUERBY  <laurent@guerby.net>
 
-        * a-teioed.adb (Expand): Fix Result overflow.
-        
+	* a-teioed.adb (Expand): Fix Result overflow.
+
 2009-02-25  Laurent GUERBY <laurent@guerby.net>
 
-        * gcc-interface/Makefile.in: Fix multilib handling for
-        sparc64-linux.
-	
+	* gcc-interface/Makefile.in: Fix multilib handling for
+	sparc64-linux.
+
 2009-02-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* s-oscons-tmplt.c [__osf__ && !_SS_MAXSIZE]: Undef AF_UNIX6.
@@ -53,7 +62,7 @@
 2009-01-31  Laurent GUERBY  <laurent@guerby.net>
 
 	* gcc-interface/Makefile.in: Fix mipsel linux handling.
-	
+
 2009-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/Makefile.in: Fix multilib handling for
