@@ -1,3 +1,7 @@
+2009-02-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* MAINTAINERS: Update e-mail address.
+
 2009-02-24  Michael Eager  <eager@eagercon.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
