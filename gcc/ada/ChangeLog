@@ -1,3 +1,8 @@
+2009-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (cygwin/mingw): Revert accidental EH_MECHANISM change
+	in r130816.
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.
