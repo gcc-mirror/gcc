@@ -1,3 +1,13 @@
+2009-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline:
+	2008-12-02  Martin Jambor  <mjambor@suse.cz>
+	
+	PR middle-end/37861
+	* tree-ssa-forwprop.c 
+	(forward_propagate_addr_into_variable_array_index): Check that the
+	offset is not computed from a MULT_EXPR if element size is one.
+
 2009-02-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

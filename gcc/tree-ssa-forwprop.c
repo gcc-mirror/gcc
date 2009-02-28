@@ -487,28 +487,36 @@ static bool
 forward_propagate_addr_into_variable_array_index (tree offset,
 						  tree def_rhs, tree use_stmt)
 {
-  tree index;
+  tree index, offset_def;
 
-  /* Try to find an expression for a proper index.  This is either
-     a multiplication expression by the element size or just the
-     ssa name we came along in case the element size is one.  */
+  /* Get the offset's defining statement.  */
+  offset_def = SSA_NAME_DEF_STMT (offset);
+
+  /* Try to find an expression for a proper index.  This is either a
+     multiplication expression by the element size or just the ssa name we came
+     along in case the element size is one. In that case, however, we do not
+     allow multiplications because they can be computing index to a higher
+     level dimension (PR 37861). */
   if (integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (def_rhs)))))
-    index = offset;
+    {
+      if (TREE_CODE (offset_def) == GIMPLE_MODIFY_STMT
+	  && TREE_CODE (GIMPLE_STMT_OPERAND (offset_def, 1)) == MULT_EXPR)
+	return false;
+
+      index = offset;
+    }
   else
     {
-      /* Get the offset's defining statement.  */
-      offset = SSA_NAME_DEF_STMT (offset);
-
       /* The statement which defines OFFSET before type conversion
          must be a simple GIMPLE_MODIFY_STMT.  */
-      if (TREE_CODE (offset) != GIMPLE_MODIFY_STMT)
+      if (TREE_CODE (offset_def) != GIMPLE_MODIFY_STMT)
 	return false;
 
       /* The RHS of the statement which defines OFFSET must be a
 	 multiplication of an object by the size of the array elements. 
 	 This implicitly verifies that the size of the array elements
 	 is constant.  */
-     offset = GIMPLE_STMT_OPERAND (offset, 1);
+     offset = GIMPLE_STMT_OPERAND (offset_def, 1);
       if (TREE_CODE (offset) != MULT_EXPR
 	  || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
 	  || !simple_cst_equal (TREE_OPERAND (offset, 1),
