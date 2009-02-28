@@ -1,3 +1,11 @@
+2009-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (alpha_expand_mov): Return false if
+	force_const_mem returns NULL_RTX.
+
 2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
@@ -131,7 +139,7 @@
 
 	Backport from mainline
 	2009-02-05  Daniel Berlin  <dberlin@dberlin.org>
-	    Richard Guenther  <rguenther@suse.de>
+		    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39100
 	* tree-ssa-structalias.c (do_ds_constraint): Actually do what the

@@ -2123,6 +2123,8 @@ alpha_split_const_mov (enum machine_mode mode, rtx *operands)
 bool
 alpha_expand_mov (enum machine_mode mode, rtx *operands)
 {
+  rtx tmp;
+
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_0_operand (operands[1], mode))
@@ -2131,8 +2133,6 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
   /* Allow legitimize_address to perform some simplifications.  */
   if (mode == Pmode && symbolic_operand (operands[1], mode))
     {
-      rtx tmp;
-
       tmp = alpha_legitimize_address (operands[1], operands[0], mode);
       if (tmp)
 	{
@@ -2157,14 +2157,18 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
     }
 
   /* Otherwise we've nothing left but to drop the thing to memory.  */
-  operands[1] = force_const_mem (mode, operands[1]);
+  tmp = force_const_mem (mode, operands[1]);
+
+  if (tmp == NULL_RTX)
+    return false;
+
   if (reload_in_progress)
     {
-      emit_move_insn (operands[0], XEXP (operands[1], 0));
-      operands[1] = replace_equiv_address (operands[1], operands[0]);
+      emit_move_insn (operands[0], XEXP (tmp, 0));
+      operands[1] = replace_equiv_address (tmp, operands[0]);
     }
   else
-    operands[1] = validize_mem (operands[1]);
+    operands[1] = validize_mem (tmp);
   return false;
 }
 
