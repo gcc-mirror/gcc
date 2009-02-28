@@ -3305,25 +3305,30 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       DECL_NO_TBAA_P (retvar) = 1;
     }
 
-  /* This is it.  Duplicate the callee body.  Assume callee is
-     pre-gimplified.  Note that we must not alter the caller
-     function in any way before this point, as this CALL_EXPR may be
-     a self-referential call; if we're calling ourselves, we need to
-     duplicate our body before altering anything.  */
-  copy_body (id, bb->count, bb->frequency, bb, return_block);
-
   /* Add local vars in this inlined callee to caller.  */
   t_step = id->src_cfun->local_decls;
   for (; t_step; t_step = TREE_CHAIN (t_step))
     {
       var = TREE_VALUE (t_step);
       if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
-	cfun->local_decls = tree_cons (NULL_TREE, var,
-					       cfun->local_decls);
+	{
+	  if (var_ann (var) && referenced_var_check_and_insert (var))
+	    cfun->local_decls = tree_cons (NULL_TREE, var,
+					   cfun->local_decls);
+	}
       else
-	cfun->local_decls = tree_cons (NULL_TREE, remap_decl (var, id),
-					       cfun->local_decls);
+        {
+	  cfun->local_decls = tree_cons (NULL_TREE, remap_decl (var, id),
+					          cfun->local_decls);
+	}
     }
+
+  /* This is it.  Duplicate the callee body.  Assume callee is
+     pre-gimplified.  Note that we must not alter the caller
+     function in any way before this point, as this CALL_EXPR may be
+     a self-referential call; if we're calling ourselves, we need to
+     duplicate our body before altering anything.  */
+  copy_body (id, bb->count, bb->frequency, bb, return_block);
 
   /* Clean up.  */
   pointer_map_destroy (id->decl_map);
@@ -4140,7 +4145,7 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
         *parg = new_tree;
 	parg = &TREE_CHAIN (new_tree);
       }
-    else
+    else if (!pointer_map_contains (id->decl_map, arg))
       {
 	/* Make an equivalent VAR_DECL.  If the argument was used
 	   as temporary variable later in function, the uses will be
@@ -4263,16 +4268,6 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
     DECL_STRUCT_FUNCTION (new_decl)->static_chain_decl =
       copy_static_chain (DECL_STRUCT_FUNCTION (old_decl)->static_chain_decl,
 			 &id);
-  /* Copy the function's arguments.  */
-  if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
-    DECL_ARGUMENTS (new_decl) =
-      copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
-      				     args_to_skip, &vars);
-  
-  DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
-  
-  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
-  number_blocks (id.dst_fn);
   
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
@@ -4307,6 +4302,16 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 	      VEC_safe_push (gimple, heap, init_stmts, init);
 	  }
       }
+  /* Copy the function's arguments.  */
+  if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
+    DECL_ARGUMENTS (new_decl) =
+      copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
+      				     args_to_skip, &vars);
+  
+  DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
+  
+  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
+  number_blocks (id.dst_fn);
   
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
   if (DECL_STRUCT_FUNCTION (old_decl)->local_decls != NULL_TREE)

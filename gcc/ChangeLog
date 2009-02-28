@@ -1,3 +1,11 @@
+2009-02-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (expand_call_inline): Avoid duplicate declarations of
+	static vars.
+	(copy_arguments_for_versioning): If var is declared don't declare it.
+	(tree_function_versioning): First setup substitutions and then copy
+	args.
+
 2009-02-27  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/39267
