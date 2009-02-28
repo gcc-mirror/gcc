@@ -563,6 +563,19 @@ fix = {
 
 
 /*
+ *  Fix missing semicolon on Alpha OSF/4 in <net/if.h>
+ */
+fix = {
+    hackname  = alpha_if_semicolon;
+    files     = net/if.h;
+    select    = "struct[ \t]+sockaddr[ \t]+vmif_paddr[ \t]+/\\*";
+    c_fix     = format;
+    c_fix_arg = "struct sockaddr vmif_paddr;\t/*";
+    test_text = '     struct  sockaddr vmif_paddr     /* protocol address */';
+};
+
+
+/*
  * Remove erroneous parentheses in sym.h on Alpha OSF/1.
  */
 fix = {
