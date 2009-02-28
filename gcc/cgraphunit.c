@@ -1313,7 +1313,6 @@ cgraph_optimize (void)
 
       varpool_assemble_pending_decls ();
     }
-  varpool_output_debug_info ();
   cgraph_process_new_functions ();
   cgraph_state = CGRAPH_STATE_FINISHED;
 
