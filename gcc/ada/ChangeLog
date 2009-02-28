@@ -1,3 +1,8 @@
+2009-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (cygwin/mingw): Revert accidental
+	EH_MECHANISM change in r130816.
+
 2009-02-26  Andreas Schwab  <schwab@suse.de>
 
 	PR ada/39172

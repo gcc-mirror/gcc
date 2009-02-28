@@ -1403,8 +1403,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     # ??? This will be replaced by gnatlib-shared-dual-win32 when GNAT
     # auto-import support for array/record will be done.
     GNATLIB_SHARED = gnatlib-shared-win32
-
-    EH_MECHANISM=-gcc
   endif
 
   TOOLS_TARGET_PAIRS= \
