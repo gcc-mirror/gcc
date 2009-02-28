@@ -1,3 +1,17 @@
+2009-02-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39327
+	* config/i386/sse.md (avx_addsubv8sf3): Correct item bits.
+	(avx_addsubv4df3): Likewise.
+	(*avx_addsubv4sf3): Likewise.
+	(sse3_addsubv4sf3): Likewise.
+	(*avx_addsubv2df3): Likewise.
+	(sse3_addsubv2df3): Likewise.
+	(avx_unpckhps256): Correct item selectors.
+	(avx_unpcklps256): Likewise.
+	(avx_unpckhpd256): Likewise.
+	(avx_unpcklpd256): Likewise.
+
 2009-02-28  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (expand_call_inline): Avoid duplicate declarations of
