@@ -456,29 +456,6 @@ varpool_empty_needed_queue (void)
   varpool_last_needed_node = NULL;
 }
 
-/* Output all variables enqueued to be assembled.  */
-void
-varpool_output_debug_info (void)
-{
-  timevar_push (TV_SYMOUT);
-  if (errorcount == 0 && sorrycount == 0)
-    while (varpool_assembled_nodes_queue)
-      {
-	struct varpool_node *node = varpool_assembled_nodes_queue;
-
-	/* Local static variables are never seen by check_global_declarations
-	   so we need to output debug info by hand.  */
-	if (DECL_CONTEXT (node->decl)
-	    && (TREE_CODE (DECL_CONTEXT (node->decl)) == BLOCK
-		|| TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
-	    && errorcount == 0 && sorrycount == 0)
-	     (*debug_hooks->global_decl) (node->decl);
-	varpool_assembled_nodes_queue = node->next_needed;
-	node->next_needed = 0;
-      }
-  timevar_pop (TV_SYMOUT);
-}
-
 /* Create a new global variable of type TYPE.  */
 tree
 add_new_static_var (tree type)
