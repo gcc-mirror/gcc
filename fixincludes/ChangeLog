@@ -1,3 +1,9 @@
+2004-10-15  Giovanni Bajo  <giovannibajo@libero.it>
+	Bruce Korb <bkorb@gnu.org>
+
+	* inclhack.def (alpha_if_semicolon): new fix from long, long ago
+	* tests/base/net/if.h: Add new test.
+
 2009-01-06  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* tests/base/locale.h: Add new test.
