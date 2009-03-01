@@ -1,4 +1,4 @@
-#  Copyright (C) 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -147,6 +147,8 @@ for (i = 0; i < n_opts; i++) {
 	# ends, for example.
 	while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
 		flags[i + 1] = flags[i] " " flags[i + 1];
+		if (help[i + 1] == "")
+			help[i + 1] = help[i]
 		i++;
 		back_chain[i] = "N_OPTS";
 		indices[opts[i]] = j;
@@ -155,11 +157,10 @@ for (i = 0; i < n_opts; i++) {
 }
 
 for (i = 0; i < n_opts; i++) {
-	# Combine the flags of identical switches.  Switches
-	# appear many times if they are handled by many front
-	# ends, for example.
+	# With identical flags, pick only the last one.  The
+	# earlier loop ensured that it has all flags merged,
+	# and a nonempty help text if one of the texts was nonempty.
 	while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
-		flags[i + 1] = flags[i] " " flags[i + 1];
 		i++;
 	}
 
