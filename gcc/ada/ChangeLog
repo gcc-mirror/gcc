@@ -12,7 +12,7 @@
 2009-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (cygwin/mingw): Revert accidental
-	EH_MECHANISM change in r130816.
+	EH_MECHANISM change made on 2007-12-06.
 
 2009-02-26  Andreas Schwab  <schwab@suse.de>
 
