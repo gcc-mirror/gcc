@@ -1,5 +1,8 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* doc/invoke.texi (Warning Options): -Wsync-nand is C/C++ only.
+	-Wno-pedantic-ms-format is for MinGW targets only.
+
 	* doc/options.texi (Option file format): Fix bad indentation,
 	restoring dropped sentence.
 

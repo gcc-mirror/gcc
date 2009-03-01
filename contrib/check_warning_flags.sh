@@ -3,7 +3,7 @@
 # Check that the warning flags documented in invoke.texi match up
 # with what the compiler accepts.
 #
-# Copyright (C) 2008 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 # Written by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -39,9 +39,12 @@ stderr=check_warning_flags_stderr$$
 
 remove_problematic_flags='
   /-Wlarger-than-/d
+  /-Wframe-larger-than/d
+  /-Wdisallowed-function-list/d
   /-W[alp],/d
   /-Werror/d
   /-Wpadded/d
+  /pedantic-ms-format/d
   /=/d'
 
 # Ensure that indexed warnings are accepted.

@@ -3150,7 +3150,7 @@ and lacks a @code{case} for one or more of the named codes of that
 enumeration.  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.
 
-@item -Wsync-nand
+@item -Wsync-nand @r{(C and C++ only)}
 @opindex Wsync-nand
 @opindex Wno-sync-nand
 Warn when @code{__sync_fetch_and_nand} and @code{__sync_nand_and_fetch}
@@ -3604,7 +3604,7 @@ assume anything on the bounds of the loop indices.  With
 @option{-funsafe-loop-optimizations} warn if the compiler made
 such assumptions.
 
-@item -Wno-pedantic-ms-format
+@item -Wno-pedantic-ms-format @r{(MinGW targets only)}
 @opindex Wno-pedantic-ms-format
 @opindex Wpedantic-ms-format
 Disables the warnings about non-ISO @code{printf} / @code{scanf} format
