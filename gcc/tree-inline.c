@@ -2048,6 +2048,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      We might want to introduce a notion that single SSA_NAME might
      represent multiple variables for purposes of debugging. */
   if (gimple_in_ssa_p (cfun) && rhs && def && is_gimple_reg (p)
+      && optimize
       && (TREE_CODE (rhs) == SSA_NAME
 	  || is_gimple_min_invariant (rhs))
       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
@@ -2058,7 +2059,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 
   /* If the value of argument is never used, don't care about initializing
      it.  */
-  if (gimple_in_ssa_p (cfun) && !def && is_gimple_reg (p))
+  if (optimize && gimple_in_ssa_p (cfun) && !def && is_gimple_reg (p))
     {
       gcc_assert (!value || !TREE_SIDE_EFFECTS (value));
       return NULL;
