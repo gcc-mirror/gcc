@@ -1,3 +1,14 @@
+2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Backport from git Libtool:
+
+	2009-01-19  Robert Millan  <rmh@aybabtu.com>
+	Support GNU/kOpenSolaris.
+	* libltdl/m4/libtool.m4 (_LT_SYS_DYNAMIC_LINKER)
+	(_LT_CHECK_MAGIC_METHOD, _LT_COMPILER_PIC, _LT_LINKER_SHLIBS)
+	(_LT_LANG_CXX_CONFIG) [kopensolaris*-gnu]: Recognize
+	GNU/kOpenSolaris.
+
 2009-02-27  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* MAINTAINERS: Update e-mail address.

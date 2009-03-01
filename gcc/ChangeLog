@@ -1,5 +1,9 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure: Regenerate.
+
+2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* optc-gen.awk: No need to duplicate option flags twice.
 	Reuse help texts for duplicate options which do not have
 	any.
