@@ -1,17 +1,3 @@
-2009-02-26  Jan Hubicka  <jh@suse.cz>
-
-	PR debug/39267
-	* cgraph.h (varpool_output_debug_info): Remove.
-	* cgraphunit.c (varpool_output_debug_info): Remove.
-	* dwarf2out.c (deferred_locations_struct): New struct
-	(deferred_locations): New type.
-	(deferred_locations_list): New static var.
-	(deffer_location): New function.
-	(gen_variable_die): Use it.
-	(decls_for_scope): Output info on local static vars.
-	(dwarf2out_finish): Process deferred locations.
-	* varpool.c (varpool_output_debug_info): Remove.
-
 2009-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/37789
