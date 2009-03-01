@@ -1,5 +1,9 @@
 2009-02-28  Jan Hubicka  <jh@suse.cz>
 
+	* tree-inline.c (tree_function_versioning): Output debug info.
+
+2009-02-28  Jan Hubicka  <jh@suse.cz>
+
 	PR debug/39267
 	* tree-inline.c (setup_one_parameter): Do not copy propagate
 	arguments when not optimizing.
