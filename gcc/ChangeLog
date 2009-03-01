@@ -1,7 +1,8 @@
 2009-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Do not
-	shadow "i" variable.
+	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Do not shadow "i"
+	variable.  Use defined names instead of magic constants for REX SSE
+	registers.
 
 2009-03-01  Richard Guenther  <rguenther@suse.de>
 
