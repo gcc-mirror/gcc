@@ -41,6 +41,7 @@ records have two fields: the string @samp{TargetSave}, and a
 declaration type to go in the @code{cl_target_option} structure.
 
 @item
+An option definition record.  These records have the following fields:
 @enumerate
 @item
 the name of the option, with the leading ``-'' removed
