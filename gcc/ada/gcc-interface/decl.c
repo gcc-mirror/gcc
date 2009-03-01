@@ -1958,6 +1958,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Has_Aliased_Components (gnat_entity)
 	    && !Strict_Alignment (Component_Type (gnat_entity))
 	    && TREE_CODE (tem) == RECORD_TYPE
+	    && !TYPE_IS_FAT_POINTER_P (tem)
 	    && host_integerp (TYPE_SIZE (tem), 1))
 	  tem = make_packable_type (tem, false);
 
@@ -2326,6 +2327,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  && !Has_Aliased_Components (gnat_entity)
 		  && !Strict_Alignment (Component_Type (gnat_entity))
 		  && TREE_CODE (gnu_type) == RECORD_TYPE
+		  && !TYPE_IS_FAT_POINTER_P (gnu_type)
 		  && host_integerp (TYPE_SIZE (gnu_type), 1))
 		gnu_type = make_packable_type (gnu_type, false);
 
@@ -3082,8 +3084,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			        == INTEGER_CST)
 		      {
 			gnu_size = DECL_SIZE (gnu_old_field);
-			if (TYPE_MODE (gnu_field_type) == BLKmode
-			    && TREE_CODE (gnu_field_type) == RECORD_TYPE
+			if (TREE_CODE (gnu_field_type) == RECORD_TYPE
+			    && !TYPE_IS_FAT_POINTER_P (gnu_field_type)
 			    && host_integerp (TYPE_SIZE (gnu_field_type), 1))
 			  gnu_field_type
 			    = make_packable_type (gnu_field_type, true);
@@ -5697,8 +5699,8 @@ round_up_to_align (unsigned HOST_WIDE_INT t, unsigned int align)
    as the field type of a packed record if IN_RECORD is true, or as the
    component type of a packed array if IN_RECORD is false.  See if we can
    rewrite it either as a type that has a non-BLKmode, which we can pack
-   tighter in the packed record case, or as a smaller type with BLKmode.
-   If so, return the new type.  If not, return the original type.  */
+   tighter in the packed record case, or as a smaller type.  If so, return
+   the new type.  If not, return the original type.  */
 
 static tree
 make_packable_type (tree type, bool in_record)
@@ -5760,10 +5762,10 @@ make_packable_type (tree type, bool in_record)
       tree new_field_type = TREE_TYPE (old_field);
       tree new_field, new_size;
 
-      if (TYPE_MODE (new_field_type) == BLKmode
-	  && (TREE_CODE (new_field_type) == RECORD_TYPE
-	      || TREE_CODE (new_field_type) == UNION_TYPE
-	      || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+      if ((TREE_CODE (new_field_type) == RECORD_TYPE
+	   || TREE_CODE (new_field_type) == UNION_TYPE
+	   || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+	  && !TYPE_IS_FAT_POINTER_P (new_field_type)
 	  && host_integerp (TYPE_SIZE (new_field_type), 1))
 	new_field_type = make_packable_type (new_field_type, true);
 
@@ -6207,11 +6209,10 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_size = NULL_TREE;
 
   /* If we have a specified size that's smaller than that of the field type,
-     or a position is specified, and the field type is also a record that's
-     BLKmode, see if we can get either an integral mode form of the type or
-     a smaller BLKmode form.  If we can, show a size was specified for the
-     field if there wasn't one already, so we know to make this a bitfield
-     and avoid making things wider.
+     or a position is specified, and the field type is a record, see if we can
+     get either an integral mode form of the type or a smaller form.  If we
+     can, show a size was specified for the field if there wasn't one already,
+     so we know to make this a bitfield and avoid making things wider.
 
      Doing this is first useful if the record is packed because we may then
      place the field at a non-byte-aligned position and so achieve tighter
@@ -6231,7 +6232,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      from a component clause.  */
 
   if (TREE_CODE (gnu_field_type) == RECORD_TYPE
-      && TYPE_MODE (gnu_field_type) == BLKmode
+      && !TYPE_IS_FAT_POINTER_P (gnu_field_type)
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && (packed == 1
 	  || (gnu_size
