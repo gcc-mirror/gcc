@@ -1,3 +1,7 @@
+2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2009-02-13  Andrew John Hughes  <ahughes@redhat.com>
 
 	Import GNU Classpath (classpath-0_98-release).
