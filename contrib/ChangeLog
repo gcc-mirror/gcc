@@ -1,3 +1,7 @@
+2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* check_warning_flags.sh: Update flag exceptions.
+
 2008-11-18  Ben Elliston  <bje@au.ibm.com>
 
 	* dg-cmp-results.sh: Do not print usage if either .sum file cannot
