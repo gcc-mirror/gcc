@@ -942,10 +942,10 @@ do {									\
       {									\
 	call_used_regs[4 /*RSI*/] = 0;					\
 	call_used_regs[5 /*RDI*/] = 0;					\
-	for (i = 0; i < 8; i++)						\
-	  call_used_regs[45+i] = 0;					\
 	call_used_regs[27 /*XMM6*/] = 0;				\
 	call_used_regs[28 /*XMM7*/] = 0;				\
+	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
+	  call_used_regs[i] = 0;					\
       }									\
     if (! TARGET_MMX)							\
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
