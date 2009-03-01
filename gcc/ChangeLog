@@ -1,5 +1,7 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* gcc.c (display_help): Document --version.
+
 	* gcc.c (main): If print_help_list and verbose_flag, ensure
 	driver output comes before subprocess output.
 
