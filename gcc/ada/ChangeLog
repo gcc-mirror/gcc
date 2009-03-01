@@ -1,7 +1,7 @@
 2009-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (cygwin/mingw): Revert accidental EH_MECHANISM change
-	in r130816.
+	made on 2007-12-06.
 
 2009-01-24  Release Manager
 
