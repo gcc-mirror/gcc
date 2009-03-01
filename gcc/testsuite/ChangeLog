@@ -1,5 +1,9 @@
 2009-03-01  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/debug/dwarf2/ipa-cp1.c: New testcase.
+
+2009-03-01  Jan Hubicka  <jh@suse.cz>
+
 	PR debug/39267
 	* gcc.dg/debug/dwarf2/inline1.c: New testcase.
 
