@@ -1,5 +1,8 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* optc-gen.awk: Assign all remaining fields to help string,
+	space-separated, for multi-line help in *.opt.
+
 	* doc/invoke.texi (Warning Options): -Wsync-nand is C/C++ only.
 	-Wno-pedantic-ms-format is for MinGW targets only.
 

@@ -53,6 +53,8 @@ BEGIN {
 				opts[n_opts]  = $1
 				flags[n_opts] = $2
 				help[n_opts]  = $3
+				for (i = 4; i <= NF; i++)
+					help[n_opts] = help[n_opts] " " $i
 				n_opts++;
 			}
 		}
