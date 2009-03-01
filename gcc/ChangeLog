@@ -1,5 +1,9 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* optc-gen.awk: No need to duplicate option flags twice.
+	Reuse help texts for duplicate options which do not have
+	any.
+
 	* gcc.c (display_help): Document --version.
 
 	* gcc.c (main): If print_help_list and verbose_flag, ensure
