@@ -1,5 +1,8 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* gcc.c (main): If print_help_list and verbose_flag, ensure
+	driver output comes before subprocess output.
+
 	* optc-gen.awk: Assign all remaining fields to help string,
 	space-separated, for multi-line help in *.opt.
 
