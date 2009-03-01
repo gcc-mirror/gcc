@@ -122,7 +122,6 @@ eni_weights eni_time_weights;
 static tree declare_return_variable (copy_body_data *, tree, tree, tree *);
 static bool inlinable_function_p (tree);
 static void remap_block (tree *, copy_body_data *);
-static tree remap_decls (tree, copy_body_data *);
 static void copy_bind_expr (tree *, int *, copy_body_data *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
 static void unsave_expr_1 (tree);
@@ -427,8 +426,43 @@ remap_type (tree type, copy_body_data *id)
   return tmp;
 }
 
+/* Decide if DECL can be put into BLOCK_NONLOCAL_VARs.  */
+  
+static bool
+can_be_nonlocal (tree decl, copy_body_data *id)
+{
+  /* We can not duplicate function decls.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    return true;
+
+  /* Local static vars must be non-local or we get multiple declaration
+     problems.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && !auto_var_in_fn_p (decl, id->src_fn))
+    return true;
+
+  /* At the moment dwarf2out can handle only these types of nodes.  We
+     can support more later.  */
+  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL)
+    return false;
+
+  /* We must use global type.  */
+  if (TREE_TYPE (decl) != remap_type (TREE_TYPE (decl), id))
+    return false;
+
+  /* Wihtout SSA we can't tell if variable is used.  */
+  if (!gimple_in_ssa_p (cfun))
+    return false;
+
+  /* Live variables must be copied so we can attach DECL_RTL.  */
+  if (var_ann (decl))
+    return false;
+
+  return true;
+}
+
 static tree
-remap_decls (tree decls, copy_body_data *id)
+remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 {
   tree old_var;
   tree new_decls = NULL_TREE;
@@ -437,16 +471,18 @@ remap_decls (tree decls, copy_body_data *id)
   for (old_var = decls; old_var; old_var = TREE_CHAIN (old_var))
     {
       tree new_var;
+      tree origin_var = DECL_ORIGIN (old_var);
 
-      /* We cannot chain the local static declarations into the local_decls
-	 as we can't duplicate them or break one decl rule.  Go ahead
-	 and link them into local_decls.  */
-
-      if (!auto_var_in_fn_p (old_var, id->src_fn)
-	  && !DECL_EXTERNAL (old_var))
+      if (can_be_nonlocal (old_var, id))
 	{
-	  cfun->local_decls = tree_cons (NULL_TREE, old_var,
-						 cfun->local_decls);
+	  if (TREE_CODE (old_var) == VAR_DECL
+	      && (var_ann (old_var) || !gimple_in_ssa_p (cfun)))
+	    cfun->local_decls = tree_cons (NULL_TREE, old_var,
+						   cfun->local_decls);
+	  if (debug_info_level > DINFO_LEVEL_TERSE
+	      && !DECL_IGNORED_P (old_var)
+	      && nonlocalized_list)
+	    VEC_safe_push (tree, gc, *nonlocalized_list, origin_var);
 	  continue;
 	}
 
@@ -456,8 +492,16 @@ remap_decls (tree decls, copy_body_data *id)
       /* If we didn't remap this variable, we can't mess with its
 	 TREE_CHAIN.  If we remapped this variable to the return slot, it's
 	 already declared somewhere else, so don't declare it here.  */
-      if (!new_var || new_var == id->retvar)
+      
+      if (new_var == id->retvar)
 	;
+      else if (!new_var)
+        {
+	  if (debug_info_level > DINFO_LEVEL_TERSE
+	      && !DECL_IGNORED_P (old_var)
+	      && nonlocalized_list)
+	    VEC_safe_push (tree, gc, *nonlocalized_list, origin_var);
+	}
       else
 	{
 	  gcc_assert (DECL_P (new_var));
@@ -485,10 +529,14 @@ remap_block (tree *block, copy_body_data *id)
   TREE_USED (new_block) = TREE_USED (old_block);
   BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
+  BLOCK_NONLOCALIZED_VARS (new_block)
+    = VEC_copy (tree, gc, BLOCK_NONLOCALIZED_VARS (old_block));
   *block = new_block;
 
   /* Remap its variables.  */
-  BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block), id);
+  BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block),
+  					&BLOCK_NONLOCALIZED_VARS (new_block),
+					id);
 
   fn = id->dst_fn;
 
@@ -549,7 +597,7 @@ copy_bind_expr (tree *tp, int *walk_subtrees, copy_body_data *id)
   if (BIND_EXPR_VARS (*tp))
     /* This will remap a lot of the same decls again, but this should be
        harmless.  */
-    BIND_EXPR_VARS (*tp) = remap_decls (BIND_EXPR_VARS (*tp), id);
+    BIND_EXPR_VARS (*tp) = remap_decls (BIND_EXPR_VARS (*tp), NULL, id);
 }
 
 
@@ -595,7 +643,7 @@ copy_gimple_bind (gimple stmt, copy_body_data *id)
      harmless.  */
   new_vars = gimple_bind_vars (stmt);
   if (new_vars)
-    new_vars = remap_decls (new_vars, id);
+    new_vars = remap_decls (new_vars, NULL, id);
 
   new_bind = gimple_build_bind (new_vars, new_body, new_block);
 
@@ -3317,11 +3365,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	    cfun->local_decls = tree_cons (NULL_TREE, var,
 					   cfun->local_decls);
 	}
-      else
-        {
-	  cfun->local_decls = tree_cons (NULL_TREE, remap_decl (var, id),
-					          cfun->local_decls);
-	}
+      else if (!can_be_nonlocal (var, id))
+	cfun->local_decls = tree_cons (NULL_TREE, remap_decl (var, id),
+				       cfun->local_decls);
     }
 
   /* This is it.  Duplicate the callee body.  Assume callee is
@@ -3911,7 +3957,7 @@ replace_locals_stmt (gimple_stmt_iterator *gsip,
       /* This will remap a lot of the same decls again, but this should be
 	 harmless.  */
       if (gimple_bind_vars (stmt))
-	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt), id));
+	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt), NULL, id));
     }
 
   /* Keep iterating.  */
@@ -4329,7 +4375,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 	tree var = TREE_VALUE (t_step);
 	if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
 	  cfun->local_decls = tree_cons (NULL_TREE, var, cfun->local_decls);
-	else
+	else if (!can_be_nonlocal (var, &id))
 	  cfun->local_decls =
 	    tree_cons (NULL_TREE, remap_decl (var, &id),
 		       cfun->local_decls);

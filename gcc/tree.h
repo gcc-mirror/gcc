@@ -1968,6 +1968,9 @@ struct varray_head_tag;
 
 /* In a BLOCK node.  */
 #define BLOCK_VARS(NODE) (BLOCK_CHECK (NODE)->block.vars)
+#define BLOCK_NONLOCALIZED_VARS(NODE) (BLOCK_CHECK (NODE)->block.nonlocalized_vars)
+#define BLOCK_NUM_NONLOCALIZED_VARS(NODE) VEC_length (tree, BLOCK_NONLOCALIZED_VARS (NODE))
+#define BLOCK_NONLOCALIZED_VAR(NODE,N) VEC_index (tree, BLOCK_NONLOCALIZED_VARS (NODE), N)
 #define BLOCK_SUBBLOCKS(NODE) (BLOCK_CHECK (NODE)->block.subblocks)
 #define BLOCK_SUPERCONTEXT(NODE) (BLOCK_CHECK (NODE)->block.supercontext)
 /* Note: when changing this, make sure to find the places
@@ -2022,6 +2025,8 @@ struct tree_block GTY(())
   location_t locus;
 
   tree vars;
+  VEC(tree,gc) *nonlocalized_vars;
+
   tree subblocks;
   tree supercontext;
   tree abstract_origin;

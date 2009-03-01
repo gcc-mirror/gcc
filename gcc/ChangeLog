@@ -1,3 +1,24 @@
+2009-03-01  Jan Hubicka  <jh@suse.cz>
+
+	PR debug/39267
+	* tree.h (BLOCK_NONLOCALIZED_VARS, BLOCK_NUM_NONLOCALIZED_VARS,
+	BLOCK_NONLOCALIZED_VAR): New macros.
+	(tree_block): Add nonlocalized_vars.
+	* dwarf2out.c (gen_formal_parameter_die, gen_variable_die, gen_decl_die): Add
+	origin argument; allow generation of die with origin at hand only.
+	(gen_member_die, gen_type_die_with_usage, force_decl_die,
+	declare_in_namespace, gen_namescpace_die, dwarf2out_decl): Update use of gen_*.
+	(gen_block_die): Fix checking for unused blocks.
+	(process_scope_var): Break out from .... ; work with origins only.
+	(decls_for_scope) ... here; process nonlocalized list.
+	(dwarf2out_ignore_block): Look for nonlocalized vars.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Look for nonlocalized vars.
+	(dump_scope_block): Dump them.
+	* tree-inline.c (remap_decls): Handle nonlocalized vars.
+	(remap_block): Likewise.
+	(can_be_nonlocal): New predicate.
+	(copy_bind_expr, copy_gimple_bind): Update use of remap_block.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
