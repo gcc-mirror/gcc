@@ -3450,6 +3450,10 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 
   VEC_free (tree, heap, vargs);
 
+  /* Update the exception handling table with the vector stmt if necessary.  */
+  if (maybe_clean_or_replace_eh_stmt (stmt, *vec_stmt))
+    gimple_purge_dead_eh_edges (gimple_bb (stmt));
+
   /* The call in STMT might prevent it from being removed in dce.
      We however cannot remove it here, due to the way the ssa name
      it defines is mapped to the new definition.  So just replace

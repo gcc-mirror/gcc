@@ -1,3 +1,9 @@
+2009-03-02  Richard Guenther  <rguenther@suse.de>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39318
+	* gfortran.dg/vect/pr39318.f90: New test.
+
 2009-03-01  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/debug/dwarf2/ipa-cp1.c: New testcase.

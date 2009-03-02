@@ -1,3 +1,10 @@
+2009-03-02  Richard Guenther  <rguenther@suse.de>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39318
+	* tree-vect-transform.c (vectorizable_call): Transfer the EH region
+	information to the vectorized statement.
+
 2009-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Do not shadow "i"
