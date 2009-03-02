@@ -859,7 +859,7 @@ enum target_cpu_default
     1,    1,   1,   1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
-/*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
+/* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
      2,   2,   2,   2,   2,   2,   2,   2,			\
@@ -887,7 +887,7 @@ enum target_cpu_default
     1,   1,    1,   1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      1,   1,   1,   1,   1,   1,   1,   1,			\
-/*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
+/* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
      1,   1,   1,   1,   1,   1,   1,   1,			\
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
      1,   1,   1,   1,   2,   2,   2,   2,			\
