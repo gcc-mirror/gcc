@@ -1,5 +1,12 @@
+2009-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/stackalign/return-4.c: Scan andl/andq instead
+	of andl.
+	* gcc.target/i386/stackalign/return-5.c: Likewise.
+	* gcc.target/i386/stackalign/return-6.c: Likewise.
+
 2009-03-02  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39318
 	* gfortran.dg/vect/pr39318.f90: New test.

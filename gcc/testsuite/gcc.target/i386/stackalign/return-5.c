@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mpreferred-stack-boundary=4" } */
-/* { dg-final { scan-assembler-not "andl\[^\\n\]*-64,\[^\\n\]*sp" } } */
+/* { dg-final { scan-assembler-not "and\[lq\]?\[^\\n\]*-64,\[^\\n\]*sp" } } */
 
 /* This compile only test is to detect an assertion failure in stack branch
    development.  */
