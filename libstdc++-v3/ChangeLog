@@ -19,6 +19,9 @@
 	* testsuite/thread/pthread3.cc: Move...
 	* testsuite/27_io/basic_ostringstream/pthread3.cc: ...here.
 
+	* testsuite/libstdc++-dg/conformance.exp: Remove thread directory.
+	* testsuite/thread: Remove.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
