@@ -143,6 +143,7 @@ static bool spu_vector_alignment_reachable (const_tree, bool);
 static tree spu_builtin_vec_perm (tree, tree *);
 static int spu_sms_res_mii (struct ddg *g);
 static void asm_file_start (void);
+static unsigned int spu_section_type_flags (tree, const char *, int);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -328,6 +329,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START asm_file_start
+
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6283,5 +6287,15 @@ asm_file_start (void)
   flag_var_tracking = 0;
 
   default_file_start ();
+}
+
+/* Implement targetm.section_type_flags.  */
+static unsigned int
+spu_section_type_flags (tree decl, const char *name, int reloc)
+{
+  /* .toe needs to have type @nobits.  */
+  if (strcmp (name, ".toe") == 0)
+    return SECTION_BSS;
+  return default_section_type_flags (decl, name, reloc);
 }
 
