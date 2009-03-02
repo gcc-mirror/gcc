@@ -933,9 +933,7 @@ do {									\
       }									\
     j = PIC_OFFSET_TABLE_REGNUM;					\
     if (j != INVALID_REGNUM)						\
-      {									\
-	fixed_regs[j] = call_used_regs[j] = 1;				\
-      }									\
+      fixed_regs[j] = call_used_regs[j] = 1;				\
     if (TARGET_64BIT							\
 	&& ((cfun && cfun->machine->call_abi == MS_ABI)			\
 	    || (!cfun && DEFAULT_ABI == MS_ABI)))			\
@@ -956,13 +954,9 @@ do {									\
 	if (TEST_HARD_REG_BIT (reg_class_contents[(int)SSE_REGS], i))	\
 	  fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
     if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))		\
-      {									\
-	HARD_REG_SET x;							\
-	COPY_HARD_REG_SET (x, reg_class_contents[(int)FLOAT_REGS]);	\
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
-	  if (TEST_HARD_REG_BIT (x, i)) 				\
-	    fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
-      }									\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
+	if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))	\
+	  fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
     if (! TARGET_64BIT)							\
       {									\
 	for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)		\
