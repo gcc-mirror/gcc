@@ -1,3 +1,8 @@
+2009-03-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (TARGET_SECTION_TYPE_FLAGS): Define.
+	(spu_section_type_flags): New function.
+
 2009-02-28  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline:
