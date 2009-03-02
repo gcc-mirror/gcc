@@ -1,5 +1,10 @@
+2009-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Do not copy
+	reg_class_contents of FLOAT_REGS into a temporary.
+
 2009-03-02  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39318
 	* tree-vect-transform.c (vectorizable_call): Transfer the EH region
