@@ -743,7 +743,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PLATFORM = @PLATFORM@
 RANLIB = @RANLIB@
 SDK_BIN_DIR = @SDK_BIN_DIR@
-SDK_DIR = @SDK_DIR@
 SDK_INCLUDE_DIR = @SDK_INCLUDE_DIR@
 SDK_LIB_DIR = @SDK_LIB_DIR@
 SDK_LNK = @SDK_LNK@
@@ -12434,7 +12433,6 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/rmic; \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjavah | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/javah; \
-@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/ecj $(DESTDIR)$(SDK_BIN_DIR)/javac; \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gappletviewer | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/appletviewer; \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjarsigner | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
@@ -12486,7 +12484,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	  done; \
 @CREATE_JAVA_HOME_TRUE@	cd $$working_dir; \
 @CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/security; \
-@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(libdir)/security \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(toolexeclibdir)/security \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/security); \
 @CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JRE_LIB_DIR)/security; \
 @CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/classpath.security java.security; \
@@ -12532,9 +12530,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
 @CREATE_JAVA_HOME_TRUE@	done; \
 @CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
-@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
-@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/src-$(gcc_version).zip \
-@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); 
 
 maintainer-check: libgcj.la
 	$(NM) .libs/libgcj.a | grep ' T ' \

@@ -1809,8 +1809,7 @@ then
   AC_SUBST(BUILD_VERSION)
   AC_MSG_RESULT(Java version: ${JAVA_VERSION})
 
-  jre_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}/jre
-  sdk_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}
+  jre_dir=jre
   jre_lnk=jre-${JAVA_VERSION}-${origin_name}
   sdk_lnk=java-${JAVA_VERSION}-${origin_name}
 
@@ -1822,15 +1821,12 @@ then
   AC_SUBST(JVM_JAR_ROOT_DIR)
   AC_MSG_RESULT(JVM JAR ROOT directory: ${JVM_JAR_ROOT_DIR})
 
-  JVM_JAR_DIR=${jvm_jar_dir}/${sdk_dir}
+  JVM_JAR_DIR=${jvm_jar_dir}
   AC_SUBST(JVM_JAR_DIR)
   AC_MSG_RESULT(JVM JAR directory: ${JVM_JAR_DIR})
 
   JRE_DIR=${jre_dir}
   AC_SUBST(JRE_DIR)
-
-  SDK_DIR=${sdk_dir}
-  AC_SUBST(SDK_DIR)
 
   JRE_LNK=${jre_lnk}
   AC_SUBST(JRE_LNK)
@@ -1838,15 +1834,15 @@ then
   SDK_LNK=${sdk_lnk}
   AC_SUBST(SDK_LNK)
 
-  SDK_BIN_DIR=${jvm_root_dir}/${sdk_dir}/bin
+  SDK_BIN_DIR=${jvm_root_dir}/bin
   AC_SUBST(SDK_BIN_DIR)
   AC_MSG_RESULT(SDK tools directory: ${SDK_BIN_DIR})
 
-  SDK_LIB_DIR=${jvm_root_dir}/${sdk_dir}/lib
+  SDK_LIB_DIR=${jvm_root_dir}/lib
   AC_SUBST(SDK_LIB_DIR)
   AC_MSG_RESULT(SDK jar directory: ${SDK_LIB_DIR})
 
-  SDK_INCLUDE_DIR=${jvm_root_dir}/${sdk_dir}/include
+  SDK_INCLUDE_DIR=${jvm_root_dir}/include
   AC_SUBST(SDK_INCLUDE_DIR)
   AC_MSG_RESULT(SDK include directory: ${SDK_INCLUDE_DIR})
 
@@ -1868,7 +1864,7 @@ then
   AC_SUBST(GCJ_BIN_DIR)
   AC_MSG_RESULT(GCJ tools directory: ${GCJ_BIN_DIR})
 
-  echo host is ${host}
+  AC_MSG_RESULT(host is ${host})
   if test "x${host_cpu}" = "x"
   then
     case ${host} in
@@ -1876,6 +1872,8 @@ then
         host_cpu=x86;;
       i486-* | i586-* | i686-*)
         host_cpu=i386;;
+      x86_64-*)
+        host_cpu=amd64;;
       *)
         host_cpu=${host_cpu};;
     esac

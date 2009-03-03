@@ -586,7 +586,6 @@ if CREATE_JAVA_HOME
 	  $(DESTDIR)$(SDK_BIN_DIR)/rmic; \
 	ln -sf $$RELATIVE/`echo gjavah | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/javah; \
-	ln -sf $$RELATIVE/ecj $(DESTDIR)$(SDK_BIN_DIR)/javac; \
 	ln -sf $$RELATIVE/`echo gappletviewer | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/appletviewer; \
 	ln -sf $$RELATIVE/`echo gjarsigner | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
@@ -638,7 +637,7 @@ if CREATE_JAVA_HOME
 	  done; \
 	cd $$working_dir; \
 	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/security; \
-	RELATIVE=$$(relative $(DESTDIR)$(libdir)/security \
+	RELATIVE=$$(relative $(DESTDIR)$(toolexeclibdir)/security \
 	  $(DESTDIR)$(JRE_LIB_DIR)/security); \
 	cd $(DESTDIR)$(JRE_LIB_DIR)/security; \
 	  ln -sf $$RELATIVE/classpath.security java.security; \
@@ -684,9 +683,7 @@ if CREATE_JAVA_HOME
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
 	done; \
 	RELATIVE=$$(relative $(DESTDIR)$(datadir)/java \
-	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
-	ln -sf $$RELATIVE/src-$(gcc_version).zip \
-	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;
+	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); 
 endif
 
 ## ################################################################
