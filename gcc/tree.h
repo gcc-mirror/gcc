@@ -4946,6 +4946,7 @@ extern void set_expr_locus (tree, source_location *);
 
 extern tree *tree_block (tree);
 extern location_t *block_nonartificial_location (tree);
+extern location_t tree_nonartificial_location (tree);
 
 /* In function.c */
 extern void expand_main_function (void);
