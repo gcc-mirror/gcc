@@ -1,3 +1,9 @@
+2009-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39343
+	* tree-ssa-ccp.c (maybe_fold_offset_to_address): Don't check if
+	COMPONENT_REF t has ARRAY_TYPE.
+
 2009-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39335
