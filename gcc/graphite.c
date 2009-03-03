@@ -2395,7 +2395,7 @@ graphite_loop_normal_form (loop_p loop)
   if (nb_reductions_in_loop (loop) > 0)
     return NULL_TREE;
 
-  return canonicalize_loop_ivs (loop, NULL, nit);
+  return canonicalize_loop_ivs (loop, NULL, &nit);
 }
 
 /* Record LOOP as occuring in SCOP.  Returns true when the operation

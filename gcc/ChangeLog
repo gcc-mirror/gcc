@@ -1,3 +1,13 @@
+2009-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/39335
+	* tree-parloops.c (canonicalize_loop_ivs): Call fold_convert
+	when the type precision of the induction variable should be
+	larger than the type precision of nit.
+	(gen_parallel_loop): Update use of canonicalize_loop_ivs.
+	* graphite.c (graphite_loop_normal_form): Same.
+	* tree-flow.h (canonicalize_loop_ivs): Update declaration.
+
 2009-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ST?_REG, MM?_REG): New constants.

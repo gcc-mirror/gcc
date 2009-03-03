@@ -1,3 +1,9 @@
+2009-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/39335
+	* testsuite/gcc.dg/graphite/pr39335_1.c: New.
+	* testsuite/gcc.dg/graphite/pr39335.c: New.
+
 2009-03-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/stackalign/return-4.c: Scan andl/andq instead
