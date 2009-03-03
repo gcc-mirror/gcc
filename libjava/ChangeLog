@@ -1,3 +1,18 @@
+2009-03-03  Andrew John Hughes  <ahughes@redhat.com>
+
+	* Makefile.am:
+	Remove dangling src.zip and javac symlinks.
+	Fix java.security symlink to use toolexeclibdir
+	as classpath/resource/Makefile.am does.
+	* Makefile.in,
+	* configure: Regenerated.
+	* configure.ac: Drop hard-coded prefix,
+	thus removing sdk_dir and making jre_dir="jre".
+	Map x86_64 to amd64 as used by OpenJDK.
+	* gcj/Makefile.in,
+	* include/Makefile.in,
+	* testsuite/Makefile.in: Regenerated.
+	
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
