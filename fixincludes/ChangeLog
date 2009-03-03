@@ -1,5 +1,7 @@
-2004-10-15  Giovanni Bajo  <giovannibajo@libero.it>
-	Bruce Korb <bkorb@gnu.org>
+2009-03-01  Bruce Korb  <bkorb@gnu.org>
+	Apply a positively ancient patch:
+
+	2004-10-15  Giovanni Bajo  <giovannibajo@libero.it>
 
 	* inclhack.def (alpha_if_semicolon): new fix from long, long ago
 	* tests/base/net/if.h: Add new test.
