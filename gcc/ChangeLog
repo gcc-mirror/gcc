@@ -1,5 +1,10 @@
 2009-03-03  Steve Ellcey  <sje@cup.hp.com>
 
+	PR middle-end/10109
+	* tm.texi (LIBCALL_VALUE): Update description.
+
+2009-03-03  Steve Ellcey  <sje@cup.hp.com>
+
 	PR middle-end/34443
 	* doc/extend.texi (section): Update description.
 
