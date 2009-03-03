@@ -426,6 +426,26 @@ remap_type (tree type, copy_body_data *id)
   return tmp;
 }
 
+/* Return previously remapped type of TYPE in ID.  Return NULL if TYPE
+   is NULL or TYPE has not been remapped before.  */
+
+static tree
+remapped_type (tree type, copy_body_data *id)
+{
+  tree *node;
+
+  if (type == NULL)
+    return type;
+
+  /* See if we have remapped this type.  */
+  node = (tree *) pointer_map_contains (id->decl_map, type);
+  if (node)
+    return *node;
+  else
+    return NULL;
+}
+
+  /* The type only needs remapping if it's variably modified.  */
 /* Decide if DECL can be put into BLOCK_NONLOCAL_VARs.  */
   
 static bool
@@ -446,8 +466,10 @@ can_be_nonlocal (tree decl, copy_body_data *id)
   if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL)
     return false;
 
-  /* We must use global type.  */
-  if (TREE_TYPE (decl) != remap_type (TREE_TYPE (decl), id))
+  /* We must use global type.  We call remapped_type instead of
+     remap_type since we don't want to remap this type here if it
+     hasn't been remapped before.  */
+  if (TREE_TYPE (decl) != remapped_type (TREE_TYPE (decl), id))
     return false;
 
   /* Wihtout SSA we can't tell if variable is used.  */
