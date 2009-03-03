@@ -1,3 +1,14 @@
+2009-03-03  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39248
+	* gcc.dg/vect/vect-complex-1.c: Add attribute aligned
+	to the arrays.
+	* gcc.dg/vect/vect-iv-6.c: Don't expect to fail to vectorize
+	on targets without vector misalignment support.
+	* lib/target-supports.exp 
+	(check_effective_target_vect_short_mult): Add 
+	check_effective_target_arm32.
+
 2009-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39335
