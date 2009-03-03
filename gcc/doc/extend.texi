@@ -3872,7 +3872,7 @@ section.  For example, this small program uses several specific section names:
 struct duart a __attribute__ ((section ("DUART_A"))) = @{ 0 @};
 struct duart b __attribute__ ((section ("DUART_B"))) = @{ 0 @};
 char stack[10000] __attribute__ ((section ("STACK"))) = @{ 0 @};
-int init_data __attribute__ ((section ("INITDATA"))) = 0;
+int init_data __attribute__ ((section ("INITDATA")));
 
 main()
 @{
@@ -3889,18 +3889,19 @@ main()
 @end smallexample
 
 @noindent
-Use the @code{section} attribute with an @emph{initialized} definition
-of a @emph{global} variable, as shown in the example.  GCC issues
-a warning and otherwise ignores the @code{section} attribute in
-uninitialized variable declarations.
+Use the @code{section} attribute with
+@emph{global} variables and not @emph{local} variables,
+as shown in the example.
 
-You may only use the @code{section} attribute with a fully initialized
-global definition because of the way linkers work.  The linker requires
+You may use the @code{section} attribute with initialized or
+uninitialized global variables but the linker requires
 each object be defined once, with the exception that uninitialized
 variables tentatively go in the @code{common} (or @code{bss}) section
-and can be multiply ``defined''.  You can force a variable to be
-initialized with the @option{-fno-common} flag or the @code{nocommon}
-attribute.
+and can be multiply ``defined''.  Using the @code{section} attribute
+will change what section the variable goes into and may cause the
+linker to issue an error if an uninitialized variable has multiple
+definitions.  You can force a variable to be initialized with the
+@option{-fno-common} flag or the @code{nocommon} attribute.
 
 Some file formats do not support arbitrary sections so the @code{section}
 attribute is not available on all platforms.
