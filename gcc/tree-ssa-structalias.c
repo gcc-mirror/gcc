@@ -1524,8 +1524,8 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
      of a variable can also reach all other fields of the variable
      we simply have to expand the solution to contain all sub-fields
      if one sub-field is contained.  */
-  if (c->rhs.var == escaped_id
-      || c->rhs.var == callused_id)
+  if (c->rhs.var == find (escaped_id)
+      || c->rhs.var == find (callused_id))
     {
       bitmap vars = NULL;
       /* In a first pass record all variables we need to add all
@@ -1594,9 +1594,10 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  /* Merging the solution from ESCAPED needlessly increases
 	     the set.  Use ESCAPED as representative instead.
 	     Same for CALLUSED.  */
-	  else if (get_varinfo (t)->id == escaped_id
-		   || get_varinfo (t)->id == callused_id)
-	    flag |= bitmap_set_bit (sol, get_varinfo (t)->id);
+	  else if (get_varinfo (t)->id == find (escaped_id))
+	    flag |= bitmap_set_bit (sol, escaped_id);
+	  else if (get_varinfo (t)->id == find (callused_id))
+	    flag |= bitmap_set_bit (sol, callused_id);
 	  else if (add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	}
@@ -2516,8 +2517,8 @@ solve_graph (constraint_graph_t graph)
 
 	      if (!solution_empty
 		  /* Do not propagate the ESCAPED/CALLUSED solutions.  */
-		  && i != escaped_id
-		  && i != callused_id)
+		  && i != find (escaped_id)
+		  && i != find (callused_id))
 		{
 		  bitmap_iterator bi;
 

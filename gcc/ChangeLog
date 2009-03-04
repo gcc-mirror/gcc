@@ -1,5 +1,12 @@
 2009-03-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39358
+	* tree-ssa-structalias.c (do_sd_constraint): Fix check for
+	escaped_id and callused_id.
+	(solve_graph): Likewise.
+
+2009-03-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39339
 	* tree-sra.c (try_instantiate_multiple_fields): Make it
 	no longer ICE on the above.
