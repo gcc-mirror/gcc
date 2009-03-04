@@ -364,7 +364,8 @@ idx_analyze_ref (tree base, tree *index, void *data)
       || TREE_CODE (base) == ALIGN_INDIRECT_REF)
     return false;
 
-  if (!simple_iv (ar_data->loop, ar_data->stmt, *index, &iv, false))
+  if (!simple_iv (ar_data->loop, loop_containing_stmt (ar_data->stmt),
+		  *index, &iv, false))
     return false;
   ibase = iv.base;
   step = iv.step;

@@ -1374,7 +1374,7 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
   else
     return NULL_TREE;
 
-  ok = simple_iv (loop, first_stmt (loop->header), idx, &iv, true);
+  ok = simple_iv (loop, loop, idx, &iv, true);
   if (!ok)
     return NULL_TREE;
   iv.base = expand_simple_operations (iv.base);

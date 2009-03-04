@@ -1,3 +1,20 @@
+2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
+
+	* tree-scalar-evolution.c (analyze_scalar_evolution_in_loop):
+	Extend comments.
+	(simple_iv):  Take loop as an argument instead of statement.
+	* tree-scalar-evolution.h (simple_iv): Declaration changed.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Update calls
+	to simple_iv.
+	* tree-ssa-loop-ivopts.c (determine_biv_step, find_givs_in_stmt_scev):
+	Ditto.
+	* tree-parloops.c (loop_parallel_p, canonicalize_loop_ivs): Ditto.
+	* matrix-reorg.c (analyze_transpose): Ditto.
+	* tree-data-ref.c (dr_analyze_innermost): Ditto.
+	* tree-vect-analyze.c (vect_analyze_data_refs): Ditto.
+	* tree-predcom.c (ref_at_iteration): Ditto.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Ditto.
+
 2009-03-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39358
