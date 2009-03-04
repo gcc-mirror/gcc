@@ -2008,6 +2008,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   rtx memoffset = MEM_OFFSET (memref);
   rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
+  int pbits;
 
   /* If there are no changes, just return the original memory reference.  */
   if (mode == GET_MODE (memref) && !offset
@@ -2018,6 +2019,16 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
      This may happen even if offset is nonzero -- consider
      (plus (plus reg reg) const_int) -- so do this always.  */
   addr = copy_rtx (addr);
+
+  /* Convert a possibly large offset to a signed value within the
+     range of the target address space.  */
+  pbits = GET_MODE_BITSIZE (Pmode);
+  if (HOST_BITS_PER_WIDE_INT > pbits)
+    {
+      int shift = HOST_BITS_PER_WIDE_INT - pbits;
+      offset = (((HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) offset << shift))
+		>> shift);
+    }
 
   if (adjust)
     {

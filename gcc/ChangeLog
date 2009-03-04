@@ -1,3 +1,8 @@
+2009-03-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* emit-rtl.c (adjust_address_1): Reduce offset to a signed value
+	that fits within Pmode.
+
 2009-03-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/10109
