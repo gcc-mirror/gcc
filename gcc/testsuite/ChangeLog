@@ -1,3 +1,8 @@
+2009-03-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39339
+	* gcc.c-torture/execute/pr39339.c: New testcase.
+
 2009-03-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c-torture/compile/20090303-1.c,
