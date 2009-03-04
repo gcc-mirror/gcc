@@ -1,3 +1,9 @@
+2009-03-04  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/39357
+	* gcc.dg/vect-iv-6.c (dg-require-effective-target): Change from
+	vect_int to vect_int_mult.
+
 2009-03-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39358
