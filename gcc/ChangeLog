@@ -1,3 +1,9 @@
+2009-03-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39362
+	* tree-ssa-sccvn.c (visit_use): Stores and copies from SSA_NAMEs
+	that occur in abnormal PHIs should be varying.
+
 2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
 
 	* tree-scalar-evolution.c (analyze_scalar_evolution_in_loop):
