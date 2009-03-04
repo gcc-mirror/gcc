@@ -698,7 +698,7 @@ dr_analyze_innermost (struct data_reference *dr)
     }
 
   base = build_fold_addr_expr (base);
-  if (!simple_iv (loop, stmt, base, &base_iv, false))
+  if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv, false))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "failed: evolution of base is not affine.\n");
@@ -709,7 +709,8 @@ dr_analyze_innermost (struct data_reference *dr)
       offset_iv.base = ssize_int (0);
       offset_iv.step = ssize_int (0);
     }
-  else if (!simple_iv (loop, stmt, poffset, &offset_iv, false))
+  else if (!simple_iv (loop, loop_containing_stmt (stmt),
+		       poffset, &offset_iv, false))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "failed: evolution of offset is not affine.\n");

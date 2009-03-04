@@ -930,7 +930,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
 	      free (acc_info);
 	      continue;
 	    }
-	  if (simple_iv (loop, acc_info->stmt, acc_info->offset, &iv, true))
+	  if (simple_iv (loop, loop, acc_info->offset, &iv, true))
 	    {
 	      if (iv.step != NULL)
 		{

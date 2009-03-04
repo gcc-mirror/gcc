@@ -385,7 +385,7 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list,
       tree def = PHI_RESULT (phi);
       affine_iv iv;
 
-      if (is_gimple_reg (def) && !simple_iv (loop, phi, def, &iv, true))
+      if (is_gimple_reg (def) && !simple_iv (loop, loop, def, &iv, true))
 	{
 	  struct reduction_info *red;
 
@@ -1380,7 +1380,7 @@ canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree *nit)
 	  continue;
 	}
 
-      ok = simple_iv (loop, phi, res, &iv, true);
+      ok = simple_iv (loop, loop, res, &iv, true);
 
       if (reduction_list)
 	red = reduction_phi (reduction_list, phi);

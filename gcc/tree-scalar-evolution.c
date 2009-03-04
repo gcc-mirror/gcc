@@ -1915,12 +1915,54 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 }
 
 /* Analyze scalar evolution of use of VERSION in USE_LOOP with respect to
-   WRTO_LOOP (which should be a superloop of both USE_LOOP and definition
-   of VERSION).
+   WRTO_LOOP (which should be a superloop of USE_LOOP)
 
    FOLDED_CASTS is set to true if resolve_mixers used
    chrec_convert_aggressive (TODO -- not really, we are way too conservative
-   at the moment in order to keep things simple).  */
+   at the moment in order to keep things simple). 
+   
+   To illustrate the meaning of USE_LOOP and WRTO_LOOP, consider the following
+   example:
+
+   for (i = 0; i < 100; i++)			-- loop 1
+     {
+       for (j = 0; j < 100; j++)		-- loop 2
+         {
+	   k1 = i;
+	   k2 = j;
+
+	   use2 (k1, k2);
+
+	   for (t = 0; t < 100; t++)		-- loop 3
+	     use3 (k1, k2);
+
+	 }
+       use1 (k1, k2);
+     }
+
+   Both k1 and k2 are invariants in loop3, thus
+     analyze_scalar_evolution_in_loop (loop3, loop3, k1) = k1
+     analyze_scalar_evolution_in_loop (loop3, loop3, k2) = k2
+
+   As they are invariant, it does not matter whether we consider their
+   usage in loop 3 or loop 2, hence
+     analyze_scalar_evolution_in_loop (loop2, loop3, k1) =
+       analyze_scalar_evolution_in_loop (loop2, loop2, k1) = i
+     analyze_scalar_evolution_in_loop (loop2, loop3, k2) =
+       analyze_scalar_evolution_in_loop (loop2, loop2, k2) = [0,+,1]_2
+
+   Similarly for their evolutions with respect to loop 1.  The values of K2
+   in the use in loop 2 vary independently on loop 1, thus we cannot express
+   the evolution with respect to loop 1:
+     analyze_scalar_evolution_in_loop (loop1, loop3, k1) =
+       analyze_scalar_evolution_in_loop (loop1, loop2, k1) = [0,+,1]_1
+     analyze_scalar_evolution_in_loop (loop1, loop3, k2) =
+       analyze_scalar_evolution_in_loop (loop1, loop2, k2) = dont_know
+
+   The value of k2 in the use in loop 1 is known, though:
+     analyze_scalar_evolution_in_loop (loop1, loop1, k1) = [0,+,1]_1
+     analyze_scalar_evolution_in_loop (loop1, loop1, k2) = 100
+   */
 
 static tree
 analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
@@ -1928,6 +1970,25 @@ analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
 {
   bool val = false;
   tree ev = version, tmp;
+
+  /* We cannot just do 
+
+     tmp = analyze_scalar_evolution (use_loop, version);
+     ev = resolve_mixers (wrto_loop, tmp);
+
+     as resolve_mixers would query the scalar evolution with respect to
+     wrto_loop.  For example, in the situation described in the function
+     comment, suppose that wrto_loop = loop1, use_loop = loop3 and
+     version = k2.  Then
+
+     analyze_scalar_evolution (use_loop, version) = k2
+
+     and resolve_mixers (loop1, k2) finds that the value of k2 in loop 1
+     is 100, which is a wrong result, since we are interested in the
+     value in loop 3.
+
+     Instead, we need to proceed from use_loop to wrto_loop loop by loop,
+     each time checking that there is no evolution in the inner loop.  */
 
   if (folded_casts)
     *folded_casts = false;
@@ -2743,17 +2804,31 @@ scev_reset (void)
     }
 }
 
-/* Checks whether OP behaves as a simple affine iv of LOOP in STMT and returns
-   its base and step in IV if possible.  If ALLOW_NONCONSTANT_STEP is true, we
-   want step to be invariant in LOOP.  Otherwise we require it to be an
-   integer constant.  IV->no_overflow is set to true if we are sure the iv cannot
-   overflow (e.g.  because it is computed in signed arithmetics).  */
+/* Checks whether use of OP in USE_LOOP behaves as a simple affine iv with
+   respect to WRTO_LOOP and returns its base and step in IV if possible
+   (see analyze_scalar_evolution_in_loop for more details on USE_LOOP
+   and WRTO_LOOP).  If ALLOW_NONCONSTANT_STEP is true, we want step to be
+   invariant in LOOP.  Otherwise we require it to be an integer constant.
+   
+   IV->no_overflow is set to true if we are sure the iv cannot overflow (e.g.
+   because it is computed in signed arithmetics).  Consequently, adding an
+   induction variable
+   
+   for (i = IV->base; ; i += IV->step)
+
+   is only safe if IV->no_overflow is false, or TYPE_OVERFLOW_UNDEFINED is
+   false for the type of the induction variable, or you can prove that i does
+   not wrap by some other argument.  Otherwise, this might introduce undefined
+   behavior, and
+   
+   for (i = iv->base; ; i = (type) ((unsigned type) i + (unsigned type) iv->step))
+
+   must be used instead.  */
 
 bool
-simple_iv (struct loop *loop, gimple stmt, tree op, affine_iv *iv,
-	   bool allow_nonconstant_step)
+simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
+	   affine_iv *iv, bool allow_nonconstant_step)
 {
-  basic_block bb = gimple_bb (stmt);
   tree type, ev;
   bool folded_casts;
 
@@ -2766,13 +2841,13 @@ simple_iv (struct loop *loop, gimple stmt, tree op, affine_iv *iv,
       && TREE_CODE (type) != POINTER_TYPE)
     return false;
 
-  ev = analyze_scalar_evolution_in_loop (loop, bb->loop_father, op,
+  ev = analyze_scalar_evolution_in_loop (wrto_loop, use_loop, op,
 					 &folded_casts);
-  if (chrec_contains_undetermined (ev))
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols_defined_in_loop (ev, wrto_loop->num))
     return false;
 
-  if (tree_does_not_contain_chrecs (ev)
-      && !chrec_contains_symbols_defined_in_loop (ev, loop->num))
+  if (tree_does_not_contain_chrecs (ev))
     {
       iv->base = ev;
       iv->step = build_int_cst (TREE_TYPE (ev), 0);
@@ -2781,22 +2856,16 @@ simple_iv (struct loop *loop, gimple stmt, tree op, affine_iv *iv,
     }
 
   if (TREE_CODE (ev) != POLYNOMIAL_CHREC
-      || CHREC_VARIABLE (ev) != (unsigned) loop->num)
+      || CHREC_VARIABLE (ev) != (unsigned) wrto_loop->num)
     return false;
 
   iv->step = CHREC_RIGHT (ev);
-  if (allow_nonconstant_step)
-    {
-      if (tree_contains_chrecs (iv->step, NULL)
-	  || chrec_contains_symbols_defined_in_loop (iv->step, loop->num))
-	return false;
-    }
-  else if (TREE_CODE (iv->step) != INTEGER_CST)
+  if ((!allow_nonconstant_step && TREE_CODE (iv->step) != INTEGER_CST)
+      || tree_contains_chrecs (iv->step, NULL))
     return false;
 
   iv->base = CHREC_LEFT (ev);
-  if (tree_contains_chrecs (iv->base, NULL)
-      || chrec_contains_symbols_defined_in_loop (iv->base, loop->num))
+  if (tree_contains_chrecs (iv->base, NULL))
     return false;
 
   iv->no_overflow = !folded_casts && TYPE_OVERFLOW_UNDEFINED (type);

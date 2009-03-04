@@ -1781,9 +1781,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
       && !POINTER_TYPE_P (type))
     return false;
      
-  if (!simple_iv (loop, stmt, op0, &iv0, false))
+  if (!simple_iv (loop, loop_containing_stmt (stmt), op0, &iv0, false))
     return false;
-  if (!simple_iv (loop, stmt, op1, &iv1, false))
+  if (!simple_iv (loop, loop_containing_stmt (stmt), op1, &iv1, false))
     return false;
 
   /* We don't want to see undefined signed overflow warnings while
