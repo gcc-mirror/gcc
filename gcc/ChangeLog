@@ -1,3 +1,8 @@
+2009-03-04  J"orn Rennecke  <joern.rennecke@arc.com>
+
+	PR39235:
+	* loop-iv.c (get_simple_loop_desc): Use XCNEW.
+
 2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
 
 	* graphite.c (nb_reductions_in_loop): Update simple_iv arguments.
