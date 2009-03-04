@@ -1713,16 +1713,6 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
   gcc_assert (block && block->is_scalar);
 
   var = block->replacement;
-
-  if ((bit & ~alchk)
-      || (HOST_WIDE_INT)size != tree_low_cst (DECL_SIZE (var), 1))
-    {
-      block->replacement = fold_build3 (BIT_FIELD_REF,
-					TREE_TYPE (block->element), var,
-					bitsize_int (size),
-					bitsize_int (bit & ~alchk));
-    }
-
   block->in_bitfld_block = 2;
 
   /* Add the member fields to the group, such that they access
@@ -1736,12 +1726,14 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
       gcc_assert (fld && fld->is_scalar && !fld->replacement);
 
       fld->replacement = fold_build3 (BIT_FIELD_REF, field_type, var,
-				      DECL_SIZE (f),
+				      bitsize_int (TYPE_PRECISION (field_type)),
 				      bitsize_int
 				      ((TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f))
 					* BITS_PER_UNIT
 					+ (TREE_INT_CST_LOW
-					   (DECL_FIELD_BIT_OFFSET (f))))
+					   (DECL_FIELD_BIT_OFFSET (f)))
+					- (TREE_INT_CST_LOW
+					   (TREE_OPERAND (block->element, 2))))
 				       & ~alchk));
       fld->in_bitfld_block = 1;
     }

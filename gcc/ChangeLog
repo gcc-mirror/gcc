@@ -1,3 +1,9 @@
+2009-03-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39339
+	* tree-sra.c (try_instantiate_multiple_fields): Make it
+	no longer ICE on the above.
+
 2009-03-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* emit-rtl.c (adjust_address_1): Reduce offset to a signed value
