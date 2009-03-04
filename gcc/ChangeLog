@@ -1,3 +1,7 @@
+2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
+
+	* graphite.c (nb_reductions_in_loop): Update simple_iv arguments.
+
 2009-03-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39362

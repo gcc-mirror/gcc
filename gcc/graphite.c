@@ -2364,7 +2364,7 @@ nb_reductions_in_loop (loop_p loop)
 
       scev = analyze_scalar_evolution (loop, PHI_RESULT (phi));
       scev = instantiate_parameters (loop, scev);
-      if (!simple_iv (loop, phi, PHI_RESULT (phi), &iv, true))
+      if (!simple_iv (loop, loop, PHI_RESULT (phi), &iv, true))
 	res++;
     }
 
