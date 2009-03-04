@@ -9953,7 +9953,7 @@ cp_parser_template_name (cp_parser* parser,
 	  && !template_keyword_p
 	  && parser->scope && TYPE_P (parser->scope)
 	  && check_dependency_p
-	  && dependent_type_p (parser->scope)
+	  && dependent_scope_p (parser->scope)
 	  /* Do not do this for dtors (or ctors), since they never
 	     need the template keyword before their name.  */
 	  && !constructor_name_p (identifier, parser->scope))
@@ -16226,11 +16226,43 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	 cannot look up the name if the scope is not a class type; it
 	 might, for example, be a template type parameter.  */
       dependent_p = (TYPE_P (parser->scope)
-		     && !(parser->in_declarator_p
-			  && currently_open_class (parser->scope))
-		     && dependent_type_p (parser->scope));
+		     && dependent_scope_p (parser->scope));
       if ((check_dependency || !CLASS_TYPE_P (parser->scope))
-	   && dependent_p)
+	  && dependent_p)
+	/* Defer lookup.  */
+	decl = error_mark_node;
+      else
+	{
+	  tree pushed_scope = NULL_TREE;
+
+	  /* If PARSER->SCOPE is a dependent type, then it must be a
+	     class type, and we must not be checking dependencies;
+	     otherwise, we would have processed this lookup above.  So
+	     that PARSER->SCOPE is not considered a dependent base by
+	     lookup_member, we must enter the scope here.  */
+	  if (dependent_p)
+	    pushed_scope = push_scope (parser->scope);
+	  /* If the PARSER->SCOPE is a template specialization, it
+	     may be instantiated during name lookup.  In that case,
+	     errors may be issued.  Even if we rollback the current
+	     tentative parse, those errors are valid.  */
+	  decl = lookup_qualified_name (parser->scope, name,
+					tag_type != none_type,
+					/*complain=*/true);
+
+	  /* If we have a single function from a using decl, pull it out.  */
+	  if (TREE_CODE (decl) == OVERLOAD
+	      && !really_overloaded_fn (decl))
+	    decl = OVL_FUNCTION (decl);
+
+	  if (pushed_scope)
+	    pop_scope (pushed_scope);
+	}
+
+      /* If the scope is a dependent type and either we deferred lookup or
+	 we did lookup but didn't find the name, rememeber the name.  */
+      if (decl == error_mark_node && TYPE_P (parser->scope)
+	  && dependent_type_p (parser->scope))
 	{
 	  if (tag_type)
 	    {
@@ -16254,34 +16286,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	    decl = build_qualified_name (/*type=*/NULL_TREE,
 					 parser->scope, name,
 					 is_template);
-	}
-      else
-	{
-	  tree pushed_scope = NULL_TREE;
-
-	  /* If PARSER->SCOPE is a dependent type, then it must be a
-	     class type, and we must not be checking dependencies;
-	     otherwise, we would have processed this lookup above.  So
-	     that PARSER->SCOPE is not considered a dependent base by
-	     lookup_member, we must enter the scope here.  */
-	  if (dependent_p)
-	    pushed_scope = push_scope (parser->scope);
-	  /* If the PARSER->SCOPE is a template specialization, it
-	     may be instantiated during name lookup.  In that case,
-	     errors may be issued.  Even if we rollback the current
-	     tentative parse, those errors are valid.  */
-	  decl = lookup_qualified_name (parser->scope, name,
-					tag_type != none_type,
-					/*complain=*/true);
-
-	  /* If we have a single function from a using decl, pull it out.  */
-	  if (decl
-	      && TREE_CODE (decl) == OVERLOAD
-	      && !really_overloaded_fn (decl))
-	    decl = OVL_FUNCTION (decl);
-
-	  if (pushed_scope)
-	    pop_scope (pushed_scope);
 	}
       parser->qualifying_scope = parser->scope;
       parser->object_scope = NULL_TREE;

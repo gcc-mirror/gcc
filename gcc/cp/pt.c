@@ -15644,6 +15644,16 @@ dependent_type_p (tree type)
   return TYPE_DEPENDENT_P (type);
 }
 
+/* Returns TRUE if SCOPE is a dependent scope, in which we can't do any
+   lookup.  In other words, a dependent type that is not the current
+   instantiation.  */
+
+bool
+dependent_scope_p (tree scope)
+{
+  return dependent_type_p (scope) && !currently_open_class (scope);
+}
+
 /* Returns TRUE if EXPRESSION is dependent, according to CRITERION.  */
 
 static bool
@@ -15665,7 +15675,7 @@ dependent_scope_ref_p (tree expression, bool criterion (tree))
      An id-expression is type-dependent if it contains a
      nested-name-specifier that contains a class-name that names a
      dependent type.  */
-  /* The suggested resolution to Core Issue 2 implies that if the
+  /* The suggested resolution to Core Issue 224 implies that if the
      qualifying type is the current class, then we must peek
      inside it.  */
   if (DECL_P (name)

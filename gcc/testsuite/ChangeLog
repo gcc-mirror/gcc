@@ -1,3 +1,11 @@
+2009-03-04  Jason Merrill  <jason@redhat.com>
+	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/9634
+	PR c++/29469
+	PR c++/29607
+	* g++.dg/template/dependent-name5.C: New test.
+
 2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

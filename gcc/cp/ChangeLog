@@ -1,3 +1,15 @@
+2009-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9634
+	PR c++/29469
+	PR c++/29607
+	* decl.c (make_typename_type): Do look inside currently open classes.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	(cp_parser_template_name): Likewise.
+	* pt.c (dependent_scope_p): New function.
+	* cp-tree.h: Declare it.
+	* class.c (currently_open_class): Return fast if T isn't a class.
+
 2009-02-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39225
