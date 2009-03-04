@@ -1,14 +1,14 @@
-# Mensajes en español para cpplib-4.3.0
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+# Mensajes en español para cpplib-4.4-b20081121
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008.
+# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.3.0\n"
+"Project-Id-Version: cpplib 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2008-03-18 12:01-0600\n"
+"PO-Revision-Date: 2009-03-03 23:45-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -160,9 +160,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s es una extensión de GCC"
 
 #: directives.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s es una extensión de GCC"
+msgstr "#%s es una extensión de GCC obsoleta"
 
 #: directives.c:366
 msgid "suggest not using #elif in traditional C"
@@ -267,7 +267,7 @@ msgstr "\"%s\" después de # no es un entero positivo"
 #: directives.c:1042
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: directives.c:1066
 #, c-format
@@ -522,14 +522,12 @@ msgid "\"%s\" is not defined"
 msgstr "\"%s\" no está definido"
 
 #: expr.c:756
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "las constantes binarias son una extensión GCC"
+msgstr "las aserciones son una extensión GCC"
 
 #: expr.c:759
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "las constantes binarias son una extensión GCC"
+msgstr "las aserciones son una extensión obsoleta"
 
 #: expr.c:892 expr.c:921
 #, c-format
@@ -546,9 +544,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "falta una expresión entre '(' y ')'"
 
 #: expr.c:932
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if sin expresión"
+msgstr "%s sin expresión"
 
 #: expr.c:935
 #, c-format
@@ -565,9 +563,9 @@ msgid " ':' without preceding '?'"
 msgstr " ':' sin una '?' precedente"
 
 #: expr.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "pila desbalanceada en #if"
+msgstr "pila desbalanceada en %s"
 
 #: expr.c:1014
 #, c-format
@@ -830,7 +828,7 @@ msgstr "la función de macro \"%s\" se debe usar con argumentos en C tradicional"
 #: macro.c:1016
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "al invocar el macro %s argumento %d: los argumentos de macro vacíos están indefinidos en ISO C90 y en ISO C++98"
 
 #: macro.c:1453
 #, c-format
