@@ -1,5 +1,11 @@
 2009-03-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39358
+	* g++.dg/warn/Wstrict-aliasing-bogus-escape-2.C: New testcase.
+	* g++.dg/warn/Wstrict-aliasing-bogus-escape-3.C: Likewise.
+
+2009-03-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39339
 	* gcc.c-torture/execute/pr39339.c: New testcase.
 
