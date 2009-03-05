@@ -1796,9 +1796,21 @@ remove_useless_stmts_bind (gimple_stmt_iterator *gsi, struct rus_data *data ATTR
 	  || (TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block))
 	      != FUNCTION_DECL)))
     {
-      gsi_insert_seq_before (gsi, body_seq, GSI_SAME_STMT);
-      gsi_remove (gsi, false);
-      data->repeat = true;
+      tree var = NULL_TREE;
+      /* Even if there are no gimple_bind_vars, there might be other
+	 decls in BLOCK_VARS rendering the GIMPLE_BIND not useless.  */
+      if (block)
+	for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
+	  if (TREE_CODE (var) == IMPORTED_DECL)
+	    break;
+      if (var)
+	gsi_next (gsi);
+      else
+	{
+	  gsi_insert_seq_before (gsi, body_seq, GSI_SAME_STMT);
+	  gsi_remove (gsi, false);
+	  data->repeat = true;
+	}
     }
   else
     gsi_next (gsi);
