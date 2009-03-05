@@ -1,3 +1,8 @@
+2009-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_discover_loop): When retrying fails, mark
+	the loop as bad.
+
 2009-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/39379
