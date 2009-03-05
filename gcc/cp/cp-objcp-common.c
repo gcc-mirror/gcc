@@ -101,7 +101,7 @@ cp_expr_size (const_tree exp)
 	     constructed, this is a valid transformation.  */
 	  || CP_AGGREGATE_TYPE_P (type))
 	/* This would be wrong for a type with virtual bases.  */
-	return (is_empty_class (type)
+	return (is_really_empty_class (type)
 		? size_zero_node
 		: CLASSTYPE_SIZE_UNIT (type));
       else
