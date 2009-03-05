@@ -1,5 +1,10 @@
 2009-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38908
+	* class.c (is_really_empty_class): New fn.
+	* cp-tree.h: Declare it.
+	* cp-objcp-common.c (cp_expr_size): Use it.
+
 	PR c++/13549
 	* semantics.c (perform_koenig_lookup): Handle TEMPLATE_ID_EXPR.
 	* parser.c (cp_parser_postfix_expression): Call it for 
