@@ -4732,7 +4732,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      }
 
 	    koenig_p = false;
-	    if (idk == CP_ID_KIND_UNQUALIFIED)
+	    if (idk == CP_ID_KIND_UNQUALIFIED
+		|| idk == CP_ID_KIND_TEMPLATE_ID)
 	      {
 		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		  {
