@@ -1,3 +1,8 @@
+2009-03-05  J"orn Rennecke  <joern.rennecke@arc.com>
+
+	* combine.c (gen_lowpart_for_combine): Use omode when generating
+	clobber.
+
 2009-03-04  J"orn Rennecke  <joern.rennecke@arc.com>
 
 	PR39235:
