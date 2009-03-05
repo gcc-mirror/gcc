@@ -4362,6 +4362,12 @@ bfin_discover_loop (loop_info loop, basic_block tail_bb, rtx tail_insn)
 		      break;
 		    }
 		}
+	      if (!retry)
+		{
+		  if (dump_file)
+		    fprintf (dump_file, ";; No forwarder blocks found\n");
+		  loop->bad = 1;
+		}
 	    }
 	}
     }
