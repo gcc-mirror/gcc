@@ -1533,24 +1533,8 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
-static int const x86_64_int_parameter_registers[6] =
-{
-  5 /*RDI*/, 4 /*RSI*/, 1 /*RDX*/, 2 /*RCX*/,
-  FIRST_REX_INT_REG /*R8 */, FIRST_REX_INT_REG + 1 /*R9 */
-};
-
-static int const x86_64_ms_abi_int_parameter_registers[4] =
-{
-  2 /*RCX*/, 1 /*RDX*/,
-  FIRST_REX_INT_REG /*R8 */, FIRST_REX_INT_REG + 1 /*R9 */
-};
-
-static int const x86_64_int_return_registers[4] =
-{
-  0 /*RAX*/, 1 /*RDX*/, 5 /*RDI*/, 4 /*RSI*/
-};
-
 /* The "default" register map used in 64bit mode.  */
+
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
@@ -1633,6 +1617,23 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 rtx ix86_compare_op0 = NULL_RTX;
 rtx ix86_compare_op1 = NULL_RTX;
 rtx ix86_compare_emitted = NULL_RTX;
+
+/* Define parameter passing and return registers.  */
+
+static int const x86_64_int_parameter_registers[6] =
+{
+  DI_REG, SI_REG, DX_REG, CX_REG, R8_REG, R9_REG
+};
+
+static int const x86_64_ms_abi_int_parameter_registers[4] =
+{
+  CX_REG, DX_REG, R8_REG, R9_REG
+};
+
+static int const x86_64_int_return_registers[4] =
+{
+  AX_REG, DX_REG, DI_REG, SI_REG
+};
 
 /* Define the structure for the machine field in struct function.  */
 
@@ -18684,8 +18685,12 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
      by SYSV calls.  */
   if (ix86_cfun_abi () == MS_ABI && function_call_abi == SYSV_ABI)
     {
-      static int clobbered_registers[] = {27, 28, 45, 46, 47, 48, 49, 50, 51,
-      					  52, SI_REG, DI_REG};
+      static int clobbered_registers[] = {
+	XMM6_REG, XMM7_REG, XMM8_REG,
+	XMM9_REG, XMM10_REG, XMM11_REG,
+	XMM12_REG, XMM13_REG, XMM14_REG,
+	XMM15_REG, SI_REG, DI_REG
+      };
       unsigned int i;
       rtx vec[ARRAY_SIZE (clobbered_registers) + 2];
       rtx unspec = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx),
@@ -25757,7 +25762,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* Take care for QImode values - they can be in non-QI regs,
 	 but then they do cause partial register stalls.  */
-      if (regno < 4 || TARGET_64BIT)
+      if (regno <= BX_REG || TARGET_64BIT)
 	return 1;
       if (!TARGET_PARTIAL_REG_STALL)
 	return 1;
@@ -26869,7 +26874,7 @@ x86_extended_QIreg_mentioned_p (rtx insn)
   extract_insn_cached (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     if (REG_P (recog_data.operand[i])
-	&& REGNO (recog_data.operand[i]) >= 4)
+	&& REGNO (recog_data.operand[i]) > BX_REG)
        return true;
   return false;
 }

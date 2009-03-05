@@ -1,6 +1,20 @@
+2009-03-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (R8_REG, R9_REG): New constants.
+	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Use named
+	constants instead of magic numbers.
+	(HARD_REGNO_CALLER_SAVE_MODE): Ditto.
+	(QI_REG_P): Ditto.
+	* config/i386/i386.c (x86_64_int_parameter_registers): Ditto.
+	(x86_64_ms_abi_int_parameter_registers): Ditto.
+	(x86_64_int_return_registers): Ditto.
+	(ix86_expand_call): Ditto for clobbered_registers array.
+	(ix86_hard_regno_mode_ok): Ditto.
+	(x86_extended_QIreg_mentioned_p): Ditto.
+
 2009-03-05  J"orn Rennecke  <joern.rennecke@arc.com>
 
-	PR tree-optimization/39349:
+	PR tree-optimization/39349
 	* cse.c (cse_insn): Fix loop to stop at VOIDmode.
 
 	* combine.c (gen_lowpart_for_combine): Use omode when generating
@@ -8,7 +22,7 @@
 
 2009-03-04  J"orn Rennecke  <joern.rennecke@arc.com>
 
-	PR rtl-optimization/39235:
+	PR rtl-optimization/39235
 	* loop-iv.c (get_simple_loop_desc): Use XCNEW.
 
 2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
@@ -110,10 +124,10 @@
 
 	* config/i386/i386.md (ST?_REG, MM?_REG): New constants.
 	(*call_1_rex64_ms_sysv): Use named constants instead of magic
-	numbers to describe clobbbered registers.
+	numbers to describe clobbered registers.
 	(*call_value_0_rex64_ms_sysv): Ditto.
-	* config/i386/mmx.md (emms): Ditto.
-	(femms): Ditto.
+	* config/i386/mmx.md (mmx_emms): Ditto.
+	(mmx_femms): Ditto.
 
 2009-03-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -321,7 +335,7 @@
 
 	PR tree-optimization/39259
 	* tree-inline.c (initialize_cfun): Remove asserts for calls_setjmp and
-	alls_alloca function flags.
+	calls_alloca function flags.
 	(copy_bb): Set calls_setjmp and alls_alloca function flags if such
 	calls are detected.
 
@@ -714,7 +728,7 @@
 
 	PR target/39149
 	* config/i386/i386.c (override_options): Correct warning
-	messages for -malign-loops,  -malign-jumps and -malign-functions.
+	messages for -malign-loops, -malign-jumps and -malign-functions.
 
 2009-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
