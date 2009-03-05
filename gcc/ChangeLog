@@ -1,3 +1,9 @@
+2009-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39379
+	* tree-cfg.c (remove_useless_stmts_bind): Don't remove GIMPLE_BINDs
+	with blocks containing IMPORTED_DECLs in BLOCK_VARS.
+
 2009-03-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (R8_REG, R9_REG): New constants.
