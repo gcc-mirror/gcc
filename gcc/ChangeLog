@@ -1,5 +1,7 @@
 2009-03-05  J"orn Rennecke  <joern.rennecke@arc.com>
 
+	* cse.c (cse_insn): Fix loop to stop at VOIDmode.
+
 	* combine.c (gen_lowpart_for_combine): Use omode when generating
 	clobber.
 
