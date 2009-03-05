@@ -1,5 +1,6 @@
 2009-03-05  J"orn Rennecke  <joern.rennecke@arc.com>
 
+	PR tree-optimization/39349:
 	* cse.c (cse_insn): Fix loop to stop at VOIDmode.
 
 	* combine.c (gen_lowpart_for_combine): Use omode when generating
@@ -7,7 +8,7 @@
 
 2009-03-04  J"orn Rennecke  <joern.rennecke@arc.com>
 
-	PR39235:
+	PR rtl-optimization/39235:
 	* loop-iv.c (get_simple_loop_desc): Use XCNEW.
 
 2009-03-04  Zdenek Dvorak  <ook@ucw.cz>
