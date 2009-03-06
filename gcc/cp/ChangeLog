@@ -1,3 +1,8 @@
+2009-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33492
+	* error.c (dump_expr): Don't try to print THROW_EXPRs in full.
+
 2009-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* decl.c (record_builtin_java_type): Use canonicalized integer
