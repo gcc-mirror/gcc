@@ -768,7 +768,7 @@ extern void dump_referenced_vars (FILE *);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
 extern tree get_virtual_var (tree);
-extern void add_referenced_var (tree);
+extern bool add_referenced_var (tree);
 extern void remove_referenced_var (tree);
 extern void mark_symbols_for_renaming (gimple);
 extern void find_new_referenced_vars (gimple);

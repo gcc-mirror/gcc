@@ -1,5 +1,8 @@
 2009-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/39360
+	* gcc.c-torture/compile/pr39360.c: New test.
+
 	PR debug/39372
 	* g++.dg/debug/dwarf2/static-local-var-in-ctor.C: New test.
 
