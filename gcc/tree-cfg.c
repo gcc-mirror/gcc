@@ -1799,11 +1799,11 @@ remove_useless_stmts_bind (gimple_stmt_iterator *gsi, struct rus_data *data ATTR
       tree var = NULL_TREE;
       /* Even if there are no gimple_bind_vars, there might be other
 	 decls in BLOCK_VARS rendering the GIMPLE_BIND not useless.  */
-      if (block)
+      if (block && !BLOCK_NUM_NONLOCALIZED_VARS (block))
 	for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
 	  if (TREE_CODE (var) == IMPORTED_DECL)
 	    break;
-      if (var)
+      if (var || (block && BLOCK_NUM_NONLOCALIZED_VARS (block)))
 	gsi_next (gsi);
       else
 	{

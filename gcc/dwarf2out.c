@@ -5128,7 +5128,7 @@ static void add_byte_size_attribute (dw_die_ref, tree);
 static void add_bit_offset_attribute (dw_die_ref, tree);
 static void add_bit_size_attribute (dw_die_ref, tree);
 static void add_prototyped_attribute (dw_die_ref, tree);
-static void add_abstract_origin_attribute (dw_die_ref, tree);
+static dw_die_ref add_abstract_origin_attribute (dw_die_ref, tree);
 static void add_pure_or_virtual_attribute (dw_die_ref, tree);
 static void add_src_coords_attributes (dw_die_ref, tree);
 static void add_name_and_src_coords_attributes (dw_die_ref, tree);
@@ -12479,7 +12479,7 @@ add_prototyped_attribute (dw_die_ref die, tree func_type)
    by looking in either the type declaration or object declaration
    equate table.  */
 
-static inline void
+static inline dw_die_ref
 add_abstract_origin_attribute (dw_die_ref die, tree origin)
 {
   dw_die_ref origin_die = NULL;
@@ -12517,7 +12517,8 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
      here.  */
 
   if (origin_die)
-      add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+  return origin_die;
 }
 
 /* We do not currently support the pure_virtual attribute.  */
@@ -13885,6 +13886,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   tree decl_or_origin = decl ? decl : origin;
   dw_die_ref var_die;
   dw_die_ref old_die = decl ? lookup_decl_die (decl) : NULL;
+  dw_die_ref origin_die;
   int declaration = (DECL_EXTERNAL (decl_or_origin)
 		     /* If DECL is COMDAT and has not actually been
 			emitted, we cannot take its address; there
@@ -14018,8 +14020,9 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 
   var_die = new_die (DW_TAG_variable, context_die, decl);
 
+  origin_die = NULL;
   if (origin != NULL)
-    add_abstract_origin_attribute (var_die, origin);
+    origin_die = add_abstract_origin_attribute (var_die, origin);
 
   /* Loop unrolling can create multiple blocks that refer to the same
      static variable, so we must test for the DW_AT_declaration flag.
@@ -14082,7 +14085,17 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (decl && (DECL_ABSTRACT (decl) || declaration))
     equate_decl_number_to_die (decl, var_die);
 
-  if (! declaration && ! DECL_ABSTRACT (decl_or_origin))
+  if (! declaration
+      && (! DECL_ABSTRACT (decl_or_origin)
+	  /* Local static vars are shared between all clones/inlines,
+	     so emit DW_AT_location on the abstract DIE if DECL_RTL is
+	     already set.  */
+	  || (TREE_CODE (decl_or_origin) == VAR_DECL
+	      && TREE_STATIC (decl_or_origin)
+	      && DECL_RTL_SET_P (decl_or_origin)))
+      /* When abstract origin already has DW_AT_location attribute, no need
+	 to add it again.  */
+      && (origin_die == NULL || get_AT (origin_die, DW_AT_location) == NULL))
     {
       if (TREE_CODE (decl_or_origin) == VAR_DECL && TREE_STATIC (decl_or_origin)
           && !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl_or_origin)))

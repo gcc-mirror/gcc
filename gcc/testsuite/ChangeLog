@@ -1,3 +1,8 @@
+2009-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39372
+	* g++.dg/debug/dwarf2/static-local-var-in-ctor.C: New test.
+
 2009-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38908
