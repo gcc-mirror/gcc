@@ -1,3 +1,9 @@
+2009-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39387
+	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): For IMPORTED_DECL
+	take locus from its DECL_SOURCE_LOCATION instead of input_location.
+
 2009-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_discover_loop): When retrying fails, mark
