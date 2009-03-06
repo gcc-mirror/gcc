@@ -2,7 +2,7 @@
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
      (insn-preds.c)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -234,7 +234,7 @@ needs_variable (rtx exp, const char *var)
 	if (q != p && (ISALNUM (q[-1]) || q[-1] == '_'))
 	  return false;
 	q += strlen (var);
-	if (ISALNUM (q[0] || q[0] == '_'))
+	if (ISALNUM (q[0]) || q[0] == '_')
 	  return false;
       }
       return true;
@@ -1103,7 +1103,7 @@ write_tm_constrs_h (void)
 		"{\n", c->c_name,
 		needs_op ? "op" : "ARG_UNUSED (op)");
 	if (needs_mode)
-	  puts ("enum machine_mode mode = GET_MODE (op);");
+	  puts ("  enum machine_mode mode = GET_MODE (op);");
 	if (needs_ival)
 	  puts ("  HOST_WIDE_INT ival = 0;");
 	if (needs_hval)
