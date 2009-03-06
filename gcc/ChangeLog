@@ -1,3 +1,9 @@
+2009-03-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* genpreds.c: (needs_variable): Fix parentheses at variable name
+	detection.
+	(write_tm_constrs_h): Indent generated code.
+
 2009-03-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* doc/extend.texi (Function Attributes): Add documentation
