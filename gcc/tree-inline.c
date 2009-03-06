@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
@@ -3383,7 +3383,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       var = TREE_VALUE (t_step);
       if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
 	{
-	  if (var_ann (var) && referenced_var_check_and_insert (var))
+	  if (var_ann (var) && add_referenced_var (var))
 	    cfun->local_decls = tree_cons (NULL_TREE, var,
 					   cfun->local_decls);
 	}

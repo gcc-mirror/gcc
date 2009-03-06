@@ -1,5 +1,12 @@
 2009-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/39360
+	* tree-flow.h (add_referenced_var): Return bool instead of void.
+	* tree-dfa.c (add_referenced_var): Return result of
+	referenced_var_check_and_insert call.
+	* tree-inline.c (expand_call_inline): Call add_referenced_var instead
+	of referenced_var_check_and_insert.
+
 	PR debug/39372
 	* dwarf2out.c (add_abstract_origin_attribute): Return
 	origin_die.

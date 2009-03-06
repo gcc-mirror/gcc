@@ -1,6 +1,6 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
-   Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -639,7 +639,7 @@ set_default_def (tree var, tree def)
 
 /* Add VAR to the list of referenced variables if it isn't already there.  */
 
-void
+bool
 add_referenced_var (tree var)
 {
   var_ann_t v_ann;
@@ -655,7 +655,7 @@ add_referenced_var (tree var)
       
       /* Tag's don't have DECL_INITIAL.  */
       if (MTAG_P (var))
-	return;
+	return true;
 
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
@@ -667,7 +667,11 @@ add_referenced_var (tree var)
 	     optimizers.  */
           && !DECL_EXTERNAL (var))
       	walk_tree (&DECL_INITIAL (var), find_vars_r, NULL, 0);
+
+      return true;
     }
+
+  return false;
 }
 
 /* Remove VAR from the list.  */
