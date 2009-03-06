@@ -2436,6 +2436,11 @@ to run as a thread.  The compiler omits generate prologue/epilogue
 sequences and replaces the return instruction with a @code{sleep}
 instruction.  This attribute is available only on fido.
 
+@item isr
+@cindex interrupt service routines on ARM
+Use this attribute on ARM to write Interrupt Service Routines. This is an
+alias to the @code{interrupt} attribute above.
+
 @item kspisusp
 @cindex User stack pointer in interrupts on the Blackfin
 When used together with @code{interrupt_handler}, @code{exception_handler}
