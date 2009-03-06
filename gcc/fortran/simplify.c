@@ -4541,6 +4541,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   /* Allocate the buffer to store the binary version of the source.  */
   buffer_size = MAX (source_size, result_size);
   buffer = (unsigned char*)alloca (buffer_size);
+  memset (buffer, 0, buffer_size);
 
   /* Now write source to the buffer.  */
   gfc_target_encode_expr (source, buffer, buffer_size);

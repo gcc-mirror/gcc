@@ -1,3 +1,8 @@
+2009-03-06  Alexandre Oliva <aoliva@redhat.com>
+
+	* simplify.c (gfc_simplify_transfer): Zero-initialize the
+	buffer.
+
 2009-02-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39309
