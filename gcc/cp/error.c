@@ -1508,8 +1508,9 @@ dump_expr (tree t, int flags)
       break;
 
     case THROW_EXPR:
-      pp_cxx_identifier (cxx_pp, "throw");
-      dump_expr (TREE_OPERAND (t, 0), flags);
+      /* While waiting for caret diagnostics, avoid printing
+	 __cxa_allocate_exception, __cxa_throw, and the like.  */
+      pp_cxx_identifier (cxx_pp, "<throw-expression>");
       break;
 
     case PTRMEM_CST:
