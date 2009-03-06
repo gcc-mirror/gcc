@@ -15490,7 +15490,10 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 			    lexical_block_die,
 			    lexical_block);
 
-  xloc = expand_location (input_location);
+  if (TREE_CODE (decl) == IMPORTED_DECL)
+    xloc = expand_location (DECL_SOURCE_LOCATION (decl));
+  else
+    xloc = expand_location (input_location);
   add_AT_file (imported_die, DW_AT_decl_file, lookup_filename (xloc.file));
   add_AT_unsigned (imported_die, DW_AT_decl_line, xloc.line);
   if (name)
