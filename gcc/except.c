@@ -2017,11 +2017,13 @@ sjlj_build_landing_pads (void)
   if (sjlj_find_directly_reachable_regions (lp_info))
     {
       rtx dispatch_label = gen_label_rtx ();
-
+      int align = STACK_SLOT_ALIGNMENT (sjlj_fc_type_node,
+					TYPE_MODE (sjlj_fc_type_node),
+					TYPE_ALIGN (sjlj_fc_type_node));
       crtl->eh.sjlj_fc
 	= assign_stack_local (TYPE_MODE (sjlj_fc_type_node),
 			      int_size_in_bytes (sjlj_fc_type_node),
-			      TYPE_ALIGN (sjlj_fc_type_node));
+			      align);
 
       sjlj_assign_call_site_values (dispatch_label, lp_info);
       sjlj_mark_call_sites (lp_info);

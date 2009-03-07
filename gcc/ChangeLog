@@ -1,3 +1,11 @@
+2009-03-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR middle-end/38028
+	* function.c (assign_parm_setup_stack): Use STACK_SLOT_ALIGNMENT to
+	determine alignment passed to assign_stack_local.
+	(assign_parms_unsplit_complex): Likewise.
+	* except.c (sjlj_build_landing_pads): Likewise.
+
 2009-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/39360
