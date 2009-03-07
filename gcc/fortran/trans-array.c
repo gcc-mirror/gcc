@@ -3867,8 +3867,21 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
 
+
 	    default:
-	      gcc_unreachable ();
+	      /* Catch those occasional beasts that do not simplify
+		 for one reason or another, assuming that if they are
+		 standard defying the frontend will catch them.  */
+	      gfc_conv_expr (&se, c->expr);
+	      if (range == NULL_TREE)
+		CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
+	      else
+		{
+		  if (index != NULL_TREE)
+		  CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
+		  CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
+		}
+	      break;
 	    }
         }
       break;
