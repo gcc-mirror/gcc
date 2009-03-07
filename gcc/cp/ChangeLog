@@ -1,3 +1,9 @@
+2009-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39367
+	* init.c (build_new_1): Don't use a VLA type.
+	(build_vec_init): Handle getting a pointer for BASE.
+
 2009-03-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/37520
