@@ -1,3 +1,9 @@
+2009-03-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/37520
+	* cp-tree.h: Check NO_DOT_IN_LABEL before NO_DOLLAR_IN_LABEL
+	when mangling symbols.
+
 2009-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33492
