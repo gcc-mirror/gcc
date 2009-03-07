@@ -124,7 +124,7 @@
 2009-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/37789
-	* other/pr37789.C: New.
+	* g++.dg/other/pr37789.C: New.
 
 2009-02-26  Paul Thomas  <pault@gcc.gnu.org>
 
