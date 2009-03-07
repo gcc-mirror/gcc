@@ -1,5 +1,13 @@
 2009-03-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/39295
+	* interface.c (compare_type_rank_if): Return 1 if the symbols
+	are the same and deal with external procedures where one is
+	identified to be a function or subroutine by usage but the
+	other is not.
+
+2009-03-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/39292
 	* trans-array.c (gfc_conv_array_initializer): Convert all
 	expressions rather than ICEing.

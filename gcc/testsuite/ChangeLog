@@ -1,5 +1,11 @@
 2009-03-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/39295
+	* gfortran.dg/interface_25.f90: New test.
+	* gfortran.dg/interface_26.f90: New test.
+
+2009-03-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/39292
 	* gfortran.dg/initialization_22.f90: New test.
 
