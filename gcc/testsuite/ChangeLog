@@ -1,3 +1,8 @@
+2009-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39367
+	* g++.dg/opt/new1.C: New.
+
 2009-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33492
