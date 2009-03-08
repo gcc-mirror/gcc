@@ -25,6 +25,7 @@
 
 2009-02-25  Laurent GUERBY  <laurent@guerby.net>
 
+	PR ada/39221
 	* a-teioed.adb (Expand): Fix Result overflow.
 
 2009-02-25  Laurent GUERBY <laurent@guerby.net>
