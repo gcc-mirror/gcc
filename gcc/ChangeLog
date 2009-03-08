@@ -1,3 +1,9 @@
+2009-03-07  Jan Hubicka  <jh@suse.cz>
+
+	PR target/39361
+	* tree-inline.c (setup_one_parameter): Do replacement of const argument
+	by constant in SSA form.
+
 2009-03-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR middle-end/38028
