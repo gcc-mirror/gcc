@@ -1,3 +1,13 @@
+2009-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39060
+	* g++.dg/other/new1.C: Adjusted.
+	* g++.dg/parse/crash40.C: Likewise.
+	* g++.dg/parse/defarg12.C: Likewise.
+	* g++.dg/template/error15.C: Likewise.
+
+	* g++.dg/other/pr39060.C: New.
+
 2009-03-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39367

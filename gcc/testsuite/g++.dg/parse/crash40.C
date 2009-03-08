@@ -37,6 +37,6 @@ void bar()
   int i;
   i.C::foo<0>(); /* { dg-error "which is of non-class type" } */
 
-  S<false> s;
+  S<false> s; /* { dg-error "default argument" } */
   SS<false> ss; /* { dg-error "within this context" } */
 }
