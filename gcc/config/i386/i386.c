@@ -4618,7 +4618,7 @@ static void
 ix86_maybe_switch_abi (void)
 {
   if (TARGET_64BIT &&
-      call_used_regs[4 /*RSI*/] ==  (cfun->machine->call_abi == MS_ABI))
+      call_used_regs[SI_REG] == (cfun->machine->call_abi == MS_ABI))
     reinit_regs ();
 }
 

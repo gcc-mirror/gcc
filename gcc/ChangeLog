@@ -61,6 +61,7 @@
 	* config/i386/i386.c (x86_64_int_parameter_registers): Ditto.
 	(x86_64_ms_abi_int_parameter_registers): Ditto.
 	(x86_64_int_return_registers): Ditto.
+	(ix86_maybe_switch_abi): Ditto.
 	(ix86_expand_call): Ditto for clobbered_registers array.
 	(ix86_hard_regno_mode_ok): Ditto.
 	(x86_extended_QIreg_mentioned_p): Ditto.
