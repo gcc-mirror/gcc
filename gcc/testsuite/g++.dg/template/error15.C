@@ -18,7 +18,7 @@ protected:
 
 template <class T>
 void B<T>::g(void) {
-  f();
+  f(); // { dg-error "default argument" }
 }
 
 template class B<long>;

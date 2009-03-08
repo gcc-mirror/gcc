@@ -18291,6 +18291,11 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
       /* Parse the assignment-expression.  */
       parsed_arg = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+      if (parsed_arg == error_mark_node)
+	{
+	  cp_parser_pop_lexer (parser);
+	  continue;
+	}
 
       if (!processing_template_decl)
 	parsed_arg = check_default_argument (TREE_VALUE (parm), parsed_arg);

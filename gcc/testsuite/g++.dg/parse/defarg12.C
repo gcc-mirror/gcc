@@ -9,5 +9,5 @@ struct A
 
 void foo()
 {
-  A().i;
+  A().i; /* { dg-error "default argument" } */
 }
