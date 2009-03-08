@@ -2110,6 +2110,10 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      We need to construct map for the variable anyway as it might be used
      in different SSA names when parameter is set in function.
 
+     Do replacement at -O0 for const arguments replaced by constant.
+     This is important for builtin_constant_p and other construct requiring
+     constant argument to be visible in inlined function body.
+
      FIXME: This usually kills the last connection in between inlined
      function parameter and the actual value in debug info.  Can we do
      better here?  If we just inserted the statement, copy propagation
@@ -2118,7 +2122,9 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      We might want to introduce a notion that single SSA_NAME might
      represent multiple variables for purposes of debugging. */
   if (gimple_in_ssa_p (cfun) && rhs && def && is_gimple_reg (p)
-      && optimize
+      && (optimize
+          || (TREE_READONLY (p)
+	      && is_gimple_min_invariant (rhs)))
       && (TREE_CODE (rhs) == SSA_NAME
 	  || is_gimple_min_invariant (rhs))
       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
