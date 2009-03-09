@@ -1,3 +1,7 @@
+2009-03-09  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md ("andsi3"): Fix wrong cc attribute.
+
 2009-03-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_mdebug_abi_name): Fix the handling
