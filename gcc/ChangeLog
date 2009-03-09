@@ -1,3 +1,8 @@
+2009-03-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* recog.c (verfiy_changes): Disallow renaming of hard regs in
+	inline asms for register asm ("") declarations.
+
 2009-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_unary): Fix comment.
