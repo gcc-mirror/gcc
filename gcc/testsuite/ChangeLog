@@ -1,5 +1,11 @@
 2009-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/39371
+	* g++.dg/opt/switch2.C: Add -w to dg-options.
+	* g++.dg/warn/Wswitch-1.C: Adjust expected warnings.
+	* g++.dg/warn/switch1.C: New test.
+	* g++.dg/other/switch3.C: New test.
+
 	PR tree-optimization/39394
 	* gcc.c-torture/compile/pr39394.c: New test.
 

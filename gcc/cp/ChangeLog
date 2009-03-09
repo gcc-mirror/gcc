@@ -1,3 +1,10 @@
+2009-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39371
+	* semantics.c (finish_switch_cond): Don't call get_unwidened.
+	* decl.c (finish_case_label): Pass SWITCH_STMT_TYPE as 3rd argument
+	instead of TREE_TYPE (cond).
+
 2009-03-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39060
