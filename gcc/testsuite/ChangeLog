@@ -1,3 +1,8 @@
+2009-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/39402
+	* gfortran.dg/fmt_f0_1.f90: New test.
+
 2009-03-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39060
