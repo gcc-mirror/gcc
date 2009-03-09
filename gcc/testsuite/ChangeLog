@@ -1,3 +1,8 @@
+2009-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39394
+	* gcc.c-torture/compile/pr39394.c: New test.
+
 2009-03-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/20090223-1.c: New testcase.

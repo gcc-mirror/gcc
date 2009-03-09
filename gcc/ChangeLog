@@ -1,3 +1,9 @@
+2009-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39394
+	* gimplify.c (gimplify_type_sizes): Gimplify DECL_SIZE and
+	DECL_SIZE_UNIT of variable length FIELD_DECLs.
+
 2009-03-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* recog.c (verfiy_changes): Disallow renaming of hard regs in

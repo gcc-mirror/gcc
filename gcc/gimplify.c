@@ -7141,6 +7141,8 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), list_p);
+	    gimplify_one_sizepos (&DECL_SIZE (field), list_p);
+	    gimplify_one_sizepos (&DECL_SIZE_UNIT (field), list_p);
 	    gimplify_type_sizes (TREE_TYPE (field), list_p);
 	  }
       break;
