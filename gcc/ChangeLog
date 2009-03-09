@@ -1,3 +1,7 @@
+2009-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_unary): Fix comment.
+
 2009-03-07  Jan Hubicka  <jh@suse.cz>
 
 	PR target/39361
