@@ -1,3 +1,11 @@
+2009-03-10  Richard Guenther  <rguenther@suse.de>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR middle-end/37850
+	* libgcc2.c (__mulMODE3): Use explicit assignments to form the
+	result.
+	(__divMODE3): Likewise.
+
 2009-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/39394
