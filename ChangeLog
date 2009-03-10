@@ -1,3 +1,7 @@
+2009-03-10  Ira Rosen <irar@il.ibm.com>
+
+	* MAINTAINERS: Add myself as auto-vectorizer maintainer.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	Backport from git Libtool:
