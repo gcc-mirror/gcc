@@ -1,3 +1,10 @@
+2009-03-10  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39422
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76b.c: Move
+	constant array with static initialization to global memory.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76c.c: Likewise.
+
 2009-03-10  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* gcc.c-torture/execute/pr39339.c: Bitfield sizes changed to avoid
