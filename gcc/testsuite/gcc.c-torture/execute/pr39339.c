@@ -4,8 +4,8 @@ struct C
   struct D
   {
     unsigned int columns : 4;
-    unsigned int fore : 9;
-    unsigned int back : 9;
+    unsigned int fore : 12;
+    unsigned int back : 6;
     unsigned int fragment : 1;
     unsigned int standout : 1;
     unsigned int underline : 1;

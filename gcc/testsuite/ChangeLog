@@ -1,3 +1,8 @@
+2009-03-10  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* gcc.c-torture/execute/pr39339.c: Bitfield sizes changed to avoid
+	padding.
+
 2009-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39371
