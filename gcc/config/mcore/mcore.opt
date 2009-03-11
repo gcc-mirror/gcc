@@ -1,6 +1,6 @@
 ; Options for the Motorola MCore port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -26,17 +26,9 @@ m340
 Target RejectNegative Report Mask(M340)
 Generate code for the M*Core M340
 
-m4align
-Target RejectNegative Report InverseMask(8ALIGN)
-Set maximum alignment to 4
-
 m4byte-functions
 Target Report Mask(OVERALIGN_FUNC)
 Force functions to be aligned to a 4 byte boundary
-
-m8align
-Target RejectNegative Report Mask(8ALIGN)
-Set maximum alignment to 8
 
 mbig-endian
 Target RejectNegative Report InverseMask(LITTLE_END)
@@ -60,7 +52,8 @@ Generate little-endian code
 
 ; Not used by the compiler proper.
 mno-lsim
-Target RejectNegative Undocumented
+Target RejectNegative
+Assume that run-time support has been provided, so omit -lsim from the linker command line
 
 mrelax-immediates
 Target Report Mask(RELAX_IMM)
