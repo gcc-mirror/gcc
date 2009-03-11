@@ -1,3 +1,11 @@
+2009-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR debug/39086
+	* tree-nrv.c (tree_nrv): Don't do this optimization if the front
+	end already did.  Notice GIMPLE_CALL modifications of the result.
+	Don't copy debug information from an ignored decl or a decl from
+	another function.
+
 2009-03-10  Richard Guenther  <rguenther@suse.de>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 
