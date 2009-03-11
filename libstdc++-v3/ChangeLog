@@ -1,5 +1,9 @@
 2009-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* doc/xml/faq.xml: Fix links to implementation status pages.
+
+2009-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/complex (operator+(const complex<>&, const _Tp&),
 	operator+(const _Tp&, const complex<>&),
 	operator-(const complex<>&, const _Tp&),
