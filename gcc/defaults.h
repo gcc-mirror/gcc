@@ -944,6 +944,11 @@ along with GCC; see the file COPYING3.  If not see
   ((TYPE) ? LOCAL_ALIGNMENT ((TYPE), (ALIGN)) : (ALIGN))
 #endif
 
+#ifndef LOCAL_DECL_ALIGNMENT
+#define LOCAL_DECL_ALIGNMENT(DECL) \
+  LOCAL_ALIGNMENT (TREE_TYPE (DECL), DECL_ALIGN (DECL))
+#endif
+
 /* Alignment value for attribute ((aligned)).  */
 #ifndef ATTRIBUTE_ALIGNED_VALUE
 #define ATTRIBUTE_ALIGNED_VALUE BIGGEST_ALIGNMENT

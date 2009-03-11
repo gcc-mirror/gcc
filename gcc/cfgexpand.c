@@ -488,8 +488,7 @@ get_decl_align_unit (tree decl)
 {
   unsigned int align;
 
-  align = DECL_ALIGN (decl);
-  align = LOCAL_ALIGNMENT (TREE_TYPE (decl), align);
+  align = LOCAL_DECL_ALIGNMENT (decl);
 
   if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
     align = MAX_SUPPORTED_STACK_ALIGNMENT;
