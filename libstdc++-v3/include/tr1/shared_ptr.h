@@ -51,6 +51,9 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _TR1_SHARED_PTR_H
+#define _TR1_SHARED_PTR_H 1
+
 #if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #  error TR1 header cannot be included from C++0x header
 #endif
@@ -1018,3 +1021,5 @@ namespace tr1
 
 }
 }
+
+#endif // _TR1_SHARED_PTR_H
