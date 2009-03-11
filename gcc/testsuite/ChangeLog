@@ -1,3 +1,8 @@
+2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.c-torture/execute/ieee/inf-3.c: New test.
+	* gcc.c-torture/execute/ieee/inf-2.c: Fix typo.
+
 2009-03-11  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/slice_enum.adb: New test.

@@ -77,7 +77,7 @@ int main()
 {
   test (34.0, __builtin_inf());
   testf (34.0f, __builtin_inff());
-  testf (34.0l, __builtin_infl());
+  testl (34.0l, __builtin_infl());
   return 0;
 }
 
