@@ -1,3 +1,16 @@
+2009-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39137
+	* cfgexpand.c (get_decl_align_unit): Use LOCAL_DECL_ALIGNMENT
+	macro.
+	* defaults.h (LOCAL_DECL_ALIGNMENT): Define if not yet defined.
+	* config/i386/i386.h (LOCAL_DECL_ALIGNMENT): Define.
+	* config/i386/i386.c (ix86_local_alignment): For
+	-m32 -mpreferred-stack-boundary=2 use 32-bit alignment for
+	long long variables on the stack to avoid dynamic realignment.
+	Allow the first argument to be a decl rather than type.
+	* doc/tm.texi (LOCAL_DECL_ALIGNMENT): Document.
+
 2009-03-11  Nick Clifton  <nickc@redhat.com>
 
 	PR target/5362

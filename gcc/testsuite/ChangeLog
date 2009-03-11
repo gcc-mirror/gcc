@@ -1,3 +1,9 @@
+2009-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39137
+	* gcc.target/i386/stackalign/longlong-1.c: New test.
+	* gcc.target/i386/stackalign/longlong-2.c: New test.
+
 2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* g++.old-deja/g++.jason/thunk2.C: Skip on SPU.

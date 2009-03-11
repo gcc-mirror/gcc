@@ -791,6 +791,19 @@ enum target_cpu_default
 #define STACK_SLOT_ALIGNMENT(TYPE, MODE, ALIGN) \
   ix86_local_alignment ((TYPE), (MODE), (ALIGN))
 
+/* If defined, a C expression to compute the alignment for a local
+   variable DECL.
+
+   If this macro is not defined, then
+   LOCAL_ALIGNMENT (TREE_TYPE (DECL), DECL_ALIGN (DECL)) will be used.
+
+   One use of this macro is to increase alignment of medium-size
+   data to make it all fit in fewer cache lines.  */
+
+#define LOCAL_DECL_ALIGNMENT(DECL) \
+  ix86_local_alignment ((DECL), VOIDmode, DECL_ALIGN (DECL))
+
+
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is
    not defined, `PARM_BOUNDARY' is used for all arguments.  */
