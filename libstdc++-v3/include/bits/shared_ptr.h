@@ -51,6 +51,9 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _SHARED_PTR_H
+#define _SHARED_PTR_H 1
+
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
@@ -1589,3 +1592,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // @} group pointer_abstractions
 
 _GLIBCXX_END_NAMESPACE
+
+#endif // _SHARED_PTR_H

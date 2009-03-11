@@ -1,5 +1,10 @@
 2009-03-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/shared_ptr.h: Add include guards.
+	* include/tr1/shared_ptr.h: Likewise.
+
+2009-03-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/iostream: Fix doxygen link.
 	* include/bits/forward_list.h: Fix doxygen markup.
 	* include/ext/vstring.h: Escape backslash in doxygen comment.
