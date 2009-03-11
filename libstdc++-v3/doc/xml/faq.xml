@@ -692,8 +692,9 @@
     </para>
     <para>    
     Long answer: See the implementation status pages for 
-    <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/c++1998_status.html">C++98</ulink>,
-    <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/tr1_status.html">TR1</ulink>, and <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/c++0x_status.html">C++0x</ulink>.
+    <link linkend="manual.intro.status.standard.1998">C++98</link>,
+    <link linkend="manual.intro.status.standard.tr1">TR1</link>, and 
+    <link linkend="manual.intro.status.standard.200x">C++0x</link>.
     </para> 
   </answer>
 </qandaentry>
