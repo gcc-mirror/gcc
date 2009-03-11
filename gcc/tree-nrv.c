@@ -121,6 +121,10 @@ tree_nrv (void)
   if (is_gimple_reg_type (result_type))
     return 0;
 
+  /* If the front end already did something like this, don't do it here.  */
+  if (DECL_NAME (result))
+    return 0;
+
   /* Look through each block for assignments to the RESULT_DECL.  */
   FOR_EACH_BB (bb)
     {
@@ -138,8 +142,8 @@ tree_nrv (void)
 	      if (ret_val)
 		gcc_assert (ret_val == result);
 	    }
-	  else if (is_gimple_assign (stmt)
-		   && gimple_assign_lhs (stmt) == result)
+	  else if (gimple_has_lhs (stmt)
+		   && gimple_get_lhs (stmt) == result)
 	    {
               tree rhs;
 
@@ -173,9 +177,9 @@ tree_nrv (void)
 					        TREE_TYPE (found)))
 		return 0;
 	    }
-	  else if (is_gimple_assign (stmt))
+	  else if (gimple_has_lhs (stmt))
 	    {
-	      tree addr = get_base_address (gimple_assign_lhs (stmt));
+	      tree addr = get_base_address (gimple_get_lhs (stmt));
 	       /* If there's any MODIFY of component of RESULT, 
 		  then bail out.  */
 	      if (addr && addr == result)
@@ -199,10 +203,17 @@ tree_nrv (void)
 
   /* At this point we know that all the return statements return the
      same local which has suitable attributes for NRV.   Copy debugging
-     information from FOUND to RESULT.  */
-  DECL_NAME (result) = DECL_NAME (found);
-  DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (found);
-  DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (found);
+     information from FOUND to RESULT if it will be useful.  But don't set
+     DECL_ABSTRACT_ORIGIN to point at another function.  */
+  if (!DECL_IGNORED_P (found)
+      && !(DECL_ABSTRACT_ORIGIN (found)
+	   && DECL_CONTEXT (DECL_ABSTRACT_ORIGIN (found)) != current_function_decl))
+    {
+      DECL_NAME (result) = DECL_NAME (found);
+      DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (found);
+      DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (found);
+    }
+
   TREE_ADDRESSABLE (result) = TREE_ADDRESSABLE (found);
 
   /* Now walk through the function changing all references to VAR to be

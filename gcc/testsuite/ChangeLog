@@ -1,3 +1,8 @@
+2009-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR debug/39086
+	* g++.dg/opt/nrv15.C: New test.
+
 2009-03-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39422
