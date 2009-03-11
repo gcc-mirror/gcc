@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using __gnu_cxx::__const_pointer_cast;
 
   /**
-   *  @brief  A helper basic node class for @forward_list.
+   *  @brief  A helper basic node class for %forward_list.
    *          This is just a linked list with nothing inside it.
    *          There are purely list shuffling utility methods here.
    */
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /**
-   *  @brief  A helper node class for @forward_list.
+   *  @brief  A helper node class for %forward_list.
    *          This is just a linked list with a data value in each node.
    *          There is a sorting utility method.
    */
@@ -290,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return __x._M_node != __y._M_node; }
 
   /**
-   *  @brief  Base class for @forward_list.
+   *  @brief  Base class for %forward_list.
    */
   template<typename _Tp, typename _Alloc = allocator<_Tp> >
     struct _Fwd_list_base
