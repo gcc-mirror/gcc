@@ -1,3 +1,8 @@
+2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* fold-const.c (fold_comparison): Only call fold_inf_compare
+	if the mode supports infinities.
+
 2009-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR debug/39086
