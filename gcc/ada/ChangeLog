@@ -1,3 +1,8 @@
+2009-03-11  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <case N_Slice>: In range
+	checks processing, remove unintended TREE_TYPE walk on index type.
+
 2009-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/39264
