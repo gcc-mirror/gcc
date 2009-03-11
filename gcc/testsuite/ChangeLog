@@ -1,3 +1,7 @@
+2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.old-deja/g++.jason/thunk2.C: Skip on SPU.
+
 2009-03-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/39295
