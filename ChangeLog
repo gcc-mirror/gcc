@@ -1,3 +1,7 @@
+2009-03-11  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* MAINTAINERS: Remove myself as auto-vectorizer maintainer.
+
 2009-03-10  Ira Rosen <irar@il.ibm.com>
 
 	* MAINTAINERS: Add myself as auto-vectorizer maintainer.
