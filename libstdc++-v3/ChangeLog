@@ -1,3 +1,12 @@
+2009-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (operator+(const complex<>&, const _Tp&),
+	operator+(const _Tp&, const complex<>&),
+	operator-(const complex<>&, const _Tp&),
+	operator-(const _Tp&, const complex<>&)): Do not assume real()
+	returns a reference (against DR 387).
+	* testsuite/26_numerics/complex/dr387_2.cc: New.
+
 2009-03-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/thread/pthread4.cc: Move...

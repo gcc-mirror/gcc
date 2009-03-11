@@ -333,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator+(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
-      __r.real() += __y;
+      __r += __y;
       return __r;
     }
 
@@ -342,7 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator+(const _Tp& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r = __y;
-      __r.real() += __x;
+      __r += __x;
       return __r;
     }
   //@}
@@ -363,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator-(const complex<_Tp>& __x, const _Tp& __y)
     {
       complex<_Tp> __r = __x;
-      __r.real() -= __y;
+      __r -= __y;
       return __r;
     }
 
@@ -372,7 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator-(const _Tp& __x, const complex<_Tp>& __y)
     {
       complex<_Tp> __r(__x, -__y.imag());
-      __r.real() -= __y.real();
+      __r -= __y.real();
       return __r;
     }
   //@}
