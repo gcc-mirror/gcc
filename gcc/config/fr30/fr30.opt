@@ -1,6 +1,6 @@
 ; Options for the FR30 port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,4 +23,5 @@ Target Report Mask(SMALL_MODEL)
 Assume small address space
 
 mno-lsim
-Target RejectNegative Undocumented
+Target RejectNegative
+Assume that run-time support has been provided, so omit -lsim from the linker command line

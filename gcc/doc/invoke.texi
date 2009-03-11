@@ -525,6 +525,9 @@ Objective-C and Objective-C++ Dialects}.
 @emph{DEC Alpha/VMS Options}
 @gccoptlist{-mvms-return-codes}
 
+@emph{FR30 Options}
+@gccoptlist{-msmall-model -mno-lsim}
+
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
 -mhard-float  -msoft-float @gol
@@ -8818,6 +8821,7 @@ platform.
 * Darwin Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
+* FR30 Options::
 * FRV Options::
 * GNU/Linux Options::
 * H8/300 Options::
@@ -10248,6 +10252,28 @@ These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
 @opindex mvms-return-codes
 Return VMS condition codes from main.  The default is to return POSIX
 style condition (e.g.@: error) codes.
+@end table
+
+@node FR30 Options
+@subsection FR30 Options
+@cindex FR30 Options
+
+These options are defined specifically for the FR30 port.
+
+@table @gcctabopt
+
+@item -msmall-model
+@opindex msmall-model
+Use the small address space model.  This can produce smaller code, but
+it does assume that all symbolic values and addresses will fit into a
+20-bit range.
+
+@item -mno-lsim
+@opindex mno-lsim
+Assume that run-time support has been provided and so there is no need
+to include the simulator library (@file{libsim.a}) on the linker
+command line.
+
 @end table
 
 @node FRV Options

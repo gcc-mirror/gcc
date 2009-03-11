@@ -1,3 +1,10 @@
+2009-03-11  Nick Clifton  <nickc@redhat.com>
+
+	PR target/5362
+	* config/fr30/fr30.opt: Document the -mno-lsim option.
+	* doc/invoke.texi: Add descriptions of the FR30's -msmall-model
+	and -mno-lsim options.
+
 2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* fold-const.c (fold_comparison): Only call fold_inf_compare
