@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  @param  __n  Number of characters to copy.
        *  @param  __a  Allocator to use (default is default allocator).
        *
-       *  NB: @a __s must have at least @a __n characters, '\0' has no special
+       *  NB: @a __s must have at least @a __n characters, '\\0' has no special
        *  meaning.
        */
       __versa_string(const _CharT* __s, size_type __n,
@@ -2006,7 +2006,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
        *
-       *  NB: s must have at least n2 characters, '\0' has no special
+       *  NB: s must have at least n2 characters, '\\0' has no special
        *  meaning.
       */
       int

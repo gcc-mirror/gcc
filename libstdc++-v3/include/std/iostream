@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  The &lt;iostream&gt; header declares the eight <em>standard stream
    *  objects</em>.  For other declarations, see
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
-   *  and the @link s27_2_iosfwd I/O forward declarations @endlink
+   *  and the @link iosfwd I/O forward declarations @endlink
    *
    *  They are required by default to cooperate with the global C library's
    *  @c FILE streams, and to be available during program startup and

@@ -1,3 +1,10 @@
+2009-03-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/iostream: Fix doxygen link.
+	* include/bits/forward_list.h: Fix doxygen markup.
+	* include/ext/vstring.h: Escape backslash in doxygen comment.
+	* include/bits/basic_string.h: Likewise.
+
 2009-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/xml/faq.xml: Fix links to implementation status pages.
