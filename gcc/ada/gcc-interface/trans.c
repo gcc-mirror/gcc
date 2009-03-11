@@ -3594,7 +3594,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   gnu_max_expr = protect_multiple_eval (gnu_max_expr);
 
 	    /* Derive a good type to convert everything to.  */
-	    gnu_expr_type = get_base_type (TREE_TYPE (gnu_index_type));
+	    gnu_expr_type = get_base_type (gnu_index_type);
 
 	    /* Test whether the minimum slice value is too small.  */
 	    gnu_expr_l = build_binary_op (LT_EXPR, integer_type_node,
