@@ -1,6 +1,15 @@
 2009-03-11  Nick Clifton  <nickc@redhat.com>
 
 	PR target/5362
+	* config/mcore/mcore.opt: Remove deprecated m4align and m8align
+	options.
+	Add description to mno-lsim option.
+	* config/mcore/mcore.h: Remove comment about deprecated m4align
+	option.
+	(TARGET_DEFAULT): Remove deprecated MASK_M8ALIGN.
+	* doc/invoke.texi: Add description of mno-lsim and
+	mstack-increment options.
+
 	* config/fr30/fr30.opt: Document the -mno-lsim option.
 	* doc/invoke.texi: Add descriptions of the FR30's -msmall-model
 	and -mno-lsim options.

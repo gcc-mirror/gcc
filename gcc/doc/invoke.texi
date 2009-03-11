@@ -12438,6 +12438,20 @@ Generate code for a little endian target.
 @opindex m210
 @opindex m340
 Generate code for the 210 processor.
+
+@item -mno-lsim
+@opindex no-lsim
+Assume that run-time support has been provided and so omit the
+simulator library (@file{libsim.a)} from the linker command line.
+
+@item -mstack-increment=@var{size}
+@opindex mstack-increment
+Set the maximum amount for a single stack increment operation.  Large
+values can increase the speed of progrqams which contain functions
+that need a large amount of stack space, but they can also trigger a
+segmentation fault if the stack is extended too much.  The default
+value is 0x1000.
+
 @end table
 
 @node MIPS Options
