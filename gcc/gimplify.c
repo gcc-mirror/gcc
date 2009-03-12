@@ -2355,11 +2355,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   else if (parms)
     p = parms;
   else
-    {
-      if (nargs != 0)
-	CALL_CANNOT_INLINE_P (*expr_p) = 1;
-      p = NULL_TREE;
-    }
+    p = NULL_TREE;
   for (i = 0; i < nargs && p; i++, p = TREE_CHAIN (p))
     ;
 

@@ -1,3 +1,8 @@
+2009-03-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gimplify.c (gimplify_call_expr): Don't set CALL_CANNOT_INLINE_P
+	for functions for which the parameter types are unknown.
+
 2009-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39137
