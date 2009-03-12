@@ -1,5 +1,13 @@
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39327
+	* config/i386/sse.md (avx_addsubv8sf3): Correct item bits.
+	(avx_addsubv4df3): Likewise.
+	(*avx_addsubv4sf3): Likewise.
+	(sse3_addsubv4sf3): Likewise.
+
+2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/38824
 	* config/i386/i386.md: Compare REGNO on the new peephole2
 	patterns.
