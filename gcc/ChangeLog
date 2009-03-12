@@ -1,3 +1,9 @@
+2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38824
+	* config/i386/i386.md: Compare REGNO on the new peephole2
+	patterns.
+
 2009-03-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/39432
