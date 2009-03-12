@@ -248,7 +248,7 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
       // Note that the field returned by find_field_helper is always
       // resolved.  However, we still use the constraint mechanism
       // because this may affect other lookups.
-      _Jv_CheckOrCreateLoadingConstraint (klass, (*found_class)->loader);
+      _Jv_CheckOrCreateLoadingConstraint (field_type, (*found_class)->loader);
     }
   else
     {

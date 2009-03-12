@@ -1,3 +1,14 @@
+2009-03-11  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Clear
+	INTERPRETED access modifier.
+
+2009-03-11  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (_Jv_Linker::find_field): Pass the field_type to
+	_Jv_CheckOrCreateLoadingConstraint, not the class that is
+	requesting the field.
+
 2009-03-03  Andrew John Hughes  <ahughes@redhat.com>
 
 	* Makefile.am:
