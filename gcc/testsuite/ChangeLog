@@ -1,3 +1,7 @@
+2009-03-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/inline-33.c: New test.
+
 2009-03-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.dg/vect/vect-82.c: Combine dg-do and
