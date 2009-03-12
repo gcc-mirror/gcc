@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005, 2006, 2007, 2008
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -82,8 +82,15 @@
       low = force_reg (hmode, low);
       high = force_reg (hmode, high);
       if (<MODE>mode == DImode)
-	emit_insn (gen_sync_double_compare_and_swapdi
-		   (operands[0], operands[1], operands[2], low, high));
+	{
+	  if (flag_pic && !cmpxchg8b_pic_memory_operand (operands[1], DImode))
+	    operands[1] = replace_equiv_address (operands[1],
+						 force_reg (Pmode,
+							    XEXP (operands[1],
+								  0)));
+	  emit_insn (gen_sync_double_compare_and_swapdi
+		     (operands[0], operands[1], operands[2], low, high));
+	}
       else if (<MODE>mode == TImode)
 	emit_insn (gen_sync_double_compare_and_swapti
 		   (operands[0], operands[1], operands[2], low, high));
@@ -131,7 +138,7 @@
 ;; are just esi and edi.
 (define_insn "*sync_double_compare_and_swapdi_pic"
   [(set (match_operand:DI 0 "register_operand" "=A")
-	(match_operand:DI 1 "memory_operand" "+m"))
+	(match_operand:DI 1 "cmpxchg8b_pic_memory_operand" "+m"))
    (set (match_dup 1)
 	(unspec_volatile:DI
 	  [(match_dup 1)
@@ -173,8 +180,15 @@
       low = force_reg (hmode, low);
       high = force_reg (hmode, high);
       if (<MODE>mode == DImode)
-	emit_insn (gen_sync_double_compare_and_swap_ccdi
-		   (operands[0], operands[1], operands[2], low, high));
+	{
+	  if (flag_pic && !cmpxchg8b_pic_memory_operand (operands[1], DImode))
+	    operands[1] = replace_equiv_address (operands[1],
+						 force_reg (Pmode,
+							    XEXP (operands[1],
+								  0)));
+	  emit_insn (gen_sync_double_compare_and_swap_ccdi
+		     (operands[0], operands[1], operands[2], low, high));
+	}
       else if (<MODE>mode == TImode)
 	emit_insn (gen_sync_double_compare_and_swap_ccti
 		   (operands[0], operands[1], operands[2], low, high));
@@ -224,7 +238,7 @@
 ;; operand 3.
 (define_insn "*sync_double_compare_and_swap_ccdi_pic"
   [(set (match_operand:DI 0 "register_operand" "=A")
-	(match_operand:DI 1 "memory_operand" "+m"))
+	(match_operand:DI 1 "cmpxchg8b_pic_memory_operand" "+m"))
    (set (match_dup 1)
 	(unspec_volatile:DI
 	  [(match_dup 1)

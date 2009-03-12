@@ -1,3 +1,8 @@
+2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39431
+	* gcc.target/i386/pr39431.c: New test.
+
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39445
