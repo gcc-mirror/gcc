@@ -333,7 +333,7 @@ struct ira_allocno
   /* Accumulated frequency of calls which given allocno
      intersects.  */
   int call_freq;
-  /* Length of the previous array (number of the intersected calls).  */
+  /* Accumulated number of the intersected calls.  */
   int calls_crossed_num;
   /* Non NULL if we remove restoring value from given allocno to
      MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
