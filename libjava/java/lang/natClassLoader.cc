@@ -380,6 +380,15 @@ _Jv_RegisterClassHookDefault (jclass klass)
   if (! klass->engine)
     klass->engine = &_Jv_soleCompiledEngine;
 
+  /* FIXME:  Way back before the dawn of time, we overloaded the
+     SYNTHETIC class access modifier to mean INTERPRETED.  This was a
+     Bad Thing, but it didn't matter then because classes were never
+     marked synthetic.  However, it is possible to redeem the
+     situation: _Jv_RegisterClassHookDefault is only called from
+     compiled classes, so we clear the INTERPRETED flag.  This is a
+     kludge!  */
+  klass->accflags &= ~java::lang::reflect::Modifier::INTERPRETED;
+
   if (system_class_list != SYSTEM_LOADER_INITIALIZED)
     {
       unsigned long abi = (unsigned long) klass->next_or_version;
