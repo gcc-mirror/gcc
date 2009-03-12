@@ -800,29 +800,33 @@ ira_build_conflicts (void)
     }
   FOR_EACH_ALLOCNO (a, ai)
     {
-      if (ALLOCNO_CALLS_CROSSED_NUM (a) == 0)
-	continue;
-      if (! flag_caller_saves)
+      reg_attrs *attrs;
+      tree decl;
+
+      if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+	  /* For debugging purposes don't put user defined variables in
+	     callee-clobbered registers.  */
+	  || (optimize <= 1
+	      && (attrs = REG_ATTRS (regno_reg_rtx [ALLOCNO_REGNO (a)])) != NULL
+	      && (decl = attrs->decl) != NULL
+	      && VAR_OR_FUNCTION_DECL_P (decl)
+	      && ! DECL_ARTIFICIAL (decl)))
 	{
 	  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
 			    call_used_reg_set);
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	    IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
-			      call_used_reg_set);
+	  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+			    call_used_reg_set);
 	}
-      else
+      else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	{
 	  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
 			    no_caller_save_reg_set);
 	  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
 			    temp_hard_reg_set);
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	    {
-	      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
-				no_caller_save_reg_set);
-	      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
-				temp_hard_reg_set);
-	    }
+	  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+			    no_caller_save_reg_set);
+	  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+			    temp_hard_reg_set);
 	}
     }
   if (optimize && ira_conflicts_p
