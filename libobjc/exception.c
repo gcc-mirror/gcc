@@ -1,5 +1,5 @@
 /* The implementation of exception handling primitives for Objective-C.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -85,6 +85,11 @@ struct lsda_header_info
   unsigned char ttype_encoding;
   unsigned char call_site_encoding;
 };
+
+/* This hook allows libraries to sepecify special actions when an
+   exception is thrown without a handler in place.
+ */
+void (*_objc_unexpected_exception) (id exception); /* !T:SAFE */
 
 static const unsigned char *
 parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
@@ -486,5 +491,9 @@ objc_exception_throw (id value)
 #endif
 
   /* Some sort of unwinding error.  */
+  if (_objc_unexpected_exception != 0)
+    {
+      (*_objc_unexpected_exception) (value);
+    }
   abort ();
 }

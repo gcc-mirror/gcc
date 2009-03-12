@@ -1,3 +1,8 @@
+2009-03-12  David Ayers  <ayers@fsfe.org>
+
+	PR libobjc/27466
+	* objc/execute/exceptions/handler-1.m. New test.
+
 2008-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39431

@@ -1,5 +1,5 @@
 ;  GNU Objective C Runtime DLL Export Definitions
-;  Copyright (C) 1997 Free Software Foundation, Inc.
+;  Copyright (C) 1997, 2001, 2003, 2005, 2009 Free Software Foundation, Inc.
 ;  Contributed by Scott Christley <scottc@net-community.com>
 ;
 ;  This file is part of GCC.
@@ -38,6 +38,7 @@ objc_mutex_deallocate
 objc_mutex_lock
 objc_mutex_trylock
 objc_mutex_unlock
+_objc_unexpected_exception
 objc_thread_detach
 objc_thread_exit
 objc_thread_get_data
