@@ -1,3 +1,9 @@
+2009-03-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/vect/vect-82.c: Combine dg-do and
+	dg-require-effective-target into dg-skip-if.
+	* gcc.dg/vect/vect-83.c: Likewise.
+
 2009-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39137
