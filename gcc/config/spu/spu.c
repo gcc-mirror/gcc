@@ -4114,17 +4114,16 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
   if (GET_CODE (ops[1]) == SUBREG && !valid_subreg (ops[1]))
     {
       rtx from = SUBREG_REG (ops[1]);
-      enum machine_mode imode = GET_MODE (from);
+      enum machine_mode imode = int_mode_for_mode (GET_MODE (from));
 
       gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
 		  && GET_MODE_CLASS (imode) == MODE_INT
 		  && subreg_lowpart_p (ops[1]));
 
       if (GET_MODE_SIZE (imode) < 4)
-	{
-	  from = gen_rtx_SUBREG (SImode, from, 0);
-	  imode = SImode;
-	}
+	imode = SImode;
+      if (imode != GET_MODE (from))
+	from = gen_rtx_SUBREG (imode, from, 0);
 
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (imode))
 	{
