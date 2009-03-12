@@ -1,3 +1,16 @@
+2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39431
+	* config/i386/predicates.md (cmpxchg8b_pic_memory_operand): New
+	predicate.
+	* config/i386/sync.md (sync_compare_and_swap<mode>,
+	sync_compare_and_swap_cc<mode>): For DImode with -m32 -fpic check
+	if operands[1] is cmpxchg8b_pic_memory_operand, if not force address
+	into a register.
+	(sync_double_compare_and_swapdi_pic,
+	sync_double_compare_and_swap_ccdi_pic): Require operand 1 to be
+	cmpxchg8b_pic_memory_operand instead of just memory_operand.
+
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39445
