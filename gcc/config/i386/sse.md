@@ -737,7 +737,7 @@
 	    (match_operand:V4SF 1 "register_operand" "0")
 	    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
 	  (minus:V4SF (match_dup 1) (match_dup 2))
-	  (const_int 5)))]
+	  (const_int 10)))]
   "TARGET_SSE3"
   "addsubps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
@@ -2381,7 +2381,7 @@
 	    (match_operand:V2DF 1 "register_operand" "0")
 	    (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
 	  (minus:V2DF (match_dup 1) (match_dup 2))
-	  (const_int 1)))]
+	  (const_int 2)))]
   "TARGET_SSE3"
   "addsubpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")

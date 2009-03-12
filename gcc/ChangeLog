@@ -1,3 +1,12 @@
+2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39327
+	* config/i386/sse.md (sse3_addsubv4sf3): Correct item bits.
+	(sse3_addsubv2df3): Likewise.
+
 2009-03-09  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md ("andsi3"): Fix wrong cc attribute.
