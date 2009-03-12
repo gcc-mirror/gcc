@@ -1,3 +1,9 @@
+2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/39181
+	* config/spu/spu.c (spu_expand_mov): Handle invalid subregs
+	of non-integer mode as well.
+
 2009-03-11  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gimplify.c (gimplify_call_expr): Don't set CALL_CANNOT_INLINE_P
