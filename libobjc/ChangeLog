@@ -1,3 +1,14 @@
+2009-03-12  Richard Frith-Macdonald  <rfm@gnu.org>
+	    David Ayers  <ayers@fsfe.org>
+
+	PR libobjc/27466
+	* objc/objc-api.h (_objc_unexpected_exception): Declare
+	new hook.  Update copyright dates.
+	* exception.c (objc_exception_throw): Use hook.  Update
+	copyright dates.
+	* libobjc.def (_objc_unexpected_exception): Export hook.
+	Update copyright dates.
+	
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

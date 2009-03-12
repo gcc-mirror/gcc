@@ -1,5 +1,6 @@
 /* GNU Objective-C Runtime API.
-   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 2001, 2002, 2003, 2004, 2005,
+   2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -429,6 +430,15 @@ objc_EXPORT void (*_objc_free)(void *);
 */
 objc_EXPORT IMP (*__objc_msg_forward)(SEL);
 objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
+
+/*
+** Hook for uncaught exceptions.  This hook is called when an exception
+** is thrown and no valid exception handler is in place.  The function
+** is expected never to return.  If the function returns the result is
+** currently undefined.
+*/
+objc_EXPORT void (*_objc_unexpected_exception)(id);
+
 
 Method_t class_get_class_method(MetaClass _class, SEL aSel);
 
