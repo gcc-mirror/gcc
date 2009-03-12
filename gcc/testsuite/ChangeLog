@@ -1,3 +1,10 @@
+2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39445
+	* gcc.target/i386/pr39445.c: New.
+
+	* gcc.target/i386/push-1.c: XFAIL.
+
 2009-03-11  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/inline-33.c: New test.
