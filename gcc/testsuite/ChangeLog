@@ -1,3 +1,12 @@
+2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/39451
+	* gcc.dg/asm-b.c: Use "Q" constraint on %b1/%h1 and "R"
+	constraint on (%2).
+
 2009-03-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* g++.old-deja/g++.jason/thunk2.C: Skip on SPU.
