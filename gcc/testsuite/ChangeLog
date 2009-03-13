@@ -1,3 +1,9 @@
+2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/39451
+	* gcc.dg/asm-b.c: Use "Q" constraint on %b1/%h1 and "R"
+	constraint on (%2).
+
 2009-03-12  David Ayers  <ayers@fsfe.org>
 
 	PR libobjc/27466
