@@ -23,8 +23,8 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <thread/all.h>
 #include <condition_variable>
+#include <thread/all.h>
 
 int main()
 {
