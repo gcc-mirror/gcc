@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile  { target { ! *-*-darwin* } } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -mpreferred-stack-boundary=2" } */
 /* { dg-final { scan-assembler-times "and\[lq\]?\[^\\n\]*-8,\[^\\n\]*sp" 2 } } */ 

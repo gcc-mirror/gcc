@@ -1,3 +1,8 @@
+2009-03-13  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/39137
+	* testsuite/gcc.target/i386/stackalign/longlong-2.c: Skip on darwin.
+
 2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/39451
