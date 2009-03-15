@@ -111,7 +111,7 @@ namespace std
     { typedef _Tp   type; };
 
   template<typename _Tp,
-	   bool = is_object<_Tp>::value || is_function<_Tp>::value,
+	   bool = !is_reference<_Tp>::value && !is_void<_Tp>::value,
 	   bool = is_rvalue_reference<_Tp>::value>
     struct __add_lvalue_reference_helper
     { typedef _Tp   type; };
@@ -131,7 +131,7 @@ namespace std
     { };
 
   template<typename _Tp,
-	   bool = is_object<_Tp>::value || is_function<_Tp>::value>
+	   bool = !is_reference<_Tp>::value && !is_void<_Tp>::value>
     struct __add_rvalue_reference_helper
     { typedef _Tp   type; };
 
