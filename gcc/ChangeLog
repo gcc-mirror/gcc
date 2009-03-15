@@ -1,3 +1,14 @@
+2009-03-14  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/34299
+	* config/avr/avr.c (avr_handle_fndecl_attribute): Move code for
+	generate a warning if the function name does not begin with
+	"__vector" and the function has either the 'signal' or 'interrupt'
+	attribute, from here to ...
+	(avr_declare_function_name): ...here. New function.
+	* config/avr/avr.h (ASM_DECLARE_FUNCTION_NAME): Redefine.
+	* config/avr/avr-protos.h (avr_declare_function_name): Declare.
+
 2009-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/39454

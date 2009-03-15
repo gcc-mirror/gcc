@@ -4595,6 +4595,39 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
+/* Worker function for ASM_DECLARE_FUNCTION_NAME.  */
+
+void
+avr_asm_declare_function_name (FILE *file, const char *name, tree decl)
+{
+
+  /* If the function has the 'signal' or 'interrupt' attribute, test to
+     make sure that the name of the function is "__vector_NN" so as to
+     catch when the user misspells the interrupt vector name.  */
+
+  if (cfun->machine->is_interrupt)
+    {
+      if (strncmp (name, "__vector", strlen ("__vector")) != 0)
+        {
+          warning_at (DECL_SOURCE_LOCATION (decl), 0,
+                      "%qs appears to be a misspelled interrupt handler",
+                      name);
+        }
+    }
+  else if (cfun->machine->is_signal)
+    {
+      if (strncmp (name, "__vector", strlen ("__vector")) != 0)
+        {
+           warning_at (DECL_SOURCE_LOCATION (decl), 0,
+                       "%qs appears to be a misspelled signal handler",
+                       name);
+        }
+    }
+
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
+  ASM_OUTPUT_LABEL (file, name);
+}
+
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the
    generated assembly code more compact (and thus faster to assemble)
@@ -4778,32 +4811,6 @@ avr_handle_fndecl_attribute (tree *node, tree name,
       warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
-    }
-  else
-    {
-      const char *func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (*node));
-      const char *attr = IDENTIFIER_POINTER (name);
-
-      /* If the function has the 'signal' or 'interrupt' attribute, test to
-         make sure that the name of the function is "__vector_NN" so as to
-         catch when the user misspells the interrupt vector name.  */
-
-      if (strncmp (attr, "interrupt", strlen ("interrupt")) == 0)
-        {
-          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
-            {
-              warning (0, "%qs appears to be a misspelled interrupt handler",
-                       func_name);
-            }
-        }
-      else if (strncmp (attr, "signal", strlen ("signal")) == 0)
-        {
-          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
-            {
-              warning (0, "%qs appears to be a misspelled signal handler",
-                       func_name);
-            }
-        }
     }
 
   return NULL_TREE;

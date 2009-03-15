@@ -590,10 +590,7 @@ do {									\
    specific tm.h file (depending upon the particulars of your assembler).  */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
-do {								\
-     ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
-     ASM_OUTPUT_LABEL (FILE, NAME);				\
-} while (0)
+avr_asm_declare_function_name ((FILE), (NAME), (DECL))
 
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
