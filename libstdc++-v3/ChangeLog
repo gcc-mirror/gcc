@@ -1,3 +1,11 @@
+2009-03-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39405
+	* include/std/type_traits (__add_lvalue_reference_helper,
+	__add_rvalue_reference_helper): Avoid is_function.
+	* testsuite/20_util/shared_ptr/cons/39405.cc: New.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/39405.cc: Likewise.
+
 2009-02-09  Johannes Singler  <singler@ira.uka.de>
 
         Backport from mainline:
