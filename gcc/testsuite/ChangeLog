@@ -1,5 +1,7 @@
 2009-03-16  Janis Johnson  <janis187@us.ibm.com>
 
+	Revert patch for PR testsuite/37630.
+
 	PR testsuite/37960
 	* gcc.dg/pr11492.c: Replace constant and remove xfail.
 
