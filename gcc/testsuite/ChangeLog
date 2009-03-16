@@ -1,5 +1,10 @@
 2009-03-16  Janis Johnson  <janis187@us.ibm.com>
 
+	PR testsuite/37630
+	* lib/target-supports.exp (check_effective_target_ieee): New.
+	* gcc.c-torture/execute/ieee/ieee.exp: Use it.
+	* gcc.dg/20001012-1.c: Require ieee.
+
 	PR testsuite/37628
 	* gcc.c-torture/execute/pr35456.x: New, skip test for vax.
 
