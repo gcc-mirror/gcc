@@ -1476,6 +1476,15 @@ you can explicitly specify the directory where they are installed
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
 
+@item --with-host-libstdcxx=@var{linker-args}
+If you are linking with a static copy of PPL, you can use this option
+to specify how the linker should find the standard C++ library used
+internally by PPL.  Typical values of @var{linker-args} might be
+@samp{-lstdc++} or @samp{-Wl,-Bstatic,-lstdc++,-Bdynamic -lm}.  If you are
+linking with a shared copy of PPL, you probably do not need this
+option; shared library dependencies will cause the linker to search
+for the standard C++ library automatically.
+
 @item --with-debug-prefix-map=@var{map}
 Convert source directory names using @option{-fdebug-prefix-map} when
 building runtime libraries.  @samp{@var{map}} is a space-separated
