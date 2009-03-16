@@ -702,7 +702,10 @@ if test "x${COMPILE_JNI}" = xyes; then
 
   dnl Check for plugin support headers and libraries.
   if test "x${COMPILE_PLUGIN}" = xyes; then
-    PKG_CHECK_MODULES(MOZILLA, mozilla-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+    PKG_CHECK_MODULES(MOZILLA, mozilla-plugin libxul-unstable, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+    if test "x${MOZILLA_FOUND}" = xno; then
+      PKG_CHECK_MODULES(MOZILLA, mozilla-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+    fi
     if test "x${MOZILLA_FOUND}" = xno; then
       PKG_CHECK_MODULES(MOZILLA, firefox-plugin firefox-xpcom, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
