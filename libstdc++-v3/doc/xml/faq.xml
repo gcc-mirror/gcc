@@ -273,8 +273,8 @@
     </para> 
     <para> 
     To build and install from the GNU GCC sources, please consult the 
-    <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/install.html">install
-    documentation</ulink> for detailed
+    <link linkend="manual.intro.setup">setup
+    documentation</link> for detailed
     instructions. You may wish to browse those files ahead
     of time to get a feel for what's required.
     </para> 
