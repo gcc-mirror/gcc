@@ -111,9 +111,6 @@
    ; Internal TSTPORT instruction, used to generate a single TSTPORT
    ; instruction for use in the testport branch split.
    (UNSPEC_INTERNAL_TESTPORT        19)
-
-   ; instruction for use in the profile based optimizations.
-   (UNSPEC_INTERNAL_PROFILE        20)
   ]
 )
 
@@ -2225,14 +2222,6 @@
 	UNSPEC_HALT)]
   ""
   "HALT\t// (id %0)"
-  [(set_attr "length" "1")
-   (set_attr "type" "unknown")])
-
-(define_insn "profile"
-  [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "i")]
-	UNSPEC_INTERNAL_PROFILE)]
-  ""
-  "PROFILE_DUMMY %0 \t// (profile instruction %0)"
   [(set_attr "length" "1")
    (set_attr "type" "unknown")])
 

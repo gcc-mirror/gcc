@@ -3898,23 +3898,6 @@ picochip_generate_halt (void)
   return const0_rtx;
 }
 
-static rtx
-picochip_generate_profile (tree arglist)
-{
-  tree arg0 = TREE_VALUE (arglist);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-
-  start_sequence();
-  emit_insn (gen_profile (op0));
-
-  rtx insns = get_insns();
-  end_sequence();
-  emit_insn (insns);
-
-  return const0_rtx;
-}
-
-
 /* Initialise the builtin functions.  Start by initialising
    descriptions of different types of functions (e.g., void fn(int),
    int fn(void)), and then use these to define the builtins. */
@@ -3994,14 +3977,6 @@ picochip_init_builtins (void)
 			       NULL_TREE);
   add_builtin_function ("picoSbc", int_ftype_int, PICOCHIP_BUILTIN_SBC,
 			       BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* Initialise the bit reverse function. */
-  add_builtin_function ("__builtin_profile", void_ftype_int,
-			       PICOCHIP_BUILTIN_PROFILE, BUILT_IN_MD, NULL,
-			       NULL_TREE);
-  add_builtin_function ("picoProfile", void_ftype_int,
-			       PICOCHIP_BUILTIN_PROFILE, BUILT_IN_MD, NULL,
-			       NULL_TREE);
 
   /* Initialise the bit reverse function. */
   add_builtin_function ("__builtin_brev", unsigned_ftype_unsigned,
@@ -4134,9 +4109,6 @@ picochip_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case PICOCHIP_BUILTIN_HALT:
       return picochip_generate_halt ();
-
-    case PICOCHIP_BUILTIN_PROFILE:
-      return picochip_generate_profile (arglist);
 
     default:
       gcc_unreachable();
