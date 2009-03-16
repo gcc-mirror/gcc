@@ -1,3 +1,8 @@
+2009-03-16  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Detect xulrunner-1.9.
+	* configure: Regenerate.
+
 2009-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/java/rmi/registry/RegistryImpl.java (version): Update
