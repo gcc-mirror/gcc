@@ -17771,12 +17771,6 @@
 	* config/i386/i386.c (override_options): Replace TARGET_64BIT_MS_ABI.
 	(X86_64_VARARGS_SIZE): Replace REGPARM_MAX and SSE_REGPARM_MAX by abi
 	specific defines.
-	(X86_64_REGPARM_MAX): New.
-	(X86_64_SSE_REGPARM_MAX): New.
-	(X64_REGPARM_MAX): New.
-	(X64_SSE_REGPARM_MAX): New.
-	(X86_32_REGPARM_MAX): New.
-	(X86_32_SSE_REGPARM_MAX): New.
 	(ix86_handle_cconv_attribute): Replace TARGET_64BIT_MS_ABI.
 	(ix86_function_regparm): Handle user calling abi.
 	(ix86_function_arg_regno_p): Replace TARGET_64BIT_MS_ABI
@@ -17816,6 +17810,14 @@
 	(OUTGOING_REG_PARM_STACK_SPACE): New.
 	(ix86_reg_parm_stack_space): New prototype.
 	(CUMULATIVE_ARGS): Add call_abi member.
+	(X86_64_REGPARM_MAX): New.
+	(X86_64_SSE_REGPARM_MAX): New.
+	(X64_REGPARM_MAX): New.
+	(X64_SSE_REGPARM_MAX): New.
+	(X86_32_REGPARM_MAX): New.
+	(X86_32_SSE_REGPARM_MAX): New.
+	(REGPARM_MAX): Updated.
+	(SSE_REGPARM_MAX): Updated.
 	(machine_function): Add call_abi member.
 	* config/i386/mingw32.h (EXTRA_OS_CPP_BUILTINS): Replace
 	TARGET_64BIT_MS_ABI by DEFAULT_ABI compare to MS_ABI.
