@@ -2846,19 +2846,3 @@ proc check_effective_target_correct_iso_cpp_string_wchar_protos { } {
 	#endif
     }]
 }
-
-# Return 1 if the target supports IEEE arithmetic.
-
-proc check_effective_target_ieee { } {
-    global et_ieee_saved
-
-    if { ![info exists et_ieee_saved] } {
-	set et_ieee_saved 1
-	if { [istarget vax-*-*]
-	     || [istarget powerpc-*-*spe*] } {
-	    set et_ieee_saved 0
-	}
-    }
-
-    return $et_ieee_saved
-}
