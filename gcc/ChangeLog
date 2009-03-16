@@ -1,3 +1,7 @@
+2009-03-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/install.texi (--with-host-libstdcxx): Document.
+
 2009-03-14  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/34299

@@ -1,3 +1,8 @@
+2009-03-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (--with-host-libstdcxx): New option.
+	* configure: Regenerate.
+
 2009-03-12  Joern Rennecke <joern.rennecke@arc.com>
 
 	* MAINTAINERS:  Move myself into the write after approval list.
