@@ -1,3 +1,9 @@
+2009-03-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c: Removed profiling support.
+	* config/picochip/picochip.md: Removed profiling instruction.
+	* config/picochip/picochip.h: Removed profiling builtin.
+
 2009-03-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/install.texi (--with-host-libstdcxx): Document.
