@@ -1,5 +1,8 @@
 2009-03-16  Janis Johnson  <janis187@us.ibm.com>
 
+	PR testsuite/37960
+	* gcc.dg/pr11492.c: Replace constant and remove xfail.
+
 	PR testsuite/37630
 	* lib/target-supports.exp (check_effective_target_ieee): New.
 	* gcc.c-torture/execute/ieee/ieee.exp: Use it.
