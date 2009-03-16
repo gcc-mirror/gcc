@@ -1,3 +1,10 @@
+2009-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39455
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Fix types
+	mismatches for POINTER_TYPE_P (type).
+	(number_of_iterations_le): Likewise.
+
 2009-03-16  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c: Removed profiling support.
