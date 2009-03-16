@@ -1,3 +1,8 @@
+2009-03-16  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/37628
+	* gcc.c-torture/execute/pr35456.x: New, skip test for vax.
+
 2009-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/39455
