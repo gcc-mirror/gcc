@@ -1,5 +1,8 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Allow
+	non-NAMESPACE_DECL IMPORTED_DECL_ASSOCIATED_DECL.
+
 	PR debug/39471
 	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Emit
 	DW_TAG_imported_module even if decl is IMPORTED_DECL with
