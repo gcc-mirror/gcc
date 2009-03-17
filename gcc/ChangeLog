@@ -1,3 +1,12 @@
+2009-03-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39482
+	* config/i386/i386.md (*truncdfsf_mixed): Avoid combining registers
+	from different units in a single alternative.
+	(*truncdfsf_i387): Ditto.
+	(*truncxfsf2_mixed): Ditto.
+	(*truncxfdf2_mixed): Ditto.
+
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Allow
@@ -44,14 +53,12 @@
 2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39477
-	* doc/extend.texi: Correct register behavior for regparm on
-	Intel 386.
+	* doc/extend.texi: Correct register behavior for regparm on Intel 386.
 
 2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39476
-	* config/i386/i386.c (ix86_function_regparm): Rewrite for
-	64bit.
+	* config/i386/i386.c (ix86_function_regparm): Rewrite for 64bit.
 
 2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -105,7 +112,7 @@
 
 2008-03-13  Catherine Moore  <clm@codesourcery.com>
 
-	*  gcc/config/i386/x-mingw32 (host-mingw32.o): Replace
+	* gcc/config/i386/x-mingw32 (host-mingw32.o): Replace
 	diagnostic.h with $(DIAGNOSTIC_H).
 
 2008-03-12  Jakub Jelinek  <jakub@redhat.com>
@@ -124,8 +131,7 @@
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39445
-	* config/i386/i386.c (ix86_expand_push): Don't set memory
-	alignment.
+	* config/i386/i386.c (ix86_expand_push): Don't set memory alignment.
 
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -138,8 +144,7 @@
 2009-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38824
-	* config/i386/i386.md: Compare REGNO on the new peephole2
-	patterns.
+	* config/i386/i386.md: Compare REGNO on the new peephole2 patterns.
 
 2009-03-12  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -162,8 +167,7 @@
 2009-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39137
-	* cfgexpand.c (get_decl_align_unit): Use LOCAL_DECL_ALIGNMENT
-	macro.
+	* cfgexpand.c (get_decl_align_unit): Use LOCAL_DECL_ALIGNMENT macro.
 	* defaults.h (LOCAL_DECL_ALIGNMENT): Define if not yet defined.
 	* config/i386/i386.h (LOCAL_DECL_ALIGNMENT): Define.
 	* config/i386/i386.c (ix86_local_alignment): For
@@ -205,8 +209,7 @@
 	    Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR middle-end/37850
-	* libgcc2.c (__mulMODE3): Use explicit assignments to form the
-	result.
+	* libgcc2.c (__mulMODE3): Use explicit assignments to form the result.
 	(__divMODE3): Likewise.
 
 2009-03-09  Jakub Jelinek  <jakub@redhat.com>
@@ -248,8 +251,7 @@
 	of referenced_var_check_and_insert.
 
 	PR debug/39372
-	* dwarf2out.c (add_abstract_origin_attribute): Return
-	origin_die.
+	* dwarf2out.c (add_abstract_origin_attribute): Return origin_die.
 	(gen_variable_die): Emit DW_AT_location on abstract static variable's
 	DIE, don't emit it if abstract origin already has it.
 	* tree-cfg.c (remove_useless_stmts_bind): GIMPLE_BINDs with any
@@ -480,8 +482,7 @@
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* optc-gen.awk: No need to duplicate option flags twice.
-	Reuse help texts for duplicate options which do not have
-	any.
+	Reuse help texts for duplicate options which do not have any.
 
 	* gcc.c (display_help): Document --version.
 
