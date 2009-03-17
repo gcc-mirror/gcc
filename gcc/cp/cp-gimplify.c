@@ -593,8 +593,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 	  IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
 	    = TREE_OPERAND (*expr_p, 0);
-	  DECL_NAME (using_directive)
-	    = DECL_NAME (TREE_OPERAND (*expr_p, 0));
 	  TREE_CHAIN (using_directive) = BLOCK_VARS (block);
 	  BLOCK_VARS (block) = using_directive;
 	}

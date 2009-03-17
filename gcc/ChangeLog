@@ -1,5 +1,10 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/39471
+	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Emit
+	DW_TAG_imported_module even if decl is IMPORTED_DECL with
+	NAMESPACE_DECL in its DECL_INITIAL.
+
 	PR middle-end/39443
 	* optabs.c (set_user_assembler_libfunc): New function.
 	* expr.h (set_user_assembler_libfunc): New prototype.

@@ -1,3 +1,9 @@
+2009-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39471
+	* cp-gimplify.c (cp_gimplify_expr): Don't set DECL_NAME
+	on IMPORTED_DECL.
+
 2009-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39371
